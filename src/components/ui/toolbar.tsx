@@ -5,13 +5,13 @@
 // animation بر اساس `data-side` به‌درستی flip می‌کند؛ نیازی به
 // override نیست. فقط مطمئن شوید متن خود tooltip فارسی است.
 
+import { useDirection } from '@/hooks/useDirection';
+import { Portal } from '@radix-ui/react-tooltip';
 import { type ButtonHTMLAttributes, type HTMLProps, forwardRef } from 'react';
-import { Icon } from './icon';
 import { cn } from '../Editor1/lib/utils';
 import { Button, type ButtonProps } from './button';
+import { Icon } from './icon';
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
-import { Portal } from '@radix-ui/react-tooltip';
-import { useDirection } from '@/hooks/useDirection';
 
 type ToolbarWrapperProps = HTMLProps<HTMLDivElement>;
 
@@ -96,7 +96,8 @@ const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(
       className,
       {
         [`${activeClassname}`]: active,
-        'hover:bg-primary-50 text-primary-500 dark:text-primary-400 dark:hover:bg-primary-900/20': !active,
+        'hover:bg-primary-50 text-primary-500 dark:text-primary-400 dark:hover:bg-primary-900/20':
+          !active,
         'my-1': isDropdown,
       },
     );
@@ -123,7 +124,9 @@ const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(
                 <span>{tooltip}</span>
                 {tooltipShortcut && tooltipShortcut.length > 0 && (
                   <>
-                    <span className="opacity-50" aria-hidden>·</span>
+                    <span className="opacity-50" aria-hidden>
+                      ·
+                    </span>
                     <kbd className="text-[10px] font-mono opacity-80 tracking-tight">
                       {tooltipShortcut.join(' + ')}
                     </kbd>
@@ -149,7 +152,7 @@ export type ToolbarSelectProps = HTMLProps<HTMLSelectElement> & {
 const ToolbarSelect = forwardRef<HTMLSelectElement, ToolbarSelectProps>(
   ({ children, className, tooltip, ...rest }, ref) => {
     const dir = useDirection('rtl');
-  const selectClass = cn(
+    const selectClass = cn(
       'h-8 px-2 text-sm bg-transparent border border-gray-200 dark:border-gray-700 rounded',
       'hover:bg-primary-50 dark:hover:bg-primary-900/20',
       'focus:outline-none focus:ring-1 focus:ring-primary-500',

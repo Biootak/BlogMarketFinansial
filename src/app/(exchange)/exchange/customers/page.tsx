@@ -1,12 +1,12 @@
+import { getCustomers } from '@/actions/exchange-customers';
+import { getExchangeForUser } from '@/actions/exchanges';
 /**
  * /exchange/customers — لیست و مدیریت مشتریان
  */
 import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
-import { getExchangeForUser } from '@/actions/exchanges';
-import { getCustomers } from '@/actions/exchange-customers';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import CustomersWorkspace from './_components/CustomersWorkspace';
 
 export const metadata: Metadata = { title: 'مشتریان صرافی' };

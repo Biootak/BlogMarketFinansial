@@ -294,10 +294,7 @@ export default function ScheduledRail({ scheduledPosts }: ScheduledRailProps) {
       </div>
 
       <footer className="pt-2 border-t border-slate-100 dark:border-slate-800">
-        <Link
-          href="/dashboard/posts?view=calendar"
-          className="dash-link text-xs px-1"
-        >
+        <Link href="/dashboard/posts?view=calendar" className="dash-link text-xs px-1">
           <span>مشاهده تقویم کامل</span>
           <HiOutlineArrowLeft className="w-3.5 h-3.5" />
         </Link>

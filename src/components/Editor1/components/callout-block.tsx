@@ -5,9 +5,10 @@
 
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { NodeViewWrapper, NodeViewContent } from '@tiptap/react';
 import type { NodeViewProps } from '@tiptap/core';
+import { NodeViewContent, NodeViewWrapper } from '@tiptap/react';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type CalloutType, calloutTypeConfig } from '../extensions/callout';
 
 const CalloutBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, selected }) => {
@@ -43,27 +44,36 @@ const CalloutBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor,
     };
   }, [showTypePicker]);
 
-  const handleTypeChange = useCallback((newType: CalloutType) => {
-    updateAttributes({
-      type: newType,
-      icon: calloutTypeConfig[newType].iconName,
-    });
-    setShowTypePicker(false);
-  }, [updateAttributes]);
+  const handleTypeChange = useCallback(
+    (newType: CalloutType) => {
+      updateAttributes({
+        type: newType,
+        icon: calloutTypeConfig[newType].iconName,
+      });
+      setShowTypePicker(false);
+    },
+    [updateAttributes],
+  );
 
-  const typeLabels: Record<CalloutType, string> = useMemo(() => ({
-    info: 'اطلاعات',
-    warning: 'هشدار',
-    success: 'موفقیت',
-    error: 'خطا',
-  }), []);
+  const typeLabels: Record<CalloutType, string> = useMemo(
+    () => ({
+      info: 'اطلاعات',
+      warning: 'هشدار',
+      success: 'موفقیت',
+      error: 'خطا',
+    }),
+    [],
+  );
 
-  const typeDescriptions: Record<CalloutType, string> = useMemo(() => ({
-    info: 'برای نکات و اطلاعات مفید',
-    warning: 'برای هشدارها و نکات مهم',
-    success: 'برای پیام‌های موفقیت',
-    error: 'برای خطاها و مشکلات',
-  }), []);
+  const typeDescriptions: Record<CalloutType, string> = useMemo(
+    () => ({
+      info: 'برای نکات و اطلاعات مفید',
+      warning: 'برای هشدارها و نکات مهم',
+      success: 'برای پیام‌های موفقیت',
+      error: 'برای خطاها و مشکلات',
+    }),
+    [],
+  );
 
   return (
     <NodeViewWrapper
@@ -114,7 +124,9 @@ const CalloutBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor,
                       </span>
                       <span className="at-callout__option-text">
                         <span className="at-callout__option-label">{typeLabels[calloutType]}</span>
-                        <span className="at-callout__option-desc">{typeDescriptions[calloutType]}</span>
+                        <span className="at-callout__option-desc">
+                          {typeDescriptions[calloutType]}
+                        </span>
                       </span>
                     </button>
                   );

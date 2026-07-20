@@ -20,8 +20,7 @@ import AtelierMasthead from '../../_components/AtelierMasthead';
 import AtelierToolbar from '../../_components/AtelierToolbar';
 import { buildArchiveCrumbs } from '../../_components/buildArchiveCrumbs';
 
-const ARCHIVE_BASE_URL =
-  process.env.NEXT_PUBLIC_APP_URL || 'https://blogmarketfinansial.ir';
+const ARCHIVE_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://blogmarketfinansial.ir';
 
 export async function generateMetadata({
   params,
@@ -61,9 +60,7 @@ export async function generateMetadata({
     title,
     description,
     alternates: { canonical: `${ARCHIVE_BASE_URL}${canonicalPath}` },
-    robots: isFilteredView
-      ? { index: false, follow: true }
-      : { index: true, follow: true },
+    robots: isFilteredView ? { index: false, follow: true } : { index: true, follow: true },
   };
 }
 
@@ -192,10 +189,21 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
     });
   }
   if (selectedTag) {
-    activeFilters.push({ type: 'tag', label: `#${selectedTag.name}`, href: '/archive', icon: 'tag', variant: 'accent' });
+    activeFilters.push({
+      type: 'tag',
+      label: `#${selectedTag.name}`,
+      href: '/archive',
+      icon: 'tag',
+      variant: 'accent',
+    });
   }
   if (filter && filter !== DEFAULT_FILTER) {
-    activeFilters.push({ type: 'filter', label: `مرتب‌سازی: ${filter}`, href: '/archive', icon: 'sort' });
+    activeFilters.push({
+      type: 'filter',
+      label: `مرتب‌سازی: ${filter}`,
+      href: '/archive',
+      icon: 'sort',
+    });
   }
 
   const { crumbs } = buildArchiveCrumbs({
@@ -250,11 +258,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
           </div>
         ) : null}
 
-        {posts.length > 0 ? (
-          <AtelierGrid posts={gridPosts} ads={betweenPostsAds} />
-        ) : (
-          <Empty />
-        )}
+        {posts.length > 0 ? <AtelierGrid posts={gridPosts} ads={betweenPostsAds} /> : <Empty />}
 
         {posts.length > 0 && pages > 1 ? (
           <div

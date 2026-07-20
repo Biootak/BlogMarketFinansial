@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useHotkeys } from '@/hooks/useHotkeys';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export function KeyboardShortcuts() {
   const router = useRouter();

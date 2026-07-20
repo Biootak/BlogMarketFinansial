@@ -9,7 +9,7 @@ export const publicRoutes = [
   '/about/[...slug]',
   '/contact',
   '/contact/[...slug]',
-  
+
   // صفحات قانونی و اطلاعات
   '/terms',
   '/privacy-policy',
@@ -18,13 +18,13 @@ export const publicRoutes = [
   '/support',
   '/help-center',
   '/feedback',
-  
+
   // نقشه سایت و SEO
   '/sitemap.xml',
   '/sitemap',
   '/rss.xml',
   '/feed.json',
-  
+
   // جستجو و آرشیو
   '/search',
   '/search/[...slug]',
@@ -33,14 +33,14 @@ export const publicRoutes = [
   '/archive/category/[...slug]',
   '/archive/tag/[...slug]',
   '/archive/author/[...slug]',
-  
+
   // بلاگ و پست‌ها
   '/blog',
   '/blog/[...slug]',
   '/posts',
   '/posts/[id]',
   '/posts/[...slug]',
-  
+
   // دسته‌بندی‌ها و زیردسته‌ها
   '/categories',
   '/categories/[slug]',
@@ -49,39 +49,39 @@ export const publicRoutes = [
   '/categories/featured',
   '/categories/popular',
   '/categories/latest',
-  
+
   // دسته‌بندی‌های مالی
   '/categories/financial',
   '/categories/financial/stocks',
   '/categories/financial/crypto',
   '/categories/financial/forex',
   '/categories/financial/commodities',
-  
+
   // دسته‌بندی‌های بازار
   '/categories/market',
   '/categories/market/analysis',
   '/categories/market/news',
   '/categories/market/predictions',
   '/categories/market/strategies',
-  
+
   // دسته‌بندی‌های آموزشی
   '/categories/education',
   '/categories/education/beginners',
   '/categories/education/advanced',
   '/categories/education/expert',
   '/categories/education/tutorials',
-  
+
   // پست‌های دسته‌بندی شده
   '/posts/category/[category]',
   '/posts/category/[category]/[subcategory]',
   '/posts/category/[category]/[subcategory]/[post]',
-  
+
   // برچسب‌ها
   '/tags',
   '/tags/[slug]',
   '/authors',
   '/authors/[username]',
-  
+
   // نرخ‌ها و اطلاعات مالی
   '/exchange-rates',
   '/exchange-rates/[currency]',
@@ -91,7 +91,7 @@ export const publicRoutes = [
   '/market-analysis/[...slug]',
   '/financial-news',
   '/financial-news/[...slug]',
-  
+
   // API های عمومی
   '/api/public',
   '/api/public/posts',
@@ -102,7 +102,7 @@ export const publicRoutes = [
   '/api/public/credit-rates',
   '/api/public/market-stats',
   '/api/public/financial-news',
-  
+
   // صفحات سرویس
   '/subscription',
   '/subscription/[plan]',
@@ -110,7 +110,7 @@ export const publicRoutes = [
   '/money-transfer/[...slug]',
   '/online-payment',
   '/online-payment/[...slug]',
-  
+
   // فایل‌های استاتیک
   '/images',
   '/images/[...path]',

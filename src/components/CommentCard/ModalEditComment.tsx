@@ -1,17 +1,17 @@
 'use client';
 
-import type React from 'react';
-import { type FC, useEffect, useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import type { CommentWithRelationsAndLikes } from '@/types/types';
+import type React from 'react';
+import { type FC, useEffect, useRef, useState } from 'react';
 
 export interface ModalEditCommentProps {
   show: boolean;

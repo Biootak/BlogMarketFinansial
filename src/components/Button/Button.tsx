@@ -58,7 +58,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const CLASSES = `nc-Button flex-shrink-0 relative h-auto inline-flex items-center justify-center rounded-full transition-all duration-200 border-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 hover:scale-[1.02] active:scale-[0.98] ${colors} ${fontSize} ${sizeClass} ${className} `;
 
-    if (!!href) {
+    if (href) {
       return (
         <Link href={href} className={`${CLASSES}`} onClick={onClick}>
           {loading && <Loading />}

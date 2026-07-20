@@ -70,6 +70,6 @@ export async function getTags(
     {
       tags: ['tags'],
       revalidate: 3600, // 1 hour
-    }
+    },
   )();
 }

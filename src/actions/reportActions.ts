@@ -1,7 +1,8 @@
 'use server';
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
-import db from '@/lib/db';
+// db is an alias for prisma — used in legacy functions below
+const db = prisma;
 
 import { revalidatePath } from 'next/cache';
 
@@ -84,25 +85,23 @@ interface SystemLog {
   timestamp: Date;
 }
 
-interface ActionResult<T = any> {
+interface ActionResult<T = unknown> {
   success: boolean;
   data?: T;
   message?: string;
 }
 
+// 2026-07-28: Use session role directly instead of a redundant DB roundtrip.
+// The JWT-based session already carries the role — no need to re-fetch from DB.
 export async function checkReportAccess() {
   const session = await auth();
 
-  if (!session?.user?.email) {
-    throw new Error('No user email found');
+  if (!session?.user?.id) {
+    throw new Error('احراز هویت الزامی است');
   }
 
-  const user = await db.user.findUnique({
-    where: { email: session.user.email },
-    select: { role: true },
-  });
-
-  if (!user || !['OWNER', 'ADMIN'].includes(user.role)) {
+  const role = session.user.role as string | undefined;
+  if (!role || !['OWNER', 'ADMIN'].includes(role)) {
     throw new Error('شما دسترسی لازم برای مشاهده گزارش‌ها را ندارید');
   }
 }
@@ -111,12 +110,15 @@ export async function getSystemReports(from?: Date, to?: Date) {
   try {
     await checkReportAccess();
 
-    const dateFilter = from && to ? {
-      createdAt: {
-        gte: from,
-        lte: to
-      }
-    } : {};
+    const dateFilter =
+      from && to
+        ? {
+            createdAt: {
+              gte: from,
+              lte: to,
+            },
+          }
+        : {};
 
     // 2026-06-14: flatten the IIFEs. Each IIFE had 2-4 sequential
     // queries that *could not* be parallelized by the outer
@@ -214,7 +216,7 @@ export async function getSystemReports(from?: Date, to?: Date) {
       message: error instanceof Error ? error.message : 'خطا در دریافت گزارش‌های سیستم',
     };
   }
-};
+}
 
 export const getSystemStatus = async (): Promise<ActionResult<SystemStatus>> => {
   'use server';
@@ -288,7 +290,7 @@ export const getActivityLog = async (): Promise<ActionResult<Activity[]>> => {
       },
     });
 
-    const formattedActivities = activities.map((activity) => ({
+    const formattedActivities = activities.map((activity: (typeof activities)[number]) => ({
       id: activity.id,
       userEmail: activity.user.email,
       action: activity.action,
@@ -307,9 +309,9 @@ export const getActivityLog = async (): Promise<ActionResult<Activity[]>> => {
 };
 
 export async function getSystemLogs(
-  page: number = 1,
-  limit: number = 10,
-  level?: string
+  page = 1,
+  limit = 10,
+  level?: string,
 ): Promise<ActionResult<{ logs: SystemLog[]; total: number }>> {
   try {
     await checkReportAccess();

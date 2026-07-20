@@ -1,10 +1,10 @@
 // menu-button-indent.tsx — Inkwell 2026
 // افزایش یک سطح تورفتگی برای پاراگراف/heading فعلی.
 
-import React, { memo, useCallback } from 'react';
-import { Toolbar } from '../../ui/toolbar';
-import { Icon } from '../../ui/icon';
 import type { Editor } from '@tiptap/core';
+import React, { memo, useCallback } from 'react';
+import { Icon } from '../../ui/icon';
+import { Toolbar } from '../../ui/toolbar';
 import { useActive } from '../hooks/use-active';
 
 interface MenuButtonIndentProps {

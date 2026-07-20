@@ -1,10 +1,10 @@
-import React, { type FC } from 'react';
-import { HiArrowRight } from 'react-icons/hi2';
+import type { TopAuthor } from '@/actions/getTopAuthors';
 import Avatar from '@/components/Avatar/Avatar';
 import NcImage from '@/components/NcImage/NcImage';
+import { heading, radius, text } from '@/lib/design-tokens';
 import Link from 'next/link';
-import type { TopAuthor } from '@/actions/getTopAuthors';
-import { heading, text, radius } from '@/lib/design-tokens';
+import React, { type FC } from 'react';
+import { HiArrowRight } from 'react-icons/hi2';
 
 export interface CardAuthorBox2Props {
   className?: string;
@@ -56,12 +56,15 @@ const CardAuthorBox2: FC<CardAuthorBox2Props> = ({ className = '', author }) => 
           userName={name}
         />
         <div className="mt-3 px-4">
-          <h2 className={[heading.h3, 'group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors'].join(' ')}>
+          <h2
+            className={[
+              heading.h3,
+              'group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors',
+            ].join(' ')}
+          >
             <span className="line-clamp-1">{name}</span>
           </h2>
-          <span className={['block mt-1', text.bodySm].join(' ')}>
-            @{jobName}
-          </span>
+          <span className={['block mt-1', text.bodySm].join(' ')}>@{jobName}</span>
         </div>
       </div>
     </Link>

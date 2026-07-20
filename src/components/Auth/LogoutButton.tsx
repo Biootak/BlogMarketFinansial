@@ -1,16 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import { IoExitOutline } from 'react-icons/io5';
-import { useRouter } from 'next/navigation';
+import {
+  invalidateDashboardCache,
+  invalidatePublicCache,
+  invalidateUserCache,
+} from '@/actions/cacheActions';
 import { useToast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
 import { getSession, signOut } from 'next-auth/react';
-import {
-  invalidateUserCache,
-  invalidatePublicCache,
-  invalidateDashboardCache,
-} from '@/actions/cacheActions';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { IoExitOutline } from 'react-icons/io5';
 import Loading from '../Button/Loading';
 
 const LogoutButton = () => {

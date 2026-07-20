@@ -4,10 +4,10 @@
  * قبلاً فقط در bubble menu در دسترس بود.
  */
 
-import React, { memo, useCallback } from 'react';
-import { Toolbar } from '../../ui/toolbar';
-import { Icon } from '../../ui/icon';
 import type { Editor } from '@tiptap/core';
+import React, { memo, useCallback } from 'react';
+import { Icon } from '../../ui/icon';
+import { Toolbar } from '../../ui/toolbar';
 import { useActive } from '../hooks/use-active';
 
 interface MenuButtonStrikeProps {

@@ -14,9 +14,12 @@
  * ----------------------------------------------------------------------------
  */
 
-import { useEffect, useMemo, useRef, useState, useCallback, memo } from 'react';
-import Link from 'next/link';
-import { motion, AnimatePresence } from '@/lib/motion-shim';
+import LiveClock from '@/components/Sections/effects/LiveClock';
+import Ticker from '@/components/Ticker';
+import { AnimatePresence, motion } from '@/lib/motion-shim';
+import { type ParsedRateItem, groupRateItems, parseRateItem } from '@/lib/rateItem';
+import { cn, formatNumber, toPersianNumber } from '@/lib/utils';
+import type { RateListData } from '@/types/types';
 import {
   Activity,
   ArrowLeftRight,
@@ -25,15 +28,12 @@ import {
   Pause,
   Play,
   Sparkles,
-  TrendingUp,
   TrendingDown,
+  TrendingUp,
   Wallet,
 } from 'lucide-react';
-import { cn, toPersianNumber, formatNumber } from '@/lib/utils';
-import Ticker from '@/components/Ticker';
-import LiveClock from '@/components/Sections/effects/LiveClock';
-import { parseRateItem, groupRateItems, type ParsedRateItem } from '@/lib/rateItem';
-import type { RateListData } from '@/types/types';
+import Link from 'next/link';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface RateListsTickerProps {
   /** فقط لیست‌های فعال. */
@@ -97,7 +97,7 @@ function RateListsTicker({
 
   /* ---------- Group all rate items from all active lists ---------- */
   const grouped = useMemo(() => {
-    const active = (rateLists ?? []).filter((l) => l && l.isActive);
+    const active = (rateLists ?? []).filter((l) => l?.isActive);
     const result = groupRateItems(
       active.map((l) => ({ id: l.id, title: l.title, rates: l.rates })),
     );
@@ -210,7 +210,8 @@ function RateListsTicker({
           )}
         >
           {/* Live pulse */}
-          <span className="relative inline-flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl shrink-0"
+          <span
+            className="relative inline-flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl shrink-0"
             style={{ backgroundColor: `${accent.color}1f`, color: accent.color }}
             aria-hidden
           >
@@ -240,7 +241,8 @@ function RateListsTicker({
           aria-hidden
           className="w-px self-stretch my-2"
           style={{
-            background: 'linear-gradient(180deg, transparent, var(--hairline) 18%, var(--hairline) 82%, transparent)',
+            background:
+              'linear-gradient(180deg, transparent, var(--hairline) 18%, var(--hairline) 82%, transparent)',
           }}
         />
 
@@ -351,14 +353,17 @@ function RateListsTicker({
           aria-hidden
           className="w-px self-stretch my-2"
           style={{
-            background: 'linear-gradient(180deg, transparent, var(--hairline) 18%, var(--hairline) 82%, transparent)',
+            background:
+              'linear-gradient(180deg, transparent, var(--hairline) 18%, var(--hairline) 82%, transparent)',
           }}
         />
 
         {/* ── Controls + counter ───────────────────────────────────────── */}
         <div className="shrink-0 flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-2.5 sm:py-3">
           <span className="hidden sm:inline-flex items-center gap-1 text-[10.5px] font-semibold text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums px-1.5">
-            <span style={{ color: accent.color }}>{toPersianNumber(String(activeIndex + 1).padStart(2, '۰'))}</span>
+            <span style={{ color: accent.color }}>
+              {toPersianNumber(String(activeIndex + 1).padStart(2, '۰'))}
+            </span>
             <span className="text-neutral-300 dark:text-neutral-600">/</span>
             <span>{toPersianNumber(String(items.length).padStart(2, '۰'))}</span>
           </span>
@@ -445,10 +450,7 @@ function RateListsTicker({
               {grouped.lists.map((l) => {
                 const a = getAccentForTitle(l.title);
                 return (
-                  <span
-                    key={l.id}
-                    className="inline-flex items-center gap-1.5 px-2.5 shrink-0"
-                  >
+                  <span key={l.id} className="inline-flex items-center gap-1.5 px-2.5 shrink-0">
                     <span
                       className="inline-block h-1 w-1 rounded-full"
                       style={{ backgroundColor: a.color }}

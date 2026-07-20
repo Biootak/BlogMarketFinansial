@@ -1,13 +1,13 @@
+import { auth } from '@/auth';
 import SiteLogo from '@/components/Logo/SiteLogo';
 import MenuBar from '@/components/MenuBar/MenuBar';
 import Navigation from '@/components/Navigation/Navigation2026';
+import type { RateListData } from '@/types/types';
+import { Sparkles, User } from 'lucide-react';
+import Link from 'next/link';
 import AvatarDropdown from './AvatarDropdown';
 import NotifyDropdown from './NotifyDropdown';
 import SearchModal from './SearchModal';
-import { auth } from '@/auth';
-import Link from 'next/link';
-import { User, Sparkles } from 'lucide-react';
-import type { RateListData } from '@/types/types';
 
 /**
  * MainNav — Premium Header با تراز کاملاً متقارن
@@ -61,8 +61,10 @@ export default async function MainNav({
           </div>
 
           {/* ستون وسط — Logo */}
-          <div className="flex items-center justify-center min-w-0 col-start-2 row-start-1
-                          lg:col-start-1 lg:row-start-1 lg:justify-start">
+          <div
+            className="flex items-center justify-center min-w-0 col-start-2 row-start-1
+                          lg:col-start-1 lg:row-start-1 lg:justify-start"
+          >
             <SiteLogo variant="modern" />
           </div>
 
@@ -209,9 +211,7 @@ export default async function MainNav({
                         transition-opacity duration-300
                       "
                     />
-                    <span className="relative text-primary-600 dark:text-primary-400">
-                      ثبت‌نام
-                    </span>
+                    <span className="relative text-primary-600 dark:text-primary-400">ثبت‌نام</span>
                   </Link>
                 </div>
               )}
@@ -219,9 +219,11 @@ export default async function MainNav({
           </div>
 
           {/* ستون وسط ردیف دوم — Navigation (فقط lg+ = دسکتاپ) */}
-          <div className="hidden lg:flex items-center justify-center min-w-0
+          <div
+            className="hidden lg:flex items-center justify-center min-w-0
                           col-span-3 row-start-2
-                          lg:col-span-1 lg:col-start-2 lg:row-start-1">
+                          lg:col-span-1 lg:col-start-2 lg:row-start-1"
+          >
             <Navigation rateLists={activeRateLists} />
           </div>
         </div>

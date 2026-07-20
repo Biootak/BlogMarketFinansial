@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState, useCallback, Suspense } from 'react';
 import { getActivityLog } from '@/actions/reports/activityLogs';
-import dynamic from 'next/dynamic';
-import { Loader2, Activity, Clock } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
-import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
 import type { ActivityLog } from '@/actions/reports/activityLogs';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from '@/components/ui/use-toast';
+import { cn } from '@/lib/utils';
+import { Activity, Clock, Loader2 } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 
 const ActivityTable = dynamic(() => import('@/components/Dashboard/Reports/ActivityTable'), {
   loading: () => (
@@ -87,7 +87,7 @@ export default function ActivityLogComponent() {
           className={cn(
             'p-4 rounded-xl',
             'bg-gradient-to-br from-emerald-50 to-teal-50',
-            'border border-emerald-100'
+            'border border-emerald-100',
           )}
         >
           <div className="flex items-center gap-2 text-emerald-600 mb-1">
@@ -100,7 +100,7 @@ export default function ActivityLogComponent() {
           className={cn(
             'p-4 rounded-xl',
             'bg-gradient-to-br from-blue-50 to-indigo-50',
-            'border border-blue-100'
+            'border border-blue-100',
           )}
         >
           <div className="flex items-center gap-2 text-blue-600 mb-1">
@@ -114,7 +114,7 @@ export default function ActivityLogComponent() {
             'p-4 rounded-xl',
             'bg-gradient-to-br from-violet-50 to-purple-50',
             'border border-violet-100',
-            'col-span-2 sm:col-span-1'
+            'col-span-2 sm:col-span-1',
           )}
         >
           <div className="flex items-center gap-2 text-violet-600 mb-1">

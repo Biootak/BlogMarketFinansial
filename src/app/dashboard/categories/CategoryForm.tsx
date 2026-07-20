@@ -1,21 +1,38 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { HiOutlinePlus, HiOutlineXMark } from 'react-icons/hi2';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { useToast } from '@/components/ui/use-toast';
 import { createCategory, updateCategory } from '@/actions/categoryActions';
 import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/components/ui/use-toast';
 import { pickDims } from '@/lib/image-dims';
+import type {
+  ActionResult,
+  CreateCategoryInput,
+  TaxonomyType,
+  UpdateCategoryInput,
+} from '@/types/types';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { ActionResult, CreateCategoryInput, TaxonomyType, UpdateCategoryInput } from '@/types/types';
+import { useCallback, useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { HiOutlinePlus, HiOutlineXMark } from 'react-icons/hi2';
+import { HiOutlineFolder, HiOutlineLink, HiOutlinePhoto, HiOutlineTag } from 'react-icons/hi2';
 import { z } from 'zod';
-import { HiOutlinePhoto, HiOutlineLink, HiOutlineFolder, HiOutlineTag } from 'react-icons/hi2';
 
 const categorySchema = z.object({
   name: z.string().min(1, 'نام دسته‌بندی الزامی است'),
@@ -95,12 +112,16 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
         }
       } catch (error) {
         console.error('خطا در ارسال فرم:', error);
-        toast({ title: 'خطا', description: 'مشکلی در ارسال اطلاعات رخ داد.', variant: 'destructive' });
+        toast({
+          title: 'خطا',
+          description: 'مشکلی در ارسال اطلاعات رخ داد.',
+          variant: 'destructive',
+        });
       } finally {
         setIsSubmitting(false);
       }
     },
-    [category, toast, router, form, onClose]
+    [category, toast, router, form, onClose],
   );
 
   const handleDialogOpenChange = (open: boolean) => {
@@ -148,7 +169,9 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
                   placeholder="bazar-sarmaye"
                 />
               </FormControl>
-              <p className="at-field__hint">شناسه‌ی یکتا برای URL — بدون فاصله، حروف لاتین و اعداد</p>
+              <p className="at-field__hint">
+                شناسه‌ی یکتا برای URL — بدون فاصله، حروف لاتین و اعداد
+              </p>
               <FormMessage />
             </FormItem>
           )}
@@ -248,7 +271,10 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
           )}
         />
 
-        <div className="at-dialog-foot" style={{ marginInlineStart: '-22px', marginInlineEnd: '-22px', marginBottom: '-20px' }}>
+        <div
+          className="at-dialog-foot"
+          style={{ marginInlineStart: '-22px', marginInlineEnd: '-22px', marginBottom: '-20px' }}
+        >
           <button
             type="button"
             onClick={() => handleDialogOpenChange(false)}
@@ -257,16 +283,8 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
           >
             انصراف
           </button>
-          <button
-            type="submit"
-            className="at-btn at-btn--primary"
-            disabled={isSubmitting}
-          >
-            {isSubmitting
-              ? 'در حال ذخیره...'
-              : category
-                ? 'ویرایش دسته‌بندی'
-                : 'ایجاد دسته‌بندی'}
+          <button type="submit" className="at-btn at-btn--primary" disabled={isSubmitting}>
+            {isSubmitting ? 'در حال ذخیره...' : category ? 'ویرایش دسته‌بندی' : 'ایجاد دسته‌بندی'}
           </button>
         </div>
       </form>

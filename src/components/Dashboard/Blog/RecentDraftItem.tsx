@@ -1,6 +1,6 @@
-import type React from 'react';
 import Link from 'next/link';
-import { HiCalendar, HiUser, HiPencil } from 'react-icons/hi2';
+import type React from 'react';
+import { HiCalendar, HiPencil, HiUser } from 'react-icons/hi2';
 
 interface RecentDraftItemProps {
   id: string;

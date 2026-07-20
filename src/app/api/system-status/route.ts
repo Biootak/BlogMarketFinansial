@@ -1,16 +1,15 @@
-import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import db from '@/lib/db';
 import { checkDiskSpace, getSystemMetrics } from '@/lib/system';
-
+import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
     const session = await auth();
     if (!session?.user || session.user.role !== 'OWNER') {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized access' },
-        { status: 401 }
+        { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } },
+        { status: 403 },
       );
     }
 
@@ -19,13 +18,16 @@ export async function GET() {
 
     // Get disk space info
     try {
-      const diskSpace = await checkDiskSpace(process.cwd().split('\\')[0]);
+      // Use path.parse to safely extract drive root on Windows; on Linux/macOS cwd() is used directly
+      const cwd = process.cwd();
+      const diskRoot = process.platform === 'win32' ? (cwd.split('\\')[0] ?? cwd) : cwd;
+      const diskSpace = await checkDiskSpace(diskRoot);
       if (diskSpace) {
         systemInfo.disk = {
           total: diskSpace.size,
           free: diskSpace.free,
           used: diskSpace.size - diskSpace.free,
-          usagePercentage: Math.round((diskSpace.size - diskSpace.free) / diskSpace.size * 100)
+          usagePercentage: Math.round(((diskSpace.size - diskSpace.free) / diskSpace.size) * 100),
         };
       }
     } catch (diskError) {
@@ -34,7 +36,7 @@ export async function GET() {
         total: 0,
         free: 0,
         used: 0,
-        usagePercentage: 0
+        usagePercentage: 0,
       };
     }
 
@@ -42,7 +44,7 @@ export async function GET() {
     let dbStatus = {
       status: 'offline',
       connections: 0,
-      responseTime: 0
+      responseTime: 0,
     };
 
     try {
@@ -50,10 +52,16 @@ export async function GET() {
       await db.$queryRaw`SELECT 1`;
       const endTime = Date.now();
 
+      // $queryRaw returns typed rows; $executeRaw returns affected-row count.
+      // For the pg_stat_activity count we need $queryRaw so we get the actual
+      // BigInt value, then convert to Number for JSON serialisation.
+      const countResult = await db.$queryRaw<[{ count: bigint }]>`
+        SELECT COUNT(*)::bigint AS count FROM pg_stat_activity
+      `;
       dbStatus = {
         status: 'online',
-        connections: await db.$executeRaw`SELECT COUNT(*) FROM pg_stat_activity`,
-        responseTime: endTime - startTime
+        connections: Number(countResult[0]?.count ?? 0),
+        responseTime: endTime - startTime,
       };
     } catch (dbError) {
       console.error('Database check error:', dbError);
@@ -64,21 +72,21 @@ export async function GET() {
       users: 0,
       posts: 0,
       comments: 0,
-      environment: process.env.NODE_ENV || 'development'
+      environment: process.env.NODE_ENV || 'development',
     };
 
     try {
       const [users, posts, comments] = await Promise.all([
         db.user.count(),
         db.post.count(),
-        db.comment.count()
+        db.comment.count(),
       ]);
 
       appStats = {
         users,
         posts,
         comments,
-        environment: process.env.NODE_ENV || 'development'
+        environment: process.env.NODE_ENV || 'development',
       };
     } catch (statsError) {
       console.error('Error getting application stats:', statsError);
@@ -90,19 +98,18 @@ export async function GET() {
         system: systemInfo,
         database: dbStatus,
         application: appStats,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     });
-
   } catch (error) {
     console.error('System status API error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: 'Internal server error',
-        details: process.env.NODE_ENV === 'development' ? String(error) : undefined
+        details: process.env.NODE_ENV === 'development' ? String(error) : undefined,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

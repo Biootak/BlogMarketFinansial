@@ -1,8 +1,8 @@
-import { notFound } from 'next/navigation';
-import ProfileForm from '@/components/ProfileForm';
 import { getProfileData } from '@/actions/getProfileData';
 import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
+import ProfileForm from '@/components/ProfileForm';
+import { notFound } from 'next/navigation';
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -18,10 +18,7 @@ export default async function ProfilePage() {
   return (
     <div className="at-form" dir="rtl">
       <PageHeader
-        breadcrumb={[
-          { label: 'داشبورد', href: '/dashboard' },
-          { label: 'ویرایش پروفایل' },
-        ]}
+        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'ویرایش پروفایل' }]}
         eyebrow="حساب کاربری"
         title="ویرایش پروفایل"
         description="اطلاعات حساب، تصویر و توضیحات نمایه‌ی عمومی"

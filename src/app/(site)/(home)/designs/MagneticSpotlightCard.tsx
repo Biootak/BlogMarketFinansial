@@ -21,13 +21,13 @@
  */
 
 import {
-  type ReactNode,
-  type MouseEvent,
   type CSSProperties,
-  useRef,
-  useState,
+  type MouseEvent,
+  type ReactNode,
   useCallback,
   useEffect,
+  useRef,
+  useState,
 } from 'react';
 
 interface MagneticSpotlightCardProps {
@@ -59,7 +59,7 @@ export default function MagneticSpotlightCard({
   // position به صورت ref ذخیره می‌شه تا re-render نشه
   const positionRef = useRef({ x: 0.5, y: 0.5 });
   const rafRef = useRef<number | null>(null);
-  const pendingMouseEvent = useRef<MouseEvent<HTMLDivElement> | null>(null);
+  const _pendingMouseEvent = useRef<MouseEvent<HTMLDivElement> | null>(null);
 
   // فقط isHovering و prefersReducedMotion به صورت state (re-render ارزش داره)
   const [isHovering, setIsHovering] = useState(false);

@@ -62,7 +62,7 @@ export async function requireAuthor(): Promise<AuthResult> {
 }
 
 // Convert an AuthFailure into the project's standard ActionResult shape.
-export function authFailureToActionResult<T>(failure: AuthFailure): {
+export function authFailureToActionResult<_T>(failure: AuthFailure): {
   success: false;
   message: string;
   error: string;

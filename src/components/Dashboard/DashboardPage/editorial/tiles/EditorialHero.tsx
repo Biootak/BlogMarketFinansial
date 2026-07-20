@@ -67,7 +67,9 @@ function HeroSpark({ data, gradId }: { data: number[]; gradId: string }) {
     const y = allZero ? height - 4 : height - 6 - ((v - min) / span) * (height - 12);
     return [x, y] as const;
   });
-  const line = pts.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+  const line = pts
+    .map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`)
+    .join(' ');
   const area = allZero ? '' : `${line} L${width},${height} L0,${height} Z`;
 
   return (

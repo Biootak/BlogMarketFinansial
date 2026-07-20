@@ -1,9 +1,9 @@
 'use server';
 
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { requireUser } from '@/lib/require-auth';
 import { authFailureToActionResult } from '@/lib/require-auth';
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 const s3Client = new S3Client({
   region: 'default',
@@ -19,19 +19,16 @@ const s3Client = new S3Client({
 // to any key in the bucket, which is a critical-severity issue (it lets
 // anonymous attackers turn the bucket into their personal malware host
 // using our credentials).
-const ALLOWED_FILE_TYPES = new Set([
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/gif',
-]);
+const ALLOWED_FILE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
 const SAFE_NAME = /^[a-zA-Z0-9._-]+$/;
 
 export async function getPresignedUrl(
   fileName: string,
   fileType: string,
-): Promise<{ success: true; url: string; key: string } | { success: false; message: string; error: string }> {
+): Promise<
+  { success: true; url: string; key: string } | { success: false; message: string; error: string }
+> {
   const auth = await requireUser();
   if (!auth.success) return authFailureToActionResult(auth);
 

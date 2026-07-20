@@ -1,6 +1,6 @@
-import * as React from 'react';
+import { heading, radius, space, text } from '@/lib/design-tokens';
 import { cn } from '@/lib/utils';
-import { heading, text, space, radius } from '@/lib/design-tokens';
+import type * as React from 'react';
 
 /**
  * CardTitle — single source of truth for a card heading.
@@ -33,18 +33,13 @@ export function CardTitle({
   id,
 }: CardTitleProps) {
   const Tag = as as 'h3';
-  const clampClass =
-    clamp === 1 ? 'line-clamp-1' : clamp === 2 ? 'line-clamp-2' : 'line-clamp-3';
+  const clampClass = clamp === 1 ? 'line-clamp-1' : clamp === 2 ? 'line-clamp-2' : 'line-clamp-3';
   return (
     <div className={cn('flex items-start justify-between gap-2', className)}>
       <div className="min-w-0 flex-1">
         {meta && <p className={cn(text.meta, 'mb-1')}>{meta}</p>}
-        <Tag className={cn(heading.h4, clampClass, 'break-words text-balance')}>
-          {title}
-        </Tag>
-        {subtitle && (
-          <p className={cn(text.bodySm, 'mt-1 line-clamp-2')}>{subtitle}</p>
-        )}
+        <Tag className={cn(heading.h4, clampClass, 'break-words text-balance')}>{title}</Tag>
+        {subtitle && <p className={cn(text.bodySm, 'mt-1 line-clamp-2')}>{subtitle}</p>}
       </div>
       {trailing && <div className="flex-shrink-0">{trailing}</div>}
     </div>
@@ -75,11 +70,7 @@ export function CardMeta({
   children: React.ReactNode;
   className?: string;
 }) {
-  return (
-    <div className={cn('flex items-center gap-2', text.meta, className)}>
-      {children}
-    </div>
-  );
+  return <div className={cn('flex items-center gap-2', text.meta, className)}>{children}</div>;
 }
 
 /**

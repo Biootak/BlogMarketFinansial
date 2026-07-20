@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useTransition, useCallback } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { useDebouncedCallback } from 'use-debounce';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useState, useTransition } from 'react';
 import { HiMagnifyingGlass } from 'react-icons/hi2';
+import { useDebouncedCallback } from 'use-debounce';
 
 export default function SearchCategories() {
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function SearchCategories() {
       }
       return params.toString();
     },
-    [searchParams]
+    [searchParams],
   );
 
   const debouncedSearch = useDebouncedCallback((term: string) => {
@@ -46,7 +46,9 @@ export default function SearchCategories() {
       />
       <HiMagnifyingGlass className="at-filterbar__search__ico size-4" />
       {isPending && (
-        <span className="text-[10px] text-[color:var(--at-fg-subtle)] mt-1 block">در حال جستجو...</span>
+        <span className="text-[10px] text-[color:var(--at-fg-subtle)] mt-1 block">
+          در حال جستجو...
+        </span>
       )}
     </div>
   );

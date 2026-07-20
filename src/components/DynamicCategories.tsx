@@ -1,11 +1,11 @@
 'use client';
 
+import { getCategories } from '@/actions/categoryActions';
+import ButtonSecondary from '@/components/Button/ButtonSecondary';
+import SectionGridCategoryBox from '@/components/SectionGridCategoryBox/SectionGridCategoryBox';
+import type { TaxonomyType } from '@/types/types';
 import type React from 'react';
 import { useState } from 'react';
-import type { TaxonomyType } from '@/types/types';
-import SectionGridCategoryBox from '@/components/SectionGridCategoryBox/SectionGridCategoryBox';
-import ButtonSecondary from '@/components/Button/ButtonSecondary';
-import { getCategories } from '@/actions/categoryActions';
 
 interface DynamicCategoriesProps {
   initialCategories: TaxonomyType[];

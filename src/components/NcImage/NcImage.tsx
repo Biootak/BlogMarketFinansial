@@ -1,5 +1,6 @@
 'use client';
 
+import { SafeImage, type SafeImageProps } from '@/components/SafeImage';
 /**
  * NcImage — نسخه‌ی بهبودیافته که:
  *  - به جای fallback hard-coded URL، SafeImage placeholder استفاده می‌کنه
@@ -7,7 +8,6 @@
  *  - API سازگار با نسخه‌ی قبلی (همون propها)
  */
 import type React from 'react';
-import { SafeImage, type SafeImageProps } from '@/components/SafeImage';
 
 type NcOnlyImgProps = Omit<SafeImageProps, 'alt' | 'variant'> &
   Pick<React.ImgHTMLAttributes<HTMLImageElement>, 'alt'>;

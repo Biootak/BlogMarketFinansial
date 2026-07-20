@@ -1,5 +1,5 @@
-import type { Metadata } from 'next';
 import { getSiteIdentity } from '@/lib/site-identity';
+import type { Metadata } from 'next';
 import ContactForm from './ContactForm';
 
 export async function generateMetadata(): Promise<Metadata> {

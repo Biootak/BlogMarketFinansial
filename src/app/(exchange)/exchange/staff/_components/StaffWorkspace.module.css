@@ -40,8 +40,12 @@
   transition: background 80ms ease;
 }
 
-.staffRow:last-child { border-bottom: none; }
-.staffRow:hover { background: var(--at-canvas-subtle); }
+.staffRow:last-child {
+  border-bottom: none;
+}
+.staffRow:hover {
+  background: var(--at-canvas-subtle);
+}
 
 .staffAvatar {
   width: 40px;

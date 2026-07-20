@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
-import Link from 'next/link';
-import { Wrench, WifiOff, Lock, Search, AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import * as Sentry from '@sentry/nextjs';
+import { AlertTriangle, Home, Lock, RefreshCw, Search, WifiOff, Wrench } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect } from 'react';
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -12,12 +13,18 @@ interface ErrorProps {
 
 export default function Error({ error, reset }: ErrorProps) {
   useEffect(() => {
-    // لاگ کردن خطا (می‌تونی به Sentry یا سرویس دیگه بفرستی)
-    console.error('Application Error:', {
-      message: error.message,
-      digest: error.digest,
-      stack: error.stack,
-    });
+    // In development: log to console for debugging.
+    // In production: capture to Sentry; do NOT log to console (avoids
+    // exposing stack traces / Prisma query strings in browser devtools).
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Application Error:', {
+        message: error.message,
+        digest: error.digest,
+        stack: error.stack,
+      });
+    } else {
+      Sentry.captureException(error);
+    }
   }, [error]);
 
   // نمایش پیام مناسب بر اساس نوع خطا
@@ -25,7 +32,11 @@ export default function Error({ error, reset }: ErrorProps) {
     const message = error.message?.toLowerCase() || '';
 
     // خطاهای دیتابیس
-    if (message.includes('database') || message.includes('prisma') || message.includes("can't reach")) {
+    if (
+      message.includes('database') ||
+      message.includes('prisma') ||
+      message.includes("can't reach")
+    ) {
       return {
         title: 'خطای سرور',
         description: 'سرور موقتاً در دسترس نیست. لطفاً چند لحظه صبر کنید و دوباره تلاش کنید.',
@@ -68,10 +79,7 @@ export default function Error({ error, reset }: ErrorProps) {
   const Icon = errorInfo.icon;
 
   return (
-    <div
-      dir="rtl"
-      className="min-h-[60vh] flex items-center justify-center p-4"
-    >
+    <div dir="rtl" className="min-h-[60vh] flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white dark:bg-neutral-800 rounded-2xl shadow-xl p-8 text-center">
         {/* Icon */}
         <div className="mb-4 flex justify-center">
@@ -83,9 +91,7 @@ export default function Error({ error, reset }: ErrorProps) {
         </h2>
 
         {/* Description */}
-        <p className="text-neutral-600 dark:text-neutral-400 mb-6">
-          {errorInfo.description}
-        </p>
+        <p className="text-neutral-600 dark:text-neutral-400 mb-6">{errorInfo.description}</p>
 
         {/* Error digest for debugging - فقط در development */}
         {process.env.NODE_ENV === 'development' && error.digest && (
@@ -96,10 +102,7 @@ export default function Error({ error, reset }: ErrorProps) {
 
         {/* Actions */}
         <div className="flex flex-col gap-3">
-          <Button
-            onClick={reset}
-            className="w-full gap-2"
-          >
+          <Button onClick={reset} className="w-full gap-2">
             <RefreshCw className="w-4 h-4" />
             تلاش مجدد
           </Button>

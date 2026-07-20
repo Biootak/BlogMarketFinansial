@@ -1,52 +1,52 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import {
-  Clock,
-  CheckCircle2,
-  XCircle,
-  RefreshCw,
-  AlertCircle,
-  CalendarClock,
-  Hash,
-  MessageSquare,
-  History,
-  Copy,
-  Check,
-  ArrowUpRight,
-} from 'lucide-react';
 import { getServiceRequestByTrackingCode } from '@/actions/serviceRequestActions';
+import {
+  AlertCircle,
+  ArrowUpRight,
+  CalendarClock,
+  Check,
+  CheckCircle2,
+  Clock,
+  Copy,
+  Hash,
+  History,
+  MessageSquare,
+  RefreshCw,
+  XCircle,
+} from 'lucide-react';
+import { useCallback, useState } from 'react';
 import s from './TrackingPageClient.module.css';
 
 // ─── Constants ────────────────────────────────────────────────────────────── //
 
 const STATUS_CONFIG = {
-  PENDING:     { label: 'در انتظار بررسی', icon: Clock,        cls: s.statusPending  },
-  IN_PROGRESS: { label: 'در حال انجام',    icon: RefreshCw,    cls: s.statusProgress },
-  COMPLETED:   { label: 'تکمیل شده',       icon: CheckCircle2, cls: s.statusDone     },
-  CANCELLED:   { label: 'لغو شده',         icon: XCircle,      cls: s.statusCancelled },
+  PENDING: { label: 'در انتظار بررسی', icon: Clock, cls: s.statusPending },
+  IN_PROGRESS: { label: 'در حال انجام', icon: RefreshCw, cls: s.statusProgress },
+  COMPLETED: { label: 'تکمیل شده', icon: CheckCircle2, cls: s.statusDone },
+  CANCELLED: { label: 'لغو شده', icon: XCircle, cls: s.statusCancelled },
 } as const;
 
 const SERVICE_LABELS: Record<string, string> = {
   INTERNATIONAL_TRANSFER: 'حواله بین‌المللی',
-  ONLINE_PAYMENT:         'پرداخت آنلاین',
-  TUITION_PAYMENT:        'پرداخت شهریه',
-  FREELANCE_INCOME:       'نقد کردن درآمد فریلنسری',
-  SOFTWARE_PURCHASE:      'خرید نرم‌افزار/اشتراک',
-  GIFT_CARD:              'گیفت کارت',
-  CURRENCY_BUY:           'خرید ارز',
-  CURRENCY_SELL:          'فروش ارز',
-  CRYPTO_BUY:             'خرید ارز دیجیتال',
-  CRYPTO_SELL:            'فروش ارز دیجیتال',
-  PAYPAL_TRANSFER:        'انتقال پی‌پال / اسکریل',
-  OTHER:                  'سایر خدمات',
+  ONLINE_PAYMENT: 'پرداخت آنلاین',
+  TUITION_PAYMENT: 'پرداخت شهریه',
+  FREELANCE_INCOME: 'نقد کردن درآمد فریلنسری',
+  SOFTWARE_PURCHASE: 'خرید نرم‌افزار/اشتراک',
+  GIFT_CARD: 'گیفت کارت',
+  CURRENCY_BUY: 'خرید ارز',
+  CURRENCY_SELL: 'فروش ارز',
+  CRYPTO_BUY: 'خرید ارز دیجیتال',
+  CRYPTO_SELL: 'فروش ارز دیجیتال',
+  PAYPAL_TRANSFER: 'انتقال پی‌پال / اسکریل',
+  OTHER: 'سایر خدمات',
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  PENDING:     'در انتظار بررسی',
+  PENDING: 'در انتظار بررسی',
   IN_PROGRESS: 'در حال انجام',
-  COMPLETED:   'تکمیل شده',
-  CANCELLED:   'لغو شده',
+  COMPLETED: 'تکمیل شده',
+  CANCELLED: 'لغو شده',
 };
 
 // ─── Types ────────────────────────────────────────────────────────────────── //
@@ -87,10 +87,10 @@ interface Props {
 // ─── Component ────────────────────────────────────────────────────────────── //
 
 export default function TrackingPageClient({ code, initialData, initialError }: Props) {
-  const [data, setData]       = useState<TrackingData | null>(initialData);
-  const [error, setError]     = useState<string | null>(initialError);
+  const [data, setData] = useState<TrackingData | null>(initialData);
+  const [error, setError] = useState<string | null>(initialError);
   const [loading, setLoading] = useState(false);
-  const [copied, setCopied]   = useState(false);
+  const [copied, setCopied] = useState(false);
 
   // ── Refresh ─────────────────────────────────────────────────────────────── //
   const refresh = useCallback(async () => {
@@ -117,7 +117,7 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
     setTimeout(() => setCopied(false), 2000);
   }, []);
 
-  const status     = data?.status ? STATUS_CONFIG[data.status] : null;
+  const status = data?.status ? STATUS_CONFIG[data.status] : null;
   const StatusIcon = status?.icon;
 
   return (
@@ -126,7 +126,9 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
       <div className={s.header}>
         <div className={s.codeRow}>
           <span className={s.codeLabel}>کد پیگیری</span>
-          <span className={s.code} dir="ltr">{code}</span>
+          <span className={s.code} dir="ltr">
+            {code}
+          </span>
         </div>
         <div className={s.headerActions}>
           <button
@@ -178,7 +180,9 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
             </div>
             <div className={s.infoRow}>
               <dt className={s.infoLabel}>نوع خدمات</dt>
-              <dd className={s.infoValue}>{SERVICE_LABELS[data.serviceType] ?? data.serviceType}</dd>
+              <dd className={s.infoValue}>
+                {SERVICE_LABELS[data.serviceType] ?? data.serviceType}
+              </dd>
             </div>
             <div className={s.infoRow}>
               <dt className={s.infoLabel}>مبلغ</dt>
@@ -190,19 +194,23 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
               <dt className={s.infoLabel}>تاریخ ثبت</dt>
               <dd className={s.infoValue}>
                 {new Date(data.createdAt).toLocaleDateString('fa-IR', {
-                  year: 'numeric', month: 'long', day: 'numeric',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
                 })}
               </dd>
             </div>
             {data.estimatedCompletionAt && (
               <div className={s.infoRow}>
                 <dt className={s.infoLabel}>
-                  <CalendarClock size={12} style={{ display:'inline', marginLeft:4 }} />
+                  <CalendarClock size={12} style={{ display: 'inline', marginLeft: 4 }} />
                   زمان تخمینی تکمیل
                 </dt>
                 <dd className={s.infoValue}>
                   {new Date(data.estimatedCompletionAt).toLocaleDateString('fa-IR', {
-                    year: 'numeric', month: 'long', day: 'numeric',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
                   })}
                 </dd>
               </div>
@@ -210,10 +218,12 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
             {data.externalTxId && (
               <div className={s.infoRow}>
                 <dt className={s.infoLabel}>
-                  <Hash size={12} style={{ display:'inline', marginLeft:4 }} />
+                  <Hash size={12} style={{ display: 'inline', marginLeft: 4 }} />
                   شناسه تراکنش
                 </dt>
-                <dd className={s.infoValue} dir="ltr">{data.externalTxId}</dd>
+                <dd className={s.infoValue} dir="ltr">
+                  {data.externalTxId}
+                </dd>
               </div>
             )}
           </dl>
@@ -242,14 +252,18 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
                     <span className={s.historyDot} />
                     <div className={s.historyBody}>
                       <span className={s.historyStatus}>
-                        {log.fromStatus ? `${STATUS_LABELS[log.fromStatus] ?? log.fromStatus} → ` : ''}
+                        {log.fromStatus
+                          ? `${STATUS_LABELS[log.fromStatus] ?? log.fromStatus} → `
+                          : ''}
                         {STATUS_LABELS[log.toStatus] ?? log.toStatus}
                       </span>
                       {log.note && <span className={s.historyNote}>{log.note}</span>}
                       <time className={s.historyTime}>
                         {new Date(log.createdAt).toLocaleDateString('fa-IR', {
-                          month: 'short', day: 'numeric',
-                          hour: '2-digit', minute: '2-digit',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
                         })}
                       </time>
                     </div>

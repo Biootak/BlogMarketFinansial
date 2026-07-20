@@ -1,13 +1,7 @@
 import { Node, mergeAttributes } from '@tiptap/core';
-import { ReactNodeViewRenderer } from '@tiptap/react';
 import type { NodeViewProps } from '@tiptap/core';
-import {
-  Info,
-  AlertTriangle,
-  CheckCircle2,
-  XCircle,
-  type LucideIcon,
-} from 'lucide-react';
+import { ReactNodeViewRenderer } from '@tiptap/react';
+import { AlertTriangle, CheckCircle2, Info, type LucideIcon, XCircle } from 'lucide-react';
 import CalloutBlock from '../components/callout-block';
 
 export type CalloutType = 'info' | 'warning' | 'success' | 'error';
@@ -32,10 +26,7 @@ declare module '@tiptap/core' {
 // کلاس‌های Tailwind قبلاً اینجا بود ولی باعث bleed بین callout-block و
 // استایل سراسری داشبورد می‌شد. الان رنگ‌ها از طریق `[data-callout-type]`
 // در styles/callout.scss به‌صورت تم-محور اعمال می‌شوند.
-export const calloutTypeConfig: Record<
-  CalloutType,
-  { icon: LucideIcon; iconName: string }
-> = {
+export const calloutTypeConfig: Record<CalloutType, { icon: LucideIcon; iconName: string }> = {
   info: {
     icon: Info,
     iconName: 'Info',

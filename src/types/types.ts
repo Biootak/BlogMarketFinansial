@@ -385,7 +385,13 @@ export type RateType = 'BUY_SELL' | 'SINGLE_BULK';
 
 /** گروه‌بندی semantic نرخ‌ها — برای فیلتر کردن forex/afghan/gold/coin.
  *  مقادیر در seed به‌صورت lowercase ذخیره می‌شوند. */
-export type ExchangeRateGroup = 'iran-forex' | 'afghan' | 'gold' | 'coin' | 'global' | (string & {});
+export type ExchangeRateGroup =
+  | 'iran-forex'
+  | 'afghan'
+  | 'gold'
+  | 'coin'
+  | 'global'
+  | (string & {});
 
 export interface ExchangeRateData {
   id: string;

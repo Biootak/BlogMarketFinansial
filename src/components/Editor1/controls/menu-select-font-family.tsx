@@ -5,8 +5,7 @@
 
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import type { Editor } from '@tiptap/core';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -14,12 +13,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Icon, type IconName } from '../../ui/icon';
-import { fontFamilies, loadFont, type FontOption } from '../extensions/font-family';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import type { Editor } from '@tiptap/core';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Icon, type IconName } from '../../ui/icon';
+import { type FontOption, fontFamilies, loadFont } from '../extensions/font-family';
 
 interface MenuSelectFontFamilyProps {
   editor: Editor;
@@ -75,8 +76,7 @@ const MenuSelectFontFamily: React.FC<MenuSelectFontFamilyProps> = ({ editor }) =
   const displayLabel = currentFont?.label || 'فونت';
 
   const filteredFonts = allFonts.filter((f) => {
-    const matchSearch =
-      !searchQuery || f.label.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchSearch = !searchQuery || f.label.toLowerCase().includes(searchQuery.toLowerCase());
     const matchTab = activeTab === 'all' || f.category === activeTab;
     return matchSearch && matchTab;
   });
@@ -95,9 +95,12 @@ const MenuSelectFontFamily: React.FC<MenuSelectFontFamilyProps> = ({ editor }) =
         setUploadedFonts(fonts);
         fonts.forEach((font) => {
           const fontFace = new FontFace(font.family, `url(${font.url})`);
-          fontFace.load().then(() => document.fonts.add(fontFace)).catch(() => {
-            /* font failed to load — silent, demo fallback */
-          });
+          fontFace
+            .load()
+            .then(() => document.fonts.add(fontFace))
+            .catch(() => {
+              /* font failed to load — silent, demo fallback */
+            });
         });
       } catch {
         // localStorage ممکن است خراب باشد — silent fail
@@ -264,19 +267,12 @@ const MenuSelectFontFamily: React.FC<MenuSelectFontFamilyProps> = ({ editor }) =
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200',
                 )}
               >
-                <Icon
-                  name={tab.icon as IconName}
-                  size={12}
-                  strokeWidth={1.5}
-                  aria-hidden
-                />
+                <Icon name={tab.icon as IconName} size={12} strokeWidth={1.5} aria-hidden />
                 {tab.label}
                 <span
                   className={cn(
                     'text-[10px] px-1 rounded font-bold',
-                    activeTab === tab.id
-                      ? 'bg-white/20'
-                      : 'bg-gray-200 dark:bg-gray-700',
+                    activeTab === tab.id ? 'bg-white/20' : 'bg-gray-200 dark:bg-gray-700',
                   )}
                 >
                   {tab.count}
@@ -348,12 +344,7 @@ const MenuSelectFontFamily: React.FC<MenuSelectFontFamilyProps> = ({ editor }) =
                             className="w-4 h-4 rounded-full bg-primary-500 flex items-center justify-center shrink-0"
                             aria-hidden
                           >
-                            <Icon
-                              name="check"
-                              size={10}
-                              strokeWidth={2.5}
-                              className="text-white"
-                            />
+                            <Icon name="check" size={10} strokeWidth={2.5} className="text-white" />
                           </span>
                         )}
                       </div>
@@ -382,12 +373,7 @@ const MenuSelectFontFamily: React.FC<MenuSelectFontFamilyProps> = ({ editor }) =
               })
             ) : (
               <div className="col-span-2 py-10 text-center">
-                <Icon
-                  name="type"
-                  size={28}
-                  className="mx-auto mb-2 text-gray-300"
-                  aria-hidden
-                />
+                <Icon name="type" size={28} className="mx-auto mb-2 text-gray-300" aria-hidden />
                 <p className="text-sm text-gray-500">فونتی یافت نشد</p>
               </div>
             )}

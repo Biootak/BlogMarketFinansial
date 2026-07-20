@@ -1,6 +1,5 @@
-
-import { FaTimes } from 'react-icons/fa';
 import twFocusClass from '@/utils/twFocusClass';
+import { FaTimes } from 'react-icons/fa';
 
 export interface ButtonCloseProps {
   className?: string;

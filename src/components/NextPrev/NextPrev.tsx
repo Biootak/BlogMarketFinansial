@@ -1,6 +1,6 @@
-"use client";
-import React, { type FC } from "react";
-import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
+'use client';
+import React, { type FC } from 'react';
+import { HiChevronLeft, HiChevronRight } from 'react-icons/hi2';
 
 export interface NextPrevProps {
   className?: string;
@@ -12,14 +12,14 @@ export interface NextPrevProps {
 }
 
 const NextPrev: FC<NextPrevProps> = ({
-  className = "",
+  className = '',
   onClickNext = () => {},
   onClickPrev = () => {},
-  btnClassName = "w-10 h-10",
+  btnClassName = 'w-10 h-10',
   onlyNext = false,
   onlyPrev = false,
 }) => {
-  const [focus, setFocus] = React.useState<"left" | "right">("right");
+  const [focus, setFocus] = React.useState<'left' | 'right'>('right');
 
   const baseButtonClass = `
     rounded-full flex items-center justify-center
@@ -37,7 +37,7 @@ const NextPrev: FC<NextPrevProps> = ({
       {!onlyNext && (
         <button
           className={`${btnClassName} ${baseButtonClass} ${
-            focus === "left" ? "ring-2 ring-white/50 scale-105" : ""
+            focus === 'left' ? 'ring-2 ring-white/50 scale-105' : ''
           }`}
           onClick={(e) => {
             e.preventDefault();
@@ -45,7 +45,7 @@ const NextPrev: FC<NextPrevProps> = ({
           }}
           title="قبلی"
           aria-label="قبلی"
-          onMouseEnter={() => setFocus("left")}
+          onMouseEnter={() => setFocus('left')}
         >
           <HiChevronRight className="w-5 h-5" />
         </button>
@@ -53,7 +53,7 @@ const NextPrev: FC<NextPrevProps> = ({
       {!onlyPrev && (
         <button
           className={`${btnClassName} ${baseButtonClass} ${
-            focus === "right" ? "ring-2 ring-white/50 scale-105" : ""
+            focus === 'right' ? 'ring-2 ring-white/50 scale-105' : ''
           }`}
           onClick={(e) => {
             e.preventDefault();
@@ -61,7 +61,7 @@ const NextPrev: FC<NextPrevProps> = ({
           }}
           title="بعدی"
           aria-label="بعدی"
-          onMouseEnter={() => setFocus("right")}
+          onMouseEnter={() => setFocus('right')}
         >
           <HiChevronLeft className="w-5 h-5" />
         </button>

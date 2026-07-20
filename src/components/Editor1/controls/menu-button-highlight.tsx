@@ -1,10 +1,10 @@
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import type { Editor } from '@tiptap/core';
 import React, { useCallback } from 'react';
-import { Toolbar } from '../../ui/toolbar';
 import { Icon } from '../../ui/icon';
+import { Toolbar } from '../../ui/toolbar';
 import { ColorPicker } from '../components/color-picker';
 import { useAttributes } from '../hooks/use-attributes';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 type MenuButtonHighlightProps = {
   editor: Editor;
@@ -32,10 +32,7 @@ const MenuButtonHighlight = ({ editor }: MenuButtonHighlightProps) => {
     <Popover>
       <PopoverTrigger asChild>
         <Toolbar.Button tooltip={'هایلایت'} active={Boolean(highlightColor)}>
-          <Icon
-            name="highlighter"
-            style={{ color: highlightColor }}
-          />
+          <Icon name="highlighter" style={{ color: highlightColor }} />
         </Toolbar.Button>
       </PopoverTrigger>
 

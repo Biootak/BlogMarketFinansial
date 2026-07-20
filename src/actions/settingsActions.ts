@@ -1,9 +1,9 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { revalidatePath } from 'next/cache';
+import { authFailureToActionResult, requireAdmin, requireSuperAdmin } from '@/lib/require-auth';
 import { revalidateSiteIdentity } from '@/lib/site-identity-revalidate';
-import { requireAdmin, requireSuperAdmin, authFailureToActionResult } from '@/lib/require-auth';
+import { revalidatePath } from 'next/cache';
 
 export interface SystemSettingsData {
   siteName?: string;
@@ -74,7 +74,7 @@ export async function getSystemSettings() {
     }
 
     // C1 fix: never return the SMTP password (secret) to the client.
-    delete (settings as { smtpPassword?: string }).smtpPassword;
+    (settings as { smtpPassword?: string }).smtpPassword = undefined;
     return { success: true, data: settings };
   } catch (error) {
     console.error('Error fetching settings:', error);
@@ -116,9 +116,9 @@ export async function updateGeneralSettings(data: {
     await revalidateSiteIdentity();
     revalidatePath('/dashboard/settings');
     revalidatePath('/');
-    
+
     // C1 fix: never return the SMTP password (secret) to the client.
-    delete (settings as { smtpPassword?: string }).smtpPassword;
+    (settings as { smtpPassword?: string }).smtpPassword = undefined;
     return { success: true, data: settings };
   } catch (error) {
     console.error('Error updating general settings:', error);
@@ -167,7 +167,7 @@ export async function updateEmailSettings(data: {
 
     revalidatePath('/dashboard/settings');
     // C1 fix: never return the SMTP password (secret) to the client.
-    delete (settings as { smtpPassword?: string }).smtpPassword;
+    (settings as { smtpPassword?: string }).smtpPassword = undefined;
     return { success: true, data: settings };
   } catch (error) {
     console.error('Error updating email settings:', error);
@@ -211,9 +211,9 @@ export async function updateSocialSettings(data: {
     // Revalidate all pages that use social settings
     revalidatePath('/dashboard/settings');
     revalidatePath('/');
-    
+
     // C1 fix: never return the SMTP password (secret) to the client.
-    delete (settings as { smtpPassword?: string }).smtpPassword;
+    (settings as { smtpPassword?: string }).smtpPassword = undefined;
     return { success: true, data: settings };
   } catch (error) {
     console.error('Error updating social settings:', error);
@@ -245,7 +245,7 @@ export async function updateCacheSettings(data: { cacheEnabled: boolean }) {
 
     revalidatePath('/dashboard/settings');
     // C1 fix: never return the SMTP password (secret) to the client.
-    delete (settings as { smtpPassword?: string }).smtpPassword;
+    (settings as { smtpPassword?: string }).smtpPassword = undefined;
     return { success: true, data: settings };
   } catch (error) {
     console.error('Error updating cache settings:', error);
@@ -277,7 +277,7 @@ export async function updateMaintenanceMode(data: { maintenanceMode: boolean }) 
 
     revalidatePath('/dashboard/settings');
     // C1 fix: never return the SMTP password (secret) to the client.
-    delete (settings as { smtpPassword?: string }).smtpPassword;
+    (settings as { smtpPassword?: string }).smtpPassword = undefined;
     return { success: true, data: settings };
   } catch (error) {
     console.error('Error updating maintenance mode:', error);

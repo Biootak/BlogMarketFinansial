@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import CategoryItem from './CategoryItem';
-import type { TaxonomyType } from '@/types/types';
 import { getCategories } from '@/actions/categoryActions';
-import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
-import { useToast } from '@/components/ui/use-toast';
 import LoadingMore from '@/components/LoadingMore';
+import { useToast } from '@/components/ui/use-toast';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import type { TaxonomyType } from '@/types/types';
+import { useCallback, useEffect, useState } from 'react';
 import { HiOutlineFolderOpen } from 'react-icons/hi2';
+import CategoryItem from './CategoryItem';
 
 interface CategoryListProps {
   initialData:
@@ -41,7 +41,7 @@ export function CategoryList({
         setPage((prev) => prev + 1);
         setHasNextPage(
           categories.length + (result.data?.categories.length || 0) <
-            (result.data?.totalCount || 0)
+            (result.data?.totalCount || 0),
         );
       }
     } catch (error) {
@@ -78,7 +78,7 @@ export function CategoryList({
         </CategoryItem>
       ));
     },
-    [parentCategories]
+    [parentCategories],
   );
 
   if (categories.length === 0) {

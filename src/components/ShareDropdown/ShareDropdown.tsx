@@ -1,22 +1,16 @@
 'use client';
 
-import { useState, useCallback } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/components/ui/use-toast';
-import {
-  FaFacebook,
-  FaTwitter,
-  FaTelegram,
-  FaLinkedinIn,
-  FaWhatsapp,
-} from 'react-icons/fa';
-import { HiLink, HiCheck } from 'react-icons/hi2';
+import { useCallback, useState } from 'react';
+import { FaFacebook, FaLinkedinIn, FaTelegram, FaTwitter, FaWhatsapp } from 'react-icons/fa';
+import { HiCheck, HiLink } from 'react-icons/hi2';
 
 interface ShareDropdownProps {
   url: string;

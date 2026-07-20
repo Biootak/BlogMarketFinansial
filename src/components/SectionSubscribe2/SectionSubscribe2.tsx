@@ -1,7 +1,7 @@
-import type { FC } from 'react';
-import { Mail, Sparkles, Bell, Gift, Users, CheckCircle2 } from 'lucide-react';
-import SubscribeForm from './SubscribeForm';
 import { subscribeToNewsletter } from '@/actions/newsletter';
+import { Bell, CheckCircle2, Gift, Mail, Sparkles, Users } from 'lucide-react';
+import type { FC } from 'react';
+import SubscribeForm from './SubscribeForm';
 
 export interface SectionSubscribe2Props {
   className?: string;
@@ -9,16 +9,16 @@ export interface SectionSubscribe2Props {
 
 const SectionSubscribe2: FC<SectionSubscribe2Props> = async ({ className = '' }) => {
   return (
-    <section
-      className={`nc-SectionSubscribe2 relative ${className}`}
-      dir="rtl"
-    >
+    <section className={`nc-SectionSubscribe2 relative ${className}`} dir="rtl">
       <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 dark:from-primary-800 dark:via-primary-900 dark:to-neutral-900">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }} />
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            }}
+          />
         </div>
 
         {/* Floating Decorations — کوچک‌تر و یکی کمتر */}
@@ -30,7 +30,9 @@ const SectionSubscribe2: FC<SectionSubscribe2Props> = async ({ className = '' })
           {/* Badge — فشرده‌تر */}
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
             <Mail className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-300" />
-            <span className="text-[10.5px] sm:text-xs font-medium text-white/90">خبرنامه هفتگی</span>
+            <span className="text-[10.5px] sm:text-xs font-medium text-white/90">
+              خبرنامه هفتگی
+            </span>
             <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-300" />
           </div>
 
@@ -51,9 +53,21 @@ const SectionSubscribe2: FC<SectionSubscribe2Props> = async ({ className = '' })
 
           {/* Stats strip — 3 آمار افقی به جای تصویر دکوراتیو 320px */}
           <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-2xl pt-3 sm:pt-4 border-t border-white/10">
-            <StatCell icon={<Users className="h-3.5 w-3.5" strokeWidth={2.25} />} value="۱۰,۲۴۷" label="عضو فعال" />
-            <StatCell icon={<Bell className="h-3.5 w-3.5" strokeWidth={2.25} />} value="هفتگی" label="ارسال منظم" />
-            <StatCell icon={<CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.25} />} value="۱۰۰٪" label="بدون اسپم" />
+            <StatCell
+              icon={<Users className="h-3.5 w-3.5" strokeWidth={2.25} />}
+              value="۱۰,۲۴۷"
+              label="عضو فعال"
+            />
+            <StatCell
+              icon={<Bell className="h-3.5 w-3.5" strokeWidth={2.25} />}
+              value="هفتگی"
+              label="ارسال منظم"
+            />
+            <StatCell
+              icon={<CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.25} />}
+              value="۱۰۰٪"
+              label="بدون اسپم"
+            />
           </div>
 
           {/* Trust Text */}
@@ -77,9 +91,7 @@ function StatCell({
 }) {
   return (
     <div className="flex flex-col items-center gap-0.5 sm:gap-1 py-1">
-      <div className="flex items-center gap-1 text-amber-300">
-        {icon}
-      </div>
+      <div className="flex items-center gap-1 text-amber-300">{icon}</div>
       <span
         className="text-sm sm:text-base font-bold text-white tabular-nums"
         dir="ltr"

@@ -2,8 +2,8 @@
 
 import { Popover, Transition } from '@/app/headlessui';
 import Avatar from '@/components/Avatar/Avatar';
-import { Fragment, memo, useCallback, useMemo, useId } from 'react';
 import { useThemeMode } from '@/hooks/useThemeMode';
+import { Fragment, memo, useCallback, useId, useMemo } from 'react';
 
 interface Props {
   className?: string;
@@ -105,8 +105,8 @@ const NotifyDropdown = memo(({ className = 'hidden sm:block' }: Props) => {
             >
               {/* Notification badge */}
               {solutions.length > 0 && (
-              <span
-                className="
+                <span
+                  className="
                   absolute -top-0.5 -left-0.5 w-4 h-4
                   flex items-center justify-center
                   text-[10px] font-bold text-white
@@ -115,9 +115,9 @@ const NotifyDropdown = memo(({ className = 'hidden sm:block' }: Props) => {
                   shadow-sm shadow-blue-500/40
                   ring-2 ring-white dark:ring-neutral-900
                 "
-              >
-                {solutions.length}
-              </span>
+                >
+                  {solutions.length}
+                </span>
               )}
               <NotificationIcon />
             </Popover.Button>

@@ -127,7 +127,7 @@
 
   /* Accents (low-saturation) */
   --ds-accent-amber: oklch(72% 0.13 70);
-  --ds-accent-emerald: oklch(60% 0.10 165);
+  --ds-accent-emerald: oklch(60% 0.1 165);
   --ds-accent-rose: oklch(60% 0.13 20);
   --ds-accent-violet: oklch(58% 0.13 290);
   --ds-accent-slate: oklch(60% 0.02 250);
@@ -179,33 +179,32 @@
   --ds-shadow-sm: 0 1px 2px oklch(20% 0.01 240 / 0.04);
   --ds-shadow-md: 0 4px 12px -4px oklch(20% 0.01 240 / 0.1);
   --ds-shadow-lg: 0 18px 50px -20px oklch(45% 0.1 250 / 0.35);
-  --ds-glow-brand: 0 0 0 1px oklch(55% 0.1 235 / 0.4),
-    0 8px 24px -8px oklch(55% 0.1 235 / 0.35);
+  --ds-glow-brand: 0 0 0 1px oklch(55% 0.1 235 / 0.4), 0 8px 24px -8px oklch(55% 0.1 235 / 0.35);
 
   /* ==========================================================================
      STATUS COLOR TOKENS — برای status badge های سراسری
      (pending, progress/info, success/done, error/cancelled)
      هر گروه سه variant دارد: bg (پس‌زمینه)، border، fg (متن)
      ========================================================================== */
-  --ds-status-pending-bg:     oklch(97% 0.03 80);
+  --ds-status-pending-bg: oklch(97% 0.03 80);
   --ds-status-pending-border: oklch(88% 0.07 80);
-  --ds-status-pending-fg:     oklch(45% 0.14 80);
+  --ds-status-pending-fg: oklch(45% 0.14 80);
 
-  --ds-status-progress-bg:     oklch(96% 0.03 218);
+  --ds-status-progress-bg: oklch(96% 0.03 218);
   --ds-status-progress-border: oklch(88% 0.07 218);
-  --ds-status-progress-fg:     oklch(42% 0.14 218);
+  --ds-status-progress-fg: oklch(42% 0.14 218);
 
-  --ds-status-success-bg:     oklch(96% 0.04 145);
+  --ds-status-success-bg: oklch(96% 0.04 145);
   --ds-status-success-border: oklch(88% 0.08 145);
-  --ds-status-success-fg:     oklch(36% 0.14 145);
+  --ds-status-success-fg: oklch(36% 0.14 145);
 
-  --ds-status-error-bg:     oklch(97% 0.02 15);
+  --ds-status-error-bg: oklch(97% 0.02 15);
   --ds-status-error-border: oklch(88% 0.05 15);
-  --ds-status-error-fg:     oklch(40% 0.12 15);
+  --ds-status-error-fg: oklch(40% 0.12 15);
 
-  --ds-status-cancelled-bg:     oklch(97% 0.01 0);
+  --ds-status-cancelled-bg: oklch(97% 0.01 0);
   --ds-status-cancelled-border: oklch(88% 0.04 0);
-  --ds-status-cancelled-fg:     oklch(44% 0.08 0);
+  --ds-status-cancelled-fg: oklch(44% 0.08 0);
 }
 
 /* ==========================================================================
@@ -231,30 +230,29 @@
   --ds-shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.4);
   --ds-shadow-md: 0 4px 12px -4px oklch(0% 0 0 / 0.5);
   --ds-shadow-lg: 0 22px 60px -22px oklch(0% 0 0 / 0.7);
-  --ds-glow-brand: 0 0 0 1px oklch(65% 0.1 235 / 0.5),
-    0 8px 24px -8px oklch(65% 0.1 235 / 0.5);
+  --ds-glow-brand: 0 0 0 1px oklch(65% 0.1 235 / 0.5), 0 8px 24px -8px oklch(65% 0.1 235 / 0.5);
 
   /* Status token dark overrides — رنگ‌های وضعیت در تاریکی
      bg: تیره‌تر/کم‌اشباع‌تر؛ border: کمی روشن‌تر؛ fg: روشن‌تر برای contrast */
-  --ds-status-pending-bg:     oklch(22% 0.04 80 / 0.5);
+  --ds-status-pending-bg: oklch(22% 0.04 80 / 0.5);
   --ds-status-pending-border: oklch(35% 0.07 80 / 0.6);
-  --ds-status-pending-fg:     oklch(75% 0.14 80);
+  --ds-status-pending-fg: oklch(75% 0.14 80);
 
-  --ds-status-progress-bg:     oklch(20% 0.04 218 / 0.5);
+  --ds-status-progress-bg: oklch(20% 0.04 218 / 0.5);
   --ds-status-progress-border: oklch(35% 0.07 218 / 0.6);
-  --ds-status-progress-fg:     oklch(72% 0.14 218);
+  --ds-status-progress-fg: oklch(72% 0.14 218);
 
-  --ds-status-success-bg:     oklch(20% 0.05 145 / 0.5);
+  --ds-status-success-bg: oklch(20% 0.05 145 / 0.5);
   --ds-status-success-border: oklch(35% 0.08 145 / 0.6);
-  --ds-status-success-fg:     oklch(72% 0.14 145);
+  --ds-status-success-fg: oklch(72% 0.14 145);
 
-  --ds-status-error-bg:     oklch(22% 0.04 15 / 0.5);
+  --ds-status-error-bg: oklch(22% 0.04 15 / 0.5);
   --ds-status-error-border: oklch(35% 0.06 15 / 0.6);
-  --ds-status-error-fg:     oklch(72% 0.12 15);
+  --ds-status-error-fg: oklch(72% 0.12 15);
 
-  --ds-status-cancelled-bg:     oklch(20% 0.01 0 / 0.4);
+  --ds-status-cancelled-bg: oklch(20% 0.01 0 / 0.4);
   --ds-status-cancelled-border: oklch(34% 0.03 0 / 0.6);
-  --ds-status-cancelled-fg:     oklch(68% 0.06 0);
+  --ds-status-cancelled-fg: oklch(68% 0.06 0);
 
   /* Dashboard v2 semantic colors */
   --ds-color-canvas: var(--ds-color-canvas-dark);
@@ -294,38 +292,38 @@
    ========================================================================== */
 :root {
   /* ---- NOVA Colors (light mode) ---------------------------------------- */
-  --nova-primary:   oklch(55% 0.14 265);
+  --nova-primary: oklch(55% 0.14 265);
   --nova-primary-hover: oklch(50% 0.14 265);
-  --nova-ink:       oklch(18% 0.006 265);
-  --nova-ink-2:     oklch(42% 0.008 265);
-  --nova-muted:     oklch(55% 0.008 265);
-  --nova-line:      oklch(90% 0.006 265);
-  --nova-surface:   oklch(100% 0 0 / 0.65);
+  --nova-ink: oklch(18% 0.006 265);
+  --nova-ink-2: oklch(42% 0.008 265);
+  --nova-muted: oklch(55% 0.008 265);
+  --nova-line: oklch(90% 0.006 265);
+  --nova-surface: oklch(100% 0 0 / 0.65);
   --nova-surface-solid: oklch(100% 0 0);
   --nova-surface-2: oklch(96% 0.004 265);
-  --nova-canvas:    oklch(98% 0.003 240);
+  --nova-canvas: oklch(98% 0.003 240);
 
   /* Semantic trend colors */
-  --nova-up:        oklch(52% 0.14 162);
-  --nova-up-bg:     oklch(72% 0.14 165 / 0.14);
-  --nova-down:      oklch(55% 0.17 20);
-  --nova-down-bg:   oklch(68% 0.18 20 / 0.14);
-  --nova-flat:      oklch(55% 0.02 265);
-  --nova-flat-bg:   oklch(60% 0.02 265 / 0.12);
+  --nova-up: oklch(52% 0.14 162);
+  --nova-up-bg: oklch(72% 0.14 165 / 0.14);
+  --nova-down: oklch(55% 0.17 20);
+  --nova-down-bg: oklch(68% 0.18 20 / 0.14);
+  --nova-flat: oklch(55% 0.02 265);
+  --nova-flat-bg: oklch(60% 0.02 265 / 0.12);
 
   /* Accent tones (per-tile) */
-  --nova-cyan:      oklch(62% 0.12 220);
-  --nova-rose:      oklch(60% 0.15 25);
-  --nova-emerald:   oklch(58% 0.12 165);
-  --nova-violet:    oklch(58% 0.14 290);
-  --nova-amber:     oklch(68% 0.14 70);
+  --nova-cyan: oklch(62% 0.12 220);
+  --nova-rose: oklch(60% 0.15 25);
+  --nova-emerald: oklch(58% 0.12 165);
+  --nova-violet: oklch(58% 0.14 290);
+  --nova-amber: oklch(68% 0.14 70);
 
   /* ---- NOVA Typography ------------------------------------------------- */
-  --nova-weight-medium:   500;
+  --nova-weight-medium: 500;
   --nova-weight-semibold: 600;
-  --nova-weight-bold:     700;
+  --nova-weight-bold: 700;
   --nova-weight-extrabold: 800;
-  --nova-tracking-tight:  -0.015em;
+  --nova-tracking-tight: -0.015em;
   --nova-tracking-tighter: -0.025em;
   --nova-tracking-tightest: -0.035em;
 
@@ -339,54 +337,52 @@
   --nova-space-8: 2rem;
 
   /* ---- NOVA Radius ----------------------------------------------------- */
-  --nova-radius-sm:   0.375rem;  /* 6px  */
-  --nova-radius-md:   0.5rem;    /* 8px  */
-  --nova-radius-lg:   0.75rem;   /* 12px */
-  --nova-radius-xl:   1rem;      /* 16px */
-  --nova-radius-2xl:  1.25rem;   /* 20px */
+  --nova-radius-sm: 0.375rem; /* 6px  */
+  --nova-radius-md: 0.5rem; /* 8px  */
+  --nova-radius-lg: 0.75rem; /* 12px */
+  --nova-radius-xl: 1rem; /* 16px */
+  --nova-radius-2xl: 1.25rem; /* 20px */
   --nova-radius-full: 9999px;
 
   /* ---- NOVA Effects ---------------------------------------------------- */
-  --nova-backdrop:    blur(16px) saturate(140%);
-  --nova-shadow-sm:   0 1px 2px oklch(20% 0.01 265 / 0.04);
-  --nova-shadow-md:   0 4px 12px -4px oklch(20% 0.01 265 / 0.08);
-  --nova-shadow-lg:   0 12px 32px -8px oklch(20% 0.01 265 / 0.12);
-  --nova-glow:        0 0 0 1px oklch(55% 0.14 265 / 0.3),
-                      0 8px 24px -8px oklch(55% 0.14 265 / 0.25);
-  --nova-ease:        cubic-bezier(0.22, 1, 0.36, 1);
+  --nova-backdrop: blur(16px) saturate(140%);
+  --nova-shadow-sm: 0 1px 2px oklch(20% 0.01 265 / 0.04);
+  --nova-shadow-md: 0 4px 12px -4px oklch(20% 0.01 265 / 0.08);
+  --nova-shadow-lg: 0 12px 32px -8px oklch(20% 0.01 265 / 0.12);
+  --nova-glow: 0 0 0 1px oklch(55% 0.14 265 / 0.3), 0 8px 24px -8px oklch(55% 0.14 265 / 0.25);
+  --nova-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .dark {
   /* ---- NOVA Colors (dark mode) ----------------------------------------- */
-  --nova-primary:   oklch(65% 0.12 265);
+  --nova-primary: oklch(65% 0.12 265);
   --nova-primary-hover: oklch(60% 0.12 265);
-  --nova-ink:       oklch(93% 0.004 265);
-  --nova-ink-2:     oklch(72% 0.006 265);
-  --nova-muted:     oklch(58% 0.006 265);
-  --nova-line:      oklch(28% 0.01 265);
-  --nova-surface:   oklch(18% 0.01 265 / 0.6);
+  --nova-ink: oklch(93% 0.004 265);
+  --nova-ink-2: oklch(72% 0.006 265);
+  --nova-muted: oklch(58% 0.006 265);
+  --nova-line: oklch(28% 0.01 265);
+  --nova-surface: oklch(18% 0.01 265 / 0.6);
   --nova-surface-solid: oklch(16% 0.008 265);
   --nova-surface-2: oklch(22% 0.012 265);
-  --nova-canvas:    oklch(12% 0.008 250);
+  --nova-canvas: oklch(12% 0.008 250);
 
-  --nova-up:        oklch(75% 0.12 162);
-  --nova-up-bg:     oklch(25% 0.05 165 / 0.2);
-  --nova-down:      oklch(72% 0.14 20);
-  --nova-down-bg:   oklch(25% 0.06 20 / 0.2);
-  --nova-flat:      oklch(68% 0.01 265);
-  --nova-flat-bg:   oklch(25% 0.005 265 / 0.15);
+  --nova-up: oklch(75% 0.12 162);
+  --nova-up-bg: oklch(25% 0.05 165 / 0.2);
+  --nova-down: oklch(72% 0.14 20);
+  --nova-down-bg: oklch(25% 0.06 20 / 0.2);
+  --nova-flat: oklch(68% 0.01 265);
+  --nova-flat-bg: oklch(25% 0.005 265 / 0.15);
 
-  --nova-cyan:      oklch(68% 0.10 220);
-  --nova-rose:      oklch(68% 0.12 25);
-  --nova-emerald:   oklch(65% 0.10 165);
-  --nova-violet:    oklch(65% 0.12 290);
-  --nova-amber:     oklch(72% 0.12 70);
+  --nova-cyan: oklch(68% 0.1 220);
+  --nova-rose: oklch(68% 0.12 25);
+  --nova-emerald: oklch(65% 0.1 165);
+  --nova-violet: oklch(65% 0.12 290);
+  --nova-amber: oklch(72% 0.12 70);
 
   --nova-shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.3);
   --nova-shadow-md: 0 4px 12px -4px oklch(0% 0 0 / 0.4);
   --nova-shadow-lg: 0 12px 32px -8px oklch(0% 0 0 / 0.5);
-  --nova-glow:      0 0 0 1px oklch(65% 0.12 265 / 0.4),
-                    0 8px 24px -8px oklch(65% 0.12 265 / 0.35);
+  --nova-glow: 0 0 0 1px oklch(65% 0.12 265 / 0.4), 0 8px 24px -8px oklch(65% 0.12 265 / 0.35);
 }
 
 @media (prefers-reduced-motion: reduce) {

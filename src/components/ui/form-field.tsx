@@ -1,6 +1,6 @@
-import * as React from 'react';
+import { form, heading, space, text } from '@/lib/design-tokens';
 import { cn } from '@/lib/utils';
-import { heading, text, form, space } from '@/lib/design-tokens';
+import * as React from 'react';
 
 /**
  * FormField — the single source of truth for a labeled form input.
@@ -36,17 +36,9 @@ export function FormField({
 }: FormFieldProps) {
   const id = htmlFor ?? React.useId();
   return (
-    <div
-      className={cn(
-        inline ? 'flex items-center gap-4' : 'flex flex-col gap-1.5',
-        className,
-      )}
-    >
+    <div className={cn(inline ? 'flex items-center gap-4' : 'flex flex-col gap-1.5', className)}>
       {label && (
-        <label
-          htmlFor={id}
-          className={cn(form.label, required && form.required)}
-        >
+        <label htmlFor={id} className={cn(form.label, required && form.required)}>
           {label}
         </label>
       )}

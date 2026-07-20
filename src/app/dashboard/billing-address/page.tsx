@@ -1,10 +1,10 @@
 import { PageHeader } from '@/components/Dashboard/primitives';
 import {
-  HiOutlineMapPin,
-  HiOutlineHome,
   HiOutlineBuildingOffice2,
-  HiOutlineEnvelope,
   HiOutlineCheck,
+  HiOutlineEnvelope,
+  HiOutlineHome,
+  HiOutlineMapPin,
 } from 'react-icons/hi2';
 
 const countries = [
@@ -27,10 +27,7 @@ const BillingAddressPage = () => {
   return (
     <div className="at-form" dir="rtl">
       <PageHeader
-        breadcrumb={[
-          { label: 'داشبورد', href: '/dashboard' },
-          { label: 'آدرس صورتحساب' },
-        ]}
+        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'آدرس صورتحساب' }]}
         eyebrow="صورتحساب"
         title="آدرس صورتحساب"
         description="آدرسی که فاکتورها و صورتحساب‌های دوره‌ای به آن ارسال می‌شود"
@@ -100,11 +97,7 @@ const BillingAddressPage = () => {
                   <HiOutlineHome className="at-field__ico size-4" />
                   آدرس (خط ۲)
                 </span>
-                <input
-                  type="text"
-                  className="at-input"
-                  placeholder="واحد، طبقه (اختیاری)"
-                />
+                <input type="text" className="at-input" placeholder="واحد، طبقه (اختیاری)" />
               </label>
 
               <label className="at-field">
@@ -139,7 +132,14 @@ const BillingAddressPage = () => {
 
         <div
           className="at-form-section"
-          style={{ marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px', padding: '14px 20px' }}
+          style={{
+            marginTop: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            gap: '8px',
+            padding: '14px 20px',
+          }}
         >
           <button type="button" className="at-btn at-btn--ghost">
             انصراف

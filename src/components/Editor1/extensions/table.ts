@@ -1,10 +1,10 @@
+import { findParentNode } from '@tiptap/core';
 import { Table } from '@tiptap/extension-table';
-import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
-import { findParentNode } from '@tiptap/core';
-import { CellSelection } from '@tiptap/pm/tables';
+import TableRow from '@tiptap/extension-table-row';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
+import { CellSelection } from '@tiptap/pm/tables';
 
 // Plugin key for cell drag selection
 const tableCellSelectionKey = new PluginKey('tableCellSelection');
@@ -32,7 +32,7 @@ const setSelectedCellsBackground = (editor: any, color: string | null) => {
 
   // Fallback: single cell - find the cell at cursor position
   const cell = findParentNode(
-    (node) => node.type.name === 'tableCell' || node.type.name === 'tableHeader'
+    (node) => node.type.name === 'tableCell' || node.type.name === 'tableHeader',
   )(selection);
 
   if (cell) {
@@ -49,14 +49,11 @@ const setSelectedCellsBackground = (editor: any, color: string | null) => {
 };
 
 // Find cell node position from DOM coordinates
-const getCellPosFromCoords = (
-  view: any,
-  coords: { x: number; y: number }
-): number | null => {
+const getCellPosFromCoords = (view: any, coords: { x: number; y: number }): number | null => {
   const posAtCoords = view.posAtCoords({ left: coords.x, top: coords.y });
   if (!posAtCoords) return null;
 
-  let pos = posAtCoords.pos;
+  const pos = posAtCoords.pos;
   const doc = view.state.doc;
 
   // Walk up to find the cell
@@ -117,7 +114,7 @@ const createCellSelectionPlugin = () => {
                   const selection = CellSelection.create(
                     view.state.doc,
                     startCellPos,
-                    currentCellPos
+                    currentCellPos,
                   );
                   view.dispatch(view.state.tr.setSelection(selection));
                 } catch {
@@ -219,12 +216,7 @@ export const TableHeaderExtension = TableHeader.extend({
 });
 
 // Export all table-related extensions
-export const tableExtensions = [
-  TableExtension,
-  TableRow,
-  TableCellExtension,
-  TableHeaderExtension,
-];
+export const tableExtensions = [TableExtension, TableRow, TableCellExtension, TableHeaderExtension];
 
 export { TableRow };
 export default TableExtension;

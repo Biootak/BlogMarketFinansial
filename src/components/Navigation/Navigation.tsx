@@ -17,17 +17,17 @@
  *  - Zero framer-motion runtime on the home page.
  */
 
-import { memo, useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { ChevronDown } from 'lucide-react';
-import { dropdownPanel, dropdownPanelExit } from '@/lib/motion';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { dropdownPanel, dropdownPanelExit } from '@/lib/motion';
+import { ChevronDown } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { memo, useState } from 'react';
 
 type NavItem = Readonly<{
   id: string;
@@ -144,9 +144,10 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
                   relative z-10 inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium
                   rounded-full outline-none whitespace-nowrap
                   transition-colors duration-200
-                  ${active
-                    ? 'text-[rgb(var(--c-foreground))]'
-                    : 'text-[rgb(var(--c-neutral-400))] hover:text-[rgb(var(--c-foreground))]'
+                  ${
+                    active
+                      ? 'text-[rgb(var(--c-foreground))]'
+                      : 'text-[rgb(var(--c-neutral-400))] hover:text-[rgb(var(--c-foreground))]'
                   }
                 `}
               >
@@ -192,9 +193,10 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
                               group/sub relative flex items-center gap-3
                               py-2.5 px-3 text-sm rounded-xl
                               transition-colors duration-200 cursor-pointer
-                              ${isSubActive
-                                ? 'bg-[rgb(var(--c-primary-500))]/12 text-[rgb(var(--c-primary-300))]'
-                                : 'text-[rgb(var(--c-neutral-300))] hover:bg-[rgb(var(--c-surface-elevated))] hover:text-[rgb(var(--c-foreground))]'
+                              ${
+                                isSubActive
+                                  ? 'bg-[rgb(var(--c-primary-500))]/12 text-[rgb(var(--c-primary-300))]'
+                                  : 'text-[rgb(var(--c-neutral-300))] hover:bg-[rgb(var(--c-surface-elevated))] hover:text-[rgb(var(--c-foreground))]'
                               }
                             `}
                           >
@@ -255,9 +257,10 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
             relative z-10 inline-flex items-center px-3.5 py-2 text-sm font-medium
             rounded-full outline-none whitespace-nowrap
             transition-colors duration-200
-            ${active
-              ? 'text-[rgb(var(--c-foreground))]'
-              : 'text-[rgb(var(--c-neutral-400))] hover:text-[rgb(var(--c-foreground))]'
+            ${
+              active
+                ? 'text-[rgb(var(--c-foreground))]'
+                : 'text-[rgb(var(--c-neutral-400))] hover:text-[rgb(var(--c-foreground))]'
             }
           `}
         >

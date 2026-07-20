@@ -1,9 +1,9 @@
 'use server';
 
-import { unstable_cache } from 'next/cache';
 import { auth } from '@/auth';
-import { Role } from '@prisma/client';
 import prisma from '@/lib/db';
+import { Role } from '@prisma/client';
+import { unstable_cache } from 'next/cache';
 
 const fetchProfile = async (userId: string) => {
   return prisma.user.findUnique({

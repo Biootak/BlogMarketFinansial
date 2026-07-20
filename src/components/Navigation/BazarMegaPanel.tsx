@@ -13,19 +13,13 @@
  * ----------------------------------------------------------------------------
  */
 
-import { useMemo } from 'react';
-import Link from 'next/link';
 import { motion } from '@/lib/motion-shim';
-import {
-  ArrowUpRight,
-  Banknote,
-  Coins,
-  TrendingUp,
-  TrendingDown,
-} from 'lucide-react';
+import { type ParsedRateItem, groupRateItems } from '@/lib/rateItem';
 import { cn, formatNumber, toPersianNumber } from '@/lib/utils';
-import { groupRateItems, type ParsedRateItem } from '@/lib/rateItem';
 import type { RateListData } from '@/types/types';
+import { ArrowUpRight, Banknote, Coins, TrendingDown, TrendingUp } from 'lucide-react';
+import Link from 'next/link';
+import { useMemo } from 'react';
 
 interface BazarMegaPanelProps {
   rateLists: RateListData[];
@@ -52,7 +46,8 @@ interface CategoryColumn {
   limit: number;
 }
 
-const CURRENCY_REGEX = /دلار|یورو|پوند|درهم|لیر|فرانک|افغانی|ین|روبل|ریال|usd|eur|gbp|aed|chf|cny|jpy|afghani/i;
+const CURRENCY_REGEX =
+  /دلار|یورو|پوند|درهم|لیر|فرانک|افغانی|ین|روبل|ریال|usd|eur|gbp|aed|chf|cny|jpy|afghani/i;
 const GOLD_REGEX = /طلا|سکه|گرم|انس|نقره|gold|coin|silver/i;
 
 const COLUMNS: CategoryColumn[] = [
@@ -100,10 +95,8 @@ export default function BazarMegaPanel({
   onNavigate,
 }: BazarMegaPanelProps) {
   const grouped = useMemo(() => {
-    const active = (rateLists ?? []).filter((l) => l && l.isActive);
-    return groupRateItems(
-      active.map((l) => ({ id: l.id, title: l.title, rates: l.rates })),
-    );
+    const active = (rateLists ?? []).filter((l) => l?.isActive);
+    return groupRateItems(active.map((l) => ({ id: l.id, title: l.title, rates: l.rates })));
   }, [rateLists]);
 
   /* ---------- build columns ---------- */
@@ -111,7 +104,9 @@ export default function BazarMegaPanel({
     return COLUMNS.map((col) => {
       if (col.scope === 'lists') {
         // کل لیست‌هایی که فیلتر col.listFilter را pass می‌کنن
-        const matched = grouped.byList.filter((l) => (col.listFilter ? col.listFilter(l.title) : true));
+        const matched = grouped.byList.filter((l) =>
+          col.listFilter ? col.listFilter(l.title) : true,
+        );
         const items: Array<ParsedRateItem & { sourceListId: string; sourceListTitle: string }> = [];
         for (const list of matched) {
           for (const item of list.items) {
@@ -123,7 +118,9 @@ export default function BazarMegaPanel({
         return { col, items };
       }
       // scope: items — فقط آیتم‌هایی که فیلتر itemFilter را pass می‌کنن
-      const items = grouped.flat.filter((it) => (col.itemFilter ? col.itemFilter(it.title) : true)).slice(0, col.limit);
+      const items = grouped.flat
+        .filter((it) => (col.itemFilter ? col.itemFilter(it.title) : true))
+        .slice(0, col.limit);
       return { col, items };
     });
   }, [grouped]);
@@ -141,22 +138,23 @@ export default function BazarMegaPanel({
   return (
     <div className="relative isolate">
       {/* aurora bg */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
-      >
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div
           className="absolute -top-12 -end-12 h-40 w-40 rounded-full blur-3xl opacity-30"
-          style={{ background: 'radial-gradient(closest-side, rgba(94,106,230,0.35), transparent 70%)' }}
+          style={{
+            background: 'radial-gradient(closest-side, rgba(94,106,230,0.35), transparent 70%)',
+          }}
         />
         <div
           className="absolute -bottom-12 -start-12 h-40 w-40 rounded-full blur-3xl opacity-25"
-          style={{ background: 'radial-gradient(closest-side, rgba(16,185,129,0.3), transparent 70%)' }}
+          style={{
+            background: 'radial-gradient(closest-side, rgba(16,185,129,0.3), transparent 70%)',
+          }}
         />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 sm:gap-0 divide-y sm:divide-y-0 sm:divide-x sm:divide-x-reverse divide-[color:var(--hairline)]">
-        {columns.map(({ col, items }, colIdx) => (
+        {columns.map(({ col, items }, _colIdx) => (
           <div
             key={col.id}
             className="flex flex-col gap-2 sm:gap-2.5 px-4 sm:px-5 py-3.5 sm:py-4 min-w-0"
@@ -174,9 +172,7 @@ export default function BazarMegaPanel({
                 {col.icon}
               </span>
               <div className="min-w-0 flex-1">
-                <h3
-                  className="text-[12px] sm:text-[12.5px] font-bold text-neutral-900 dark:text-white leading-tight"
-                >
+                <h3 className="text-[12px] sm:text-[12.5px] font-bold text-neutral-900 dark:text-white leading-tight">
                   {col.title}
                 </h3>
                 <p className="text-[10px] sm:text-[10.5px] text-neutral-500 dark:text-neutral-400 leading-tight mt-0.5 truncate">
@@ -222,16 +218,22 @@ export default function BazarMegaPanel({
                               style={{ unicodeBidi: 'isolate' }}
                             >
                               <TrendingUp className="h-2.5 w-2.5" strokeWidth={2.5} aria-hidden />
-                              {it.buyNum > 0 ? toPersianNumber(formatNumber(it.buyNum)) : (it.buy ?? '—')}
+                              {it.buyNum > 0
+                                ? toPersianNumber(formatNumber(it.buyNum))
+                                : (it.buy ?? '—')}
                             </span>
-                            <span className="text-neutral-300 dark:text-neutral-600 text-[10px]">/</span>
+                            <span className="text-neutral-300 dark:text-neutral-600 text-[10px]">
+                              /
+                            </span>
                             <span
                               className="text-[10px] sm:text-[11px] font-bold tabular-nums inline-flex items-center gap-0.5 text-rose-600 dark:text-rose-400"
                               dir="ltr"
                               style={{ unicodeBidi: 'isolate' }}
                             >
                               <TrendingDown className="h-2.5 w-2.5" strokeWidth={2.5} aria-hidden />
-                              {it.sellNum > 0 ? toPersianNumber(formatNumber(it.sellNum)) : (it.sell ?? '—')}
+                              {it.sellNum > 0
+                                ? toPersianNumber(formatNumber(it.sellNum))
+                                : (it.sell ?? '—')}
                             </span>
                           </>
                         ) : (
@@ -240,7 +242,9 @@ export default function BazarMegaPanel({
                             dir="ltr"
                             style={{ unicodeBidi: 'isolate' }}
                           >
-                            {it.buyNum > 0 ? toPersianNumber(formatNumber(it.buyNum)) : (it.buy ?? '—')}
+                            {it.buyNum > 0
+                              ? toPersianNumber(formatNumber(it.buyNum))
+                              : (it.buy ?? '—')}
                           </span>
                         )}
                       </span>

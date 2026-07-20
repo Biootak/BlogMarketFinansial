@@ -1,32 +1,32 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
 import {
-  Settings,
-  Mail,
-  Shield,
-  Share2,
-  Database,
-  Wrench,
-  Check,
-  RefreshCw,
-  Loader2,
-  Upload,
-  ImageIcon,
-  type LucideIcon,
-} from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
-import { PageHeader } from '@/components/Dashboard/primitives';
-import {
+  generateApiKey,
   getSystemSettings,
-  updateGeneralSettings,
-  updateEmailSettings,
-  updateCacheSettings,
   testDatabaseConnection,
   testSmtpConnection,
-  generateApiKey,
+  updateCacheSettings,
+  updateEmailSettings,
+  updateGeneralSettings,
 } from '@/actions/settingsActions';
 import SocialLinksManager from '@/components/Dashboard/Settings/SocialLinksManager';
+import { PageHeader } from '@/components/Dashboard/primitives';
+import { useToast } from '@/components/ui/use-toast';
+import {
+  Check,
+  Database,
+  ImageIcon,
+  Loader2,
+  type LucideIcon,
+  Mail,
+  RefreshCw,
+  Settings,
+  Share2,
+  Shield,
+  Upload,
+  Wrench,
+} from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface TabType {
   id: string;
@@ -47,14 +47,42 @@ const tabs: TabType[] = [
 interface SettingsFormData {
   general: { siteTitle: string; siteDescription: string; contactEmail: string; logoUrl: string };
   email: { smtpServer: string; smtpPort: string; smtpUsername: string; smtpPassword: string };
-  security: { twoFactorAuth: boolean; ipRestriction: boolean; minPasswordLength: number; sessionDuration: number };
+  security: {
+    twoFactorAuth: boolean;
+    ipRestriction: boolean;
+    minPasswordLength: number;
+    sessionDuration: number;
+  };
   social: { instagram: string; telegram: string; whatsapp: string; twitter: string };
-  database: { server: string; port: string; name: string; username: string; password: string; type: string; autoBackup: boolean };
-  advanced: { debugMode: boolean; cacheEnabled: boolean; apiRateLimit: boolean; cacheDuration: number; maxUploadSize: number; errorLevel: string; logPath: string; apiKey: string; cacheStorage: string; rateLimit: number };
+  database: {
+    server: string;
+    port: string;
+    name: string;
+    username: string;
+    password: string;
+    type: string;
+    autoBackup: boolean;
+  };
+  advanced: {
+    debugMode: boolean;
+    cacheEnabled: boolean;
+    apiRateLimit: boolean;
+    cacheDuration: number;
+    maxUploadSize: number;
+    errorLevel: string;
+    logPath: string;
+    apiKey: string;
+    cacheStorage: string;
+    rateLimit: number;
+  };
 }
 
 // Toggle Switch Component — atelier (hairline + emerald)
-const ToggleSwitch = ({ enabled, onChange, disabled }: { enabled: boolean; onChange: () => void; disabled?: boolean }) => (
+const ToggleSwitch = ({
+  enabled,
+  onChange,
+  disabled,
+}: { enabled: boolean; onChange: () => void; disabled?: boolean }) => (
   <button
     type="button"
     role="switch"
@@ -65,12 +93,30 @@ const ToggleSwitch = ({ enabled, onChange, disabled }: { enabled: boolean; onCha
       disabled ? 'opacity-50 cursor-not-allowed' : ''
     } ${enabled ? 'bg-[color:var(--at-accent)]' : 'bg-[color:var(--at-bg-elevated)] border border-[color:var(--at-line)]'}`}
   >
-    <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ${enabled ? '-translate-x-6' : '-translate-x-1'}`} />
+    <span
+      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ${enabled ? '-translate-x-6' : '-translate-x-1'}`}
+    />
   </button>
 );
 
 // Input Field Component — atelier
-const InputField = ({ label, type = 'text', value, onChange, placeholder, readOnly = false, disabled = false }: { label: string; type?: string; value: string | number; onChange: (value: string) => void; placeholder?: string; readOnly?: boolean; disabled?: boolean }) => (
+const InputField = ({
+  label,
+  type = 'text',
+  value,
+  onChange,
+  placeholder,
+  readOnly = false,
+  disabled = false,
+}: {
+  label: string;
+  type?: string;
+  value: string | number;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  readOnly?: boolean;
+  disabled?: boolean;
+}) => (
   <div className="space-y-2">
     {label && <label className="at-field__label block">{label}</label>}
     <input
@@ -81,13 +127,33 @@ const InputField = ({ label, type = 'text', value, onChange, placeholder, readOn
       disabled={disabled}
       placeholder={placeholder}
       className={`at-input ${readOnly || disabled ? 'cursor-not-allowed opacity-60' : ''}`}
-      style={readOnly ? { background: 'var(--at-bg-deep)', fontFamily: 'ui-monospace, monospace', fontSize: '12px' } : undefined}
+      style={
+        readOnly
+          ? {
+              background: 'var(--at-bg-deep)',
+              fontFamily: 'ui-monospace, monospace',
+              fontSize: '12px',
+            }
+          : undefined
+      }
     />
   </div>
 );
 
 // Select Field Component — atelier
-const SelectField = ({ label, value, onChange, options, disabled = false }: { label: string; value: string | number; onChange: (value: string) => void; options: { value: string | number; label: string }[]; disabled?: boolean }) => (
+const SelectField = ({
+  label,
+  value,
+  onChange,
+  options,
+  disabled = false,
+}: {
+  label: string;
+  value: string | number;
+  onChange: (value: string) => void;
+  options: { value: string | number; label: string }[];
+  disabled?: boolean;
+}) => (
   <div className="space-y-2">
     <label className="at-field__label block">{label}</label>
     <select
@@ -98,14 +164,28 @@ const SelectField = ({ label, value, onChange, options, disabled = false }: { la
       style={{ height: 'auto', padding: '10px 14px', fontSize: '13px', fontWeight: '500' }}
     >
       {options.map((opt) => (
-        <option key={opt.value} value={opt.value}>{opt.label}</option>
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
       ))}
     </select>
   </div>
 );
 
 // Setting Toggle Row — atelier
-const SettingToggleRow = ({ title, description, enabled, onChange, disabled }: { title: string; description: string; enabled: boolean; onChange: () => void; disabled?: boolean }) => (
+const SettingToggleRow = ({
+  title,
+  description,
+  enabled,
+  onChange,
+  disabled,
+}: {
+  title: string;
+  description: string;
+  enabled: boolean;
+  onChange: () => void;
+  disabled?: boolean;
+}) => (
   <div className="flex items-center justify-between gap-4 px-4 py-3.5 rounded-[var(--at-radius)] border border-[color:var(--at-line)] bg-[color:var(--at-bg)] transition-colors hover:bg-[color:var(--at-surface-hover)]">
     <div className="space-y-0.5 min-w-0">
       <h4 className="text-sm font-semibold text-[color:var(--at-fg)]">{title}</h4>
@@ -116,7 +196,11 @@ const SettingToggleRow = ({ title, description, enabled, onChange, disabled }: {
 );
 
 // Card Section — atelier
-const CardSection = ({ title, description, children }: { title: string; description: string; children: React.ReactNode }) => (
+const CardSection = ({
+  title,
+  description,
+  children,
+}: { title: string; description: string; children: React.ReactNode }) => (
   <div className="at-form-section">
     <div className="at-form-section__head">
       <div className="at-form-section__title">
@@ -129,14 +213,17 @@ const CardSection = ({ title, description, children }: { title: string; descript
         </div>
       </div>
     </div>
-    <div className="at-form-section__body at-form-stack at-form-stack--lg">
-      {children}
-    </div>
+    <div className="at-form-section__body at-form-stack at-form-stack--lg">{children}</div>
   </div>
 );
 
 // Action Buttons — atelier
-const ActionButtons = ({ onReset, onSubmit, loading, disabled }: { onReset?: () => void; onSubmit?: () => void; loading?: boolean; disabled?: boolean }) => (
+const ActionButtons = ({
+  onReset,
+  onSubmit,
+  loading,
+  disabled,
+}: { onReset?: () => void; onSubmit?: () => void; loading?: boolean; disabled?: boolean }) => (
   <div className="flex items-center justify-end gap-2 pt-2">
     {onReset && (
       <button type="button" onClick={onReset} disabled={loading || disabled} className="at-btn">
@@ -145,7 +232,12 @@ const ActionButtons = ({ onReset, onSubmit, loading, disabled }: { onReset?: () 
       </button>
     )}
     {onSubmit && (
-      <button type="button" onClick={onSubmit} disabled={loading || disabled} className="at-btn at-btn--primary">
+      <button
+        type="button"
+        onClick={onSubmit}
+        disabled={loading || disabled}
+        className="at-btn at-btn--primary"
+      >
         {loading ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
         {loading ? 'در حال ذخیره...' : 'ذخیره تنظیمات'}
       </button>
@@ -161,10 +253,34 @@ export default function SettingsPage() {
   const [formData, setFormData] = useState<SettingsFormData>({
     general: { siteTitle: '', siteDescription: '', contactEmail: '', logoUrl: '' },
     email: { smtpServer: '', smtpPort: '', smtpUsername: '', smtpPassword: '' },
-    security: { twoFactorAuth: false, ipRestriction: false, minPasswordLength: 8, sessionDuration: 30 },
+    security: {
+      twoFactorAuth: false,
+      ipRestriction: false,
+      minPasswordLength: 8,
+      sessionDuration: 30,
+    },
     social: { instagram: '', telegram: '', whatsapp: '', twitter: '' },
-    database: { server: '', port: '', name: '', username: '', password: '', type: 'postgresql', autoBackup: false },
-    advanced: { debugMode: false, cacheEnabled: true, apiRateLimit: true, cacheDuration: 60, maxUploadSize: 10, errorLevel: 'error', logPath: '', apiKey: '', cacheStorage: 'memory', rateLimit: 100 },
+    database: {
+      server: '',
+      port: '',
+      name: '',
+      username: '',
+      password: '',
+      type: 'postgresql',
+      autoBackup: false,
+    },
+    advanced: {
+      debugMode: false,
+      cacheEnabled: true,
+      apiRateLimit: true,
+      cacheDuration: 60,
+      maxUploadSize: 10,
+      errorLevel: 'error',
+      logPath: '',
+      apiKey: '',
+      cacheStorage: 'memory',
+      rateLimit: 100,
+    },
   });
 
   useEffect(() => {
@@ -175,9 +291,25 @@ export default function SettingsPage() {
           const data = result.data;
           setFormData((prev) => ({
             ...prev,
-            general: { ...prev.general, siteTitle: data.siteName || '', siteDescription: data.siteDescription || '', logoUrl: data.logoUrl || '' },
-            email: { ...prev.email, smtpServer: data.smtpServer || '', smtpPort: data.smtpPort || '', smtpUsername: data.smtpUsername || '' },
-            social: { ...prev.social, instagram: data.instagram || '', telegram: data.telegram || '', twitter: data.twitter || '', whatsapp: data.whatsapp || '' },
+            general: {
+              ...prev.general,
+              siteTitle: data.siteName || '',
+              siteDescription: data.siteDescription || '',
+              logoUrl: data.logoUrl || '',
+            },
+            email: {
+              ...prev.email,
+              smtpServer: data.smtpServer || '',
+              smtpPort: data.smtpPort || '',
+              smtpUsername: data.smtpUsername || '',
+            },
+            social: {
+              ...prev.social,
+              instagram: data.instagram || '',
+              telegram: data.telegram || '',
+              twitter: data.twitter || '',
+              whatsapp: data.whatsapp || '',
+            },
             advanced: { ...prev.advanced, cacheEnabled: data.cacheEnabled ?? true },
           }));
         }
@@ -190,14 +322,21 @@ export default function SettingsPage() {
     loadSettings();
   }, []);
 
-  const handleInputChange = useCallback((tab: keyof SettingsFormData, field: string, value: string | number | boolean) => {
-    setFormData((prev) => ({ ...prev, [tab]: { ...prev[tab], [field]: value } }));
-  }, []);
+  const handleInputChange = useCallback(
+    (tab: keyof SettingsFormData, field: string, value: string | number | boolean) => {
+      setFormData((prev) => ({ ...prev, [tab]: { ...prev[tab], [field]: value } }));
+    },
+    [],
+  );
 
   const handleSaveGeneral = async () => {
     setLoading(true);
     try {
-      const result = await updateGeneralSettings({ siteName: formData.general.siteTitle, siteDescription: formData.general.siteDescription, logoUrl: formData.general.logoUrl });
+      const result = await updateGeneralSettings({
+        siteName: formData.general.siteTitle,
+        siteDescription: formData.general.siteDescription,
+        logoUrl: formData.general.logoUrl,
+      });
       if (result.success) {
         toast({ title: 'موفق', description: 'تنظیمات عمومی با موفقیت ذخیره شد' });
       } else {
@@ -359,7 +498,11 @@ export default function SettingsPage() {
                     <span style={{ fontSize: '13px' }}>{tab.name}</span>
                     <span
                       className="hidden lg:block text-[10px]"
-                      style={{ color: isActive ? 'var(--at-fg-muted)' : 'var(--at-fg-subtle)', fontWeight: 400, marginTop: '1px' }}
+                      style={{
+                        color: isActive ? 'var(--at-fg-muted)' : 'var(--at-fg-subtle)',
+                        fontWeight: 400,
+                        marginTop: '1px',
+                      }}
                     >
                       {tab.description}
                     </span>
@@ -372,20 +515,45 @@ export default function SettingsPage() {
 
         {/* Tab Content */}
         <div className="flex-1 min-w-0">
-
           {/* General Settings */}
           {activeTab === 'general' && (
-            <CardSection title="تنظیمات عمومی سایت" description="اطلاعات اصلی و هویت سایت خود را تنظیم کنید">
+            <CardSection
+              title="تنظیمات عمومی سایت"
+              description="اطلاعات اصلی و هویت سایت خود را تنظیم کنید"
+            >
               <div className="at-form-grid">
-                <InputField label="عنوان سایت" value={formData.general.siteTitle} onChange={(v) => handleInputChange('general', 'siteTitle', v)} placeholder="عنوان سایت را وارد کنید" disabled={loading} />
-                <InputField label="توضیحات سایت" value={formData.general.siteDescription} onChange={(v) => handleInputChange('general', 'siteDescription', v)} placeholder="توضیحات سایت را وارد کنید" disabled={loading} />
-                <InputField label="ایمیل تماس" type="email" value={formData.general.contactEmail} onChange={(v) => handleInputChange('general', 'contactEmail', v)} placeholder="ایمیل تماس را وارد کنید" disabled={loading} />
+                <InputField
+                  label="عنوان سایت"
+                  value={formData.general.siteTitle}
+                  onChange={(v) => handleInputChange('general', 'siteTitle', v)}
+                  placeholder="عنوان سایت را وارد کنید"
+                  disabled={loading}
+                />
+                <InputField
+                  label="توضیحات سایت"
+                  value={formData.general.siteDescription}
+                  onChange={(v) => handleInputChange('general', 'siteDescription', v)}
+                  placeholder="توضیحات سایت را وارد کنید"
+                  disabled={loading}
+                />
+                <InputField
+                  label="ایمیل تماس"
+                  type="email"
+                  value={formData.general.contactEmail}
+                  onChange={(v) => handleInputChange('general', 'contactEmail', v)}
+                  placeholder="ایمیل تماس را وارد کنید"
+                  disabled={loading}
+                />
                 <div className="space-y-2 sm:col-span-2">
                   <label className="at-field__label block">لوگوی سایت</label>
                   <div className="flex flex-col sm:flex-row items-start gap-4 p-4 rounded-[var(--at-radius)] border border-dashed border-[color:var(--at-line-strong)] bg-[color:var(--at-bg-deep)]">
                     {formData.general.logoUrl ? (
                       <div className="relative shrink-0">
-                        <img src={formData.general.logoUrl} alt="Site logo preview" className="h-16 w-auto object-contain rounded-lg" />
+                        <img
+                          src={formData.general.logoUrl}
+                          alt="Site logo preview"
+                          className="h-16 w-auto object-contain rounded-lg"
+                        />
                         <button
                           type="button"
                           onClick={() => handleInputChange('general', 'logoUrl', '')}
@@ -402,14 +570,30 @@ export default function SettingsPage() {
                       </div>
                     )}
                     <div className="flex-1 min-w-0 space-y-3 w-full">
-                      <InputField label="" value={formData.general.logoUrl} onChange={(v) => handleInputChange('general', 'logoUrl', v)} placeholder="https://example.com/logo.png" disabled={loading} />
+                      <InputField
+                        label=""
+                        value={formData.general.logoUrl}
+                        onChange={(v) => handleInputChange('general', 'logoUrl', v)}
+                        placeholder="https://example.com/logo.png"
+                        disabled={loading}
+                      />
                       <div className="flex items-center gap-3">
-                        <label className={`at-btn ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                        <label
+                          className={`at-btn ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                        >
                           <Upload className="size-4" />
                           <span>آپلود لوگو</span>
-                          <input type="file" accept="image/*" onChange={handleLogoUpload} disabled={loading} className="hidden" />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleLogoUpload}
+                            disabled={loading}
+                            className="hidden"
+                          />
                         </label>
-                        <span className="text-xs text-[color:var(--at-fg-subtle)]">یا URL لوگو را وارد کنید</span>
+                        <span className="text-xs text-[color:var(--at-fg-subtle)]">
+                          یا URL لوگو را وارد کنید
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -421,20 +605,66 @@ export default function SettingsPage() {
 
           {/* Email Settings */}
           {activeTab === 'email' && (
-            <CardSection title="تنظیمات SMTP" description="سرور ایمیل خود را برای ارسال پیام‌ها پیکربندی کنید">
+            <CardSection
+              title="تنظیمات SMTP"
+              description="سرور ایمیل خود را برای ارسال پیام‌ها پیکربندی کنید"
+            >
               <div className="at-form-grid">
-                <InputField label="سرور SMTP" value={formData.email.smtpServer} onChange={(v) => handleInputChange('email', 'smtpServer', v)} placeholder="smtp.example.com" disabled={loading} />
-                <InputField label="پورت" value={formData.email.smtpPort} onChange={(v) => handleInputChange('email', 'smtpPort', v)} placeholder="587" disabled={loading} />
-                <InputField label="نام کاربری" value={formData.email.smtpUsername} onChange={(v) => handleInputChange('email', 'smtpUsername', v)} placeholder="username@example.com" disabled={loading} />
-                <InputField label="رمز عبور" type="password" value={formData.email.smtpPassword} onChange={(v) => handleInputChange('email', 'smtpPassword', v)} placeholder="••••••••" disabled={loading} />
+                <InputField
+                  label="سرور SMTP"
+                  value={formData.email.smtpServer}
+                  onChange={(v) => handleInputChange('email', 'smtpServer', v)}
+                  placeholder="smtp.example.com"
+                  disabled={loading}
+                />
+                <InputField
+                  label="پورت"
+                  value={formData.email.smtpPort}
+                  onChange={(v) => handleInputChange('email', 'smtpPort', v)}
+                  placeholder="587"
+                  disabled={loading}
+                />
+                <InputField
+                  label="نام کاربری"
+                  value={formData.email.smtpUsername}
+                  onChange={(v) => handleInputChange('email', 'smtpUsername', v)}
+                  placeholder="username@example.com"
+                  disabled={loading}
+                />
+                <InputField
+                  label="رمز عبور"
+                  type="password"
+                  value={formData.email.smtpPassword}
+                  onChange={(v) => handleInputChange('email', 'smtpPassword', v)}
+                  placeholder="••••••••"
+                  disabled={loading}
+                />
               </div>
               <div className="flex items-center justify-end gap-2 pt-2">
-                <button type="button" onClick={handleTestSmtp} disabled={loading} className="at-btn">
-                  {loading ? <Loader2 className="size-3.5 animate-spin" /> : <Mail className="size-3.5" />}
+                <button
+                  type="button"
+                  onClick={handleTestSmtp}
+                  disabled={loading}
+                  className="at-btn"
+                >
+                  {loading ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <Mail className="size-3.5" />
+                  )}
                   تست اتصال
                 </button>
-                <button type="button" onClick={handleSaveEmail} disabled={loading} className="at-btn at-btn--primary">
-                  {loading ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
+                <button
+                  type="button"
+                  onClick={handleSaveEmail}
+                  disabled={loading}
+                  className="at-btn at-btn--primary"
+                >
+                  {loading ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <Check className="size-3.5" />
+                  )}
                   ذخیره تنظیمات
                 </button>
               </div>
@@ -443,16 +673,66 @@ export default function SettingsPage() {
 
           {/* Security Settings */}
           {activeTab === 'security' && (
-            <CardSection title="تنظیمات امنیتی" description="امنیت سیستم و دسترسی‌های کاربران را مدیریت کنید">
+            <CardSection
+              title="تنظیمات امنیتی"
+              description="امنیت سیستم و دسترسی‌های کاربران را مدیریت کنید"
+            >
               <div className="space-y-3">
-                <SettingToggleRow title="احراز هویت دو مرحله‌ای" description="فعال‌سازی احراز هویت دو مرحله‌ای برای افزایش امنیت" enabled={formData.security.twoFactorAuth} onChange={() => handleInputChange('security', 'twoFactorAuth', !formData.security.twoFactorAuth)} disabled={loading} />
-                <SettingToggleRow title="محدودیت IP" description="محدود کردن دسترسی به IP‌های مشخص" enabled={formData.security.ipRestriction} onChange={() => handleInputChange('security', 'ipRestriction', !formData.security.ipRestriction)} disabled={loading} />
+                <SettingToggleRow
+                  title="احراز هویت دو مرحله‌ای"
+                  description="فعال‌سازی احراز هویت دو مرحله‌ای برای افزایش امنیت"
+                  enabled={formData.security.twoFactorAuth}
+                  onChange={() =>
+                    handleInputChange('security', 'twoFactorAuth', !formData.security.twoFactorAuth)
+                  }
+                  disabled={loading}
+                />
+                <SettingToggleRow
+                  title="محدودیت IP"
+                  description="محدود کردن دسترسی به IP‌های مشخص"
+                  enabled={formData.security.ipRestriction}
+                  onChange={() =>
+                    handleInputChange('security', 'ipRestriction', !formData.security.ipRestriction)
+                  }
+                  disabled={loading}
+                />
               </div>
               <div className="at-form-grid">
-                <SelectField label="حداقل طول رمز عبور" value={formData.security.minPasswordLength} onChange={(v) => handleInputChange('security', 'minPasswordLength', parseInt(v))} disabled={loading} options={[{ value: 6, label: '۶ کاراکتر' }, { value: 8, label: '۸ کاراکتر' }, { value: 10, label: '۱۰ کاراکتر' }, { value: 12, label: '۱۲ کاراکتر' }]} />
-                <SelectField label="مدت زمان نشست کاربری" value={formData.security.sessionDuration} onChange={(v) => handleInputChange('security', 'sessionDuration', parseInt(v))} disabled={loading} options={[{ value: 30, label: '۳۰ دقیقه' }, { value: 60, label: '۱ ساعت' }, { value: 120, label: '۲ ساعت' }, { value: 240, label: '۴ ساعت' }]} />
+                <SelectField
+                  label="حداقل طول رمز عبور"
+                  value={formData.security.minPasswordLength}
+                  onChange={(v) =>
+                    handleInputChange('security', 'minPasswordLength', Number.parseInt(v))
+                  }
+                  disabled={loading}
+                  options={[
+                    { value: 6, label: '۶ کاراکتر' },
+                    { value: 8, label: '۸ کاراکتر' },
+                    { value: 10, label: '۱۰ کاراکتر' },
+                    { value: 12, label: '۱۲ کاراکتر' },
+                  ]}
+                />
+                <SelectField
+                  label="مدت زمان نشست کاربری"
+                  value={formData.security.sessionDuration}
+                  onChange={(v) =>
+                    handleInputChange('security', 'sessionDuration', Number.parseInt(v))
+                  }
+                  disabled={loading}
+                  options={[
+                    { value: 30, label: '۳۰ دقیقه' },
+                    { value: 60, label: '۱ ساعت' },
+                    { value: 120, label: '۲ ساعت' },
+                    { value: 240, label: '۴ ساعت' },
+                  ]}
+                />
               </div>
-              <ActionButtons loading={loading} onSubmit={() => toast({ title: 'اطلاع', description: 'تنظیمات امنیتی در نسخه بعدی فعال می‌شود' })} />
+              <ActionButtons
+                loading={loading}
+                onSubmit={() =>
+                  toast({ title: 'اطلاع', description: 'تنظیمات امنیتی در نسخه بعدی فعال می‌شود' })
+                }
+              />
             </CardSection>
           )}
 
@@ -465,24 +745,95 @@ export default function SettingsPage() {
 
           {/* Database Settings */}
           {activeTab === 'database' && (
-            <CardSection title="تنظیمات پایگاه داده" description="اتصال و پیکربندی پایگاه داده را مدیریت کنید">
+            <CardSection
+              title="تنظیمات پایگاه داده"
+              description="اتصال و پیکربندی پایگاه داده را مدیریت کنید"
+            >
               <div className="at-form-grid">
-                <InputField label="آدرس سرور" value={formData.database.server} onChange={(v) => handleInputChange('database', 'server', v)} placeholder="localhost" disabled={loading} />
-                <InputField label="پورت" value={formData.database.port} onChange={(v) => handleInputChange('database', 'port', v)} placeholder="5432" disabled={loading} />
-                <InputField label="نام پایگاه داده" value={formData.database.name} onChange={(v) => handleInputChange('database', 'name', v)} placeholder="biotak_db" disabled={loading} />
-                <InputField label="نام کاربری" value={formData.database.username} onChange={(v) => handleInputChange('database', 'username', v)} placeholder="postgres" disabled={loading} />
-                <InputField label="رمز عبور" type="password" value={formData.database.password} onChange={(v) => handleInputChange('database', 'password', v)} placeholder="••••••••" disabled={loading} />
-                <SelectField label="نوع پایگاه داده" value={formData.database.type} onChange={(v) => handleInputChange('database', 'type', v)} disabled={loading} options={[{ value: 'postgresql', label: 'PostgreSQL' }, { value: 'mysql', label: 'MySQL' }, { value: 'mongodb', label: 'MongoDB' }]} />
+                <InputField
+                  label="آدرس سرور"
+                  value={formData.database.server}
+                  onChange={(v) => handleInputChange('database', 'server', v)}
+                  placeholder="localhost"
+                  disabled={loading}
+                />
+                <InputField
+                  label="پورت"
+                  value={formData.database.port}
+                  onChange={(v) => handleInputChange('database', 'port', v)}
+                  placeholder="5432"
+                  disabled={loading}
+                />
+                <InputField
+                  label="نام پایگاه داده"
+                  value={formData.database.name}
+                  onChange={(v) => handleInputChange('database', 'name', v)}
+                  placeholder="biotak_db"
+                  disabled={loading}
+                />
+                <InputField
+                  label="نام کاربری"
+                  value={formData.database.username}
+                  onChange={(v) => handleInputChange('database', 'username', v)}
+                  placeholder="postgres"
+                  disabled={loading}
+                />
+                <InputField
+                  label="رمز عبور"
+                  type="password"
+                  value={formData.database.password}
+                  onChange={(v) => handleInputChange('database', 'password', v)}
+                  placeholder="••••••••"
+                  disabled={loading}
+                />
+                <SelectField
+                  label="نوع پایگاه داده"
+                  value={formData.database.type}
+                  onChange={(v) => handleInputChange('database', 'type', v)}
+                  disabled={loading}
+                  options={[
+                    { value: 'postgresql', label: 'PostgreSQL' },
+                    { value: 'mysql', label: 'MySQL' },
+                    { value: 'mongodb', label: 'MongoDB' },
+                  ]}
+                />
               </div>
               <div>
-                <SettingToggleRow title="پشتیبان‌گیری خودکار" description="فعال‌سازی پشتیبان‌گیری خودکار از پایگاه داده" enabled={formData.database.autoBackup} onChange={() => handleInputChange('database', 'autoBackup', !formData.database.autoBackup)} disabled={loading} />
+                <SettingToggleRow
+                  title="پشتیبان‌گیری خودکار"
+                  description="فعال‌سازی پشتیبان‌گیری خودکار از پایگاه داده"
+                  enabled={formData.database.autoBackup}
+                  onChange={() =>
+                    handleInputChange('database', 'autoBackup', !formData.database.autoBackup)
+                  }
+                  disabled={loading}
+                />
               </div>
               <div className="flex items-center justify-end gap-2 pt-2">
-                <button type="button" onClick={handleTestDatabase} disabled={loading} className="at-btn">
-                  {loading ? <Loader2 className="size-3.5 animate-spin" /> : <Database className="size-3.5" />}
+                <button
+                  type="button"
+                  onClick={handleTestDatabase}
+                  disabled={loading}
+                  className="at-btn"
+                >
+                  {loading ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <Database className="size-3.5" />
+                  )}
                   تست اتصال
                 </button>
-                <button type="button" onClick={() => toast({ title: 'اطلاع', description: 'تنظیمات دیتابیس از فایل .env خوانده می‌شود' })} disabled={loading} className="at-btn at-btn--primary">
+                <button
+                  type="button"
+                  onClick={() =>
+                    toast({
+                      title: 'اطلاع',
+                      description: 'تنظیمات دیتابیس از فایل .env خوانده می‌شود',
+                    })
+                  }
+                  disabled={loading}
+                  className="at-btn at-btn--primary"
+                >
                   <Check className="size-3.5" />
                   ذخیره تنظیمات
                 </button>
@@ -494,18 +845,87 @@ export default function SettingsPage() {
           {activeTab === 'advanced' && (
             <CardSection title="تنظیمات پیشرفته" description="تنظیمات حرفه‌ای و پیشرفته سیستم">
               <div className="space-y-3">
-                <SettingToggleRow title="حالت دیباگ" description="فعال‌سازی گزارش‌های خطا و اشکال‌زدایی" enabled={formData.advanced.debugMode} onChange={() => handleInputChange('advanced', 'debugMode', !formData.advanced.debugMode)} disabled={loading} />
-                <SettingToggleRow title="ذخیره‌سازی کش" description="فعال‌سازی سیستم کش برای بهبود عملکرد" enabled={formData.advanced.cacheEnabled} onChange={() => handleInputChange('advanced', 'cacheEnabled', !formData.advanced.cacheEnabled)} disabled={loading} />
-                <SettingToggleRow title="محدودیت درخواست API" description="محدودیت تعداد درخواست‌های API" enabled={formData.advanced.apiRateLimit} onChange={() => handleInputChange('advanced', 'apiRateLimit', !formData.advanced.apiRateLimit)} disabled={loading} />
+                <SettingToggleRow
+                  title="حالت دیباگ"
+                  description="فعال‌سازی گزارش‌های خطا و اشکال‌زدایی"
+                  enabled={formData.advanced.debugMode}
+                  onChange={() =>
+                    handleInputChange('advanced', 'debugMode', !formData.advanced.debugMode)
+                  }
+                  disabled={loading}
+                />
+                <SettingToggleRow
+                  title="ذخیره‌سازی کش"
+                  description="فعال‌سازی سیستم کش برای بهبود عملکرد"
+                  enabled={formData.advanced.cacheEnabled}
+                  onChange={() =>
+                    handleInputChange('advanced', 'cacheEnabled', !formData.advanced.cacheEnabled)
+                  }
+                  disabled={loading}
+                />
+                <SettingToggleRow
+                  title="محدودیت درخواست API"
+                  description="محدودیت تعداد درخواست‌های API"
+                  enabled={formData.advanced.apiRateLimit}
+                  onChange={() =>
+                    handleInputChange('advanced', 'apiRateLimit', !formData.advanced.apiRateLimit)
+                  }
+                  disabled={loading}
+                />
               </div>
               <div className="at-form-grid">
-                <InputField label="مدت زمان کش (دقیقه)" type="number" value={formData.advanced.cacheDuration} onChange={(v) => handleInputChange('advanced', 'cacheDuration', parseInt(v) || 60)} placeholder="60" disabled={loading} />
-                <SelectField label="محدودیت درخواست API (در دقیقه)" value={formData.advanced.rateLimit} onChange={(v) => handleInputChange('advanced', 'rateLimit', parseInt(v))} disabled={loading} options={[{ value: 100, label: '۱۰۰ درخواست' }, { value: 500, label: '۵۰۰ درخواست' }, { value: 1000, label: '۱۰۰۰ درخواست' }]} />
-                <InputField label="حداکثر اندازه فایل آپلود (MB)" type="number" value={formData.advanced.maxUploadSize} onChange={(v) => handleInputChange('advanced', 'maxUploadSize', parseInt(v) || 10)} placeholder="10" disabled={loading} />
-                <SelectField label="سطح گزارش خطا" value={formData.advanced.errorLevel} onChange={(v) => handleInputChange('advanced', 'errorLevel', v)} disabled={loading} options={[{ value: 'error', label: 'خطا' }, { value: 'warning', label: 'هشدار' }, { value: 'info', label: 'اطلاعات' }, { value: 'debug', label: 'دیباگ' }]} />
+                <InputField
+                  label="مدت زمان کش (دقیقه)"
+                  type="number"
+                  value={formData.advanced.cacheDuration}
+                  onChange={(v) =>
+                    handleInputChange('advanced', 'cacheDuration', Number.parseInt(v) || 60)
+                  }
+                  placeholder="60"
+                  disabled={loading}
+                />
+                <SelectField
+                  label="محدودیت درخواست API (در دقیقه)"
+                  value={formData.advanced.rateLimit}
+                  onChange={(v) => handleInputChange('advanced', 'rateLimit', Number.parseInt(v))}
+                  disabled={loading}
+                  options={[
+                    { value: 100, label: '۱۰۰ درخواست' },
+                    { value: 500, label: '۵۰۰ درخواست' },
+                    { value: 1000, label: '۱۰۰۰ درخواست' },
+                  ]}
+                />
+                <InputField
+                  label="حداکثر اندازه فایل آپلود (MB)"
+                  type="number"
+                  value={formData.advanced.maxUploadSize}
+                  onChange={(v) =>
+                    handleInputChange('advanced', 'maxUploadSize', Number.parseInt(v) || 10)
+                  }
+                  placeholder="10"
+                  disabled={loading}
+                />
+                <SelectField
+                  label="سطح گزارش خطا"
+                  value={formData.advanced.errorLevel}
+                  onChange={(v) => handleInputChange('advanced', 'errorLevel', v)}
+                  disabled={loading}
+                  options={[
+                    { value: 'error', label: 'خطا' },
+                    { value: 'warning', label: 'هشدار' },
+                    { value: 'info', label: 'اطلاعات' },
+                    { value: 'debug', label: 'دیباگ' },
+                  ]}
+                />
               </div>
               <div className="space-y-3">
-                <InputField label="مسیر ذخیره‌سازی لاگ‌ها" value={formData.advanced.logPath} onChange={(v) => handleInputChange('advanced', 'logPath', v)} placeholder="/var/log/biotak" disabled={loading} />
+                <InputField
+                  label="مسیر ذخیره‌سازی لاگ‌ها"
+                  value={formData.advanced.logPath}
+                  onChange={(v) => handleInputChange('advanced', 'logPath', v)}
+                  placeholder="/var/log/biotak"
+                  disabled={loading}
+                />
                 <div className="space-y-2">
                   <label className="at-field__label block">کلید API</label>
                   <div className="flex gap-2">
@@ -515,14 +935,34 @@ export default function SettingsPage() {
                       readOnly
                       placeholder="کلید API تولید نشده است"
                       className="at-input flex-1"
-                      style={{ background: 'var(--at-bg-deep)', fontFamily: 'ui-monospace, monospace', fontSize: '12px', cursor: 'not-allowed' }}
+                      style={{
+                        background: 'var(--at-bg-deep)',
+                        fontFamily: 'ui-monospace, monospace',
+                        fontSize: '12px',
+                        cursor: 'not-allowed',
+                      }}
                     />
-                    <button type="button" onClick={handleGenerateApiKey} disabled={loading} className="at-btn at-btn--primary shrink-0">
+                    <button
+                      type="button"
+                      onClick={handleGenerateApiKey}
+                      disabled={loading}
+                      className="at-btn at-btn--primary shrink-0"
+                    >
                       {loading ? <Loader2 className="size-3.5 animate-spin" /> : 'تولید کلید جدید'}
                     </button>
                   </div>
                 </div>
-                <SelectField label="ذخیره‌سازی کش" value={formData.advanced.cacheStorage} onChange={(v) => handleInputChange('advanced', 'cacheStorage', v)} disabled={loading} options={[{ value: 'memory', label: 'حافظه موقت' }, { value: 'redis', label: 'Redis کش' }, { value: 'file', label: 'فایل سیستم' }]} />
+                <SelectField
+                  label="ذخیره‌سازی کش"
+                  value={formData.advanced.cacheStorage}
+                  onChange={(v) => handleInputChange('advanced', 'cacheStorage', v)}
+                  disabled={loading}
+                  options={[
+                    { value: 'memory', label: 'حافظه موقت' },
+                    { value: 'redis', label: 'Redis کش' },
+                    { value: 'file', label: 'فایل سیستم' },
+                  ]}
+                />
               </div>
               <ActionButtons loading={loading} onSubmit={handleSaveAdvanced} />
             </CardSection>

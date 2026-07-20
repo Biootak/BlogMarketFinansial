@@ -1,6 +1,6 @@
-import type { Metadata } from 'next';
-import { Gem, Check } from 'lucide-react';
 import { getSiteIdentity } from '@/lib/site-identity';
+import { Check, Gem } from 'lucide-react';
+import type { Metadata } from 'next';
 import s from './subscription.module.css';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -70,12 +70,9 @@ export default function SubscriptionPage() {
           طرح‌های اشتراک
         </div>
         <h1 className={s.title}>
-          قیمت‌گذاری{' '}
-          <span className={s.titleAccent}>ساده و شفاف</span>
+          قیمت‌گذاری <span className={s.titleAccent}>ساده و شفاف</span>
         </h1>
-        <p className={s.sub}>
-          برای هر نوع کسب و کار — بدون هزینه پنهان
-        </p>
+        <p className={s.sub}>برای هر نوع کسب و کار — بدون هزینه پنهان</p>
       </header>
 
       {/* ── Pricing grid ───────────────────────────────────────── */}
@@ -105,7 +102,7 @@ export default function SubscriptionPage() {
               <div className={s.divider} />
 
               {/* Features */}
-              <ul className={s.features} role="list">
+              <ul className={s.features}>
                 {plan.features.map((feat) => (
                   <li key={feat} className={s.feature}>
                     <span className={s.featureCheck} aria-hidden>

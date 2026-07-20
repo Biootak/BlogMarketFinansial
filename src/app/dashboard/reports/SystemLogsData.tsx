@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
 import { getSystemLogs } from '@/actions/reportActions';
-import { AlertCircle, Info, AlertTriangle, Terminal, ChevronRight, ChevronLeft, Filter } from 'lucide-react';
+import { ReportsSkeleton } from '@/components/Skeletons';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -10,10 +10,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
-import { ReportsSkeleton } from '@/components/Skeletons';
 import { cn } from '@/lib/utils';
+import {
+  AlertCircle,
+  AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  Info,
+  Terminal,
+} from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface SystemLog {
   id: string;
@@ -132,16 +140,24 @@ export default function SystemLogsData() {
                 'border-gray-200 hover:border-[rgb(var(--c-primary-300))]',
                 'bg-white/80 backdrop-blur-sm',
                 'focus:ring-2 focus:ring-[rgb(var(--c-primary-200))]',
-                'transition-all duration-200'
+                'transition-all duration-200',
               )}
             >
               <SelectValue placeholder="انتخاب سطح لاگ" />
             </SelectTrigger>
             <SelectContent className="rounded-xl border-gray-200 shadow-xl">
-              <SelectItem value="all" className="rounded-lg">همه</SelectItem>
-              <SelectItem value="INFO" className="rounded-lg">اطلاعات</SelectItem>
-              <SelectItem value="WARNING" className="rounded-lg">هشدار</SelectItem>
-              <SelectItem value="ERROR" className="rounded-lg">خطا</SelectItem>
+              <SelectItem value="all" className="rounded-lg">
+                همه
+              </SelectItem>
+              <SelectItem value="INFO" className="rounded-lg">
+                اطلاعات
+              </SelectItem>
+              <SelectItem value="WARNING" className="rounded-lg">
+                هشدار
+              </SelectItem>
+              <SelectItem value="ERROR" className="rounded-lg">
+                خطا
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -149,7 +165,13 @@ export default function SystemLogsData() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <div className={cn('p-4 rounded-xl', 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20', 'border border-blue-100 dark:border-blue-800/40')}>
+        <div
+          className={cn(
+            'p-4 rounded-xl',
+            'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20',
+            'border border-blue-100 dark:border-blue-800/40',
+          )}
+        >
           <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-1">
             <Info className="w-4 h-4" />
             <span className="text-xs font-medium">اطلاعات</span>
@@ -158,7 +180,13 @@ export default function SystemLogsData() {
             {logs.filter((l) => l.level === 'INFO').length.toLocaleString('fa-IR')}
           </p>
         </div>
-        <div className={cn('p-4 rounded-xl', 'bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20', 'border border-amber-100 dark:border-amber-800/40')}>
+        <div
+          className={cn(
+            'p-4 rounded-xl',
+            'bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20',
+            'border border-amber-100 dark:border-amber-800/40',
+          )}
+        >
           <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 mb-1">
             <AlertTriangle className="w-4 h-4" />
             <span className="text-xs font-medium">هشدار</span>
@@ -167,7 +195,13 @@ export default function SystemLogsData() {
             {logs.filter((l) => l.level === 'WARNING').length.toLocaleString('fa-IR')}
           </p>
         </div>
-        <div className={cn('p-4 rounded-xl', 'bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20', 'border border-red-100 dark:border-red-800/40')}>
+        <div
+          className={cn(
+            'p-4 rounded-xl',
+            'bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20',
+            'border border-red-100 dark:border-red-800/40',
+          )}
+        >
           <div className="flex items-center gap-2 text-red-600 dark:text-red-400 mb-1">
             <AlertCircle className="w-4 h-4" />
             <span className="text-xs font-medium">خطا</span>
@@ -184,10 +218,18 @@ export default function SystemLogsData() {
           <table className="w-full">
             <thead>
               <tr className="bg-gradient-to-l from-gray-50 to-gray-100/80 dark:from-white/5 dark:to-transparent border-b border-gray-200 dark:border-white/10">
-                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-28">سطح</th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">پیام</th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-32">منبع</th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-44">زمان</th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-28">
+                  سطح
+                </th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                  پیام
+                </th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-32">
+                  منبع
+                </th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-44">
+                  زمان
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -206,23 +248,45 @@ export default function SystemLogsData() {
                 logs.map((log) => {
                   const config = getLevelConfig(log.level);
                   return (
-                    <tr key={log.id} className={cn('group transition-colors duration-200', 'hover:bg-gradient-to-l hover:from-gray-50/80 hover:to-transparent')}>
+                    <tr
+                      key={log.id}
+                      className={cn(
+                        'group transition-colors duration-200',
+                        'hover:bg-gradient-to-l hover:from-gray-50/80 hover:to-transparent',
+                      )}
+                    >
                       <td className="px-6 py-4">
-                        <span className={cn('inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border', config.bg, config.text, config.border)}>
+                        <span
+                          className={cn(
+                            'inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border',
+                            config.bg,
+                            config.text,
+                            config.border,
+                          )}
+                        >
                           {config.icon}
                           {config.label}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{log.message}</p>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
+                          {log.message}
+                        </p>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={cn('inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium', 'bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300')}>
+                        <span
+                          className={cn(
+                            'inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium',
+                            'bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300',
+                          )}
+                        >
                           {log.source}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-gray-500 dark:text-gray-400">{new Date(log.timestamp).toLocaleString('fa-IR')}</span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                          {new Date(log.timestamp).toLocaleString('fa-IR')}
+                        </span>
                       </td>
                     </tr>
                   );
@@ -235,9 +299,21 @@ export default function SystemLogsData() {
 
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className={cn('px-4 py-2 rounded-lg', 'bg-gray-100/80 dark:bg-white/10 text-gray-600 dark:text-gray-300 text-sm')}>
-          نمایش <span className="font-semibold text-gray-900 dark:text-white">{Math.min(page * limit, total).toLocaleString('fa-IR')}</span> از{' '}
-          <span className="font-semibold text-gray-900 dark:text-white">{total.toLocaleString('fa-IR')}</span> مورد
+        <div
+          className={cn(
+            'px-4 py-2 rounded-lg',
+            'bg-gray-100/80 dark:bg-white/10 text-gray-600 dark:text-gray-300 text-sm',
+          )}
+        >
+          نمایش{' '}
+          <span className="font-semibold text-gray-900 dark:text-white">
+            {Math.min(page * limit, total).toLocaleString('fa-IR')}
+          </span>{' '}
+          از{' '}
+          <span className="font-semibold text-gray-900 dark:text-white">
+            {total.toLocaleString('fa-IR')}
+          </span>{' '}
+          مورد
         </div>
 
         <div className="flex items-center gap-2">
@@ -246,7 +322,13 @@ export default function SystemLogsData() {
             size="sm"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className={cn('rounded-lg px-4 py-2', 'border-gray-200 hover:border-[rgb(var(--c-primary-300))]', 'hover:bg-[rgb(var(--c-primary-50))]', 'transition-all duration-200', 'disabled:opacity-50')}
+            className={cn(
+              'rounded-lg px-4 py-2',
+              'border-gray-200 hover:border-[rgb(var(--c-primary-300))]',
+              'hover:bg-[rgb(var(--c-primary-50))]',
+              'transition-all duration-200',
+              'disabled:opacity-50',
+            )}
           >
             <ChevronRight className="w-4 h-4 ml-1" />
             قبلی
@@ -264,7 +346,13 @@ export default function SystemLogsData() {
                   key={pageNum}
                   type="button"
                   onClick={() => setPage(pageNum)}
-                  className={cn('w-9 h-9 rounded-lg text-sm font-medium', 'transition-all duration-200', page === pageNum ? 'bg-gradient-to-l from-[rgb(var(--c-primary-600))] to-[rgb(var(--c-primary-700))] text-white shadow-md' : 'hover:bg-gray-100 text-gray-600')}
+                  className={cn(
+                    'w-9 h-9 rounded-lg text-sm font-medium',
+                    'transition-all duration-200',
+                    page === pageNum
+                      ? 'bg-gradient-to-l from-[rgb(var(--c-primary-600))] to-[rgb(var(--c-primary-700))] text-white shadow-md'
+                      : 'hover:bg-gray-100 text-gray-600',
+                  )}
                 >
                   {pageNum.toLocaleString('fa-IR')}
                 </button>
@@ -277,7 +365,13 @@ export default function SystemLogsData() {
             size="sm"
             onClick={() => setPage((p) => p + 1)}
             disabled={page * limit >= total}
-            className={cn('rounded-lg px-4 py-2', 'border-gray-200 hover:border-[rgb(var(--c-primary-300))]', 'hover:bg-[rgb(var(--c-primary-50))]', 'transition-all duration-200', 'disabled:opacity-50')}
+            className={cn(
+              'rounded-lg px-4 py-2',
+              'border-gray-200 hover:border-[rgb(var(--c-primary-300))]',
+              'hover:bg-[rgb(var(--c-primary-50))]',
+              'transition-all duration-200',
+              'disabled:opacity-50',
+            )}
           >
             بعدی
             <ChevronLeft className="w-4 h-4 mr-1" />

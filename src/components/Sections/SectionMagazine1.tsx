@@ -88,7 +88,7 @@ export default async function SectionMagazine1({ className = '' }: SectionMagazi
   }
 
   const categorizedPosts: Record<string, PostWithRelations[]> = {};
-  categorizedPosts['همه'] = allPosts;
+  categorizedPosts.همه = allPosts;
   for (let i = 1; i < categoryNames.length; i++) {
     const name = categoryNames[i];
     const list = (postsResults[i] as PostWithRelations[] | undefined) ?? [];

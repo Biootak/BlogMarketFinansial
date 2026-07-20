@@ -160,10 +160,7 @@ export function useTransform<TIn, TOut>(
   return out;
 }
 
-export function useMotionTemplate(
-  strings: TemplateStringsArray,
-  ..._values: unknown[]
-): string {
+export function useMotionTemplate(strings: TemplateStringsArray, ..._values: unknown[]): string {
   // CSS string template — values aren't tracked live; consumers can update style
   // by re-rendering with new values.
   return strings.join(' ');
@@ -194,7 +191,13 @@ export function AnimatePresence({
 /*  MotionConfig — no-op passthrough                                          */
 /* -------------------------------------------------------------------------- */
 
-export function MotionConfig({ children }: { children: React.ReactNode; transition?: Transition; reducedMotion?: 'never' | 'always' | 'user' }) {
+export function MotionConfig({
+  children,
+}: {
+  children: React.ReactNode;
+  transition?: Transition;
+  reducedMotion?: 'never' | 'always' | 'user';
+}) {
   return <>{children}</>;
 }
 
@@ -255,23 +258,32 @@ function buildStyle(props: Record<string, unknown>): React.CSSProperties | undef
   const extra: React.CSSProperties = {};
 
   // Map framer-motion shorthand style props → CSS
-  const x = (props.x as { get?: () => unknown } | number | string | undefined);
-  const y = (props.y as { get?: () => unknown } | number | string | undefined);
-  const rotateX = (props.rotateX as { get?: () => unknown } | number | string | undefined);
-  const rotateY = (props.rotateY as { get?: () => unknown } | number | string | undefined);
-  const scale = (props.scale as { get?: () => unknown } | number | string | undefined);
+  const x = props.x as { get?: () => unknown } | number | string | undefined;
+  const y = props.y as { get?: () => unknown } | number | string | undefined;
+  const rotateX = props.rotateX as { get?: () => unknown } | number | string | undefined;
+  const rotateY = props.rotateY as { get?: () => unknown } | number | string | undefined;
+  const scale = props.scale as { get?: () => unknown } | number | string | undefined;
   const transformPerspective = props.transformPerspective as number | string | undefined;
   const transformStyle = props.transformStyle as string | undefined;
 
   const fmt = (v: unknown): string | undefined => {
     if (v == null) return undefined;
-    if (typeof v === 'object' && v && 'get' in v && typeof (v as { get: () => unknown }).get === 'function') {
+    if (
+      typeof v === 'object' &&
+      v &&
+      'get' in v &&
+      typeof (v as { get: () => unknown }).get === 'function'
+    ) {
       return String((v as { get: () => unknown }).get());
     }
     return String(v);
   };
 
-  const tx = fmt(x), ty = fmt(y), rx = fmt(rotateX), ry = fmt(rotateY), sc = fmt(scale);
+  const tx = fmt(x);
+  const ty = fmt(y);
+  const rx = fmt(rotateX);
+  const ry = fmt(rotateY);
+  const sc = fmt(scale);
   const transforms: string[] = [];
   if (tx) transforms.push(`translateX(${tx}px)`);
   if (ty) transforms.push(`translateY(${ty}px)`);
@@ -282,7 +294,9 @@ function buildStyle(props: Record<string, unknown>): React.CSSProperties | undef
     extra.transform = transforms.join(' ');
   }
   if (transformPerspective) {
-    const pers = String(transformPerspective).endsWith('px') ? String(transformPerspective) : `${transformPerspective}px`;
+    const pers = String(transformPerspective).endsWith('px')
+      ? String(transformPerspective)
+      : `${transformPerspective}px`;
     extra.perspective = pers;
   }
   if (transformStyle) {
@@ -294,34 +308,75 @@ function buildStyle(props: Record<string, unknown>): React.CSSProperties | undef
 }
 
 function makeMotionComponent(tag: string) {
-  const Component = React.forwardRef<HTMLElement, Record<string, unknown>>(function MotionComponent(
-    props,
-    ref,
-  ) {
-    const cleaned = scrubMotionProps(props);
-    return React.createElement(tag, {
-      ref,
-      ...cleaned,
-      className: buildClassName(props),
-      style: buildStyle(props),
-    } as Dict);
-  });
+  const Component = React.forwardRef<HTMLElement, Record<string, unknown>>(
+    function MotionComponent(props, ref) {
+      const cleaned = scrubMotionProps(props);
+      return React.createElement(tag, {
+        ref,
+        ...cleaned,
+        className: buildClassName(props),
+        style: buildStyle(props),
+      } as Dict);
+    },
+  );
   Component.displayName = `motion.${tag}`;
   return Component;
 }
 
 const TAGS = [
-  'div', 'span', 'section', 'article', 'header', 'footer', 'nav', 'main', 'aside',
-  'ul', 'ol', 'li', 'a', 'button', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-  'form', 'input', 'textarea', 'select', 'option', 'label', 'img', 'figure',
-  'table', 'thead', 'tbody', 'tr', 'td', 'th',
-  'svg', 'g', 'path', 'rect', 'circle', 'line', 'polyline', 'polygon', 'text',
+  'div',
+  'span',
+  'section',
+  'article',
+  'header',
+  'footer',
+  'nav',
+  'main',
+  'aside',
+  'ul',
+  'ol',
+  'li',
+  'a',
+  'button',
+  'p',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'form',
+  'input',
+  'textarea',
+  'select',
+  'option',
+  'label',
+  'img',
+  'figure',
+  'table',
+  'thead',
+  'tbody',
+  'tr',
+  'td',
+  'th',
+  'svg',
+  'g',
+  'path',
+  'rect',
+  'circle',
+  'line',
+  'polyline',
+  'polygon',
+  'text',
 ];
 
-export const motion = TAGS.reduce<Record<string, ReturnType<typeof makeMotionComponent>>>((acc, tag) => {
-  acc[tag] = makeMotionComponent(tag);
-  return acc;
-}, {});
+export const motion = TAGS.reduce<Record<string, ReturnType<typeof makeMotionComponent>>>(
+  (acc, tag) => {
+    acc[tag] = makeMotionComponent(tag);
+    return acc;
+  },
+  {},
+);
 
 /* -------------------------------------------------------------------------- */
 /*  Default export for `import motion from '@/lib/motion-shim'`                    */

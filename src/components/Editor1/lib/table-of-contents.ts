@@ -94,7 +94,7 @@ function flatten(toc: ToCObject, depth: number): TocItem[] {
   return items;
 }
 
-export function getToCItems(editor: EditorInstance, depth: number = 3) {
+export function getToCItems(editor: EditorInstance, depth = 3) {
   const headings: any[] = [];
 
   editor.state.doc.descendants((node, pos) => {

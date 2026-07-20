@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import Avatar from '@/components/Avatar/Avatar';
 import type { PostWithRelations } from '@/types/types';
 import Link from 'next/link';
-import Avatar from '@/components/Avatar/Avatar';
+import { useEffect, useState } from 'react';
 
 export interface PostCardMetaProps {
   className?: string;
@@ -54,8 +54,12 @@ const PostCardMeta: React.FC<PostCardMetaProps> = ({
           <span className="block font-medium">{author.name}</span>
         </Link>
       )}
-      {author && formattedDate && <span className="text-neutral-500 dark:text-neutral-400 mx-[6px]">·</span>}
-      <span className="font-normal text-neutral-500 dark:text-neutral-400 font-vazirmatn">{formattedDate}</span>
+      {author && formattedDate && (
+        <span className="text-neutral-500 dark:text-neutral-400 mx-[6px]">·</span>
+      )}
+      <span className="font-normal text-neutral-500 dark:text-neutral-400 font-vazirmatn">
+        {formattedDate}
+      </span>
     </div>
   );
 };

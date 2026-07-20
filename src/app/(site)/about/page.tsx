@@ -1,8 +1,8 @@
-﻿import type { Metadata } from 'next';
-import { Suspense } from 'react';
+﻿import { getAuthorsHubData } from '@/actions/getAuthorsHubData';
 import { getPublishedPostCount } from '@/actions/getLatestPosts';
-import { getAuthorsHubData } from '@/actions/getAuthorsHubData';
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
+import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import AboutPageClient from './AboutPageClient';
 
 export const metadata: Metadata = {

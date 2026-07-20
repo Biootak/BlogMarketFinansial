@@ -21,35 +21,35 @@
  */
 
 import {
-  useRef,
-  useEffect,
-  useCallback,
-  useState,
-  type RefObject,
-} from 'react';
-import Link from 'next/link';
-import {
-  Globe,
-  CreditCard,
-  GraduationCap,
-  Wallet,
-  ShoppingBag,
-  Sparkles,
   ArrowLeft,
   CheckCircle2,
   Clock,
-  Phone,
-  TrendingUp,
-  TrendingDown,
+  CreditCard,
+  Globe,
+  GraduationCap,
   type LucideIcon,
+  Phone,
+  ShoppingBag,
+  Sparkles,
+  TrendingDown,
+  TrendingUp,
+  Wallet,
 } from 'lucide-react';
+import Link from 'next/link';
+import { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import s from './OnlinePaymentHero.module.css';
 
 /* ─────────────────────────────────────────────────────────────────────────
    TYPES & DATA
    ───────────────────────────────────────────────────────────────────────── */
 
-type AccentKey = 'accentBrand' | 'accentViolet' | 'accentEmerald' | 'accentAmber' | 'accentRose' | 'accentSlate';
+type AccentKey =
+  | 'accentBrand'
+  | 'accentViolet'
+  | 'accentEmerald'
+  | 'accentAmber'
+  | 'accentRose'
+  | 'accentSlate';
 
 interface Service {
   icon: LucideIcon;
@@ -217,11 +217,7 @@ function ServiceCard({
   return (
     <li
       ref={ref}
-      className={[
-        s.serviceCard,
-        s[service.accentKey],
-        visible ? s.revealed : '',
-      ].join(' ')}
+      className={[s.serviceCard, s[service.accentKey], visible ? s.revealed : ''].join(' ')}
       style={{ transitionDelay: `${index * 70}ms` }}
     >
       <div className={s.serviceIconWrap}>
@@ -315,8 +311,8 @@ export default function OnlinePaymentLanding({ onScrollToContact }: OnlinePaymen
 
             {/* Sub */}
             <p className={s.heroSub}>
-              از پی‌پال تا حواله بانکی، از شهریه دانشگاه تا نقد درآمد فریلنسری —
-              همه خدمات پرداخت بین‌المللی در یک جا با بهترین نرخ.
+              از پی‌پال تا حواله بانکی، از شهریه دانشگاه تا نقد درآمد فریلنسری — همه خدمات پرداخت
+              بین‌المللی در یک جا با بهترین نرخ.
             </p>
 
             {/* Trust pills */}
@@ -335,11 +331,7 @@ export default function OnlinePaymentLanding({ onScrollToContact }: OnlinePaymen
 
             {/* CTAs */}
             <div className={s.heroCtas}>
-              <button
-                type="button"
-                onClick={scrollToContact}
-                className={s.ctaMain}
-              >
+              <button type="button" onClick={scrollToContact} className={s.ctaMain}>
                 شروع کنید
                 <ArrowLeft size={16} strokeWidth={2} style={{ transform: 'scaleX(-1)' }} />
               </button>
@@ -372,7 +364,9 @@ export default function OnlinePaymentLanding({ onScrollToContact }: OnlinePaymen
                 <div className={s.cardDivider} />
                 <div className={s.methodRow}>
                   {['PP', 'MC', 'VI', 'BT'].map((m) => (
-                    <div key={m} className={s.methodChip}>{m}</div>
+                    <div key={m} className={s.methodChip}>
+                      {m}
+                    </div>
                   ))}
                 </div>
               </div>
@@ -397,9 +391,17 @@ export default function OnlinePaymentLanding({ onScrollToContact }: OnlinePaymen
                     <span className={s.rateName}>{r.name}</span>
                     <span className={`${s.rateNum} ${r.trend === 'up' ? s.rateUp : s.rateDown}`}>
                       {r.trend === 'up' ? (
-                        <TrendingUp size={10} strokeWidth={2} style={{ display: 'inline', marginInlineEnd: 3 }} />
+                        <TrendingUp
+                          size={10}
+                          strokeWidth={2}
+                          style={{ display: 'inline', marginInlineEnd: 3 }}
+                        />
                       ) : (
-                        <TrendingDown size={10} strokeWidth={2} style={{ display: 'inline', marginInlineEnd: 3 }} />
+                        <TrendingDown
+                          size={10}
+                          strokeWidth={2}
+                          style={{ display: 'inline', marginInlineEnd: 3 }}
+                        />
                       )}
                       {r.val}
                     </span>
@@ -436,25 +438,27 @@ export default function OnlinePaymentLanding({ onScrollToContact }: OnlinePaymen
             { num: '۹۸٪', label: 'رضایت مشتریان' },
             { num: '+۱۲', label: 'روش پرداخت' },
             { num: '۲۴/۷', label: 'پشتیبانی آنلاین' },
-          ].map((stat, i) => (
-            <div
-              key={stat.label}
-              className={s.trustStat}
-              style={{
-                opacity: trustVisible ? 1 : 0,
-                transform: trustVisible ? 'none' : 'translateY(12px)',
-                transition: `opacity 0.4s 0.1s, transform 0.4s ${i * 80}ms`,
-              }}
-            >
-              <span className={s.trustNum}>{stat.num}</span>
-              <span className={s.trustLabel}>{stat.label}</span>
-            </div>
-          )).reduce<React.ReactNode[]>((acc, el, i, arr) => {
-            acc.push(el);
-            if (i < arr.length - 1)
-              acc.push(<div key={`d${i}`} className={s.trustDivider} aria-hidden />);
-            return acc;
-          }, [])}
+          ]
+            .map((stat, i) => (
+              <div
+                key={stat.label}
+                className={s.trustStat}
+                style={{
+                  opacity: trustVisible ? 1 : 0,
+                  transform: trustVisible ? 'none' : 'translateY(12px)',
+                  transition: `opacity 0.4s 0.1s, transform 0.4s ${i * 80}ms`,
+                }}
+              >
+                <span className={s.trustNum}>{stat.num}</span>
+                <span className={s.trustLabel}>{stat.label}</span>
+              </div>
+            ))
+            .reduce<React.ReactNode[]>((acc, el, i, arr) => {
+              acc.push(el);
+              if (i < arr.length - 1)
+                acc.push(<div key={`d${i}`} className={s.trustDivider} aria-hidden />);
+              return acc;
+            }, [])}
         </div>
       </div>
 
@@ -468,7 +472,8 @@ export default function OnlinePaymentLanding({ onScrollToContact }: OnlinePaymen
             همه نیازهای پرداخت بین‌المللی
           </h2>
           <p className={s.sectionBody}>
-            از حواله ارزی تا خرید نرم‌افزار، هر نوع پرداخت خارجی را با بهترین نرخ و سریع‌ترین زمان انجام می‌دهیم
+            از حواله ارزی تا خرید نرم‌افزار، هر نوع پرداخت خارجی را با بهترین نرخ و سریع‌ترین زمان
+            انجام می‌دهیم
           </p>
         </div>
 
@@ -488,9 +493,7 @@ export default function OnlinePaymentLanding({ onScrollToContact }: OnlinePaymen
           <h2 id="how-title" className={s.sectionTitle}>
             در ۳ مرحله ساده
           </h2>
-          <p className={s.sectionBody}>
-            پرداخت بین‌المللی دیگر پیچیده نیست
-          </p>
+          <p className={s.sectionBody}>پرداخت بین‌المللی دیگر پیچیده نیست</p>
         </div>
 
         <div className={s.stepsRow}>

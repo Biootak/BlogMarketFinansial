@@ -28,11 +28,20 @@ export async function createSuperAdmin(formData: FormData) {
     // بررسی محیط اجرا
     if (process.env.NODE_ENV === 'production') {
       // بررسی IP در محیط تولید
+      // از rightmost entry XFF استفاده می‌کنیم (توسط proxy قابل اعتماد اضافه می‌شود)
+      // تا از IP spoofing جلوگیری شود
       const headersList = await headers();
-      const clientIp = headersList.get('x-forwarded-for') || 'unknown';
-      const allowedIps = process.env.ALLOWED_SETUP_IPS?.split(',') || [];
+      const xff = headersList.get('x-forwarded-for');
+      const clientIp = xff
+        ? (xff
+            .split(',')
+            .map((p) => p.trim())
+            .filter(Boolean)
+            .pop() ?? 'unknown')
+        : (headersList.get('x-real-ip')?.trim() ?? 'unknown');
+      const allowedIps = process.env.ALLOWED_SETUP_IPS?.split(',').map((ip) => ip.trim()) || [];
 
-      if (!allowedIps.includes(clientIp)) {
+      if (allowedIps.length > 0 && !allowedIps.includes(clientIp)) {
         return {
           success: false,
           message: 'شما مجوز دسترسی به این بخش را ندارید',
@@ -98,16 +107,16 @@ export async function createSuperAdmin(formData: FormData) {
       { isolationLevel: 'Serializable' },
     );
 
-    if (txResult.existing && txResult.user === null) {
+    if (txResult.existing || txResult.user === null) {
       return {
         success: false,
         message: 'تنظیمات اولیه قبلاً انجام شده است. لطفاً وارد سیستم شوید',
         errors: {},
-        existingAdmin: txResult.user,
+        existingAdmin: null,
       };
     }
 
-    const user = txResult.user!;
+    const user = txResult.user;
 
     // ثبت لاگ ایجاد مالک (بدون PII plaintext)
     // No email, no user.id, no phone — فقط timestamp + masked شناسه‌ی داخلی.

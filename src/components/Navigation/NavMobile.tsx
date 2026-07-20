@@ -13,16 +13,16 @@
  *    no `useReducedMotion` subscription, no `useEffect`-driven setState.
  */
 
-import type React from 'react';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Disclosure } from '@/app/headlessui';
 import ButtonClose from '@/components/ButtonClose/ButtonClose';
 import Logo from '@/components/Logo/Logo';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
-import { Disclosure } from '@/app/headlessui';
 import ClientSocialLinks from '@/components/SocialsList/ClientSocialLinks';
 import SwitchDarkMode from '@/components/SwitchDarkMode/SwitchDarkMode';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import type React from 'react';
+import { useState } from 'react';
 
 export interface NavMobileProps {
   onClickClose?: () => void;
@@ -159,13 +159,8 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
               </Disclosure.Button>
 
               {open && (
-                <div
-                  key="content"
-                  className="anim-accordion-in"
-                >
-                  <ul
-                    className="ps-4 pe-2 py-2 space-y-1 stagger-children"
-                  >
+                <div key="content" className="anim-accordion-in">
+                  <ul className="ps-4 pe-2 py-2 space-y-1 stagger-children">
                     {item.subItems?.map((subItem: { id: string; href: string; name: string }) => (
                       <li key={subItem.id}>
                         <Link
@@ -228,9 +223,7 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
       aria-modal="true"
       aria-label="منوی موبایل"
     >
-      <div
-        className="py-6 px-5 border-b border-[rgb(var(--c-border-subtle))] stagger-children"
-      >
+      <div className="py-6 px-5 border-b border-[rgb(var(--c-border-subtle))] stagger-children">
         <div className="flex items-center justify-between">
           <Logo logoUrl={logoUrl || undefined} />
           <ButtonClose onClick={onClickClose} />
@@ -245,10 +238,7 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
           <ClientSocialLinks className="gap-2" itemClass="!w-9 !h-9" iconSize={18} />
         </div>
 
-        <form
-          onSubmit={handleSearch}
-          className="mt-5 text-[rgb(var(--c-foreground))]"
-        >
+        <form onSubmit={handleSearch} className="mt-5 text-[rgb(var(--c-foreground))]">
           <label htmlFor="bmf-mobile-search" className="sr-only">
             جستجو
           </label>
@@ -279,13 +269,9 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
         </form>
       </div>
 
-      <ul
-        className="flex flex-col py-4 px-2 space-y-0.5 stagger-children"
-      >
+      <ul className="flex flex-col py-4 px-2 space-y-0.5 stagger-children">
         {NAVBAR_LINKS.map((item) => (
-          <li key={item.id}>
-            {renderItem(item)}
-          </li>
+          <li key={item.id}>{renderItem(item)}</li>
         ))}
       </ul>
     </div>

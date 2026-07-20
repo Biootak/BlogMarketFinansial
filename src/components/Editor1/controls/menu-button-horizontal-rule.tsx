@@ -4,10 +4,10 @@
  * قبلاً فقط در slash menu و فلوتینگ منو در دسترس بود.
  */
 
-import React, { memo, useCallback } from 'react';
-import { Toolbar } from '../../ui/toolbar';
-import { Icon } from '../../ui/icon';
 import type { Editor } from '@tiptap/core';
+import React, { memo, useCallback } from 'react';
+import { Icon } from '../../ui/icon';
+import { Toolbar } from '../../ui/toolbar';
 
 interface MenuButtonHorizontalRuleProps {
   editor: Editor;
@@ -23,11 +23,7 @@ const MenuButtonHorizontalRule = ({ editor }: MenuButtonHorizontalRuleProps) => 
   );
 
   return (
-    <Toolbar.Button
-      tooltip="خط افقی"
-      tooltipShortcut={['Mod', 'Shift', '-']}
-      onClick={onClick}
-    >
+    <Toolbar.Button tooltip="خط افقی" tooltipShortcut={['Mod', 'Shift', '-']} onClick={onClick}>
       <Icon name="horizontal-rule" />
     </Toolbar.Button>
   );

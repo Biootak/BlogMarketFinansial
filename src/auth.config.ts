@@ -1,7 +1,7 @@
 import type { NextAuthConfig } from 'next-auth';
 
-import Google from 'next-auth/providers/google';
 import Github from 'next-auth/providers/github';
+import Google from 'next-auth/providers/google';
 
 export default {
   trustHost: true,

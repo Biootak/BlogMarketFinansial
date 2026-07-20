@@ -177,10 +177,7 @@ export default function PostsSpotlight({ popularPosts, recentDrafts }: PostsSpot
           </div>
         </div>
 
-        <Link
-          href="/dashboard/posts"
-          className="dash-link text-sm px-2 py-1"
-        >
+        <Link href="/dashboard/posts" className="dash-link text-sm px-2 py-1">
           <span>همه پست‌ها</span>
           <HiOutlineArrowLeft className="w-4 h-4" />
         </Link>

@@ -16,40 +16,24 @@ export default function ExchangeRatesLoading() {
       aria-label="در حال بارگذاری نرخ‌ها"
     >
       {/* Header skeleton */}
-      <div
-        className="flex flex-col"
-        style={{ gap: 'var(--ds-space-2)' }}
-      >
+      <div className="flex flex-col" style={{ gap: 'var(--ds-space-2)' }}>
         <Skeleton className="h-3 w-16" />
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-4 w-96 max-w-full" />
       </div>
 
       {/* StatCards skeleton */}
-      <div
-        className="grid grid-cols-1 sm:grid-cols-3"
-        style={{ gap: 'var(--ds-space-4)' }}
-      >
+      <div className="grid grid-cols-1 sm:grid-cols-3" style={{ gap: 'var(--ds-space-4)' }}>
         {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton
-            key={i}
-            className="h-20"
-            style={{ borderRadius: 'var(--ds-radius-lg)' }}
-          />
+          <Skeleton key={i} className="h-20" style={{ borderRadius: 'var(--ds-radius-lg)' }} />
         ))}
       </div>
 
       {/* Toolbar skeleton */}
-      <Skeleton
-        className="h-12"
-        style={{ borderRadius: 'var(--ds-radius-md)' }}
-      />
+      <Skeleton className="h-12" style={{ borderRadius: 'var(--ds-radius-md)' }} />
 
       {/* Table skeleton */}
-      <Skeleton
-        className="h-96"
-        style={{ borderRadius: 'var(--ds-radius-lg)' }}
-      />
+      <Skeleton className="h-96" style={{ borderRadius: 'var(--ds-radius-lg)' }} />
     </main>
   );
 }

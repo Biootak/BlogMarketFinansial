@@ -7,7 +7,7 @@ import type { ActionResult, SystemLog } from './types';
 export async function getSystemLogs(
   page = 1,
   limit = 10,
-  level?: string
+  level?: string,
 ): Promise<ActionResult<{ logs: SystemLog[]; total: number }>> {
   try {
     await checkReportAccess();

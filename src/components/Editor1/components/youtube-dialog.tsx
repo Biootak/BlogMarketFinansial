@@ -5,8 +5,7 @@
 
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import type { Editor } from '@tiptap/core';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -14,9 +13,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import type { Editor } from '@tiptap/core';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Icon } from '../../ui/icon';
 
 interface YoutubeDialogProps {
@@ -146,7 +147,11 @@ const YoutubeDialog: React.FC<YoutubeDialogProps> = ({
               />
             </div>
             {error && (
-              <p id="yt-url-err" className="text-xs text-red-500 flex items-center gap-1" role="alert">
+              <p
+                id="yt-url-err"
+                className="text-xs text-red-500 flex items-center gap-1"
+                role="alert"
+              >
                 <Icon name="alert-circle" size={12} aria-hidden />
                 {error}
               </p>

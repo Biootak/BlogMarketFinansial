@@ -26,7 +26,7 @@
   border-radius: 10px;
   background: var(--ds-surface);
   color: var(--ds-text-primary);
-  font-family: 'ui-monospace', 'SFMono-Regular', monospace;
+  font-family: "ui-monospace", "SFMono-Regular", monospace;
   font-size: 0.875rem;
   letter-spacing: 0.04em;
   min-block-size: 44px;
@@ -55,18 +55,17 @@
   color: var(--ds-text-inverse, white);
   cursor: pointer;
   flex-shrink: 0;
-  transition:
-    background 180ms,
-    transform 120ms cubic-bezier(0.34,1.56,0.64,1),
-    box-shadow 180ms;
-  box-shadow: 0 2px 8px -2px oklch(55% 0.16 235 / 0.30);
+  transition: background 180ms, transform 120ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 180ms;
+  box-shadow: 0 2px 8px -2px oklch(55% 0.16 235 / 0.3);
 }
 .searchBtn:hover:not(:disabled) {
   background: var(--ds-brand-700, var(--ds-brand-600));
   transform: translateY(-1px);
   box-shadow: 0 4px 14px -3px oklch(55% 0.16 235 / 0.38);
 }
-.searchBtn:active { transform: scale(0.95); }
+.searchBtn:active {
+  transform: scale(0.95);
+}
 .searchBtn:disabled {
   background: var(--ds-text-muted);
   box-shadow: none;
@@ -80,22 +79,30 @@
 .spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid oklch(100% 0 0 / 0.30);
+  border: 2px solid oklch(100% 0 0 / 0.3);
   border-top-color: var(--ds-text-inverse, white);
   border-radius: 50%;
   animation: spin 0.65s linear infinite;
 }
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ─── Result ─────────────────────────────────────────────────────────────── */
 .resultWrap {
-  animation: fadeUp 0.28s cubic-bezier(0.22,1,0.36,1) both;
+  animation: fadeUp 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .resultCard {
@@ -117,17 +124,17 @@
   margin: 16px 16px 0;
 }
 /* Status badge — amber / blue / emerald / rose, token-compatible */
-.statusPending   {
+.statusPending {
   background: var(--ds-surface-elevated);
   color: var(--ds-accent-amber, oklch(72% 0.15 75));
   border: 1px solid var(--ds-accent-amber, oklch(72% 0.15 75));
 }
-.statusProgress  {
+.statusProgress {
   background: var(--ds-surface-elevated);
   color: var(--ds-accent-blue, oklch(55% 0.17 240));
   border: 1px solid var(--ds-accent-blue, oklch(55% 0.17 240));
 }
-.statusDone      {
+.statusDone {
   background: var(--ds-surface-elevated);
   color: var(--ds-accent-emerald, oklch(60% 0.16 155));
   border: 1px solid var(--ds-accent-emerald, oklch(60% 0.16 155));

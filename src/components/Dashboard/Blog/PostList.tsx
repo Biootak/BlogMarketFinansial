@@ -1,30 +1,36 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { motion, AnimatePresence } from '@/lib/motion-shim';
-import { cn } from '@/lib/utils';
-import { deletePostAndInvalidate, duplicatePost, listAllPosts, updatePost, updatePostStatusAndInvalidate } from '@/actions/postActions';
-import type { ActionResult, PostWithRelations, PostStatus } from '@/types/types';
-import LoadingMore from '@/components/LoadingMore';
-import CardList from '../DashboardPage/CardList';
-import { toast } from '@/components/ui/use-toast';
-import { ConfirmDialog } from '@/components/Dashboard/primitives';
-import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import {
-  HiOutlineTrash,
-  HiOutlineDocumentText,
-  HiCursorArrowRipple,
-  HiXMark,
-  HiCheck,
-  HiOutlineSparkles,
-  HiOutlineEye,
-  HiOutlineClock,
-  HiOutlinePlus,
-} from 'react-icons/hi2';
+  deletePostAndInvalidate,
+  duplicatePost,
+  listAllPosts,
+  updatePost,
+  updatePostStatusAndInvalidate,
+} from '@/actions/postActions';
 import PostsFloatingToolbar from '@/components/Dashboard/DashboardPage/PostsFloatingToolbar';
+import { ConfirmDialog } from '@/components/Dashboard/primitives';
 import FormattedDate from '@/components/FormattedDate';
-import Link from 'next/link';
+import LoadingMore from '@/components/LoadingMore';
+import { toast } from '@/components/ui/use-toast';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { getPostLink } from '@/lib/getPostLink';
+import { AnimatePresence, motion } from '@/lib/motion-shim';
+import { cn } from '@/lib/utils';
+import type { ActionResult, PostStatus, PostWithRelations } from '@/types/types';
+import Link from 'next/link';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  HiCheck,
+  HiCursorArrowRipple,
+  HiOutlineClock,
+  HiOutlineDocumentText,
+  HiOutlineEye,
+  HiOutlinePlus,
+  HiOutlineSparkles,
+  HiOutlineTrash,
+  HiXMark,
+} from 'react-icons/hi2';
+import CardList from '../DashboardPage/CardList';
 import type { ViewMode } from './PostsPageHeader';
 
 const itemVariants = {
@@ -133,7 +139,12 @@ export default function PostList({
     if (hasNextPage && !isLoading) {
       setIsLoading(true);
       const result: ActionResult<{ posts: PostWithRelations[]; total: number; pages: number }> =
-        await listAllPosts(page, 12, currentSearch || '', (currentFilter as 'همه' | PostStatus) || 'همه');
+        await listAllPosts(
+          page,
+          12,
+          currentSearch || '',
+          (currentFilter as 'همه' | PostStatus) || 'همه',
+        );
 
       if (result.success && result.data) {
         const newPosts = result.data.posts || [];
@@ -295,13 +306,12 @@ export default function PostList({
             variant: 'success',
           });
           return true;
-        } else {
-          toast({
-            title: 'خطا',
-            description: result.error || 'خطا در بروزرسانی وضعیت',
-            variant: 'destructive',
-          });
         }
+        toast({
+          title: 'خطا',
+          description: result.error || 'خطا در بروزرسانی وضعیت',
+          variant: 'destructive',
+        });
       } catch {
         toast({
           title: 'خطا',
@@ -321,15 +331,11 @@ export default function PostList({
         const result = await updatePost(postId, { isFeatured: !currentFeatured } as never);
         if (result.success && result.data) {
           setPosts((prev) =>
-            prev.map((p) =>
-              p.id === postId ? { ...p, isFeatured: !currentFeatured } : p,
-            ),
+            prev.map((p) => (p.id === postId ? { ...p, isFeatured: !currentFeatured } : p)),
           );
           toast({
             title: 'موفقیت',
-            description: !currentFeatured
-              ? 'پست به‌عنوان ویژه نشان شد.'
-              : 'از حالت ویژه خارج شد.',
+            description: !currentFeatured ? 'پست به‌عنوان ویژه نشان شد.' : 'از حالت ویژه خارج شد.',
             variant: 'success',
           });
           return true;
@@ -525,7 +531,8 @@ export default function PostList({
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[color:var(--at-violet)]" />
                 </span>
                 <span className="text-xs font-medium text-[color:var(--at-fg-muted)] truncate flex-1">
-                  پست فعال: <span className="font-bold text-[color:var(--at-fg)]">{activePost.title}</span>
+                  پست فعال:{' '}
+                  <span className="font-bold text-[color:var(--at-fg)]">{activePost.title}</span>
                 </span>
                 <button
                   type="button"
@@ -608,7 +615,9 @@ export default function PostList({
       {/* Single delete confirmation */}
       <ConfirmDialog
         open={!!deleteTarget}
-        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
         title="حذف پست"
         description={`آیا از حذف پست "${deleteTarget?.title}" اطمینان دارید؟ این عمل قابل بازگشت نیست.`}
         confirmLabel="حذف"
@@ -689,7 +698,14 @@ interface LayoutProps {
 }
 
 /** Magazine — اولین پست = hero بزرگ (full-width) + بقیه ۲ ستونه */
-function MagazineLayout({ posts, selectedIds, activePostId, isSelecting, onActivate, onSelect }: LayoutProps) {
+function MagazineLayout({
+  posts,
+  selectedIds,
+  activePostId,
+  isSelecting,
+  onActivate,
+  onSelect,
+}: LayoutProps) {
   if (posts.length === 0) return null;
   const [hero, ...rest] = posts;
 
@@ -740,7 +756,14 @@ function MagazineLayout({ posts, selectedIds, activePostId, isSelecting, onActiv
 }
 
 /** Grid — گرید یکدست ۳ ستونه */
-function GridLayout({ posts, selectedIds, activePostId, isSelecting, onActivate, onSelect }: LayoutProps) {
+function GridLayout({
+  posts,
+  selectedIds,
+  activePostId,
+  isSelecting,
+  onActivate,
+  onSelect,
+}: LayoutProps) {
   return (
     <motion.div
       initial="hidden"
@@ -768,7 +791,14 @@ function GridLayout({ posts, selectedIds, activePostId, isSelecting, onActivate,
 }
 
 /** List — ردیف‌های چگال با thumb + meta inline (مثل inbox) */
-function ListLayout({ posts, selectedIds, activePostId, isSelecting, onActivate, onSelect }: LayoutProps) {
+function ListLayout({
+  posts,
+  selectedIds,
+  activePostId,
+  isSelecting,
+  onActivate,
+  onSelect,
+}: LayoutProps) {
   return (
     <motion.div
       initial="hidden"
@@ -812,7 +842,12 @@ function HeroCard({ post, isActive, isSelecting, selected, onActivate, onSelect 
       let el: HTMLElement | null = target;
       while (el && el !== e.currentTarget) {
         const tag = el.tagName;
-        if (tag === 'A' || tag === 'BUTTON' || el.getAttribute('role') === 'button' || el.getAttribute('role') === 'link') {
+        if (
+          tag === 'A' ||
+          tag === 'BUTTON' ||
+          el.getAttribute('role') === 'button' ||
+          el.getAttribute('role') === 'link'
+        ) {
           return;
         }
         el = el.parentElement;
@@ -840,7 +875,9 @@ function HeroCard({ post, isActive, isSelecting, selected, onActivate, onSelect 
         'at-tile relative overflow-hidden cursor-pointer',
         'transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
         'grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-0',
-        isActive && !isSelecting && 'border-[color:var(--at-accent)] shadow-[0_0_0_1px_var(--at-accent),var(--at-shadow-hover)]',
+        isActive &&
+          !isSelecting &&
+          'border-[color:var(--at-accent)] shadow-[0_0_0_1px_var(--at-accent),var(--at-shadow-hover)]',
         isSelecting && selected && 'border-[color:var(--at-violet)]',
       )}
     >
@@ -911,13 +948,17 @@ function HeroCard({ post, isActive, isSelecting, selected, onActivate, onSelect 
               <span aria-hidden>·</span>
               <span className="inline-flex items-center gap-1">
                 <HiOutlineEye className="w-3.5 h-3.5" aria-hidden />
-                <span className="tabular-nums">{post.viewCount.toLocaleString('fa-IR')}</span> بازدید
+                <span className="tabular-nums">{post.viewCount.toLocaleString('fa-IR')}</span>{' '}
+                بازدید
               </span>
             </>
           )}
         </div>
 
-        <h2 className="text-xl lg:text-2xl font-black text-[color:var(--at-fg)] leading-snug line-clamp-3" dir="rtl">
+        <h2
+          className="text-xl lg:text-2xl font-black text-[color:var(--at-fg)] leading-snug line-clamp-3"
+          dir="rtl"
+        >
           <Link
             href={getPostLink(post.postType, post.slug)}
             className="hover:text-[color:var(--at-accent)] transition-colors"
@@ -929,7 +970,10 @@ function HeroCard({ post, isActive, isSelecting, selected, onActivate, onSelect 
         </h2>
 
         {post.excerpt && (
-          <p className="text-sm text-[color:var(--at-fg-muted)] leading-relaxed line-clamp-3" dir="rtl">
+          <p
+            className="text-sm text-[color:var(--at-fg-muted)] leading-relaxed line-clamp-3"
+            dir="rtl"
+          >
             {post.excerpt}
           </p>
         )}
@@ -946,7 +990,9 @@ function HeroCard({ post, isActive, isSelecting, selected, onActivate, onSelect 
               </span>
             ))}
             {post.tags.length > 4 && (
-              <span className="text-[11px] text-[color:var(--at-fg-subtle)]">+{post.tags.length - 4}</span>
+              <span className="text-[11px] text-[color:var(--at-fg-subtle)]">
+                +{post.tags.length - 4}
+              </span>
             )}
           </div>
         )}
@@ -995,7 +1041,12 @@ function ListRow({ post, isActive, isSelecting, selected, onActivate, onSelect }
       let el: HTMLElement | null = target;
       while (el && el !== e.currentTarget) {
         const tag = el.tagName;
-        if (tag === 'A' || tag === 'BUTTON' || el.getAttribute('role') === 'button' || el.getAttribute('role') === 'link') {
+        if (
+          tag === 'A' ||
+          tag === 'BUTTON' ||
+          el.getAttribute('role') === 'button' ||
+          el.getAttribute('role') === 'link'
+        ) {
           return;
         }
         el = el.parentElement;
@@ -1031,7 +1082,12 @@ function ListRow({ post, isActive, isSelecting, selected, onActivate, onSelect }
       <div className="flex-shrink-0 w-16 h-16 rounded-[10px] overflow-hidden bg-[color:var(--at-bg-elevated)] border border-[color:var(--at-line)]">
         {post.featuredImage ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={post.featuredImage} alt="" className="w-full h-full object-cover" loading="lazy" />
+          <img
+            src={post.featuredImage}
+            alt=""
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-[color:var(--at-fg-subtle)]">
             <HiOutlineDocumentText className="w-6 h-6" />

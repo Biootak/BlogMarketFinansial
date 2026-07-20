@@ -1,6 +1,6 @@
-import { Suspense } from 'react';
 import { SiteSettingsProvider } from '@/components/SiteSettingsProvider';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
+import { Suspense } from 'react';
 
 /**
  * SiteSettingsData — async data boundary for hydrating the public site

@@ -250,9 +250,7 @@ export default function CommandPanel({
                   setActiveIndex(0);
                 }}
                 placeholder={
-                  mode === 'category'
-                    ? 'نام دسته‌بندی را بنویسید…'
-                    : 'نام برچسب را بنویسید…'
+                  mode === 'category' ? 'نام دسته‌بندی را بنویسید…' : 'نام برچسب را بنویسید…'
                 }
                 type="text"
                 autoComplete="off"
@@ -337,7 +335,9 @@ export default function CommandPanel({
                         aria-selected={isActive}
                         onMouseEnter={() => setActiveIndex(i + 1)}
                       >
-                        <span className={`atl-cmd__item-icon${meta.iconClass ? ` ${meta.iconClass}` : ''}`}>
+                        <span
+                          className={`atl-cmd__item-icon${meta.iconClass ? ` ${meta.iconClass}` : ''}`}
+                        >
                           {mode === 'category' ? (
                             <FolderOpen className="w-4 h-4" />
                           ) : (

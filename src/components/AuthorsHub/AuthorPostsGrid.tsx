@@ -1,31 +1,24 @@
+import Card11 from '@/components/Card11/Card11';
+import Empty from '@/components/Empty';
+import { cn, toPersianNumber } from '@/lib/utils';
+import type { PostWithRelations } from '@/types/types';
+import { FileText } from 'lucide-react';
 /**
  * @file AuthorPostsGrid
  * @description Premium editorial grid of an author's published posts.
  * Server-renderable. Uses the existing Card11 for visual consistency
  * with the rest of the site.
  */
-import * as React from 'react';
-import { FileText } from 'lucide-react';
-import { cn, toPersianNumber } from '@/lib/utils';
-import Card11 from '@/components/Card11/Card11';
-import Empty from '@/components/Empty';
-import type { PostWithRelations } from '@/types/types';
+import type * as React from 'react';
 
 export interface AuthorPostsGridProps {
   posts: PostWithRelations[];
   className?: string;
 }
 
-const AuthorPostsGrid: React.FC<AuthorPostsGridProps> = ({
-  posts,
-  className,
-}) => {
+const AuthorPostsGrid: React.FC<AuthorPostsGridProps> = ({ posts, className }) => {
   return (
-    <section
-      dir="rtl"
-      className={cn('relative', className)}
-      aria-label="مقالات نویسنده"
-    >
+    <section dir="rtl" className={cn('relative', className)} aria-label="مقالات نویسنده">
       <header className="mb-4 sm:mb-5 flex items-center gap-2">
         <span
           aria-hidden

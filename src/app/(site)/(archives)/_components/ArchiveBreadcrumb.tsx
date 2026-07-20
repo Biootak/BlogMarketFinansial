@@ -1,12 +1,6 @@
-import {
-  ChevronLeft,
-  Home,
-  ArrowUpRight,
-  Sparkles,
-  type LucideIcon,
-} from 'lucide-react';
+import { ArrowUpRight, ChevronLeft, Home, type LucideIcon, Sparkles } from 'lucide-react';
 import Link from 'next/link';
-import * as React from 'react';
+import type * as React from 'react';
 import {
   HiOutlineDocumentText,
   HiOutlineRectangleStack,
@@ -79,27 +73,17 @@ export default function ArchiveBreadcrumb({ crumbs, trailing, badge }: Props) {
                             <CrumbIcon Icon={c.icon} />
                           </span>
                         ) : null}
-                        <span className="arc-crumb__label truncate max-w-[14rem]">
-                          {c.label}
-                        </span>
-                        {isLast ? (
-                          <span className="arc-crumb__pulse" aria-hidden />
-                        ) : null}
+                        <span className="arc-crumb__label truncate max-w-[14rem]">{c.label}</span>
+                        {isLast ? <span className="arc-crumb__pulse" aria-hidden /> : null}
                       </span>
                     ) : (
-                      <Link
-                        href={c.href}
-                        className={`arc-crumb ${accentClass}`}
-                        prefetch
-                      >
+                      <Link href={c.href} className={`arc-crumb ${accentClass}`} prefetch>
                         {c.icon ? (
                           <span className="arc-crumb__icon">
                             <CrumbIcon Icon={c.icon} />
                           </span>
                         ) : null}
-                        <span className="arc-crumb__label truncate max-w-[14rem]">
-                          {c.label}
-                        </span>
+                        <span className="arc-crumb__label truncate max-w-[14rem]">{c.label}</span>
                         <ArrowUpRight className="arc-crumb__arrow w-3 h-3" aria-hidden />
                       </Link>
                     )}

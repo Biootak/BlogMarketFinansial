@@ -1,14 +1,14 @@
 'use client';
 
-import PostCardMeta from '@/components/PostCardMeta/PostCardMeta';
-import type { PostWithRelations } from '@/types/types';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
+import PostCardMeta from '@/components/PostCardMeta/PostCardMeta';
 import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
-import Link from 'next/link';
-import { getPostLink } from '@/lib/getPostLink';
-import { ArrowLeft } from 'lucide-react';
-import { heading, text, radius } from '@/lib/design-tokens';
 import { SafeImage } from '@/components/SafeImage';
+import { heading, radius, text } from '@/lib/design-tokens';
+import { getPostLink } from '@/lib/getPostLink';
+import type { PostWithRelations } from '@/types/types';
+import { ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 export interface Card6Props {
   className?: string;
@@ -24,11 +24,12 @@ export default function Card6({ className = '', post }: Card6Props) {
       dir="rtl"
       className={`nc-Card6 group relative anim-fade-in-up hover:-translate-y-0.5 transition-transform duration-300 ${className}`}
     >
-      <div className={[
-        'relative overflow-hidden shadow-md hover:shadow-xl transition-all duration-300',
-        radius.md,
-      ].join(' ')}>
-
+      <div
+        className={[
+          'relative overflow-hidden shadow-md hover:shadow-xl transition-all duration-300',
+          radius.md,
+        ].join(' ')}
+      >
         {/* Mobile Layout: Full-width image with content overlay */}
         <div className="sm:hidden relative aspect-[16/10] w-full">
           <Link href={postLink} className="block absolute inset-0">
@@ -54,11 +55,7 @@ export default function Card6({ className = '', post }: Card6Props) {
                 className="flex flex-wrap gap-1.5"
                 itemClass="text-[10px] px-2 py-1 font-semibold backdrop-blur-md bg-white/90 dark:bg-neutral-900/90 shadow-lg"
               />
-              <PostTypeFeaturedIcon
-                wrapSize="h-7 w-7"
-                iconSize="h-3.5 w-3.5"
-                postType={postType}
-              />
+              <PostTypeFeaturedIcon wrapSize="h-7 w-7" iconSize="h-3.5 w-3.5" postType={postType} />
             </div>
 
             <div className="space-y-2.5">
@@ -92,7 +89,6 @@ export default function Card6({ className = '', post }: Card6Props) {
 
         {/* Desktop Layout: Horizontal Card */}
         <div className="hidden sm:flex flex-row items-stretch p-3 md:p-3.5 lg:p-3.5 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm border border-neutral-100 dark:border-neutral-800 gap-3 md:gap-3.5 lg:gap-4 relative min-h-[7.5rem] md:min-h-[8rem] lg:min-h-[8.5rem]">
-
           <div className="absolute inset-0 bg-gradient-to-br from-primary-50/0 to-violet-50/0 group-hover:from-primary-50/50 group-hover:to-violet-50/30 dark:group-hover:from-primary-950/20 dark:group-hover:to-violet-950/10 transition-all duration-400 pointer-events-none" />
 
           <Link
@@ -112,11 +108,7 @@ export default function Card6({ className = '', post }: Card6Props) {
             <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300" />
 
             <span className="absolute bottom-2 start-2 z-10">
-              <PostTypeFeaturedIcon
-                wrapSize="h-6 w-6"
-                iconSize="h-3 w-3"
-                postType={postType}
-              />
+              <PostTypeFeaturedIcon wrapSize="h-6 w-6" iconSize="h-3 w-3" postType={postType} />
             </span>
 
             <div className="absolute bottom-2 end-2 z-10 opacity-0 group-hover:opacity-100 transition-all duration-300">
@@ -127,7 +119,6 @@ export default function Card6({ className = '', post }: Card6Props) {
           </Link>
 
           <div className="relative flex flex-col flex-grow justify-between min-w-0 py-0.5">
-
             <div className="mb-1.5">
               <CategoryBadgeList
                 categories={categories}

@@ -31,9 +31,11 @@
   z-index: 0;
   pointer-events: none;
   /* layered mesh gradient — depth feel */
-  background:
-    radial-gradient(ellipse 80% 60% at 110% -10%, oklch(55% 0.10 235 / 0.18) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at -10% 110%, oklch(72% 0.13 70 / 0.12) 0%, transparent 60%),
+  background: radial-gradient(
+      ellipse 80% 60% at 110% -10%,
+      oklch(55% 0.1 235 / 0.18) 0%,
+      transparent 60%
+    ), radial-gradient(ellipse 60% 40% at -10% 110%, oklch(72% 0.13 70 / 0.12) 0%, transparent 60%),
     radial-gradient(ellipse 40% 50% at 50% 120%, oklch(58% 0.13 290 / 0.08) 0%, transparent 60%),
     var(--ds-canvas);
 }
@@ -83,15 +85,31 @@
 .heroText > * {
   animation: staggerUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-.heroText > *:nth-child(1) { animation-delay: 0ms; }
-.heroText > *:nth-child(2) { animation-delay: 80ms; }
-.heroText > *:nth-child(3) { animation-delay: 160ms; }
-.heroText > *:nth-child(4) { animation-delay: 220ms; }
-.heroText > *:nth-child(5) { animation-delay: 280ms; }
+.heroText > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.heroText > *:nth-child(2) {
+  animation-delay: 80ms;
+}
+.heroText > *:nth-child(3) {
+  animation-delay: 160ms;
+}
+.heroText > *:nth-child(4) {
+  animation-delay: 220ms;
+}
+.heroText > *:nth-child(5) {
+  animation-delay: 280ms;
+}
 
 @keyframes staggerUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Live badge */
@@ -116,14 +134,21 @@
   height: 8px;
   border-radius: 9999px;
   background: var(--ds-accent-emerald);
-  box-shadow: 0 0 0 2px oklch(60% 0.10 165 / 0.25);
+  box-shadow: 0 0 0 2px oklch(60% 0.1 165 / 0.25);
   animation: livePulse 2s ease-in-out infinite;
   flex-shrink: 0;
 }
 
 @keyframes livePulse {
-  0%, 100% { transform: scale(0.9); opacity: 0.7; }
-  50%       { transform: scale(1.1); opacity: 1; }
+  0%,
+  100% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
 }
 
 /* Headline */
@@ -144,25 +169,23 @@
 
 /* animated underline stroke */
 .heroAccent::after {
-  content: '';
+  content: "";
   position: absolute;
   inset-inline-start: 0;
   bottom: -3px;
   width: 100%;
   height: 3px;
   border-radius: 2px;
-  background: linear-gradient(
-    to left,
-    var(--nova-emerald),
-    var(--nova-cyan)
-  );
+  background: linear-gradient(to left, var(--nova-emerald), var(--nova-cyan));
   transform: scaleX(0);
   transform-origin: 100% 50%;
   animation: drawLine 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.5s forwards;
 }
 
 @keyframes drawLine {
-  to { transform: scaleX(1); }
+  to {
+    transform: scaleX(1);
+  }
 }
 
 /* Sub headline */
@@ -223,26 +246,23 @@
   border: none;
   cursor: pointer;
   min-height: 48px;
-  box-shadow:
-    0 0 0 1px oklch(58% 0.12 165 / 0.35),
-    0 8px 32px -8px oklch(58% 0.12 165 / 0.45),
+  box-shadow: 0 0 0 1px oklch(58% 0.12 165 / 0.35), 0 8px 32px -8px oklch(58% 0.12 165 / 0.45),
     inset 0 1px 0 oklch(100% 0 0 / 0.12);
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring),
-    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-spring), box-shadow var(--ds-duration-base)
+    var(--ds-ease-out-quart);
 }
 
 .ctaMain:hover {
   background: oklch(52% 0.14 162);
   transform: translateY(-2px);
-  box-shadow:
-    0 0 0 1px oklch(58% 0.12 165 / 0.45),
-    0 16px 48px -12px oklch(58% 0.12 165 / 0.5),
+  box-shadow: 0 0 0 1px oklch(58% 0.12 165 / 0.45), 0 16px 48px -12px oklch(58% 0.12 165 / 0.5),
     inset 0 1px 0 oklch(100% 0 0 / 0.15);
 }
 
-.ctaMain:active { transform: scale(0.97); }
+.ctaMain:active {
+  transform: scale(0.97);
+}
 
 .ctaGhost {
   display: inline-flex;
@@ -257,10 +277,8 @@
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-medium);
   min-height: 48px;
-  transition:
-    border-color var(--ds-duration-fast),
-    background var(--ds-duration-fast),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: border-color var(--ds-duration-fast), background var(--ds-duration-fast), transform
+    var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .ctaGhost:hover {
@@ -269,7 +287,9 @@
   transform: translateY(-1px);
 }
 
-.ctaGhost:active { transform: scale(0.97); }
+.ctaGhost:active {
+  transform: scale(0.97);
+}
 
 /* ── Visual column — floating glass card stack ───────────── */
 .heroVisual {
@@ -285,11 +305,8 @@
   border: 1px solid var(--ds-border-subtle);
   background: var(--ds-surface-elevated);
   backdrop-filter: blur(24px) saturate(1.8) brightness(1.02);
-  box-shadow:
-    0 0 0 0.5px var(--ds-border-subtle),
-    0 24px 64px -16px oklch(45% 0.08 240 / 0.28),
-    inset 0 1px 0 var(--ds-surface-elevated),
-    inset 0 -1px 0 var(--ds-border-subtle);
+  box-shadow: 0 0 0 0.5px var(--ds-border-subtle), 0 24px 64px -16px oklch(45% 0.08 240 / 0.28),
+    inset 0 1px 0 var(--ds-surface-elevated), inset 0 -1px 0 var(--ds-border-subtle);
   overflow: hidden;
   cursor: default;
   /* 3D prepare */
@@ -300,7 +317,7 @@
 
 /* Glass inner shine overlay */
 .glassCard::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
@@ -325,8 +342,13 @@
 }
 
 @keyframes floatMain {
-  0%, 100% { transform: translateY(0px) rotate(-1deg); }
-  50%       { transform: translateY(-10px) rotate(-1deg); }
+  0%,
+  100% {
+    transform: translateY(0px) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(-1deg);
+  }
 }
 
 /* ── Card 2: Rate card (mid depth) ──────────────────────── */
@@ -340,8 +362,13 @@
 }
 
 @keyframes floatRate {
-  0%, 100% { transform: translateY(0px) rotate(1.5deg); }
-  50%       { transform: translateY(-8px) rotate(1.5deg); }
+  0%,
+  100% {
+    transform: translateY(0px) rotate(1.5deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1.5deg);
+  }
 }
 
 /* ── Card 3: Status card (background) ────────────────────── */
@@ -355,8 +382,13 @@
 }
 
 @keyframes floatStatus {
-  0%, 100% { transform: translateY(0px) rotate(2deg); }
-  50%       { transform: translateY(-6px) rotate(2deg); }
+  0%,
+  100% {
+    transform: translateY(0px) rotate(2deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(2deg);
+  }
 }
 
 /* ── Card internals ──────────────────────────────────────── */
@@ -442,8 +474,12 @@
   color: var(--ds-text-primary);
 }
 
-.rateUp   { color: var(--ds-accent-emerald); }
-.rateDown { color: var(--ds-accent-rose); }
+.rateUp {
+  color: var(--ds-accent-emerald);
+}
+.rateDown {
+  color: var(--ds-accent-rose);
+}
 
 /* Status badge in card */
 .statusBadge {
@@ -452,8 +488,8 @@
   gap: 6px;
   padding: 4px 10px;
   border-radius: var(--ds-radius-full);
-  background: oklch(60% 0.10 165 / 0.12);
-  border: 1px solid oklch(60% 0.10 165 / 0.25);
+  background: oklch(60% 0.1 165 / 0.12);
+  border: 1px solid oklch(60% 0.1 165 / 0.25);
   font-size: 11px;
   font-weight: var(--ds-weight-semibold);
   color: var(--ds-accent-emerald);
@@ -483,11 +519,7 @@
   width: clamp(220px, 30vw, 380px);
   aspect-ratio: 1;
   border-radius: 9999px;
-  background: radial-gradient(
-    circle,
-    oklch(55% 0.10 235 / 0.22) 0%,
-    transparent 65%
-  );
+  background: radial-gradient(circle, oklch(55% 0.1 235 / 0.22) 0%, transparent 65%);
   pointer-events: none;
   z-index: 0;
   animation: orbDrift 8s ease-in-out infinite;
@@ -500,19 +532,20 @@
   width: clamp(160px, 20vw, 260px);
   aspect-ratio: 1;
   border-radius: 9999px;
-  background: radial-gradient(
-    circle,
-    oklch(72% 0.13 70 / 0.16) 0%,
-    transparent 65%
-  );
+  background: radial-gradient(circle, oklch(72% 0.13 70 / 0.16) 0%, transparent 65%);
   pointer-events: none;
   z-index: 0;
   animation: orbDrift 10s ease-in-out 2s infinite reverse;
 }
 
 @keyframes orbDrift {
-  0%, 100% { transform: scale(1) translateY(0); }
-  50%       { transform: scale(1.08) translateY(-12px); }
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.08) translateY(-12px);
+  }
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -633,12 +666,9 @@
   cursor: default;
   opacity: 0;
   transform: translateY(24px);
-  transition:
-    opacity 0.45s var(--ds-ease-out-expo),
-    transform 0.45s var(--ds-ease-out-expo),
-    border-color var(--ds-duration-fast),
-    background var(--ds-duration-fast),
-    box-shadow var(--ds-duration-base);
+  transition: opacity 0.45s var(--ds-ease-out-expo), transform 0.45s var(--ds-ease-out-expo),
+    border-color var(--ds-duration-fast), background var(--ds-duration-fast), box-shadow
+    var(--ds-duration-base);
 }
 
 .serviceCard.revealed {
@@ -654,21 +684,17 @@
 
 /* inner shine */
 .serviceCard::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    135deg,
-    oklch(100% 0 0 / 0.08) 0%,
-    transparent 50%
-  );
+  background: linear-gradient(135deg, oklch(100% 0 0 / 0.08) 0%, transparent 50%);
   pointer-events: none;
   border-radius: inherit;
 }
 
 /* accent bottom line */
 .serviceCard::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   inset-inline-start: 0;
@@ -711,42 +737,54 @@
   background: oklch(58% 0.12 165 / 0.08);
   color: var(--nova-emerald);
 }
-.accentBrand.serviceCard::after { background: var(--nova-emerald); }
+.accentBrand.serviceCard::after {
+  background: var(--nova-emerald);
+}
 
 .accentViolet .serviceIconWrap {
   border-color: oklch(58% 0.13 290 / 0.25);
   background: oklch(58% 0.13 290 / 0.08);
   color: var(--ds-accent-violet);
 }
-.accentViolet.serviceCard::after { background: var(--ds-accent-violet); }
+.accentViolet.serviceCard::after {
+  background: var(--ds-accent-violet);
+}
 
 .accentEmerald .serviceIconWrap {
-  border-color: oklch(60% 0.10 165 / 0.25);
-  background: oklch(60% 0.10 165 / 0.08);
+  border-color: oklch(60% 0.1 165 / 0.25);
+  background: oklch(60% 0.1 165 / 0.08);
   color: var(--ds-accent-emerald);
 }
-.accentEmerald.serviceCard::after { background: var(--ds-accent-emerald); }
+.accentEmerald.serviceCard::after {
+  background: var(--ds-accent-emerald);
+}
 
 .accentAmber .serviceIconWrap {
   border-color: oklch(72% 0.13 70 / 0.25);
   background: oklch(72% 0.13 70 / 0.08);
   color: var(--ds-accent-amber);
 }
-.accentAmber.serviceCard::after { background: var(--ds-accent-amber); }
+.accentAmber.serviceCard::after {
+  background: var(--ds-accent-amber);
+}
 
 .accentRose .serviceIconWrap {
   border-color: oklch(60% 0.13 20 / 0.25);
   background: oklch(60% 0.13 20 / 0.08);
   color: var(--ds-accent-rose);
 }
-.accentRose.serviceCard::after { background: var(--ds-accent-rose); }
+.accentRose.serviceCard::after {
+  background: var(--ds-accent-rose);
+}
 
 .accentSlate .serviceIconWrap {
   border-color: oklch(60% 0.02 250 / 0.25);
   background: oklch(60% 0.02 250 / 0.08);
   color: var(--ds-accent-slate);
 }
-.accentSlate.serviceCard::after { background: var(--ds-accent-slate); }
+.accentSlate.serviceCard::after {
+  background: var(--ds-accent-slate);
+}
 
 .serviceTitle {
   font-size: var(--ds-text-base);
@@ -784,7 +822,7 @@
 
 /* connector line between steps */
 .stepsRow::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 23px;
   inset-inline-start: calc(33% - 20px);
@@ -807,9 +845,7 @@
   gap: var(--ds-space-3);
   opacity: 0;
   transform: translateY(20px);
-  transition:
-    opacity 0.4s var(--ds-ease-out-expo),
-    transform 0.4s var(--ds-ease-out-expo);
+  transition: opacity 0.4s var(--ds-ease-out-expo), transform 0.4s var(--ds-ease-out-expo);
 }
 
 .step.revealed {

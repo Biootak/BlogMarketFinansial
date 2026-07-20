@@ -1,7 +1,7 @@
 'use client';
 
-import * as React from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
+import * as React from 'react';
 import { FaTimes } from 'react-icons/fa';
 
 import { cn } from '@/lib/utils';
@@ -63,10 +63,7 @@ DialogHeader.displayName = 'DialogHeader';
 
 const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn(
-      'flex flex-col-reverse sm:flex-row sm:justify-start sm:gap-2',
-      className,
-    )}
+    className={cn('flex flex-col-reverse sm:flex-row sm:justify-start sm:gap-2', className)}
     {...props}
   />
 );

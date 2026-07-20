@@ -1,5 +1,5 @@
-import BannerADS from './BannerADS';
 import type { Advertisement } from '@/types/types';
+import BannerADS from './BannerADS';
 
 interface LargeAdProps {
   ad: Advertisement;

@@ -1,7 +1,6 @@
-﻿import Link from 'next/link';
-import { ShieldAlert } from 'lucide-react';
+﻿import { ShieldAlert } from 'lucide-react';
+import Link from 'next/link';
 import { Suspense } from 'react';
-
 
 export const metadata = {
   title: 'خطا در ورود — Financial Market',
@@ -68,7 +67,9 @@ async function ErrorContent({
             {callbackUrl ? (
               <p className="auth-helper">
                 مقصد مورد نظر:{' '}
-                <span dir="ltr" style={{ fontWeight: 500 }}>{callbackUrl}</span>
+                <span dir="ltr" style={{ fontWeight: 500 }}>
+                  {callbackUrl}
+                </span>
               </p>
             ) : null}
 
@@ -85,9 +86,15 @@ async function ErrorContent({
       </div>
 
       <nav className="auth-foot" aria-label="پیوندهای پاورقی">
-        <Link href="/terms" prefetch={false}>قوانین و مقررات</Link>
-        <span aria-hidden="true" style={{ margin: '0 0.5rem', opacity: 0.4 }}>·</span>
-        <Link href="/privacy-policy" prefetch={false}>حریم خصوصی</Link>
+        <Link href="/terms" prefetch={false}>
+          قوانین و مقررات
+        </Link>
+        <span aria-hidden="true" style={{ margin: '0 0.5rem', opacity: 0.4 }}>
+          ·
+        </span>
+        <Link href="/privacy-policy" prefetch={false}>
+          حریم خصوصی
+        </Link>
       </nav>
     </main>
   );

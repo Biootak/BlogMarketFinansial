@@ -3,11 +3,11 @@
 
 'use client';
 
+import type { MarketRateProvider, MarketRateUnit } from '@/lib/market-rates';
 import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import SourceBadge from './SourceBadge';
 import ValueCell from './ValueCell';
-import type { MarketRateUnit, MarketRateProvider } from '@/lib/market-rates';
 
 export interface RateRowData {
   id: string;
@@ -56,9 +56,7 @@ export default function ExchangeRateRow({ row, onEdit, onDelete }: RowProps) {
   }, [menuOpen]);
 
   const rawValue =
-    row.singleRate && row.divisor > 0
-      ? Number.parseFloat(row.singleRate) / row.divisor
-      : null;
+    row.singleRate && row.divisor > 0 ? Number.parseFloat(row.singleRate) / row.divisor : null;
 
   return (
     <tr
@@ -130,11 +128,7 @@ export default function ExchangeRateRow({ row, onEdit, onDelete }: RowProps) {
           textAlign: 'start',
         }}
       >
-        <ValueCell
-          rawValue={rawValue}
-          unit={row.unit}
-          decimals={row.decimals}
-        />
+        <ValueCell rawValue={rawValue} unit={row.unit} decimals={row.decimals} />
       </td>
 
       {/* Source */}
@@ -159,9 +153,7 @@ export default function ExchangeRateRow({ row, onEdit, onDelete }: RowProps) {
               width: '0.5rem',
               height: '0.5rem',
               borderRadius: 'var(--ds-radius-full)',
-              background: row.active
-                ? 'var(--ds-accent-emerald)'
-                : 'var(--ds-text-muted)',
+              background: row.active ? 'var(--ds-accent-emerald)' : 'var(--ds-text-muted)',
               boxShadow: row.active
                 ? '0 0 0 3px color-mix(in oklch, var(--ds-accent-emerald) 18%, transparent)'
                 : 'none',
@@ -178,11 +170,7 @@ export default function ExchangeRateRow({ row, onEdit, onDelete }: RowProps) {
           textAlign: 'end',
         }}
       >
-        <div
-          ref={menuRef}
-          className="relative inline-block"
-          style={{ minHeight: '1.5rem' }}
-        >
+        <div ref={menuRef} className="relative inline-block" style={{ minHeight: '1.5rem' }}>
           <button
             type="button"
             onClick={() => setMenuOpen((v) => !v)}
@@ -211,10 +199,7 @@ export default function ExchangeRateRow({ row, onEdit, onDelete }: RowProps) {
               }
             }}
           >
-            <MoreHorizontal
-              aria-hidden
-              style={{ width: '1rem', height: '1rem' }}
-            />
+            <MoreHorizontal aria-hidden style={{ width: '1rem', height: '1rem' }} />
           </button>
 
           {menuOpen && (
@@ -258,10 +243,7 @@ export default function ExchangeRateRow({ row, onEdit, onDelete }: RowProps) {
                   e.currentTarget.style.background = 'transparent';
                 }}
               >
-                <Pencil
-                  aria-hidden
-                  style={{ width: '0.875rem', height: '0.875rem' }}
-                />
+                <Pencil aria-hidden style={{ width: '0.875rem', height: '0.875rem' }} />
                 ویرایش
               </button>
               <button
@@ -289,10 +271,7 @@ export default function ExchangeRateRow({ row, onEdit, onDelete }: RowProps) {
                   e.currentTarget.style.background = 'transparent';
                 }}
               >
-                <Trash2
-                  aria-hidden
-                  style={{ width: '0.875rem', height: '0.875rem' }}
-                />
+                <Trash2 aria-hidden style={{ width: '0.875rem', height: '0.875rem' }} />
                 حذف
               </button>
             </div>

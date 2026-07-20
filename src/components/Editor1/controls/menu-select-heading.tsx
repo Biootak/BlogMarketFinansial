@@ -1,15 +1,15 @@
-import React, { memo, useCallback, useMemo } from 'react';
-import { Toolbar } from '../../ui/toolbar';
-import { Icon } from '../../ui/icon';
-import { cn } from '../lib/utils';
-import type { Editor } from '@tiptap/core';
-import { useActive } from '../hooks/use-active';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import type { Editor } from '@tiptap/core';
+import React, { memo, useCallback, useMemo } from 'react';
+import { Icon } from '../../ui/icon';
+import { Toolbar } from '../../ui/toolbar';
+import { useActive } from '../hooks/use-active';
+import { cn } from '../lib/utils';
 
 type MenuSelectHeading = {
   editor: Editor;

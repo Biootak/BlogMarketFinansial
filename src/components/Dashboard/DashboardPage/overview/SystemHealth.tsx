@@ -350,7 +350,15 @@ export default function SystemHealth() {
               <span className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200 min-w-0">
                 <span
                   className="dash-kpi-ico w-7 h-7"
-                  data-tone={rowTone === 'ok' ? 'ok' : rowTone === 'fail' ? 'fail' : rowTone === 'stale' ? 'warn' : 'neutral'}
+                  data-tone={
+                    rowTone === 'ok'
+                      ? 'ok'
+                      : rowTone === 'fail'
+                        ? 'fail'
+                        : rowTone === 'stale'
+                          ? 'warn'
+                          : 'neutral'
+                  }
                   aria-hidden
                 >
                   {row.icon}

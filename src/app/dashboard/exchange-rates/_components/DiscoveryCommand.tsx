@@ -3,9 +3,9 @@
 
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { Command } from 'cmdk';
 import type { TgjuSymbol } from '@/lib/market-rates/discovery';
+import { Command } from 'cmdk';
+import { useCallback, useEffect, useState } from 'react';
 
 interface Props {
   open: boolean;
@@ -64,8 +64,7 @@ export default function DiscoveryCommand({ open, onOpenChange, onSelect }: Props
       style={{
         paddingTop: 'min(20vh, 8rem)',
         paddingInline: '1rem',
-        background:
-          'color-mix(in oklch, var(--ds-canvas) 60%, transparent)',
+        background: 'color-mix(in oklch, var(--ds-canvas) 60%, transparent)',
         backdropFilter: 'blur(8px)',
       }}
       onClick={() => onOpenChange(false)}
@@ -81,12 +80,7 @@ export default function DiscoveryCommand({ open, onOpenChange, onSelect }: Props
           overflow: 'hidden',
         }}
       >
-        <Command
-          className="flex flex-col"
-          label="جست‌وجوی نرخ"
-          shouldFilter
-          loop
-        >
+        <Command className="flex flex-col" label="جست‌وجوی نرخ" shouldFilter loop>
           <div
             className="flex items-center gap-2"
             style={{

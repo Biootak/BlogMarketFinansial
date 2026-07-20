@@ -1,7 +1,7 @@
 'use server';
 
-import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
+import { unstable_cache } from 'next/cache';
 
 export const getViewStats = unstable_cache(
   async () => {

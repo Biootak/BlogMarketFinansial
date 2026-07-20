@@ -6,12 +6,12 @@
 //
 // Auth: Bearer CRON_SECRET (constant-time, header only).
 
-import { NextResponse } from 'next/server';
-import { revalidateTag } from '@/lib/revalidate';
-import prisma from '@/lib/db';
 import { verifyCronSecret } from '@/lib/cron-auth';
+import prisma from '@/lib/db';
 import { assembleMarketRates } from '@/lib/market-rates';
 import { writeMarketRatesSnapshot } from '@/lib/market-rates/snapshot';
+import { revalidateTag } from '@/lib/revalidate';
+import { NextResponse } from 'next/server';
 
 const TAGS = {
   ticker: 'market-rates:ticker',

@@ -1,5 +1,5 @@
-import { type Metadata } from 'next';
 import { auth } from '@/auth';
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import MyRequestsClient from './_components/MyRequestsClient';
 

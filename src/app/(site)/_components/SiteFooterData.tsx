@@ -1,8 +1,8 @@
-import { Suspense } from 'react';
-import Footer from '@/components/Footer/Footer';
 import { getActiveAdvertisements } from '@/actions/advertisementActions';
+import Footer from '@/components/Footer/Footer';
 import { getSiteIdentity } from '@/lib/site-identity';
 import type { Advertisement } from '@/types/types';
+import { Suspense } from 'react';
 
 /**
  * SiteFooterData — async data boundary for the public site footer.
@@ -19,9 +19,7 @@ export default async function SiteFooterData() {
   });
 
   const footerAd: Advertisement | null =
-    footerAdsResult.success &&
-    Array.isArray(footerAdsResult.data) &&
-    footerAdsResult.data[0]
+    footerAdsResult.success && Array.isArray(footerAdsResult.data) && footerAdsResult.data[0]
       ? (footerAdsResult.data[0] as Advertisement)
       : null;
 

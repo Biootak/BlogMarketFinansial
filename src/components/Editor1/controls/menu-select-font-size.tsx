@@ -6,9 +6,10 @@
 
 'use client';
 
-import React, { memo, useRef, useState } from 'react';
-import type { Editor } from '@tiptap/core';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import type { Editor } from '@tiptap/core';
+import type React from 'react';
+import { memo, useRef, useState } from 'react';
 import { Icon } from '../../ui/icon';
 import { fontSizes } from '../extensions/font-size';
 
@@ -111,16 +112,11 @@ const MenuSelectFontSize: React.FC<MenuSelectFontSizeProps> = ({ editor }) => {
                   : 'text-gray-700 dark:text-gray-200'
               }`}
             >
-              <span style={{ fontSize: `${Math.min(parseInt(size.label, 10), 24)}px` }}>
+              <span style={{ fontSize: `${Math.min(Number.parseInt(size.label, 10), 24)}px` }}>
                 {size.label}
               </span>
               {currentFontSize === size.value && (
-                <Icon
-                  name="check"
-                  size={14}
-                  strokeWidth={2.5}
-                  className="text-primary-500"
-                />
+                <Icon name="check" size={14} strokeWidth={2.5} className="text-primary-500" />
               )}
             </button>
           ))}

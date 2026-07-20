@@ -2,9 +2,9 @@
 
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
+import { revalidateTag } from '@/lib/revalidate';
 import type { ActionResult, CommentWithCustomRelations } from '@/types/types';
 import { revalidatePath } from 'next/cache';
-import { revalidateTag } from '@/lib/revalidate';
 
 export async function addComment(
   postId: string,
@@ -80,7 +80,6 @@ export async function addComment(
     return {
       success: false,
       message: 'خطا در  افزودن کامنت. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }
@@ -109,7 +108,11 @@ export async function deleteComment(commentId: string): Promise<ActionResult<voi
       };
     }
 
-    if (comment.authorId !== session.user.id && session.user.role !== 'ADMIN' && session.user.role !== 'OWNER') {
+    if (
+      comment.authorId !== session.user.id &&
+      session.user.role !== 'ADMIN' &&
+      session.user.role !== 'OWNER'
+    ) {
       return {
         success: false,
         message: 'شما اجازه حذف این کامنت را ندارید.',
@@ -135,7 +138,6 @@ export async function deleteComment(commentId: string): Promise<ActionResult<voi
     return {
       success: false,
       message: 'خطا در حذف کامنت. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }
@@ -174,7 +176,11 @@ export async function editComment(
       };
     }
 
-    if (comment.authorId !== session.user.id && session.user.role !== 'ADMIN' && session.user.role !== 'OWNER') {
+    if (
+      comment.authorId !== session.user.id &&
+      session.user.role !== 'ADMIN' &&
+      session.user.role !== 'OWNER'
+    ) {
       return {
         success: false,
         message: 'شما اجازه ویرایش این کامنت را ندارید.',
@@ -229,7 +235,6 @@ export async function editComment(
     return {
       success: false,
       message: 'خطا در ویرایش کامنت. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }

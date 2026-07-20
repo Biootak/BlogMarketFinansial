@@ -33,7 +33,7 @@
 }
 
 .code {
-  font-family: 'Menlo', 'Consolas', 'Courier New', monospace;
+  font-family: "Menlo", "Consolas", "Courier New", monospace;
   font-size: 1.05rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -57,16 +57,36 @@
   background: var(--ds-surface);
   color: var(--ds-text-secondary);
   cursor: pointer;
-  transition: background 150ms, border-color 150ms, transform 150ms cubic-bezier(0.34,1.56,0.64,1);
+  transition: background 150ms, border-color 150ms, transform 150ms
+    cubic-bezier(0.34, 1.56, 0.64, 1);
   font-family: inherit;
 }
-.btnIcon:hover { background: var(--ds-surface-elevated); border-color: var(--ds-border-strong); transform: translateY(-1px); }
-.btnIcon:active { transform: scale(0.95); }
-.btnIcon:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-.btnIcon:focus-visible { outline: 2px solid var(--ds-brand-500); outline-offset: 2px; }
+.btnIcon:hover {
+  background: var(--ds-surface-elevated);
+  border-color: var(--ds-border-strong);
+  transform: translateY(-1px);
+}
+.btnIcon:active {
+  transform: scale(0.95);
+}
+.btnIcon:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+.btnIcon:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 2px;
+}
 
-.spinning { animation: spin 0.65s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.spinning {
+  animation: spin 0.65s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* ─── Error ───────────────────────────────────────────────── */
 .errorBox {
@@ -87,11 +107,17 @@
   border-radius: 14px;
   overflow: hidden;
   background: var(--ds-surface);
-  animation: fadeUp 0.3s cubic-bezier(0.22,1,0.36,1) both;
+  animation: fadeUp 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ─── Status Badge ────────────────────────────────────────── */
@@ -105,10 +131,26 @@
   font-weight: 600;
   margin: 16px 16px 0;
 }
-.statusPending   { background: var(--ds-status-pending-bg);   color: var(--ds-status-pending-fg);   border: 1px solid var(--ds-status-pending-border); }
-.statusProgress  { background: var(--ds-status-progress-bg);  color: var(--ds-status-progress-fg);  border: 1px solid var(--ds-status-progress-border); }
-.statusDone      { background: var(--ds-status-success-bg);   color: var(--ds-status-success-fg);   border: 1px solid var(--ds-status-success-border); }
-.statusCancelled { background: var(--ds-status-cancelled-bg); color: var(--ds-status-cancelled-fg); border: 1px solid var(--ds-status-cancelled-border); }
+.statusPending {
+  background: var(--ds-status-pending-bg);
+  color: var(--ds-status-pending-fg);
+  border: 1px solid var(--ds-status-pending-border);
+}
+.statusProgress {
+  background: var(--ds-status-progress-bg);
+  color: var(--ds-status-progress-fg);
+  border: 1px solid var(--ds-status-progress-border);
+}
+.statusDone {
+  background: var(--ds-status-success-bg);
+  color: var(--ds-status-success-fg);
+  border: 1px solid var(--ds-status-success-border);
+}
+.statusCancelled {
+  background: var(--ds-status-cancelled-bg);
+  color: var(--ds-status-cancelled-fg);
+  border: 1px solid var(--ds-status-cancelled-border);
+}
 
 /* ─── Info list ───────────────────────────────────────────── */
 .infoList {
@@ -125,9 +167,21 @@
   padding: 9px 0;
   border-block-end: 1px solid var(--ds-border-subtle);
 }
-.infoRow:last-child { border-block-end: none; }
-.infoLabel { font-size: 0.78rem; color: var(--ds-text-muted); flex-shrink: 0; }
-.infoValue { font-size: 0.82rem; font-weight: 600; color: var(--ds-text-primary); text-align: end; font-variant-numeric: tabular-nums; }
+.infoRow:last-child {
+  border-block-end: none;
+}
+.infoLabel {
+  font-size: 0.78rem;
+  color: var(--ds-text-muted);
+  flex-shrink: 0;
+}
+.infoValue {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ds-text-primary);
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
 
 /* ─── Admin note ──────────────────────────────────────────── */
 .noteBox {
@@ -148,10 +202,17 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
-.noteText { font-size: 0.82rem; color: var(--ds-text-secondary); line-height: 1.6; margin: 0; }
+.noteText {
+  font-size: 0.82rem;
+  color: var(--ds-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
 
 /* ─── History ─────────────────────────────────────────────── */
-.history { margin: 12px 16px 0; }
+.history {
+  margin: 12px 16px 0;
+}
 .historyHeader {
   display: flex;
   align-items: center;
@@ -163,14 +224,52 @@
   letter-spacing: 0.05em;
   margin-block-end: 10px;
 }
-.historyList { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0; }
-.historyItem { display: flex; align-items: flex-start; gap: 10px; padding-block: 8px; border-block-end: 1px solid var(--ds-border-subtle); }
-.historyItem:last-child { border-block-end: none; }
-.historyDot { width: 7px; height: 7px; border-radius: 50%; background: var(--ds-brand-500); flex-shrink: 0; margin-block-start: 5px; }
-.historyBody { display: flex; flex-direction: column; gap: 2px; flex: 1; }
-.historyStatus { font-size: 0.78rem; font-weight: 600; color: var(--ds-text-primary); }
-.historyNote { font-size: 0.75rem; color: var(--ds-text-secondary); }
-.historyTime { font-size: 0.72rem; color: var(--ds-text-muted); font-variant-numeric: tabular-nums; }
+.historyList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.historyItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding-block: 8px;
+  border-block-end: 1px solid var(--ds-border-subtle);
+}
+.historyItem:last-child {
+  border-block-end: none;
+}
+.historyDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ds-brand-500);
+  flex-shrink: 0;
+  margin-block-start: 5px;
+}
+.historyBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+.historyStatus {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ds-text-primary);
+}
+.historyNote {
+  font-size: 0.75rem;
+  color: var(--ds-text-secondary);
+}
+.historyTime {
+  font-size: 0.72rem;
+  color: var(--ds-text-muted);
+  font-variant-numeric: tabular-nums;
+}
 
 /* ─── CTA ─────────────────────────────────────────────────── */
 .cta {
@@ -193,8 +292,18 @@
   border: 1.5px solid var(--ds-status-progress-border);
   background: var(--ds-status-progress-bg);
   min-block-size: 40px;
-  transition: background 140ms, border-color 140ms, transform 140ms cubic-bezier(0.34,1.56,0.64,1);
+  transition: background 140ms, border-color 140ms, transform 140ms
+    cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.ctaLink:hover { background: oklch(94% 0.04 218); border-color: var(--ds-status-progress-fg); transform: translateY(-1px); }
-.ctaLink:active { transform: scale(0.97); }
-.ctaLink:focus-visible { outline: 2px solid var(--ds-brand-500); outline-offset: 2px; }
+.ctaLink:hover {
+  background: oklch(94% 0.04 218);
+  border-color: var(--ds-status-progress-fg);
+  transform: translateY(-1px);
+}
+.ctaLink:active {
+  transform: scale(0.97);
+}
+.ctaLink:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 2px;
+}

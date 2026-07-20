@@ -1,6 +1,6 @@
-import * as React from 'react';
+import { heading, space, text } from '@/lib/design-tokens';
 import { cn } from '@/lib/utils';
-import { text, heading, space } from '@/lib/design-tokens';
+import type * as React from 'react';
 
 /**
  * StatCard — the single source of truth for a stat / KPI tile.
@@ -34,9 +34,7 @@ export function StatCard({
         {icon && <div className="text-neutral-400">{icon}</div>}
         <div className="flex-1 min-w-0">
           <p className={text.meta}>{label}</p>
-          <p className={cn('text-lg font-bold tabular-nums', valueClassName)}>
-            {value}
-          </p>
+          <p className={cn('text-lg font-bold tabular-nums', valueClassName)}>{value}</p>
         </div>
       </div>
     );
@@ -55,14 +53,14 @@ export function StatCard({
         <p className={text.meta}>{label}</p>
         {icon && <div className="text-neutral-400">{icon}</div>}
       </div>
-      <p className={cn('text-xl font-bold tabular-nums', valueClassName)}>
-        {value}
-      </p>
+      <p className={cn('text-xl font-bold tabular-nums', valueClassName)}>{value}</p>
       {trend && (
         <p
           className={cn(
             text.meta,
-            trend.positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400',
+            trend.positive
+              ? 'text-emerald-600 dark:text-emerald-400'
+              : 'text-rose-600 dark:text-rose-400',
           )}
         >
           {trend.value}

@@ -9,7 +9,7 @@
  * Users may override with an explicit +CountryCode prefix.
  */
 
-import { parsePhoneNumber, isValidPhoneNumber, type CountryCode } from 'libphonenumber-js';
+import { type CountryCode, isValidPhoneNumber, parsePhoneNumber } from 'libphonenumber-js';
 
 export const DEFAULT_COUNTRY: CountryCode = 'AF';
 
@@ -57,7 +57,10 @@ export function isPhoneValid(raw: string, defaultCountry: CountryCode = DEFAULT_
  * Normalize a valid phone number to E.164.
  * Caller MUST ensure `isPhoneValid` returned true before calling this.
  */
-export function normalizeToE164(raw: string, defaultCountry: CountryCode = DEFAULT_COUNTRY): string {
+export function normalizeToE164(
+  raw: string,
+  defaultCountry: CountryCode = DEFAULT_COUNTRY,
+): string {
   try {
     const parsed = parsePhoneNumber(raw.trim(), defaultCountry);
     return parsed?.format('E.164') ?? raw.trim();

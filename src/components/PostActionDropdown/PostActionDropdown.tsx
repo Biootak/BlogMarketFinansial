@@ -1,22 +1,22 @@
 'use client';
 
-import React, { type FC, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { motion } from '@/lib/motion-shim';
-import { HiLink, HiEyeSlash, HiExclamationTriangle } from 'react-icons/hi2';
+import ModalReportItem from '@/components/ModalReportItem/ModalReportItem';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import ModalReportItem from '@/components/ModalReportItem/ModalReportItem';
-import ModalHideAuthor from './ModalHideAuthor';
-import type { PostWithRelations } from '@/types/types';
-import { twMerge } from 'tailwind-merge';
 import { getPostLink } from '@/lib/getPostLink';
+import { motion } from '@/lib/motion-shim';
+import type { PostWithRelations } from '@/types/types';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import React, { type FC, useState, useCallback } from 'react';
+import { HiExclamationTriangle, HiEyeSlash, HiLink } from 'react-icons/hi2';
+import { twMerge } from 'tailwind-merge';
+import ModalHideAuthor from './ModalHideAuthor';
 
 export interface PostActionDropdownProps {
   containerClassName?: string;
@@ -31,7 +31,7 @@ const PostActionDropdown: FC<PostActionDropdownProps> = ({
   dropdownPosition = 'bottom',
   post,
 }) => {
-  const router = useRouter();
+  const _router = useRouter();
   const { data: session } = useSession();
   const [isReporting, setIsReporting] = useState(false);
   const [showModalHideAuthor, setShowModalHideAuthor] = useState(false);

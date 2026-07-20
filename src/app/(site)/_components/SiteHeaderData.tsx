@@ -1,6 +1,6 @@
-import { Suspense } from 'react';
-import Header from '@/components/Header/Header';
 import { getActiveRateListsOrCryptoFallback } from '@/actions/rate-lists';
+import Header from '@/components/Header/Header';
+import { Suspense } from 'react';
 
 /**
  * SiteHeaderData — async data boundary for the public site header.
@@ -23,11 +23,7 @@ export default async function SiteHeaderData() {
  */
 export function HeaderSkeleton() {
   return (
-    <header
-      className="sticky top-0 w-full z-40 h-14 bg-white/70 dark:bg-neutral-950/70 backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-neutral-950/60 border-b border-neutral-200/70 dark:border-neutral-800/70"
-      aria-hidden="true"
-      role="presentation"
-    />
+    <header className="sticky top-0 w-full z-40 h-14 bg-white/70 dark:bg-neutral-950/70 backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-neutral-950/60 border-b border-neutral-200/70 dark:border-neutral-800/70" />
   );
 }
 

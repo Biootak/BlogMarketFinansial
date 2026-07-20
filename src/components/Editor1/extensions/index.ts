@@ -1,16 +1,5 @@
-import StarterKit from '@tiptap/starter-kit';
-import Underline from '@tiptap/extension-underline';
-import Color from '@tiptap/extension-color';
-import Highlight from '@tiptap/extension-highlight';
-import { TextStyle } from '@tiptap/extension-text-style';
-import TextAlign from '@tiptap/extension-text-align';
 import CharacterCount from '@tiptap/extension-character-count';
-import Superscript from '@tiptap/extension-superscript';
-import Subscript from '@tiptap/extension-subscript';
-import Placeholder from '@tiptap/extension-placeholder';
-import Gapcursor from '@tiptap/extension-gapcursor';
-import Typography from '@tiptap/extension-typography';
-import UniqueID from '@tiptap/extension-unique-id';
+import Color from '@tiptap/extension-color';
 import { FileHandler } from '@tiptap/extension-file-handler';
 // 2026-07-06: Focus — هایلایت خودکار block جاری با کلاس `.has-focus`.
 // جایگزین `markActiveBlock` دستی در editor.tsx که با DOM querySelector
@@ -20,6 +9,16 @@ import { FileHandler } from '@tiptap/extension-file-handler';
 //   - فقط به deep-most node کلاس می‌دهد (mode: 'deepest')
 //   - هم در render و هم در selectionUpdate به‌روز می‌شود
 import Focus from '@tiptap/extension-focus';
+import Gapcursor from '@tiptap/extension-gapcursor';
+import Highlight from '@tiptap/extension-highlight';
+import Placeholder from '@tiptap/extension-placeholder';
+import Subscript from '@tiptap/extension-subscript';
+import Superscript from '@tiptap/extension-superscript';
+import TextAlign from '@tiptap/extension-text-align';
+import { TextStyle } from '@tiptap/extension-text-style';
+import Typography from '@tiptap/extension-typography';
+import Underline from '@tiptap/extension-underline';
+import UniqueID from '@tiptap/extension-unique-id';
 // 2026-07-06: Youtube — Embed رسمی YouTube با پشتیبانی از:
 //   - nocookie mode (حریم خصوصی)
 //   - controls / autoplay / loop
@@ -27,28 +26,29 @@ import Focus from '@tiptap/extension-focus';
 // هم‌زمان با custom Embed کار می‌کند (Embed دیگر YouTube را
 // پردازش نمی‌کند — فقط Twitter/X + Vimeo).
 import Youtube from '@tiptap/extension-youtube';
+import StarterKit from '@tiptap/starter-kit';
 
-import Link from './link';
-import Image from './image-resize';
-import CodeBlockLowlight from './code-block-lowlight/code-block-lowlight';
-import Heading from './heading';
-import { tableExtensions } from './table';
-import { taskExtensions } from './task-list';
-import { SlashCommands } from './slash-commands';
 import slashCommandsSuggestion from '../lib/slash-commands-suggestion';
 import { Callout } from './callout';
-import { Embed } from './embed';
+import CodeBlockLowlight from './code-block-lowlight/code-block-lowlight';
 import { detailsExtensions } from './details';
+import { DragHandle } from './drag-handle';
+import { Embed } from './embed';
+import { FontFamily } from './font-family';
+import { FontSize } from './font-size';
+import { Footnote, FootnoteRef } from './footnote';
+import Heading from './heading';
+import Image from './image-resize';
+import { Indent } from './indent';
+import { KeyboardShortcuts } from './keyboard-shortcuts';
+import Link from './link';
 import { Math } from './math';
 import { Mention, mentionSuggestion } from './mention';
-import { FontSize } from './font-size';
-import { FontFamily } from './font-family';
-import { DragHandle } from './drag-handle';
-import { KeyboardShortcuts } from './keyboard-shortcuts';
-import { Paragraph } from './paragraph';
 import { PageBreak } from './page-break';
-import { Indent } from './indent';
-import { Footnote, FootnoteRef } from './footnote';
+import { Paragraph } from './paragraph';
+import { SlashCommands } from './slash-commands';
+import { tableExtensions } from './table';
+import { taskExtensions } from './task-list';
 import { TextDirection } from './text-direction';
 
 export const extensions = [

@@ -68,10 +68,7 @@ interface Computed {
   todayIndex: number;
 }
 
-function computeMetrics(
-  labels: string[],
-  data: number[],
-): Computed {
+function computeMetrics(labels: string[], data: number[]): Computed {
   const total = data.reduce((a, b) => a + b, 0);
   const avg = data.length > 0 ? total / data.length : 0;
 
@@ -147,7 +144,11 @@ function KpiTile({ label, value, sub, icon, tone = 'default' }: KpiTileProps) {
 
 function TrendBadge({ trend, delta }: { trend: 'up' | 'down' | 'flat'; delta: number }) {
   const Icon =
-    trend === 'up' ? HiOutlineArrowUpRight : trend === 'down' ? HiOutlineArrowDownRight : HiOutlineMinus;
+    trend === 'up'
+      ? HiOutlineArrowUpRight
+      : trend === 'down'
+        ? HiOutlineArrowDownRight
+        : HiOutlineMinus;
   const sign = delta > 0 ? '+' : '';
   return (
     <span className={cn('at-c-kpi__badge', `is-${trend}`)}>
@@ -242,7 +243,14 @@ interface CanvasProps {
   dimmed?: boolean;
 }
 
-function AtelierChartCanvas({ labels, data, metrics, period, axisTickIndices, dimmed }: CanvasProps) {
+function AtelierChartCanvas({
+  labels,
+  data,
+  metrics,
+  period,
+  axisTickIndices,
+  dimmed,
+}: CanvasProps) {
   const gradId = useId();
   const wrapRef = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<number | null>(null);
@@ -270,7 +278,8 @@ function AtelierChartCanvas({ labels, data, metrics, period, axisTickIndices, di
   }, [niceMax]);
 
   // Benchmark line: previous half average (drawn as hairline above bars)
-  const benchmarkValue = data.length > 1 ? metrics.sumPrevHalf / Math.max(1, Math.floor(data.length / 2)) : 0;
+  const benchmarkValue =
+    data.length > 1 ? metrics.sumPrevHalf / Math.max(1, Math.floor(data.length / 2)) : 0;
 
   // Format compact for Y labels (Persian digits)
   const yLabel = (v: number) => fmtCompact(v);
@@ -333,7 +342,7 @@ function AtelierChartCanvas({ labels, data, metrics, period, axisTickIndices, di
 
           {/* Hover column highlight */}
           <linearGradient id={`${gradId}-hover`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--at-accent)" stopOpacity={0.10} />
+            <stop offset="0%" stopColor="var(--at-accent)" stopOpacity={0.1} />
             <stop offset="100%" stopColor="var(--at-accent)" stopOpacity={0} />
           </linearGradient>
 
@@ -695,14 +704,15 @@ export default function AtelierChart({ viewStats, statsData }: AtelierChartProps
     todayViews: number;
     periodDays?: number;
   }>(`/api/traffic-stats?period=${period}`, fetcher, {
-    fallbackData: period === '7d'
-      ? {
-          labels: viewStats.labels,
-          data: viewStats.data,
-          totalViews: viewStats.totalViews,
-          todayViews: viewStats.todayViews,
-        }
-      : undefined,
+    fallbackData:
+      period === '7d'
+        ? {
+            labels: viewStats.labels,
+            data: viewStats.data,
+            totalViews: viewStats.totalViews,
+            todayViews: viewStats.todayViews,
+          }
+        : undefined,
     revalidateOnFocus: false,
     revalidateIfStale: true,
   });
@@ -788,7 +798,10 @@ export default function AtelierChart({ viewStats, statsData }: AtelierChartProps
         </div>
       </header>
 
-      <KpiStrip metrics={metrics} periodLabel={PERIODS.find((p) => p.id === period)?.label ?? '۷ روز'} />
+      <KpiStrip
+        metrics={metrics}
+        periodLabel={PERIODS.find((p) => p.id === period)?.label ?? '۷ روز'}
+      />
 
       <div className={cn('at-chart__canvas', isLoading && 'is-loading')}>
         {isError ? (
@@ -800,11 +813,7 @@ export default function AtelierChart({ viewStats, statsData }: AtelierChartProps
               <p className="at-chart__error-title">خطا در بارگیری داده‌ها</p>
               <p className="at-chart__error-sub">لطفاً دوباره تلاش کنید</p>
             </div>
-            <button
-              type="button"
-              onClick={() => swr.mutate()}
-              className="at-chart__error-retry"
-            >
+            <button type="button" onClick={() => swr.mutate()} className="at-chart__error-retry">
               تلاش مجدد
             </button>
           </div>

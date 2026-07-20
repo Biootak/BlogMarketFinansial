@@ -20,12 +20,12 @@
  *  - تبلیغ‌ها از initialAds props میان
  */
 
-import type { PostWithRelations, Advertisement } from '@/types/types';
-import PostItem from './PostItem';
 import { AdCard, buildAdEntries } from '@/components/AdCard';
-import FeaturedPostHero from './FeaturedPostHero';
-import CompactPostCard from './CompactPostCard';
 import { cn } from '@/lib/utils';
+import type { Advertisement, PostWithRelations } from '@/types/types';
+import CompactPostCard from './CompactPostCard';
+import FeaturedPostHero from './FeaturedPostHero';
+import PostItem from './PostItem';
 
 interface PostsListProps {
   posts: PostWithRelations[];
@@ -51,7 +51,7 @@ const PostsList: React.FC<PostsListProps> = ({ posts, ads = [], className = '' }
     | { kind: 'ad'; ad: Advertisement; position: number };
 
   const mixedList: ListEntry[] = [];
-  rest.forEach((post, i) => {
+  rest.forEach((post, _i) => {
     mixedList.push({ kind: 'post', post });
   });
   // جای‌گذاری تبلیغ‌ها در موقعیت‌های صحیح

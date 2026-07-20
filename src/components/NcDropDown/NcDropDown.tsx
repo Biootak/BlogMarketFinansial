@@ -1,10 +1,11 @@
 'use client';
 
-import { HiEllipsisHorizontal } from 'react-icons/hi2';
-import React, { type FC, Fragment, type ReactNode } from 'react';
-import { Menu, Transition } from '@headlessui/react';
 import { cn } from '@/lib/utils';
 import type { NcDropDownItem } from '@/types/types';
+import { Menu, Transition } from '@headlessui/react';
+import type React from 'react';
+import { type FC, Fragment, type ReactNode } from 'react';
+import { HiEllipsisHorizontal } from 'react-icons/hi2';
 
 export interface NcDropDownProps {
   className?: string;

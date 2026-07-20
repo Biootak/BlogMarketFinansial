@@ -22,9 +22,9 @@
  *   └──────────────┴──────────────────────────────────────┘
  */
 
+import type { TopAuthor } from '@/actions/getTopAuthors';
 import CommandPalette from '@/components/Dashboard/DashboardPage/CommandPalette';
 import type { MarketRateItem } from '@/lib/market-rates';
-import type { TopAuthor } from '@/actions/getTopAuthors';
 import type { ActivityItem } from '../overview/ActivityRail';
 import EditorialActions from './tiles/EditorialActions';
 import EditorialActivity from './tiles/EditorialActivity';
@@ -101,10 +101,7 @@ const EditorialDeck: React.FC<EditorialDeckProps> = (props) => {
           <EditorialChart scheduledPosts={props.scheduledPosts} />
 
           {/* Row 4: Popular posts + Activity feed */}
-          <EditorialPosts
-            popularPosts={props.popularPosts}
-            recentDrafts={props.recentDrafts}
-          />
+          <EditorialPosts popularPosts={props.popularPosts} recentDrafts={props.recentDrafts} />
           <EditorialActivity items={props.recentActivity} />
 
           {/* Row 5: Market pulse + Top authors + Quick actions */}

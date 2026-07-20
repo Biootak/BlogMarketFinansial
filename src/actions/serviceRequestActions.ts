@@ -1253,7 +1253,9 @@ export async function addServiceRequestNote(
           source: 'ServiceRequest',
         },
       })
-      .catch(() => {/* non-critical */});
+      .catch(() => {
+        /* non-critical */
+      });
 
     revalidatePath('/dashboard/service-requests');
     return { success: true, message: 'یادداشت ثبت شد.' };

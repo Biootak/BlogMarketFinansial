@@ -110,7 +110,7 @@ function extractNumeric(s: string | null | undefined): number {
   if (!s) return 0;
   const match = s.match(NUM_RE);
   if (!match) return 0;
-  return parseFloat(match[0].replace(/[٬,]/g, '')) || 0;
+  return Number.parseFloat(match[0].replace(/[٬,]/g, '')) || 0;
 }
 
 /**

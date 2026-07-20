@@ -99,8 +99,8 @@
   align-items: center;
   padding: 2px 8px;
   border-radius: var(--ds-radius-full);
-  background: oklch(60% 0.10 165 / 0.12);
-  border: 1px solid oklch(60% 0.10 165 / 0.25);
+  background: oklch(60% 0.1 165 / 0.12);
+  border: 1px solid oklch(60% 0.1 165 / 0.25);
   color: var(--ds-accent-emerald);
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
@@ -132,17 +132,21 @@
   background: var(--ds-surface);
   backdrop-filter: blur(16px) saturate(1.5);
   padding: var(--ds-space-6);
-  transition:
-    transform var(--ds-duration-fast) var(--ds-ease-spring),
-    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast);
+  transition: transform var(--ds-duration-fast) var(--ds-ease-spring), box-shadow
+    var(--ds-duration-base) var(--ds-ease-out-quart), border-color var(--ds-duration-fast);
   animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
   overflow: hidden;
 }
 
-.card:nth-child(1) { animation-delay: 60ms; }
-.card:nth-child(2) { animation-delay: 140ms; }
-.card:nth-child(3) { animation-delay: 220ms; }
+.card:nth-child(1) {
+  animation-delay: 60ms;
+}
+.card:nth-child(2) {
+  animation-delay: 140ms;
+}
+.card:nth-child(3) {
+  animation-delay: 220ms;
+}
 
 .card:hover {
   transform: translateY(-4px);
@@ -155,11 +159,8 @@
   border: 1px solid oklch(100% 0 0 / 0.22);
   background: oklch(100% 0 0 / 0.7);
   backdrop-filter: blur(24px) saturate(1.8) brightness(1.02);
-  box-shadow:
-    0 0 0 0.5px oklch(100% 0 0 / 0.3),
-    0 20px 60px -16px oklch(45% 0.08 240 / 0.25),
-    inset 0 1px 0 oklch(100% 0 0 / 0.6),
-    inset 0 -1px 0 oklch(100% 0 0 / 0.1);
+  box-shadow: 0 0 0 0.5px oklch(100% 0 0 / 0.3), 0 20px 60px -16px oklch(45% 0.08 240 / 0.25), inset
+    0 1px 0 oklch(100% 0 0 / 0.6), inset 0 -1px 0 oklch(100% 0 0 / 0.1);
 }
 
 :global(.dark) .cardPopular {
@@ -169,19 +170,13 @@
 
 /* Signature gradient ring on popular card */
 .cardPopular::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(
-    135deg,
-    var(--ds-accent-emerald),
-    var(--nova-cyan) 55%,
-    transparent
-  );
-  -webkit-mask:
-    linear-gradient(var(--ds-text-inverse) 0 0) content-box,
+  background: linear-gradient(135deg, var(--ds-accent-emerald), var(--nova-cyan) 55%, transparent);
+  -webkit-mask: linear-gradient(var(--ds-text-inverse) 0 0) content-box,
     linear-gradient(var(--ds-text-inverse) 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -191,7 +186,7 @@
 
 /* inner shine */
 .cardPopular::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
@@ -302,8 +297,8 @@
   width: 20px;
   height: 20px;
   border-radius: 6px;
-  background: oklch(60% 0.10 165 / 0.12);
-  border: 1px solid oklch(60% 0.10 165 / 0.25);
+  background: oklch(60% 0.1 165 / 0.12);
+  border: 1px solid oklch(60% 0.1 165 / 0.25);
   display: grid;
   place-items: center;
   color: var(--ds-accent-emerald);
@@ -321,10 +316,9 @@
   font-weight: var(--ds-weight-semibold);
   cursor: pointer;
   border: none;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring),
-    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-spring), box-shadow var(--ds-duration-base)
+    var(--ds-ease-out-quart);
   position: relative;
   z-index: 1;
   min-height: 44px;
@@ -333,22 +327,20 @@
 .btnPrimary {
   background: var(--ds-brand-600);
   color: var(--ds-text-inverse);
-  box-shadow:
-    0 0 0 1px oklch(55% 0.1 235 / 0.35),
-    0 8px 24px -8px oklch(48% 0.11 235 / 0.45),
-    inset 0 1px 0 oklch(100% 0 0 / 0.12);
+  box-shadow: 0 0 0 1px oklch(55% 0.1 235 / 0.35), 0 8px 24px -8px oklch(48% 0.11 235 / 0.45), inset
+    0 1px 0 oklch(100% 0 0 / 0.12);
 }
 
 .btnPrimary:hover {
   background: var(--ds-brand-700);
   transform: translateY(-2px);
-  box-shadow:
-    0 0 0 1px oklch(55% 0.1 235 / 0.45),
-    0 14px 40px -10px oklch(48% 0.11 235 / 0.5),
+  box-shadow: 0 0 0 1px oklch(55% 0.1 235 / 0.45), 0 14px 40px -10px oklch(48% 0.11 235 / 0.5),
     inset 0 1px 0 oklch(100% 0 0 / 0.15);
 }
 
-.btnPrimary:active { transform: scale(0.97); }
+.btnPrimary:active {
+  transform: scale(0.97);
+}
 
 .btnGhost {
   background: transparent;
@@ -363,10 +355,18 @@
   transform: translateY(-1px);
 }
 
-.btnGhost:active { transform: scale(0.97); }
+.btnGhost:active {
+  transform: scale(0.97);
+}
 
 /* ─── Fade up animation ──────────────────────────────────────────── */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

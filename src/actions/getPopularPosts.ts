@@ -1,8 +1,8 @@
 'use server';
 
-import { unstable_cache } from 'next/cache';
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
+import { unstable_cache } from 'next/cache';
 
 import type { ActionResult } from '@/types/types';
 import type { Prisma } from '@prisma/client';
@@ -41,7 +41,8 @@ export async function getPopularPosts(): Promise<
     // `unstable_cache` keys ONLY on `keyParts`, NOT on the closure's function
     // args — the previous static key leaked one user's scoped list to another
     // for 120s. Scope the cache by userId/role here.
-    const scopeKey = user.role === 'AUTHOR' ? (user.id ?? 'no-id') : `role:${user.role ?? 'unknown'}`;
+    const scopeKey =
+      user.role === 'AUTHOR' ? (user.id ?? 'no-id') : `role:${user.role ?? 'unknown'}`;
     const fetcher = unstable_cache(
       async () => {
         return prisma.post.findMany({

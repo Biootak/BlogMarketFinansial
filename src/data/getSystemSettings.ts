@@ -1,5 +1,5 @@
-import { safeCache } from '@/lib/safe-cache';
 import prisma from '@/lib/db';
+import { safeCache } from '@/lib/safe-cache';
 
 export interface SiteSettings {
   siteName: string | null;

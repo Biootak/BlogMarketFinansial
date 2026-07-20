@@ -7,11 +7,11 @@
  */
 'use server';
 
-import { cache } from 'react';
-import { unstable_cache } from 'next/cache';
-import { Prisma, type PostStatus } from '@prisma/client';
 import prisma from '@/lib/db';
-import type { UserWithProfile, PostWithRelations } from '@/types/types';
+import type { PostWithRelations, UserWithProfile } from '@/types/types';
+import type { PostStatus, Prisma } from '@prisma/client';
+import { unstable_cache } from 'next/cache';
+import { cache } from 'react';
 
 export interface AuthorProfilePayload {
   author: (UserWithProfile & { _count: { posts: number } }) | null;
@@ -21,11 +21,7 @@ export interface AuthorProfilePayload {
 }
 
 const AUTHOR_FILTER: Prisma.UserWhereInput = {
-  OR: [
-    { role: 'AUTHOR' },
-    { role: 'ADMIN' },
-    { role: 'OWNER' },
-  ],
+  OR: [{ role: 'AUTHOR' }, { role: 'ADMIN' }, { role: 'OWNER' }],
 };
 
 const fetchAuthorProfile = async (
@@ -94,11 +90,7 @@ const getCachedAuthorProfile = unstable_cache(
 );
 
 export const getAuthorProfile = cache(
-  async (
-    authorId: string,
-    page = 1,
-    limit = 9,
-  ): Promise<AuthorProfilePayload> => {
+  async (authorId: string, page = 1, limit = 9): Promise<AuthorProfilePayload> => {
     try {
       return await getCachedAuthorProfile(authorId, page, limit);
     } catch (error) {

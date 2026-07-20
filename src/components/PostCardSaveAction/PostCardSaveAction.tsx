@@ -1,9 +1,9 @@
 'use client';
 
-import React, { type FC } from 'react';
-import NcBookmark from '../NcBookmark/NcBookmark';
 import { motion } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
+import React, { type FC } from 'react';
+import NcBookmark from '../NcBookmark/NcBookmark';
 
 export interface PostCardSaveActionProps {
   className?: string;

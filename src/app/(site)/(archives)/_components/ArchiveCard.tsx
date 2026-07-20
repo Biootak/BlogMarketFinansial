@@ -1,11 +1,11 @@
 'use client';
 
+import { SafeImage } from '@/components/SafeImage';
 // 2026-06-29: Client Component because of `new Date()` usage in date
 // formatting. Next.js 16 forbids `new Date()` in Server Components during
 // static generation unless preceded by uncached/request data access. See
 // https://nextjs.org/docs/messages/next-prerender-current-time
 import { Card } from '@/components/ds';
-import { SafeImage } from '@/components/SafeImage';
 import { getPostLink } from '@/lib/getPostLink';
 import type { PostWithRelations } from '@/types/types';
 import { FolderOpen } from 'lucide-react';
@@ -112,7 +112,10 @@ const ArchiveCard: React.FC<ArchiveCardProps> = ({
             </span>
           </div>
 
-          <Link href={postLink} className="focus:outline-none focus-visible:underline underline-offset-4">
+          <Link
+            href={postLink}
+            className="focus:outline-none focus-visible:underline underline-offset-4"
+          >
             <h3 className="ds-card__title">{title}</h3>
           </Link>
 
@@ -132,7 +135,11 @@ const ArchiveCard: React.FC<ArchiveCardProps> = ({
                   </span>
                 </span>
               ) : null}
-              {author ? <span aria-hidden className="opacity-40">·</span> : null}
+              {author ? (
+                <span aria-hidden className="opacity-40">
+                  ·
+                </span>
+              ) : null}
               <time
                 dateTime={new Date(createdAt).toISOString()}
                 className="inline-flex items-center gap-1"
@@ -143,7 +150,10 @@ const ArchiveCard: React.FC<ArchiveCardProps> = ({
             </div>
             <div className="ds-card__foot-actions">
               {commentCount > 0 ? (
-                <span className="inline-flex items-center gap-1" aria-label={`${commentCount} دیدگاه`}>
+                <span
+                  className="inline-flex items-center gap-1"
+                  aria-label={`${commentCount} دیدگاه`}
+                >
                   <HiOutlineChatBubbleLeftRight className="w-3 h-3" aria-hidden />
                   {commentCount}
                 </span>
@@ -171,7 +181,9 @@ const ArchiveCard: React.FC<ArchiveCardProps> = ({
         href={postLink}
         className="ds-card__media block relative focus:outline-none"
         aria-label={title}
-      >        <SafeImage
+      >
+        {' '}
+        <SafeImage
           src={featuredImage}
           alt={title || ''}
           ratio={ratio}
@@ -181,14 +193,12 @@ const ArchiveCard: React.FC<ArchiveCardProps> = ({
           className="object-cover"
         />
         <div className="ds-card__media-overlay" />
-
         {primaryCategory ? (
           <span className="ds-badge">
             <FolderOpen className="w-3 h-3" aria-hidden />
             {primaryCategory.name}
           </span>
         ) : null}
-
         {postType && postType !== 'STANDARD' ? (
           <span className="ds-badge ds-badge--type">
             {postType === 'VIDEO'
@@ -215,8 +225,13 @@ const ArchiveCard: React.FC<ArchiveCardProps> = ({
           </div>
         ) : null}
 
-        <Link href={postLink} className="focus:outline-none focus-visible:underline underline-offset-4">
-          <h3 className="ds-card__title" title={title}>{title}</h3>
+        <Link
+          href={postLink}
+          className="focus:outline-none focus-visible:underline underline-offset-4"
+        >
+          <h3 className="ds-card__title" title={title}>
+            {title}
+          </h3>
         </Link>
 
         {excerpt ? <p className="ds-card__excerpt">{excerpt}</p> : null}
@@ -235,7 +250,11 @@ const ArchiveCard: React.FC<ArchiveCardProps> = ({
                 </span>
               </span>
             ) : null}
-            {author ? <span aria-hidden className="opacity-40 shrink-0">·</span> : null}
+            {author ? (
+              <span aria-hidden className="opacity-40 shrink-0">
+                ·
+              </span>
+            ) : null}
             <time
               dateTime={new Date(createdAt).toISOString()}
               className="inline-flex items-center gap-1 shrink-0"
@@ -247,7 +266,10 @@ const ArchiveCard: React.FC<ArchiveCardProps> = ({
 
           <div className="ds-card__foot-actions">
             {commentCount > 0 ? (
-              <span className="inline-flex items-center gap-1" aria-label={`${commentCount} دیدگاه`}>
+              <span
+                className="inline-flex items-center gap-1"
+                aria-label={`${commentCount} دیدگاه`}
+              >
                 <HiOutlineChatBubbleLeftRight className="w-3.5 h-3.5" aria-hidden />
                 {commentCount}
               </span>

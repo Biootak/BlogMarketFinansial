@@ -65,10 +65,8 @@ export function AuroraBackground({
           backgroundImage:
             'linear-gradient(rgba(127,127,127,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(127,127,127,0.4) 1px, transparent 1px)',
           backgroundSize: '48px 48px',
-          maskImage:
-            'radial-gradient(ellipse 80% 60% at center, black 0%, transparent 75%)',
-          WebkitMaskImage:
-            'radial-gradient(ellipse 80% 60% at center, black 0%, transparent 75%)',
+          maskImage: 'radial-gradient(ellipse 80% 60% at center, black 0%, transparent 75%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 80% 60% at center, black 0%, transparent 75%)',
         }}
       />
     </div>

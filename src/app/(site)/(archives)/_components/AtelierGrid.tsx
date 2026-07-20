@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
 import type { Advertisement, PostWithRelations } from '@/types/types';
+import type { ReactNode } from 'react';
 import ArchiveAdCard from './ArchiveAdCard';
 import AtelierCard from './AtelierCard';
 

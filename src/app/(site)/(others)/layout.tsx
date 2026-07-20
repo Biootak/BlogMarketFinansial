@@ -1,6 +1,6 @@
-import SectionSubscribe2 from "@/components/SectionSubscribe2/SectionSubscribe2";
-import type { ReactNode } from "react";
-import s from "./others.module.css";
+import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
+import type { ReactNode } from 'react';
+import s from './others.module.css';
 
 /**
  * Layout for /contact, /subscription, /terms etc.

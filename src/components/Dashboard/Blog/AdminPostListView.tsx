@@ -1,9 +1,9 @@
-import { Suspense } from 'react';
 import { listAllPosts } from '@/actions/postActions';
-import PostList from './PostList';
-import SkeletonLoader from '@/components/SkeletonLoader';
 import ErrorComponent from '@/components/ErrorComponent';
+import SkeletonLoader from '@/components/SkeletonLoader';
 import type { PostStatus } from '@/types/types';
+import { Suspense } from 'react';
+import PostList from './PostList';
 
 export default async function AdminPostListView({
   searchParams,

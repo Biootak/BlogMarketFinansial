@@ -1,11 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { getActivityLog } from '@/actions/reportActions';
-import { Loader2 } from 'lucide-react';
-import { toast, useToast } from '@/components/ui/use-toast';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -14,17 +21,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { toast, useToast } from '@/components/ui/use-toast';
+import { Loader2 } from 'lucide-react';
 import { AlertCircle, AlertTriangle, Info, Loader2 as Loader } from 'lucide-react';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { useEffect, useState } from 'react';
 
 interface SystemData {
   system?: {
@@ -90,10 +90,10 @@ export default function SystemLogs() {
             variant: 'success',
           });
         } else {
-          setError(result.message || "خطا در دریافت لاگ‌های سیستم");
+          setError(result.message || 'خطا در دریافت لاگ‌های سیستم');
         }
       } catch (error) {
-        setError(error instanceof Error ? error.message : "خطا در دریافت لاگ‌های سیستم");
+        setError(error instanceof Error ? error.message : 'خطا در دریافت لاگ‌های سیستم');
       } finally {
         setIsLoading(false);
       }
@@ -111,14 +111,14 @@ export default function SystemLogs() {
         } else {
           toast({
             title: 'خطا',
-            description: result.message || "خطا در دریافت لاگ‌های سیستم",
+            description: result.message || 'خطا در دریافت لاگ‌های سیستم',
             variant: 'destructive',
           });
         }
       } catch (error) {
         toast({
           title: 'خطا',
-          description: error instanceof Error ? error.message : "خطا در دریافت لاگ‌های سیستم",
+          description: error instanceof Error ? error.message : 'خطا در دریافت لاگ‌های سیستم',
           variant: 'destructive',
         });
       } finally {
@@ -145,13 +145,14 @@ export default function SystemLogs() {
     }
   }, []);
 
-  const filteredLogs = logs.filter(log => {
+  const filteredLogs = logs.filter((log) => {
     if (filter.action !== 'all' && log.action !== filter.action) return false;
-    if (filter.search && !log.details.toLowerCase().includes(filter.search.toLowerCase())) return false;
+    if (filter.search && !log.details.toLowerCase().includes(filter.search.toLowerCase()))
+      return false;
     return true;
   });
 
-  const getLevelBadge = (level: string) => {
+  const _getLevelBadge = (level: string) => {
     switch (level.toLowerCase()) {
       case 'error':
         return <Badge variant="destructive">{level}</Badge>;
@@ -227,7 +228,9 @@ export default function SystemLogs() {
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span>Status:</span>
-                <Badge variant={systemData.database?.status === 'outline' ? 'default' : 'destructive'}>
+                <Badge
+                  variant={systemData.database?.status === 'outline' ? 'default' : 'destructive'}
+                >
                   {systemData.database?.status}
                 </Badge>
               </div>
@@ -293,10 +296,7 @@ export default function SystemLogs() {
             <SelectItem value="error">Error</SelectItem>
           </SelectContent>
         </Select>
-        <Button
-          variant="outline"
-          onClick={() => setFilter({ action: 'all', search: '' })}
-        >
+        <Button variant="outline" onClick={() => setFilter({ action: 'all', search: '' })}>
           Reset Filters
         </Button>
       </div>
@@ -331,11 +331,15 @@ export default function SystemLogs() {
           <div key={index} className="dash-panel p-4">
             <div className="flex justify-between items-start">
               <div>
-                <h4 className={`font-medium ${
-                  log.level === 'error' ? 'text-red-600' :
-                  log.level === 'warning' ? 'text-amber-600' :
-                  'text-[rgb(var(--c-primary-600))]'
-                }`}>
+                <h4
+                  className={`font-medium ${
+                    log.level === 'error'
+                      ? 'text-red-600'
+                      : log.level === 'warning'
+                        ? 'text-amber-600'
+                        : 'text-[rgb(var(--c-primary-600))]'
+                  }`}
+                >
                   {log.message}
                 </h4>
                 {log.details && (
@@ -347,11 +351,15 @@ export default function SystemLogs() {
               </div>
             </div>
             <div className="mt-2 flex gap-2 text-sm">
-              <span className={`px-2 py-0.5 rounded-full ${
-                log.level === 'error' ? 'bg-red-100 text-red-800' :
-                log.level === 'warning' ? 'bg-amber-100 text-amber-800' :
-                'bg-[rgb(var(--c-primary-50))] text-[rgb(var(--c-primary-800))]'
-              }`}>
+              <span
+                className={`px-2 py-0.5 rounded-full ${
+                  log.level === 'error'
+                    ? 'bg-red-100 text-red-800'
+                    : log.level === 'warning'
+                      ? 'bg-amber-100 text-amber-800'
+                      : 'bg-[rgb(var(--c-primary-50))] text-[rgb(var(--c-primary-800))]'
+                }`}
+              >
                 {log.level}
               </span>
               <span className="text-gray-500">{log.source}</span>

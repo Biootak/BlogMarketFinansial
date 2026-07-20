@@ -1,12 +1,12 @@
 // src/actions/market-rates.ts
 'use server';
 
-import { unstable_cache } from 'next/cache';
 import { auth } from '@/auth';
-import { revalidateTag } from '@/lib/revalidate';
 import prisma from '@/lib/db';
 import { assembleMarketRates } from '@/lib/market-rates';
 import type { MarketRateItem } from '@/lib/market-rates';
+import { revalidateTag } from '@/lib/revalidate';
+import { unstable_cache } from 'next/cache';
 
 const TAGS = {
   ticker: 'market-rates:ticker',
@@ -62,7 +62,9 @@ type CreateInput = {
 };
 
 /** ادمین: اضافه کردن نرخ جدید. */
-export async function createMarketRate(input: CreateInput): Promise<
+export async function createMarketRate(
+  input: CreateInput,
+): Promise<
   { success: true; id: string } | { success: false; error: { code: string; message: string } }
 > {
   const session = await auth();
@@ -71,11 +73,20 @@ export async function createMarketRate(input: CreateInput): Promise<
   }
 
   if (!input.symbol || !input.displayNameFa) {
-    return { success: false, error: { code: 'INVALID_INPUT', message: 'symbol و displayNameFa الزامی هستند' } };
+    return {
+      success: false,
+      error: { code: 'INVALID_INPUT', message: 'symbol و displayNameFa الزامی هستند' },
+    };
   }
 
-  if (input.provider === 'manual' && (!input.singleRate || Number.parseFloat(input.singleRate) <= 0)) {
-    return { success: false, error: { code: 'INVALID_INPUT', message: 'برای حالت دستی، singleRate الزامی است' } };
+  if (
+    input.provider === 'manual' &&
+    (!input.singleRate || Number.parseFloat(input.singleRate) <= 0)
+  ) {
+    return {
+      success: false,
+      error: { code: 'INVALID_INPUT', message: 'برای حالت دستی، singleRate الزامی است' },
+    };
   }
 
   try {
@@ -149,9 +160,9 @@ export async function updateMarketRate(
 }
 
 /** ادمین: حذف. */
-export async function deleteMarketRate(id: string): Promise<
-  { success: true } | { success: false; error: { code: string; message: string } }
-> {
+export async function deleteMarketRate(
+  id: string,
+): Promise<{ success: true } | { success: false; error: { code: string; message: string } }> {
   const session = await auth();
   if (!session?.user || (session.user.role !== 'OWNER' && session.user.role !== 'ADMIN')) {
     return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی ندارید' } };

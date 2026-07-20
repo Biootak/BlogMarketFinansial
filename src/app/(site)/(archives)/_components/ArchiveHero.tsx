@@ -1,5 +1,5 @@
-import { Chip } from '@/components/ds';
 import { SafeImage } from '@/components/SafeImage';
+import { Chip } from '@/components/ds';
 import type { TaxonomyType } from '@/types/types';
 import { FolderOpen, Hash } from 'lucide-react';
 import Link from 'next/link';
@@ -7,12 +7,12 @@ import * as React from 'react';
 import {
   HiArrowTrendingUp,
   HiOutlineCalendarDays,
+  HiOutlineClock,
   HiOutlineDocumentText,
   HiOutlineRectangleStack,
   HiOutlineSparkles,
   HiOutlineSquares2X2,
   HiOutlineUserGroup,
-  HiOutlineClock,
 } from 'react-icons/hi2';
 
 /**
@@ -196,9 +196,7 @@ function ArchiveHero({
                       </span>
                       <span className="truncate max-w-[10rem]">{cat.name}</span>
                       {typeof cat.count === 'number' ? (
-                        <span className="arc-quickpick-v4__count">
-                          {formatNumberFa(cat.count)}
-                        </span>
+                        <span className="arc-quickpick-v4__count">{formatNumberFa(cat.count)}</span>
                       ) : null}
                     </Link>
                   ))}
@@ -223,18 +221,13 @@ function ArchiveHero({
             </div>
 
             {/* ---- Cell 2: تعداد مقالات ---- */}
-            <div
-              className="arc-bento__cell"
-              style={{ ['--arc-cell-index' as string]: '1' }}
-            >
+            <div className="arc-bento__cell" style={{ ['--arc-cell-index' as string]: '1' }}>
               <div className="flex items-center gap-3">
                 <span className="arc-metric-card__icon">
                   <HiOutlineDocumentText className="w-4 h-4" />
                 </span>
                 <div className="arc-metric-card__body">
-                  <span className="arc-counter arc-counter--brand">
-                    {formatNumberFa(total)}
-                  </span>
+                  <span className="arc-counter arc-counter--brand">{formatNumberFa(total)}</span>
                   <span className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
                     مقاله در آرشیو
                   </span>
@@ -248,10 +241,7 @@ function ArchiveHero({
 
             {/* ---- Cell 3: متریک پویا (بر اساس context) ---- */}
             {selectedCategory?.childCategories?.length ? (
-              <div
-                className="arc-bento__cell"
-                style={{ ['--arc-cell-index' as string]: '2' }}
-              >
+              <div className="arc-bento__cell" style={{ ['--arc-cell-index' as string]: '2' }}>
                 <div className="flex items-center gap-3">
                   <span className="arc-metric-card__icon arc-metric-card--violet">
                     <HiOutlineSquares2X2 className="w-4 h-4" />
@@ -278,18 +268,13 @@ function ArchiveHero({
                 </div>
               </div>
             ) : trendingTags.length > 0 ? (
-              <div
-                className="arc-bento__cell"
-                style={{ ['--arc-cell-index' as string]: '2' }}
-              >
+              <div className="arc-bento__cell" style={{ ['--arc-cell-index' as string]: '2' }}>
                 <div className="flex items-center gap-3">
                   <span className="arc-metric-card__icon arc-metric-card--emerald">
                     <HiOutlineSparkles className="w-4 h-4" />
                   </span>
                   <div className="arc-metric-card__body">
-                    <span className="arc-counter">
-                      {formatNumberFa(trendingTags.length)}
-                    </span>
+                    <span className="arc-counter">{formatNumberFa(trendingTags.length)}</span>
                     <span className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
                       برچسب پرطرفدار
                     </span>
@@ -311,10 +296,7 @@ function ArchiveHero({
                 </div>
               </div>
             ) : (
-              <div
-                className="arc-bento__cell"
-                style={{ ['--arc-cell-index' as string]: '2' }}
-              >
+              <div className="arc-bento__cell" style={{ ['--arc-cell-index' as string]: '2' }}>
                 <div className="flex items-center gap-3">
                   <span className="arc-metric-card__icon arc-metric-card--amber">
                     <HiOutlineSparkles className="w-4 h-4" />
@@ -357,9 +339,7 @@ function ArchiveHero({
                     <HiOutlineCalendarDays className="w-4 h-4" />
                   </span>
                   <div className="flex flex-col">
-                    <span className="arc-counter text-sm">
-                      {formatNumberFa(monthlyCount)}
-                    </span>
+                    <span className="arc-counter text-sm">{formatNumberFa(monthlyCount)}</span>
                     <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
                       مقاله این ماه
                     </span>
@@ -370,7 +350,9 @@ function ArchiveHero({
                     <HiArrowTrendingUp className="w-4 h-4" />
                   </span>
                   <div className="flex flex-col">
-                    <span className="arc-counter text-sm">+{Math.max(Math.floor(total * 0.05), 3)}</span>
+                    <span className="arc-counter text-sm">
+                      +{Math.max(Math.floor(total * 0.05), 3)}
+                    </span>
                     <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
                       رشد هفتگی
                     </span>

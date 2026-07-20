@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useCallback, useEffect, useState, useRef } from 'react';
-import type { Editor } from '@tiptap/core';
-import { Icon } from '../../ui/icon';
 import { ConfirmDialog } from '@/components/Dashboard/primitives/ConfirmDialog';
-import { CellColorPicker } from './cell-color-picker';
-import { cn } from '@/lib/utils';
 // 2026-07-06: dir صریح برای منویی که با fixed positioning روی body سوار می‌شود.
 import { useDirection } from '@/hooks/useDirection';
+import { cn } from '@/lib/utils';
+import type { Editor } from '@tiptap/core';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Icon } from '../../ui/icon';
+import { CellColorPicker } from './cell-color-picker';
 
 interface TableContextMenuProps {
   editor: Editor;
@@ -30,15 +31,15 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
     (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       const tableCell = target.closest('td, th');
-      
+
       if (tableCell && editor.isActive('table')) {
         event.preventDefault();
-        
+
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
         const menuWidth = 240;
         const menuHeight = 400;
-        
+
         let x = event.clientX;
         let y = event.clientY;
 
@@ -60,31 +61,34 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
         setShowColorPicker(false);
       }
     },
-    [editor]
+    [editor],
   );
 
   const handleClick = useCallback((event: MouseEvent) => {
-    if (menuRef.current && menuRef.current.contains(event.target as Node)) {
+    if (menuRef.current?.contains(event.target as Node)) {
       return;
     }
     setIsOpen(false);
   }, []);
 
-  const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      if (showColorPicker) {
-        setShowColorPicker(false);
-      } else {
-        setIsOpen(false);
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (showColorPicker) {
+          setShowColorPicker(false);
+        } else {
+          setIsOpen(false);
+        }
       }
-    }
-  }, [showColorPicker]);
+    },
+    [showColorPicker],
+  );
 
   useEffect(() => {
     document.addEventListener('contextmenu', handleContextMenu);
     document.addEventListener('click', handleClick);
     document.addEventListener('keydown', handleKeyDown);
-    
+
     return () => {
       document.removeEventListener('contextmenu', handleContextMenu);
       document.removeEventListener('click', handleClick);
@@ -115,7 +119,7 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
   interface MenuItem {
     label: string;
     icon: React.ReactNode;
-    action: () => boolean | void;
+    action: () => boolean | undefined;
     danger?: boolean;
     disabled?: boolean;
   }
@@ -207,7 +211,7 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
             {sectionIndex > 0 && (
               <div className="h-px bg-gray-200 dark:bg-gray-700 my-2" role="separator" />
             )}
-            <div 
+            <div
               id={`section-${section.title}`}
               className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase"
             >
@@ -227,15 +231,17 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
                   }
                 }}
                 className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2 text-sm text-start transition-colors",
+                  'w-full flex items-center gap-3 px-3 py-2 text-sm text-start transition-colors',
                   item.disabled
                     ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
                     : item.danger
-                    ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
-                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
+                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700',
                 )}
               >
-                <span className={item.disabled ? 'opacity-50' : ''} aria-hidden="true">{item.icon}</span>
+                <span className={item.disabled ? 'opacity-50' : ''} aria-hidden="true">
+                  {item.icon}
+                </span>
                 <span>{item.label}</span>
               </button>
             ))}
@@ -247,7 +253,7 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
         <div className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase">
           رنگ سلول
         </div>
-        
+
         <div className="px-2 py-1">
           <button
             type="button"
@@ -259,14 +265,14 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
               <Icon name="palette" size={14} aria-hidden="true" />
               انتخاب رنگ
             </span>
-            <Icon 
+            <Icon
               name="chevron-down"
-              size={14} 
-              className={cn("transition-transform", showColorPicker && "rotate-180")} 
+              size={14}
+              className={cn('transition-transform', showColorPicker && 'rotate-180')}
               aria-hidden="true"
             />
           </button>
-          
+
           {showColorPicker && (
             <div className="mt-2">
               <CellColorPicker onSelect={setCellColor} onClose={() => setShowColorPicker(false)} />

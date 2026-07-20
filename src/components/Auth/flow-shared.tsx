@@ -1,14 +1,6 @@
 'use client';
 
-import {
-  AlertCircle,
-  AtSign,
-  CheckCircle2,
-  Eye,
-  EyeOff,
-  Info,
-  Pencil,
-} from 'lucide-react';
+import { AlertCircle, AtSign, CheckCircle2, Eye, EyeOff, Info, Pencil } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { FieldValues, Path, useForm } from 'react-hook-form';
 
@@ -17,80 +9,74 @@ import type { VerificationEmailIntent } from '@/lib/tokens';
 
 export type { AuthResult };
 
-export type InternalStep =
-  | 'email'
-  | 'register'
-  | 'login'
-  | 'verify'
-  | 'recover'
-  | 'set-password';
+export type InternalStep = 'email' | 'register' | 'login' | 'verify' | 'recover' | 'set-password';
 
-export type FlowIntent   = VerificationEmailIntent;
-export type NoticeTone   = 'error' | 'success' | 'info';
-export type AuthNotice   = { tone: NoticeTone; message: string };
+export type FlowIntent = VerificationEmailIntent;
+export type NoticeTone = 'error' | 'success' | 'info';
+export type AuthNotice = { tone: NoticeTone; message: string };
 
 type StepCopy = {
-  eyebrow:  string;
-  title:    string;
+  eyebrow: string;
+  title: string;
   subtitle: string;
-  aside:    string;
-  help?:    string;
+  aside: string;
+  help?: string;
 };
 
 export const RESEND_COOLDOWN_MS = 60_000;
 
 export const STEP_COPY: Record<InternalStep, StepCopy> = {
   email: {
-    eyebrow:  'ورود یا ساخت حساب',
-    title:    'با ایمیل ادامه دهید',
+    eyebrow: 'ورود یا ساخت حساب',
+    title: 'با ایمیل ادامه دهید',
     subtitle: 'ایمیل‌تان را وارد کنید تا مناسب‌ترین مسیر باز شود.',
-    aside:    '',
+    aside: '',
   },
   register: {
-    eyebrow:  'ساخت حساب',
-    title:    'حساب جدید بسازید',
+    eyebrow: 'ساخت حساب',
+    title: 'حساب جدید بسازید',
     subtitle: 'اطلاعات پایه‌تان را وارد کنید تا حساب آماده شود.',
-    aside:    '',
+    aside: '',
   },
   login: {
-    eyebrow:  'ورود',
-    title:    'خوش برگشتید',
+    eyebrow: 'ورود',
+    title: 'خوش برگشتید',
     subtitle: 'رمز عبور را وارد کنید یا با یک ارائه‌دهنده اجتماعی ادامه دهید.',
-    aside:    '',
+    aside: '',
   },
   verify: {
-    eyebrow:  'تأیید ایمیل',
-    title:    'کد ایمیل را وارد کنید',
+    eyebrow: 'تأیید ایمیل',
+    title: 'کد ایمیل را وارد کنید',
     subtitle: 'کد ۶ رقمی ارسال‌شده را وارد کنید.',
-    aside:    '',
-    help:     'کد را وارد کنید؛ بعد از کامل شدن، با دکمه «تأیید» ادامه دهید.',
+    aside: '',
+    help: 'کد را وارد کنید؛ بعد از کامل شدن، با دکمه «تأیید» ادامه دهید.',
   },
   recover: {
-    eyebrow:  'بازیابی رمز عبور',
-    title:    'رمز عبور را بازیابی کنید',
+    eyebrow: 'بازیابی رمز عبور',
+    title: 'رمز عبور را بازیابی کنید',
     subtitle: 'کد بازیابی به ایمیل‌تان ارسال می‌شود.',
-    aside:    '',
+    aside: '',
   },
   'set-password': {
-    eyebrow:  'رمز عبور جدید',
-    title:    'رمز جدید بسازید',
+    eyebrow: 'رمز عبور جدید',
+    title: 'رمز جدید بسازید',
     subtitle: 'یک رمز امن انتخاب کنید.',
-    aside:    '',
+    aside: '',
   },
 };
 
 export const INTENT_LABEL: Record<FlowIntent, string> = {
-  register:         'فعال‌سازی حساب',
-  login:            'ورود امن',
-  reverify:         'تأیید مجدد ایمیل',
-  recover:          'بازیابی رمز عبور',
+  register: 'فعال‌سازی حساب',
+  login: 'ورود امن',
+  reverify: 'تأیید مجدد ایمیل',
+  recover: 'بازیابی رمز عبور',
   'service-verify': 'تأیید درخواست خدمات',
 };
 
 export function scorePassword(pw: string): { score: 0 | 1 | 2 | 3 | 4; label: string } {
   if (!pw) return { score: 0, label: '' };
   let p = 0;
-  if (pw.length >= 8)  p++;
+  if (pw.length >= 8) p++;
   if (pw.length >= 12) p++;
   if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) p++;
   if (/\d/.test(pw)) p++;
@@ -103,17 +89,19 @@ export function formatCooldown(ms: number): string {
   return Math.max(0, Math.ceil(ms / 1000)).toLocaleString('fa-IR');
 }
 
-export function readInitialStep(
-  step: string | null,
-  intent: string | null,
-): InternalStep {
+export function readInitialStep(step: string | null, intent: string | null): InternalStep {
   const allowed: InternalStep[] = [
-    'email', 'register', 'login', 'verify', 'recover', 'set-password',
+    'email',
+    'register',
+    'login',
+    'verify',
+    'recover',
+    'set-password',
   ];
   if (step && allowed.includes(step as InternalStep)) return step as InternalStep;
   if (intent === 'register') return 'register';
-  if (intent === 'login')    return 'login';
-  if (intent === 'recover')  return 'recover';
+  if (intent === 'login') return 'login';
+  if (intent === 'recover') return 'recover';
   return 'email';
 }
 
@@ -130,25 +118,27 @@ export function PasswordField<TFieldValues extends FieldValues>({
   error,
   registration,
   showStrength = false,
-  autoFocus    = false,
+  autoFocus = false,
 }: {
-  name:          Path<TFieldValues>;
-  id:            string;
-  label:         string;
-  autoComplete:  string;
-  error?:        string;
-  registration:  ReturnType<typeof useForm<TFieldValues>>['register'];
+  name: Path<TFieldValues>;
+  id: string;
+  label: string;
+  autoComplete: string;
+  error?: string;
+  registration: ReturnType<typeof useForm<TFieldValues>>['register'];
   showStrength?: boolean;
-  autoFocus?:    boolean;
+  autoFocus?: boolean;
 }) {
   const [visible, setVisible] = useState(false);
-  const [value,   setValue]   = useState('');
+  const [value, setValue] = useState('');
   const strength = useMemo(() => scorePassword(value), [value]);
-  const field    = registration(name);
+  const field = registration(name);
 
   return (
     <div className="auth-fieldset">
-      <label htmlFor={id} className="auth-label">{label}</label>
+      <label htmlFor={id} className="auth-label">
+        {label}
+      </label>
       <div className="auth-input-wrap">
         <input
           id={id}
@@ -160,7 +150,10 @@ export function PasswordField<TFieldValues extends FieldValues>({
           className={`auth-input auth-input--with-action${error ? ' auth-input--invalid' : ''}`}
           dir="ltr"
           {...field}
-          onChange={(e) => { field.onChange(e); setValue(e.target.value); }}
+          onChange={(e) => {
+            field.onChange(e);
+            setValue(e.target.value);
+          }}
         />
         <button
           type="button"
@@ -200,9 +193,9 @@ export function LockedEmailChip({
   onChangeEmail,
   label = 'ادامه به عنوان',
 }: {
-  email:          string;
-  onChangeEmail:  () => void;
-  label?:         string;
+  email: string;
+  onChangeEmail: () => void;
+  label?: string;
 }) {
   return (
     <div className="auth-email-chip" aria-label={`${label}: ${email}`}>
@@ -211,7 +204,9 @@ export function LockedEmailChip({
       </span>
       <span className="auth-email-chip__content">
         <span className="auth-email-chip__label">{label}</span>
-        <span className="auth-email-chip__address" dir="ltr">{email}</span>
+        <span className="auth-email-chip__address" dir="ltr">
+          {email}
+        </span>
       </span>
       <button
         type="button"
@@ -230,13 +225,13 @@ export function LockedEmailChip({
 export function NoticeBanner({ notice }: { notice: AuthNotice | null }) {
   if (!notice) return null;
   const cls =
-    notice.tone === 'error'   ? 'auth-alert'
-    : notice.tone === 'success' ? 'auth-notice auth-notice--success'
-    : 'auth-notice';
+    notice.tone === 'error'
+      ? 'auth-alert'
+      : notice.tone === 'success'
+        ? 'auth-notice auth-notice--success'
+        : 'auth-notice';
   const Icon =
-    notice.tone === 'error'   ? AlertCircle
-    : notice.tone === 'success' ? CheckCircle2
-    : Info;
+    notice.tone === 'error' ? AlertCircle : notice.tone === 'success' ? CheckCircle2 : Info;
   return (
     <p className={cls} aria-live="polite">
       <Icon aria-hidden="true" />
@@ -251,8 +246,8 @@ export function ContextSummary({
   email: _email,
   intent: _intent,
 }: {
-  step:   InternalStep;
-  email:  string;
+  step: InternalStep;
+  email: string;
   intent: FlowIntent;
 }) {
   return null;

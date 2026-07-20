@@ -23,11 +23,11 @@
 // فقط). اجرای چندباره نتیجهٔ یکسانی دارد.
 // ============================================================================
 
+import { verifyCronSecret } from '@/lib/cron-auth';
 import prisma from '@/lib/db';
 import { revalidateTag } from '@/lib/revalidate';
 import { revalidatePath } from 'next/cache';
 import { NextResponse } from 'next/server';
-import { verifyCronSecret } from '@/lib/cron-auth';
 
 // Vercel Cron: Hobby max=10s, Pro max=60s. کوئری ما یک SELECT + چند UPDATE
 // است؛ حتی با ۱۰۰ پست زیر ۵ ثانیه.
@@ -97,9 +97,9 @@ async function handle(request: Request) {
         continue;
       }
 
-      // scheduledAt: NOT NULL در SELECT (where not null). حتی اگر TS
-      // آن را nullable ببیند، runtime تضمین می‌دهد که اینجا مقدار دارد.
-      const scheduledAtIso = post.scheduledAt!.toISOString();
+      // scheduledAt: NOT NULL in the WHERE clause above (`{ not: null, lte: now }`).
+      // TypeScript still sees it as nullable from the schema; runtime guarantees a value.
+      const scheduledAtIso = (post.scheduledAt as Date).toISOString();
       published.push({
         postId: post.id,
         title: post.title,

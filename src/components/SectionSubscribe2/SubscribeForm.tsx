@@ -1,14 +1,14 @@
 'use client';
 
-import { type FC, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
 import { motion } from '@/lib/motion-shim';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, Loader2, Mail } from 'lucide-react';
+import { type FC, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
 
 const schema = z.object({
   email: z.string().email({ message: 'ایمیل معتبر وارد کنید' }),
@@ -102,7 +102,7 @@ const SubscribeForm: FC<SubscribeFormProps> = ({ onSubmit }) => {
 
       {/* Error Message */}
       {errors.email && (
-        <motion.p 
+        <motion.p
           className="mt-2 text-amber-300 text-xs sm:text-sm flex items-center gap-1"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}

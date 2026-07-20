@@ -2,9 +2,9 @@
 // 2026-06-20: نمایش مقدار DB + delta از TGJU در یک سلول
 // RTL-safe (اعداد با dir="ltr" داخل سلول)
 
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import { formatWithUnit } from '@/lib/market-rates/format';
 import type { MarketRateUnit } from '@/lib/market-rates';
+import { formatWithUnit } from '@/lib/market-rates/format';
+import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
 
 interface ValueCellProps {
   rawValue: number | null;
@@ -13,12 +13,7 @@ interface ValueCellProps {
   tgjuDelta?: number | null;
 }
 
-export default function ValueCell({
-  rawValue,
-  unit,
-  decimals,
-  tgjuDelta,
-}: ValueCellProps) {
+export default function ValueCell({ rawValue, unit, decimals, tgjuDelta }: ValueCellProps) {
   if (rawValue === null || !unit) {
     return (
       <span
@@ -30,15 +25,13 @@ export default function ValueCell({
         }}
         aria-label="مقدار موجود نیست"
       >
-        <Minus aria-hidden style={{ width: '0.875rem', height: '0.875rem' }} />
-        —
+        <Minus aria-hidden style={{ width: '0.875rem', height: '0.875rem' }} />—
       </span>
     );
   }
 
   const formatted = formatWithUnit(rawValue, unit as MarketRateUnit, decimals);
-  const hasDelta =
-    typeof tgjuDelta === 'number' && Number.isFinite(tgjuDelta) && tgjuDelta !== 0;
+  const hasDelta = typeof tgjuDelta === 'number' && Number.isFinite(tgjuDelta) && tgjuDelta !== 0;
 
   return (
     <span className="inline-flex items-center gap-2">
@@ -58,10 +51,7 @@ export default function ValueCell({
           dir="ltr"
           style={{
             fontSize: 'var(--ds-text-xs)',
-            color:
-              (tgjuDelta ?? 0) > 0
-                ? 'var(--ds-accent-emerald)'
-                : 'var(--ds-accent-rose)',
+            color: (tgjuDelta ?? 0) > 0 ? 'var(--ds-accent-emerald)' : 'var(--ds-accent-rose)',
           }}
           aria-label={`تغییر ${(tgjuDelta ?? 0) > 0 ? 'مثبت' : 'منفی'} ${Math.abs(tgjuDelta ?? 0).toFixed(2)} درصد`}
         >

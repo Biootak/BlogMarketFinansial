@@ -3,10 +3,10 @@
 
 'use client';
 
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { ChevronUp, ChevronDown } from 'lucide-react';
 import ExchangeRateRow, { type RateRowData } from './ExchangeRateRow';
-import type { SourceFilter, GroupFilter } from './ExchangeRatesToolbar';
+import type { GroupFilter, SourceFilter } from './ExchangeRatesToolbar';
 
 interface TableProps {
   rows: RateRowData[];
@@ -55,10 +55,7 @@ export default function ExchangeRatesTable({
       if (source !== 'all' && r.provider !== source) return false;
       if (group !== 'all' && r.group !== group) return false;
       if (!q) return true;
-      return (
-        r.displayNameFa.toLowerCase().includes(q) ||
-        r.symbol.toLowerCase().includes(q)
-      );
+      return r.displayNameFa.toLowerCase().includes(q) || r.symbol.toLowerCase().includes(q);
     });
   }, [rows, query, source, group]);
 
@@ -69,8 +66,7 @@ export default function ExchangeRatesTable({
       if (sortKey === 'priority') cmp = a.priority - b.priority;
       else if (sortKey === 'displayNameFa')
         cmp = a.displayNameFa.localeCompare(b.displayNameFa, 'fa-IR');
-      else if (sortKey === 'updatedAt')
-        cmp = a.updatedAt.getTime() - b.updatedAt.getTime();
+      else if (sortKey === 'updatedAt') cmp = a.updatedAt.getTime() - b.updatedAt.getTime();
       return sortDir === 'asc' ? cmp : -cmp;
     });
     return list;
@@ -103,8 +99,7 @@ export default function ExchangeRatesTable({
             width: '3rem',
             height: '3rem',
             borderRadius: 'var(--ds-radius-full)',
-            background:
-              'color-mix(in oklch, var(--ds-brand-500) 12%, transparent)',
+            background: 'color-mix(in oklch, var(--ds-brand-500) 12%, transparent)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -162,11 +157,7 @@ export default function ExchangeRatesTable({
                   key={i}
                   scope="col"
                   aria-sort={
-                    sortKey === col.key
-                      ? sortDir === 'asc'
-                        ? 'ascending'
-                        : 'descending'
-                      : 'none'
+                    sortKey === col.key ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
                   }
                   className="font-semibold uppercase"
                   style={{
@@ -198,10 +189,7 @@ export default function ExchangeRatesTable({
                       {col.label}
                       {sortKey === col.key ? (
                         sortDir === 'asc' ? (
-                          <ChevronUp
-                            aria-hidden
-                            style={{ width: '0.75rem', height: '0.75rem' }}
-                          />
+                          <ChevronUp aria-hidden style={{ width: '0.75rem', height: '0.75rem' }} />
                         ) : (
                           <ChevronDown
                             aria-hidden
@@ -220,12 +208,7 @@ export default function ExchangeRatesTable({
         </thead>
         <tbody>
           {sorted.map((row) => (
-            <ExchangeRateRow
-              key={row.id}
-              row={row}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
+            <ExchangeRateRow key={row.id} row={row} onEdit={onEdit} onDelete={onDelete} />
           ))}
         </tbody>
       </table>

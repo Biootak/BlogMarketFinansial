@@ -330,8 +330,7 @@ export default function HeroConverter({
 
             {/* H1 — headline مستقل با proof point */}
             <h1 id="hero-converter-title" className="mt-hero__title mt-fade-up mt-fade-up-d2">
-              حواله با{' '}
-              <span className="mt-hero__title-accent">بهترین نرخ بازار</span>
+              حواله با <span className="mt-hero__title-accent">بهترین نرخ بازار</span>
             </h1>
 
             {/* Lead — عدد dynamic با fallback امن */}

@@ -3,8 +3,8 @@
 import prisma from '@/lib/db';
 import { safeCache } from '@/lib/safe-cache';
 import { generateColor } from '@/lib/utils';
-import type { ActionResult, TaxonomyType, PostWithRelations, SidebarData } from '@/types/types';
-import { getTopAuthors, type TopAuthor } from './getTopAuthors';
+import type { ActionResult, PostWithRelations, SidebarData, TaxonomyType } from '@/types/types';
+import { type TopAuthor, getTopAuthors } from './getTopAuthors';
 
 // 2026-06-21: همه‌ی cached functions در این فایل از safeCache استفاده می‌کنند.
 // قبلاً unstable_cache بود که در Next.js 16 خطای DB را re-throw می‌کرد.
@@ -299,4 +299,3 @@ export async function getSidebarData(): Promise<SidebarData> {
     },
   )();
 }
-

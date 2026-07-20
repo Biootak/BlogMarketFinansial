@@ -1,12 +1,12 @@
 import { auth } from '@/auth';
 import { notFound, redirect } from 'next/navigation';
 
-import { getMarketRates } from '@/actions/market-rates';
 import { getPopularPosts } from '@/actions/getPopularPosts';
 import { getRecentActivity } from '@/actions/getRecentActivity';
 import { getRecentDrafts } from '@/actions/getRecentDrafts';
 import { getTopAuthors } from '@/actions/getTopAuthors';
 import { getViewStats } from '@/actions/getViewStats';
+import { getMarketRates } from '@/actions/market-rates';
 import { getScheduledPosts, getStats } from '@/actions/postActions';
 // 2026-07-04: Replaced Editorial Command (typography-only, 5-row, single
 // emerald accent) with Atelier 2026 — Persian-modern redesign with a

@@ -6,8 +6,8 @@
  * No DB dependency — purely presentational / landing.
  */
 
-import { useRef, useEffect, useCallback, useState } from 'react';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingDown, TrendingUp } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import s from './wallet.module.css';
 
 function useGlassTilt(strength = 5) {
@@ -105,11 +105,25 @@ export default function WalletHero() {
             ].map((r) => (
               <div key={r.label} className={s.cardRow}>
                 <span className={s.cardRowLabel}>{r.label}</span>
-                <span className={s.cardRowVal} style={{ color: r.trend === 'up' ? 'var(--ds-accent-emerald)' : 'var(--ds-accent-rose)' }}>
-                  {r.trend === 'up'
-                    ? <TrendingUp size={9} strokeWidth={2} style={{ display: 'inline', marginInlineEnd: 3 }} />
-                    : <TrendingDown size={9} strokeWidth={2} style={{ display: 'inline', marginInlineEnd: 3 }} />
-                  }
+                <span
+                  className={s.cardRowVal}
+                  style={{
+                    color: r.trend === 'up' ? 'var(--ds-accent-emerald)' : 'var(--ds-accent-rose)',
+                  }}
+                >
+                  {r.trend === 'up' ? (
+                    <TrendingUp
+                      size={9}
+                      strokeWidth={2}
+                      style={{ display: 'inline', marginInlineEnd: 3 }}
+                    />
+                  ) : (
+                    <TrendingDown
+                      size={9}
+                      strokeWidth={2}
+                      style={{ display: 'inline', marginInlineEnd: 3 }}
+                    />
+                  )}
                   {r.val}
                 </span>
               </div>

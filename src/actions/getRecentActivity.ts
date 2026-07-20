@@ -10,10 +10,10 @@
  * is enough — no explicit invalidation hook is required.
  */
 
-import { unstable_cache } from 'next/cache';
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import type { ActionResult } from '@/types/types';
+import { unstable_cache } from 'next/cache';
 
 export interface ActivityEntry {
   id: string;
@@ -59,16 +59,14 @@ const fetchRecentActivityRaw = async (
 const cached = (userId: string, role: string, limit: number) =>
   unstable_cache(
     () => fetchRecentActivityRaw(userId, role, limit),
-    ['recent-activity', `v1-2026-06-22`, userId, role, String(limit)],
+    ['recent-activity', 'v1-2026-06-22', userId, role, String(limit)],
     {
       revalidate: 30,
       tags: ['recent-activity', 'activity-log'],
     },
   )();
 
-export async function getRecentActivity(
-  limit = 8,
-): Promise<ActionResult<ActivityEntry[]>> {
+export async function getRecentActivity(limit = 8): Promise<ActionResult<ActivityEntry[]>> {
   try {
     const session = await auth();
     if (!session?.user?.id) {

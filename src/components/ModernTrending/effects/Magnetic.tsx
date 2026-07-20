@@ -8,8 +8,8 @@
  * - تنها direct style transform update → main thread safe
  */
 
-import { type ReactNode, useRef, type CSSProperties, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from 'react';
 
 export interface MagneticProps {
   children: ReactNode;
@@ -21,14 +21,9 @@ export interface MagneticProps {
 const STIFFNESS = 220;
 const DAMPING = 18;
 const MASS = 0.6;
-const CRITICAL = 2 * Math.sqrt(STIFFNESS * MASS);
+const _CRITICAL = 2 * Math.sqrt(STIFFNESS * MASS);
 
-export function Magnetic({
-  children,
-  strength = 0.2,
-  className,
-  style,
-}: MagneticProps) {
+export function Magnetic({ children, strength = 0.2, className, style }: MagneticProps) {
   const ref = useRef<HTMLDivElement>(null);
   const stateRef = useRef({ x: 0, y: 0, tx: 0, ty: 0, vx: 0, vy: 0 });
   const [enabled, setEnabled] = useState(true);
@@ -54,8 +49,7 @@ export function Magnetic({
       s.x += s.vx * dt;
       s.y += s.vy * dt;
       if (ref.current) {
-        ref.current.style.transform =
-          `translate3d(${s.x.toFixed(2)}px, ${s.y.toFixed(2)}px, 0)`;
+        ref.current.style.transform = `translate3d(${s.x.toFixed(2)}px, ${s.y.toFixed(2)}px, 0)`;
       }
       rafId = requestAnimationFrame(tick);
     };

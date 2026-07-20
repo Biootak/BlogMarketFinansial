@@ -9,6 +9,7 @@ import type { Prisma } from '@prisma/client';
 import { Role } from '@prisma/client';
 import { hash } from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 
 // 2026-06-23: role hierarchy for ownership/permission checks.
 // OWNER (4) > ADMIN (3) > AUTHOR (2) > USER (1).
@@ -106,11 +107,10 @@ export async function getUsers({
       },
     };
   } catch (error) {
-    void error;
+    console.error('[getUsers] error:', error);
     return {
       success: false,
       message: 'خطا در بازیابی کاربران. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }
@@ -123,6 +123,22 @@ type CreateUserData = {
   status: string;
   password: string;
 };
+
+// Schema for input validation
+const createUserInputSchema = z.object({
+  name: z.string().min(2, 'نام باید حداقل ۲ حرف باشد').max(100),
+  email: z
+    .string()
+    .email('ایمیل نامعتبر است')
+    .transform((v) => v.trim().toLowerCase()),
+  phoneNumber: z.string().max(20).optional(),
+  role: z.nativeEnum(Role),
+  status: z.string().min(1),
+  password: z
+    .string()
+    .min(8, 'رمز عبور باید حداقل ۸ کاراکتر باشد')
+    .max(128, 'رمز عبور بیش از حد طولانی است'),
+});
 
 export async function createUser(data: CreateUserData): Promise<ActionResult<UserWithProfile>> {
   try {
@@ -137,15 +153,21 @@ export async function createUser(data: CreateUserData): Promise<ActionResult<Use
       return { success: false, message: 'شما مجوز ایجاد کاربر با این نقش را ندارید' };
     }
 
-    const hashedPassword = await hash(data.password, 12);
+    // Validate input
+    const parsed = createUserInputSchema.safeParse(data);
+    if (!parsed.success) {
+      return { success: false, message: parsed.error.errors[0]?.message ?? 'ورودی نامعتبر است' };
+    }
+
+    const hashedPassword = await hash(parsed.data.password, 12);
 
     const newUser = await prisma.user.create({
       data: {
-        name: data.name,
-        email: data.email,
-        phoneNumber: data.phoneNumber,
-        role: data.role,
-        status: data.status,
+        name: parsed.data.name,
+        email: parsed.data.email,
+        phoneNumber: parsed.data.phoneNumber,
+        role: parsed.data.role,
+        status: parsed.data.status,
         password: hashedPassword,
         profile: {
           create: {},
@@ -173,11 +195,10 @@ export async function createUser(data: CreateUserData): Promise<ActionResult<Use
       data: newUserSafe,
     };
   } catch (error) {
-    void error;
+    console.error('[createUser] error:', error);
     return {
       success: false,
       message: 'خطا در ایجاد کاربر. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }
@@ -249,11 +270,10 @@ export async function updateUser(
       data: updatedUserSafe,
     };
   } catch (error) {
-    void error;
+    console.error('[updateUser] error:', error);
     return {
       success: false,
       message: 'خطا در به‌روزرسانی کاربر. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }
@@ -309,7 +329,7 @@ export async function updateUserRole(userId: string, newRole: Role) {
       data: updatedUser,
     };
   } catch (error) {
-    void error;
+    console.error('[updateUserRole] error:', error);
     return { success: false, message: 'خطا در به‌روزرسانی نقش کاربر' };
   }
 }
@@ -348,11 +368,10 @@ export async function deleteUser(id: string): Promise<ActionResult> {
       message: 'کاربر با موفقیت حذف شد.',
     };
   } catch (error) {
-    void error;
+    console.error('[deleteUser] error:', error);
     return {
       success: false,
       message: 'خطا در حذف کاربر. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }

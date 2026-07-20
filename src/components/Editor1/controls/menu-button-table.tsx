@@ -1,12 +1,13 @@
 // menu-button-table.tsx — Inkwell 2026
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
-import type { Editor } from '@tiptap/core';
-import * as Dialog from '@radix-ui/react-dialog';
-import { Toolbar } from '../../ui/toolbar';
-import { Icon } from '../../ui/icon';
 import { useDirection } from '@/hooks/useDirection';
+import * as Dialog from '@radix-ui/react-dialog';
+import type { Editor } from '@tiptap/core';
+import type React from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { Icon } from '../../ui/icon';
+import { Toolbar } from '../../ui/toolbar';
 
 interface MenuButtonTableProps {
   editor: Editor;
@@ -114,9 +115,7 @@ const MenuButtonTable: React.FC<MenuButtonTableProps> = ({ editor }) => {
 
           {/* Quick Insert Buttons */}
           <div className="mb-6">
-            <p className="text-sm text-gray-500 dark:text-gray-400 text-start mb-3">
-              انتخاب سریع
-            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-start mb-3">انتخاب سریع</p>
             <div className="flex gap-2 justify-end flex-wrap">
               {[
                 { rows: 2, cols: 2, label: '۲×۲' },
@@ -141,10 +140,7 @@ const MenuButtonTable: React.FC<MenuButtonTableProps> = ({ editor }) => {
             <p className="text-sm text-gray-500 dark:text-gray-400 text-start mb-3">
               یا روی خانه‌ها کلیک کنید
             </p>
-            <div
-              className="flex justify-center"
-              onMouseLeave={handleCellLeave}
-            >
+            <div className="flex justify-center" onMouseLeave={handleCellLeave}>
               <div className="inline-grid gap-1 p-3 bg-gray-50 dark:bg-gray-900 rounded-xl">
                 {Array.from({ length: maxRows }).map((_, rowIndex) => (
                   <div key={rowIndex} className="flex gap-1">

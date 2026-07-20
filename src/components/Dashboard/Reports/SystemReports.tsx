@@ -1,14 +1,32 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Download, Loader2, Users, FileText, MessageSquare, Eye, TrendingUp, ArrowUpRight } from 'lucide-react';
-import { useEffect, useState, useCallback } from 'react';
-import { toast } from '@/components/ui/use-toast';
-import { Button } from '@/components/ui/button';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { ChartSkeleton, StatsCardSkeleton } from '@/components/Skeletons';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
+import {
+  ArrowUpRight,
+  Download,
+  Eye,
+  FileText,
+  Loader2,
+  MessageSquare,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 interface SystemReportData {
   users: number;
@@ -47,19 +65,20 @@ interface StatCardProps {
 function StatCard({ title, value, icon, badges, gradient, iconBg, delay = 0 }: StatCardProps) {
   return (
     <div
-      className={cn(
-        'dash-panel dash-panel--hover group relative overflow-hidden'
-      )}
+      className={cn('dash-panel dash-panel--hover group relative overflow-hidden')}
       style={{ animationDelay: `${delay}ms` }}
     >
       {/* Gradient Accent */}
-      <div className={cn('absolute top-0 right-0 w-32 h-32 -mr-10 -mt-10 rounded-full opacity-20 blur-2xl', gradient)} />
-      
+      <div
+        className={cn(
+          'absolute top-0 right-0 w-32 h-32 -mr-10 -mt-10 rounded-full opacity-20 blur-2xl',
+          gradient,
+        )}
+      />
+
       <div className="relative p-6">
         <div className="flex items-start justify-between mb-4">
-          <div className={cn('p-3 rounded-xl shadow-lg', iconBg)}>
-            {icon}
-          </div>
+          <div className={cn('p-3 rounded-xl shadow-lg', iconBg)}>{icon}</div>
           <div className="flex items-center gap-1 text-emerald-600 text-sm font-medium">
             <TrendingUp className="w-4 h-4" />
             <span>+12%</span>
@@ -71,7 +90,7 @@ function StatCard({ title, value, icon, badges, gradient, iconBg, delay = 0 }: S
           <p className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
             {value.toLocaleString('fa-IR')}
           </p>
-          
+
           <div className="flex flex-wrap gap-2 pt-2">
             {badges.map((badge, idx) => (
               <span
@@ -81,7 +100,7 @@ function StatCard({ title, value, icon, badges, gradient, iconBg, delay = 0 }: S
                   'bg-gray-100/80 dark:bg-white/10 text-gray-700 dark:text-gray-200',
                   'border border-gray-200/50',
                   'transition-colors duration-200',
-                  'hover:bg-gray-200/80'
+                  'hover:bg-gray-200/80',
                 )}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
@@ -93,11 +112,13 @@ function StatCard({ title, value, icon, badges, gradient, iconBg, delay = 0 }: S
       </div>
 
       {/* Hover Effect Line */}
-      <div className={cn(
-        'absolute bottom-0 inset-x-0 h-1 opacity-0 group-hover:opacity-100',
-        'transition-opacity duration-300',
-        gradient
-      )} />
+      <div
+        className={cn(
+          'absolute bottom-0 inset-x-0 h-1 opacity-0 group-hover:opacity-100',
+          'transition-opacity duration-300',
+          gradient,
+        )}
+      />
     </div>
   );
 }
@@ -112,7 +133,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
             <div key={index} className="flex items-center gap-2 text-sm">
               <span className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
               <span className="text-gray-600">{entry.name}:</span>
-              <span className="font-medium text-gray-900 dark:text-white">{entry.value?.toLocaleString('fa-IR')}</span>
+              <span className="font-medium text-gray-900 dark:text-white">
+                {entry.value?.toLocaleString('fa-IR')}
+              </span>
             </div>
           ))}
         </div>
@@ -204,7 +227,13 @@ export default function SystemReports() {
   }
 
   const chartData = [
-    { key: 'users', name: 'کاربران', تعداد: data.users, فعال: data.activeUsers, جدید: data.newUsers },
+    {
+      key: 'users',
+      name: 'کاربران',
+      تعداد: data.users,
+      فعال: data.activeUsers,
+      جدید: data.newUsers,
+    },
     { key: 'posts', name: 'پست‌ها', تعداد: data.posts, منتشرشده: data.publishedPosts },
     { key: 'comments', name: 'نظرات', تعداد: data.comments, درانتظار: data.pendingComments },
     { key: 'views', name: 'بازدیدها', تعداد: data.views, امروز: data.todayViews },
@@ -215,7 +244,10 @@ export default function SystemReports() {
       title: 'کاربران',
       value: data.users,
       icon: <Users className="w-5 h-5 text-white" />,
-      badges: [{ label: 'فعال', value: data.activeUsers }, { label: 'جدید', value: data.newUsers }],
+      badges: [
+        { label: 'فعال', value: data.activeUsers },
+        { label: 'جدید', value: data.newUsers },
+      ],
       gradient: 'bg-gradient-to-br from-blue-500 to-indigo-600',
       iconBg: 'bg-gradient-to-br from-blue-500 to-indigo-600',
     },
@@ -251,7 +283,9 @@ export default function SystemReports() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">نمای کلی آمار</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">خلاصه‌ای از وضعیت کلی سیستم</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            خلاصه‌ای از وضعیت کلی سیستم
+          </p>
         </div>
         <Button
           onClick={handleDownload}
@@ -263,7 +297,7 @@ export default function SystemReports() {
             'text-white font-medium shadow-lg shadow-[rgb(var(--c-primary-400))]/30',
             'hover:shadow-xl hover:shadow-[rgb(var(--c-primary-500))]/40',
             'transition-all duration-300',
-            'disabled:opacity-70 disabled:cursor-not-allowed'
+            'disabled:opacity-70 disabled:cursor-not-allowed',
           )}
         >
           {downloading ? (
@@ -288,9 +322,7 @@ export default function SystemReports() {
       </div>
 
       {/* Chart Section */}
-      <div
-        className={cn('dash-panel relative overflow-hidden')}
-      >
+      <div className={cn('dash-panel relative overflow-hidden')}>
         <div className="p-6 border-b border-gray-100 dark:border-white/10">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
@@ -302,7 +334,7 @@ export default function SystemReports() {
             </div>
           </div>
         </div>
-        
+
         <div className="p-6">
           <div className="h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -322,9 +354,17 @@ export default function SystemReports() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} />
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#6b7280', fontSize: 12 }}
+                />
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(59, 130, 246, 0.05)' }} />
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{ fill: 'rgba(59, 130, 246, 0.05)' }}
+                />
                 <Legend wrapperStyle={{ paddingTop: '20px' }} />
                 <Bar dataKey="تعداد" fill="url(#colorTotal)" radius={[6, 6, 0, 0]} />
                 <Bar dataKey="فعال" fill="url(#colorActive)" radius={[6, 6, 0, 0]} />

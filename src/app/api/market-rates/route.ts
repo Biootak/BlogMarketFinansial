@@ -17,8 +17,8 @@
  * ----------------------------------------------------------------------------
  */
 
-import { NextResponse } from 'next/server';
 import { getMarketRates } from '@/actions/market-rates';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;

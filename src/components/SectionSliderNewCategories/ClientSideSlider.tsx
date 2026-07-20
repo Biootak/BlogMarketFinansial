@@ -1,8 +1,8 @@
 'use client';
 
+import CardCategory2 from '@/components/CardCategory2/CardCategory2';
 import type { TaxonomyType } from '@/types/types';
 import MySlider from '../MySlider';
-import CardCategory2 from '@/components/CardCategory2/CardCategory2';
 
 interface ClientSideSliderProps {
   categories: TaxonomyType[];

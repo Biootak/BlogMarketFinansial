@@ -1,23 +1,32 @@
 'use client';
 
+import {
+  CheckCircle2,
+  Clock,
+  PenLine,
+  Search,
+  ShieldCheck,
+  TrendingUp,
+  Users,
+  Zap,
+} from 'lucide-react';
 import { type FC, useState } from 'react';
-import { TrendingUp, Users, CheckCircle2, Clock, ShieldCheck, Zap, Search, PenLine } from 'lucide-react';
+import s from './ContactCTA.module.css';
 import ServiceRequestForm from './ServiceRequestForm';
 import TrackingForm from './TrackingForm';
-import s from './ContactCTA.module.css';
 
 /* ─── Data ───────────────────────────────────────────────────────────────── */
 
 const STATS = [
   { icon: TrendingUp, value: '۲,۵۰۰+', label: 'تراکنش موفق ماهانه' },
-  { icon: Users,      value: '۱۲,۰۰۰+', label: 'مشتری راضی' },
-  { icon: CheckCircle2, value: '۹۸٪',  label: 'نرخ رضایت مشتریان' },
+  { icon: Users, value: '۱۲,۰۰۰+', label: 'مشتری راضی' },
+  { icon: CheckCircle2, value: '۹۸٪', label: 'نرخ رضایت مشتریان' },
 ];
 
 const FEATURES = [
-  { icon: Clock,       label: 'پاسخگویی سریع',  desc: 'حداکثر ۳۰ دقیقه' },
-  { icon: ShieldCheck, label: 'تراکنش امن',      desc: 'با ضمانت بازگشت وجه' },
-  { icon: Zap,         label: 'پشتیبانی ۲۴/۷',  desc: 'همه روزه در خدمت شما' },
+  { icon: Clock, label: 'پاسخگویی سریع', desc: 'حداکثر ۳۰ دقیقه' },
+  { icon: ShieldCheck, label: 'تراکنش امن', desc: 'با ضمانت بازگشت وجه' },
+  { icon: Zap, label: 'پشتیبانی ۲۴/۷', desc: 'همه روزه در خدمت شما' },
 ];
 
 /* ─── Types ───────────────────────────────────────────────────────────────── */

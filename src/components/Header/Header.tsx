@@ -20,10 +20,7 @@ import MainNav from './MainNav';
 
 const Header = ({ activeRateLists = [] }: { activeRateLists?: RateListData[] }) => {
   return (
-    <header
-      className="sticky top-0 w-full z-40 isolate"
-      role="banner"
-    >
+    <header className="sticky top-0 w-full z-40 isolate">
       {/* Narrow ad at the very top — admin-controlled, dismissible by user */}
       <HeaderAdBar />
 

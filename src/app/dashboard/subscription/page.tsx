@@ -1,19 +1,19 @@
-import { PageHeader } from "@/components/Dashboard/primitives";
+import { PageHeader } from '@/components/Dashboard/primitives';
 import {
-  HiOutlineSparkles,
+  HiOutlineCalendarDays,
   HiOutlineCreditCard,
   HiOutlineDocumentText,
-  HiOutlineCalendarDays,
-} from "react-icons/hi2";
+  HiOutlineSparkles,
+} from 'react-icons/hi2';
 
 const subscription = {
-  plan: "اشتراک حرفه‌ای",
-  planSub: "دسترسی کامل به همه‌ی ابزارهای تحلیل و انتشار نامحدود",
-  price: "۲٬۹۰۰٬۰۰۰ تومان / ماه",
-  postsRemaining: "۱۸",
-  postsTotal: "نامحدود در پلن فعلی",
-  renewDate: "۲۸ مهر ۱۴۰۵",
-  status: "فعال",
+  plan: 'اشتراک حرفه‌ای',
+  planSub: 'دسترسی کامل به همه‌ی ابزارهای تحلیل و انتشار نامحدود',
+  price: '۲٬۹۰۰٬۰۰۰ تومان / ماه',
+  postsRemaining: '۱۸',
+  postsTotal: 'نامحدود در پلن فعلی',
+  renewDate: '۲۸ مهر ۱۴۰۵',
+  status: 'فعال',
   autoRenew: true,
 };
 
@@ -21,10 +21,7 @@ const DashboardSubscription = () => {
   return (
     <div className="at-page" dir="rtl">
       <PageHeader
-        breadcrumb={[
-          { label: "داشبورد", href: "/dashboard" },
-          { label: "اشتراک" },
-        ]}
+        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'اشتراک' }]}
         eyebrow="حساب کاربری"
         title="اشتراک و پلن"
         description="مدیریت پلن فعلی، تمدید و صورتحساب"
@@ -64,7 +61,7 @@ const DashboardSubscription = () => {
           </div>
           <div className="at-stat__main">
             <div className="at-stat__value">
-              {subscription.postsRemaining}{" "}
+              {subscription.postsRemaining}{' '}
               <span className="text-[color:var(--at-fg-subtle)] text-sm font-medium">
                 از {subscription.postsTotal}
               </span>

@@ -1,15 +1,15 @@
-import { mergeAttributes, Node } from '@tiptap/core';
-import { ReactRenderer } from '@tiptap/react';
-import Suggestion, { type SuggestionOptions } from '@tiptap/suggestion';
-import { PluginKey } from '@tiptap/pm/state';
 import {
+  type ReferenceElement,
+  autoUpdate,
   computePosition,
   flip,
-  shift,
   offset,
-  autoUpdate,
-  type ReferenceElement,
+  shift,
 } from '@floating-ui/dom';
+import { Node, mergeAttributes } from '@tiptap/core';
+import { PluginKey } from '@tiptap/pm/state';
+import { ReactRenderer } from '@tiptap/react';
+import Suggestion, { type SuggestionOptions } from '@tiptap/suggestion';
 import MentionList, { type MentionListRef } from '../components/mention-list';
 
 // کلید یکتا برای پلاگین mention
@@ -111,7 +111,7 @@ export const Mention = Node.create<MentionOptions>({
   },
 
   parseHTML() {
-    return [{ tag: `span[data-mention]` }];
+    return [{ tag: 'span[data-mention]' }];
   },
 
   renderHTML({ node, HTMLAttributes }) {
@@ -120,7 +120,7 @@ export const Mention = Node.create<MentionOptions>({
       mergeAttributes(
         { 'data-mention': '', class: 'mention' },
         this.options.HTMLAttributes,
-        HTMLAttributes
+        HTMLAttributes,
       ),
       `@${node.attrs.label}`,
     ];
@@ -175,9 +175,10 @@ export const mentionSuggestion: Partial<SuggestionOptions> = {
   pluginKey: mentionPluginKey,
   items: ({ query }) => {
     return mockUsers
-      .filter((user) =>
-        user.name.toLowerCase().includes(query.toLowerCase()) ||
-        user.username.toLowerCase().includes(query.toLowerCase())
+      .filter(
+        (user) =>
+          user.name.toLowerCase().includes(query.toLowerCase()) ||
+          user.username.toLowerCase().includes(query.toLowerCase()),
       )
       .slice(0, 5);
   },

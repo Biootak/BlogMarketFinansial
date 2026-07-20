@@ -1,18 +1,18 @@
 'use server';
 
-import { cache } from 'react';
-import { safeCache } from '@/lib/safe-cache'; // 2026-06-21: جایگزین unstable_cache شد
-import { revalidateTag } from '@/lib/revalidate';
-import prisma from '@/lib/db';
-import { generateColor, generateSlug, validateSlug } from '@/lib/utils';
 import { logActivity } from '@/lib/activity-logger';
+import prisma from '@/lib/db';
+import { authFailureToActionResult, requireAdmin } from '@/lib/require-auth';
+import { revalidateTag } from '@/lib/revalidate';
+import { safeCache } from '@/lib/safe-cache'; // 2026-06-21: جایگزین unstable_cache شد
+import { generateColor, generateSlug, validateSlug } from '@/lib/utils';
 import type {
   ActionResult,
-  TaxonomyType,
   CreateCategoryInput,
+  TaxonomyType,
   UpdateCategoryInput,
 } from '@/types/types';
-import { requireAdmin, authFailureToActionResult } from '@/lib/require-auth';
+import { cache } from 'react';
 
 export const getCategories = cache(
   async (
@@ -117,7 +117,14 @@ export async function createCategory(
   try {
     const authCheck = await requireAdmin();
     if (!authCheck.success) return authFailureToActionResult(authCheck);
-    const { name, slug: providedSlug, thumbnail, thumbnailWidth, thumbnailHeight, parentIds = [] } = data;
+    const {
+      name,
+      slug: providedSlug,
+      thumbnail,
+      thumbnailWidth,
+      thumbnailHeight,
+      parentIds = [],
+    } = data;
 
     if (!name) {
       return {
@@ -238,7 +245,14 @@ export async function updateCategory(
   try {
     const authCheck = await requireAdmin();
     if (!authCheck.success) return authFailureToActionResult(authCheck);
-    const { name, slug: providedSlug, thumbnail, thumbnailWidth, thumbnailHeight, parentIds = [] } = data;
+    const {
+      name,
+      slug: providedSlug,
+      thumbnail,
+      thumbnailWidth,
+      thumbnailHeight,
+      parentIds = [],
+    } = data;
 
     if (!name) {
       return {
@@ -403,7 +417,7 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
     }
 
     const categoryName = category.name;
-    
+
     await prisma.category.delete({
       where: { id },
     });

@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import type { FC } from 'react';
-import { useSession } from 'next-auth/react';
 import { useToast } from '@/components/ui/use-toast';
 import { useCommentStore } from '@/hooks/useCommentStore';
+import { useSession } from 'next-auth/react';
+import { useState } from 'react';
+import type { FC } from 'react';
 import { HiPaperAirplane, HiXMark } from 'react-icons/hi2';
 
 interface SingleCommentFormProps {
@@ -76,24 +76,29 @@ const SingleCommentForm: FC<SingleCommentFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className={`nc-SingleCommentForm ${className}`}>
       {/* Glass Card Container */}
-      <div className={`
+      <div
+        className={`
         relative overflow-hidden rounded-2xl
         bg-gradient-to-br from-white/95 to-neutral-50/95 dark:from-neutral-900/95 dark:to-neutral-800/95
         backdrop-blur-xl
         border transition-all duration-300
-        ${isFocused 
-          ? 'border-primary-300 dark:border-primary-700 shadow-[0_8px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.3)]' 
-          : 'border-neutral-200/80 dark:border-neutral-700/80 shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)]'
+        ${
+          isFocused
+            ? 'border-primary-300 dark:border-primary-700 shadow-[0_8px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.3)]'
+            : 'border-neutral-200/80 dark:border-neutral-700/80 shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)]'
         }
-      `}>
+      `}
+      >
         {/* Decorative Gradient */}
-        <div className={`
+        <div
+          className={`
           absolute inset-0 bg-gradient-to-br from-primary-50/50 via-transparent to-violet-50/30 
           dark:from-primary-950/30 dark:via-transparent dark:to-violet-950/20 
           pointer-events-none transition-opacity duration-300
           ${isFocused ? 'opacity-100' : 'opacity-0'}
-        `} />
-        
+        `}
+        />
+
         {/* Textarea */}
         <div className="relative p-4 sm:p-5">
           <textarea
@@ -172,11 +177,13 @@ const SingleCommentForm: FC<SingleCommentFormProps> = ({
         </div>
 
         {/* Bottom Accent */}
-        <div className={`
+        <div
+          className={`
           h-0.5 bg-gradient-to-l from-primary-500 via-violet-500 to-rose-500
           transition-opacity duration-300
           ${isFocused ? 'opacity-100' : 'opacity-0'}
-        `} />
+        `}
+        />
       </div>
     </form>
   );

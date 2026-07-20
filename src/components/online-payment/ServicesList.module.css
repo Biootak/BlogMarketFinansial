@@ -63,11 +63,9 @@
   background: var(--ds-surface);
   overflow: hidden;
   cursor: default;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    background var(--ds-duration-fast),
-    transform var(--ds-duration-fast) var(--ds-ease-spring),
-    box-shadow var(--ds-duration-fast);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), background
+    var(--ds-duration-fast), transform var(--ds-duration-fast) var(--ds-ease-spring), box-shadow
+    var(--ds-duration-fast);
 }
 
 .card:hover {
@@ -81,9 +79,7 @@
 .hidden {
   opacity: 0;
   transform: translateY(20px);
-  transition:
-    opacity 0.4s var(--ds-ease-out-expo),
-    transform 0.4s var(--ds-ease-out-expo);
+  transition: opacity 0.4s var(--ds-ease-out-expo), transform 0.4s var(--ds-ease-out-expo);
 }
 
 .visible {
@@ -107,10 +103,8 @@
   display: grid;
   place-items: center;
   margin-bottom: var(--ds-space-4);
-  transition:
-    background var(--ds-duration-fast),
-    border-color var(--ds-duration-fast),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast), border-color var(--ds-duration-fast), transform
+    var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .card:hover .iconWrap {
@@ -172,8 +166,8 @@
 /* emerald */
 .accent_emerald .iconWrap {
   color: var(--ds-accent-emerald);
-  background: oklch(60% 0.10 165 / 0.08);
-  border-color: oklch(60% 0.10 165 / 0.22);
+  background: oklch(60% 0.1 165 / 0.08);
+  border-color: oklch(60% 0.1 165 / 0.22);
 }
 .accent_emerald .cardLine {
   background: var(--ds-accent-emerald);

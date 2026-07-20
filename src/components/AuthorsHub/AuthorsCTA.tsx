@@ -1,12 +1,12 @@
+import { cn } from '@/lib/utils';
+import { ArrowLeft, Compass, FileText, Sparkles } from 'lucide-react';
+import Link from 'next/link';
 /**
  * @file AuthorsCTA
  * @description Editorial-style CTA strip at the bottom of the author hub.
  * Pure server component.
  */
-import * as React from 'react';
-import Link from 'next/link';
-import { ArrowLeft, Sparkles, FileText, Compass } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import type * as React from 'react';
 
 export interface AuthorsCTAProps {
   className?: string;
@@ -30,16 +30,14 @@ const AuthorsCTA: React.FC<AuthorsCTAProps> = ({ className }) => {
         aria-hidden
         className="absolute -top-20 -end-20 h-72 w-72 rounded-full opacity-30 blur-3xl"
         style={{
-          background:
-            'radial-gradient(closest-side, oklch(72% 0.13 70), transparent 70%)',
+          background: 'radial-gradient(closest-side, oklch(72% 0.13 70), transparent 70%)',
         }}
       />
       <span
         aria-hidden
         className="absolute -bottom-20 -start-20 h-72 w-72 rounded-full opacity-25 blur-3xl"
         style={{
-          background:
-            'radial-gradient(closest-side, oklch(65% 0.10 200), transparent 70%)',
+          background: 'radial-gradient(closest-side, oklch(65% 0.10 200), transparent 70%)',
         }}
       />
       <div className="relative grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6 items-center">
@@ -52,9 +50,9 @@ const AuthorsCTA: React.FC<AuthorsCTAProps> = ({ className }) => {
             صدای شما در <span className="text-amber-300">بازارهای مالی</span> شنیده می‌شود
           </h2>
           <p className="mt-2.5 text-sm sm:text-[15px] text-white/80 max-w-2xl leading-relaxed">
-            اگر تحلیل‌گر، تریدر یا روزنامه‌نگار بازارهای مالی هستید، پلتفرم ما
-            بستر مناسبی برای انتشار دیدگاه‌هایتان است. با تیم تحریریه همکاری کنید
-            و مقالات‌تان به دست هزاران خواننده‌ی حرفه‌ای برسد.
+            اگر تحلیل‌گر، تریدر یا روزنامه‌نگار بازارهای مالی هستید، پلتفرم ما بستر مناسبی برای انتشار
+            دیدگاه‌هایتان است. با تیم تحریریه همکاری کنید و مقالات‌تان به دست هزاران خواننده‌ی حرفه‌ای
+            برسد.
           </p>
         </div>
 

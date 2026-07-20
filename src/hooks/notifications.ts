@@ -1,5 +1,5 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
 import { auth } from '@/auth';
+import type { NextApiRequest, NextApiResponse } from 'next';
 
 type Notification = {
   id: number;

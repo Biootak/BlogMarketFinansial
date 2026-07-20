@@ -1,12 +1,12 @@
+import { cn } from '@/lib/utils';
+import { toPersianNumber } from '@/lib/utils';
 /**
  * @file AuthorStatPill
  * @description Inline stat cell (number + label) used across the author
  * surfaces. Numbers always pass through `toPersianNumber` so they read
  * naturally in RTL.
  */
-import * as React from 'react';
-import { cn } from '@/lib/utils';
-import { toPersianNumber } from '@/lib/utils';
+import type * as React from 'react';
 
 export interface AuthorStatPillProps {
   label: string;
@@ -24,8 +24,7 @@ const AuthorStatPill: React.FC<AuthorStatPillProps> = ({
   className,
   compact = false,
 }) => {
-  const display =
-    typeof value === 'number' ? toPersianNumber(value) : value;
+  const display = typeof value === 'number' ? toPersianNumber(value) : value;
   return (
     <div
       className={cn(
@@ -36,10 +35,7 @@ const AuthorStatPill: React.FC<AuthorStatPillProps> = ({
       )}
     >
       {icon && (
-        <span
-          aria-hidden
-          className="text-primary-500 dark:text-primary-300 flex items-center"
-        >
+        <span aria-hidden className="text-primary-500 dark:text-primary-300 flex items-center">
           {icon}
         </span>
       )}

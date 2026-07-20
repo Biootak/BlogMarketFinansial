@@ -1,12 +1,12 @@
 'use client';
 
+import GenericCryptoIcon from '@/components/GenericCryptoIcon';
+import { Skeleton } from '@/components/ui/skeleton';
+import { motion } from '@/lib/motion-shim';
+import { cn } from '@/lib/utils';
+import Image from 'next/image';
 import type { FC } from 'react';
 import { memo, useState } from 'react';
-import Image from 'next/image';
-import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
-import { motion } from '@/lib/motion-shim';
-import GenericCryptoIcon from '@/components/GenericCryptoIcon';
 
 interface CurrencyIconProps {
   symbol: string;

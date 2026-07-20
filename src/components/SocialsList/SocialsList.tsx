@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
 import { motion } from '@/lib/motion-shim';
 import type { SocialType } from '@/types/types';
+import React from 'react';
 
 interface SocialsListProps {
   className?: string;

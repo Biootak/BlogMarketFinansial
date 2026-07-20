@@ -1,20 +1,20 @@
+import { getDocumentDirection } from '@/hooks/useDirection';
+import {
+  type ReferenceElement,
+  autoUpdate,
+  computePosition,
+  flip,
+  offset,
+  shift,
+} from '@floating-ui/dom';
 import type { Editor } from '@tiptap/core';
 import { ReactRenderer } from '@tiptap/react';
 import { exitSuggestion } from '@tiptap/suggestion';
-import {
-  computePosition,
-  flip,
-  shift,
-  offset,
-  autoUpdate,
-  type ReferenceElement,
-} from '@floating-ui/dom';
-import { getDocumentDirection } from '@/hooks/useDirection';
 import SlashCommandMenu, { type SlashCommandMenuRef } from '../components/slash-command-menu';
 import {
+  type SlashCommandItem,
   defaultSlashCommands,
   slashCommandsPluginKey,
-  type SlashCommandItem,
 } from '../extensions/slash-commands';
 
 export const slashCommandsSuggestion = {
@@ -24,7 +24,7 @@ export const slashCommandsSuggestion = {
     return defaultSlashCommands.filter((item) => {
       const titleMatch = item.title.toLowerCase().includes(normalizedQuery);
       const keywordMatch = item.keywords.some((keyword) =>
-        keyword.toLowerCase().includes(normalizedQuery)
+        keyword.toLowerCase().includes(normalizedQuery),
       );
       return titleMatch || keywordMatch;
     });

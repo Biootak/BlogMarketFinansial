@@ -1,34 +1,34 @@
 import { Extension } from '@tiptap/core';
-import Suggestion, { type SuggestionOptions } from '@tiptap/suggestion';
-import { PluginKey } from '@tiptap/pm/state';
 import type { Editor } from '@tiptap/core';
+import { PluginKey } from '@tiptap/pm/state';
+import Suggestion, { type SuggestionOptions } from '@tiptap/suggestion';
 import type { LucideIcon } from 'lucide-react';
 import {
-  Pilcrow,
+  AlertTriangle,
+  BetweenHorizontalStart,
+  CheckCircle2,
+  CheckSquare,
+  Code2,
+  FolderOpen,
+  Footprints,
   Heading1,
   Heading2,
   Heading3,
   Heading4,
+  Image as ImageIcon,
+  Indent,
+  Info,
+  Languages,
   List,
   ListOrdered,
-  CheckSquare,
-  Image as ImageIcon,
+  Minus,
+  Outdent,
+  Pilcrow,
   Play,
   Quote,
-  Code2,
-  Table,
-  Minus,
-  BetweenHorizontalStart,
-  Info,
-  AlertTriangle,
-  CheckCircle2,
-  XCircle,
-  FolderOpen,
   Sigma,
-  Languages,
-  Footprints,
-  Indent,
-  Outdent,
+  Table,
+  XCircle,
 } from 'lucide-react';
 
 // کلید یکتا برای پلاگین slash commands
@@ -161,7 +161,8 @@ export const defaultSlashCommands: SlashCommandItem[] = [
     icon: Table,
     keywords: ['table', 'جدول'],
     category: 'advanced',
-    command: (editor) => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+    command: (editor) =>
+      editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
   },
   {
     title: 'خط جداکننده',
@@ -295,7 +296,11 @@ export const SlashCommands = Extension.create<
         char: '/',
         pluginKey: slashCommandsPluginKey,
 
-        command: ({ editor, range, props }: { editor: Editor; range: any; props: SlashCommandItem }) => {
+        command: ({
+          editor,
+          range,
+          props,
+        }: { editor: Editor; range: any; props: SlashCommandItem }) => {
           // 2026-07-05: ابتدا اسلش و query را حذف می‌کنیم، سپس دستور انتخاب‌شده
           // را روی ویرایشگر تمیز اجرا می‌کنیم. اگر هر دو را در یک chain یا برعکس
           // اجرا کنیم، دستور داخلی روی متنی که هنوز اسلش دارد کار می‌کند و

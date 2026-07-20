@@ -34,11 +34,7 @@
   top: -20%;
   width: clamp(280px, 40vw, 520px);
   aspect-ratio: 1;
-  background: radial-gradient(
-    circle,
-    oklch(55% 0.10 235 / 0.12) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(circle, oklch(55% 0.1 235 / 0.12) 0%, transparent 70%);
 }
 
 .heroOrb2 {
@@ -46,11 +42,7 @@
   bottom: -10%;
   width: clamp(200px, 28vw, 360px);
   aspect-ratio: 1;
-  background: radial-gradient(
-    circle,
-    oklch(72% 0.13 70 / 0.10) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(circle, oklch(72% 0.13 70 / 0.1) 0%, transparent 70%);
 }
 
 .heroInner {
@@ -77,8 +69,14 @@
 }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .heroEyebrowDot {
@@ -90,8 +88,15 @@
 }
 
 @keyframes breathe {
-  0%, 100% { opacity: 0.4; transform: scale(0.85); }
-  50%       { opacity: 1;   transform: scale(1); }
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .heroTitle {
@@ -159,11 +164,8 @@
   background: var(--ds-surface);
   text-align: center;
   opacity: 0;
-  transition:
-    opacity 0.4s var(--ds-ease-out-expo),
-    transform 0.4s var(--ds-ease-out-expo),
-    border-color var(--ds-duration-fast),
-    box-shadow var(--ds-duration-fast);
+  transition: opacity 0.4s var(--ds-ease-out-expo), transform 0.4s var(--ds-ease-out-expo),
+    border-color var(--ds-duration-fast), box-shadow var(--ds-duration-fast);
   transform: translateY(16px);
 }
 
@@ -210,7 +212,8 @@
   align-items: start;
 }
 
-.missionText {}
+.missionText {
+}
 
 .missionEyebrow {
   display: inline-block;
@@ -259,9 +262,7 @@
   border-radius: var(--ds-radius-lg);
   border: 1px solid var(--ds-border-subtle);
   background: var(--ds-surface);
-  transition:
-    border-color var(--ds-duration-fast),
-    background var(--ds-duration-fast);
+  transition: border-color var(--ds-duration-fast), background var(--ds-duration-fast);
 }
 
 .valueItem:hover {

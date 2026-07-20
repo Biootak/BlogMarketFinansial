@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import path from 'node:path';
 import { getFileStream } from '@/lib/storage';
-import path from 'path';
+import { type NextRequest, NextResponse } from 'next/server';
 
 const ALLOWED_FOLDERS = ['posts', 'avatars', 'categories', 'tags', 'ads', 'general'];
 
@@ -31,7 +31,7 @@ const buildEtag = (folder: string, filename: string, mtimeMs?: number) => {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> }
+  { params }: { params: Promise<{ path: string[] }> },
 ) {
   try {
     const { path: pathSegments } = await params;
@@ -91,4 +91,3 @@ export async function GET(
     return NextResponse.json({ error: 'خطا در خواندن فایل' }, { status: 500 });
   }
 }
-

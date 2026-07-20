@@ -1,6 +1,6 @@
+import twFocusClass from '@/utils/twFocusClass';
 import React from 'react';
 import { HiReply } from 'react-icons/hi';
-import twFocusClass from '@/utils/twFocusClass';
 
 export interface CommentCardReplyProps {
   className?: string;

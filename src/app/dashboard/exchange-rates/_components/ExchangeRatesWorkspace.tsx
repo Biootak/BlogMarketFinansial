@@ -3,15 +3,12 @@
 
 'use client';
 
-import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import ExchangeRatesToolbar, {
-  type SourceFilter,
-  type GroupFilter,
-} from './ExchangeRatesToolbar';
-import ExchangeRatesTable from './ExchangeRatesTable';
-import RateEditorDrawer from './RateEditorDrawer';
+import { useCallback, useState } from 'react';
 import type { RateRowData } from './ExchangeRateRow';
+import ExchangeRatesTable from './ExchangeRatesTable';
+import ExchangeRatesToolbar, { type SourceFilter, type GroupFilter } from './ExchangeRatesToolbar';
+import RateEditorDrawer from './RateEditorDrawer';
 
 interface Props {
   initialRows: RateRowData[];
@@ -37,9 +34,7 @@ export default function ExchangeRatesWorkspace({ initialRows }: Props) {
 
   const handleDelete = useCallback(
     async (row: RateRowData) => {
-      const ok = window.confirm(
-        `نرخ «${row.displayNameFa}» حذف شود؟ این عملیات برگشت‌پذیر نیست.`,
-      );
+      const ok = window.confirm(`نرخ «${row.displayNameFa}» حذف شود؟ این عملیات برگشت‌پذیر نیست.`);
       if (!ok) return;
       const { deleteMarketRate } = await import('@/actions/market-rates');
       const result = await deleteMarketRate(row.id);
@@ -68,10 +63,7 @@ export default function ExchangeRatesWorkspace({ initialRows }: Props) {
     if (group !== 'all' && r.group !== group) return false;
     if (!query.trim()) return true;
     const q = query.toLowerCase();
-    return (
-      r.displayNameFa.toLowerCase().includes(q) ||
-      r.symbol.toLowerCase().includes(q)
-    );
+    return r.displayNameFa.toLowerCase().includes(q) || r.symbol.toLowerCase().includes(q);
   }).length;
 
   return (

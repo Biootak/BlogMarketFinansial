@@ -1,11 +1,11 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { safeCache } from '@/lib/safe-cache';
-import { PostStatus } from '@prisma/client';
-import type { PostWithRelations } from '@/types/types';
-import { revalidatePath } from 'next/cache';
 import { revalidateTag } from '@/lib/revalidate';
+import { safeCache } from '@/lib/safe-cache';
+import type { PostWithRelations } from '@/types/types';
+import { PostStatus } from '@prisma/client';
+import { revalidatePath } from 'next/cache';
 
 interface GetLatestPostsParams {
   count?: number;
@@ -35,106 +35,102 @@ async function fetchLatestPosts(
   skip: number,
   category: string | undefined,
 ): Promise<PostWithRelations[]> {
-    try {
-      const whereClause = {
-        status: PostStatus.PUBLISHED,
-        featuredImage: {
-          not: null,
+  try {
+    const whereClause = {
+      status: PostStatus.PUBLISHED,
+      featuredImage: {
+        not: null,
+      },
+      AND: [
+        {
+          featuredImage: {
+            not: '',
+          },
         },
-        AND: [
-          {
-            featuredImage: {
-              not: '',
-            },
+        {
+          featuredImage: {
+            not: ' ',
           },
-          {
-            featuredImage: {
-              not: ' ',
-            },
-          },
-        ],
-        ...(category && category !== 'همه'
-          ? {
-              categories: {
-                some: {
-                  name: category,
-                },
+        },
+      ],
+      ...(category && category !== 'همه'
+        ? {
+            categories: {
+              some: {
+                name: category,
               },
-            }
-          : {}),
-      };
+            },
+          }
+        : {}),
+    };
 
-      const posts = await prisma.post.findMany({
-        where: whereClause,
-        take: count,
-        skip: skip,
-        orderBy: { createdAt: 'desc' },
-        // بدنه‌ی کامل مقاله (content) در کارت‌های لیست استفاده نمی‌شه؛ حذفش
-        // از payload (DB → RSC → hydration) حجم صفحه‌ی اصلی رو کم می‌کنه.
-        omit: { content: true },
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-              profile: {
-                select: {
-                  avatar: true,
-                  jobName: true,
-                },
+    const posts = await prisma.post.findMany({
+      where: whereClause,
+      take: count,
+      skip: skip,
+      orderBy: { createdAt: 'desc' },
+      // بدنه‌ی کامل مقاله (content) در کارت‌های لیست استفاده نمی‌شه؛ حذفش
+      // از payload (DB → RSC → hydration) حجم صفحه‌ی اصلی رو کم می‌کنه.
+      omit: { content: true },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            profile: {
+              select: {
+                avatar: true,
+                jobName: true,
               },
-            },
-          },
-          categories: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
-          tags: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
-          _count: {
-            select: {
-              comments: true,
-              likes: true,
-              savedBy: true,
             },
           },
         },
-      });
+        categories: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        tags: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        _count: {
+          select: {
+            comments: true,
+            likes: true,
+            savedBy: true,
+          },
+        },
+      },
+    });
 
-      // فیلتر ثانویه: حذف رشته‌های خالی / placeholder های broken
-      const cleaned = posts.filter((p) => {
-        const img = (p as { featuredImage?: string | null }).featuredImage;
-        return typeof img === 'string' && img.trim().length > 0;
-      });
-      return cleaned as PostWithRelations[];
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error fetching posts:', error);
-      }
-      return [];
+    // فیلتر ثانویه: حذف رشته‌های خالی / placeholder های broken
+    const cleaned = posts.filter((p) => {
+      const img = (p as { featuredImage?: string | null }).featuredImage;
+      return typeof img === 'string' && img.trim().length > 0;
+    });
+    return cleaned as PostWithRelations[];
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error fetching posts:', error);
     }
+    return [];
+  }
 }
 
 // 2026-06-21: قبلاً unstable_cache بود. حالا safeCache.
 // CACHE_VERSION در key هست تا با تغییرش کش قبلی invalidate شود.
-const getCachedLatestPosts = safeCache(
-  fetchLatestPosts,
-  [],
-  {
-    key: `latest-posts::${CACHE_VERSION}`,
-    ttl: 60,
-    tags: ['posts', 'latest-posts'],
-  },
-);
+const getCachedLatestPosts = safeCache(fetchLatestPosts, [], {
+  key: `latest-posts::${CACHE_VERSION}`,
+  ttl: 60,
+  tags: ['posts', 'latest-posts'],
+});
 
 // Public API
 export async function getLatestPosts({
@@ -170,15 +166,11 @@ async function fetchPublishedPostCount(): Promise<number> {
   }
 }
 
-const getCachedPublishedPostCount = safeCache(
-  fetchPublishedPostCount,
-  0,
-  {
-    key: `published-post-count::${CACHE_VERSION}`,
-    ttl: 60,
-    tags: ['posts', 'latest-posts'],
-  },
-);
+const getCachedPublishedPostCount = safeCache(fetchPublishedPostCount, 0, {
+  key: `published-post-count::${CACHE_VERSION}`,
+  ttl: 60,
+  tags: ['posts', 'latest-posts'],
+});
 
 export async function getPublishedPostCount(): Promise<number> {
   return getCachedPublishedPostCount();

@@ -3,13 +3,13 @@
 //   - همهٔ آیکون‌ها از یک نقطه می‌آیند → premium stroke (1.25) یکدست.
 //   - دیگر size/stroke ناهماهنگ بین کنترل‌ها نیست.
 
-import React, { useState } from 'react';
+import { useDirection } from '@/hooks/useDirection';
+import { TooltipProvider } from '@radix-ui/react-tooltip';
 import type { Editor } from '@tiptap/core';
 import dynamic from 'next/dynamic';
-import { Toolbar } from '../../ui/toolbar';
+import React, { useState } from 'react';
 import { Icon } from '../../ui/icon';
-import { TooltipProvider } from '@radix-ui/react-tooltip';
-import { useDirection } from '@/hooks/useDirection';
+import { Toolbar } from '../../ui/toolbar';
 
 // Skeleton کوچک برای دکمه‌هایی که lazy-load می‌شوند تا در شبکهٔ کند
 // چیدمان تولبار حفظ شود و پرش نداشته باشیم.
@@ -18,29 +18,75 @@ const MenuButtonSkeleton = () => (
 );
 
 // Dynamic imports for client-side components
-const MenuButtonUndo = dynamic(() => import('../controls/menu-button-undo'), { loading: MenuButtonSkeleton });
-const MenuButtonRedo = dynamic(() => import('../controls/menu-button-redo'), { loading: MenuButtonSkeleton });
-const MenuSelectHeading = dynamic(() => import('../controls/menu-select-heading'), { loading: MenuButtonSkeleton });
-const MenuSelectFontSize = dynamic(() => import('../controls/menu-select-font-size'), { loading: MenuButtonSkeleton });
-const MenuSelectFontFamily = dynamic(() => import('../controls/menu-select-font-family'), { loading: MenuButtonSkeleton });
-const MenuButtonBold = dynamic(() => import('../controls/menu-button-bold'), { loading: MenuButtonSkeleton });
-const MenuButtonItalic = dynamic(() => import('../controls/menu-button-italic'), { loading: MenuButtonSkeleton });
-const MenuButtonUnderline = dynamic(() => import('../controls/menu-button-underline'), { loading: MenuButtonSkeleton });
-const MenuButtonStrike = dynamic(() => import('../controls/menu-button-strike'), { loading: MenuButtonSkeleton });
-const MenuButtonColor = dynamic(() => import('../controls/menu-button-color'), { loading: MenuButtonSkeleton });
-const MenuButtonHighlight = dynamic(() => import('../controls/menu-button-highlight'), { loading: MenuButtonSkeleton });
-const MenuSelectTextAlign = dynamic(() => import('../controls/menu-select-text-align'), { loading: MenuButtonSkeleton });
-const MenuButtonOrderedList = dynamic(() => import('../controls/menu-button-ordered-list'), { loading: MenuButtonSkeleton });
-const MenuButtonBulletedList = dynamic(() => import('../controls/menu-button-bulleted-list'), { loading: MenuButtonSkeleton });
-const MenuButtonLink = dynamic(() => import('../controls/menu-button-link'), { loading: MenuButtonSkeleton });
-const MenuButtonBlockquote = dynamic(() => import('../controls/menu-button-blockquote'), { loading: MenuButtonSkeleton });
-const MenuButtonCodeblock = dynamic(() => import('../controls/menu-button-codeblock'), { loading: MenuButtonSkeleton });
-const MenuButtonHorizontalRule = dynamic(() => import('../controls/menu-button-horizontal-rule'), { loading: MenuButtonSkeleton });
-const MenuButtonImage = dynamic(() => import('../controls/menu-button-image'), { loading: MenuButtonSkeleton });
-const MenuButtonTable = dynamic(() => import('../controls/menu-button-table'), { loading: MenuButtonSkeleton });
-const MenuButtonTaskList = dynamic(() => import('../controls/menu-button-task-list'), { loading: MenuButtonSkeleton });
-const MenuButtonSuperscript = dynamic(() => import('../controls/menu-button-superscript'), { loading: MenuButtonSkeleton });
-const MenuButtonSubscript = dynamic(() => import('../controls/menu-button-subscript'), { loading: MenuButtonSkeleton });
+const MenuButtonUndo = dynamic(() => import('../controls/menu-button-undo'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuButtonRedo = dynamic(() => import('../controls/menu-button-redo'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuSelectHeading = dynamic(() => import('../controls/menu-select-heading'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuSelectFontSize = dynamic(() => import('../controls/menu-select-font-size'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuSelectFontFamily = dynamic(() => import('../controls/menu-select-font-family'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuButtonBold = dynamic(() => import('../controls/menu-button-bold'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuButtonItalic = dynamic(() => import('../controls/menu-button-italic'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuButtonUnderline = dynamic(() => import('../controls/menu-button-underline'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuButtonStrike = dynamic(() => import('../controls/menu-button-strike'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuButtonColor = dynamic(() => import('../controls/menu-button-color'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuButtonHighlight = dynamic(() => import('../controls/menu-button-highlight'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuSelectTextAlign = dynamic(() => import('../controls/menu-select-text-align'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuButtonOrderedList = dynamic(() => import('../controls/menu-button-ordered-list'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuButtonBulletedList = dynamic(() => import('../controls/menu-button-bulleted-list'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuButtonLink = dynamic(() => import('../controls/menu-button-link'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuButtonBlockquote = dynamic(() => import('../controls/menu-button-blockquote'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuButtonCodeblock = dynamic(() => import('../controls/menu-button-codeblock'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuButtonHorizontalRule = dynamic(() => import('../controls/menu-button-horizontal-rule'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuButtonImage = dynamic(() => import('../controls/menu-button-image'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuButtonTable = dynamic(() => import('../controls/menu-button-table'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuButtonTaskList = dynamic(() => import('../controls/menu-button-task-list'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuButtonSuperscript = dynamic(() => import('../controls/menu-button-superscript'), {
+  loading: MenuButtonSkeleton,
+});
+const MenuButtonSubscript = dynamic(() => import('../controls/menu-button-subscript'), {
+  loading: MenuButtonSkeleton,
+});
 
 export type FixedMenuProps = {
   editor: Editor;
@@ -150,11 +196,7 @@ const FixedMenu = ({ editor, className, tocOpen, onToggleToc, hasToc }: FixedMen
               aria-label={moreOpen ? 'بستن ابزارهای بیشتر' : 'ابزارهای بیشتر'}
               className="at-bubble__btn"
             >
-              {moreOpen ? (
-                <Icon name="x" size={16} />
-              ) : (
-                <Icon name="more-horizontal" size={16} />
-              )}
+              {moreOpen ? <Icon name="x" size={16} /> : <Icon name="more-horizontal" size={16} />}
             </button>
           </Toolbar.Group>
         </div>

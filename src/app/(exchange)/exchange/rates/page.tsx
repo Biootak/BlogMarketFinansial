@@ -5,12 +5,12 @@
  * از اینجا ویرایش کند.
  */
 
-import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
 import { getExchangeForUser } from '@/actions/exchanges';
 import { getExchangeProvider } from '@/actions/transfer-providers';
+import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import ExchangeRatesWorkspace from './_components/ExchangeRatesWorkspace';
 
 export const metadata: Metadata = { title: 'مدیریت نرخ‌ها' };

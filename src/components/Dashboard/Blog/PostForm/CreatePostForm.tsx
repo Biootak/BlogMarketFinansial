@@ -1,18 +1,17 @@
 // components/Dashboard/Blog/PostForm/CreatePostForm.tsx
 'use client';
 
-import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { CreatePostSchema } from '@/schemas';
-import PostForm from './PostForm';
-import type { CreatePostInput, TaxonomyType } from '@/types/types';
-import { useToast } from '@/components/ui/use-toast';
-import { Button } from '@/components/ui/button';
-import { createPost } from '@/actions/postActions';
 import { getCategories } from '@/actions/categoryActions';
 import { getTags } from '@/actions/getTags';
+import { createPost } from '@/actions/postActions';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
 import { isSuccessResult } from '@/lib/utils';
-
+import { CreatePostSchema } from '@/schemas';
+import type { CreatePostInput, TaxonomyType } from '@/types/types';
+import { useRouter } from 'next/navigation';
+import { useCallback, useState } from 'react';
+import PostForm from './PostForm';
 
 interface CreatePostFormProps {
   initialCategories: TaxonomyType[];
@@ -63,7 +62,7 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({
           description: 'پست با موفقیت ایجاد شد',
           variant: 'success',
         });
-        router.push("/dashboard/posts");
+        router.push('/dashboard/posts');
         router.refresh();
       } else {
         toast({

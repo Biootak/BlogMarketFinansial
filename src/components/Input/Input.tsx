@@ -1,4 +1,4 @@
-import React, { type InputHTMLAttributes } from "react";
+import React, { type InputHTMLAttributes } from 'react';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   sizeClass?: string;
@@ -11,16 +11,16 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (
     {
-      className = "",
-      sizeClass = "h-11 px-4 py-3",
-      fontClass = "text-sm font-normal",
-      rounded = "rounded-full",
+      className = '',
+      sizeClass = 'h-11 px-4 py-3',
+      fontClass = 'text-sm font-normal',
+      rounded = 'rounded-full',
       children,
-      type = "text",
+      type = 'text',
       error,
       ...args
     },
-    ref
+    ref,
   ) => {
     return (
       <div className="nc-Input relative">
@@ -33,13 +33,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {...args}
         />
         {error && (
-          <span className="text-red-500 text-sm mt-1 absolute start-0 -bottom-6">
-            {error}
-          </span>
+          <span className="text-red-500 text-sm mt-1 absolute start-0 -bottom-6">{error}</span>
         )}
       </div>
     );
-  }
+  },
 );
 
 export default Input;

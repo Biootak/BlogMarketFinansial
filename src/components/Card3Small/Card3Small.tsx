@@ -1,9 +1,9 @@
-import type React from 'react';
-import Link from 'next/link';
-import { SafeImage } from '@/components/SafeImage';
 import PostCardMeta from '@/components/PostCardMeta/PostCardMeta';
-import type { PostWithRelations } from '@/types/types';
+import { SafeImage } from '@/components/SafeImage';
 import { heading, text } from '@/lib/design-tokens';
+import type { PostWithRelations } from '@/types/types';
+import Link from 'next/link';
+import type React from 'react';
 
 export interface Card3SmallProps {
   className?: string;

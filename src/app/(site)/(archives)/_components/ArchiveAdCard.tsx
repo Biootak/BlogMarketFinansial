@@ -1,8 +1,8 @@
-import Link from 'next/link';
+import { AD_STRIP_SIZES } from '@/lib/image-sizes';
+import type { Advertisement } from '@/types/types';
 import { ExternalLink } from 'lucide-react';
 import Image from 'next/image';
-import type { Advertisement } from '@/types/types';
-import { AD_STRIP_SIZES } from '@/lib/image-sizes';
+import Link from 'next/link';
 
 type Props = {
   ad: Advertisement;
@@ -112,5 +112,3 @@ function parseDims(json: unknown): Dim | null {
   if (!nw || !nh) return null;
   return { width: nw, height: nh };
 }
-
-

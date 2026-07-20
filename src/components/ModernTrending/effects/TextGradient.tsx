@@ -9,8 +9,8 @@
  * - text-shadow ضد pixelation
  */
 
-import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import type { ReactNode } from 'react';
 
 export interface TextGradientProps {
   children: ReactNode;
@@ -28,11 +28,7 @@ const VARIANTS = {
   warm: 'from-[rgb(var(--c-foreground))] via-[rgb(var(--c-accent))] to-[rgb(var(--c-foreground))]',
 } as const;
 
-export function TextGradient({
-  children,
-  className,
-  variant = 'default',
-}: TextGradientProps) {
+export function TextGradient({ children, className, variant = 'default' }: TextGradientProps) {
   return (
     <span
       className={cn(

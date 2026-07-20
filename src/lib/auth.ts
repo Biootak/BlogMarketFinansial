@@ -1,6 +1,6 @@
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
-import { type PrismaClient, Role } from '@prisma/client';
+import { auth } from '@/auth';
+import { type PrismaClient as PrismaClientType, Role } from '@prisma/client';
+import { redirect } from 'next/navigation';
 
 export async function checkRole(allowedRoles: string[]) {
   const session = await auth();
@@ -24,7 +24,7 @@ export async function checkRole(allowedRoles: string[]) {
 
 export async function checkSuperAdmin() {
   const session = await auth();
-  
+
   if (!session || !session.user) {
     redirect('/signin');
   }
@@ -38,7 +38,7 @@ export async function checkSuperAdmin() {
 
 export async function checkAdmin() {
   const session = await auth();
-  
+
   if (!session || !session.user) {
     redirect('/signin');
   }
@@ -52,7 +52,7 @@ export async function checkAdmin() {
 
 export async function checkAuthor() {
   const session = await auth();
-  
+
   if (!session || !session.user) {
     redirect('/signin');
   }
@@ -64,12 +64,12 @@ export async function checkAuthor() {
   return session.user;
 }
 
-export async function checkExistingSuperAdmin(prisma: PrismaClient) {
+export async function checkExistingSuperAdmin(prisma: PrismaClientType) {
   try {
     const existingAdmin = await prisma.user.findFirst({
       where: {
-        role: Role.OWNER
-      }
+        role: Role.OWNER,
+      },
     });
     return existingAdmin;
   } catch (error) {

@@ -7,16 +7,9 @@
  * scroll-reveal با IntersectionObserver (بدون motion library)
  */
 
-import { useRef, useEffect, useState } from 'react';
-import {
-  Globe,
-  CreditCard,
-  GraduationCap,
-  Wallet,
-  ShoppingBag,
-  Sparkles,
-} from 'lucide-react';
+import { CreditCard, Globe, GraduationCap, ShoppingBag, Sparkles, Wallet } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import s from './ServicesList.module.css';
 
 interface Service {

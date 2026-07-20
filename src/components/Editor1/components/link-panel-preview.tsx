@@ -42,11 +42,15 @@ const LinkPanelPreview = ({ url, onEdit, onRemove }: LinkPanelPreviewProps) => {
           className="flex items-center gap-2 text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors group"
           dir="ltr"
         >
-          <Icon name="link-2" size={14} className="flex-shrink-0 opacity-60 group-hover:opacity-100" />
+          <Icon
+            name="link-2"
+            size={14}
+            className="flex-shrink-0 opacity-60 group-hover:opacity-100"
+          />
           <span className="truncate">{displayUrl}</span>
         </a>
       </div>
-      
+
       {/* Actions */}
       <div className="flex items-center justify-end gap-1 px-2 py-1.5">
         <button
@@ -61,9 +65,9 @@ const LinkPanelPreview = ({ url, onEdit, onRemove }: LinkPanelPreviewProps) => {
             <Icon name="copy" size={16} />
           )}
         </button>
-        
+
         <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" aria-hidden="true" />
-        
+
         <button
           type="button"
           onClick={onEdit}
@@ -72,7 +76,7 @@ const LinkPanelPreview = ({ url, onEdit, onRemove }: LinkPanelPreviewProps) => {
         >
           <Icon name="settings-2" size={16} />
         </button>
-        
+
         <button
           type="button"
           onClick={onRemove}

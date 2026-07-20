@@ -1,7 +1,7 @@
 import Card10 from '@/components/Card10/Card10';
 import Card10V3 from '@/components/Card10/Card10V3';
 import type { PostWithRelations } from '@/types/types';
-import { Images, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Images } from 'lucide-react';
 import Link from 'next/link';
 import type { FC } from 'react';
 
@@ -26,7 +26,9 @@ const SectionMagazine7: FC<SectionMagazine7Props> = ({ posts = [], className = '
               روایت‌های تصویری
             </h2>
             <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-              {posts.length > 0 ? `بیش از ${posts.length.toLocaleString('fa-IR')} روایت تصویری` : 'روایت‌هایی که با تصویر جان می‌گیرند'}
+              {posts.length > 0
+                ? `بیش از ${posts.length.toLocaleString('fa-IR')} روایت تصویری`
+                : 'روایت‌هایی که با تصویر جان می‌گیرند'}
             </p>
           </div>
         </div>

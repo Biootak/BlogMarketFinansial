@@ -1,21 +1,21 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import dynamic from 'next/dynamic';
-import { useForm, type FieldValues, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import dynamic from 'next/dynamic';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { type FieldValues, FormProvider, useForm } from 'react-hook-form';
 
+import { PersianDateTimePicker } from '@/components/ui/PersianDateTimePicker';
 import {
   Form,
+  FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
-  FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -23,40 +23,55 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { FiX, FiPlus, FiImage, FiVideo, FiMusic, FiGrid, FiFileText, FiTag, FiFolder, FiLink, FiStar } from 'react-icons/fi';
-import { RiSendPlaneFill, RiDraftLine } from 'react-icons/ri';
+import { Switch } from '@/components/ui/switch';
 import { BiLoaderAlt } from 'react-icons/bi';
-import { HiOutlineSparkles, HiOutlineArrowPath } from 'react-icons/hi2';
-import { PersianDateTimePicker } from '@/components/ui/PersianDateTimePicker';
+import {
+  FiFileText,
+  FiFolder,
+  FiGrid,
+  FiImage,
+  FiLink,
+  FiMusic,
+  FiPlus,
+  FiStar,
+  FiTag,
+  FiVideo,
+  FiX,
+} from 'react-icons/fi';
+import { HiOutlineArrowPath, HiOutlineSparkles } from 'react-icons/hi2';
+import { RiDraftLine, RiSendPlaneFill } from 'react-icons/ri';
 
-import type { CreatePostInput, UpdatePostInput, TaxonomyType, PostType, PostStatus } from '@/types/types';
-import type { ZodType } from 'zod';
-import { generateSlug } from '@/lib/utils';
-import { CategorySelectDialog } from './CategorySelectDialog';
-import { TagSelectDialog } from './TagSelectDialog';
-import { useToast } from '@/components/ui/use-toast';
-import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
-import { pickDims } from '@/lib/image-dims';
 // 2026-06-14: Tiptap editor (~150KB gzipped) was eagerly imported into
 // the dashboard post-form chunk. Lazy-loading it shaves ~100ms off the
 // initial dashboard TTFB, especially on the posts list page that pulls
 // in the same chunk via barrel imports. The editor still ships in the
 // route bundle, just not in the first paint.
 import type { EditorRef } from '@/components/Editor1';
-const Editor = dynamic(
-  () => import('@/components/Editor1/editor').then((m) => m.default),
-  {
-    ssr: false,
-    loading: () => <div className="at-editor-skeleton" aria-hidden />,
-  },
-);
-const TocSidebar = dynamic(
+import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
+import { useToast } from '@/components/ui/use-toast';
+import { pickDims } from '@/lib/image-dims';
+import { generateSlug } from '@/lib/utils';
+import type {
+  CreatePostInput,
+  PostStatus,
+  PostType,
+  TaxonomyType,
+  UpdatePostInput,
+} from '@/types/types';
+import type { ZodType } from 'zod';
+import { CategorySelectDialog } from './CategorySelectDialog';
+import { TagSelectDialog } from './TagSelectDialog';
+const Editor = dynamic(() => import('@/components/Editor1/editor').then((m) => m.default), {
+  ssr: false,
+  loading: () => <div className="at-editor-skeleton" aria-hidden />,
+});
+const _TocSidebar = dynamic(
   () => import('@/components/Editor1/components/toc-sidebar').then((m) => m.default),
   { ssr: false },
 );
+import type { TocItem } from '@/components/Editor1/lib/table-of-contents';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import type { TocItem } from '@/components/Editor1/lib/table-of-contents';
 
 // 2026-07-04: کمک‌کننده برای تعیین وضعیت نهایی پست بر اساس نقش +
 // scheduledAt + نوع دکمه. این منبع حقیقت است؛ سرور (`createPost`/`updatePost`)
@@ -129,7 +144,11 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
     const trimmed = content.trim();
     if (trimmed.startsWith('<')) return trimmed;
     if (trimmed.startsWith('{')) {
-      try { return JSON.parse(trimmed); } catch { return trimmed; }
+      try {
+        return JSON.parse(trimmed);
+      } catch {
+        return trimmed;
+      }
     }
     return trimmed;
   };
@@ -140,7 +159,9 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
   const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
   const { toast } = useToast();
   const editorRef = useRef<EditorRef>(null);
-  const [featuredImage, setFeaturedImage] = useState<string | undefined>(defaultValues.featuredImage);
+  const [featuredImage, setFeaturedImage] = useState<string | undefined>(
+    defaultValues.featuredImage,
+  );
   const [activeSection, setActiveSection] = useState<'content' | 'meta' | 'media'>('content');
   const localStorageKey = isEditing ? `post-${defaultValues.slug}` : 'new-post';
 
@@ -206,29 +227,38 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
     }
   }, [isEditing, defaultValues, form, localStorageKey]);
 
-  const generateSlugFromTitle = useCallback((title: string) => {
-    // فقط در حالت ایجاد پست جدید، اسلاگ خودکار ساخته بشه
-    if (!isEditing) {
-      const generatedSlug = generateSlug(title);
-      setSlug(generatedSlug);
-      form.setValue('slug', generatedSlug);
-    }
-  }, [form, isEditing]);
+  const generateSlugFromTitle = useCallback(
+    (title: string) => {
+      // فقط در حالت ایجاد پست جدید، اسلاگ خودکار ساخته بشه
+      if (!isEditing) {
+        const generatedSlug = generateSlug(title);
+        setSlug(generatedSlug);
+        form.setValue('slug', generatedSlug);
+      }
+    },
+    [form, isEditing],
+  );
 
-  const handleSelectCategories = useCallback((selectedCategories: string[]) => {
-    form.setValue('categories', selectedCategories);
-  }, [form]);
+  const handleSelectCategories = useCallback(
+    (selectedCategories: string[]) => {
+      form.setValue('categories', selectedCategories);
+    },
+    [form],
+  );
 
-  const handleSelectTags = useCallback((selectedTags: string[]) => {
-    form.setValue('tags', selectedTags);
-  }, [form]);
+  const handleSelectTags = useCallback(
+    (selectedTags: string[]) => {
+      form.setValue('tags', selectedTags);
+    },
+    [form],
+  );
 
   const [saveAsDraft, setSaveAsDraft] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   // 2026-07-04: scheduledAt به‌صورت محلی نگه داشته می‌شود تا با
   // input کنترل نشدهٔ datetime-local سازگار باشد. موقع submit در
   // data تزریق می‌شود.
-  const [tocItems, setTocItems] = useState<TocItem[]>([]);
+  const [_tocItems, setTocItems] = useState<TocItem[]>([]);
 
   const [scheduledAt, setScheduledAt] = useState<Date | null>(
     defaultValues.scheduledAt
@@ -250,10 +280,13 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
       });
 
       const submissionData = {
-        ...data, content: editorContent, slug,
+        ...data,
+        content: editorContent,
+        slug,
         categories: Array.isArray(data.categories) ? data.categories : [],
         tags: Array.isArray(data.tags) ? data.tags : [],
-        featuredImage, status: finalStatus,
+        featuredImage,
+        status: finalStatus,
         // scheduledAt فقط وقتی معتبر است که saveAsDraft نباشد.
         // اگر draft ذخیره شود، scheduledAt را null می‌فرستیم تا
         // پیش‌نویس بدون برنامه باشد.
@@ -269,12 +302,16 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
       toast({ variant: 'success', title: 'موفقیت‌آمیز', description: toastDesc });
       localStorage.removeItem(localStorageKey);
       localStorage.removeItem(`${localStorageKey}-editor`);
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 300));
       router.push('/dashboard/posts');
       router.refresh();
     } catch (error) {
       console.error('Error submitting form:', error);
-      toast({ title: 'خطا', description: 'خطا در ارسال فرم. لطفاً دوباره تلاش کنید.', variant: 'destructive' });
+      toast({
+        title: 'خطا',
+        description: 'خطا در ارسال فرم. لطفاً دوباره تلاش کنید.',
+        variant: 'destructive',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -300,9 +337,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
   const hasFeatured = !!featuredImage;
   const postType = (form.watch('postType') as PostType | undefined) ?? 'STANDARD';
   const hasMediaType = postType === 'GALLERY' || postType === 'VIDEO' || postType === 'AUDIO';
-  const mediaCount =
-    (hasFeatured ? 1 : 0) +
-    (hasMediaType ? 1 : 0);
+  const mediaCount = (hasFeatured ? 1 : 0) + (hasMediaType ? 1 : 0);
 
   return (
     <FormProvider {...form}>
@@ -328,7 +363,10 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
               <button
                 type="button"
                 disabled={isLoading}
-                onClick={() => { setSaveAsDraft(true); form.handleSubmit(handleSubmit)(); }}
+                onClick={() => {
+                  setSaveAsDraft(true);
+                  form.handleSubmit(handleSubmit)();
+                }}
                 className="at-btn at-btn--secondary"
               >
                 <RiDraftLine className="w-4 h-4" />
@@ -338,7 +376,10 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
               <button
                 type="button"
                 disabled={isLoading}
-                onClick={() => { setSaveAsDraft(false); form.handleSubmit(handleSubmit)(); }}
+                onClick={() => {
+                  setSaveAsDraft(false);
+                  form.handleSubmit(handleSubmit)();
+                }}
                 className="at-btn at-btn--primary"
               >
                 {isLoading ? (
@@ -362,9 +403,14 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
               const Icon = tab.icon;
               const isActive = activeSection === tab.id;
               const count =
-                tab.id === 'content' ? contentCount :
-                tab.id === 'meta' ? (categoryCount + tagCount + (scheduledAt ? 1 : 0) + (form.watch('postType') ? 1 : 0)) :
-                mediaCount;
+                tab.id === 'content'
+                  ? contentCount
+                  : tab.id === 'meta'
+                    ? categoryCount +
+                      tagCount +
+                      (scheduledAt ? 1 : 0) +
+                      (form.watch('postType') ? 1 : 0)
+                    : mediaCount;
               return (
                 <button
                   key={tab.id}
@@ -377,9 +423,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                   <Icon className="w-4 h-4" aria-hidden />
                   <span>{tab.label}</span>
                   {count > 0 && (
-                    <span className="at-form-tab__count">
-                      {count.toLocaleString('fa-IR')}
-                    </span>
+                    <span className="at-form-tab__count">{count.toLocaleString('fa-IR')}</span>
                   )}
                 </button>
               );
@@ -389,7 +433,11 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
 
         {/* ─── Main content ─── */}
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="at-form-stack at-form-stack--lg" style={{ marginTop: 20 }}>
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="at-form-stack at-form-stack--lg"
+            style={{ marginTop: 20 }}
+          >
             {/* Content Section */}
             <div className={activeSection === 'content' ? '' : 'hidden'}>
               <div className="at-form-stack">
@@ -401,7 +449,10 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                     render={({ field }) => (
                       <FormItem className="at-form-section__body">
                         <FormLabel className="at-field__label">
-                          <FiFileText className="w-4 h-4 at-field__ico at-field__ico--emerald" aria-hidden />
+                          <FiFileText
+                            className="w-4 h-4 at-field__ico at-field__ico--emerald"
+                            aria-hidden
+                          />
                           <span>عنوان پست</span>
                         </FormLabel>
                         <FormControl>
@@ -431,7 +482,10 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                       <FormItem className="at-form-section__body">
                         <div className="flex items-center justify-between gap-2 mb-2">
                           <FormLabel className="at-field__label">
-                            <FiLink className="w-4 h-4 at-field__ico at-field__ico--emerald" aria-hidden />
+                            <FiLink
+                              className="w-4 h-4 at-field__ico at-field__ico--emerald"
+                              aria-hidden
+                            />
                             <span>اسلاگ (URL)</span>
                           </FormLabel>
                           <button
@@ -490,19 +544,26 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                             </span>
                             <div>
                               <div className="at-form-section__title-text">محتوای پست</div>
-                              <div className="at-form-section__sub">بدنه اصلی مقاله با ویرایشگر</div>
+                              <div className="at-form-section__sub">
+                                بدنه اصلی مقاله با ویرایشگر
+                              </div>
                             </div>
                           </div>
                         </div>
                         <FormControl>
-                          <div className="at-editor-wrap" style={{ borderRadius: 0, border: 0, boxShadow: 'none' }}>
+                          <div
+                            className="at-editor-wrap"
+                            style={{ borderRadius: 0, border: 0, boxShadow: 'none' }}
+                          >
                             <div className="at-editor-layout">
                               <div className="at-editor-layout__main">
                                 <Editor
                                   ref={editorRef}
                                   content={parseContent(editorContent)}
                                   onUpdate={({ editor }) => {
-                                    const json = !editor.isEmpty ? JSON.stringify(editor.getJSON()) : '';
+                                    const json = !editor.isEmpty
+                                      ? JSON.stringify(editor.getJSON())
+                                      : '';
                                     setEditorContent(json);
                                     field.onChange(json);
                                     saveDraft();
@@ -513,7 +574,10 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                             </div>
                           </div>
                         </FormControl>
-                        <FormMessage className="at-field__error" style={{ padding: '0 20px 16px' }} />
+                        <FormMessage
+                          className="at-field__error"
+                          style={{ padding: '0 20px 16px' }}
+                        />
                       </FormItem>
                     )}
                   />
@@ -527,7 +591,10 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                     render={({ field }) => (
                       <FormItem className="at-form-section__body">
                         <FormLabel className="at-field__label">
-                          <FiFileText className="w-4 h-4 at-field__ico at-field__ico--emerald" aria-hidden />
+                          <FiFileText
+                            className="w-4 h-4 at-field__ico at-field__ico--emerald"
+                            aria-hidden
+                          />
                           <span>خلاصه پست</span>
                         </FormLabel>
                         <FormControl>
@@ -558,7 +625,10 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                     render={({ field }) => (
                       <FormItem className="at-form-section__body">
                         <FormLabel className="at-field__label">
-                          <FiFolder className="w-4 h-4 at-field__ico at-field__ico--blue" aria-hidden />
+                          <FiFolder
+                            className="w-4 h-4 at-field__ico at-field__ico--blue"
+                            aria-hidden
+                          />
                           <span>دسته‌بندی‌ها</span>
                         </FormLabel>
                         <div className="flex flex-wrap gap-1.5 min-h-[40px]">
@@ -569,7 +639,12 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                                 <span>{category.name}</span>
                                 <button
                                   type="button"
-                                  onClick={() => form.setValue('categories', field.value?.filter((id) => id !== categoryId) || [])}
+                                  onClick={() =>
+                                    form.setValue(
+                                      'categories',
+                                      field.value?.filter((id) => id !== categoryId) || [],
+                                    )
+                                  }
                                   className="at-pill__close"
                                   aria-label={`حذف ${category.name}`}
                                 >
@@ -589,7 +664,9 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                             <span>افزودن دسته‌بندی</span>
                           </button>
                         </FormControl>
-                        <p className="at-field__hint">{categoryCount} از {totalCategories.toLocaleString('fa-IR')} دسته‌بندی</p>
+                        <p className="at-field__hint">
+                          {categoryCount} از {totalCategories.toLocaleString('fa-IR')} دسته‌بندی
+                        </p>
                         <FormMessage className="at-field__error" />
                       </FormItem>
                     )}
@@ -604,7 +681,10 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                     render={({ field }) => (
                       <FormItem className="at-form-section__body">
                         <FormLabel className="at-field__label">
-                          <FiTag className="w-4 h-4 at-field__ico at-field__ico--emerald" aria-hidden />
+                          <FiTag
+                            className="w-4 h-4 at-field__ico at-field__ico--emerald"
+                            aria-hidden
+                          />
                           <span>برچسب‌ها</span>
                         </FormLabel>
                         <div className="flex flex-wrap gap-1.5 min-h-[40px]">
@@ -613,7 +693,9 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                               <span>{tag}</span>
                               <button
                                 type="button"
-                                onClick={() => form.setValue('tags', field.value?.filter((t) => t !== tag) || [])}
+                                onClick={() =>
+                                  form.setValue('tags', field.value?.filter((t) => t !== tag) || [])
+                                }
                                 className="at-pill__close"
                                 aria-label={`حذف ${tag}`}
                               >
@@ -649,7 +731,11 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                         <FormLabel className="at-field__label">
                           <span>وضعیت پست</span>
                         </FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={isAuthor ? 'PENDING_REVIEW' : field.value} disabled={isAuthor}>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={isAuthor ? 'PENDING_REVIEW' : field.value}
+                          disabled={isAuthor}
+                        >
                           <FormControl>
                             <SelectTrigger className="h-11 rounded-[10px] border-[color:var(--at-line)] bg-[color:var(--at-bg)] focus:ring-2 focus:ring-[color:var(--at-accent)]/20">
                               <SelectValue placeholder="انتخاب وضعیت" />
@@ -657,19 +743,31 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="DRAFT">
-                              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-[color:var(--at-fg-faint)]" />پیش‌نویس</div>
+                              <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-[color:var(--at-fg-faint)]" />
+                                پیش‌نویس
+                              </div>
                             </SelectItem>
                             <SelectItem value="PENDING_REVIEW">
-                              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-[color:var(--at-warning)]" />در انتظار بررسی</div>
+                              <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-[color:var(--at-warning)]" />
+                                در انتظار بررسی
+                              </div>
                             </SelectItem>
                             {!isAuthor && (
                               <>
                                 {/* 2026-07-04: گزینهٔ زمان‌بندی برای admin/owner. */}
                                 <SelectItem value="SCHEDULED">
-                                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-[color:var(--at-info)]" />زمان‌بندی شده</div>
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-[color:var(--at-info)]" />
+                                    زمان‌بندی شده
+                                  </div>
                                 </SelectItem>
                                 <SelectItem value="PUBLISHED">
-                                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-[color:var(--at-accent)]" />منتشر شده</div>
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-[color:var(--at-accent)]" />
+                                    منتشر شده
+                                  </div>
                                 </SelectItem>
                               </>
                             )}
@@ -691,9 +789,23 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                   <div className="at-form-section__body">
                     <div className="at-field">
                       <FormLabel className="at-field__label">
-                        <span className="at-switch-row__ico" aria-hidden style={{ width: 28, height: 28 }}>
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        <span
+                          className="at-switch-row__ico"
+                          aria-hidden
+                          style={{ width: 28, height: 28 }}
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
                           </svg>
                         </span>
                         <span>زمان انتشار برنامه‌ریزی‌شده</span>
@@ -722,7 +834,12 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                           <span>نوع پست</span>
                         </FormLabel>
                         <div className="at-ptype-grid">
-                          {(Object.entries(postTypeConfig) as [PostType, typeof postTypeConfig.STANDARD][]).map(([type, config]) => {
+                          {(
+                            Object.entries(postTypeConfig) as [
+                              PostType,
+                              typeof postTypeConfig.STANDARD,
+                            ][]
+                          ).map(([type, config]) => {
                             const Icon = config.icon;
                             const isSelected = field.value === type;
                             return (
@@ -783,7 +900,10 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                       render={({ field }) => (
                         <FormItem className="at-form-section__body">
                           <FormLabel className="at-field__label">
-                            <FiVideo className="w-4 h-4 at-field__ico at-field__ico--rose" aria-hidden />
+                            <FiVideo
+                              className="w-4 h-4 at-field__ico at-field__ico--rose"
+                              aria-hidden
+                            />
                             <span>آدرس ویدیو</span>
                           </FormLabel>
                           <FormControl>
@@ -810,7 +930,10 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                       render={({ field }) => (
                         <FormItem className="at-form-section__body">
                           <FormLabel className="at-field__label">
-                            <FiMusic className="w-4 h-4 at-field__ico at-field__ico--amber" aria-hidden />
+                            <FiMusic
+                              className="w-4 h-4 at-field__ico at-field__ico--amber"
+                              aria-hidden
+                            />
                             <span>آدرس فایل صوتی</span>
                           </FormLabel>
                           <FormControl>
@@ -841,12 +964,18 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                     render={({ field }) => (
                       <FormItem className="at-form-section__body">
                         <FormLabel className="at-field__label">
-                          <FiImage className="w-4 h-4 at-field__ico at-field__ico--emerald" aria-hidden />
+                          <FiImage
+                            className="w-4 h-4 at-field__ico at-field__ico--emerald"
+                            aria-hidden
+                          />
                           <span>تصویر شاخص</span>
                         </FormLabel>
                         <FormControl>
                           <ImageUploader
-                            onImageUpload={(urls) => { setFeaturedImage(urls[0]); field.onChange(urls[0]); }}
+                            onImageUpload={(urls) => {
+                              setFeaturedImage(urls[0]);
+                              field.onChange(urls[0]);
+                            }}
                             onUploadComplete={(files) => {
                               const d = pickDims(files);
                               if (!d) return;
@@ -880,12 +1009,17 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                       render={({ field }) => (
                         <FormItem className="at-form-section__body">
                           <FormLabel className="at-field__label">
-                            <FiGrid className="w-4 h-4 at-field__ico at-field__ico--emerald" aria-hidden />
+                            <FiGrid
+                              className="w-4 h-4 at-field__ico at-field__ico--emerald"
+                              aria-hidden
+                            />
                             <span>گالری تصاویر</span>
                           </FormLabel>
                           <FormControl>
                             <ImageUploader
-                              onImageUpload={(urls) => field.onChange([...(field.value ?? []), ...urls])}
+                              onImageUpload={(urls) =>
+                                field.onChange([...(field.value ?? []), ...urls])
+                              }
                               onImageRemove={(index) => {
                                 const newValue = [...(field.value ?? [])];
                                 newValue.splice(index, 1);
@@ -905,7 +1039,6 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                 )}
               </div>
             </div>
-
           </form>
         </Form>
 

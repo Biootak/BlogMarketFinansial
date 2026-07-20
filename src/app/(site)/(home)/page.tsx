@@ -11,10 +11,10 @@ import MarketRatesTickerSection from '@/components/Sections/MarketRatesTickerSec
 import PulseSection from '@/components/Sections/PulseBoard/PulseSection';
 import SectionMagazine7 from '@/components/Sections/SectionMagazine7';
 import { TopAuthorsSection } from '@/components/TopAuthorsSection';
+import HeroSection from './HeroSection';
 import SectionLargeSlider from './SectionLargeSlider';
 import DeferredAdStrip from './deferred/DeferredAdStrip';
 import DeferredTrending from './deferred/DeferredTrending';
-import HeroSection from './HeroSection';
 
 // Dynamically rendered on demand: the shared site header (MainNav) reads
 // auth() to render sign-in/avatar state, which opts the whole (site) tree out

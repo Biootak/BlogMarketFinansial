@@ -19,18 +19,18 @@
  *     not pay paint cost on first scroll.
  */
 
-import { useEffect, useId, useRef } from 'react';
-import { motion } from '@/lib/motion-shim';
-import {
-  HiOutlineHeart,
-  HiOutlineChatBubbleLeftEllipsis,
-  HiOutlineShare,
-  HiOutlinePencilSquare,
-} from 'react-icons/hi2';
-import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react';
 import CountUp from '@/components/Dashboard/DashboardPage/CountUp';
+import { motion } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
-import { type Range } from './WorkspaceToolbar';
+import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react';
+import { useEffect, useId, useRef } from 'react';
+import {
+  HiOutlineChatBubbleLeftEllipsis,
+  HiOutlineHeart,
+  HiOutlinePencilSquare,
+  HiOutlineShare,
+} from 'react-icons/hi2';
+import type { Range } from './WorkspaceToolbar';
 
 interface Stats {
   views: { today: number; data: number[] };
@@ -113,7 +113,7 @@ function MiniSparkline({
     const duration = 800;
     let raf = 0;
     let start: number | null = null;
-    const easeOutExpo = (t: number) => (t >= 1 ? 1 : 1 - Math.pow(2, -10 * t));
+    const easeOutExpo = (t: number) => (t >= 1 ? 1 : 1 - 2 ** (-10 * t));
 
     const step = (ts: number) => {
       if (start === null) start = ts;
@@ -204,7 +204,11 @@ function CompactPane({ title, value, icon, iconClass, stroke, data, suffix, rang
       <div>
         <p className="dash-pane__value">
           <CountUp value={value} duration={600} />
-          {suffix && <span className="text-base font-medium text-slate-500 dark:text-slate-400 ms-1.5">{suffix}</span>}
+          {suffix && (
+            <span className="text-base font-medium text-slate-500 dark:text-slate-400 ms-1.5">
+              {suffix}
+            </span>
+          )}
         </p>
         <p className="dash-pane__sub">هفت روز اخیر</p>
       </div>
@@ -220,11 +224,7 @@ export default function KpiGrid({ stats, viewStats, range }: KpiGridProps) {
   const { trend: heroTrend, delta: heroDelta } = pickTrend(viewStats.data);
 
   return (
-    <section
-      id="dash-kpis"
-      aria-label="شاخص‌های کلیدی"
-      className="dash-bento2"
-    >
+    <section id="dash-kpis" aria-label="شاخص‌های کلیدی" className="dash-bento2">
       {/* Hero pane — Today views with full sparkline + delta badge */}
       <motion.article
         initial={{ opacity: 0, y: 14 }}
@@ -254,7 +254,12 @@ export default function KpiGrid({ stats, viewStats, range }: KpiGridProps) {
         </div>
 
         <div className="-mx-3 h-24 sm:h-28">
-          <MiniSparkline data={viewStats.data} stroke="oklch(72% 0.13 220)" gradId="hero-spark" range={range} />
+          <MiniSparkline
+            data={viewStats.data}
+            stroke="oklch(72% 0.13 220)"
+            gradId="hero-spark"
+            range={range}
+          />
         </div>
       </motion.article>
 

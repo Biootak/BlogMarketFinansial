@@ -1,11 +1,11 @@
 'use client';
 
-import * as React from 'react';
-import * as ToastPrimitives from '@radix-ui/react-toast';
-import { cva, type VariantProps } from 'class-variance-authority';
-import { MdClose, MdInfo, MdCheckCircle, MdWarning, MdError } from 'react-icons/md';
-import { motion, AnimatePresence } from '@/lib/motion-shim';
+import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
+import * as ToastPrimitives from '@radix-ui/react-toast';
+import { type VariantProps, cva } from 'class-variance-authority';
+import * as React from 'react';
+import { MdCheckCircle, MdClose, MdError, MdInfo, MdWarning } from 'react-icons/md';
 
 const ToastProvider = ToastPrimitives.Provider;
 
@@ -42,10 +42,7 @@ const toastVariants = cva(
   {
     variants: {
       variant: {
-        default: cn(
-          'bg-white/95 border-gray-200/60 text-gray-900',
-          'shadow-gray-200/50',
-        ),
+        default: cn('bg-white/95 border-gray-200/60 text-gray-900', 'shadow-gray-200/50'),
         destructive: cn(
           'bg-gradient-to-l from-red-50/95 to-rose-50/95 border-red-200/60 text-red-900',
           'shadow-red-200/30',
@@ -113,19 +110,19 @@ const ToastClose = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Close
     ref={ref}
-      className={cn(
-        'absolute right-3 left-auto rtl:left-3 rtl:right-auto top-3',
-        'rounded-xl p-1.5',
-        'text-gray-400 opacity-70',
-        'transition-all duration-200',
-        'hover:text-gray-600 hover:opacity-100 hover:bg-gray-100/80',
-        'focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-gray-300',
-        'group-hover:opacity-100',
-        className,
-      )}
-      {...props}
-    >
-      <MdClose className="h-4 w-4" />
+    className={cn(
+      'absolute right-3 left-auto rtl:left-3 rtl:right-auto top-3',
+      'rounded-xl p-1.5',
+      'text-gray-400 opacity-70',
+      'transition-all duration-200',
+      'hover:text-gray-600 hover:opacity-100 hover:bg-gray-100/80',
+      'focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-gray-300',
+      'group-hover:opacity-100',
+      className,
+    )}
+    {...props}
+  >
+    <MdClose className="h-4 w-4" />
   </ToastPrimitives.Close>
 ));
 ToastClose.displayName = ToastPrimitives.Close.displayName;
@@ -194,11 +191,7 @@ const iconVariants: Record<ToastVariant, { icon: React.ReactNode; bg: string }> 
 
 export const ToastIcon: React.FC<{ variant?: ToastVariant }> = ({ variant = 'default' }) => {
   const config = iconVariants[variant];
-  return (
-    <div className={cn('flex-shrink-0 p-2 rounded-xl', config.bg)}>
-      {config.icon}
-    </div>
-  );
+  return <div className={cn('flex-shrink-0 p-2 rounded-xl', config.bg)}>{config.icon}</div>;
 };
 
 export const AnimatedToast: React.FC<ToastProps> = (props) => (

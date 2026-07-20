@@ -11,8 +11,8 @@
  * → main thread فقط CSS transform را update می‌کند.
  */
 
-import { type ReactNode, useRef, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 export interface TiltCardProps {
   children: ReactNode;
@@ -23,10 +23,10 @@ export interface TiltCardProps {
 
 const SPRING_STIFFNESS = 280;
 const SPRING_DAMPING = 24;
-const SPRING_CRITICAL = 2 * Math.sqrt(SPRING_STIFFNESS * 1); // mass = 1
+const _SPRING_CRITICAL = 2 * Math.sqrt(SPRING_STIFFNESS * 1); // mass = 1
 // یه ضریب damping-ratio: damping/critical = 24 / (2*sqrt(280)) ≈ 0.72
 // rAF interpolation: factor = 1 - exp(-rate * dt)
-const SPRING_RATE = 14; // tune شده برای حس مشابه framer-motion
+const _SPRING_RATE = 14; // tune شده برای حس مشابه framer-motion
 
 export function TiltCard({
   children,
@@ -58,8 +58,7 @@ export function TiltCard({
       s.rx += s.vx * dt;
       s.ry += s.vy * dt;
       if (ref.current) {
-        ref.current.style.transform =
-          `perspective(${perspective}px) rotateX(${s.rx.toFixed(3)}deg) rotateY(${s.ry.toFixed(3)}deg)`;
+        ref.current.style.transform = `perspective(${perspective}px) rotateX(${s.rx.toFixed(3)}deg) rotateY(${s.ry.toFixed(3)}deg)`;
       }
       rafId = requestAnimationFrame(tick);
     };

@@ -16,11 +16,5 @@ interface SiteLogoProps {
 export default async function SiteLogo({ className, variant }: SiteLogoProps) {
   const { logoUrl, siteName } = await getSiteIdentity();
 
-  return (
-    <Logo
-      logoUrl={logoUrl}
-      className={className}
-      variant={variant}
-    />
-  );
+  return <Logo logoUrl={logoUrl} className={className} variant={variant} />;
 }

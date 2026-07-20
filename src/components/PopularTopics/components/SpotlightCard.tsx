@@ -48,8 +48,8 @@ export function SpotlightCard({
   // مقادیر tilt
   const rotateX = useMotionValue(0);
   const rotateY = useMotionValue(0);
-  const rotateXSpring = useMotionValue(0);
-  const rotateYSpring = useMotionValue(0);
+  const _rotateXSpring = useMotionValue(0);
+  const _rotateYSpring = useMotionValue(0);
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -62,8 +62,8 @@ export function SpotlightCard({
 
       if (enableTilt) {
         // محاسبه tilt بر اساس موقعیت ماوس
-        const xPct = (x / rect.width) - 0.5;
-        const yPct = (y / rect.height) - 0.5;
+        const xPct = x / rect.width - 0.5;
+        const yPct = y / rect.height - 0.5;
         rotateX.set(-yPct * tiltIntensity);
         rotateY.set(xPct * tiltIntensity);
       }

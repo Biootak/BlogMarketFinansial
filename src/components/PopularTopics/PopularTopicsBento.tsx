@@ -1,11 +1,11 @@
 'use client';
 
-import { motion, type Variants } from '@/lib/motion-shim';
+import { type Variants, motion } from '@/lib/motion-shim';
+import { cn } from '@/lib/utils';
+import type { TaxonomyType } from '@/types/types';
 import { ArrowLeft, Flame, Sparkles, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
-import { useMemo, type FC } from 'react';
-import type { TaxonomyType } from '@/types/types';
-import { cn } from '@/lib/utils';
+import { type FC, useMemo } from 'react';
 import { PopularTopicCard } from './components/PopularTopicCard';
 import { getCategoryColor } from './utils/categoryColors';
 
@@ -93,9 +93,7 @@ const PopularTopicsBento: FC<PopularTopicsBentoProps> = ({
 
   // pre-compute colors
   const colorMap = useMemo(() => {
-    return new Map(
-      sortedCategories.map((c, idx) => [c.id, getCategoryColor(c.color, idx, c.id)]),
-    );
+    return new Map(sortedCategories.map((c, idx) => [c.id, getCategoryColor(c.color, idx, c.id)]));
   }, [sortedCategories]);
 
   if (sortedCategories.length === 0) {
@@ -126,7 +124,7 @@ const PopularTopicsBento: FC<PopularTopicsBentoProps> = ({
           }}
           transition={{
             duration: 18,
-            repeat: Infinity,
+            repeat: Number.POSITIVE_INFINITY,
             ease: 'easeInOut',
           }}
         />
@@ -140,7 +138,7 @@ const PopularTopicsBento: FC<PopularTopicsBentoProps> = ({
           }}
           transition={{
             duration: 22,
-            repeat: Infinity,
+            repeat: Number.POSITIVE_INFINITY,
             ease: 'easeInOut',
           }}
         />
@@ -154,7 +152,7 @@ const PopularTopicsBento: FC<PopularTopicsBentoProps> = ({
           }}
           transition={{
             duration: 25,
-            repeat: Infinity,
+            repeat: Number.POSITIVE_INFINITY,
             ease: 'easeInOut',
           }}
         />
@@ -162,7 +160,8 @@ const PopularTopicsBento: FC<PopularTopicsBentoProps> = ({
         <div
           className="absolute inset-0 opacity-[0.015] dark:opacity-[0.04]"
           style={{
-            backgroundImage: `linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px)`,
+            backgroundImage:
+              'linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px)',
             backgroundSize: '32px 32px',
           }}
         />
@@ -232,14 +231,10 @@ const PopularTopicsBento: FC<PopularTopicsBentoProps> = ({
         >
           <span className="inline-flex items-center gap-1.5">
             <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
-            <span>
-              {sortedCategories.length} موضوع فعال
-            </span>
+            <span>{sortedCategories.length} موضوع فعال</span>
           </span>
           <span className="h-1 w-1 rounded-full bg-neutral-300 dark:bg-neutral-700" />
-          <span>
-            به‌روزرسانی لحظه‌ای
-          </span>
+          <span>به‌روزرسانی لحظه‌ای</span>
         </motion.div>
       </motion.header>
 
@@ -266,9 +261,7 @@ const PopularTopicsBento: FC<PopularTopicsBentoProps> = ({
             // featured pattern — کارت‌های اول و چهارم بزرگ
             const isFeatured = idx === 0 || idx === 3;
             // در حالت featured، در md دو ستون رو اشغال می‌کنه
-            const colSpan = isFeatured
-              ? 'col-span-2 md:col-span-2'
-              : 'col-span-1';
+            const colSpan = isFeatured ? 'col-span-2 md:col-span-2' : 'col-span-1';
             // در featured اول، یه ردیف کامل باشه
             const rowSpan = idx === 0 ? 'row-span-2 md:row-span-2' : 'row-span-1';
 

@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { useToast } from '@/components/ui/use-toast';
-import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, CheckCircle2, Server, Database, HardDrive } from 'lucide-react';
 import { getSystemStatus } from '@/actions/reportActions';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/components/ui/use-toast';
+import { AlertCircle, CheckCircle2, Database, HardDrive, Server } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface SystemStatus {
   cpu?: {
@@ -109,11 +109,9 @@ export default function SystemStatus() {
     );
   }
 
-  const memoryUsagePercent = status.memory ? 
-    (status.memory.used / status.memory.total) * 100 : 0;
+  const memoryUsagePercent = status.memory ? (status.memory.used / status.memory.total) * 100 : 0;
 
-  const diskUsagePercent = status.disk ? 
-    (status.disk.used / status.disk.total) * 100 : 0;
+  const diskUsagePercent = status.disk ? (status.disk.used / status.disk.total) * 100 : 0;
 
   return (
     <div className="space-y-6">

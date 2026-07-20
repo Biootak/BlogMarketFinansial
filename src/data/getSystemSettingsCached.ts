@@ -1,8 +1,8 @@
-import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
+import { unstable_cache } from 'next/cache';
 import type { SiteSettings } from './getSystemSettings';
 
-export { type SiteSettings } from './getSystemSettings';
+export type { SiteSettings } from './getSystemSettings';
 
 const SETTINGS_FALLBACK: SiteSettings = {
   siteName: null,
@@ -53,5 +53,5 @@ export const getSystemSettingsCached = unstable_cache(
   {
     tags: ['system-settings'],
     revalidate: 60,
-  }
+  },
 );

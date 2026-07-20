@@ -1,8 +1,8 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { TaxonomyType } from '@/types/types';
+import dynamic from 'next/dynamic';
 
 interface DeferredTrendingProps {
   categories: TaxonomyType[];

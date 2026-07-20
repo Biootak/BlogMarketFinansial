@@ -102,8 +102,12 @@
   transition: opacity 120ms ease;
 }
 
-.addBtn:hover { opacity: 0.88; }
-.addBtn:active { transform: scale(0.97); }
+.addBtn:hover {
+  opacity: 0.88;
+}
+.addBtn:active {
+  transform: scale(0.97);
+}
 
 .tableWrap {
   background: var(--at-surface);
@@ -154,10 +158,22 @@
   font-weight: 600;
 }
 
-.badgeActive { background: oklch(95% 0.08 145); color: oklch(40% 0.12 145); }
-.badgePending { background: oklch(95% 0.06 85); color: oklch(40% 0.1 80); }
-.badgeSuspended { background: oklch(95% 0.06 50); color: oklch(40% 0.1 50); }
-.badgeClosed { background: oklch(93% 0 0); color: oklch(45% 0 0); }
+.badgeActive {
+  background: oklch(95% 0.08 145);
+  color: oklch(40% 0.12 145);
+}
+.badgePending {
+  background: oklch(95% 0.06 85);
+  color: oklch(40% 0.1 80);
+}
+.badgeSuspended {
+  background: oklch(95% 0.06 50);
+  color: oklch(40% 0.1 50);
+}
+.badgeClosed {
+  background: oklch(93% 0 0);
+  color: oklch(45% 0 0);
+}
 
 /* Actions */
 .actions {

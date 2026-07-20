@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { NodeViewWrapper } from '@tiptap/react';
 import type { NodeViewProps } from '@tiptap/core';
+import { NodeViewWrapper } from '@tiptap/react';
 import { AlertTriangle, Sigma } from 'lucide-react';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Dynamic import for KaTeX to avoid SSR issues
 let katex: typeof import('katex') | null = null;
@@ -12,12 +13,12 @@ let katexLoaded = false;
 const loadKatex = async () => {
   if (katexLoaded) return katex;
   if (typeof window === 'undefined') return null;
-  
+
   try {
     const mod = await import('katex');
     katex = mod.default as unknown as typeof import('katex');
     katexLoaded = true;
-    
+
     // Load CSS dynamically
     if (!document.querySelector('link[href*="katex"]')) {
       const link = document.createElement('link');
@@ -25,7 +26,7 @@ const loadKatex = async () => {
       link.href = 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css';
       document.head.appendChild(link);
     }
-    
+
     return katex;
   } catch (error) {
     console.error('Failed to load KaTeX:', error);
@@ -57,7 +58,7 @@ const MathBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, se
         setError('کتابخانه KaTeX بارگذاری نشد');
         return;
       }
-      
+
       const html = (katexModule as any).renderToString(latexStr, {
         displayMode,
         throwOnError: true,

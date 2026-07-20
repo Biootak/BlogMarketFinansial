@@ -6,11 +6,11 @@
 
 import { Resend } from 'resend';
 import {
+  EMAIL_ENV,
+  EmailConfigError,
   type EmailMessage,
   type EmailProvider,
   type EmailSendResult,
-  EmailConfigError,
-  EMAIL_ENV,
 } from './types';
 
 export function createResendProvider(): EmailProvider {

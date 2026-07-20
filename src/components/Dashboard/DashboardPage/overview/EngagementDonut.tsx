@@ -20,13 +20,10 @@
  *     the slices with focus.
  */
 
-import { useEffect, useId, useMemo, useState } from 'react';
-import { motion, AnimatePresence } from '@/lib/motion-shim';
-import {
-  HiOutlinePresentationChartLine,
-  HiOutlineInformationCircle,
-} from 'react-icons/hi2';
+import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
+import { useEffect, useId, useMemo, useState } from 'react';
+import { HiOutlineInformationCircle, HiOutlinePresentationChartLine } from 'react-icons/hi2';
 
 export interface EngagementSlice {
   key: string;
@@ -48,11 +45,7 @@ const RANGE_LABEL: Record<'all' | 'today' | 'week', string> = {
   week: 'هفتگی',
 };
 
-export default function EngagementDonut({
-  slices,
-  range,
-  caption,
-}: EngagementDonutProps) {
+export default function EngagementDonut({ slices, range, caption }: EngagementDonutProps) {
   const id = useId();
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
 
@@ -109,7 +102,7 @@ export default function EngagementDonut({
     const startTs = performance.now();
     const duration = 600;
     const stagger = 80;
-    const easeOutExpo = (t: number) => (t >= 1 ? 1 : 1 - Math.pow(2, -10 * t));
+    const easeOutExpo = (t: number) => (t >= 1 ? 1 : 1 - 2 ** (-10 * t));
     let raf = 0;
     const tick = (now: number) => {
       const elapsed = now - startTs;
@@ -180,10 +173,7 @@ export default function EngagementDonut({
                 className="text-slate-100/70 dark:text-slate-800/50"
               />
               {arcs.map(({ slice, start, arcLength, pct }, i) => (
-                <g
-                  key={`${id}-${slice.key}-${range}`}
-                  transform={`rotate(${start} ${cx} ${cy})`}
-                >
+                <g key={`${id}-${slice.key}-${range}`} transform={`rotate(${start} ${cx} ${cy})`}>
                   <circle
                     cx={cx}
                     cy={cy}
@@ -237,14 +227,12 @@ export default function EngagementDonut({
                 className="fill-slate-400 dark:fill-slate-500"
                 style={{ fontSize: 9 }}
               >
-                {hoveredArc
-                  ? `${hoveredArc.pct.toFixed(0)}%`
-                  : RANGE_LABEL[range]}
+                {hoveredArc ? `${hoveredArc.pct.toFixed(0)}%` : RANGE_LABEL[range]}
               </text>
             </svg>
           </div>
 
-          <ul className="grid gap-1 min-w-0" role="list">
+          <ul className="grid gap-1 min-w-0">
             {arcs.map(({ slice, pct }) => {
               const active = hoveredKey === slice.key;
               return (
@@ -299,7 +287,8 @@ export default function EngagementDonut({
             aria-live="polite"
           >
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              {arcs.find((a) => a.slice.key === hoveredKey)?.slice.label} · {arcs.find((a) => a.slice.key === hoveredKey)?.pct.toFixed(1)}٪ از کل تعامل
+              {arcs.find((a) => a.slice.key === hoveredKey)?.slice.label} ·{' '}
+              {arcs.find((a) => a.slice.key === hoveredKey)?.pct.toFixed(1)}٪ از کل تعامل
             </p>
           </motion.div>
         )}

@@ -1,14 +1,14 @@
 'use client';
 
-import React, { type FC, useState } from 'react';
-import PostCardSaveAction from '@/components/PostCardSaveAction/PostCardSaveAction';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
-import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia';
 import PostCardMetaV2 from '@/components/PostCardMeta/PostCardMetaV2';
-import Link from 'next/link';
-import type { PostWithRelations } from '@/types/types';
-import BookmarkCheck from '../BookmarkCheck';
+import PostCardSaveAction from '@/components/PostCardSaveAction/PostCardSaveAction';
+import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia';
 import { getPostLink } from '@/lib/getPostLink';
+import type { PostWithRelations } from '@/types/types';
+import Link from 'next/link';
+import React, { type FC, useState } from 'react';
+import BookmarkCheck from '../BookmarkCheck';
 
 export interface Card10Props {
   className?: string;
@@ -30,8 +30,6 @@ const Card10: FC<Card10Props> = ({ className = 'h-full', post }) => {
         <div>
           <PostFeaturedMedia post={post} isHover={isHover} />
         </div>
-
-
       </div>
       <div className="absolute top-2 sm:top-3 inset-x-2 sm:inset-x-3 flex justify-between items-start gap-2 sm:gap-4 z-10">
         <CategoryBadgeList categories={categories} className="flex flex-wrap gap-1" />

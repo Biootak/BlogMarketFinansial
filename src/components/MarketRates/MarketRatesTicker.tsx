@@ -30,7 +30,12 @@
 import Ticker from '@/components/Ticker';
 import { TickerShell } from '@/components/TickerShell';
 import type { MarketRateItem } from '@/lib/market-rates';
-import { UNIT_LABELS, formatChangePercent, formatValueOnly, formatWithUnit } from '@/lib/market-rates/format';
+import {
+  UNIT_LABELS,
+  formatChangePercent,
+  formatValueOnly,
+  formatWithUnit,
+} from '@/lib/market-rates/format';
 import { cn } from '@/lib/utils';
 import { memo, useEffect, useMemo, useState } from 'react';
 

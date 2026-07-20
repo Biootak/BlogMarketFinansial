@@ -1,23 +1,30 @@
 'use client';
 
-import * as React from 'react';
-import { Calendar as CalendarIcon } from 'lucide-react';
-import type { DayRange } from '@hassanmojab/react-modern-calendar-datepicker';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import type { DayRange } from '@hassanmojab/react-modern-calendar-datepicker';
+import { Calendar as CalendarIcon } from 'lucide-react';
+import * as React from 'react';
 
 interface DatePickerWithRangeProps {
   className?: string;
   date: DayRange | null;
   onDateChange: (date: DayRange | null) => void;
-  minDate?: { year: number; month: number; day: number; }; 
-  maxDate?: { year: number; month: number; day: number; }; 
+  minDate?: { year: number; month: number; day: number };
+  maxDate?: { year: number; month: number; day: number };
   locale: string;
 }
 
-export function DatePickerWithRange({ className, date, onDateChange, minDate, maxDate, locale }: DatePickerWithRangeProps) {
+export function DatePickerWithRange({
+  className,
+  date,
+  onDateChange,
+  minDate,
+  maxDate,
+  locale,
+}: DatePickerWithRangeProps) {
   try {
     if (!date || !locale) {
       throw new Error('Please provide a valid date and locale.');

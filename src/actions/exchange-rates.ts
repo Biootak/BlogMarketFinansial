@@ -1,11 +1,11 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { revalidatePath } from 'next/cache';
+import { authFailureToActionResult, requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
-import { z } from 'zod';
 import type { ActionResult, ExchangeRateData } from '@/types/types';
-import { requireAdmin, authFailureToActionResult } from '@/lib/require-auth';
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 
 const exchangeRateSchema = z.object({
   name: z.string(),

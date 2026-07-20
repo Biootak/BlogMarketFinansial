@@ -25,12 +25,7 @@ function formatLastSync(lastSyncAt: Date | string | null): string {
   return rtf.format(diffDays, 'day');
 }
 
-export default function ExchangeRatesHeader({
-  total,
-  auto,
-  manual,
-  lastSyncAt,
-}: HeaderProps) {
+export default function ExchangeRatesHeader({ total, auto, manual, lastSyncAt }: HeaderProps) {
   const lastSyncLabel = formatLastSync(lastSyncAt);
 
   return (
@@ -77,21 +72,9 @@ export default function ExchangeRatesHeader({
         style={{ gap: 'var(--ds-space-4)' }}
         role="list"
       >
-        <StatCard
-          label="کل نرخ‌ها"
-          value={total.toLocaleString('fa-IR')}
-          accent="brand"
-        />
-        <StatCard
-          label="خودکار (TGJU)"
-          value={auto.toLocaleString('fa-IR')}
-          accent="emerald"
-        />
-        <StatCard
-          label="دستی"
-          value={manual.toLocaleString('fa-IR')}
-          accent="amber"
-        />
+        <StatCard label="کل نرخ‌ها" value={total.toLocaleString('fa-IR')} accent="brand" />
+        <StatCard label="خودکار (TGJU)" value={auto.toLocaleString('fa-IR')} accent="emerald" />
+        <StatCard label="دستی" value={manual.toLocaleString('fa-IR')} accent="amber" />
       </dl>
     </header>
   );

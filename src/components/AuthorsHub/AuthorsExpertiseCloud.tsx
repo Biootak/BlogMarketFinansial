@@ -1,13 +1,13 @@
+import { SectionHeader } from '@/components/SectionHeader';
+import { cn, toPersianNumber } from '@/lib/utils';
+import { BookOpen, ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
 /**
  * @file AuthorsExpertiseCloud
  * @description A premium "expertise" section for the author hub. Renders
  * up to 8 author chips per category. Server component.
  */
-import * as React from 'react';
-import Link from 'next/link';
-import { BookOpen, ChevronLeft } from 'lucide-react';
-import { cn, toPersianNumber } from '@/lib/utils';
-import { SectionHeader } from '@/components/SectionHeader';
+import type * as React from 'react';
 import AuthorAvatar from './primitives/AuthorAvatar';
 
 export interface ExpertiseGroup {
@@ -27,17 +27,10 @@ export interface AuthorsExpertiseCloudProps {
   className?: string;
 }
 
-const AuthorsExpertiseCloud: React.FC<AuthorsExpertiseCloudProps> = ({
-  groups,
-  className,
-}) => {
+const AuthorsExpertiseCloud: React.FC<AuthorsExpertiseCloudProps> = ({ groups, className }) => {
   if (groups.length === 0) return null;
   return (
-    <section
-      dir="rtl"
-      className={cn('relative', className)}
-      aria-label="نویسندگان بر اساس تخصص"
-    >
+    <section dir="rtl" className={cn('relative', className)} aria-label="نویسندگان بر اساس تخصص">
       <SectionHeader
         icon={<BookOpen className="h-4 w-4 sm:h-4.5 sm:w-4.5" strokeWidth={2.25} />}
         title="تخصص‌ها"
@@ -48,10 +41,7 @@ const AuthorsExpertiseCloud: React.FC<AuthorsExpertiseCloudProps> = ({
         {groups.map((group) => (
           <article
             key={group.id}
-            className={cn(
-              'relative rounded-2xl author-surface author-lift',
-              'p-4 sm:p-5',
-            )}
+            className={cn('relative rounded-2xl author-surface author-lift', 'p-4 sm:p-5')}
           >
             <header className="flex items-center justify-between gap-2 mb-3">
               <h3 className="text-sm sm:text-[15px] font-bold text-neutral-900 dark:text-neutral-50 line-clamp-1">

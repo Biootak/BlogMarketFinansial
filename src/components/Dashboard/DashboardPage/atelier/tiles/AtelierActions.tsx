@@ -170,9 +170,7 @@ export default function AtelierActions({ userRole }: AtelierActionsProps) {
           </span>
           <span className="at-action__hero-body">
             <span className="at-action__hero-label">{primary.label}</span>
-            {primary.meta && (
-              <span className="at-action__hero-meta">{primary.meta}</span>
-            )}
+            {primary.meta && <span className="at-action__hero-meta">{primary.meta}</span>}
           </span>
           <span className="at-action__hero-arrow" aria-hidden>
             ‹

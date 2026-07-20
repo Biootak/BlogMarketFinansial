@@ -1,11 +1,11 @@
 'use client';
 
+import { motion } from '@/lib/motion-shim';
+import { cn } from '@/lib/utils';
+import convertNumbThousand from '@/utils/convertNumbThousand';
 import Link from 'next/link';
 import type React from 'react';
 import type { FC } from 'react';
-import { motion } from '@/lib/motion-shim';
-import convertNumbThousand from '@/utils/convertNumbThousand';
-import { cn } from '@/lib/utils';
 import { Icon } from '../ui/icon';
 
 export interface PostCardCommentBtnProps {

@@ -1,12 +1,12 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { authFailureToActionResult, requireAdmin } from '@/lib/require-auth';
+import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
-import type { ActionResult, Advertisement, AdSize, AdPosition } from '@/types/types';
+import type { ActionResult, AdPosition, AdSize, Advertisement } from '@/types/types';
 import type { Prisma } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
-import { revalidateTag } from '@/lib/revalidate';
-import { requireAdmin, authFailureToActionResult } from '@/lib/require-auth';
 
 // Internal function for fetching ads (not cached)
 async function fetchActiveAdsInternal(
@@ -66,15 +66,11 @@ const EMPTY_ADS_RESULT: ActionResult<Advertisement[]> = {
   data: [],
 };
 
-const getCachedActiveAds = safeCache(
-  fetchActiveAdsInternal,
-  EMPTY_ADS_RESULT,
-  {
-    key: 'active-advertisements',
-    ttl: 300,
-    tags: ['advertisements'],
-  },
-);
+const getCachedActiveAds = safeCache(fetchActiveAdsInternal, EMPTY_ADS_RESULT, {
+  key: 'active-advertisements',
+  ttl: 300,
+  tags: ['advertisements'],
+});
 
 // Public API with object params
 export async function getActiveAdvertisements({
@@ -96,7 +92,6 @@ export async function getActiveAdvertisements({
 } = {}): Promise<ActionResult<Advertisement[]>> {
   return getCachedActiveAds(limit, page, search, size, position, orderBy, orderDirection);
 }
-
 
 export async function getAllAdvertisements({
   limit = 10,

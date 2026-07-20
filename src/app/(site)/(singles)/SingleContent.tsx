@@ -1,6 +1,6 @@
-import type { PostWithRelations, Advertisement } from '@/types/types';
-import SingleContentClient from './SingleContentClient';
 import getCurrentUser from '@/lib/current-user';
+import type { Advertisement, PostWithRelations } from '@/types/types';
+import SingleContentClient from './SingleContentClient';
 
 interface SingleContentProps {
   post: PostWithRelations;

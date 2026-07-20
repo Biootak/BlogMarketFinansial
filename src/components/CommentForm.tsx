@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import type React from 'react';
 import { useState } from 'react';
@@ -26,7 +26,10 @@ const CommentForm: React.FC<CommentFormProps> = ({ onSubmit }) => {
         rows={3}
         placeholder="Write your comment..."
       />
-      <button type="submit" className="mt-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+      <button
+        type="submit"
+        className="mt-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+      >
         Submit Comment
       </button>
     </form>

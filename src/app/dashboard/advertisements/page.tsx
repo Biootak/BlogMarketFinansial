@@ -65,12 +65,12 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
+  HiMagnifyingGlass,
+  HiOutlineCheckCircle,
   HiOutlineMegaphone,
   HiOutlinePencil,
   HiOutlinePlus,
-  HiOutlineCheckCircle,
   HiOutlineRectangleStack,
-  HiMagnifyingGlass,
   HiOutlineTrash,
 } from 'react-icons/hi2';
 import * as z from 'zod';
@@ -291,10 +291,7 @@ export default function AdvertisementsPage() {
   return (
     <div className="at-page" dir="rtl">
       <PageHeader
-        breadcrumb={[
-          { label: 'داشبورد', href: '/dashboard' },
-          { label: 'تبلیغات' },
-        ]}
+        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'تبلیغات' }]}
         eyebrow="محتوا"
         title={activeTab === 'header' ? 'تبلیغ بالای هدر' : 'مدیریت تبلیغات'}
         description={
@@ -382,7 +379,10 @@ export default function AdvertisementsPage() {
               </div>
             </div>
             <div className="at-stat">
-              <div className="at-stat__ico at-stat__ico--emerald" style={{ background: 'var(--at-accent-soft)', color: 'var(--at-accent)' }}>
+              <div
+                className="at-stat__ico at-stat__ico--emerald"
+                style={{ background: 'var(--at-accent-soft)', color: 'var(--at-accent)' }}
+              >
                 <HiOutlineCheckCircle className="size-4" />
               </div>
               <div className="at-stat__main">
@@ -531,13 +531,12 @@ export default function AdvertisementsPage() {
         </>
       )}
 
-      {activeTab === 'header' && (
-        isHeaderAdsLoading ? (
+      {activeTab === 'header' &&
+        (isHeaderAdsLoading ? (
           <AdvertisementsSkeleton />
         ) : (
           <HeaderAdsClient initialAds={headerAds} onRefresh={fetchHeaderAds} />
-        )
-      )}
+        ))}
     </div>
   );
 }

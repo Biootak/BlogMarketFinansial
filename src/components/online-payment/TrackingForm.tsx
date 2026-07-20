@@ -1,44 +1,44 @@
 'use client';
 
-import { type FC, useState } from 'react';
+import { getServiceRequestByTrackingCode } from '@/actions/serviceRequestActions';
 import {
-  Search,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  RefreshCw,
   AlertCircle,
   CalendarClock,
+  CheckCircle2,
+  Clock,
   Hash,
-  MessageSquare,
   History,
+  MessageSquare,
+  RefreshCw,
+  Search,
+  XCircle,
 } from 'lucide-react';
-import { getServiceRequestByTrackingCode } from '@/actions/serviceRequestActions';
+import { type FC, useState } from 'react';
 import s from './TrackingForm.module.css';
 
 // ─── Status Config ─────────────────────────────────────────────────────────── //
 
 const STATUS_CONFIG = {
-  PENDING:     { label: 'در انتظار بررسی', icon: Clock,        cls: s.statusPending  },
-  IN_PROGRESS: { label: 'در حال انجام',    icon: RefreshCw,    cls: s.statusProgress },
-  COMPLETED:   { label: 'تکمیل شده',       icon: CheckCircle2, cls: s.statusDone     },
-  CANCELLED:   { label: 'لغو شده',         icon: XCircle,      cls: s.statusCancelled },
+  PENDING: { label: 'در انتظار بررسی', icon: Clock, cls: s.statusPending },
+  IN_PROGRESS: { label: 'در حال انجام', icon: RefreshCw, cls: s.statusProgress },
+  COMPLETED: { label: 'تکمیل شده', icon: CheckCircle2, cls: s.statusDone },
+  CANCELLED: { label: 'لغو شده', icon: XCircle, cls: s.statusCancelled },
 };
 
 const SERVICE_LABELS: Record<string, string> = {
   INTERNATIONAL_TRANSFER: 'حواله بین‌المللی',
-  ONLINE_PAYMENT:         'پرداخت آنلاین',
-  TUITION_PAYMENT:        'پرداخت شهریه',
-  FREELANCE_INCOME:       'نقد کردن درآمد فریلنسری',
-  SOFTWARE_PURCHASE:      'خرید نرم‌افزار/اشتراک',
-  OTHER:                  'سایر خدمات',
+  ONLINE_PAYMENT: 'پرداخت آنلاین',
+  TUITION_PAYMENT: 'پرداخت شهریه',
+  FREELANCE_INCOME: 'نقد کردن درآمد فریلنسری',
+  SOFTWARE_PURCHASE: 'خرید نرم‌افزار/اشتراک',
+  OTHER: 'سایر خدمات',
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  PENDING:     'در انتظار بررسی',
+  PENDING: 'در انتظار بررسی',
   IN_PROGRESS: 'در حال انجام',
-  COMPLETED:   'تکمیل شده',
-  CANCELLED:   'لغو شده',
+  COMPLETED: 'تکمیل شده',
+  CANCELLED: 'لغو شده',
 };
 
 // ─── Types ─────────────────────────────────────────────────────────────────── //
@@ -71,7 +71,7 @@ interface TrackingData {
 // ─── Component ─────────────────────────────────────────────────────────────── //
 
 const TrackingForm: FC = () => {
-  const [code, setCode]     = useState('');
+  const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{
     success: boolean;
@@ -96,7 +96,7 @@ const TrackingForm: FC = () => {
     }
   };
 
-  const status     = result?.data?.status ? STATUS_CONFIG[result.data.status] : null;
+  const status = result?.data?.status ? STATUS_CONFIG[result.data.status] : null;
   const StatusIcon = status?.icon;
 
   return (
@@ -120,11 +120,7 @@ const TrackingForm: FC = () => {
           className={s.searchBtn}
           aria-label="جستجو"
         >
-          {loading ? (
-            <span className={s.spinner} aria-hidden="true" />
-          ) : (
-            <Search size={17} />
-          )}
+          {loading ? <span className={s.spinner} aria-hidden="true" /> : <Search size={17} />}
         </button>
       </form>
 
@@ -145,7 +141,9 @@ const TrackingForm: FC = () => {
               <dl className={s.infoList}>
                 <div className={s.infoRow}>
                   <dt className={s.infoLabel}>کد پیگیری</dt>
-                  <dd className={s.infoValue} dir="ltr">{result.data.trackingCode}</dd>
+                  <dd className={s.infoValue} dir="ltr">
+                    {result.data.trackingCode}
+                  </dd>
                 </div>
                 <div className={s.infoRow}>
                   <dt className={s.infoLabel}>نام</dt>
@@ -204,7 +202,9 @@ const TrackingForm: FC = () => {
                       <Hash size={12} style={{ display: 'inline', marginLeft: 4 }} />
                       شناسه تراکنش
                     </dt>
-                    <dd className={s.infoValue} dir="ltr">{result.data.externalTxId}</dd>
+                    <dd className={s.infoValue} dir="ltr">
+                      {result.data.externalTxId}
+                    </dd>
                   </div>
                 )}
               </dl>
@@ -233,7 +233,9 @@ const TrackingForm: FC = () => {
                         <span className={s.historyDot} />
                         <div className={s.historyBody}>
                           <span className={s.historyStatus}>
-                            {log.fromStatus ? `${STATUS_LABELS[log.fromStatus] ?? log.fromStatus} → ` : ''}
+                            {log.fromStatus
+                              ? `${STATUS_LABELS[log.fromStatus] ?? log.fromStatus} → `
+                              : ''}
                             {STATUS_LABELS[log.toStatus] ?? log.toStatus}
                           </span>
                           {log.note && <span className={s.historyNote}>{log.note}</span>}

@@ -1,3 +1,8 @@
+import type { TopAuthor } from '@/actions/getTopAuthors';
+import AuthorCard, { type AuthorCardAuthor } from '@/components/AuthorsHub/primitives/AuthorCard';
+import { SectionHeader } from '@/components/SectionHeader';
+import { cn, toPersianNumber } from '@/lib/utils';
+import { Crown } from 'lucide-react';
 /**
  * @file TopAuthorsSection
  * @description Premium editorial "نویسندگان برتر" section used on the
@@ -11,14 +16,7 @@
  *   props: { authors: TopAuthor[]; className?: string }
  *   so existing call sites (home, archive) do not need to change.
  */
-import * as React from 'react';
-import { Crown } from 'lucide-react';
-import { cn, toPersianNumber } from '@/lib/utils';
-import { SectionHeader } from '@/components/SectionHeader';
-import AuthorCard, {
-  type AuthorCardAuthor,
-} from '@/components/AuthorsHub/primitives/AuthorCard';
-import type { TopAuthor } from '@/actions/getTopAuthors';
+import type * as React from 'react';
 
 export interface TopAuthorsSectionProps {
   authors: TopAuthor[];
@@ -61,11 +59,7 @@ const TopAuthorsSection: React.FC<TopAuthorsSectionProps> = ({
   const [feature, ...rest] = sorted;
 
   return (
-    <section
-      dir="rtl"
-      className={cn('relative', className)}
-      aria-label={title}
-    >
+    <section dir="rtl" className={cn('relative', className)} aria-label={title}>
       <SectionHeader
         icon={<Crown className="h-4 w-4 sm:h-4.5 sm:w-4.5" strokeWidth={2.25} />}
         title={title}
@@ -79,11 +73,7 @@ const TopAuthorsSection: React.FC<TopAuthorsSectionProps> = ({
 
       {feature && (
         <div className="mb-3 sm:mb-4 author-reveal">
-          <AuthorCard
-            author={toCardAuthor(feature)}
-            rank={1}
-            variant="feature"
-          />
+          <AuthorCard author={toCardAuthor(feature)} rank={1} variant="feature" />
         </div>
       )}
 

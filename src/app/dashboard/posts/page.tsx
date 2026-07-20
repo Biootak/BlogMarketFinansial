@@ -1,8 +1,8 @@
+import { getPostStatusCounts } from '@/actions/postActions';
 import AdminPostListView from '@/components/Dashboard/Blog/AdminPostListView';
 import PostsPageHeader from '@/components/Dashboard/Blog/PostsPageHeader';
-import type { PostStatus } from '@/types/types';
 import { checkRole } from '@/lib/auth';
-import { getPostStatusCounts } from '@/actions/postActions';
+import type { PostStatus } from '@/types/types';
 
 export default async function DashboardPosts({
   searchParams,

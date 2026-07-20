@@ -77,12 +77,8 @@ async function loadLatestPostCategories(): Promise<LatestPostCategory[]> {
   }
 }
 
-export const getLatestPostCategories = safeCache(
-  loadLatestPostCategories,
-  [],
-  {
-    key: 'latest-post-categories',
-    ttl: 60,
-    tags: ['latest-post-categories', 'posts', 'categories'],
-  },
-);
+export const getLatestPostCategories = safeCache(loadLatestPostCategories, [], {
+  key: 'latest-post-categories',
+  ttl: 60,
+  tags: ['latest-post-categories', 'posts', 'categories'],
+});

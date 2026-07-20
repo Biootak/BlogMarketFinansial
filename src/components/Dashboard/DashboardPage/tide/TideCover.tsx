@@ -284,9 +284,21 @@ export default function TideCover({ stats, viewStats, userRole: _userRole }: Tid
 
   // 2x2 chip grid driven by stats
   const chipData: ChipProps[] = [
-    { label: 'بازدید امروز', value: stats.views.today, tone: 'cyan', idx: 0, data: stats.views.data },
+    {
+      label: 'بازدید امروز',
+      value: stats.views.today,
+      tone: 'cyan',
+      idx: 0,
+      data: stats.views.data,
+    },
     { label: 'لایک‌ها', value: stats.likes.total, tone: 'rose', idx: 1, data: stats.likes.data },
-    { label: 'نظرات', value: stats.comments.new, tone: 'emerald', idx: 2, data: stats.comments.data },
+    {
+      label: 'نظرات',
+      value: stats.comments.new,
+      tone: 'emerald',
+      idx: 2,
+      data: stats.comments.data,
+    },
     {
       label: 'اشتراک‌گذاری',
       value: stats.shares.total,

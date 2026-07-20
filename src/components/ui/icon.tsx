@@ -11,6 +11,7 @@
 //      با prop `rtlAware` در RTL mirror می‌شوند؛ خود آیکون بدون تغییر
 //      می‌ماند.
 
+import { cn } from '@/lib/utils';
 import {
   AlertCircle,
   AlignCenter,
@@ -32,12 +33,11 @@ import {
   ChevronUp,
   Clock,
   Code,
-  Combine,
   Columns,
+  Combine,
   Copy,
   CornerDownLeft,
   CornerDownRight,
-  Ellipsis as MoreHorizontalIcon,
   FileText,
   Footprints,
   Globe,
@@ -57,8 +57,6 @@ import {
   Link2,
   Link2Off,
   List,
-  Play,
-  Plus,
   ListChecks,
   ListOrdered,
   ListTodo,
@@ -69,12 +67,14 @@ import {
   Menu,
   MessageCircle,
   MessageSquare,
-  Minus,
   Minimize2,
+  Minus,
   Monitor,
+  Ellipsis as MoreHorizontalIcon,
   Pipette,
+  Play,
+  Plus,
   Quote,
-  Split,
   Redo2,
   Rows2 as Rows,
   Search,
@@ -83,6 +83,7 @@ import {
   Share,
   Share2,
   Sparkles,
+  Split,
   Strikethrough,
   Subscript,
   Superscript,
@@ -99,7 +100,6 @@ import {
   X,
 } from 'lucide-react';
 import { type CSSProperties, memo } from 'react';
-import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // iconMap — نقطهٔ واحد برای همهٔ آیکون‌های پروژه

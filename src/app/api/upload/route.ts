@@ -2,11 +2,11 @@
 // route handler runs. Idempotent — safe to re-import across hot reloads.
 import '@/lib/sharp-config';
 
-import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import sharp from 'sharp';
-import { uploadFile } from '@/lib/storage';
 import { checkRateLimit as checkSharedRateLimit } from '@/lib/rate-limiter';
+import { uploadFile } from '@/lib/storage';
+import { type NextRequest, NextResponse } from 'next/server';
+import sharp from 'sharp';
 
 // ---------- constants ------------------------------------------------------
 
@@ -127,11 +127,7 @@ async function processImage(input: Buffer, mime: AllowedMime): Promise<OptimizeR
   // Anything larger is either already bloated (rare) or a screenshot
   // that benefits from re-encoding.
   const SIZE_THRESHOLD_BYTES = 300 * 1024;
-  if (
-    mime === 'image/webp' &&
-    !needsResize &&
-    input.byteLength <= SIZE_THRESHOLD_BYTES
-  ) {
+  if (mime === 'image/webp' && !needsResize && input.byteLength <= SIZE_THRESHOLD_BYTES) {
     return {
       buffer: input,
       width: sourceWidth,
@@ -188,14 +184,13 @@ async function processImage(input: Buffer, mime: AllowedMime): Promise<OptimizeR
 function generateFilename(originalName: string, mime: AllowedMime): string {
   const timestamp = Date.now();
   const random = Math.random().toString(36).slice(2, 8);
-  const baseName = originalName
-    .replace(/\.[^/.]+$/, '')
-    .replace(/[^a-zA-Z0-9-_]/g, '')
-    .slice(0, 20) || 'image';
+  const baseName =
+    originalName
+      .replace(/\.[^/.]+$/, '')
+      .replace(/[^a-zA-Z0-9-_]/g, '')
+      .slice(0, 20) || 'image';
 
-   const ext = mime === 'image/gif'
-     ? originalName.split('.').pop()?.toLowerCase() || 'bin'
-     : 'webp';
+  const ext = mime === 'image/gif' ? originalName.split('.').pop()?.toLowerCase() || 'bin' : 'webp';
 
   return `${timestamp}-${random}-${baseName}.${ext}`;
 }
@@ -303,7 +298,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: { code: 'RATE_LIMIT_EXCEEDED', message: 'تعداد درخواست‌های شما بیش از حد مجاز است' },
+          error: {
+            code: 'RATE_LIMIT_EXCEEDED',
+            message: 'تعداد درخواست‌های شما بیش از حد مجاز است',
+          },
         },
         { status: 429 },
       );
@@ -336,7 +334,10 @@ export async function POST(request: NextRequest) {
     // this, any authenticated reader could fill S3 with arbitrary files.
     if (folder !== 'avatars' && role !== 'AUTHOR' && role !== 'ADMIN' && role !== 'OWNER') {
       return NextResponse.json(
-        { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی برای آپلود در این بخش وجود ندارد' } },
+        {
+          success: false,
+          error: { code: 'FORBIDDEN', message: 'دسترسی برای آپلود در این بخش وجود ندارد' },
+        },
         { status: 403 },
       );
     }
@@ -352,7 +353,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: { code: 'TOO_MANY_FILES', message: `حداکثر ${MAX_FILES_PER_REQUEST} فایل مجاز است` },
+          error: {
+            code: 'TOO_MANY_FILES',
+            message: `حداکثر ${MAX_FILES_PER_REQUEST} فایل مجاز است`,
+          },
         },
         { status: 400 },
       );
@@ -381,7 +385,11 @@ export async function POST(request: NextRequest) {
             code: first.code,
             message: first.message,
             // Surface per-file failures so the UI can attribute them
-            details: failures.map((f) => ({ filename: f.filename, code: f.code, message: f.message })),
+            details: failures.map((f) => ({
+              filename: f.filename,
+              code: f.code,
+              message: f.message,
+            })),
           },
         },
         { status: 400 },

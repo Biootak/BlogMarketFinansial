@@ -1,11 +1,11 @@
 'use server';
 
+import prisma from '@/lib/db';
+import { authFailureToActionResult, requireAdmin } from '@/lib/require-auth';
+import { revalidateTag } from '@/lib/revalidate';
+import type { SocialLinkType } from '@prisma/client';
 import { unstable_cache } from 'next/cache';
 import { revalidatePath } from 'next/cache';
-import { revalidateTag } from '@/lib/revalidate';
-import prisma from '@/lib/db';
-import type { SocialLinkType } from '@prisma/client';
-import { requireAdmin, authFailureToActionResult } from '@/lib/require-auth';
 
 // M14 fix: validate social URLs before persisting. Stored links are later
 // rendered as `href`, so an arbitrary scheme (javascript:, data:, etc.) is a
@@ -82,7 +82,6 @@ export async function getAllSocialLinks(type?: SocialLinkType) {
     return { success: false, error: 'خطا در دریافت لینک‌ها' };
   }
 }
-
 
 // Create social link
 export async function createSocialLink(data: SocialLinkData) {
@@ -219,8 +218,8 @@ export async function reorderSocialLinks(orderedIds: string[]) {
     // and the connection pool sees a single burst.
     await prisma.$transaction(
       orderedIds.map((id, index) =>
-        prisma.socialLink.update({ where: { id }, data: { order: index } })
-      )
+        prisma.socialLink.update({ where: { id }, data: { order: index } }),
+      ),
     );
 
     revalidatePath('/dashboard/settings');

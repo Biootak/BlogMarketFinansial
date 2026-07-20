@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type { TaxonomyType } from '@/types/types';
-import { FiX, FiSearch, FiFolder, FiCheck } from 'react-icons/fi';
-import { BiLoaderAlt } from 'react-icons/bi';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import type { TaxonomyType } from '@/types/types';
+import { useCallback, useEffect, useState } from 'react';
+import { BiLoaderAlt } from 'react-icons/bi';
+import { FiCheck, FiFolder, FiSearch, FiX } from 'react-icons/fi';
 
 interface CategorySelectDialogProps {
   isOpen: boolean;
@@ -20,24 +20,39 @@ interface CategorySelectDialogProps {
 }
 
 export function CategorySelectDialog({
-  isOpen, onClose, onSelectCategories, initialSelectedCategories,
-  categories, onLoadMore, isLoading, hasMoreItems,
+  isOpen,
+  onClose,
+  onSelectCategories,
+  initialSelectedCategories,
+  categories,
+  onLoadMore,
+  isLoading,
+  hasMoreItems,
 }: CategorySelectDialogProps) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>(initialSelectedCategories);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => { setSelectedCategories(initialSelectedCategories); }, [initialSelectedCategories]);
+  useEffect(() => {
+    setSelectedCategories(initialSelectedCategories);
+  }, [initialSelectedCategories]);
 
   const handleToggleCategory = useCallback((categoryId: string) => {
     setSelectedCategories((prev) =>
-      prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId]
+      prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId],
     );
   }, []);
 
-  const handleSave = useCallback(() => { onSelectCategories(selectedCategories); onClose(); }, [selectedCategories, onSelectCategories, onClose]);
-  const handleLoadMore = useCallback(() => { if (!isLoading && hasMoreItems) onLoadMore(); }, [isLoading, hasMoreItems, onLoadMore]);
+  const handleSave = useCallback(() => {
+    onSelectCategories(selectedCategories);
+    onClose();
+  }, [selectedCategories, onSelectCategories, onClose]);
+  const handleLoadMore = useCallback(() => {
+    if (!isLoading && hasMoreItems) onLoadMore();
+  }, [isLoading, hasMoreItems, onLoadMore]);
   const infiniteScrollRef = useInfiniteScroll(handleLoadMore, hasMoreItems, isLoading);
-  const filteredCategories = categories.filter((c) => c.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredCategories = categories.filter((c) =>
+    c.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -120,9 +135,7 @@ export function CategorySelectDialog({
               </div>
             )}
             {filteredCategories.length === 0 && !isLoading && (
-              <div className="at-form-empty text-sm">
-                نتیجه‌ای برای «{searchTerm}» یافت نشد.
-              </div>
+              <div className="at-form-empty text-sm">نتیجه‌ای برای «{searchTerm}» یافت نشد.</div>
             )}
           </div>
         </ScrollArea>

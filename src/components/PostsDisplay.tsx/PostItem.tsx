@@ -10,10 +10,10 @@
  * - ARIA roles + keyboard accessible
  */
 
-import type { PostWithRelations } from '@/types/types';
-import { TiltCard } from '@/components/ModernTrending/effects/TiltCard';
 import { Shimmer } from '@/components/ModernTrending/effects/Shimmer';
+import { TiltCard } from '@/components/ModernTrending/effects/TiltCard';
 import { cn } from '@/lib/utils';
+import type { PostWithRelations } from '@/types/types';
 import Card6 from '../Card6/Card6';
 
 interface PostItemProps {
@@ -24,16 +24,10 @@ interface PostItemProps {
 
 const PostItem: React.FC<PostItemProps> = ({ post, isLarge = false, className }) => {
   return (
-    <div
-      className={cn('w-full anim-fade-in-up', className)}
-    >
+    <div className={cn('w-full anim-fade-in-up', className)}>
       <TiltCard intensity={3} perspective={1400} className="w-full">
         <div className="relative hover:-translate-y-0.5 transition-transform duration-300">
-          {isLarge ? (
-            <FeaturedCardFrame post={post} />
-          ) : (
-            <Card6 post={post} />
-          )}
+          {isLarge ? <FeaturedCardFrame post={post} /> : <Card6 post={post} />}
         </div>
       </TiltCard>
     </div>

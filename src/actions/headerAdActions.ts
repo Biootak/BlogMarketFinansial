@@ -14,12 +14,12 @@
  *  - فعال‌سازی یک تبلیغ، بقیه را غیرفعال می‌کند
  */
 
+import { checkAdmin } from '@/lib/auth';
 import prisma from '@/lib/db';
-import { revalidatePath } from 'next/cache';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
+import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { checkAdmin } from '@/lib/auth';
 
 // ۲۰۲۶-۰۶-۱۴: ActionResult مطابق الگوی موجود
 export interface ActionResult<T = unknown> {
@@ -35,41 +35,30 @@ const HeaderAdInputSchema = z.object({
     .string()
     .min(1, 'متن تبلیغ الزامی است')
     .max(200, 'متن تبلیغ نباید بیشتر از ۲۰۰ کاراکتر باشد'),
-  subtext: z
-    .string()
-    .max(200, 'زیرنویس نباید بیشتر از ۲۰۰ کاراکتر باشد')
-    .optional()
-    .nullable(),
-  ctaLabel: z
-    .string()
-    .max(40, 'متن دکمه نباید بیشتر از ۴۰ کاراکتر باشد')
-    .optional()
-    .nullable(),
+  subtext: z.string().max(200, 'زیرنویس نباید بیشتر از ۲۰۰ کاراکتر باشد').optional().nullable(),
+  ctaLabel: z.string().max(40, 'متن دکمه نباید بیشتر از ۴۰ کاراکتر باشد').optional().nullable(),
   ctaHref: z
     .string()
     .max(500, 'لینک دکمه بسیار طولانی است')
-    .refine(
-      (v) => !v || v.startsWith('/') || v.startsWith('http://') || v.startsWith('https://'),
-      { message: 'فرمت لینک نامعتبر است' },
-    )
+    .refine((v) => !v || v.startsWith('/') || v.startsWith('http://') || v.startsWith('https://'), {
+      message: 'فرمت لینک نامعتبر است',
+    })
     .optional()
     .nullable(),
   imageUrl: z
     .string()
     .max(500)
-    .refine(
-      (v) => !v || v.startsWith('/') || v.startsWith('http://') || v.startsWith('https://'),
-      { message: 'آدرس تصویر نامعتبر است' },
-    )
+    .refine((v) => !v || v.startsWith('/') || v.startsWith('http://') || v.startsWith('https://'), {
+      message: 'آدرس تصویر نامعتبر است',
+    })
     .optional()
     .nullable(),
   href: z
     .string()
     .max(500)
-    .refine(
-      (v) => !v || v.startsWith('/') || v.startsWith('http://') || v.startsWith('https://'),
-      { message: 'فرمت لینک نامعتبر است' },
-    )
+    .refine((v) => !v || v.startsWith('/') || v.startsWith('http://') || v.startsWith('https://'), {
+      message: 'فرمت لینک نامعتبر است',
+    })
     .optional()
     .nullable(),
   variant: z.enum(['TEXT', 'IMAGE', 'MIXED']).default('TEXT'),
@@ -108,11 +97,11 @@ async function fetchAllHeaderAdsInternal() {
 // safeCache (in-memory) works in both dev and prod; unstable_cache is bypassed
 // in Next.js dev mode which caused a fresh DB round-trip on every request.
 
-const getCachedActiveHeaderAd = safeCache(
-  fetchActiveHeaderAdInternal,
-  null,
-  { key: 'active-header-ad', ttl: 60, tags: ['header-ad'] },
-);
+const getCachedActiveHeaderAd = safeCache(fetchActiveHeaderAdInternal, null, {
+  key: 'active-header-ad',
+  ttl: 60,
+  tags: ['header-ad'],
+});
 
 /**
  * دریافت تبلیغ فعال هدر برای رندر در فرانت‌اند.

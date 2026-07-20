@@ -1,8 +1,8 @@
 'use client';
 
+import { Search, X } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
-import { Search, X } from 'lucide-react';
 
 interface ArchiveSearchInputProps {
   initialQuery?: string;

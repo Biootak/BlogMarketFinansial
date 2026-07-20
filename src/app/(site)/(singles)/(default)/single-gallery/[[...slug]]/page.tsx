@@ -1,16 +1,16 @@
-import React from 'react';
-import { notFound } from 'next/navigation';
-import type { Metadata } from 'next';
-import { getGalleryPostBySlug } from '@/actions/getGalleryPostBySlug';
-import { getRelatedPosts } from '@/actions/getRelatedPosts';
-import { getMoreFromAuthor } from '@/actions/getMoreFromAuthor';
-import SingleHeader from '@/app/(site)/(singles)/SingleHeader';
-import SingleContent from '@/app/(site)/(singles)/SingleContent';
-import SingleRelatedPosts from '@/app/(site)/(singles)/SingleRelatedPosts';
-import { getSidebarData } from '@/actions/sidebarActions';
-import type { PostWithRelations, ActionResult } from '@/types/types';
-import Sidebar from '../../../Sidebar';
 import { getActiveAdvertisements } from '@/actions/advertisementActions';
+import { getGalleryPostBySlug } from '@/actions/getGalleryPostBySlug';
+import { getMoreFromAuthor } from '@/actions/getMoreFromAuthor';
+import { getRelatedPosts } from '@/actions/getRelatedPosts';
+import { getSidebarData } from '@/actions/sidebarActions';
+import SingleContent from '@/app/(site)/(singles)/SingleContent';
+import SingleHeader from '@/app/(site)/(singles)/SingleHeader';
+import SingleRelatedPosts from '@/app/(site)/(singles)/SingleRelatedPosts';
+import type { ActionResult, PostWithRelations } from '@/types/types';
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import React from 'react';
+import Sidebar from '../../../Sidebar';
 import GalleryImages from '../GalleryImages';
 
 export interface PageProps {
@@ -33,9 +33,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const post = result.data;
   const postUrl = `${APP_URL}/single-gallery/${postSlug}`;
   const imageUrl = post.featuredImage || `${APP_URL}/images/default-og.jpg`;
-  
-  const description = post.excerpt 
-    || (post.content ? post.content.replace(/<[^>]*>/g, '').slice(0, 160) + '...' : 'بیوتاک - مرجع تحلیل بازارهای مالی');
+
+  const description =
+    post.excerpt ||
+    (post.content
+      ? `${post.content.replace(/<[^>]*>/g, '').slice(0, 160)}...`
+      : 'بیوتاک - مرجع تحلیل بازارهای مالی');
 
   return {
     title: post.title,
@@ -101,14 +104,15 @@ export default async function Page({ params }: PageProps) {
     orderBy: 'createdAt',
     orderDirection: 'desc',
   });
-  const inContentAd = inContentAdsResult.success && inContentAdsResult.data?.[0] ? inContentAdsResult.data[0] : null;
+  const inContentAd =
+    inContentAdsResult.success && inContentAdsResult.data?.[0] ? inContentAdsResult.data[0] : null;
 
   return (
     <div className="nc-PageSingle-Gallery relative min-h-screen">
       {/* Subtle Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-b from-neutral-50 via-white to-neutral-50/50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950/50 pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.15),transparent)] pointer-events-none" />
-      
+
       <div className="relative container pt-6 pb-12 lg:pt-8 lg:pb-16 @container/single-layout">
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
           {/* Main Content Area */}
@@ -134,9 +138,11 @@ export default async function Page({ params }: PageProps) {
             <div className="sticky top-24 space-y-8">
               <div className="relative">
                 <div className="absolute -inset-1 bg-gradient-to-br from-primary-500/20 via-violet-500/10 to-rose-500/20 rounded-3xl blur-xl opacity-0 hover:opacity-100 transition-opacity duration-500" />
-                
+
                 <Sidebar
-                  ads={sidebarAdsResult.success && sidebarAdsResult.data ? sidebarAdsResult.data : []}
+                  ads={
+                    sidebarAdsResult.success && sidebarAdsResult.data ? sidebarAdsResult.data : []
+                  }
                   className="relative space-y-6 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl rounded-2xl p-5 border border-neutral-200/50 dark:border-neutral-800/50 shadow-[0_8px_40px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.2)]"
                   widgetPosts={sidebarData.recentPosts}
                   tags={sidebarData.popularTags}

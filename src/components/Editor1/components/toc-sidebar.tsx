@@ -7,10 +7,11 @@
 
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronUp, List, X } from 'lucide-react';
-import type { TocItem } from '../lib/table-of-contents';
 import { cn } from '@/lib/utils';
+import { ChevronUp, List, X } from 'lucide-react';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { TocItem } from '../lib/table-of-contents';
 
 export interface TocSidebarProps {
   items: TocItem[];
@@ -31,10 +32,10 @@ function slugifyToFragment(id: string): string {
   return id
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, '-')           // spaces → hyphens
+    .replace(/\s+/g, '-') // spaces → hyphens
     .replace(/[^\p{L}\p{N}\-_۰-۹۰-۹]/gu, '') // strip non-alphanumeric (keeps Persian chars)
-    .replace(/--+/g, '-')          // collapse multiple hyphens
-    .replace(/^-|-$/g, '');        // trim leading/trailing hyphens
+    .replace(/--+/g, '-') // collapse multiple hyphens
+    .replace(/^-|-$/g, ''); // trim leading/trailing hyphens
 }
 
 export const TocSidebar: React.FC<TocSidebarProps> = ({
@@ -104,7 +105,7 @@ export const TocSidebar: React.FC<TocSidebarProps> = ({
         // The visible heading with the smallest (still negative or smallest
         // positive) top wins — i.e. the one closest above the highlight line.
         let bestId: string | null = null;
-        let bestTop = Infinity;
+        let bestTop = Number.POSITIVE_INFINITY;
         for (const [id, top] of visible.entries()) {
           // Prefer heading closest to (but above) the highlight line.
           const dist = Math.abs(top - highlightOffset) + (top > highlightOffset ? 1000 : 0);
@@ -122,19 +123,22 @@ export const TocSidebar: React.FC<TocSidebarProps> = ({
     return () => observer.disconnect();
   }, [items, highlightOffset]);
 
-  const handleClick = useCallback((id: string) => (e: React.MouseEvent) => {
-    e.preventDefault();
-    const target = document.getElementById(id);
-    if (!target) return;
-    const offset = highlightOffset - 16;
-    const top = target.getBoundingClientRect().top + window.scrollY - offset;
-    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
-    // Update hash without triggering page jump.
-    if (typeof window !== 'undefined' && window.history?.replaceState) {
-      window.history.replaceState(null, '', `#${id}`);
-    }
-    setActiveId(id);
-  }, [highlightOffset]);
+  const handleClick = useCallback(
+    (id: string) => (e: React.MouseEvent) => {
+      e.preventDefault();
+      const target = document.getElementById(id);
+      if (!target) return;
+      const offset = highlightOffset - 16;
+      const top = target.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+      // Update hash without triggering page jump.
+      if (typeof window !== 'undefined' && window.history?.replaceState) {
+        window.history.replaceState(null, '', `#${id}`);
+      }
+      setActiveId(id);
+    },
+    [highlightOffset],
+  );
 
   const handleToggleCollapse = useCallback(() => {
     const next = !collapsed;
@@ -188,22 +192,17 @@ export const TocSidebar: React.FC<TocSidebarProps> = ({
             ) : (
               <ol className="at-toc__list">
                 {displayItems.map((item) => (
-                  <li
-                    key={item.id}
-                    className="at-toc__item"
-                    data-level={item.level}
-                  >
+                  <li key={item.id} className="at-toc__item" data-level={item.level}>
                     <a
                       href={`#${item.id}`}
                       onClick={handleClick(item.id)}
-                      className={cn(
-                        'at-toc__link',
-                        activeId === item.id ? 'is-active' : '',
-                      )}
+                      className={cn('at-toc__link', activeId === item.id ? 'is-active' : '')}
                       aria-current={activeId === item.id ? 'true' : undefined}
                     >
                       <span className="at-toc__rail" aria-hidden />
-                      <span className="at-toc__text min-w-0 truncate">{item.text || 'بدون متن'}</span>
+                      <span className="at-toc__text min-w-0 truncate">
+                        {item.text || 'بدون متن'}
+                      </span>
                     </a>
                   </li>
                 ))}

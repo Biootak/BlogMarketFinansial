@@ -1,8 +1,8 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Advertisement } from '@/types/types';
+import dynamic from 'next/dynamic';
 
 interface DeferredAdStripProps {
   ads: Advertisement[];

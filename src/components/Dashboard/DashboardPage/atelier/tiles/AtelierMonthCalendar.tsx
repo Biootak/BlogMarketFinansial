@@ -42,24 +42,19 @@
 
 import { cn } from '@/lib/utils';
 import type { PostWithRelations } from '@/types/types';
+import { isLeapJalaaliYear, jalaaliMonthLength, toGregorian, toJalaali } from 'jalaali-js';
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import {
   HiOutlineArrowLeft,
   HiOutlineArrowRight,
+  HiOutlineArrowTopRightOnSquare,
   HiOutlineCalendarDays,
   HiOutlineChartBar,
-  HiOutlinePencilSquare,
-  HiOutlineArrowTopRightOnSquare,
-  HiOutlineSparkles,
   HiOutlineHome,
+  HiOutlinePencilSquare,
+  HiOutlineSparkles,
 } from 'react-icons/hi2';
-import Link from 'next/link';
-import {
-  isLeapJalaaliYear,
-  jalaaliMonthLength,
-  toGregorian,
-  toJalaali,
-} from 'jalaali-js';
 
 interface AtelierMonthCalendarProps {
   scheduledPosts: PostWithRelations[];
@@ -198,10 +193,7 @@ export default function AtelierMonthCalendar({
   }));
   const [openDay, setOpenDay] = useState<JalaliYMD | null>(todayJ);
 
-  const grid = useMemo(
-    () => buildJalaliMonthGrid(cursor.y, cursor.m),
-    [cursor.y, cursor.m],
-  );
+  const grid = useMemo(() => buildJalaliMonthGrid(cursor.y, cursor.m), [cursor.y, cursor.m]);
 
   // Bucket posts by their effective day: scheduledAt if set, else
   // createdAt. So a post scheduled for 25 Tir lands under Tir 25,
@@ -209,10 +201,11 @@ export default function AtelierMonthCalendar({
   const byDay = useMemo(() => {
     const map = new Map<string, PostWithRelations[]>();
     for (const p of scheduledPosts ?? []) {
-      const eff =
-        p.scheduledAt ? new Date(p.scheduledAt) :
-        p.createdAt ? new Date(p.createdAt) :
-        null;
+      const eff = p.scheduledAt
+        ? new Date(p.scheduledAt)
+        : p.createdAt
+          ? new Date(p.createdAt)
+          : null;
       if (!eff) continue;
       const k = jalaliKey(gregorianToJalali(eff));
       const list = map.get(k) ?? [];
@@ -220,13 +213,11 @@ export default function AtelierMonthCalendar({
       map.set(k, list);
     }
     for (const list of map.values()) {
-      list.sort(
-        (a, b) => {
-          const at = a.scheduledAt ?? a.createdAt;
-          const bt = b.scheduledAt ?? b.createdAt;
-          return new Date(bt).getTime() - new Date(at).getTime();
-        },
-      );
+      list.sort((a, b) => {
+        const at = a.scheduledAt ?? a.createdAt;
+        const bt = b.scheduledAt ?? b.createdAt;
+        return new Date(bt).getTime() - new Date(at).getTime();
+      });
     }
     return map;
   }, [scheduledPosts]);
@@ -259,11 +250,7 @@ export default function AtelierMonthCalendar({
       {/* ───── Header ───── */}
       <header className="at-cal__head">
         {!embedded && (
-          <Link
-            href="/dashboard"
-            className="at-cal__back"
-            aria-label="بازگشت به داشبورد"
-          >
+          <Link href="/dashboard" className="at-cal__back" aria-label="بازگشت به داشبورد">
             <HiOutlineHome className="w-3.5 h-3.5" />
             <span>بازگشت به داشبورد</span>
           </Link>
@@ -275,9 +262,7 @@ export default function AtelierMonthCalendar({
             <span>تقویم انتشار</span>
           </span>
           <h1 className="at-cal__title-text">{monthLabel}</h1>
-          {isCurrentMonth && (
-            <span className="at-cal__here">اکنون</span>
-          )}
+          {isCurrentMonth && <span className="at-cal__here">اکنون</span>}
         </div>
 
         <div className="at-cal__nav">
@@ -315,23 +300,17 @@ export default function AtelierMonthCalendar({
       <div className="at-cal__metrics">
         <div className="at-cal__metric">
           <span className="at-cal__metric-label">کل پست‌های ماه</span>
-          <span className="at-cal__metric-num tabular-nums">
-            {fmtFa(monthPosts.length)}
-          </span>
+          <span className="at-cal__metric-num tabular-nums">{fmtFa(monthPosts.length)}</span>
         </div>
         <div className="at-cal__metric at-cal__metric--published">
           <span className="at-cal__metric-dot" aria-hidden />
           <span className="at-cal__metric-label">منتشر شده</span>
-          <span className="at-cal__metric-num tabular-nums">
-            {fmtFa(monthMetrics.PUBLISHED)}
-          </span>
+          <span className="at-cal__metric-num tabular-nums">{fmtFa(monthMetrics.PUBLISHED)}</span>
         </div>
         <div className="at-cal__metric at-cal__metric--scheduled">
           <span className="at-cal__metric-dot" aria-hidden />
           <span className="at-cal__metric-label">زمان‌بندی شده</span>
-          <span className="at-cal__metric-num tabular-nums">
-            {fmtFa(monthMetrics.SCHEDULED)}
-          </span>
+          <span className="at-cal__metric-num tabular-nums">{fmtFa(monthMetrics.SCHEDULED)}</span>
         </div>
         <div className="at-cal__metric at-cal__metric--pending">
           <span className="at-cal__metric-dot" aria-hidden />
@@ -343,9 +322,7 @@ export default function AtelierMonthCalendar({
         <div className="at-cal__metric at-cal__metric--draft">
           <span className="at-cal__metric-dot" aria-hidden />
           <span className="at-cal__metric-label">پیش‌نویس</span>
-          <span className="at-cal__metric-num tabular-nums">
-            {fmtFa(monthMetrics.DRAFT)}
-          </span>
+          <span className="at-cal__metric-num tabular-nums">{fmtFa(monthMetrics.DRAFT)}</span>
         </div>
       </div>
 
@@ -391,20 +368,21 @@ export default function AtelierMonthCalendar({
               {posts.length > 0 && (
                 <span className="at-cal__cell-posts">
                   {posts.slice(0, 3).map((p) => {
-                    const s = (p.status as StatusKey) in STATUS_LABEL
-                      ? (p.status as StatusKey)
-                      : 'DRAFT';
+                    const s =
+                      (p.status as StatusKey) in STATUS_LABEL ? (p.status as StatusKey) : 'DRAFT';
                     return (
                       <span
                         key={p.id}
-                        className={cn(
-                          'at-cal__post',
-                          `at-cal__post--${s.toLowerCase()}`,
-                        )}
+                        className={cn('at-cal__post', `at-cal__post--${s.toLowerCase()}`)}
                         title={p.title}
                       >
                         <span className="at-cal__post-title">{p.title}</span>
-                        <span className={cn('at-cal__post-status', `at-cal__post-status--${s.toLowerCase()}`)} />
+                        <span
+                          className={cn(
+                            'at-cal__post-status',
+                            `at-cal__post-status--${s.toLowerCase()}`,
+                          )}
+                        />
                       </span>
                     );
                   })}
@@ -452,9 +430,8 @@ export default function AtelierMonthCalendar({
           ) : (
             <ul className="at-cal__agenda-list">
               {openDayPosts.map((p) => {
-                const status = (p.status as StatusKey) in STATUS_LABEL
-                  ? (p.status as StatusKey)
-                  : 'DRAFT';
+                const status =
+                  (p.status as StatusKey) in STATUS_LABEL ? (p.status as StatusKey) : 'DRAFT';
                 return (
                   <li key={p.id} className="at-cal__agenda-item">
                     <span
@@ -464,23 +441,15 @@ export default function AtelierMonthCalendar({
                       )}
                       aria-hidden
                     />
-                    <Link
-                      href={`/dashboard/posts/edit/${p.id}`}
-                      className="at-cal__agenda-link"
-                    >
+                    <Link href={`/dashboard/posts/edit/${p.id}`} className="at-cal__agenda-link">
                       <span className="at-cal__agenda-title">{p.title}</span>
                       <span className="at-cal__agenda-meta">
                         <span
-                          className={cn(
-                            'at-cal__pill',
-                            `at-cal__pill--${status.toLowerCase()}`,
-                          )}
+                          className={cn('at-cal__pill', `at-cal__pill--${status.toLowerCase()}`)}
                         >
                           {STATUS_LABEL[status]}
                         </span>
-                        <span className="at-cal__agenda-author">
-                          {p.author?.name ?? '—'}
-                        </span>
+                        <span className="at-cal__agenda-author">{p.author?.name ?? '—'}</span>
                       </span>
                     </Link>
                     {p.slug && (

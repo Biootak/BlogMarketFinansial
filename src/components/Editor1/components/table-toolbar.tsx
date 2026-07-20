@@ -6,16 +6,17 @@
 
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BubbleMenu } from '@tiptap/react/menus';
+import { ConfirmDialog } from '@/components/Dashboard/primitives/ConfirmDialog';
+import { useDirection } from '@/hooks/useDirection';
+import { cn } from '@/lib/utils';
 import type { Editor } from '@tiptap/core';
 import { CellSelection } from '@tiptap/pm/tables';
+import { BubbleMenu } from '@tiptap/react/menus';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '../../ui/icon';
-import { ConfirmDialog } from '@/components/Dashboard/primitives/ConfirmDialog';
-import { CellColorPicker } from './cell-color-picker';
-import { useDirection } from '@/hooks/useDirection';
 import { hexToRgba } from '../constants/color';
-import { cn } from '@/lib/utils';
+import { CellColorPicker } from './cell-color-picker';
 
 interface TableToolbarProps {
   editor: Editor;
@@ -43,8 +44,8 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
 
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        colorPickerWrapperRef.current
-        && !colorPickerWrapperRef.current.contains(event.target as Node)
+        colorPickerWrapperRef.current &&
+        !colorPickerWrapperRef.current.contains(event.target as Node)
       ) {
         setShowColorPicker(false);
       }
@@ -211,15 +212,14 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
             aria-haspopup="dialog"
           >
             <Icon name="palette" size={16} />
-          </button>                  {showColorPicker && (
-              <div
-                className="absolute top-full end-0 mt-2 z-[300]"
-              >
-                <CellColorPicker
-                  onSelect={handleColorSelect}
-                  onClose={() => setShowColorPicker(false)}
-                />
-              </div>
+          </button>{' '}
+          {showColorPicker && (
+            <div className="absolute top-full end-0 mt-2 z-[300]">
+              <CellColorPicker
+                onSelect={handleColorSelect}
+                onClose={() => setShowColorPicker(false)}
+              />
+            </div>
           )}
         </div>
 

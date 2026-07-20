@@ -3,7 +3,6 @@
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { useEffect } from 'react';
 
-
 const SidebarInitializer: React.FC = () => {
   const { setIsMobile, setIsOpen } = useSidebarStore();
 

@@ -18,30 +18,18 @@
  * ============================================================================
  */
 
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 import * as React from 'react';
-import DatePicker, { DateObject } from 'react-multi-date-picker';
-import TimePicker from 'react-multi-date-picker/plugins/time_picker';
 import persian from 'react-date-object/calendars/persian';
 import persian_fa from 'react-date-object/locales/persian_fa';
-import { HiCalendar } from 'react-icons/hi2';
 import { FiClock, FiX } from 'react-icons/fi';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { HiCalendar } from 'react-icons/hi2';
+import DatePicker, { DateObject } from 'react-multi-date-picker';
+import TimePicker from 'react-multi-date-picker/plugins/time_picker';
 
-const FA_WEEKDAYS = [
-  'شنبه',
-  'یکشنبه',
-  'دوشنبه',
-  'سه‌شنبه',
-  'چهارشنبه',
-  'پنج‌شنبه',
-  'جمعه',
-];
+const FA_WEEKDAYS = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه'];
 
 const FA_MONTHS = [
   'فروردین',
@@ -191,7 +179,7 @@ export function PersianDateTimePicker({
                   dir="rtl"
                   className={cn(
                     'text-sm font-semibold tabular-nums',
-                    (isPast || beforeMin)
+                    isPast || beforeMin
                       ? 'text-rose-700 dark:text-rose-300'
                       : 'text-slate-900 dark:text-slate-100',
                   )}
@@ -202,7 +190,7 @@ export function PersianDateTimePicker({
                   dir="ltr"
                   className={cn(
                     'text-xs tabular-nums tracking-wide',
-                    (isPast || beforeMin)
+                    isPast || beforeMin
                       ? 'text-rose-600 dark:text-rose-400'
                       : 'text-slate-500 dark:text-slate-400',
                   )}
@@ -216,7 +204,7 @@ export function PersianDateTimePicker({
             <HiCalendar
               className={cn(
                 'ms-2 h-5 w-5 shrink-0',
-                (isPast || beforeMin) ? 'text-rose-500' : 'text-violet-500',
+                isPast || beforeMin ? 'text-rose-500' : 'text-violet-500',
               )}
             />
           </Button>
@@ -259,11 +247,7 @@ export function PersianDateTimePicker({
               )}
             </div>
           )}
-          <div
-            dir="rtl"
-            className="font-vazirmatn"
-            style={{ direction: 'rtl' }}
-          >
+          <div dir="rtl" className="font-vazirmatn" style={{ direction: 'rtl' }}>
             <DatePicker
               value={dpValue}
               onChange={handleChange}
@@ -272,13 +256,7 @@ export function PersianDateTimePicker({
               calendarPosition="bottom-right"
               format="YYYY/MM/DD HH:mm"
               plugins={[
-                <TimePicker
-                  key="time"
-                  position="bottom"
-                  hStep={1}
-                  mStep={5}
-                  hideSeconds
-                />,
+                <TimePicker key="time" position="bottom" hStep={1} mStep={5} hideSeconds />,
               ]}
               minDate={minDate ?? undefined}
             />

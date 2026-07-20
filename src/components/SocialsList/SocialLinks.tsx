@@ -1,9 +1,9 @@
 'use client';
 
-import { motion } from '@/lib/motion-shim';
-import Image from 'next/image';
-import type { SocialType } from '@/types/types';
 import { getSocialLinks } from '@/actions/socialLinkActions';
+import { motion } from '@/lib/motion-shim';
+import type { SocialType } from '@/types/types';
+import Image from 'next/image';
 
 interface SocialLinksProps {
   className?: string;
@@ -37,7 +37,12 @@ interface SocialLinkDb {
   color: string | null;
 }
 
-const SocialLinks = ({ className = '', itemClass = '', iconSize = 22, initialLinks = [] }: SocialLinksProps) => {
+const SocialLinks = ({
+  className = '',
+  itemClass = '',
+  iconSize = 22,
+  initialLinks = [],
+}: SocialLinksProps) => {
   const [links, setLinks] = useState<SocialLinkDb[]>(initialLinks as unknown as SocialLinkDb[]);
 
   useEffect(() => {
@@ -49,7 +54,9 @@ const SocialLinks = ({ className = '', itemClass = '', iconSize = 22, initialLin
         setLinks(result.success ? (result.data as unknown as SocialLinkDb[]) : []);
       })
       .catch(() => {});
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [initialLinks.length]);
 
   if (!links || links.length === 0) {

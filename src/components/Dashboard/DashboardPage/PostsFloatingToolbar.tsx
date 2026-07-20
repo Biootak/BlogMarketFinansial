@@ -1,31 +1,7 @@
 'use client';
 
-import { type FC, memo, useCallback, useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { motion, AnimatePresence } from '@/lib/motion-shim';
-import { useSession } from 'next-auth/react';
-import { cn } from '@/lib/utils';
-import {
-  HiPencil,
-  HiTrash,
-  HiEye,
-  HiClipboard,
-  HiXMark,
-  HiArrowTopRightOnSquare,
-  HiOutlineSparkles,
-  HiOutlineCheckCircle,
-  HiOutlineDocumentDuplicate,
-  HiOutlineLink,
-  HiOutlineStar,
-  HiOutlineEye,
-  HiOutlineChatBubbleLeftRight,
-  HiOutlineHeart,
-  HiOutlineBookmark,
-  HiOutlineClock,
-  HiOutlineBars3BottomLeft,
-  HiCheck,
-} from 'react-icons/hi2';
+import PostStatusBadge from '@/components/Dashboard/Blog/PostStatusBadge';
+import FormattedDate from '@/components/FormattedDate';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,12 +10,36 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { PostStatus } from '@prisma/client';
-import type { PostWithRelations } from '@/types/types';
-import { getPostLink } from '@/lib/getPostLink';
-import PostStatusBadge from '@/components/Dashboard/Blog/PostStatusBadge';
-import FormattedDate from '@/components/FormattedDate';
 import { toast } from '@/components/ui/use-toast';
+import { getPostLink } from '@/lib/getPostLink';
+import { AnimatePresence, motion } from '@/lib/motion-shim';
+import { cn } from '@/lib/utils';
+import type { PostWithRelations } from '@/types/types';
+import type { PostStatus } from '@prisma/client';
+import { useSession } from 'next-auth/react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { type FC, memo, useCallback, useState } from 'react';
+import {
+  HiArrowTopRightOnSquare,
+  HiCheck,
+  HiClipboard,
+  type HiEye,
+  HiOutlineBars3BottomLeft,
+  HiOutlineBookmark,
+  HiOutlineChatBubbleLeftRight,
+  HiOutlineCheckCircle,
+  HiOutlineClock,
+  HiOutlineDocumentDuplicate,
+  HiOutlineEye,
+  HiOutlineHeart,
+  HiOutlineLink,
+  HiOutlineSparkles,
+  HiOutlineStar,
+  HiPencil,
+  HiTrash,
+  HiXMark,
+} from 'react-icons/hi2';
 
 export interface PostsFloatingToolbarProps {
   activePost: PostWithRelations | null;
@@ -128,8 +128,7 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
   const [duplicateLoading, setDuplicateLoading] = useState(false);
   const [copyDone, setCopyDone] = useState(false);
 
-  const isAdminOrOwner =
-    session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER';
+  const isAdminOrOwner = session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER';
   const isAuthor = session?.user?.role === 'AUTHOR';
 
   const isBulkMode = bulkSelectionCount > 0;
@@ -210,10 +209,8 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
       'bg-[color:var(--at-bg-elevated)] border-[color:var(--at-line-strong)] text-[color:var(--at-fg)] hover:bg-[color:var(--at-surface-hover)]',
     violet:
       'bg-[color:var(--at-violet)] border-[color:var(--at-violet)] text-white hover:opacity-90',
-    rose:
-      'bg-[color:var(--at-surface)] border-[color:var(--at-danger)] text-[color:var(--at-danger)] hover:bg-[color:var(--at-danger-soft)]',
-    gold:
-      'bg-[color:var(--at-bg-elevated)] border-amber-400 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30',
+    rose: 'bg-[color:var(--at-surface)] border-[color:var(--at-danger)] text-[color:var(--at-danger)] hover:bg-[color:var(--at-danger-soft)]',
+    gold: 'bg-[color:var(--at-bg-elevated)] border-amber-400 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30',
     plain:
       'bg-[color:var(--at-bg-elevated)] border-[color:var(--at-line-strong)] text-[color:var(--at-fg)] hover:bg-[color:var(--at-surface-hover)]',
     iconOnly:
@@ -342,21 +339,30 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                   {/* عنوان + meta + KPIs */}
                   <div className="flex-1 min-w-0 py-3 px-4 sm:px-5 flex flex-col gap-1.5 justify-center border-s border-[color:var(--at-line)]">
                     {/* خط meta — status + postType + age */}
-                    <div className="flex items-center gap-2 text-xs text-[color:var(--at-fg-subtle)] flex-wrap" dir="rtl">
+                    <div
+                      className="flex items-center gap-2 text-xs text-[color:var(--at-fg-subtle)] flex-wrap"
+                      dir="rtl"
+                    >
                       <span className={cn('at-badge text-[10px]', currentMeta.pillClass)}>
                         {currentMeta.label}
                       </span>
-                      <span aria-hidden className="opacity-40">·</span>
+                      <span aria-hidden className="opacity-40">
+                        ·
+                      </span>
                       <span className="font-mono text-[10px] truncate max-w-[180px]">
                         {activePost.postType}
                       </span>
-                      <span aria-hidden className="opacity-40 hidden sm:inline">·</span>
+                      <span aria-hidden className="opacity-40 hidden sm:inline">
+                        ·
+                      </span>
                       <span className="hidden sm:inline">
                         <FormattedDate date={activePost.createdAt} />
                       </span>
                       {activePost.readingTime != null && (
                         <>
-                          <span aria-hidden className="opacity-40 hidden sm:inline">·</span>
+                          <span aria-hidden className="opacity-40 hidden sm:inline">
+                            ·
+                          </span>
                           <span className="hidden sm:inline tabular-nums">
                             {activePost.readingTime} دقیقه
                           </span>
@@ -373,7 +379,10 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                     </h3>
 
                     {/* KPI micro-strip */}
-                    <div className="flex items-center gap-2 sm:gap-3 text-[11px] text-[color:var(--at-fg-muted)] flex-wrap" dir="rtl">
+                    <div
+                      className="flex items-center gap-2 sm:gap-3 text-[11px] text-[color:var(--at-fg-muted)] flex-wrap"
+                      dir="rtl"
+                    >
                       <span className="inline-flex items-center gap-1">
                         <HiOutlineEye className="w-3.5 h-3.5" aria-hidden />
                         <span className="tabular-nums font-bold">
@@ -381,7 +390,9 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                         </span>
                         <span className="text-[color:var(--at-fg-subtle)]">بازدید</span>
                       </span>
-                      <span aria-hidden className="opacity-30">|</span>
+                      <span aria-hidden className="opacity-30">
+                        |
+                      </span>
                       <span className="inline-flex items-center gap-1">
                         <HiOutlineChatBubbleLeftRight className="w-3.5 h-3.5" aria-hidden />
                         <span className="tabular-nums font-bold">
@@ -404,7 +415,10 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-1.5 flex-shrink-0 py-3 px-3 sm:px-5 border-s border-[color:var(--at-line)]" dir="rtl">
+                  <div
+                    className="flex items-center gap-1.5 flex-shrink-0 py-3 px-3 sm:px-5 border-s border-[color:var(--at-line)]"
+                    dir="rtl"
+                  >
                     {/* ── Status dropdown (primary) ── */}
                     <DropdownMenu dir="rtl">
                       <DropdownMenuTrigger asChild>
@@ -421,10 +435,19 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                           aria-label="تغییر وضعیت"
                         >
                           <span className="flex items-center gap-2 min-w-0">
-                            <span className={cn('w-2 h-2 rounded-full flex-shrink-0', currentMeta.dotClass)} aria-hidden />
+                            <span
+                              className={cn(
+                                'w-2 h-2 rounded-full flex-shrink-0',
+                                currentMeta.dotClass,
+                              )}
+                              aria-hidden
+                            />
                             <span className="font-bold truncate">{currentMeta.shortLabel}</span>
                           </span>
-                          <HiOutlineBars3BottomLeft className="w-4 h-4 opacity-60 flex-shrink-0" aria-hidden />
+                          <HiOutlineBars3BottomLeft
+                            className="w-4 h-4 opacity-60 flex-shrink-0"
+                            aria-hidden
+                          />
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
@@ -435,7 +458,7 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                         <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-[color:var(--at-fg-subtle)] font-bold px-2.5 py-1.5">
                           تغییر وضعیت
                         </DropdownMenuLabel>
-                        {(Object.values(STATUS_META)).map((meta) => {
+                        {Object.values(STATUS_META).map((meta) => {
                           const Icon = meta.icon;
                           const isCurrent = activePost.status === meta.value;
                           return (
@@ -451,12 +474,21 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                               )}
                             >
                               <span className="flex items-center gap-2 min-w-0">
-                                <span className={cn('w-2 h-2 rounded-full flex-shrink-0', meta.dotClass)} aria-hidden />
+                                <span
+                                  className={cn(
+                                    'w-2 h-2 rounded-full flex-shrink-0',
+                                    meta.dotClass,
+                                  )}
+                                  aria-hidden
+                                />
                                 <Icon className="w-4 h-4 flex-shrink-0 opacity-80" aria-hidden />
                                 <span className="font-semibold">{meta.label}</span>
                               </span>
                               {isCurrent && (
-                                <HiOutlineCheckCircle className="w-4 h-4 text-[color:var(--at-accent)] flex-shrink-0" aria-hidden />
+                                <HiOutlineCheckCircle
+                                  className="w-4 h-4 text-[color:var(--at-accent)] flex-shrink-0"
+                                  aria-hidden
+                                />
                               )}
                             </DropdownMenuItem>
                           );
@@ -518,7 +550,9 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                               <HiOutlineStar
                                 className={cn(
                                   'w-4 h-4 flex-shrink-0',
-                                  activePost.isFeatured ? 'text-amber-500 fill-current' : 'opacity-80',
+                                  activePost.isFeatured
+                                    ? 'text-amber-500 fill-current'
+                                    : 'opacity-80',
                                 )}
                                 aria-hidden
                               />
@@ -539,7 +573,10 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                             onClick={handleDuplicate}
                             className="flex items-center gap-2 px-2.5 py-2 text-sm rounded-[8px] cursor-pointer text-[color:var(--at-fg)] focus:bg-[color:var(--at-surface-hover)]"
                           >
-                            <HiOutlineDocumentDuplicate className="w-4 h-4 flex-shrink-0 opacity-80" aria-hidden />
+                            <HiOutlineDocumentDuplicate
+                              className="w-4 h-4 flex-shrink-0 opacity-80"
+                              aria-hidden
+                            />
                             <span className="font-semibold">
                               {duplicateLoading ? 'در حال تکرار...' : 'تکرار پست'}
                             </span>
@@ -552,7 +589,9 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                           className="flex items-center gap-2 px-2.5 py-2 text-sm rounded-[8px] cursor-pointer text-[color:var(--at-fg)] focus:bg-[color:var(--at-surface-hover)]"
                         >
                           <HiOutlineLink className="w-4 h-4 flex-shrink-0 opacity-80" aria-hidden />
-                          <span className="font-semibold">{copyDone ? 'کپی شد ✓' : 'کپی لینک پست'}</span>
+                          <span className="font-semibold">
+                            {copyDone ? 'کپی شد ✓' : 'کپی لینک پست'}
+                          </span>
                         </DropdownMenuItem>
 
                         {/* Bulk select toggle */}

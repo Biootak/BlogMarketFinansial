@@ -1,8 +1,8 @@
 'use client';
 
 import { Switch } from '@/app/headlessui';
-import { useThemeMode } from '@/hooks/useThemeMode';
 import { ThemeIcon } from '@/components/Icons';
+import { useThemeMode } from '@/hooks/useThemeMode';
 
 export interface SwitchDarkModeProps {
   className?: string;

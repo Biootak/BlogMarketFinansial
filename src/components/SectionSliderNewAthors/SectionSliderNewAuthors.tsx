@@ -1,10 +1,10 @@
 'use client';
 
-import React, { type FC } from 'react';
-import Heading from '@/components/Heading/Heading';
-import CardAuthorBox2 from '@/components/CardAuthorBox2/CardAuthorBox2';
-import MySlider from '@/components/MySlider';
 import type { TopAuthor } from '@/actions/getTopAuthors';
+import CardAuthorBox2 from '@/components/CardAuthorBox2/CardAuthorBox2';
+import Heading from '@/components/Heading/Heading';
+import MySlider from '@/components/MySlider';
+import React, { type FC } from 'react';
 
 export interface SectionSliderNewAuthorsProps {
   className?: string;

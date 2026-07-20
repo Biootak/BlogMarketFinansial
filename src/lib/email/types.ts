@@ -74,8 +74,7 @@ export type EmailProviderName = 'resend' | 'smtp' | 'console';
 export class EmailConfigError extends Error {
   constructor(provider: string, missing: string[]) {
     super(
-      `[email:${provider}] missing required env vars: ${missing.join(', ')}. ` +
-        `Set them in .env, or pick a different EMAIL_PROVIDER.`,
+      `[email:${provider}] missing required env vars: ${missing.join(', ')}. Set them in .env, or pick a different EMAIL_PROVIDER.`,
     );
     this.name = 'EmailConfigError';
   }

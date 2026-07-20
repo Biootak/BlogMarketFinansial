@@ -14,8 +14,8 @@
  * - هزارگان فارسی از `formatNumber` (همون util قبلی).
  */
 
+import { cn, formatNumber, toPersianNumber } from '@/lib/utils';
 import { useEffect, useRef, useState } from 'react';
-import { cn, toPersianNumber, formatNumber } from '@/lib/utils';
 
 interface AnimatedNumberProps {
   value: number;
@@ -68,7 +68,7 @@ export default function AnimatedNumber({
             const tick = (now: number) => {
               const elapsed = (now - start) / 1000;
               const t = Math.min(elapsed / duration, 1);
-              const eased = 1 - Math.pow(1 - t, 3);
+              const eased = 1 - (1 - t) ** 3;
               const current = from + (to - from) * eased;
               setDisplay(formatValue(current, format, thousands));
               if (t < 1) requestAnimationFrame(tick);

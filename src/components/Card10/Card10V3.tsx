@@ -1,15 +1,15 @@
 'use client';
-import type React from 'react';
-import { useMemo, useState, useCallback } from 'react';
+import CardAuthor2 from '@/components/CardAuthor2/CardAuthor2';
+import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
 import NcImage from '@/components/NcImage/NcImage';
 import PostCardSaveAction from '@/components/PostCardSaveAction/PostCardSaveAction';
-import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
 import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia';
-import CardAuthor2 from '@/components/CardAuthor2/CardAuthor2';
-import Link from 'next/link';
-import type { PostWithRelations } from '@/types/types';
-import BookmarkCheck from '../BookmarkCheck';
 import { getPostLink } from '@/lib/getPostLink';
+import type { PostWithRelations } from '@/types/types';
+import Link from 'next/link';
+import type React from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import BookmarkCheck from '../BookmarkCheck';
 
 interface Card10V3Props {
   className?: string;
@@ -77,7 +77,6 @@ const Card10V3: React.FC<Card10V3Props> = ({ className = 'h-full', post, gallery
         ) : (
           renderGallery
         )}
-
       </div>
       <div className="absolute top-2 sm:top-3 inset-x-2 sm:inset-x-3 flex justify-between items-start gap-2 sm:gap-4">
         <CategoryBadgeList categories={categories} className="flex flex-wrap gap-1" />

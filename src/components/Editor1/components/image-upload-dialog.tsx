@@ -1,5 +1,18 @@
 'use client';
 
+import { ImageUploader, type UploadFolder } from '@/components/ImageUpload/ImageUploader';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from '@/components/ui/use-toast';
+import type { Editor } from '@tiptap/core';
 import React, {
   forwardRef,
   useCallback,
@@ -10,19 +23,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import type { Editor } from '@tiptap/core';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { ImageUploader, type UploadFolder } from '@/components/ImageUpload/ImageUploader';
-import { toast } from '@/components/ui/use-toast';
 
 export interface ImageUploadDialogRef {
   open: () => void;
@@ -32,10 +32,7 @@ export interface ImageUploadDialogRef {
    * `width` and `height` are accepted so the editor can set intrinsic
    * dimensions without re-probing the image.
    */
-  setPending: (
-    url: string,
-    dims?: { width?: number | null; height?: number | null },
-  ) => void;
+  setPending: (url: string, dims?: { width?: number | null; height?: number | null }) => void;
   /**
    * 2026-07-06: target an existing image node for in-place edit. When
    * set, the dialog's Insert button UPDATES the attrs of that node via
@@ -78,16 +75,7 @@ function isAcceptableImageUrl(value: string): boolean {
 }
 
 const ImageUploadDialog = forwardRef<ImageUploadDialogRef, ImageUploadDialogProps>(
-  (
-    {
-      editor,
-      open: controlledOpen,
-      onOpenChange,
-      folder = 'posts',
-      requireAlt = true,
-    },
-    ref,
-  ) => {
+  ({ editor, open: controlledOpen, onOpenChange, folder = 'posts', requireAlt = true }, ref) => {
     const [internalOpen, setInternalOpen] = useState(false);
     const isControlled = controlledOpen !== undefined;
     const isOpen = isControlled ? controlledOpen : internalOpen;
@@ -229,7 +217,11 @@ const ImageUploadDialog = forwardRef<ImageUploadDialogRef, ImageUploadDialogProp
         }
       } else {
         // Standard insert-mode: focus editor, insert fresh image node.
-        editor.chain().focus().setImage(newAttrs as never).run();
+        editor
+          .chain()
+          .focus()
+          .setImage(newAttrs as never)
+          .run();
       }
       setOpen(false);
     }, [pending, alt, title, editor, setOpen, editingNodePos]);
@@ -286,11 +278,7 @@ const ImageUploadDialog = forwardRef<ImageUploadDialogRef, ImageUploadDialogProp
                     autoFocus
                   />
                   {altMissing && (
-                    <p
-                      id={`${altId}-err`}
-                      className="text-xs text-red-500"
-                      role="alert"
-                    >
+                    <p id={`${altId}-err`} className="text-xs text-red-500" role="alert">
                       متن جایگزین برای دسترس‌پذیری لازم است.
                     </p>
                   )}

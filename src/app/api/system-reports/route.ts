@@ -1,21 +1,26 @@
 import { checkReportAccess } from '@/actions/reportActions';
 import { auth } from '@/auth';
 import db from '@/lib/db';
-import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
+import { NextResponse } from 'next/server';
 
 async function ensureReportAccess(): Promise<NextResponse | null> {
   const session = await auth();
   const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user || (role !== 'ADMIN' && role !== 'OWNER')) {
+  if (!session?.user) {
+    return NextResponse.json(
+      { success: false, error: { code: 'UNAUTHENTICATED', message: 'احراز هویت الزامی است' } },
+      { status: 401 },
+    );
+  }
+  if (role !== 'ADMIN' && role !== 'OWNER') {
     return NextResponse.json(
       { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } },
-      { status: 401 },
+      { status: 403 },
     );
   }
   return null;
 }
-
 
 interface MonthlyStats {
   month: Date;
@@ -61,36 +66,37 @@ export async function GET(): Promise<NextResponse> {
   try {
     await checkReportAccess();
 
-    const systemReport = await db.$transaction(async (tx) => {
-      // Transaction with increased timeout and maxWait settings
-      // User Statistics
-      const total = await tx.user.count();
-      const active = await tx.user.count({
-        where: { status: 'Active' }
-      });
+    const systemReport = await db.$transaction(
+      async (tx) => {
+        // Transaction with increased timeout and maxWait settings
+        // User Statistics
+        const total = await tx.user.count();
+        const active = await tx.user.count({
+          where: { status: 'Active' },
+        });
 
-      const firstDayOfMonth = new Date();
-      firstDayOfMonth.setDate(1);
-      firstDayOfMonth.setHours(0, 0, 0, 0);
+        const firstDayOfMonth = new Date();
+        firstDayOfMonth.setDate(1);
+        firstDayOfMonth.setHours(0, 0, 0, 0);
 
-      const newThisMonth = await tx.user.count({
-        where: {
-          createdAt: {
-            gte: firstDayOfMonth
-          }
-        }
-      });
+        const newThisMonth = await tx.user.count({
+          where: {
+            createdAt: {
+              gte: firstDayOfMonth,
+            },
+          },
+        });
 
-      const roleDistribution = await tx.user.groupBy({
-        by: ['role'],
-        _count: true
-      });
+        const roleDistribution = await tx.user.groupBy({
+          by: ['role'],
+          _count: true,
+        });
 
-      // Post Statistics
-      const totalPosts = await tx.post.count();
-      const publishedPosts = await tx.post.count({
-        where: { status: 'PUBLISHED' }
-      });
+        // Post Statistics
+        const totalPosts = await tx.post.count();
+        const publishedPosts = await tx.post.count({
+          where: { status: 'PUBLISHED' },
+        });
 
         const monthlyPosts = await tx.$queryRaw<MonthlyStats[]>`
         SELECT DATE_TRUNC('month', "createdAt") as month,
@@ -104,9 +110,9 @@ export async function GET(): Promise<NextResponse> {
 
         // View Statistics
         const totalViews = await tx.post.aggregate({
-        _sum: {
-          viewCount: true
-        }
+          _sum: {
+            viewCount: true,
+          },
         });
 
         const monthlyViews = await tx.$queryRaw<MonthlyStats[]>`
@@ -120,66 +126,67 @@ export async function GET(): Promise<NextResponse> {
         `;
 
         const topPosts = await tx.post.findMany({
-        where: { status: 'PUBLISHED' },
-        select: {
-          title: true,
-          viewCount: true
-        },
-        orderBy: {
-          viewCount: 'desc'
-        },
-        take: 5
+          where: { status: 'PUBLISHED' },
+          select: {
+            title: true,
+            viewCount: true,
+          },
+          orderBy: {
+            viewCount: 'desc',
+          },
+          take: 5,
         });
 
         const formatNumber = (num: number) => {
-        return new Intl.NumberFormat('fa-IR').format(num);
+          return new Intl.NumberFormat('fa-IR').format(num);
         };
 
         const formatDate = (date: Date) => {
-        return date.toLocaleDateString('fa-IR', {
-          year: 'numeric',
-          month: 'long'
-        });
+          return date.toLocaleDateString('fa-IR', {
+            year: 'numeric',
+            month: 'long',
+          });
         };
 
         const report: SystemReport = {
-        userStats: {
-          total,
-          active,
-          newThisMonth,
-          roleDistribution: roleDistribution.map(item => ({
-          name: item.role === 'ADMIN' ? 'مدیر' : 
-              item.role === 'USER' ? 'کاربر' : item.role,
-          value: item._count
-          }))
-        },
-        postStats: {
-          total: totalPosts,
-          published: publishedPosts,
-          monthlyPosts: monthlyPosts.map(item => ({
-          month: formatDate(new Date(item.month)),
-          count: Number(item.count)
-          }))
-        },
-        viewStats: {
-          total: totalViews._sum.viewCount || 0,
-          monthly: monthlyViews.map(item => ({
-          month: formatDate(new Date(item.month)),
-          count: Number(item.count)
-          })),
-          topPosts: topPosts.map(post => ({
-          title: post.title,
-          views: post.viewCount,
-          viewsFormatted: formatNumber(post.viewCount)
-          }))
-        }
-      };
+          userStats: {
+            total,
+            active,
+            newThisMonth,
+            roleDistribution: roleDistribution.map((item) => ({
+              name: item.role === 'ADMIN' ? 'مدیر' : item.role === 'USER' ? 'کاربر' : item.role,
+              value: item._count,
+            })),
+          },
+          postStats: {
+            total: totalPosts,
+            published: publishedPosts,
+            monthlyPosts: monthlyPosts.map((item) => ({
+              month: formatDate(new Date(item.month)),
+              count: Number(item.count),
+            })),
+          },
+          viewStats: {
+            total: totalViews._sum.viewCount || 0,
+            monthly: monthlyViews.map((item) => ({
+              month: formatDate(new Date(item.month)),
+              count: Number(item.count),
+            })),
+            topPosts: topPosts.map((post) => ({
+              title: post.title,
+              views: post.viewCount,
+              viewsFormatted: formatNumber(post.viewCount),
+            })),
+          },
+        };
 
         return report;
-      }, {
+      },
+      {
         timeout: 10000, // 10 seconds timeout
-        maxWait: 5000,  // 5 seconds maximum wait time
-      });
+        maxWait: 5000, // 5 seconds maximum wait time
+      },
+    );
 
     return NextResponse.json(systemReport);
   } catch (error) {
@@ -187,19 +194,14 @@ export async function GET(): Promise<NextResponse> {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       // Handle specific Prisma errors
       return NextResponse.json(
-      { error: 'Database operation failed', code: error.code },
-      { status: 500 }
-      );
-    } else if (error instanceof Prisma.PrismaClientValidationError) {
-      // Handle validation errors
-      return NextResponse.json(
-      { error: 'Invalid data provided to database' },
-      { status: 400 }
+        { error: 'Database operation failed', code: error.code },
+        { status: 500 },
       );
     }
-    return NextResponse.json(
-      { error: 'خطا در دریافت گزارش‌های سیستم' },
-      { status: 500 }
-    );
+    if (error instanceof Prisma.PrismaClientValidationError) {
+      // Handle validation errors
+      return NextResponse.json({ error: 'Invalid data provided to database' }, { status: 400 });
+    }
+    return NextResponse.json({ error: 'خطا در دریافت گزارش‌های سیستم' }, { status: 500 });
   }
 }

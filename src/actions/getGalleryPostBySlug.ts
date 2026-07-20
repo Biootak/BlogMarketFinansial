@@ -2,7 +2,7 @@
 
 import prisma from '@/lib/db';
 import type { ActionResult, PostWithRelations } from '@/types/types';
-import { PostType, PostStatus } from '@prisma/client';
+import { PostStatus, PostType } from '@prisma/client';
 
 export async function getGalleryPostBySlug(
   slug: string,

@@ -1,5 +1,5 @@
-import type { MetadataRoute } from 'next';
 import prisma from '@/lib/db';
+import type { MetadataRoute } from 'next';
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://blogmarketfinansial.ir';
 
@@ -38,7 +38,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }),
       prisma.category.findMany({ select: { slug: true } }),
       prisma.tag.findMany({ select: { slug: true } }),
-      prisma.user.findMany({ select: { id: true }, where: { role: { in: ['AUTHOR', 'ADMIN', 'OWNER'] } } }),
+      prisma.user.findMany({
+        select: { id: true },
+        where: { role: { in: ['AUTHOR', 'ADMIN', 'OWNER'] } },
+      }),
     ]);
 
     for (const post of posts) {

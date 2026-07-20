@@ -1,16 +1,7 @@
+import { getSiteIdentity } from '@/lib/site-identity';
+import { ArrowLeft, ArrowUpDown, BarChart2, Globe, Lock, Shield, Wallet, Zap } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import {
-  Wallet,
-  ArrowUpDown,
-  Shield,
-  Zap,
-  Globe,
-  BarChart2,
-  ArrowLeft,
-  Lock,
-} from 'lucide-react';
-import { getSiteIdentity } from '@/lib/site-identity';
 import WalletHero from './WalletHero';
 import s from './wallet.module.css';
 
@@ -73,21 +64,17 @@ export default function WalletPage() {
 
           {/* Headline */}
           <h1 className={s.headline}>
-            پول خود را{' '}
-            <span className={s.headlineAccent}>هوشمند</span>
-            {' '}مدیریت کنید
+            پول خود را <span className={s.headlineAccent}>هوشمند</span> مدیریت کنید
           </h1>
 
           {/* Sub */}
-          <p className={s.sub}>
-            انتقال امن، نرخ لحظه‌ای و مدیریت چند‌ارزی — همه در یک پلتفرم ساده
-          </p>
+          <p className={s.sub}>انتقال امن، نرخ لحظه‌ای و مدیریت چند‌ارزی — همه در یک پلتفرم ساده</p>
 
           {/* Pills */}
           <ul className={s.pills} aria-label="ویژگی‌های کلیدی">
             {[
-              { icon: Globe,  text: 'چند ارزی' },
-              { icon: Zap,    text: 'انتقال فوری' },
+              { icon: Globe, text: 'چند ارزی' },
+              { icon: Zap, text: 'انتقال فوری' },
               { icon: Shield, text: 'کاملاً امن' },
             ].map(({ icon: Icon, text }) => (
               <li key={text} className={s.pill}>
@@ -106,7 +93,12 @@ export default function WalletPage() {
             <Link href="/online-payment" className={s.ctaSecondary}>
               <BarChart2 size={16} strokeWidth={1.5} aria-hidden />
               پرداخت آنلاین
-              <ArrowLeft size={15} strokeWidth={1.5} style={{ transform: 'scaleX(-1)' }} aria-hidden />
+              <ArrowLeft
+                size={15}
+                strokeWidth={1.5}
+                style={{ transform: 'scaleX(-1)' }}
+                aria-hidden
+              />
             </Link>
           </div>
         </div>

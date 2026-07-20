@@ -18,19 +18,19 @@
  *   • All numeric values use the .dash-num class for tabular alignment.
  */
 
-import type React from 'react';
-import Link from 'next/link';
 import { motion } from '@/lib/motion-shim';
+import Link from 'next/link';
+import type React from 'react';
 import {
-  HiOutlinePencilAlt,
-  HiOutlineEye,
-  HiOutlineDocumentText,
-  HiOutlinePlus,
   HiOutlineArrowLeft,
   HiOutlineChartBar,
   HiOutlineClock,
-  HiPencil,
+  HiOutlineDocumentText,
+  HiOutlineEye,
+  HiOutlinePencilAlt,
+  HiOutlinePlus,
   HiOutlineSparkles,
+  HiPencil,
 } from 'react-icons/hi';
 
 interface PostManagementProps {
@@ -82,10 +82,7 @@ const PostManagement: React.FC<PostManagementProps> = ({
   showCreateButton = true,
 }) => {
   return (
-    <section
-      aria-label="مدیریت پست‌ها"
-      className="space-y-5"
-    >
+    <section aria-label="مدیریت پست‌ها" className="space-y-5">
       {/* Header */}
       {(showHeaderStats || showCreateButton) && (
         <motion.div
@@ -213,10 +210,14 @@ const StatCard: React.FC<{
 
   return (
     <div className="group relative overflow-hidden">
-      <div className={`relative dash-panel dash-panel--hover dash-glow p-5 border-b-4 ${colors.border}`}>
+      <div
+        className={`relative dash-panel dash-panel--hover dash-glow p-5 border-b-4 ${colors.border}`}
+      >
         <div
           className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-          style={{ background: `radial-gradient(circle at 70% 30%, ${colors.glow}, transparent 70%)` }}
+          style={{
+            background: `radial-gradient(circle at 70% 30%, ${colors.glow}, transparent 70%)`,
+          }}
           aria-hidden="true"
         />
         <div className="relative flex items-center justify-between">

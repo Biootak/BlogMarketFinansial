@@ -22,17 +22,11 @@
  * doesn't churn them on re-render.
  */
 
-import { useId } from 'react';
-import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
+import { useId } from 'react';
 
-export type DashboardEmptyTone =
-  | 'violet'
-  | 'cyan'
-  | 'emerald'
-  | 'amber'
-  | 'rose'
-  | 'slate';
+export type DashboardEmptyTone = 'violet' | 'cyan' | 'emerald' | 'amber' | 'rose' | 'slate';
 
 export interface DashboardEmptyProps {
   /** Decorative icon shown inside the tinted icon block. */
@@ -94,10 +88,7 @@ const SIZE_SPEC: Record<NonNullable<DashboardEmptyProps['size']>, SizeSpec> = {
  * the dashboard's color language and the .dark <html> token swap handles
  * light/dark automatically for the text-only variants below.
  */
-const TONE_TINT: Record<
-  DashboardEmptyTone,
-  { blockBg: string; blockFg: string; dotFg: string }
-> = {
+const TONE_TINT: Record<DashboardEmptyTone, { blockBg: string; blockFg: string; dotFg: string }> = {
   violet: {
     blockBg: 'bg-violet-500/10 dark:bg-violet-500/15',
     blockFg: 'text-violet-600 dark:text-violet-400',
@@ -168,14 +159,7 @@ export function DashboardEmpty({
         height="100%"
       >
         <defs>
-          <pattern
-            id={patternId}
-            x="0"
-            y="0"
-            width="14"
-            height="14"
-            patternUnits="userSpaceOnUse"
-          >
+          <pattern id={patternId} x="0" y="0" width="14" height="14" patternUnits="userSpaceOnUse">
             <circle cx="1.2" cy="1.2" r="0.9" className={tint.dotFg} />
           </pattern>
         </defs>
@@ -197,20 +181,12 @@ export function DashboardEmpty({
 
       <div className="space-y-1.5 max-w-xs">
         <p
-          className={cn(
-            'font-extrabold text-slate-900 dark:text-white tracking-tight',
-            spec.title,
-          )}
+          className={cn('font-extrabold text-slate-900 dark:text-white tracking-tight', spec.title)}
         >
           {title}
         </p>
         {description && (
-          <p
-            className={cn(
-              'text-slate-500 dark:text-slate-400 leading-relaxed',
-              spec.desc,
-            )}
-          >
+          <p className={cn('text-slate-500 dark:text-slate-400 leading-relaxed', spec.desc)}>
             {description}
           </p>
         )}

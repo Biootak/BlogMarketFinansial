@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
 import { getSystemReports } from '@/actions/reportActions';
 import { auth } from '@/auth';
+import { NextResponse } from 'next/server';
 import * as XLSX from 'xlsx';
 
 export async function POST(req: Request) {
@@ -11,8 +11,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'احراز هویت الزامی است' }, { status: 401 });
     }
 
-    const userRole = (session.user as any).role;
-    if (!['ADMIN', 'OWNER'].includes(userRole)) {
+    const userRole = (session.user as { role?: string }).role;
+    if (!['ADMIN', 'OWNER'].includes(userRole ?? '')) {
       return NextResponse.json({ error: 'دسترسی غیرمجاز' }, { status: 403 });
     }
 
@@ -33,15 +33,15 @@ export async function POST(req: Request) {
     }
 
     const result = await getSystemReports(fromDate, toDate);
-    
+
     if (!result.success) {
       return NextResponse.json({ error: result.message }, { status: 400 });
     }
 
     const { data } = result;
-    
+
     if (!data) {
-      return NextResponse.json({ error: "داده‌ای یافت نشد" }, { status: 404 });
+      return NextResponse.json({ error: 'داده‌ای یافت نشد' }, { status: 404 });
     }
 
     // تبدیل داده‌ها به فرمت مناسب برای اکسل
@@ -94,9 +94,6 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('Error in download reports:', error);
-    return NextResponse.json(
-      { error: 'خطا در دانلود گزارش' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'خطا در دانلود گزارش' }, { status: 500 });
   }
 }

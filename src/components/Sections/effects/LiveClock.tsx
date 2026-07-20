@@ -10,9 +10,9 @@
  * - prefers-reduced-motion توسط global rule در globals.css → animation حذف میشه
  */
 
-import { memo, useEffect, useState } from 'react';
-import { Clock } from 'lucide-react';
 import { cn, toPersianNumber } from '@/lib/utils';
+import { Clock } from 'lucide-react';
+import { memo, useEffect, useState } from 'react';
 
 interface LiveClockProps {
   className?: string;
@@ -89,19 +89,17 @@ function LiveClock({
       style={{ unicodeBidi: 'isolate' }}
       suppressHydrationWarning
     >
-      {showIcon && (
-        <Clock className="h-3 w-3 text-neutral-400" strokeWidth={2} aria-hidden />
-      )}
-      <span className="font-semibold text-neutral-800 dark:text-neutral-200">
-        {time.hour}
+      {showIcon && <Clock className="h-3 w-3 text-neutral-400" strokeWidth={2} aria-hidden />}
+      <span className="font-semibold text-neutral-800 dark:text-neutral-200">{time.hour}</span>
+      <span className="text-neutral-400 anim-blink" aria-hidden>
+        :
       </span>
-      <span className="text-neutral-400 anim-blink" aria-hidden>:</span>
-      <span className="font-semibold text-neutral-800 dark:text-neutral-200">
-        {time.minute}
-      </span>
+      <span className="font-semibold text-neutral-800 dark:text-neutral-200">{time.minute}</span>
       {showSeconds && renderSecond ? (
         <>
-          <span className="text-neutral-400 anim-blink" aria-hidden>:</span>
+          <span className="text-neutral-400 anim-blink" aria-hidden>
+            :
+          </span>
           <span className="text-neutral-500 dark:text-neutral-400">
             {toPersianNumber(time.second!)}
           </span>

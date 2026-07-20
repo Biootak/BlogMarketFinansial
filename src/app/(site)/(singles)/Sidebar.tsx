@@ -1,4 +1,4 @@
-import type React from 'react';
+import WidgetAds from '@/components/WidgetAds/WidgetAds';
 import WidgetAuthors from '@/components/WidgetAuthors/WidgetAuthors';
 import WidgetCategories from '@/components/WidgetCategories/WidgetCategories';
 import WidgetPosts from '@/components/WidgetPosts/WidgetPosts';
@@ -9,7 +9,7 @@ import type {
   TaxonomyType,
   UserWithProfile,
 } from '@/types/types';
-import WidgetAds from '@/components/WidgetAds/WidgetAds';
+import type React from 'react';
 
 export interface SidebarProps {
   className?: string;

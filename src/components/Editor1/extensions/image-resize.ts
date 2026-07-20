@@ -1,7 +1,7 @@
-import { ReactNodeViewRenderer } from '@tiptap/react';
 import type { NodeViewProps } from '@tiptap/core';
 import { mergeAttributes } from '@tiptap/core';
 import { Image as BaseImage } from '@tiptap/extension-image';
+import { ReactNodeViewRenderer } from '@tiptap/react';
 import ResizeImage from '../components/resize-image';
 
 // 2026-07-06: image extension برای resize interactive + attrs کامل.
@@ -56,8 +56,7 @@ export default BaseImage.extend({
       // عرض: '100%' | '500px' | 500
       width: {
         default: '100%',
-        parseHTML: (element) =>
-          parseWidth(element.getAttribute('width')) ?? '100%',
+        parseHTML: (element) => parseWidth(element.getAttribute('width')) ?? '100%',
         renderHTML: (attributes) => {
           const w = attributes.width;
           if (w == null) return {};

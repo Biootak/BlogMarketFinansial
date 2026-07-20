@@ -1,5 +1,5 @@
-import React from 'react';
 import type { PostWithRelations } from '@/types/types';
+import React from 'react';
 
 interface PostTypeFeaturedIconProps {
   className?: string;

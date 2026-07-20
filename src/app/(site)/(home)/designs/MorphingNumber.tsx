@@ -35,7 +35,7 @@ interface MorphingNumberProps {
 }
 
 function easeOutCubic(t: number): number {
-  return 1 - Math.pow(1 - t, 3);
+  return 1 - (1 - t) ** 3;
 }
 
 function formatPersian(n: number, decimals: number): string {
@@ -90,8 +90,7 @@ export default memo(function MorphingNumber({
       const progress = Math.min(elapsed / duration, 1);
       const eased = easeOutCubic(progress);
 
-      const current =
-        fromRef.current + (targetRef.current - fromRef.current) * eased;
+      const current = fromRef.current + (targetRef.current - fromRef.current) * eased;
       setDisplay(current);
 
       if (progress < 1) {
@@ -111,11 +110,7 @@ export default memo(function MorphingNumber({
 
   const formatted = persian ? formatPersian(display, decimals) : formatEnglish(display, decimals);
   const trendClass =
-    trend === 'up'
-      ? 'text-emerald-300'
-      : trend === 'down'
-        ? 'text-rose-300'
-        : 'text-white';
+    trend === 'up' ? 'text-emerald-300' : trend === 'down' ? 'text-rose-300' : 'text-white';
 
   return (
     <span className={`tabular-nums ${trendClass} ${className}`}>

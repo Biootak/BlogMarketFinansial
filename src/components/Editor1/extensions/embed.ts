@@ -1,6 +1,6 @@
 import { Node, mergeAttributes } from '@tiptap/core';
-import { ReactNodeViewRenderer } from '@tiptap/react';
 import type { NodeViewProps } from '@tiptap/core';
+import { ReactNodeViewRenderer } from '@tiptap/react';
 import EmbedBlock from '../components/embed-block';
 
 // 2026-07-06: 'youtube' حذف شد — توسط @tiptap/extension-youtube رسمی.
@@ -91,7 +91,10 @@ export const Embed = Node.create<EmbedOptions>({
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ['div', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, { 'data-embed': '' })];
+    return [
+      'div',
+      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, { 'data-embed': '' }),
+    ];
   },
 
   addCommands() {
@@ -137,11 +140,15 @@ export const Embed = Node.create<EmbedOptions>({
           const detected = detectProvider(url);
           if (detected) {
             const { tr } = state;
-            tr.replaceWith(range.from, range.to, this.type.create({
-              src: url,
-              provider: detected.provider,
-              embedId: detected.id,
-            }));
+            tr.replaceWith(
+              range.from,
+              range.to,
+              this.type.create({
+                src: url,
+                provider: detected.provider,
+                embedId: detected.id,
+              }),
+            );
           }
         },
       },
@@ -152,11 +159,15 @@ export const Embed = Node.create<EmbedOptions>({
           const detected = detectProvider(url);
           if (detected) {
             const { tr } = state;
-            tr.replaceWith(range.from, range.to, this.type.create({
-              src: url,
-              provider: detected.provider,
-              embedId: detected.id,
-            }));
+            tr.replaceWith(
+              range.from,
+              range.to,
+              this.type.create({
+                src: url,
+                provider: detected.provider,
+                embedId: detected.id,
+              }),
+            );
           }
         },
       },

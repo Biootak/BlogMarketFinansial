@@ -1,13 +1,9 @@
-﻿import { Suspense } from 'react';
-import type { Metadata } from 'next';
-import { getSystemSettingsCached } from '@/data/getSystemSettingsCached';
-import SiteHeaderData, {
-  HeaderSkeleton,
-} from '@/app/(site)/_components/SiteHeaderData';
-import SiteFooterData, {
-  FooterSkeleton,
-} from '@/app/(site)/_components/SiteFooterData';
+﻿import SiteFooterData, { FooterSkeleton } from '@/app/(site)/_components/SiteFooterData';
+import SiteHeaderData, { HeaderSkeleton } from '@/app/(site)/_components/SiteHeaderData';
 import SiteSettingsData from '@/app/(site)/_components/SiteSettingsData';
+import { getSystemSettingsCached } from '@/data/getSystemSettingsCached';
+import type { Metadata } from 'next';
+import { Suspense } from 'react';
 
 export async function generateMetadata(): Promise<Metadata> {
   // Site settings come from `getSystemSettingsCached` (unstable_cache, 60s)

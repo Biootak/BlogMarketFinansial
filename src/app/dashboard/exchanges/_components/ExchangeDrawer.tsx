@@ -5,11 +5,11 @@
  * Portal mount، focus trap با keyboard navigation.
  */
 
+import type { ExchangeRow } from '@/actions/exchanges';
 import { FormField } from '@/components/Dashboard/primitives';
 import { X } from 'lucide-react';
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import type { ExchangeRow } from '@/actions/exchanges';
 
 interface Props {
   open: boolean;
@@ -58,7 +58,9 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
 
   // ESC close
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [onClose]);
@@ -68,7 +70,8 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
     setName(v);
     if (!initialData) {
       setSlug(
-        v.toLowerCase()
+        v
+          .toLowerCase()
           .replace(/\s+/g, '-')
           .replace(/[^a-z0-9-]/g, '')
           .slice(0, 60),
@@ -83,7 +86,8 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
     if (!/^[a-z0-9-]+$/.test(slug)) errs.slug = 'فقط حروف انگلیسی کوچک، اعداد و خط تیره';
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = 'ایمیل نامعتبر';
     const fee = Number.parseFloat(platformFee);
-    if (Number.isNaN(fee) || fee < 0 || fee > 100) errs.platformFee = 'کارمزد باید بین ۰ تا ۱۰۰ باشد';
+    if (Number.isNaN(fee) || fee < 0 || fee > 100)
+      errs.platformFee = 'کارمزد باید بین ۰ تا ۱۰۰ باشد';
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -108,10 +112,14 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
   if (!open || typeof window === 'undefined') return null;
 
   const overlay: CSSProperties = {
-    position: 'fixed', inset: 0, zIndex: 1000,
+    position: 'fixed',
+    inset: 0,
+    zIndex: 1000,
     background: 'rgba(0,0,0,0.45)',
     backdropFilter: 'blur(2px)',
-    display: 'flex', alignItems: 'stretch', justifyContent: 'flex-end',
+    display: 'flex',
+    alignItems: 'stretch',
+    justifyContent: 'flex-end',
   };
 
   const panel: CSSProperties = {
@@ -120,15 +128,19 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
     overflowY: 'auto',
     background: 'var(--at-surface, #fff)',
     borderInlineStart: '1px solid var(--at-line)',
-    display: 'flex', flexDirection: 'column',
+    display: 'flex',
+    flexDirection: 'column',
     gap: 0,
   };
 
   const hdr: CSSProperties = {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     padding: '1.25rem 1.5rem',
     borderBottom: '1px solid var(--at-line)',
-    position: 'sticky', top: 0,
+    position: 'sticky',
+    top: 0,
     background: 'var(--at-surface, #fff)',
     zIndex: 1,
   };
@@ -136,56 +148,91 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
   const body: CSSProperties = {
     flex: 1,
     padding: '1.5rem',
-    display: 'flex', flexDirection: 'column', gap: '1.25rem',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1.25rem',
   };
 
   const ftr: CSSProperties = {
     padding: '1rem 1.5rem',
     borderTop: '1px solid var(--at-line)',
-    display: 'flex', gap: '0.75rem', justifyContent: 'flex-start',
-    position: 'sticky', bottom: 0,
+    display: 'flex',
+    gap: '0.75rem',
+    justifyContent: 'flex-start',
+    position: 'sticky',
+    bottom: 0,
     background: 'var(--at-surface, #fff)',
   };
 
   const btnPrimary: CSSProperties = {
-    height: '2.4rem', padding: '0 1.5rem',
-    fontSize: 'var(--ds-text-sm)', fontFamily: 'inherit', fontWeight: 600,
-    color: '#fff', background: 'var(--at-accent)',
-    border: 'none', borderRadius: '8px', cursor: saving ? 'wait' : 'pointer',
+    height: '2.4rem',
+    padding: '0 1.5rem',
+    fontSize: 'var(--ds-text-sm)',
+    fontFamily: 'inherit',
+    fontWeight: 600,
+    color: '#fff',
+    background: 'var(--at-accent)',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: saving ? 'wait' : 'pointer',
     opacity: saving ? 0.7 : 1,
   };
 
   const btnCancel: CSSProperties = {
-    height: '2.4rem', padding: '0 1.25rem',
-    fontSize: 'var(--ds-text-sm)', fontFamily: 'inherit',
-    color: 'var(--at-fg-subtle)', background: 'transparent',
-    border: '1px solid var(--at-line)', borderRadius: '8px', cursor: 'pointer',
+    height: '2.4rem',
+    padding: '0 1.25rem',
+    fontSize: 'var(--ds-text-sm)',
+    fontFamily: 'inherit',
+    color: 'var(--at-fg-subtle)',
+    background: 'transparent',
+    border: '1px solid var(--at-line)',
+    borderRadius: '8px',
+    cursor: 'pointer',
   };
 
   const title_style: CSSProperties = {
-    fontSize: 'var(--ds-text-base)', fontWeight: 700, color: 'var(--at-fg)',
+    fontSize: 'var(--ds-text-base)',
+    fontWeight: 700,
+    color: 'var(--at-fg)',
   };
 
   const closeBtn: CSSProperties = {
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    width: '2rem', height: '2rem',
-    border: '1px solid var(--at-line)', borderRadius: '6px',
-    background: 'transparent', cursor: 'pointer', color: 'var(--at-fg-subtle)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '2rem',
+    height: '2rem',
+    border: '1px solid var(--at-line)',
+    borderRadius: '6px',
+    background: 'transparent',
+    cursor: 'pointer',
+    color: 'var(--at-fg-subtle)',
   };
 
   const sectionLabel: CSSProperties = {
-    fontSize: '11px', fontWeight: 700, textTransform: 'uppercase',
-    letterSpacing: '0.05em', color: 'var(--at-fg-subtle)',
+    fontSize: '11px',
+    fontWeight: 700,
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    color: 'var(--at-fg-subtle)',
     margin: '0.5rem 0 -0.25rem',
     paddingBottom: '0.5rem',
     borderBottom: '1px solid var(--at-line)',
   };
 
   return createPortal(
-    <div style={overlay} role="dialog" aria-modal aria-label={initialData ? 'ویرایش صرافی' : 'صرافی جدید'} onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div
+      style={overlay}
+      role="dialog"
+      aria-modal
+      aria-label={initialData ? 'ویرایش صرافی' : 'صرافی جدید'}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
       <div style={panel}>
         <div style={hdr}>
-          <span style={title_style}>{initialData ? `ویرایش — ${initialData.name}` : 'صرافی جدید'}</span>
+          <span style={title_style}>
+            {initialData ? `ویرایش — ${initialData.name}` : 'صرافی جدید'}
+          </span>
           <button type="button" style={closeBtn} onClick={onClose} aria-label="بستن">
             <X className="w-4 h-4" />
           </button>
@@ -206,9 +253,19 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
           </FormField>
 
           {!initialData && (
-            <FormField label="Slug (یکتا)" required error={errors.slug} hint="مثال: noori-herat — فقط انگلیسی، بدون فاصله">
+            <FormField
+              label="Slug (یکتا)"
+              required
+              error={errors.slug}
+              hint="مثال: noori-herat — فقط انگلیسی، بدون فاصله"
+            >
               <input
-                style={{ ...input, direction: 'ltr', textAlign: 'left', borderColor: errors.slug ? 'oklch(60% 0.18 25)' : undefined }}
+                style={{
+                  ...input,
+                  direction: 'ltr',
+                  textAlign: 'left',
+                  borderColor: errors.slug ? 'oklch(60% 0.18 25)' : undefined,
+                }}
                 value={slug}
                 onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
                 placeholder="exchange-slug"
@@ -219,40 +276,85 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <FormField label="شهر">
-              <input style={input} value={city} onChange={(e) => setCity(e.target.value)} placeholder="هرات" />
+              <input
+                style={input}
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="هرات"
+              />
             </FormField>
             <FormField label="شماره مجوز">
-              <input style={input} value={licenseNo} onChange={(e) => setLicenseNo(e.target.value)} placeholder="AF-2026-XXX" />
+              <input
+                style={input}
+                value={licenseNo}
+                onChange={(e) => setLicenseNo(e.target.value)}
+                placeholder="AF-2026-XXX"
+              />
             </FormField>
           </div>
 
           <FormField label="آدرس">
-            <input style={input} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="آدرس کامل" />
+            <input
+              style={input}
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="آدرس کامل"
+            />
           </FormField>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <FormField label="تلفن">
-              <input style={{ ...input, direction: 'ltr' }} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+93..." type="tel" />
+              <input
+                style={{ ...input, direction: 'ltr' }}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+93..."
+                type="tel"
+              />
             </FormField>
             <FormField label="ایمیل" error={errors.email}>
-              <input style={{ ...input, direction: 'ltr' }} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="info@exchange.af" type="email" aria-invalid={!!errors.email} />
+              <input
+                style={{ ...input, direction: 'ltr' }}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="info@exchange.af"
+                type="email"
+                aria-invalid={!!errors.email}
+              />
             </FormField>
           </div>
 
           <p style={sectionLabel}>تنظیمات پلتفرم</p>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <FormField label="کارمزد پلتفرم (٪)" error={errors.platformFee} hint="درصد از هر تراکنش">
+            <FormField
+              label="کارمزد پلتفرم (٪)"
+              error={errors.platformFee}
+              hint="درصد از هر تراکنش"
+            >
               <input
-                style={{ ...input, direction: 'ltr', borderColor: errors.platformFee ? 'oklch(60% 0.18 25)' : undefined }}
+                style={{
+                  ...input,
+                  direction: 'ltr',
+                  borderColor: errors.platformFee ? 'oklch(60% 0.18 25)' : undefined,
+                }}
                 value={platformFee}
                 onChange={(e) => setPlatformFee(e.target.value)}
-                type="number" min="0" max="100" step="0.01"
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
                 aria-invalid={!!errors.platformFee}
               />
             </FormField>
             <FormField label="سقف روزانه (افغانی)" hint="۰ = بدون محدودیت">
-              <input style={{ ...input, direction: 'ltr' }} value={dailyLimitAf} onChange={(e) => setDailyLimitAf(e.target.value)} type="number" min="0" />
+              <input
+                style={{ ...input, direction: 'ltr' }}
+                value={dailyLimitAf}
+                onChange={(e) => setDailyLimitAf(e.target.value)}
+                type="number"
+                min="0"
+              />
             </FormField>
           </div>
 
@@ -274,7 +376,14 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
                   onChange={(e) => setRequireKyc(e.target.checked)}
                   style={{ width: '18px', height: '18px', cursor: 'pointer' }}
                 />
-                <label htmlFor="requireKyc" style={{ fontSize: 'var(--ds-text-sm)', cursor: 'pointer', color: 'var(--at-fg)' }}>
+                <label
+                  htmlFor="requireKyc"
+                  style={{
+                    fontSize: 'var(--ds-text-sm)',
+                    cursor: 'pointer',
+                    color: 'var(--at-fg)',
+                  }}
+                >
                   {requireKyc ? 'بله' : 'خیر'}
                 </label>
               </div>
@@ -283,7 +392,13 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
         </div>
 
         <div style={ftr}>
-          <button type="button" style={btnPrimary} onClick={handleSubmit} disabled={saving} aria-busy={saving}>
+          <button
+            type="button"
+            style={btnPrimary}
+            onClick={handleSubmit}
+            disabled={saving}
+            aria-busy={saving}
+          >
             {saving ? 'در حال ذخیره…' : initialData ? 'ذخیره تغییرات' : 'ایجاد صرافی'}
           </button>
           <button type="button" style={btnCancel} onClick={onClose}>

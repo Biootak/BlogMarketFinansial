@@ -8,7 +8,7 @@ export async function GET() {
     if (!session?.user || session.user.role !== 'OWNER') {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -33,7 +33,7 @@ export async function GET() {
           message: 'خطای داخلی سرور',
         },
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

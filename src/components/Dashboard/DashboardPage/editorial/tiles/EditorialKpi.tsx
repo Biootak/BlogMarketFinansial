@@ -10,11 +10,7 @@
 
 import CountUp from '@/components/Dashboard/DashboardPage/CountUp';
 import { cn } from '@/lib/utils';
-import {
-  HiOutlineArrowDownRight,
-  HiOutlineArrowUpRight,
-  HiOutlineMinus,
-} from 'react-icons/hi2';
+import { HiOutlineArrowDownRight, HiOutlineArrowUpRight, HiOutlineMinus } from 'react-icons/hi2';
 import { pickTrend } from '../utils';
 
 interface EditorialKpiProps {

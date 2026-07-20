@@ -1,10 +1,10 @@
 'use client';
 
-import React, { type FC } from 'react';
-import { useSession } from 'next-auth/react';
 import PostCardCommentBtn from '@/components/PostCardCommentBtn/PostCardCommentBtn';
 import PostCardLikeAction from '@/components/PostCardLikeAction/PostCardLikeAction';
 import type { PostWithRelations } from '@/types/types';
+import { useSession } from 'next-auth/react';
+import React, { type FC } from 'react';
 
 export interface PostCardLikeAndCommentProps {
   className?: string;
@@ -36,9 +36,7 @@ const PostCardLikeAndComment: FC<PostCardLikeAndCommentProps> = ({
   const commentCount = post._count?.comments ?? 0;
 
   return (
-    <div
-      className={`nc-PostCardLikeAndComment flex items-center gap-2 ${className}`}
-    >
+    <div className={`nc-PostCardLikeAndComment flex items-center gap-2 ${className}`}>
       <PostCardLikeAction
         className={itemClass}
         postId={post.id}

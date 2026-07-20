@@ -1,3 +1,11 @@
+import { getAuthorProfile } from '@/actions/getAuthorProfile';
+import { getTopAuthors } from '@/actions/getTopAuthors';
+import {
+  AuthorPostsGrid,
+  AuthorProfileHero,
+  AuthorRelated,
+  AuthorsCTA,
+} from '@/components/AuthorsHub';
 /**
  * @file /author/[id] — premium editorial author profile page
  * @description Replaces the previous page that delegated to
@@ -8,14 +16,6 @@
  */
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import {
-  AuthorProfileHero,
-  AuthorPostsGrid,
-  AuthorRelated,
-  AuthorsCTA,
-} from '@/components/AuthorsHub';
-import { getAuthorProfile } from '@/actions/getAuthorProfile';
-import { getTopAuthors } from '@/actions/getTopAuthors';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://blogmarketfinansial.ir';
 
@@ -32,8 +32,7 @@ export async function generateMetadata({
   const name = author.name?.trim() || 'نویسنده';
   const job = author.profile?.jobName ?? 'نویسنده';
   const description =
-    author.profile?.bio?.slice(0, 160) ??
-    `مقالات و تحلیل‌های ${name} در بازارهای مالی.`;
+    author.profile?.bio?.slice(0, 160) ?? `مقالات و تحلیل‌های ${name} در بازارهای مالی.`;
   return {
     title: name,
     description,
@@ -43,9 +42,7 @@ export async function generateMetadata({
       title: `${name} | ${job}`,
       description,
       url: `${SITE_URL}/author/${id}`,
-      images: author.profile?.avatar
-        ? [{ url: author.profile.avatar, alt: name }]
-        : undefined,
+      images: author.profile?.avatar ? [{ url: author.profile.avatar, alt: name }] : undefined,
       locale: 'fa_IR',
     },
     twitter: {
@@ -56,7 +53,6 @@ export async function generateMetadata({
   };
 }
 
-
 // Dynamically rendered on demand — the shared site header reads auth(), which
 // opts the whole (site) tree out of static generation (see (home)/page.tsx).
 export default async function PageAuthor({
@@ -65,19 +61,14 @@ export default async function PageAuthor({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [payload, topAuthors] = await Promise.all([
-    getAuthorProfile(id, 1, 9),
-    getTopAuthors(8),
-  ]);
+  const [payload, topAuthors] = await Promise.all([getAuthorProfile(id, 1, 9), getTopAuthors(8)]);
 
   if (!payload.author) {
     notFound();
   }
 
   const name = payload.author.name?.trim() || 'نویسنده';
-  const related = topAuthors
-    .filter((a) => a.id !== payload.author?.id)
-    .slice(0, 4);
+  const related = topAuthors.filter((a) => a.id !== payload.author?.id).slice(0, 4);
 
   // JSON-LD: Person + ItemList of blog posts
   const jsonLd = {
@@ -100,17 +91,13 @@ export default async function PageAuthor({
       '@type': 'BlogPosting',
       headline: p.title,
       url: `${SITE_URL}/single/${p.slug}`,
-      datePublished:
-        typeof p.createdAt === 'string' ? p.createdAt : p.createdAt.toISOString(),
+      datePublished: typeof p.createdAt === 'string' ? p.createdAt : p.createdAt.toISOString(),
       author: { '@type': 'Person', name },
     })),
   };
 
   return (
-    <div
-      dir="rtl"
-      className="nc-PageAuthor bg-[color:var(--c-bg)] dark:bg-neutral-950"
-    >
+    <div dir="rtl" className="nc-PageAuthor bg-[color:var(--c-bg)] dark:bg-neutral-950">
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger

@@ -12,7 +12,7 @@ export function useAttributes<T, R>(
   editor: Editor,
   attribute: string,
   defaultValue: T,
-  map?: MapFn<T, R>
+  map?: MapFn<T, R>,
 ) {
   const mapFn = (map || mapSelf) as MapFn<T, R>;
   const [value, setValue] = useState<R>(mapFn(defaultValue));

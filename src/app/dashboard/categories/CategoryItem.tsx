@@ -1,19 +1,19 @@
 'use client';
 
-import Image from 'next/image';
-import { useState, useCallback } from 'react';
-import {
-  HiOutlinePencil,
-  HiOutlineTrash,
-  HiOutlineChevronLeft,
-  HiOutlineChevronDown,
-} from 'react-icons/hi2';
-import { FaLayerGroup, FaFolder } from 'react-icons/fa';
-import type { TaxonomyType } from '@/types/types';
 import { deleteCategory } from '@/actions/categoryActions';
 import { useToast } from '@/components/ui/use-toast';
-import { CategoryForm } from './CategoryForm';
+import type { TaxonomyType } from '@/types/types';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useCallback, useState } from 'react';
+import { FaFolder, FaLayerGroup } from 'react-icons/fa';
+import {
+  HiOutlineChevronDown,
+  HiOutlineChevronLeft,
+  HiOutlinePencil,
+  HiOutlineTrash,
+} from 'react-icons/hi2';
+import { CategoryForm } from './CategoryForm';
 
 interface CategoryItemProps {
   category: TaxonomyType;

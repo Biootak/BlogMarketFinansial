@@ -178,11 +178,7 @@ export default function AtelierActivity({ items }: AtelierActivityProps) {
           </span>
           <div className="at-head__text">
             <h2 className="at-head__title-text">فعالیت اخیر</h2>
-            <p className="at-head__sub">
-              {total > 0
-                ? `${fmt(total)} مورد`
-                : 'بدون فعالیت'}
-            </p>
+            <p className="at-head__sub">{total > 0 ? `${fmt(total)} مورد` : 'بدون فعالیت'}</p>
           </div>
         </div>
 
@@ -197,9 +193,7 @@ export default function AtelierActivity({ items }: AtelierActivityProps) {
               className={cn('at-activity__filter', filter === key && 'is-active')}
             >
               <span>{CATEGORY_LABEL[key]}</span>
-              <span className="tabular-nums at-activity__filter-count">
-                {fmt(counts[key])}
-              </span>
+              <span className="tabular-nums at-activity__filter-count">{fmt(counts[key])}</span>
             </button>
           ))}
         </div>
@@ -207,8 +201,7 @@ export default function AtelierActivity({ items }: AtelierActivityProps) {
 
       {grouped.length === 0 ? (
         <p className="at-activity__empty">
-          <HiOutlineInbox className="w-4 h-4 inline-block align-middle" aria-hidden />
-          {' '}
+          <HiOutlineInbox className="w-4 h-4 inline-block align-middle" aria-hidden />{' '}
           {filter === 'all'
             ? 'هنوز فعالیتی ثبت نشده است.'
             : `هیچ فعالیت ${CATEGORY_LABEL[filter].replace('ها', '')}ای یافت نشد.`}
@@ -227,7 +220,8 @@ export default function AtelierActivity({ items }: AtelierActivityProps) {
                   const cat = actionCategory(item.action);
                   const userName = item.user.name ?? 'کاربر';
                   const initials = userName.charAt(0);
-                  const avatar = (item.user as unknown as { avatar?: string | null }).avatar ?? null;
+                  const avatar =
+                    (item.user as unknown as { avatar?: string | null }).avatar ?? null;
                   const CatIcon =
                     cat === 'post'
                       ? HiOutlineDocumentText
@@ -250,9 +244,7 @@ export default function AtelierActivity({ items }: AtelierActivityProps) {
                         ) : (
                           <span className="at-activity__avatar-initials">{initials}</span>
                         )}
-                        {tone === 'up' && (
-                          <span className="at-activity__avatar-ring" aria-hidden />
-                        )}
+                        {tone === 'up' && <span className="at-activity__avatar-ring" aria-hidden />}
                       </span>
                       <span className={cn('at-activity__dot', `is-${tone}`)} aria-hidden />
                       <span className="at-activity__body">
@@ -260,8 +252,7 @@ export default function AtelierActivity({ items }: AtelierActivityProps) {
                           <strong>{userName}</strong> {item.action}
                         </p>
                         <p className="at-activity__time">
-                          <CatIcon className="w-3 h-3 inline-block align-middle" aria-hidden />
-                          {' '}
+                          <CatIcon className="w-3 h-3 inline-block align-middle" aria-hidden />{' '}
                           {now ? formatRelativeFa(new Date(item.createdAt), now) : '—'}
                         </p>
                       </span>

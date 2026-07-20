@@ -1,8 +1,8 @@
 'use client';
 
-import { createContext, useContext, type ReactNode } from 'react';
 import type { SiteIdentity } from '@/lib/site-identity';
-import { FALLBACK_SITE_NAME, FALLBACK_LOGO_URL } from '@/lib/site-identity';
+import { FALLBACK_LOGO_URL, FALLBACK_SITE_NAME } from '@/lib/site-identity';
+import { type ReactNode, createContext, useContext } from 'react';
 
 const SiteIdentityContext = createContext<SiteIdentity | null>(null);
 
@@ -28,9 +28,5 @@ export function SiteIdentityProvider({
   identity: SiteIdentity;
   children: ReactNode;
 }) {
-  return (
-    <SiteIdentityContext.Provider value={identity}>
-      {children}
-    </SiteIdentityContext.Provider>
-  );
+  return <SiteIdentityContext.Provider value={identity}>{children}</SiteIdentityContext.Provider>;
 }

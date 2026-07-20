@@ -7,16 +7,16 @@
  * from the existing archive primitives; only the presentation is new.
  */
 
+import type { TaxonomyType } from '@/types/types';
 import { ArrowDownAZ, FolderOpen, Hash, RotateCcw, Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import * as React from 'react';
 import { useEffect, useState, useTransition } from 'react';
-import type { TaxonomyType } from '@/types/types';
+import type { ActiveFilter } from './ActiveFilters';
 import ArchiveSearchInput, { ARCHIVE_SEARCH_INPUT_ID } from './ArchiveSearchInput';
 import CommandPanel from './CommandPanel';
 import CommandTrigger from './CommandTrigger';
-import type { ActiveFilter } from './ActiveFilters';
 
 type Props = {
   filters: { name: string }[];
@@ -134,9 +134,7 @@ export default function AtelierToolbar({
 
       {activeFilters.length > 0 ? (
         <div className="atl-active" style={{ marginTop: 'var(--ds-space-4)' }}>
-          <span className="atl-active__label">
-            {totalCount.toLocaleString('fa-IR')} نتیجه برای
-          </span>
+          <span className="atl-active__label">{totalCount.toLocaleString('fa-IR')} نتیجه برای</span>
           {activeFilters.map((f) => {
             const Icon = f.icon ? ACTIVE_ICONS[f.icon] : null;
             return (

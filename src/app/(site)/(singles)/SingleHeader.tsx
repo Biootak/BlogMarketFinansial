@@ -1,10 +1,10 @@
-import type React from 'react';
-import Link from 'next/link';
-import SingleTitle from './SingleTitle';
 import PostMeta2 from '@/components/PostMeta2/PostMeta2';
-import SingleMetaAction2 from './SingleMetaAction2';
 import type { PostWithRelations } from '@/types/types';
+import Link from 'next/link';
+import type React from 'react';
 import { HiChevronLeft, HiHome } from 'react-icons/hi2';
+import SingleMetaAction2 from './SingleMetaAction2';
+import SingleTitle from './SingleTitle';
 
 interface SingleHeaderProps {
   post: PostWithRelations;
@@ -20,31 +20,29 @@ const SingleHeader: React.FC<SingleHeaderProps> = ({ post, titleMainClass, class
   const readingTime = Math.ceil(wordCount / 200);
 
   return (
-    <div
-      className={`nc-SingleHeader ${className} text-right rtl`}
-    >
+    <div className={`nc-SingleHeader ${className} text-right rtl`}>
       {/* Glass Card Container */}
       <div className="relative overflow-hidden rounded-2xl lg:rounded-3xl bg-white/90 dark:bg-neutral-900/90 backdrop-blur-2xl border border-white/50 dark:border-neutral-800/50 shadow-[0_20px_70px_-15px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_70px_-15px_rgba(0,0,0,0.5)]">
         {/* Decorative Gradient Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary-50/50 via-transparent to-violet-50/30 dark:from-primary-950/30 dark:via-transparent dark:to-violet-950/20 pointer-events-none" />
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-primary-400/10 via-transparent to-transparent rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-violet-400/10 via-transparent to-transparent rounded-full blur-3xl pointer-events-none" />
-        
+
         {/* Content */}
         <div className="relative p-6 sm:p-8 lg:p-10 space-y-6">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-xs sm:text-sm text-neutral-600 dark:text-neutral-300">
-            <Link 
-              href="/" 
+            <Link
+              href="/"
               className="flex items-center gap-1 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
             >
               <HiHome className="w-3.5 h-3.5" />
               <span>{siteName}</span>
             </Link>
-            {post.categories.map((cat, index) => (
+            {post.categories.map((cat, _index) => (
               <span key={cat.id} className="flex items-center gap-2">
                 <HiChevronLeft className="w-3 h-3 text-neutral-300 dark:text-neutral-600" />
-                <Link 
+                <Link
                   href={`/archive/category/${cat.slug}`}
                   className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
                 >

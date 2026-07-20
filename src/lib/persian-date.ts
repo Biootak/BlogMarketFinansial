@@ -20,7 +20,9 @@ export function toPersianDate(date: Date): { year: number; month: number; day: n
   const gregorianMonth = date.getMonth() + 1;
   const gregorianDay = date.getDate();
 
-  let jY, jM, jD;
+  let jY;
+  let jM;
+  let jD;
   const gy = gregorianYear - 1600;
   const gm = gregorianMonth - 1;
   const gd = gregorianDay - 1;
@@ -32,7 +34,7 @@ export function toPersianDate(date: Date): { year: number; month: number; day: n
   let i;
 
   for (i = 0; i < gm; ++i) g_day_no += [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][i];
-  if (gm > 1 && ((gy % 4 == 0 && gy % 100 != 0) || gy % 400 == 0)) ++g_day_no;
+  if (gm > 1 && ((gy % 4 === 0 && gy % 100 !== 0) || gy % 400 === 0)) ++g_day_no;
   g_day_no += gd;
 
   let j_day_no = g_day_no - 79;

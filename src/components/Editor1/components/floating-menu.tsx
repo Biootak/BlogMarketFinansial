@@ -4,11 +4,12 @@
 
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { FloatingMenu as TiptapFloatingMenu } from '@tiptap/react/menus';
-import type { Editor } from '@tiptap/core';
 // 2026-07-05: dir صریح برای portal tippy.
 import { useDirection } from '@/hooks/useDirection';
+import type { Editor } from '@tiptap/core';
+import { FloatingMenu as TiptapFloatingMenu } from '@tiptap/react/menus';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '../../ui/icon';
 
 interface FloatingMenuProps {
@@ -99,7 +100,8 @@ const FloatingMenuComponent: React.FC<FloatingMenuProps> = ({ editor }) => {
         icon: <Icon name="table" size={14} />,
         label: 'جدول',
         description: 'درج جدول ۳×۳',
-        action: () => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+        action: () =>
+          editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
         category: 'advanced',
       },
       {
@@ -190,7 +192,13 @@ const FloatingMenuComponent: React.FC<FloatingMenuProps> = ({ editor }) => {
         return currentLineText === '' && $from.parent.content.size === 0;
       }}
     >
-      <div className="at-floating-shell" ref={menuRef} onKeyDown={handleKeyDown} dir={dir} data-dir={dir}>
+      <div
+        className="at-floating-shell"
+        ref={menuRef}
+        onKeyDown={handleKeyDown}
+        dir={dir}
+        data-dir={dir}
+      >
         <button
           ref={buttonRef}
           type="button"

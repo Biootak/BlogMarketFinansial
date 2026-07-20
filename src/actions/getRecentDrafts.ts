@@ -1,8 +1,8 @@
 'use server';
 
-import { unstable_cache } from 'next/cache';
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
+import { unstable_cache } from 'next/cache';
 
 import type { ActionResult } from '@/types/types';
 import type { Prisma } from '@prisma/client';
@@ -40,7 +40,8 @@ export async function getRecentDrafts(): Promise<
     // `unstable_cache` keys ONLY on `keyParts` (string args), NOT on the
     // closure's function args — so the previous static key leaked one user's
     // drafts to another for 30s. Scopes the cache by userId/role here.
-    const scopeKey = user.role === 'AUTHOR' ? (user.id ?? 'no-id') : `role:${user.role ?? 'unknown'}`;
+    const scopeKey =
+      user.role === 'AUTHOR' ? (user.id ?? 'no-id') : `role:${user.role ?? 'unknown'}`;
     const fetcher = unstable_cache(
       async () => {
         return prisma.post.findMany({

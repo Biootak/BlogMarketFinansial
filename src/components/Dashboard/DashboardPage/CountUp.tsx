@@ -35,7 +35,7 @@ interface CountUpProps {
   tabular?: boolean;
 }
 
-const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4);
+const easeOutQuart = (t: number) => 1 - (1 - t) ** 4;
 
 export default function CountUp({
   value,
@@ -54,9 +54,7 @@ export default function CountUp({
   // Honor prefers-reduced-motion at mount.
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    reducedMotion.current = window.matchMedia(
-      '(prefers-reduced-motion: reduce)',
-    ).matches;
+    reducedMotion.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }, []);
 
   useEffect(() => {
@@ -98,7 +96,7 @@ export default function CountUp({
   const formatted = new Intl.NumberFormat(locale, {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
-  }).format(Math.round(display * Math.pow(10, decimals)) / Math.pow(10, decimals));
+  }).format(Math.round(display * 10 ** decimals) / 10 ** decimals);
 
   return (
     <output

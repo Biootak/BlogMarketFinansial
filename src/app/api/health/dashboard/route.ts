@@ -1,7 +1,7 @@
-import { type NextRequest } from 'next/server';
+import { getTrustedClientIp } from '@/lib/client-ip';
 import prisma from '@/lib/db';
 import { checkRateLimit } from '@/lib/rate-limiter';
-import { getTrustedClientIp } from '@/lib/client-ip';
+import type { NextRequest } from 'next/server';
 
 const STALE_THRESHOLD_MS = 30 * 60 * 1000; // 30 min — cron fires every 10 min.
 

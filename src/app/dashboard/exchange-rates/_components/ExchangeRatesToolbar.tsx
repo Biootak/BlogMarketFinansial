@@ -2,9 +2,9 @@
 // 2026-06-20: نوار ابزار با جست‌وجو + SegmentedControl + CTA
 'use client';
 
-import { Search, Plus } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 import { SegmentedControl } from '@/components/ds';
+import { Plus, Search } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 export type SourceFilter = 'all' | 'auto' | 'manual';
 export type GroupFilter =

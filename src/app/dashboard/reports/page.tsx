@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { Activity, BarChart3, Terminal, RefreshCw } from 'lucide-react';
-import dynamic from 'next/dynamic';
-import { ReportsSkeleton } from '@/components/Skeletons';
 import { PageHeader } from '@/components/Dashboard/primitives';
-import { HiOutlineSquares2X2, HiOutlineChartBar, HiOutlineCommandLine } from 'react-icons/hi2';
+import { ReportsSkeleton } from '@/components/Skeletons';
+import { Activity, BarChart3, RefreshCw, Terminal } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { useState } from 'react';
+import { HiOutlineChartBar, HiOutlineCommandLine, HiOutlineSquares2X2 } from 'react-icons/hi2';
 
 const SystemReports = dynamic(() => import('@/components/Dashboard/Reports/SystemReports'), {
   loading: () => <ReportsSkeleton />,
@@ -59,10 +59,7 @@ export default function ReportsPage() {
   return (
     <div className="at-page" dir="rtl">
       <PageHeader
-        breadcrumb={[
-          { label: 'داشبورد', href: '/dashboard' },
-          { label: 'گزارش‌ها' },
-        ]}
+        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'گزارش‌ها' }]}
         eyebrow="تحلیل"
         title="گزارش‌ها"
         description="گزارش‌های سیستمی، فعالیت‌ها و لاگ‌های رویداد"

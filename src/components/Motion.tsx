@@ -12,7 +12,7 @@ export { useReducedMotion };
 // Utility to get animation props based on reduced motion preference
 export const getMotionProps = (
   props: ComponentProps<typeof motion.div>,
-  reducedMotion: boolean | null
+  reducedMotion: boolean | null,
 ) => {
   if (reducedMotion) {
     return {

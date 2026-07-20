@@ -4,7 +4,6 @@ import db from '@/lib/db';
 import { checkReportAccess } from './auth';
 import type { ActionResult, SystemReport } from './types';
 
-
 export async function getSystemReports(): Promise<ActionResult<SystemReport>> {
   try {
     await checkReportAccess();
@@ -69,7 +68,7 @@ export async function getSystemReports(): Promise<ActionResult<SystemReport>> {
           total: totalUsers,
           active: activeUsers,
           newThisMonth: newUsers,
-          roleDistribution: roleStats.map(stat => ({
+          roleDistribution: roleStats.map((stat) => ({
             name: stat.role,
             value: stat._count,
           })),
@@ -78,7 +77,7 @@ export async function getSystemReports(): Promise<ActionResult<SystemReport>> {
           total: totalPosts,
           published: publishedPosts,
           draft: draftPosts,
-          monthlyPosts: monthlyPosts.map(stat => ({
+          monthlyPosts: monthlyPosts.map((stat) => ({
             month: stat.createdAt.toISOString().slice(0, 7),
             count: stat._count,
           })),
@@ -86,18 +85,18 @@ export async function getSystemReports(): Promise<ActionResult<SystemReport>> {
         commentStats: {
           total: totalComments,
           recent: recentComments,
-          monthly: monthlyComments.map(stat => ({
+          monthly: monthlyComments.map((stat) => ({
             month: stat.createdAt.toISOString().slice(0, 7),
             count: stat._count,
           })),
         },
         viewStats: {
           total: totalViews._sum.views || 0,
-          monthly: monthlyViews.map(stat => ({
+          monthly: monthlyViews.map((stat) => ({
             month: stat.date.toISOString().slice(0, 7),
             count: stat._sum.views || 0,
           })),
-          topPosts: topPosts.map(post => ({
+          topPosts: topPosts.map((post) => ({
             title: post.title,
             views: post.viewCount,
           })),

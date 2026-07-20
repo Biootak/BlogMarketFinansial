@@ -25,10 +25,12 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background:
-    radial-gradient(ellipse 70% 55% at 105% -5%,  oklch(55% 0.10 235 / 0.17) 0%, transparent 60%),
-    radial-gradient(ellipse 55% 40% at -8%  110%, oklch(72% 0.13 70  / 0.12) 0%, transparent 60%),
-    radial-gradient(ellipse 35% 45% at 55%  115%, oklch(58% 0.13 290 / 0.07) 0%, transparent 60%),
+  background: radial-gradient(
+      ellipse 70% 55% at 105% -5%,
+      oklch(55% 0.1 235 / 0.17) 0%,
+      transparent 60%
+    ), radial-gradient(ellipse 55% 40% at -8% 110%, oklch(72% 0.13 70 / 0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 35% 45% at 55% 115%, oklch(58% 0.13 290 / 0.07) 0%, transparent 60%),
     var(--ds-canvas);
 }
 
@@ -59,15 +61,31 @@
 .content > * {
   animation: staggerUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-.content > *:nth-child(1) { animation-delay:   0ms; }
-.content > *:nth-child(2) { animation-delay:  80ms; }
-.content > *:nth-child(3) { animation-delay: 160ms; }
-.content > *:nth-child(4) { animation-delay: 220ms; }
-.content > *:nth-child(5) { animation-delay: 280ms; }
+.content > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.content > *:nth-child(2) {
+  animation-delay: 80ms;
+}
+.content > *:nth-child(3) {
+  animation-delay: 160ms;
+}
+.content > *:nth-child(4) {
+  animation-delay: 220ms;
+}
+.content > *:nth-child(5) {
+  animation-delay: 280ms;
+}
 
 @keyframes staggerUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── Live badge — همان liveBadge صفحه حواله ───────────────── */
@@ -97,14 +115,21 @@
   height: 8px;
   border-radius: 9999px;
   background: var(--ds-accent-emerald);
-  box-shadow: 0 0 0 2px oklch(60% 0.10 165 / 0.25);
+  box-shadow: 0 0 0 2px oklch(60% 0.1 165 / 0.25);
   animation: livePulse 2s ease-in-out infinite;
   flex-shrink: 0;
 }
 
 @keyframes livePulse {
-  0%, 100% { transform: scale(0.9); opacity: 0.7; }
-  50%       { transform: scale(1.1); opacity: 1; }
+  0%,
+  100% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
 }
 
 /* ── Headline ───────────────────────────────────────────────── */
@@ -129,25 +154,23 @@
 }
 
 .headlineAccent::after {
-  content: '';
+  content: "";
   position: absolute;
   inset-inline-start: 0;
   bottom: -3px;
   width: 100%;
   height: 3px;
   border-radius: 2px;
-  background: linear-gradient(
-    to left,
-    var(--ds-brand-500),
-    var(--ds-accent-violet)
-  );
+  background: linear-gradient(to left, var(--ds-brand-500), var(--ds-accent-violet));
   transform: scaleX(0);
   transform-origin: 100% 50%;
   animation: drawLine 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.5s forwards;
 }
 
 @keyframes drawLine {
-  to { transform: scaleX(1); }
+  to {
+    transform: scaleX(1);
+  }
 }
 
 /* ── Sub ───────────────────────────────────────────────────── */
@@ -206,26 +229,23 @@
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
   min-height: 48px;
-  box-shadow:
-    0 0 0 1px oklch(58% 0.12 165 / 0.35),
-    0 8px 32px -8px oklch(52% 0.14 162 / 0.45),
+  box-shadow: 0 0 0 1px oklch(58% 0.12 165 / 0.35), 0 8px 32px -8px oklch(52% 0.14 162 / 0.45),
     inset 0 1px 0 oklch(100% 0 0 / 0.12);
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring),
-    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-spring), box-shadow var(--ds-duration-base)
+    var(--ds-ease-out-quart);
 }
 
 .ctaPrimary:hover {
   background: var(--ds-brand-700);
   transform: translateY(-2px);
-  box-shadow:
-    0 0 0 1px oklch(58% 0.12 165 / 0.45),
-    0 16px 48px -12px oklch(52% 0.14 162 / 0.5),
+  box-shadow: 0 0 0 1px oklch(58% 0.12 165 / 0.45), 0 16px 48px -12px oklch(52% 0.14 162 / 0.5),
     inset 0 1px 0 oklch(100% 0 0 / 0.15);
 }
 
-.ctaPrimary:active { transform: scale(0.97); }
+.ctaPrimary:active {
+  transform: scale(0.97);
+}
 
 .ctaSecondary {
   display: inline-flex;
@@ -240,10 +260,8 @@
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-medium);
   min-height: 48px;
-  transition:
-    border-color var(--ds-duration-fast),
-    background var(--ds-duration-fast),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: border-color var(--ds-duration-fast), background var(--ds-duration-fast), transform
+    var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .ctaSecondary:hover {
@@ -252,7 +270,9 @@
   transform: translateY(-1px);
 }
 
-.ctaSecondary:active { transform: scale(0.97); }
+.ctaSecondary:active {
+  transform: scale(0.97);
+}
 
 .arrowIcon {
   transform: scaleX(-1); /* RTL mirror */
@@ -278,11 +298,7 @@
   width: clamp(200px, 28vw, 340px);
   aspect-ratio: 1;
   border-radius: 9999px;
-  background: radial-gradient(
-    circle,
-    oklch(55% 0.10 235 / 0.2) 0%,
-    transparent 65%
-  );
+  background: radial-gradient(circle, oklch(55% 0.1 235 / 0.2) 0%, transparent 65%);
   pointer-events: none;
   z-index: 0;
   animation: orbDrift 8s ease-in-out infinite;
@@ -295,19 +311,20 @@
   width: clamp(140px, 18vw, 220px);
   aspect-ratio: 1;
   border-radius: 9999px;
-  background: radial-gradient(
-    circle,
-    oklch(72% 0.13 70 / 0.15) 0%,
-    transparent 65%
-  );
+  background: radial-gradient(circle, oklch(72% 0.13 70 / 0.15) 0%, transparent 65%);
   pointer-events: none;
   z-index: 0;
   animation: orbDrift 10s ease-in-out 2s infinite reverse;
 }
 
 @keyframes orbDrift {
-  0%, 100% { transform: scale(1) translateY(0); }
-  50%       { transform: scale(1.07) translateY(-10px); }
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.07) translateY(-10px);
+  }
 }
 
 /* ── Glass card — همان glassCard صفحه حواله ────────────────── */
@@ -317,11 +334,8 @@
   border: 1px solid oklch(100% 0 0 / 0.22);
   background: oklch(100% 0 0 / 0.65);
   backdrop-filter: blur(24px) saturate(1.8) brightness(1.02);
-  box-shadow:
-    0 0 0 0.5px oklch(100% 0 0 / 0.3),
-    0 24px 64px -16px oklch(45% 0.08 240 / 0.28),
-    inset 0 1px 0 oklch(100% 0 0 / 0.6),
-    inset 0 -1px 0 oklch(100% 0 0 / 0.1);
+  box-shadow: 0 0 0 0.5px oklch(100% 0 0 / 0.3), 0 24px 64px -16px oklch(45% 0.08 240 / 0.28), inset
+    0 1px 0 oklch(100% 0 0 / 0.6), inset 0 -1px 0 oklch(100% 0 0 / 0.1);
   overflow: hidden;
   cursor: default;
   transform-style: preserve-3d;
@@ -330,19 +344,13 @@
 
 /* Signature gradient ring از HeroConverter.module.css */
 .glassCard::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(
-    135deg,
-    var(--ds-accent-emerald),
-    var(--nova-cyan) 55%,
-    transparent
-  );
-  -webkit-mask:
-    linear-gradient(var(--ds-text-inverse) 0 0) content-box,
+  background: linear-gradient(135deg, var(--ds-accent-emerald), var(--nova-cyan) 55%, transparent);
+  -webkit-mask: linear-gradient(var(--ds-text-inverse) 0 0) content-box,
     linear-gradient(var(--ds-text-inverse) 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -353,7 +361,7 @@
 
 /* inner shine */
 .glassCard::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
@@ -370,10 +378,8 @@
 :global(.dark) .glassCard {
   background: oklch(22% 0.015 250 / 0.75);
   border-color: oklch(100% 0 0 / 0.08);
-  box-shadow:
-    0 0 0 0.5px oklch(100% 0 0 / 0.08),
-    0 24px 64px -16px oklch(0% 0 0 / 0.6),
-    inset 0 1px 0 oklch(100% 0 0 / 0.08);
+  box-shadow: 0 0 0 0.5px oklch(100% 0 0 / 0.08), 0 24px 64px -16px oklch(0% 0 0 / 0.6), inset 0 1px
+    0 oklch(100% 0 0 / 0.08);
 }
 
 /* ── Card positions + float animations ─────────────────────── */
@@ -387,8 +393,13 @@
 }
 
 @keyframes floatA {
-  0%, 100% { transform: translateY(0px)   rotate(-1.5deg); }
-  50%       { transform: translateY(-10px) rotate(-1.5deg); }
+  0%,
+  100% {
+    transform: translateY(0px) rotate(-1.5deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(-1.5deg);
+  }
 }
 
 .cardSecond {
@@ -401,8 +412,13 @@
 }
 
 @keyframes floatB {
-  0%, 100% { transform: translateY(0px)  rotate(2deg); }
-  50%       { transform: translateY(-8px) rotate(2deg); }
+  0%,
+  100% {
+    transform: translateY(0px) rotate(2deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(2deg);
+  }
 }
 
 .cardThird {
@@ -415,8 +431,13 @@
 }
 
 @keyframes floatC {
-  0%, 100% { transform: translateY(0px)  rotate(1deg); }
-  50%       { transform: translateY(-6px) rotate(1deg); }
+  0%,
+  100% {
+    transform: translateY(0px) rotate(1deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(1deg);
+  }
 }
 
 /* ── Card internals — همان cardRow/cardLabel/cardAmount ──────── */
@@ -478,8 +499,12 @@
   color: var(--ds-text-primary);
 }
 
-.trendUp   { color: var(--ds-accent-emerald); }
-.trendDown { color: var(--ds-accent-rose); }
+.trendUp {
+  color: var(--ds-accent-emerald);
+}
+.trendDown {
+  color: var(--ds-accent-rose);
+}
 
 /* Status badge — همان statusBadge صفحه حواله */
 .statusBadge {
@@ -488,8 +513,8 @@
   gap: 6px;
   padding: 4px 10px;
   border-radius: var(--ds-radius-full);
-  background: oklch(60% 0.10 165 / 0.12);
-  border: 1px solid oklch(60% 0.10 165 / 0.25);
+  background: oklch(60% 0.1 165 / 0.12);
+  border: 1px solid oklch(60% 0.1 165 / 0.25);
   font-size: 11px;
   font-weight: var(--ds-weight-semibold);
   color: var(--ds-accent-emerald);

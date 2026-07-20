@@ -19,15 +19,15 @@
  *   - trackingCode is validated as belonging to the same email address submitted
  */
 
+import { randomBytes } from 'node:crypto';
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import { getEmailProviderAsync } from '@/lib/email';
 import { serviceVerifyOtpEmail, welcomeSetPasswordEmail } from '@/lib/email/templates';
-import { checkRateLimit } from '@/lib/rate-limiter';
-import { generateOtpToken, consumeOtpToken } from '@/lib/tokens';
 import { normalizeToE164 } from '@/lib/phone-validation';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { consumeOtpToken, generateOtpToken } from '@/lib/tokens';
 import { headers } from 'next/headers';
-import { randomBytes } from 'node:crypto';
 
 // 24-hour window for the welcome/set-password token — longer than the 5-min
 // reset token used in normal "forgot password" flow, because the user may

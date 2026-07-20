@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useCallback, Fragment, useEffect } from 'react';
+import { cn, toPersianNumber } from '@/lib/utils';
+import { Dialog, Transition } from '@headlessui/react';
+import { ChevronLeft, ChevronRight, Maximize2, X } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Dialog, Transition } from '@headlessui/react';
-import { cn, toPersianNumber } from '@/lib/utils';
-import { ChevronLeft, ChevronRight, Maximize2, X } from 'lucide-react';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 
 const ImageWithSkeleton: React.FC<{
   src: string;
@@ -31,7 +31,7 @@ const ImageWithSkeleton: React.FC<{
         className={cn(
           className,
           'transition-all duration-300',
-          isLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+          isLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100',
         )}
         onLoad={() => setLoading(false)}
       />
@@ -58,13 +58,16 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
       ? post.galleryImages
       : ([post.featuredImage].filter(Boolean) as string[]);
 
-  const handleOpenModalImageGallery = useCallback((index: number = 0) => {
-    setIsModalOpen(true);
-    setCurrentImageIndex(index);
-    const newParams = new URLSearchParams(searchParams.toString());
-    newParams.set('modal', 'PHOTO_TOUR_SCROLLABLE');
-    router.push(`?${newParams.toString()}`, { scroll: false });
-  }, [router, searchParams]);
+  const handleOpenModalImageGallery = useCallback(
+    (index = 0) => {
+      setIsModalOpen(true);
+      setCurrentImageIndex(index);
+      const newParams = new URLSearchParams(searchParams.toString());
+      newParams.set('modal', 'PHOTO_TOUR_SCROLLABLE');
+      router.push(`?${newParams.toString()}`, { scroll: false });
+    },
+    [router, searchParams],
+  );
 
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
@@ -79,7 +82,7 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
 
   const handlePrevImage = useCallback(() => {
     setCurrentImageIndex((prevIndex) =>
-      prevIndex === 0 ? IMAGES_GALLERY.length - 1 : prevIndex - 1
+      prevIndex === 0 ? IMAGES_GALLERY.length - 1 : prevIndex - 1,
     );
   }, [IMAGES_GALLERY.length]);
 
@@ -101,10 +104,8 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
   return (
     <>
       <div className="relative overflow-hidden rounded-2xl border border-neutral-200/40 dark:border-neutral-800/40 bg-neutral-900/10 dark:bg-neutral-950/30 p-4 sm:p-5 backdrop-blur-md shadow-2xl my-8">
-        
         {/* Main Immersive Viewport */}
         <div className="relative aspect-[16/9] lg:aspect-[21/9] w-full overflow-hidden rounded-xl bg-neutral-950 shadow-inner group/viewport">
-          
           {/* Ambient Glow matching active image colors */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
             {IMAGES_GALLERY[currentImageIndex] && (
@@ -120,7 +121,7 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
           </div>
 
           {/* Large Main Image Display */}
-          <div 
+          <div
             className="relative w-full h-full z-10 cursor-zoom-in"
             onClick={() => handleOpenModalImageGallery(currentImageIndex)}
           >
@@ -181,10 +182,10 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
                   key={index}
                   onClick={() => setCurrentImageIndex(index)}
                   className={cn(
-                    "relative w-20 h-14 sm:w-24 sm:h-16 flex-shrink-0 rounded-lg overflow-hidden cursor-pointer border-2 transition-all duration-300",
-                    isActive 
-                      ? "border-primary-500 scale-105 shadow-[0_0_12px_rgba(94,106,230,0.4)]" 
-                      : "border-transparent opacity-50 hover:opacity-100"
+                    'relative w-20 h-14 sm:w-24 sm:h-16 flex-shrink-0 rounded-lg overflow-hidden cursor-pointer border-2 transition-all duration-300',
+                    isActive
+                      ? 'border-primary-500 scale-105 shadow-[0_0_12px_rgba(94,106,230,0.4)]'
+                      : 'border-transparent opacity-50 hover:opacity-100',
                   )}
                 >
                   <Image
@@ -217,7 +218,7 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
           </Transition.Child>
 
           {/* SVG Grain Noise Overlay for Premium Depth */}
-          <div className="fixed inset-0 pointer-events-none opacity-[0.015] bg-[url('data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'2\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E')] z-10" />
+          <div className="fixed inset-0 pointer-events-none opacity-[0.015] bg-[url('data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E')] z-10" />
 
           <div className="fixed inset-0 overflow-y-auto z-20">
             <div className="flex min-h-full items-center justify-center p-4 text-center">
@@ -231,7 +232,6 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
                 leaveTo="opacity-0 scale-95"
               >
                 <Dialog.Panel className="w-full max-w-6xl transform overflow-hidden rounded-2xl bg-transparent text-right align-middle transition-all flex flex-col items-center justify-between min-h-[90vh]">
-                  
                   {/* Close Trigger Button */}
                   <button
                     type="button"
@@ -281,8 +281,12 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
                     <span className="text-neutral-200 text-sm font-medium order-2 sm:order-1">
                       {post.title}
                     </span>
-                    <span dir="ltr" className="unicode-bidi-isolate text-neutral-400 text-xs font-semibold order-1 sm:order-2">
-                      {toPersianNumber(currentImageIndex + 1)} / {toPersianNumber(IMAGES_GALLERY.length)}
+                    <span
+                      dir="ltr"
+                      className="unicode-bidi-isolate text-neutral-400 text-xs font-semibold order-1 sm:order-2"
+                    >
+                      {toPersianNumber(currentImageIndex + 1)} /{' '}
+                      {toPersianNumber(IMAGES_GALLERY.length)}
                     </span>
                   </div>
 
@@ -296,10 +300,10 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
                             key={index}
                             onClick={() => setCurrentImageIndex(index)}
                             className={cn(
-                              "relative w-14 h-10 flex-shrink-0 rounded overflow-hidden cursor-pointer border transition-all duration-300",
+                              'relative w-14 h-10 flex-shrink-0 rounded overflow-hidden cursor-pointer border transition-all duration-300',
                               isActive
-                                ? "border-primary-500 scale-105 shadow-[0_0_8px_rgba(94,106,230,0.4)]"
-                                : "border-neutral-800 opacity-40 hover:opacity-100"
+                                ? 'border-primary-500 scale-105 shadow-[0_0_8px_rgba(94,106,230,0.4)]'
+                                : 'border-neutral-800 opacity-40 hover:opacity-100',
                             )}
                           >
                             <Image
@@ -314,7 +318,6 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
                       })}
                     </div>
                   )}
-
                 </Dialog.Panel>
               </Transition.Child>
             </div>

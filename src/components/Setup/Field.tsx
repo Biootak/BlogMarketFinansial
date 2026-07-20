@@ -99,7 +99,6 @@ export const Field = React.forwardRef<HTMLInputElement | null, FieldProps>(funct
           required={required}
           disabled={disabled}
           dir={dir}
-          autoFocus={autoFocus}
           aria-invalid={tone === 'error' || undefined}
           aria-describedby={
             [describedBy, showCounter && maxLength ? counterId : null].filter(Boolean).join(' ') ||

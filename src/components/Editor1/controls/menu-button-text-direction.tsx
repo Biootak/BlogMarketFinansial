@@ -1,7 +1,7 @@
-import React, { memo, useCallback } from 'react';
-import { Toolbar } from '../../ui/toolbar';
-import { Icon } from '../../ui/icon';
 import type { Editor } from '@tiptap/core';
+import React, { memo, useCallback } from 'react';
+import { Icon } from '../../ui/icon';
+import { Toolbar } from '../../ui/toolbar';
 
 interface MenuButtonTextDirectionProps {
   editor: Editor;
@@ -14,8 +14,8 @@ interface MenuButtonTextDirectionProps {
  */
 const MenuButtonTextDirection = ({ editor }: MenuButtonTextDirectionProps) => {
   // تشخیص direction فعلی
-  const isLtr = editor.isActive('paragraph', { dir: 'ltr' }) ||
-                editor.isActive('heading', { dir: 'ltr' });
+  const isLtr =
+    editor.isActive('paragraph', { dir: 'ltr' }) || editor.isActive('heading', { dir: 'ltr' });
 
   const onClick = useCallback(
     (e: { stopPropagation: () => void }) => {
@@ -26,11 +26,7 @@ const MenuButtonTextDirection = ({ editor }: MenuButtonTextDirectionProps) => {
   );
 
   return (
-    <Toolbar.Button
-      tooltip="تغییر جهت متن (RTL ↔ LTR)"
-      active={isLtr}
-      onClick={onClick}
-    >
+    <Toolbar.Button tooltip="تغییر جهت متن (RTL ↔ LTR)" active={isLtr} onClick={onClick}>
       <Icon name="languages" />
     </Toolbar.Button>
   );

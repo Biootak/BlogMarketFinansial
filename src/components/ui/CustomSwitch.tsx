@@ -1,6 +1,6 @@
-import React from 'react';
-import * as SwitchPrimitives from '@radix-ui/react-switch';
 import { cn } from '@/lib/utils';
+import * as SwitchPrimitives from '@radix-ui/react-switch';
+import React from 'react';
 
 interface CustomSwitchProps extends React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root> {}
 

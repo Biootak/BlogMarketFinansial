@@ -4,17 +4,14 @@
 
 'use client';
 
-import { useEffect, useState, type CSSProperties } from 'react';
-import { createPortal } from 'react-dom';
-import { X, ArrowRight, ArrowLeft, Check, Search } from 'lucide-react';
-import {
-  createMarketRate,
-  updateMarketRate,
-} from '@/actions/market-rates';
-import DiscoveryCommand from './DiscoveryCommand';
-import type { TgjuSymbol } from '@/lib/market-rates/discovery';
-import type { RateRowData } from './ExchangeRateRow';
+import { createMarketRate, updateMarketRate } from '@/actions/market-rates';
 import type { MarketRateGroup, MarketRateUnit } from '@/lib/market-rates';
+import type { TgjuSymbol } from '@/lib/market-rates/discovery';
+import { ArrowLeft, ArrowRight, Check, Search, X } from 'lucide-react';
+import { type CSSProperties, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import DiscoveryCommand from './DiscoveryCommand';
+import type { RateRowData } from './ExchangeRateRow';
 
 type Step = 'discover' | 'configure' | 'review';
 type Mode = 'create' | 'edit';
@@ -78,13 +75,7 @@ const inputStyle: CSSProperties = {
   fontFamily: 'inherit',
 };
 
-export default function RateEditorDrawer({
-  open,
-  mode,
-  initialRow,
-  onClose,
-  onSaved,
-}: Props) {
+export default function RateEditorDrawer({ open, mode, initialRow, onClose, onSaved }: Props) {
   const [step, setStep] = useState<Step>(mode === 'edit' ? 'configure' : 'discover');
   const [form, setForm] = useState<FormState>(EMPTY);
   const [discoveryOpen, setDiscoveryOpen] = useState(false);
@@ -101,8 +92,7 @@ export default function RateEditorDrawer({
       setForm({
         symbol: initialRow.symbol,
         displayNameFa: initialRow.displayNameFa,
-        group:
-          (initialRow.group as MarketRateGroup | null) ?? 'iran-forex',
+        group: (initialRow.group as MarketRateGroup | null) ?? 'iran-forex',
         unit: (initialRow.unit as MarketRateUnit | null) ?? 'toman',
         divisor: initialRow.divisor || 10,
         decimals: initialRow.decimals || 0,
@@ -213,8 +203,7 @@ export default function RateEditorDrawer({
         aria-hidden
         className="fixed inset-0 z-40"
         style={{
-          background:
-            'color-mix(in oklch, var(--ds-canvas) 50%, transparent)',
+          background: 'color-mix(in oklch, var(--ds-canvas) 50%, transparent)',
           backdropFilter: 'blur(4px)',
         }}
         onClick={onClose}
@@ -317,12 +306,8 @@ export default function RateEditorDrawer({
                     width: '1.25rem',
                     height: '1.25rem',
                     borderRadius: 'var(--ds-radius-full)',
-                    background: active
-                      ? 'var(--ds-brand-500)'
-                      : 'var(--ds-canvas-subtle)',
-                    color: active
-                      ? 'var(--ds-text-inverse)'
-                      : 'var(--ds-text-muted)',
+                    background: active ? 'var(--ds-brand-500)' : 'var(--ds-canvas-subtle)',
+                    color: active ? 'var(--ds-text-inverse)' : 'var(--ds-text-muted)',
                     border: '1px solid var(--ds-border-default)',
                     fontWeight: 700,
                   }}
@@ -336,15 +321,9 @@ export default function RateEditorDrawer({
         </ol>
 
         {/* Body */}
-        <div
-          className="flex-1 overflow-y-auto"
-          style={{ padding: 'var(--ds-space-5)' }}
-        >
+        <div className="flex-1 overflow-y-auto" style={{ padding: 'var(--ds-space-5)' }}>
           {step === 'discover' && mode === 'create' && (
-            <div
-              className="flex flex-col"
-              style={{ gap: 'var(--ds-space-4)' }}
-            >
+            <div className="flex flex-col" style={{ gap: 'var(--ds-space-4)' }}>
               <p
                 style={{
                   fontSize: 'var(--ds-text-sm)',
@@ -395,16 +374,11 @@ export default function RateEditorDrawer({
           )}
 
           {step === 'configure' && (
-            <div
-              className="grid grid-cols-2"
-              style={{ gap: 'var(--ds-space-4)' }}
-            >
+            <div className="grid grid-cols-2" style={{ gap: 'var(--ds-space-4)' }}>
               <Field label="نماد (Symbol)" required>
                 <input
                   value={form.symbol}
-                  onChange={(e) =>
-                    setForm({ ...form, symbol: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, symbol: e.target.value })}
                   required
                   style={inputStyle}
                 />
@@ -412,9 +386,7 @@ export default function RateEditorDrawer({
               <Field label="نام فارسی" required>
                 <input
                   value={form.displayNameFa}
-                  onChange={(e) =>
-                    setForm({ ...form, displayNameFa: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, displayNameFa: e.target.value })}
                   required
                   style={inputStyle}
                 />
@@ -459,9 +431,7 @@ export default function RateEditorDrawer({
                 <input
                   type="number"
                   value={form.divisor}
-                  onChange={(e) =>
-                    setForm({ ...form, divisor: Number(e.target.value) })
-                  }
+                  onChange={(e) => setForm({ ...form, divisor: Number(e.target.value) })}
                   style={inputStyle}
                 />
               </Field>
@@ -469,9 +439,7 @@ export default function RateEditorDrawer({
                 <input
                   type="number"
                   value={form.priority}
-                  onChange={(e) =>
-                    setForm({ ...form, priority: Number(e.target.value) })
-                  }
+                  onChange={(e) => setForm({ ...form, priority: Number(e.target.value) })}
                   style={inputStyle}
                 />
               </Field>
@@ -493,26 +461,19 @@ export default function RateEditorDrawer({
               <Field label="TGJU Key">
                 <input
                   value={form.tgjuKey}
-                  onChange={(e) =>
-                    setForm({ ...form, tgjuKey: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, tgjuKey: e.target.value })}
                   placeholder="price_dollar_rl"
                   className="font-mono"
                   style={inputStyle}
                 />
               </Field>
               {form.provider === 'manual' && (
-                <Field
-                  label={`مقدار دستی (${form.unit})`}
-                  className="col-span-2"
-                >
+                <Field label={`مقدار دستی (${form.unit})`} className="col-span-2">
                   <input
                     type="number"
                     step="any"
                     value={form.singleRate}
-                    onChange={(e) =>
-                      setForm({ ...form, singleRate: e.target.value })
-                    }
+                    onChange={(e) => setForm({ ...form, singleRate: e.target.value })}
                     required
                     style={inputStyle}
                   />
@@ -531,9 +492,7 @@ export default function RateEditorDrawer({
                     <input
                       type="checkbox"
                       checked={form.active}
-                      onChange={(e) =>
-                        setForm({ ...form, active: e.target.checked })
-                      }
+                      onChange={(e) => setForm({ ...form, active: e.target.checked })}
                     />
                     <span>این نرخ در تیکر نمایش داده شود</span>
                   </label>
@@ -543,10 +502,7 @@ export default function RateEditorDrawer({
           )}
 
           {step === 'review' && (
-            <div
-              className="flex flex-col"
-              style={{ gap: 'var(--ds-space-3)' }}
-            >
+            <div className="flex flex-col" style={{ gap: 'var(--ds-space-3)' }}>
               <p
                 style={{
                   fontSize: 'var(--ds-text-sm)',
@@ -571,17 +527,9 @@ export default function RateEditorDrawer({
                 <SummaryRow label="نام فارسی" value={form.displayNameFa} />
                 <SummaryRow label="گروه" value={form.group} />
                 <SummaryRow label="واحد" value={form.unit} />
-                <SummaryRow
-                  label="اولویت"
-                  value={form.priority.toString()}
-                />
-                <SummaryRow
-                  label="منبع"
-                  value={form.provider === 'auto' ? 'TGJU' : 'دستی'}
-                />
-                {form.tgjuKey && (
-                  <SummaryRow label="TGJU Key" value={form.tgjuKey} mono />
-                )}
+                <SummaryRow label="اولویت" value={form.priority.toString()} />
+                <SummaryRow label="منبع" value={form.provider === 'auto' ? 'TGJU' : 'دستی'} />
+                {form.tgjuKey && <SummaryRow label="TGJU Key" value={form.tgjuKey} mono />}
               </dl>
               {error && (
                 <p
@@ -590,8 +538,7 @@ export default function RateEditorDrawer({
                     fontSize: 'var(--ds-text-sm)',
                     color: 'var(--ds-accent-rose)',
                     padding: 'var(--ds-space-3)',
-                    background:
-                      'color-mix(in oklch, var(--ds-accent-rose) 10%, transparent)',
+                    background: 'color-mix(in oklch, var(--ds-accent-rose) 10%, transparent)',
                     borderRadius: 'var(--ds-radius-md)',
                     margin: 0,
                   }}
@@ -616,9 +563,7 @@ export default function RateEditorDrawer({
           {step !== 'discover' ? (
             <button
               type="button"
-              onClick={() =>
-                setStep((s) => (s === 'review' ? 'configure' : 'discover'))
-              }
+              onClick={() => setStep((s) => (s === 'review' ? 'configure' : 'discover'))}
               disabled={submitting}
               className="inline-flex items-center"
               style={{
@@ -652,10 +597,7 @@ export default function RateEditorDrawer({
                   setStep('review');
                 }
               }}
-              disabled={
-                step === 'configure' &&
-                (!form.symbol.trim() || !form.displayNameFa.trim())
-              }
+              disabled={step === 'configure' && (!form.symbol.trim() || !form.displayNameFa.trim())}
               className="inline-flex items-center font-semibold"
               style={{
                 height: '2.25rem',
@@ -668,8 +610,7 @@ export default function RateEditorDrawer({
                 cursor: 'pointer',
                 gap: '0.4rem',
                 opacity:
-                  step === 'configure' &&
-                  (!form.symbol.trim() || !form.displayNameFa.trim())
+                  step === 'configure' && (!form.symbol.trim() || !form.displayNameFa.trim())
                     ? 0.5
                     : 1,
               }}
@@ -697,11 +638,7 @@ export default function RateEditorDrawer({
               }}
             >
               <Check aria-hidden style={{ width: '1rem', height: '1rem' }} />
-              {submitting
-                ? 'در حال ذخیره…'
-                : mode === 'create'
-                  ? 'ایجاد'
-                  : 'ذخیره'}
+              {submitting ? 'در حال ذخیره…' : mode === 'create' ? 'ایجاد' : 'ذخیره'}
             </button>
           )}
         </div>
@@ -730,10 +667,7 @@ function Field({
   className?: string;
 }) {
   return (
-    <div
-      className={`flex flex-col ${className ?? ''}`}
-      style={{ gap: '0.375rem' }}
-    >
+    <div className={`flex flex-col ${className ?? ''}`} style={{ gap: '0.375rem' }}>
       <label
         style={{
           fontSize: 'var(--ds-text-xs)',
@@ -742,9 +676,7 @@ function Field({
         }}
       >
         {label}
-        {required && (
-          <span style={{ color: 'var(--ds-accent-rose)' }}> *</span>
-        )}
+        {required && <span style={{ color: 'var(--ds-accent-rose)' }}> *</span>}
       </label>
       {children}
     </div>

@@ -1,16 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import type React from 'react';
-import {
-  Bar,
-  BarChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-} from 'recharts';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 interface InnerChartProps {
   data: Array<Record<string, unknown>>;
@@ -18,7 +10,7 @@ interface InnerChartProps {
 }
 
 function easeOutExpo(t: number): number {
-  return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+  return t === 1 ? 1 : 1 - 2 ** (-10 * t);
 }
 
 function usePrefersReducedMotion(): boolean {
@@ -91,17 +83,7 @@ const AnimatedRect: React.FC<AnimatedRectProps> = (props) => {
   // Spreading them onto <rect> causes React "unknown prop" warnings; we whitelist
   // only the SVG-valid ones (fill). Radius (corner rounding) is omitted on purpose —
   // raw <rect> doesn't support Recharts' array radius; use rx/ry if needed.
-  return (
-    <rect
-      ref={ref}
-      x={x}
-      y={y}
-      width={width}
-      height={height}
-      fill={fill}
-      style={style}
-    />
-  );
+  return <rect ref={ref} x={x} y={y} width={width} height={height} fill={fill} style={style} />;
 };
 
 const TrafficChartInner: React.FC<InnerChartProps> = ({ data, tooltip }) => {
@@ -158,7 +140,13 @@ const TrafficChartInner: React.FC<InnerChartProps> = ({ data, tooltip }) => {
               <stop offset="100%" stopColor="#6366F1" stopOpacity={0.7} />
             </linearGradient>
             <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#8B5CF6" floodOpacity="0.3" />
+              <feDropShadow
+                dx="0"
+                dy="4"
+                stdDeviation="4"
+                floodColor="#8B5CF6"
+                floodOpacity="0.3"
+              />
             </filter>
           </defs>
           <CartesianGrid

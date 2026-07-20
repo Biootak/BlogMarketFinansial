@@ -1,24 +1,24 @@
-﻿import type { Metadata } from 'next';
+﻿import { getServiceRequestByTrackingCode } from '@/actions/serviceRequestActions';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getServiceRequestByTrackingCode } from '@/actions/serviceRequestActions';
 import TrackingPageClient from './_components/TrackingPageClient';
 
 // ─── generateMetadata — per-request SEO ──────────────────────────────────── //
 
 const SERVICE_LABELS: Record<string, string> = {
   INTERNATIONAL_TRANSFER: 'حواله بین‌المللی',
-  ONLINE_PAYMENT:         'پرداخت آنلاین',
-  TUITION_PAYMENT:        'پرداخت شهریه',
-  FREELANCE_INCOME:       'نقد کردن درآمد فریلنسری',
-  SOFTWARE_PURCHASE:      'خرید نرم‌افزار',
-  OTHER:                  'سایر خدمات',
+  ONLINE_PAYMENT: 'پرداخت آنلاین',
+  TUITION_PAYMENT: 'پرداخت شهریه',
+  FREELANCE_INCOME: 'نقد کردن درآمد فریلنسری',
+  SOFTWARE_PURCHASE: 'خرید نرم‌افزار',
+  OTHER: 'سایر خدمات',
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  PENDING:     'در انتظار بررسی',
+  PENDING: 'در انتظار بررسی',
   IN_PROGRESS: 'در حال انجام',
-  COMPLETED:   'تکمیل شده',
-  CANCELLED:   'لغو شده',
+  COMPLETED: 'تکمیل شده',
+  CANCELLED: 'لغو شده',
 };
 
 export async function generateMetadata({
@@ -39,9 +39,9 @@ export async function generateMetadata({
 
   const d = res.data;
   const serviceLabel = SERVICE_LABELS[d.serviceType] ?? d.serviceType;
-  const statusLabel  = STATUS_LABELS[d.status]       ?? d.status;
-  const title        = `پیگیری ${upper} | ${serviceLabel}`;
-  const description  = `وضعیت: ${statusLabel} · ${d.amount} ${d.currency} · ${serviceLabel}`;
+  const statusLabel = STATUS_LABELS[d.status] ?? d.status;
+  const title = `پیگیری ${upper} | ${serviceLabel}`;
+  const description = `وضعیت: ${statusLabel} · ${d.amount} ${d.currency} · ${serviceLabel}`;
 
   return {
     title,
@@ -94,7 +94,7 @@ export default async function TrackPage({
     >
       <TrackingPageClient
         code={upper}
-        initialData={(res.success && res.data) ? res.data : null}
+        initialData={res.success && res.data ? res.data : null}
         initialError={!res.success ? (res.message ?? 'خطا') : null}
       />
     </main>

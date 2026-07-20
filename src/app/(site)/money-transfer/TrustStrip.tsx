@@ -35,9 +35,10 @@ function CountUpNumber({ target, duration = 1600 }: { target: number; duration?:
   const [started, setStarted] = useState(false);
 
   // Check reduced motion preference
-  const prefersReducedMotion = typeof window !== 'undefined'
-    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    : false;
+  const prefersReducedMotion =
+    typeof window !== 'undefined'
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      : false;
 
   useEffect(() => {
     if (prefersReducedMotion) {

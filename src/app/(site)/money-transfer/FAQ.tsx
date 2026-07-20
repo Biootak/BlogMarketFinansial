@@ -73,21 +73,14 @@ export default function FAQ() {
       {/* FAQ Items — native <details> with CSS interpolate-size */}
       <div className="max-w-3xl mx-auto space-y-3">
         {faqs.map((faq, index) => (
-          <details
-            key={index}
-            className="mt-faq-item group"
-          >
+          <details key={index} className="mt-faq-item group">
             <summary className="mt-faq-trigger">
               <span className="mt-faq-index" aria-hidden>
                 {String(index + 1).padStart(2, '۰')}
               </span>
               <span className="mt-faq-question">{faq.question}</span>
               <span className="mt-faq-chevron" aria-hidden>
-                <svg
-                  viewBox="0 0 12 12"
-                  fill="none"
-                  className="w-3 h-3"
-                >
+                <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3">
                   <path
                     d="M3 4.5L6 7.5L9 4.5"
                     stroke="currentColor"
@@ -107,9 +100,7 @@ export default function FAQ() {
 
       {/* Contact CTA */}
       <div className="mt-12 text-center">
-        <p className="text-slate-500 dark:text-slate-400 mb-4">
-          سوال دیگری دارید؟
-        </p>
+        <p className="text-slate-500 dark:text-slate-400 mb-4">سوال دیگری دارید؟</p>
         <a
           href="#contact"
           className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-medium hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors duration-200"

@@ -45,6 +45,7 @@
 
 import { cn } from '@/lib/utils';
 import type { PostWithRelations } from '@/types/types';
+import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   HiOutlineArrowLeft,
@@ -53,12 +54,7 @@ import {
   HiOutlinePencilSquare,
   HiOutlineSparkles,
 } from 'react-icons/hi2';
-import {
-  dayNameFa,
-  fmt,
-  persianShortDate,
-} from '../utils';
-import Link from 'next/link';
+import { dayNameFa, fmt, persianShortDate } from '../utils';
 
 interface AtelierWeekRhythmProps {
   scheduledPosts: PostWithRelations[];
@@ -104,8 +100,7 @@ function persianWeekdayShort(d: Date): string {
 function persianRangeShort(start: Date, end: Date): string {
   // «۱۰ تا ۱۶ تیر» اگه یک ماه، «۲۸ تیر تا ۴ مرداد» اگه دو ماه.
   const sameMonth =
-    start.getMonth() === end.getMonth() &&
-    start.getFullYear() === end.getFullYear();
+    start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear();
   return sameMonth
     ? `${fmt(start.getDate())} تا ${fmt(end.getDate())} ${persianShortDate(end).split(' ')[1]}`
     : `${persianShortDate(start)} تا ${persianShortDate(end)}`;
@@ -123,9 +118,7 @@ const STATUS_LABEL: Record<StatusKey, string> = {
   PUBLISHED: 'منتشر شده',
 };
 
-export default function AtelierWeekRhythm({
-  scheduledPosts,
-}: AtelierWeekRhythmProps) {
+export default function AtelierWeekRhythm({ scheduledPosts }: AtelierWeekRhythmProps) {
   // 2026-07-04 (late night): `today` قبلاً useMemo با deps=[] بود
   // که اگه داشبورد بدون reload از نیمه‌شب رد بشه، همهٔ محاسبات رو
   // روز قبل گیر می‌کرد. حالا state هست + وقتی tab به visible
@@ -158,11 +151,12 @@ export default function AtelierWeekRhythm({
   }, []);
 
   const week = useMemo(
-    () => Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(startOfWeek(today));
-      d.setDate(d.getDate() + i);
-      return d;
-    }),
+    () =>
+      Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(startOfWeek(today));
+        d.setDate(d.getDate() + i);
+        return d;
+      }),
     [today],
   );
 
@@ -172,10 +166,11 @@ export default function AtelierWeekRhythm({
   const byDay = useMemo(() => {
     const map = new Map<string, PostWithRelations[]>();
     for (const p of scheduledPosts ?? []) {
-      const eff =
-        p.scheduledAt ? new Date(p.scheduledAt) :
-        p.createdAt ? new Date(p.createdAt) :
-        null;
+      const eff = p.scheduledAt
+        ? new Date(p.scheduledAt)
+        : p.createdAt
+          ? new Date(p.createdAt)
+          : null;
       if (!eff) continue;
       const k = dayKey(eff);
       const list = map.get(k) ?? [];
@@ -240,9 +235,7 @@ export default function AtelierWeekRhythm({
   }, [todayPosts]);
 
   const [openDay, setOpenDay] = useState<Date | null>(todayBucket.date);
-  const openBucket = openDay
-    ? buckets.find((b) => isSameDay(b.date, openDay))
-    : undefined;
+  const openBucket = openDay ? buckets.find((b) => isSameDay(b.date, openDay)) : undefined;
 
   // 2026-07-04: اگر هر سه وضعیت امروز خالی باشن، کارت CTA بزرگ
   // («نوشتن پست جدید») حذف می‌شه — در غیر این صورت ۴ مسیر موازی برای
@@ -252,19 +245,16 @@ export default function AtelierWeekRhythm({
     groupedToday.PENDING_REVIEW.length === 0 &&
     groupedToday.DRAFT.length === 0;
 
-// 2026-07-04: keyboard nav برای radiogroup ستون‌ها.
-// کلیدها مسیر بصری دنبال می‌کنن، نه DOM order. در RTL، DOM[0] (شنبه)
-// در سمت راست بصری است؛ پس ArrowRight = کاهش ایندکس = راست بصری.
-// ArrowLeft = افزایش ایندکس = چپ بصری. Home/End = اول/آخر در reading
-// order (شنبه/جمعه) که مستقل از جهت بصری است.
+  // 2026-07-04: keyboard nav برای radiogroup ستون‌ها.
+  // کلیدها مسیر بصری دنبال می‌کنن، نه DOM order. در RTL، DOM[0] (شنبه)
+  // در سمت راست بصری است؛ پس ArrowRight = کاهش ایندکس = راست بصری.
+  // ArrowLeft = افزایش ایندکس = چپ بصری. Home/End = اول/آخر در reading
+  // order (شنبه/جمعه) که مستقل از جهت بصری است.
   const chartRef = useRef<HTMLDivElement>(null);
   const handleChartKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    const buttons =
-      chartRef.current?.querySelectorAll<HTMLButtonElement>('button[role="radio"]');
+    const buttons = chartRef.current?.querySelectorAll<HTMLButtonElement>('button[role="radio"]');
     if (!buttons || buttons.length === 0) return;
-    const currentIdx = Array.from(buttons).indexOf(
-      e.target as HTMLButtonElement,
-    );
+    const currentIdx = Array.from(buttons).indexOf(e.target as HTMLButtonElement);
     if (currentIdx === -1) return;
     let nextIdx: number | null = null;
     switch (e.key) {
@@ -299,8 +289,7 @@ export default function AtelierWeekRhythm({
             <span>هفتهٔ انتشار</span>
           </span>
           <p className="at-rhythm__head-day">
-            {dayNameFa(today)}{' '}
-            <span className="at-rhythm__head-day-sep">·</span>
+            {dayNameFa(today)} <span className="at-rhythm__head-day-sep">·</span>
             <span className="tabular-nums">{persianShortDate(today)}</span>
           </p>
           <p className="at-rhythm__head-range tabular-nums">
@@ -309,18 +298,14 @@ export default function AtelierWeekRhythm({
         </div>
 
         <div className="at-rhythm__metric">
-          <span className="at-rhythm__metric-num tabular-nums">
-            {fmt(thisWeekTotal)}
-          </span>
+          <span className="at-rhythm__metric-num tabular-nums">{fmt(thisWeekTotal)}</span>
           <span className="at-rhythm__metric-suffix">پست در ۷ روز</span>
           <span className={cn('at-rhythm__metric-delta', `is-${delta.trend}`)}>
             {delta.trend === 'up' && <span aria-hidden>▲</span>}
             {delta.trend === 'down' && <span aria-hidden>▼</span>}
             {delta.trend === 'flat' && <span aria-hidden>—</span>}
             <span className="tabular-nums">{delta.text}</span>
-            <span className="at-rhythm__metric-delta-aux">
-              نسبت به هفتۀ قبل
-            </span>
+            <span className="at-rhythm__metric-delta-aux">نسبت به هفتۀ قبل</span>
           </span>
         </div>
 
@@ -408,12 +393,8 @@ export default function AtelierWeekRhythm({
                 )}
               </span>
               <span className="at-rhythm__col-meta">
-                <span className="at-rhythm__col-name">
-                  {persianWeekdayShort(b.date)}
-                </span>
-                <span className="at-rhythm__col-num tabular-nums">
-                  {fmt(b.date.getDate())}
-                </span>
+                <span className="at-rhythm__col-name">{persianWeekdayShort(b.date)}</span>
+                <span className="at-rhythm__col-num tabular-nums">{fmt(b.date.getDate())}</span>
               </span>
               {isToday && (
                 <span className="at-rhythm__col-today" aria-hidden>
@@ -434,14 +415,10 @@ export default function AtelierWeekRhythm({
           <div className="at-rhythm__empty-text">
             <p className="at-rhythm__empty-title">هفتهٔ خالی</p>
             <p className="at-rhythm__empty-sub">
-              هنوز هیچ پستی برای این هفته برنامه‌ریزی نشده. اولین پست رو
-              بنویس تا تقویم پُر بشه.
+              هنوز هیچ پستی برای این هفته برنامه‌ریزی نشده. اولین پست رو بنویس تا تقویم پُر بشه.
             </p>
           </div>
-          <Link
-            href="/dashboard/posts/create"
-            className="at-rhythm__empty-cta"
-          >
+          <Link href="/dashboard/posts/create" className="at-rhythm__empty-cta">
             <HiOutlinePencilSquare className="w-4 h-4" />
             <span>نوشتن اولین پست</span>
             <HiOutlineArrowLeft className="w-3 h-3" />
@@ -454,19 +431,14 @@ export default function AtelierWeekRhythm({
               <HiOutlineSparkles className="w-3 h-3" />
               <span>امروز</span>
             </span>
-            <span className="at-rhythm__spotlight-day tabular-nums">
-              {persianShortDate(today)}
-            </span>
+            <span className="at-rhythm__spotlight-day tabular-nums">{persianShortDate(today)}</span>
             <span className="at-rhythm__spotlight-count tabular-nums">
               {fmt(todayPosts.length)} پست
             </span>
           </div>
 
           <div
-            className={cn(
-              'at-rhythm__spot-grid',
-              allTodayEmpty && 'at-rhythm__spot-grid--three',
-            )}
+            className={cn('at-rhythm__spot-grid', allTodayEmpty && 'at-rhythm__spot-grid--three')}
           >
             <SpotCard
               status="PUBLISHED"
@@ -484,10 +456,7 @@ export default function AtelierWeekRhythm({
               hrefCreate="/dashboard/posts/create?status=DRAFT"
             />
             {!allTodayEmpty && (
-              <Link
-                href="/dashboard/posts/create"
-                className="at-rhythm__spot at-rhythm__spot--cta"
-              >
+              <Link href="/dashboard/posts/create" className="at-rhythm__spot at-rhythm__spot--cta">
                 <span className="at-rhythm__spot-ico">
                   <HiOutlinePencilSquare className="w-5 h-5" />
                 </span>
@@ -510,9 +479,7 @@ export default function AtelierWeekRhythm({
         >
           <div className="at-rhythm__agenda-head">
             <span className="at-rhythm__agenda-day">
-              <span className="at-rhythm__agenda-day-name">
-                {dayNameFa(openBucket.date)}
-              </span>
+              <span className="at-rhythm__agenda-day-name">{dayNameFa(openBucket.date)}</span>
               <span className="at-rhythm__agenda-day-num tabular-nums">
                 {persianShortDate(openBucket.date)}
               </span>
@@ -533,9 +500,7 @@ export default function AtelierWeekRhythm({
             <ul className="at-rhythm__agenda-list">
               {openBucket.posts.map((p) => {
                 const status =
-                  (p.status as StatusKey) in STATUS_LABEL
-                    ? (p.status as StatusKey)
-                    : 'DRAFT';
+                  (p.status as StatusKey) in STATUS_LABEL ? (p.status as StatusKey) : 'DRAFT';
                 return (
                   <li key={p.id} className="at-rhythm__agenda-item">
                     <span
@@ -545,10 +510,7 @@ export default function AtelierWeekRhythm({
                       )}
                       aria-hidden
                     />
-                    <Link
-                      href={`/dashboard/posts/edit/${p.id}`}
-                      className="at-rhythm__agenda-link"
-                    >
+                    <Link href={`/dashboard/posts/edit/${p.id}`} className="at-rhythm__agenda-link">
                       <span className="at-rhythm__agenda-title">{p.title}</span>
                       <span className="at-rhythm__agenda-meta">
                         <span
@@ -559,9 +521,7 @@ export default function AtelierWeekRhythm({
                         >
                           {STATUS_LABEL[status]}
                         </span>
-                        <span className="at-rhythm__agenda-author">
-                          {p.author?.name ?? '—'}
-                        </span>
+                        <span className="at-rhythm__agenda-author">{p.author?.name ?? '—'}</span>
                       </span>
                     </Link>
                     {p.slug && (
@@ -605,22 +565,14 @@ function SpotCard({ status, posts, hrefCreate }: SpotCardProps) {
     >
       <div className="at-rhythm__spot-head">
         <span
-          className={cn(
-            'at-rhythm__spot-dot',
-            `at-rhythm__spot-dot--${statusLower}`,
-          )}
+          className={cn('at-rhythm__spot-dot', `at-rhythm__spot-dot--${statusLower}`)}
           aria-hidden
         />
         <span className="at-rhythm__spot-label">{STATUS_LABEL[status]}</span>
-        <span className="at-rhythm__spot-num tabular-nums">
-          {fmt(posts.length)}
-        </span>
+        <span className="at-rhythm__spot-num tabular-nums">{fmt(posts.length)}</span>
       </div>
       {primary ? (
-        <Link
-          href={`/dashboard/posts/edit/${primary.id}`}
-          className="at-rhythm__spot-title-link"
-        >
+        <Link href={`/dashboard/posts/edit/${primary.id}`} className="at-rhythm__spot-title-link">
           <span className="at-rhythm__spot-title">{primary.title}</span>
         </Link>
       ) : posts.length === 0 ? (
@@ -633,7 +585,7 @@ function SpotCard({ status, posts, hrefCreate }: SpotCardProps) {
         {posts.length > 1
           ? `+${fmt(posts.length - 1)} مورد دیگر`
           : primary
-            ? primary.author?.name ?? '—'
+            ? (primary.author?.name ?? '—')
             : 'برای افزودن کلیک کنید'}
       </span>
     </div>

@@ -23,10 +23,7 @@ export function TrendingBadge({
   accentClass = 'bg-gradient-to-br from-rose-500 to-orange-500',
   size = 'sm',
 }: TrendingBadgeProps) {
-  const sizeClasses =
-    size === 'sm'
-      ? 'h-6 px-2.5 text-[10px] gap-1'
-      : 'h-7 px-3 text-xs gap-1.5';
+  const sizeClasses = size === 'sm' ? 'h-6 px-2.5 text-[10px] gap-1' : 'h-7 px-3 text-xs gap-1.5';
 
   const iconSize = size === 'sm' ? 'h-3 w-3' : 'h-3.5 w-3.5';
 

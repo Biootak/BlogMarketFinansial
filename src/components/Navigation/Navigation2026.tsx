@@ -18,9 +18,6 @@
  *  RateList به‌صورت زنده از سرور به این نوار پاس داده می‌شه.
  */
 
-import { memo, useState, useRef, useEffect, useCallback } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +26,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import type { RateListData } from '@/types/types';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import BazarMegaPanel from './BazarMegaPanel';
 
 type NavItem = Readonly<{
@@ -74,7 +74,11 @@ const NAVBAR_LINKS: readonly NavItem[] = [
     name: 'بازار جهانی',
     href: '/archive/category/global-market',
     subItems: [
-      { id: 'currency-pairs', name: 'جفت ارزها', href: '/archive/category/global-market/currency-pairs' },
+      {
+        id: 'currency-pairs',
+        name: 'جفت ارزها',
+        href: '/archive/category/global-market/currency-pairs',
+      },
       { id: 'global-analysis', name: 'تحلیل', href: '/archive/category/global-market/analysis' },
       { id: 'global-education', name: 'آموزش', href: '/archive/category/global-market/education' },
     ],
@@ -117,8 +121,7 @@ const Navigation = ({ className = '', rateLists = [] }: NavigationProps): React.
     if (pathname === item.href) return true;
     if (item.subItems) {
       return item.subItems.some(
-        (subItem) =>
-          pathname === subItem.href || pathname.startsWith(`${subItem.href}/`),
+        (subItem) => pathname === subItem.href || pathname.startsWith(`${subItem.href}/`),
       );
     }
     return false;
@@ -234,10 +237,7 @@ const Navigation = ({ className = '', rateLists = [] }: NavigationProps): React.
                   'anim-fade-in-down',
                 )}
               >
-                <BazarMegaPanel
-                  rateLists={rateLists}
-                  onNavigate={closePanel}
-                />
+                <BazarMegaPanel rateLists={rateLists} onNavigate={closePanel} />
               </DropdownMenuContent>
             )}
           </DropdownMenu>
@@ -326,10 +326,7 @@ const Navigation = ({ className = '', rateLists = [] }: NavigationProps): React.
                   'anim-fade-in-down',
                 )}
               >
-                <ul
-                  className="flex flex-col gap-0.5 stagger-children"
-                  key={activeId}
-                >
+                <ul className="flex flex-col gap-0.5 stagger-children" key={activeId}>
                   {item.subItems.map((subItem) => {
                     const isSubActive = pathname === subItem.href;
                     return (
@@ -458,11 +455,7 @@ const Navigation = ({ className = '', rateLists = [] }: NavigationProps): React.
         {mounted
           ? NAVBAR_LINKS.map(renderNavItem)
           : NAVBAR_LINKS.map((item) => (
-              <li
-                key={item.id}
-                className="relative flex-shrink-0"
-                suppressHydrationWarning
-              >
+              <li key={item.id} className="relative flex-shrink-0" suppressHydrationWarning>
                 <span
                   className="inline-flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium rounded-full whitespace-nowrap text-neutral-500 dark:text-neutral-400"
                   suppressHydrationWarning

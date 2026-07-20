@@ -30,12 +30,7 @@ const SidebarToggle: React.FC = () => {
         data-open={isOpen}
       >
         {logoUrl ? (
-          <img
-            src={logoUrl}
-            alt=""
-            aria-hidden
-            className="dash-side__toggle-logo"
-          />
+          <img src={logoUrl} alt="" aria-hidden className="dash-side__toggle-logo" />
         ) : (
           <LogoSvg className="dash-side__toggle-logo" />
         )}

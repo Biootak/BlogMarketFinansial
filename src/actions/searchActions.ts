@@ -12,7 +12,10 @@ export async function getSearchResults(
   const skip = (page - 1) * pageSize;
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // SearchResultItem is a union type (Post | Category | Tag | User).
+    // The actual queries return shaped subsets of each; we cast to SearchResultItem[]
+    // at the return boundary where the shape is known to be compatible.
+    // biome-ignore lint/suspicious/noExplicitAny: Prisma returns different shapes per tab; cast happens at return
     let posts: any[];
     let total: number;
 

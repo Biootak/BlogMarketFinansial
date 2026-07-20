@@ -97,9 +97,8 @@
   padding: 5px 8px;
   border-radius: var(--ds-radius-sm);
   cursor: pointer;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast);
   text-align: start;
 }
 
@@ -121,9 +120,8 @@
   backdrop-filter: blur(12px);
   padding: var(--ds-space-6);
   margin-bottom: var(--ds-space-4);
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-base) var(--ds-ease-out-quart);
   scroll-margin-top: 100px;
 }
 
@@ -197,6 +195,12 @@
 
 /* ─── Animations ─────────────────────────────────────────────────── */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

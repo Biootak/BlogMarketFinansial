@@ -131,8 +131,11 @@ function HeroHeart({ data, gradId }: HeroHeartProps) {
     .join(' ');
 
   const lastX = (data.length - 1) * step;
-  const lastY = baseY - Math.sin((data.length - 1) * 0.95) * 7 -
-    (allZero ? 0 : ((data[data.length - 1] - min) / span) * 20) - 28;
+  const lastY =
+    baseY -
+    Math.sin((data.length - 1) * 0.95) * 7 -
+    (allZero ? 0 : ((data[data.length - 1] - min) / span) * 20) -
+    28;
 
   // Floating particle ring positions — 8 dots orbiting the heart center.
   // Rendered as <span> inside an absolutely positioned container.
@@ -217,7 +220,7 @@ function HeroHeart({ data, gradId }: HeroHeartProps) {
           fill="none"
           stroke="var(--at-accent)"
           strokeWidth={8}
-          opacity={0.10}
+          opacity={0.1}
           aria-hidden
         />
 
@@ -237,7 +240,8 @@ function HeroHeart({ data, gradId }: HeroHeartProps) {
               style={{
                 strokeDasharray: 1,
                 strokeDashoffset: 1,
-                filter: 'drop-shadow(0 0 8px color-mix(in oklch, var(--at-accent) 60%, transparent))',
+                filter:
+                  'drop-shadow(0 0 8px color-mix(in oklch, var(--at-accent) 60%, transparent))',
               }}
             />
             {!allZero && (
@@ -411,11 +415,29 @@ function CommentBubbleStack({ intensity }: { intensity: number }) {
         strokeWidth={1}
         className="at-eng-bubble at-eng-bubble--front"
       />
-      <path d="M22,26 L24,32 L28,26 Z" fill="var(--at-accent-soft)" stroke="var(--at-accent-fg)" strokeOpacity={0.45} strokeWidth={1} />
+      <path
+        d="M22,26 L24,32 L28,26 Z"
+        fill="var(--at-accent-soft)"
+        stroke="var(--at-accent-fg)"
+        strokeOpacity={0.45}
+        strokeWidth={1}
+      />
       <g className="at-eng-bubble__dots">
         <circle cx="22" cy="18" r="1.6" fill="var(--at-accent-fg)" />
-        <circle cx="30" cy="18" r="1.6" fill="var(--at-accent-fg)" opacity={0.6 + intensity * 0.4} />
-        <circle cx="38" cy="18" r="1.6" fill="var(--at-accent-fg)" opacity={0.3 + intensity * 0.5} />
+        <circle
+          cx="30"
+          cy="18"
+          r="1.6"
+          fill="var(--at-accent-fg)"
+          opacity={0.6 + intensity * 0.4}
+        />
+        <circle
+          cx="38"
+          cy="18"
+          r="1.6"
+          fill="var(--at-accent-fg)"
+          opacity={0.3 + intensity * 0.5}
+        />
       </g>
     </svg>
   );
@@ -434,15 +456,51 @@ function ShareRipple({ count }: { count: number }) {
   return (
     <svg viewBox="0 0 64 40" className={cn('at-eng-ripple', `tier-${tier}`)} aria-hidden>
       <g className="at-eng-ripple__pulse" style={{ transformOrigin: '32px 20px' }}>
-        <circle cx="32" cy="20" r="6" fill="var(--at-gold-soft)" stroke="var(--at-gold-fg)" strokeOpacity={0.45} strokeWidth={1} />
+        <circle
+          cx="32"
+          cy="20"
+          r="6"
+          fill="var(--at-gold-soft)"
+          stroke="var(--at-gold-fg)"
+          strokeOpacity={0.45}
+          strokeWidth={1}
+        />
         <circle cx="32" cy="20" r="3" fill="var(--at-gold)" />
       </g>
       <g className="at-eng-ripple__ring" style={{ transformOrigin: '32px 20px' }}>
-        <circle cx="32" cy="20" r="13" fill="none" stroke="var(--at-gold-fg)" strokeOpacity={0.45} strokeWidth={1} />
-        <circle cx="32" cy="20" r="13" fill="none" stroke="var(--at-gold-fg)" strokeOpacity={0.3} strokeWidth={1} strokeDasharray="3 4" />
+        <circle
+          cx="32"
+          cy="20"
+          r="13"
+          fill="none"
+          stroke="var(--at-gold-fg)"
+          strokeOpacity={0.45}
+          strokeWidth={1}
+        />
+        <circle
+          cx="32"
+          cy="20"
+          r="13"
+          fill="none"
+          stroke="var(--at-gold-fg)"
+          strokeOpacity={0.3}
+          strokeWidth={1}
+          strokeDasharray="3 4"
+        />
       </g>
-      <g className="at-eng-ripple__ring at-eng-ripple__ring--2" style={{ transformOrigin: '32px 20px' }}>
-        <circle cx="32" cy="20" r="19" fill="none" stroke="var(--at-gold-fg)" strokeOpacity={0.22} strokeWidth={1} />
+      <g
+        className="at-eng-ripple__ring at-eng-ripple__ring--2"
+        style={{ transformOrigin: '32px 20px' }}
+      >
+        <circle
+          cx="32"
+          cy="20"
+          r="19"
+          fill="none"
+          stroke="var(--at-gold-fg)"
+          strokeOpacity={0.22}
+          strokeWidth={1}
+        />
       </g>
       <circle cx="49" cy="14" r="1.5" fill="var(--at-gold-fg)" opacity="0.6" />
       <circle cx="52" cy="22" r="1.5" fill="var(--at-gold-fg)" opacity="0.45" />
@@ -499,9 +557,7 @@ export default function AtelierEngagement({ stats }: AtelierEngagementProps) {
 
   const weeklyViews = sumSeries(stats.views.data);
   const totalEng =
-    sumSeries(stats.likes.data) +
-    sumSeries(stats.comments.data) +
-    sumSeries(stats.shares.data);
+    sumSeries(stats.likes.data) + sumSeries(stats.comments.data) + sumSeries(stats.shares.data);
   const engRate = weeklyViews > 0 ? totalEng / weeklyViews : 0;
 
   const prevHalfViews = windowed(stats.views.data, 0) - windowed(stats.views.data, half);
@@ -513,7 +569,10 @@ export default function AtelierEngagement({ stats }: AtelierEngagementProps) {
   const prevRate = prevHalfViews > 0 ? prevHalfEng / prevHalfViews : 0;
   const engDeltaPp = (engRate - prevRate) * 100;
 
-  const commentIntensity = Math.min(1, sumSeries(stats.comments.data) / Math.max(1, weeklyViews * 0.05));
+  const commentIntensity = Math.min(
+    1,
+    sumSeries(stats.comments.data) / Math.max(1, weeklyViews * 0.05),
+  );
   const weeklyLikes = sumSeries(stats.likes.data);
   const weeklyComments = sumSeries(stats.comments.data);
   const weeklyShares = sumSeries(stats.shares.data);
@@ -588,19 +647,10 @@ export default function AtelierEngagement({ stats }: AtelierEngagementProps) {
           <div className="at-eng-rate-card__body">
             <span className="at-eng-rate-card__narrative">
               از هر ۱۰۰ بازدید،{' '}
-              <strong className="tabular-nums">
-                {(engRate * 100).toFixed(1)}
-              </strong>{' '}
-              تعامل ثبت شده
+              <strong className="tabular-nums">{(engRate * 100).toFixed(1)}</strong> تعامل ثبت شده
             </span>
             <TrendPill
-              trend={
-                Math.abs(engDeltaPp) < 0.05
-                  ? 'flat'
-                  : engDeltaPp > 0
-                    ? 'up'
-                    : 'down'
-              }
+              trend={Math.abs(engDeltaPp) < 0.05 ? 'flat' : engDeltaPp > 0 ? 'up' : 'down'}
               delta={engDeltaPp}
               suffix="pp"
             />

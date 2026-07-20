@@ -16,14 +16,9 @@
 //        await getEmailProvider().send(verificationEmail({ to: email, url }));
 //   3. set EMAIL_PROVIDER in .env (default stays `resend`)
 
-import {
-  type EmailProvider,
-  type EmailProviderName,
-  EmailConfigError,
-  EMAIL_ENV,
-} from './types';
-import { createResendProvider } from './resend';
 import { createConsoleProvider } from './console';
+import { createResendProvider } from './resend';
+import { EMAIL_ENV, EmailConfigError, type EmailProvider, type EmailProviderName } from './types';
 
 let cached: EmailProvider | null = null;
 
@@ -60,9 +55,7 @@ export async function getEmailProviderAsync(): Promise<EmailProvider> {
     // server-action bundle when the SMTP provider isn't in use. Without
     // it, Next 16's webpack trace walks the dynamic import and fails
     // the build even though `process.env.EMAIL_PROVIDER` is 'resend'.
-    const { createSmtpProvider } = await import(
-      /* webpackIgnore: true */ './smtp'
-    );
+    const { createSmtpProvider } = await import(/* webpackIgnore: true */ './smtp');
     cached = await createSmtpProvider();
     return cached;
   }

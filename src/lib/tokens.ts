@@ -13,7 +13,12 @@ import prisma from '@/lib/db';
 
 // 2026-07-10: 'service-verify' — OTP issued after ServiceRequest is created,
 // to verify the requester's email and enable Progressive Capture (auto-create account).
-export type VerificationEmailIntent = 'register' | 'login' | 'reverify' | 'recover' | 'service-verify';
+export type VerificationEmailIntent =
+  | 'register'
+  | 'login'
+  | 'reverify'
+  | 'recover'
+  | 'service-verify';
 
 export const OTP_EXPIRES_MS = 10 * 60 * 1000;
 export const OTP_RESEND_COOLDOWN_MS = 60 * 1000;

@@ -12,7 +12,9 @@ interface ContactCTAProps {
     | 'OTHER';
 }
 
-export default async function ContactCTA({ defaultServiceType = 'ONLINE_PAYMENT' }: ContactCTAProps) {
+export default async function ContactCTA({
+  defaultServiceType = 'ONLINE_PAYMENT',
+}: ContactCTAProps) {
   const contactLinks = await getSupportContactLinks();
 
   return (

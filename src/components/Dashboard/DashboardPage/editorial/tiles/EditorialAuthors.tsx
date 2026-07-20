@@ -34,7 +34,9 @@ export default function EditorialAuthors({ topAuthors }: EditorialAuthorsProps) 
           </span>
           <div className="ec-head__text">
             <h2 className="ec-head__title-text">نویسندگان برتر</h2>
-            <p className="ec-head__sub" dir="ltr">{todayFa}</p>
+            <p className="ec-head__sub" dir="ltr">
+              {todayFa}
+            </p>
           </div>
         </div>
       </header>

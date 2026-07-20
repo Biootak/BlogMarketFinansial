@@ -1,9 +1,9 @@
 'use server';
 
-import { cache } from 'react';
-import { unstable_cache } from 'next/cache';
-import { Role, Prisma } from '@prisma/client';
 import prisma from '@/lib/db';
+import { type Prisma, Role } from '@prisma/client';
+import { unstable_cache } from 'next/cache';
+import { cache } from 'react';
 
 /**
  * @file getAuthorsHubData
@@ -49,11 +49,7 @@ const fetchHubDataRaw = async (
   // 1. Top authors (ordered by post count) — reused by hero + grid.
   const authors = await prisma.user.findMany({
     where: {
-      OR: [
-        { role: Role.AUTHOR },
-        { role: Role.ADMIN },
-        { role: Role.OWNER },
-      ],
+      OR: [{ role: Role.AUTHOR }, { role: Role.ADMIN }, { role: Role.OWNER }],
     },
     take: topLimit,
     orderBy: { posts: { _count: 'desc' } },
@@ -72,11 +68,7 @@ const fetchHubDataRaw = async (
   const [authorCount, postCount] = await Promise.all([
     prisma.user.count({
       where: {
-        OR: [
-          { role: Role.AUTHOR },
-          { role: Role.ADMIN },
-          { role: Role.OWNER },
-        ],
+        OR: [{ role: Role.AUTHOR }, { role: Role.ADMIN }, { role: Role.OWNER }],
       },
     }),
     prisma.post.count({ where: { status: 'PUBLISHED' } }),
@@ -103,11 +95,7 @@ const fetchHubDataRaw = async (
   for (const cat of topCategories) {
     const catAuthors = await prisma.user.findMany({
       where: {
-        OR: [
-          { role: Role.AUTHOR },
-          { role: Role.ADMIN },
-          { role: Role.OWNER },
-        ],
+        OR: [{ role: Role.AUTHOR }, { role: Role.ADMIN }, { role: Role.OWNER }],
         posts: { some: { status: 'PUBLISHED', categories: { some: { id: cat.id } } } },
       },
       orderBy: { posts: { _count: 'desc' } },
@@ -126,9 +114,7 @@ const fetchHubDataRaw = async (
         authors: catAuthors.map((a) => ({
           id: a.id,
           name: a.name,
-          profile: a.profile
-            ? { avatar: a.profile.avatar, jobName: a.profile.jobName }
-            : null,
+          profile: a.profile ? { avatar: a.profile.avatar, jobName: a.profile.jobName } : null,
         })),
       });
     }
@@ -156,17 +142,13 @@ const fetchHubDataRaw = async (
 
 // `cache` (react) dedupes within a single request; `unstable_cache` dedupes
 // across requests for 5 minutes. Tag `posts` so a publish busts the hub.
-const getCachedHubData = unstable_cache(
-  fetchHubDataRaw,
-  ['authors-hub', 'v1-2026-06-16'],
-  { revalidate: 300, tags: ['posts', 'top-authors'] },
-);
+const getCachedHubData = unstable_cache(fetchHubDataRaw, ['authors-hub', 'v1-2026-06-16'], {
+  revalidate: 300,
+  tags: ['posts', 'top-authors'],
+});
 
 export const getAuthorsHubData = cache(
-  async (
-    topLimit = 12,
-    expertiseLimit = 6,
-  ): Promise<AuthorsHubData> => {
+  async (topLimit = 12, expertiseLimit = 6): Promise<AuthorsHubData> => {
     try {
       return await getCachedHubData(topLimit, expertiseLimit);
     } catch (error) {
@@ -189,6 +171,7 @@ export type AuthorsHubDataResult = Awaited<ReturnType<typeof getAuthorsHubData>>
 // 2026-06-16: `isEmptyHub` is intentionally NOT exported from a 'use server'
 // file because Next.js requires every export from such a file to be an
 // async function. Consumers can re-define this 1-liner locally.
+// biome-ignore lint/correctness/noUnusedVariables: intentionally kept but not exported (see comment above)
 function isEmptyHub(data: AuthorsHubData): boolean {
   return data.topAuthors.length === 0 && data.expertise.length === 0;
 }

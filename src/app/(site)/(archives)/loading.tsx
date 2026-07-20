@@ -28,7 +28,12 @@ export default function ArchiveLoading() {
 
             <div className="atl-quicklinks" style={{ marginTop: 'var(--ds-space-2)' }}>
               {Array.from({ length: 4 }, (_, i) => (
-                <Skeleton key={i} width="5rem" height="1.75rem" style={{ borderRadius: '9999px' }} />
+                <Skeleton
+                  key={i}
+                  width="5rem"
+                  height="1.75rem"
+                  style={{ borderRadius: '9999px' }}
+                />
               ))}
             </div>
 

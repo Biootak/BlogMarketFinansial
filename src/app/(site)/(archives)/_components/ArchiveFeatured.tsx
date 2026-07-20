@@ -1,11 +1,11 @@
 'use client';
 
+import { SafeImage } from '@/components/SafeImage';
 // 2026-06-29: Client Component because Jalali date formatting calls
 // `new Date()`. Next.js 16's static generation rejects `new Date()` in
 // Server Components before dynamic data access. See
 // https://nextjs.org/docs/messages/next-prerender-current-time
 import { Card } from '@/components/ds';
-import { SafeImage } from '@/components/SafeImage';
 import { getPostLink } from '@/lib/getPostLink';
 import type { PostWithRelations } from '@/types/types';
 import { FolderOpen } from 'lucide-react';
@@ -125,7 +125,10 @@ const ArchiveFeatured: React.FC<ArchiveFeaturedProps> = ({ post }) => {
           </span>
         ) : null}
 
-        <Link href={postLink} className="focus:outline-none focus-visible:underline underline-offset-4">
+        <Link
+          href={postLink}
+          className="focus:outline-none focus-visible:underline underline-offset-4"
+        >
           <h2 className="arc-fcard-v4__title" title={title}>
             {title}
           </h2>
@@ -145,7 +148,11 @@ const ArchiveFeatured: React.FC<ArchiveFeaturedProps> = ({ post }) => {
                 <span className="truncate font-medium max-w-[10rem]">{author.name}</span>
               </span>
             ) : null}
-            {author ? <span aria-hidden className="opacity-40">·</span> : null}
+            {author ? (
+              <span aria-hidden className="opacity-40">
+                ·
+              </span>
+            ) : null}
             <time
               dateTime={new Date(createdAt).toISOString()}
               className="inline-flex items-center gap-1"

@@ -16,20 +16,20 @@ import {
   readInitialStep,
 } from './flow-shared';
 
-const EmailStep       = lazy(() => import('./EmailStep'));
-const RegisterStep    = lazy(() => import('./RegisterStep'));
-const LoginStep       = lazy(() => import('./LoginStep'));
-const RecoverStep     = lazy(() => import('./RecoverStep'));
-const VerifyStep      = lazy(() => import('./VerifyStep'));
+const EmailStep = lazy(() => import('./EmailStep'));
+const RegisterStep = lazy(() => import('./RegisterStep'));
+const LoginStep = lazy(() => import('./LoginStep'));
+const RecoverStep = lazy(() => import('./RecoverStep'));
+const VerifyStep = lazy(() => import('./VerifyStep'));
 const SetPasswordStep = lazy(() => import('./SetPasswordStep'));
 
 // Step → pill index (0-based) for the dot indicator
 const STEP_DOT: Record<InternalStep, number> = {
-  email:          0,
-  register:       1,
-  login:          1,
-  recover:        1,
-  verify:         2,
+  email: 0,
+  register: 1,
+  login: 1,
+  recover: 1,
+  verify: 2,
   'set-password': 2,
 };
 const DOT_COUNT = 3;
@@ -46,43 +46,43 @@ function StepFallback() {
 }
 
 export default function AuthFlow() {
-  const router       = useRouter();
+  const router = useRouter();
   const searchParams = useSearchParams();
 
-  const initialStep   = readInitialStep(searchParams.get('step'), searchParams.get('intent'));
-  const initialEmail  = searchParams.get('email') ?? '';
+  const initialStep = readInitialStep(searchParams.get('step'), searchParams.get('intent'));
+  const initialEmail = searchParams.get('email') ?? '';
   const initialIntent = searchParams.get('intent');
-  const callbackUrl   = searchParams.get('callbackUrl');
+  const callbackUrl = searchParams.get('callbackUrl');
 
-  const [step,   setStep]   = useState<InternalStep>(initialStep);
-  const [email,  setEmail]  = useState(initialEmail);
+  const [step, setStep] = useState<InternalStep>(initialStep);
+  const [email, setEmail] = useState(initialEmail);
   const [intent, setIntent] = useState<FlowIntent>(
     initialIntent === 'login' || initialIntent === 'reverify' || initialIntent === 'recover'
-      ? initialIntent : 'register',
+      ? initialIntent
+      : 'register',
   );
-  const [notice,     setNotice]     = useState<AuthNotice | null>(null);
+  const [notice, setNotice] = useState<AuthNotice | null>(null);
   const [cooldownMs, setCooldownMs] = useState(0);
   const [otpInvalid, setOtpInvalid] = useState(false);
   const [resetToken, setResetToken] = useState<string | null>(null);
 
-  const liveId  = useId();
-  const copy    = STEP_COPY[step];
-  const dotIdx  = STEP_DOT[step];
+  const liveId = useId();
+  const copy = STEP_COPY[step];
+  const dotIdx = STEP_DOT[step];
 
   useEffect(() => {
     if (cooldownMs <= 0) return;
-    const t = window.setInterval(
-      () => setCooldownMs((c) => (c > 1000 ? c - 1000 : 0)),
-      1000,
-    );
+    const t = window.setInterval(() => setCooldownMs((c) => (c > 1000 ? c - 1000 : 0)), 1000);
     return () => clearInterval(t);
   }, [cooldownMs]);
 
   const syncUrl = (s: InternalStep, e: string, i: FlowIntent) => {
     const p = new URLSearchParams(searchParams.toString());
     p.set('step', s);
-    if (e) p.set('email', e); else p.delete('email');
-    if (s === 'email') p.delete('intent'); else p.set('intent', i);
+    if (e) p.set('email', e);
+    else p.delete('email');
+    if (s === 'email') p.delete('intent');
+    else p.set('intent', i);
     router.replace(`/auth?${p.toString()}`, { scroll: false });
   };
 
@@ -90,7 +90,7 @@ export default function AuthFlow() {
     next: InternalStep,
     opts?: { email?: string; intent?: FlowIntent; notice?: AuthNotice | null },
   ) => {
-    const ne = opts?.email  ?? email;
+    const ne = opts?.email ?? email;
     const ni = opts?.intent ?? intent;
     setStep(next);
     setEmail(ne);
@@ -106,7 +106,7 @@ export default function AuthFlow() {
       if (typeof result.cooldownMs === 'number') setCooldownMs(result.cooldownMs);
       return;
     }
-    const ne = result.email  ?? email;
+    const ne = result.email ?? email;
     const ni = (result.intent ?? intent) as FlowIntent;
     setEmail(ne);
     setIntent(ni);
@@ -114,14 +114,17 @@ export default function AuthFlow() {
     setNotice({ tone: 'success', message: result.message });
 
     if (result.redirect) {
-      const dest = callbackUrl?.startsWith('/') && !callbackUrl.startsWith('//')
-        ? callbackUrl : result.redirect;
+      const dest =
+        callbackUrl?.startsWith('/') && !callbackUrl.startsWith('//')
+          ? callbackUrl
+          : result.redirect;
       router.push(dest);
       return;
     }
     if (result.step) {
       moveTo(result.step as InternalStep, {
-        email: ne, intent: ni,
+        email: ne,
+        intent: ni,
         notice: { tone: 'success', message: result.message },
       });
     }
@@ -130,7 +133,6 @@ export default function AuthFlow() {
   return (
     <section className="auth-card" aria-labelledby="auth-heading">
       <div className="auth-card-inner">
-
         {/* ── Step dots ── */}
         <div className="auth-step-dots" aria-hidden="true">
           {Array.from({ length: DOT_COUNT }).map((_, i) => (
@@ -146,7 +148,9 @@ export default function AuthFlow() {
         <div className="auth-shell-band">
           <p className="auth-shell-eyebrow">{copy.eyebrow}</p>
           <div className="auth-card-header">
-            <h1 id="auth-heading" className="auth-form-heading">{copy.title}</h1>
+            <h1 id="auth-heading" className="auth-form-heading">
+              {copy.title}
+            </h1>
             <p className="auth-form-lede">{copy.subtitle}</p>
           </div>
         </div>
@@ -157,16 +161,11 @@ export default function AuthFlow() {
         </div>
 
         {/* ── Notices ── */}
-        <NoticeBanner
-          notice={notice}
-          key={notice ? `${notice.tone}-${Date.now()}` : 'idle'}
-        />
+        <NoticeBanner notice={notice} key={notice ? `${notice.tone}-${Date.now()}` : 'idle'} />
 
         {/* ── Step content ── */}
         <Suspense fallback={<StepFallback />}>
-          {step === 'email' && (
-            <EmailStep onResult={handleResult} onMoveTo={moveTo} />
-          )}
+          {step === 'email' && <EmailStep onResult={handleResult} onMoveTo={moveTo} />}
           {step === 'register' && (
             <RegisterStep
               initialEmail={email}
@@ -201,9 +200,7 @@ export default function AuthFlow() {
               onInvalidChange={setOtpInvalid}
               onBack={() => {
                 const fallback: InternalStep =
-                  intent === 'recover' ? 'recover'
-                  : intent === 'login'   ? 'login'
-                  : 'register';
+                  intent === 'recover' ? 'recover' : intent === 'login' ? 'login' : 'register';
                 moveTo(fallback, { notice: null, intent });
               }}
             />
@@ -224,10 +221,14 @@ export default function AuthFlow() {
         {/* ── Fine print ── */}
         <p className="auth-fineprint">
           با ادامه،{' '}
-          <Link href="/terms" className="auth-link">قوانین</Link>
-          {' '}و{' '}
-          <Link href="/privacy-policy" className="auth-link">حریم خصوصی</Link>
-          {' '}را می‌پذیرید.
+          <Link href="/terms" className="auth-link">
+            قوانین
+          </Link>{' '}
+          و{' '}
+          <Link href="/privacy-policy" className="auth-link">
+            حریم خصوصی
+          </Link>{' '}
+          را می‌پذیرید.
         </p>
       </div>
     </section>

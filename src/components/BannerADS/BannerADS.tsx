@@ -14,25 +14,20 @@
 
 'use client';
 
-import Link from 'next/link';
-import { useRef, useState, useEffect, type CSSProperties } from 'react';
+import SafeImage from '@/components/SafeImage/SafeImage';
+import { cn, parseCustomDimensions, toPersianNumber } from '@/lib/utils';
+import type { AdPosition, AdSize, Advertisement, CustomAdDimensions } from '@/types/types';
 import {
   ArrowUpLeft,
-  ExternalLink,
-  Sparkles,
-  Radio,
   Calendar,
+  ExternalLink,
   Eye,
+  Radio,
+  Sparkles,
   TrendingUp,
 } from 'lucide-react';
-import SafeImage from '@/components/SafeImage/SafeImage';
-import { cn, toPersianNumber, parseCustomDimensions } from '@/lib/utils';
-import type {
-  Advertisement,
-  AdSize,
-  AdPosition,
-  CustomAdDimensions,
-} from '@/types/types';
+import Link from 'next/link';
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
 
 export type BannerAdVariant = 'rich' | 'image' | 'showcase' | 'minimal' | 'spotlight';
 
@@ -151,7 +146,9 @@ function BannerAdLabel({
         className,
       )}
     >
-      {variant === 'minimal' ? null : <Sparkles className="h-2.5 w-2.5" strokeWidth={2.5} aria-hidden />}
+      {variant === 'minimal' ? null : (
+        <Sparkles className="h-2.5 w-2.5" strokeWidth={2.5} aria-hidden />
+      )}
       <span>{text}</span>
     </span>
   );
@@ -197,29 +194,25 @@ function BannerCta({
   const inner = (
     <>
       <span>{label}</span>
-      <ArrowUpLeft className="h-3.5 w-3.5 transition-transform duration-300 group-hover/cta:rotate-12" strokeWidth={2.25} aria-hidden />
+      <ArrowUpLeft
+        className="h-3.5 w-3.5 transition-transform duration-300 group-hover/cta:rotate-12"
+        strokeWidth={2.25}
+        aria-hidden
+      />
     </>
   );
 
   // وقتی داخل یه <a> دیگه هستیم، از <span> بصری استفاده می‌کنیم
   if (asSpan) {
     return (
-      <span
-        aria-hidden
-        className={sharedClass}
-      >
+      <span aria-hidden className={sharedClass}>
         {inner}
       </span>
     );
   }
 
   return (
-    <Link
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer sponsored"
-      className={sharedClass}
-    >
+    <Link href={href} target="_blank" rel="noopener noreferrer sponsored" className={sharedClass}>
       {inner}
     </Link>
   );
@@ -254,18 +247,8 @@ function Sparkline() {
         fill="url(#ad-spark-grad)"
       />
       <circle cx="78" cy="4" r="3" fill="rgb(94 106 230)">
-        <animate
-          attributeName="r"
-          values="3;5;3"
-          dur="2s"
-          repeatCount="indefinite"
-        />
-        <animate
-          attributeName="opacity"
-          values="1;0.4;1"
-          dur="2s"
-          repeatCount="indefinite"
-        />
+        <animate attributeName="r" values="3;5;3" dur="2s" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite" />
       </circle>
     </svg>
   );
@@ -291,17 +274,21 @@ export default function BannerAds({
   const parsedCustom = customDimensions ?? parseCustomDimensions(ad.customDimensions);
   const { ratio, variant: imageVariant } = getRatioForSize(size, parsedCustom ?? undefined);
 
-  const variant = resolveVariant(
-    variantProp,
-    { imageOnly, showAdLabel, showTitle, showDescription, showButton },
-  );
+  const variant = resolveVariant(variantProp, {
+    imageOnly,
+    showAdLabel,
+    showTitle,
+    showDescription,
+    showButton,
+  });
 
-  const showLabelResolved =
-    typeof showAdLabel === 'boolean' ? showAdLabel : false;
+  const showLabelResolved = typeof showAdLabel === 'boolean' ? showAdLabel : false;
   const showTitleResolved =
     typeof showTitle === 'boolean' ? showTitle : variant === 'rich' || variant === 'showcase';
   const showDescriptionResolved =
-    typeof showDescription === 'boolean' ? showDescription : variant === 'rich' || variant === 'showcase';
+    typeof showDescription === 'boolean'
+      ? showDescription
+      : variant === 'rich' || variant === 'showcase';
   const showButtonResolved =
     typeof showButton === 'boolean' ? showButton : variant === 'rich' || variant === 'showcase';
 
@@ -384,10 +371,7 @@ export default function BannerAds({
             <div aria-hidden className="ad-pulse-glow absolute inset-0 rounded-3xl" />
 
             {/* Hairline مورب بالای کارت */}
-            <div
-              aria-hidden
-              className="ad-spotlight-hairline absolute start-0 end-0 top-0 h-px"
-            />
+            <div aria-hidden className="ad-spotlight-hairline absolute start-0 end-0 top-0 h-px" />
 
             {showLabelResolved && (
               <div className="absolute start-5 top-5 sm:start-7 sm:top-7 z-30 flex items-center gap-2">
@@ -428,8 +412,7 @@ export default function BannerAds({
                     aria-hidden
                     className="absolute inset-0 pointer-events-none"
                     style={{
-                      background:
-                        'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.15) 100%)',
+                      background: 'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.15) 100%)',
                     }}
                   />
                 </div>
@@ -459,7 +442,11 @@ export default function BannerAds({
                         روند بازدید زنده
                       </span>
                       <span className="text-[11.5px] font-semibold text-neutral-600 dark:text-neutral-300 tabular-nums flex items-center gap-1.5">
-                        <Eye className="inline h-3.5 w-3.5 text-neutral-400 dark:text-neutral-500" strokeWidth={2.25} aria-hidden />
+                        <Eye
+                          className="inline h-3.5 w-3.5 text-neutral-400 dark:text-neutral-500"
+                          strokeWidth={2.25}
+                          aria-hidden
+                        />
                         <span>{toPersianNumber(viewsCount)}</span> بازدید واقعی
                       </span>
                     </div>
@@ -469,7 +456,9 @@ export default function BannerAds({
                 {/* Meta row — تاریخ + spacer */}
                 <div className="flex items-center gap-2 text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
                   <Calendar className="h-3 w-3" strokeWidth={2.25} aria-hidden />
-                  <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{dateStr}</span>
+                  <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
+                    {dateStr}
+                  </span>
                 </div>
 
                 {/* CTA row */}
@@ -544,7 +533,8 @@ export default function BannerAds({
             aria-hidden
             className="pointer-events-none absolute inset-0 opacity-0 group-hover/ad:opacity-100 transition-opacity duration-500 z-20 mix-blend-overlay"
             style={{
-              background: `radial-gradient(circle 300px at calc(var(--mx, 0.5) * 100%) calc(var(--my, 0.5) * 100%), rgba(255, 255, 255, 0.15) 0%, var(--glow-soft) 40%, transparent 100%)`,
+              background:
+                'radial-gradient(circle 300px at calc(var(--mx, 0.5) * 100%) calc(var(--my, 0.5) * 100%), rgba(255, 255, 255, 0.15) 0%, var(--glow-soft) 40%, transparent 100%)',
             }}
           />
 
@@ -578,7 +568,10 @@ export default function BannerAds({
                   : 'end-3 top-3 opacity-0 translate-y-1 group-hover/ad:opacity-100 group-hover/ad:translate-y-0 transition-all duration-300',
               )}
             >
-              <BannerAdLabel text={isMinimal ? 'AD' : 'تبلیغ'} variant={isMinimal ? 'minimal' : 'primary'} />
+              <BannerAdLabel
+                text={isMinimal ? 'AD' : 'تبلیغ'}
+                variant={isMinimal ? 'minimal' : 'primary'}
+              />
             </div>
           )}
 
@@ -635,7 +628,8 @@ export default function BannerAds({
           aria-hidden
           className="pointer-events-none absolute inset-0 opacity-0 group-hover/ad:opacity-100 transition-opacity duration-500 z-20 mix-blend-overlay"
           style={{
-            background: `radial-gradient(circle 300px at calc(var(--mx, 0.5) * 100%) calc(var(--my, 0.5) * 100%), rgba(255, 255, 255, 0.15) 0%, var(--glow-soft) 40%, transparent 100%)`,
+            background:
+              'radial-gradient(circle 300px at calc(var(--mx, 0.5) * 100%) calc(var(--my, 0.5) * 100%), rgba(255, 255, 255, 0.15) 0%, var(--glow-soft) 40%, transparent 100%)',
           }}
         />
 
@@ -645,7 +639,10 @@ export default function BannerAds({
           tabIndex={0}
           aria-label={`تبلیغ: ${title}`}
           onClick={() => window.open(linkUrl, '_blank', 'noopener,noreferrer')}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') window.open(linkUrl, '_blank', 'noopener,noreferrer'); }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ')
+              window.open(linkUrl, '_blank', 'noopener,noreferrer');
+          }}
           className="absolute inset-0 z-0 cursor-pointer"
         />
 
@@ -664,8 +661,7 @@ export default function BannerAds({
           aria-hidden
           className="absolute start-0 end-0 top-0 h-px opacity-50"
           style={{
-            background:
-              'linear-gradient(90deg, transparent, var(--primary-500) 50%, transparent)',
+            background: 'linear-gradient(90deg, transparent, var(--primary-500) 50%, transparent)',
           }}
         />
 
@@ -686,8 +682,7 @@ export default function BannerAds({
               aria-hidden
               className="absolute inset-0 pointer-events-none"
               style={{
-                background:
-                  'linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.18) 100%)',
+                background: 'linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.18) 100%)',
               }}
             />
           </div>
@@ -723,12 +718,6 @@ export default function BannerAds({
 
 function getPositionClass(position: AdPosition): string {
   switch (position) {
-    case 'HEADER':
-    case 'FOOTER':
-    case 'IN_CONTENT':
-    case 'BETWEEN_POSTS':
-    case 'SIDEBAR':
-    case 'CUSTOM':
     default:
       return 'w-full';
   }

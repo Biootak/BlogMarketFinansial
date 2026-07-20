@@ -22,11 +22,7 @@ const isDev = process.env.NODE_ENV === 'development';
  * یک promise را اجرا می‌کند و در صورت خطا، مقدار fallback برمی‌گرداند.
  * خطا فقط در dev لاگ می‌شود تا production log ها تمیز بمانند.
  */
-export async function safe<T>(
-  promise: Promise<T>,
-  fallback: T,
-  context?: string,
-): Promise<T> {
+export async function safe<T>(promise: Promise<T>, fallback: T, context?: string): Promise<T> {
   try {
     return await promise;
   } catch (error) {
@@ -45,10 +41,7 @@ export async function safe<T>(
  * نسخه‌ی آرایه‌ای: اگر خطا دهد، آرایه‌ی خالی برمی‌گرداند.
  * کوتاه‌نویس برای استفاده‌ی رایج در layout ها.
  */
-export async function safeArray<T>(
-  promise: Promise<T[]>,
-  context?: string,
-): Promise<T[]> {
+export async function safeArray<T>(promise: Promise<T[]>, context?: string): Promise<T[]> {
   return safe(promise, [] as T[], context);
 }
 

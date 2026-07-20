@@ -1,9 +1,9 @@
 'use client';
 
 import LoadingVideo from '@/components/LoadingVideo/LoadingVideo';
-import { HiSpeakerWave, HiSpeakerXMark } from 'react-icons/hi2';
-import React, { type FC, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
+import React, { type FC, useEffect, useState } from 'react';
+import { HiSpeakerWave, HiSpeakerXMark } from 'react-icons/hi2';
 
 const ReactPlayer = dynamic(() => import('react-player'), { ssr: false });
 
@@ -33,7 +33,7 @@ const MediaVideo: FC<MediaVideoProps> = ({ videoUrl, isHover }) => {
         style={{
           opacity: isPlaying ? 1 : 0,
         }}
-        className={`absolute bg-neutral-900 inset-0 transition-opacity`}
+        className={'absolute bg-neutral-900 inset-0 transition-opacity'}
         width="100%"
         height="100%"
         onStart={() => {

@@ -13,17 +13,9 @@
  *  - prefers-reduced-motion رعایت شده
  */
 
-import { useRef, useEffect, useCallback, useState } from 'react';
+import { ArrowLeft, BarChart2, Globe, Shield, TrendingDown, TrendingUp, Zap } from 'lucide-react';
 import Link from 'next/link';
-import {
-  TrendingUp,
-  ArrowLeft,
-  BarChart2,
-  Globe,
-  Zap,
-  Shield,
-  TrendingDown,
-} from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import s from './HeroSection.module.css';
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -126,8 +118,8 @@ export default function HeroSection() {
         {/* Trust pills — همان heroPills صفحه حواله */}
         <ul className={s.pills} aria-label="ویژگی‌های کلیدی">
           {[
-            { icon: Globe,  text: '۲ کشور' },
-            { icon: Zap,    text: 'نرخ لحظه‌ای' },
+            { icon: Globe, text: '۲ کشور' },
+            { icon: Zap, text: 'نرخ لحظه‌ای' },
             { icon: Shield, text: 'انتقال امن' },
           ].map(({ icon: Icon, text }) => (
             <li key={text} className={s.pill}>
@@ -173,17 +165,26 @@ export default function HeroSection() {
             </div>
             <div className={s.cardDivider} />
             {[
-              { name: 'دلار / ریال',  val: '۷۹٬۵۰۰', trend: 'up'   as const },
-              { name: 'دلار / افغانی', val: '۷۲٬۸',   trend: 'down' as const },
-              { name: 'یورو / دلار',  val: '۱.۰۸',   trend: 'up'   as const },
+              { name: 'دلار / ریال', val: '۷۹٬۵۰۰', trend: 'up' as const },
+              { name: 'دلار / افغانی', val: '۷۲٬۸', trend: 'down' as const },
+              { name: 'یورو / دلار', val: '۱.۰۸', trend: 'up' as const },
             ].map((r) => (
               <div key={r.name} className={s.rateRow}>
                 <span className={s.rateName}>{r.name}</span>
                 <span className={`${s.rateVal} ${r.trend === 'up' ? s.trendUp : s.trendDown}`}>
-                  {r.trend === 'up'
-                    ? <TrendingUp   size={9} strokeWidth={2} style={{ display: 'inline', marginInlineEnd: 3 }} />
-                    : <TrendingDown size={9} strokeWidth={2} style={{ display: 'inline', marginInlineEnd: 3 }} />
-                  }
+                  {r.trend === 'up' ? (
+                    <TrendingUp
+                      size={9}
+                      strokeWidth={2}
+                      style={{ display: 'inline', marginInlineEnd: 3 }}
+                    />
+                  ) : (
+                    <TrendingDown
+                      size={9}
+                      strokeWidth={2}
+                      style={{ display: 'inline', marginInlineEnd: 3 }}
+                    />
+                  )}
                   {r.val}
                 </span>
               </div>

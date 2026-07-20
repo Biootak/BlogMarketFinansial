@@ -1,11 +1,11 @@
+import { getExchangeForUser, getExchangeStaff } from '@/actions/exchanges';
 /**
  * /exchange/staff — مدیریت کارمندان صراف
  */
 import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
-import { getExchangeForUser, getExchangeStaff } from '@/actions/exchanges';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import StaffWorkspace from './_components/StaffWorkspace';
 
 export const metadata: Metadata = { title: 'کارمندان صرافی' };

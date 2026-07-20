@@ -64,7 +64,11 @@ export const FontFamily = Extension.create<FontFamilyOptions>({
 // فونت‌های فارسی (Vazirmatn از 2026-06-28 self-hosted است)
 export const persianFonts = [
   { label: 'وزیرمتن', value: 'Vazirmatn', url: '/fonts/vazirmatn/vazirmatn.css' },
-  { label: 'یکان بخ', value: 'Yekan Bakh', url: 'https://cdn.jsdelivr.net/gh/nicefont/yekan-bakh@main/css/yekan-bakh.css' },
+  {
+    label: 'یکان بخ',
+    value: 'Yekan Bakh',
+    url: 'https://cdn.jsdelivr.net/gh/nicefont/yekan-bakh@main/css/yekan-bakh.css',
+  },
 ];
 
 // فونت‌های سیستمی
@@ -84,14 +88,46 @@ export const systemFonts = [
 
 // فونت‌های آنلاین انگلیسی (Google Fonts)
 export const googleFonts = [
-  { label: 'Roboto', value: 'Roboto', url: 'https://fonts.googleapis.com/css2?family=Roboto:wght@100..900&display=swap' },
-  { label: 'Open Sans', value: 'Open Sans', url: 'https://fonts.googleapis.com/css2?family=Open+Sans:wght@300..800&display=swap' },
-  { label: 'Lato', value: 'Lato', url: 'https://fonts.googleapis.com/css2?family=Lato:wght@100..900&display=swap' },
-  { label: 'Montserrat', value: 'Montserrat', url: 'https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap' },
-  { label: 'Poppins', value: 'Poppins', url: 'https://fonts.googleapis.com/css2?family=Poppins:wght@100..900&display=swap' },
-  { label: 'Playfair Display', value: 'Playfair Display', url: 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400..900&display=swap' },
-  { label: 'Merriweather', value: 'Merriweather', url: 'https://fonts.googleapis.com/css2?family=Merriweather:wght@300..900&display=swap' },
-  { label: 'Source Code Pro', value: 'Source Code Pro', url: 'https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@200..900&display=swap' },
+  {
+    label: 'Roboto',
+    value: 'Roboto',
+    url: 'https://fonts.googleapis.com/css2?family=Roboto:wght@100..900&display=swap',
+  },
+  {
+    label: 'Open Sans',
+    value: 'Open Sans',
+    url: 'https://fonts.googleapis.com/css2?family=Open+Sans:wght@300..800&display=swap',
+  },
+  {
+    label: 'Lato',
+    value: 'Lato',
+    url: 'https://fonts.googleapis.com/css2?family=Lato:wght@100..900&display=swap',
+  },
+  {
+    label: 'Montserrat',
+    value: 'Montserrat',
+    url: 'https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap',
+  },
+  {
+    label: 'Poppins',
+    value: 'Poppins',
+    url: 'https://fonts.googleapis.com/css2?family=Poppins:wght@100..900&display=swap',
+  },
+  {
+    label: 'Playfair Display',
+    value: 'Playfair Display',
+    url: 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400..900&display=swap',
+  },
+  {
+    label: 'Merriweather',
+    value: 'Merriweather',
+    url: 'https://fonts.googleapis.com/css2?family=Merriweather:wght@300..900&display=swap',
+  },
+  {
+    label: 'Source Code Pro',
+    value: 'Source Code Pro',
+    url: 'https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@200..900&display=swap',
+  },
 ];
 
 export interface FontOption {
@@ -103,18 +139,18 @@ export interface FontOption {
 
 export const fontFamilies: FontOption[] = [
   { label: 'پیش‌فرض', value: '', category: 'default' },
-  ...persianFonts.map(f => ({ ...f, category: 'persian' as const })),
-  ...systemFonts.map(f => ({ ...f, category: 'system' as const })),
-  ...googleFonts.map(f => ({ ...f, category: 'google' as const })),
+  ...persianFonts.map((f) => ({ ...f, category: 'persian' as const })),
+  ...systemFonts.map((f) => ({ ...f, category: 'system' as const })),
+  ...googleFonts.map((f) => ({ ...f, category: 'google' as const })),
 ];
 
 // تابع برای لود کردن فونت آنلاین
 export const loadFont = (fontOption: FontOption) => {
   if (!fontOption.url) return;
-  
+
   const linkId = `font-${fontOption.value.replace(/\s+/g, '-')}`;
   if (document.getElementById(linkId)) return;
-  
+
   const link = document.createElement('link');
   link.id = linkId;
   link.rel = 'stylesheet';

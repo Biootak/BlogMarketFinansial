@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { deleteFile } from '@/lib/storage';
 import { assertSameOrigin } from '@/lib/csrf';
+import { deleteFile } from '@/lib/storage';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export async function DELETE(request: NextRequest) {
   // M1 fix parity with /api/revalidate: reject cross-origin state-changing
@@ -19,7 +19,7 @@ export async function DELETE(request: NextRequest) {
     if (!session?.user || (role !== 'ADMIN' && role !== 'OWNER')) {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: 'فقط ادمین می‌تواند فایل حذف کند' } },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -28,7 +28,7 @@ export async function DELETE(request: NextRequest) {
     if (!imageUrl) {
       return NextResponse.json(
         { success: false, error: { code: 'MISSING_IMAGE_URL', message: 'آدرس تصویر الزامی است' } },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -39,7 +39,7 @@ export async function DELETE(request: NextRequest) {
           success: false,
           error: { code: 'INVALID_IMAGE_URL', message: 'فقط فایل‌های آپلود شده قابل حذف هستند' },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -48,7 +48,7 @@ export async function DELETE(request: NextRequest) {
     if (parts.length < 2 || parts.some((p: string) => p === '..' || p.includes('~'))) {
       return NextResponse.json(
         { success: false, error: { code: 'INVALID_PATH', message: 'مسیر نامعتبر' } },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -57,7 +57,7 @@ export async function DELETE(request: NextRequest) {
     if (!ALLOWED_FOLDERS.includes(folder)) {
       return NextResponse.json(
         { success: false, error: { code: 'INVALID_FOLDER', message: 'فولدر نامعتبر' } },
-        { status: 400 }
+        { status: 400 },
       );
     }
     const filename = parts.slice(1).join('/');
@@ -67,7 +67,7 @@ export async function DELETE(request: NextRequest) {
     if (!deleted) {
       return NextResponse.json(
         { success: false, error: { code: 'FILE_NOT_FOUND', message: 'فایل یافت نشد' } },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -79,8 +79,7 @@ export async function DELETE(request: NextRequest) {
     console.error('خطا در حذف فایل:', error);
     return NextResponse.json(
       { success: false, error: { code: 'DELETE_FAILED', message: 'خطا در حذف فایل' } },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

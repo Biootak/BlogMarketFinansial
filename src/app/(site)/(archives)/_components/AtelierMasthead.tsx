@@ -1,9 +1,9 @@
-import { ChevronLeft, Eye, MessagesSquare } from 'lucide-react';
-import Link from 'next/link';
-import * as React from 'react';
 import { SafeImage } from '@/components/SafeImage';
 import { getPostLink } from '@/lib/getPostLink';
 import type { PostWithRelations, TaxonomyType } from '@/types/types';
+import { ChevronLeft, Eye, MessagesSquare } from 'lucide-react';
+import Link from 'next/link';
+import * as React from 'react';
 import type { Crumb } from './ArchiveBreadcrumb';
 
 /**
@@ -51,7 +51,7 @@ export default function AtelierMasthead({
   showQuickLinks,
   featuredPost,
 }: Props) {
-  const fp = featuredPost && featuredPost.slug ? featuredPost : null;
+  const fp = featuredPost?.slug ? featuredPost : null;
   const fpLink = fp ? getPostLink(fp.postType, fp.slug) : '#';
   const fpCategory = fp?.categories?.[0];
   const fpViews = fp?.viewCount ?? 0;

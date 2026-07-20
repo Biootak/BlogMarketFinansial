@@ -17,11 +17,9 @@ export default function SourceBadge({ provider, tgjuKey }: SourceBadgeProps) {
           fontSize: 'var(--ds-text-xs)',
           padding: '0.25rem 0.625rem',
           borderRadius: 'var(--ds-radius-full)',
-          background:
-            'color-mix(in oklch, var(--ds-accent-emerald) 14%, transparent)',
+          background: 'color-mix(in oklch, var(--ds-accent-emerald) 14%, transparent)',
           color: 'var(--ds-accent-emerald)',
-          border:
-            '1px solid color-mix(in oklch, var(--ds-accent-emerald) 30%, transparent)',
+          border: '1px solid color-mix(in oklch, var(--ds-accent-emerald) 30%, transparent)',
         }}
         aria-label={`منبع خودکار از ${tgjuKey ?? 'TGJU'}`}
       >
@@ -47,11 +45,9 @@ export default function SourceBadge({ provider, tgjuKey }: SourceBadgeProps) {
         fontSize: 'var(--ds-text-xs)',
         padding: '0.25rem 0.625rem',
         borderRadius: 'var(--ds-radius-full)',
-        background:
-          'color-mix(in oklch, var(--ds-accent-amber) 14%, transparent)',
+        background: 'color-mix(in oklch, var(--ds-accent-amber) 14%, transparent)',
         color: 'var(--ds-accent-amber)',
-        border:
-          '1px solid color-mix(in oklch, var(--ds-accent-amber) 30%, transparent)',
+        border: '1px solid color-mix(in oklch, var(--ds-accent-amber) 30%, transparent)',
       }}
       aria-label="منبع دستی"
     >

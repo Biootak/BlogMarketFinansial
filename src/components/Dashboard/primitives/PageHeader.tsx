@@ -82,15 +82,11 @@ export function PageHeader({
             {title}
           </h1>
           {description && (
-            <p className="mt-1 max-w-2xl text-sm text-[color:var(--at-fg-muted)]">
-              {description}
-            </p>
+            <p className="mt-1 max-w-2xl text-sm text-[color:var(--at-fg-muted)]">{description}</p>
           )}
         </div>
       </div>
-      {actions && (
-        <div className="flex flex-wrap items-center gap-2">{actions}</div>
-      )}
+      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
     </header>
   );
 }

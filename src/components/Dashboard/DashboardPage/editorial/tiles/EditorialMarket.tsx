@@ -8,15 +8,12 @@
  * no rainbow icons.
  */
 
-import { cn } from '@/lib/utils';
-import { formatWithUnit, formatChangePercent } from '@/lib/market-rates/format';
 import type { MarketRateItem } from '@/lib/market-rates';
+import { formatChangePercent, formatWithUnit } from '@/lib/market-rates/format';
+import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useMemo } from 'react';
-import {
-  HiOutlineArrowLeft,
-  HiOutlinePresentationChartLine,
-} from 'react-icons/hi2';
+import { HiOutlineArrowLeft, HiOutlinePresentationChartLine } from 'react-icons/hi2';
 
 const DISPLAY_SYMBOLS = ['IRAN_USD', 'IRAN_EUR', 'IRAN_GOLD_18K', 'IRAN_COIN_EMAMI'] as const;
 

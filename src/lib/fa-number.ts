@@ -5,7 +5,7 @@ export function formatFaNumber(input: number | string): string {
     // Use locale, but fa-IR isn't always present. Type coercion is safe.
     return (Number(s) === Number(s) ? Number(s) : s).toLocaleString('fa-IR');
   } catch {
-    const map = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+    const map = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
     return s.replace(/[0-9]/g, (d) => map[Number(d)]);
   }
 }
@@ -15,6 +15,6 @@ export function localTimeShortFa(d: Date | null | undefined): string {
   try {
     return new Intl.DateTimeFormat('fa-IR', { hour: '2-digit', minute: '2-digit' }).format(d);
   } catch {
-    return formatFaNumber(d.getHours()) + ':' + formatFaNumber(d.getMinutes());
+    return `${formatFaNumber(d.getHours())}:${formatFaNumber(d.getMinutes())}`;
   }
 }

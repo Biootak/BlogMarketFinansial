@@ -1,28 +1,29 @@
 'use client';
 
-import { type FC, useCallback, useMemo } from 'react';
 import { motion } from '@/lib/motion-shim';
-import {
-  HiCheck,
-} from 'react-icons/hi2';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { type FC, useCallback, useMemo } from 'react';
+import { HiCheck } from 'react-icons/hi2';
 
-import PostCardSaveAction from '@/components/PostCardSaveAction/PostCardSaveAction';
-import type { PostWithRelations } from '@/types/types';
 import PostCardLikeAndComment from '@/components/PostCardLikeAndComment/PostCardLikeAndComment';
 import PostCardMeta from '@/components/PostCardMeta/PostCardMeta';
-import PostStatusBadge from '../Blog/PostStatusBadge';
+import PostCardSaveAction from '@/components/PostCardSaveAction/PostCardSaveAction';
 import { cn } from '@/lib/utils';
+import type { PostWithRelations } from '@/types/types';
+import PostStatusBadge from '../Blog/PostStatusBadge';
 
-import BookmarkCheck from '../../BookmarkCheck';
 import FormattedDate from '@/components/FormattedDate';
 import { getPostLink } from '@/lib/getPostLink';
 import dynamic from 'next/dynamic';
+import BookmarkCheck from '../../BookmarkCheck';
 
-const PostFeaturedMedia = dynamic(() => import('@/components/PostFeaturedMedia/PostFeaturedMedia'), {
-  ssr: false,
-});
+const PostFeaturedMedia = dynamic(
+  () => import('@/components/PostFeaturedMedia/PostFeaturedMedia'),
+  {
+    ssr: false,
+  },
+);
 
 export interface CardListProps {
   className?: string;
@@ -70,7 +71,7 @@ const CardList: FC<CardListProps> = ({
   const postMeta = useMemo(() => <PostCardMeta meta={post} />, [post]);
 
   const isSessionLoading = status === 'loading';
-  const canEditPost =
+  const _canEditPost =
     isSessionLoading ||
     session?.user?.role === 'OWNER' ||
     session?.user?.role === 'ADMIN' ||
@@ -194,7 +195,10 @@ const CardList: FC<CardListProps> = ({
           )}
 
           {/* Title — like at-posts__feature-title */}
-          <h3 className="mt-2 mb-3 text-sm font-bold text-[color:var(--at-fg)] leading-relaxed line-clamp-2" dir="rtl">
+          <h3
+            className="mt-2 mb-3 text-sm font-bold text-[color:var(--at-fg)] leading-relaxed line-clamp-2"
+            dir="rtl"
+          >
             <Link
               href={getPostLink(postType, slug)}
               className={cn(

@@ -46,8 +46,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useBreadcrumb } from '@/hooks/useBreadcrumb';
 import { useSidebarStore } from '@/hooks/sidebarStore';
+import { useBreadcrumb } from '@/hooks/useBreadcrumb';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
@@ -225,12 +225,9 @@ const Header: React.FC = () => {
   // is set by the page below. Uses the last breadcrumb item (the leaf) so
   // sub-pages (پست‌ها، کاربران، گزارش‌ها…) reflect where the user is.
   const mobileTitle =
-    breadcrumbItems.length > 0
-      ? breadcrumbItems[breadcrumbItems.length - 1].label
-      : 'داشبورد';
+    breadcrumbItems.length > 0 ? breadcrumbItems[breadcrumbItems.length - 1].label : 'داشبورد';
 
-  const headerMode: 'default' | 'search' =
-    isMobile && isSearching ? 'search' : 'default';
+  const headerMode: 'default' | 'search' = isMobile && isSearching ? 'search' : 'default';
 
   // The sidebar is a flex child (not fixed), so the header needs no margin
   // offset — the flex layout handles spacing automatically.

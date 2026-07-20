@@ -31,7 +31,7 @@ export function createConsoleProvider(): EmailProvider {
           `│ to:      ${message.to}`,
           `│ subject: ${message.subject}`,
           '│',
-          ...message.text?.split('\n').map((line) => `│ ${line}`) ?? [],
+          ...(message.text?.split('\n').map((line) => `│ ${line}`) ?? []),
           '└──────────────────────────────────────────────────',
         ].join('\n'),
       );

@@ -1,8 +1,8 @@
-import type React from 'react';
-import Link from 'next/link';
 import Avatar from '@/components/Avatar/Avatar';
-import type { UserWithProfile } from '@/types/types';
 import { heading, text } from '@/lib/design-tokens';
+import type { UserWithProfile } from '@/types/types';
+import Link from 'next/link';
+import type React from 'react';
 
 export interface CardAuthorProps {
   className?: string;
@@ -29,9 +29,7 @@ const CardAuthor: React.FC<CardAuthorProps> = ({ className = '', author }) => {
       <div>
         <h2 className={heading.h4}>{name}</h2>
         {profile?.jobName && (
-          <span className={['block mt-0.5', text.meta].join(' ')}>
-            {profile.jobName}
-          </span>
+          <span className={['block mt-0.5', text.meta].join(' ')}>{profile.jobName}</span>
         )}
       </div>
     </Link>

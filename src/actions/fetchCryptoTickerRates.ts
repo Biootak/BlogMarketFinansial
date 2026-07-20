@@ -1,7 +1,7 @@
 'use server';
 
-import type { CryptoTickerResult } from '@/types/types';
 import { safeCache } from '@/lib/safe-cache';
+import type { CryptoTickerResult } from '@/types/types';
 import { getExirCryptoRates } from '../lib/exir-crypto-rates';
 
 /* 2026-06-20: این اکشن قبلاً `fetchExchangeRates` نام داشت که با مدل

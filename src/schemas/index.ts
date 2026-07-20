@@ -1,7 +1,7 @@
+import { isPhoneValid } from '@/lib/phone-validation';
 import { generateSlug, validateSlug } from '@/lib/utils';
 import { PostStatus, PostType } from '@prisma/client';
 import { z } from 'zod';
-import { isPhoneValid } from '@/lib/phone-validation';
 
 // Utility functions
 const createStringSchema = (min: number, max: number, minMessage: string, maxMessage: string) =>
@@ -165,7 +165,9 @@ export const UpdateProfileSchema = z
     phoneNumber: z
       .string()
       .max(20, 'شماره موبایل نمی‌تواند بیشتر از 20 رقم باشد')
-      .refine((v) => !v || isPhoneValid(v), { message: 'شماره موبایل معتبر نیست (مثال: ۰۷۰۱۲۳۴۵۶۷)' })
+      .refine((v) => !v || isPhoneValid(v), {
+        message: 'شماره موبایل معتبر نیست (مثال: ۰۷۰۱۲۳۴۵۶۷)',
+      })
       .optional()
       .or(z.literal('')),
     bio: z

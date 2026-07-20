@@ -1,29 +1,24 @@
 'use client';
 
-import React, { useState, useCallback, useRef, useMemo, useEffect } from 'react';
-import { useDropzone, type FileRejection } from 'react-dropzone';
 import Image from 'next/image';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type FileRejection, useDropzone } from 'react-dropzone';
 
+import { toast } from '@/components/ui/use-toast';
+import { AnimatePresence, motion } from '@/lib/motion-shim';
 import {
-  RiUploadCloud2Line,
-  RiImageAddLine,
+  RiCheckLine,
   RiCloseLine,
   RiErrorWarningLine,
-  RiCheckLine,
+  RiImageAddLine,
+  RiUploadCloud2Line,
 } from 'react-icons/ri';
-import { motion, AnimatePresence } from '@/lib/motion-shim';
-import { toast } from '@/components/ui/use-toast';
 
 // Re-export UploadFolder so callers only need to import from this module.
 // Keeps the dependency graph clean: components → uploader (not components →
 // server-action for a type).
-export type UploadFolder =
-  | 'posts'
-  | 'avatars'
-  | 'categories'
-  | 'tags'
-  | 'ads'
-  | 'general';
+export type UploadFolder = 'posts' | 'avatars' | 'categories' | 'tags' | 'ads' | 'general';
 
 export interface UploadedFile {
   url: string;
@@ -425,10 +420,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
   // ---------- derived -----------------------------------------------------
 
-  const anyUploading = useMemo(
-    () => entries.some((e) => e.status === 'uploading'),
-    [entries],
-  );
+  const anyUploading = useMemo(() => entries.some((e) => e.status === 'uploading'), [entries]);
   const hasEntries = entries.length > 0;
 
   // ---------- render ------------------------------------------------------

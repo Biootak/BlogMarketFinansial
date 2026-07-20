@@ -18,13 +18,19 @@
 }
 
 @keyframes backdropIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* ── Modal panel ─────────────────────────────────────────────────────── */
 /* <dialog> reset */
-.modal[open] { display: block; }
+.modal[open] {
+  display: block;
+}
 .modal {
   /* reset native dialog styles */
   margin: 0;
@@ -41,8 +47,14 @@
 }
 
 @keyframes modalIn {
-  from { opacity: 0; transform: scale(0.93) translateY(10px); }
-  to   { opacity: 1; transform: scale(1)    translateY(0);    }
+  from {
+    opacity: 0;
+    transform: scale(0.93) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* ── Header ──────────────────────────────────────────────────────────── */
@@ -67,7 +79,10 @@
   justify-content: center;
 }
 
-.headerText { flex: 1; min-width: 0; }
+.headerText {
+  flex: 1;
+  min-width: 0;
+}
 
 .title {
   margin: 0;
@@ -99,7 +114,10 @@
   transition: background 0.15s, color 0.15s;
   margin-inline-start: auto;
 }
-.closeBtn:hover { background: var(--ds-surface-elevated); color: var(--ds-text-primary); }
+.closeBtn:hover {
+  background: var(--ds-surface-elevated);
+  color: var(--ds-text-primary);
+}
 .closeBtn:focus-visible {
   outline: 2px solid var(--ds-brand-500);
   outline-offset: 2px;
@@ -123,7 +141,10 @@
 }
 
 /* phone input row */
-.phoneRow { display: flex; gap: var(--ds-space-2); }
+.phoneRow {
+  display: flex;
+  gap: var(--ds-space-2);
+}
 
 .phoneInput {
   flex: 1;
@@ -138,12 +159,17 @@
   transition: border-color 0.15s, box-shadow 0.15s;
   outline: none;
 }
-.phoneInput::placeholder { color: var(--ds-text-muted); }
+.phoneInput::placeholder {
+  color: var(--ds-text-muted);
+}
 .phoneInput:focus {
   border-color: var(--ds-brand-500);
   box-shadow: 0 0 0 3px oklch(from var(--ds-brand-500) l c h / 0.15);
 }
-.phoneInput:disabled { opacity: 0.55; cursor: not-allowed; }
+.phoneInput:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 
 /* OTP input */
 .otpInput {
@@ -162,15 +188,24 @@
   transition: border-color 0.15s, box-shadow 0.15s;
   outline: none;
 }
-.otpInput::placeholder { color: var(--ds-text-muted); letter-spacing: 0.15em; font-weight: 400; }
+.otpInput::placeholder {
+  color: var(--ds-text-muted);
+  letter-spacing: 0.15em;
+  font-weight: 400;
+}
 .otpInput:focus {
   border-color: var(--ds-brand-500);
   box-shadow: 0 0 0 3px oklch(from var(--ds-brand-500) l c h / 0.15);
 }
-.otpInput:disabled { opacity: 0.55; cursor: not-allowed; }
+.otpInput:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 
 /* shared error border */
-.inputErr { border-color: oklch(60% 0.18 20) !important; }
+.inputErr {
+  border-color: oklch(60% 0.18 20) !important;
+}
 
 /* field error */
 .fieldErr {
@@ -249,8 +284,13 @@
   padding: 0;
   transition: opacity 0.15s;
 }
-.resendBtn:hover { opacity: 0.7; }
-.resendBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+.resendBtn:hover {
+  opacity: 0.7;
+}
+.resendBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 .changePhoneBtn {
   display: inline-flex;
@@ -264,7 +304,9 @@
   padding: 0;
   transition: color 0.15s;
 }
-.changePhoneBtn:hover { color: var(--ds-text-secondary); }
+.changePhoneBtn:hover {
+  color: var(--ds-text-secondary);
+}
 
 /* ── Footer ──────────────────────────────────────────────────────────── */
 .footer {
@@ -292,9 +334,17 @@
   cursor: pointer;
   transition: filter 0.15s, transform 0.15s;
 }
-.primaryBtn:hover:not(:disabled) { filter: brightness(1.07); transform: translateY(-1px); }
-.primaryBtn:active:not(:disabled) { transform: scale(0.98); }
-.primaryBtn:disabled { opacity: 0.55; cursor: not-allowed; }
+.primaryBtn:hover:not(:disabled) {
+  filter: brightness(1.07);
+  transform: translateY(-1px);
+}
+.primaryBtn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.primaryBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 .primaryBtn:focus-visible {
   outline: 2px solid var(--ds-brand-500);
   outline-offset: 3px;
@@ -315,7 +365,10 @@
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
-.cancelBtn:hover { background: var(--ds-surface-elevated); color: var(--ds-text-primary); }
+.cancelBtn:hover {
+  background: var(--ds-surface-elevated);
+  color: var(--ds-text-primary);
+}
 .cancelBtn:focus-visible {
   outline: 2px solid var(--ds-brand-500);
   outline-offset: 2px;
@@ -332,4 +385,8 @@
   animation: spin 0.6s linear infinite;
   flex-shrink: 0;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

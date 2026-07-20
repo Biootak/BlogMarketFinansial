@@ -1,14 +1,14 @@
-import { BubbleMenu } from '@tiptap/react/menus';
 import { type Editor, type Range, getMarkRange, getMarkType, posToDOMRect } from '@tiptap/core';
+import { BubbleMenu } from '@tiptap/react/menus';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import LinkPanelEdit from './link-panel-edit';
-import LinkPanelPreview from './link-panel-preview';
-import { useAttributes } from '../hooks/use-attributes';
 // 2026-07-05: dir از hook مرکزی می‌آید تا در پورتل body جهت متن
 // مستقل از cascade <html dir> درست بماند.
 import { useDirection } from '@/hooks/useDirection';
+import { useAttributes } from '../hooks/use-attributes';
+import LinkPanelEdit from './link-panel-edit';
+import LinkPanelPreview from './link-panel-preview';
 
 interface LinkBubbleProps {
   editor: Editor;
@@ -41,7 +41,7 @@ const LinkBubble = ({ editor }: LinkBubbleProps) => {
   );
 
   const onUnsetLink = useCallback(() => {
-    let transaction = editor.chain().focus();
+    const transaction = editor.chain().focus();
     if (pos) {
       transaction.setTextSelection(pos);
       setPos({ from: -1, to: -1 });
@@ -49,7 +49,7 @@ const LinkBubble = ({ editor }: LinkBubbleProps) => {
     return transaction.unsetLink().run();
   }, [editor, pos]);
 
-  const getReferenceClientRect = useCallback(() => {
+  const _getReferenceClientRect = useCallback(() => {
     const { view, state } = editor;
     const {
       selection: { from, to, $to },
@@ -58,7 +58,7 @@ const LinkBubble = ({ editor }: LinkBubbleProps) => {
 
     if (linkRange) {
       const node = view.nodeDOM(linkRange.from) as HTMLElement;
-      return node!.parentElement!.getBoundingClientRect();
+      return node?.parentElement?.getBoundingClientRect();
     }
 
     return posToDOMRect(view, from, to);
@@ -84,12 +84,10 @@ const LinkBubble = ({ editor }: LinkBubbleProps) => {
     // 2026-07-05: فقط با تغییر selection اجرا شود، نه با هر کیبورد.
   }, [editor.state.selection, href]);
 
-
-
   return (
     <BubbleMenu
       editor={editor}
-      pluginKey={`linkMenu`}
+      pluginKey={'linkMenu'}
       shouldShow={shouldShow}
       updateDelay={0}
       options={{

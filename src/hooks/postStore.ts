@@ -1,8 +1,8 @@
-import { create } from 'zustand';
-import { listAllPosts, deletePost, updatePostStatus } from '@/actions/postActions';
+import { deletePost, listAllPosts, updatePostStatus } from '@/actions/postActions';
 import type { ActionResult, PostWithRelations, UpdatePostInput } from '@/types/types';
+import { create } from 'zustand';
 
-import { createPost, updatePost, getPostById } from '@/actions/postActions';
+import { createPost, getPostById, updatePost } from '@/actions/postActions';
 import type { CreatePostInput } from '@/types/types';
 
 type Toast = {
@@ -110,14 +110,13 @@ export const usePostStore = create<PostsState>((set, get) => ({
         variant: 'success',
       });
       return true;
-    } else {
-      toast({
-        title: 'خطا',
-        description: 'خطا در ذخیره پست',
-        variant: 'destructive',
-      });
-      return false;
     }
+    toast({
+      title: 'خطا',
+      description: 'خطا در ذخیره پست',
+      variant: 'destructive',
+    });
+    return false;
   },
 
   createPost: async (data, toast) => {

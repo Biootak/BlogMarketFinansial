@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
+import { useEffect, useRef } from 'react';
 
 // Debounce window - فقط آخرین navigation در این بازه ثبت می‌شه
 // جلوگیری از ثبت چندباره pageview در navigation سریع (مثلاً SPA back/forward)
@@ -69,7 +69,9 @@ export function usePageView() {
 
       // درخواست رو در idle time بفرست تا UI رو بلاک نکنه
       if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-        (window as Window & { requestIdleCallback?: (cb: () => void) => void }).requestIdleCallback?.(send);
+        (
+          window as Window & { requestIdleCallback?: (cb: () => void) => void }
+        ).requestIdleCallback?.(send);
       } else {
         send();
       }

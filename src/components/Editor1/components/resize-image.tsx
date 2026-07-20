@@ -1,5 +1,6 @@
-import { NodeViewWrapper } from '@tiptap/react';
+import { useDirection } from '@/hooks/useDirection';
 import type { NodeViewProps } from '@tiptap/core';
+import { NodeViewWrapper } from '@tiptap/react';
 import {
   AlignCenter,
   AlignLeft,
@@ -9,14 +10,8 @@ import {
   Minimize2,
   Trash2,
 } from 'lucide-react';
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import { useDirection } from '@/hooks/useDirection';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 // 2026-06-30: This component intentionally uses a plain <img> tag.
 // The editor image is resized interactively and its natural aspect ratio
@@ -60,7 +55,7 @@ function widthToDisplay(value: ImageNodeAttributes['width']): DisplayWidth {
   // '100%' یا '50%' → نمایش عددی نداریم (0 = «از wrapper پیروی کن»)
   const m = /^(\d+(?:\.\d+)?)(px|%)?$/.exec(trimmed);
   if (!m) return 0;
-  return m[2] === '%' ? 0 : parseFloat(m[1]!);
+  return m[2] === '%' ? 0 : Number.parseFloat(m[1]!);
 }
 
 function widthToStored(value: DisplayWidth, parentWidth: number): string {
@@ -78,14 +73,9 @@ function sizeClamp(length: number, min: number, max: number): number {
   return length;
 }
 
-const ResizeImage = ({
-  editor,
-  node,
-  updateAttributes,
-  selected,
-}: ResizeImageProps) => {
+const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImageProps) => {
   const { src, textAlign, width: widthProps, alt, title } = node.attrs;
-  const dir = useDirection('rtl');
+  const _dir = useDirection('rtl');
 
   const isEditable = editor.isEditable;
 
@@ -96,9 +86,7 @@ const ResizeImage = ({
   const [initialPosition, setInitialPosition] = useState(0);
   const [initialSize, setInitialSize] = useState(0);
   // عرض فعلی برای نمایش زنده در حین درگ
-  const [displayWidth, setDisplayWidth] = useState<DisplayWidth>(() =>
-    widthToDisplay(widthProps),
-  );
+  const [displayWidth, setDisplayWidth] = useState<DisplayWidth>(() => widthToDisplay(widthProps));
   const [showControls, setShowControls] = useState(false);
 
   // هر وقت widthProps از بیرون تغییر کند (undo، load پست)، همگام شو.
@@ -119,12 +107,8 @@ const ResizeImage = ({
     (delta: number, baseWidth: number): number => {
       const wrapperWidth = wrapperRef.current?.offsetWidth ?? 0;
       const centerFactor = textAlign === 'center' ? 2 : 1;
-      const maxWidth = wrapperWidth > 0 ? wrapperWidth : Infinity;
-      return sizeClamp(
-        baseWidth + delta * centerFactor,
-        MIN_WIDTH,
-        maxWidth,
-      );
+      const maxWidth = wrapperWidth > 0 ? wrapperWidth : Number.POSITIVE_INFINITY;
+      return sizeClamp(baseWidth + delta * centerFactor, MIN_WIDTH, maxWidth);
     },
     [textAlign],
   );
@@ -134,9 +118,8 @@ const ResizeImage = ({
       const newWidth = computeNewWidth(delta, initialSize);
       if (finished) {
         const wrapperWidth = wrapperRef.current?.offsetWidth ?? 0;
-        const stored = wrapperWidth > 0
-          ? widthToStored(newWidth, wrapperWidth)
-          : `${Math.round(newWidth)}px`;
+        const stored =
+          wrapperWidth > 0 ? widthToStored(newWidth, wrapperWidth) : `${Math.round(newWidth)}px`;
         updateAttributes({ width: stored });
       }
       setDisplayWidth(newWidth);
@@ -165,22 +148,16 @@ const ResizeImage = ({
 
   // start drag — عرض فعلی را از <img> واقعی می‌خوانیم تا اگر widthProps
   // درصدی/legacy بود، باز هم delta درست محاسبه شود.
-  const startResize =
-    (): React.MouseEventHandler =>
-    (e) => {
-      e.preventDefault();
-      const handleEl = e.currentTarget as HTMLElement;
-      const imageEl = handleEl.parentElement?.querySelector(
-        'img',
-      ) as HTMLImageElement | null;
-      const currentWidth =
-        imageEl?.getBoundingClientRect().width ||
-        wrapperRef.current?.offsetWidth ||
-        0;
-      setInitialPosition(e.clientX);
-      setInitialSize(currentWidth);
-      setIsResizing(true);
-    };
+  const startResize = (): React.MouseEventHandler => (e) => {
+    e.preventDefault();
+    const handleEl = e.currentTarget as HTMLElement;
+    const imageEl = handleEl.parentElement?.querySelector('img') as HTMLImageElement | null;
+    const currentWidth =
+      imageEl?.getBoundingClientRect().width || wrapperRef.current?.offsetWidth || 0;
+    setInitialPosition(e.clientX);
+    setInitialSize(currentWidth);
+    setIsResizing(true);
+  };
 
   // keyboard: ArrowRight = بزرگ‌تر، ArrowLeft = کوچک‌تر.
   // رفتار مستقل از dir است چون handle ها دو طرف فیزیکی تصویرند.
@@ -194,9 +171,8 @@ const ResizeImage = ({
     const newWidth = computeNewWidth(step * dirSign, baseWidth);
     if (newWidth === baseWidth) return;
     e.preventDefault();
-    const stored = wrapperWidth > 0
-      ? widthToStored(newWidth, wrapperWidth)
-      : `${Math.round(newWidth)}px`;
+    const stored =
+      wrapperWidth > 0 ? widthToStored(newWidth, wrapperWidth) : `${Math.round(newWidth)}px`;
     updateAttributes({ width: stored });
   };
 
@@ -242,7 +218,6 @@ const ResizeImage = ({
         return 'justify-start';
       case 'right':
         return 'justify-end';
-      case 'center':
       default:
         return 'justify-center';
     }
@@ -267,9 +242,7 @@ const ResizeImage = ({
   const wrapperWidth = wrapperRef.current?.offsetWidth ?? 0;
   const indicatorPx = displayWidth > 0 ? Math.round(displayWidth) : null;
   const indicatorPct =
-    displayWidth > 0 && wrapperWidth > 0
-      ? Math.round((displayWidth / wrapperWidth) * 100)
-      : null;
+    displayWidth > 0 && wrapperWidth > 0 ? Math.round((displayWidth / wrapperWidth) * 100) : null;
 
   return (
     <NodeViewWrapper

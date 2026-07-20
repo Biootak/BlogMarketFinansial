@@ -2,7 +2,7 @@
 
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
-import type { UserWithProfile, ActionResult } from '@/types/types';
+import type { ActionResult, UserWithProfile } from '@/types/types';
 
 export async function getAuthorById(id: string): Promise<ActionResult<UserWithProfile>> {
   try {

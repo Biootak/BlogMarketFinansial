@@ -1,12 +1,12 @@
+import { createReadStream, existsSync } from 'node:fs';
+import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import {
-  S3Client,
-  PutObjectCommand,
-  GetObjectCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
 } from '@aws-sdk/client-s3';
-import { writeFile, mkdir, unlink, readFile } from 'fs/promises';
-import { existsSync, createReadStream } from 'fs';
-import path from 'path';
 
 // 2026-07-06: Liara S3 timeout + no-retry tuning.
 //
@@ -44,7 +44,8 @@ const s3Client = new S3Client({
 });
 
 const BUCKET_NAME = process.env.LIARA_BUCKET_NAME || '';
-const S3_PUBLIC_URL = process.env.LIARA_ENDPOINT?.replace('https://', `https://${BUCKET_NAME}.`) || '';
+const S3_PUBLIC_URL =
+  process.env.LIARA_ENDPOINT?.replace('https://', `https://${BUCKET_NAME}.`) || '';
 const LOCAL_UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads');
 
 // 2026-07-05: S3 is now optional. If credentials are missing, the system
@@ -55,7 +56,7 @@ function isS3CredentialsSet(): boolean {
     process.env.LIARA_ENDPOINT &&
       process.env.LIARA_ACCESS_KEY &&
       process.env.LIARA_SECRET_KEY &&
-      process.env.LIARA_BUCKET_NAME
+      process.env.LIARA_BUCKET_NAME,
   );
 }
 
@@ -103,11 +104,7 @@ export interface UploadResult {
  * هر جای دیگری که نیاز به write روی public/uploads دارد.
  * مسیر به‌صورت ایمن ساخته می‌شود (folder traversal نمی‌تواند فرار کند).
  */
-async function writeLocal(
-  buffer: Buffer,
-  folder: string,
-  filename: string
-): Promise<string> {
+async function writeLocal(buffer: Buffer, folder: string, filename: string): Promise<string> {
   const safeFolder = folder.replace(/[^a-zA-Z0-9_-]/g, '');
   const safeFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '');
   if (!safeFolder || !safeFilename) {
@@ -129,10 +126,7 @@ async function writeLocal(
  * the write path sanitized these inputs, leaving getFile/getFileStream/
  * deleteFile open to path traversal (H1).
  */
-function resolveUploadTarget(
-  folder: string,
-  filename: string,
-): { localPath: string; key: string } {
+function resolveUploadTarget(folder: string, filename: string): { localPath: string; key: string } {
   const safeFolder = folder.replace(/[^a-zA-Z0-9_-]/g, '');
   const safeFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '');
   if (!safeFolder || !safeFilename) {
@@ -161,7 +155,7 @@ export async function uploadFile(
   filename: string,
   folder: string,
   contentType: string,
-  dims?: { width?: number | null; height?: number | null }
+  dims?: { width?: number | null; height?: number | null },
 ): Promise<UploadResult> {
   // M5/M9 fix: sanitize folder + filename the same way `resolveUploadTarget`
   // does, so the S3 `Key` always matches the locally resolved path (no
@@ -170,7 +164,7 @@ export async function uploadFile(
   const safeFolder = folder.replace(/[^a-zA-Z0-9_-]/g, '');
   const safeFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '');
   const key = `${safeFolder}/${safeFilename}`;
-  const localPath = `/uploads/${safeFolder}/${safeFilename}`;
+  const _localPath = `/uploads/${safeFolder}/${safeFilename}`;
 
   // هم local هم S3 را هم‌زمان شروع کن.
   // localPathString در صورت موفقیت local پر می‌شود.
@@ -192,14 +186,10 @@ export async function uploadFile(
           CacheControl: 'public, max-age=31536000, immutable',
           Metadata: {
             'uploaded-at': String(Date.now()),
-            ...(typeof dims?.width === 'number'
-              ? { 'img-width': String(dims.width) }
-              : {}),
-            ...(typeof dims?.height === 'number'
-              ? { 'img-height': String(dims.height) }
-              : {}),
+            ...(typeof dims?.width === 'number' ? { 'img-width': String(dims.width) } : {}),
+            ...(typeof dims?.height === 'number' ? { 'img-height': String(dims.height) } : {}),
           },
-        })
+        }),
       );
       // success — make sure the breaker is closed
       s3DisabledUntil = 0;
@@ -208,9 +198,7 @@ export async function uploadFile(
       // S3 اختیاری است — log می‌کنیم ولی throw نمی‌کنیم تا local نجات بدهد.
       // tripCircuitBreaker trips once and suppresses repeat logs for 60s.
       const reason =
-        error instanceof Error
-          ? (error as { code?: string }).code ?? error.name
-          : 'unknown';
+        error instanceof Error ? ((error as { code?: string }).code ?? error.name) : 'unknown';
       tripCircuitBreaker(reason);
       return null;
     }
@@ -247,7 +235,10 @@ export async function uploadFile(
  *   * `getFile` keeps the Buffer-based API for callers that need
  *     the bytes (e.g. sharp pipeline in upload route).
  */
-export async function getFileStream(folder: string, filename: string): Promise<NodeJS.ReadableStream> {
+export async function getFileStream(
+  folder: string,
+  filename: string,
+): Promise<NodeJS.ReadableStream> {
   const { localPath: localFilePath, key } = resolveUploadTarget(folder, filename);
 
   // Try S3 first when configured.
@@ -284,7 +275,7 @@ export async function getFile(folder: string, filename: string): Promise<Buffer 
         new GetObjectCommand({
           Bucket: BUCKET_NAME,
           Key: key,
-        })
+        }),
       );
       if (response.Body) {
         const chunks: Uint8Array[] = [];
@@ -323,7 +314,7 @@ export async function deleteFile(folder: string, filename: string): Promise<bool
         new DeleteObjectCommand({
           Bucket: BUCKET_NAME,
           Key: key,
-        })
+        }),
       );
       return true;
     } catch (error) {

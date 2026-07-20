@@ -55,8 +55,16 @@ type FilterKey = 'all' | 'popular' | 'drafts';
 
 const FILTER_OPTIONS: ReadonlyArray<{ key: FilterKey; label: string; icon: React.ReactNode }> = [
   { key: 'all', label: 'همه', icon: <HiOutlineSparkles className="w-3 h-3" aria-hidden /> },
-  { key: 'popular', label: 'پربازدید', icon: <HiOutlineArrowTrendingUp className="w-3 h-3" aria-hidden /> },
-  { key: 'drafts', label: 'پیش‌نویس', icon: <HiOutlineDocumentText className="w-3 h-3" aria-hidden /> },
+  {
+    key: 'popular',
+    label: 'پربازدید',
+    icon: <HiOutlineArrowTrendingUp className="w-3 h-3" aria-hidden />,
+  },
+  {
+    key: 'drafts',
+    label: 'پیش‌نویس',
+    icon: <HiOutlineDocumentText className="w-3 h-3" aria-hidden />,
+  },
 ];
 
 const FILTER_STORAGE_KEY = 'at:posts-filter';
@@ -113,9 +121,10 @@ export default function AtelierPosts({ popularPosts, recentDrafts = [] }: Atelie
     }
     if (filter === 'popular') {
       // فقط پست‌های با view count بالای میانگین.
-      const avg = popularPosts.length > 0
-        ? popularPosts.reduce((s, p) => s + p.views, 0) / popularPosts.length
-        : 0;
+      const avg =
+        popularPosts.length > 0
+          ? popularPosts.reduce((s, p) => s + p.views, 0) / popularPosts.length
+          : 0;
       return popularPosts.filter((p) => p.views >= avg).slice(0, 6);
     }
     return popularPosts.slice(0, 6);
@@ -135,9 +144,7 @@ export default function AtelierPosts({ popularPosts, recentDrafts = [] }: Atelie
           <div className="at-head__text">
             <h2 className="at-head__title-text">پست‌های پربازدید</h2>
             <p className="at-head__sub">
-              {rows.length > 0
-                ? `${fmt(rows.length)} پست`
-                : 'بدون پست'}
+              {rows.length > 0 ? `${fmt(rows.length)} پست` : 'بدون پست'}
             </p>
           </div>
         </div>
@@ -253,9 +260,7 @@ export default function AtelierPosts({ popularPosts, recentDrafts = [] }: Atelie
                       className="at-postrow"
                     >
                       <span className="at-postrow__rank" aria-hidden>
-                        <span className="at-postrow__rank-num">
-                          {fmt(rank).padStart(2, '۰')}
-                        </span>
+                        <span className="at-postrow__rank-num">{fmt(rank).padStart(2, '۰')}</span>
                       </span>
                       <span className="at-postrow__body">
                         <span className="at-postrow__title" dir="rtl">

@@ -1,5 +1,5 @@
-import { Link as BaseLink, type LinkOptions } from '@tiptap/extension-link';
 import { markInputRule } from '@tiptap/core';
+import { Link as BaseLink, type LinkOptions } from '@tiptap/extension-link';
 
 const extractHrefFromMatch = (match: any) => {
   return { href: match.groups.href };
@@ -26,12 +26,7 @@ export const Link = BaseLink.extend({
   addOptions() {
     return {
       ...this.parent?.(),
-      protocols: [
-        { scheme: 'http' },
-        { scheme: 'https' },
-        { scheme: 'mailto' },
-        { scheme: 'tel' },
-      ],
+      protocols: [{ scheme: 'http' }, { scheme: 'https' }, { scheme: 'mailto' }, { scheme: 'tel' }],
       validate: (href: string) => /^(https?:|mailto:|tel:)/i.test(href),
     } as LinkOptions;
   },

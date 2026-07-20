@@ -1,6 +1,8 @@
 import authConfig from '@/auth.config';
 import { getUserByEmail } from '@/data/user';
 import prisma from '@/lib/db';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { consumeLoginToken } from '@/lib/tokens';
 import { LoginSchema } from '@/schemas';
 import type { Role, UserProfile } from '@/types/types';
 import { PrismaAdapter } from '@auth/prisma-adapter';
@@ -8,8 +10,6 @@ import bcrypt from 'bcryptjs';
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { z } from 'zod';
-import { consumeLoginToken } from '@/lib/tokens';
-import { checkRateLimit } from '@/lib/rate-limiter';
 
 // 2026-06-24: P1-3. Credentials provider accepts two *internal* fields
 // (`kind` and `intent`) that are not in the public schema. Auth.js v5

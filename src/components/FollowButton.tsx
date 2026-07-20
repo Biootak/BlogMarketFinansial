@@ -1,7 +1,7 @@
 'use client';
 
-import { HiPlusCircle } from 'react-icons/hi2';
 import React, { type FC } from 'react';
+import { HiPlusCircle } from 'react-icons/hi2';
 import Button, { type ButtonProps } from './Button/Button';
 import ButtonPrimary from './Button/ButtonPrimary';
 

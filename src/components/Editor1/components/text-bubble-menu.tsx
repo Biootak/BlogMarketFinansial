@@ -9,12 +9,13 @@
 
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { BubbleMenu } from '@tiptap/react/menus';
-import type { Editor } from '@tiptap/core';
-import { Icon } from '../../ui/icon';
 // 2026-07-05: dir از hook مرکزی برای consistency با shell.
 import { useDirection } from '@/hooks/useDirection';
+import type { Editor } from '@tiptap/core';
+import { BubbleMenu } from '@tiptap/react/menus';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Icon } from '../../ui/icon';
 
 interface TextBubbleMenuProps {
   editor: Editor;
@@ -44,7 +45,12 @@ const TextBubbleMenu: React.FC<TextBubbleMenuProps> = ({ editor }) => {
       editor.chain().focus().extendMarkRange('link').unsetLink().run();
     } else {
       let finalUrl = linkUrl.trim();
-      if (finalUrl && !/^https?:\/\//i.test(finalUrl) && !finalUrl.startsWith('/') && !finalUrl.startsWith('#')) {
+      if (
+        finalUrl &&
+        !/^https?:\/\//i.test(finalUrl) &&
+        !finalUrl.startsWith('/') &&
+        !finalUrl.startsWith('#')
+      ) {
         finalUrl = `https://${finalUrl}`;
       }
       editor.chain().focus().extendMarkRange('link').setLink({ href: finalUrl }).run();
@@ -104,7 +110,13 @@ const TextBubbleMenu: React.FC<TextBubbleMenuProps> = ({ editor }) => {
         );
       }}
     >
-      <div className="at-bubble" role="toolbar" aria-label="ابزار فرمت‌بندی متن" dir={dir} data-dir={dir}>
+      <div
+        className="at-bubble"
+        role="toolbar"
+        aria-label="ابزار فرمت‌بندی متن"
+        dir={dir}
+        data-dir={dir}
+      >
         {showLinkInput ? (
           <>
             <input

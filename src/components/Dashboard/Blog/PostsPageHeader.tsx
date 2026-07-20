@@ -1,27 +1,27 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { motion, AnimatePresence } from '@/lib/motion-shim';
+import type { PostStatusCounts } from '@/actions/postActions';
+import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
+import type { PostStatus } from '@prisma/client';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import {
-  HiOutlinePlus,
-  HiOutlineMagnifyingGlass,
-  HiOutlineDocumentText,
-  HiOutlineCalendarDays,
-  HiOutlineXMark,
   HiCheck,
-  HiOutlineSquares2X2,
-  HiOutlineNewspaper,
   HiOutlineBars3,
-  HiOutlineEye,
-  HiOutlinePencilSquare,
+  HiOutlineCalendarDays,
   HiOutlineClipboardDocumentCheck,
   HiOutlineClock,
+  HiOutlineDocumentText,
+  HiOutlineEye,
+  HiOutlineMagnifyingGlass,
+  HiOutlineNewspaper,
+  HiOutlinePencilSquare,
+  HiOutlinePlus,
+  HiOutlineSquares2X2,
+  HiOutlineXMark,
 } from 'react-icons/hi2';
-import type { PostStatus } from '@prisma/client';
-import type { PostStatusCounts } from '@/actions/postActions';
 
 type FilterOption = 'همه' | PostStatus;
 export type ViewMode = 'magazine' | 'grid' | 'list';
@@ -44,13 +44,28 @@ const kpiChips: Array<{
   tone: string; // کلاس رنگی برای dot + آیکون
 }> = [
   { key: 'all', label: 'همه', filter: 'همه', icon: HiOutlineDocumentText, tone: 'slate' },
-  { key: 'published', label: 'منتشر شده', filter: 'PUBLISHED', icon: HiOutlineEye, tone: 'emerald' },
+  {
+    key: 'published',
+    label: 'منتشر شده',
+    filter: 'PUBLISHED',
+    icon: HiOutlineEye,
+    tone: 'emerald',
+  },
   { key: 'draft', label: 'پیش‌نویس', filter: 'DRAFT', icon: HiOutlinePencilSquare, tone: 'slate' },
-  { key: 'pending', label: 'در انتظار', filter: 'PENDING_REVIEW', icon: HiOutlineClipboardDocumentCheck, tone: 'amber' },
+  {
+    key: 'pending',
+    label: 'در انتظار',
+    filter: 'PENDING_REVIEW',
+    icon: HiOutlineClipboardDocumentCheck,
+    tone: 'amber',
+  },
   { key: 'scheduled', label: 'زمان‌بندی', filter: 'SCHEDULED', icon: HiOutlineClock, tone: 'sky' },
 ];
 
-const toneClasses: Record<string, { dot: string; iconActive: string; iconIdle: string; ring: string }> = {
+const toneClasses: Record<
+  string,
+  { dot: string; iconActive: string; iconIdle: string; ring: string }
+> = {
   slate: {
     dot: 'bg-[color:var(--at-fg-subtle)]',
     iconActive: 'text-[color:var(--at-accent-fg)]',
@@ -395,7 +410,7 @@ export default function PostsPageHeader({ searchParams, counts }: PostsPageHeade
             className="h-full bg-[color:var(--at-accent)]"
             initial={{ x: '-100%' }}
             animate={{ x: '100%' }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: 'linear' }}
           />
         </div>
       )}

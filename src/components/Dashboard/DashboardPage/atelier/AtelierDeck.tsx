@@ -113,10 +113,7 @@ const AtelierDeck: React.FC<AtelierDeckProps> = (props) => {
           {/* Row 5: Editorial Posts (8/12) | Pulse Activity (4/12) — real-time */}
           {/* content. Posts عریض‌تر چون Featured card جدید دارد. Activity کم‌عرض */}
           {/* چون فقط timeline + avatar است. */}
-          <AtelierPosts
-            popularPosts={props.popularPosts}
-            recentDrafts={props.recentDrafts}
-          />
+          <AtelierPosts popularPosts={props.popularPosts} recentDrafts={props.recentDrafts} />
           <AtelierActivity items={props.recentActivity} />
 
           {/* Row 6: Authors Leaderboard — full-width compact. metadata هست */}

@@ -26,26 +26,23 @@ export async function getActivityLog(page = 1, limit = 10) {
         skip,
         take: limit,
         orderBy: {
-          createdAt: 'desc'
+          createdAt: 'desc',
         },
         include: {
           user: {
             select: {
               name: true,
-              email: true
-            }
-          }
+              email: true,
+            },
+          },
         },
         where: {
           user: {
-            AND: [
-              { name: { not: '' } },
-              { email: { not: '' } }
-            ]
-          }
-        }
+            AND: [{ name: { not: '' } }, { email: { not: '' } }],
+          },
+        },
       }),
-      db.activityLog.count()
+      db.activityLog.count(),
     ]);
 
     revalidatePath('/dashboard/activity');
@@ -53,18 +50,18 @@ export async function getActivityLog(page = 1, limit = 10) {
     return {
       success: true,
       data: {
-        activities: activities.map(activity => ({
+        activities: activities.map((activity) => ({
           ...activity,
-          createdAt: activity.createdAt.toISOString()
+          createdAt: activity.createdAt.toISOString(),
         })),
-        total
-      }
+        total,
+      },
     };
   } catch (error) {
     console.error('خطا در دریافت لاگ‌های فعالیت:', error);
     return {
       success: false,
-      message: 'خطا در دریافت لاگ‌های فعالیت'
+      message: 'خطا در دریافت لاگ‌های فعالیت',
     };
   }
 }

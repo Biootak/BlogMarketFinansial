@@ -1,15 +1,15 @@
 'use client';
 
-import type { FC } from 'react';
-import type { PostWithRelations } from '@/types/types';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
-import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
 import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia';
-import Link from 'next/link';
-import Image from 'next/image';
+import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
+import { heading, radius, text } from '@/lib/design-tokens';
 import { getPostLink } from '@/lib/getPostLink';
+import type { PostWithRelations } from '@/types/types';
+import Image from 'next/image';
+import Link from 'next/link';
+import type { FC } from 'react';
 import { HiArrowLeft } from 'react-icons/hi2';
-import { heading, text, radius } from '@/lib/design-tokens';
 
 export interface Card9Props {
   className?: string;
@@ -30,7 +30,12 @@ const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hov
   const renderMeta = () => (
     <div className="inline-flex items-center">
       <div className="block">
-        <h3 className={['block text-white group-hover:text-primary-300 transition-colors duration-300', heading.h4].join(' ')}>
+        <h3
+          className={[
+            'block text-white group-hover:text-primary-300 transition-colors duration-300',
+            heading.h4,
+          ].join(' ')}
+        >
           <Link href={getPostLink(postType, slug)} className="line-clamp-2" title={title}>
             {title}
           </Link>
@@ -75,7 +80,10 @@ const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hov
             <PostFeaturedMedia post={post} className="w-full h-full" />
           </div>
         ) : (
-          <Link href={getPostLink(postType, slug)} className="relative w-full h-full block overflow-hidden">
+          <Link
+            href={getPostLink(postType, slug)}
+            className="relative w-full h-full block overflow-hidden"
+          >
             <Image
               fill
               alt={title}

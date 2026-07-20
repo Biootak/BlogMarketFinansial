@@ -6,9 +6,9 @@
  * - IntersectionObserver برای reveal
  */
 
-import { useRef, useEffect, useState } from 'react';
 import AnimatedNumber from '@/components/Sections/effects/AnimatedNumber';
-import { Target, Shield, Users, Lightbulb } from 'lucide-react';
+import { Lightbulb, Shield, Target, Users } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import s from './AboutPage.module.css';
 
 /* ---------------------------------------------------------------------- */
@@ -124,14 +124,13 @@ export default function AboutPageClient({ stats }: { stats: AboutStats }) {
             درباره ما
           </div>
           <h1 className={s.heroTitle}>
-            پلتفرم مالی{' '}
-            <span className={s.heroTitleAccent}>مورد اعتماد</span>
+            پلتفرم مالی <span className={s.heroTitleAccent}>مورد اعتماد</span>
             <br />
             افغانستان و ایران
           </h1>
           <p className={s.heroBody}>
-            ما بی‌طرف و مستقل هستیم و هر روز برنامه‌ها و محتوای متمایز و در سطح جهانی ایجاد
-            می‌کنیم که میلیون‌ها نفر را در سراسر جهان آگاه، آموزش و سرگرم می‌کند.
+            ما بی‌طرف و مستقل هستیم و هر روز برنامه‌ها و محتوای متمایز و در سطح جهانی ایجاد می‌کنیم که
+            میلیون‌ها نفر را در سراسر جهان آگاه، آموزش و سرگرم می‌کند.
           </p>
         </div>
       </section>
@@ -142,27 +141,10 @@ export default function AboutPageClient({ stats }: { stats: AboutStats }) {
           <h2 className={s.statsTitle}>حقایق سریع</h2>
           <p className={s.statsSub}>تا به امروز با هم چه ساختیم</p>
           <div className={s.statsGrid}>
-            <StatCard
-              value={stats.postCount}
-              label="مقاله منتشر شده"
-              index={0}
-            />
-            <StatCard
-              value={stats.userCount}
-              label="کاربر فعال"
-              index={1}
-            />
-            <StatCard
-              value={stats.authorCount}
-              label="نویسنده متخصص"
-              index={2}
-            />
-            <StatCard
-              value={stats.countries}
-              label="کشور تحت پوشش"
-              suffix="+"
-              index={3}
-            />
+            <StatCard value={stats.postCount} label="مقاله منتشر شده" index={0} />
+            <StatCard value={stats.userCount} label="کاربر فعال" index={1} />
+            <StatCard value={stats.authorCount} label="نویسنده متخصص" index={2} />
+            <StatCard value={stats.countries} label="کشور تحت پوشش" suffix="+" index={3} />
           </div>
         </div>
       </section>
@@ -179,8 +161,8 @@ export default function AboutPageClient({ stats }: { stats: AboutStats }) {
               تحلیل‌ها، نرخ‌های لحظه‌ای و راهنمایی‌های کاربردی را به زبان ساده ارائه دهیم.
             </p>
             <p className={s.missionBody}>
-              از نرخ ارز افغانی گرفته تا تحلیل بازار کریپتو — همه چیز در یک پلتفرم واحد،
-              با کیفیت بالا و بدون وابستگی به هیچ نهاد مالی.
+              از نرخ ارز افغانی گرفته تا تحلیل بازار کریپتو — همه چیز در یک پلتفرم واحد، با کیفیت
+              بالا و بدون وابستگی به هیچ نهاد مالی.
             </p>
           </div>
 

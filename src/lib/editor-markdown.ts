@@ -60,34 +60,44 @@ function walkHtml(node: Node): string {
   const inner = Array.from(el.childNodes).map(walkHtml).join('');
 
   switch (tag) {
-    case 'h1': return `# ${inner}\n\n`;
-    case 'h2': return `## ${inner}\n\n`;
-    case 'h3': return `### ${inner}\n\n`;
-    case 'h4': return `#### ${inner}\n\n`;
-    case 'h5': return `##### ${inner}\n\n`;
-    case 'h6': return `###### ${inner}\n\n`;
-    case 'p': return `${inner}\n\n`;
-    case 'br': return '\n';
-    case 'hr': return '---\n\n';
+    case 'h1':
+      return `# ${inner}\n\n`;
+    case 'h2':
+      return `## ${inner}\n\n`;
+    case 'h3':
+      return `### ${inner}\n\n`;
+    case 'h4':
+      return `#### ${inner}\n\n`;
+    case 'h5':
+      return `##### ${inner}\n\n`;
+    case 'h6':
+      return `###### ${inner}\n\n`;
+    case 'p':
+      return `${inner}\n\n`;
+    case 'br':
+      return '\n';
+    case 'hr':
+      return '---\n\n';
     case 'strong':
-    case 'b': return `**${inner}**`;
+    case 'b':
+      return `**${inner}**`;
     case 'em':
-    case 'i': return `*${inner}*`;
+    case 'i':
+      return `*${inner}*`;
     case 's':
     case 'strike':
-    case 'del': return `~~${inner}~~`;
+    case 'del':
+      return `~~${inner}~~`;
     case 'code':
       // Inline code only — `<pre><code>` is handled as a code block below.
       if (el.parentElement?.tagName.toLowerCase() === 'pre') return inner;
-      return '`' + inner.replace(/`/g, '\\`') + '`';
+      return `\`${inner.replace(/`/g, '\\`')}\``;
     case 'pre': {
       // Try to extract the language from class="language-xxx".
       const codeEl = el.querySelector('code');
-      const langClass = Array.from(codeEl?.classList ?? []).find((c) =>
-        c.startsWith('language-'),
-      );
+      const langClass = Array.from(codeEl?.classList ?? []).find((c) => c.startsWith('language-'));
       const lang = langClass ? langClass.replace('language-', '') : '';
-      return '```' + lang + '\n' + codeEl?.textContent?.trim() + '\n```\n\n';
+      return `\`\`\`${lang}\n${codeEl?.textContent?.trim()}\n\`\`\`\n\n`;
     }
     case 'a': {
       const href = el.getAttribute('href') ?? '';
@@ -100,14 +110,18 @@ function walkHtml(node: Node): string {
       return src ? `![${alt}](${src})` : '';
     }
     case 'ul':
-      return listHtmlToMarkdown(el, false) + '\n';
+      return `${listHtmlToMarkdown(el, false)}\n`;
     case 'ol':
-      return listHtmlToMarkdown(el, true) + '\n';
+      return `${listHtmlToMarkdown(el, true)}\n`;
     case 'li':
       // Unreachable: lists handle their own children to get the bullet/number.
       return inner;
     case 'blockquote':
-      return inner.trim().split('\n').map((l) => `> ${l}`).join('\n') + '\n\n';
+      return `${inner
+        .trim()
+        .split('\n')
+        .map((l) => `> ${l}`)
+        .join('\n')}\n\n`;
     default:
       // Unknown tag (e.g. custom node views, mention chips) — keep its
       // text content so nothing important is lost in the markdown output.
@@ -116,9 +130,7 @@ function walkHtml(node: Node): string {
 }
 
 function listHtmlToMarkdown(el: Element, ordered: boolean): string {
-  const items = Array.from(el.children).filter(
-    (c) => c.tagName.toLowerCase() === 'li',
-  );
+  const items = Array.from(el.children).filter((c) => c.tagName.toLowerCase() === 'li');
   return items
     .map((li, i) => {
       const bullet = ordered ? `${i + 1}.` : '-';
@@ -134,7 +146,7 @@ function listHtmlToMarkdown(el: Element, ordered: boolean): string {
  * is unavailable. Used only as a last resort for SSR/edge cases.
  */
 function serverHtmlToMarkdown(html: string): string {
-  let out = html
+  const out = html
     .replace(/<h1[^>]*>([\s\S]*?)<\/h1>/gi, '# $1\n\n')
     .replace(/<h2[^>]*>([\s\S]*?)<\/h2>/gi, '## $1\n\n')
     .replace(/<h3[^>]*>([\s\S]*?)<\/h3>/gi, '### $1\n\n')
@@ -152,8 +164,14 @@ function serverHtmlToMarkdown(html: string): string {
     .replace(/<img[^>]*src="([^"]+)"[^>]*alt="([^"]*)"[^>]*\/?>/gi, '![$2]($1)')
     .replace(/<hr\s*\/?>/gi, '---\n\n')
     .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<blockquote[^>]*>([\s\S]*?)<\/blockquote>/gi, (_, c) =>
-      c.trim().split('\n').map((l: string) => `> ${l}`).join('\n') + '\n\n',
+    .replace(
+      /<blockquote[^>]*>([\s\S]*?)<\/blockquote>/gi,
+      (_, c) =>
+        `${c
+          .trim()
+          .split('\n')
+          .map((l: string) => `> ${l}`)
+          .join('\n')}\n\n`,
     )
     .replace(/<p[^>]*>([\s\S]*?)<\/p>/gi, '$1\n\n')
     .replace(/<[^>]+>/g, ''); // strip remaining tags

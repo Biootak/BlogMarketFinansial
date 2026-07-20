@@ -1,6 +1,6 @@
-import type { Metadata } from 'next';
-import { Scale, Clock } from 'lucide-react';
 import { getSiteIdentity } from '@/lib/site-identity';
+import { Clock, Scale } from 'lucide-react';
+import type { Metadata } from 'next';
 import s from './terms.module.css';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
 const sections = [
   {
     title: 'قوانین، مقررات و مسئولیت‌های کلی',
-    body: `پلتفرم ما هیچ مسئولیتی در قبال استفاده نادرست از دارایی‌های دیجیتال موجود در وبسایت توسط خریداران ندارد. ما صرفاً خدمات خرید و فروش این دارایی‌ها را در چارچوب این پلتفرم ارائه می‌دهیم. حساب‌های مرتبط با فعالیت‌هایی که مغایر با قوانین و مقررات بین‌المللی باشند، تحت هیچ شرایطی سرویس‌دهی نخواهند شد.`,
+    body: 'پلتفرم ما هیچ مسئولیتی در قبال استفاده نادرست از دارایی‌های دیجیتال موجود در وبسایت توسط خریداران ندارد. ما صرفاً خدمات خرید و فروش این دارایی‌ها را در چارچوب این پلتفرم ارائه می‌دهیم. حساب‌های مرتبط با فعالیت‌هایی که مغایر با قوانین و مقررات بین‌المللی باشند، تحت هیچ شرایطی سرویس‌دهی نخواهند شد.',
   },
   {
     title: 'ثبت‌نام، تعهدات کاربران و فرآیند تراکنش',
@@ -38,7 +38,7 @@ const sections = [
   },
   {
     title: 'خدمات ما',
-    body: `پلتفرم ما با هدف تسهیل خدمات پرداخت دارایی‌های دیجیتال، یک پلتفرم خرید و فروش ارزهای الکترونیکی ایجاد کرده است. ما نرخ‌های رقابتی برای معامله ارزهای محبوب مانند تتر ارائه می‌دهیم و امکان خرید و فروش فوری پرفکت مانی را بدون کارمزد اضافی فراهم می‌کنیم.`,
+    body: 'پلتفرم ما با هدف تسهیل خدمات پرداخت دارایی‌های دیجیتال، یک پلتفرم خرید و فروش ارزهای الکترونیکی ایجاد کرده است. ما نرخ‌های رقابتی برای معامله ارزهای محبوب مانند تتر ارائه می‌دهیم و امکان خرید و فروش فوری پرفکت مانی را بدون کارمزد اضافی فراهم می‌کنیم.',
   },
   {
     title: 'مسئولیت‌ها و تعهدات پلتفرم',
@@ -96,13 +96,11 @@ export default function TermsPage() {
         {/* Content */}
         <div className={s.content}>
           {sections.map((sec, i) => (
-            <article
-              key={sec.title}
-              id={`term-${i + 1}`}
-              className={s.section}
-            >
+            <article key={sec.title} id={`term-${i + 1}`} className={s.section}>
               <header className={s.sectionHeader}>
-                <span className={s.sectionNum} aria-hidden>{i + 1}</span>
+                <span className={s.sectionNum} aria-hidden>
+                  {i + 1}
+                </span>
                 <h2 className={s.sectionTitle}>{sec.title}</h2>
               </header>
               <p className={s.sectionBody}>{sec.body}</p>

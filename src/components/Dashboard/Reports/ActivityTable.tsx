@@ -3,7 +3,7 @@
 import type { ActivityLog } from '@/actions/reports/activityLogs';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { ChevronRight, ChevronLeft, User, Clock, FileText, MoreHorizontal } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, FileText, MoreHorizontal, User } from 'lucide-react';
 
 interface ActivityTableProps {
   activities: ActivityLog[];
@@ -48,9 +48,7 @@ export default function ActivityTable({
   return (
     <div className="space-y-5">
       {/* Table Container */}
-      <div
-        className={cn('dash-panel overflow-hidden')}
-      >
+      <div className={cn('dash-panel overflow-hidden')}>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -94,12 +92,12 @@ export default function ActivityTable({
                   </td>
                 </tr>
               ) : (
-                activities.map((activity, index) => (
+                activities.map((activity, _index) => (
                   <tr
                     key={activity.id}
                     className={cn(
                       'group transition-colors duration-200',
-                      'hover:bg-gradient-to-l hover:from-[rgb(var(--c-primary-50))]/50 hover:to-transparent'
+                      'hover:bg-gradient-to-l hover:from-[rgb(var(--c-primary-50))]/50 hover:to-transparent',
                     )}
                   >
                     <td className="px-6 py-4">
@@ -109,16 +107,20 @@ export default function ActivityTable({
                             'w-10 h-10 rounded-xl flex items-center justify-center',
                             'bg-gradient-to-br from-[rgb(var(--c-primary-100))] to-[rgb(var(--c-primary-200))]',
                             'text-[rgb(var(--c-primary-700))] font-semibold text-sm',
-                            'shadow-sm'
+                            'shadow-sm',
                           )}
                         >
-                          {(activity.user.name || activity.user.email || '?').charAt(0).toUpperCase()}
+                          {(activity.user.name || activity.user.email || '?')
+                            .charAt(0)
+                            .toUpperCase()}
                         </div>
                         <div>
                           <p className="font-medium text-gray-900 dark:text-white">
                             {activity.user.name || 'کاربر ناشناس'}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">{activity.user.email}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {activity.user.email}
+                          </p>
                         </div>
                       </div>
                     </td>
@@ -126,14 +128,17 @@ export default function ActivityTable({
                       <span
                         className={cn(
                           'inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium border',
-                          getActionColor(activity.action)
+                          getActionColor(activity.action),
                         )}
                       >
                         {activity.action}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <p className="text-sm text-gray-700 dark:text-gray-300 max-w-xs truncate" title={activity.details}>
+                      <p
+                        className="text-sm text-gray-700 dark:text-gray-300 max-w-xs truncate"
+                        title={activity.details}
+                      >
                         {activity.details || '-'}
                       </p>
                     </td>
@@ -164,7 +169,7 @@ export default function ActivityTable({
         <div
           className={cn(
             'px-4 py-2 rounded-lg',
-            'bg-gray-100/80 dark:bg-white/10 text-gray-600 dark:text-gray-300 text-sm'
+            'bg-gray-100/80 dark:bg-white/10 text-gray-600 dark:text-gray-300 text-sm',
           )}
         >
           نمایش{' '}
@@ -176,7 +181,10 @@ export default function ActivityTable({
             {Math.min(page * limit, total).toLocaleString('fa-IR')}
           </span>{' '}
           از{' '}
-          <span className="font-semibold text-gray-900 dark:text-white">{total.toLocaleString('fa-IR')}</span> مورد
+          <span className="font-semibold text-gray-900 dark:text-white">
+            {total.toLocaleString('fa-IR')}
+          </span>{' '}
+          مورد
         </div>
 
         <div className="flex items-center gap-2">
@@ -190,7 +198,7 @@ export default function ActivityTable({
               'border-gray-200 hover:border-[rgb(var(--c-primary-300))]',
               'hover:bg-[rgb(var(--c-primary-50))]',
               'transition-all duration-200',
-              'disabled:opacity-50 disabled:cursor-not-allowed'
+              'disabled:opacity-50 disabled:cursor-not-allowed',
             )}
           >
             <ChevronRight className="w-4 h-4 ml-1" />
@@ -220,7 +228,7 @@ export default function ActivityTable({
                     'transition-all duration-200',
                     page === pageNum
                       ? 'bg-gradient-to-l from-[rgb(var(--c-primary-600))] to-[rgb(var(--c-primary-700))] text-white shadow-md'
-                      : 'hover:bg-gray-100 text-gray-600'
+                      : 'hover:bg-gray-100 text-gray-600',
                   )}
                 >
                   {pageNum.toLocaleString('fa-IR')}
@@ -239,7 +247,7 @@ export default function ActivityTable({
               'border-gray-200 hover:border-[rgb(var(--c-primary-300))]',
               'hover:bg-[rgb(var(--c-primary-50))]',
               'transition-all duration-200',
-              'disabled:opacity-50 disabled:cursor-not-allowed'
+              'disabled:opacity-50 disabled:cursor-not-allowed',
             )}
           >
             بعدی

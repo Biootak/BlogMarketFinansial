@@ -70,7 +70,7 @@ export function AnimatedCounter({
     const tick = (now: number) => {
       const t = Math.min((now - start) / (duration * 1000), 1);
       // easeOutExpo approximation
-      const eased = t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+      const eased = t === 1 ? 1 : 1 - 2 ** (-10 * t);
       const current = from + (to - from) * eased;
       setDisplay(Math.round(current).toLocaleString('fa-IR'));
       if (t < 1) requestAnimationFrame(tick);

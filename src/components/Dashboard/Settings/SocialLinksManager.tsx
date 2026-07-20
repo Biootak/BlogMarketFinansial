@@ -1,34 +1,34 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import {
-  Plus,
-  Trash2,
-  GripVertical,
-  ExternalLink,
-  Loader2,
-  Upload,
-  Palette,
-  Pencil,
-  X,
-  MessageCircle,
-  Share2,
-} from 'lucide-react';
+  createSocialLink,
+  deleteSocialLink,
+  getAllSocialLinks,
+  toggleSocialLink,
+  updateSocialLink,
+} from '@/actions/socialLinkActions';
+import ImageUploadDialog from '@/components/ImageUpload/ImageUploadDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
-import {
-  getAllSocialLinks,
-  createSocialLink,
-  updateSocialLink,
-  deleteSocialLink,
-  toggleSocialLink,
-} from '@/actions/socialLinkActions';
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
-import ImageUploadDialog from '@/components/ImageUpload/ImageUploadDialog';
 import type { SocialLinkType } from '@prisma/client';
+import {
+  ExternalLink,
+  GripVertical,
+  Loader2,
+  MessageCircle,
+  Palette,
+  Pencil,
+  Plus,
+  Share2,
+  Trash2,
+  Upload,
+  X,
+} from 'lucide-react';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
 interface SocialLink {
   id: string;
@@ -107,7 +107,10 @@ export default function SocialLinksManager() {
     });
 
     if (result.success) {
-      toast({ title: 'موفق', description: type === 'SUPPORT' ? 'لینک پشتیبانی اضافه شد' : 'شبکه اجتماعی اضافه شد' });
+      toast({
+        title: 'موفق',
+        description: type === 'SUPPORT' ? 'لینک پشتیبانی اضافه شد' : 'شبکه اجتماعی اضافه شد',
+      });
       setNewLink({ name: '', url: '', icon: '', color: '' });
       setShowAddForm(null);
       loadLinks();
@@ -178,7 +181,6 @@ export default function SocialLinksManager() {
     );
   }
 
-
   const renderAddForm = (type: SocialLinkType) => (
     <div className="p-5 rounded-2xl bg-gradient-to-br from-[rgb(var(--c-primary-50))] to-white dark:from-neutral-800 dark:to-neutral-900 border border-[rgb(var(--c-primary-100))] dark:border-neutral-700 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -196,7 +198,9 @@ export default function SocialLinksManager() {
           <Input
             value={newLink.url}
             onChange={(e) => setNewLink({ ...newLink, url: e.target.value })}
-            placeholder={type === 'SUPPORT' ? 'https://t.me/support' : 'https://instagram.com/username'}
+            placeholder={
+              type === 'SUPPORT' ? 'https://t.me/support' : 'https://instagram.com/username'
+            }
             className="mt-1"
             dir="ltr"
           />
@@ -219,7 +223,12 @@ export default function SocialLinksManager() {
                 </button>
               </div>
             )}
-            <Button type="button" variant="outline" onClick={() => setIsIconDialogOpen(true)} className="flex-1">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsIconDialogOpen(true)}
+              className="flex-1"
+            >
               <Upload className="w-4 h-4 ml-2" />
               {newLink.icon ? 'تغییر آیکون' : 'آپلود آیکون'}
             </Button>
@@ -272,7 +281,7 @@ export default function SocialLinksManager() {
         'group rounded-xl border transition-all duration-200',
         link.isActive
           ? 'bg-white dark:bg-neutral-800 border-gray-200 dark:border-neutral-700 hover:border-[rgb(var(--c-primary-200))] hover:shadow-md'
-          : 'bg-gray-50 dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 opacity-60'
+          : 'bg-gray-50 dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 opacity-60',
       )}
     >
       {editingId === link.id ? (
@@ -310,7 +319,12 @@ export default function SocialLinksManager() {
                     </button>
                   </div>
                 )}
-                <Button type="button" variant="outline" onClick={() => setIsEditIconDialogOpen(true)} className="flex-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsEditIconDialogOpen(true)}
+                  className="flex-1"
+                >
                   <Upload className="w-4 h-4 ml-2" />
                   {editingData.icon ? 'تغییر' : 'آپلود'}
                 </Button>
@@ -352,7 +366,13 @@ export default function SocialLinksManager() {
             style={{ backgroundColor: `${link.color}20` || '#f3f4f6' }}
           >
             {isValidIconSrc(link.icon) ? (
-              <Image src={link.icon} alt={link.name} width={28} height={28} className="object-contain" />
+              <Image
+                src={link.icon}
+                alt={link.name}
+                width={28}
+                height={28}
+                className="object-contain"
+              />
             ) : (
               <span className="font-bold text-lg" style={{ color: link.color || '#666' }}>
                 {link.name.charAt(0).toUpperCase()}
@@ -396,7 +416,6 @@ export default function SocialLinksManager() {
     </div>
   );
 
-
   return (
     <div className="space-y-8">
       {/* Support Links Section */}
@@ -407,7 +426,9 @@ export default function SocialLinksManager() {
               <MessageCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">لینک‌های پشتیبانی</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                لینک‌های پشتیبانی
+              </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 لینک‌های تماس برای فرم‌های پشتیبانی و درخواست خدمات
               </p>
@@ -447,7 +468,9 @@ export default function SocialLinksManager() {
               <Share2 className="w-5 h-5 text-[rgb(var(--c-primary-600))] dark:text-[rgb(var(--c-primary-400))]" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">شبکه‌های اجتماعی</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                شبکه‌های اجتماعی
+              </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 لینک‌های شبکه‌های اجتماعی برای نمایش در سایت
               </p>

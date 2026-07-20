@@ -25,13 +25,13 @@
  *   7. @container queries برای واکنش‌گرایی داخلی
  */
 
-import { useRef, useMemo, useEffect, useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { ArrowUpLeft, ExternalLink, Sparkles, Eye } from 'lucide-react';
-import type { Advertisement, AdSize } from '@/types/types';
-import { cn, toPersianNumber } from '@/lib/utils';
 import { TiltCard } from '@/components/ModernTrending/effects/TiltCard';
+import { cn, toPersianNumber } from '@/lib/utils';
+import type { AdSize, Advertisement } from '@/types/types';
+import { ArrowUpLeft, ExternalLink, Eye, Sparkles } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 export type AdCardVariant = 'inline' | 'compact' | 'showcase';
 
@@ -56,7 +56,6 @@ function getSizeForVariant(variant: AdCardVariant): AdSize {
       return 'LARGE';
     case 'compact':
       return 'SMALL';
-    case 'inline':
     default:
       return 'MEDIUM';
   }
@@ -84,7 +83,6 @@ function getRatioForAd(ad: Advertisement, variant: AdCardVariant): string {
       return '16/7';
     case 'compact':
       return '16/10';
-    case 'inline':
     default:
       return '16/9';
   }
@@ -116,33 +114,14 @@ export default function AdCard({
 
   // showcase = متفاوت، compact = افقی، inline = پیش‌فرض
   if (variant === 'showcase') {
-    return (
-      <ShowcaseAd
-        ad={ad}
-        accentColor={accentColor}
-        className={className}
-      />
-    );
+    return <ShowcaseAd ad={ad} accentColor={accentColor} className={className} />;
   }
 
   if (variant === 'compact') {
-    return (
-      <CompactAd
-        ad={ad}
-        accentColor={accentColor}
-        className={className}
-      />
-    );
+    return <CompactAd ad={ad} accentColor={accentColor} className={className} />;
   }
 
-  return (
-    <InlineAd
-      ad={ad}
-      position={position}
-      accentColor={accentColor}
-      className={className}
-    />
-  );
+  return <InlineAd ad={ad} position={position} accentColor={accentColor} className={className} />;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -161,7 +140,7 @@ function InlineAd({
   className?: string;
 }) {
   const ref = useRef<HTMLAnchorElement | null>(null);
-  const ratio = getRatioForAd(ad, 'inline');
+  const _ratio = getRatioForAd(ad, 'inline');
 
   const onMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
     const el = ref.current;
@@ -206,9 +185,7 @@ function InlineAd({
         >
           <div className="ad-spotlight-inner relative">
             {/* Image container — همون aspect ratio با PostItem */}
-            <div
-              className="relative aspect-[16/9] sm:aspect-[16/10] overflow-hidden"
-            >
+            <div className="relative aspect-[16/9] sm:aspect-[16/10] overflow-hidden">
               <Image
                 src={ad.imageUrl}
                 alt={ad.title}
@@ -300,11 +277,7 @@ function InlineAd({
                   <span>پیشنهاد ویژه</span>
                 </span>
                 <span className="inline-flex items-center gap-1">
-                  <ArrowUpLeft
-                    className="h-3 w-3 rtl:-scale-x-100"
-                    strokeWidth={2.2}
-                    aria-hidden
-                  />
+                  <ArrowUpLeft className="h-3 w-3 rtl:-scale-x-100" strokeWidth={2.2} aria-hidden />
                   <span>کلیک برای مشاهده</span>
                 </span>
               </div>
@@ -535,8 +508,7 @@ function ShowcaseAd({
               <div
                 className="absolute inset-0 pointer-events-none"
                 style={{
-                  background:
-                    'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.4) 100%)',
+                  background: 'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.4) 100%)',
                 }}
                 aria-hidden
               />
@@ -554,9 +526,7 @@ function ShowcaseAd({
             <div className="relative flex flex-col gap-3 sm:gap-4 p-4 sm:p-5 md:p-6">
               <div className="flex items-center gap-2">
                 <AdLabel accentColor={accentColor} />
-                <span
-                  className="inline-flex items-center gap-1 text-[10px] sm:text-[10.5px] font-medium text-neutral-500 dark:text-neutral-400"
-                >
+                <span className="inline-flex items-center gap-1 text-[10px] sm:text-[10.5px] font-medium text-neutral-500 dark:text-neutral-400">
                   <span
                     className="size-1.5 rounded-full animate-pulse"
                     style={{ backgroundColor: accentColor }}
@@ -680,11 +650,11 @@ export function pickAd(
 /**
  * سازنده‌ی لیست entries برای masonry — با de-dup هوشمند
  */
-export function buildAdEntries<T>(
+export function buildAdEntries<_T>(
   totalItems: number,
   ads: Advertisement[],
   interval: number,
-  startIndex: number = 0,
+  startIndex = 0,
 ): Array<{ ad: Advertisement; position: number }> {
   if (ads.length === 0 || totalItems === 0) return [];
   const out: Array<{ ad: Advertisement; position: number }> = [];

@@ -72,13 +72,9 @@ function cardVariant(id: string): string {
 function buildLiveRateLists(items: MarketRateItem[]): RateList[] {
   const makePairRow = (r: MarketRateItem, namePrefix = ''): Rate => {
     const buy =
-      r.buyValue != null
-        ? formatWithUnit(r.buyValue / r.divisor, r.unit, r.decimals)
-        : '—';
+      r.buyValue != null ? formatWithUnit(r.buyValue / r.divisor, r.unit, r.decimals) : '—';
     const sell =
-      r.sellValue != null
-        ? formatWithUnit(r.sellValue / r.divisor, r.unit, r.decimals)
-        : '—';
+      r.sellValue != null ? formatWithUnit(r.sellValue / r.divisor, r.unit, r.decimals) : '—';
     return { title: shortName(r.displayNameFa, namePrefix), value: `${buy}|${sell}` };
   };
   const makeSingleRow = (r: MarketRateItem, namePrefix = ''): Rate => ({
@@ -91,9 +87,7 @@ function buildLiveRateLists(items: MarketRateItem[]): RateList[] {
   const sanaItems = items
     .filter(
       (r) =>
-        r.symbol.startsWith('SANA_') &&
-        (r.buyValue != null || r.sellValue != null) &&
-        r.value > 0,
+        r.symbol.startsWith('SANA_') && (r.buyValue != null || r.sellValue != null) && r.value > 0,
     )
     .sort((a, b) => a.priority - b.priority);
 
@@ -104,9 +98,7 @@ function buildLiveRateLists(items: MarketRateItem[]): RateList[] {
   const saraItems = items
     .filter(
       (r) =>
-        r.symbol.startsWith('SARA_') &&
-        (r.buyValue != null || r.sellValue != null) &&
-        r.value > 0,
+        r.symbol.startsWith('SARA_') && (r.buyValue != null || r.sellValue != null) && r.value > 0,
     )
     .sort((a, b) => a.priority - b.priority);
 
@@ -196,7 +188,9 @@ function RateCard({ list, cardIdx }: { list: RateList; cardIdx: number }) {
               ) : (
                 <div className={s.rowPair}>
                   <span className={s.buyVal}>{buy}</span>
-                  <span className={s.divider} aria-hidden>|</span>
+                  <span className={s.divider} aria-hidden>
+                    |
+                  </span>
                   <span className={s.sellVal}>{sell ?? '—'}</span>
                 </div>
               )}

@@ -1,15 +1,15 @@
 'use client';
 
-import { useActionState, useEffect, useRef } from 'react';
-import { MapPin, Mail, Phone, SendHorizonal, CheckCircle2, AlertCircle } from 'lucide-react';
 import SocialLinks from '@/components/SocialsList/SocialLinks';
-import { sendContactAction, type ContactFormState } from './contact-action';
+import { AlertCircle, CheckCircle2, Mail, MapPin, Phone, SendHorizonal } from 'lucide-react';
+import { useActionState, useEffect, useRef } from 'react';
+import { type ContactFormState, sendContactAction } from './contact-action';
 import s from './contact.module.css';
 
 const contactInfo = [
   { icon: MapPin, label: 'آدرس', value: 'کابل، افغانستان' },
-  { icon: Mail,   label: 'ایمیل', value: 'support@financialmarket.com' },
-  { icon: Phone,  label: 'تلفن', value: '۰۷۰۰ ۰۰۰ ۰۰۰' },
+  { icon: Mail, label: 'ایمیل', value: 'support@financialmarket.com' },
+  { icon: Phone, label: 'تلفن', value: '۰۷۰۰ ۰۰۰ ۰۰۰' },
 ] as const;
 
 const initialState: ContactFormState = { success: false, error: null };
@@ -70,7 +70,9 @@ export default function ContactForm() {
             <form ref={formRef} action={action} noValidate>
               <div className={s.fieldset}>
                 <div className={s.fieldGroup}>
-                  <label htmlFor="cf-name" className={s.label}>نام کامل</label>
+                  <label htmlFor="cf-name" className={s.label}>
+                    نام کامل
+                  </label>
                   <input
                     id="cf-name"
                     name="name"
@@ -84,7 +86,9 @@ export default function ContactForm() {
                 </div>
 
                 <div className={s.fieldGroup}>
-                  <label htmlFor="cf-email" className={s.label}>آدرس ایمیل</label>
+                  <label htmlFor="cf-email" className={s.label}>
+                    آدرس ایمیل
+                  </label>
                   <input
                     id="cf-email"
                     name="email"
@@ -99,7 +103,9 @@ export default function ContactForm() {
                 </div>
 
                 <div className={s.fieldGroup}>
-                  <label htmlFor="cf-message" className={s.label}>پیام شما</label>
+                  <label htmlFor="cf-message" className={s.label}>
+                    پیام شما
+                  </label>
                   <textarea
                     id="cf-message"
                     name="message"

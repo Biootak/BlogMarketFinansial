@@ -1,5 +1,5 @@
-﻿import { Suspense } from 'react';
-import Link from 'next/link';
+﻿import Link from 'next/link';
+import { Suspense } from 'react';
 
 import VerifyRequestClient from '@/components/Auth/VerifyRequestClient';
 
@@ -37,9 +37,15 @@ export default function VerifyRequestPage() {
       </div>
 
       <nav className="auth-foot" aria-label="پیوندهای پاورقی">
-        <Link href="/terms" prefetch={false}>قوانین و مقررات</Link>
-        <span aria-hidden="true" style={{ margin: '0 0.5rem', opacity: 0.4 }}>·</span>
-        <Link href="/privacy-policy" prefetch={false}>حریم خصوصی</Link>
+        <Link href="/terms" prefetch={false}>
+          قوانین و مقررات
+        </Link>
+        <span aria-hidden="true" style={{ margin: '0 0.5rem', opacity: 0.4 }}>
+          ·
+        </span>
+        <Link href="/privacy-policy" prefetch={false}>
+          حریم خصوصی
+        </Link>
       </nav>
     </main>
   );

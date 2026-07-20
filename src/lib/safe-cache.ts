@@ -85,7 +85,7 @@ export function safeCache<TArgs extends unknown[], T>(
   // safeRevalidateTag(tag) can purge it on demand.
   for (const tag of tags) {
     if (!tagRegistry.has(tag)) tagRegistry.set(tag, new Set());
-    tagRegistry.get(tag)!.add(baseKey);
+    tagRegistry.get(tag)?.add(baseKey);
   }
 
   return async (...args: TArgs): Promise<T> => {
@@ -118,7 +118,9 @@ export function safeCache<TArgs extends unknown[], T>(
       if (cached) {
         if (isDev) {
           const msg = error instanceof Error ? error.message : String(error);
-          console.warn(`[safe-cache] ${fullKey} DB fail, using stale value (${Math.round((now - cached.storedAt) / 1000)}s old): ${msg.slice(0, 120)}`);
+          console.warn(
+            `[safe-cache] ${fullKey} DB fail, using stale value (${Math.round((now - cached.storedAt) / 1000)}s old): ${msg.slice(0, 120)}`,
+          );
         }
         // TTL را تمدید کن تا request بعدی دوباره امتحان کند
         cached.expiresAt = now + Math.min(ttl, 30) * 1000;

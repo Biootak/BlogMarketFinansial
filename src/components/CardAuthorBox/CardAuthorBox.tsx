@@ -1,11 +1,11 @@
 'use client';
 
-import React, { type FC } from 'react';
-import Avatar from '@/components/Avatar/Avatar';
-import Link from 'next/link';
 import type { TopAuthor } from '@/actions/getTopAuthors';
-import { FileText, ArrowLeft } from 'lucide-react';
-import { heading, text, radius } from '@/lib/design-tokens';
+import Avatar from '@/components/Avatar/Avatar';
+import { heading, radius, text } from '@/lib/design-tokens';
+import { ArrowLeft, FileText } from 'lucide-react';
+import Link from 'next/link';
+import React, { type FC } from 'react';
 
 export interface CardAuthorBoxProps {
   className?: string;
@@ -33,13 +33,15 @@ const CardAuthorBox: FC<CardAuthorBoxProps> = ({ className = '', author, index =
         <div className="absolute inset-0 bg-gradient-to-br from-primary-50/50 via-transparent to-primary-50/30 dark:from-primary-900/20 dark:to-primary-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
         {isTopThree && (
-          <div className={`absolute top-2 sm:top-3 end-2 sm:end-3 z-10 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold shadow-lg ${
-            index === 0
-              ? 'bg-gradient-to-br from-amber-400 to-amber-600 text-white'
-              : index === 1
-                ? 'bg-gradient-to-br from-neutral-300 to-neutral-400 text-neutral-800'
-                : 'bg-gradient-to-br from-amber-600 to-amber-800 text-white'
-          }`}>
+          <div
+            className={`absolute top-2 sm:top-3 end-2 sm:end-3 z-10 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold shadow-lg ${
+              index === 0
+                ? 'bg-gradient-to-br from-amber-400 to-amber-600 text-white'
+                : index === 1
+                  ? 'bg-gradient-to-br from-neutral-300 to-neutral-400 text-neutral-800'
+                  : 'bg-gradient-to-br from-amber-600 to-amber-800 text-white'
+            }`}
+          >
             {index + 1}
           </div>
         )}
@@ -59,7 +61,12 @@ const CardAuthorBox: FC<CardAuthorBoxProps> = ({ className = '', author, index =
         </div>
 
         <div className="relative z-10 mt-2 sm:mt-4 w-full">
-          <h2 className={[heading.h4, 'truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors'].join(' ')}>
+          <h2
+            className={[
+              heading.h4,
+              'truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors',
+            ].join(' ')}
+          >
             {name ?? 'نویسنده ناشناس'}
           </h2>
           <span className={['block mt-0.5 sm:mt-1 truncate', text.meta].join(' ')}>

@@ -1,7 +1,7 @@
-import * as React from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
-import { CheckCircle2, AlertCircle, Info, AlertTriangle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { type VariantProps, cva } from 'class-variance-authority';
+import { AlertCircle, AlertTriangle, CheckCircle2, Info, X } from 'lucide-react';
+import * as React from 'react';
 
 const alertVariants = cva(
   [
@@ -29,8 +29,7 @@ const alertVariants = cva(
           'bg-destructive-50/90 text-destructive-900 border-destructive-200/80 [&>svg.icon]:text-destructive-600 dark:bg-destructive-950/40 dark:text-destructive-100 dark:border-destructive-900/60',
         success:
           'bg-emerald-50/90 text-emerald-900 border-emerald-200/80 [&>svg.icon]:text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-100 dark:border-emerald-900/60',
-        info:
-          'bg-sky-50/90 text-sky-900 border-sky-200/80 [&>svg.icon]:text-sky-600 dark:bg-sky-950/40 dark:text-sky-100 dark:border-sky-900/60',
+        info: 'bg-sky-50/90 text-sky-900 border-sky-200/80 [&>svg.icon]:text-sky-600 dark:bg-sky-950/40 dark:text-sky-100 dark:border-sky-900/60',
         warning:
           'bg-amber-50/90 text-amber-900 border-amber-200/80 [&>svg.icon]:text-amber-600 dark:bg-amber-950/40 dark:text-amber-100 dark:border-amber-900/60',
       },

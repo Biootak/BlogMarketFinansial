@@ -30,8 +30,7 @@
     var(--ds-color-blue) 55%,
     transparent
   );
-  -webkit-mask:
-    linear-gradient(var(--ds-text-inverse) 0 0) content-box,
+  -webkit-mask: linear-gradient(var(--ds-text-inverse) 0 0) content-box,
     linear-gradient(var(--ds-text-inverse) 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -65,8 +64,7 @@
   height: 0.4rem;
   border-radius: 50%;
   background: var(--ds-accent-emerald);
-  box-shadow: 0 0 0 0.25rem
-    color-mix(in oklch, var(--ds-accent-emerald) 30%, transparent);
+  box-shadow: 0 0 0 0.25rem color-mix(in oklch, var(--ds-accent-emerald) 30%, transparent);
 }
 
 /* Prominent received-amount result (the single most important number) */
@@ -141,11 +139,7 @@
   inset-block: 0;
   inset-inline-start: 0;
   border-radius: inherit;
-  background: linear-gradient(
-    90deg,
-    var(--ds-accent-emerald),
-    var(--ds-accent-amber)
-  );
+  background: linear-gradient(90deg, var(--ds-accent-emerald), var(--ds-accent-amber));
   opacity: 0.85;
 }
 

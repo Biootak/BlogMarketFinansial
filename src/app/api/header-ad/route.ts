@@ -9,15 +9,15 @@
  *  ۲۰۲۶-۰۶-۱۴: مطابق الگوی api/revalidate و api/settings
  */
 
-import { type NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
 import {
-  getActiveHeaderAd,
   createHeaderAd,
-  updateHeaderAd,
   deleteHeaderAd,
+  getActiveHeaderAd,
   toggleHeaderAd,
+  updateHeaderAd,
 } from '@/actions/headerAdActions';
+import { auth } from '@/auth';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export async function GET() {
   try {
@@ -78,7 +78,10 @@ export async function PATCH(request: NextRequest) {
     const guard = await ensureAdmin();
     if (guard.error) return guard.error;
 
-    const body = (await request.json()) as { id?: string; toggle?: boolean } & Record<string, unknown>;
+    const body = (await request.json()) as { id?: string; toggle?: boolean } & Record<
+      string,
+      unknown
+    >;
     if (!body.id) {
       return NextResponse.json(
         { success: false, message: 'شناسه تبلیغ الزامی است' },
@@ -140,9 +143,6 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true, message: result.message });
   } catch (error) {
     console.error('DELETE /api/header-ad error:', error);
-    return NextResponse.json(
-      { success: false, message: 'خطا در حذف تبلیغ هدر' },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, message: 'خطا در حذف تبلیغ هدر' }, { status: 500 });
   }
 }

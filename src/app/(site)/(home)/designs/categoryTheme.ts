@@ -153,7 +153,10 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
  * تشخیص تم بر اساس slug دسته‌بندی
  * کلیدواژه‌های متعدد برای تطابق با slugs مختلف
  */
-export function getCategoryTheme(categorySlug?: string | null, categoryName?: string | null): CategoryTheme {
+export function getCategoryTheme(
+  categorySlug?: string | null,
+  categoryName?: string | null,
+): CategoryTheme {
   const haystack = `${categorySlug ?? ''} ${categoryName ?? ''}`.toLowerCase().trim();
 
   if (!haystack) return CATEGORY_THEMES.default;
@@ -182,20 +185,78 @@ export function detectSentiment(title: string, excerpt?: string | null): Sentime
 
   // کلیدواژه‌های صعودی
   const bullishKeywords = [
-    'افزایش', 'صعود', 'رشد', 'سود', 'سودآوری', 'پیروزی', 'موفقیت', 'بهبود',
-    'بالاترین', 'رکورد', 'صعودی', 'گران', 'گرانی', 'افزایشی', 'تقویت',
-    'احیا', 'رونق', 'شکوفایی', 'پرش', 'جهش', 'برتری',
-    'increase', 'rise', 'growth', 'profit', 'gain', 'surge', 'rally',
-    'bull', 'bullish', 'up', 'higher', 'boost',
+    'افزایش',
+    'صعود',
+    'رشد',
+    'سود',
+    'سودآوری',
+    'پیروزی',
+    'موفقیت',
+    'بهبود',
+    'بالاترین',
+    'رکورد',
+    'صعودی',
+    'گران',
+    'گرانی',
+    'افزایشی',
+    'تقویت',
+    'احیا',
+    'رونق',
+    'شکوفایی',
+    'پرش',
+    'جهش',
+    'برتری',
+    'increase',
+    'rise',
+    'growth',
+    'profit',
+    'gain',
+    'surge',
+    'rally',
+    'bull',
+    'bullish',
+    'up',
+    'higher',
+    'boost',
   ];
 
   // کلیدواژه‌های نزولی
   const bearishKeywords = [
-    'کاهش', 'سقوط', 'زیان', 'ضرر', 'افت', 'نزول', 'بحران', 'رکود',
-    'پایین‌ترین', 'بدترین', 'خسارت', 'نگرانی', 'هشدار', 'خطر',
-    'تنش', 'تحریم', 'فشار', 'کسری', 'بحران', 'ریزش', 'ریزشی',
-    'decrease', 'fall', 'drop', 'loss', 'decline', 'crash', 'recession',
-    'bear', 'bearish', 'down', 'lower', 'concern', 'risk', 'warning',
+    'کاهش',
+    'سقوط',
+    'زیان',
+    'ضرر',
+    'افت',
+    'نزول',
+    'بحران',
+    'رکود',
+    'پایین‌ترین',
+    'بدترین',
+    'خسارت',
+    'نگرانی',
+    'هشدار',
+    'خطر',
+    'تنش',
+    'تحریم',
+    'فشار',
+    'کسری',
+    'بحران',
+    'ریزش',
+    'ریزشی',
+    'decrease',
+    'fall',
+    'drop',
+    'loss',
+    'decline',
+    'crash',
+    'recession',
+    'bear',
+    'bearish',
+    'down',
+    'lower',
+    'concern',
+    'risk',
+    'warning',
   ];
 
   const bullishScore = bullishKeywords.reduce((acc, kw) => acc + (text.includes(kw) ? 1 : 0), 0);
@@ -206,14 +267,17 @@ export function detectSentiment(title: string, excerpt?: string | null): Sentime
   return 'neutral';
 }
 
-export const SENTIMENT_CONFIG: Record<SentimentType, {
-  label: string;
-  shortLabel: string;
-  gradient: string;
-  icon: 'up' | 'down' | 'flat';
-  ring: string;
-  text: string;
-}> = {
+export const SENTIMENT_CONFIG: Record<
+  SentimentType,
+  {
+    label: string;
+    shortLabel: string;
+    gradient: string;
+    icon: 'up' | 'down' | 'flat';
+    ring: string;
+    text: string;
+  }
+> = {
   bullish: {
     label: 'صعودی',
     shortLabel: '↑',

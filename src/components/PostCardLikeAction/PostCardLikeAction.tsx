@@ -1,13 +1,12 @@
 'use client';
 
+import { likeItem } from '@/actions/postActions';
+import { motion } from '@/lib/motion-shim';
+import { cn } from '@/lib/utils';
+import convertNumbThousand from '@/utils/convertNumbThousand';
 import React, { type FC, useState, useCallback } from 'react';
 import { useTransition } from 'react';
-import { motion } from '@/lib/motion-shim';
-import { likeItem } from '@/actions/postActions';
-import convertNumbThousand from '@/utils/convertNumbThousand';
-import { cn } from '@/lib/utils';
 import { Icon } from '../ui/icon';
-
 
 export interface PostCardLikeActionProps {
   className?: string;

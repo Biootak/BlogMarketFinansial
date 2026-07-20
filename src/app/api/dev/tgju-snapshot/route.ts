@@ -6,14 +6,10 @@
  * ----------------------------------------------------------------------------
  */
 
-import { NextResponse, type NextRequest } from 'next/server';
 import { auth } from '@/auth';
+import { ALL_TGJU_PAGE_IDS, type TgjuPageId, fetchAllTgjuPages } from '@/lib/market-rates/tgju';
 import { Role } from '@prisma/client';
-import {
-  fetchAllTgjuPages,
-  ALL_TGJU_PAGE_IDS,
-  type TgjuPageId,
-} from '@/lib/market-rates/tgju';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -59,7 +55,7 @@ const DISPLAY_FA_HINT: Record<string, string> = {
   currency_price_aed: 'درهم بازار آزاد',
 };
 
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export async function GET(_request: NextRequest): Promise<NextResponse> {
   // L1b fix: dev-only endpoint must still require an OWNER session, otherwise
   // (if NODE_ENV is ever flipped to development) it would scrape and return
   // internal market data to anyone without a login.

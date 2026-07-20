@@ -1,23 +1,22 @@
-import { notFound } from 'next/navigation';
-import type { Metadata } from 'next';
+import { getActiveAdvertisements } from '@/actions/advertisementActions';
+import { getMoreFromAuthor } from '@/actions/getMoreFromAuthor';
 import { getPostBySlug } from '@/actions/getPostBySlug';
 import { getRelatedPosts } from '@/actions/getRelatedPosts';
-import { getMoreFromAuthor } from '@/actions/getMoreFromAuthor';
-import SingleHeader from '@/app/(site)/(singles)/SingleHeader';
+import { getSidebarData } from '@/actions/sidebarActions';
 import SingleContent from '@/app/(site)/(singles)/SingleContent';
+import SingleHeader from '@/app/(site)/(singles)/SingleHeader';
 import SingleRelatedPosts from '@/app/(site)/(singles)/SingleRelatedPosts';
 import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia';
-import { getSidebarData } from '@/actions/sidebarActions';
-import type { PostWithRelations, ActionResult } from '@/types/types';
+import type { ActionResult, PostWithRelations } from '@/types/types';
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import Sidebar from '../../../Sidebar';
-import { getActiveAdvertisements } from '@/actions/advertisementActions';
 
 export interface PageProps {
   params: Promise<{ slug: string[] }>;
 }
 
-const APP_URL =
-  process.env.NEXT_PUBLIC_APP_URL || 'https://blogmarketfinansial.ir';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://blogmarketfinansial.ir';
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
@@ -35,8 +34,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const imageUrl = post.featuredImage || `${APP_URL}/images/default-og.jpg`;
 
   // استخراج توضیحات از محتوا (حذف HTML tags)
-  const description = post.excerpt
-    || (post.content ? post.content.replace(/<[^>]*>/g, '').slice(0, 160) + '...' : 'بازار های مالی - مرجع تحلیل بازارهای مالی');
+  const description =
+    post.excerpt ||
+    (post.content
+      ? `${post.content.replace(/<[^>]*>/g, '').slice(0, 160)}...`
+      : 'بازار های مالی - مرجع تحلیل بازارهای مالی');
 
   return {
     title: post.title,
@@ -102,7 +104,8 @@ export default async function PageSingleTemplate3({ params }: PageProps) {
     orderBy: 'createdAt',
     orderDirection: 'desc',
   });
-  const inContentAd = inContentAdsResult.success && inContentAdsResult.data?.[0] ? inContentAdsResult.data[0] : null;
+  const inContentAd =
+    inContentAdsResult.success && inContentAdsResult.data?.[0] ? inContentAdsResult.data[0] : null;
 
   return (
     <div className="nc-PageSingle relative min-h-screen">
@@ -139,7 +142,9 @@ export default async function PageSingleTemplate3({ params }: PageProps) {
                 <div className="absolute -inset-1 bg-gradient-to-br from-primary-500/20 via-violet-500/10 to-rose-500/20 rounded-3xl blur-xl opacity-0 hover:opacity-100 transition-opacity duration-500" />
 
                 <Sidebar
-                  ads={sidebarAdsResult.success && sidebarAdsResult.data ? sidebarAdsResult.data : []}
+                  ads={
+                    sidebarAdsResult.success && sidebarAdsResult.data ? sidebarAdsResult.data : []
+                  }
                   className="relative space-y-6 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl rounded-2xl p-5 border border-neutral-200/50 dark:border-neutral-800/50 shadow-[0_8px_40px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.2)]"
                   widgetPosts={sidebarData.recentPosts}
                   tags={sidebarData.popularTags}

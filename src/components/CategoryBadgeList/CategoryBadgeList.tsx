@@ -1,8 +1,8 @@
+import Badge from '@/components/Badge/Badge';
+import type { TwMainColor } from '@/types/types';
+import type { Category } from '@prisma/client';
 import type React from 'react';
 import { useMemo } from 'react';
-import Badge from '@/components/Badge/Badge';
-import type { Category } from '@prisma/client';
-import type { TwMainColor } from '@/types/types';
 
 export interface CategoryBadgeListProps {
   className?: string;

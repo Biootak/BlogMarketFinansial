@@ -1,17 +1,17 @@
+import { getAuthorsHubData } from '@/actions/getAuthorsHubData';
+import {
+  AuthorsCTA,
+  AuthorsExpertiseCloud,
+  AuthorsGrid,
+  AuthorsHero,
+} from '@/components/AuthorsHub';
+import { getSystemSettingsData } from '@/data/getSystemSettings';
 /**
  * @file /authors hub page
  * @description Premium editorial page that lists all active authors and
  * the categories they specialize in. Server-rendered, fully cached.
  */
 import type { Metadata } from 'next';
-import {
-  AuthorsHero,
-  AuthorsGrid,
-  AuthorsExpertiseCloud,
-  AuthorsCTA,
-} from '@/components/AuthorsHub';
-import { getAuthorsHubData } from '@/actions/getAuthorsHubData';
-import { getSystemSettingsData } from '@/data/getSystemSettings';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://blogmarketfinansial.ir';
 
@@ -21,8 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSystemSettingsData();
   const siteName = settings.siteName ?? 'بازارهای مالی';
   const title = 'نویسندگان';
-  const description =
-    'با تحلیل‌گران، معامله‌گران و روزنامه‌نگاران فعال در بازارهای مالی آشنا شوید.';
+  const description = 'با تحلیل‌گران، معامله‌گران و روزنامه‌نگاران فعال در بازارهای مالی آشنا شوید.';
   return {
     title,
     description,
@@ -43,7 +42,6 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-
 // Dynamically rendered on demand — the shared site header reads auth(), which
 // opts the whole (site) tree out of static generation (see (home)/page.tsx).
 export default async function AuthorsPage() {
@@ -57,8 +55,7 @@ export default async function AuthorsPage() {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     name: 'نویسندگان',
-    description:
-      'مجموعه نویسندگان فعال در پلتفرم بازارهای مالی',
+    description: 'مجموعه نویسندگان فعال در پلتفرم بازارهای مالی',
     url: `${SITE_URL}/authors`,
     hasPart: data.topAuthors.slice(0, 10).map((a) => ({
       '@type': 'Person',
@@ -70,10 +67,7 @@ export default async function AuthorsPage() {
   };
 
   return (
-    <div
-      dir="rtl"
-      className="nc-PageAuthors relative bg-[color:var(--c-bg)] dark:bg-neutral-950"
-    >
+    <div dir="rtl" className="nc-PageAuthors relative bg-[color:var(--c-bg)] dark:bg-neutral-950">
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
@@ -91,10 +85,7 @@ export default async function AuthorsPage() {
 
         {feature && (
           <div className="author-reveal">
-            <FeaturedSpotlight
-              author={feature}
-              rank={1}
-            />
+            <FeaturedSpotlight author={feature} rank={1} />
           </div>
         )}
 
@@ -114,14 +105,14 @@ export default async function AuthorsPage() {
   );
 }
 
+import type { HubAuthor } from '@/actions/getAuthorsHubData';
+import AuthorAvatar from '@/components/AuthorsHub/primitives/AuthorAvatar';
+import { cn, toPersianNumber } from '@/lib/utils';
 /* -------------------------------------------------------------------------- */
 /*                              Local spotlight                              */
 /* -------------------------------------------------------------------------- */
-import { Sparkles, FileText } from 'lucide-react';
-import AuthorAvatar from '@/components/AuthorsHub/primitives/AuthorAvatar';
-import { toPersianNumber, cn } from '@/lib/utils';
+import { FileText, Sparkles } from 'lucide-react';
 import Link from 'next/link';
-import type { HubAuthor } from '@/actions/getAuthorsHubData';
 
 function FeaturedSpotlight({
   author,
@@ -146,8 +137,7 @@ function FeaturedSpotlight({
         aria-hidden
         className="absolute -top-20 -end-20 h-64 w-64 rounded-full opacity-30 blur-3xl"
         style={{
-          background:
-            'radial-gradient(closest-side, oklch(72% 0.13 70), transparent 70%)',
+          background: 'radial-gradient(closest-side, oklch(72% 0.13 70), transparent 70%)',
         }}
       />
       <div className="relative grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-6 lg:gap-10 items-center">

@@ -10,6 +10,15 @@
 
 'use client';
 
+import { Icon } from '@/components/ui/icon';
+import { toast } from '@/components/ui/use-toast';
+// 2026-07-05: منبع حقیقت جهت متن در کلاینت. به جای hardcode `dir="rtl"`
+// از این hook می‌خوانیم تا اگر روزی پنلی LTR شد (مثلاً ادیتور چندزبانه)
+// یا کاربر دکمهٔ تغییر زبان زد، shell درست رفتار کند.
+import { useDirection } from '@/hooks/useDirection';
+import { cn } from '@/lib/utils';
+import type { Content, EditorOptions } from '@tiptap/core';
+import { EditorContent, useEditor } from '@tiptap/react';
 import React, {
   forwardRef,
   useCallback,
@@ -19,28 +28,17 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { EditorContent, useEditor } from '@tiptap/react';
-import type { Content, EditorOptions } from '@tiptap/core';
-import { extensions as builtInExtensions } from './extensions';
+import type { EditorInstance } from '.';
 import FixedMenu from './components/fixed-menu';
+import ImageUploadDialog, { type ImageUploadDialogRef } from './components/image-upload-dialog';
 import LinkBubbleMenu from './components/link-bubble-menu';
 import TableContextMenu from './components/table-context-menu';
-import TextBubbleMenu from './components/text-bubble-menu';
 import TableToolbar from './components/table-toolbar';
+import TextBubbleMenu from './components/text-bubble-menu';
 import TocSidebar from './components/toc-sidebar';
-import ImageUploadDialog, {
-  type ImageUploadDialogRef,
-} from './components/image-upload-dialog';
 import YoutubeDialog from './components/youtube-dialog';
-import { Icon } from '@/components/ui/icon';
-import { toast } from '@/components/ui/use-toast';
-import type { EditorInstance } from '.';
-import { getToCItems, type TocItem } from './lib/table-of-contents';
-import { cn } from '@/lib/utils';
-// 2026-07-05: منبع حقیقت جهت متن در کلاینت. به جای hardcode `dir="rtl"`
-// از این hook می‌خوانیم تا اگر روزی پنلی LTR شد (مثلاً ادیتور چندزبانه)
-// یا کاربر دکمهٔ تغییر زبان زد، shell درست رفتار کند.
-import { useDirection } from '@/hooks/useDirection';
+import { extensions as builtInExtensions } from './extensions';
+import { type TocItem, getToCItems } from './lib/table-of-contents';
 
 import './styles/index.scss';
 
@@ -72,7 +70,7 @@ export interface EditorProps extends Partial<EditorOptions> {
    *     بدون تغییر در call site.
    *
    * اگر `content` prop هم داده شده باشد، بازیابی انجام نمی‌شود
-    * (محتوای اصلی پست بر local draft ارجحیت دارد).
+   * (محتوای اصلی پست بر local draft ارجحیت دارد).
    */
   autoSaveKey?: string | null;
   /** اختیاری — callback وقتی محتوای draft از localStorage بازیابی شد. */
@@ -178,7 +176,9 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
     // Returns the first uploaded file's URL + dimensions, or null on
     // failure (toast already shown to the user).
     const uploadFileSilently = useCallback(
-      (file: File): Promise<{ url: string; width: number | null; height: number | null } | null> => {
+      (
+        file: File,
+      ): Promise<{ url: string; width: number | null; height: number | null } | null> => {
         return new Promise((resolve) => {
           const xhr = new XMLHttpRequest();
           xhr.open('POST', '/api/upload', true);
@@ -206,12 +206,20 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
               });
               resolve(null);
             } catch {
-              toast({ title: 'خطا در آپلود تصویر', description: 'پاسخ نامعتبر سرور', variant: 'destructive' });
+              toast({
+                title: 'خطا در آپلود تصویر',
+                description: 'پاسخ نامعتبر سرور',
+                variant: 'destructive',
+              });
               resolve(null);
             }
           });
           xhr.addEventListener('error', () => {
-            toast({ title: 'خطای شبکه', description: 'آپلود تصویر ناموفق بود', variant: 'destructive' });
+            toast({
+              title: 'خطای شبکه',
+              description: 'آپلود تصویر ناموفق بود',
+              variant: 'destructive',
+            });
             resolve(null);
           });
           xhr.send(formData);
@@ -223,31 +231,28 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
     // 2026-07-06: extract image files from a clipboard / drop event.
     // Returns null if no image is present (so the caller knows to fall
     // through to the default editor behavior).
-    const extractImageFiles = useCallback(
-      (dt: DataTransfer | null | undefined): File[] => {
-        if (!dt) return [];
-        const files: File[] = [];
-        // `files` is the modern API and works for both paste and drop.
-        // `items` is fallback for older browsers / drag-data uris.
-        if (dt.files && dt.files.length > 0) {
-          for (let i = 0; i < dt.files.length; i++) {
-            const f = dt.files.item(i);
-            if (f && f.type.startsWith('image/')) files.push(f);
+    const extractImageFiles = useCallback((dt: DataTransfer | null | undefined): File[] => {
+      if (!dt) return [];
+      const files: File[] = [];
+      // `files` is the modern API and works for both paste and drop.
+      // `items` is fallback for older browsers / drag-data uris.
+      if (dt.files && dt.files.length > 0) {
+        for (let i = 0; i < dt.files.length; i++) {
+          const f = dt.files.item(i);
+          if (f?.type.startsWith('image/')) files.push(f);
+        }
+      }
+      if (files.length === 0 && dt.items) {
+        for (let i = 0; i < dt.items.length; i++) {
+          const item = dt.items[i];
+          if (item && item.kind === 'file' && item.type.startsWith('image/')) {
+            const f = item.getAsFile();
+            if (f) files.push(f);
           }
         }
-        if (files.length === 0 && dt.items) {
-          for (let i = 0; i < dt.items.length; i++) {
-            const item = dt.items[i];
-            if (item && item.kind === 'file' && item.type.startsWith('image/')) {
-              const f = item.getAsFile();
-              if (f) files.push(f);
-            }
-          }
-        }
-        return files;
-      },
-      [],
-    );
+      }
+      return files;
+    }, []);
 
     // 2026-07-06: handle pasted / dropped image.
     //
@@ -386,7 +391,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       // the event and it should not also try to insert the image data
       // (which would yield a base64-embedded <img> — we want the
       // uploaded URL instead).
-      handlePaste: (view, event) => {
+      handlePaste: (_view, event) => {
         const files = extractImageFiles(event.clipboardData);
         if (files.length === 0) return false;
         // Fire-and-forget; the editor stays editable while upload runs.
@@ -406,7 +411,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       // The only payload that conflicts with our blob-first upload is
       // rich `text/html` (e.g. dragging a styled snippet). text/plain
       // is harmless because we paste the file ourselves.
-      handleDrop: (view, event) => {
+      handleDrop: (_view, event) => {
         const e = event as unknown as DragEvent;
         const files = extractImageFiles(e.dataTransfer);
         if (files.length === 0) return false;
@@ -680,24 +685,21 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
     // 2026-07-05: در v3 نوع Content فقط string | object | JSONContent[] | null
     // است. به جای undefined/null، رشتهٔ خالی برمی‌گردانیم تا setContent
     // هیچ‌وقت null دریافت نکند.
-    const parseContent = useCallback(
-      (raw: Content): Content => {
-        if (!raw) return '';
-        if (typeof raw !== 'string') return raw;
-        const trimmed = raw.trim();
-        if (!trimmed) return '';
-        if (trimmed.startsWith('<')) return trimmed;
-        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
-          try {
-            return JSON.parse(trimmed);
-          } catch {
-            return trimmed;
-          }
+    const parseContent = useCallback((raw: Content): Content => {
+      if (!raw) return '';
+      if (typeof raw !== 'string') return raw;
+      const trimmed = raw.trim();
+      if (!trimmed) return '';
+      if (trimmed.startsWith('<')) return trimmed;
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        try {
+          return JSON.parse(trimmed);
+        } catch {
+          return trimmed;
         }
-        return trimmed;
-      },
-      [],
-    );
+      }
+      return trimmed;
+    }, []);
 
     const lastLoadedContentRef = useRef<string | null>(null);
     useEffect(() => {
@@ -705,9 +707,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       const parsedContent = parseContent(content ?? '');
       if (!parsedContent) return; // محتوای خالی: صبر کن تا parent لود کند
       const serialized =
-        typeof parsedContent === 'string'
-          ? parsedContent
-          : JSON.stringify(parsedContent);
+        typeof parsedContent === 'string' ? parsedContent : JSON.stringify(parsedContent);
       // اگر همین محتوا قبلاً لود شده (مثلاً حلقهٔ onUpdate)، تکرار نکن.
       if (serialized === lastLoadedContentRef.current) return;
       lastLoadedContentRef.current = serialized;
@@ -797,11 +797,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
             تا کاربر کنترل داشته باشد که پیش‌نویس را نگه دارد یا دور بیندازد.
             CSS کلاس‌ها در shell.scss از قبل آماده است. */}
         {restoredAt !== null && (
-          <div
-            className="at-editor-recover"
-            role="status"
-            aria-live="polite"
-          >
+          <div className="at-editor-recover" role="status" aria-live="polite">
             <span className="at-editor-recover__ico" aria-hidden>
               <Icon name="clock" size={14} strokeWidth={2} />
             </span>
@@ -861,10 +857,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
               <TextBubbleMenu editor={editor} />
               <TableToolbar editor={editor} />
 
-              <EditorContent
-                editor={editor}
-                className={`at-editor-prose ${contentClassName}`}
-              />
+              <EditorContent editor={editor} className={`at-editor-prose ${contentClassName}`} />
 
               {/* Floating empty-state hint — حذف شد (جایگزین با
                   Placeholder رسمی Tiptap + Deck hint بالایی).
@@ -886,11 +879,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
           onOpenChange={setImageUploadOpen}
         />
 
-        <YoutubeDialog
-          editor={editor}
-          open={youtubeOpen}
-          onOpenChange={setYoutubeOpen}
-        />
+        <YoutubeDialog editor={editor} open={youtubeOpen} onOpenChange={setYoutubeOpen} />
 
         {/* ═══ Status bar ═══════════════════════════════════════════════════ */}
         {editable && displayWordsCount && (
@@ -969,10 +958,16 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
                       strokeWidth={2}
                       className="at-editor-status__ico at-editor-status__ico--amber"
                     />
-                    <span className="at-editor-status__num">{toFaDigits(selectionCount.words)}</span>
+                    <span className="at-editor-status__num">
+                      {toFaDigits(selectionCount.words)}
+                    </span>
                     <span className="at-editor-status__lbl">کلمه انتخاب</span>
-                    <span className="at-editor-status__num-sep" aria-hidden>·</span>
-                    <span className="at-editor-status__num">{toFaDigits(selectionCount.chars)}</span>
+                    <span className="at-editor-status__num-sep" aria-hidden>
+                      ·
+                    </span>
+                    <span className="at-editor-status__num">
+                      {toFaDigits(selectionCount.chars)}
+                    </span>
                     <span className="at-editor-status__lbl">نویسه</span>
                   </span>
                 </>

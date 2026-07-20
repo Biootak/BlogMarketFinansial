@@ -1,7 +1,7 @@
-import { type Metadata } from 'next';
 import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
 import ServiceRequestsClient from '@/components/Dashboard/ServiceRequests/ServiceRequestsClient';
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
   title: 'مدیریت درخواست‌های خدمات | داشبورد',

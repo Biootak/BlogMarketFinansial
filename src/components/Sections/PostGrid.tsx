@@ -16,24 +16,24 @@
  * 10. Empty/end state با المان بصری refined
  */
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from '@/lib/motion-shim';
+import { STRIPE_EASE } from '@/lib/motion';
+import { AnimatePresence, motion, useReducedMotion } from '@/lib/motion-shim';
+import { cn, formatNumber, toPersianNumber } from '@/lib/utils';
+import type { PostWithRelations } from '@/types/types';
 import {
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-  LayoutGrid,
-  List,
   ArrowDown,
   Check,
+  ChevronLeft,
+  ChevronRight,
+  LayoutGrid,
+  List,
+  Loader2,
   Sparkles,
 } from 'lucide-react';
-import type { PostWithRelations } from '@/types/types';
-import { cn, toPersianNumber, formatNumber } from '@/lib/utils';
-import { STRIPE_EASE } from '@/lib/motion';
-import PostsList from '../PostsDisplay.tsx/PostsList';
-import PostItem from '../PostsDisplay.tsx/PostItem';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Empty from '../Empty';
+import PostItem from '../PostsDisplay.tsx/PostItem';
+import PostsList from '../PostsDisplay.tsx/PostsList';
 
 interface PostGridProps {
   posts: PostWithRelations[];
@@ -177,13 +177,7 @@ export default function PostGrid({
       </AnimatePresence>
 
       {/* Pagination — pill segmented control */}
-      {totalPages > 1 && (
-        <Pagination
-          page={page}
-          totalPages={totalPages}
-          onSelect={goToPage}
-        />
-      )}
+      {totalPages > 1 && <Pagination page={page} totalPages={totalPages} onSelect={goToPage} />}
     </div>
   );
 }
@@ -231,7 +225,7 @@ function LoadingState() {
               animate={{ x: ['-100%', '300%'] }}
               transition={{
                 duration: 1.4,
-                repeat: Infinity,
+                repeat: Number.POSITIVE_INFINITY,
                 ease: 'easeInOut',
                 delay: i * 0.15,
               }}
@@ -389,9 +383,7 @@ function EndState({
         >
           <Check className="size-2.5" strokeWidth={3.5} aria-hidden />
         </span>
-        <span>
-          تمام {toPersianNumber(formatNumber(count))} مقاله نمایش داده شد
-        </span>
+        <span>تمام {toPersianNumber(formatNumber(count))} مقاله نمایش داده شد</span>
       </div>
 
       {showPaginatedOption && (
@@ -450,9 +442,7 @@ function PaginatedToolbar({
         'shadow-[0_1px_0_0_rgba(255,255,255,0.6)_inset,0_8px_24px_-16px_rgba(20,23,32,0.10)]',
       )}
     >
-      <div
-        className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 px-3 py-2.5 sm:px-4 sm:py-3"
-      >
+      <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 px-3 py-2.5 sm:px-4 sm:py-3">
         {/* Right side in RTL = status */}
         <div className="flex items-center gap-2 sm:gap-2.5 text-[11.5px] sm:text-xs text-neutral-600 dark:text-neutral-400 tabular-nums">
           <span className="hidden sm:inline">نمایش</span>
@@ -489,10 +479,7 @@ function PaginatedToolbar({
       </div>
 
       {/* Progress bar at bottom */}
-      <div
-        className="h-0.5 w-full bg-neutral-200/50 dark:bg-neutral-800/50"
-        aria-hidden
-      >
+      <div className="h-0.5 w-full bg-neutral-200/50 dark:bg-neutral-800/50" aria-hidden>
         <motion.div
           className="h-full rounded-full"
           style={{
@@ -520,16 +507,9 @@ function Pagination({
   const pages = useMemo(() => buildPageList(page, totalPages), [page, totalPages]);
 
   return (
-    <nav
-      className="flex items-center justify-center gap-1.5 sm:gap-2 pt-2"
-      aria-label="صفحه‌بندی"
-    >
+    <nav className="flex items-center justify-center gap-1.5 sm:gap-2 pt-2" aria-label="صفحه‌بندی">
       {/* قبلی — در RTL: سمت راست */}
-      <PageBtn
-        disabled={page === 1}
-        onClick={() => onSelect(page - 1)}
-        ariaLabel="صفحه‌ی قبل"
-      >
+      <PageBtn disabled={page === 1} onClick={() => onSelect(page - 1)} ariaLabel="صفحه‌ی قبل">
         <ChevronRight className="size-4" strokeWidth={2} aria-hidden />
       </PageBtn>
 
@@ -552,12 +532,7 @@ function Pagination({
               …
             </span>
           ) : (
-            <PageNum
-              key={p}
-              page={p}
-              active={p === page}
-              onClick={() => onSelect(p)}
-            />
+            <PageNum key={p} page={p} active={p === page} onClick={() => onSelect(p)} />
           ),
         )}
       </div>

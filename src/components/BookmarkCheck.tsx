@@ -1,8 +1,8 @@
 'use client';
 
+import type { PostWithRelations } from '@/types/types';
 import { useSession } from 'next-auth/react';
 import { useMemo } from 'react';
-import type { PostWithRelations } from '@/types/types';
 
 interface BookmarkCheckProps {
   post: PostWithRelations;

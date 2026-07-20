@@ -17,7 +17,7 @@ export default function LoadingMore({
         'col-span-full flex items-center justify-center gap-3 py-6',
         'bg-gradient-to-r from-transparent via-gray-50/50 to-transparent',
         'dark:via-gray-800/30',
-        className
+        className,
       )}
     >
       {/* Animated Spinner */}
@@ -25,7 +25,7 @@ export default function LoadingMore({
         <div
           className={cn(
             'absolute inset-0 rounded-full',
-            'border-2 border-gray-200/60 dark:border-gray-700/40'
+            'border-2 border-gray-200/60 dark:border-gray-700/40',
           )}
         />
         <div
@@ -33,16 +33,14 @@ export default function LoadingMore({
             'absolute inset-0 rounded-full',
             'border-2 border-transparent',
             'border-t-[rgb(var(--c-primary-500))] border-r-[rgb(var(--c-primary-400))]',
-            'animate-spin'
+            'animate-spin',
           )}
           style={{ animationDuration: '0.7s' }}
         />
       </div>
 
       {/* Message */}
-      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-        {message}
-      </span>
+      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{message}</span>
 
       {/* Animated Dots */}
       <div className="flex gap-0.5">
@@ -52,7 +50,7 @@ export default function LoadingMore({
             className={cn(
               'h-1 w-1 rounded-full',
               'bg-[rgb(var(--c-primary-500))]',
-              'animate-bounce'
+              'animate-bounce',
             )}
             style={{ animationDelay: `${i * 0.15}s`, animationDuration: '0.6s' }}
           />

@@ -29,24 +29,64 @@ interface Action {
 }
 
 const OWNER: Action[] = [
-  { href: '/dashboard/posts/create', label: 'نوشتن پست', icon: <HiOutlinePencilSquare className="w-4 h-4" /> },
-  { href: '/dashboard/exchange-rates', label: 'نرخ ارز', icon: <HiOutlineArrowTrendingUp className="w-4 h-4" /> },
+  {
+    href: '/dashboard/posts/create',
+    label: 'نوشتن پست',
+    icon: <HiOutlinePencilSquare className="w-4 h-4" />,
+  },
+  {
+    href: '/dashboard/exchange-rates',
+    label: 'نرخ ارز',
+    icon: <HiOutlineArrowTrendingUp className="w-4 h-4" />,
+  },
   { href: '/dashboard/users', label: 'کاربران', icon: <HiOutlineUserGroup className="w-4 h-4" /> },
-  { href: '/dashboard/settings', label: 'تنظیمات', icon: <HiOutlineCog6Tooth className="w-4 h-4" /> },
+  {
+    href: '/dashboard/settings',
+    label: 'تنظیمات',
+    icon: <HiOutlineCog6Tooth className="w-4 h-4" />,
+  },
 ];
 
 const ADMIN: Action[] = [
-  { href: '/dashboard/posts/create', label: 'نوشتن پست', icon: <HiOutlinePencilSquare className="w-4 h-4" /> },
-  { href: '/dashboard/categories', label: 'دسته‌بندی‌ها', icon: <HiOutlineTag className="w-4 h-4" /> },
+  {
+    href: '/dashboard/posts/create',
+    label: 'نوشتن پست',
+    icon: <HiOutlinePencilSquare className="w-4 h-4" />,
+  },
+  {
+    href: '/dashboard/categories',
+    label: 'دسته‌بندی‌ها',
+    icon: <HiOutlineTag className="w-4 h-4" />,
+  },
   { href: '/dashboard/posts', label: 'پست‌ها', icon: <HiOutlineDocumentText className="w-4 h-4" /> },
-  { href: '/dashboard/reports', label: 'گزارش‌ها', icon: <HiOutlineChartBarSquare className="w-4 h-4" /> },
+  {
+    href: '/dashboard/reports',
+    label: 'گزارش‌ها',
+    icon: <HiOutlineChartBarSquare className="w-4 h-4" />,
+  },
 ];
 
 const AUTHOR: Action[] = [
-  { href: '/dashboard/posts/create', label: 'نوشتن پست', icon: <HiOutlinePencilSquare className="w-4 h-4" /> },
-  { href: '/dashboard/posts', label: 'پست‌های من', icon: <HiOutlineDocumentText className="w-4 h-4" /> },
-  { href: '/dashboard/categories', label: 'دسته‌بندی‌ها', icon: <HiOutlineSquares2X2 className="w-4 h-4" /> },
-  { href: '/dashboard/edit-profile', label: 'پروفایل', icon: <HiOutlinePhoto className="w-4 h-4" /> },
+  {
+    href: '/dashboard/posts/create',
+    label: 'نوشتن پست',
+    icon: <HiOutlinePencilSquare className="w-4 h-4" />,
+  },
+  {
+    href: '/dashboard/posts',
+    label: 'پست‌های من',
+    icon: <HiOutlineDocumentText className="w-4 h-4" />,
+  },
+  {
+    href: '/dashboard/categories',
+    label: 'دسته‌بندی‌ها',
+    icon: <HiOutlineSquares2X2 className="w-4 h-4" />,
+  },
+  {
+    href: '/dashboard/edit-profile',
+    label: 'پروفایل',
+    icon: <HiOutlinePhoto className="w-4 h-4" />,
+  },
 ];
 
 interface EditorialActionsProps {

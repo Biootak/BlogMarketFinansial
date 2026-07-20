@@ -1,14 +1,14 @@
 'use client';
 
-import Link from 'next/link';
-import { motion } from '@/lib/motion-shim';
-import SocialLinks from '@/components/SocialsList/SocialLinks';
-import Logo from '@/components/Logo/Logo';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
-import { Mail, Phone, ArrowUpLeft } from 'lucide-react';
-import { heading, text, space, radius } from '@/lib/design-tokens';
-import type { Advertisement } from '@/types/types';
 import BannerAds from '@/components/BannerADS/BannerADS';
+import Logo from '@/components/Logo/Logo';
+import SocialLinks from '@/components/SocialsList/SocialLinks';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { heading, radius, space, text } from '@/lib/design-tokens';
+import { motion } from '@/lib/motion-shim';
+import type { Advertisement } from '@/types/types';
+import { ArrowUpLeft, Mail, Phone } from 'lucide-react';
+import Link from 'next/link';
 
 interface WidgetFooterMenu {
   id: string;
@@ -60,7 +60,11 @@ const Footer = ({ footerAd, siteName = 'Financila Market' }: FooterProps) => {
             <div className="relative group rounded-3xl overflow-hidden shadow-lg hover:shadow-[0_20px_50px_rgba(99,102,241,0.15)] transition-all duration-500 border border-slate-200/40 dark:border-neutral-800/80 bg-white/30 dark:bg-neutral-900/30 backdrop-blur-xl">
               <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/5 via-transparent to-violet-500/5 opacity-40 pointer-events-none" />
               <div className="absolute inset-0 border border-primary-500/0 group-hover:border-primary-500/20 rounded-3xl transition-colors duration-500 pointer-events-none" />
-              <BannerAds ad={footerAd} variant="rich" className="!border-0 !bg-transparent !shadow-none !backdrop-blur-none" />
+              <BannerAds
+                ad={footerAd}
+                variant="rich"
+                className="!border-0 !bg-transparent !shadow-none !backdrop-blur-none"
+              />
             </div>
           </div>
         </div>
@@ -74,25 +78,30 @@ const Footer = ({ footerAd, siteName = 'Financila Market' }: FooterProps) => {
           transition={{ duration: 0.6, ease: 'easeOut' }}
           className="text-center mb-16"
         >
-          <div className={[
-            'inline-flex items-center gap-2 px-4 py-2 mb-6',
-            radius.pill,
-            'bg-white/60 dark:bg-white/5 backdrop-blur-sm',
-            'border border-slate-200/50 dark:border-slate-700/50',
-          ].join(' ')}>
+          <div
+            className={[
+              'inline-flex items-center gap-2 px-4 py-2 mb-6',
+              radius.pill,
+              'bg-white/60 dark:bg-white/5 backdrop-blur-sm',
+              'border border-slate-200/50 dark:border-slate-700/50',
+            ].join(' ')}
+          >
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
             <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
               همیشه در دسترس
             </span>
           </div>
-          <h3 className={['mb-6', heading.h2].join(' ')}>
-            ما را در شبکه‌های اجتماعی دنبال کنید
-          </h3>
+          <h3 className={['mb-6', heading.h2].join(' ')}>ما را در شبکه‌های اجتماعی دنبال کنید</h3>
           <SocialLinks className="flex justify-center gap-3" />
         </motion.div>
 
         {/* Main Grid */}
-        <div className={['grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 mb-16', space.gapLg].join(' ')}>
+        <div
+          className={[
+            'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 mb-16',
+            space.gapLg,
+          ].join(' ')}
+        >
           {/* Brand Column */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -104,10 +113,7 @@ const Footer = ({ footerAd, siteName = 'Financila Market' }: FooterProps) => {
               <div className="flex items-center gap-4">
                 <div className="relative group">
                   <div className="absolute -inset-2 bg-gradient-to-r from-primary-500/20 to-indigo-500/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                  <Logo
-                    logoUrl={logoUrl || undefined}
-                    className="relative w-14 h-auto"
-                  />
+                  <Logo logoUrl={logoUrl || undefined} className="relative w-14 h-auto" />
                 </div>
                 <div>
                   <h2 className={heading.h2}>{siteName}</h2>
@@ -115,8 +121,8 @@ const Footer = ({ footerAd, siteName = 'Financila Market' }: FooterProps) => {
                 </div>
               </div>
               <p className={text.bodySm}>
-                ارائه بهترین خدمات ارز دیجیتال و بازارهای مالی با امنیت و سرعت بالا. ما با استفاده از
-                فناوری‌های پیشرفته، بهترین تجربه معاملاتی را برای شما فراهم می‌کنیم.
+                ارائه بهترین خدمات ارز دیجیتال و بازارهای مالی با امنیت و سرعت بالا. ما با استفاده
+                از فناوری‌های پیشرفته، بهترین تجربه معاملاتی را برای شما فراهم می‌کنیم.
               </p>
             </div>
           </motion.div>
@@ -176,7 +182,9 @@ const Footer = ({ footerAd, siteName = 'Financila Market' }: FooterProps) => {
                   <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500/10 to-indigo-500/10 dark:from-primary-500/20 dark:to-indigo-500/20 group-hover:from-primary-500/20 group-hover:to-indigo-500/20 transition-all duration-300">
                     <Phone className="size-4 text-primary-600 dark:text-primary-400" />
                   </span>
-                  <span className="text-sm font-medium" dir="ltr">۰۹۳۸۰۹۲۶۰۶</span>
+                  <span className="text-sm font-medium" dir="ltr">
+                    ۰۹۳۸۰۹۲۶۰۶
+                  </span>
                 </a>
               </li>
               <li>

@@ -1,5 +1,7 @@
 'use client';
 
+import { cn } from '@/lib/utils';
+import { ImageOff } from 'lucide-react';
 /**
  * SafeImage
  * ----------------------------------------------------------------------------
@@ -15,14 +17,11 @@
  *   <SafeImage src={user.avatar} alt={user.name} variant="avatar" />
  */
 import Image, { type ImageProps } from 'next/image';
-import { useEffect, useState, type CSSProperties } from 'react';
-import { ImageOff } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { type CSSProperties, useEffect, useState } from 'react';
 
 type ImageVariant = 'card' | 'avatar' | 'hero' | 'thumbnail';
 
-export interface SafeImageProps
-  extends Omit<ImageProps, 'src' | 'alt' | 'onError'> {
+export interface SafeImageProps extends Omit<ImageProps, 'src' | 'alt' | 'onError'> {
   /** URL تصویر. اگه خالی/null باشه، placeholder نشون داده می‌شه. */
   src?: string | null;
   /** متن جایگزین — برای screen reader و SEO الزامیه */
@@ -108,11 +107,7 @@ export default function SafeImage({
 
   return (
     <div
-      className={cn(
-        'relative overflow-hidden',
-        VARIANT_OVERLAY[variant],
-        containerClassName,
-      )}
+      className={cn('relative overflow-hidden', VARIANT_OVERLAY[variant], containerClassName)}
       style={hasAbsolutePosition ? undefined : { aspectRatio: effectiveRatio, ...placeholderStyle }}
     >
       {showPlaceholder ? (

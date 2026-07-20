@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useId, useRef, useState, useTransition } from 'react';
+import { AlertCircle, Info, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { AlertCircle, Info, Loader2 } from 'lucide-react';
+import { useEffect, useId, useRef, useState, useTransition } from 'react';
 
 import OtpDialPad, { type OtpDialPadHandle } from '@/components/Auth/OtpDialPad';
 
@@ -82,9 +82,10 @@ export default function VerifyRequestClient() {
   };
 
   const remainingSec = Math.ceil(cooldownMs / 1000);
-  const resendLabel = cooldownMs > 0
-    ? `ارسال مجدد در ${remainingSec.toLocaleString('fa-IR')} ثانیه`
-    : 'ارسال مجدد کد';
+  const resendLabel =
+    cooldownMs > 0
+      ? `ارسال مجدد در ${remainingSec.toLocaleString('fa-IR')} ثانیه`
+      : 'ارسال مجدد کد';
 
   const busy = isPending;
 
@@ -92,12 +93,25 @@ export default function VerifyRequestClient() {
     <div className="auth-card auth-fade-in">
       <div className="auth-card-inner">
         <div className="auth-card-header">
-          <p className="auth-form-lede" style={{ textTransform: 'uppercase', fontSize: 'var(--ds-text-xs)', letterSpacing: '0.12em', fontWeight: 600, color: 'oklch(60% 0.02 240)' }}>
+          <p
+            className="auth-form-lede"
+            style={{
+              textTransform: 'uppercase',
+              fontSize: 'var(--ds-text-xs)',
+              letterSpacing: '0.12em',
+              fontWeight: 600,
+              color: 'oklch(60% 0.02 240)',
+            }}
+          >
             تأیید ایمیل
           </p>
           <h1 className="auth-form-heading">کد یک‌بار مصرف را وارد کنید</h1>
           <p className="auth-form-lede">
-            کد شش‌رقمی به <span dir="ltr" style={{ fontWeight: 600 }}>{email || '—'}</span> ارسال شد.
+            کد شش‌رقمی به{' '}
+            <span dir="ltr" style={{ fontWeight: 600 }}>
+              {email || '—'}
+            </span>{' '}
+            ارسال شد.
           </p>
         </div>
 
@@ -107,7 +121,9 @@ export default function VerifyRequestClient() {
 
         <form noValidate onSubmit={(e) => e.preventDefault()} className="auth-tabpanel">
           <div className="auth-fieldset">
-            <label htmlFor="otp-input" className="auth-label">کد یک‌بار مصرف</label>
+            <label htmlFor="otp-input" className="auth-label">
+              کد یک‌بار مصرف
+            </label>
             <OtpDialPad
               ref={dialRef}
               onComplete={submitCode}
@@ -134,7 +150,9 @@ export default function VerifyRequestClient() {
 
         <p className="auth-fineprint">
           آدرس اشتباه است؟{' '}
-          <Link href="/auth" className="auth-link">بازگشت به ورود</Link>
+          <Link href="/auth" className="auth-link">
+            بازگشت به ورود
+          </Link>
         </p>
 
         {(statusMsg || errorMsg) && (

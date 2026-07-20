@@ -1,23 +1,20 @@
 'use server';
 
-import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
 import type {
   ActionResult,
-  PostWithRelations,
   CategoryWithPostCount,
+  PostWithRelations,
   UserWithProfile,
 } from '@/types/types';
+import { unstable_cache } from 'next/cache';
 
 // Cache search results for 60 seconds
 const getCachedPosts = unstable_cache(
   async (query: string) => {
     return prisma.post.findMany({
       where: {
-        AND: [
-          { title: { contains: query, mode: 'insensitive' } },
-          { status: 'PUBLISHED' },
-        ],
+        AND: [{ title: { contains: query, mode: 'insensitive' } }, { status: 'PUBLISHED' }],
       },
       take: 6,
       select: {

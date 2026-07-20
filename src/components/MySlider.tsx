@@ -1,12 +1,12 @@
 'use client';
 
-import React, { FC, type ReactNode, useEffect, useState, useCallback } from 'react';
-import { useWindowSize } from 'react-use';
-import { useSwipeable } from 'react-swipeable';
-import { variants } from '@/utils/animationVariants';
-import { AnimatePresence, motion, MotionConfig } from '@/lib/motion-shim';
-import PrevBtn from '@/components/NextPrev/PrevBtn';
 import NextBtn from '@/components/NextPrev/NextBtn';
+import PrevBtn from '@/components/NextPrev/PrevBtn';
+import { AnimatePresence, MotionConfig, motion } from '@/lib/motion-shim';
+import { variants } from '@/utils/animationVariants';
+import React, { FC, type ReactNode, useEffect, useState, useCallback } from 'react';
+import { useSwipeable } from 'react-swipeable';
+import { useWindowSize } from 'react-use';
 
 export interface MySliderProps<T> {
   className?: string;

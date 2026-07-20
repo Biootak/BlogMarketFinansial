@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { useEffect } from 'react';
 
 interface SiteSettingsProviderProps {
   children: React.ReactNode;

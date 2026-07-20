@@ -121,7 +121,11 @@ export default function EditorialChart({ scheduledPosts }: EditorialChartProps) 
             <TrafficChart key={`traffic-${period}`} period={period} />
           </div>
         ) : (
-          <div role="tabpanel" id={`${tabId}-calendar`} aria-labelledby={`${tabId}-trigger-calendar`}>
+          <div
+            role="tabpanel"
+            id={`${tabId}-calendar`}
+            aria-labelledby={`${tabId}-trigger-calendar`}
+          >
             <PublishingCalendar scheduledPosts={scheduledPosts} />
           </div>
         )}

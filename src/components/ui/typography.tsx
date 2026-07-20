@@ -1,6 +1,6 @@
-import * as React from 'react';
+import { heading, space, text } from '@/lib/design-tokens';
 import { cn } from '@/lib/utils';
-import { heading, text, space } from '@/lib/design-tokens';
+import * as React from 'react';
 
 /**
  * SectionTitle — the single source of truth for a section heading.
@@ -29,18 +29,9 @@ const variantMap: Record<Variant, string> = {
   h4: heading.h4,
 };
 
-export function SectionTitle({
-  as,
-  variant = 'h2',
-  children,
-  className,
-}: SectionTitleProps) {
+export function SectionTitle({ as, variant = 'h2', children, className }: SectionTitleProps) {
   const tag = (as ?? variant) as 'h1' | 'h2' | 'h3' | 'h4';
-  return React.createElement(
-    tag,
-    { className: cn(variantMap[variant], className) },
-    children,
-  );
+  return React.createElement(tag, { className: cn(variantMap[variant], className) }, children);
 }
 
 /**
@@ -72,9 +63,7 @@ export function SectionBlock({
     >
       {eyebrow && <span className={heading.h5}>{eyebrow}</span>}
       <SectionTitle>{title}</SectionTitle>
-      {description && (
-        <p className={cn(text.bodySm, 'max-w-2xl')}>{description}</p>
-      )}
+      {description && <p className={cn(text.bodySm, 'max-w-2xl')}>{description}</p>}
     </div>
   );
 }

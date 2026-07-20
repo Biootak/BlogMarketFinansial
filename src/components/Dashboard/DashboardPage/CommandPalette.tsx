@@ -21,38 +21,38 @@
  *   • All actions are real <button>s with focus rings
  */
 
+import { AnimatePresence, motion } from '@/lib/motion-shim';
+import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 import {
+  type KeyboardEvent as ReactKeyboardEvent,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
-  type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from '@/lib/motion-shim';
-import { useRouter } from 'next/navigation';
 import {
-  HiOutlineHome,
-  HiOutlineDocumentText,
-  HiOutlineUsers,
-  HiOutlineSquares2X2,
-  HiOutlineMegaphone,
-  HiOutlineCurrencyDollar,
-  HiOutlineCog6Tooth,
-  HiOutlineChartBarSquare,
-  HiOutlineUserCircle,
-  HiOutlinePencilSquare,
-  HiOutlineChartBar,
+  HiOutlineArrowLeft,
   HiOutlineCalendarDays,
+  HiOutlineChartBar,
+  HiOutlineChartBarSquare,
   HiOutlineClipboardDocumentCheck,
   HiOutlineClipboardDocumentList,
-  HiOutlineSparkles,
-  HiOutlineMagnifyingGlass,
+  HiOutlineCog6Tooth,
   HiOutlineCommandLine,
-  HiOutlineArrowLeft,
+  HiOutlineCurrencyDollar,
+  HiOutlineDocumentText,
+  HiOutlineHome,
+  HiOutlineMagnifyingGlass,
+  HiOutlineMegaphone,
+  HiOutlinePencilSquare,
+  HiOutlineSparkles,
+  HiOutlineSquares2X2,
+  HiOutlineUserCircle,
+  HiOutlineUsers,
 } from 'react-icons/hi2';
-import { cn } from '@/lib/utils';
 
 export type CommandActionRole = 'OWNER' | 'ADMIN' | 'AUTHOR';
 
@@ -373,9 +373,7 @@ export default function CommandPalette({ role }: CommandPaletteProps) {
   // Scroll active into view
   useEffect(() => {
     if (!open) return;
-    const el = listRef.current?.querySelector<HTMLElement>(
-      `[data-cmd-index="${activeIndex}"]`,
-    );
+    const el = listRef.current?.querySelector<HTMLElement>(`[data-cmd-index="${activeIndex}"]`);
     el?.scrollIntoView({ block: 'nearest' });
   }, [activeIndex, open]);
 
@@ -393,178 +391,179 @@ export default function CommandPalette({ role }: CommandPaletteProps) {
     }
   };
 
-  const overlayAndDialog = typeof document !== 'undefined'
-    ? createPortal(
-        <AnimatePresence>
-          {open && (
-            <motion.div
-              key="cmd-overlay"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              onClick={close}
-              className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm"
-              aria-hidden="true"
-            />
-          )}
-          {open && (
-            <motion.div
-              key="cmd-dialog"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="cmd-palette-title"
-              initial={{ opacity: 0, scale: 0.96, y: -8 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: -8 }}
-              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed inset-x-0 top-0 sm:top-24 z-50 mx-auto w-[min(640px,92vw)]"
-            >
-            <div
-              className={cn(
-                'overflow-hidden rounded-2xl',
-                'bg-white/45 backdrop-blur-[24px] border-[0.5px] border-white/60 shadow-[0_8px_32px_0_rgba(31,38,135,0.03)]',
-                'dark:bg-slate-900/45 dark:border-white/10 dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.25)]',
-                'ring-1 ring-slate-200/80 dark:ring-slate-700/80',
-                'shadow-2xl shadow-slate-900/10 dark:shadow-slate-900/40',
-              )}
-              onKeyDown={onListKeyDown}
-            >
-              <h2 id="cmd-palette-title" className="sr-only">
-                جستجوی سریع فرمان‌ها
-              </h2>
-              {/* Search input */}
-              <div className="flex items-center gap-3 px-4 sm:px-5 h-14 border-b border-slate-200/70 dark:border-slate-700/70">
-                <HiOutlineMagnifyingGlass className="w-5 h-5 text-slate-400" />
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={query}
-                  onChange={(e) => {
-                    setQuery(e.target.value);
-                    setActiveIndex(0);
-                  }}
-                  placeholder="جستجو در داشبورد…"
-                  className="flex-1 bg-transparent outline-none text-base placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-900 dark:text-white"
-                  aria-label="جستجو"
-                  autoComplete="off"
-                  spellCheck={false}
-                />
-                <kbd className="hidden sm:inline-flex items-center text-[10px] font-mono font-semibold text-slate-400 dark:text-slate-500 border border-slate-200/70 dark:border-slate-700/70 rounded px-1.5 py-0.5">
-                  Esc
-                </kbd>
-              </div>
-
-              {/* Results */}
-              <div
-                ref={listRef}
-                className="max-h-[60vh] overflow-y-auto p-2"
-                role="listbox"
+  const overlayAndDialog =
+    typeof document !== 'undefined'
+      ? createPortal(
+          <AnimatePresence>
+            {open && (
+              <motion.div
+                key="cmd-overlay"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                onClick={close}
+                className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm"
+                aria-hidden="true"
+              />
+            )}
+            {open && (
+              <motion.div
+                key="cmd-dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="cmd-palette-title"
+                initial={{ opacity: 0, scale: 0.96, y: -8 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.96, y: -8 }}
+                transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                className="fixed inset-x-0 top-0 sm:top-24 z-50 mx-auto w-[min(640px,92vw)]"
               >
-                {flatResults.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center text-center py-10 px-4 text-sm text-slate-500 dark:text-slate-400">
-                    <HiOutlineMagnifyingGlass className="w-8 h-8 mb-3 opacity-50" />
-                    <p>نتیجه‌ای برای «{query}» یافت نشد.</p>
+                <div
+                  className={cn(
+                    'overflow-hidden rounded-2xl',
+                    'bg-white/45 backdrop-blur-[24px] border-[0.5px] border-white/60 shadow-[0_8px_32px_0_rgba(31,38,135,0.03)]',
+                    'dark:bg-slate-900/45 dark:border-white/10 dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.25)]',
+                    'ring-1 ring-slate-200/80 dark:ring-slate-700/80',
+                    'shadow-2xl shadow-slate-900/10 dark:shadow-slate-900/40',
+                  )}
+                  onKeyDown={onListKeyDown}
+                >
+                  <h2 id="cmd-palette-title" className="sr-only">
+                    جستجوی سریع فرمان‌ها
+                  </h2>
+                  {/* Search input */}
+                  <div className="flex items-center gap-3 px-4 sm:px-5 h-14 border-b border-slate-200/70 dark:border-slate-700/70">
+                    <HiOutlineMagnifyingGlass className="w-5 h-5 text-slate-400" />
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      value={query}
+                      onChange={(e) => {
+                        setQuery(e.target.value);
+                        setActiveIndex(0);
+                      }}
+                      placeholder="جستجو در داشبورد…"
+                      className="flex-1 bg-transparent outline-none text-base placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-900 dark:text-white"
+                      aria-label="جستجو"
+                      autoComplete="off"
+                      spellCheck={false}
+                    />
+                    <kbd className="hidden sm:inline-flex items-center text-[10px] font-mono font-semibold text-slate-400 dark:text-slate-500 border border-slate-200/70 dark:border-slate-700/70 rounded px-1.5 py-0.5">
+                      Esc
+                    </kbd>
                   </div>
-                ) : (
-                  groupedResults.map(([group, items]) => (
-                    <div key={group} className="mb-2 last:mb-0">
-                      <p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                        {group}
-                      </p>
-                      {items.map((item) => {
-                        const flatIndex = flatResults.findIndex(
-                          (r) => r.id === item.id,
-                        );
-                        const isActive = flatIndex === activeIndex;
-                        return (
-                          <button
-                            key={item.id}
-                            type="button"
-                            role="option"
-                            aria-selected={isActive}
-                            data-cmd-index={flatIndex}
-                            onMouseEnter={() => setActiveIndex(flatIndex)}
-                            onClick={() => run(item)}
-                            className={cn(
-                              'w-full text-right flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors',
-                              isActive
-                                ? 'bg-cyan-500/10 dark:bg-cyan-400/10 text-cyan-900 dark:text-cyan-100'
-                                : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100/70 dark:hover:bg-slate-800/60',
-                            )}
-                          >
-                            <span
-                              className={cn(
-                                'flex items-center justify-center w-8 h-8 rounded-lg shrink-0',
-                                isActive
-                                  ? 'bg-cyan-500 text-white'
-                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400',
-                              )}
-                            >
-                              {item.icon}
-                            </span>
-                            <span className="flex-1 text-sm font-semibold truncate">
-                              {item.label}
-                            </span>
-                            {item.shortcut && (
-                              <kbd
+
+                  {/* Results */}
+                  <div ref={listRef} className="max-h-[60vh] overflow-y-auto p-2" role="listbox">
+                    {flatResults.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center text-center py-10 px-4 text-sm text-slate-500 dark:text-slate-400">
+                        <HiOutlineMagnifyingGlass className="w-8 h-8 mb-3 opacity-50" />
+                        <p>نتیجه‌ای برای «{query}» یافت نشد.</p>
+                      </div>
+                    ) : (
+                      groupedResults.map(([group, items]) => (
+                        <div key={group} className="mb-2 last:mb-0">
+                          <p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                            {group}
+                          </p>
+                          {items.map((item) => {
+                            const flatIndex = flatResults.findIndex((r) => r.id === item.id);
+                            const isActive = flatIndex === activeIndex;
+                            return (
+                              <button
+                                key={item.id}
+                                type="button"
+                                role="option"
+                                aria-selected={isActive}
+                                data-cmd-index={flatIndex}
+                                onMouseEnter={() => setActiveIndex(flatIndex)}
+                                onClick={() => run(item)}
                                 className={cn(
-                                  'hidden sm:inline-flex items-center gap-0.5 text-[10px] font-mono font-semibold',
+                                  'w-full text-right flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors',
                                   isActive
-                                    ? 'text-cyan-700/80 dark:text-cyan-200/80'
-                                    : 'text-slate-400 dark:text-slate-500',
+                                    ? 'bg-cyan-500/10 dark:bg-cyan-400/10 text-cyan-900 dark:text-cyan-100'
+                                    : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100/70 dark:hover:bg-slate-800/60',
                                 )}
                               >
-                                {item.shortcut.split(' ').map((k, i) => (
-                                  <span
-                                    key={i}
-                                    className="rounded border border-current/30 px-1.5 py-0.5"
+                                <span
+                                  className={cn(
+                                    'flex items-center justify-center w-8 h-8 rounded-lg shrink-0',
+                                    isActive
+                                      ? 'bg-cyan-500 text-white'
+                                      : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400',
+                                  )}
+                                >
+                                  {item.icon}
+                                </span>
+                                <span className="flex-1 text-sm font-semibold truncate">
+                                  {item.label}
+                                </span>
+                                {item.shortcut && (
+                                  <kbd
+                                    className={cn(
+                                      'hidden sm:inline-flex items-center gap-0.5 text-[10px] font-mono font-semibold',
+                                      isActive
+                                        ? 'text-cyan-700/80 dark:text-cyan-200/80'
+                                        : 'text-slate-400 dark:text-slate-500',
+                                    )}
                                   >
-                                    {k}
-                                  </span>
-                                ))}
-                              </kbd>
-                            )}
-                            <HiOutlineArrowLeft
-                              className={cn(
-                                'w-3.5 h-3.5',
-                                isActive ? 'opacity-100' : 'opacity-0',
-                              )}
-                            />
-                          </button>
-                        );
-                      })}
-                    </div>
-                  ))
-                )}
-              </div>
+                                    {item.shortcut.split(' ').map((k, i) => (
+                                      <span
+                                        key={i}
+                                        className="rounded border border-current/30 px-1.5 py-0.5"
+                                      >
+                                        {k}
+                                      </span>
+                                    ))}
+                                  </kbd>
+                                )}
+                                <HiOutlineArrowLeft
+                                  className={cn(
+                                    'w-3.5 h-3.5',
+                                    isActive ? 'opacity-100' : 'opacity-0',
+                                  )}
+                                />
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ))
+                    )}
+                  </div>
 
-              {/* Footer */}
-              <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-2.5 border-t border-slate-200/70 dark:border-slate-700/70 text-[11px] text-slate-500 dark:text-slate-400">
-                <div className="flex items-center gap-3">
-                  <span className="inline-flex items-center gap-1">
-                    <HiOutlineCommandLine className="w-3.5 h-3.5" />
-                    <span>⌘K</span>
-                  </span>
-                  <span className="inline-flex items-center gap-1">
-                    <kbd className="rounded border border-current/30 px-1 py-0.5 font-mono">↑</kbd>
-                    <kbd className="rounded border border-current/30 px-1 py-0.5 font-mono">↓</kbd>
-                    <span className="ms-1">پیمایش</span>
-                  </span>
-                  <span className="inline-flex items-center gap-1">
-                    <kbd className="rounded border border-current/30 px-1 py-0.5 font-mono">↵</kbd>
-                    <span className="ms-1">انتخاب</span>
-                  </span>
+                  {/* Footer */}
+                  <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-2.5 border-t border-slate-200/70 dark:border-slate-700/70 text-[11px] text-slate-500 dark:text-slate-400">
+                    <div className="flex items-center gap-3">
+                      <span className="inline-flex items-center gap-1">
+                        <HiOutlineCommandLine className="w-3.5 h-3.5" />
+                        <span>⌘K</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <kbd className="rounded border border-current/30 px-1 py-0.5 font-mono">
+                          ↑
+                        </kbd>
+                        <kbd className="rounded border border-current/30 px-1 py-0.5 font-mono">
+                          ↓
+                        </kbd>
+                        <span className="ms-1">پیمایش</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <kbd className="rounded border border-current/30 px-1 py-0.5 font-mono">
+                          ↵
+                        </kbd>
+                        <span className="ms-1">انتخاب</span>
+                      </span>
+                    </div>
+                    <span className="hidden sm:inline">{flatResults.length} نتیجه</span>
+                  </div>
                 </div>
-                <span className="hidden sm:inline">{flatResults.length} نتیجه</span>
-              </div>
-            </div>
-            </motion.div>
-          )}
-        </AnimatePresence>,
-        document.body,
-      )
-    : null;
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body,
+        )
+      : null;
 
   return (
     <>
@@ -590,4 +589,3 @@ export default function CommandPalette({ role }: CommandPaletteProps) {
     </>
   );
 }
-

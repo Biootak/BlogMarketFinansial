@@ -102,7 +102,9 @@
 }
 
 @media (max-width: 768px) {
-  .brandClose { display: flex; }
+  .brandClose {
+    display: flex;
+  }
 }
 
 /* Navigation */
@@ -256,7 +258,9 @@
 }
 
 @media (max-width: 768px) {
-  .menuBtn { display: flex; }
+  .menuBtn {
+    display: flex;
+  }
 }
 
 .topbarInfo {
@@ -277,7 +281,7 @@
   color: var(--at-fg-subtle);
 }
 
-.topbarStatus[data-status='ACTIVE'] {
+.topbarStatus[data-status="ACTIVE"] {
   color: oklch(45% 0.14 145);
 }
 

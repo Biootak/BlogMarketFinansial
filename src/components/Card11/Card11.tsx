@@ -1,12 +1,12 @@
-import type React from 'react';
-import Link from 'next/link';
-import type { PostWithRelations } from '@/types/types';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
 import PostCardMeta from '@/components/PostCardMeta/PostCardMeta';
 import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia';
+import { heading, radius, text } from '@/lib/design-tokens';
 import { getPostLink } from '@/lib/getPostLink';
+import type { PostWithRelations } from '@/types/types';
+import Link from 'next/link';
+import type React from 'react';
 import { HiArrowLeft } from 'react-icons/hi2';
-import { heading, text, radius } from '@/lib/design-tokens';
 
 export interface Card11Props {
   className?: string;
@@ -73,13 +73,23 @@ const Card11: React.FC<Card11Props> = ({
           href={postLink}
           className="flex-1 flex flex-col focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-lg"
         >
-          <h3 className={['nc-card-title block text-neutral-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300 leading-snug', heading.h3].join(' ')}>
+          <h3
+            className={[
+              'nc-card-title block text-neutral-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300 leading-snug',
+              heading.h3,
+            ].join(' ')}
+          >
             <span className="line-clamp-2" title={title}>
               {title}
             </span>
           </h3>
           {excerpt && (
-            <p className={['mt-2.5 leading-relaxed group-hover:text-neutral-700 dark:group-hover:text-neutral-300 transition-colors duration-300', text.bodySm].join(' ')}>
+            <p
+              className={[
+                'mt-2.5 leading-relaxed group-hover:text-neutral-700 dark:group-hover:text-neutral-300 transition-colors duration-300',
+                text.bodySm,
+              ].join(' ')}
+            >
               {excerpt}
             </p>
           )}

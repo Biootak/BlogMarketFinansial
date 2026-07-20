@@ -7,10 +7,11 @@
 
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import { cn } from '@/lib/utils';
+import type React from 'react';
+import { useCallback, useState } from 'react';
 import { Icon } from '../../ui/icon';
 import { COLOR_PALETTE, DEFAULT_COLORS, hexToRgba } from '../constants/color';
-import { cn } from '@/lib/utils';
 
 export interface CellColorPickerProps {
   /** Called when user picks a color. `null` means "clear". */
@@ -40,9 +41,7 @@ export const CellColorPicker: React.FC<CellColorPickerProps> = ({ onSelect, onCl
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-          رنگ سلول
-        </span>
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">رنگ سلول</span>
         <button
           type="button"
           onClick={onClose}
@@ -99,9 +98,7 @@ export const CellColorPicker: React.FC<CellColorPickerProps> = ({ onSelect, onCl
                     aria-label={c.name}
                     className={cn(
                       'w-6 h-6 rounded-md transition-all hover:scale-110 border focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none',
-                      selectedColor === c.value
-                        ? 'ring-2 ring-primary-500 ring-offset-1'
-                        : '',
+                      selectedColor === c.value ? 'ring-2 ring-primary-500 ring-offset-1' : '',
                       c.isBrightColor
                         ? 'border-gray-200 dark:border-gray-600'
                         : 'border-transparent',

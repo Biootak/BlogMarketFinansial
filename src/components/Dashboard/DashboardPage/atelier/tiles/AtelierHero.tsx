@@ -81,24 +81,94 @@ interface HeroQuickItem {
 }
 
 const HERO_OWNER: HeroQuickItem[] = [
-  { href: '/dashboard/service-requests', label: 'درخواست‌ها', icon: <HiOutlineClipboardDocumentList className="w-4 h-4" />, hotkey: 'G V', tone: 'accent' },
-  { href: '/dashboard/exchange-rates', label: 'نرخ ارز', icon: <HiOutlineArrowTrendingUp className="w-4 h-4" />, hotkey: 'G E', tone: 'gold' },
-  { href: '/dashboard/users', label: 'کاربران', icon: <HiOutlineUserGroup className="w-4 h-4" />, hotkey: 'G U', tone: 'info' },
-  { href: '/dashboard/settings', label: 'تنظیمات', icon: <HiOutlineCog6Tooth className="w-4 h-4" />, hotkey: 'G S', tone: 'violet' },
+  {
+    href: '/dashboard/service-requests',
+    label: 'درخواست‌ها',
+    icon: <HiOutlineClipboardDocumentList className="w-4 h-4" />,
+    hotkey: 'G V',
+    tone: 'accent',
+  },
+  {
+    href: '/dashboard/exchange-rates',
+    label: 'نرخ ارز',
+    icon: <HiOutlineArrowTrendingUp className="w-4 h-4" />,
+    hotkey: 'G E',
+    tone: 'gold',
+  },
+  {
+    href: '/dashboard/users',
+    label: 'کاربران',
+    icon: <HiOutlineUserGroup className="w-4 h-4" />,
+    hotkey: 'G U',
+    tone: 'info',
+  },
+  {
+    href: '/dashboard/settings',
+    label: 'تنظیمات',
+    icon: <HiOutlineCog6Tooth className="w-4 h-4" />,
+    hotkey: 'G S',
+    tone: 'violet',
+  },
 ];
 
 const HERO_ADMIN: HeroQuickItem[] = [
-  { href: '/dashboard/service-requests', label: 'درخواست‌ها', icon: <HiOutlineClipboardDocumentList className="w-4 h-4" />, hotkey: 'G V', tone: 'accent' },
-  { href: '/dashboard/categories', label: 'دسته‌بندی‌ها', icon: <HiOutlineTag className="w-4 h-4" />, hotkey: 'G C', tone: 'gold' },
-  { href: '/dashboard/posts', label: 'پست‌ها', icon: <HiOutlineDocumentText className="w-4 h-4" />, hotkey: 'G L', tone: 'info' },
-  { href: '/dashboard/reports', label: 'گزارش‌ها', icon: <HiOutlineChartBarSquare className="w-4 h-4" />, hotkey: 'G R', tone: 'violet' },
+  {
+    href: '/dashboard/service-requests',
+    label: 'درخواست‌ها',
+    icon: <HiOutlineClipboardDocumentList className="w-4 h-4" />,
+    hotkey: 'G V',
+    tone: 'accent',
+  },
+  {
+    href: '/dashboard/categories',
+    label: 'دسته‌بندی‌ها',
+    icon: <HiOutlineTag className="w-4 h-4" />,
+    hotkey: 'G C',
+    tone: 'gold',
+  },
+  {
+    href: '/dashboard/posts',
+    label: 'پست‌ها',
+    icon: <HiOutlineDocumentText className="w-4 h-4" />,
+    hotkey: 'G L',
+    tone: 'info',
+  },
+  {
+    href: '/dashboard/reports',
+    label: 'گزارش‌ها',
+    icon: <HiOutlineChartBarSquare className="w-4 h-4" />,
+    hotkey: 'G R',
+    tone: 'violet',
+  },
 ];
 
 const HERO_AUTHOR: HeroQuickItem[] = [
-  { href: '/dashboard/posts/create', label: 'نوشتن پست', icon: <HiOutlinePencilSquare className="w-4 h-4" />, hotkey: 'G P', tone: 'accent' },
-  { href: '/dashboard/posts', label: 'پست‌های من', icon: <HiOutlineDocumentText className="w-4 h-4" />, hotkey: 'G L', tone: 'gold' },
-  { href: '/dashboard/categories', label: 'دسته‌بندی‌ها', icon: <HiOutlineSquares2X2 className="w-4 h-4" />, tone: 'info' },
-  { href: '/dashboard/edit-profile', label: 'پروفایل', icon: <HiOutlinePhoto className="w-4 h-4" />, tone: 'violet' },
+  {
+    href: '/dashboard/posts/create',
+    label: 'نوشتن پست',
+    icon: <HiOutlinePencilSquare className="w-4 h-4" />,
+    hotkey: 'G P',
+    tone: 'accent',
+  },
+  {
+    href: '/dashboard/posts',
+    label: 'پست‌های من',
+    icon: <HiOutlineDocumentText className="w-4 h-4" />,
+    hotkey: 'G L',
+    tone: 'gold',
+  },
+  {
+    href: '/dashboard/categories',
+    label: 'دسته‌بندی‌ها',
+    icon: <HiOutlineSquares2X2 className="w-4 h-4" />,
+    tone: 'info',
+  },
+  {
+    href: '/dashboard/edit-profile',
+    label: 'پروفایل',
+    icon: <HiOutlinePhoto className="w-4 h-4" />,
+    tone: 'violet',
+  },
 ];
 
 function HeroSpark({ data, gradId }: { data: number[]; gradId: string }) {

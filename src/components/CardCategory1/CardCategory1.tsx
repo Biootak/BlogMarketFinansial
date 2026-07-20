@@ -1,8 +1,8 @@
-import React, { type FC } from 'react';
 import NcImage from '@/components/NcImage/NcImage';
-import Link from 'next/link';
+import { heading, radius, text } from '@/lib/design-tokens';
 import type { TaxonomyType } from '@/types/types';
-import { heading, text, radius } from '@/lib/design-tokens';
+import Link from 'next/link';
+import React, { type FC } from 'react';
 
 export interface CardCategory1Props {
   className?: string;
@@ -28,12 +28,8 @@ const CardCategory1: FC<CardCategory1Props> = ({ className = '', size = 'normal'
         sizes="80px"
       />
       <div>
-        <h2 className={[heading.h4, 'text-neutral-900 dark:text-neutral-100'].join(' ')}>
-          {name}
-        </h2>
-        <span className={['block mt-0.5', text.meta].join(' ')}>
-          {count} مقاله ها
-        </span>
+        <h2 className={[heading.h4, 'text-neutral-900 dark:text-neutral-100'].join(' ')}>{name}</h2>
+        <span className={['block mt-0.5', text.meta].join(' ')}>{count} مقاله ها</span>
       </div>
     </Link>
   );

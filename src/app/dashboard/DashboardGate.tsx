@@ -1,8 +1,8 @@
-import { Suspense } from 'react';
-import { checkRole } from '@/lib/auth';
 import { DashboardProviders } from '@/components/Dashboard/DashboardPage/DashboardProviders';
 import { SiteSettingsProvider } from '@/components/SiteSettingsProvider';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
+import { checkRole } from '@/lib/auth';
+import { Suspense } from 'react';
 
 /**
  * DashboardGate — async inner component that resolves auth + settings.

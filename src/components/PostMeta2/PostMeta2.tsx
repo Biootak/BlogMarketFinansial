@@ -1,8 +1,8 @@
-import React, { type FC } from 'react';
-import Link from 'next/link';
-import type { PostWithRelations } from '@/types/types';
 import { toPersianNumber } from '@/lib/utils';
+import type { PostWithRelations } from '@/types/types';
 import { formatDate } from '@/utils/formatDate';
+import Link from 'next/link';
+import React, { type FC } from 'react';
 import { HiCalendarDays, HiClock, HiFolder } from 'react-icons/hi2';
 
 export interface PostMeta2Props {
@@ -33,7 +33,9 @@ const PostMeta2: FC<PostMeta2Props> = ({
         <span className="flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 shadow-sm shadow-primary-500/30">
           <HiCalendarDays className="w-3 h-3 text-white" />
         </span>
-        <span className={`font-medium text-primary-700 dark:text-primary-300 ${size === 'normal' ? 'text-xs' : 'text-[11px]'}`}>
+        <span
+          className={`font-medium text-primary-700 dark:text-primary-300 ${size === 'normal' ? 'text-xs' : 'text-[11px]'}`}
+        >
           {formatDate(date)}
         </span>
       </div>
@@ -43,7 +45,9 @@ const PostMeta2: FC<PostMeta2Props> = ({
         <span className="flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-sm shadow-emerald-500/30">
           <HiClock className="w-3 h-3 text-white" />
         </span>
-        <span className={`font-medium text-emerald-700 dark:text-emerald-300 ${size === 'normal' ? 'text-xs' : 'text-[11px]'}`}>
+        <span
+          className={`font-medium text-emerald-700 dark:text-emerald-300 ${size === 'normal' ? 'text-xs' : 'text-[11px]'}`}
+        >
           {toPersianNumber(readingTime)} دقیقه مطالعه
         </span>
       </div>
@@ -54,7 +58,9 @@ const PostMeta2: FC<PostMeta2Props> = ({
           <span className="flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-violet-500 to-violet-600 shadow-sm shadow-violet-500/30">
             <HiFolder className="w-3 h-3 text-white" />
           </span>
-          <div className={`flex items-center gap-1 font-medium text-violet-700 dark:text-violet-300 ${size === 'normal' ? 'text-xs' : 'text-[11px]'}`}>
+          <div
+            className={`flex items-center gap-1 font-medium text-violet-700 dark:text-violet-300 ${size === 'normal' ? 'text-xs' : 'text-[11px]'}`}
+          >
             {categories.slice(0, 2).map((cat, index) => (
               <React.Fragment key={cat.id}>
                 <Link

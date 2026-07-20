@@ -1,6 +1,6 @@
 import { Node, mergeAttributes } from '@tiptap/core';
-import { ReactNodeViewRenderer } from '@tiptap/react';
 import type { NodeViewProps } from '@tiptap/core';
+import { ReactNodeViewRenderer } from '@tiptap/react';
 import MathBlock from '../components/math-block';
 
 export interface MathOptions {
@@ -52,7 +52,10 @@ export const Math = Node.create<MathOptions>({
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ['div', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, { 'data-math': '' })];
+    return [
+      'div',
+      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, { 'data-math': '' }),
+    ];
   },
 
   addCommands() {

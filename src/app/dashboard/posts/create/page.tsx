@@ -1,12 +1,18 @@
-// app/dashboard/posts/create/page.tsx
-import { Suspense } from 'react';
-import { notFound } from 'next/navigation';
-import { HiOutlineSparkles, HiOutlinePhoto, HiOutlineDocumentText, HiOutlineRocketLaunch, HiOutlineCalendarDays } from 'react-icons/hi2';
+import { getCategories } from '@/actions/categoryActions';
+import { getTags } from '@/actions/getTags';
 import CreatePostForm from '@/components/Dashboard/Blog/PostForm/CreatePostForm';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import SkeletonLoader from '@/components/SkeletonLoader';
-import { getCategories } from '@/actions/categoryActions';
-import { getTags } from '@/actions/getTags';
+import { notFound } from 'next/navigation';
+// app/dashboard/posts/create/page.tsx
+import { Suspense } from 'react';
+import {
+  HiOutlineCalendarDays,
+  HiOutlineDocumentText,
+  HiOutlinePhoto,
+  HiOutlineRocketLaunch,
+  HiOutlineSparkles,
+} from 'react-icons/hi2';
 
 // Dynamic rendering is inherited from the dashboard layout (force-dynamic);
 // no per-page revalidate — this is an auth-gated workspace, not ISR content.
@@ -47,7 +53,10 @@ export default async function CreatePostPage() {
 
       {/* ── نوار راهنمای ۴ مرحله‌ای (process strip) ────────────────────── */}
       <div className="at-tile mb-5 overflow-hidden">
-        <div className="flex items-stretch divide-x-2 divide-x-reverse divide-[color:var(--at-line)] overflow-x-auto" dir="rtl">
+        <div
+          className="flex items-stretch divide-x-2 divide-x-reverse divide-[color:var(--at-line)] overflow-x-auto"
+          dir="rtl"
+        >
           {hints.map((step, idx) => {
             const Icon = step.icon;
             return (
@@ -61,13 +70,21 @@ export default async function CreatePostPage() {
                 >
                   {idx + 1}
                 </span>
-                <Icon className="w-4 h-4 text-[color:var(--at-fg-muted)] flex-shrink-0" aria-hidden />
-                <span className="text-xs font-semibold text-[color:var(--at-fg)] truncate">{step.label}</span>
+                <Icon
+                  className="w-4 h-4 text-[color:var(--at-fg-muted)] flex-shrink-0"
+                  aria-hidden
+                />
+                <span className="text-xs font-semibold text-[color:var(--at-fg)] truncate">
+                  {step.label}
+                </span>
               </div>
             );
           })}
           <div className="hidden lg:flex items-center gap-2 px-4 py-3 me-auto border-r-2 border-r-[color:var(--at-line)]">
-            <HiOutlineCalendarDays className="w-4 h-4 text-[color:var(--at-fg-muted)]" aria-hidden />
+            <HiOutlineCalendarDays
+              className="w-4 h-4 text-[color:var(--at-fg-muted)]"
+              aria-hidden
+            />
             <span className="text-xs font-medium text-[color:var(--at-fg-muted)]">
               امکان زمان‌بندی انتشار
             </span>

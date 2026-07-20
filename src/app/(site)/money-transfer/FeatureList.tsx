@@ -12,14 +12,7 @@
  * 2026-07-05: rewritten — replaced InfoCards.tsx.
  */
 
-import {
-  ArrowLeftRight,
-  Shield,
-  Clock,
-  Headphones,
-  CreditCard,
-  Globe,
-} from 'lucide-react';
+import { ArrowLeftRight, Clock, CreditCard, Globe, Headphones, Shield } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 interface Feature {

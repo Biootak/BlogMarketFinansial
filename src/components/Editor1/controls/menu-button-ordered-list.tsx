@@ -1,8 +1,8 @@
 import type { Editor } from '@tiptap/core';
 import React, { memo, useCallback } from 'react';
+import { Icon } from '../../ui/icon';
 import { Toolbar } from '../../ui/toolbar';
 import { useActive } from '../hooks/use-active';
-import { Icon } from '../../ui/icon';
 
 interface MenuButtonOrderedListProps {
   editor: Editor;

@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------------
  */
 
-import { Node, Mark, mergeAttributes, InputRule } from '@tiptap/core';
+import { InputRule, Mark, Node, mergeAttributes } from '@tiptap/core';
 import type { Editor } from '@tiptap/core';
 
 declare module '@tiptap/core' {
@@ -85,7 +85,11 @@ export const FootnoteRef = Mark.create({
         'data-footnote-ref': '',
         class: 'at-footnote-ref',
       }),
-      ['a', { href: `#fn-${HTMLAttributes['data-footnote-id'] ?? ''}` }, String(HTMLAttributes['data-footnote-number'] ?? '')],
+      [
+        'a',
+        { href: `#fn-${HTMLAttributes['data-footnote-id'] ?? ''}` },
+        String(HTMLAttributes['data-footnote-number'] ?? ''),
+      ],
     ];
   },
 

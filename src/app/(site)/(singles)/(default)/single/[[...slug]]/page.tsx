@@ -1,16 +1,16 @@
-import { notFound } from 'next/navigation';
-import type { Metadata } from 'next';
-import { getPostBySlug } from '@/actions/postActions';
-import { getRelatedPosts } from '@/actions/getRelatedPosts';
+import { getActiveAdvertisements } from '@/actions/advertisementActions';
 import { getMoreFromAuthor } from '@/actions/getMoreFromAuthor';
-import SingleHeader from '@/app/(site)/(singles)/SingleHeader';
+import { getRelatedPosts } from '@/actions/getRelatedPosts';
+import { getPostBySlug } from '@/actions/postActions';
+import { getSidebarData } from '@/actions/sidebarActions';
 import SingleContent from '@/app/(site)/(singles)/SingleContent';
+import SingleHeader from '@/app/(site)/(singles)/SingleHeader';
 import SingleRelatedPosts from '@/app/(site)/(singles)/SingleRelatedPosts';
 import NcImage from '@/components/NcImage/NcImage';
-import { getSidebarData } from '@/actions/sidebarActions';
-import type { PostWithRelations, ActionResult } from '@/types/types';
+import type { ActionResult, PostWithRelations } from '@/types/types';
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import Sidebar from '../../../Sidebar';
-import { getActiveAdvertisements } from '@/actions/advertisementActions';
 
 export interface PageProps {
   params: Promise<{ slug: string[] }>;
@@ -32,10 +32,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const post = result.data;
   const postUrl = `${APP_URL}/single/${postSlug}`;
   const imageUrl = post.featuredImage || `${APP_URL}/images/default-og.jpg`;
-  
+
   // استخراج توضیحات از محتوا (حذف HTML tags)
-  const description = post.excerpt 
-    || (post.content ? post.content.replace(/<[^>]*>/g, '').slice(0, 160) + '...' : 'بیوتاک - مرجع تحلیل بازارهای مالی');
+  const description =
+    post.excerpt ||
+    (post.content
+      ? `${post.content.replace(/<[^>]*>/g, '').slice(0, 160)}...`
+      : 'بیوتاک - مرجع تحلیل بازارهای مالی');
 
   return {
     title: post.title,
@@ -101,14 +104,15 @@ export default async function PageSingle({ params }: PageProps) {
     orderBy: 'createdAt',
     orderDirection: 'desc',
   });
-  const inContentAd = inContentAdsResult.success && inContentAdsResult.data?.[0] ? inContentAdsResult.data[0] : null;
+  const inContentAd =
+    inContentAdsResult.success && inContentAdsResult.data?.[0] ? inContentAdsResult.data[0] : null;
 
   return (
     <div className="nc-PageSingle relative min-h-screen">
       {/* Subtle Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-b from-neutral-50 via-white to-neutral-50/50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950/50 pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.15),transparent)] pointer-events-none" />
-      
+
       <div className="relative container pt-6 pb-12 lg:pt-8 lg:pb-16 @container/single-layout">
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* Main Content Area */}
@@ -118,7 +122,7 @@ export default async function PageSingle({ params }: PageProps) {
               {/* Gradient Overlays */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10" />
               <div className="absolute inset-0 bg-gradient-to-br from-primary-600/10 via-transparent to-violet-600/10 z-10 mix-blend-overlay" />
-              
+
               {/* Image */}
               <NcImage
                 alt={post.title}
@@ -132,7 +136,7 @@ export default async function PageSingle({ params }: PageProps) {
                 sizes="(max-width: 1024px) 100vw, 1400px"
                 fill={false}
               />
-              
+
               {/* Decorative Elements */}
               <div className="absolute top-4 right-4 w-20 h-20 border border-white/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="absolute bottom-4 left-4 w-12 h-12 border border-white/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100" />
@@ -156,9 +160,11 @@ export default async function PageSingle({ params }: PageProps) {
               <div className="relative">
                 {/* Decorative Glow */}
                 <div className="absolute -inset-1 bg-gradient-to-br from-primary-500/20 via-violet-500/10 to-rose-500/20 rounded-3xl blur-xl opacity-0 hover:opacity-100 transition-opacity duration-500" />
-                
+
                 <Sidebar
-                  ads={sidebarAdsResult.success && sidebarAdsResult.data ? sidebarAdsResult.data : []}
+                  ads={
+                    sidebarAdsResult.success && sidebarAdsResult.data ? sidebarAdsResult.data : []
+                  }
                   className="relative space-y-6 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl rounded-2xl p-5 border border-neutral-200/50 dark:border-neutral-800/50 shadow-[0_8px_40px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.2)]"
                   widgetPosts={sidebarData.recentPosts}
                   tags={sidebarData.popularTags}

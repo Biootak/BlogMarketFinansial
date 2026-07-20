@@ -16,7 +16,12 @@
  */
 
 import type { MarketRateItem } from '@/lib/market-rates';
-import { UNIT_LABELS, formatChangePercent, formatValueOnly, formatWithUnit } from '@/lib/market-rates/format';
+import {
+  UNIT_LABELS,
+  formatChangePercent,
+  formatValueOnly,
+  formatWithUnit,
+} from '@/lib/market-rates/format';
 import { formatFreshness } from '@/lib/money-transfer/hero';
 import { useEffect, useState } from 'react';
 
@@ -69,8 +74,14 @@ export default function LiveTicker({ rates, freshnessAnchorISO }: LiveTickerProp
                   aria-label={`${rate.displayNameFa} ${formatWithUnit(rate.value, rate.unit, rate.decimals)}`}
                 >
                   <span className="mt-ticker__pair">{rate.displayNameFa}</span>
-                  <span className="mt-ticker__rate" dir="ltr" style={{ display: 'inline-flex', alignItems: 'baseline', gap: '0.15em' }}>
-                    <span style={{ fontSize: '0.85em', opacity: 0.75 }}>{UNIT_LABELS[rate.unit]}</span>
+                  <span
+                    className="mt-ticker__rate"
+                    dir="ltr"
+                    style={{ display: 'inline-flex', alignItems: 'baseline', gap: '0.15em' }}
+                  >
+                    <span style={{ fontSize: '0.85em', opacity: 0.75 }}>
+                      {UNIT_LABELS[rate.unit]}
+                    </span>
                     <span>{formatValueOnly(rate.value, rate.decimals)}</span>
                   </span>
                   <span

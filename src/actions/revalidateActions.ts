@@ -1,15 +1,13 @@
 'use server';
 
+import { authFailureToActionResult, requireSuperAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
-import { requireSuperAdmin, authFailureToActionResult } from '@/lib/require-auth';
 
 // C4 fix: every revalidation action is a cache-busting, DB/upstream-pressure
 // operation. Gate them behind SUPER_ADMIN so an anonymous caller cannot
 // trigger a cache stampede / DoS.
 function assertAuth() {
-  return requireSuperAdmin().then((r) =>
-    r.success ? null : authFailureToActionResult(r),
-  );
+  return requireSuperAdmin().then((r) => (r.success ? null : authFailureToActionResult(r)));
 }
 
 export async function revalidateCategoryCache(categoryId: string) {
@@ -31,7 +29,7 @@ export async function revalidateCategoryCache(categoryId: string) {
     return { success: true };
   } catch (error) {
     console.error('Error revalidating category cache:', error);
-    return { success: false, error };
+    return { success: false, message: 'خطا در پاکسازی کش' };
   }
 }
 
@@ -59,7 +57,7 @@ export async function revalidatePostCache(postId?: string) {
     return { success: true };
   } catch (error) {
     console.error('Error revalidating post cache:', error);
-    return { success: false, error };
+    return { success: false, message: 'خطا در پاکسازی کش' };
   }
 }
 
@@ -71,7 +69,7 @@ export async function revalidateSettingsCache() {
     return { success: true };
   } catch (error) {
     console.error('Error revalidating settings cache:', error);
-    return { success: false, error };
+    return { success: false, message: 'خطا در پاکسازی کش' };
   }
 }
 
@@ -83,7 +81,7 @@ export async function revalidateAdvertisementsCache() {
     return { success: true };
   } catch (error) {
     console.error('Error revalidating advertisements cache:', error);
-    return { success: false, error };
+    return { success: false, message: 'خطا در پاکسازی کش' };
   }
 }
 
@@ -116,6 +114,6 @@ export async function revalidateAllCache() {
     return { success: true };
   } catch (error) {
     console.error('Error revalidating all cache:', error);
-    return { success: false, error };
+    return { success: false, message: 'خطا در پاکسازی کش' };
   }
 }

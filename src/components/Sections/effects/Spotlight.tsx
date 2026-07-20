@@ -11,8 +11,8 @@
  *  - می‌تونه به‌صورت prop intensity و color بگیره
  */
 
-import { useRef, useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { useEffect, useRef, useState } from 'react';
 
 interface SpotlightProps {
   className?: string;

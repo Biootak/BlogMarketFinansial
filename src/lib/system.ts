@@ -1,6 +1,6 @@
 import { exec } from 'node:child_process';
-import { promisify } from 'node:util';
 import * as os from 'node:os';
+import { promisify } from 'node:util';
 
 const execAsync = promisify(exec);
 
@@ -37,7 +37,7 @@ interface SystemMetrics {
 export async function getSystemMetrics(): Promise<SystemMetrics> {
   try {
     const cpus = os.cpus();
-    const cpuUsage = os.loadavg()[0] * 100 / cpus.length;
+    const cpuUsage = (os.loadavg()[0] * 100) / cpus.length;
     const totalMem = os.totalmem();
     const freeMem = os.freemem();
     const usedMem = totalMem - freeMem;
@@ -52,13 +52,13 @@ export async function getSystemMetrics(): Promise<SystemMetrics> {
         total: totalMem,
         free: freeMem,
         used: usedMem,
-        usagePercentage: Math.round((usedMem / totalMem) * 100)
+        usagePercentage: Math.round((usedMem / totalMem) * 100),
       },
       os: {
         platform: process.platform,
         release: os.release(),
-        uptime: os.uptime()
-      }
+        uptime: os.uptime(),
+      },
     };
 
     return metrics;
@@ -78,12 +78,14 @@ export async function checkDiskSpace(drive: string): Promise<DiskSpace | null> {
 
     // For Windows
     if (process.platform === 'win32') {
-      const { stdout } = await execAsync(`wmic logicaldisk where "DeviceID='${drive}:'" get size,freespace /format:value`);
-      
+      const { stdout } = await execAsync(
+        `wmic logicaldisk where "DeviceID='${drive}:'" get size,freespace /format:value`,
+      );
+
       const lines = stdout.trim().split('\n');
       const values: { [key: string]: string } = {};
-      
-      lines.forEach(line => {
+
+      lines.forEach((line) => {
         const [key, value] = line.trim().split('=');
         if (key && value) {
           values[key.trim()] = value.trim();
@@ -93,11 +95,11 @@ export async function checkDiskSpace(drive: string): Promise<DiskSpace | null> {
       if (values.Size && values.FreeSpace) {
         return {
           size: Number.parseInt(values.Size, 10),
-          free: Number.parseInt(values.FreeSpace, 10)
+          free: Number.parseInt(values.FreeSpace, 10),
         };
       }
     }
-    
+
     // For Unix-like systems (Linux, macOS)
     else {
       const { stdout } = await execAsync(`df -k ${drive}`);
@@ -106,7 +108,7 @@ export async function checkDiskSpace(drive: string): Promise<DiskSpace | null> {
         const [, size, , free] = lines[1].split(/\s+/);
         return {
           size: Number.parseInt(size, 10) * 1024, // Convert KB to bytes
-          free: Number.parseInt(free, 10) * 1024
+          free: Number.parseInt(free, 10) * 1024,
         };
       }
     }

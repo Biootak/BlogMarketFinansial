@@ -1,8 +1,7 @@
-import prisma from '@/lib/db';
-import { type NextRequest, NextResponse } from 'next/server';
-import { LRUCache } from 'lru-cache';
 import { getTrustedClientIp } from '@/lib/client-ip';
-
+import prisma from '@/lib/db';
+import { LRUCache } from 'lru-cache';
+import { type NextRequest, NextResponse } from 'next/server';
 
 // Rate limiter in-memory با LRU bounded cache (حداکثر 10,000 IP)
 // جایگزین Map بی‌نهایت قبلی - خودکار entryهای قدیمی/کم‌استفاده را حذف می‌کند
@@ -44,7 +43,7 @@ export async function POST(req: NextRequest) {
     if (!checkRateLimit(ip)) {
       return NextResponse.json(
         { error: 'Too many requests' },
-        { status: 429, headers: { 'Retry-After': '60' } }
+        { status: 429, headers: { 'Retry-After': '60' } },
       );
     }
 

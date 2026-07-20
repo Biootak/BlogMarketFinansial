@@ -7,12 +7,7 @@
 
 import type { EmailMessage } from './types';
 
-export type OtpEmailIntent =
-  | 'register'
-  | 'login'
-  | 'reverify'
-  | 'recover'
-  | 'service-verify';
+export type OtpEmailIntent = 'register' | 'login' | 'reverify' | 'recover' | 'service-verify';
 
 export interface OtpEmailArgs {
   to: string;
@@ -21,10 +16,7 @@ export interface OtpEmailArgs {
   expiresLabel: string;
 }
 
-const COPY: Record<
-  OtpEmailIntent,
-  { subject: string; heading: string; body: string }
-> = {
+const COPY: Record<OtpEmailIntent, { subject: string; heading: string; body: string }> = {
   register: {
     subject: 'کد تأیید ثبت‌نام / Verification code',
     heading: 'تأیید ثبت‌نام',
@@ -153,7 +145,7 @@ export function serviceRequestConfirmationEmail(
     `نوع خدمات: ${serviceLabel}`,
     `مبلغ: ${args.amount} ${args.currency}`,
     '',
-    `برای پیگیری وضعیت درخواست خود به آدرس زیر مراجعه کنید:`,
+    'برای پیگیری وضعیت درخواست خود به آدرس زیر مراجعه کنید:',
     trackingUrl,
     '',
     'تیم ما در کمتر از ۳۰ دقیقه با شما تماس خواهد گرفت.',
@@ -240,9 +232,7 @@ const STATUS_LABELS: Record<string, string> = {
   CANCELLED: 'لغو شده',
 };
 
-export function serviceRequestStatusEmail(
-  args: ServiceRequestStatusEmailArgs,
-): EmailMessage {
+export function serviceRequestStatusEmail(args: ServiceRequestStatusEmailArgs): EmailMessage {
   const statusLabel = STATUS_LABELS[args.newStatus] ?? args.newStatus;
   const trackingUrl = `${args.appUrl}/online-payment#tracking`;
 
@@ -278,14 +268,18 @@ export function serviceRequestStatusEmail(
                 <p style="margin:0;font-size:16px;font-weight:700;color:#15803d">${statusLabel}</p>
               </td></tr>
             </table>
-            ${args.adminNote ? `
+            ${
+              args.adminNote
+                ? `
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
                    style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;margin:0 0 20px 0">
               <tr><td style="padding:14px 16px">
                 <p style="margin:0 0 4px 0;font-size:11px;color:#92400e">یادداشت تیم</p>
                 <p style="margin:0;font-size:13px;color:#78350f;line-height:1.6">${args.adminNote}</p>
               </td></tr>
-            </table>` : ''}
+            </table>`
+                : ''
+            }
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
               <tr><td align="center">
                 <a href="${trackingUrl}"
@@ -386,7 +380,7 @@ export interface WelcomeSetPasswordArgs {
   to: string;
   name: string;
   trackingCode: string;
-  resetToken: string;     // 64-char hex from generatePasswordResetToken
+  resetToken: string; // 64-char hex from generatePasswordResetToken
   appUrl: string;
 }
 
@@ -457,7 +451,7 @@ export function welcomeSetPasswordEmail(args: WelcomeSetPasswordArgs): EmailMess
 
   return {
     to: args.to,
-    subject: `حساب کاربری شما آماده است — رمز عبور بسازید`,
+    subject: 'حساب کاربری شما آماده است — رمز عبور بسازید',
     html,
     text,
     tags: [{ name: 'category', value: 'account:welcome-set-password' }],
@@ -481,10 +475,13 @@ export interface ServiceRequestReceiptArgs {
 
 export function serviceRequestReceiptEmail(args: ServiceRequestReceiptArgs): EmailMessage {
   const serviceLabel = SERVICE_LABELS[args.serviceType] ?? args.serviceType;
-  const trackingUrl  = `${args.appUrl}/track/${args.trackingCode}`;
-  const dateLabel    = new Intl.DateTimeFormat('fa-IR', {
-    year: 'numeric', month: 'long', day: 'numeric',
-    hour: '2-digit', minute: '2-digit',
+  const trackingUrl = `${args.appUrl}/track/${args.trackingCode}`;
+  const dateLabel = new Intl.DateTimeFormat('fa-IR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   }).format(args.completedAt);
 
   const text = [
@@ -539,20 +536,28 @@ export function serviceRequestReceiptEmail(args: ServiceRequestReceiptArgs): Ema
                 <td style="padding:10px 16px;${args.externalTxId ? 'border-bottom:1px solid #f0f0f0;' : ''}font-size:13px;color:#6b7280">تاریخ تکمیل</td>
                 <td style="padding:10px 16px;${args.externalTxId ? 'border-bottom:1px solid #f0f0f0;' : ''}font-size:13px;color:#111827;text-align:left" dir="ltr">${dateLabel}</td>
               </tr>
-              ${args.externalTxId ? `<tr>
+              ${
+                args.externalTxId
+                  ? `<tr>
                 <td style="padding:10px 16px;font-size:13px;color:#6b7280">شناسه تراکنش</td>
                 <td style="padding:10px 16px;font-size:12px;font-family:Menlo,Consolas,monospace;color:#0369a1;text-align:left" dir="ltr">${args.externalTxId}</td>
-              </tr>` : ''}
+              </tr>`
+                  : ''
+              }
             </table>
 
-            ${args.adminNote ? `
+            ${
+              args.adminNote
+                ? `
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
                    style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;margin:0 0 20px 0">
               <tr><td style="padding:12px 16px">
                 <p style="margin:0 0 4px 0;font-size:11px;color:#92400e">یادداشت تیم</p>
                 <p style="margin:0;font-size:13px;color:#78350f;line-height:1.6">${args.adminNote}</p>
               </td></tr>
-            </table>` : ''}
+            </table>`
+                : ''
+            }
 
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px 0">
               <tr><td align="center">

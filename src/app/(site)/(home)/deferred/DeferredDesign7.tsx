@@ -1,9 +1,9 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
-import type { PostWithRelations, CryptoTickerRate, RateListData } from '@/types/types';
 import type { MarketRateItem } from '@/actions/marketRates';
+import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
+import type { CryptoTickerRate, PostWithRelations, RateListData } from '@/types/types';
+import dynamic from 'next/dynamic';
 
 interface DeferredDesign7Props {
   initialPosts: PostWithRelations[];

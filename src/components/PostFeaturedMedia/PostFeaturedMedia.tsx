@@ -1,14 +1,14 @@
 'use client';
 
-import React, { type FC, useMemo } from 'react';
-import type { PostWithRelations } from '@/types/types';
-import GallerySlider from './GallerySlider';
-import MediaVideo from './MediaVideo';
 import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
-import MediaAudio from './MediaAudio';
-import Link from 'next/link';
-import Image from 'next/image';
 import { getPostLink } from '@/lib/getPostLink';
+import type { PostWithRelations } from '@/types/types';
+import Image from 'next/image';
+import Link from 'next/link';
+import React, { type FC, useMemo } from 'react';
+import GallerySlider from './GallerySlider';
+import MediaAudio from './MediaAudio';
+import MediaVideo from './MediaVideo';
 
 export interface PostFeaturedMediaProps {
   className?: string;

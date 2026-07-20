@@ -24,19 +24,13 @@
  *   - bookmark / share در hero
  */
 
-import { useMemo, useState } from 'react';
-import Link from 'next/link';
-import {
-  ArrowLeft,
-  ArrowUpRight,
-  ExternalLink,
-  Sparkles,
-  Megaphone,
-} from 'lucide-react';
-import { motion, useReducedMotion } from '@/lib/motion-shim';
-import type { Advertisement } from '@/types/types';
-import { cn, toPersianNumber } from '@/lib/utils';
 import SafeImage from '@/components/SafeImage/SafeImage';
+import { motion, useReducedMotion } from '@/lib/motion-shim';
+import { cn, toPersianNumber } from '@/lib/utils';
+import type { Advertisement } from '@/types/types';
+import { ArrowLeft, ArrowUpRight, ExternalLink, Megaphone, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
 
 interface AdCardStripProps {
   ads: Advertisement[];
@@ -56,10 +50,7 @@ export function AdCardStrip({
   const reduce = useReducedMotion();
 
   // لیست ads رو فیلتر می‌کنیم (null/empty)
-  const items = useMemo(
-    () => (Array.isArray(ads) ? ads.filter(Boolean) : []),
-    [ads],
-  );
+  const items = useMemo(() => (Array.isArray(ads) ? ads.filter(Boolean) : []), [ads]);
 
   if (items.length === 0) return null;
 
@@ -67,11 +58,7 @@ export function AdCardStrip({
   const richItems = rest.slice(0, 3);
 
   return (
-    <section
-      dir="rtl"
-      aria-label="تبلیغات"
-      className={cn('relative isolate', className)}
-    >
+    <section dir="rtl" aria-label="تبلیغات" className={cn('relative isolate', className)}>
       {/* Eyebrow */}
       <div className="flex items-center justify-between mb-3 sm:mb-4">
         <div className="flex items-center gap-2">
@@ -117,12 +104,7 @@ export function AdCardStrip({
         {/* RICH CARDS — compact */}
         {richItems.map((ad, i) => (
           <div key={ad.id} className="h-full">
-            <RichAdCard
-              ad={ad}
-              accentColor={accentColor}
-              index={i}
-              reduce={reduce ?? false}
-            />
+            <RichAdCard ad={ad} accentColor={accentColor} index={i} reduce={reduce ?? false} />
           </div>
         ))}
       </div>
@@ -142,7 +124,7 @@ function HeroAdCard({
   accentColor: string;
   className?: string;
 }) {
-  const reduce = useReducedMotion();
+  const _reduce = useReducedMotion();
 
   return (
     <motion.div

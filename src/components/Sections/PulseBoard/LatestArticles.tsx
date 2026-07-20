@@ -148,7 +148,7 @@ function LatestArticles({
   totalCount,
   rateLists = [],
 }: LatestArticlesProps) {
-  const reduce = useReducedMotion();
+  const _reduce = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const categoriesList = useMemo(() => dedupeCategories(categories), [categories]);
@@ -268,12 +268,7 @@ function LatestArticles({
   const adSpot = initialAds[1] ?? initialAds[0];
 
   return (
-    <section
-      ref={containerRef}
-      dir="rtl"
-      className="relative isolate"
-      aria-label="تازه‌های بازار"
-    >
+    <section ref={containerRef} dir="rtl" className="relative isolate" aria-label="تازه‌های بازار">
       {/* RateLists Ticker — نوار چرخشی نرخ‌های بازار (RateList از DB) */}
       {rateLists.length > 0 && <RateListsTicker rateLists={rateLists} className="mb-3 sm:mb-4" />}
 
@@ -647,8 +642,6 @@ function LatestArticles({
               {adSpot && adSpot.id !== adForYou?.id && (
                 <InlineAdBanner ad={adSpot} accentColor={accent.color} />
               )}
-
-
             </div>
           )}
         </div>

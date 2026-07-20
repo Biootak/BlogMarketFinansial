@@ -1,6 +1,6 @@
+import type { LucideIcon } from 'lucide-react';
 import type React from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
-import type { LucideIcon } from 'lucide-react';
 
 export interface Heading2Props extends HTMLAttributes<HTMLHeadingElement> {
   icon?: LucideIcon | ReactNode;
@@ -19,7 +19,8 @@ const Heading2: React.FC<Heading2Props> = ({
     >
       {!!icon && (
         <span className="ml-3 md:ml-4 inline-flex items-center text-base md:text-lg lg:text-xl leading-none">
-          {typeof icon === 'function' || (icon && typeof icon === 'object' && 'render' in (icon as object))
+          {typeof icon === 'function' ||
+          (icon && typeof icon === 'object' && 'render' in (icon as object))
             ? (() => {
                 const Icon = icon as LucideIcon;
                 return <Icon className="h-5 w-5 text-amber-500" strokeWidth={2} aria-hidden />;
@@ -27,7 +28,7 @@ const Heading2: React.FC<Heading2Props> = ({
             : icon}
         </span>
       )}
-      {children || `Heading2 Title`}
+      {children || 'Heading2 Title'}
     </h2>
   );
 };

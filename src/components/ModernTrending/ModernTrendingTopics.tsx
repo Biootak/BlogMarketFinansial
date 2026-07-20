@@ -25,12 +25,12 @@
  *  - حذف Spring stiffness زیاد (smooth feel)
  */
 
-import { motion, type Variants } from '@/lib/motion-shim';
-import { useMemo, type FC } from 'react';
-import Link from 'next/link';
-import type { TaxonomyType } from '@/types/types';
-import { cn } from '@/lib/utils';
 import Ticker from '@/components/Ticker';
+import { type Variants, motion } from '@/lib/motion-shim';
+import { cn } from '@/lib/utils';
+import type { TaxonomyType } from '@/types/types';
+import Link from 'next/link';
+import { type FC, useMemo } from 'react';
 import { AuroraBackground } from './effects/AuroraBackground';
 import { Magnetic } from './effects/Magnetic';
 import { Shimmer } from './effects/Shimmer';
@@ -67,14 +67,54 @@ interface Palette {
 
 /** رنگ‌های ملایم — saturation پایین، جایگزین violet/fuchsia */
 const PALETTES: Palette[] = [
-  { accent: '#94a3b8', bg: 'bg-slate-500/10',     text: 'text-slate-600 dark:text-slate-300',     ring: 'ring-slate-500/20' }, // slate
-  { accent: '#64748b', bg: 'bg-neutral-500/10',   text: 'text-neutral-600 dark:text-neutral-300', ring: 'ring-neutral-500/20' },
-  { accent: '#5b6cff', bg: 'bg-primary-500/8',    text: 'text-primary-600 dark:text-primary-300', ring: 'ring-primary-500/20' }, // primary (طیف سایت)
-  { accent: '#22d3ee', bg: 'bg-cyan-500/10',      text: 'text-cyan-700 dark:text-cyan-300',       ring: 'ring-cyan-500/20' },
-  { accent: '#34d399', bg: 'bg-emerald-500/10',   text: 'text-emerald-700 dark:text-emerald-300', ring: 'ring-emerald-500/20' },
-  { accent: '#fbbf24', bg: 'bg-amber-500/10',     text: 'text-amber-700 dark:text-amber-300',     ring: 'ring-amber-500/20' },
-  { accent: '#f87171', bg: 'bg-rose-500/10',      text: 'text-rose-700 dark:text-rose-300',       ring: 'ring-rose-500/20' },
-  { accent: '#a78bfa', bg: 'bg-violet-500/10',    text: 'text-violet-700 dark:text-violet-300',   ring: 'ring-violet-500/20' },
+  {
+    accent: '#94a3b8',
+    bg: 'bg-slate-500/10',
+    text: 'text-slate-600 dark:text-slate-300',
+    ring: 'ring-slate-500/20',
+  }, // slate
+  {
+    accent: '#64748b',
+    bg: 'bg-neutral-500/10',
+    text: 'text-neutral-600 dark:text-neutral-300',
+    ring: 'ring-neutral-500/20',
+  },
+  {
+    accent: '#5b6cff',
+    bg: 'bg-primary-500/8',
+    text: 'text-primary-600 dark:text-primary-300',
+    ring: 'ring-primary-500/20',
+  }, // primary (طیف سایت)
+  {
+    accent: '#22d3ee',
+    bg: 'bg-cyan-500/10',
+    text: 'text-cyan-700 dark:text-cyan-300',
+    ring: 'ring-cyan-500/20',
+  },
+  {
+    accent: '#34d399',
+    bg: 'bg-emerald-500/10',
+    text: 'text-emerald-700 dark:text-emerald-300',
+    ring: 'ring-emerald-500/20',
+  },
+  {
+    accent: '#fbbf24',
+    bg: 'bg-amber-500/10',
+    text: 'text-amber-700 dark:text-amber-300',
+    ring: 'ring-amber-500/20',
+  },
+  {
+    accent: '#f87171',
+    bg: 'bg-rose-500/10',
+    text: 'text-rose-700 dark:text-rose-300',
+    ring: 'ring-rose-500/20',
+  },
+  {
+    accent: '#a78bfa',
+    bg: 'bg-violet-500/10',
+    text: 'text-violet-700 dark:text-violet-300',
+    ring: 'ring-violet-500/20',
+  },
 ];
 
 /* -------------------------------------------------------------------------- */
@@ -161,10 +201,7 @@ const ModernTrendingTopics: FC<ModernTrendingTopicsProps> = ({
 }) => {
   // همه دسته‌ها (بدون محدودیت) — برای Ticker
   const allCategories = useMemo(
-    () =>
-      [...categories]
-        .filter((c) => c.count > 0)
-        .sort((a, b) => b.count - a.count),
+    () => [...categories].filter((c) => c.count > 0).sort((a, b) => b.count - a.count),
     [categories],
   );
 
@@ -175,7 +212,10 @@ const ModernTrendingTopics: FC<ModernTrendingTopicsProps> = ({
   );
 
   const colorMap = useMemo(
-    () => new Map(allCategories.map((c, idx) => [c.id, PALETTES[(hashCode(c.id) + idx) % PALETTES.length]])),
+    () =>
+      new Map(
+        allCategories.map((c, idx) => [c.id, PALETTES[(hashCode(c.id) + idx) % PALETTES.length]]),
+      ),
     [allCategories],
   );
 
@@ -449,10 +489,7 @@ function FeaturedCard({
   className?: string;
 }) {
   return (
-    <motion.div
-      variants={variants}
-      className={cn(className)}
-    >
+    <motion.div variants={variants} className={cn(className)}>
       <Magnetic strength={0.1}>
         <Link
           href={`/archive/category/${category.slug}`}

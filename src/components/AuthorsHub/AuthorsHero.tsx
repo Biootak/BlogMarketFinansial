@@ -1,12 +1,12 @@
+import { cn, toPersianNumber } from '@/lib/utils';
+import { BookOpen, Sparkles, Star, Users } from 'lucide-react';
 /**
  * @file AuthorsHero
  * @description Premium editorial hero for the /authors hub. Pure server
  * component. Uses the new author tokens (aurora, hairline, halo).
  */
-import * as React from 'react';
-import { Sparkles, Users, BookOpen, Star } from 'lucide-react';
+import type * as React from 'react';
 import AuthorAvatar from './primitives/AuthorAvatar';
-import { cn, toPersianNumber } from '@/lib/utils';
 
 export interface AuthorsHeroProps {
   totalAuthors: number;
@@ -58,10 +58,8 @@ const AuthorsHero: React.FC<AuthorsHeroProps> = ({
           backgroundImage:
             'linear-gradient(to right, var(--hairline) 1px, transparent 1px), linear-gradient(to bottom, var(--hairline) 1px, transparent 1px)',
           backgroundSize: '44px 44px',
-          maskImage:
-            'radial-gradient(ellipse at center, black 35%, transparent 75%)',
-          WebkitMaskImage:
-            'radial-gradient(ellipse at center, black 35%, transparent 75%)',
+          maskImage: 'radial-gradient(ellipse at center, black 35%, transparent 75%)',
+          WebkitMaskImage: 'radial-gradient(ellipse at center, black 35%, transparent 75%)',
         }}
       />
 
@@ -74,22 +72,22 @@ const AuthorsHero: React.FC<AuthorsHeroProps> = ({
           </span>
 
           <h1 className="mt-4 sm:mt-5 text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-[1.1] text-neutral-900 dark:text-neutral-50 text-balance">
-            ذهن‌هایی که <span className="bg-gradient-to-r from-primary-500 via-primary-400 to-amber-400 bg-clip-text text-transparent">روایت می‌کنند</span>
+            ذهن‌هایی که{' '}
+            <span className="bg-gradient-to-r from-primary-500 via-primary-400 to-amber-400 bg-clip-text text-transparent">
+              روایت می‌کنند
+            </span>
           </h1>
 
           <p className="mt-4 sm:mt-5 max-w-xl mx-auto lg:mx-0 text-sm sm:text-base leading-relaxed text-neutral-600 dark:text-neutral-300 text-balance">
-            با تحلیل‌گران، معامله‌گران و روزنامه‌نگارانی آشنا شوید که پشت
-            هر مقاله در بازارهای مالی، یک داستان، یک استراتژی و یک نگاه تازه
-            نهفته است.
+            با تحلیل‌گران، معامله‌گران و روزنامه‌نگارانی آشنا شوید که پشت هر مقاله در بازارهای مالی، یک
+            داستان، یک استراتژی و یک نگاه تازه نهفته است.
           </p>
 
           <dl className="mt-6 sm:mt-8 grid grid-cols-3 gap-2 sm:gap-3 max-w-xl mx-auto lg:mx-0">
             {stats.map((stat) => {
               const Icon = stat.icon;
               const display =
-                typeof stat.value === 'number'
-                  ? toPersianNumber(stat.value)
-                  : stat.value;
+                typeof stat.value === 'number' ? toPersianNumber(stat.value) : stat.value;
               return (
                 <div
                   key={stat.label}

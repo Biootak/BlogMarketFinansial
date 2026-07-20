@@ -1,9 +1,9 @@
 'use client';
 
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, CheckCircle2, Server, Database, HardDrive } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Database, HardDrive, Server } from 'lucide-react';
 
 interface SystemStatus {
   cpu: {

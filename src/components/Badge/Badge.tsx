@@ -10,12 +10,12 @@ export interface BadgeProps {
   isLink?: boolean;
 }
 
-const Badge: FC<BadgeProps> = ({ 
-  className = 'relative', 
-  name, 
-  color = 'blue', 
+const Badge: FC<BadgeProps> = ({
+  className = 'relative',
+  name,
+  color = 'blue',
   href,
-  isLink = true 
+  isLink = true,
 }) => {
   const colorClasses: Record<TwMainColor, string> = {
     pink: 'text-pink-800 bg-pink-100 hover:bg-pink-800 hover:text-white',
@@ -31,7 +31,7 @@ const Badge: FC<BadgeProps> = ({
   const colorClass = colorClasses[color] || colorClasses.blue;
 
   const CLASSES = `nc-Badge inline-flex px-2.5 py-1 rounded-full font-medium text-[10px]/[14px] ${className} ${colorClass} transition-colors duration-300`;
-  
+
   if (!isLink || !href) {
     return <span className={CLASSES}>{name}</span>;
   }

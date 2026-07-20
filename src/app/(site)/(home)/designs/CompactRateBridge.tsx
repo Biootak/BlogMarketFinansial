@@ -14,12 +14,21 @@
  * ----------------------------------------------------------------------------
  */
 
-import { useState, useEffect, useRef, useMemo } from 'react';
-import Link from 'next/link';
-import { motion, AnimatePresence } from '@/lib/motion-shim';
-import { ArrowLeftRight, TrendingUp, TrendingDown, Pause, Play, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
-import type { RateItem } from '@/types/types';
+import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { parseRateItem } from '@/lib/rateItem';
+import type { RateItem } from '@/types/types';
+import {
+  ArrowLeftRight,
+  ChevronLeft,
+  ChevronRight,
+  Pause,
+  Play,
+  ShoppingCart,
+  TrendingDown,
+  TrendingUp,
+} from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface CompactRateBridgeProps {
   rates: RateItem[];
@@ -52,10 +61,7 @@ export default function CompactRateBridge({
   const activeIndex = internalIndex;
 
   // همه rate ها رو از اول parse کن (memoize)
-  const parsedRates = useMemo(
-    () => rates.map(parseRateItem),
-    [rates],
-  );
+  const parsedRates = useMemo(() => rates.map(parseRateItem), [rates]);
 
   // Auto-rotate
   useEffect(() => {
@@ -146,8 +152,7 @@ export default function CompactRateBridge({
         <span className="text-[10px] sm:text-[11px] font-bold text-white/90 flex items-center gap-1">
           <ArrowLeftRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
           <span className="tabular-nums">
-            {String(activeIndex + 1).padStart(2, '۰')}/
-            {String(rates.length).padStart(2, '۰')}
+            {String(activeIndex + 1).padStart(2, '۰')}/{String(rates.length).padStart(2, '۰')}
           </span>
         </span>
       </div>
@@ -198,9 +203,7 @@ export default function CompactRateBridge({
                     خرید
                   </span>
                   <span className="text-[12px] sm:text-[13px] font-bold text-emerald-200 tabular-nums">
-                    {buyDisplay > 0
-                      ? buyDisplay.toLocaleString('fa-IR')
-                      : current?.buy}
+                    {buyDisplay > 0 ? buyDisplay.toLocaleString('fa-IR') : current?.buy}
                   </span>
                   {buySuffix && (
                     <span className="text-[9px] sm:text-[10px] text-emerald-200/70 shrink-0">
@@ -218,9 +221,7 @@ export default function CompactRateBridge({
                     فروش
                   </span>
                   <span className="text-[12px] sm:text-[13px] font-bold text-rose-200 tabular-nums">
-                    {sellDisplay > 0
-                      ? sellDisplay.toLocaleString('fa-IR')
-                      : current?.sell}
+                    {sellDisplay > 0 ? sellDisplay.toLocaleString('fa-IR') : current?.sell}
                   </span>
                   {sellSuffix && (
                     <span className="text-[9px] sm:text-[10px] text-rose-200/70 shrink-0">

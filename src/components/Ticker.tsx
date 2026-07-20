@@ -17,9 +17,9 @@
  * unified so every ticker on the site behaves consistently.
  */
 
-import { cn } from '@/lib/utils';
 import { useTickerPause } from '@/hooks/useTickerPause';
-import { memo, useMemo, type ReactNode } from 'react';
+import { cn } from '@/lib/utils';
+import { type ReactNode, memo, useMemo } from 'react';
 
 export interface TickerProps {
   children: ReactNode;

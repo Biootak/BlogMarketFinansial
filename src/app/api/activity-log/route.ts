@@ -1,7 +1,6 @@
-import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import db from '@/lib/db';
-
+import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
@@ -13,24 +12,24 @@ export async function GET() {
     const activities = await db.activityLog.findMany({
       take: 100,
       orderBy: {
-        createdAt: 'desc'
+        createdAt: 'desc',
       },
       include: {
         user: {
           select: {
-            email: true
-          }
-        }
-      }
+            email: true,
+          },
+        },
+      },
     });
 
-    const formattedActivities = activities.map(activity => ({
+    const formattedActivities = activities.map((activity) => ({
       id: activity.id,
       action: activity.action,
       details: activity.details,
       userId: activity.userId,
       userEmail: activity.user.email,
-      createdAt: activity.createdAt
+      createdAt: activity.createdAt,
     }));
 
     return NextResponse.json({ success: true, data: formattedActivities });
@@ -46,14 +45,14 @@ export async function POST(req: Request) {
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: { code: 'UNAUTHENTICATED', message: 'Unauthorized' } },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     if (!['ADMIN', 'OWNER'].includes(session.user.role)) {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -63,7 +62,7 @@ export async function POST(req: Request) {
     if (!action || typeof action !== 'string' || !details || typeof details !== 'string') {
       return NextResponse.json(
         { success: false, error: { code: 'BAD_REQUEST', message: 'Missing required fields' } },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -71,8 +70,8 @@ export async function POST(req: Request) {
       data: {
         action,
         details,
-        userId: session.user.id
-      }
+        userId: session.user.id,
+      },
     });
 
     return NextResponse.json({ success: true, data: activity });
@@ -80,7 +79,7 @@ export async function POST(req: Request) {
     console.error('[ACTIVITY_LOG_POST]', error);
     return NextResponse.json(
       { success: false, error: { code: 'INTERNAL_ERROR', message: 'Internal Error' } },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

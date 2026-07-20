@@ -1,7 +1,7 @@
 'use client';
 
-import type React from 'react';
 import { motion } from '@/lib/motion-shim';
+import type React from 'react';
 
 interface SkeletonProps {
   className?: string;

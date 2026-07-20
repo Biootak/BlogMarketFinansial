@@ -1,5 +1,6 @@
 'use client';
 
+import { useDirection } from '@/hooks/useDirection';
 import Image from 'next/image';
 import React, {
   forwardRef,
@@ -10,7 +11,6 @@ import React, {
   useRef,
 } from 'react';
 import type { MentionUser } from '../extensions/mention';
-import { useDirection } from '@/hooks/useDirection';
 
 export interface MentionListRef {
   onKeyDown: (props: { event: KeyboardEvent }) => boolean;
@@ -102,6 +102,7 @@ const MentionList = forwardRef<MentionListRef, MentionListProps>(({ items, comma
       aria-activedescendant={items[selectedIndex]?.id}
       dir={dir}
       data-dir={dir}
+      tabIndex={0}
     >
       {items.map((item, index) => (
         <button

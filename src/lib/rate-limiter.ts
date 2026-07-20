@@ -74,7 +74,7 @@ const LIMITS: Record<string, { max: number; windowMs: number }> = {
 
 export async function checkRateLimit(
   identifier: string,
-  type: keyof typeof rateLimiters = 'api'
+  type: keyof typeof rateLimiters = 'api',
 ): Promise<{ success: boolean; remaining: number; reset: number }> {
   const limiter = rateLimiters[type];
 
@@ -94,7 +94,11 @@ export async function checkRateLimit(
       // to the per-process in-memory store so availability is preserved.
       if (type === 'auth') {
         console.error(`[rate-limiter] Upstash failed for ${type}, failing closed:`, error);
-        return { success: false, remaining: 0, reset: Date.now() + (LIMITS[type]?.windowMs ?? 15 * 60 * 1000) };
+        return {
+          success: false,
+          remaining: 0,
+          reset: Date.now() + (LIMITS[type]?.windowMs ?? 15 * 60 * 1000),
+        };
       }
       console.warn(`[rate-limiter] Upstash failed for ${type}, falling back to in-memory:`, error);
     }
@@ -142,6 +146,6 @@ if (
         }
       }
     },
-    5 * 60 * 1000
+    5 * 60 * 1000,
   ); // هر 5 دقیقه - نه 1 دقیقه (کمتر overhead)
 }

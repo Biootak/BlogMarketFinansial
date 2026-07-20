@@ -1,6 +1,8 @@
 'use client';
 
 import { motion } from '@/lib/motion-shim';
+import { cn } from '@/lib/utils';
+import type { TaxonomyType } from '@/types/types';
 import {
   ArrowUpRight,
   BarChart,
@@ -12,12 +14,10 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import Link from 'next/link';
-import type { TaxonomyType } from '@/types/types';
-import { cn } from '@/lib/utils';
+import { type CategoryColorConfig, getCategoryColor } from '../utils/categoryColors';
 import { AnimatedCounter } from './AnimatedCounter';
 import { SpotlightCard } from './SpotlightCard';
 import { TrendingBadge } from './TrendingBadge';
-import { type CategoryColorConfig, getCategoryColor } from '../utils/categoryColors';
 
 const ICON_MAP: Record<string, typeof Hash> = {
   Hash,

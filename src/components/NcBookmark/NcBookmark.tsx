@@ -1,13 +1,13 @@
 'use client';
 
-import type React from 'react';
-import { useState, useTransition } from 'react';
-import { cn } from '@/lib/utils';
 import { savePost } from '@/actions/postActions';
 import { useToast } from '@/components/ui/use-toast';
 import { motion } from '@/lib/motion-shim';
-import { Icon } from '../ui/icon';
+import { cn } from '@/lib/utils';
 import { Check } from 'lucide-react';
+import type React from 'react';
+import { useState, useTransition } from 'react';
+import { Icon } from '../ui/icon';
 
 export interface NcBookmarkProps {
   containerClassName?: string;

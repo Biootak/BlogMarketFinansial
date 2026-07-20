@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type { TaxonomyType } from '@/types/types';
-import { FiX, FiPlus, FiSearch, FiTag, FiCheck } from 'react-icons/fi';
-import { BiLoaderAlt } from 'react-icons/bi';
-import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useToast } from '@/components/ui/use-toast';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import type { TaxonomyType } from '@/types/types';
+import { useCallback, useEffect, useState } from 'react';
+import { BiLoaderAlt } from 'react-icons/bi';
+import { FiCheck, FiPlus, FiSearch, FiTag, FiX } from 'react-icons/fi';
 
 interface TagSelectDialogProps {
   isOpen: boolean;
@@ -21,41 +21,66 @@ interface TagSelectDialogProps {
 }
 
 export function TagSelectDialog({
-  isOpen, onClose, onSelectTags, initialSelectedTags,
-  tags, onLoadMore, isLoading, hasMoreItems,
+  isOpen,
+  onClose,
+  onSelectTags,
+  initialSelectedTags,
+  tags,
+  onLoadMore,
+  isLoading,
+  hasMoreItems,
 }: TagSelectDialogProps) {
   const [selectedTags, setSelectedTags] = useState<string[]>(initialSelectedTags);
   const [newTag, setNewTag] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
 
-  useEffect(() => { setSelectedTags(initialSelectedTags); }, [initialSelectedTags]);
+  useEffect(() => {
+    setSelectedTags(initialSelectedTags);
+  }, [initialSelectedTags]);
 
-  const handleAddTag = useCallback((tagName: string) => {
-    if (!selectedTags.includes(tagName)) {
-      setSelectedTags((prev) => [...prev, tagName]);
-      toast({ title: 'موفقیت', description: 'برچسب اضافه شد', variant: 'success' });
-    }
-  }, [selectedTags, toast]);
+  const handleAddTag = useCallback(
+    (tagName: string) => {
+      if (!selectedTags.includes(tagName)) {
+        setSelectedTags((prev) => [...prev, tagName]);
+        toast({ title: 'موفقیت', description: 'برچسب اضافه شد', variant: 'success' });
+      }
+    },
+    [selectedTags, toast],
+  );
 
   const handleRemoveTag = useCallback((tagName: string) => {
     setSelectedTags((prev) => prev.filter((tag) => tag !== tagName));
   }, []);
 
-  const handleNewTagSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    if (newTag.trim() && !selectedTags.includes(newTag.trim())) {
-      handleAddTag(newTag.trim());
-      setNewTag('');
-    } else if (selectedTags.includes(newTag.trim())) {
-      toast({ title: 'خطا', description: 'این برچسب قبلاً اضافه شده است.', variant: 'destructive' });
-    }
-  }, [newTag, handleAddTag, selectedTags, toast]);
+  const handleNewTagSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (newTag.trim() && !selectedTags.includes(newTag.trim())) {
+        handleAddTag(newTag.trim());
+        setNewTag('');
+      } else if (selectedTags.includes(newTag.trim())) {
+        toast({
+          title: 'خطا',
+          description: 'این برچسب قبلاً اضافه شده است.',
+          variant: 'destructive',
+        });
+      }
+    },
+    [newTag, handleAddTag, selectedTags, toast],
+  );
 
-  const handleSave = useCallback(() => { onSelectTags(selectedTags); onClose(); }, [selectedTags, onSelectTags, onClose]);
-  const handleLoadMore = useCallback(() => { if (!isLoading && hasMoreItems) onLoadMore(); }, [isLoading, hasMoreItems, onLoadMore]);
+  const handleSave = useCallback(() => {
+    onSelectTags(selectedTags);
+    onClose();
+  }, [selectedTags, onSelectTags, onClose]);
+  const handleLoadMore = useCallback(() => {
+    if (!isLoading && hasMoreItems) onLoadMore();
+  }, [isLoading, hasMoreItems, onLoadMore]);
   const infiniteScrollRef = useInfiniteScroll(handleLoadMore, hasMoreItems, isLoading);
-  const filteredTags = tags.filter((tag) => tag.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredTags = tags.filter((tag) =>
+    tag.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -104,7 +129,11 @@ export function TagSelectDialog({
               className="at-input"
               dir="rtl"
             />
-            <button type="submit" className="at-btn at-btn--primary at-btn--icon" aria-label="افزودن">
+            <button
+              type="submit"
+              className="at-btn at-btn--primary at-btn--icon"
+              aria-label="افزودن"
+            >
               <FiPlus className="w-4 h-4" />
             </button>
           </form>
@@ -151,9 +180,7 @@ export function TagSelectDialog({
               </div>
             )}
             {filteredTags.length === 0 && !isLoading && (
-              <div className="at-form-empty text-sm">
-                نتیجه‌ای برای «{searchTerm}» یافت نشد.
-              </div>
+              <div className="at-form-empty text-sm">نتیجه‌ای برای «{searchTerm}» یافت نشد.</div>
             )}
           </div>
         </ScrollArea>

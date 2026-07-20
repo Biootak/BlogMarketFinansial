@@ -1,22 +1,45 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useForm, type UseFormReturn, type SubmitHandler } from 'react-hook-form';
-import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineUsers, HiOutlineUser, HiOutlineEnvelope, HiOutlineLockClosed, HiOutlinePhone, HiOutlineUserGroup, HiOutlineCheckCircle } from 'react-icons/hi2';
-import Image from 'next/image';
-import { getUsers, createUser, updateUser, deleteUser } from '@/actions/userActions';
-import type { Role, UserWithProfile } from '@/types/types';
-import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { useToast } from '@/components/ui/use-toast';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import SubmitButton from '@/components/SubmitButton';
+import { createUser, deleteUser, getUsers, updateUser } from '@/actions/userActions';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import LoadingMore from '@/components/LoadingMore';
 import { UsersTableSkeleton } from '@/components/Skeletons';
+import SubmitButton from '@/components/SubmitButton';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/components/ui/use-toast';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import type { Role, UserWithProfile } from '@/types/types';
 import { useSession } from 'next-auth/react';
-import { PageHeader } from '@/components/Dashboard/primitives';
+import Image from 'next/image';
+import { useCallback, useEffect, useState } from 'react';
+import { type SubmitHandler, type UseFormReturn, useForm } from 'react-hook-form';
+import {
+  HiOutlineCheckCircle,
+  HiOutlineEnvelope,
+  HiOutlineLockClosed,
+  HiOutlinePencil,
+  HiOutlinePhone,
+  HiOutlinePlus,
+  HiOutlineTrash,
+  HiOutlineUser,
+  HiOutlineUserGroup,
+  HiOutlineUsers,
+} from 'react-icons/hi2';
 import { HiMagnifyingGlass } from 'react-icons/hi2';
 
 type FormData = {
@@ -50,11 +73,16 @@ const statusLabels: Record<string, string> = {
 
 const getAtBadgeVariant = (status?: string | null) => {
   switch (status) {
-    case 'Active': return 'published' as const;
-    case 'Pending': return 'pending' as const;
-    case 'Banned': return 'danger' as const;
-    case 'Rejected': return 'draft' as const;
-    default: return 'draft' as const;
+    case 'Active':
+      return 'published' as const;
+    case 'Pending':
+      return 'pending' as const;
+    case 'Banned':
+      return 'danger' as const;
+    case 'Rejected':
+      return 'draft' as const;
+    default:
+      return 'draft' as const;
   }
 };
 
@@ -134,7 +162,7 @@ export default function UsersPage() {
       }
       setIsLoading(false);
     },
-    [toast, statusFilter, roleFilter]
+    [toast, statusFilter, roleFilter],
   );
 
   const loadMore = useCallback(() => {
@@ -165,7 +193,11 @@ export default function UsersPage() {
 
   const handleEdit = (user: UserWithProfile) => {
     if (!canManageUser(user)) {
-      toast({ title: 'خطا', description: 'شما دسترسی لازم برای ویرایش این کاربر را ندارید', variant: 'destructive' });
+      toast({
+        title: 'خطا',
+        description: 'شما دسترسی لازم برای ویرایش این کاربر را ندارید',
+        variant: 'destructive',
+      });
       return;
     }
     setEditingUser(user);
@@ -183,12 +215,20 @@ export default function UsersPage() {
 
   const handleDelete = async (id: string, userRole?: Role) => {
     if (id === currentUserId) {
-      toast({ title: 'خطا', description: 'شما نمی‌توانید حساب خود را حذف کنید', variant: 'destructive' });
+      toast({
+        title: 'خطا',
+        description: 'شما نمی‌توانید حساب خود را حذف کنید',
+        variant: 'destructive',
+      });
       return;
     }
     const role = userRole || 'USER';
     if (!canManageUser({ id, role } as UserWithProfile)) {
-      toast({ title: 'خطا', description: 'شما دسترسی لازم برای حذف این کاربر را ندارید', variant: 'destructive' });
+      toast({
+        title: 'خطا',
+        description: 'شما دسترسی لازم برای حذف این کاربر را ندارید',
+        variant: 'destructive',
+      });
       return;
     }
     if (window.confirm('آیا مطمئن هستید که می‌خواهید این کاربر را حذف کنید؟')) {
@@ -204,11 +244,19 @@ export default function UsersPage() {
 
   const onSubmit = async (data: FormData) => {
     if (editingUser && !canManageUser(editingUser)) {
-      toast({ title: 'خطا', description: 'شما دسترسی لازم برای ویرایش این کاربر را ندارید', variant: 'destructive' });
+      toast({
+        title: 'خطا',
+        description: 'شما دسترسی لازم برای ویرایش این کاربر را ندارید',
+        variant: 'destructive',
+      });
       return;
     }
     if (!canChangeRole(data.role as Role)) {
-      toast({ title: 'خطا', description: 'شما دسترسی لازم برای تغییر به این نقش را ندارید', variant: 'destructive' });
+      toast({
+        title: 'خطا',
+        description: 'شما دسترسی لازم برای تغییر به این نقش را ندارید',
+        variant: 'destructive',
+      });
       return;
     }
     const result = editingUser
@@ -246,16 +294,17 @@ export default function UsersPage() {
   return (
     <div className="at-page" dir="rtl">
       <PageHeader
-        breadcrumb={[
-          { label: 'داشبورد', href: '/dashboard' },
-          { label: 'کاربران' },
-        ]}
+        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'کاربران' }]}
         eyebrow="تیم"
         title="کاربران"
         description="مدیریت اعضا، نقش‌ها و دسترسی‌ها"
         actions={
           <button
-            onClick={() => { setEditingUser(null); form.reset(); setIsDialogOpen(true); }}
+            onClick={() => {
+              setEditingUser(null);
+              form.reset();
+              setIsDialogOpen(true);
+            }}
             className="at-btn at-btn--primary"
           >
             <HiOutlinePlus className="size-4" />
@@ -281,7 +330,7 @@ export default function UsersPage() {
           </div>
           <div className="at-stat__main">
             <div className="at-stat__value">
-              {users.filter(u => u.status === 'Pending').length}
+              {users.filter((u) => u.status === 'Pending').length}
             </div>
             <div className="at-stat__label">در انتظار فعال‌سازی</div>
           </div>
@@ -292,7 +341,7 @@ export default function UsersPage() {
           </div>
           <div className="at-stat__main">
             <div className="at-stat__value">
-              {users.filter(u => u.status === 'Active').length}
+              {users.filter((u) => u.status === 'Active').length}
             </div>
             <div className="at-stat__label">فعال</div>
           </div>
@@ -303,7 +352,7 @@ export default function UsersPage() {
           </div>
           <div className="at-stat__main">
             <div className="at-stat__value">
-              {users.filter(u => u.status === 'Banned').length}
+              {users.filter((u) => u.status === 'Banned').length}
             </div>
             <div className="at-stat__label">مسدود شده</div>
           </div>
@@ -327,7 +376,9 @@ export default function UsersPage() {
           onChange={(e) => setStatusFilter(e.target.value)}
         >
           {statusOptions.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
           ))}
         </select>
         <select
@@ -336,7 +387,9 @@ export default function UsersPage() {
           onChange={(e) => setRoleFilter(e.target.value)}
         >
           {roleOptions.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
           ))}
         </select>
       </div>
@@ -370,7 +423,10 @@ export default function UsersPage() {
                     <tr key={user.id}>
                       <td>
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="at-thumb" style={{ borderRadius: '50%', width: '40px', height: '40px' }}>
+                          <div
+                            className="at-thumb"
+                            style={{ borderRadius: '50%', width: '40px', height: '40px' }}
+                          >
                             <Image
                               src={
                                 user.profile?.avatar ||
@@ -387,19 +443,35 @@ export default function UsersPage() {
                             <p className="truncate font-semibold text-[color:var(--at-fg)] text-sm">
                               {user.name}
                             </p>
-                            <p className="truncate text-xs text-[color:var(--at-fg-subtle)]" dir="ltr">
+                            <p
+                              className="truncate text-xs text-[color:var(--at-fg-subtle)]"
+                              dir="ltr"
+                            >
                               {user.email}
                             </p>
                           </div>
                         </div>
                       </td>
                       <td>
-                        <span className="at-badge" style={{ fontSize: '11px', ...Object.fromEntries(getRoleBadgeStyle(user.role ?? '').split(';').filter(Boolean).map(s => s.split(':').map(x => x.trim()))) }}>
+                        <span
+                          className="at-badge"
+                          style={{
+                            fontSize: '11px',
+                            ...Object.fromEntries(
+                              getRoleBadgeStyle(user.role ?? '')
+                                .split(';')
+                                .filter(Boolean)
+                                .map((s) => s.split(':').map((x) => x.trim())),
+                            ),
+                          }}
+                        >
                           {roleLabels[user.role ?? ''] || user.role}
                         </span>
                       </td>
                       <td className="hidden sm:table-cell">
-                        <span className={`at-badge at-badge--${getAtBadgeVariant(user.status ?? '')}`}>
+                        <span
+                          className={`at-badge at-badge--${getAtBadgeVariant(user.status ?? '')}`}
+                        >
                           {statusLabels[user.status ?? ''] || user.status || ''}
                         </span>
                       </td>
@@ -486,13 +558,12 @@ export default function UsersPage() {
   );
 }
 
-
 function UserForm({ form, onSubmit }: UserFormProps) {
   const { data: session } = useSession();
   const currentUserRole = session?.user?.role;
 
-  const inputClass = "at-input";
-  const selectTriggerClass = "at-input flex items-center h-auto py-2.5";
+  const inputClass = 'at-input';
+  const selectTriggerClass = 'at-input flex items-center h-auto py-2.5';
 
   return (
     <Form {...form}>
@@ -543,7 +614,12 @@ function UserForm({ form, onSubmit }: UserFormProps) {
                   رمز عبور
                 </label>
                 <FormControl>
-                  <Input placeholder="رمز عبور کاربر" type="password" {...field} className={inputClass} />
+                  <Input
+                    placeholder="رمز عبور کاربر"
+                    type="password"
+                    {...field}
+                    className={inputClass}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -626,12 +702,11 @@ function UserForm({ form, onSubmit }: UserFormProps) {
           />
         </div>
 
-        <div className="at-dialog-foot" style={{ marginInlineStart: '-22px', marginInlineEnd: '-22px', marginBottom: '-20px' }}>
-          <button
-            type="button"
-            className="at-btn at-btn--ghost"
-            onClick={() => form.reset()}
-          >
+        <div
+          className="at-dialog-foot"
+          style={{ marginInlineStart: '-22px', marginInlineEnd: '-22px', marginBottom: '-20px' }}
+        >
+          <button type="button" className="at-btn at-btn--ghost" onClick={() => form.reset()}>
             انصراف
           </button>
           <SubmitButton isSubmitting={form.formState.isSubmitting} />
