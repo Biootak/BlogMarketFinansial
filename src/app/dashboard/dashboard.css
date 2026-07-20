@@ -3307,16 +3307,14 @@
     pointer-events: none;
     transition: inset-inline-start 320ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
   }
-  /* RTL: sidebar on right → left edge of sidebar = viewport-width - sidebar-width.
-     We use `right` explicitly since logical props + calc + env is fragile for
-     fixed positioning across browsers. */
+  /* RTL: sidebar on right — use inset-inline-end (logical, all modern browsers 2024+). */
   [dir="rtl"] .dash-side__toggle-zone {
     inset-inline-start: auto;
-    right: var(--ds-side-w-expanded, 268px);
+    inset-inline-end: var(--ds-side-w-expanded, 268px);
     transform: translate(50%, -50%);
   }
   [dir="rtl"] .dash-side__toggle-zone[data-open="false"] {
-    right: var(--ds-side-w-rail, 76px);
+    inset-inline-end: var(--ds-side-w-rail, 76px);
   }
   .dash-side__toggle-line {
     display: block;
