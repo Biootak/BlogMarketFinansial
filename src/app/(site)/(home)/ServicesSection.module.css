@@ -166,6 +166,12 @@
 }
 
 /* ── Icon ───────────────────────────────────────────────────── */
+
+/* SendHorizonal در RTL باید به راست اشاره کند (جهت ارسال) */
+.accent_amber .iconWrap svg {
+  transform: scaleX(-1);
+}
+
 .iconWrap {
   display: flex;
   align-items: center;
@@ -237,10 +243,9 @@
 }
 
 .ctaArrow {
-  transform: scaleX(-1);
   transition: transform var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .cardCta:hover .ctaArrow {
-  transform: scaleX(-1) translateX(3px);
+  transform: translateX(-3px);
 }

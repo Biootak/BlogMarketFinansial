@@ -230,7 +230,7 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                   key={mainPost.id}
                   tiltStrength={0.4}
                   enableHolographic
-                  className="relative group h-[min(38dvh,180px)] sm:h-[220px] @lg/main-hero:h-[260px] @3xl/main-hero:h-[300px] overflow-hidden rounded-2xl"
+                  className="relative group h-[min(52dvh,240px)] sm:h-[320px] @lg/main-hero:h-[400px] @3xl/main-hero:h-[480px] overflow-hidden rounded-2xl"
                   innerClassName="relative h-full"
                 >
                   <motion.div
