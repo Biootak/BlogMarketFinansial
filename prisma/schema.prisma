@@ -564,22 +564,26 @@ model Task {
 }
 
 model TransferProvider {
-  id            String       @id @default(cuid())
-  slug          String       @unique
+  id            String    @id @default(cuid())
+  slug          String    @unique
   name          String
   kind          TransferKind
-  spreadPercent Float        @default(0)
-  flatFeeToman  Int          @default(0)
-  speedMinutes  Int          @default(0)
-  features      String[]     @default([])
-  active        Boolean      @default(true)
-  order         Int          @default(100)
+  spreadPercent Float     @default(0)
+  flatFeeToman  Int       @default(0)
+  speedMinutes  Int       @default(0)
+  features      String[]  @default([])
+  active        Boolean   @default(true)
+  order         Int       @default(100)
   description   String?
   logoUrl       String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  /// اگر این provider متعلق به یک صرافی خاص باشد — null = پلتفرم‌شمول
+  exchangeId    String?
+  Exchange      Exchange? @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@index([active, order])
+  @@index([exchangeId])
 }
 
 model AuditLog {
@@ -725,16 +729,17 @@ model Exchange {
   createdById     String?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime
-  AuditLog        AuditLog[]
-  Customer        Customer[]
-  Device          Device[]
-  ExchangeStaff   ExchangeStaff[]
-  FintechAccount  FintechAccount[]
-  FraudReview     FraudReview[]
-  KycVerification KycVerification[]
-  LedgerEntry     LedgerEntry[]
-  Transaction     Transaction[]
-  Wallet          Wallet[]
+  AuditLog         AuditLog[]
+  Customer         Customer[]
+  Device           Device[]
+  ExchangeStaff    ExchangeStaff[]
+  FintechAccount   FintechAccount[]
+  FraudReview      FraudReview[]
+  KycVerification  KycVerification[]
+  LedgerEntry      LedgerEntry[]
+  Transaction      Transaction[]
+  TransferProvider TransferProvider[]
+  Wallet           Wallet[]
 
   @@index([city])
   @@index([createdAt(sort: Desc)])

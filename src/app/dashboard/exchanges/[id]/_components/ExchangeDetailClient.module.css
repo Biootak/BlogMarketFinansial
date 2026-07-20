@@ -1,0 +1,320 @@
+/* ExchangeDetailClient.module.css */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5);
+}
+
+/* ─── top row ────────────────────────────────────────────────────────────── */
+.topRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ds-space-4);
+}
+
+@media (max-width: 768px) {
+  .topRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── card ───────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--at-surface);
+  border: 1px solid var(--at-line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--at-line);
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  color: var(--at-fg);
+  background: var(--at-canvas-subtle);
+}
+
+/* ─── info grid ──────────────────────────────────────────────────────────── */
+.infoGrid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0;
+  padding: 0;
+}
+
+.infoGrid dt {
+  padding: 0.6rem 1.25rem;
+  font-size: 12px;
+  color: var(--at-fg-subtle);
+  font-weight: 500;
+  border-bottom: 1px solid var(--at-line);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.infoGrid dd {
+  padding: 0.6rem 1.25rem;
+  font-size: var(--ds-text-sm);
+  color: var(--at-fg);
+  border-bottom: 1px solid var(--at-line);
+  font-variant-numeric: tabular-nums;
+}
+
+.infoGrid dt:last-of-type,
+.infoGrid dd:last-of-type {
+  border-bottom: none;
+}
+
+/* ─── status section ─────────────────────────────────────────────────────── */
+.statusSection {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-bottom: 1px solid var(--at-line);
+}
+
+.statusBadgeLg {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.statusHint {
+  font-size: 12px;
+  color: var(--at-fg-subtle);
+  line-height: 1.5;
+}
+
+.statusActions {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.statusBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 2.25rem;
+  padding: 0 1.25rem;
+  font-size: var(--ds-text-sm);
+  font-family: inherit;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: opacity 100ms ease;
+  border: 1px solid var(--at-line);
+  background: transparent;
+  color: var(--at-fg-subtle);
+  text-align: center;
+}
+
+.statusBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.statusBtn:not(:disabled):hover {
+  opacity: 0.8;
+}
+
+.statusBtnActive {
+  background: oklch(95% 0.08 145);
+  border-color: oklch(75% 0.12 145);
+  color: oklch(35% 0.14 145);
+}
+
+.statusBtnSuspend {
+  background: oklch(95% 0.06 75);
+  border-color: oklch(75% 0.10 75);
+  color: oklch(40% 0.12 75);
+}
+
+.statusBtnClose {
+  background: oklch(95% 0.06 25);
+  border-color: oklch(75% 0.10 25);
+  color: oklch(40% 0.14 25);
+}
+
+/* ─── staff list ─────────────────────────────────────────────────────────── */
+.staffList {
+  padding: 0;
+}
+
+.staffRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--at-line);
+  transition: background 80ms ease;
+}
+
+.staffRow:last-child {
+  border-bottom: none;
+}
+
+.staffRow:hover {
+  background: var(--at-canvas-subtle);
+}
+
+.staffAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--at-accent-subtle);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.staffAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.staffAvatarFallback {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--at-accent);
+}
+
+.staffInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.staffName {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--at-fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.staffEmail {
+  font-size: 11px;
+  color: var(--at-fg-subtle);
+  direction: ltr;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.roleBadge {
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--at-accent-subtle);
+  color: var(--at-accent);
+  flex-shrink: 0;
+}
+
+/* ─── tx list ────────────────────────────────────────────────────────────── */
+.txList {
+  padding: 0;
+}
+
+.txRow {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid var(--at-line);
+  font-size: var(--ds-text-sm);
+  transition: background 80ms ease;
+}
+
+.txRow:last-child {
+  border-bottom: none;
+}
+
+.txRow:hover {
+  background: var(--at-canvas-subtle);
+}
+
+.txCustomer {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.txName {
+  font-weight: 600;
+  color: var(--at-fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.txPhone {
+  font-size: 11px;
+  color: var(--at-fg-subtle);
+  direction: ltr;
+  text-align: right;
+}
+
+.txKind {
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--at-accent-subtle);
+  color: var(--at-accent);
+  white-space: nowrap;
+}
+
+.txAmount {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--at-fg);
+  direction: ltr;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.txStatus {
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.txDate {
+  font-size: 11px;
+  color: var(--at-fg-subtle);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ─── empty ──────────────────────────────────────────────────────────────── */
+.empty {
+  padding: 1.5rem 1.25rem;
+  font-size: var(--ds-text-sm);
+  color: var(--at-fg-subtle);
+  text-align: center;
+}

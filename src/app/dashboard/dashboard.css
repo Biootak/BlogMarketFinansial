@@ -14479,3 +14479,107 @@
 
   /* ---- FAB shadow refinement (no extra layer) ------------------------------ */
 }
+
+@layer utilities {
+  /* =========================================================================
+     dash2-table — DataTable primitive
+     جدول داده‌ای با layout flex، RTL-safe، density-aware.
+     استفاده در DataTable.tsx با classes: dash2-table, dash2-table__head,
+     dash2-table__row, dash2-table__cell
+     ========================================================================= */
+
+  .dash2-table {
+    width: 100%;
+    background: var(--at-surface);
+    border: 1px solid var(--at-line);
+    border-radius: 12px;
+    overflow: hidden;
+    font-size: var(--ds-text-sm, 13px);
+  }
+
+  .dash2-table__head {
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    background: var(--at-bg);
+    border-block-end: 1px solid var(--at-line);
+    min-height: 40px;
+    gap: 0;
+  }
+
+  .dash2-table__head .dash2-table__cell {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--at-fg-subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 10px 12px;
+  }
+
+  .dash2-table__row {
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    border-block-end: 1px solid var(--at-line);
+    min-height: 48px;
+    gap: 0;
+    transition: background 100ms ease;
+  }
+
+  .dash2-table__row[data-density="comfortable"] {
+    min-height: 56px;
+  }
+
+  .dash2-table__row[data-density="spacious"] {
+    min-height: 64px;
+  }
+
+  .dash2-table__row:last-child {
+    border-block-end: none;
+  }
+
+  .dash2-table__row:hover {
+    background: var(--at-surface-hover, color-mix(in oklch, var(--at-accent) 4%, var(--at-surface)));
+  }
+
+  .dash2-table__cell {
+    flex: 1;
+    padding: 10px 12px;
+    color: var(--at-fg);
+    word-break: break-word;
+    min-width: 0;
+  }
+
+  /* ستون‌هایی که روی موبایل collapse می‌شوند */
+  @media (max-width: 640px) {
+    .dash2-table__cell[data-collapse] {
+      display: none;
+    }
+  }
+
+  /* ستون‌هایی که overflow دارند */
+  .dash2-table__cell--truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* skeleton shimmer */
+  .dash2-skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--at-line) 25%,
+      var(--at-surface-hover, color-mix(in oklch, var(--at-line) 60%, transparent)) 50%,
+      var(--at-line) 75%
+    );
+    background-size: 200% 100%;
+    animation: dash2-shimmer 1.4s infinite;
+    border-radius: 4px;
+  }
+
+  @keyframes dash2-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+}

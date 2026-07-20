@@ -36,6 +36,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   HiOutlineArrowRightOnRectangle,
+  HiOutlineArrowsRightLeft,
+  HiOutlineBuildingStorefront,
   HiOutlineChartBarSquare,
   HiOutlineChevronDown,
   HiOutlineClipboardDocumentList,
@@ -171,6 +173,22 @@ function getMenu(role: UserRole): NavSection[] {
     shortcut: SHORTCUT_KEYS.exchangeRates,
   };
 
+  const exchanges: MenuItem = {
+    id: 'exchanges',
+    href: '/dashboard/exchanges',
+    icon: <HiOutlineBuildingStorefront className={ICON_CLASS} />,
+    label: 'صراف‌ها',
+    title: 'مدیریت صراف‌ها',
+  };
+
+  const transferProviders: MenuItem = {
+    id: 'transferProviders',
+    href: '/dashboard/transfer-providers',
+    icon: <HiOutlineArrowsRightLeft className={ICON_CLASS} />,
+    label: 'جدول مقایسه',
+    title: 'صرافی‌های جدول مقایسه نرخ',
+  };
+
   const settings: MenuItem = {
     id: 'settings',
     href: '/dashboard/settings',
@@ -216,7 +234,7 @@ function getMenu(role: UserRole): NavSection[] {
           id: 'operations',
           index: '۰۳',
           label: 'عملیات',
-          items: [exchangeRates, advertisements, serviceRequests],
+          items: [exchanges, transferProviders, exchangeRates, advertisements, serviceRequests],
         },
         { id: 'admin', index: '۰۴', label: 'مدیریت', items: [users, reports, settings] },
         { id: 'account', index: '۰۵', label: 'حساب', items: [myRequests, profile] },
@@ -229,7 +247,7 @@ function getMenu(role: UserRole): NavSection[] {
           id: 'operations',
           index: '۰۳',
           label: 'عملیات',
-          items: [exchangeRates, advertisements, serviceRequests],
+          items: [exchanges, transferProviders, exchangeRates, advertisements, serviceRequests],
         },
         { id: 'admin', index: '۰۴', label: 'مدیریت', items: [users] },
         { id: 'account', index: '۰۵', label: 'حساب', items: [myRequests, profile] },
@@ -497,10 +515,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
         <header className="dash-side__top">
           <div className="dash-side__brand">
             <div className="dash-side__brand-logo">
-              <Logo
-                logoUrl={logoUrl || undefined}
-                className="dash-side__brand-logo-img"
-              />
+              <Logo logoUrl={logoUrl || undefined} className="dash-side__brand-logo-img" />
             </div>
             {isOpen && (
               <div className="dash-side__brand-text">
