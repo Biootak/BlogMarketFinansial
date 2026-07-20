@@ -921,7 +921,7 @@ export const SectionCategoriesSkeleton: FC = () => (
 );
 
 export const PulseSectionSkeleton: FC = () => (
-  <div className="space-y-4" role="status" aria-label="در حال بارگذاری آخرین مقالات">
+  <div className="space-y-4" aria-live="polite" aria-label="در حال بارگذاری آخرین مقالات">
     <div className="flex gap-2 overflow-hidden">
       {[...Array(6)].map((_, i) => (
         <SkeletonBase key={i} className="h-9 w-24 rounded-full shrink-0" />
@@ -1134,11 +1134,177 @@ export const ContactPageSkeleton: FC = () => (
 );
 
 export const MoneyTransferSkeleton: FC = () => (
-  <div className="container py-8 space-y-8">
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {[...Array(8)].map((_, i) => (
-        <RateCardSkeleton key={i} />
-      ))}
+  <div dir="rtl" className="min-h-screen" aria-busy="true" aria-label="در حال بارگذاری صرافی…">
+    {/* ── Hero Converter skeleton ── */}
+    <div className="w-full py-12 px-4 sm:px-6" style={{ background: 'var(--ds-canvas-subtle)' }}>
+      <div className="container mx-auto max-w-4xl space-y-6">
+        {/* eyebrow + title */}
+        <div className="flex flex-col gap-3">
+          <SkeletonBase className="h-5 w-28 rounded-full" />
+          <SkeletonBase className="h-10 w-2/3 rounded-xl" />
+          <SkeletonBase className="h-5 w-1/2 rounded-lg" />
+        </div>
+        {/* Converter card */}
+        <SkeletonBase className="h-[200px] w-full rounded-2xl" />
+        {/* Trust strip */}
+        <div className="flex gap-4 flex-wrap">
+          {[1, 2, 3, 4].map((i) => (
+            <SkeletonBase key={i} className="h-8 w-28 rounded-full" />
+          ))}
+        </div>
+      </div>
+    </div>
+
+    {/* ── Live ticker skeleton ── */}
+    <SkeletonBase className="h-10 w-full rounded-none" />
+
+    {/* ── Body sections ── */}
+    <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-10">
+      {/* ExchangeQuotesBoard skeleton */}
+      <div className="space-y-4">
+        <div className="flex flex-col gap-2">
+          <SkeletonBase className="h-4 w-24 rounded-full" />
+          <SkeletonBase className="h-7 w-60 rounded-xl" />
+          <SkeletonBase className="h-4 w-3/4 rounded-lg" />
+        </div>
+        <div
+          className="rounded-2xl overflow-hidden border"
+          style={{ borderColor: 'var(--ds-border-default)' }}
+        >
+          {/* tabs */}
+          <div
+            className="flex gap-1 p-2"
+            style={{
+              background: 'var(--ds-canvas-subtle)',
+              borderBottom: '1px solid var(--ds-border-subtle)',
+            }}
+          >
+            {[1, 2, 3, 4].map((i) => (
+              <SkeletonBase key={i} className="h-11 w-16 rounded-xl" />
+            ))}
+          </div>
+          {/* rows */}
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="flex items-center gap-4 px-4 py-3"
+              style={{
+                borderBottom: i < 3 ? '1px solid var(--ds-border-subtle)' : 'none',
+                animationDelay: `${i * 70}ms`,
+              }}
+            >
+              <SkeletonBase className="h-5 w-28 rounded-lg flex-shrink-0" />
+              <SkeletonBase className="h-5 flex-1 rounded-lg" />
+              <SkeletonBase className="h-5 flex-1 rounded-lg" />
+              <SkeletonBase className="h-7 w-16 rounded-lg flex-shrink-0" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* RateComparisonTable skeleton */}
+      <div className="space-y-4">
+        <div className="flex flex-col gap-2">
+          <SkeletonBase className="h-4 w-32 rounded-full" />
+          <SkeletonBase className="h-7 w-72 rounded-xl" />
+          <SkeletonBase className="h-4 w-2/3 rounded-lg" />
+        </div>
+        <div
+          className="rounded-2xl overflow-hidden border"
+          style={{ borderColor: 'var(--ds-border-default)' }}
+        >
+          {/* context bar */}
+          <div
+            className="flex flex-col gap-3 p-4"
+            style={{
+              background: 'var(--ds-canvas-subtle)',
+              borderBottom: '1px solid var(--ds-border-subtle)',
+            }}
+          >
+            <SkeletonBase className="h-4 w-44 rounded-lg" />
+            <div className="flex gap-2 flex-wrap">
+              <SkeletonBase className="h-10 w-44 rounded-xl" />
+              {[1, 2, 3, 4].map((i) => (
+                <SkeletonBase key={i} className="h-8 w-10 rounded-full" />
+              ))}
+            </div>
+            <SkeletonBase className="h-3 w-56 rounded-md" />
+          </div>
+          {/* rows */}
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div
+              key={i}
+              className="flex items-center gap-4 px-4 py-3"
+              style={{ borderBottom: i < 5 ? '1px solid var(--ds-border-subtle)' : 'none' }}
+            >
+              <div className="flex items-center gap-2 flex-[2]">
+                <SkeletonBase className="h-5 w-5 rounded-full flex-shrink-0" />
+                <div className="flex flex-col gap-1 flex-1">
+                  <SkeletonBase className="h-3.5 w-24 rounded-md" />
+                  <SkeletonBase className="h-2.5 w-14 rounded-md" />
+                </div>
+              </div>
+              <SkeletonBase className="h-3 flex-1 rounded-md" />
+              <SkeletonBase className="h-3 flex-1 rounded-md" />
+              <SkeletonBase className="h-3 flex-1 rounded-md" />
+              <div className="flex flex-col gap-1 items-end flex-1">
+                <SkeletonBase className="h-4 w-20 rounded-md" />
+                <SkeletonBase className="h-2.5 w-14 rounded-md" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* RateListGrid skeleton */}
+      <div className="space-y-4">
+        <div className="flex flex-col gap-2">
+          <SkeletonBase className="h-7 w-40 rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="rounded-2xl overflow-hidden border"
+              style={{ borderColor: 'var(--ds-border-default)', animationDelay: `${i * 55}ms` }}
+            >
+              {/* card header */}
+              <div
+                className="flex items-center justify-between px-4 py-3"
+                style={{
+                  borderBottom: '1px solid var(--ds-border-subtle)',
+                  background: 'var(--ds-canvas-subtle)',
+                }}
+              >
+                <SkeletonBase className="h-4 w-24 rounded-lg" />
+                <SkeletonBase className="h-4 w-16 rounded-full" />
+              </div>
+              {/* rows */}
+              {[1, 2, 3, 4, 5, 6].map((j) => (
+                <div
+                  key={j}
+                  className="flex items-center justify-between px-4 py-2.5"
+                  style={{ borderBottom: j < 6 ? '1px solid var(--ds-border-subtle)' : 'none' }}
+                >
+                  <SkeletonBase className="h-3 w-24 rounded-md" />
+                  <SkeletonBase className="h-3 w-20 rounded-md" />
+                </div>
+              ))}
+              {/* footer */}
+              <div
+                className="flex items-center justify-between px-4 py-2"
+                style={{
+                  borderTop: '1px solid var(--ds-border-subtle)',
+                  background: 'var(--ds-canvas-subtle)',
+                }}
+              >
+                <SkeletonBase className="h-3 w-12 rounded-md" />
+                <SkeletonBase className="h-6 w-16 rounded-lg" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   </div>
 );

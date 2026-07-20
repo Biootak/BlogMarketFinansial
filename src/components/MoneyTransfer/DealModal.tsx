@@ -3,16 +3,14 @@
 /**
  * DealModal — فرم ثبت معامله ارزی
  * مشتری صرافی و ارز را انتخاب کرده، اینجا مبلغ و اطلاعات تماس می‌دهد.
+ *
+ * از Radix Dialog primitive مستقیم استفاده می‌شود (نه shadcn wrapper)
+ * تا CSS Module کنترل کامل layout/style داشته باشد.
  */
 
 import { createDeal } from '@/actions/currency-deals';
 import type { QuoteRow } from '@/actions/exchange-quotes';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { CheckCircle2, Loader2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useActionState, useEffect } from 'react';
@@ -41,10 +39,7 @@ type FormState =
   | { status: 'error'; message: string }
   | { status: 'success'; trackingCode: string };
 
-async function submitAction(
-  _prev: FormState,
-  formData: FormData,
-): Promise<FormState> {
+async function submitAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const quoteId = formData.get('quoteId') as string;
   const exchangeId = formData.get('exchangeId') as string;
   const fromCurrency = formData.get('fromCurrency') as string;
@@ -96,155 +91,157 @@ export default function DealModal({ quote, open, onClose }: Props) {
   }, [state, router, onClose]);
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className={s.content} aria-describedby={undefined}>
-        <DialogHeader className={s.dialogHeader}>
-          <DialogTitle className={s.dialogTitle}>ثبت معامله</DialogTitle>
-          <button
-            type="button"
-            className={s.closeBtn}
-            onClick={onClose}
-            aria-label="بستن"
-          >
-            <X className="w-4 h-4" aria-hidden />
-          </button>
-        </DialogHeader>
+    <DialogPrimitive.Root open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogPrimitive.Portal>
+        {/* Overlay */}
+        <DialogPrimitive.Overlay className={s.overlay} />
 
-        {/* quote summary */}
-        <div className={s.quoteSummary}>
-          <span className={s.summaryExchange}>{quote.exchangeName ?? 'صرافی'}</span>
-          <span className={s.summaryCurrency}>{quote.currencyCode}</span>
-          <span className={s.summaryRate + ' tabular-nums'}>
-            نرخ خرید: {formatFa(buy)} {unit}
-          </span>
-          {quote.exchangeCity && (
-            <span className={s.summaryCity}>{quote.exchangeCity}</span>
-          )}
-        </div>
-
-        {/* success state */}
-        {state.status === 'success' && (
-          <div className={s.successBox} role="status">
-            <CheckCircle2 className={s.successIcon} aria-hidden />
-            <p className={s.successMsg}>معامله ثبت شد!</p>
-            <p className={s.successCode + ' tabular-nums'}>
-              کد پیگیری: {state.trackingCode}
-            </p>
-            <p className={s.successHint}>در حال انتقال به صفحه پیگیری…</p>
+        {/* Content — Radix primitive مستقیم: بدون shadcn default classes */}
+        <DialogPrimitive.Content className={s.content} aria-describedby={undefined}>
+          {/* Header */}
+          <div className={s.dialogHeader}>
+            <DialogPrimitive.Title className={s.dialogTitle}>ثبت معامله</DialogPrimitive.Title>
+            <DialogPrimitive.Close asChild>
+              <button type="button" className={s.closeBtn} aria-label="بستن">
+                <X className="w-4 h-4" aria-hidden />
+              </button>
+            </DialogPrimitive.Close>
           </div>
-        )}
 
-        {/* form */}
-        {state.status !== 'success' && (
-          <form action={formAction} className={s.form} noValidate>
-            <input type="hidden" name="exchangeId" value={quote.exchangeId} />
-            <input type="hidden" name="quoteId" value={quote.id} />
-            <input type="hidden" name="fromCurrency" value={quote.currencyCode} />
-            <input type="hidden" name="toCurrency" value={quote.unit === 'afn' ? 'AFN' : 'IRR'} />
+          {/* Quote summary */}
+          <div className={s.quoteSummary}>
+            <span className={s.summaryExchange}>{quote.exchangeName ?? 'صرافی'}</span>
+            <span className={s.summaryCurrency}>{quote.currencyCode}</span>
+            <span className={`${s.summaryRate} tabular-nums`}>
+              نرخ خرید: {formatFa(buy)} {unit}
+            </span>
+            {quote.exchangeCity && <span className={s.summaryCity}>{quote.exchangeCity}</span>}
+          </div>
 
-            {state.status === 'error' && (
-              <div className={s.errorBox} role="alert">
-                {state.message}
+          {/* Success state */}
+          {state.status === 'success' && (
+            <output className={s.successBox}>
+              <div className={s.successIcon} aria-hidden>
+                <CheckCircle2 className="w-7 h-7" />
               </div>
-            )}
+              <p className={s.successMsg}>معامله ثبت شد!</p>
+              <p className={s.successCode}>کد پیگیری: {state.trackingCode}</p>
+              <p className={s.successHint}>در حال انتقال به صفحه پیگیری…</p>
+            </output>
+          )}
 
-            <div className={s.field}>
-              <label className={s.label} htmlFor="dm-amount">
-                مبلغ ({quote.currencyCode})
-              </label>
-              <input
-                id="dm-amount"
-                name="fromAmount"
-                type="number"
-                className={s.input}
-                min={minAmount}
-                step="any"
-                placeholder={`حداقل ${formatFa(minAmount)} ${quote.currencyCode}`}
-                required
-                dir="ltr"
-              />
-            </div>
+          {/* Form */}
+          {state.status !== 'success' && (
+            <form action={formAction} className={s.form} noValidate>
+              <input type="hidden" name="exchangeId" value={quote.exchangeId} />
+              <input type="hidden" name="quoteId" value={quote.id} />
+              <input type="hidden" name="fromCurrency" value={quote.currencyCode} />
+              <input type="hidden" name="toCurrency" value={quote.unit === 'afn' ? 'AFN' : 'IRR'} />
 
-            <div className={s.field}>
-              <label className={s.label} htmlFor="dm-name">
-                نام و نام خانوادگی
-              </label>
-              <input
-                id="dm-name"
-                name="customerName"
-                type="text"
-                className={s.input}
-                placeholder="نام کامل خود را وارد کنید"
-                required
-                minLength={2}
-                maxLength={100}
-              />
-            </div>
-
-            <div className={s.field}>
-              <label className={s.label} htmlFor="dm-phone">
-                شماره تماس
-              </label>
-              <input
-                id="dm-phone"
-                name="customerPhone"
-                type="tel"
-                className={s.input}
-                placeholder="مثال: 0912xxxxxxx"
-                required
-                minLength={7}
-                maxLength={20}
-                dir="ltr"
-              />
-            </div>
-
-            <div className={s.field}>
-              <label className={s.label} htmlFor="dm-channel">
-                نوع معامله
-              </label>
-              <select id="dm-channel" name="channel" className={s.select} defaultValue="ONLINE">
-                <option value="ONLINE">آنلاین</option>
-                <option value="INPERSON">حضوری</option>
-                <option value="PHONE">تلفنی</option>
-              </select>
-            </div>
-
-            <div className={s.field}>
-              <label className={s.label} htmlFor="dm-note">
-                یادداشت (اختیاری)
-              </label>
-              <textarea
-                id="dm-note"
-                name="note"
-                className={s.textarea}
-                placeholder="توضیحات اضافه…"
-                maxLength={500}
-                rows={2}
-              />
-            </div>
-
-            <button
-              type="submit"
-              className={s.submitBtn}
-              disabled={isPending}
-              aria-busy={isPending}
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" aria-hidden />
-                  در حال ثبت…
-                </>
-              ) : (
-                'ثبت معامله'
+              {state.status === 'error' && (
+                <div className={s.errorBox} role="alert">
+                  {state.message}
+                </div>
               )}
-            </button>
 
-            <p className={s.disclaimer}>
-              با ثبت معامله، شرایط صرافی را پذیرفته‌اید. کد پیگیری برای پیگیری وضعیت الزامی است.
-            </p>
-          </form>
-        )}
-      </DialogContent>
-    </Dialog>
+              <div className={s.field}>
+                <label className={s.label} htmlFor="dm-amount">
+                  مبلغ ({quote.currencyCode})
+                </label>
+                <input
+                  id="dm-amount"
+                  name="fromAmount"
+                  type="number"
+                  className={s.input}
+                  min={minAmount}
+                  step="any"
+                  placeholder={`حداقل ${formatFa(minAmount)} ${quote.currencyCode}`}
+                  required
+                  dir="ltr"
+                />
+              </div>
+
+              <div className={s.field}>
+                <label className={s.label} htmlFor="dm-name">
+                  نام و نام خانوادگی
+                </label>
+                <input
+                  id="dm-name"
+                  name="customerName"
+                  type="text"
+                  className={s.input}
+                  placeholder="نام کامل خود را وارد کنید"
+                  required
+                  minLength={2}
+                  maxLength={100}
+                />
+              </div>
+
+              <div className={s.field}>
+                <label className={s.label} htmlFor="dm-phone">
+                  شماره تماس
+                </label>
+                <input
+                  id="dm-phone"
+                  name="customerPhone"
+                  type="tel"
+                  className={s.input}
+                  placeholder="مثال: 0912xxxxxxx"
+                  required
+                  minLength={7}
+                  maxLength={20}
+                  dir="ltr"
+                />
+              </div>
+
+              <div className={s.field}>
+                <label className={s.label} htmlFor="dm-channel">
+                  نوع معامله
+                </label>
+                <select id="dm-channel" name="channel" className={s.select} defaultValue="ONLINE">
+                  <option value="ONLINE">آنلاین</option>
+                  <option value="INPERSON">حضوری</option>
+                  <option value="PHONE">تلفنی</option>
+                </select>
+              </div>
+
+              <div className={s.field}>
+                <label className={s.label} htmlFor="dm-note">
+                  یادداشت (اختیاری)
+                </label>
+                <textarea
+                  id="dm-note"
+                  name="note"
+                  className={s.textarea}
+                  placeholder="توضیحات اضافه…"
+                  maxLength={500}
+                  rows={2}
+                />
+              </div>
+
+              <button
+                type="submit"
+                className={s.submitBtn}
+                disabled={isPending}
+                aria-busy={isPending}
+              >
+                {isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" aria-hidden />
+                    در حال ثبت…
+                  </>
+                ) : (
+                  'ثبت معامله'
+                )}
+              </button>
+
+              <p className={s.disclaimer}>
+                با ثبت معامله، شرایط صرافی را پذیرفته‌اید. کد پیگیری برای پیگیری وضعیت الزامی است.
+              </p>
+            </form>
+          )}
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }

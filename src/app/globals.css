@@ -7649,11 +7649,13 @@ p {
   .arc-search-field-v4:focus-within {
     border-color: color-mix(in oklch, var(--ds-brand-500), transparent 40%);
     background: oklch(100% 0 0 / 0.96);
-    box-shadow: 0 0 0 4px color-mix(in oklch, var(--ds-brand-500), transparent 88%), 0 1px 0 oklch(100% 0 0 / 0.6) inset;
+    box-shadow: 0 0 0 4px color-mix(in oklch, var(--ds-brand-500), transparent 88%), 0 1px 0
+      oklch(100% 0 0 / 0.6) inset;
   }
   .dark .arc-search-field-v4:focus-within {
     background: oklch(20% 0.01 250 / 0.9);
-    box-shadow: 0 0 0 4px color-mix(in oklch, var(--ds-brand-500), transparent 82%), 0 1px 0 oklch(100% 0 0 / 0.04) inset;
+    box-shadow: 0 0 0 4px color-mix(in oklch, var(--ds-brand-500), transparent 82%), 0 1px 0
+      oklch(100% 0 0 / 0.04) inset;
   }
   .arc-search-field-v4__icon {
     position: absolute;
@@ -9578,6 +9580,14 @@ p {
     background: oklch(60% 0.1 220 / 0.15);
     color: oklch(80% 0.08 215);
   }
+  .mt-eyebrow--blue {
+    background: oklch(60% 0.15 250 / 0.1);
+    color: oklch(40% 0.14 250);
+  }
+  .dark .mt-eyebrow--blue {
+    background: oklch(60% 0.15 250 / 0.18);
+    color: oklch(75% 0.14 250);
+  }
   .mt-eyebrow--emerald {
     background: oklch(60% 0.15 165 / 0.1);
     color: oklch(45% 0.15 165);
@@ -9702,9 +9712,10 @@ p {
     color: oklch(70% 0.01 240);
   }
 
+  /* table — semantic <table> layout */
   .ds-comparison__table {
-    display: flex;
-    flex-direction: column;
+    width: 100%;
+    border-collapse: collapse;
     border-radius: clamp(0.75rem, 0.5rem + 0.5vw, 1rem);
     border: 1px solid oklch(90% 0.006 240 / 0.9);
     background: oklch(99% 0.003 240 / 0.7);
@@ -9715,29 +9726,17 @@ p {
     background: oklch(18% 0.012 250 / 0.5);
     border-color: oklch(30% 0.012 250 / 0.7);
   }
+  /* tr rows */
   .ds-comparison__row {
-    display: grid;
-    grid-template-columns: minmax(0, 1.6fr) minmax(0, 0.9fr) minmax(0, 0.7fr) minmax(0, 0.7fr) minmax(
-        0,
-        0.9fr
-      ) minmax(0, 1fr);
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.85rem 1rem;
-    border-block-end: 1px solid oklch(90% 0.006 240 / 0.6);
-    background: transparent;
-    cursor: pointer;
     text-align: start;
     font-size: 0.875rem;
     color: oklch(15% 0.015 250);
     transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
-    width: 100%;
-    font-family: inherit;
   }
   .dark .ds-comparison__row {
     color: oklch(95% 0.005 240);
   }
-  .ds-comparison__row:last-child {
+  .ds-comparison__row:last-child td {
     border-block-end: none;
   }
   .ds-comparison__row:hover:not(.ds-comparison__row--head) {
@@ -9746,54 +9745,71 @@ p {
   .dark .ds-comparison__row:hover:not(.ds-comparison__row--head) {
     background: oklch(22% 0.01 250 / 0.7);
   }
-  .ds-comparison__row--head {
+  /* thead row */
+  .ds-comparison__row--head th {
     font-size: 0.6875rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: oklch(50% 0.02 240);
     font-weight: 700;
-    cursor: default;
     background: oklch(96% 0.005 240 / 0.7);
+    padding: 0.6rem 1rem;
+    border-block-end: 1px solid oklch(90% 0.006 240 / 0.6);
   }
-  .dark .ds-comparison__row--head {
+  .dark .ds-comparison__row--head th {
     color: oklch(70% 0.01 240);
     background: oklch(22% 0.01 250 / 0.6);
   }
   /* best row gets an emerald accent stripe from start */
-  .ds-comparison__row--best {
+  .ds-comparison__row--best td,
+  .ds-comparison__row--best th {
     background: linear-gradient(
       90deg,
       oklch(70% 0.15 165 / 0.08) 0%,
       oklch(70% 0.15 165 / 0.02) 100%
     );
+  }
+  .ds-comparison__row--best td:first-child {
     border-inline-start: 3px solid oklch(60% 0.15 165);
     padding-inline-start: calc(1rem - 3px);
   }
-  .dark .ds-comparison__row--best {
+  .dark .ds-comparison__row--best td,
+  .dark .ds-comparison__row--best th {
     background: linear-gradient(
       90deg,
       oklch(70% 0.15 165 / 0.15) 0%,
       oklch(70% 0.15 165 / 0.04) 100%
     );
+  }
+  .dark .ds-comparison__row--best td:first-child {
     border-inline-start-color: oklch(70% 0.15 165);
   }
-  .ds-comparison__row--best:hover {
+  .ds-comparison__row--best:hover td,
+  .ds-comparison__row--best:hover th {
     background: linear-gradient(
       90deg,
       oklch(70% 0.15 165 / 0.14) 0%,
       oklch(70% 0.15 165 / 0.04) 100%
     );
   }
-  .ds-comparison__row--worst {
+  .ds-comparison__row--worst td {
     opacity: 0.55;
   }
 
+  /* td/th cells */
   .ds-comparison__cell {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    min-width: 0;
+    display: table-cell;
+    vertical-align: middle;
+    padding: 0.85rem 1rem;
+    border-block-end: 1px solid oklch(90% 0.006 240 / 0.6);
   }
+  /* flex container برای محتوای cell */
+  td.ds-comparison__cell,
+  th.ds-comparison__cell {
+    padding: 0.85rem 1rem;
+    border-block-end: 1px solid oklch(90% 0.006 240 / 0.6);
+  }
+  /* best row accent stripe */
   .ds-comparison__cell--name {
     gap: 0.625rem;
   }
@@ -9963,34 +9979,15 @@ p {
     }
   }
 
-  /* Mobile: collapse columns to compact 2-line rows */
+  /* Mobile: hide middle columns */
   @media (max-width: 767.98px) {
-    .ds-comparison__row {
-      grid-template-columns: minmax(0, 1fr) minmax(0, auto);
-      grid-template-areas:
-        "name total"
-        "kind total"
-        "meta meta";
-      row-gap: 0.3rem;
-      padding: 0.85rem 1rem;
-    }
-    .ds-comparison__row--head {
+    .ds-comparison__row--head th:nth-child(3),
+    .ds-comparison__row--head th:nth-child(4),
+    .ds-comparison__row--head th:nth-child(5),
+    .ds-comparison__row td:nth-child(3),
+    .ds-comparison__row td:nth-child(4),
+    .ds-comparison__row td:nth-child(5) {
       display: none;
-    }
-    .ds-comparison__cell--name {
-      grid-area: name;
-    }
-    .ds-comparison__cell--kind {
-      grid-area: kind;
-    }
-    .ds-comparison__cell--total {
-      grid-area: total;
-      align-self: center;
-    }
-    .ds-comparison__cell:not(.ds-comparison__cell--name):not(.ds-comparison__cell--kind):not(
-        .ds-comparison__cell--total
-      ) {
-      grid-area: meta;
     }
   }
 
@@ -10140,15 +10137,15 @@ p {
   /* ─── FAQ: Native <details> accordion ─── */
   .mt-faq-item {
     border-radius: 0.75rem;
-    border: 1px solid var(--border-default);
-    background: var(--surface-card);
+    border: 1px solid var(--ds-border-default);
+    background: var(--ds-surface);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
   }
   .mt-faq-item:hover {
-    border-color: oklch(45% 0 0 / 0.5);
+    border-color: var(--ds-border-strong);
   }
   .mt-faq-item[open] {
-    border-color: oklch(40% 0.08 250 / 0.3);
+    border-color: var(--ds-brand-500);
     box-shadow: 0 1px 3px oklch(0% 0 0 / 0.04);
   }
   .mt-faq-trigger {
@@ -10159,9 +10156,8 @@ p {
     cursor: pointer;
     list-style: none;
     font-weight: 500;
-    color: var(--fg);
+    color: var(--ds-text-primary);
     transition: background-color 0.15s ease;
-    /* Remove default marker */
     &::-webkit-details-marker {
       display: none;
     }
@@ -10170,15 +10166,15 @@ p {
     }
   }
   .mt-faq-trigger:hover {
-    background: oklch(0% 0 0 / 0.02);
+    background: var(--ds-canvas-subtle);
   }
   .dark .mt-faq-trigger:hover {
-    background: oklch(100% 0 0 / 0.03);
+    background: var(--ds-canvas-subtle);
   }
   .mt-faq-index {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--fg-muted);
+    color: var(--ds-text-muted);
     font-variant-numeric: tabular-nums;
     min-width: 1.5rem;
   }
@@ -10187,17 +10183,15 @@ p {
     font-size: 0.9375rem;
   }
   .mt-faq-chevron {
-    color: var(--fg-muted);
+    color: var(--ds-text-muted);
     transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
     flex-shrink: 0;
   }
   .mt-faq-item[open] .mt-faq-chevron {
     transform: rotate(180deg);
   }
-  /* Animated content reveal via interpolate-size (2026) */
   .mt-faq-content {
     overflow: hidden;
-    /* Use interpolate-size for keyword-based height animation */
     height: 0;
     interpolate-size: allow-keywords;
     transition: height 0.3s cubic-bezier(0.32, 0.72, 0, 1);
@@ -10207,7 +10201,7 @@ p {
   }
   .mt-faq-answer {
     padding: 0 1.25rem 1rem 3.25rem;
-    color: var(--fg-muted);
+    color: var(--ds-text-muted);
     font-size: 0.875rem;
     line-height: 1.7;
   }

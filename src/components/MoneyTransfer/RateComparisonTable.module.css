@@ -1,0 +1,865 @@
+/**
+ * RateComparisonTable.module.css
+ * مقایسه هزینه انتقال پول بین provider های مختلف
+ * ─────────────────────────────────────────────────
+ * فقط از --ds-* tokens (tokens.css) استفاده می‌شود.
+ * RTL logical properties — بدون left/right.
+ */
+
+/* ─── Wrapper ────────────────────────────────────────────────────────────────── */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-radius: var(--ds-radius-xl);
+  border: 1px solid var(--ds-border-default);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-md);
+  overflow: hidden;
+}
+
+/* ─── Context Bar ────────────────────────────────────────────────────────────── */
+
+.contextBar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4) var(--ds-space-5);
+  background: var(--ds-canvas-subtle);
+  border-block-end: 1px solid var(--ds-border-subtle);
+}
+
+.contextLabel {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--ds-text-secondary);
+  margin: 0;
+}
+
+.contextControls {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  flex-wrap: wrap;
+}
+
+/* Amount + currency input group */
+.amountWrap {
+  display: flex;
+  align-items: stretch;
+  border-radius: var(--ds-radius-lg);
+  border: 1.5px solid var(--ds-border-default);
+  background: var(--ds-surface);
+  overflow: hidden;
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+.amountWrap:focus-within {
+  border-color: var(--ds-brand-500);
+  box-shadow: 0 0 0 3px oklch(58% 0.12 165 / 0.12);
+}
+
+.amountInput {
+  width: 100px;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border: none;
+  background: transparent;
+  font-size: var(--ds-text-base);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+  -moz-appearance: textfield;
+  appearance: textfield;
+  text-align: end;
+}
+.amountInput::-webkit-inner-spin-button,
+.amountInput::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.currencySelect {
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border: none;
+  border-inline-start: 1px solid var(--ds-border-subtle);
+  background: var(--ds-canvas-subtle);
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  min-inline-size: 80px;
+}
+.currencySelect:focus-visible {
+  outline: 2px dashed var(--ds-brand-500);
+  outline-offset: -2px;
+}
+
+/* Preset buttons */
+.presets {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.preset {
+  padding: var(--ds-space-1) var(--ds-space-3);
+  border-radius: var(--ds-radius-full);
+  border: 1px solid var(--ds-border-subtle);
+  background: var(--ds-surface);
+  color: var(--ds-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart),
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform 80ms var(--ds-ease-spring);
+  min-block-size: 30px;
+  min-inline-size: 44px;
+}
+.preset:hover {
+  background: var(--ds-surface-elevated);
+  border-color: var(--ds-border-default);
+  color: var(--ds-text-secondary);
+  transform: translateY(-1px);
+}
+.preset:active {
+  transform: scale(0.96);
+}
+.preset:focus-visible {
+  outline: 2px dashed var(--ds-brand-500);
+  outline-offset: 2px;
+}
+
+.presetActive {
+  background: var(--ds-brand-500);
+  border-color: var(--ds-brand-500);
+  color: var(--ds-text-inverse);
+}
+.presetActive:hover {
+  background: var(--ds-brand-600);
+  border-color: var(--ds-brand-600);
+  color: var(--ds-text-inverse);
+}
+
+/* نرخ پایه بازار */
+.baseRateNote {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--ds-text-muted);
+  margin: 0;
+}
+
+.refreshSpin {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+  animation: spin 1.2s linear infinite;
+}
+
+.updatedTime {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--ds-text-muted);
+}
+
+/* ─── State boxes ─────────────────────────────────────────────────────────────── */
+
+.stateBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-10) var(--ds-space-4);
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-sm);
+  text-align: center;
+}
+
+.spinIcon {
+  width: 22px;
+  height: 22px;
+  color: var(--ds-brand-500);
+  animation: spin 1.2s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.retryBtn {
+  padding: var(--ds-space-1) var(--ds-space-4);
+  border-radius: var(--ds-radius-md);
+  border: 1px solid var(--ds-brand-500);
+  background: transparent;
+  color: var(--ds-brand-600);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.retryBtn:hover {
+  background: var(--ds-brand-500);
+  color: var(--ds-text-inverse);
+}
+
+.emptyBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-10) var(--ds-space-4);
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-sm);
+  text-align: center;
+}
+
+.emptyHint {
+  font-size: 12px;
+  color: var(--ds-text-muted);
+  opacity: 0.7;
+  margin: 0;
+}
+
+/* ─── Table wrapper ──────────────────────────────────────────────────────────── */
+
+.tableWrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.tableCaption {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-5);
+  font-size: 12px;
+  color: var(--ds-text-muted);
+  background: var(--ds-canvas-subtle);
+  border-block-end: 1px solid var(--ds-border-subtle);
+}
+
+.refreshSpinSm {
+  width: 11px;
+  height: 11px;
+  color: var(--ds-brand-500);
+  animation: spin 1.2s linear infinite;
+  flex-shrink: 0;
+}
+
+/* ─── Table ──────────────────────────────────────────────────────────────────── */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+/* ─── Table header ───────────────────────────────────────────────────────────── */
+
+.thead th {
+  padding: var(--ds-space-2) var(--ds-space-4);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ds-text-muted);
+  background: var(--ds-canvas-subtle);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  text-align: start;
+  white-space: nowrap;
+}
+
+.thTotal {
+  text-align: end;
+}
+
+/* ─── Rows ───────────────────────────────────────────────────────────────────── */
+
+.row td {
+  padding: var(--ds-space-3) var(--ds-space-4);
+  vertical-align: middle;
+  border-block-end: 1px solid var(--ds-border-subtle);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+.row:last-child td {
+  border-block-end: none;
+}
+.row:hover td {
+  background: var(--ds-canvas-subtle);
+}
+
+/* بهترین ردیف — سبز */
+.rowBest td {
+  background: oklch(96% 0.04 145 / 0.35);
+}
+.rowBest:hover td {
+  background: oklch(94% 0.05 145 / 0.5);
+}
+.rowBest td:first-child {
+  border-inline-start: 3px solid var(--ds-accent-emerald);
+  padding-inline-start: calc(var(--ds-space-4) - 3px);
+}
+
+/* گران‌ترین ردیف — کم‌رنگ */
+.rowWorst td {
+  opacity: 0.7;
+}
+
+/* ─── Name cell ──────────────────────────────────────────────────────────────── */
+
+.nameCell {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 20px;
+  block-size: 20px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-canvas-subtle);
+  border: 1px solid var(--ds-border-subtle);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ds-text-muted);
+  flex-shrink: 0;
+  margin-inline-end: var(--ds-space-2);
+  vertical-align: middle;
+}
+
+.nameWrap {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  vertical-align: middle;
+}
+
+.name {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--ds-text-primary);
+  line-height: 1.3;
+}
+
+.kind {
+  font-size: 11px;
+  color: var(--ds-text-muted);
+}
+
+.bestBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: var(--ds-radius-full);
+  font-size: 10px;
+  font-weight: 700;
+  background: oklch(96% 0.05 145 / 0.7);
+  color: var(--ds-accent-emerald);
+  border: 1px solid oklch(60% 0.1 165 / 0.3);
+  white-space: nowrap;
+}
+
+/* ─── Regular cells ──────────────────────────────────────────────────────────── */
+
+.cell {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-secondary);
+  vertical-align: middle;
+}
+
+.spreadVal {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ds-accent-amber);
+}
+
+.feeVal {
+  font-size: 12px;
+  color: var(--ds-text-secondary);
+}
+
+.feeNone {
+  font-size: 11px;
+  color: var(--ds-accent-emerald);
+  font-weight: 600;
+}
+
+.speed {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  color: var(--ds-text-muted);
+}
+
+/* ─── Total cell ─────────────────────────────────────────────────────────────── */
+
+.totalCell {
+  text-align: end;
+  vertical-align: middle;
+}
+
+.totalVal {
+  display: block;
+  font-size: var(--ds-text-base);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.totalBest {
+  color: var(--ds-accent-emerald);
+}
+
+.totalUnit {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--ds-text-muted);
+}
+
+/* تفاوت با بازار */
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  margin-block-start: 2px;
+}
+
+.deltaPos {
+  color: var(--ds-accent-rose);
+}
+
+.deltaNeg {
+  color: var(--ds-accent-emerald);
+}
+
+/* ─── Load More ─────────────────────────────────────────────────────────────── */
+
+.loadMoreWrap {
+  display: flex;
+  justify-content: center;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-block-start: 1px solid var(--ds-border-subtle);
+  background: var(--ds-canvas-subtle);
+}
+
+.loadMoreBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-5);
+  border-radius: var(--ds-radius-lg);
+  border: 1px solid var(--ds-border-default);
+  background: var(--ds-surface);
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart),
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform 80ms var(--ds-ease-spring);
+  min-block-size: 36px;
+}
+.loadMoreBtn:hover {
+  background: color-mix(in oklch, var(--ds-brand-500) 6%, transparent);
+  border-color: var(--ds-brand-500);
+  color: var(--ds-text-primary);
+  transform: translateY(-1px);
+}
+.loadMoreBtn:active {
+  transform: scale(0.97);
+}
+.loadMoreBtn:focus-visible {
+  outline: 2px dashed var(--ds-brand-500);
+  outline-offset: 2px;
+}
+
+.loadMoreCount {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  opacity: 0.6;
+  font-size: 12px;
+}
+
+/* ─── Footer note ────────────────────────────────────────────────────────────── */
+
+.foot {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-5);
+  font-size: 11px;
+  color: var(--ds-text-muted);
+  border-block-start: 1px solid var(--ds-border-subtle);
+  background: var(--ds-canvas-subtle);
+  margin: 0;
+}
+
+/* ─── Mobile ─────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .thead th:nth-child(2),
+  .thead th:nth-child(3),
+  .row td:nth-child(2),
+  .row td:nth-child(3) {
+    display: none;
+  }
+
+  .amountInput {
+    width: 80px;
+  }
+
+  .presets {
+    gap: 3px;
+  }
+
+  .preset {
+    padding: var(--ds-space-1) var(--ds-space-2);
+    font-size: 11px;
+  }
+
+  .totalVal {
+    font-size: var(--ds-text-sm);
+  }
+}
+
+/* ─── Skeleton ───────────────────────────────────────────────────────────────── */
+
+/* keyframes مشترک برای shimmer sweep */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* base shimmer مixin — reuse با custom property */
+.skeletonWrap {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--ds-radius-xl);
+  border: 1px solid var(--ds-border-default);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-md);
+  overflow: hidden;
+}
+
+/* ── shimmer utility — همه skeleton‌ها از این الگو استفاده می‌کنند ── */
+.skeletonBar,
+.skeletonCaption,
+.skeletonThead,
+.skeletonRow {
+  position: relative;
+}
+
+/* ── Context bar skeleton ── */
+.skeletonBar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4) var(--ds-space-5);
+  background: var(--ds-canvas-subtle);
+  border-block-end: 1px solid var(--ds-border-subtle);
+}
+
+.skeletonLabel {
+  height: 13px;
+  width: 180px;
+  border-radius: var(--ds-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--ds-border-subtle) 25%,
+    var(--ds-canvas-subtle) 50%,
+    var(--ds-border-subtle) 75%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+.skeletonControls {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  flex-wrap: wrap;
+}
+
+.skeletonInput {
+  height: 40px;
+  width: 180px;
+  border-radius: var(--ds-radius-lg);
+  background: linear-gradient(
+    90deg,
+    var(--ds-border-default) 25%,
+    var(--ds-border-subtle) 50%,
+    var(--ds-border-default) 75%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  animation-delay: 0.1s;
+}
+
+.skeletonPresets {
+  display: flex;
+  gap: 4px;
+}
+
+.skeletonPreset {
+  height: 30px;
+  width: 44px;
+  border-radius: var(--ds-radius-full);
+  background: linear-gradient(
+    90deg,
+    var(--ds-border-subtle) 25%,
+    var(--ds-canvas-subtle) 50%,
+    var(--ds-border-subtle) 75%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  animation-delay: calc(0.08s * var(--i, 1));
+}
+
+.skeletonNote {
+  height: 11px;
+  width: 260px;
+  border-radius: var(--ds-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--ds-border-subtle) 25%,
+    var(--ds-canvas-subtle) 50%,
+    var(--ds-border-subtle) 75%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  animation-delay: 0.2s;
+}
+
+/* ── Caption skeleton ── */
+.skeletonCaption {
+  height: 36px;
+  padding: var(--ds-space-2) var(--ds-space-5);
+  background: var(--ds-canvas-subtle);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  display: flex;
+  align-items: center;
+}
+.skeletonCaption::after {
+  content: '';
+  display: block;
+  height: 12px;
+  width: 220px;
+  border-radius: var(--ds-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--ds-border-subtle) 25%,
+    var(--ds-canvas-subtle) 50%,
+    var(--ds-border-subtle) 75%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* ── Thead skeleton ── */
+.skeletonThead {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-6);
+  padding: var(--ds-space-2) var(--ds-space-4);
+  background: var(--ds-canvas-subtle);
+  border-block-end: 1px solid var(--ds-border-subtle);
+}
+
+.skeletonTh {
+  height: 10px;
+  border-radius: var(--ds-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--ds-border-subtle) 25%,
+    var(--ds-canvas-subtle) 50%,
+    var(--ds-border-subtle) 75%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  animation-delay: calc(0.06s * var(--i, 1));
+}
+.skeletonTh:nth-child(1) { width: 120px; flex: 2; }
+.skeletonTh:nth-child(2) { width: 60px; flex: 1; }
+.skeletonTh:nth-child(3) { width: 60px; flex: 1; }
+.skeletonTh:nth-child(4) { width: 60px; flex: 1; }
+.skeletonTh:nth-child(5) { width: 80px; flex: 1; margin-inline-start: auto; }
+
+/* ── Row skeletons — staggered ── */
+.skeletonRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  /* stagger entry */
+  animation: rowFadeIn 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(60ms * var(--i, 1));
+}
+.skeletonRow:last-child {
+  border-block-end: none;
+}
+
+@keyframes rowFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.skeletonNameCell {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  flex: 2;
+  min-inline-size: 0;
+}
+
+.skeletonRank {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(
+    90deg,
+    var(--ds-border-default) 25%,
+    var(--ds-border-subtle) 50%,
+    var(--ds-border-default) 75%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  animation-delay: calc(0.05s * var(--i, 1));
+}
+
+.skeletonNameStack {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.skeletonName {
+  height: 13px;
+  width: 100%;
+  max-width: 120px;
+  border-radius: var(--ds-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--ds-border-default) 25%,
+    var(--ds-border-subtle) 50%,
+    var(--ds-border-default) 75%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  animation-delay: calc(0.07s * var(--i, 1));
+}
+
+.skeletonKind {
+  height: 10px;
+  width: 60px;
+  border-radius: var(--ds-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--ds-border-subtle) 25%,
+    var(--ds-canvas-subtle) 50%,
+    var(--ds-border-subtle) 75%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  animation-delay: calc(0.09s * var(--i, 1));
+}
+
+.skeletonCell {
+  flex: 1;
+  height: 13px;
+  border-radius: var(--ds-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--ds-border-subtle) 25%,
+    var(--ds-canvas-subtle) 50%,
+    var(--ds-border-subtle) 75%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  animation-delay: calc(0.06s * var(--i, 1));
+}
+
+.skeletonTotalCell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+/* total خط اول — accent shimmer با رنگ سبز ضعیف */
+.skeletonTotal {
+  height: 16px;
+  width: 90px;
+  border-radius: var(--ds-radius-sm);
+  background: linear-gradient(
+    90deg,
+    oklch(92% 0.04 145 / 0.6) 25%,
+    oklch(96% 0.06 145 / 0.8) 50%,
+    oklch(92% 0.04 145 / 0.6) 75%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  animation-delay: calc(0.08s * var(--i, 1));
+}
+
+.skeletonDelta {
+  height: 10px;
+  width: 60px;
+  border-radius: var(--ds-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--ds-border-subtle) 25%,
+    var(--ds-canvas-subtle) 50%,
+    var(--ds-border-subtle) 75%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  animation-delay: calc(0.1s * var(--i, 1));
+}
+
+/* mobile: hide some skeleton cells */
+@media (max-width: 640px) {
+  .skeletonTh:nth-child(2),
+  .skeletonTh:nth-child(3) {
+    display: none;
+  }
+  .skeletonRow .skeletonCell:nth-child(3),
+  .skeletonRow .skeletonCell:nth-child(4) {
+    display: none;
+  }
+}

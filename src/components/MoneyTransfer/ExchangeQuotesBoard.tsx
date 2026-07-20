@@ -13,7 +13,14 @@
 
 import type { QuoteRow } from '@/actions/exchange-quotes';
 import DealModal from '@/components/MoneyTransfer/DealModal';
-import { AlertCircle, Clock, RefreshCw, ShoppingCart, TrendingDown, TrendingUp } from 'lucide-react';
+import {
+  AlertCircle,
+  Clock,
+  RefreshCw,
+  ShoppingCart,
+  TrendingDown,
+  TrendingUp,
+} from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import s from './ExchangeQuotesBoard.module.css';
 
@@ -135,13 +142,16 @@ function QuoteTableRow({
   );
 }
 
+const QUOTES_INITIAL = 4;
+const QUOTES_STEP = 4;
+
 export default function ExchangeQuotesBoard() {
   const [data, setData] = useState<QuotesData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeCurrencyIdx, setActiveCurrencyIdx] = useState(0);
+  const [shownQuotes, setShownQuotes] = useState(QUOTES_INITIAL);
   const [dealQuote, setDealQuote] = useState<QuoteRow | null>(null);
-  const rotateRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const fetchRef = useRef<AbortController | null>(null);
 
   const fetchData = useCallback(async () => {
@@ -182,22 +192,39 @@ export default function ExchangeQuotesBoard() {
     };
   }, [fetchData]);
 
-  // rotate currency every 4s when multiple currencies exist
-  useEffect(() => {
-    if (!data?.currencies.length || data.currencies.length <= 1) return;
-    rotateRef.current = setInterval(() => {
-      setActiveCurrencyIdx((i) => (i + 1) % data.currencies.length);
-    }, 4_000);
-    return () => {
-      if (rotateRef.current) clearInterval(rotateRef.current);
-    };
-  }, [data?.currencies]);
-
   if (loading) {
     return (
-      <div className={s.loading} aria-live="polite">
-        <RefreshCw className={s.loadingIcon} aria-hidden />
-        <span>در حال بارگذاری قیمت‌های صرافی‌ها…</span>
+      <div className={s.skeleton} aria-busy="true" aria-label="در حال بارگذاری قیمت‌های صرافی‌ها…">
+        {/* Tabs skeleton */}
+        <div className={s.skeletonTabs}>
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className={s.skeletonTab} style={{ '--i': i } as React.CSSProperties} />
+          ))}
+        </div>
+        {/* Thead skeleton */}
+        <div className={s.skeletonThead}>
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className={s.skeletonTh} style={{ '--i': i } as React.CSSProperties} />
+          ))}
+        </div>
+        {/* Rows skeleton */}
+        {[1, 2, 3].map((i) => (
+          <div key={i} className={s.skeletonRow} style={{ '--i': i } as React.CSSProperties}>
+            <div className={s.skeletonExchange}>
+              <div className={s.skeletonExchangeName} />
+              <div className={s.skeletonExchangeCity} />
+            </div>
+            <div className={s.skeletonRate}>
+              <div className={s.skeletonRateLabel} />
+              <div className={s.skeletonRateVal} />
+            </div>
+            <div className={s.skeletonRate}>
+              <div className={s.skeletonRateLabel} />
+              <div className={s.skeletonRateVal} />
+            </div>
+            <div className={s.skeletonBtn} />
+          </div>
+        ))}
       </div>
     );
   }
@@ -223,11 +250,13 @@ export default function ExchangeQuotesBoard() {
   const activeCurrency = data.currencies[activeCurrencyIdx] ?? data.currencies[0];
   if (!activeCurrency) return null;
 
-  const visibleQuotes = data.quotes
+  const allQuotes = data.quotes
     .filter((q) => q.currencyCode === activeCurrency)
     .sort((a, b) => Number.parseFloat(a.buyRate) - Number.parseFloat(b.buyRate));
 
-  const bestBuyId = visibleQuotes[0]?.id;
+  const visibleQuotes = allQuotes.slice(0, shownQuotes);
+  const hasMoreQuotes = shownQuotes < allQuotes.length;
+  const bestBuyId = allQuotes[0]?.id;
 
   return (
     <div className={s.board}>
@@ -242,10 +271,7 @@ export default function ExchangeQuotesBoard() {
             className={`${s.tab}${code === activeCurrency ? ` ${s.tabActive}` : ''}`}
             onClick={() => {
               setActiveCurrencyIdx(i);
-              if (rotateRef.current) {
-                clearInterval(rotateRef.current);
-                rotateRef.current = null;
-              }
+              setShownQuotes(QUOTES_INITIAL);
             }}
           >
             <span className={s.tabCode}>{code}</span>
@@ -269,7 +295,7 @@ export default function ExchangeQuotesBoard() {
           </tr>
         </thead>
         <tbody>
-          {visibleQuotes.length === 0 ? (
+          {allQuotes.length === 0 ? (
             <tr>
               <td colSpan={5} className={s.emptyRow}>
                 قیمتی برای این ارز موجود نیست
@@ -288,17 +314,26 @@ export default function ExchangeQuotesBoard() {
         </tbody>
       </table>
 
+      {hasMoreQuotes && (
+        <div className={s.loadMoreWrap}>
+          <button
+            type="button"
+            className={s.loadMoreBtn}
+            onClick={() => setShownQuotes((n) => Math.min(allQuotes.length, n + QUOTES_STEP))}
+          >
+            <span>نمایش بیشتر</span>
+            <span className={s.loadMoreCount}>+{allQuotes.length - shownQuotes}</span>
+          </button>
+        </div>
+      )}
+
       <p className={s.foot}>
         قیمت‌ها توسط صرافی‌های تایید‌شده ثبت می‌شوند و هر ۳۰ ثانیه به‌روز می‌گردند.
       </p>
 
       {/* Deal modal */}
       {dealQuote && (
-        <DealModal
-          quote={dealQuote}
-          open={!!dealQuote}
-          onClose={() => setDealQuote(null)}
-        />
+        <DealModal quote={dealQuote} open={!!dealQuote} onClose={() => setDealQuote(null)} />
       )}
     </div>
   );

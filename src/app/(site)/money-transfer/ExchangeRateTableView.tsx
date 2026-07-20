@@ -69,11 +69,15 @@ export function ExchangeRateTableView({ rates }: Props) {
   ];
 
   const [activeTab, setActiveTab] = useState<MarketRateGroup | 'all'>('all');
+  const [shownCount, setShownCount] = useState(10);
 
-  const displayed =
+  const allDisplayed =
     activeTab === 'all'
       ? [...valid].sort((a, b) => a.priority - b.priority)
       : valid.filter((r) => r.group === activeTab).sort((a, b) => a.priority - b.priority);
+
+  const displayed = allDisplayed.slice(0, shownCount);
+  const hasMore = shownCount < allDisplayed.length;
 
   if (valid.length === 0) {
     return (
@@ -89,7 +93,7 @@ export function ExchangeRateTableView({ rates }: Props) {
       <div className="flex items-center justify-between gap-3 px-1">
         <h3 className="text-base font-bold text-slate-900 dark:text-white">نرخ بازار</h3>
         <span className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
-          {displayed.length} مورد
+          {allDisplayed.length} مورد
         </span>
       </div>
 
@@ -100,7 +104,10 @@ export function ExchangeRateTableView({ rates }: Props) {
             <button
               key={tab.id}
               type="button"
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                setActiveTab(tab.id);
+                setShownCount(10);
+              }}
               aria-current={activeTab === tab.id ? 'true' : undefined}
               className={['mt-tab', activeTab === tab.id ? 'mt-tab--active' : '']
                 .filter(Boolean)
@@ -191,6 +198,29 @@ export function ExchangeRateTableView({ rates }: Props) {
           })}
         </div>
       </div>
+
+      {hasMore && (
+        <div className="flex justify-center pt-3">
+          <button
+            type="button"
+            onClick={() => setShownCount((n) => n + 10)}
+            className="mt-tab"
+            style={{ minInlineSize: '140px', justifyContent: 'center', gap: '6px' }}
+          >
+            <span>نمایش بیشتر</span>
+            <span
+              style={{
+                fontVariantNumeric: 'tabular-nums',
+                fontWeight: 700,
+                opacity: 0.6,
+                fontSize: '11px',
+              }}
+            >
+              +{allDisplayed.length - shownCount}
+            </span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
