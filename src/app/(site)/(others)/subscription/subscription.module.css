@@ -117,7 +117,7 @@
 @media (max-width: 900px) {
   .grid {
     grid-template-columns: 1fr;
-    max-width: 420px;
+    max-inline-size: 420px;
     margin-inline: auto;
   }
 }
@@ -162,7 +162,7 @@
     inset 0 -1px 0 oklch(100% 0 0 / 0.1);
 }
 
-.dark .cardPopular {
+:global(.dark) .cardPopular {
   background: oklch(22% 0.015 250 / 0.8);
   border-color: oklch(100% 0 0 / 0.1);
 }

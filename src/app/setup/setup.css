@@ -740,7 +740,7 @@
   }
   .setup-wizard__nav--primary {
     background: linear-gradient(135deg, oklch(58% 0.16 265), oklch(48% 0.16 250));
-    color: #fff;
+    color: oklch(100% 0 0);
     border-color: oklch(58% 0.16 265 / 0.5);
     box-shadow: 0 1px 0 oklch(100% 0 0 / 0.18) inset, 0 16px 32px -16px oklch(45% 0.18 265 / 0.65);
   }
@@ -792,7 +792,7 @@
     block-size: 1rem;
     border-radius: 9999px;
     border: 2px solid oklch(100% 0 0 / 0.35);
-    border-block-start-color: #fff;
+    border-block-start-color: oklch(100% 0 0);
     animation: setup-spin 0.7s linear infinite;
   }
   @keyframes setup-spin {
@@ -893,7 +893,7 @@
   }
   .setup-intro__btn--primary {
     background: linear-gradient(135deg, oklch(58% 0.16 265), oklch(48% 0.16 250));
-    color: #fff;
+    color: oklch(100% 0 0);
     border-color: oklch(58% 0.16 265 / 0.5);
     box-shadow: 0 1px 0 oklch(100% 0 0 / 0.18) inset, 0 18px 36px -16px oklch(45% 0.18 265 / 0.65);
   }
@@ -1268,7 +1268,7 @@
     justify-content: center;
     border-radius: 9999px;
     background: linear-gradient(135deg, oklch(58% 0.16 265), oklch(48% 0.16 250));
-    color: #fff;
+    color: oklch(100% 0 0);
     font-size: 0.72rem;
     font-weight: 700;
   }
@@ -1399,7 +1399,7 @@
   .admin-preview__avatar-inner {
     font-size: 1.2rem;
     font-weight: 800;
-    color: #fff;
+    color: oklch(100% 0 0);
     letter-spacing: -0.02em;
   }
   .admin-preview__avatar-ring {
@@ -1784,7 +1784,7 @@
 
   .setup-stepper__item--done .setup-stepper__disc {
     background: linear-gradient(135deg, oklch(65% 0.14 165), oklch(55% 0.13 160));
-    color: #fff;
+    color: oklch(100% 0 0);
     border-color: oklch(65% 0.14 165 / 0.5);
   }
   .setup-stepper__item--done .setup-stepper__disc-inner {
@@ -1800,7 +1800,7 @@
 
   .setup-stepper__item--active .setup-stepper__disc {
     background: linear-gradient(135deg, oklch(60% 0.16 265), oklch(48% 0.16 250));
-    color: #fff;
+    color: oklch(100% 0 0);
     border-color: oklch(60% 0.16 265 / 0.5);
     box-shadow: 0 0 0 4px oklch(60% 0.16 265 / 0.12), 0 10px 20px -10px oklch(45% 0.18 265 / 0.55);
   }
@@ -2403,7 +2403,7 @@
   }
   .setup-req__item[data-passed="true"] .setup-req__indicator {
     background: linear-gradient(135deg, oklch(65% 0.14 165), oklch(55% 0.13 160));
-    color: #fff;
+    color: oklch(100% 0 0);
     border-color: transparent;
     transform: scale(1);
     animation: setup-req-pop 0.35s var(--ds-ease-out-quart);
@@ -2536,7 +2536,7 @@
     block-size: 1.6rem;
     padding: 0.3rem;
     border-radius: 0.65rem;
-    color: #fff;
+    color: oklch(100% 0 0);
     background: linear-gradient(135deg, oklch(65% 0.14 165), oklch(55% 0.13 160));
     flex-shrink: 0;
   }
@@ -2740,7 +2740,7 @@
     justify-content: center;
     border-radius: 9999px;
     background: linear-gradient(135deg, oklch(65% 0.14 165), oklch(50% 0.13 160));
-    color: #fff;
+    color: oklch(100% 0 0);
     box-shadow: 0 0 0 6px oklch(100% 0 0 / 0.6), 0 24px 40px -20px oklch(55% 0.14 165 / 0.55);
     animation: setup-complete-pop 0.7s var(--ds-ease-out-expo) both;
   }
@@ -2853,7 +2853,7 @@
     justify-content: center;
     border-radius: 9999px;
     background: linear-gradient(135deg, oklch(65% 0.14 165), oklch(55% 0.13 160));
-    color: #fff;
+    color: oklch(100% 0 0);
     font-size: 0.7rem;
     font-weight: 800;
     flex-shrink: 0;
@@ -2890,7 +2890,7 @@
     border-radius: 0.85rem;
     border: 1px solid oklch(58% 0.16 265 / 0.5);
     background: linear-gradient(135deg, oklch(58% 0.16 265), oklch(48% 0.16 250));
-    color: #fff;
+    color: oklch(100% 0 0);
     font: inherit;
     font-size: 0.9375rem;
     font-weight: 700;
@@ -3038,7 +3038,7 @@
     padding: 0.7rem 1.25rem;
     border-radius: 0.75rem;
     background: linear-gradient(135deg, oklch(58% 0.16 265), oklch(48% 0.16 250));
-    color: #fff;
+    color: oklch(100% 0 0);
     text-decoration: none;
     font-size: 0.875rem;
     font-weight: 700;

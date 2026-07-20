@@ -147,7 +147,7 @@
   white-space: nowrap;
   flex-shrink: 0;
 }
-.dark .dateBadge {
+:global(.dark) .dateBadge {
   background: color-mix(in oklch, var(--ds-brand-500) 18%, transparent);
   color: var(--ds-brand-100);
 }

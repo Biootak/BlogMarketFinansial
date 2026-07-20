@@ -193,7 +193,7 @@
   z-index: 0;
 }
 
-.dark .formCard {
+:global(.dark) .formCard {
   background: oklch(22% 0.015 250 / 0.8);
   border-color: oklch(100% 0 0 / 0.08);
 }

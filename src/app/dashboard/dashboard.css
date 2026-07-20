@@ -1,4 +1,4 @@
-﻿/* ============================================================================
+/* ============================================================================
    Dashboard 2026 — Fintech Aurora / OLED  (دامنه: .dash-scope)
    ----------------------------------------------------------------------------
    زبان طراحی: navy عمیق + aurora drift + اکسنت emerald برای روند مثبت
@@ -9,6 +9,15 @@
    پالت hue: 245 (navy/indigo) پایه، 165 (emerald) مثبت، 25 (rose) منفی،
    210 (cyan) خنثای داده.
    ============================================================================ */
+
+/* @property --dash-angle: لازم برای انیمیشن conic-gradient در .dash-glow
+   بدون این تعریف، Firefox و Safari از انیمیشن typed custom property پشتیبانی
+   نمی‌کنند و conic border در آن‌ها ثابت می‌ماند. */
+@property --dash-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
 @layer utilities {
   /* ---- Canvas: پس‌زمینه‌ی aurora کل ناحیه‌ی محتوا --------------------------- */
   /* 2026-06-26: Premium glassmorphic canvas — visible lavender / indigo
@@ -102,20 +111,15 @@
   }
 
   /* ---- Accent tints (برای آیکن‌ها و trend) -------------------------------- */
-  .dash-ico {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--ds-radius-lg);
-    color: var(--at-fg-inv);
-    box-shadow: 0 8px 20px -8px var(--dash-ico-glow, oklch(55% 0.16 255 / 0.6));
-  }
+  /* 2026-07 fix: دو تعریف .dash-ico ادغام شدند — اولی color/shadow داشت،
+     دومی radius/transition. نسخهٔ ادغام‌شده هر دو را نگه می‌دارد. */
   .dash-ico {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: 0.625rem;
     color: oklch(45% 0.02 250);
+    box-shadow: 0 8px 20px -8px var(--dash-ico-glow, oklch(55% 0.16 255 / 0.6));
     transition: transform 200ms ease;
   }
   .dash-pane:hover .dash-ico {
@@ -234,20 +238,7 @@
      The grid is a single 12-col track on desktop, 6-col on tablet, 1-col
      on mobile. No separate rail column. */
 
-  @media (min-width: 640px) {
-  }
-
-  @media (min-width: 1024px) {
-  }
-
-  @media (min-width: 1280px) {
-  }
-
-  /* ---- Paired row (donut + activity) — asymmetric, visually cohesive -- */
-  @media (min-width: 640px) {
-  }
-  @media (min-width: 1024px) {
-  }
+  /* 2026-07 fix: media query های خالی حذف شدند — هیچ قانونی نداشتند */
   /* 2026-06-26: حذف قانون @container قدیمی که گرید ۱۲ ستونی bento را
      به ۲ ستون (main+sidebar) تبدیل می‌کرد و با span ها تداخل داشت.
      این قانون از لایه‌بندی قبلی [main|rail] باقی مانده بود و باعث
@@ -256,32 +247,9 @@
   /* =========================================================================
      Canvas Layout — Meridian Canvas 2026 (July)
      =========================================================================
-     Radically different layout: instead of uniform rows, cards have VARYING
-     HEIGHTS based on importance. The hero+KPI section dominates, analytics
-     is tall, and other cards orbit around them.
-
-     Grid template:
-       toolbar  toolbar  toolbar
-       hero     hero     hero
-       analytics analytics engagement
-       analytics analytics activity
-       calendar  health   quick
-       posts    posts    posts
+     Grid area assignments و media query های bento در کامپوننت‌های TSX
+     اعمال می‌شوند؛ این بخش فقط comment برای مستندسازی نگه داشته شده.
      ========================================================================= */
-
-  /* Tablet: 2 columns */
-  @media (min-width: 640px) {
-  }
-
-  /* Desktop: 3 columns with varying heights */
-  @media (min-width: 1024px) {
-  }
-
-  /* Large desktop: add quick actions */
-  @media (min-width: 1280px) {
-  }
-
-  /* Grid area assignments */
 
   /* Geometric accent — subtle diagonal line */
   .dark .dash-canvas__geo {
@@ -857,13 +825,13 @@
     font-size: 0.6875rem;
     font-weight: 700;
     letter-spacing: 0.02em;
-    color: rgb(100, 116, 139); /* text-slate-500 */
+    color: var(--ds-text-muted);
     white-space: nowrap;
   }
   .dark .dash-pane__chip {
     background: oklch(28% 0.02 250 / 0.55);
     border-color: oklch(38% 0.02 250 / 0.7);
-    color: rgb(148, 163, 184); /* text-slate-400 */
+    color: var(--ds-text-secondary);
   }
 
   /* ---- Persistent header (2026) ------------------------------------------

@@ -305,7 +305,7 @@
   z-index: 0;
 }
 
-.dark .glassCard {
+:global(.dark) .glassCard {
   background: oklch(22% 0.015 250 / 0.75);
   border-color: oklch(100% 0 0 / 0.08);
 }
@@ -580,7 +580,7 @@
   pointer-events: none;
 }
 
-.dark .ctaBanner {
+:global(.dark) .ctaBanner {
   background: oklch(22% 0.015 250 / 0.75);
 }
 

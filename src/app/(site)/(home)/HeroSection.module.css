@@ -87,7 +87,7 @@
   margin-bottom: var(--ds-space-4);
 }
 
-.dark .badge {
+:global(.dark) .badge {
   background: oklch(22% 0.015 250 / 0.65);
   border-color: oklch(30% 0.015 250 / 0.7);
 }
@@ -367,7 +367,7 @@
   z-index: 1;
 }
 
-.dark .glassCard {
+:global(.dark) .glassCard {
   background: oklch(22% 0.015 250 / 0.75);
   border-color: oklch(100% 0 0 / 0.08);
   box-shadow:

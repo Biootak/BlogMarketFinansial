@@ -9,16 +9,16 @@
  * Per route, the (site)/layout and dashboard/layout call `auth()` and
  * pass `session` to `<Providers session={session}>`.
  */
-import localFont from 'next/font/local';
-import type { Metadata, Viewport } from 'next';
-import Script from 'next/script';
 import { Toaster } from '@/components/ui/toaster';
+import type { Metadata, Viewport } from 'next';
+import localFont from 'next/font/local';
+import Script from 'next/script';
 
 import './globals.css';
 import '@/styles/index.scss';
 
-import Providers from '@/components/providers';
 import PageViewTracker from '@/components/PageViewTracker';
+import Providers from '@/components/providers';
 import STRIP_EXTENSION_ATTRS_SCRIPT from '@/lib/strip-extension-attrs';
 
 /* ============================================================================
@@ -30,8 +30,7 @@ import STRIP_EXTENSION_ATTRS_SCRIPT from '@/lib/strip-extension-attrs';
    ============================================================================ */
 import { getSiteIdentity } from '@/lib/site-identity';
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://blogmarketfinansial.ir';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://blogmarketfinansial.ir';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { siteName, siteDescription } = await getSiteIdentity();
@@ -97,15 +96,12 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <Script
-          id="strip-extension-attrs"
-          strategy="beforeInteractive"
-        >
+        <Script id="strip-extension-attrs" strategy="beforeInteractive">
           {STRIP_EXTENSION_ATTRS_SCRIPT}
         </Script>
       </head>
       <body
-        className="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 antialiased font-vazirmatn"
+        className="bg-[var(--ds-canvas)] text-[var(--ds-text-primary)] antialiased font-vazirmatn"
         suppressHydrationWarning
       >
         <Providers>

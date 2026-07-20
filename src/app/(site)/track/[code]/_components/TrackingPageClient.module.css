@@ -73,9 +73,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: oklch(97% 0.02 15);
-  border: 1px solid oklch(88% 0.05 15);
-  color: oklch(40% 0.12 15);
+  background: var(--ds-status-error-bg);
+  border: 1px solid var(--ds-status-error-border);
+  color: var(--ds-status-error-fg);
   border-radius: 10px;
   padding: 14px 16px;
   font-size: 0.82rem;
@@ -105,10 +105,10 @@
   font-weight: 600;
   margin: 16px 16px 0;
 }
-.statusPending   { background: oklch(97% 0.03 80); color: oklch(45% 0.14 80); border: 1px solid oklch(88% 0.07 80); }
-.statusProgress  { background: oklch(96% 0.03 218); color: oklch(42% 0.14 218); border: 1px solid oklch(88% 0.07 218); }
-.statusDone      { background: oklch(96% 0.04 145); color: oklch(36% 0.14 145); border: 1px solid oklch(88% 0.08 145); }
-.statusCancelled { background: oklch(97% 0.01 0); color: oklch(44% 0.08 0); border: 1px solid oklch(88% 0.04 0); }
+.statusPending   { background: var(--ds-status-pending-bg);   color: var(--ds-status-pending-fg);   border: 1px solid var(--ds-status-pending-border); }
+.statusProgress  { background: var(--ds-status-progress-bg);  color: var(--ds-status-progress-fg);  border: 1px solid var(--ds-status-progress-border); }
+.statusDone      { background: var(--ds-status-success-bg);   color: var(--ds-status-success-fg);   border: 1px solid var(--ds-status-success-border); }
+.statusCancelled { background: var(--ds-status-cancelled-bg); color: var(--ds-status-cancelled-fg); border: 1px solid var(--ds-status-cancelled-border); }
 
 /* ─── Info list ───────────────────────────────────────────── */
 .infoList {
@@ -132,8 +132,8 @@
 /* ─── Admin note ──────────────────────────────────────────── */
 .noteBox {
   margin: 12px 16px 0;
-  background: oklch(98% 0.02 80);
-  border: 1px solid oklch(91% 0.04 80);
+  background: var(--ds-status-pending-bg);
+  border: 1px solid var(--ds-status-pending-border);
   border-radius: 8px;
   padding: 12px 14px;
 }
@@ -143,7 +143,7 @@
   gap: 6px;
   font-size: 0.72rem;
   font-weight: 700;
-  color: oklch(48% 0.12 80);
+  color: var(--ds-status-pending-fg);
   margin-block-end: 6px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -190,11 +190,11 @@
   text-decoration: none;
   padding: 8px 16px;
   border-radius: 8px;
-  border: 1.5px solid oklch(88% 0.07 218);
-  background: oklch(97% 0.02 218);
+  border: 1.5px solid var(--ds-status-progress-border);
+  background: var(--ds-status-progress-bg);
   min-block-size: 40px;
   transition: background 140ms, border-color 140ms, transform 140ms cubic-bezier(0.34,1.56,0.64,1);
 }
-.ctaLink:hover { background: oklch(94% 0.04 218); border-color: oklch(82% 0.09 218); transform: translateY(-1px); }
+.ctaLink:hover { background: oklch(94% 0.04 218); border-color: var(--ds-status-progress-fg); transform: translateY(-1px); }
 .ctaLink:active { transform: scale(0.97); }
 .ctaLink:focus-visible { outline: 2px solid var(--ds-brand-500); outline-offset: 2px; }

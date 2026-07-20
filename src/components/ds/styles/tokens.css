@@ -28,13 +28,6 @@
       ========================================================================== */
   --fs-base: clamp(0.75rem, 0.73rem + 0.12vw, 0.875rem);
   /* ==========================================================================
-      PAGE ZOOM — حالا غیرفعال (۱). قبلاً روی html اعمال می‌شد (zoom)
-      ولی طبق بهترین رویهٔ سایت‌های حرفه‌ای حذف شد؛ scaling از طریق
-      فلوید تایپوگرافی (--fs-base + --ds-text-*) انجام می‌شود.
-      ========================================================================== */
-  --page-zoom: 1;
-
-  /* ==========================================================================
       SPACING (fluid) — clamp() برای scaling بدون breakpoint
       ========================================================================== */
   --ds-space-1: clamp(0.25rem, 0.2rem + 0.2vw, 0.375rem);
@@ -188,6 +181,31 @@
   --ds-shadow-lg: 0 18px 50px -20px oklch(45% 0.1 250 / 0.35);
   --ds-glow-brand: 0 0 0 1px oklch(55% 0.1 235 / 0.4),
     0 8px 24px -8px oklch(55% 0.1 235 / 0.35);
+
+  /* ==========================================================================
+     STATUS COLOR TOKENS — برای status badge های سراسری
+     (pending, progress/info, success/done, error/cancelled)
+     هر گروه سه variant دارد: bg (پس‌زمینه)، border، fg (متن)
+     ========================================================================== */
+  --ds-status-pending-bg:     oklch(97% 0.03 80);
+  --ds-status-pending-border: oklch(88% 0.07 80);
+  --ds-status-pending-fg:     oklch(45% 0.14 80);
+
+  --ds-status-progress-bg:     oklch(96% 0.03 218);
+  --ds-status-progress-border: oklch(88% 0.07 218);
+  --ds-status-progress-fg:     oklch(42% 0.14 218);
+
+  --ds-status-success-bg:     oklch(96% 0.04 145);
+  --ds-status-success-border: oklch(88% 0.08 145);
+  --ds-status-success-fg:     oklch(36% 0.14 145);
+
+  --ds-status-error-bg:     oklch(97% 0.02 15);
+  --ds-status-error-border: oklch(88% 0.05 15);
+  --ds-status-error-fg:     oklch(40% 0.12 15);
+
+  --ds-status-cancelled-bg:     oklch(97% 0.01 0);
+  --ds-status-cancelled-border: oklch(88% 0.04 0);
+  --ds-status-cancelled-fg:     oklch(44% 0.08 0);
 }
 
 /* ==========================================================================
@@ -215,6 +233,28 @@
   --ds-shadow-lg: 0 22px 60px -22px oklch(0% 0 0 / 0.7);
   --ds-glow-brand: 0 0 0 1px oklch(65% 0.1 235 / 0.5),
     0 8px 24px -8px oklch(65% 0.1 235 / 0.5);
+
+  /* Status token dark overrides — رنگ‌های وضعیت در تاریکی
+     bg: تیره‌تر/کم‌اشباع‌تر؛ border: کمی روشن‌تر؛ fg: روشن‌تر برای contrast */
+  --ds-status-pending-bg:     oklch(22% 0.04 80 / 0.5);
+  --ds-status-pending-border: oklch(35% 0.07 80 / 0.6);
+  --ds-status-pending-fg:     oklch(75% 0.14 80);
+
+  --ds-status-progress-bg:     oklch(20% 0.04 218 / 0.5);
+  --ds-status-progress-border: oklch(35% 0.07 218 / 0.6);
+  --ds-status-progress-fg:     oklch(72% 0.14 218);
+
+  --ds-status-success-bg:     oklch(20% 0.05 145 / 0.5);
+  --ds-status-success-border: oklch(35% 0.08 145 / 0.6);
+  --ds-status-success-fg:     oklch(72% 0.14 145);
+
+  --ds-status-error-bg:     oklch(22% 0.04 15 / 0.5);
+  --ds-status-error-border: oklch(35% 0.06 15 / 0.6);
+  --ds-status-error-fg:     oklch(72% 0.12 15);
+
+  --ds-status-cancelled-bg:     oklch(20% 0.01 0 / 0.4);
+  --ds-status-cancelled-border: oklch(34% 0.03 0 / 0.6);
+  --ds-status-cancelled-fg:     oklch(68% 0.06 0);
 
   /* Dashboard v2 semantic colors */
   --ds-color-canvas: var(--ds-color-canvas-dark);

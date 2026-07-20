@@ -46,7 +46,7 @@
   padding: clamp(1.25rem, 4vw, 3rem);
 }
 
-.dark .card {
+:global(.dark) .card {
   background: oklch(20% 0.012 250 / 0.8);
   border-color: oklch(100% 0 0 / 0.07);
   box-shadow:
