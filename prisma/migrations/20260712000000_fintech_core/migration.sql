@@ -1,0 +1,5 @@
+-- Migration applied directly to production database before being tracked locally.
+-- This file is a placeholder to sync the local migration history with the database.
+-- The actual schema changes are already reflected in prisma/schema.prisma.
+-- This migration created: Exchange, ExchangeStaff, Customer, Transaction,
+--   FintechAccount, LedgerEntry, TransferProvider models.
