@@ -164,11 +164,11 @@ function assembleFromRow(
     }
   }
 
-  // Priority 2c: bonbast buy/sell برای IRAN_* ارزها که TGJU فقط mid داد.
-  // بعد از اینکه rawValue از TGJU پر شد ولی buyValue/sellValue هنوز null هستند،
-  // از bonbast.com صفحه اصلی نرخ خرید/فروش واقعی بازار تهران می‌گیریم.
-  // مثال: IRAN_USD → bonbastBS.rates['USD'].buy / .sell (هر دو به تومان)
-  if (rawValue !== null && buyValue === null && sellValue === null && bonbastBS) {
+  // Priority 2c: bonbast buy/sell برای IRAN_* و AFGHANI_* ارزها.
+  // دو حالت:
+  //   a) rawValue از TGJU پر شده ولی buyValue/sellValue هنوز null → فقط buy/sell بگیر
+  //   b) rawValue هنوز null است (TGJU fail شده) → هم rawValue هم buy/sell از bonbast بگیر
+  if (buyValue === null && sellValue === null && bonbastBS) {
     let fxCode: string | null = null;
     if (symbol.startsWith('IRAN_')) {
       fxCode = symbol.replace('IRAN_', '');
@@ -178,11 +178,15 @@ function assembleFromRow(
     if (fxCode) {
       const bsEntry = bonbastBS.rates[fxCode.toUpperCase()];
       if (bsEntry && bsEntry.buy > 0 && bsEntry.sell > 0) {
-        // bonbast مقادیر را به تومان می‌دهد — برای consistency با بقیه rawValue ها
-        // که ریال هستند، ضرب در divisor می‌کنیم.
+        // bonbast مقادیر را به تومان می‌دهد — ضرب در divisor برای consistency با ریال raw
         buyValue = bsEntry.buy * divisor;
         sellValue = bsEntry.sell * divisor;
-        // rawValue را از bonbast override نمی‌کنیم — TGJU دقیق‌تر است برای mid
+        // اگه TGJU rawValue داده → override نمی‌کنیم (TGJU mid دقیق‌تر است)
+        // اگه rawValue هنوز null است → bonbast mid را fallback می‌کنیم
+        if (rawValue === null) {
+          rawValue = ((bsEntry.buy + bsEntry.sell) / 2) * divisor;
+          changePercent = 0;
+        }
       }
     }
   }

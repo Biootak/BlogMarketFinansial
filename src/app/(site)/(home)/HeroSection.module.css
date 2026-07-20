@@ -530,10 +530,10 @@
 }
 
 .cardThird {
-  inset-inline-end: clamp(30px, 5vw, 55px);
-  bottom: 2%;
-  width: clamp(160px, 20vw, 220px);
-  padding: clamp(12px, 1.5vw, 18px);
+  inset-inline-end: clamp(10px, 3vw, 30px);
+  top: clamp(260px, 38vw, 400px);
+  width: clamp(150px, 18vw, 200px);
+  padding: clamp(10px, 1.3vw, 16px);
   z-index: 1;
   animation: floatC 8s ease-in-out 0.5s infinite;
 }
