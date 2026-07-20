@@ -1,24 +1,37 @@
 /**
- * /track/[code] — صفحه پیگیری وضعیت معامله
+ * /track/[code] — صفحه پیگیری یکپارچه
  *
- * Server Component — داده از DB با getDealByTracking.
- * اطلاعات حساس (customerPhone partial) نشان داده می‌شود.
+ * دو نوع کد پشتیبانی می‌شود:
+ *   BT-XXXXXXXX-XXXXXX  →  ServiceRequest (سیستم قدیمی خدمات ارزی)
+ *   DL-XXXXX-XXXX       →  CurrencyDeal   (معامله صرافی جدید)
+ *
+ * Server Component — هر دو route به‌صورت SSR رندر می‌شوند.
  */
 
 import { getDealByTracking } from '@/actions/currency-deals';
+import { getServiceRequestByTrackingCode } from '@/actions/serviceRequestActions';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import TrackingPageClient from './_components/TrackingPageClient';
 import s from './TrackingPage.module.css';
 
 interface Props {
   params: Promise<{ code: string }>;
 }
 
+const IS_DEAL = (code: string) => /^DL-/i.test(code);
+const IS_SERVICE = (code: string) => /^BT-/i.test(code);
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { code } = await params;
+  const upper = code.trim().toUpperCase();
+  const title = IS_DEAL(upper)
+    ? `پیگیری معامله ${upper} | صرافی`
+    : `پیگیری درخواست ${upper} | خدمات ارزی`;
   return {
-    title: `پیگیری معامله ${code} | صرافی`,
-    description: 'وضعیت معامله ارزی خود را پیگیری کنید',
+    title,
+    description: 'وضعیت درخواست یا معامله ارزی خود را پیگیری کنید',
+    robots: { index: false, follow: false },
   };
 }
 
@@ -89,10 +102,27 @@ function formatDate(d: Date): string {
 
 export default async function TrackingPage({ params }: Props) {
   const { code } = await params;
-  // بررسی ساده format کد — DL- + alphanumeric
-  if (!/^DL-[A-Z0-9]+-[A-Z0-9]+$/i.test(code)) notFound();
+  const upper = code.trim().toUpperCase();
 
-  const deal = await getDealByTracking(code.toUpperCase());
+  // ── ServiceRequest (BT-*) → کامپوننت قدیمی ──────────────────────────────────
+  if (IS_SERVICE(upper)) {
+    if (!/^BT-[A-F0-9]{8}-[A-F0-9]{6}$/i.test(upper)) notFound();
+    const res = await getServiceRequestByTrackingCode(upper);
+    return (
+      <main style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 'clamp(24px,5vw,56px) 16px' }}>
+        <TrackingPageClient
+          code={upper}
+          initialData={res.success && res.data ? res.data : null}
+          initialError={!res.success ? (res.message ?? 'خطا') : null}
+        />
+      </main>
+    );
+  }
+
+  // ── CurrencyDeal (DL-*) → صفحه جدید ─────────────────────────────────────────
+  if (!IS_DEAL(upper) || !/^DL-[A-Z0-9]+-[A-Z0-9]+$/i.test(upper)) notFound();
+
+  const deal = await getDealByTracking(upper);
   if (!deal) notFound();
 
   const statusInfo = STATUS_MAP[deal.status] ?? {

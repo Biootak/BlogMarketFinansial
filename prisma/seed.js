@@ -1434,6 +1434,45 @@ async function seedTasks(users) {
 /* ─── 50 Posts Data (shared) ────────────────────────────────── */
 const POSTS_DATA = require('./posts-data.js');
 
+/* ─── 24) ExchangeRateQuotes — نمونه برای DEV ─────────────────── */
+async function seedExchangeQuotes() {
+  const now = new Date();
+  const existing = await p.exchangeRateQuote.count({ where: { status: 'ACTIVE', expiresAt: { gt: now } } });
+  if (existing >= 4) { console.log('   ⏭️  ExchangeRateQuotes قبلاً ایجاد شده (' + existing + ' عدد)'); return; }
+
+  const QUOTES = [
+    { exchangeId: 'exch_nobitex_001', currencyCode: 'USD', currencyPair: 'USD/AFN', buyRate: 88.5, sellRate: 90.2, unit: 'afn', validMinutes: 120, minAmount: 100, maxAmount: 50000 },
+    { exchangeId: 'exch_nobitex_001', currencyCode: 'EUR', currencyPair: 'EUR/AFN', buyRate: 96.1, sellRate: 98.0, unit: 'afn', validMinutes: 120 },
+    { exchangeId: 'exch_exir_002',    currencyCode: 'USD', currencyPair: 'USD/AFN', buyRate: 89.0, sellRate: 90.8, unit: 'afn', validMinutes: 120, minAmount: 50 },
+    { exchangeId: 'exch_exir_002',    currencyCode: 'AED', currencyPair: 'AED/AFN', buyRate: 24.1, sellRate: 24.7, unit: 'afn', validMinutes: 120 },
+    { exchangeId: 'exch_bitpin_003',  currencyCode: 'USD', currencyPair: 'USD/AFN', buyRate: 87.8, sellRate: 89.5, unit: 'afn', validMinutes: 120, minAmount: 200 },
+    { exchangeId: 'exch_bit24_004',   currencyCode: 'EUR', currencyPair: 'EUR/AFN', buyRate: 95.5, sellRate: 97.3, unit: 'afn', validMinutes: 120 },
+    { exchangeId: 'exch_bit24_004',   currencyCode: 'GBP', currencyPair: 'GBP/AFN', buyRate: 113.2, sellRate: 115.8, unit: 'afn', validMinutes: 120 },
+  ];
+
+  let created = 0;
+  for (const q of QUOTES) {
+    const exchange = await p.exchange.findUnique({ where: { id: q.exchangeId }, select: { id: true, name: true, status: true } });
+    if (!exchange || exchange.status !== 'ACTIVE') continue;
+
+    const alreadyActive = await p.exchangeRateQuote.findFirst({
+      where: { exchangeId: q.exchangeId, currencyCode: q.currencyCode, status: 'ACTIVE', expiresAt: { gt: now } },
+    });
+    if (alreadyActive) { console.log('   ⏭️  ' + exchange.name + ' / ' + q.currencyCode + ' already active'); continue; }
+
+    await p.exchangeRateQuote.updateMany({ where: { exchangeId: q.exchangeId, currencyCode: q.currencyCode, status: 'PENDING' }, data: { status: 'ARCHIVED' } });
+
+    const expiresAt = new Date(now.getTime() + q.validMinutes * 60 * 1000);
+    await p.exchangeRateQuote.create({
+      data: { exchangeId: q.exchangeId, currencyCode: q.currencyCode, currencyPair: q.currencyPair, buyRate: q.buyRate, sellRate: q.sellRate, unit: q.unit, minAmount: q.minAmount || null, maxAmount: q.maxAmount || null, status: 'ACTIVE', validMinutes: q.validMinutes, expiresAt, note: 'seed — DEV' },
+    });
+    await p.exchange.update({ where: { id: q.exchangeId }, data: { showInComparison: true } }).catch(() => null);
+    console.log('   ✅  ' + exchange.name + ' / ' + q.currencyCode + ': buy=' + q.buyRate + ' sell=' + q.sellRate);
+    created++;
+  }
+  console.log('   ✨ ' + created + ' quote ایجاد شد');
+}
+
 /* ─── main: اجرای ترتیبی seed ───────────────────────────────── */
 async function main() {
   console.log('🌱 شروع Seed کامل دیتابیس BlogMarketFinansial\n');
@@ -1516,6 +1555,9 @@ async function main() {
 
   console.log('\n2️⃣3️⃣  Legacy TransferProviders (market-mid + tgju):');
   await seedTransferProviders();
+
+  console.log('\n2️⃣4️⃣  Sample ExchangeRateQuotes (DEV):');
+  await seedExchangeQuotes();
 
   /* ─── گزارش نهایی ─── */
   const stats = {
