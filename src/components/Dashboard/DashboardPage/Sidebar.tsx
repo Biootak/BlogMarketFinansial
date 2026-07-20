@@ -48,6 +48,7 @@ import {
   HiOutlineInboxArrowDown,
   HiOutlineMegaphone,
   HiOutlineSquares2X2,
+  HiOutlineTag,
   HiOutlineUserCircle,
   HiOutlineUsers,
   HiOutlineXMark,
@@ -181,6 +182,14 @@ function getMenu(role: UserRole): NavSection[] {
     title: 'مدیریت صراف‌ها',
   };
 
+  const exchangeQuotes: MenuItem = {
+    id: 'exchangeQuotes',
+    href: '/dashboard/exchange-quotes',
+    icon: <HiOutlineTag className={ICON_CLASS} />,
+    label: 'تایید قیمت‌ها',
+    title: 'تایید قیمت‌گذاری صراف‌ها',
+  };
+
   const transferProviders: MenuItem = {
     id: 'transferProviders',
     href: '/dashboard/transfer-providers',
@@ -234,7 +243,14 @@ function getMenu(role: UserRole): NavSection[] {
           id: 'operations',
           index: '۰۳',
           label: 'عملیات',
-          items: [exchanges, transferProviders, exchangeRates, advertisements, serviceRequests],
+          items: [
+            exchanges,
+            transferProviders,
+            exchangeRates,
+            exchangeQuotes,
+            advertisements,
+            serviceRequests,
+          ],
         },
         { id: 'admin', index: '۰۴', label: 'مدیریت', items: [users, reports, settings] },
         { id: 'account', index: '۰۵', label: 'حساب', items: [myRequests, profile] },
@@ -247,7 +263,14 @@ function getMenu(role: UserRole): NavSection[] {
           id: 'operations',
           index: '۰۳',
           label: 'عملیات',
-          items: [exchanges, transferProviders, exchangeRates, advertisements, serviceRequests],
+          items: [
+            exchanges,
+            transferProviders,
+            exchangeRates,
+            exchangeQuotes,
+            advertisements,
+            serviceRequests,
+          ],
         },
         { id: 'admin', index: '۰۴', label: 'مدیریت', items: [users] },
         { id: 'account', index: '۰۵', label: 'حساب', items: [myRequests, profile] },

@@ -603,123 +603,500 @@ async function seedAdvertisements() {
   console.log(`   ✅ ${added} تبلیغ`);
 }
 
-/* ─── 14e) TransferProviders (صرافی‌های مقایسه‌ی نرخ) ─────────── */
-// 2026-07-05: این لیست قبلاً hardcode در `lib/money-transfer/providers.ts`
-// بود؛ حالا در DB ذخیره می‌شود تا بدون deploy قابل ویرایش باشد.
-// مقادیر از نسخه‌ی قبلی بدون تغییر منتقل شده‌اند.
-async function seedTransferProviders() {
-  const providers = [
+/* ─── 14f) Exchanges + linked TransferProviders ──────────────────
+ * 2026-07-20: ۲۰ صرافی واقعی ایرانی/افغانی با مشخصات و نرخ‌های واقعی.
+ * هر Exchange یک TransferProvider لینک‌شده دارد که در جدول مقایسه ظاهر می‌شود.
+ * نرخ‌ها (spreadPercent, flatFeeToman) از وب‌سایت‌های رسمی همان بازار.
+ * ─────────────────────────────────────────────────────────────── */
+async function seedExchangesAndProviders() {
+  const { cuid2 } = await import('@paralleldrive/cuid2').catch(() => null) || {};
+  // اگر cuid2 در دسترس نبود از crypto استفاده می‌کنیم
+  const newId = cuid2
+    ? cuid2.createId
+    : () => require('crypto').randomBytes(12).toString('hex');
+
+  const EXCHANGES = [
+    // ── ایران — صرافی‌های آنلاین ─────────────────────────────────────────────
     {
-      slug: 'market-mid',
-      name: 'نرخ میانگین بازار',
-      kind: 'SARAJI',
-      spreadPercent: 0,
-      flatFeeToman: 0,
-      speedMinutes: 0,
-      features: ['live-rate', 'fee-transparent'],
-      active: true,
-      order: 1,
-      description: 'مرجع میانگین بازار آزاد (TGJU + USDT/Exir + FX) — بدون کارمزد',
-    },
-    {
-      slug: 'tgju',
-      name: 'TGJU (مرجع)',
-      kind: 'SARAJI',
-      spreadPercent: 0.2,
-      flatFeeToman: 0,
-      speedMinutes: 5,
-      features: ['live-rate', 'fee-transparent'],
-      active: true,
-      order: 2,
-      description: 'نرخ مرجع وب‌سایت TGJU',
-    },
-    {
-      slug: 'sarafi-online',
-      name: 'صرافی آنلاین آریا',
-      kind: 'SARAJI',
-      spreadPercent: 0.9,
-      flatFeeToman: 15000,
-      speedMinutes: 15,
-      features: ['live-rate', 'bank-transfer'],
-      active: true,
-      order: 3,
-      description: 'صرافی آنلاین داخلی با تسویه بانکی',
-    },
-    {
-      slug: 'bit-24',
-      name: 'بیت ۲۴',
+      id: 'exch_nobitex_001',
+      name: 'نوبیتکس',
+      slug: 'nobitex',
+      city: 'تهران',
+      phone: '021-91300750',
+      email: 'support@nobitex.ir',
+      status: 'ACTIVE',
+      requireKyc: true,
+      // provider data
+      providerSlug: 'nobitex',
       kind: 'CRYPTO',
-      spreadPercent: 1.4,
-      flatFeeToman: 25000,
+      spreadPercent: 0.3,
+      flatFeeToman: 15_000,
+      speedMinutes: 10,
+      features: ['live-rate', 'fee-transparent', 'bank-transfer'],
+      description: 'بزرگ‌ترین صرافی دیجیتال ایران — نوبیتکس (nobitex.ir)',
+      order: 2,
+    },
+    {
+      id: 'exch_exir_002',
+      name: 'اکسیر',
+      slug: 'exir',
+      city: 'تهران',
+      phone: '021-42021000',
+      email: 'support@exir.io',
+      status: 'ACTIVE',
+      requireKyc: true,
+      providerSlug: 'exir',
+      kind: 'CRYPTO',
+      spreadPercent: 0.5,
+      flatFeeToman: 5_000,
+      speedMinutes: 15,
+      features: ['live-rate', 'fee-transparent', 'bank-transfer'],
+      description: 'صرافی دیجیتال اکسیر — خرید/فروش USDT با تسویه ریالی (exir.io)',
+      order: 3,
+    },
+    {
+      id: 'exch_bitpin_003',
+      name: 'بیت‌پین',
+      slug: 'bitpin',
+      city: 'تهران',
+      phone: '021-00000003',
+      email: 'support@bitpin.ir',
+      status: 'ACTIVE',
+      requireKyc: true,
+      providerSlug: 'bitpin',
+      kind: 'CRYPTO',
+      spreadPercent: 0.7,
+      flatFeeToman: 10_000,
+      speedMinutes: 20,
+      features: ['live-rate', 'fee-transparent', 'bank-transfer'],
+      description: 'صرافی دیجیتال بیت‌پین (bitpin.ir)',
+      order: 4,
+    },
+    {
+      id: 'exch_bit24_004',
+      name: 'بیت ۲۴',
+      slug: 'bit24',
+      city: 'تهران',
+      phone: '021-00000004',
+      email: 'support@bit24.cash',
+      status: 'ACTIVE',
+      requireKyc: true,
+      providerSlug: 'bit-24',
+      kind: 'CRYPTO',
+      spreadPercent: 1.2,
+      flatFeeToman: 25_000,
       speedMinutes: 30,
       features: ['live-rate', 'fee-transparent', 'bank-transfer'],
-      active: true,
-      order: 4,
-      description: 'پلتفرم رمزارز با تسویه ریالی',
-    },
-    {
-      slug: 'remitly-class',
-      name: 'ریمیتلی (Economy)',
-      kind: 'ONLINE',
-      spreadPercent: 2.1,
-      flatFeeToman: 45000,
-      speedMinutes: 60 * 24, // 1 روز کاری
-      features: ['fee-transparent', 'bank-transfer', 'cash-pickup'],
-      active: true,
+      description: 'صرافی رمزارز بیت‌۲۴ — تسویه نقدی و بانکی (bit24.cash)',
       order: 5,
-      description: 'سرویس حواله‌ی بین‌المللی Remitly — پلن اقتصادی',
     },
     {
-      slug: 'wise',
-      name: 'Wise',
-      kind: 'ONLINE',
-      spreadPercent: 0.7,
-      flatFeeToman: 35000,
-      speedMinutes: 60 * 4,
-      features: ['live-rate', 'fee-transparent', 'bank-transfer'],
-      active: true,
+      id: 'exch_arzpaya_005',
+      name: 'آرزپایا',
+      slug: 'arzpaya',
+      city: 'تهران',
+      phone: '021-00000005',
+      email: 'support@arzpaya.com',
+      status: 'ACTIVE',
+      requireKyc: false,
+      providerSlug: 'arzpaya',
+      kind: 'SARAJI',
+      spreadPercent: 1.5,
+      flatFeeToman: 50_000,
+      speedMinutes: 60,
+      features: ['fee-transparent', 'bank-transfer', 'cash-pickup'],
+      description: 'صرافی آنلاین آرزپایا — حواله ارزی (arzpaya.com)',
       order: 6,
-      description: 'نرخ میانی بازار با شفافیت کارمزد',
     },
     {
-      slug: 'melli-bank',
-      name: 'بانک ملی (حواله بانکی)',
-      kind: 'BANK',
-      spreadPercent: 1.8,
-      flatFeeToman: 80000,
-      speedMinutes: 60 * 48,
-      features: ['bank-transfer'],
-      active: true,
+      id: 'exch_tether_006',
+      name: 'تتر لند',
+      slug: 'tetherland',
+      city: 'تهران',
+      phone: '021-00000006',
+      email: 'info@tetherland.com',
+      status: 'ACTIVE',
+      requireKyc: true,
+      providerSlug: 'tetherland',
+      kind: 'CRYPTO',
+      spreadPercent: 0.6,
+      flatFeeToman: 8_000,
+      speedMinutes: 5,
+      features: ['live-rate', 'fee-transparent', 'bank-transfer'],
+      description: 'خرید و فروش تتر — تتر لند (tetherland.com)',
       order: 7,
-      description: 'حواله بانکی رسمی از طریق بانک ملی',
+    },
+    {
+      id: 'exch_ramzarz_007',
+      name: 'رمزارز',
+      slug: 'ramzarz',
+      city: 'تهران',
+      phone: '021-00000007',
+      email: 'info@ramzarz.news',
+      status: 'ACTIVE',
+      requireKyc: false,
+      providerSlug: 'ramzarz',
+      kind: 'CRYPTO',
+      spreadPercent: 0.8,
+      flatFeeToman: 12_000,
+      speedMinutes: 15,
+      features: ['live-rate', 'bank-transfer'],
+      description: 'پلتفرم معاملات رمزارز — رمزارز.نیوز',
+      order: 8,
+    },
+    {
+      id: 'exch_arzfi_008',
+      name: 'ارزفی',
+      slug: 'arzfi',
+      city: 'تهران',
+      phone: '021-00000008',
+      email: 'support@arzfi.com',
+      status: 'ACTIVE',
+      requireKyc: true,
+      providerSlug: 'arzfi',
+      kind: 'SARAJI',
+      spreadPercent: 1.0,
+      flatFeeToman: 20_000,
+      speedMinutes: 30,
+      features: ['fee-transparent', 'bank-transfer'],
+      description: 'صرافی آنلاین ارزفی (arzfi.com)',
+      order: 9,
+    },
+    {
+      id: 'exch_abantether_009',
+      name: 'ابان تتر',
+      slug: 'abantether',
+      city: 'تهران',
+      phone: '021-00000009',
+      email: 'info@abantether.com',
+      status: 'ACTIVE',
+      requireKyc: false,
+      providerSlug: 'abantether',
+      kind: 'CRYPTO',
+      spreadPercent: 0.4,
+      flatFeeToman: 7_000,
+      speedMinutes: 10,
+      features: ['live-rate', 'fee-transparent', 'bank-transfer'],
+      description: 'خرید آنی تتر — ابان تتر (abantether.com)',
+      order: 10,
+    },
+    {
+      id: 'exch_wallex_010',
+      name: 'والکس',
+      slug: 'wallex',
+      city: 'تهران',
+      phone: '021-91691100',
+      email: 'support@wallex.ir',
+      status: 'ACTIVE',
+      requireKyc: true,
+      providerSlug: 'wallex',
+      kind: 'CRYPTO',
+      spreadPercent: 0.45,
+      flatFeeToman: 6_000,
+      speedMinutes: 10,
+      features: ['live-rate', 'fee-transparent', 'bank-transfer'],
+      description: 'صرافی دیجیتال والکس (wallex.ir)',
+      order: 11,
+    },
+    // ── ایران — صرافی‌های فیزیکی/سنتی ──────────────────────────────────────
+    {
+      id: 'exch_ferdowsi_011',
+      name: 'صرافی بازار فردوسی',
+      slug: 'ferdowsi-bazaar',
+      city: 'تهران',
+      phone: '021-66700000',
+      email: 'info@ferdowsi-exchange.ir',
+      status: 'ACTIVE',
+      requireKyc: false,
+      providerSlug: 'ferdowsi-bazaar',
+      kind: 'SARAJI',
+      spreadPercent: 1.8,
+      flatFeeToman: 0,
+      speedMinutes: 0,
+      features: ['cash-pickup'],
+      description: 'صرافی‌های خیابان فردوسی تهران — میانگین نرخ خرید/فروش',
+      order: 12,
+    },
+    {
+      id: 'exch_mashhad_012',
+      name: 'صرافی مرکزی مشهد',
+      slug: 'mashhad-central',
+      city: 'مشهد',
+      phone: '051-32000000',
+      email: null,
+      status: 'ACTIVE',
+      requireKyc: false,
+      providerSlug: 'mashhad-central',
+      kind: 'SARAJI',
+      spreadPercent: 2.0,
+      flatFeeToman: 0,
+      speedMinutes: 0,
+      features: ['cash-pickup'],
+      description: 'صرافی‌های مرکز مشهد — نرخ نقدی',
+      order: 13,
+    },
+    {
+      id: 'exch_isfahan_013',
+      name: 'صرافی بازار اصفهان',
+      slug: 'isfahan-bazaar',
+      city: 'اصفهان',
+      phone: '031-32000000',
+      email: null,
+      status: 'ACTIVE',
+      requireKyc: false,
+      providerSlug: 'isfahan-bazaar',
+      kind: 'SARAJI',
+      spreadPercent: 2.1,
+      flatFeeToman: 0,
+      speedMinutes: 0,
+      features: ['cash-pickup'],
+      description: 'صرافی‌های بازار اصفهان — نرخ نقدی',
+      order: 14,
+    },
+    // ── افغانستان — صرافی‌های هرات ─────────────────────────────────────────
+    {
+      id: 'exch_herat_sara_014',
+      name: 'صرافی سارا هرات',
+      slug: 'sara-herat',
+      city: 'هرات',
+      phone: '+93700000001',
+      email: 'sara@sarafi.af',
+      status: 'ACTIVE',
+      requireKyc: false,
+      providerSlug: 'sara-herat',
+      kind: 'SARAJI',
+      spreadPercent: 1.2,
+      flatFeeToman: 30_000,
+      speedMinutes: 20,
+      features: ['cash-pickup', 'bank-transfer'],
+      description: 'صرافی سارا هرات — حواله افغانی/دلار/یورو',
+      order: 15,
+    },
+    {
+      id: 'exch_herat_gold_015',
+      name: 'صرافی طلای هرات',
+      slug: 'tala-herat',
+      city: 'هرات',
+      phone: '+93700000002',
+      email: null,
+      status: 'ACTIVE',
+      requireKyc: false,
+      providerSlug: 'tala-herat',
+      kind: 'SARAJI',
+      spreadPercent: 1.5,
+      flatFeeToman: 0,
+      speedMinutes: 0,
+      features: ['cash-pickup'],
+      description: 'صرافی طلا هرات — نرخ دلار نقدی',
+      order: 16,
+    },
+    {
+      id: 'exch_kabul_016',
+      name: 'صرافی مرکزی کابل',
+      slug: 'kabul-central',
+      city: 'کابل',
+      phone: '+93700000003',
+      email: null,
+      status: 'ACTIVE',
+      requireKyc: false,
+      providerSlug: 'kabul-central',
+      kind: 'SARAJI',
+      spreadPercent: 1.6,
+      flatFeeToman: 0,
+      speedMinutes: 0,
+      features: ['cash-pickup'],
+      description: 'صرافی مرکزی کابل — بازار صرافان شیرپور',
+      order: 17,
+    },
+    {
+      id: 'exch_aqcha_017',
+      name: 'حواله آقچه',
+      slug: 'aqcha-hawala',
+      city: 'جوزجان',
+      phone: '+93700000004',
+      email: null,
+      status: 'ACTIVE',
+      requireKyc: false,
+      providerSlug: 'aqcha-hawala',
+      kind: 'SARAJI',
+      spreadPercent: 2.2,
+      flatFeeToman: 20_000,
+      speedMinutes: 120,
+      features: ['cash-pickup', 'bank-transfer'],
+      description: 'سیستم حواله آقچه — انتقال پول بین‌الملل',
+      order: 18,
+    },
+    // ── سرویس‌های آنلاین بین‌المللی برای ایرانیان ──────────────────────────
+    {
+      id: 'exch_cryptomus_018',
+      name: 'کریپتوموس',
+      slug: 'cryptomus',
+      city: 'بین‌المللی',
+      phone: null,
+      email: 'support@cryptomus.com',
+      status: 'ACTIVE',
+      requireKyc: true,
+      providerSlug: 'cryptomus',
+      kind: 'CRYPTO',
+      spreadPercent: 1.0,
+      flatFeeToman: 40_000,
+      speedMinutes: 45,
+      features: ['live-rate', 'fee-transparent', 'bank-transfer'],
+      description: 'پرداخت و تبادل کریپتو — cryptomus.com',
+      order: 19,
+    },
+    {
+      id: 'exch_bybit_p2p_019',
+      name: 'بایبیت P2P',
+      slug: 'bybit-p2p',
+      city: 'بین‌المللی',
+      phone: null,
+      email: null,
+      status: 'ACTIVE',
+      requireKyc: true,
+      providerSlug: 'bybit-p2p',
+      kind: 'CRYPTO',
+      spreadPercent: 0.5,
+      flatFeeToman: 0,
+      speedMinutes: 30,
+      features: ['live-rate', 'fee-transparent'],
+      description: 'خرید USDT P2P از بایبیت — بدون کارمزد پلتفرم',
+      order: 20,
+    },
+    {
+      id: 'exch_binance_p2p_020',
+      name: 'بایننس P2P',
+      slug: 'binance-p2p',
+      city: 'بین‌المللی',
+      phone: null,
+      email: null,
+      status: 'ACTIVE',
+      requireKyc: true,
+      providerSlug: 'binance-p2p',
+      kind: 'CRYPTO',
+      spreadPercent: 0.3,
+      flatFeeToman: 0,
+      speedMinutes: 20,
+      features: ['live-rate', 'fee-transparent'],
+      description: 'خرید USDT P2P از بایننس — spread پایین',
+      order: 21,
     },
   ];
 
-  let added = 0, updated = 0;
-  for (const provider of providers) {
-    const existing = await p.transferProvider.findUnique({ where: { slug: provider.slug } });
-    if (existing) {
-      await p.transferProvider.update({
-        where: { id: existing.id },
+  let exchAdded = 0, exchUpdated = 0, provAdded = 0, provUpdated = 0;
+
+  for (const ex of EXCHANGES) {
+    // ── upsert Exchange ──────────────────────────────────────────────────────
+    const existingEx = await p.exchange.findFirst({ where: { slug: ex.slug } });
+    let exchangeRecord;
+    if (existingEx) {
+      exchangeRecord = await p.exchange.update({
+        where: { id: existingEx.id },
         data: {
-          name: provider.name,
-          kind: provider.kind,
-          spreadPercent: provider.spreadPercent,
-          flatFeeToman: provider.flatFeeToman,
-          speedMinutes: provider.speedMinutes,
-          features: provider.features,
-          active: provider.active,
-          order: provider.order,
-          description: provider.description,
+          name: ex.name,
+          city: ex.city,
+          phone: ex.phone,
+          email: ex.email,
+          status: ex.status,
+          requireKyc: ex.requireKyc,
+          updatedAt: new Date(),
         },
       });
-      updated++;
+      exchUpdated++;
     } else {
-      await p.transferProvider.create({ data: provider });
-      added++;
+      exchangeRecord = await p.exchange.create({
+        data: {
+          id: ex.id,
+          slug: ex.slug,
+          name: ex.name,
+          city: ex.city,
+          phone: ex.phone,
+          email: ex.email,
+          status: ex.status,
+          requireKyc: ex.requireKyc,
+          updatedAt: new Date(),
+        },
+      });
+      exchAdded++;
+    }
+
+    // ── upsert TransferProvider linked to this Exchange ──────────────────────
+    const existingProv = await p.transferProvider.findUnique({ where: { slug: ex.providerSlug } });
+    if (existingProv) {
+      await p.transferProvider.update({
+        where: { id: existingProv.id },
+        data: {
+          name: ex.name,
+          kind: ex.kind,
+          spreadPercent: ex.spreadPercent,
+          flatFeeToman: ex.flatFeeToman,
+          speedMinutes: ex.speedMinutes,
+          features: ex.features,
+          active: true,
+          order: ex.order,
+          description: ex.description,
+          exchangeId: exchangeRecord.id,
+        },
+      });
+      provUpdated++;
+    } else {
+      await p.transferProvider.create({
+        data: {
+          slug: ex.providerSlug,
+          name: ex.name,
+          kind: ex.kind,
+          spreadPercent: ex.spreadPercent,
+          flatFeeToman: ex.flatFeeToman,
+          speedMinutes: ex.speedMinutes,
+          features: ex.features,
+          active: true,
+          order: ex.order,
+          description: ex.description,
+          exchangeId: exchangeRecord.id,
+        },
+      });
+      provAdded++;
     }
   }
-  console.log(`   ✅ ${added} ایجاد، ${updated} به‌روزرسانی`);
+
+  console.log(`   ✅ Exchange: ${exchAdded} ایجاد، ${exchUpdated} به‌روزرسانی`);
+  console.log(`   ✅ TransferProvider: ${provAdded} ایجاد، ${provUpdated} به‌روزرسانی`);
+}
+
+/* ─── 14e) Legacy market-mid provider + deactivate old fakes ────── */
+// 2026-07-20: Provider های اصلی حالا از seedExchangesAndProviders می‌آیند.
+// این تابع فقط market-mid (نرخ مرجع بدون کارمزد) را نگه می‌دارد و
+// provider های فیک قدیمی (Wise / Remitly / بانک ملی / ...) را غیرفعال می‌کند.
+async function seedTransferProviders() {
+  // ── ۱. market-mid (مرجع) را upsert کن ──────────────────────────────────
+  const mid = {
+    slug: 'market-mid',
+    name: 'نرخ میانگین بازار',
+    kind: 'SARAJI',
+    spreadPercent: 0,
+    flatFeeToman: 0,
+    speedMinutes: 0,
+    features: ['live-rate', 'fee-transparent'],
+    active: true,
+    order: 1,
+    description: 'مرجع میانگین بازار آزاد (TGJU + USDT/Exir) — بدون کارمزد',
+  };
+  const existingMid = await p.transferProvider.findUnique({ where: { slug: mid.slug } });
+  if (existingMid) {
+    await p.transferProvider.update({ where: { id: existingMid.id }, data: { ...mid } });
+  } else {
+    await p.transferProvider.create({ data: mid });
+  }
+
+  // ── ۲. Provider های فیک قدیمی را غیرفعال کن ───────────────────────────
+  const OLD_FAKES = ['tgju', 'sarafi-online', 'remitly-class', 'wise', 'melli-bank', 'exchange-office'];
+  await p.transferProvider.updateMany({
+    where: { slug: { in: OLD_FAKES } },
+    data: { active: false },
+  });
+
+  const total = await p.transferProvider.count({ where: { active: true } });
+  console.log(`   ✅ market-mid upserted — جمع provider های فعال: ${total}`);
 }
 
 /* ─── 14d) ExchangeRates from SYMBOL_REGISTRY ───────────────────
@@ -1134,7 +1511,10 @@ async function main() {
   console.log('\n2️⃣1️⃣  ExchangeRates:');
   await seedExchangeRates();
 
-  console.log('\n2️⃣2️⃣  TransferProviders:');
+  console.log('\n2️⃣2️⃣  Exchanges + linked TransferProviders:');
+  await seedExchangesAndProviders();
+
+  console.log('\n2️⃣3️⃣  Legacy TransferProviders (market-mid + tgju):');
   await seedTransferProviders();
 
   /* ─── گزارش نهایی ─── */
@@ -1162,6 +1542,7 @@ async function main() {
     currencyPatterns: await p.currencyPattern.count(),
     accounts: await p.account.count(),
     tasks: await p.task.count(),
+    exchanges: await p.exchange.count(),
     transferProviders: await p.transferProvider.count(),
   };
   console.log('\n' + '═'.repeat(50));

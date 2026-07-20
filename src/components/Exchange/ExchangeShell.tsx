@@ -19,6 +19,7 @@ import {
   LogOut,
   Menu,
   Settings,
+  Tag,
   Users,
   X,
 } from 'lucide-react';
@@ -46,6 +47,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: '/exchange/dashboard', label: 'داشبورد', icon: LayoutDashboard },
+  { href: '/exchange/quotes', label: 'قیمت‌گذاری', icon: Tag },
   { href: '/exchange/customers', label: 'مشتریان', icon: Users },
   { href: '/exchange/transactions', label: 'تراکنش‌ها', icon: CircleDollarSign },
   { href: '/exchange/rates', label: 'نرخ‌ها', icon: BarChart3 },

@@ -1,0 +1,251 @@
+/**
+ * ExchangeQuotesBoard.module.css
+ * جدول چرخشی قیمت‌های صرافی‌ها — tokens only, RTL logical properties
+ */
+
+.board {
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--ds-surface-1);
+}
+
+/* ─── Currency tabs ─────────────────────────────────────────────────────────── */
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  background: var(--ds-surface-2);
+  border-block-end: 1px solid var(--ds-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--ds-space-1-5) var(--ds-space-3);
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: background 140ms, border-color 140ms, transform 80ms;
+  white-space: nowrap;
+  color: var(--ds-text-2);
+  min-inline-size: 64px;
+}
+.tab:hover {
+  background: var(--ds-surface-1);
+  border-color: var(--ds-border);
+}
+.tab:active { transform: scale(0.97); }
+
+.tabActive {
+  background: var(--ds-surface-1);
+  border-color: var(--ds-accent, var(--ds-primary));
+  color: var(--ds-text-1);
+}
+
+.tabCode {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: inherit;
+}
+.tabActive .tabCode {
+  color: var(--ds-accent, var(--ds-primary));
+}
+
+.tabName {
+  font-size: 11px;
+  color: var(--ds-text-3);
+}
+
+/* ─── Table ──────────────────────────────────────────────────────────────────── */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* ─── Table header ───────────────────────────────────────────────────────────── */
+
+.tableHeader th {
+  padding: var(--ds-space-2) var(--ds-space-4);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ds-text-3);
+  background: var(--ds-surface-2);
+  border-block-end: 1px solid var(--ds-border);
+  text-align: start;
+}
+
+/* ─── Row ─────────────────────────────────────────────────────────────────── */
+
+.row td {
+  padding: var(--ds-space-3) var(--ds-space-4);
+  vertical-align: middle;
+  border-block-end: 1px solid var(--ds-border-muted, var(--ds-border));
+  transition: background 100ms;
+}
+.row:last-child td { border-block-end: none; }
+.row:hover td { background: var(--ds-surface-2); }
+
+.rowBest td {
+  background: color-mix(in srgb, var(--ds-success) 5%, transparent);
+}
+.rowBest td:first-child {
+  border-inline-start: 2px solid var(--ds-success);
+}
+
+/* ─── Exchange cell ──────────────────────────────────────────────────────────── */
+
+.exchangeCell { display: flex; flex-direction: column; gap: 2px; }
+.exchangeName { font-size: 14px; font-weight: 600; color: var(--ds-text-1); }
+.exchangeCity { font-size: 12px; color: var(--ds-text-3); }
+
+/* ─── Rate cell ─────────────────────────────────────────────────────────────── */
+
+.rateCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rateLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--ds-text-3);
+}
+.rateIcon { width: 12px; height: 12px; }
+.rateValue {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ds-text-1);
+}
+.rateUnit {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--ds-text-3);
+  margin-inline-start: 3px;
+}
+
+/* ─── Countdown ─────────────────────────────────────────────────────────────── */
+
+.countdownCell {
+  display: table-cell;
+  font-size: 12px;
+  color: var(--ds-text-3);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  width: 80px;
+}
+.countdownCell > span,
+.countdownCell > * {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.countdownIcon { width: 13px; height: 13px; flex-shrink: 0; }
+
+/* ─── Best badge ─────────────────────────────────────────────────────────────── */
+
+.badgeCell {
+  width: 56px;
+  text-align: center;
+}
+
+.bestBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--ds-success) 12%, transparent);
+  color: var(--ds-success);
+  border: 1px solid color-mix(in srgb, var(--ds-success) 25%, transparent);
+}
+
+.dealBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--ds-radius-md, 8px);
+  border: 1px solid var(--ds-accent, var(--ds-primary));
+  background: transparent;
+  color: var(--ds-accent, var(--ds-primary));
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 100ms, color 100ms;
+  block-size: 30px;
+}
+.dealBtn:hover {
+  background: var(--ds-accent, var(--ds-primary));
+  color: var(--ds-text-inverse);
+}
+.dealBtn:active { transform: scale(0.97); }
+
+/* ─── States ─────────────────────────────────────────────────────────────────── */
+
+.loading, .error, .empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-8) var(--ds-space-4);
+  color: var(--ds-text-3);
+  font-size: 14px;
+  text-align: center;
+}
+
+.loadingIcon {
+  width: 20px;
+  height: 20px;
+  animation: spin 1.2s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.errorIcon { width: 20px; height: 20px; color: var(--ds-error); }
+.error { color: var(--ds-error); }
+
+.emptyHint { font-size: 12px; color: var(--ds-text-3); opacity: 0.7; }
+
+.emptyRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-6) var(--ds-space-4);
+  color: var(--ds-text-3);
+  font-size: 13px;
+}
+
+/* ─── Footer ─────────────────────────────────────────────────────────────────── */
+
+.foot {
+  padding: var(--ds-space-3) var(--ds-space-4);
+  font-size: 12px;
+  color: var(--ds-text-3);
+  border-block-start: 1px solid var(--ds-border);
+  background: var(--ds-surface-2);
+  margin: 0;
+}
+
+/* ─── Mobile ─────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .tableHeader th:nth-child(4),
+  .tableHeader th:nth-child(5) { display: none; }
+  .row td:nth-child(4),
+  .row td:nth-child(5) { display: none; }
+}

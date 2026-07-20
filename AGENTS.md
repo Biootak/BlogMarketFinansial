@@ -861,6 +861,11 @@ TASK COMPLETION CHECKLIST (run before every "done" declaration — MUST be visib
 - **علت:** قانون «Analysis ≠ Done» وجود نداشت
 - **اصلاح:** قانون به AGENTS.md اضافه شد + شماره ۲۵ به anti-failure اضافه شد
 
+### PRE-CODE GATE «راهکار بهتر» — Silent Skipping — learned 2026-07-29
+- **fail شد:** هنگام ساختن `/api/exchange-quotes/active` از `safeCache` استفاده کردم بدون اینکه به کاربر بگویم جایگزین بهتر (Next.js 15+ `export const revalidate`) هم وجود دارد.
+- **علت:** ردیف «💡 Better way?» در PRE-CODE GATE پر شد ولی چون انتخاب با consistency توجیه می‌شد، بدون explicit notification به کاربر ادامه دادم.
+- **قانون اضافه‌شده:** وقتی ردیف «Better way?» پاسخ «بله — ولی consistency دارم» دارد، **باز هم باید به کاربر گفته شود** و explicit تأیید گرفته شود. «consistency» یک دلیل، نه یک مجوز سکوت است.
+
 ### ⚠️ تذکر مهم:
 این loop **جایگزین عذرخواهی** است — نه مکمل آن. عذرخواهی بدون اصلاح دستورالعمل = همان اشتباه در سشن بعدی.
 

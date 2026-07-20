@@ -9,6 +9,10 @@
       "schedule": "*/5 * * * *"
     },
     {
+      "path": "/api/cron/expire-quotes",
+      "schedule": "*/5 * * * *"
+    },
+    {
       "path": "/api/cron/publish-scheduled-posts",
       "schedule": "*/10 * * * *"
     }

@@ -1,0 +1,200 @@
+/**
+ * DealModal.module.css — tokens only, RTL logical props
+ */
+
+.content {
+  max-inline-size: 480px;
+  inline-size: 100%;
+  border-radius: var(--ds-radius-xl, 16px);
+  padding: var(--ds-space-5);
+  background: var(--ds-surface-1);
+  border: 1px solid var(--ds-border);
+}
+
+.dialogHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-block-end: var(--ds-space-4);
+}
+
+.dialogTitle {
+  font-size: var(--ds-text-lg, 1.125rem);
+  font-weight: 700;
+  color: var(--ds-text-1);
+  margin: 0;
+}
+
+.closeBtn {
+  inline-size: 32px;
+  block-size: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+  background: var(--ds-surface-2);
+  color: var(--ds-text-2);
+  cursor: pointer;
+  transition: background 100ms;
+}
+.closeBtn:hover { background: var(--ds-surface-3, var(--ds-border)); }
+
+/* ─── Quote summary ─── */
+
+.quoteSummary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-radius: var(--ds-radius-md, 8px);
+  background: var(--ds-surface-2);
+  border: 1px solid var(--ds-border);
+  margin-block-end: var(--ds-space-4);
+}
+
+.summaryExchange {
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  color: var(--ds-text-1);
+}
+.summaryCurrency {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 100px;
+  background: color-mix(in srgb, var(--ds-accent, var(--ds-primary)) 12%, transparent);
+  color: var(--ds-accent, var(--ds-primary));
+  border: 1px solid color-mix(in srgb, var(--ds-accent, var(--ds-primary)) 25%, transparent);
+}
+.summaryRate {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-2);
+}
+.summaryCity {
+  font-size: 12px;
+  color: var(--ds-text-3);
+  margin-inline-start: auto;
+}
+
+/* ─── Success ─── */
+
+.successBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-6) var(--ds-space-4);
+  text-align: center;
+}
+.successIcon {
+  inline-size: 48px;
+  block-size: 48px;
+  color: var(--ds-success);
+}
+.successMsg {
+  font-size: var(--ds-text-lg, 1.125rem);
+  font-weight: 700;
+  color: var(--ds-text-1);
+  margin: 0;
+}
+.successCode {
+  font-family: monospace;
+  font-size: var(--ds-text-base);
+  color: var(--ds-accent, var(--ds-primary));
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+.successHint {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-3);
+  margin: 0;
+}
+
+/* ─── Error ─── */
+
+.errorBox {
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-radius: var(--ds-radius-md, 8px);
+  background: color-mix(in srgb, var(--ds-error) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ds-error) 25%, transparent);
+  color: var(--ds-error);
+  font-size: var(--ds-text-sm);
+  margin-block-end: var(--ds-space-3);
+}
+
+/* ─── Form ─── */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+}
+
+.label {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--ds-text-2);
+}
+
+.input,
+.select,
+.textarea {
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-radius: var(--ds-radius-md, 8px);
+  border: 1px solid var(--ds-border);
+  background: var(--ds-surface-0, var(--ds-bg));
+  color: var(--ds-text-1);
+  font-size: var(--ds-text-sm);
+  font-family: inherit;
+  transition: border-color 120ms;
+  inline-size: 100%;
+  box-sizing: border-box;
+}
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--ds-accent, var(--ds-primary));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-accent, var(--ds-primary)) 15%, transparent);
+}
+
+.textarea { resize: vertical; min-block-size: 60px; }
+
+/* ─── Submit ─── */
+
+.submitBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-5);
+  background: var(--ds-accent, var(--ds-primary));
+  color: var(--ds-text-inverse);
+  border: none;
+  border-radius: var(--ds-radius-md, 8px);
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  block-size: 44px; /* touch target */
+}
+.submitBtn:not(:disabled):hover { opacity: 0.88; }
+.submitBtn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* ─── Disclaimer ─── */
+
+.disclaimer {
+  font-size: 12px;
+  color: var(--ds-text-3);
+  text-align: center;
+  margin: 0;
+}

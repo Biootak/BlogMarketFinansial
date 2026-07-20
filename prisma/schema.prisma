@@ -53,6 +53,7 @@ model User {
   tasks               Task[]
   TwoFactorBackupCode TwoFactorBackupCode[]
   VirtualCard         VirtualCard[]
+  CurrencyDeal        CurrencyDeal[]
 
   @@index([status])
   @@index([role, status])
@@ -713,38 +714,50 @@ model Device {
 }
 
 model Exchange {
-  id              String            @id
-  name            String
-  slug            String            @unique
-  licenseNo       String?
-  city            String?
-  address         String?
-  phone           String?
-  email           String?
-  logoUrl         String?
-  status          ExchangeStatus    @default(PENDING)
-  dailyLimitAf    BigInt            @default(0)
-  platformFee     Float             @default(0)
-  requireKyc      Boolean           @default(true)
-  createdById     String?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime
-  AuditLog         AuditLog[]
-  Customer         Customer[]
-  Device           Device[]
-  ExchangeStaff    ExchangeStaff[]
-  FintechAccount   FintechAccount[]
-  FraudReview      FraudReview[]
-  KycVerification  KycVerification[]
-  LedgerEntry      LedgerEntry[]
-  Transaction      Transaction[]
-  TransferProvider TransferProvider[]
-  Wallet           Wallet[]
+  id                   String            @id
+  name                 String
+  slug                 String            @unique
+  licenseNo            String?
+  city                 String?
+  address              String?
+  phone                String?
+  email                String?
+  logoUrl              String?
+  /// نام رسمی فارسی برای نمایش در سایت
+  displayName          String?
+  website              String?
+  /// آیا در جدول مقایسه /money-transfer نشان داده شود
+  showInComparison     Boolean           @default(false)
+  /// ارزهایی که این صرافی مجاز به ثبت قیمت برای آن‌ها است
+  allowedCurrencies    String[]          @default([])
+  /// مدت اعتبار quote (دقیقه) — پیش‌فرض ۶۰
+  quoteAutoExpireMin   Int               @default(60)
+  status               ExchangeStatus    @default(PENDING)
+  dailyLimitAf         BigInt            @default(0)
+  platformFee          Float             @default(0)
+  requireKyc           Boolean           @default(true)
+  createdById          String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime
+  AuditLog             AuditLog[]
+  Customer             Customer[]
+  Device               Device[]
+  ExchangeStaff        ExchangeStaff[]
+  FintechAccount       FintechAccount[]
+  FraudReview          FraudReview[]
+  KycVerification      KycVerification[]
+  LedgerEntry          LedgerEntry[]
+  Transaction          Transaction[]
+  TransferProvider     TransferProvider[]
+  Wallet               Wallet[]
+  ExchangeRateQuote    ExchangeRateQuote[]
+  CurrencyDeal         CurrencyDeal[]
 
   @@index([city])
   @@index([createdAt(sort: Desc)])
   @@index([slug])
   @@index([status])
+  @@index([showInComparison, status])
 }
 
 model ExchangeStaff {
@@ -1164,6 +1177,204 @@ enum ExchangeStaffRole {
   MANAGER
   STAFF
   VIEWER
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ExchangeRateQuote — قیمت‌گذاری صرافی برای هر ارز (ثبت، تایید، نمایش)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// وضعیت یک quote قیمت‌گذاری صرافی
+enum QuoteStatus {
+  PENDING   // ثبت‌شده — در انتظار تایید ادمین
+  ACTIVE    // تایید‌شده — در سایت نمایش داده می‌شود
+  REJECTED  // رد‌شده توسط ادمین با یادداشت
+  EXPIRED   // منقضی‌شده (cron خودکار)
+  ARCHIVED  // آرشیو دستی توسط ادمین
+  LOCKED    // انتخاب‌شده توسط مشتری — در حین انجام معامله
+}
+
+/// نحوه انجام معامله
+enum DealChannel {
+  ONLINE    // از طریق پلتفرم
+  INPERSON  // حضوری در شعبه صرافی
+  PHONE     // تلفنی
+}
+
+/// وضعیت معامله
+enum DealStatus {
+  PENDING     // ثبت‌شده — در انتظار تایید صرافی
+  CONFIRMED   // تایید صرافی
+  PROCESSING  // در حال انجام
+  COMPLETED   // تکمیل‌شده
+  CANCELLED   // لغو‌شده
+  DISPUTED    // در حال رسیدگی به اعتراض
+  REFUNDED    // بازگشت وجه
+}
+
+/// قیمت ثبت‌شده توسط صرافی برای یک ارز — پس از تایید ادمین در سایت نمایش داده می‌شود
+model ExchangeRateQuote {
+  id              String       @id @default(cuid())
+  exchangeId      String
+  /// کد ارز استاندارد ISO 4217
+  currencyCode    String       // USD، EUR، AFN، AED، …
+  /// جفت ارز: "USD/AFN"، "USD/IRR"، "EUR/AFN"
+  currencyPair    String
+  /// قیمت خرید صرافی (صرافی از مشتری می‌خرد) — واحد: تومان یا افغانی
+  buyRate         Decimal      @db.Decimal(20, 6)
+  /// قیمت فروش صرافی (صرافی به مشتری می‌فروشد)
+  sellRate        Decimal      @db.Decimal(20, 6)
+  /// واحد پول پایه: toman / rial / afn / usd
+  unit            String       @default("toman")
+  /// حداقل مبلغ معامله
+  minAmount       Decimal?     @db.Decimal(20, 2)
+  /// حداکثر مبلغ معامله
+  maxAmount       Decimal?     @db.Decimal(20, 2)
+  status          QuoteStatus  @default(PENDING)
+  /// مدت اعتبار (دقیقه) — از approvedAt محاسبه می‌شود
+  validMinutes    Int          @default(60)
+  /// زمان انقضا (پر می‌شود هنگام ACTIVE شدن)
+  expiresAt       DateTime?
+  /// یادداشت ادمین هنگام تایید یا رد
+  note            String?
+  /// شناسه ادمین تایید‌کننده
+  approvedById    String?
+  approvedAt      DateTime?
+  /// شناسه صراف ثبت‌کننده
+  submittedById   String?
+  /// شماره نسخه برای optimistic locking
+  version         Int          @default(1)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  Exchange    Exchange          @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  StatusLogs  QuoteStatusLog[]
+  Deals       CurrencyDeal[]
+
+  @@index([exchangeId, currencyCode, status])
+  @@index([status, expiresAt])
+  @@index([exchangeId, status])
+  @@index([approvedById])
+  @@index([currencyCode, status])
+}
+
+/// تاریخچه کامل تغییر وضعیت هر quote — برای audit trail و نمودار تاریخچه نرخ
+model QuoteStatusLog {
+  id         String      @id @default(cuid())
+  quoteId    String
+  fromStatus QuoteStatus?
+  toStatus   QuoteStatus
+  actorId    String?
+  /// نقش انجام‌دهنده: ADMIN / SARAFI / SYSTEM (cron)
+  actorRole  String?
+  /// دلیل رد یا انقضا
+  reason     String?
+  /// metadata: اختلاف با بازار٪، buyRate قبلی و جدید
+  metadata   Json?
+  createdAt  DateTime    @default(now())
+
+  Quote ExchangeRateQuote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  @@index([quoteId, createdAt(sort: Desc)])
+  @@index([actorId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CurrencyDeal — معامله ارزی (آنلاین یا حضوری)
+// مشتری یک quote را انتخاب می‌کند و یک معامله ثبت می‌شود
+// ─────────────────────────────────────────────────────────────────────────────
+
+model CurrencyDeal {
+  id             String      @id @default(cuid())
+  /// کد پیگیری منحصربه‌فرد برای مشتری
+  trackingCode   String      @unique
+  exchangeId     String
+  /// quote ای که مشتری بر اساس آن معامله کرده
+  quoteId        String?
+  /// شناسه کاربر ثبت‌نام‌شده (null = مشتری مهمان)
+  userId         String?
+  /// اطلاعات تماس (برای مشتری مهمان یا حضوری)
+  customerName   String
+  customerPhone  String
+  customerEmail  String?
+  /// کد ارز مبدأ
+  fromCurrency   String      // USD، EUR، …
+  /// کد ارز مقصد
+  toCurrency     String      // AFN، IRR، AED، …
+  /// مبلغ پرداختی مشتری
+  fromAmount     Decimal     @db.Decimal(20, 6)
+  /// مبلغ دریافتی مشتری (محاسبه‌شده)
+  toAmount       Decimal     @db.Decimal(20, 6)
+  /// نرخ اعمال‌شده در معامله
+  appliedRate    Decimal     @db.Decimal(20, 6)
+  /// کارمزد صرافی
+  feeAmount      Decimal     @default(0) @db.Decimal(20, 6)
+  /// نرخ مرجع بازار در زمان معامله (برای سابقه)
+  marketRateRef  Decimal?    @db.Decimal(20, 6)
+  channel        DealChannel @default(ONLINE)
+  status         DealStatus  @default(PENDING)
+  /// یادداشت مشتری
+  note           String?
+  /// یادداشت داخلی صرافی (private)
+  internalNote   String?
+  /// idempotency برای جلوگیری از ثبت تکراری
+  idempotencyKey String?     @unique
+  /// شناسه کارمند صرافی که معامله را تایید کرد
+  confirmedById  String?
+  confirmedAt    DateTime?
+  /// زمان تکمیل معامله
+  completedAt    DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  Exchange    Exchange           @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  Quote       ExchangeRateQuote? @relation(fields: [quoteId], references: [id], onDelete: SetNull)
+  User        User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  StatusLogs  DealStatusLog[]
+  Attachments DealAttachment[]
+
+  @@index([exchangeId, status, createdAt(sort: Desc)])
+  @@index([trackingCode])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([customerPhone])
+  @@index([status, createdAt(sort: Desc)])
+  @@index([idempotencyKey])
+  @@index([quoteId])
+}
+
+/// تاریخچه وضعیت معامله
+model DealStatusLog {
+  id         String     @id @default(cuid())
+  dealId     String
+  fromStatus DealStatus?
+  toStatus   DealStatus
+  actorId    String?
+  actorRole  String?
+  note       String?
+  createdAt  DateTime   @default(now())
+
+  Deal CurrencyDeal @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId, createdAt(sort: Desc)])
+}
+
+/// مدارک و رسید معامله
+model DealAttachment {
+  id           String   @id @default(cuid())
+  dealId       String
+  uploadedById String
+  fileName     String
+  fileType     String
+  fileSize     Int
+  url          String
+  fileHash     String?
+  /// نوع سند: RECEIPT / ID_SCAN / CONTRACT / OTHER
+  label        String?
+  createdAt    DateTime @default(now())
+
+  Deal CurrencyDeal @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId])
+  @@index([uploadedById])
 }
 
 enum ExchangeStatus {

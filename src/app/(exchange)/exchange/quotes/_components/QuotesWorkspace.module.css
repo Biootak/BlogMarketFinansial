@@ -1,0 +1,274 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-4);
+  flex-wrap: wrap;
+}
+
+.hint {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-3);
+}
+
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-4);
+  background: var(--nova-accent, var(--ds-primary));
+  color: var(--ds-text-inverse);
+  border: none;
+  border-radius: var(--ds-radius-md);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.addBtn:hover { opacity: 0.88; }
+
+/* ── فرم ──────────────────────────────────────────────────── */
+.form {
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-lg);
+  padding: var(--ds-space-5);
+  background: var(--ds-surface);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+.formHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.formTitle {
+  font-size: var(--ds-text-base);
+  font-weight: 700;
+  color: var(--ds-text-1);
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ds-text-3);
+  padding: 4px;
+  border-radius: var(--ds-radius-sm);
+}
+.closeBtn:hover { color: var(--ds-text-1); }
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--ds-space-3);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+}
+
+.label {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--ds-text-2);
+}
+
+.labelHint {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--ds-text-3);
+  margin-inline-start: 4px;
+}
+
+.input,
+.select {
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+  font-size: var(--ds-text-sm);
+  background: var(--ds-bg);
+  color: var(--ds-text-1);
+  transition: border-color 0.15s;
+}
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--nova-accent, var(--ds-primary));
+}
+
+/* ── پیش‌نمایش ───────────────────────────────────────────── */
+.preview {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  flex-wrap: wrap;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  background: color-mix(in srgb, var(--ds-success) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ds-success) 25%, transparent);
+  border-radius: var(--ds-radius-md);
+  font-size: var(--ds-text-sm);
+}
+
+.previewLabel { font-weight: 700; color: var(--ds-text-2); }
+.previewItem { color: var(--ds-text-1); }
+.previewSep { color: var(--ds-text-3); }
+
+/* ── خطا / موفقیت ────────────────────────────────────────── */
+.formError {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-sm);
+  color: var(--ds-error);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  background: color-mix(in srgb, var(--ds-error) 8%, transparent);
+  border-radius: var(--ds-radius-md);
+}
+
+.formSuccess {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-sm);
+  color: var(--ds-success);
+}
+
+.formFooter {
+  display: flex;
+  gap: var(--ds-space-3);
+}
+
+.submitBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-5);
+  background: var(--nova-accent, var(--ds-primary));
+  color: var(--ds-text-inverse);
+  border: none;
+  border-radius: var(--ds-radius-md);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.submitBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+.submitBtn:not(:disabled):hover { opacity: 0.88; }
+
+.cancelBtn {
+  padding: var(--ds-space-2) var(--ds-space-4);
+  background: none;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-2);
+  cursor: pointer;
+}
+.cancelBtn:hover { border-color: var(--ds-text-2); }
+
+/* ── جدول قیمت‌ها ─────────────────────────────────────────── */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-10) var(--ds-space-6);
+  text-align: center;
+  color: var(--ds-text-3);
+  font-size: var(--ds-text-sm);
+}
+
+.tableWrap {
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-lg);
+  overflow: hidden;
+}
+
+.tableHead {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1.5fr 1.5fr;
+  padding: var(--ds-space-2) var(--ds-space-4);
+  background: var(--ds-surface);
+  border-bottom: 1px solid var(--ds-border);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ds-text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  gap: var(--ds-space-3);
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1.5fr 1.5fr;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-bottom: 1px solid var(--ds-border);
+  align-items: center;
+  gap: var(--ds-space-3);
+  font-size: var(--ds-text-sm);
+  transition: background 0.1s;
+}
+.tableRow:last-child { border-bottom: none; }
+.tableRow:hover { background: var(--ds-surface); }
+.tableRow[data-status='ACTIVE'] { background: color-mix(in srgb, var(--ds-success) 4%, transparent); }
+.tableRow[data-status='REJECTED'] { background: color-mix(in srgb, var(--ds-error) 4%, transparent); }
+
+.cellCurrency {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cellCurrency strong { font-size: var(--ds-text-base); color: var(--ds-text-1); }
+.cellCurrency small { font-size: 11px; color: var(--ds-text-3); direction: ltr; }
+
+.cellNum {
+  font-weight: 600;
+  color: var(--ds-text-1);
+}
+
+.statusBadge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.liveDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ds-success);
+  animation: pulse 2s infinite;
+  flex-shrink: 0;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.cellExpiry { font-size: 12px; color: var(--ds-text-3); }
+
+.countdown {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ds-warning);
+  font-weight: 600;
+}
+
+.rejectNote {
+  font-size: 11px;
+  color: var(--ds-error);
+  opacity: 0.8;
+}

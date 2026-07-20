@@ -1,0 +1,110 @@
+.root { display:flex; flex-direction:column; gap:var(--ds-space-5); }
+
+.toast {
+  display:flex; align-items:center; gap:var(--ds-space-2);
+  padding:var(--ds-space-2) var(--ds-space-4);
+  border-radius:var(--ds-radius-md);
+  font-size:var(--ds-text-sm); font-weight:600;
+  animation: fadeIn .2s ease;
+}
+@keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+.toastOk { background:color-mix(in srgb,var(--ds-success) 12%,transparent); color:var(--ds-success); border:1px solid color-mix(in srgb,var(--ds-success) 30%,transparent); }
+.toastErr { background:color-mix(in srgb,var(--ds-error) 12%,transparent); color:var(--ds-error); border:1px solid color-mix(in srgb,var(--ds-error) 30%,transparent); }
+
+.list { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:var(--ds-space-4); }
+
+.card {
+  border:1px solid var(--ds-border);
+  border-radius:var(--ds-radius-lg);
+  background:var(--ds-surface);
+  overflow:hidden;
+  display:flex; flex-direction:column;
+}
+
+.cardHead {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:var(--ds-space-3) var(--ds-space-4);
+  border-bottom:1px solid var(--ds-border);
+  background:var(--ds-bg);
+}
+
+.exchangeInfo { display:flex; flex-direction:column; gap:2px; }
+.exchangeName { font-size:var(--ds-text-base); font-weight:700; color:var(--ds-text-1); }
+.exchangeCity { font-size:11px; color:var(--ds-text-3); }
+
+.timeInfo {
+  display:flex; align-items:center; gap:4px;
+  font-size:11px; color:var(--ds-text-3);
+}
+
+.cardBody { padding:var(--ds-space-4); display:flex; flex-direction:column; gap:var(--ds-space-3); flex:1; }
+
+.currencyBadge {
+  display:inline-flex; align-items:center; gap:6px;
+  font-size:var(--ds-text-base); font-weight:800;
+  color:var(--ds-text-1);
+}
+.pairLabel { font-size:12px; font-weight:500; color:var(--ds-text-3); direction:ltr; }
+
+.rates { display:flex; flex-wrap:wrap; gap:var(--ds-space-4); align-items:center; }
+.rateItem { display:flex; flex-direction:column; gap:2px; }
+.rateLabel { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--ds-text-3); }
+.rateVal { font-size:var(--ds-text-base); font-weight:700; color:var(--ds-text-1); }
+.rateUnit { font-size:10px; color:var(--ds-text-3); }
+.ratesSep { width:1px; height:32px; background:var(--ds-border); }
+
+.cardActions {
+  display:flex; gap:var(--ds-space-3);
+  padding:var(--ds-space-3) var(--ds-space-4);
+  border-top:1px solid var(--ds-border);
+}
+
+.approveBtn {
+  display:inline-flex; align-items:center; gap:6px;
+  flex:1; justify-content:center;
+  padding:var(--ds-space-2) var(--ds-space-4);
+  background:color-mix(in srgb,var(--ds-success) 90%,transparent);
+  color:var(--ds-text-inverse); border:none;
+  border-radius:var(--ds-radius-md);
+  font-size:var(--ds-text-sm); font-weight:700;
+  cursor:pointer; transition:opacity .15s;
+}
+.approveBtn:hover { opacity:.85; }
+.approveBtn:disabled { opacity:.5; cursor:not-allowed; }
+
+.rejectBtn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:var(--ds-space-2) var(--ds-space-4);
+  background:none; border:1px solid var(--ds-error);
+  color:var(--ds-error);
+  border-radius:var(--ds-radius-md);
+  font-size:var(--ds-text-sm); font-weight:600;
+  cursor:pointer; transition:background .15s;
+}
+.rejectBtn:hover { background:color-mix(in srgb,var(--ds-error) 8%,transparent); }
+.rejectBtn:disabled { opacity:.5; cursor:not-allowed; }
+
+.rejectForm { padding:var(--ds-space-3) var(--ds-space-4); border-top:1px solid var(--ds-border); display:flex; flex-direction:column; gap:var(--ds-space-2); }
+.rejectInput {
+  padding:var(--ds-space-2) var(--ds-space-3);
+  border:1px solid var(--ds-error);
+  border-radius:var(--ds-radius-md);
+  font-size:var(--ds-text-sm);
+  background:var(--ds-bg); color:var(--ds-text-1);
+}
+.rejectInput:focus { outline:none; }
+.rejectActions { display:flex; gap:var(--ds-space-2); }
+.confirmRejectBtn {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:var(--ds-space-1) var(--ds-space-3);
+  background:var(--ds-error); color:var(--ds-text-inverse); border:none;
+  border-radius:var(--ds-radius-md);
+  font-size:var(--ds-text-sm); font-weight:700; cursor:pointer;
+}
+.confirmRejectBtn:disabled { opacity:.5; cursor:not-allowed; }
+.cancelBtn {
+  padding:var(--ds-space-1) var(--ds-space-3);
+  background:none; border:1px solid var(--ds-border);
+  border-radius:var(--ds-radius-md);
+  font-size:var(--ds-text-sm); color:var(--ds-text-2); cursor:pointer;
+}

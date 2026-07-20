@@ -1,0 +1,305 @@
+'use client';
+
+/**
+ * ExchangeQuotesBoard — جدول چرخشی قیمت‌های صرافی‌ها
+ * ----------------------------------------------------------------------------
+ * quote های ACTIVE از پایگاه داده را نمایش می‌دهد:
+ *   - هر ۴ ثانیه ارز فعال تغییر می‌کند
+ *   - countdown انقضا برای هر quote
+ *   - buyRate / sellRate هر صرافی
+ *   - اگر quote نیست → پیام خالی
+ * ----------------------------------------------------------------------------
+ */
+
+import type { QuoteRow } from '@/actions/exchange-quotes';
+import DealModal from '@/components/MoneyTransfer/DealModal';
+import { AlertCircle, Clock, RefreshCw, ShoppingCart, TrendingDown, TrendingUp } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import s from './ExchangeQuotesBoard.module.css';
+
+interface QuotesData {
+  quotes: QuoteRow[];
+  currencies: string[];
+}
+
+const CURRENCY_NAMES: Record<string, string> = {
+  USD: 'دلار آمریکا',
+  EUR: 'یورو',
+  AED: 'درهم امارات',
+  GBP: 'پوند انگلیس',
+  AFN: 'افغانی',
+  TRY: 'لیر ترکیه',
+  SAR: 'ریال عربستان',
+  CAD: 'دلار کانادا',
+  AUD: 'دلار استرالیا',
+  CHF: 'فرانک سوئیس',
+};
+
+const UNIT_LABEL: Record<string, string> = {
+  toman: 'تومان',
+  rial: 'ریال',
+  afn: 'افغانی',
+  usd: 'دلار',
+};
+
+function formatFa(n: number): string {
+  if (!Number.isFinite(n) || n === 0) return '—';
+  return new Intl.NumberFormat('fa-IR').format(Math.round(n));
+}
+
+function useCountdown(expiresAt: Date | string | null): string {
+  const [label, setLabel] = useState('');
+  useEffect(() => {
+    if (!expiresAt) {
+      setLabel('');
+      return;
+    }
+    const tick = () => {
+      const diff = new Date(expiresAt).getTime() - Date.now();
+      if (diff <= 0) {
+        setLabel('منقضی');
+        return;
+      }
+      const m = Math.floor(diff / 60000);
+      const sec = Math.floor((diff % 60000) / 1000);
+      setLabel(`${m}:${String(sec).padStart(2, '0')}`);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [expiresAt]);
+  return label;
+}
+
+function QuoteTableRow({
+  quote,
+  isBestBuy,
+  onDeal,
+}: {
+  quote: QuoteRow;
+  isBestBuy: boolean;
+  onDeal: (q: QuoteRow) => void;
+}) {
+  const countdown = useCountdown(quote.expiresAt);
+  const buy = Number.parseFloat(quote.buyRate);
+  const sell = Number.parseFloat(quote.sellRate);
+  const unit = UNIT_LABEL[quote.unit] ?? quote.unit;
+
+  return (
+    <tr className={`${s.row}${isBestBuy ? ` ${s.rowBest}` : ''}`}>
+      <td className={s.exchangeCell}>
+        <div className={s.exchangeName}>{quote.exchangeName ?? 'صرافی'}</div>
+        {quote.exchangeCity && <div className={s.exchangeCity}>{quote.exchangeCity}</div>}
+      </td>
+      <td className={s.rateCell}>
+        <span className={s.rateLabel}>
+          <TrendingDown className={s.rateIcon} aria-hidden />
+          خرید
+        </span>
+        <span className={`${s.rateValue} tabular-nums`}>
+          {formatFa(buy)}
+          <span className={s.rateUnit}>{unit}</span>
+        </span>
+      </td>
+      <td className={s.rateCell}>
+        <span className={s.rateLabel}>
+          <TrendingUp className={s.rateIcon} aria-hidden />
+          فروش
+        </span>
+        <span className={`${s.rateValue} tabular-nums`}>
+          {formatFa(sell)}
+          <span className={s.rateUnit}>{unit}</span>
+        </span>
+      </td>
+      <td className={s.countdownCell} aria-label={countdown ? `انقضا: ${countdown}` : undefined}>
+        {countdown && (
+          <>
+            <Clock className={s.countdownIcon} aria-hidden />
+            <span className="tabular-nums">{countdown}</span>
+          </>
+        )}
+      </td>
+      <td className={s.badgeCell}>
+        {isBestBuy && <span className={s.bestBadge}>بهترین</span>}
+        <button
+          type="button"
+          className={s.dealBtn}
+          onClick={() => onDeal(quote)}
+          aria-label={`معامله با ${quote.exchangeName ?? 'صرافی'} برای ${quote.currencyCode}`}
+        >
+          <ShoppingCart className="w-3.5 h-3.5" aria-hidden />
+          معامله
+        </button>
+      </td>
+    </tr>
+  );
+}
+
+export default function ExchangeQuotesBoard() {
+  const [data, setData] = useState<QuotesData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeCurrencyIdx, setActiveCurrencyIdx] = useState(0);
+  const [dealQuote, setDealQuote] = useState<QuoteRow | null>(null);
+  const rotateRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const fetchRef = useRef<AbortController | null>(null);
+
+  const fetchData = useCallback(async () => {
+    fetchRef.current?.abort();
+    const ctl = new AbortController();
+    fetchRef.current = ctl;
+    try {
+      const res = await fetch('/api/exchange-quotes/active', { signal: ctl.signal });
+      const json = (await res.json()) as {
+        success: boolean;
+        data?: QuotesData;
+        error?: { message: string };
+      };
+      if (json.success && json.data) {
+        setData(json.data);
+        setError(null);
+      } else {
+        setError(json.error?.message ?? 'خطا در دریافت قیمت‌ها');
+      }
+    } catch (e) {
+      if ((e as { name?: string }).name !== 'AbortError') {
+        setError('ارتباط برقرار نشد');
+      }
+    } finally {
+      if (!ctl.signal.aborted) setLoading(false);
+    }
+  }, []);
+
+  // initial fetch + refresh every 30s
+  useEffect(() => {
+    void fetchData();
+    const id = setInterval(() => {
+      void fetchData();
+    }, 30_000);
+    return () => {
+      clearInterval(id);
+      fetchRef.current?.abort();
+    };
+  }, [fetchData]);
+
+  // rotate currency every 4s when multiple currencies exist
+  useEffect(() => {
+    if (!data?.currencies.length || data.currencies.length <= 1) return;
+    rotateRef.current = setInterval(() => {
+      setActiveCurrencyIdx((i) => (i + 1) % data.currencies.length);
+    }, 4_000);
+    return () => {
+      if (rotateRef.current) clearInterval(rotateRef.current);
+    };
+  }, [data?.currencies]);
+
+  if (loading) {
+    return (
+      <div className={s.loading} aria-live="polite">
+        <RefreshCw className={s.loadingIcon} aria-hidden />
+        <span>در حال بارگذاری قیمت‌های صرافی‌ها…</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={s.error} role="alert">
+        <AlertCircle className={s.errorIcon} aria-hidden />
+        {error}
+      </div>
+    );
+  }
+
+  if (!data || data.currencies.length === 0) {
+    return (
+      <div className={s.empty}>
+        <p>در حال حاضر قیمتی از صرافی‌ها موجود نیست.</p>
+        <p className={s.emptyHint}>صرافی‌ها می‌توانند از طریق پنل خود قیمت ثبت کنند.</p>
+      </div>
+    );
+  }
+
+  const activeCurrency = data.currencies[activeCurrencyIdx] ?? data.currencies[0];
+  if (!activeCurrency) return null;
+
+  const visibleQuotes = data.quotes
+    .filter((q) => q.currencyCode === activeCurrency)
+    .sort((a, b) => Number.parseFloat(a.buyRate) - Number.parseFloat(b.buyRate));
+
+  const bestBuyId = visibleQuotes[0]?.id;
+
+  return (
+    <div className={s.board}>
+      {/* Currency tabs */}
+      <div className={s.tabs} role="tablist" aria-label="انتخاب ارز">
+        {data.currencies.map((code, i) => (
+          <button
+            key={code}
+            type="button"
+            role="tab"
+            aria-selected={code === activeCurrency}
+            className={`${s.tab}${code === activeCurrency ? ` ${s.tabActive}` : ''}`}
+            onClick={() => {
+              setActiveCurrencyIdx(i);
+              if (rotateRef.current) {
+                clearInterval(rotateRef.current);
+                rotateRef.current = null;
+              }
+            }}
+          >
+            <span className={s.tabCode}>{code}</span>
+            <span className={s.tabName}>{CURRENCY_NAMES[code] ?? code}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Semantic table */}
+      <table
+        className={s.table}
+        aria-label={`قیمت‌های ${CURRENCY_NAMES[activeCurrency] ?? activeCurrency}`}
+      >
+        <thead>
+          <tr className={s.tableHeader}>
+            <th scope="col">صرافی</th>
+            <th scope="col">نرخ خرید</th>
+            <th scope="col">نرخ فروش</th>
+            <th scope="col">انقضا</th>
+            <th scope="col" />
+          </tr>
+        </thead>
+        <tbody>
+          {visibleQuotes.length === 0 ? (
+            <tr>
+              <td colSpan={5} className={s.emptyRow}>
+                قیمتی برای این ارز موجود نیست
+              </td>
+            </tr>
+          ) : (
+            visibleQuotes.map((q) => (
+              <QuoteTableRow
+                key={q.id}
+                quote={q}
+                isBestBuy={q.id === bestBuyId}
+                onDeal={setDealQuote}
+              />
+            ))
+          )}
+        </tbody>
+      </table>
+
+      <p className={s.foot}>
+        قیمت‌ها توسط صرافی‌های تایید‌شده ثبت می‌شوند و هر ۳۰ ثانیه به‌روز می‌گردند.
+      </p>
+
+      {/* Deal modal */}
+      {dealQuote && (
+        <DealModal
+          quote={dealQuote}
+          open={!!dealQuote}
+          onClose={() => setDealQuote(null)}
+        />
+      )}
+    </div>
+  );
+}
