@@ -2,6 +2,9 @@
 
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
+import { getEmailProviderAsync } from '@/lib/email';
+import { otpEmail, otpExpiresLabel } from '@/lib/email/templates';
+import { generateOtpToken } from '@/lib/tokens';
 import { UpdateProfileSchema } from '@/schemas';
 import type { ActionResult, UpdateProfileInput, UserWithProfile } from '@/types/types';
 import bcrypt from 'bcryptjs';
@@ -28,12 +31,8 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
     > = {};
     if (validatedFields.name) updateData.name = validatedFields.name;
     if (validatedFields.email) {
-      // M15 fix: changing email requires re-verification. We:
-      // 1. Reset emailVerified so the new address cannot be used for auth.
-      // 2. Invalidate all OTP tokens for the old email to prevent reuse.
-      // NOTE: A full re-verify OTP email should be sent here in production.
       const currentEmail = session.user.email;
-      const newEmail = validatedFields.email;
+      const newEmail = validatedFields.email.trim().toLowerCase();
       if (currentEmail !== newEmail) {
         updateData.email = newEmail;
         updateData.emailVerified = null;
@@ -94,6 +93,34 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
         update: profileUpdateData,
         create: { ...profileUpdateData, userId: session.user.id },
       });
+    }
+
+    // If email changed, issue an OTP to the new address so the user re-verifies.
+    // emailVerified was already set to null above, so auth is blocked until verify.
+    if (updateData.email) {
+      const minted = await generateOtpToken({ email: updateData.email, intent: 'reverify' });
+      if (minted.ok) {
+        try {
+          const provider = await getEmailProviderAsync();
+          await provider.send(
+            otpEmail({
+              to: updateData.email,
+              code: minted.code,
+              intent: 'reverify',
+              expiresLabel: otpExpiresLabel(),
+            }),
+          );
+        } catch {
+          // Email delivery failed — OTP is still stored; user can request resend.
+        }
+      }
+      revalidatePath('/edit-profile');
+      return {
+        success: true,
+        message: 'ایمیل تغییر کرد — کد تأیید به آدرس جدید ارسال شد',
+        variant: 'success',
+        redirect: `/auth?step=reverify&email=${encodeURIComponent(updateData.email)}`,
+      };
     }
 
     revalidatePath('/edit-profile');

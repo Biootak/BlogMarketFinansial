@@ -11,7 +11,8 @@ import {
 } from '@/lib/email/templates';
 import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
 import { checkRateLimit } from '@/lib/rate-limiter';
-import { revalidatePath, unstable_cache } from 'next/cache';
+import { safeCache } from '@/lib/safe-cache';
+import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { z } from 'zod';
 
@@ -1358,7 +1359,9 @@ export async function deleteServiceRequestAttachment(
 }
 
 // ─── Support links (cached) ───────────────────────────────────────────────── //
-const _getCachedSupportLinks = unstable_cache(
+// Migrated from unstable_cache to safeCache (2026-07-19) so DB failures
+// return { telegram: null, whatsapp: null } gracefully instead of crashing.
+const _getCachedSupportLinks = safeCache(
   async () => {
     const links = await prisma.socialLink.findMany({
       where: { isActive: true, type: 'SUPPORT' },
@@ -1369,8 +1372,8 @@ const _getCachedSupportLinks = unstable_cache(
       links.find((l) => ['whatsapp', 'واتساپ'].includes(l.name.toLowerCase()))?.url ?? null;
     return { telegram, whatsapp };
   },
-  ['support-contact-links', 'v1'],
-  { revalidate: 600, tags: ['sidebar-data'] },
+  { telegram: null, whatsapp: null },
+  { key: 'support-contact-links-v1', ttl: 600, tags: ['sidebar-data'] },
 );
 
 export async function getSupportContactLinks() {

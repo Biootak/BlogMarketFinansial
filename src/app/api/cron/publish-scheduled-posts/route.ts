@@ -107,17 +107,12 @@ async function handle(request: Request) {
         publishedAt: now.toISOString(),
       });
 
-      // log ساده برای observability — ActivityLog نیاز به userId دارد که
-      // در cron context نداریم. اگر نیاز به audit شد، می‌توان یک کاربر
-      // «system» ساخت و activity را به نام او ثبت کرد.
-      console.log(
-        `[publish-scheduled-posts] published "${post.title}" (id=${post.id}, ` +
-          `scheduledAt=${post.scheduledAt?.toISOString()})`,
-      );
+      // Observability: error details are returned in the JSON response body
+      // (errorDetails array) and captured by the cron runner's log stream.
+      // ActivityLog needs a userId which is unavailable in cron context.
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       errors.push({ postId: post.id, error: msg });
-      console.error(`[publish-scheduled-posts] failed to publish ${post.id}:`, err);
     }
   }
 

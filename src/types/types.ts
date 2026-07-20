@@ -259,6 +259,8 @@ export type ActionResult<T = void, E = string> = {
   data?: T;
   error?: E;
   variant?: 'success' | 'destructive' | 'warning' | 'info';
+  /** Optional client-side redirect URL after a successful action. */
+  redirect?: string;
   meta?: {
     currentPage: number;
     pageSize: number;
