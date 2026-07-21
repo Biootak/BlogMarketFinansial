@@ -15,7 +15,7 @@
  *     with server-side type+size validation in addServiceRequestAttachment
  */
 
-import '@/components/Dashboard/ServiceRequests/ServiceRequestsDetailDrawer.module.css';
+import '@/components/Dashboard/ServiceRequests/ServiceRequestsDetailDrawer.css';
 import {
   addServiceRequestAttachment,
   addServiceRequestNote,

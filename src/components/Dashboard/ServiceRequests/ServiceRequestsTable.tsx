@@ -27,7 +27,7 @@
  *   └────────────────────────────────────────────────┘
  */
 
-import '@/components/Dashboard/ServiceRequests/ServiceRequestsTable.module.css';
+import '@/components/Dashboard/ServiceRequests/ServiceRequestsTable.css';
 import {
   bulkUpdateServiceRequestStatus,
   deleteServiceRequest,

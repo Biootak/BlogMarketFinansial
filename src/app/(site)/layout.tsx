@@ -1,9 +1,14 @@
-﻿import SiteFooterData, { FooterSkeleton } from '@/app/(site)/_components/SiteFooterData';
+import SiteFooterData, { FooterSkeleton } from '@/app/(site)/_components/SiteFooterData';
 import SiteHeaderData, { HeaderSkeleton } from '@/app/(site)/_components/SiteHeaderData';
 import SiteSettingsData from '@/app/(site)/_components/SiteSettingsData';
 import { getSystemSettingsCached } from '@/data/getSystemSettingsCached';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+
+// The shared header reads auth() to render sign-in/avatar state, which opts
+// the entire (site) tree out of static generation. Declaring force-dynamic here
+// prevents Next.js from attempting a build-time DB connection on any child route.
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
   // Site settings come from `getSystemSettingsCached` (unstable_cache, 60s)

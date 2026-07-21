@@ -5,7 +5,7 @@
  * به همه child routes از طریق server context پاس می‌دهد.
  * هر صراف فقط داده خودش را می‌بیند.
  */
-import '../../../dashboard/dashboard.css';
+import '@/app/dashboard/dashboard.css';
 import { getExchangeForUser } from '@/actions/exchanges';
 import { auth } from '@/auth';
 import ExchangeShell from '@/components/Exchange/ExchangeShell';

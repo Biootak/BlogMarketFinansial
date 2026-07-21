@@ -1,18 +1,18 @@
-/**
- * ServiceRequestsDetailDrawer — co-located CSS module
+﻿/**
+ * ServiceRequestsDetailDrawer â€” co-located CSS module
  * New classes for tabs, notes, attachments (2026-07-09)
  * Uses only --at-* tokens from dashboard.css; no hex literals.
  */
 
-/* ── Tabs bar ───────────────────────────────────────────────────────────── */
-:global(.at-srq-drawer__tabs) {
+/* â”€â”€ Tabs bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.at-srq-drawer__tabs {
   display: flex;
   gap: 0;
   border-bottom: 1px solid var(--at-line);
   background: var(--at-bg-deep);
 }
 
-:global(.at-srq-drawer__tab) {
+.at-srq-drawer__tab {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -28,15 +28,15 @@
   flex-shrink: 0;
 }
 
-:global(.at-srq-drawer__tab:hover) {
+.at-srq-drawer__tab:hover {
   color: var(--at-fg);
 }
 
-:global(.at-srq-drawer__tab.is-active) {
+.at-srq-drawer__tab.is-active {
   color: var(--at-accent-fg);
 }
 
-:global(.at-srq-drawer__tab.is-active::after) {
+.at-srq-drawer__tab.is-active::after {
   content: "";
   position: absolute;
   inset-inline: 8px;
@@ -46,7 +46,7 @@
   background: var(--at-accent-fg);
 }
 
-:global(.at-srq-drawer__tab-badge) {
+.at-srq-drawer__tab-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -61,8 +61,8 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Timeline ───────────────────────────────────────────────────────────── */
-:global(.at-srq-drawer__timeline) {
+/* â”€â”€ Timeline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.at-srq-drawer__timeline {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -71,18 +71,18 @@
   gap: 0;
 }
 
-:global(.at-srq-drawer__timeline-item) {
+.at-srq-drawer__timeline-item {
   display: flex;
   gap: 10px;
   position: relative;
   padding-bottom: 12px;
 }
 
-:global(.at-srq-drawer__timeline-item:last-child) {
+.at-srq-drawer__timeline-item:last-child {
   padding-bottom: 0;
 }
 
-:global(.at-srq-drawer__timeline-item::before) {
+.at-srq-drawer__timeline-item::before {
   content: "";
   position: absolute;
   inset-inline-start: 7px;
@@ -92,11 +92,11 @@
   background: var(--at-line);
 }
 
-:global(.at-srq-drawer__timeline-item:last-child::before) {
+.at-srq-drawer__timeline-item:last-child::before {
   display: none;
 }
 
-:global(.at-srq-drawer__timeline-dot) {
+.at-srq-drawer__timeline-dot {
   flex-shrink: 0;
   width: 15px;
   height: 15px;
@@ -106,7 +106,7 @@
   margin-top: 2px;
 }
 
-:global(.at-srq-drawer__timeline-body) {
+.at-srq-drawer__timeline-body {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -114,34 +114,34 @@
   flex: 1;
 }
 
-:global(.at-srq-drawer__timeline-status) {
+.at-srq-drawer__timeline-status {
   font-size: 12.5px;
   font-weight: 700;
   color: var(--at-fg);
 }
 
-:global(.at-srq-drawer__timeline-by) {
+.at-srq-drawer__timeline-by {
   font-size: 11px;
   color: var(--at-fg-muted);
   direction: ltr;
   text-align: start;
 }
 
-:global(.at-srq-drawer__timeline-note) {
+.at-srq-drawer__timeline-note {
   font-size: 11.5px;
   color: var(--at-fg-subtle);
   font-style: italic;
   white-space: pre-wrap;
 }
 
-:global(.at-srq-drawer__timeline-time) {
+.at-srq-drawer__timeline-time {
   font-size: 10.5px;
   color: var(--at-fg-muted);
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Notes tab ──────────────────────────────────────────────────────────── */
-:global(.at-srq-drawer__note-info) {
+/* â”€â”€ Notes tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.at-srq-drawer__note-info {
   display: flex;
   align-items: flex-start;
   gap: 7px;
@@ -154,7 +154,7 @@
   line-height: 1.5;
 }
 
-:global(.at-srq-drawer__note-compose) {
+.at-srq-drawer__note-compose {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -164,7 +164,7 @@
   border: 1px solid var(--at-line);
 }
 
-:global(.at-srq-drawer__textarea) {
+.at-srq-drawer__textarea {
   width: 100%;
   resize: vertical;
   padding: 10px 12px;
@@ -180,11 +180,11 @@
   direction: rtl;
 }
 
-:global(.at-srq-drawer__textarea:focus) {
+.at-srq-drawer__textarea:focus {
   border-color: var(--at-accent-fg);
 }
 
-:global(.at-srq-drawer__note-compose-foot) {
+.at-srq-drawer__note-compose-foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -192,7 +192,7 @@
   flex-wrap: wrap;
 }
 
-:global(.at-srq-drawer__checkbox-label) {
+.at-srq-drawer__checkbox-label {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -202,14 +202,14 @@
   user-select: none;
 }
 
-:global(.at-srq-drawer__checkbox) {
+.at-srq-drawer__checkbox {
   width: 14px;
   height: 14px;
   cursor: pointer;
   accent-color: var(--at-accent-fg);
 }
 
-:global(.at-srq-drawer__btn-primary) {
+.at-srq-drawer__btn-primary {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -227,24 +227,24 @@
   white-space: nowrap;
 }
 
-:global(.at-srq-drawer__btn-primary:disabled),
-:global(.at-srq-drawer__btn-primary.is-disabled) {
+.at-srq-drawer__btn-primary:disabled,
+.at-srq-drawer__btn-primary.is-disabled {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
 }
 
-:global(.at-srq-drawer__btn-primary:hover:not(:disabled)) {
+.at-srq-drawer__btn-primary:hover:not(:disabled) {
   opacity: 0.85;
 }
 
-:global(.at-srq-drawer__msg) {
+.at-srq-drawer__msg {
   font-size: 12px;
   color: var(--at-fg-muted);
   margin: 0;
 }
 
-:global(.at-srq-drawer__empty-hint) {
+.at-srq-drawer__empty-hint {
   text-align: center;
   font-size: 13px;
   color: var(--at-fg-muted);
@@ -252,7 +252,7 @@
   margin: 0;
 }
 
-:global(.at-srq-drawer__note) {
+.at-srq-drawer__note {
   padding: 12px 14px;
   border-radius: 10px;
   border: 1px solid var(--at-line);
@@ -262,19 +262,19 @@
   gap: 6px;
 }
 
-:global(.at-srq-drawer__note.is-private) {
+.at-srq-drawer__note.is-private {
   border-color: color-mix(in oklch, var(--at-gold) 25%, var(--at-line));
   background: color-mix(in oklch, var(--at-gold) 5%, var(--at-bg-deep));
 }
 
-:global(.at-srq-drawer__note-head) {
+.at-srq-drawer__note-head {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
 }
 
-:global(.at-srq-drawer__note-author) {
+.at-srq-drawer__note-author {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -289,7 +289,7 @@
   white-space: nowrap;
 }
 
-:global(.at-srq-drawer__note-tag) {
+.at-srq-drawer__note-tag {
   display: inline-flex;
   align-items: center;
   padding: 1px 7px;
@@ -301,14 +301,14 @@
   color: color-mix(in oklch, var(--at-gold) 70%, var(--at-fg));
 }
 
-:global(.at-srq-drawer__note-time) {
+.at-srq-drawer__note-time {
   font-size: 10.5px;
   color: var(--at-fg-muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-:global(.at-srq-drawer__note-content) {
+.at-srq-drawer__note-content {
   font-size: 13px;
   line-height: 1.55;
   color: var(--at-fg);
@@ -316,8 +316,8 @@
   margin: 0;
 }
 
-/* ── Attachments tab ────────────────────────────────────────────────────── */
-:global(.at-srq-drawer__upload-area) {
+/* â”€â”€ Attachments tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.at-srq-drawer__upload-area {
   padding: 14px;
   border-radius: 12px;
   background: var(--at-bg-deep);
@@ -327,13 +327,13 @@
   gap: 8px;
 }
 
-:global(.at-srq-drawer__upload-label-row) {
+.at-srq-drawer__upload-label-row {
   display: flex;
   gap: 8px;
   align-items: center;
 }
 
-:global(.at-srq-drawer__input) {
+.at-srq-drawer__input {
   flex: 1;
   height: 34px;
   padding-inline: 10px;
@@ -348,17 +348,17 @@
   direction: rtl;
 }
 
-:global(.at-srq-drawer__input:focus) {
+.at-srq-drawer__input:focus {
   border-color: var(--at-accent-fg);
 }
 
-:global(.at-srq-drawer__upload-hint) {
+.at-srq-drawer__upload-hint {
   font-size: 11px;
   color: var(--at-fg-muted);
   margin: 0;
 }
 
-:global(.at-srq-drawer__attachment) {
+.at-srq-drawer__attachment {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -369,7 +369,7 @@
   min-width: 0;
 }
 
-:global(.at-srq-drawer__attachment-icon) {
+.at-srq-drawer__attachment-icon {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
@@ -381,7 +381,7 @@
   color: var(--at-accent-fg);
 }
 
-:global(.at-srq-drawer__attachment-info) {
+.at-srq-drawer__attachment-info {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -389,7 +389,7 @@
   gap: 2px;
 }
 
-:global(.at-srq-drawer__attachment-name) {
+.at-srq-drawer__attachment-name {
   font-size: 12.5px;
   font-weight: 700;
   color: var(--at-fg);
@@ -398,7 +398,7 @@
   white-space: nowrap;
 }
 
-:global(.at-srq-drawer__attachment-meta) {
+.at-srq-drawer__attachment-meta {
   font-size: 10.5px;
   color: var(--at-fg-muted);
   overflow: hidden;
@@ -409,14 +409,14 @@
   text-align: start;
 }
 
-:global(.at-srq-drawer__attachment-actions) {
+.at-srq-drawer__attachment-actions {
   display: flex;
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
 }
 
-:global(.at-srq-drawer__attachment-action) {
+.at-srq-drawer__attachment-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -431,28 +431,29 @@
   text-decoration: none;
 }
 
-:global(.at-srq-drawer__attachment-action:hover) {
+.at-srq-drawer__attachment-action:hover {
   background: var(--at-bg-elevated);
   color: var(--at-fg);
 }
 
-:global(.at-srq-drawer__attachment-action.is-danger) {
+.at-srq-drawer__attachment-action.is-danger {
   border-color: color-mix(in oklch, var(--at-danger) 25%, var(--at-line));
   color: var(--at-danger);
 }
 
-:global(.at-srq-drawer__attachment-action.is-danger:hover) {
+.at-srq-drawer__attachment-action.is-danger:hover {
   background: var(--at-danger-soft);
 }
 
-:global(.at-srq-drawer__attachment-action:disabled) {
+.at-srq-drawer__attachment-action:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
-/* ── Meta grid for service-specific fields ──────────────────────────────── */
-:global(.at-srq-drawer__meta-grid) {
+/* â”€â”€ Meta grid for service-specific fields â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.at-srq-drawer__meta-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6px;
 }
+
