@@ -239,9 +239,14 @@ export async function createDeal(
     toAmount = 0;
   }
 
-  // userId از auth (اگر لاگین بود)
-  const auth = await requireUser().catch(() => null);
-  const userId = auth?.success ? auth.user.id : null;
+  // userId از auth (اگر لاگین بود) — از try/catch به جای .catch() برای type safety
+  let userId: string | null = null;
+  try {
+    const auth = await requireUser();
+    if (auth.success) userId = auth.user.id;
+  } catch {
+    // کاربر لاگین نیست — deal به عنوان مهمان ثبت می‌شود
+  }
 
   const trackingCode = generateTrackingCode();
   const deal = await prisma.currencyDeal.create({

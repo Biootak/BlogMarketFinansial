@@ -8,6 +8,7 @@ import { PageHeader, StatCard, StatGrid } from '@/components/Dashboard/primitive
 import { Building2, CircleDollarSign, TrendingUp, Users } from 'lucide-react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 import ExchangeRecentTransactions from './_components/ExchangeRecentTransactions';
 
 export const metadata: Metadata = { title: 'داشبورد صرافی' };
@@ -54,7 +55,25 @@ export default async function ExchangeDashboardPage() {
         <StatCard label="حجم (افغانی)" value={volumeAfn} icon={Building2} format="compact" />
       </StatGrid>
 
-      <ExchangeRecentTransactions exchangeId={exchange.id} />
+      <Suspense
+        fallback={
+          <div
+            style={{
+              background: 'var(--at-surface)',
+              border: '1px solid var(--at-line)',
+              borderRadius: '14px',
+              padding: '2rem',
+              textAlign: 'center',
+              color: 'var(--at-fg-subtle)',
+              fontSize: 'var(--ds-text-sm)',
+            }}
+          >
+            در حال بارگذاری تراکنش‌ها…
+          </div>
+        }
+      >
+        <ExchangeRecentTransactions exchangeId={exchange.id} />
+      </Suspense>
     </div>
   );
 }

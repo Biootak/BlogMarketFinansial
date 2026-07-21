@@ -280,61 +280,66 @@ export async function createTransaction(
   const feeBig = BigInt(Math.round((fee ?? 0) * 100));
   const destAmountBig = destAmount ? BigInt(Math.round(destAmount * 100)) : null;
 
-  // ثبت تراکنش + ledger در یک transaction
-  const txResult = await prisma.$transaction(async (tx) => {
-    const transaction = await tx.transaction.create({
-      data: {
-        id: createId(),
-        exchangeId,
-        customerId,
-        accountId: account.id,
-        kind,
-        status: 'COMPLETED',
-        amount: amountBig,
-        currency,
-        rate,
-        fee: feeBig,
-        destAmount: destAmountBig,
-        destCurrency: destCurrency ?? null,
-        note: note ?? null,
-        counterparty: counterparty ?? null,
-        idempotencyKey: idempotencyKey ?? null,
-        createdById: access.userId,
-        updatedAt: new Date(),
-      },
-    });
+  // ثبت تراکنش + ledger در یک transaction با serializable isolation
+  // برای جلوگیری از race condition روی running balance
+  const txResult = await prisma.$transaction(
+    async (tx) => {
+      const transaction = await tx.transaction.create({
+        data: {
+          id: createId(),
+          exchangeId,
+          customerId,
+          accountId: account.id,
+          kind,
+          status: 'COMPLETED',
+          amount: amountBig,
+          currency,
+          rate,
+          fee: feeBig,
+          destAmount: destAmountBig,
+          destCurrency: destCurrency ?? null,
+          note: note ?? null,
+          counterparty: counterparty ?? null,
+          idempotencyKey: idempotencyKey ?? null,
+          createdById: access.userId,
+          updatedAt: new Date(),
+        },
+      });
 
-    // Ledger: DEPOSIT/EXCHANGE-IN = CREDIT، بقیه = DEBIT
-    const direction = kind === 'DEPOSIT' ? 'CREDIT' : 'DEBIT';
+      // Ledger: DEPOSIT/EXCHANGE-IN = CREDIT، بقیه = DEBIT
+      const direction = kind === 'DEPOSIT' ? 'CREDIT' : 'DEBIT';
 
-    // running balance (ساده‌شده — در production باید atomic باشد)
-    const lastEntry = await tx.ledgerEntry.findFirst({
-      where: { accountId: account.id },
-      orderBy: { createdAt: 'desc' },
-    });
-    const prevBalance = lastEntry?.runningBalance ?? BigInt(0);
-    const runningBalance =
-      direction === 'CREDIT' ? prevBalance + amountBig : prevBalance - amountBig;
+      // running balance — در همان transaction isolation context
+      // از آخرین running balance استفاده می‌کنیم (serializable تضمین می‌کند read ما fresh باشد)
+      const lastEntry = await tx.ledgerEntry.findFirst({
+        where: { accountId: account.id },
+        orderBy: { createdAt: 'desc' },
+      });
+      const prevBalance = lastEntry?.runningBalance ?? BigInt(0);
+      const runningBalance =
+        direction === 'CREDIT' ? prevBalance + amountBig : prevBalance - amountBig;
 
-    await tx.ledgerEntry.create({
-      data: {
-        id: createId(),
-        exchangeId,
-        accountId: account.id,
-        customerId,
-        txnId: transaction.id,
-        direction,
-        amount: amountBig,
-        currency,
-        runningBalance,
-        description: `${kind} — ${note ?? ''}`.trim(),
-        createdById: access.userId,
-        createdAt: new Date(),
-      },
-    });
+      await tx.ledgerEntry.create({
+        data: {
+          id: createId(),
+          exchangeId,
+          accountId: account.id,
+          customerId,
+          txnId: transaction.id,
+          direction,
+          amount: amountBig,
+          currency,
+          runningBalance,
+          description: `${kind} — ${note ?? ''}`.trim(),
+          createdById: access.userId,
+          createdAt: new Date(),
+        },
+      });
 
-    return transaction;
-  });
+      return transaction;
+    },
+    { isolationLevel: 'Serializable' },
+  );
 
   revalidateTag(`exchange-transactions-${exchangeId}`);
   revalidateTag(`exchange-customers-${exchangeId}`);

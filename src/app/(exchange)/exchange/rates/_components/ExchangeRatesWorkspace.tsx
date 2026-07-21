@@ -146,9 +146,12 @@ export default function ExchangeRatesWorkspace({ exchange, provider }: Props) {
   }
 
   // محاسبه نمونه: ۱۰۰ دلار
-  const spreadEx = (100 * Number(form.spreadPercent || 0)) / 100;
+  // فرض: نرخ بازار USD ≈ ۶۵۰۰۰ تومان (مثال نمایشی)
+  const DEMO_RATE_TOMAN = 65_000;
+  const spreadEx = (100 * DEMO_RATE_TOMAN * Number(form.spreadPercent || 0)) / 100;
   const flatEx = Math.round(Number(form.flatFeeToman || 0));
-  const totalMarkupEx = spreadEx + flatEx / 1000; // تقریبی در مثال ۱۰۰ دلار
+  const totalMarkupExToman = spreadEx + flatEx; // مجموع کارمزد به تومان برای ۱۰۰ دلار
+  const totalMarkupExUsd = DEMO_RATE_TOMAN > 0 ? totalMarkupExToman / DEMO_RATE_TOMAN : 0;
 
   function formatDuration(min: number): string {
     if (!Number.isFinite(min) || min <= 0) return 'لحظه‌ای';
@@ -190,8 +193,11 @@ export default function ExchangeRatesWorkspace({ exchange, provider }: Props) {
         </div>
         {(spreadEx > 0 || flatEx > 0) && (
           <p className={s.previewNote}>
-            برای ۱۰۰ دلار، تفاوت نرخ شما با بازار تقریباً{' '}
-            <strong>{totalMarkupEx.toFixed(2)} دلار</strong> است.
+            برای ۱۰۰ دلار، کارمزد شما تقریباً{' '}
+            <strong className="tabular-nums">
+              {new Intl.NumberFormat('fa-IR').format(Math.round(totalMarkupExToman))} تومان
+            </strong>{' '}
+            (حدود <strong className="tabular-nums">{totalMarkupExUsd.toFixed(2)} دلار</strong>) است.
           </p>
         )}
       </div>

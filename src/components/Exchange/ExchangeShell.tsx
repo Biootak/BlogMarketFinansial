@@ -23,6 +23,7 @@ import {
   Users,
   X,
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { type ReactNode, useState } from 'react';
@@ -144,7 +145,13 @@ export default function ExchangeShell({
         <div className={s.userCard}>
           <div className={s.userAvatar}>
             {userImage ? (
-              <img src={userImage} alt={userName} className={s.userAvatarImg} />
+              <Image
+                src={userImage}
+                alt={userName}
+                width={36}
+                height={36}
+                className={s.userAvatarImg}
+              />
             ) : (
               <span className={s.userAvatarFallback}>{userName.slice(0, 1).toUpperCase()}</span>
             )}

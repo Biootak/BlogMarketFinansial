@@ -1,8 +1,9 @@
 'use client';
 
 import { type ExchangeStaffRow, addExchangeStaff, revokeExchangeStaff } from '@/actions/exchanges';
+import Image from 'next/image';
 import { ConfirmDialog } from '@/components/Dashboard/primitives';
-import { Shield, Trash2, UserPlus } from 'lucide-react';
+import { Trash2, UserPlus } from 'lucide-react';
 import { type CSSProperties, useCallback, useState } from 'react';
 import s from './StaffWorkspace.module.css';
 
@@ -120,7 +121,7 @@ export default function StaffWorkspace({ exchangeId, initialStaff, currentUserId
               fontSize: 'var(--ds-text-sm)',
               fontFamily: 'inherit',
               fontWeight: 600,
-              color: '#fff',
+              color: 'var(--at-fg-inverse, #fff)',
               background: 'var(--at-accent)',
               border: 'none',
               borderRadius: '8px',
@@ -154,10 +155,12 @@ export default function StaffWorkspace({ exchangeId, initialStaff, currentUserId
             <div key={member.id} className={s.staffRow}>
               <div className={s.staffAvatar}>
                 {member.user.image ? (
-                  <img
+                  <Image
                     src={member.user.image}
                     alt={member.user.name ?? ''}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    width={36}
+                    height={36}
+                    style={{ objectFit: 'cover', borderRadius: '50%' }}
                   />
                 ) : (
                   <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--at-accent)' }}>

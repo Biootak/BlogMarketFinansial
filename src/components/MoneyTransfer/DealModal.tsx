@@ -62,7 +62,9 @@ async function submitAction(_prev: FormState, formData: FormData): Promise<FormS
     fromAmount,
     channel,
     note,
-    idempotencyKey: `${quoteId}-${customerPhone}-${fromAmount}-${Date.now()}`,
+    // idempotencyKey باید deterministic باشد — بدون Date.now()
+    // برای یک session: quoteId + phone + amount کافی است
+    idempotencyKey: `deal-${quoteId}-${customerPhone}-${fromAmount}`,
   });
 
   if (!res.success) return { status: 'error', message: res.error.message };
