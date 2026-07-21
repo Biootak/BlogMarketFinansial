@@ -20,7 +20,7 @@
  */
 
 import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
-import { unstable_cache } from 'next/cache';
+import { safeCache } from '@/lib/safe-cache';
 
 export interface MarketTickerItem {
   /** کلید یکتا (symbol) */
@@ -129,15 +129,15 @@ async function loadCryptoTickerData(): Promise<MarketTickerItem[]> {
 }
 
 /**
- * Cached wrapper با 60s TTL.
- * - revalidate: 60s — بعد ۶۰ ثانیه دوباره fetch می‌کنه
- * - tag: 'crypto-ticker' — می‌تونیم با revalidateTag('crypto-ticker') invalidate کنیم
+ * safeCache wrapper با 60s TTL.
+ * - ttl: 60s — بعد ۶۰ ثانیه دوباره fetch می‌کنه
+ * - tag: 'crypto-ticker' — با safeRevalidateTag('crypto-ticker') invalidate می‌شود
+ * - fallback: [] — نوار قیمت gracefully غیب می‌شه، کل صفحه کرش نمی‌کنه
+ *
+ * 2026-08-01: migrated from unstable_cache → safeCache for DB-resilience.
  */
-export const getCryptoTickerData = unstable_cache(
-  loadCryptoTickerData,
-  ['crypto-ticker-data', 'v2-crypto-only-2026-06-20'],
-  {
-    revalidate: 60,
-    tags: ['crypto-ticker'],
-  },
-);
+export const getCryptoTickerData = safeCache(loadCryptoTickerData, [], {
+  key: 'crypto-ticker-data',
+  ttl: 60,
+  tags: ['crypto-ticker'],
+});

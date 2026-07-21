@@ -6,6 +6,7 @@ import { logActivity } from '@/lib/activity-logger';
 import { checkRole } from '@/lib/auth';
 import prisma from '@/lib/db';
 import { revalidatePath, revalidateTag } from '@/lib/revalidate';
+import { safeCache } from '@/lib/safe-cache';
 import { createUniqueSlug } from '@/lib/slugUtils';
 import { generateSlug, generateUniqueId, validateSlug } from '@/lib/utils';
 import { CreatePostSchema, UpdatePostSchema } from '@/schemas';
@@ -17,7 +18,6 @@ import type {
   UpdatePostInput,
 } from '@/types/types';
 import { PostStatus, type Prisma, Role } from '@prisma/client';
-import { unstable_cache } from 'next/cache';
 
 export async function createPost(data: CreatePostInput): Promise<ActionResult<PostWithRelations>> {
   const session = await checkRole(['ADMIN', 'AUTHOR']);
@@ -95,7 +95,7 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
     // Invalidate paths
     revalidatePath('/');
     revalidatePath(`/single/${post.slug}`);
-    // 2026-06-14: also bust the new unstable_cache wrappers (post-slug, archive, dashboard-stats).
+    // 2026-06-14: bust post-slug, archive, dashboard-stats caches.
     revalidateTag(`post-${post.id}`);
     revalidateTag('post-slug');
     revalidateTag('archive');
@@ -758,11 +758,9 @@ export async function getPostBySlug(slug: string): Promise<
 }
 
 // ---------- Cache wrapper for getPostBySlug ----------
-// 2026-06-14: heavy single-post fetcher. Public archive/single pages call
-// it from server components, so wrapping in unstable_cache avoids 3 sequential
-// DB round-trips per visit. The 3 inner queries are Promise.all'd below so
-// wall-clock = slowest query, not sum. Invalidated by revalidatePostCache()
-// (tag 'post-${id}') and the broad 'posts' tag on any post write.
+// 2026-06-14: heavy single-post fetcher. 3 inner queries are Promise.all'd.
+// Invalidated by revalidatePostCache() (tag 'post-${id}') and 'posts' tag.
+// 2026-08-01: unstable_cache → safeCache — DB failure returns fallback, not crash.
 async function fetchPostBySlugRaw(slug: string): Promise<
   ActionResult<
     PostWithRelations & {
@@ -899,10 +897,27 @@ async function fetchPostBySlugRaw(slug: string): Promise<
   }
 }
 
-const getCachedPostBySlug = unstable_cache(fetchPostBySlugRaw, ['post-by-slug', 'v1-2026-06-14'], {
-  revalidate: 300, // 5 minutes
-  tags: ['posts', 'post-slug'],
-});
+const STATS_FALLBACK: ActionResult<{
+  views: { today: number; data: number[] };
+  comments: { new: number; data: number[] };
+  shares: { total: number; data: number[] };
+  likes: { total: number; data: number[] };
+  publishedPosts: { total: number; data: number[] };
+  drafts: { total: number; data: number[] };
+}> = {
+  success: false,
+  message: 'خطا در بازیابی آمار. لطفاً دوباره تلاش کنید.',
+};
+
+const getCachedPostBySlug = safeCache(
+  fetchPostBySlugRaw,
+  { success: false, message: 'پست یافت نشد.' } as Awaited<ReturnType<typeof fetchPostBySlugRaw>>,
+  {
+    key: 'post-by-slug',
+    ttl: 300,
+    tags: ['posts', 'post-slug'],
+  },
+);
 
 export async function listAllPosts(
   page = 1,
@@ -1018,12 +1033,9 @@ export const getArchivePosts = async (
 };
 
 // ---------- Cache wrapper for getArchivePosts ----------
-// 2026-06-14: wrap the heavy archive query in unstable_cache so the public
-// archive page hits Prisma at most once per cache key. The wrapper invalidates
-// on every post write (tag 'posts'), category write (tag 'categories' +
-// 'category-${slug}') and tag write (tag 'tags'). Per-page filter values
-// become part of the keyParts array so Next.js keeps a distinct entry per
-// (category, subcategory, tag, filter, page, q) combination.
+// 2026-06-14: heavy archive query. Invalidated on post/category/tag writes.
+// Per-arg cache keys via safeCache makeKey() keep distinct entries per filter.
+// 2026-08-01: unstable_cache → safeCache.
 type ArchiveResult = { posts: PostWithRelations[]; total: number; pages: number };
 
 async function fetchArchivePostsRaw(
@@ -1174,11 +1186,14 @@ async function fetchArchivePostsRaw(
   }
 }
 
-const getCachedArchivePosts = unstable_cache(
+// 2026-08-01: unstable_cache → safeCache. Fallback: empty result page.
+const ARCHIVE_FALLBACK: ArchiveResult = { posts: [], total: 0, pages: 0 };
+const getCachedArchivePosts = safeCache(
   fetchArchivePostsRaw,
-  ['archive-posts', 'v1-2026-06-14'],
+  { success: true, data: ARCHIVE_FALLBACK } as ActionResult<ArchiveResult>,
   {
-    revalidate: 120, // 2 minutes
+    key: 'archive-posts',
+    ttl: 120,
     tags: ['posts', 'archive', 'categories', 'tags'],
   },
 );
@@ -1300,20 +1315,16 @@ export async function getStats(): Promise<
     };
   }
 
-  // 2026-06-19: auth()/headers() can't run inside unstable_cache (Next 16
-  // forbids dynamic data sources in a cache scope). Resolve the user above
-  // and pass the role scope in as an argument. unstable_cache keys on
-  // [name, ...args], so the authorId arg also scopes the cache per-author
-  // (previously the key was global, which leaked AUTHOR views across users).
+  // 2026-06-19: auth()/headers() can't run inside a cache scope (Next 16
+  // forbids dynamic data sources). Resolve the user above and pass role
+  // scope as an argument — safeCache keys on (baseKey + JSON.stringify(args))
+  // so the authorId scopes the cache per-author automatically.
   return getCachedStats({ authorId: user.role === 'AUTHOR' ? user.id : undefined });
 }
 
 // ---------- Cache wrapper for getStats ----------
-// 2026-06-14: dashboard's getStats ran 12 queries in a transaction (4 metrics
-// × today/weekly). Dashboard renders this on every load. Wrap in
-// unstable_cache with 120s TTL + tag 'dashboard-stats'. The 'posts' tag
-// (already invalidated on every post write via revalidatePostCache) busts
-// it on real changes; the TTL keeps the data fresh even without writes.
+// 2026-06-14: dashboard's getStats ran 12 queries. Cached 120s.
+// 2026-08-01: unstable_cache → safeCache. On DB failure returns STATS_FALLBACK.
 async function fetchStatsRaw(roleScope: { authorId?: string }): Promise<
   ActionResult<{
     views: { today: number; data: number[] };
@@ -1458,8 +1469,11 @@ async function fetchStatsRaw(roleScope: { authorId?: string }): Promise<
   }
 }
 
-const getCachedStats = unstable_cache(fetchStatsRaw, ['dashboard-stats', 'v1-2026-06-14'], {
-  revalidate: 120, // 2 minutes
+// 2026-08-01: unstable_cache → safeCache. Fallback reuses STATS_FALLBACK
+// defined above getCachedPostBySlug.
+const getCachedStats = safeCache(fetchStatsRaw, STATS_FALLBACK, {
+  key: 'dashboard-stats',
+  ttl: 120,
   tags: ['posts', 'comments', 'dashboard-stats'],
 });
 

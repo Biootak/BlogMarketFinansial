@@ -6,8 +6,7 @@ import { assembleMarketRates } from '@/lib/market-rates';
 import type { MarketRateItem } from '@/lib/market-rates';
 import { requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
-import { safeRevalidateTag } from '@/lib/safe-cache';
-import { unstable_cache } from 'next/cache';
+import { safeCache, safeRevalidateTag } from '@/lib/safe-cache';
 
 const TAGS = {
   ticker: 'market-rates:ticker',
@@ -15,33 +14,38 @@ const TAGS = {
   exchangeRates: 'market-rates:exchange-rates',
 };
 
-/** کش ۶۰ ثانیه‌ای برای assemble. */
-export const getMarketRates = unstable_cache(
+/**
+ * کش ۶۰ ثانیه‌ای برای assemble.
+ * 2026-08-01: unstable_cache → safeCache. assembleMarketRates خودش
+ * try/catch دارد ولی unstable_cache خطا را از طریق cache boundary
+ * re-throw می‌کرد. safeCache fallback به [] می‌دهد.
+ */
+export const getMarketRates = safeCache(
   async (): Promise<MarketRateItem[]> => {
-    try {
-      return await assembleMarketRates();
-    } catch {
-      // H7: خطا در assemble — [] برگردانده می‌شود (log در cache miss LogRocket/Sentry)
-      return [];
-    }
+    return assembleMarketRates();
   },
-  ['market-rates:v1'],
+  [] as MarketRateItem[],
   {
-    revalidate: 60,
+    key: 'market-rates',
+    ttl: 60,
     tags: [TAGS.ticker, TAGS.list],
   },
 );
 
-/** لیست همه‌ی ExchangeRate برای داشبورد. */
-export const getExchangeRateList = unstable_cache(
+/**
+ * لیست همه‌ی ExchangeRate برای داشبورد.
+ * 2026-08-01: unstable_cache → safeCache.
+ */
+export const getExchangeRateList = safeCache(
   async () => {
     return prisma.exchangeRate.findMany({
       orderBy: { priority: 'asc' },
     });
   },
-  ['market-rates:list:v1'],
+  [],
   {
-    revalidate: 60,
+    key: 'market-rates:list',
+    ttl: 60,
     tags: [TAGS.list],
   },
 );

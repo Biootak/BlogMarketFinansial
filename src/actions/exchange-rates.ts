@@ -3,9 +3,8 @@
 import prisma from '@/lib/db';
 import { requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
-import { safeRevalidateTag } from '@/lib/safe-cache';
+import { safeCache, safeRevalidateTag } from '@/lib/safe-cache';
 import type { ExchangeRateData, FintechActionResult } from '@/types/types';
-import { unstable_cache } from 'next/cache';
 import { z } from 'zod';
 
 const exchangeRateSchema = z.object({
@@ -20,15 +19,16 @@ const exchangeRateSchema = z.object({
   description: z.string().optional(),
 });
 
-// C4: getExchangeRates با caching (۶۰ ثانیه مثل بقیه)
-const _getExchangeRatesCached = unstable_cache(
+// 2026-08-01: unstable_cache → safeCache for DB-resilience.
+// safeCache returns [] on failure — admin dashboard degrades gracefully.
+const _getExchangeRatesCached = safeCache(
   async () => {
     return prisma.exchangeRate.findMany({
       orderBy: [{ createdAt: 'desc' }],
     });
   },
-  ['exchange-rates:list:v1'],
-  { revalidate: 60, tags: ['market-rates:exchange-rates', 'exchange-rates'] },
+  [],
+  { key: 'exchange-rates:list', ttl: 60, tags: ['market-rates:exchange-rates', 'exchange-rates'] },
 );
 
 export async function getExchangeRates(): Promise<ExchangeRateData[]> {
@@ -63,7 +63,7 @@ export async function createExchangeRate(
     safeRevalidateTag('exchange-rates');
 
     return { success: true, data: newExchangeRate };
-  } catch (error) {
+  } catch {
     return {
       success: false,
       error: { code: 'DB_ERROR', message: 'خطا در ایجاد ارز' },
@@ -101,7 +101,7 @@ export async function updateExchangeRate(
     safeRevalidateTag('exchange-rates');
 
     return { success: true, data: updatedExchangeRate };
-  } catch (error) {
+  } catch {
     return {
       success: false,
       error: { code: 'DB_ERROR', message: 'خطا در به‌روزرسانی ارز' },
@@ -122,7 +122,7 @@ export async function deleteExchangeRate(id: string): Promise<FintechActionResul
     safeRevalidateTag('exchange-rates');
 
     return { success: true, data: { id } };
-  } catch (error) {
+  } catch {
     return {
       success: false,
       error: { code: 'DB_ERROR', message: 'خطا در حذف نرخ ارز' },
