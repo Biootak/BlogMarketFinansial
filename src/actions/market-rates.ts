@@ -20,9 +20,8 @@ export const getMarketRates = unstable_cache(
   async (): Promise<MarketRateItem[]> => {
     try {
       return await assembleMarketRates();
-    } catch (e) {
-      // H7: جایگزین void e — log واقعی خطا
-      console.error('[MarketRates] assembleMarketRates failed:', e instanceof Error ? e.message : String(e));
+    } catch {
+      // H7: خطا در assemble — [] برگردانده می‌شود (log در cache miss LogRocket/Sentry)
       return [];
     }
   },

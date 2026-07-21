@@ -296,30 +296,34 @@ export async function submitQuote(
     };
   }
 
-  // M8: quote قبلی PENDING + ACTIVE همین ارز را آرشیو کن
-  await prisma.exchangeRateQuote.updateMany({
-    where: { exchangeId, currencyCode, status: { in: ['PENDING', 'ACTIVE'] } },
-    data: { status: 'ARCHIVED' },
-  });
+  // M8: quote قبلی PENDING + ACTIVE همین ارز را آرشیو کن + ایجاد quote جدید + log — همه atomic
+  const row = await prisma.$transaction(async (tx) => {
+    await tx.exchangeRateQuote.updateMany({
+      where: { exchangeId, currencyCode, status: { in: ['PENDING', 'ACTIVE'] } },
+      data: { status: 'ARCHIVED' },
+    });
 
-  const row = await prisma.exchangeRateQuote.create({
-    data: {
-      exchangeId,
-      currencyCode,
-      currencyPair,
-      buyRate,
-      sellRate,
-      unit,
-      minAmount: minAmount ?? null,
-      maxAmount: maxAmount ?? null,
-      status: 'PENDING',
-      validMinutes: validMinutes ?? exchange.quoteAutoExpireMin,
-      submittedById: access.userId,
-    },
-  });
+    const created = await tx.exchangeRateQuote.create({
+      data: {
+        exchangeId,
+        currencyCode,
+        currencyPair,
+        buyRate,
+        sellRate,
+        unit,
+        minAmount: minAmount ?? null,
+        maxAmount: maxAmount ?? null,
+        status: 'PENDING',
+        validMinutes: validMinutes ?? exchange.quoteAutoExpireMin,
+        submittedById: access.userId,
+      },
+    });
 
-  await prisma.quoteStatusLog.create({
-    data: { quoteId: row.id, toStatus: 'PENDING', actorId: access.userId, actorRole: 'SARAFI' },
+    await tx.quoteStatusLog.create({
+      data: { quoteId: created.id, toStatus: 'PENDING', actorId: access.userId, actorRole: 'SARAFI' },
+    });
+
+    return created;
   });
 
   revalidateQuoteCaches();
@@ -356,38 +360,41 @@ export async function approveQuote(
   const now = new Date();
   const expiresAt = new Date(now.getTime() + quote.validMinutes * 60 * 1000);
 
-  // quote قبلی ACTIVE همین ارز را آرشیو کن
-  await prisma.exchangeRateQuote.updateMany({
-    where: {
-      exchangeId: quote.exchangeId,
-      currencyCode: quote.currencyCode,
-      status: 'ACTIVE',
-      id: { not: id },
-    },
-    data: { status: 'ARCHIVED' },
-  });
+  // تمام write ها atomic: آرشیو quote قبلی + تأیید + log
+  await prisma.$transaction(async (tx) => {
+    // quote قبلی ACTIVE همین ارز را آرشیو کن
+    await tx.exchangeRateQuote.updateMany({
+      where: {
+        exchangeId: quote.exchangeId,
+        currencyCode: quote.currencyCode,
+        status: 'ACTIVE',
+        id: { not: id },
+      },
+      data: { status: 'ARCHIVED' },
+    });
 
-  await prisma.exchangeRateQuote.update({
-    where: { id },
-    data: {
-      status: 'ACTIVE',
-      approvedById: auth.user.id,
-      approvedAt: now,
-      expiresAt,
-      note: note ?? null,
-    },
-  });
+    await tx.exchangeRateQuote.update({
+      where: { id },
+      data: {
+        status: 'ACTIVE',
+        approvedById: auth.user.id,
+        approvedAt: now,
+        expiresAt,
+        note: note ?? null,
+      },
+    });
 
-  await prisma.quoteStatusLog.create({
-    data: {
-      quoteId: id,
-      fromStatus: 'PENDING',
-      toStatus: 'ACTIVE',
-      actorId: auth.user.id,
-      actorRole: 'ADMIN',
-      reason: note ?? null,
-      metadata: { expiresAt: expiresAt.toISOString() },
-    },
+    await tx.quoteStatusLog.create({
+      data: {
+        quoteId: id,
+        fromStatus: 'PENDING',
+        toStatus: 'ACTIVE',
+        actorId: auth.user.id,
+        actorRole: 'ADMIN',
+        reason: note ?? null,
+        metadata: { expiresAt: expiresAt.toISOString() },
+      },
+    });
   });
 
   revalidateQuoteCaches();
@@ -415,19 +422,22 @@ export async function rejectQuote(
     };
   }
 
-  await prisma.exchangeRateQuote.update({
-    where: { id },
-    data: { status: 'REJECTED', note: reason },
-  });
-  await prisma.quoteStatusLog.create({
-    data: {
-      quoteId: id,
-      fromStatus: 'PENDING',
-      toStatus: 'REJECTED',
-      actorId: auth.user.id,
-      actorRole: 'ADMIN',
-      reason,
-    },
+  // update + log atomic
+  await prisma.$transaction(async (tx) => {
+    await tx.exchangeRateQuote.update({
+      where: { id },
+      data: { status: 'REJECTED', note: reason },
+    });
+    await tx.quoteStatusLog.create({
+      data: {
+        quoteId: id,
+        fromStatus: 'PENDING',
+        toStatus: 'REJECTED',
+        actorId: auth.user.id,
+        actorRole: 'ADMIN',
+        reason,
+      },
+    });
   });
 
   revalidateQuoteCaches();

@@ -175,6 +175,7 @@ export default function ServiceRequestsTable({
 }: ServiceRequestsTableProps) {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [selectedRequest, setSelectedRequest] = useState<ServiceRequest | null>(null);
   const [page, setPage] = useState(1);
@@ -188,11 +189,14 @@ export default function ServiceRequestsTable({
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [bulkErrorMsg, setBulkErrorMsg] = useState<string | null>(null);
   const [bulkErrorOpen, setBulkErrorOpen] = useState(false);
+  const [bulkSuccessMsg, setBulkSuccessMsg] = useState<string | null>(null);
+  const [bulkSuccessOpen, setBulkSuccessOpen] = useState(false);
 
   const statusFilter = externalFilter;
 
   const fetchRequests = useCallback(async () => {
     setLoading(true);
+    setFetchError(null);
     const result = await getServiceRequests({
       status: statusFilter,
       page,
@@ -205,6 +209,8 @@ export default function ServiceRequestsTable({
       setTotalPages(data.pagination?.totalPages || 1);
       setTotalCount(data.pagination?.total || 0);
       setSelectedIds(new Set());
+    } else if (!result.success) {
+      setFetchError('error' in result ? result.error.message : 'خطا در بارگذاری درخواست‌ها');
     }
     setLoading(false);
   }, [statusFilter, page, search]);
@@ -251,8 +257,11 @@ export default function ServiceRequestsTable({
   const handleBulkStatus = async (status: keyof typeof STATUS_META) => {
     if (selectedIds.size === 0) return;
     const ids = Array.from(selectedIds);
+    const count = ids.length;
     const result = await bulkUpdateServiceRequestStatus(ids, status);
     if (result.success) {
+      setBulkSuccessMsg(`${count} درخواست با موفقیت به‌روز شد`);
+      setBulkSuccessOpen(true);
       fetchRequests();
       onDataChanged?.();
     } else {
@@ -347,6 +356,24 @@ export default function ServiceRequestsTable({
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Fetch error state */}
+        {fetchError && !loading && (
+          <div
+            role="alert"
+            className="mx-4 mt-3 flex items-center gap-3 rounded-md border border-[var(--at-danger-line,#fca5a5)] bg-[var(--at-danger-bg,#fff1f2)] px-4 py-3 text-sm text-[var(--at-danger,#dc2626)]"
+          >
+            <HiXCircle className="w-4 h-4 shrink-0" aria-hidden />
+            <span>{fetchError}</span>
+            <button
+              type="button"
+              onClick={fetchRequests}
+              className="ms-auto text-xs underline opacity-80 hover:opacity-100"
+            >
+              تلاش مجدد
+            </button>
+          </div>
+        )}
 
         {/* Filter toolbar */}
         <div className="at-srq-table__filter">
@@ -677,6 +704,18 @@ export default function ServiceRequestsTable({
         cancelLabel=""
         variant="default"
         onConfirm={() => setBulkErrorOpen(false)}
+      />
+
+      {/* Bulk operation success dialog */}
+      <ConfirmDialog
+        open={bulkSuccessOpen}
+        onOpenChange={setBulkSuccessOpen}
+        title="عملیات موفق"
+        description={bulkSuccessMsg ?? 'به‌روزرسانی با موفقیت انجام شد.'}
+        confirmLabel="باشه"
+        cancelLabel=""
+        variant="default"
+        onConfirm={() => setBulkSuccessOpen(false)}
       />
     </>
   );
