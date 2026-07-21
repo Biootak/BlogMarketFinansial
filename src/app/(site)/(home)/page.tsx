@@ -1,6 +1,10 @@
-import { getFeaturedPosts } from '@/actions/getFeaturedPosts';
-import { getPosts } from '@/actions/getPosts';
-import { getTopAuthors } from '@/actions/getTopAuthors';
+import {
+  AdBannerSkeleton,
+  HeroSectionSkeleton,
+  SectionAuthorsSkeleton,
+  SectionCategoriesSkeleton,
+  SectionMagazine7Skeleton,
+} from '@/components/Skeletons';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
@@ -8,74 +12,41 @@ import { Suspense } from 'react';
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
 import CryptoTickerSection from '@/components/Sections/CryptoTickerSection';
 import PulseSection from '@/components/Sections/PulseBoard/PulseSection';
-import SectionMagazine7 from '@/components/Sections/SectionMagazine7';
-import { TopAuthorsSection } from '@/components/TopAuthorsSection';
 import HeroSection from './HeroSection';
 import SectionLargeSlider from './SectionLargeSlider';
 import ServicesSection from './ServicesSection';
 import TrustSection from './TrustSection';
-import DeferredAdStrip from './deferred/DeferredAdStrip';
-import DeferredTrending from './deferred/DeferredTrending';
+import AdStripsDeferred from './deferred/AdStripsDeferred';
+import PostsSection from './deferred/PostsSection';
+import TopAuthorsSectionDeferred from './deferred/TopAuthorsSectionDeferred';
+import TrendingDeferred from './deferred/TrendingDeferred';
 
 // Dynamically rendered on demand: the shared site header (MainNav) reads
 // auth() to render sign-in/avatar state, which opts the whole (site) tree out
 // of static generation — so `revalidate` here would be a no-op. DB reads are
 // deduped via safeCache; HTML is edge-cached via the s-maxage header in
 // next.config.ts.
-export default async function Home() {
-  const [posts, topAuthors, firstStripResult, secondStripResult, categoriesResult, featuredResult] =
-    await Promise.all([
-      getPosts(6),
-      getTopAuthors(5),
-      import('@/actions/advertisementActions').then((m) =>
-        m.getActiveAdvertisements({
-          limit: 4,
-          size: 'LARGE',
-          position: 'CUSTOM',
-          orderBy: 'order',
-          orderDirection: 'asc',
-        }),
-      ),
-      import('@/actions/advertisementActions').then((m) =>
-        m.getActiveAdvertisements({
-          limit: 3,
-          size: 'MEDIUM',
-          position: 'CUSTOM',
-          orderBy: 'order',
-          orderDirection: 'asc',
-          page: 2,
-        }),
-      ),
-      import('@/actions/categoryActions').then((m) => m.getPopularCategoriesForHome(16)),
-      getFeaturedPosts(1),
-    ]);
-
-  const popularCategories =
-    categoriesResult.success && categoriesResult.data?.categories
-      ? categoriesResult.data.categories.filter((c) => c.count > 0)
-      : [];
-
-  const firstStrip = firstStripResult.success && firstStripResult.data ? firstStripResult.data : [];
-  const secondStrip =
-    secondStripResult.success && secondStripResult.data ? secondStripResult.data : [];
-
-  const lcpImage = featuredResult?.data?.[0]?.featuredImage;
-
+//
+// Streaming architecture (2026): each data-heavy section is an async server
+// component wrapped in its own <Suspense> boundary so the page shell renders
+// immediately and sections stream in as their data arrives. This eliminates
+// the "blank page + loading.tsx flash" caused by a top-level Promise.all block.
+export default function Home() {
   return (
     <div className="nc-HomePage relative">
-      {lcpImage ? <link rel="preload" as="image" href={lcpImage} /> : null}
-
-      {/* ── Hero Section ────────────────────────────────── */}
+      {/* ── Hero Section (async — fetches market rates) ──────── */}
       <div className="container relative pt-6 sm:pt-8">
-        <HeroSection />
+        <Suspense fallback={<HeroSectionSkeleton />}>
+          <HeroSection />
+        </Suspense>
       </div>
 
-      {/* ── Services Section ────────────────────────────── */}
+      {/* ── Services Section (static) ────────────────────────── */}
       <div className="container relative mt-6 lg:mt-8">
         <ServicesSection />
       </div>
 
-      {/* ── Market Tickers ──────────────────────────────── */}
+      {/* ── Market Tickers (async, suspended) ───────────────── */}
       <div className="container relative">
         <Suspense fallback={<Skeleton className="h-28 rounded-2xl" />}>
           <CryptoTickerSection />
@@ -86,18 +57,14 @@ export default async function Home() {
         </Suspense>
       </div>
 
-      {popularCategories.length > 0 && (
-        <div className="container relative mt-4 lg:mt-5" style={{ minHeight: '320px' }}>
-          <DeferredTrending
-            categories={popularCategories}
-            maxItems={9}
-            title="موضوعات داغ"
-            subtitle="پرطرفدارترین دسته‌بندی‌هایی که الان در بازار می‌درخشند"
-            viewAllHref="/archive"
-          />
-        </div>
-      )}
+      {/* ── Trending Topics (async streaming) ───────────────── */}
+      <div className="container relative mt-4 lg:mt-5">
+        <Suspense fallback={<SectionCategoriesSkeleton />}>
+          <TrendingDeferred />
+        </Suspense>
+      </div>
 
+      {/* ── Pulse Board (async, suspended) ──────────────────── */}
       <div className="container relative mt-4 lg:mt-6">
         <Suspense
           fallback={
@@ -111,31 +78,37 @@ export default async function Home() {
         </Suspense>
       </div>
 
-      {firstStrip.length > 0 && (
-        <div className="container relative mt-4 lg:mt-6" style={{ minHeight: '300px' }}>
-          <DeferredAdStrip ads={firstStrip} accentColor="#5b6cff" />
-        </div>
-      )}
-
-      {posts.length > 0 && (
+      {/* ── Ad Strips + Posts + Authors (single Suspense boundary) ── */}
+      {/* Ads and posts share the same visual area — stream together */}
+      <Suspense
+        fallback={
+          <>
+            <div className="container relative mt-4 lg:mt-6">
+              <AdBannerSkeleton />
+            </div>
+            <div className="container relative mt-4 lg:mt-6">
+              <SectionMagazine7Skeleton />
+            </div>
+            <div className="container relative mt-4 lg:mt-6">
+              <AdBannerSkeleton />
+            </div>
+          </>
+        }
+      >
+        <AdStripsDeferred />
         <div className="container relative mt-4 lg:mt-6">
-          <SectionMagazine7 className="" posts={posts} />
+          <PostsSection />
         </div>
-      )}
+      </Suspense>
 
-      {secondStrip.length > 0 && (
-        <div className="container relative mt-4 lg:mt-6" style={{ minHeight: '300px' }}>
-          <DeferredAdStrip ads={secondStrip} accentColor="#22d3ee" eyebrow="تازه‌های پیشنهادی" />
-        </div>
-      )}
+      {/* ── Top Authors (async streaming) ───────────────────── */}
+      <div className="container relative mt-4 lg:mt-6">
+        <Suspense fallback={<SectionAuthorsSkeleton />}>
+          <TopAuthorsSectionDeferred />
+        </Suspense>
+      </div>
 
-      {topAuthors.length > 0 && (
-        <div className="container relative mt-4 lg:mt-6">
-          <TopAuthorsSection className="" authors={topAuthors} />
-        </div>
-      )}
-
-      {/* ── Trust & Stats Section ───────────────────────── */}
+      {/* ── Trust & Stats Section (static) ──────────────────── */}
       <div className="container relative mt-4 lg:mt-6">
         <TrustSection />
       </div>

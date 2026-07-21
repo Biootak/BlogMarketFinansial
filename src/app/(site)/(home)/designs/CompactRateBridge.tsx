@@ -271,7 +271,7 @@ export default function CompactRateBridge({
         aria-label={isPaused ? 'ادامه چرخش' : 'توقف چرخش'}
       >
         {isPaused ? (
-          <Play className="w-3 h-3" fill="currentColor" />
+          <Play className="w-3 h-3 [transform:scaleX(-1)]" fill="currentColor" />
         ) : (
           <Pause className="w-3 h-3" fill="currentColor" />
         )}

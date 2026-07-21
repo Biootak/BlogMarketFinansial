@@ -1,3 +1,5 @@
+import { SkeletonBase, TableSkeleton } from '@/components/Skeletons';
+
 export default function TransferProvidersLoading() {
   return (
     <main
@@ -9,37 +11,32 @@ export default function TransferProvidersLoading() {
         flexDirection: 'column',
         gap: 'var(--ds-space-6)',
       }}
+      aria-busy="true"
+      aria-label="در حال بارگذاری ارائه‌دهندگان انتقال"
     >
-      <div
-        style={{
-          height: '80px',
-          borderRadius: '14px',
-          background: 'var(--at-surface, #fff)',
-          border: '1px solid var(--at-line, #e5e7eb)',
-        }}
-      />
-      <div style={{ display: 'flex', gap: '12px' }}>
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
+      {/* Page header */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-2)' }}>
+        <SkeletonBase className="h-3 w-20 rounded" />
+        <SkeletonBase className="h-8 w-48 rounded-lg" />
+        <SkeletonBase className="h-4 w-80 rounded-md" />
+      </div>
+
+      {/* Provider logo strip */}
+      <div style={{ display: 'flex', gap: 'var(--ds-space-3)' }}>
+        {(['p1', 'p2', 'p3'] as const).map((k) => (
+          <SkeletonBase
+            key={k}
             style={{
               width: '120px',
               height: '80px',
-              borderRadius: '10px',
-              background: 'var(--at-surface, #fff)',
-              border: '1px solid var(--at-line, #e5e7eb)',
+              borderRadius: 'var(--ds-radius-lg)',
             }}
           />
         ))}
       </div>
-      <div
-        style={{
-          height: '380px',
-          borderRadius: '12px',
-          background: 'var(--at-surface, #fff)',
-          border: '1px solid var(--at-line, #e5e7eb)',
-        }}
-      />
+
+      {/* Table */}
+      <TableSkeleton rows={6} showHeader showActions />
     </main>
   );
 }

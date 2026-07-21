@@ -1,3 +1,5 @@
+import { SkeletonBase, StatsCardSkeleton, TableSkeleton } from '@/components/Skeletons';
+
 export default function ExchangesLoading() {
   return (
     <main
@@ -9,37 +11,31 @@ export default function ExchangesLoading() {
         flexDirection: 'column',
         gap: 'var(--ds-space-6)',
       }}
+      aria-busy="true"
+      aria-label="در حال بارگذاری تبادل‌ها"
     >
+      {/* Page header */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-2)' }}>
+        <SkeletonBase className="h-3 w-16 rounded" />
+        <SkeletonBase className="h-8 w-40 rounded-lg" />
+        <SkeletonBase className="h-4 w-72 rounded-md" />
+      </div>
+
+      {/* Stat cards */}
       <div
         style={{
-          height: '80px',
-          borderRadius: '14px',
-          background: 'var(--at-surface, #fff)',
-          border: '1px solid var(--at-line, #e5e7eb)',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+          gap: 'var(--ds-space-4)',
         }}
-      />
-      <div style={{ display: 'flex', gap: '12px' }}>
-        {[1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            style={{
-              flex: 1,
-              height: '90px',
-              borderRadius: '12px',
-              background: 'var(--at-surface, #fff)',
-              border: '1px solid var(--at-line, #e5e7eb)',
-            }}
-          />
+      >
+        {(['a', 'b', 'c', 'd'] as const).map((k) => (
+          <StatsCardSkeleton key={k} />
         ))}
       </div>
-      <div
-        style={{
-          height: '480px',
-          borderRadius: '12px',
-          background: 'var(--at-surface, #fff)',
-          border: '1px solid var(--at-line, #e5e7eb)',
-        }}
-      />
+
+      {/* Table */}
+      <TableSkeleton rows={8} showHeader showActions />
     </main>
   );
 }

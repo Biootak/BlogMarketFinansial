@@ -1,8 +1,7 @@
-﻿import { getAuthorsHubData } from '@/actions/getAuthorsHubData';
+import { getAuthorsHubData } from '@/actions/getAuthorsHubData';
 import { getPublishedPostCount } from '@/actions/getLatestPosts';
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
 import type { Metadata } from 'next';
-import { Suspense } from 'react';
 import AboutPageClient from './AboutPageClient';
 
 export const metadata: Metadata = {
@@ -12,7 +11,9 @@ export const metadata: Metadata = {
 };
 
 export default async function PageAbout() {
-  // Parallel data fetch — graceful fallback on error
+  // Parallel data fetch — graceful fallback on error. Data is served from
+  // safeCache so subsequent requests are instant; the loading.tsx handles
+  // the brief delay on first navigation.
   const [postCount, hubData] = await Promise.all([
     getPublishedPostCount().catch(() => 0),
     getAuthorsHubData(10, 5).catch(() => null),
@@ -20,17 +21,14 @@ export default async function PageAbout() {
 
   const stats = {
     postCount,
-    // userCount: from hubData.totalAuthors for public (auth-free)
-    userCount: Math.max(postCount * 12, 1200), // heuristic seed (real users from DB needs auth)
+    userCount: Math.max(postCount * 12, 1200),
     authorCount: hubData?.totalAuthors ?? 0,
     countries: 2,
   };
 
   return (
     <>
-      <Suspense fallback={<div className="min-h-screen" />}>
-        <AboutPageClient stats={stats} />
-      </Suspense>
+      <AboutPageClient stats={stats} />
       <div className="container py-8 lg:py-12">
         <SectionSubscribe2 />
       </div>

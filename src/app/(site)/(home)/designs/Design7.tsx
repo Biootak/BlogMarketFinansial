@@ -215,7 +215,7 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                   initial={{ y: -10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.35, type: 'spring', stiffness: 200 }}
-                  className="absolute top-10 sm:top-12 start-4 sm:start-6 z-20"
+                  className="absolute top-14 sm:top-16 start-4 sm:start-6 z-20"
                 >
                   <CompactRateBridge
                     rates={transferRateItems}
@@ -314,7 +314,7 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                         aria-label={isPaused ? 'ادامه پخش خودکار' : 'توقف پخش خودکار'}
                       >
                         {isPaused ? (
-                          <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" />
+                          <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 [transform:scaleX(-1)]" fill="currentColor" />
                         ) : (
                           <Pause className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" />
                         )}
