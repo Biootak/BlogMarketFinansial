@@ -4,7 +4,30 @@ import prisma from '@/lib/db';
 import { authFailureToActionResult, requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import type { ActionResult } from '@/types/types';
-import type { Task, TaskPriority, TaskStatus } from '@prisma/client';
+import { TaskPriority, TaskStatus } from '@prisma/client';
+import type { Task } from '@prisma/client';
+import { z } from 'zod';
+
+// Zod schemas — centralised input validation for task mutations.
+const createTaskSchema = z.object({
+  title: z
+    .string()
+    .min(1, 'عنوان تسک الزامی است')
+    .max(200, 'عنوان نباید بیشتر از ۲۰۰ کاراکتر باشد')
+    .trim(),
+  description: z.string().max(2000).optional(),
+  dueDate: z.coerce.date().optional(),
+  priority: z.nativeEnum(TaskPriority).optional(),
+});
+
+const updateStatusSchema = z.object({
+  id: z.string().min(1),
+  status: z.nativeEnum(TaskStatus),
+});
+
+const deleteTaskSchema = z.object({
+  id: z.string().min(1),
+});
 
 export async function getTasks(limit = 10): Promise<ActionResult<Task[]>> {
   const auth = await requireUser();
@@ -14,11 +37,10 @@ export async function getTasks(limit = 10): Promise<ActionResult<Task[]>> {
     const tasks = await prisma.task.findMany({
       where: { userId: auth.user.id },
       orderBy: [{ status: 'asc' }, { priority: 'desc' }, { dueDate: 'asc' }],
-      take: limit,
+      take: Math.min(limit, 100),
     });
     return { success: true, data: tasks, message: '' };
-  } catch (error) {
-    console.error('[taskActions] Error fetching tasks:', error);
+  } catch {
     return {
       success: false,
       message: 'خطا در دریافت تسک‌ها. لطفاً دوباره تلاش کنید.',
@@ -36,10 +58,11 @@ export async function createTask(data: {
   const auth = await requireUser();
   if (!auth.success) return authFailureToActionResult(auth);
 
-  if (!data.title?.trim()) {
+  const parsed = createTaskSchema.safeParse(data);
+  if (!parsed.success) {
     return {
       success: false,
-      message: 'عنوان تسک الزامی است.',
+      message: parsed.error.errors[0]?.message ?? 'داده نامعتبر',
       error: 'INVALID_INPUT',
     };
   }
@@ -47,18 +70,17 @@ export async function createTask(data: {
   try {
     const task = await prisma.task.create({
       data: {
-        title: data.title.trim(),
-        description: data.description,
-        dueDate: data.dueDate,
-        priority: data.priority || 'MEDIUM',
+        title: parsed.data.title,
+        description: parsed.data.description,
+        dueDate: parsed.data.dueDate,
+        priority: parsed.data.priority ?? 'MEDIUM',
         userId: auth.user.id,
       },
     });
 
     revalidateTag('tasks');
     return { success: true, data: task, message: 'تسک با موفقیت ایجاد شد.' };
-  } catch (error) {
-    console.error('[taskActions] Error creating task:', error);
+  } catch {
     return {
       success: false,
       message: 'خطا در ایجاد تسک. لطفاً دوباره تلاش کنید.',
@@ -74,10 +96,19 @@ export async function updateTaskStatus(
   const auth = await requireUser();
   if (!auth.success) return authFailureToActionResult(auth);
 
+  const parsed = updateStatusSchema.safeParse({ id, status });
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: parsed.error.errors[0]?.message ?? 'داده نامعتبر',
+      error: 'INVALID_INPUT',
+    };
+  }
+
   try {
     const updated = await prisma.task.update({
-      where: { id, userId: auth.user.id },
-      data: { status },
+      where: { id: parsed.data.id, userId: auth.user.id },
+      data: { status: parsed.data.status },
     });
 
     revalidateTag('tasks');
@@ -90,7 +121,6 @@ export async function updateTaskStatus(
         error: 'NOT_FOUND',
       };
     }
-    console.error('[taskActions] Error updating task status:', error);
     return {
       success: false,
       message: 'خطا در بروزرسانی وضعیت تسک. لطفاً دوباره تلاش کنید.',
@@ -103,9 +133,18 @@ export async function deleteTask(id: string): Promise<ActionResult<void>> {
   const auth = await requireUser();
   if (!auth.success) return authFailureToActionResult(auth);
 
+  const parsed = deleteTaskSchema.safeParse({ id });
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: 'شناسه تسک نامعتبر است.',
+      error: 'INVALID_INPUT',
+    };
+  }
+
   try {
     await prisma.task.delete({
-      where: { id, userId: auth.user.id },
+      where: { id: parsed.data.id, userId: auth.user.id },
     });
 
     revalidateTag('tasks');
@@ -118,7 +157,6 @@ export async function deleteTask(id: string): Promise<ActionResult<void>> {
         error: 'NOT_FOUND',
       };
     }
-    console.error('[taskActions] Error deleting task:', error);
     return {
       success: false,
       message: 'خطا در حذف تسک. لطفاً دوباره تلاش کنید.',

@@ -22,9 +22,7 @@ export async function GET() {
         },
       },
     });
-  } catch (error) {
-    // M6 fix: do not leak raw error messages (DB/stack hints) to the client.
-    console.error('[debug-session] error:', error);
+  } catch {
     return NextResponse.json(
       {
         success: false,

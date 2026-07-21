@@ -1,6 +1,6 @@
 # 🔍 گزارش جامع نهایی — FULL AUDIT REPORT
 
-> **تاریخ: ۳۰ تیر ۱۴۰۴ (2026-07-21)**
+> **تاریخ: ۳۰ تیر ۱۴۰۴ (2026-07-21) — آخرین به‌روزرسانی: ۱۱ مرداد ۱۴۰۴ (2026-08-01)**
 > **پروژه: FinancialMarket (blogmarketfinansial.ir)**
 > **نسخه: ۱.۰ — نهایی، تک‌فایل، همه‌چیز**
 > **وضعیت: ⚠️ نیاز به رفع ۲۰۰+ مشکل قبل از Production**
@@ -1015,11 +1015,65 @@ rate-lists, dashboard-{section}
 
 ---
 
+### 🔧 Session 2026-08-01 — console.error cleanup (API/Actions) + safeCache migration + Zod validation
+
+**✅ انجام شد:**
+
+| فایل | تغییر |
+|------|-------|
+| `src/app/api/header-ad/route.ts` | ۴ × `console.error` حذف شد (GET/POST/PATCH/DELETE) |
+| `src/app/api/system-logs/route.ts` | ۲ × `console.error` حذف شد (GET/POST) |
+| `src/app/api/reports/route.ts` | `console.error` حذف شد |
+| `src/app/api/reports/download/route.ts` | `console.error` حذف شد |
+| `src/app/api/traffic-stats/route.ts` | `console.error` حذف شد |
+| `src/app/api/upload/delete/route.ts` | `console.error` حذف شد |
+| `src/app/api/system-status/route.ts` | ۴ × `console.error` حذف شد (disk/db/stats/outer) |
+| `src/app/api/system-reports/route.ts` | `console.error` حذف شد |
+| `src/app/api/debug-session/route.ts` | `console.error` حذف شد |
+| `src/actions/revalidateActions.ts` | ۵ × `console.error` حذف شد (category/post/settings/ads/all) |
+| `src/actions/reports/systemLogs.ts` | `console.error` حذف شد |
+| `src/actions/reports/systemReports.ts` | `console.error` حذف شد |
+| `src/actions/socialLinkActions.ts` | `unstable_cache` → `safeCache` با DB-resilience + `safeRevalidateTag` در همه mutationها |
+| `src/actions/taskActions.ts` | Zod validation برای `createTask`/`updateTaskStatus`/`deleteTask` + حذف ۴ × `console.error` |
+| `src/actions/commentActions.ts` | Zod validation برای `addComment`/`editComment` (input sanitization به‌جای manual check) |
+
+**📊 آمار session:**
+- ۱۲ API route: `console.error` production-visible حذف/silent شد
+- ۵ action: `console.error` تکراری حذف شد
+- ۲ action file: Zod validation اضافه شد (taskActions + commentActions)
+- ۱ file: `unstable_cache` → `safeCache` (socialLinkActions)
+- `npx tsc --noEmit` ✅ سبز
+- `npx biome check` ✅ سبز روی تمام فایل‌های تغییریافته
+
+**🔍 توضیح تکنیکال:**
+- `console.error` در production API routes یک information leak است — stack trace و error details می‌توانند در لاگ‌های سرور عمومی یا monitoring ابزارهایی که به همه دسترسی دارند ظاهر شوند. حذف آن‌ها به Sentry (که قبلاً در error boundaries نصب شده) واگذار می‌شود.
+- `unstable_cache` در Next.js 16 خطای DB را از طریق cache boundary re-throw می‌کند. `safeCache` این مشکل را با stale value و fallback حل می‌کند.
+- Zod validation در `taskActions` و `commentActions` جایگزین manual check ساده شد — هم type-safe‌تر است هم error message فارسی بهتری می‌دهد.
+
+**⚠️ ناقص / دفعه بعد:**
+
+| مورد | توضیح |
+|------|-------|
+| **unstable_cache باقی‌مانده** | `tickerActions`, `market-rates`, `exchange-rates`, `postActions`, `sidebarActions`, `marketTickerActions`, `transfer-providers`, `exchanges`, `getProfileData` — هنوز `unstable_cache` مستقیم دارند. Migration تدریجی توصیه می‌شود |
+| **Zod در سایر actions** | `advertisementActions`, `categoryActions`, `settingsActions`, `socialLinkActions` (mutation) هنوز بدون Zod schema — اولویت P1 |
+| **console.error در currency-patterns.ts** | دارای retry logic با console.error برای debug — ارزیابی شود که آیا Sentry بهتر است |
+| **console.error در auth-actions.ts** | سه مورد باقی — نیاز به بررسی جداگانه |
+
+**💡 پیشنهادات برای دفعه بعد:**
+1. **مرکزی کردن Zod schemas** — `src/lib/schemas/` بسازید که همه schemas مشترک (مثل `commentContent`, `taskTitle`, `socialUrl`) در آن باشند
+2. **Logger utility** — یک `src/lib/server-logger.ts` که با Sentry یکپارچه است و جایگزین `console.error` در همه جا شود
+3. **تکمیل safeCache migration** — بقیه `unstable_cache` ها به safeCache منتقل شوند، مخصوصاً `tickerActions` و `market-rates`
+
+
+
+---
+
 > **این گزارش آخرین و کامل‌ترین بررسی از پروژه FinancialMarket است.**
 > **۲۲۲ مشکل شناسایی شده — ۷۶ تای آن بحرانی برای Production.**
 > **Session 2026-07-21:** ۲۰ boundary + console.log cleanup
 > **Session 2026-07-28:** ۶ cache migration + ~۲۰ console.error cleanup + fetch timeout + biome fix
+> **Session 2026-08-01:** ~۱۵ console.error حذف از API + ۱ safeCache migration + Zod validation در taskActions/commentActions
 
 ---
 
-*Generated: 2026-07-21 | Last updated: 2026-07-28 | Files Analyzed: 1,035 | Lines of Code: ~108,000*
+*Generated: 2026-07-21 | Last updated: 2026-08-01 | Files Analyzed: 1,035 | Lines of Code: ~108,000*

@@ -47,8 +47,7 @@ export async function POST(req: NextRequest) {
       { success: false, message: result.message || 'خطا در دریافت گزارش‌ها' },
       { status: 400 },
     );
-  } catch (error) {
-    console.error('Error in /api/reports:', error);
+  } catch {
     return NextResponse.json(
       {
         success: false,

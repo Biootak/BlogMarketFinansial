@@ -27,8 +27,7 @@ export async function revalidateCategoryCache(categoryId: string) {
       revalidateTag('archive');
     }
     return { success: true };
-  } catch (error) {
-    console.error('Error revalidating category cache:', error);
+  } catch {
     return { success: false, message: 'خطا در پاکسازی کش' };
   }
 }
@@ -55,8 +54,7 @@ export async function revalidatePostCache(postId?: string) {
     revalidateTag('dashboard-stats');
 
     return { success: true };
-  } catch (error) {
-    console.error('Error revalidating post cache:', error);
+  } catch {
     return { success: false, message: 'خطا در پاکسازی کش' };
   }
 }
@@ -67,8 +65,7 @@ export async function revalidateSettingsCache() {
   try {
     revalidateTag('system-settings');
     return { success: true };
-  } catch (error) {
-    console.error('Error revalidating settings cache:', error);
+  } catch {
     return { success: false, message: 'خطا در پاکسازی کش' };
   }
 }
@@ -79,8 +76,7 @@ export async function revalidateAdvertisementsCache() {
   try {
     revalidateTag('advertisements');
     return { success: true };
-  } catch (error) {
-    console.error('Error revalidating advertisements cache:', error);
+  } catch {
     return { success: false, message: 'خطا در پاکسازی کش' };
   }
 }
@@ -112,8 +108,7 @@ export async function revalidateAllCache() {
     revalidateTag('market-rates:exchange-rates');
     revalidateTag('dashboard-stats');
     return { success: true };
-  } catch (error) {
-    console.error('Error revalidating all cache:', error);
+  } catch {
     return { success: false, message: 'خطا در پاکسازی کش' };
   }
 }

@@ -46,8 +46,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch traffic statistics' }, { status: 500 });
     }
     return NextResponse.json(result.data);
-  } catch (error) {
-    console.error('[traffic-stats] error:', error);
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch traffic statistics' }, { status: 500 });
   }
 }

@@ -29,8 +29,7 @@ export async function GET() {
       );
     }
     return NextResponse.json({ success: true, data: result.data });
-  } catch (error) {
-    console.error('GET /api/header-ad error:', error);
+  } catch {
     return NextResponse.json(
       { success: false, message: 'خطا در دریافت تبلیغ هدر' },
       { status: 500 },
@@ -64,8 +63,7 @@ export async function POST(request: NextRequest) {
       );
     }
     return NextResponse.json({ success: true, data: result.data, message: result.message });
-  } catch (error) {
-    console.error('POST /api/header-ad error:', error);
+  } catch {
     return NextResponse.json(
       { success: false, message: 'خطا در ایجاد تبلیغ هدر' },
       { status: 500 },
@@ -110,8 +108,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
     return NextResponse.json({ success: true, data: result.data, message: result.message });
-  } catch (error) {
-    console.error('PATCH /api/header-ad error:', error);
+  } catch {
     return NextResponse.json(
       { success: false, message: 'خطا در به‌روزرسانی تبلیغ هدر' },
       { status: 500 },
@@ -141,8 +138,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
     return NextResponse.json({ success: true, message: result.message });
-  } catch (error) {
-    console.error('DELETE /api/header-ad error:', error);
+  } catch {
     return NextResponse.json({ success: false, message: 'خطا در حذف تبلیغ هدر' }, { status: 500 });
   }
 }

@@ -4,6 +4,25 @@ import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import { revalidatePath, revalidateTag } from '@/lib/revalidate';
 import type { ActionResult, CommentWithCustomRelations } from '@/types/types';
+import { z } from 'zod';
+
+// Zod schemas for comment mutations.
+const commentContentSchema = z
+  .string()
+  .min(1, 'محتوای کامنت نمی‌تواند خالی باشد.')
+  .max(1000, 'محتوای کامنت نباید بیشتر از ۱۰۰۰ کاراکتر باشد.')
+  .trim();
+
+const addCommentSchema = z.object({
+  postId: z.string().min(1, 'شناسه پست الزامی است.'),
+  content: commentContentSchema,
+  parentId: z.string().min(1).optional(),
+});
+
+const editCommentSchema = z.object({
+  commentId: z.string().min(1, 'شناسه کامنت الزامی است.'),
+  content: commentContentSchema,
+});
 
 export async function addComment(
   postId: string,
@@ -19,20 +38,21 @@ export async function addComment(
     };
   }
 
-  try {
-    if (!content.trim() || content.length > 1000) {
-      return {
-        success: false,
-        message: 'محتوای کامنت نامعتبر است.',
-        error: 'محتوای کامنت باید بین 1 تا 1000 کاراکتر باشد.',
-      };
-    }
+  const parsed = addCommentSchema.safeParse({ postId, content, parentId });
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: parsed.error.errors[0]?.message ?? 'داده نامعتبر',
+      error: 'INVALID_INPUT',
+    };
+  }
 
+  try {
     // Verify the target post exists and is published before creating a comment.
     // Without this, any authenticated user could attach comments to any postId
     // (including non-existent or draft posts).
     const targetPost = await prisma.post.findUnique({
-      where: { id: postId, status: 'PUBLISHED' },
+      where: { id: parsed.data.postId, status: 'PUBLISHED' },
       select: { id: true },
     });
     if (!targetPost) {
@@ -45,10 +65,10 @@ export async function addComment(
 
     const comment = await prisma.comment.create({
       data: {
-        content,
-        postId,
+        content: parsed.data.content,
+        postId: parsed.data.postId,
         authorId: session.user.id as string,
-        parentId,
+        parentId: parsed.data.parentId,
       },
       include: {
         author: {
@@ -167,17 +187,18 @@ export async function editComment(
     };
   }
 
-  try {
-    if (!content.trim() || content.length > 1000) {
-      return {
-        success: false,
-        message: 'محتوای کامنت نامعتبر است.',
-        error: 'محتوای کامنت باید بین 1 تا 1000 کاراکتر باشد.',
-      };
-    }
+  const parsedEdit = editCommentSchema.safeParse({ commentId, content });
+  if (!parsedEdit.success) {
+    return {
+      success: false,
+      message: parsedEdit.error.errors[0]?.message ?? 'داده نامعتبر',
+      error: 'INVALID_INPUT',
+    };
+  }
 
+  try {
     const comment = await prisma.comment.findUnique({
-      where: { id: commentId },
+      where: { id: parsedEdit.data.commentId },
     });
 
     if (!comment) {
@@ -201,8 +222,8 @@ export async function editComment(
     }
 
     const updatedComment = await prisma.comment.update({
-      where: { id: commentId },
-      data: { content },
+      where: { id: parsedEdit.data.commentId },
+      data: { content: parsedEdit.data.content },
       include: {
         author: {
           select: {

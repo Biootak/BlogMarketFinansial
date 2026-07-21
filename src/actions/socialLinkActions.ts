@@ -3,8 +3,8 @@
 import prisma from '@/lib/db';
 import { authFailureToActionResult, requireAdmin } from '@/lib/require-auth';
 import { revalidatePath, revalidateTag } from '@/lib/revalidate';
+import { safeCache, safeRevalidateTag } from '@/lib/safe-cache';
 import type { SocialLinkType } from '@prisma/client';
-import { unstable_cache } from 'next/cache';
 
 // M14 fix: validate social URLs before persisting. Stored links are later
 // rendered as `href`, so an arbitrary scheme (javascript:, data:, etc.) is a
@@ -29,19 +29,21 @@ export interface SocialLinkData {
   type?: SocialLinkType;
 }
 
-// 2026-06-14: public-facing fetches are now cached. Social links
-// change at most a few times a month, so 10 minutes is invisible
-// and saves a DB round-trip on every home/footer render.
-const getCachedSocialLinks = unstable_cache(
+// 2026-08-01: migrated from unstable_cache → safeCache for DB-resilience.
+// unstable_cache re-throws DB errors through the cache boundary, crashing the
+// layout. safeCache returns [] on failure so the footer/header degrades
+// gracefully. 10-minute TTL is unchanged (social links change rarely).
+const getCachedSocialLinks = safeCache(
   async (type: SocialLinkType) => {
     return prisma.socialLink.findMany({
       where: { isActive: true, type },
       orderBy: { order: 'asc' },
     });
   },
-  ['social-links', 'v1-2026-06-14'],
+  [],
   {
-    revalidate: 600,
+    key: 'social-links',
+    ttl: 600,
     tags: ['social-links'],
   },
 );
@@ -51,7 +53,7 @@ export async function getSocialLinks() {
   try {
     const links = await getCachedSocialLinks('SOCIAL');
     return { success: true, data: links };
-  } catch (error) {
+  } catch {
     return { success: false, error: 'خطا در دریافت شبکه‌های اجتماعی' };
   }
 }
@@ -61,7 +63,7 @@ export async function getSupportLinks() {
   try {
     const links = await getCachedSocialLinks('SUPPORT');
     return { success: true, data: links };
-  } catch (error) {
+  } catch {
     return { success: false, error: 'خطا در دریافت لینک‌های پشتیبانی' };
   }
 }
@@ -74,7 +76,7 @@ export async function getAllSocialLinks(type?: SocialLinkType) {
       orderBy: { order: 'asc' },
     });
     return { success: true, data: links };
-  } catch (error) {
+  } catch {
     return { success: false, error: 'خطا در دریافت لینک‌ها' };
   }
 }
@@ -122,8 +124,9 @@ export async function createSocialLink(data: SocialLinkData) {
     revalidatePath('/dashboard/settings');
     revalidatePath('/');
     revalidateTag('social-links');
+    safeRevalidateTag('social-links');
     return { success: true, data: link };
-  } catch (error) {
+  } catch {
     return { success: false, error: 'خطا در ایجاد لینک' };
   }
 }
@@ -152,8 +155,9 @@ export async function updateSocialLink(id: string, data: Partial<SocialLinkData>
     revalidatePath('/dashboard/settings');
     revalidatePath('/');
     revalidateTag('social-links');
+    safeRevalidateTag('social-links');
     return { success: true, data: link };
-  } catch (error) {
+  } catch {
     return { success: false, error: 'خطا در بروزرسانی لینک' };
   }
 }
@@ -168,8 +172,9 @@ export async function deleteSocialLink(id: string) {
     revalidatePath('/dashboard/settings');
     revalidatePath('/');
     revalidateTag('social-links');
+    safeRevalidateTag('social-links');
     return { success: true };
-  } catch (error) {
+  } catch {
     return { success: false, error: 'خطا در حذف لینک' };
   }
 }
@@ -193,8 +198,9 @@ export async function toggleSocialLink(id: string) {
     revalidatePath('/dashboard/settings');
     revalidatePath('/');
     revalidateTag('social-links');
+    safeRevalidateTag('social-links');
     return { success: true, data: updated };
-  } catch (error) {
+  } catch {
     return { success: false, error: 'خطا در تغییر وضعیت' };
   }
 }
@@ -217,8 +223,9 @@ export async function reorderSocialLinks(orderedIds: string[]) {
     revalidatePath('/dashboard/settings');
     revalidatePath('/');
     revalidateTag('social-links');
+    safeRevalidateTag('social-links');
     return { success: true };
-  } catch (error) {
+  } catch {
     return { success: false, error: 'خطا در تغییر ترتیب' };
   }
 }

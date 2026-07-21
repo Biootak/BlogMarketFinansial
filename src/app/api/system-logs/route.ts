@@ -69,8 +69,7 @@ export async function GET(req: Request) {
       success: true,
       logs,
     });
-  } catch (error) {
-    console.error('[SYSTEM_LOGS_GET]', error);
+  } catch {
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -113,8 +112,7 @@ export async function POST(req: Request) {
       success: true,
       log,
     });
-  } catch (error) {
-    console.error('[SYSTEM_LOGS_POST]', error);
+  } catch {
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }
 }

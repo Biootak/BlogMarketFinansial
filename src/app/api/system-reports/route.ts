@@ -190,16 +190,13 @@ export async function GET(): Promise<NextResponse> {
 
     return NextResponse.json(systemReport);
   } catch (error) {
-    console.error('System reports error:', error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      // Handle specific Prisma errors
       return NextResponse.json(
         { error: 'Database operation failed', code: error.code },
         { status: 500 },
       );
     }
     if (error instanceof Prisma.PrismaClientValidationError) {
-      // Handle validation errors
       return NextResponse.json({ error: 'Invalid data provided to database' }, { status: 400 });
     }
     return NextResponse.json({ error: 'خطا در دریافت گزارش‌های سیستم' }, { status: 500 });

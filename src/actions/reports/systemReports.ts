@@ -104,7 +104,6 @@ export async function getSystemReports(): Promise<ActionResult<SystemReport>> {
       },
     };
   } catch (error) {
-    console.error('Error in getSystemReports:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : 'خطا در دریافت گزارش‌های سیستم',

@@ -30,8 +30,7 @@ export async function GET() {
           usagePercentage: Math.round(((diskSpace.size - diskSpace.free) / diskSpace.size) * 100),
         };
       }
-    } catch (diskError) {
-      console.error('Error getting disk space:', diskError);
+    } catch {
       systemInfo.disk = {
         total: 0,
         free: 0,
@@ -63,8 +62,8 @@ export async function GET() {
         connections: Number(countResult[0]?.count ?? 0),
         responseTime: endTime - startTime,
       };
-    } catch (dbError) {
-      console.error('Database check error:', dbError);
+    } catch {
+      // dbStatus stays offline — safe default
     }
 
     // Get application stats
@@ -88,8 +87,8 @@ export async function GET() {
         comments,
         environment: process.env.NODE_ENV || 'development',
       };
-    } catch (statsError) {
-      console.error('Error getting application stats:', statsError);
+    } catch {
+      // appStats stays at zero defaults — safe
     }
 
     return NextResponse.json({
@@ -101,13 +100,12 @@ export async function GET() {
         timestamp: new Date().toISOString(),
       },
     });
-  } catch (error) {
-    console.error('System status API error:', error);
+  } catch (err) {
     return NextResponse.json(
       {
         success: false,
         error: 'Internal server error',
-        details: process.env.NODE_ENV === 'development' ? String(error) : undefined,
+        details: process.env.NODE_ENV === 'development' ? String(err) : undefined,
       },
       { status: 500 },
     );

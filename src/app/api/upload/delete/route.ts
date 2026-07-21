@@ -75,8 +75,7 @@ export async function DELETE(request: NextRequest) {
       success: true,
       data: { message: 'فایل با موفقیت حذف شد' },
     });
-  } catch (error) {
-    console.error('خطا در حذف فایل:', error);
+  } catch {
     return NextResponse.json(
       { success: false, error: { code: 'DELETE_FAILED', message: 'خطا در حذف فایل' } },
       { status: 500 },

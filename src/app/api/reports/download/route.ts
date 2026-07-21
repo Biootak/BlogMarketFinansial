@@ -92,8 +92,7 @@ export async function POST(req: Request) {
         'Content-Disposition': `attachment; filename="system-report-${encodeURIComponent(String(from))}-to-${encodeURIComponent(String(to))}.xlsx"`,
       },
     });
-  } catch (error) {
-    console.error('Error in download reports:', error);
+  } catch {
     return NextResponse.json({ error: 'خطا در دانلود گزارش' }, { status: 500 });
   }
 }

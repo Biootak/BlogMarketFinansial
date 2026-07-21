@@ -30,7 +30,6 @@ export async function getSystemLogs(
       data: { logs, total },
     };
   } catch (error) {
-    console.error('Error fetching system logs:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : 'خطا در دریافت لاگ‌های سیستم',
