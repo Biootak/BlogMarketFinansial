@@ -82,8 +82,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true, views: pageView.views });
-  } catch (error) {
-    console.error('[pageview] Error recording page view:', error);
+  } catch {
     return NextResponse.json({ error: 'Failed to record page view' }, { status: 500 });
   }
 }

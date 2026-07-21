@@ -45,7 +45,7 @@ export function CategoryList({
         );
       }
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      // Silent fail — category list will show empty state
       toast({
         title: 'خطا',
         description:

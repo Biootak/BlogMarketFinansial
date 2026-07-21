@@ -314,7 +314,7 @@ export default function SettingsPage() {
           }));
         }
       } catch (error) {
-        console.error('Error loading settings:', error);
+        // Silent fail — handled by UI fallback state
       } finally {
         setInitialLoading(false);
       }

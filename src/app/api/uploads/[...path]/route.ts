@@ -86,8 +86,7 @@ export async function GET(
         'X-Content-Type-Options': 'nosniff',
       },
     });
-  } catch (error) {
-    console.error('خطا در خواندن فایل:', error);
+  } catch {
     return NextResponse.json({ error: 'خطا در خواندن فایل' }, { status: 500 });
   }
 }

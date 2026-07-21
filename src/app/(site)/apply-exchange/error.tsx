@@ -1,25 +1,19 @@
 'use client';
 
 import SiteRouteError from '@/components/ui/SiteRouteError';
-import * as Sentry from '@sentry/nextjs';
-import { useEffect } from 'react';
 
-export default function OnlinePaymentError({
+export default function ApplyExchangeError({
   error,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    Sentry.captureException(error);
-  }, [error]);
-
   return (
     <SiteRouteError
       error={error}
       reset={reset}
-      section="پرداخت آنلاین"
+      section="ثبت‌نام صرافی"
       backHref="/"
       backLabel="صفحه اصلی"
     />

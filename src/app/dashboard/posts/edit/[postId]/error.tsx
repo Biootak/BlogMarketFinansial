@@ -2,11 +2,11 @@
 
 import { Button } from '@/components/ui/button';
 import * as Sentry from '@sentry/nextjs';
-import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
+import { AlertTriangle, ArrowRight, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect } from 'react';
 
-export default function PostsError({
+export default function PostEditError({
   error,
   reset,
 }: {
@@ -24,9 +24,9 @@ export default function PostsError({
           <AlertTriangle className="w-7 h-7 text-amber-500" strokeWidth={1.75} aria-hidden />
         </div>
         <div>
-          <h2 className="text-lg font-bold mb-1">خطا در بارگذاری پست‌ها</h2>
+          <h2 className="text-lg font-bold mb-1">خطا در ویرایش پست</h2>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
-            مشکلی در بارگذاری لیست پست‌ها پیش آمده است. لطفاً دوباره تلاش کنید.
+            مشکلی در بارگذاری ویرایشگر پیش آمده است. لطفاً دوباره تلاش کنید.
           </p>
           {process.env.NODE_ENV === 'development' && error.digest && (
             <p className="mt-2 text-xs text-neutral-400 font-mono">کد: {error.digest}</p>
@@ -39,8 +39,8 @@ export default function PostsError({
           </Button>
           <Link href="/dashboard/posts">
             <Button variant="outline" className="w-full gap-2">
-              <Home className="w-4 h-4" aria-hidden />
-              لیست پست‌ها
+              <ArrowRight className="w-4 h-4" aria-hidden />
+              بازگشت به پست‌ها
             </Button>
           </Link>
         </div>

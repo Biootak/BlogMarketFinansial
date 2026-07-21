@@ -1,48 +1,42 @@
 'use client';
 
+/**
+ * SiteRouteError — shared error boundary for all public (site) routes.
+ *
+ * Captures to Sentry (all environments). Uses ds-* tokens — no hardcoded hex.
+ * RTL logical properties only.
+ */
+
 import * as Sentry from '@sentry/nextjs';
-import { RefreshCw, Wallet } from 'lucide-react';
+import { AlertTriangle, ArrowRight, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect } from 'react';
 
-export default function WalletError({
-  error,
-  reset,
-}: {
+interface SiteRouteErrorProps {
   error: Error & { digest?: string };
   reset: () => void;
-}) {
+  /**
+   * نام بخش برای نمایش در پیام خطا (مثلاً "صرافی‌ها", "پروفایل").
+   * پیش‌فرض: "این صفحه"
+   */
+  section?: string;
+  /** لینک بازگشت. پیش‌فرض: "/" */
+  backHref?: string;
+  /** متن لینک بازگشت. پیش‌فرض: "صفحه اصلی" */
+  backLabel?: string;
+}
+
+export default function SiteRouteError({
+  error,
+  reset,
+  section = 'این صفحه',
+  backHref = '/',
+  backLabel = 'صفحه اصلی',
+}: SiteRouteErrorProps) {
   useEffect(() => {
     Sentry.captureException(error);
   }, [error]);
 
-  return (
-    <SiteRouteError
-      title="خطا در بارگذاری کیف پول"
-      description="بارگذاری کیف پول با مشکل مواجه شد. لطفاً دوباره تلاش کنید."
-      digest={error.digest}
-      reset={reset}
-      backHref="/dashboard"
-      backLabel="داشبورد"
-    />
-  );
-}
-
-function SiteRouteError({
-  title,
-  description,
-  digest,
-  reset,
-  backHref,
-  backLabel,
-}: {
-  title: string;
-  description: string;
-  digest?: string;
-  reset: () => void;
-  backHref: string;
-  backLabel: string;
-}) {
   return (
     <div
       dir="rtl"
@@ -56,7 +50,7 @@ function SiteRouteError({
     >
       <div
         style={{
-          maxWidth: '24rem',
+          maxWidth: '26rem',
           width: '100%',
           textAlign: 'center',
           display: 'flex',
@@ -65,6 +59,7 @@ function SiteRouteError({
           gap: 'var(--ds-space-5)',
         }}
       >
+        {/* Icon */}
         <div
           style={{
             width: '4rem',
@@ -79,16 +74,18 @@ function SiteRouteError({
               '1px solid color-mix(in oklch, var(--ds-warning, oklch(75% 0.15 82)) 25%, transparent)',
           }}
         >
-          <Wallet
+          <AlertTriangle
             style={{
               width: '1.75rem',
               height: '1.75rem',
               color: 'var(--ds-warning, oklch(65% 0.17 55))',
             }}
-            strokeWidth={1.5}
+            strokeWidth={1.75}
             aria-hidden
           />
         </div>
+
+        {/* Text */}
         <div>
           <h2
             style={{
@@ -98,7 +95,7 @@ function SiteRouteError({
               marginBlockEnd: 'var(--ds-space-2)',
             }}
           >
-            {title}
+            خطا در بارگذاری {section}
           </h2>
           <p
             style={{
@@ -107,9 +104,9 @@ function SiteRouteError({
               lineHeight: '1.7',
             }}
           >
-            {description}
+            مشکلی در بارگذاری این صفحه پیش آمده است. لطفاً دوباره تلاش کنید یا به صفحه اصلی بازگردید.
           </p>
-          {process.env.NODE_ENV === 'development' && digest && (
+          {process.env.NODE_ENV === 'development' && error.digest && (
             <p
               style={{
                 marginBlockStart: 'var(--ds-space-2)',
@@ -118,10 +115,12 @@ function SiteRouteError({
                 fontFamily: 'monospace',
               }}
             >
-              کد: {digest}
+              کد: {error.digest}
             </p>
           )}
         </div>
+
+        {/* Actions */}
         <div
           style={{
             display: 'flex',
@@ -142,17 +141,19 @@ function SiteRouteError({
               background: 'var(--ds-brand-600, oklch(52% 0.14 162))',
               color: '#fff',
               border: 'none',
-              borderRadius: 'var(--ds-radius-lg)',
+              borderRadius: 'var(--ds-radius-lg, 0.75rem)',
               fontWeight: 600,
               fontSize: 'var(--ds-text-sm)',
               cursor: 'pointer',
               minHeight: '44px',
+              transition: 'opacity 160ms ease',
             }}
-            aria-label="تلاش مجدد"
+            aria-label="تلاش مجدد برای بارگذاری صفحه"
           >
             <RefreshCw style={{ width: '1rem', height: '1rem' }} aria-hidden />
             تلاش مجدد
           </button>
+
           <Link
             href={backHref}
             style={{
@@ -164,14 +165,16 @@ function SiteRouteError({
               background: 'transparent',
               color: 'var(--ds-text-2)',
               border: '1px solid var(--ds-border-1)',
-              borderRadius: 'var(--ds-radius-lg)',
+              borderRadius: 'var(--ds-radius-lg, 0.75rem)',
               fontWeight: 500,
               fontSize: 'var(--ds-text-sm)',
               textDecoration: 'none',
               minHeight: '44px',
+              transition: 'border-color 160ms ease',
             }}
             aria-label={`بازگشت به ${backLabel}`}
           >
+            <ArrowRight style={{ width: '1rem', height: '1rem' }} aria-hidden />
             {backLabel}
           </Link>
         </div>

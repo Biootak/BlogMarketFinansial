@@ -17,7 +17,7 @@ export default async function SectionLargeSlider() {
   const [postsResult, rateLists] = await Promise.all([getFeaturedPosts(3), getRateLists()]);
 
   if (postsResult.error) {
-    console.error('Error fetching featured posts:', postsResult.error);
+    // Silent fail — featured posts section simply won't render if unavailable
     return <Empty />;
   }
 

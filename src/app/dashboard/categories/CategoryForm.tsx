@@ -111,7 +111,7 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
           toast({ title: 'خطا', description: result.message, variant: 'destructive' });
         }
       } catch (error) {
-        console.error('خطا در ارسال فرم:', error);
+        // Error handled by action result — no console needed
         toast({
           title: 'خطا',
           description: 'مشکلی در ارسال اطلاعات رخ داد.',

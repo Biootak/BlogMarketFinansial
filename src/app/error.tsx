@@ -13,18 +13,8 @@ interface ErrorProps {
 
 export default function Error({ error, reset }: ErrorProps) {
   useEffect(() => {
-    // In development: log to console for debugging.
-    // In production: capture to Sentry; do NOT log to console (avoids
-    // exposing stack traces / Prisma query strings in browser devtools).
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Application Error:', {
-        message: error.message,
-        digest: error.digest,
-        stack: error.stack,
-      });
-    } else {
-      Sentry.captureException(error);
-    }
+    // Capture in all environments; Sentry filters out dev noise via DSN config.
+    Sentry.captureException(error);
   }, [error]);
 
   // نمایش پیام مناسب بر اساس نوع خطا

@@ -37,18 +37,6 @@ const FILE_SIGNATURES: Record<string, readonly (readonly number[])[]> = {
   'image/webp': [[0x52, 0x49, 0x46, 0x46]],
 };
 
-const SVG_DANGEROUS_PATTERNS: readonly RegExp[] = [
-  /<script/i,
-  /javascript:/i,
-  /\son\w+\s*=/i,
-  /<iframe/i,
-  /<object/i,
-  /<embed/i,
-  /<foreignobject/i,
-  /data:/i,
-  /xlink:href\s*=\s*["'](?!#)/i,
-];
-
 // ---------- types ----------------------------------------------------------
 
 type AllowedFolder = (typeof ALLOWED_FOLDERS)[number];
@@ -81,11 +69,6 @@ function validateFileSignature(buffer: Buffer, mimeType: AllowedMime): boolean {
     }
     return true;
   });
-}
-
-function isSafeSvg(buffer: Buffer): boolean {
-  const content = buffer.toString('utf8').toLowerCase();
-  return !SVG_DANGEROUS_PATTERNS.some((p) => p.test(content));
 }
 
 // ---------- single sharp pipeline per file --------------------------------
@@ -211,10 +194,8 @@ type FileOutcome = FileSuccess | FileFailure;
 
 async function processOneFile(file: File, folder: AllowedFolder): Promise<FileOutcome> {
   const startMs = performance.now();
-  const logStep = (label: string) => {
-    // eslint-disable-next-line no-console
-    console.log(`[upload] ${label}: ${(performance.now() - startMs).toFixed(1)}ms`);
-  };
+  // Timing helper — noop in all environments (no console output)
+  const logStep = (_label: string) => { void startMs; };
 
   if (!ALLOWED_TYPES.includes(file.type as AllowedMime)) {
     return {
@@ -271,8 +252,7 @@ async function processOneFile(file: File, folder: AllowedFolder): Promise<FileOu
         mime: optimized.mime,
       },
     };
-  } catch (error) {
-    console.error(`خطا در پردازش فایل ${file.name}:`, error);
+  } catch {
     return {
       ok: false,
       code: 'PROCESSING_FAILED',
@@ -377,7 +357,7 @@ export async function POST(request: NextRequest) {
 
     // If everything failed, return a 400 so the client can show a single error.
     if (successes.length === 0) {
-      const first = failures[0]!;
+      const first = failures[0] ?? { code: 'UNKNOWN_ERROR', message: 'خطای ناشناخته' };
       return NextResponse.json(
         {
           success: false,
@@ -408,8 +388,7 @@ export async function POST(request: NextRequest) {
         message: 'فایل‌ها با موفقیت آپلود شدند',
       },
     });
-  } catch (error) {
-    console.error('خطا در آپلود:', error);
+  } catch {
     return NextResponse.json(
       { success: false, error: { code: 'UPLOAD_FAILED', message: 'خطا در آپلود فایل' } },
       { status: 500 },

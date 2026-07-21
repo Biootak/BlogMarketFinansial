@@ -92,7 +92,7 @@ export default function SystemLogsData() {
         });
       }
     } catch (error) {
-      console.error('Error fetching logs:', error);
+      // Silent fail — logs section will show empty state on error
       toast({
         variant: 'destructive',
         title: 'خطا',

@@ -1,5 +1,6 @@
 'use client';
 
+import * as Sentry from '@sentry/nextjs';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, Home, RefreshCw, ServerOff, WifiOff } from 'lucide-react';
 import Link from 'next/link';
@@ -12,13 +13,7 @@ interface ErrorProps {
 
 export default function DashboardError({ error, reset }: ErrorProps) {
   useEffect(() => {
-    // فقط در development لاگ کن
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Dashboard Error:', {
-        message: error.message,
-        digest: error.digest,
-      });
-    }
+    Sentry.captureException(error);
   }, [error]);
 
   // تشخیص نوع خطا
