@@ -1869,8 +1869,8 @@ export const AuthorsPageSkeleton: FC = () => (
     {/*
       Hero — mirrors AuthorsHero:
       rounded-3xl card, 2-col grid:
-        left: chip + h1 + p + stats-3col
-        right: collage (circular bg + 3 positioned avatars)
+        start: chip + h1 + p + stats-3col
+        end: collage (circular bg + 3 positioned avatars)
     */}
     <div className="relative overflow-hidden rounded-3xl sm:rounded-[2.5rem] border border-neutral-200/60 dark:border-neutral-800/60 bg-white dark:bg-neutral-900 px-5 py-8 sm:px-8 sm:py-12 lg:px-12 lg:py-16">
       <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-8 lg:gap-12 items-center">
