@@ -4,11 +4,11 @@ import { auth } from '@/auth';
 import { logActivity } from '@/lib/activity-logger';
 import prisma from '@/lib/db';
 import { requireUser } from '@/lib/require-auth';
+import { revalidatePath } from '@/lib/revalidate';
 import type { ActionResult, UserWithProfile } from '@/types/types';
 import type { Prisma } from '@prisma/client';
 import { Role } from '@prisma/client';
 import { hash } from 'bcryptjs';
-import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 // 2026-06-23: role hierarchy for ownership/permission checks.

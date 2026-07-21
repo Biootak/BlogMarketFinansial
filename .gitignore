@@ -80,6 +80,13 @@ next-env.d.ts
 # and inflates every shallow clone.
 /.codegraph/
 
+# Freebuff Desktop — local database and agent config (user-specific, never commit)
+/.freebuff/
+/.claude/settings.local.json
+/.openclaude/
+/.kilo/
+/.kimchi/agents.json
+
 # 2026-07-06: Playwright artifacts. The HTML report and per-test JSON
 # outputs are regenerated on every `playwright test` run, so they're
 # noise in the working tree.

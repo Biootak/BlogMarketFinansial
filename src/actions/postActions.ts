@@ -5,7 +5,7 @@ import { auth } from '@/auth';
 import { logActivity } from '@/lib/activity-logger';
 import { checkRole } from '@/lib/auth';
 import prisma from '@/lib/db';
-import { revalidateTag } from '@/lib/revalidate';
+import { revalidatePath, revalidateTag } from '@/lib/revalidate';
 import { createUniqueSlug } from '@/lib/slugUtils';
 import { generateSlug, generateUniqueId, validateSlug } from '@/lib/utils';
 import { CreatePostSchema, UpdatePostSchema } from '@/schemas';
@@ -17,7 +17,7 @@ import type {
   UpdatePostInput,
 } from '@/types/types';
 import { PostStatus, type Prisma, Role } from '@prisma/client';
-import { revalidatePath, unstable_cache } from 'next/cache';
+import { unstable_cache } from 'next/cache';
 
 export async function createPost(data: CreatePostInput): Promise<ActionResult<PostWithRelations>> {
   const session = await checkRole(['ADMIN', 'AUTHOR']);
@@ -570,7 +570,7 @@ export async function duplicatePost(postId: string): Promise<ActionResult<PostWi
     await logActivity('CREATE', `تکرار پست: ${source.title} → ${newId} (از ${postId})`);
 
     return { success: true, message: 'پست با موفقیت تکرار شد.', data: post as PostWithRelations };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در تکرار پست. لطفاً دوباره تلاش کنید.',
@@ -636,7 +636,7 @@ export async function deletePost(postId: string): Promise<ActionResult> {
       success: true,
       message: 'پست با موفقیت حذف شد.',
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در حذف پست. لطفاً دوباره تلاش کنید.',
@@ -657,7 +657,7 @@ export async function deletePostAndInvalidate(postId: string): Promise<ActionRes
     }
 
     return result;
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در حذف پست',
@@ -1272,7 +1272,7 @@ export async function savePost(postId: string): Promise<ActionResult> {
       success: true,
       message: existingSave ? 'پست از لیست ذخیره‌ها حذف شد.' : 'پست با موفقیت ذخیره شد.',
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'عملیات با خطا مواجه شد. لطفاً دوباره تلاش کنید.',
@@ -1450,7 +1450,7 @@ async function fetchStatsRaw(roleScope: { authorId?: string }): Promise<
         drafts: { total: draftsTotal, data: fillWeeklyData(draftsWeekly) },
       },
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در بازیابی آمار. لطفاً دوباره تلاش کنید.',
@@ -1558,7 +1558,7 @@ export async function getScheduledPosts(): Promise<ActionResult<PostWithRelation
       message: 'پست‌های پنجرهٔ تقویم با موفقیت دریافت شدند',
       data: posts as unknown as PostWithRelations[],
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در دریافت پست‌های پنجرهٔ تقویم',

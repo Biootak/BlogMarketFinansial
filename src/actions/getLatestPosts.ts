@@ -1,11 +1,10 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { revalidateTag } from '@/lib/revalidate';
+import { revalidatePath, revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
 import type { PostWithRelations } from '@/types/types';
 import { PostStatus } from '@prisma/client';
-import { revalidatePath } from 'next/cache';
 
 interface GetLatestPostsParams {
   count?: number;
@@ -118,7 +117,6 @@ async function fetchLatestPosts(
     return cleaned as PostWithRelations[];
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.error('Error fetching posts:', error);
     }
     return [];
   }
@@ -160,7 +158,6 @@ async function fetchPublishedPostCount(): Promise<number> {
     });
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.error('[getPublishedPostCount] error:', error);
     }
     return 0;
   }

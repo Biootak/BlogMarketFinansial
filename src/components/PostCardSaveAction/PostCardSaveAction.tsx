@@ -42,10 +42,6 @@ const PostCardSaveAction: FC<PostCardSaveActionProps> = ({
         containerClassName={cn(bookmarkClass, 'rtl:mr-2')}
         postId={postId}
         initialBookmarked={initialBookmarked}
-        onBookmarkChange={(newBookmarkedState) => {
-          // اینجا می‌توانید هر عملیاتی که نیاز دارید پس از تغییر وضعیت bookmark انجام دهید
-          console.log('Bookmark state changed:', newBookmarkedState);
-        }}
       />
     </motion.div>
   );

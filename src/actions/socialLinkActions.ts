@@ -2,10 +2,9 @@
 
 import prisma from '@/lib/db';
 import { authFailureToActionResult, requireAdmin } from '@/lib/require-auth';
-import { revalidateTag } from '@/lib/revalidate';
+import { revalidatePath, revalidateTag } from '@/lib/revalidate';
 import type { SocialLinkType } from '@prisma/client';
 import { unstable_cache } from 'next/cache';
-import { revalidatePath } from 'next/cache';
 
 // M14 fix: validate social URLs before persisting. Stored links are later
 // rendered as `href`, so an arbitrary scheme (javascript:, data:, etc.) is a
@@ -53,7 +52,6 @@ export async function getSocialLinks() {
     const links = await getCachedSocialLinks('SOCIAL');
     return { success: true, data: links };
   } catch (error) {
-    console.error('Error fetching social links:', error);
     return { success: false, error: 'خطا در دریافت شبکه‌های اجتماعی' };
   }
 }
@@ -64,7 +62,6 @@ export async function getSupportLinks() {
     const links = await getCachedSocialLinks('SUPPORT');
     return { success: true, data: links };
   } catch (error) {
-    console.error('Error fetching support links:', error);
     return { success: false, error: 'خطا در دریافت لینک‌های پشتیبانی' };
   }
 }
@@ -78,7 +75,6 @@ export async function getAllSocialLinks(type?: SocialLinkType) {
     });
     return { success: true, data: links };
   } catch (error) {
-    console.error('Error fetching social links:', error);
     return { success: false, error: 'خطا در دریافت لینک‌ها' };
   }
 }
@@ -128,7 +124,6 @@ export async function createSocialLink(data: SocialLinkData) {
     revalidateTag('social-links');
     return { success: true, data: link };
   } catch (error) {
-    console.error('Error creating social link:', error);
     return { success: false, error: 'خطا در ایجاد لینک' };
   }
 }
@@ -159,7 +154,6 @@ export async function updateSocialLink(id: string, data: Partial<SocialLinkData>
     revalidateTag('social-links');
     return { success: true, data: link };
   } catch (error) {
-    console.error('Error updating social link:', error);
     return { success: false, error: 'خطا در بروزرسانی لینک' };
   }
 }
@@ -176,7 +170,6 @@ export async function deleteSocialLink(id: string) {
     revalidateTag('social-links');
     return { success: true };
   } catch (error) {
-    console.error('Error deleting social link:', error);
     return { success: false, error: 'خطا در حذف لینک' };
   }
 }
@@ -202,7 +195,6 @@ export async function toggleSocialLink(id: string) {
     revalidateTag('social-links');
     return { success: true, data: updated };
   } catch (error) {
-    console.error('Error toggling social link:', error);
     return { success: false, error: 'خطا در تغییر وضعیت' };
   }
 }
@@ -227,7 +219,6 @@ export async function reorderSocialLinks(orderedIds: string[]) {
     revalidateTag('social-links');
     return { success: true };
   } catch (error) {
-    console.error('Error reordering social links:', error);
     return { success: false, error: 'خطا در تغییر ترتیب' };
   }
 }

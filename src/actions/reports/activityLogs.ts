@@ -1,7 +1,7 @@
 'use server';
 
 import db from '@/lib/db';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath } from '@/lib/revalidate';
 import { checkReportAccess } from './auth';
 
 export type ActivityLog = {
@@ -58,7 +58,6 @@ export async function getActivityLog(page = 1, limit = 10) {
       },
     };
   } catch (error) {
-    console.error('خطا در دریافت لاگ‌های فعالیت:', error);
     return {
       success: false,
       message: 'خطا در دریافت لاگ‌های فعالیت',

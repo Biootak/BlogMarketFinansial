@@ -2,8 +2,8 @@
 
 import prisma from '@/lib/db';
 import { authFailureToActionResult, requireAdmin, requireSuperAdmin } from '@/lib/require-auth';
+import { revalidatePath } from '@/lib/revalidate';
 import { revalidateSiteIdentity } from '@/lib/site-identity-revalidate';
-import { revalidatePath } from 'next/cache';
 
 export interface SystemSettingsData {
   siteName?: string;
@@ -77,7 +77,6 @@ export async function getSystemSettings() {
     (settings as { smtpPassword?: string }).smtpPassword = undefined;
     return { success: true, data: settings };
   } catch (error) {
-    console.error('Error fetching settings:', error);
     return { success: false, error: 'خطا در دریافت تنظیمات' };
   }
 }
@@ -121,7 +120,6 @@ export async function updateGeneralSettings(data: {
     (settings as { smtpPassword?: string }).smtpPassword = undefined;
     return { success: true, data: settings };
   } catch (error) {
-    console.error('Error updating general settings:', error);
     return { success: false, error: 'خطا در ذخیره تنظیمات عمومی' };
   }
 }
@@ -170,7 +168,6 @@ export async function updateEmailSettings(data: {
     (settings as { smtpPassword?: string }).smtpPassword = undefined;
     return { success: true, data: settings };
   } catch (error) {
-    console.error('Error updating email settings:', error);
     return { success: false, error: 'خطا در ذخیره تنظیمات ایمیل' };
   }
 }
@@ -216,7 +213,6 @@ export async function updateSocialSettings(data: {
     (settings as { smtpPassword?: string }).smtpPassword = undefined;
     return { success: true, data: settings };
   } catch (error) {
-    console.error('Error updating social settings:', error);
     return { success: false, error: 'خطا در ذخیره تنظیمات شبکه‌های اجتماعی' };
   }
 }
@@ -248,7 +244,6 @@ export async function updateCacheSettings(data: { cacheEnabled: boolean }) {
     (settings as { smtpPassword?: string }).smtpPassword = undefined;
     return { success: true, data: settings };
   } catch (error) {
-    console.error('Error updating cache settings:', error);
     return { success: false, error: 'خطا در ذخیره تنظیمات کش' };
   }
 }
@@ -280,7 +275,6 @@ export async function updateMaintenanceMode(data: { maintenanceMode: boolean }) 
     (settings as { smtpPassword?: string }).smtpPassword = undefined;
     return { success: true, data: settings };
   } catch (error) {
-    console.error('Error updating maintenance mode:', error);
     return { success: false, error: 'خطا در تغییر حالت تعمیرات' };
   }
 }
@@ -293,7 +287,6 @@ export async function generateApiKey() {
     const apiKey = `bk_${crypto.randomUUID().replace(/-/g, '')}`;
     return { success: true, data: { apiKey } };
   } catch (error) {
-    console.error('Error generating API key:', error);
     return { success: false, error: 'خطا در تولید کلید API' };
   }
 }
@@ -317,7 +310,6 @@ export async function testSmtpConnection(data: {
 
     return { success: true, message: 'اتصال به سرور SMTP با موفقیت برقرار شد' };
   } catch (error) {
-    console.error('Error testing SMTP:', error);
     return { success: false, error: 'خطا در اتصال به سرور SMTP' };
   }
 }
@@ -330,7 +322,6 @@ export async function testDatabaseConnection() {
     await prisma.$queryRaw`SELECT 1`;
     return { success: true, message: 'اتصال به پایگاه داده برقرار است' };
   } catch (error) {
-    console.error('Error testing database:', error);
     return { success: false, error: 'خطا در اتصال به پایگاه داده' };
   }
 }

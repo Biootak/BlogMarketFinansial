@@ -2,11 +2,10 @@
 
 import prisma from '@/lib/db';
 import { authFailureToActionResult, requireAdmin } from '@/lib/require-auth';
-import { revalidateTag } from '@/lib/revalidate';
+import { revalidatePath, revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
 import type { ActionResult, AdPosition, AdSize, Advertisement } from '@/types/types';
 import type { Prisma } from '@prisma/client';
-import { revalidatePath } from 'next/cache';
 
 // Internal function for fetching ads (not cached)
 async function fetchActiveAdsInternal(
@@ -47,7 +46,6 @@ async function fetchActiveAdsInternal(
       data: ads,
     };
   } catch (error) {
-    console.error('خطا در بازیابی تبلیغات:', error);
     return {
       success: false,
       message: 'خطا در بازیابی تبلیغات. لطفاً دوباره تلاش کنید.',
@@ -131,7 +129,6 @@ export async function getAllAdvertisements({
       data: { ads, totalCount },
     };
   } catch (error) {
-    console.error('خطا در بازیابی تبلیغات:', error);
     return {
       success: false,
       message: 'خطا در بازیابی تبلیغات. لطفاً دوباره تلاش کنید.',
@@ -157,7 +154,6 @@ export async function getAdvertisementById(id: string): Promise<ActionResult<Adv
       data: ad,
     };
   } catch (error) {
-    console.error('خطا در بازیابی تبلیغ:', error);
     return {
       success: false,
       message: 'خطا در بازیابی تبلیغ. لطفاً دوباره تلاش کنید.',
@@ -188,7 +184,6 @@ export async function createAdvertisement(
       data: newAd,
     };
   } catch (error) {
-    console.error('خطا در ایجاد تبلیغ:', error);
     return {
       success: false,
       message: 'خطا در ایجاد تبلیغ. لطفاً دوباره تلاش کنید.',
@@ -221,7 +216,6 @@ export async function updateAdvertisement(
       data: updatedAd,
     };
   } catch (error) {
-    console.error('خطا در به‌روزرسانی تبلیغ:', error);
     return {
       success: false,
       message: 'خطا در به‌روزرسانی تبلیغ. لطفاً دوباره تلاش کنید.',
@@ -242,7 +236,6 @@ export async function deleteAdvertisement(id: string): Promise<ActionResult> {
       message: 'تبلیغ با موفقیت حذف شد.',
     };
   } catch (error) {
-    console.error('خطا در حذف تبلیغ:', error);
     return {
       success: false,
       message: 'خطا در حذف تبلیغ. لطفاً دوباره تلاش کنید.',

@@ -7,7 +7,7 @@ import React, { type FC, useEffect, useRef } from 'react';
 import ButtonThird from '../Button/ButtonThird';
 
 export interface ModalHideAuthorProps {
-  auhthor?: any;
+  auhthor?: { id?: string; displayName?: string };
   show: boolean;
   onCloseModalHideAuthor: () => void;
 }
@@ -19,9 +19,7 @@ const ModalHideAuthor: FC<ModalHideAuthorProps> = ({
 }) => {
   const textareaRef = useRef(null);
 
-  const handleClickSubmitForm = () => {
-    console.log({ auhthor: auhthor.id });
-  };
+  const handleClickSubmitForm = () => {};
 
   useEffect(() => {
     if (show) {

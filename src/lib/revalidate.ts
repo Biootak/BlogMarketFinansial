@@ -1,4 +1,7 @@
-import { revalidateTag as nextRevalidateTag } from 'next/cache';
+import {
+  revalidatePath as nextRevalidatePath,
+  revalidateTag as nextRevalidateTag,
+} from 'next/cache';
 
 /**
  * 2026-06-14: Next.js 16 type definition for `revalidateTag` requires
@@ -15,4 +18,12 @@ export function revalidateTag(tag: string): void {
   // arg required, but the runtime accepts one. We always pass 'max' to
   // also invalidate any time-based caches the same call would touch.
   (nextRevalidateTag as unknown as (t: string, p?: string) => void)(tag, 'max');
+}
+
+/**
+ * Re-export revalidatePath so all callers can import from '@/lib/revalidate'
+ * instead of 'next/cache' directly — keeps the import policy consistent.
+ */
+export function revalidatePath(path: string, type?: 'layout' | 'page'): void {
+  nextRevalidatePath(path, type);
 }

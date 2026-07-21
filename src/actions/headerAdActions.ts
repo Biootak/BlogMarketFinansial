@@ -16,9 +16,8 @@
 
 import { checkAdmin } from '@/lib/auth';
 import prisma from '@/lib/db';
-import { revalidateTag } from '@/lib/revalidate';
+import { revalidatePath, revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
-import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 // ۲۰۲۶-۰۶-۱۴: ActionResult مطابق الگوی موجود

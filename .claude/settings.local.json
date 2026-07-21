@@ -1,6 +1,0 @@
-{
-  "permissions": {
-    "allow": ["WebSearch"]
-  },
-  "enabledMcpjsonServers": ["graphify", "context7", "context-mode"]
-}

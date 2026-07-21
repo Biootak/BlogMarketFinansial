@@ -1,8 +1,7 @@
 'use server';
 
-import { revalidateTag } from '@/lib/revalidate';
+import { revalidatePath, revalidateTag } from '@/lib/revalidate';
 import { safeRevalidateTag } from '@/lib/safe-cache';
-import { revalidatePath } from 'next/cache';
 
 export async function invalidateUserCache(userId: string) {
   revalidateTag(`user-${userId}`);

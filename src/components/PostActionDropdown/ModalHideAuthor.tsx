@@ -5,23 +5,20 @@ import NcModal from '@/components/NcModal/NcModal';
 import React, { type FC, useEffect, useRef } from 'react';
 import ButtonThird from '../Button/ButtonThird';
 
-const authorDemo = [0];
 export interface ModalHideAuthorProps {
-  auhthor?: any;
+  auhthor?: { id?: string; displayName?: string };
   show: boolean;
   onCloseModalHideAuthor: () => void;
 }
 
 const ModalHideAuthor: FC<ModalHideAuthorProps> = ({
-  auhthor = authorDemo,
+  auhthor = {},
   show,
   onCloseModalHideAuthor,
 }) => {
   const textareaRef = useRef(null);
 
-  const handleClickSubmitForm = () => {
-    console.log({ auhthor: auhthor.id });
-  };
+  const handleClickSubmitForm = () => {};
 
   useEffect(() => {
     if (show) {

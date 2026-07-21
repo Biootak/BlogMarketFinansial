@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath } from '@/lib/revalidate';
 
 export async function sharePost(postId: string, platform: string) {
   // اینجا می‌توانید منطق اشتراک‌گذاری را پیاده‌سازی کنید

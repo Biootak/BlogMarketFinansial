@@ -17,9 +17,9 @@ import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { revalidatePath } from '@/lib/revalidate';
 import { sendSms } from '@/lib/sms';
 import { consumeOtpToken, generateOtpToken } from '@/lib/tokens';
-import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 
 // intent اختصاصی برای تأیید موبایل

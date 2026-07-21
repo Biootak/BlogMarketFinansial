@@ -5,10 +5,9 @@ import prisma from '@/lib/db';
 import { fetchBonbastBuySell } from '@/lib/market-rates/bonbast';
 import { bonbastToRateItems } from '@/lib/market-rates/bonbast-rate-items';
 import { requireAdmin } from '@/lib/require-auth';
-import { revalidateTag } from '@/lib/revalidate';
+import { revalidatePath, revalidateTag } from '@/lib/revalidate';
 import { safeCache, safeRevalidateTag } from '@/lib/safe-cache';
 import type { FintechActionResult, RateItem, RateListData } from '@/types/types';
-import { revalidatePath } from 'next/cache';
 
 // 2026-06-14: shared helper to normalize the Json column into a
 // typed array. Prisma 6 returns the Json value already parsed, so

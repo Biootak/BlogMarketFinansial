@@ -4,7 +4,7 @@ import prisma from '@/lib/db';
 // db is an alias for prisma — used in legacy functions below
 const db = prisma;
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath } from '@/lib/revalidate';
 
 interface UserStats {
   total: number;
@@ -210,7 +210,6 @@ export async function getSystemReports(from?: Date, to?: Date) {
     revalidatePath('/dashboard/reports');
     return { success: true, data };
   } catch (error) {
-    console.error('Error in getSystemReports:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : 'خطا در دریافت گزارش‌های سیستم',
@@ -258,7 +257,6 @@ export const getSystemStatus = async (): Promise<ActionResult<SystemStatus>> => 
 
     return { success: true, data: status };
   } catch (error) {
-    console.error('Error in getSystemStatus:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : 'خطا در دریافت وضعیت سیستم',
@@ -300,7 +298,6 @@ export const getActivityLog = async (): Promise<ActionResult<Activity[]>> => {
 
     return { success: true, data: formattedActivities };
   } catch (error) {
-    console.error('Error in getActivityLog:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : 'خطا در دریافت لاگ فعالیت‌ها',
@@ -334,7 +331,6 @@ export async function getSystemLogs(
       data: { logs, total },
     };
   } catch (error) {
-    console.error('Error fetching system logs:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : 'خطا در دریافت لاگ‌های سیستم',

@@ -2,9 +2,8 @@
 
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
-import { revalidateTag } from '@/lib/revalidate';
+import { revalidatePath, revalidateTag } from '@/lib/revalidate';
 import type { ActionResult, CommentWithCustomRelations } from '@/types/types';
-import { revalidatePath } from 'next/cache';
 
 export async function addComment(
   postId: string,
@@ -90,7 +89,7 @@ export async function addComment(
       message: 'کامنت با موفقیت افزوده شد.',
       data: comment,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در  افزودن کامنت. لطفاً دوباره تلاش کنید.',
@@ -147,7 +146,7 @@ export async function deleteComment(commentId: string): Promise<ActionResult<voi
       success: true,
       message: 'کامنت با موفقیت حذف شد.',
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در حذف کامنت. لطفاً دوباره تلاش کنید.',
@@ -243,7 +242,7 @@ export async function editComment(
       message: 'کامنت با موفقیت ویرایش شد.',
       data: updatedComment,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در ویرایش کامنت. لطفاً دوباره تلاش کنید.',
