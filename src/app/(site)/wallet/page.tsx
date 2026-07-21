@@ -1,7 +1,10 @@
+import { auth } from '@/auth';
 import { getSiteIdentity } from '@/lib/site-identity';
 import { ArrowLeft, ArrowUpDown, BarChart2, Globe, Lock, Shield, Wallet, Zap } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Suspense } from 'react';
+import WalletDashboard from './WalletDashboard';
 import WalletHero from './WalletHero';
 import s from './wallet.module.css';
 
@@ -46,7 +49,52 @@ const features = [
   },
 ] as const;
 
-export default function WalletPage() {
+export default async function WalletPage() {
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  // اگر کاربر لاگین است → داشبورد واقعی (P1-3)
+  if (userId) {
+    return (
+      <div className={s.root}>
+        <section
+          className={s.hero}
+          aria-label="کیف پول دیجیتال"
+          style={{ minHeight: 'auto', paddingBlock: 'var(--ds-space-6)' }}
+        >
+          <div className={s.content}>
+            <div className={s.badge}>
+              <span className={s.badgeDot} aria-hidden />
+              کیف پول من
+            </div>
+            <h1 className={s.headline} style={{ fontSize: 'var(--ds-text-3xl)' }}>
+              موجودی و تراکنش‌ها
+            </h1>
+          </div>
+        </section>
+        <div style={{ maxWidth: '860px', margin: '0 auto', padding: '0 var(--ds-space-4)' }}>
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  padding: 'var(--ds-space-8)',
+                  textAlign: 'center',
+                  color: 'var(--ds-text-muted)',
+                  fontSize: 'var(--ds-text-sm)',
+                }}
+              >
+                در حال بارگذاری کیف پول…
+              </div>
+            }
+          >
+            <WalletDashboard userId={userId} />
+          </Suspense>
+        </div>
+      </div>
+    );
+  }
+
+  // کاربر لاگین نیست → landing page عمومی
   return (
     <div className={s.root}>
       {/* ── Hero ──────────────────────────────────────────────────── */}

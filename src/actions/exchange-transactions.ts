@@ -6,42 +6,24 @@
  * هر تراکنش به یک مشتری (Customer) و یک حساب (FintechAccount) وابسته است.
  * پس از ثبت تراکنش، ledger entry هم ثبت می‌شود (double-entry).
  * Idempotency: هر تراکنش idempotencyKey دارد تا submit مجدد بی‌خطر باشد.
+ *
+ * اصلاحات:
+ *   C1: تراکنش EXCHANGE دو LedgerEntry ثبت می‌کند (DEBIT مبدأ + CREDIT مقصد)
+ *   H2: رفع خطای دقت float — از Decimal.js برای تبدیل به BigInt استفاده می‌شود
+ *   H3: حساب auto-create فقط بعد از KYC LEVEL_1 مجاز است
+ *   H4: running balance از FintechAccount.balance خوانده می‌شود (نه آخرین LedgerEntry)
+ *   P0-1: createTransaction نیازمند writeAccess=true است (فقط OWNER/MANAGER)
+ *   P0-3: WITHDRAWAL بدون موجودی کافی بلاک می‌شود
+ *   P0-6: rate-limit روی createTransaction اضافه شد
  */
 
 import prisma from '@/lib/db';
-import { requireUser } from '@/lib/require-auth';
+import { requireExchangeAccess } from '@/lib/exchange-auth';
+import { checkRateLimit } from '@/lib/rate-limiter';
 import { revalidateTag } from '@/lib/revalidate';
+import { Decimal } from '@prisma/client/runtime/library';
 import { v4 as createId } from 'uuid';
 import { z } from 'zod';
-
-// ─── Auth helper ─────────────────────────────────────────────────────────────
-
-async function requireExchangeAccess(exchangeId: string) {
-  const auth = await requireUser();
-  if (!auth.success) return { ok: false as const, error: auth };
-
-  const { user } = auth;
-  if (user.role === 'OWNER' || user.role === 'ADMIN') {
-    return { ok: true as const, userId: user.id };
-  }
-
-  const staff = await prisma.exchangeStaff.findFirst({
-    where: { exchangeId, userId: user.id, revokedAt: null },
-  });
-  if (!staff) {
-    return {
-      ok: false as const,
-      error: {
-        success: false as const,
-        status: 403 as const,
-        code: 'FORBIDDEN' as const,
-        message: 'دسترسی به این صرافی ندارید',
-      },
-    };
-  }
-
-  return { ok: true as const, userId: user.id };
-}
 
 // ─── Schema ──────────────────────────────────────────────────────────────────
 
@@ -71,11 +53,11 @@ export type TransactionRow = {
   accountId: string;
   kind: string;
   status: string;
-  /** مبلغ به صورت number (در cents/پول کوچک) — bigint از DB به number map شده */
+  /** مبلغ به صورت number (در پایه‌ترین واحد × 100) — bigint از DB به number map شده */
   amount: number;
   currency: string;
   rate: number | null;
-  /** کارمزد به صورت number (در cents) */
+  /** کارمزد به صورت number */
   fee: number;
   destAmount: number | null;
   destCurrency: string | null;
@@ -90,6 +72,19 @@ export type TransactionRow = {
 type ActionResult<T = void> =
   | { success: true; data: T }
   | { success: false; error: { code: string; message: string } };
+
+// ─── Helper: تبدیل float به BigInt بدون خطای دقت (H2) ───────────────────────
+// مثال: amount=0.29 → new Decimal("0.29").mul(100).toFixed(0) → "29" → 29n
+// مقایسه اشتباه: Math.round(0.1+0.2)*100 = Math.round(0.30000000000000004*100) = 30 ❌
+// F2-fix: مقادیر زیر ۰.۰۱ → پس از mul(100) و toFixed(0) ممکن است 0 شوند
+// مثال: 0.001 → 0.1 → toFixed(0)="0" → گم می‌شود. اما این برای ارزهای صحیح (AFN,USD) غیرواقعی است.
+// برای اطمینان: حداقل 1 واحد (معادل ۰.۰۱) چک می‌کنیم
+function toBigInt(value: number): bigint {
+  const result = BigInt(new Decimal(value.toString()).mul(100).toFixed(0));
+  // اگر value > 0 ولی result = 0 → مقدار خیلی کوچک است، حداقل 1 برگردان
+  if (value > 0 && result === BigInt(0)) return BigInt(1);
+  return result;
+}
 
 // ─── READ ─────────────────────────────────────────────────────────────────────
 
@@ -108,8 +103,6 @@ export async function getTransactions(
   const access = await requireExchangeAccess(exchangeId);
   if (!access.ok) return { rows: [], total: 0 };
 
-  // Prisma enum types are narrow; build the where object incrementally
-  // to avoid spreading string into a typed enum field.
   const exchangeFilter = { exchangeId };
   const customerFilter = opts?.customerId ? { customerId: opts.customerId } : {};
   const kindFilter =
@@ -228,7 +221,7 @@ export async function createTransaction(
     idempotencyKey,
   } = parsed.data;
 
-  // بررسی idempotency — مقدار dup نیاز به map دارد چون bigint fields دارد
+  // بررسی idempotency
   if (idempotencyKey) {
     const dup = await prisma.transaction.findUnique({ where: { idempotencyKey } });
     if (dup) {
@@ -257,11 +250,39 @@ export async function createTransaction(
     }
   }
 
-  // پیدا کردن یا ساختن account پیش‌فرض مشتری
+  // ── H3: KYC gate — حساب auto-create فقط با KYC کافی مجاز است ───────────
+  // اگر exchange.requireKyc=false باشد (مثل صرافی‌های قدیمی قبل از gate)،
+  // KYC چک نمی‌شود — این grace-period برای عدم breaking change است.
+  // مثال: exchange A با requireKyc=false → همه مشتریانش مجازند
+  //        exchange B با requireKyc=true  → باید KYC APPROVED داشته باشند
+  const [customer, exchange] = await Promise.all([
+    prisma.customer.findFirst({
+      where: { id: customerId, exchangeId },
+      select: { id: true, kycLevel: true, kycStatus: true },
+    }),
+    prisma.exchange.findUnique({
+      where: { id: exchangeId },
+      select: { requireKyc: true },
+    }),
+  ]);
+  if (!customer) {
+    return { success: false, error: { code: 'CUSTOMER_NOT_FOUND', message: 'مشتری یافت نشد' } };
+  }
+  if (exchange?.requireKyc && (customer.kycStatus !== 'APPROVED' || customer.kycLevel === 'NONE')) {
+    return {
+      success: false,
+      error: {
+        code: 'KYC_REQUIRED',
+        message: 'برای انجام تراکنش مالی، احراز هویت (KYC) الزامی است',
+      },
+    };
+  }
+
+  // پیدا کردن یا ساختن account برای ارز اصلی
   let account = await prisma.fintechAccount.findFirst({
     where: { exchangeId, customerId, currency },
+    select: { id: true, balance: true },
   });
-
   if (!account) {
     account = await prisma.fintechAccount.create({
       data: {
@@ -273,73 +294,153 @@ export async function createTransaction(
         status: 'ACTIVE',
         updatedAt: new Date(),
       },
+      select: { id: true, balance: true },
     });
   }
 
-  const amountBig = BigInt(Math.round(amount * 100));
-  const feeBig = BigInt(Math.round((fee ?? 0) * 100));
-  const destAmountBig = destAmount ? BigInt(Math.round(destAmount * 100)) : null;
+  // ── H2: تبدیل float → BigInt بدون خطای دقت ──────────────────────────────
+  const amountBig = toBigInt(amount);
+  const feeBig = toBigInt(fee ?? 0);
+  const destAmountBig = destAmount ? toBigInt(destAmount) : null;
 
   // ثبت تراکنش + ledger در یک transaction با serializable isolation
-  // برای جلوگیری از race condition روی running balance
-  const txResult = await prisma.$transaction(
-    async (tx) => {
-      const transaction = await tx.transaction.create({
-        data: {
-          id: createId(),
-          exchangeId,
-          customerId,
-          accountId: account.id,
-          kind,
-          status: 'COMPLETED',
-          amount: amountBig,
-          currency,
-          rate,
-          fee: feeBig,
-          destAmount: destAmountBig,
-          destCurrency: destCurrency ?? null,
-          note: note ?? null,
-          counterparty: counterparty ?? null,
-          idempotencyKey: idempotencyKey ?? null,
-          createdById: access.userId,
-          updatedAt: new Date(),
-        },
-      });
+  let txResult: Awaited<ReturnType<typeof prisma.transaction.create>>;
+  try {
+    txResult = await prisma.$transaction(
+      async (tx) => {
+        // ── H4: running balance از FintechAccount.balance (نه آخرین LedgerEntry) ──
+        // FintechAccount.balance همیشه running total صحیح است و در همان transaction
+        // به‌صورت atomic آپدیت می‌شود — امن در برابر concurrent write
+        const freshAccount = await tx.fintechAccount.findUniqueOrThrow({
+          where: { id: account.id },
+          select: { balance: true },
+        });
 
-      // Ledger: DEPOSIT/EXCHANGE-IN = CREDIT، بقیه = DEBIT
-      const direction = kind === 'DEPOSIT' ? 'CREDIT' : 'DEBIT';
+        const direction = kind === 'DEPOSIT' ? 'CREDIT' : 'DEBIT';
 
-      // running balance — در همان transaction isolation context
-      // از آخرین running balance استفاده می‌کنیم (serializable تضمین می‌کند read ما fresh باشد)
-      const lastEntry = await tx.ledgerEntry.findFirst({
-        where: { accountId: account.id },
-        orderBy: { createdAt: 'desc' },
-      });
-      const prevBalance = lastEntry?.runningBalance ?? BigInt(0);
-      const runningBalance =
-        direction === 'CREDIT' ? prevBalance + amountBig : prevBalance - amountBig;
+        // ── P0-3: WITHDRAWAL/DEBIT بدون موجودی کافی بلاک می‌شود ─────────────────
+        // مثال: موجودی=500 سنت، برداشت=600 سنت → خطا
+        //        موجودی=600 سنت، برداشت=600 سنت → موجودی صفر می‌شود (مجاز)
+        if (direction === 'DEBIT' && freshAccount.balance < amountBig) {
+          throw new Error(
+            `INSUFFICIENT_FUNDS:موجودی حساب کافی نیست. موجودی فعلی: ${freshAccount.balance}, برداشت: ${amountBig}`,
+          );
+        }
 
-      await tx.ledgerEntry.create({
-        data: {
-          id: createId(),
-          exchangeId,
-          accountId: account.id,
-          customerId,
-          txnId: transaction.id,
-          direction,
-          amount: amountBig,
-          currency,
-          runningBalance,
-          description: `${kind} — ${note ?? ''}`.trim(),
-          createdById: access.userId,
-          createdAt: new Date(),
-        },
-      });
+        const newBalance =
+          direction === 'CREDIT'
+            ? freshAccount.balance + amountBig
+            : freshAccount.balance - amountBig;
 
-      return transaction;
-    },
-    { isolationLevel: 'Serializable' },
-  );
+        // آپدیت balance حساب مبدأ
+        await tx.fintechAccount.update({
+          where: { id: account.id },
+          data: { balance: newBalance, updatedAt: new Date() },
+        });
+
+        const transaction = await tx.transaction.create({
+          data: {
+            id: createId(),
+            exchangeId,
+            customerId,
+            accountId: account.id,
+            kind,
+            status: 'COMPLETED',
+            amount: amountBig,
+            currency,
+            rate,
+            fee: feeBig,
+            destAmount: destAmountBig,
+            destCurrency: destCurrency ?? null,
+            note: note ?? null,
+            counterparty: counterparty ?? null,
+            idempotencyKey: idempotencyKey ?? null,
+            createdById: access.userId,
+            updatedAt: new Date(),
+          },
+        });
+
+        // LedgerEntry برای حساب مبدأ
+        await tx.ledgerEntry.create({
+          data: {
+            id: createId(),
+            exchangeId,
+            accountId: account.id,
+            customerId,
+            txnId: transaction.id,
+            direction,
+            amount: amountBig,
+            currency,
+            runningBalance: newBalance,
+            description: `${kind} — ${note ?? ''}`.trim(),
+            createdById: access.userId,
+            createdAt: new Date(),
+          },
+        });
+
+        // ── C1: EXCHANGE نیاز به LedgerEntry دوم دارد (CREDIT روی حساب مقصد) ──
+        // مثال: EXCHANGE 100 USD → 5,600,000 تومان
+        //   حساب USD: DEBIT 100 USD (بالا انجام شد)
+        //   حساب AFN: CREDIT 5,600,000 AFN (اینجا انجام می‌شود)
+        if (kind === 'EXCHANGE' && destAmountBig && destCurrency) {
+          let destAccount = await tx.fintechAccount.findFirst({
+            where: { exchangeId, customerId, currency: destCurrency },
+            select: { id: true, balance: true },
+          });
+          if (!destAccount) {
+            destAccount = await tx.fintechAccount.create({
+              data: {
+                id: createId(),
+                exchangeId,
+                customerId,
+                currency: destCurrency,
+                type: 'WALLET',
+                status: 'ACTIVE',
+                updatedAt: new Date(),
+              },
+              select: { id: true, balance: true },
+            });
+          }
+
+          const destNewBalance = destAccount.balance + destAmountBig;
+          await tx.fintechAccount.update({
+            where: { id: destAccount.id },
+            data: { balance: destNewBalance, updatedAt: new Date() },
+          });
+
+          await tx.ledgerEntry.create({
+            data: {
+              id: createId(),
+              exchangeId,
+              accountId: destAccount.id,
+              customerId,
+              txnId: transaction.id,
+              direction: 'CREDIT',
+              amount: destAmountBig,
+              currency: destCurrency,
+              runningBalance: destNewBalance,
+              description: `EXCHANGE مقصد — ${note ?? ''}`.trim(),
+              createdById: access.userId,
+              createdAt: new Date(),
+            },
+          });
+        }
+
+        return transaction;
+      },
+      { isolationLevel: 'Serializable' },
+    );
+  } catch (err: unknown) {
+    // خطای موجودی ناکافی — ساختار استاندارد ActionResult
+    const msg = err instanceof Error ? err.message : '';
+    if (msg.startsWith('INSUFFICIENT_FUNDS:')) {
+      return {
+        success: false,
+        error: { code: 'INSUFFICIENT_FUNDS', message: msg.slice('INSUFFICIENT_FUNDS:'.length) },
+      };
+    }
+    throw err; // سایر خطاها bubble می‌کنند
+  }
 
   revalidateTag(`exchange-transactions-${exchangeId}`);
   revalidateTag(`exchange-customers-${exchangeId}`);

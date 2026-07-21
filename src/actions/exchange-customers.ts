@@ -4,43 +4,25 @@
  * exchange-customers — Server Actions برای مدیریت مشتریان هر صراف.
  *
  * Tenant isolation: هر action نیازمند exchangeId است و دسترسی چک می‌شود.
+ *
+ * P0-5: nationalId قبل از ذخیره با SHA-256 هش می‌شود (حفظ حریم خصوصی)
+ * P3-1: mapCustomer() type-safe به جای as unknown as CustomerRow
+ * P3-2: personalLimitAf در CustomerRow از bigint به string تبدیل شد (JSON-safe)
  */
 
+import { createHash } from 'node:crypto';
 import prisma from '@/lib/db';
-import { requireUser } from '@/lib/require-auth';
+import { requireExchangeAccess } from '@/lib/exchange-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import { v4 as createId } from 'uuid';
 import { z } from 'zod';
 
-// ─── Auth helper ─────────────────────────────────────────────────────────────
-
-async function requireExchangeAccess(exchangeId: string) {
-  const auth = await requireUser();
-  if (!auth.success) return { ok: false as const, error: auth };
-
-  const { user } = auth;
-  // OWNER/ADMIN پلتفرم همه چیز را می‌بینند
-  if (user.role === 'OWNER' || user.role === 'ADMIN') {
-    return { ok: true as const, userId: user.id };
-  }
-
-  // بقیه باید staff همین صرافی باشند
-  const staff = await prisma.exchangeStaff.findFirst({
-    where: { exchangeId, userId: user.id, revokedAt: null },
-  });
-  if (!staff) {
-    return {
-      ok: false as const,
-      error: {
-        success: false as const,
-        status: 403 as const,
-        code: 'FORBIDDEN' as const,
-        message: 'دسترسی به این صرافی ندارید',
-      },
-    };
-  }
-
-  return { ok: true as const, userId: user.id };
+// ─── Helper: هش کردن شناسه ملی (P0-5) ────────────────────────────────────────
+// SHA-256 یک‌طرفه — نه قابل بازیابی نه قابل مقایسه متنی.
+// مثال: "1234567890" → "a665a45920422f9d417e4867efdc4fb8a0..."
+// برای search: ورودی کاربر را هش کن و با هش ذخیره‌شده مقایسه کن.
+function hashNationalId(id: string): string {
+  return createHash('sha256').update(id.trim()).digest('hex');
 }
 
 // ─── Schema ──────────────────────────────────────────────────────────────────
@@ -65,6 +47,30 @@ export type CustomerRow = {
   exchangeId: string;
   fullName: string;
   fatherName: string | null;
+  /** هش SHA-256 کد ملی — برای نمایش در UI باید null یا '[محافظت‌شده]' نشان داده شود */
+  nationalId: string | null;
+  passportNo: string | null;
+  phone: string;
+  email: string | null;
+  address: string | null;
+  city: string | null;
+  status: string;
+  kycLevel: string;
+  kycStatus: string;
+  /** P3-2: string به جای bigint — JSON-serializable و قابل پاس به client components */
+  personalLimitAf: string | null;
+  riskScore: number;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+// ─── mapCustomer: type-safe mapper (P3-1) ─────────────────────────────────────
+type PrismaCustomer = {
+  id: string;
+  exchangeId: string;
+  fullName: string;
+  fatherName: string | null;
   nationalId: string | null;
   passportNo: string | null;
   phone: string;
@@ -80,6 +86,29 @@ export type CustomerRow = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+function mapCustomer(row: PrismaCustomer): CustomerRow {
+  return {
+    id: row.id,
+    exchangeId: row.exchangeId,
+    fullName: row.fullName,
+    fatherName: row.fatherName,
+    nationalId: row.nationalId, // هش ذخیره‌شده — نه plain text
+    passportNo: row.passportNo,
+    phone: row.phone,
+    email: row.email,
+    address: row.address,
+    city: row.city,
+    status: row.status,
+    kycLevel: row.kycLevel,
+    kycStatus: row.kycStatus,
+    personalLimitAf: row.personalLimitAf != null ? row.personalLimitAf.toString() : null,
+    riskScore: row.riskScore,
+    notes: row.notes,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
 
 type ActionResult<T = void> =
   | { success: true; data: T }
@@ -103,7 +132,8 @@ export async function getCustomers(
           OR: [
             { fullName: { contains: opts.query, mode: 'insensitive' as const } },
             { phone: { contains: opts.query } },
-            { nationalId: { contains: opts.query } },
+            // P0-5: search روی هش — ورودی کاربر را قبل از مقایسه هش کن
+            { nationalId: { equals: hashNationalId(opts.query) } },
           ],
         }
       : {}),
@@ -119,7 +149,7 @@ export async function getCustomers(
     prisma.customer.count({ where }),
   ]);
 
-  return { rows: rows as unknown as CustomerRow[], total };
+  return { rows: rows.map(mapCustomer), total };
 }
 
 export async function getCustomerById(
@@ -129,9 +159,10 @@ export async function getCustomerById(
   const access = await requireExchangeAccess(exchangeId);
   if (!access.ok) return null;
 
-  return prisma.customer.findFirst({
+  const row = await prisma.customer.findFirst({
     where: { id: customerId, exchangeId },
-  }) as Promise<CustomerRow | null>;
+  });
+  return row ? mapCustomer(row) : null;
 }
 
 // ─── CREATE ───────────────────────────────────────────────────────────────────
@@ -152,11 +183,14 @@ export async function createCustomer(
     };
   }
 
+  const { nationalId, ...restData } = parsed.data;
   const row = await prisma.customer.create({
     data: {
       id: createId(),
       exchangeId,
-      ...parsed.data,
+      ...restData,
+      // P0-5: هش کردن nationalId — plain text هرگز به DB نمی‌رسد
+      nationalId: nationalId ? hashNationalId(nationalId) : null,
       personalLimitAf: parsed.data.personalLimitAf ? BigInt(parsed.data.personalLimitAf) : null,
       updatedAt: new Date(),
       createdById: access.userId,
@@ -164,7 +198,7 @@ export async function createCustomer(
   });
 
   revalidateTag(`exchange-customers-${exchangeId}`);
-  return { success: true, data: row as unknown as CustomerRow };
+  return { success: true, data: mapCustomer(row) };
 }
 
 // ─── UPDATE ───────────────────────────────────────────────────────────────────
@@ -186,10 +220,15 @@ export async function updateCustomer(
     };
   }
 
+  const { nationalId: newNationalId, ...restUpdate } = parsed.data;
   const row = await prisma.customer.update({
     where: { id: customerId, exchangeId },
     data: {
-      ...parsed.data,
+      ...restUpdate,
+      // P0-5: اگر nationalId جدید داده شده، هش کن
+      ...(newNationalId !== undefined
+        ? { nationalId: newNationalId ? hashNationalId(newNationalId) : null }
+        : {}),
       ...(parsed.data.personalLimitAf !== undefined
         ? {
             personalLimitAf: parsed.data.personalLimitAf
@@ -202,7 +241,7 @@ export async function updateCustomer(
   });
 
   revalidateTag(`exchange-customers-${exchangeId}`);
-  return { success: true, data: row as unknown as CustomerRow };
+  return { success: true, data: mapCustomer(row) };
 }
 
 // ─── STATUS ───────────────────────────────────────────────────────────────────

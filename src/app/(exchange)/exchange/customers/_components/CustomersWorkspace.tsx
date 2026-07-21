@@ -17,6 +17,7 @@ import {
   DataTable,
   EmptyState,
 } from '@/components/Dashboard/primitives';
+import { useToast } from '@/components/ui/use-toast';
 import { CheckCircle2, PencilLine, Plus, Search, UserCheck, UserX } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -52,6 +53,7 @@ export default function CustomersWorkspace({
   staffRole,
 }: Props) {
   const router = useRouter();
+  const { toast } = useToast();
   const [rows, setRows] = useState(initialRows);
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -87,10 +89,11 @@ export default function CustomersWorkspace({
         setEditRow(null);
         router.refresh();
       } else {
-        alert(result.error.message);
+        // U6-fix: جایگزینی alert() با toast
+        toast({ variant: 'destructive', title: 'خطا', description: result.error.message });
       }
     },
-    [editRow, exchangeId, router],
+    [editRow, exchangeId, router, toast],
   );
 
   const handleStatusChange = useCallback(

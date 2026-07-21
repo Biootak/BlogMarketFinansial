@@ -263,10 +263,11 @@ export default function TransactionsWorkspace({
             onClick={(e) => e.target === e.currentTarget && setDrawerOpen(false)}
             onKeyDown={(e) => e.key === 'Escape' && setDrawerOpen(false)}
           >
+            {/* U10-fix: dialog بدون display:contents — semantic و a11y درست */}
             <dialog
               open
               aria-label="تراکنش جدید"
-              style={{ display: 'contents', border: 'none', padding: 0, background: 'transparent' }}
+              style={{ border: 'none', padding: 0, background: 'transparent', margin: 0 }}
             >
               <div style={panel}>
                 <div

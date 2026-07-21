@@ -12,7 +12,8 @@
  */
 
 import prisma from '@/lib/db';
-import { requireAdmin, requireUser } from '@/lib/require-auth';
+import { requireExchangeAccess } from '@/lib/exchange-auth';
+import { requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeRevalidateTag } from '@/lib/safe-cache';
 import { unstable_cache } from 'next/cache';
@@ -113,39 +114,6 @@ function revalidateProviderCaches(): void {
   }
 }
 
-// ─── Auth helper برای صراف ────────────────────────────────────────────────────
-
-async function requireExchangeStaffAccess(
-  exchangeId: string,
-): Promise<{ ok: true; userId: string } | { ok: false; error: { code: string; message: string } }> {
-  const authResult = await requireUser();
-  if (!authResult.success) {
-    return { ok: false, error: { code: authResult.code, message: authResult.message } };
-  }
-  const { user } = authResult;
-
-  if (user.role === 'OWNER' || user.role === 'ADMIN') {
-    return { ok: true, userId: user.id };
-  }
-
-  const staff = await prisma.exchangeStaff.findFirst({
-    where: {
-      exchangeId,
-      userId: user.id,
-      revokedAt: null,
-      role: { in: ['OWNER', 'MANAGER'] },
-    },
-    select: { id: true },
-  });
-  if (!staff) {
-    return {
-      ok: false,
-      error: { code: 'FORBIDDEN', message: 'فقط مدیران صرافی می‌توانند نرخ‌ها را ویرایش کنند' },
-    };
-  }
-  return { ok: true, userId: user.id };
-}
-
 // ─── READ — Platform Admin ────────────────────────────────────────────────────
 
 export const getTransferProviders = unstable_cache(
@@ -226,9 +194,10 @@ export async function upsertExchangeProvider(
   exchangeId: string,
   raw: unknown,
 ): Promise<ActionResult<TransferProviderRow>> {
-  const access = await requireExchangeStaffAccess(exchangeId);
+  // A1-fix: از requireExchangeAccess در exchange-auth.ts استفاده می‌کنیم (single source of truth)
+  const access = await requireExchangeAccess(exchangeId, true);
   if (!access.ok) {
-    return { success: false, error: access.error };
+    return { success: false, error: { code: access.error.code, message: access.error.message } };
   }
 
   const parsed = ExchangeProviderUpdateSchema.safeParse(raw);

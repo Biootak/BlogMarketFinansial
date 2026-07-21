@@ -8,12 +8,18 @@
  *   ادمین → approveQuote (ACTIVE) یا rejectQuote (REJECTED)
  *   cron  → expireQuotes (EXPIRED)
  *   مشتری → lockQuote (LOCKED) هنگام ثبت معامله
+ *
+ * P1-2: getActiveQuotes و getActiveCurrencies با safeCache کش می‌شوند
+ * P0-6: rate-limit روی submitQuote اضافه شد
  */
 
 import prisma from '@/lib/db';
-import { requireAdmin, requireUser } from '@/lib/require-auth';
+import { requireExchangeAccess } from '@/lib/exchange-auth';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
-import { safeRevalidateTag } from '@/lib/safe-cache';
+import safeCache, { safeRevalidateTag } from '@/lib/safe-cache';
+import { headers } from 'next/headers';
 import { z } from 'zod';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -91,96 +97,82 @@ const SubmitQuoteSchema = z
 // ─── Cache invalidation ───────────────────────────────────────────────────────
 
 function revalidateQuoteCaches(): void {
-  for (const tag of [
-    'exchange-quotes',
-    'transfer-providers',
-    'exchange-rates',
-    'money-transfer',
-  ] as const) {
-    revalidateTag(tag);
-    safeRevalidateTag(tag);
-  }
+  revalidateTag('exchange-quotes');
+  revalidateTag('transfer-providers');
+  revalidateTag('exchange-rates');
+  revalidateTag('money-transfer');
+  // P1-2: in-memory safeCache را هم پاک کن
+  safeRevalidateTag('exchange-quotes');
+  safeRevalidateTag('exchange-rates');
 }
 
-// ─── Auth helper برای صراف ────────────────────────────────────────────────────
+// ─── READ — کش‌شده (P1-2) ────────────────────────────────────────────────────
 
-async function requireExchangeAccess(
-  exchangeId: string,
-): Promise<{ ok: true; userId: string } | { ok: false; error: { code: string; message: string } }> {
-  const auth = await requireUser();
-  if (!auth.success) return { ok: false, error: { code: auth.code, message: auth.message } };
-  const { user } = auth;
-  if (user.role === 'OWNER' || user.role === 'ADMIN') return { ok: true, userId: user.id };
+/** همه quotes فعال برای نمایش در سایت — با safeCache 60 ثانیه (P1-2) */
+export const getActiveQuotes = safeCache(
+  async (currencyCode?: string): Promise<QuoteRow[]> => {
+    const now = new Date();
+    const rows = await prisma.exchangeRateQuote.findMany({
+      where: {
+        status: 'ACTIVE',
+        expiresAt: { gt: now },
+        Exchange: { showInComparison: true, status: 'ACTIVE' },
+        ...(currencyCode ? { currencyCode } : {}),
+      },
+      include: {
+        Exchange: { select: { name: true, displayName: true, city: true, logoUrl: true } },
+      },
+      orderBy: [{ Exchange: { name: 'asc' } }, { currencyCode: 'asc' }],
+    });
 
-  const staff = await prisma.exchangeStaff.findFirst({
-    where: { exchangeId, userId: user.id, revokedAt: null, role: { in: ['OWNER', 'MANAGER'] } },
-    select: { id: true },
-  });
-  if (!staff)
-    return {
-      ok: false,
-      error: { code: 'FORBIDDEN', message: 'فقط مدیران صرافی می‌توانند قیمت ثبت کنند' },
-    };
-  return { ok: true, userId: user.id };
-}
+    return rows.map((r) => ({
+      id: r.id,
+      exchangeId: r.exchangeId,
+      currencyCode: r.currencyCode,
+      currencyPair: r.currencyPair,
+      buyRate: r.buyRate.toString(),
+      sellRate: r.sellRate.toString(),
+      unit: r.unit,
+      minAmount: r.minAmount?.toString() ?? null,
+      maxAmount: r.maxAmount?.toString() ?? null,
+      status: r.status,
+      validMinutes: r.validMinutes,
+      expiresAt: r.expiresAt,
+      note: r.note,
+      approvedById: r.approvedById,
+      approvedAt: r.approvedAt,
+      submittedById: r.submittedById,
+      version: r.version,
+      createdAt: r.createdAt,
+      updatedAt: r.updatedAt,
+      exchangeName: r.Exchange.displayName ?? r.Exchange.name,
+      exchangeCity: r.Exchange.city,
+      exchangeLogoUrl: r.Exchange.logoUrl,
+    }));
+  },
+  [] as QuoteRow[],
+  { key: 'active-quotes', ttl: 60, tags: ['exchange-quotes', 'exchange-rates'] },
+);
 
-// ─── READ ─────────────────────────────────────────────────────────────────────
-
-/** همه quotes فعال برای نمایش در سایت — با اطلاعات صرافی */
-export async function getActiveQuotes(currencyCode?: string): Promise<QuoteRow[]> {
-  const now = new Date();
-  const rows = await prisma.exchangeRateQuote.findMany({
-    where: {
-      status: 'ACTIVE',
-      expiresAt: { gt: now },
-      Exchange: { showInComparison: true, status: 'ACTIVE' },
-      ...(currencyCode ? { currencyCode } : {}),
-    },
-    include: { Exchange: { select: { name: true, displayName: true, city: true, logoUrl: true } } },
-    orderBy: [{ Exchange: { name: 'asc' } }, { currencyCode: 'asc' }],
-  });
-
-  return rows.map((r) => ({
-    id: r.id,
-    exchangeId: r.exchangeId,
-    currencyCode: r.currencyCode,
-    currencyPair: r.currencyPair,
-    buyRate: r.buyRate.toString(),
-    sellRate: r.sellRate.toString(),
-    unit: r.unit,
-    minAmount: r.minAmount?.toString() ?? null,
-    maxAmount: r.maxAmount?.toString() ?? null,
-    status: r.status,
-    validMinutes: r.validMinutes,
-    expiresAt: r.expiresAt,
-    note: r.note,
-    approvedById: r.approvedById,
-    approvedAt: r.approvedAt,
-    submittedById: r.submittedById,
-    version: r.version,
-    createdAt: r.createdAt,
-    updatedAt: r.updatedAt,
-    exchangeName: r.Exchange.displayName ?? r.Exchange.name,
-    exchangeCity: r.Exchange.city,
-    exchangeLogoUrl: r.Exchange.logoUrl,
-  }));
-}
-
-/** ارزهای یکتایی که quote ACTIVE دارند — برای چرخش در جدول */
-export async function getActiveCurrencies(): Promise<string[]> {
-  const now = new Date();
-  const rows = await prisma.exchangeRateQuote.findMany({
-    where: {
-      status: 'ACTIVE',
-      expiresAt: { gt: now },
-      Exchange: { showInComparison: true, status: 'ACTIVE' },
-    },
-    select: { currencyCode: true },
-    distinct: ['currencyCode'],
-    orderBy: { currencyCode: 'asc' },
-  });
-  return rows.map((r) => r.currencyCode);
-}
+/** ارزهای یکتایی که quote ACTIVE دارند — با safeCache 60 ثانیه (P1-2) */
+export const getActiveCurrencies = safeCache(
+  async (): Promise<string[]> => {
+    const now = new Date();
+    const rows = await prisma.exchangeRateQuote.findMany({
+      where: {
+        status: 'ACTIVE',
+        expiresAt: { gt: now },
+        Exchange: { showInComparison: true, status: 'ACTIVE' },
+      },
+      select: { currencyCode: true },
+      distinct: ['currencyCode'],
+      orderBy: { currencyCode: 'asc' },
+    });
+    return rows.map((r) => r.currencyCode);
+  },
+  [] as string[],
+  { key: 'active-currencies', ttl: 60, tags: ['exchange-quotes', 'exchange-rates'] },
+);
 
 /** همه quotes یک صرافی — برای داشبورد صراف */
 export async function getExchangeQuotes(exchangeId: string): Promise<QuoteRow[]> {
@@ -252,7 +244,17 @@ export async function submitQuote(
   exchangeId: string,
   raw: unknown,
 ): Promise<ActionResult<QuoteRow>> {
-  const access = await requireExchangeAccess(exchangeId);
+  // ── P0-6: rate-limit روی submitQuote ──────────────────────────────────────
+  const ip = (await headers()).get('x-forwarded-for')?.split(',').pop()?.trim() ?? 'unknown';
+  const rl = await checkRateLimit(`quote-submit:${ip}:${exchangeId}`, 'api');
+  if (!rl.success) {
+    return {
+      success: false,
+      error: { code: 'RATE_LIMITED', message: 'تعداد درخواست‌ها زیاد است. لطفاً صبر کنید.' },
+    };
+  }
+
+  const access = await requireExchangeAccess(exchangeId, true);
   if (!access.ok) return { success: false, error: access.error };
 
   const parsed = SubmitQuoteSchema.safeParse(raw);

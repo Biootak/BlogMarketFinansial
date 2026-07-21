@@ -11,6 +11,7 @@
  */
 
 import prisma from '@/lib/db';
+import { requireExchangeAccess } from '@/lib/exchange-auth';
 import { requireAdmin, requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import { unstable_cache } from 'next/cache';
@@ -270,8 +271,11 @@ export async function addExchangeStaff(
   userEmail: string,
   role: 'OWNER' | 'MANAGER' | 'STAFF' | 'VIEWER',
 ): Promise<ActionResult<ExchangeStaffRow>> {
-  const auth = await requireAdmin();
-  if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
+  // S2-fix: OWNER/MANAGER صرافی هم می‌توانند staff اضافه کنند (نه فقط ADMIN پلتفرم)
+  const access = await requireExchangeAccess(exchangeId, true);
+  if (!access.ok) {
+    return { success: false, error: { code: access.error.code, message: access.error.message } };
+  }
 
   const user = await prisma.user.findUnique({ where: { email: userEmail } });
   if (!user) {
@@ -300,7 +304,7 @@ export async function addExchangeStaff(
       userId: user.id,
       role,
       joinedAt: new Date(),
-      invitedBy: auth.user.id,
+      invitedBy: access.userId,
     },
     update: { role, revokedAt: null, joinedAt: new Date() },
     include: { User: { select: { name: true, email: true, image: true } } },
@@ -323,9 +327,15 @@ export async function addExchangeStaff(
   };
 }
 
-export async function revokeExchangeStaff(staffId: string): Promise<ActionResult<{ id: string }>> {
-  const auth = await requireAdmin();
-  if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
+export async function revokeExchangeStaff(
+  staffId: string,
+  exchangeId: string,
+): Promise<ActionResult<{ id: string }>> {
+  // S2-fix: OWNER/MANAGER صرافی هم می‌توانند staff را revoke کنند
+  const access = await requireExchangeAccess(exchangeId, true);
+  if (!access.ok) {
+    return { success: false, error: { code: access.error.code, message: access.error.message } };
+  }
 
   await prisma.exchangeStaff.update({
     where: { id: staffId },

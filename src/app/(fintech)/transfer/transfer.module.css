@@ -1,0 +1,137 @@
+/* transfer.module.css — صفحه درخواست حواله ارزی */
+
+.page {
+  min-height: 100dvh;
+  background: var(--ds-canvas);
+  direction: rtl;
+}
+
+/* ── Hero ──────────────────────────────────────────────────────────────────── */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  /* Navy عمیق — هماهنگ با dashboard.css */
+  background: oklch(13% 0.05 265);
+  padding-block: clamp(3.5rem, 9vw, 6.5rem);
+  padding-inline: clamp(1rem, 5vw, 3rem);
+}
+
+.heroAmbient {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 50%, oklch(32% 0.12 265 / 0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 85% 20%, oklch(30% 0.10 300 / 0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 60% at 50% 100%, oklch(20% 0.08 220 / 0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.heroHairline {
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    oklch(55% 0.12 265 / 0.4) 40%,
+    oklch(65% 0.1 280 / 0.3) 60%,
+    transparent
+  );
+}
+
+.heroInner {
+  position: relative;
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 16px;
+  border-radius: var(--ds-radius-full);
+  background: oklch(30% 0.10 265 / 0.35);
+  border: 1px solid oklch(55% 0.12 265 / 0.35);
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  color: oklch(78% 0.08 265);
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.heroBadgeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: oklch(70% 0.18 145);
+  display: inline-block;
+  box-shadow: 0 0 8px oklch(70% 0.18 145 / 0.7);
+}
+
+.heroTitle {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 800;
+  color: oklch(98% 0.005 240);
+  line-height: var(--ds-leading-tight);
+  margin-bottom: 1.1rem;
+  letter-spacing: -0.02em;
+}
+
+.heroTitleAccent {
+  display: block;
+  background: linear-gradient(135deg, oklch(75% 0.16 75) 0%, oklch(72% 0.18 55) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.heroDesc {
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  color: oklch(73% 0.04 265);
+  line-height: var(--ds-leading-relaxed);
+  margin-bottom: 2.25rem;
+  max-width: 520px;
+  margin-inline: auto;
+}
+
+.heroStats {
+  display: flex;
+  justify-content: center;
+  gap: clamp(2rem, 5vw, 4rem);
+  flex-wrap: wrap;
+  padding-top: 0.5rem;
+  border-top: 1px solid oklch(55% 0.06 265 / 0.2);
+}
+
+.heroStat {
+  text-align: center;
+  min-width: 80px;
+}
+
+.heroStatValue {
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  font-weight: 800;
+  color: oklch(98% 0.005 240);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.heroStatLabel {
+  font-size: var(--ds-text-xs);
+  color: oklch(60% 0.04 265);
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* ── Form Section ──────────────────────────────────────────────────────────── */
+
+.formSection {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 6vw, 4rem) clamp(1rem, 4vw, 2rem);
+}

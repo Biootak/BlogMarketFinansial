@@ -1,9 +1,9 @@
 'use client';
 
 import { type ExchangeStaffRow, addExchangeStaff, revokeExchangeStaff } from '@/actions/exchanges';
-import Image from 'next/image';
 import { ConfirmDialog } from '@/components/Dashboard/primitives';
 import { Trash2, UserPlus } from 'lucide-react';
+import Image from 'next/image';
 import { type CSSProperties, useCallback, useState } from 'react';
 import s from './StaffWorkspace.module.css';
 
@@ -56,13 +56,13 @@ export default function StaffWorkspace({ exchangeId, initialStaff, currentUserId
   const handleRevoke = useCallback(async () => {
     if (!revokeTarget) return;
     setRevoking(true);
-    const result = await revokeExchangeStaff(revokeTarget.id);
+    const result = await revokeExchangeStaff(revokeTarget.id, exchangeId);
     setRevoking(false);
     if (result.success) {
       setStaff((prev) => prev.filter((s) => s.id !== revokeTarget.id));
       setRevokeTarget(null);
     }
-  }, [revokeTarget]);
+  }, [revokeTarget, exchangeId]);
 
   const inp: CSSProperties = {
     height: '2.4rem',
