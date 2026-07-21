@@ -4,6 +4,7 @@ import prisma from '@/lib/db';
 import { authFailureToActionResult, requireAdmin } from '@/lib/require-auth';
 import { revalidatePath, revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
+import { CreateAdvertisementSchema, UpdateAdvertisementSchema } from '@/schemas';
 import type { ActionResult, AdPosition, AdSize, Advertisement } from '@/types/types';
 import type { Prisma } from '@prisma/client';
 
@@ -168,13 +169,23 @@ export async function createAdvertisement(
   try {
     const authCheck = await requireAdmin();
     if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    // 2026-08-11: Zod validation — جلوگیری از mass assignment
+    const parsed = CreateAdvertisementSchema.safeParse(data);
+    if (!parsed.success) {
+      return {
+        success: false,
+        message: parsed.error.issues[0]?.message ?? 'داده‌های وارد شده نامعتبر است.',
+      };
+    }
+
     const newAd = await prisma.advertisement.create({
       data: {
-        ...data,
-        customDimensions: data.customDimensions
-          ? JSON.parse(JSON.stringify(data.customDimensions))
+        ...parsed.data,
+        customDimensions: parsed.data.customDimensions
+          ? JSON.parse(JSON.stringify(parsed.data.customDimensions))
           : null,
-      },
+      } as Parameters<typeof prisma.advertisement.create>[0]['data'],
     });
     revalidatePath('/advertisements');
     revalidateTag('advertisements');
@@ -199,14 +210,24 @@ export async function updateAdvertisement(
   try {
     const authCheck = await requireAdmin();
     if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    // 2026-08-11: Zod validation
+    const parsed = UpdateAdvertisementSchema.safeParse(data);
+    if (!parsed.success) {
+      return {
+        success: false,
+        message: parsed.error.issues[0]?.message ?? 'داده‌های وارد شده نامعتبر است.',
+      };
+    }
+
     const updatedAd = await prisma.advertisement.update({
       where: { id },
       data: {
-        ...data,
-        customDimensions: data.customDimensions
-          ? JSON.parse(JSON.stringify(data.customDimensions))
+        ...parsed.data,
+        customDimensions: parsed.data.customDimensions
+          ? JSON.parse(JSON.stringify(parsed.data.customDimensions))
           : undefined,
-      },
+      } as Parameters<typeof prisma.advertisement.update>[0]['data'],
     });
     revalidatePath('/advertisements');
     revalidateTag('advertisements');

@@ -1,6 +1,6 @@
 # 🔍 گزارش جامع نهایی — FULL AUDIT REPORT
 
-> **تاریخ: ۳۰ تیر ۱۴۰۴ (2026-07-21) — آخرین به‌روزرسانی: ۲۰ مرداد ۱۴۰۴ (2026-08-10)**
+> **تاریخ: ۳۰ تیر ۱۴۰۴ (2026-07-21) — آخرین به‌روزرسانی: ۲۰ مرداد ۱۴۰۵ (2026-08-11)**
 > **پروژه: FinancialMarket (blogmarketfinansial.ir)**
 > **نسخه: ۱.۰ — نهایی، تک‌فایل، همه‌چیز**
 > **وضعیت: ⚠️ نیاز به رفع ۲۰۰+ مشکل قبل از Production**
@@ -1136,6 +1136,57 @@ rate-lists, dashboard-{section}
 2. **Logger utility** — `src/lib/server-logger.ts` با Sentry برای جایگزینی `console.error` های server-side
 3. **safeCache migration کامل است** — دیگر `unstable_cache` مستقیم در actions وجود ندارد ✅
 
+
+### 🔧 Session 2026-08-11 — server-logger + Zod validation کامل + dead code cleanup
+
+**✅ انجام شد:**
+
+| فایل | تغییر |
+|------|-------|
+| `src/lib/server-logger.ts` | **ساخته شد** — Logger یکپارچه: در dev → console.error، در production → Sentry.captureException. جایگزین `console.error` در server-side. |
+| `src/schemas/index.ts` | ۷ schema جدید اضافه شد: `CreateCategorySchema`، `UpdateCategorySchema`، `CreateAdvertisementSchema`، `UpdateAdvertisementSchema`، `UpdateGeneralSettingsSchema`، `UpdateEmailSettingsSchema`، `UpdateSocialSettingsSchema`، `UpdateCacheSettingsSchema`، `UpdateMaintenanceModeSchema` |
+| `src/actions/categoryActions.ts` | Zod validation برای `createCategory` + `updateCategory` — جایگزین `if (!name)` manual check |
+| `src/actions/advertisementActions.ts` | Zod validation برای `createAdvertisement` + `updateAdvertisement` — جلوگیری از mass assignment |
+| `src/actions/settingsActions.ts` | Zod validation برای همه ۵ تابع mutation + fix `catch (error)` → `catch (_error)` (biome) |
+| `src/actions/auth-actions.ts` | ۳ × `console.error` → `serverLog.error` — logging به Sentry در production |
+| `src/components/ds/primitives/IconButton.tsx` | **حذف شد** — ۰ استفاده، dead component |
+| `src/components/ds/primitives/Pill.tsx` | **حذف شد** — ۰ استفاده، dead component |
+| `src/components/ds/primitives/SearchField.tsx` | **حذف شد** — ۰ استفاده، dead component |
+| `src/components/ds/index.ts` | exports حذف‌شده‌ها پاک شدند |
+
+**📊 آمار session:**
+- ۱ فایل جدید: `server-logger.ts` با Sentry integration
+- ۹ Zod schema جدید در `src/schemas/index.ts`
+- ۳ action file: Zod validation اضافه شد
+- ۳ × `console.error` → `serverLog.error` در auth-actions
+- ۳ dead component حذف شد
+- `npx tsc --noEmit` ✅ سبز
+- `npx biome check` ✅ سبز روی تمام فایل‌های تغییریافته
+
+**🔍 توضیح تکنیکال:**
+- `server-logger.ts` از pattern "thin logger" استفاده می‌کند: در development همان `console.error` است (برای DX)، در production خطا به Sentry ارسال می‌شود که visibility کامل را بدون information leak به کاربر حفظ می‌کند.
+- Zod validation در mutations (`createCategory`, `createAdvertisement`, `updateGeneralSettings`, ...) جلوگیری از mass assignment می‌کند — قبلاً raw object مستقیم به Prisma می‌رفت. حالا فقط فیلدهای white-listed عبور می‌کنند.
+- `biome check --fix --unsafe` برای fix خودکار `catch (error)` → `catch (_error)` در settingsActions.ts استفاده شد.
+- Dead components (`IconButton`, `Pill`, `SearchField`) هیچ consumer در codebase نداشتند — حذف ایمن است.
+
+**⚠️ ناقص / دفعه بعد:**
+
+| مورد | توضیح |
+|------|-------|
+| **Zod در سایر actions** | `socialLinkActions` mutations (update URLs)، `postActions` (createPost/updatePost schema موجود ولی integration نیاز به بررسی) |
+| **CSS مونولیت** | `dashboard.css` 16k خط — شکستن به CSS Module یک کار بزرگ مجزا است |
+| **Role System** | بزرگ‌ترین unresolved — نیاز به طراحی جداگانه |
+| **هیچ تست** | صفر تست — قبل از production اضافه شود |
+| **console.error در createSuperAdmin.ts** | دو مورد legitimate server-side logging — اولویت پایین |
+
+**💡 پیشنهادات برای دفعه بعد:**
+1. **تست نوشتن** — `src/lib/server-logger.ts` را test کنید (mock Sentry)
+2. **`socialLinkActions` Zod** — schema `UpdateSocialLinkSchema` اضافه شود
+3. **CSS module migration** — با `dashboard.css` شروع شود (بزرگ‌ترین فایل)
+4. **Logger در `createSuperAdmin.ts`** — جایگزینی با `serverLog`
+
+---
+
 ---
 
 > **این گزارش آخرین و کامل‌ترین بررسی از پروژه FinancialMarket است.**
@@ -1145,7 +1196,8 @@ rate-lists, dashboard-{section}
 > **Session 2026-08-01 (قسمت ۱):** ~۱۵ console.error حذف از API + ۱ safeCache migration + Zod validation در taskActions/commentActions
 > **Session 2026-08-01 (قسمت ۲):** ۷ unstable_cache → safeCache در tickerActions + marketTickerActions + market-rates + exchange-rates + postActions
 > **Session 2026-08-10:** ۱۰ unstable_cache → safeCache در search + exchanges + transfer-providers + getProfileData + getRecentActivity + getPopularPosts + getRecentDrafts + console.error dev-guard در currency-patterns
+> **Session 2026-08-11:** server-logger + Zod validation در advertisementActions/categoryActions/settingsActions + console.error → serverLog در auth-actions + dead components حذف شد
 
 ---
 
-*Generated: 2026-07-21 | Last updated: 2026-08-10 | Files Analyzed: 1,035 | Lines of Code: ~108,000*
+*Generated: 2026-07-21 | Last updated: 2026-08-11 | Files Analyzed: 1,035 | Lines of Code: ~108,000*

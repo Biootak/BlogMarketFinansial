@@ -6,6 +6,7 @@ import { authFailureToActionResult, requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache'; // 2026-06-21: جایگزین unstable_cache شد
 import { generateColor, generateSlug, validateSlug } from '@/lib/utils';
+import { CreateCategorySchema, UpdateCategorySchema } from '@/schemas';
 import type {
   ActionResult,
   CreateCategoryInput,
@@ -115,6 +116,16 @@ export async function createCategory(
   try {
     const authCheck = await requireAdmin();
     if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    // 2026-08-11: Zod validation — جایگزین manual if (!name) check
+    const parsed = CreateCategorySchema.safeParse(data);
+    if (!parsed.success) {
+      return {
+        success: false,
+        message: parsed.error.issues[0]?.message ?? 'داده‌های وارد شده نامعتبر است.',
+      };
+    }
+
     const {
       name,
       slug: providedSlug,
@@ -122,14 +133,7 @@ export async function createCategory(
       thumbnailWidth,
       thumbnailHeight,
       parentIds = [],
-    } = data;
-
-    if (!name) {
-      return {
-        success: false,
-        message: 'نام دسته‌بندی الزامی است.',
-      };
-    }
+    } = parsed.data;
 
     let slug = providedSlug || generateSlug(name);
     slug = generateSlug(slug);
@@ -241,6 +245,16 @@ export async function updateCategory(
   try {
     const authCheck = await requireAdmin();
     if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    // 2026-08-11: Zod validation
+    const parsed = UpdateCategorySchema.safeParse(data);
+    if (!parsed.success) {
+      return {
+        success: false,
+        message: parsed.error.issues[0]?.message ?? 'داده‌های وارد شده نامعتبر است.',
+      };
+    }
+
     const {
       name,
       slug: providedSlug,
@@ -248,14 +262,7 @@ export async function updateCategory(
       thumbnailWidth,
       thumbnailHeight,
       parentIds = [],
-    } = data;
-
-    if (!name) {
-      return {
-        success: false,
-        message: 'نام دسته‌بندی الزامی است.',
-      };
-    }
+    } = parsed.data;
 
     let slug = providedSlug || generateSlug(name);
     slug = generateSlug(slug);

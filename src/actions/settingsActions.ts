@@ -4,6 +4,13 @@ import prisma from '@/lib/db';
 import { authFailureToActionResult, requireAdmin, requireSuperAdmin } from '@/lib/require-auth';
 import { revalidatePath } from '@/lib/revalidate';
 import { revalidateSiteIdentity } from '@/lib/site-identity-revalidate';
+import {
+  UpdateCacheSettingsSchema,
+  UpdateEmailSettingsSchema,
+  UpdateGeneralSettingsSchema,
+  UpdateMaintenanceModeSchema,
+  UpdateSocialSettingsSchema,
+} from '@/schemas';
 
 export interface SystemSettingsData {
   siteName?: string;
@@ -76,7 +83,7 @@ export async function getSystemSettings() {
     // C1 fix: never return the SMTP password (secret) to the client.
     (settings as { smtpPassword?: string }).smtpPassword = undefined;
     return { success: true, data: settings };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'خطا در دریافت تنظیمات' };
   }
 }
@@ -90,23 +97,33 @@ export async function updateGeneralSettings(data: {
   try {
     const authCheck = await requireSuperAdmin();
     if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    // 2026-08-11: Zod validation
+    const parsed = UpdateGeneralSettingsSchema.safeParse(data);
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'داده‌های وارد شده نامعتبر است.',
+      };
+    }
+
     let settings = await prisma.systemSettings.findFirst();
 
     if (settings) {
       settings = await prisma.systemSettings.update({
         where: { id: settings.id },
         data: {
-          siteName: data.siteName,
-          siteDescription: data.siteDescription,
-          logoUrl: data.logoUrl,
+          siteName: parsed.data.siteName,
+          siteDescription: parsed.data.siteDescription,
+          logoUrl: parsed.data.logoUrl ?? null,
         },
       });
     } else {
       settings = await prisma.systemSettings.create({
         data: {
-          siteName: data.siteName,
-          siteDescription: data.siteDescription,
-          logoUrl: data.logoUrl,
+          siteName: parsed.data.siteName,
+          siteDescription: parsed.data.siteDescription,
+          logoUrl: parsed.data.logoUrl ?? null,
         },
       });
     }
@@ -119,7 +136,7 @@ export async function updateGeneralSettings(data: {
     // C1 fix: never return the SMTP password (secret) to the client.
     (settings as { smtpPassword?: string }).smtpPassword = undefined;
     return { success: true, data: settings };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'خطا در ذخیره تنظیمات عمومی' };
   }
 }
@@ -134,30 +151,40 @@ export async function updateEmailSettings(data: {
   try {
     const authCheck = await requireSuperAdmin();
     if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    // 2026-08-11: Zod validation
+    const parsed = UpdateEmailSettingsSchema.safeParse(data);
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'داده‌های وارد شده نامعتبر است.',
+      };
+    }
+
     let settings = await prisma.systemSettings.findFirst();
 
     // Only write smtpPassword when a new, non-empty value is supplied.
     // getSystemSettings no longer returns the stored secret, so the form
     // cannot prefill it — an empty field must mean "keep the existing
     // password" rather than overwriting it with an empty string.
-    const smtpPassword = data.smtpPassword ? data.smtpPassword : undefined;
+    const smtpPassword = parsed.data.smtpPassword ? parsed.data.smtpPassword : undefined;
 
     if (settings) {
       settings = await prisma.systemSettings.update({
         where: { id: settings.id },
         data: {
-          smtpServer: data.smtpServer,
-          smtpPort: data.smtpPort,
-          smtpUsername: data.smtpUsername,
+          smtpServer: parsed.data.smtpServer,
+          smtpPort: parsed.data.smtpPort,
+          smtpUsername: parsed.data.smtpUsername,
           ...(smtpPassword ? { smtpPassword } : {}),
         },
       });
     } else {
       settings = await prisma.systemSettings.create({
         data: {
-          smtpServer: data.smtpServer,
-          smtpPort: data.smtpPort,
-          smtpUsername: data.smtpUsername,
+          smtpServer: parsed.data.smtpServer,
+          smtpPort: parsed.data.smtpPort,
+          smtpUsername: parsed.data.smtpUsername,
           ...(smtpPassword ? { smtpPassword } : {}),
         },
       });
@@ -167,7 +194,7 @@ export async function updateEmailSettings(data: {
     // C1 fix: never return the SMTP password (secret) to the client.
     (settings as { smtpPassword?: string }).smtpPassword = undefined;
     return { success: true, data: settings };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'خطا در ذخیره تنظیمات ایمیل' };
   }
 }
@@ -182,25 +209,35 @@ export async function updateSocialSettings(data: {
   try {
     const authCheck = await requireSuperAdmin();
     if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    // 2026-08-11: Zod validation
+    const parsed = UpdateSocialSettingsSchema.safeParse(data);
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'داده‌های وارد شده نامعتبر است.',
+      };
+    }
+
     let settings = await prisma.systemSettings.findFirst();
 
     if (settings) {
       settings = await prisma.systemSettings.update({
         where: { id: settings.id },
         data: {
-          instagram: data.instagram,
-          telegram: data.telegram,
-          twitter: data.twitter,
-          whatsapp: data.whatsapp,
+          instagram: parsed.data.instagram,
+          telegram: parsed.data.telegram,
+          twitter: parsed.data.twitter,
+          whatsapp: parsed.data.whatsapp,
         },
       });
     } else {
       settings = await prisma.systemSettings.create({
         data: {
-          instagram: data.instagram,
-          telegram: data.telegram,
-          twitter: data.twitter,
-          whatsapp: data.whatsapp,
+          instagram: parsed.data.instagram,
+          telegram: parsed.data.telegram,
+          twitter: parsed.data.twitter,
+          whatsapp: parsed.data.whatsapp,
         },
       });
     }
@@ -212,7 +249,7 @@ export async function updateSocialSettings(data: {
     // C1 fix: never return the SMTP password (secret) to the client.
     (settings as { smtpPassword?: string }).smtpPassword = undefined;
     return { success: true, data: settings };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'خطا در ذخیره تنظیمات شبکه‌های اجتماعی' };
   }
 }
@@ -222,20 +259,26 @@ export async function updateCacheSettings(data: { cacheEnabled: boolean }) {
   try {
     const authCheck = await requireSuperAdmin();
     if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    // 2026-08-11: Zod validation
+    const parsed = UpdateCacheSettingsSchema.safeParse(data);
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'داده‌های وارد شده نامعتبر است.',
+      };
+    }
+
     let settings = await prisma.systemSettings.findFirst();
 
     if (settings) {
       settings = await prisma.systemSettings.update({
         where: { id: settings.id },
-        data: {
-          cacheEnabled: data.cacheEnabled,
-        },
+        data: { cacheEnabled: parsed.data.cacheEnabled },
       });
     } else {
       settings = await prisma.systemSettings.create({
-        data: {
-          cacheEnabled: data.cacheEnabled,
-        },
+        data: { cacheEnabled: parsed.data.cacheEnabled },
       });
     }
 
@@ -243,7 +286,7 @@ export async function updateCacheSettings(data: { cacheEnabled: boolean }) {
     // C1 fix: never return the SMTP password (secret) to the client.
     (settings as { smtpPassword?: string }).smtpPassword = undefined;
     return { success: true, data: settings };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'خطا در ذخیره تنظیمات کش' };
   }
 }
@@ -253,20 +296,26 @@ export async function updateMaintenanceMode(data: { maintenanceMode: boolean }) 
   try {
     const authCheck = await requireSuperAdmin();
     if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    // 2026-08-11: Zod validation
+    const parsed = UpdateMaintenanceModeSchema.safeParse(data);
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'داده‌های وارد شده نامعتبر است.',
+      };
+    }
+
     let settings = await prisma.systemSettings.findFirst();
 
     if (settings) {
       settings = await prisma.systemSettings.update({
         where: { id: settings.id },
-        data: {
-          maintenanceMode: data.maintenanceMode,
-        },
+        data: { maintenanceMode: parsed.data.maintenanceMode },
       });
     } else {
       settings = await prisma.systemSettings.create({
-        data: {
-          maintenanceMode: data.maintenanceMode,
-        },
+        data: { maintenanceMode: parsed.data.maintenanceMode },
       });
     }
 
@@ -274,7 +323,7 @@ export async function updateMaintenanceMode(data: { maintenanceMode: boolean }) 
     // C1 fix: never return the SMTP password (secret) to the client.
     (settings as { smtpPassword?: string }).smtpPassword = undefined;
     return { success: true, data: settings };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'خطا در تغییر حالت تعمیرات' };
   }
 }
@@ -286,7 +335,7 @@ export async function generateApiKey() {
     if (!authCheck.success) return authFailureToActionResult(authCheck);
     const apiKey = `bk_${crypto.randomUUID().replace(/-/g, '')}`;
     return { success: true, data: { apiKey } };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'خطا در تولید کلید API' };
   }
 }
@@ -309,7 +358,7 @@ export async function testSmtpConnection(data: {
     }
 
     return { success: true, message: 'اتصال به سرور SMTP با موفقیت برقرار شد' };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'خطا در اتصال به سرور SMTP' };
   }
 }
@@ -321,7 +370,7 @@ export async function testDatabaseConnection() {
     if (!authCheck.success) return authFailureToActionResult(authCheck);
     await prisma.$queryRaw`SELECT 1`;
     return { success: true, message: 'اتصال به پایگاه داده برقرار است' };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'خطا در اتصال به پایگاه داده' };
   }
 }

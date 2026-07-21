@@ -23,6 +23,7 @@ import prisma from '@/lib/db';
 import { getEmailProviderAsync } from '@/lib/email';
 import { otpEmail, otpExpiresLabel } from '@/lib/email/templates';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { serverLog } from '@/lib/server-logger';
 import {
   type VerificationEmailIntent,
   consumeOtpToken,
@@ -113,7 +114,7 @@ function handleAuthError(error: unknown, context: string): AuthResult {
     }
   }
   // Unknown / internal — log with context, return generic.
-  console.error(`[auth-actions] ${context}:`, error);
+  serverLog.error('auth-actions', context, error);
   return {
     success: false,
     error: 'خطای موقتی در سامانه. لطفاً لحظاتی دیگر دوباره تلاش کنید',
@@ -456,7 +457,7 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
         redirect: false,
       });
     } catch (signInErr) {
-      console.error('[verifyOtp] signIn failed after OTP consume', signInErr);
+      serverLog.error('auth-actions', 'verifyOtp/signIn', signInErr);
       return {
         success: false,
         error: 'تأیید موفق بود ولی ورود با خطا مواجه شد. لطفاً دوباره درخواست کد کنید',
@@ -685,7 +686,7 @@ export async function logout(): Promise<AuthResult> {
     };
   } catch (error) {
     if (error instanceof AuthError) return handleAuthError(error, 'logout');
-    console.error('[auth-actions] logout:', error);
+    serverLog.error('auth-actions', 'logout', error);
     return {
       success: false,
       error: 'خروج با خطا مواجه شد. لطفاً دوباره تلاش کنید',

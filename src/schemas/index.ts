@@ -267,3 +267,117 @@ export const ServiceRequestSchema = z.object({
 });
 
 export type ServiceRequestFormData = z.infer<typeof ServiceRequestSchema>;
+
+// ─── Category Schemas ───────────────────────────────────────────────────────
+
+export const CreateCategorySchema = z.object({
+  name: z
+    .string()
+    .min(1, 'نام دسته‌بندی الزامی است')
+    .max(100, 'نام دسته‌بندی نباید بیشتر از ۱۰۰ کاراکتر باشد'),
+  slug: z.string().optional(),
+  thumbnail: z.string().optional().nullable(),
+  thumbnailWidth: z.number().int().positive().optional().nullable(),
+  thumbnailHeight: z.number().int().positive().optional().nullable(),
+  parentIds: z.array(z.string().cuid()).max(5, 'حداکثر ۵ والد مجاز است').optional(),
+});
+
+export const UpdateCategorySchema = CreateCategorySchema;
+
+// ─── Advertisement Schemas ───────────────────────────────────────────────────
+
+export const CreateAdvertisementSchema = z.object({
+  title: z
+    .string()
+    .min(1, 'عنوان تبلیغ الزامی است')
+    .max(200, 'عنوان نباید بیشتر از ۲۰۰ کاراکتر باشد'),
+  description: z.string().max(500, 'توضیحات نباید بیشتر از ۵۰۰ کاراکتر باشد').optional(),
+  imageUrl: z
+    .string()
+    .refine((v) => !v || v.startsWith('/') || v.startsWith('http'), 'آدرس تصویر نامعتبر است')
+    .optional()
+    .nullable(),
+  linkUrl: z
+    .string()
+    .url('آدرس لینک نامعتبر است')
+    .max(500, 'آدرس لینک نباید بیشتر از ۵۰۰ کاراکتر باشد')
+    .optional()
+    .nullable(),
+  position: z.string().min(1, 'موقعیت تبلیغ الزامی است'),
+  size: z.string().min(1, 'اندازه تبلیغ الزامی است'),
+  isActive: z.boolean().optional(),
+  startDate: z.coerce.date().optional().nullable(),
+  endDate: z.coerce.date().optional().nullable(),
+  order: z.number().int().nonnegative().optional(),
+  customDimensions: z.unknown().optional().nullable(),
+});
+
+export const UpdateAdvertisementSchema = CreateAdvertisementSchema.partial();
+
+// ─── Settings Schemas ─────────────────────────────────────────────────────────
+
+export const UpdateGeneralSettingsSchema = z.object({
+  siteName: z
+    .string()
+    .min(1, 'نام سایت الزامی است')
+    .max(100, 'نام سایت نباید بیشتر از ۱۰۰ کاراکتر باشد'),
+  siteDescription: z
+    .string()
+    .max(500, 'توضیحات سایت نباید بیشتر از ۵۰۰ کاراکتر باشد')
+    .optional()
+    .or(z.literal('')),
+  logoUrl: z
+    .string()
+    .refine((v) => !v || v.startsWith('/') || v.startsWith('http'), 'آدرس لوگو نامعتبر است')
+    .optional()
+    .or(z.literal(''))
+    .nullable(),
+});
+
+export const UpdateEmailSettingsSchema = z.object({
+  smtpServer: z.string().min(1, 'آدرس سرور SMTP الزامی است').max(255),
+  smtpPort: z
+    .string()
+    .regex(/^\d+$/, 'پورت باید عدد باشد')
+    .refine((v) => {
+      const n = Number(v);
+      return n >= 1 && n <= 65535;
+    }, 'پورت باید بین ۱ تا ۶۵۵۳۵ باشد'),
+  smtpUsername: z.string().email('نام کاربری SMTP باید یک ایمیل معتبر باشد').max(255),
+  smtpPassword: z.string().max(255).optional().or(z.literal('')),
+});
+
+export const UpdateSocialSettingsSchema = z.object({
+  instagram: z
+    .string()
+    .max(200)
+    .refine((v) => !v || v.startsWith('http') || v.startsWith('@'), 'آدرس اینستاگرام نامعتبر است')
+    .optional()
+    .or(z.literal('')),
+  telegram: z
+    .string()
+    .max(200)
+    .refine((v) => !v || v.startsWith('http') || v.startsWith('@'), 'آدرس تلگرام نامعتبر است')
+    .optional()
+    .or(z.literal('')),
+  twitter: z
+    .string()
+    .max(200)
+    .refine((v) => !v || v.startsWith('http') || v.startsWith('@'), 'آدرس توییتر نامعتبر است')
+    .optional()
+    .or(z.literal('')),
+  whatsapp: z
+    .string()
+    .max(200)
+    .refine((v) => !v || v.startsWith('http') || v.startsWith('+'), 'آدرس واتساپ نامعتبر است')
+    .optional()
+    .or(z.literal('')),
+});
+
+export const UpdateCacheSettingsSchema = z.object({
+  cacheEnabled: z.boolean(),
+});
+
+export const UpdateMaintenanceModeSchema = z.object({
+  maintenanceMode: z.boolean(),
+});
