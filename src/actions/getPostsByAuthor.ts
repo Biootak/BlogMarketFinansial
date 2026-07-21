@@ -85,12 +85,10 @@ export async function getPostsByAuthor(
         pages: Math.ceil(total / limit),
       },
     };
-  } catch (error) {
-    console.error('خطا در دریافت پست‌های نویسنده:', error);
+  } catch {
     return {
       success: false,
       message: 'خطا در دریافت پست‌های نویسنده.',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }

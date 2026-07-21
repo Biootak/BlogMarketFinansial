@@ -62,12 +62,10 @@ export const getRelatedPosts = cache(
         message: 'پست‌های مرتبط با موفقیت بازیابی شدند.',
         data: relatedPosts as PostWithRelations[],
       };
-    } catch (error) {
-      console.error('Error retrieving related posts:', error);
+    } catch {
       return {
         success: false,
         message: 'خطا در بازیابی پست‌های مرتبط.',
-        error: error instanceof Error ? error.message : String(error),
       };
     }
   },

@@ -62,8 +62,7 @@ export async function getGalleryPostBySlug(
       message: 'پست گالری با موفقیت بازیابی شد.',
       data: post as unknown as PostWithRelations,
     };
-  } catch (error) {
-    console.error('خطا در بازیابی پست گالری:', error);
+  } catch {
     return {
       success: false,
       message: 'خطا در بازیابی پست گالری. لطفاً دوباره تلاش کنید.',

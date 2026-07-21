@@ -74,12 +74,10 @@ export async function getRecentActivity(limit = 8): Promise<ActionResult<Activit
     }
     const rows = await cached(session.user.id, session.user.role ?? 'USER', limit);
     return { success: true, message: 'فعالیت‌های اخیر', data: rows };
-  } catch (error) {
-    console.error('Error in getRecentActivity:', error);
+  } catch {
     return {
       success: false,
       message: 'خطا در دریافت فعالیت‌های اخیر',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }

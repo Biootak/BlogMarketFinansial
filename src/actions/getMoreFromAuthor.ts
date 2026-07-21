@@ -58,12 +58,10 @@ export const getMoreFromAuthor = cache(
         message: 'پست‌های بیشتر از این نویسنده با موفقیت بازیابی شدند.',
         data: moreFromAuthor as PostWithRelations[],
       };
-    } catch (error) {
-      console.error('Error retrieving more posts from author:', error);
+    } catch {
       return {
         success: false,
         message: 'خطا در بازیابی پست‌های بیشتر از این نویسنده.',
-        error: error instanceof Error ? error.message : String(error),
       };
     }
   },

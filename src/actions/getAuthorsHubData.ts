@@ -1,16 +1,14 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { safeCache } from '@/lib/safe-cache';
 import { type Prisma, Role } from '@prisma/client';
-import { unstable_cache } from 'next/cache';
 import { cache } from 'react';
 
 /**
  * @file getAuthorsHubData
  * @description Single round-trip aggregator for the public /authors hub.
- * Returns the data needed by the hub hero + grid + expertise cloud in
- * a single Promise.all. Cached across requests with `unstable_cache` so
- * the hub is cheap to render on every page navigation.
+ * 2026-07-28: migrated from unstable_cache → safeCache for DB-resilience.
  */
 export interface HubAuthor {
   id: string;
@@ -41,6 +39,13 @@ export interface AuthorsHubData {
   topAuthors: HubAuthor[];
   expertise: HubExpertiseCategory[];
 }
+
+const EMPTY_HUB: AuthorsHubData = {
+  totalAuthors: 0,
+  totalPosts: 0,
+  topAuthors: [],
+  expertise: [],
+};
 
 const fetchHubDataRaw = async (
   topLimit: number,
@@ -75,9 +80,6 @@ const fetchHubDataRaw = async (
   ]);
 
   // 3. Top categories by published-post count, with their top authors.
-  //    A group-by on Post.categories + a per-category user lookup is
-  //    more efficient than 1+N — the inner findMany picks the most
-  //    published authors in that category.
   const topCategories = await prisma.category.findMany({
     where: {
       posts: { some: { status: 'PUBLISHED' } },
@@ -140,41 +142,21 @@ const fetchHubDataRaw = async (
   };
 };
 
-// `cache` (react) dedupes within a single request; `unstable_cache` dedupes
-// across requests for 5 minutes. Tag `posts` so a publish busts the hub.
-const getCachedHubData = unstable_cache(fetchHubDataRaw, ['authors-hub', 'v1-2026-06-16'], {
-  revalidate: 300,
+// safeCache dedupes across requests (in-memory, 5 min TTL) and tags allow
+// immediate invalidation on publish. Tag `posts` so a publish busts the hub.
+const getCachedHubData = safeCache(fetchHubDataRaw, EMPTY_HUB, {
+  key: 'authors-hub',
+  ttl: 300,
   tags: ['posts', 'top-authors'],
 });
 
 export const getAuthorsHubData = cache(
   async (topLimit = 12, expertiseLimit = 6): Promise<AuthorsHubData> => {
-    try {
-      return await getCachedHubData(topLimit, expertiseLimit);
-    } catch (error) {
-      // 2026-06-16: if Prisma is unreachable (e.g. local dev without DB)
-      // we still want the page to render. Surface the failure via an
-      // empty payload rather than 500ing the whole hub.
-      console.error('Failed to fetch authors hub data:', error);
-      return {
-        totalAuthors: 0,
-        totalPosts: 0,
-        topAuthors: [],
-        expertise: [],
-      };
-    }
+    return getCachedHubData(topLimit, expertiseLimit);
   },
 );
 
 export type AuthorsHubDataResult = Awaited<ReturnType<typeof getAuthorsHubData>>;
-
-// 2026-06-16: `isEmptyHub` is intentionally NOT exported from a 'use server'
-// file because Next.js requires every export from such a file to be an
-// async function. Consumers can re-define this 1-liner locally.
-// biome-ignore lint/correctness/noUnusedVariables: intentionally kept but not exported (see comment above)
-function isEmptyHub(data: AuthorsHubData): boolean {
-  return data.topAuthors.length === 0 && data.expertise.length === 0;
-}
 
 // Type used by callers when they want to discriminate individual shapes
 // (currently only used internally for Prisma typing).

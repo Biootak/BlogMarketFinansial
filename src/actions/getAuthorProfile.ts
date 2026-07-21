@@ -1,27 +1,32 @@
-/**
- * @file getAuthorProfile
- * @description Single aggregated fetch for the public author profile
- * page. Returns the author + the first page of their published posts
- * in one round-trip pair. Cached for 2 minutes — profiles are read
- * often but rarely change.
- */
 'use server';
 
 import prisma from '@/lib/db';
-import type { PostWithRelations, UserWithProfile } from '@/types/types';
-import type { PostStatus, Prisma } from '@prisma/client';
-import { unstable_cache } from 'next/cache';
-import { cache } from 'react';
+import { safeCache } from '@/lib/safe-cache';
+import type { PostWithRelations } from '@/types/types';
+
+// 2026-07-28: migrated from unstable_cache → safeCache for DB-resilience.
+// The public author profile page must never 500 — safeCache returns stale
+// or an empty payload instead of crashing the layout.
 
 export interface AuthorProfilePayload {
-  author: (UserWithProfile & { _count: { posts: number } }) | null;
+  author: (import('@/types/types').UserWithProfile & { _count: { posts: number } }) | null;
   posts: PostWithRelations[];
   totalPosts: number;
   totalPages: number;
 }
 
+import type { PostStatus, Prisma } from '@prisma/client';
+import { cache } from 'react';
+
 const AUTHOR_FILTER: Prisma.UserWhereInput = {
   OR: [{ role: 'AUTHOR' }, { role: 'ADMIN' }, { role: 'OWNER' }],
+};
+
+const EMPTY_PAYLOAD: AuthorProfilePayload = {
+  author: null,
+  posts: [],
+  totalPosts: 0,
+  totalPages: 0,
 };
 
 const fetchAuthorProfile = async (
@@ -72,7 +77,7 @@ const fetchAuthorProfile = async (
   ]);
 
   if (!author) {
-    return { author: null, posts: [], totalPosts: 0, totalPages: 0 };
+    return EMPTY_PAYLOAD;
   }
 
   return {
@@ -83,19 +88,16 @@ const fetchAuthorProfile = async (
   };
 };
 
-const getCachedAuthorProfile = unstable_cache(
-  fetchAuthorProfile,
-  ['author-profile', 'v1-2026-06-16'],
-  { revalidate: 120, tags: ['posts', 'top-authors'] },
-);
+const getCachedAuthorProfile = safeCache(fetchAuthorProfile, EMPTY_PAYLOAD, {
+  key: 'author-profile',
+  ttl: 120,
+  tags: ['posts', 'top-authors'],
+});
 
 export const getAuthorProfile = cache(
   async (authorId: string, page = 1, limit = 9): Promise<AuthorProfilePayload> => {
-    try {
-      return await getCachedAuthorProfile(authorId, page, limit);
-    } catch (error) {
-      console.error('Failed to fetch author profile:', error);
-      return { author: null, posts: [], totalPosts: 0, totalPages: 0 };
-    }
+    return getCachedAuthorProfile(authorId, page, limit);
   },
 );
+
+export type AuthorProfileData = Awaited<ReturnType<typeof getAuthorProfile>>;

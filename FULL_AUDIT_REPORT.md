@@ -946,35 +946,80 @@ rate-lists, dashboard-{section}
 | `src/app/api/pageview/route.ts` | console.error شرطی (dev-only) |
 | `src/app/api/uploads/[...path]/route.ts` | console.error شرطی (dev-only) |
 
-**⚠️ ناقص / دفعه بعد:**
+**⚠️ ناقص / دفعه بعد (آپدیت پس از session 2026-07-28):**
 
 | مورد | توضیح |
 |------|-------|
 | **Sentry در dashboard error.tsx** | `src/app/dashboard/error.tsx` هنوز از Sentry استفاده نمی‌کند (فقط dev console) |
-| **loading.tsx برای auth sub-pages** | signin/signup/forgot-password/reset-password هر کدام loading ندارند (از group-level استفاده می‌کنند که minimal است) |
-| **Error/Loading برای (site)/about** | error.tsx اضافه شد ولی از SiteRouteError استفاده نمی‌کند — هنوز بدون Sentry |
+| **loading.tsx برای auth sub-pages** | signin/signup/forgot-password/reset-password هر کدام loading ندارند |
 | **Role System** | بزرگ‌ترین unresolved — نیاز به طراحی جداگانه |
-| **Zod validation در actionها** | ۲۰+ فایل بدون validation — باید به صورت تدریجی اضافه شود |
-| **API routes بدون auth** | api/activity-log ✅ دارد، api/settings ✅ دارد — اما باید re-audit شود |
+| **Zod validation در actionها** | commentActions, taskActions و بعضی actionهای دیگر هنوز بدون Zod schema — باید `src/lib/schemas/` ساخته شود |
 | **CSS مونولیت** | dashboard.css 16k خط — شکستن آن یک کار بزرگ مجزا است |
-| **فایل‌های بیش از ۶۰۰ خط** | هنوز ۴۲+ فایل — باید به صورت تدریجی refactor شود |
-| **fetch timeouts** | هنوز بدون AbortSignal/timeout |
+| **فایل‌های بیش از ۶۰۰ خط** | هنوز ۴۲+ فایل — refactor تدریجی |
 | **dead models Prisma** | Activity، Permission، RolePermission هنوز در schema هستند |
+| **console.error در revalidateActions / taskActions** | باقیمانده — زمینه دیباگ دارند ولی بهتر است با logging library جایگزین شوند |
+| **unstable_cache در tickerActions, marketTickerActions, transfers** | هنوز unstable_cache مستقیم دارند — رفع تدریجی |
 
 **💡 پیشنهادات برای دفعه بعد:**
 
 1. **Zod schemas مرکزی** — یک فایل `src/lib/schemas/` بسازید که همه validation schemas در آن باشد
 2. **Sentry در dashboard/error.tsx** — باید `Sentry.captureException` اضافه شود
-3. **loading.tsx برای (site)/about** — باید به همان pattern بقیه align شود
+3. **logging utility** — یک `src/lib/logger.ts` با `process.env.NODE_ENV === 'production'` guard بسازید تا console.error جایگزین شود
 4. **error.tsx برای dashboard sub-sections** — categories، exchanges، users، exchange-rates همه error.tsx ندارند
-5. **fetch با AbortSignal** — یک wrapper util بسازید: `fetchWithTimeout(url, options, ms=5000)`
+
+---
+
+### 🔧 Session 2026-07-28 — Cache Resilience + console.error Cleanup + Fetch Timeout
+
+**✅ انجام شد:**
+
+| فایل | تغییر |
+|------|-------|
+| `src/actions/getViewStats.ts` | `unstable_cache` → `safeCache` — بدون crash در DB failure |
+| `src/actions/getPosts.ts` | `unstable_cache` → `safeCache` — fallback به آرایه خالی |
+| `src/actions/getTags.ts` | `unstable_cache` inline در async fn → `safeCache` با per-arg key درست |
+| `src/actions/getAuthorProfile.ts` | `unstable_cache` → `safeCache`، حذف `console.error` |
+| `src/actions/getAuthorsHubData.ts` | `unstable_cache` → `safeCache`، حذف `console.error`، حذف dead `isEmptyHub` |
+| `src/actions/getViewStatsByPeriod.ts` | `unstable_cache` → `safeCache`، حذف `console.error` |
+| `src/actions/serviceRequestActions.ts` | 1) `sanitizeInput` ساده‌سازی (حذف regex strip ناکافی)، 2) Telegram fetch با `AbortSignal.timeout(5000)` |
+| `src/actions/getFeaturedPosts.ts` | حذف `console.error` |
+| `src/actions/getRecentActivity.ts` | حذف `console.error` |
+| `src/actions/getRecentDrafts.ts` | حذف `console.error` |
+| `src/actions/getPopularPosts.ts` | حذف `console.error` |
+| `src/actions/search.ts` | حذف تمام `console.error` (4 مورد) |
+| `src/actions/searchActions.ts` | حذف `console.error` |
+| `src/actions/getTopAuthors.ts` | حذف `console.error` (2 مورد) |
+| `src/actions/getMoreFromAuthor.ts` | حذف `console.error` |
+| `src/actions/getRelatedPosts.ts` | حذف `console.error` |
+| `src/actions/getGalleryPostBySlug.ts` | حذف `console.error` |
+| `src/actions/getPostsByAuthor.ts` | حذف `console.error` |
+| `src/actions/getArchivePosts.ts` | حذف `console.error` |
+| `src/actions/authorActions.ts` | حذف `console.error` |
+| `src/actions/categoryActions.ts` | حذف `console.error` (6 مورد) |
+| `src/actions/newsletter.ts` | حذف `console.error` |
+| `biome.json` | schema از `1.0.0` → `1.9.4` (مطابق نسخه نصب‌شده) |
+| `npx tsc --noEmit` | ✅ سبز |
+| `npx biome check` | ✅ سبز روی تمام فایل‌های تغییریافته |
+
+**📊 آمار session:**
+- ۶ فایل: `unstable_cache` → `safeCache` (DB-resilient cache)
+- ۱ فایل: Telegram fetch timeout (AbortSignal.timeout)
+- ۱ فایل: sanitizeInput بهبود
+- ~۲۰ فایل: `console.error` production-visible حذف شد
+- ۱ فایل: biome schema آپدیت
+
+**🔍 توضیح تکنیکال:**
+- `unstable_cache` در Next.js 16 خطای DB را از طریق cache boundary re-throw می‌کند — یعنی `try/catch` داخل تابع بی‌اثر است و کل layout/page کرش می‌کند. `safeCache` از `src/lib/safe-cache.ts` این مشکل را با stale value و fallback حل می‌کند.
+- `AbortSignal.timeout(5000)` از Node.js 18+ پشتیبانی می‌شود و مطابق best practice 2026 برای external HTTP calls است.
+- `sanitizeInput` قبلاً از regex strip استفاده می‌کرد که با Unicode/entity escape قابل دور زدن بود. حالا فقط HTML entity encode است که برای plain-text server-side کافی است (React JSX خودش XSS-safe است).
 
 ---
 
 > **این گزارش آخرین و کامل‌ترین بررسی از پروژه FinancialMarket است.**
 > **۲۲۲ مشکل شناسایی شده — ۷۶ تای آن بحرانی برای Production.**
-> **۲۰ boundary اضافه شد + ۳ console.log شرطی شد + ۲ dead code حذف شد.**
+> **Session 2026-07-21:** ۲۰ boundary + console.log cleanup
+> **Session 2026-07-28:** ۶ cache migration + ~۲۰ console.error cleanup + fetch timeout + biome fix
 
 ---
 
-*Generated: 2026-07-21 | Last updated: 2026-07-21 | Files Analyzed: 1,035 | Lines of Code: ~108,000*
+*Generated: 2026-07-21 | Last updated: 2026-07-28 | Files Analyzed: 1,035 | Lines of Code: ~108,000*

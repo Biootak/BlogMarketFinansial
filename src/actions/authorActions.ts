@@ -41,8 +41,7 @@ export async function getAuthorById(id: string): Promise<ActionResult<UserWithPr
       message: 'اطلاعات نویسنده با موفقیت دریافت شد.',
       data: author as UserWithProfile,
     };
-  } catch (error) {
-    console.error('خطا در دریافت اطلاعات نویسنده:', error);
+  } catch {
     return {
       success: false,
       message: 'خطا در دریافت اطلاعات نویسنده. لطفاً دوباره تلاش کنید.',

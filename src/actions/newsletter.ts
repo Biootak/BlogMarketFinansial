@@ -54,7 +54,6 @@ export async function subscribeToNewsletter(email: string) {
     if (error instanceof z.ZodError) {
       return { success: false, message: 'لطفاً یک آدرس ایمیل معتبر وارد کنید.' };
     }
-    console.error('Error in subscribeToNewsletter:', error);
     return { success: false, message: 'خطایی رخ داد. لطفاً دوباره تلاش کنید.' };
   }
 }

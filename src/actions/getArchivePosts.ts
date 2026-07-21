@@ -77,12 +77,10 @@ export async function getArchivePosts(
         pages: Math.ceil(total / limit),
       },
     };
-  } catch (error) {
-    console.error('خطا در بازیابی پست‌ها:', error);
+  } catch {
     return {
       success: false,
       message: 'خطا در بازیابی پست‌ها.',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }

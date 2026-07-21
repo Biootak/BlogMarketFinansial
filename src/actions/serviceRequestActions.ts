@@ -96,10 +96,13 @@ async function sendTelegramNotification(message: string): Promise<boolean> {
 
     if (!botToken || !chatId) return false;
 
+    // 2026-07-28: AbortSignal.timeout() — اگر تلگرام در 5 ثانیه جواب ندهد
+    // کل action hang نکند. AbortSignal.timeout از Node 18+ پشتیبانی می‌شود.
     const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: chatId, text: message }),
+      signal: AbortSignal.timeout(5000),
     });
 
     return response.ok;

@@ -126,12 +126,10 @@ export async function getSearchResults(
       message: 'نتایج جستجو با موفقیت دریافت شد',
       data: { posts, total, pages: Math.ceil(total / pageSize) },
     };
-  } catch (error) {
-    console.error('Error in getSearchResults:', error);
+  } catch {
     return {
       success: false,
       message: 'خطا در جستجو',
-      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }

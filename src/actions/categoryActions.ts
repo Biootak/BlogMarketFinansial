@@ -100,12 +100,10 @@ export const getCategories = cache(
           totalCount,
         },
       };
-    } catch (error) {
-      console.error('خطا در بازیابی دسته‌بندی‌ها:', error);
+    } catch {
       return {
         success: false,
         message: 'خطا در بازیابی دسته‌بندی‌ها. لطفاً دوباره تلاش کنید.',
-        error: error instanceof Error ? error.message : String(error),
       };
     }
   },
@@ -228,12 +226,10 @@ export async function createCategory(
       message: 'دسته‌بندی با موفقیت ایجاد شد.',
       data: formattedCategory,
     };
-  } catch (error) {
-    console.error('خطا در ایجاد دسته‌بندی:', error);
+  } catch {
     return {
       success: false,
       message: 'خطا در ایجاد دسته‌بندی. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }
@@ -383,12 +379,10 @@ export async function updateCategory(
       message: 'دسته‌بندی با موفقیت به‌روزرسانی شد.',
       data: formattedCategory,
     };
-  } catch (error) {
-    console.error('خطا در به‌روزرسانی دسته‌بندی:', error);
+  } catch {
     return {
       success: false,
       message: 'خطا در به‌روزرسانی دسته‌بندی. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }
@@ -431,12 +425,10 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
       success: true,
       message: 'دسته‌بندی با موفقیت حذف شد.',
     };
-  } catch (error) {
-    console.error('خطا در حذف دسته‌بندی:', error);
+  } catch {
     return {
       success: false,
       message: 'خطا در حذف دسته‌بندی. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }
@@ -498,12 +490,10 @@ export const getAllParentCategories = cache(async (): Promise<ActionResult<Taxon
       message: 'تمام دسته‌بندی‌ها با موفقیت بازیابی شدند.',
       data: formattedCategories,
     };
-  } catch (error) {
-    console.error('خطا در بازیابی دسته‌بندی‌ها:', error);
+  } catch {
     return {
       success: false,
       message: 'خطا در بازیابی دسته‌بندی‌ها. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 });
@@ -562,12 +552,10 @@ async function fetchPopularCategoriesForHomeRaw(
       message: 'دسته‌بندی‌های محبوب با موفقیت بازیابی شدند.',
       data: { categories },
     };
-  } catch (error) {
-    console.error('خطا در دریافت دسته‌بندی‌های محبوب:', error);
+  } catch {
     return {
       success: false,
       message: 'خطا در دریافت دسته‌بندی‌های محبوب. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }

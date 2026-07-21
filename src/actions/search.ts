@@ -97,12 +97,10 @@ export async function searchPosts(query: string): Promise<ActionResult<PostWithR
       message: 'پست‌ها با موفقیت جستجو شدند.',
       data: posts as PostWithRelations[],
     };
-  } catch (error) {
-    console.error('خطا در جستجوی پست‌ها:', error);
+  } catch {
     return {
       success: false,
       message: 'خطا در جستجوی پست‌ها.',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }
@@ -117,12 +115,10 @@ export async function searchCategories(
       message: 'دسته‌بندی‌ها با موفقیت جستجو شدند.',
       data: categories as CategoryWithPostCount[],
     };
-  } catch (error) {
-    console.error('خطا در جستجوی دسته‌بندی‌ها:', error);
+  } catch {
     return {
       success: false,
       message: 'خطا در جستجوی دسته‌بندی‌ها.',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }
@@ -135,12 +131,10 @@ export async function searchAuthors(query: string): Promise<ActionResult<UserWit
       message: 'نویسندگان با موفقیت جستجو شدند.',
       data: authors as UserWithProfile[],
     };
-  } catch (error) {
-    console.error('خطا در جستجوی نویسندگان:', error);
+  } catch {
     return {
       success: false,
       message: 'خطا در جستجوی نویسندگان.',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }
@@ -162,8 +156,7 @@ export async function searchAll(query: string) {
       success: true,
       data: { posts, categories, authors },
     };
-  } catch (error) {
-    console.error('خطا در جستجو:', error);
+  } catch {
     return {
       success: false,
       data: { posts: [], categories: [], authors: [] },

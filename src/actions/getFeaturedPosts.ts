@@ -59,12 +59,10 @@ async function fetchFeaturedPosts(limit: number): Promise<ActionResult<PostWithR
       message: 'پست‌های ویژه با موفقیت بازیابی شدند.',
       data: posts as PostWithRelations[],
     };
-  } catch (error) {
-    console.error('خطا در بازیابی پست‌های ویژه:', error);
+  } catch {
     return {
       success: false,
       message: 'خطا در بازیابی پست‌های ویژه.',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }

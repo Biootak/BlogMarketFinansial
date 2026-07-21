@@ -2,74 +2,78 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { safeCache } from '@/lib/safe-cache';
 import type { ActionResult, TaxonomyType } from '@/types/types';
-import { unstable_cache } from 'next/cache';
+
+// 2026-07-28: getTags previously called unstable_cache() inline inside an
+// async function — the cache key included option values but the closure
+// captured them from the outer scope, making key/body out-of-sync on re-use.
+// Replaced with safeCache which handles per-arg keying correctly.
+
+const FALLBACK: ActionResult<{ tags: TaxonomyType[]; totalCount: number }> = {
+  success: true,
+  message: 'تگ‌ها (fallback)',
+  data: { tags: [], totalCount: 0 },
+};
+
+async function fetchTags(
+  limit: number,
+  page: number,
+  search: string,
+): Promise<ActionResult<{ tags: TaxonomyType[]; totalCount: number }>> {
+  const skip = (page - 1) * limit;
+
+  const where = search
+    ? {
+        name: {
+          contains: search,
+          mode: 'insensitive' as const,
+        },
+      }
+    : {};
+
+  const [tags, totalCount] = await Promise.all([
+    prisma.tag.findMany({
+      where,
+      take: limit,
+      skip,
+      include: {
+        _count: {
+          select: { posts: true },
+        },
+      },
+      orderBy: {
+        posts: {
+          _count: 'desc',
+        },
+      },
+    }),
+    prisma.tag.count({ where }),
+  ]);
+
+  const formattedTags: TaxonomyType[] = tags.map((tag) => ({
+    ...tag,
+    taxonomy: 'tag',
+    count: tag._count.posts,
+    color: 'indigo',
+  }));
+
+  return {
+    success: true,
+    message: 'تگ‌ها با موفقیت بازیابی شدند.',
+    data: { tags: formattedTags, totalCount },
+  };
+}
+
+const getCachedTags = safeCache(fetchTags, FALLBACK, {
+  key: 'tags-list',
+  ttl: 3600,
+  tags: ['tags'],
+});
 
 export async function getTags(
   options: { limit?: number; page?: number; search?: string } = {},
 ): Promise<ActionResult<{ tags: TaxonomyType[]; totalCount: number }>> {
-  return unstable_cache(
-    async () => {
-      try {
-        const { limit = 10, page = 1, search = '' } = options;
-        const skip = (page - 1) * limit;
-
-        const where = search
-          ? {
-              name: {
-                contains: search,
-                mode: 'insensitive' as const,
-              },
-            }
-          : {};
-
-        const [tags, totalCount] = await Promise.all([
-          prisma.tag.findMany({
-            where,
-            take: limit,
-            skip: skip,
-            include: {
-              _count: {
-                select: { posts: true },
-              },
-            },
-            orderBy: {
-              posts: {
-                _count: 'desc',
-              },
-            },
-          }),
-          prisma.tag.count({ where }),
-        ]);
-
-        const formattedTags: TaxonomyType[] = tags.map((tag) => ({
-          ...tag,
-          taxonomy: 'tag',
-          count: tag._count.posts,
-          color: 'indigo',
-        }));
-
-        return {
-          success: true,
-          message: 'تگ‌ها با موفقیت بازیابی شدند.',
-          data: {
-            tags: formattedTags,
-            totalCount,
-          },
-        };
-      } catch (error) {
-        console.error('خطا در بازیابی تگ‌ها:', error);
-        return {
-          success: false,
-          message: 'خطا در بازیابی تگ‌ها. لطفاً دوباره تلاش کنید.',
-          error: error instanceof Error ? error.message : String(error),
-        };
-      }
-    },
-    [`tags-${options.page}-${options.limit}-${options.search}`],
-    {
-      tags: ['tags'],
-      revalidate: 3600, // 1 hour
-    },
-  )();
+  const { limit = 10, page = 1, search = '' } = options;
+  return getCachedTags(limit, page, search);
 }

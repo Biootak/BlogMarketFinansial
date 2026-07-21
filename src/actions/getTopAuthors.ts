@@ -45,8 +45,7 @@ const fetchTopAuthorsRaw = async (limit: number): Promise<TopAuthor[]> => {
         },
       },
     });
-  } catch (error) {
-    console.error('Failed to fetch top authors:', error);
+  } catch {
     return [];
   }
 };
@@ -67,8 +66,7 @@ export async function fetchTopAuthors(
   try {
     const authors = await getTopAuthors(limit);
     return { data: authors, error: null };
-  } catch (error) {
-    console.error('Error in fetchTopAuthors:', error);
+  } catch {
     return { data: null, error: 'خطا در دریافت نویسندگان برتر' };
   }
 }

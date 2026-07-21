@@ -83,12 +83,10 @@ export async function getRecentDrafts(): Promise<
       message: 'پیش‌نویس‌های اخیر با موفقیت بازیابی شدند.',
       data: formattedDrafts,
     };
-  } catch (error) {
-    console.error('خطا در بازیابی پیش‌نویس‌های اخیر:', error);
+  } catch {
     return {
       success: false,
       message: 'خطا در بازیابی پیش‌نویس‌های اخیر. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }

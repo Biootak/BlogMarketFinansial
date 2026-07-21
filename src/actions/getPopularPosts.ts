@@ -88,12 +88,10 @@ export async function getPopularPosts(): Promise<
       message: 'پست‌های محبوب با موفقیت بازیابی شدند.',
       data: formattedPosts,
     };
-  } catch (error) {
-    console.error('خطا در بازیابی پست‌های محبوب:', error);
+  } catch {
     return {
       success: false,
       message: 'خطا در بازیابی پست‌های محبوب. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }
