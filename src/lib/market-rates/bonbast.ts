@@ -168,7 +168,7 @@ export async function fetchBonbastBuySell(): Promise<BonbastBuySellRates | null>
         .split(',')
         .map((c) => c.split(';')[0].trim())
         .join('; ');
-      if (cookieVal) reqHeaders['Cookie'] = cookieVal;
+      if (cookieVal) reqHeaders.Cookie = cookieVal;
     }
 
     const res2 = await fetch(BONBAST_JSON_URL, {
@@ -245,7 +245,7 @@ export function fetchBonbastRatesFromBuySell(bs: BonbastBuySellRates): BonbastRa
   }
 
   // irrPerEur = EUR mid × 10 (convert Toman → Rial)
-  const eurMid = midRates['EUR'] ?? 0;
+  const eurMid = midRates.EUR ?? 0;
   const irrPerEur = eurMid * 10;
 
   if (irrPerEur > 0) {
@@ -255,11 +255,11 @@ export function fetchBonbastRatesFromBuySell(bs: BonbastBuySellRates): BonbastRa
       if (mid > 0) crossRates[code] = eurMid / mid;
     }
     // IRR itself
-    crossRates['IRR'] = irrPerEur;
-    crossRates['EUR'] = 1;
+    crossRates.IRR = irrPerEur;
+    crossRates.EUR = 1;
   }
 
-  const usdPerEur = crossRates['USD'] ?? 1;
+  const usdPerEur = crossRates.USD ?? 1;
 
   return { crossRates, irrPerEur, usdPerEur, fetchedAt: bs.fetchedAt };
 }

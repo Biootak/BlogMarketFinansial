@@ -8,5 +8,5 @@ export type PathName = Route<string>;
 export interface Page {
   path: PathName;
   exact?: boolean;
-  component: ComponentType<Object>;
+  component: ComponentType<Record<string, unknown>>;
 }

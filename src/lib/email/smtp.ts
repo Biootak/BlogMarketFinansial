@@ -48,10 +48,13 @@ export async function createSmtpProvider(): Promise<EmailProvider> {
   // the `tls`/`requireTLS` options, so we keep the standard config. To force
   // TLS v1.2+ at the transport level, install matching @types/nodemailer and
   // add `tls: { minVersion: 'TLSv1.2' }`.
+  // host/user/pass/from are validated above (missing.length check), safe to assert
   const transport: NodemailerTransport = nodemailer.createTransport({
+    // biome-ignore lint/style/noNonNullAssertion: validated above — missing.length > 0 would have thrown
     host: host!,
     port,
     secure: port === 465,
+    // biome-ignore lint/style/noNonNullAssertion: validated above — missing.length > 0 would have thrown
     auth: { user: user!, pass: pass! },
   });
 
@@ -59,6 +62,7 @@ export async function createSmtpProvider(): Promise<EmailProvider> {
     name: 'smtp',
     async send(message: EmailMessage): Promise<EmailSendResult> {
       const info = await transport.sendMail({
+        // biome-ignore lint/style/noNonNullAssertion: validated above — missing.length > 0 would have thrown
         from: from!,
         to: message.to,
         subject: message.subject,

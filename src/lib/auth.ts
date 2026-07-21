@@ -72,7 +72,7 @@ export async function checkExistingSuperAdmin(prisma: PrismaClientType) {
       },
     });
     return existingAdmin;
-  } catch (error) {
+  } catch {
     return null;
   }
 }

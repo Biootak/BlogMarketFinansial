@@ -124,6 +124,10 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
           <div
             className="relative w-full h-full z-10 cursor-zoom-in"
             onClick={() => handleOpenModalImageGallery(currentImageIndex)}
+            onKeyDown={(e) => e.key === 'Enter' && handleOpenModalImageGallery(currentImageIndex)}
+            role="button"
+            tabIndex={0}
+            aria-label="بزرگنمایی تصویر"
           >
             <ImageWithSkeleton
               alt={`${post.title} - ${currentImageIndex + 1}`}
@@ -180,7 +184,12 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
               return (
                 <div
                   key={index}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`تصویر ${index + 1}`}
+                  aria-pressed={index === currentImageIndex}
                   onClick={() => setCurrentImageIndex(index)}
+                  onKeyDown={(e) => e.key === 'Enter' && setCurrentImageIndex(index)}
                   className={cn(
                     'relative w-20 h-14 sm:w-24 sm:h-16 flex-shrink-0 rounded-lg overflow-hidden cursor-pointer border-2 transition-all duration-300',
                     isActive
@@ -298,7 +307,12 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
                         return (
                           <div
                             key={index}
+                            role="button"
+                            tabIndex={0}
+                            aria-label={`تصویر ${index + 1}`}
+                            aria-pressed={index === currentImageIndex}
                             onClick={() => setCurrentImageIndex(index)}
+                            onKeyDown={(e) => e.key === 'Enter' && setCurrentImageIndex(index)}
                             className={cn(
                               'relative w-14 h-10 flex-shrink-0 rounded overflow-hidden cursor-pointer border transition-all duration-300',
                               isActive

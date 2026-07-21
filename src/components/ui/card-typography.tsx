@@ -30,7 +30,7 @@ export function CardTitle({
   className,
   clamp = 2,
   as = 'h3',
-  id,
+  id: _id,
 }: CardTitleProps) {
   const Tag = as as 'h3';
   const clampClass = clamp === 1 ? 'line-clamp-1' : clamp === 2 ? 'line-clamp-2' : 'line-clamp-3';

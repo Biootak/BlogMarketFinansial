@@ -1,13 +1,11 @@
 'use client';
 
 import { ChartSkeleton, StatsCardSkeleton } from '@/components/Skeletons';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
 import {
-  ArrowUpRight,
+  BarChart3,
   Download,
   Eye,
   FileText,
@@ -57,53 +55,139 @@ interface StatCardProps {
   value: number;
   icon: React.ReactNode;
   badges: { label: string; value: number }[];
-  gradient: string;
-  iconBg: string;
+  accentColor: string;
   delay?: number;
+  trend?: number | null;
 }
 
-function StatCard({ title, value, icon, badges, gradient, iconBg, delay = 0 }: StatCardProps) {
+function StatCard({ title, value, icon, badges, accentColor, delay = 0, trend }: StatCardProps) {
   return (
     <div
-      className={cn('dash-panel dash-panel--hover group relative overflow-hidden')}
+      className="dash-panel dash-panel--hover group relative overflow-hidden"
       style={{ animationDelay: `${delay}ms` }}
     >
       {/* Gradient Accent */}
       <div
-        className={cn(
-          'absolute top-0 right-0 w-32 h-32 -mr-10 -mt-10 rounded-full opacity-20 blur-2xl',
-          gradient,
-        )}
+        style={{
+          position: 'absolute',
+          top: 0,
+          insetInlineEnd: 0,
+          width: '8rem',
+          height: '8rem',
+          marginInlineEnd: '-2.5rem',
+          marginBlockStart: '-2.5rem',
+          borderRadius: '50%',
+          opacity: 0.15,
+          filter: 'blur(24px)',
+          background: accentColor,
+        }}
       />
 
-      <div className="relative p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className={cn('p-3 rounded-xl shadow-lg', iconBg)}>{icon}</div>
-          <div className="flex items-center gap-1 text-emerald-600 text-sm font-medium">
-            <TrendingUp className="w-4 h-4" />
-            <span>+12%</span>
+      <div style={{ position: 'relative', padding: 'var(--ds-space-5)' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            marginBlockEnd: 'var(--ds-space-4)',
+          }}
+        >
+          <div
+            style={{
+              padding: 'var(--ds-space-3)',
+              borderRadius: 'var(--ds-radius-md)',
+              background: accentColor,
+              color: 'oklch(98% 0 0)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {icon}
           </div>
+          {trend != null && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: 'var(--ds-text-sm)',
+                fontWeight: 500,
+                color: trend >= 0 ? 'var(--ds-status-success-fg)' : 'var(--ds-status-error-fg)',
+              }}
+            >
+              <TrendingUp
+                style={{
+                  width: '1rem',
+                  height: '1rem',
+                  transform: trend < 0 ? 'rotate(180deg)' : 'none',
+                }}
+              />
+              <span>
+                {trend >= 0 ? '+' : ''}
+                {new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 1 }).format(trend)}٪
+              </span>
+            </div>
+          )}
         </div>
 
-        <div className="space-y-3">
-          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-2)' }}>
+          <p
+            style={{
+              fontSize: 'var(--ds-text-sm)',
+              fontWeight: 500,
+              color: 'var(--ds-text-secondary)',
+              margin: 0,
+            }}
+          >
+            {title}
+          </p>
+          <p
+            style={{
+              fontSize: 'var(--ds-text-2xl)',
+              fontWeight: 700,
+              color: 'var(--ds-text-primary)',
+              margin: 0,
+              fontVariantNumeric: 'tabular-nums',
+            }}
+          >
             {value.toLocaleString('fa-IR')}
           </p>
 
-          <div className="flex flex-wrap gap-2 pt-2">
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 'var(--ds-space-2)',
+              paddingBlockStart: 'var(--ds-space-2)',
+            }}
+          >
             {badges.map((badge, idx) => (
               <span
                 key={idx}
-                className={cn(
-                  'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium',
-                  'bg-gray-100/80 dark:bg-white/10 text-gray-700 dark:text-gray-200',
-                  'border border-gray-200/50',
-                  'transition-colors duration-200',
-                  'hover:bg-gray-200/80',
-                )}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: 'var(--ds-space-1) var(--ds-space-3)',
+                  borderRadius: 'var(--ds-radius-md)',
+                  fontSize: 'var(--ds-text-xs)',
+                  fontWeight: 500,
+                  background: 'var(--ds-canvas-subtle)',
+                  color: 'var(--ds-text-secondary)',
+                  border: '1px solid var(--ds-border-subtle)',
+                  transition: 'background var(--ds-duration-fast)',
+                }}
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
+                <span
+                  style={{
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    background: 'currentColor',
+                    opacity: 0.6,
+                  }}
+                />
                 {badge.value.toLocaleString('fa-IR')} {badge.label}
               </span>
             ))}
@@ -113,27 +197,84 @@ function StatCard({ title, value, icon, badges, gradient, iconBg, delay = 0 }: S
 
       {/* Hover Effect Line */}
       <div
-        className={cn(
-          'absolute bottom-0 inset-x-0 h-1 opacity-0 group-hover:opacity-100',
-          'transition-opacity duration-300',
-          gradient,
-        )}
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          insetInline: 0,
+          height: '2px',
+          opacity: 0,
+          background: accentColor,
+          transition: 'opacity var(--ds-duration-fast)',
+        }}
+        className="group-hover:opacity-100"
       />
     </div>
   );
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+interface TooltipPayloadEntry {
+  color: string;
+  name: string;
+  value: number;
+}
+
+interface TooltipProps {
+  active?: boolean;
+  payload?: TooltipPayloadEntry[];
+  label?: string;
+}
+
+const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-2xl border border-gray-100">
-        <p className="font-semibold text-gray-900 dark:text-white mb-2">{label}</p>
-        <div className="space-y-1.5">
-          {payload.map((entry: any, index: number) => (
-            <div key={index} className="flex items-center gap-2 text-sm">
-              <span className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
-              <span className="text-gray-600">{entry.name}:</span>
-              <span className="font-medium text-gray-900 dark:text-white">
+      <div
+        style={{
+          background: 'var(--ds-surface-elevated)',
+          backdropFilter: 'blur(8px)',
+          borderRadius: 'var(--ds-radius-lg)',
+          padding: 'var(--ds-space-4)',
+          boxShadow: 'var(--ds-shadow-lg)',
+          border: '1px solid var(--ds-border-subtle)',
+        }}
+      >
+        <p
+          style={{
+            fontWeight: 600,
+            color: 'var(--ds-text-primary)',
+            marginBlockEnd: 'var(--ds-space-2)',
+            margin: '0 0 8px 0',
+          }}
+        >
+          {label}
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-1)' }}>
+          {payload.map((entry, index) => (
+            <div
+              key={index}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: 'var(--ds-text-sm)',
+              }}
+            >
+              <span
+                style={{
+                  width: '12px',
+                  height: '12px',
+                  borderRadius: '50%',
+                  backgroundColor: entry.color,
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ color: 'var(--ds-text-secondary)' }}>{entry.name}:</span>
+              <span
+                style={{
+                  fontWeight: 500,
+                  color: 'var(--ds-text-primary)',
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
                 {entry.value?.toLocaleString('fa-IR')}
               </span>
             </div>
@@ -153,7 +294,7 @@ export default function SystemReports() {
   const handleDownload = async () => {
     try {
       setDownloading(true);
-      const response = await fetch('/api/system-reports/download', {
+      const response = await fetch('/api/reports/download', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -169,8 +310,7 @@ export default function SystemReports() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       toast({ title: 'موفقیت', description: 'گزارش با موفقیت دریافت شد', variant: 'success' });
-    } catch (error) {
-      console.error('Error downloading file:', error);
+    } catch {
       toast({ title: 'خطا', description: 'خطا در دانلود فایل', variant: 'destructive' });
     } finally {
       setDownloading(false);
@@ -185,8 +325,6 @@ export default function SystemReports() {
         headers: { 'Content-Type': 'application/json' },
       });
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Error details:', errorData);
         throw new Error('خطا در دریافت اطلاعات');
       }
       const result = await response.json();
@@ -201,8 +339,7 @@ export default function SystemReports() {
         views: result.viewStats.total,
         todayViews: result.viewStats.today || 0,
       });
-    } catch (error) {
-      console.error('Error fetching data:', error);
+    } catch {
       toast({ title: 'خطا', description: 'خطا در دریافت گزارش', variant: 'destructive' });
     } finally {
       setLoading(false);
@@ -239,75 +376,116 @@ export default function SystemReports() {
     { key: 'views', name: 'بازدیدها', تعداد: data.views, امروز: data.todayViews },
   ];
 
+  // trend: percentage of sub-value relative to total (e.g. active/total users)
   const statCards = [
     {
       title: 'کاربران',
       value: data.users,
-      icon: <Users className="w-5 h-5 text-white" />,
+      icon: <Users style={{ width: '1.25rem', height: '1.25rem', color: 'oklch(98% 0 0)' }} />,
       badges: [
         { label: 'فعال', value: data.activeUsers },
         { label: 'جدید', value: data.newUsers },
       ],
-      gradient: 'bg-gradient-to-br from-blue-500 to-indigo-600',
-      iconBg: 'bg-gradient-to-br from-blue-500 to-indigo-600',
+      accentColor: 'var(--ds-status-progress-fg)',
+      trend: data.users > 0 ? Math.round((data.newUsers / data.users) * 100) : null,
     },
     {
       title: 'پست‌ها',
       value: data.posts,
-      icon: <FileText className="w-5 h-5 text-white" />,
+      icon: <FileText style={{ width: '1.25rem', height: '1.25rem', color: 'oklch(98% 0 0)' }} />,
       badges: [{ label: 'منتشر شده', value: data.publishedPosts }],
-      gradient: 'bg-gradient-to-br from-violet-500 to-purple-600',
-      iconBg: 'bg-gradient-to-br from-violet-500 to-purple-600',
+      accentColor: 'var(--nova-violet)',
+      trend: data.posts > 0 ? Math.round((data.publishedPosts / data.posts) * 100) : null,
     },
     {
       title: 'نظرات',
       value: data.comments,
-      icon: <MessageSquare className="w-5 h-5 text-white" />,
+      icon: (
+        <MessageSquare style={{ width: '1.25rem', height: '1.25rem', color: 'oklch(98% 0 0)' }} />
+      ),
       badges: [{ label: 'در انتظار تأیید', value: data.pendingComments }],
-      gradient: 'bg-gradient-to-br from-amber-500 to-orange-600',
-      iconBg: 'bg-gradient-to-br from-amber-500 to-orange-600',
+      accentColor: 'var(--ds-accent-amber)',
+      trend:
+        data.comments > 0
+          ? Math.round(((data.comments - data.pendingComments) / data.comments) * 100)
+          : null,
     },
     {
       title: 'بازدیدها',
       value: data.views,
-      icon: <Eye className="w-5 h-5 text-white" />,
+      icon: <Eye style={{ width: '1.25rem', height: '1.25rem', color: 'oklch(98% 0 0)' }} />,
       badges: [{ label: 'امروز', value: data.todayViews }],
-      gradient: 'bg-gradient-to-br from-emerald-500 to-teal-600',
-      iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-600',
+      accentColor: 'var(--ds-accent-emerald)',
+      trend: data.views > 0 ? Math.round((data.todayViews / data.views) * 100) : null,
     },
   ];
 
   return (
-    <div className="space-y-8">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-8)' }}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div
+        style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-4)' }}
+        className="sm:flex-row sm:items-center sm:justify-between"
+      >
         <div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">نمای کلی آمار</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <h2
+            style={{
+              fontSize: 'var(--ds-text-xl)',
+              fontWeight: 700,
+              color: 'var(--ds-text-primary)',
+              margin: 0,
+            }}
+          >
+            نمای کلی آمار
+          </h2>
+          <p
+            style={{
+              fontSize: 'var(--ds-text-sm)',
+              color: 'var(--ds-text-secondary)',
+              marginBlockStart: 'var(--ds-space-1)',
+              margin: '4px 0 0',
+            }}
+          >
             خلاصه‌ای از وضعیت کلی سیستم
           </p>
         </div>
         <Button
           onClick={handleDownload}
           disabled={downloading}
-          className={cn(
-            'relative overflow-hidden rounded-xl px-5 py-2.5',
-            'bg-gradient-to-l from-[rgb(var(--c-primary-600))] to-[rgb(var(--c-primary-700))]',
-            'hover:from-[rgb(var(--c-primary-700))] hover:to-[rgb(var(--c-primary-800))]',
-            'text-white font-medium shadow-lg shadow-[rgb(var(--c-primary-400))]/30',
-            'hover:shadow-xl hover:shadow-[rgb(var(--c-primary-500))]/40',
-            'transition-all duration-300',
-            'disabled:opacity-70 disabled:cursor-not-allowed',
-          )}
+          style={{
+            background: 'var(--nova-primary)',
+            color: 'oklch(98% 0 0)',
+            borderRadius: 'var(--ds-radius-md)',
+            padding: '0.625rem 1.25rem',
+            fontWeight: 500,
+            border: 'none',
+            cursor: downloading ? 'not-allowed' : 'pointer',
+            opacity: downloading ? 0.7 : 1,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'opacity var(--ds-duration-fast)',
+          }}
         >
           {downloading ? (
             <>
-              <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+              <Loader2
+                style={{
+                  width: '1rem',
+                  height: '1rem',
+                  animation: 'spin 1s linear infinite',
+                  marginInlineEnd: '8px',
+                }}
+                aria-hidden
+              />
               در حال دانلود...
             </>
           ) : (
             <>
-              <Download className="ml-2 h-4 w-4" />
+              <Download
+                style={{ width: '1rem', height: '1rem', marginInlineEnd: '8px' }}
+                aria-hidden
+              />
               دانلود گزارش
             </>
           )}
@@ -322,56 +500,96 @@ export default function SystemReports() {
       </div>
 
       {/* Chart Section */}
-      <div className={cn('dash-panel relative overflow-hidden')}>
-        <div className="p-6 border-b border-gray-100 dark:border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
-              <BarChart3 className="w-5 h-5 text-white" />
+      <div className="dash-panel" style={{ overflow: 'hidden', position: 'relative' }}>
+        <div
+          style={{
+            padding: 'var(--ds-space-5)',
+            borderBottom: '1px solid var(--ds-border-subtle)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-3)' }}>
+            <div
+              style={{
+                padding: 'var(--ds-space-2)',
+                borderRadius: 'var(--ds-radius-md)',
+                background: 'var(--nova-primary)',
+                color: 'oklch(98% 0 0)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <BarChart3 style={{ width: '1.25rem', height: '1.25rem' }} />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">نمودار آماری</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">مقایسه آمار بخش‌های مختلف</p>
+              <h3
+                style={{
+                  fontWeight: 600,
+                  color: 'var(--ds-text-primary)',
+                  margin: 0,
+                  fontSize: 'var(--ds-text-base)',
+                }}
+              >
+                نمودار آماری
+              </h3>
+              <p
+                style={{
+                  fontSize: 'var(--ds-text-sm)',
+                  color: 'var(--ds-text-secondary)',
+                  margin: 0,
+                }}
+              >
+                مقایسه آمار بخش‌های مختلف
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="p-6">
-          <div className="h-[350px]">
+        <div style={{ padding: 'var(--ds-space-5)' }}>
+          <div style={{ height: '350px' }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} barCategoryGap="20%">
                 <defs>
                   <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3b82f6" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.7} />
+                    <stop offset="0%" stopColor="oklch(55% 0.14 265)" stopOpacity={1} />
+                    <stop offset="100%" stopColor="oklch(55% 0.14 265)" stopOpacity={0.7} />
                   </linearGradient>
                   <linearGradient id="colorActive" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10b981" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#10b981" stopOpacity={0.7} />
+                    <stop offset="0%" stopColor="oklch(58% 0.12 165)" stopOpacity={1} />
+                    <stop offset="100%" stopColor="oklch(58% 0.12 165)" stopOpacity={0.7} />
                   </linearGradient>
                   <linearGradient id="colorNew" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#f59e0b" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.7} />
+                    <stop offset="0%" stopColor="oklch(68% 0.14 70)" stopOpacity={1} />
+                    <stop offset="100%" stopColor="oklch(68% 0.14 70)" stopOpacity={0.7} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="var(--ds-border-subtle)"
+                  vertical={false}
+                />
                 <XAxis
                   dataKey="name"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: '#6b7280', fontSize: 12 }}
+                  tick={{ fill: 'var(--ds-text-muted)', fontSize: 12 }}
                 />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: 'var(--ds-text-muted)', fontSize: 12 }}
+                />
                 <Tooltip
                   content={<CustomTooltip />}
-                  cursor={{ fill: 'rgba(59, 130, 246, 0.05)' }}
+                  cursor={{ fill: 'color-mix(in oklch, var(--nova-primary) 5%, transparent)' }}
                 />
                 <Legend wrapperStyle={{ paddingTop: '20px' }} />
                 <Bar dataKey="تعداد" fill="url(#colorTotal)" radius={[6, 6, 0, 0]} />
                 <Bar dataKey="فعال" fill="url(#colorActive)" radius={[6, 6, 0, 0]} />
                 <Bar dataKey="جدید" fill="url(#colorNew)" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="منتشرشده" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="درانتظار" fill="#ef4444" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="امروز" fill="#ec4899" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="منتشرشده" fill="oklch(58% 0.14 290)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="درانتظار" fill="oklch(55% 0.17 20)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="امروز" fill="oklch(52% 0.14 162)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -380,6 +598,3 @@ export default function SystemReports() {
     </div>
   );
 }
-
-// Import for chart icon
-import { BarChart3 } from 'lucide-react';

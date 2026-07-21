@@ -20,6 +20,7 @@ import {
   EmptyState,
   PageHeader,
 } from '@/components/Dashboard/primitives';
+import { toast } from '@/components/ui/use-toast';
 import {
   Building2,
   CheckCircle2,
@@ -83,7 +84,7 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
         setEditRow(null);
         router.refresh();
       } else {
-        alert(result.error.message);
+        toast({ title: 'خطا', description: result.error.message, variant: 'destructive' });
       }
     },
     [editRow, router],
@@ -108,7 +109,7 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
       setRows((prev) => prev.filter((r) => r.id !== deleteTarget.id));
       setDeleteTarget(null);
     } else {
-      alert(result.error.message);
+      toast({ title: 'خطا', description: result.error.message, variant: 'destructive' });
     }
   }, [deleteTarget]);
 

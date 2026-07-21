@@ -83,31 +83,29 @@ export default function CompactRateBridge({
   // و هر ۳ ثانیه re-render کل bridge رو trigger می‌کرد
   // الان عدد base نمایش داده می‌شه (بدون morph)
 
-  // propagate hover state به parent (با debounce کوتاه برای جلوگیری از loop)
+  // propagate hover state به parent
   useEffect(() => {
     if (!onHoverChange) return;
     onHoverChange(isPaused);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPaused]);
+  }, [isPaused, onHoverChange]);
+
+  // track mouse داخل wrapper — باید قبل از early return باشد (Rules of Hooks)
+  const mouseCountRef = useRef(0);
 
   if (!rates || rates.length === 0) return null;
 
   const current = parsedRates[activeIndex] || parsedRates[0];
 
-  // morph حذف شد — عدد base مستقیماً نمایش داده می‌شه
   const buyBase = current?.buyNum ?? 0;
   const buyDisplay = buyBase;
   const buySuffix = current?.buySuffix ?? '';
 
-  // morph فروش
   const sellBase = current?.sellNum ?? 0;
   const sellDisplay = sellBase;
   const sellSuffix = current?.sellSuffix ?? '';
 
-  // لینک ثبت سفارش
   const orderHref = `${orderLinkBase}?currency=${encodeURIComponent(current?.title || '')}&type=INTERNATIONAL_TRANSFER#contact`;
 
-  // Handler های prev/next — pause رو فعال می‌کنن تا کاربر بتونه ببینه
   const goPrev = () => {
     setIsPaused(true);
     setInternalIndex((i) => (i - 1 + rates.length) % rates.length);
@@ -118,9 +116,6 @@ export default function CompactRateBridge({
     setInternalIndex((i) => (i + 1) % rates.length);
   };
 
-  // track mouse داخل wrapper با شمارنده — وقتی mouse وارد می‌شه counter++،
-  // وقتی خارج می‌شه counter--. وقتی 0 شد یعنی واقعاً بیرون رفته
-  const mouseCountRef = useRef(0);
   const handleMouseEnter = () => {
     mouseCountRef.current += 1;
     setIsPaused(true);

@@ -4,6 +4,9 @@ import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import type React from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
+// recharts margin uses SVG axis keys — intentional, not CSS physical props
+const CHART_MARGIN = { top: 20, right: 10, left: -10, bottom: 5 };
+
 interface InnerChartProps {
   data: Array<Record<string, unknown>>;
   tooltip: React.ReactElement;
@@ -126,13 +129,15 @@ const TrafficChartInner: React.FC<InnerChartProps> = ({ data, tooltip }) => {
       controllers.push(() => cancelAnimationFrame(rafId));
     });
 
-    return () => controllers.forEach((cancel) => cancel());
+    return () => {
+      for (const cancel of controllers) cancel();
+    };
   }, [reduced, data]);
 
   return (
     <div ref={wrapperRef} className="w-full h-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 20, right: 10, left: -10, bottom: 5 }}>
+        <BarChart data={data} margin={CHART_MARGIN}>
           <defs>
             <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#8B5CF6" stopOpacity={1} />
@@ -173,7 +178,13 @@ const TrafficChartInner: React.FC<InnerChartProps> = ({ data, tooltip }) => {
             className="text-slate-500 dark:text-slate-400"
             dx={-5}
           />
-          <Tooltip content={tooltip} cursor={{ fill: 'rgba(139, 92, 246, 0.1)', radius: 8 }} />
+          <Tooltip
+            content={tooltip}
+            cursor={{
+              fill: 'color-mix(in oklch, var(--at-accent, oklch(58% 0.2 265)) 10%, transparent)',
+              radius: 8,
+            }}
+          />
           <Bar
             dataKey="بازدید"
             fill="url(#barGradient)"

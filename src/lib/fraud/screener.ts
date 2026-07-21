@@ -5,9 +5,9 @@
  * Never throws to caller — all errors logged internally.
  */
 
-import { v4 as createId } from 'uuid';
 import prisma from '@/lib/db';
-import { assessTransactionRisk, type FraudRisk } from './rules';
+import { v4 as createId } from 'uuid';
+import { type FraudRisk, assessTransactionRisk } from './rules';
 
 type ScreenParams = Parameters<typeof assessTransactionRisk>[0];
 

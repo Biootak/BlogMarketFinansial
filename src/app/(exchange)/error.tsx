@@ -1,7 +1,7 @@
 'use client';
 
-import * as Sentry from '@sentry/nextjs';
 import { Button } from '@/components/ui/button';
+import * as Sentry from '@sentry/nextjs';
 import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect } from 'react';
@@ -46,7 +46,9 @@ export default function ExchangeError({ error, reset }: ErrorProps) {
             background: 'var(--at-warning-soft, #fef3c7)',
           }}
         >
-          <AlertTriangle style={{ width: '1.75rem', height: '1.75rem', color: 'var(--at-warning, #d97706)' }} />
+          <AlertTriangle
+            style={{ width: '1.75rem', height: '1.75rem', color: 'var(--at-warning, #d97706)' }}
+          />
         </div>
 
         <div>

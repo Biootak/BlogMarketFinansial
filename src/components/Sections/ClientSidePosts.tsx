@@ -44,7 +44,7 @@ import { cn, toPersianNumber } from '@/lib/utils';
 import type { Advertisement, PostWithRelations } from '@/types/types';
 import { AlertCircle, Check, ChevronDown, MoreHorizontal, Newspaper, Sparkles } from 'lucide-react';
 import type React from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import Empty from '../Empty';
 import PostGrid from './PostGrid';
 import AnimatedNumber from './effects/AnimatedNumber';
@@ -224,9 +224,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
   }, [posts, isLoading, hasMore, activeCategory, initialPageSize]);
 
   /* ---------- Switch category → scroll to top of panel ---------- */
-  useEffect(() => {
-    // اگه دسته‌ی فعال توی visible نیست و توی overflow هست، دوباره tabs رو می‌بندیم
-  }, [activeCategory]);
+  // TODO: implement scroll-to-top when category changes
 
   return (
     <section className="relative isolate space-y-3 sm:space-y-4">

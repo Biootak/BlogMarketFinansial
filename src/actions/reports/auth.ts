@@ -9,8 +9,10 @@ export async function checkReportAccess() {
     throw new Error('لطفاً وارد سیستم شوید');
   }
 
-  const userRole = session.user.role as 'ADMIN' | 'OWNER';
-  if (![Role.ADMIN, Role.OWNER].includes(userRole)) {
+  const userRole = session.user.role as string;
+  // SUPERADMIN هم باید دسترسی داشته باشد — با require-auth هماهنگ است
+  const allowed: string[] = [Role.ADMIN, Role.OWNER, Role.SUPERADMIN];
+  if (!allowed.includes(userRole)) {
     throw new Error('شما دسترسی لازم برای مشاهده گزارش‌ها را ندارید');
   }
 }

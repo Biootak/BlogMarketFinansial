@@ -195,7 +195,9 @@ type FileOutcome = FileSuccess | FileFailure;
 async function processOneFile(file: File, folder: AllowedFolder): Promise<FileOutcome> {
   const startMs = performance.now();
   // Timing helper — noop in all environments (no console output)
-  const logStep = (_label: string) => { void startMs; };
+  const logStep = (_label: string) => {
+    void startMs;
+  };
 
   if (!ALLOWED_TYPES.includes(file.type as AllowedMime)) {
     return {

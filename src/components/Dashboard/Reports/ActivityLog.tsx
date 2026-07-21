@@ -37,11 +37,12 @@ export default function ActivityLogComponent() {
         setActivities(
           result.data.activities.map((activity) => ({
             ...activity,
-            createdAt: new Date(activity.createdAt),
-            userEmail: activity.user.email,
+            createdAt: new Date(activity.createdAt as string),
+            userEmail: activity.user?.email ?? '',
             user: {
               ...activity.user,
-              name: activity.user.name || 'کاربر ناشناس',
+              name: activity.user?.name || 'کاربر ناشناس',
+              email: activity.user?.email ?? '',
             },
           })),
         );

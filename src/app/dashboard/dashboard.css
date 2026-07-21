@@ -448,8 +448,6 @@
       box-shadow: 0 0 0 6px oklch(72% 0.18 150 / 0);
     }
   }
-  @media (prefers-reduced-motion: reduce) {
-  }
 
   /* Geometric accents */
 
@@ -655,8 +653,6 @@
   }
 
   /* ---- Live status pill --------------------------------------------------- */
-  @media (min-width: 768px) {
-  }
   .dark .dash-toolbar__status {
     background: oklch(28% 0.02 250 / 0.55);
     border-color: oklch(38% 0.02 250 / 0.7);
@@ -678,9 +674,6 @@
   }
   .dark .dash-toolbar__status-city {
     color: oklch(70% 0.02 245);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
   }
 
   /* ---- Range segmented control (Linear-style sliding indicator) ----------- */
@@ -860,8 +853,6 @@
       transform: translateY(0) scale(1);
     }
   }
-  @media (prefers-reduced-motion: reduce) {
-  }
   .dark .dash-toolbar__menu-head {
     border-color: oklch(30% 0.012 250 / 0.7);
   }
@@ -899,8 +890,6 @@
   }
   .dark .dash-toolbar__avatar-dot {
     box-shadow: 0 0 0 2px oklch(22% 0.018 255 / 0.9), 0 0 6px oklch(72% 0.18 150 / 0.5);
-  }
-  @media (prefers-reduced-motion: reduce) {
   }
 
   /* Fluid spacer used between the context label and the actions zone in
@@ -1675,8 +1664,6 @@
     }
   }
 
-  @media (min-width: 1024px) {
-  }
   .dash-pane--compact {
     grid-column: span 2;
   }
@@ -2055,8 +2042,6 @@
     color: oklch(75% 0.008 245);
     font-weight: 500;
     max-width: 38rem;
-  }
-  @media (min-width: 1024px) {
   }
 
   /* ---- Hero compact variant (June 26 redesign) --------------------------
@@ -6802,11 +6787,6 @@
       ), radial-gradient(ellipse 40% 50% at 10% 85%, oklch(40% 0.1 200 / 0.2), transparent 60%),
       radial-gradient(ellipse 60% 40% at 50% 50%, oklch(38% 0.08 165 / 0.12), transparent 55%);
   }
-  @media (prefers-reduced-motion: reduce) {
-  }
-
-  @media (min-width: 1024px) {
-  }
 
   /* ---- Skip link ---------------------------------------------------------- */
 
@@ -6814,10 +6794,6 @@
      8 focused tiles. Hero dominates. Stream anchors right.
      Mobile: single column. Tablet: 2-col. Desktop: 4-col bento.
      ---------------------------------------------------------------------- */
-  @media (min-width: 640px) {
-  }
-  @media (min-width: 1024px) {
-  }
 
   /* ---- Tile surface — v4 refined ----------------------------------------
      Solid surface with layered depth. No glass, no noise.
@@ -6827,8 +6803,6 @@
     background: oklch(16% 0.006 265);
     border-color: oklch(100% 0 0 / 0.06);
     box-shadow: 0 1px 2px oklch(0% 0 0 / 0.2), 0 4px 8px -2px oklch(0% 0 0 / 0.15);
-  }
-  @media (min-width: 640px) {
   }
   .dark .nova-tile:hover {
     border-color: oklch(60% 0.12 265 / 0.18);
@@ -6852,8 +6826,6 @@
       }
     }
   }
-  @media (prefers-reduced-motion: reduce) {
-  }
 
   /* ---- Shared panel header ------------------------------------------------ */
 
@@ -6866,8 +6838,6 @@
     50% {
       box-shadow: 0 0 0 6px oklch(72% 0.16 162 / 0);
     }
-  }
-  @media (prefers-reduced-motion: reduce) {
   }
 
   /* ---- Trend delta chips (shared) ---------------------------------------- */
@@ -6886,8 +6856,6 @@
         oklch(12% 0.03 265) 50%,
         oklch(10% 0.02 255) 100%
       );
-  }
-  @media (min-width: 1024px) {
   }
   .dark .nova-hero__cta-icon {
     background: oklch(100% 0 0 / 0.14);
@@ -6908,8 +6876,6 @@
   /* ======================================================================
      CHART tile
      ====================================================================== */
-  @media (min-width: 1024px) {
-  }
   .nova-embed :is(.dash-panel, .dash-pane, .tide-station, [class*="card"], [class*="Card"]) {
     background: transparent !important;
     border: 0 !important;
@@ -6925,8 +6891,6 @@
     to {
       transform: translateX(100%);
     }
-  }
-  @media (prefers-reduced-motion: reduce) {
   }
 
   /* ======================================================================
@@ -6954,25 +6918,15 @@
   /* ======================================================================
      POSTS tile
      ====================================================================== */
-  @media (min-width: 1024px) {
-  }
 
   /* ======================================================================
      ASIDE tile — v4 horizontal layout (authors + system health)
      ====================================================================== */
-  @media (min-width: 1024px) {
-  }
-  @media (min-width: 640px) {
-  }
   .dark .nova-aside__avatar-fallback {
     background: oklch(30% 0.03 285);
   }
-  @media (min-width: 1024px) {
-  }
 
   /* ---- Reduced-motion overrides for the NOVA layer ----------------------- */
-  @media (prefers-reduced-motion: reduce) {
-  }
 }
 
 /* Command Center — 2026-07-03 */
@@ -6983,9 +6937,6 @@
 
   /* Main Layout */
 
-  @media (max-width: 1023px) {
-  }
-
   /* Timeline */
 
   /* Context Panel */
@@ -6995,9 +6946,6 @@
   /* Tiles */
 
   /* Stats */
-
-  @media (max-width: 767px) {
-  }
 
   /* Posts List */
 
@@ -8153,8 +8101,6 @@
       transform: scale(0.92);
     }
   }
-  @media (prefers-reduced-motion: reduce) {
-  }
   @keyframes at-ticker-scroll {
     from {
       transform: translateX(0);
@@ -8164,8 +8110,6 @@
     }
   }
   /* RTL: scroll starts from -50% to 0 so the loop direction matches reading */
-  @media (prefers-reduced-motion: reduce) {
-  }
 
   /* ---------- Hero (row 1) ---------- */
   .at-hero {
@@ -12964,8 +12908,6 @@
   }
 
   /* ── Reduced motion ────────────────────────────────────────────── */
-  @media (prefers-reduced-motion: reduce) {
-  }
 
   /* ============================================================================
      Service Requests — Activity Rail + Detail Drawer (2026-07-04)
@@ -15603,10 +15545,6 @@
   }
 
   /* header strip — title + description + actions (در بالای صفحه) */
-  @media (min-width: 768px) {
-  }
-  @media (min-width: 768px) {
-  }
 
   /* ---------- Table shell (atelier) ---------- */
   .at-table {
@@ -15999,8 +15937,6 @@
   }
 
   /* ---- Magazine: lg breakpoint refinement ---------------------------------- */
-  @media (min-width: 1024px) {
-  }
 
   /* ---- List row: divider + hover affordance -------------------------------- */
 

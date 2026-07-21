@@ -508,9 +508,9 @@ export default function CommandPalette({ role }: CommandPaletteProps) {
                                         : 'text-slate-400 dark:text-slate-500',
                                     )}
                                   >
-                                    {item.shortcut.split(' ').map((k, i) => (
+                                    {item.shortcut.split(' ').map((k) => (
                                       <span
-                                        key={i}
+                                        key={k}
                                         className="rounded border border-current/30 px-1.5 py-0.5"
                                       >
                                         {k}

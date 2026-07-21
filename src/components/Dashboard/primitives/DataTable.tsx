@@ -1,8 +1,5 @@
 'use client';
 
-// biome-ignore-all lint/a11y/useSemanticElements: linear-style flex table requires div+ARIA roles
-// biome-ignore-all lint/a11y/useFocusableInteractive: header row is not interactive
-
 import { cn } from '@/lib/utils';
 import { Check } from 'lucide-react';
 import { type CSSProperties, type ReactNode, useCallback, useMemo, useState } from 'react';

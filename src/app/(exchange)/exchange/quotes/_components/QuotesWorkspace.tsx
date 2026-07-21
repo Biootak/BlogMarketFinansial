@@ -191,20 +191,31 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
                 onClick={handleAutoSuggest}
                 disabled={suggestPending}
                 style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '5px',
-                  fontSize: '12px', fontWeight: 600, padding: '4px 10px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  padding: '4px 10px',
                   background: 'color-mix(in oklch, var(--ds-primary) 10%, transparent)',
                   color: 'var(--ds-primary)',
                   border: '1px solid color-mix(in oklch, var(--ds-primary) 25%, transparent)',
-                  borderRadius: '6px', cursor: suggestPending ? 'not-allowed' : 'pointer',
+                  borderRadius: '6px',
+                  cursor: suggestPending ? 'not-allowed' : 'pointer',
                   opacity: suggestPending ? 0.7 : 1,
                   transition: 'opacity 0.15s',
                 }}
                 aria-label="پیشنهاد خودکار نرخ از بازار"
               >
-                {suggestPending
-                  ? <Loader2 className="w-3 h-3" style={{ animation: 'spin 0.7s linear infinite' }} aria-hidden />
-                  : <Sparkles className="w-3 h-3" aria-hidden />}
+                {suggestPending ? (
+                  <Loader2
+                    className="w-3 h-3"
+                    style={{ animation: 'spin 0.7s linear infinite' }}
+                    aria-hidden
+                  />
+                ) : (
+                  <Sparkles className="w-3 h-3" aria-hidden />
+                )}
                 پیشنهاد بازار
               </button>
               <button
@@ -220,32 +231,59 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
 
           {/* نمایش پیشنهاد بازار */}
           {suggestion && (
-            <div
-              role="status"
+            <output
+              aria-live="polite"
               style={{
-                padding: '8px 12px', fontSize: '12px', lineHeight: 1.6,
+                display: 'block',
+                padding: '8px 12px',
+                fontSize: '12px',
+                lineHeight: 1.6,
                 background: 'color-mix(in oklch, var(--ds-primary) 7%, transparent)',
                 border: '1px solid color-mix(in oklch, var(--ds-primary) 18%, transparent)',
-                borderRadius: '8px', color: 'var(--ds-text-2)',
+                borderRadius: '8px',
+                color: 'var(--ds-text-2)',
               }}
             >
               <span style={{ fontWeight: 600, color: 'var(--ds-primary)' }}>
-                <Sparkles className="w-3 h-3" style={{ display: 'inline', verticalAlign: 'middle', marginInlineEnd: '4px' }} aria-hidden />
+                <Sparkles
+                  className="w-3 h-3"
+                  style={{ display: 'inline', verticalAlign: 'middle', marginInlineEnd: '4px' }}
+                  aria-hidden
+                />
                 پیشنهاد بازار ({suggestion.currencyCode}):
               </span>{' '}
-              خرید <span dir="ltr" style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{suggestion.suggestedBuyRate.toLocaleString('fa-IR')}</span>
-              {' '}·{' '}
-              فروش <span dir="ltr" style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{suggestion.suggestedSellRate.toLocaleString('fa-IR')}</span>
-              {' '}·{' '}
-              منبع: <span style={{ color: 'var(--ds-text-3)' }}>{suggestion.source}</span>
-              {' '}·{' '}
-              <span style={{ color: suggestion.confidence === 'high' ? 'var(--ds-success, #22c55e)' : 'var(--ds-warning, #f59e0b)' }}>
-                {suggestion.confidence === 'high' ? 'داده تازه' : suggestion.confidence === 'medium' ? 'نسبتاً تازه' : 'قدیمی'}
+              خرید{' '}
+              <span dir="ltr" style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>
+                {suggestion.suggestedBuyRate.toLocaleString('fa-IR')}
+              </span>{' '}
+              · فروش{' '}
+              <span dir="ltr" style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>
+                {suggestion.suggestedSellRate.toLocaleString('fa-IR')}
+              </span>{' '}
+              · منبع: <span style={{ color: 'var(--ds-text-3)' }}>{suggestion.source}</span> ·{' '}
+              <span
+                style={{
+                  color:
+                    suggestion.confidence === 'high'
+                      ? 'var(--ds-success, #22c55e)'
+                      : 'var(--ds-warning, #f59e0b)',
+                }}
+              >
+                {suggestion.confidence === 'high'
+                  ? 'داده تازه'
+                  : suggestion.confidence === 'medium'
+                    ? 'نسبتاً تازه'
+                    : 'قدیمی'}
               </span>
-            </div>
+            </output>
           )}
           {suggestError && (
-            <p role="alert" style={{ color: 'var(--ds-error, #ef4444)', fontSize: '12px', margin: 0 }}>{suggestError}</p>
+            <p
+              role="alert"
+              style={{ color: 'var(--ds-error, #ef4444)', fontSize: '12px', margin: 0 }}
+            >
+              {suggestError}
+            </p>
           )}
 
           <div className={s.formGrid}>
@@ -383,7 +421,7 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
 
           {/* پیش‌نمایش */}
           {form.buyRate && form.sellRate && (
-            <div className={s.preview} role="status" aria-live="polite">
+            <output className={s.preview} aria-live="polite">
               <span className={s.previewLabel}>پیش‌نمایش:</span>
               <span className={s.previewItem}>
                 خرید: <strong dir="ltr">{Number(form.buyRate).toLocaleString('fa-IR')}</strong>
@@ -404,7 +442,7 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
                   ٪
                 </strong>
               </span>
-            </div>
+            </output>
           )}
 
           {error && (
@@ -446,52 +484,56 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
           <p>هنوز قیمتی ثبت نشده. اولین قیمت را ثبت کنید تا در سایت نمایش داده شود.</p>
         </div>
       ) : (
-        <div className={s.tableWrap} role="table" aria-label="قیمت‌های ثبت‌شده">
-          <div className={s.tableHead} role="row">
-            <span role="columnheader">ارز</span>
-            <span role="columnheader">خرید</span>
-            <span role="columnheader">فروش</span>
-            <span role="columnheader">واحد</span>
-            <span role="columnheader">وضعیت</span>
-            <span role="columnheader">انقضا</span>
-          </div>
-          {quotes.map((q) => {
-            const st = STATUS_LABEL[q.status] ?? { label: q.status, color: 'inherit' };
-            return (
-              <div key={q.id} className={s.tableRow} role="row" data-status={q.status}>
-                <span className={s.cellCurrency} role="cell">
-                  <strong>{q.currencyCode}</strong>
-                  <small>{q.currencyPair}</small>
-                </span>
-                <span className={`${s.cellNum} tabular-nums`} role="cell" dir="ltr">
-                  {Number(q.buyRate).toLocaleString('fa-IR')}
-                </span>
-                <span className={`${s.cellNum} tabular-nums`} role="cell" dir="ltr">
-                  {Number(q.sellRate).toLocaleString('fa-IR')}
-                </span>
-                <span role="cell">{q.unit}</span>
-                <span className={s.statusBadge} role="cell" style={{ color: st.color }}>
-                  {q.status === 'ACTIVE' && <span className={s.liveDot} aria-hidden />}
-                  {st.label}
-                </span>
-                <span className={s.cellExpiry} role="cell">
-                  {q.status === 'ACTIVE' && q.expiresAt ? (
-                    <span className={s.countdown}>
-                      <Clock className="w-3 h-3" aria-hidden />
-                      {minutesLeft(q.expiresAt)}
-                    </span>
-                  ) : q.status === 'REJECTED' && q.note ? (
-                    <span className={s.rejectNote} title={q.note}>
-                      دلیل: {q.note.slice(0, 40)}
-                    </span>
-                  ) : (
-                    '—'
-                  )}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+        <table className={s.tableWrap} aria-label="قیمت‌های ثبت‌شده">
+          <thead>
+            <tr className={s.tableHead}>
+              <th scope="col">ارز</th>
+              <th scope="col">خرید</th>
+              <th scope="col">فروش</th>
+              <th scope="col">واحد</th>
+              <th scope="col">وضعیت</th>
+              <th scope="col">انقضا</th>
+            </tr>
+          </thead>
+          <tbody>
+            {quotes.map((q) => {
+              const st = STATUS_LABEL[q.status] ?? { label: q.status, color: 'inherit' };
+              return (
+                <tr key={q.id} className={s.tableRow} data-status={q.status}>
+                  <td className={s.cellCurrency}>
+                    <strong>{q.currencyCode}</strong>
+                    <small>{q.currencyPair}</small>
+                  </td>
+                  <td className={`${s.cellNum} tabular-nums`} dir="ltr">
+                    {Number(q.buyRate).toLocaleString('fa-IR')}
+                  </td>
+                  <td className={`${s.cellNum} tabular-nums`} dir="ltr">
+                    {Number(q.sellRate).toLocaleString('fa-IR')}
+                  </td>
+                  <td>{q.unit}</td>
+                  <td className={s.statusBadge} style={{ color: st.color }}>
+                    {q.status === 'ACTIVE' && <span className={s.liveDot} aria-hidden />}
+                    {st.label}
+                  </td>
+                  <td className={s.cellExpiry}>
+                    {q.status === 'ACTIVE' && q.expiresAt ? (
+                      <span className={s.countdown}>
+                        <Clock className="w-3 h-3" aria-hidden />
+                        {minutesLeft(q.expiresAt)}
+                      </span>
+                    ) : q.status === 'REJECTED' && q.note ? (
+                      <span className={s.rejectNote} title={q.note}>
+                        دلیل: {q.note.slice(0, 40)}
+                      </span>
+                    ) : (
+                      '—'
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       )}
     </div>
   );

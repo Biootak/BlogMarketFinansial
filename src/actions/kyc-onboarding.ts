@@ -14,13 +14,38 @@
  *   - LEVEL_3 فقط توسط ادمین ثبت می‌شود
  */
 
+import { createHash } from 'node:crypto';
 import prisma from '@/lib/db';
 import { requireAdmin, requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
+import { normalizeDigits } from '@/lib/utils';
 import type { FintechActionResult } from '@/types/types';
-import { createHash } from 'node:crypto';
+import type { Prisma } from '@prisma/client';
 import { v4 as createId } from 'uuid';
 import { z } from 'zod';
+
+// helper: ثبت AuditLog برای KYC (exchangeId اختیاری چون KYC سایت-wide است)
+async function logKycAudit(params: {
+  actorId: string;
+  actorRole: 'USER' | 'ADMIN';
+  action: string;
+  entityId: string;
+  meta?: Record<string, unknown>;
+}) {
+  // KYC یک عملیات سراسری (نه مختص صرافی) است — exchangeId را خالی می‌گذاریم
+  await prisma.auditLog.create({
+    data: {
+      id: createId(),
+      exchangeId: 'PLATFORM',
+      actorId: params.actorId,
+      actorRole: params.actorRole,
+      action: params.action,
+      entityType: 'KycRecord',
+      entityId: params.entityId,
+      meta: (params.meta ?? {}) as Prisma.InputJsonValue,
+    },
+  });
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -75,6 +100,7 @@ export async function getMyKycRecord(): Promise<KycRecordRow | null> {
 const BasicInfoSchema = z.object({
   fullName: z.string().min(3, 'نام کامل حداقل ۳ کاراکتر').max(100),
   nationalId: z.string().min(8, 'شناسه ملی نامعتبر').max(20),
+  // dateOfBirth قبل از validation normalize می‌شود — هم ASCII هم فارسی قبول می‌شود
   dateOfBirth: z.string().regex(/^\d{4}\/\d{2}\/\d{2}$/, 'فرمت تاریخ: ۱۴۰۰/۰۱/۰۱'),
   phone: z
     .string()
@@ -83,13 +109,28 @@ const BasicInfoSchema = z.object({
     .regex(/^[\d+\-\s]+$/, 'شماره تلفن نامعتبر'),
 });
 
-export async function submitKycBasicInfo(raw: unknown): Promise<FintechActionResult<{ id: string }>> {
+export async function submitKycBasicInfo(
+  raw: unknown,
+): Promise<FintechActionResult<{ id: string }>> {
   const auth = await requireUser();
   if (!auth.success) {
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد حساب کاربری شوید' } };
   }
 
-  const parsed = BasicInfoSchema.safeParse(raw);
+  // normalize ارقام فارسی/عربی به ASCII قبل از validation — defense-in-depth
+  let normalizedRaw = raw;
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    const r = raw as Record<string, unknown>;
+    normalizedRaw = {
+      ...r,
+      dateOfBirth:
+        typeof r.dateOfBirth === 'string' ? normalizeDigits(r.dateOfBirth) : r.dateOfBirth,
+      nationalId: typeof r.nationalId === 'string' ? normalizeDigits(r.nationalId) : r.nationalId,
+      phone: typeof r.phone === 'string' ? normalizeDigits(r.phone) : r.phone,
+    };
+  }
+
+  const parsed = BasicInfoSchema.safeParse(normalizedRaw);
   if (!parsed.success) {
     return {
       success: false,
@@ -100,9 +141,7 @@ export async function submitKycBasicInfo(raw: unknown): Promise<FintechActionRes
   const { fullName, nationalId, dateOfBirth: _dob, phone: _phone } = parsed.data;
 
   // Hash شناسه ملی قبل از ذخیره (privacy-first)
-  const nationalIdHash = createHash('sha256')
-    .update(`${auth.user.id}:${nationalId}`)
-    .digest('hex');
+  const nationalIdHash = createHash('sha256').update(`${auth.user.id}:${nationalId}`).digest('hex');
 
   // بررسی تکرار شناسه ملی در سیستم
   const existing = await prisma.kycRecord.findFirst({
@@ -139,15 +178,34 @@ export async function submitKycBasicInfo(raw: unknown): Promise<FintechActionRes
   });
 
   revalidateTag('kyc');
+
+  await logKycAudit({
+    actorId: auth.user.id,
+    actorRole: 'USER',
+    action: 'KYC_BASIC_INFO_SUBMITTED',
+    entityId: id,
+    meta: { fullName },
+  });
+
   return { success: true, data: { id } };
 }
 
 // ─── STEP 2: آپلود مدارک ───────────────────────────────────────────────────
 
 const DocumentsSchema = z.object({
-  selfieUrl: z.string().url('آدرس عکس سلفی نامعتبر'),
-  docFrontUrl: z.string().url('آدرس تصویر روی مدرک نامعتبر'),
-  docBackUrl: z.string().url('آدرس تصویر پشت مدرک نامعتبر').optional(),
+  selfieUrl: z
+    .string()
+    .url('آدرس عکس سلفی نامعتبر')
+    .startsWith('https://', 'آدرس سلفی باید HTTPS باشد'),
+  docFrontUrl: z
+    .string()
+    .url('آدرس تصویر روی مدرک نامعتبر')
+    .startsWith('https://', 'آدرس مدرک باید HTTPS باشد'),
+  docBackUrl: z
+    .string()
+    .url('آدرس تصویر پشت مدرک نامعتبر')
+    .startsWith('https://', 'آدرس پشت مدرک باید HTTPS باشد')
+    .optional(),
 });
 
 export async function submitKycDocuments(raw: unknown): Promise<FintechActionResult<void>> {
@@ -188,6 +246,19 @@ export async function submitKycDocuments(raw: unknown): Promise<FintechActionRes
   });
 
   revalidateTag('kyc');
+
+  await logKycAudit({
+    actorId: auth.user.id,
+    actorRole: 'USER',
+    action: 'KYC_DOCUMENTS_SUBMITTED',
+    entityId: record.id,
+    meta: {
+      hasSelfie: !!parsed.data.selfieUrl,
+      hasFront: !!parsed.data.docFrontUrl,
+      hasBack: !!parsed.data.docBackUrl,
+    },
+  });
+
   return { success: true, data: undefined };
 }
 
@@ -197,7 +268,12 @@ const ReviewSchema = z.object({
   userId: z.string().min(1),
   approved: z.boolean(),
   rejectedReason: z.string().max(500).optional(),
+  /** مدت انقضای KYC به ماه — پیش‌فرض ۲۴ ماه (۲ سال) */
+  expiryMonths: z.number().int().min(1).max(120).default(24),
 });
+
+// KYC_EXPIRY_MONTHS: انقضای پیش‌فرض ۲ سال — قابل override در ReviewSchema
+const KYC_DEFAULT_EXPIRY_MONTHS = 24;
 
 export async function reviewKycRecord(raw: unknown): Promise<FintechActionResult<void>> {
   const auth = await requireAdmin();
@@ -213,7 +289,7 @@ export async function reviewKycRecord(raw: unknown): Promise<FintechActionResult
     };
   }
 
-  const { userId, approved, rejectedReason } = parsed.data;
+  const { userId, approved, rejectedReason, expiryMonths } = parsed.data;
 
   if (!approved && !rejectedReason) {
     return {
@@ -222,15 +298,64 @@ export async function reviewKycRecord(raw: unknown): Promise<FintechActionResult
     };
   }
 
-  await prisma.kycRecord.update({
+  // Progression gate: نمی‌توان KYC را approve کرد مگر اینکه مدارک ارسال شده باشند
+  const existingRecord = await prisma.kycRecord.findUnique({
+    where: { userId },
+    select: { id: true, submittedAt: true, selfieUrl: true, docFrontUrl: true },
+  });
+
+  if (!existingRecord) {
+    return { success: false, error: { code: 'NOT_FOUND', message: 'پرونده KYC یافت نشد' } };
+  }
+
+  if (approved) {
+    // هر دو شرط باید برقرار باشند: submittedAt + حداقل یک مدرک
+    if (!existingRecord.submittedAt || !existingRecord.docFrontUrl) {
+      return {
+        success: false,
+        error: {
+          code: 'PREREQUISITE',
+          message: 'تأیید KYC ممکن نیست — کاربر هنوز مدارک خود را ارسال نکرده است',
+        },
+      };
+    }
+  }
+
+  // محاسبه تاریخ انقضا — فقط هنگام approve
+  const now = new Date();
+  const expiresAt = approved
+    ? new Date(
+        now.getFullYear(),
+        now.getMonth() + (expiryMonths ?? KYC_DEFAULT_EXPIRY_MONTHS),
+        now.getDate(),
+      )
+    : null;
+
+  const updatedRecord = await prisma.kycRecord.update({
     where: { userId },
     data: {
-      reviewedAt: new Date(),
+      reviewedAt: now,
       rejectedReason: approved ? null : (rejectedReason ?? null),
-      updatedAt: new Date(),
+      ...(expiresAt ? { expiresAt } : {}),
+      updatedAt: now,
     },
+    select: { id: true },
   });
 
   revalidateTag('kyc');
+
+  await logKycAudit({
+    actorId: auth.user.id,
+    actorRole: 'ADMIN',
+    action: approved ? 'KYC_APPROVED' : 'KYC_REJECTED',
+    entityId: updatedRecord.id,
+    meta: {
+      targetUserId: userId,
+      approved,
+      ...(expiresAt ? { expiresAt: expiresAt.toISOString() } : {}),
+      ...(rejectedReason ? { rejectedReason } : {}),
+    },
+  });
+
   return { success: true, data: undefined };
 }

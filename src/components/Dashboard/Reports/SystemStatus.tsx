@@ -56,8 +56,7 @@ export default function SystemStatus() {
         } else {
           throw new Error(result.message || 'Failed to load system status');
         }
-      } catch (error) {
-        console.error('Error loading system status:', error);
+      } catch {
         setError('خطا در بارگذاری وضعیت سیستم');
         toast({
           title: 'خطا',

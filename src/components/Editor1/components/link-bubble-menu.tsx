@@ -50,7 +50,7 @@ const LinkBubble = ({ editor }: LinkBubbleProps) => {
   }, [editor, pos]);
 
   const _getReferenceClientRect = useCallback(() => {
-    const { view, state } = editor;
+    const { view } = editor;
     const {
       selection: { from, to, $to },
     } = view.state;

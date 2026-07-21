@@ -1157,7 +1157,7 @@ export const NewsletterSkeleton: FC = () => (
   </div>
 );
 
-export const ArchivePageSkeleton: FC<{ cols?: number }> = ({ cols = 4 }) => (
+export const ArchivePageSkeleton: FC<{ cols?: number }> = ({ cols: _cols = 4 }) => (
   <div className="nc-PageArchive max-w-full overflow-x-hidden">
     <div className="sticky top-0 z-20 bg-white/70 dark:bg-neutral-900/70 backdrop-blur-xl border-b border-neutral-200/50 dark:border-neutral-800/50">
       <div className="container">

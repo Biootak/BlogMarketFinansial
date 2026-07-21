@@ -11,6 +11,7 @@ import prisma from '@/lib/db';
 import { requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import type { FintechActionResult } from '@/types/types';
+import type { Prisma } from '@prisma/client';
 import { v4 as createId } from 'uuid';
 import { z } from 'zod';
 
@@ -63,7 +64,10 @@ export async function createBeneficiary(
   if (!parsed.success) {
     return {
       success: false,
-      error: { code: 'VALIDATION_ERROR', message: parsed.error.errors[0]?.message ?? 'خطای اعتبارسنجی' },
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: parsed.error.errors[0]?.message ?? 'خطای اعتبارسنجی',
+      },
     };
   }
 
@@ -82,6 +86,19 @@ export async function createBeneficiary(
   const row = await prisma.beneficiary.create({
     data: { id: createId(), userId: auth.user.id, name, identifier, note: note ?? null },
     select: { id: true, name: true, identifier: true, note: true, createdAt: true },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      id: createId(),
+      exchangeId: 'PLATFORM',
+      actorId: auth.user.id,
+      actorRole: 'USER',
+      action: 'BENEFICIARY_CREATED',
+      entityType: 'Beneficiary',
+      entityId: row.id,
+      meta: { name, identifier } as Prisma.InputJsonValue,
+    },
   });
 
   revalidateTag('beneficiaries');

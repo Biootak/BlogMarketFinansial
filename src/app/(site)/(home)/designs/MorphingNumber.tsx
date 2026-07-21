@@ -73,14 +73,15 @@ export default memo(function MorphingNumber({
     // اگه مقدار تغییر نکرده، کاری نکن
     if (value === targetRef.current) return;
 
+    const prevDisplay = fromRef.current;
     targetRef.current = value;
-    fromRef.current = display;
+    fromRef.current = prevDisplay;
     startTimeRef.current = null;
 
     // تشخیص trend
     if (showTrend) {
-      if (value > display) setTrend('up');
-      else if (value < display) setTrend('down');
+      if (value > prevDisplay) setTrend('up');
+      else if (value < prevDisplay) setTrend('down');
       else setTrend('flat');
     }
 
@@ -105,8 +106,7 @@ export default memo(function MorphingNumber({
         cancelAnimationFrame(frameRef.current);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, duration]);
+  }, [value, duration, showTrend]);
 
   const formatted = persian ? formatPersian(display, decimals) : formatEnglish(display, decimals);
   const trendClass =

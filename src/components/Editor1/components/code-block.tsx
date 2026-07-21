@@ -5,7 +5,7 @@ import { Icon } from '../../ui/icon';
 
 import { findLanguage } from '../lib/code-block-language-loader';
 
-let copiedTimeout: any;
+let copiedTimeout: ReturnType<typeof setTimeout> | undefined;
 
 const CodeBlock = ({ node: { attrs, textContent } }: NodeViewProps) => {
   const [copied, setCopied] = useState(false);

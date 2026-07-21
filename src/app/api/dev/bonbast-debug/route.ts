@@ -29,10 +29,10 @@ export async function GET(): Promise<NextResponse> {
     fetchedAt: result.fetchedAt,
     totalCodes: codes.length,
     allCodes: codes,
-    USD: result.rates['USD'] ?? null,
-    EUR: result.rates['EUR'] ?? null,
-    AED: result.rates['AED'] ?? null,
-    AFN: result.rates['AFN'] ?? null,
+    USD: result.rates.USD ?? null,
+    EUR: result.rates.EUR ?? null,
+    AED: result.rates.AED ?? null,
+    AFN: result.rates.AFN ?? null,
     allRates: result.rates,
   });
 }

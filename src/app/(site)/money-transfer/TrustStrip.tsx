@@ -80,48 +80,41 @@ function CountUpNumber({ target, duration = 1600 }: { target: number; duration?:
 }
 
 export default function TrustStrip(props: Props) {
-  const {
-    totalVolume = '۲۴۰M+',
-    currencies = 35,
-    countries = 50,
-    yearsActive = 8,
-    responseTimeMin = 15,
-    satisfactionPct = 98,
-  } = props;
+  const { totalVolume = '۲۴۰M+', currencies = 35, countries = 50, yearsActive = 8 } = props;
 
   return (
-    <div className="mt-trust" role="list">
-      <div className="mt-trust__cell mt-fade-up mt-fade-up-d1" role="listitem">
+    <ul className="mt-trust">
+      <li className="mt-trust__cell mt-fade-up mt-fade-up-d1">
         <span className="mt-trust__num">
           <span>{totalVolume}</span>
           <span className="mt-trust__num-suffix">$</span>
         </span>
         <span className="mt-trust__label">حجم تراکنش سالانه</span>
-      </div>
+      </li>
 
-      <div className="mt-trust__cell mt-fade-up mt-fade-up-d2" role="listitem">
+      <li className="mt-trust__cell mt-fade-up mt-fade-up-d2">
         <span className="mt-trust__num">
           <CountUpNumber target={currencies} />
           <span className="mt-trust__num-suffix">+</span>
         </span>
         <span className="mt-trust__label">ارز قابل پشتیبانی</span>
-      </div>
+      </li>
 
-      <div className="mt-trust__cell mt-fade-up mt-fade-up-d3" role="listitem">
+      <li className="mt-trust__cell mt-fade-up mt-fade-up-d3">
         <span className="mt-trust__num">
           <CountUpNumber target={countries} />
           <span className="mt-trust__num-suffix">+</span>
         </span>
         <span className="mt-trust__label">کشور مقصد</span>
-      </div>
+      </li>
 
-      <div className="mt-trust__cell mt-fade-up mt-fade-up-d4" role="listitem">
+      <li className="mt-trust__cell mt-fade-up mt-fade-up-d4">
         <span className="mt-trust__num">
           <CountUpNumber target={yearsActive} />
           <span className="mt-trust__num-suffix">سال</span>
         </span>
         <span className="mt-trust__label">سابقه فعالیت مستمر</span>
-      </div>
-    </div>
+      </li>
+    </ul>
   );
 }

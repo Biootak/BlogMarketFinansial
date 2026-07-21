@@ -67,13 +67,7 @@ async function sendTelegram(message: string): Promise<void> {
 export async function notifyDealStatusChange(deal: DealInfo, newStatus: string): Promise<void> {
   try {
     const label = DEAL_STATUS_FA[newStatus] ?? newStatus;
-    const msg =
-      `📊 <b>تغییر وضعیت معامله</b>\n` +
-      `🔑 کد: <code>${deal.trackingCode}</code>\n` +
-      `📌 وضعیت: ${label}\n` +
-      `👤 مشتری: ${deal.customerName}\n` +
-      `💱 ${deal.fromAmount} ${deal.fromCurrency} → ${deal.toAmount} ${deal.toCurrency}\n` +
-      `🏢 صرافی: ${deal.exchangeName}`;
+    const msg = `📊 <b>تغییر وضعیت معامله</b>\n🔑 کد: <code>${deal.trackingCode}</code>\n📌 وضعیت: ${label}\n👤 مشتری: ${deal.customerName}\n💱 ${deal.fromAmount} ${deal.fromCurrency} → ${deal.toAmount} ${deal.toCurrency}\n🏢 صرافی: ${deal.exchangeName}`;
     await sendTelegram(msg);
   } catch {
     // fire-and-forget — notification failure must never crash the caller
@@ -82,11 +76,7 @@ export async function notifyDealStatusChange(deal: DealInfo, newStatus: string):
 
 export async function notifyNewDeal(deal: DealInfo): Promise<void> {
   try {
-    const msg =
-      `🆕 <b>معامله جدید</b>\n` +
-      `🔑 <code>${deal.trackingCode}</code>\n` +
-      `👤 ${deal.customerName} — ${deal.customerPhone}\n` +
-      `💱 ${deal.fromAmount} ${deal.fromCurrency}`;
+    const msg = `🆕 <b>معامله جدید</b>\n🔑 <code>${deal.trackingCode}</code>\n👤 ${deal.customerName} — ${deal.customerPhone}\n💱 ${deal.fromAmount} ${deal.fromCurrency}`;
     await sendTelegram(msg);
   } catch {
     // fire-and-forget

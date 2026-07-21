@@ -31,11 +31,11 @@
   user-select: none;
   /* Spring-like transition: fast duration, spring easing */
   transition:
-    background   var(--ds-duration-fast) var(--ds-ease-spring),
+    background var(--ds-duration-fast) var(--ds-ease-spring),
     border-color var(--ds-duration-fast) var(--ds-ease-spring),
-    color        var(--ds-duration-fast) var(--ds-ease-spring),
-    transform    var(--ds-duration-fast) var(--ds-ease-spring),
-    box-shadow   var(--ds-duration-fast) var(--ds-ease-spring);
+    color var(--ds-duration-fast) var(--ds-ease-spring),
+    transform var(--ds-duration-fast) var(--ds-ease-spring),
+    box-shadow var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .btn:hover {

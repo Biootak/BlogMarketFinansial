@@ -8,7 +8,7 @@
  */
 
 import { type TransactionRow, getTransactions } from '@/actions/exchange-transactions';
-import { generateReportCsv, getExchangeReport, type ReportData } from '@/actions/reporting';
+import { type ReportData, generateReportCsv, getExchangeReport } from '@/actions/reporting';
 import { type Column, DataTable, EmptyState } from '@/components/Dashboard/primitives';
 import { BarChart3, Calendar, Download, Filter, Search, TrendingUp } from 'lucide-react';
 import { type CSSProperties, useCallback, useEffect, useState, useTransition } from 'react';
@@ -104,7 +104,12 @@ interface Props {
   initialReport: ReportData | null;
 }
 
-export default function ReportsWorkspace({ exchangeId, initialRows, initialTotal, initialReport }: Props) {
+export default function ReportsWorkspace({
+  exchangeId,
+  initialRows,
+  initialTotal,
+  initialReport,
+}: Props) {
   const [rows, setRows] = useState<TransactionRow[]>(initialRows);
   const [total, setTotal] = useState(initialTotal);
   const [kindFilter, setKindFilter] = useState('all');
@@ -127,7 +132,8 @@ export default function ReportsWorkspace({ exchangeId, initialRows, initialTotal
         kind: kindFilter !== 'all' ? kindFilter : undefined,
         fromDate: from,
         toDate: to,
-        limit: 200,
+        // حداکثر ۱۰۰ ردیف — برای داده‌های بیشتر از Export CSV استفاده کنید
+        limit: 100,
       });
       setRows(result.rows);
       setTotal(result.total);
@@ -279,13 +285,17 @@ export default function ReportsWorkspace({ exchangeId, initialRows, initialTotal
 
   return (
     <div className={s.root}>
-
       {/* Tabs */}
-      <div style={{
-        display: 'flex', gap: '4px', padding: '4px',
-        background: 'color-mix(in oklch, var(--at-fg) 6%, transparent)',
-        borderRadius: '10px', width: 'fit-content',
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: '4px',
+          padding: '4px',
+          background: 'color-mix(in oklch, var(--at-fg) 6%, transparent)',
+          borderRadius: '10px',
+          width: 'fit-content',
+        }}
+      >
         {(['transactions', 'pnl'] as const).map((tab) => (
           <button
             key={tab}
@@ -295,20 +305,36 @@ export default function ReportsWorkspace({ exchangeId, initialRows, initialTotal
               if (tab === 'pnl' && !report) handleLoadPnl();
             }}
             style={{
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
-              height: '32px', paddingInline: '14px', fontSize: '13px', fontWeight: 600,
-              border: 'none', borderRadius: '7px', cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              height: '32px',
+              paddingInline: '14px',
+              fontSize: '13px',
+              fontWeight: 600,
+              border: 'none',
+              borderRadius: '7px',
+              cursor: 'pointer',
               background: activeTab === tab ? 'var(--at-surface)' : 'transparent',
               color: activeTab === tab ? 'var(--at-fg)' : 'var(--at-fg-subtle)',
-              boxShadow: activeTab === tab ? '0 1px 3px color-mix(in oklch, var(--at-fg) 10%, transparent)' : 'none',
+              boxShadow:
+                activeTab === tab
+                  ? '0 1px 3px color-mix(in oklch, var(--at-fg) 10%, transparent)'
+                  : 'none',
               transition: 'all 0.15s',
             }}
             aria-pressed={activeTab === tab}
           >
             {tab === 'transactions' ? (
-              <><BarChart3 size={13} aria-hidden />تراکنش‌ها</>
+              <>
+                <BarChart3 size={13} aria-hidden />
+                تراکنش‌ها
+              </>
             ) : (
-              <><TrendingUp size={13} aria-hidden />P&L</>
+              <>
+                <TrendingUp size={13} aria-hidden />
+                P&L
+              </>
             )}
           </button>
         ))}
@@ -318,62 +344,116 @@ export default function ReportsWorkspace({ exchangeId, initialRows, initialTotal
       {activeTab === 'pnl' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {reportPending && (
-            <p style={{ color: 'var(--at-fg-subtle)', fontSize: 'var(--ds-text-sm)' }}>در حال بارگذاری…</p>
+            <p style={{ color: 'var(--at-fg-subtle)', fontSize: 'var(--ds-text-sm)' }}>
+              در حال بارگذاری…
+            </p>
           )}
           {report && (
             <>
               {/* Summary P&L */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '12px' }}>
                 {[
-                  { label: 'حجم کل', value: new Intl.NumberFormat('fa-IR', { notation: 'compact' }).format(report.totalVolume / 100) },
-                  { label: 'کارمزد', value: new Intl.NumberFormat('fa-IR', { notation: 'compact' }).format(report.totalFee / 100) },
-                  { label: 'معاملات', value: new Intl.NumberFormat('fa-IR').format(report.totalDeals) },
+                  {
+                    label: 'حجم کل',
+                    value: new Intl.NumberFormat('fa-IR', { notation: 'compact' }).format(
+                      report.totalVolume / 100,
+                    ),
+                  },
+                  {
+                    label: 'کارمزد',
+                    value: new Intl.NumberFormat('fa-IR', { notation: 'compact' }).format(
+                      report.totalFee / 100,
+                    ),
+                  },
+                  {
+                    label: 'معاملات',
+                    value: new Intl.NumberFormat('fa-IR').format(report.totalDeals),
+                  },
                 ].map((item) => (
                   <div key={item.label} className={s.summaryCard}>
-                    <span className={s.summaryValue} style={{ fontVariantNumeric: 'tabular-nums' }}>{item.value}</span>
+                    <span className={s.summaryValue} style={{ fontVariantNumeric: 'tabular-nums' }}>
+                      {item.value}
+                    </span>
                     <span className={s.summaryLabel}>{item.label}</span>
                   </div>
                 ))}
               </div>
 
               {/* P&L by currency */}
-              <div className={s.tableWrap} role="table" aria-label="P&L بر حسب ارز">
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px',
-                  padding: '8px 16px', background: 'color-mix(in oklch, var(--at-fg) 4%, transparent)',
-                  borderBottom: '1px solid var(--at-line)', fontSize: '11px', fontWeight: 600, color: 'var(--at-fg-subtle)' }} role="row">
-                  <span>ارز</span><span>حجم</span><span>کارمزد</span><span>تعداد</span>
-                </div>
-                {report.pnlByCurrency.map((row) => (
-                  <div key={row.currency} role="row"
-                    style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px',
-                      padding: '10px 16px', fontSize: 'var(--ds-text-sm)', borderBottom: '1px solid color-mix(in oklch, var(--at-line) 50%, transparent)' }}>
-                    <span style={{ fontWeight: 700 }}>{row.currency}</span>
-                    <span style={{ fontVariantNumeric: 'tabular-nums' }}>{new Intl.NumberFormat('fa-IR', { notation: 'compact' }).format(row.totalVolume / 100)}</span>
-                    <span style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--ds-success, #22c55e)', fontWeight: 600 }}>{new Intl.NumberFormat('fa-IR', { notation: 'compact' }).format(row.totalFee / 100)}</span>
-                    <span style={{ fontVariantNumeric: 'tabular-nums' }}>{new Intl.NumberFormat('fa-IR').format(row.dealCount)}</span>
-                  </div>
-                ))}
-              </div>
+              <table className={s.tableWrap} aria-label="P&L بر حسب ارز">
+                <thead>
+                  <tr className={s.tableHead}>
+                    <th scope="col">ارز</th>
+                    <th scope="col">حجم</th>
+                    <th scope="col">کارمزد</th>
+                    <th scope="col">تعداد</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {report.pnlByCurrency.map((row) => (
+                    <tr key={row.currency} className={s.tableRow}>
+                      <td style={{ fontWeight: 700 }}>{row.currency}</td>
+                      <td style={{ fontVariantNumeric: 'tabular-nums' }}>
+                        {new Intl.NumberFormat('fa-IR', { notation: 'compact' }).format(
+                          row.totalVolume / 100,
+                        )}
+                      </td>
+                      <td
+                        className={s.tdFee}
+                        style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}
+                      >
+                        {new Intl.NumberFormat('fa-IR', { notation: 'compact' }).format(
+                          row.totalFee / 100,
+                        )}
+                      </td>
+                      <td style={{ fontVariantNumeric: 'tabular-nums' }}>
+                        {new Intl.NumberFormat('fa-IR').format(row.dealCount)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
               {/* Top customers */}
               {report.topCustomers.length > 0 && (
                 <div>
-                  <h3 style={{ fontSize: 'var(--ds-text-sm)', fontWeight: 700, color: 'var(--at-fg)', margin: '0 0 8px 0' }}>
+                  <h3
+                    style={{
+                      fontSize: 'var(--ds-text-sm)',
+                      fontWeight: 700,
+                      color: 'var(--at-fg)',
+                      margin: '0 0 8px 0',
+                    }}
+                  >
                     بهترین مشتریان
                   </h3>
-                  <div className={s.tableWrap} role="table" aria-label="بهترین مشتریان">
-                    {report.topCustomers.map((c, i) => (
-                      <div key={c.customerId} role="row"
-                        style={{ display: 'flex', alignItems: 'center', gap: '12px',
-                          padding: '8px 16px', fontSize: 'var(--ds-text-sm)', borderBottom: '1px solid color-mix(in oklch, var(--at-line) 50%, transparent)' }}>
-                        <span style={{ color: 'var(--at-fg-subtle)', fontVariantNumeric: 'tabular-nums', minWidth: '20px', fontSize: '11px' }}>{i + 1}</span>
-                        <span style={{ flex: 1 }}>{c.fullName}</span>
-                        <span style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--at-fg-subtle)' }}>
-                          {new Intl.NumberFormat('fa-IR').format(c.dealCount)} معامله
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                  <table className={s.tableWrap} aria-label="بهترین مشتریان">
+                    <tbody>
+                      {report.topCustomers.map((c, i) => (
+                        <tr key={c.customerId} className={s.tableRow}>
+                          <td
+                            style={{
+                              color: 'var(--at-fg-subtle)',
+                              fontVariantNumeric: 'tabular-nums',
+                              width: '28px',
+                              fontSize: '11px',
+                            }}
+                          >
+                            {i + 1}
+                          </td>
+                          <td style={{ flex: 1 }}>{c.fullName}</td>
+                          <td
+                            style={{
+                              fontVariantNumeric: 'tabular-nums',
+                              color: 'var(--at-fg-subtle)',
+                            }}
+                          >
+                            {new Intl.NumberFormat('fa-IR').format(c.dealCount)} معامله
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </>
@@ -382,134 +462,140 @@ export default function ReportsWorkspace({ exchangeId, initialRows, initialTotal
       )}
 
       {/* ── Transactions Tab ──────────────────────────────── */}
-      {activeTab === 'transactions' && <>
+      {activeTab === 'transactions' && (
+        <>
+          {/* خلاصه آماری */}
+          <div className={s.summaryGrid}>
+            <div className={s.summaryCard}>
+              <span className={s.summaryValue} style={{ fontVariantNumeric: 'tabular-nums' }}>
+                {new Intl.NumberFormat('fa-IR').format(total)}
+              </span>
+              <span className={s.summaryLabel}>کل تراکنش‌ها</span>
+            </div>
+            <div className={s.summaryCard}>
+              <span className={s.summaryValue} style={{ fontVariantNumeric: 'tabular-nums' }}>
+                {new Intl.NumberFormat('fa-IR').format(summary.completedCount)}
+              </span>
+              <span className={s.summaryLabel}>تکمیل‌شده</span>
+            </div>
+            <div className={s.summaryCard}>
+              <span className={s.summaryValue} style={{ fontVariantNumeric: 'tabular-nums' }}>
+                {new Intl.NumberFormat('fa-IR', { notation: 'compact' }).format(
+                  summary.totalVolumeAfn,
+                )}
+              </span>
+              <span className={s.summaryLabel}>حجم (افغانی)</span>
+            </div>
+            <div className={s.summaryCard}>
+              <span className={s.summaryValue} style={{ fontVariantNumeric: 'tabular-nums' }}>
+                {new Intl.NumberFormat('fa-IR').format(summary.byKind.EXCHANGE ?? 0)}
+              </span>
+              <span className={s.summaryLabel}>صرافی</span>
+            </div>
+          </div>
 
-      {/* خلاصه آماری */}
-      <div className={s.summaryGrid}>
-        <div className={s.summaryCard}>
-          <span className={s.summaryValue} style={{ fontVariantNumeric: 'tabular-nums' }}>
-            {new Intl.NumberFormat('fa-IR').format(total)}
-          </span>
-          <span className={s.summaryLabel}>کل تراکنش‌ها</span>
-        </div>
-        <div className={s.summaryCard}>
-          <span className={s.summaryValue} style={{ fontVariantNumeric: 'tabular-nums' }}>
-            {new Intl.NumberFormat('fa-IR').format(summary.completedCount)}
-          </span>
-          <span className={s.summaryLabel}>تکمیل‌شده</span>
-        </div>
-        <div className={s.summaryCard}>
-          <span className={s.summaryValue} style={{ fontVariantNumeric: 'tabular-nums' }}>
-            {new Intl.NumberFormat('fa-IR', { notation: 'compact' }).format(summary.totalVolumeAfn)}
-          </span>
-          <span className={s.summaryLabel}>حجم (افغانی)</span>
-        </div>
-        <div className={s.summaryCard}>
-          <span className={s.summaryValue} style={{ fontVariantNumeric: 'tabular-nums' }}>
-            {new Intl.NumberFormat('fa-IR').format(summary.byKind.EXCHANGE ?? 0)}
-          </span>
-          <span className={s.summaryLabel}>صرافی</span>
-        </div>
-      </div>
+          {/* نوار فیلتر */}
+          <div className={s.filterBar}>
+            <div className={s.filterRow}>
+              <Filter
+                className="w-4 h-4"
+                style={{ color: 'var(--at-fg-subtle)', flexShrink: 0 }}
+                aria-hidden
+              />
+              {['all', ...Object.keys(KIND_FA)].map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  className={`${s.filterBtn} ${kindFilter === k ? s.filterBtnActive : ''}`}
+                  onClick={() => setKindFilter(k)}
+                >
+                  {k === 'all' ? 'همه انواع' : KIND_FA[k]}
+                </button>
+              ))}
+            </div>
 
-      {/* نوار فیلتر */}
-      <div className={s.filterBar}>
-        <div className={s.filterRow}>
-          <Filter
-            className="w-4 h-4"
-            style={{ color: 'var(--at-fg-subtle)', flexShrink: 0 }}
-            aria-hidden
-          />
-          {['all', ...Object.keys(KIND_FA)].map((k) => (
-            <button
-              key={k}
-              type="button"
-              className={`${s.filterBtn} ${kindFilter === k ? s.filterBtnActive : ''}`}
-              onClick={() => setKindFilter(k)}
-            >
-              {k === 'all' ? 'همه انواع' : KIND_FA[k]}
-            </button>
-          ))}
-        </div>
+            <div className={s.filterDateRow}>
+              <div className={s.dateField}>
+                <label className={s.dateLabel} htmlFor="rpt-from">
+                  <Calendar className="w-3.5 h-3.5" aria-hidden />
+                  از تاریخ
+                </label>
+                <input
+                  id="rpt-from"
+                  style={{ ...inp, direction: 'ltr' }}
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                  placeholder="۱۴۰۴/۰۱/۰۱"
+                  aria-label="از تاریخ (شمسی)"
+                />
+              </div>
+              <div className={s.dateField}>
+                <label className={s.dateLabel} htmlFor="rpt-to">
+                  <Calendar className="w-3.5 h-3.5" aria-hidden />
+                  تا تاریخ
+                </label>
+                <input
+                  id="rpt-to"
+                  style={{ ...inp, direction: 'ltr' }}
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                  placeholder="۱۴۰۴/۱۲/۲۹"
+                  aria-label="تا تاریخ (شمسی)"
+                />
+              </div>
+              <div className={s.searchWrap}>
+                <Search className={s.searchIcon} aria-hidden />
+                <input
+                  className={s.searchInput}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="جستجو مشتری / یادداشت…"
+                  aria-label="جستجو"
+                />
+              </div>
+              <button
+                type="button"
+                className={s.exportBtn}
+                onClick={handleExport}
+                aria-label="دانلود گزارش CSV"
+              >
+                <Download className="w-4 h-4" aria-hidden />
+                <span>CSV</span>
+              </button>
+            </div>
+          </div>
 
-        <div className={s.filterDateRow}>
-          <div className={s.dateField}>
-            <label className={s.dateLabel} htmlFor="rpt-from">
-              <Calendar className="w-3.5 h-3.5" aria-hidden />
-              از تاریخ
-            </label>
-            <input
-              id="rpt-from"
-              style={{ ...inp, direction: 'ltr' }}
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-              placeholder="۱۴۰۴/۰۱/۰۱"
-              aria-label="از تاریخ (شمسی)"
+          {/* جدول */}
+          <div className={s.tableWrap} aria-busy={isPending}>
+            {isPending ? (
+              <div className={s.loadingOverlay}>
+                <span className={s.loadingDot} />
+                <span className={s.loadingDot} />
+                <span className={s.loadingDot} />
+              </div>
+            ) : null}
+            <DataTable
+              columns={columns}
+              rows={filtered}
+              rowKey={(r) => r.id}
+              ariaLabel="گزارش تراکنش‌ها"
+              empty={
+                <EmptyState
+                  title="تراکنشی یافت نشد"
+                  description="بازه تاریخ یا فیلتر را تغییر دهید."
+                />
+              }
             />
           </div>
-          <div className={s.dateField}>
-            <label className={s.dateLabel} htmlFor="rpt-to">
-              <Calendar className="w-3.5 h-3.5" aria-hidden />
-              تا تاریخ
-            </label>
-            <input
-              id="rpt-to"
-              style={{ ...inp, direction: 'ltr' }}
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-              placeholder="۱۴۰۴/۱۲/۲۹"
-              aria-label="تا تاریخ (شمسی)"
-            />
-          </div>
-          <div className={s.searchWrap}>
-            <Search className={s.searchIcon} aria-hidden />
-            <input
-              className={s.searchInput}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="جستجو مشتری / یادداشت…"
-              aria-label="جستجو"
-            />
-          </div>
-          <button
-            type="button"
-            className={s.exportBtn}
-            onClick={handleExport}
-            aria-label="دانلود گزارش CSV"
-          >
-            <Download className="w-4 h-4" aria-hidden />
-            <span>CSV</span>
-          </button>
-        </div>
-      </div>
 
-      {/* جدول */}
-      <div className={s.tableWrap} aria-busy={isPending}>
-        {isPending ? (
-          <div className={s.loadingOverlay}>
-            <span className={s.loadingDot} />
-            <span className={s.loadingDot} />
-            <span className={s.loadingDot} />
-          </div>
-        ) : null}
-        <DataTable
-          columns={columns}
-          rows={filtered}
-          rowKey={(r) => r.id}
-          ariaLabel="گزارش تراکنش‌ها"
-          empty={
-            <EmptyState title="تراکنشی یافت نشد" description="بازه تاریخ یا فیلتر را تغییر دهید." />
-          }
-        />
-      </div>
-
-      {filtered.length > 0 && (
-        <p className={s.footer}>
-          نمایش {new Intl.NumberFormat('fa-IR').format(filtered.length)} از{' '}
-          {new Intl.NumberFormat('fa-IR').format(total)} تراکنش
-        </p>
+          {filtered.length > 0 && (
+            <p className={s.footer}>
+              نمایش {new Intl.NumberFormat('fa-IR').format(filtered.length)} از{' '}
+              {new Intl.NumberFormat('fa-IR').format(total)} تراکنش
+            </p>
+          )}
+        </>
       )}
-      </>}
     </div>
   );
 }

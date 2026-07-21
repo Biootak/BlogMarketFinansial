@@ -180,17 +180,17 @@ const AuthorProfileHero: React.FC<AuthorProfileHeroProps> = ({
       </div>
 
       {/* ── 4-Column Stat Strip ───────────────────────────────── */}
-      <div className={styles.statsStrip} role="list" aria-label="آمار نویسنده">
+      <ul className={styles.statsStrip} aria-label="آمار نویسنده">
         {stats.map((stat) => (
-          <div key={stat.label} role="listitem" className={styles.statCell}>
+          <li key={stat.label} className={styles.statCell}>
             <span aria-hidden className={styles.statPip} />
             <span className={cn(styles.statValue, 'author-num')}>
               {toPersianNumber(stat.value)}
             </span>
             <span className={styles.statLabel}>{stat.label}</span>
-          </div>
+          </li>
         ))}
-      </div>
+      </ul>
     </section>
   );
 };

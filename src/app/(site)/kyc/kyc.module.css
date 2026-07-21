@@ -1,6 +1,4 @@
-﻿/* kyc.module.css â€” Premium KYC wizard design */
-
-.root {
+﻿/* kyc.module.css â€” Premium KYC wizard design */ .root {
   min-height: 100dvh;
   padding-block: var(--ds-space-10) var(--ds-space-14);
   padding-inline: var(--ds-space-4);
@@ -13,9 +11,16 @@
   position: fixed;
   inset: 0;
   z-index: -1;
-  background:
-    radial-gradient(ellipse 55% 35% at 80% 10%, color-mix(in oklch, var(--ds-primary) 7%, transparent), transparent 70%),
-    radial-gradient(ellipse 40% 30% at 10% 90%, color-mix(in oklch, var(--ds-primary) 4%, transparent), transparent 70%);
+  background: radial-gradient(
+      ellipse 55% 35% at 80% 10%,
+      color-mix(in oklch, var(--ds-primary) 7%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 40% 30% at 10% 90%,
+      color-mix(in oklch, var(--ds-primary) 4%, transparent),
+      transparent 70%
+    );
   pointer-events: none;
 }
 
@@ -81,7 +86,7 @@
 }
 
 .stepItem::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block-start: 20px;
   inset-inline-start: calc(50% + 20px);
@@ -90,7 +95,9 @@
   background: var(--ds-border);
   z-index: 0;
 }
-.stepItem:last-child::before { display: none; }
+.stepItem:last-child::before {
+  display: none;
+}
 .stepItemDone::before,
 .stepItemActive::before {
   background: var(--ds-primary);
@@ -133,8 +140,12 @@
   white-space: nowrap;
 }
 
-.stepItemActive .stepLabel { color: var(--ds-text-2); }
-.stepItemDone .stepLabel { color: var(--ds-text-3); }
+.stepItemActive .stepLabel {
+  color: var(--ds-text-2);
+}
+.stepItemDone .stepLabel {
+  color: var(--ds-text-3);
+}
 
 /* â”€â”€â”€ Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .card {
@@ -148,8 +159,14 @@
   animation: cardIn 0.3s ease both;
 }
 @keyframes cardIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .cardTitle {
@@ -211,7 +228,9 @@
 }
 
 @media (max-width: 420px) {
-  .formGrid { grid-template-columns: 1fr; }
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .field {
@@ -224,7 +243,9 @@
   grid-column: span 2;
 }
 @media (max-width: 420px) {
-  .fieldFull { grid-column: span 1; }
+  .fieldFull {
+    grid-column: span 1;
+  }
 }
 
 .label {
@@ -280,7 +301,8 @@
   position: relative;
   min-height: 100px;
 }
-.uploadArea:hover, .uploadAreaActive {
+.uploadArea:hover,
+.uploadAreaActive {
   border-color: var(--ds-primary);
   background: color-mix(in oklch, var(--ds-primary) 4%, transparent);
 }
@@ -294,7 +316,9 @@
   height: 100%;
 }
 
-.uploadIcon { color: var(--ds-text-3); }
+.uploadIcon {
+  color: var(--ds-text-3);
+}
 .uploadText {
   font-size: 12px;
   color: var(--ds-text-3);
@@ -352,10 +376,20 @@
   cursor: pointer;
   transition: opacity 0.15s, transform 0.15s;
 }
-.primaryBtn:hover:not(:disabled) { opacity: 0.88; }
-.primaryBtn:active:not(:disabled) { transform: scale(0.97); }
-.primaryBtn:disabled { opacity: 0.5; cursor: not-allowed; }
-.primaryBtn:focus-visible { outline: 2px dashed var(--ds-primary); outline-offset: 3px; }
+.primaryBtn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+.primaryBtn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.primaryBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.primaryBtn:focus-visible {
+  outline: 2px dashed var(--ds-primary);
+  outline-offset: 3px;
+}
 
 .backBtn {
   height: 44px;
@@ -369,12 +403,18 @@
   cursor: pointer;
   transition: opacity 0.12s;
 }
-.backBtn:hover { opacity: 0.75; }
+.backBtn:hover {
+  opacity: 0.75;
+}
 
 .spin {
   animation: spin 0.7s linear infinite;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* Features list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .featureList {
@@ -420,5 +460,9 @@
   transition: opacity 0.15s, transform 0.15s;
   margin-block-start: var(--ds-space-2);
 }
-.startBtn:hover { opacity: 0.88; }
-.startBtn:active { transform: scale(0.98); }
+.startBtn:hover {
+  opacity: 0.88;
+}
+.startBtn:active {
+  transform: scale(0.98);
+}

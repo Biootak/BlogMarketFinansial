@@ -236,13 +236,23 @@ export default function AdvertisementsPage() {
     setEditingAd(ad);
     setIsDialogOpen(true);
 
-    const validateCustomDimensions = (dimensions: any): CustomAdDimensions | undefined => {
+    const validateCustomDimensions = (dimensions: unknown): CustomAdDimensions | undefined => {
       if (typeof dimensions === 'object' && dimensions !== null) {
-        const { width, height, aspectRatio } = dimensions;
+        const d = dimensions as Record<string, unknown>;
         return {
-          width: width ?? undefined,
-          height: height ?? undefined,
-          aspectRatio: aspectRatio ?? undefined,
+          width:
+            typeof d.width === 'number'
+              ? String(d.width)
+              : typeof d.width === 'string'
+                ? d.width
+                : undefined,
+          height:
+            typeof d.height === 'number'
+              ? String(d.height)
+              : typeof d.height === 'string'
+                ? d.height
+                : undefined,
+          aspectRatio: typeof d.aspectRatio === 'string' ? d.aspectRatio : undefined,
         };
       }
       return undefined;
@@ -260,7 +270,7 @@ export default function AdvertisementsPage() {
       position: ad.position,
       customPosition: ad.customPosition ?? undefined,
       order: Number(ad.order),
-      customDimensions: validateCustomDimensions(ad.customDimensions),
+      customDimensions: validateCustomDimensions(ad.customDimensions ?? undefined),
     });
   };
 
@@ -313,7 +323,11 @@ export default function AdvertisementsPage() {
               </div>
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                  <button onClick={openNewAdDialog} className="at-btn at-btn--primary">
+                  <button
+                    type="button"
+                    onClick={openNewAdDialog}
+                    className="at-btn at-btn--primary"
+                  >
                     <HiOutlinePlus className="size-4" />
                     <span>افزودن تبلیغ</span>
                   </button>
@@ -544,7 +558,10 @@ export default function AdvertisementsPage() {
 function AdvertisementForm({
   form,
   onSubmit,
-}: { form: any; onSubmit: (data: AdvertisementFormData) => Promise<void> }) {
+}: {
+  form: ReturnType<typeof import('react-hook-form').useForm<AdvertisementFormData>>;
+  onSubmit: (data: AdvertisementFormData) => Promise<void>;
+}) {
   const [activeTab, setActiveTab] = useState<'content' | 'placement' | 'schedule'>('content');
   const watchedValues = form.watch();
 

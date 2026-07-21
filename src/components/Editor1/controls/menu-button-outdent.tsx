@@ -13,7 +13,9 @@ interface MenuButtonOutdentProps {
 
 const MenuButtonOutdent = ({ editor }: MenuButtonOutdentProps) => {
   // داخل list باشیم، StarterKit ساختار لیست را با Shift+Tab مدیریت می‌کند.
-  const inList = useActive(editor, 'listItem') || useActive(editor, 'taskItem');
+  const inListItem = useActive(editor, 'listItem');
+  const inTaskItem = useActive(editor, 'taskItem');
+  const inList = inListItem || inTaskItem;
   const onClick = useCallback(
     (e: { stopPropagation: () => void }) => {
       e.stopPropagation();

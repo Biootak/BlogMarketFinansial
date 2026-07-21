@@ -42,7 +42,7 @@ import Image from './image-resize';
 import { Indent } from './indent';
 import { KeyboardShortcuts } from './keyboard-shortcuts';
 import Link from './link';
-import { Math } from './math';
+import { Math as MathExtension } from './math';
 import { Mention, mentionSuggestion } from './mention';
 import { PageBreak } from './page-break';
 import { Paragraph } from './paragraph';
@@ -106,7 +106,7 @@ export const extensions = [
   Superscript,
   Subscript,
   ...detailsExtensions,
-  Math,
+  MathExtension,
   Mention.configure({
     suggestion: mentionSuggestion,
   }),

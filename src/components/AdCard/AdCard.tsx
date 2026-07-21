@@ -50,17 +50,6 @@ interface AdCardProps {
 /*  Helpers                                                                   */
 /* -------------------------------------------------------------------------- */
 
-function getSizeForVariant(variant: AdCardVariant): AdSize {
-  switch (variant) {
-    case 'showcase':
-      return 'LARGE';
-    case 'compact':
-      return 'SMALL';
-    default:
-      return 'MEDIUM';
-  }
-}
-
 function getRatioForAd(ad: Advertisement, variant: AdCardVariant): string {
   // اگر custom dimensions داره، استفاده کن
   if (ad.size === 'CUSTOM' && ad.customDimensions) {

@@ -9,22 +9,18 @@ export interface SwitchDarkModeProps {
 }
 
 const DarkModeSwitch = ({ className }: SwitchDarkModeProps) => {
-  const { _toogleDarkMode, isDarkMode } = useThemeMode();
+  const { toggleDarkMode, isDarkMode } = useThemeMode();
 
   return (
     <div
       className={`
         group flex items-center justify-between p-2.5
-        rounded-xl cursor-pointer
+        rounded-xl
         hover:bg-gradient-to-l hover:from-neutral-50/80 hover:to-neutral-100/50
         dark:hover:from-neutral-800/60 dark:hover:to-neutral-700/40
         transition-all duration-300 ease-out
         ${className || ''}
       `}
-      onClick={_toogleDarkMode}
-      onKeyDown={(e) => e.key === 'Enter' && _toogleDarkMode()}
-      role="button"
-      tabIndex={0}
     >
       <div className="flex items-center gap-3">
         <span
@@ -48,7 +44,7 @@ const DarkModeSwitch = ({ className }: SwitchDarkModeProps) => {
         <span className="sr-only">فعال‌سازی حالت تاریک</span>
         <Switch
           checked={isDarkMode}
-          onChange={_toogleDarkMode}
+          onChange={toggleDarkMode}
           className={`
             relative inline-flex h-6 w-11 shrink-0 cursor-pointer
             rounded-full border-2 border-transparent

@@ -210,6 +210,16 @@
   border: 1px solid var(--ds-border);
   border-radius: var(--ds-radius-lg);
   overflow: hidden;
+  border-spacing: 0;
+  border-collapse: collapse;
+  width: 100%;
+  display: block;
+}
+
+/* Allow thead/tbody to participate in block layout */
+.tableWrap thead,
+.tableWrap tbody {
+  display: block;
 }
 
 .tableHead {
@@ -226,6 +236,15 @@
   gap: var(--ds-space-3);
 }
 
+/* Reset th styles inside tableHead */
+.tableHead th {
+  padding: 0;
+  font: inherit;
+  text-align: inherit;
+  background: inherit;
+  border: none;
+}
+
 .tableRow {
   display: grid;
   grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1.5fr 1.5fr;
@@ -235,6 +254,12 @@
   gap: var(--ds-space-3);
   font-size: var(--ds-text-sm);
   transition: background 0.1s;
+}
+
+/* Reset td styles inside tableRow */
+.tableRow td {
+  padding: 0;
+  border: none;
 }
 .tableRow:last-child {
   border-bottom: none;

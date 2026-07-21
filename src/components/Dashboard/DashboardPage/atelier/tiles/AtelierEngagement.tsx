@@ -297,8 +297,6 @@ interface EngagementRateGaugeProps {
   /** Stroke width in px. */
   stroke?: number;
   gradId: string;
-  /** Delta in percentage points for the badge. */
-  delta?: number;
 }
 
 function EngagementRateGauge({
@@ -308,7 +306,6 @@ function EngagementRateGauge({
   size = 96,
   stroke = 7,
   gradId,
-  delta = 0,
 }: EngagementRateGaugeProps) {
   const r = (size - stroke) / 2 - 4;
   const c = 2 * Math.PI * r;
@@ -637,11 +634,7 @@ export default function AtelierEngagement({ stats }: AtelierEngagementProps) {
           </div>
 
           <div className="at-eng-rate-card__viz">
-            <EngagementRateGauge
-              value={engRate}
-              gradId={`at-rate-${gradId}`}
-              delta={Math.sign(engDeltaPp)}
-            />
+            <EngagementRateGauge value={engRate} gradId={`at-rate-${gradId}`} />
           </div>
 
           <div className="at-eng-rate-card__body">

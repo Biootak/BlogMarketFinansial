@@ -213,6 +213,8 @@
 }
 
 .missionText {
+  /* placeholder for future styling */
+  display: block;
 }
 
 .missionEyebrow {

@@ -67,11 +67,7 @@ export default function ExchangeRatesHeader({ total, auto, manual, lastSyncAt }:
       </div>
 
       {/* StatCards grid */}
-      <dl
-        className="grid grid-cols-1 sm:grid-cols-3"
-        style={{ gap: 'var(--ds-space-4)' }}
-        role="list"
-      >
+      <dl className="grid grid-cols-1 sm:grid-cols-3" style={{ gap: 'var(--ds-space-4)' }}>
         <StatCard label="کل نرخ‌ها" value={total.toLocaleString('fa-IR')} accent="brand" />
         <StatCard label="خودکار (TGJU)" value={auto.toLocaleString('fa-IR')} accent="emerald" />
         <StatCard label="دستی" value={manual.toLocaleString('fa-IR')} accent="amber" />
@@ -98,7 +94,6 @@ function StatCard({
 
   return (
     <div
-      role="listitem"
       className="ds-stat-card flex flex-col gap-1.5 backdrop-blur-sm transition-shadow"
       style={{
         background: 'var(--ds-surface)',

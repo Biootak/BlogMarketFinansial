@@ -126,7 +126,7 @@ const TrackingForm: FC = () => {
 
       {/* Result */}
       {result && (
-        <div className={s.resultWrap} role="region" aria-live="polite" aria-label="نتیجه جستجو">
+        <section className={s.resultWrap} aria-live="polite" aria-label="نتیجه جستجو">
           {result.success && result.data ? (
             <div className={s.resultCard}>
               {/* Status Badge */}
@@ -260,7 +260,7 @@ const TrackingForm: FC = () => {
               <span>{result.message}</span>
             </div>
           )}
-        </div>
+        </section>
       )}
     </div>
   );

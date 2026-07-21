@@ -79,7 +79,7 @@ function TickerFn({
         className={cn('ticker-track flex w-max', isRTL ? 'ticker-rtl' : 'ticker-ltr')}
         style={{ gap, willChange: 'transform' }}
       >
-        {Array.from({ length: repeat }).map((_, i) => (
+        {Array.from({ length: repeat }, (_, i) => (
           <div
             key={i}
             className="flex shrink-0"

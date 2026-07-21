@@ -65,10 +65,10 @@ const features: Feature[] = [
 export default function FeatureList() {
   return (
     <div className="mt-features">
-      {features.map((feature, i) => {
+      {features.map((feature) => {
         const Icon = feature.icon;
         return (
-          <div key={i} className="mt-feature">
+          <div key={feature.title} className="mt-feature">
             <span className={`mt-feature__icon${feature.variant}`} aria-hidden>
               <Icon className="w-4 h-4" strokeWidth={2} />
             </span>

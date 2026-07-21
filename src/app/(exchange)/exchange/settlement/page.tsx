@@ -1,11 +1,12 @@
 /**
  * /exchange/settlement — تسویه‌حساب صرافی
  *
- * صراف دوره‌های تسویه، حجم معاملات، کارمزد پلتفرم و درآمد خالص خود را می‌بیند.
- * OWNER/MANAGER می‌توانند وضعیت را تأیید کنند.
+ * Server Component: داده‌ها اینجا fetch می‌شوند و به SettlementWorkspace پاس می‌شوند.
+ * SettlementWorkspace فقط filter client-side انجام می‌دهد — بدون re-fetch.
  */
 
 import { getExchangeForUser } from '@/actions/exchanges';
+import { getMyExchangeSettlements } from '@/actions/settlement';
 import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
@@ -21,6 +22,9 @@ export default async function SettlementPage() {
   const membership = await getExchangeForUser(session.user.id);
   if (!membership) redirect('/dashboard');
 
+  // limit=500: settlement ماهانه است — 500 دوره ≈ ۴۰ سال، در عمل هرگز truncate نمی‌شود
+  const initialRows = await getMyExchangeSettlements(membership.exchange.id, { limit: 500 });
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
       <PageHeader
@@ -28,10 +32,7 @@ export default async function SettlementPage() {
         description="دوره‌های تسویه، حجم معاملات و کارمزد پلتفرم."
         breadcrumb={[{ label: 'پنل صرافی' }, { label: 'تسویه‌حساب' }]}
       />
-      <SettlementWorkspace
-        exchangeId={membership.exchange.id}
-        staffRole={membership.staffRole}
-      />
+      <SettlementWorkspace initialRows={initialRows} staffRole={membership.staffRole} />
     </div>
   );
 }

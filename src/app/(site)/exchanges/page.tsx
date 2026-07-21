@@ -5,11 +5,11 @@
  * نمایش همه صرافی‌های active با نرخ‌های فعال‌شان.
  */
 
-import type { Metadata } from 'next';
-import prisma from '@/lib/db';
-import ExchangeQuotesBoard from '@/components/MoneyTransfer/ExchangeQuotesBoard';
 import ScrollReveal from '@/app/(site)/money-transfer/ScrollReveal';
+import ExchangeQuotesBoard from '@/components/MoneyTransfer/ExchangeQuotesBoard';
+import prisma from '@/lib/db';
 import { Building2, TrendingUp, Users, Zap } from 'lucide-react';
+import type { Metadata } from 'next';
 import s from './exchanges.module.css';
 
 export const revalidate = 60;
@@ -74,9 +74,7 @@ export default async function ExchangesPage() {
             صرافی‌های تأییدشده
           </div>
           <h1 className={s.headline}>مقایسه نرخ صرافی‌ها</h1>
-          <p className={s.sub}>
-            نرخ‌های خرید و فروش ارز از صرافی‌های تأییدشده — به‌روز هر ۶۰ ثانیه
-          </p>
+          <p className={s.sub}>نرخ‌های خرید و فروش ارز از صرافی‌های تأییدشده — به‌روز هر ۶۰ ثانیه</p>
 
           {/* Stats strip */}
           <div className={s.stats} aria-label="آمار سریع">
@@ -137,7 +135,7 @@ export default async function ExchangesPage() {
               </div>
             </ScrollReveal>
 
-            <div className={s.grid} role="list" aria-label="لیست صرافی‌ها">
+            <div className={s.grid} aria-label="لیست صرافی‌ها">
               {exchanges.map((exchange, i) => {
                 const activeQuotes = exchange.ExchangeRateQuote;
                 const usdQuote = activeQuotes.find((q) => q.currencyCode === 'USD');
@@ -147,19 +145,14 @@ export default async function ExchangesPage() {
                   <ScrollReveal key={exchange.id} delay={i * 60}>
                     <article
                       className={s.exchangeCard}
-                      role="listitem"
                       aria-label={exchange.displayName ?? exchange.name}
                       style={{ '--i': i } as React.CSSProperties}
                     >
                       {/* Card header */}
                       <div className={s.cardHeader}>
                         <div className={s.cardInfo}>
-                          <h3 className={s.cardName}>
-                            {exchange.displayName ?? exchange.name}
-                          </h3>
-                          {exchange.city && (
-                            <span className={s.cardCity}>{exchange.city}</span>
-                          )}
+                          <h3 className={s.cardName}>{exchange.displayName ?? exchange.name}</h3>
+                          {exchange.city && <span className={s.cardCity}>{exchange.city}</span>}
                         </div>
                         {activeQuotes.length > 0 && (
                           <div className={s.cardActiveBadge}>
@@ -207,17 +200,13 @@ export default async function ExchangesPage() {
                             </span>
                           ))}
                           {uniqueCurrencies.length > 6 && (
-                            <span className={s.currencyMore}>
-                              +{uniqueCurrencies.length - 6}
-                            </span>
+                            <span className={s.currencyMore}>+{uniqueCurrencies.length - 6}</span>
                           )}
                         </div>
                       )}
 
                       {/* No quotes message */}
-                      {activeQuotes.length === 0 && (
-                        <p className={s.noRates}>قیمتی ثبت نشده است</p>
-                      )}
+                      {activeQuotes.length === 0 && <p className={s.noRates}>قیمتی ثبت نشده است</p>}
                     </article>
                   </ScrollReveal>
                 );
@@ -231,13 +220,13 @@ export default async function ExchangesPage() {
       {exchanges.length === 0 && (
         <section className={s.section}>
           <div className={s.sectionInner}>
-            <div className={s.emptyState} role="status">
+            <output className={s.emptyState}>
               <Building2 size={40} className={s.emptyIcon} aria-hidden />
               <h2 className={s.emptyTitle}>صرافی فعالی وجود ندارد</h2>
               <p className={s.emptySub}>
                 در حال حاضر صرافی فعالی در سیستم ثبت نشده است. بعداً مراجعه کنید.
               </p>
-            </div>
+            </output>
           </div>
         </section>
       )}

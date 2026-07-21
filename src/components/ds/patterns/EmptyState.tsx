@@ -23,7 +23,7 @@ export default function EmptyState({
   className = '',
 }: EmptyStateProps) {
   return (
-    <div className={`ds-empty ${className}`.trim()} role="status">
+    <output className={`ds-empty ${className}`.trim()}>
       <div className="ds-empty__icon" aria-hidden>
         {icon ?? <Inbox className="w-12 h-12" strokeWidth={1.5} />}
       </div>
@@ -34,6 +34,6 @@ export default function EmptyState({
           {action.label}
         </Link>
       ) : null}
-    </div>
+    </output>
   );
 }

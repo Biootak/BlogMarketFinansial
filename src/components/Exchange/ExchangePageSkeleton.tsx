@@ -70,13 +70,15 @@ export default function ExchangePageSkeleton({
           {/* header row */}
           <Skeleton className="h-11 rounded-none" style={{ borderRadius: 0 }} />
           {/* body rows */}
-          {Array.from({ length: tableRows }, (_, i) => (
-            <Skeleton
-              key={i}
-              className="h-14 rounded-none"
-              style={{ opacity: 1 - i * 0.1, borderRadius: 0 }}
-            />
-          ))}
+          {Array.from({ length: tableRows }).map((_, i) => {
+            return (
+              <Skeleton
+                key={i}
+                className="h-14 rounded-none"
+                style={{ opacity: 1 - i * 0.1, borderRadius: 0 }}
+              />
+            );
+          })}
         </div>
       </div>
     </div>

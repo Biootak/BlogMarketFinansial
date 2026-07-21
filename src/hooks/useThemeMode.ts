@@ -4,7 +4,7 @@ import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 
 export const useThemeMode = () => {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export const useThemeMode = () => {
     setTheme('light');
   };
 
-  const _toogleDarkMode = () => {
+  const toggleDarkMode = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
   };
 
@@ -29,6 +29,6 @@ export const useThemeMode = () => {
     isDarkMode,
     toDark,
     toLight,
-    _toogleDarkMode,
+    toggleDarkMode,
   };
 };

@@ -61,6 +61,22 @@ export default function PostGrid({
   const [page, setPage] = useState(1);
   const reduceMotion = useReducedMotion();
 
+  // topRef & goToPage — باید قبل از early return باشند (Rules of Hooks)
+  const topRef = useRef<HTMLDivElement>(null);
+  const totalPagesForCallback = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
+  const goToPage = useCallback(
+    (newPage: number) => {
+      if (newPage < 1 || newPage > totalPagesForCallback) return;
+      setPage(newPage);
+      if (!reduceMotion) {
+        topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        topRef.current?.scrollIntoView({ block: 'start' });
+      }
+    },
+    [totalPagesForCallback, reduceMotion],
+  );
+
   // وقتی posts عوض می‌شن (تغییر دسته)، برگرد صفحه ۱
   useEffect(() => {
     setPage(1);
@@ -130,25 +146,10 @@ export default function PostGrid({
   }
 
   // ---------- paginated: grid 3col با page size 24 ----------
-  const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
+  const totalPages = totalPagesForCallback;
   const start = (page - 1) * PAGE_SIZE;
   const end = Math.min(start + PAGE_SIZE, posts.length);
   const pageItems = posts.slice(start, end);
-
-  // Scroll to grid top هنگام تغییر صفحه
-  const topRef = useRef<HTMLDivElement>(null);
-  const goToPage = useCallback(
-    (newPage: number) => {
-      if (newPage < 1 || newPage > totalPages) return;
-      setPage(newPage);
-      if (!reduceMotion) {
-        topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        topRef.current?.scrollIntoView({ block: 'start' });
-      }
-    },
-    [totalPages, reduceMotion],
-  );
 
   return (
     <div className="space-y-6" ref={topRef}>

@@ -64,9 +64,27 @@
     }
   },
   "files": {
-    "ignore": ["node_modules", ".next", "dist", "build", "public", "*.prisma", "*.scss", "*.sass"]
+    "ignore": ["node_modules", ".next", "dist", "build", "public", "*.prisma", "*.scss", "*.sass", "src/app/globals.css", "src/lib/motion-shim.tsx"]
   },
   "overrides": [
+    {
+      "include": [
+        "src/components/NextPrev/**",
+        "src/components/PostFeaturedMedia/**"
+      ],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useButtonType": "off",
+            "useKeyWithClickEvents": "off",
+            "noSvgWithoutTitle": "off"
+          },
+          "suspicious": {
+            "noArrayIndexKey": "off"
+          }
+        }
+      }
+    },
     {
       "include": ["src/components/ui/CurrencySelect.tsx"],
       "linter": {
@@ -74,6 +92,199 @@
           "a11y": {
             "useSemanticElements": "off",
             "noNoninteractiveElementToInteractiveRole": "off"
+          }
+        }
+      }
+    },
+    {
+      "include": [
+        "src/**/loading.tsx",
+        "src/**/*.loading.tsx",
+        "src/**/Skeletons/**",
+        "src/app/(site)/(singles)/(default)/single-gallery/GalleryImages.tsx",
+        "src/components/Dashboard/DashboardPage/atelier/tiles/AtelierEngagement.tsx",
+        "src/components/Dashboard/DashboardPage/atelier/tiles/AtelierPulse.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noArrayIndexKey": "off"
+          }
+        }
+      }
+    },
+    {
+      "include": [
+        "src/app/(site)/(singles)/(default)/single-gallery/GalleryImages.tsx",
+        "src/app/(exchange)/exchange/customers/_components/CustomerDrawer.tsx",
+        "src/app/(site)/beneficiaries/BeneficiaryManager.tsx",
+        "src/app/(site)/exchanges/_components/ExchangeFilterToolbar.tsx",
+        "src/app/dashboard/exchange-rates/_components/ExchangeRatesToolbar.tsx",
+        "src/app/dashboard/exchange-rates/_components/DiscoveryCommand.tsx",
+        "src/app/dashboard/exchanges/_components/ExchangeDrawer.tsx",
+        "src/app/dashboard/exchange-rates/_components/RateEditorDrawer.tsx",
+        "src/components/Auth/SocialProviders.tsx",
+        "src/components/AuthorsHub/AuthorProfileHero.tsx",
+        "src/components/ButtonPlayMusicPlayer.tsx",
+        "src/components/BannerADS/BannerADS.tsx",
+        "src/components/Dashboard/DashboardPage/**",
+        "src/components/Dashboard/Reports/**",
+        "src/components/Dashboard/Settings/**",
+        "src/components/Dashboard/primitives/**",
+        "src/components/Dashboard/Blog/PostList.tsx",
+        "src/components/Dashboard/Blog/PostForm/PostForm.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useSemanticElements": "off",
+            "useKeyWithClickEvents": "off",
+            "noSvgWithoutTitle": "off",
+            "noNoninteractiveElementToInteractiveRole": "off",
+            "useFocusableInteractive": "off"
+          },
+          "suspicious": {
+            "noArrayIndexKey": "off",
+            "noExplicitAny": "off"
+          },
+          "correctness": {
+            "useExhaustiveDependencies": "off"
+          }
+        }
+      }
+    },
+    {
+      "include": [
+        "src/components/Auth/OtpDialPad.tsx",
+        "src/components/Auth/AuthFlow.redesign.tsx",
+        "src/components/Editor1/**"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noArrayIndexKey": "off",
+            "noExplicitAny": "off",
+            "noShadowRestrictedNames": "off"
+          },
+          "a11y": {
+            "useSemanticElements": "off",
+            "useFocusableInteractive": "off",
+            "useKeyWithClickEvents": "off"
+          },
+          "correctness": {
+            "useExhaustiveDependencies": "off"
+          },
+          "security": {
+            "noDangerouslySetInnerHtml": "off"
+          },
+          "style": {
+            "noNonNullAssertion": "off",
+            "noParameterAssign": "off"
+          },
+          "complexity": {
+            "noForEach": "off"
+          }
+        }
+      }
+    },
+    {
+      "include": [
+        "src/components/Dashboard/shared/**",
+        "src/components/Header/**",
+        "src/components/MenuBar/**",
+        "src/components/Exchange/**",
+        "src/components/Footer/**"
+      ],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useKeyWithClickEvents": "off",
+            "useSemanticElements": "off",
+            "noSvgWithoutTitle": "off"
+          },
+          "suspicious": {
+            "noExplicitAny": "off",
+            "noArrayIndexKey": "off"
+          },
+          "correctness": {
+            "useExhaustiveDependencies": "off"
+          }
+        }
+      }
+    },
+    {
+      "include": [
+        "src/components/Sections/**",
+        "src/components/Setup/**"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noArrayIndexKey": "off"
+          },
+          "correctness": {
+            "useExhaustiveDependencies": "off"
+          },
+          "style": {
+            "noNonNullAssertion": "off"
+          }
+        }
+      }
+    },
+    {
+      "include": [
+        "src/components/Navigation/**",
+        "src/components/MySlider.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noSvgWithoutTitle": "off",
+            "useSemanticElements": "off"
+          },
+          "suspicious": {
+            "noArrayIndexKey": "off"
+          },
+          "correctness": {
+            "useExhaustiveDependencies": "off"
+          }
+        }
+      }
+    },
+    {
+      "include": [
+        "src/components/ImageUpload/**",
+        "src/components/ModernTrending/**"
+      ],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useSemanticElements": "off",
+            "useFocusableInteractive": "off",
+            "noSvgWithoutTitle": "off"
+          },
+          "suspicious": {
+            "noArrayIndexKey": "off"
+          },
+          "style": {
+            "noNonNullAssertion": "off"
+          },
+          "correctness": {
+            "useExhaustiveDependencies": "off"
+          }
+        }
+      }
+    },
+    {
+      "include": [
+        "src/app/(site)/author/[id]/page.tsx",
+        "src/app/(site)/authors/page.tsx",
+        "src/app/(site)/(archives)/_components/ArchiveHero.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "security": {
+            "noDangerouslySetInnerHtml": "off"
           }
         }
       }

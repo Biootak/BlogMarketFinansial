@@ -47,7 +47,7 @@ export function AdCardStrip({
   eyebrow = 'پیشنهاد سردبیران',
   accentColor = '#5b6cff',
 }: AdCardStripProps) {
-  const reduce = useReducedMotion();
+  const _reduce = useReducedMotion();
 
   // لیست ads رو فیلتر می‌کنیم (null/empty)
   const items = useMemo(() => (Array.isArray(ads) ? ads.filter(Boolean) : []), [ads]);
@@ -104,7 +104,7 @@ export function AdCardStrip({
         {/* RICH CARDS — compact */}
         {richItems.map((ad, i) => (
           <div key={ad.id} className="h-full">
-            <RichAdCard ad={ad} accentColor={accentColor} index={i} reduce={reduce ?? false} />
+            <RichAdCard ad={ad} accentColor={accentColor} index={i} />
           </div>
         ))}
       </div>
@@ -124,8 +124,6 @@ function HeroAdCard({
   accentColor: string;
   className?: string;
 }) {
-  const _reduce = useReducedMotion();
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -266,12 +264,10 @@ function RichAdCard({
   ad,
   accentColor,
   index,
-  reduce,
 }: {
   ad: Advertisement;
   accentColor: string;
   index: number;
-  reduce: boolean;
 }) {
   return (
     <motion.div

@@ -25,7 +25,7 @@ export default function MySlider<T>({
   renderItem = () => <div />,
   arrowBtnClass = 'top-1/2 -translate-y-1/2',
   autoSlideInterval,
-  hideArrowOutside = false,
+  hideArrowOutside: _hideArrowOutside = false,
 }: MySliderProps<T>) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);

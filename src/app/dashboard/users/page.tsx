@@ -1,7 +1,7 @@
 'use client';
 
 import { createUser, deleteUser, getUsers, updateUser } from '@/actions/userActions';
-import { PageHeader } from '@/components/Dashboard/primitives';
+import { ConfirmDialog, PageHeader } from '@/components/Dashboard/primitives';
 import LoadingMore from '@/components/LoadingMore';
 import { UsersTableSkeleton } from '@/components/Skeletons';
 import SubmitButton from '@/components/SubmitButton';
@@ -12,7 +12,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -113,6 +120,8 @@ export default function UsersPage() {
   const [editingUser, setEditingUser] = useState<UserWithProfile | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; role?: Role } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
   const [page, setPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(true);
@@ -134,6 +143,7 @@ export default function UsersPage() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: fetchUsers is memoized via useCallback — stable ref; listed in deps would cause double-fetch
   useEffect(() => {
     setPage(1);
     setUsers([]);
@@ -213,7 +223,7 @@ export default function UsersPage() {
     setIsEditDialogOpen(true);
   };
 
-  const handleDelete = async (id: string, userRole?: Role) => {
+  const handleDeleteRequest = (id: string, userRole?: Role) => {
     if (id === currentUserId) {
       toast({
         title: 'خطا',
@@ -231,14 +241,20 @@ export default function UsersPage() {
       });
       return;
     }
-    if (window.confirm('آیا مطمئن هستید که می‌خواهید این کاربر را حذف کنید؟')) {
-      const result = await deleteUser(id);
-      if (result.success) {
-        fetchUsers(1, debouncedSearchTerm);
-        toast({ title: 'موفقیت', description: result.message, variant: 'success' });
-      } else {
-        toast({ title: 'خطا', description: result.message, variant: 'destructive' });
-      }
+    setDeleteTarget({ id, role });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    const result = await deleteUser(deleteTarget.id);
+    setIsDeleting(false);
+    if (result.success) {
+      setDeleteTarget(null);
+      fetchUsers(1, debouncedSearchTerm);
+      toast({ title: 'موفقیت', description: result.message, variant: 'success' });
+    } else {
+      toast({ title: 'خطا', description: result.message, variant: 'destructive' });
     }
   };
 
@@ -300,6 +316,7 @@ export default function UsersPage() {
         description="مدیریت اعضا، نقش‌ها و دسترسی‌ها"
         actions={
           <button
+            type="button"
             onClick={() => {
               setEditingUser(null);
               form.reset();
@@ -478,6 +495,7 @@ export default function UsersPage() {
                       <td>
                         <div className="at-actions">
                           <button
+                            type="button"
                             onClick={() => handleEdit(user)}
                             className="at-actions__btn at-actions__btn--edit"
                             title="ویرایش"
@@ -486,7 +504,8 @@ export default function UsersPage() {
                             <span className="hidden sm:inline">ویرایش</span>
                           </button>
                           <button
-                            onClick={() => handleDelete(user.id, user.role as Role)}
+                            type="button"
+                            onClick={() => handleDeleteRequest(user.id, user.role as Role)}
                             className="at-actions__btn at-actions__btn--danger"
                             title="حذف"
                           >
@@ -533,6 +552,20 @@ export default function UsersPage() {
         </DialogContent>
       </Dialog>
 
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+        title="حذف کاربر"
+        description="آیا مطمئن هستید که می‌خواهید این کاربر را حذف کنید؟ این عملیات برگشت‌پذیر نیست."
+        confirmLabel="بله، حذف کن"
+        cancelLabel="انصراف"
+        variant="danger"
+        onConfirm={handleDeleteConfirm}
+        loading={isDeleting}
+      />
+
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent
           className="at-dialog-content max-h-[90vh] w-full max-w-2xl p-0 overflow-hidden"
@@ -574,10 +607,10 @@ function UserForm({ form, onSubmit }: UserFormProps) {
             name="name"
             render={({ field }) => (
               <FormItem>
-                <label className="at-field__label">
+                <FormLabel className="at-field__label">
                   <HiOutlineUser className="at-field__ico at-field__ico--emerald size-4" />
                   نام
-                </label>
+                </FormLabel>
                 <FormControl>
                   <Input placeholder="نام کاربر" {...field} className={inputClass} />
                 </FormControl>
@@ -590,10 +623,10 @@ function UserForm({ form, onSubmit }: UserFormProps) {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <label className="at-field__label">
+                <FormLabel className="at-field__label">
                   <HiOutlineEnvelope className="at-field__ico at-field__ico--blue size-4" />
                   ایمیل
-                </label>
+                </FormLabel>
                 <FormControl>
                   <Input placeholder="ایمیل کاربر" type="email" {...field} className={inputClass} />
                 </FormControl>
@@ -609,10 +642,10 @@ function UserForm({ form, onSubmit }: UserFormProps) {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <label className="at-field__label">
+                <FormLabel className="at-field__label">
                   <HiOutlineLockClosed className="at-field__ico size-4" />
                   رمز عبور
-                </label>
+                </FormLabel>
                 <FormControl>
                   <Input
                     placeholder="رمز عبور کاربر"
@@ -630,10 +663,10 @@ function UserForm({ form, onSubmit }: UserFormProps) {
             name="phoneNumber"
             render={({ field }) => (
               <FormItem>
-                <label className="at-field__label">
+                <FormLabel className="at-field__label">
                   <HiOutlinePhone className="at-field__ico size-4" />
                   شماره تلفن
-                </label>
+                </FormLabel>
                 <FormControl>
                   <Input placeholder="شماره تلفن کاربر" {...field} className={inputClass} />
                 </FormControl>
@@ -649,10 +682,10 @@ function UserForm({ form, onSubmit }: UserFormProps) {
             name="role"
             render={({ field }) => (
               <FormItem>
-                <label className="at-field__label">
+                <FormLabel className="at-field__label">
                   <HiOutlineUserGroup className="at-field__ico at-field__ico--emerald size-4" />
                   نقش
-                </label>
+                </FormLabel>
                 <Select dir="rtl" onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger className={selectTriggerClass}>
@@ -679,10 +712,10 @@ function UserForm({ form, onSubmit }: UserFormProps) {
             name="status"
             render={({ field }) => (
               <FormItem>
-                <label className="at-field__label">
+                <FormLabel className="at-field__label">
                   <HiOutlineCheckCircle className="at-field__ico at-field__ico--amber size-4" />
                   وضعیت
-                </label>
+                </FormLabel>
                 <Select dir="rtl" onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger className={selectTriggerClass}>

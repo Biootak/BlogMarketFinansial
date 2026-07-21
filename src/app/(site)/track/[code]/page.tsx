@@ -5,20 +5,20 @@
  * نمایش وضعیت CurrencyDeal با timeline بصری.
  */
 
-import type { Metadata } from 'next';
-import Link from 'next/link';
 import { getDealByTracking } from '@/actions/currency-deals';
 import CopyButton from '@/components/fintech/CopyButton';
 import {
   AlertCircle,
   ArrowLeftRight,
+  ArrowRight,
   Building2,
   CheckCircle2,
   Clock,
   RefreshCw,
   XCircle,
-  ArrowRight,
 } from 'lucide-react';
+import type { Metadata } from 'next';
+import Link from 'next/link';
 import s from './track.module.css';
 
 export const revalidate = 60;
@@ -109,9 +109,7 @@ export default async function TrackPage({ params }: Props) {
   const deal = await getDealByTracking(code.toUpperCase());
 
   const statusCfg =
-    deal && deal.status in STATUS_CONFIG
-      ? STATUS_CONFIG[deal.status as DealStatus]
-      : null;
+    deal && deal.status in STATUS_CONFIG ? STATUS_CONFIG[deal.status as DealStatus] : null;
 
   const StatusIcon = statusCfg?.icon ?? AlertCircle;
 
@@ -123,8 +121,8 @@ export default async function TrackPage({ params }: Props) {
             <AlertCircle size={48} className={s.notFoundIcon} aria-hidden />
             <h1 className={s.notFoundTitle}>معامله یافت نشد</h1>
             <p className={s.notFoundSub}>
-              معامله‌ای با کد <strong dir="ltr">{code}</strong> یافت نشد. کد پیگیری را دوباره
-              بررسی کنید.
+              معامله‌ای با کد <strong dir="ltr">{code}</strong> یافت نشد. کد پیگیری را دوباره بررسی
+              کنید.
             </p>
             <Link href="/transfer" className={s.notFoundLink}>
               ثبت درخواست جدید
@@ -154,7 +152,9 @@ export default async function TrackPage({ params }: Props) {
       minute: '2-digit',
     }).format(new Date(d));
 
-  const statusLogs = (deal as { statusLogs?: Array<{ toStatus: string; note: string | null; createdAt: Date }> }).statusLogs ?? [];
+  const statusLogs =
+    (deal as { statusLogs?: Array<{ toStatus: string; note: string | null; createdAt: Date }> })
+      .statusLogs ?? [];
 
   return (
     <main className={s.page}>
@@ -229,16 +229,14 @@ export default async function TrackPage({ params }: Props) {
           <div className={s.exchangeInfo} aria-label="صرافی">
             <Building2 size={16} strokeWidth={1.5} aria-hidden />
             <span className={s.exchangeName}>{deal.exchangeName}</span>
-            {deal.exchangeCity && (
-              <span className={s.exchangeCity}>{deal.exchangeCity}</span>
-            )}
+            {deal.exchangeCity && <span className={s.exchangeCity}>{deal.exchangeCity}</span>}
           </div>
         )}
 
         {/* Timeline */}
         <section aria-label="مراحل معامله">
           <div className={s.timelineTitle}>مراحل پردازش</div>
-          <div className={s.timeline} role="list">
+          <ol className={s.timeline}>
             {TIMELINE_STEPS.map((step) => {
               const cfg = STATUS_CONFIG[step];
               const StepIcon = cfg.icon;
@@ -247,16 +245,13 @@ export default async function TrackPage({ params }: Props) {
               const isDone = stepClass === s.stepDone || stepClass === s.stepActive;
 
               return (
-                <div
+                <li
                   key={step}
                   className={`${s.timelineStep} ${stepClass}`}
-                  role="listitem"
                   aria-current={stepClass === s.stepActive ? 'step' : undefined}
                 >
                   <div className={s.stepCircle} aria-hidden>
-                    {isDone ? (
-                      <StepIcon size={12} strokeWidth={2.5} />
-                    ) : null}
+                    {isDone ? <StepIcon size={12} strokeWidth={2.5} /> : null}
                   </div>
                   <div className={s.stepBody}>
                     <span className={s.stepLabel}>{cfg.labelFa}</span>
@@ -268,17 +263,15 @@ export default async function TrackPage({ params }: Props) {
                         {formatDate(logEntry.createdAt)}
                       </time>
                     )}
-                    {logEntry?.note && (
-                      <span className={s.stepNote}>{logEntry.note}</span>
-                    )}
+                    {logEntry?.note && <span className={s.stepNote}>{logEntry.note}</span>}
                   </div>
-                </div>
+                </li>
               );
             })}
 
             {/* Terminal cancelled/disputed/refunded step */}
             {['CANCELLED', 'DISPUTED', 'REFUNDED'].includes(deal.status) && (
-              <div className={`${s.timelineStep} ${s.stepCancelled}`} role="listitem">
+              <li className={`${s.timelineStep} ${s.stepCancelled}`}>
                 <div className={s.stepCircle} aria-hidden>
                   <XCircle size={12} strokeWidth={2} />
                 </div>
@@ -286,18 +279,21 @@ export default async function TrackPage({ params }: Props) {
                   <span className={s.stepLabel}>
                     {STATUS_CONFIG[deal.status as DealStatus]?.labelFa ?? deal.status}
                   </span>
-                  {statusLogs.find((l) => l.toStatus === deal.status) && (
-                    <time
-                      className={s.stepTime}
-                      dateTime={new Date(statusLogs.find((l) => l.toStatus === deal.status)!.createdAt).toISOString()}
-                    >
-                      {formatDate(statusLogs.find((l) => l.toStatus === deal.status)!.createdAt)}
-                    </time>
-                  )}
+                  {(() => {
+                    const terminalLog = statusLogs.find((l) => l.toStatus === deal.status);
+                    return terminalLog ? (
+                      <time
+                        className={s.stepTime}
+                        dateTime={new Date(terminalLog.createdAt).toISOString()}
+                      >
+                        {formatDate(terminalLog.createdAt)}
+                      </time>
+                    ) : null;
+                  })()}
                 </div>
-              </div>
+              </li>
             )}
-          </div>
+          </ol>
         </section>
 
         {/* Dates */}

@@ -90,7 +90,6 @@ export default function CountUp({
         rafRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, duration]);
 
   const formatted = new Intl.NumberFormat(locale, {

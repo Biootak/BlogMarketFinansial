@@ -35,7 +35,7 @@
   gap: var(--ds-space-2);
   padding: var(--ds-space-2) var(--ds-space-4);
   border-radius: var(--ds-radius-md);
-  background: var(--ds-color-primary);
+  background: var(--ds-brand-500);
   color: var(--ds-text-on-primary, oklch(98% 0 0));
   font-size: var(--ds-text-sm);
   font-weight: 500;
@@ -84,7 +84,7 @@
   align-items: center;
   padding: var(--ds-space-2) var(--ds-space-5);
   border-radius: var(--ds-radius-md);
-  background: var(--ds-color-primary);
+  background: var(--ds-brand-500);
   color: var(--ds-text-on-primary, oklch(98% 0 0));
   font-size: var(--ds-text-sm);
   text-decoration: none;
@@ -169,7 +169,7 @@
 .toAmount {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
-  color: var(--ds-color-success);
+  color: var(--ds-status-success-fg);
 }
 
 .meta {

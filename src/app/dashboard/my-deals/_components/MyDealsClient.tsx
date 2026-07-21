@@ -17,13 +17,17 @@ const STATUS_META: Record<
   string,
   { label: string; icon: React.ComponentType<{ size?: number }>; color: string }
 > = {
-  PENDING: { label: 'در انتظار', icon: Clock, color: 'var(--ds-color-warning)' },
-  CONFIRMED: { label: 'تایید شده', icon: CheckCircle2, color: 'var(--ds-color-info)' },
-  PROCESSING: { label: 'در حال انجام', icon: ArrowLeftRight, color: 'var(--ds-color-info)' },
-  COMPLETED: { label: 'تکمیل شده', icon: CheckCircle2, color: 'var(--ds-color-success)' },
-  CANCELLED: { label: 'لغو شده', icon: XCircle, color: 'var(--ds-color-danger)' },
-  DISPUTED: { label: 'مورد اعتراض', icon: XCircle, color: 'var(--ds-color-warning)' },
-  REFUNDED: { label: 'بازگشت وجه', icon: CheckCircle2, color: 'var(--ds-color-success)' },
+  PENDING: { label: 'در انتظار', icon: Clock, color: 'var(--ds-status-pending-fg)' },
+  CONFIRMED: { label: 'تایید شده', icon: CheckCircle2, color: 'var(--ds-status-progress-fg)' },
+  PROCESSING: {
+    label: 'در حال انجام',
+    icon: ArrowLeftRight,
+    color: 'var(--ds-status-progress-fg)',
+  },
+  COMPLETED: { label: 'تکمیل شده', icon: CheckCircle2, color: 'var(--ds-status-success-fg)' },
+  CANCELLED: { label: 'لغو شده', icon: XCircle, color: 'var(--ds-status-error-fg)' },
+  DISPUTED: { label: 'مورد اعتراض', icon: XCircle, color: 'var(--ds-status-pending-fg)' },
+  REFUNDED: { label: 'بازگشت وجه', icon: CheckCircle2, color: 'var(--ds-status-success-fg)' },
 };
 
 const CHANNEL_FA: Record<string, string> = {
@@ -94,12 +98,12 @@ export default function MyDealsClient({ initialDeals }: Props) {
         </a>
       </header>
 
-      <div className={s.list} role="list">
+      <ul className={s.list}>
         {initialDeals.map((deal) => {
           const meta = STATUS_META[deal.status] ?? STATUS_META.PENDING;
           const Icon = meta.icon;
           return (
-            <article key={deal.id} className={s.card} role="listitem">
+            <li key={deal.id} className={s.card}>
               {/* کد پیگیری + وضعیت */}
               <div className={s.cardHead}>
                 <span className={s.trackingCode} aria-label="کد پیگیری">
@@ -140,10 +144,10 @@ export default function MyDealsClient({ initialDeals }: Props) {
                   ) : null}
                 </div>
               </div>
-            </article>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </section>
   );
 }

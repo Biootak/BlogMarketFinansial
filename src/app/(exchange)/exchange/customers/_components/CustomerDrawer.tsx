@@ -171,13 +171,18 @@ export default function CustomerDrawer({ open, initialData, saving, onClose, onS
   };
 
   return createPortal(
+    // backdrop: نه role="dialog" و نه aria-hidden — کلیک روی backdrop dialog را می‌بندد
     <div
       style={overlay}
-      role="dialog"
-      aria-modal
+      role="presentation"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div style={panel}>
+      <div
+        style={panel}
+        role="dialog"
+        aria-modal
+        aria-label={initialData ? 'ویرایش مشتری' : 'مشتری جدید'}
+      >
         <div style={hdr}>
           <span style={{ fontSize: 'var(--ds-text-base)', fontWeight: 700, color: 'var(--at-fg)' }}>
             {initialData ? 'ویرایش مشتری' : 'مشتری جدید'}

@@ -102,6 +102,7 @@ const ToggleSwitch = ({
 // Input Field Component — atelier
 const InputField = ({
   label,
+  id,
   type = 'text',
   value,
   onChange,
@@ -110,6 +111,7 @@ const InputField = ({
   disabled = false,
 }: {
   label: string;
+  id: string;
   type?: string;
   value: string | number;
   onChange: (value: string) => void;
@@ -118,8 +120,13 @@ const InputField = ({
   disabled?: boolean;
 }) => (
   <div className="space-y-2">
-    {label && <label className="at-field__label block">{label}</label>}
+    {label && (
+      <label htmlFor={id} className="at-field__label block">
+        {label}
+      </label>
+    )}
     <input
+      id={id}
       type={type}
       value={value}
       onChange={(e) => onChange(e.target.value)}
@@ -155,8 +162,11 @@ const SelectField = ({
   disabled?: boolean;
 }) => (
   <div className="space-y-2">
-    <label className="at-field__label block">{label}</label>
+    <label htmlFor={`ss-${label}`} className="at-field__label block">
+      {label}
+    </label>
     <select
+      id={`ss-${label}`}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       disabled={disabled}
@@ -313,7 +323,7 @@ export default function SettingsPage() {
             advanced: { ...prev.advanced, cacheEnabled: data.cacheEnabled ?? true },
           }));
         }
-      } catch (error) {
+      } catch {
         // Silent fail — handled by UI fallback state
       } finally {
         setInitialLoading(false);
@@ -484,6 +494,7 @@ export default function SettingsPage() {
               return (
                 <button
                   key={tab.id}
+                  type="button"
                   onClick={() => setActiveTab(tab.id)}
                   className={`at-form-tab ${isActive ? 'is-active' : ''}`}
                   style={{
@@ -523,6 +534,7 @@ export default function SettingsPage() {
             >
               <div className="at-form-grid">
                 <InputField
+                  id="settings-site-title"
                   label="عنوان سایت"
                   value={formData.general.siteTitle}
                   onChange={(v) => handleInputChange('general', 'siteTitle', v)}
@@ -530,6 +542,7 @@ export default function SettingsPage() {
                   disabled={loading}
                 />
                 <InputField
+                  id="settings-site-desc"
                   label="توضیحات سایت"
                   value={formData.general.siteDescription}
                   onChange={(v) => handleInputChange('general', 'siteDescription', v)}
@@ -537,6 +550,7 @@ export default function SettingsPage() {
                   disabled={loading}
                 />
                 <InputField
+                  id="settings-contact-email"
                   label="ایمیل تماس"
                   type="email"
                   value={formData.general.contactEmail}
@@ -545,7 +559,7 @@ export default function SettingsPage() {
                   disabled={loading}
                 />
                 <div className="space-y-2 sm:col-span-2">
-                  <label className="at-field__label block">لوگوی سایت</label>
+                  <span className="at-field__label block">لوگوی سایت</span>
                   <div className="flex flex-col sm:flex-row items-start gap-4 p-4 rounded-[var(--at-radius)] border border-dashed border-[color:var(--at-line-strong)] bg-[color:var(--at-bg-deep)]">
                     {formData.general.logoUrl ? (
                       <div className="relative shrink-0">
@@ -571,6 +585,7 @@ export default function SettingsPage() {
                     )}
                     <div className="flex-1 min-w-0 space-y-3 w-full">
                       <InputField
+                        id="settings-logo-url"
                         label=""
                         value={formData.general.logoUrl}
                         onChange={(v) => handleInputChange('general', 'logoUrl', v)}
@@ -611,6 +626,7 @@ export default function SettingsPage() {
             >
               <div className="at-form-grid">
                 <InputField
+                  id="settings-smtp-server"
                   label="سرور SMTP"
                   value={formData.email.smtpServer}
                   onChange={(v) => handleInputChange('email', 'smtpServer', v)}
@@ -618,6 +634,7 @@ export default function SettingsPage() {
                   disabled={loading}
                 />
                 <InputField
+                  id="settings-smtp-port"
                   label="پورت"
                   value={formData.email.smtpPort}
                   onChange={(v) => handleInputChange('email', 'smtpPort', v)}
@@ -625,6 +642,7 @@ export default function SettingsPage() {
                   disabled={loading}
                 />
                 <InputField
+                  id="settings-smtp-user"
                   label="نام کاربری"
                   value={formData.email.smtpUsername}
                   onChange={(v) => handleInputChange('email', 'smtpUsername', v)}
@@ -632,6 +650,7 @@ export default function SettingsPage() {
                   disabled={loading}
                 />
                 <InputField
+                  id="settings-smtp-pass"
                   label="رمز عبور"
                   type="password"
                   value={formData.email.smtpPassword}
@@ -730,7 +749,10 @@ export default function SettingsPage() {
               <ActionButtons
                 loading={loading}
                 onSubmit={() =>
-                  toast({ title: 'اطلاع', description: 'تنظیمات امنیتی در نسخه بعدی فعال می‌شود' })
+                  toast({
+                    title: 'در دست توسعه',
+                    description: 'ذخیره تنظیمات امنیتی در نسخه آینده پیاده‌سازی خواهد شد',
+                  })
                 }
               />
             </CardSection>
@@ -751,6 +773,7 @@ export default function SettingsPage() {
             >
               <div className="at-form-grid">
                 <InputField
+                  id="settings-db-server"
                   label="آدرس سرور"
                   value={formData.database.server}
                   onChange={(v) => handleInputChange('database', 'server', v)}
@@ -758,6 +781,7 @@ export default function SettingsPage() {
                   disabled={loading}
                 />
                 <InputField
+                  id="settings-db-port"
                   label="پورت"
                   value={formData.database.port}
                   onChange={(v) => handleInputChange('database', 'port', v)}
@@ -765,6 +789,7 @@ export default function SettingsPage() {
                   disabled={loading}
                 />
                 <InputField
+                  id="settings-db-name"
                   label="نام پایگاه داده"
                   value={formData.database.name}
                   onChange={(v) => handleInputChange('database', 'name', v)}
@@ -772,6 +797,7 @@ export default function SettingsPage() {
                   disabled={loading}
                 />
                 <InputField
+                  id="settings-db-user"
                   label="نام کاربری"
                   value={formData.database.username}
                   onChange={(v) => handleInputChange('database', 'username', v)}
@@ -779,6 +805,7 @@ export default function SettingsPage() {
                   disabled={loading}
                 />
                 <InputField
+                  id="settings-db-pass"
                   label="رمز عبور"
                   type="password"
                   value={formData.database.password}
@@ -827,8 +854,9 @@ export default function SettingsPage() {
                   type="button"
                   onClick={() =>
                     toast({
-                      title: 'اطلاع',
-                      description: 'تنظیمات دیتابیس از فایل .env خوانده می‌شود',
+                      title: 'در دست توسعه',
+                      description:
+                        'تنظیمات دیتابیس از فایل .env مدیریت می‌شود. ذخیره مستقیم در نسخه آینده پیاده‌سازی خواهد شد.',
                     })
                   }
                   disabled={loading}
@@ -875,6 +903,7 @@ export default function SettingsPage() {
               </div>
               <div className="at-form-grid">
                 <InputField
+                  id="settings-cache-duration"
                   label="مدت زمان کش (دقیقه)"
                   type="number"
                   value={formData.advanced.cacheDuration}
@@ -896,6 +925,7 @@ export default function SettingsPage() {
                   ]}
                 />
                 <InputField
+                  id="settings-max-upload"
                   label="حداکثر اندازه فایل آپلود (MB)"
                   type="number"
                   value={formData.advanced.maxUploadSize}
@@ -920,6 +950,7 @@ export default function SettingsPage() {
               </div>
               <div className="space-y-3">
                 <InputField
+                  id="settings-log-path"
                   label="مسیر ذخیره‌سازی لاگ‌ها"
                   value={formData.advanced.logPath}
                   onChange={(v) => handleInputChange('advanced', 'logPath', v)}
@@ -927,9 +958,12 @@ export default function SettingsPage() {
                   disabled={loading}
                 />
                 <div className="space-y-2">
-                  <label className="at-field__label block">کلید API</label>
+                  <label htmlFor="settings-api-key" className="at-field__label block">
+                    کلید API
+                  </label>
                   <div className="flex gap-2">
                     <input
+                      id="settings-api-key"
                       type="text"
                       value={formData.advanced.apiKey}
                       readOnly

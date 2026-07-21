@@ -66,6 +66,7 @@ export function buildArchiveCrumbs({
         current: true,
       });
     } else {
+      // biome-ignore lint/style/noNonNullAssertion: crumbs always has at least one item at this point
       crumbs[crumbs.length - 1]!.current = true;
     }
   } else if (type === 'tag' && selectedTag) {
@@ -83,6 +84,7 @@ export function buildArchiveCrumbs({
       current: true,
     });
   } else {
+    // biome-ignore lint/style/noNonNullAssertion: crumbs always has at least one item here
     crumbs[crumbs.length - 1]!.current = true;
   }
 

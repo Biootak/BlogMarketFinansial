@@ -12,7 +12,6 @@ interface MenuBarProps {
 const MenuBar = ({ className }: MenuBarProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const pathname = usePathname();
-
   useEffect(() => {
     setIsVisible(false);
   }, [pathname]);

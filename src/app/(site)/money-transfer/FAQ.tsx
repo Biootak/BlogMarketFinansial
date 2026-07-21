@@ -73,14 +73,14 @@ export default function FAQ() {
       {/* FAQ Items — native <details> with CSS interpolate-size */}
       <div className="max-w-3xl mx-auto space-y-3">
         {faqs.map((faq, index) => (
-          <details key={index} className="mt-faq-item group">
+          <details key={faq.question} className="mt-faq-item group">
             <summary className="mt-faq-trigger">
               <span className="mt-faq-index" aria-hidden>
                 {String(index + 1).padStart(2, '۰')}
               </span>
               <span className="mt-faq-question">{faq.question}</span>
               <span className="mt-faq-chevron" aria-hidden>
-                <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3">
+                <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3" aria-hidden="true">
                   <path
                     d="M3 4.5L6 7.5L9 4.5"
                     stroke="currentColor"

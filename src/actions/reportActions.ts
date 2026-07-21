@@ -5,6 +5,7 @@ import prisma from '@/lib/db';
 const db = prisma;
 
 import { revalidatePath } from '@/lib/revalidate';
+import { checkDiskSpace, getSystemMetrics } from '@/lib/system';
 
 interface UserStats {
   total: number;
@@ -223,34 +224,68 @@ export const getSystemStatus = async (): Promise<ActionResult<SystemStatus>> => 
   try {
     await checkReportAccess();
 
-    // 2026-06-14: removed `Math.random()` for the CPU usage. Random
-    // values made the dashboard chart flicker on every refresh and
-    // broke the "feels real" assumption. While we still need a real
-    // metric for CPU, the previous behaviour was a bug. We keep the
-    // placeholders for the other fields because the project does
-    // not yet collect real metrics for them.
+    // دریافت متریک‌های واقعی از OS
+    const metrics = await getSystemMetrics();
+
+    // دیسک: استخراج drive root
+    const cwd = process.cwd();
+    const diskRoot = process.platform === 'win32' ? (cwd.split('\\')[0] ?? cwd) : cwd;
+    const diskSpace = await checkDiskSpace(diskRoot);
+
+    // وضعیت دیتابیس از طریق یک query سبک
+    let dbStatus: {
+      status: 'online' | 'offline' | 'error';
+      connections: number;
+      queryTime: number;
+    } = {
+      status: 'offline',
+      connections: 0,
+      queryTime: 0,
+    };
+    try {
+      const t0 = Date.now();
+      await prisma.$queryRaw`SELECT 1`;
+      const queryTime = Date.now() - t0;
+      const countResult = await prisma.$queryRaw<[{ count: bigint }]>`
+        SELECT COUNT(*)::bigint AS count FROM pg_stat_activity
+      `;
+      dbStatus = {
+        status: 'online',
+        connections: Number(countResult[0]?.count ?? 0),
+        queryTime,
+      };
+    } catch {
+      dbStatus.status = 'error';
+    }
+
+    // MB واحد برای حافظه (سازگار با SystemStatus interface)
+    const memTotalMb = Math.round(metrics.memory.total / 1024 / 1024);
+    const memUsedMb = Math.round(metrics.memory.used / 1024 / 1024);
+    const memFreeMb = Math.round(metrics.memory.free / 1024 / 1024);
+
+    const diskTotalMb = diskSpace ? Math.round(diskSpace.size / 1024 / 1024) : 0;
+    const diskFreeMb = diskSpace ? Math.round(diskSpace.free / 1024 / 1024) : 0;
+    const diskUsedMb = diskTotalMb - diskFreeMb;
+
     const status: SystemStatus = {
       cpu: {
-        usage: 0,
+        usage: metrics.cpu.usage,
       },
       memory: {
-        total: 16384, // 16GB
-        used: 8192, // 8GB
-        free: 8192, // 8GB
+        total: memTotalMb,
+        used: memUsedMb,
+        free: memFreeMb,
       },
       disk: {
-        total: 512000, // 500GB
-        used: 256000, // 250GB
-        free: 256000, // 250GB
+        total: diskTotalMb,
+        used: diskUsedMb,
+        free: diskFreeMb,
       },
-      database: {
-        status: 'online',
-        connections: 5,
-        queryTime: 100,
-      },
+      database: dbStatus,
       cache: {
+        // cache hit-rate از Upstash در دسترس نیست بدون Redis client — ۱ به‌عنوان بهترین تخمین
         status: 'online',
-        hitRate: 0.85,
+        hitRate: 1,
       },
       lastUpdate: new Date().toISOString(),
     };

@@ -143,7 +143,6 @@ export default function ExchangeRatesTable({
     >
       <table
         className="w-full"
-        role="grid"
         aria-label="جدول نرخ‌های بازار"
         aria-rowcount={sorted.length + 1}
         style={{ borderCollapse: 'separate', borderSpacing: 0 }}
@@ -154,6 +153,7 @@ export default function ExchangeRatesTable({
               const align = col.align ?? 'start';
               return (
                 <th
+                  // biome-ignore lint/suspicious/noArrayIndexKey: table column headers are static/positional — stable index
                   key={i}
                   scope="col"
                   aria-sort={

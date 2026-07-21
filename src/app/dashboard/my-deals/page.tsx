@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 export default async function MyDealsPage() {
   const session = await auth();
   if (!session?.user) {
-    redirect('/auth');
+    redirect('/signin?callbackUrl=/dashboard/my-deals');
   }
 
   const deals = await getMyDeals();

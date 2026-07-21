@@ -85,6 +85,7 @@ export default function SafeImage({
   const [hasError, setHasError] = useState(false);
 
   // وقتی src تغییر می‌کنه، error state رو reset کن
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional — reset on src change only
   useEffect(() => {
     setHasError(false);
   }, [src]);

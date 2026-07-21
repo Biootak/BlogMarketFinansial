@@ -36,6 +36,7 @@ const SingleContentClient = ({ post, commentCount, inContentAd }: SingleContentC
     return postLink;
   }, [post.postType, post.slug]);
 
+  // biome-ignore lint/style/noNonNullAssertion: ref is guaranteed non-null — element is always mounted when hook is used
   const endedAnchorRef = useRef<HTMLDivElement>(null!);
   const contentRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLButtonElement>(null);
@@ -322,6 +323,7 @@ const SingleContentClient = ({ post, commentCount, inContentAd }: SingleContentC
           <div className="w-px h-6 bg-neutral-200 dark:bg-neutral-700" />
 
           <button
+            type="button"
             className={`
               w-10 h-10 flex items-center justify-center rounded-xl
               transition-all duration-300
@@ -340,7 +342,7 @@ const SingleContentClient = ({ post, commentCount, inContentAd }: SingleContentC
                 : undefined
             }
             onClick={() => isShowScrollToTop && window.scrollTo({ top: 0, behavior: 'smooth' })}
-            aria-label="Scroll to top"
+            aria-label="بازگشت به بالا"
           >
             {isShowScrollToTop ? (
               <HiArrowUp className="w-5 h-5" />

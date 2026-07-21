@@ -3,17 +3,14 @@
 /**
  * SettlementWorkspace — مدیریت تسویه‌حساب صرافی در پنل صراف
  *
- * صراف لیست دوره‌های تسویه را می‌بیند: تاریخ، حجم معاملات، کارمزد پلتفرم و درآمد خالص.
+ * داده‌ها از page.tsx (Server Component) به‌عنوان initialRows پاس می‌شوند.
+ * filter فقط client-side روی همان آرایه اعمال می‌شود — بدون re-fetch.
  * فقط OWNER/MANAGER می‌توانند دکمه تأیید را ببینند (آپشنال در آینده).
  */
 
-import {
-  type SettlementRow,
-  approveSettlement,
-  getSettlements,
-} from '@/actions/settlement';
-import { BadgeCheck, BarChart3, CheckCircle2, Clock, Loader2, Receipt } from 'lucide-react';
-import { useCallback, useEffect, useState, useTransition } from 'react';
+import type { SettlementRow } from '@/actions/settlement';
+import { BadgeCheck, BarChart3, CheckCircle2, Clock, Receipt } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import s from './SettlementWorkspace.module.css';
 
 const STATUS_FA: Record<string, string> = {
@@ -41,45 +38,21 @@ const fmtDate = (d: Date) =>
   );
 
 interface Props {
-  exchangeId: string;
+  initialRows: SettlementRow[];
   staffRole: string;
 }
 
-export default function SettlementWorkspace({ exchangeId, staffRole }: Props) {
-  const [rows, setRows] = useState<SettlementRow[]>([]);
+export default function SettlementWorkspace({ initialRows, staffRole }: Props) {
   const [filter, setFilter] = useState<string>('all');
-  const [isPending, startTransition] = useTransition();
-  const [actionPending, setActionPending] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
 
-  const canManage = staffRole === 'OWNER' || staffRole === 'MANAGER';
+  // approve فقط توسط ادمین پلتفرم انجام می‌شود — صراف نمی‌تواند settlement خودش را approve کند
+  void staffRole;
 
-  const loadData = useCallback(() => {
-    startTransition(async () => {
-      const data = await getSettlements({
-        exchangeId,
-        status: filter !== 'all' ? filter : undefined,
-        limit: 50,
-      });
-      setRows(data);
-    });
-  }, [exchangeId, filter]);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  async function handleApprove(id: string) {
-    setActionPending(id);
-    setActionError(null);
-    const res = await approveSettlement(id);
-    setActionPending(null);
-    if (res.success) {
-      setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status: 'APPROVED' } : r)));
-    } else {
-      setActionError(res.error.message);
-    }
-  }
+  // فیلتر client-side — بدون re-fetch
+  const rows = useMemo(
+    () => (filter === 'all' ? initialRows : initialRows.filter((r) => r.status === filter)),
+    [initialRows, filter],
+  );
 
   // اعداد خلاصه
   const totalVolume = rows.reduce((s, r) => s + Number(r.totalVolume), 0);
@@ -90,21 +63,39 @@ export default function SettlementWorkspace({ exchangeId, staffRole }: Props) {
     <div className={s.root}>
       {/* ── Summary ─────────────────────────────────────── */}
       <div className={s.summaryGrid}>
-        <div className={s.summaryCard} style={{ '--accent-color': 'var(--ds-primary)' } as React.CSSProperties}>
+        <div
+          className={s.summaryCard}
+          style={{ '--accent-color': 'var(--ds-brand-500)' } as React.CSSProperties}
+        >
           <div className={s.summaryValue}>
-            {new Intl.NumberFormat('fa-IR', { notation: 'compact', maximumFractionDigits: 1 }).format(totalVolume / 100)}
+            {new Intl.NumberFormat('fa-IR', {
+              notation: 'compact',
+              maximumFractionDigits: 1,
+            }).format(totalVolume / 100)}
           </div>
           <div className={s.summaryLabel}>حجم کل معاملات (AFN)</div>
         </div>
-        <div className={s.summaryCard} style={{ '--accent-color': 'var(--ds-warning, #f59e0b)' } as React.CSSProperties}>
+        <div
+          className={s.summaryCard}
+          style={{ '--accent-color': 'var(--ds-accent-amber)' } as React.CSSProperties}
+        >
           <div className={s.summaryValue}>
-            {new Intl.NumberFormat('fa-IR', { notation: 'compact', maximumFractionDigits: 1 }).format(totalFee / 100)}
+            {new Intl.NumberFormat('fa-IR', {
+              notation: 'compact',
+              maximumFractionDigits: 1,
+            }).format(totalFee / 100)}
           </div>
           <div className={s.summaryLabel}>کارمزد پلتفرم</div>
         </div>
-        <div className={s.summaryCard} style={{ '--accent-color': 'var(--ds-success, #22c55e)' } as React.CSSProperties}>
+        <div
+          className={s.summaryCard}
+          style={{ '--accent-color': 'var(--ds-status-success-fg)' } as React.CSSProperties}
+        >
           <div className={s.summaryValue}>
-            {new Intl.NumberFormat('fa-IR', { notation: 'compact', maximumFractionDigits: 1 }).format(totalNet / 100)}
+            {new Intl.NumberFormat('fa-IR', {
+              notation: 'compact',
+              maximumFractionDigits: 1,
+            }).format(totalNet / 100)}
           </div>
           <div className={s.summaryLabel}>درآمد خالص صرافی</div>
         </div>
@@ -125,23 +116,9 @@ export default function SettlementWorkspace({ exchangeId, staffRole }: Props) {
         ))}
       </div>
 
-      {actionError && (
-        <p role="alert" style={{ color: 'var(--ds-error, #ef4444)', fontSize: 'var(--ds-text-sm)', margin: 0 }}>
-          {actionError}
-        </p>
-      )}
-
       {/* ── Table ───────────────────────────────────────── */}
-      <div className={s.tableWrap} aria-busy={isPending}>
-        {isPending && (
-          <div className={s.loadingOverlay}>
-            <span className={s.loadingDot} />
-            <span className={s.loadingDot} />
-            <span className={s.loadingDot} />
-          </div>
-        )}
-
-        {rows.length === 0 && !isPending ? (
+      <div className={s.tableWrap}>
+        {rows.length === 0 ? (
           <div className={s.empty}>
             <Receipt
               size={36}
@@ -152,87 +129,68 @@ export default function SettlementWorkspace({ exchangeId, staffRole }: Props) {
             <p>هنوز دوره‌ای تسویه نشده است.</p>
           </div>
         ) : (
-          <>
-            <div className={s.tableHead} role="row" aria-label="سرستون جدول تسویه">
-              <span role="columnheader">دوره</span>
-              <span role="columnheader">حجم</span>
-              <span role="columnheader">معاملات</span>
-              <span role="columnheader">کارمزد</span>
-              <span role="columnheader">درآمد خالص</span>
-              <span role="columnheader">وضعیت</span>
-              {canManage && <span role="columnheader">عملیات</span>}
-            </div>
-            {rows.map((row) => {
-              const statusCls = STATUS_CLASS[row.status] ?? '';
-              const Icon =
-                row.status === 'PAID'
-                  ? CheckCircle2
-                  : row.status === 'APPROVED'
-                    ? BadgeCheck
-                    : Clock;
+          <table className={s.table} aria-label="جدول تسویه">
+            <thead>
+              <tr className={s.tableHead}>
+                <th scope="col">دوره</th>
+                <th scope="col">حجم</th>
+                <th scope="col">معاملات</th>
+                <th scope="col">کارمزد</th>
+                <th scope="col">درآمد خالص</th>
+                <th scope="col">وضعیت</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => {
+                const statusCls = STATUS_CLASS[row.status] ?? '';
+                const Icon =
+                  row.status === 'PAID'
+                    ? CheckCircle2
+                    : row.status === 'APPROVED'
+                      ? BadgeCheck
+                      : Clock;
 
-              return (
-                <div key={row.id} className={s.tableRow} role="row">
-                  <span className={s.cellName} role="cell">
-                    <span style={{ fontVariantNumeric: 'tabular-nums', fontSize: '12px' }}>
-                      {fmtDate(row.periodStart)} — {fmtDate(row.periodEnd)}
-                    </span>
-                  </span>
-                  <span
-                    className={s.cellNum}
-                    role="cell"
-                    title={`${Number(row.totalVolume) / 100} ${row.currency}`}
-                  >
-                    {fmtNum(row.totalVolume)} {row.currency}
-                  </span>
-                  <span role="cell" style={{ fontVariantNumeric: 'tabular-nums' }}>
-                    {new Intl.NumberFormat('fa-IR').format(row.dealCount)}
-                  </span>
-                  <span className={s.cellNum} role="cell">
-                    {fmtNum(row.platformFee)} {row.currency}
-                  </span>
-                  <span
-                    className={s.cellNum}
-                    role="cell"
-                    style={{ color: 'var(--ds-success, #22c55e)', fontWeight: 600 }}
-                  >
-                    {fmtNum(row.exchangeNet)} {row.currency}
-                  </span>
-                  <span role="cell">
-                    <span className={`${s.statusBadge} ${statusCls}`}>
-                      <Icon size={11} aria-hidden />
-                      {STATUS_FA[row.status] ?? row.status}
-                    </span>
-                  </span>
-                  {canManage && (
-                    <span role="cell">
-                      {row.status === 'PENDING' && (
-                        <button
-                          type="button"
-                          className={`${s.actionBtn} ${s.approveBtn}`}
-                          disabled={actionPending === row.id}
-                          onClick={() => handleApprove(row.id)}
-                        >
-                          {actionPending === row.id ? (
-                            <Loader2 size={11} style={{ animation: 'spin 0.7s linear infinite' }} aria-hidden />
-                          ) : (
-                            'تأیید'
-                          )}
-                        </button>
-                      )}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </>
+                return (
+                  <tr key={row.id} className={s.tableRow}>
+                    <td className={s.cellName}>
+                      <span style={{ fontVariantNumeric: 'tabular-nums', fontSize: '12px' }}>
+                        {fmtDate(row.periodStart)} — {fmtDate(row.periodEnd)}
+                      </span>
+                    </td>
+                    <td
+                      className={s.cellNum}
+                      title={`${Number(row.totalVolume) / 100} ${row.currency}`}
+                    >
+                      {fmtNum(row.totalVolume)} {row.currency}
+                    </td>
+                    <td style={{ fontVariantNumeric: 'tabular-nums' }}>
+                      {new Intl.NumberFormat('fa-IR').format(row.dealCount)}
+                    </td>
+                    <td className={s.cellNum}>
+                      {fmtNum(row.platformFee)} {row.currency}
+                    </td>
+                    <td
+                      className={s.cellNum}
+                      style={{ color: 'var(--ds-status-success-fg)', fontWeight: 600 }}
+                    >
+                      {fmtNum(row.exchangeNet)} {row.currency}
+                    </td>
+                    <td>
+                      <span className={`${s.statusBadge} ${statusCls}`}>
+                        <Icon size={11} aria-hidden />
+                        {STATUS_FA[row.status] ?? row.status}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         )}
       </div>
 
       {rows.length > 0 && (
-        <p className={s.footer}>
-          {new Intl.NumberFormat('fa-IR').format(rows.length)} دوره تسویه
-        </p>
+        <p className={s.footer}>{new Intl.NumberFormat('fa-IR').format(rows.length)} دوره تسویه</p>
       )}
     </div>
   );

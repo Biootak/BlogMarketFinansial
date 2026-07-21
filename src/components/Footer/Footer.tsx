@@ -137,9 +137,9 @@ const Footer = ({ footerAd, siteName = 'Financila Market' }: FooterProps) => {
             >
               <h3 className={[heading.h5, 'mb-6'].join(' ')}>{menu.title}</h3>
               <ul className={space.stackMd}>
-                {menu.menus.map((item, itemIndex) => (
+                {menu.menus.map((item) => (
                   <motion.li
-                    key={itemIndex}
+                    key={item.href}
                     whileHover={{ x: -4 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 15 }}
                   >

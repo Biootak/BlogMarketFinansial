@@ -20,9 +20,11 @@ export function toPersianDate(date: Date): { year: number; month: number; day: n
   const gregorianMonth = date.getMonth() + 1;
   const gregorianDay = date.getDate();
 
-  let jY;
-  let jM;
-  let jD;
+  let jY: number;
+  // biome-ignore lint/style/useConst: jM and jD are assigned multiple times in branching logic below
+  let jM: number;
+  // biome-ignore lint/style/useConst: assigned conditionally in branching logic below
+  let jD: number;
   const gy = gregorianYear - 1600;
   const gm = gregorianMonth - 1;
   const gd = gregorianDay - 1;
@@ -31,7 +33,7 @@ export function toPersianDate(date: Date): { year: number; month: number; day: n
     Math.floor((gy + 3) / 4) -
     Math.floor((gy + 99) / 100) +
     Math.floor((gy + 399) / 400);
-  let i;
+  let i: number;
 
   for (i = 0; i < gm; ++i) g_day_no += [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][i];
   if (gm > 1 && ((gy % 4 === 0 && gy % 100 !== 0) || gy % 400 === 0)) ++g_day_no;

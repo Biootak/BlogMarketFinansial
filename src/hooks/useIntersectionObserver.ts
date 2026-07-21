@@ -21,6 +21,7 @@ function useIntersectionObserver(
     setEntry(entry);
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: updateEntry is stable, elementRef.current is a DOM ref
   useEffect(() => {
     const node = elementRef?.current; // DOM Ref
     const hasIOSupport = !!window.IntersectionObserver;

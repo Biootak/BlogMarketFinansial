@@ -4,7 +4,9 @@ import {
   CODE_BLOCK_LANGUAGUE_SYNTAX_DEFAULT,
 } from '../constants/code_block_languages';
 
-export const languagesLoader: Record<string, () => Promise<any>> = {
+type LanguageModule = { default: Parameters<ReturnType<typeof createLowlight>['register']>[1] };
+
+export const languagesLoader: Record<string, () => Promise<LanguageModule>> = {
   bash: () => import('highlight.js/lib/languages/bash'),
   c: () => import('highlight.js/lib/languages/c'),
   csharp: () => import('highlight.js/lib/languages/csharp'),
@@ -36,11 +38,12 @@ export async function loadLanguage(
 ) {
   if (lowlight.registered(languageName)) return false;
   try {
-    const { default: language } = await languagesLoader[languageName]?.();
+    const loader = languagesLoader[languageName];
+    if (!loader) return false;
+    const { default: language } = await loader();
     lowlight.register(languageName, language);
     return true;
-  } catch (error) {
-    console.error(error);
+  } catch {
     return false;
   }
 }

@@ -1,7 +1,7 @@
 'use client';
 
-import * as Sentry from '@sentry/nextjs';
 import { Button } from '@/components/ui/button';
+import * as Sentry from '@sentry/nextjs';
 import { AlertTriangle, Home, RefreshCw, ServerOff, WifiOff } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect } from 'react';

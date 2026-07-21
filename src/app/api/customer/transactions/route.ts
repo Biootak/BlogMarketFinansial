@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { NextResponse } from 'next/server';
 
 export const maxDuration = 20;
 
@@ -11,6 +12,19 @@ const PRIVATE_HEADERS = { 'Cache-Control': 'no-store, private' };
  * Authenticated. Returns the current user's LedgerEntry history (cursor-paginated).
  */
 export async function GET(request: Request) {
+  // Rate limit: 60 درخواست در دقیقه بر اساس IP
+  const ip = request.headers.get('x-forwarded-for')?.split(',').pop()?.trim() ?? 'unknown';
+  const rl = await checkRateLimit(`customer-txn:${ip}`, 'api');
+  if (!rl.success) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: { code: 'RATE_LIMITED', message: 'تعداد درخواست‌ها زیاد است. لطفاً کمی صبر کنید.' },
+      },
+      { status: 429, headers: PRIVATE_HEADERS },
+    );
+  }
+
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json(

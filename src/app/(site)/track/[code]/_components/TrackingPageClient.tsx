@@ -249,8 +249,8 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
                 <span>تاریخچه وضعیت</span>
               </div>
               <ol className={s.historyList}>
-                {data.statusLogs.map((log, i) => (
-                  <li key={i} className={s.historyItem}>
+                {data.statusLogs.map((log) => (
+                  <li key={`${log.toStatus}-${log.createdAt}`} className={s.historyItem}>
                     <span className={s.historyDot} aria-hidden />
                     <div className={s.historyBody}>
                       <span className={s.historyStatus}>

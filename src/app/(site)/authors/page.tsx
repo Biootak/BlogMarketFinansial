@@ -68,9 +68,9 @@ export default async function AuthorsPage() {
 
   return (
     <div dir="rtl" className="nc-PageAuthors relative bg-[color:var(--c-bg)] dark:bg-neutral-950">
+      {/* JSON-LD structured data — sanitized via JSON.stringify + unicode-escape of < */}
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
         }}

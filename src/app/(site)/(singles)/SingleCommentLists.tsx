@@ -54,6 +54,7 @@ const SingleCommentLists: FC<SingleCommentListsProps> = ({ comments }) => {
       {visibleComments < comments.length && (
         <div className="mt-8 flex justify-center">
           <button
+            type="button"
             onClick={showAllComments}
             className="
               group relative flex items-center gap-3 px-8 py-4 rounded-2xl

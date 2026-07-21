@@ -141,7 +141,6 @@ export default BaseImage.extend({
   },
 
   addNodeView() {
-    // biome-ignore lint/suspicious/noExplicitAny: TipTap React 19 compatibility
     return ReactNodeViewRenderer(ResizeImage as any);
   },
 });

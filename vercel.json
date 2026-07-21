@@ -15,6 +15,10 @@
     {
       "path": "/api/cron/publish-scheduled-posts",
       "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/expire-kyc",
+      "schedule": "0 2 * * *"
     }
   ]
 }

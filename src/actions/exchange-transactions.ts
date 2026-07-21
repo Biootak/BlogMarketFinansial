@@ -75,8 +75,10 @@ const TransactionSchema = z
 export type TransactionRow = {
   id: string;
   exchangeId: string;
-  customerId: string;
-  accountId: string;
+  /** nullable برای تراکنش‌های settlement-level */
+  customerId: string | null;
+  /** nullable برای تراکنش‌های settlement-level */
+  accountId: string | null;
   kind: string;
   status: string;
   /** مبلغ به صورت string (JSON-safe, BigInt از DB) — جایگزین number */
@@ -184,8 +186,8 @@ export async function getTransactions(
     rows: rows.map((r) => ({
       id: r.id,
       exchangeId: r.exchangeId,
-      customerId: r.customerId,
-      accountId: r.accountId,
+      customerId: r.customerId ?? null,
+      accountId: r.accountId ?? null,
       kind: r.kind,
       status: r.status,
       amount: bigIntToStr(r.amount),
@@ -256,8 +258,8 @@ export async function createTransaction(
         data: {
           id: dup.id,
           exchangeId: dup.exchangeId,
-          customerId: dup.customerId,
-          accountId: dup.accountId,
+          customerId: dup.customerId ?? null,
+          accountId: dup.accountId ?? null,
           kind: dup.kind,
           status: dup.status,
           amount: bigIntToStr(dup.amount),
@@ -460,8 +462,8 @@ export async function createTransaction(
     data: {
       id: txResult.id,
       exchangeId: txResult.exchangeId,
-      customerId: txResult.customerId,
-      accountId: txResult.accountId,
+      customerId: txResult.customerId ?? null,
+      accountId: txResult.accountId ?? null,
       kind: txResult.kind,
       status: txResult.status,
       amount: bigIntToStr(txResult.amount),
@@ -502,9 +504,12 @@ export async function getExchangeStats(exchangeId: string): Promise<{
     };
   }
 
-  // TODO-M4: وقتی primaryCurrency به schema اضافه شد (migration)، از exchange بخوانیم
-  // فعلاً hardcoded 'AFN' — primaryCurrency هنوز در schema وجود ندارد
-  const statsCurrency = 'AFN';
+  // primaryCurrency از Exchange بخوانیم — M4 migration انجام شد
+  const exchangeRecord = await prisma.exchange.findUnique({
+    where: { id: exchangeId },
+    select: { primaryCurrency: true },
+  });
+  const statsCurrency = exchangeRecord?.primaryCurrency ?? 'AFN';
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);

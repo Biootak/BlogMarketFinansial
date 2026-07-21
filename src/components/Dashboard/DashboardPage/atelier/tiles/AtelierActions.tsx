@@ -134,8 +134,10 @@ interface AtelierActionsProps {
 
 export default function AtelierActions({ userRole }: AtelierActionsProps) {
   const actions = userRole === 'OWNER' ? OWNER : userRole === 'ADMIN' ? ADMIN : AUTHOR;
-  const primary = actions[0]!;
+  const primary = actions[0];
   const rest = actions.slice(1);
+
+  if (!primary) return null;
 
   return (
     <section className="at-tile at-actions" aria-label="دسترسی سریع">

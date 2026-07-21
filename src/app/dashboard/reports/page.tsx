@@ -2,9 +2,10 @@
 
 import { PageHeader } from '@/components/Dashboard/primitives';
 import { ReportsSkeleton } from '@/components/Skeletons';
-import { Activity, BarChart3, RefreshCw, Terminal } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useState } from 'react';
 import { HiOutlineChartBar, HiOutlineCommandLine, HiOutlineSquares2X2 } from 'react-icons/hi2';
 
 const SystemReports = dynamic(() => import('@/components/Dashboard/Reports/SystemReports'), {
@@ -23,15 +24,16 @@ const SystemLogsData = dynamic(() => import('./SystemLogsData'), {
 });
 
 export default function ReportsPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
-    setTimeout(() => {
-      window.location.reload();
-    }, 300);
-  };
+    router.refresh();
+    // Re-enable button after brief animation
+    setTimeout(() => setIsRefreshing(false), 800);
+  }, [router]);
 
   const tabs = [
     {
@@ -65,6 +67,7 @@ export default function ReportsPage() {
         description="گزارش‌های سیستمی، فعالیت‌ها و لاگ‌های رویداد"
         actions={
           <button
+            type="button"
             onClick={handleRefresh}
             disabled={isRefreshing}
             className="at-btn at-btn--icon"

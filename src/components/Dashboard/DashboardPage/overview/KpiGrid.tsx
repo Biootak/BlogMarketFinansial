@@ -82,15 +82,14 @@ function MiniSparkline({
   const pathRef = useRef<SVGPathElement>(null);
   const w = 100;
   const h = 28;
-  if (!data.length) {
-    return <div className="dash-skeleton h-7 w-full" aria-hidden />;
-  }
-  const min = Math.min(...data, 0);
-  const max = Math.max(...data, 1);
+
+  // Compute derived values — needed for useEffect dependency below
+  const min = data.length ? Math.min(...data, 0) : 0;
+  const max = data.length ? Math.max(...data, 1) : 1;
   const span = max - min || 1;
-  const step = data.length > 1 ? w / (data.length - 1) : w;
+  const stepW = data.length > 1 ? w / (data.length - 1) : w;
   const pts = data.map((v, i) => {
-    const x = i * step;
+    const x = i * stepW;
     const y = h - 2 - ((v - min) / span) * (h - 4);
     return [x, y] as const;
   });
@@ -99,7 +98,9 @@ function MiniSparkline({
     .join(' ');
   const area = `${line} L${w},${h} L0,${h} Z`;
 
+  // useEffect must be before early return (Rules of Hooks)
   useEffect(() => {
+    if (!data.length) return;
     if (typeof window === 'undefined') return;
     const el = pathRef.current;
     if (!el) return;
@@ -115,18 +116,22 @@ function MiniSparkline({
     let start: number | null = null;
     const easeOutExpo = (t: number) => (t >= 1 ? 1 : 1 - 2 ** (-10 * t));
 
-    const step = (ts: number) => {
+    const animate = (ts: number) => {
       if (start === null) start = ts;
       const t = Math.min(1, (ts - start) / duration);
       el.style.strokeDashoffset = String(1 - easeOutExpo(t));
       if (t < 1) {
-        raf = window.requestAnimationFrame(step);
+        raf = window.requestAnimationFrame(animate);
       }
     };
 
-    raf = window.requestAnimationFrame(step);
+    raf = window.requestAnimationFrame(animate);
     return () => window.cancelAnimationFrame(raf);
-  }, [range, line]);
+  }, [range, line, data.length]);
+
+  if (!data.length) {
+    return <div className="dash-skeleton h-7 w-full" aria-hidden />;
+  }
 
   return (
     <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="w-full h-7" aria-hidden>

@@ -8,9 +8,9 @@
  */
 
 import {
+  type BeneficiaryRow,
   createBeneficiary,
   deleteBeneficiary,
-  type BeneficiaryRow,
   updateBeneficiary,
 } from '@/actions/beneficiaries';
 import {
@@ -159,11 +159,7 @@ export default function BeneficiaryManager({ initialBeneficiaries }: Props) {
           <p className={s.emptyDesc}>
             دریافت‌کنندگان مکرر را ذخیره کنید تا در انتقال‌های بعدی سریع‌تر عمل کنید.
           </p>
-          <button
-            type="button"
-            className={s.addBtn}
-            onClick={() => setModal({ type: 'create' })}
-          >
+          <button type="button" className={s.addBtn} onClick={() => setModal({ type: 'create' })}>
             <Plus size={15} aria-hidden />
             افزودن اولین مخاطب
           </button>
@@ -176,11 +172,7 @@ export default function BeneficiaryManager({ initialBeneficiaries }: Props) {
           {rows.map((row, i) => {
             const isExpanded = expandedId === row.id;
             return (
-              <li
-                key={row.id}
-                className={s.card}
-                style={{ '--i': i } as React.CSSProperties}
-              >
+              <li key={row.id} className={s.card} style={{ '--i': i } as React.CSSProperties}>
                 <button
                   type="button"
                   className={s.cardMain}
@@ -249,7 +241,13 @@ export default function BeneficiaryManager({ initialBeneficiaries }: Props) {
 
       {/* ── Create Modal ─────────────────────────────────── */}
       {modal.type === 'create' && (
-        <div className={s.modal} role="dialog" aria-modal aria-label="افزودن مخاطب جدید">
+        <div
+          className={s.modal}
+          role="dialog"
+          aria-modal
+          aria-label="افزودن مخاطب جدید"
+          onKeyDown={(e) => e.key === 'Escape' && closeModal()}
+        >
           <div className={s.modalHeader}>
             <h2 className={s.modalTitle}>مخاطب جدید</h2>
             <button type="button" onClick={closeModal} className={s.closeBtn} aria-label="بستن">
@@ -304,9 +302,9 @@ export default function BeneficiaryManager({ initialBeneficiaries }: Props) {
               </div>
             )}
             {saved && (
-              <div className={s.successMsg} role="status">
+              <output className={s.successMsg}>
                 <Check size={14} aria-hidden /> ذخیره شد
-              </div>
+              </output>
             )}
 
             <div className={s.formFooter}>
@@ -328,7 +326,13 @@ export default function BeneficiaryManager({ initialBeneficiaries }: Props) {
 
       {/* ── Edit Modal ───────────────────────────────────── */}
       {modal.type === 'edit' && (
-        <div className={s.modal} role="dialog" aria-modal aria-label="ویرایش مخاطب">
+        <div
+          className={s.modal}
+          role="dialog"
+          aria-modal
+          aria-label="ویرایش مخاطب"
+          onKeyDown={(e) => e.key === 'Escape' && closeModal()}
+        >
           <div className={s.modalHeader}>
             <h2 className={s.modalTitle}>ویرایش مخاطب</h2>
             <button type="button" onClick={closeModal} className={s.closeBtn} aria-label="بستن">
@@ -349,8 +353,11 @@ export default function BeneficiaryManager({ initialBeneficiaries }: Props) {
               />
             </div>
             <div className={s.field}>
-              <label className={s.label}>شناسه (قابل ویرایش نیست)</label>
+              <label htmlFor="eb-identifier" className={s.label}>
+                شناسه (قابل ویرایش نیست)
+              </label>
               <input
+                id="eb-identifier"
                 className={s.input}
                 value={modal.row.identifier}
                 readOnly
@@ -396,7 +403,13 @@ export default function BeneficiaryManager({ initialBeneficiaries }: Props) {
 
       {/* ── Delete Confirmation ──────────────────────────── */}
       {modal.type === 'delete' && (
-        <div className={s.modal} role="dialog" aria-modal aria-label="تأیید حذف">
+        <div
+          className={s.modal}
+          role="dialog"
+          aria-modal
+          aria-label="تأیید حذف"
+          onKeyDown={(e) => e.key === 'Escape' && closeModal()}
+        >
           <div className={s.modalHeader}>
             <h2 className={s.modalTitle}>حذف مخاطب</h2>
             <button type="button" onClick={closeModal} className={s.closeBtn} aria-label="بستن">
@@ -408,9 +421,7 @@ export default function BeneficiaryManager({ initialBeneficiaries }: Props) {
               <Trash2 size={22} strokeWidth={1.5} />
             </div>
             <p className={s.deleteMsg}>
-              آیا می‌خواهید{' '}
-              <strong>{modal.row.name}</strong>{' '}
-              را از لیست مخاطبان حذف کنید؟
+              آیا می‌خواهید <strong>{modal.row.name}</strong> را از لیست مخاطبان حذف کنید؟
             </p>
             {error && (
               <div className={s.errorMsg} role="alert">
@@ -425,7 +436,11 @@ export default function BeneficiaryManager({ initialBeneficiaries }: Props) {
               onClick={handleDelete}
               disabled={isPending}
             >
-              {isPending ? <Loader2 size={14} className={s.spin} aria-hidden /> : <Trash2 size={14} aria-hidden />}
+              {isPending ? (
+                <Loader2 size={14} className={s.spin} aria-hidden />
+              ) : (
+                <Trash2 size={14} aria-hidden />
+              )}
               حذف کن
             </button>
             <button type="button" onClick={closeModal} className={s.cancelBtn}>

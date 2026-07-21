@@ -77,9 +77,9 @@ const ContactCTAClient: FC<ContactCTAClientProps> = ({
         </header>
 
         {/* ── Social Proof Stats ────────────────────────────────────────── */}
-        <div className={s.statsRow} role="list" aria-label="آمار خدمات">
+        <ul className={s.statsRow} aria-label="آمار خدمات">
           {STATS.map(({ icon: Icon, value, label }) => (
-            <div key={label} className={s.statCard} role="listitem">
+            <li key={label} className={s.statCard}>
               <div className={s.statIcon} aria-hidden="true">
                 <Icon size={18} />
               </div>
@@ -87,9 +87,9 @@ const ContactCTAClient: FC<ContactCTAClientProps> = ({
                 <div className={s.statValue}>{value}</div>
                 <div className={s.statLabel}>{label}</div>
               </div>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
 
         {/* ── Main Card ────────────────────────────────────────────────── */}
         <div className={s.card}>

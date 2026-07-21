@@ -104,8 +104,7 @@ export default function HeaderAdBarClient({ ad }: { ad: Ad }) {
     : {};
 
   return (
-    <div
-      role="region"
+    <section
       aria-label="تبلیغ"
       data-theme={ad.theme}
       data-variant={ad.variant}
@@ -194,6 +193,6 @@ export default function HeaderAdBarClient({ ad }: { ad: Ad }) {
           </button>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

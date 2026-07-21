@@ -125,7 +125,6 @@ export const Embed = Node.create<EmbedOptions>({
   },
 
   addNodeView() {
-    // biome-ignore lint/suspicious/noExplicitAny: TipTap React 19 compatibility
     return ReactNodeViewRenderer(EmbedBlock as any);
   },
 

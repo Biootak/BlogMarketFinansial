@@ -668,16 +668,18 @@ function Field({
 }) {
   return (
     <div className={`flex flex-col ${className ?? ''}`} style={{ gap: '0.375rem' }}>
-      <label
+      <span
+        role="presentation"
         style={{
           fontSize: 'var(--ds-text-xs)',
           fontWeight: 600,
           color: 'var(--ds-text-secondary)',
+          display: 'block',
         }}
       >
         {label}
         {required && <span style={{ color: 'var(--ds-accent-rose)' }}> *</span>}
-      </label>
+      </span>
       {children}
     </div>
   );

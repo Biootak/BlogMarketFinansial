@@ -1,6 +1,4 @@
-﻿/* beneficiaries.module.css â€” Premium dark glass design */
-
-.root {
+﻿/* beneficiaries.module.css â€” Premium dark glass design */ .root {
   position: relative;
   min-height: 100dvh;
   padding-block: var(--ds-space-10) var(--ds-space-12);
@@ -13,9 +11,16 @@
   position: fixed;
   inset: 0;
   z-index: -1;
-  background:
-    radial-gradient(ellipse 60% 40% at 70% 20%, color-mix(in oklch, var(--ds-primary) 6%, transparent) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 30% at 20% 80%, color-mix(in oklch, var(--ds-primary) 4%, transparent) 0%, transparent 70%);
+  background: radial-gradient(
+      ellipse 60% 40% at 70% 20%,
+      color-mix(in oklch, var(--ds-primary) 6%, transparent) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 50% 30% at 20% 80%,
+      color-mix(in oklch, var(--ds-primary) 4%, transparent) 0%,
+      transparent 70%
+    );
   pointer-events: none;
 }
 
@@ -149,8 +154,14 @@
 }
 
 @keyframes cardIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .cardMain {
@@ -227,8 +238,14 @@
   gap: var(--ds-space-3);
 }
 @keyframes expandIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .cardNote {
@@ -259,21 +276,28 @@
   transition: transform 0.12s, opacity 0.12s;
   border: 1px solid transparent;
 }
-.editBtn:active, .deleteBtn:active { transform: scale(0.96); }
+.editBtn:active,
+.deleteBtn:active {
+  transform: scale(0.96);
+}
 
 .editBtn {
   background: color-mix(in oklch, var(--ds-primary) 10%, transparent);
   color: var(--ds-primary);
   border-color: color-mix(in oklch, var(--ds-primary) 25%, transparent);
 }
-.editBtn:hover { opacity: 0.8; }
+.editBtn:hover {
+  opacity: 0.8;
+}
 
 .deleteBtn {
   background: color-mix(in oklch, var(--ds-error) 8%, transparent);
   color: var(--ds-error);
   border-color: color-mix(in oklch, var(--ds-error) 20%, transparent);
 }
-.deleteBtn:hover { opacity: 0.8; }
+.deleteBtn:hover {
+  opacity: 0.8;
+}
 
 /* Backdrop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .backdrop {
@@ -284,7 +308,14 @@
   backdrop-filter: blur(4px);
   animation: fadeIn 0.15s ease;
 }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 
 /* Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .modal {
@@ -312,12 +343,24 @@
   }
 }
 @keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to   { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 @keyframes popIn {
-  from { transform: translate(-50%, -48%) scale(0.95); opacity: 0; }
-  to   { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  from {
+    transform: translate(-50%, -48%) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
 }
 
 .modalHeader {
@@ -347,8 +390,12 @@
   cursor: pointer;
   transition: background 0.12s;
 }
-.closeBtn:hover { background: color-mix(in oklch, var(--ds-error) 10%, var(--ds-surface-2)); }
-.closeBtn:focus-visible { outline: 2px dashed var(--ds-primary); }
+.closeBtn:hover {
+  background: color-mix(in oklch, var(--ds-error) 10%, var(--ds-surface-2));
+}
+.closeBtn:focus-visible {
+  outline: 2px dashed var(--ds-primary);
+}
 
 /* Form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .form {
@@ -441,9 +488,16 @@
   cursor: pointer;
   transition: opacity 0.15s, transform 0.15s;
 }
-.submitBtn:hover:not(:disabled) { opacity: 0.88; }
-.submitBtn:active:not(:disabled) { transform: scale(0.97); }
-.submitBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+.submitBtn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+.submitBtn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.submitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 .dangerBtn {
   flex: 1;
@@ -461,9 +515,16 @@
   cursor: pointer;
   transition: opacity 0.15s, transform 0.15s;
 }
-.dangerBtn:hover:not(:disabled) { opacity: 0.85; }
-.dangerBtn:active:not(:disabled) { transform: scale(0.97); }
-.dangerBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+.dangerBtn:hover:not(:disabled) {
+  opacity: 0.85;
+}
+.dangerBtn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.dangerBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 .cancelBtn {
   height: 40px;
@@ -477,7 +538,9 @@
   cursor: pointer;
   transition: opacity 0.12s;
 }
-.cancelBtn:hover { opacity: 0.75; }
+.cancelBtn:hover {
+  opacity: 0.75;
+}
 
 /* Delete body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .deleteBody {
@@ -512,10 +575,20 @@
 .spin {
   animation: spin 0.7s linear infinite;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 375px) {
-  .pageHeader { flex-direction: column; }
-  .addBtn { margin-inline-start: 0; width: 100%; justify-content: center; }
+  .pageHeader {
+    flex-direction: column;
+  }
+  .addBtn {
+    margin-inline-start: 0;
+    width: 100%;
+    justify-content: center;
+  }
 }

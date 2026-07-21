@@ -43,7 +43,7 @@ const PostsList: React.FC<PostsListProps> = ({ posts, ads = [], className = '' }
   if (!hero) return null;
 
   // آگهی‌های masonry با de-dup هوشمند
-  const adEntries = useMemoAdEntries(rest.length, ads, ADS_INTERVAL);
+  const adEntries = buildMemoAdEntries(rest.length, ads, ADS_INTERVAL);
 
   // ساخت آرایه‌ی ترکیبی از پست و تبلیغ برای masonry
   type ListEntry =
@@ -51,14 +51,14 @@ const PostsList: React.FC<PostsListProps> = ({ posts, ads = [], className = '' }
     | { kind: 'ad'; ad: Advertisement; position: number };
 
   const mixedList: ListEntry[] = [];
-  rest.forEach((post, _i) => {
+  for (const post of rest) {
     mixedList.push({ kind: 'post', post });
-  });
+  }
   // جای‌گذاری تبلیغ‌ها در موقعیت‌های صحیح
-  adEntries.forEach(({ ad, position }) => {
+  for (const { ad, position } of adEntries) {
     const insertAt = Math.min((position + 1) * ADS_INTERVAL, mixedList.length);
     mixedList.splice(insertAt, 0, { kind: 'ad', ad, position });
-  });
+  }
 
   return (
     <div className={cn('space-y-7 sm:space-y-9', className)}>
@@ -118,13 +118,11 @@ const PostsList: React.FC<PostsListProps> = ({ posts, ads = [], className = '' }
 };
 
 /* ---------- Local helper — بدون React import ---------- */
-function useMemoAdEntries(
+function buildMemoAdEntries(
   totalItems: number,
   ads: Advertisement[],
   interval: number,
 ): Array<{ ad: Advertisement; position: number }> {
-  // چون این یک server-safe client component هست، از React.useMemo استفاده نمی‌کنیم
-  // تا وابستگی اضافه نشه. در عوض ساده compute می‌کنیم (deterministic per render).
   return buildAdEntries(totalItems, ads, interval, 0);
 }
 

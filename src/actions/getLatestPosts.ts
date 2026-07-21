@@ -115,9 +115,7 @@ async function fetchLatestPosts(
       return typeof img === 'string' && img.trim().length > 0;
     });
     return cleaned as PostWithRelations[];
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-    }
+  } catch {
     return [];
   }
 }
@@ -156,9 +154,7 @@ async function fetchPublishedPostCount(): Promise<number> {
         AND: [{ featuredImage: { not: '' } }, { featuredImage: { not: ' ' } }],
       },
     });
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-    }
+  } catch {
     return 0;
   }
 }

@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
 
     revalidatePath(path);
     return NextResponse.json({ success: true, data: { revalidated: true, now: Date.now() } });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, error: { code: 'INTERNAL_ERROR', message: 'خطا در پاکسازی کش' } },
       { status: 500 },

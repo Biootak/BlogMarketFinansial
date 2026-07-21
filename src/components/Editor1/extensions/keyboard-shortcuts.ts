@@ -33,7 +33,7 @@
 
 import { Extension } from '@tiptap/core';
 
-export type KeyboardShortcutsOptions = {};
+export type KeyboardShortcutsOptions = Record<string, never>;
 
 export const KeyboardShortcuts = Extension.create<KeyboardShortcutsOptions>({
   name: 'customKeyboardShortcuts',

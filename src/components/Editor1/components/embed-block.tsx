@@ -23,7 +23,7 @@ const isSafeEmbedSrc = (value: string | undefined): value is string =>
   typeof value === 'string' && /^https?:\/\//i.test(value);
 
 const EmbedBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, selected }) => {
-  const { src, provider, embedId, width, height } = node.attrs;
+  const { src, provider, embedId, width: _width, height } = node.attrs;
   const safeSrc = isSafeEmbedSrc(src) ? src : '#';
   const [isResizing, setIsResizing] = useState(false);
   const [currentHeight, setCurrentHeight] = useState(height);

@@ -87,6 +87,18 @@ export const socialToDropdownItem = (
 
 export const generateUniqueId = customAlphabet('1234567890abcdef', 10);
 
+/**
+ * normalizeDigits — تبدیل ارقام فارسی/عربی Unicode به ASCII
+ *
+ * مثال: «۱۴۰۳/۰۶/۱۵» → «1403/06/15»
+ * Unicode: فارسی ۰-۹ = U+06F0-U+06F9 ، عربی ۰-۹ = U+0660-U+0669
+ *
+ * در فرم‌های KYC، beneficiary و هر جا کاربر عدد فارسی وارد می‌کند استفاده شود.
+ */
+export function normalizeDigits(s: string): string {
+  return s.replace(/[\u0660-\u0669\u06F0-\u06F9]/g, (c) => String(c.charCodeAt(0) & 0xf));
+}
+
 // نویسه‌گردانی فارسی به انگلیسی (Transliteration) - برای کلماتی که در دیکشنری نیستند
 const persianToEnglishMap: Record<string, string> = {
   ا: 'a',
@@ -210,6 +222,7 @@ export function validateSlug(slug: string): boolean {
   return slugRegex.test(slug);
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: generic variadic function requires any for correct inference
 export function debounce<F extends (...args: any[]) => any>(func: F, waitFor: number) {
   let timeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -468,14 +481,14 @@ export function htmlToEditorContent(html: string): JSONContent {
       const element = node as Element;
       const content: JSONContent[] = [];
 
-      element.childNodes.forEach((child) => {
+      for (const child of Array.from(element.childNodes)) {
         const parsed = parseNode(child);
         if (Array.isArray(parsed)) {
           content.push(...parsed);
         } else {
           content.push(parsed);
         }
-      });
+      }
 
       switch (element.tagName.toLowerCase()) {
         case 'p':
@@ -552,7 +565,8 @@ export function htmlToEditorContent(html: string): JSONContent {
               attrs: { tex: element.textContent || '' },
             };
           }
-        // Fallthrough to default case if no special handling
+          // For other divs, fall through to wrap content in a paragraph
+          return content;
         default:
           // For unknown elements, we'll wrap the content in a paragraph
           return content;
@@ -564,16 +578,16 @@ export function htmlToEditorContent(html: string): JSONContent {
 
   function parseTableContent(tableElement: Element): JSONContent[] {
     const rows: JSONContent[] = [];
-    tableElement.querySelectorAll('tr').forEach((row) => {
+    for (const row of Array.from(tableElement.querySelectorAll('tr'))) {
       const cells: JSONContent[] = [];
-      row.querySelectorAll('td, th').forEach((cell) => {
+      for (const cell of Array.from(row.querySelectorAll('td, th'))) {
         cells.push({
           type: cell.tagName.toLowerCase() === 'th' ? 'tableHeader' : 'tableCell',
           content: parseNode(cell) as JSONContent[],
         });
-      });
+      }
       rows.push({ type: 'tableRow', content: cells });
-    });
+    }
     return rows;
   }
 

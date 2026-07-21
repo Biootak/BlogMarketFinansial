@@ -73,7 +73,7 @@ export async function getPresignedUrl(
   try {
     const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
     return { success: true, url: presignedUrl, key };
-  } catch (error) {
+  } catch {
     return {
       success: false,
       message: 'ایجاد Presigned URL با خطا مواجه شد.',

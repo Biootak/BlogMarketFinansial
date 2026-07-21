@@ -1,7 +1,6 @@
 'use server';
 
 import db from '@/lib/db';
-import { revalidatePath } from '@/lib/revalidate';
 import { checkReportAccess } from './auth';
 
 export type ActivityLog = {
@@ -21,6 +20,14 @@ export async function getActivityLog(page = 1, limit = 10) {
     await checkReportAccess();
     const skip = (page - 1) * limit;
 
+    // فیلتر مشترک برای هم query و هم count — تا total دقیق باشد
+    // as const حذف شد چون Prisma types readonly arrays را نمی‌پذیرند
+    const where = {
+      user: {
+        AND: [{ name: { not: '' } }, { email: { not: '' } }],
+      },
+    };
+
     const [activities, total] = await Promise.all([
       db.activityLog.findMany({
         skip,
@@ -36,16 +43,13 @@ export async function getActivityLog(page = 1, limit = 10) {
             },
           },
         },
-        where: {
-          user: {
-            AND: [{ name: { not: '' } }, { email: { not: '' } }],
-          },
-        },
+        where,
       }),
-      db.activityLog.count(),
+      db.activityLog.count({ where }),
     ]);
 
-    revalidatePath('/dashboard/activity');
+    // revalidatePath در Server Action اشتباه است — این تابع فقط read است
+    // و نیاز به invalidation ندارد. حذف شد.
 
     return {
       success: true,
@@ -57,7 +61,7 @@ export async function getActivityLog(page = 1, limit = 10) {
         total,
       },
     };
-  } catch (error) {
+  } catch {
     return {
       success: false,
       message: 'خطا در دریافت لاگ‌های فعالیت',

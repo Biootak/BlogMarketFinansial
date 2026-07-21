@@ -65,7 +65,7 @@ export const Field = React.forwardRef<HTMLInputElement | null, FieldProps>(funct
     trailing,
     showCounter = false,
     inputClassName,
-    autoFocus,
+    autoFocus: _autoFocus,
     name,
     onKeyDown,
   },

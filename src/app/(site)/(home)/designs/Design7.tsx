@@ -101,13 +101,14 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
     return () => window.removeEventListener('keydown', handleKey);
   }, [goNext, goPrev]);
 
-  if (!initialPosts?.length) return <CardLarge1Skeleton />;
-
-  const mainPost = initialPosts[activeIndex];
-
-  // تم پست اصلی + تم side cards در یک useMemo با deps stable
-  // 2026-06-28: وابسته به activeIndex نه otherPosts (که هر رندر آرایه جدید بود و useMemo را خنثی می‌کرد)
+  // تم پست اصلی + تم side cards — باید قبل از early return باشد (Rules of Hooks)
   const { mainTheme, otherPosts, sideThemes } = useMemo(() => {
+    if (!initialPosts?.length)
+      return {
+        mainTheme: getCategoryTheme(),
+        otherPosts: [],
+        sideThemes: [] as ReturnType<typeof getCategoryTheme>[],
+      };
     const current = initialPosts[activeIndex];
     const others = initialPosts.filter((_, i) => i !== activeIndex);
     return {
@@ -120,23 +121,18 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
   }, [initialPosts, activeIndex]);
 
   // پیدا کردن نرخ‌های حواله مرتبط (از RateList های فعال)
-  // به صورت flat list از RateItem برای نمایش چرخشی
   const transferRateItems: RateItem[] = useMemo(() => {
-    if (!rateLists || rateLists.length === 0) return [];
+    if (!rateLists || rateLists.length === 0 || !initialPosts?.length) return [];
 
+    const mainPost = initialPosts[activeIndex];
     const cat = (
-      mainPost.categories?.[0]?.slug ||
-      mainPost.categories?.[0]?.name ||
+      mainPost?.categories?.[0]?.slug ||
+      mainPost?.categories?.[0]?.name ||
       ''
     ).toLowerCase();
 
-    // فیلتر کردن RateList های مرتبط بر اساس دسته‌بندی پست
     let relevantLists = rateLists;
-    if (/حواله|مoney.?transfer|ارسال/.test(cat)) {
-      // اگه دسته خودش حواله هست، همه رو نشون بده
-      relevantLists = rateLists;
-    } else if (/دلار|دلار آمریکا|usd/.test(cat)) {
-      // اولویت لیست‌هایی که توشون USD هست
+    if (/دلار|دلار آمریکا|usd/.test(cat)) {
       relevantLists = rateLists.filter((l) =>
         l.rates.some((r) => /دلار|usd|افغانی/i.test(r.title)),
       );
@@ -151,16 +147,12 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
       if (relevantLists.length === 0) relevantLists = rateLists;
     }
 
-    // از همه لیست‌های مرتبط، فقط RateItem هایی که خرید/فروش دارن ("|") رو جمع می‌کنیم
     const items: RateItem[] = [];
     for (const list of relevantLists) {
-      // لیست‌های خالی رو رد کن
       if (!list.rates || list.rates.length === 0) continue;
       for (const item of list.rates) {
-        // فقط نرخ‌هایی که value شامل "|" هست (یعنی خرید و فروش جدا تعریف شدن)
         const value = String(item.value || '');
         if (!value.includes('|')) continue;
-        // حذف duplicate title
         if (!items.some((i) => i.title === item.title)) {
           items.push(item);
         }
@@ -168,13 +160,14 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
       if (items.length >= 12) break;
     }
     return items;
-  }, [rateLists, mainPost]);
+  }, [rateLists, initialPosts, activeIndex]);
 
-  // morphTick حذف شد — قبلاً هر ۴ ثانیه یه tick می‌زد که باعث re-render کل می‌شد
-  // الان viewCount مستقیماً نمایش داده می‌شه (بدون morph)
-
-  // State برای pause کردن auto-rotate bridge نرخ‌ها از بیرون (مثلاً hover)
+  // State برای pause کردن auto-rotate bridge نرخ‌ها از بیرون
   const [isBridgePaused, setIsBridgePaused] = useState(false);
+
+  if (!initialPosts?.length) return <CardLarge1Skeleton />;
+
+  const mainPost = initialPosts[activeIndex];
 
   return (
     <section className={`relative ${className}`}>

@@ -42,7 +42,7 @@
 
 import { cn } from '@/lib/utils';
 import type { PostWithRelations } from '@/types/types';
-import { isLeapJalaaliYear, jalaaliMonthLength, toGregorian, toJalaali } from 'jalaali-js';
+import { jalaaliMonthLength, toGregorian, toJalaali } from 'jalaali-js';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import {
@@ -114,10 +114,6 @@ const STATUS_LABEL: Record<StatusKey, string> = {
 // All conversion goes through `jalaali-js` (Borkowski's algorithm,
 // already a project dep). Kept thin here so the calendar logic
 // stays readable.
-
-function jalaliIsLeap(y: number): boolean {
-  return isLeapJalaaliYear(y);
-}
 
 function jalaliDaysInMonth(y: number, m: number): number {
   if (m <= 6) return 31;

@@ -734,6 +734,8 @@ model Exchange {
   website              String?
   /// آیا در جدول مقایسه /money-transfer نشان داده شود
   showInComparison     Boolean           @default(false)
+  /// ارز پایه صرافی برای محاسبه آمار — پیش‌فرض AFN
+  primaryCurrency      String            @default("AFN")
   /// ارزهایی که این صرافی مجاز به ثبت قیمت برای آن‌ها است
   allowedCurrencies    String[]          @default([])
   /// مدت اعتبار quote (دقیقه) — پیش‌فرض ۶۰
@@ -856,6 +858,8 @@ model KycRecord {
   rejectedReason String?
   submittedAt    DateTime?
   reviewedAt     DateTime?
+  /// تاریخ انقضای KYC — برای compliance (پیش‌فرض ۲ سال از reviewedAt)
+  expiresAt      DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime
   User           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -890,8 +894,10 @@ model KycVerification {
 model LedgerEntry {
   id             String          @id
   exchangeId     String
-  accountId      String
-  customerId     String
+  /// nullable برای LedgerEntry های settlement که مختص حساب مشتری نیستند
+  accountId      String?
+  /// nullable برای LedgerEntry های settlement-level
+  customerId     String?
   txnId          String?
   direction      LedgerDirection
   amount         BigInt
@@ -900,8 +906,8 @@ model LedgerEntry {
   description    String?
   createdById    String?
   createdAt      DateTime        @default(now())
-  FintechAccount FintechAccount  @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  Customer       Customer        @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  FintechAccount FintechAccount? @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  Customer       Customer?       @relation(fields: [customerId], references: [id], onDelete: Cascade)
   Exchange       Exchange        @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
   Transaction    Transaction?    @relation(fields: [txnId], references: [id])
 
@@ -928,8 +934,10 @@ model RolePermission {
 model Transaction {
   id             String            @id
   exchangeId     String
-  customerId     String
-  accountId      String
+  /// nullable برای تراکنش‌های settlement که مستقیماً به مشتری تعلق ندارند
+  customerId     String?
+  /// nullable برای تراکنش‌های settlement
+  accountId      String?
   kind           TransactionKind
   status         TransactionStatus @default(PENDING)
   amount         BigInt
@@ -949,8 +957,8 @@ model Transaction {
   updatedAt      DateTime
   FraudReview    FraudReview[]
   LedgerEntry    LedgerEntry[]
-  FintechAccount FintechAccount    @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  Customer       Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  FintechAccount FintechAccount?   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  Customer       Customer?         @relation(fields: [customerId], references: [id], onDelete: Cascade)
   Exchange       Exchange          @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
 
   @@index([accountId, createdAt(sort: Desc)])

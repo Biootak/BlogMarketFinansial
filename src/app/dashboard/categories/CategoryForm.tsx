@@ -9,7 +9,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -110,7 +117,7 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
         } else {
           toast({ title: 'خطا', description: result.message, variant: 'destructive' });
         }
-      } catch (error) {
+      } catch {
         // Error handled by action result — no console needed
         toast({
           title: 'خطا',
@@ -140,10 +147,10 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
           name="name"
           render={({ field }) => (
             <FormItem>
-              <label className="at-field__label">
+              <FormLabel className="at-field__label">
                 <HiOutlineFolder className="at-field__ico at-field__ico--emerald size-4" />
                 نام دسته‌بندی
-              </label>
+              </FormLabel>
               <FormControl>
                 <Input {...field} className="at-input" placeholder="مثلاً: بازار سرمایه" />
               </FormControl>
@@ -157,10 +164,10 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
           name="slug"
           render={({ field }) => (
             <FormItem>
-              <label className="at-field__label">
+              <FormLabel className="at-field__label">
                 <HiOutlineLink className="at-field__ico at-field__ico--blue size-4" />
                 اسلاگ
-              </label>
+              </FormLabel>
               <FormControl>
                 <Input
                   {...field}
@@ -182,10 +189,10 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
           control={form.control}
           render={({ field }) => (
             <FormItem>
-              <label className="at-field__label">
+              <FormLabel className="at-field__label">
                 <HiOutlineTag className="at-field__ico at-field__ico--emerald size-4" />
                 دسته‌بندی‌های والد
-              </label>
+              </FormLabel>
               <Select
                 dir="rtl"
                 onValueChange={(value) => {
@@ -242,10 +249,10 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
           name="thumbnail"
           render={({ field }) => (
             <FormItem>
-              <label className="at-field__label">
+              <FormLabel className="at-field__label">
                 <HiOutlinePhoto className="at-field__ico at-field__ico--amber size-4" />
                 تصویر شاخص
-              </label>
+              </FormLabel>
               <FormControl>
                 <ImageUploader
                   onImageUpload={(urls) => form.setValue('thumbnail', urls[0] || null)}
@@ -322,7 +329,7 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
   return (
     <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
       <DialogTrigger asChild>
-        <button className="at-btn at-btn--primary">
+        <button type="button" className="at-btn at-btn--primary">
           <HiOutlinePlus className="size-4" />
           <span>افزودن دسته‌بندی</span>
         </button>

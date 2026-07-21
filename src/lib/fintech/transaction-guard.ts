@@ -13,10 +13,11 @@
  *   HIGH_VALUE_THRESHOLD = 100,000 AFN (در cents: 10,000,000)
  */
 
+import { createHash, randomInt } from 'node:crypto';
 import prisma from '@/lib/db';
 import { requireUser } from '@/lib/require-auth';
+import { sendSms } from '@/lib/sms';
 import type { FintechActionResult } from '@/types/types';
-import { createHash, randomInt } from 'node:crypto';
 import { z } from 'zod';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -39,10 +40,7 @@ export function isHighValueTransaction(params: {
 }): boolean {
   const HIGH_VALUE_KINDS = ['WITHDRAWAL', 'TRANSFER'];
   const amount = BigInt(params.amountCents);
-  return (
-    HIGH_VALUE_KINDS.includes(params.kind) &&
-    amount >= HIGH_VALUE_THRESHOLD_CENTS
-  );
+  return HIGH_VALUE_KINDS.includes(params.kind) && amount >= HIGH_VALUE_THRESHOLD_CENTS;
 }
 
 // ─── REQUEST OTP ─────────────────────────────────────────────────────────────
@@ -57,7 +55,7 @@ export async function requestTransactionOtp(params: {
   txnRef: string;
   amountCents: bigint;
   kind: string;
-}): Promise<FintechActionResult<{ expiresInSeconds: number }>> {
+}): Promise<FintechActionResult<{ expiresInSeconds: number; devCode?: string }>> {
   const auth = await requireUser();
   if (!auth.success) {
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد حساب کاربری شوید' } };
@@ -90,12 +88,61 @@ export async function requestTransactionOtp(params: {
     },
   });
 
-  // TODO (production): ارسال OTP از طریق SMS/Email به کاربر
-  // در این مرحله، OTP در response موجود نیست — کانال ارسال باید configure شود
+  // ارسال OTP از طریق SMS
+  // در dev mode اگر Twilio تنظیم نشده باشد، sendSms کد را در devCode برمی‌گرداند
+  const userRecord = await prisma.user.findUnique({
+    where: { id: auth.user.id },
+    select: { phoneNumber: true },
+  });
+  const phoneNumber = userRecord?.phoneNumber;
+
+  // اگر شماره تلفن تأیید نشده → در production خطا؛ در dev کد را مستقیم برگردان
+  if (!phoneNumber) {
+    if (process.env.NODE_ENV === 'production') {
+      return {
+        success: false,
+        error: {
+          code: 'PHONE_REQUIRED',
+          message:
+            'شماره تلفن تأیید‌شده برای ارسال کد OTP الزامی است. لطفاً ابتدا شماره تلفن خود را در پروفایل ثبت کنید.',
+        },
+      };
+    }
+    // dev-only: OTP را مستقیم برگردان تا تست بتوان کرد
+    return {
+      success: true,
+      data: { expiresInSeconds: OTP_VALIDITY_MINUTES * 60, devCode: otp },
+    };
+  }
+
+  const smsResult = await sendSms(
+    phoneNumber,
+    `کد تأیید تراکنش شما: ${otp}\nاعتبار: ${OTP_VALIDITY_MINUTES} دقیقه. این کد را با کسی به اشتراک نگذارید.`,
+  );
+
+  if (!smsResult.success) {
+    // اگر SMS ارسال نشد در production، OTP را از DB پاک کن تا منقضی‌شده باشد
+    if (process.env.NODE_ENV === 'production') {
+      await prisma.transactionOtp.update({
+        where: { userId_txnRef: { userId: auth.user.id, txnRef: params.txnRef } },
+        data: { used: true }, // burn کن — کاربر باید دوباره request کند
+      });
+      return {
+        success: false,
+        error: {
+          code: 'SMS_FAILED',
+          message: 'ارسال کد تأیید ناموفق بود. لطفاً مجدداً تلاش کنید.',
+        },
+      };
+    }
+  }
+
+  const devPayload =
+    smsResult.devCode !== undefined ? ({ devCode: smsResult.devCode } as { devCode: string }) : {};
 
   return {
     success: true,
-    data: { expiresInSeconds: OTP_VALIDITY_MINUTES * 60 },
+    data: { expiresInSeconds: OTP_VALIDITY_MINUTES * 60, ...devPayload },
   };
 }
 
@@ -103,7 +150,10 @@ export async function requestTransactionOtp(params: {
 
 const VerifySchema = z.object({
   txnRef: z.string().min(1),
-  otp: z.string().length(6).regex(/^\d{6}$/),
+  otp: z
+    .string()
+    .length(6)
+    .regex(/^\d{6}$/),
 });
 
 /**
@@ -146,7 +196,7 @@ export async function verifyTransactionOtp(raw: unknown): Promise<FintechActionR
       success: false,
       error: {
         code: 'OTP_EXPIRED',
-        message: `کد OTP منقضی شده — کد جدید درخواست دهید`,
+        message: 'کد OTP منقضی شده — کد جدید درخواست دهید',
       },
     };
   }

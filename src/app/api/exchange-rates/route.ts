@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { NextResponse } from 'next/server';
 
 export const maxDuration = 30;
 

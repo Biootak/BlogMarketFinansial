@@ -160,14 +160,6 @@ function hashCode(s: string): number {
   return Math.abs(h);
 }
 
-function AnimatedNumber({ value, className }: { value: number; className?: string }) {
-  return (
-    <span className={cn('tabular-nums font-semibold', className)}>
-      {value.toLocaleString('fa-IR')}
-    </span>
-  );
-}
-
 /** یه آیکون ساده SVG برای هر دسته (نه emoji) */
 function CategoryGlyph({ accent }: { accent: string }) {
   return (

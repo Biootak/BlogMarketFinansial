@@ -58,7 +58,7 @@ import type {
   TaxonomyType,
   UpdatePostInput,
 } from '@/types/types';
-import type { ZodType } from 'zod';
+import type { ZodType, ZodTypeDef } from 'zod';
 import { CategorySelectDialog } from './CategorySelectDialog';
 import { TagSelectDialog } from './TagSelectDialog';
 const Editor = dynamic(() => import('@/components/Editor1/editor').then((m) => m.default), {
@@ -96,11 +96,11 @@ function deriveStatus(args: {
 // تبدیل Date → تقویم شمسی و زمان اکنون در `PersianDateTimePicker` انجام می‌شود.
 
 interface PostFormProps<T extends CreatePostInput | UpdatePostInput> {
-  // 2026-07-04: `ZodType<T, any, any>` تا input متفاوت با output
+  // 2026-07-04: `ZodType<T, ZodTypeDef, unknown>` تا input متفاوت با output
   // (مثلاً scheduledAt: `string|Date` در ورودی، `Date|null` در خروجی)
   // مجاز باشد. `ZodSchema<T>` فقط یه type alias برای `ZodType<T>` است
   // که input و output را یکی فرض می‌کند و با transform نمی‌سازد.
-  schema: ZodType<T, any, any>;
+  schema: ZodType<T, ZodTypeDef, unknown>;
   defaultValues: T;
   onSubmit: (data: T) => Promise<void>;
   title: string;
@@ -181,8 +181,8 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
       form.reset(parsedData);
       setEditorContent(parsedData.content || '');
       setSlug(parsedData.slug || '');
-    } catch (e) {
-      console.error('Error parsing saved draft:', e);
+    } catch {
+      // ignore corrupt draft
     }
   }, [localStorageKey, form, isEditing]);
 
@@ -197,8 +197,8 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
       const draft = { ...values, content: editorContent, slug };
       try {
         localStorage.setItem(localStorageKey, JSON.stringify(draft));
-      } catch (e) {
-        console.error('Error saving draft:', e);
+      } catch {
+        // ignore storage errors (quota exceeded, private mode)
       }
     }, 600);
   }, [isEditing, form, editorContent, slug, localStorageKey]);
@@ -305,8 +305,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
       await new Promise((resolve) => setTimeout(resolve, 300));
       router.push('/dashboard/posts');
       router.refresh();
-    } catch (error) {
-      console.error('Error submitting form:', error);
+    } catch {
       toast({
         title: 'خطا',
         description: 'خطا در ارسال فرم. لطفاً دوباره تلاش کنید.',

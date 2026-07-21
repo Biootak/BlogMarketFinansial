@@ -130,10 +130,10 @@ export default function ContactForm() {
             </form>
 
             {state.success && (
-              <div className={s.successBanner} role="status" aria-live="polite">
+              <output className={s.successBanner} aria-live="polite">
                 <CheckCircle2 size={18} strokeWidth={1.75} aria-hidden />
                 پیام شما با موفقیت ارسال شد. به زودی با شما تماس می‌گیریم.
-              </div>
+              </output>
             )}
 
             {state.error && (

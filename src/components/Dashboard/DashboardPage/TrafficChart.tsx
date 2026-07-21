@@ -27,7 +27,13 @@ const InnerChart = dynamic(() => import('./TrafficChartInner'), {
   ),
 });
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+interface TooltipProps {
+  active?: boolean;
+  payload?: Array<{ value: number }>;
+  label?: string;
+}
+
+const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <motion.div

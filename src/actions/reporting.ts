@@ -67,25 +67,50 @@ export async function getExchangeReport(
   const toDate = filters.toDate ?? new Date();
   const fromDate = filters.fromDate ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-  const deals = await prisma.currencyDeal.findMany({
-    where: {
-      exchangeId,
-      status: 'COMPLETED',
-      completedAt: { gte: fromDate, lte: toDate },
-      ...(filters.currency ? { fromCurrency: filters.currency } : {}),
-    },
-    select: {
-      fromAmount: true,
-      fromCurrency: true,
-      feeAmount: true,
-      completedAt: true,
-      userId: true,
-      customerName: true,
-      customerPhone: true,
-    },
-    orderBy: { completedAt: 'asc' },
-    take: 5000,
-  });
+  // cursor-based پیمایش — جلوگیری از hard limit بدون اخطار
+  // برای گزارش‌گیری همه رکوردهای بازه را می‌خوانیم ولی به دسته‌های ۱۰۰۰ تایی
+  const PAGE_SIZE = 1000;
+  const allDeals: Array<{
+    fromAmount: import('@prisma/client/runtime/library').Decimal;
+    fromCurrency: string;
+    feeAmount: import('@prisma/client/runtime/library').Decimal;
+    completedAt: Date | null;
+    userId: string | null;
+    customerName: string;
+    customerPhone: string;
+  }> = [];
+
+  let cursor: string | undefined;
+  while (true) {
+    const batch = await prisma.currencyDeal.findMany({
+      where: {
+        exchangeId,
+        status: 'COMPLETED',
+        completedAt: { gte: fromDate, lte: toDate },
+        ...(filters.currency ? { fromCurrency: filters.currency } : {}),
+      },
+      select: {
+        id: true,
+        fromAmount: true,
+        fromCurrency: true,
+        feeAmount: true,
+        completedAt: true,
+        userId: true,
+        customerName: true,
+        customerPhone: true,
+      },
+      orderBy: { completedAt: 'asc' },
+      take: PAGE_SIZE,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    });
+
+    if (batch.length === 0) break;
+    allDeals.push(...batch);
+    if (batch.length < PAGE_SIZE) break;
+    cursor = batch[batch.length - 1]?.id;
+  }
+
+  const deals = allDeals;
 
   // P&L by currency
   const pnlMap = new Map<string, PnLByCurrency>();
@@ -96,6 +121,8 @@ export async function getExchangeReport(
     if (!pnlMap.has(cur)) {
       pnlMap.set(cur, { currency: cur, totalVolume: 0, totalFee: 0, dealCount: 0, avgDealSize: 0 });
     }
+    // Map.get is safe here: we just set the key above if missing
+    // biome-ignore lint/style/noNonNullAssertion: guaranteed by Map.set above
     const entry = pnlMap.get(cur)!;
     entry.totalVolume += vol;
     entry.totalFee += fee;
@@ -114,6 +141,7 @@ export async function getExchangeReport(
     if (!dailyMap.has(dateStr)) {
       dailyMap.set(dateStr, { date: dateStr, dealCount: 0, volume: 0, fee: 0 });
     }
+    // biome-ignore lint/style/noNonNullAssertion: guaranteed by Map.set above
     const day = dailyMap.get(dateStr)!;
     day.dealCount += 1;
     day.volume += Number(d.fromAmount);
@@ -122,7 +150,10 @@ export async function getExchangeReport(
   const dailySummary = [...dailyMap.values()].sort((a, b) => a.date.localeCompare(b.date));
 
   // Top customers
-  const customerMap = new Map<string, { customerId: string; fullName: string; dealCount: number; totalVolume: number }>();
+  const customerMap = new Map<
+    string,
+    { customerId: string; fullName: string; dealCount: number; totalVolume: number }
+  >();
   for (const d of deals) {
     const key = d.userId ?? d.customerPhone;
     if (!customerMap.has(key)) {
@@ -133,6 +164,7 @@ export async function getExchangeReport(
         totalVolume: 0,
       });
     }
+    // biome-ignore lint/style/noNonNullAssertion: guaranteed by Map.set above
     const c = customerMap.get(key)!;
     c.dealCount += 1;
     c.totalVolume += Number(d.fromAmount);
@@ -180,30 +212,67 @@ export async function generateReportCsv(
   const toDate = filters.toDate ?? new Date();
   const fromDate = filters.fromDate ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-  const deals = await prisma.currencyDeal.findMany({
-    where: {
-      exchangeId,
-      status: 'COMPLETED',
-      completedAt: { gte: fromDate, lte: toDate },
-    },
-    select: {
-      id: true,
-      fromAmount: true,
-      fromCurrency: true,
-      toAmount: true,
-      toCurrency: true,
-      feeAmount: true,
-      completedAt: true,
-      customerName: true,
-      customerPhone: true,
-    },
-    orderBy: { completedAt: 'desc' },
-    take: 10_000,
+  // cursor-based برای CSV — همه رکوردها، دسته ۱۰۰۰ تایی
+  const CSV_PAGE_SIZE = 1000;
+  const allCsvDeals: Array<{
+    id: string;
+    fromAmount: import('@prisma/client/runtime/library').Decimal;
+    fromCurrency: string;
+    toAmount: import('@prisma/client/runtime/library').Decimal;
+    toCurrency: string;
+    feeAmount: import('@prisma/client/runtime/library').Decimal;
+    completedAt: Date | null;
+    customerName: string;
+    customerPhone: string;
+  }> = [];
+
+  let csvCursor: string | undefined;
+  while (true) {
+    const batch = await prisma.currencyDeal.findMany({
+      where: {
+        exchangeId,
+        status: 'COMPLETED',
+        completedAt: { gte: fromDate, lte: toDate },
+      },
+      select: {
+        id: true,
+        fromAmount: true,
+        fromCurrency: true,
+        toAmount: true,
+        toCurrency: true,
+        feeAmount: true,
+        completedAt: true,
+        customerName: true,
+        customerPhone: true,
+      },
+      orderBy: { completedAt: 'desc' },
+      take: CSV_PAGE_SIZE,
+      ...(csvCursor ? { cursor: { id: csvCursor }, skip: 1 } : {}),
+    });
+
+    if (batch.length === 0) break;
+    allCsvDeals.push(...batch);
+    if (batch.length < CSV_PAGE_SIZE) break;
+    csvCursor = batch[batch.length - 1]?.id;
+  }
+
+  const deals = allCsvDeals;
+
+  const dateFormatter = new Intl.DateTimeFormat('fa-IR', {
+    dateStyle: 'short',
+    timeStyle: 'short',
   });
 
-  const dateFormatter = new Intl.DateTimeFormat('fa-IR', { dateStyle: 'short', timeStyle: 'short' });
-
-  const headers = ['تاریخ', 'مشتری', 'تلفن', 'ارز مبدأ', 'مبلغ مبدأ', 'ارز مقصد', 'مبلغ مقصد', 'کارمزد'];
+  const headers = [
+    'تاریخ',
+    'مشتری',
+    'تلفن',
+    'ارز مبدأ',
+    'مبلغ مبدأ',
+    'ارز مقصد',
+    'مبلغ مقصد',
+    'کارمزد',
+  ];
   const rows = deals.map((d) => [
     d.completedAt ? dateFormatter.format(d.completedAt) : '',
     d.customerName,

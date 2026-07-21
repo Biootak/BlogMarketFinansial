@@ -78,7 +78,7 @@ const SHARE_PLATFORMS = [
 export default function ShareDropdown({
   url,
   title,
-  description,
+  description: _description,
   children,
   align = 'start',
   side = 'bottom',

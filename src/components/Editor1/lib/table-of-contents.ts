@@ -39,7 +39,10 @@ export class TOC {
     if (!this.text && this.parent) {
       const index = this.parent.children.indexOf(this);
       this.parent.children.splice(index, 1, ...this.children);
-      this.children.forEach((child) => (child.parent = this.parent));
+      const parentRef = this.parent;
+      for (const child of this.children) {
+        child.parent = parentRef;
+      }
     }
 
     return this;

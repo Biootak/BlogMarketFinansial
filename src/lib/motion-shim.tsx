@@ -176,14 +176,14 @@ export function AnimatePresence({
   mode: _mode,
   custom: _custom,
   onExitComplete: _onExitComplete,
-  ...rest
 }: {
   children: React.ReactNode;
   initial?: boolean | undefined;
   mode?: 'sync' | 'popLayout' | 'wait' | undefined;
   custom?: unknown;
   onExitComplete?: (() => void) | undefined;
-} & Record<string, unknown>) {
+  [key: string]: unknown;
+}) {
   return <>{children}</>;
 }
 

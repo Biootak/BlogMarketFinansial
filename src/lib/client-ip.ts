@@ -24,6 +24,7 @@ export function getTrustedClientIp(request: NextRequest): string {
       .filter(Boolean);
     if (parts.length > 0) {
       // Rightmost entry is appended by our own trusted proxy (most trustworthy).
+      // biome-ignore lint/style/noNonNullAssertion: parts.length > 0 guaranteed by the if block above
       return parts[parts.length - 1]!;
     }
   }

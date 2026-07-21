@@ -115,10 +115,7 @@ export async function getSuggestedRates(params: {
   // For large numbers (toman rates), round to nearest 100
   const roundingBase = marketBuyRate > 1000 ? 100 : 1;
 
-  const suggestedBuyRate = roundToNearest(
-    marketBuyRate * (1 - spreadPercent / 100),
-    roundingBase,
-  );
+  const suggestedBuyRate = roundToNearest(marketBuyRate * (1 - spreadPercent / 100), roundingBase);
   const suggestedSellRate = roundToNearest(
     marketSellRate * (1 + spreadPercent / 100),
     roundingBase,
@@ -140,9 +137,7 @@ export async function getSuggestedRates(params: {
 
 const MAJOR_CURRENCIES = ['USD', 'EUR', 'AED', 'GBP'] as const;
 
-export async function getMultiCurrencySuggestions(
-  spreadPercent = 1.5,
-): Promise<SuggestedRate[]> {
+export async function getMultiCurrencySuggestions(spreadPercent = 1.5): Promise<SuggestedRate[]> {
   const results = await Promise.allSettled(
     MAJOR_CURRENCIES.map((code) => getSuggestedRates({ currencyCode: code, spreadPercent })),
   );

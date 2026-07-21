@@ -198,7 +198,7 @@ export default function EditCategoryDialog({
             <FormField
               control={form.control}
               name="thumbnail"
-              render={({ field }) => (
+              render={() => (
                 <FormItem>
                   <FormLabel>تصویر شاخص</FormLabel>
                   <FormControl>

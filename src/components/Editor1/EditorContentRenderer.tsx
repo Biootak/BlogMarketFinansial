@@ -29,7 +29,7 @@ import { Embed } from './extensions/embed';
 import { FontFamily } from './extensions/font-family';
 import { FontSize } from './extensions/font-size';
 import { Footnote, FootnoteRef } from './extensions/footnote';
-import { Math } from './extensions/math';
+import { Math as MathExtension } from './extensions/math';
 
 // Read-only Mention renderer — no suggestion popup, just renders <span data-mention> nodes.
 // The editor's Mention extension (with suggestion) lives in builtInExtensions; this
@@ -131,7 +131,7 @@ const renderExtensions = [
   FontSize,
   FontFamily,
   ...detailsExtensions,
-  Math,
+  MathExtension,
   Footnote,
   FootnoteRef,
   MentionReadOnly,
@@ -170,8 +170,7 @@ const EditorContentRenderer: React.FC<EditorContentRendererProps> = ({
       if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
         try {
           return JSON.parse(trimmed);
-        } catch (error) {
-          console.warn('Error parsing JSON content:', error);
+        } catch {
           return trimmed;
         }
       }

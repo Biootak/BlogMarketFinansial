@@ -119,7 +119,6 @@ export const Callout = Node.create<CalloutOptions>({
   },
 
   addNodeView() {
-    // biome-ignore lint/suspicious/noExplicitAny: TipTap React 19 compatibility
     return ReactNodeViewRenderer(CalloutBlock as any);
   },
 });

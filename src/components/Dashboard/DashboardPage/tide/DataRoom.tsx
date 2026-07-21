@@ -259,10 +259,8 @@ export default function DataRoom({ scheduledPosts, recentActivity, range }: Data
             </p>
           </div>
 
-          {/* biome-ignore lint/a11y/useSemanticElements: styled period switcher uses ARIA radio group pattern to match existing AnalyticsCanvas */}
           <div className="tide-dataroom__period" role="radiogroup" aria-label="بازه زمانی">
             {PERIODS.map((p) => (
-              // biome-ignore lint/a11y/useSemanticElements: ARIA radio inside radiogroup is the correct pattern for styled buttons
               <button
                 key={p.id}
                 type="button"

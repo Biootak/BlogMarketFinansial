@@ -6,6 +6,7 @@ import { LRUCache } from 'lru-cache';
 const redis = process.env.UPSTASH_REDIS_REST_URL
   ? new Redis({
       url: process.env.UPSTASH_REDIS_REST_URL,
+      // biome-ignore lint/style/noNonNullAssertion: UPSTASH_REDIS_REST_TOKEN is guaranteed present when UPSTASH_REDIS_REST_URL is set
       token: process.env.UPSTASH_REDIS_REST_TOKEN!,
     })
   : null;
@@ -109,7 +110,7 @@ export async function checkRateLimit(
         remaining: result.remaining,
         reset: result.reset,
       };
-    } catch (error) {
+    } catch {
       // For security-critical limiters (auth) we must fail CLOSED: when Upstash
       // is unreachable we deny the request rather than silently letting an
       // attacker bypass brute-force protection. Non-critical limiters fall back

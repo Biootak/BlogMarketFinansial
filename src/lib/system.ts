@@ -63,7 +63,6 @@ export async function getSystemMetrics(): Promise<SystemMetrics> {
 
     return metrics;
   } catch (error) {
-    console.error('Error getting system metrics:', error);
     throw error;
   }
 }
@@ -72,7 +71,6 @@ export async function checkDiskSpace(drive: string): Promise<DiskSpace | null> {
   try {
     // Guard against command injection: only a single ASCII letter is allowed.
     if (!/^[a-zA-Z]$/.test(drive)) {
-      console.error('[system] Invalid drive letter rejected:', drive);
       return null;
     }
 
@@ -85,12 +83,12 @@ export async function checkDiskSpace(drive: string): Promise<DiskSpace | null> {
       const lines = stdout.trim().split('\n');
       const values: { [key: string]: string } = {};
 
-      lines.forEach((line) => {
+      for (const line of lines) {
         const [key, value] = line.trim().split('=');
         if (key && value) {
           values[key.trim()] = value.trim();
         }
-      });
+      }
 
       if (values.Size && values.FreeSpace) {
         return {
@@ -114,8 +112,7 @@ export async function checkDiskSpace(drive: string): Promise<DiskSpace | null> {
     }
 
     return null;
-  } catch (error) {
-    console.error('Error checking disk space:', error);
+  } catch {
     return null;
   }
 }

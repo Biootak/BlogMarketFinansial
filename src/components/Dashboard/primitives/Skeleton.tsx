@@ -23,7 +23,6 @@ export function Skeleton({ variant = 'text', lines = 1, className }: SkeletonPro
     return (
       <div className={cn('space-y-2', className)}>
         {Array.from({ length: lines }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: skeleton lines are order-stable
           <UiSkeleton key={`line-${i}`} className={variantClass.text} />
         ))}
       </div>

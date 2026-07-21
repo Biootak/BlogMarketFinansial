@@ -82,8 +82,7 @@ export default function ExchangeFilterToolbar({ totalCount }: Props) {
                 activeCurrency === code
                   ? 'color-mix(in oklch, var(--ds-brand-600) 12%, transparent)'
                   : 'var(--ds-surface)',
-              color:
-                activeCurrency === code ? 'var(--ds-brand-700)' : 'var(--ds-text-secondary)',
+              color: activeCurrency === code ? 'var(--ds-brand-700)' : 'var(--ds-text-secondary)',
               fontSize: 'var(--ds-text-xs)',
               fontWeight: 'var(--ds-weight-medium)',
               cursor: 'pointer',

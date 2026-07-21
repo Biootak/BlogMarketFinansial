@@ -146,7 +146,7 @@ export default function PostsPageHeader({ searchParams, counts }: PostsPageHeade
         router.push(`/dashboard/posts${params.toString() ? `?${params.toString()}` : ''}`);
       });
     },
-    [currentSearchParams, router, startTransition],
+    [currentSearchParams, router],
   );
 
   const handleSearch = useCallback(() => {
@@ -157,6 +157,7 @@ export default function PostsPageHeader({ searchParams, counts }: PostsPageHeade
   // ── Debounced real-time search ──
   // ۳۵۰ms بعد از آخرین تایپ، URL رو push می‌کنیم تا سرور لیست را با search تازه
   // واکشی کند. اگه searchValue با URL فعلی sync باشد، effect کاری نکند.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional debounce — only re-run on searchValue change
   useEffect(() => {
     const trimmed = searchValue.trim();
     const currentUrl = (searchParams.search || '').trim();
@@ -165,7 +166,6 @@ export default function PostsPageHeader({ searchParams, counts }: PostsPageHeade
       handleSearch();
     }, 350);
     return () => window.clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchValue]);
 
   const handleClearSearch = useCallback(() => {

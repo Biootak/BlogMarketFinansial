@@ -52,6 +52,7 @@ const AtelierGrid: React.FC<Props> = ({ posts, ads = [] }) => {
 
   chunks.forEach((chunk, chunkIndex) => {
     items.push(
+      // biome-ignore lint/suspicious/noArrayIndexKey: chunk key is positional/stable — chunks are derived from posts array and never re-ordered
       <div key={`grid-${chunkIndex}`} className="atl-grid">
         {chunk.map((post) => {
           const priority = cardIndex < 3;
@@ -69,6 +70,7 @@ const AtelierGrid: React.FC<Props> = ({ posts, ads = [] }) => {
     if (ads.length > 0 && adCursor < ads.length && !isLastChunk) {
       const slice = ads.slice(adCursor, adCursor + ADS_PER_STRIP);
       adCursor += slice.length;
+      // biome-ignore lint/suspicious/noArrayIndexKey: ad strip key is positional/stable — strips are inserted between post chunks
       items.push(<AdStrip key={`ad-${chunkIndex}`} ads={slice} />);
     }
   });

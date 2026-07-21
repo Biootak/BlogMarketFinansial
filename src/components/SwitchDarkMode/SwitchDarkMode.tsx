@@ -11,10 +11,10 @@ export interface SwitchDarkModeProps {
 }
 
 const SwitchDarkMode: React.FC<SwitchDarkModeProps> = ({ className = '' }) => {
-  const { _toogleDarkMode, isDarkMode } = useThemeMode();
+  const { toggleDarkMode, isDarkMode } = useThemeMode();
 
   const handleToggle = () => {
-    _toogleDarkMode();
+    toggleDarkMode();
     // اطمینان از اعمال کلاس
     const newTheme = isDarkMode ? 'light' : 'dark';
     if (newTheme === 'dark') {

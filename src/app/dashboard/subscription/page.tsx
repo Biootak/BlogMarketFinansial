@@ -1,35 +1,55 @@
 import { PageHeader } from '@/components/Dashboard/primitives';
+import getCurrentUser from '@/lib/current-user';
+import db from '@/lib/db';
+import { persianMonths, toPersianDate } from '@/lib/persian-date';
+import { redirect } from 'next/navigation';
 import {
   HiOutlineCalendarDays,
+  HiOutlineCheckCircle,
   HiOutlineCreditCard,
   HiOutlineDocumentText,
   HiOutlineSparkles,
+  HiOutlineUserCircle,
 } from 'react-icons/hi2';
 
-const subscription = {
-  plan: 'اشتراک حرفه‌ای',
-  planSub: 'دسترسی کامل به همه‌ی ابزارهای تحلیل و انتشار نامحدود',
-  price: '۲٬۹۰۰٬۰۰۰ تومان / ماه',
-  postsRemaining: '۱۸',
-  postsTotal: 'نامحدود در پلن فعلی',
-  renewDate: '۲۸ مهر ۱۴۰۵',
-  status: 'فعال',
-  autoRenew: true,
+const ROLE_LABEL: Record<string, string> = {
+  USER: 'کاربر عادی',
+  AUTHOR: 'نویسنده',
+  ADMIN: 'مدیر',
+  OWNER: 'مالک',
+  SUPERADMIN: 'سوپرادمین',
 };
 
-const DashboardSubscription = () => {
+export default async function DashboardSubscription() {
+  const user = await getCurrentUser();
+  if (!user?.id) redirect('/auth/login');
+
+  const [publishedCount, draftCount, dbUser] = await Promise.all([
+    db.post.count({ where: { authorId: user.id, status: 'PUBLISHED' } }),
+    db.post.count({ where: { authorId: user.id, status: 'DRAFT' } }),
+    db.user.findUnique({ where: { id: user.id }, select: { createdAt: true } }),
+  ]);
+
+  const roleLabel = ROLE_LABEL[user.role ?? 'USER'] ?? 'کاربر';
+  const joinedAt = dbUser?.createdAt
+    ? (() => {
+        const { year, month, day } = toPersianDate(dbUser.createdAt);
+        return `${day} ${persianMonths[month - 1]} ${year}`;
+      })()
+    : '—';
+
   return (
     <div className="at-page" dir="rtl">
       <PageHeader
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'اشتراک' }]}
         eyebrow="حساب کاربری"
         title="اشتراک و پلن"
-        description="مدیریت پلن فعلی، تمدید و صورتحساب"
+        description="وضعیت حساب کاربری و آمار تولید محتوا"
         actions={
-          <button className="at-btn at-btn--primary">
-            <HiOutlineSparkles className="size-4" />
-            ارتقای پلن
-          </button>
+          <span className="at-badge at-badge--published">
+            <HiOutlineCheckCircle className="size-3.5" />
+            حساب فعال
+          </span>
         }
       />
 
@@ -40,33 +60,30 @@ const DashboardSubscription = () => {
             <HiOutlineSparkles className="size-4" />
           </div>
           <div className="at-stat__main">
-            <div className="at-stat__value">{subscription.plan}</div>
-            <div className="at-stat__label">پلن فعلی</div>
+            <div className="at-stat__value">{roleLabel}</div>
+            <div className="at-stat__label">نقش کاربری</div>
           </div>
         </div>
         <div className="at-stat">
           <div className="at-stat__ico at-stat__ico--blue">
-            <HiOutlineCreditCard className="size-4" />
+            <HiOutlineDocumentText className="size-4" />
           </div>
           <div className="at-stat__main">
             <div className="at-stat__value" style={{ fontSize: '15px' }}>
-              {subscription.price}
+              {new Intl.NumberFormat('fa-IR').format(publishedCount)}
             </div>
-            <div className="at-stat__label">هزینه‌ی دوره</div>
+            <div className="at-stat__label">پست منتشر‌شده</div>
           </div>
         </div>
         <div className="at-stat">
           <div className="at-stat__ico at-stat__ico--amber">
-            <HiOutlineDocumentText className="size-4" />
+            <HiOutlineCreditCard className="size-4" />
           </div>
           <div className="at-stat__main">
             <div className="at-stat__value">
-              {subscription.postsRemaining}{' '}
-              <span className="text-[color:var(--at-fg-subtle)] text-sm font-medium">
-                از {subscription.postsTotal}
-              </span>
+              {new Intl.NumberFormat('fa-IR').format(draftCount)}
             </div>
-            <div className="at-stat__label">پست‌های باقی‌مانده</div>
+            <div className="at-stat__label">پیش‌نویس</div>
           </div>
         </div>
         <div className="at-stat">
@@ -75,9 +92,9 @@ const DashboardSubscription = () => {
           </div>
           <div className="at-stat__main">
             <div className="at-stat__value" style={{ fontSize: '15px' }}>
-              {subscription.renewDate}
+              {joinedAt}
             </div>
-            <div className="at-stat__label">تمدید خودکار</div>
+            <div className="at-stat__label">تاریخ عضویت</div>
           </div>
         </div>
       </div>
@@ -87,53 +104,53 @@ const DashboardSubscription = () => {
         <div className="at-form-section__head">
           <div className="at-form-section__title">
             <span className="at-form-section__ico">
-              <HiOutlineCreditCard className="size-4" />
+              <HiOutlineUserCircle className="size-4" />
             </span>
             <div>
-              <div className="at-form-section__title-text">جزئیات پلن</div>
-              <div className="at-form-section__sub">اطلاعات کامل اشتراک فعال شما</div>
+              <div className="at-form-section__title-text">اطلاعات حساب</div>
+              <div className="at-form-section__sub">جزئیات کاربری و آمار فعالیت شما</div>
             </div>
           </div>
-          <span className="at-badge at-badge--published">{subscription.status}</span>
+          <span className="at-badge at-badge--published">فعال</span>
         </div>
 
         <div className="at-form-section__body">
           <dl className="grid gap-0 divide-y divide-[color:var(--at-line)]">
             <div className="flex items-center justify-between py-3.5 gap-4">
-              <dt className="text-sm text-[color:var(--at-fg-muted)]">نام پلن</dt>
+              <dt className="text-sm text-[color:var(--at-fg-muted)]">نام کاربری</dt>
               <dd className="text-sm font-semibold text-[color:var(--at-fg)]">
-                {subscription.plan}
+                {user.name ?? '—'}
               </dd>
             </div>
             <div className="flex items-center justify-between py-3.5 gap-4">
-              <dt className="text-sm text-[color:var(--at-fg-muted)]">شرح پلن</dt>
-              <dd className="text-sm text-[color:var(--at-fg-muted)] text-end max-w-[60%]">
-                {subscription.planSub}
+              <dt className="text-sm text-[color:var(--at-fg-muted)]">ایمیل</dt>
+              <dd className="text-sm text-[color:var(--at-fg-muted)] font-mono" dir="ltr">
+                {user.email ?? '—'}
               </dd>
             </div>
             <div className="flex items-center justify-between py-3.5 gap-4">
-              <dt className="text-sm text-[color:var(--at-fg-muted)]">هزینه و صورتحساب</dt>
-              <dd className="text-sm font-semibold text-[color:var(--at-fg)] font-mono" dir="ltr">
-                {subscription.price}
+              <dt className="text-sm text-[color:var(--at-fg-muted)]">نقش کاربری</dt>
+              <dd className="text-sm font-semibold text-[color:var(--at-fg)]">{roleLabel}</dd>
+            </div>
+            <div className="flex items-center justify-between py-3.5 gap-4">
+              <dt className="text-sm text-[color:var(--at-fg-muted)]">پست‌های منتشرشده</dt>
+              <dd className="text-sm font-semibold text-[color:var(--at-fg)] tabular-nums">
+                {new Intl.NumberFormat('fa-IR').format(publishedCount)} پست
               </dd>
             </div>
             <div className="flex items-center justify-between py-3.5 gap-4">
-              <dt className="text-sm text-[color:var(--at-fg-muted)]">سهمیه پست‌ها</dt>
-              <dd className="text-sm font-semibold text-[color:var(--at-fg)]">
-                {subscription.postsRemaining} پست باقی‌مانده
+              <dt className="text-sm text-[color:var(--at-fg-muted)]">پیش‌نویس‌ها</dt>
+              <dd className="text-sm font-semibold text-[color:var(--at-fg)] tabular-nums">
+                {new Intl.NumberFormat('fa-IR').format(draftCount)} پست
               </dd>
             </div>
             <div className="flex items-center justify-between py-3.5 gap-4">
-              <dt className="text-sm text-[color:var(--at-fg-muted)]">تاریخ تمدید</dt>
-              <dd className="text-sm font-semibold text-[color:var(--at-fg)]">
-                {subscription.renewDate}
-              </dd>
+              <dt className="text-sm text-[color:var(--at-fg-muted)]">تاریخ عضویت</dt>
+              <dd className="text-sm font-semibold text-[color:var(--at-fg)]">{joinedAt}</dd>
             </div>
           </dl>
         </div>
       </div>
     </div>
   );
-};
-
-export default DashboardSubscription;
+}

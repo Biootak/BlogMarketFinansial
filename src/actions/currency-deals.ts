@@ -30,11 +30,12 @@
 import { randomBytes } from 'node:crypto';
 import prisma from '@/lib/db';
 import { requireExchangeAccess } from '@/lib/exchange-auth';
+import { notifyDealStatusChange, notifyNewDeal } from '@/lib/notifications/fintech';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
-import { notifyDealStatusChange, notifyNewDeal } from '@/lib/notifications/fintech';
 import type { FintechActionResult } from '@/types/types';
+import type { Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { headers } from 'next/headers';
 import { v4 as createId } from 'uuid';
@@ -399,6 +400,26 @@ export async function createDeal(
     data: { dealId: deal.id, toStatus: 'PENDING', actorRole: userId ? 'USER' : 'GUEST' },
   });
 
+  await prisma.auditLog.create({
+    data: {
+      id: createId(),
+      exchangeId,
+      actorId: userId ?? 'GUEST',
+      actorRole: userId ? 'USER' : 'GUEST',
+      action: 'DEAL_CREATED',
+      entityType: 'CurrencyDeal',
+      entityId: deal.id,
+      ip,
+      meta: {
+        trackingCode,
+        fromCurrency,
+        toCurrency,
+        fromAmount: String(fromAmount),
+        channel,
+      } as Prisma.InputJsonValue,
+    },
+  });
+
   revalidateDealCaches();
 
   // Fire-and-forget notification — never block the response
@@ -539,7 +560,10 @@ export async function completeDeal(
   if (!idempotencyKey) {
     return {
       success: false,
-      error: { code: 'MISSING_IDEMPOTENCY_KEY', message: 'برای تکمیل معامله، شناسه یکتای idempotency الزامی است' },
+      error: {
+        code: 'MISSING_IDEMPOTENCY_KEY',
+        message: 'برای تکمیل معامله، شناسه یکتای idempotency الزامی است',
+      },
     };
   }
   // ── P0-6: rate-limit روی complete ─────────────────────────────────────────
@@ -580,7 +604,7 @@ export async function completeDeal(
   // مثال: deal.userId='u1'، exchange.requireKyc=true، customer.kycStatus='PENDING' → خطا ✗
   //        deal.userId=null → KYC چک نمی‌شود (مهمان)                            → ادامه ✓
   if (deal.userId) {
-    const [customer, exchange] = await Promise.all([
+    const [customer, exchange, kycRecord] = await Promise.all([
       prisma.customer.findFirst({
         where: { userId: deal.userId, exchangeId: deal.exchangeId },
         select: { kycLevel: true, kycStatus: true },
@@ -588,6 +612,11 @@ export async function completeDeal(
       prisma.exchange.findUnique({
         where: { id: deal.exchangeId },
         select: { requireKyc: true },
+      }),
+      // KYC expiry: expiresAt از KycRecord خوانده می‌شود
+      prisma.kycRecord.findUnique({
+        where: { userId: deal.userId },
+        select: { expiresAt: true },
       }),
     ]);
     if (exchange?.requireKyc && customer) {
@@ -597,6 +626,17 @@ export async function completeDeal(
           error: {
             code: 'KYC_REQUIRED',
             message: 'برای تکمیل معامله، احراز هویت (KYC) مشتری الزامی است',
+          },
+        };
+      }
+      // KYC expiry gate: اگر KYC منقضی شده → خطا
+      // مثال: expiresAt=2024-01-01، now=2026-07-01 → KYC_EXPIRED ✗
+      if (kycRecord?.expiresAt && kycRecord.expiresAt < new Date()) {
+        return {
+          success: false,
+          error: {
+            code: 'KYC_EXPIRED',
+            message: 'احراز هویت (KYC) مشتری منقضی شده است. لطفاً KYC را تمدید کنید.',
           },
         };
       }
@@ -672,7 +712,7 @@ export async function completeDeal(
             fromAmount: deal.fromAmount.toString(),
             toAmount: deal.toAmount.toString(),
             appliedRate: deal.appliedRate.toString(),
-          },
+          } as Prisma.InputJsonValue,
         },
       });
 
@@ -820,27 +860,37 @@ export async function completeDeal(
   revalidateDealCaches();
 
   // Fire-and-forget: notify deal completed
-  const completedDeal = await prisma.currencyDeal.findUnique({
-    where: { id: dealId },
-    select: {
-      trackingCode: true, customerName: true, customerPhone: true,
-      fromCurrency: true, toCurrency: true, fromAmount: true, toAmount: true,
-      Exchange: { select: { name: true, displayName: true } },
-    },
-  }).catch(() => null);
+  const completedDeal = await prisma.currencyDeal
+    .findUnique({
+      where: { id: dealId },
+      select: {
+        trackingCode: true,
+        customerName: true,
+        customerPhone: true,
+        fromCurrency: true,
+        toCurrency: true,
+        fromAmount: true,
+        toAmount: true,
+        Exchange: { select: { name: true, displayName: true } },
+      },
+    })
+    .catch(() => null);
 
   if (completedDeal) {
-    void notifyDealStatusChange({
-      trackingCode: completedDeal.trackingCode,
-      customerName: completedDeal.customerName,
-      customerPhone: completedDeal.customerPhone,
-      fromCurrency: completedDeal.fromCurrency,
-      toCurrency: completedDeal.toCurrency,
-      fromAmount: completedDeal.fromAmount.toString(),
-      toAmount: completedDeal.toAmount.toString(),
-      status: 'COMPLETED',
-      exchangeName: completedDeal.Exchange.displayName ?? completedDeal.Exchange.name,
-    }, 'COMPLETED');
+    void notifyDealStatusChange(
+      {
+        trackingCode: completedDeal.trackingCode,
+        customerName: completedDeal.customerName,
+        customerPhone: completedDeal.customerPhone,
+        fromCurrency: completedDeal.fromCurrency,
+        toCurrency: completedDeal.toCurrency,
+        fromAmount: completedDeal.fromAmount.toString(),
+        toAmount: completedDeal.toAmount.toString(),
+        status: 'COMPLETED',
+        exchangeName: completedDeal.Exchange.displayName ?? completedDeal.Exchange.name,
+      },
+      'COMPLETED',
+    );
   }
 
   return { success: true, data: { id: dealId } };
@@ -909,7 +959,7 @@ export async function cancelDeal(
         entityType: 'CurrencyDeal',
         entityId: dealId,
         ip: cancelIp,
-        meta: { reason },
+        meta: { reason } as Prisma.InputJsonValue,
       },
     });
 
@@ -930,4 +980,283 @@ export async function cancelDeal(
 
   revalidateDealCaches();
   return { success: true, data: { id: dealId } };
+}
+
+// ─── DISPUTE ──────────────────────────────────────────────────────────────────
+
+/**
+ * disputeDeal — ثبت اعتراض روی معامله تکمیل‌شده
+ *
+ * فقط:
+ *   - صاحب معامله (userId === user.id) می‌تواند اعتراض دهد
+ *   - ادمین/صراف می‌توانند به‌جای مشتری ثبت کنند
+ *   - فقط معاملات COMPLETED قابل dispute هستند
+ *
+ * جریان: COMPLETED → DISPUTED → REFUNDED (refundDeal) یا → COMPLETED (بسته)
+ */
+export async function disputeDeal(
+  dealId: string,
+  reason: string,
+): Promise<FintechActionResult<{ id: string }>> {
+  const auth = await requireUser();
+  if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
+
+  if (!reason?.trim()) {
+    return {
+      success: false,
+      error: { code: 'VALIDATION_ERROR', message: 'دلیل اعتراض الزامی است' },
+    };
+  }
+
+  const deal = await prisma.currencyDeal.findUnique({
+    where: { id: dealId },
+    select: { id: true, status: true, userId: true, exchangeId: true },
+  });
+  if (!deal) return { success: false, error: { code: 'NOT_FOUND', message: 'معامله یافت نشد' } };
+
+  if (deal.status !== 'COMPLETED') {
+    return {
+      success: false,
+      error: {
+        code: 'INVALID_STATE',
+        message: 'فقط معاملات تکمیل‌شده قابل اعتراض هستند',
+      },
+    };
+  }
+
+  const { user } = auth;
+  const isOwner = deal.userId === user.id;
+  const isAdmin = user.role === 'OWNER' || user.role === 'ADMIN';
+
+  if (!isOwner && !isAdmin) {
+    const staff = await prisma.exchangeStaff.findFirst({
+      where: { exchangeId: deal.exchangeId, userId: user.id, revokedAt: null },
+      select: { id: true },
+    });
+    if (!staff) return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی ندارید' } };
+  }
+
+  const disputeIp = await getClientIp();
+  await prisma.$transaction(async (tx) => {
+    await tx.currencyDeal.update({
+      where: { id: dealId },
+      data: { status: 'DISPUTED', internalNote: reason },
+    });
+
+    await tx.dealStatusLog.create({
+      data: {
+        dealId,
+        fromStatus: 'COMPLETED',
+        toStatus: 'DISPUTED',
+        actorId: user.id,
+        actorRole: isAdmin ? 'ADMIN' : isOwner ? 'USER' : 'SARAFI',
+        note: reason,
+      },
+    });
+
+    await tx.auditLog.create({
+      data: {
+        id: createId(),
+        exchangeId: deal.exchangeId,
+        actorId: user.id,
+        actorRole: isAdmin ? 'ADMIN' : isOwner ? 'USER' : 'SARAFI',
+        action: 'DEAL_DISPUTED',
+        entityType: 'CurrencyDeal',
+        entityId: dealId,
+        ip: disputeIp,
+        meta: { reason } as Prisma.InputJsonValue,
+      },
+    });
+  });
+
+  revalidateDealCaches();
+  return { success: true, data: { id: dealId } };
+}
+
+// ─── REFUND ───────────────────────────────────────────────────────────────────
+
+/**
+ * refundDeal — ثبت بازگشت وجه برای معامله DISPUTED
+ *
+ * فقط ادمین یا صراف می‌تواند refund دهد — نه کاربر عادی.
+ * جریان: DISPUTED → REFUNDED
+ *
+ * اگر مشتری LedgerEntry داشته باشد، DEBIT reverse می‌شود (CREDIT برگشتی).
+ */
+export async function refundDeal(
+  dealId: string,
+  refundNote: string,
+): Promise<FintechActionResult<{ id: string }>> {
+  try {
+    return await _refundDealImpl(dealId, refundNote);
+  } catch (err) {
+    return parseRefundError(err);
+  }
+}
+
+async function _refundDealImpl(
+  dealId: string,
+  refundNote: string,
+): Promise<FintechActionResult<{ id: string }>> {
+  const auth = await requireUser();
+  if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
+
+  const { user } = auth;
+  const isAdmin = user.role === 'OWNER' || user.role === 'ADMIN';
+
+  const deal = await prisma.currencyDeal.findUnique({
+    where: { id: dealId },
+    select: {
+      id: true,
+      status: true,
+      userId: true,
+      exchangeId: true,
+      toAmount: true,
+      toCurrency: true,
+      feeAmount: true,
+      fromAmount: true,
+      fromCurrency: true,
+    },
+  });
+  if (!deal) return { success: false, error: { code: 'NOT_FOUND', message: 'معامله یافت نشد' } };
+
+  if (deal.status !== 'DISPUTED') {
+    return {
+      success: false,
+      error: {
+        code: 'INVALID_STATE',
+        message: 'فقط معاملات در وضعیت اعتراض قابل بازگشت وجه هستند',
+      },
+    };
+  }
+
+  // فقط ادمین یا صراف می‌توانند refund دهند
+  if (!isAdmin) {
+    const staff = await prisma.exchangeStaff.findFirst({
+      where: { exchangeId: deal.exchangeId, userId: user.id, revokedAt: null },
+      select: { id: true },
+    });
+    if (!staff) {
+      return {
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'فقط ادمین یا صراف می‌توانند بازگشت وجه دهند' },
+      };
+    }
+  }
+
+  const refundIp = await getClientIp();
+
+  // Serializable isolation: جلوگیری از race condition روی balance
+  // اگر دو refund همزمان بیایند، دومی با conflict خطا می‌دهد
+  await prisma.$transaction(
+    async (tx) => {
+      await tx.currencyDeal.update({
+        where: { id: dealId },
+        data: { status: 'REFUNDED', internalNote: refundNote },
+      });
+
+      await tx.dealStatusLog.create({
+        data: {
+          dealId,
+          fromStatus: 'DISPUTED',
+          toStatus: 'REFUNDED',
+          actorId: user.id,
+          actorRole: isAdmin ? 'ADMIN' : 'SARAFI',
+          note: refundNote,
+        },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          id: createId(),
+          exchangeId: deal.exchangeId,
+          actorId: user.id,
+          actorRole: isAdmin ? 'ADMIN' : 'SARAFI',
+          action: 'DEAL_REFUNDED',
+          entityType: 'CurrencyDeal',
+          entityId: dealId,
+          ip: refundIp,
+          meta: {
+            refundNote,
+            toAmount: deal.toAmount.toString(),
+            toCurrency: deal.toCurrency,
+          } as Prisma.InputJsonValue,
+        },
+      });
+
+      // اگر مشتری لاگین بوده و حساب داشته → DEBIT برگشتی ثبت کن
+      if (deal.userId) {
+        const customer = await tx.customer.findFirst({
+          where: { userId: deal.userId, exchangeId: deal.exchangeId },
+          select: { id: true },
+        });
+        if (customer) {
+          // SELECT ... FOR UPDATE: balance را با lock می‌خوانیم تا race condition نباشد
+          const lockedRows = await tx.$queryRaw<Array<{ id: string; balance: bigint }>>`
+            SELECT id, balance
+            FROM "FintechAccount"
+            WHERE "customerId" = ${customer.id}
+              AND "exchangeId" = ${deal.exchangeId}
+              AND currency = ${deal.toCurrency}
+            LIMIT 1
+            FOR UPDATE
+          `;
+          const lockedAccount = lockedRows[0];
+          if (lockedAccount) {
+            const refundAmount = BigInt(new Decimal(deal.toAmount.toString()).toFixed(0));
+            // اگر balance کمتر از مبلغ بازگشتی است → خطا به‌جای silent clamp
+            // مثال: مشتری 100 AFN داشت، معامله 200 AFN بود → نمی‌توان 200 AFN debit کرد
+            if (lockedAccount.balance < refundAmount) {
+              throw new Error(
+                `INSUFFICIENT_BALANCE: موجودی حساب (${lockedAccount.balance}) کمتر از مبلغ بازگشتی (${refundAmount}) است`,
+              );
+            }
+            const newBalance = lockedAccount.balance - refundAmount;
+            await tx.fintechAccount.update({
+              where: { id: lockedAccount.id },
+              data: { balance: newBalance, updatedAt: new Date() },
+            });
+            await tx.ledgerEntry.create({
+              data: {
+                id: createId(),
+                exchangeId: deal.exchangeId,
+                accountId: lockedAccount.id,
+                customerId: customer.id,
+                direction: 'DEBIT',
+                amount: refundAmount,
+                currency: deal.toCurrency,
+                runningBalance: newBalance,
+                description: `بازگشت وجه — معامله ${dealId.slice(-8)}`,
+                createdById: user.id,
+              },
+            });
+          }
+        }
+      }
+    },
+    { isolationLevel: 'Serializable' },
+  );
+
+  revalidateDealCaches();
+  return { success: true, data: { id: dealId } };
+}
+
+// ─── helper: error handler برای refundDeal ────────────────────────────────────
+// (این helper داخلی است — مستقیماً از refundDeal صدا نمی‌شود)
+// خطاهای $queryRaw/$transaction را به FintechActionResult تبدیل می‌کند
+export function parseRefundError(err: unknown): FintechActionResult<{ id: string }> {
+  const msg = err instanceof Error ? err.message : '';
+  if (msg.startsWith('INSUFFICIENT_BALANCE')) {
+    return {
+      success: false,
+      error: {
+        code: 'INSUFFICIENT_BALANCE',
+        message: 'موجودی حساب مشتری برای بازگشت وجه کافی نیست. لطفاً موجودی را بررسی کنید.',
+      },
+    };
+  }
+  return {
+    success: false,
+    error: { code: 'INTERNAL_ERROR', message: 'خطای داخلی در پردازش بازگشت وجه' },
+  };
 }

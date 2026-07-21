@@ -34,7 +34,8 @@ export function FormField({
   inline,
   htmlFor,
 }: FormFieldProps) {
-  const id = htmlFor ?? React.useId();
+  const generatedId = React.useId();
+  const id = htmlFor ?? generatedId;
   return (
     <div className={cn(inline ? 'flex items-center gap-4' : 'flex flex-col gap-1.5', className)}>
       {label && (

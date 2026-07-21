@@ -370,26 +370,24 @@ interface PanelProps {
   children: React.ReactNode;
 }
 
-function Panel({ title, tone, icon, viewAllHref, hidden, children }: PanelProps) {
+function Panel({ title, tone: _tone, icon, viewAllHref, hidden, children }: PanelProps) {
   if (hidden) return null;
   // 2026-06-26: monochrome control shift — accent + link collapsed to
   // slate. The .dash-ico--violet / .dash-ico--cyan hue variants are
   // already neutralized in globals.css §1.5; we keep a single class
   // here so JSX stays declarative.
-  const accent = 'dash-ico';
-  const link = 'dash-link';
   return (
     <article className="rounded-2xl border-[0.5px] border-white/70 dark:border-white/10 overflow-hidden bg-white/40 dark:bg-[--nova-canvas]/40 backdrop-blur-[24px] shadow-[0_8px_32px_0_oklch(45%_0.1_265/0.02)] dark:shadow-[0_12px_40px_oklch(0%_0_0/0.5)]">
       <header className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
         <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 inline-flex items-center gap-2">
-          <span className={`dash-ico ${accent} w-8 h-8`} aria-hidden>
+          <span className="dash-ico w-8 h-8" aria-hidden>
             {icon}
           </span>
           {title}
         </h4>
         <Link
           href={viewAllHref}
-          className={`inline-flex items-center gap-1 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 rounded-md px-1 ${link}`}
+          className="inline-flex items-center gap-1 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 rounded-md px-1 dash-link"
         >
           <span>مشاهده همه</span>
           <HiOutlineArrowLeft className="w-3.5 h-3.5" />
