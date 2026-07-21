@@ -1062,9 +1062,47 @@ rate-lists, dashboard-{section}
 **💡 پیشنهادات برای دفعه بعد:**
 1. **مرکزی کردن Zod schemas** — `src/lib/schemas/` بسازید که همه schemas مشترک (مثل `commentContent`, `taskTitle`, `socialUrl`) در آن باشند
 2. **Logger utility** — یک `src/lib/server-logger.ts` که با Sentry یکپارچه است و جایگزین `console.error` در همه جا شود
-3. **تکمیل safeCache migration** — بقیه `unstable_cache` ها به safeCache منتقل شوند، مخصوصاً `tickerActions` و `market-rates`
+3. ~~**تکمیل safeCache migration**~~ — ✅ **انجام شد در Session 2026-08-01 (ادامه)**
 
+---
 
+### 🔧 Session 2026-08-01 (ادامه) — safeCache migration کامل (tickerActions + marketTickerActions + market-rates + exchange-rates + postActions)
+
+**✅ انجام شد:**
+
+| فایل | تغییر |
+|------|-------|
+| `src/actions/tickerActions.ts` | `unstable_cache` → `safeCache` — header ticker با fallback `[]` |
+| `src/actions/marketTickerActions.ts` | `unstable_cache` → `safeCache` — pulse ticker با fallback `[]` |
+| `src/actions/market-rates.ts` | `unstable_cache` → `safeCache` — `getMarketRates` + `getExchangeRateList` با fallback `[]` |
+| `src/actions/exchange-rates.ts` | `unstable_cache` → `safeCache` — `_getExchangeRatesCached` با fallback `[]` + رفع ۳ unused catch-binding |
+| `src/actions/postActions.ts` | `unstable_cache` → `safeCache` — `getCachedPostBySlug` + `getCachedArchivePosts` + `getCachedStats` با fallback مناسب |
+
+**📊 آمار:**
+- ۷ `unstable_cache` در ۵ فایل → `safeCache`
+- `npx tsc --noEmit` ✅ سبز
+- `npx biome check` ✅ سبز
+
+**🔍 توضیح تکنیکال:**
+- `safeCache` به‌جای re-throw کردن خطای DB از طریق cache boundary، مقدار stale یا fallback برمی‌گرداند. این یعنی یک قطعی DB موقت دیگر کل صفحه را crash نمی‌کند.
+- `postActions` پیچیده‌ترین migration بود: `fetchPostBySlugRaw` و `fetchArchivePostsRaw` args پیچیده دارند که `safeCache` با `JSON.stringify` آن‌ها را key می‌کند؛ `fetchStatsRaw` هم `{ authorId? }` می‌گیرد که per-author scope را حفظ می‌کند.
+
+**⚠️ unstable_cache باقی‌مانده در پروژه:**
+
+| فایل | توضیح |
+|------|-------|
+| `actions/getPopularPosts.ts` | inline per-user wrapper (دارای per-user key logic پیچیده) |
+| `actions/getRecentDrafts.ts` | inline per-user wrapper (مشابه بالا) |
+| `actions/getRecentActivity.ts` | inline pattern قدیمی |
+| `actions/transfer-providers.ts` | public data — migration آسان |
+| `actions/exchanges.ts` | public data — migration آسان |
+| `actions/getProfileData.ts` | per-user (userId در key) |
+| `actions/search.ts` | public search — migration آسان |
+
+**💡 پیشنهادات برای دفعه بعد:**
+1. **مرکزی کردن Zod schemas** — `src/lib/schemas/` بسازید
+2. **Logger utility** — `src/lib/server-logger.ts` با Sentry integration
+3. **بقیه unstable_cache** — `transfer-providers`, `exchanges`, `search` آسان‌ترین موارد بعدی هستند
 
 ---
 
@@ -1072,7 +1110,8 @@ rate-lists, dashboard-{section}
 > **۲۲۲ مشکل شناسایی شده — ۷۶ تای آن بحرانی برای Production.**
 > **Session 2026-07-21:** ۲۰ boundary + console.log cleanup
 > **Session 2026-07-28:** ۶ cache migration + ~۲۰ console.error cleanup + fetch timeout + biome fix
-> **Session 2026-08-01:** ~۱۵ console.error حذف از API + ۱ safeCache migration + Zod validation در taskActions/commentActions
+> **Session 2026-08-01 (قسمت ۱):** ~۱۵ console.error حذف از API + ۱ safeCache migration + Zod validation در taskActions/commentActions
+> **Session 2026-08-01 (قسمت ۲):** ۷ unstable_cache → safeCache در tickerActions + marketTickerActions + market-rates + exchange-rates + postActions
 
 ---
 
