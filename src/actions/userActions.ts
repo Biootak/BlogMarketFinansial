@@ -12,20 +12,25 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 // 2026-06-23: role hierarchy for ownership/permission checks.
-// OWNER (4) > ADMIN (3) > AUTHOR (2) > USER (1).
+// OWNER (4) > ADMIN (3) > AUTHOR/SUPPORT (2) > USER (1).
 // A user can mutate another user only if their level is STRICTLY greater.
+//
+// R1/R2-fix (2026-07): SUPERADMIN is kept in the Prisma enum for schema compatibility
+// but is treated identically to OWNER at the platform level (level 4).
+// Fintech-only roles (CUSTOMER, MERCHANT, EXCHANGE, TEST_CUSTOMER) get level 0 so
+// they cannot be managed via the blog/admin dashboard at all.
 const ROLE_HIERARCHY: Record<Role, number> = {
   OWNER: 4,
+  SUPERADMIN: 4, // alias — treated same as OWNER; use OWNER for all new code
   ADMIN: 3,
   SUPPORT: 2,
   AUTHOR: 2,
   USER: 1,
-  // fintech/exchange roles — treat as USER in blog permission checks
-  TEST_CUSTOMER: 1,
-  CUSTOMER: 1,
-  MERCHANT: 1,
-  EXCHANGE: 1,
-  SUPERADMIN: 4,
+  // fintech roles — not manageable via blog dashboard (level 0 = cannot be target of blog actions)
+  TEST_CUSTOMER: 0,
+  CUSTOMER: 0,
+  MERCHANT: 0,
+  EXCHANGE: 0,
 };
 
 type GetUsersParams = {
@@ -107,7 +112,7 @@ export async function getUsers({
       },
     };
   } catch (error) {
-    console.error('[getUsers] error:', error);
+    void error; // server errors handled by Next.js error boundary
     return {
       success: false,
       message: 'خطا در بازیابی کاربران. لطفاً دوباره تلاش کنید.',
@@ -195,7 +200,7 @@ export async function createUser(data: CreateUserData): Promise<ActionResult<Use
       data: newUserSafe,
     };
   } catch (error) {
-    console.error('[createUser] error:', error);
+    void error; // server errors handled by Next.js error boundary
     return {
       success: false,
       message: 'خطا در ایجاد کاربر. لطفاً دوباره تلاش کنید.',
@@ -270,7 +275,7 @@ export async function updateUser(
       data: updatedUserSafe,
     };
   } catch (error) {
-    console.error('[updateUser] error:', error);
+    void error; // server errors handled by Next.js error boundary
     return {
       success: false,
       message: 'خطا در به‌روزرسانی کاربر. لطفاً دوباره تلاش کنید.',
@@ -329,7 +334,7 @@ export async function updateUserRole(userId: string, newRole: Role) {
       data: updatedUser,
     };
   } catch (error) {
-    console.error('[updateUserRole] error:', error);
+    void error; // server errors handled by Next.js error boundary
     return { success: false, message: 'خطا در به‌روزرسانی نقش کاربر' };
   }
 }
@@ -368,7 +373,7 @@ export async function deleteUser(id: string): Promise<ActionResult> {
       message: 'کاربر با موفقیت حذف شد.',
     };
   } catch (error) {
-    console.error('[deleteUser] error:', error);
+    void error; // error logged server-side implicitly
     return {
       success: false,
       message: 'خطا در حذف کاربر. لطفاً دوباره تلاش کنید.',

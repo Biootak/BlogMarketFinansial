@@ -18,6 +18,8 @@ async function DashboardGateInner({
 }) {
   // checkRole calls auth() — uncached, request-specific
   // 2026-07-07: USER role added so they can access /dashboard/my-requests
+  // R8-fix: CUSTOMER, MERCHANT, EXCHANGE, TEST_CUSTOMER are deliberately excluded —
+  // they belong to /exchange or public pages, not the admin/blog dashboard.
   const session = await checkRole(['OWNER', 'ADMIN', 'SUPPORT', 'AUTHOR', 'USER']);
   // safeCache-backed, but still resolves async — keep inside Suspense
   const settings = await getSystemSettingsData();

@@ -1,11 +1,12 @@
 // src/actions/market-rates.ts
 'use server';
 
-import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import { assembleMarketRates } from '@/lib/market-rates';
 import type { MarketRateItem } from '@/lib/market-rates';
+import { requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
+import { safeRevalidateTag } from '@/lib/safe-cache';
 import { unstable_cache } from 'next/cache';
 
 const TAGS = {
@@ -20,9 +21,7 @@ export const getMarketRates = unstable_cache(
     try {
       return await assembleMarketRates();
     } catch (e) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn('[market-rates] assemble failed:', e);
-      }
+      void e; // assembly failure is transient; caller returns stale cache or empty array
       return [];
     }
   },
@@ -67,9 +66,9 @@ export async function createMarketRate(
 ): Promise<
   { success: true; id: string } | { success: false; error: { code: string; message: string } }
 > {
-  const session = await auth();
-  if (!session?.user || (session.user.role !== 'OWNER' && session.user.role !== 'ADMIN')) {
-    return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی ندارید' } };
+  const authCheck = await requireAdmin();
+  if (!authCheck.success) {
+    return { success: false, error: { code: authCheck.code, message: authCheck.message } };
   }
 
   if (!input.symbol || !input.displayNameFa) {
@@ -111,6 +110,7 @@ export async function createMarketRate(
     revalidateTag(TAGS.list);
     revalidateTag(TAGS.ticker);
     revalidateTag(TAGS.exchangeRates);
+    safeRevalidateTag('exchange-rates');
     return { success: true, id: created.id };
   } catch (e: unknown) {
     const err = e as { code?: string; message?: string };
@@ -139,9 +139,9 @@ export async function updateMarketRate(
   id: string,
   input: UpdateInput,
 ): Promise<{ success: true } | { success: false; error: { code: string; message: string } }> {
-  const session = await auth();
-  if (!session?.user || (session.user.role !== 'OWNER' && session.user.role !== 'ADMIN')) {
-    return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی ندارید' } };
+  const authCheck = await requireAdmin();
+  if (!authCheck.success) {
+    return { success: false, error: { code: authCheck.code, message: authCheck.message } };
   }
 
   try {
@@ -152,6 +152,7 @@ export async function updateMarketRate(
     revalidateTag(TAGS.list);
     revalidateTag(TAGS.ticker);
     revalidateTag(TAGS.exchangeRates);
+    safeRevalidateTag('exchange-rates');
     return { success: true };
   } catch (e: unknown) {
     const err = e as { message?: string };
@@ -163,9 +164,9 @@ export async function updateMarketRate(
 export async function deleteMarketRate(
   id: string,
 ): Promise<{ success: true } | { success: false; error: { code: string; message: string } }> {
-  const session = await auth();
-  if (!session?.user || (session.user.role !== 'OWNER' && session.user.role !== 'ADMIN')) {
-    return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی ندارید' } };
+  const authCheck = await requireAdmin();
+  if (!authCheck.success) {
+    return { success: false, error: { code: authCheck.code, message: authCheck.message } };
   }
 
   try {
@@ -173,6 +174,7 @@ export async function deleteMarketRate(
     revalidateTag(TAGS.list);
     revalidateTag(TAGS.ticker);
     revalidateTag(TAGS.exchangeRates);
+    safeRevalidateTag('exchange-rates');
     return { success: true };
   } catch (e: unknown) {
     const err = e as { message?: string };

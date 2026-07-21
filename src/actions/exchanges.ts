@@ -409,3 +409,97 @@ export async function updateExchangeSelf(
   revalidateTag('exchanges');
   return { success: true, data: mapExchange(row) };
 }
+
+// ─── APPLY FOR EXCHANGE (R15-fix) ─────────────────────────────────────────────
+// هر کاربر لاگین‌شده می‌تواند برای ثبت صرافی درخواست بدهد.
+// صرافی با status=PENDING ایجاد می‌شود — باید توسط ADMIN/OWNER پلتفرم تأیید شود.
+// درخواست‌دهنده به عنوان ExchangeStaff با role=OWNER ثبت می‌شود.
+
+const ApplyForExchangeSchema = z.object({
+  name: z.string().min(2, 'نام صرافی حداقل ۲ کاراکتر').max(120),
+  slug: z
+    .string()
+    .min(2)
+    .max(80)
+    .regex(/^[a-z0-9-]+$/, 'فقط حروف انگلیسی کوچک، اعداد و خط تیره'),
+  licenseNo: z.string().max(60).nullable().optional(),
+  city: z.string().min(1, 'شهر الزامی است').max(80),
+  phone: z.string().max(30).nullable().optional(),
+  email: z.string().email('ایمیل نامعتبر').nullable().optional(),
+  address: z.string().max(300).nullable().optional(),
+});
+
+export async function applyForExchange(
+  raw: unknown,
+): Promise<ActionResult<{ id: string; slug: string }>> {
+  const auth = await requireUser();
+  if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
+
+  // نمی‌توان صرافی دیگری ایجاد کرد اگر قبلاً در صرافی دیگری staff هستی
+  const existing = await prisma.exchangeStaff.findFirst({
+    where: { userId: auth.user.id, revokedAt: null },
+    select: { id: true },
+  });
+  if (existing) {
+    return {
+      success: false,
+      error: {
+        code: 'ALREADY_MEMBER',
+        message:
+          'شما از قبل عضو یک صرافی هستید. برای ثبت صرافی جدید باید ابتدا از صرافی فعلی خارج شوید.',
+      },
+    };
+  }
+
+  const parsed = ApplyForExchangeSchema.safeParse(raw);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: { code: 'INVALID_INPUT', message: parsed.error.errors[0]?.message ?? 'داده نامعتبر' },
+    };
+  }
+
+  const slugExists = await prisma.exchange.findUnique({ where: { slug: parsed.data.slug } });
+  if (slugExists) {
+    return {
+      success: false,
+      error: {
+        code: 'DUPLICATE_SLUG',
+        message: `نام کوتاه «${parsed.data.slug}» قبلاً ثبت شده است`,
+      },
+    };
+  }
+
+  const exchangeId = createId();
+  await prisma.$transaction(async (tx) => {
+    await tx.exchange.create({
+      data: {
+        id: exchangeId,
+        name: parsed.data.name,
+        slug: parsed.data.slug,
+        licenseNo: parsed.data.licenseNo ?? null,
+        city: parsed.data.city,
+        phone: parsed.data.phone ?? null,
+        email: parsed.data.email ?? null,
+        address: parsed.data.address ?? null,
+        status: 'PENDING',
+        updatedAt: new Date(),
+        createdById: auth.user.id,
+      },
+    });
+
+    // درخواست‌دهنده = مالک صرافی (ExchangeStaff.OWNER)
+    await tx.exchangeStaff.create({
+      data: {
+        id: createId(),
+        exchangeId,
+        userId: auth.user.id,
+        role: 'OWNER',
+        joinedAt: new Date(),
+      },
+    });
+  });
+
+  revalidateTag('exchanges');
+  return { success: true, data: { id: exchangeId, slug: parsed.data.slug } };
+}

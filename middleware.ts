@@ -120,7 +120,14 @@ const isPublicApi = (pathname: string): boolean => {
   return pathname.startsWith('/api/public/') || pathname.startsWith('/api/debug');
 };
 
+// Roles that are NOT allowed in /dashboard (they belong to /exchange or public areas).
+// R8-fix: CUSTOMER, MERCHANT, EXCHANGE, TEST_CUSTOMER have no business in the blog/admin dashboard.
+// They should be redirected to /exchange (if exchange staff) or / (if customer).
+const DASHBOARD_BLOCKED_ROLES = new Set(['CUSTOMER', 'MERCHANT', 'EXCHANGE', 'TEST_CUSTOMER']);
+
 const checkDashboardAccess = (pathname: string, role?: string) => {
+  // R8-fix: block fintech-only roles from the entire /dashboard tree
+  if (role && DASHBOARD_BLOCKED_ROLES.has(role)) return false;
   if (matchesAny(pathname, compiledBaseDashboard)) return true;
   if (role === 'OWNER' && matchesAny(pathname, compiledSuperAdmin)) return true;
   if ((role === 'ADMIN' || role === 'OWNER') && matchesAny(pathname, compiledAdmin)) return true;
@@ -189,30 +196,35 @@ export async function middleware(req: NextRequest) {
   if (pathname.startsWith('/dashboard')) {
     const hasAccess = checkDashboardAccess(pathname, role);
     if (hasAccess) return NextResponse.next();
+    // R8-fix: redirect fintech roles to their correct home instead of looping back to /dashboard
+    if (role && DASHBOARD_BLOCKED_ROLES.has(role)) {
+      return NextResponse.redirect(new URL('/exchange', nextUrl));
+    }
     return NextResponse.redirect(new URL('/dashboard', nextUrl));
+  }
+
+  // R12-fix: /exchange/* routes require authentication — redirect to /signin if not logged in.
+  // The Exchange layout itself handles staff membership verification.
+  if (pathname.startsWith('/exchange')) {
+    if (!isLoggedIn) {
+      const callbackUrl = pathname + search;
+      return NextResponse.redirect(
+        new URL(`/auth?callbackUrl=${encodeURIComponent(callbackUrl)}`, nextUrl),
+      );
+    }
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  // 2026-06-14: tightened the matcher. The previous version was
-  // a single negative-lookahead that ran the middleware for every
-  // public-facing page, which meant decoding the JWT on every home,
-  // archive, single, author, etc. request — even though the home
-  // and archive pages don't need auth at all.
-  //
-  // 2026-07-08 (C1 fix): every /api/* route self-enforces auth + role via
-  // its own `auth()` check (verified across all route handlers), so the
-  // middleware no longer runs on /api at all. This avoids the previous
-  // default-deny allowlist which (a) was fully bypassed by the bogus
-  // `/[[...slug]]` public entry and (b) would over-block ADMIN/AUTHOR on
-  // self-gated routes once that entry was removed. The middleware now
-  // only guards the dashboard (role-based) and the auth routes.
-  //
-  // The matcher deliberately does NOT include /api — see note above.
+  // 2026-06-14: tightened the matcher.
+  // 2026-07-08 (C1 fix): /api/* routes self-enforce auth via their own `auth()` checks.
+  // R12-fix (2026-07): /exchange/:path* added — Exchange Panel requires authentication.
+  // The Exchange layout handles staff membership verification beyond basic login.
   matcher: [
     '/dashboard/:path*',
+    '/exchange/:path*',
     '/auth',
     '/signin',
     '/signup',

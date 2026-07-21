@@ -259,31 +259,21 @@ export default function RateListsWorkspace({ initialLists }: Props) {
     try {
       if (editingList) {
         const result = await updateRateList(editingList.id, data);
-        if (result.success && result.data) {
+        if (result.success) {
           toast({ title: 'موفقیت', description: 'لیست نرخ با موفقیت به‌روزرسانی شد' });
-          setLists((prev) =>
-            prev.map((l) => (l.id === editingList.id ? (result.data as RateListData) : l)),
-          );
+          setLists((prev) => prev.map((l) => (l.id === editingList.id ? result.data : l)));
           handleCloseModal();
         } else {
-          toast({
-            title: 'خطا',
-            description: result.message,
-            variant: 'destructive',
-          });
+          toast({ title: 'خطا', description: result.error.message, variant: 'destructive' });
         }
       } else {
         const result = await createRateList(data);
-        if (result.success && result.data) {
+        if (result.success) {
           toast({ title: 'موفقیت', description: 'لیست نرخ با موفقیت ایجاد شد' });
-          setLists((prev) => [result.data as RateListData, ...prev]);
+          setLists((prev) => [result.data, ...prev]);
           handleCloseModal();
         } else {
-          toast({
-            title: 'خطا',
-            description: result.message,
-            variant: 'destructive',
-          });
+          toast({ title: 'خطا', description: result.error.message, variant: 'destructive' });
         }
       }
     } catch {
@@ -305,7 +295,7 @@ export default function RateListsWorkspace({ initialLists }: Props) {
       } else {
         toast({
           title: 'خطا',
-          description: result.message,
+          description: result.error.message,
           variant: 'destructive',
         });
       }

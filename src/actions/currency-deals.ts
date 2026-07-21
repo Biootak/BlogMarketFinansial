@@ -506,6 +506,35 @@ export async function completeDeal(
   if (!access.ok)
     return { success: false, error: { code: access.error.code, message: access.error.message } };
 
+  // ── F7: KYC gate — اگر مشتری لاگین است و exchange.requireKyc=true باشد ────
+  // KYC فقط برای کاربران ثبت‌نام‌شده (userId != null) چک می‌شود.
+  // مشتریان مهمان (userId=null) از این gate رد می‌شوند — سیاست مشابه exchange-transactions.ts
+  // مثال: deal.userId='u1'، exchange.requireKyc=true، customer.kycStatus='PENDING' → خطا ✗
+  //        deal.userId=null → KYC چک نمی‌شود (مهمان)                            → ادامه ✓
+  if (deal.userId) {
+    const [customer, exchange] = await Promise.all([
+      prisma.customer.findFirst({
+        where: { userId: deal.userId, exchangeId: deal.exchangeId },
+        select: { kycLevel: true, kycStatus: true },
+      }),
+      prisma.exchange.findUnique({
+        where: { id: deal.exchangeId },
+        select: { requireKyc: true },
+      }),
+    ]);
+    if (exchange?.requireKyc && customer) {
+      if (customer.kycStatus !== 'APPROVED' || customer.kycLevel === 'NONE') {
+        return {
+          success: false,
+          error: {
+            code: 'KYC_REQUIRED',
+            message: 'برای تکمیل معامله، احراز هویت (KYC) مشتری الزامی است',
+          },
+        };
+      }
+    }
+  }
+
   if (!['CONFIRMED', 'PROCESSING'].includes(deal.status)) {
     // F4-fix: اگر قبلاً complete شده → idempotent success
     if (deal.status === 'COMPLETED' && idempotencyKey) {

@@ -269,6 +269,22 @@ export type ActionResult<T = void, E = string> = {
   };
 };
 
+/**
+ * FintechActionResult — شکل یکپارچه و نوع‌محکم برای Server Actions فین‌تک.
+ *
+ * تفاوت با ActionResult قدیمی:
+ *   - discriminated union واقعی (success: true vs success: false)
+ *   - error همیشه { code, message } دارد (نه string اختیاری)
+ *   - variant / redirect / meta حذف شده (نیاز فین‌تک نداشت)
+ *   - data اجباری در حالت success (void برای موارد بدون داده)
+ *
+ * تمام عملیات‌های فین‌تک جدید (currency-deals, exchange-quotes و غیره)
+ * از این نوع استفاده می‌کنند.
+ */
+export type FintechActionResult<T = void> =
+  | { success: true; data: T }
+  | { success: false; error: { code: string; message: string } };
+
 export type CategoryActionResult = ActionResult<TaxonomyType>;
 
 export type PaginationParams = {

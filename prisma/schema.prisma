@@ -984,6 +984,10 @@ model VirtualCard {
   @@index([walletId])
 }
 
+/// A2-note (2026-07): Wallet یک thin projection روی FintechAccount است (accountId @unique).
+/// این مدل dead code نیست — VirtualCard.walletId به آن reference دارد.
+/// balance و locked در اینجا mirror ای از FintechAccount هستند و باید همگام باشند.
+/// برای کارهای جدید: از FintechAccount مستقیم استفاده کن؛ Wallet را فقط برای VirtualCard نگه دار.
 model Wallet {
   id             String         @id
   exchangeId     String

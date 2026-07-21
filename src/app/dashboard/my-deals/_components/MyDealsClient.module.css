@@ -1,0 +1,184 @@
+/* MyDealsClient.module.css — معاملات ارزی کاربر (A5-fix) */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-6);
+  max-width: 860px;
+}
+
+/* Header */
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--ds-space-4);
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: var(--ds-text-2xl);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-secondary);
+  margin: var(--ds-space-1) 0 0;
+}
+
+.newBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-4);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-color-primary);
+  color: var(--ds-text-on-primary, oklch(98% 0 0));
+  font-size: var(--ds-text-sm);
+  font-weight: 500;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+  min-height: 44px;
+}
+
+.newBtn:hover {
+  opacity: 0.88;
+}
+
+/* Empty state */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-12) var(--ds-space-4);
+  text-align: center;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-surface);
+}
+
+.emptyIcon {
+  color: var(--ds-text-muted);
+}
+
+.emptyTitle {
+  font-size: var(--ds-text-lg);
+  font-weight: 600;
+  color: var(--ds-text-primary);
+  margin: 0;
+}
+
+.emptyDesc {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-secondary);
+  margin: 0;
+  max-width: 360px;
+}
+
+.emptyBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--ds-space-2) var(--ds-space-5);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-color-primary);
+  color: var(--ds-text-on-primary, oklch(98% 0 0));
+  font-size: var(--ds-text-sm);
+  text-decoration: none;
+  min-height: 44px;
+}
+
+/* List */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+/* Card */
+.card {
+  padding: var(--ds-space-4);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-surface);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  transition: box-shadow 0.15s ease;
+}
+
+.card:hover {
+  box-shadow: var(--ds-shadow-sm);
+}
+
+.cardHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--ds-space-2);
+  flex-wrap: wrap;
+}
+
+.trackingCode {
+  font-family: var(--ds-font-mono, monospace);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--ds-text-primary);
+  letter-spacing: 0.04em;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-1) var(--ds-space-2);
+  border-radius: var(--ds-radius-full);
+  font-size: var(--ds-text-xs);
+  font-weight: 500;
+  color: var(--status-color);
+  border: 1px solid var(--status-color);
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.amounts {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  flex-wrap: wrap;
+}
+
+.fromAmount {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--ds-text-primary);
+}
+
+.arrowIcon {
+  color: var(--ds-text-muted);
+  flex-shrink: 0;
+}
+
+.toAmount {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--ds-color-success);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-3);
+}
+
+.metaItem {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
+}

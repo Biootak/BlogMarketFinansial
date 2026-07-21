@@ -4,10 +4,10 @@ import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
 import prisma from '@/lib/db';
 import { fetchBonbastBuySell } from '@/lib/market-rates/bonbast';
 import { bonbastToRateItems } from '@/lib/market-rates/bonbast-rate-items';
-import { authFailureToActionResult, requireAdmin } from '@/lib/require-auth';
+import { requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeCache, safeRevalidateTag } from '@/lib/safe-cache';
-import type { ActionResult, RateItem, RateListData } from '@/types/types';
+import type { FintechActionResult, RateItem, RateListData } from '@/types/types';
 import { revalidatePath } from 'next/cache';
 
 // 2026-06-14: shared helper to normalize the Json column into a
@@ -204,10 +204,12 @@ export const getActiveRateListsOrCryptoFallback = safeCache(
 
 export async function createRateList(
   data: Omit<RateListData, 'id' | 'createdAt' | 'updatedAt'>,
-): Promise<ActionResult<RateListData>> {
+): Promise<FintechActionResult<RateListData>> {
   try {
     const authCheck = await requireAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
+    if (!authCheck.success) {
+      return { success: false, error: { code: authCheck.code, message: authCheck.message } };
+    }
     // 2026-06-14: Prisma's Json column type serializes for us. The
     // previous `JSON.stringify` was redundant and meant the column
     // stored a string-in-string which broke read paths.
@@ -225,7 +227,6 @@ export async function createRateList(
 
     return {
       success: true,
-      message: 'Rate list created successfully',
       data: {
         ...rateList,
         rates: Array.isArray(data.rates) ? data.rates : [],
@@ -234,7 +235,7 @@ export async function createRateList(
   } catch (_error) {
     return {
       success: false,
-      message: 'خطا در ایجاد لیست نرخ',
+      error: { code: 'DB_ERROR', message: 'خطا در ایجاد لیست نرخ' },
     };
   }
 }
@@ -242,10 +243,12 @@ export async function createRateList(
 export async function updateRateList(
   id: string,
   data: Partial<Omit<RateListData, 'id' | 'createdAt' | 'updatedAt'>>,
-): Promise<ActionResult<RateListData>> {
+): Promise<FintechActionResult<RateListData>> {
   try {
     const authCheck = await requireAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
+    if (!authCheck.success) {
+      return { success: false, error: { code: authCheck.code, message: authCheck.message } };
+    }
     // Same fix as createRateList: don't JSON.stringify the Json
     // column. Let Prisma handle serialization.
     const rateList = await prisma.rateList.update({
@@ -263,7 +266,6 @@ export async function updateRateList(
 
     return {
       success: true,
-      message: 'Rate list updated successfully',
       data: {
         ...rateList,
         rates: normalizeRates(rateList.rates),
@@ -272,29 +274,26 @@ export async function updateRateList(
   } catch (_error) {
     return {
       success: false,
-      message: 'خطا در به‌روزرسانی لیست نرخ',
+      error: { code: 'DB_ERROR', message: 'خطا در به‌روزرسانی لیست نرخ' },
     };
   }
 }
 
-export async function deleteRateList(id: string): Promise<ActionResult> {
+export async function deleteRateList(id: string): Promise<FintechActionResult<{ id: string }>> {
   try {
     const authCheck = await requireAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
+    if (!authCheck.success) {
+      return { success: false, error: { code: authCheck.code, message: authCheck.message } };
+    }
     await prisma.rateList.delete({ where: { id } });
     revalidatePath('/dashboard/exchange-rates');
     revalidateTag('rate-lists');
     safeRevalidateTag('rate-lists');
-    return {
-      success: true,
-      variant: 'success',
-      message: 'لیست نرخ با موفقیت حذف شد',
-    };
+    return { success: true, data: { id } };
   } catch (_error) {
     return {
       success: false,
-      variant: 'destructive',
-      message: 'خطا در حذف لیست نرخ',
+      error: { code: 'DB_ERROR', message: 'خطا در حذف لیست نرخ' },
     };
   }
 }

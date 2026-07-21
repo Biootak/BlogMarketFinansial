@@ -50,11 +50,13 @@ export async function requireRole(allowed: Role[]): Promise<AuthResult> {
 }
 
 export async function requireAdmin(): Promise<AuthResult> {
-  return requireRole([Role.ADMIN, Role.OWNER]);
+  // R1/R2-fix: SUPERADMIN treated identically to OWNER across all auth checks
+  return requireRole([Role.ADMIN, Role.OWNER, Role.SUPERADMIN]);
 }
 
 export async function requireSuperAdmin(): Promise<AuthResult> {
-  return requireRole([Role.OWNER]);
+  // R1/R2-fix: SUPERADMIN is an alias for OWNER — both grant full platform access
+  return requireRole([Role.OWNER, Role.SUPERADMIN]);
 }
 
 export async function requireAuthor(): Promise<AuthResult> {

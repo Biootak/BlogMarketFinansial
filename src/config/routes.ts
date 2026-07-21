@@ -108,6 +108,9 @@ export const publicRoutes = [
   '/subscription/[plan]',
   '/money-transfer',
   '/money-transfer/[...slug]',
+  // R15-fix: صفحه ثبت‌نام صرافی — صفحه اصلی public است؛ auth درون page.tsx با redirect مدیریت می‌شود
+  '/apply-exchange',
+  '/apply-exchange/success',
   '/online-payment',
   '/online-payment/[...slug]',
 
@@ -160,7 +163,16 @@ export const DEFAULT_REDIRECT = '/dashboard';
  * Base dashboard routes accessible by all authenticated users
  * @type {string[]}
  */
-export const baseDashboardRoutes = ['/dashboard', '/dashboard/edit-profile'];
+export const baseDashboardRoutes = [
+  '/dashboard',
+  '/dashboard/edit-profile',
+  // A5-fix: معاملات ارزی کاربر — قابل دسترسی برای همه کاربران لاگین‌شده
+  '/dashboard/my-deals',
+  '/dashboard/my-deals/[...slug]',
+  // موجود — درخواست‌های بلاگ/سرویس
+  '/dashboard/my-requests',
+  '/dashboard/my-requests/[...slug]',
+];
 
 /**
  * Routes that require author access
