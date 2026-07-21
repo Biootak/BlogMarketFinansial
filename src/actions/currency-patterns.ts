@@ -26,7 +26,7 @@ export async function loadPatternsFromDB(retryCount = 0) {
       multipliers: new Map<string, number>(),
     };
 
-    patterns.forEach((pattern) => {
+    for (const pattern of patterns) {
       try {
         switch (pattern.type) {
           case 'currency':
@@ -50,15 +50,13 @@ export async function loadPatternsFromDB(retryCount = 0) {
             }
             break;
         }
-      } catch (error) {
-        console.error('خطا در پردازش الگو:', pattern, error);
+      } catch {
+        // individual pattern parse errors are non-fatal — skip and continue
       }
-    });
+    }
 
     return result;
-  } catch (error) {
-    console.error(`تلاش ${retryCount + 1} برای بارگذاری الگوها با خطا مواجه شد:`, error);
-
+  } catch {
     if (retryCount < MAX_RETRIES) {
       await delay(RETRY_DELAY);
       return loadPatternsFromDB(retryCount + 1);
@@ -107,9 +105,7 @@ export async function savePatternToDB(
       },
     });
     return true;
-  } catch (error) {
-    console.error(`تلاش ${retryCount + 1} برای ذخیره الگو با خطا مواجه شد:`, error);
-
+  } catch {
     if (retryCount < MAX_RETRIES) {
       await delay(RETRY_DELAY);
       return savePatternToDB(type, pattern, value, retryCount + 1);
@@ -139,58 +135,55 @@ export async function savePatternsGroupToDB(
     let _successCount = 0;
     let failureCount = 0;
 
-    const addPromise = async (type: PatternType, pattern: string, value?: number) => {
+    const addPromise = async (type: PatternType, ptn: string, val?: number) => {
       try {
-        const result = await savePatternToDB(type, pattern, value);
+        const result = await savePatternToDB(type, ptn, val);
         if (result) _successCount++;
         else failureCount++;
-      } catch (error) {
+      } catch {
         failureCount++;
-        console.error('خطا در ذخیره الگو:', { type, pattern, value }, error);
       }
     };
 
     // پردازش هر دسته از الگوها به صورت جداگانه
     if (patterns.currencies) {
-      for (const pattern of patterns.currencies) {
-        await addPromise('currency', pattern);
+      for (const ptn of patterns.currencies) {
+        await addPromise('currency', ptn);
       }
     }
 
     if (patterns.formats) {
-      for (const pattern of patterns.formats) {
-        await addPromise('format', pattern);
+      for (const ptn of patterns.formats) {
+        await addPromise('format', ptn);
       }
     }
 
     if (patterns.prefixes) {
-      for (const pattern of patterns.prefixes) {
-        await addPromise('prefix', pattern);
+      for (const ptn of patterns.prefixes) {
+        await addPromise('prefix', ptn);
       }
     }
 
     if (patterns.suffixes) {
-      for (const pattern of patterns.suffixes) {
-        await addPromise('suffix', pattern);
+      for (const ptn of patterns.suffixes) {
+        await addPromise('suffix', ptn);
       }
     }
 
     if (patterns.separators) {
-      for (const pattern of patterns.separators) {
-        await addPromise('separator', pattern);
+      for (const ptn of patterns.separators) {
+        await addPromise('separator', ptn);
       }
     }
 
     if (patterns.multipliers) {
-      for (const [pattern, value] of patterns.multipliers.entries()) {
-        await addPromise('multiplier', pattern, value);
+      for (const [ptn, val] of patterns.multipliers.entries()) {
+        await addPromise('multiplier', ptn, val);
       }
     }
 
     return failureCount === 0;
-  } catch (error) {
-    console.error(`تلاش ${retryCount + 1} برای ذخیره گروهی الگوها با خطا مواجه شد:`, error);
-
+  } catch {
     if (retryCount < MAX_RETRIES) {
       await delay(RETRY_DELAY);
       return savePatternsGroupToDB(patterns, retryCount + 1);

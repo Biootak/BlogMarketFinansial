@@ -1,16 +1,16 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { safeCache } from '@/lib/safe-cache';
 import type {
   ActionResult,
   CategoryWithPostCount,
   PostWithRelations,
   UserWithProfile,
 } from '@/types/types';
-import { unstable_cache } from 'next/cache';
 
-// Cache search results for 60 seconds
-const getCachedPosts = unstable_cache(
+// Cache search results for 60 seconds — safeCache prevents DB-failure crash
+const getCachedPosts = safeCache(
   async (query: string) => {
     return prisma.post.findMany({
       where: {
@@ -40,11 +40,11 @@ const getCachedPosts = unstable_cache(
       orderBy: { createdAt: 'desc' },
     });
   },
-  ['search-posts'],
-  { revalidate: 60, tags: ['search'] },
+  [],
+  { key: 'search-posts', ttl: 60, tags: ['search', 'posts'] },
 );
 
-const getCachedCategories = unstable_cache(
+const getCachedCategories = safeCache(
   async (query: string) => {
     return prisma.category.findMany({
       where: {
@@ -59,11 +59,11 @@ const getCachedCategories = unstable_cache(
       },
     });
   },
-  ['search-categories'],
-  { revalidate: 60, tags: ['search'] },
+  [],
+  { key: 'search-categories', ttl: 60, tags: ['search', 'categories'] },
 );
 
-const getCachedAuthors = unstable_cache(
+const getCachedAuthors = safeCache(
   async (query: string) => {
     return prisma.user.findMany({
       where: {
@@ -82,8 +82,8 @@ const getCachedAuthors = unstable_cache(
       },
     });
   },
-  ['search-authors'],
-  { revalidate: 60, tags: ['search'] },
+  [],
+  { key: 'search-authors', ttl: 60, tags: ['search'] },
 );
 
 export async function searchPosts(query: string): Promise<ActionResult<PostWithRelations[]>> {

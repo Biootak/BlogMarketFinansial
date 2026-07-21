@@ -15,9 +15,8 @@ import prisma from '@/lib/db';
 import { requireExchangeAccess } from '@/lib/exchange-auth';
 import { requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
-import { safeRevalidateTag } from '@/lib/safe-cache';
+import { safeCache, safeRevalidateTag } from '@/lib/safe-cache';
 import type { FintechActionResult } from '@/types/types';
-import { unstable_cache } from 'next/cache';
 import { z } from 'zod';
 
 // ─── Validation Schema ────────────────────────────────────────────────────────
@@ -113,14 +112,14 @@ function revalidateProviderCaches(): void {
 
 // ─── READ — Platform Admin ────────────────────────────────────────────────────
 
-export const getTransferProviders = unstable_cache(
+export const getTransferProviders = safeCache(
   async (): Promise<TransferProviderRow[]> => {
     return prisma.transferProvider.findMany({
       orderBy: [{ order: 'asc' }, { name: 'asc' }],
     }) as Promise<TransferProviderRow[]>;
   },
-  ['transfer-providers:list:v1'],
-  { revalidate: 60, tags: ['transfer-providers'] },
+  [],
+  { key: 'transfer-providers:list:v1', ttl: 60, tags: ['transfer-providers'] },
 );
 
 // ─── READ — Exchange-scoped ───────────────────────────────────────────────────

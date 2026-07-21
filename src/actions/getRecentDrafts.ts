@@ -2,21 +2,51 @@
 
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
-import { unstable_cache } from 'next/cache';
-
+import { safeCache } from '@/lib/safe-cache';
 import type { ActionResult } from '@/types/types';
-import type { Prisma } from '@prisma/client';
 
-export async function getRecentDrafts(): Promise<
-  ActionResult<
-    Array<{
-      id: string;
-      title: string;
-      date: string;
-      author: string;
-    }>
-  >
-> {
+type RecentDraftRow = {
+  id: string;
+  title: string;
+  date: string;
+  author: string;
+};
+
+// 2026-06-14: per-user cache key. safeCache uses JSON.stringify(args) as the
+// compound key suffix, so (userId, role) pairs are stored separately and
+// avoid cross-user data leaks that the static-key unstable_cache pattern had.
+const fetchRecentDraftsRaw = async (userId: string, role: string): Promise<RecentDraftRow[]> => {
+  const drafts = await prisma.post.findMany({
+    where: {
+      status: 'DRAFT',
+      ...(role === 'AUTHOR' ? { authorId: userId } : {}),
+    },
+    orderBy: { updatedAt: 'desc' },
+    take: 5,
+    select: {
+      id: true,
+      title: true,
+      updatedAt: true,
+      author: { select: { name: true } },
+    },
+  });
+
+  return drafts.map((draft) => ({
+    id: draft.id,
+    title: draft.title,
+    // safeCache returns plain JSON so Dates arrive as ISO strings on cache hits.
+    date: new Date(draft.updatedAt).toLocaleDateString('fa-IR'),
+    author: draft.author.name || 'ناشناس',
+  }));
+};
+
+const getCachedRecentDrafts = safeCache(fetchRecentDraftsRaw, [], {
+  key: 'recent-drafts',
+  ttl: 30,
+  tags: ['recent-drafts', 'posts'],
+});
+
+export async function getRecentDrafts(): Promise<ActionResult<RecentDraftRow[]>> {
   const session = await auth();
   const user = session?.user;
 
@@ -27,56 +57,8 @@ export async function getRecentDrafts(): Promise<
     };
   }
 
-  const where: Prisma.PostWhereInput = { status: 'DRAFT' };
-  if (user.role === 'AUTHOR') {
-    where.authorId = user.id;
-  }
-
   try {
-    // 2026-06-14: per-user cache key. `unstable_cache` keys on
-    // `[name, ...args]`, so passing the user id here scopes the
-    // cache correctly while still sharing the 30s TTL globally
-    // for the same user.
-    // `unstable_cache` keys ONLY on `keyParts` (string args), NOT on the
-    // closure's function args — so the previous static key leaked one user's
-    // drafts to another for 30s. Scopes the cache by userId/role here.
-    const scopeKey =
-      user.role === 'AUTHOR' ? (user.id ?? 'no-id') : `role:${user.role ?? 'unknown'}`;
-    const fetcher = unstable_cache(
-      async () => {
-        return prisma.post.findMany({
-          where: {
-            status: 'DRAFT',
-            ...(user.role === 'AUTHOR' ? { authorId: user.id } : {}),
-          },
-          orderBy: { updatedAt: 'desc' },
-          take: 5,
-          select: {
-            id: true,
-            title: true,
-            updatedAt: true,
-            author: { select: { name: true } },
-          },
-        });
-      },
-      ['recent-drafts', 'v1-2026-06-14', scopeKey],
-      {
-        revalidate: 30,
-        tags: ['recent-drafts', 'posts'],
-      },
-    );
-
-    const recentDrafts = await fetcher();
-
-    const formattedDrafts = recentDrafts.map((draft) => ({
-      id: draft.id,
-      title: draft.title,
-      // 2026-06-19: unstable_cache JSON-serializes the return value, so
-      // Prisma's Date becomes an ISO string on cache hits. Wrap with
-      // new Date() which accepts both Date and string.
-      date: new Date(draft.updatedAt).toLocaleDateString('fa-IR'),
-      author: draft.author.name || 'ناشناس',
-    }));
+    const formattedDrafts = await getCachedRecentDrafts(user.id ?? 'no-id', user.role ?? 'unknown');
 
     return {
       success: true,

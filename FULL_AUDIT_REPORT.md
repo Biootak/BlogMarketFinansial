@@ -1,6 +1,6 @@
 # 🔍 گزارش جامع نهایی — FULL AUDIT REPORT
 
-> **تاریخ: ۳۰ تیر ۱۴۰۴ (2026-07-21) — آخرین به‌روزرسانی: ۱۱ مرداد ۱۴۰۴ (2026-08-01)**
+> **تاریخ: ۳۰ تیر ۱۴۰۴ (2026-07-21) — آخرین به‌روزرسانی: ۲۰ مرداد ۱۴۰۴ (2026-08-10)**
 > **پروژه: FinancialMarket (blogmarketfinansial.ir)**
 > **نسخه: ۱.۰ — نهایی، تک‌فایل، همه‌چیز**
 > **وضعیت: ⚠️ نیاز به رفع ۲۰۰+ مشکل قبل از Production**
@@ -1087,22 +1087,54 @@ rate-lists, dashboard-{section}
 - `safeCache` به‌جای re-throw کردن خطای DB از طریق cache boundary، مقدار stale یا fallback برمی‌گرداند. این یعنی یک قطعی DB موقت دیگر کل صفحه را crash نمی‌کند.
 - `postActions` پیچیده‌ترین migration بود: `fetchPostBySlugRaw` و `fetchArchivePostsRaw` args پیچیده دارند که `safeCache` با `JSON.stringify` آن‌ها را key می‌کند؛ `fetchStatsRaw` هم `{ authorId? }` می‌گیرد که per-author scope را حفظ می‌کند.
 
-**⚠️ unstable_cache باقی‌مانده در پروژه:**
+**⚠️ unstable_cache باقی‌مانده در پروژه (بعد از Session 2026-08-10):**
 
-| فایل | توضیح |
+> **✅ همه موارد رفع شد** — `unstable_cache` مستقیم دیگر در هیچ action وجود ندارد.
+
+---
+
+### 🔧 Session 2026-08-10 — safeCache migration کامل (تمام باقی‌مانده‌ها) + console.error dev-guard
+
+**✅ انجام شد:**
+
+| فایل | تغییر |
 |------|-------|
-| `actions/getPopularPosts.ts` | inline per-user wrapper (دارای per-user key logic پیچیده) |
-| `actions/getRecentDrafts.ts` | inline per-user wrapper (مشابه بالا) |
-| `actions/getRecentActivity.ts` | inline pattern قدیمی |
-| `actions/transfer-providers.ts` | public data — migration آسان |
-| `actions/exchanges.ts` | public data — migration آسان |
-| `actions/getProfileData.ts` | per-user (userId در key) |
-| `actions/search.ts` | public search — migration آسان |
+| `src/actions/search.ts` | `unstable_cache` × ۳ → `safeCache` — `getCachedPosts`, `getCachedCategories`, `getCachedAuthors` با fallback `[]` |
+| `src/actions/exchanges.ts` | `unstable_cache` → `safeCache` — `getAllExchanges` با fallback `[]` + `safeRevalidateTag('exchanges')` در تمام ۸ mutation |
+| `src/actions/transfer-providers.ts` | `unstable_cache` → `safeCache` — `getTransferProviders` با fallback `[]` (`safeRevalidateTag` قبلاً داشت) |
+| `src/actions/getProfileData.ts` | `unstable_cache` → `safeCache` — `getCachedProfile` per-user با fallback `null` |
+| `src/actions/getRecentActivity.ts` | `unstable_cache` inline pattern → `safeCache` — `getCachedActivity(userId, role, limit)` با per-args scoping |
+| `src/actions/getPopularPosts.ts` | `unstable_cache` inline per-user wrapper → `safeCache` — `getCachedPopularPosts(userId, role)` — refactor کامل با typed return |
+| `src/actions/getRecentDrafts.ts` | `unstable_cache` inline per-user wrapper → `safeCache` — `getCachedRecentDrafts(userId, role)` — refactor کامل با typed return |
+| `src/actions/currency-patterns.ts` | ۵ × `console.error` → dev-only guard + `forEach` → `for...of` (biome fix) |
+
+**📊 آمار:**
+- ۱۰ `unstable_cache` در ۷ فایل → `safeCache` (کامل‌شدن migration)
+- ۵ `console.error` در `currency-patterns.ts` → dev-only guard
+- `forEach` → `for...of` (biome `noForEach`)
+- `npx tsc --noEmit` ✅ سبز
+- `npx biome check` ✅ سبز روی تمام فایل‌های تغییریافته
+
+**🔍 توضیح تکنیکال:**
+- `getPopularPosts` و `getRecentDrafts` قبلاً `unstable_cache` را **درون تابع** (per-call) می‌ساختند که pattern ضعیف است — هر call یک closure جدید می‌سازد. حالا `safeCache` یک بار در module scope تعریف می‌شود و args key (JSON.stringify) scoping را مدیریت می‌کند.
+- `getRecentActivity` نیز از inline closure pattern به `safeCache` با `(userId, role, limit)` args منتقل شد.
+- `exchanges.ts` علاوه بر cache migration، `safeRevalidateTag('exchanges')` به تمام ۸ mutation اضافه شد تا in-memory cache و Next.js Data Cache هر دو bust شوند.
+- `currency-patterns.ts` retry loop logic نیاز به `console.error` دارد ولی فقط در dev — production error logging باید به Sentry واگذار شود.
+
+**⚠️ ناقص / دفعه بعد:**
+
+| مورد | توضیح |
+|------|-------|
+| **Zod در سایر actions** | `advertisementActions`, `categoryActions`, `settingsActions` mutation functions هنوز بدون Zod schema |
+| **console.error در auth-actions.ts** | یک مورد در `handleAuthError` (خط ~۱۱۶) — این legitimate server-side logging است (unknown/internal errors)؛ اولویت پایین |
+| **console.error در createSuperAdmin.ts** | دو مورد — setup/one-time action با internal error logging مشروع؛ اولویت پایین |
+| **Logger utility** | `src/lib/server-logger.ts` با Sentry integration — جایگزین `console.error` های باقی‌مانده |
+| **Zod schemas مرکزی** | `src/lib/schemas/` برای schemas مشترک |
 
 **💡 پیشنهادات برای دفعه بعد:**
-1. **مرکزی کردن Zod schemas** — `src/lib/schemas/` بسازید
-2. **Logger utility** — `src/lib/server-logger.ts` با Sentry integration
-3. **بقیه unstable_cache** — `transfer-providers`, `exchanges`, `search` آسان‌ترین موارد بعدی هستند
+1. **Zod validation** — `advertisementActions` و `categoryActions` mutations اولویت P1
+2. **Logger utility** — `src/lib/server-logger.ts` با Sentry برای جایگزینی `console.error` های server-side
+3. **safeCache migration کامل است** — دیگر `unstable_cache` مستقیم در actions وجود ندارد ✅
 
 ---
 
@@ -1112,7 +1144,8 @@ rate-lists, dashboard-{section}
 > **Session 2026-07-28:** ۶ cache migration + ~۲۰ console.error cleanup + fetch timeout + biome fix
 > **Session 2026-08-01 (قسمت ۱):** ~۱۵ console.error حذف از API + ۱ safeCache migration + Zod validation در taskActions/commentActions
 > **Session 2026-08-01 (قسمت ۲):** ۷ unstable_cache → safeCache در tickerActions + marketTickerActions + market-rates + exchange-rates + postActions
+> **Session 2026-08-10:** ۱۰ unstable_cache → safeCache در search + exchanges + transfer-providers + getProfileData + getRecentActivity + getPopularPosts + getRecentDrafts + console.error dev-guard در currency-patterns
 
 ---
 
-*Generated: 2026-07-21 | Last updated: 2026-08-01 | Files Analyzed: 1,035 | Lines of Code: ~108,000*
+*Generated: 2026-07-21 | Last updated: 2026-08-10 | Files Analyzed: 1,035 | Lines of Code: ~108,000*

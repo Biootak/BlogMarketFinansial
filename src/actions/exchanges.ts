@@ -14,8 +14,8 @@ import prisma from '@/lib/db';
 import { requireExchangeAccess } from '@/lib/exchange-auth';
 import { requireAdmin, requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
+import { safeCache, safeRevalidateTag } from '@/lib/safe-cache';
 import type { FintechActionResult } from '@/types/types';
-import { unstable_cache } from 'next/cache';
 import { v4 as createId } from 'uuid';
 import { z } from 'zod';
 
@@ -90,7 +90,7 @@ function mapExchange(raw: {
 
 // ─── READ — Platform Admin ────────────────────────────────────────────────────
 
-export const getAllExchanges = unstable_cache(
+export const getAllExchanges = safeCache(
   async (): Promise<ExchangeRow[]> => {
     const rows = await prisma.exchange.findMany({
       orderBy: { createdAt: 'desc' },
@@ -98,8 +98,8 @@ export const getAllExchanges = unstable_cache(
     });
     return rows.map(mapExchange);
   },
-  ['exchanges:all:v1'],
-  { revalidate: 60, tags: ['exchanges'] },
+  [],
+  { key: 'exchanges:all:v1', ttl: 60, tags: ['exchanges'] },
 );
 
 // ─── READ — Single Exchange (برای پنل صراف) ──────────────────────────────────
@@ -168,6 +168,7 @@ export async function createExchange(raw: unknown): Promise<FintechActionResult<
   });
 
   revalidateTag('exchanges');
+  safeRevalidateTag('exchanges');
   return { success: true, data: mapExchange(row) };
 }
 
@@ -200,6 +201,7 @@ export async function updateExchange(
   });
 
   revalidateTag('exchanges');
+  safeRevalidateTag('exchanges');
   return { success: true, data: mapExchange(row) };
 }
 
@@ -219,6 +221,7 @@ export async function setExchangeStatus(
   });
 
   revalidateTag('exchanges');
+  safeRevalidateTag('exchanges');
   return { success: true, data: row };
 }
 
@@ -230,6 +233,7 @@ export async function deleteExchange(id: string): Promise<FintechActionResult<{ 
 
   await prisma.exchange.delete({ where: { id } });
   revalidateTag('exchanges');
+  safeRevalidateTag('exchanges');
   return { success: true, data: { id } };
 }
 
@@ -311,6 +315,7 @@ export async function addExchangeStaff(
   });
 
   revalidateTag('exchanges');
+  safeRevalidateTag('exchanges');
   return {
     success: true,
     data: {
@@ -343,6 +348,7 @@ export async function revokeExchangeStaff(
   });
 
   revalidateTag('exchanges');
+  safeRevalidateTag('exchanges');
   return { success: true, data: { id: staffId } };
 }
 
@@ -407,6 +413,7 @@ export async function updateExchangeSelf(
   });
 
   revalidateTag('exchanges');
+  safeRevalidateTag('exchanges');
   return { success: true, data: mapExchange(row) };
 }
 
@@ -501,5 +508,6 @@ export async function applyForExchange(
   });
 
   revalidateTag('exchanges');
+  safeRevalidateTag('exchanges');
   return { success: true, data: { id: exchangeId, slug: parsed.data.slug } };
 }

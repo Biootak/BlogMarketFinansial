@@ -12,14 +12,14 @@
 
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
+import { safeCache } from '@/lib/safe-cache';
 import type { ActionResult } from '@/types/types';
-import { unstable_cache } from 'next/cache';
 
 export interface ActivityEntry {
   id: string;
   action: string;
   details: string;
-  /** ISO string for serialization (unstable_cache JSON-serializes) */
+  /** ISO string for serialization */
   createdAt: string;
   user: {
     id: string;
@@ -56,15 +56,12 @@ const fetchRecentActivityRaw = async (
   }));
 };
 
-const cached = (userId: string, role: string, limit: number) =>
-  unstable_cache(
-    () => fetchRecentActivityRaw(userId, role, limit),
-    ['recent-activity', 'v1-2026-06-22', userId, role, String(limit)],
-    {
-      revalidate: 30,
-      tags: ['recent-activity', 'activity-log'],
-    },
-  )();
+// safeCache with per-user args key (userId, role, limit) — DB-failure resilient
+const getCachedActivity = safeCache(fetchRecentActivityRaw, [], {
+  key: 'recent-activity',
+  ttl: 30,
+  tags: ['recent-activity', 'activity-log'],
+});
 
 export async function getRecentActivity(limit = 8): Promise<ActionResult<ActivityEntry[]>> {
   try {
@@ -72,7 +69,7 @@ export async function getRecentActivity(limit = 8): Promise<ActionResult<Activit
     if (!session?.user?.id) {
       return { success: false, message: 'لطفاً وارد حساب کاربری خود شوید.' };
     }
-    const rows = await cached(session.user.id, session.user.role ?? 'USER', limit);
+    const rows = await getCachedActivity(session.user.id, session.user.role ?? 'USER', limit);
     return { success: true, message: 'فعالیت‌های اخیر', data: rows };
   } catch {
     return {

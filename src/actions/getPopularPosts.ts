@@ -2,23 +2,60 @@
 
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
-import { unstable_cache } from 'next/cache';
-
+import { safeCache } from '@/lib/safe-cache';
 import type { ActionResult } from '@/types/types';
 import type { Prisma } from '@prisma/client';
 
-export async function getPopularPosts(): Promise<
-  ActionResult<
-    Array<{
-      id: string;
-      title: string;
-      views: number;
-      publishDate: string;
-      author: string;
-      slug: string;
-    }>
-  >
-> {
+type PopularPostRow = {
+  id: string;
+  title: string;
+  views: number;
+  publishDate: string;
+  author: string;
+  slug: string;
+};
+
+// 2026-06-14: 2-minute cache. The view count delta is small
+// enough that a 2-minute staleness is invisible in the UI, but
+// the dashboard widget no longer hits the DB on every render.
+// Per-user scoping via args key: safeCache uses JSON.stringify(args) as
+// the compound key suffix, so (userId, role) pairs are stored separately.
+const fetchPopularPostsRaw = async (userId: string, role: string): Promise<PopularPostRow[]> => {
+  const posts = await prisma.post.findMany({
+    where: {
+      status: 'PUBLISHED',
+      ...(role === 'AUTHOR' ? { authorId: userId } : {}),
+    },
+    orderBy: { viewCount: 'desc' },
+    take: 5,
+    select: {
+      id: true,
+      title: true,
+      viewCount: true,
+      createdAt: true,
+      slug: true,
+      author: { select: { name: true } },
+    },
+  });
+
+  return posts.map((post) => ({
+    id: post.id,
+    title: post.title,
+    views: post.viewCount,
+    // safeCache returns plain JSON so Dates arrive as ISO strings on cache hits.
+    publishDate: new Date(post.createdAt).toLocaleDateString('fa-IR'),
+    author: post.author.name || 'ناشناس',
+    slug: post.slug,
+  }));
+};
+
+const getCachedPopularPosts = safeCache(fetchPopularPostsRaw, [], {
+  key: 'popular-posts',
+  ttl: 120,
+  tags: ['popular-posts', 'posts'],
+});
+
+export async function getPopularPosts(): Promise<ActionResult<PopularPostRow[]>> {
   const session = await auth();
   const user = session?.user;
 
@@ -35,53 +72,7 @@ export async function getPopularPosts(): Promise<
   }
 
   try {
-    // 2026-06-14: 2-minute cache. The view count delta is small
-    // enough that a 2-minute staleness is invisible in the UI, but
-    // the dashboard widget no longer hits the DB on every render.
-    // `unstable_cache` keys ONLY on `keyParts`, NOT on the closure's function
-    // args — the previous static key leaked one user's scoped list to another
-    // for 120s. Scope the cache by userId/role here.
-    const scopeKey =
-      user.role === 'AUTHOR' ? (user.id ?? 'no-id') : `role:${user.role ?? 'unknown'}`;
-    const fetcher = unstable_cache(
-      async () => {
-        return prisma.post.findMany({
-          where: {
-            status: 'PUBLISHED',
-            ...(user.role === 'AUTHOR' ? { authorId: user.id } : {}),
-          },
-          orderBy: { viewCount: 'desc' },
-          take: 5,
-          select: {
-            id: true,
-            title: true,
-            viewCount: true,
-            createdAt: true,
-            slug: true,
-            author: { select: { name: true } },
-          },
-        });
-      },
-      ['popular-posts', 'v1-2026-06-14', scopeKey],
-      {
-        revalidate: 120,
-        tags: ['popular-posts', 'posts'],
-      },
-    );
-
-    const popularPosts = await fetcher();
-
-    const formattedPosts = popularPosts.map((post) => ({
-      id: post.id,
-      title: post.title,
-      views: post.viewCount,
-      // 2026-06-19: unstable_cache JSON-serializes the return value, so
-      // Prisma's Date becomes an ISO string on cache hits. Wrap with
-      // new Date() which accepts both Date and string.
-      publishDate: new Date(post.createdAt).toLocaleDateString('fa-IR'),
-      author: post.author.name || 'ناشناس',
-      slug: post.slug,
-    }));
+    const formattedPosts = await getCachedPopularPosts(user.id ?? 'no-id', user.role ?? 'unknown');
 
     return {
       success: true,

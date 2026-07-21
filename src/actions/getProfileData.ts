@@ -2,8 +2,8 @@
 
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
+import { safeCache } from '@/lib/safe-cache';
 import { Role } from '@prisma/client';
-import { unstable_cache } from 'next/cache';
 
 const fetchProfile = async (userId: string) => {
   return prisma.user.findUnique({
@@ -31,6 +31,14 @@ const fetchProfile = async (userId: string) => {
   });
 };
 
+// safeCache with per-user key prevents DB-failure crash while scoping cache
+// correctly per userId — matching the previous unstable_cache per-user pattern.
+const getCachedProfile = safeCache(fetchProfile, null, {
+  key: 'user-profile',
+  ttl: 60,
+  tags: ['user-profile'],
+});
+
 // C3 fix: this is a public-facing server action. Require an authenticated
 // session and restrict access to the owner of the profile (or an admin),
 // otherwise anyone could enumerate userIds and harvest emails/roles.
@@ -41,8 +49,5 @@ export async function getProfileData(userId: string) {
   if (session.user.id !== userId && role !== Role.ADMIN && role !== Role.OWNER) {
     return null;
   }
-  return unstable_cache(fetchProfile, ['user-profile', userId, 'v1-2026-06-14'], {
-    revalidate: 60,
-    tags: ['user-profile'],
-  })(userId);
+  return getCachedProfile(userId);
 }
