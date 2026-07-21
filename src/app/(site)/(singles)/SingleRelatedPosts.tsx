@@ -38,7 +38,13 @@ const SingleRelatedPosts: React.FC<SingleRelatedPostsProps> = ({
           <section className="mb-16 lg:mb-20">
             {/* Section Header */}
             <div className="flex items-center gap-4 mb-8 lg:mb-10">
-              <div className="flex items-center justify-center w-12 h-12 rounded-2xl shadow-lg" style={{background: 'var(--ds-brand-600)', boxShadow: '0 8px 24px -4px oklch(52% 0.14 162 / 0.3)'}}>
+              <div
+                className="flex items-center justify-center w-12 h-12 rounded-2xl shadow-lg"
+                style={{
+                  background: 'var(--ds-brand-600)',
+                  boxShadow: '0 8px 24px -4px oklch(52% 0.14 162 / 0.3)',
+                }}
+              >
                 <HiSparkles className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -73,7 +79,13 @@ const SingleRelatedPosts: React.FC<SingleRelatedPostsProps> = ({
           <section>
             {/* Section Header */}
             <div className="flex items-center gap-4 mb-8 lg:mb-10">
-              <div className="flex items-center justify-center w-12 h-12 rounded-2xl shadow-lg" style={{background: 'var(--ds-brand-700)', boxShadow: '0 8px 24px -4px oklch(42% 0.14 162 / 0.3)'}}>
+              <div
+                className="flex items-center justify-center w-12 h-12 rounded-2xl shadow-lg"
+                style={{
+                  background: 'var(--ds-brand-700)',
+                  boxShadow: '0 8px 24px -4px oklch(42% 0.14 162 / 0.3)',
+                }}
+              >
                 <HiPencilSquare className="w-6 h-6 text-white" />
               </div>
               <div>

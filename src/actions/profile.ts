@@ -4,11 +4,11 @@ import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import { getEmailProviderAsync } from '@/lib/email';
 import { otpEmail, otpExpiresLabel } from '@/lib/email/templates';
+import { revalidateTag } from '@/lib/revalidate';
 import { generateOtpToken } from '@/lib/tokens';
 import { UpdateProfileSchema } from '@/schemas';
 import type { ActionResult, UpdateProfileInput, UserWithProfile } from '@/types/types';
 import bcrypt from 'bcryptjs';
-import { revalidatePath } from 'next/cache';
 import { ZodError } from 'zod';
 
 export async function updateProfile(formData: FormData): Promise<ActionResult<void>> {
@@ -114,7 +114,7 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
           // Email delivery failed — OTP is still stored; user can request resend.
         }
       }
-      revalidatePath('/edit-profile');
+      revalidateTag('user-profile');
       return {
         success: true,
         message: 'ایمیل تغییر کرد — کد تأیید به آدرس جدید ارسال شد',
@@ -123,7 +123,7 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
       };
     }
 
-    revalidatePath('/edit-profile');
+    revalidateTag('user-profile');
     return { success: true, message: 'پروفایل با موفقیت بروزرسانی شد', variant: 'success' };
   } catch (error) {
     if (error instanceof ZodError) {

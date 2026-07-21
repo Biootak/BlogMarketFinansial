@@ -73,9 +73,9 @@
   border-radius: var(--ds-radius-lg);
   padding: var(--ds-space-4) var(--ds-space-5);
   box-shadow: var(--ds-shadow-sm);
-  transition: box-shadow var(--ds-duration-base) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-base) var(--ds-ease-out-quart),
-    transform var(--ds-duration-base) var(--ds-ease-out-quart);
+  transition: box-shadow var(--ds-duration-base) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-base) var(--ds-ease-out-quart), transform var(--ds-duration-base)
+    var(--ds-ease-out-quart);
 }
 
 .accountCard:hover {

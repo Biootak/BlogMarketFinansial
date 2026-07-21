@@ -54,6 +54,7 @@ model User {
   TwoFactorBackupCode TwoFactorBackupCode[]
   VirtualCard         VirtualCard[]
   CurrencyDeal        CurrencyDeal[]
+  TransactionOtp      TransactionOtp[]
 
   @@index([status])
   @@index([role, status])
@@ -383,6 +384,9 @@ model SystemLog {
   @@index([timestamp])
 }
 
+// #7: Activity و ActivityLog دو مدل تقریباً یکسان بودند.
+// Activity را به @deprecated علامت زدیم — داده‌های جدید فقط به ActivityLog می‌روند.
+// #8 fix: هر دو @default(cuid()) داشتند — OK است.
 model ActivityLog {
   id        String   @id @default(cuid())
   userId    String
@@ -394,6 +398,7 @@ model ActivityLog {
   @@index([userId, createdAt])
 }
 
+/// @deprecated — از ActivityLog استفاده کنید. این مدل فقط برای backward-compat نگه داشته شده.
 model Activity {
   id        String   @id @default(cuid())
   userId    String
@@ -753,6 +758,7 @@ model Exchange {
   Wallet               Wallet[]
   ExchangeRateQuote    ExchangeRateQuote[]
   CurrencyDeal         CurrencyDeal[]
+  Settlement           Settlement[]
 
   @@index([city])
   @@index([createdAt(sort: Desc)])
@@ -1305,15 +1311,15 @@ model CurrencyDeal {
   fromCurrency   String      // USD، EUR، …
   /// کد ارز مقصد
   toCurrency     String      // AFN، IRR، AED، …
-  /// مبلغ پرداختی مشتری
-  fromAmount     Decimal     @db.Decimal(20, 6)
+  /// مبلغ پرداختی مشتری — #6 fix: Decimal(20,2) مناسب مبالغ ارزی است (نه ۶ رقم اعشار)
+  fromAmount     Decimal     @db.Decimal(20, 2)
   /// مبلغ دریافتی مشتری (محاسبه‌شده)
-  toAmount       Decimal     @db.Decimal(20, 6)
-  /// نرخ اعمال‌شده در معامله
+  toAmount       Decimal     @db.Decimal(20, 2)
+  /// نرخ اعمال‌شده در معامله — نرخ‌ها نیاز به دقت بیشتر دارند: Decimal(20,6)
   appliedRate    Decimal     @db.Decimal(20, 6)
   /// کارمزد صرافی
-  feeAmount      Decimal     @default(0) @db.Decimal(20, 6)
-  /// نرخ مرجع بازار در زمان معامله (برای سابقه)
+  feeAmount      Decimal     @default(0) @db.Decimal(20, 2)
+  /// نرخ مرجع بازار در زمان معامله (برای سابقه) — نرخ‌ها: Decimal(20,6)
   marketRateRef  Decimal?    @db.Decimal(20, 6)
   channel        DealChannel @default(ONLINE)
   status         DealStatus  @default(PENDING)
@@ -1380,6 +1386,65 @@ model DealAttachment {
 
   @@index([dealId])
   @@index([uploadedById])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Settlement — تسویه بین صرافی و پلتفرم
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Settlement {
+  id            String           @id @default(cuid())
+  exchangeId    String
+  /// دوره محاسبه (شروع)
+  periodStart   DateTime
+  /// دوره محاسبه (پایان)
+  periodEnd     DateTime
+  /// مجموع حجم معاملات در این دوره (smallest unit)
+  totalVolume   BigInt           @default(0)
+  /// تعداد معاملات
+  dealCount     Int              @default(0)
+  /// کارمزد پلتفرم (محاسبه‌شده از platformFee Exchange)
+  platformFee   BigInt           @default(0)
+  /// خالص قابل پرداخت به صرافی
+  exchangeNet   BigInt           @default(0)
+  /// ارز پایه محاسبه
+  currency      String           @default("AFN")
+  status        SettlementStatus @default(PENDING)
+  /// یادداشت ادمین
+  note          String?
+  /// شناسه ادمین تأییدکننده
+  approvedById  String?
+  approvedAt    DateTime?
+  /// زمان پرداخت
+  paidAt        DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  Exchange      Exchange         @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+
+  @@index([exchangeId, status])
+  @@index([periodStart, periodEnd])
+  @@index([status])
+}
+
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TransactionOtp — کد یکبار مصرف برای تأیید تراکنش‌های حساس
+// ─────────────────────────────────────────────────────────────────────────────
+
+model TransactionOtp {
+  id        String   @id @default(cuid())
+  userId    String
+  txnRef    String
+  otpHash   String
+  used      Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, txnRef])
+  @@index([userId, expiresAt])
+  @@index([expiresAt])
 }
 
 enum ExchangeStatus {
@@ -1482,3 +1547,13 @@ enum WalletStatus {
   CLOSED
   PENDING_VERIFICATION
 }
+
+enum SettlementStatus {
+  PENDING
+  APPROVED
+  PAID
+  DISPUTED
+  CANCELLED
+}
+
+

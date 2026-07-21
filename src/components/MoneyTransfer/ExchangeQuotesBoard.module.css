@@ -345,10 +345,9 @@
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform 80ms var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), color var(--ds-duration-fast)
+    var(--ds-ease-out-quart), transform 80ms var(--ds-ease-spring);
   min-block-size: 36px;
 }
 .loadMoreBtn:hover {
@@ -402,13 +401,23 @@
 /* ─── Skeleton ───────────────────────────────────────────────────────────────── */
 
 @keyframes shimmer {
-  0%   { background-position: -200% center; }
-  100% { background-position: 200% center; }
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
 }
 
 @keyframes rowSlideIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .skeleton {
@@ -468,10 +477,18 @@
   animation: shimmer 1.6s ease-in-out infinite;
   animation-delay: calc(0.07s * var(--i, 1));
 }
-.skeletonTh:nth-child(1) { flex: 2; }
-.skeletonTh:nth-child(2) { flex: 1.5; }
-.skeletonTh:nth-child(3) { flex: 1.5; }
-.skeletonTh:nth-child(4) { flex: 0.8; }
+.skeletonTh:nth-child(1) {
+  flex: 2;
+}
+.skeletonTh:nth-child(2) {
+  flex: 1.5;
+}
+.skeletonTh:nth-child(3) {
+  flex: 1.5;
+}
+.skeletonTh:nth-child(4) {
+  flex: 0.8;
+}
 
 /* Row skeletons */
 .skeletonRow {
@@ -483,7 +500,9 @@
   animation: rowSlideIn 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: calc(70ms * var(--i, 1));
 }
-.skeletonRow:last-child { border-block-end: none; }
+.skeletonRow:last-child {
+  border-block-end: none;
+}
 
 .skeletonExchange {
   flex: 2;

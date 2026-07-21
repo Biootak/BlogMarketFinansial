@@ -22,7 +22,15 @@ export default function ApplyExchangeSuccessPage() {
         textAlign: 'center',
       }}
     >
-      <div style={{ maxWidth: 480, display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-4)', alignItems: 'center' }}>
+      <div
+        style={{
+          maxWidth: 480,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 'var(--ds-space-4)',
+          alignItems: 'center',
+        }}
+      >
         <div
           style={{
             width: 64,
@@ -38,12 +46,26 @@ export default function ApplyExchangeSuccessPage() {
         >
           ✓
         </div>
-        <h1 style={{ fontSize: 'var(--ds-text-2xl)', fontWeight: 700, color: 'var(--ds-text-primary)', margin: 0 }}>
+        <h1
+          style={{
+            fontSize: 'var(--ds-text-2xl)',
+            fontWeight: 700,
+            color: 'var(--ds-text-primary)',
+            margin: 0,
+          }}
+        >
           درخواست ثبت شد
         </h1>
-        <p style={{ fontSize: 'var(--ds-text-base)', color: 'var(--ds-text-secondary)', margin: 0, lineHeight: 1.7 }}>
-          درخواست ثبت صرافی شما دریافت شد و در انتظار بررسی تیم ما است.
-          پس از تأیید، دسترسی به پنل صرافی برای شما فعال می‌شود.
+        <p
+          style={{
+            fontSize: 'var(--ds-text-base)',
+            color: 'var(--ds-text-secondary)',
+            margin: 0,
+            lineHeight: 1.7,
+          }}
+        >
+          درخواست ثبت صرافی شما دریافت شد و در انتظار بررسی تیم ما است. پس از تأیید، دسترسی به پنل
+          صرافی برای شما فعال می‌شود.
         </p>
         <Link
           href="/"

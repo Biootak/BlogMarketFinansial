@@ -28,7 +28,7 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
     startTransition(async () => {
       const res = await approveQuote(id);
       if (res.success) {
-        setQuotes(prev => prev.filter(q => q.id !== id));
+        setQuotes((prev) => prev.filter((q) => q.id !== id));
         setFeedback({ id, ok: true, msg: 'تایید شد' });
         setTimeout(() => setFeedback(null), 2500);
       } else {
@@ -43,7 +43,7 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
     startTransition(async () => {
       const res = await rejectQuote(id, rejectReason);
       if (res.success) {
-        setQuotes(prev => prev.filter(q => q.id !== id));
+        setQuotes((prev) => prev.filter((q) => q.id !== id));
         setRejectTargetId(null);
         setRejectReason('');
       } else {
@@ -62,7 +62,11 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
 
       {feedback && (
         <div className={`${s.toast} ${feedback.ok ? s.toastOk : s.toastErr}`} role="status">
-          {feedback.ok ? <CheckCircle2 className="w-4 h-4" aria-hidden /> : <XCircle className="w-4 h-4" aria-hidden />}
+          {feedback.ok ? (
+            <CheckCircle2 className="w-4 h-4" aria-hidden />
+          ) : (
+            <XCircle className="w-4 h-4" aria-hidden />
+          )}
           {feedback.msg}
         </div>
       )}
@@ -75,7 +79,7 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
         />
       ) : (
         <div className={s.list}>
-          {quotes.map(q => (
+          {quotes.map((q) => (
             <div key={q.id} className={s.card}>
               {/* هدر کارت */}
               <div className={s.cardHead}>
@@ -85,31 +89,44 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
                 </div>
                 <div className={s.timeInfo}>
                   <Clock className="w-3 h-3" aria-hidden />
-                  {new Date(q.createdAt).toLocaleString('fa-IR', { dateStyle: 'short', timeStyle: 'short' })}
+                  {new Date(q.createdAt).toLocaleString('fa-IR', {
+                    dateStyle: 'short',
+                    timeStyle: 'short',
+                  })}
                 </div>
               </div>
 
               {/* بدنه */}
               <div className={s.cardBody}>
-                <div className={s.currencyBadge}>{q.currencyCode} <span className={s.pairLabel}>{q.currencyPair}</span></div>
+                <div className={s.currencyBadge}>
+                  {q.currencyCode} <span className={s.pairLabel}>{q.currencyPair}</span>
+                </div>
 
                 <div className={s.rates}>
                   <div className={s.rateItem}>
                     <span className={s.rateLabel}>خرید</span>
-                    <span className={s.rateVal} dir="ltr">{Number(q.buyRate).toLocaleString('fa-IR')}</span>
+                    <span className={s.rateVal} dir="ltr">
+                      {Number(q.buyRate).toLocaleString('fa-IR')}
+                    </span>
                     <span className={s.rateUnit}>{q.unit}</span>
                   </div>
                   <div className={s.ratesSep} />
                   <div className={s.rateItem}>
                     <span className={s.rateLabel}>فروش</span>
-                    <span className={s.rateVal} dir="ltr">{Number(q.sellRate).toLocaleString('fa-IR')}</span>
+                    <span className={s.rateVal} dir="ltr">
+                      {Number(q.sellRate).toLocaleString('fa-IR')}
+                    </span>
                     <span className={s.rateUnit}>{q.unit}</span>
                   </div>
                   <div className={s.ratesSep} />
                   <div className={s.rateItem}>
                     <span className={s.rateLabel}>اسپرد</span>
                     <span className={s.rateVal} dir="ltr">
-                      {(((Number(q.sellRate) - Number(q.buyRate)) / Number(q.buyRate)) * 100).toFixed(2)}٪
+                      {(
+                        ((Number(q.sellRate) - Number(q.buyRate)) / Number(q.buyRate)) *
+                        100
+                      ).toFixed(2)}
+                      ٪
                     </span>
                   </div>
                   <div className={s.rateItem}>
@@ -127,7 +144,7 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
                     className={s.rejectInput}
                     placeholder="دلیل رد (الزامی)…"
                     value={rejectReason}
-                    onChange={e => setRejectReason(e.target.value)}
+                    onChange={(e) => setRejectReason(e.target.value)}
                     autoFocus
                     aria-label="دلیل رد"
                   />
@@ -141,7 +158,14 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
                       {isPending ? <Loader2 className="w-3 h-3 animate-spin" aria-hidden /> : null}
                       تایید رد
                     </button>
-                    <button type="button" className={s.cancelBtn} onClick={() => { setRejectTargetId(null); setRejectReason(''); }}>
+                    <button
+                      type="button"
+                      className={s.cancelBtn}
+                      onClick={() => {
+                        setRejectTargetId(null);
+                        setRejectReason('');
+                      }}
+                    >
                       انصراف
                     </button>
                   </div>
@@ -155,7 +179,11 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
                     disabled={isPending}
                     aria-busy={isPending}
                   >
-                    {isPending ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden /> : <CheckCircle2 className="w-4 h-4" aria-hidden />}
+                    {isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" aria-hidden />
+                    ) : (
+                      <CheckCircle2 className="w-4 h-4" aria-hidden />
+                    )}
                     تایید
                   </button>
                   <button

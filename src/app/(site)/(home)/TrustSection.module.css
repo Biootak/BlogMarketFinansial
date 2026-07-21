@@ -13,11 +13,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(
-    ellipse 60% 100% at 50% 50%,
-    var(--ds-brand-50) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(ellipse 60% 100% at 50% 50%, var(--ds-brand-50) 0%, transparent 70%);
   z-index: 0;
 }
 
@@ -77,10 +73,8 @@
   border-radius: var(--ds-radius-2xl);
   border: 1px solid var(--ds-border-subtle);
   background: var(--ds-surface-elevated);
-  transition:
-    border-color var(--ds-duration-fast),
-    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart),
-    transform var(--ds-duration-base) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast), box-shadow var(--ds-duration-base)
+    var(--ds-ease-out-quart), transform var(--ds-duration-base) var(--ds-ease-out-quart);
 }
 
 .statCard:hover {

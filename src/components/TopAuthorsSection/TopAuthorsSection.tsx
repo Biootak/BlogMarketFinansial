@@ -66,10 +66,7 @@ const TopAuthorsSection: React.FC<TopAuthorsSectionProps> = ({
         <SectionHeader
           icon={<Crown className="h-4 w-4" strokeWidth={2.25} />}
           title={title}
-          subtitle={
-            subtitle ??
-            `${toPersianNumber(sorted.length)} نویسنده و تحلیلگر فعال این ماه`
-          }
+          subtitle={subtitle ?? `${toPersianNumber(sorted.length)} نویسنده و تحلیلگر فعال این ماه`}
           accent="amber"
           viewAll={{ label: 'مشاهده همه', href: '/authors' }}
         />

@@ -33,6 +33,7 @@ import { requireExchangeAccess } from '@/lib/exchange-auth';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
+import { notifyDealStatusChange, notifyNewDeal } from '@/lib/notifications/fintech';
 import type { FintechActionResult } from '@/types/types';
 import { Decimal } from '@prisma/client/runtime/library';
 import { headers } from 'next/headers';
@@ -40,6 +41,17 @@ import { v4 as createId } from 'uuid';
 import { z } from 'zod';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+
+export type DealStatusLogRow = {
+  id: string;
+  dealId: string;
+  fromStatus: string | null;
+  toStatus: string;
+  actorId: string | null;
+  actorRole: string | null;
+  note: string | null;
+  createdAt: Date;
+};
 
 export type DealRow = {
   id: string;
@@ -69,6 +81,8 @@ export type DealRow = {
   // joined
   exchangeName?: string;
   exchangeCity?: string | null;
+  // status history (included by getDealByTracking)
+  statusLogs?: DealStatusLogRow[];
 };
 
 // ─── Validation ───────────────────────────────────────────────────────────────
@@ -232,13 +246,26 @@ export async function getMyDeals(): Promise<DealRow[]> {
 export async function getDealByTracking(trackingCode: string): Promise<DealRow | null> {
   const row = await prisma.currencyDeal.findUnique({
     where: { trackingCode },
-    include: { Exchange: { select: { name: true, displayName: true, city: true } } },
+    include: {
+      Exchange: { select: { name: true, displayName: true, city: true } },
+      StatusLogs: { orderBy: { createdAt: 'asc' } },
+    },
   });
   if (!row) return null;
   return {
     ...mapDeal(row),
     exchangeName: row.Exchange.displayName ?? row.Exchange.name,
     exchangeCity: row.Exchange.city,
+    statusLogs: row.StatusLogs.map((l) => ({
+      id: l.id,
+      dealId: l.dealId,
+      fromStatus: l.fromStatus ?? null,
+      toStatus: l.toStatus,
+      actorId: l.actorId ?? null,
+      actorRole: l.actorRole ?? null,
+      note: l.note ?? null,
+      createdAt: l.createdAt,
+    })),
   };
 }
 
@@ -373,6 +400,20 @@ export async function createDeal(
   });
 
   revalidateDealCaches();
+
+  // Fire-and-forget notification — never block the response
+  void notifyNewDeal({
+    trackingCode,
+    customerName,
+    customerPhone,
+    fromCurrency,
+    toCurrency,
+    fromAmount: String(fromAmount),
+    toAmount: String(inputToAmount ?? 0),
+    status: 'PENDING',
+    exchangeName: exchangeId,
+  });
+
   return { success: true, data: { id: deal.id, trackingCode } };
 }
 
@@ -777,6 +818,31 @@ export async function completeDeal(
   }
 
   revalidateDealCaches();
+
+  // Fire-and-forget: notify deal completed
+  const completedDeal = await prisma.currencyDeal.findUnique({
+    where: { id: dealId },
+    select: {
+      trackingCode: true, customerName: true, customerPhone: true,
+      fromCurrency: true, toCurrency: true, fromAmount: true, toAmount: true,
+      Exchange: { select: { name: true, displayName: true } },
+    },
+  }).catch(() => null);
+
+  if (completedDeal) {
+    void notifyDealStatusChange({
+      trackingCode: completedDeal.trackingCode,
+      customerName: completedDeal.customerName,
+      customerPhone: completedDeal.customerPhone,
+      fromCurrency: completedDeal.fromCurrency,
+      toCurrency: completedDeal.toCurrency,
+      fromAmount: completedDeal.fromAmount.toString(),
+      toAmount: completedDeal.toAmount.toString(),
+      status: 'COMPLETED',
+      exchangeName: completedDeal.Exchange.displayName ?? completedDeal.Exchange.name,
+    }, 'COMPLETED');
+  }
+
   return { success: true, data: { id: dealId } };
 }
 

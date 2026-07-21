@@ -204,7 +204,10 @@ export default function ServiceRequestsTable({
       limit: 15,
     });
     if (result.success && result.data) {
-      const data = result.data as unknown as { data: ServiceRequest[]; pagination: { totalPages: number; total: number } };
+      const data = result.data as unknown as {
+        data: ServiceRequest[];
+        pagination: { totalPages: number; total: number };
+      };
       setRequests(data.data);
       setTotalPages(data.pagination?.totalPages || 1);
       setTotalCount(data.pagination?.total || 0);

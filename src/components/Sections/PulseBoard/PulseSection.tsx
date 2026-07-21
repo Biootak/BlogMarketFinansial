@@ -32,14 +32,13 @@ export default async function PulseSection({ className = '' }: PulseSectionProps
   // uncached `prisma.post.count` بود — یعنی هر رندر home دو round-trip
   // اضافه به DB (Neon cross-region) می‌زد. حالا categories از قبل cached
   // است و totalCount از `getPublishedPostCount` (unstable_cache) میاد.
-  const [tickerData, adsResult, latestPosts, totalCount, categoriesData] =
-    await Promise.all([
-      getCryptoTickerData(),
-      getActiveAdvertisements({ limit: 5 }),
-      getLatestPosts({ count: INITIAL, skip: 0 }),
-      getPublishedPostCount(),
-      getLatestPostCategories(),
-    ]);
+  const [tickerData, adsResult, latestPosts, totalCount, categoriesData] = await Promise.all([
+    getCryptoTickerData(),
+    getActiveAdvertisements({ limit: 5 }),
+    getLatestPosts({ count: INITIAL, skip: 0 }),
+    getPublishedPostCount(),
+    getLatestPostCategories(),
+  ]);
 
   const categories = [
     { name: 'همه', slug: 'all' },

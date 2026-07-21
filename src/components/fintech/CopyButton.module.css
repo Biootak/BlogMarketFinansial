@@ -1,0 +1,104 @@
+/**
+ * CopyButton.module.css
+ *
+ * Small pill button with icon + optional label.
+ * Spring animation on press (scale 0.95 via :active).
+ * Success state turns the button green.
+ *
+ * Rules:
+ * - Only oklch() or var(--ds-*) — no hex
+ * - RTL logical properties (padding-inline-*, gap, etc.)
+ * - :hover   → translateY(-1px) spring lift
+ * - :active  → scale(0.95) spring press
+ * - .btnSuccess → emerald/green palette shift
+ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding-block: var(--ds-space-1);
+  padding-inline: var(--ds-space-3);
+  min-block-size: 34px;
+  border-radius: var(--ds-radius-2xl);
+  border: 1px solid var(--ds-border-default);
+  background: var(--ds-surface);
+  color: var(--ds-text-secondary);
+  font-family: inherit;
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  /* Spring-like transition: fast duration, spring easing */
+  transition:
+    background   var(--ds-duration-fast) var(--ds-ease-spring),
+    border-color var(--ds-duration-fast) var(--ds-ease-spring),
+    color        var(--ds-duration-fast) var(--ds-ease-spring),
+    transform    var(--ds-duration-fast) var(--ds-ease-spring),
+    box-shadow   var(--ds-duration-fast) var(--ds-ease-spring);
+}
+
+.btn:hover {
+  background: var(--ds-surface-elevated);
+  border-color: var(--ds-border-strong, var(--ds-border-default));
+  color: var(--ds-text-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--ds-shadow-sm);
+}
+
+.btn:active {
+  transform: scale(0.95);
+  box-shadow: none;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ds-brand-500, oklch(55% 0.16 265));
+  outline-offset: 2px;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ─── Icon wrapper ─────────────────────────────────────────────────────────── */
+
+.iconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  /* Icon transition so Check icon slides in */
+  transition: transform var(--ds-duration-fast) var(--ds-ease-spring);
+}
+
+.btn:active .iconWrap {
+  transform: scale(0.88);
+}
+
+/* ─── Label text ──────────────────────────────────────────────────────────── */
+
+.label {
+  /* Prevent layout shift when text changes */
+  white-space: nowrap;
+  transition: color var(--ds-duration-fast) var(--ds-ease-spring);
+}
+
+/* ─── Success state ────────────────────────────────────────────────────────── */
+
+.btnSuccess {
+  background: var(--ds-status-success-bg, oklch(20% 0.08 160 / 0.4));
+  border-color: var(--ds-status-success-border, oklch(38% 0.12 160));
+  color: var(--ds-status-success-fg, oklch(70% 0.18 160));
+}
+
+.btnSuccess:hover {
+  background: color-mix(
+    in oklch,
+    var(--ds-status-success-bg, oklch(20% 0.08 160 / 0.4)) 100%,
+    var(--ds-surface-elevated) 20%
+  );
+  border-color: var(--ds-status-success-fg, oklch(70% 0.18 160));
+  color: var(--ds-status-success-fg, oklch(70% 0.18 160));
+}

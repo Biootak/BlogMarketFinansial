@@ -316,7 +316,9 @@ export async function toggleTransferProvider(
 
 // ─── DELETE ───────────────────────────────────────────────────────────────────
 
-export async function deleteTransferProvider(id: string): Promise<FintechActionResult<{ id: string }>> {
+export async function deleteTransferProvider(
+  id: string,
+): Promise<FintechActionResult<{ id: string }>> {
   const auth = await requireAdmin();
   if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
 

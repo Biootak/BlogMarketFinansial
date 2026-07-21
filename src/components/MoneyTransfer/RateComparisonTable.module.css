@@ -52,8 +52,8 @@
   border: 1.5px solid var(--ds-border-default);
   background: var(--ds-surface);
   overflow: hidden;
-  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 .amountWrap:focus-within {
   border-color: var(--ds-brand-500);
@@ -119,10 +119,9 @@
   cursor: pointer;
   font-family: inherit;
   font-variant-numeric: tabular-nums;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform 80ms var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), color var(--ds-duration-fast)
+    var(--ds-ease-out-quart), transform 80ms var(--ds-ease-spring);
   min-block-size: 30px;
   min-inline-size: 44px;
 }
@@ -484,10 +483,9 @@
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform 80ms var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), color var(--ds-duration-fast)
+    var(--ds-ease-out-quart), transform 80ms var(--ds-ease-spring);
   min-block-size: 36px;
 }
 .loadMoreBtn:hover {
@@ -557,8 +555,12 @@
 
 /* keyframes مشترک برای shimmer sweep */
 @keyframes shimmer {
-  0% { background-position: -200% center; }
-  100% { background-position: 200% center; }
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
 }
 
 /* base shimmer مixin — reuse با custom property */
@@ -671,7 +673,7 @@
   align-items: center;
 }
 .skeletonCaption::after {
-  content: '';
+  content: "";
   display: block;
   height: 12px;
   width: 220px;
@@ -709,11 +711,27 @@
   animation: shimmer 1.6s ease-in-out infinite;
   animation-delay: calc(0.06s * var(--i, 1));
 }
-.skeletonTh:nth-child(1) { width: 120px; flex: 2; }
-.skeletonTh:nth-child(2) { width: 60px; flex: 1; }
-.skeletonTh:nth-child(3) { width: 60px; flex: 1; }
-.skeletonTh:nth-child(4) { width: 60px; flex: 1; }
-.skeletonTh:nth-child(5) { width: 80px; flex: 1; margin-inline-start: auto; }
+.skeletonTh:nth-child(1) {
+  width: 120px;
+  flex: 2;
+}
+.skeletonTh:nth-child(2) {
+  width: 60px;
+  flex: 1;
+}
+.skeletonTh:nth-child(3) {
+  width: 60px;
+  flex: 1;
+}
+.skeletonTh:nth-child(4) {
+  width: 60px;
+  flex: 1;
+}
+.skeletonTh:nth-child(5) {
+  width: 80px;
+  flex: 1;
+  margin-inline-start: auto;
+}
 
 /* ── Row skeletons — staggered ── */
 .skeletonRow {
@@ -731,8 +749,14 @@
 }
 
 @keyframes rowFadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .skeletonNameCell {

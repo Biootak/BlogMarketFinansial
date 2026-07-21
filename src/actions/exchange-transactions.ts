@@ -199,9 +199,7 @@ export async function getTransactions(
       idempotencyKey: r.idempotencyKey,
       createdAt: r.createdAt.toISOString(),
       updatedAt: r.updatedAt.toISOString(),
-      customer: r.Customer
-        ? { fullName: r.Customer.fullName, phone: r.Customer.phone }
-        : undefined,
+      customer: r.Customer ? { fullName: r.Customer.fullName, phone: r.Customer.phone } : undefined,
     })),
     total,
   };
@@ -235,7 +233,19 @@ export async function createTransaction(
     };
   }
 
-  const { customerId, kind, amount, currency, rate, fee, destAmount, destCurrency, note, counterparty, idempotencyKey } = parsed.data;
+  const {
+    customerId,
+    kind,
+    amount,
+    currency,
+    rate,
+    fee,
+    destAmount,
+    destCurrency,
+    note,
+    counterparty,
+    idempotencyKey,
+  } = parsed.data;
 
   // بررسی idempotency
   if (idempotencyKey) {
@@ -283,7 +293,10 @@ export async function createTransaction(
   if (exchange?.requireKyc && (customer.kycStatus !== 'APPROVED' || customer.kycLevel === 'NONE')) {
     return {
       success: false,
-      error: { code: 'KYC_REQUIRED', message: 'برای انجام تراکنش مالی، احراز هویت (KYC) الزامی است' },
+      error: {
+        code: 'KYC_REQUIRED',
+        message: 'برای انجام تراکنش مالی، احراز هویت (KYC) الزامی است',
+      },
     };
   }
 

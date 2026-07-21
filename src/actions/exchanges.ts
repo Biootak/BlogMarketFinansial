@@ -173,7 +173,10 @@ export async function createExchange(raw: unknown): Promise<FintechActionResult<
 
 // ─── UPDATE ───────────────────────────────────────────────────────────────────
 
-export async function updateExchange(id: string, raw: unknown): Promise<FintechActionResult<ExchangeRow>> {
+export async function updateExchange(
+  id: string,
+  raw: unknown,
+): Promise<FintechActionResult<ExchangeRow>> {
   const auth = await requireAdmin();
   if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
 

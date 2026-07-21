@@ -366,8 +366,8 @@
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
   min-height: 48px;
-  transition: background var(--ds-duration-fast), border-color var(--ds-duration-fast),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast), border-color var(--ds-duration-fast), transform
+    var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .ctaAction:hover {
@@ -775,8 +775,12 @@
 }
 
 @keyframes uptimeGrow {
-  from { width: 0; }
-  to { width: 99.9%; }
+  from {
+    width: 0;
+  }
+  to {
+    width: 99.9%;
+  }
 }
 
 .trendUp {
@@ -889,8 +893,12 @@
    SKELETON — empty state هنگامی که داده موجود نیست
    ────────────────────────────────────────────────────────────────────────── */
 @keyframes shimmer {
-  0%   { background-position: -200% center; }
-  100% { background-position: 200% center; }
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
 }
 
 .cardAmountSkeleton {

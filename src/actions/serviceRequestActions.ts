@@ -12,11 +12,11 @@ import {
 import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireRole, requireUser } from '@/lib/require-auth';
+import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
 import type { FintechActionResult } from '@/types/types';
-import { revalidatePath } from 'next/cache';
-import { headers } from 'next/headers';
 import { Role } from '@prisma/client';
+import { headers } from 'next/headers';
 import { z } from 'zod';
 
 // ─── getUserProfile ─────────────────────────────────────────────────────────── //
@@ -25,12 +25,17 @@ export async function getUserServiceProfile(): Promise<
   FintechActionResult<{ name: string; phone: string | null; phoneVerified: boolean; email: string }>
 > {
   const session = await auth();
-  if (!session?.user?.id) return { success: false, error: { code: 'UNAUTHENTICATED', message: 'برای این عملیات باید وارد حساب شوید' } };
+  if (!session?.user?.id)
+    return {
+      success: false,
+      error: { code: 'UNAUTHENTICATED', message: 'برای این عملیات باید وارد حساب شوید' },
+    };
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: { name: true, phoneNumber: true, email: true },
   });
-  if (!user) return { success: false, error: { code: 'UNAUTHENTICATED', message: 'کاربر یافت نشد' } };
+  if (!user)
+    return { success: false, error: { code: 'UNAUTHENTICATED', message: 'کاربر یافت نشد' } };
   return {
     success: true,
     data: {
@@ -66,11 +71,19 @@ function generateTrackingCode(): string {
 }
 
 // ─── Sanitize input ───────────────────────────────────────────────────────── //
+// 2026-07: encode-based approach — جلوگیری از XSS حتی با Unicode escape
 function sanitizeInput(input: string): string {
   return input
-    .replace(/[<>]/g, '')
-    .replace(/javascript:/gi, '')
-    .replace(/on\w+=/gi, '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;')
+    .replace(/javascript\s*:/gi, '')
+    .replace(/data\s*:/gi, '')
+    .replace(/vbscript\s*:/gi, '')
+    .replace(/on\w+\s*=/gi, '')
     .trim();
 }
 
@@ -90,7 +103,17 @@ async function sendTelegramNotification(message: string): Promise<boolean> {
     });
 
     return response.ok;
-  } catch {
+  } catch (err) {
+    // #22 fix: خطا را به audit log ثبت می‌کنیم — swallow نمی‌کنیم
+    void prisma.systemLog
+      .create({
+        data: {
+          level: 'WARN',
+          message: `Telegram notification failed: ${err instanceof Error ? err.message : String(err)}`,
+          source: 'ServiceRequest',
+        },
+      })
+      .catch(() => {});
     return false;
   }
 }
@@ -99,8 +122,17 @@ async function sendTelegramNotification(message: string): Promise<boolean> {
 async function trySendEmail(fn: () => Promise<void>): Promise<void> {
   try {
     await fn();
-  } catch {
-    // Email failure must not block the main flow — error swallowed intentionally
+  } catch (err) {
+    // #23 fix: خطا را به audit log ثبت می‌کنیم — swallow نمی‌کنیم
+    void prisma.systemLog
+      .create({
+        data: {
+          level: 'WARN',
+          message: `Email notification failed: ${err instanceof Error ? err.message : String(err)}`,
+          source: 'ServiceRequest',
+        },
+      })
+      .catch(() => {});
   }
 }
 
@@ -136,18 +168,54 @@ const ServiceRequestInputSchema = z.object({
   ]),
   amount: z.string().min(1).max(50).transform(sanitizeInput),
   currency: z.string().min(1).max(10),
-  destinationCountry: z.string().optional().transform((val) => val || null),
-  bankName: z.string().optional().transform((val) => val || null),
-  websiteUrl: z.string().optional().transform((val) => val || null),
-  productName: z.string().optional().transform((val) => val || null),
-  universityName: z.string().optional().transform((val) => val || null),
-  studentId: z.string().optional().transform((val) => val || null),
-  platformName: z.string().optional().transform((val) => val || null),
-  platformUsername: z.string().optional().transform((val) => val || null),
-  softwareName: z.string().optional().transform((val) => val || null),
-  subscriptionType: z.string().optional().transform((val) => val || null),
-  giftCardBrand: z.string().optional().transform((val) => val || null),
-  giftCardRegion: z.string().optional().transform((val) => val || null),
+  destinationCountry: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  bankName: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  websiteUrl: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  productName: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  universityName: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  studentId: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  platformName: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  platformUsername: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  softwareName: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  subscriptionType: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  giftCardBrand: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  giftCardRegion: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
   description: z
     .string()
     .max(500)
@@ -201,7 +269,10 @@ export async function createServiceRequest(
     if (!rateResult.success) {
       return {
         success: false,
-        error: { code: 'RATE_LIMIT_EXCEEDED', message: 'تعداد درخواست‌های شما بیش از حد مجاز است. لطفاً چند دقیقه دیگر تلاش کنید.' },
+        error: {
+          code: 'RATE_LIMIT_EXCEEDED',
+          message: 'تعداد درخواست‌های شما بیش از حد مجاز است. لطفاً چند دقیقه دیگر تلاش کنید.',
+        },
       };
     }
 
@@ -269,7 +340,10 @@ export async function createServiceRequest(
     if (userId && !resolvedPhone) {
       return {
         success: false,
-        error: { code: 'PHONE_REQUIRED', message: 'برای ثبت درخواست باید شماره موبایل خود را در پروفایل تأیید کنید.' },
+        error: {
+          code: 'PHONE_REQUIRED',
+          message: 'برای ثبت درخواست باید شماره موبایل خود را در پروفایل تأیید کنید.',
+        },
       };
     }
 
@@ -331,7 +405,8 @@ export async function createServiceRequest(
 
     // Telegram notification (fire-and-forget)
     const urgencyLabel = data.urgency === 'URGENT' ? '🔴 فوری' : '⚪ عادی';
-    const notificationMessage = `*درخواست جدید خدمات*\n\nکد پیگیری: ${trackingCode}\nنام: ${data.fullName}\nتماس: ${data.phone}\n${data.email ? `ایمیل: ${data.email}` : ''}\n\n${serviceTypeLabels[data.serviceType] || data.serviceType}\nمبلغ: ${data.amount} ${data.currency}\nاولویت: ${urgencyLabel}\nروش تماس: ${data.contactMethod === 'telegram' ? 'تلگرام' : 'واتساپ'}\n${data.description ? `توضیحات: ${data.description}` : ''}\n\nمشاهده در داشبورد: ${process.env.NEXT_PUBLIC_APP_URL}/dashboard/service-requests`.trim();
+    const notificationMessage =
+      `*درخواست جدید خدمات*\n\nکد پیگیری: ${trackingCode}\nنام: ${data.fullName}\nتماس: ${data.phone}\n${data.email ? `ایمیل: ${data.email}` : ''}\n\n${serviceTypeLabels[data.serviceType] || data.serviceType}\nمبلغ: ${data.amount} ${data.currency}\nاولویت: ${urgencyLabel}\nروش تماس: ${data.contactMethod === 'telegram' ? 'تلگرام' : 'واتساپ'}\n${data.description ? `توضیحات: ${data.description}` : ''}\n\nمشاهده در داشبورد: ${process.env.NEXT_PUBLIC_APP_URL}/dashboard/service-requests`.trim();
     await sendTelegramNotification(notificationMessage);
 
     // H4: resolvedEmail null safety
@@ -354,28 +429,36 @@ export async function createServiceRequest(
 
     return { success: true, data: { trackingCode } };
   } catch {
-    return { success: false, error: { code: 'SERVER_ERROR', message: 'خطایی در ثبت درخواست رخ داد.' } };
+    return {
+      success: false,
+      error: { code: 'SERVER_ERROR', message: 'خطایی در ثبت درخواست رخ داد.' },
+    };
   }
 }
 
 // ─── getServiceRequestByTrackingCode ──────────────────────────────────────── //
-export async function getServiceRequestByTrackingCode(
-  trackingCode: string,
-): Promise<FintechActionResult<{
-  trackingCode: string;
-  fullName: string;
-  serviceType: string;
-  amount: string;
-  currency: string;
-  status: string;
-  urgency: string;
-  adminNotes: string | null;
-  estimatedCompletionAt: Date | null;
-  externalTxId: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  statusLogs: Array<{ fromStatus: string | null; toStatus: string; note: string | null; createdAt: Date }>;
-}>> {
+export async function getServiceRequestByTrackingCode(trackingCode: string): Promise<
+  FintechActionResult<{
+    trackingCode: string;
+    fullName: string;
+    serviceType: string;
+    amount: string;
+    currency: string;
+    status: string;
+    urgency: string;
+    adminNotes: string | null;
+    estimatedCompletionAt: Date | null;
+    externalTxId: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    statusLogs: Array<{
+      fromStatus: string | null;
+      toStatus: string;
+      note: string | null;
+      createdAt: Date;
+    }>;
+  }>
+> {
   try {
     const request = await prisma.serviceRequest.findUnique({
       where: { trackingCode },
@@ -400,7 +483,10 @@ export async function getServiceRequestByTrackingCode(
     });
 
     if (!request) {
-      return { success: false, error: { code: 'NOT_FOUND', message: 'درخواستی با این کد پیگیری یافت نشد.' } };
+      return {
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'درخواستی با این کد پیگیری یافت نشد.' },
+      };
     }
 
     const maskedName = `${request.fullName.charAt(0)}***`;
@@ -416,10 +502,12 @@ export async function getServiceRequests(params?: {
   page?: number;
   limit?: number;
   search?: string;
-}): Promise<FintechActionResult<{
-  requests: unknown[];
-  pagination: { page: number; limit: number; total: number; totalPages: number };
-}>> {
+}): Promise<
+  FintechActionResult<{
+    requests: unknown[];
+    pagination: { page: number; limit: number; total: number; totalPages: number };
+  }>
+> {
   const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
   if (!authCheck.success) {
     return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
@@ -441,12 +529,24 @@ export async function getServiceRequests(params?: {
 
   try {
     const [requests, total] = await Promise.all([
-      prisma.serviceRequest.findMany({ where, orderBy: { createdAt: 'desc' }, skip, take: limit, include: { _count: { select: { notes: true, attachments: true } } } }),
+      prisma.serviceRequest.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+        include: { _count: { select: { notes: true, attachments: true } } },
+      }),
       prisma.serviceRequest.count({ where }),
     ]);
 
     // M1: double nesting removed
-    return { success: true, data: { requests: requests as unknown[], pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } } };
+    return {
+      success: true,
+      data: {
+        requests: requests as unknown[],
+        pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      },
+    };
   } catch {
     return { success: false, error: { code: 'SERVER_ERROR', message: 'خطایی رخ داد.' } };
   }
@@ -459,14 +559,26 @@ export async function updateServiceRequestStatus(
   adminNotes?: string,
 ): Promise<FintechActionResult<void>> {
   const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
-  if (!authCheck.success) return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
+  if (!authCheck.success)
+    return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
 
   try {
     const existing = await prisma.serviceRequest.findUnique({
       where: { id },
-      select: { status: true, trackingCode: true, fullName: true, email: true, phone: true, serviceType: true, amount: true, currency: true, externalTxId: true },
+      select: {
+        status: true,
+        trackingCode: true,
+        fullName: true,
+        email: true,
+        phone: true,
+        serviceType: true,
+        amount: true,
+        currency: true,
+        externalTxId: true,
+      },
     });
-    if (!existing) return { success: false, error: { code: 'NOT_FOUND', message: 'درخواست یافت نشد.' } };
+    if (!existing)
+      return { success: false, error: { code: 'NOT_FOUND', message: 'درخواست یافت نشد.' } };
 
     const request = await prisma.serviceRequest.update({
       where: { id },
@@ -474,36 +586,79 @@ export async function updateServiceRequestStatus(
     });
 
     await prisma.serviceRequestStatusLog.create({
-      data: { requestId: id, fromStatus: existing.status, toStatus: status, changedBy: authCheck.user.id, note: adminNotes ?? null },
+      data: {
+        requestId: id,
+        fromStatus: existing.status,
+        toStatus: status,
+        changedBy: authCheck.user.id,
+        note: adminNotes ?? null,
+      },
     });
 
     await prisma.systemLog.create({
-      data: { level: 'INFO', message: `Service request ${request.trackingCode} status updated to ${status} by ${authCheck.user.id}`, source: 'ServiceRequest' },
+      data: {
+        level: 'INFO',
+        message: `Service request ${request.trackingCode} status updated to ${status} by ${authCheck.user.id}`,
+        source: 'ServiceRequest',
+      },
     });
 
     // Notification logic (unchanged)
-    const statusEmoji: Record<string, string> = { PENDING: '⏳', IN_PROGRESS: '🔄', COMPLETED: '✅', CANCELLED: '❌' };
-    const statusFa: Record<string, string> = { PENDING: 'در انتظار بررسی', IN_PROGRESS: 'در حال انجام', COMPLETED: 'تکمیل شده', CANCELLED: 'لغو شده' };
+    const statusEmoji: Record<string, string> = {
+      PENDING: '⏳',
+      IN_PROGRESS: '🔄',
+      COMPLETED: '✅',
+      CANCELLED: '❌',
+    };
+    const statusFa: Record<string, string> = {
+      PENDING: 'در انتظار بررسی',
+      IN_PROGRESS: 'در حال انجام',
+      COMPLETED: 'تکمیل شده',
+      CANCELLED: 'لغو شده',
+    };
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
     const trackingUrl = `${appUrl}/track/${existing.trackingCode}`;
-    const pushMsg = `${statusEmoji[status] ?? '📋'} *تغییر وضعیت درخواست*\n\nکد: \\\`${existing.trackingCode}\\\`\nمشتری: ${existing.fullName}\nتماس: ${existing.phone}\nوضعیت جدید: *${statusFa[status] ?? status}*\n${adminNotes ? `یادداشت: ${adminNotes}` : ''}\n${existing.externalTxId ? `شناسه تراکنش: ${existing.externalTxId}` : ''}\n\n🔗 ${trackingUrl}`.trim();
+    const pushMsg =
+      `${statusEmoji[status] ?? '📋'} *تغییر وضعیت درخواست*\n\nکد: \\\`${existing.trackingCode}\\\`\nمشتری: ${existing.fullName}\nتماس: ${existing.phone}\nوضعیت جدید: *${statusFa[status] ?? status}*\n${adminNotes ? `یادداشت: ${adminNotes}` : ''}\n${existing.externalTxId ? `شناسه تراکنش: ${existing.externalTxId}` : ''}\n\n🔗 ${trackingUrl}`.trim();
     void sendTelegramNotification(pushMsg);
 
     if (existing.email) {
       if (status === 'COMPLETED') {
         await trySendEmail(async () => {
           const provider = await getEmailProviderAsync();
-          await provider.send(serviceRequestReceiptEmail({ to: existing.email as string, fullName: existing.fullName, trackingCode: existing.trackingCode, serviceType: existing.serviceType, amount: existing.amount, currency: existing.currency, externalTxId: existing.externalTxId, adminNote: adminNotes ?? null, completedAt: new Date(), appUrl }));
+          await provider.send(
+            serviceRequestReceiptEmail({
+              to: existing.email as string,
+              fullName: existing.fullName,
+              trackingCode: existing.trackingCode,
+              serviceType: existing.serviceType,
+              amount: existing.amount,
+              currency: existing.currency,
+              externalTxId: existing.externalTxId,
+              adminNote: adminNotes ?? null,
+              completedAt: new Date(),
+              appUrl,
+            }),
+          );
         });
       } else {
         await trySendEmail(async () => {
           const provider = await getEmailProviderAsync();
-          await provider.send(serviceRequestStatusEmail({ to: existing.email as string, fullName: existing.fullName, trackingCode: existing.trackingCode, newStatus: status, adminNote: adminNotes, appUrl }));
+          await provider.send(
+            serviceRequestStatusEmail({
+              to: existing.email as string,
+              fullName: existing.fullName,
+              trackingCode: existing.trackingCode,
+              newStatus: status,
+              adminNote: adminNotes,
+              appUrl,
+            }),
+          );
         });
       }
     }
 
-    revalidatePath('/dashboard/service-requests');
+    revalidateTag('service-requests');
     return { success: true, data: undefined };
   } catch {
     return { success: false, error: { code: 'SERVER_ERROR', message: 'خطایی رخ داد.' } };
@@ -513,10 +668,14 @@ export async function updateServiceRequestStatus(
 // ─── Admin: Delete request ───────────────────────────────────────────────── //
 export async function deleteServiceRequest(id: string): Promise<FintechActionResult<void>> {
   const authCheck = await requireRole([Role.OWNER]);
-  if (!authCheck.success) return { success: false, error: { code: 'FORBIDDEN', message: 'فقط مالک می‌تواند درخواست را حذف کند.' } };
+  if (!authCheck.success)
+    return {
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'فقط مالک می‌تواند درخواست را حذف کند.' },
+    };
   try {
     await prisma.serviceRequest.delete({ where: { id } });
-    revalidatePath('/dashboard/service-requests');
+    revalidateTag('service-requests');
     return { success: true, data: undefined };
   } catch {
     return { success: false, error: { code: 'SERVER_ERROR', message: 'خطایی رخ داد.' } };
@@ -524,19 +683,80 @@ export async function deleteServiceRequest(id: string): Promise<FintechActionRes
 }
 
 // ─── Admin: Get recent activity ──────────────────────────────────────────── //
-export async function getServiceRequestRecentActivity(limit = 10): Promise<FintechActionResult<unknown[]>> {
+export async function getServiceRequestRecentActivity(
+  limit = 10,
+): Promise<FintechActionResult<unknown[]>> {
   const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
-  if (!authCheck.success) return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
+  if (!authCheck.success)
+    return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
   try {
-    const [statusLogs, recent] = await Promise.all([
-      prisma.serviceRequestStatusLog.findMany({ orderBy: { createdAt: 'desc' }, take: limit, include: { request: { select: { trackingCode: true, fullName: true } } } }),
-      prisma.serviceRequest.findMany({ where: { createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } }, orderBy: { createdAt: 'desc' }, take: limit, select: { id: true, trackingCode: true, fullName: true, status: true, urgency: true, serviceType: true, createdAt: true } }),
+    // #15 fix: allSettled به‌جای all — اگر یک کوئری fail کند، دیگری abort نمی‌شود
+    const [statusLogsResult, recentResult] = await Promise.allSettled([
+      prisma.serviceRequestStatusLog.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        include: { request: { select: { trackingCode: true, fullName: true } } },
+      }),
+      prisma.serviceRequest.findMany({
+        where: { createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        select: {
+          id: true,
+          trackingCode: true,
+          fullName: true,
+          status: true,
+          urgency: true,
+          serviceType: true,
+          createdAt: true,
+        },
+      }),
     ]);
+    const statusLogs = statusLogsResult.status === 'fulfilled' ? statusLogsResult.value : [];
+    const recent = recentResult.status === 'fulfilled' ? recentResult.value : [];
 
-    type Activity = { kind: 'created'; id: string; trackingCode: string; fullName: string; status: string; urgency: string; serviceType: string; createdAt: string } | { kind: 'status_changed'; id: string; trackingCode: string; fromStatus: string | null; toStatus: string; updatedBy: string; createdAt: string };
+    type Activity =
+      | {
+          kind: 'created';
+          id: string;
+          trackingCode: string;
+          fullName: string;
+          status: string;
+          urgency: string;
+          serviceType: string;
+          createdAt: string;
+        }
+      | {
+          kind: 'status_changed';
+          id: string;
+          trackingCode: string;
+          fromStatus: string | null;
+          toStatus: string;
+          updatedBy: string;
+          createdAt: string;
+        };
     const items: Activity[] = [];
-    for (const r of recent) items.push({ kind: 'created' as const, id: r.id, trackingCode: r.trackingCode, fullName: r.fullName, status: r.status, urgency: r.urgency, serviceType: r.serviceType, createdAt: r.createdAt.toISOString() });
-    for (const log of statusLogs) items.push({ kind: 'status_changed' as const, id: `log-${log.id}`, trackingCode: log.request.trackingCode, fromStatus: log.fromStatus, toStatus: log.toStatus, updatedBy: log.changedBy, createdAt: log.createdAt.toISOString() });
+    for (const r of recent)
+      items.push({
+        kind: 'created' as const,
+        id: r.id,
+        trackingCode: r.trackingCode,
+        fullName: r.fullName,
+        status: r.status,
+        urgency: r.urgency,
+        serviceType: r.serviceType,
+        createdAt: r.createdAt.toISOString(),
+      });
+    for (const log of statusLogs)
+      items.push({
+        kind: 'status_changed' as const,
+        id: `log-${log.id}`,
+        trackingCode: log.request.trackingCode,
+        fromStatus: log.fromStatus,
+        toStatus: log.toStatus,
+        updatedBy: log.changedBy,
+        createdAt: log.createdAt.toISOString(),
+      });
     items.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
     return { success: true, data: items.slice(0, limit) };
   } catch {
@@ -545,26 +765,61 @@ export async function getServiceRequestRecentActivity(limit = 10): Promise<Finte
 }
 
 // ─── Admin: Bulk status update ────────────────────────────────────────────── //
-export async function bulkUpdateServiceRequestStatus(ids: string[], status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'): Promise<FintechActionResult<{ count: number }>> {
+export async function bulkUpdateServiceRequestStatus(
+  ids: string[],
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED',
+): Promise<FintechActionResult<{ count: number }>> {
   const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
-  if (!authCheck.success) return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
-  if (ids.length === 0) return { success: false, error: { code: 'INVALID_INPUT', message: 'هیچ موردی انتخاب نشده است.' } };
+  if (!authCheck.success)
+    return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
+  if (ids.length === 0)
+    return {
+      success: false,
+      error: { code: 'INVALID_INPUT', message: 'هیچ موردی انتخاب نشده است.' },
+    };
   try {
-    const existing = await prisma.serviceRequest.findMany({ where: { id: { in: ids } }, select: { id: true, status: true } });
-    const result = await prisma.serviceRequest.updateMany({ where: { id: { in: ids } }, data: { status } });
-    await prisma.serviceRequestStatusLog.createMany({ data: existing.map((r) => ({ id: randomBytes(8).toString('hex'), requestId: r.id, fromStatus: r.status, toStatus: status, changedBy: authCheck.user.id })) });
-    await prisma.systemLog.create({ data: { level: 'INFO', message: `Bulk update: ${result.count} requests set to ${status} by ${authCheck.user.id}`, source: 'ServiceRequest' } });
-    revalidatePath('/dashboard/service-requests');
+    const existing = await prisma.serviceRequest.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, status: true },
+    });
+    const result = await prisma.serviceRequest.updateMany({
+      where: { id: { in: ids } },
+      data: { status },
+    });
+    await prisma.serviceRequestStatusLog.createMany({
+      data: existing.map((r) => ({
+        id: randomBytes(8).toString('hex'),
+        requestId: r.id,
+        fromStatus: r.status,
+        toStatus: status,
+        changedBy: authCheck.user.id,
+      })),
+    });
+    await prisma.systemLog.create({
+      data: {
+        level: 'INFO',
+        message: `Bulk update: ${result.count} requests set to ${status} by ${authCheck.user.id}`,
+        source: 'ServiceRequest',
+      },
+    });
+    revalidateTag('service-requests');
     return { success: true, data: { count: result.count } };
   } catch {
-    return { success: false, error: { code: 'SERVER_ERROR', message: 'خطا در به‌روزرسانی گروهی رخ داد.' } };
+    return {
+      success: false,
+      error: { code: 'SERVER_ERROR', message: 'خطا در به‌روزرسانی گروهی رخ داد.' },
+    };
   }
 }
 
 // ─── Admin: Export CSV ───────────────────────────────────────────────────── //
-export async function exportServiceRequestsCsv(params?: { status?: string; search?: string }): Promise<FintechActionResult<string>> {
+export async function exportServiceRequestsCsv(params?: {
+  status?: string;
+  search?: string;
+}): Promise<FintechActionResult<string>> {
   const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
-  if (!authCheck.success) return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
+  if (!authCheck.success)
+    return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
   const where: Record<string, unknown> = {};
   if (params?.status && params.status !== 'ALL') where.status = params.status;
   if (params?.search) {
@@ -575,14 +830,62 @@ export async function exportServiceRequestsCsv(params?: { status?: string; searc
     ];
   }
   try {
-    const rows = await prisma.serviceRequest.findMany({ where, orderBy: { createdAt: 'desc' }, take: 1000 });
-    const header = ['کد پیگیری', 'نام', 'تلفن', 'ایمیل', 'نوع خدمات', 'مبلغ', 'ارز', 'اولویت', 'روش تماس', 'وضعیت', 'تاریخ ثبت'];
-    const serviceLabel: Record<string, string> = { INTERNATIONAL_TRANSFER: 'حواله بین‌المللی', ONLINE_PAYMENT: 'پرداخت آنلاین', TUITION_PAYMENT: 'پرداخت شهریه', FREELANCE_INCOME: 'نقد کردن درآمد', SOFTWARE_PURCHASE: 'خرید نرم‌افزار', GIFT_CARD: 'گیفت کارت', OTHER: 'سایر' };
-    const statusLabel: Record<string, string> = { PENDING: 'در انتظار', IN_PROGRESS: 'در حال انجام', COMPLETED: 'تکمیل شده', CANCELLED: 'لغو شده' };
-    const escapeCsv = (val: unknown): string => { const s = val === null || val === undefined ? '' : String(val); return /[\",\n]/.test(s) ? `\"${s.replace(/\"/g, '""')}\"` : s; };
+    // #17 note: take: 1000 آگاهانه است — برای فایل CSV در یک batch.
+    // اگر داده‌ها بیش از ۱۰۰۰ شدند، از cursor-based export استفاده کنید.
+    const rows = await prisma.serviceRequest.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: 1000,
+    });
+    const header = [
+      'کد پیگیری',
+      'نام',
+      'تلفن',
+      'ایمیل',
+      'نوع خدمات',
+      'مبلغ',
+      'ارز',
+      'اولویت',
+      'روش تماس',
+      'وضعیت',
+      'تاریخ ثبت',
+    ];
+    const serviceLabel: Record<string, string> = {
+      INTERNATIONAL_TRANSFER: 'حواله بین‌المللی',
+      ONLINE_PAYMENT: 'پرداخت آنلاین',
+      TUITION_PAYMENT: 'پرداخت شهریه',
+      FREELANCE_INCOME: 'نقد کردن درآمد',
+      SOFTWARE_PURCHASE: 'خرید نرم‌افزار',
+      GIFT_CARD: 'گیفت کارت',
+      OTHER: 'سایر',
+    };
+    const statusLabel: Record<string, string> = {
+      PENDING: 'در انتظار',
+      IN_PROGRESS: 'در حال انجام',
+      COMPLETED: 'تکمیل شده',
+      CANCELLED: 'لغو شده',
+    };
+    const escapeCsv = (val: unknown): string => {
+      const s = val === null || val === undefined ? '' : String(val);
+      return /[\",\n]/.test(s) ? `\"${s.replace(/\"/g, '""')}\"` : s;
+    };
     const csvRows: string[] = [header.join(',')];
     for (const r of rows) {
-      csvRows.push([escapeCsv(r.trackingCode), escapeCsv(r.fullName), escapeCsv(r.phone), escapeCsv(r.email), escapeCsv(serviceLabel[r.serviceType] ?? r.serviceType), escapeCsv(r.amount), escapeCsv(r.currency), escapeCsv(r.urgency === 'URGENT' ? 'فوری' : 'عادی'), escapeCsv(r.contactMethod === 'telegram' ? 'تلگرام' : 'واتساپ'), escapeCsv(statusLabel[r.status] ?? r.status), escapeCsv(r.createdAt.toISOString())].join(','));
+      csvRows.push(
+        [
+          escapeCsv(r.trackingCode),
+          escapeCsv(r.fullName),
+          escapeCsv(r.phone),
+          escapeCsv(r.email),
+          escapeCsv(serviceLabel[r.serviceType] ?? r.serviceType),
+          escapeCsv(r.amount),
+          escapeCsv(r.currency),
+          escapeCsv(r.urgency === 'URGENT' ? 'فوری' : 'عادی'),
+          escapeCsv(r.contactMethod === 'telegram' ? 'تلگرام' : 'واتساپ'),
+          escapeCsv(statusLabel[r.status] ?? r.status),
+          escapeCsv(r.createdAt.toISOString()),
+        ].join(','),
+      );
     }
     return { success: true, data: `\uFEFF${csvRows.join('\n')}` };
   } catch {
@@ -591,29 +894,72 @@ export async function exportServiceRequestsCsv(params?: { status?: string; searc
 }
 
 // ─── Admin: Get stats ─────────────────────────────────────────────────────── //
-export async function getServiceRequestStats(): Promise<FintechActionResult<{ total: number; pending: number; inProgress: number; completed: number; cancelled: number; todayCount: number; urgent: number; pendingUrgent: number }>> {
+export async function getServiceRequestStats(): Promise<
+  FintechActionResult<{
+    total: number;
+    pending: number;
+    inProgress: number;
+    completed: number;
+    cancelled: number;
+    todayCount: number;
+    urgent: number;
+    pendingUrgent: number;
+  }>
+> {
   const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
-  if (!authCheck.success) return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
+  if (!authCheck.success)
+    return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
   try {
     const [byStatus, todayCount, urgentCount, pendingUrgentCount] = await Promise.all([
       prisma.serviceRequest.groupBy({ by: ['status'], _count: { _all: true } }),
-      prisma.serviceRequest.count({ where: { createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } } }),
+      prisma.serviceRequest.count({
+        where: { createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
+      }),
       prisma.serviceRequest.count({ where: { urgency: 'URGENT' } }),
       prisma.serviceRequest.count({ where: { urgency: 'URGENT', status: 'PENDING' } }),
     ]);
-    const counts: Record<string, number> = { PENDING: 0, IN_PROGRESS: 0, COMPLETED: 0, CANCELLED: 0 };
+    const counts: Record<string, number> = {
+      PENDING: 0,
+      IN_PROGRESS: 0,
+      COMPLETED: 0,
+      CANCELLED: 0,
+    };
     let total = 0;
-    for (const row of byStatus) { counts[row.status] = row._count._all; total += row._count._all; }
-    return { success: true, data: { total, pending: counts.PENDING, inProgress: counts.IN_PROGRESS, completed: counts.COMPLETED, cancelled: counts.CANCELLED, todayCount, urgent: urgentCount, pendingUrgent: pendingUrgentCount } };
+    for (const row of byStatus) {
+      counts[row.status] = row._count._all;
+      total += row._count._all;
+    }
+    return {
+      success: true,
+      data: {
+        total,
+        pending: counts.PENDING,
+        inProgress: counts.IN_PROGRESS,
+        completed: counts.COMPLETED,
+        cancelled: counts.CANCELLED,
+        todayCount,
+        urgent: urgentCount,
+        pendingUrgent: pendingUrgentCount,
+      },
+    };
   } catch {
     return { success: false, error: { code: 'SERVER_ERROR', message: 'خطایی رخ داد.' } };
   }
 }
 
 // ─── User: Get own service requests ──────────────────────────────────────── //
-export async function getMyServiceRequests(params?: { page?: number; limit?: number }): Promise<FintechActionResult<{ requests: unknown[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>> {
+export async function getMyServiceRequests(params?: { page?: number; limit?: number }): Promise<
+  FintechActionResult<{
+    requests: unknown[];
+    pagination: { page: number; limit: number; total: number; totalPages: number };
+  }>
+> {
   const session = await auth();
-  if (!session?.user?.id) return { success: false, error: { code: 'UNAUTHENTICATED', message: 'لطفاً وارد حساب کاربری خود شوید.' } };
+  if (!session?.user?.id)
+    return {
+      success: false,
+      error: { code: 'UNAUTHENTICATED', message: 'لطفاً وارد حساب کاربری خود شوید.' },
+    };
   const page = params?.page ?? 1;
   const limit = params?.limit ?? 10;
   const skip = (page - 1) * limit;
@@ -624,78 +970,202 @@ export async function getMyServiceRequests(params?: { page?: number; limit?: num
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
-        select: { id: true, trackingCode: true, serviceType: true, amount: true, currency: true, status: true, urgency: true, adminNotes: true, estimatedCompletionAt: true, createdAt: true, updatedAt: true, statusLogs: { orderBy: { createdAt: 'desc' }, take: 5, select: { fromStatus: true, toStatus: true, note: true, createdAt: true } } },
+        select: {
+          id: true,
+          trackingCode: true,
+          serviceType: true,
+          amount: true,
+          currency: true,
+          status: true,
+          urgency: true,
+          adminNotes: true,
+          estimatedCompletionAt: true,
+          createdAt: true,
+          updatedAt: true,
+          statusLogs: {
+            orderBy: { createdAt: 'desc' },
+            take: 5,
+            select: { fromStatus: true, toStatus: true, note: true, createdAt: true },
+          },
+        },
       }),
       prisma.serviceRequest.count({ where: { userId: session.user.id } }),
     ]);
-    return { success: true, data: { requests: requests as unknown[], pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } } };
+    return {
+      success: true,
+      data: {
+        requests: requests as unknown[],
+        pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      },
+    };
   } catch {
     return { success: false, error: { code: 'SERVER_ERROR', message: 'خطایی رخ داد.' } };
   }
 }
 
 // ─── User: Cancel own PENDING request ────────────────────────────────────── //
-export async function cancelMyServiceRequest(trackingCode: string): Promise<FintechActionResult<void>> {
+export async function cancelMyServiceRequest(
+  trackingCode: string,
+): Promise<FintechActionResult<void>> {
   const session = await auth();
-  if (!session?.user?.id) return { success: false, error: { code: 'UNAUTHENTICATED', message: 'لطفاً وارد حساب کاربری خود شوید.' } };
+  if (!session?.user?.id)
+    return {
+      success: false,
+      error: { code: 'UNAUTHENTICATED', message: 'لطفاً وارد حساب کاربری خود شوید.' },
+    };
   try {
-    const req = await prisma.serviceRequest.findUnique({ where: { trackingCode }, select: { id: true, status: true, userId: true, createdAt: true, trackingCode: true } });
-    if (!req) return { success: false, error: { code: 'NOT_FOUND', message: 'سفارشی با این کد یافت نشد.' } };
-    if (req.userId !== session.user.id) return { success: false, error: { code: 'FORBIDDEN', message: 'این سفارش به حساب شما تعلق ندارد.' } };
-    if (req.status !== 'PENDING') return { success: false, error: { code: 'INVALID_STATE', message: 'فقط سفارش‌های «در انتظار بررسی» قابل لغو هستند.' } };
+    const req = await prisma.serviceRequest.findUnique({
+      where: { trackingCode },
+      select: { id: true, status: true, userId: true, createdAt: true, trackingCode: true },
+    });
+    if (!req)
+      return {
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'سفارشی با این کد یافت نشد.' },
+      };
+    if (req.userId !== session.user.id)
+      return {
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'این سفارش به حساب شما تعلق ندارد.' },
+      };
+    if (req.status !== 'PENDING')
+      return {
+        success: false,
+        error: { code: 'INVALID_STATE', message: 'فقط سفارش‌های «در انتظار بررسی» قابل لغو هستند.' },
+      };
 
     const thirtyMinutes = 30 * 60 * 1000;
     const elapsed = Date.now() - new Date(req.createdAt).getTime();
-    if (elapsed > thirtyMinutes) return { success: false, error: { code: 'CANCEL_WINDOW_EXPIRED', message: 'مهلت لغو خودکار (۳۰ دقیقه) پایان یافته. برای لغو با پشتیبانی تماس بگیرید.' } };
+    if (elapsed > thirtyMinutes)
+      return {
+        success: false,
+        error: {
+          code: 'CANCEL_WINDOW_EXPIRED',
+          message: 'مهلت لغو خودکار (۳۰ دقیقه) پایان یافته. برای لغو با پشتیبانی تماس بگیرید.',
+        },
+      };
 
     await prisma.$transaction([
       prisma.serviceRequest.update({ where: { id: req.id }, data: { status: 'CANCELLED' } }),
-      prisma.serviceRequestStatusLog.create({ data: { requestId: req.id, fromStatus: 'PENDING', toStatus: 'CANCELLED', changedBy: session.user.email ?? session.user.id, note: 'لغو توسط کاربر' } }),
+      prisma.serviceRequestStatusLog.create({
+        data: {
+          requestId: req.id,
+          fromStatus: 'PENDING',
+          toStatus: 'CANCELLED',
+          changedBy: session.user.email ?? session.user.id,
+          note: 'لغو توسط کاربر',
+        },
+      }),
     ]);
-    revalidatePath('/dashboard/my-requests');
+    revalidateTag('service-requests');
     return { success: true, data: undefined };
   } catch {
-    return { success: false, error: { code: 'SERVER_ERROR', message: 'خطایی در لغو سفارش رخ داد.' } };
+    return {
+      success: false,
+      error: { code: 'SERVER_ERROR', message: 'خطایی در لغو سفارش رخ داد.' },
+    };
   }
 }
 
 // ─── User: Claim a guest request ────────────────────────────────────────── //
-export async function claimGuestRequest(trackingCode: string): Promise<FintechActionResult<{ requiresOtp?: boolean; email?: string }>> {
+export async function claimGuestRequest(
+  trackingCode: string,
+): Promise<FintechActionResult<{ requiresOtp?: boolean; email?: string }>> {
   const session = await auth();
-  if (!session?.user?.id || !session.user.email) return { success: false, error: { code: 'UNAUTHENTICATED', message: 'لطفاً وارد حساب کاربری خود شوید.' } };
+  if (!session?.user?.id || !session.user.email)
+    return {
+      success: false,
+      error: { code: 'UNAUTHENTICATED', message: 'لطفاً وارد حساب کاربری خود شوید.' },
+    };
   try {
-    const req = await prisma.serviceRequest.findUnique({ where: { trackingCode: trackingCode.trim().toUpperCase() }, select: { id: true, userId: true, email: true, emailVerified: true } });
-    if (!req) return { success: false, error: { code: 'NOT_FOUND', message: 'سفارشی با این کد یافت نشد.' } };
+    const req = await prisma.serviceRequest.findUnique({
+      where: { trackingCode: trackingCode.trim().toUpperCase() },
+      select: { id: true, userId: true, email: true, emailVerified: true },
+    });
+    if (!req)
+      return {
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'سفارشی با این کد یافت نشد.' },
+      };
     if (req.userId) {
-      if (req.userId === session.user.id) return { success: false, error: { code: 'ALREADY_CLAIMED', message: 'این سفارش قبلاً به حساب شما وصل شده است.' } };
-      return { success: false, error: { code: 'ALREADY_CLAIMED', message: 'این سفارش به حساب دیگری تعلق دارد.' } };
+      if (req.userId === session.user.id)
+        return {
+          success: false,
+          error: { code: 'ALREADY_CLAIMED', message: 'این سفارش قبلاً به حساب شما وصل شده است.' },
+        };
+      return {
+        success: false,
+        error: { code: 'ALREADY_CLAIMED', message: 'این سفارش به حساب دیگری تعلق دارد.' },
+      };
     }
     const reqEmail = req.email?.trim().toLowerCase();
     const userEmail = session.user.email.trim().toLowerCase();
     if (!reqEmail) {
-      await prisma.serviceRequest.update({ where: { id: req.id }, data: { userId: session.user.id } });
-      revalidatePath('/dashboard/my-requests');
+      // #10+11 fix: $transaction برای atomicity — جلوگیری از race condition
+      await prisma.$transaction(async (tx) => {
+        const fresh = await tx.serviceRequest.findUnique({
+          where: { id: req.id },
+          select: { userId: true },
+        });
+        if (fresh?.userId) throw new Error('ALREADY_CLAIMED');
+        await tx.serviceRequest.update({
+          where: { id: req.id },
+          data: { userId: session.user.id },
+        });
+      });
+      revalidateTag('service-requests');
       return { success: true, data: {} };
     }
-    if (reqEmail !== userEmail) return { success: false, error: { code: 'EMAIL_MISMATCH', message: 'ایمیل این سفارش با ایمیل حساب شما مطابقت ندارد.' } };
+    if (reqEmail !== userEmail)
+      return {
+        success: false,
+        error: {
+          code: 'EMAIL_MISMATCH',
+          message: 'ایمیل این سفارش با ایمیل حساب شما مطابقت ندارد.',
+        },
+      };
     if (req.emailVerified) {
-      await prisma.serviceRequest.update({ where: { id: req.id }, data: { userId: session.user.id } });
-      revalidatePath('/dashboard/my-requests');
+      // #10+11 fix: $transaction برای atomicity — جلوگیری از race condition
+      await prisma.$transaction(async (tx) => {
+        const fresh = await tx.serviceRequest.findUnique({
+          where: { id: req.id },
+          select: { userId: true },
+        });
+        if (fresh?.userId) throw new Error('ALREADY_CLAIMED');
+        await tx.serviceRequest.update({
+          where: { id: req.id },
+          data: { userId: session.user.id },
+        });
+      });
+      revalidateTag('service-requests');
       return { success: true, data: {} };
     }
     return { success: true, data: { requiresOtp: true, email: reqEmail } };
   } catch {
-    return { success: false, error: { code: 'SERVER_ERROR', message: 'خطایی رخ داد. دوباره تلاش کنید.' } };
+    return {
+      success: false,
+      error: { code: 'SERVER_ERROR', message: 'خطایی رخ داد. دوباره تلاش کنید.' },
+    };
   }
 }
 
 // ─── Admin: Get full request detail ──────────────────────────────────────── //
 export async function getServiceRequestDetail(id: string): Promise<FintechActionResult<unknown>> {
   const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
-  if (!authCheck.success) return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
+  if (!authCheck.success)
+    return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
   try {
-    const request = await prisma.serviceRequest.findUnique({ where: { id }, include: { statusLogs: { orderBy: { createdAt: 'desc' } }, notes: { orderBy: { createdAt: 'desc' } }, attachments: { orderBy: { createdAt: 'desc' } } } });
-    if (!request) return { success: false, error: { code: 'NOT_FOUND', message: 'درخواست یافت نشد.' } };
+    const request = await prisma.serviceRequest.findUnique({
+      where: { id },
+      include: {
+        // #12 fix: take اضافه شد — بدون limit داده‌های unbounded بارگذاری می‌شدند
+        statusLogs: { orderBy: { createdAt: 'desc' }, take: 50 },
+        notes: { orderBy: { createdAt: 'desc' }, take: 100 },
+        attachments: { orderBy: { createdAt: 'desc' }, take: 50 },
+      },
+    });
+    if (!request)
+      return { success: false, error: { code: 'NOT_FOUND', message: 'درخواست یافت نشد.' } };
     return { success: true, data: request };
   } catch {
     return { success: false, error: { code: 'SERVER_ERROR', message: 'خطایی رخ داد.' } };
@@ -704,50 +1174,127 @@ export async function getServiceRequestDetail(id: string): Promise<FintechAction
 
 // ─── Rest of file remains the same ───────────────────────────────────────── //
 
-export async function addServiceRequestNote(requestId: string, content: string, isPrivate = true): Promise<FintechActionResult<void>> {
+export async function addServiceRequestNote(
+  requestId: string,
+  content: string,
+  isPrivate = true,
+): Promise<FintechActionResult<void>> {
   const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
-  if (!authCheck.success) return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
+  if (!authCheck.success)
+    return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
   const trimmed = content.trim().replace(/[<>]/g, '');
-  if (!trimmed || trimmed.length < 2 || trimmed.length > 2000) return { success: false, error: { code: 'INVALID_INPUT', message: 'متن یادداشت باید بین ۲ تا ۲۰۰۰ کاراکتر باشد.' } };
+  if (!trimmed || trimmed.length < 2 || trimmed.length > 2000)
+    return {
+      success: false,
+      error: { code: 'INVALID_INPUT', message: 'متن یادداشت باید بین ۲ تا ۲۰۰۰ کاراکتر باشد.' },
+    };
   try {
-    const req = await prisma.serviceRequest.findUnique({ where: { id: requestId }, select: { id: true } });
+    const req = await prisma.serviceRequest.findUnique({
+      where: { id: requestId },
+      select: { id: true },
+    });
     if (!req) return { success: false, error: { code: 'NOT_FOUND', message: 'درخواست یافت نشد.' } };
-    await prisma.serviceRequestNote.create({ data: { requestId, authorId: authCheck.user.id, body: trimmed, isPrivate } });
-    prisma.systemLog.create({ data: { level: 'INFO', message: `Note added to service request ${requestId} by ${authCheck.user.id}`, source: 'ServiceRequest' } }).catch(() => {});
-    revalidatePath('/dashboard/service-requests');
+    await prisma.serviceRequestNote.create({
+      data: { requestId, authorId: authCheck.user.id, body: trimmed, isPrivate },
+    });
+    prisma.systemLog
+      .create({
+        data: {
+          level: 'INFO',
+          message: `Note added to service request ${requestId} by ${authCheck.user.id}`,
+          source: 'ServiceRequest',
+        },
+      })
+      .catch(() => {});
+    revalidateTag('service-requests');
     return { success: true, data: undefined };
   } catch {
     return { success: false, error: { code: 'SERVER_ERROR', message: 'خطا در ثبت یادداشت.' } };
   }
 }
 
-export async function addServiceRequestAttachment(input: { requestId: string; fileName: string; fileType: string; fileSize: number; url: string; fileHash?: string; label?: string }): Promise<FintechActionResult<void>> {
+export async function addServiceRequestAttachment(input: {
+  requestId: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  url: string;
+  fileHash?: string;
+  label?: string;
+}): Promise<FintechActionResult<void>> {
   const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
-  if (!authCheck.success) return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
+  if (!authCheck.success)
+    return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
-  if (!ALLOWED_TYPES.includes(input.fileType)) return { success: false, error: { code: 'INVALID_FILE_TYPE', message: 'نوع فایل مجاز نیست. فقط تصویر یا PDF قابل پیوست است.' } };
-  if (input.fileSize > 10 * 1024 * 1024) return { success: false, error: { code: 'FILE_TOO_LARGE', message: 'حجم فایل بیش از ۱۰ مگابایت است.' } };
+  if (!ALLOWED_TYPES.includes(input.fileType))
+    return {
+      success: false,
+      error: {
+        code: 'INVALID_FILE_TYPE',
+        message: 'نوع فایل مجاز نیست. فقط تصویر یا PDF قابل پیوست است.',
+      },
+    };
+  if (input.fileSize > 10 * 1024 * 1024)
+    return {
+      success: false,
+      error: { code: 'FILE_TOO_LARGE', message: 'حجم فایل بیش از ۱۰ مگابایت است.' },
+    };
   try {
-    const req = await prisma.serviceRequest.findUnique({ where: { id: input.requestId }, select: { id: true } });
+    const req = await prisma.serviceRequest.findUnique({
+      where: { id: input.requestId },
+      select: { id: true },
+    });
     if (!req) return { success: false, error: { code: 'NOT_FOUND', message: 'درخواست یافت نشد.' } };
-    await prisma.serviceRequestAttachment.create({ data: { requestId: input.requestId, uploadedById: authCheck.user.id, fileName: input.fileName.substring(0, 255), fileType: input.fileType, fileSize: input.fileSize, url: input.url, fileHash: input.fileHash ?? null, label: input.label?.substring(0, 100) ?? null } });
-    await prisma.systemLog.create({ data: { level: 'INFO', message: `Attachment added to service request ${input.requestId} by ${authCheck.user.id}: ${input.fileName}`, source: 'ServiceRequest' } });
-    revalidatePath('/dashboard/service-requests');
+    await prisma.serviceRequestAttachment.create({
+      data: {
+        requestId: input.requestId,
+        uploadedById: authCheck.user.id,
+        fileName: input.fileName.substring(0, 255),
+        fileType: input.fileType,
+        fileSize: input.fileSize,
+        url: input.url,
+        fileHash: input.fileHash ?? null,
+        label: input.label?.substring(0, 100) ?? null,
+      },
+    });
+    await prisma.systemLog.create({
+      data: {
+        level: 'INFO',
+        message: `Attachment added to service request ${input.requestId} by ${authCheck.user.id}: ${input.fileName}`,
+        source: 'ServiceRequest',
+      },
+    });
+    revalidateTag('service-requests');
     return { success: true, data: undefined };
   } catch {
     return { success: false, error: { code: 'SERVER_ERROR', message: 'خطا در ثبت پیوست.' } };
   }
 }
 
-export async function deleteServiceRequestAttachment(attachmentId: string): Promise<FintechActionResult<void>> {
+export async function deleteServiceRequestAttachment(
+  attachmentId: string,
+): Promise<FintechActionResult<void>> {
   const authCheck = await requireRole([Role.ADMIN, Role.OWNER]);
-  if (!authCheck.success) return { success: false, error: { code: 'FORBIDDEN', message: 'فقط ادمین یا مالک می‌توانند پیوست را حذف کنند.' } };
+  if (!authCheck.success)
+    return {
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'فقط ادمین یا مالک می‌توانند پیوست را حذف کنند.' },
+    };
   try {
-    const att = await prisma.serviceRequestAttachment.findUnique({ where: { id: attachmentId }, select: { id: true, requestId: true, fileName: true } });
+    const att = await prisma.serviceRequestAttachment.findUnique({
+      where: { id: attachmentId },
+      select: { id: true, requestId: true, fileName: true },
+    });
     if (!att) return { success: false, error: { code: 'NOT_FOUND', message: 'پیوست یافت نشد.' } };
     await prisma.serviceRequestAttachment.delete({ where: { id: attachmentId } });
-    await prisma.systemLog.create({ data: { level: 'INFO', message: `Attachment ${att.fileName} deleted from request ${att.requestId} by ${authCheck.user.id}`, source: 'ServiceRequest' } });
-    revalidatePath('/dashboard/service-requests');
+    await prisma.systemLog.create({
+      data: {
+        level: 'INFO',
+        message: `Attachment ${att.fileName} deleted from request ${att.requestId} by ${authCheck.user.id}`,
+        source: 'ServiceRequest',
+      },
+    });
+    revalidateTag('service-requests');
     return { success: true, data: undefined };
   } catch {
     return { success: false, error: { code: 'SERVER_ERROR', message: 'خطا در حذف پیوست.' } };
@@ -757,8 +1304,10 @@ export async function deleteServiceRequestAttachment(attachmentId: string): Prom
 const _getCachedSupportLinks = safeCache(
   async () => {
     const links = await prisma.socialLink.findMany({ where: { isActive: true, type: 'SUPPORT' } });
-    const telegram = links.find((l) => ['telegram', 'تلگرام'].includes(l.name.toLowerCase()))?.url ?? null;
-    const whatsapp = links.find((l) => ['whatsapp', 'واتساپ'].includes(l.name.toLowerCase()))?.url ?? null;
+    const telegram =
+      links.find((l) => ['telegram', 'تلگرام'].includes(l.name.toLowerCase()))?.url ?? null;
+    const whatsapp =
+      links.find((l) => ['whatsapp', 'واتساپ'].includes(l.name.toLowerCase()))?.url ?? null;
     return { telegram, whatsapp };
   },
   { telegram: null, whatsapp: null },
@@ -766,5 +1315,9 @@ const _getCachedSupportLinks = safeCache(
 );
 
 export async function getSupportContactLinks() {
-  try { return await _getCachedSupportLinks(); } catch { return { telegram: null, whatsapp: null }; }
+  try {
+    return await _getCachedSupportLinks();
+  } catch {
+    return { telegram: null, whatsapp: null };
+  }
 }

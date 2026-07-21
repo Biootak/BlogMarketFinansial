@@ -1,6 +1,6 @@
-import type { NextConfig } from 'next';
-import path from 'path';
+import path from 'node:path';
 import { withSentryConfig } from '@sentry/nextjs';
+import type { NextConfig } from 'next';
 
 // 2026-06-14: Content Security Policy — تمیزتر، با allowlist دقیق برای
 // Sentry loader، Telegram bot API، و سرویس‌دهنده‌های embed ویدیو. در dev
@@ -32,7 +32,9 @@ const ContentSecurityPolicy = `
   form-action 'self';
   frame-ancestors 'self';
   ${isProd ? 'upgrade-insecure-requests;' : ''}
-`.replace(/\s{2,}/g, ' ').trim();
+`
+  .replace(/\s{2,}/g, ' ')
+  .trim();
 
 const nextConfig: NextConfig = {
   // 2026-06-24: support redirecting the build/dev cache to a native
@@ -153,10 +155,8 @@ const nextConfig: NextConfig = {
             key: 'X-Frame-Options',
             value: 'SAMEORIGIN',
           },
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
+          // #24 fix: X-XSS-Protection deprecated — Chrome این هدر را نادیده می‌گیرد.
+          // CSP (Content-Security-Policy) که بالاتر تعریف شده، جایگزین کافی است.
           {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
@@ -375,23 +375,21 @@ const nextConfig: NextConfig = {
     // the CDN/server, so unminified CSS only costs a few KB after
     // compression.
     if (config.optimization?.minimizer) {
-      config.optimization.minimizer = config.optimization.minimizer.filter(
-        (plugin: unknown) => {
-          // Class instances: filter by name
-          if (plugin && typeof plugin === 'object' && 'constructor' in plugin) {
-            const name = (plugin as { constructor?: { name?: string } }).constructor?.name;
-            if (name === 'CssMinimizerPlugin') return false;
+      config.optimization.minimizer = config.optimization.minimizer.filter((plugin: unknown) => {
+        // Class instances: filter by name
+        if (plugin && typeof plugin === 'object' && 'constructor' in plugin) {
+          const name = (plugin as { constructor?: { name?: string } }).constructor?.name;
+          if (name === 'CssMinimizerPlugin') return false;
+        }
+        // Functions: check if the function source references cssnano
+        if (typeof plugin === 'function') {
+          const src = plugin.toString();
+          if (src.includes('CssMinimizerPlugin') || src.includes('cssnano')) {
+            return false;
           }
-          // Functions: check if the function source references cssnano
-          if (typeof plugin === 'function') {
-            const src = plugin.toString();
-            if (src.includes('CssMinimizerPlugin') || src.includes('cssnano')) {
-              return false;
-            }
-          }
-          return true;
-        },
-      );
+        }
+        return true;
+      });
     }
     return config;
   },

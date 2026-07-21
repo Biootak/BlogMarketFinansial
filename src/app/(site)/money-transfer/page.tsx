@@ -143,11 +143,13 @@ export default async function MoneyTransferPage() {
   const activeRateLists = rateLists.filter((list) => list.isActive);
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background:
-        'linear-gradient(to bottom, var(--ds-bg-subtle), var(--ds-bg-primary), var(--ds-bg-subtle))',
-    }}>
+    <div
+      style={{
+        minHeight: '100vh',
+        background:
+          'linear-gradient(to bottom, var(--ds-bg-subtle), var(--ds-bg-primary), var(--ds-bg-subtle))',
+      }}
+    >
       {/* Hero + Live Converter (one cohesive unit) */}
       <HeroConverter
         pairs={hero.pairs}

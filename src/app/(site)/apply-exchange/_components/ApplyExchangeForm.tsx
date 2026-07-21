@@ -33,7 +33,15 @@ export default function ApplyExchangeForm() {
     setError,
     formState: { errors },
   } = useForm<FormValues>({
-    defaultValues: { name: '', slug: '', city: '', licenseNo: '', phone: '', email: '', address: '' },
+    defaultValues: {
+      name: '',
+      slug: '',
+      city: '',
+      licenseNo: '',
+      phone: '',
+      email: '',
+      address: '',
+    },
   });
 
   const onSubmit: SubmitHandler<FormValues> = (values) => {
@@ -72,7 +80,10 @@ export default function ApplyExchangeForm() {
         {/* نام صرافی */}
         <div className={s.field}>
           <label htmlFor="ex-name" className={s.label}>
-            نام صرافی <span className={s.req} aria-hidden>*</span>
+            نام صرافی{' '}
+            <span className={s.req} aria-hidden>
+              *
+            </span>
           </label>
           <input
             id="ex-name"
@@ -80,7 +91,10 @@ export default function ApplyExchangeForm() {
             className={`${s.input}${errors.name ? ` ${s.inputError}` : ''}`}
             placeholder="صرافی کابل"
             aria-invalid={Boolean(errors.name) || undefined}
-            {...register('name', { required: 'نام صرافی الزامی است', minLength: { value: 2, message: 'حداقل ۲ کاراکتر' } })}
+            {...register('name', {
+              required: 'نام صرافی الزامی است',
+              minLength: { value: 2, message: 'حداقل ۲ کاراکتر' },
+            })}
           />
           {errors.name ? <span className={s.error}>{errors.name.message}</span> : null}
         </div>
@@ -88,7 +102,10 @@ export default function ApplyExchangeForm() {
         {/* نام کوتاه (slug) */}
         <div className={s.field}>
           <label htmlFor="ex-slug" className={s.label}>
-            نام کوتاه (آدرس) <span className={s.req} aria-hidden>*</span>
+            نام کوتاه (آدرس){' '}
+            <span className={s.req} aria-hidden>
+              *
+            </span>
           </label>
           <input
             id="ex-slug"
@@ -109,7 +126,10 @@ export default function ApplyExchangeForm() {
         {/* شهر */}
         <div className={s.field}>
           <label htmlFor="ex-city" className={s.label}>
-            شهر <span className={s.req} aria-hidden>*</span>
+            شهر{' '}
+            <span className={s.req} aria-hidden>
+              *
+            </span>
           </label>
           <input
             id="ex-city"
@@ -124,7 +144,9 @@ export default function ApplyExchangeForm() {
 
         {/* شماره مجوز */}
         <div className={s.field}>
-          <label htmlFor="ex-license" className={s.label}>شماره مجوز</label>
+          <label htmlFor="ex-license" className={s.label}>
+            شماره مجوز
+          </label>
           <input
             id="ex-license"
             type="text"
@@ -137,7 +159,9 @@ export default function ApplyExchangeForm() {
 
         {/* شماره تماس */}
         <div className={s.field}>
-          <label htmlFor="ex-phone" className={s.label}>شماره تماس</label>
+          <label htmlFor="ex-phone" className={s.label}>
+            شماره تماس
+          </label>
           <input
             id="ex-phone"
             type="tel"
@@ -150,7 +174,9 @@ export default function ApplyExchangeForm() {
 
         {/* ایمیل */}
         <div className={s.field}>
-          <label htmlFor="ex-email" className={s.label}>ایمیل</label>
+          <label htmlFor="ex-email" className={s.label}>
+            ایمیل
+          </label>
           <input
             id="ex-email"
             type="email"
@@ -164,7 +190,9 @@ export default function ApplyExchangeForm() {
 
         {/* آدرس */}
         <div className={s.field}>
-          <label htmlFor="ex-address" className={s.label}>آدرس دقیق</label>
+          <label htmlFor="ex-address" className={s.label}>
+            آدرس دقیق
+          </label>
           <textarea
             id="ex-address"
             className={s.textarea}
@@ -176,10 +204,17 @@ export default function ApplyExchangeForm() {
 
         {/* خطای کلی */}
         {errors.root ? (
-          <p className={s.rootError} role="alert">{errors.root.message}</p>
+          <p className={s.rootError} role="alert">
+            {errors.root.message}
+          </p>
         ) : null}
 
-        <button type="submit" className={s.submit} disabled={isPending} aria-busy={isPending || undefined}>
+        <button
+          type="submit"
+          className={s.submit}
+          disabled={isPending}
+          aria-busy={isPending || undefined}
+        >
           {isPending ? <Loader2 size={16} className={s.spinner} aria-hidden /> : null}
           {isPending ? 'در حال ثبت درخواست…' : 'ارسال درخواست ثبت صرافی'}
         </button>

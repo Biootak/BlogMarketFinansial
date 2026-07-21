@@ -214,7 +214,13 @@ const SingleContentClient = ({ post, commentCount, inContentAd }: SingleContentC
             <div className="relative p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-neutral-50/80 to-white/80 dark:from-neutral-900/80 dark:to-neutral-800/80 backdrop-blur-sm border border-neutral-200/50 dark:border-neutral-700/50">
               {/* Header */}
               <div className="flex items-center gap-3 mb-5">
-                <span className="flex items-center justify-center w-10 h-10 rounded-xl shadow-lg" style={{background: 'var(--ds-brand-600)', boxShadow: '0 8px 24px -4px oklch(52% 0.14 162 / 0.35)'}}>
+                <span
+                  className="flex items-center justify-center w-10 h-10 rounded-xl shadow-lg"
+                  style={{
+                    background: 'var(--ds-brand-600)',
+                    boxShadow: '0 8px 24px -4px oklch(52% 0.14 162 / 0.35)',
+                  }}
+                >
                   <HiHashtag className="w-5 h-5 text-white" />
                 </span>
                 <h4 className="text-lg font-bold text-neutral-900 dark:text-white">
@@ -248,7 +254,13 @@ const SingleContentClient = ({ post, commentCount, inContentAd }: SingleContentC
         <div id="comments" className="scroll-mt-20 max-w-full">
           {/* Comments Header */}
           <div className="flex items-center gap-4 mb-8">
-            <span className="flex items-center justify-center w-12 h-12 rounded-2xl shadow-lg" style={{background: 'var(--ds-brand-600)', boxShadow: '0 8px 24px -4px oklch(52% 0.14 162 / 0.35)'}}>
+            <span
+              className="flex items-center justify-center w-12 h-12 rounded-2xl shadow-lg"
+              style={{
+                background: 'var(--ds-brand-600)',
+                boxShadow: '0 8px 24px -4px oklch(52% 0.14 162 / 0.35)',
+              }}
+            >
               <HiChatBubbleLeftRight className="w-6 h-6 text-white" />
             </span>
             <div>
@@ -280,7 +292,13 @@ const SingleContentClient = ({ post, commentCount, inContentAd }: SingleContentC
       >
         <div className="relative overflow-hidden bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.4)] rounded-2xl border border-neutral-200/50 dark:border-neutral-700/50 p-2 flex items-center justify-center gap-1.5">
           {/* Gradient Accent */}
-          <div className="absolute inset-x-0 top-0 h-0.5" style={{background: 'linear-gradient(to left, var(--ds-brand-700), var(--ds-brand-500), var(--ds-brand-100))'}} />
+          <div
+            className="absolute inset-x-0 top-0 h-0.5"
+            style={{
+              background:
+                'linear-gradient(to left, var(--ds-brand-700), var(--ds-brand-500), var(--ds-brand-100))',
+            }}
+          />
 
           <ShareDropdown url={getFullUrl()} title={post.title} side="top" align="center">
             <button
@@ -313,7 +331,14 @@ const SingleContentClient = ({ post, commentCount, inContentAd }: SingleContentC
                   : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
               }
             `}
-            style={isShowScrollToTop ? {background: 'var(--ds-brand-600)', boxShadow: '0 4px 16px -4px oklch(52% 0.14 162 / 0.4)'} : undefined}
+            style={
+              isShowScrollToTop
+                ? {
+                    background: 'var(--ds-brand-600)',
+                    boxShadow: '0 4px 16px -4px oklch(52% 0.14 162 / 0.4)',
+                  }
+                : undefined
+            }
             onClick={() => isShowScrollToTop && window.scrollTo({ top: 0, behavior: 'smooth' })}
             aria-label="Scroll to top"
           >

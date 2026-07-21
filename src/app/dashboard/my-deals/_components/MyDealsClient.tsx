@@ -8,13 +8,7 @@
  */
 
 import type { DealRow } from '@/actions/currency-deals';
-import {
-  ArrowLeftRight,
-  CheckCircle2,
-  Clock,
-  PackageSearch,
-  XCircle,
-} from 'lucide-react';
+import { ArrowLeftRight, CheckCircle2, Clock, PackageSearch, XCircle } from 'lucide-react';
 import s from './MyDealsClient.module.css';
 
 // ─── وضعیت‌ها ────────────────────────────────────────────────────────────────
@@ -76,9 +70,7 @@ export default function MyDealsClient({ initialDeals }: Props) {
         <div className={s.empty}>
           <PackageSearch size={40} strokeWidth={1.2} className={s.emptyIcon} aria-hidden />
           <h2 className={s.emptyTitle}>هنوز معامله‌ای ثبت نشده</h2>
-          <p className={s.emptyDesc}>
-            با مراجعه به صفحه نرخ‌ها، اولین معامله ارزی خود را ثبت کنید.
-          </p>
+          <p className={s.emptyDesc}>با مراجعه به صفحه نرخ‌ها، اولین معامله ارزی خود را ثبت کنید.</p>
           <a href="/money-transfer" className={s.emptyBtn}>
             مشاهده نرخ‌ها و صرافی‌ها
           </a>
@@ -126,7 +118,9 @@ export default function MyDealsClient({ initialDeals }: Props) {
               {/* جزئیات معامله */}
               <div className={s.cardBody}>
                 <div className={s.amounts}>
-                  <span className={s.fromAmount}>{formatAmount(deal.fromAmount, deal.fromCurrency)}</span>
+                  <span className={s.fromAmount}>
+                    {formatAmount(deal.fromAmount, deal.fromCurrency)}
+                  </span>
                   <ArrowLeftRight size={14} className={s.arrowIcon} aria-hidden />
                   <span className={s.toAmount}>{formatAmount(deal.toAmount, deal.toCurrency)}</span>
                 </div>
@@ -137,7 +131,9 @@ export default function MyDealsClient({ initialDeals }: Props) {
                       {deal.exchangeCity ? ` — ${deal.exchangeCity}` : ''}
                     </span>
                   ) : null}
-                  <span className={s.metaItem}>کانال: {CHANNEL_FA[deal.channel] ?? deal.channel}</span>
+                  <span className={s.metaItem}>
+                    کانال: {CHANNEL_FA[deal.channel] ?? deal.channel}
+                  </span>
                   <span className={s.metaItem}>تاریخ: {formatDate(deal.createdAt)}</span>
                   {deal.completedAt ? (
                     <span className={s.metaItem}>تکمیل: {formatDate(deal.completedAt)}</span>

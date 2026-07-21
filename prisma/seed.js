@@ -28,31 +28,139 @@ const p = new PrismaClient();
 /* ─── helpers ─────────────────────────────────────────────────── */
 function slugify(s) {
   const map = {
-    '۰':'0','۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9',
-    'ا':'a','ب':'b','پ':'p','ت':'t','ث':'s','ج':'j','چ':'ch','ح':'h','خ':'kh','د':'d','ذ':'z','ر':'r','ز':'z','ژ':'zh','س':'s','ش':'sh','ص':'s','ض':'z','ط':'t','ظ':'z','ع':'a','غ':'gh','ف':'f','ق':'gh','ک':'k','گ':'g','ل':'l','م':'m','ن':'n','و':'o','ه':'h','ی':'i','ئ':'i','ء':'','آ':'a','أ':'a','إ':'e','ة':'h','‌':'-'
+    '۰': '0',
+    '۱': '1',
+    '۲': '2',
+    '۳': '3',
+    '۴': '4',
+    '۵': '5',
+    '۶': '6',
+    '۷': '7',
+    '۸': '8',
+    '۹': '9',
+    ا: 'a',
+    ب: 'b',
+    پ: 'p',
+    ت: 't',
+    ث: 's',
+    ج: 'j',
+    چ: 'ch',
+    ح: 'h',
+    خ: 'kh',
+    د: 'd',
+    ذ: 'z',
+    ر: 'r',
+    ز: 'z',
+    ژ: 'zh',
+    س: 's',
+    ش: 'sh',
+    ص: 's',
+    ض: 'z',
+    ط: 't',
+    ظ: 'z',
+    ع: 'a',
+    غ: 'gh',
+    ف: 'f',
+    ق: 'gh',
+    ک: 'k',
+    گ: 'g',
+    ل: 'l',
+    م: 'm',
+    ن: 'n',
+    و: 'o',
+    ه: 'h',
+    ی: 'i',
+    ئ: 'i',
+    ء: '',
+    آ: 'a',
+    أ: 'a',
+    إ: 'e',
+    ة: 'h',
+    '‌': '-',
   };
-  return s.toLowerCase().split('').map((c) => (map[c] !== undefined ? map[c] : c)).join('').replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 80);
+  return s
+    .toLowerCase()
+    .split('')
+    .map((c) => (map[c] !== undefined ? map[c] : c))
+    .join('')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 80);
 }
 
 function tipDoc(blocks) {
   return JSON.stringify({
     type: 'doc',
     content: blocks.map((b) => {
-      if (b.t === 'h2') return { type: 'heading', attrs: { textAlign: null, level: 2, id: b.id }, content: [{ type: 'text', text: b.x }] };
-      if (b.t === 'h3') return { type: 'heading', attrs: { textAlign: null, level: 3, id: b.id }, content: [{ type: 'text', text: b.x }] };
-      if (b.t === 'p')  return { type: 'paragraph', attrs: { textAlign: null, dataEmpty: null }, content: [{ type: 'text', text: b.x }] };
-      if (b.t === 'quote') return { type: 'blockquote', content: [{ type: 'paragraph', attrs: { textAlign: null, dataEmpty: null }, content: [{ type: 'text', text: b.x }] }] };
-      if (b.t === 'li') return { type: 'bulletList', content: b.items.map((t) => ({ type: 'listItem', content: [{ type: 'paragraph', attrs: { textAlign: null, dataEmpty: null }, content: [{ type: 'text', text: t }] }] })) };
-      return { type: 'paragraph', attrs: { textAlign: null, dataEmpty: null }, content: [{ type: 'text', text: '' }] };
+      if (b.t === 'h2')
+        return {
+          type: 'heading',
+          attrs: { textAlign: null, level: 2, id: b.id },
+          content: [{ type: 'text', text: b.x }],
+        };
+      if (b.t === 'h3')
+        return {
+          type: 'heading',
+          attrs: { textAlign: null, level: 3, id: b.id },
+          content: [{ type: 'text', text: b.x }],
+        };
+      if (b.t === 'p')
+        return {
+          type: 'paragraph',
+          attrs: { textAlign: null, dataEmpty: null },
+          content: [{ type: 'text', text: b.x }],
+        };
+      if (b.t === 'quote')
+        return {
+          type: 'blockquote',
+          content: [
+            {
+              type: 'paragraph',
+              attrs: { textAlign: null, dataEmpty: null },
+              content: [{ type: 'text', text: b.x }],
+            },
+          ],
+        };
+      if (b.t === 'li')
+        return {
+          type: 'bulletList',
+          content: b.items.map((t) => ({
+            type: 'listItem',
+            content: [
+              {
+                type: 'paragraph',
+                attrs: { textAlign: null, dataEmpty: null },
+                content: [{ type: 'text', text: t }],
+              },
+            ],
+          })),
+        };
+      return {
+        type: 'paragraph',
+        attrs: { textAlign: null, dataEmpty: null },
+        content: [{ type: 'text', text: '' }],
+      };
     }),
   });
 }
 
-function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
-function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-function randIP() { return `${rand(1,255)}.${rand(0,255)}.${rand(0,255)}.${rand(0,255)}`; }
-function daysAgo(n) { return new Date(Date.now() - n * 24 * 60 * 60 * 1000); }
-function hoursAgo(n) { return new Date(Date.now() - n * 60 * 60 * 1000); }
+function rand(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+function randIP() {
+  return `${rand(1, 255)}.${rand(0, 255)}.${rand(0, 255)}.${rand(0, 255)}`;
+}
+function daysAgo(n) {
+  return new Date(Date.now() - n * 24 * 60 * 60 * 1000);
+}
+function hoursAgo(n) {
+  return new Date(Date.now() - n * 60 * 60 * 1000);
+}
 
 /* ─── seed credential helpers ────────────────────────────────── */
 let seededOwner = null; // { email, password, source } فقط در صورت ایجاد جدید پر می‌شود
@@ -105,10 +213,38 @@ async function seedUsers() {
   const ownerPasswordHash = await bcrypt.hash(ownerPassword, 10);
 
   const usersData = [
-    { id: 'cm5qdrd3e0001m4zli12b2rd5', name: 'author',         email: 'author@gmail.com',       role: 'AUTHOR', status: 'Active', image: 'https://i.pravatar.cc/150?img=12' },
-    { id: 'cm5qnptpb0001v8tnms9kwp6j', name: 'biotak',         email: 'bioootak@gmail.com',     role: 'ADMIN',  status: 'Active', image: 'https://i.pravatar.cc/150?img=33' },
-    { id: 'cm5kqiap00001ckmow11600x8', name: 'مالک',           email: ownerEmail,               role: 'OWNER',  status: 'Active', image: 'https://i.pravatar.cc/150?img=68' },
-    { id: 'cmqcm407d0002vjpsihhfla61', name: 'تیم تحریریه',  email: 'author@blogmarket.local', role: 'AUTHOR', status: 'Active', image: 'https://i.pravatar.cc/150?img=5'  },
+    {
+      id: 'cm5qdrd3e0001m4zli12b2rd5',
+      name: 'author',
+      email: 'author@gmail.com',
+      role: 'AUTHOR',
+      status: 'Active',
+      image: 'https://i.pravatar.cc/150?img=12',
+    },
+    {
+      id: 'cm5qnptpb0001v8tnms9kwp6j',
+      name: 'biotak',
+      email: 'bioootak@gmail.com',
+      role: 'ADMIN',
+      status: 'Active',
+      image: 'https://i.pravatar.cc/150?img=33',
+    },
+    {
+      id: 'cm5kqiap00001ckmow11600x8',
+      name: 'مالک',
+      email: ownerEmail,
+      role: 'OWNER',
+      status: 'Active',
+      image: 'https://i.pravatar.cc/150?img=68',
+    },
+    {
+      id: 'cmqcm407d0002vjpsihhfla61',
+      name: 'تیم تحریریه',
+      email: 'author@blogmarket.local',
+      role: 'AUTHOR',
+      status: 'Active',
+      image: 'https://i.pravatar.cc/150?img=5',
+    },
   ];
 
   const created = [];
@@ -123,7 +259,9 @@ async function seedUsers() {
     }
     const isOwner = u.role === 'OWNER';
     const password = isOwner ? ownerPasswordHash : samplePassword;
-    const user = await p.user.create({ data: { ...u, password, emailVerified: daysAgo(rand(30, 300)) } });
+    const user = await p.user.create({
+      data: { ...u, password, emailVerified: daysAgo(rand(30, 300)) },
+    });
     created.push(user);
 
     if (isOwner) {
@@ -137,24 +275,35 @@ async function seedUsers() {
 
   // کاربران عادی برای تست
   const normalUsers = [
-    { name: 'علی محمدی',     email: 'ali.m@test.ir',    role: 'USER' },
-    { name: 'مریم احمدی',    email: 'maryam@test.ir',   role: 'USER' },
-    { name: 'حسین رضایی',    email: 'hossein@test.ir',  role: 'USER' },
-    { name: 'زهرا کریمی',    email: 'zahra@test.ir',    role: 'USER' },
-    { name: 'محمد قاسمی',    email: 'mohammad@test.ir', role: 'USER' },
-    { name: 'فاطمه نوری',    email: 'fateme@test.ir',   role: 'USER' },
-    { name: 'رضا صادقی',     email: 'reza@test.ir',     role: 'USER' },
-    { name: 'نگار حسینی',    email: 'negar@test.ir',    role: 'USER' },
+    { name: 'علی محمدی', email: 'ali.m@test.ir', role: 'USER' },
+    { name: 'مریم احمدی', email: 'maryam@test.ir', role: 'USER' },
+    { name: 'حسین رضایی', email: 'hossein@test.ir', role: 'USER' },
+    { name: 'زهرا کریمی', email: 'zahra@test.ir', role: 'USER' },
+    { name: 'محمد قاسمی', email: 'mohammad@test.ir', role: 'USER' },
+    { name: 'فاطمه نوری', email: 'fateme@test.ir', role: 'USER' },
+    { name: 'رضا صادقی', email: 'reza@test.ir', role: 'USER' },
+    { name: 'نگار حسینی', email: 'negar@test.ir', role: 'USER' },
   ];
   for (const u of normalUsers) {
     const exists = await p.user.findUnique({ where: { email: u.email } });
-    if (exists) { created.push(exists); continue; }
+    if (exists) {
+      created.push(exists);
+      continue;
+    }
     const user = await p.user.create({
-      data: { ...u, password: samplePassword, status: 'Active', image: `https://i.pravatar.cc/150?img=${rand(1, 70)}`, emailVerified: daysAgo(rand(1, 200)) },
+      data: {
+        ...u,
+        password: samplePassword,
+        status: 'Active',
+        image: `https://i.pravatar.cc/150?img=${rand(1, 70)}`,
+        emailVerified: daysAgo(rand(1, 200)),
+      },
     });
     created.push(user);
   }
-  console.log(`   ✅ ${created.length} کاربر (${created.filter((x) => x.role !== 'USER').length} تیم + ${created.filter((x) => x.role === 'USER').length} عادی)`);
+  console.log(
+    `   ✅ ${created.length} کاربر (${created.filter((x) => x.role !== 'USER').length} تیم + ${created.filter((x) => x.role === 'USER').length} عادی)`,
+  );
   return created;
 }
 
@@ -167,7 +316,13 @@ async function seedProfiles(users) {
     'روزنامه‌نگار اقتصادی، پوشش خبری بازار سرمایه',
   ];
   const jobs = ['تحلیلگر ارشد', 'معامله‌گر', 'کارشناس اقتصادی', 'روزنامه‌نگار', 'مشاور سرمایه‌گذاری'];
-  const companies = ['بازار مالی', 'صرافی آنلاین', 'کارگزاری بورس', 'بانک پاسارگاد', 'استارتاپ فینتک'];
+  const companies = [
+    'بازار مالی',
+    'صرافی آنلاین',
+    'کارگزاری بورس',
+    'بانک پاسارگاد',
+    'استارتاپ فینتک',
+  ];
 
   let count = 0;
   for (const user of users.slice(0, 6)) {
@@ -217,8 +372,12 @@ async function seedCategories() {
     const exists = await p.category.findFirst({ where: { name: c.name } });
     if (exists) continue;
     const slug = slugify(c.name);
-    let uniqueSlug = slug, counter = 1;
-    while (await p.category.findUnique({ where: { slug: uniqueSlug } })) { uniqueSlug = `${slug}-${counter}`; counter++; }
+    let uniqueSlug = slug,
+      counter = 1;
+    while (await p.category.findUnique({ where: { slug: uniqueSlug } })) {
+      uniqueSlug = `${slug}-${counter}`;
+      counter++;
+    }
     await p.category.create({ data: { name: c.name, slug: uniqueSlug } });
     added++;
   }
@@ -243,20 +402,29 @@ async function seedTags() {
 /* ─── 6) Posts (۵۰ پست متنوع) ──────────────────────────────── */
 async function seedPosts() {
   const AUTHOR_ID = 'cm5qdrd3e0001m4zli12b2rd5';
-  let added = 0, skipped = 0;
+  let added = 0,
+    skipped = 0;
   for (let i = 0; i < POSTS_DATA.length; i++) {
     const post = POSTS_DATA[i];
     const exists = await p.post.findFirst({ where: { title: post.title } });
-    if (exists) { skipped++; continue; }
+    if (exists) {
+      skipped++;
+      continue;
+    }
     const baseSlug = slugify(post.title);
-    let uniqueSlug = baseSlug, counter = 1;
-    while (await p.post.findUnique({ where: { slug: uniqueSlug } })) { uniqueSlug = `${baseSlug}-${counter}`; counter++; }
+    let uniqueSlug = baseSlug,
+      counter = 1;
+    while (await p.post.findUnique({ where: { slug: uniqueSlug } })) {
+      uniqueSlug = `${baseSlug}-${counter}`;
+      counter++;
+    }
 
     const cats = await p.category.findMany({ where: { slug: { in: post.cats } } });
     const tags = await p.tag.findMany({ where: { slug: { in: post.tags.map(slugify) } } });
 
     const wordCount = post.blocks.reduce((acc, b) => {
-      if (b.t === 'p' || b.t === 'h2' || b.t === 'h3' || b.t === 'quote') return acc + (b.x ? b.x.split(/\s+/).length : 0);
+      if (b.t === 'p' || b.t === 'h2' || b.t === 'h3' || b.t === 'quote')
+        return acc + (b.x ? b.x.split(/\s+/).length : 0);
       if (b.t === 'li') return acc + b.items.reduce((a, t) => a + t.split(/\s+/).length, 0);
       return acc;
     }, 0);
@@ -289,9 +457,15 @@ async function seedPosts() {
 /* ─── 7) Comments (با reply تو در تو) ────────────────────────── */
 async function seedComments(users, posts) {
   const existingCount = await p.comment.count();
-  if (existingCount >= 200) { console.log('   ⏭️  Comments قبلاً ایجاد شده (' + existingCount + ' عدد)'); return; }
+  if (existingCount >= 200) {
+    console.log('   ⏭️  Comments قبلاً ایجاد شده (' + existingCount + ' عدد)');
+    return;
+  }
   const normalUsers = users.filter((u) => u.role === 'USER');
-  if (normalUsers.length === 0) { console.log('   ⚠️  کاربر عادی برای دیدگاه یافت نشد'); return; }
+  if (normalUsers.length === 0) {
+    console.log('   ⚠️  کاربر عادی برای دیدگاه یافت نشد');
+    return;
+  }
   const sampleComments = [
     'مقاله بسیار مفیدی بود، ممنون از تیم تحریریه.',
     'آیا منبع آماری که استفاده کردید رو هم معرفی می‌کنید؟',
@@ -353,7 +527,10 @@ async function seedComments(users, posts) {
 /* ─── 8) Likes (پست و دیدگاه) ───────────────────────────────── */
 async function seedLikes(users, posts) {
   const existingCount = await p.like.count();
-  if (existingCount >= 100) { console.log('   ⏭️  Likes قبلاً ایجاد شده (' + existingCount + ' عدد)'); return; }
+  if (existingCount >= 100) {
+    console.log('   ⏭️  Likes قبلاً ایجاد شده (' + existingCount + ' عدد)');
+    return;
+  }
   const normalUsers = users.filter((u) => u.role === 'USER');
   let added = 0;
   // Like روی پست‌ها
@@ -362,7 +539,9 @@ async function seedLikes(users, posts) {
     for (const user of likers) {
       const exists = await p.like.findFirst({ where: { userId: user.id, postId: post.id } });
       if (exists) continue;
-      await p.like.create({ data: { userId: user.id, postId: post.id, createdAt: daysAgo(rand(0, 60)) } });
+      await p.like.create({
+        data: { userId: user.id, postId: post.id, createdAt: daysAgo(rand(0, 60)) },
+      });
       added++;
     }
   }
@@ -373,7 +552,9 @@ async function seedLikes(users, posts) {
     const liker = pick(normalUsers);
     const exists = await p.like.findFirst({ where: { userId: liker.id, commentId: c.id } });
     if (exists) continue;
-    await p.like.create({ data: { userId: liker.id, commentId: c.id, createdAt: daysAgo(rand(0, 30)) } });
+    await p.like.create({
+      data: { userId: liker.id, commentId: c.id, createdAt: daysAgo(rand(0, 30)) },
+    });
     added++;
   }
   console.log(`   ✅ ${added} لایک ایجاد شد`);
@@ -382,7 +563,10 @@ async function seedLikes(users, posts) {
 /* ─── 9) Views (بازدید از پست‌ها) ───────────────────────────── */
 async function seedViews(posts) {
   const existingCount = await p.view.count();
-  if (existingCount >= 500) { console.log('   ⏭️  Views قبلاً ایجاد شده (' + existingCount + ' عدد)'); return; }
+  if (existingCount >= 500) {
+    console.log('   ⏭️  Views قبلاً ایجاد شده (' + existingCount + ' عدد)');
+    return;
+  }
   const userAgents = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
     'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15',
@@ -411,7 +595,10 @@ async function seedViews(posts) {
 /* ─── 10) SavedPosts (نشان‌شده‌ها) ──────────────────────────── */
 async function seedSavedPosts(users, posts) {
   const existingCount = await p.savedPost.count();
-  if (existingCount >= 30) { console.log('   ⏭️  SavedPosts قبلاً ایجاد شده (' + existingCount + ' عدد)'); return; }
+  if (existingCount >= 30) {
+    console.log('   ⏭️  SavedPosts قبلاً ایجاد شده (' + existingCount + ' عدد)');
+    return;
+  }
   const normalUsers = users.filter((u) => u.role === 'USER');
   let added = 0;
   for (const user of normalUsers) {
@@ -422,7 +609,9 @@ async function seedSavedPosts(users, posts) {
         where: { userId_postId: { userId: user.id, postId: post.id } },
       });
       if (exists) continue;
-      await p.savedPost.create({ data: { userId: user.id, postId: post.id, createdAt: daysAgo(rand(0, 30)) } });
+      await p.savedPost.create({
+        data: { userId: user.id, postId: post.id, createdAt: daysAgo(rand(0, 30)) },
+      });
       added++;
     }
   }
@@ -432,7 +621,10 @@ async function seedSavedPosts(users, posts) {
 /* ─── 11) Notifications ─────────────────────────────────────── */
 async function seedNotifications(users) {
   const existingCount = await p.notification.count();
-  if (existingCount >= 30) { console.log('   ⏭️  Notifications قبلاً ایجاد شده (' + existingCount + ' عدد)'); return; }
+  if (existingCount >= 30) {
+    console.log('   ⏭️  Notifications قبلاً ایجاد شده (' + existingCount + ' عدد)');
+    return;
+  }
   const normalUsers = users.filter((u) => u.role === 'USER');
   const samples = [
     'پاسخ به دیدگاه شما توسط {user} ارسال شد.',
@@ -451,7 +643,9 @@ async function seedNotifications(users) {
       await p.notification.create({
         data: {
           userId: user.id,
-          message: tpl.replace('{user}', pick(users).name || 'کاربر').replace('{cat}', pick(['طلا', 'بیت‌کوین', 'بورس'])),
+          message: tpl
+            .replace('{user}', pick(users).name || 'کاربر')
+            .replace('{cat}', pick(['طلا', 'بیت‌کوین', 'بورس'])),
           createdAt: daysAgo(rand(0, 30)),
         },
       });
@@ -464,8 +658,19 @@ async function seedNotifications(users) {
 /* ─── 12) ActivityLog + Activity ───────────────────────────── */
 async function seedActivityLogs(users) {
   const existingCount = await p.activityLog.count();
-  if (existingCount >= 100) { console.log('   ⏭️  ActivityLogs قبلاً ایجاد شده (' + existingCount + ' عدد)'); return; }
-  const actions = ['LOGIN', 'POST_VIEW', 'POST_LIKE', 'COMMENT_ADD', 'PROFILE_UPDATE', 'POST_CREATE', 'PASSWORD_CHANGE'];
+  if (existingCount >= 100) {
+    console.log('   ⏭️  ActivityLogs قبلاً ایجاد شده (' + existingCount + ' عدد)');
+    return;
+  }
+  const actions = [
+    'LOGIN',
+    'POST_VIEW',
+    'POST_LIKE',
+    'COMMENT_ADD',
+    'PROFILE_UPDATE',
+    'POST_CREATE',
+    'PASSWORD_CHANGE',
+  ];
   let added = 0;
   for (const user of users) {
     const count = rand(5, 15);
@@ -497,13 +702,24 @@ async function seedActivityLogs(users) {
 /* ─── 13) Newsletters ──────────────────────────────────────── */
 async function seedNewsletters() {
   const existingCount = await p.newsletter.count();
-  if (existingCount >= 5) { console.log('   ⏭️  Newsletters قبلاً ایجاد شده (' + existingCount + ' عدد)'); return; }
-  const emails = ['investor1@gmail.com', 'trader2@yahoo.com', 'crypto.fan@outlook.com', 'gold.lover@gmail.com', 'stock.pro@protonmail.com'];
+  if (existingCount >= 5) {
+    console.log('   ⏭️  Newsletters قبلاً ایجاد شده (' + existingCount + ' عدد)');
+    return;
+  }
+  const emails = [
+    'investor1@gmail.com',
+    'trader2@yahoo.com',
+    'crypto.fan@outlook.com',
+    'gold.lover@gmail.com',
+    'stock.pro@protonmail.com',
+  ];
   let added = 0;
   for (const email of emails) {
     const exists = await p.newsletter.findUnique({ where: { email } });
     if (exists) continue;
-    await p.newsletter.create({ data: { email, isActive: true, createdAt: daysAgo(rand(30, 200)) } });
+    await p.newsletter.create({
+      data: { email, isActive: true, createdAt: daysAgo(rand(30, 200)) },
+    });
     added++;
   }
   console.log(`   ✅ ${added} عضو خبرنامه`);
@@ -512,12 +728,54 @@ async function seedNewsletters() {
 /* ─── 14) SocialLinks ──────────────────────────────────────── */
 async function seedSocialLinks() {
   const links = [
-    { name: 'Telegram', url: 'https://t.me/blogmarket', icon: 'FaTelegram', color: '#0088cc', type: 'SOCIAL', order: 1 },
-    { name: 'Instagram', url: 'https://instagram.com/blogmarket', icon: 'FaInstagram', color: '#E4405F', type: 'SOCIAL', order: 2 },
-    { name: 'Twitter', url: 'https://twitter.com/blogmarket', icon: 'FaTwitter', color: '#1DA1F2', type: 'SOCIAL', order: 3 },
-    { name: 'WhatsApp', url: 'https://wa.me/989120000000', icon: 'FaWhatsapp', color: '#25D366', type: 'SUPPORT', order: 1 },
-    { name: 'YouTube', url: 'https://youtube.com/@blogmarket', icon: 'FaYoutube', color: '#FF0000', type: 'SOCIAL', order: 4 },
-    { name: 'LinkedIn', url: 'https://linkedin.com/company/blogmarket', icon: 'FaLinkedin', color: '#0A66C2', type: 'SOCIAL', order: 5 },
+    {
+      name: 'Telegram',
+      url: 'https://t.me/blogmarket',
+      icon: 'FaTelegram',
+      color: '#0088cc',
+      type: 'SOCIAL',
+      order: 1,
+    },
+    {
+      name: 'Instagram',
+      url: 'https://instagram.com/blogmarket',
+      icon: 'FaInstagram',
+      color: '#E4405F',
+      type: 'SOCIAL',
+      order: 2,
+    },
+    {
+      name: 'Twitter',
+      url: 'https://twitter.com/blogmarket',
+      icon: 'FaTwitter',
+      color: '#1DA1F2',
+      type: 'SOCIAL',
+      order: 3,
+    },
+    {
+      name: 'WhatsApp',
+      url: 'https://wa.me/989120000000',
+      icon: 'FaWhatsapp',
+      color: '#25D366',
+      type: 'SUPPORT',
+      order: 1,
+    },
+    {
+      name: 'YouTube',
+      url: 'https://youtube.com/@blogmarket',
+      icon: 'FaYoutube',
+      color: '#FF0000',
+      type: 'SOCIAL',
+      order: 4,
+    },
+    {
+      name: 'LinkedIn',
+      url: 'https://linkedin.com/company/blogmarket',
+      icon: 'FaLinkedin',
+      color: '#0A66C2',
+      type: 'SOCIAL',
+      order: 5,
+    },
   ];
   let added = 0;
   for (const l of links) {
@@ -609,16 +867,19 @@ async function seedAdvertisements() {
  * نرخ‌ها (spreadPercent, flatFeeToman) از وب‌سایت‌های رسمی همان بازار.
  * ─────────────────────────────────────────────────────────────── */
 async function seedExchangesAndProviders() {
-  const { cuid2 } = await import('@paralleldrive/cuid2').catch(() => null) || {};
+  const { cuid2 } = (await import('@paralleldrive/cuid2').catch(() => null)) || {};
   // اگر cuid2 در دسترس نبود از crypto استفاده می‌کنیم
-  const newId = cuid2
-    ? cuid2.createId
-    : () => require('crypto').randomBytes(12).toString('hex');
+  const newId = cuid2 ? cuid2.createId : () => require('crypto').randomBytes(12).toString('hex');
 
   // صرافی‌هایی که باید در جدول مقایسه نشان داده شوند
   const SHOW_IN_COMPARISON_SLUGS = new Set([
-    'nobitex', 'exir', 'bitpin', 'bit24',
-    'sara-herat', 'abantether', 'wallex',
+    'nobitex',
+    'exir',
+    'bitpin',
+    'bit24',
+    'sara-herat',
+    'abantether',
+    'wallex',
   ]);
 
   const EXCHANGES = [
@@ -989,7 +1250,10 @@ async function seedExchangesAndProviders() {
     },
   ];
 
-  let exchAdded = 0, exchUpdated = 0, provAdded = 0, provUpdated = 0;
+  let exchAdded = 0,
+    exchUpdated = 0,
+    provAdded = 0,
+    provUpdated = 0;
 
   for (const ex of EXCHANGES) {
     // ── upsert Exchange ──────────────────────────────────────────────────────
@@ -1098,7 +1362,14 @@ async function seedTransferProviders() {
   }
 
   // ── ۲. Provider های فیک قدیمی را غیرفعال کن ───────────────────────────
-  const OLD_FAKES = ['tgju', 'sarafi-online', 'remitly-class', 'wise', 'melli-bank', 'exchange-office'];
+  const OLD_FAKES = [
+    'tgju',
+    'sarafi-online',
+    'remitly-class',
+    'wise',
+    'melli-bank',
+    'exchange-office',
+  ];
   await p.transferProvider.updateMany({
     where: { slug: { in: OLD_FAKES } },
     data: { active: false },
@@ -1115,31 +1386,272 @@ async function seedTransferProviders() {
  */
 async function seedExchangeRates() {
   const SYMBOL_REGISTRY = [
-    { symbol: 'AFGHANI_USD',        displayNameFa: 'دلار هرات',       group: 'afghan',     unit: 'toman', divisor: 10, decimals: 0, priority: 2,  buy: 68200, sell: 68700 },
-    { symbol: 'AFGHANI_AFN',        displayNameFa: 'افغانی',          group: 'afghan',     unit: 'toman', divisor: 10, decimals: 0, priority: 3,  buy: 9650,  sell: 9800 },
-    { symbol: 'IRAN_USD',           displayNameFa: 'دلار تهران',      tgjuKey: 'price_dollar_rl', group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 1,  buy: 68300, sell: 68700 },
-    { symbol: 'IRAN_EUR',           displayNameFa: 'یورو',            tgjuKey: 'price_eur',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 7,  buy: 73900, sell: 74300 },
-    { symbol: 'IRAN_GBP',           displayNameFa: 'پوند انگلیس',     tgjuKey: 'price_gbp',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 9,  buy: 86800, sell: 87300 },
-    { symbol: 'IRAN_AED',           displayNameFa: 'درهم امارات',     tgjuKey: 'price_aed',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 8,  buy: 18580, sell: 18680 },
-    { symbol: 'IRAN_TRY',           displayNameFa: 'لیر ترکیه',       tgjuKey: 'price_try',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 11, buy: 2080,  sell: 2110 },
-    { symbol: 'IRAN_CHF',           displayNameFa: 'فرانک سوئیس',     tgjuKey: 'price_chf',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 17, buy: 76100, sell: 76600 },
-    { symbol: 'IRAN_CAD',           displayNameFa: 'دلار کانادا',     tgjuKey: 'price_cad',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 18, buy: 49850, sell: 50250 },
-    { symbol: 'IRAN_AUD',           displayNameFa: 'دلار استرالیا',   tgjuKey: 'price_aud',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 19, buy: 44500, sell: 44900 },
-    { symbol: 'IRAN_CNY',           displayNameFa: 'یوان چین',        tgjuKey: 'price_cny',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 12, buy: 9420,  sell: 9490 },
-    { symbol: 'IRAN_JPY',           displayNameFa: 'ین ژاپن',         tgjuKey: 'price_jpy',       group: 'minor',      unit: 'toman', divisor: 10, decimals: 0, priority: 20, buy: 45200, sell: 45500 },
-    { symbol: 'IRAN_RUB',           displayNameFa: 'روبل روسیه',      tgjuKey: 'price_rub',       group: 'minor',      unit: 'toman', divisor: 10, decimals: 0, priority: 21, buy: 7600,  sell: 7680 },
-    { symbol: 'IRAN_INR',           displayNameFa: 'روپیه هند',       tgjuKey: 'price_inr',       group: 'minor',      unit: 'toman', divisor: 10, decimals: 0, priority: 22, buy: 815,   sell: 825 },
-    { symbol: 'IRAN_COIN_EMAMI',    displayNameFa: 'سکه امامی',       tgjuKey: 'retail_sekee',   group: 'iran-coin',  unit: 'toman', divisor: 10, decimals: 0, priority: 4,  buy: 43100000, sell: 43600000 },
-    { symbol: 'IRAN_COIN_BAHAR',    displayNameFa: 'سکه بهار آزادی', tgjuKey: 'retail_sekeb',   group: 'iran-coin',  unit: 'toman', divisor: 10, decimals: 0, priority: 10, buy: 38100000, sell: 38600000 },
-    { symbol: 'IRAN_COIN_NIM',      displayNameFa: 'نیم سکه',         tgjuKey: 'retail_nim',     group: 'iran-coin',  unit: 'toman', divisor: 10, decimals: 0, priority: 13, buy: 22300000, sell: 22600000 },
-    { symbol: 'IRAN_COIN_ROB',      displayNameFa: 'ربع سکه',         tgjuKey: 'retail_rob',     group: 'iran-coin',  unit: 'toman', divisor: 10, decimals: 0, priority: 14, buy: 12650000, sell: 12850000 },
-    { symbol: 'IRAN_COIN_GERAMI',   displayNameFa: 'سکه گرمی',        tgjuKey: 'retail_gerami',  group: 'iran-coin',  unit: 'toman', divisor: 10, decimals: 0, priority: 15, buy: 6700000,  sell: 6850000 },
-    { symbol: 'IRAN_GOLD_18K',      displayNameFa: 'طلای ۱۸ عیار',    tgjuKey: 'geram18',        group: 'iran-gold',  unit: 'toman', divisor: 10, decimals: 0, priority: 5,  buy: 4220000,  sell: 4265000 },
-    { symbol: 'IRAN_GOLD_MESGHAL',  displayNameFa: 'مثقال طلا',       tgjuKey: 'mesghal',        group: 'iran-gold',  unit: 'toman', divisor: 10, decimals: 0, priority: 16, buy: 18350000, sell: 18550000 },
-    { symbol: 'GLOBAL_OUNCE_GOLD',  displayNameFa: 'انس طلا',         tgjuKey: 'ons',            group: 'global',     unit: 'usd',   divisor: 1,  decimals: 2, priority: 6,  buy: 2342.5, sell: 2347.0 },
+    {
+      symbol: 'AFGHANI_USD',
+      displayNameFa: 'دلار هرات',
+      group: 'afghan',
+      unit: 'toman',
+      divisor: 10,
+      decimals: 0,
+      priority: 2,
+      buy: 68200,
+      sell: 68700,
+    },
+    {
+      symbol: 'AFGHANI_AFN',
+      displayNameFa: 'افغانی',
+      group: 'afghan',
+      unit: 'toman',
+      divisor: 10,
+      decimals: 0,
+      priority: 3,
+      buy: 9650,
+      sell: 9800,
+    },
+    {
+      symbol: 'IRAN_USD',
+      displayNameFa: 'دلار تهران',
+      tgjuKey: 'price_dollar_rl',
+      group: 'iran-forex',
+      unit: 'toman',
+      divisor: 10,
+      decimals: 0,
+      priority: 1,
+      buy: 68300,
+      sell: 68700,
+    },
+    {
+      symbol: 'IRAN_EUR',
+      displayNameFa: 'یورو',
+      tgjuKey: 'price_eur',
+      group: 'iran-forex',
+      unit: 'toman',
+      divisor: 10,
+      decimals: 0,
+      priority: 7,
+      buy: 73900,
+      sell: 74300,
+    },
+    {
+      symbol: 'IRAN_GBP',
+      displayNameFa: 'پوند انگلیس',
+      tgjuKey: 'price_gbp',
+      group: 'iran-forex',
+      unit: 'toman',
+      divisor: 10,
+      decimals: 0,
+      priority: 9,
+      buy: 86800,
+      sell: 87300,
+    },
+    {
+      symbol: 'IRAN_AED',
+      displayNameFa: 'درهم امارات',
+      tgjuKey: 'price_aed',
+      group: 'iran-forex',
+      unit: 'toman',
+      divisor: 10,
+      decimals: 0,
+      priority: 8,
+      buy: 18580,
+      sell: 18680,
+    },
+    {
+      symbol: 'IRAN_TRY',
+      displayNameFa: 'لیر ترکیه',
+      tgjuKey: 'price_try',
+      group: 'iran-forex',
+      unit: 'toman',
+      divisor: 10,
+      decimals: 0,
+      priority: 11,
+      buy: 2080,
+      sell: 2110,
+    },
+    {
+      symbol: 'IRAN_CHF',
+      displayNameFa: 'فرانک سوئیس',
+      tgjuKey: 'price_chf',
+      group: 'iran-forex',
+      unit: 'toman',
+      divisor: 10,
+      decimals: 0,
+      priority: 17,
+      buy: 76100,
+      sell: 76600,
+    },
+    {
+      symbol: 'IRAN_CAD',
+      displayNameFa: 'دلار کانادا',
+      tgjuKey: 'price_cad',
+      group: 'iran-forex',
+      unit: 'toman',
+      divisor: 10,
+      decimals: 0,
+      priority: 18,
+      buy: 49850,
+      sell: 50250,
+    },
+    {
+      symbol: 'IRAN_AUD',
+      displayNameFa: 'دلار استرالیا',
+      tgjuKey: 'price_aud',
+      group: 'iran-forex',
+      unit: 'toman',
+      divisor: 10,
+      decimals: 0,
+      priority: 19,
+      buy: 44500,
+      sell: 44900,
+    },
+    {
+      symbol: 'IRAN_CNY',
+      displayNameFa: 'یوان چین',
+      tgjuKey: 'price_cny',
+      group: 'iran-forex',
+      unit: 'toman',
+      divisor: 10,
+      decimals: 0,
+      priority: 12,
+      buy: 9420,
+      sell: 9490,
+    },
+    {
+      symbol: 'IRAN_JPY',
+      displayNameFa: 'ین ژاپن',
+      tgjuKey: 'price_jpy',
+      group: 'minor',
+      unit: 'toman',
+      divisor: 10,
+      decimals: 0,
+      priority: 20,
+      buy: 45200,
+      sell: 45500,
+    },
+    {
+      symbol: 'IRAN_RUB',
+      displayNameFa: 'روبل روسیه',
+      tgjuKey: 'price_rub',
+      group: 'minor',
+      unit: 'toman',
+      divisor: 10,
+      decimals: 0,
+      priority: 21,
+      buy: 7600,
+      sell: 7680,
+    },
+    {
+      symbol: 'IRAN_INR',
+      displayNameFa: 'روپیه هند',
+      tgjuKey: 'price_inr',
+      group: 'minor',
+      unit: 'toman',
+      divisor: 10,
+      decimals: 0,
+      priority: 22,
+      buy: 815,
+      sell: 825,
+    },
+    {
+      symbol: 'IRAN_COIN_EMAMI',
+      displayNameFa: 'سکه امامی',
+      tgjuKey: 'retail_sekee',
+      group: 'iran-coin',
+      unit: 'toman',
+      divisor: 10,
+      decimals: 0,
+      priority: 4,
+      buy: 43100000,
+      sell: 43600000,
+    },
+    {
+      symbol: 'IRAN_COIN_BAHAR',
+      displayNameFa: 'سکه بهار آزادی',
+      tgjuKey: 'retail_sekeb',
+      group: 'iran-coin',
+      unit: 'toman',
+      divisor: 10,
+      decimals: 0,
+      priority: 10,
+      buy: 38100000,
+      sell: 38600000,
+    },
+    {
+      symbol: 'IRAN_COIN_NIM',
+      displayNameFa: 'نیم سکه',
+      tgjuKey: 'retail_nim',
+      group: 'iran-coin',
+      unit: 'toman',
+      divisor: 10,
+      decimals: 0,
+      priority: 13,
+      buy: 22300000,
+      sell: 22600000,
+    },
+    {
+      symbol: 'IRAN_COIN_ROB',
+      displayNameFa: 'ربع سکه',
+      tgjuKey: 'retail_rob',
+      group: 'iran-coin',
+      unit: 'toman',
+      divisor: 10,
+      decimals: 0,
+      priority: 14,
+      buy: 12650000,
+      sell: 12850000,
+    },
+    {
+      symbol: 'IRAN_COIN_GERAMI',
+      displayNameFa: 'سکه گرمی',
+      tgjuKey: 'retail_gerami',
+      group: 'iran-coin',
+      unit: 'toman',
+      divisor: 10,
+      decimals: 0,
+      priority: 15,
+      buy: 6700000,
+      sell: 6850000,
+    },
+    {
+      symbol: 'IRAN_GOLD_18K',
+      displayNameFa: 'طلای ۱۸ عیار',
+      tgjuKey: 'geram18',
+      group: 'iran-gold',
+      unit: 'toman',
+      divisor: 10,
+      decimals: 0,
+      priority: 5,
+      buy: 4220000,
+      sell: 4265000,
+    },
+    {
+      symbol: 'IRAN_GOLD_MESGHAL',
+      displayNameFa: 'مثقال طلا',
+      tgjuKey: 'mesghal',
+      group: 'iran-gold',
+      unit: 'toman',
+      divisor: 10,
+      decimals: 0,
+      priority: 16,
+      buy: 18350000,
+      sell: 18550000,
+    },
+    {
+      symbol: 'GLOBAL_OUNCE_GOLD',
+      displayNameFa: 'انس طلا',
+      tgjuKey: 'ons',
+      group: 'global',
+      unit: 'usd',
+      divisor: 1,
+      decimals: 2,
+      priority: 6,
+      buy: 2342.5,
+      sell: 2347.0,
+    },
   ];
 
-  let added = 0, updated = 0;
+  let added = 0,
+    updated = 0;
   for (const entry of SYMBOL_REGISTRY) {
     const buyRate = (entry.buy * entry.divisor).toFixed(entry.decimals);
     const sellRate = (entry.sell * entry.divisor).toFixed(entry.decimals);
@@ -1168,7 +1680,10 @@ async function seedExchangeRates() {
         data: {
           symbol: entry.symbol,
           name: entry.displayNameFa,
-          currency: entry.symbol.replace('IRAN_', '').replace('AFGHANI_', '').replace('GLOBAL_', ''),
+          currency: entry.symbol
+            .replace('IRAN_', '')
+            .replace('AFGHANI_', '')
+            .replace('GLOBAL_', ''),
           displayNameFa: entry.displayNameFa,
           group: entry.group,
           unit: entry.unit,
@@ -1192,32 +1707,41 @@ async function seedExchangeRates() {
 /* ─── 15) RateLists (نرخ ارز و طلا) ─────────────────────────── */
 async function seedRateLists() {
   const lists = [
-    { title: 'نرخ لحظه‌ای طلا و سکه', rates: [
-      { title: 'طلای ۱۸ عیار', value: '۴٬۲۵۰٬۰۰۰' },
-      { title: 'طلای ۲۴ عیار', value: '۵٬۶۶۰٬۰۰۰' },
-      { title: 'سکه طرح جدید', value: '۲۸٬۵۰۰٬۰۰۰' },
-      { title: 'نیم سکه', value: '۱۴٬۵۰۰٬۰۰۰' },
-      { title: 'ربع سکه', value: '۷٬۸۰۰٬۰۰۰' },
-      { title: 'سکه گرمی', value: '۴٬۲۰۰٬۰۰۰' },
-      { title: 'اونس جهانی', value: '۲٬۳۴۵$' },
-    ]},
-    { title: 'نرخ ارزهای اصلی', rates: [
-      { title: 'دلار آمریکا', value: '۶۸٬۵۰۰' },
-      { title: 'یورو', value: '۷۲٬۸۰۰' },
-      { title: 'پوند انگلیس', value: '۸۵٬۳۰۰' },
-      { title: 'درهم امارات', value: '۱۸٬۶۵۰' },
-      { title: 'لیر ترکیه', value: '۲٬۱۰۰' },
-      { title: 'بیت‌کوین', value: '۶۷٬۸۹۰$' },
-      { title: 'اتریوم', value: '۳٬۴۵۰$' },
-    ]},
-    { title: 'شاخص‌های بورس', rates: [
-      { title: 'شاخص کل', value: '۲٬۰۴۵٬۸۹۰' },
-      { title: 'شاخص هم‌وزن', value: '۷۲۰٬۴۵۰' },
-      { title: 'شاخص قیمت', value: '۱۶۵٬۲۳۰' },
-      { title: 'ارزش معاملات', value: '۸٬۲۰۰ میلیارد' },
-      { title: 'حجم معاملات', value: '۲٫۸ میلیارد' },
-      { title: 'P/E بازار', value: '۶٫۲' },
-    ]},
+    {
+      title: 'نرخ لحظه‌ای طلا و سکه',
+      rates: [
+        { title: 'طلای ۱۸ عیار', value: '۴٬۲۵۰٬۰۰۰' },
+        { title: 'طلای ۲۴ عیار', value: '۵٬۶۶۰٬۰۰۰' },
+        { title: 'سکه طرح جدید', value: '۲۸٬۵۰۰٬۰۰۰' },
+        { title: 'نیم سکه', value: '۱۴٬۵۰۰٬۰۰۰' },
+        { title: 'ربع سکه', value: '۷٬۸۰۰٬۰۰۰' },
+        { title: 'سکه گرمی', value: '۴٬۲۰۰٬۰۰۰' },
+        { title: 'اونس جهانی', value: '۲٬۳۴۵$' },
+      ],
+    },
+    {
+      title: 'نرخ ارزهای اصلی',
+      rates: [
+        { title: 'دلار آمریکا', value: '۶۸٬۵۰۰' },
+        { title: 'یورو', value: '۷۲٬۸۰۰' },
+        { title: 'پوند انگلیس', value: '۸۵٬۳۰۰' },
+        { title: 'درهم امارات', value: '۱۸٬۶۵۰' },
+        { title: 'لیر ترکیه', value: '۲٬۱۰۰' },
+        { title: 'بیت‌کوین', value: '۶۷٬۸۹۰$' },
+        { title: 'اتریوم', value: '۳٬۴۵۰$' },
+      ],
+    },
+    {
+      title: 'شاخص‌های بورس',
+      rates: [
+        { title: 'شاخص کل', value: '۲٬۰۴۵٬۸۹۰' },
+        { title: 'شاخص هم‌وزن', value: '۷۲۰٬۴۵۰' },
+        { title: 'شاخص قیمت', value: '۱۶۵٬۲۳۰' },
+        { title: 'ارزش معاملات', value: '۸٬۲۰۰ میلیارد' },
+        { title: 'حجم معاملات', value: '۲٫۸ میلیارد' },
+        { title: 'P/E بازار', value: '۶٫۲' },
+      ],
+    },
   ];
   let added = 0;
   for (const l of lists) {
@@ -1231,8 +1755,24 @@ async function seedRateLists() {
 
 /* ─── 16) ServiceRequests (درخواست خدمات) ───────────────────── */
 async function seedServiceRequests() {
-  const names = ['علی موسوی', 'مریم صادقی', 'حسین نوری', 'زهرا رضایی', 'محمد احمدی', 'فاطمه کریمی', 'رضا مرادی', 'نگار حسینی'];
-  const services = ['INTERNATIONAL_TRANSFER', 'ONLINE_PAYMENT', 'TUITION_PAYMENT', 'FREELANCE_INCOME', 'SOFTWARE_PURCHASE', 'OTHER'];
+  const names = [
+    'علی موسوی',
+    'مریم صادقی',
+    'حسین نوری',
+    'زهرا رضایی',
+    'محمد احمدی',
+    'فاطمه کریمی',
+    'رضا مرادی',
+    'نگار حسینی',
+  ];
+  const services = [
+    'INTERNATIONAL_TRANSFER',
+    'ONLINE_PAYMENT',
+    'TUITION_PAYMENT',
+    'FREELANCE_INCOME',
+    'SOFTWARE_PURCHASE',
+    'OTHER',
+  ];
   const statuses = ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'COMPLETED', 'COMPLETED', 'CANCELLED'];
   const currencies = ['USD', 'EUR', 'GBP', 'AED', 'CAD'];
   const urgencies = ['NORMAL', 'NORMAL', 'NORMAL', 'URGENT'];
@@ -1270,7 +1810,10 @@ async function seedServiceRequests() {
 /* ─── 17) SystemLogs ────────────────────────────────────────── */
 async function seedSystemLogs() {
   const existingCount = await p.systemLog.count();
-  if (existingCount >= 20) { console.log('   ⏭️  SystemLogs قبلاً ایجاد شده (' + existingCount + ' عدد)'); return; }
+  if (existingCount >= 20) {
+    console.log('   ⏭️  SystemLogs قبلاً ایجاد شده (' + existingCount + ' عدد)');
+    return;
+  }
   const levels = ['INFO', 'INFO', 'INFO', 'WARNING', 'ERROR'];
   const sources = ['api/auth', 'api/posts', 'api/payment', 'cron/rates', 'middleware', 'cache'];
   const messages = [
@@ -1376,7 +1919,10 @@ async function seedCurrencyPatterns() {
 /* ─── 20) Accounts (OAuth providers) ────────────────────────── */
 async function seedAccounts(users) {
   const existingCount = await p.account.count();
-  if (existingCount >= 1) { console.log('   ⏭️  Account قبلاً ایجاد شده (' + existingCount + ' عدد)'); return; }
+  if (existingCount >= 1) {
+    console.log('   ⏭️  Account قبلاً ایجاد شده (' + existingCount + ' عدد)');
+    return;
+  }
 
   const providers = [
     { provider: 'google', providerAccountId: 'google-123456' },
@@ -1404,7 +1950,10 @@ async function seedAccounts(users) {
 /* ─── 20b) Tasks (وظایف کاربران) ────────────────────────────── */
 async function seedTasks(users) {
   const existingCount = await p.task.count();
-  if (existingCount >= 10) { console.log('   ⏭️  Tasks قبلاً ایجاد شده (' + existingCount + ' عدد)'); return; }
+  if (existingCount >= 10) {
+    console.log('   ⏭️  Tasks قبلاً ایجاد شده (' + existingCount + ' عدد)');
+    return;
+  }
   const titles = [
     'بازبینی مقاله بیت‌کوین',
     'به‌روزرسانی نرخ‌های طلا',
@@ -1446,37 +1995,140 @@ const POSTS_DATA = require('./posts-data.js');
 /* ─── 24) ExchangeRateQuotes — نمونه برای DEV ─────────────────── */
 async function seedExchangeQuotes() {
   const now = new Date();
-  const existing = await p.exchangeRateQuote.count({ where: { status: 'ACTIVE', expiresAt: { gt: now } } });
-  if (existing >= 4) { console.log('   ⏭️  ExchangeRateQuotes قبلاً ایجاد شده (' + existing + ' عدد)'); return; }
+  const existing = await p.exchangeRateQuote.count({
+    where: { status: 'ACTIVE', expiresAt: { gt: now } },
+  });
+  if (existing >= 4) {
+    console.log('   ⏭️  ExchangeRateQuotes قبلاً ایجاد شده (' + existing + ' عدد)');
+    return;
+  }
 
   const QUOTES = [
-    { exchangeId: 'exch_nobitex_001', currencyCode: 'USD', currencyPair: 'USD/AFN', buyRate: 88.5, sellRate: 90.2, unit: 'afn', validMinutes: 120, minAmount: 100, maxAmount: 50000 },
-    { exchangeId: 'exch_nobitex_001', currencyCode: 'EUR', currencyPair: 'EUR/AFN', buyRate: 96.1, sellRate: 98.0, unit: 'afn', validMinutes: 120 },
-    { exchangeId: 'exch_exir_002',    currencyCode: 'USD', currencyPair: 'USD/AFN', buyRate: 89.0, sellRate: 90.8, unit: 'afn', validMinutes: 120, minAmount: 50 },
-    { exchangeId: 'exch_exir_002',    currencyCode: 'AED', currencyPair: 'AED/AFN', buyRate: 24.1, sellRate: 24.7, unit: 'afn', validMinutes: 120 },
-    { exchangeId: 'exch_bitpin_003',  currencyCode: 'USD', currencyPair: 'USD/AFN', buyRate: 87.8, sellRate: 89.5, unit: 'afn', validMinutes: 120, minAmount: 200 },
-    { exchangeId: 'exch_bit24_004',   currencyCode: 'EUR', currencyPair: 'EUR/AFN', buyRate: 95.5, sellRate: 97.3, unit: 'afn', validMinutes: 120 },
-    { exchangeId: 'exch_bit24_004',   currencyCode: 'GBP', currencyPair: 'GBP/AFN', buyRate: 113.2, sellRate: 115.8, unit: 'afn', validMinutes: 120 },
+    {
+      exchangeId: 'exch_nobitex_001',
+      currencyCode: 'USD',
+      currencyPair: 'USD/AFN',
+      buyRate: 88.5,
+      sellRate: 90.2,
+      unit: 'afn',
+      validMinutes: 120,
+      minAmount: 100,
+      maxAmount: 50000,
+    },
+    {
+      exchangeId: 'exch_nobitex_001',
+      currencyCode: 'EUR',
+      currencyPair: 'EUR/AFN',
+      buyRate: 96.1,
+      sellRate: 98.0,
+      unit: 'afn',
+      validMinutes: 120,
+    },
+    {
+      exchangeId: 'exch_exir_002',
+      currencyCode: 'USD',
+      currencyPair: 'USD/AFN',
+      buyRate: 89.0,
+      sellRate: 90.8,
+      unit: 'afn',
+      validMinutes: 120,
+      minAmount: 50,
+    },
+    {
+      exchangeId: 'exch_exir_002',
+      currencyCode: 'AED',
+      currencyPair: 'AED/AFN',
+      buyRate: 24.1,
+      sellRate: 24.7,
+      unit: 'afn',
+      validMinutes: 120,
+    },
+    {
+      exchangeId: 'exch_bitpin_003',
+      currencyCode: 'USD',
+      currencyPair: 'USD/AFN',
+      buyRate: 87.8,
+      sellRate: 89.5,
+      unit: 'afn',
+      validMinutes: 120,
+      minAmount: 200,
+    },
+    {
+      exchangeId: 'exch_bit24_004',
+      currencyCode: 'EUR',
+      currencyPair: 'EUR/AFN',
+      buyRate: 95.5,
+      sellRate: 97.3,
+      unit: 'afn',
+      validMinutes: 120,
+    },
+    {
+      exchangeId: 'exch_bit24_004',
+      currencyCode: 'GBP',
+      currencyPair: 'GBP/AFN',
+      buyRate: 113.2,
+      sellRate: 115.8,
+      unit: 'afn',
+      validMinutes: 120,
+    },
   ];
 
   let created = 0;
   for (const q of QUOTES) {
-    const exchange = await p.exchange.findUnique({ where: { id: q.exchangeId }, select: { id: true, name: true, status: true } });
+    const exchange = await p.exchange.findUnique({
+      where: { id: q.exchangeId },
+      select: { id: true, name: true, status: true },
+    });
     if (!exchange || exchange.status !== 'ACTIVE') continue;
 
     const alreadyActive = await p.exchangeRateQuote.findFirst({
-      where: { exchangeId: q.exchangeId, currencyCode: q.currencyCode, status: 'ACTIVE', expiresAt: { gt: now } },
+      where: {
+        exchangeId: q.exchangeId,
+        currencyCode: q.currencyCode,
+        status: 'ACTIVE',
+        expiresAt: { gt: now },
+      },
     });
-    if (alreadyActive) { console.log('   ⏭️  ' + exchange.name + ' / ' + q.currencyCode + ' already active'); continue; }
+    if (alreadyActive) {
+      console.log('   ⏭️  ' + exchange.name + ' / ' + q.currencyCode + ' already active');
+      continue;
+    }
 
-    await p.exchangeRateQuote.updateMany({ where: { exchangeId: q.exchangeId, currencyCode: q.currencyCode, status: 'PENDING' }, data: { status: 'ARCHIVED' } });
+    await p.exchangeRateQuote.updateMany({
+      where: { exchangeId: q.exchangeId, currencyCode: q.currencyCode, status: 'PENDING' },
+      data: { status: 'ARCHIVED' },
+    });
 
     const expiresAt = new Date(now.getTime() + q.validMinutes * 60 * 1000);
     await p.exchangeRateQuote.create({
-      data: { exchangeId: q.exchangeId, currencyCode: q.currencyCode, currencyPair: q.currencyPair, buyRate: q.buyRate, sellRate: q.sellRate, unit: q.unit, minAmount: q.minAmount || null, maxAmount: q.maxAmount || null, status: 'ACTIVE', validMinutes: q.validMinutes, expiresAt, note: 'seed — DEV' },
+      data: {
+        exchangeId: q.exchangeId,
+        currencyCode: q.currencyCode,
+        currencyPair: q.currencyPair,
+        buyRate: q.buyRate,
+        sellRate: q.sellRate,
+        unit: q.unit,
+        minAmount: q.minAmount || null,
+        maxAmount: q.maxAmount || null,
+        status: 'ACTIVE',
+        validMinutes: q.validMinutes,
+        expiresAt,
+        note: 'seed — DEV',
+      },
     });
-    await p.exchange.update({ where: { id: q.exchangeId }, data: { showInComparison: true } }).catch(() => null);
-    console.log('   ✅  ' + exchange.name + ' / ' + q.currencyCode + ': buy=' + q.buyRate + ' sell=' + q.sellRate);
+    await p.exchange
+      .update({ where: { id: q.exchangeId }, data: { showInComparison: true } })
+      .catch(() => null);
+    console.log(
+      '   ✅  ' +
+        exchange.name +
+        ' / ' +
+        q.currencyCode +
+        ': buy=' +
+        q.buyRate +
+        ' sell=' +
+        q.sellRate,
+    );
     created++;
   }
   console.log('   ✨ ' + created + ' quote ایجاد شد');
@@ -1598,9 +2250,11 @@ async function main() {
   };
   console.log('\n' + '═'.repeat(50));
   console.log('📊 آمار نهایی دیتابیس:');
-  Object.entries(stats).sort((a, b) => b[1] - a[1]).forEach(([k, v]) => {
-    console.log('   ' + k.padEnd(20) + ': ' + v.toString().padStart(6));
-  });
+  Object.entries(stats)
+    .sort((a, b) => b[1] - a[1])
+    .forEach(([k, v]) => {
+      console.log('   ' + k.padEnd(20) + ': ' + v.toString().padStart(6));
+    });
   console.log('═'.repeat(50));
 
   /* ─── نمایش مشخصات مالک (OWNER) در صورت ایجاد جدید ─── */
@@ -1621,5 +2275,10 @@ async function main() {
 }
 
 main()
-  .catch((e) => { console.error('\n❌ خطای کلی:', e); process.exit(1); })
-  .finally(async () => { await p.$disconnect(); });
+  .catch((e) => {
+    console.error('\n❌ خطای کلی:', e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await p.$disconnect();
+  });

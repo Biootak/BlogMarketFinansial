@@ -92,7 +92,10 @@ const SingleCommentForm: FC<SingleCommentFormProps> = ({
         {/* Decorative Gradient */}
         <div
           className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${isFocused ? 'opacity-100' : 'opacity-0'}`}
-          style={{background: 'linear-gradient(135deg, oklch(96% 0.03 165 / 0.5), transparent, oklch(92% 0.05 165 / 0.2))'}}
+          style={{
+            background:
+              'linear-gradient(135deg, oklch(96% 0.03 165 / 0.5), transparent, oklch(92% 0.05 165 / 0.2))',
+          }}
         />
 
         {/* Textarea */}
@@ -153,7 +156,10 @@ const SingleCommentForm: FC<SingleCommentFormProps> = ({
                 disabled:opacity-50 disabled:cursor-not-allowed
                 transition-all duration-300
               "
-              style={{background: 'var(--ds-brand-600)', boxShadow: '0 4px 16px -4px oklch(52% 0.14 162 / 0.35)'}}
+              style={{
+                background: 'var(--ds-brand-600)',
+                boxShadow: '0 4px 16px -4px oklch(52% 0.14 162 / 0.35)',
+              }}
             >
               {isLoading ? (
                 <>
@@ -173,7 +179,10 @@ const SingleCommentForm: FC<SingleCommentFormProps> = ({
         {/* Bottom Accent */}
         <div
           className={`h-0.5 transition-opacity duration-300 ${isFocused ? 'opacity-100' : 'opacity-0'}`}
-          style={{background: 'linear-gradient(to left, var(--ds-brand-700), var(--ds-brand-500), var(--ds-brand-100))'}}
+          style={{
+            background:
+              'linear-gradient(to left, var(--ds-brand-700), var(--ds-brand-500), var(--ds-brand-100))',
+          }}
         />
       </div>
     </form>

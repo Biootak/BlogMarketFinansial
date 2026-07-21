@@ -421,7 +421,9 @@ export default function HeroVisual({ heroRates, usdRate, usdToAfn }: HeroVisualP
                           </span>
                           <span className={s.buySellItem}>
                             <span className={s.buySellLabel}>فروش:</span>
-                            <span className={`${s.buySellVal} ${s.buySellSell}`}>{sellDisplay}</span>
+                            <span className={`${s.buySellVal} ${s.buySellSell}`}>
+                              {sellDisplay}
+                            </span>
                           </span>
                         </div>
                       )}

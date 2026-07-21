@@ -111,7 +111,13 @@ export default async function PageSingle({ params }: PageProps) {
     <div className="nc-PageSingle relative min-h-screen">
       {/* Subtle Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-b from-neutral-50 via-white to-neutral-50/50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950/50 pointer-events-none" />
-      <div className="absolute inset-0 pointer-events-none" style={{background: 'radial-gradient(ellipse 80% 50% at 50% -20%, oklch(58% 0.12 165 / 0.07), transparent)'}} />
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            'radial-gradient(ellipse 80% 50% at 50% -20%, oklch(58% 0.12 165 / 0.07), transparent)',
+        }}
+      />
 
       <div className="relative container pt-6 pb-12 lg:pt-8 lg:pb-16 @container/single-layout">
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
@@ -121,7 +127,13 @@ export default async function PageSingle({ params }: PageProps) {
             <div className="relative aspect-[16/9] md:aspect-[16/9] @lg/single-layout:aspect-[21/9] rounded-2xl @lg/single-layout:rounded-3xl overflow-hidden mb-8 group">
               {/* Gradient Overlays */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10" />
-              <div className="absolute inset-0 z-10 mix-blend-overlay" style={{background: 'linear-gradient(135deg, oklch(52% 0.14 162 / 0.1), transparent, oklch(58% 0.12 165 / 0.06))'}} />
+              <div
+                className="absolute inset-0 z-10 mix-blend-overlay"
+                style={{
+                  background:
+                    'linear-gradient(135deg, oklch(52% 0.14 162 / 0.1), transparent, oklch(58% 0.12 165 / 0.06))',
+                }}
+              />
 
               {/* Image */}
               <NcImage
@@ -159,7 +171,13 @@ export default async function PageSingle({ params }: PageProps) {
               {/* Sidebar Card Wrapper */}
               <div className="relative">
                 {/* Decorative Glow */}
-                <div className="absolute -inset-1 rounded-3xl blur-xl opacity-0 hover:opacity-100 transition-opacity duration-500" style={{background: 'linear-gradient(135deg, oklch(58% 0.12 165 / 0.2), oklch(58% 0.12 165 / 0.08), oklch(92% 0.05 165 / 0.15))'}} />
+                <div
+                  className="absolute -inset-1 rounded-3xl blur-xl opacity-0 hover:opacity-100 transition-opacity duration-500"
+                  style={{
+                    background:
+                      'linear-gradient(135deg, oklch(58% 0.12 165 / 0.2), oklch(58% 0.12 165 / 0.08), oklch(92% 0.05 165 / 0.15))',
+                  }}
+                />
 
                 <Sidebar
                   ads={

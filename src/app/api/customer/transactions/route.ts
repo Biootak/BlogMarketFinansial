@@ -1,0 +1,78 @@
+import { NextResponse } from 'next/server';
+import { auth } from '@/auth';
+import prisma from '@/lib/db';
+
+export const maxDuration = 20;
+
+const PRIVATE_HEADERS = { 'Cache-Control': 'no-store, private' };
+
+/**
+ * GET /api/customer/transactions?cursor=&limit=
+ * Authenticated. Returns the current user's LedgerEntry history (cursor-paginated).
+ */
+export async function GET(request: Request) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { success: false, error: { code: 'UNAUTHENTICATED', message: 'احراز هویت لازم است' } },
+      { status: 401, headers: PRIVATE_HEADERS },
+    );
+  }
+
+  const url = new URL(request.url);
+  const cursorParam = url.searchParams.get('cursor') ?? undefined;
+  const limitRaw = Number(url.searchParams.get('limit') ?? '20');
+  const limit = Math.min(50, Math.max(1, Number.isFinite(limitRaw) ? Math.floor(limitRaw) : 20));
+
+  const customer = await prisma.customer.findFirst({
+    where: { userId: session.user.id },
+    select: { id: true },
+  });
+
+  if (!customer) {
+    return NextResponse.json(
+      { success: true, data: { entries: [], nextCursor: null, hasMore: false } },
+      { headers: PRIVATE_HEADERS },
+    );
+  }
+
+  const entries = await prisma.ledgerEntry.findMany({
+    where: { customerId: customer.id },
+    orderBy: { createdAt: 'desc' },
+    take: limit + 1,
+    ...(cursorParam ? { cursor: { id: cursorParam }, skip: 1 } : {}),
+    select: {
+      id: true,
+      direction: true,
+      amount: true,
+      currency: true,
+      description: true,
+      createdAt: true,
+      runningBalance: true,
+    },
+  });
+
+  const hasMore = entries.length > limit;
+  const pageEntries = hasMore ? entries.slice(0, limit) : entries;
+  const nextCursor = hasMore ? (pageEntries[pageEntries.length - 1]?.id ?? null) : null;
+
+  return NextResponse.json(
+    {
+      success: true,
+      data: {
+        entries: pageEntries.map((e) => ({
+          id: e.id,
+          direction: e.direction,
+          amount: e.amount.toString(),
+          currency: e.currency,
+          description: e.description ?? null,
+          createdAt: e.createdAt.toISOString(),
+          runningBalance: e.runningBalance.toString(),
+        })),
+        nextCursor,
+        hasMore,
+      },
+    },
+    { headers: PRIVATE_HEADERS },
+  );
+}

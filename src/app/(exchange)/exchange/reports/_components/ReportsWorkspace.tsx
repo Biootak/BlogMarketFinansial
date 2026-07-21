@@ -8,8 +8,9 @@
  */
 
 import { type TransactionRow, getTransactions } from '@/actions/exchange-transactions';
+import { generateReportCsv, getExchangeReport, type ReportData } from '@/actions/reporting';
 import { type Column, DataTable, EmptyState } from '@/components/Dashboard/primitives';
-import { BarChart3, Calendar, Download, Filter, Search } from 'lucide-react';
+import { BarChart3, Calendar, Download, Filter, Search, TrendingUp } from 'lucide-react';
 import { type CSSProperties, useCallback, useEffect, useState, useTransition } from 'react';
 import s from './ReportsWorkspace.module.css';
 
@@ -100,9 +101,10 @@ interface Props {
   exchangeId: string;
   initialRows: TransactionRow[];
   initialTotal: number;
+  initialReport: ReportData | null;
 }
 
-export default function ReportsWorkspace({ exchangeId, initialRows, initialTotal }: Props) {
+export default function ReportsWorkspace({ exchangeId, initialRows, initialTotal, initialReport }: Props) {
   const [rows, setRows] = useState<TransactionRow[]>(initialRows);
   const [total, setTotal] = useState(initialTotal);
   const [kindFilter, setKindFilter] = useState('all');
@@ -110,6 +112,9 @@ export default function ReportsWorkspace({ exchangeId, initialRows, initialTotal
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [isPending, startTransition] = useTransition();
+  const [activeTab, setActiveTab] = useState<'transactions' | 'pnl'>('transactions');
+  const [report, setReport] = useState<ReportData | null>(initialReport);
+  const [reportPending, setReportPending] = useState(false);
 
   // summary stats
   const summary = calcSummary(rows);
@@ -144,26 +149,28 @@ export default function ReportsWorkspace({ exchangeId, initialRows, initialTotal
     );
   });
 
-  // export به CSV
-  const handleExport = () => {
-    const headers = ['تاریخ', 'مشتری', 'نوع', 'مبلغ', 'ارز', 'وضعیت', 'یادداشت'];
-    const csvRows = filtered.map((r) => [
-      new Intl.DateTimeFormat('fa-IR').format(new Date(r.createdAt as string)),
-      r.customer?.fullName ?? '',
-      KIND_FA[r.kind] ?? r.kind,
-      (Number(r.amount) / 100).toFixed(2),
-      r.currency,
-      STATUS_FA[r.status] ?? r.status,
-      r.note ?? '',
-    ]);
-    const csv = [headers, ...csvRows].map((row) => row.join(',')).join('\n');
-    const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
+  // export به CSV (از server action)
+  const handleExport = async () => {
+    const from = fromDate ? parseJalaliDate(fromDate) : undefined;
+    const to = toDate ? parseJalaliDate(toDate) : undefined;
+    const result = await generateReportCsv(exchangeId, { fromDate: from, toDate: to });
+    if (!result.success) return;
+    const blob = new Blob([result.data.csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `گزارش-تراکنش‌ها-${new Date().toLocaleDateString('fa-IR')}.csv`;
+    a.download = result.data.filename;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handleLoadPnl = async () => {
+    setReportPending(true);
+    const from = fromDate ? parseJalaliDate(fromDate) : undefined;
+    const to = toDate ? parseJalaliDate(toDate) : undefined;
+    const res = await getExchangeReport(exchangeId, { fromDate: from, toDate: to });
+    setReportPending(false);
+    if (res.success) setReport(res.data);
   };
 
   const columns: Column<TransactionRow>[] = [
@@ -219,7 +226,8 @@ export default function ReportsWorkspace({ exchangeId, initialRows, initialTotal
       render: (r) =>
         r.destAmount ? (
           <span className="tabular-nums" style={{ direction: 'ltr', display: 'inline-block' }}>
-            {new Intl.NumberFormat('fa-IR').format(Number(r.destAmount) / 100)} {r.destCurrency ?? ''}
+            {new Intl.NumberFormat('fa-IR').format(Number(r.destAmount) / 100)}{' '}
+            {r.destCurrency ?? ''}
           </span>
         ) : (
           <span style={{ color: 'var(--at-fg-subtle)' }}>—</span>
@@ -271,6 +279,111 @@ export default function ReportsWorkspace({ exchangeId, initialRows, initialTotal
 
   return (
     <div className={s.root}>
+
+      {/* Tabs */}
+      <div style={{
+        display: 'flex', gap: '4px', padding: '4px',
+        background: 'color-mix(in oklch, var(--at-fg) 6%, transparent)',
+        borderRadius: '10px', width: 'fit-content',
+      }}>
+        {(['transactions', 'pnl'] as const).map((tab) => (
+          <button
+            key={tab}
+            type="button"
+            onClick={() => {
+              setActiveTab(tab);
+              if (tab === 'pnl' && !report) handleLoadPnl();
+            }}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              height: '32px', paddingInline: '14px', fontSize: '13px', fontWeight: 600,
+              border: 'none', borderRadius: '7px', cursor: 'pointer',
+              background: activeTab === tab ? 'var(--at-surface)' : 'transparent',
+              color: activeTab === tab ? 'var(--at-fg)' : 'var(--at-fg-subtle)',
+              boxShadow: activeTab === tab ? '0 1px 3px color-mix(in oklch, var(--at-fg) 10%, transparent)' : 'none',
+              transition: 'all 0.15s',
+            }}
+            aria-pressed={activeTab === tab}
+          >
+            {tab === 'transactions' ? (
+              <><BarChart3 size={13} aria-hidden />تراکنش‌ها</>
+            ) : (
+              <><TrendingUp size={13} aria-hidden />P&L</>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* ── P&L Tab ────────────────────────────────────────── */}
+      {activeTab === 'pnl' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {reportPending && (
+            <p style={{ color: 'var(--at-fg-subtle)', fontSize: 'var(--ds-text-sm)' }}>در حال بارگذاری…</p>
+          )}
+          {report && (
+            <>
+              {/* Summary P&L */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '12px' }}>
+                {[
+                  { label: 'حجم کل', value: new Intl.NumberFormat('fa-IR', { notation: 'compact' }).format(report.totalVolume / 100) },
+                  { label: 'کارمزد', value: new Intl.NumberFormat('fa-IR', { notation: 'compact' }).format(report.totalFee / 100) },
+                  { label: 'معاملات', value: new Intl.NumberFormat('fa-IR').format(report.totalDeals) },
+                ].map((item) => (
+                  <div key={item.label} className={s.summaryCard}>
+                    <span className={s.summaryValue} style={{ fontVariantNumeric: 'tabular-nums' }}>{item.value}</span>
+                    <span className={s.summaryLabel}>{item.label}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* P&L by currency */}
+              <div className={s.tableWrap} role="table" aria-label="P&L بر حسب ارز">
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px',
+                  padding: '8px 16px', background: 'color-mix(in oklch, var(--at-fg) 4%, transparent)',
+                  borderBottom: '1px solid var(--at-line)', fontSize: '11px', fontWeight: 600, color: 'var(--at-fg-subtle)' }} role="row">
+                  <span>ارز</span><span>حجم</span><span>کارمزد</span><span>تعداد</span>
+                </div>
+                {report.pnlByCurrency.map((row) => (
+                  <div key={row.currency} role="row"
+                    style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px',
+                      padding: '10px 16px', fontSize: 'var(--ds-text-sm)', borderBottom: '1px solid color-mix(in oklch, var(--at-line) 50%, transparent)' }}>
+                    <span style={{ fontWeight: 700 }}>{row.currency}</span>
+                    <span style={{ fontVariantNumeric: 'tabular-nums' }}>{new Intl.NumberFormat('fa-IR', { notation: 'compact' }).format(row.totalVolume / 100)}</span>
+                    <span style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--ds-success, #22c55e)', fontWeight: 600 }}>{new Intl.NumberFormat('fa-IR', { notation: 'compact' }).format(row.totalFee / 100)}</span>
+                    <span style={{ fontVariantNumeric: 'tabular-nums' }}>{new Intl.NumberFormat('fa-IR').format(row.dealCount)}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Top customers */}
+              {report.topCustomers.length > 0 && (
+                <div>
+                  <h3 style={{ fontSize: 'var(--ds-text-sm)', fontWeight: 700, color: 'var(--at-fg)', margin: '0 0 8px 0' }}>
+                    بهترین مشتریان
+                  </h3>
+                  <div className={s.tableWrap} role="table" aria-label="بهترین مشتریان">
+                    {report.topCustomers.map((c, i) => (
+                      <div key={c.customerId} role="row"
+                        style={{ display: 'flex', alignItems: 'center', gap: '12px',
+                          padding: '8px 16px', fontSize: 'var(--ds-text-sm)', borderBottom: '1px solid color-mix(in oklch, var(--at-line) 50%, transparent)' }}>
+                        <span style={{ color: 'var(--at-fg-subtle)', fontVariantNumeric: 'tabular-nums', minWidth: '20px', fontSize: '11px' }}>{i + 1}</span>
+                        <span style={{ flex: 1 }}>{c.fullName}</span>
+                        <span style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--at-fg-subtle)' }}>
+                          {new Intl.NumberFormat('fa-IR').format(c.dealCount)} معامله
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* ── Transactions Tab ──────────────────────────────── */}
+      {activeTab === 'transactions' && <>
+
       {/* خلاصه آماری */}
       <div className={s.summaryGrid}>
         <div className={s.summaryCard}>
@@ -396,6 +509,7 @@ export default function ReportsWorkspace({ exchangeId, initialRows, initialTotal
           {new Intl.NumberFormat('fa-IR').format(total)} تراکنش
         </p>
       )}
+      </>}
     </div>
   );
 }

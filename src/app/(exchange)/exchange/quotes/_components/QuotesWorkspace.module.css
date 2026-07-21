@@ -30,7 +30,9 @@
   cursor: pointer;
   transition: opacity 0.15s;
 }
-.addBtn:hover { opacity: 0.88; }
+.addBtn:hover {
+  opacity: 0.88;
+}
 
 /* ── فرم ──────────────────────────────────────────────────── */
 .form {
@@ -63,7 +65,9 @@
   padding: 4px;
   border-radius: var(--ds-radius-sm);
 }
-.closeBtn:hover { color: var(--ds-text-1); }
+.closeBtn:hover {
+  color: var(--ds-text-1);
+}
 
 .formGrid {
   display: grid;
@@ -119,9 +123,16 @@
   font-size: var(--ds-text-sm);
 }
 
-.previewLabel { font-weight: 700; color: var(--ds-text-2); }
-.previewItem { color: var(--ds-text-1); }
-.previewSep { color: var(--ds-text-3); }
+.previewLabel {
+  font-weight: 700;
+  color: var(--ds-text-2);
+}
+.previewItem {
+  color: var(--ds-text-1);
+}
+.previewSep {
+  color: var(--ds-text-3);
+}
 
 /* ── خطا / موفقیت ────────────────────────────────────────── */
 .formError {
@@ -162,8 +173,13 @@
   cursor: pointer;
   transition: opacity 0.15s;
 }
-.submitBtn:disabled { opacity: 0.6; cursor: not-allowed; }
-.submitBtn:not(:disabled):hover { opacity: 0.88; }
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.submitBtn:not(:disabled):hover {
+  opacity: 0.88;
+}
 
 .cancelBtn {
   padding: var(--ds-space-2) var(--ds-space-4);
@@ -174,7 +190,9 @@
   color: var(--ds-text-2);
   cursor: pointer;
 }
-.cancelBtn:hover { border-color: var(--ds-text-2); }
+.cancelBtn:hover {
+  border-color: var(--ds-text-2);
+}
 
 /* ── جدول قیمت‌ها ─────────────────────────────────────────── */
 .empty {
@@ -218,18 +236,33 @@
   font-size: var(--ds-text-sm);
   transition: background 0.1s;
 }
-.tableRow:last-child { border-bottom: none; }
-.tableRow:hover { background: var(--ds-surface); }
-.tableRow[data-status='ACTIVE'] { background: color-mix(in srgb, var(--ds-success) 4%, transparent); }
-.tableRow[data-status='REJECTED'] { background: color-mix(in srgb, var(--ds-error) 4%, transparent); }
+.tableRow:last-child {
+  border-bottom: none;
+}
+.tableRow:hover {
+  background: var(--ds-surface);
+}
+.tableRow[data-status="ACTIVE"] {
+  background: color-mix(in srgb, var(--ds-success) 4%, transparent);
+}
+.tableRow[data-status="REJECTED"] {
+  background: color-mix(in srgb, var(--ds-error) 4%, transparent);
+}
 
 .cellCurrency {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
-.cellCurrency strong { font-size: var(--ds-text-base); color: var(--ds-text-1); }
-.cellCurrency small { font-size: 11px; color: var(--ds-text-3); direction: ltr; }
+.cellCurrency strong {
+  font-size: var(--ds-text-base);
+  color: var(--ds-text-1);
+}
+.cellCurrency small {
+  font-size: 11px;
+  color: var(--ds-text-3);
+  direction: ltr;
+}
 
 .cellNum {
   font-weight: 600;
@@ -253,11 +286,19 @@
   flex-shrink: 0;
 }
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
-.cellExpiry { font-size: 12px; color: var(--ds-text-3); }
+.cellExpiry {
+  font-size: 12px;
+  color: var(--ds-text-3);
+}
 
 .countdown {
   display: flex;

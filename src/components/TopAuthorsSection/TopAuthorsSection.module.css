@@ -16,8 +16,7 @@
     oklch(97.5% 0.006 240) 55%,
     oklch(96% 0.008 200 / 0.6) 100%
   );
-  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.65) inset,
-    0 24px 64px -32px oklch(45% 0.08 250 / 0.28);
+  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.65) inset, 0 24px 64px -32px oklch(45% 0.08 250 / 0.28);
   padding: var(--ds-space-5) var(--ds-space-5) var(--ds-space-6);
 }
 
@@ -30,8 +29,7 @@
     oklch(13% 0.01 200) 100%
   );
   border-color: oklch(28% 0.012 250 / 0.7);
-  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.04) inset,
-    0 28px 72px -32px oklch(0% 0 0 / 0.6);
+  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.04) inset, 0 28px 72px -32px oklch(0% 0 0 / 0.6);
 }
 
 @media (min-width: 640px) {
@@ -75,9 +73,15 @@
 }
 
 @keyframes auroraFloat {
-  0%   { transform: translate3d(0, 0, 0) scale(1); }
-  50%  { transform: translate3d(3%, -4%, 0) scale(1.07); }
-  100% { transform: translate3d(0, 0, 0) scale(1); }
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(3%, -4%, 0) scale(1.07);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
 }
 
 /* hairline dot-grid overlay */
@@ -86,8 +90,7 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background-image:
-    radial-gradient(circle, oklch(45% 0.02 250 / 0.08) 1px, transparent 1px);
+  background-image: radial-gradient(circle, oklch(45% 0.02 250 / 0.08) 1px, transparent 1px);
   background-size: 28px 28px;
   mask-image: radial-gradient(ellipse at 60% 0%, black 0%, transparent 65%);
   -webkit-mask-image: radial-gradient(ellipse at 60% 0%, black 0%, transparent 65%);
@@ -118,8 +121,7 @@
   color: inherit;
   animation: featureReveal 560ms var(--ds-ease-out-expo) both;
   animation-delay: 60ms;
-  transition: transform 360ms var(--ds-ease-out-quart),
-    box-shadow 360ms var(--ds-ease-out-quart),
+  transition: transform 360ms var(--ds-ease-out-quart), box-shadow 360ms var(--ds-ease-out-quart),
     border-color 280ms ease;
 }
 
@@ -150,8 +152,14 @@
 }
 
 @keyframes featureReveal {
-  from { opacity: 0; transform: translate3d(0, 14px, 0); }
-  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 /* CTA «مشاهده پروفایل» — روی hover از feature نمایش پیدا می‌کند */
@@ -164,8 +172,7 @@
   color: oklch(55% 0.15 250);
   opacity: 0;
   translate: 4px 0;
-  transition: opacity 280ms var(--ds-ease-out-quart),
-    translate 280ms var(--ds-ease-out-quart);
+  transition: opacity 280ms var(--ds-ease-out-quart), translate 280ms var(--ds-ease-out-quart);
 }
 
 :global(.dark) .featureCta {
@@ -234,7 +241,9 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-.rail::-webkit-scrollbar { display: none; }
+.rail::-webkit-scrollbar {
+  display: none;
+}
 
 /* روی موبایل: ردیف افقی scroll‌دار */
 @media (max-width: 639px) {
@@ -267,8 +276,7 @@
   text-decoration: none;
   color: inherit;
   position: relative;
-  transition: transform 360ms var(--ds-ease-out-quart),
-    box-shadow 360ms var(--ds-ease-out-quart),
+  transition: transform 360ms var(--ds-ease-out-quart), box-shadow 360ms var(--ds-ease-out-quart),
     border-color 280ms ease;
   animation: railCardIn 480ms var(--ds-ease-out-expo) both;
 }
@@ -309,17 +317,35 @@
 }
 
 @keyframes railCardIn {
-  from { opacity: 0; transform: translate3d(0, 10px, 0); }
-  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 /* stagger delay — 40ms gap */
-.railCard:nth-child(1) { animation-delay: 120ms; }
-.railCard:nth-child(2) { animation-delay: 160ms; }
-.railCard:nth-child(3) { animation-delay: 200ms; }
-.railCard:nth-child(4) { animation-delay: 240ms; }
-.railCard:nth-child(5) { animation-delay: 280ms; }
-.railCard:nth-child(6) { animation-delay: 320ms; }
+.railCard:nth-child(1) {
+  animation-delay: 120ms;
+}
+.railCard:nth-child(2) {
+  animation-delay: 160ms;
+}
+.railCard:nth-child(3) {
+  animation-delay: 200ms;
+}
+.railCard:nth-child(4) {
+  animation-delay: 240ms;
+}
+.railCard:nth-child(5) {
+  animation-delay: 280ms;
+}
+.railCard:nth-child(6) {
+  animation-delay: 320ms;
+}
 
 /* ── Rail card text elements ────────────────────────────────────────────── */
 .railCardName {

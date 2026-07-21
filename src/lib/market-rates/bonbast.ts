@@ -235,9 +235,7 @@ export function crossRateToToman(crossRate: number, irrPerEur: number): number {
  * Used by assembler when TGJU is unavailable for cross-rate derivation.
  * irrPerEur is derived from eur mid-rate × 10.
  */
-export function fetchBonbastRatesFromBuySell(
-  bs: BonbastBuySellRates,
-): BonbastRates {
+export function fetchBonbastRatesFromBuySell(bs: BonbastBuySellRates): BonbastRates {
   const crossRates: Record<string, number> = {};
 
   // Mid-rates in Toman per unit

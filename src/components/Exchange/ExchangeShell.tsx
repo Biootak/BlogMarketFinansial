@@ -18,6 +18,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Receipt,
   Settings,
   Tag,
   Users,
@@ -54,6 +55,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/exchange/rates', label: 'نرخ‌ها', icon: BarChart3 },
   { href: '/exchange/staff', label: 'کارمندان', icon: Building2, roles: ['OWNER', 'MANAGER'] },
   { href: '/exchange/reports', label: 'گزارش‌ها', icon: FileText },
+  { href: '/exchange/settlement', label: 'تسویه‌حساب', icon: Receipt, roles: ['OWNER', 'MANAGER'] },
   { href: '/exchange/settings', label: 'تنظیمات', icon: Settings, roles: ['OWNER', 'MANAGER'] },
 ];
 

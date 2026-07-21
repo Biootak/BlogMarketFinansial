@@ -126,7 +126,9 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
       <div className={s.header}>
         <div className={s.codeRow}>
           <span className={s.codeLabel}>کد پیگیری</span>
-          <span className={s.code} dir="ltr">{code}</span>
+          <span className={s.code} dir="ltr">
+            {code}
+          </span>
         </div>
         <div className={s.headerActions}>
           <button
@@ -162,7 +164,6 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
       {/* ── Result card ── */}
       {data && (
         <div className={s.card}>
-
           {/* Card header: status badge + service type */}
           <div className={s.cardHead}>
             {status && StatusIcon && (
@@ -179,7 +180,9 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
           {/* Amount row — prominent display */}
           <div className={s.amountRow}>
             <span className={s.amountLabel}>مبلغ</span>
-            <span className={s.amountValue} dir="ltr">{data.amount}</span>
+            <span className={s.amountValue} dir="ltr">
+              {data.amount}
+            </span>
             <span className={s.amountCurrency}>{data.currency}</span>
           </div>
 
@@ -220,7 +223,9 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
                   <Hash size={12} aria-hidden />
                   شناسه تراکنش
                 </dt>
-                <dd className={s.infoValue} dir="ltr">{data.externalTxId}</dd>
+                <dd className={s.infoValue} dir="ltr">
+                  {data.externalTxId}
+                </dd>
               </div>
             )}
           </dl>
@@ -277,7 +282,6 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
               <ArrowUpRight size={15} />
             </a>
           </div>
-
         </div>
       )}
     </div>

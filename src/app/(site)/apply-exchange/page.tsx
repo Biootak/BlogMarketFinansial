@@ -23,7 +23,16 @@ export default async function ApplyExchangePage() {
   }
 
   return (
-    <main dir="rtl" style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--ds-space-6)' }}>
+    <main
+      dir="rtl"
+      style={{
+        minHeight: '100dvh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 'var(--ds-space-6)',
+      }}
+    >
       <ApplyExchangeForm />
     </main>
   );

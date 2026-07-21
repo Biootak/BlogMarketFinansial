@@ -78,9 +78,6 @@ export async function GET(): Promise<NextResponse> {
       ads: ADS.map((a) => ({ title: a.title, imageUrl: a.imageUrl })),
     });
   } catch (error) {
-    return NextResponse.json(
-      { success: false, error: String(error) },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
   }
 }

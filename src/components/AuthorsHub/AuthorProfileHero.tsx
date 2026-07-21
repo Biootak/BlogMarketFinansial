@@ -1,5 +1,5 @@
-import AuthorAvatar from '@/components/AuthorsHub/primitives/AuthorAvatar';
 import styles from '@/components/AuthorsHub/AuthorProfileHero.module.css';
+import AuthorAvatar from '@/components/AuthorsHub/primitives/AuthorAvatar';
 import { cn, toPersianNumber } from '@/lib/utils';
 import { Briefcase, Building2 } from 'lucide-react';
 import Image from 'next/image';
@@ -66,21 +66,17 @@ const AuthorProfileHero: React.FC<AuthorProfileHeroProps> = ({
   const postCount = author._count?.posts ?? 0;
 
   const useNextImage = bgImage ? isLocalUploads(bgImage) : false;
-  const usePlainImg = bgImage ? (!useNextImage && !isLocalAsset(bgImage)) : false;
+  const usePlainImg = bgImage ? !useNextImage && !isLocalAsset(bgImage) : false;
 
   const stats = [
-    { label: 'مقالات',    value: postCount },
+    { label: 'مقالات', value: postCount },
     { label: 'کتگوری‌ها', value: categoryCount },
-    { label: 'کامنت‌ها',  value: commentCount },
-    { label: 'لایک‌ها',   value: likeCount },
+    { label: 'کامنت‌ها', value: commentCount },
+    { label: 'لایک‌ها', value: likeCount },
   ] as const;
 
   return (
-    <section
-      dir="rtl"
-      className={cn(styles.hero, className)}
-      aria-label={`پروفایل ${name}`}
-    >
+    <section dir="rtl" className={cn(styles.hero, className)} aria-label={`پروفایل ${name}`}>
       {/* ── Ambient Mesh Background ───────────────────────────── */}
       <div aria-hidden className={styles.meshBg} />
       <div aria-hidden className={styles.meshNoise} />
@@ -152,8 +148,8 @@ const AuthorProfileHero: React.FC<AuthorProfileHeroProps> = ({
               />
               <defs>
                 <linearGradient id="nameGrad" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%"   stopColor="oklch(65% 0.18 200)" />
-                  <stop offset="50%"  stopColor="oklch(62% 0.2 280)" />
+                  <stop offset="0%" stopColor="oklch(65% 0.18 200)" />
+                  <stop offset="50%" stopColor="oklch(62% 0.2 280)" />
                   <stop offset="100%" stopColor="oklch(72% 0.16 60)" />
                 </linearGradient>
               </defs>

@@ -1,19 +1,20 @@
 /**
- * /exchange/reports — گزارش تراکنش‌های صرافی
+ * /exchange/reports — گزارش مالی P&L صرافی (upgrade)
  *
- * Server Component: داده اولیه را می‌گیرد و به ReportsWorkspace پاس می‌دهد.
- * فیلترهای بیشتر (بازه تاریخ، نوع) در client انجام می‌شوند.
+ * دو تب: تراکنش‌ها (موجود) + P&L جدید
  */
 
-import { getTransactions } from '@/actions/exchange-transactions';
+import { getExchangeQuotes } from '@/actions/exchange-quotes';
 import { getExchangeForUser } from '@/actions/exchanges';
+import { getTransactions } from '@/actions/exchange-transactions';
+import { getExchangeReport } from '@/actions/reporting';
 import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import ReportsWorkspace from './_components/ReportsWorkspace';
 
-export const metadata: Metadata = { title: 'گزارشات صرافی' };
+export const metadata: Metadata = { title: 'گزارش‌ها | پنل صرافی' };
 
 export default async function ExchangeReportsPage() {
   const session = await auth();
@@ -24,17 +25,24 @@ export default async function ExchangeReportsPage() {
 
   const { exchange } = membership;
 
-  const { rows, total } = await getTransactions(exchange.id, { limit: 100 });
+  const [txnResult, reportResult] = await Promise.all([
+    getTransactions(exchange.id, { limit: 100 }),
+    getExchangeReport(exchange.id),
+  ]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
       <PageHeader
-        title="گزارشات"
-        description="مشاهده و دانلود گزارش تراکنش‌های صرافی"
-        breadcrumb={[{ label: 'پنل صرافی' }, { label: 'گزارشات' }]}
+        title="گزارش‌ها"
+        description="تحلیل مالی، حجم معاملات، سود/زیان و خروجی CSV"
+        breadcrumb={[{ label: 'پنل صرافی' }, { label: 'گزارش‌ها' }]}
       />
-
-      <ReportsWorkspace exchangeId={exchange.id} initialRows={rows} initialTotal={total} />
+      <ReportsWorkspace
+        exchangeId={exchange.id}
+        initialRows={txnResult.rows}
+        initialTotal={txnResult.total}
+        initialReport={reportResult.success ? reportResult.data : null}
+      />
     </div>
   );
 }

@@ -6,8 +6,9 @@
  */
 
 import type { QuoteRow } from '@/actions/exchange-quotes';
-import { submitQuote } from '@/actions/exchange-quotes';
-import { CheckCircle2, Clock, Loader2, Plus, RefreshCw, X, XCircle } from 'lucide-react';
+import { getAutoSuggestedRates, submitQuote } from '@/actions/exchange-quotes';
+import type { SuggestedRate } from '@/lib/pricing/auto-suggest';
+import { CheckCircle2, Clock, Loader2, Plus, RefreshCw, Sparkles, X, XCircle } from 'lucide-react';
 import { useCallback, useState, useTransition } from 'react';
 import s from './QuotesWorkspace.module.css';
 
@@ -23,12 +24,12 @@ const SUPPORTED_CURRENCIES = [
 ] as const;
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
-  PENDING:  { label: 'در انتظار تایید', color: 'var(--ds-warning)' },
-  ACTIVE:   { label: 'فعال — در سایت', color: 'var(--ds-success)' },
+  PENDING: { label: 'در انتظار تایید', color: 'var(--ds-warning)' },
+  ACTIVE: { label: 'فعال — در سایت', color: 'var(--ds-success)' },
   REJECTED: { label: 'رد شده', color: 'var(--ds-error)' },
-  EXPIRED:  { label: 'منقضی', color: 'var(--ds-text-3)' },
+  EXPIRED: { label: 'منقضی', color: 'var(--ds-text-3)' },
   ARCHIVED: { label: 'آرشیو', color: 'var(--ds-text-3)' },
-  LOCKED:   { label: 'در حال معامله', color: 'var(--ds-info, #3b82f6)' },
+  LOCKED: { label: 'در حال معامله', color: 'var(--ds-info, #3b82f6)' },
 };
 
 interface QuoteFormState {
@@ -64,15 +65,39 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [suggestion, setSuggestion] = useState<SuggestedRate | null>(null);
+  const [suggestPending, setSuggestPending] = useState(false);
+  const [suggestError, setSuggestError] = useState<string | null>(null);
 
-  const availableCurrencies = allowedCurrencies.length > 0
-    ? SUPPORTED_CURRENCIES.filter(c => allowedCurrencies.includes(c.code))
-    : SUPPORTED_CURRENCIES;
+  const availableCurrencies =
+    allowedCurrencies.length > 0
+      ? SUPPORTED_CURRENCIES.filter((c) => allowedCurrencies.includes(c.code))
+      : SUPPORTED_CURRENCIES;
 
   const handleCurrencyChange = useCallback((code: string) => {
-    const cur = SUPPORTED_CURRENCIES.find(c => c.code === code);
-    setForm(f => ({ ...f, currencyCode: code, unit: cur?.unit ?? 'afn' }));
+    const cur = SUPPORTED_CURRENCIES.find((c) => c.code === code);
+    setForm((f) => ({ ...f, currencyCode: code, unit: cur?.unit ?? 'afn' }));
+    setSuggestion(null);
+    setSuggestError(null);
   }, []);
+
+  const handleAutoSuggest = useCallback(async () => {
+    setSuggestPending(true);
+    setSuggestError(null);
+    const res = await getAutoSuggestedRates(exchangeId, form.currencyCode, 1.5);
+    setSuggestPending(false);
+    if (res.success) {
+      const s = res.data;
+      setSuggestion(s);
+      setForm((f) => ({
+        ...f,
+        buyRate: s.suggestedBuyRate.toString(),
+        sellRate: s.suggestedSellRate.toString(),
+      }));
+    } else {
+      setSuggestError(res.error.message);
+    }
+  }, [exchangeId, form.currencyCode]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -84,10 +109,16 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
       setError('قیمت خرید و فروش الزامی است');
       return;
     }
-    if (buy <= 0 || sell <= 0) { setError('قیمت‌ها باید مثبت باشند'); return; }
-    if (buy > sell) { setError('قیمت فروش باید بیشتر یا مساوی خرید باشد'); return; }
+    if (buy <= 0 || sell <= 0) {
+      setError('قیمت‌ها باید مثبت باشند');
+      return;
+    }
+    if (buy > sell) {
+      setError('قیمت فروش باید بیشتر یا مساوی خرید باشد');
+      return;
+    }
 
-    const cur = SUPPORTED_CURRENCIES.find(c => c.code === form.currencyCode);
+    const cur = SUPPORTED_CURRENCIES.find((c) => c.code === form.currencyCode);
 
     startTransition(async () => {
       const res = await submitQuote(exchangeId, {
@@ -102,10 +133,16 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
       });
 
       if (res.success) {
-        setQuotes(prev => [res.data, ...prev.filter(q => !(q.currencyCode === form.currencyCode && q.status === 'PENDING'))]);
+        setQuotes((prev) => [
+          res.data,
+          ...prev.filter((q) => !(q.currencyCode === form.currencyCode && q.status === 'PENDING')),
+        ]);
         setSaved(true);
         setForm(EMPTY_FORM);
-        setTimeout(() => { setSaved(false); setShowForm(false); }, 1800);
+        setTimeout(() => {
+          setSaved(false);
+          setShowForm(false);
+        }, 1800);
       } else {
         setError(res.error.message);
       }
@@ -127,13 +164,18 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
         <button
           type="button"
           className={s.addBtn}
-          onClick={() => { setShowForm(v => !v); setError(null); setSaved(false); }}
+          onClick={() => {
+            setShowForm((v) => !v);
+            setError(null);
+            setSaved(false);
+          }}
         >
           <Plus className="w-4 h-4" aria-hidden />
           ثبت قیمت جدید
         </button>
         <p className={s.hint}>
-          پس از تایید ادمین، قیمت‌ها به مدت <strong>{form.validMinutes || 60} دقیقه</strong> در سایت نمایش داده می‌شوند.
+          پس از تایید ادمین، قیمت‌ها به مدت <strong>{form.validMinutes || 60} دقیقه</strong> در سایت
+          نمایش داده می‌شوند.
         </p>
       </div>
 
@@ -142,35 +184,100 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
         <form onSubmit={handleSubmit} className={s.form} aria-label="فرم ثبت قیمت">
           <div className={s.formHeader}>
             <h3 className={s.formTitle}>ثبت قیمت جدید</h3>
-            <button type="button" onClick={() => setShowForm(false)} className={s.closeBtn} aria-label="بستن">
-              <X className="w-4 h-4" aria-hidden />
-            </button>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              {/* Auto-suggest button */}
+              <button
+                type="button"
+                onClick={handleAutoSuggest}
+                disabled={suggestPending}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '5px',
+                  fontSize: '12px', fontWeight: 600, padding: '4px 10px',
+                  background: 'color-mix(in oklch, var(--ds-primary) 10%, transparent)',
+                  color: 'var(--ds-primary)',
+                  border: '1px solid color-mix(in oklch, var(--ds-primary) 25%, transparent)',
+                  borderRadius: '6px', cursor: suggestPending ? 'not-allowed' : 'pointer',
+                  opacity: suggestPending ? 0.7 : 1,
+                  transition: 'opacity 0.15s',
+                }}
+                aria-label="پیشنهاد خودکار نرخ از بازار"
+              >
+                {suggestPending
+                  ? <Loader2 className="w-3 h-3" style={{ animation: 'spin 0.7s linear infinite' }} aria-hidden />
+                  : <Sparkles className="w-3 h-3" aria-hidden />}
+                پیشنهاد بازار
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className={s.closeBtn}
+                aria-label="بستن"
+              >
+                <X className="w-4 h-4" aria-hidden />
+              </button>
+            </div>
           </div>
+
+          {/* نمایش پیشنهاد بازار */}
+          {suggestion && (
+            <div
+              role="status"
+              style={{
+                padding: '8px 12px', fontSize: '12px', lineHeight: 1.6,
+                background: 'color-mix(in oklch, var(--ds-primary) 7%, transparent)',
+                border: '1px solid color-mix(in oklch, var(--ds-primary) 18%, transparent)',
+                borderRadius: '8px', color: 'var(--ds-text-2)',
+              }}
+            >
+              <span style={{ fontWeight: 600, color: 'var(--ds-primary)' }}>
+                <Sparkles className="w-3 h-3" style={{ display: 'inline', verticalAlign: 'middle', marginInlineEnd: '4px' }} aria-hidden />
+                پیشنهاد بازار ({suggestion.currencyCode}):
+              </span>{' '}
+              خرید <span dir="ltr" style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{suggestion.suggestedBuyRate.toLocaleString('fa-IR')}</span>
+              {' '}·{' '}
+              فروش <span dir="ltr" style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{suggestion.suggestedSellRate.toLocaleString('fa-IR')}</span>
+              {' '}·{' '}
+              منبع: <span style={{ color: 'var(--ds-text-3)' }}>{suggestion.source}</span>
+              {' '}·{' '}
+              <span style={{ color: suggestion.confidence === 'high' ? 'var(--ds-success, #22c55e)' : 'var(--ds-warning, #f59e0b)' }}>
+                {suggestion.confidence === 'high' ? 'داده تازه' : suggestion.confidence === 'medium' ? 'نسبتاً تازه' : 'قدیمی'}
+              </span>
+            </div>
+          )}
+          {suggestError && (
+            <p role="alert" style={{ color: 'var(--ds-error, #ef4444)', fontSize: '12px', margin: 0 }}>{suggestError}</p>
+          )}
 
           <div className={s.formGrid}>
             {/* ارز */}
             <div className={s.field}>
-              <label htmlFor="q-currency" className={s.label}>ارز</label>
+              <label htmlFor="q-currency" className={s.label}>
+                ارز
+              </label>
               <select
                 id="q-currency"
                 className={s.select}
                 value={form.currencyCode}
-                onChange={e => handleCurrencyChange(e.target.value)}
+                onChange={(e) => handleCurrencyChange(e.target.value)}
               >
-                {availableCurrencies.map(c => (
-                  <option key={c.code} value={c.code}>{c.name} ({c.code})</option>
+                {availableCurrencies.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.name} ({c.code})
+                  </option>
                 ))}
               </select>
             </div>
 
             {/* واحد */}
             <div className={s.field}>
-              <label htmlFor="q-unit" className={s.label}>واحد</label>
+              <label htmlFor="q-unit" className={s.label}>
+                واحد
+              </label>
               <select
                 id="q-unit"
                 className={s.select}
                 value={form.unit}
-                onChange={e => setForm(f => ({ ...f, unit: e.target.value }))}
+                onChange={(e) => setForm((f) => ({ ...f, unit: e.target.value }))}
               >
                 <option value="afn">افغانی (AFN)</option>
                 <option value="toman">تومان (IRR)</option>
@@ -189,7 +296,7 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
                 type="number"
                 className={s.input}
                 value={form.buyRate}
-                onChange={e => setForm(f => ({ ...f, buyRate: e.target.value }))}
+                onChange={(e) => setForm((f) => ({ ...f, buyRate: e.target.value }))}
                 min="0"
                 step="any"
                 dir="ltr"
@@ -209,7 +316,7 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
                 type="number"
                 className={s.input}
                 value={form.sellRate}
-                onChange={e => setForm(f => ({ ...f, sellRate: e.target.value }))}
+                onChange={(e) => setForm((f) => ({ ...f, sellRate: e.target.value }))}
                 min="0"
                 step="any"
                 dir="ltr"
@@ -228,7 +335,7 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
                 type="number"
                 className={s.input}
                 value={form.minAmount}
-                onChange={e => setForm(f => ({ ...f, minAmount: e.target.value }))}
+                onChange={(e) => setForm((f) => ({ ...f, minAmount: e.target.value }))}
                 min="0"
                 dir="ltr"
                 placeholder="۰"
@@ -245,7 +352,7 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
                 type="number"
                 className={s.input}
                 value={form.maxAmount}
-                onChange={e => setForm(f => ({ ...f, maxAmount: e.target.value }))}
+                onChange={(e) => setForm((f) => ({ ...f, maxAmount: e.target.value }))}
                 min="0"
                 dir="ltr"
                 placeholder="بدون محدودیت"
@@ -254,12 +361,14 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
 
             {/* مدت اعتبار */}
             <div className={s.field}>
-              <label htmlFor="q-valid" className={s.label}>مدت اعتبار (دقیقه)</label>
+              <label htmlFor="q-valid" className={s.label}>
+                مدت اعتبار (دقیقه)
+              </label>
               <select
                 id="q-valid"
                 className={s.select}
                 value={form.validMinutes}
-                onChange={e => setForm(f => ({ ...f, validMinutes: e.target.value }))}
+                onChange={(e) => setForm((f) => ({ ...f, validMinutes: e.target.value }))}
               >
                 <option value="30">۳۰ دقیقه</option>
                 <option value="60">۱ ساعت</option>
@@ -284,10 +393,15 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
                 فروش: <strong dir="ltr">{Number(form.sellRate).toLocaleString('fa-IR')}</strong>
               </span>
               <span className={s.previewItem}>
-                اسپرد: <strong dir="ltr">
+                اسپرد:{' '}
+                <strong dir="ltr">
                   {form.buyRate && form.sellRate
-                    ? (((Number(form.sellRate) - Number(form.buyRate)) / Number(form.buyRate)) * 100).toFixed(2)
-                    : '0'}٪
+                    ? (
+                        ((Number(form.sellRate) - Number(form.buyRate)) / Number(form.buyRate)) *
+                        100
+                      ).toFixed(2)
+                    : '0'}
+                  ٪
                 </strong>
               </span>
             </div>
@@ -305,11 +419,22 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
           )}
 
           <div className={s.formFooter}>
-            <button type="submit" className={s.submitBtn} disabled={isPending} aria-busy={isPending}>
-              {isPending ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden /> : <Plus className="w-4 h-4" aria-hidden />}
+            <button
+              type="submit"
+              className={s.submitBtn}
+              disabled={isPending}
+              aria-busy={isPending}
+            >
+              {isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" aria-hidden />
+              ) : (
+                <Plus className="w-4 h-4" aria-hidden />
+              )}
               {isPending ? 'در حال ثبت…' : 'ثبت قیمت'}
             </button>
-            <button type="button" onClick={() => setShowForm(false)} className={s.cancelBtn}>انصراف</button>
+            <button type="button" onClick={() => setShowForm(false)} className={s.cancelBtn}>
+              انصراف
+            </button>
           </div>
         </form>
       )}
@@ -330,7 +455,7 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
             <span role="columnheader">وضعیت</span>
             <span role="columnheader">انقضا</span>
           </div>
-          {quotes.map(q => {
+          {quotes.map((q) => {
             const st = STATUS_LABEL[q.status] ?? { label: q.status, color: 'inherit' };
             return (
               <div key={q.id} className={s.tableRow} role="row" data-status={q.status}>
@@ -345,11 +470,7 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
                   {Number(q.sellRate).toLocaleString('fa-IR')}
                 </span>
                 <span role="cell">{q.unit}</span>
-                <span
-                  className={s.statusBadge}
-                  role="cell"
-                  style={{ color: st.color }}
-                >
+                <span className={s.statusBadge} role="cell" style={{ color: st.color }}>
                   {q.status === 'ACTIVE' && <span className={s.liveDot} aria-hidden />}
                   {st.label}
                 </span>
@@ -359,10 +480,12 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
                       <Clock className="w-3 h-3" aria-hidden />
                       {minutesLeft(q.expiresAt)}
                     </span>
+                  ) : q.status === 'REJECTED' && q.note ? (
+                    <span className={s.rejectNote} title={q.note}>
+                      دلیل: {q.note.slice(0, 40)}
+                    </span>
                   ) : (
-                    q.status === 'REJECTED' && q.note ? (
-                      <span className={s.rejectNote} title={q.note}>دلیل: {q.note.slice(0, 40)}</span>
-                    ) : '—'
+                    '—'
                   )}
                 </span>
               </div>

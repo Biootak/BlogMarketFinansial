@@ -110,7 +110,13 @@ function revalidateQuoteCaches(): void {
 
 // ─── READ — کش‌شده (P1-2) ────────────────────────────────────────────────────
 
-/** همه quotes فعال برای نمایش در سایت — با safeCache 60 ثانیه (P1-2) */
+/**
+ * همه quotes فعال برای نمایش در سایت — با safeCache 60 ثانیه (P1-2)
+ *
+ * #13 note: TTL=60s waterfall — با SWR در safeCache کاهش یافته.
+ * بهتر از unstable_cache + revalidateTag است چون safeCache در-process cache
+ * را هم پاک می‌کند (safeRevalidateTag). در revalidateQuoteCaches هر دو صدا زده می‌شوند.
+ */
 export const getActiveQuotes = safeCache(
   async (currencyCode?: string): Promise<QuoteRow[]> => {
     const now = new Date();
@@ -176,7 +182,13 @@ export const getActiveCurrencies = safeCache(
   { key: 'active-currencies', ttl: 60, tags: ['exchange-quotes', 'exchange-rates'] },
 );
 
-/** همه quotes یک صرافی — برای داشبورد صراف (H5: access check اضافه شد) */
+/**
+ * همه quotes یک صرافی — برای داشبورد صراف (H5: access check اضافه شد)
+ *
+ * #14 note: این تابع عمداً بدون cache است — داده tenant-specific است
+ * و cache کردن آن ریسک data leak بین صرافی‌ها دارد. هر بار fresh load
+ * از DB می‌خورد. با revalidateTag('exchange-quotes') بعد از write پوشش داده می‌شود.
+ */
 export async function getExchangeQuotes(exchangeId: string): Promise<QuoteRow[]> {
   const access = await requireExchangeAccess(exchangeId);
   if (!access.ok) return [];
@@ -260,7 +272,8 @@ export async function submitQuote(
   }
 
   const access = await requireExchangeAccess(exchangeId, true);
-  if (!access.ok) return { success: false, error: { code: access.error.code, message: access.error.message } };
+  if (!access.ok)
+    return { success: false, error: { code: access.error.code, message: access.error.message } };
 
   const parsed = SubmitQuoteSchema.safeParse(raw);
   if (!parsed.success) {
@@ -320,7 +333,12 @@ export async function submitQuote(
     });
 
     await tx.quoteStatusLog.create({
-      data: { quoteId: created.id, toStatus: 'PENDING', actorId: access.userId, actorRole: 'SARAFI' },
+      data: {
+        quoteId: created.id,
+        toStatus: 'PENDING',
+        actorId: access.userId,
+        actorRole: 'SARAFI',
+      },
     });
 
     return created;
@@ -454,9 +472,13 @@ export async function expireQuotes(): Promise<{ expired: number }> {
   // C3: این تابع بدون auth — فقط از cron با secret صدا زده شود
   // auth در route handler انجام می‌شود، اینجا pure business logic است
   const now = new Date();
+  // #16 fix: ACTIVE و LOCKED هر دو باید expire شوند — LOCKED quotes بی‌نهایت می‌ماندند
   const expired = await prisma.exchangeRateQuote.findMany({
-    where: { status: 'ACTIVE', expiresAt: { lt: now } },
-    select: { id: true },
+    where: {
+      status: { in: ['ACTIVE', 'LOCKED'] },
+      expiresAt: { lt: now },
+    },
+    select: { id: true, status: true },
   });
 
   if (expired.length === 0) return { expired: 0 };
@@ -467,9 +489,9 @@ export async function expireQuotes(): Promise<{ expired: number }> {
     data: { status: 'EXPIRED' },
   });
   await prisma.quoteStatusLog.createMany({
-    data: ids.map((id) => ({
-      quoteId: id,
-      fromStatus: 'ACTIVE' as const,
+    data: expired.map((q) => ({
+      quoteId: q.id,
+      fromStatus: q.status as 'ACTIVE' | 'LOCKED',
       toStatus: 'EXPIRED' as const,
       actorRole: 'SYSTEM',
       reason: 'auto-expired by cron',
@@ -478,4 +500,35 @@ export async function expireQuotes(): Promise<{ expired: number }> {
 
   revalidateQuoteCaches();
   return { expired: expired.length };
+}
+
+// ─── AUTO-SUGGEST ─────────────────────────────────────────────────────────────
+
+/**
+ * getSuggestedRatesForExchange — Server Action wrapper برای auto-suggest
+ *
+ * ExchangeAccess check: فقط اعضای صرافی می‌توانند این را صدا کنند.
+ * نرخ پیشنهادی را با spread پیش‌فرض ۱.۵٪ برمی‌گرداند.
+ */
+export async function getAutoSuggestedRates(
+  exchangeId: string,
+  currencyCode: string,
+  spreadPercent = 1.5,
+): Promise<FintechActionResult<import('@/lib/pricing/auto-suggest').SuggestedRate>> {
+  const auth = await requireExchangeAccess(exchangeId);
+  if (!auth.ok) {
+    return { success: false, error: { code: 'UNAUTHORIZED', message: 'دسترسی غیرمجاز' } };
+  }
+
+  const { getSuggestedRates } = await import('@/lib/pricing/auto-suggest');
+  const result = await getSuggestedRates({ currencyCode, spreadPercent });
+
+  if (!result) {
+    return {
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'نرخ بازار برای این ارز یافت نشد' },
+    };
+  }
+
+  return { success: true, data: result };
 }

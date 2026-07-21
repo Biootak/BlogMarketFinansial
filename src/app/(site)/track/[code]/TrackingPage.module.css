@@ -23,8 +23,14 @@
 }
 
 @keyframes pageEnter {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ─── Top breadcrumb / back hint ─── */
@@ -38,7 +44,9 @@
   margin-block-end: var(--ds-space-1);
 }
 
-.breadcrumb svg { flex-shrink: 0; }
+.breadcrumb svg {
+  flex-shrink: 0;
+}
 
 /* ─── Hero status section ─── */
 
@@ -53,7 +61,7 @@
 }
 
 .hero::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block-start: 0;
   inset-inline: 0;
@@ -63,14 +71,28 @@
   transition: background var(--ds-duration-base);
 }
 
-.hero--success::before  { background: var(--ds-status-success-fg); }
-.hero--warning::before  { background: var(--ds-status-pending-fg); }
-.hero--error::before    { background: var(--ds-status-error-fg); }
-.hero--info::before     { background: var(--ds-status-progress-fg); }
+.hero--success::before {
+  background: var(--ds-status-success-fg);
+}
+.hero--warning::before {
+  background: var(--ds-status-pending-fg);
+}
+.hero--error::before {
+  background: var(--ds-status-error-fg);
+}
+.hero--info::before {
+  background: var(--ds-status-progress-fg);
+}
 
 @keyframes cardEnter {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .heroInner {
@@ -119,7 +141,7 @@
 /* Pulse ring animation for active states */
 .hero--warning .statusRing::after,
 .hero--info .statusRing::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: -6px;
   border-radius: var(--ds-radius-full);
@@ -129,8 +151,14 @@
 }
 
 @keyframes ringPulse {
-  0%   { opacity: 0.5; transform: scale(1); }
-  100% { opacity: 0;   transform: scale(1.4); }
+  0% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.4);
+  }
 }
 
 .heroContent {
@@ -193,7 +221,7 @@
 
 /* Connector line between steps */
 .stepItem:not(:last-child)::after {
-  content: '';
+  content: "";
   position: absolute;
   inset-block-start: 14px;
   /* RTL: go from center outward */
@@ -241,8 +269,13 @@
 }
 
 @keyframes stepGlow {
-  0%, 100% { box-shadow: 0 0 0 4px color-mix(in oklch, var(--ds-status-progress-fg) 15%, transparent); }
-  50%       { box-shadow: 0 0 0 7px color-mix(in oklch, var(--ds-status-progress-fg) 6%, transparent); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px color-mix(in oklch, var(--ds-status-progress-fg) 15%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 7px color-mix(in oklch, var(--ds-status-progress-fg) 6%, transparent);
+  }
 }
 
 .stepItem--error .stepDot {
@@ -260,9 +293,18 @@
   transition: color var(--ds-duration-base);
 }
 
-.stepItem--done .stepLabel  { color: var(--ds-status-success-fg); font-weight: 600; }
-.stepItem--active .stepLabel{ color: var(--ds-status-progress-fg); font-weight: 700; }
-.stepItem--error .stepLabel { color: var(--ds-status-error-fg); font-weight: 600; }
+.stepItem--done .stepLabel {
+  color: var(--ds-status-success-fg);
+  font-weight: 600;
+}
+.stepItem--active .stepLabel {
+  color: var(--ds-status-progress-fg);
+  font-weight: 700;
+}
+.stepItem--error .stepLabel {
+  color: var(--ds-status-error-fg);
+  font-weight: 600;
+}
 
 /* ─── Details card ─── */
 
@@ -406,7 +448,9 @@
   padding-block-start: var(--ds-space-2);
   animation: cardEnter var(--ds-duration-base) var(--ds-ease-out-quart) 280ms both;
 }
-.footer p { margin: 0; }
+.footer p {
+  margin: 0;
+}
 
 .footNote {
   opacity: 0.7;

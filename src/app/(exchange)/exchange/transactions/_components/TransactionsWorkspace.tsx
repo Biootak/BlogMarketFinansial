@@ -143,7 +143,8 @@ export default function TransactionsWorkspace({
       render: (r) =>
         r.destAmount ? (
           <span className="tabular-nums">
-            {new Intl.NumberFormat('fa-IR').format(Number(r.destAmount) / 100)} {r.destCurrency ?? ''}
+            {new Intl.NumberFormat('fa-IR').format(Number(r.destAmount) / 100)}{' '}
+            {r.destCurrency ?? ''}
           </span>
         ) : (
           <span style={{ color: 'var(--at-fg-subtle)' }}>—</span>

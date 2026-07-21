@@ -14,10 +14,10 @@ const path = require('path');
 const repo = 'E:/FinancialMarket';
 const journalPath = path.join(repo, '.harness', '.journal.log');
 
-const tool  = (process.argv[2] || 'MANUAL').toUpperCase();
-const rel   = process.argv[3] || '?';
-const diff  = process.argv[4] || '';
-const ts    = new Date().toISOString();
+const tool = (process.argv[2] || 'MANUAL').toUpperCase();
+const rel = process.argv[3] || '?';
+const diff = process.argv[4] || '';
+const ts = new Date().toISOString();
 
 const line = `${ts}  ${tool.padEnd(8)}  ${rel}${diff ? '  ' + diff : ''}\n`;
 

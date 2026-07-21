@@ -57,10 +57,9 @@
   background: var(--ds-surface);
   color: var(--ds-text-secondary);
   cursor: pointer;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
+    var(--ds-ease-spring);
   font-family: inherit;
 }
 .btnIcon:hover {
@@ -85,7 +84,9 @@
   animation: spin 0.65s linear infinite;
 }
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ─── Error ───────────────────────────────────────────────── */
@@ -111,8 +112,14 @@
   animation: fadeUp var(--ds-duration-base) var(--ds-ease-out-quart) both;
 }
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ─── Card header band ────────────────────────────────────── */
@@ -285,7 +292,7 @@
 
 /* Vertical timeline connector */
 .historyList::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block: 0;
   inset-inline-start: 6px;
@@ -367,10 +374,9 @@
   border: 1.5px solid var(--ds-brand-100);
   background: var(--ds-brand-50);
   min-block-size: 44px;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
+    var(--ds-ease-spring);
 }
 .ctaLink:hover {
   background: var(--ds-brand-100);

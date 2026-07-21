@@ -16,7 +16,10 @@ export async function GET(): Promise<NextResponse> {
   const result = await fetchBonbastBuySell();
 
   if (!result) {
-    return NextResponse.json({ ok: false, error: 'fetchBonbastBuySell returned null — param expired or site unreachable' });
+    return NextResponse.json({
+      ok: false,
+      error: 'fetchBonbastBuySell returned null — param expired or site unreachable',
+    });
   }
 
   const codes = Object.keys(result.rates);

@@ -1,11 +1,10 @@
 ﻿/**
- * ServiceRequestsDetailDrawer â€” co-located CSS module
- * New classes for tabs, notes, attachments (2026-07-09)
- * Uses only --at-* tokens from dashboard.css; no hex literals.
- */
-
-/* â”€â”€ Tabs bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-.at-srq-drawer__tabs {
+   * ServiceRequestsDetailDrawer â€” co-located CSS module
+   * New classes for tabs, notes, attachments (2026-07-09)
+   * Uses only --at-* tokens from dashboard.css; no hex literals.
+   */
+  /* â”€â”€ Tabs bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  .at-srq-drawer__tabs {
   display: flex;
   gap: 0;
   border-bottom: 1px solid var(--at-line);
@@ -456,4 +455,3 @@
   grid-template-columns: 1fr 1fr;
   gap: 6px;
 }
-

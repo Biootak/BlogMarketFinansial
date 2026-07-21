@@ -32,7 +32,13 @@ const SingleCommentLists: FC<SingleCommentListsProps> = ({ comments }) => {
         >
           {/* Connector Line for Nested Comments */}
           {depth > 0 && (
-            <div className="absolute -end-4 sm:-end-6 top-0 bottom-0 w-px" style={{background: 'linear-gradient(to bottom, oklch(92% 0.05 165 / 0.8), oklch(58% 0.12 165 / 0.3), transparent)'}} />
+            <div
+              className="absolute -end-4 sm:-end-6 top-0 bottom-0 w-px"
+              style={{
+                background:
+                  'linear-gradient(to bottom, oklch(92% 0.05 165 / 0.8), oklch(58% 0.12 165 / 0.3), transparent)',
+              }}
+            />
           )}
           <CommentCard comment={comment} />
         </li>
@@ -62,10 +68,22 @@ const SingleCommentLists: FC<SingleCommentListsProps> = ({ comments }) => {
             "
           >
             {/* Hover Background */}
-            <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" style={{background: 'linear-gradient(135deg, oklch(96% 0.03 165 / 0.5), oklch(92% 0.05 165 / 0.3))'}} />
+            <span
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"
+              style={{
+                background:
+                  'linear-gradient(135deg, oklch(96% 0.03 165 / 0.5), oklch(92% 0.05 165 / 0.3))',
+              }}
+            />
 
             {/* Icon */}
-            <span className="relative flex items-center justify-center w-10 h-10 rounded-xl shadow-lg transition-shadow duration-300" style={{background: 'var(--ds-brand-600)', boxShadow: '0 4px 16px -4px oklch(52% 0.14 162 / 0.35)'}}>
+            <span
+              className="relative flex items-center justify-center w-10 h-10 rounded-xl shadow-lg transition-shadow duration-300"
+              style={{
+                background: 'var(--ds-brand-600)',
+                boxShadow: '0 4px 16px -4px oklch(52% 0.14 162 / 0.35)',
+              }}
+            >
               <HiChatBubbleLeftRight className="w-5 h-5 text-white" />
             </span>
 

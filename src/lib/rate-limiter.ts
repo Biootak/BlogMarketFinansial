@@ -51,6 +51,26 @@ export const rateLimiters = {
         prefix: 'ratelimit:pageview',
       })
     : null,
+
+  // نرخ ارز عمومی: 60 درخواست در دقیقه
+  'exchange-rates': redis
+    ? new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(60, '1 m'),
+        analytics: true,
+        prefix: 'ratelimit:exchange-rates',
+      })
+    : null,
+
+  // پیگیری معامله: 20 درخواست در دقیقه (per IP)
+  'deal-track': redis
+    ? new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(20, '1 m'),
+        analytics: true,
+        prefix: 'ratelimit:deal-track',
+      })
+    : null,
 };
 
 // Fallback in-memory rate limiter با LRU bounded cache
@@ -70,6 +90,8 @@ const LIMITS: Record<string, { max: number; windowMs: number }> = {
   upload: { max: 30, windowMs: 60 * 1000 },
   auth: { max: 10, windowMs: 15 * 60 * 1000 },
   pageview: { max: 200, windowMs: 60 * 1000 },
+  'exchange-rates': { max: 60, windowMs: 60 * 1000 },
+  'deal-track': { max: 20, windowMs: 60 * 1000 },
 };
 
 export async function checkRateLimit(
@@ -93,14 +115,14 @@ export async function checkRateLimit(
       // attacker bypass brute-force protection. Non-critical limiters fall back
       // to the per-process in-memory store so availability is preserved.
       if (type === 'auth') {
-        console.error(`[rate-limiter] Upstash failed for ${type}, failing closed:`, error);
+        // auth type: fail closed — deny request when Upstash unreachable
         return {
           success: false,
           remaining: 0,
           reset: Date.now() + (LIMITS[type]?.windowMs ?? 15 * 60 * 1000),
         };
       }
-      console.warn(`[rate-limiter] Upstash failed for ${type}, falling back to in-memory:`, error);
+      // non-critical: fall back to in-memory silently
     }
   }
 

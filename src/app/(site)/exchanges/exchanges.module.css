@@ -1,0 +1,373 @@
+/* exchanges.module.css — صفحه مقایسه صرافی‌ها */
+
+/* ── Shell ──────────────────────────────────────────────────────────────────── */
+.page {
+  min-block-size: 100dvh;
+  background: var(--ds-canvas);
+  direction: rtl;
+}
+
+/* ── Hero ───────────────────────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  overflow: hidden;
+  background: oklch(12% 0.05 265);
+  padding-block: clamp(3rem, 8vw, 5.5rem);
+  padding-inline: clamp(1rem, 5vw, 3rem);
+}
+
+.heroAmbient {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 25% 50%, oklch(30% 0.12 265 / 0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 55% 40% at 80% 20%, oklch(28% 0.09 295 / 0.14) 0%, transparent 65%),
+    radial-gradient(ellipse 45% 55% at 50% 100%, oklch(20% 0.07 220 / 0.12) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.heroHairline {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    oklch(55% 0.12 265 / 0.45) 40%,
+    oklch(65% 0.1 280 / 0.3) 60%,
+    transparent
+  );
+}
+
+.heroInner {
+  position: relative;
+  max-inline-size: 700px;
+  margin-inline: auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 99px;
+  background: oklch(28% 0.09 265 / 0.45);
+  border: 1px solid oklch(55% 0.1 265 / 0.35);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: oklch(78% 0.08 265);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.badgeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: oklch(70% 0.18 145);
+  box-shadow: 0 0 6px oklch(70% 0.18 145 / 0.8);
+}
+
+.headline {
+  font-size: clamp(1.8rem, 4.5vw, 2.8rem);
+  font-weight: 800;
+  color: oklch(97% 0.005 240);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.sub {
+  font-size: clamp(0.88rem, 2vw, 1rem);
+  color: oklch(68% 0.04 265);
+  line-height: 1.65;
+  max-inline-size: 520px;
+  margin: 0;
+}
+
+/* Stats strip */
+.stats {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-4);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-block-start: var(--ds-space-2);
+  padding-block-start: var(--ds-space-4);
+  border-block-start: 1px solid oklch(55% 0.06 265 / 0.2);
+}
+
+.stat {
+  text-align: center;
+  min-inline-size: 72px;
+}
+
+.statNum {
+  display: block;
+  font-size: clamp(1.4rem, 3vw, 1.8rem);
+  font-weight: 800;
+  color: oklch(97% 0.005 240);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.statLabel {
+  display: block;
+  font-size: 0.72rem;
+  color: oklch(58% 0.04 265);
+  margin-block-start: 5px;
+  font-weight: 500;
+}
+
+.statDivider {
+  inline-size: 1px;
+  block-size: 2rem;
+  background: oklch(55% 0.06 265 / 0.3);
+}
+
+/* ── Section ─────────────────────────────────────────────────────────────── */
+.section {
+  padding-block: clamp(2.5rem, 6vw, 4rem);
+  padding-inline: clamp(1rem, 5vw, 3rem);
+}
+
+.sectionInner {
+  max-inline-size: 1100px;
+  margin-inline: auto;
+}
+
+.sectionHeader {
+  margin-block-end: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ds-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-block-end: var(--ds-space-2);
+}
+
+.sectionTitle {
+  font-size: clamp(1.2rem, 3vw, 1.7rem);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  margin: 0 0 var(--ds-space-2) 0;
+  letter-spacing: -0.01em;
+}
+
+.sectionSub {
+  font-size: 0.88rem;
+  color: var(--ds-text-muted);
+  line-height: 1.65;
+  max-inline-size: 560px;
+  margin: 0;
+}
+
+/* ── Exchange Cards Grid ─────────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--ds-space-4);
+}
+
+.exchangeCard {
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-xl, 1.25rem);
+  padding: var(--ds-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s;
+  cursor: default;
+}
+
+.exchangeCard:hover {
+  transform: translateY(-2px);
+  border-color: var(--ds-border-strong);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+
+.cardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cardName {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  margin: 0;
+}
+
+.cardCity {
+  font-size: 0.75rem;
+  color: var(--ds-text-muted);
+}
+
+.cardActiveBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 99px;
+  background: oklch(35% 0.1 145 / 0.2);
+  border: 1px solid oklch(55% 0.15 145 / 0.35);
+  color: oklch(72% 0.18 145);
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Rate row */
+.cardRateRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3);
+  background: var(--ds-surface-recessed, var(--ds-surface-elevated));
+  border-radius: var(--ds-radius-md, 0.75rem);
+  border: 1px solid var(--ds-border-subtle);
+}
+
+.rateItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-inline-size: 0;
+}
+
+.rateLabel {
+  font-size: 0.68rem;
+  color: var(--ds-text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rateVal {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.rateUnit {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--ds-text-muted);
+  margin-inline-start: 3px;
+}
+
+.rateDivider {
+  inline-size: 1px;
+  block-size: 2rem;
+  background: var(--ds-border-subtle);
+  flex-shrink: 0;
+}
+
+/* Currencies */
+.currencies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.currencyBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: var(--ds-radius-sm, 0.5rem);
+  background: var(--ds-surface-elevated, oklch(20% 0.03 265 / 0.3));
+  border: 1px solid var(--ds-border-subtle);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ds-text-secondary);
+  letter-spacing: 0.03em;
+}
+
+.currencyMore {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: var(--ds-radius-sm, 0.5rem);
+  background: transparent;
+  border: 1px solid var(--ds-border-subtle);
+  font-size: 0.7rem;
+  color: var(--ds-text-muted);
+}
+
+.noRates {
+  font-size: 0.78rem;
+  color: var(--ds-text-muted);
+  margin: 0;
+  text-align: center;
+  padding-block: var(--ds-space-2);
+}
+
+/* ── Empty State ────────────────────────────────────────────────────────────── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-10) var(--ds-space-4);
+}
+
+.emptyIcon {
+  color: var(--ds-text-muted);
+  opacity: 0.4;
+}
+
+.emptyTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  margin: 0;
+}
+
+.emptySub {
+  font-size: 0.88rem;
+  color: var(--ds-text-muted);
+  line-height: 1.65;
+  max-inline-size: 400px;
+  margin: 0;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────────── */
+@media (max-width: 540px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .stats {
+    gap: var(--ds-space-3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exchangeCard {
+    transition: none;
+  }
+}

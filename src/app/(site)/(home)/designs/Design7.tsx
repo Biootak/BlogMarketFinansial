@@ -314,7 +314,10 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                         aria-label={isPaused ? 'ادامه پخش خودکار' : 'توقف پخش خودکار'}
                       >
                         {isPaused ? (
-                          <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 [transform:scaleX(-1)]" fill="currentColor" />
+                          <Play
+                            className="w-3.5 h-3.5 sm:w-4 sm:h-4 [transform:scaleX(-1)]"
+                            fill="currentColor"
+                          />
                         ) : (
                           <Pause className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" />
                         )}
