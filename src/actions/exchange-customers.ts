@@ -14,6 +14,7 @@ import { createHash } from 'node:crypto';
 import prisma from '@/lib/db';
 import { requireExchangeAccess } from '@/lib/exchange-auth';
 import { revalidateTag } from '@/lib/revalidate';
+import type { FintechActionResult } from '@/types/types';
 import { v4 as createId } from 'uuid';
 import { z } from 'zod';
 
@@ -110,10 +111,6 @@ function mapCustomer(row: PrismaCustomer): CustomerRow {
   };
 }
 
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: { code: string; message: string } };
-
 // ─── READ ─────────────────────────────────────────────────────────────────────
 
 export async function getCustomers(
@@ -170,7 +167,7 @@ export async function getCustomerById(
 export async function createCustomer(
   exchangeId: string,
   raw: unknown,
-): Promise<ActionResult<CustomerRow>> {
+): Promise<FintechActionResult<CustomerRow>> {
   const access = await requireExchangeAccess(exchangeId);
   if (!access.ok)
     return { success: false, error: { code: access.error.code, message: access.error.message } };
@@ -207,7 +204,7 @@ export async function updateCustomer(
   exchangeId: string,
   customerId: string,
   raw: unknown,
-): Promise<ActionResult<CustomerRow>> {
+): Promise<FintechActionResult<CustomerRow>> {
   const access = await requireExchangeAccess(exchangeId);
   if (!access.ok)
     return { success: false, error: { code: access.error.code, message: access.error.message } };
@@ -250,7 +247,7 @@ export async function setCustomerStatus(
   exchangeId: string,
   customerId: string,
   status: 'PROSPECT' | 'ACTIVE' | 'FROZEN' | 'CLOSED',
-): Promise<ActionResult<{ id: string; status: string }>> {
+): Promise<FintechActionResult<{ id: string; status: string }>> {
   const access = await requireExchangeAccess(exchangeId);
   if (!access.ok)
     return { success: false, error: { code: access.error.code, message: access.error.message } };

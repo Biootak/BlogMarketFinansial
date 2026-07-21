@@ -25,16 +25,13 @@ import { requireExchangeAccess } from '@/lib/exchange-auth';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
+import type { FintechActionResult } from '@/types/types';
 import { Decimal } from '@prisma/client/runtime/library';
 import { headers } from 'next/headers';
 import { v4 as createId } from 'uuid';
 import { z } from 'zod';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: { code: string; message: string } };
 
 export type DealRow = {
   id: string;
@@ -238,7 +235,7 @@ export async function getDealByTracking(trackingCode: string): Promise<DealRow |
 
 export async function createDeal(
   raw: unknown,
-): Promise<ActionResult<{ id: string; trackingCode: string }>> {
+): Promise<FintechActionResult<{ id: string; trackingCode: string }>> {
   // ── Rate limit: 5 deal در 10 دقیقه بر اساس IP (M5) ──────────────────────
   const ip = (await headers()).get('x-forwarded-for')?.split(',').pop()?.trim() ?? 'unknown';
   const rl = await checkRateLimit(`deal:${ip}`, 'api');
@@ -379,7 +376,7 @@ export async function confirmDeal(
     internalNote?: string;
     idempotencyKey?: string;
   },
-): Promise<ActionResult<{ id: string }>> {
+): Promise<FintechActionResult<{ id: string }>> {
   // ── P0-6: rate-limit روی confirm ──────────────────────────────────────────
   const ip = await getClientIp();
   const rl = await checkRateLimit(`confirm:${ip}`, 'api');
@@ -473,7 +470,7 @@ export async function completeDeal(
   dealId: string,
   internalNote?: string,
   idempotencyKey?: string,
-): Promise<ActionResult<{ id: string }>> {
+): Promise<FintechActionResult<{ id: string }>> {
   // ── P0-6: rate-limit روی complete ─────────────────────────────────────────
   const ip = await getClientIp();
   const rl = await checkRateLimit(`complete:${ip}`, 'api');
@@ -758,7 +755,7 @@ export async function completeDeal(
 export async function cancelDeal(
   dealId: string,
   reason: string,
-): Promise<ActionResult<{ id: string }>> {
+): Promise<FintechActionResult<{ id: string }>> {
   const auth = await requireUser();
   if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
 

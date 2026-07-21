@@ -19,14 +19,11 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import safeCache, { safeRevalidateTag } from '@/lib/safe-cache';
+import type { FintechActionResult } from '@/types/types';
 import { headers } from 'next/headers';
 import { z } from 'zod';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: { code: string; message: string } };
 
 export type QuoteRow = {
   id: string;
@@ -243,7 +240,7 @@ export async function getPendingQuotes(): Promise<QuoteRow[]> {
 export async function submitQuote(
   exchangeId: string,
   raw: unknown,
-): Promise<ActionResult<QuoteRow>> {
+): Promise<FintechActionResult<QuoteRow>> {
   // ── P0-6: rate-limit روی submitQuote ──────────────────────────────────────
   const ip = (await headers()).get('x-forwarded-for')?.split(',').pop()?.trim() ?? 'unknown';
   const rl = await checkRateLimit(`quote-submit:${ip}:${exchangeId}`, 'api');
@@ -255,7 +252,7 @@ export async function submitQuote(
   }
 
   const access = await requireExchangeAccess(exchangeId, true);
-  if (!access.ok) return { success: false, error: access.error };
+  if (!access.ok) return { success: false, error: { code: access.error.code, message: access.error.message } };
 
   const parsed = SubmitQuoteSchema.safeParse(raw);
   if (!parsed.success) {
@@ -335,7 +332,7 @@ export async function submitQuote(
 export async function approveQuote(
   id: string,
   note?: string,
-): Promise<ActionResult<{ id: string }>> {
+): Promise<FintechActionResult<{ id: string }>> {
   const auth = await requireAdmin();
   if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
 
@@ -394,7 +391,7 @@ export async function approveQuote(
 export async function rejectQuote(
   id: string,
   reason: string,
-): Promise<ActionResult<{ id: string }>> {
+): Promise<FintechActionResult<{ id: string }>> {
   const auth = await requireAdmin();
   if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
 

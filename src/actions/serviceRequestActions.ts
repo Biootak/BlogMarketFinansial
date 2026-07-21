@@ -11,9 +11,11 @@ import {
 } from '@/lib/email/templates';
 import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { requireRole, requireUser } from '@/lib/require-auth';
 import { safeCache } from '@/lib/safe-cache';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
+import { Role } from '@prisma/client';
 import { z } from 'zod';
 
 // ─── getUserProfile ─────────────────────────────────────────────────────────── //
@@ -507,8 +509,8 @@ export async function getServiceRequests(params?: {
   limit?: number;
   search?: string;
 }) {
-  const session = await auth();
-  if (!session?.user || !['ADMIN', 'OWNER', 'SUPPORT'].includes(session.user.role as string)) {
+  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
+  if (!authCheck.success) {
     return { success: false, message: 'دسترسی غیرمجاز' };
   }
 
@@ -559,9 +561,9 @@ export async function updateServiceRequestStatus(
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED',
   adminNotes?: string,
 ) {
-  const session = await auth();
-  if (!session?.user || !['ADMIN', 'OWNER', 'SUPPORT'].includes(session.user.role as string)) {
-    return { success: false, message: 'دسترسی غیرمجاز' };
+  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
+  if (!authCheck.success) {
+    return { success: false, message: 'دسترسی غیرمجاز'  };
   }
 
   try {
@@ -596,7 +598,7 @@ export async function updateServiceRequestStatus(
         requestId: id,
         fromStatus: existing.status,
         toStatus: status,
-        changedBy: session.user.email ?? 'admin',
+        changedBy: authCheck.user.id,
         note: adminNotes ?? null,
       },
     });
@@ -604,7 +606,7 @@ export async function updateServiceRequestStatus(
     await prisma.systemLog.create({
       data: {
         level: 'INFO',
-        message: `Service request ${request.trackingCode} status updated to ${status} by ${session.user.email}`,
+        message: `Service request ${request.trackingCode} status updated to ${status} by ${authCheck.user.id}`,
         source: 'ServiceRequest',
       },
     });
@@ -690,8 +692,8 @@ ${existing.externalTxId ? `شناسه تراکنش: ${existing.externalTxId}` : 
 
 // ─── Admin: Delete request ───────────────────────────────────────────────── //
 export async function deleteServiceRequest(id: string) {
-  const session = await auth();
-  if (!session?.user || session.user.role !== 'OWNER') {
+  const authCheck = await requireRole([Role.OWNER]);
+  if (!authCheck.success) {
     return { success: false, message: 'فقط مالک می‌تواند درخواست را حذف کند.' };
   }
 
@@ -706,8 +708,8 @@ export async function deleteServiceRequest(id: string) {
 
 // ─── Admin: Get recent activity ──────────────────────────────────────────── //
 export async function getServiceRequestRecentActivity(limit = 10) {
-  const session = await auth();
-  if (!session?.user || !['ADMIN', 'OWNER', 'SUPPORT'].includes(session.user.role as string)) {
+  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
+  if (!authCheck.success) {
     return { success: false, message: 'دسترسی غیرمجاز' };
   }
 
@@ -801,8 +803,8 @@ export async function bulkUpdateServiceRequestStatus(
   ids: string[],
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED',
 ) {
-  const session = await auth();
-  if (!session?.user || !['ADMIN', 'OWNER', 'SUPPORT'].includes(session.user.role as string)) {
+  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
+  if (!authCheck.success) {
     return { success: false, message: 'دسترسی غیرمجاز' };
   }
 
@@ -829,14 +831,14 @@ export async function bulkUpdateServiceRequestStatus(
         requestId: r.id,
         fromStatus: r.status,
         toStatus: status,
-        changedBy: session.user?.email ?? 'admin',
+        changedBy: authCheck.user.id,
       })),
     });
 
     await prisma.systemLog.create({
       data: {
         level: 'INFO',
-        message: `Bulk update: ${result.count} requests set to ${status} by ${session.user.email}`,
+        message: `Bulk update: ${result.count} requests set to ${status} by ${authCheck.user.id}`,
         source: 'ServiceRequest',
       },
     });
@@ -857,8 +859,8 @@ export async function exportServiceRequestsCsv(params?: {
   status?: string;
   search?: string;
 }) {
-  const session = await auth();
-  if (!session?.user || !['ADMIN', 'OWNER', 'SUPPORT'].includes(session.user.role as string)) {
+  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
+  if (!authCheck.success) {
     return { success: false, message: 'دسترسی غیرمجاز' };
   }
 
@@ -944,8 +946,8 @@ export async function exportServiceRequestsCsv(params?: {
 
 // ─── Admin: Get stats ─────────────────────────────────────────────────────── //
 export async function getServiceRequestStats() {
-  const session = await auth();
-  if (!session?.user || !['ADMIN', 'OWNER', 'SUPPORT'].includes(session.user.role as string)) {
+  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
+  if (!authCheck.success) {
     return { success: false, message: 'دسترسی غیرمجاز' };
   }
 
@@ -1184,8 +1186,8 @@ export async function claimGuestRequest(trackingCode: string): Promise<{
 
 // ─── Admin: Get full request detail (with notes + attachments + statusLogs) ── //
 export async function getServiceRequestDetail(id: string) {
-  const session = await auth();
-  if (!session?.user || !['ADMIN', 'OWNER', 'SUPPORT'].includes(session.user.role as string)) {
+  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
+  if (!authCheck.success) {
     return { success: false as const, message: 'دسترسی غیرمجاز' };
   }
 
@@ -1219,8 +1221,8 @@ export async function addServiceRequestNote(
   content: string,
   isPrivate = true,
 ): Promise<{ success: boolean; message: string }> {
-  const session = await auth();
-  if (!session?.user || !['ADMIN', 'OWNER', 'SUPPORT'].includes(session.user.role as string)) {
+  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
+  if (!authCheck.success) {
     return { success: false, message: 'دسترسی غیرمجاز' };
   }
 
@@ -1239,7 +1241,7 @@ export async function addServiceRequestNote(
     await prisma.serviceRequestNote.create({
       data: {
         requestId,
-        authorId: session.user.id ?? session.user.email ?? 'unknown',
+        authorId: authCheck.user.id,
         body: trimmed,
         isPrivate,
       },
@@ -1250,7 +1252,7 @@ export async function addServiceRequestNote(
       .create({
         data: {
           level: 'INFO',
-          message: `Note added to service request ${requestId} by ${session.user.email}`,
+          message: `Note added to service request ${requestId} by ${authCheck.user.id}`,
           source: 'ServiceRequest',
         },
       })
@@ -1276,8 +1278,8 @@ export async function addServiceRequestAttachment(input: {
   fileHash?: string;
   label?: string;
 }): Promise<{ success: boolean; message: string }> {
-  const session = await auth();
-  if (!session?.user || !['ADMIN', 'OWNER', 'SUPPORT'].includes(session.user.role as string)) {
+  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
+  if (!authCheck.success) {
     return { success: false, message: 'دسترسی غیرمجاز' };
   }
 
@@ -1300,7 +1302,7 @@ export async function addServiceRequestAttachment(input: {
     await prisma.serviceRequestAttachment.create({
       data: {
         requestId: input.requestId,
-        uploadedById: session.user.id ?? session.user.email ?? 'unknown',
+        uploadedById: authCheck.user.id,
         fileName: input.fileName.substring(0, 255),
         fileType: input.fileType,
         fileSize: input.fileSize,
@@ -1313,7 +1315,7 @@ export async function addServiceRequestAttachment(input: {
     await prisma.systemLog.create({
       data: {
         level: 'INFO',
-        message: `Attachment added to service request ${input.requestId} by ${session.user.email}: ${input.fileName}`,
+        message: `Attachment added to service request ${input.requestId} by ${authCheck.user.id}: ${input.fileName}`,
         source: 'ServiceRequest',
       },
     });
@@ -1329,8 +1331,8 @@ export async function addServiceRequestAttachment(input: {
 export async function deleteServiceRequestAttachment(
   attachmentId: string,
 ): Promise<{ success: boolean; message: string }> {
-  const session = await auth();
-  if (!session?.user || !['ADMIN', 'OWNER'].includes(session.user.role as string)) {
+  const authCheck = await requireRole([Role.ADMIN, Role.OWNER]);
+  if (!authCheck.success) {
     return { success: false, message: 'فقط ادمین یا مالک می‌توانند پیوست را حذف کنند.' };
   }
 
@@ -1345,8 +1347,8 @@ export async function deleteServiceRequestAttachment(
 
     await prisma.systemLog.create({
       data: {
-        level: 'INFO',
-        message: `Attachment ${att.fileName} deleted from request ${att.requestId} by ${session.user.email}`,
+        level: 'INFO',          message: `Attachment ${att.fileName} deleted from request ${att.requestId} by ${authCheck.user.id}`,
+
         source: 'ServiceRequest',
       },
     });

@@ -42,8 +42,9 @@ export async function requireExchangeAccess(
 
   const { user } = auth;
 
-  // OWNER/ADMIN پلتفرم همه صرافی‌ها را مدیریت می‌کنند
-  if (user.role === 'OWNER' || user.role === 'ADMIN') {
+  // OWNER/ADMIN/SUPERADMIN پلتفرم همه صرافی‌ها را مدیریت می‌کنند
+  // C4-fix: SUPERADMIN هم مثل OWNER/ADMIN bypass دارد
+  if (user.role === 'OWNER' || user.role === 'ADMIN' || user.role === 'SUPERADMIN') {
     return { ok: true, userId: user.id };
   }
 

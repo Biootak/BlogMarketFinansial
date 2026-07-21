@@ -21,6 +21,7 @@ import prisma from '@/lib/db';
 import { requireExchangeAccess } from '@/lib/exchange-auth';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { revalidateTag } from '@/lib/revalidate';
+import type { FintechActionResult } from '@/types/types';
 import { Decimal } from '@prisma/client/runtime/library';
 import { v4 as createId } from 'uuid';
 import { z } from 'zod';
@@ -68,10 +69,6 @@ export type TransactionRow = {
   updatedAt: string;
   customer?: { fullName: string; phone: string };
 };
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: { code: string; message: string } };
 
 // ─── Helper: تبدیل float به BigInt بدون خطای دقت (H2) ───────────────────────
 // مثال: amount=0.29 → new Decimal("0.29").mul(100).toFixed(0) → "29" → 29n
@@ -194,7 +191,7 @@ export async function getTransactions(
 export async function createTransaction(
   exchangeId: string,
   raw: unknown,
-): Promise<ActionResult<TransactionRow>> {
+): Promise<FintechActionResult<TransactionRow>> {
   const access = await requireExchangeAccess(exchangeId);
   if (!access.ok)
     return { success: false, error: { code: access.error.code, message: access.error.message } };

@@ -14,6 +14,7 @@ import prisma from '@/lib/db';
 import { requireExchangeAccess } from '@/lib/exchange-auth';
 import { requireAdmin, requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
+import type { FintechActionResult } from '@/types/types';
 import { unstable_cache } from 'next/cache';
 import { v4 as createId } from 'uuid';
 import { z } from 'zod';
@@ -87,10 +88,6 @@ function mapExchange(raw: {
   return { ...raw, dailyLimitAf: Number(raw.dailyLimitAf) };
 }
 
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: { code: string; message: string } };
-
 // ─── READ — Platform Admin ────────────────────────────────────────────────────
 
 export const getAllExchanges = unstable_cache(
@@ -140,7 +137,7 @@ export async function getExchangeForUser(userId: string): Promise<{
 
 // ─── CREATE ───────────────────────────────────────────────────────────────────
 
-export async function createExchange(raw: unknown): Promise<ActionResult<ExchangeRow>> {
+export async function createExchange(raw: unknown): Promise<FintechActionResult<ExchangeRow>> {
   const auth = await requireAdmin();
   if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
 
@@ -176,7 +173,7 @@ export async function createExchange(raw: unknown): Promise<ActionResult<Exchang
 
 // ─── UPDATE ───────────────────────────────────────────────────────────────────
 
-export async function updateExchange(id: string, raw: unknown): Promise<ActionResult<ExchangeRow>> {
+export async function updateExchange(id: string, raw: unknown): Promise<FintechActionResult<ExchangeRow>> {
   const auth = await requireAdmin();
   if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
 
@@ -208,7 +205,7 @@ export async function updateExchange(id: string, raw: unknown): Promise<ActionRe
 export async function setExchangeStatus(
   id: string,
   status: 'ACTIVE' | 'SUSPENDED' | 'CLOSED' | 'PENDING',
-): Promise<ActionResult<{ id: string; status: string }>> {
+): Promise<FintechActionResult<{ id: string; status: string }>> {
   const auth = await requireAdmin();
   if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
 
@@ -224,7 +221,7 @@ export async function setExchangeStatus(
 
 // ─── DELETE ───────────────────────────────────────────────────────────────────
 
-export async function deleteExchange(id: string): Promise<ActionResult<{ id: string }>> {
+export async function deleteExchange(id: string): Promise<FintechActionResult<{ id: string }>> {
   const auth = await requireAdmin();
   if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
 
@@ -270,7 +267,7 @@ export async function addExchangeStaff(
   exchangeId: string,
   userEmail: string,
   role: 'OWNER' | 'MANAGER' | 'STAFF' | 'VIEWER',
-): Promise<ActionResult<ExchangeStaffRow>> {
+): Promise<FintechActionResult<ExchangeStaffRow>> {
   // S2-fix: OWNER/MANAGER صرافی هم می‌توانند staff اضافه کنند (نه فقط ADMIN پلتفرم)
   const access = await requireExchangeAccess(exchangeId, true);
   if (!access.ok) {
@@ -330,7 +327,7 @@ export async function addExchangeStaff(
 export async function revokeExchangeStaff(
   staffId: string,
   exchangeId: string,
-): Promise<ActionResult<{ id: string }>> {
+): Promise<FintechActionResult<{ id: string }>> {
   // S2-fix: OWNER/MANAGER صرافی هم می‌توانند staff را revoke کنند
   const access = await requireExchangeAccess(exchangeId, true);
   if (!access.ok) {
@@ -367,7 +364,7 @@ const ExchangeSelfUpdateSchema = z.object({
 export async function updateExchangeSelf(
   exchangeId: string,
   raw: unknown,
-): Promise<ActionResult<ExchangeRow>> {
+): Promise<FintechActionResult<ExchangeRow>> {
   const auth = await requireUser();
   if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
 
@@ -431,7 +428,7 @@ const ApplyForExchangeSchema = z.object({
 
 export async function applyForExchange(
   raw: unknown,
-): Promise<ActionResult<{ id: string; slug: string }>> {
+): Promise<FintechActionResult<{ id: string; slug: string }>> {
   const auth = await requireUser();
   if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
 

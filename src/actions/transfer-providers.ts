@@ -16,6 +16,7 @@ import { requireExchangeAccess } from '@/lib/exchange-auth';
 import { requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeRevalidateTag } from '@/lib/safe-cache';
+import type { FintechActionResult } from '@/types/types';
 import { unstable_cache } from 'next/cache';
 import { z } from 'zod';
 
@@ -96,10 +97,6 @@ export type TransferProviderRow = {
   updatedAt: Date;
 };
 
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: { code: string; message: string } };
-
 // ─── Cache invalidation helper ────────────────────────────────────────────────
 
 /**
@@ -143,7 +140,7 @@ export async function getExchangeProvider(exchangeId: string): Promise<TransferP
 
 export async function createTransferProvider(
   raw: unknown,
-): Promise<ActionResult<TransferProviderRow>> {
+): Promise<FintechActionResult<TransferProviderRow>> {
   const auth = await requireAdmin();
   if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
 
@@ -193,7 +190,7 @@ export async function createTransferProvider(
 export async function upsertExchangeProvider(
   exchangeId: string,
   raw: unknown,
-): Promise<ActionResult<TransferProviderRow>> {
+): Promise<FintechActionResult<TransferProviderRow>> {
   // A1-fix: از requireExchangeAccess در exchange-auth.ts استفاده می‌کنیم (single source of truth)
   const access = await requireExchangeAccess(exchangeId, true);
   if (!access.ok) {
@@ -266,7 +263,7 @@ export async function upsertExchangeProvider(
 export async function updateTransferProvider(
   id: string,
   raw: unknown,
-): Promise<ActionResult<TransferProviderRow>> {
+): Promise<FintechActionResult<TransferProviderRow>> {
   const auth = await requireAdmin();
   if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
 
@@ -303,7 +300,7 @@ export async function updateTransferProvider(
 export async function toggleTransferProvider(
   id: string,
   active: boolean,
-): Promise<ActionResult<{ id: string; active: boolean }>> {
+): Promise<FintechActionResult<{ id: string; active: boolean }>> {
   const auth = await requireAdmin();
   if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
 
@@ -319,7 +316,7 @@ export async function toggleTransferProvider(
 
 // ─── DELETE ───────────────────────────────────────────────────────────────────
 
-export async function deleteTransferProvider(id: string): Promise<ActionResult<{ id: string }>> {
+export async function deleteTransferProvider(id: string): Promise<FintechActionResult<{ id: string }>> {
   const auth = await requireAdmin();
   if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
 
@@ -338,7 +335,7 @@ export async function deleteTransferProvider(id: string): Promise<ActionResult<{
 
 export async function reorderTransferProviders(
   items: { id: string; order: number }[],
-): Promise<ActionResult<void>> {
+): Promise<FintechActionResult<void>> {
   const auth = await requireAdmin();
   if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
 
