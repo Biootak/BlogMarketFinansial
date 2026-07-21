@@ -306,13 +306,17 @@ const nextConfig: NextConfig = {
       dynamic: 30,
       static: 180,
     },
-    // 2026-06-29: Optimized for build performance with database connections
-    // - staticGenerationRetryCount: 1 (fail fast, don't retry failed pages)
-    // - staticGenerationMaxConcurrency: 8 (increased from 4, per Next.js docs)
-    // - staticGenerationMinPagesPerWorker: 25 (batch pages per worker)
-    staticGenerationRetryCount: 1,
-    staticGenerationMaxConcurrency: 8,
-    staticGenerationMinPagesPerWorker: 25,
+    // 2026-07-29: staticGeneration concurrency dialed to SAFE values.
+    // Each worker builds its OWN PrismaClient (the singleton only helps
+    // within one worker, not across workers). With connection_limit=3
+    // in production, 8 concurrent workers would try to open 8 connections
+    // simultaneously, collapsing any database under ~30 max_connections.
+    // Retry = 0 (fail fast — no point retrying a DB timeout).
+    // Concurrency = 1 (build pages one at a time — doubly safe with DB).
+    // MinPagesPerWorker = 50 (fewer workers = fewer total connections).
+    staticGenerationRetryCount: 0,
+    staticGenerationMaxConcurrency: 1,
+    staticGenerationMinPagesPerWorker: 50,
     optimizePackageImports: ['lucide-react', 'react-icons'],
     optimizeCss: false,
     // 2026-06-27: Turbopack's embedded lightningcss 1.0.0-alpha.70 panics on

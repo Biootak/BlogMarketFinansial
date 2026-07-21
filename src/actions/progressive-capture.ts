@@ -27,6 +27,7 @@ import { serviceVerifyOtpEmail, welcomeSetPasswordEmail } from '@/lib/email/temp
 import { normalizeToE164 } from '@/lib/phone-validation';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { consumeOtpToken, generateOtpToken } from '@/lib/tokens';
+import type { FintechActionResult } from '@/types/types';
 import { headers } from 'next/headers';
 
 // 24-hour window for the welcome/set-password token — longer than the 5-min
@@ -56,20 +57,14 @@ async function generateWelcomeToken(email: string): Promise<{ token: string; exp
 
 // ─── Types ────────────────────────────────────────────────────────────────── //
 
-export interface IssueOtpResult {
-  success: boolean;
-  message: string;
-  retryAfterMs?: number;
-}
+/** @deprecated use FintechActionResult from @/types/types — kept for transitional compat */
+export type IssueOtpResult = FintechActionResult<void>;
 
-export interface VerifyOtpResult {
-  success: boolean;
-  message: string;
-  /** true when a new account was created via Progressive Capture */
+/** @deprecated use FintechActionResult from @/types/types — kept for transitional compat */
+export type VerifyOtpResult = FintechActionResult<{
   accountCreated?: boolean;
-  /** email to pre-fill on the login page if the user wants to sign in */
   loginHint?: string;
-}
+}>;
 
 // ─── issueServiceOtp ──────────────────────────────────────────────────────── //
 
@@ -88,11 +83,12 @@ export async function issueServiceOtp(args: {
     const emailRateKey = `service-otp-issue:${args.email.trim().toLowerCase()}`;
     const rateResult = await checkRateLimit(emailRateKey, 'auth');
     if (!rateResult.success) {
-      const retryAfterMs = Math.max(0, rateResult.reset - Date.now());
       return {
         success: false,
-        message: 'درخواست کد تأیید بیش از حد مجاز است. چند دقیقه صبر کنید.',
-        retryAfterMs,
+        error: {
+          code: 'RATE_LIMIT_EXCEEDED',
+          message: 'درخواست کد تأیید بیش از حد مجاز است. چند دقیقه صبر کنید.',
+        },
       };
     }
 
@@ -102,7 +98,10 @@ export async function issueServiceOtp(args: {
     if (!ipRate.success) {
       return {
         success: false,
-        message: 'تعداد درخواست‌های شما بیش از حد مجاز است.',
+        error: {
+          code: 'IP_RATE_LIMIT_EXCEEDED',
+          message: 'تعداد درخواست‌های شما بیش از حد مجاز است.',
+        },
       };
     }
 
@@ -116,7 +115,10 @@ export async function issueServiceOtp(args: {
     });
 
     if (!request) {
-      return { success: false, message: 'کد پیگیری معتبر نیست.' };
+      return {
+        success: false,
+        error: { code: 'TRACKING_NOT_FOUND', message: 'کد پیگیری معتبر نیست.' },
+      };
     }
 
     // The email in the request must match what the user claims
@@ -124,12 +126,18 @@ export async function issueServiceOtp(args: {
     if (!requestEmail || requestEmail !== email) {
       return {
         success: false,
-        message: 'ایمیل وارد شده با ایمیل ثبت‌شده در درخواست مطابقت ندارد.',
+        error: {
+          code: 'EMAIL_MISMATCH',
+          message: 'ایمیل وارد شده با ایمیل ثبت‌شده در درخواست مطابقت ندارد.',
+        },
       };
     }
 
     if (request.emailVerified) {
-      return { success: false, message: 'ایمیل قبلاً تأیید شده است.' };
+      return {
+        success: false,
+        error: { code: 'ALREADY_VERIFIED', message: 'ایمیل قبلاً تأیید شده است.' },
+      };
     }
 
     // Generate OTP
@@ -138,8 +146,10 @@ export async function issueServiceOtp(args: {
       const waitSec = Math.ceil((otpResult as { retryAfterMs: number }).retryAfterMs / 1000);
       return {
         success: false,
-        message: `لطفاً ${waitSec} ثانیه صبر کنید و دوباره درخواست کنید.`,
-        retryAfterMs: (otpResult as { retryAfterMs: number }).retryAfterMs,
+        error: {
+          code: 'OTP_GENERATE_LIMIT',
+          message: `لطفاً ${waitSec} ثانیه صبر کنید و دوباره درخواست کنید.`,
+        },
       };
     }
 
@@ -157,13 +167,19 @@ export async function issueServiceOtp(args: {
     } catch {
       return {
         success: false,
-        message: 'ارسال ایمیل با خطا مواجه شد. لطفاً ایمیل خود را بررسی کنید.',
+        error: {
+          code: 'EMAIL_SEND_FAILED',
+          message: 'ارسال ایمیل با خطا مواجه شد. لطفاً ایمیل خود را بررسی کنید.',
+        },
       };
     }
 
-    return { success: true, message: 'کد تأیید به ایمیل شما ارسال شد.' };
+    return { success: true, data: undefined };
   } catch {
-    return { success: false, message: 'خطایی رخ داد. لطفاً دوباره تلاش کنید.' };
+    return {
+      success: false,
+      error: { code: 'SERVER_ERROR', message: 'خطایی رخ داد. لطفاً دوباره تلاش کنید.' },
+    };
   }
 }
 
@@ -186,16 +202,22 @@ export async function verifyServiceOtpAndLink(args: {
     });
 
     if (!request) {
-      return { success: false, message: 'کد پیگیری معتبر نیست.' };
+      return {
+        success: false,
+        error: { code: 'TRACKING_NOT_FOUND', message: 'کد پیگیری معتبر نیست.' },
+      };
     }
 
     const requestEmail = request.email?.trim().toLowerCase();
     if (!requestEmail || requestEmail !== email) {
-      return { success: false, message: 'ایمیل وارد شده با درخواست مطابقت ندارد.' };
+      return {
+        success: false,
+        error: { code: 'EMAIL_MISMATCH', message: 'ایمیل وارد شده با درخواست مطابقت ندارد.' },
+      };
     }
 
     if (request.emailVerified) {
-      return { success: true, message: 'ایمیل قبلاً تأیید شده است.' };
+      return { success: true, data: { accountCreated: false, loginHint: undefined } };
     }
 
     // Consume OTP
@@ -209,7 +231,10 @@ export async function verifyServiceOtpAndLink(args: {
       };
       return {
         success: false,
-        message: messageMap[consume.reason] ?? 'خطا در تأیید کد.',
+        error: {
+          code: consume.reason === 'too-many-attempts' ? 'OTP_TOO_MANY_ATTEMPTS' : 'OTP_INVALID',
+          message: messageMap[consume.reason] ?? 'خطا در تأیید کد.',
+        },
       };
     }
 
@@ -290,13 +315,15 @@ export async function verifyServiceOtpAndLink(args: {
 
     return {
       success: true,
-      message: accountCreated
-        ? 'ایمیل تأیید شد و حساب کاربری برای شما ساخته شد!'
-        : 'ایمیل با موفقیت تأیید شد.',
-      accountCreated,
-      loginHint: accountCreated ? email : undefined,
+      data: {
+        accountCreated,
+        loginHint: accountCreated ? email : undefined,
+      },
     };
   } catch {
-    return { success: false, message: 'خطایی در تأیید ایمیل رخ داد.' };
+    return {
+      success: false,
+      error: { code: 'SERVER_ERROR', message: 'خطایی در تأیید ایمیل رخ داد.' },
+    };
   }
 }

@@ -3,6 +3,8 @@
 
 'use client';
 
+import { ConfirmDialog } from '@/components/Dashboard/primitives';
+import { useToast } from '@/components/ui/use-toast';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import type { RateRowData } from './ExchangeRateRow';
@@ -21,6 +23,9 @@ export default function ExchangeRatesWorkspace({ initialRows }: Props) {
   const [group, setGroup] = useState<GroupFilter>('all');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editRow, setEditRow] = useState<RateRowData | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<RateRowData | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const { toast } = useToast();
 
   const handleAdd = useCallback(() => {
     setEditRow(null);
@@ -32,20 +37,23 @@ export default function ExchangeRatesWorkspace({ initialRows }: Props) {
     setDrawerOpen(true);
   }, []);
 
-  const handleDelete = useCallback(
-    async (row: RateRowData) => {
-      const ok = window.confirm(`نرخ «${row.displayNameFa}» حذف شود؟ این عملیات برگشت‌پذیر نیست.`);
-      if (!ok) return;
-      const { deleteMarketRate } = await import('@/actions/market-rates');
-      const result = await deleteMarketRate(row.id);
-      if (result.success) {
-        router.refresh();
-      } else {
-        window.alert(result.error.message);
-      }
-    },
-    [router],
-  );
+  const handleDelete = useCallback((row: RateRowData) => {
+    setDeleteTarget(row);
+  }, []);
+
+  const confirmDelete = useCallback(async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    const { deleteMarketRate } = await import('@/actions/market-rates');
+    const result = await deleteMarketRate(deleteTarget.id);
+    setDeleting(false);
+    setDeleteTarget(null);
+    if (result.success) {
+      router.refresh();
+    } else {
+      toast({ variant: 'destructive', title: 'خطا', description: result.error.message });
+    }
+  }, [deleteTarget, router, toast]);
 
   const handleSaved = useCallback(() => {
     router.refresh();
@@ -95,6 +103,21 @@ export default function ExchangeRatesWorkspace({ initialRows }: Props) {
         initialRow={editRow}
         onClose={handleCloseDrawer}
         onSaved={handleSaved}
+      />
+
+      {/* Delete confirmation */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+        title="حذف نرخ"
+        description={`نرخ «${deleteTarget?.displayNameFa ?? ''}» حذف شود؟ این عملیات برگشت‌پذیر نیست.`}
+        confirmLabel="بله، حذف شود"
+        cancelLabel="انصراف"
+        variant="danger"
+        onConfirm={confirmDelete}
+        loading={deleting}
       />
     </>
   );

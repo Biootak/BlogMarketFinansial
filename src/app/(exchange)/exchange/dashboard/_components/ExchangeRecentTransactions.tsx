@@ -99,7 +99,7 @@ export default async function ExchangeRecentTransactions({
                 {KIND_FA[row.kind] ?? row.kind}
               </span>
               <span style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--at-fg)' }}>
-                {new Intl.NumberFormat('fa-IR').format(row.amount / 100)} {row.currency}
+                {new Intl.NumberFormat('fa-IR').format(Number(row.amount) / 100)} {row.currency}
               </span>
               <span
                 style={{

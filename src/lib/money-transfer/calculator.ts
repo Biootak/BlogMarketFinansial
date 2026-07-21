@@ -50,8 +50,9 @@ const ZERO = 0;
 
 export function convertSourceToToman(input: ConversionInput): ConversionResult {
   const { sourceAmount, rateSourceToToman, provider } = input;
-  const marketToman = sourceAmount * rateSourceToToman;
-  const spreadToman = marketToman * (provider.spreadPercent / 100);
+  const marketToman = Math.round(sourceAmount * rateSourceToToman);
+  // M11: Math.round برای جلوگیری از خطای float (0.7% روی 10M تومان = 69,999.9999)
+  const spreadToman = Math.round(marketToman * (provider.spreadPercent / 100));
   const flatFeeToman = provider.flatFeeToman;
   const finalToman = marketToman + spreadToman + flatFeeToman;
   const effectiveRate = sourceAmount > ZERO ? finalToman / sourceAmount : ZERO;
@@ -76,8 +77,9 @@ export function convertTomanToSource(
   rateSourceToToman: number,
   provider: TransferProvider,
 ): { sourceAmount: number; marketToman: number; spreadToman: number; flatFeeToman: number } {
-  const subtotalAfterFee = Math.max(0, targetToman - provider.flatFeeToman);
-  const marketToman = subtotalAfterFee / (1 + provider.spreadPercent / 100);
+  const subtotalAfterFee = Math.max(0, Math.round(targetToman) - provider.flatFeeToman);
+  // M11: Math.round برای ثبات محاسبات float
+  const marketToman = Math.round(subtotalAfterFee / (1 + provider.spreadPercent / 100));
   const sourceAmount = rateSourceToToman > ZERO ? marketToman / rateSourceToToman : ZERO;
   const spreadToman = subtotalAfterFee - marketToman;
   return {

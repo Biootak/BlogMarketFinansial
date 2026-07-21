@@ -144,7 +144,7 @@ function RequestRow({
       setCancelDone(true);
       onCancelled(req.trackingCode);
     } else {
-      setCancelErr(res.message);
+      setCancelErr(res.error?.message ?? '');
     }
   };
 
@@ -357,7 +357,7 @@ function ClaimGuestPanel({ onClaimed }: { onClaimed: () => void }) {
       setOtpTimer(60);
       setMsg('');
     } else {
-      setMsg(res.message);
+      setMsg(res.error.message);
       setIsErr(true);
     }
   };
@@ -370,26 +370,26 @@ function ClaimGuestPanel({ onClaimed }: { onClaimed: () => void }) {
     const res = await claimGuestRequest(code.trim());
     setLoading(false);
     if (!res.success) {
-      setMsg(res.message);
+      setMsg(res.error?.message ?? '');
       setIsErr(true);
       return;
     }
-    if (res.requiresOtp && res.email) {
+    if (res.data.requiresOtp && res.data.email) {
       setNeedsOtp(true);
-      setOtpEmail(res.email);
+      setOtpEmail(res.data.email);
       setTrackingForOtp(code.trim().toUpperCase());
-      setMsg(res.message);
+      setMsg('');
       setIsErr(false);
       // auto-send OTP
       const otpRes = await issueServiceOtp({
-        email: res.email,
+        email: res.data.email,
         trackingCode: code.trim().toUpperCase(),
       });
       if (otpRes.success) setOtpTimer(60);
       return;
     }
     // directly claimed
-    setMsg(res.message);
+    setMsg('سفارش با موفقیت به حساب شما اضافه شد!');
     setIsErr(false);
     setTimeout(() => {
       setOpen(false);
@@ -415,7 +415,7 @@ function ClaimGuestPanel({ onClaimed }: { onClaimed: () => void }) {
         onClaimed();
       }, 1200);
     } else {
-      setMsg(res.message);
+      setMsg(res.error.message);
       setIsErr(true);
     }
   };
@@ -552,10 +552,15 @@ export default function MyRequestsClient() {
     setError(null);
     const result = await getMyServiceRequests({ page: p, limit: 10 });
     if (result.success && result.data) {
-      setRequests(result.data as MyRequest[]);
-      setTotalPages(result.pagination?.totalPages ?? 1);
+      // M1: result.data حالا { requests, pagination } است (نه { data, pagination })
+      const resData = result.data as {
+        requests: MyRequest[];
+        pagination: { page: number; limit: number; total: number; totalPages: number };
+      };
+      setRequests(resData.requests);
+      setTotalPages(resData.pagination.totalPages ?? 1);
     } else {
-      setError(result.message ?? 'خطایی رخ داد.');
+      setError('error' in result ? result.error.message : 'خطایی رخ داد.');
     }
     setLoading(false);
   }, []);

@@ -207,7 +207,11 @@ export default function ServiceRequestsDetailDrawer({
     const res = await getServiceRequestDetail(id);
     setDetailLoading(false);
     if (res.success) {
-      const data = res.data;
+      const data = res.data as {
+        statusLogs: Array<{ id: string; fromStatus: string | null; toStatus: string; changedBy: string; note: string | null; createdAt: Date | string }>;
+        notes: Array<{ id: string; body?: string | null; content: string | null; authorId: string; isPrivate: boolean; createdAt: Date | string }>;
+        attachments: Array<{ id: string; fileName: string; fileType: string; fileSize: number; url: string; label: string | null; createdAt: Date | string }>;
+      };
       setDetail({
         statusLogs: data.statusLogs.map((l) => ({ ...l, createdAt: l.createdAt.toString() })),
         notes: data.notes.map((n) => ({ ...n, createdAt: n.createdAt.toString() })),
@@ -232,7 +236,7 @@ export default function ServiceRequestsDetailDrawer({
     if (!request || !noteText.trim()) return;
     startNoteTransition(async () => {
       const res = await addServiceRequestNote(request.id, noteText, notePrivate);
-      setNoteMsg(res.message);
+      setNoteMsg(res.success ? '' : ('error' in res ? res.error.message : ''));
       if (res.success) {
         setNoteText('');
         loadDetail(request.id);
@@ -304,7 +308,7 @@ export default function ServiceRequestsDetailDrawer({
         label: attachLabel.trim() || undefined,
       });
 
-      setAttachMsg(res.message);
+      setAttachMsg(res.success ? '' : ('error' in res ? res.error.message : ''));
       if (res.success) {
         setAttachLabel('');
         if (fileRef.current) fileRef.current.value = '';
@@ -325,7 +329,7 @@ export default function ServiceRequestsDetailDrawer({
     setDeleteAttachLoading(false);
     setDeleteAttachDialogOpen(false);
     setDeleteAttachTargetId(null);
-    setAttachMsg(res.message);
+    setAttachMsg(res.success ? '' : ('error' in res ? res.error.message : ''));
     if (res.success) loadDetail(request.id);
   };
 

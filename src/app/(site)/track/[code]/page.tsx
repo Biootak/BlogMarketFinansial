@@ -24,7 +24,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { notFound } from 'next/navigation';
-import TrackingPageClient from './_components/TrackingPageClient';
+import TrackingPageClient, { type TrackingData } from './_components/TrackingPageClient';
 import s from './TrackingPage.module.css';
 
 interface Props {
@@ -171,8 +171,8 @@ export default async function TrackingPage({ params }: Props) {
           </div>
           <TrackingPageClient
             code={upper}
-            initialData={res.success && res.data ? res.data : null}
-            initialError={!res.success ? (res.message ?? 'خطا') : null}
+            initialData={res.success && res.data ? (res.data as unknown as TrackingData) : null}
+            initialError={!res.success ? ('error' in res ? res.error.message : 'خطا') : null}
           />
         </div>
       </main>

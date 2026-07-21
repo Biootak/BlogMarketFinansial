@@ -587,8 +587,9 @@ model TransferProvider {
   @@index([exchangeId])
 }
 
+/// H6: @default(cuid()) اضافه شد — قبلاً فراموش شده بود
 model AuditLog {
-  id         String    @id
+  id         String    @id @default(cuid())
   exchangeId String?
   actorId    String?
   actorRole  String?

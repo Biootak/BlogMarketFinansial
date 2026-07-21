@@ -23,7 +23,7 @@ export default async function ExchangeDashboardPage() {
   const { exchange } = membership;
   const stats = await getExchangeStats(exchange.id);
 
-  const volumeAfn = stats.totalVolumeAfn / 100;
+  const volumeAfn = Number(stats.totalVolume) / 100;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>

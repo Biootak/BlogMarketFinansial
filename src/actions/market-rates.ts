@@ -21,7 +21,8 @@ export const getMarketRates = unstable_cache(
     try {
       return await assembleMarketRates();
     } catch (e) {
-      void e; // assembly failure is transient; caller returns stale cache or empty array
+      // H7: جایگزین void e — log واقعی خطا
+      console.error('[MarketRates] assembleMarketRates failed:', e instanceof Error ? e.message : String(e));
       return [];
     }
   },

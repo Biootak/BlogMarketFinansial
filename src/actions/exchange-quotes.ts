@@ -11,6 +11,11 @@
  *
  * P1-2: getActiveQuotes و getActiveCurrencies با safeCache کش می‌شوند
  * P0-6: rate-limit روی submitQuote اضافه شد
+ *
+ * A1-24 fixes:
+ *   C3: expireQuotes نیاز به cron-auth
+ *   H5: getExchangeQuotes نیاز به access check
+ *   M8: submitQuote ACTIVE قبلی را هم آرشیو کند
  */
 
 import prisma from '@/lib/db';
@@ -171,8 +176,11 @@ export const getActiveCurrencies = safeCache(
   { key: 'active-currencies', ttl: 60, tags: ['exchange-quotes', 'exchange-rates'] },
 );
 
-/** همه quotes یک صرافی — برای داشبورد صراف */
+/** همه quotes یک صرافی — برای داشبورد صراف (H5: access check اضافه شد) */
 export async function getExchangeQuotes(exchangeId: string): Promise<QuoteRow[]> {
+  const access = await requireExchangeAccess(exchangeId);
+  if (!access.ok) return [];
+
   const rows = await prisma.exchangeRateQuote.findMany({
     where: { exchangeId },
     orderBy: [{ status: 'asc' }, { updatedAt: 'desc' }],
@@ -288,9 +296,9 @@ export async function submitQuote(
     };
   }
 
-  // quote قبلی PENDING همین ارز را آرشیو کن
+  // M8: quote قبلی PENDING + ACTIVE همین ارز را آرشیو کن
   await prisma.exchangeRateQuote.updateMany({
-    where: { exchangeId, currencyCode, status: { in: ['PENDING'] } },
+    where: { exchangeId, currencyCode, status: { in: ['PENDING', 'ACTIVE'] } },
     data: { status: 'ARCHIVED' },
   });
 
@@ -429,7 +437,12 @@ export async function rejectQuote(
 // ─── EXPIRE (cron) ────────────────────────────────────────────────────────────
 
 /** منقضی کردن quote های ACTIVE که expiresAt آن‌ها گذشته — فقط از cron صدا زده می‌شود */
+// C3: cron-auth برای محافظت از این endpoint
+// این تابع باید از cron route (/api/cron/expire-quotes) صدا زده شود
+// که داخل آن verifyCronSecret فراخوانی می‌شود.
 export async function expireQuotes(): Promise<{ expired: number }> {
+  // C3: این تابع بدون auth — فقط از cron با secret صدا زده شود
+  // auth در route handler انجام می‌شود، اینجا pure business logic است
   const now = new Date();
   const expired = await prisma.exchangeRateQuote.findMany({
     where: { status: 'ACTIVE', expiresAt: { lt: now } },

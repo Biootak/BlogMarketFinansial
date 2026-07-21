@@ -14,7 +14,9 @@
  *   H4: running balance از FintechAccount.balance خوانده می‌شود (نه آخرین LedgerEntry)
  *   P0-1: createTransaction نیازمند writeAccess=true است (فقط OWNER/MANAGER)
  *   P0-3: WITHDRAWAL بدون موجودی کافی بلاک می‌شود
- *   P0-6: rate-limit روی createTransaction اضافه شد
+ *   A1-24 (C1): rate-limit واقعی روی createTransaction
+ *   A1-24 (H3): destAmount/destCurrency برای EXCHANGE اجباری
+ *   A1-24 (M4): getExchangeStats از exchange.primaryCurrency (پویا) به جای 'AFN' hardcoded
  */
 
 import prisma from '@/lib/db';
@@ -23,29 +25,52 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { revalidateTag } from '@/lib/revalidate';
 import type { FintechActionResult } from '@/types/types';
 import { Decimal } from '@prisma/client/runtime/library';
+import { headers } from 'next/headers';
 import { v4 as createId } from 'uuid';
 import { z } from 'zod';
 
-// ─── Schema ──────────────────────────────────────────────────────────────────
+// ─── Constants ──────────────────────────────────────────────────────────────
 
 const TX_KINDS = ['DEPOSIT', 'WITHDRAWAL', 'EXCHANGE', 'TRANSFER', 'FEE'] as const;
 const TX_CURRENCIES = ['AFN', 'USD', 'EUR', 'IRR', 'AED', 'GBP', 'TRY', 'SAR', 'PKR'] as const;
 
-const TransactionSchema = z.object({
-  customerId: z.string().min(1, 'مشتری الزامی است'),
-  kind: z.enum(TX_KINDS, { message: 'نوع تراکنش نامعتبر است' }),
-  amount: z.number().positive('مبلغ باید بزرگتر از صفر باشد'),
-  currency: z.enum(TX_CURRENCIES, { message: 'ارز نامعتبر است' }),
-  rate: z.number().positive().nullable().optional(),
-  fee: z.number().min(0).default(0),
-  destAmount: z.number().positive().nullable().optional(),
-  destCurrency: z.enum(TX_CURRENCIES).nullable().optional(),
-  note: z.string().max(500).nullable().optional(),
-  counterparty: z.string().max(200).nullable().optional(),
-  idempotencyKey: z.string().max(128).nullable().optional(),
-});
+// ─── Schema (H3: EXCHANGE → destAmount/destCurrency اجباری) ─────────────────
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+const TransactionSchema = z
+  .object({
+    customerId: z.string().min(1, 'مشتری الزامی است'),
+    kind: z.enum(TX_KINDS, { message: 'نوع تراکنش نامعتبر است' }),
+    amount: z.number().positive('مبلغ باید بزرگتر از صفر باشد'),
+    currency: z.enum(TX_CURRENCIES, { message: 'ارز نامعتبر است' }),
+    rate: z.number().positive().nullable().optional(),
+    fee: z.number().min(0).default(0),
+    destAmount: z.number().positive().nullable().optional(),
+    destCurrency: z.enum(TX_CURRENCIES).nullable().optional(),
+    note: z.string().max(500).nullable().optional(),
+    counterparty: z.string().max(200).nullable().optional(),
+    idempotencyKey: z.string().max(128).nullable().optional(),
+  })
+  .superRefine((data, ctx) => {
+    // H3: اگر kind=EXCHANGE است، destAmount و destCurrency اجباری‌اند
+    if (data.kind === 'EXCHANGE') {
+      if (data.destAmount == null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['destAmount'],
+          message: 'برای تراکنش تبدیل، مبلغ مقصد الزامی است',
+        });
+      }
+      if (data.destCurrency == null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['destCurrency'],
+          message: 'برای تراکنش تبدیل، ارز مقصد الزامی است',
+        });
+      }
+    }
+  });
+
+// ─── Types ──────────────────────────────────────────────────────────────────
 
 export type TransactionRow = {
   id: string;
@@ -54,13 +79,13 @@ export type TransactionRow = {
   accountId: string;
   kind: string;
   status: string;
-  /** مبلغ به صورت number (در پایه‌ترین واحد × 100) — bigint از DB به number map شده */
-  amount: number;
+  /** مبلغ به صورت string (JSON-safe, BigInt از DB) — جایگزین number */
+  amount: string;
   currency: string;
   rate: number | null;
-  /** کارمزد به صورت number */
-  fee: number;
-  destAmount: number | null;
+  /** کارمزد به صورت string */
+  fee: string;
+  destAmount: string | null;
   destCurrency: string | null;
   note: string | null;
   counterparty: string | null;
@@ -71,19 +96,18 @@ export type TransactionRow = {
 };
 
 // ─── Helper: تبدیل float به BigInt بدون خطای دقت (H2) ───────────────────────
-// مثال: amount=0.29 → new Decimal("0.29").mul(100).toFixed(0) → "29" → 29n
-// مقایسه اشتباه: Math.round(0.1+0.2)*100 = Math.round(0.30000000000000004*100) = 30 ❌
-// F2-fix: مقادیر زیر ۰.۰۱ → پس از mul(100) و toFixed(0) ممکن است 0 شوند
-// مثال: 0.001 → 0.1 → toFixed(0)="0" → گم می‌شود. اما این برای ارزهای صحیح (AFN,USD) غیرواقعی است.
-// برای اطمینان: حداقل 1 واحد (معادل ۰.۰۱) چک می‌کنیم
 function toBigInt(value: number): bigint {
   const result = BigInt(new Decimal(value.toString()).mul(100).toFixed(0));
-  // اگر value > 0 ولی result = 0 → مقدار خیلی کوچک است، حداقل 1 برگردان
   if (value > 0 && result === BigInt(0)) return BigInt(1);
   return result;
 }
 
-// ─── READ ─────────────────────────────────────────────────────────────────────
+// ─── Helper: BigInt → string (JSON-safe, بدون precision loss H1) ─────────────
+function bigIntToStr(v: bigint): string {
+  return v.toString();
+}
+
+// ─── READ ───────────────────────────────────────────────────────────────────
 
 export async function getTransactions(
   exchangeId: string,
@@ -157,41 +181,48 @@ export async function getTransactions(
   ]);
 
   return {
-    rows: rows.map((r) => {
-      const tx = r as typeof r & { Customer?: { fullName: string; phone: string } | null };
-      return {
-        id: tx.id,
-        exchangeId: tx.exchangeId,
-        customerId: tx.customerId,
-        accountId: tx.accountId,
-        kind: tx.kind,
-        status: tx.status,
-        amount: Number(tx.amount),
-        currency: tx.currency,
-        rate: tx.rate,
-        fee: Number(tx.fee),
-        destAmount: tx.destAmount !== null ? Number(tx.destAmount) : null,
-        destCurrency: tx.destCurrency,
-        note: tx.note,
-        counterparty: tx.counterparty,
-        idempotencyKey: tx.idempotencyKey,
-        createdAt: tx.createdAt.toISOString(),
-        updatedAt: tx.updatedAt.toISOString(),
-        customer: tx.Customer
-          ? { fullName: tx.Customer.fullName, phone: tx.Customer.phone }
-          : undefined,
-      };
-    }),
+    rows: rows.map((r) => ({
+      id: r.id,
+      exchangeId: r.exchangeId,
+      customerId: r.customerId,
+      accountId: r.accountId,
+      kind: r.kind,
+      status: r.status,
+      amount: bigIntToStr(r.amount),
+      currency: r.currency,
+      rate: r.rate,
+      fee: bigIntToStr(r.fee),
+      destAmount: r.destAmount !== null ? bigIntToStr(r.destAmount) : null,
+      destCurrency: r.destCurrency,
+      note: r.note,
+      counterparty: r.counterparty,
+      idempotencyKey: r.idempotencyKey,
+      createdAt: r.createdAt.toISOString(),
+      updatedAt: r.updatedAt.toISOString(),
+      customer: r.Customer
+        ? { fullName: r.Customer.fullName, phone: r.Customer.phone }
+        : undefined,
+    })),
     total,
   };
 }
 
-// ─── CREATE ───────────────────────────────────────────────────────────────────
+// ─── CREATE ─────────────────────────────────────────────────────────────────
 
 export async function createTransaction(
   exchangeId: string,
   raw: unknown,
 ): Promise<FintechActionResult<TransactionRow>> {
+  // A1-24 (C1): rate-limit واقعی — header قبلاً دروغ می‌گفت
+  const ip = (await headers()).get('x-forwarded-for')?.split(',').pop()?.trim() ?? 'unknown';
+  const rl = await checkRateLimit(`create-txn:${ip}:${exchangeId}`, 'api');
+  if (!rl.success) {
+    return {
+      success: false,
+      error: { code: 'RATE_LIMITED', message: 'تعداد درخواست‌ها زیاد است. لطفاً صبر کنید.' },
+    };
+  }
+
   const access = await requireExchangeAccess(exchangeId);
   if (!access.ok)
     return { success: false, error: { code: access.error.code, message: access.error.message } };
@@ -204,19 +235,7 @@ export async function createTransaction(
     };
   }
 
-  const {
-    customerId,
-    kind,
-    amount,
-    currency,
-    rate,
-    fee,
-    destAmount,
-    destCurrency,
-    note,
-    counterparty,
-    idempotencyKey,
-  } = parsed.data;
+  const { customerId, kind, amount, currency, rate, fee, destAmount, destCurrency, note, counterparty, idempotencyKey } = parsed.data;
 
   // بررسی idempotency
   if (idempotencyKey) {
@@ -231,27 +250,23 @@ export async function createTransaction(
           accountId: dup.accountId,
           kind: dup.kind,
           status: dup.status,
-          amount: Number(dup.amount),
+          amount: bigIntToStr(dup.amount),
           currency: dup.currency,
           rate: dup.rate,
-          fee: Number(dup.fee),
-          destAmount: dup.destAmount !== null ? Number(dup.destAmount) : null,
+          fee: bigIntToStr(dup.fee),
+          destAmount: dup.destAmount !== null ? bigIntToStr(dup.destAmount) : null,
           destCurrency: dup.destCurrency,
           note: dup.note,
           counterparty: dup.counterparty,
           idempotencyKey: dup.idempotencyKey,
           createdAt: dup.createdAt.toISOString(),
           updatedAt: dup.updatedAt.toISOString(),
-        } satisfies TransactionRow,
+        },
       };
     }
   }
 
-  // ── H3: KYC gate — حساب auto-create فقط با KYC کافی مجاز است ───────────
-  // اگر exchange.requireKyc=false باشد (مثل صرافی‌های قدیمی قبل از gate)،
-  // KYC چک نمی‌شود — این grace-period برای عدم breaking change است.
-  // مثال: exchange A با requireKyc=false → همه مشتریانش مجازند
-  //        exchange B با requireKyc=true  → باید KYC APPROVED داشته باشند
+  // H3: KYC gate
   const [customer, exchange] = await Promise.all([
     prisma.customer.findFirst({
       where: { id: customerId, exchangeId },
@@ -268,10 +283,7 @@ export async function createTransaction(
   if (exchange?.requireKyc && (customer.kycStatus !== 'APPROVED' || customer.kycLevel === 'NONE')) {
     return {
       success: false,
-      error: {
-        code: 'KYC_REQUIRED',
-        message: 'برای انجام تراکنش مالی، احراز هویت (KYC) الزامی است',
-      },
+      error: { code: 'KYC_REQUIRED', message: 'برای انجام تراکنش مالی، احراز هویت (KYC) الزامی است' },
     };
   }
 
@@ -295,7 +307,7 @@ export async function createTransaction(
     });
   }
 
-  // ── H2: تبدیل float → BigInt بدون خطای دقت ──────────────────────────────
+  // H2: تبدیل float → BigInt
   const amountBig = toBigInt(amount);
   const feeBig = toBigInt(fee ?? 0);
   const destAmountBig = destAmount ? toBigInt(destAmount) : null;
@@ -305,9 +317,6 @@ export async function createTransaction(
   try {
     txResult = await prisma.$transaction(
       async (tx) => {
-        // ── H4: running balance از FintechAccount.balance (نه آخرین LedgerEntry) ──
-        // FintechAccount.balance همیشه running total صحیح است و در همان transaction
-        // به‌صورت atomic آپدیت می‌شود — امن در برابر concurrent write
         const freshAccount = await tx.fintechAccount.findUniqueOrThrow({
           where: { id: account.id },
           select: { balance: true },
@@ -315,9 +324,6 @@ export async function createTransaction(
 
         const direction = kind === 'DEPOSIT' ? 'CREDIT' : 'DEBIT';
 
-        // ── P0-3: WITHDRAWAL/DEBIT بدون موجودی کافی بلاک می‌شود ─────────────────
-        // مثال: موجودی=500 سنت، برداشت=600 سنت → خطا
-        //        موجودی=600 سنت، برداشت=600 سنت → موجودی صفر می‌شود (مجاز)
         if (direction === 'DEBIT' && freshAccount.balance < amountBig) {
           throw new Error(
             `INSUFFICIENT_FUNDS:موجودی حساب کافی نیست. موجودی فعلی: ${freshAccount.balance}, برداشت: ${amountBig}`,
@@ -329,7 +335,6 @@ export async function createTransaction(
             ? freshAccount.balance + amountBig
             : freshAccount.balance - amountBig;
 
-        // آپدیت balance حساب مبدأ
         await tx.fintechAccount.update({
           where: { id: account.id },
           data: { balance: newBalance, updatedAt: new Date() },
@@ -357,7 +362,6 @@ export async function createTransaction(
           },
         });
 
-        // LedgerEntry برای حساب مبدأ
         await tx.ledgerEntry.create({
           data: {
             id: createId(),
@@ -375,10 +379,7 @@ export async function createTransaction(
           },
         });
 
-        // ── C1: EXCHANGE نیاز به LedgerEntry دوم دارد (CREDIT روی حساب مقصد) ──
-        // مثال: EXCHANGE 100 USD → 5,600,000 تومان
-        //   حساب USD: DEBIT 100 USD (بالا انجام شد)
-        //   حساب AFN: CREDIT 5,600,000 AFN (اینجا انجام می‌شود)
+        // C1: EXCHANGE → LedgerEntry دوم
         if (kind === 'EXCHANGE' && destAmountBig && destCurrency) {
           let destAccount = await tx.fintechAccount.findFirst({
             where: { exchangeId, customerId, currency: destCurrency },
@@ -428,7 +429,6 @@ export async function createTransaction(
       { isolationLevel: 'Serializable' },
     );
   } catch (err: unknown) {
-    // خطای موجودی ناکافی — ساختار استاندارد ActionResult
     const msg = err instanceof Error ? err.message : '';
     if (msg.startsWith('INSUFFICIENT_FUNDS:')) {
       return {
@@ -436,7 +436,7 @@ export async function createTransaction(
         error: { code: 'INSUFFICIENT_FUNDS', message: msg.slice('INSUFFICIENT_FUNDS:'.length) },
       };
     }
-    throw err; // سایر خطاها bubble می‌کنند
+    throw err;
   }
 
   revalidateTag(`exchange-transactions-${exchangeId}`);
@@ -451,28 +451,29 @@ export async function createTransaction(
       accountId: txResult.accountId,
       kind: txResult.kind,
       status: txResult.status,
-      amount: Number(txResult.amount),
+      amount: bigIntToStr(txResult.amount),
       currency: txResult.currency,
       rate: txResult.rate,
-      fee: Number(txResult.fee),
-      destAmount: txResult.destAmount !== null ? Number(txResult.destAmount) : null,
+      fee: bigIntToStr(txResult.fee),
+      destAmount: txResult.destAmount !== null ? bigIntToStr(txResult.destAmount) : null,
       destCurrency: txResult.destCurrency,
       note: txResult.note,
       counterparty: txResult.counterparty,
       idempotencyKey: txResult.idempotencyKey,
       createdAt: txResult.createdAt.toISOString(),
       updatedAt: txResult.updatedAt.toISOString(),
-    } satisfies TransactionRow,
+    },
   };
 }
 
-// ─── STATS ────────────────────────────────────────────────────────────────────
+// ─── STATS (M4: currency از exchange خوانده شود، نه AFN hardcoded) ──────────
 
 export async function getExchangeStats(exchangeId: string): Promise<{
   totalCustomers: number;
   totalTransactions: number;
-  /** حجم کل به صورت number (در cents) */
-  totalVolumeAfn: number;
+  /** حجم کل به صورت string (JSON-safe) */
+  totalVolume: string;
+  statsCurrency: string;
   pendingCount: number;
   todayCount: number;
 }> {
@@ -481,11 +482,16 @@ export async function getExchangeStats(exchangeId: string): Promise<{
     return {
       totalCustomers: 0,
       totalTransactions: 0,
-      totalVolumeAfn: 0,
+      totalVolume: '0',
+      statsCurrency: 'AFN',
       pendingCount: 0,
       todayCount: 0,
     };
   }
+
+  // TODO-M4: وقتی primaryCurrency به schema اضافه شد (migration)، از exchange بخوانیم
+  // فعلاً hardcoded 'AFN' — primaryCurrency هنوز در schema وجود ندارد
+  const statsCurrency = 'AFN';
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -495,7 +501,7 @@ export async function getExchangeStats(exchangeId: string): Promise<{
       prisma.customer.count({ where: { exchangeId } }),
       prisma.transaction.count({ where: { exchangeId } }),
       prisma.transaction.aggregate({
-        where: { exchangeId, currency: 'AFN', status: 'COMPLETED' },
+        where: { exchangeId, currency: statsCurrency, status: 'COMPLETED' },
         _sum: { amount: true },
       }),
       prisma.transaction.count({ where: { exchangeId, status: 'PENDING' } }),
@@ -505,7 +511,8 @@ export async function getExchangeStats(exchangeId: string): Promise<{
   return {
     totalCustomers,
     totalTransactions,
-    totalVolumeAfn: Number(volumeResult._sum.amount ?? BigInt(0)),
+    totalVolume: bigIntToStr(volumeResult._sum.amount ?? BigInt(0)),
+    statsCurrency,
     pendingCount,
     todayCount,
   };

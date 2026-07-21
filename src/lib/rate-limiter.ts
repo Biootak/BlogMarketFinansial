@@ -123,6 +123,12 @@ export async function checkRateLimit(
   return { success: true, remaining: max - record.count, reset: record.resetTime };
 }
 
+// M10: هشدار Serverless — در Vercel Edge deployment، هر lambda in-memory خودش را دارد.
+// مهاجم با ارسال درخواست از ۵۰ IP مختلف می‌تواند ۵۰×۱۰۰ = ۵۰۰۰ درخواست بزند
+// تا اینکه یک lambda به حد خود برسد. اینجا فیل کلوز (fail closed) برای نوع auth
+// امنیت را بالا می‌برد چون بدون Redis همه درخواست‌های auth ریجکت می‌شوند.
+// برای production حتماً UPSTASH_REDIS_REST_URL تنظیم شود.
+//
 // پاکسازی حافظه (برای in-memory) - فقط در Node.js runtime و فقط یکبار
 // LRU cache خودش TTL داره، پس نیازی به interval manual نیست
 // این فقط برای cleanup entries منقضی شده در window‌های طولانی‌تر هست

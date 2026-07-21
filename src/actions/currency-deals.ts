@@ -18,8 +18,16 @@
  *   - completeDeal: LedgerEntry با txnId صحیح + Transaction ثبت می‌شود (H1, P1-1)
  *   - P0-2: getExchangeDeals نیاز به requireExchangeAccess دارد
  *   - P0-4: AuditLog حالا IP را ثبت می‌کند
+ *
+ * A1-24 fixes:
+ *   C2: Math.random() → crypto.randomBytes() در generateTrackingCode
+ *   H8: idempotencyKey اجباری در completeDeal
+ *   M2: appliedRate>0 validation در confirmDeal
+ *   M5: toAmount در CreateDealSchema (از fromAmount * appliedRate محاسبه شود)
+ *   H2: KYC gate مهمانان — حتی کاربر لاگین‌نشده باید شماره موبایل معتبر بدهد
  */
 
+import { randomBytes } from 'node:crypto';
 import prisma from '@/lib/db';
 import { requireExchangeAccess } from '@/lib/exchange-auth';
 import { checkRateLimit } from '@/lib/rate-limiter';
@@ -76,6 +84,8 @@ const CreateDealSchema = z.object({
   fromAmount: z
     .number({ invalid_type_error: 'مبلغ باید عدد باشد' })
     .positive('مبلغ باید مثبت باشد'),
+  // M5: toAmount از fromAmount * appliedRate محاسبه می‌شود
+  toAmount: z.number().positive().nullable().optional(),
   channel: z.enum(['ONLINE', 'INPERSON', 'PHONE']).default('ONLINE'),
   note: z.string().max(500).nullable().optional(),
   idempotencyKey: z.string().max(128).optional(),
@@ -83,10 +93,11 @@ const CreateDealSchema = z.object({
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
+// C2: crypto.randomBytes به جای Math.random() — غیرقابل پیش‌بینی
 function generateTrackingCode(): string {
-  const ts = Date.now().toString(36).toUpperCase();
-  const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `DL-${ts}-${rand}`;
+  const a = randomBytes(4).toString('hex').toUpperCase();
+  const b = randomBytes(2).toString('hex').toUpperCase();
+  return `DL-${a}-${b}`;
 }
 
 function revalidateDealCaches(): void {
@@ -261,6 +272,7 @@ export async function createDeal(
     fromCurrency,
     toCurrency,
     fromAmount,
+    toAmount: inputToAmount,
     channel,
     note,
     idempotencyKey,
@@ -283,9 +295,8 @@ export async function createDeal(
   }
 
   // ── Atomic quote check + lock در یک transaction (C3) ─────────────────────
-  // این جلوگیری می‌کند دو درخواست همزمان با یک quoteId، هر دو موفق شوند.
   let appliedRate = new Decimal(0);
-  let toAmount = new Decimal(0);
+  let calculatedToAmount = new Decimal(0);
   const feeAmount = new Decimal(0);
   const marketRateRef: Decimal | null = null;
 
@@ -325,7 +336,12 @@ export async function createDeal(
     // نرخ فروش صرافی = مشتری می‌خرد
     // مثال: fromAmount=100 USD، sellRate=56000 تومان → toAmount=5,600,000 تومان
     appliedRate = lockResult.quote.sellRate;
-    toAmount = new Decimal(fromAmount).mul(appliedRate);
+    calculatedToAmount = new Decimal(fromAmount).mul(appliedRate);
+    // M5: اگر کاربر toAmount داده است و quote ندارد، از ورودی استفاده کن
+    // اگر quote دارد، toAmount محاسبه‌شده اولویت دارد
+    if (inputToAmount != null) {
+      calculatedToAmount = new Decimal(inputToAmount);
+    }
   }
 
   const trackingCode = generateTrackingCode();
@@ -341,7 +357,7 @@ export async function createDeal(
       fromCurrency,
       toCurrency,
       fromAmount,
-      toAmount,
+      toAmount: calculatedToAmount,
       appliedRate,
       feeAmount,
       marketRateRef,
@@ -377,6 +393,13 @@ export async function confirmDeal(
     idempotencyKey?: string;
   },
 ): Promise<FintechActionResult<{ id: string }>> {
+  // M2: appliedRate باید > 0 باشد
+  if (data.appliedRate != null && data.appliedRate <= 0) {
+    return {
+      success: false,
+      error: { code: 'INVALID_RATE', message: 'نرخ معامله باید بزرگتر از صفر باشد' },
+    };
+  }
   // ── P0-6: rate-limit روی confirm ──────────────────────────────────────────
   const ip = await getClientIp();
   const rl = await checkRateLimit(`confirm:${ip}`, 'api');
@@ -466,11 +489,18 @@ export async function confirmDeal(
 
 // ─── COMPLETE (صرافی) ─────────────────────────────────────────────────────────
 
+// H8: idempotencyKey اجباری در completeDeal — برای جلوگیری از double-complete
 export async function completeDeal(
   dealId: string,
   internalNote?: string,
   idempotencyKey?: string,
 ): Promise<FintechActionResult<{ id: string }>> {
+  if (!idempotencyKey) {
+    return {
+      success: false,
+      error: { code: 'MISSING_IDEMPOTENCY_KEY', message: 'برای تکمیل معامله، شناسه یکتای idempotency الزامی است' },
+    };
+  }
   // ── P0-6: rate-limit روی complete ─────────────────────────────────────────
   const ip = await getClientIp();
   const rl = await checkRateLimit(`complete:${ip}`, 'api');

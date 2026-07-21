@@ -5,6 +5,7 @@ import { requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeRevalidateTag } from '@/lib/safe-cache';
 import type { ExchangeRateData, FintechActionResult } from '@/types/types';
+import { unstable_cache } from 'next/cache';
 import { z } from 'zod';
 
 const exchangeRateSchema = z.object({
@@ -19,11 +20,19 @@ const exchangeRateSchema = z.object({
   description: z.string().optional(),
 });
 
+// C4: getExchangeRates با caching (۶۰ ثانیه مثل بقیه)
+const _getExchangeRatesCached = unstable_cache(
+  async () => {
+    return prisma.exchangeRate.findMany({
+      orderBy: [{ createdAt: 'desc' }],
+    });
+  },
+  ['exchange-rates:list:v1'],
+  { revalidate: 60, tags: ['market-rates:exchange-rates', 'exchange-rates'] },
+);
+
 export async function getExchangeRates(): Promise<ExchangeRateData[]> {
-  const exchangeRates = await prisma.exchangeRate.findMany({
-    orderBy: [{ createdAt: 'desc' }],
-  });
-  return exchangeRates;
+  return _getExchangeRatesCached();
 }
 
 export async function createExchangeRate(

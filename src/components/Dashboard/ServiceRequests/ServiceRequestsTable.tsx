@@ -200,9 +200,10 @@ export default function ServiceRequestsTable({
       limit: 15,
     });
     if (result.success && result.data) {
-      setRequests(result.data as ServiceRequest[]);
-      setTotalPages(result.pagination?.totalPages || 1);
-      setTotalCount(result.pagination?.total || 0);
+      const data = result.data as unknown as { data: ServiceRequest[]; pagination: { totalPages: number; total: number } };
+      setRequests(data.data);
+      setTotalPages(data.pagination?.totalPages || 1);
+      setTotalCount(data.pagination?.total || 0);
       setSelectedIds(new Set());
     }
     setLoading(false);
@@ -242,7 +243,7 @@ export default function ServiceRequestsTable({
       fetchRequests();
       onDataChanged?.();
     } else {
-      setBulkErrorMsg(result.message || 'خطا در حذف درخواست');
+      setBulkErrorMsg('error' in result ? result.error.message : 'خطا در حذف درخواست');
       setBulkErrorOpen(true);
     }
   };
@@ -255,7 +256,7 @@ export default function ServiceRequestsTable({
       fetchRequests();
       onDataChanged?.();
     } else {
-      setBulkErrorMsg(result.message || 'خطا در به‌روزرسانی گروهی');
+      setBulkErrorMsg('error' in result ? result.error.message : 'خطا در به‌روزرسانی گروهی');
       setBulkErrorOpen(true);
     }
   };

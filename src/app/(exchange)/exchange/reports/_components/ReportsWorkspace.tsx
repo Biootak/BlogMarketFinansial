@@ -90,7 +90,7 @@ function calcSummary(rows: TransactionRow[]): SummaryStats {
   };
   for (const r of rows) {
     if (r.status === 'COMPLETED') stats.completedCount++;
-    if (r.currency === 'AFN') stats.totalVolumeAfn += r.amount / 100;
+    if (r.currency === 'AFN') stats.totalVolumeAfn += Number(r.amount) / 100;
     stats.byKind[r.kind] = (stats.byKind[r.kind] ?? 0) + 1;
   }
   return stats;
@@ -209,7 +209,7 @@ export default function ReportsWorkspace({ exchangeId, initialRows, initialTotal
       header: 'مبلغ',
       render: (r) => (
         <span className="tabular-nums" style={{ direction: 'ltr', display: 'inline-block' }}>
-          {new Intl.NumberFormat('fa-IR').format(r.amount / 100)} {r.currency}
+          {new Intl.NumberFormat('fa-IR').format(Number(r.amount) / 100)} {r.currency}
         </span>
       ),
     },
@@ -219,7 +219,7 @@ export default function ReportsWorkspace({ exchangeId, initialRows, initialTotal
       render: (r) =>
         r.destAmount ? (
           <span className="tabular-nums" style={{ direction: 'ltr', display: 'inline-block' }}>
-            {new Intl.NumberFormat('fa-IR').format(r.destAmount / 100)} {r.destCurrency ?? ''}
+            {new Intl.NumberFormat('fa-IR').format(Number(r.destAmount) / 100)} {r.destCurrency ?? ''}
           </span>
         ) : (
           <span style={{ color: 'var(--at-fg-subtle)' }}>—</span>

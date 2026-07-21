@@ -187,7 +187,6 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
   const [otpSending, setOtpSending] = useState(false);
   const [otpVerifying, setOtpVerifying] = useState(false);
   const [otpError, setOtpError] = useState('');
-  const [_otpSent, setOtpSent] = useState(false);
   const [otpResendTimer, setOtpResendTimer] = useState(0);
   const [otpResult, setOtpResult] = useState<{
     accountCreated?: boolean;
@@ -295,11 +294,9 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
     const res = await issueServiceOtp({ email, trackingCode });
     setOtpSending(false);
     if (res.success) {
-      setOtpSent(true);
       setOtpResendTimer(60);
     } else {
-      setOtpError(res.message);
-      if (res.retryAfterMs) setOtpResendTimer(Math.ceil(res.retryAfterMs / 1000));
+      setOtpError(res.error.message);
     }
   }, []);
 
@@ -330,22 +327,26 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
       };
       const res = await createServiceRequest(payload);
       if (!res.success) {
-        setResult({ status: 'error', message: res.message });
+        setResult({ status: 'error', message: res.error.message });
         setSubmitShake(true);
         setTimeout(() => setSubmitShake(false), 400);
         return;
       }
       // Go to OTP step if email was provided
       const email = data.email?.trim();
-      if (email && res.trackingCode) {
-        setTrackingCodeForOtp(res.trackingCode);
+      if (email && res.data.trackingCode) {
+        setTrackingCodeForOtp(res.data.trackingCode);
         idempotencyKeyRef.current = crypto.randomUUID(); // reset for safety
         setDir('fwd');
         setStep(4);
-        await sendOtp(email, res.trackingCode);
+        await sendOtp(email, res.data.trackingCode);
       } else {
         // No email → show success directly
-        setResult({ status: 'success', message: res.message, trackingCode: res.trackingCode });
+        setResult({
+          status: 'success',
+          message: 'درخواست شما با موفقیت ثبت شد.',
+          trackingCode: res.data.trackingCode,
+        });
         reset();
         setStep(1);
       }
@@ -370,12 +371,16 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
     });
     setOtpVerifying(false);
     if (res.success) {
-      setOtpResult({ accountCreated: res.accountCreated, loginHint: res.loginHint });
-      setResult({ status: 'success', message: res.message, trackingCode: trackingCodeForOtp });
+      setOtpResult({ accountCreated: res.data.accountCreated, loginHint: res.data.loginHint });
+      setResult({
+        status: 'success',
+        message: 'درخواست شما با موفقیت ثبت شد.',
+        trackingCode: trackingCodeForOtp,
+      });
       reset();
       setStep(1);
     } else {
-      setOtpError(res.message);
+      setOtpError(res.error.message);
     }
   };
 
@@ -390,7 +395,6 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
     setResult({ status: 'idle' });
     setOtpResult(null);
     setOtpCode('');
-    setOtpSent(false);
     setOtpError('');
     setOtpResendTimer(0);
     setTrackingCodeForOtp('');
@@ -894,14 +898,12 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
             <div className={s.fieldGroup}>
               <textarea
                 id="description"
-                {...register('description')}
+                name={register('description').name}
+                onChange={register('description').onChange}
+                onBlur={register('description').onBlur}
                 ref={(el) => {
-                  (
-                    register('description') as unknown as {
-                      ref: (el: HTMLTextAreaElement | null) => void;
-                    }
-                  ).ref(el);
-                  (textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = el;
+                  register('description').ref(el);
+                  textareaRef.current = el;
                 }}
                 rows={2}
                 className={s.textarea}

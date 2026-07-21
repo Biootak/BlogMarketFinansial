@@ -325,10 +325,12 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
 
     // بارگذاری پروفایل
     setProfileLoading(true);
+    // H10: prefill race fix — getServiceProfile data درون res.data است
+    // H9: FintechActionResult بازگشتی → .data برای دسترسی به مقادیر
     getUserServiceProfile()
       .then((res) => {
         setProfileLoading(false);
-        if (res.success) setUserProfile(res);
+        if (res.success) setUserProfile(res.data);
       })
       .catch(() => setProfileLoading(false));
 
@@ -437,16 +439,16 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
       });
       if (!res.success) {
         // اگر شماره موبایل نداشت (race condition) → modal باز کن
-        if (res.error === 'PHONE_REQUIRED') {
+        if (res.error.code === 'PHONE_REQUIRED') {
           setShowPhoneModal(true);
           return;
         }
-        setFormError(res.message);
+        setFormError(res.error.message);
         setSubmitShake(true);
         setTimeout(() => setSubmitShake(false), 400);
         return;
       }
-      setTrackingCode(res.trackingCode ?? '');
+      setTrackingCode(res.data.trackingCode);
       setSuccess(true);
     } catch {
       setFormError('خطایی رخ داد. لطفاً دوباره تلاش کنید.');

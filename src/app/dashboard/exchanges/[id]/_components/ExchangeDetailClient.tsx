@@ -301,7 +301,7 @@ export default function ExchangeDetailClient({
                 </div>
                 <span className={s.txKind}>{KIND_FA[tx.kind] ?? tx.kind}</span>
                 <span className={s.txAmount}>
-                  {new Intl.NumberFormat('fa-IR').format(tx.amount / 100)} {tx.currency}
+                  {new Intl.NumberFormat('fa-IR').format(Number(tx.amount) / 100)} {tx.currency}
                 </span>
                 <span
                   className={s.txStatus}

@@ -133,7 +133,7 @@ export default function TransactionsWorkspace({
       header: 'مبلغ',
       render: (r) => (
         <span className="tabular-nums">
-          {new Intl.NumberFormat('fa-IR').format(r.amount / 100)} {r.currency}
+          {new Intl.NumberFormat('fa-IR').format(Number(r.amount) / 100)} {r.currency}
         </span>
       ),
     },
@@ -143,7 +143,7 @@ export default function TransactionsWorkspace({
       render: (r) =>
         r.destAmount ? (
           <span className="tabular-nums">
-            {new Intl.NumberFormat('fa-IR').format(r.destAmount / 100)} {r.destCurrency ?? ''}
+            {new Intl.NumberFormat('fa-IR').format(Number(r.destAmount) / 100)} {r.destCurrency ?? ''}
           </span>
         ) : (
           <span style={{ color: 'var(--at-fg-subtle)' }}>—</span>

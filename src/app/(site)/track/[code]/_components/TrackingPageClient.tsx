@@ -60,7 +60,7 @@ interface StatusLogEntry {
   createdAt: Date | string;
 }
 
-interface TrackingData {
+export interface TrackingData {
   trackingCode: string;
   fullName: string;
   serviceType: string;
@@ -99,9 +99,9 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
     try {
       const res = await getServiceRequestByTrackingCode(code);
       if (res.success && res.data) {
-        setData(res.data as TrackingData);
+        setData(res.data as unknown as TrackingData);
       } else {
-        setError(res.message ?? 'درخواستی با این کد یافت نشد.');
+        setError('error' in res ? res.error.message : 'درخواستی با این کد یافت نشد.');
       }
     } catch {
       setError('خطا در بارگذاری وضعیت. دوباره تلاش کنید.');

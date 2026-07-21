@@ -13,8 +13,15 @@
  *     - طلا/سکه ارز نیست (تبدیل‌پذیری متفاوت دارد)
  *     - انس طلا با USD pivot می‌خواهد (نه تومان)
  *     - این‌ها در جداول جدای صفحه نمایش داده می‌شوند.
+ *
+ * M12: IRT_RIAL_RATIO برای تبدیل ریال به تومان — اینجا ۱۰ (هر تومان = ۱۰ ریال).
+ * در ایران درست است ولی برای پشتیبانی از افغانستان در آینده می‌توان ratio را
+ * از system settings خواند.
  * ----------------------------------------------------------------------------
  */
+
+/** M12: نسبت تومان به ریال — ۱ تومان = ۱۰ ریال. */
+export const IRT_RIAL_RATIO = 10;
 
 import type { MarketRateItem } from '@/lib/market-rates/types';
 import type { CryptoTickerRate, ExchangeRateData } from '@/types/types';
@@ -428,8 +435,8 @@ export function buildCryptoPairs(cryptoRates: CryptoTickerRate[], usdtToman: num
 
   for (const r of cryptoRates) {
     const sym = r.symbol.toUpperCase();
-    // irrPrice از Exir به ریال است → ÷10 = تومان
-    const toman = r.irrPrice > 0 ? r.irrPrice / 10 : r.usdtPrice * usdtToman;
+    // irrPrice از Exir به ریال است → ÷IRT_RIAL_RATIO = تومان
+    const toman = r.irrPrice > 0 ? r.irrPrice / IRT_RIAL_RATIO : r.usdtPrice * usdtToman;
     if (!Number.isFinite(toman) || toman <= 0) continue;
 
     pairs.push({
