@@ -26,6 +26,7 @@
 import { logout } from '@/actions/auth-actions';
 import Avatar from '@/components/Avatar/Avatar';
 import Logo from '@/components/Logo/Logo';
+import { NotificationBadge } from '@/components/Dashboard/DashboardPage/NotificationBadge';
 import { useToast } from '@/components/ui/use-toast';
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
@@ -38,6 +39,7 @@ import {
   HiOutlineArrowRightOnRectangle,
   HiOutlineArrowsRightLeft,
   HiOutlineBanknotes,
+  HiOutlineBell,
   HiOutlineBuildingStorefront,
   HiOutlineChartBarSquare,
   HiOutlineChevronDown,
@@ -56,10 +58,12 @@ import {
   HiOutlineSquares2X2,
   HiOutlineTag,
   HiOutlineUserCircle,
+  HiOutlineUserGroup,
   HiOutlineUsers,
   HiOutlineWallet,
   HiOutlineXMark,
   HiOutlineCreditCard as HiOutlineVirtualCard,
+  HiOutlineKey,
 } from 'react-icons/hi2';
 
 const ICON_CLASS = 'w-[19px] h-[19px]';
@@ -326,6 +330,30 @@ function getMenu(role: UserRole): NavSection[] {
     title: 'تسویه‌حساب صرافی‌ها',
   };
 
+  const permissions: MenuItem = {
+    id: 'permissions',
+    href: '/dashboard/permissions',
+    icon: <HiOutlineKey className={ICON_CLASS} />,
+    label: 'مجوزها',
+    title: 'مدیریت مجوزهای سیستم',
+  };
+
+  const customers: MenuItem = {
+    id: 'customers',
+    href: '/dashboard/customers',
+    icon: <HiOutlineUserGroup className={ICON_CLASS} />,
+    label: 'مشتریان',
+    title: 'مدیریت مشتریان صرافی',
+  };
+
+  const notifications: MenuItem = {
+    id: 'notifications',
+    href: '/dashboard/notifications',
+    icon: <HiOutlineBell className={ICON_CLASS} />,
+    label: 'اعلان‌ها',
+    title: 'مرکز اعلان‌ها',
+  };
+
   switch (role) {
     case 'OWNER':
     case 'SUPERADMIN':
@@ -349,14 +377,14 @@ function getMenu(role: UserRole): NavSection[] {
           id: 'fintech',
           index: '۰۴',
           label: 'فین‌تک',
-          items: [kycReview, fraudReview, settlements, auditLog],
+          items: [customers, kycReview, fraudReview, settlements, auditLog],
         },
-        { id: 'admin', index: '۰۵', label: 'مدیریت', items: [users, reports, settings] },
+        { id: 'admin', index: '۰۵', label: 'مدیریت', items: [users, permissions, reports, settings] },
         {
           id: 'account',
           index: '۰۶',
           label: 'حساب',
-          items: [wallet, virtualCards, kyc, myDeals, transfer, devices, myRequests, profile],
+          items: [wallet, virtualCards, kyc, myDeals, transfer, devices, notifications, myRequests, profile],
         },
       ];
     case 'ADMIN':
@@ -380,14 +408,14 @@ function getMenu(role: UserRole): NavSection[] {
           id: 'fintech',
           index: '۰۴',
           label: 'فین‌تک',
-          items: [kycReview, fraudReview, settlements, auditLog],
+          items: [customers, kycReview, fraudReview, settlements, auditLog],
         },
-        { id: 'admin', index: '۰۵', label: 'مدیریت', items: [users] },
+        { id: 'admin', index: '۰۵', label: 'مدیریت', items: [users, permissions] },
         {
           id: 'account',
           index: '۰۶',
           label: 'حساب',
-          items: [wallet, virtualCards, kyc, myDeals, transfer, devices, myRequests, profile],
+          items: [wallet, virtualCards, kyc, myDeals, transfer, devices, notifications, myRequests, profile],
         },
       ];
     case 'SUPPORT':
@@ -525,6 +553,7 @@ const NavItem: React.FC<NavItemProps> = ({
         </span>
         <span className="dash-side__item-ico">{item.icon}</span>
         <span className="dash-side__item-label">{item.label}</span>
+        {item.id === 'notifications' && <NotificationBadge />}
         {item.shortcut && isOpen && (
           <kbd className="dash-side__item-kbd" aria-hidden>
             {item.shortcut}

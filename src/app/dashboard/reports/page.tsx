@@ -6,7 +6,12 @@ import { RefreshCw } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
-import { HiOutlineChartBar, HiOutlineCommandLine, HiOutlineSquares2X2 } from 'react-icons/hi2';
+import {
+  HiOutlineBanknotes,
+  HiOutlineChartBar,
+  HiOutlineCommandLine,
+  HiOutlineSquares2X2,
+} from 'react-icons/hi2';
 
 const SystemReports = dynamic(() => import('@/components/Dashboard/Reports/SystemReports'), {
   loading: () => <ReportsSkeleton />,
@@ -23,28 +28,38 @@ const SystemLogsData = dynamic(() => import('./SystemLogsData'), {
   ssr: false,
 });
 
+const FinanceReport = dynamic(
+  () => import('@/components/Dashboard/Reports/FinanceReport'),
+  { loading: () => <ReportsSkeleton />, ssr: false },
+);
+
 export default function ReportsPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('finance');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
     router.refresh();
-    // Re-enable button after brief animation
     setTimeout(() => setIsRefreshing(false), 800);
   }, [router]);
 
   const tabs = [
     {
+      id: 'finance',
+      label: 'گزارش مالی',
+      icon: HiOutlineBanknotes,
+      component: <FinanceReport />,
+    },
+    {
       id: 'overview',
-      label: 'نمای کلی',
+      label: 'نمای کلی بلاگ',
       icon: HiOutlineSquares2X2,
       component: <SystemReports />,
     },
     {
       id: 'activity',
-      label: 'گزارش فعالیت‌ها',
+      label: 'فعالیت‌ها',
       icon: HiOutlineChartBar,
       component: <ActivityLog />,
     },

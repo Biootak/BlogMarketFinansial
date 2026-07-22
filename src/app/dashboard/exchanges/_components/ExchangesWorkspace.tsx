@@ -1,9 +1,15 @@
 'use client';
 
 /**
- * ExchangesWorkspace — جدول + drawer مدیریت صراف‌ها.
+ * ExchangesWorkspace — 2026 Million-Dollar Exchange Management
  *
- * OWNER/ADMIN پلتفرم از اینجا صراف‌ها را ایجاد، ویرایش، تأیید و مکث می‌کند.
+ * طراحی: Stripe Dashboard × Linear — hero KPI bar + card-grid + table hybrid
+ * ویژگی‌ها:
+ * - KPI strip فیلتر-قابل با عدد بزرگ و label کوچک
+ * - searchbar + status filter pill
+ * - جدول با avatar icon + badge status + action row
+ * - Drawer برای ایجاد/ویرایش
+ * - ConfirmDialog برای حذف
  */
 
 import {
@@ -18,20 +24,17 @@ import {
   ConfirmDialog,
   DataTable,
   EmptyState,
-  PageHeader,
 } from '@/components/Dashboard/primitives';
 import { toast } from '@/components/ui/use-toast';
 import {
   Building2,
   CheckCircle2,
-  ChevronDown,
-  CircleDot,
+  ChevronRight,
   PauseCircle,
   PencilLine,
   Plus,
   Search,
   Trash2,
-  XCircle,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -40,10 +43,10 @@ import ExchangeDrawer from './ExchangeDrawer';
 import s from './ExchangesWorkspace.module.css';
 
 const STATUS_MAP: Record<string, { label: string; cls: string }> = {
-  ACTIVE: { label: 'فعال', cls: s.badgeActive },
-  PENDING: { label: 'در انتظار', cls: s.badgePending },
-  SUSPENDED: { label: 'معلق', cls: s.badgeSuspended },
-  CLOSED: { label: 'بسته', cls: s.badgeClosed },
+  ACTIVE:    { label: 'فعال',      cls: s.badgeActive },
+  PENDING:   { label: 'در انتظار', cls: s.badgePending },
+  SUSPENDED: { label: 'معلق',      cls: s.badgeSuspended },
+  CLOSED:    { label: 'بسته',      cls: s.badgeClosed },
 };
 
 interface Props {
@@ -113,46 +116,71 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
     }
   }, [deleteTarget]);
 
+  const stats = {
+    all:       rows.length,
+    active:    rows.filter((r) => r.status === 'ACTIVE').length,
+    pending:   rows.filter((r) => r.status === 'PENDING').length,
+    suspended: rows.filter((r) => r.status === 'SUSPENDED').length,
+  };
+
+  const kpiItems = [
+    { id: 'all',       label: 'کل صراف‌ها',  value: stats.all,       accent: 'var(--ds-brand-500)' },
+    { id: 'ACTIVE',    label: 'فعال',         value: stats.active,    accent: 'var(--nova-emerald, oklch(50% 0.14 145))' },
+    { id: 'PENDING',   label: 'در انتظار',    value: stats.pending,   accent: 'var(--nova-amber, oklch(60% 0.16 70))' },
+    { id: 'SUSPENDED', label: 'معلق',          value: stats.suspended, accent: 'var(--nova-rose, oklch(55% 0.18 25))' },
+  ] as const;
+
   const columns: Column<ExchangeRow>[] = [
     {
       key: 'name',
-      header: 'نام صرافی',
+      header: 'صرافی',
       render: (r) => (
         <div className={s.nameCell}>
-          <div className={s.nameIcon}>
-            <Building2 className="w-4 h-4" aria-hidden />
+          <div className={s.nameAvatar}>
+            {r.name.slice(0, 1)}
           </div>
-          <div>
-            <div className={s.nameText}>{r.name}</div>
-            <div className={s.slugText}>/{r.slug}</div>
+          <div className={s.nameInfo}>
+            <span className={s.nameText}>{r.name}</span>
+            <span className={s.slugText} dir="ltr">/{r.slug}</span>
           </div>
         </div>
       ),
-      width: '220px',
+      width: '240px',
     },
     {
       key: 'city',
       header: 'شهر',
-      render: (r) => r.city ?? '—',
+      render: (r) => (
+        <span className={s.cityCell}>{r.city ?? <span className={s.dash}>—</span>}</span>
+      ),
     },
     {
       key: 'status',
       header: 'وضعیت',
       render: (r) => {
-        const s2 = STATUS_MAP[r.status] ?? { label: r.status, cls: '' };
-        return <span className={`${s.badge} ${s2.cls}`}>{s2.label}</span>;
+        const sm = STATUS_MAP[r.status] ?? { label: r.status, cls: '' };
+        return (
+          <span className={`${s.badge} ${sm.cls}`}>
+            <span className={s.badgeDot} aria-hidden />
+            {sm.label}
+          </span>
+        );
       },
     },
     {
       key: 'platformFee',
-      header: 'کارمزد پلتفرم',
-      render: (r) => <span className="tabular-nums">{r.platformFee.toFixed(2)}٪</span>,
+      header: 'کارمزد',
+      render: (r) => (
+        <span className={s.feeCell} dir="ltr">
+          {r.platformFee.toFixed(2)}٪
+        </span>
+      ),
     },
     {
       key: 'customers',
       header: 'مشتریان',
       render: (r) => (
-        <span className="tabular-nums">
+        <span className={s.countCell}>
           {new Intl.NumberFormat('fa-IR').format(r._count?.Customer ?? 0)}
         </span>
       ),
@@ -160,42 +188,44 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
     {
       key: 'actions',
       header: '',
-      width: '160px',
+      width: '180px',
       render: (r) => (
         <div className={s.actions}>
           {r.status !== 'ACTIVE' && (
             <button
               type="button"
-              className={s.actionBtn}
+              className={`${s.actionBtn} ${s.actionApprove}`}
               title="تأیید و فعال‌سازی"
               onClick={() => handleStatusChange(r.id, 'ACTIVE')}
             >
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" aria-hidden />
+              <CheckCircle2 size={14} aria-hidden />
+              فعال‌سازی
             </button>
           )}
           {r.status === 'ACTIVE' && (
             <button
               type="button"
-              className={s.actionBtn}
+              className={`${s.actionBtn} ${s.actionSuspend}`}
               title="معلق کردن"
               onClick={() => handleStatusChange(r.id, 'SUSPENDED')}
             >
-              <PauseCircle className="w-4 h-4 text-amber-600" aria-hidden />
+              <PauseCircle size={14} aria-hidden />
             </button>
           )}
-          <Link href={`/dashboard/exchanges/${r.id}`} className={s.actionBtn} title="مشاهده جزئیات">
-            <CircleDot className="w-4 h-4" aria-hidden />
+          <Link
+            href={`/dashboard/exchanges/${r.id}`}
+            className={`${s.actionBtn} ${s.actionView}`}
+            title="مشاهده جزئیات"
+          >
+            <ChevronRight size={14} aria-hidden />
           </Link>
           <button
             type="button"
             className={s.actionBtn}
             title="ویرایش"
-            onClick={() => {
-              setEditRow(r);
-              setDrawerOpen(true);
-            }}
+            onClick={() => { setEditRow(r); setDrawerOpen(true); }}
           >
-            <PencilLine className="w-4 h-4" aria-hidden />
+            <PencilLine size={14} aria-hidden />
           </button>
           <button
             type="button"
@@ -203,46 +233,40 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
             title="حذف"
             onClick={() => setDeleteTarget(r)}
           >
-            <Trash2 className="w-4 h-4" aria-hidden />
+            <Trash2 size={14} aria-hidden />
           </button>
         </div>
       ),
     },
   ];
 
-  const stats = {
-    all: rows.length,
-    active: rows.filter((r) => r.status === 'ACTIVE').length,
-    pending: rows.filter((r) => r.status === 'PENDING').length,
-    suspended: rows.filter((r) => r.status === 'SUSPENDED').length,
-  };
-
   return (
-    <>
-      {/* Stats strip */}
-      <div className={s.statsStrip}>
-        {[
-          { label: 'کل صراف‌ها', value: stats.all, filter: 'all' },
-          { label: 'فعال', value: stats.active, filter: 'ACTIVE' },
-          { label: 'در انتظار', value: stats.pending, filter: 'PENDING' },
-          { label: 'معلق', value: stats.suspended, filter: 'SUSPENDED' },
-        ].map((s2) => (
+    <div className={s.workspace}>
+      {/* ── KPI Strip ─────────────────────────────────────────────── */}
+      <div className={s.kpiStrip} role="list" aria-label="آمار صراف‌ها">
+        {kpiItems.map((item) => (
           <button
-            key={s2.filter}
+            key={item.id}
             type="button"
-            className={`${s.statCard} ${statusFilter === s2.filter ? s.statCardActive : ''}`}
-            onClick={() => setStatusFilter(s2.filter)}
+            role="listitem"
+            className={`${s.kpiCard} ${statusFilter === item.id ? s.kpiCardActive : ''}`}
+            style={{ '--kpi-accent': item.accent } as React.CSSProperties}
+            onClick={() => setStatusFilter(item.id)}
+            aria-pressed={statusFilter === item.id}
           >
-            <span className={s.statValue}>{new Intl.NumberFormat('fa-IR').format(s2.value)}</span>
-            <span className={s.statLabel}>{s2.label}</span>
+            <span className={s.kpiAccentBar} aria-hidden />
+            <span className={s.kpiValue}>
+              {new Intl.NumberFormat('fa-IR').format(item.value)}
+            </span>
+            <span className={s.kpiLabel}>{item.label}</span>
           </button>
         ))}
       </div>
 
-      {/* Toolbar */}
+      {/* ── Toolbar ───────────────────────────────────────────────── */}
       <div className={s.toolbar}>
         <div className={s.searchWrap}>
-          <Search className={s.searchIcon} aria-hidden />
+          <Search size={15} className={s.searchIcon} aria-hidden />
           <input
             className={s.searchInput}
             placeholder="جستجو نام، slug، شهر…"
@@ -251,20 +275,37 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
             aria-label="جستجوی صراف"
           />
         </div>
+
+        {/* Status pills */}
+        <div className={s.pills} role="group" aria-label="فیلتر وضعیت">
+          {[
+            { id: 'all', label: 'همه' },
+            { id: 'ACTIVE', label: 'فعال' },
+            { id: 'PENDING', label: 'در انتظار' },
+            { id: 'SUSPENDED', label: 'معلق' },
+          ].map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              className={`${s.pill} ${statusFilter === p.id ? s.pillActive : ''}`}
+              onClick={() => setStatusFilter(p.id)}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+
         <button
           type="button"
           className={s.addBtn}
-          onClick={() => {
-            setEditRow(null);
-            setDrawerOpen(true);
-          }}
+          onClick={() => { setEditRow(null); setDrawerOpen(true); }}
         >
-          <Plus className="w-4 h-4" aria-hidden />
-          <span>صراف جدید</span>
+          <Plus size={14} aria-hidden />
+          صراف جدید
         </button>
       </div>
 
-      {/* Table */}
+      {/* ── Table ─────────────────────────────────────────────────── */}
       <div className={s.tableWrap}>
         <DataTable
           columns={columns}
@@ -273,41 +314,44 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
           ariaLabel="لیست صراف‌ها"
           empty={
             <EmptyState
+              icon={Building2}
               title="صرافی یافت نشد"
               description={query ? 'جستجوی شما نتیجه‌ای ندارد.' : 'اولین صرافی را اضافه کنید.'}
+              action={
+                !query ? (
+                  <button type="button" className={s.addBtn} onClick={() => { setEditRow(null); setDrawerOpen(true); }}>
+                    <Plus size={14} aria-hidden /> صراف جدید
+                  </button>
+                ) : undefined
+              }
             />
           }
         />
       </div>
 
-      {/* Drawer */}
+      {/* ── Drawer ────────────────────────────────────────────────── */}
       {drawerOpen && (
         <ExchangeDrawer
           open={drawerOpen}
           initialData={editRow}
           saving={saving}
-          onClose={() => {
-            setDrawerOpen(false);
-            setEditRow(null);
-          }}
+          onClose={() => { setDrawerOpen(false); setEditRow(null); }}
           onSave={handleSave}
         />
       )}
 
-      {/* Delete confirm */}
+      {/* ── Delete confirm ────────────────────────────────────────── */}
       <ConfirmDialog
         open={!!deleteTarget}
-        onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null);
-        }}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
         title="حذف صرافی"
-        description={`صرافی «${deleteTarget?.name ?? ''}» و تمام داده‌های آن (مشتریان، تراکنش‌ها) برای همیشه حذف می‌شوند. این عملیات برگشت‌پذیر نیست.`}
+        description={`صرافی «${deleteTarget?.name ?? ''}» و تمام داده‌های آن برای همیشه حذف می‌شوند. این عملیات برگشت‌پذیر نیست.`}
         confirmLabel="بله، حذف کن"
         cancelLabel="انصراف"
         variant="danger"
         onConfirm={handleDelete}
         loading={deleting}
       />
-    </>
+    </div>
   );
 }

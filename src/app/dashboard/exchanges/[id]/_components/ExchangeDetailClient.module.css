@@ -15,6 +15,16 @@
   to   { opacity: 1; transform: translateX(0); }
 }
 
+@keyframes tabSlideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes tabFadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
 @keyframes badgePop {
   0%   { transform: scale(1); }
   40%  { transform: scale(1.06); }
@@ -478,4 +488,188 @@
 .emptyIcon {
   opacity: 0.25;
   color: var(--ds-text-muted);
+}
+
+/* ── Tabs ─────────────────────────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+.tabsList {
+  background: var(--at-surface, var(--ds-surface));
+  border: 1px solid var(--at-line, var(--ds-border-default));
+  border-radius: var(--ds-radius-xl);
+  padding: var(--ds-space-1);
+  box-shadow: var(--ds-shadow-sm);
+  display: flex;
+  gap: var(--ds-space-1);
+}
+
+.tabsTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  padding: var(--ds-space-1-5) var(--ds-space-3);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  border-radius: var(--ds-radius-lg);
+  transition:
+    background var(--ds-duration-fast) var(--ds-ease-out-quart),
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+/* active indicator underline */
+.tabsTrigger[data-state="active"] {
+  box-shadow: inset 0 -2px 0 0 var(--at-accent, var(--ds-brand-500));
+}
+
+.tabCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 18px;
+  padding-inline: 4px;
+  block-size: 18px;
+  border-radius: var(--ds-radius-full);
+  font-size: 0.65rem;
+  font-weight: var(--ds-weight-bold);
+  background: var(--at-accent-soft, color-mix(in oklch, var(--ds-brand-500) 12%, transparent));
+  color: var(--at-accent, var(--ds-brand-500));
+}
+
+.tabContent {
+  outline: none;
+  /* Radix emits data-state="active"|"inactive" */
+}
+
+.tabContent[data-state="active"] {
+  animation: tabSlideIn 220ms var(--ds-ease-out-quart) both;
+}
+
+.tabContent[data-state="inactive"] {
+  animation: tabFadeOut 120ms var(--ds-ease-out-quart) both;
+}
+
+/* ── Card Header Actions ──────────────────────────────────────────────────── */
+.cardHeaderActions {
+  margin-inline-start: auto;
+}
+
+.inviteBtn {
+  gap: var(--ds-space-1);
+}
+
+/* ── Role Badge (colored) ─────────────────────────────────────────────────── */
+.roleBadge {
+  padding: 3px 10px;
+  border-radius: var(--ds-radius-full);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  background: color-mix(in oklch, var(--role-c, var(--ds-brand-500)) 12%, transparent);
+  color: var(--role-c, var(--ds-brand-500));
+  flex-shrink: 0;
+  border: 1px solid color-mix(in oklch, var(--role-c, var(--ds-brand-500)) 22%, transparent);
+}
+
+/* ── Joined Date ──────────────────────────────────────────────────────────── */
+.joinedDate {
+  font-size: var(--ds-text-xs);
+  color: var(--at-fg-muted, var(--ds-text-muted));
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Revoke Button ────────────────────────────────────────────────────────── */
+.revokeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 28px;
+  block-size: 28px;
+  border-radius: var(--ds-radius-md);
+  border: none;
+  background: transparent;
+  color: var(--ds-text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity var(--ds-duration-fast) var(--ds-ease-out-quart),
+    background var(--ds-duration-fast) var(--ds-ease-out-quart),
+    color var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.staffRow:hover .revokeBtn,
+.revokeBtn:focus-visible {
+  opacity: 1;
+}
+
+.revokeBtn:hover {
+  background: var(--ds-status-error-bg, oklch(96% 0.05 25));
+  color: var(--ds-status-error-fg, oklch(38% 0.14 25));
+}
+
+/* ── View All Link ────────────────────────────────────────────────────────── */
+.viewAllLink {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--at-accent, var(--ds-brand-500));
+  text-decoration: none;
+  padding: 4px 10px;
+  border-radius: var(--ds-radius-md);
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 25%, transparent);
+  background: var(--at-accent-soft, color-mix(in oklch, var(--ds-brand-500) 10%, transparent));
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.viewAllLink:hover {
+  background: color-mix(in oklch, var(--ds-brand-500) 16%, transparent);
+}
+
+/* ── Invite Dialog ────────────────────────────────────────────────────────── */
+.inviteDialog {
+  max-inline-size: 420px;
+}
+
+.inviteBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  padding-block: var(--ds-space-2);
+}
+
+.inviteField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+}
+
+.inviteHint {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  margin: 0;
+}
+
+.inviteFooter {
+  display: flex;
+  justify-content: flex-start;
+  gap: var(--ds-space-2);
+}
+
+/* ── Spinner ──────────────────────────────────────────────────────────────── */
+.spinner {
+  display: inline-block;
+  inline-size: 14px;
+  block-size: 14px;
+  border: 2px solid currentColor;
+  border-block-start-color: transparent;
+  border-radius: var(--ds-radius-full);
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
