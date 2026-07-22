@@ -35,36 +35,32 @@ interface SystemMetrics {
 }
 
 export async function getSystemMetrics(): Promise<SystemMetrics> {
-  try {
-    const cpus = os.cpus();
-    const cpuUsage = (os.loadavg()[0] * 100) / cpus.length;
-    const totalMem = os.totalmem();
-    const freeMem = os.freemem();
-    const usedMem = totalMem - freeMem;
+  const cpus = os.cpus();
+  const cpuUsage = (os.loadavg()[0] * 100) / cpus.length;
+  const totalMem = os.totalmem();
+  const freeMem = os.freemem();
+  const usedMem = totalMem - freeMem;
 
-    const metrics: SystemMetrics = {
-      cpu: {
-        usage: Math.round(cpuUsage * 100) / 100,
-        count: cpus.length,
-        model: cpus[0].model,
-      },
-      memory: {
-        total: totalMem,
-        free: freeMem,
-        used: usedMem,
-        usagePercentage: Math.round((usedMem / totalMem) * 100),
-      },
-      os: {
-        platform: process.platform,
-        release: os.release(),
-        uptime: os.uptime(),
-      },
-    };
+  const metrics: SystemMetrics = {
+    cpu: {
+      usage: Math.round(cpuUsage * 100) / 100,
+      count: cpus.length,
+      model: cpus[0].model,
+    },
+    memory: {
+      total: totalMem,
+      free: freeMem,
+      used: usedMem,
+      usagePercentage: Math.round((usedMem / totalMem) * 100),
+    },
+    os: {
+      platform: process.platform,
+      release: os.release(),
+      uptime: os.uptime(),
+    },
+  };
 
-    return metrics;
-  } catch (error) {
-    throw error;
-  }
+  return metrics;
 }
 
 export async function checkDiskSpace(drive: string): Promise<DiskSpace | null> {

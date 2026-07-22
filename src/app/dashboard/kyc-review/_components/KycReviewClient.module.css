@@ -170,9 +170,8 @@
   font-weight: var(--ds-weight-medium);
   border: 1px solid;
   cursor: pointer;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .docsChip:hover:not(:disabled) {

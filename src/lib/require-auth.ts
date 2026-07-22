@@ -69,9 +69,7 @@ export async function requireAuthor(): Promise<AuthResult> {
 // سپس بررسی می‌کند آیا permissionKey خواسته‌شده وجود دارد.
 import prisma from '@/lib/db';
 
-export async function requirePermission(
-  permissionKey: string,
-): Promise<AuthResult> {
+export async function requirePermission(permissionKey: string): Promise<AuthResult> {
   const userResult = await requireUser();
   if (!userResult.success) return userResult;
 

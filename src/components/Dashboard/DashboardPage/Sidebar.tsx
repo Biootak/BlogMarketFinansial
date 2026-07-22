@@ -37,28 +37,28 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   HiOutlineArrowRightOnRectangle,
   HiOutlineArrowsRightLeft,
+  HiOutlineBanknotes,
   HiOutlineBuildingStorefront,
   HiOutlineChartBarSquare,
   HiOutlineChevronDown,
+  HiOutlineClipboardDocumentCheck,
   HiOutlineClipboardDocumentList,
   HiOutlineCog6Tooth,
+  HiOutlineCreditCard,
   HiOutlineCurrencyDollar,
+  HiOutlineDevicePhoneMobile,
   HiOutlineDocumentText,
+  HiOutlineExclamationTriangle,
   HiOutlineHome,
   HiOutlineInboxArrowDown,
   HiOutlineMegaphone,
+  HiOutlineShieldCheck,
   HiOutlineSquares2X2,
   HiOutlineTag,
   HiOutlineUserCircle,
   HiOutlineUsers,
-  HiOutlineXMark,
   HiOutlineWallet,
-  HiOutlineShieldCheck,
-  HiOutlineClipboardDocumentCheck,
-  HiOutlineExclamationTriangle,
-  HiOutlineBanknotes,
-  HiOutlineCreditCard,
-  HiOutlineDevicePhoneMobile,
+  HiOutlineXMark,
 } from 'react-icons/hi2';
 
 const ICON_CLASS = 'w-[19px] h-[19px]';
@@ -340,7 +340,12 @@ function getMenu(role: UserRole): NavSection[] {
           items: [kycReview, fraudReview, settlements, auditLog],
         },
         { id: 'admin', index: '۰۵', label: 'مدیریت', items: [users, reports, settings] },
-        { id: 'account', index: '۰۶', label: 'حساب', items: [wallet, kyc, myDeals, transfer, devices, myRequests, profile] },
+        {
+          id: 'account',
+          index: '۰۶',
+          label: 'حساب',
+          items: [wallet, kyc, myDeals, transfer, devices, myRequests, profile],
+        },
       ];
     case 'ADMIN':
       return [
@@ -366,7 +371,12 @@ function getMenu(role: UserRole): NavSection[] {
           items: [kycReview, fraudReview, settlements, auditLog],
         },
         { id: 'admin', index: '۰۵', label: 'مدیریت', items: [users] },
-        { id: 'account', index: '۰۶', label: 'حساب', items: [wallet, kyc, myDeals, transfer, devices, myRequests, profile] },
+        {
+          id: 'account',
+          index: '۰۶',
+          label: 'حساب',
+          items: [wallet, kyc, myDeals, transfer, devices, myRequests, profile],
+        },
       ];
     case 'SUPPORT':
       return [
@@ -377,13 +387,23 @@ function getMenu(role: UserRole): NavSection[] {
           label: 'عملیات',
           items: [serviceRequests, kycReview, fraudReview],
         },
-        { id: 'account', index: '۰۳', label: 'حساب', items: [wallet, kyc, myDeals, transfer, devices, myRequests, profile] },
+        {
+          id: 'account',
+          index: '۰۳',
+          label: 'حساب',
+          items: [wallet, kyc, myDeals, transfer, devices, myRequests, profile],
+        },
       ];
     case 'AUTHOR':
       return [
         { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
         { id: 'content', index: '۰۲', label: 'محتوا', items: [posts, categories] },
-        { id: 'account', index: '۰۵', label: 'حساب', items: [wallet, kyc, myDeals, transfer, devices, myRequests, profile] },
+        {
+          id: 'account',
+          index: '۰۵',
+          label: 'حساب',
+          items: [wallet, kyc, myDeals, transfer, devices, myRequests, profile],
+        },
       ];
     default:
       // USER role — minimal panel

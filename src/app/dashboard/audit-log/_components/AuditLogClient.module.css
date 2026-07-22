@@ -268,12 +268,24 @@
 }
 
 /* Dot colors */
-.dotBlue   { background: var(--ds-status-progress-fg); }
-.dotEmerald{ background: var(--ds-status-success-fg); }
-.dotAmber  { background: var(--ds-status-pending-fg); }
-.dotRose   { background: var(--ds-status-error-fg); }
-.dotViolet { background: var(--ds-accent-violet); }
-.dotGray   { background: var(--ds-text-muted); }
+.dotBlue {
+  background: var(--ds-status-progress-fg);
+}
+.dotEmerald {
+  background: var(--ds-status-success-fg);
+}
+.dotAmber {
+  background: var(--ds-status-pending-fg);
+}
+.dotRose {
+  background: var(--ds-status-error-fg);
+}
+.dotViolet {
+  background: var(--ds-accent-violet);
+}
+.dotGray {
+  background: var(--ds-text-muted);
+}
 
 /* ── Pagination ── */
 .pagination {
@@ -300,9 +312,8 @@
   font-size: var(--ds-text-xs);
   font-variant-numeric: tabular-nums;
   cursor: pointer;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .pageBtn:hover:not(:disabled) {

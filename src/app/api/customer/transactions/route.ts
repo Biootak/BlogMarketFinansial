@@ -22,7 +22,10 @@ export async function GET(request: Request) {
   const rl = await checkRateLimit(`customer-txn:${ip}`, 'api');
   if (!rl.success) {
     return NextResponse.json(
-      { success: false, error: { code: 'RATE_LIMITED', message: 'تعداد درخواست‌ها زیاد است. لطفاً کمی صبر کنید.' } },
+      {
+        success: false,
+        error: { code: 'RATE_LIMITED', message: 'تعداد درخواست‌ها زیاد است. لطفاً کمی صبر کنید.' },
+      },
       { status: 429, headers: PRIVATE_HEADERS },
     );
   }

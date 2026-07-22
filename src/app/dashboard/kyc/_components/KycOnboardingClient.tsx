@@ -6,7 +6,11 @@
  * Status views: PENDING / APPROVED / REJECTED
  */
 
-import { type KycRecordRow, submitKycBasicInfo, submitKycDocuments } from '@/actions/kyc-onboarding';
+import {
+  type KycRecordRow,
+  submitKycBasicInfo,
+  submitKycDocuments,
+} from '@/actions/kyc-onboarding';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -85,7 +89,7 @@ export function KycOnboardingClient({ initialRecord }: Props) {
   });
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     setError(null);
   }, []);
 
@@ -98,7 +102,10 @@ export function KycOnboardingClient({ initialRecord }: Props) {
         dateOfBirth: data.dateOfBirth,
         phone: data.phone,
       });
-      if (!res.success) { setError(res.error.message); return; }
+      if (!res.success) {
+        setError(res.error.message);
+        return;
+      }
       setStep(2);
     });
   }, [data]);
@@ -115,7 +122,10 @@ export function KycOnboardingClient({ initialRecord }: Props) {
         docFrontUrl: data.docFrontUrl,
         docBackUrl: data.docBackUrl || undefined,
       });
-      if (!res.success) { setError(res.error.message); return; }
+      if (!res.success) {
+        setError(res.error.message);
+        return;
+      }
       setStep(3);
     });
   }, [data]);
@@ -159,7 +169,11 @@ export function KycOnboardingClient({ initialRecord }: Props) {
 
           {record.status === 'REJECTED' && (
             <Button
-              onClick={() => { setRecord(null); setStep(1); setError(null); }}
+              onClick={() => {
+                setRecord(null);
+                setStep(1);
+                setError(null);
+              }}
               variant="default"
             >
               ارسال مجدد مدارک
@@ -171,8 +185,7 @@ export function KycOnboardingClient({ initialRecord }: Props) {
   }
 
   // ── Wizard ────────────────────────────────────────────────────────────────
-  const stepState = (id: number) =>
-    id < step ? 'done' : id === step ? 'active' : 'pending';
+  const stepState = (id: number) => (id < step ? 'done' : id === step ? 'active' : 'pending');
 
   return (
     <div className={s.page}>
@@ -185,9 +198,11 @@ export function KycOnboardingClient({ initialRecord }: Props) {
             return (
               <div key={st.id} className={`${s.stepItem} ${state}`} role="listitem">
                 <div className={`${s.stepDot} ${state}`}>
-                  {state === 'done'
-                    ? <CheckCircle2 size={16} aria-hidden />
-                    : <StepIcon size={14} aria-hidden />}
+                  {state === 'done' ? (
+                    <CheckCircle2 size={16} aria-hidden />
+                  ) : (
+                    <StepIcon size={14} aria-hidden />
+                  )}
                 </div>
                 <span className={`${s.stepLabel} ${state}`}>{st.label}</span>
               </div>
@@ -200,7 +215,9 @@ export function KycOnboardingClient({ initialRecord }: Props) {
           <div className={s.form}>
             <div>
               <h2 className={s.formTitle}>اطلاعات پایه</h2>
-              <p className={s.formDesc}>این اطلاعات به‌صورت امن ذخیره و برای تأیید هویت استفاده می‌شود.</p>
+              <p className={s.formDesc}>
+                این اطلاعات به‌صورت امن ذخیره و برای تأیید هویت استفاده می‌شود.
+              </p>
             </div>
 
             {error && (
@@ -212,30 +229,42 @@ export function KycOnboardingClient({ initialRecord }: Props) {
 
             <div className={s.fieldGroup}>
               <div className={s.field}>
-                <label htmlFor="fullName" className={s.label}>نام کامل</label>
+                <label htmlFor="fullName" className={s.label}>
+                  نام کامل
+                </label>
                 <Input
-                  id="fullName" name="fullName"
-                  value={data.fullName} onChange={handleChange}
+                  id="fullName"
+                  name="fullName"
+                  value={data.fullName}
+                  onChange={handleChange}
                   placeholder="علی احمدی"
                   autoComplete="name"
                   aria-required="true"
                 />
               </div>
               <div className={s.field}>
-                <label htmlFor="nationalId" className={s.label}>شناسه ملی / تذکره</label>
+                <label htmlFor="nationalId" className={s.label}>
+                  شناسه ملی / تذکره
+                </label>
                 <Input
-                  id="nationalId" name="nationalId"
-                  value={data.nationalId} onChange={handleChange}
+                  id="nationalId"
+                  name="nationalId"
+                  value={data.nationalId}
+                  onChange={handleChange}
                   placeholder="شماره تذکره یا شناسه ملی"
                   dir="ltr"
                   aria-required="true"
                 />
               </div>
               <div className={s.field}>
-                <label htmlFor="dateOfBirth" className={s.label}>تاریخ تولد</label>
+                <label htmlFor="dateOfBirth" className={s.label}>
+                  تاریخ تولد
+                </label>
                 <Input
-                  id="dateOfBirth" name="dateOfBirth"
-                  value={data.dateOfBirth} onChange={handleChange}
+                  id="dateOfBirth"
+                  name="dateOfBirth"
+                  value={data.dateOfBirth}
+                  onChange={handleChange}
                   placeholder="۱۳۷۰/۰۱/۰۱"
                   dir="ltr"
                   aria-required="true"
@@ -243,11 +272,16 @@ export function KycOnboardingClient({ initialRecord }: Props) {
                 <span className={s.inputHint}>فرمت: ۱۴۰۰/۰۱/۰۱</span>
               </div>
               <div className={s.field}>
-                <label htmlFor="phone" className={s.label}>شماره موبایل</label>
+                <label htmlFor="phone" className={s.label}>
+                  شماره موبایل
+                </label>
                 <Input
-                  id="phone" name="phone"
-                  type="tel" inputMode="tel"
-                  value={data.phone} onChange={handleChange}
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  inputMode="tel"
+                  value={data.phone}
+                  onChange={handleChange}
                   placeholder="+93700000000"
                   dir="ltr"
                   aria-required="true"
@@ -262,7 +296,10 @@ export function KycOnboardingClient({ initialRecord }: Props) {
           <div className={s.form}>
             <div>
               <h2 className={s.formTitle}>آپلود مدارک</h2>
-              <p className={s.formDesc}>لینک‌های HTTPS تصاویر مدرک خود را وارد کنید. فایل‌ها باید روی سرور شما آپلود شده باشند.</p>
+              <p className={s.formDesc}>
+                لینک‌های HTTPS تصاویر مدرک خود را وارد کنید. فایل‌ها باید روی سرور شما آپلود شده
+                باشند.
+              </p>
             </div>
 
             {error && (
@@ -274,10 +311,14 @@ export function KycOnboardingClient({ initialRecord }: Props) {
 
             <div className={s.fieldGroup}>
               <div className={s.field}>
-                <label htmlFor="selfieUrl" className={s.label}>عکس سلفی</label>
+                <label htmlFor="selfieUrl" className={s.label}>
+                  عکس سلفی
+                </label>
                 <Input
-                  id="selfieUrl" name="selfieUrl"
-                  value={data.selfieUrl} onChange={handleChange}
+                  id="selfieUrl"
+                  name="selfieUrl"
+                  value={data.selfieUrl}
+                  onChange={handleChange}
                   placeholder="https://..."
                   dir="ltr"
                   type="url"
@@ -285,10 +326,14 @@ export function KycOnboardingClient({ initialRecord }: Props) {
                 />
               </div>
               <div className={s.field}>
-                <label htmlFor="docFrontUrl" className={s.label}>روی مدرک</label>
+                <label htmlFor="docFrontUrl" className={s.label}>
+                  روی مدرک
+                </label>
                 <Input
-                  id="docFrontUrl" name="docFrontUrl"
-                  value={data.docFrontUrl} onChange={handleChange}
+                  id="docFrontUrl"
+                  name="docFrontUrl"
+                  value={data.docFrontUrl}
+                  onChange={handleChange}
                   placeholder="https://..."
                   dir="ltr"
                   type="url"
@@ -296,10 +341,15 @@ export function KycOnboardingClient({ initialRecord }: Props) {
                 />
               </div>
               <div className={s.field}>
-                <label htmlFor="docBackUrl" className={s.label}>پشت مدرک <span style={{ color: 'var(--ds-text-muted)', fontWeight: 400 }}>(اختیاری)</span></label>
+                <label htmlFor="docBackUrl" className={s.label}>
+                  پشت مدرک{' '}
+                  <span style={{ color: 'var(--ds-text-muted)', fontWeight: 400 }}>(اختیاری)</span>
+                </label>
                 <Input
-                  id="docBackUrl" name="docBackUrl"
-                  value={data.docBackUrl} onChange={handleChange}
+                  id="docBackUrl"
+                  name="docBackUrl"
+                  value={data.docBackUrl}
+                  onChange={handleChange}
                   placeholder="https://..."
                   dir="ltr"
                   type="url"
@@ -314,7 +364,9 @@ export function KycOnboardingClient({ initialRecord }: Props) {
           <div className={s.form}>
             <div>
               <h2 className={s.formTitle}>بررسی نهایی</h2>
-              <p className={s.formDesc}>اطلاعات زیر را بررسی کنید. پس از تأیید، مدارک برای بررسی ادمین ارسال می‌شوند.</p>
+              <p className={s.formDesc}>
+                اطلاعات زیر را بررسی کنید. پس از تأیید، مدارک برای بررسی ادمین ارسال می‌شوند.
+              </p>
             </div>
 
             <div className={s.reviewGrid}>
@@ -337,12 +389,15 @@ export function KycOnboardingClient({ initialRecord }: Props) {
 
         {/* Footer nav */}
         <div className={s.footer}>
-          <span className={s.stepHint}>گام {step} از {STEPS.length}</span>
+          <span className={s.stepHint}>
+            گام {step} از {STEPS.length}
+          </span>
 
           <div style={{ display: 'flex', gap: 'var(--ds-space-2)' }}>
             {step > 1 && (
               <Button
-                variant="outline" size="sm"
+                variant="outline"
+                size="sm"
                 onClick={() => setStep(step - 1)}
                 disabled={isPending}
               >
@@ -363,11 +418,7 @@ export function KycOnboardingClient({ initialRecord }: Props) {
             )}
 
             {step === 3 && (
-              <Button
-                size="sm"
-                onClick={handleFinish}
-                disabled={isPending}
-              >
+              <Button size="sm" onClick={handleFinish} disabled={isPending}>
                 <ShieldCheck size={14} aria-hidden />
                 ارسال برای تأیید
               </Button>

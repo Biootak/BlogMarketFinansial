@@ -25,17 +25,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import {
-  AlertTriangle,
-  CheckCircle2,
-  ShieldAlert,
-  ShieldCheck,
-  User,
-  Zap,
-} from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ShieldAlert, ShieldCheck, User, Zap } from 'lucide-react';
 import { useCallback, useMemo, useState, useTransition } from 'react';
-import { resolveFraudReview } from './actions';
 import s from './FraudReviewClient.module.css';
+import { resolveFraudReview } from './actions';
 
 type FraudRow = {
   id: string;
@@ -69,8 +62,11 @@ function getRiskLabel(score: number): string {
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('fa-IR', {
-    year: 'numeric', month: 'short', day: 'numeric',
-    hour: '2-digit', minute: '2-digit',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 }
 
@@ -80,17 +76,18 @@ function formatDate(iso: string) {
  */
 function RiskGauge({ score }: { score: number }) {
   const R = 16;
-  const cx = 20;
+  const _cx = 20;
   const cy = 20;
   const circumference = Math.PI * R; // half-circle arc length ≈ 50.27
   const filled = (score / 100) * circumference;
   const gap = circumference - filled;
 
-  const color = score >= 70
-    ? 'var(--ds-status-error-fg)'
-    : score >= 40
-      ? 'var(--ds-status-pending-fg)'
-      : 'var(--ds-status-success-fg)';
+  const color =
+    score >= 70
+      ? 'var(--ds-status-error-fg)'
+      : score >= 40
+        ? 'var(--ds-status-pending-fg)'
+        : 'var(--ds-status-success-fg)';
 
   return (
     <svg
@@ -171,12 +168,15 @@ export function FraudReviewClient({ reviews: initial }: Props) {
     startTransition(async () => {
       setError(null);
       const res = await resolveFraudReview(target.id, resolution);
-      if (!res.success) { setError(res.error.message); return; }
+      if (!res.success) {
+        setError(res.error.message);
+        return;
+      }
       setRows((prev) => prev.filter((r) => r.id !== target.id));
       setTarget(null);
       setResolution('');
       // بستن detail sheet اگر همین row بود
-      setDetailRow((prev) => prev?.id === target.id ? null : prev);
+      setDetailRow((prev) => (prev?.id === target.id ? null : prev));
     });
   }, [target, resolution]);
 
@@ -200,7 +200,9 @@ export function FraudReviewClient({ reviews: initial }: Props) {
         <div className={s.customerCell}>
           <span className={s.customerName}>{row.customerName ?? '—'}</span>
           {row.customerPhone && (
-            <span className={s.customerPhone} dir="ltr">{row.customerPhone}</span>
+            <span className={s.customerPhone} dir="ltr">
+              {row.customerPhone}
+            </span>
           )}
         </div>
       ),
@@ -208,23 +210,21 @@ export function FraudReviewClient({ reviews: initial }: Props) {
     {
       key: 'exchange',
       header: 'صرافی',
-      render: (row: FraudRow) => (
-        <span className={s.exchangeName}>{row.exchangeName}</span>
-      ),
+      render: (row: FraudRow) => <span className={s.exchangeName}>{row.exchangeName}</span>,
     },
     {
       key: 'reason',
       header: 'دلیل شناسایی',
       render: (row: FraudRow) => (
-        <span className={s.reasonCell} title={row.reason}>{row.reason}</span>
+        <span className={s.reasonCell} title={row.reason}>
+          {row.reason}
+        </span>
       ),
     },
     {
       key: 'createdAt',
       header: 'زمان',
-      render: (row: FraudRow) => (
-        <span className={s.dateCell}>{formatDate(row.createdAt)}</span>
-      ),
+      render: (row: FraudRow) => <span className={s.dateCell}>{formatDate(row.createdAt)}</span>,
     },
     {
       key: 'actions',
@@ -295,12 +295,14 @@ export function FraudReviewClient({ reviews: initial }: Props) {
       <div className={s.toolbar}>
         {/* Risk filter pills */}
         <div className={s.filterPills} role="group" aria-label="فیلتر سطح ریسک">
-          {([
-            { val: 'all',  label: 'همه' },
-            { val: 'high', label: 'پرریسک' },
-            { val: 'med',  label: 'متوسط' },
-            { val: 'low',  label: 'کم‌ریسک' },
-          ] as const).map(({ val, label }) => (
+          {(
+            [
+              { val: 'all', label: 'همه' },
+              { val: 'high', label: 'پرریسک' },
+              { val: 'med', label: 'متوسط' },
+              { val: 'low', label: 'کم‌ریسک' },
+            ] as const
+          ).map(({ val, label }) => (
             <button
               key={val}
               type="button"
@@ -326,7 +328,11 @@ export function FraudReviewClient({ reviews: initial }: Props) {
       </div>
 
       {/* Error banner */}
-      {error && <div className={s.errorBanner} role="alert">{error}</div>}
+      {error && (
+        <div className={s.errorBanner} role="alert">
+          {error}
+        </div>
+      )}
 
       {/* ── Table ── */}
       <DataTable
@@ -388,7 +394,9 @@ export function FraudReviewClient({ reviews: initial }: Props) {
                   ].map(({ label, val, ltr }) => (
                     <div key={label} className={s.metaItem}>
                       <span className={s.metaKey}>{label}</span>
-                      <span className={s.metaVal} dir={ltr ? 'ltr' : undefined}>{val}</span>
+                      <span className={s.metaVal} dir={ltr ? 'ltr' : undefined}>
+                        {val}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -396,7 +404,10 @@ export function FraudReviewClient({ reviews: initial }: Props) {
                 {/* Quick resolve from sheet */}
                 <div className={s.detailActions}>
                   <Button
-                    onClick={() => { setTarget(detailRow); setDetailRow(null); }}
+                    onClick={() => {
+                      setTarget(detailRow);
+                      setDetailRow(null);
+                    }}
                     disabled={isPending}
                     className={s.resolveBtn}
                   >
@@ -420,12 +431,18 @@ export function FraudReviewClient({ reviews: initial }: Props) {
             {target && (
               <>
                 <div className={s.dialogProfile}>
-                  <div className={`${s.dialogAvatar} ${getRiskClass(target.riskScore)}`} aria-hidden>
+                  <div
+                    className={`${s.dialogAvatar} ${getRiskClass(target.riskScore)}`}
+                    aria-hidden
+                  >
                     <User size={16} aria-hidden />
                   </div>
                   <div>
                     <span className={s.dialogName}>{target.customerName ?? '—'}</span>
-                    <div className={`${s.riskBadge} ${getRiskClass(target.riskScore)}`} style={{ marginTop: 4 }}>
+                    <div
+                      className={`${s.riskBadge} ${getRiskClass(target.riskScore)}`}
+                      style={{ marginTop: 4 }}
+                    >
                       <AlertTriangle size={11} aria-hidden />
                       {getRiskLabel(target.riskScore)} — {target.riskScore}
                     </div>
@@ -438,7 +455,9 @@ export function FraudReviewClient({ reviews: initial }: Props) {
               </>
             )}
             <div>
-              <label className={s.dialogLabel} htmlFor="resolution">نتیجه بررسی:</label>
+              <label className={s.dialogLabel} htmlFor="resolution">
+                نتیجه بررسی:
+              </label>
               <textarea
                 id="resolution"
                 className={s.dialogTextarea}

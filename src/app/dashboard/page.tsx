@@ -24,7 +24,7 @@ import { checkRole } from '@/lib/auth';
 
 export default async function Dashboard() {
   // Check user role before loading any data
-  await checkRole(['OWNER', 'ADMIN', 'AUTHOR']);
+  await checkRole(['OWNER', 'ADMIN', 'AUTHOR', 'SUPERADMIN']);
 
   const session = await auth();
 

@@ -1,8 +1,8 @@
 import { auth } from '@/auth';
+import prisma from '@/lib/db';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
-import prisma from '@/lib/db';
 import { AuditLogClient } from './_components/AuditLogClient';
 
 export const metadata: Metadata = {
@@ -87,10 +87,7 @@ export default async function AuditLogPage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const session = await auth();
-  if (
-    !session?.user ||
-    !['ADMIN', 'OWNER', 'SUPERADMIN'].includes(session.user.role ?? '')
-  ) {
+  if (!session?.user || !['ADMIN', 'OWNER', 'SUPERADMIN'].includes(session.user.role ?? '')) {
     redirect('/dashboard');
   }
 
@@ -111,7 +108,11 @@ export default async function AuditLogPage({
 
   return (
     <div className="at-page" dir="rtl">
-      <Suspense fallback={<div style={{ padding: '2rem', color: 'var(--ds-text-muted)' }}>در حال بارگذاری...</div>}>
+      <Suspense
+        fallback={
+          <div style={{ padding: '2rem', color: 'var(--ds-text-muted)' }}>در حال بارگذاری...</div>
+        }
+      >
         <AuditLogClient
           logs={logs}
           total={total}

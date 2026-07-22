@@ -64,14 +64,22 @@
     }
   },
   "files": {
-    "ignore": ["node_modules", ".next", "dist", "build", "public", "*.prisma", "*.scss", "*.sass", "src/app/globals.css", "src/lib/motion-shim.tsx"]
+    "ignore": [
+      "node_modules",
+      ".next",
+      "dist",
+      "build",
+      "public",
+      "*.prisma",
+      "*.scss",
+      "*.sass",
+      "src/app/globals.css",
+      "src/lib/motion-shim.tsx"
+    ]
   },
   "overrides": [
     {
-      "include": [
-        "src/components/NextPrev/**",
-        "src/components/PostFeaturedMedia/**"
-      ],
+      "include": ["src/components/NextPrev/**", "src/components/PostFeaturedMedia/**"],
       "linter": {
         "rules": {
           "a11y": {
@@ -213,10 +221,7 @@
       }
     },
     {
-      "include": [
-        "src/components/Sections/**",
-        "src/components/Setup/**"
-      ],
+      "include": ["src/components/Sections/**", "src/components/Setup/**"],
       "linter": {
         "rules": {
           "suspicious": {
@@ -232,10 +237,7 @@
       }
     },
     {
-      "include": [
-        "src/components/Navigation/**",
-        "src/components/MySlider.tsx"
-      ],
+      "include": ["src/components/Navigation/**", "src/components/MySlider.tsx"],
       "linter": {
         "rules": {
           "a11y": {
@@ -252,10 +254,7 @@
       }
     },
     {
-      "include": [
-        "src/components/ImageUpload/**",
-        "src/components/ModernTrending/**"
-      ],
+      "include": ["src/components/ImageUpload/**", "src/components/ModernTrending/**"],
       "linter": {
         "rules": {
           "a11y": {

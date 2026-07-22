@@ -44,7 +44,8 @@ export type TwoFAStatus = {
  */
 export async function setup2FA(): Promise<FintechActionResult<TwoFASetupData>> {
   const auth = await requireUser();
-  if (!auth.success) return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد شوید' } };
+  if (!auth.success)
+    return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد شوید' } };
 
   const user = await prisma.user.findUnique({
     where: { id: auth.user.id },
@@ -72,15 +73,24 @@ export async function setup2FA(): Promise<FintechActionResult<TwoFASetupData>> {
 /**
  * مرحله ۲: تأیید کد TOTP و فعال‌سازی 2FA + تولید backup codes.
  */
-export async function confirmEnable2FA(token: string): Promise<FintechActionResult<{ backupCodes: string[] }>> {
+export async function confirmEnable2FA(
+  token: string,
+): Promise<FintechActionResult<{ backupCodes: string[] }>> {
   const auth = await requireUser();
-  if (!auth.success) return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد شوید' } };
+  if (!auth.success)
+    return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد شوید' } };
 
   // Rate limit: حداکثر ۵ تلاش در ۵ دقیقه
   const rateKey = `2fa-confirm:${auth.user.id}`;
   const limited = await checkRateLimit(rateKey, 'auth');
   if (!limited.success) {
-    return { success: false, error: { code: 'RATE_LIMITED', message: 'تعداد تلاش‌ها بیش از حد مجاز است. لطفاً ۵ دقیقه صبر کنید.' } };
+    return {
+      success: false,
+      error: {
+        code: 'RATE_LIMITED',
+        message: 'تعداد تلاش‌ها بیش از حد مجاز است. لطفاً ۵ دقیقه صبر کنید.',
+      },
+    };
   }
 
   const user = await prisma.user.findUnique({
@@ -88,19 +98,23 @@ export async function confirmEnable2FA(token: string): Promise<FintechActionResu
     select: { twoFactorSecretEnc: true, email: true },
   });
   if (!user?.twoFactorSecretEnc?.startsWith('pending:')) {
-    return { success: false, error: { code: 'SETUP_REQUIRED', message: 'ابتدا setup2FA را فراخوانی کنید' } };
+    return {
+      success: false,
+      error: { code: 'SETUP_REQUIRED', message: 'ابتدا setup2FA را فراخوانی کنید' },
+    };
   }
 
   const secret = user.twoFactorSecretEnc.slice('pending:'.length);
   const valid = await verifyTotp(secret, token);
   if (!valid) {
-    return { success: false, error: { code: 'INVALID_TOKEN', message: 'کد وارد شده نادرست است. لطفاً دوباره امتحان کنید.' } };
+    return {
+      success: false,
+      error: { code: 'INVALID_TOKEN', message: 'کد وارد شده نادرست است. لطفاً دوباره امتحان کنید.' },
+    };
   }
 
   // تولید ۸ backup code یکبار مصرف
-  const backupCodes = Array.from({ length: 8 }, () =>
-    randomBytes(4).toString('hex').toUpperCase(),
-  );
+  const backupCodes = Array.from({ length: 8 }, () => randomBytes(4).toString('hex').toUpperCase());
 
   // فعال‌سازی 2FA + ذخیره secret + ذخیره backup codes
   await prisma.$transaction(async (tx) => {
@@ -147,12 +161,16 @@ export async function confirmEnable2FA(token: string): Promise<FintechActionResu
  */
 export async function disable2FA(token: string): Promise<FintechActionResult<void>> {
   const auth = await requireUser();
-  if (!auth.success) return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد شوید' } };
+  if (!auth.success)
+    return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد شوید' } };
 
   const rateKey = `2fa-disable:${auth.user.id}`;
   const limited = await checkRateLimit(rateKey, 'auth');
   if (!limited.success) {
-    return { success: false, error: { code: 'RATE_LIMITED', message: 'تعداد تلاش‌ها بیش از حد است' } };
+    return {
+      success: false,
+      error: { code: 'RATE_LIMITED', message: 'تعداد تلاش‌ها بیش از حد است' },
+    };
   }
 
   const user = await prisma.user.findUnique({
@@ -196,7 +214,8 @@ export async function disable2FA(token: string): Promise<FintechActionResult<voi
  */
 export async function get2FAStatus(): Promise<FintechActionResult<TwoFAStatus>> {
   const auth = await requireUser();
-  if (!auth.success) return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد شوید' } };
+  if (!auth.success)
+    return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد شوید' } };
 
   const user = await prisma.user.findUnique({
     where: { id: auth.user.id },

@@ -1,7 +1,7 @@
+import { getMyKycRecord } from '@/actions/kyc-onboarding';
 import { auth } from '@/auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { getMyKycRecord } from '@/actions/kyc-onboarding';
 import { KycOnboardingClient } from './_components/KycOnboardingClient';
 
 export const metadata: Metadata = {

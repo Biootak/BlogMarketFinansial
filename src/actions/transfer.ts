@@ -17,14 +17,14 @@
 
 import { randomBytes } from 'node:crypto';
 import prisma from '@/lib/db';
-import { checkRateLimit } from '@/lib/rate-limiter';
-import { requireUser } from '@/lib/require-auth';
-import { revalidateTag } from '@/lib/revalidate';
 import {
   isHighValueTransaction,
   requestTransactionOtp,
   verifyTransactionOtp,
 } from '@/lib/fintech/transaction-guard';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { requireUser } from '@/lib/require-auth';
+import { revalidateTag } from '@/lib/revalidate';
 import type { FintechActionResult } from '@/types/types';
 import type { Prisma } from '@prisma/client';
 import { headers } from 'next/headers';
@@ -66,7 +66,10 @@ export async function findTransferRecipient(
   if (!parsed.success) {
     return {
       success: false,
-      error: { code: 'VALIDATION_ERROR', message: parsed.error.errors[0]?.message ?? 'ورودی نامعتبر' },
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: parsed.error.errors[0]?.message ?? 'ورودی نامعتبر',
+      },
     };
   }
 
@@ -116,9 +119,7 @@ const InitiateSchema = z.object({
   idempotencyKey: z.string().min(8).max(64),
 });
 
-export async function initiateTransfer(
-  raw: unknown,
-): Promise<FintechActionResult<TransferResult>> {
+export async function initiateTransfer(raw: unknown): Promise<FintechActionResult<TransferResult>> {
   const auth = await requireUser();
   if (!auth.success) {
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد حساب کاربری شوید' } };
@@ -138,7 +139,10 @@ export async function initiateTransfer(
   if (!parsed.success) {
     return {
       success: false,
-      error: { code: 'VALIDATION_ERROR', message: parsed.error.errors[0]?.message ?? 'ورودی نامعتبر' },
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: parsed.error.errors[0]?.message ?? 'ورودی نامعتبر',
+      },
     };
   }
 
@@ -164,7 +168,13 @@ export async function initiateTransfer(
   // پیدا کردن حساب فرستنده
   const senderCustomer = await prisma.customer.findFirst({
     where: { userId: auth.user.id },
-    select: { id: true, FintechAccount: { where: { currency, status: 'ACTIVE' }, select: { id: true, balance: true, exchangeId: true } } },
+    select: {
+      id: true,
+      FintechAccount: {
+        where: { currency, status: 'ACTIVE' },
+        select: { id: true, balance: true, exchangeId: true },
+      },
+    },
   });
 
   if (!senderCustomer || senderCustomer.FintechAccount.length === 0) {
@@ -187,7 +197,10 @@ export async function initiateTransfer(
   // پیدا کردن حساب گیرنده
   const recipientCustomer = await prisma.customer.findFirst({
     where: { userId: recipientUserId },
-    select: { id: true, FintechAccount: { where: { currency, status: 'ACTIVE' }, select: { id: true } } },
+    select: {
+      id: true,
+      FintechAccount: { where: { currency, status: 'ACTIVE' }, select: { id: true } },
+    },
   });
 
   if (!recipientCustomer || recipientCustomer.FintechAccount.length === 0) {
@@ -268,7 +281,11 @@ export async function initiateTransfer(
 const ConfirmSchema = z.object({
   txnId: z.string().min(1),
   txnRef: z.string().min(1),
-  otp: z.string().length(6).regex(/^\d{6}$/).optional(),
+  otp: z
+    .string()
+    .length(6)
+    .regex(/^\d{6}$/)
+    .optional(),
 });
 
 export async function confirmTransfer(
@@ -283,16 +300,36 @@ export async function confirmTransfer(
   if (!parsed.success) {
     return {
       success: false,
-      error: { code: 'VALIDATION_ERROR', message: parsed.error.errors[0]?.message ?? 'ورودی نامعتبر' },
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: parsed.error.errors[0]?.message ?? 'ورودی نامعتبر',
+      },
     };
   }
 
   const { txnId, txnRef, otp } = parsed.data;
 
-  // بازیابی تراکنش
+  // بازیابی تراکنش — ownership check: فقط customer خودِ کاربر مجاز است
+  const senderCustomer = await prisma.customer.findFirst({
+    where: { userId: auth.user.id },
+    select: { id: true },
+  });
+
   const txn = await prisma.transaction.findFirst({
-    where: { id: txnId, customerId: { not: null } },
-    select: { id: true, status: true, amount: true, currency: true, accountId: true, meta: true, exchangeId: true, customerId: true },
+    where: {
+      id: txnId,
+      customerId: senderCustomer?.id ?? '__none__',
+    },
+    select: {
+      id: true,
+      status: true,
+      amount: true,
+      currency: true,
+      accountId: true,
+      meta: true,
+      exchangeId: true,
+      customerId: true,
+    },
   });
 
   if (!txn) {
@@ -300,7 +337,10 @@ export async function confirmTransfer(
   }
   if (txn.status !== 'PENDING') {
     if (txn.status === 'COMPLETED') return { success: true, data: { txnId } };
-    return { success: false, error: { code: 'INVALID_STATE', message: 'این تراکنش قابل تأیید نیست' } };
+    return {
+      success: false,
+      error: { code: 'INVALID_STATE', message: 'این تراکنش قابل تأیید نیست' },
+    };
   }
 
   // OTP verification اگر لازم باشد
@@ -316,25 +356,44 @@ export async function confirmTransfer(
   const meta = txn.meta as { recipientCustomerId?: string } | null;
   const recipientCustomerId = meta?.recipientCustomerId;
   if (!recipientCustomerId) {
-    return { success: false, error: { code: 'MISSING_RECIPIENT', message: 'اطلاعات گیرنده یافت نشد' } };
+    return {
+      success: false,
+      error: { code: 'MISSING_RECIPIENT', message: 'اطلاعات گیرنده یافت نشد' },
+    };
   }
 
-  // Double-entry ledger
+  // accountId و customerId در TRANSFER transactions همیشه set هستند (در initiateTransfer ثبت شد)
+  if (!txn.accountId || !txn.customerId) {
+    return {
+      success: false,
+      error: { code: 'INVALID_STATE', message: 'اطلاعات حساب تراکنش ناقص است' },
+    };
+  }
+  const accountId = txn.accountId;
+  const customerId = txn.customerId;
+
+  // Double-entry ledger + atomic balance update
   await prisma.$transaction(async (tx) => {
     const now = new Date();
 
-    // DEBIT از حساب فرستنده
+    // DEBIT از حساب فرستنده — balance کم می‌شود
+    const updatedSender = await tx.fintechAccount.update({
+      where: { id: accountId },
+      data: { balance: { decrement: txn.amount }, updatedAt: now },
+      select: { balance: true },
+    });
+
     await tx.ledgerEntry.create({
       data: {
         id: createId(),
         exchangeId: txn.exchangeId,
-        accountId: txn.accountId,
-        customerId: txn.customerId,
+        accountId: accountId,
+        customerId: customerId,
         txnId: txn.id,
         direction: 'DEBIT',
         amount: txn.amount,
         currency: txn.currency,
-        runningBalance: BigInt(0), // runtime balance calculation
+        runningBalance: updatedSender.balance,
         createdAt: now,
       },
     });
@@ -346,7 +405,13 @@ export async function confirmTransfer(
     });
 
     if (recipientAccount) {
-      // CREDIT به حساب گیرنده
+      // CREDIT به حساب گیرنده — balance زیاد می‌شود
+      const updatedRecipient = await tx.fintechAccount.update({
+        where: { id: recipientAccount.id },
+        data: { balance: { increment: txn.amount }, updatedAt: now },
+        select: { balance: true },
+      });
+
       await tx.ledgerEntry.create({
         data: {
           id: createId(),
@@ -357,7 +422,7 @@ export async function confirmTransfer(
           direction: 'CREDIT',
           amount: txn.amount,
           currency: txn.currency,
-          runningBalance: BigInt(0),
+          runningBalance: updatedRecipient.balance,
           createdAt: now,
         },
       });
@@ -368,7 +433,7 @@ export async function confirmTransfer(
       where: { id: txn.id },
       data: { status: 'COMPLETED', updatedAt: now },
     });
-  });
+  }); // end $transaction
 
   revalidateTag('wallet');
 

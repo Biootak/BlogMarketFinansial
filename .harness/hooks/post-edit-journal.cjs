@@ -1,8 +1,8 @@
 // Auto-journal hook — append one line per Edit/Write to .harness/.journal.log
 // Captures tool name + relative path. Source: stdin JSON (preferred) or env (fallback).
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const repo = 'E:/FinancialMarket';
 const journalPath = path.join(repo, '.harness', '.journal.log');

@@ -26,14 +26,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import {
-  CheckCircle2,
-  Eye,
-  FileText,
-  ShieldCheck,
-  User,
-  XCircle,
-} from 'lucide-react';
+import { CheckCircle2, Eye, FileText, ShieldCheck, User, XCircle } from 'lucide-react';
 import { useCallback, useState, useTransition } from 'react';
 import s from './KycReviewClient.module.css';
 
@@ -82,13 +75,7 @@ function DocImage({ src, alt }: { src: string; alt: string }) {
   }
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={src}
-      alt={alt}
-      className={s.docImg}
-      onError={() => setError(true)}
-      loading="lazy"
-    />
+    <img src={src} alt={alt} className={s.docImg} onError={() => setError(true)} loading="lazy" />
   );
 }
 
@@ -100,19 +87,19 @@ export function KycReviewClient({ records: initial }: Props) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const handleApprove = useCallback(
-    (row: KycRow) => {
-      startTransition(async () => {
-        setError(null);
-        const res = await reviewKycRecord({ userId: row.userId, approved: true });
-        if (!res.success) { setError(res.error.message); return; }
-        setRows((prev) => prev.filter((r) => r.id !== row.id));
-        // اگر preview همین row بود ببند
-        setPreviewRow((prev) => prev?.id === row.id ? null : prev);
-      });
-    },
-    [],
-  );
+  const handleApprove = useCallback((row: KycRow) => {
+    startTransition(async () => {
+      setError(null);
+      const res = await reviewKycRecord({ userId: row.userId, approved: true });
+      if (!res.success) {
+        setError(res.error.message);
+        return;
+      }
+      setRows((prev) => prev.filter((r) => r.id !== row.id));
+      // اگر preview همین row بود ببند
+      setPreviewRow((prev) => (prev?.id === row.id ? null : prev));
+    });
+  }, []);
 
   const handleRejectConfirm = useCallback(() => {
     if (!rejectTarget) return;
@@ -123,9 +110,12 @@ export function KycReviewClient({ records: initial }: Props) {
         approved: false,
         rejectedReason: rejectReason.trim() || 'اطلاعات ناقص یا نادرست',
       });
-      if (!res.success) { setError(res.error.message); return; }
+      if (!res.success) {
+        setError(res.error.message);
+        return;
+      }
       setRows((prev) => prev.filter((r) => r.id !== rejectTarget.id));
-      setPreviewRow((prev) => prev?.id === rejectTarget.id ? null : prev);
+      setPreviewRow((prev) => (prev?.id === rejectTarget.id ? null : prev));
       setRejectTarget(null);
       setRejectReason('');
     });
@@ -210,7 +200,9 @@ export function KycReviewClient({ records: initial }: Props) {
 
                   {/* Phone */}
                   <td className={s.td}>
-                    <span className={s.phone} dir="ltr">{row.user?.phone ?? '—'}</span>
+                    <span className={s.phone} dir="ltr">
+                      {row.user?.phone ?? '—'}
+                    </span>
                   </td>
 
                   {/* Date */}
@@ -318,7 +310,10 @@ export function KycReviewClient({ records: initial }: Props) {
                   <Button
                     variant="outline"
                     className={s.previewRejectBtn}
-                    onClick={() => { setRejectTarget(previewRow); setPreviewRow(null); }}
+                    onClick={() => {
+                      setRejectTarget(previewRow);
+                      setPreviewRow(null);
+                    }}
                     disabled={isPending}
                   >
                     <XCircle size={15} aria-hidden />
@@ -364,11 +359,7 @@ export function KycReviewClient({ records: initial }: Props) {
             <Button variant="outline" onClick={() => setRejectTarget(null)} disabled={isPending}>
               انصراف
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleRejectConfirm}
-              disabled={isPending}
-            >
+            <Button variant="destructive" onClick={handleRejectConfirm} disabled={isPending}>
               {isPending ? 'در حال ارسال...' : 'رد کردن'}
             </Button>
           </DialogFooter>

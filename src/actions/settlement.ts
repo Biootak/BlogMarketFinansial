@@ -292,7 +292,10 @@ export async function computePeriodSettlement(
 export async function approveSettlement(settlementId: string): Promise<FintechActionResult<void>> {
   const auth = await requireAdmin();
   if (!auth.success) {
-    return { success: false, error: { code: 'UNAUTHORIZED', message: 'دسترسی غیرمجاز — فقط ادمین پلتفرم' } };
+    return {
+      success: false,
+      error: { code: 'UNAUTHORIZED', message: 'دسترسی غیرمجاز — فقط ادمین پلتفرم' },
+    };
   }
 
   const settlement = await prisma.settlement.findUnique({

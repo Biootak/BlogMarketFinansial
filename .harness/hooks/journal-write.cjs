@@ -8,8 +8,8 @@
 // REL_PATH must be relative to E:/FinancialMarket with forward-slash separators.
 // DIFF is the "(+A -B)" diff from the Edit tool result if known, else omit.
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const repo = 'E:/FinancialMarket';
 const journalPath = path.join(repo, '.harness', '.journal.log');
@@ -19,7 +19,7 @@ const rel = process.argv[3] || '?';
 const diff = process.argv[4] || '';
 const ts = new Date().toISOString();
 
-const line = `${ts}  ${tool.padEnd(8)}  ${rel}${diff ? '  ' + diff : ''}\n`;
+const line = `${ts}  ${tool.padEnd(8)}  ${rel}${diff ? `  ${diff}` : ''}\n`;
 
 try {
   fs.mkdirSync(path.dirname(journalPath), { recursive: true });

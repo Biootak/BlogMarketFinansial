@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
+import prisma from '@/lib/db';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import prisma from '@/lib/db';
 import { KycReviewClient } from './_components/KycReviewClient';
 
 export const metadata: Metadata = {
@@ -27,18 +27,13 @@ async function getKycQueue() {
     selfieUrl: r.selfieUrl,
     docFrontUrl: r.docFrontUrl,
     docBackUrl: r.docBackUrl,
-    user: r.User
-      ? { name: r.User.name, email: r.User.email, phone: r.User.phoneNumber }
-      : null,
+    user: r.User ? { name: r.User.name, email: r.User.email, phone: r.User.phoneNumber } : null,
   }));
 }
 
 export default async function KycReviewPage() {
   const session = await auth();
-  if (
-    !session?.user ||
-    !['ADMIN', 'OWNER', 'SUPERADMIN'].includes(session.user.role ?? '')
-  ) {
+  if (!session?.user || !['ADMIN', 'OWNER', 'SUPERADMIN'].includes(session.user.role ?? '')) {
     redirect('/dashboard');
   }
 

@@ -30,11 +30,11 @@
 import { randomBytes } from 'node:crypto';
 import prisma from '@/lib/db';
 import { requireExchangeAccess } from '@/lib/exchange-auth';
+import { screenTransaction } from '@/lib/fraud/screener';
 import { notifyDealStatusChange, notifyNewDeal } from '@/lib/notifications/fintech';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
-import { screenTransaction } from '@/lib/fraud/screener';
 import type { FintechActionResult } from '@/types/types';
 import type { Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
@@ -501,7 +501,8 @@ export async function createDeal(
 
 // ─── helper: خواندن IP از headers ────────────────────────────────────────────
 async function getClientIp(): Promise<string> {
-  return (await headers()).get('x-forwarded-for')?.split(',').pop()?.trim() ?? 'unknown';
+  // [0] = real client IP — pop() آخرین proxy IP را می‌گرفت که نادرست است
+  return (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
 }
 
 // ─── CONFIRM (صرافی) ─────────────────────────────────────────────────────────

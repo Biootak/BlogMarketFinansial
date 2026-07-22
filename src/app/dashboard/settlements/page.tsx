@@ -1,7 +1,7 @@
+import { getSettlements } from '@/actions/settlement';
 import { auth } from '@/auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { getSettlements } from '@/actions/settlement';
 import { SettlementClient } from './_components/SettlementClient';
 
 export const metadata: Metadata = {
@@ -10,10 +10,7 @@ export const metadata: Metadata = {
 
 export default async function SettlementsPage() {
   const session = await auth();
-  if (
-    !session?.user ||
-    !['ADMIN', 'OWNER', 'SUPERADMIN'].includes(session.user.role ?? '')
-  ) {
+  if (!session?.user || !['ADMIN', 'OWNER', 'SUPERADMIN'].includes(session.user.role ?? '')) {
     redirect('/dashboard');
   }
 

@@ -372,8 +372,8 @@ async function seedCategories() {
     const exists = await p.category.findFirst({ where: { name: c.name } });
     if (exists) continue;
     const slug = slugify(c.name);
-    let uniqueSlug = slug,
-      counter = 1;
+    let uniqueSlug = slug;
+    let counter = 1;
     while (await p.category.findUnique({ where: { slug: uniqueSlug } })) {
       uniqueSlug = `${slug}-${counter}`;
       counter++;
@@ -402,8 +402,8 @@ async function seedTags() {
 /* ─── 6) Posts (۵۰ پست متنوع) ──────────────────────────────── */
 async function seedPosts() {
   const AUTHOR_ID = 'cm5qdrd3e0001m4zli12b2rd5';
-  let added = 0,
-    skipped = 0;
+  let added = 0;
+  let skipped = 0;
   for (let i = 0; i < POSTS_DATA.length; i++) {
     const post = POSTS_DATA[i];
     const exists = await p.post.findFirst({ where: { title: post.title } });
@@ -412,8 +412,8 @@ async function seedPosts() {
       continue;
     }
     const baseSlug = slugify(post.title);
-    let uniqueSlug = baseSlug,
-      counter = 1;
+    let uniqueSlug = baseSlug;
+    let counter = 1;
     while (await p.post.findUnique({ where: { slug: uniqueSlug } })) {
       uniqueSlug = `${baseSlug}-${counter}`;
       counter++;
@@ -458,7 +458,7 @@ async function seedPosts() {
 async function seedComments(users, posts) {
   const existingCount = await p.comment.count();
   if (existingCount >= 200) {
-    console.log('   ⏭️  Comments قبلاً ایجاد شده (' + existingCount + ' عدد)');
+    console.log(`   ⏭️  Comments قبلاً ایجاد شده (${existingCount} عدد)`);
     return;
   }
   const normalUsers = users.filter((u) => u.role === 'USER');
@@ -528,7 +528,7 @@ async function seedComments(users, posts) {
 async function seedLikes(users, posts) {
   const existingCount = await p.like.count();
   if (existingCount >= 100) {
-    console.log('   ⏭️  Likes قبلاً ایجاد شده (' + existingCount + ' عدد)');
+    console.log(`   ⏭️  Likes قبلاً ایجاد شده (${existingCount} عدد)`);
     return;
   }
   const normalUsers = users.filter((u) => u.role === 'USER');
@@ -564,7 +564,7 @@ async function seedLikes(users, posts) {
 async function seedViews(posts) {
   const existingCount = await p.view.count();
   if (existingCount >= 500) {
-    console.log('   ⏭️  Views قبلاً ایجاد شده (' + existingCount + ' عدد)');
+    console.log(`   ⏭️  Views قبلاً ایجاد شده (${existingCount} عدد)`);
     return;
   }
   const userAgents = [
@@ -596,7 +596,7 @@ async function seedViews(posts) {
 async function seedSavedPosts(users, posts) {
   const existingCount = await p.savedPost.count();
   if (existingCount >= 30) {
-    console.log('   ⏭️  SavedPosts قبلاً ایجاد شده (' + existingCount + ' عدد)');
+    console.log(`   ⏭️  SavedPosts قبلاً ایجاد شده (${existingCount} عدد)`);
     return;
   }
   const normalUsers = users.filter((u) => u.role === 'USER');
@@ -622,7 +622,7 @@ async function seedSavedPosts(users, posts) {
 async function seedNotifications(users) {
   const existingCount = await p.notification.count();
   if (existingCount >= 30) {
-    console.log('   ⏭️  Notifications قبلاً ایجاد شده (' + existingCount + ' عدد)');
+    console.log(`   ⏭️  Notifications قبلاً ایجاد شده (${existingCount} عدد)`);
     return;
   }
   const normalUsers = users.filter((u) => u.role === 'USER');
@@ -659,7 +659,7 @@ async function seedNotifications(users) {
 async function seedActivityLogs(users) {
   const existingCount = await p.activityLog.count();
   if (existingCount >= 100) {
-    console.log('   ⏭️  ActivityLogs قبلاً ایجاد شده (' + existingCount + ' عدد)');
+    console.log(`   ⏭️  ActivityLogs قبلاً ایجاد شده (${existingCount} عدد)`);
     return;
   }
   const actions = [
@@ -703,7 +703,7 @@ async function seedActivityLogs(users) {
 async function seedNewsletters() {
   const existingCount = await p.newsletter.count();
   if (existingCount >= 5) {
-    console.log('   ⏭️  Newsletters قبلاً ایجاد شده (' + existingCount + ' عدد)');
+    console.log(`   ⏭️  Newsletters قبلاً ایجاد شده (${existingCount} عدد)`);
     return;
   }
   const emails = [
@@ -869,7 +869,9 @@ async function seedAdvertisements() {
 async function seedExchangesAndProviders() {
   const { cuid2 } = (await import('@paralleldrive/cuid2').catch(() => null)) || {};
   // اگر cuid2 در دسترس نبود از crypto استفاده می‌کنیم
-  const newId = cuid2 ? cuid2.createId : () => require('crypto').randomBytes(12).toString('hex');
+  const _newId = cuid2
+    ? cuid2.createId
+    : () => require('node:crypto').randomBytes(12).toString('hex');
 
   // صرافی‌هایی که باید در جدول مقایسه نشان داده شوند
   const SHOW_IN_COMPARISON_SLUGS = new Set([
@@ -1250,10 +1252,10 @@ async function seedExchangesAndProviders() {
     },
   ];
 
-  let exchAdded = 0,
-    exchUpdated = 0,
-    provAdded = 0,
-    provUpdated = 0;
+  let exchAdded = 0;
+  let exchUpdated = 0;
+  let provAdded = 0;
+  let provUpdated = 0;
 
   for (const ex of EXCHANGES) {
     // ── upsert Exchange ──────────────────────────────────────────────────────
@@ -1650,8 +1652,8 @@ async function seedExchangeRates() {
     },
   ];
 
-  let added = 0,
-    updated = 0;
+  let added = 0;
+  let updated = 0;
   for (const entry of SYMBOL_REGISTRY) {
     const buyRate = (entry.buy * entry.divisor).toFixed(entry.decimals);
     const sellRate = (entry.sell * entry.divisor).toFixed(entry.decimals);
@@ -1811,7 +1813,7 @@ async function seedServiceRequests() {
 async function seedSystemLogs() {
   const existingCount = await p.systemLog.count();
   if (existingCount >= 20) {
-    console.log('   ⏭️  SystemLogs قبلاً ایجاد شده (' + existingCount + ' عدد)');
+    console.log(`   ⏭️  SystemLogs قبلاً ایجاد شده (${existingCount} عدد)`);
     return;
   }
   const levels = ['INFO', 'INFO', 'INFO', 'WARNING', 'ERROR'];
@@ -1920,7 +1922,7 @@ async function seedCurrencyPatterns() {
 async function seedAccounts(users) {
   const existingCount = await p.account.count();
   if (existingCount >= 1) {
-    console.log('   ⏭️  Account قبلاً ایجاد شده (' + existingCount + ' عدد)');
+    console.log(`   ⏭️  Account قبلاً ایجاد شده (${existingCount} عدد)`);
     return;
   }
 
@@ -1935,8 +1937,8 @@ async function seedAccounts(users) {
         userId: users[i].id,
         type: 'oauth',
         ...providers[i],
-        access_token: 'mock_access_' + Math.random().toString(36).slice(2),
-        refresh_token: 'mock_refresh_' + Math.random().toString(36).slice(2),
+        access_token: `mock_access_${Math.random().toString(36).slice(2)}`,
+        refresh_token: `mock_refresh_${Math.random().toString(36).slice(2)}`,
         expires_at: Math.floor(Date.now() / 1000) + 3600,
         token_type: 'Bearer',
         scope: 'openid email profile',
@@ -1951,7 +1953,7 @@ async function seedAccounts(users) {
 async function seedTasks(users) {
   const existingCount = await p.task.count();
   if (existingCount >= 10) {
-    console.log('   ⏭️  Tasks قبلاً ایجاد شده (' + existingCount + ' عدد)');
+    console.log(`   ⏭️  Tasks قبلاً ایجاد شده (${existingCount} عدد)`);
     return;
   }
   const titles = [
@@ -1999,7 +2001,7 @@ async function seedExchangeQuotes() {
     where: { status: 'ACTIVE', expiresAt: { gt: now } },
   });
   if (existing >= 4) {
-    console.log('   ⏭️  ExchangeRateQuotes قبلاً ایجاد شده (' + existing + ' عدد)');
+    console.log(`   ⏭️  ExchangeRateQuotes قبلاً ایجاد شده (${existing} عدد)`);
     return;
   }
 
@@ -2090,7 +2092,7 @@ async function seedExchangeQuotes() {
       },
     });
     if (alreadyActive) {
-      console.log('   ⏭️  ' + exchange.name + ' / ' + q.currencyCode + ' already active');
+      console.log(`   ⏭️  ${exchange.name} / ${q.currencyCode} already active`);
       continue;
     }
 
@@ -2119,19 +2121,10 @@ async function seedExchangeQuotes() {
     await p.exchange
       .update({ where: { id: q.exchangeId }, data: { showInComparison: true } })
       .catch(() => null);
-    console.log(
-      '   ✅  ' +
-        exchange.name +
-        ' / ' +
-        q.currencyCode +
-        ': buy=' +
-        q.buyRate +
-        ' sell=' +
-        q.sellRate,
-    );
+    console.log(`   ✅  ${exchange.name} / ${q.currencyCode}: buy=${q.buyRate} sell=${q.sellRate}`);
     created++;
   }
-  console.log('   ✨ ' + created + ' quote ایجاد شد');
+  console.log(`   ✨ ${created} quote ایجاد شد`);
 }
 
 /* ─── main: اجرای ترتیبی seed ───────────────────────────────── */
@@ -2248,18 +2241,18 @@ async function main() {
     exchanges: await p.exchange.count(),
     transferProviders: await p.transferProvider.count(),
   };
-  console.log('\n' + '═'.repeat(50));
+  console.log(`\n${'═'.repeat(50)}`);
   console.log('📊 آمار نهایی دیتابیس:');
   Object.entries(stats)
     .sort((a, b) => b[1] - a[1])
     .forEach(([k, v]) => {
-      console.log('   ' + k.padEnd(20) + ': ' + v.toString().padStart(6));
+      console.log(`   ${k.padEnd(20)}: ${v.toString().padStart(6)}`);
     });
   console.log('═'.repeat(50));
 
   /* ─── نمایش مشخصات مالک (OWNER) در صورت ایجاد جدید ─── */
   if (seededOwner) {
-    console.log('\n' + '═'.repeat(50));
+    console.log(`\n${'═'.repeat(50)}`);
     console.log('🔐 مشخصات مالک / OWNER (ذخیره کنید):');
     console.log('   Email:', seededOwner.email);
     if (seededOwner.source === 'generated') {

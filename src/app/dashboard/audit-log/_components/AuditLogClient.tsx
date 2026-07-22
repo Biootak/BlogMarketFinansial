@@ -91,7 +91,7 @@ function downloadCsv(logs: AuditLog[]) {
       .join(','),
   );
   const csv = [header, ...rows].join('\n');
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -182,7 +182,9 @@ export function AuditLogClient({
         >
           <option value="">همه موجودیت‌ها</option>
           {entityTypes.map((t) => (
-            <option key={t} value={t}>{t}</option>
+            <option key={t} value={t}>
+              {t}
+            </option>
           ))}
         </select>
 
@@ -268,11 +270,9 @@ export function AuditLogClient({
                 <td className={s.td}>
                   <div className={s.actorCell}>
                     <span className={s.actorId} dir="ltr">
-                      {log.actorId ? log.actorId.slice(0, 8) + '…' : '—'}
+                      {log.actorId ? `${log.actorId.slice(0, 8)}…` : '—'}
                     </span>
-                    {log.actorRole && (
-                      <span className={s.actorRole}>{log.actorRole}</span>
-                    )}
+                    {log.actorRole && <span className={s.actorRole}>{log.actorRole}</span>}
                   </div>
                 </td>
                 <td className={s.td}>
@@ -284,9 +284,7 @@ export function AuditLogClient({
                   </div>
                 </td>
                 <td className={s.td}>
-                  {log.entityType ? (
-                    <span className={s.entity}>{log.entityType}</span>
-                  ) : '—'}
+                  {log.entityType ? <span className={s.entity}>{log.entityType}</span> : '—'}
                 </td>
                 <td className={s.td} dir="ltr">
                   <span className={s.ip}>{log.ip ?? '—'}</span>
@@ -352,7 +350,10 @@ export function AuditLogClient({
           {selectedLog && (
             <>
               <SheetHeader className={s.detailHeader}>
-                <div className={`${s.actionDot} ${s.actionDotLg} ${getActionDot(selectedLog.action)}`} aria-hidden />
+                <div
+                  className={`${s.actionDot} ${s.actionDotLg} ${getActionDot(selectedLog.action)}`}
+                  aria-hidden
+                />
                 <SheetTitle className={s.detailTitle}>{selectedLog.action}</SheetTitle>
               </SheetHeader>
 
@@ -370,7 +371,9 @@ export function AuditLogClient({
                   ].map(({ key, val, ltr }) => (
                     <div key={key} className={s.metaItem}>
                       <span className={s.metaKey}>{key}</span>
-                      <span className={s.metaVal} dir={ltr ? 'ltr' : undefined}>{val}</span>
+                      <span className={s.metaVal} dir={ltr ? 'ltr' : undefined}>
+                        {val}
+                      </span>
                     </div>
                   ))}
                 </div>

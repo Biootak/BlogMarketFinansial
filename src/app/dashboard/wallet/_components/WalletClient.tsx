@@ -12,6 +12,7 @@
  * - همه ۵ حالت: loading / empty / error / success / disabled
  */
 
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   ArrowDown,
   ArrowLeftRight,
@@ -23,7 +24,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
 import s from './WalletClient.module.css';
 
 type Account = {
@@ -57,12 +57,13 @@ type Props = { walletData: WalletData | null };
 function formatAFN(amount: string): string {
   const num = Number(amount);
   if (Number.isNaN(num)) return '—';
+  // balance و amount در DB به صورت BigInt cents ذخیره می‌شوند → تقسیم بر 100
   return new Intl.NumberFormat('fa-AF', {
     style: 'currency',
     currency: 'AFN',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(num);
+  }).format(num / 100);
 }
 
 function formatDate(iso: string): string {
@@ -86,19 +87,28 @@ function AmbientRings() {
         xmlns="http://www.w3.org/2000/svg"
       >
         <circle
-          cx="130" cy="130" r="100"
-          stroke="currentColor" strokeWidth="1"
+          cx="130"
+          cy="130"
+          r="100"
+          stroke="currentColor"
+          strokeWidth="1"
           strokeDasharray="8 6"
           style={{ color: 'var(--ds-brand-500)', opacity: 0.6 }}
         />
         <circle
-          cx="130" cy="130" r="70"
-          stroke="currentColor" strokeWidth="1.5"
+          cx="130"
+          cy="130"
+          r="70"
+          stroke="currentColor"
+          strokeWidth="1.5"
           style={{ color: 'var(--ds-brand-500)', opacity: 0.4 }}
         />
         <circle
-          cx="130" cy="130" r="40"
-          stroke="currentColor" strokeWidth="2"
+          cx="130"
+          cy="130"
+          r="40"
+          stroke="currentColor"
+          strokeWidth="2"
           style={{ color: 'var(--ds-brand-500)', opacity: 0.3 }}
         />
       </svg>
@@ -129,7 +139,11 @@ export function WalletClient({ walletData }: Props) {
       const url = `/api/customer/transactions?limit=20${cursor ? `&cursor=${cursor}` : ''}`;
       const res = await fetch(url, { signal: ctrl.signal });
       if (!res.ok) throw new Error('خطا در دریافت تراکنش‌ها');
-      const json = await res.json() as { success: boolean; data?: { entries: LedgerEntry[]; nextCursor: string | null; hasMore: boolean }; error?: { message: string } };
+      const json = (await res.json()) as {
+        success: boolean;
+        data?: { entries: LedgerEntry[]; nextCursor: string | null; hasMore: boolean };
+        error?: { message: string };
+      };
       if (!json.success) throw new Error(json.error?.message ?? 'خطای ناشناخته');
       const data = json.data!;
       if (isMore) {
@@ -170,7 +184,8 @@ export function WalletClient({ walletData }: Props) {
     );
   }
 
-  const primaryAccount = walletData.accounts.find((a) => a.type === 'WALLET') ?? walletData.accounts[0];
+  const primaryAccount =
+    walletData.accounts.find((a) => a.type === 'WALLET') ?? walletData.accounts[0];
   const kycApproved = walletData.kycStatus === 'APPROVED';
 
   return (
@@ -178,7 +193,11 @@ export function WalletClient({ walletData }: Props) {
       {/* ── KYC Banner ── */}
       {!kycApproved && (
         <div className={s.kycBanner} role="status">
-          <ShieldAlert size={18} aria-hidden style={{ color: 'var(--ds-status-pending-fg)', flexShrink: 0 }} />
+          <ShieldAlert
+            size={18}
+            aria-hidden
+            style={{ color: 'var(--ds-status-pending-fg)', flexShrink: 0 }}
+          />
           <p className={s.kycBannerText}>
             برای استفاده کامل از کیف پول، احراز هویت خود را تکمیل کنید.
           </p>
@@ -194,13 +213,9 @@ export function WalletClient({ walletData }: Props) {
         <p className={s.heroEyebrow}>موجودی کل</p>
         <div>
           <span className={s.heroBalance} aria-live="polite">
-            {primaryAccount
-              ? formatAFN(primaryAccount.balance)
-              : '—'}
+            {primaryAccount ? formatAFN(primaryAccount.balance) : '—'}
           </span>
-          {primaryAccount && (
-            <span className={s.heroCurrency}>{primaryAccount.currency}</span>
-          )}
+          {primaryAccount && <span className={s.heroCurrency}>{primaryAccount.currency}</span>}
         </div>
         <div className={s.heroMeta}>
           {kycApproved && primaryAccount && (
@@ -249,7 +264,9 @@ export function WalletClient({ walletData }: Props) {
                   <Skeleton className={s.skLine} style={{ width: '60%' }} />
                   <Skeleton className={s.skLine} style={{ width: '35%', height: '10px' }} />
                 </div>
-                <Skeleton style={{ width: '70px', height: '14px', borderRadius: 'var(--ds-radius-sm)' }} />
+                <Skeleton
+                  style={{ width: '70px', height: '14px', borderRadius: 'var(--ds-radius-sm)' }}
+                />
               </div>
             ))}
           </div>
@@ -259,11 +276,7 @@ export function WalletClient({ walletData }: Props) {
         {!loading && fetchError && (
           <div className={s.txError} role="alert">
             <p style={{ marginBottom: 'var(--ds-space-2)' }}>{fetchError}</p>
-            <button
-              type="button"
-              onClick={() => fetchEntries()}
-              className={s.loadMoreBtn}
-            >
+            <button type="button" onClick={() => fetchEntries()} className={s.loadMoreBtn}>
               تلاش مجدد
             </button>
           </div>
@@ -274,9 +287,7 @@ export function WalletClient({ walletData }: Props) {
           <div className={s.txEmpty}>
             <ArrowLeftRight size={36} className={s.txEmptyIcon} aria-hidden />
             <p className={s.txEmptyTitle}>هنوز تراکنشی نداری</p>
-            <p className={s.txEmptyDesc}>
-              اولین انتقال خود را انجام بده تا تاریخچه‌ات شروع شود.
-            </p>
+            <p className={s.txEmptyDesc}>اولین انتقال خود را انجام بده تا تاریخچه‌ات شروع شود.</p>
           </div>
         )}
 
@@ -286,14 +297,10 @@ export function WalletClient({ walletData }: Props) {
             {entries.map((entry) => (
               <div key={entry.id} className={s.txRow} role="listitem">
                 <div
-                  className={
-                    entry.direction === 'CREDIT' ? s.txDotCredit : s.txDotDebit
-                  }
+                  className={entry.direction === 'CREDIT' ? s.txDotCredit : s.txDotDebit}
                   aria-hidden
                 >
-                  {entry.direction === 'CREDIT'
-                    ? <ArrowDown size={16} />
-                    : <ArrowUp size={16} />}
+                  {entry.direction === 'CREDIT' ? <ArrowDown size={16} /> : <ArrowUp size={16} />}
                 </div>
                 <div className={s.txMeta}>
                   <p className={s.txDesc}>

@@ -13,19 +13,14 @@
  * - spring micro-interactions
  */
 
-import { approveSettlement, markSettlementPaid, type SettlementRow } from '@/actions/settlement';
+import { type SettlementRow, approveSettlement, markSettlementPaid } from '@/actions/settlement';
 import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  CheckCircle2,
-  CircleDollarSign,
-  Download,
-  Eye,
-} from 'lucide-react';
+import { CheckCircle2, CircleDollarSign, Download, Eye } from 'lucide-react';
 import { useCallback, useMemo, useState, useTransition } from 'react';
 import s from './SettlementClient.module.css';
 
@@ -81,7 +76,7 @@ function downloadCsv(rows: SettlementRow[]) {
       .join(','),
   );
   const csv = [header, ...csvRows].join('\n');
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -110,18 +105,22 @@ export function SettlementClient({ settlements: initial }: Props) {
     [rows],
   );
 
-  const kpiTotalVolume = useMemo(
-    () => rows.reduce((s, r) => s + Number(r.totalVolume), 0),
-    [rows],
-  );
+  const kpiTotalVolume = useMemo(() => rows.reduce((s, r) => s + Number(r.totalVolume), 0), [rows]);
 
   const handleApprove = useCallback((id: string) => {
     startTransition(async () => {
       setError(null);
       const res = await approveSettlement(id);
-      if (!res.success) { setError(res.error.message); return; }
-      setRows((prev) => prev.map((r) => r.id === id ? { ...r, status: 'APPROVED' } : r));
-      setSelectedRows((prev) => { const s = new Set(prev); s.delete(id); return s; });
+      if (!res.success) {
+        setError(res.error.message);
+        return;
+      }
+      setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status: 'APPROVED' } : r)));
+      setSelectedRows((prev) => {
+        const s = new Set(prev);
+        s.delete(id);
+        return s;
+      });
     });
   }, []);
 
@@ -129,8 +128,11 @@ export function SettlementClient({ settlements: initial }: Props) {
     startTransition(async () => {
       setError(null);
       const res = await markSettlementPaid(id);
-      if (!res.success) { setError(res.error.message); return; }
-      setRows((prev) => prev.map((r) => r.id === id ? { ...r, status: 'PAID' } : r));
+      if (!res.success) {
+        setError(res.error.message);
+        return;
+      }
+      setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status: 'PAID' } : r)));
     });
   }, []);
 
@@ -144,7 +146,7 @@ export function SettlementClient({ settlements: initial }: Props) {
           setError(res.error.message);
           break;
         }
-        setRows((prev) => prev.map((r) => r.id === id ? { ...r, status: 'APPROVED' } : r));
+        setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status: 'APPROVED' } : r)));
       }
       setSelectedRows(new Set());
     });
@@ -203,15 +205,25 @@ export function SettlementClient({ settlements: initial }: Props) {
 
       {/* ── Error banner ── */}
       {error && (
-        <div className={s.errorBanner} role="alert">{error}</div>
+        <div className={s.errorBanner} role="alert">
+          {error}
+        </div>
       )}
 
       {/* ── Toolbar ── */}
       <div className={s.toolbar}>
-        <Tabs value={tab} onValueChange={(v) => { setTab(v as typeof tab); setSelectedRows(new Set()); }}>
+        <Tabs
+          value={tab}
+          onValueChange={(v) => {
+            setTab(v as typeof tab);
+            setSelectedRows(new Set());
+          }}
+        >
           <TabsList>
             <TabsTrigger value="all">همه</TabsTrigger>
-            <TabsTrigger value="PENDING">در انتظار {pendingRows.length > 0 && `(${pendingRows.length})`}</TabsTrigger>
+            <TabsTrigger value="PENDING">
+              در انتظار {pendingRows.length > 0 && `(${pendingRows.length})`}
+            </TabsTrigger>
             <TabsTrigger value="APPROVED">تأیید شده</TabsTrigger>
             <TabsTrigger value="PAID">پرداخت شده</TabsTrigger>
           </TabsList>
@@ -262,7 +274,9 @@ export function SettlementClient({ settlements: initial }: Props) {
                       className={s.checkbox}
                       checked={
                         filtered.filter((r) => r.status === 'PENDING').length > 0 &&
-                        filtered.filter((r) => r.status === 'PENDING').every((r) => selectedRows.has(r.id))
+                        filtered
+                          .filter((r) => r.status === 'PENDING')
+                          .every((r) => selectedRows.has(r.id))
                       }
                       onChange={selectAllPending}
                       aria-label="انتخاب همه"
@@ -301,7 +315,9 @@ export function SettlementClient({ settlements: initial }: Props) {
                   <td className={s.td}>
                     <div className={s.exchangeCell}>
                       <span className={s.exchangeName}>{row.exchangeName}</span>
-                      <span className={s.exchangeId} dir="ltr">{row.exchangeId.slice(0, 8)}</span>
+                      <span className={s.exchangeId} dir="ltr">
+                        {row.exchangeId.slice(0, 8)}
+                      </span>
                     </div>
                   </td>
 
@@ -402,13 +418,20 @@ export function SettlementClient({ settlements: initial }: Props) {
                 <div className={s.metaGrid}>
                   {[
                     { label: 'حجم کل', val: fmtAFN(detailRow.totalVolume) },
-                    { label: 'تعداد معاملات', val: new Intl.NumberFormat('fa-IR').format(detailRow.dealCount) },
+                    {
+                      label: 'تعداد معاملات',
+                      val: new Intl.NumberFormat('fa-IR').format(detailRow.dealCount),
+                    },
                     { label: 'کارمزد پلتفرم', val: fmtAFN(detailRow.platformFee) },
                     { label: 'خالص قابل پرداخت', val: fmtAFN(detailRow.exchangeNet) },
                     { label: 'ارز', val: detailRow.currency },
                     { label: 'وضعیت', val: STATUS_LABELS[detailRow.status] ?? detailRow.status },
-                    ...(detailRow.approvedAt ? [{ label: 'تأیید در', val: fmtDate(detailRow.approvedAt) }] : []),
-                    ...(detailRow.paidAt ? [{ label: 'پرداخت در', val: fmtDate(detailRow.paidAt) }] : []),
+                    ...(detailRow.approvedAt
+                      ? [{ label: 'تأیید در', val: fmtDate(detailRow.approvedAt) }]
+                      : []),
+                    ...(detailRow.paidAt
+                      ? [{ label: 'پرداخت در', val: fmtDate(detailRow.paidAt) }]
+                      : []),
                   ].map(({ label, val }) => (
                     <div key={label} className={s.metaItem}>
                       <span className={s.metaKey}>{label}</span>
@@ -421,7 +444,10 @@ export function SettlementClient({ settlements: initial }: Props) {
                 <div className={s.detailActions}>
                   {detailRow.status === 'PENDING' && (
                     <Button
-                      onClick={() => { handleApprove(detailRow.id); setDetailRow(null); }}
+                      onClick={() => {
+                        handleApprove(detailRow.id);
+                        setDetailRow(null);
+                      }}
                       disabled={isPending}
                       className={s.approveBtn}
                     >
@@ -431,7 +457,10 @@ export function SettlementClient({ settlements: initial }: Props) {
                   )}
                   {detailRow.status === 'APPROVED' && (
                     <Button
-                      onClick={() => { handlePaid(detailRow.id); setDetailRow(null); }}
+                      onClick={() => {
+                        handlePaid(detailRow.id);
+                        setDetailRow(null);
+                      }}
                       disabled={isPending}
                       className={s.paidBtn}
                     >

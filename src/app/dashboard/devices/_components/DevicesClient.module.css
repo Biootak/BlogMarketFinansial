@@ -31,7 +31,9 @@
   padding: var(--ds-space-4) var(--ds-space-3);
   transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
-.kpiItem:hover { background: var(--ds-canvas-subtle); }
+.kpiItem:hover {
+  background: var(--ds-canvas-subtle);
+}
 
 .kpiIcon {
   display: flex;
@@ -45,11 +47,19 @@
   margin-block-end: 2px;
   transition: transform var(--ds-duration-fast) var(--ds-ease-spring);
 }
-.kpiItem:hover .kpiIcon { transform: translateY(-1px); }
+.kpiItem:hover .kpiIcon {
+  transform: translateY(-1px);
+}
 
-.kpiIconGreen { color: var(--ds-status-success-fg); }
-.kpiIconAmber { color: var(--ds-status-pending-fg); }
-.kpiIconRed   { color: var(--ds-status-error-fg); }
+.kpiIconGreen {
+  color: var(--ds-status-success-fg);
+}
+.kpiIconAmber {
+  color: var(--ds-status-pending-fg);
+}
+.kpiIconRed {
+  color: var(--ds-status-error-fg);
+}
 
 .kpiVal {
   font-size: var(--ds-text-xl);
@@ -59,9 +69,15 @@
   color: var(--ds-text-primary);
   letter-spacing: -0.03em;
 }
-.kpiTrusted    { color: var(--ds-status-success-fg); }
-.kpiUnverified { color: var(--ds-status-pending-fg); }
-.kpiRevoked    { color: var(--ds-status-error-fg); }
+.kpiTrusted {
+  color: var(--ds-status-success-fg);
+}
+.kpiUnverified {
+  color: var(--ds-status-pending-fg);
+}
+.kpiRevoked {
+  color: var(--ds-status-error-fg);
+}
 
 .kpiLabel {
   font-size: var(--ds-text-xs);
@@ -110,10 +126,9 @@
   border-radius: var(--ds-radius-xl);
   box-shadow: var(--ds-shadow-sm);
   animation: slideIn var(--ds-duration-base) var(--ds-ease-out-quart) both;
-  transition:
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
 }
 .deviceCard:hover {
   box-shadow: var(--ds-shadow-md);
@@ -122,8 +137,14 @@
 }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Device Icon */
@@ -138,10 +159,9 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), color var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
 }
 .deviceIconTrusted {
   background: var(--ds-status-success-bg);
@@ -252,10 +272,9 @@
   font-family: inherit;
   cursor: pointer;
   min-block-size: 34px;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-spring), box-shadow var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
 }
 .trustBtn:hover {
   background: var(--ds-status-success-fg);
@@ -263,8 +282,14 @@
   transform: translateY(-1px);
   box-shadow: 0 3px 10px -2px color-mix(in oklch, var(--ds-status-success-fg) 35%, transparent);
 }
-.trustBtn:active { transform: scale(0.97); }
-.trustBtn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.trustBtn:active {
+  transform: scale(0.97);
+}
+.trustBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
 
 .revokeBtn {
   display: inline-flex;
@@ -280,11 +305,9 @@
   font-family: inherit;
   cursor: pointer;
   min-block-size: 34px;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), color var(--ds-duration-fast)
+    var(--ds-ease-out-quart), transform var(--ds-duration-fast) var(--ds-ease-spring);
 }
 .revokeBtn:hover {
   background: var(--ds-status-error-bg);
@@ -292,8 +315,14 @@
   color: var(--ds-status-error-fg);
   transform: translateY(-1px);
 }
-.revokeBtn:active { transform: scale(0.97); }
-.revokeBtn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.revokeBtn:active {
+  transform: scale(0.97);
+}
+.revokeBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
 
 /* ─── Dialog Text ─────────────────────────────────────────────────────────── */
 .dialogText {
@@ -309,7 +338,9 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
   }
-  .kpiDivider { display: none; }
+  .kpiDivider {
+    display: none;
+  }
 
   .deviceCard {
     flex-wrap: wrap;

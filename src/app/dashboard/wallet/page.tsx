@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
+import prisma from '@/lib/db';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import prisma from '@/lib/db';
 import { WalletClient } from './_components/WalletClient';
 
 export const metadata: Metadata = {

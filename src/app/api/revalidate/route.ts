@@ -2,8 +2,8 @@ import { auth } from '@/auth';
 import { getTrustedClientIp } from '@/lib/client-ip';
 import { assertSameOrigin } from '@/lib/csrf';
 import { checkRateLimit } from '@/lib/rate-limiter';
-import { Role } from '@prisma/client';
 import { revalidatePath } from '@/lib/revalidate';
+import { Role } from '@prisma/client';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {

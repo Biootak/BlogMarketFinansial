@@ -1123,10 +1123,16 @@ export async function claimGuestRequest(
         if (txErr instanceof Error && txErr.message === 'ALREADY_CLAIMED') {
           return {
             success: false,
-            error: { code: 'ALREADY_CLAIMED', message: 'این سفارش قبلاً توسط حساب دیگری ادعا شده است.' },
+            error: {
+              code: 'ALREADY_CLAIMED',
+              message: 'این سفارش قبلاً توسط حساب دیگری ادعا شده است.',
+            },
           };
         }
-        return { success: false, error: { code: 'SERVER_ERROR', message: 'خطایی رخ داد. دوباره تلاش کنید.' } };
+        return {
+          success: false,
+          error: { code: 'SERVER_ERROR', message: 'خطایی رخ داد. دوباره تلاش کنید.' },
+        };
       }
       revalidateTag('service-requests');
       return { success: true, data: {} };
@@ -1158,10 +1164,16 @@ export async function claimGuestRequest(
         if (txErr instanceof Error && txErr.message === 'ALREADY_CLAIMED') {
           return {
             success: false,
-            error: { code: 'ALREADY_CLAIMED', message: 'این سفارش قبلاً توسط حساب دیگری ادعا شده است.' },
+            error: {
+              code: 'ALREADY_CLAIMED',
+              message: 'این سفارش قبلاً توسط حساب دیگری ادعا شده است.',
+            },
           };
         }
-        return { success: false, error: { code: 'SERVER_ERROR', message: 'خطایی رخ داد. دوباره تلاش کنید.' } };
+        return {
+          success: false,
+          error: { code: 'SERVER_ERROR', message: 'خطایی رخ داد. دوباره تلاش کنید.' },
+        };
       }
       revalidateTag('service-requests');
       return { success: true, data: {} };
