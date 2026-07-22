@@ -7,10 +7,10 @@
 
 ## §Workflow — ساخت یک صفحه UI (ترتیب اجباری)
 
-0. **UIDQG Pre-scan:** UQ1–UQ22 را سریع مرور کن. کدام UQ ها برای این تسک ریسک دارند؟ → در PRE-CODE GATE ردیف `🎨 UI Check` بنویس. این گام **قبل از grep و قبل از کد** است.
+0. **UI VISION GATE:** جدول مستقل UI VISION GATE در `AGENTS.md` را پر کن (UQ1+UQ2+UQ3+Risk+CompMap). §Craft Bar را همین لحظه بخوان. اگر هر سطر خالی است → کد ممنوع.
 1. **Audit:** کامپوننت‌های موجود برای المان‌های مورد نیاز را grep کن (`COMPONENTS.md` + repo).
-2. **Map:** المان‌ها → کامپوننت موجود → decision (reuse/extend/compose/create). → ردیف `🏗️ Comp Map` در PRE-CODE GATE را پر کن.
-3. **Research:** internet-first rule اگر surface non-trivial است.
+2. **Research:** internet-first rule اگر surface non-trivial است.
+3. **PRE-CODE GATE:** جدول اصلی PRE-CODE GATE را پر کن.
 4. **Build:** با tokens + canonical components؛ همه states را handle کن (loading/empty/error/disabled/success).
 5. **Self-check:** با `COMPONENTS.md` + `DESIGN.md` anti-patterns. `npx tsc --noEmit` + `npm run lint`.
 6. **UIDQG کامل (UQ1–UQ22):** قبل از Show اجباری است. هر ❌ = همان لحظه fix کن.
@@ -20,8 +20,8 @@
 
 ## چه موقع اجرا می‌شود؟ (دو مرحله‌ای — اجباری)
 
-- **مرحله اول (قبل از کد):** ردیف‌های `🎨 UI Design Check` + `🏗️ Component Map` را در PRE-CODE GATE پر کن. UQ ریسک‌دار را شناسایی کن.
-- **مرحله دوم (قبل از Show/Done):** همه UQ1–UQ22 را اجرا کن و نتیجه را visible بنویس.
+- **مرحله اول (قبل از کد):** جدول **UI VISION GATE** (مستقل، قبل از PRE-CODE GATE) + §Craft Bar خوانده شود.
+- **مرحله دوم (قبل از Show/Done):** همه UQ1–UQ22 را اجرا کن و نتیجه را visible بنویس. §Craft Bar دوباره چک شود.
 
 > ⛔ **VISIBLE OUTPUT اجباری است.** نوشتن "UIDQG انجام شد" بدون خروجی = نقض مستقیم.
 > هر `❌` = همان لحظه fix کن → از UQ1 دوباره شروع کن.
@@ -62,16 +62,21 @@
 
 ---
 
-## بلاک A — هویت و استراتژی بصری (Vision)
+## بلاک A — هویت و استراتژی بصری (Vision) ⚡ اجباری در مرحله اول
+
+> ⛔ **این بلاک در Vision-First (گام ۰) پیش از کد پاسخ داده می‌شود — نه فقط در مرحله دوم.**
 
 **[UQ1]** آیا طراحی «بیلیون‌دلاری» است یا «معمولی/کسل‌کننده»؟
 مقایسه با Wise/Linear/Stripe: اگر آن‌ها آن را منتشر نمی‌کردند = شکست. «درست است ولی ordinary» = شکست.
+> پیش از کد بنویس: «این صفحه باید حس [X] بدهد — شبیه [Product] در لحظه [Y].»
 
 **[UQ2]** آیا یک «لحظهٔ واو» (Signature Moment) وجود دارد؟
 حداقل یک جزء به‌یادماندنی: ambient SVG stroke / System-breath / view-transition / stagger choreography.
+> پیش از کد بنویس: «signature moment این صفحه: [...]»
 
 **[UQ3]** آیا هویت بصری از «منطق دامنه» برمی‌خیزد؟
 فرم از semantics مالی (نرخ/اعتماد/سرعت) می‌آید، نه کپی سطح‌بصری رقیب.
+> پیش از کد بنویس: «هویت از [X در دامنه مالی] می‌آید، نه از کپی [Y].»
 
 **[UQ4]** آیا با رفرنس‌های اینترنتی (2026) تحقیق شده؟
 حداقل یک UI reference معتبر (shadcn، Layered-UI، Supabase، Linear) مطالعه شده + تاریخ visible.

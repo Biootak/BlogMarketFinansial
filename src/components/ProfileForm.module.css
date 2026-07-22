@@ -1,0 +1,550 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   ProfileForm — 2026 redesign (Full)
+   زبان طراحی: Calm Confidence · Premium · RTL-first · Linear/Attio pattern
+   توکن‌ها: --at-* (dashboard) + --ds-space-* + --ds-radius-*
+   قوانین: فقط توکن، بدون hex/rgb خام — logical props — no left/right
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Root wrapper ───────────────────────────────────────────────────────── */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5);
+  animation: motion-fade-in-up 280ms var(--ds-ease-out-quart) both;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HERO — Cover + Avatar
+   ─────────────────────────────────────────────────────────────────────────
+   Layout:
+     .hero  →  position: relative;  padding-block-end to make room for avatar
+     .cover →  image strip (height: 10rem)
+     .avatarWrap → absolute, bottom half sticking out of cover
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.hero {
+  position: relative;
+  /* bottom padding = half avatar height (2.75rem) + small gap */
+  padding-block-end: 3rem;
+}
+
+.cover {
+  position: relative;
+  width: 100%;
+  height: 10rem;
+  border-radius: var(--at-radius-lg, 14px);
+  overflow: hidden;
+  background: var(--at-accent-soft);
+  border: 1px solid var(--at-line);
+}
+
+/* Placeholder image: subtle opacity so it reads as "not uploaded yet" */
+.coverPlaceholder {
+  opacity: 0.45;
+  filter: saturate(0.4);
+}
+
+.dark .coverPlaceholder {
+  opacity: 0.25;
+  filter: saturate(0.3) brightness(0.7);
+}
+
+/* Edit cover button — always visible (bottom-start corner) */
+.coverBtn {
+  position: absolute;
+  inset-block-end: var(--ds-space-3);
+  inset-inline-start: var(--ds-space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-1-5) var(--ds-space-3);
+  background: color-mix(in oklch, var(--at-surface) 92%, transparent);
+  border-radius: var(--at-radius, 10px);
+  border: 1px solid var(--at-line);
+  cursor: pointer;
+  font-size: var(--ds-text-sm);
+  font-weight: 500;
+  color: var(--at-fg);
+  font-family: inherit;
+  backdrop-filter: blur(8px);
+  transition: transform 160ms var(--ds-ease-spring), background 160ms,
+    box-shadow 160ms;
+  /* 44px touch target minimum */
+  min-height: 36px;
+}
+
+.coverBtn:hover {
+  transform: translateY(-1px);
+  background: var(--at-surface);
+  box-shadow: var(--at-shadow-hover);
+}
+
+.coverBtn:active {
+  transform: scale(0.97);
+}
+
+.coverBtn:focus-visible {
+  outline: 2px solid var(--at-accent);
+  outline-offset: 2px;
+}
+
+/* ─── Avatar ─────────────────────────────────────────────────────────────── */
+.avatarWrap {
+  position: absolute;
+  bottom: 0;
+  inset-inline-end: var(--ds-space-5);
+}
+
+/* Clickable wrapper — whole avatar is the button */
+.avatarTrigger {
+  position: relative;
+  display: block;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: var(--at-radius-lg, 14px);
+  transition: transform 200ms var(--ds-ease-spring);
+}
+
+.avatarTrigger:hover {
+  transform: scale(1.03);
+}
+
+.avatarTrigger:active {
+  transform: scale(0.96);
+}
+
+.avatarTrigger:focus-visible {
+  outline: 2px solid var(--at-accent);
+  outline-offset: 3px;
+  border-radius: var(--at-radius-lg, 14px);
+}
+
+.avatar {
+  position: relative;
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: var(--at-radius-lg, 14px);
+  overflow: hidden;
+  border: 3px solid var(--at-surface, oklch(100% 0 0));
+  background: var(--at-accent-soft);
+  display: block;
+}
+
+.avatarFallback {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  color: var(--at-accent-fg);
+}
+
+/* Camera badge — bottom-end corner */
+.avatarEditBadge {
+  position: absolute;
+  inset-inline-end: -0.375rem;
+  bottom: -0.375rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--at-radius-sm, 6px);
+  background: var(--at-accent);
+  border: 2px solid var(--at-surface, oklch(100% 0 0));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: oklch(100% 0 0);
+  pointer-events: none;
+  transition: transform 150ms var(--ds-ease-spring), background 150ms;
+}
+
+.avatarTrigger:hover .avatarEditBadge {
+  transform: scale(1.12);
+  background: var(--at-accent-fg, var(--at-accent));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TABS — override Radix ui/tabs.tsx styles with our token-based design
+   We override via className props in TSX + scoped module classes here.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.tabsRoot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+/* TabsList override */
+.tabsList {
+  display: flex !important;
+  gap: 2px !important;
+  padding: 3px !important;
+  background: var(--at-accent-soft, oklch(96% 0.008 245)) !important;
+  border-radius: var(--at-radius, 10px) !important;
+  border: 1px solid var(--at-line) !important;
+  width: fit-content !important;
+  /* Reset Radix defaults */
+  backdrop-filter: none !important;
+}
+
+/* TabsTrigger override */
+.tabsTrigger {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: var(--ds-space-2) !important;
+  padding: var(--ds-space-1-5) var(--ds-space-3) !important;
+  border-radius: calc(var(--at-radius, 10px) - 2px) !important;
+  font-size: var(--ds-text-sm) !important;
+  font-weight: 500 !important;
+  color: var(--at-fg-muted) !important;
+  font-family: inherit !important;
+  white-space: nowrap !important;
+  min-height: 36px !important;
+  transition: background 160ms var(--ds-ease-out-quart),
+    color 160ms var(--ds-ease-out-quart),
+    transform 120ms var(--ds-ease-spring) !important;
+  /* Reset Radix rounded-full */
+  height: auto !important;
+  /* Reset Radix active colors */
+  background: transparent !important;
+}
+
+.tabsTrigger:hover {
+  background: oklch(100% 0 0 / 0.5) !important;
+  color: var(--at-fg) !important;
+}
+
+.tabsTrigger:active {
+  transform: scale(0.97) !important;
+}
+
+/* Active tab */
+.tabsTrigger[data-state="active"] {
+  background: var(--at-surface, oklch(100% 0 0)) !important;
+  color: var(--at-fg) !important;
+  font-weight: 600 !important;
+  box-shadow: var(--at-shadow-sm) !important;
+}
+
+/* Dark mode adjustments */
+.dark .tabsList {
+  background: oklch(18% 0.015 255 / 0.6) !important;
+}
+
+.dark .tabsTrigger:hover {
+  background: oklch(28% 0.02 255 / 0.5) !important;
+}
+
+.dark .tabsTrigger[data-state="active"] {
+  background: oklch(22% 0.022 255) !important;
+}
+
+/* TabsContent */
+.tabsPanel {
+  margin-block-start: 0 !important;
+  animation: motion-fade-in-up 220ms var(--ds-ease-out-quart) both;
+}
+
+/* ─── Panel form ─────────────────────────────────────────────────────────── */
+.panelForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CARDS — form section wrappers
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.card {
+  background: var(--at-surface);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-lg, 14px);
+  box-shadow: var(--at-shadow);
+  padding: var(--ds-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  transition: border-color 200ms var(--ds-ease-out-quart),
+    box-shadow 200ms var(--ds-ease-out-quart);
+}
+
+.card:focus-within {
+  border-color: var(--at-line-strong);
+  box-shadow: var(--at-shadow-hover);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding-block-end: var(--ds-space-3);
+  border-block-end: 1px solid var(--at-line);
+}
+
+.cardIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--at-radius-sm, 6px);
+  flex-shrink: 0;
+}
+
+.cardTitle {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--at-fg);
+  margin: 0;
+}
+
+.cardDesc {
+  font-size: var(--ds-text-xs);
+  color: var(--at-fg-subtle);
+  margin: 0;
+  margin-block-start: 2px;
+}
+
+/* ─── 2-column form grid ─────────────────────────────────────────────────── */
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ds-space-4);
+}
+
+.formGridFull {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 600px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .formGridFull {
+    grid-column: auto;
+  }
+}
+
+/* ─── Textarea with character counter ───────────────────────────────────── */
+.textareaWrap {
+  position: relative;
+}
+
+.textarea {
+  padding-block-end: var(--ds-space-5);
+}
+
+.charCount {
+  position: absolute;
+  inset-block-end: var(--ds-space-2);
+  inset-inline-start: var(--ds-space-3);
+  font-size: var(--ds-text-xs);
+  color: var(--at-fg-subtle);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  transition: color 200ms;
+}
+
+.charCountWarn {
+  color: oklch(55% 0.16 25);
+}
+
+.dark .charCountWarn {
+  color: oklch(72% 0.12 25);
+}
+
+/* ─── Unsaved badge ──────────────────────────────────────────────────────── */
+.unsavedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  padding: var(--ds-space-1) var(--ds-space-2-5);
+  border-radius: 9999px;
+  font-size: var(--ds-text-xs);
+  font-weight: 500;
+  color: oklch(52% 0.14 75);
+  background: oklch(95% 0.04 80 / 0.6);
+  border: 1px solid oklch(88% 0.08 80 / 0.6);
+}
+
+.dark .unsavedBadge {
+  color: oklch(75% 0.1 75);
+  background: oklch(22% 0.04 80 / 0.3);
+  border-color: oklch(50% 0.1 80 / 0.3);
+}
+
+/* ─── Submit row ─────────────────────────────────────────────────────────── */
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--ds-space-3);
+  padding-block-start: var(--ds-space-2);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PASSWORD FIELDS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.passField {
+  position: relative;
+}
+
+/* Toggle button — inset-inline-end so it works for both RTL/LTR */
+.passToggle {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: var(--ds-space-3);
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--at-fg-subtle);
+  padding: 4px;
+  border-radius: var(--at-radius-sm, 6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 44px touch target via negative margin trick */
+  min-width: 28px;
+  min-height: 28px;
+  transition: color 150ms, background 150ms;
+}
+
+.passToggle:hover {
+  color: var(--at-fg);
+  background: var(--at-accent-soft);
+}
+
+.passToggle:focus-visible {
+  outline: 2px solid var(--at-accent);
+  outline-offset: 1px;
+}
+
+/* ─── Password strength ──────────────────────────────────────────────────── */
+.strengthWrap {
+  margin-block-start: var(--ds-space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+}
+
+.strengthBar {
+  display: flex;
+  gap: 3px;
+}
+
+.strengthSegment {
+  height: 3px;
+  flex: 1;
+  border-radius: 99px;
+  background: var(--at-line-strong);
+  transition: background 300ms var(--ds-ease-out-quart);
+}
+
+.strengthSegment[data-active="weak"] {
+  background: oklch(55% 0.16 25);
+}
+
+.strengthSegment[data-active="fair"] {
+  background: oklch(62% 0.14 70);
+}
+
+.strengthSegment[data-active="good"] {
+  background: oklch(55% 0.14 165);
+}
+
+.strengthSegment[data-active="strong"] {
+  background: oklch(50% 0.14 162);
+}
+
+.strengthLabel {
+  font-size: var(--ds-text-xs);
+  color: var(--at-fg-subtle);
+  margin: 0;
+}
+
+.strengthLabel [data-strength="weak"] {
+  color: oklch(55% 0.16 25);
+}
+
+.strengthLabel [data-strength="fair"] {
+  color: oklch(58% 0.14 70);
+}
+
+.strengthLabel [data-strength="good"] {
+  color: oklch(48% 0.14 165);
+}
+
+.strengthLabel [data-strength="strong"] {
+  color: oklch(45% 0.14 162);
+}
+
+.dark .strengthLabel [data-strength="weak"] {
+  color: oklch(72% 0.13 25);
+}
+
+.dark .strengthLabel [data-strength="fair"] {
+  color: oklch(75% 0.12 70);
+}
+
+.dark .strengthLabel [data-strength="good"] {
+  color: oklch(72% 0.12 165);
+}
+
+.dark .strengthLabel [data-strength="strong"] {
+  color: oklch(72% 0.12 162);
+}
+
+/* ─── Password match status ──────────────────────────────────────────────── */
+.matchStatus {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--ds-text-xs);
+  margin-block-start: var(--ds-space-1);
+  margin: var(--ds-space-1) 0 0;
+}
+
+.matchOk {
+  color: oklch(48% 0.14 162);
+}
+
+.matchFail {
+  color: oklch(50% 0.16 25);
+}
+
+.dark .matchOk {
+  color: oklch(72% 0.12 165);
+}
+
+.dark .matchFail {
+  color: oklch(72% 0.13 25);
+}
+
+/* ─── Info tip ───────────────────────────────────────────────────────────── */
+.tip {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2-5) var(--ds-space-3);
+  border-radius: var(--at-radius-sm, 6px);
+  background: var(--at-accent-soft);
+  border: 1px solid color-mix(in oklch, var(--at-accent) 20%, transparent);
+}
+
+.tipIcon {
+  flex-shrink: 0;
+  margin-block-start: 2px;
+  color: var(--at-accent-fg);
+}
+
+.tipText {
+  font-size: var(--ds-text-xs);
+  color: var(--at-accent-fg);
+  line-height: var(--ds-leading-relaxed);
+  margin: 0;
+}

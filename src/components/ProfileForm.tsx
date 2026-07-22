@@ -1,9 +1,11 @@
 'use client';
 
 import { updateProfile } from '@/actions/profile';
+import { FormField } from '@/components/Dashboard/primitives/FormField';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
@@ -11,51 +13,121 @@ import { UpdateProfileSchema } from '@/schemas';
 import type { UpdateProfileInput, UserWithProfile } from '@/types/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  Briefcase,
   Camera,
   Check,
-  ChevronDown,
+  CheckCircle2,
   Eye,
   EyeOff,
   FileText,
   ImageIcon,
   KeyRound,
-  Lightbulb,
   Lock,
-  Mail,
-  Phone,
   Shield,
   User,
+  XCircle,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useCallback, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import Loading from './Button/Loading';
 import ImageUploadDialog from './ImageUpload/ImageUploadDialog';
+import s from './ProfileForm.module.css';
+
+/* ─── constants ───────────────────────────────────────────────────────────── */
+
+/** Canonical cover placeholder — same as CardAuthorBox2 */
+const COVER_PLACEHOLDER = '/images/placeholder-small.png';
+
+const BIO_MAX = 300;
+
+/* ─── password strength helper ───────────────────────────────────────────── */
+
+function getPasswordStrength(password: string): 0 | 1 | 2 | 3 | 4 {
+  if (!password) return 0;
+  let score = 0;
+  if (password.length >= 8) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+  return score as 0 | 1 | 2 | 3 | 4;
+}
+
+const STRENGTH_LABELS: Record<number, string> = {
+  0: '',
+  1: 'ضعیف',
+  2: 'متوسط',
+  3: 'خوب',
+  4: 'قوی',
+};
+
+const STRENGTH_ACTIVE: Record<number, 'weak' | 'fair' | 'good' | 'strong'> = {
+  1: 'weak',
+  2: 'fair',
+  3: 'good',
+  4: 'strong',
+};
+
+/* ─── types ───────────────────────────────────────────────────────────────── */
 
 interface ProfileFormProps {
   initialData: UserWithProfile;
 }
 
+/* ─── helper — submit wrapper ─────────────────────────────────────────────── */
+
+async function submitProfile(
+  formData: FormData,
+  router: ReturnType<typeof useRouter>,
+  successMessage: string,
+): Promise<boolean> {
+  const result = await updateProfile(formData);
+  toast({
+    title: result.success ? 'موفقیت' : 'خطا',
+    description: result.success ? successMessage : result.message,
+    variant: result.success ? 'success' : 'destructive',
+  });
+  if (result.success && result.redirect) {
+    router.push(result.redirect);
+  }
+  return result.success;
+}
+
+/* ─── component ───────────────────────────────────────────────────────────── */
+
 const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
+  const router = useRouter();
+
+  /* ── image state ── */
   const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
   const [isBgImageDialogOpen, setIsBgImageDialogOpen] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(initialData.profile?.avatar ?? '');
   const [bgImagePreview, setBgImagePreview] = useState(initialData.profile?.bgImage ?? '');
-  const [isPasswordSectionOpen, setIsPasswordSectionOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  /* ── submit states — one per form ── */
+  const [isInfoSubmitting, setIsInfoSubmitting] = useState(false);
+  const [isSecuritySubmitting, setIsSecuritySubmitting] = useState(false);
+
+  /* ── password visibility toggles ── */
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // 2026-07-19: آیا شماره موبایل ثبت شده؟ (برای badge هشدار سرویس‌های مالی)
+  /* ── live derived UI values ── */
+  const [newPasswordValue, setNewPasswordValue] = useState('');
+  const [confirmPasswordValue, setConfirmPasswordValue] = useState('');
+  const [bioValue, setBioValue] = useState(initialData.profile?.bio ?? '');
+
   const hasPhone = !!initialData.phoneNumber;
 
+  /* ─────────────────────────────────────────────────────────────────────────
+     Form 1 — Info (اطلاعات پروفایل)
+     Fields: name, email, phoneNumber, bio, jobName, imageUrl, bgImage
+  ───────────────────────────────────────────────────────────────────────── */
   const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
+    register: infoReg,
+    handleSubmit: handleInfoSubmit,
+    formState: { errors: infoErrors, isDirty: infoIsDirty },
+    setValue: infoSetValue,
   } = useForm<UpdateProfileInput>({
     resolver: zodResolver(UpdateProfileSchema),
     defaultValues: {
@@ -68,36 +140,65 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
     },
   });
 
+  /* ─────────────────────────────────────────────────────────────────────────
+     Form 2 — Security (امنیت حساب)
+     Fields: currentPassword, newPassword, confirmNewPassword
+  ───────────────────────────────────────────────────────────────────────── */
+  const {
+    register: secReg,
+    handleSubmit: handleSecSubmit,
+    formState: { errors: secErrors },
+    reset: resetSecurity,
+  } = useForm<UpdateProfileInput>({
+    resolver: zodResolver(UpdateProfileSchema),
+    defaultValues: {
+      currentPassword: '',
+      newPassword: '',
+      confirmNewPassword: '',
+    },
+  });
+
+  /* ── password strength ── */
+  const passwordStrength = useMemo(
+    () => getPasswordStrength(newPasswordValue),
+    [newPasswordValue],
+  );
+
+  const passwordsMatch = confirmPasswordValue.length > 0 && confirmPasswordValue === newPasswordValue;
+  const passwordsMismatch = confirmPasswordValue.length > 0 && confirmPasswordValue !== newPasswordValue;
+
+  /* ── image handlers ── */
   const handleImageUpload = useCallback(
     (urls: string[], type: 'avatar' | 'bgImage') => {
       if (urls.length > 0) {
         if (type === 'avatar') {
           setAvatarPreview(urls[0]);
-          setValue('imageUrl', urls[0]);
+          infoSetValue('imageUrl', urls[0], { shouldDirty: true });
         } else {
           setBgImagePreview(urls[0]);
-          setValue('bgImage', urls[0]);
+          infoSetValue('bgImage', urls[0], { shouldDirty: true });
         }
       }
     },
-    [setValue],
+    [infoSetValue],
   );
 
   const handleImageRemove = useCallback(
     (type: 'avatar' | 'bgImage') => {
       if (type === 'avatar') {
         setAvatarPreview('');
-        setValue('imageUrl', '');
+        infoSetValue('imageUrl', '', { shouldDirty: true });
       } else {
         setBgImagePreview('');
-        setValue('bgImage', '');
+        infoSetValue('bgImage', '', { shouldDirty: true });
       }
     },
-    [setValue],
+    [infoSetValue],
   );
 
-  const onSubmit = async (data: UpdateProfileInput) => {
-    setIsSubmitting(true);
+  /* ── submit handlers ── */
+  const onInfoSubmit = async (data: UpdateProfileInput) => {
+    setIsInfoSubmitting(true);
     try {
       const formData = new FormData();
       formData.append('name', data.name || '');
@@ -107,373 +208,469 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
       formData.append('jobName', data.jobName || '');
       formData.append('imageUrl', avatarPreview || '');
       formData.append('bgImage', bgImagePreview || '');
-      if (data.currentPassword) formData.append('currentPassword', data.currentPassword);
-      if (data.newPassword) formData.append('newPassword', data.newPassword);
-      if (data.confirmNewPassword) formData.append('confirmNewPassword', data.confirmNewPassword);
-
-      const result = await updateProfile(formData);
-      toast({
-        title: result.success ? 'موفقیت' : 'خطا',
-        description: result.success ? 'پروفایل با موفقیت بروزرسانی شد' : result.message,
-        variant: result.success ? 'success' : 'destructive',
-      });
+      await submitProfile(formData, router, 'پروفایل با موفقیت بروزرسانی شد');
     } catch {
       toast({ title: 'خطا', description: 'خطا در بروزرسانی پروفایل', variant: 'destructive' });
     } finally {
-      setIsSubmitting(false);
+      setIsInfoSubmitting(false);
     }
   };
 
+  const onSecuritySubmit = async (data: UpdateProfileInput) => {
+    setIsSecuritySubmitting(true);
+    try {
+      const formData = new FormData();
+      if (data.currentPassword) formData.append('currentPassword', data.currentPassword);
+      if (data.newPassword) formData.append('newPassword', data.newPassword);
+      if (data.confirmNewPassword) formData.append('confirmNewPassword', data.confirmNewPassword);
+      const ok = await submitProfile(formData, router, 'رمز عبور با موفقیت تغییر کرد');
+      if (ok) {
+        // clear password fields after success
+        resetSecurity();
+        setNewPasswordValue('');
+        setConfirmPasswordValue('');
+      }
+    } catch {
+      toast({ title: 'خطا', description: 'خطا در تغییر رمز عبور', variant: 'destructive' });
+    } finally {
+      setIsSecuritySubmitting(false);
+    }
+  };
+
+  /* ── display cover: user image or placeholder ── */
+  const coverSrc = bgImagePreview || COVER_PLACEHOLDER;
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 rtl">
-      {/* Profile Images */}
-      <div className="relative @container/profile-cover">
-        <div className="relative w-full h-40 sm:h-48 @md/profile-cover:h-56 rounded-2xl overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800" />
-          {bgImagePreview && (
-            <Image
-              src={bgImagePreview}
-              alt="Background"
-              fill
-              sizes="100vw"
-              className="object-cover"
-            />
-          )}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300" />
+    <div className={s.root} dir="rtl">
+      {/* ── Cover + Avatar hero ─────────────────────────────────────────────── */}
+      <div className={s.hero}>
+        {/* Cover strip */}
+        <div className={s.cover}>
+          <Image
+            src={coverSrc}
+            alt="تصویر پس‌زمینه"
+            fill
+            sizes="100vw"
+            className={cn('object-cover', !bgImagePreview && s.coverPlaceholder)}
+            priority
+          />
+
+          {/* Cover edit button — always visible bottom-start */}
           <button
             type="button"
+            className={s.coverBtn}
+            aria-label="تغییر تصویر کاور"
             onClick={() => setIsBgImageDialogOpen(true)}
-            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
           >
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/90 dark:bg-slate-800/90 rounded-xl shadow-lg backdrop-blur-sm">
-              <ImageIcon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                تغییر کاور
-              </span>
-            </div>
+            <ImageIcon size={14} aria-hidden />
+            {bgImagePreview ? 'تغییر کاور' : 'افزودن کاور'}
           </button>
-          {!bgImagePreview && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-slate-400 dark:text-slate-500 text-sm">تصویر پس‌زمینه</span>
-            </div>
-          )}
         </div>
-        <div className="absolute -bottom-10 sm:-bottom-12 end-4 sm:end-6">
-          <div className="relative group">
-            <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-4 border-white dark:border-slate-900 shadow-xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800">
+
+        {/* Avatar */}
+        <div className={s.avatarWrap}>
+          <button
+            type="button"
+            className={s.avatarTrigger}
+            onClick={() => setIsAvatarDialogOpen(true)}
+            aria-label="تغییر آواتار"
+          >
+            <span className={s.avatar}>
               {avatarPreview ? (
                 <Image
                   src={avatarPreview}
-                  alt="Avatar"
+                  alt="تصویر پروفایل"
                   fill
-                  sizes="112px"
+                  sizes="88px"
                   className="object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <User className="w-10 h-10 text-slate-400 dark:text-slate-500" />
-                </div>
+                <span className={s.avatarFallback}>
+                  <User size={28} aria-hidden />
+                </span>
               )}
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsAvatarDialogOpen(true)}
-              className="absolute -bottom-2 -left-2 w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg shadow-blue-500/30 flex items-center justify-center hover:scale-110 transition-transform duration-200"
-            >
-              <Camera className="w-5 h-5 text-white" />
-            </button>
-          </div>
+            </span>
+            <span className={s.avatarEditBadge} aria-hidden>
+              <Camera size={11} />
+            </span>
+          </button>
         </div>
       </div>
-      <div className="h-8" />
 
-      {/* بنر هشدار — اگر موبایل ثبت نشده */}
+      {/* ── Phone verification alert ─────────────────────────────────────────── */}
       {!hasPhone && (
-        <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-200/70 dark:border-amber-700/50 bg-amber-50/60 dark:bg-amber-900/20">
-          <Shield className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
-              شماره موبایل تأیید نشده
-            </p>
-            <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5 leading-relaxed">
-              برای استفاده از خدمات مالی (حواله، خرید ارز، رمزارز) باید شماره موبایل خود را در پایین
-              وارد کنید.
-            </p>
-          </div>
-        </div>
+        <Alert variant="warning">
+          <AlertTitle>شماره موبایل تأیید نشده</AlertTitle>
+          <AlertDescription>
+            برای استفاده از خدمات مالی (حواله، خرید ارز، رمزارز) باید شماره موبایل خود را
+            وارد کنید.
+          </AlertDescription>
+        </Alert>
       )}
 
-      {/* Form Fields */}
-      <div className="space-y-6">
-        <div className="group">
-          <Label
-            htmlFor="name"
-            className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-          >
-            <User className="w-4 h-4 text-slate-400" />
-            نام
-          </Label>
-          <Input
-            id="name"
-            {...register('name')}
-            className="w-full h-12 px-4 bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-xl text-right"
-            placeholder="نام خود را وارد کنید"
-          />
-          {errors.name && <p className="text-red-500 text-xs mt-2">{errors.name.message}</p>}
-        </div>
-        <div className="group">
-          <Label
-            htmlFor="email"
-            className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-          >
-            <Mail className="w-4 h-4 text-slate-400" />
-            ایمیل
-          </Label>
-          <Input
-            id="email"
-            {...register('email')}
-            type="email"
-            dir="ltr"
-            className="w-full h-12 px-4 bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-xl text-left"
-            placeholder="email@example.com"
-          />
-          {errors.email && <p className="text-red-500 text-xs mt-2">{errors.email.message}</p>}
-        </div>
-        {/* شماره موبایل */}
-        <div className="group">
-          <Label
-            htmlFor="phoneNumber"
-            className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-          >
-            <Phone className="w-4 h-4 text-slate-400" />
-            شماره موبایل
-            <span className="text-xs font-normal text-amber-600 dark:text-amber-400">
-              (لازم برای خدمات مالی)
-            </span>
-          </Label>
-          <Input
-            id="phoneNumber"
-            {...register('phoneNumber')}
-            type="tel"
-            dir="ltr"
-            className="w-full h-12 px-4 bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-xl text-left"
-            placeholder="07X-XXXXXXX یا +93XXXXXXXXX"
-          />
-          {errors.phoneNumber && (
-            <p className="text-red-500 text-xs mt-2">{errors.phoneNumber.message}</p>
-          )}
-        </div>
-        <div className="group">
-          <Label
-            htmlFor="jobName"
-            className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-          >
-            <Briefcase className="w-4 h-4 text-slate-400" />
-            شغل
-          </Label>
-          <Input
-            id="jobName"
-            {...register('jobName')}
-            className="w-full h-12 px-4 bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-xl text-right"
-            placeholder="شغل خود را وارد کنید"
-          />
-          {errors.jobName && <p className="text-red-500 text-xs mt-2">{errors.jobName.message}</p>}
-        </div>
-        <div className="group">
-          <Label
-            htmlFor="bio"
-            className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-          >
-            <FileText className="w-4 h-4 text-slate-400" />
-            بیوگرافی
-          </Label>
-          <Textarea
-            id="bio"
-            {...register('bio')}
-            rows={4}
-            className="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-xl text-right resize-none"
-            placeholder="درباره خودتان بنویسید..."
-          />
-          {errors.bio && <p className="text-red-500 text-xs mt-2">{errors.bio.message}</p>}
-        </div>
-      </div>
+      {/* ── Tabs ─────────────────────────────────────────────────────────────── */}
+      <Tabs defaultValue="info" className={s.tabsRoot}>
+        <TabsList className={s.tabsList}>
+          <TabsTrigger value="info" className={s.tabsTrigger}>
+            <User size={14} aria-hidden />
+            اطلاعات پروفایل
+          </TabsTrigger>
+          <TabsTrigger value="security" className={s.tabsTrigger}>
+            <Shield size={14} aria-hidden />
+            امنیت حساب
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Password Section */}
-      <div className="relative overflow-hidden rounded-2xl border border-slate-200/60 dark:border-slate-700/60 bg-gradient-to-br from-slate-50/80 to-white dark:from-slate-800/50 dark:to-slate-900/50 shadow-sm">
-        <button
-          type="button"
-          onClick={() => setIsPasswordSectionOpen(!isPasswordSectionOpen)}
-          className={cn(
-            'w-full flex items-center justify-between p-5 transition-all duration-300 hover:bg-slate-100/50 dark:hover:bg-slate-800/50',
-            isPasswordSectionOpen && 'border-b border-slate-200/60 dark:border-slate-700/60',
-          )}
-        >
-          <div className="flex items-center gap-4">
-            <div
-              className={cn(
-                'p-3 rounded-xl transition-all duration-300',
-                isPasswordSectionOpen
-                  ? 'bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/25'
-                  : 'bg-slate-200/80 dark:bg-slate-700/80',
+        {/* ── Panel: Profile Info ──────────────────────────────────────────────── */}
+        <TabsContent value="info" className={s.tabsPanel}>
+          <form onSubmit={handleInfoSubmit(onInfoSubmit)} noValidate className={s.panelForm}>
+
+            {/* Personal info card */}
+            <section className={s.card}>
+              <header className={s.cardHeader}>
+                <span className={cn(s.cardIcon, 'dash-ico dash-ico--indigo')} aria-hidden>
+                  <User size={15} />
+                </span>
+                <div>
+                  <h2 className={s.cardTitle}>اطلاعات شخصی</h2>
+                  <p className={s.cardDesc}>نام، ایمیل و شماره موبایل شما</p>
+                </div>
+              </header>
+
+              <div className={s.formGrid}>
+                {/* Name */}
+                <FormField label="نام" error={infoErrors.name?.message} required>
+                  <Input
+                    id="name"
+                    {...infoReg('name')}
+                    placeholder="نام خود را وارد کنید"
+                    aria-invalid={!!infoErrors.name}
+                    autoComplete="name"
+                  />
+                </FormField>
+
+                {/* Job */}
+                <FormField label="شغل" error={infoErrors.jobName?.message}>
+                  <Input
+                    id="jobName"
+                    {...infoReg('jobName')}
+                    placeholder="عنوان شغلی"
+                    aria-invalid={!!infoErrors.jobName}
+                    autoComplete="organization-title"
+                  />
+                </FormField>
+
+                {/* Email */}
+                <FormField
+                  label="ایمیل"
+                  hint="در صورت تغییر، کد تأیید به ایمیل جدید ارسال می‌شود"
+                  error={infoErrors.email?.message}
+                  required
+                >
+                  <Input
+                    id="email"
+                    {...infoReg('email')}
+                    type="email"
+                    dir="ltr"
+                    placeholder="example@mail.com"
+                    aria-invalid={!!infoErrors.email}
+                    autoComplete="email"
+                    className="text-start"
+                  />
+                </FormField>
+
+                {/* Phone */}
+                <FormField
+                  label="شماره موبایل"
+                  hint="فرمت: 0701234567 یا +93701234567"
+                  error={infoErrors.phoneNumber?.message}
+                >
+                  <Input
+                    id="phoneNumber"
+                    {...infoReg('phoneNumber')}
+                    type="tel"
+                    dir="ltr"
+                    placeholder="0701234567"
+                    aria-invalid={!!infoErrors.phoneNumber}
+                    autoComplete="tel"
+                    className="text-start"
+                  />
+                </FormField>
+              </div>
+            </section>
+
+            {/* Bio card */}
+            <section className={s.card}>
+              <header className={s.cardHeader}>
+                <span className={cn(s.cardIcon, 'dash-ico dash-ico--violet')} aria-hidden>
+                  <FileText size={15} />
+                </span>
+                <div>
+                  <h2 className={s.cardTitle}>درباره شما</h2>
+                  <p className={s.cardDesc}>نمایه‌ی عمومی در سایت</p>
+                </div>
+              </header>
+
+              <FormField label="بیوگرافی" error={infoErrors.bio?.message}>
+                <div className={s.textareaWrap}>
+                  <Textarea
+                    id="bio"
+                    {...infoReg('bio', {
+                      onChange: (e) => setBioValue(e.target.value),
+                    })}
+                    rows={4}
+                    maxLength={BIO_MAX}
+                    placeholder="درباره خودتان بنویسید..."
+                    aria-invalid={!!infoErrors.bio}
+                    className={cn('resize-none', s.textarea)}
+                  />
+                  <span
+                    className={cn(
+                      s.charCount,
+                      bioValue.length > BIO_MAX * 0.9 && s.charCountWarn,
+                    )}
+                    aria-live="polite"
+                    aria-label={`${bioValue.length} از ${BIO_MAX} کاراکتر`}
+                  >
+                    {bioValue.length}/{BIO_MAX}
+                  </span>
+                </div>
+              </FormField>
+            </section>
+
+            {/* Action row */}
+            <div className={s.actions}>
+              {infoIsDirty && (
+                <span className={s.unsavedBadge} role="status" aria-live="polite">
+                  تغییرات ذخیره‌نشده
+                </span>
               )}
-            >
-              <Shield
-                className={cn(
-                  'w-5 h-5 transition-colors duration-300',
-                  isPasswordSectionOpen ? 'text-white' : 'text-slate-500 dark:text-slate-400',
+              <Button
+                type="submit"
+                disabled={isInfoSubmitting}
+                className="min-w-[140px]"
+              >
+                {isInfoSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <span
+                      className="size-4 rounded-full border-2 border-current border-t-transparent animate-spin"
+                      role="status"
+                      aria-label="در حال بارگذاری"
+                    />
+                    در حال ذخیره...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <Check size={15} aria-hidden />
+                    ذخیره تغییرات
+                  </span>
                 )}
-              />
+              </Button>
             </div>
-            <div className="text-right">
-              <h3 className="font-semibold text-slate-800 dark:text-slate-200">امنیت حساب</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">تغییر رمز عبور</p>
-            </div>
-          </div>
-          <ChevronDown
-            className={cn(
-              'w-5 h-5 text-slate-400 transition-transform duration-300',
-              isPasswordSectionOpen && 'rotate-180',
-            )}
-          />
-        </button>
-        <div
-          className={cn(
-            'grid transition-all duration-300 ease-out',
-            isPasswordSectionOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0',
-          )}
-        >
-          <div className="overflow-hidden">
-            <div className="p-5 space-y-5">
-              <div className="group">
-                <Label
-                  htmlFor="currentPassword"
-                  className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-                >
-                  <KeyRound className="w-4 h-4 text-amber-500" />
-                  رمز عبور فعلی
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="currentPassword"
-                    {...register('currentPassword')}
-                    type={showCurrentPassword ? 'text' : 'password'}
-                    className="w-full h-12 px-4 pl-12 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl text-right"
-                    placeholder="رمز عبور فعلی"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                  >
-                    {showCurrentPassword ? (
-                      <EyeOff className="w-4 h-4 text-slate-400" />
-                    ) : (
-                      <Eye className="w-4 h-4 text-slate-400" />
-                    )}
-                  </button>
+          </form>
+        </TabsContent>
+
+        {/* ── Panel: Security ──────────────────────────────────────────────────── */}
+        <TabsContent value="security" className={s.tabsPanel}>
+          <form onSubmit={handleSecSubmit(onSecuritySubmit)} noValidate className={s.panelForm}>
+            <section className={s.card}>
+              <header className={s.cardHeader}>
+                <span className={cn(s.cardIcon, 'dash-ico dash-ico--amber')} aria-hidden>
+                  <KeyRound size={15} />
+                </span>
+                <div>
+                  <h2 className={s.cardTitle}>تغییر رمز عبور</h2>
+                  <p className={s.cardDesc}>رمز قوی با حداقل ۸ کاراکتر استفاده کنید</p>
                 </div>
-                {errors.currentPassword && (
-                  <p className="text-red-500 text-xs mt-2">{errors.currentPassword.message}</p>
-                )}
-              </div>
-              <div className="group">
-                <Label
-                  htmlFor="newPassword"
-                  className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-                >
-                  <Lock className="w-4 h-4 text-amber-500" />
-                  رمز عبور جدید
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="newPassword"
-                    {...register('newPassword')}
-                    type={showNewPassword ? 'text' : 'password'}
-                    className="w-full h-12 px-4 pl-12 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl text-right"
-                    placeholder="رمز عبور جدید"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                  >
-                    {showNewPassword ? (
-                      <EyeOff className="w-4 h-4 text-slate-400" />
-                    ) : (
-                      <Eye className="w-4 h-4 text-slate-400" />
-                    )}
-                  </button>
+              </header>
+
+              <div className={s.formGrid}>
+                {/* Current password — full width */}
+                <div className={s.formGridFull}>
+                  <FormField label="رمز عبور فعلی" error={secErrors.currentPassword?.message}>
+                    <div className={s.passField}>
+                      <Input
+                        id="currentPassword"
+                        {...secReg('currentPassword')}
+                        type={showCurrentPassword ? 'text' : 'password'}
+                        placeholder="رمز عبور فعلی خود را وارد کنید"
+                        aria-invalid={!!secErrors.currentPassword}
+                        autoComplete="current-password"
+                        className="pe-10"
+                      />
+                      <button
+                        type="button"
+                        className={s.passToggle}
+                        onClick={() => setShowCurrentPassword((p) => !p)}
+                        aria-label={showCurrentPassword ? 'پنهان کردن رمز' : 'نمایش رمز'}
+                      >
+                        {showCurrentPassword ? (
+                          <EyeOff size={15} aria-hidden />
+                        ) : (
+                          <Eye size={15} aria-hidden />
+                        )}
+                      </button>
+                    </div>
+                  </FormField>
                 </div>
-                {errors.newPassword && (
-                  <p className="text-red-500 text-xs mt-2">{errors.newPassword.message}</p>
-                )}
-              </div>
-              <div className="group">
-                <Label
-                  htmlFor="confirmNewPassword"
-                  className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-                >
-                  <Check className="w-4 h-4 text-amber-500" />
-                  تکرار رمز عبور جدید
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="confirmNewPassword"
-                    {...register('confirmNewPassword')}
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    className="w-full h-12 px-4 pl-12 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl text-right"
-                    placeholder="تکرار رمز عبور جدید"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="w-4 h-4 text-slate-400" />
-                    ) : (
-                      <Eye className="w-4 h-4 text-slate-400" />
-                    )}
-                  </button>
+
+                {/* New password */}
+                <div>
+                  <FormField label="رمز عبور جدید" error={secErrors.newPassword?.message}>
+                    <div className={s.passField}>
+                      <Input
+                        id="newPassword"
+                        {...secReg('newPassword', {
+                          onChange: (e) => setNewPasswordValue(e.target.value),
+                        })}
+                        type={showNewPassword ? 'text' : 'password'}
+                        placeholder="رمز عبور جدید"
+                        aria-invalid={!!secErrors.newPassword}
+                        autoComplete="new-password"
+                        className="pe-10"
+                      />
+                      <button
+                        type="button"
+                        className={s.passToggle}
+                        onClick={() => setShowNewPassword((p) => !p)}
+                        aria-label={showNewPassword ? 'پنهان کردن رمز' : 'نمایش رمز'}
+                      >
+                        {showNewPassword ? (
+                          <EyeOff size={15} aria-hidden />
+                        ) : (
+                          <Eye size={15} aria-hidden />
+                        )}
+                      </button>
+                    </div>
+                  </FormField>
+
+                  {/* Strength bar */}
+                  {newPasswordValue && (
+                    <div className={s.strengthWrap}>
+                      <div className={s.strengthBar} aria-hidden>
+                        {[1, 2, 3, 4].map((seg) => (
+                          <div
+                            key={seg}
+                            className={s.strengthSegment}
+                            data-active={
+                              seg <= passwordStrength
+                                ? STRENGTH_ACTIVE[passwordStrength]
+                                : undefined
+                            }
+                          />
+                        ))}
+                      </div>
+                      <p
+                        className={s.strengthLabel}
+                        aria-live="polite"
+                        aria-label={`قدرت رمز: ${STRENGTH_LABELS[passwordStrength]}`}
+                      >
+                        قدرت رمز:{' '}
+                        <span data-strength={STRENGTH_ACTIVE[passwordStrength] ?? 'empty'}>
+                          {STRENGTH_LABELS[passwordStrength]}
+                        </span>
+                      </p>
+                    </div>
+                  )}
                 </div>
-                {errors.confirmNewPassword && (
-                  <p className="text-red-500 text-xs mt-2">{errors.confirmNewPassword.message}</p>
-                )}
+
+                {/* Confirm password */}
+                <div>
+                  <FormField
+                    label="تکرار رمز عبور جدید"
+                    error={secErrors.confirmNewPassword?.message}
+                  >
+                    <div className={s.passField}>
+                      <Input
+                        id="confirmNewPassword"
+                        {...secReg('confirmNewPassword', {
+                          onChange: (e) => setConfirmPasswordValue(e.target.value),
+                        })}
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        placeholder="تکرار رمز عبور جدید"
+                        aria-invalid={!!secErrors.confirmNewPassword || passwordsMismatch}
+                        autoComplete="new-password"
+                        className="pe-10"
+                      />
+                      <button
+                        type="button"
+                        className={s.passToggle}
+                        onClick={() => setShowConfirmPassword((p) => !p)}
+                        aria-label={showConfirmPassword ? 'پنهان کردن رمز' : 'نمایش رمز'}
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff size={15} aria-hidden />
+                        ) : (
+                          <Eye size={15} aria-hidden />
+                        )}
+                      </button>
+                    </div>
+                  </FormField>
+
+                  {/* Real-time match indicator */}
+                  {confirmPasswordValue.length > 0 && (
+                    <p
+                      className={cn(
+                        s.matchStatus,
+                        passwordsMatch ? s.matchOk : s.matchFail,
+                      )}
+                      aria-live="polite"
+                    >
+                      {passwordsMatch ? (
+                        <>
+                          <CheckCircle2 size={12} aria-hidden />
+                          رمزها یکسان هستند
+                        </>
+                      ) : (
+                        <>
+                          <XCircle size={12} aria-hidden />
+                          رمزها مطابقت ندارند
+                        </>
+                      )}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div className="p-4 rounded-xl bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-800/30 flex items-start gap-2">
-                <Lightbulb
-                  className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0"
-                  strokeWidth={2}
-                  aria-hidden
-                />
-                <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
-                  رمز عبور قوی شامل حداقل ۶ کاراکتر، ترکیبی از حروف بزرگ و کوچک، اعداد و نمادها است.
+
+              {/* Security tip */}
+              <div className={s.tip}>
+                <Lock size={13} className={s.tipIcon} aria-hidden />
+                <p className={s.tipText}>
+                  رمز قوی شامل حداقل ۸ کاراکتر، ترکیبی از حروف بزرگ و کوچک انگلیسی، اعداد و
+                  نمادهاست. رمز خود را در جایی امن نگه دارید.
                 </p>
               </div>
+            </section>
+
+            {/* Action row */}
+            <div className={s.actions}>
+              <Button
+                type="submit"
+                disabled={isSecuritySubmitting}
+                className="min-w-[160px]"
+              >
+                {isSecuritySubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <span
+                      className="size-4 rounded-full border-2 border-current border-t-transparent animate-spin"
+                      role="status"
+                      aria-label="در حال بارگذاری"
+                    />
+                    در حال ذخیره...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <Shield size={15} aria-hidden />
+                    بروزرسانی امنیت
+                  </span>
+                )}
+              </Button>
             </div>
-          </div>
-        </div>
-      </div>
+          </form>
+        </TabsContent>
+      </Tabs>
 
-      {/* Submit */}
-      <Button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full h-14 bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 hover:from-blue-600 hover:via-blue-700 hover:to-purple-700 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-70"
-      >
-        {isSubmitting ? (
-          <div className="flex items-center justify-center gap-3">
-            <Loading size="sm" variant="secondary" type="spinner" />
-            <span>در حال بروزرسانی...</span>
-          </div>
-        ) : (
-          <span className="flex items-center justify-center gap-2">
-            <Check className="w-5 h-5" />
-            بروزرسانی پروفایل
-          </span>
-        )}
-      </Button>
-
+      {/* ── Image upload dialogs ─────────────────────────────────────────────── */}
       <ImageUploadDialog
         isOpen={isAvatarDialogOpen}
         onClose={() => setIsAvatarDialogOpen(false)}
@@ -492,7 +689,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
         title="تغییر تصویر پس‌زمینه"
         folder="avatars"
       />
-    </form>
+    </div>
   );
 };
 

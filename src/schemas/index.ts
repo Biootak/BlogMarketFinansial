@@ -166,7 +166,7 @@ export const UpdateProfileSchema = z
       .string()
       .max(20, 'شماره موبایل نمی‌تواند بیشتر از 20 رقم باشد')
       .refine((v) => !v || isPhoneValid(v), {
-        message: 'شماره موبایل معتبر نیست (مثال: ۰۷۰۱۲۳۴۵۶۷)',
+        message: 'شماره موبایل معتبر نیست — مثال: 0701234567 یا +93701234567',
       })
       .optional()
       .or(z.literal('')),

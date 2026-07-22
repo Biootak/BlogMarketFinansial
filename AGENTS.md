@@ -41,6 +41,24 @@
 
 ---
 
+## 🎨 UI VISION GATE (فقط UI — قبل از PRE-CODE GATE)
+
+> ⛔ برای تسک‌های backend/DB → یک خط: `UI VISION GATE: N/A — backend only`
+> این جدول باید **قبل از هر grep و قبل از جدول PRE-CODE GATE** پر شود.
+> اگر هر سؤال پاسخ ندارد → کد ممنوع. §Craft Bar در `AGENTS.uidqg.md` را همین لحظه بخوان.
+
+```
+| چک                    | سؤال                                                                          | پاسخ (یک جمله — نه placeholder) |
+|-----------------------|-------------------------------------------------------------------------------|----------------------------------|
+| 👁️ UQ1 — Vision      | این صفحه چه احساسی باید بدهد؟ مقایسه با کدام product بیلیون‌دلاری؟           | «حس [X] — شبیه [Product] در لحظه [Y]» |
+| ✨ UQ2 — Signature    | signature moment این صفحه چیست؟                                               | «[ambient SVG / stagger / view-transition / ...]» |
+| 🏦 UQ3 — Domain       | هویت بصری از کجای منطق مالی دامنه می‌آید؟ (نه کپی رقیب)                      | «هویت از [X] می‌آید، نه کپی [Y]» |
+| ⚠️ UQ Risk           | UQ4–UQ22 مرور شد — کدام ریسک‌دارند؟                                          | [شماره UQ ها + دلیل کوتاه] |
+| 🏗️ Comp Map          | المان‌های UI → کامپوننت موجود → decision                                      | \| element \| impl \| decision \| |
+```
+
+---
+
 ## 🚦 PRE-CODE GATE (قبل از اولین کد هر تسک جدید — نه هر پیام)
 
 > ⛔ جدول باید **بعد از تحقیق واقعی** پر شود — هیچ placeholder مجاز نیست.
@@ -60,11 +78,9 @@
 | 🧩 Integration  | با بخش‌های دیگر پروژه هماهنگ است؟                                 | [grep callers، sidebar، nav، sitemap] |
 | ✅ Complete     | کد کامل خواهد بود؟                                                | [نه stub/TODO/console.log] |
 | 💡 Better way?  | راهکار بهتری وجود داشت؟                                           | [اگر بله → همین لحظه به کاربر بگو + تأیید بگیر] |
-| 🎨 UI Check     | [فقط UI] UQ ریسک‌دار کدامند؟                                      | [N/A اگر backend — وگرنه: UQ فهرست شود] |
-| 🏗️ Comp Map    | [فقط UI] component map پر شده؟                                    | [N/A اگر backend — وگرنه: \| element \| impl \| decision \|] |
 ```
 
-**ترتیب اجباری:** ۱. grep/read_file → ۲. داک رسمی/اینترنت (تاریخ اجباری) → ۳. [UI] UQ1-22 مرور → ۴. جدول پر کن → ۵. اگر «بهتر وجود دارد» → به کاربر بگو + تأیید بگیر → ۶. کد بنویس.
+**ترتیب اجباری:** ۱. [UI] **UI VISION GATE** → ۲. grep/read_file → ۳. داک رسمی/اینترنت (تاریخ اجباری) → ۴. PRE-CODE GATE → ۵. اگر «بهتر وجود دارد» → به کاربر بگو + تأیید بگیر → ۶. کد بنویس.
 
 ---
 
@@ -73,7 +89,7 @@
 1. **[فقط UI] قبل از هر ویرایش بصری re-anchor:** `DESIGN.md` + `COMPONENTS.md` + `AGENTS.ui-design.md` را بخوان. برای backend/DB: فقط §Critical conventions کافی است.
 2. **Build → `npm run verify` → Show.** تسک تا `npm run verify` سبز نشده «تمام» نیست.
 3. اگر verify قرمز شد → تا سبز شدن درستش کن.
-4. **[فقط UI] CRAFT GATE:** خروجی UI باید Craft Bar (→ `AGENTS.uidqg.md §Craft Bar`) را رد کند. «کار می‌کند ولی معمولی» = شکست.
+4. **[فقط UI] CRAFT GATE (دو نقطه — قبل از کد + قبل از Show):** خروجی UI باید §Craft Bar را رد کند. **قبل از کد** یک بار بخوان؛ **قبل از Show** دوباره چک کن. «کار می‌کند ولی معمولی» = شکست مستقل از اینکه بقیه UQ سبز باشند.
 5. **[فقط UI] UIDQG دو مرحله‌ای:** مرحله ۱ در PRE-CODE GATE (قبل از کد)، مرحله ۲ قبل از Show. → ر.ک `AGENTS.uidqg.md §Workflow`.
 6. قبل از «تمام» → gate متناسب با سطح تسک از `AGENTS.19dqg.md` را اجرا کن.
 
@@ -244,6 +260,8 @@ Rules for new code:
 | 2026-07 | NO-REPEAT declaration rule (تکرار وسط تسک ممنوع) |
 | 2026-07 | AGENTS.md refactored: UIDQG→AGENTS.uidqg.md، 19DQG→AGENTS.19dqg.md، market-rates→AGENTS.market-rates.md |
 | 2026-07 | تعریف صریح Trivial/Standard/Full؛ رفع تضاد scope/fix؛ periodic cleanup rule؛ mid-task state tracking |
+| 2026-07 | **Vision-First gate:** UQ1+UQ2+UQ3 پیش از grep اجباری شدند؛ §Craft Bar دو نقطه (قبل از کد + قبل از Show)؛ بلاک A در UIDQG مارک ⚡ شد |
+| 2026-07 | **UI VISION GATE جداگانه:** جدول مستقل UI VISION GATE قبل از PRE-CODE GATE اضافه شد؛ ردیف‌های UI Check و Comp Map از PRE-CODE GATE حذف و به جدول جدید منتقل شدند |
 
 ---
 
