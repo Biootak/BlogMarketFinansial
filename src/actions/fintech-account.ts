@@ -36,7 +36,11 @@ import { z } from 'zod';
 // ─── DEPOSIT REQUEST ──────────────────────────────────────────────────────────
 
 const DepositSchema = z.object({
-  amountCents: z.number().int().positive('مبلغ باید مثبت باشد').max(100_000_000_00, 'سقف واریز ۱۰۰ میلیون افغانی'),
+  amountCents: z
+    .number()
+    .int()
+    .positive('مبلغ باید مثبت باشد')
+    .max(100_000_000_00, 'سقف واریز ۱۰۰ میلیون افغانی'),
   currency: z.string().default('AFN'),
   idempotencyKey: z.string().min(8).max(64),
   note: z.string().max(200).optional(),
@@ -60,30 +64,51 @@ export async function requestDeposit(raw: unknown): Promise<FintechActionResult<
   const ip = (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
   const rl = await checkRateLimit(`deposit:${auth.user.id}`, 'api');
   if (!rl.success) {
-    return { success: false, error: { code: 'RATE_LIMITED', message: 'تعداد درخواست‌های واریز زیاد است' } };
+    return {
+      success: false,
+      error: { code: 'RATE_LIMITED', message: 'تعداد درخواست‌های واریز زیاد است' },
+    };
   }
 
   const parsed = DepositSchema.safeParse(raw);
   if (!parsed.success) {
-    return { success: false, error: { code: 'VALIDATION_ERROR', message: parsed.error.errors[0]?.message ?? 'خطا' } };
+    return {
+      success: false,
+      error: { code: 'VALIDATION_ERROR', message: parsed.error.errors[0]?.message ?? 'خطا' },
+    };
   }
 
   const { amountCents, currency, idempotencyKey, note } = parsed.data;
 
   // Idempotency
-  const existing = await prisma.transaction.findFirst({ where: { idempotencyKey }, select: { id: true, meta: true } });
+  const existing = await prisma.transaction.findFirst({
+    where: { idempotencyKey },
+    select: { id: true, meta: true },
+  });
   if (existing) {
     const meta = existing.meta as { txnRef?: string } | null;
-    return { success: true, data: { txnId: existing.id, txnRef: meta?.txnRef ?? existing.id, amountCents, currency } };
+    return {
+      success: true,
+      data: { txnId: existing.id, txnRef: meta?.txnRef ?? existing.id, amountCents, currency },
+    };
   }
 
   const senderCustomer = await prisma.customer.findFirst({
     where: { userId: auth.user.id },
-    select: { id: true, FintechAccount: { where: { currency, status: 'ACTIVE' }, select: { id: true, exchangeId: true } } },
+    select: {
+      id: true,
+      FintechAccount: {
+        where: { currency, status: 'ACTIVE' },
+        select: { id: true, exchangeId: true },
+      },
+    },
   });
 
   if (!senderCustomer || senderCustomer.FintechAccount.length === 0) {
-    return { success: false, error: { code: 'NO_ACCOUNT', message: 'حساب فعالی برای این ارز یافت نشد' } };
+    return {
+      success: false,
+      error: { code: 'NO_ACCOUNT', message: 'حساب فعالی برای این ارز یافت نشد' },
+    };
   }
 
   // biome-ignore lint/style/noNonNullAssertion: length check above guarantees index 0
@@ -143,7 +168,11 @@ const WithdrawSchema = z.object({
   idempotencyKey: z.string().min(8).max(64),
   destinationAccount: z.string().min(5).max(200),
   note: z.string().max(200).optional(),
-  otp: z.string().length(6).regex(/^\d{6}$/).optional(),
+  otp: z
+    .string()
+    .length(6)
+    .regex(/^\d{6}$/)
+    .optional(),
 });
 
 export type WithdrawResult = {
@@ -163,25 +192,43 @@ export async function requestWithdraw(raw: unknown): Promise<FintechActionResult
   const ip = (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
   const rl = await checkRateLimit(`withdraw:${auth.user.id}`, 'api');
   if (!rl.success) {
-    return { success: false, error: { code: 'RATE_LIMITED', message: 'تعداد درخواست‌های برداشت زیاد است' } };
+    return {
+      success: false,
+      error: { code: 'RATE_LIMITED', message: 'تعداد درخواست‌های برداشت زیاد است' },
+    };
   }
 
   const parsed = WithdrawSchema.safeParse(raw);
   if (!parsed.success) {
-    return { success: false, error: { code: 'VALIDATION_ERROR', message: parsed.error.errors[0]?.message ?? 'خطا' } };
+    return {
+      success: false,
+      error: { code: 'VALIDATION_ERROR', message: parsed.error.errors[0]?.message ?? 'خطا' },
+    };
   }
 
   const { amountCents, currency, idempotencyKey, destinationAccount, note } = parsed.data;
 
-  const existing = await prisma.transaction.findFirst({ where: { idempotencyKey }, select: { id: true, meta: true } });
+  const existing = await prisma.transaction.findFirst({
+    where: { idempotencyKey },
+    select: { id: true, meta: true },
+  });
   if (existing) {
     const meta = existing.meta as { txnRef?: string } | null;
-    return { success: true, data: { txnId: existing.id, txnRef: meta?.txnRef ?? existing.id, needsOtp: false } };
+    return {
+      success: true,
+      data: { txnId: existing.id, txnRef: meta?.txnRef ?? existing.id, needsOtp: false },
+    };
   }
 
   const customer = await prisma.customer.findFirst({
     where: { userId: auth.user.id },
-    select: { id: true, FintechAccount: { where: { currency, status: 'ACTIVE' }, select: { id: true, balance: true, exchangeId: true } } },
+    select: {
+      id: true,
+      FintechAccount: {
+        where: { currency, status: 'ACTIVE' },
+        select: { id: true, balance: true, exchangeId: true },
+      },
+    },
   });
 
   if (!customer || customer.FintechAccount.length === 0) {
@@ -229,7 +276,11 @@ export async function requestWithdraw(raw: unknown): Promise<FintechActionResult
 
   const needsOtp = isHighValueTransaction({ kind: 'WITHDRAWAL', amountCents: BigInt(amountCents) });
   if (needsOtp) {
-    const otpResult = await requestTransactionOtp({ txnRef, amountCents: BigInt(amountCents), kind: 'WITHDRAWAL' });
+    const otpResult = await requestTransactionOtp({
+      txnRef,
+      amountCents: BigInt(amountCents),
+      kind: 'WITHDRAWAL',
+    });
     return {
       success: true,
       data: {
@@ -251,10 +302,16 @@ export async function requestWithdraw(raw: unknown): Promise<FintechActionResult
 const ConfirmWithdrawSchema = z.object({
   txnId: z.string().min(1),
   txnRef: z.string().min(1),
-  otp: z.string().length(6).regex(/^\d{6}$/).optional(),
+  otp: z
+    .string()
+    .length(6)
+    .regex(/^\d{6}$/)
+    .optional(),
 });
 
-export async function confirmWithdraw(raw: unknown): Promise<FintechActionResult<{ txnId: string }>> {
+export async function confirmWithdraw(
+  raw: unknown,
+): Promise<FintechActionResult<{ txnId: string }>> {
   const auth = await requireUser();
   if (!auth.success) {
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد حساب کاربری شوید' } };
@@ -262,26 +319,44 @@ export async function confirmWithdraw(raw: unknown): Promise<FintechActionResult
 
   const parsed = ConfirmWithdrawSchema.safeParse(raw);
   if (!parsed.success) {
-    return { success: false, error: { code: 'VALIDATION_ERROR', message: parsed.error.errors[0]?.message ?? 'خطا' } };
+    return {
+      success: false,
+      error: { code: 'VALIDATION_ERROR', message: parsed.error.errors[0]?.message ?? 'خطا' },
+    };
   }
 
   const { txnId, txnRef, otp } = parsed.data;
 
-  const customer = await prisma.customer.findFirst({ where: { userId: auth.user.id }, select: { id: true } });
+  const customer = await prisma.customer.findFirst({
+    where: { userId: auth.user.id },
+    select: { id: true },
+  });
   const txn = await prisma.transaction.findFirst({
     where: { id: txnId, customerId: customer?.id ?? '__none__' },
-    select: { id: true, status: true, amount: true, currency: true, accountId: true, exchangeId: true, customerId: true },
+    select: {
+      id: true,
+      status: true,
+      amount: true,
+      currency: true,
+      accountId: true,
+      exchangeId: true,
+      customerId: true,
+    },
   });
 
   if (!txn) return { success: false, error: { code: 'NOT_FOUND', message: 'تراکنش یافت نشد' } };
   if (txn.status !== 'PENDING') {
     if (txn.status === 'COMPLETED') return { success: true, data: { txnId } };
-    return { success: false, error: { code: 'INVALID_STATE', message: 'این تراکنش قابل تأیید نیست' } };
+    return {
+      success: false,
+      error: { code: 'INVALID_STATE', message: 'این تراکنش قابل تأیید نیست' },
+    };
   }
 
   const needsOtp = isHighValueTransaction({ kind: 'WITHDRAWAL', amountCents: txn.amount });
   if (needsOtp) {
-    if (!otp) return { success: false, error: { code: 'OTP_REQUIRED', message: 'کد تأیید الزامی است' } };
+    if (!otp)
+      return { success: false, error: { code: 'OTP_REQUIRED', message: 'کد تأیید الزامی است' } };
     const otpResult = await verifyTransactionOtp({ txnRef, otp });
     if (!otpResult.success) return otpResult;
   }
@@ -302,14 +377,22 @@ export async function confirmWithdraw(raw: unknown): Promise<FintechActionResult
     });
     await tx.ledgerEntry.create({
       data: {
-        id: createId(), exchangeId: txn.exchangeId,
-        accountId, customerId,
-        txnId: txn.id, direction: 'DEBIT', amount: txn.amount,
-        currency: txn.currency, runningBalance: updated.balance,
+        id: createId(),
+        exchangeId: txn.exchangeId,
+        accountId,
+        customerId,
+        txnId: txn.id,
+        direction: 'DEBIT',
+        amount: txn.amount,
+        currency: txn.currency,
+        runningBalance: updated.balance,
         createdAt: now,
       },
     });
-    await tx.transaction.update({ where: { id: txn.id }, data: { status: 'COMPLETED', updatedAt: now } });
+    await tx.transaction.update({
+      where: { id: txn.id },
+      data: { status: 'COMPLETED', updatedAt: now },
+    });
   });
 
   revalidateTag('wallet');

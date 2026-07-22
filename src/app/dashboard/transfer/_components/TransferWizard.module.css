@@ -5,38 +5,85 @@
    ══════════════════════════════════════════════════════════════════════════ */
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.94); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes popIn {
-  0%   { opacity: 0; transform: scale(0.6); }
-  70%  { opacity: 1; transform: scale(1.08); }
-  100% { transform: scale(1); }
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 @keyframes breathPulse {
-  0%, 100% { opacity: 0.35; transform: scale(1); }
-  50%       { opacity: 0.65; transform: scale(1.05); }
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(1.05);
+  }
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20%       { transform: translateX(-4px); }
-  40%       { transform: translateX(4px); }
-  60%       { transform: translateX(-3px); }
-  80%       { transform: translateX(3px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
 }
 
 @keyframes successRing {
-  0%   { transform: scale(0.5); opacity: 0; }
-  60%  { transform: scale(1.15); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* ── Page ─────────────────────────────────────────────────────────────────── */
@@ -136,9 +183,16 @@
   transition: color 200ms var(--at-ease);
 }
 
-.stepLabel_pending { color: var(--at-fg-faint); }
-.stepLabel_active  { color: var(--at-accent-fg, var(--at-accent)); font-weight: 600; }
-.stepLabel_done    { color: var(--at-fg-muted); }
+.stepLabel_pending {
+  color: var(--at-fg-faint);
+}
+.stepLabel_active {
+  color: var(--at-accent-fg, var(--at-accent));
+  font-weight: 600;
+}
+.stepLabel_done {
+  color: var(--at-fg-muted);
+}
 
 /* ── Form ─────────────────────────────────────────────────────────────────── */
 .form {
@@ -212,9 +266,7 @@
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   cursor: pointer;
-  transition:
-    all 180ms var(--at-ease),
-    transform 120ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 180ms var(--at-ease), transform 120ms cubic-bezier(0.34, 1.56, 0.64, 1);
   min-height: 36px;
   display: inline-flex;
   align-items: center;

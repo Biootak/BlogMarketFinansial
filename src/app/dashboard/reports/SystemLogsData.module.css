@@ -4,8 +4,14 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @keyframes rowIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── Root ─────────────────────────────────────────────────────────────────── */
@@ -112,9 +118,15 @@
   letter-spacing: -0.03em;
 }
 
-.kpiValInfo    { color: var(--ds-status-info-fg,    oklch(50% 0.12 230)); }
-.kpiValWarning { color: var(--ds-status-pending-fg); }
-.kpiValError   { color: var(--ds-status-error-fg); }
+.kpiValInfo {
+  color: var(--ds-status-info-fg, oklch(50% 0.12 230));
+}
+.kpiValWarning {
+  color: var(--ds-status-pending-fg);
+}
+.kpiValError {
+  color: var(--ds-status-error-fg);
+}
 
 .kpiLabel {
   font-size: var(--ds-text-xs);
@@ -277,12 +289,21 @@
 .skRow {
   height: 48px;
   border-radius: var(--ds-radius-md);
-  background: linear-gradient(90deg, var(--ds-canvas-subtle) 0%, var(--ds-border-subtle) 50%, var(--ds-canvas-subtle) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--ds-canvas-subtle) 0%,
+    var(--ds-border-subtle) 50%,
+    var(--ds-canvas-subtle) 100%
+  );
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
 }
 
 @keyframes shimmer {
-  0%   { background-position: 200% center; }
-  100% { background-position: -200% center; }
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
 }

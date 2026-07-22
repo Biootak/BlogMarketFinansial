@@ -13,11 +13,11 @@ import {
 import s from './subscription.module.css';
 
 const ROLE_CONFIG: Record<string, { label: string; color: string; level: number }> = {
-  USER:       { label: 'کاربر عادی',  color: 'muted',   level: 1 },
-  AUTHOR:     { label: 'نویسنده',     color: 'accent',  level: 2 },
-  ADMIN:      { label: 'مدیر',        color: 'info',    level: 3 },
-  OWNER:      { label: 'مالک',        color: 'gold',    level: 4 },
-  SUPERADMIN: { label: 'سوپرادمین',  color: 'violet',  level: 5 },
+  USER: { label: 'کاربر عادی', color: 'muted', level: 1 },
+  AUTHOR: { label: 'نویسنده', color: 'accent', level: 2 },
+  ADMIN: { label: 'مدیر', color: 'info', level: 3 },
+  OWNER: { label: 'مالک', color: 'gold', level: 4 },
+  SUPERADMIN: { label: 'سوپرادمین', color: 'violet', level: 5 },
 };
 
 export default async function DashboardSubscription() {
@@ -66,7 +66,9 @@ export default async function DashboardSubscription() {
         </div>
         <div className={s.profileInfo}>
           <h2 className={s.profileName}>{user.name ?? '—'}</h2>
-          <p className={s.profileEmail} dir="ltr">{user.email}</p>
+          <p className={s.profileEmail} dir="ltr">
+            {user.email}
+          </p>
           <span className={`${s.roleBadge} ${s[`roleBadge_${roleCfg.color}`]}`}>
             <HiOutlineSparkles className="size-3" />
             {roleCfg.label}
@@ -75,7 +77,11 @@ export default async function DashboardSubscription() {
         <div className={s.profileActivityBar}>
           <div
             className={s.activityFill}
-            style={{ '--activity-pct': `${Math.min(100, (publishedCount / Math.max(totalActivity, 1)) * 100)}%` } as React.CSSProperties}
+            style={
+              {
+                '--activity-pct': `${Math.min(100, (publishedCount / Math.max(totalActivity, 1)) * 100)}%`,
+              } as React.CSSProperties
+            }
             aria-label={`${publishedCount} پست منتشر از ${totalActivity} کل`}
           />
         </div>
@@ -100,9 +106,7 @@ export default async function DashboardSubscription() {
             <HiOutlineDocumentText className="size-4" />
           </div>
           <div className={s.kpiBody}>
-            <span className={s.kpiValue}>
-              {new Intl.NumberFormat('fa-IR').format(draftCount)}
-            </span>
+            <span className={s.kpiValue}>{new Intl.NumberFormat('fa-IR').format(draftCount)}</span>
             <span className={s.kpiLabel}>پیش‌نویس</span>
           </div>
         </div>
@@ -112,7 +116,9 @@ export default async function DashboardSubscription() {
             <HiOutlineCalendarDays className="size-4" />
           </div>
           <div className={s.kpiBody}>
-            <span className={s.kpiValue} style={{ fontSize: '0.9375rem' }}>{joinedAt}</span>
+            <span className={s.kpiValue} style={{ fontSize: '0.9375rem' }}>
+              {joinedAt}
+            </span>
             <span className={s.kpiLabel}>تاریخ عضویت</span>
           </div>
         </div>
@@ -122,7 +128,9 @@ export default async function DashboardSubscription() {
             <HiOutlineUserCircle className="size-4" />
           </div>
           <div className={s.kpiBody}>
-            <span className={s.kpiValue} style={{ fontSize: '0.9375rem' }}>{roleCfg.label}</span>
+            <span className={s.kpiValue} style={{ fontSize: '0.9375rem' }}>
+              {roleCfg.label}
+            </span>
             <span className={s.kpiLabel}>سطح دسترسی</span>
           </div>
         </div>
@@ -134,7 +142,8 @@ export default async function DashboardSubscription() {
           <span className={s.planEyebrow}>اشتراک فعلی</span>
           <h3 className={s.planTitle}>پلن رایگان</h3>
           <p className={s.planDesc}>
-            با ارتقاء به پلن حرفه‌ای به آمارهای پیشرفته، اولویت بررسی محتوا و قابلیت‌های بیشتر دسترسی داشته باشید.
+            با ارتقاء به پلن حرفه‌ای به آمارهای پیشرفته، اولویت بررسی محتوا و قابلیت‌های بیشتر دسترسی
+            داشته باشید.
           </p>
         </div>
 
@@ -147,7 +156,10 @@ export default async function DashboardSubscription() {
             { label: 'Newsletter خودکار', included: false },
             { label: 'پشتیبانی اولویت‌دار', included: false },
           ].map(({ label, included }) => (
-            <div key={label} className={`${s.planFeatureRow} ${included ? s.planFeatureIncluded : s.planFeatureExcluded}`}>
+            <div
+              key={label}
+              className={`${s.planFeatureRow} ${included ? s.planFeatureIncluded : s.planFeatureExcluded}`}
+            >
               <div className={s.planFeatureDot} aria-hidden />
               <span>{label}</span>
             </div>
@@ -173,13 +185,18 @@ export default async function DashboardSubscription() {
             { term: 'ایمیل', def: user.email ?? '—', ltr: true },
             { term: 'نقش کاربری', def: roleCfg.label },
             { term: 'وضعیت حساب', def: 'فعال' },
-            { term: 'پست‌های منتشر شده', def: `${new Intl.NumberFormat('fa-IR').format(publishedCount)} پست` },
+            {
+              term: 'پست‌های منتشر شده',
+              def: `${new Intl.NumberFormat('fa-IR').format(publishedCount)} پست`,
+            },
             { term: 'پیش‌نویس‌ها', def: `${new Intl.NumberFormat('fa-IR').format(draftCount)} پست` },
             { term: 'تاریخ عضویت', def: joinedAt },
           ].map(({ term, def, ltr }) => (
             <div key={term} className={s.detailRow}>
               <dt className={s.detailTerm}>{term}</dt>
-              <dd className={s.detailDef} dir={ltr ? 'ltr' : undefined}>{def}</dd>
+              <dd className={s.detailDef} dir={ltr ? 'ltr' : undefined}>
+                {def}
+              </dd>
             </div>
           ))}
         </dl>

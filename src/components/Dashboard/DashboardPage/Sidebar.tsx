@@ -25,8 +25,8 @@
 
 import { logout } from '@/actions/auth-actions';
 import Avatar from '@/components/Avatar/Avatar';
-import Logo from '@/components/Logo/Logo';
 import { NotificationBadge } from '@/components/Dashboard/DashboardPage/NotificationBadge';
+import Logo from '@/components/Logo/Logo';
 import { useToast } from '@/components/ui/use-toast';
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
@@ -53,6 +53,7 @@ import {
   HiOutlineExclamationTriangle,
   HiOutlineHome,
   HiOutlineInboxArrowDown,
+  HiOutlineKey,
   HiOutlineMegaphone,
   HiOutlineShieldCheck,
   HiOutlineSquares2X2,
@@ -60,10 +61,9 @@ import {
   HiOutlineUserCircle,
   HiOutlineUserGroup,
   HiOutlineUsers,
+  HiOutlineCreditCard as HiOutlineVirtualCard,
   HiOutlineWallet,
   HiOutlineXMark,
-  HiOutlineCreditCard as HiOutlineVirtualCard,
-  HiOutlineKey,
 } from 'react-icons/hi2';
 
 const ICON_CLASS = 'w-[19px] h-[19px]';
@@ -194,6 +194,14 @@ function getMenu(role: UserRole): NavSection[] {
     icon: <HiOutlineBuildingStorefront className={ICON_CLASS} />,
     label: 'صراف‌ها',
     title: 'مدیریت صراف‌ها',
+  };
+
+  const exchangeStaff: MenuItem = {
+    id: 'exchangeStaff',
+    href: '/dashboard/exchange-staff',
+    icon: <HiOutlineUserGroup className={ICON_CLASS} />,
+    label: 'کارکنان صراف‌ها',
+    title: 'مدیریت کارکنان صراف‌ها',
   };
 
   const exchangeQuotes: MenuItem = {
@@ -366,6 +374,7 @@ function getMenu(role: UserRole): NavSection[] {
           label: 'عملیات',
           items: [
             exchanges,
+            exchangeStaff,
             transferProviders,
             exchangeRates,
             exchangeQuotes,
@@ -379,12 +388,27 @@ function getMenu(role: UserRole): NavSection[] {
           label: 'فین‌تک',
           items: [customers, kycReview, fraudReview, settlements, auditLog],
         },
-        { id: 'admin', index: '۰۵', label: 'مدیریت', items: [users, permissions, reports, settings] },
+        {
+          id: 'admin',
+          index: '۰۵',
+          label: 'مدیریت',
+          items: [users, permissions, reports, settings],
+        },
         {
           id: 'account',
           index: '۰۶',
           label: 'حساب',
-          items: [wallet, virtualCards, kyc, myDeals, transfer, devices, notifications, myRequests, profile],
+          items: [
+            wallet,
+            virtualCards,
+            kyc,
+            myDeals,
+            transfer,
+            devices,
+            notifications,
+            myRequests,
+            profile,
+          ],
         },
       ];
     case 'ADMIN':
@@ -397,6 +421,7 @@ function getMenu(role: UserRole): NavSection[] {
           label: 'عملیات',
           items: [
             exchanges,
+            exchangeStaff,
             transferProviders,
             exchangeRates,
             exchangeQuotes,
@@ -415,7 +440,17 @@ function getMenu(role: UserRole): NavSection[] {
           id: 'account',
           index: '۰۶',
           label: 'حساب',
-          items: [wallet, virtualCards, kyc, myDeals, transfer, devices, notifications, myRequests, profile],
+          items: [
+            wallet,
+            virtualCards,
+            kyc,
+            myDeals,
+            transfer,
+            devices,
+            notifications,
+            myRequests,
+            profile,
+          ],
         },
       ];
     case 'SUPPORT':
@@ -449,7 +484,12 @@ function getMenu(role: UserRole): NavSection[] {
       // USER role — minimal panel
       return [
         { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
-        { id: 'fintech', index: '۰۲', label: 'مالی', items: [wallet, virtualCards, kyc, myDeals, transfer] },
+        {
+          id: 'fintech',
+          index: '۰۲',
+          label: 'مالی',
+          items: [wallet, virtualCards, kyc, myDeals, transfer],
+        },
         { id: 'account', index: '۰۳', label: 'حساب', items: [devices, myRequests, profile] },
       ];
   }

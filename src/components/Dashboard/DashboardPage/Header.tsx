@@ -35,6 +35,11 @@
  */
 
 import { logout } from '@/actions/auth-actions';
+import {
+  type NotificationRow,
+  getNotifications,
+  markAllNotificationsRead,
+} from '@/actions/notification-actions';
 import Avatar from '@/components/Avatar/Avatar';
 import SwitchDarkMode from '@/components/SwitchDarkMode/SwitchDarkMode';
 import {
@@ -83,61 +88,20 @@ const getRoleBadge = (role?: string) => {
   }
 };
 
-// Sample notifications — placeholder until the notifications feed ships.
-// Each item carries a `tone` to drive the dot + accent; layout still works
-// without any real data (the popover shows an empty state).
-interface NotificationItem {
-  id: string;
-  title: string;
-  detail?: string;
-  time: string;
-  tone: 'ok' | 'info' | 'warn' | 'urgent';
-  href?: string;
+/** Map NotificationRow.isRead → visual tone */
+function rowToTone(n: NotificationRow): 'ok' | 'info' | 'warn' | 'urgent' {
+  if (!n.isRead) return 'info';
+  return 'ok';
 }
 
-const SAMPLE_NOTIFICATIONS: ReadonlyArray<NotificationItem> = [
-  {
-    id: 'n1',
-    title: 'پست جدید منتشر شد',
-    detail: 'راهنمای کامل انتقال ارز — نسخه‌ی ۲۰۲۶',
-    time: '۵ دقیقه پیش',
-    tone: 'ok',
-    href: '/dashboard/posts',
-  },
-  {
-    id: 'n2',
-    title: 'درخواست خدمات جدید ثبت شد',
-    detail: 'پیگیری: RS-1024',
-    time: '۱ ساعت پیش',
-    tone: 'info',
-    href: '/dashboard/service-requests',
-  },
-  {
-    id: 'n3',
-    title: 'گزارش هفتگی آماده است',
-    detail: 'بازدید، تعامل و نرخ تبدیل',
-    time: 'دیروز',
-    tone: 'info',
-    href: '/dashboard/reports',
-  },
-  {
-    id: 'n4',
-    title: 'کرون نرخ بازار بیش از ۳۰ دقیقه به‌روز نشده',
-    detail: 'بررسی تنظیمات CRON_SECRET',
-    time: '۲ ساعت پیش',
-    tone: 'warn',
-    href: '/dashboard/settings',
-  },
-];
-
-const TONE_ACCENT: Record<NotificationItem['tone'], string> = {
+const TONE_ACCENT: Record<'ok' | 'info' | 'warn' | 'urgent', string> = {
   ok: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
   info: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
   warn: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
   urgent: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300',
 };
 
-const TONE_ICON: Record<NotificationItem['tone'], React.ReactNode> = {
+const TONE_ICON: Record<'ok' | 'info' | 'warn' | 'urgent', React.ReactNode> = {
   ok: <HiOutlineCheckCircle className="w-4 h-4" />,
   info: <HiOutlineDocumentText className="w-4 h-4" />,
   warn: <HiOutlineExclamationCircle className="w-4 h-4" />,
@@ -156,6 +120,34 @@ const Header: React.FC = () => {
   const { items: breadcrumbItems } = useBreadcrumb();
 
   const roleBadge = getRoleBadge(user?.role);
+
+  // Real notifications from DB — loaded once on mount, refreshed every 60s
+  const [notifications, setNotifications] = useState<NotificationRow[]>([]);
+  const [notifLoading, setNotifLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setNotifLoading(true);
+      const rows = await getNotifications({ limit: 20 });
+      if (!cancelled) {
+        setNotifications(rows);
+        setNotifLoading(false);
+      }
+    };
+    void load();
+    const interval = window.setInterval(() => void load(), 60_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  const handleMarkAllRead = async () => {
+    await markAllNotificationsRead();
+    // Optimistically update local state
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  };
 
   // Live Tehran clock — cheap single setState per minute.
   const [clock, setClock] = useState<string | null>(null);
@@ -219,7 +211,7 @@ const Header: React.FC = () => {
     }
   };
 
-  const unreadCount = SAMPLE_NOTIFICATIONS.length;
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   // Mobile page-context title — falls back to "داشبورد" when no breadcrumb
   // is set by the page below. Uses the last breadcrumb item (the leaf) so
@@ -370,6 +362,7 @@ const Header: React.FC = () => {
                   </div>
                   <button
                     type="button"
+                    onClick={() => void handleMarkAllRead()}
                     className="text-[11px] font-semibold text-violet-600 hover:text-violet-700 dark:text-violet-400 hover:underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60 px-1"
                   >
                     علامت همه خوانده‌شده
@@ -377,61 +370,66 @@ const Header: React.FC = () => {
                 </div>
               </header>
 
-              {SAMPLE_NOTIFICATIONS.length === 0 ? (
+              {notifLoading ? (
+                <div className="px-6 py-10 text-center">
+                  <p className="text-sm text-slate-500 dark:text-slate-400">در حال بارگذاری…</p>
+                </div>
+              ) : notifications.length === 0 ? (
                 <div className="px-6 py-10 text-center">
                   <p className="text-sm text-slate-500 dark:text-slate-400">اعلان تازه‌ای ندارید.</p>
                 </div>
               ) : (
                 <ul className="max-h-96 overflow-y-auto py-1">
                   <AnimatePresence initial={false}>
-                    {SAMPLE_NOTIFICATIONS.map((n, i) => (
-                      <motion.li
-                        key={n.id}
-                        initial={{ opacity: 0, x: 8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 8 }}
-                        transition={{
-                          duration: 0.25,
-                          delay: i * 0.03,
-                          ease: [0.22, 1, 0.36, 1],
-                        }}
-                      >
-                        <Link href={n.href ?? '#'} className="dash-header__notif group">
-                          <span
-                            className={cn(
-                              'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg',
-                              TONE_ACCENT[n.tone],
-                            )}
-                            aria-hidden
+                    {notifications.map((n, i) => {
+                      const tone = rowToTone(n);
+                      return (
+                        <motion.li
+                          key={n.id}
+                          initial={{ opacity: 0, x: 8 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 8 }}
+                          transition={{
+                            duration: 0.25,
+                            delay: i * 0.03,
+                            ease: [0.22, 1, 0.36, 1],
+                          }}
+                        >
+                          <Link
+                            href="/dashboard/notifications"
+                            className="dash-header__notif group"
                           >
-                            {TONE_ICON[n.tone]}
-                          </span>
-                          <span className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">
-                              {n.title}
-                            </p>
-                            {n.detail && (
-                              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-                                {n.detail}
+                            <span
+                              className={cn(
+                                'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg',
+                                TONE_ACCENT[tone],
+                              )}
+                              aria-hidden
+                            >
+                              {TONE_ICON[tone]}
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">
+                                {n.message}
                               </p>
-                            )}
-                            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
-                              {n.time}
-                            </p>
-                          </span>
-                        </Link>
-                      </motion.li>
-                    ))}
+                              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                                {n.time}
+                              </p>
+                            </span>
+                          </Link>
+                        </motion.li>
+                      );
+                    })}
                   </AnimatePresence>
                 </ul>
               )}
 
               <footer className="dash-header__popover-foot">
                 <Link
-                  href="/dashboard/reports"
+                  href="/dashboard/notifications"
                   className="text-xs font-semibold text-violet-600 hover:text-violet-700 dark:text-violet-400 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60 px-1"
                 >
-                  مشاهده همه در گزارش‌ها
+                  مشاهده همه اعلان‌ها
                 </Link>
               </footer>
             </PopoverContent>

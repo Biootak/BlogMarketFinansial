@@ -25,7 +25,15 @@ export async function getBillingAddress(): Promise<FintechActionResult<BillingAd
   }
   const record = await prisma.billingAddress.findUnique({
     where: { userId: auth.user.id },
-    select: { country: true, province: true, city: true, address: true, postalCode: true, recipientName: true, phoneNumber: true },
+    select: {
+      country: true,
+      province: true,
+      city: true,
+      address: true,
+      postalCode: true,
+      recipientName: true,
+      phoneNumber: true,
+    },
   });
   if (!record) return { success: true, data: null };
   // null → undefined برای سازگاری با Zod schema (optional fields)
@@ -53,7 +61,10 @@ export async function saveBillingAddress(raw: unknown): Promise<FintechActionRes
   if (!parsed.success) {
     return {
       success: false,
-      error: { code: 'VALIDATION_ERROR', message: parsed.error.errors[0]?.message ?? 'ورودی نامعتبر' },
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: parsed.error.errors[0]?.message ?? 'ورودی نامعتبر',
+      },
     };
   }
 
@@ -67,12 +78,21 @@ export async function saveBillingAddress(raw: unknown): Promise<FintechActionRes
   if (existing) {
     await prisma.billingAddress.update({
       where: { userId: auth.user.id },
-      data: { country, province, city, address, postalCode, recipientName, phoneNumber, updatedAt: new Date() },
+      data: {
+        country,
+        province,
+        city,
+        address,
+        postalCode,
+        recipientName,
+        phoneNumber,
+        updatedAt: new Date(),
+      },
     });
   } else {
     await prisma.billingAddress.create({
       data: {
-        id: auth.user.id + '_ba',
+        id: `${auth.user.id}_ba`,
         userId: auth.user.id,
         country,
         province,

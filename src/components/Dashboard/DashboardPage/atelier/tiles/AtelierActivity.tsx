@@ -24,6 +24,7 @@
  *   باشد تا کاربر یک «stream view» واحد از محتوای اخیر داشته باشد.
  */
 
+import type { ActivityEntry } from '@/actions/getRecentActivity';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
@@ -35,8 +36,10 @@ import {
   HiOutlinePencilSquare,
   HiOutlineUserPlus,
 } from 'react-icons/hi2';
-import type { ActivityItem } from '../../overview/ActivityRail';
 import { formatRelativeFa } from '../utils';
+
+/** ActivityItem = alias for ActivityEntry so callers can import either */
+export type ActivityItem = ActivityEntry;
 
 type Tone = 'up' | 'info' | 'warn' | 'danger';
 

@@ -28,10 +28,10 @@ const SystemLogsData = dynamic(() => import('./SystemLogsData'), {
   ssr: false,
 });
 
-const FinanceReport = dynamic(
-  () => import('@/components/Dashboard/Reports/FinanceReport'),
-  { loading: () => <ReportsSkeleton />, ssr: false },
-);
+const FinanceReport = dynamic(() => import('@/components/Dashboard/Reports/FinanceReport'), {
+  loading: () => <ReportsSkeleton />,
+  ssr: false,
+});
 
 export default function ReportsPage() {
   const router = useRouter();

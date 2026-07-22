@@ -90,9 +90,7 @@ const IssueCardSchema = z.object({
   currency: z.enum(['USD', 'EUR', 'AFN', 'IRR']).default('USD'),
 });
 
-export async function issueVirtualCard(
-  raw: unknown,
-): Promise<FintechActionResult<VirtualCardRow>> {
+export async function issueVirtualCard(raw: unknown): Promise<FintechActionResult<VirtualCardRow>> {
   const auth = await requireUser();
   if (!auth.success) {
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد حساب کاربری شوید' } };

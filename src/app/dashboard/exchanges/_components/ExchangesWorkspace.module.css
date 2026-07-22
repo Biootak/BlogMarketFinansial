@@ -5,13 +5,25 @@
    ============================================================================ */
 
 @keyframes pageIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes kpiIn {
-  from { opacity: 0; transform: scale(0.96); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* ── Workspace container ──────────────────────────────────────────────────── */
@@ -30,7 +42,9 @@
 }
 
 @media (max-width: 640px) {
-  .kpiStrip { grid-template-columns: 1fr 1fr; }
+  .kpiStrip {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .kpiCard {
@@ -45,10 +59,9 @@
   cursor: pointer;
   overflow: hidden;
   text-align: start;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
+    var(--ds-ease-spring);
   animation: kpiIn var(--ds-duration-slow) var(--ds-ease-out-quart) both;
 }
 
@@ -132,8 +145,8 @@
   border: 1px solid var(--at-line);
   border-radius: var(--ds-radius-md);
   outline: none;
-  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-              box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .searchInput:focus {
@@ -162,8 +175,8 @@
   border-radius: var(--ds-radius-md);
   cursor: pointer;
   font-family: inherit;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart),
-              color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
   white-space: nowrap;
 }
 
@@ -195,13 +208,16 @@
   border-radius: var(--ds-radius-md);
   cursor: pointer;
   white-space: nowrap;
-  transition:
-    opacity var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: opacity var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
-.addBtn:hover { opacity: 0.88; }
-.addBtn:active { transform: scale(0.97); }
+.addBtn:hover {
+  opacity: 0.88;
+}
+.addBtn:active {
+  transform: scale(0.97);
+}
 
 /* ── Table ────────────────────────────────────────────────────────────────── */
 .tableWrap {
@@ -249,7 +265,7 @@
 .slugText {
   font-size: var(--ds-text-xs);
   color: var(--at-fg-muted, var(--ds-text-muted));
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
 }
 
 /* misc cells */
@@ -299,7 +315,7 @@
 .badgeActive {
   background: var(--ds-status-success-bg, oklch(95% 0.05 145));
   color: var(--ds-status-success-fg, oklch(35% 0.14 145));
-  border-color: var(--ds-status-success-border, oklch(80% 0.10 145));
+  border-color: var(--ds-status-success-border, oklch(80% 0.1 145));
 }
 
 .badgePending {
@@ -346,11 +362,9 @@
   font-family: inherit;
   text-decoration: none;
   white-space: nowrap;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), border-color var(--ds-duration-fast)
+    var(--ds-ease-out-quart), transform var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .actionBtn:hover {
@@ -363,7 +377,7 @@
 /* Approve — emerald */
 .actionApprove {
   color: var(--ds-status-success-fg, oklch(35% 0.14 145));
-  border-color: var(--ds-status-success-border, oklch(80% 0.10 145));
+  border-color: var(--ds-status-success-border, oklch(80% 0.1 145));
   background: var(--ds-status-success-bg, oklch(96% 0.04 145));
 }
 
@@ -381,7 +395,9 @@
 }
 
 /* View — neutral */
-.actionView { }
+.actionView {
+  /* intentionally empty — inherits base .actionBtn styles */
+}
 
 /* Danger — red */
 .actionDanger:hover {

@@ -78,15 +78,13 @@
   border: 1px solid var(--ds-border-default);
   border-radius: var(--ds-radius-xl);
   overflow: hidden;
-  box-shadow:
-    var(--ds-shadow-sm),
-    0 0 0 1px var(--ds-border-subtle) inset;
+  box-shadow: var(--ds-shadow-sm), 0 0 0 1px var(--ds-border-subtle) inset;
   /* Subtle top highlight line — Stripe Radar signature */
   position: relative;
 }
 
 .kpiStrip::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block-start: 0;
   inset-inline: 0;
@@ -127,7 +125,7 @@
 }
 
 /* Live count pulse on initial mount — applied via JS if needed */
-.kpiVal[data-live='true'] {
+.kpiVal[data-live="true"] {
   animation: kpiPulse 1.6s var(--ds-ease-in-out-quart) 1;
 }
 
@@ -234,7 +232,7 @@
 
 /* Magnifier icon slot — placed in TSX via CSS pseudo if needed */
 .searchWrap::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block-start: 50%;
   inset-inline-start: 12px;
@@ -261,9 +259,8 @@
   font-family: inherit;
   /* Touch target ≥44px */
   min-block-size: 44px;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
   outline: 2px solid transparent;
   outline-offset: 2px;
 }
@@ -299,9 +296,7 @@
    Since the path is rendered by React with inline stroke-dasharray,
    the transition on stroke-dasharray produces the kinetic arc draw. */
 .gauge path:last-of-type {
-  transition:
-    stroke-dasharray 0.65s var(--ds-ease-out-expo),
-    stroke 0.28s var(--ds-ease-out-quart);
+  transition: stroke-dasharray 0.65s var(--ds-ease-out-expo), stroke 0.28s var(--ds-ease-out-quart);
   animation: gaugeArcIn 0.65s var(--ds-ease-out-expo) both;
   animation-delay: calc(var(--row-index, 0) * 40ms + 80ms);
 }
@@ -450,9 +445,8 @@
 .resolveBtn {
   min-block-size: 44px !important;
   font-size: var(--ds-text-xs) !important;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring) !important;
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-spring) !important;
   outline: 2px solid transparent !important;
   outline-offset: 2px !important;
 }
@@ -741,9 +735,8 @@
   font-size: var(--ds-text-sm);
   font-family: inherit;
   resize: vertical;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
   outline: 2px solid transparent;
   outline-offset: 2px;
 }
@@ -801,7 +794,7 @@
 }
 
 /* ─── Responsive ───────────────────────────────────────────────────────────── */
-@media (max-inline-size: 640px) {
+@media (max-width: 640px) {
   .kpiStrip {
     flex-direction: column;
   }

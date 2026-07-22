@@ -97,7 +97,7 @@ export function BillingAddressForm({ initial }: Props) {
         </div>
       )}
       {saved && (
-        <div className={s.alertSuccess} role="status">
+        <div className={s.alertSuccess} aria-live="polite">
           <CheckCircle2 size={16} className={s.alertIcon} aria-hidden />
           <span>آدرس با موفقیت ذخیره شد.</span>
         </div>

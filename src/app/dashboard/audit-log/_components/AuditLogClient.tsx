@@ -260,8 +260,9 @@ export function AuditLogClient({
                 className={s.tr}
                 onClick={() => setSelectedLog(log)}
                 tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && setSelectedLog(log)}
-                role="button"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') setSelectedLog(log);
+                }}
                 aria-label={`جزئیات رویداد ${log.action}`}
               >
                 <td className={s.td} style={{ whiteSpace: 'nowrap' }}>

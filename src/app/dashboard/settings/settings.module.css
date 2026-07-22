@@ -5,8 +5,14 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── Page layout ──────────────────────────────────────────────────────────── */
@@ -65,7 +71,8 @@
   text-align: start;
   cursor: pointer;
   width: 100%;
-  transition: background var(--at-duration, 180ms) var(--at-ease), color var(--at-duration, 180ms) var(--at-ease);
+  transition: background var(--at-duration, 180ms) var(--at-ease), color var(--at-duration, 180ms)
+    var(--at-ease);
   min-height: 40px;
 }
 

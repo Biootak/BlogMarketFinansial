@@ -67,9 +67,8 @@
   color: var(--ds-text-primary);
   font-size: var(--ds-text-sm);
   font-family: inherit;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .searchInput::placeholder {
@@ -94,9 +93,8 @@
   color: var(--ds-text-primary);
   font-size: var(--ds-text-sm);
   font-family: inherit;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
   /* native date picker arrow keeps correct direction */
   appearance: auto;
 }
@@ -119,9 +117,8 @@
   color: var(--ds-text-muted) !important;
   gap: var(--ds-space-1) !important;
   font-size: var(--ds-text-xs) !important;
-  transition:
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    background var(--ds-duration-fast) var(--ds-ease-out-quart) !important;
+  transition: color var(--ds-duration-fast) var(--ds-ease-out-quart), background
+    var(--ds-duration-fast) var(--ds-ease-out-quart) !important;
 }
 
 .clearBtn:hover {
@@ -134,10 +131,9 @@
   font-size: var(--ds-text-xs) !important;
   font-weight: var(--ds-weight-semibold) !important;
   letter-spacing: 0.03em !important;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring) !important;
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
+    var(--ds-ease-spring) !important;
 }
 
 .exportBtn:hover {
@@ -480,11 +476,9 @@
   font-variant-numeric: tabular-nums;
   font-family: inherit;
   cursor: pointer;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), color var(--ds-duration-fast)
+    var(--ds-ease-out-quart), transform var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .pageBtn:hover:not(:disabled) {
@@ -541,8 +535,7 @@
   inline-size: min(480px, 95vw) !important;
   overflow-y: auto;
   /* subtle inset shadow on the opening edge */
-  box-shadow:
-    -8px 0 32px -8px color-mix(in oklch, var(--ds-text-primary) 12%, transparent),
+  box-shadow: -8px 0 32px -8px color-mix(in oklch, var(--ds-text-primary) 12%, transparent),
     var(--ds-shadow-lg) !important;
   display: flex;
   flex-direction: column;
@@ -710,7 +703,7 @@
    On small viewports: collapse IP column (least important),
    shrink date inputs, tighten filter-bar gap.
 */
-@media (max-inline-size: 640px) {
+@media (max-width: 640px) {
   .filterBar {
     gap: var(--ds-space-2);
     padding: var(--ds-space-2) var(--ds-space-3);
@@ -731,7 +724,7 @@
   }
 }
 
-@media (max-inline-size: 480px) {
+@media (max-width: 480px) {
   /* Also collapse entity column on very small screens */
   .th:nth-child(4),
   .td:nth-child(4) {

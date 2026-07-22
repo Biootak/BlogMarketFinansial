@@ -74,7 +74,8 @@
       "*.scss",
       "*.sass",
       "src/app/globals.css",
-      "src/lib/motion-shim.tsx"
+      "src/lib/motion-shim.tsx",
+      ".harness/**"
     ]
   },
   "overrides": [
@@ -284,6 +285,30 @@
         "rules": {
           "security": {
             "noDangerouslySetInnerHtml": "off"
+          }
+        }
+      }
+    },
+    {
+      "include": ["check-db.js", "prisma/seed.js"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noForEach": "off"
+          }
+        }
+      }
+    },
+    {
+      "include": [
+        "src/components/Ticker.tsx",
+        "src/components/online-payment/OnlinePaymentHero.tsx",
+        "src/components/online-payment/TrackingForm.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noArrayIndexKey": "off"
           }
         }
       }

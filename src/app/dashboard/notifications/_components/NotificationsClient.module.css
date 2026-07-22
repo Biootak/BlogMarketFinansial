@@ -5,18 +5,35 @@
    ============================================================================= */
 
 @keyframes pageIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes itemIn {
-  from { opacity: 0; transform: translateX(6px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes dotPulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
 /* ── Root ─────────────────────────────────────────────────────────────────── */
@@ -62,9 +79,8 @@
   border-radius: var(--ds-radius-md);
   cursor: pointer;
   font-family: inherit;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .tab:hover:not(.tabActive) {
@@ -186,8 +202,8 @@
   align-items: center;
   justify-content: center;
   margin-block-start: 2px;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart),
-              color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .itemIconUnread {
@@ -248,9 +264,8 @@
   background: transparent;
   color: var(--ds-brand-500);
   cursor: pointer;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .readBtn:hover {
@@ -270,10 +285,9 @@
   background: transparent;
   color: var(--ds-text-muted);
   cursor: pointer;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), border-color var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
 }
 
 .deleteBtn:hover {
@@ -296,9 +310,8 @@
   color: var(--ds-brand-500);
   cursor: pointer;
   font-family: inherit;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .markAllBtn:hover:not(:disabled) {

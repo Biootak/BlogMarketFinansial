@@ -19,7 +19,7 @@
 @keyframes rowIn {
   from {
     opacity: 0;
-    transform: translateX(-4px);   /* RTL: slides from inline-start */
+    transform: translateX(-4px); /* RTL: slides from inline-start */
   }
   to {
     opacity: 1;
@@ -50,8 +50,13 @@
 }
 
 @keyframes breathPulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.55; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
 }
 
 /* ─── Root ────────────────────────────────────────────────────────────────── */
@@ -86,16 +91,23 @@
   gap: var(--ds-space-1);
   padding: var(--ds-space-4) var(--ds-space-5);
   animation: kpiFadeUp var(--ds-duration-base) var(--ds-ease-out-quart) both;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow  var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 /* stagger each KPI tile */
-.kpiItem:nth-child(1) { animation-delay:  0ms; }
-.kpiItem:nth-child(3) { animation-delay: 60ms; }
-.kpiItem:nth-child(5) { animation-delay:120ms; }
-.kpiItem:nth-child(7) { animation-delay:180ms; }
+.kpiItem:nth-child(1) {
+  animation-delay: 0ms;
+}
+.kpiItem:nth-child(3) {
+  animation-delay: 60ms;
+}
+.kpiItem:nth-child(5) {
+  animation-delay: 120ms;
+}
+.kpiItem:nth-child(7) {
+  animation-delay: 180ms;
+}
 
 .kpiItem:hover {
   background: var(--ds-canvas-subtle);
@@ -176,10 +188,9 @@
   color: var(--ds-text-inverse) !important;
   border: none !important;
   box-shadow: 0 2px 8px -2px color-mix(in oklch, var(--ds-brand-500) 45%, transparent) !important;
-  transition:
-    background   var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow   var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform    var(--ds-duration-fast) var(--ds-ease-spring) !important;
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
+    var(--ds-ease-spring) !important;
 }
 .batchBtn:hover:not(:disabled) {
   background: var(--ds-brand-600) !important;
@@ -199,10 +210,9 @@
   border: 1.5px solid var(--ds-border-default) !important;
   background: var(--ds-surface) !important;
   color: var(--ds-text-secondary) !important;
-  transition:
-    background     var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color   var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform      var(--ds-duration-fast) var(--ds-ease-spring) !important;
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
+    var(--ds-ease-spring) !important;
 }
 .exportBtn:hover {
   background: var(--ds-canvas-subtle) !important;
@@ -289,26 +299,66 @@
 }
 
 /* Stagger: first 20 rows get incremental delays */
-.tr:nth-child(1)  { animation-delay:   0ms; }
-.tr:nth-child(2)  { animation-delay:  25ms; }
-.tr:nth-child(3)  { animation-delay:  50ms; }
-.tr:nth-child(4)  { animation-delay:  75ms; }
-.tr:nth-child(5)  { animation-delay: 100ms; }
-.tr:nth-child(6)  { animation-delay: 120ms; }
-.tr:nth-child(7)  { animation-delay: 140ms; }
-.tr:nth-child(8)  { animation-delay: 160ms; }
-.tr:nth-child(9)  { animation-delay: 180ms; }
-.tr:nth-child(10) { animation-delay: 200ms; }
-.tr:nth-child(11) { animation-delay: 215ms; }
-.tr:nth-child(12) { animation-delay: 230ms; }
-.tr:nth-child(13) { animation-delay: 245ms; }
-.tr:nth-child(14) { animation-delay: 260ms; }
-.tr:nth-child(15) { animation-delay: 275ms; }
-.tr:nth-child(16) { animation-delay: 285ms; }
-.tr:nth-child(17) { animation-delay: 295ms; }
-.tr:nth-child(18) { animation-delay: 305ms; }
-.tr:nth-child(19) { animation-delay: 315ms; }
-.tr:nth-child(20) { animation-delay: 325ms; }
+.tr:nth-child(1) {
+  animation-delay: 0ms;
+}
+.tr:nth-child(2) {
+  animation-delay: 25ms;
+}
+.tr:nth-child(3) {
+  animation-delay: 50ms;
+}
+.tr:nth-child(4) {
+  animation-delay: 75ms;
+}
+.tr:nth-child(5) {
+  animation-delay: 100ms;
+}
+.tr:nth-child(6) {
+  animation-delay: 120ms;
+}
+.tr:nth-child(7) {
+  animation-delay: 140ms;
+}
+.tr:nth-child(8) {
+  animation-delay: 160ms;
+}
+.tr:nth-child(9) {
+  animation-delay: 180ms;
+}
+.tr:nth-child(10) {
+  animation-delay: 200ms;
+}
+.tr:nth-child(11) {
+  animation-delay: 215ms;
+}
+.tr:nth-child(12) {
+  animation-delay: 230ms;
+}
+.tr:nth-child(13) {
+  animation-delay: 245ms;
+}
+.tr:nth-child(14) {
+  animation-delay: 260ms;
+}
+.tr:nth-child(15) {
+  animation-delay: 275ms;
+}
+.tr:nth-child(16) {
+  animation-delay: 285ms;
+}
+.tr:nth-child(17) {
+  animation-delay: 295ms;
+}
+.tr:nth-child(18) {
+  animation-delay: 305ms;
+}
+.tr:nth-child(19) {
+  animation-delay: 315ms;
+}
+.tr:nth-child(20) {
+  animation-delay: 325ms;
+}
 
 .tr:hover .td {
   background: var(--ds-canvas-subtle);
@@ -418,7 +468,7 @@
 
 /* Before each badge: a 6px dot breathing indicator */
 .statusBadge::before {
-  content: '';
+  content: "";
   display: inline-block;
   width: 6px;
   height: 6px;
@@ -478,11 +528,9 @@
   background: var(--ds-surface);
   color: var(--ds-text-muted);
   cursor: pointer;
-  transition:
-    background    var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color  var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color         var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform     var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), color var(--ds-duration-fast)
+    var(--ds-ease-out-quart), transform var(--ds-duration-fast) var(--ds-ease-spring);
 }
 .detailBtn:hover {
   background: var(--ds-canvas-subtle);
@@ -503,10 +551,9 @@
   border-color: var(--ds-status-success-border) !important;
   background: var(--ds-status-success-bg) !important;
   font-size: var(--ds-text-xs) !important;
-  transition:
-    background   var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow   var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform    var(--ds-duration-fast) var(--ds-ease-spring) !important;
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
+    var(--ds-ease-spring) !important;
 }
 .approveBtn:hover:not(:disabled) {
   background: color-mix(in oklch, var(--ds-status-success-bg) 60%, var(--ds-status-success-border)) !important;
@@ -527,10 +574,9 @@
   color: var(--ds-text-inverse) !important;
   border: none !important;
   box-shadow: 0 2px 6px -2px color-mix(in oklch, var(--ds-brand-500) 40%, transparent) !important;
-  transition:
-    background  var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow  var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform   var(--ds-duration-fast) var(--ds-ease-spring) !important;
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
+    var(--ds-ease-spring) !important;
 }
 .paidBtn:hover:not(:disabled) {
   background: var(--ds-brand-600) !important;
@@ -608,8 +654,8 @@
 .metaGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1px;                                /* gap = border between cells */
-  background: var(--ds-border-subtle);    /* border color via bg + gap */
+  gap: 1px; /* gap = border between cells */
+  background: var(--ds-border-subtle); /* border color via bg + gap */
   border: 1px solid var(--ds-border-subtle);
   border-radius: var(--ds-radius-lg);
   overflow: hidden;
@@ -705,7 +751,7 @@
   }
 
   /* Last row items don't need bottom border */
-  .kpiItem:nth-last-child(-n+2) {
+  .kpiItem:nth-last-child(-n + 2) {
     border-block-end: none;
   }
 
@@ -737,7 +783,7 @@
     border-inline-end: 1px solid var(--ds-border-subtle);
   }
 
-  .kpiItem:nth-last-child(-n+2) {
+  .kpiItem:nth-last-child(-n + 2) {
     border-block-end: 1px solid var(--ds-border-subtle);
   }
 

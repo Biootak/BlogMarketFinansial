@@ -5,18 +5,32 @@
    ============================================================================= */
 
 @keyframes pageIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes barGrow {
-  from { width: 0; }
-  to   { width: var(--w, 0%); }
+  from {
+    width: 0;
+  }
+  to {
+    width: var(--w, 0%);
+  }
 }
 
 @keyframes shimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 /* ── Root ─────────────────────────────────────────────────────────────────── */
@@ -35,11 +49,15 @@
 }
 
 @media (max-width: 860px) {
-  .kpiGrid { grid-template-columns: repeat(2, 1fr); }
+  .kpiGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 480px) {
-  .kpiGrid { grid-template-columns: 1fr; }
+  .kpiGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .kpiCard {
@@ -53,13 +71,13 @@
   box-shadow: var(--ds-shadow-sm);
   position: relative;
   overflow: hidden;
-  transition: box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart),
-              transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 /* left accent bar */
 .kpiCard::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-inline-start: 0;
   inset-block: 0;
@@ -138,7 +156,9 @@
 }
 
 @media (max-width: 768px) {
-  .bottomRow { grid-template-columns: 1fr; }
+  .bottomRow {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── Sparkline ────────────────────────────────────────────────────────────── */
@@ -230,7 +250,11 @@
 .barFill {
   block-size: 100%;
   border-radius: var(--ds-radius-full);
-  background: linear-gradient(to inline-end, var(--ds-brand-500), color-mix(in oklch, var(--ds-brand-500) 70%, var(--nova-violet, oklch(55% 0.16 280))));
+  background: linear-gradient(
+    to inline-end,
+    var(--ds-brand-500),
+    color-mix(in oklch, var(--ds-brand-500) 70%, var(--nova-violet, oklch(55% 0.16 280)))
+  );
   width: var(--w, 0%);
   animation: barGrow var(--ds-duration-slow) var(--ds-ease-out-quart) both;
 }
@@ -302,7 +326,8 @@
 .skeletonCard {
   block-size: 90px;
   border-radius: var(--ds-radius-xl);
-  background: linear-gradient(90deg,
+  background: linear-gradient(
+    90deg,
     var(--ds-canvas-subtle) 25%,
     var(--ds-surface) 50%,
     var(--ds-canvas-subtle) 75%
@@ -316,7 +341,8 @@
   grid-column: 1 / -1;
   block-size: 150px;
   border-radius: var(--ds-radius-xl);
-  background: linear-gradient(90deg,
+  background: linear-gradient(
+    90deg,
     var(--ds-canvas-subtle) 25%,
     var(--ds-surface) 50%,
     var(--ds-canvas-subtle) 75%
@@ -329,7 +355,8 @@
   grid-column: span 2;
   block-size: 180px;
   border-radius: var(--ds-radius-xl);
-  background: linear-gradient(90deg,
+  background: linear-gradient(
+    90deg,
     var(--ds-canvas-subtle) 25%,
     var(--ds-surface) 50%,
     var(--ds-canvas-subtle) 75%

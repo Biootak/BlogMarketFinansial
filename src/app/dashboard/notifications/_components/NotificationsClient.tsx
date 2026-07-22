@@ -44,15 +44,12 @@ export default function NotificationsClient({ notifications: initial }: Props) {
   const unreadCount = useMemo(() => items.filter((n) => !n.isRead).length, [items]);
   const displayed = activeTab === 'unread' ? items.filter((n) => !n.isRead) : items;
 
-  const handleRead = useCallback(
-    (id: number) => {
-      setItems((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
-      startTransition(async () => {
-        await markNotificationRead(id);
-      });
-    },
-    [],
-  );
+  const handleRead = useCallback((id: number) => {
+    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
+    startTransition(async () => {
+      await markNotificationRead(id);
+    });
+  }, []);
 
   const handleMarkAllRead = useCallback(() => {
     setItems((prev) => prev.map((n) => ({ ...n, isRead: true })));
@@ -96,10 +93,7 @@ export default function NotificationsClient({ notifications: initial }: Props) {
     <div className={s.root}>
       {/* ── Header ──────────────────────────────────────────────────── */}
       <PageHeader
-        breadcrumb={[
-          { label: 'داشبورد', href: '/dashboard' },
-          { label: 'اعلان‌ها' },
-        ]}
+        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'اعلان‌ها' }]}
         title="مرکز اعلان‌ها"
         description="رویدادها، هشدارها و پیام‌های سیستم"
         eyebrow="اعلان"
@@ -144,10 +138,14 @@ export default function NotificationsClient({ notifications: initial }: Props) {
           >
             {tab === 'all' ? 'همه' : 'خوانده‌نشده'}
             {tab === 'unread' && unreadCount > 0 && (
-              <span className={s.tabBadge}>{new Intl.NumberFormat('fa-IR').format(unreadCount)}</span>
+              <span className={s.tabBadge}>
+                {new Intl.NumberFormat('fa-IR').format(unreadCount)}
+              </span>
             )}
             {tab === 'all' && items.length > 0 && (
-              <span className={s.tabCount}>{new Intl.NumberFormat('fa-IR').format(items.length)}</span>
+              <span className={s.tabCount}>
+                {new Intl.NumberFormat('fa-IR').format(items.length)}
+              </span>
             )}
           </button>
         ))}
@@ -165,16 +163,17 @@ export default function NotificationsClient({ notifications: initial }: Props) {
           }
         />
       ) : (
-        <div className={s.list} role="list" aria-label="اعلان‌ها">
+        <ul className={s.list} aria-label="اعلان‌ها">
           {displayed.map((n, i) => (
-            <div
+            <li
               key={n.id}
               className={`${s.item} ${!n.isRead ? s.itemUnread : ''}`}
-              role="listitem"
               style={{ '--item-i': i } as React.CSSProperties}
               onClick={() => !n.isRead && handleRead(n.id)}
               tabIndex={!n.isRead ? 0 : undefined}
-              onKeyDown={(e) => { if (e.key === 'Enter' && !n.isRead) handleRead(n.id); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !n.isRead) handleRead(n.id);
+              }}
               aria-label={`${!n.isRead ? 'خوانده‌نشده: ' : ''}${n.message}`}
             >
               {/* unread dot */}
@@ -199,7 +198,10 @@ export default function NotificationsClient({ notifications: initial }: Props) {
                   <button
                     type="button"
                     className={s.readBtn}
-                    onClick={(e) => { e.stopPropagation(); handleRead(n.id); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRead(n.id);
+                    }}
                     aria-label="علامت‌گذاری به عنوان خوانده‌شده"
                     disabled={isPending}
                     title="خوانده شد"
@@ -217,9 +219,9 @@ export default function NotificationsClient({ notifications: initial }: Props) {
                   <X size={13} aria-hidden />
                 </button>
               </div>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );

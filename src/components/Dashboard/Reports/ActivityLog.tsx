@@ -10,7 +10,16 @@ import type { ActivityLog } from '@/actions/reports/activityLogs';
 import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
-import { Activity, ChevronLeft, ChevronRight, Clock, FileText, Loader2, MoreHorizontal, User } from 'lucide-react';
+import {
+  Activity,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  FileText,
+  Loader2,
+  MoreHorizontal,
+  User,
+} from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import s from './ActivityLog.module.css';
 
@@ -49,7 +58,9 @@ export default function ActivityLogComponent() {
     }
   }, [page]);
 
-  useEffect(() => { fetchActivities(); }, [fetchActivities]);
+  useEffect(() => {
+    fetchActivities();
+  }, [fetchActivities]);
 
   const totalPages = Math.ceil(total / LIMIT);
 
@@ -57,7 +68,9 @@ export default function ActivityLogComponent() {
     <div className={s.root} dir="rtl">
       {/* ── Header ── */}
       <div className={s.head}>
-        <div className={s.headIcon} aria-hidden><Activity size={16} /></div>
+        <div className={s.headIcon} aria-hidden>
+          <Activity size={16} />
+        </div>
         <div>
           <h3 className={s.headTitle}>گزارش فعالیت‌ها</h3>
           <p className={s.headDesc}>تاریخچه فعالیت‌های کاربران سیستم</p>
@@ -85,19 +98,36 @@ export default function ActivityLogComponent() {
       {/* ── Table ── */}
       {loading ? (
         <div className={s.loadWrap} aria-label="در حال بارگذاری">
-          <Loader2 size={24} className="animate-spin" style={{ color: 'var(--at-accent)' }} aria-hidden />
+          <Loader2
+            size={24}
+            className="animate-spin"
+            style={{ color: 'var(--at-accent)' }}
+            aria-hidden
+          />
         </div>
       ) : activities.length === 0 ? (
-        <EmptyState icon={Activity} title="فعالیتی ثبت نشده" description="هنوز هیچ رویدادی در سیستم ثبت نشده است." />
+        <EmptyState
+          icon={Activity}
+          title="فعالیتی ثبت نشده"
+          description="هنوز هیچ رویدادی در سیستم ثبت نشده است."
+        />
       ) : (
         <div className={s.tableWrap}>
           <table className={s.table} aria-label="گزارش فعالیت‌ها">
             <thead>
               <tr>
-                <th className={s.th}><User size={12} aria-hidden /> کاربر</th>
-                <th className={s.th}><MoreHorizontal size={12} aria-hidden /> عملیات</th>
-                <th className={s.th}><FileText size={12} aria-hidden /> جزئیات</th>
-                <th className={s.th}><Clock size={12} aria-hidden /> زمان</th>
+                <th className={s.th}>
+                  <User size={12} aria-hidden /> کاربر
+                </th>
+                <th className={s.th}>
+                  <MoreHorizontal size={12} aria-hidden /> عملیات
+                </th>
+                <th className={s.th}>
+                  <FileText size={12} aria-hidden /> جزئیات
+                </th>
+                <th className={s.th}>
+                  <Clock size={12} aria-hidden /> زمان
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -114,7 +144,9 @@ export default function ActivityLogComponent() {
                       </div>
                       <div>
                         <p className={s.userName}>{activity.user?.name ?? 'ناشناس'}</p>
-                        <p className={s.userEmail} dir="ltr">{activity.user?.email ?? '—'}</p>
+                        <p className={s.userEmail} dir="ltr">
+                          {activity.user?.email ?? '—'}
+                        </p>
                       </div>
                     </div>
                   </td>
@@ -129,8 +161,11 @@ export default function ActivityLogComponent() {
                   <td className={s.td}>
                     <time className={s.time} dateTime={new Date(activity.createdAt).toISOString()}>
                       {new Date(activity.createdAt).toLocaleDateString('fa-IR', {
-                        year: 'numeric', month: 'short', day: 'numeric',
-                        hour: '2-digit', minute: '2-digit',
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
                       })}
                     </time>
                   </td>
@@ -145,14 +180,27 @@ export default function ActivityLogComponent() {
       {totalPages > 1 && !loading && (
         <div className={s.pagination}>
           <span className={s.paginationInfo}>
-            نمایش <strong>{Math.min(page * LIMIT, total).toLocaleString('fa-IR')}</strong> از <strong>{total.toLocaleString('fa-IR')}</strong>
+            نمایش <strong>{Math.min(page * LIMIT, total).toLocaleString('fa-IR')}</strong> از{' '}
+            <strong>{total.toLocaleString('fa-IR')}</strong>
           </span>
           <div className={s.paginationBtns}>
-            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1 || loading}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1 || loading}
+            >
               <ChevronRight size={14} aria-hidden /> قبلی
             </Button>
-            <span className={s.pageNum}>{page.toLocaleString('fa-IR')} / {totalPages.toLocaleString('fa-IR')}</span>
-            <Button variant="outline" size="sm" onClick={() => setPage((p) => p + 1)} disabled={page * LIMIT >= total || loading}>
+            <span className={s.pageNum}>
+              {page.toLocaleString('fa-IR')} / {totalPages.toLocaleString('fa-IR')}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => p + 1)}
+              disabled={page * LIMIT >= total || loading}
+            >
               بعدی <ChevronLeft size={14} aria-hidden />
             </Button>
           </div>

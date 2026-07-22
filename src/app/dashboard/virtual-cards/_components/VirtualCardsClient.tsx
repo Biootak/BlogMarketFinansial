@@ -27,16 +27,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import {
-  AlertCircle,
-  CreditCard,
-  Flame,
-  Lock,
-  Plus,
-  Trash2,
-  Unlock,
-  Wifi,
-} from 'lucide-react';
+import { AlertCircle, CreditCard, Flame, Lock, Plus, Trash2, Unlock, Wifi } from 'lucide-react';
 import { useCallback, useState, useTransition } from 'react';
 import s from './VirtualCardsClient.module.css';
 
@@ -49,7 +40,6 @@ const STATUS_LABELS: Record<string, string> = {
   EXPIRED: 'منقضی',
 };
 
-
 function formatExpiry(iso: string): string {
   const d = new Date(iso);
   return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)}`;
@@ -58,7 +48,10 @@ function formatExpiry(iso: string): string {
 // ── Card Visual Component ─────────────────────────────────────────────────
 function CardVisual({ card }: { card: VirtualCardRow }) {
   return (
-    <div className={`${s.cardVisual} ${card.status === 'FROZEN' ? s.cardFrozen : ''}`} role="article" aria-label={`کارت ${card.last4}`}>
+    <article
+      className={`${s.cardVisual} ${card.status === 'FROZEN' ? s.cardFrozen : ''}`}
+      aria-label={`کارت ${card.last4}`}
+    >
       {/* Ambient glow */}
       <div className={s.cardAmbient} aria-hidden />
 
@@ -82,7 +75,9 @@ function CardVisual({ card }: { card: VirtualCardRow }) {
       <div className={s.cardBottom}>
         <div className={s.cardExpiry}>
           <span className={s.cardExpiryLabel}>انقضا</span>
-          <span className={s.cardExpiryVal} dir="ltr">{formatExpiry(card.expiresAt)}</span>
+          <span className={s.cardExpiryVal} dir="ltr">
+            {formatExpiry(card.expiresAt)}
+          </span>
         </div>
         <div className={s.cardBrand}>{card.brand}</div>
       </div>
@@ -99,7 +94,7 @@ function CardVisual({ card }: { card: VirtualCardRow }) {
       <div className={`${s.cardStatus} ${s[`cardStatus_${card.status.toLowerCase()}`]}`}>
         {STATUS_LABELS[card.status] ?? card.status}
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -134,9 +129,7 @@ export default function VirtualCardsClient({ initialCards }: Props) {
       const res = await toggleFreezeCard(cardId, freeze);
       if (!res.success) return;
       setCards((prev) =>
-        prev.map((c) =>
-          c.id === cardId ? { ...c, status: freeze ? 'FROZEN' : 'ACTIVE' } : c,
-        ),
+        prev.map((c) => (c.id === cardId ? { ...c, status: freeze ? 'FROZEN' : 'ACTIVE' } : c)),
       );
     });
   }, []);
@@ -188,15 +181,21 @@ export default function VirtualCardsClient({ initialCards }: Props) {
         <>
           <div className={s.stats}>
             <div className={s.stat}>
-              <span className={s.statValue}>{new Intl.NumberFormat('fa-IR').format(cards.length)}</span>
+              <span className={s.statValue}>
+                {new Intl.NumberFormat('fa-IR').format(cards.length)}
+              </span>
               <span className={s.statLabel}>کل کارت‌ها</span>
             </div>
             <div className={s.stat}>
-              <span className={s.statValue}>{new Intl.NumberFormat('fa-IR').format(activeCount)}</span>
+              <span className={s.statValue}>
+                {new Intl.NumberFormat('fa-IR').format(activeCount)}
+              </span>
               <span className={s.statLabel}>فعال</span>
             </div>
             <div className={s.stat}>
-              <span className={s.statValue}>{new Intl.NumberFormat('fa-IR').format(3 - activeCount)}</span>
+              <span className={s.statValue}>
+                {new Intl.NumberFormat('fa-IR').format(3 - activeCount)}
+              </span>
               <span className={s.statLabel}>ظرفیت باقی‌مانده</span>
             </div>
           </div>
@@ -265,8 +264,11 @@ export default function VirtualCardsClient({ initialCards }: Props) {
             )}
 
             <div className={s.issueField}>
-              <label className={s.issueLabel}>نام کارت (اختیاری)</label>
+              <label className={s.issueLabel} htmlFor="issue-label-input">
+                نام کارت (اختیاری)
+              </label>
               <Input
+                id="issue-label-input"
                 value={issueLabel}
                 onChange={(e) => setIssueLabel(e.target.value)}
                 placeholder="مثال: خرید اشتراک"
@@ -275,7 +277,7 @@ export default function VirtualCardsClient({ initialCards }: Props) {
             </div>
 
             <div className={s.issueField}>
-              <label className={s.issueLabel}>ارز</label>
+              <p className={s.issueLabel}>ارز</p>
               <div className={s.currencyBtns}>
                 {(['USD', 'EUR', 'AFN'] as const).map((c) => (
                   <button

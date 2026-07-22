@@ -92,12 +92,12 @@ async function generateHotp(secret: string, counter: number): Promise<string> {
   const hmacBytes = new Uint8Array(signature);
 
   // Dynamic truncation (RFC 4226 §5.4)
-  const offset = hmacBytes[19]! & 0x0f;
+  const offset = (hmacBytes[19] ?? 0) & 0x0f;
   const binary =
-    ((hmacBytes[offset]! & 0x7f) << 24) |
-    ((hmacBytes[offset + 1]! & 0xff) << 16) |
-    ((hmacBytes[offset + 2]! & 0xff) << 8) |
-    (hmacBytes[offset + 3]! & 0xff);
+    (((hmacBytes[offset] ?? 0) & 0x7f) << 24) |
+    (((hmacBytes[offset + 1] ?? 0) & 0xff) << 16) |
+    (((hmacBytes[offset + 2] ?? 0) & 0xff) << 8) |
+    ((hmacBytes[offset + 3] ?? 0) & 0xff);
 
   const otp = binary % 10 ** TOTP_DIGITS;
   return otp.toString().padStart(TOTP_DIGITS, '0');

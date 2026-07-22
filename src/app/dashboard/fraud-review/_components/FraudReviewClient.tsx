@@ -95,9 +95,11 @@ function RiskGauge({ score }: { score: number }) {
       height="24"
       viewBox="0 0 40 24"
       fill="none"
+      role="img"
       aria-label={`امتیاز ریسک ${score}`}
       className={s.gauge}
     >
+      <title>{`امتیاز ریسک ${score}`}</title>
       {/* Track */}
       <path
         d={`M 4 ${cy} A ${R} ${R} 0 0 1 36 ${cy}`}
@@ -263,7 +265,7 @@ export function FraudReviewClient({ reviews: initial }: Props) {
       />
 
       {/* ── KPI Strip ── */}
-      <div className={s.kpiStrip} role="status">
+      <div className={s.kpiStrip}>
         <div className={s.kpiItem}>
           <span className={s.kpiVal}>{new Intl.NumberFormat('fa-IR').format(openCount)}</span>
           <span className={s.kpiLabel}>موارد باز</span>
@@ -294,7 +296,7 @@ export function FraudReviewClient({ reviews: initial }: Props) {
       {/* ── Toolbar ── */}
       <div className={s.toolbar}>
         {/* Risk filter pills */}
-        <div className={s.filterPills} role="group" aria-label="فیلتر سطح ریسک">
+        <div className={s.filterPills} aria-label="فیلتر سطح ریسک">
           {(
             [
               { val: 'all', label: 'همه' },

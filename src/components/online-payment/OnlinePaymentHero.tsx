@@ -283,7 +283,8 @@ export default function OnlinePaymentLanding({ onScrollToContact }: OnlinePaymen
         {/* Layered ambient background */}
         <div className={s.heroBg} aria-hidden>
           {/* SVG grid */}
-          <svg className={s.heroGrid} aria-hidden>
+          <svg className={s.heroGrid} aria-hidden="true" focusable="false">
+            <title>grid background</title>
             <defs>
               <pattern id="payGrid" width="48" height="48" patternUnits="userSpaceOnUse">
                 <path d="M 48 0 L 0 0 0 48" fill="none" stroke="currentColor" strokeWidth="0.5" />
@@ -316,18 +317,18 @@ export default function OnlinePaymentLanding({ onScrollToContact }: OnlinePaymen
             </p>
 
             {/* Trust pills */}
-            <div className={s.heroPills} role="list" aria-label="ویژگی‌های کلیدی">
+            <ul className={s.heroPills} aria-label="ویژگی‌های کلیدی">
               {[
                 { icon: CheckCircle2, text: 'بدون واسطه' },
                 { icon: Clock, text: 'انجام در ۲۴ ساعت' },
                 { icon: Phone, text: 'پشتیبانی مستمر' },
               ].map(({ icon: Icon, text }) => (
-                <div key={text} className={s.pill} role="listitem">
+                <li key={text} className={s.pill}>
                   <Icon size={13} strokeWidth={2} />
                   {text}
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
 
             {/* CTAs */}
             <div className={s.heroCtas}>

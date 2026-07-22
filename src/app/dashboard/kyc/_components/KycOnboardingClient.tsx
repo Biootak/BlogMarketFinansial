@@ -372,15 +372,27 @@ export function KycOnboardingClient({ initialRecord }: Props) {
 
       <div className={s.wizardCard}>
         {/* ── Stepper ── */}
-        <div className={s.stepper} role="list" aria-label="مراحل احراز هویت">
+        <div className={s.stepper} aria-label="مراحل احراز هویت">
           {STEPS.map((st, i) => {
             const state = stepState(st.id);
             const StepIcon = st.Icon;
             return (
-              <div key={st.id} role="listitem" className={`${s.stepItem} ${s[`stepItem_${state}`]}`}>
-                {i > 0 && <div className={`${s.stepConnector} ${stepState(st.id - 1) === 'done' ? s.stepConnectorDone : ''}`} aria-hidden />}
-                <div className={`${s.stepDot} ${s[`stepDot_${state}`]}`} aria-current={state === 'active' ? 'step' : undefined}>
-                  {state === 'done' ? <CheckCircle2 size={15} aria-hidden /> : <StepIcon size={14} aria-hidden />}
+              <div key={st.id} className={`${s.stepItem} ${s[`stepItem_${state}`]}`}>
+                {i > 0 && (
+                  <div
+                    className={`${s.stepConnector} ${stepState(st.id - 1) === 'done' ? s.stepConnectorDone : ''}`}
+                    aria-hidden
+                  />
+                )}
+                <div
+                  className={`${s.stepDot} ${s[`stepDot_${state}`]}`}
+                  aria-current={state === 'active' ? 'step' : undefined}
+                >
+                  {state === 'done' ? (
+                    <CheckCircle2 size={15} aria-hidden />
+                  ) : (
+                    <StepIcon size={14} aria-hidden />
+                  )}
                 </div>
                 <span className={`${s.stepLabel} ${s[`stepLabel_${state}`]}`}>{st.label}</span>
               </div>
@@ -393,7 +405,9 @@ export function KycOnboardingClient({ initialRecord }: Props) {
           <div className={s.form}>
             <div className={s.formHead}>
               <h2 className={s.formTitle}>اطلاعات پایه</h2>
-              <p className={s.formDesc}>این اطلاعات به‌صورت ایمن ذخیره و برای احراز هویت استفاده می‌شود.</p>
+              <p className={s.formDesc}>
+                این اطلاعات به‌صورت ایمن ذخیره و برای احراز هویت استفاده می‌شود.
+              </p>
             </div>
 
             {error && (
@@ -405,21 +419,67 @@ export function KycOnboardingClient({ initialRecord }: Props) {
 
             <div className={s.fieldGrid}>
               <div className={s.fieldCol}>
-                <label htmlFor="fullName" className={s.fieldLabel}>نام کامل</label>
-                <Input id="fullName" name="fullName" value={form.fullName} onChange={handleFormChange} placeholder="علی احمدی" autoComplete="name" aria-required="true" className={s.fieldInput} />
+                <label htmlFor="fullName" className={s.fieldLabel}>
+                  نام کامل
+                </label>
+                <Input
+                  id="fullName"
+                  name="fullName"
+                  value={form.fullName}
+                  onChange={handleFormChange}
+                  placeholder="علی احمدی"
+                  autoComplete="name"
+                  aria-required="true"
+                  className={s.fieldInput}
+                />
               </div>
               <div className={s.fieldCol}>
-                <label htmlFor="nationalId" className={s.fieldLabel}>شناسه ملی / تذکره</label>
-                <Input id="nationalId" name="nationalId" value={form.nationalId} onChange={handleFormChange} placeholder="شماره تذکره یا شناسه ملی" dir="ltr" aria-required="true" className={s.fieldInput} />
+                <label htmlFor="nationalId" className={s.fieldLabel}>
+                  شناسه ملی / تذکره
+                </label>
+                <Input
+                  id="nationalId"
+                  name="nationalId"
+                  value={form.nationalId}
+                  onChange={handleFormChange}
+                  placeholder="شماره تذکره یا شناسه ملی"
+                  dir="ltr"
+                  aria-required="true"
+                  className={s.fieldInput}
+                />
               </div>
               <div className={s.fieldCol}>
-                <label htmlFor="dateOfBirth" className={s.fieldLabel}>تاریخ تولد</label>
-                <Input id="dateOfBirth" name="dateOfBirth" value={form.dateOfBirth} onChange={handleFormChange} placeholder="۱۳۷۰/۰۱/۰۱" dir="ltr" aria-required="true" className={s.fieldInput} />
+                <label htmlFor="dateOfBirth" className={s.fieldLabel}>
+                  تاریخ تولد
+                </label>
+                <Input
+                  id="dateOfBirth"
+                  name="dateOfBirth"
+                  value={form.dateOfBirth}
+                  onChange={handleFormChange}
+                  placeholder="۱۳۷۰/۰۱/۰۱"
+                  dir="ltr"
+                  aria-required="true"
+                  className={s.fieldInput}
+                />
                 <span className={s.fieldHint}>فرمت: سال/ماه/روز</span>
               </div>
               <div className={s.fieldCol}>
-                <label htmlFor="phone" className={s.fieldLabel}>شماره موبایل</label>
-                <Input id="phone" name="phone" type="tel" inputMode="tel" value={form.phone} onChange={handleFormChange} placeholder="+93700000000" dir="ltr" aria-required="true" className={s.fieldInput} />
+                <label htmlFor="phone" className={s.fieldLabel}>
+                  شماره موبایل
+                </label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  inputMode="tel"
+                  value={form.phone}
+                  onChange={handleFormChange}
+                  placeholder="+93700000000"
+                  dir="ltr"
+                  aria-required="true"
+                  className={s.fieldInput}
+                />
               </div>
             </div>
           </div>
@@ -445,7 +505,9 @@ export function KycOnboardingClient({ initialRecord }: Props) {
                 label="عکس سلفی"
                 hint="عکس با کیفیت از صورت خود بگیرید"
                 previewUrl={docs.selfiePreview}
-                onFile={(url, preview) => setDocs((d) => ({ ...d, selfieUrl: url, selfiePreview: preview }))}
+                onFile={(url, preview) =>
+                  setDocs((d) => ({ ...d, selfieUrl: url, selfiePreview: preview }))
+                }
                 required
                 disabled={isPending}
               />
@@ -453,7 +515,9 @@ export function KycOnboardingClient({ initialRecord }: Props) {
                 label="روی مدرک"
                 hint="تصویر واضح جلو کارت ملی / تذکره"
                 previewUrl={docs.docFrontPreview}
-                onFile={(url, preview) => setDocs((d) => ({ ...d, docFrontUrl: url, docFrontPreview: preview }))}
+                onFile={(url, preview) =>
+                  setDocs((d) => ({ ...d, docFrontUrl: url, docFrontPreview: preview }))
+                }
                 required
                 disabled={isPending}
               />
@@ -461,7 +525,9 @@ export function KycOnboardingClient({ initialRecord }: Props) {
                 label="پشت مدرک"
                 hint="اختیاری — پشت کارت ملی / تذکره"
                 previewUrl={docs.docBackPreview}
-                onFile={(url, preview) => setDocs((d) => ({ ...d, docBackUrl: url, docBackPreview: preview }))}
+                onFile={(url, preview) =>
+                  setDocs((d) => ({ ...d, docBackUrl: url, docBackPreview: preview }))
+                }
                 disabled={isPending}
               />
             </div>
@@ -478,7 +544,9 @@ export function KycOnboardingClient({ initialRecord }: Props) {
           <div className={s.form}>
             <div className={s.formHead}>
               <h2 className={s.formTitle}>بررسی و ارسال</h2>
-              <p className={s.formDesc}>اطلاعات زیر را بررسی کنید. پس از تأیید، پرونده شما ارسال می‌شود.</p>
+              <p className={s.formDesc}>
+                اطلاعات زیر را بررسی کنید. پس از تأیید، پرونده شما ارسال می‌شود.
+              </p>
             </div>
 
             <div className={s.reviewGrid}>
@@ -499,7 +567,13 @@ export function KycOnboardingClient({ initialRecord }: Props) {
               {docs.selfiePreview && (
                 <div className={s.docPreviewItem}>
                   <div className={s.docThumb}>
-                    <Image src={docs.selfiePreview} alt="سلفی" fill className={s.docThumbImg} unoptimized />
+                    <Image
+                      src={docs.selfiePreview}
+                      alt="سلفی"
+                      fill
+                      className={s.docThumbImg}
+                      unoptimized
+                    />
                     <CheckCircle2 className={s.docThumbCheck} size={16} aria-hidden />
                   </div>
                   <span className={s.docThumbLabel}>سلفی</span>
@@ -508,7 +582,13 @@ export function KycOnboardingClient({ initialRecord }: Props) {
               {docs.docFrontPreview && (
                 <div className={s.docPreviewItem}>
                   <div className={s.docThumb}>
-                    <Image src={docs.docFrontPreview} alt="روی مدرک" fill className={s.docThumbImg} unoptimized />
+                    <Image
+                      src={docs.docFrontPreview}
+                      alt="روی مدرک"
+                      fill
+                      className={s.docThumbImg}
+                      unoptimized
+                    />
                     <CheckCircle2 className={s.docThumbCheck} size={16} aria-hidden />
                   </div>
                   <span className={s.docThumbLabel}>روی مدرک</span>
@@ -517,7 +597,13 @@ export function KycOnboardingClient({ initialRecord }: Props) {
               {docs.docBackPreview && (
                 <div className={s.docPreviewItem}>
                   <div className={s.docThumb}>
-                    <Image src={docs.docBackPreview} alt="پشت مدرک" fill className={s.docThumbImg} unoptimized />
+                    <Image
+                      src={docs.docBackPreview}
+                      alt="پشت مدرک"
+                      fill
+                      className={s.docThumbImg}
+                      unoptimized
+                    />
                     <CheckCircle2 className={s.docThumbCheck} size={16} aria-hidden />
                   </div>
                   <span className={s.docThumbLabel}>پشت مدرک</span>
@@ -529,16 +615,27 @@ export function KycOnboardingClient({ initialRecord }: Props) {
 
         {/* ── Footer Nav ── */}
         <div className={s.footer}>
-          <span className={s.stepCounter}>گام {step} از {STEPS.length}</span>
+          <span className={s.stepCounter}>
+            گام {step} از {STEPS.length}
+          </span>
           <div className={s.footerActions}>
             {step > 1 && (
-              <Button variant="outline" size="sm" onClick={() => setStep((s) => (s - 1) as 1 | 2 | 3)} disabled={isPending}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setStep((s) => (s - 1) as 1 | 2 | 3)}
+                disabled={isPending}
+              >
                 <ArrowRight size={14} aria-hidden />
                 قبلی
               </Button>
             )}
             {step < 3 && (
-              <Button size="sm" onClick={step === 1 ? handleStep1 : handleStep2} disabled={isPending}>
+              <Button
+                size="sm"
+                onClick={step === 1 ? handleStep1 : handleStep2}
+                disabled={isPending}
+              >
                 {isPending ? 'در حال پردازش...' : 'بعدی'}
                 {!isPending && <ArrowLeft size={14} aria-hidden />}
               </Button>

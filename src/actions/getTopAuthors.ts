@@ -10,6 +10,7 @@ export type TopAuthor = Pick<User, 'id' | 'name' | 'image'> & {
   _count: {
     posts: number;
   };
+  avgViewsPerPost: number;
 };
 
 // 2026-06-14: previously this used only `react.cache` which is
@@ -19,7 +20,7 @@ export type TopAuthor = Pick<User, 'id' | 'name' | 'image'> & {
 // (multiple consumers in one page) still dedupes.
 const fetchTopAuthorsRaw = async (limit: number): Promise<TopAuthor[]> => {
   try {
-    return await prisma.user.findMany({
+    const users = await prisma.user.findMany({
       where: {
         OR: [{ role: Role.AUTHOR }, { role: Role.ADMIN }, { role: Role.OWNER }],
       },
@@ -43,7 +44,18 @@ const fetchTopAuthorsRaw = async (limit: number): Promise<TopAuthor[]> => {
         _count: {
           select: { posts: true },
         },
+        posts: {
+          select: { viewCount: true },
+        },
       },
+    });
+
+    return users.map((u) => {
+      const totalViews = u.posts.reduce((sum, p) => sum + p.viewCount, 0);
+      const avgViewsPerPost = u._count.posts > 0 ? Math.round(totalViews / u._count.posts) : 0;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { posts: _posts, ...rest } = u;
+      return { ...rest, avgViewsPerPost };
     });
   } catch {
     return [];

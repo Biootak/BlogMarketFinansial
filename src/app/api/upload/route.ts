@@ -17,7 +17,15 @@ const MAX_FILES_PER_REQUEST = 10;
 // file is then served with Content-Type image/svg+xml + nosniff, so it can
 // execute as a document and steal the session. Only serve raster formats.
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const;
-const ALLOWED_FOLDERS = ['posts', 'avatars', 'categories', 'tags', 'ads', 'general', 'kyc'] as const;
+const ALLOWED_FOLDERS = [
+  'posts',
+  'avatars',
+  'categories',
+  'tags',
+  'ads',
+  'general',
+  'kyc',
+] as const;
 
 // soft max-width for the canonical rendition. We do NOT generate multiple
 // variants — the upload route returns one WebP (or the original mime for

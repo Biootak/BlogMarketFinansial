@@ -61,29 +61,30 @@ function TrendSparkline({ data }: { data: TransactionTrend[] }) {
 
   const pts = data.map((d, i) => {
     const x = PAD + (i / Math.max(data.length - 1, 1)) * (W - PAD * 2);
-    const y = H - PAD - ((d.count / maxCount) * (H - PAD * 2));
+    const y = H - PAD - (d.count / maxCount) * (H - PAD * 2);
     return [x, y] as [number, number];
   });
 
   const completedPts = data.map((d, i) => {
     const x = PAD + (i / Math.max(data.length - 1, 1)) * (W - PAD * 2);
-    const y = H - PAD - ((d.completed / maxCount) * (H - PAD * 2));
+    const y = H - PAD - (d.completed / maxCount) * (H - PAD * 2);
     return [x, y] as [number, number];
   });
 
   function toPath(points: [number, number][]): string {
     if (!points.length) return '';
     const [first, ...rest] = points;
-    return [
-      `M ${first![0]} ${first![1]}`,
-      ...rest.map(([x, y]) => `L ${x} ${y}`),
-    ].join(' ');
+    return [`M ${first?.[0] ?? 0} ${first?.[1] ?? 0}`, ...rest.map(([x, y]) => `L ${x} ${y}`)].join(
+      ' ',
+    );
   }
 
   function toArea(points: [number, number][]): string {
     if (!points.length) return '';
     const path = toPath(points);
-    const [first, last] = [points[0]!, points[points.length - 1]!];
+    const first = points[0];
+    const last = points[points.length - 1];
+    if (!first || !last) return path;
     return `${path} L ${last[0]} ${H - PAD} L ${first[0]} ${H - PAD} Z`;
   }
 
@@ -112,10 +113,7 @@ function TrendSparkline({ data }: { data: TransactionTrend[] }) {
         ))}
 
         {/* area fill — کل تراکنش‌ها */}
-        <path
-          d={toArea(pts)}
-          fill="color-mix(in oklch, var(--ds-brand-500) 8%, transparent)"
-        />
+        <path d={toArea(pts)} fill="color-mix(in oklch, var(--ds-brand-500) 8%, transparent)" />
         {/* line — کل */}
         <path
           d={toPath(pts)}
@@ -143,8 +141,10 @@ function TrendSparkline({ data }: { data: TransactionTrend[] }) {
 
         {/* baseline */}
         <line
-          x1={PAD} y1={H - PAD}
-          x2={W - PAD} y2={H - PAD}
+          x1={PAD}
+          y1={H - PAD}
+          x2={W - PAD}
+          y2={H - PAD}
           stroke="var(--ds-border-default)"
           strokeWidth="1"
         />
@@ -200,9 +200,9 @@ function ExchangeBars({ data }: { data: ExchangeVolumeRow[] }) {
 // ─── SVG Donut ────────────────────────────────────────────────────────────────
 
 const SETTLEMENT_COLORS: Record<string, string> = {
-  PENDING:  'var(--nova-amber, oklch(60% 0.16 70))',
+  PENDING: 'var(--nova-amber, oklch(60% 0.16 70))',
   APPROVED: 'var(--ds-brand-500)',
-  PAID:     'var(--nova-emerald, oklch(50% 0.14 145))',
+  PAID: 'var(--nova-emerald, oklch(50% 0.14 145))',
   REJECTED: 'var(--nova-rose, oklch(55% 0.18 25))',
   CANCELLED: 'var(--ds-text-muted)',
 };
@@ -288,7 +288,9 @@ function KpiCard({
 }) {
   return (
     <div className={s.kpiCard} style={{ '--accent': accent } as React.CSSProperties}>
-      <span className={s.kpiIcon} aria-hidden>{icon}</span>
+      <span className={s.kpiIcon} aria-hidden>
+        {icon}
+      </span>
       <span className={s.kpiValue}>{value}</span>
       <span className={s.kpiLabel}>{label}</span>
       {sub && <span className={s.kpiSub}>{sub}</span>}
@@ -330,21 +332,24 @@ export default function FinanceReport() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   if (loading) return <FinanceReportSkeleton />;
-  if (error) return (
-    <EmptyState
-      icon={BarChart3}
-      title="خطا در بارگذاری گزارش"
-      description={error}
-      action={
-        <button type="button" className={s.retryBtn} onClick={load}>
-          تلاش مجدد
-        </button>
-      }
-    />
-  );
+  if (error)
+    return (
+      <EmptyState
+        icon={BarChart3}
+        title="خطا در بارگذاری گزارش"
+        description={error}
+        action={
+          <button type="button" className={s.retryBtn} onClick={load}>
+            تلاش مجدد
+          </button>
+        }
+      />
+    );
   if (!data) return <EmptyState icon={BarChart3} title="داده‌ای موجود نیست" />;
 
   const { kpi, txTrend, topExchanges, settlementDist } = data;

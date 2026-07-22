@@ -40,11 +40,26 @@
   flex-shrink: 0;
 }
 
-.kpiIcon[data-color="amber"]   { background: color-mix(in oklch, var(--nova-amber,  oklch(75% 0.15 80))  12%, transparent); color: var(--nova-amber,  oklch(60% 0.15 80));  }
-.kpiIcon[data-color="brand"]   { background: color-mix(in oklch, var(--ds-brand-500) 12%, transparent); color: var(--ds-brand-500); }
-.kpiIcon[data-color="rose"]    { background: var(--ds-status-error-bg);   color: var(--ds-status-error-fg);   }
-.kpiIcon[data-color="emerald"] { background: var(--ds-status-success-bg); color: var(--ds-status-success-fg); }
-.kpiIcon[data-color="violet"]  { background: color-mix(in oklch, var(--nova-violet, oklch(60% 0.17 290)) 12%, transparent); color: var(--nova-violet, oklch(55% 0.17 290)); }
+.kpiIcon[data-color="amber"] {
+  background: color-mix(in oklch, var(--nova-amber, oklch(75% 0.15 80)) 12%, transparent);
+  color: var(--nova-amber, oklch(60% 0.15 80));
+}
+.kpiIcon[data-color="brand"] {
+  background: color-mix(in oklch, var(--ds-brand-500) 12%, transparent);
+  color: var(--ds-brand-500);
+}
+.kpiIcon[data-color="rose"] {
+  background: var(--ds-status-error-bg);
+  color: var(--ds-status-error-fg);
+}
+.kpiIcon[data-color="emerald"] {
+  background: var(--ds-status-success-bg);
+  color: var(--ds-status-success-fg);
+}
+.kpiIcon[data-color="violet"] {
+  background: color-mix(in oklch, var(--nova-violet, oklch(60% 0.17 290)) 12%, transparent);
+  color: var(--nova-violet, oklch(55% 0.17 290));
+}
 
 .kpiBody {
   display: flex;
@@ -80,8 +95,14 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .toastOk {
@@ -114,10 +135,9 @@
   font-weight: var(--ds-weight-medium);
   color: var(--at-fg-muted, var(--ds-text-secondary));
   cursor: pointer;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), border-color var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
 }
 
 .filterBtn:hover {
@@ -147,9 +167,8 @@
   display: flex;
   flex-direction: column;
   box-shadow: var(--ds-shadow-sm);
-  transition:
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .card:hover {
@@ -271,8 +290,12 @@
   gap: 4px;
 }
 
-.rateTrendUp   { color: var(--ds-status-success-fg); }
-.rateTrendDown { color: var(--ds-status-error-fg); }
+.rateTrendUp {
+  color: var(--ds-status-success-fg);
+}
+.rateTrendDown {
+  color: var(--ds-status-error-fg);
+}
 
 .rateGridDivider {
   inline-size: 1px;
@@ -322,9 +345,15 @@
   transition: width 0.4s var(--ds-ease-out-quart);
 }
 
-.spreadFill_low { background: var(--ds-status-success-fg); }
-.spreadFill_mid { background: var(--ds-status-pending-fg); }
-.spreadFill_high { background: var(--ds-status-error-fg); }
+.spreadFill_low {
+  background: var(--ds-status-success-fg);
+}
+.spreadFill_mid {
+  background: var(--ds-status-pending-fg);
+}
+.spreadFill_high {
+  background: var(--ds-status-error-fg);
+}
 
 .spreadMark {
   position: absolute;
@@ -340,9 +369,15 @@
   white-space: nowrap;
 }
 
-.spreadPct_low  { color: var(--ds-status-success-fg); }
-.spreadPct_mid  { color: var(--ds-status-pending-fg); }
-.spreadPct_high { color: var(--ds-status-error-fg); }
+.spreadPct_low {
+  color: var(--ds-status-success-fg);
+}
+.spreadPct_mid {
+  color: var(--ds-status-pending-fg);
+}
+.spreadPct_high {
+  color: var(--ds-status-error-fg);
+}
 
 /* ── Inline feedback ───────────────────────────────────────────────────────── */
 .inlineFeedback {
@@ -390,9 +425,8 @@
   font-weight: var(--ds-weight-semibold);
   font-family: inherit;
   cursor: pointer;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .approveBtn:hover:not(:disabled) {
@@ -418,9 +452,8 @@
   font-weight: var(--ds-weight-semibold);
   font-family: inherit;
   cursor: pointer;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .rejectBtn:hover:not(:disabled) {

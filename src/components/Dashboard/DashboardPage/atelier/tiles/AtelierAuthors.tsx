@@ -33,17 +33,10 @@ interface AtelierAuthorsProps {
 }
 
 export default function AtelierAuthors({ topAuthors }: AtelierAuthorsProps) {
-  // میانگین بازدید هر پست (deterministic برای هر نویسنده از id).
   const rows = useMemo(() => {
     return topAuthors.slice(0, 6).map((author, i) => {
-      let seed = 0;
-      for (let c = 0; c < author.id.length; c++) {
-        seed = (seed * 17 + author.id.charCodeAt(c)) >>> 0;
-      }
-      const seedAvg = (seed & 0xfff) / 0xfff;
-      const avgViews = Math.round(120 + seedAvg * 880 + i * 60);
       const isLead = i === 0;
-      return { author, rank: i + 1, avgViews, isLead };
+      return { author, rank: i + 1, avgViews: author.avgViewsPerPost, isLead };
     });
   }, [topAuthors]);
 

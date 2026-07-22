@@ -71,22 +71,26 @@ function SpreadBar({ spreadPct }: { spreadPct: number }) {
         <div className={s.spreadMark} style={{ insetInlineStart: '20%' }} aria-hidden />
         <div className={s.spreadMark} style={{ insetInlineStart: '60%' }} aria-hidden />
       </div>
-      <span className={`${s.spreadPct} ${s[`spreadPct_${level}`]}`}>
-        {spreadPct.toFixed(2)}٪
-      </span>
+      <span className={`${s.spreadPct} ${s[`spreadPct_${level}`]}`}>{spreadPct.toFixed(2)}٪</span>
     </div>
   );
 }
 
 /** RateDelta — نشان می‌دهد خرید/فروش نسبت به هم چقدر جابه‌جا شده */
-function RateCell({ label, val, direction }: { label: string; val: string; direction?: 'up' | 'down' }) {
+function RateCell({
+  label,
+  val,
+  direction,
+}: { label: string; val: string; direction?: 'up' | 'down' }) {
   return (
     <div className={s.rateCell}>
       <span className={s.rateCellLabel}>{label}</span>
       <span className={s.rateCellVal}>
         {fmtRate(val)}
         {direction === 'up' && <TrendingUp size={12} className={s.rateTrendUp} aria-label="بالا" />}
-        {direction === 'down' && <TrendingDown size={12} className={s.rateTrendDown} aria-label="پایین" />}
+        {direction === 'down' && (
+          <TrendingDown size={12} className={s.rateTrendDown} aria-label="پایین" />
+        )}
       </span>
     </div>
   );
@@ -103,18 +107,22 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
 
   // ── KPI calculations ──────────────────────────────────────────────────────
   const kpi = useMemo(() => {
-    const avgSpread = quotes.length > 0
-      ? quotes.reduce((sum, q) => sum + calcSpread(Number(q.buyRate), Number(q.sellRate)), 0) / quotes.length
-      : 0;
-    const highRisk = quotes.filter(q => calcSpread(Number(q.buyRate), Number(q.sellRate)) > 3).length;
-    const currencies = [...new Set(quotes.map(q => q.currencyCode))];
+    const avgSpread =
+      quotes.length > 0
+        ? quotes.reduce((sum, q) => sum + calcSpread(Number(q.buyRate), Number(q.sellRate)), 0) /
+          quotes.length
+        : 0;
+    const highRisk = quotes.filter(
+      (q) => calcSpread(Number(q.buyRate), Number(q.sellRate)) > 3,
+    ).length;
+    const currencies = [...new Set(quotes.map((q) => q.currencyCode))];
     return { count: quotes.length, avgSpread, highRisk, currencies };
   }, [quotes]);
 
   // ── Currency filter ───────────────────────────────────────────────────────
   const filtered = useMemo(() => {
     if (selectedCurrency === 'all') return quotes;
-    return quotes.filter(q => q.currencyCode === selectedCurrency);
+    return quotes.filter((q) => q.currencyCode === selectedCurrency);
   }, [quotes, selectedCurrency]);
 
   // ── Actions ───────────────────────────────────────────────────────────────
@@ -123,7 +131,7 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
     const res = await approveQuote(id);
     setLoadingId(null);
     if (res.success) {
-      setQuotes(prev => prev.filter(q => q.id !== id));
+      setQuotes((prev) => prev.filter((q) => q.id !== id));
       setFeedback({ id, ok: true, msg: 'تأیید شد' });
       setTimeout(() => setFeedback(null), 2500);
     } else {
@@ -138,7 +146,7 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
     const res = await rejectQuote(id, rejectReason);
     setLoadingId(null);
     if (res.success) {
-      setQuotes(prev => prev.filter(q => q.id !== id));
+      setQuotes((prev) => prev.filter((q) => q.id !== id));
       setRejectTargetId(null);
       setRejectReason('');
     } else {
@@ -191,7 +199,9 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
             <TrendingUp size={15} />
           </div>
           <div className={s.kpiBody}>
-            <span className={s.kpiVal}>{new Intl.NumberFormat('fa-IR').format(kpi.currencies.length)}</span>
+            <span className={s.kpiVal}>
+              {new Intl.NumberFormat('fa-IR').format(kpi.currencies.length)}
+            </span>
             <span className={s.kpiLabel}>ارز متفاوت</span>
           </div>
         </div>
@@ -217,7 +227,7 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
           >
             همه ارزها
           </button>
-          {kpi.currencies.map(c => (
+          {kpi.currencies.map((c) => (
             <button
               key={c}
               type="button"
@@ -263,7 +273,9 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
 
                   <div className={s.headerMeta}>
                     <span className={s.currencyBadge}>{q.currencyCode}</span>
-                    <span className={s.pairBadge} dir="ltr">{q.currencyPair}</span>
+                    <span className={s.pairBadge} dir="ltr">
+                      {q.currencyPair}
+                    </span>
                     <div className={s.timeInfo}>
                       <Clock size={11} aria-hidden />
                       {fmtDate(q.createdAt)}
@@ -296,7 +308,10 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
 
                 {/* ── Inline feedback ── */}
                 {thisFeedback && (
-                  <div className={`${s.inlineFeedback} ${thisFeedback.ok ? s.feedbackOk : s.feedbackErr}`} role="status">
+                  <div
+                    className={`${s.inlineFeedback} ${thisFeedback.ok ? s.feedbackOk : s.feedbackErr}`}
+                    role="alert"
+                  >
                     {thisFeedback.ok ? <CheckCircle2 size={13} /> : <XCircle size={13} />}
                     {thisFeedback.msg}
                   </div>
@@ -355,7 +370,10 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
                         type="button"
                         className={s.cancelRejectBtn}
                         disabled={isLoading}
-                        onClick={() => { setRejectTargetId(null); setRejectReason(''); }}
+                        onClick={() => {
+                          setRejectTargetId(null);
+                          setRejectReason('');
+                        }}
                       >
                         انصراف
                       </button>

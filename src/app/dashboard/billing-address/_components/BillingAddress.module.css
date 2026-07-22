@@ -5,21 +5,44 @@
    ============================================================================ */
 
 @keyframes pageIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.94); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20%       { transform: translateX(-4px); }
-  40%       { transform: translateX(4px); }
-  60%       { transform: translateX(-3px); }
-  80%       { transform: translateX(3px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
 }
 
 /* ── Page ──────────────────────────────────────────────────────────────────── */
@@ -127,7 +150,9 @@
 }
 
 @media (max-width: 560px) {
-  .grid { grid-template-columns: 1fr; }
+  .grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .gridFull {
@@ -157,9 +182,15 @@
 }
 
 /* رنگ semantic icon‌ها */
-.labelIcon[data-color="emerald"] { color: var(--nova-emerald, oklch(55% 0.14 165)); }
-.labelIcon[data-color="blue"]    { color: oklch(48% 0.14 255); }
-.labelIcon[data-color="amber"]   { color: var(--nova-amber, oklch(60% 0.15 80)); }
+.labelIcon[data-color="emerald"] {
+  color: var(--nova-emerald, oklch(55% 0.14 165));
+}
+.labelIcon[data-color="blue"] {
+  color: oklch(48% 0.14 255);
+}
+.labelIcon[data-color="amber"] {
+  color: var(--nova-amber, oklch(60% 0.15 80));
+}
 
 .input {
   inline-size: 100%;
@@ -171,9 +202,8 @@
   color: var(--at-fg, var(--ds-text-primary));
   font-size: var(--ds-text-sm);
   font-family: inherit;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
   outline: none;
 }
 
@@ -204,9 +234,8 @@
   font-size: var(--ds-text-sm);
   font-family: inherit;
   cursor: pointer;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
   outline: none;
   appearance: none;
   /* arrow custom RTL-aware */
@@ -247,21 +276,18 @@
   font-family: inherit;
   border: none;
   cursor: pointer;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
-  box-shadow:
-    0 1px 2px color-mix(in oklch, var(--ds-brand-600) 25%, transparent),
-    0 4px 12px -3px color-mix(in oklch, var(--ds-brand-600) 35%, transparent);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-spring), box-shadow var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
+  box-shadow: 0 1px 2px color-mix(in oklch, var(--ds-brand-600) 25%, transparent), 0 4px 12px -3px
+    color-mix(in oklch, var(--ds-brand-600) 35%, transparent);
 }
 
 .btnPrimary:hover:not(:disabled) {
   background: var(--ds-brand-700, oklch(38% 0.18 255));
   transform: translateY(-1px);
-  box-shadow:
-    0 2px 4px color-mix(in oklch, var(--ds-brand-600) 20%, transparent),
-    0 8px 20px -4px color-mix(in oklch, var(--ds-brand-600) 40%, transparent);
+  box-shadow: 0 2px 4px color-mix(in oklch, var(--ds-brand-600) 20%, transparent), 0 8px 20px -4px
+    color-mix(in oklch, var(--ds-brand-600) 40%, transparent);
 }
 
 .btnPrimary:disabled {
@@ -284,9 +310,8 @@
   font-family: inherit;
   border: 1px solid var(--at-line, var(--ds-border-default));
   cursor: pointer;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .btnGhost:hover {
@@ -301,5 +326,7 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }

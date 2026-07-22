@@ -15,10 +15,7 @@ export default async function PermissionsPage() {
 
   const result = await getPermissions();
 
-  const data =
-    result.success && result.data
-      ? result.data
-      : { permissions: [], matrix: [] };
+  const data = result.success && result.data ? result.data : { permissions: [], matrix: [] };
 
   return (
     <div className="at-page" dir="rtl">

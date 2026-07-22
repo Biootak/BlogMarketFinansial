@@ -30,14 +30,47 @@ import s from './MyDealsClient.module.css';
 
 // ─── Types & Constants ────────────────────────────────────────────────────────
 
-const STATUS_META: Record<string, { label: string; icon: React.ComponentType<{ size?: number; className?: string }>; color: string; cssKey: string }> = {
-  PENDING:    { label: 'در انتظار',    icon: Clock,         color: 'var(--nova-amber)',   cssKey: 'pending'    },
-  CONFIRMED:  { label: 'تأیید شده',   icon: CheckCircle2,  color: 'var(--nova-cyan)',    cssKey: 'confirmed'  },
-  PROCESSING: { label: 'در حال انجام', icon: ArrowLeftRight, color: 'var(--at-info)',      cssKey: 'processing' },
-  COMPLETED:  { label: 'تکمیل شده',   icon: CheckCircle2,  color: 'var(--nova-emerald)', cssKey: 'completed'  },
-  CANCELLED:  { label: 'لغو شده',     icon: XCircle,       color: 'var(--nova-rose)',    cssKey: 'cancelled'  },
-  DISPUTED:   { label: 'مورد اعتراض', icon: AlertCircle,   color: 'var(--nova-amber)',   cssKey: 'disputed'   },
-  REFUNDED:   { label: 'بازگشت وجه',  icon: CheckCircle2,  color: 'var(--nova-emerald)', cssKey: 'refunded'   },
+const STATUS_META: Record<
+  string,
+  {
+    label: string;
+    icon: React.ComponentType<{ size?: number; className?: string }>;
+    color: string;
+    cssKey: string;
+  }
+> = {
+  PENDING: { label: 'در انتظار', icon: Clock, color: 'var(--nova-amber)', cssKey: 'pending' },
+  CONFIRMED: {
+    label: 'تأیید شده',
+    icon: CheckCircle2,
+    color: 'var(--nova-cyan)',
+    cssKey: 'confirmed',
+  },
+  PROCESSING: {
+    label: 'در حال انجام',
+    icon: ArrowLeftRight,
+    color: 'var(--at-info)',
+    cssKey: 'processing',
+  },
+  COMPLETED: {
+    label: 'تکمیل شده',
+    icon: CheckCircle2,
+    color: 'var(--nova-emerald)',
+    cssKey: 'completed',
+  },
+  CANCELLED: { label: 'لغو شده', icon: XCircle, color: 'var(--nova-rose)', cssKey: 'cancelled' },
+  DISPUTED: {
+    label: 'مورد اعتراض',
+    icon: AlertCircle,
+    color: 'var(--nova-amber)',
+    cssKey: 'disputed',
+  },
+  REFUNDED: {
+    label: 'بازگشت وجه',
+    icon: CheckCircle2,
+    color: 'var(--nova-emerald)',
+    cssKey: 'refunded',
+  },
 };
 
 const CHANNEL_FA: Record<string, string> = {
@@ -47,7 +80,7 @@ const CHANNEL_FA: Record<string, string> = {
 };
 
 const STATUS_FILTERS = ['ALL', 'PENDING', 'COMPLETED', 'CANCELLED'] as const;
-type StatusFilter = typeof STATUS_FILTERS[number];
+type StatusFilter = (typeof STATUS_FILTERS)[number];
 
 const PAGE_LIMIT = 12;
 
@@ -76,10 +109,13 @@ function CompletionArc({ pct }: { pct: number }) {
   const C = 2 * Math.PI * R;
   const dash = (pct / 100) * C;
   return (
-    <svg className={s.arcSvg} viewBox="0 0 48 48" aria-hidden fill="none">
+    <svg className={s.arcSvg} viewBox="0 0 48 48" aria-hidden="true" focusable="false" fill="none">
+      <title>arc</title>
       <circle cx="24" cy="24" r={R} strokeWidth="3.5" className={s.arcTrack} />
       <circle
-        cx="24" cy="24" r={R}
+        cx="24"
+        cy="24"
+        r={R}
         strokeWidth="3.5"
         strokeLinecap="round"
         strokeDasharray={`${dash} ${C - dash}`}
@@ -87,7 +123,9 @@ function CompletionArc({ pct }: { pct: number }) {
         className={s.arcFill}
         style={{ '--arc-pct': `${pct}` } as React.CSSProperties}
       />
-      <text x="24" y="28" textAnchor="middle" className={s.arcText}>{Math.round(pct)}</text>
+      <text x="24" y="28" textAnchor="middle" className={s.arcText}>
+        {Math.round(pct)}
+      </text>
     </svg>
   );
 }
@@ -98,10 +136,10 @@ function DealDetailSheet({ deal, onClose }: { deal: DealRow; onClose: () => void
   const Icon = meta.icon;
 
   const TIMELINE = [
-    { status: 'PENDING',    label: 'ثبت درخواست' },
-    { status: 'CONFIRMED',  label: 'تأیید صرافی' },
+    { status: 'PENDING', label: 'ثبت درخواست' },
+    { status: 'CONFIRMED', label: 'تأیید صرافی' },
     { status: 'PROCESSING', label: 'در حال پردازش' },
-    { status: 'COMPLETED',  label: 'تکمیل' },
+    { status: 'COMPLETED', label: 'تکمیل' },
   ];
 
   const ORDER = ['PENDING', 'CONFIRMED', 'PROCESSING', 'COMPLETED', 'CANCELLED'];
@@ -116,14 +154,18 @@ function DealDetailSheet({ deal, onClose }: { deal: DealRow; onClose: () => void
           </div>
           <div>
             <SheetTitle className={s.detailTitle}>جزئیات معامله</SheetTitle>
-            <p className={s.detailTracking} dir="ltr">{deal.trackingCode}</p>
+            <p className={s.detailTracking} dir="ltr">
+              {deal.trackingCode}
+            </p>
           </div>
         </SheetHeader>
 
         <div className={s.detailBody}>
           {/* Amount visual */}
           <div className={s.detailAmountCard}>
-            <div className={s.detailAmountFrom}>{fmtAmount(deal.fromAmount, deal.fromCurrency)}</div>
+            <div className={s.detailAmountFrom}>
+              {fmtAmount(deal.fromAmount, deal.fromCurrency)}
+            </div>
             <div className={s.detailAmountArrow} aria-hidden>
               <ArrowLeftRight size={18} />
             </div>
@@ -132,19 +174,25 @@ function DealDetailSheet({ deal, onClose }: { deal: DealRow; onClose: () => void
 
           {/* Status timeline */}
           {deal.status !== 'CANCELLED' && deal.status !== 'DISPUTED' && (
-            <div className={s.timeline} role="list" aria-label="مراحل معامله">
+            <div className={s.timeline} aria-label="مراحل معامله">
               {TIMELINE.map((step, i) => {
                 const stepIdx = ORDER.indexOf(step.status);
                 const isDone = stepIdx <= currentIdx;
                 const isActive = stepIdx === currentIdx;
                 return (
-                  <div key={step.status} role="listitem" className={`${s.timelineStep} ${isDone ? s.timelineStepDone : ''} ${isActive ? s.timelineStepActive : ''}`}>
+                  <div
+                    key={step.status}
+                    className={`${s.timelineStep} ${isDone ? s.timelineStepDone : ''} ${isActive ? s.timelineStepActive : ''}`}
+                  >
                     <div className={s.timelineDot} aria-hidden>
                       {isDone && !isActive && <CheckCircle2 size={11} />}
                       {isActive && <div className={s.timelinePulse} aria-hidden />}
                     </div>
                     {i < TIMELINE.length - 1 && (
-                      <div className={`${s.timelineBar} ${isDone && !isActive ? s.timelineBarDone : ''}`} aria-hidden />
+                      <div
+                        className={`${s.timelineBar} ${isDone && !isActive ? s.timelineBarDone : ''}`}
+                        aria-hidden
+                      />
                     )}
                     <span className={s.timelineLabel}>{step.label}</span>
                   </div>
@@ -216,9 +264,9 @@ export default function MyDealsClient() {
 
   // ── KPI calculations ──────────────────────────────────────────────────────
   const kpi = useMemo(() => {
-    const pending   = deals.filter(d => d.status === 'PENDING').length;
-    const completed = deals.filter(d => d.status === 'COMPLETED').length;
-    const cancelled = deals.filter(d => d.status === 'CANCELLED').length;
+    const pending = deals.filter((d) => d.status === 'PENDING').length;
+    const completed = deals.filter((d) => d.status === 'COMPLETED').length;
+    const cancelled = deals.filter((d) => d.status === 'CANCELLED').length;
     const completionPct = deals.length > 0 ? (completed / deals.length) * 100 : 0;
     return { pending, completed, cancelled, completionPct };
   }, [deals]);
@@ -226,7 +274,7 @@ export default function MyDealsClient() {
   // ── Client-side status filter ──────────────────────────────────────────────
   const filtered = useMemo(() => {
     if (statusFilter === 'ALL') return deals;
-    return deals.filter(d => d.status === statusFilter);
+    return deals.filter((d) => d.status === statusFilter);
   }, [deals, statusFilter]);
 
   return (
@@ -236,9 +284,11 @@ export default function MyDealsClient() {
         eyebrow="پورتفولیو"
         title="معاملات ارزی من"
         description={
-          loading ? 'در حال بارگذاری…'
-          : total > 0 ? `${new Intl.NumberFormat('fa-IR').format(total)} معامله ثبت‌شده`
-          : 'تاریخچه معاملات ارزی شما با صرافی‌های پلتفرم'
+          loading
+            ? 'در حال بارگذاری…'
+            : total > 0
+              ? `${new Intl.NumberFormat('fa-IR').format(total)} معامله ثبت‌شده`
+              : 'تاریخچه معاملات ارزی شما با صرافی‌های پلتفرم'
         }
         actions={
           <a href="/money-transfer" className={s.newBtn}>
@@ -250,7 +300,7 @@ export default function MyDealsClient() {
 
       {/* ── KPI strip ── */}
       {!loading && deals.length > 0 && (
-        <div className={s.kpiStrip} role="status" aria-label="خلاصه معاملات">
+        <div className={s.kpiStrip} aria-label="خلاصه معاملات">
           <div className={s.kpiCard}>
             <div className={s.kpiIconWrap} data-color="brand" aria-hidden>
               <Wallet size={16} />
@@ -276,7 +326,9 @@ export default function MyDealsClient() {
               <CheckCircle2 size={16} />
             </div>
             <div className={s.kpiBody}>
-              <span className={s.kpiVal}>{new Intl.NumberFormat('fa-IR').format(kpi.completed)}</span>
+              <span className={s.kpiVal}>
+                {new Intl.NumberFormat('fa-IR').format(kpi.completed)}
+              </span>
               <span className={s.kpiLabel}>تکمیل شده</span>
             </div>
           </div>
@@ -298,8 +350,8 @@ export default function MyDealsClient() {
       {/* ── Filter tabs ── */}
       {!loading && deals.length > 0 && (
         <nav className={s.filterNav} role="tablist" aria-label="فیلتر وضعیت">
-          {STATUS_FILTERS.map(f => {
-            const count = f === 'ALL' ? deals.length : deals.filter(d => d.status === f).length;
+          {STATUS_FILTERS.map((f) => {
+            const count = f === 'ALL' ? deals.length : deals.filter((d) => d.status === f).length;
             return (
               <button
                 key={f}
@@ -309,9 +361,11 @@ export default function MyDealsClient() {
                 className={`${s.filterBtn} ${statusFilter === f ? s.filterBtnActive : ''}`}
                 onClick={() => setStatusFilter(f)}
               >
-                {f === 'ALL' ? 'همه' : STATUS_META[f]?.label ?? f}
+                {f === 'ALL' ? 'همه' : (STATUS_META[f]?.label ?? f)}
                 {count > 0 && (
-                  <span className={s.filterCount}>{new Intl.NumberFormat('fa-IR').format(count)}</span>
+                  <span className={s.filterCount}>
+                    {new Intl.NumberFormat('fa-IR').format(count)}
+                  </span>
                 )}
               </button>
             );
@@ -334,7 +388,12 @@ export default function MyDealsClient() {
         <div className={s.errorBox} role="alert">
           <AlertCircle size={16} />
           <span>{error}</span>
-          <button type="button" className={s.retryBtn} onClick={() => fetchDeals(page)} aria-label="تلاش مجدد">
+          <button
+            type="button"
+            className={s.retryBtn}
+            onClick={() => fetchDeals(page)}
+            aria-label="تلاش مجدد"
+          >
             تلاش مجدد
           </button>
         </div>
@@ -383,24 +442,28 @@ export default function MyDealsClient() {
 
                     {/* Amount row — the focal element */}
                     <div className={s.amounts}>
-                      <span className={s.fromAmount}>{fmtAmount(deal.fromAmount, deal.fromCurrency)}</span>
+                      <span className={s.fromAmount}>
+                        {fmtAmount(deal.fromAmount, deal.fromCurrency)}
+                      </span>
                       <span className={s.amountArrow} aria-hidden>
                         <ArrowLeftRight size={14} />
                       </span>
-                      <span className={s.toAmount}>{fmtAmount(deal.toAmount, deal.toCurrency)}</span>
+                      <span className={s.toAmount}>
+                        {fmtAmount(deal.toAmount, deal.toCurrency)}
+                      </span>
                     </div>
 
                     {/* Meta chips */}
                     <div className={s.chips}>
-                      {deal.exchangeName && (
-                        <span className={s.chip}>{deal.exchangeName}</span>
-                      )}
+                      {deal.exchangeName && <span className={s.chip}>{deal.exchangeName}</span>}
                       <span className={s.chip}>{CHANNEL_FA[deal.channel] ?? deal.channel}</span>
                       <span className={s.chip}>{fmtDate(deal.createdAt)}</span>
                     </div>
                   </div>
 
-                  <div className={s.cardChevron} aria-hidden>›</div>
+                  <div className={s.cardChevron} aria-hidden>
+                    ›
+                  </div>
                 </button>
               </li>
             );
@@ -424,19 +487,20 @@ export default function MyDealsClient() {
           <button
             type="button"
             className={s.pageBtn}
-            onClick={() => setPage(p => Math.max(1, p - 1))}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
             aria-label="صفحه قبل"
           >
             ›
           </button>
           <span className={s.pageInfo}>
-            {new Intl.NumberFormat('fa-IR').format(page)} از {new Intl.NumberFormat('fa-IR').format(totalPages)}
+            {new Intl.NumberFormat('fa-IR').format(page)} از{' '}
+            {new Intl.NumberFormat('fa-IR').format(totalPages)}
           </span>
           <button
             type="button"
             className={s.pageBtn}
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
             aria-label="صفحه بعد"
           >

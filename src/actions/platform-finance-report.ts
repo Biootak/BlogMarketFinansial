@@ -17,7 +17,7 @@ export type PlatformFinanceKpi = {
   totalTransactions: number;
   completedTransactions: number;
   pendingTransactions: number;
-  totalVolumeSampled: string; /** مجموع (sample — فقط ۱۰۰۰ رکورد اخیر) */
+  totalVolumeSampled: string /** مجموع (sample — فقط ۱۰۰۰ رکورد اخیر) */;
   totalSettlements: number;
   pendingSettlements: number;
   paidSettlements: number;
@@ -28,7 +28,7 @@ export type PlatformFinanceKpi = {
 };
 
 export type TransactionTrend = {
-  date: string;        // YYYY-MM-DD
+  date: string; // YYYY-MM-DD
   count: number;
   completed: number;
   failed: number;
@@ -48,8 +48,8 @@ export type SettlementStatusDist = {
 
 export type PlatformFinanceReport = {
   kpi: PlatformFinanceKpi;
-  txTrend: TransactionTrend[];           // روزانه ۳۰ روز گذشته
-  topExchanges: ExchangeVolumeRow[];     // ۸ صرافی برتر
+  txTrend: TransactionTrend[]; // روزانه ۳۰ روز گذشته
+  topExchanges: ExchangeVolumeRow[]; // ۸ صرافی برتر
   settlementDist: SettlementStatusDist[];
 };
 
@@ -98,9 +98,7 @@ export async function getPlatformFinanceReport(): Promise<
     orderBy: { createdAt: 'desc' },
     take: 1000,
   });
-  const totalVolumeSampled = recentTx
-    .reduce((sum, t) => sum + t.amount, BigInt(0))
-    .toString();
+  const totalVolumeSampled = recentTx.reduce((sum, t) => sum + t.amount, BigInt(0)).toString();
 
   // ── Trend: روزانه ۳۰ روز ────────────────────────────────────────────────
   const recentTxForTrend = await prisma.transaction.findMany({
@@ -116,7 +114,8 @@ export async function getPlatformFinanceReport(): Promise<
     if (!trendMap.has(d)) {
       trendMap.set(d, { date: d, count: 0, completed: 0, failed: 0 });
     }
-    const day = trendMap.get(d)!;
+    const day = trendMap.get(d);
+    if (!day) continue;
     day.count++;
     if (tx.status === 'COMPLETED') day.completed++;
     if (tx.status === 'FAILED') day.failed++;

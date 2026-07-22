@@ -133,7 +133,7 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
 
   // ── Search / Filter ───────────────────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState('');
-  const [catFilter, setCatFilter]     = useState<string>('all');
+  const [catFilter, setCatFilter] = useState<string>('all');
 
   const visiblePerms = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -145,7 +145,9 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
   }, [localPerms, searchQuery, catFilter]);
 
   const categories = useMemo(() => {
-    const cats = Array.from(new Set(localPerms.map((p) => parseCategory(p.key)))).sort((a, b) => a.localeCompare(b, 'fa'));
+    const cats = Array.from(new Set(localPerms.map((p) => parseCategory(p.key)))).sort((a, b) =>
+      a.localeCompare(b, 'fa'),
+    );
     return cats;
   }, [localPerms]);
 
@@ -155,24 +157,21 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
     for (const perm of visiblePerms) {
       const cat = parseCategory(perm.key);
       if (!groups[cat]) groups[cat] = [];
-      groups[cat]!.push(perm);
+      groups[cat]?.push(perm);
     }
     return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b, 'fa'));
   }, [visiblePerms]);
 
   // تغییر checkbox
-  const handleCheck = useCallback(
-    (permId: string, role: EditableRole, val: boolean) => {
-      setLocalMatrix((prev) => {
-        const next = { ...prev, [`${permId}:${role}`]: val };
-        // چک تغییر نسبت به original
-        const hasChange = Object.entries(next).some(([k, v]) => originalRef.current[k] !== v);
-        setDirty(hasChange);
-        return next;
-      });
-    },
-    [],
-  );
+  const handleCheck = useCallback((permId: string, role: EditableRole, val: boolean) => {
+    setLocalMatrix((prev) => {
+      const next = { ...prev, [`${permId}:${role}`]: val };
+      // چک تغییر نسبت به original
+      const hasChange = Object.entries(next).some(([k, v]) => originalRef.current[k] !== v);
+      setDirty(hasChange);
+      return next;
+    });
+  }, []);
 
   // ذخیره ماتریس
   const handleSave = useCallback(() => {
@@ -207,7 +206,10 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
   // افزودن مجوز
   const handleAdd = useCallback(() => {
     startAddTransition(async () => {
-      const result = await createPermission({ key: newKey.trim(), description: newDesc.trim() || null });
+      const result = await createPermission({
+        key: newKey.trim(),
+        description: newDesc.trim() || null,
+      });
       if (result.success && result.data) {
         const perm = result.data;
         setLocalPerms((prev) => [...prev, perm]);
@@ -257,10 +259,7 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
     <div className={s.root}>
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <PageHeader
-        breadcrumb={[
-          { label: 'داشبورد', href: '/dashboard' },
-          { label: 'مجوزها' },
-        ]}
+        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'مجوزها' }]}
         title="مدیریت مجوزها"
         description="ماتریس نقش × مجوز — هر نقش چه کاری می‌تواند انجام دهد"
         eyebrow="RBAC"
@@ -280,22 +279,18 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
       />
 
       {/* ── Legend نقش‌ها ─────────────────────────────────────────────── */}
-      <div className={s.legend} role="list" aria-label="نقش‌های سیستم">
+      <ul className={s.legend} aria-label="نقش‌های سیستم">
         {EDITABLE_ROLES.map((role) => (
-          <div key={role} className={s.legendItem} role="listitem">
-            <span
-              className={s.legendDot}
-              style={{ background: ROLE_COLOR[role] }}
-              aria-hidden
-            />
+          <li key={role} className={s.legendItem}>
+            <span className={s.legendDot} style={{ background: ROLE_COLOR[role] }} aria-hidden />
             <span>{ROLE_FA[role]}</span>
-          </div>
+          </li>
         ))}
-        <div className={s.legendItem} role="listitem">
+        <li className={s.legendItem}>
           <ShieldCheck size={13} className={s.legendSuperAdmin} aria-hidden />
           <span className={s.legendSuperAdminText}>SUPERADMIN — همه دسترسی‌ها (read-only)</span>
-        </div>
-      </div>
+        </li>
+      </ul>
 
       {/* ── Search / Filter toolbar ──────────────────────────────────── */}
       {localPerms.length > 0 && (
@@ -321,7 +316,7 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
               </button>
             )}
           </div>
-          <div className={s.catPills} role="group" aria-label="فیلتر دسته">
+          <div className={s.catPills} aria-label="فیلتر دسته">
             <button
               type="button"
               className={`${s.catPill} ${catFilter === 'all' ? s.catPillActive : ''}`}
@@ -363,45 +358,57 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
           title="مجوزی یافت نشد"
           description="جستجو یا فیلتر شما نتیجه‌ای ندارد"
           action={
-            <Button size="sm" variant="outline" onClick={() => { setSearchQuery(''); setCatFilter('all'); }}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setSearchQuery('');
+                setCatFilter('all');
+              }}
+            >
               پاک کردن فیلتر
             </Button>
           }
         />
       ) : (
         <div className={s.matrixWrap}>
-          <div className={s.matrixTable} role="table" aria-label="ماتریس مجوزها">
-            {/* Header */}
-            <div className={s.matrixHeader} role="row">
-              <div className={s.colKey} role="columnheader">کلید مجوز</div>
-              {EDITABLE_ROLES.map((role) => (
-                <div
-                  key={role}
-                  className={s.colRole}
-                  role="columnheader"
-                  style={{ '--role-color': ROLE_COLOR[role] } as React.CSSProperties}
-                >
-                  {ROLE_FA[role]}
-                </div>
-              ))}
-              <div className={s.colSuperAdmin} role="columnheader">SUPERADMIN</div>
-              {isSuperAdmin && <div className={s.colAction} role="columnheader" />}
-            </div>
-
+          <table className={s.matrixTable} aria-label="ماتریس مجوزها">
+            <thead>
+              <tr className={s.matrixHeader}>
+                <th scope="col" className={s.colKey}>
+                  کلید مجوز
+                </th>
+                {EDITABLE_ROLES.map((role) => (
+                  <th
+                    key={role}
+                    scope="col"
+                    className={s.colRole}
+                    style={{ '--role-color': ROLE_COLOR[role] } as React.CSSProperties}
+                  >
+                    {ROLE_FA[role]}
+                  </th>
+                ))}
+                <th scope="col" className={s.colSuperAdmin}>
+                  SUPERADMIN
+                </th>
+                {isSuperAdmin && <th scope="col" className={s.colAction} />}
+              </tr>
+            </thead>
             {/* Rows — گروه‌بندی شده */}
             {grouped.map(([cat, perms]) => (
-              <div key={cat} role="rowgroup" className={s.group}>
-                <div className={s.groupHeader} role="row">
-                  <span className={s.groupLabel}>{cat}</span>
-                </div>
+              <tbody key={cat} className={s.group}>
+                <tr className={s.groupHeader}>
+                  <td colSpan={EDITABLE_ROLES.length + (isSuperAdmin ? 3 : 2)}>
+                    <span className={s.groupLabel}>{cat}</span>
+                  </td>
+                </tr>
                 {perms.map((perm, i) => (
-                  <div
+                  <tr
                     key={perm.id}
                     className={s.matrixRow}
-                    role="row"
                     style={{ '--row-i': i } as React.CSSProperties}
                   >
-                    <div className={s.colKey} role="cell">
+                    <td className={s.colKey}>
                       <span
                         className={s.keyBadge}
                         style={
@@ -412,39 +419,39 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
                       >
                         {perm.key}
                       </span>
-                      {perm.description && (
-                        <span className={s.keyDesc}>{perm.description}</span>
-                      )}
-                    </div>
+                      {perm.description && <span className={s.keyDesc}>{perm.description}</span>}
+                    </td>
 
                     {EDITABLE_ROLES.map((role) => {
                       const checked = localMatrix[`${perm.id}:${role}`] ?? false;
                       return (
-                        <div key={role} className={s.colRole} role="cell">
+                        <td key={role} className={s.colRole}>
                           <Checkbox
                             id={`${perm.id}-${role}`}
                             checked={checked}
-                            onCheckedChange={(val) =>
-                              handleCheck(perm.id, role, val === true)
-                            }
+                            onCheckedChange={(val) => handleCheck(perm.id, role, val === true)}
                             aria-label={`${ROLE_FA[role]} — ${perm.key}`}
                             className={s.checkbox}
-                            style={{
-                              '--cb-color': ROLE_COLOR[role],
-                            } as React.CSSProperties}
+                            style={
+                              {
+                                '--cb-color': ROLE_COLOR[role],
+                              } as React.CSSProperties
+                            }
                           />
-                        </div>
+                        </td>
                       );
                     })}
 
                     {/* SUPERADMIN — همیشه checked و read-only */}
-                    <div className={s.colSuperAdmin} role="cell">
-                      <span className={s.superAdminCheck} aria-label="دسترسی کامل">✓</span>
-                    </div>
+                    <td className={s.colSuperAdmin}>
+                      <span className={s.superAdminCheck} aria-label="دسترسی کامل">
+                        ✓
+                      </span>
+                    </td>
 
                     {/* عملیات (فقط SUPERADMIN) */}
                     {isSuperAdmin && (
-                      <div className={s.colAction} role="cell">
+                      <td className={s.colAction}>
                         <button
                           type="button"
                           className={s.deleteRowBtn}
@@ -453,19 +460,19 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
                         >
                           <Trash2 size={13} aria-hidden />
                         </button>
-                      </div>
+                      </td>
                     )}
-                  </div>
+                  </tr>
                 ))}
-              </div>
+              </tbody>
             ))}
-          </div>
+          </table>
         </div>
       )}
 
       {/* ── Unsaved Changes Bar ──────────────────────────────────────── */}
       {dirty && (
-        <div className={s.unsavedBar} role="status" aria-live="polite">
+        <div className={s.unsavedBar} aria-live="polite">
           <span className={s.unsavedIcon} aria-hidden>
             <AlertTriangle size={15} />
           </span>
@@ -479,12 +486,7 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
             >
               <X size={13} aria-hidden /> لغو
             </button>
-            <button
-              type="button"
-              className={s.saveBtn}
-              onClick={handleSave}
-              disabled={isPending}
-            >
+            <button type="button" className={s.saveBtn} onClick={handleSave} disabled={isPending}>
               {isPending ? (
                 <span className={s.spinner} aria-label="در حال ذخیره" />
               ) : (
@@ -516,7 +518,9 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
                 dir="ltr"
                 className={s.codeInput}
               />
-              <p className={s.fieldHint}>فرمت: resource:action — فقط حروف انگلیسی، عدد، خط تیره و دو‌نقطه</p>
+              <p className={s.fieldHint}>
+                فرمت: resource:action — فقط حروف انگلیسی، عدد، خط تیره و دو‌نقطه
+              </p>
             </div>
             <div className={s.fieldGroup}>
               <Label htmlFor="perm-desc">توضیح (اختیاری)</Label>
@@ -532,11 +536,12 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
             <Button variant="outline" onClick={() => setShowAdd(false)} disabled={addPending}>
               انصراف
             </Button>
-            <Button
-              onClick={handleAdd}
-              disabled={addPending || !newKey.trim()}
-            >
-              {addPending ? <span className={s.spinner} aria-label="در حال ثبت" /> : <CheckCircle2 size={14} aria-hidden />}
+            <Button onClick={handleAdd} disabled={addPending || !newKey.trim()}>
+              {addPending ? (
+                <span className={s.spinner} aria-label="در حال ثبت" />
+              ) : (
+                <CheckCircle2 size={14} aria-hidden />
+              )}
               ثبت مجوز
             </Button>
           </DialogFooter>
@@ -546,7 +551,9 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
       {/* ── Confirm حذف ─────────────────────────────────────────────── */}
       <ConfirmDialog
         open={!!deleteTarget}
-        onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}
+        onOpenChange={(o) => {
+          if (!o) setDeleteTarget(null);
+        }}
         title="حذف مجوز"
         description={
           deleteTarget

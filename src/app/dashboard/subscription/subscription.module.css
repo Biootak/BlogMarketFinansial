@@ -5,13 +5,25 @@
    ══════════════════════════════════════════════════════════════════════════ */
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes avatarIn {
-  from { opacity: 0; transform: scale(0.8); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* ── Page ─────────────────────────────────────────────────────────────────── */
@@ -55,7 +67,7 @@
 
 /* Ambient gradient in background */
 .profileHero::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-inline-start: -40px;
   top: -40px;
@@ -80,7 +92,11 @@
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--at-accent-soft), color-mix(in oklch, var(--at-accent) 20%, var(--at-surface)));
+  background: linear-gradient(
+    135deg,
+    var(--at-accent-soft),
+    color-mix(in oklch, var(--at-accent) 20%, var(--at-surface))
+  );
   border: 2px solid var(--at-accent);
   display: flex;
   align-items: center;
@@ -143,11 +159,31 @@
   margin-block-start: 2px;
 }
 
-.roleBadge_accent  { background: var(--at-accent-soft); color: var(--at-accent-fg, var(--at-accent)); border: 1px solid color-mix(in oklch, var(--at-accent) 25%, transparent); }
-.roleBadge_info    { background: color-mix(in oklch, var(--at-info) 12%, transparent); color: var(--at-info); border: 1px solid color-mix(in oklch, var(--at-info) 25%, transparent); }
-.roleBadge_gold    { background: var(--at-gold-soft); color: var(--at-gold-fg, var(--at-gold)); border: 1px solid color-mix(in oklch, var(--at-gold) 25%, transparent); }
-.roleBadge_violet  { background: color-mix(in oklch, var(--at-violet) 12%, transparent); color: var(--at-violet); border: 1px solid color-mix(in oklch, var(--at-violet) 25%, transparent); }
-.roleBadge_muted   { background: var(--at-bg-elevated, var(--at-surface)); color: var(--at-fg-muted); border: 1px solid var(--at-line); }
+.roleBadge_accent {
+  background: var(--at-accent-soft);
+  color: var(--at-accent-fg, var(--at-accent));
+  border: 1px solid color-mix(in oklch, var(--at-accent) 25%, transparent);
+}
+.roleBadge_info {
+  background: color-mix(in oklch, var(--at-info) 12%, transparent);
+  color: var(--at-info);
+  border: 1px solid color-mix(in oklch, var(--at-info) 25%, transparent);
+}
+.roleBadge_gold {
+  background: var(--at-gold-soft);
+  color: var(--at-gold-fg, var(--at-gold));
+  border: 1px solid color-mix(in oklch, var(--at-gold) 25%, transparent);
+}
+.roleBadge_violet {
+  background: color-mix(in oklch, var(--at-violet) 12%, transparent);
+  color: var(--at-violet);
+  border: 1px solid color-mix(in oklch, var(--at-violet) 25%, transparent);
+}
+.roleBadge_muted {
+  background: var(--at-bg-elevated, var(--at-surface));
+  color: var(--at-fg-muted);
+  border: 1px solid var(--at-line);
+}
 
 /* Activity bar (published ratio) */
 .profileActivityBar {
@@ -177,10 +213,14 @@
 }
 
 @media (max-width: 680px) {
-  .kpiStrip { grid-template-columns: 1fr 1fr; }
+  .kpiStrip {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 @media (max-width: 400px) {
-  .kpiStrip { grid-template-columns: 1fr; }
+  .kpiStrip {
+    grid-template-columns: 1fr;
+  }
 }
 
 .kpiCard {
@@ -210,10 +250,22 @@
   flex-shrink: 0;
 }
 
-.kpiIcon[data-color="accent"] { background: var(--at-accent-soft); color: var(--at-accent-fg, var(--at-accent)); }
-.kpiIcon[data-color="amber"]  { background: color-mix(in oklch, var(--at-warning) 12%, transparent); color: var(--at-warning); }
-.kpiIcon[data-color="info"]   { background: color-mix(in oklch, var(--at-info) 12%, transparent); color: var(--at-info); }
-.kpiIcon[data-color="violet"] { background: color-mix(in oklch, var(--at-violet) 12%, transparent); color: var(--at-violet); }
+.kpiIcon[data-color="accent"] {
+  background: var(--at-accent-soft);
+  color: var(--at-accent-fg, var(--at-accent));
+}
+.kpiIcon[data-color="amber"] {
+  background: color-mix(in oklch, var(--at-warning) 12%, transparent);
+  color: var(--at-warning);
+}
+.kpiIcon[data-color="info"] {
+  background: color-mix(in oklch, var(--at-info) 12%, transparent);
+  color: var(--at-info);
+}
+.kpiIcon[data-color="violet"] {
+  background: color-mix(in oklch, var(--at-violet) 12%, transparent);
+  color: var(--at-violet);
+}
 
 .kpiBody {
   display: flex;
@@ -253,7 +305,7 @@
 
 /* Subtle decorative ring */
 .planSection::after {
-  content: '';
+  content: "";
   position: absolute;
   inset-inline-end: -60px;
   top: -60px;
@@ -300,7 +352,9 @@
 }
 
 @media (max-width: 480px) {
-  .planFeatures { grid-template-columns: 1fr; }
+  .planFeatures {
+    grid-template-columns: 1fr;
+  }
 }
 
 .planFeatureRow {
@@ -317,11 +371,19 @@
   flex-shrink: 0;
 }
 
-.planFeatureIncluded { color: var(--at-fg-muted); }
-.planFeatureIncluded .planFeatureDot { background: var(--at-accent); }
+.planFeatureIncluded {
+  color: var(--at-fg-muted);
+}
+.planFeatureIncluded .planFeatureDot {
+  background: var(--at-accent);
+}
 
-.planFeatureExcluded { color: var(--at-fg-faint); }
-.planFeatureExcluded .planFeatureDot { background: var(--at-line-strong); }
+.planFeatureExcluded {
+  color: var(--at-fg-faint);
+}
+.planFeatureExcluded .planFeatureDot {
+  background: var(--at-line-strong);
+}
 
 .upgradeBtn {
   display: inline-flex;
@@ -380,7 +442,9 @@
 }
 
 @media (max-width: 560px) {
-  .detailGrid { grid-template-columns: 1fr; }
+  .detailGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .detailRow {
@@ -397,7 +461,9 @@
 }
 
 @media (max-width: 560px) {
-  .detailRow { border-inline-end: none; }
+  .detailRow {
+    border-inline-end: none;
+  }
 }
 
 .detailRow:last-child,
@@ -422,6 +488,13 @@
 
 /* ── Reduced motion ─────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .page, .profileAvatarWrap, .kpiCard { animation: none; transition: none; }
-  .activityFill { transition: none; }
+  .page,
+  .profileAvatarWrap,
+  .kpiCard {
+    animation: none;
+    transition: none;
+  }
+  .activityFill {
+    transition: none;
+  }
 }

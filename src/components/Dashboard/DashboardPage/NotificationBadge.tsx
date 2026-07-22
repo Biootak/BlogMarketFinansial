@@ -45,10 +45,7 @@ export function NotificationBadge() {
   if (count === 0) return null;
 
   return (
-    <span
-      className="dash-side__notif-badge"
-      aria-label={`${count} اعلان خوانده‌نشده`}
-    >
+    <span className="dash-side__notif-badge" aria-label={`${count} اعلان خوانده‌نشده`}>
       {count > 99 ? '۹۹+' : new Intl.NumberFormat('fa-IR').format(count)}
     </span>
   );

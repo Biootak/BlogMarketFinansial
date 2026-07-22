@@ -71,7 +71,9 @@ export async function getNotificationsCount(): Promise<number> {
 /**
  * علامت‌گذاری همه اعلان‌ها به عنوان خوانده‌شده
  */
-export async function markAllNotificationsRead(): Promise<FintechActionResult<{ updated: number }>> {
+export async function markAllNotificationsRead(): Promise<
+  FintechActionResult<{ updated: number }>
+> {
   const auth = await requireUser();
   if (!auth.success) {
     return { success: false, error: { code: auth.code, message: auth.message } };
@@ -89,7 +91,9 @@ export async function markAllNotificationsRead(): Promise<FintechActionResult<{ 
 /**
  * علامت‌گذاری یک اعلان به عنوان خوانده‌شده
  */
-export async function markNotificationRead(id: number): Promise<FintechActionResult<{ id: number }>> {
+export async function markNotificationRead(
+  id: number,
+): Promise<FintechActionResult<{ id: number }>> {
   const auth = await requireUser();
   if (!auth.success) {
     return { success: false, error: { code: auth.code, message: auth.message } };
@@ -107,10 +111,7 @@ export async function markNotificationRead(id: number): Promise<FintechActionRes
 /**
  * ایجاد اعلان جدید — برای استفاده در Server Actions دیگر
  */
-export async function createNotification(
-  userId: string,
-  message: string,
-): Promise<void> {
+export async function createNotification(userId: string, message: string): Promise<void> {
   await prisma.notification.create({
     data: { message, userId },
   });

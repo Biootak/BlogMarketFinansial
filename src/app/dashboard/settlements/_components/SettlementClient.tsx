@@ -179,7 +179,7 @@ export function SettlementClient({ settlements: initial }: Props) {
       />
 
       {/* ── KPI Strip ── */}
-      <div className={s.kpiStrip} role="status">
+      <div className={s.kpiStrip}>
         <div className={s.kpiItem}>
           <span className={s.kpiVal}>{new Intl.NumberFormat('fa-IR').format(rows.length)}</span>
           <span className={s.kpiLabel}>مجموع تسویه‌ها</span>

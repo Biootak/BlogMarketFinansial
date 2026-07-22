@@ -3226,7 +3226,7 @@
     block-size: 18px;
     padding-inline: 4px;
     border-radius: 9999px;
-    background: oklch(55% 0.18 25);   /* rose — semantic error/alert */
+    background: oklch(55% 0.18 25); /* rose — semantic error/alert */
     color: oklch(98% 0.01 25);
     font-size: 10px;
     font-weight: 700;
@@ -3236,16 +3236,20 @@
   }
 
   @keyframes badge-pop {
-    from { transform: scale(0.5); opacity: 0; }
-    to   { transform: scale(1);   opacity: 1; }
+    from {
+      transform: scale(0.5);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
   }
 
   .dash-side[data-state="rail"] .dash-side__notif-badge,
   .dash-side[data-state="mobile-closed"] .dash-side__notif-badge {
     display: none;
   }
-
-
 
   .dash-side__item-chev {
     inline-size: 13px;

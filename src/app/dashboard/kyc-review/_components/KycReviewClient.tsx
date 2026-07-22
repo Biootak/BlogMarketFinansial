@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { CheckCircle2, Eye, FileText, ShieldCheck, User, XCircle } from 'lucide-react';
+import Image from 'next/image';
 import { useCallback, useState, useTransition } from 'react';
 import s from './KycReviewClient.module.css';
 
@@ -62,7 +63,7 @@ function initials(name: string | null | undefined): string {
   return name.slice(0, 2);
 }
 
-/** Image preview با fallback */
+/** Image preview با fallback — از next/image برای بهینه‌سازی لود */
 function DocImage({ src, alt }: { src: string; alt: string }) {
   const [error, setError] = useState(false);
   if (error) {
@@ -74,8 +75,17 @@ function DocImage({ src, alt }: { src: string; alt: string }) {
     );
   }
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt={alt} className={s.docImg} onError={() => setError(true)} loading="lazy" />
+    <div className={s.docImgWrap}>
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        className={s.docImg}
+        onError={() => setError(true)}
+        unoptimized
+        sizes="(max-width: 768px) 100vw, 480px"
+      />
+    </div>
   );
 }
 
@@ -133,7 +143,7 @@ export function KycReviewClient({ records: initial }: Props) {
       />
 
       {/* ── KPI strip ── */}
-      <div className={s.kpiStrip} role="status" aria-label="خلاصه صف KYC">
+      <div className={s.kpiStrip} aria-label="خلاصه صف KYC">
         <div className={s.kpiItem}>
           <span className={s.kpiVal}>{rows.length}</span>
           <span className={s.kpiLabel}>در انتظار بررسی</span>

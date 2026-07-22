@@ -34,13 +34,7 @@ export type RoleMatrixEntry = {
 };
 
 // نقش‌های قابل ویرایش در ماتریس (SUPERADMIN همیشه همه — read-only)
-export const EDITABLE_ROLES = [
-  'CUSTOMER',
-  'MERCHANT',
-  'EXCHANGE',
-  'SUPPORT',
-  'ADMIN',
-] as const;
+export const EDITABLE_ROLES = ['CUSTOMER', 'MERCHANT', 'EXCHANGE', 'SUPPORT', 'ADMIN'] as const;
 
 export type EditableRole = (typeof EDITABLE_ROLES)[number];
 
@@ -167,9 +161,7 @@ const PermissionCreateSchema = z.object({
   description: z.string().max(200).nullable().optional(),
 });
 
-export async function createPermission(
-  raw: unknown,
-): Promise<FintechActionResult<PermissionRow>> {
+export async function createPermission(raw: unknown): Promise<FintechActionResult<PermissionRow>> {
   const auth = await requireAdmin();
   if (!auth.success) {
     return { success: false, error: { code: auth.code, message: auth.message } };
@@ -196,7 +188,10 @@ export async function createPermission(
   });
 
   revalidateTag('permissions');
-  return { success: true, data: { id: perm.id, key: perm.key, description: perm.description, createdAt: perm.createdAt } };
+  return {
+    success: true,
+    data: { id: perm.id, key: perm.key, description: perm.description, createdAt: perm.createdAt },
+  };
 }
 
 // ─── DELETE ───────────────────────────────────────────────────────────────────
@@ -213,7 +208,10 @@ export async function deletePermission(
   if (used > 0) {
     return {
       success: false,
-      error: { code: 'IN_USE', message: `این مجوز در ${used} نقش استفاده می‌شود. ابتدا از نقش‌ها بردار.` },
+      error: {
+        code: 'IN_USE',
+        message: `این مجوز در ${used} نقش استفاده می‌شود. ابتدا از نقش‌ها بردار.`,
+      },
     };
   }
 

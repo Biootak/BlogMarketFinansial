@@ -1,15 +1,24 @@
 /* ============================================================================
-   FintechKpiWidget.module.css — 2026 Admin Fintech KPI Bar
-   Linear-density · OKLCH tokens · spring micro-interactions · RTL-safe
+   FintechKpiWidget.module.css — 2026 Million-Dollar Fintech KPI Strip
+   Design: Stripe Dashboard × Brex × Mercury
+   Tokens: --ds-* | OKLCH | RTL-safe logical properties
    ============================================================================ */
 
+/* ─── Accent color tokens — local scope ─────────────────────────────────────── */
 .root {
+  --kpi-accent-brand: oklch(0.55 0.22 265);
+  --kpi-accent-success: oklch(0.52 0.18 155);
+  --kpi-accent-error: oklch(0.52 0.22 15);
+  --kpi-accent-warn: oklch(0.6 0.18 65);
+  --kpi-accent-neutral: oklch(0.55 0.05 265);
+
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-3);
-  margin-block-end: var(--ds-space-5);
+  gap: var(--ds-space-4);
+  margin-block-end: var(--ds-space-6);
 }
 
+/* ─── Header ─────────────────────────────────────────────────────────────── */
 .header {
   display: flex;
   align-items: center;
@@ -17,132 +26,271 @@
   gap: var(--ds-space-3);
 }
 
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .eyebrow {
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-semibold);
-  letter-spacing: 0.07em;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ds-text-muted);
 }
 
-.viewAll {
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-semibold);
-  color: var(--ds-brand-500);
-  text-decoration: none;
-  transition: color var(--ds-duration-fast) var(--ds-ease-out-quart);
-}
-.viewAll:hover {
-  color: var(--ds-brand-600);
+.eyebrowSub {
+  font-size: 0.6875rem;
+  color: var(--ds-text-muted);
+  opacity: 0.7;
 }
 
-/* ─── KPI Strip ───────────────────────────────────────────────────────────── */
+.viewAll {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--kpi-accent-brand);
+  text-decoration: none;
+  transition: opacity var(--ds-duration-fast);
+  white-space: nowrap;
+}
+.viewAll:hover {
+  opacity: 0.75;
+}
+
+/* ─── KPI Strip grid ─────────────────────────────────────────────────────── */
 .strip {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: var(--ds-space-3);
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1024px) {
   .strip {
     grid-template-columns: repeat(3, 1fr);
   }
 }
-@media (max-width: 560px) {
+@media (max-width: 600px) {
   .strip {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+@media (max-width: 380px) {
+  .strip {
+    grid-template-columns: 1fr;
+  }
+}
 
-/* ─── KPI Card ────────────────────────────────────────────────────────────── */
+/* ─── KPI Card ───────────────────────────────────────────────────────────── */
 .kpiCard {
+  position: relative;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: var(--ds-space-2);
   padding: var(--ds-space-4);
-  background: var(--ds-surface);
+  /* Glass surface */
+  background: color-mix(in oklch, var(--ds-surface) 90%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--ds-border-default);
   border-radius: var(--ds-radius-xl);
   text-decoration: none;
-  box-shadow: var(--ds-shadow-sm);
-  animation: fadeUp var(--ds-duration-base) var(--ds-ease-out-quart) both;
-  transition: box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
-    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
-    var(--ds-ease-out-quart);
+  overflow: hidden;
+  /* Layered shadow */
+  box-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 4px 12px oklch(0 0 0 / 0.06), inset 0 1px 0
+    oklch(1 0 0 / 0.06);
+  animation: kpiIn var(--ds-duration-base, 300ms)
+    var(--ds-ease-out-quart, cubic-bezier(0.25, 0.46, 0.45, 0.94)) both;
+  transition: box-shadow 200ms var(--ds-ease-out-quart, ease), border-color 200ms
+    var(--ds-ease-out-quart, ease), transform 200ms var(--ds-ease-out-quart, ease);
 }
+
 .kpiCard:hover {
-  box-shadow: var(--ds-shadow-md);
+  box-shadow: 0 2px 4px oklch(0 0 0 / 0.05), 0 8px 24px oklch(0 0 0 / 0.1), inset 0 1px 0
+    oklch(1 0 0 / 0.1);
   border-color: var(--ds-border-strong);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
 }
+
 .kpiCard:active {
-  transform: scale(0.98);
+  transform: scale(0.98) translateY(0);
 }
 
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* ─── Shine overlay ──────────────────────────────────────────────────────── */
+.shine {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  block-size: 40%;
+  background: linear-gradient(to bottom, oklch(1 0 0 / 0.06) 0%, oklch(1 0 0 / 0) 100%);
+  pointer-events: none;
+  border-radius: var(--ds-radius-xl) var(--ds-radius-xl) 0 0;
 }
 
-/* ─── KPI Icon ────────────────────────────────────────────────────────────── */
+/* ─── Top row: icon + sparkline ──────────────────────────────────────────── */
+.topRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+
+/* ─── Icon ───────────────────────────────────────────────────────────────── */
 .kpiIcon {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: var(--ds-radius-lg);
-  background: var(--ds-canvas-subtle);
+  background: color-mix(in oklch, var(--ds-canvas-subtle) 80%, transparent);
   border: 1px solid var(--ds-border-subtle);
-  color: var(--ds-text-muted);
-  transition: transform var(--ds-duration-fast) var(--ds-ease-spring);
+  color: var(--ds-text-secondary);
+  flex-shrink: 0;
+  transition: transform 200ms var(--ds-ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
 }
+
 .kpiCard:hover .kpiIcon {
-  transform: translateY(-1px) scale(1.05);
+  transform: translateY(-2px) scale(1.08);
 }
 
-/* Accent variants — CSS Modules-safe (no attribute selectors) */
-.accentProgress {
-  background: var(--ds-status-progress-bg);
-  border-color: var(--ds-status-progress-border);
-  color: var(--ds-status-progress-fg);
-}
-.accentError {
-  background: var(--ds-status-error-bg);
-  border-color: var(--ds-status-error-border);
-  color: var(--ds-status-error-fg);
-}
-.accentSuccess {
-  background: var(--ds-status-success-bg);
-  border-color: var(--ds-status-success-border);
-  color: var(--ds-status-success-fg);
-}
-.accentPending {
-  background: var(--ds-status-pending-bg);
-  border-color: var(--ds-status-pending-border);
-  color: var(--ds-status-pending-fg);
+.iconSvg {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
 }
 
-/* ─── KPI Values ──────────────────────────────────────────────────────────── */
+/* ─── Pulse dot (live alert) ─────────────────────────────────────────────── */
+.pulseDot {
+  position: absolute;
+  inset-block-start: -3px;
+  inset-inline-end: -3px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--kpi-accent-error);
+  box-shadow: 0 0 0 0 color-mix(in oklch, var(--kpi-accent-error) 50%, transparent);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--kpi-accent-error) 50%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+/* ─── Sparkline ──────────────────────────────────────────────────────────── */
+.sparkline {
+  flex-shrink: 0;
+  opacity: 0.8;
+  transition: opacity 200ms;
+}
+.kpiCard:hover .sparkline {
+  opacity: 1;
+}
+
+/* ─── Value ──────────────────────────────────────────────────────────────── */
 .kpiVal {
-  font-size: var(--ds-text-xl);
-  font-weight: var(--ds-weight-extrabold);
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: var(--ds-text-primary);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+/* ─── Bottom row: label + trend ──────────────────────────────────────────── */
+.bottomRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
 }
 
 .kpiLabel {
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-medium);
+  font-size: 0.6875rem;
+  font-weight: 600;
   color: var(--ds-text-muted);
   letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── Trend badge ─────────────────────────────────────────────────────────── */
+.trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding-block: 2px;
+  padding-inline: 5px;
+  border-radius: var(--ds-radius-full, 9999px);
+  font-size: 0.625rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.trendUp {
+  background: oklch(0.95 0.05 155);
+  color: oklch(0.4 0.18 155);
+}
+
+.trendDown {
+  background: oklch(0.97 0.04 15);
+  color: oklch(0.45 0.18 15);
+}
+
+.trendFlat {
+  background: var(--ds-canvas-subtle);
+  color: var(--ds-text-muted);
+}
+
+/* ─── Accent variants — border-top flash ────────────────────────────────── */
+.accentBrand {
+  border-block-start: 2px solid var(--kpi-accent-brand);
+}
+.accentSuccess {
+  border-block-start: 2px solid var(--kpi-accent-success);
+}
+.accentError {
+  border-block-start: 2px solid var(--kpi-accent-error);
+}
+.accentWarn {
+  border-block-start: 2px solid var(--kpi-accent-warn);
+}
+.accentNeutral {
+  border-block-start: 2px solid var(--kpi-accent-neutral);
+}
+
+/* ─── Entrance animation ─────────────────────────────────────────────────── */
+@keyframes kpiIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ─── Dark mode adjustments ──────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  .kpiCard {
+    box-shadow: 0 1px 2px oklch(0 0 0 / 0.2), 0 4px 16px oklch(0 0 0 / 0.3), inset 0 1px 0
+      oklch(1 0 0 / 0.04);
+  }
+  .kpiCard:hover {
+    box-shadow: 0 2px 4px oklch(0 0 0 / 0.25), 0 8px 32px oklch(0 0 0 / 0.4), inset 0 1px 0
+      oklch(1 0 0 / 0.06);
+  }
 }

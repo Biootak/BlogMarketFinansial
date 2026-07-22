@@ -43,10 +43,10 @@ import ExchangeDrawer from './ExchangeDrawer';
 import s from './ExchangesWorkspace.module.css';
 
 const STATUS_MAP: Record<string, { label: string; cls: string }> = {
-  ACTIVE:    { label: 'فعال',      cls: s.badgeActive },
-  PENDING:   { label: 'در انتظار', cls: s.badgePending },
-  SUSPENDED: { label: 'معلق',      cls: s.badgeSuspended },
-  CLOSED:    { label: 'بسته',      cls: s.badgeClosed },
+  ACTIVE: { label: 'فعال', cls: s.badgeActive },
+  PENDING: { label: 'در انتظار', cls: s.badgePending },
+  SUSPENDED: { label: 'معلق', cls: s.badgeSuspended },
+  CLOSED: { label: 'بسته', cls: s.badgeClosed },
 };
 
 interface Props {
@@ -117,17 +117,32 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
   }, [deleteTarget]);
 
   const stats = {
-    all:       rows.length,
-    active:    rows.filter((r) => r.status === 'ACTIVE').length,
-    pending:   rows.filter((r) => r.status === 'PENDING').length,
+    all: rows.length,
+    active: rows.filter((r) => r.status === 'ACTIVE').length,
+    pending: rows.filter((r) => r.status === 'PENDING').length,
     suspended: rows.filter((r) => r.status === 'SUSPENDED').length,
   };
 
   const kpiItems = [
-    { id: 'all',       label: 'کل صراف‌ها',  value: stats.all,       accent: 'var(--ds-brand-500)' },
-    { id: 'ACTIVE',    label: 'فعال',         value: stats.active,    accent: 'var(--nova-emerald, oklch(50% 0.14 145))' },
-    { id: 'PENDING',   label: 'در انتظار',    value: stats.pending,   accent: 'var(--nova-amber, oklch(60% 0.16 70))' },
-    { id: 'SUSPENDED', label: 'معلق',          value: stats.suspended, accent: 'var(--nova-rose, oklch(55% 0.18 25))' },
+    { id: 'all', label: 'کل صراف‌ها', value: stats.all, accent: 'var(--ds-brand-500)' },
+    {
+      id: 'ACTIVE',
+      label: 'فعال',
+      value: stats.active,
+      accent: 'var(--nova-emerald, oklch(50% 0.14 145))',
+    },
+    {
+      id: 'PENDING',
+      label: 'در انتظار',
+      value: stats.pending,
+      accent: 'var(--nova-amber, oklch(60% 0.16 70))',
+    },
+    {
+      id: 'SUSPENDED',
+      label: 'معلق',
+      value: stats.suspended,
+      accent: 'var(--nova-rose, oklch(55% 0.18 25))',
+    },
   ] as const;
 
   const columns: Column<ExchangeRow>[] = [
@@ -136,12 +151,12 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
       header: 'صرافی',
       render: (r) => (
         <div className={s.nameCell}>
-          <div className={s.nameAvatar}>
-            {r.name.slice(0, 1)}
-          </div>
+          <div className={s.nameAvatar}>{r.name.slice(0, 1)}</div>
           <div className={s.nameInfo}>
             <span className={s.nameText}>{r.name}</span>
-            <span className={s.slugText} dir="ltr">/{r.slug}</span>
+            <span className={s.slugText} dir="ltr">
+              /{r.slug}
+            </span>
           </div>
         </div>
       ),
@@ -223,7 +238,10 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
             type="button"
             className={s.actionBtn}
             title="ویرایش"
-            onClick={() => { setEditRow(r); setDrawerOpen(true); }}
+            onClick={() => {
+              setEditRow(r);
+              setDrawerOpen(true);
+            }}
           >
             <PencilLine size={14} aria-hidden />
           </button>
@@ -243,21 +261,18 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
   return (
     <div className={s.workspace}>
       {/* ── KPI Strip ─────────────────────────────────────────────── */}
-      <div className={s.kpiStrip} role="list" aria-label="آمار صراف‌ها">
+      <div className={s.kpiStrip} aria-label="فیلتر آمار صراف‌ها">
         {kpiItems.map((item) => (
           <button
             key={item.id}
             type="button"
-            role="listitem"
             className={`${s.kpiCard} ${statusFilter === item.id ? s.kpiCardActive : ''}`}
             style={{ '--kpi-accent': item.accent } as React.CSSProperties}
             onClick={() => setStatusFilter(item.id)}
             aria-pressed={statusFilter === item.id}
           >
             <span className={s.kpiAccentBar} aria-hidden />
-            <span className={s.kpiValue}>
-              {new Intl.NumberFormat('fa-IR').format(item.value)}
-            </span>
+            <span className={s.kpiValue}>{new Intl.NumberFormat('fa-IR').format(item.value)}</span>
             <span className={s.kpiLabel}>{item.label}</span>
           </button>
         ))}
@@ -277,7 +292,7 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
         </div>
 
         {/* Status pills */}
-        <div className={s.pills} role="group" aria-label="فیلتر وضعیت">
+        <div className={s.pills} aria-label="فیلتر وضعیت">
           {[
             { id: 'all', label: 'همه' },
             { id: 'ACTIVE', label: 'فعال' },
@@ -298,7 +313,10 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
         <button
           type="button"
           className={s.addBtn}
-          onClick={() => { setEditRow(null); setDrawerOpen(true); }}
+          onClick={() => {
+            setEditRow(null);
+            setDrawerOpen(true);
+          }}
         >
           <Plus size={14} aria-hidden />
           صراف جدید
@@ -319,7 +337,14 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
               description={query ? 'جستجوی شما نتیجه‌ای ندارد.' : 'اولین صرافی را اضافه کنید.'}
               action={
                 !query ? (
-                  <button type="button" className={s.addBtn} onClick={() => { setEditRow(null); setDrawerOpen(true); }}>
+                  <button
+                    type="button"
+                    className={s.addBtn}
+                    onClick={() => {
+                      setEditRow(null);
+                      setDrawerOpen(true);
+                    }}
+                  >
                     <Plus size={14} aria-hidden /> صراف جدید
                   </button>
                 ) : undefined
@@ -335,7 +360,10 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
           open={drawerOpen}
           initialData={editRow}
           saving={saving}
-          onClose={() => { setDrawerOpen(false); setEditRow(null); }}
+          onClose={() => {
+            setDrawerOpen(false);
+            setEditRow(null);
+          }}
           onSave={handleSave}
         />
       )}
@@ -343,7 +371,9 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
       {/* ── Delete confirm ────────────────────────────────────────── */}
       <ConfirmDialog
         open={!!deleteTarget}
-        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
         title="حذف صرافی"
         description={`صرافی «${deleteTarget?.name ?? ''}» و تمام داده‌های آن برای همیشه حذف می‌شوند. این عملیات برگشت‌پذیر نیست.`}
         confirmLabel="بله، حذف کن"
