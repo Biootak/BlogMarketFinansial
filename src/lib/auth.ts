@@ -29,7 +29,8 @@ export async function checkSuperAdmin() {
     redirect('/auth');
   }
 
-  if (session.user.role !== 'OWNER') {
+  // G8-fix: SUPERADMIN alias برای OWNER — مطابق require-auth.ts و RBAC matrix
+  if (session.user.role !== 'OWNER' && session.user.role !== 'SUPERADMIN') {
     redirect('/');
   }
 
@@ -43,7 +44,8 @@ export async function checkAdmin() {
     redirect('/auth');
   }
 
-  if (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER') {
+  // G8-fix: SUPERADMIN هم مثل OWNER/ADMIN دسترسی ادمین دارد
+  if (!['ADMIN', 'OWNER', 'SUPERADMIN'].includes(session.user.role)) {
     redirect('/');
   }
 
@@ -57,7 +59,8 @@ export async function checkAuthor() {
     redirect('/auth');
   }
 
-  if (!['AUTHOR', 'ADMIN', 'OWNER'].includes(session.user.role)) {
+  // G8-fix: SUPERADMIN هم باید به محتوا دسترسی داشته باشد
+  if (!['AUTHOR', 'ADMIN', 'OWNER', 'SUPERADMIN'].includes(session.user.role)) {
     redirect('/');
   }
 
