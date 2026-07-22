@@ -1,12 +1,10 @@
 /**
  * /dashboard/my-deals — معاملات ارزی کاربر
  *
- * A5-fix (2026-07): این صفحه CurrencyDeal های ثبت‌شده کاربر لاگین‌شده را
- * از طریق getMyDeals نمایش می‌دهد. این صفحه فقط برای کاربران احراز هویت‌شده
- * قابل دسترسی است.
+ * Shell: auth check روی server. داده‌ها توسط MyDealsClient با
+ * pagination از getMyDeals (Server Action) دریافت می‌شوند.
  */
 
-import { getMyDeals } from '@/actions/currency-deals';
 import { auth } from '@/auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -23,11 +21,9 @@ export default async function MyDealsPage() {
     redirect('/signin?callbackUrl=/dashboard/my-deals');
   }
 
-  const deals = await getMyDeals();
-
   return (
     <div className="at-page" dir="rtl">
-      <MyDealsClient initialDeals={deals} />
+      <MyDealsClient />
     </div>
   );
 }

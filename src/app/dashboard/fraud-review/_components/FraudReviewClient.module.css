@@ -1,0 +1,103 @@
+/* FraudReviewClient.module.css — 2026 admin fraud review */
+
+.page { max-width: 1100px; }
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--ds-space-4);
+  margin-bottom: var(--ds-space-5);
+}
+
+.statCard {
+  padding: var(--ds-space-4) var(--ds-space-5);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-xl);
+  display: flex; flex-direction: column; gap: var(--ds-space-1);
+  transition: box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+.statCard:hover { box-shadow: var(--ds-shadow-sm); }
+
+.statLabel {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-text-muted);
+}
+
+.statValue {
+  font-size: var(--ds-text-3xl);
+  font-weight: var(--ds-weight-extrabold);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--ds-leading-tight);
+}
+
+/* Risk badges */
+.riskBadge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: var(--ds-text-xs); font-weight: var(--ds-weight-semibold);
+  padding: 3px 8px;
+  border-radius: var(--ds-radius-full);
+  border: 1px solid;
+}
+
+.riskHigh {
+  background: var(--ds-status-error-bg);
+  border-color: var(--ds-status-error-border);
+  color: var(--ds-status-error-fg);
+}
+
+.riskMed {
+  background: var(--ds-status-pending-bg);
+  border-color: var(--ds-status-pending-border);
+  color: var(--ds-status-pending-fg);
+}
+
+.riskLow {
+  background: var(--ds-status-success-bg);
+  border-color: var(--ds-status-success-border);
+  color: var(--ds-status-success-fg);
+}
+
+/* Customer cell */
+.customerCell { display: flex; flex-direction: column; gap: 2px; }
+.customerName { font-size: var(--ds-text-sm); font-weight: var(--ds-weight-medium); color: var(--ds-text-primary); }
+.customerPhone { font-size: var(--ds-text-xs); color: var(--ds-text-muted); font-variant-numeric: tabular-nums; }
+
+.reasonCell {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
+  max-width: 220px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.actionCell { display: flex; gap: var(--ds-space-2); }
+
+/* Dialog */
+.dialogBody { display: flex; flex-direction: column; gap: var(--ds-space-3); padding: var(--ds-space-1) 0; }
+.dialogLabel { font-size: var(--ds-text-sm); font-weight: var(--ds-weight-medium); color: var(--ds-text-secondary); }
+.dialogTextarea {
+  width: 100%; min-height: 80px;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-canvas);
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-sm);
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+.dialogTextarea:focus { outline: none; border-color: var(--ds-brand-500); }
+
+.errorBanner {
+  padding: var(--ds-space-3) var(--ds-space-4);
+  background: var(--ds-status-error-bg);
+  border: 1px solid var(--ds-status-error-border);
+  border-radius: var(--ds-radius-lg);
+  color: var(--ds-status-error-fg);
+  font-size: var(--ds-text-sm);
+  margin-bottom: var(--ds-space-4);
+}

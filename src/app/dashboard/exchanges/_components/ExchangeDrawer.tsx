@@ -52,9 +52,25 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
   const [errors, setErrors] = useState<Record<string, string>>({});
   const firstRef = useRef<HTMLInputElement>(null);
 
+  // Bug-fix: وقتی drawer باز می‌شود، state را با initialData جدید sync کن
+  // بدون این، بعد از edit یک row، باز کردن create form مقادیر قبلی را نشان می‌داد
   useEffect(() => {
-    if (open) setTimeout(() => firstRef.current?.focus(), 60);
-  }, [open]);
+    if (open) {
+      setName(initialData?.name ?? '');
+      setSlug(initialData?.slug ?? '');
+      setLicenseNo(initialData?.licenseNo ?? '');
+      setCity(initialData?.city ?? '');
+      setAddress(initialData?.address ?? '');
+      setPhone(initialData?.phone ?? '');
+      setEmail(initialData?.email ?? '');
+      setPlatformFee(String(initialData?.platformFee ?? '0'));
+      setDailyLimitAf(String(initialData?.dailyLimitAf ? Number(initialData.dailyLimitAf) : 0));
+      setStatus(initialData?.status ?? 'PENDING');
+      setRequireKyc(initialData?.requireKyc ?? true);
+      setErrors({});
+      setTimeout(() => firstRef.current?.focus(), 60);
+    }
+  }, [open, initialData]);
 
   // ESC close
   useEffect(() => {
@@ -126,7 +142,7 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
     width: 'min(480px, 100vw)',
     height: '100%',
     overflowY: 'auto',
-    background: 'var(--at-surface, #fff)',
+    background: 'var(--at-surface)',
     borderInlineStart: '1px solid var(--at-line)',
     display: 'flex',
     flexDirection: 'column',
@@ -141,7 +157,7 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
     borderBottom: '1px solid var(--at-line)',
     position: 'sticky',
     top: 0,
-    background: 'var(--at-surface, #fff)',
+    background: 'var(--at-surface)',
     zIndex: 1,
   };
 
@@ -161,7 +177,7 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
     justifyContent: 'flex-start',
     position: 'sticky',
     bottom: 0,
-    background: 'var(--at-surface, #fff)',
+    background: 'var(--at-surface)',
   };
 
   const btnPrimary: CSSProperties = {
@@ -170,7 +186,7 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
     fontSize: 'var(--ds-text-sm)',
     fontFamily: 'inherit',
     fontWeight: 600,
-    color: '#fff',
+    color: 'var(--ds-text-on-primary, oklch(98% 0 0))',
     background: 'var(--at-accent)',
     border: 'none',
     borderRadius: '8px',
@@ -244,7 +260,10 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
           <FormField label="نام صرافی" required error={errors.name}>
             <input
               ref={firstRef}
-              style={{ ...input, borderColor: errors.name ? 'oklch(60% 0.18 25)' : undefined }}
+              style={{
+                ...input,
+                borderColor: errors.name ? 'var(--ds-status-error-fg)' : undefined,
+              }}
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
               placeholder="مثال: صرافی نوری هرات"
@@ -264,7 +283,7 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
                   ...input,
                   direction: 'ltr',
                   textAlign: 'left',
-                  borderColor: errors.slug ? 'oklch(60% 0.18 25)' : undefined,
+                  borderColor: errors.slug ? 'var(--ds-status-error-fg)' : undefined,
                 }}
                 value={slug}
                 onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
@@ -336,7 +355,7 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
                 style={{
                   ...input,
                   direction: 'ltr',
-                  borderColor: errors.platformFee ? 'oklch(60% 0.18 25)' : undefined,
+                  borderColor: errors.platformFee ? 'var(--ds-status-error-fg)' : undefined,
                 }}
                 value={platformFee}
                 onChange={(e) => setPlatformFee(e.target.value)}

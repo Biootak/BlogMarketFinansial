@@ -998,7 +998,8 @@ export async function getMyServiceRequests(params?: { page?: number; limit?: num
       success: true,
       data: {
         requests: requests as unknown[],
-        pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        // Bug-fix: Math.max(1, ...) — وقتی total=0، Math.ceil(0/10)=0 که pagination شکسته می‌شد
+        pagination: { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) },
       },
     };
   } catch {
@@ -1105,17 +1106,28 @@ export async function claimGuestRequest(
     const userEmail = session.user.email.trim().toLowerCase();
     if (!reqEmail) {
       // #10+11 fix: $transaction برای atomicity — جلوگیری از race condition
-      await prisma.$transaction(async (tx) => {
-        const fresh = await tx.serviceRequest.findUnique({
-          where: { id: req.id },
-          select: { userId: true },
+      try {
+        await prisma.$transaction(async (tx) => {
+          const fresh = await tx.serviceRequest.findUnique({
+            where: { id: req.id },
+            select: { userId: true },
+          });
+          if (fresh?.userId) throw new Error('ALREADY_CLAIMED');
+          await tx.serviceRequest.update({
+            where: { id: req.id },
+            data: { userId: session.user.id },
+          });
         });
-        if (fresh?.userId) throw new Error('ALREADY_CLAIMED');
-        await tx.serviceRequest.update({
-          where: { id: req.id },
-          data: { userId: session.user.id },
-        });
-      });
+      } catch (txErr) {
+        // Bug-fix: ALREADY_CLAIMED از throw داخل transaction — باید پیام دقیق برگردد
+        if (txErr instanceof Error && txErr.message === 'ALREADY_CLAIMED') {
+          return {
+            success: false,
+            error: { code: 'ALREADY_CLAIMED', message: 'این سفارش قبلاً توسط حساب دیگری ادعا شده است.' },
+          };
+        }
+        return { success: false, error: { code: 'SERVER_ERROR', message: 'خطایی رخ داد. دوباره تلاش کنید.' } };
+      }
       revalidateTag('service-requests');
       return { success: true, data: {} };
     }
@@ -1129,17 +1141,28 @@ export async function claimGuestRequest(
       };
     if (req.emailVerified) {
       // #10+11 fix: $transaction برای atomicity — جلوگیری از race condition
-      await prisma.$transaction(async (tx) => {
-        const fresh = await tx.serviceRequest.findUnique({
-          where: { id: req.id },
-          select: { userId: true },
+      try {
+        await prisma.$transaction(async (tx) => {
+          const fresh = await tx.serviceRequest.findUnique({
+            where: { id: req.id },
+            select: { userId: true },
+          });
+          if (fresh?.userId) throw new Error('ALREADY_CLAIMED');
+          await tx.serviceRequest.update({
+            where: { id: req.id },
+            data: { userId: session.user.id },
+          });
         });
-        if (fresh?.userId) throw new Error('ALREADY_CLAIMED');
-        await tx.serviceRequest.update({
-          where: { id: req.id },
-          data: { userId: session.user.id },
-        });
-      });
+      } catch (txErr) {
+        // Bug-fix: ALREADY_CLAIMED از throw داخل transaction — باید پیام دقیق برگردد
+        if (txErr instanceof Error && txErr.message === 'ALREADY_CLAIMED') {
+          return {
+            success: false,
+            error: { code: 'ALREADY_CLAIMED', message: 'این سفارش قبلاً توسط حساب دیگری ادعا شده است.' },
+          };
+        }
+        return { success: false, error: { code: 'SERVER_ERROR', message: 'خطایی رخ داد. دوباره تلاش کنید.' } };
+      }
       revalidateTag('service-requests');
       return { success: true, data: {} };
     }

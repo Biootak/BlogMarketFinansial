@@ -1,0 +1,56 @@
+/* SettlementClient.module.css */
+
+.statusBadge {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  padding: 2px 8px;
+}
+
+.pending {
+  background: var(--ds-status-pending-bg) !important;
+  color: var(--ds-status-pending-fg) !important;
+  border-color: var(--ds-status-pending-border) !important;
+}
+
+.approved {
+  background: var(--ds-status-progress-bg) !important;
+  color: var(--ds-status-progress-fg) !important;
+  border-color: var(--ds-status-progress-border) !important;
+}
+
+.paid {
+  background: var(--ds-status-success-bg) !important;
+  color: var(--ds-status-success-fg) !important;
+  border-color: var(--ds-status-success-border) !important;
+}
+
+.cancelled {
+  background: var(--ds-status-error-bg) !important;
+  color: var(--ds-status-error-fg) !important;
+  border-color: var(--ds-status-error-border) !important;
+}
+
+.amount {
+  font-variant-numeric: tabular-nums;
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-primary);
+}
+
+.actionCell {
+  display: flex;
+  gap: var(--ds-space-2);
+}
+
+.errorBanner {
+  padding: var(--ds-space-3) var(--ds-space-4);
+  background: var(--ds-status-error-bg);
+  border: 1px solid var(--ds-status-error-border);
+  border-radius: var(--ds-radius-md);
+  color: var(--ds-status-error-fg);
+  font-size: var(--ds-text-sm);
+  margin-bottom: var(--ds-space-4);
+}
+
+.tabs {
+  margin-bottom: var(--ds-space-4);
+}

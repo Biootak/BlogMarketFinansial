@@ -1,7 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
-import type { SearchActionResult } from '@/types/types';
+import type { SearchActionResult, SearchResultItem } from '@/types/types';
 
 export async function getSearchResults(
   searchQuery: string,
@@ -12,11 +12,11 @@ export async function getSearchResults(
   const skip = (page - 1) * pageSize;
 
   try {
-    // SearchResultItem is a union type (Post | Category | Tag | User).
-    // The actual queries return shaped subsets of each; we cast to SearchResultItem[]
-    // at the return boundary where the shape is known to be compatible.
-    // biome-ignore lint/suspicious/noExplicitAny: Prisma returns different shapes per tab; cast happens at return
-    let posts: any[];
+    // Prisma returns partial shapes per switch-case tab (Post | Category | Tag | User).
+    // Each branch queries only the fields needed for display — the shapes are compatible
+    // with SearchResultItem but TS cannot verify structural compatibility across union branches.
+    // Narrowing to SearchResultItem[] via `as` at each assignment site makes the intent explicit.
+    let posts: SearchResultItem[];
     let total: number;
 
     switch (activeTab) {
@@ -28,7 +28,7 @@ export async function getSearchResults(
           ],
           status: 'PUBLISHED' as const,
         };
-        [posts, total] = await Promise.all([
+        [posts, total] = (await Promise.all([
           prisma.post.findMany({
             where,
             select: {
@@ -54,12 +54,12 @@ export async function getSearchResults(
             orderBy: { createdAt: 'desc' },
           }),
           prisma.post.count({ where }),
-        ]);
+        ])) as unknown as [SearchResultItem[], number];
         break;
       }
       case 'دسته‌بندی‌ها': {
         const where = { name: { contains: searchQuery, mode: 'insensitive' as const } };
-        [posts, total] = await Promise.all([
+        [posts, total] = (await Promise.all([
           prisma.category.findMany({
             where,
             select: {
@@ -73,12 +73,12 @@ export async function getSearchResults(
             take: pageSize,
           }),
           prisma.category.count({ where }),
-        ]);
+        ])) as unknown as [SearchResultItem[], number];
         break;
       }
       case 'برچسب‌ها': {
         const where = { name: { contains: searchQuery, mode: 'insensitive' as const } };
-        [posts, total] = await Promise.all([
+        [posts, total] = (await Promise.all([
           prisma.tag.findMany({
             where,
             select: {
@@ -91,12 +91,12 @@ export async function getSearchResults(
             take: pageSize,
           }),
           prisma.tag.count({ where }),
-        ]);
+        ])) as unknown as [SearchResultItem[], number];
         break;
       }
       case 'نویسندگان': {
         const where = { name: { contains: searchQuery, mode: 'insensitive' as const } };
-        [posts, total] = await Promise.all([
+        [posts, total] = (await Promise.all([
           prisma.user.findMany({
             where,
             select: {
@@ -110,7 +110,7 @@ export async function getSearchResults(
             take: pageSize,
           }),
           prisma.user.count({ where }),
-        ]);
+        ])) as unknown as [SearchResultItem[], number];
         break;
       }
       default:

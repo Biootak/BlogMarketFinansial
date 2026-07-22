@@ -23,6 +23,7 @@ import {
   EmptyState,
   PageHeader,
 } from '@/components/Dashboard/primitives';
+import { toast } from '@/components/ui/use-toast';
 import {
   Building2,
   CheckCircle2,
@@ -80,6 +81,8 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
       const res = await toggleTransferProvider(row.id, !row.active);
       if (res.success) {
         setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, active: !row.active } : r)));
+      } else {
+        toast({ title: 'خطا', description: res.error.message, variant: 'destructive' });
       }
     });
   }, []);
@@ -114,6 +117,9 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
     setDeleting(false);
     if (res.success) {
       setRows((prev) => prev.filter((r) => r.id !== deleteTarget.id));
+      setDeleteTarget(null);
+    } else {
+      toast({ title: 'خطا', description: res.error.message, variant: 'destructive' });
       setDeleteTarget(null);
     }
   }, [deleteTarget]);

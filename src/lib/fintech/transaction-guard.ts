@@ -1,5 +1,3 @@
-'use server';
-
 /**
  * transaction-guard.ts — 2FA/OTP guard برای تراکنش‌های حساس
  *

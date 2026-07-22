@@ -11,7 +11,7 @@ export default async function MyRequestsPage() {
   const session = await auth();
 
   if (!session?.user) {
-    redirect('/auth');
+    redirect('/signin?callbackUrl=/dashboard/my-requests');
   }
 
   return (

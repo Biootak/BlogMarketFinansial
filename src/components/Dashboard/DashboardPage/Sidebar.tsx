@@ -52,6 +52,13 @@ import {
   HiOutlineUserCircle,
   HiOutlineUsers,
   HiOutlineXMark,
+  HiOutlineWallet,
+  HiOutlineShieldCheck,
+  HiOutlineClipboardDocumentCheck,
+  HiOutlineExclamationTriangle,
+  HiOutlineBanknotes,
+  HiOutlineCreditCard,
+  HiOutlineDevicePhoneMobile,
 } from 'react-icons/hi2';
 
 const ICON_CLASS = 'w-[19px] h-[19px]';
@@ -234,6 +241,80 @@ function getMenu(role: UserRole): NavSection[] {
     title: 'درخواست‌های من',
   };
 
+  // ─── Fintech menu items ───────────────────────────────────────────────────
+  const wallet: MenuItem = {
+    id: 'wallet',
+    href: '/dashboard/wallet',
+    icon: <HiOutlineWallet className={ICON_CLASS} />,
+    label: 'کیف پول',
+    title: 'کیف پول',
+  };
+
+  const kyc: MenuItem = {
+    id: 'kyc',
+    href: '/dashboard/kyc',
+    icon: <HiOutlineShieldCheck className={ICON_CLASS} />,
+    label: 'احراز هویت',
+    title: 'احراز هویت (KYC)',
+  };
+
+  const myDeals: MenuItem = {
+    id: 'myDeals',
+    href: '/dashboard/my-deals',
+    icon: <HiOutlineArrowsRightLeft className={ICON_CLASS} />,
+    label: 'معاملات من',
+    title: 'معاملات ارزی من',
+  };
+
+  const transfer: MenuItem = {
+    id: 'transfer',
+    href: '/dashboard/transfer',
+    icon: <HiOutlineBanknotes className={ICON_CLASS} />,
+    label: 'انتقال وجه',
+    title: 'انتقال وجه P2P',
+  };
+
+  const devices: MenuItem = {
+    id: 'devices',
+    href: '/dashboard/devices',
+    icon: <HiOutlineDevicePhoneMobile className={ICON_CLASS} />,
+    label: 'دستگاه‌های من',
+    title: 'مدیریت دستگاه‌های متصل',
+  };
+
+  // ─── Admin fintech items ──────────────────────────────────────────────────
+  const kycReview: MenuItem = {
+    id: 'kycReview',
+    href: '/dashboard/kyc-review',
+    icon: <HiOutlineClipboardDocumentCheck className={ICON_CLASS} />,
+    label: 'بررسی KYC',
+    title: 'بررسی درخواست‌های احراز هویت',
+  };
+
+  const auditLog: MenuItem = {
+    id: 'auditLog',
+    href: '/dashboard/audit-log',
+    icon: <HiOutlineClipboardDocumentList className={ICON_CLASS} />,
+    label: 'گزارش ممیزی',
+    title: 'گزارش ممیزی سیستم',
+  };
+
+  const fraudReview: MenuItem = {
+    id: 'fraudReview',
+    href: '/dashboard/fraud-review',
+    icon: <HiOutlineExclamationTriangle className={ICON_CLASS} />,
+    label: 'بررسی تقلب',
+    title: 'صف بررسی تقلب',
+  };
+
+  const settlements: MenuItem = {
+    id: 'settlements',
+    href: '/dashboard/settlements',
+    icon: <HiOutlineCreditCard className={ICON_CLASS} />,
+    label: 'تسویه‌حساب',
+    title: 'تسویه‌حساب صرافی‌ها',
+  };
+
   switch (role) {
     case 'OWNER':
       return [
@@ -252,8 +333,14 @@ function getMenu(role: UserRole): NavSection[] {
             serviceRequests,
           ],
         },
-        { id: 'admin', index: '۰۴', label: 'مدیریت', items: [users, reports, settings] },
-        { id: 'account', index: '۰۵', label: 'حساب', items: [myRequests, profile] },
+        {
+          id: 'fintech',
+          index: '۰۴',
+          label: 'فین‌تک',
+          items: [kycReview, fraudReview, settlements, auditLog],
+        },
+        { id: 'admin', index: '۰۵', label: 'مدیریت', items: [users, reports, settings] },
+        { id: 'account', index: '۰۶', label: 'حساب', items: [wallet, kyc, myDeals, transfer, devices, myRequests, profile] },
       ];
     case 'ADMIN':
       return [
@@ -272,8 +359,14 @@ function getMenu(role: UserRole): NavSection[] {
             serviceRequests,
           ],
         },
-        { id: 'admin', index: '۰۴', label: 'مدیریت', items: [users] },
-        { id: 'account', index: '۰۵', label: 'حساب', items: [myRequests, profile] },
+        {
+          id: 'fintech',
+          index: '۰۴',
+          label: 'فین‌تک',
+          items: [kycReview, fraudReview, settlements, auditLog],
+        },
+        { id: 'admin', index: '۰۵', label: 'مدیریت', items: [users] },
+        { id: 'account', index: '۰۶', label: 'حساب', items: [wallet, kyc, myDeals, transfer, devices, myRequests, profile] },
       ];
     case 'SUPPORT':
       return [
@@ -282,21 +375,22 @@ function getMenu(role: UserRole): NavSection[] {
           id: 'operations',
           index: '۰۲',
           label: 'عملیات',
-          items: [serviceRequests],
+          items: [serviceRequests, kycReview, fraudReview],
         },
-        { id: 'account', index: '۰۳', label: 'حساب', items: [myRequests, profile] },
+        { id: 'account', index: '۰۳', label: 'حساب', items: [wallet, kyc, myDeals, transfer, devices, myRequests, profile] },
       ];
     case 'AUTHOR':
       return [
         { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
         { id: 'content', index: '۰۲', label: 'محتوا', items: [posts, categories] },
-        { id: 'account', index: '۰۵', label: 'حساب', items: [myRequests, profile] },
+        { id: 'account', index: '۰۵', label: 'حساب', items: [wallet, kyc, myDeals, transfer, devices, myRequests, profile] },
       ];
     default:
       // USER role — minimal panel
       return [
         { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
-        { id: 'account', index: '۰۲', label: 'حساب', items: [myRequests, profile] },
+        { id: 'fintech', index: '۰۲', label: 'مالی', items: [wallet, kyc, myDeals, transfer] },
+        { id: 'account', index: '۰۳', label: 'حساب', items: [devices, myRequests, profile] },
       ];
   }
 }

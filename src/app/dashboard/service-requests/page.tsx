@@ -1,5 +1,5 @@
-import { auth } from '@/auth';
 import ServiceRequestsClient from '@/components/Dashboard/ServiceRequests/ServiceRequestsClient';
+import { requireAdmin } from '@/lib/require-auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
@@ -8,11 +8,8 @@ export const metadata: Metadata = {
 };
 
 export default async function ServiceRequestsPage() {
-  const session = await auth();
-
-  if (!session?.user || !['ADMIN', 'OWNER'].includes(session.user.role as string)) {
-    redirect('/dashboard');
-  }
+  const auth = await requireAdmin();
+  if (!auth.success) redirect('/dashboard');
 
   return (
     <div className="at-page" dir="rtl">

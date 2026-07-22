@@ -1,0 +1,75 @@
+/* DevicesClient.module.css */
+
+.page { max-width: 760px; }
+
+.errorBanner {
+  display: flex; align-items: center; gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  background: var(--ds-status-error-bg);
+  border: 1px solid var(--ds-status-error-border);
+  border-radius: var(--ds-radius-lg);
+  color: var(--ds-status-error-fg);
+  font-size: var(--ds-text-sm);
+  margin-bottom: var(--ds-space-4);
+}
+
+.deviceList {
+  display: flex; flex-direction: column; gap: var(--ds-space-3);
+}
+
+.deviceCard {
+  display: flex; align-items: flex-start; gap: var(--ds-space-4);
+  padding: var(--ds-space-4);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-xl);
+  transition: box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  animation: fadeIn var(--ds-duration-base) var(--ds-ease-out-quart);
+}
+.deviceCard:hover { box-shadow: var(--ds-shadow-sm); }
+
+.deviceIcon {
+  width: 44px; height: 44px;
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-canvas-subtle);
+  border: 1px solid var(--ds-border-subtle);
+  color: var(--ds-text-muted);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.deviceInfo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--ds-space-1); }
+
+.deviceTop { display: flex; align-items: center; gap: var(--ds-space-2); flex-wrap: wrap; }
+
+.deviceName {
+  font-size: var(--ds-text-base);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-primary);
+}
+
+.statusBadge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: var(--ds-text-xs); font-weight: var(--ds-weight-medium);
+}
+
+.deviceMeta {
+  display: flex; gap: var(--ds-space-3); flex-wrap: wrap;
+  font-size: var(--ds-text-xs); color: var(--ds-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.deviceUa {
+  font-size: var(--ds-text-xs); color: var(--ds-text-muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.deviceActions {
+  display: flex; gap: var(--ds-space-2); align-items: flex-start;
+  flex-shrink: 0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

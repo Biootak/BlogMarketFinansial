@@ -58,10 +58,10 @@ const STATUS_META: Record<
   string,
   { label: string; icon: React.ComponentType<{ size?: number }>; color: string }
 > = {
-  PENDING: { label: 'در انتظار بررسی', icon: Clock, color: 'oklch(60% 0.18 75)' },
-  IN_PROGRESS: { label: 'در حال انجام', icon: RefreshCw, color: 'oklch(52% 0.18 240)' },
-  COMPLETED: { label: 'تکمیل شده', icon: CheckCircle2, color: 'oklch(50% 0.18 155)' },
-  CANCELLED: { label: 'لغو شده', icon: XCircle, color: 'oklch(52% 0.18 15)' },
+  PENDING: { label: 'در انتظار بررسی', icon: Clock, color: 'var(--ds-status-pending-fg)' },
+  IN_PROGRESS: { label: 'در حال انجام', icon: RefreshCw, color: 'var(--ds-status-progress-fg)' },
+  COMPLETED: { label: 'تکمیل شده', icon: CheckCircle2, color: 'var(--ds-status-success-fg)' },
+  CANCELLED: { label: 'لغو شده', icon: XCircle, color: 'var(--ds-status-error-fg)' },
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -90,10 +90,10 @@ const SERVICE_LABELS: Record<string, string> = {
 
 // status → CSS custom property for accent bar + icon bg
 const STATUS_ACCENT: Record<string, string> = {
-  PENDING: 'oklch(60% 0.18 75)',
-  IN_PROGRESS: 'oklch(52% 0.18 240)',
-  COMPLETED: 'oklch(50% 0.18 155)',
-  CANCELLED: 'oklch(52% 0.18 15)',
+  PENDING: 'var(--ds-status-pending-fg)',
+  IN_PROGRESS: 'var(--ds-status-progress-fg)',
+  COMPLETED: 'var(--ds-status-success-fg)',
+  CANCELLED: 'var(--ds-status-error-fg)',
 };
 
 function RequestRow({
@@ -544,6 +544,8 @@ export default function MyRequestsClient() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  // Bug-fix: total را از pagination می‌گیریم، نه requests.length (که فقط صفحه جاری است)
+  const [totalCount, setTotalCount] = useState(0);
   const pageRef = useRef(page);
   pageRef.current = page;
 
@@ -559,6 +561,7 @@ export default function MyRequestsClient() {
       };
       setRequests(resData.requests);
       setTotalPages(resData.pagination.totalPages ?? 1);
+      setTotalCount(resData.pagination.total ?? 0);
     } else {
       setError('error' in result ? result.error.message : 'خطایی رخ داد.');
     }
@@ -574,9 +577,10 @@ export default function MyRequestsClient() {
     fetchRequests(pageRef.current);
   }, [fetchRequests]);
 
-  // stats از requests محاسبه می‌شه
+  // Bug-fix: stats.total از pagination.total می‌آید نه requests.length
+  // requests.length فقط آیتم‌های صفحه جاری است (max 10) — totalCount کل رکوردهای DB است
   const stats = {
-    total: requests.length,
+    total: totalCount,
     pending: requests.filter((r) => r.status === 'PENDING').length,
     inProgress: requests.filter((r) => r.status === 'IN_PROGRESS').length,
     completed: requests.filter((r) => r.status === 'COMPLETED').length,
@@ -608,21 +612,21 @@ export default function MyRequestsClient() {
           </div>
           <div
             className={s.statCard}
-            style={{ '--stat-color': 'oklch(55% 0.16 75)' } as React.CSSProperties}
+            style={{ '--stat-color': 'var(--ds-status-pending-fg)' } as React.CSSProperties}
           >
             <span className={s.statCount}>{stats.pending.toLocaleString('fa-IR')}</span>
             <span className={s.statLabel}>در انتظار</span>
           </div>
           <div
             className={s.statCard}
-            style={{ '--stat-color': 'oklch(48% 0.16 240)' } as React.CSSProperties}
+            style={{ '--stat-color': 'var(--ds-status-progress-fg)' } as React.CSSProperties}
           >
             <span className={s.statCount}>{stats.inProgress.toLocaleString('fa-IR')}</span>
             <span className={s.statLabel}>در انجام</span>
           </div>
           <div
             className={s.statCard}
-            style={{ '--stat-color': 'oklch(44% 0.16 155)' } as React.CSSProperties}
+            style={{ '--stat-color': 'var(--ds-status-success-fg)' } as React.CSSProperties}
           >
             <span className={s.statCount}>{stats.completed.toLocaleString('fa-IR')}</span>
             <span className={s.statLabel}>تکمیل شده</span>

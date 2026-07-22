@@ -1,0 +1,241 @@
+/* KycOnboardingClient.module.css — 2026 progressive KYC wizard */
+
+.page {
+  max-width: 560px;
+}
+
+/* ── Status views (PENDING / APPROVED / REJECTED) ── */
+.statusCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-10) var(--ds-space-6);
+  background: var(--ds-surface-elevated);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-2xl);
+  box-shadow: var(--ds-shadow-md);
+  animation: fadeUp var(--ds-duration-base) var(--ds-ease-out-quart);
+}
+
+.statusIconWrap {
+  width: 72px; height: 72px;
+  border-radius: var(--ds-radius-full);
+  display: flex; align-items: center; justify-content: center;
+}
+
+.statusTitle {
+  font-size: var(--ds-text-2xl);
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-text-primary);
+  line-height: var(--ds-leading-snug);
+}
+
+.statusDesc {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-muted);
+  max-width: 36ch;
+  line-height: var(--ds-leading-relaxed);
+}
+
+.statusReason {
+  width: 100%;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  background: var(--ds-status-error-bg);
+  border: 1px solid var(--ds-status-error-border);
+  border-radius: var(--ds-radius-lg);
+  font-size: var(--ds-text-sm);
+  color: var(--ds-status-error-fg);
+  text-align: start;
+}
+
+/* ── Wizard card ── */
+.wizardCard {
+  background: var(--ds-surface-elevated);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-2xl);
+  box-shadow: var(--ds-shadow-md);
+  overflow: hidden;
+  animation: fadeUp var(--ds-duration-base) var(--ds-ease-out-quart);
+}
+
+/* ── Progress stepper ── */
+.stepper {
+  display: flex;
+  align-items: center;
+  padding: var(--ds-space-5) var(--ds-space-6);
+  border-bottom: 1px solid var(--ds-border-subtle);
+  background: var(--ds-canvas-subtle);
+  gap: 0;
+}
+
+.stepItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-1);
+  flex: 1;
+  position: relative;
+}
+
+.stepItem + .stepItem::before {
+  content: '';
+  position: absolute;
+  top: 16px;
+  inset-inline-end: 50%;
+  width: 100%;
+  height: 1px;
+  background: var(--ds-border-default);
+  transform: translateX(50%);
+}
+
+.stepItem.done + .stepItem::before { background: var(--ds-status-success-border); }
+
+.stepDot {
+  width: 32px; height: 32px;
+  border-radius: var(--ds-radius-full);
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-bold);
+  position: relative;
+  z-index: 1;
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.stepDot.pending {
+  background: var(--ds-canvas);
+  border: 2px solid var(--ds-border-default);
+  color: var(--ds-text-muted);
+}
+
+.stepDot.active {
+  background: var(--ds-brand-500);
+  color: var(--ds-text-inverse);
+  box-shadow: 0 0 0 4px oklch(58% 0.12 165 / 0.2);
+}
+
+.stepDot.done {
+  background: var(--ds-status-success-bg);
+  border: 1px solid var(--ds-status-success-border);
+  color: var(--ds-status-success-fg);
+}
+
+.stepLabel {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  white-space: nowrap;
+}
+
+.stepLabel.active { color: var(--ds-brand-600); font-weight: var(--ds-weight-semibold); }
+.stepLabel.done   { color: var(--ds-status-success-fg); }
+
+/* ── Form area ── */
+.form {
+  padding: var(--ds-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+.formTitle {
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-text-primary);
+  margin-bottom: var(--ds-space-1);
+}
+
+.formDesc {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-muted);
+  line-height: var(--ds-leading-relaxed);
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+}
+
+.label {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-secondary);
+}
+
+.inputHint {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+
+/* ── Error banner ── */
+.error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  background: var(--ds-status-error-bg);
+  border: 1px solid var(--ds-status-error-border);
+  border-radius: var(--ds-radius-lg);
+  font-size: var(--ds-text-sm);
+  color: var(--ds-status-error-fg);
+  animation: shake 0.3s var(--ds-ease-spring);
+}
+
+/* ── Footer ── */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--ds-space-4) var(--ds-space-6);
+  border-top: 1px solid var(--ds-border-subtle);
+  background: var(--ds-canvas-subtle);
+}
+
+.stepHint {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+
+/* ── Review step ── */
+.reviewGrid {
+  display: flex; flex-direction: column; gap: var(--ds-space-2);
+}
+
+.reviewRow {
+  display: flex; gap: var(--ds-space-3); align-items: flex-start;
+  padding: var(--ds-space-2) 0;
+  border-bottom: 1px solid var(--ds-border-subtle);
+}
+.reviewRow:last-child { border-bottom: none; }
+
+.reviewKey {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  min-width: 100px;
+  padding-top: 2px;
+}
+
+.reviewVal {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-primary);
+  word-break: break-all;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%  { transform: translateX(-4px); }
+  75%  { transform: translateX(4px); }
+}

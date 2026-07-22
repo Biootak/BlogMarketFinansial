@@ -182,3 +182,96 @@
   font-size: var(--ds-text-xs);
   color: var(--ds-text-secondary);
 }
+
+/* ─── Skeleton ───────────────────────────────────────────────────────────── */
+.skeleton {
+  height: 88px;
+  border-radius: var(--ds-radius-lg);
+  background: linear-gradient(
+    90deg,
+    var(--ds-surface-elevated) 25%,
+    var(--ds-border-subtle, var(--ds-border)) 50%,
+    var(--ds-surface-elevated) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── Error ──────────────────────────────────────────────────────────────── */
+.errorBox {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-status-error-bg);
+  border: 1px solid var(--ds-status-error-border);
+  border-inline-start-width: 3px;
+  border-inline-start-color: var(--ds-status-error-fg);
+  color: var(--ds-status-error-fg);
+  font-size: var(--ds-text-sm);
+  flex-wrap: wrap;
+}
+
+.retryBtn {
+  margin-inline-start: auto;
+  padding: 4px 12px;
+  border-radius: var(--ds-radius-md);
+  border: 1px solid var(--ds-status-error-fg);
+  background: transparent;
+  color: var(--ds-status-error-fg);
+  font-size: var(--ds-text-xs);
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 120ms;
+}
+
+.retryBtn:hover {
+  background: var(--ds-status-error-bg, rgba(0,0,0,0.06));
+}
+
+/* ─── Pagination ─────────────────────────────────────────────────────────── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-3);
+}
+
+.pageBtn {
+  padding: 7px 16px;
+  border: 1.5px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface);
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  min-block-size: 36px;
+  transition: background 150ms, border-color 150ms;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background: var(--ds-surface-elevated, var(--ds-surface));
+  border-color: var(--ds-border-strong, var(--ds-border));
+}
+
+.pageBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.pageInfo {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-muted);
+  font-variant-numeric: tabular-nums;
+  min-inline-size: 5ch;
+  text-align: center;
+}

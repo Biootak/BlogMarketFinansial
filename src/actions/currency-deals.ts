@@ -34,6 +34,7 @@ import { notifyDealStatusChange, notifyNewDeal } from '@/lib/notifications/finte
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
+import { screenTransaction } from '@/lib/fraud/screener';
 import type { FintechActionResult } from '@/types/types';
 import type { Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
@@ -227,20 +228,50 @@ export async function getExchangeDeals(
 }
 
 /** معاملات کاربر — برای داشبورد مشتری */
-export async function getMyDeals(): Promise<DealRow[]> {
+export type MyDealsPage = {
+  deals: DealRow[];
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+};
+
+export async function getMyDeals(
+  opts: { page?: number; limit?: number } = {},
+): Promise<FintechActionResult<MyDealsPage>> {
   const auth = await requireUser();
-  if (!auth.success) return [];
-  const rows = await prisma.currencyDeal.findMany({
-    where: { userId: auth.user.id },
-    include: { Exchange: { select: { name: true, displayName: true, city: true } } },
-    orderBy: { createdAt: 'desc' },
-    take: 50,
-  });
-  return rows.map((r) => ({
-    ...mapDeal(r),
-    exchangeName: r.Exchange.displayName ?? r.Exchange.name,
-    exchangeCity: r.Exchange.city,
-  }));
+  if (!auth.success) {
+    return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد حساب کاربری شوید' } };
+  }
+
+  const page = Math.max(1, opts.page ?? 1);
+  const limit = Math.min(50, Math.max(1, opts.limit ?? 10));
+  const skip = (page - 1) * limit;
+
+  const [rows, total] = await Promise.all([
+    prisma.currencyDeal.findMany({
+      where: { userId: auth.user.id },
+      include: { Exchange: { select: { name: true, displayName: true, city: true } } },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+    }),
+    prisma.currencyDeal.count({ where: { userId: auth.user.id } }),
+  ]);
+
+  return {
+    success: true,
+    data: {
+      deals: rows.map((r) => ({
+        ...mapDeal(r),
+        exchangeName: r.Exchange.displayName ?? r.Exchange.name,
+        exchangeCity: r.Exchange.city,
+      })),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+    },
+  };
 }
 
 /** پیگیری معامله با کد — عمومی (بدون auth) */
@@ -276,7 +307,8 @@ export async function createDeal(
   raw: unknown,
 ): Promise<FintechActionResult<{ id: string; trackingCode: string }>> {
   // ── Rate limit: 5 deal در 10 دقیقه بر اساس IP (M5) ──────────────────────
-  const ip = (await headers()).get('x-forwarded-for')?.split(',').pop()?.trim() ?? 'unknown';
+  // Bug-fix: .split(',')[0] (اول لیست) = real client IP — .pop() آخرین proxy IP را می‌گرفت
+  const ip = (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
   const rl = await checkRateLimit(`deal:${ip}`, 'api');
   if (!rl.success) {
     return {
@@ -369,6 +401,35 @@ export async function createDeal(
     // اگر quote دارد، toAmount محاسبه‌شده اولویت دارد
     if (inputToAmount != null) {
       calculatedToAmount = new Decimal(inputToAmount);
+    }
+  }
+
+  // ── Fraud screening (فقط برای کاربران لاگین) ──────────────────────────────
+  // اگر userId موجود باشد (user logged in)، تراکنش را از فیلتر fraud رد می‌کنیم.
+  // گزارش fraud هرگز باعث block نمی‌شود — فقط اگر shouldBlock=true برگشت، خطا.
+  if (userId) {
+    const customer = await prisma.customer.findFirst({
+      where: { userId },
+      select: { id: true },
+    });
+    if (customer) {
+      const fraudRisk = await screenTransaction({
+        customerId: customer.id,
+        exchangeId,
+        amount: BigInt(Math.round(Number(fromAmount) * 100)),
+        currency: fromCurrency,
+        ip,
+        kind: 'EXCHANGE',
+      });
+      if (fraudRisk.shouldBlock) {
+        return {
+          success: false,
+          error: {
+            code: 'FRAUD_BLOCKED',
+            message: 'این معامله به دلایل امنیتی مسدود شد. لطفاً با پشتیبانی تماس بگیرید.',
+          },
+        };
+      }
     }
   }
 
@@ -1244,7 +1305,7 @@ async function _refundDealImpl(
 // ─── helper: error handler برای refundDeal ────────────────────────────────────
 // (این helper داخلی است — مستقیماً از refundDeal صدا نمی‌شود)
 // خطاهای $queryRaw/$transaction را به FintechActionResult تبدیل می‌کند
-export function parseRefundError(err: unknown): FintechActionResult<{ id: string }> {
+function parseRefundError(err: unknown): FintechActionResult<{ id: string }> {
   const msg = err instanceof Error ? err.message : '';
   if (msg.startsWith('INSUFFICIENT_BALANCE')) {
     return {
