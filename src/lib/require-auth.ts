@@ -60,7 +60,8 @@ export async function requireSuperAdmin(): Promise<AuthResult> {
 }
 
 export async function requireAuthor(): Promise<AuthResult> {
-  return requireRole([Role.AUTHOR, Role.ADMIN, Role.OWNER]);
+  // R1/R2-fix: SUPERADMIN treated identically to OWNER — must match checkAuthor() in auth.ts
+  return requireRole([Role.AUTHOR, Role.ADMIN, Role.OWNER, Role.SUPERADMIN]);
 }
 
 // ─── Permission-level RBAC (دانه‌ای) ─────────────────────────────────────────

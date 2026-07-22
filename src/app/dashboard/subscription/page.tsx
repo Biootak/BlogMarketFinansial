@@ -15,9 +15,11 @@ import s from './subscription.module.css';
 const ROLE_CONFIG: Record<string, { label: string; color: string; level: number }> = {
   USER: { label: 'کاربر عادی', color: 'muted', level: 1 },
   AUTHOR: { label: 'نویسنده', color: 'accent', level: 2 },
+  SUPPORT: { label: 'پشتیبانی', color: 'info', level: 2 },
   ADMIN: { label: 'مدیر', color: 'info', level: 3 },
   OWNER: { label: 'مالک', color: 'gold', level: 4 },
-  SUPERADMIN: { label: 'سوپرادمین', color: 'violet', level: 5 },
+  // SUPERADMIN is an alias for OWNER (level=4, not 5) — treated identically across the platform
+  SUPERADMIN: { label: 'سوپرادمین', color: 'gold', level: 4 },
 };
 
 export default async function DashboardSubscription() {

@@ -9,16 +9,19 @@
  *   پلتفرم بلاگ/ادمین:
  *     OWNER       — مالک کامل پلتفرم (همه دسترسی‌ها)
  *     SUPERADMIN  — alias برای OWNER (برای سازگاری schema؛ در کد جدید استفاده نشود)
- *     ADMIN       — مدیر محتوا و کاربران
- *     AUTHOR      — نویسنده بلاگ
- *     SUPPORT     — پشتیبانی
- *     USER        — کاربر عادی (فقط my-requests + edit-profile در dashboard)
+ *                   ⚠️  سطح = 4 (مثل OWNER) — نه 5. در همه auth helper‌ها با OWNER یکسان است.
+ *     ADMIN       — مدیر محتوا و کاربران (سطح ۳)
+ *     AUTHOR      — نویسنده بلاگ (سطح ۲) — مجوزهای blog hardcoded
+ *     SUPPORT     — پشتیبانی (سطح ۲) — در RBAC matrix قابل پیکربندی است
+ *                   ولی به /dashboard/permissions دسترسی ندارد (فقط ADMIN/OWNER/SUPERADMIN)
+ *     USER        — کاربر عادی (سطح ۱ — فقط my-requests + edit-profile در dashboard)
+ *                   مجوزهای ثابت دارد؛ در RBAC matrix نیست
  *
  *   فین‌تک (کاربر سایت عمومی — نه داشبورد ادمین):
- *     CUSTOMER    — مشتری صرافی که در پلتفرم ثبت‌نام کرده
- *     MERCHANT    — فروشنده
- *     EXCHANGE    — (deprecated) نماینده صرافی — از ExchangeStaff استفاده شود
- *     TEST_CUSTOMER — حساب آزمایشی
+ *     CUSTOMER      — مشتری صرافی که در پلتفرم ثبت‌نام کرده
+ *     MERCHANT      — فروشنده
+ *     EXCHANGE      — (deprecated) نماینده صرافی — از ExchangeStaff استفاده شود
+ *     TEST_CUSTOMER — حساب آزمایشی؛ مجوزها از CUSTOMER وراثت می‌گیرد
  *
  * ─── سطح ۲: نقش‌های staff صرافی (ExchangeStaff.role — Prisma enum ExchangeStaffRole) ─
  *
@@ -30,7 +33,7 @@
  *
  * ─── تفکیک کلیدی (R17) ─────────────────────────────────────────────────────
  *
- *   «ادمین پلتفرم» (User.role = ADMIN|OWNER):
+ *   «ادمین پلتفرم» (User.role = ADMIN|OWNER|SUPERADMIN):
  *     - به /dashboard دسترسی دارد
  *     - همه صرافی‌ها را می‌بیند و مدیریت می‌کند
  *     - quote ها را approve/reject می‌کند
@@ -41,6 +44,11 @@
  *     - فقط صرافی خودش را می‌بیند
  *     - deal ها را confirm/complete می‌کند
  *     - در exchange-auth.ts: با exchangeId + revokedAt=null چک می‌شود
+ *
+ * ─── سلسله‌مراتب سطح دسترسی (ROLE_HIERARCHY در userActions.ts) ─────────────
+ *
+ *   OWNER = SUPERADMIN = 4  >  ADMIN = 3  >  AUTHOR = SUPPORT = 2  >  USER = 1
+ *   CUSTOMER = MERCHANT = EXCHANGE = TEST_CUSTOMER = 0 (خارج از داشبورد ادمین)
  *
  * ─── Type helpers ──────────────────────────────────────────────────────────
  */

@@ -15,13 +15,13 @@
  */
 
 import {
-  type EditableRole,
   type PermissionRow,
   type RoleMatrixEntry,
   createPermission,
   deletePermission,
   saveRoleMatrix,
 } from '@/actions/permission-actions';
+import { EDITABLE_ROLES, type EditableRole } from '@/lib/permissions-constants';
 import { ConfirmDialog, EmptyState, PageHeader } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -72,8 +72,6 @@ const ROLE_COLOR: Record<string, string> = {
   SUPPORT: 'var(--nova-emerald)',
   ADMIN: 'var(--ds-brand-500)',
 };
-
-const EDITABLE_ROLES: EditableRole[] = ['CUSTOMER', 'MERCHANT', 'EXCHANGE', 'SUPPORT', 'ADMIN'];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -449,7 +447,7 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
                       </span>
                     </td>
 
-                    {/* عملیات (فقط SUPERADMIN) */}
+                    {/* عملیات (فقط OWNER / SUPERADMIN) */}
                     {isSuperAdmin && (
                       <td className={s.colAction}>
                         <button
