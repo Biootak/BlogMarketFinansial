@@ -270,7 +270,7 @@ export default function HeaderAdsClient({
                     type="checkbox"
                     name="isActive"
                     defaultChecked={editing?.isActive ?? false}
-                    className="h-5 w-5 rounded-md border-neutral-300 text-primary-600 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                    className="h-5 w-5 rounded-md border-neutral-300 focus:ring-2 focus:ring-offset-2 [accent-color:var(--at-accent)]"
                   />
                   <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                     فعال باشد (فقط یک تبلیغ می‌تواند فعال باشد)

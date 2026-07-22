@@ -1,0 +1,31 @@
+/*
+ * checkbox.module.css — DS-aware checkbox styling
+ *
+ * رنگ از --cb (رنگ نقش یا context) می‌آید.
+ * fallback: --at-accent داشبورد → --ds-brand-500 سایت → indigo-500 tailwind
+ *
+ * چرا module CSS و نه Tailwind utility:
+ *   Radix Checkbox با data-state attribute کار می‌کند؛
+ *   Tailwind v4 arbitrary value با color-mix() و CSS var ترکیبی
+ *   به‌درستی کامپایل نمی‌شود. module CSS قابلیت cascade کافی دارد.
+ */
+
+.root {
+  /* border در حالت idle — ملایم */
+  border-color: oklch(75% 0.02 245) !important;
+}
+
+.root:not([data-disabled]):hover {
+  border-color: var(--cb, var(--at-accent, var(--ds-brand-500))) !important;
+  background: color-mix(in oklch, var(--cb, var(--at-accent, var(--ds-brand-500))) 10%, transparent) !important;
+}
+
+.root[data-state="checked"],
+.root[data-state="indeterminate"] {
+  background: var(--cb, var(--at-accent, var(--ds-brand-500))) !important;
+  border-color: var(--cb, var(--at-accent, var(--ds-brand-500))) !important;
+}
+
+.root:focus-visible {
+  --tw-ring-color: color-mix(in oklch, var(--cb, var(--at-accent, var(--ds-brand-500))) 30%, transparent);
+}

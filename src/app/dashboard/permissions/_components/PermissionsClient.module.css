@@ -1064,13 +1064,10 @@
   justify-content: center;
 }
 
+/* --cb از inline style روی <Checkbox> می‌آید (ROLE_COLOR[role]).
+   این کلاس فقط سایز را تنظیم می‌کند؛ رنگ از --cb خود element می‌آید. */
 .checkbox {
-  accent-color: var(--cb, var(--at-accent));
-}
-
-.checkbox[data-state="checked"] {
-  border-color: var(--cb, var(--at-accent)) !important;
-  background: var(--cb, var(--at-accent)) !important;
+  /* no color override — رنگ از style={{ '--cb': ROLE_COLOR[role] }} */
 }
 
 .tdSuper {

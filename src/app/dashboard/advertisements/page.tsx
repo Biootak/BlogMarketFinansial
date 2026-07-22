@@ -993,7 +993,7 @@ function AdvertisementForm({
                             type="checkbox"
                             checked={field.value}
                             onChange={field.onChange}
-                            className="h-5 w-5 rounded-md border-neutral-300 text-primary-600 transition-all duration-200 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 cursor-pointer"
+                            className="h-5 w-5 rounded-md border-neutral-300 transition-all duration-200 focus:ring-2 focus:ring-offset-2 cursor-pointer [accent-color:var(--at-accent)]"
                           />
                         </FormControl>
                         <FormLabel className="!mt-0 text-sm font-medium text-neutral-700 dark:text-neutral-300 cursor-pointer">

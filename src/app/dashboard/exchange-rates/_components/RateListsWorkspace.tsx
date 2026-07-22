@@ -818,7 +818,7 @@ export default function RateListsWorkspace({ initialLists }: Props) {
                   type="checkbox"
                   id="rate-list-active"
                   {...register('isActive')}
-                  className="h-4 w-4 rounded border-neutral-300 text-primary-600"
+                  className="h-4 w-4 rounded border-neutral-300 [accent-color:var(--at-accent)]"
                 />
                 <Label htmlFor="rate-list-active" className="text-sm font-medium">
                   فعال

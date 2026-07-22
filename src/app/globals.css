@@ -15,9 +15,17 @@
    قاطی شوند؛ نام‌گذاری‌شان متفاوت است (`--color-*` vs `--ds-*`).
    ============================================================================ */
 @theme {
-  /* ---- Typography (font utilities) ---------------------------------------- */
-  --font-vazirmatn: var(--font-vazirmatn), system-ui, sans-serif;
-  --font-family: var(--font-vazirmatn);
+  /* ---- Typography -------------------------------------------------------
+     next/font/local روی <html> دو CSS variable inject می‌کند:
+       --font-estedad  →  "estedad", "estedad Fallback"
+       --font-geist    →  "geist", "geist Fallback"
+
+     ⚠️  این variableها را با var() override نکنید — circular reference
+         می‌شود و مرورگر آنها را ignore می‌کند.
+     ---------------------------------------------------------------------- */
+  /* فقط یک font-family utility برای Tailwind — مستقیم از variable استفاده می‌کند */
+  --font-sans: var(--font-estedad), system-ui, sans-serif;
+  --font-display: var(--font-geist), var(--font-estedad), system-ui, sans-serif;
 
   /* ---- shadcn semantic colors (Tailwind utilities) ------------------------- */
   /* توضیح: bg-background / text-muted-foreground / border-input / ring-ring و
@@ -280,13 +288,18 @@ html {
 }
 
 body {
+  /* next/font/local مقادیر را در --font-estedad و --font-geist inject می‌کند.
+     مستقیم از variable استفاده می‌کنیم — هیچ override اضافه‌ای نیست. */
+  font-family: var(--font-estedad), system-ui, sans-serif;
   font-size: var(--fs-base);
   line-height: 1.45;
   font-weight: 400;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: "ss01", "cv11", "kern";
+  /* ss01=alternate digits, cv01=stylistic numbers در Geist
+     cv11=Persian digits در Vazirmatn, kern=kerning */
+  font-feature-settings: "ss01", "cv01", "cv11", "kern";
   font-synthesis: none;
   overflow-x: clip;
 }
@@ -2084,7 +2097,7 @@ p {
     border-radius: 0.4rem;
     font-size: 0.6875rem;
     font-weight: 600;
-    font-family: var(--font-vazirmatn, system-ui, sans-serif);
+    font-family: var(--font-estedad), system-ui, sans-serif;
     color: oklch(50% 0.01 240);
     background: oklch(96% 0.005 240 / 0.85);
     border: 1px solid oklch(88% 0.006 240 / 0.85);
@@ -3305,7 +3318,7 @@ p {
     border-radius: 0.3rem;
     font-size: 0.65rem;
     font-weight: 600;
-    font-family: var(--font-vazirmatn, system-ui, sans-serif);
+    font-family: var(--font-estedad), system-ui, sans-serif;
     color: oklch(40% 0.01 240);
     background: oklch(100% 0 0 / 0.85);
     border: 1px solid oklch(85% 0.006 240 / 0.9);
