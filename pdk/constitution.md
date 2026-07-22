@@ -1,83 +1,81 @@
-# بخش ۱ — قانون اساسی (Constitution)
+# قانون اساسی PDK (C1–C14)
 
-> این ماژول جزء غیرقابل مذاکره PDK است. هیچ خروجی نباید با آن تضاد داشته باشد.
+> **غیرقابل مذاکره.** هیچ خروجی نباید با این قوانین تضاد داشته باشد.  
+> **تضاد با AGENTS.md:** AGENTS.md در workflow/process حاکم است — این قوانین مکمل هستند.
 
-## ۱.۱ تحلیل قبل از اجرا (C1)
-- پیش از تغییر/نوشتن: کل پروژه را بررسی کن.
-- با جستجو کد مشابه بیاب (Reuse → Refactor → Extend).
-- فقط پس از درک کافی اقدام کن. کد بدون تحلیل ممنوع.
+---
 
-## ۱.۲ کیفیت بر سرعت (C2)
-- کیفیت همیشه بر سرعت اولویت دارد.
-- هیچ Technical Debt آگاهانه‌ای ایجاد نکن.
-- «کد کار می‌کند» کافی نیست؛ باید درست، ایمن و قابل نگهداری باشد.
+## C1 — تحلیل قبل از کد
+- grep + read_file قبل از هر تغییر
+- Reuse → Refactor → Extend → New (به ترتیب)
+- کد بدون تحلیل = نقض مستقیم
 
-## ۱.۳ مخالفت سازنده (C3)
-- اگر ایده اشتباه است یا راه بهتری هست، مخالفت کن.
-- هدف تأیید کاربر نیست؛ بهترین محصول ممکن است.
+## C2 — کیفیت > سرعت
+- Technical Debt آگاهانه ممنوع
+- «کار می‌کند» کافی نیست — باید درست، ایمن، و قابل نگهداری باشد
 
-## ۱.۴ ممنوعیت‌های مطلق (C4)
-ممنوع:
-- کد بدون تحلیل
-- حدس schema / ساختار دیتابیس
-- API خیالی (غیرمستند)
-- کامپوننت تکراری
-- تغییر معماری بی‌دلیل
-- کتابخونه قدیمی / ترک‌خورده
-- نادیده گرفتن امنیت / Performance / Responsive / RTL / Accessibility
-- کد placeholder، `TODO`، پاک کردن کد فعلی بی‌دلیل
-- طراحی کلیشه‌ای شبیه Template
-- خروجی شبیه AI Slop (→ بخش ۸ روبربر)
+## C3 — مخالفت سازنده
+- اگر راه بهتری هست → همان لحظه به کاربر بگو
+- هدف بهترین محصول است، نه تأیید
 
-## ۱.۵ زبان و جهت‌نما (C5)
-- کد/دستور/مسیر: انگلیسی.
-- رابط کاربر: **دوزبانه — فارسی + دری/پشتو** (تصمیم کاربر). هر دو RTL.
-- ارز رابط: **AFN** (افغانی) در کنار نمایش تومان/ارزهای موجود.
-- **RTL همیشه روشن.**
-- هرگز `left/right` سخت‌کد نکن؛ logical properties: `margin-inline`, `inset-inline`, `padding-block`.
-- از hook موجود `@/hooks/useDirection` استفاده کن (واقعی و تست‌شده در ریپو).
-- تقویم/عدد: تطبیق `src/lib/fa-number.ts` برای ارقام دری/پشتو + فرمت AFN.
-
-## ۱.۶ Type Safety (C6)
-- TypeScript strict اجباری.
-- هیچ `any`، هیچ `ts-ignore` / `ts-expect-error` بی‌دلیل.
-- هیچ cast (`as`) بی‌دلیل.
-
-## ۱.۷ امنیت از روز صفر (C7)
-- امنیت feature نیست؛ زیربنا است.
-- هر endpoint/فرم/تراکنش با Threat Model بررسی شود (→ `pdk/security.md`).
-- داده مالی همیشه رمزنگاری‌شده در سکون و انتقال.
-
-## ۱.۸ قابلیت آزمون (C8)
-- بدون تست، تحویل ممنوع.
-- هر منطق مالی/احراز باید تست داشته باشد.
-- پول «تقریبی» نداریم.
-
-## ۱.۹ شکل پاسخ API یکپارچه (C9)
+## C4 — ممنوع‌های مطلق
 ```
-{ success: true, data }
-{ success: false, error: { code, message } }
+❌ any / ts-ignore / TODO / placeholder / console.log
+❌ schema/API خیالی (غیرمستند از prisma/schema.prisma)
+❌ کامپوننت تکراری (قبل از ساخت grep کن)
+❌ طراحی کلیشه‌ای / AI Slop
+❌ کتابخانه ترک‌شده / قدیمی
+❌ تغییر معماری بدون دلیل
 ```
 
-## ۱.۱۰ قابلیت مشاهده (C10)
-- هر عملیات حساس در audit log غیرقابل تغییر ثبت شود.
-- خطاها بدون ردپا نمانند.
+## C5 — زبان و RTL
+- **UI:** فارسی (اصلی پروژه)
+- **کد/دستور/مسیر:** انگلیسی
+- **RTL:** همیشه — `margin-inline`, `padding-inline`, `inset-inline` — هرگز `left/right`
+- `useDirection` hook از `@/hooks/useDirection`
+- اعداد: `src/lib/fa-number.ts`
 
-## ۱.۱۱ گزارش پس از هر مرحله (C11)
-- پس از هر مرحله تحلیلی گزارش بده و منتظر تأیید بمان.
-- اجرای کد فقط پس از تأیید مرحله مربوطه.
+## C6 — Type Safety
+- TypeScript strict — هیچ `any`، هیچ `ts-ignore`، هیچ `as` بدون دلیل
+- همه ورودی خارجی با Zod
 
-## ۱.۱۲ بازاستفاده قبل از ساخت (C12)
-- پیش از ساخت جدید، ببین آیا در کد موجود / کتابخونه تیم / design system هست.
-- **در این ریپو:** حتماً از `src/components/ui/*` (کامپوننت‌ها) و `src/components/ds/*` (توکن‌های OKLCH) و `lib/db`, `lib/auth`, `lib/ratelimit` استفاده کن.
-- **قبل از هر صفحه فین‌تک، `src/components/ds/styles/tokens.css` و `src/components/ui` را بخوان** (منبع حقیقت طراحی).
-- تکرار ممنوع؛ سیستم رقیب نساز.
+## C7 — امنیت = زیربنا
+- هر endpoint: auth + RBAC + rate-limit + Zod validation
+- داده مالی حساس: رمزنگاری at-rest + TLS
+- Threat model قبل از پیاده‌سازی هر ماژول مالی جدید
 
-## ۱.۱۳ تخصصی‌بودن طراحی / Anti-Slop (C13)
-- هر خروجی بصری باید از **چرخه طراحی** (`pdk/design-cycle.md`) عبور کند.
-- در **روبربر AI-Slop** (`pdk/design-cycle.md#rubric`) حداقل امتیاز قبولی را بگیرد.
-- در غیر این صورت برگرد به ابتدا.
+## C8 — تست
+- منطق مالی ≥80% coverage
+- هر LedgerEntry/Transaction جدید تست دارد
+- «بدون تست» = تحویل ممنوع برای کد مالی
 
-## ۱.۱۴ تحقیق مستمر ۲۰۲۶ (C14)
-- برای هر تصمیم طراحی/معماری/امنیت، از تازه‌ترین منابع ۲۰۲۶ استفاده کن.
-- به دانش داخلی اکتفا نکن. منابع در `pdk/references.md` ثبت شوند.
+## C9 — شکل API یکپارچه
+```ts
+{ success: true, data: T }
+{ success: false, error: { code: string, message: string } }
+```
+کدهای خطا: `VALIDATION | UNAUTHENTICATED | FORBIDDEN | NOT_FOUND | CONFLICT | RATE_LIMITED | INTERNAL`
+
+## C10 — قابلیت مشاهده
+- هر عملیات حساس → `AuditLog` (actor, action, entityType, entityId, ip, beforeHash, afterHash)
+- خطاها → Sentry — هیچ silent fail
+
+## C11 — تأیید مرحله‌ای (فقط قابلیت P0 جدید)
+- برای ساختن قابلیت‌های بزرگ جدید (KYC، Ledger، Auth): تحلیل → تأیید → کد
+- برای تسک‌های روزمره: AGENTS.md Build→Show→Improve حاکم است
+
+## C12 — Reuse اجباری
+- **UI:** `src/components/ui/*` — هرگز Modal/Button/Input تکراری
+- **DB:** فقط `@/lib/db` — هرگز `new PrismaClient()`
+- **Auth:** `@/lib/auth`
+- **Rate limit:** `@/lib/ratelimit` (Upstash)
+- **Cache invalidation:** `@/lib/revalidate` — هرگز `next/cache` مستقیم
+- قبل از هر صفحه UI: `src/components/ds/styles/tokens.css` بخوان
+
+## C13 — Anti-Slop (فقط UI)
+- design-cycle.md برای هر صفحه جدید
+- روبربر AI-Slop: ≤2 مردود = قبول، بیشتر = بازگشت به گام 1
+
+## C14 — تحقیق 2026
+- هر تصمیم معماری/امنیت/UX: منبع 2026 اجباری
+- منابع در `pdk/references.md` ثبت شوند

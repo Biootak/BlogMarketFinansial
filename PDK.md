@@ -1,64 +1,57 @@
-# PDK — Product/Project Development Kit
+# PDK v2 — Product Development Kit
 
-> **یک کیت واحد برای کل مسیر توسعه.** این فایل «نمایه واحد» (entry point) است و به ماژول‌های تخصصی در پوشه `pdk/` ارجاع می‌دهد.
-> هر جلسه توسعه از اینجا شروع می‌شود؛ ابتدا این فایل، سپس ماژول مرتبط.
-> زبان رابط کاربر (end-user copy): **دوزبانه — فارسی + دری/پشتو** (RTL). زبان کد، دستورات، مسیرها: **انگلیسی**.
->
-> ⚠️ **آشتی با واقعیت:** این PDK روی ریپؤ موجود `E:\FinancialMarket` (بلاگ مالی فارسی) بنا شده که طبق تصمیم کاربر به **فین‌تک افغانستان گسترش می‌یابد**. جزئیات در [`pdk/project-reality.md`](pdk/project-reality.md). سیستم طراحی موجود (`src/components/ds` + `src/components/ui`) **حفظ و توسعه** می‌یابد، نه جایگزینی.
-
----
-
-## نقشه ماژول‌ها (یک کیت واحد)
-
-| ماژول | مسیر | محتوا |
-|-------|------|-------|
-| **تحلیل واقعیت ریپو** | [`pdk/project-reality.md`](pdk/project-reality.md) | وضعیت واقعی این ریپو + بازاستفاده + شکاف‌ها + آشتی |
-| قانون اساسی | [`pdk/constitution.md`](pdk/constitution.md) | ۱۴ قانون دائمی (غیرقابل مذاکره) |
-| فرآیند ۱۲ مرحله‌ای | [`pdk/process.md`](pdk/process.md) | گردش کار تحلیل→ساخت |
-| معماری | [`pdk/architecture.md`](pdk/architecture.md) | stack، اصول، جریان تراکنش، ADR |
-| امنیت | [`pdk/security.md`](pdk/security.md) | احراز، RBAC، رمزنگاری، threat model، PCI |
-| استانداردهای کد | [`pdk/coding-standards.md`](pdk/coding-standards.md) | TS، کامپوننت، state، clean code |
-| دیتابیس | [`pdk/database.md`](pdk/database.md) | ledger، مدل‌ها، بهره‌وری |
-| API | [`pdk/api.md`](pdk/api.md) | شکل پاسخ، خطا، idempotency، rate limit |
-| **DESIGN SYSTEM** | [`pdk/design-system.md`](pdk/design-system.md) | فلسفه، توکن‌های کامل، مولفه‌ها، a11y، دارک‌مود |
-| **چرخه طراحی + AI-Slop** | [`pdk/design-cycle.md`](pdk/design-cycle.md) | چرخه خوداصلاح‌گر + روبربر ۱۰ موردی |
-| نقشه صفحات | [`pdk/blueprints/`](pdk/blueprints/) | wallet / transfer / kyc / admin |
-| PRD (MVP) | [`pdk/prd/mvp.md`](pdk/prd/mvp.md) | اولویت‌بندی + قالب PRD |
-| بنچمارک رقبا | [`pdk/benchmarks.md`](pdk/benchmarks.md) | مقایسه جهانی + محلی |
-| چک‌لیست ضد شکست | [`pdk/anti-failure.md`](pdk/anti-failure.md) | تایید پیش از اتمام |
-| منابع ۲۰۲۶ | [`pdk/references.md`](pdk/references.md) | تحقیقات و استانداردها |
+> **ریپو:** `blogmarketfinansial.ir` — بلاگ مالی فارسی + پلتفرم صرافی/فین‌تک  
+> **Stack:** Next.js 16 + Prisma 6 + PostgreSQL + NextAuth v5 + Tailwind v4  
+> **زبان UI:** فارسی (اصلی). کد/دستور/مسیر: انگلیسی.  
+> **Workflow:** AGENTS.md حاکم است — PDK مرجع فنی/دامنه است، نه جایگزین AGENTS.md.
 
 ---
 
-## خلاصه قانون اساسی (C1–C14)
-1. **تحلیل قبل از اجرا** — هیچ کد بدون درک.
-2. **کیفیت بر سرعت** — Technical Debt آگاهانه ممنوع.
-3. **مخالفت سازنده** — هدف بهترین محصول، نه تأیید.
-4. **ممنوعیت‌های مطلق** — کد بدون تحلیل، API خیالی، کلیشه، placeholder، AI Slop.
-5. **زبان/RTL** — انگلیسی در کد، دری/پشتو در رابط، RTL همیشه، logical properties.
-6. **Type Safety** — TS strict، هیچ `any`.
-7. **امنیت از روز صفر** — زیربنا، نه feature.
-8. **قابلیت آزمون** — بدون تست ممنوع.
-9. **شکل پاسخ یکپارچه** — `{success,data}` / `{success:false,error}`.
-10. **قابلیت مشاهده** — audit log غیرقابل تغییر.
-11. **گزارش پس از هر مرحله** — منتظر تأیید.
-12. **بازاستفاده قبل از ساخت** — تکرار ممنوع.
-13. **تخصصی‌بودن طراحی / Anti-Slop** — چرخه طراحی + روبربر اجباری.
-14. **تحقیق مستمر ۲۰۲۶** — به دانش داخلی اکتفا نکن.
+## ماژول‌ها
 
-## چرخه طراحی (خلاصه — جزئیات در `pdk/design-cycle.md`)
-```
-تحقیق → جهت خلاقانه(متن) → کاوش جهت‌ها(≥۳) → قفل توکن‌ها
-   → ساخت صفحه → خودآزمونی AI-Slop ──رد؟──▶ برگشت به ابتدا
-   → تایید تخصصی‌بودن ──رد؟──▶ برگشت کامل → خروج
-```
-
-## فرآیند ۱۲ مرحله‌ای (خلاصه)
-تحلیل پروژه → بازار → رقبا → معماری → امنیت → MVP → PRD → دیتابیس → API → **طراحی UI/UX (چرخه)** → برنامه → پیاده‌سازی.
-پس از هر مرحله تحلیلی گزارش بده و منتظر تأیید بمان.
+| موضوع | فایل | بارگذاری |
+|-------|------|---------|
+| واقعیت ریپو + صفحات موجود | [`pdk/project-reality.md`](pdk/project-reality.md) | اول هر تسک جدید |
+| قوانین دائمی (C1–C14) | [`pdk/constitution.md`](pdk/constitution.md) | هر تسک |
+| معماری + stack | [`pdk/architecture.md`](pdk/architecture.md) | تغییر ساختار/DB/auth |
+| امنیت + RBAC | [`pdk/security.md`](pdk/security.md) | هر endpoint مالی |
+| دیتابیس — مدل‌های واقعی | [`pdk/database.md`](pdk/database.md) | query/migration |
+| API — شکل پاسخ + خطا | [`pdk/api.md`](pdk/api.md) | هر route/action |
+| کدنویسی | [`pdk/coding-standards.md`](pdk/coding-standards.md) | هر کد |
+| Design System | [`pdk/design-system.md`](pdk/design-system.md) | هر UI |
+| چرخه طراحی + Anti-Slop | [`pdk/design-cycle.md`](pdk/design-cycle.md) | هر صفحه جدید |
+| Blueprints | [`pdk/blueprints/`](pdk/blueprints/) | ساختن صفحه |
+| MVP + اولویت‌ها | [`pdk/prd/mvp.md`](pdk/prd/mvp.md) | برنامه‌ریزی |
+| Anti-Failure checklist | [`pdk/anti-failure.md`](pdk/anti-failure.md) | قبل از «تمام» |
+| بنچمارک رقبا | [`pdk/benchmarks.md`](pdk/benchmarks.md) | UX/feature comparison |
 
 ---
 
-> **PDK v1.3 — کیت واحد (آشت‌شده با واقعیت ریپو).** نمایه در ریشه + ماژول‌های تخصصی در `pdk/`.
-> افزوده شد: [`pdk/project-reality.md`](pdk/project-reality.md) (تحلیل واقعی ریپو + آشتی). برند ایندیگو موجود حفظ شد؛ زعفران لغو شد؛ دوزبانه فارسی+دری/پشتو تصویب شد.
-> هرگونه تغییر در اصول با تأیید مالک محصول (کاربر) و ثبت در ماژول مربوطه باشد.
+## قوانین سریع (C1–C14 خلاصه)
+
+| # | قانون | اجرا |
+|---|-------|------|
+| C1 | تحلیل قبل از کد | grep + read_file قبل از هر تغییر |
+| C2 | کیفیت > سرعت | no tech debt |
+| C4 | ممنوع‌ها | no any/TODO/placeholder/AI-slop/duplicate |
+| C5 | زبان/RTL | فارسی UI، انگلیسی کد، logical props، `useDirection` |
+| C6 | TS strict | no any, no ts-ignore |
+| C7 | امنیت = زیربنا | auth+RBAC+validation روی هر endpoint |
+| C9 | API shape | `{success,data}` / `{success:false,error:{code,msg}}` |
+| C10 | AuditLog | هر عملیات حساس → `AuditLog` |
+| C12 | Reuse | `ui/*` + `lib/db` + `lib/auth` + `lib/ratelimit` |
+| C13 | Anti-Slop | design-cycle برای هر UI جدید |
+
+---
+
+## تضاد PDK ↔ AGENTS.md — قانون حل‌کننده
+
+| موضوع | حاکم |
+|-------|------|
+| Workflow (Build→Show→Improve) | **AGENTS.md** |
+| تأیید مرحله‌ای (process.md) | فقط برای قابلیت‌های P0 جدید |
+| مدل‌های DB / schema | **pdk/database.md** (از روی prisma/schema.prisma) |
+| نقش‌ها / RBAC | **pdk/security.md** |
+| UI tokens | **pdk/design-system.md** → `tokens.css` |
+
+> **PDK v2 — 2026-07** — هماهنگ با AGENTS.md. تضاد‌های نسخه قبل حل شد.
