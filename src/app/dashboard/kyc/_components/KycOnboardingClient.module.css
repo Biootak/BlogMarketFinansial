@@ -1,105 +1,131 @@
-/* KycOnboardingClient.module.css — 2026 progressive KYC wizard */
+/* =============================================================================
+   KycOnboardingClient.module.css
+   RTL-first Persian Fintech KYC Wizard — 2026 premium quality
+   ─────────────────────────────────────────────────────────────────────────────
+   Conventions:
+   • All colours via --ds-* / --ds-status-* tokens — zero hardcoded hex/rgb
+   • Logical properties only  (inset-inline-*, padding-inline-*, etc.)
+   • RTL-safe stepper connector: inset-inline-start/end, no translateX
+   • Spring micro-interactions on interactive surfaces
+   • Animations: fadeSlideDown (entrance) · popIn (status icon) · shake (error)
+   ============================================================================= */
+
+/* ── Keyframes ──────────────────────────────────────────────────────────────── */
+
+@keyframes fadeSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.55);
+  }
+  65% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-5px); }
+  40%       { transform: translateX(5px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+
+@keyframes connectorGrow {
+  from { opacity: 0; transform: scaleX(0); }
+  to   { opacity: 1; transform: scaleX(1); }
+}
+
+/* ── Page shell ─────────────────────────────────────────────────────────────── */
 
 .page {
-  max-width: 560px;
-}
-
-/* ── Status views (PENDING / APPROVED / REJECTED) ── */
-.statusCard {
+  max-inline-size: 560px;
+  width: 100%;
+  margin-inline: auto;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
   gap: var(--ds-space-4);
-  padding: var(--ds-space-10) var(--ds-space-6);
-  background: var(--ds-surface-elevated);
-  border: 1px solid var(--ds-border-default);
-  border-radius: var(--ds-radius-2xl);
-  box-shadow: var(--ds-shadow-md);
-  animation: fadeUp var(--ds-duration-base) var(--ds-ease-out-quart);
+  animation: fadeSlideDown var(--ds-duration-base) var(--ds-ease-out-quart) both;
 }
 
-.statusIconWrap {
-  width: 72px;
-  height: 72px;
-  border-radius: var(--ds-radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+/* ── Wizard card ────────────────────────────────────────────────────────────── */
 
-.statusTitle {
-  font-size: var(--ds-text-2xl);
-  font-weight: var(--ds-weight-bold);
-  color: var(--ds-text-primary);
-  line-height: var(--ds-leading-snug);
-}
-
-.statusDesc {
-  font-size: var(--ds-text-sm);
-  color: var(--ds-text-muted);
-  max-width: 36ch;
-  line-height: var(--ds-leading-relaxed);
-}
-
-.statusReason {
-  width: 100%;
-  padding: var(--ds-space-3) var(--ds-space-4);
-  background: var(--ds-status-error-bg);
-  border: 1px solid var(--ds-status-error-border);
-  border-radius: var(--ds-radius-lg);
-  font-size: var(--ds-text-sm);
-  color: var(--ds-status-error-fg);
-  text-align: start;
-}
-
-/* ── Wizard card ── */
 .wizardCard {
   background: var(--ds-surface-elevated);
   border: 1px solid var(--ds-border-default);
   border-radius: var(--ds-radius-2xl);
-  box-shadow: var(--ds-shadow-md);
+  box-shadow: var(--ds-shadow-lg);
   overflow: hidden;
-  animation: fadeUp var(--ds-duration-base) var(--ds-ease-out-quart);
+  /* Stagger child entrance after page */
+  animation: fadeSlideDown var(--ds-duration-slow) var(--ds-ease-out-quart) 40ms both;
 }
 
-/* ── Progress stepper ── */
+/* ── Stepper ────────────────────────────────────────────────────────────────── */
+
 .stepper {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   padding: var(--ds-space-5) var(--ds-space-6);
-  border-bottom: 1px solid var(--ds-border-subtle);
+  border-block-end: 1px solid var(--ds-border-subtle);
   background: var(--ds-canvas-subtle);
-  gap: 0;
+  /* no gap — flex: 1 on items handles distribution */
 }
 
 .stepItem {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--ds-space-1);
-  flex: 1;
   position: relative;
 }
 
+/*
+  RTL-safe connector line.
+  Sits between the previous item's dot and the current item's dot.
+  inset-inline-start: 0  → starts at our own inline-start edge
+  inset-inline-end: 50%  → stops at horizontal midpoint (centre of own dot)
+  No translateX — works identically in LTR and RTL.
+*/
 .stepItem + .stepItem::before {
   content: "";
   position: absolute;
-  top: 16px;
+  block-start: 15px; /* vertically centred with 32px dot */
+  inset-inline-start: 0;
   inset-inline-end: 50%;
-  width: 100%;
+  width: auto;
   height: 1px;
   background: var(--ds-border-default);
-  transform: translateX(50%);
+  transform-origin: inline-start center;
 }
 
-.stepItem.done + .stepItem::before {
+/* Connector turns success-green when the preceding step is done */
+.stepItem.done + .stepItem::before,
+.done + .stepItem::before {
   background: var(--ds-status-success-border);
+  animation: connectorGrow var(--ds-duration-base) var(--ds-ease-out-expo) both;
 }
+
+/* ── Step dot ───────────────────────────────────────────────────────────────── */
 
 .stepDot {
   width: 32px;
   height: 32px;
+  flex-shrink: 0;
   border-radius: var(--ds-radius-full);
   display: flex;
   align-items: center;
@@ -108,7 +134,10 @@
   font-weight: var(--ds-weight-bold);
   position: relative;
   z-index: 1;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition:
+    background var(--ds-duration-fast) var(--ds-ease-out-quart),
+    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .stepDot.pending {
@@ -119,43 +148,66 @@
 
 .stepDot.active {
   background: var(--ds-brand-500);
+  border: none;
   color: var(--ds-text-inverse);
-  box-shadow: 0 0 0 4px oklch(58% 0.12 165 / 0.2);
+  box-shadow:
+    0 0 0 3px var(--ds-canvas-subtle),
+    0 0 0 5px color-mix(in oklch, var(--ds-brand-500), transparent 55%);
+  animation: popIn var(--ds-duration-base) var(--ds-ease-spring) both;
 }
 
 .stepDot.done {
   background: var(--ds-status-success-bg);
-  border: 1px solid var(--ds-status-success-border);
+  border: 1.5px solid var(--ds-status-success-border);
   color: var(--ds-status-success-fg);
 }
+
+/* ── Step label ─────────────────────────────────────────────────────────────── */
 
 .stepLabel {
   font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
   white-space: nowrap;
+  transition: color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  text-align: center;
 }
 
 .stepLabel.active {
   color: var(--ds-brand-600);
   font-weight: var(--ds-weight-semibold);
 }
+
 .stepLabel.done {
   color: var(--ds-status-success-fg);
+  font-weight: var(--ds-weight-medium);
 }
 
-/* ── Form area ── */
+/* ── Form body ──────────────────────────────────────────────────────────────── */
+
 .form {
   padding: var(--ds-space-6);
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-4);
+  animation: fadeSlideDown var(--ds-duration-base) var(--ds-ease-out-quart) both;
+}
+
+/* Alias kept for any external usage */
+.step {
+  padding: var(--ds-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  animation: fadeSlideDown var(--ds-duration-base) var(--ds-ease-out-quart) both;
 }
 
 .formTitle {
   font-size: var(--ds-text-lg);
   font-weight: var(--ds-weight-bold);
   color: var(--ds-text-primary);
-  margin-bottom: var(--ds-space-1);
+  line-height: var(--ds-leading-snug);
+  margin-block-end: var(--ds-space-1);
+  letter-spacing: -0.01em;
 }
 
 .formDesc {
@@ -163,6 +215,8 @@
   color: var(--ds-text-muted);
   line-height: var(--ds-leading-relaxed);
 }
+
+/* ── Field group & individual field ─────────────────────────────────────────── */
 
 .fieldGroup {
   display: flex;
@@ -180,34 +234,97 @@
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-medium);
   color: var(--ds-text-secondary);
+  line-height: var(--ds-leading-snug);
 }
 
+/*
+  .input — override for bare <input> elements that don't use the Input component.
+  The shared Input component applies its own styles; this covers fallback usage.
+*/
+.input {
+  inline-size: 100%;
+  padding-block: var(--ds-space-2);
+  padding-inline: var(--ds-space-3);
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-primary);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-md);
+  outline: none;
+  transition:
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.input:focus {
+  border-color: var(--ds-brand-500);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500), transparent 82%);
+}
+
+/* Hint text below a field */
+.hint,
 .inputHint {
   font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
+  line-height: var(--ds-leading-normal);
 }
 
-/* ── Error banner ── */
+/* ── Upload area ─────────────────────────────────────────────────────────────── */
+
+/* Reusable upload zone (consumed if rendered via JSX class="s.uploadArea") */
+.uploadArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-6) var(--ds-space-4);
+  border: 2px dashed var(--ds-border-default);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-canvas-subtle);
+  cursor: pointer;
+  transition:
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    background var(--ds-duration-fast) var(--ds-ease-out-quart);
+  text-align: center;
+}
+
+.uploadArea:hover,
+.uploadArea:focus-within {
+  border-color: var(--ds-brand-500);
+  background: color-mix(in oklch, var(--ds-brand-50), transparent 20%);
+}
+
+.uploadArea:active {
+  background: var(--ds-brand-100);
+}
+
+/* ── Error banner ───────────────────────────────────────────────────────────── */
+
 .error {
   display: flex;
   align-items: flex-start;
   gap: var(--ds-space-2);
-  padding: var(--ds-space-3) var(--ds-space-4);
+  padding-block: var(--ds-space-3);
+  padding-inline: var(--ds-space-4);
   background: var(--ds-status-error-bg);
   border: 1px solid var(--ds-status-error-border);
   border-radius: var(--ds-radius-lg);
   font-size: var(--ds-text-sm);
   color: var(--ds-status-error-fg);
-  animation: shake 0.3s var(--ds-ease-spring);
+  line-height: var(--ds-leading-relaxed);
+  animation: shake 0.35s var(--ds-ease-spring);
 }
 
-/* ── Footer ── */
+/* ── Footer nav ─────────────────────────────────────────────────────────────── */
+
 .footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--ds-space-4) var(--ds-space-6);
-  border-top: 1px solid var(--ds-border-subtle);
+  padding-block: var(--ds-space-4);
+  padding-inline: var(--ds-space-6);
+  border-block-start: 1px solid var(--ds-border-subtle);
   background: var(--ds-canvas-subtle);
 }
 
@@ -216,29 +333,65 @@
   color: var(--ds-text-muted);
 }
 
-/* ── Review step ── */
+/* ── Spring micro-interaction on buttons (global selector) ───────────────────
+   Targets the shared Button component rendered inside this module's footer.
+   Uses :global so it reaches the component's root element without CSS-modules
+   scoping. We key on the button[data-variant] or just button to keep it light. */
+
+.footer button,
+.statusCard button {
+  transition:
+    transform var(--ds-duration-fast) var(--ds-ease-spring),
+    filter var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.footer button:hover:not(:disabled),
+.statusCard button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.footer button:active:not(:disabled),
+.statusCard button:active:not(:disabled) {
+  transform: scale(0.97);
+  filter: brightness(0.97);
+}
+
+/* ── Review grid (step 3) ───────────────────────────────────────────────────── */
+
 .reviewGrid {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-2);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+  overflow: hidden;
 }
 
 .reviewRow {
   display: flex;
   gap: var(--ds-space-3);
-  align-items: flex-start;
-  padding: var(--ds-space-2) 0;
-  border-bottom: 1px solid var(--ds-border-subtle);
+  align-items: baseline;
+  padding-block: var(--ds-space-2);
+  padding-inline: var(--ds-space-4);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
+
 .reviewRow:last-child {
-  border-bottom: none;
+  border-block-end: none;
+}
+
+.reviewRow:nth-child(even) {
+  background: var(--ds-canvas-subtle);
 }
 
 .reviewKey {
+  flex-shrink: 0;
+  inline-size: 96px;
   font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
-  min-width: 100px;
-  padding-top: 2px;
+  font-weight: var(--ds-weight-medium);
+  padding-block-start: 2px;
 }
 
 .reviewVal {
@@ -246,28 +399,162 @@
   font-weight: var(--ds-weight-medium);
   color: var(--ds-text-primary);
   word-break: break-all;
+  line-height: var(--ds-leading-snug);
 }
 
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* ── Status views: shared card ──────────────────────────────────────────────── */
+
+.statusCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--ds-space-4);
+  padding-block: var(--ds-space-10);
+  padding-inline: var(--ds-space-6);
+  background: var(--ds-surface-elevated);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-2xl);
+  box-shadow: var(--ds-shadow-lg);
+  animation: fadeSlideDown var(--ds-duration-base) var(--ds-ease-out-quart) both;
 }
 
-@keyframes shake {
-  0%,
-  100% {
-    transform: translateX(0);
+/* Generic aliases used by brief (maps to statusCard internals) */
+.status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--ds-space-4);
+}
+
+/* ── Status icon wrapper ─────────────────────────────────────────────────────── */
+
+.statusIconWrap,
+.statusIcon {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--ds-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  animation: popIn var(--ds-duration-slow) var(--ds-ease-spring) 80ms both;
+}
+
+/* ── PENDING ─────────────────────────────────────────────────────────────────── */
+
+.statusCard[data-status="PENDING"] .statusIconWrap {
+  background: var(--ds-status-pending-bg);
+  border: 1.5px solid var(--ds-status-pending-border);
+}
+
+.statusCard[data-status="PENDING"] .statusTitle {
+  color: var(--ds-status-pending-fg);
+}
+
+/* ── APPROVED ────────────────────────────────────────────────────────────────── */
+
+.statusCard[data-status="APPROVED"] .statusIconWrap {
+  background: var(--ds-status-success-bg);
+  border: 1.5px solid var(--ds-status-success-border);
+}
+
+.statusCard[data-status="APPROVED"] .statusTitle {
+  color: var(--ds-status-success-fg);
+}
+
+/* ── REJECTED ────────────────────────────────────────────────────────────────── */
+
+.statusCard[data-status="REJECTED"] .statusIconWrap {
+  background: var(--ds-status-error-bg);
+  border: 1.5px solid var(--ds-status-error-border);
+}
+
+.statusCard[data-status="REJECTED"] .statusTitle {
+  color: var(--ds-status-error-fg);
+}
+
+/* ── Status text ─────────────────────────────────────────────────────────────── */
+
+.statusTitle {
+  font-size: var(--ds-text-2xl);
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-text-primary);
+  line-height: var(--ds-leading-snug);
+  letter-spacing: -0.015em;
+}
+
+.statusDesc {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-muted);
+  max-inline-size: 38ch;
+  line-height: var(--ds-leading-relaxed);
+}
+
+/* ── Status badge (chip / pill variant) ──────────────────────────────────────── */
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  padding-block: 3px;
+  padding-inline: var(--ds-space-3);
+  border-radius: var(--ds-radius-full);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  line-height: 1;
+}
+
+.statusBadge[data-status="PENDING"] {
+  background: var(--ds-status-pending-bg);
+  border: 1px solid var(--ds-status-pending-border);
+  color: var(--ds-status-pending-fg);
+}
+
+.statusBadge[data-status="APPROVED"] {
+  background: var(--ds-status-success-bg);
+  border: 1px solid var(--ds-status-success-border);
+  color: var(--ds-status-success-fg);
+}
+
+.statusBadge[data-status="REJECTED"] {
+  background: var(--ds-status-error-bg);
+  border: 1px solid var(--ds-status-error-border);
+  color: var(--ds-status-error-fg);
+}
+
+/* ── Rejection reason box ────────────────────────────────────────────────────── */
+
+.statusReason,
+.rejectedBox {
+  inline-size: 100%;
+  padding-block: var(--ds-space-3);
+  padding-inline: var(--ds-space-4);
+  background: var(--ds-status-error-bg);
+  border: 1px solid var(--ds-status-error-border);
+  border-radius: var(--ds-radius-lg);
+  font-size: var(--ds-text-sm);
+  color: var(--ds-status-error-fg);
+  line-height: var(--ds-leading-relaxed);
+  text-align: start;
+}
+
+/* ── Reduced-motion overrides ────────────────────────────────────────────────── */
+/* tokens.css already covers *,*::before with 0.01ms globally, but we
+   re-assert transform removal here for safety on the stepper connector. */
+@media (prefers-reduced-motion: reduce) {
+  .stepItem + .stepItem::before {
+    animation: none;
   }
-  25% {
-    transform: translateX(-4px);
-  }
-  75% {
-    transform: translateX(4px);
+  .page,
+  .wizardCard,
+  .form,
+  .step,
+  .statusCard,
+  .statusIconWrap,
+  .statusIcon,
+  .stepDot.active {
+    animation: none;
   }
 }

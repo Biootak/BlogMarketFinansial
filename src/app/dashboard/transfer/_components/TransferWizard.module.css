@@ -1,25 +1,50 @@
-/* TransferWizard.module.css — 2026 P2P transfer wizard */
+/* ============================================================================
+   TransferWizard.module.css — 2026 P2P Transfer Wizard
+   RTL-first Persian fintech · Million-dollar craft · DS tokens only
+   ============================================================================ */
 
+/* ── Page shell ──────────────────────────────────────────────────────────── */
 .page {
-  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  max-inline-size: 520px;
+  inline-size: 100%;
 }
 
+/* ── Wizard card ─────────────────────────────────────────────────────────── */
+/*
+   Elevation tier 2:
+   - hairline border (border-default @ 0.8 opacity) separates from canvas
+   - shadow-md lifts card above page layer
+   - surface-elevated (semi-transparent white / dark) enables depth layering
+*/
 .wizardCard {
   background: var(--ds-surface-elevated);
   border: 1px solid var(--ds-border-default);
   border-radius: var(--ds-radius-2xl);
   box-shadow: var(--ds-shadow-md);
   overflow: hidden;
-  animation: fadeUp var(--ds-duration-base) var(--ds-ease-out-quart);
+  animation: fadeUp var(--ds-duration-base) var(--ds-ease-out-quart) both;
 }
 
-/* ── Stepper ── */
+/* ── Stepper ─────────────────────────────────────────────────────────────── */
+/*
+   Connector bar strategy (RTL-safe, no translateX):
+   Each .stepItem + .stepItem draws its connector via ::before anchored to
+   inset-inline-start: 0 (the logical "start" edge, which is the right side in
+   RTL) and inset-inline-end: 50% (up to the center of the current dot).
+   width: auto lets the browser compute the dimension from the two inset values.
+   This is direction-agnostic — no transform needed.
+*/
 .stepper {
   display: flex;
   align-items: center;
-  padding: var(--ds-space-4) var(--ds-space-6);
+  padding-block: var(--ds-space-4);
+  padding-inline: var(--ds-space-6);
   border-bottom: 1px solid var(--ds-border-subtle);
   background: var(--ds-canvas-subtle);
+  gap: 0;
 }
 
 .stepItem {
@@ -31,16 +56,20 @@
   position: relative;
 }
 
+/* Connector: runs from the inline-start edge of the current item to its center */
 .stepItem + .stepItem::before {
   content: "";
   position: absolute;
   top: 15px;
+  inset-inline-start: 0;
   inset-inline-end: 50%;
-  width: 100%;
+  width: auto;
   height: 1px;
   background: var(--ds-border-default);
-  transform: translateX(50%);
+  transition: background var(--ds-duration-base) var(--ds-ease-out-quart);
 }
+
+/* Completed connector gets success tint */
 .stepItem.done + .stepItem::before {
   background: var(--ds-status-success-border);
 }
@@ -56,17 +85,28 @@
   z-index: 1;
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-base) var(--ds-ease-out-quart), border-color var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
 }
+
+/* Tier: pending — recessed, no emphasis */
 .stepDot.pending {
   background: var(--ds-canvas);
   border: 2px solid var(--ds-border-default);
   color: var(--ds-text-muted);
 }
+
+/* Tier: active — brand fill + 4px halo ring (DS brand token, no inline oklch) */
 .stepDot.active {
   background: var(--ds-brand-500);
   color: var(--ds-text-inverse);
-  box-shadow: 0 0 0 4px oklch(58% 0.12 165 / 0.18);
+  border: none;
+  box-shadow: 0 0 0 4px var(--ds-brand-100), var(--ds-shadow-sm);
 }
+
+/* Tier: done — success semantic tint */
 .stepDot.done {
   background: var(--ds-status-success-bg);
   border: 1px solid var(--ds-status-success-border);
@@ -76,18 +116,23 @@
 .stepLabel {
   font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
+  white-space: nowrap;
+  transition: color var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
+
 .stepLabel.active {
   color: var(--ds-brand-600);
   font-weight: var(--ds-weight-semibold);
 }
+
 .stepLabel.done {
   color: var(--ds-status-success-fg);
 }
 
-/* ── Form ── */
+/* ── Form area ───────────────────────────────────────────────────────────── */
 .form {
-  padding: var(--ds-space-6);
+  padding-block: var(--ds-space-6);
+  padding-inline: var(--ds-space-6);
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-4);
@@ -97,44 +142,67 @@
   font-size: var(--ds-text-lg);
   font-weight: var(--ds-weight-bold);
   color: var(--ds-text-primary);
+  line-height: var(--ds-leading-snug);
+  letter-spacing: -0.015em;
 }
 
 .formDesc {
   font-size: var(--ds-text-sm);
   color: var(--ds-text-muted);
+  line-height: var(--ds-leading-relaxed);
+  margin-block-start: calc(var(--ds-space-1) * -1);
 }
 
+/* ── Field ───────────────────────────────────────────────────────────────── */
 .field {
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-1);
 }
+
 .label {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-medium);
   color: var(--ds-text-secondary);
+  line-height: var(--ds-leading-tight);
 }
+
 .optional {
   font-weight: 400;
+  font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
+  padding-block: 1px;
+  padding-inline: var(--ds-space-2);
+  background: var(--ds-canvas-subtle);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-full);
 }
+
+/* Amount preview below input — tabular for digit alignment */
 .amountPreview {
   font-size: var(--ds-text-sm);
   color: var(--ds-brand-600);
   font-weight: var(--ds-weight-semibold);
   font-variant-numeric: tabular-nums;
+  line-height: var(--ds-leading-tight);
+  padding-inline-start: var(--ds-space-1);
 }
 
-/* ── Quick amounts ── */
+/* ── Quick-amount pill row ───────────────────────────────────────────────── */
 .quickAmounts {
   display: flex;
   gap: var(--ds-space-2);
   flex-wrap: wrap;
 }
+
 .quickBtn {
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-medium);
-  padding: var(--ds-space-1) var(--ds-space-3);
+  padding-block: var(--ds-space-1);
+  padding-inline: var(--ds-space-3);
   border: 1px solid var(--ds-border-default);
   border-radius: var(--ds-radius-full);
   background: var(--ds-canvas);
@@ -142,32 +210,55 @@
   cursor: pointer;
   font-family: inherit;
   font-variant-numeric: tabular-nums;
-  transition: border-color var(--ds-duration-fast), background var(--ds-duration-fast);
+  /* Spring micro-interaction */
+  transition:
+    transform var(--ds-duration-fast) var(--ds-ease-spring),
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    background var(--ds-duration-fast) var(--ds-ease-out-quart),
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
+
 .quickBtn:hover {
+  transform: translateY(-1px);
   border-color: var(--ds-brand-500);
   color: var(--ds-brand-600);
+  box-shadow: var(--ds-shadow-sm);
 }
+
+.quickBtn:active {
+  transform: scale(0.97);
+}
+
 .quickBtnActive {
   border-color: var(--ds-brand-500) !important;
   background: var(--ds-brand-50) !important;
   color: var(--ds-brand-600) !important;
+  box-shadow: 0 0 0 1px var(--ds-brand-100) !important;
 }
 
-/* ── Recipient preview ── */
+/* ── Recipient preview card ──────────────────────────────────────────────── */
+/*
+   Elevation tier 0.5 (recessed inset):
+   - canvas-subtle background (darker than card) creates a "pressed in" look
+   - hairline border at border-subtle keeps silhouette crisp
+*/
 .recipientPreview {
   display: flex;
   align-items: center;
   gap: var(--ds-space-3);
-  padding: var(--ds-space-3) var(--ds-space-4);
+  padding-block: var(--ds-space-3);
+  padding-inline: var(--ds-space-4);
   background: var(--ds-canvas-subtle);
   border: 1px solid var(--ds-border-subtle);
   border-radius: var(--ds-radius-lg);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .recipientAvatar {
   width: 40px;
   height: 40px;
+  flex-shrink: 0;
   border-radius: var(--ds-radius-full);
   background: var(--ds-brand-50);
   border: 1px solid var(--ds-brand-100);
@@ -177,30 +268,45 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  line-height: 1;
 }
 
 .recipientName {
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
   color: var(--ds-text-primary);
+  line-height: var(--ds-leading-snug);
 }
+
 .recipientPhone {
   font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
   font-variant-numeric: tabular-nums;
+  margin-block-start: 2px;
+  /* Keep phone number LTR inside RTL flow */
+  unicode-bidi: embed;
+  direction: ltr;
+  text-align: end;
 }
 
+/* KYC badge: pushed to inline-end (right in LTR, left in RTL) */
 .kycBadge {
   margin-inline-start: auto;
+  flex-shrink: 0;
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-medium);
-  padding: 2px 8px;
+  padding-block: 3px;
+  padding-inline: var(--ds-space-2);
   border-radius: var(--ds-radius-full);
   white-space: nowrap;
+  /* Color provided by consuming component via inline style or sibling class */
 }
 
-/* ── Summary ── */
+/* ── Summary table ───────────────────────────────────────────────────────── */
+/*
+   Elevation tier 0.5 — same recessed treatment as recipientPreview.
+   Each row has a hairline separator; last row's border is suppressed.
+*/
 .summary {
   display: flex;
   flex-direction: column;
@@ -214,72 +320,116 @@
   display: flex;
   gap: var(--ds-space-3);
   align-items: center;
-  padding: var(--ds-space-3) var(--ds-space-4);
+  padding-block: var(--ds-space-3);
+  padding-inline: var(--ds-space-4);
   border-bottom: 1px solid var(--ds-border-subtle);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
+
 .summaryRow:last-child {
   border-bottom: none;
 }
+
+/* Final summary row (total amount) gets a subtle brand tint */
+.summaryRow:last-child .summaryVal {
+  color: var(--ds-brand-600);
+  font-size: var(--ds-text-base);
+  font-weight: var(--ds-weight-bold);
+}
+
 .summaryKey {
   font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
-  min-width: 72px;
+  min-inline-size: 80px;
+  flex-shrink: 0;
 }
+
 .summaryVal {
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-medium);
   color: var(--ds-text-primary);
   font-variant-numeric: tabular-nums;
+  flex: 1;
+  text-align: end;
 }
 
-/* ── OTP section ── */
+/* ── OTP section ─────────────────────────────────────────────────────────── */
 .otpSection {
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-3);
 }
+
+/* Attention banner: pending/amber semantic tier */
 .otpHint {
   display: flex;
   align-items: center;
   gap: var(--ds-space-2);
   font-size: var(--ds-text-sm);
   color: var(--ds-status-pending-fg);
-  padding: var(--ds-space-2) var(--ds-space-3);
+  padding-block: var(--ds-space-2);
+  padding-inline: var(--ds-space-3);
   background: var(--ds-status-pending-bg);
   border: 1px solid var(--ds-status-pending-border);
   border-radius: var(--ds-radius-md);
+  line-height: var(--ds-leading-snug);
 }
+
+/* Dev-mode OTP display */
 .devCode {
   font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
   font-variant-numeric: tabular-nums;
+  /* Monospace digit alignment for OTP codes */
+  font-feature-settings: "tnum";
+  padding-inline-start: var(--ds-space-1);
 }
 
-/* ── Error ── */
+/* ── Error banner ────────────────────────────────────────────────────────── */
+/*
+   shake animation fires once on mount to physically communicate failure.
+   Uses semantic error tier tokens — no inline color values.
+*/
 .error {
   display: flex;
   align-items: flex-start;
   gap: var(--ds-space-2);
-  padding: var(--ds-space-3) var(--ds-space-4);
+  padding-block: var(--ds-space-3);
+  padding-inline: var(--ds-space-4);
   background: var(--ds-status-error-bg);
   border: 1px solid var(--ds-status-error-border);
   border-radius: var(--ds-radius-lg);
   font-size: var(--ds-text-sm);
   color: var(--ds-status-error-fg);
-  animation: shake 0.3s var(--ds-ease-spring);
+  line-height: var(--ds-leading-snug);
+  animation: shake 320ms var(--ds-ease-spring) both;
 }
 
-/* ── Footer nav ── */
+/* ── Footer navigation bar ───────────────────────────────────────────────── */
+/*
+   Separated from .form to sit at the card bottom — uses canvas-subtle with
+   a hairline border-top to create a clear "chrome" separation.
+*/
 .footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: var(--ds-space-2);
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-4);
+  padding-inline: var(--ds-space-6);
+  border-block-start: 1px solid var(--ds-border-subtle);
+  background: var(--ds-canvas-subtle);
 }
 
-/* ── Success ── */
+/* ── Success view ────────────────────────────────────────────────────────── */
+/*
+   Generous vertical padding (space-10 top, space-8 bottom) gives the
+   confirmation screen room to breathe — a key "premium feel" signal.
+*/
 .successView {
-  padding: var(--ds-space-8) var(--ds-space-6);
+  padding-block-start: var(--ds-space-10);
+  padding-block-end: var(--ds-space-8);
+  padding-inline: var(--ds-space-6);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -287,9 +437,11 @@
   gap: var(--ds-space-3);
 }
 
+/* 80px icon circle — pops in with spring overshoot */
 .successIcon {
   width: 80px;
   height: 80px;
+  flex-shrink: 0;
   border-radius: var(--ds-radius-full);
   background: var(--ds-status-success-bg);
   border: 1px solid var(--ds-status-success-border);
@@ -297,31 +449,53 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: popIn 0.4s var(--ds-ease-spring);
+  /* Depth: inner glow echoes the success hue */
+  box-shadow: 0 0 0 8px var(--ds-status-success-bg), var(--ds-shadow-md);
+  animation: popIn 400ms var(--ds-ease-spring) both;
 }
 
 .successTitle {
   font-size: var(--ds-text-2xl);
   font-weight: var(--ds-weight-bold);
   color: var(--ds-text-primary);
+  line-height: var(--ds-leading-snug);
+  letter-spacing: -0.02em;
 }
+
 .successDesc {
   font-size: var(--ds-text-sm);
   color: var(--ds-text-muted);
-  max-width: 34ch;
+  line-height: var(--ds-leading-relaxed);
+  max-inline-size: 34ch;
   font-variant-numeric: tabular-nums;
 }
 
+/* Transaction ID chip — recessed, monospace digits */
 .txnId {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
   font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
   background: var(--ds-canvas-subtle);
   border: 1px solid var(--ds-border-subtle);
   border-radius: var(--ds-radius-md);
-  padding: var(--ds-space-2) var(--ds-space-3);
+  padding-block: var(--ds-space-2);
+  padding-inline: var(--ds-space-3);
   font-variant-numeric: tabular-nums;
+  /* Keep ref IDs LTR even in RTL layout */
+  direction: ltr;
+  unicode-bidi: embed;
 }
 
+/* ============================================================================
+   KEYFRAME ANIMATIONS
+   ============================================================================ */
+
+/*
+   fadeUp — card entrance. 10px Y-travel feels deliberate at 280ms ease-out-quart.
+   `both` fill-mode in animation rule ensures the card is invisible pre-render.
+*/
 @keyframes fadeUp {
   from {
     opacity: 0;
@@ -333,26 +507,44 @@
   }
 }
 
+/*
+   popIn — success icon overshoot. scale 0.6→1.08→1 mirrors spring cubic.
+   The 320ms main duration + 80ms settle feels natural without being bouncy.
+*/
+@keyframes popIn {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  72% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/*
+   shake — error feedback. ±5px offset at 320ms fires attention without panic.
+   Three keyframe passes give exactly 1.5 oscillation cycles for "double-knock" feel.
+*/
 @keyframes shake {
   0%,
   100% {
     transform: translateX(0);
   }
-  25% {
+  20% {
+    transform: translateX(-5px);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+  60% {
     transform: translateX(-4px);
   }
-  75% {
-    transform: translateX(4px);
-  }
-}
-
-@keyframes popIn {
-  from {
-    transform: scale(0.7);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
+  80% {
+    transform: translateX(3px);
   }
 }

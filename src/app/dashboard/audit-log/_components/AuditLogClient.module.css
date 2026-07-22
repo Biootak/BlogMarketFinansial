@@ -1,25 +1,47 @@
-/* AuditLogClient.module.css — 2026 Immutable Audit Trail */
+/* ============================================================================
+   AuditLogClient.module.css — 2026 Immutable Audit Trail
+   Mercury × Linear × Stripe high-density · OKLCH DS tokens · RTL-safe
+   ============================================================================
 
-/* ── Root ── */
+   Design language:
+   - Immutable feel: hairline borders, tabular-nums, monospace data atoms
+   - Sticky frosted-glass thead: backdrop-blur + subtle gradient separator
+   - Action badge semantic palette tied to DS status tokens (no hex)
+   - Detail Sheet: terminal-inspired JSON viewer, monospace syntax background
+   - Spring micro-interactions on hover / focus / active
+   - Full RTL via logical CSS properties (inline-start/end, block-start/end)
+   ============================================================================ */
+
+/* ── Root ─────────────────────────────────────────────────────────────────── */
 .root {
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-5);
 }
 
-/* ── Filter bar ── */
+/* ── Filter Bar ───────────────────────────────────────────────────────────── */
+/*
+   Flush horizontal strip — search grows, selects + dates are fixed-width,
+   export anchors to the inline-end. gap-3 keeps it dense without crowding.
+*/
 .filterBar {
   display: flex;
+  align-items: center;
   gap: var(--ds-space-3);
   flex-wrap: wrap;
-  align-items: center;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-sm);
 }
 
-/* Search */
+/* ── Search ───────────────────────────────────────────────────────────────── */
 .searchWrap {
   position: relative;
   flex: 1;
-  min-width: 200px;
+  min-inline-size: 180px;
+  max-inline-size: 360px;
 }
 
 .searchIcon {
@@ -29,56 +51,108 @@
   transform: translateY(-50%);
   color: var(--ds-text-muted);
   pointer-events: none;
+  /* smooth appearance when filter bar re-renders */
+  transition: color var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .searchInput {
-  width: 100%;
-  padding: var(--ds-space-2) var(--ds-space-3);
-  padding-inline-start: calc(var(--ds-space-3) + 20px);
-  border: 1px solid var(--ds-border-default);
+  inline-size: 100%;
+  block-size: 36px;
+  padding-block: var(--ds-space-2);
+  padding-inline-start: calc(var(--ds-space-3) + 22px);
+  padding-inline-end: var(--ds-space-3);
+  border: 1.5px solid var(--ds-border-default);
   border-radius: var(--ds-radius-md);
   background: var(--ds-canvas);
   color: var(--ds-text-primary);
   font-size: var(--ds-text-sm);
   font-family: inherit;
-  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition:
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.searchInput::placeholder {
+  color: var(--ds-text-muted);
 }
 
 .searchInput:focus {
   outline: none;
   border-color: var(--ds-brand-500);
-  box-shadow: 0 0 0 3px oklch(58% 0.12 165 / 0.1);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 14%, transparent);
 }
 
+/* ── Entity Type Select + Date Inputs ────────────────────────────────────── */
 .entitySelect,
 .dateInput {
-  padding: var(--ds-space-2) var(--ds-space-3);
-  border: 1px solid var(--ds-border-default);
+  block-size: 36px;
+  padding-block: var(--ds-space-2);
+  padding-inline: var(--ds-space-3);
+  border: 1.5px solid var(--ds-border-default);
   border-radius: var(--ds-radius-md);
   background: var(--ds-canvas);
   color: var(--ds-text-primary);
   font-size: var(--ds-text-sm);
   font-family: inherit;
-  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
-  height: 36px;
+  transition:
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  /* native date picker arrow keeps correct direction */
+  appearance: auto;
 }
 
 .entitySelect:focus,
 .dateInput:focus {
   outline: none;
   border-color: var(--ds-brand-500);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 14%, transparent);
 }
 
+.entitySelect option {
+  background: var(--ds-canvas);
+  color: var(--ds-text-primary);
+}
+
+/* ── Clear + Export Buttons ───────────────────────────────────────────────── */
 .clearBtn {
+  /* ghost variant override */
   color: var(--ds-text-muted) !important;
+  gap: var(--ds-space-1) !important;
+  font-size: var(--ds-text-xs) !important;
+  transition:
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    background var(--ds-duration-fast) var(--ds-ease-out-quart) !important;
+}
+
+.clearBtn:hover {
+  color: var(--ds-status-error-fg) !important;
 }
 
 .exportBtn {
+  /* outline variant supplement */
   gap: var(--ds-space-2) !important;
   font-size: var(--ds-text-xs) !important;
+  font-weight: var(--ds-weight-semibold) !important;
+  letter-spacing: 0.03em !important;
+  transition:
+    background var(--ds-duration-fast) var(--ds-ease-out-quart),
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-spring) !important;
 }
 
-/* ── Table ── */
+.exportBtn:hover {
+  transform: translateY(-1px) !important;
+}
+
+.exportBtn:active {
+  transform: scale(0.97) !important;
+}
+
+/* ── Table Wrapper ────────────────────────────────────────────────────────── */
+/*
+   overflow-x:auto lets the table scroll on small viewports.
+   border + radius clip the sticky thead corners cleanly.
+*/
 .tableWrap {
   overflow-x: auto;
   border: 1px solid var(--ds-border-default);
@@ -86,286 +160,430 @@
   background: var(--ds-surface);
   box-shadow: var(--ds-shadow-sm);
   transition: opacity var(--ds-duration-base) var(--ds-ease-out-quart);
+  /* isolate stacking context so sticky thead z-index is scoped */
+  isolation: isolate;
 }
 
+/* Pending navigation — dim + block interaction */
 .tableLoading {
-  opacity: 0.6;
+  opacity: 0.55;
   pointer-events: none;
+  cursor: wait;
 }
 
 .table {
-  width: 100%;
+  inline-size: 100%;
   border-collapse: collapse;
 }
 
+/* ── Sticky Frosted-glass thead ───────────────────────────────────────────── */
+/*
+   position:sticky on <thead> + backdrop-blur creates the Mercury-style
+   floating header. The pseudo-element adds a crisp bottom border that
+   survives the blur layer without colour bleed.
+*/
 .thead {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 2;
 }
 
 .th {
-  padding: var(--ds-space-3) var(--ds-space-4);
+  padding-block: var(--ds-space-3);
+  padding-inline: var(--ds-space-4);
   text-align: start;
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
   color: var(--ds-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  border-bottom: 1px solid var(--ds-border-default);
-  background: var(--ds-canvas-subtle);
+  letter-spacing: 0.06em;
   white-space: nowrap;
+  /* frosted glass */
+  background: color-mix(in oklch, var(--ds-canvas-subtle) 85%, transparent);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  border-block-end: 1px solid var(--ds-border-default);
+  /* first/last child get no extra inline padding adjustment — logical props
+     handle RTL automatically */
+  user-select: none;
 }
 
+/* ── Table Body ───────────────────────────────────────────────────────────── */
 .td {
-  padding: var(--ds-space-3) var(--ds-space-4);
+  padding-block: var(--ds-space-3);
+  padding-inline: var(--ds-space-4);
   font-size: var(--ds-text-sm);
   color: var(--ds-text-primary);
-  border-bottom: 1px solid var(--ds-border-subtle);
+  border-block-end: 1px solid var(--ds-border-subtle);
   vertical-align: middle;
-}
-
-.tr {
-  cursor: pointer;
+  /* smooth background sweep on hover */
   transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
-.tr:hover .td {
-  background: var(--ds-canvas-subtle);
+/* Row — full-row hover + keyboard focus */
+.tr {
+  cursor: pointer;
+  /* no background on <tr> itself; we tint individual <td> so the border
+     separators remain crisp through the sweep */
 }
 
+.tr:hover .td {
+  background: color-mix(in oklch, var(--ds-canvas-subtle) 70%, transparent);
+}
+
+/* Focus ring via box-shadow on the first/last cell pair instead of outline
+   on <tr> (which browsers don't paint reliably on table rows) */
 .tr:focus-visible .td {
-  background: var(--ds-canvas-subtle);
-  outline: none;
+  background: color-mix(in oklch, var(--ds-brand-50) 60%, transparent);
+}
+
+.tr:focus-visible .td:first-child {
+  box-shadow: inset 3px 0 0 var(--ds-brand-500);
 }
 
 .tr:last-child .td {
-  border-bottom: none;
+  border-block-end: none;
 }
 
-/* Date cell */
+/* ── Date Cell ────────────────────────────────────────────────────────────── */
 .dateCell {
   font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
   font-variant-numeric: tabular-nums;
+  /* monospace digits for perfect column alignment */
+  font-feature-settings: "tnum";
+  white-space: nowrap;
 }
 
-/* Actor cell */
+/* ── Actor Cell ───────────────────────────────────────────────────────────── */
 .actorCell {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .actorId {
   font-size: var(--ds-text-xs);
-  font-family: monospace;
+  font-family: ui-monospace, "Cascadia Code", "Fira Code", monospace;
   color: var(--ds-text-secondary);
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
 }
 
 .actorRole {
+  display: inline-flex;
+  align-items: center;
   font-size: 10px;
+  font-weight: var(--ds-weight-medium);
   color: var(--ds-text-muted);
   background: var(--ds-canvas-subtle);
   border: 1px solid var(--ds-border-subtle);
   border-radius: var(--ds-radius-full);
-  padding: 1px 6px;
-  width: fit-content;
+  padding-block: 1px;
+  padding-inline: 6px;
+  inline-size: fit-content;
+  letter-spacing: 0.03em;
 }
 
-/* Action cell */
+/* ── Action Cell ──────────────────────────────────────────────────────────── */
 .actionCell {
   display: flex;
   align-items: center;
   gap: var(--ds-space-2);
 }
 
+/* Status dot — pulsing live indicator for in-progress states */
 .actionDot {
-  width: 7px;
-  height: 7px;
+  inline-size: 7px;
+  block-size: 7px;
   border-radius: var(--ds-radius-full);
   flex-shrink: 0;
 }
 
 .actionDotLg {
-  width: 10px;
-  height: 10px;
+  inline-size: 10px;
+  block-size: 10px;
 }
 
-/* Entity + IP */
+/* ── Entity + IP Chips ────────────────────────────────────────────────────── */
 .entity {
+  display: inline-flex;
+  align-items: center;
   font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
   color: var(--ds-text-muted);
   background: var(--ds-canvas-subtle);
-  padding: 2px 6px;
-  border-radius: var(--ds-radius-sm);
   border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-sm);
+  padding-block: 2px;
+  padding-inline: 7px;
+  white-space: nowrap;
 }
 
 .ip {
   font-size: var(--ds-text-xs);
-  font-family: monospace;
+  font-family: ui-monospace, "Cascadia Code", "Fira Code", monospace;
   color: var(--ds-text-muted);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
 }
 
-/* Empty row */
+/* ── Empty State ──────────────────────────────────────────────────────────── */
 .emptyRow {
-  padding: var(--ds-space-10) var(--ds-space-4);
+  padding-block: var(--ds-space-10);
+  padding-inline: var(--ds-space-4);
   text-align: center;
   color: var(--ds-text-muted);
 }
 
+/* <td> inside .emptyRow is a block-level flex container */
 .emptyRow td {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--ds-space-2);
+  font-size: var(--ds-text-sm);
 }
 
-/* Action badge variants */
+/* ── Action Badge ─────────────────────────────────────────────────────────── */
+/*
+   Base badge reset — component variant classes below override colour.
+   font-size intentionally small (10px) for high-density Mercury look.
+*/
 .actionBadge {
-  font-size: 10px;
-  font-weight: var(--ds-weight-medium);
-  padding: 2px 6px;
+  font-size: 10px !important;
+  font-weight: var(--ds-weight-semibold) !important;
+  padding-block: 2px !important;
+  padding-inline: 7px !important;
+  border-radius: var(--ds-radius-full) !important;
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  /* smooth colour transition when data refreshes */
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
+  border-width: 1px !important;
+  border-style: solid !important;
 }
 
+/* ── Badge colour system ──────────────────────────────────────────────────── */
+/*
+   Requirements mapping:
+   - APPROVED / COMPLETED → success tokens  (green, hue 145)
+   - REJECTED / FAILED    → error tokens    (red, hue 15)
+   - KYC_*               → progress tokens (blue, hue 218)
+   - TRANSFER / SETTLEMENT → brand tokens  (emerald, hue 165)
+   - DEAL / CURRENCY_DEAL  → success tokens (emerald)
+   - EXCHANGE              → pending tokens (amber, hue 80)
+   - FRAUD / SECURITY      → error tokens   (rose)
+   - default               → muted border + canvas
+*/
+
+/* KYC_* — progress / info (blue) */
 .badgeBlue {
   background: var(--ds-status-progress-bg) !important;
   color: var(--ds-status-progress-fg) !important;
   border-color: var(--ds-status-progress-border) !important;
 }
 
+/* DEAL / COMPLETED / APPROVED — success (emerald) */
 .badgeEmerald {
   background: var(--ds-status-success-bg) !important;
   color: var(--ds-status-success-fg) !important;
   border-color: var(--ds-status-success-border) !important;
 }
 
+/* EXCHANGE / SETTLEMENT / PENDING — pending (amber) */
 .badgeAmber {
   background: var(--ds-status-pending-bg) !important;
   color: var(--ds-status-pending-fg) !important;
   border-color: var(--ds-status-pending-border) !important;
 }
 
+/* FRAUD / SECURITY / REJECTED / FAILED — error (rose) */
 .badgeRose {
   background: var(--ds-status-error-bg) !important;
   color: var(--ds-status-error-fg) !important;
   border-color: var(--ds-status-error-border) !important;
 }
 
+/* TRANSFER / PAYMENT — brand accent (violet) */
 .badgeViolet {
-  background: oklch(96% 0.03 290 / 0.8) !important;
+  background: color-mix(in oklch, var(--ds-accent-violet) 10%, var(--ds-canvas)) !important;
   color: var(--ds-accent-violet) !important;
-  border-color: oklch(88% 0.07 290) !important;
+  border-color: color-mix(in oklch, var(--ds-accent-violet) 30%, var(--ds-border-default)) !important;
 }
 
+/* Default — muted border only */
 .badgeGray {
   background: var(--ds-canvas-subtle) !important;
   color: var(--ds-text-muted) !important;
   border-color: var(--ds-border-default) !important;
 }
 
-/* Dot colors */
+/* ── Status Dot colours ───────────────────────────────────────────────────── */
 .dotBlue {
   background: var(--ds-status-progress-fg);
 }
+
 .dotEmerald {
   background: var(--ds-status-success-fg);
 }
+
 .dotAmber {
   background: var(--ds-status-pending-fg);
 }
+
 .dotRose {
   background: var(--ds-status-error-fg);
 }
+
 .dotViolet {
   background: var(--ds-accent-violet);
 }
+
 .dotGray {
   background: var(--ds-text-muted);
 }
 
-/* ── Pagination ── */
+/* ── Pagination ───────────────────────────────────────────────────────────── */
+/*
+   Centred strip with prev/next chevrons, page pills, and an
+   aria-live count caption. Dense but readable.
+*/
 .pagination {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--ds-space-2);
-  padding: var(--ds-space-3) 0;
+  padding-block: var(--ds-space-3);
+  flex-wrap: wrap;
 }
 
 .pageNumbers {
   display: flex;
-  gap: 4px;
+  gap: 3px;
 }
 
 .pageBtn {
-  min-width: 32px;
-  height: 32px;
-  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 32px;
+  block-size: 32px;
+  padding-inline: 8px;
   border: 1px solid var(--ds-border-default);
   border-radius: var(--ds-radius-sm);
   background: var(--ds-canvas);
   color: var(--ds-text-secondary);
   font-size: var(--ds-text-xs);
   font-variant-numeric: tabular-nums;
+  font-family: inherit;
   cursor: pointer;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
-    var(--ds-duration-fast) var(--ds-ease-spring);
+  transition:
+    background var(--ds-duration-fast) var(--ds-ease-out-quart),
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .pageBtn:hover:not(:disabled) {
   background: var(--ds-canvas-subtle);
+  border-color: var(--ds-border-strong);
   transform: translateY(-1px);
 }
 
+.pageBtn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.pageBtn:focus-visible {
+  outline: none;
+  border-color: var(--ds-brand-500);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 14%, transparent);
+}
+
+.pageBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Active page pill */
 .pageBtnActive {
   background: var(--ds-brand-500) !important;
   color: var(--ds-text-inverse) !important;
   border-color: var(--ds-brand-500) !important;
+  font-weight: var(--ds-weight-semibold) !important;
+  box-shadow: 0 2px 6px -1px color-mix(in oklch, var(--ds-brand-500) 40%, transparent);
 }
 
+.pageBtnActive:hover:not(:disabled) {
+  background: var(--ds-brand-600) !important;
+  border-color: var(--ds-brand-600) !important;
+  transform: translateY(-1px);
+}
+
+/* Count caption */
 .pageInfo {
   font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
   font-variant-numeric: tabular-nums;
   margin-inline-start: var(--ds-space-2);
+  white-space: nowrap;
 }
 
-/* ── Detail Sheet ── */
+/* ── Detail Sheet ─────────────────────────────────────────────────────────── */
+/*
+   Slides in from the inline-start (left in RTL → right column).
+   Wider than default to fit JSON comfortably.
+*/
 .detailSheet {
-  width: min(440px, 95vw) !important;
+  inline-size: min(480px, 95vw) !important;
   overflow-y: auto;
+  /* subtle inset shadow on the opening edge */
+  box-shadow:
+    -8px 0 32px -8px color-mix(in oklch, var(--ds-text-primary) 12%, transparent),
+    var(--ds-shadow-lg) !important;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5);
+  padding: var(--ds-space-5) !important;
 }
 
+/* Sheet header — action icon + title inline */
 .detailHeader {
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
   gap: var(--ds-space-3) !important;
-  padding-bottom: var(--ds-space-4) !important;
-  border-bottom: 1px solid var(--ds-border-subtle) !important;
-  margin-bottom: var(--ds-space-4) !important;
+  padding-block-end: var(--ds-space-4) !important;
+  border-block-end: 1px solid var(--ds-border-subtle) !important;
+  margin-block-end: 0 !important;
 }
 
+/* Action name in monospace — terminal authority */
 .detailTitle {
   font-size: var(--ds-text-sm) !important;
   font-weight: var(--ds-weight-semibold) !important;
-  font-family: monospace !important;
+  font-family: ui-monospace, "Cascadia Code", "Fira Code", monospace !important;
   color: var(--ds-text-primary) !important;
   margin: 0 !important;
   word-break: break-all;
+  letter-spacing: 0.02em;
 }
 
+/* Sheet body — stacked blocks with consistent gap */
 .detailBody {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-4);
+  gap: var(--ds-space-5);
 }
 
-/* Meta grid */
+/* ── Meta Grid ────────────────────────────────────────────────────────────── */
+/*
+   Striped key-value table inside the sheet.
+   Alternating row background via :nth-child — no JS.
+*/
 .metaGrid {
   border: 1px solid var(--ds-border-subtle);
   border-radius: var(--ds-radius-lg);
@@ -377,19 +595,32 @@
   justify-content: space-between;
   align-items: center;
   gap: var(--ds-space-4);
-  padding: var(--ds-space-2) var(--ds-space-3);
-  border-bottom: 1px solid var(--ds-border-subtle);
+  padding-block: var(--ds-space-2);
+  padding-inline: var(--ds-space-3);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.metaItem:nth-child(odd) {
+  background: color-mix(in oklch, var(--ds-canvas-subtle) 50%, transparent);
 }
 
 .metaItem:last-child {
-  border-bottom: none;
+  border-block-end: none;
+}
+
+.metaItem:hover {
+  background: color-mix(in oklch, var(--ds-brand-50) 40%, transparent);
 }
 
 .metaKey {
   font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
   color: var(--ds-text-muted);
-  font-weight: var(--ds-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .metaVal {
@@ -398,51 +629,152 @@
   text-align: end;
   word-break: break-all;
   font-variant-numeric: tabular-nums;
+  font-weight: var(--ds-weight-medium);
 }
 
-/* JSON block */
+/* ── JSON Metadata Viewer ─────────────────────────────────────────────────── */
+/*
+   Terminal-grade block:
+   - Header bar: uppercase label + subtle track colour (canvas-subtle)
+   - Body: near-black background, light monospace text, slight green tint
+     to evoke an immutable audit ledger / blockchain explorer aesthetic.
+   - Scrollable with word-wrap so long UUIDs don't overflow.
+*/
 .metaJson {
-  border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-md);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-lg);
   overflow: hidden;
+  /* Outer glow on hover — signals interactivity */
+  transition: box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
+.metaJson:hover {
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--ds-brand-500) 20%, transparent);
+}
+
+/* Label bar above the code block */
 .jsonLabel {
-  padding: var(--ds-space-2) var(--ds-space-3);
-  font-size: var(--ds-text-xs);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: var(--ds-space-2);
+  padding-inline: var(--ds-space-3);
+  font-size: 10px;
   font-weight: var(--ds-weight-semibold);
   color: var(--ds-text-muted);
   background: var(--ds-canvas-subtle);
-  border-bottom: 1px solid var(--ds-border-subtle);
+  border-block-end: 1px solid var(--ds-border-subtle);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
+  user-select: none;
 }
 
+/*
+   JSON body — syntax highlight background:
+   Light mode: very pale green-gray (hue 165, low saturation)
+     → reads as a "safe immutable ledger" without screaming code-editor.
+   Dark mode: near-black with the same hue tint.
+   OKLCH tokens only — no hex.
+*/
 .jsonPre {
-  padding: var(--ds-space-3);
+  margin: 0;
+  padding: var(--ds-space-4);
   font-size: var(--ds-text-xs);
+  font-family: ui-monospace, "Cascadia Code", "Fira Code", "Consolas", monospace;
+  line-height: 1.7;
   color: var(--ds-text-secondary);
-  font-family: monospace;
+  background: color-mix(in oklch, var(--ds-status-success-bg) 35%, var(--ds-canvas));
   overflow-x: auto;
   white-space: pre-wrap;
   word-break: break-all;
-  margin: 0;
-  background: var(--ds-canvas);
-  line-height: 1.6;
+  /* subtle scrollbar for long payloads */
+  scrollbar-width: thin;
+  scrollbar-color: var(--ds-border-strong) transparent;
+  /* tabular nums for numeric values */
+  font-variant-numeric: tabular-nums;
 }
 
-/* ── Responsive ── */
-@media (max-width: 640px) {
+.jsonPre::-webkit-scrollbar {
+  block-size: 6px;
+}
+.jsonPre::-webkit-scrollbar-thumb {
+  background: var(--ds-border-strong);
+  border-radius: var(--ds-radius-full);
+}
+.jsonPre::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+/*
+   On small viewports: collapse IP column (least important),
+   shrink date inputs, tighten filter-bar gap.
+*/
+@media (max-inline-size: 640px) {
   .filterBar {
     gap: var(--ds-space-2);
+    padding: var(--ds-space-2) var(--ds-space-3);
+  }
+
+  .searchWrap {
+    max-inline-size: none;
   }
 
   .dateInput {
-    width: 130px;
+    inline-size: 130px;
   }
 
+  /* Hide IP column on mobile — 5th child */
   .th:nth-child(5),
   .td:nth-child(5) {
     display: none;
+  }
+}
+
+@media (max-inline-size: 480px) {
+  /* Also collapse entity column on very small screens */
+  .th:nth-child(4),
+  .td:nth-child(4) {
+    display: none;
+  }
+}
+
+/* ── Dark Mode Supplements ────────────────────────────────────────────────── */
+/*
+   DS tokens already handle dark mode via .dark selector flips in tokens.css.
+   These rules fine-tune the JSON viewer and frosted thead for dark contexts.
+*/
+:global(.dark) .jsonPre {
+  background: color-mix(in oklch, var(--ds-status-success-bg) 20%, var(--ds-canvas));
+  color: var(--ds-text-secondary);
+}
+
+:global(.dark) .th {
+  background: color-mix(in oklch, var(--ds-canvas-subtle) 90%, transparent);
+}
+
+:global(.dark) .metaItem:nth-child(odd) {
+  background: color-mix(in oklch, var(--ds-canvas-subtle) 60%, transparent);
+}
+
+/* ── Reduced-motion guard ─────────────────────────────────────────────────── */
+/*
+   tokens.css already collapses duration to 0.01ms globally.
+   Extra guard for any transform we added that tokens.css doesn't cover.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .pageBtn,
+  .exportBtn,
+  .clearBtn {
+    transition: none !important;
+    transform: none !important;
+  }
+
+  .tr .td {
+    transition: none;
+  }
+
+  .metaJson {
+    transition: none;
   }
 }

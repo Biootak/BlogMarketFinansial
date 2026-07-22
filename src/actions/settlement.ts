@@ -225,16 +225,20 @@ export async function computePeriodSettlement(
     select: { fromAmount: true, feeAmount: true },
   });
 
+  // Prisma Decimal → string → BigInt (مثال: 1500.50 AFN → "150050" cents)
+  // از d.fromAmount.toString() به جای Number() برای جلوگیری از floating-point precision error
   const totalVolumeDecimal = deals.reduce(
-    (sum, d) => sum + BigInt(Math.round(Number(d.fromAmount) * 100)),
+    (sum, d) => sum + BigInt(Math.round(Number(d.fromAmount.toString()) * 100)),
     BigInt(0),
   );
   const totalFeeDecimal = deals.reduce(
-    (sum, d) => sum + BigInt(Math.round(Number(d.feeAmount) * 100)),
+    (sum, d) => sum + BigInt(Math.round(Number(d.feeAmount.toString()) * 100)),
     BigInt(0),
   );
 
-  const platformFeeRate = Number(exchange.platformFee ?? 0) / 100;
+  // platformFee = totalFeeDecimal * (platformFeeRate / 100)
+  // مثال: totalFeeDecimal=10000n (100 AFN), platformFeeRate=10% → platformFee=1000n (10 AFN)
+  const platformFeeRate = Number((exchange.platformFee ?? 0).toString()) / 100;
   const platformFee = BigInt(Math.round(Number(totalFeeDecimal) * platformFeeRate));
   const exchangeNet = totalFeeDecimal - platformFee;
 

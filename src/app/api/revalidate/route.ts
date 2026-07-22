@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     const userRole = session.user.role as Role | undefined;
-    if (userRole !== Role.ADMIN && userRole !== Role.OWNER) {
+    if (userRole !== Role.ADMIN && userRole !== Role.OWNER && userRole !== Role.SUPERADMIN) {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } },
         { status: 403 },

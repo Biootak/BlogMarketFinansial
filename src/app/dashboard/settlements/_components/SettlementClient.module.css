@@ -1,67 +1,155 @@
-/* SettlementClient.module.css — 2026 Million-dollar Settlement Panel */
+/* ============================================================================
+   SettlementClient.module.css — 2026 Million-dollar Settlement Panel
+   Ramp/Mercury-inspired · OKLCH --ds-* tokens · RTL logical properties ·
+   Spring micro-interactions · Staggered table rows · Persian fintech
+   ============================================================================ */
 
-/* ── Root ── */
+/* ─── Keyframes ───────────────────────────────────────────────────────────── */
+@keyframes kpiFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rowIn {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);   /* RTL: slides from inline-start */
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes sheetSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes errorSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes breathPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+/* ─── Root ────────────────────────────────────────────────────────────────── */
 .root {
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-5);
+  max-inline-size: 1200px;
 }
 
-/* ── KPI Strip ── */
+/* ─── KPI Strip ───────────────────────────────────────────────────────────── */
+/*
+  Horizontal band flush to card edge; each stat separated by a hairline
+  vertical divider.  Ramp-style: no padding top-level, items own the
+  vertical rhythm.  Mercury-style: hover lifts individual tile.
+*/
 .kpiStrip {
   display: flex;
-  align-items: center;
+  align-items: stretch;
+  gap: 0;
   background: var(--ds-surface);
   border: 1px solid var(--ds-border-default);
-  border-radius: var(--ds-radius-lg);
-  padding: var(--ds-space-4) var(--ds-space-5);
+  border-radius: var(--ds-radius-xl);
+  overflow: hidden;
   box-shadow: var(--ds-shadow-sm);
 }
 
 .kpiItem {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  flex: 1;
-  align-items: center;
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-4) var(--ds-space-5);
+  animation: kpiFadeUp var(--ds-duration-base) var(--ds-ease-out-quart) both;
+  transition:
+    background var(--ds-duration-fast) var(--ds-ease-out-quart),
+    box-shadow  var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+/* stagger each KPI tile */
+.kpiItem:nth-child(1) { animation-delay:  0ms; }
+.kpiItem:nth-child(3) { animation-delay: 60ms; }
+.kpiItem:nth-child(5) { animation-delay:120ms; }
+.kpiItem:nth-child(7) { animation-delay:180ms; }
+
+.kpiItem:hover {
+  background: var(--ds-canvas-subtle);
 }
 
 .kpiVal {
-  font-size: var(--ds-text-xl);
-  font-weight: var(--ds-weight-bold);
-  color: var(--ds-text-primary);
+  font-size: var(--ds-text-2xl);
+  font-weight: var(--ds-weight-extrabold);
   font-variant-numeric: tabular-nums;
-  line-height: 1;
+  line-height: 1.05;
+  color: var(--ds-text-primary);
+  letter-spacing: -0.03em;
 }
 
 .kpiValPending {
   color: var(--ds-status-pending-fg);
+  /* Subtle living pulse to draw attention to outstanding items */
+  animation: breathPulse 2.4s ease-in-out infinite;
 }
 
 .kpiLabel {
   font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   color: var(--ds-text-muted);
 }
 
+/* Full-height hairline divider — aligns visually with the strip content */
 .kpiDivider {
   width: 1px;
-  height: 36px;
-  background: var(--ds-border-default);
   flex-shrink: 0;
-  margin: 0 var(--ds-space-4);
+  background: var(--ds-border-default);
+  align-self: stretch;
 }
 
-/* ── Error Banner ── */
+/* ─── Error Banner ────────────────────────────────────────────────────────── */
 .errorBanner {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
   padding: var(--ds-space-3) var(--ds-space-4);
   background: var(--ds-status-error-bg);
   border: 1px solid var(--ds-status-error-border);
-  border-radius: var(--ds-radius-md);
+  /* Mercury/Stripe: inline-start accent stripe */
+  border-inline-start-width: 3px;
+  border-inline-start-color: var(--ds-status-error-fg);
+  border-radius: var(--ds-radius-lg);
   color: var(--ds-status-error-fg);
   font-size: var(--ds-text-sm);
+  animation: errorSlideDown var(--ds-duration-base) var(--ds-ease-out-quart) both;
 }
 
-/* ── Toolbar ── */
+/* ─── Toolbar ─────────────────────────────────────────────────────────────── */
 .toolbar {
   display: flex;
   align-items: center;
@@ -76,29 +164,68 @@
   gap: var(--ds-space-2);
 }
 
+/*
+  Batch approve — Ramp-style: brand-filled, spring lift on hover.
+  Active state snaps back with scale (spring overshoot feel).
+*/
 .batchBtn {
+  display: inline-flex;
+  align-items: center;
   gap: var(--ds-space-2) !important;
   background: var(--ds-brand-500) !important;
   color: var(--ds-text-inverse) !important;
-  transition: transform var(--ds-duration-fast) var(--ds-ease-spring) !important;
+  border: none !important;
+  box-shadow: 0 2px 8px -2px color-mix(in oklch, var(--ds-brand-500) 45%, transparent) !important;
+  transition:
+    background   var(--ds-duration-fast) var(--ds-ease-out-quart),
+    box-shadow   var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform    var(--ds-duration-fast) var(--ds-ease-spring) !important;
 }
-
 .batchBtn:hover:not(:disabled) {
-  transform: translateY(-1px);
+  background: var(--ds-brand-600) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px -4px color-mix(in oklch, var(--ds-brand-500) 50%, transparent) !important;
+}
+.batchBtn:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
+/* CSV export button — subtle ghost style */
 .exportBtn {
+  display: inline-flex;
+  align-items: center;
   gap: var(--ds-space-2) !important;
   font-size: var(--ds-text-xs) !important;
+  border: 1.5px solid var(--ds-border-default) !important;
+  background: var(--ds-surface) !important;
+  color: var(--ds-text-secondary) !important;
+  transition:
+    background     var(--ds-duration-fast) var(--ds-ease-out-quart),
+    border-color   var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform      var(--ds-duration-fast) var(--ds-ease-spring) !important;
+}
+.exportBtn:hover {
+  background: var(--ds-canvas-subtle) !important;
+  border-color: var(--ds-border-strong) !important;
+  transform: translateY(-1px);
+}
+.exportBtn:active {
+  transform: scale(0.97);
 }
 
-/* ── Table ── */
+/* ─── Table ───────────────────────────────────────────────────────────────── */
+/*
+  Scroll container keeps the table horizontally navigable on narrow
+  viewports while the sticky thead always stays visible on tall tables.
+*/
 .tableWrap {
   overflow-x: auto;
   border: 1px solid var(--ds-border-default);
-  border-radius: var(--ds-radius-lg);
+  border-radius: var(--ds-radius-xl);
   background: var(--ds-surface);
   box-shadow: var(--ds-shadow-sm);
+  /* Prevent border-radius clip fighting with sticky header */
+  isolation: isolate;
 }
 
 .table {
@@ -106,58 +233,105 @@
   border-collapse: collapse;
 }
 
+/* Sticky header: stays pinned at top of scroll container */
 .th {
-  padding: var(--ds-space-3) var(--ds-space-4);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 10px var(--ds-space-4);
   text-align: start;
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
   color: var(--ds-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  border-bottom: 1px solid var(--ds-border-default);
+  letter-spacing: 0.05em;
   background: var(--ds-canvas-subtle);
+  border-block-end: 1px solid var(--ds-border-default);
   white-space: nowrap;
+  /* Glass-like backdrop for depth when scrolling */
+  backdrop-filter: blur(8px);
 }
 
+/* Amount column headers — right-aligned to match numeric cells */
+.th.thAmount {
+  text-align: end;
+}
+
+/* Checkbox column — compact, no end padding */
 .thCheck {
   width: 40px;
   padding-inline-end: 0;
 }
 
+/* Body cells */
 .td {
   padding: var(--ds-space-3) var(--ds-space-4);
   font-size: var(--ds-text-sm);
   color: var(--ds-text-primary);
-  border-bottom: 1px solid var(--ds-border-subtle);
+  border-block-end: 1px solid var(--ds-border-subtle);
   vertical-align: middle;
+  background: transparent;
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .tdCheck {
-  padding-inline-end: 0;
   width: 40px;
+  padding-inline-end: 0;
 }
 
+/*
+  Row stagger animation:  nth-child delay creates a cascade effect when
+  the filtered list first renders.  Row hover elevates the whole row
+  by changing each td directly (td-level background for sticky compat).
+*/
 .tr {
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
+  animation: rowIn var(--ds-duration-base) var(--ds-ease-out-quart) both;
 }
+
+/* Stagger: first 20 rows get incremental delays */
+.tr:nth-child(1)  { animation-delay:   0ms; }
+.tr:nth-child(2)  { animation-delay:  25ms; }
+.tr:nth-child(3)  { animation-delay:  50ms; }
+.tr:nth-child(4)  { animation-delay:  75ms; }
+.tr:nth-child(5)  { animation-delay: 100ms; }
+.tr:nth-child(6)  { animation-delay: 120ms; }
+.tr:nth-child(7)  { animation-delay: 140ms; }
+.tr:nth-child(8)  { animation-delay: 160ms; }
+.tr:nth-child(9)  { animation-delay: 180ms; }
+.tr:nth-child(10) { animation-delay: 200ms; }
+.tr:nth-child(11) { animation-delay: 215ms; }
+.tr:nth-child(12) { animation-delay: 230ms; }
+.tr:nth-child(13) { animation-delay: 245ms; }
+.tr:nth-child(14) { animation-delay: 260ms; }
+.tr:nth-child(15) { animation-delay: 275ms; }
+.tr:nth-child(16) { animation-delay: 285ms; }
+.tr:nth-child(17) { animation-delay: 295ms; }
+.tr:nth-child(18) { animation-delay: 305ms; }
+.tr:nth-child(19) { animation-delay: 315ms; }
+.tr:nth-child(20) { animation-delay: 325ms; }
 
 .tr:hover .td {
   background: var(--ds-canvas-subtle);
 }
 
 .tr:last-child .td {
-  border-bottom: none;
+  border-block-end: none;
 }
 
-/* Checkbox */
+/* ─── Checkbox ────────────────────────────────────────────────────────────── */
 .checkbox {
   width: 15px;
   height: 15px;
   cursor: pointer;
   accent-color: var(--ds-brand-500);
+  border-radius: var(--ds-radius-sm);
+  transition: transform var(--ds-duration-fast) var(--ds-ease-spring);
+}
+.checkbox:hover {
+  transform: scale(1.1);
 }
 
-/* Exchange cell */
+/* ─── Exchange cell ───────────────────────────────────────────────────────── */
 .exchangeCell {
   display: flex;
   flex-direction: column;
@@ -165,18 +339,23 @@
 }
 
 .exchangeName {
-  font-weight: var(--ds-weight-medium);
   font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
   color: var(--ds-text-primary);
+  letter-spacing: -0.01em;
 }
 
+/* Monospace ID fragment — always LTR regardless of page direction */
 .exchangeId {
   font-size: 10px;
-  font-family: monospace;
+  font-family: ui-monospace, "SFMono-Regular", monospace;
   color: var(--ds-text-muted);
+  letter-spacing: 0.03em;
+  direction: ltr;
+  unicode-bidi: isolate;
 }
 
-/* Period */
+/* ─── Period cell ─────────────────────────────────────────────────────────── */
 .period {
   font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
@@ -184,158 +363,253 @@
   white-space: nowrap;
 }
 
-/* Amounts */
+/* ─── Amount cells ────────────────────────────────────────────────────────── */
+/*
+  All monetary + count values: tabular-nums for column alignment,
+  end-aligned so decimal points line up in RTL context.
+*/
 .amount,
 .count {
+  display: block;
   font-variant-numeric: tabular-nums;
   font-size: var(--ds-text-sm);
   color: var(--ds-text-primary);
+  text-align: end;
 }
 
+/* Platform fee — shown as a cost therefore error-toned */
 .feeAmount {
+  display: block;
   font-variant-numeric: tabular-nums;
   font-size: var(--ds-text-sm);
   color: var(--ds-status-error-fg);
+  text-align: end;
 }
 
+/* Exchange net — the bottom line, success-toned + heavier weight */
 .netAmount {
+  display: block;
   font-variant-numeric: tabular-nums;
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
   color: var(--ds-status-success-fg);
+  text-align: end;
+  letter-spacing: -0.01em;
 }
 
-/* Status badge */
+/* ─── Status Badges ───────────────────────────────────────────────────────── */
+/*
+  Each badge class applies bg + border + fg from the semantic status tokens.
+  !important overrides shadcn Badge's inline variant styles without adding
+  a wrapper element.
+*/
 .statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-medium);
-  padding: 2px 8px;
+  font-weight: var(--ds-weight-semibold);
+  padding: 3px 9px;
+  border-radius: var(--ds-radius-full);
+  border: 1px solid;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
 }
 
+/* Before each badge: a 6px dot breathing indicator */
+.statusBadge::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--ds-radius-full);
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+/* PENDING → amber / warning palette */
 .pending {
   background: var(--ds-status-pending-bg) !important;
   color: var(--ds-status-pending-fg) !important;
   border-color: var(--ds-status-pending-border) !important;
 }
+.pending::before {
+  animation: breathPulse 2s ease-in-out infinite;
+}
 
+/* APPROVED → blue / progress palette */
 .approved {
   background: var(--ds-status-progress-bg) !important;
   color: var(--ds-status-progress-fg) !important;
   border-color: var(--ds-status-progress-border) !important;
 }
 
+/* PAID → emerald / success palette */
 .paid {
   background: var(--ds-status-success-bg) !important;
   color: var(--ds-status-success-fg) !important;
   border-color: var(--ds-status-success-border) !important;
 }
 
+/* REJECTED / CANCELLED → rose / error palette */
 .cancelled {
   background: var(--ds-status-error-bg) !important;
   color: var(--ds-status-error-fg) !important;
   border-color: var(--ds-status-error-border) !important;
 }
 
-/* Action cell */
+/* ─── Action Cell ─────────────────────────────────────────────────────────── */
 .actionCell {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: var(--ds-space-2);
 }
 
-/* Detail icon button */
+/* Detail (eye) icon button */
 .detailBtn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--ds-radius-sm);
-  border: 1px solid var(--ds-border-default);
-  background: var(--ds-canvas);
+  width: 30px;
+  height: 30px;
+  border-radius: var(--ds-radius-md);
+  border: 1.5px solid var(--ds-border-default);
+  background: var(--ds-surface);
   color: var(--ds-text-muted);
   cursor: pointer;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
-    var(--ds-duration-fast) var(--ds-ease-spring);
+  transition:
+    background    var(--ds-duration-fast) var(--ds-ease-out-quart),
+    border-color  var(--ds-duration-fast) var(--ds-ease-out-quart),
+    color         var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform     var(--ds-duration-fast) var(--ds-ease-spring);
 }
-
 .detailBtn:hover {
   background: var(--ds-canvas-subtle);
+  border-color: var(--ds-border-strong);
   color: var(--ds-text-primary);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+}
+.detailBtn:active {
+  transform: scale(0.93);
 }
 
+/* Approve action — success-tinted */
 .approveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2) !important;
   color: var(--ds-status-success-fg) !important;
   border-color: var(--ds-status-success-border) !important;
   background: var(--ds-status-success-bg) !important;
-  gap: var(--ds-space-2) !important;
-  transition: transform var(--ds-duration-fast) var(--ds-ease-spring) !important;
+  font-size: var(--ds-text-xs) !important;
+  transition:
+    background   var(--ds-duration-fast) var(--ds-ease-out-quart),
+    box-shadow   var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform    var(--ds-duration-fast) var(--ds-ease-spring) !important;
 }
-
 .approveBtn:hover:not(:disabled) {
-  transform: translateY(-1px);
+  background: color-mix(in oklch, var(--ds-status-success-bg) 60%, var(--ds-status-success-border)) !important;
+  box-shadow: 0 2px 8px -3px color-mix(in oklch, var(--ds-status-success-fg) 30%, transparent) !important;
+  transform: translateY(-2px);
+}
+.approveBtn:active:not(:disabled) {
+  transform: scale(0.96);
 }
 
+/* Mark paid action — brand-filled, represents finality */
 .paidBtn {
+  display: inline-flex;
+  align-items: center;
   gap: var(--ds-space-2) !important;
-  transition: transform var(--ds-duration-fast) var(--ds-ease-spring) !important;
+  font-size: var(--ds-text-xs) !important;
+  background: var(--ds-brand-500) !important;
+  color: var(--ds-text-inverse) !important;
+  border: none !important;
+  box-shadow: 0 2px 6px -2px color-mix(in oklch, var(--ds-brand-500) 40%, transparent) !important;
+  transition:
+    background  var(--ds-duration-fast) var(--ds-ease-out-quart),
+    box-shadow  var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform   var(--ds-duration-fast) var(--ds-ease-spring) !important;
 }
-
 .paidBtn:hover:not(:disabled) {
-  transform: translateY(-1px);
+  background: var(--ds-brand-600) !important;
+  box-shadow: 0 4px 12px -4px color-mix(in oklch, var(--ds-brand-500) 50%, transparent) !important;
+  transform: translateY(-2px);
+}
+.paidBtn:active:not(:disabled) {
+  transform: scale(0.96);
 }
 
-/* ── Detail Sheet ── */
+/* ─── Detail Sheet ────────────────────────────────────────────────────────── */
+/*
+  Opens from the inline-start edge (left in RTL).  The SheetContent has
+  dir="rtl" so padding is symmetric.  min() ensures it never overflows
+  tiny screens.
+*/
 .detailSheet {
-  width: min(420px, 95vw) !important;
+  inline-size: min(440px, 95vw) !important;
   overflow-y: auto;
+  animation: sheetSlideIn var(--ds-duration-base) var(--ds-ease-out-expo) both;
 }
 
+/* Sheet header: avatar + exchange name + period date range */
 .detailHeader {
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
   gap: var(--ds-space-3) !important;
-  padding-bottom: var(--ds-space-4) !important;
-  border-bottom: 1px solid var(--ds-border-subtle) !important;
-  margin-bottom: var(--ds-space-5) !important;
+  padding-block-end: var(--ds-space-4) !important;
+  border-block-end: 1px solid var(--ds-border-default) !important;
+  margin-block-end: var(--ds-space-5) !important;
 }
 
+/* Circular avatar with success-toned brand icon */
 .detailExchangeAvatar {
-  width: 44px;
-  height: 44px;
+  inline-size: 46px;
+  block-size: 46px;
   border-radius: var(--ds-radius-full);
   background: var(--ds-status-success-bg);
   color: var(--ds-status-success-fg);
+  border: 1.5px solid var(--ds-status-success-border);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--ds-status-success-fg) 8%, transparent);
 }
 
 .detailTitle {
   font-size: var(--ds-text-base) !important;
-  font-weight: var(--ds-weight-semibold) !important;
+  font-weight: var(--ds-weight-bold) !important;
   color: var(--ds-text-primary) !important;
   margin: 0 !important;
+  letter-spacing: -0.02em;
 }
 
 .detailPeriod {
   font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
   font-variant-numeric: tabular-nums;
-  margin-top: 2px;
+  margin-block-start: 3px;
 }
 
+/* Sheet body: stacked sections */
 .detailBody {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-4);
+  gap: var(--ds-space-5);
 }
 
-/* Meta grid */
+/* ─── Meta Grid ─────────────────────────────────────────────────────────────
+   2-column financial breakdown grid inside the sheet.
+   Odd items (full-width label rows) span both columns when they need to.
+   ─────────────────────────────────────────────────────────────────────────── */
 .metaGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;                                /* gap = border between cells */
+  background: var(--ds-border-subtle);    /* border color via bg + gap */
   border: 1px solid var(--ds-border-subtle);
   border-radius: var(--ds-radius-lg);
   overflow: hidden;
@@ -343,65 +617,142 @@
 
 .metaItem {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--ds-space-4);
-  padding: var(--ds-space-2) var(--ds-space-3);
-  border-bottom: 1px solid var(--ds-border-subtle);
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  background: var(--ds-surface);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+.metaItem:hover {
+  background: var(--ds-canvas-subtle);
 }
 
-.metaItem:last-child {
-  border-bottom: none;
+/* Span full row for the last odd item so it doesn't float alone */
+.metaItem:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
 }
 
 .metaKey {
   font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
   font-weight: var(--ds-weight-medium);
-  flex-shrink: 0;
+  color: var(--ds-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .metaVal {
   font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
   color: var(--ds-text-primary);
   font-variant-numeric: tabular-nums;
-  text-align: end;
+  word-break: break-word;
 }
 
-/* Detail quick actions */
+/* ─── Detail Quick Actions ────────────────────────────────────────────────── */
 .detailActions {
   display: flex;
+  flex-direction: column;
   gap: var(--ds-space-3);
-  padding-top: var(--ds-space-4);
-  border-top: 1px solid var(--ds-border-subtle);
+  padding-block-start: var(--ds-space-4);
+  border-block-start: 1px solid var(--ds-border-default);
 }
 
-/* ── Responsive ── */
+/* Full-width buttons in the sheet footer */
+.detailActions .approveBtn,
+.detailActions .paidBtn {
+  width: 100%;
+  justify-content: center;
+  min-block-size: 40px;
+  font-size: var(--ds-text-sm) !important;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────────── */
+
+/* Tablet / narrow desktop */
+@media (max-width: 960px) {
+  /* Hide deal count column to save space */
+  .th:nth-child(5),
+  .td:nth-child(5) {
+    display: none;
+  }
+}
+
+/* Mobile */
 @media (max-width: 768px) {
+  /* Stack KPI strip into 2-up grid */
   .kpiStrip {
-    flex-wrap: wrap;
-    gap: var(--ds-space-3);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border-radius: var(--ds-radius-lg);
   }
 
+  /* Hide dividers — grid gutters take their place */
   .kpiDivider {
     display: none;
   }
 
+  /* KPI items: left-align in grid cells, add separating borders */
   .kpiItem {
-    flex: 0 0 calc(50% - var(--ds-space-3));
     align-items: flex-start;
+    border-block-end: 1px solid var(--ds-border-subtle);
+    border-inline-end: 1px solid var(--ds-border-subtle);
   }
 
+  /* Last-in-row items don't need right border */
+  .kpiItem:nth-child(even) {
+    border-inline-end: none;
+  }
+
+  /* Last row items don't need bottom border */
+  .kpiItem:nth-last-child(-n+2) {
+    border-block-end: none;
+  }
+
+  /* Toolbar stacks vertically */
   .toolbar {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  /* Hide less important columns on mobile */
-  .th:nth-child(5),
-  .td:nth-child(5),
+  .toolbarEnd {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  /* Hide fee column on narrow screens */
   .th:nth-child(6),
   .td:nth-child(6) {
     display: none;
   }
 }
+
+/* Extra-small: single-column KPI strip */
+@media (max-width: 480px) {
+  .kpiStrip {
+    grid-template-columns: 1fr;
+  }
+
+  .kpiItem:nth-child(even) {
+    border-inline-end: 1px solid var(--ds-border-subtle);
+  }
+
+  .kpiItem:nth-last-child(-n+2) {
+    border-block-end: 1px solid var(--ds-border-subtle);
+  }
+
+  .kpiItem:last-child {
+    border-block-end: none;
+  }
+
+  .detailSheet {
+    inline-size: 100vw !important;
+  }
+}
+
+/* ─── Reduced-motion safety ───────────────────────────────────────────────── */
+/*
+  The global reduce-motion clamp in tokens.css already collapses all
+  animation/transition durations project-wide.  Nothing additional needed
+  here — just document the intent.
+*/

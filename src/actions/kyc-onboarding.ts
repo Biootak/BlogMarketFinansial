@@ -331,18 +331,33 @@ export async function reviewKycRecord(raw: unknown): Promise<FintechActionResult
       )
     : null;
 
-  const updatedRecord = await prisma.kycRecord.update({
-    where: { userId },
-    data: {
-      reviewedAt: now,
-      rejectedReason: approved ? null : (rejectedReason ?? null),
-      ...(expiresAt ? { expiresAt } : {}),
-      updatedAt: now,
-    },
-    select: { id: true },
+  // KYC review + Customer.kycStatus sync در یک transaction
+  const updatedRecord = await prisma.$transaction(async (tx) => {
+    const record = await tx.kycRecord.update({
+      where: { userId },
+      data: {
+        reviewedAt: now,
+        rejectedReason: approved ? null : (rejectedReason ?? null),
+        ...(expiresAt ? { expiresAt } : {}),
+        updatedAt: now,
+      },
+      select: { id: true },
+    });
+
+    // sync Customer.kycStatus — اگر Customer record برای این user وجود دارد
+    // (ممکن است کاربر عادی KYC بدهد ولی هنوز Customer نشده باشد — skip)
+    const newKycStatus = approved ? 'APPROVED' : 'REJECTED';
+    await tx.customer.updateMany({
+      where: { userId },
+      data: { kycStatus: newKycStatus, updatedAt: now },
+    });
+
+    return record;
   });
 
   revalidateTag('kyc');
+  revalidateTag('wallet');
+  revalidateTag('dashboard-stats');
 
   await logKycAudit({
     actorId: auth.user.id,
