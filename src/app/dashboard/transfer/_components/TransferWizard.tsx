@@ -140,21 +140,26 @@ export function TransferWizard() {
       />
 
       <div className={s.wizardCard}>
-        {/* Stepper */}
+        {/* ── Stepper ── */}
         <div className={s.stepper} role="list" aria-label="مراحل انتقال">
-          {STEPS.map((st) => {
+          {STEPS.map((st, i) => {
             const state = stepState(st.id);
             const StepIcon = st.Icon;
             return (
-              <div key={st.id} className={`${s.stepItem} ${state}`} role="listitem">
-                <div className={`${s.stepDot} ${state}`}>
-                  {state === 'done' ? (
-                    <CheckCircle2 size={15} aria-hidden />
-                  ) : (
-                    <StepIcon size={14} aria-hidden />
-                  )}
+              <div key={st.id} role="listitem" className={`${s.stepItem}`}>
+                {i > 0 && (
+                  <div
+                    className={`${s.stepConnector} ${stepState(st.id - 1) === 'done' ? s.stepConnectorDone : ''}`}
+                    aria-hidden
+                  />
+                )}
+                <div
+                  className={`${s.stepDot} ${s[`stepDot_${state}`]}`}
+                  aria-current={state === 'active' ? 'step' : undefined}
+                >
+                  {state === 'done' ? <CheckCircle2 size={15} aria-hidden /> : <StepIcon size={14} aria-hidden />}
                 </div>
-                <span className={`${s.stepLabel} ${state}`}>{st.label}</span>
+                <span className={`${s.stepLabel} ${s[`stepLabel_${state}`]}`}>{st.label}</span>
               </div>
             );
           })}
@@ -163,27 +168,26 @@ export function TransferWizard() {
         {/* ── Step 1: Recipient ── */}
         {step === 1 && (
           <div className={s.form}>
-            <h2 className={s.formTitle}>انتخاب گیرنده</h2>
-            <p className={s.formDesc}>شماره موبایل گیرنده را جستجو کنید.</p>
+            <div className={s.formHead}>
+              <h2 className={s.formTitle}>انتخاب گیرنده</h2>
+              <p className={s.formDesc}>شماره موبایل گیرنده را جستجو کنید.</p>
+            </div>
 
             {error && (
-              <div className={s.error} role="alert">
+              <div className={s.errorBox} role="alert">
                 <AlertCircle size={16} aria-hidden />
                 <span>{error}</span>
               </div>
             )}
 
-            <div className={s.field}>
-              <label htmlFor="identifier" className={s.label}>
+            <div className={s.fieldGroup}>
+              <label htmlFor="identifier" className={s.fieldLabel}>
                 شماره موبایل گیرنده
               </label>
               <Input
                 id="identifier"
                 value={identifier}
-                onChange={(e) => {
-                  setIdentifier(e.target.value);
-                  setError(null);
-                }}
+                onChange={(e) => { setIdentifier(e.target.value); setError(null); }}
                 placeholder="+93700000000"
                 dir="ltr"
                 type="tel"
@@ -206,48 +210,36 @@ export function TransferWizard() {
         {/* ── Step 2: Amount ── */}
         {step === 2 && recipient && (
           <div className={s.form}>
-            <h2 className={s.formTitle}>مبلغ انتقال</h2>
+            <div className={s.formHead}>
+              <h2 className={s.formTitle}>مبلغ انتقال</h2>
+            </div>
 
-            {/* Recipient preview */}
-            <div className={s.recipientPreview}>
+            {/* Recipient Card */}
+            <div className={s.recipientCard}>
               <div className={s.recipientAvatar} aria-hidden>
                 {recipient.fullName.charAt(0)}
               </div>
-              <div>
+              <div className={s.recipientInfo}>
                 <p className={s.recipientName}>{recipient.fullName}</p>
-                <p className={s.recipientPhone} dir="ltr">
-                  {recipient.phone}
-                </p>
+                <p className={s.recipientPhone} dir="ltr">{recipient.phone}</p>
               </div>
               <span
                 className={s.kycBadge}
-                style={
-                  recipient.kycStatus === 'APPROVED'
-                    ? {
-                        background: 'var(--ds-status-success-bg)',
-                        color: 'var(--ds-status-success-fg)',
-                        border: '1px solid var(--ds-status-success-border)',
-                      }
-                    : {
-                        background: 'var(--ds-status-pending-bg)',
-                        color: 'var(--ds-status-pending-fg)',
-                        border: '1px solid var(--ds-status-pending-border)',
-                      }
-                }
+                data-status={recipient.kycStatus === 'APPROVED' ? 'APPROVED' : 'PENDING'}
               >
                 {recipient.kycStatus === 'APPROVED' ? 'تأیید شده' : 'در انتظار'}
               </span>
             </div>
 
             {error && (
-              <div className={s.error} role="alert">
+              <div className={s.errorBox} role="alert">
                 <AlertCircle size={16} aria-hidden />
                 <span>{error}</span>
               </div>
             )}
 
-            <div className={s.field}>
-              <label htmlFor="amount" className={s.label}>
+            <div className={s.fieldGroup}>
+              <label htmlFor="amount" className={s.fieldLabel}>
                 مبلغ (افغانی)
               </label>
               <Input
@@ -262,25 +254,39 @@ export function TransferWizard() {
               {amountCents > 0 && <p className={s.amountPreview}>{formatAFN(amountCents)}</p>}
             </div>
 
-            {/* Quick amounts */}
             <div className={s.quickAmounts}>
               {QUICK_AMOUNTS.map((c) => (
                 <button
                   key={c}
                   type="button"
                   className={`${s.quickBtn} ${amountCents === c ? s.quickBtnActive : ''}`}
-                  onClick={() => {
-                    setAmountCents(c);
-                    setAmountRaw(String(c / 100));
-                  }}
+                  onClick={() => { setAmountCents(c); setAmountRaw(String(c / 100)); }}
                 >
                   {formatAFN(c)}
                 </button>
               ))}
             </div>
 
-            <div className={s.field}>
-              <label htmlFor="note" className={s.label}>
+            {/* Fee transparency (Structural Honesty) */}
+            {amountCents > 0 && (
+              <div className={s.feeSummary}>
+                <div className={s.feeRow}>
+                  <span className={s.feeKey}>مبلغ ارسالی</span>
+                  <span className={s.feeVal}>{formatAFN(amountCents)}</span>
+                </div>
+                <div className={s.feeRow}>
+                  <span className={s.feeKey}>کارمزد سرویس</span>
+                  <span className={s.feeVal}>رایگان</span>
+                </div>
+                <div className={`${s.feeRow} ${s['feeRow--total']}`}>
+                  <span className={s.feeKey}>دریافتی گیرنده</span>
+                  <span className={`${s.feeVal} ${s['feeVal--accent']}`}>{formatAFN(amountCents)}</span>
+                </div>
+              </div>
+            )}
+
+            <div className={s.fieldGroup}>
+              <label htmlFor="note" className={s.fieldLabel}>
                 یادداشت <span className={s.optional}>(اختیاری)</span>
               </label>
               <Input
@@ -307,9 +313,10 @@ export function TransferWizard() {
         {/* ── Step 3: Confirm ── */}
         {step === 3 && transferResult && recipient && (
           <div className={s.form}>
-            <h2 className={s.formTitle}>تأیید انتقال</h2>
+            <div className={s.formHead}>
+              <h2 className={s.formTitle}>تأیید انتقال</h2>
+            </div>
 
-            {/* Summary */}
             <div className={s.summary}>
               {[
                 { key: 'گیرنده', val: recipient.fullName },
@@ -319,9 +326,7 @@ export function TransferWizard() {
               ].map(({ key, val, dir }) => (
                 <div key={key} className={s.summaryRow}>
                   <span className={s.summaryKey}>{key}</span>
-                  <span className={s.summaryVal} dir={dir}>
-                    {val}
-                  </span>
+                  <span className={s.summaryVal} dir={dir}>{val}</span>
                 </div>
               ))}
             </div>
@@ -337,17 +342,12 @@ export function TransferWizard() {
                     کد آزمایشی: {transferResult.devCode}
                   </p>
                 )}
-                <div className={s.field}>
-                  <label htmlFor="otp" className={s.label}>
-                    کد تأیید ۶ رقمی
-                  </label>
+                <div className={s.fieldGroup}>
+                  <label htmlFor="otp" className={s.fieldLabel}>کد تأیید ۶ رقمی</label>
                   <Input
                     id="otp"
                     value={otp}
-                    onChange={(e) => {
-                      setOtp(e.target.value);
-                      setError(null);
-                    }}
+                    onChange={(e) => { setOtp(e.target.value); setError(null); }}
                     placeholder="000000"
                     dir="ltr"
                     inputMode="numeric"
@@ -360,7 +360,7 @@ export function TransferWizard() {
             )}
 
             {error && (
-              <div className={s.error} role="alert">
+              <div className={s.errorBox} role="alert">
                 <AlertCircle size={16} aria-hidden />
                 <span>{error}</span>
               </div>
@@ -384,21 +384,21 @@ export function TransferWizard() {
         {/* ── Step 4: Success ── */}
         {step === 4 && (
           <div className={s.successView}>
-            <div className={s.successIcon} aria-hidden>
-              <CheckCircle2 size={48} />
+            <div className={s.successRing} aria-hidden>
+              <CheckCircle2 size={40} />
             </div>
-            <h2 className={s.successTitle}>انتقال موفق!</h2>
+            <p className={s.successAmount}>{formatAFN(amountCents)}</p>
+            <h2 className={s.successTitle}>انتقال موفق انجام شد</h2>
             <p className={s.successDesc}>
-              {formatAFN(amountCents)} با موفقیت به {recipient?.fullName} ارسال شد.
+              با موفقیت به {recipient?.fullName} ارسال شد.
             </p>
             {finalTxnId && (
-              <div className={s.txnId} dir="ltr">
-                شماره پیگیری: {finalTxnId.slice(0, 12)}…
+              <div className={s.txnIdBox}>
+                <span className={s.txnIdLabel}>شماره پیگیری</span>
+                <span className={s.txnIdVal} dir="ltr">{finalTxnId.slice(0, 16)}…</span>
               </div>
             )}
-            <div
-              style={{ display: 'flex', gap: 'var(--ds-space-3)', marginTop: 'var(--ds-space-4)' }}
-            >
+            <div className={s.successActions}>
               <Button
                 variant="outline"
                 onClick={() => {

@@ -27,31 +27,11 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import s from './ExchangeDetailClient.module.css';
 
-const STATUS_MAP: Record<string, { label: string; color: string; bg: string; border: string }> = {
-  ACTIVE: {
-    label: 'فعال',
-    color: 'oklch(40% 0.12 145)',
-    bg: 'oklch(95% 0.08 145)',
-    border: 'oklch(80% 0.12 145)',
-  },
-  PENDING: {
-    label: 'در انتظار تأیید',
-    color: 'oklch(40% 0.12 80)',
-    bg: 'oklch(95% 0.06 85)',
-    border: 'oklch(80% 0.10 80)',
-  },
-  SUSPENDED: {
-    label: 'معلق',
-    color: 'oklch(40% 0.12 50)',
-    bg: 'oklch(95% 0.06 50)',
-    border: 'oklch(80% 0.10 50)',
-  },
-  CLOSED: {
-    label: 'بسته',
-    color: 'oklch(45% 0 0)',
-    bg: 'oklch(93% 0 0)',
-    border: 'oklch(80% 0 0)',
-  },
+const STATUS_LABEL: Record<string, string> = {
+  ACTIVE: 'فعال',
+  PENDING: 'در انتظار تأیید',
+  SUSPENDED: 'معلق',
+  CLOSED: 'بسته',
 };
 
 const ROLE_FA: Record<string, string> = {
@@ -107,16 +87,43 @@ export default function ExchangeDetailClient({
     [exchange.id, router],
   );
 
-  const currentStatusInfo = STATUS_MAP[status] ?? STATUS_MAP.PENDING;
-
   return (
-    <div className={s.root}>
-      {/* ─── ردیف بالا: اطلاعات + وضعیت ─────────────────────────────────────── */}
+    <div className={s.root} dir="rtl">
+      {/* ── KPI Strip ─────────────────────────────────────────────────────────── */}
+      <div className={s.kpiStrip} role="list" aria-label="آمار صرافی">
+        <div className={s.kpiItem} role="listitem">
+          <span className={s.kpiVal}>{new Intl.NumberFormat('fa-IR').format(staff.length)}</span>
+          <span className={s.kpiLabel}>کارمندان</span>
+        </div>
+        <div className={s.kpiDivider} aria-hidden />
+        <div className={s.kpiItem} role="listitem">
+          <span className={s.kpiVal}>{new Intl.NumberFormat('fa-IR').format(recentTransactions.length)}</span>
+          <span className={s.kpiLabel}>تراکنش‌های اخیر</span>
+        </div>
+        <div className={s.kpiDivider} aria-hidden />
+        <div className={s.kpiItem} role="listitem">
+          <span className={s.kpiVal}>{exchange.platformFee}٪</span>
+          <span className={s.kpiLabel}>کارمزد پلتفرم</span>
+        </div>
+        <div className={s.kpiDivider} aria-hidden />
+        <div className={s.kpiItem} role="listitem">
+          <span className={s.kpiVal}>
+            {exchange.dailyLimitAf > 0
+              ? new Intl.NumberFormat('fa-IR', { notation: 'compact' }).format(exchange.dailyLimitAf)
+              : '∞'}
+          </span>
+          <span className={s.kpiLabel}>سقف روزانه (افغانی)</span>
+        </div>
+      </div>
+
+      {/* ── ردیف بالا: اطلاعات + وضعیت ─────────────────────────────────────── */}
       <div className={s.topRow}>
         {/* اطلاعات پایه */}
         <div className={s.card}>
           <div className={s.cardHeader}>
-            <Building2 className="w-4 h-4" style={{ color: 'var(--at-accent)' }} aria-hidden />
+            <span className={s.cardHeaderIcon} aria-hidden>
+              <Building2 size={15} />
+            </span>
             <span>اطلاعات پایه</span>
           </div>
           <dl className={s.infoGrid}>
@@ -128,9 +135,7 @@ export default function ExchangeDetailClient({
             )}
             {exchange.city && (
               <>
-                <dt>
-                  <MapPin className="w-3 h-3" aria-hidden style={{ display: 'inline' }} /> شهر
-                </dt>
+                <dt><MapPin size={12} aria-hidden /> شهر</dt>
                 <dd>{exchange.city}</dd>
               </>
             )}
@@ -142,32 +147,18 @@ export default function ExchangeDetailClient({
             )}
             {exchange.phone && (
               <>
-                <dt>
-                  <Phone className="w-3 h-3" aria-hidden style={{ display: 'inline' }} /> تلفن
-                </dt>
+                <dt><Phone size={12} aria-hidden /> تلفن</dt>
                 <dd dir="ltr">{exchange.phone}</dd>
               </>
             )}
             {exchange.email && (
               <>
-                <dt>
-                  <Mail className="w-3 h-3" aria-hidden style={{ display: 'inline' }} /> ایمیل
-                </dt>
+                <dt><Mail size={12} aria-hidden /> ایمیل</dt>
                 <dd dir="ltr">{exchange.email}</dd>
               </>
             )}
-            <dt>
-              <ShieldCheck className="w-3 h-3" aria-hidden style={{ display: 'inline' }} /> KYC
-            </dt>
+            <dt><ShieldCheck size={12} aria-hidden /> KYC</dt>
             <dd>{exchange.requireKyc ? 'اجباری' : 'اختیاری'}</dd>
-            <dt>کارمزد پلتفرم</dt>
-            <dd className="tabular-nums">{exchange.platformFee}٪</dd>
-            <dt>سقف روزانه</dt>
-            <dd className="tabular-nums">
-              {exchange.dailyLimitAf > 0
-                ? `${new Intl.NumberFormat('fa-IR').format(exchange.dailyLimitAf)} افغانی`
-                : 'بدون محدودیت'}
-            </dd>
             <dt>تاریخ ثبت</dt>
             <dd>
               {new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium' }).format(
@@ -180,24 +171,17 @@ export default function ExchangeDetailClient({
         {/* مدیریت وضعیت */}
         <div className={s.card}>
           <div className={s.cardHeader}>
-            <CircleDollarSign
-              className="w-4 h-4"
-              style={{ color: 'var(--at-accent)' }}
-              aria-hidden
-            />
+            <span className={s.cardHeaderIcon} aria-hidden>
+              <CircleDollarSign size={15} />
+            </span>
             <span>وضعیت و مدیریت</span>
           </div>
 
           <div className={s.statusSection}>
-            <div
-              className={s.statusBadgeLg}
-              style={{
-                color: currentStatusInfo.color,
-                background: currentStatusInfo.bg,
-                border: `1px solid ${currentStatusInfo.border}`,
-              }}
-            >
-              {currentStatusInfo.label}
+            {/* data-status → CSS رنگ را handle می‌کند، نه inline style */}
+            <div className={s.statusBadgeLg} data-status={status}>
+              <span className={s.statusDot} aria-hidden />
+              {STATUS_LABEL[status] ?? status}
             </div>
             <p className={s.statusHint}>وضعیت فعلی صرافی. تغییر وضعیت بلافاصله اعمال می‌شود.</p>
           </div>
@@ -210,7 +194,7 @@ export default function ExchangeDetailClient({
                 onClick={() => setPendingStatus('ACTIVE')}
                 disabled={saving}
               >
-                <CheckCircle2 className="w-4 h-4" aria-hidden />
+                <CheckCircle2 size={16} aria-hidden />
                 تأیید و فعال‌سازی
               </button>
             )}
@@ -221,7 +205,7 @@ export default function ExchangeDetailClient({
                 onClick={() => setPendingStatus('SUSPENDED')}
                 disabled={saving}
               >
-                <PauseCircle className="w-4 h-4" aria-hidden />
+                <PauseCircle size={16} aria-hidden />
                 تعلیق موقت
               </button>
             )}
@@ -232,33 +216,32 @@ export default function ExchangeDetailClient({
                 onClick={() => setPendingStatus('CLOSED')}
                 disabled={saving}
               >
-                <XCircle className="w-4 h-4" aria-hidden />
+                <XCircle size={16} aria-hidden />
                 بستن صرافی
               </button>
             )}
-            <Link
-              href="/dashboard/exchanges"
-              className={s.statusBtn}
-              style={{ textDecoration: 'none' }}
-            >
+            <Link href="/dashboard/exchanges" className={s.statusBtn}>
               بازگشت به لیست
             </Link>
           </div>
         </div>
       </div>
 
-      {/* ─── کارمندان ─────────────────────────────────────────────────────────── */}
+      {/* ── کارمندان ─────────────────────────────────────────────────────────── */}
       <div className={s.card}>
         <div className={s.cardHeader}>
-          <Users className="w-4 h-4" style={{ color: 'var(--at-accent)' }} aria-hidden />
+          <span className={s.cardHeaderIcon} aria-hidden><Users size={15} /></span>
           <span>کارمندان ({new Intl.NumberFormat('fa-IR').format(staff.length)})</span>
         </div>
         {staff.length === 0 ? (
-          <p className={s.empty}>هنوز کارمندی اضافه نشده.</p>
+          <div className={s.empty}>
+            <Users size={32} className={s.emptyIcon} aria-hidden />
+            هنوز کارمندی اضافه نشده.
+          </div>
         ) : (
           <div className={s.staffList}>
-            {staff.map((member) => (
-              <div key={member.id} className={s.staffRow}>
+            {staff.map((member, i) => (
+              <div key={member.id} className={s.staffRow} style={{ '--row-i': i } as React.CSSProperties}>
                 <div className={s.staffAvatar}>
                   {member.user.image ? (
                     <img
@@ -283,18 +266,21 @@ export default function ExchangeDetailClient({
         )}
       </div>
 
-      {/* ─── آخرین تراکنش‌ها ──────────────────────────────────────────────────── */}
+      {/* ── آخرین تراکنش‌ها ──────────────────────────────────────────────────── */}
       <div className={s.card}>
         <div className={s.cardHeader}>
-          <CircleDollarSign className="w-4 h-4" style={{ color: 'var(--at-accent)' }} aria-hidden />
+          <span className={s.cardHeaderIcon} aria-hidden><CircleDollarSign size={15} /></span>
           <span>آخرین تراکنش‌ها</span>
         </div>
         {recentTransactions.length === 0 ? (
-          <p className={s.empty}>هنوز تراکنشی ثبت نشده.</p>
+          <div className={s.empty}>
+            <CircleDollarSign size={32} className={s.emptyIcon} aria-hidden />
+            هنوز تراکنشی ثبت نشده.
+          </div>
         ) : (
           <div className={s.txList}>
-            {recentTransactions.map((tx) => (
-              <div key={tx.id} className={s.txRow}>
+            {recentTransactions.map((tx, i) => (
+              <div key={tx.id} className={s.txRow} style={{ '--row-i': i } as React.CSSProperties}>
                 <div className={s.txCustomer}>
                   <span className={s.txName}>{tx.customer?.fullName ?? '—'}</span>
                   <span className={s.txPhone}>{tx.customer?.phone ?? ''}</span>
@@ -303,13 +289,8 @@ export default function ExchangeDetailClient({
                 <span className={s.txAmount}>
                   {new Intl.NumberFormat('fa-IR').format(Number(tx.amount) / 100)} {tx.currency}
                 </span>
-                <span
-                  className={s.txStatus}
-                  style={{
-                    color:
-                      tx.status === 'COMPLETED' ? 'oklch(40% 0.12 145)' : 'var(--at-fg-subtle)',
-                  }}
-                >
+                {/* CSS class تعیین رنگ می‌کند — نه inline style */}
+                <span className={tx.status === 'COMPLETED' ? s.txStatusCompleted : s.txStatusOther}>
                   {STATUS_TX_FA[tx.status] ?? tx.status}
                 </span>
                 <span className={s.txDate}>

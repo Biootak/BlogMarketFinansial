@@ -14,6 +14,7 @@ import { PageHeader } from '@/components/Dashboard/primitives';
 import { useToast } from '@/components/ui/use-toast';
 import {
   Check,
+  CheckCircle2,
   Database,
   ImageIcon,
   Loader2,
@@ -25,458 +26,195 @@ import {
   Shield,
   Upload,
   Wrench,
+  XCircle,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import s from './settings.module.css';
+
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 interface TabType {
   id: string;
   name: string;
+  desc: string;
   icon: LucideIcon;
-  description: string;
 }
 
-const tabs: TabType[] = [
-  { id: 'general', name: 'تنظیمات عمومی', icon: Settings, description: 'تنظیمات اصلی سایت' },
-  { id: 'email', name: 'تنظیمات ایمیل', icon: Mail, description: 'پیکربندی SMTP' },
-  { id: 'security', name: 'تنظیمات امنیتی', icon: Shield, description: 'امنیت و دسترسی' },
-  { id: 'social', name: 'شبکه‌های اجتماعی', icon: Share2, description: 'اتصال به شبکه‌ها' },
-  { id: 'database', name: 'پایگاه داده', icon: Database, description: 'مدیریت دیتابیس' },
-  { id: 'advanced', name: 'تنظیمات پیشرفته', icon: Wrench, description: 'تنظیمات حرفه‌ای' },
+const TABS: TabType[] = [
+  { id: 'general',  name: 'تنظیمات عمومی', desc: 'هویت سایت',         icon: Settings  },
+  { id: 'email',    name: 'ایمیل / SMTP',   desc: 'پیکربندی ارسال',   icon: Mail       },
+  { id: 'security', name: 'امنیت',          desc: 'دسترسی و رمز',     icon: Shield     },
+  { id: 'social',   name: 'شبکه‌های اجتماعی', desc: 'لینک‌های خارجی', icon: Share2     },
+  { id: 'database', name: 'پایگاه داده',    desc: 'اتصال و backup',   icon: Database   },
+  { id: 'advanced', name: 'پیشرفته',        desc: 'cache و API',      icon: Wrench     },
 ];
 
-interface SettingsFormData {
+interface FormData {
   general: { siteTitle: string; siteDescription: string; contactEmail: string; logoUrl: string };
   email: { smtpServer: string; smtpPort: string; smtpUsername: string; smtpPassword: string };
-  security: {
-    twoFactorAuth: boolean;
-    ipRestriction: boolean;
-    minPasswordLength: number;
-    sessionDuration: number;
-  };
+  security: { twoFactorAuth: boolean; ipRestriction: boolean; minPasswordLength: number; sessionDuration: number };
   social: { instagram: string; telegram: string; whatsapp: string; twitter: string };
-  database: {
-    server: string;
-    port: string;
-    name: string;
-    username: string;
-    password: string;
-    type: string;
-    autoBackup: boolean;
-  };
-  advanced: {
-    debugMode: boolean;
-    cacheEnabled: boolean;
-    apiRateLimit: boolean;
-    cacheDuration: number;
-    maxUploadSize: number;
-    errorLevel: string;
-    logPath: string;
-    apiKey: string;
-    cacheStorage: string;
-    rateLimit: number;
-  };
+  database: { server: string; port: string; name: string; username: string; password: string; type: string; autoBackup: boolean };
+  advanced: { debugMode: boolean; cacheEnabled: boolean; apiRateLimit: boolean; cacheDuration: number; maxUploadSize: number; errorLevel: string; logPath: string; apiKey: string; cacheStorage: string; rateLimit: number };
 }
 
-// Toggle Switch Component — atelier (hairline + emerald)
-const ToggleSwitch = ({
-  enabled,
-  onChange,
-  disabled,
-}: { enabled: boolean; onChange: () => void; disabled?: boolean }) => (
-  <button
-    type="button"
-    role="switch"
-    aria-checked={enabled}
-    onClick={onChange}
-    disabled={disabled}
-    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--at-accent)] focus-visible:ring-offset-2 ${
-      disabled ? 'opacity-50 cursor-not-allowed' : ''
-    } ${enabled ? 'bg-[color:var(--at-accent)]' : 'bg-[color:var(--at-bg-elevated)] border border-[color:var(--at-line)]'}`}
-  >
-    <span
-      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ${enabled ? '-translate-x-6' : '-translate-x-1'}`}
-    />
-  </button>
-);
+// ── Sub-components ─────────────────────────────────────────────────────────────
 
-// Input Field Component — atelier
-const InputField = ({
-  label,
-  id,
-  type = 'text',
-  value,
-  onChange,
-  placeholder,
-  readOnly = false,
-  disabled = false,
-}: {
-  label: string;
-  id: string;
-  type?: string;
-  value: string | number;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  readOnly?: boolean;
-  disabled?: boolean;
-}) => (
-  <div className="space-y-2">
-    {label && (
-      <label htmlFor={id} className="at-field__label block">
-        {label}
-      </label>
-    )}
-    <input
-      id={id}
-      type={type}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      readOnly={readOnly}
+function ToggleSwitch({ enabled, onChange, disabled }: { enabled: boolean; onChange: () => void; disabled?: boolean }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={enabled}
+      onClick={onChange}
       disabled={disabled}
-      placeholder={placeholder}
-      className={`at-input ${readOnly || disabled ? 'cursor-not-allowed opacity-60' : ''}`}
-      style={
-        readOnly
-          ? {
-              background: 'var(--at-bg-deep)',
-              fontFamily: 'ui-monospace, monospace',
-              fontSize: '12px',
-            }
-          : undefined
-      }
-    />
-  </div>
-);
-
-// Select Field Component — atelier
-const SelectField = ({
-  label,
-  value,
-  onChange,
-  options,
-  disabled = false,
-}: {
-  label: string;
-  value: string | number;
-  onChange: (value: string) => void;
-  options: { value: string | number; label: string }[];
-  disabled?: boolean;
-}) => (
-  <div className="space-y-2">
-    <label htmlFor={`ss-${label}`} className="at-field__label block">
-      {label}
-    </label>
-    <select
-      id={`ss-${label}`}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      disabled={disabled}
-      className="at-select w-full"
-      style={{ height: 'auto', padding: '10px 14px', fontSize: '13px', fontWeight: '500' }}
+      className={s.switch}
     >
-      {options.map((opt) => (
-        <option key={opt.value} value={opt.value}>
-          {opt.label}
-        </option>
-      ))}
-    </select>
-  </div>
-);
+      <span className={s.switchThumb} />
+    </button>
+  );
+}
 
-// Setting Toggle Row — atelier
-const SettingToggleRow = ({
-  title,
-  description,
-  enabled,
-  onChange,
-  disabled,
-}: {
-  title: string;
-  description: string;
-  enabled: boolean;
-  onChange: () => void;
-  disabled?: boolean;
-}) => (
-  <div className="flex items-center justify-between gap-4 px-4 py-3.5 rounded-[var(--at-radius)] border border-[color:var(--at-line)] bg-[color:var(--at-bg)] transition-colors hover:bg-[color:var(--at-surface-hover)]">
-    <div className="space-y-0.5 min-w-0">
-      <h4 className="text-sm font-semibold text-[color:var(--at-fg)]">{title}</h4>
-      <p className="text-xs text-[color:var(--at-fg-subtle)]">{description}</p>
-    </div>
-    <ToggleSwitch enabled={enabled} onChange={onChange} disabled={disabled} />
-  </div>
-);
-
-// Card Section — atelier
-const CardSection = ({
-  title,
-  description,
-  children,
-}: { title: string; description: string; children: React.ReactNode }) => (
-  <div className="at-form-section">
-    <div className="at-form-section__head">
-      <div className="at-form-section__title">
-        <span className="at-form-section__ico">
-          <Settings className="size-4" />
-        </span>
-        <div>
-          <div className="at-form-section__title-text">{title}</div>
-          <div className="at-form-section__sub">{description}</div>
-        </div>
+function ToggleRow({ title, desc, enabled, onChange, disabled }: { title: string; desc: string; enabled: boolean; onChange: () => void; disabled?: boolean }) {
+  return (
+    <div className={s.toggleRow}>
+      <div className={s.toggleRowText}>
+        <span className={s.toggleTitle}>{title}</span>
+        <span className={s.toggleDesc}>{desc}</span>
       </div>
+      <ToggleSwitch enabled={enabled} onChange={onChange} disabled={disabled} />
     </div>
-    <div className="at-form-section__body at-form-stack at-form-stack--lg">{children}</div>
-  </div>
-);
+  );
+}
 
-// Action Buttons — atelier
-const ActionButtons = ({
-  onReset,
-  onSubmit,
-  loading,
-  disabled,
-}: { onReset?: () => void; onSubmit?: () => void; loading?: boolean; disabled?: boolean }) => (
-  <div className="flex items-center justify-end gap-2 pt-2">
-    {onReset && (
-      <button type="button" onClick={onReset} disabled={loading || disabled} className="at-btn">
-        <RefreshCw className={`size-3.5 ${loading ? 'animate-spin' : ''}`} />
-        بازنشانی
-      </button>
-    )}
-    {onSubmit && (
-      <button
-        type="button"
-        onClick={onSubmit}
-        disabled={loading || disabled}
-        className="at-btn at-btn--primary"
-      >
+function SaveBtn({ loading, onClick }: { loading: boolean; onClick?: () => void }) {
+  return (
+    <div className="flex items-center justify-end gap-2 pt-1">
+      <button type="button" onClick={onClick} disabled={loading} className="at-btn at-btn--primary">
         {loading ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
         {loading ? 'در حال ذخیره...' : 'ذخیره تنظیمات'}
       </button>
-    )}
-  </div>
-);
+    </div>
+  );
+}
+
+// ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('general');
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [formData, setFormData] = useState<SettingsFormData>({
-    general: { siteTitle: '', siteDescription: '', contactEmail: '', logoUrl: '' },
-    email: { smtpServer: '', smtpPort: '', smtpUsername: '', smtpPassword: '' },
-    security: {
-      twoFactorAuth: false,
-      ipRestriction: false,
-      minPasswordLength: 8,
-      sessionDuration: 30,
-    },
-    social: { instagram: '', telegram: '', whatsapp: '', twitter: '' },
-    database: {
-      server: '',
-      port: '',
-      name: '',
-      username: '',
-      password: '',
-      type: 'postgresql',
-      autoBackup: false,
-    },
-    advanced: {
-      debugMode: false,
-      cacheEnabled: true,
-      apiRateLimit: true,
-      cacheDuration: 60,
-      maxUploadSize: 10,
-      errorLevel: 'error',
-      logPath: '',
-      apiKey: '',
-      cacheStorage: 'memory',
-      rateLimit: 100,
-    },
+  const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
+
+  const [form, setForm] = useState<FormData>({
+    general:  { siteTitle: '', siteDescription: '', contactEmail: '', logoUrl: '' },
+    email:    { smtpServer: '', smtpPort: '', smtpUsername: '', smtpPassword: '' },
+    security: { twoFactorAuth: false, ipRestriction: false, minPasswordLength: 8, sessionDuration: 30 },
+    social:   { instagram: '', telegram: '', whatsapp: '', twitter: '' },
+    database: { server: '', port: '', name: '', username: '', password: '', type: 'postgresql', autoBackup: false },
+    advanced: { debugMode: false, cacheEnabled: true, apiRateLimit: true, cacheDuration: 60, maxUploadSize: 10, errorLevel: 'error', logPath: '', apiKey: '', cacheStorage: 'memory', rateLimit: 100 },
   });
 
+  // ── Load initial settings ──────────────────────────────────────────────────
   useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const result = await getSystemSettings();
-        if (result.success && result.data) {
-          const data = result.data;
-          setFormData((prev) => ({
-            ...prev,
-            general: {
-              ...prev.general,
-              siteTitle: data.siteName || '',
-              siteDescription: data.siteDescription || '',
-              logoUrl: data.logoUrl || '',
-            },
-            email: {
-              ...prev.email,
-              smtpServer: data.smtpServer || '',
-              smtpPort: data.smtpPort || '',
-              smtpUsername: data.smtpUsername || '',
-            },
-            social: {
-              ...prev.social,
-              instagram: data.instagram || '',
-              telegram: data.telegram || '',
-              twitter: data.twitter || '',
-              whatsapp: data.whatsapp || '',
-            },
-            advanced: { ...prev.advanced, cacheEnabled: data.cacheEnabled ?? true },
-          }));
-        }
-      } catch {
-        // Silent fail — handled by UI fallback state
-      } finally {
-        setInitialLoading(false);
+    getSystemSettings().then((result) => {
+      if (result.success && result.data) {
+        const d = result.data;
+        setForm((prev) => ({
+          ...prev,
+          general:  { ...prev.general, siteTitle: d.siteName || '', siteDescription: d.siteDescription || '', logoUrl: d.logoUrl || '' },
+          email:    { ...prev.email, smtpServer: d.smtpServer || '', smtpPort: d.smtpPort || '', smtpUsername: d.smtpUsername || '' },
+          social:   { ...prev.social, instagram: d.instagram || '', telegram: d.telegram || '', twitter: d.twitter || '', whatsapp: d.whatsapp || '' },
+          advanced: { ...prev.advanced, cacheEnabled: d.cacheEnabled ?? true },
+        }));
       }
-    };
-    loadSettings();
+    }).finally(() => setInitialLoading(false));
   }, []);
 
-  const handleInputChange = useCallback(
-    (tab: keyof SettingsFormData, field: string, value: string | number | boolean) => {
-      setFormData((prev) => ({ ...prev, [tab]: { ...prev[tab], [field]: value } }));
-    },
-    [],
-  );
+  const set = useCallback(<T extends keyof FormData>(tab: T, field: keyof FormData[T], value: unknown) => {
+    setForm((prev) => ({ ...prev, [tab]: { ...prev[tab], [field]: value } }));
+    setTestResult(null);
+  }, []);
 
-  const handleSaveGeneral = async () => {
+  // ── Save handlers ──────────────────────────────────────────────────────────
+  const handleSaveGeneral = useCallback(async () => {
     setLoading(true);
-    try {
-      const result = await updateGeneralSettings({
-        siteName: formData.general.siteTitle,
-        siteDescription: formData.general.siteDescription,
-        logoUrl: formData.general.logoUrl,
-      });
-      if (result.success) {
-        toast({ title: 'موفق', description: 'تنظیمات عمومی با موفقیت ذخیره شد' });
-      } else {
-        toast({ title: 'خطا', description: result.error, variant: 'destructive' });
-      }
-    } catch {
-      toast({ title: 'خطا', description: 'خطا در ذخیره تنظیمات', variant: 'destructive' });
-    } finally {
-      setLoading(false);
-    }
-  };
+    const r = await updateGeneralSettings({ siteName: form.general.siteTitle, siteDescription: form.general.siteDescription, logoUrl: form.general.logoUrl }).catch(() => ({ success: false, error: 'خطا در ذخیره' }));
+    setLoading(false);
+    if ((r as { success: boolean }).success) toast({ title: 'ذخیره شد', description: 'تنظیمات عمومی با موفقیت ذخیره شد' });
+    else toast({ title: 'خطا', description: typeof (r as { error?: unknown }).error === 'string' ? (r as { error: string }).error : 'خطا در ذخیره', variant: 'destructive' });
+  }, [form.general, toast]);
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSaveEmail = useCallback(async () => {
+    setLoading(true);
+    const r = await updateEmailSettings(form.email).catch(() => ({ success: false, error: 'خطا در ذخیره' }));
+    setLoading(false);
+    if ((r as { success: boolean }).success) toast({ title: 'ذخیره شد', description: 'تنظیمات ایمیل با موفقیت ذخیره شد' });
+    else toast({ title: 'خطا', description: typeof (r as { error?: unknown }).error === 'string' ? (r as { error: string }).error : 'خطا', variant: 'destructive' });
+  }, [form.email, toast]);
+
+  const handleSaveAdvanced = useCallback(async () => {
+    setLoading(true);
+    const r = await updateCacheSettings({ cacheEnabled: form.advanced.cacheEnabled }).catch(() => ({ success: false, error: 'خطا در ذخیره' }));
+    setLoading(false);
+    if ((r as { success: boolean }).success) toast({ title: 'ذخیره شد', description: 'تنظیمات پیشرفته ذخیره شد' });
+    else toast({ title: 'خطا', description: typeof (r as { error?: unknown }).error === 'string' ? (r as { error: string }).error : 'خطا', variant: 'destructive' });
+  }, [form.advanced.cacheEnabled, toast]);
+
+  const handleTestSmtp = useCallback(async () => {
+    setLoading(true);
+    setTestResult(null);
+    const r = await testSmtpConnection(form.email).catch(() => ({ success: false, message: 'خطا در تست' }));
+    setLoading(false);
+    setTestResult({ ok: (r as { success: boolean }).success, msg: (r as { message?: string; error?: string }).message || (r as { error?: string }).error || (r as { success: boolean }).success ? 'اتصال موفق' : 'اتصال ناموفق' });
+  }, [form.email]);
+
+  const handleTestDb = useCallback(async () => {
+    setLoading(true);
+    setTestResult(null);
+    const r = await testDatabaseConnection().catch(() => ({ success: false, message: 'خطا در تست' }));
+    setLoading(false);
+    setTestResult({ ok: (r as { success: boolean }).success, msg: (r as { message?: string; error?: string }).message || (r as { error?: string }).error || ((r as { success: boolean }).success ? 'اتصال موفق' : 'اتصال ناموفق') });
+  }, []);
+
+  const handleGenerateApiKey = useCallback(async () => {
+    setLoading(true);
+    const r = await generateApiKey().catch(() => ({ success: false }));
+    setLoading(false);
+    if ((r as { success: boolean; data?: { apiKey: string } }).success && (r as { data?: { apiKey: string } }).data?.apiKey) {
+      set('advanced', 'apiKey', (r as { data: { apiKey: string } }).data.apiKey);
+      toast({ title: 'کلید تولید شد', description: 'کلید API جدید با موفقیت تولید شد' });
+    }
+  }, [set, toast]);
+
+  const handleLogoUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setLoading(true);
-    try {
-      const uploadData = new FormData();
-      uploadData.append('files', file);
-      uploadData.append('folder', 'general');
-      const response = await fetch('/api/upload', { method: 'POST', body: uploadData });
-      const data = await response.json();
-      if (data.success && data.data?.files?.[0]?.url) {
-        handleInputChange('general', 'logoUrl', data.data.files[0].url);
-        toast({ title: 'موفق', description: 'لوگو با موفقیت آپلود شد' });
-      } else {
-        toast({
-          title: 'خطا',
-          description: data.error?.message || 'خطا در آپلود لوگو',
-          variant: 'destructive',
-        });
-      }
-    } catch {
-      toast({ title: 'خطا', description: 'خطا در آپلود لوگو', variant: 'destructive' });
-    } finally {
-      setLoading(false);
+    const fd = new FormData();
+    fd.append('files', file);
+    fd.append('folder', 'general');
+    const res = await fetch('/api/upload', { method: 'POST', body: fd }).then((r) => r.json()).catch(() => null);
+    setLoading(false);
+    if (res?.success && res.data?.files?.[0]?.url) {
+      set('general', 'logoUrl', res.data.files[0].url);
+      toast({ title: 'آپلود شد', description: 'لوگو با موفقیت آپلود شد' });
+    } else {
+      toast({ title: 'خطا', description: res?.error?.message || 'خطا در آپلود', variant: 'destructive' });
     }
-  };
-
-  const handleSaveEmail = async () => {
-    setLoading(true);
-    try {
-      const result = await updateEmailSettings(formData.email);
-      if (result.success) {
-        toast({ title: 'موفق', description: 'تنظیمات ایمیل با موفقیت ذخیره شد' });
-      } else {
-        toast({ title: 'خطا', description: result.error, variant: 'destructive' });
-      }
-    } catch {
-      toast({ title: 'خطا', description: 'خطا در ذخیره تنظیمات', variant: 'destructive' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSaveAdvanced = async () => {
-    setLoading(true);
-    try {
-      const result = await updateCacheSettings({ cacheEnabled: formData.advanced.cacheEnabled });
-      if (result.success) {
-        toast({ title: 'موفق', description: 'تنظیمات پیشرفته با موفقیت ذخیره شد' });
-      } else {
-        toast({ title: 'خطا', description: result.error, variant: 'destructive' });
-      }
-    } catch {
-      toast({ title: 'خطا', description: 'خطا در ذخیره تنظیمات', variant: 'destructive' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleTestDatabase = async () => {
-    setLoading(true);
-    try {
-      const result = await testDatabaseConnection();
-      if (result.success) {
-        toast({ title: 'موفق', description: result.message });
-      } else {
-        toast({ title: 'خطا', description: result.error, variant: 'destructive' });
-      }
-    } catch {
-      toast({ title: 'خطا', description: 'خطا در تست اتصال', variant: 'destructive' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleTestSmtp = async () => {
-    setLoading(true);
-    try {
-      const result = await testSmtpConnection(formData.email);
-      if (result.success) {
-        toast({ title: 'موفق', description: result.message });
-      } else {
-        toast({ title: 'خطا', description: result.error, variant: 'destructive' });
-      }
-    } catch {
-      toast({ title: 'خطا', description: 'خطا در تست اتصال', variant: 'destructive' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGenerateApiKey = async () => {
-    setLoading(true);
-    try {
-      const result = await generateApiKey();
-      if (result.success && result.data) {
-        handleInputChange('advanced', 'apiKey', result.data.apiKey);
-        toast({ title: 'موفق', description: 'کلید API جدید تولید شد' });
-      } else {
-        toast({ title: 'خطا', description: result.error, variant: 'destructive' });
-      }
-    } catch {
-      toast({ title: 'خطا', description: 'خطا در تولید کلید', variant: 'destructive' });
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [set, toast]);
 
   if (initialLoading) {
     return (
-      <div className="at-page flex items-center justify-center" style={{ minHeight: '60vh' }}>
-        <Loader2 className="size-6 animate-spin text-[color:var(--at-accent)]" />
+      <div className="at-page" dir="rtl" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+        <Loader2 className="size-6 animate-spin" style={{ color: 'var(--at-accent)' }} />
       </div>
     );
   }
 
   return (
-    <div className="at-page" dir="rtl">
+    <div className={`at-page ${s.page}`} dir="rtl">
       <PageHeader
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'تنظیمات' }]}
         eyebrow="سیستم"
@@ -484,522 +222,370 @@ export default function SettingsPage() {
         description="تنظیمات سیستم، امنیت، ایمیل و شبکه‌های اجتماعی"
       />
 
-      <div className="flex flex-col lg:flex-row gap-5">
-        {/* Vertical Tabs (sidebar) — atelier */}
-        <nav className="lg:w-64 shrink-0 lg:sticky lg:top-6 lg:self-start">
-          <div className="flex lg:flex-col gap-1.5 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
-            {tabs.map((tab) => {
-              const IconComponent = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`at-form-tab ${isActive ? 'is-active' : ''}`}
-                  style={{
-                    minWidth: 'max-content',
-                    width: '100%',
-                    justifyContent: 'flex-start',
-                    padding: '10px 14px',
-                  }}
-                >
-                  <IconComponent className="size-4 shrink-0" />
-                  <div className="flex flex-col items-start min-w-0">
-                    <span style={{ fontSize: '13px' }}>{tab.name}</span>
-                    <span
-                      className="hidden lg:block text-[10px]"
-                      style={{
-                        color: isActive ? 'var(--at-fg-muted)' : 'var(--at-fg-subtle)',
-                        fontWeight: 400,
-                        marginTop: '1px',
-                      }}
-                    >
-                      {tab.description}
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+      <div className={s.body}>
+        {/* ── Sidebar ── */}
+        <nav className={s.sidebar} aria-label="بخش‌های تنظیمات">
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            const active = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => { setActiveTab(tab.id); setTestResult(null); }}
+                className={`${s.navBtn} ${active ? s.navBtnActive : ''}`}
+                aria-current={active ? 'page' : undefined}
+              >
+                <span className={s.navBtnIcon}>
+                  <Icon size={15} aria-hidden />
+                </span>
+                <span className={s.navBtnText}>
+                  <span>{tab.name}</span>
+                  <span className={s.navBtnDesc}>{tab.desc}</span>
+                </span>
+              </button>
+            );
+          })}
         </nav>
 
-        {/* Tab Content */}
-        <div className="flex-1 min-w-0">
-          {/* General Settings */}
+        {/* ── Content ── */}
+        <div className={s.content}>
+
+          {/* ── General ── */}
           {activeTab === 'general' && (
-            <CardSection
-              title="تنظیمات عمومی سایت"
-              description="اطلاعات اصلی و هویت سایت خود را تنظیم کنید"
-            >
-              <div className="at-form-grid">
-                <InputField
-                  id="settings-site-title"
-                  label="عنوان سایت"
-                  value={formData.general.siteTitle}
-                  onChange={(v) => handleInputChange('general', 'siteTitle', v)}
-                  placeholder="عنوان سایت را وارد کنید"
-                  disabled={loading}
-                />
-                <InputField
-                  id="settings-site-desc"
-                  label="توضیحات سایت"
-                  value={formData.general.siteDescription}
-                  onChange={(v) => handleInputChange('general', 'siteDescription', v)}
-                  placeholder="توضیحات سایت را وارد کنید"
-                  disabled={loading}
-                />
-                <InputField
-                  id="settings-contact-email"
-                  label="ایمیل تماس"
-                  type="email"
-                  value={formData.general.contactEmail}
-                  onChange={(v) => handleInputChange('general', 'contactEmail', v)}
-                  placeholder="ایمیل تماس را وارد کنید"
-                  disabled={loading}
-                />
-                <div className="space-y-2 sm:col-span-2">
-                  <span className="at-field__label block">لوگوی سایت</span>
-                  <div className="flex flex-col sm:flex-row items-start gap-4 p-4 rounded-[var(--at-radius)] border border-dashed border-[color:var(--at-line-strong)] bg-[color:var(--at-bg-deep)]">
-                    {formData.general.logoUrl ? (
-                      <div className="relative shrink-0">
-                        <img
-                          src={formData.general.logoUrl}
-                          alt="Site logo preview"
-                          className="h-16 w-auto object-contain rounded-lg"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleInputChange('general', 'logoUrl', '')}
-                          disabled={loading}
-                          className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-[color:var(--at-danger)] text-white text-xs flex items-center justify-center hover:opacity-90 disabled:opacity-50"
-                          aria-label="حذف لوگو"
-                        >
-                          ×
-                        </button>
+            <div className="at-form-section">
+              <div className="at-form-section__head">
+                <div className="at-form-section__title">
+                  <span className="at-form-section__ico"><Settings size={16} /></span>
+                  <div>
+                    <div className="at-form-section__title-text">تنظیمات عمومی سایت</div>
+                    <div className="at-form-section__sub">اطلاعات اصلی و هویت سایت</div>
+                  </div>
+                </div>
+              </div>
+              <div className="at-form-section__body">
+                <div className="at-form-grid">
+                  <label className="at-field">
+                    <span className="at-field__label">عنوان سایت</span>
+                    <input type="text" className="at-input" value={form.general.siteTitle} onChange={(e) => set('general', 'siteTitle', e.target.value)} placeholder="عنوان سایت را وارد کنید" disabled={loading} />
+                  </label>
+                  <label className="at-field">
+                    <span className="at-field__label">توضیحات سایت</span>
+                    <input type="text" className="at-input" value={form.general.siteDescription} onChange={(e) => set('general', 'siteDescription', e.target.value)} placeholder="توضیحات کوتاه" disabled={loading} />
+                  </label>
+                  <label className="at-field">
+                    <span className="at-field__label">ایمیل تماس</span>
+                    <input type="email" className="at-input" dir="ltr" value={form.general.contactEmail} onChange={(e) => set('general', 'contactEmail', e.target.value)} placeholder="contact@example.com" disabled={loading} />
+                  </label>
+                </div>
+
+                {/* Logo upload */}
+                <div style={{ marginTop: 'var(--ds-space-4)' }}>
+                  <span className="at-field__label" style={{ display: 'block', marginBottom: 'var(--ds-space-2)' }}>لوگوی سایت</span>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--ds-space-4)', padding: 'var(--ds-space-4)', borderRadius: 'var(--at-radius)', border: '1.5px dashed var(--at-line-strong)', background: 'var(--at-bg-deep)' }}>
+                    {form.general.logoUrl ? (
+                      <div style={{ position: 'relative', flexShrink: 0 }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={form.general.logoUrl} alt="لوگوی سایت" style={{ height: '60px', width: 'auto', objectFit: 'contain', borderRadius: 'var(--ds-radius-sm)' }} />
+                        <button type="button" onClick={() => set('general', 'logoUrl', '')} style={{ position: 'absolute', top: '-8px', insetInlineEnd: '-8px', width: '20px', height: '20px', borderRadius: '50%', background: 'var(--at-danger)', border: 'none', color: '#fff', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-label="حذف لوگو">×</button>
                       </div>
                     ) : (
-                      <div className="h-16 w-16 shrink-0 rounded-lg bg-[color:var(--at-bg-elevated)] border border-[color:var(--at-line)] flex items-center justify-center">
-                        <ImageIcon className="h-8 w-8 text-[color:var(--at-fg-subtle)]" />
+                      <div style={{ height: '60px', width: '60px', flexShrink: 0, borderRadius: 'var(--ds-radius-sm)', background: 'var(--at-bg-elevated)', border: '1px solid var(--at-line)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <ImageIcon size={24} style={{ color: 'var(--at-fg-subtle)' }} aria-hidden />
                       </div>
                     )}
-                    <div className="flex-1 min-w-0 space-y-3 w-full">
-                      <InputField
-                        id="settings-logo-url"
-                        label=""
-                        value={formData.general.logoUrl}
-                        onChange={(v) => handleInputChange('general', 'logoUrl', v)}
-                        placeholder="https://example.com/logo.png"
-                        disabled={loading}
-                      />
-                      <div className="flex items-center gap-3">
-                        <label
-                          className={`at-btn ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                        >
-                          <Upload className="size-4" />
-                          <span>آپلود لوگو</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleLogoUpload}
-                            disabled={loading}
-                            className="hidden"
-                          />
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-2)' }}>
+                      <input type="text" className="at-input" dir="ltr" value={form.general.logoUrl} onChange={(e) => set('general', 'logoUrl', e.target.value)} placeholder="https://example.com/logo.png" disabled={loading} />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-2)' }}>
+                        <label className={`at-btn ${loading ? '' : 'cursor-pointer'}`} style={{ cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.5 : 1 }}>
+                          <Upload size={14} />
+                          آپلود لوگو
+                          <input type="file" accept="image/*" onChange={handleLogoUpload} disabled={loading} style={{ display: 'none' }} />
                         </label>
-                        <span className="text-xs text-[color:var(--at-fg-subtle)]">
-                          یا URL لوگو را وارد کنید
-                        </span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--at-fg-subtle)' }}>یا URL وارد کنید</span>
                       </div>
                     </div>
                   </div>
                 </div>
+
+                <SaveBtn loading={loading} onClick={handleSaveGeneral} />
               </div>
-              <ActionButtons loading={loading} onSubmit={handleSaveGeneral} />
-            </CardSection>
+            </div>
           )}
 
-          {/* Email Settings */}
+          {/* ── Email ── */}
           {activeTab === 'email' && (
-            <CardSection
-              title="تنظیمات SMTP"
-              description="سرور ایمیل خود را برای ارسال پیام‌ها پیکربندی کنید"
-            >
-              <div className="at-form-grid">
-                <InputField
-                  id="settings-smtp-server"
-                  label="سرور SMTP"
-                  value={formData.email.smtpServer}
-                  onChange={(v) => handleInputChange('email', 'smtpServer', v)}
-                  placeholder="smtp.example.com"
-                  disabled={loading}
-                />
-                <InputField
-                  id="settings-smtp-port"
-                  label="پورت"
-                  value={formData.email.smtpPort}
-                  onChange={(v) => handleInputChange('email', 'smtpPort', v)}
-                  placeholder="587"
-                  disabled={loading}
-                />
-                <InputField
-                  id="settings-smtp-user"
-                  label="نام کاربری"
-                  value={formData.email.smtpUsername}
-                  onChange={(v) => handleInputChange('email', 'smtpUsername', v)}
-                  placeholder="username@example.com"
-                  disabled={loading}
-                />
-                <InputField
-                  id="settings-smtp-pass"
-                  label="رمز عبور"
-                  type="password"
-                  value={formData.email.smtpPassword}
-                  onChange={(v) => handleInputChange('email', 'smtpPassword', v)}
-                  placeholder="••••••••"
-                  disabled={loading}
-                />
-              </div>
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={handleTestSmtp}
-                  disabled={loading}
-                  className="at-btn"
-                >
-                  {loading ? (
-                    <Loader2 className="size-3.5 animate-spin" />
-                  ) : (
-                    <Mail className="size-3.5" />
-                  )}
-                  تست اتصال
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveEmail}
-                  disabled={loading}
-                  className="at-btn at-btn--primary"
-                >
-                  {loading ? (
-                    <Loader2 className="size-3.5 animate-spin" />
-                  ) : (
-                    <Check className="size-3.5" />
-                  )}
-                  ذخیره تنظیمات
-                </button>
-              </div>
-            </CardSection>
-          )}
-
-          {/* Security Settings */}
-          {activeTab === 'security' && (
-            <CardSection
-              title="تنظیمات امنیتی"
-              description="امنیت سیستم و دسترسی‌های کاربران را مدیریت کنید"
-            >
-              <div className="space-y-3">
-                <SettingToggleRow
-                  title="احراز هویت دو مرحله‌ای"
-                  description="فعال‌سازی احراز هویت دو مرحله‌ای برای افزایش امنیت"
-                  enabled={formData.security.twoFactorAuth}
-                  onChange={() =>
-                    handleInputChange('security', 'twoFactorAuth', !formData.security.twoFactorAuth)
-                  }
-                  disabled={loading}
-                />
-                <SettingToggleRow
-                  title="محدودیت IP"
-                  description="محدود کردن دسترسی به IP‌های مشخص"
-                  enabled={formData.security.ipRestriction}
-                  onChange={() =>
-                    handleInputChange('security', 'ipRestriction', !formData.security.ipRestriction)
-                  }
-                  disabled={loading}
-                />
-              </div>
-              <div className="at-form-grid">
-                <SelectField
-                  label="حداقل طول رمز عبور"
-                  value={formData.security.minPasswordLength}
-                  onChange={(v) =>
-                    handleInputChange('security', 'minPasswordLength', Number.parseInt(v))
-                  }
-                  disabled={loading}
-                  options={[
-                    { value: 6, label: '۶ کاراکتر' },
-                    { value: 8, label: '۸ کاراکتر' },
-                    { value: 10, label: '۱۰ کاراکتر' },
-                    { value: 12, label: '۱۲ کاراکتر' },
-                  ]}
-                />
-                <SelectField
-                  label="مدت زمان نشست کاربری"
-                  value={formData.security.sessionDuration}
-                  onChange={(v) =>
-                    handleInputChange('security', 'sessionDuration', Number.parseInt(v))
-                  }
-                  disabled={loading}
-                  options={[
-                    { value: 30, label: '۳۰ دقیقه' },
-                    { value: 60, label: '۱ ساعت' },
-                    { value: 120, label: '۲ ساعت' },
-                    { value: 240, label: '۴ ساعت' },
-                  ]}
-                />
-              </div>
-              <ActionButtons
-                loading={loading}
-                onSubmit={() =>
-                  toast({
-                    title: 'در دست توسعه',
-                    description: 'ذخیره تنظیمات امنیتی در نسخه آینده پیاده‌سازی خواهد شد',
-                  })
-                }
-              />
-            </CardSection>
-          )}
-
-          {/* Social Settings */}
-          {activeTab === 'social' && (
-            <CardSection title="شبکه‌های اجتماعی" description="مدیریت لینک‌های شبکه‌های اجتماعی سایت">
-              <SocialLinksManager />
-            </CardSection>
-          )}
-
-          {/* Database Settings */}
-          {activeTab === 'database' && (
-            <CardSection
-              title="تنظیمات پایگاه داده"
-              description="اتصال و پیکربندی پایگاه داده را مدیریت کنید"
-            >
-              <div className="at-form-grid">
-                <InputField
-                  id="settings-db-server"
-                  label="آدرس سرور"
-                  value={formData.database.server}
-                  onChange={(v) => handleInputChange('database', 'server', v)}
-                  placeholder="localhost"
-                  disabled={loading}
-                />
-                <InputField
-                  id="settings-db-port"
-                  label="پورت"
-                  value={formData.database.port}
-                  onChange={(v) => handleInputChange('database', 'port', v)}
-                  placeholder="5432"
-                  disabled={loading}
-                />
-                <InputField
-                  id="settings-db-name"
-                  label="نام پایگاه داده"
-                  value={formData.database.name}
-                  onChange={(v) => handleInputChange('database', 'name', v)}
-                  placeholder="biotak_db"
-                  disabled={loading}
-                />
-                <InputField
-                  id="settings-db-user"
-                  label="نام کاربری"
-                  value={formData.database.username}
-                  onChange={(v) => handleInputChange('database', 'username', v)}
-                  placeholder="postgres"
-                  disabled={loading}
-                />
-                <InputField
-                  id="settings-db-pass"
-                  label="رمز عبور"
-                  type="password"
-                  value={formData.database.password}
-                  onChange={(v) => handleInputChange('database', 'password', v)}
-                  placeholder="••••••••"
-                  disabled={loading}
-                />
-                <SelectField
-                  label="نوع پایگاه داده"
-                  value={formData.database.type}
-                  onChange={(v) => handleInputChange('database', 'type', v)}
-                  disabled={loading}
-                  options={[
-                    { value: 'postgresql', label: 'PostgreSQL' },
-                    { value: 'mysql', label: 'MySQL' },
-                    { value: 'mongodb', label: 'MongoDB' },
-                  ]}
-                />
-              </div>
-              <div>
-                <SettingToggleRow
-                  title="پشتیبان‌گیری خودکار"
-                  description="فعال‌سازی پشتیبان‌گیری خودکار از پایگاه داده"
-                  enabled={formData.database.autoBackup}
-                  onChange={() =>
-                    handleInputChange('database', 'autoBackup', !formData.database.autoBackup)
-                  }
-                  disabled={loading}
-                />
-              </div>
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={handleTestDatabase}
-                  disabled={loading}
-                  className="at-btn"
-                >
-                  {loading ? (
-                    <Loader2 className="size-3.5 animate-spin" />
-                  ) : (
-                    <Database className="size-3.5" />
-                  )}
-                  تست اتصال
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    toast({
-                      title: 'در دست توسعه',
-                      description:
-                        'تنظیمات دیتابیس از فایل .env مدیریت می‌شود. ذخیره مستقیم در نسخه آینده پیاده‌سازی خواهد شد.',
-                    })
-                  }
-                  disabled={loading}
-                  className="at-btn at-btn--primary"
-                >
-                  <Check className="size-3.5" />
-                  ذخیره تنظیمات
-                </button>
-              </div>
-            </CardSection>
-          )}
-
-          {/* Advanced Settings */}
-          {activeTab === 'advanced' && (
-            <CardSection title="تنظیمات پیشرفته" description="تنظیمات حرفه‌ای و پیشرفته سیستم">
-              <div className="space-y-3">
-                <SettingToggleRow
-                  title="حالت دیباگ"
-                  description="فعال‌سازی گزارش‌های خطا و اشکال‌زدایی"
-                  enabled={formData.advanced.debugMode}
-                  onChange={() =>
-                    handleInputChange('advanced', 'debugMode', !formData.advanced.debugMode)
-                  }
-                  disabled={loading}
-                />
-                <SettingToggleRow
-                  title="ذخیره‌سازی کش"
-                  description="فعال‌سازی سیستم کش برای بهبود عملکرد"
-                  enabled={formData.advanced.cacheEnabled}
-                  onChange={() =>
-                    handleInputChange('advanced', 'cacheEnabled', !formData.advanced.cacheEnabled)
-                  }
-                  disabled={loading}
-                />
-                <SettingToggleRow
-                  title="محدودیت درخواست API"
-                  description="محدودیت تعداد درخواست‌های API"
-                  enabled={formData.advanced.apiRateLimit}
-                  onChange={() =>
-                    handleInputChange('advanced', 'apiRateLimit', !formData.advanced.apiRateLimit)
-                  }
-                  disabled={loading}
-                />
-              </div>
-              <div className="at-form-grid">
-                <InputField
-                  id="settings-cache-duration"
-                  label="مدت زمان کش (دقیقه)"
-                  type="number"
-                  value={formData.advanced.cacheDuration}
-                  onChange={(v) =>
-                    handleInputChange('advanced', 'cacheDuration', Number.parseInt(v) || 60)
-                  }
-                  placeholder="60"
-                  disabled={loading}
-                />
-                <SelectField
-                  label="محدودیت درخواست API (در دقیقه)"
-                  value={formData.advanced.rateLimit}
-                  onChange={(v) => handleInputChange('advanced', 'rateLimit', Number.parseInt(v))}
-                  disabled={loading}
-                  options={[
-                    { value: 100, label: '۱۰۰ درخواست' },
-                    { value: 500, label: '۵۰۰ درخواست' },
-                    { value: 1000, label: '۱۰۰۰ درخواست' },
-                  ]}
-                />
-                <InputField
-                  id="settings-max-upload"
-                  label="حداکثر اندازه فایل آپلود (MB)"
-                  type="number"
-                  value={formData.advanced.maxUploadSize}
-                  onChange={(v) =>
-                    handleInputChange('advanced', 'maxUploadSize', Number.parseInt(v) || 10)
-                  }
-                  placeholder="10"
-                  disabled={loading}
-                />
-                <SelectField
-                  label="سطح گزارش خطا"
-                  value={formData.advanced.errorLevel}
-                  onChange={(v) => handleInputChange('advanced', 'errorLevel', v)}
-                  disabled={loading}
-                  options={[
-                    { value: 'error', label: 'خطا' },
-                    { value: 'warning', label: 'هشدار' },
-                    { value: 'info', label: 'اطلاعات' },
-                    { value: 'debug', label: 'دیباگ' },
-                  ]}
-                />
-              </div>
-              <div className="space-y-3">
-                <InputField
-                  id="settings-log-path"
-                  label="مسیر ذخیره‌سازی لاگ‌ها"
-                  value={formData.advanced.logPath}
-                  onChange={(v) => handleInputChange('advanced', 'logPath', v)}
-                  placeholder="/var/log/biotak"
-                  disabled={loading}
-                />
-                <div className="space-y-2">
-                  <label htmlFor="settings-api-key" className="at-field__label block">
-                    کلید API
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      id="settings-api-key"
-                      type="text"
-                      value={formData.advanced.apiKey}
-                      readOnly
-                      placeholder="کلید API تولید نشده است"
-                      className="at-input flex-1"
-                      style={{
-                        background: 'var(--at-bg-deep)',
-                        fontFamily: 'ui-monospace, monospace',
-                        fontSize: '12px',
-                        cursor: 'not-allowed',
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleGenerateApiKey}
-                      disabled={loading}
-                      className="at-btn at-btn--primary shrink-0"
-                    >
-                      {loading ? <Loader2 className="size-3.5 animate-spin" /> : 'تولید کلید جدید'}
-                    </button>
+            <div className="at-form-section">
+              <div className="at-form-section__head">
+                <div className="at-form-section__title">
+                  <span className="at-form-section__ico"><Mail size={16} /></span>
+                  <div>
+                    <div className="at-form-section__title-text">تنظیمات SMTP</div>
+                    <div className="at-form-section__sub">سرور ایمیل برای ارسال پیام‌ها</div>
                   </div>
                 </div>
-                <SelectField
-                  label="ذخیره‌سازی کش"
-                  value={formData.advanced.cacheStorage}
-                  onChange={(v) => handleInputChange('advanced', 'cacheStorage', v)}
-                  disabled={loading}
-                  options={[
-                    { value: 'memory', label: 'حافظه موقت' },
-                    { value: 'redis', label: 'Redis کش' },
-                    { value: 'file', label: 'فایل سیستم' },
-                  ]}
-                />
               </div>
-              <ActionButtons loading={loading} onSubmit={handleSaveAdvanced} />
-            </CardSection>
+              <div className="at-form-section__body">
+                <div className="at-form-grid">
+                  <label className="at-field">
+                    <span className="at-field__label">سرور SMTP</span>
+                    <input type="text" className="at-input" dir="ltr" value={form.email.smtpServer} onChange={(e) => set('email', 'smtpServer', e.target.value)} placeholder="smtp.example.com" disabled={loading} />
+                  </label>
+                  <label className="at-field">
+                    <span className="at-field__label">پورت</span>
+                    <input type="text" className="at-input" dir="ltr" value={form.email.smtpPort} onChange={(e) => set('email', 'smtpPort', e.target.value)} placeholder="587" disabled={loading} />
+                  </label>
+                  <label className="at-field">
+                    <span className="at-field__label">نام کاربری</span>
+                    <input type="text" className="at-input" dir="ltr" value={form.email.smtpUsername} onChange={(e) => set('email', 'smtpUsername', e.target.value)} placeholder="user@example.com" disabled={loading} autoComplete="off" />
+                  </label>
+                  <label className="at-field">
+                    <span className="at-field__label">رمز عبور</span>
+                    <input type="password" className="at-input" dir="ltr" value={form.email.smtpPassword} onChange={(e) => set('email', 'smtpPassword', e.target.value)} placeholder="••••••••" disabled={loading} autoComplete="new-password" />
+                  </label>
+                </div>
+
+                {testResult && (
+                  <div className={s.testResult} data-ok={String(testResult.ok)}>
+                    {testResult.ok ? <CheckCircle2 size={15} aria-hidden /> : <XCircle size={15} aria-hidden />}
+                    {testResult.msg}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 'var(--ds-space-2)', paddingTop: '4px' }}>
+                  <button type="button" onClick={handleTestSmtp} disabled={loading} className="at-btn">
+                    {loading ? <Loader2 size={14} className="animate-spin" /> : <Mail size={14} />}
+                    تست اتصال
+                  </button>
+                  <button type="button" onClick={handleSaveEmail} disabled={loading} className="at-btn at-btn--primary">
+                    {loading ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                    ذخیره تنظیمات
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Security ── */}
+          {activeTab === 'security' && (
+            <div className="at-form-section">
+              <div className="at-form-section__head">
+                <div className="at-form-section__title">
+                  <span className="at-form-section__ico"><Shield size={16} /></span>
+                  <div>
+                    <div className="at-form-section__title-text">تنظیمات امنیتی</div>
+                    <div className="at-form-section__sub">مدیریت امنیت و دسترسی‌ها</div>
+                  </div>
+                </div>
+              </div>
+              <div className="at-form-section__body">
+                <div className="at-form-stack" style={{ gap: 'var(--ds-space-2)' }}>
+                  <ToggleRow
+                    title="احراز هویت دو مرحله‌ای (2FA)"
+                    desc="فعال‌سازی 2FA برای تمام کاربران ادمین"
+                    enabled={form.security.twoFactorAuth}
+                    onChange={() => set('security', 'twoFactorAuth', !form.security.twoFactorAuth)}
+                    disabled={loading}
+                  />
+                  <ToggleRow
+                    title="محدودیت IP"
+                    desc="محدود کردن دسترسی به IP‌های مشخص"
+                    enabled={form.security.ipRestriction}
+                    onChange={() => set('security', 'ipRestriction', !form.security.ipRestriction)}
+                    disabled={loading}
+                  />
+                </div>
+                <div className="at-form-grid" style={{ marginTop: 'var(--ds-space-4)' }}>
+                  <label className="at-field">
+                    <span className="at-field__label">حداقل طول رمز عبور</span>
+                    <select className="at-select" value={form.security.minPasswordLength} onChange={(e) => set('security', 'minPasswordLength', Number.parseInt(e.target.value))} disabled={loading}>
+                      {[6, 8, 10, 12].map((v) => <option key={v} value={v}>{v} کاراکتر</option>)}
+                    </select>
+                  </label>
+                  <label className="at-field">
+                    <span className="at-field__label">مدت زمان نشست</span>
+                    <select className="at-select" value={form.security.sessionDuration} onChange={(e) => set('security', 'sessionDuration', Number.parseInt(e.target.value))} disabled={loading}>
+                      {[{ v: 30, l: '۳۰ دقیقه' }, { v: 60, l: '۱ ساعت' }, { v: 120, l: '۲ ساعت' }, { v: 240, l: '۴ ساعت' }].map(({ v, l }) => <option key={v} value={v}>{l}</option>)}
+                    </select>
+                  </label>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingTop: '4px' }}>
+                  <button
+                    type="button"
+                    disabled={loading}
+                    className="at-btn at-btn--primary"
+                    onClick={() => toast({ title: 'در دست توسعه', description: 'ذخیره تنظیمات امنیتی در نسخه آینده' })}
+                  >
+                    <Check size={14} />
+                    ذخیره تنظیمات
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Social ── */}
+          {activeTab === 'social' && (
+            <div className="at-form-section">
+              <div className="at-form-section__head">
+                <div className="at-form-section__title">
+                  <span className="at-form-section__ico"><Share2 size={16} /></span>
+                  <div>
+                    <div className="at-form-section__title-text">شبکه‌های اجتماعی</div>
+                    <div className="at-form-section__sub">لینک‌های خارجی سایت</div>
+                  </div>
+                </div>
+              </div>
+              <div className="at-form-section__body">
+                <SocialLinksManager />
+              </div>
+            </div>
+          )}
+
+          {/* ── Database ── */}
+          {activeTab === 'database' && (
+            <div className="at-form-section">
+              <div className="at-form-section__head">
+                <div className="at-form-section__title">
+                  <span className="at-form-section__ico"><Database size={16} /></span>
+                  <div>
+                    <div className="at-form-section__title-text">پایگاه داده</div>
+                    <div className="at-form-section__sub">اتصال و پیکربندی دیتابیس</div>
+                  </div>
+                </div>
+              </div>
+              <div className="at-form-section__body">
+                <div className="at-form-grid">
+                  <label className="at-field">
+                    <span className="at-field__label">آدرس سرور</span>
+                    <input type="text" className="at-input" dir="ltr" value={form.database.server} onChange={(e) => set('database', 'server', e.target.value)} placeholder="localhost" disabled={loading} />
+                  </label>
+                  <label className="at-field">
+                    <span className="at-field__label">پورت</span>
+                    <input type="text" className="at-input" dir="ltr" value={form.database.port} onChange={(e) => set('database', 'port', e.target.value)} placeholder="5432" disabled={loading} />
+                  </label>
+                  <label className="at-field">
+                    <span className="at-field__label">نام پایگاه داده</span>
+                    <input type="text" className="at-input" dir="ltr" value={form.database.name} onChange={(e) => set('database', 'name', e.target.value)} placeholder="fintech_db" disabled={loading} />
+                  </label>
+                  <label className="at-field">
+                    <span className="at-field__label">نام کاربری</span>
+                    <input type="text" className="at-input" dir="ltr" value={form.database.username} onChange={(e) => set('database', 'username', e.target.value)} placeholder="postgres" disabled={loading} autoComplete="off" />
+                  </label>
+                  <label className="at-field">
+                    <span className="at-field__label">رمز عبور</span>
+                    <input type="password" className="at-input" dir="ltr" value={form.database.password} onChange={(e) => set('database', 'password', e.target.value)} placeholder="••••••••" disabled={loading} autoComplete="new-password" />
+                  </label>
+                  <label className="at-field">
+                    <span className="at-field__label">نوع پایگاه داده</span>
+                    <select className="at-select" value={form.database.type} onChange={(e) => set('database', 'type', e.target.value)} disabled={loading}>
+                      <option value="postgresql">PostgreSQL</option>
+                      <option value="mysql">MySQL</option>
+                      <option value="mongodb">MongoDB</option>
+                    </select>
+                  </label>
+                </div>
+                <div style={{ marginTop: 'var(--ds-space-3)' }}>
+                  <ToggleRow
+                    title="پشتیبان‌گیری خودکار"
+                    desc="پشتیبان‌گیری دوره‌ای از پایگاه داده"
+                    enabled={form.database.autoBackup}
+                    onChange={() => set('database', 'autoBackup', !form.database.autoBackup)}
+                    disabled={loading}
+                  />
+                </div>
+
+                {testResult && (
+                  <div className={s.testResult} data-ok={String(testResult.ok)}>
+                    {testResult.ok ? <CheckCircle2 size={15} aria-hidden /> : <XCircle size={15} aria-hidden />}
+                    {testResult.msg}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 'var(--ds-space-2)', paddingTop: '4px' }}>
+                  <button type="button" onClick={handleTestDb} disabled={loading} className="at-btn">
+                    {loading ? <Loader2 size={14} className="animate-spin" /> : <Database size={14} />}
+                    تست اتصال
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Advanced ── */}
+          {activeTab === 'advanced' && (
+            <div className="at-form-section">
+              <div className="at-form-section__head">
+                <div className="at-form-section__title">
+                  <span className="at-form-section__ico"><Wrench size={16} /></span>
+                  <div>
+                    <div className="at-form-section__title-text">تنظیمات پیشرفته</div>
+                    <div className="at-form-section__sub">cache، API key و عملکرد</div>
+                  </div>
+                </div>
+              </div>
+              <div className="at-form-section__body">
+                <div className="at-form-stack" style={{ gap: 'var(--ds-space-2)' }}>
+                  <ToggleRow
+                    title="کش فعال"
+                    desc="فعال‌سازی cache برای بهبود عملکرد سایت"
+                    enabled={form.advanced.cacheEnabled}
+                    onChange={() => set('advanced', 'cacheEnabled', !form.advanced.cacheEnabled)}
+                    disabled={loading}
+                  />
+                  <ToggleRow
+                    title="محدودیت نرخ API"
+                    desc="جلوگیری از درخواست‌های بیش از حد"
+                    enabled={form.advanced.apiRateLimit}
+                    onChange={() => set('advanced', 'apiRateLimit', !form.advanced.apiRateLimit)}
+                    disabled={loading}
+                  />
+                  <ToggleRow
+                    title="حالت اشکال‌زدایی"
+                    desc="فعال‌سازی لاگ‌های دقیق برای توسعه"
+                    enabled={form.advanced.debugMode}
+                    onChange={() => set('advanced', 'debugMode', !form.advanced.debugMode)}
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className="at-form-grid" style={{ marginTop: 'var(--ds-space-4)' }}>
+                  <label className="at-field">
+                    <span className="at-field__label">مدت cache (ثانیه)</span>
+                    <input type="number" className="at-input" dir="ltr" value={form.advanced.cacheDuration} onChange={(e) => set('advanced', 'cacheDuration', Number.parseInt(e.target.value) || 60)} disabled={loading} min={10} max={3600} />
+                  </label>
+                  <label className="at-field">
+                    <span className="at-field__label">حداکثر آپلود (MB)</span>
+                    <input type="number" className="at-input" dir="ltr" value={form.advanced.maxUploadSize} onChange={(e) => set('advanced', 'maxUploadSize', Number.parseInt(e.target.value) || 10)} disabled={loading} min={1} max={100} />
+                  </label>
+                </div>
+
+                {/* API Key */}
+                <div style={{ marginTop: 'var(--ds-space-4)' }}>
+                  <label className="at-field">
+                    <span className="at-field__label">کلید API سایت</span>
+                    <div style={{ display: 'flex', gap: 'var(--ds-space-2)' }}>
+                      <input
+                        type="text"
+                        className="at-input"
+                        dir="ltr"
+                        value={form.advanced.apiKey}
+                        readOnly
+                        disabled={loading}
+                        style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.75rem', background: 'var(--at-bg-deep)' }}
+                        placeholder="برای تولید، دکمه تولید را بزنید"
+                      />
+                      <button type="button" onClick={handleGenerateApiKey} disabled={loading} className="at-btn" style={{ flexShrink: 0 }}>
+                        {loading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                        تولید
+                      </button>
+                    </div>
+                  </label>
+                </div>
+
+                <SaveBtn loading={loading} onClick={handleSaveAdvanced} />
+              </div>
+            </div>
           )}
         </div>
       </div>

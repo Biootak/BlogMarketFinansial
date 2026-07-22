@@ -281,8 +281,8 @@
 /* ─── Row Animation ────────────────────────────────────────────────────────── */
 /* DataTable rows pick this up via :nth-child stagger.
    Each row delays by its position using --row-index (set inline or via JS).
-   We target <tr> descendants that carry a data-row-index attribute. */
-:global([data-row-index]) {
+   The .animatedRow class is applied to each <tr> by the component. */
+.animatedRow {
   animation: rowSlideIn var(--ds-duration-base) var(--ds-ease-out-quart) both;
   animation-delay: calc(var(--row-index, 0) * 40ms);
 }

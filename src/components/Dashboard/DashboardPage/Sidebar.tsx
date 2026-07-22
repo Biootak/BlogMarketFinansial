@@ -59,6 +59,7 @@ import {
   HiOutlineUsers,
   HiOutlineWallet,
   HiOutlineXMark,
+  HiOutlineCreditCard as HiOutlineVirtualCard,
 } from 'react-icons/hi2';
 
 const ICON_CLASS = 'w-[19px] h-[19px]';
@@ -276,6 +277,14 @@ function getMenu(role: UserRole): NavSection[] {
     title: 'انتقال وجه P2P',
   };
 
+  const virtualCards: MenuItem = {
+    id: 'virtualCards',
+    href: '/dashboard/virtual-cards',
+    icon: <HiOutlineVirtualCard className={ICON_CLASS} />,
+    label: 'کارت مجازی',
+    title: 'کارت‌های مجازی پیش‌پرداخت',
+  };
+
   const devices: MenuItem = {
     id: 'devices',
     href: '/dashboard/devices',
@@ -347,7 +356,7 @@ function getMenu(role: UserRole): NavSection[] {
           id: 'account',
           index: '۰۶',
           label: 'حساب',
-          items: [wallet, kyc, myDeals, transfer, devices, myRequests, profile],
+          items: [wallet, virtualCards, kyc, myDeals, transfer, devices, myRequests, profile],
         },
       ];
     case 'ADMIN':
@@ -378,7 +387,7 @@ function getMenu(role: UserRole): NavSection[] {
           id: 'account',
           index: '۰۶',
           label: 'حساب',
-          items: [wallet, kyc, myDeals, transfer, devices, myRequests, profile],
+          items: [wallet, virtualCards, kyc, myDeals, transfer, devices, myRequests, profile],
         },
       ];
     case 'SUPPORT':
@@ -394,7 +403,7 @@ function getMenu(role: UserRole): NavSection[] {
           id: 'account',
           index: '۰۳',
           label: 'حساب',
-          items: [wallet, kyc, myDeals, transfer, devices, myRequests, profile],
+          items: [wallet, virtualCards, kyc, myDeals, transfer, devices, myRequests, profile],
         },
       ];
     case 'AUTHOR':
@@ -405,14 +414,14 @@ function getMenu(role: UserRole): NavSection[] {
           id: 'account',
           index: '۰۵',
           label: 'حساب',
-          items: [wallet, kyc, myDeals, transfer, devices, myRequests, profile],
+          items: [wallet, virtualCards, kyc, myDeals, transfer, devices, myRequests, profile],
         },
       ];
     default:
       // USER role — minimal panel
       return [
         { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
-        { id: 'fintech', index: '۰۲', label: 'مالی', items: [wallet, kyc, myDeals, transfer] },
+        { id: 'fintech', index: '۰۲', label: 'مالی', items: [wallet, virtualCards, kyc, myDeals, transfer] },
         { id: 'account', index: '۰۳', label: 'حساب', items: [devices, myRequests, profile] },
       ];
   }

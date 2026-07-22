@@ -1,50 +1,71 @@
-/* ============================================================================
-   TransferWizard.module.css — 2026 P2P Transfer Wizard
-   RTL-first Persian fintech · Million-dollar craft · DS tokens only
-   ============================================================================ */
+/* ══════════════════════════════════════════════════════════════════════════
+   TransferWizard — 2026 Million-Dollar Redesign
+   الهام: Wise / Mercury transfer flow — Structural Honesty، fee شفاف
+   توکن‌ها: --at-* (dashboard) + --ds-space-*
+   ══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Page shell ──────────────────────────────────────────────────────────── */
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-4);
-  max-inline-size: 520px;
-  inline-size: 100%;
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Wizard card ─────────────────────────────────────────────────────────── */
-/*
-   Elevation tier 2:
-   - hairline border (border-default @ 0.8 opacity) separates from canvas
-   - shadow-md lifts card above page layer
-   - surface-elevated (semi-transparent white / dark) enables depth layering
-*/
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes popIn {
+  0%   { opacity: 0; transform: scale(0.6); }
+  70%  { opacity: 1; transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+@keyframes breathPulse {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50%       { opacity: 0.65; transform: scale(1.05); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-4px); }
+  40%       { transform: translateX(4px); }
+  60%       { transform: translateX(-3px); }
+  80%       { transform: translateX(3px); }
+}
+
+@keyframes successRing {
+  0%   { transform: scale(0.5); opacity: 0; }
+  60%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ── Page ─────────────────────────────────────────────────────────────────── */
+.page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: var(--ds-space-6) var(--ds-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-6);
+  animation: fadeUp var(--at-duration, 220ms) var(--at-ease) both;
+}
+
+/* ── Wizard Card ──────────────────────────────────────────────────────────── */
 .wizardCard {
-  background: var(--ds-surface-elevated);
-  border: 1px solid var(--ds-border-default);
-  border-radius: var(--ds-radius-2xl);
-  box-shadow: var(--ds-shadow-md);
+  background: var(--at-surface);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-xl);
+  box-shadow: var(--at-shadow);
   overflow: hidden;
-  animation: fadeUp var(--ds-duration-base) var(--ds-ease-out-quart) both;
 }
 
 /* ── Stepper ─────────────────────────────────────────────────────────────── */
-/*
-   Connector bar strategy (RTL-safe, no translateX):
-   Each .stepItem + .stepItem draws its connector via ::before anchored to
-   inset-inline-start: 0 (the logical "start" edge, which is the right side in
-   RTL) and inset-inline-end: 50% (up to the center of the current dot).
-   width: auto lets the browser compute the dimension from the two inset values.
-   This is direction-agnostic — no transform needed.
-*/
 .stepper {
   display: flex;
   align-items: center;
-  padding-block: var(--ds-space-4);
-  padding-inline: var(--ds-space-6);
-  border-bottom: 1px solid var(--ds-border-subtle);
-  background: var(--ds-canvas-subtle);
-  gap: 0;
+  padding: var(--ds-space-5) var(--ds-space-6);
+  border-block-end: 1px solid var(--at-line);
+  background: var(--at-bg-elevated, var(--at-surface));
 }
 
 .stepItem {
@@ -56,142 +77,125 @@
   position: relative;
 }
 
-/* Connector: runs from the inline-start edge of the current item to its center */
-.stepItem + .stepItem::before {
-  content: "";
+.stepConnector {
   position: absolute;
-  top: 15px;
-  inset-inline-start: 0;
-  inset-inline-end: 50%;
-  width: auto;
+  top: 16px;
+  inset-inline-end: calc(50% + 20px);
+  inset-inline-start: auto;
   height: 1px;
-  background: var(--ds-border-default);
-  transition: background var(--ds-duration-base) var(--ds-ease-out-quart);
+  width: calc(100% - 40px);
+  background: var(--at-line);
+  transition: background 300ms var(--at-ease);
 }
 
-/* Completed connector gets success tint */
-.stepItem.done + .stepItem::before {
-  background: var(--ds-status-success-border);
+[dir="rtl"] .stepConnector {
+  inset-inline-end: auto;
+  inset-inline-start: calc(50% + 20px);
+}
+
+.stepConnectorDone {
+  background: var(--at-accent);
 }
 
 .stepDot {
-  width: 30px;
-  height: 30px;
-  border-radius: var(--ds-radius-full);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   z-index: 1;
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-bold);
-  font-variant-numeric: tabular-nums;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
-    var(--ds-duration-base) var(--ds-ease-out-quart), border-color var(--ds-duration-fast)
-    var(--ds-ease-out-quart);
+  transition: all 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Tier: pending — recessed, no emphasis */
-.stepDot.pending {
-  background: var(--ds-canvas);
-  border: 2px solid var(--ds-border-default);
-  color: var(--ds-text-muted);
+.stepDot_pending {
+  background: var(--at-bg-elevated, var(--at-surface));
+  border: 1.5px solid var(--at-line-strong);
+  color: var(--at-fg-subtle);
 }
 
-/* Tier: active — brand fill + 4px halo ring (DS brand token, no inline oklch) */
-.stepDot.active {
-  background: var(--ds-brand-500);
-  color: var(--ds-text-inverse);
-  border: none;
-  box-shadow: 0 0 0 4px var(--ds-brand-100), var(--ds-shadow-sm);
+.stepDot_active {
+  background: var(--at-accent);
+  border: 2px solid var(--at-accent);
+  color: var(--at-accent-on, oklch(99% 0 0));
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--at-accent) 18%, transparent);
+  animation: breathPulse 2s ease-in-out infinite;
 }
 
-/* Tier: done — success semantic tint */
-.stepDot.done {
-  background: var(--ds-status-success-bg);
-  border: 1px solid var(--ds-status-success-border);
-  color: var(--ds-status-success-fg);
+.stepDot_done {
+  background: var(--at-accent-soft);
+  border: 1.5px solid var(--at-accent);
+  color: var(--at-accent-fg, var(--at-accent));
 }
 
 .stepLabel {
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
-  white-space: nowrap;
-  transition: color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  font-size: 0.69rem;
+  font-weight: 500;
+  text-align: center;
+  transition: color 200ms var(--at-ease);
 }
 
-.stepLabel.active {
-  color: var(--ds-brand-600);
-  font-weight: var(--ds-weight-semibold);
-}
+.stepLabel_pending { color: var(--at-fg-faint); }
+.stepLabel_active  { color: var(--at-accent-fg, var(--at-accent)); font-weight: 600; }
+.stepLabel_done    { color: var(--at-fg-muted); }
 
-.stepLabel.done {
-  color: var(--ds-status-success-fg);
-}
-
-/* ── Form area ───────────────────────────────────────────────────────────── */
+/* ── Form ─────────────────────────────────────────────────────────────────── */
 .form {
-  padding-block: var(--ds-space-6);
-  padding-inline: var(--ds-space-6);
+  padding: var(--ds-space-6);
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-4);
+  gap: var(--ds-space-5);
+  animation: fadeUp 220ms var(--at-ease) both;
 }
 
-.formTitle {
-  font-size: var(--ds-text-lg);
-  font-weight: var(--ds-weight-bold);
-  color: var(--ds-text-primary);
-  line-height: var(--ds-leading-snug);
-  letter-spacing: -0.015em;
-}
-
-.formDesc {
-  font-size: var(--ds-text-sm);
-  color: var(--ds-text-muted);
-  line-height: var(--ds-leading-relaxed);
-  margin-block-start: calc(var(--ds-space-1) * -1);
-}
-
-/* ── Field ───────────────────────────────────────────────────────────────── */
-.field {
+.formHead {
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-1);
 }
 
-.label {
+.formTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--at-fg);
+  margin: 0;
+}
+
+.formDesc {
+  font-size: 0.8125rem;
+  color: var(--at-fg-muted);
+  margin: 0;
+}
+
+/* ── Field ────────────────────────────────────────────────────────────────── */
+.fieldGroup {
   display: flex;
-  align-items: center;
-  gap: var(--ds-space-2);
-  font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-medium);
-  color: var(--ds-text-secondary);
-  line-height: var(--ds-leading-tight);
+  flex-direction: column;
+  gap: var(--ds-space-1);
+}
+
+.fieldLabel {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--at-fg-muted);
 }
 
 .optional {
   font-weight: 400;
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
-  padding-block: 1px;
-  padding-inline: var(--ds-space-2);
-  background: var(--ds-canvas-subtle);
-  border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-full);
+  color: var(--at-fg-subtle);
 }
 
-/* Amount preview below input — tabular for digit alignment */
 .amountPreview {
-  font-size: var(--ds-text-sm);
-  color: var(--ds-brand-600);
-  font-weight: var(--ds-weight-semibold);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--at-accent-fg, var(--at-accent));
   font-variant-numeric: tabular-nums;
-  line-height: var(--ds-leading-tight);
   padding-inline-start: var(--ds-space-1);
+  margin: 0;
 }
 
-/* ── Quick-amount pill row ───────────────────────────────────────────────── */
+/* ── Quick Amount Buttons ─────────────────────────────────────────────────── */
 .quickAmounts {
   display: flex;
   gap: var(--ds-space-2);
@@ -199,352 +203,340 @@
 }
 
 .quickBtn {
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-medium);
-  padding-block: var(--ds-space-1);
-  padding-inline: var(--ds-space-3);
-  border: 1px solid var(--ds-border-default);
-  border-radius: var(--ds-radius-full);
-  background: var(--ds-canvas);
-  color: var(--ds-text-secondary);
-  cursor: pointer;
-  font-family: inherit;
+  padding: var(--ds-space-1) var(--ds-space-3);
+  border-radius: var(--at-radius);
+  border: 1px solid var(--at-line-strong);
+  background: var(--at-bg-elevated, var(--at-surface));
+  color: var(--at-fg-muted);
+  font-size: 0.78rem;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
-  /* Spring micro-interaction */
+  cursor: pointer;
   transition:
-    transform var(--ds-duration-fast) var(--ds-ease-spring),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+    all 180ms var(--at-ease),
+    transform 120ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .quickBtn:hover {
+  border-color: var(--at-accent);
+  color: var(--at-accent-fg, var(--at-accent));
+  background: var(--at-accent-soft);
   transform: translateY(-1px);
-  border-color: var(--ds-brand-500);
-  color: var(--ds-brand-600);
-  box-shadow: var(--ds-shadow-sm);
 }
 
 .quickBtn:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
 .quickBtnActive {
-  border-color: var(--ds-brand-500) !important;
-  background: var(--ds-brand-50) !important;
-  color: var(--ds-brand-600) !important;
-  box-shadow: 0 0 0 1px var(--ds-brand-100) !important;
+  background: var(--at-accent-soft);
+  border-color: var(--at-accent);
+  color: var(--at-accent-fg, var(--at-accent));
+  font-weight: 600;
 }
 
-/* ── Recipient preview card ──────────────────────────────────────────────── */
-/*
-   Elevation tier 0.5 (recessed inset):
-   - canvas-subtle background (darker than card) creates a "pressed in" look
-   - hairline border at border-subtle keeps silhouette crisp
-*/
-.recipientPreview {
+/* ── Recipient Preview ────────────────────────────────────────────────────── */
+.recipientCard {
   display: flex;
   align-items: center;
   gap: var(--ds-space-3);
-  padding-block: var(--ds-space-3);
-  padding-inline: var(--ds-space-4);
-  background: var(--ds-canvas-subtle);
-  border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-lg);
-  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  padding: var(--ds-space-4);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-lg);
+  background: var(--at-bg-elevated, var(--at-surface));
+  animation: scaleIn 240ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 .recipientAvatar {
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  border-radius: var(--ds-radius-full);
-  background: var(--ds-brand-50);
-  border: 1px solid var(--ds-brand-100);
-  color: var(--ds-brand-600);
-  font-weight: var(--ds-weight-bold);
-  font-size: var(--ds-text-lg);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--at-accent-soft);
+  color: var(--at-accent-fg, var(--at-accent));
+  font-size: 1.0625rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;
+  flex-shrink: 0;
+}
+
+.recipientInfo {
+  flex: 1;
+  min-width: 0;
 }
 
 .recipientName {
-  font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-semibold);
-  color: var(--ds-text-primary);
-  line-height: var(--ds-leading-snug);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--at-fg);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .recipientPhone {
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
+  font-size: 0.78rem;
+  color: var(--at-fg-muted);
   font-variant-numeric: tabular-nums;
-  margin-block-start: 2px;
-  /* Keep phone number LTR inside RTL flow */
-  unicode-bidi: embed;
-  direction: ltr;
-  text-align: end;
+  margin: 0;
 }
 
-/* KYC badge: pushed to inline-end (right in LTR, left in RTL) */
 .kycBadge {
-  margin-inline-start: auto;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
   flex-shrink: 0;
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-medium);
-  padding-block: 3px;
-  padding-inline: var(--ds-space-2);
-  border-radius: var(--ds-radius-full);
-  white-space: nowrap;
-  /* Color provided by consuming component via inline style or sibling class */
 }
 
-/* ── Summary table ───────────────────────────────────────────────────────── */
-/*
-   Elevation tier 0.5 — same recessed treatment as recipientPreview.
-   Each row has a hairline separator; last row's border is suppressed.
-*/
+.kycBadge[data-status="APPROVED"] {
+  background: var(--at-accent-soft);
+  color: var(--at-accent-fg, var(--at-accent));
+  border: 1px solid color-mix(in oklch, var(--at-accent) 25%, transparent);
+}
+
+.kycBadge[data-status="PENDING"] {
+  background: color-mix(in oklch, var(--at-warning) 12%, transparent);
+  color: var(--at-warning-fg, var(--at-warning));
+  border: 1px solid color-mix(in oklch, var(--at-warning) 25%, transparent);
+}
+
+/* ── Fee Summary ─────────────────────────────────────────────────────────── */
+.feeSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-lg);
+  overflow: hidden;
+}
+
+.feeRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-block-end: 1px solid var(--at-line);
+}
+
+.feeRow:last-child {
+  border-block-end: none;
+}
+
+.feeRow--total {
+  background: var(--at-bg-elevated, var(--at-surface));
+  font-weight: 700;
+}
+
+.feeKey {
+  font-size: 0.8125rem;
+  color: var(--at-fg-muted);
+}
+
+.feeVal {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--at-fg);
+  font-variant-numeric: tabular-nums;
+}
+
+.feeVal--accent {
+  color: var(--at-accent-fg, var(--at-accent));
+  font-size: 1rem;
+}
+
+/* ── Confirm Summary ─────────────────────────────────────────────────────── */
 .summary {
   display: flex;
   flex-direction: column;
-  background: var(--ds-canvas-subtle);
-  border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-lg);
+  gap: 0;
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-lg);
   overflow: hidden;
 }
 
 .summaryRow {
   display: flex;
+  justify-content: space-between;
+  align-items: baseline;
   gap: var(--ds-space-3);
-  align-items: center;
-  padding-block: var(--ds-space-3);
-  padding-inline: var(--ds-space-4);
-  border-bottom: 1px solid var(--ds-border-subtle);
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-block-end: 1px solid var(--at-line);
 }
 
 .summaryRow:last-child {
-  border-bottom: none;
-}
-
-/* Final summary row (total amount) gets a subtle brand tint */
-.summaryRow:last-child .summaryVal {
-  color: var(--ds-brand-600);
-  font-size: var(--ds-text-base);
-  font-weight: var(--ds-weight-bold);
+  border-block-end: none;
+  background: var(--at-bg-elevated, var(--at-surface));
 }
 
 .summaryKey {
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
-  min-inline-size: 80px;
+  font-size: 0.8125rem;
+  color: var(--at-fg-muted);
   flex-shrink: 0;
 }
 
 .summaryVal {
-  font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-medium);
-  color: var(--ds-text-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--at-fg);
   font-variant-numeric: tabular-nums;
-  flex: 1;
   text-align: end;
 }
 
-/* ── OTP section ─────────────────────────────────────────────────────────── */
+/* ── OTP Section ─────────────────────────────────────────────────────────── */
 .otpSection {
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  border-radius: var(--at-radius-lg);
+  background: color-mix(in oklch, var(--at-info) 6%, var(--at-bg-elevated, var(--at-surface)));
+  border: 1px solid color-mix(in oklch, var(--at-info) 20%, transparent);
 }
 
-/* Attention banner: pending/amber semantic tier */
 .otpHint {
   display: flex;
   align-items: center;
   gap: var(--ds-space-2);
-  font-size: var(--ds-text-sm);
-  color: var(--ds-status-pending-fg);
-  padding-block: var(--ds-space-2);
-  padding-inline: var(--ds-space-3);
-  background: var(--ds-status-pending-bg);
-  border: 1px solid var(--ds-status-pending-border);
-  border-radius: var(--ds-radius-md);
-  line-height: var(--ds-leading-snug);
+  font-size: 0.8125rem;
+  color: var(--at-fg-muted);
 }
 
-/* Dev-mode OTP display */
 .devCode {
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
+  font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
-  /* Monospace digit alignment for OTP codes */
-  font-feature-settings: "tnum";
-  padding-inline-start: var(--ds-space-1);
+  color: var(--at-warning-fg, var(--at-warning));
+  padding: var(--ds-space-2) var(--ds-space-3);
+  background: color-mix(in oklch, var(--at-warning) 8%, var(--at-bg-elevated, var(--at-surface)));
+  border: 1px dashed color-mix(in oklch, var(--at-warning) 30%, transparent);
+  border-radius: var(--at-radius-sm);
+  margin: 0;
 }
 
-/* ── Error banner ────────────────────────────────────────────────────────── */
-/*
-   shake animation fires once on mount to physically communicate failure.
-   Uses semantic error tier tokens — no inline color values.
-*/
-.error {
+/* ── Error ───────────────────────────────────────────────────────────────── */
+.errorBox {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--ds-space-2);
-  padding-block: var(--ds-space-3);
-  padding-inline: var(--ds-space-4);
-  background: var(--ds-status-error-bg);
-  border: 1px solid var(--ds-status-error-border);
-  border-radius: var(--ds-radius-lg);
-  font-size: var(--ds-text-sm);
-  color: var(--ds-status-error-fg);
-  line-height: var(--ds-leading-snug);
-  animation: shake 320ms var(--ds-ease-spring) both;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-radius: var(--at-radius);
+  background: var(--at-danger-soft);
+  border: 1px solid color-mix(in oklch, var(--at-danger) 20%, transparent);
+  font-size: 0.8125rem;
+  color: var(--at-danger-fg, var(--at-danger));
+  animation: shake 300ms ease both;
 }
 
-/* ── Footer navigation bar ───────────────────────────────────────────────── */
-/*
-   Separated from .form to sit at the card bottom — uses canvas-subtle with
-   a hairline border-top to create a clear "chrome" separation.
-*/
+/* ── Footer ──────────────────────────────────────────────────────────────── */
 .footer {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: var(--ds-space-3);
-  padding-block: var(--ds-space-4);
-  padding-inline: var(--ds-space-6);
-  border-block-start: 1px solid var(--ds-border-subtle);
-  background: var(--ds-canvas-subtle);
+  justify-content: space-between;
+  padding: var(--ds-space-4) var(--ds-space-6);
+  border-block-start: 1px solid var(--at-line);
+  background: var(--at-bg-elevated, var(--at-surface));
 }
 
-/* ── Success view ────────────────────────────────────────────────────────── */
-/*
-   Generous vertical padding (space-10 top, space-8 bottom) gives the
-   confirmation screen room to breathe — a key "premium feel" signal.
-*/
+/* ── Success View ────────────────────────────────────────────────────────── */
 .successView {
-  padding-block-start: var(--ds-space-10);
-  padding-block-end: var(--ds-space-8);
-  padding-inline: var(--ds-space-6);
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-10) var(--ds-space-6);
   text-align: center;
-  gap: var(--ds-space-3);
+  animation: fadeUp 280ms var(--at-ease) both;
 }
 
-/* 80px icon circle — pops in with spring overshoot */
-.successIcon {
+.successRing {
   width: 80px;
   height: 80px;
-  flex-shrink: 0;
-  border-radius: var(--ds-radius-full);
-  background: var(--ds-status-success-bg);
-  border: 1px solid var(--ds-status-success-border);
-  color: var(--ds-status-success-fg);
+  border-radius: 50%;
+  background: var(--at-accent-soft);
+  border: 2px solid var(--at-accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Depth: inner glow echoes the success hue */
-  box-shadow: 0 0 0 8px var(--ds-status-success-bg), var(--ds-shadow-md);
-  animation: popIn 400ms var(--ds-ease-spring) both;
+  color: var(--at-accent-fg, var(--at-accent));
+  animation: successRing 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 .successTitle {
-  font-size: var(--ds-text-2xl);
-  font-weight: var(--ds-weight-bold);
-  color: var(--ds-text-primary);
-  line-height: var(--ds-leading-snug);
-  letter-spacing: -0.02em;
+  font-size: clamp(1.125rem, 2vw, 1.375rem);
+  font-weight: 700;
+  color: var(--at-fg);
+  margin: 0;
+}
+
+.successAmount {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  color: var(--at-accent-fg, var(--at-accent));
+  font-variant-numeric: tabular-nums;
+  margin: 0;
 }
 
 .successDesc {
-  font-size: var(--ds-text-sm);
-  color: var(--ds-text-muted);
-  line-height: var(--ds-leading-relaxed);
-  max-inline-size: 34ch;
-  font-variant-numeric: tabular-nums;
+  font-size: 0.875rem;
+  color: var(--at-fg-muted);
+  margin: 0;
+  max-width: 340px;
+  line-height: 1.6;
 }
 
-/* Transaction ID chip — recessed, monospace digits */
-.txnId {
-  display: inline-flex;
+.txnIdBox {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--ds-space-2);
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
-  background: var(--ds-canvas-subtle);
-  border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-md);
-  padding-block: var(--ds-space-2);
-  padding-inline: var(--ds-space-3);
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-3) var(--ds-space-5);
+  border-radius: var(--at-radius);
+  background: var(--at-bg-elevated, var(--at-surface));
+  border: 1px solid var(--at-line);
+  width: 100%;
+  max-width: 340px;
+}
+
+.txnIdLabel {
+  font-size: 0.72rem;
+  color: var(--at-fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.txnIdVal {
+  font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
-  /* Keep ref IDs LTR even in RTL layout */
-  direction: ltr;
-  unicode-bidi: embed;
+  color: var(--at-fg);
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
-/* ============================================================================
-   KEYFRAME ANIMATIONS
-   ============================================================================ */
-
-/*
-   fadeUp — card entrance. 10px Y-travel feels deliberate at 280ms ease-out-quart.
-   `both` fill-mode in animation rule ensures the card is invisible pre-render.
-*/
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.successActions {
+  display: flex;
+  gap: var(--ds-space-3);
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
-/*
-   popIn — success icon overshoot. scale 0.6→1.08→1 mirrors spring cubic.
-   The 320ms main duration + 80ms settle feels natural without being bouncy.
-*/
-@keyframes popIn {
-  0% {
-    transform: scale(0.6);
-    opacity: 0;
+/* ── Reduced motion ─────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .page,
+  .wizardCard,
+  .form,
+  .successView,
+  .recipientCard,
+  .stepDot_active,
+  .successRing {
+    animation: none;
   }
-  72% {
-    transform: scale(1.08);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-/*
-   shake — error feedback. ±5px offset at 320ms fires attention without panic.
-   Three keyframe passes give exactly 1.5 oscillation cycles for "double-knock" feel.
-*/
-@keyframes shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  20% {
-    transform: translateX(-5px);
-  }
-  40% {
-    transform: translateX(5px);
-  }
-  60% {
-    transform: translateX(-4px);
-  }
-  80% {
-    transform: translateX(3px);
+  .quickBtn,
+  .stepDot {
+    transition: none;
   }
 }

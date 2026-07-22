@@ -1,560 +1,722 @@
-/* =============================================================================
-   KycOnboardingClient.module.css
-   RTL-first Persian Fintech KYC Wizard — 2026 premium quality
-   ─────────────────────────────────────────────────────────────────────────────
-   Conventions:
-   • All colours via --ds-* / --ds-status-* tokens — zero hardcoded hex/rgb
-   • Logical properties only  (inset-inline-*, padding-inline-*, etc.)
-   • RTL-safe stepper connector: inset-inline-start/end, no translateX
-   • Spring micro-interactions on interactive surfaces
-   • Animations: fadeSlideDown (entrance) · popIn (status icon) · shake (error)
-   ============================================================================= */
-
-/* ── Keyframes ──────────────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════
+   KYC Onboarding — 2026 Million-Dollar Redesign
+   زبان: Calm Confidence + Domain Semantics (امنیت / هویت / اعتماد)
+   توکن‌ها: --at-* (dashboard) + --ds-space-*
+   ══════════════════════════════════════════════════════════════════════════ */
 
 @keyframes fadeSlideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes popIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.55);
-  }
-  65% {
-    opacity: 1;
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes breathPulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50%       { opacity: 0.7; transform: scale(1.04); }
+}
+
+@keyframes connectorGrow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
 }
 
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
-  20%       { transform: translateX(-5px); }
-  40%       { transform: translateX(5px); }
-  60%       { transform: translateX(-4px); }
-  80%       { transform: translateX(4px); }
+  20%       { transform: translateX(-4px); }
+  40%       { transform: translateX(4px); }
+  60%       { transform: translateX(-3px); }
+  80%       { transform: translateX(3px); }
 }
 
-@keyframes connectorGrow {
-  from { opacity: 0; transform: scaleX(0); }
-  to   { opacity: 1; transform: scaleX(1); }
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-/* ── Page shell ─────────────────────────────────────────────────────────────── */
-
+/* ── Page ─────────────────────────────────────────────────────────────────── */
 .page {
-  max-inline-size: 560px;
-  width: 100%;
-  margin-inline: auto;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: var(--ds-space-6) var(--ds-space-4);
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-4);
-  animation: fadeSlideDown var(--ds-duration-base) var(--ds-ease-out-quart) both;
+  gap: var(--ds-space-6);
+  animation: fadeSlideDown var(--at-duration, 220ms) var(--at-ease) both;
 }
 
-/* ── Wizard card ────────────────────────────────────────────────────────────── */
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
 
+.headerEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--at-accent);
+}
+
+.headerTitle {
+  font-size: clamp(1.375rem, 2vw, 1.75rem);
+  font-weight: 700;
+  color: var(--at-fg);
+  line-height: 1.25;
+  margin: 0;
+}
+
+.headerDesc {
+  font-size: 0.875rem;
+  color: var(--at-fg-muted);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ── Wizard Card ──────────────────────────────────────────────────────────── */
 .wizardCard {
-  background: var(--ds-surface-elevated);
-  border: 1px solid var(--ds-border-default);
-  border-radius: var(--ds-radius-2xl);
-  box-shadow: var(--ds-shadow-lg);
+  background: var(--at-surface);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-xl);
+  box-shadow: var(--at-shadow);
   overflow: hidden;
-  /* Stagger child entrance after page */
-  animation: fadeSlideDown var(--ds-duration-slow) var(--ds-ease-out-quart) 40ms both;
+  animation: scaleIn 280ms var(--at-ease) both;
 }
 
-/* ── Stepper ────────────────────────────────────────────────────────────────── */
-
+/* ── Stepper ─────────────────────────────────────────────────────────────── */
 .stepper {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
   padding: var(--ds-space-5) var(--ds-space-6);
-  border-block-end: 1px solid var(--ds-border-subtle);
-  background: var(--ds-canvas-subtle);
-  /* no gap — flex: 1 on items handles distribution */
+  border-block-end: 1px solid var(--at-line);
+  background: var(--at-bg-elevated, var(--at-surface));
 }
 
 .stepItem {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--ds-space-1);
   position: relative;
+  min-width: 80px;
+  flex: 1;
 }
 
-/*
-  RTL-safe connector line.
-  Sits between the previous item's dot and the current item's dot.
-  inset-inline-start: 0  → starts at our own inline-start edge
-  inset-inline-end: 50%  → stops at horizontal midpoint (centre of own dot)
-  No translateX — works identically in LTR and RTL.
-*/
-.stepItem + .stepItem::before {
-  content: "";
+.stepItem_active {}
+.stepItem_done {}
+.stepItem_pending {}
+
+.stepConnector {
   position: absolute;
-  block-start: 15px; /* vertically centred with 32px dot */
-  inset-inline-start: 0;
-  inset-inline-end: 50%;
-  width: auto;
+  inset-inline-end: calc(50% + 20px);
+  inset-inline-start: auto;
+  top: 16px;
   height: 1px;
-  background: var(--ds-border-default);
-  transform-origin: inline-start center;
+  width: calc(100% - 40px);
+  background: var(--at-line);
+  transform-origin: inline-end;
 }
 
-/* Connector turns success-green when the preceding step is done */
-.stepItem.done + .stepItem::before,
-.done + .stepItem::before {
-  background: var(--ds-status-success-border);
-  animation: connectorGrow var(--ds-duration-base) var(--ds-ease-out-expo) both;
+/* RTL: connector goes left→right but reads right-to-left */
+[dir="rtl"] .stepConnector {
+  inset-inline-end: auto;
+  inset-inline-start: calc(50% + 20px);
+  transform-origin: left;
 }
 
-/* ── Step dot ───────────────────────────────────────────────────────────────── */
+.stepConnectorDone {
+  background: var(--at-accent);
+}
 
 .stepDot {
   width: 32px;
   height: 32px;
-  flex-shrink: 0;
-  border-radius: var(--ds-radius-full);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-bold);
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 240ms var(--at-ease);
   position: relative;
   z-index: 1;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
-.stepDot.pending {
-  background: var(--ds-canvas);
-  border: 2px solid var(--ds-border-default);
-  color: var(--ds-text-muted);
+.stepDot_pending {
+  background: var(--at-bg-elevated, var(--at-surface));
+  border: 1.5px solid var(--at-line-strong);
+  color: var(--at-fg-subtle);
 }
 
-.stepDot.active {
-  background: var(--ds-brand-500);
-  border: none;
-  color: var(--ds-text-inverse);
-  box-shadow:
-    0 0 0 3px var(--ds-canvas-subtle),
-    0 0 0 5px color-mix(in oklch, var(--ds-brand-500), transparent 55%);
-  animation: popIn var(--ds-duration-base) var(--ds-ease-spring) both;
+.stepDot_active {
+  background: var(--at-accent);
+  border: 2px solid var(--at-accent);
+  color: var(--at-accent-on, oklch(99% 0 0));
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--at-accent) 18%, transparent);
+  animation: breathPulse 2s ease-in-out infinite;
 }
 
-.stepDot.done {
-  background: var(--ds-status-success-bg);
-  border: 1.5px solid var(--ds-status-success-border);
-  color: var(--ds-status-success-fg);
+.stepDot_done {
+  background: var(--at-accent-soft);
+  border: 1.5px solid var(--at-accent);
+  color: var(--at-accent-fg, var(--at-accent));
 }
-
-/* ── Step label ─────────────────────────────────────────────────────────────── */
 
 .stepLabel {
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
-  white-space: nowrap;
-  transition: color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  font-size: 0.7rem;
+  font-weight: 500;
   text-align: center;
+  transition: color 200ms var(--at-ease);
 }
 
-.stepLabel.active {
-  color: var(--ds-brand-600);
-  font-weight: var(--ds-weight-semibold);
-}
+.stepLabel_pending  { color: var(--at-fg-faint); }
+.stepLabel_active   { color: var(--at-accent-fg, var(--at-accent)); font-weight: 600; }
+.stepLabel_done     { color: var(--at-fg-muted); }
 
-.stepLabel.done {
-  color: var(--ds-status-success-fg);
-  font-weight: var(--ds-weight-medium);
-}
-
-/* ── Form body ──────────────────────────────────────────────────────────────── */
-
+/* ── Form body ────────────────────────────────────────────────────────────── */
 .form {
   padding: var(--ds-space-6);
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-4);
-  animation: fadeSlideDown var(--ds-duration-base) var(--ds-ease-out-quart) both;
+  gap: var(--ds-space-5);
+  animation: fadeSlideDown 220ms var(--at-ease) both;
 }
 
-/* Alias kept for any external usage */
-.step {
-  padding: var(--ds-space-6);
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-4);
-  animation: fadeSlideDown var(--ds-duration-base) var(--ds-ease-out-quart) both;
-}
-
-.formTitle {
-  font-size: var(--ds-text-lg);
-  font-weight: var(--ds-weight-bold);
-  color: var(--ds-text-primary);
-  line-height: var(--ds-leading-snug);
-  margin-block-end: var(--ds-space-1);
-  letter-spacing: -0.01em;
-}
-
-.formDesc {
-  font-size: var(--ds-text-sm);
-  color: var(--ds-text-muted);
-  line-height: var(--ds-leading-relaxed);
-}
-
-/* ── Field group & individual field ─────────────────────────────────────────── */
-
-.fieldGroup {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-3);
-}
-
-.field {
+.formHead {
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-1);
 }
 
-.label {
-  font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-medium);
-  color: var(--ds-text-secondary);
-  line-height: var(--ds-leading-snug);
+.formTitle {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--at-fg);
+  margin: 0;
 }
 
-/*
-  .input — override for bare <input> elements that don't use the Input component.
-  The shared Input component applies its own styles; this covers fallback usage.
-*/
-.input {
-  inline-size: 100%;
-  padding-block: var(--ds-space-2);
-  padding-inline: var(--ds-space-3);
-  font-size: var(--ds-text-sm);
-  color: var(--ds-text-primary);
-  background: var(--ds-surface);
-  border: 1px solid var(--ds-border-default);
-  border-radius: var(--ds-radius-md);
-  outline: none;
+.formDesc {
+  font-size: 0.8125rem;
+  color: var(--at-fg-muted);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ── Field Grid ────────────────────────────────────────────────────────────── */
+.fieldGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ds-space-4) var(--ds-space-5);
+}
+
+@media (max-width: 540px) {
+  .fieldGrid { grid-template-columns: 1fr; }
+}
+
+.fieldCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+}
+
+.fieldLabel {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--at-fg-muted);
+}
+
+.fieldInput {
+  border-color: var(--at-line);
+  background: var(--at-bg);
+  transition: border-color 180ms var(--at-ease), box-shadow 180ms var(--at-ease);
+}
+
+.fieldInput:focus {
+  border-color: var(--at-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 15%, transparent);
+}
+
+.fieldHint {
+  font-size: 0.72rem;
+  color: var(--at-fg-subtle);
+  padding-inline-start: var(--ds-space-1);
+}
+
+/* ── Upload Grid ───────────────────────────────────────────────────────────── */
+.uploadGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--ds-space-4);
+}
+
+@media (max-width: 600px) {
+  .uploadGrid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 400px) {
+  .uploadGrid { grid-template-columns: 1fr; }
+}
+
+.uploadZoneWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+}
+
+.uploadLabel {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--at-fg-muted);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.required {
+  color: var(--at-danger);
+  font-size: 0.75rem;
+}
+
+.uploadZone {
+  aspect-ratio: 4/3;
+  border: 1.5px dashed var(--at-line-strong);
+  border-radius: var(--at-radius-lg);
+  background: var(--at-bg-elevated, var(--at-surface));
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
   transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+    border-color 200ms var(--at-ease),
+    background 200ms var(--at-ease),
+    transform 120ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  width: 100%;
+  display: block;
 }
 
-.input:focus {
-  border-color: var(--ds-brand-500);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500), transparent 82%);
+.uploadZone:hover:not(:disabled) {
+  border-color: var(--at-accent);
+  background: color-mix(in oklch, var(--at-accent) 4%, var(--at-bg-elevated, var(--at-surface)));
+  transform: translateY(-1px);
 }
 
-/* Hint text below a field */
-.hint,
-.inputHint {
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
-  line-height: var(--ds-leading-normal);
+.uploadZone:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
-/* ── Upload area ─────────────────────────────────────────────────────────────── */
+.uploadZone:focus-visible {
+  outline: 2px solid var(--at-accent);
+  outline-offset: 2px;
+}
 
-/* Reusable upload zone (consumed if rendered via JSX class="s.uploadArea") */
-.uploadArea {
+.uploadZoneDrag {
+  border-color: var(--at-accent) !important;
+  background: color-mix(in oklch, var(--at-accent) 8%, var(--at-bg-elevated, var(--at-surface))) !important;
+  transform: scale(1.01);
+}
+
+.uploadZoneHasFile {
+  border-style: solid;
+  border-color: var(--at-accent);
+}
+
+.uploadZoneDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.uploadPlaceholder {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--ds-space-2);
-  padding: var(--ds-space-6) var(--ds-space-4);
-  border: 2px dashed var(--ds-border-default);
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-canvas-subtle);
-  cursor: pointer;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    background var(--ds-duration-fast) var(--ds-ease-out-quart);
+  height: 100%;
+  padding: var(--ds-space-4);
   text-align: center;
 }
 
-.uploadArea:hover,
-.uploadArea:focus-within {
-  border-color: var(--ds-brand-500);
-  background: color-mix(in oklch, var(--ds-brand-50), transparent 20%);
-}
-
-.uploadArea:active {
-  background: var(--ds-brand-100);
-}
-
-/* ── Error banner ───────────────────────────────────────────────────────────── */
-
-.error {
+.uploadIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: color-mix(in oklch, var(--at-accent) 10%, var(--at-bg-elevated, var(--at-surface)));
   display: flex;
-  align-items: flex-start;
-  gap: var(--ds-space-2);
-  padding-block: var(--ds-space-3);
-  padding-inline: var(--ds-space-4);
-  background: var(--ds-status-error-bg);
-  border: 1px solid var(--ds-status-error-border);
-  border-radius: var(--ds-radius-lg);
-  font-size: var(--ds-text-sm);
-  color: var(--ds-status-error-fg);
-  line-height: var(--ds-leading-relaxed);
-  animation: shake 0.35s var(--ds-ease-spring);
-}
-
-/* ── Footer nav ─────────────────────────────────────────────────────────────── */
-
-.footer {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding-block: var(--ds-space-4);
-  padding-inline: var(--ds-space-6);
-  border-block-start: 1px solid var(--ds-border-subtle);
-  background: var(--ds-canvas-subtle);
+  justify-content: center;
+  color: var(--at-accent-fg, var(--at-accent));
 }
 
-.stepHint {
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
+.uploadTitle {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--at-fg-muted);
 }
 
-/* ── Spring micro-interaction on buttons (global selector) ───────────────────
-   Targets the shared Button component rendered inside this module's footer.
-   Uses :global so it reaches the component's root element without CSS-modules
-   scoping. We key on the button[data-variant] or just button to keep it light. */
-
-.footer button,
-.statusCard button {
-  transition:
-    transform var(--ds-duration-fast) var(--ds-ease-spring),
-    filter var(--ds-duration-fast) var(--ds-ease-out-quart);
+.uploadHint {
+  font-size: 0.7rem;
+  color: var(--at-fg-subtle);
+  line-height: 1.4;
 }
 
-.footer button:hover:not(:disabled),
-.statusCard button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  filter: brightness(1.06);
+.uploadPreview {
+  position: absolute;
+  inset: 0;
 }
 
-.footer button:active:not(:disabled),
-.statusCard button:active:not(:disabled) {
-  transform: scale(0.97);
-  filter: brightness(0.97);
+.uploadPreviewImg {
+  object-fit: cover;
 }
 
-/* ── Review grid (step 3) ───────────────────────────────────────────────────── */
-
-.reviewGrid {
+.uploadPreviewOverlay {
+  position: absolute;
+  inset: 0;
+  background: oklch(0% 0 0 / 0.55);
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-lg);
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-1);
+  color: oklch(100% 0 0 / 0.9);
+  font-size: 0.75rem;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 200ms var(--at-ease);
+}
+
+.uploadZone:hover .uploadPreviewOverlay {
+  opacity: 1;
+}
+
+.uploadSpinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--at-line-strong);
+  border-top-color: var(--at-accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.uploadError {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  font-size: 0.72rem;
+  color: var(--at-danger);
+  margin: 0;
+  animation: shake 300ms ease both;
+}
+
+.hiddenInput {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.uploadNotice {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-radius: var(--at-radius);
+  background: color-mix(in oklch, var(--at-accent) 6%, var(--at-bg-elevated, var(--at-surface)));
+  border: 1px solid color-mix(in oklch, var(--at-accent) 20%, transparent);
+  font-size: 0.78rem;
+  color: var(--at-fg-muted);
+}
+
+.uploadNotice svg {
+  flex-shrink: 0;
+  color: var(--at-accent-fg, var(--at-accent));
+}
+
+/* ── Review Grid ──────────────────────────────────────────────────────────── */
+.reviewGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius);
   overflow: hidden;
+}
+
+@media (max-width: 480px) {
+  .reviewGrid { grid-template-columns: 1fr; }
 }
 
 .reviewRow {
   display: flex;
-  gap: var(--ds-space-3);
-  align-items: baseline;
-  padding-block: var(--ds-space-2);
-  padding-inline: var(--ds-space-4);
-  border-block-end: 1px solid var(--ds-border-subtle);
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-block-end: 1px solid var(--at-line);
+  background: var(--at-bg);
 }
 
-.reviewRow:last-child {
+.reviewRow:nth-child(odd) {
+  border-inline-end: 1px solid var(--at-line);
+}
+
+@media (max-width: 480px) {
+  .reviewRow:nth-child(odd) { border-inline-end: none; }
+}
+
+.reviewRow:last-child,
+.reviewRow:nth-last-child(2):nth-child(odd) {
   border-block-end: none;
 }
 
-.reviewRow:nth-child(even) {
-  background: var(--ds-canvas-subtle);
+.reviewLabel {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--at-fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
-.reviewKey {
-  flex-shrink: 0;
-  inline-size: 96px;
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
-  font-weight: var(--ds-weight-medium);
-  padding-block-start: 2px;
+.reviewValue {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--at-fg);
 }
 
-.reviewVal {
-  font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-medium);
-  color: var(--ds-text-primary);
-  word-break: break-all;
-  line-height: var(--ds-leading-snug);
+/* ── Doc Previews ─────────────────────────────────────────────────────────── */
+.docPreviews {
+  display: flex;
+  gap: var(--ds-space-4);
+  flex-wrap: wrap;
 }
 
-/* ── Status views: shared card ──────────────────────────────────────────────── */
+.docPreviewItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-1);
+}
 
+.docThumb {
+  width: 80px;
+  height: 60px;
+  border-radius: var(--at-radius);
+  overflow: hidden;
+  position: relative;
+  border: 1.5px solid var(--at-accent);
+}
+
+.docThumbImg {
+  object-fit: cover;
+}
+
+.docThumbCheck {
+  position: absolute;
+  bottom: 4px;
+  inset-inline-end: 4px;
+  color: var(--at-accent);
+  background: var(--at-surface);
+  border-radius: 50%;
+}
+
+.docThumbLabel {
+  font-size: 0.7rem;
+  color: var(--at-fg-muted);
+}
+
+/* ── Error Box ────────────────────────────────────────────────────────────── */
+.errorBox {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-radius: var(--at-radius);
+  background: var(--at-danger-soft);
+  border: 1px solid color-mix(in oklch, var(--at-danger) 20%, transparent);
+  font-size: 0.8125rem;
+  color: var(--at-danger-fg, var(--at-danger));
+  animation: shake 300ms ease both;
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────────── */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--ds-space-4) var(--ds-space-6);
+  border-block-start: 1px solid var(--at-line);
+  background: var(--at-bg-elevated, var(--at-surface));
+}
+
+.stepCounter {
+  font-size: 0.78rem;
+  color: var(--at-fg-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+.footerActions {
+  display: flex;
+  gap: var(--ds-space-2);
+}
+
+/* ── Status Card ──────────────────────────────────────────────────────────── */
 .statusCard {
+  background: var(--at-surface);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-xl);
+  padding: var(--ds-space-8) var(--ds-space-6);
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
   gap: var(--ds-space-4);
-  padding-block: var(--ds-space-10);
-  padding-inline: var(--ds-space-6);
-  background: var(--ds-surface-elevated);
-  border: 1px solid var(--ds-border-default);
-  border-radius: var(--ds-radius-2xl);
-  box-shadow: var(--ds-shadow-lg);
-  animation: fadeSlideDown var(--ds-duration-base) var(--ds-ease-out-quart) both;
+  text-align: center;
+  animation: scaleIn 300ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  box-shadow: var(--at-shadow);
 }
 
-/* Generic aliases used by brief (maps to statusCard internals) */
-.status {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: var(--ds-space-4);
-}
-
-/* ── Status icon wrapper ─────────────────────────────────────────────────────── */
-
-.statusIconWrap,
-.statusIcon {
+.statusIconRing {
   width: 72px;
   height: 72px;
-  border-radius: var(--ds-radius-full);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  animation: popIn var(--ds-duration-slow) var(--ds-ease-spring) 80ms both;
+  position: relative;
 }
 
-/* ── PENDING ─────────────────────────────────────────────────────────────────── */
-
-.statusCard[data-status="PENDING"] .statusIconWrap {
-  background: var(--ds-status-pending-bg);
-  border: 1.5px solid var(--ds-status-pending-border);
+.statusCard[data-status="PENDING"] .statusIconRing {
+  background: color-mix(in oklch, var(--at-warning) 12%, var(--at-surface));
+  border: 1.5px solid color-mix(in oklch, var(--at-warning) 30%, transparent);
+  color: var(--at-warning);
 }
 
-.statusCard[data-status="PENDING"] .statusTitle {
-  color: var(--ds-status-pending-fg);
+.statusCard[data-status="APPROVED"] .statusIconRing {
+  background: color-mix(in oklch, var(--at-accent) 12%, var(--at-surface));
+  border: 1.5px solid color-mix(in oklch, var(--at-accent) 30%, transparent);
+  color: var(--at-accent-fg, var(--at-accent));
 }
 
-/* ── APPROVED ────────────────────────────────────────────────────────────────── */
-
-.statusCard[data-status="APPROVED"] .statusIconWrap {
-  background: var(--ds-status-success-bg);
-  border: 1.5px solid var(--ds-status-success-border);
+.statusCard[data-status="REJECTED"] .statusIconRing {
+  background: var(--at-danger-soft);
+  border: 1.5px solid color-mix(in oklch, var(--at-danger) 30%, transparent);
+  color: var(--at-danger);
 }
 
-.statusCard[data-status="APPROVED"] .statusTitle {
-  color: var(--ds-status-success-fg);
+.statusIconInner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-
-/* ── REJECTED ────────────────────────────────────────────────────────────────── */
-
-.statusCard[data-status="REJECTED"] .statusIconWrap {
-  background: var(--ds-status-error-bg);
-  border: 1.5px solid var(--ds-status-error-border);
-}
-
-.statusCard[data-status="REJECTED"] .statusTitle {
-  color: var(--ds-status-error-fg);
-}
-
-/* ── Status text ─────────────────────────────────────────────────────────────── */
-
-.statusTitle {
-  font-size: var(--ds-text-2xl);
-  font-weight: var(--ds-weight-bold);
-  color: var(--ds-text-primary);
-  line-height: var(--ds-leading-snug);
-  letter-spacing: -0.015em;
-}
-
-.statusDesc {
-  font-size: var(--ds-text-sm);
-  color: var(--ds-text-muted);
-  max-inline-size: 38ch;
-  line-height: var(--ds-leading-relaxed);
-}
-
-/* ── Status badge (chip / pill variant) ──────────────────────────────────────── */
 
 .statusBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ds-space-1);
-  padding-block: 3px;
-  padding-inline: var(--ds-space-3);
-  border-radius: var(--ds-radius-full);
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-semibold);
-  line-height: 1;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 999px;
 }
 
 .statusBadge[data-status="PENDING"] {
-  background: var(--ds-status-pending-bg);
-  border: 1px solid var(--ds-status-pending-border);
-  color: var(--ds-status-pending-fg);
+  background: color-mix(in oklch, var(--at-warning) 14%, transparent);
+  color: var(--at-warning-fg, var(--at-warning));
+  border: 1px solid color-mix(in oklch, var(--at-warning) 25%, transparent);
 }
 
 .statusBadge[data-status="APPROVED"] {
-  background: var(--ds-status-success-bg);
-  border: 1px solid var(--ds-status-success-border);
-  color: var(--ds-status-success-fg);
+  background: var(--at-accent-soft);
+  color: var(--at-accent-fg, var(--at-accent));
+  border: 1px solid color-mix(in oklch, var(--at-accent) 25%, transparent);
 }
 
 .statusBadge[data-status="REJECTED"] {
-  background: var(--ds-status-error-bg);
-  border: 1px solid var(--ds-status-error-border);
-  color: var(--ds-status-error-fg);
+  background: var(--at-danger-soft);
+  color: var(--at-danger-fg, var(--at-danger));
+  border: 1px solid color-mix(in oklch, var(--at-danger) 25%, transparent);
 }
 
-/* ── Rejection reason box ────────────────────────────────────────────────────── */
+.statusTitle {
+  font-size: clamp(1.125rem, 2vw, 1.375rem);
+  font-weight: 700;
+  color: var(--at-fg);
+  margin: 0;
+  line-height: 1.25;
+}
 
-.statusReason,
-.rejectedBox {
-  inline-size: 100%;
-  padding-block: var(--ds-space-3);
-  padding-inline: var(--ds-space-4);
-  background: var(--ds-status-error-bg);
-  border: 1px solid var(--ds-status-error-border);
-  border-radius: var(--ds-radius-lg);
-  font-size: var(--ds-text-sm);
-  color: var(--ds-status-error-fg);
-  line-height: var(--ds-leading-relaxed);
+.statusDesc {
+  font-size: 0.875rem;
+  color: var(--at-fg-muted);
+  margin: 0;
+  max-width: 380px;
+  line-height: 1.6;
+}
+
+.statusReason {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-radius: var(--at-radius);
+  background: var(--at-danger-soft);
+  border: 1px solid color-mix(in oklch, var(--at-danger) 20%, transparent);
+  font-size: 0.8125rem;
+  color: var(--at-danger-fg, var(--at-danger));
   text-align: start;
+  width: 100%;
+  max-width: 420px;
 }
 
-/* ── Reduced-motion overrides ────────────────────────────────────────────────── */
-/* tokens.css already covers *,*::before with 0.01ms globally, but we
-   re-assert transform removal here for safety on the stepper connector. */
+.statusReason svg { flex-shrink: 0; margin-top: 2px; }
+
+.statusTimeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  width: 100%;
+  max-width: 320px;
+  padding: var(--ds-space-4);
+  background: var(--at-bg-elevated, var(--at-surface));
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-lg);
+}
+
+.timelineItem {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: 0.8125rem;
+}
+
+.timelineItem[data-done="true"] {
+  color: var(--at-accent-fg, var(--at-accent));
+}
+
+.timelineItem[data-done="false"] {
+  color: var(--at-fg-muted);
+}
+
+.retryBtn {
+  min-width: 160px;
+}
+
+/* ── Reduced motion ────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .stepItem + .stepItem::before {
-    animation: none;
-  }
   .page,
   .wizardCard,
   .form,
-  .step,
   .statusCard,
-  .statusIconWrap,
-  .statusIcon,
-  .stepDot.active {
+  .stepDot_active {
     animation: none;
+  }
+  .uploadZone,
+  .stepDot {
+    transition: none;
   }
 }

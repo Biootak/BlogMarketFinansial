@@ -1,9 +1,15 @@
 'use client';
 
 /**
- * KycOnboardingClient — 2026 Progressive KYC wizard
- * ۳ گام: اطلاعات پایه → مدارک → تأیید نهایی
+ * KycOnboardingClient — 2026 Progressive KYC Wizard (Million-Dollar Redesign)
+ *
+ * ۳ گام: اطلاعات پایه → آپلود مدارک (drag-drop واقعی) → تأیید نهایی
  * Status views: PENDING / APPROVED / REJECTED
+ * - File upload واقعی از /api/upload (نه URL دستی)
+ * - Drag & Drop + camera capture
+ * - Preview تصاویر قبل از ارسال
+ * - Spring micro-interactions
+ * - همه ۵ state: loading / empty / error / success / disabled
  */
 
 import {
@@ -18,14 +24,18 @@ import {
   ArrowLeft,
   ArrowRight,
   BadgeCheck,
+  Camera,
   CheckCircle2,
   Clock,
   FileText,
   ShieldCheck,
+  Upload,
   User,
+  X,
   XCircle,
 } from 'lucide-react';
-import { useCallback, useState, useTransition } from 'react';
+import Image from 'next/image';
+import { useCallback, useRef, useState, useTransition } from 'react';
 import s from './KycOnboardingClient.module.css';
 
 type Props = { initialRecord: KycRecordRow | null };
@@ -35,92 +45,226 @@ type FormData = {
   nationalId: string;
   dateOfBirth: string;
   phone: string;
+};
+
+type DocFiles = {
   selfieUrl: string;
   docFrontUrl: string;
   docBackUrl: string;
+  selfiePreview: string;
+  docFrontPreview: string;
+  docBackPreview: string;
 };
 
 const STEPS = [
   { id: 1, label: 'اطلاعات پایه', Icon: User },
   { id: 2, label: 'مدارک', Icon: FileText },
-  { id: 3, label: 'تأیید نهایی', Icon: CheckCircle2 },
+  { id: 3, label: 'تأیید', Icon: ShieldCheck },
 ];
 
 const STATUS_CONFIG = {
   PENDING: {
     Icon: Clock,
-    colorVar: 'var(--ds-status-pending-fg)',
-    bgVar: 'var(--ds-status-pending-bg)',
-    borderVar: 'var(--ds-status-pending-border)',
+    status: 'PENDING' as const,
     title: 'در حال بررسی',
-    desc: 'مدارک شما دریافت شده و در صف بررسی است. معمولاً ۲۴ تا ۴۸ ساعت طول می‌کشد.',
+    desc: 'مدارک شما دریافت شده و در صف بررسی تیم ماست. معمولاً ۲۴ تا ۴۸ ساعت طول می‌کشد.',
   },
   APPROVED: {
     Icon: BadgeCheck,
-    colorVar: 'var(--ds-status-success-fg)',
-    bgVar: 'var(--ds-status-success-bg)',
-    borderVar: 'var(--ds-status-success-border)',
+    status: 'APPROVED' as const,
     title: 'هویت تأیید شد',
-    desc: 'حساب شما تأیید شده و می‌توانید از تمام خدمات مالی استفاده کنید.',
+    desc: 'حساب شما با موفقیت تأیید شده است. اکنون به تمام خدمات مالی دسترسی کامل دارید.',
   },
   REJECTED: {
     Icon: XCircle,
-    colorVar: 'var(--ds-status-error-fg)',
-    bgVar: 'var(--ds-status-error-bg)',
-    borderVar: 'var(--ds-status-error-border)',
+    status: 'REJECTED' as const,
     title: 'مدارک رد شد',
-    desc: 'متأسفانه مدارک ارسالی تأیید نشد. لطفاً مدارک معتبر ارسال کنید.',
+    desc: 'متأسفانه مدارک ارسالی مورد تأیید قرار نگرفت. لطفاً مدارک معتبرتری ارسال کنید.',
   },
 };
 
+// ── FileUploadZone ─────────────────────────────────────────────────────────
+interface UploadZoneProps {
+  label: string;
+  hint: string;
+  previewUrl: string;
+  onFile: (url: string, preview: string) => void;
+  required?: boolean;
+  disabled?: boolean;
+}
+
+function FileUploadZone({ label, hint, previewUrl, onFile, required, disabled }: UploadZoneProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const upload = useCallback(
+    async (file: File) => {
+      if (!file.type.startsWith('image/')) {
+        setUploadError('فقط تصویر قابل قبول است (JPG، PNG، WebP)');
+        return;
+      }
+      if (file.size > 8 * 1024 * 1024) {
+        setUploadError('حداکثر اندازه فایل ۸ مگابایت است');
+        return;
+      }
+      setUploadError(null);
+      setUploading(true);
+      try {
+        const formData = new FormData();
+        formData.append('files', file);
+        formData.append('folder', 'kyc');
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        if (!res.ok) throw new Error('خطا در آپلود تصویر');
+        const json = await res.json();
+        const url: string = json.files?.[0]?.url ?? '';
+        if (!url) throw new Error('آدرس تصویر دریافت نشد');
+        const preview = URL.createObjectURL(file);
+        onFile(url, preview);
+      } catch (err) {
+        setUploadError(err instanceof Error ? err.message : 'خطا در آپلود');
+      } finally {
+        setUploading(false);
+      }
+    },
+    [onFile],
+  );
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragOver(false);
+      const file = e.dataTransfer.files[0];
+      if (file) upload(file);
+    },
+    [upload],
+  );
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) upload(file);
+    },
+    [upload],
+  );
+
+  return (
+    <div className={s.uploadZoneWrapper}>
+      <div className={s.uploadLabel}>
+        {label}
+        {required && <span className={s.required}>*</span>}
+      </div>
+      <button
+        type="button"
+        className={`${s.uploadZone} ${dragOver ? s.uploadZoneDrag : ''} ${previewUrl ? s.uploadZoneHasFile : ''} ${disabled ? s.uploadZoneDisabled : ''}`}
+        onClick={() => !disabled && !uploading && inputRef.current?.click()}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={handleDrop}
+        disabled={disabled || uploading}
+        aria-label={`آپلود ${label}`}
+      >
+        {previewUrl ? (
+          <div className={s.uploadPreview}>
+            <Image src={previewUrl} alt={label} fill className={s.uploadPreviewImg} unoptimized />
+            <div className={s.uploadPreviewOverlay}>
+              <Camera size={20} aria-hidden />
+              <span>تغییر</span>
+            </div>
+          </div>
+        ) : (
+          <div className={s.uploadPlaceholder}>
+            {uploading ? (
+              <div className={s.uploadSpinner} aria-label="در حال آپلود" />
+            ) : (
+              <>
+                <div className={s.uploadIcon}>
+                  <Upload size={22} aria-hidden />
+                </div>
+                <span className={s.uploadTitle}>
+                  {dragOver ? 'رها کنید' : 'کلیک یا drag & drop'}
+                </span>
+                <span className={s.uploadHint}>{hint}</span>
+              </>
+            )}
+          </div>
+        )}
+      </button>
+      {uploadError && (
+        <p className={s.uploadError} role="alert">
+          <AlertCircle size={13} aria-hidden />
+          {uploadError}
+        </p>
+      )}
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className={s.hiddenInput}
+        onChange={handleChange}
+        disabled={disabled || uploading}
+        aria-hidden="true"
+        tabIndex={-1}
+      />
+    </div>
+  );
+}
+
+// ── Main Component ──────────────────────────────────────────────────────────
 export function KycOnboardingClient({ initialRecord }: Props) {
   const [record, setRecord] = useState<KycRecordRow | null>(initialRecord);
   const [step, setStep] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [data, setData] = useState<FormData>({
+
+  const [form, setForm] = useState<FormData>({
     fullName: '',
     nationalId: '',
     dateOfBirth: '',
     phone: '',
+  });
+
+  const [docs, setDocs] = useState<DocFiles>({
     selfieUrl: '',
     docFrontUrl: '',
     docBackUrl: '',
+    selfiePreview: '',
+    docFrontPreview: '',
+    docBackPreview: '',
   });
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleFormChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     setError(null);
   }, []);
 
   const handleStep1 = useCallback(() => {
     startTransition(async () => {
       setError(null);
-      const res = await submitKycBasicInfo({
-        fullName: data.fullName,
-        nationalId: data.nationalId,
-        dateOfBirth: data.dateOfBirth,
-        phone: data.phone,
-      });
+      const res = await submitKycBasicInfo(form);
       if (!res.success) {
         setError(res.error.message);
         return;
       }
       setStep(2);
     });
-  }, [data]);
+  }, [form]);
 
   const handleStep2 = useCallback(() => {
+    if (!docs.selfieUrl || !docs.docFrontUrl) {
+      setError('لطفاً عکس سلفی و تصویر روی مدرک را آپلود کنید');
+      return;
+    }
     startTransition(async () => {
       setError(null);
-      if (!data.selfieUrl || !data.docFrontUrl) {
-        setError('لطفاً عکس سلفی و تصویر روی مدرک را وارد کنید');
-        return;
-      }
       const res = await submitKycDocuments({
-        selfieUrl: data.selfieUrl,
-        docFrontUrl: data.docFrontUrl,
-        docBackUrl: data.docBackUrl || undefined,
+        selfieUrl: docs.selfieUrl,
+        docFrontUrl: docs.docFrontUrl,
+        docBackUrl: docs.docBackUrl || undefined,
       });
       if (!res.success) {
         setError(res.error.message);
@@ -128,54 +272,79 @@ export function KycOnboardingClient({ initialRecord }: Props) {
       }
       setStep(3);
     });
-  }, [data]);
+  }, [docs]);
 
   const handleFinish = useCallback(() => {
     setRecord({
       id: 'optimistic',
-      fullName: data.fullName,
-      selfieUrl: data.selfieUrl,
-      docFrontUrl: data.docFrontUrl,
-      docBackUrl: data.docBackUrl || null,
+      fullName: form.fullName,
+      selfieUrl: docs.selfieUrl,
+      docFrontUrl: docs.docFrontUrl,
+      docBackUrl: docs.docBackUrl || null,
       submittedAt: new Date(),
       reviewedAt: null,
       rejectedReason: null,
       status: 'PENDING',
     });
-  }, [data]);
+  }, [form, docs]);
 
-  // ── Status views ──────────────────────────────────────────────────────────
+  // ── Status Views ────────────────────────────────────────────────────────
   if (record && record.status !== 'NONE') {
     const cfg = STATUS_CONFIG[record.status as keyof typeof STATUS_CONFIG];
     if (!cfg) return null;
     const StatusIcon = cfg.Icon;
     return (
       <div className={s.page}>
-        <div className={s.statusCard}>
-          <div
-            className={s.statusIconWrap}
-            style={{ background: cfg.bgVar, border: `1px solid ${cfg.borderVar}` }}
-          >
-            <StatusIcon size={36} style={{ color: cfg.colorVar }} aria-hidden />
+        <div className={s.statusCard} data-status={cfg.status}>
+          <div className={s.statusIconRing} aria-hidden>
+            <div className={s.statusIconInner}>
+              <StatusIcon size={32} aria-hidden />
+            </div>
           </div>
+
+          <div className={s.statusBadge} data-status={cfg.status}>
+            {cfg.status === 'PENDING' && 'در انتظار بررسی'}
+            {cfg.status === 'APPROVED' && 'تأیید شده'}
+            {cfg.status === 'REJECTED' && 'رد شده'}
+          </div>
+
           <h1 className={s.statusTitle}>{cfg.title}</h1>
           <p className={s.statusDesc}>{cfg.desc}</p>
 
           {record.status === 'REJECTED' && record.rejectedReason && (
             <div className={s.statusReason}>
-              <strong>دلیل رد:</strong> {record.rejectedReason}
+              <AlertCircle size={14} aria-hidden />
+              <span>{record.rejectedReason}</span>
+            </div>
+          )}
+
+          {record.status === 'PENDING' && (
+            <div className={s.statusTimeline}>
+              <div className={s.timelineItem} data-done="true">
+                <CheckCircle2 size={14} aria-hidden />
+                <span>اطلاعات پایه ثبت شد</span>
+              </div>
+              <div className={s.timelineItem} data-done="true">
+                <CheckCircle2 size={14} aria-hidden />
+                <span>مدارک آپلود شد</span>
+              </div>
+              <div className={s.timelineItem} data-done="false">
+                <Clock size={14} aria-hidden />
+                <span>در انتظار بررسی تیم</span>
+              </div>
             </div>
           )}
 
           {record.status === 'REJECTED' && (
             <Button
+              className={s.retryBtn}
               onClick={() => {
                 setRecord(null);
                 setStep(1);
                 setError(null);
               }}
-              variant="default"
             >
+              <Upload size={15} aria-hidden />
               ارسال مجدد مدارک
             </Button>
           )}
@@ -184,239 +353,196 @@ export function KycOnboardingClient({ initialRecord }: Props) {
     );
   }
 
-  // ── Wizard ────────────────────────────────────────────────────────────────
+  // ── Wizard ──────────────────────────────────────────────────────────────
   const stepState = (id: number) => (id < step ? 'done' : id === step ? 'active' : 'pending');
 
   return (
     <div className={s.page}>
+      {/* ── Header ── */}
+      <div className={s.header}>
+        <div className={s.headerEyebrow}>
+          <ShieldCheck size={14} aria-hidden />
+          <span>احراز هویت</span>
+        </div>
+        <h1 className={s.headerTitle}>تأیید هویت</h1>
+        <p className={s.headerDesc}>
+          اطلاعات شما رمزنگاری‌شده ذخیره می‌شود. بررسی معمولاً ۲۴ ساعت طول می‌کشد.
+        </p>
+      </div>
+
       <div className={s.wizardCard}>
-        {/* Stepper */}
+        {/* ── Stepper ── */}
         <div className={s.stepper} role="list" aria-label="مراحل احراز هویت">
-          {STEPS.map((st) => {
+          {STEPS.map((st, i) => {
             const state = stepState(st.id);
             const StepIcon = st.Icon;
             return (
-              <div key={st.id} className={`${s.stepItem} ${state}`} role="listitem">
-                <div className={`${s.stepDot} ${state}`}>
-                  {state === 'done' ? (
-                    <CheckCircle2 size={16} aria-hidden />
-                  ) : (
-                    <StepIcon size={14} aria-hidden />
-                  )}
+              <div key={st.id} role="listitem" className={`${s.stepItem} ${s[`stepItem_${state}`]}`}>
+                {i > 0 && <div className={`${s.stepConnector} ${stepState(st.id - 1) === 'done' ? s.stepConnectorDone : ''}`} aria-hidden />}
+                <div className={`${s.stepDot} ${s[`stepDot_${state}`]}`} aria-current={state === 'active' ? 'step' : undefined}>
+                  {state === 'done' ? <CheckCircle2 size={15} aria-hidden /> : <StepIcon size={14} aria-hidden />}
                 </div>
-                <span className={`${s.stepLabel} ${state}`}>{st.label}</span>
+                <span className={`${s.stepLabel} ${s[`stepLabel_${state}`]}`}>{st.label}</span>
               </div>
             );
           })}
         </div>
 
-        {/* Step 1 — Basic info */}
+        {/* ── Step 1: Basic Info ── */}
         {step === 1 && (
           <div className={s.form}>
-            <div>
+            <div className={s.formHead}>
               <h2 className={s.formTitle}>اطلاعات پایه</h2>
-              <p className={s.formDesc}>
-                این اطلاعات به‌صورت امن ذخیره و برای تأیید هویت استفاده می‌شود.
-              </p>
+              <p className={s.formDesc}>این اطلاعات به‌صورت ایمن ذخیره و برای احراز هویت استفاده می‌شود.</p>
             </div>
 
             {error && (
-              <div className={s.error} role="alert">
-                <AlertCircle size={16} aria-hidden />
+              <div className={s.errorBox} role="alert">
+                <AlertCircle size={15} aria-hidden />
                 <span>{error}</span>
               </div>
             )}
 
-            <div className={s.fieldGroup}>
-              <div className={s.field}>
-                <label htmlFor="fullName" className={s.label}>
-                  نام کامل
-                </label>
-                <Input
-                  id="fullName"
-                  name="fullName"
-                  value={data.fullName}
-                  onChange={handleChange}
-                  placeholder="علی احمدی"
-                  autoComplete="name"
-                  aria-required="true"
-                />
+            <div className={s.fieldGrid}>
+              <div className={s.fieldCol}>
+                <label htmlFor="fullName" className={s.fieldLabel}>نام کامل</label>
+                <Input id="fullName" name="fullName" value={form.fullName} onChange={handleFormChange} placeholder="علی احمدی" autoComplete="name" aria-required="true" className={s.fieldInput} />
               </div>
-              <div className={s.field}>
-                <label htmlFor="nationalId" className={s.label}>
-                  شناسه ملی / تذکره
-                </label>
-                <Input
-                  id="nationalId"
-                  name="nationalId"
-                  value={data.nationalId}
-                  onChange={handleChange}
-                  placeholder="شماره تذکره یا شناسه ملی"
-                  dir="ltr"
-                  aria-required="true"
-                />
+              <div className={s.fieldCol}>
+                <label htmlFor="nationalId" className={s.fieldLabel}>شناسه ملی / تذکره</label>
+                <Input id="nationalId" name="nationalId" value={form.nationalId} onChange={handleFormChange} placeholder="شماره تذکره یا شناسه ملی" dir="ltr" aria-required="true" className={s.fieldInput} />
               </div>
-              <div className={s.field}>
-                <label htmlFor="dateOfBirth" className={s.label}>
-                  تاریخ تولد
-                </label>
-                <Input
-                  id="dateOfBirth"
-                  name="dateOfBirth"
-                  value={data.dateOfBirth}
-                  onChange={handleChange}
-                  placeholder="۱۳۷۰/۰۱/۰۱"
-                  dir="ltr"
-                  aria-required="true"
-                />
-                <span className={s.inputHint}>فرمت: ۱۴۰۰/۰۱/۰۱</span>
+              <div className={s.fieldCol}>
+                <label htmlFor="dateOfBirth" className={s.fieldLabel}>تاریخ تولد</label>
+                <Input id="dateOfBirth" name="dateOfBirth" value={form.dateOfBirth} onChange={handleFormChange} placeholder="۱۳۷۰/۰۱/۰۱" dir="ltr" aria-required="true" className={s.fieldInput} />
+                <span className={s.fieldHint}>فرمت: سال/ماه/روز</span>
               </div>
-              <div className={s.field}>
-                <label htmlFor="phone" className={s.label}>
-                  شماره موبایل
-                </label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  inputMode="tel"
-                  value={data.phone}
-                  onChange={handleChange}
-                  placeholder="+93700000000"
-                  dir="ltr"
-                  aria-required="true"
-                />
+              <div className={s.fieldCol}>
+                <label htmlFor="phone" className={s.fieldLabel}>شماره موبایل</label>
+                <Input id="phone" name="phone" type="tel" inputMode="tel" value={form.phone} onChange={handleFormChange} placeholder="+93700000000" dir="ltr" aria-required="true" className={s.fieldInput} />
               </div>
             </div>
           </div>
         )}
 
-        {/* Step 2 — Documents */}
+        {/* ── Step 2: Documents ── */}
         {step === 2 && (
           <div className={s.form}>
-            <div>
+            <div className={s.formHead}>
               <h2 className={s.formTitle}>آپلود مدارک</h2>
-              <p className={s.formDesc}>
-                لینک‌های HTTPS تصاویر مدرک خود را وارد کنید. فایل‌ها باید روی سرور شما آپلود شده
-                باشند.
-              </p>
+              <p className={s.formDesc}>تصویر واضح و خوانا از مدارک خود را آپلود کنید.</p>
             </div>
 
             {error && (
-              <div className={s.error} role="alert">
-                <AlertCircle size={16} aria-hidden />
+              <div className={s.errorBox} role="alert">
+                <AlertCircle size={15} aria-hidden />
                 <span>{error}</span>
               </div>
             )}
 
-            <div className={s.fieldGroup}>
-              <div className={s.field}>
-                <label htmlFor="selfieUrl" className={s.label}>
-                  عکس سلفی
-                </label>
-                <Input
-                  id="selfieUrl"
-                  name="selfieUrl"
-                  value={data.selfieUrl}
-                  onChange={handleChange}
-                  placeholder="https://..."
-                  dir="ltr"
-                  type="url"
-                  aria-required="true"
-                />
-              </div>
-              <div className={s.field}>
-                <label htmlFor="docFrontUrl" className={s.label}>
-                  روی مدرک
-                </label>
-                <Input
-                  id="docFrontUrl"
-                  name="docFrontUrl"
-                  value={data.docFrontUrl}
-                  onChange={handleChange}
-                  placeholder="https://..."
-                  dir="ltr"
-                  type="url"
-                  aria-required="true"
-                />
-              </div>
-              <div className={s.field}>
-                <label htmlFor="docBackUrl" className={s.label}>
-                  پشت مدرک{' '}
-                  <span style={{ color: 'var(--ds-text-muted)', fontWeight: 400 }}>(اختیاری)</span>
-                </label>
-                <Input
-                  id="docBackUrl"
-                  name="docBackUrl"
-                  value={data.docBackUrl}
-                  onChange={handleChange}
-                  placeholder="https://..."
-                  dir="ltr"
-                  type="url"
-                />
-              </div>
+            <div className={s.uploadGrid}>
+              <FileUploadZone
+                label="عکس سلفی"
+                hint="عکس با کیفیت از صورت خود بگیرید"
+                previewUrl={docs.selfiePreview}
+                onFile={(url, preview) => setDocs((d) => ({ ...d, selfieUrl: url, selfiePreview: preview }))}
+                required
+                disabled={isPending}
+              />
+              <FileUploadZone
+                label="روی مدرک"
+                hint="تصویر واضح جلو کارت ملی / تذکره"
+                previewUrl={docs.docFrontPreview}
+                onFile={(url, preview) => setDocs((d) => ({ ...d, docFrontUrl: url, docFrontPreview: preview }))}
+                required
+                disabled={isPending}
+              />
+              <FileUploadZone
+                label="پشت مدرک"
+                hint="اختیاری — پشت کارت ملی / تذکره"
+                previewUrl={docs.docBackPreview}
+                onFile={(url, preview) => setDocs((d) => ({ ...d, docBackUrl: url, docBackPreview: preview }))}
+                disabled={isPending}
+              />
+            </div>
+
+            <div className={s.uploadNotice}>
+              <ShieldCheck size={14} aria-hidden />
+              <span>تصاویر شما رمزنگاری‌شده ذخیره و فقط برای بررسی توسط تیم استفاده می‌شوند.</span>
             </div>
           </div>
         )}
 
-        {/* Step 3 — Review */}
+        {/* ── Step 3: Review ── */}
         {step === 3 && (
           <div className={s.form}>
-            <div>
-              <h2 className={s.formTitle}>بررسی نهایی</h2>
-              <p className={s.formDesc}>
-                اطلاعات زیر را بررسی کنید. پس از تأیید، مدارک برای بررسی ادمین ارسال می‌شوند.
-              </p>
+            <div className={s.formHead}>
+              <h2 className={s.formTitle}>بررسی و ارسال</h2>
+              <p className={s.formDesc}>اطلاعات زیر را بررسی کنید. پس از تأیید، پرونده شما ارسال می‌شود.</p>
             </div>
 
             <div className={s.reviewGrid}>
               {[
-                { key: 'نام', val: data.fullName },
-                { key: 'شناسه', val: data.nationalId },
-                { key: 'تاریخ تولد', val: data.dateOfBirth },
-                { key: 'موبایل', val: data.phone },
-                { key: 'سلفی', val: data.selfieUrl ? '✓ آپلود شده' : '—' },
-                { key: 'مدرک (رو)', val: data.docFrontUrl ? '✓ آپلود شده' : '—' },
-              ].map(({ key, val }) => (
-                <div key={key} className={s.reviewRow}>
-                  <span className={s.reviewKey}>{key}</span>
-                  <span className={s.reviewVal}>{val || '—'}</span>
+                { label: 'نام کامل', value: form.fullName },
+                { label: 'شناسه ملی', value: form.nationalId },
+                { label: 'تاریخ تولد', value: form.dateOfBirth },
+                { label: 'موبایل', value: form.phone },
+              ].map(({ label, value }) => (
+                <div key={label} className={s.reviewRow}>
+                  <span className={s.reviewLabel}>{label}</span>
+                  <span className={s.reviewValue}>{value || '—'}</span>
                 </div>
               ))}
+            </div>
+
+            <div className={s.docPreviews}>
+              {docs.selfiePreview && (
+                <div className={s.docPreviewItem}>
+                  <div className={s.docThumb}>
+                    <Image src={docs.selfiePreview} alt="سلفی" fill className={s.docThumbImg} unoptimized />
+                    <CheckCircle2 className={s.docThumbCheck} size={16} aria-hidden />
+                  </div>
+                  <span className={s.docThumbLabel}>سلفی</span>
+                </div>
+              )}
+              {docs.docFrontPreview && (
+                <div className={s.docPreviewItem}>
+                  <div className={s.docThumb}>
+                    <Image src={docs.docFrontPreview} alt="روی مدرک" fill className={s.docThumbImg} unoptimized />
+                    <CheckCircle2 className={s.docThumbCheck} size={16} aria-hidden />
+                  </div>
+                  <span className={s.docThumbLabel}>روی مدرک</span>
+                </div>
+              )}
+              {docs.docBackPreview && (
+                <div className={s.docPreviewItem}>
+                  <div className={s.docThumb}>
+                    <Image src={docs.docBackPreview} alt="پشت مدرک" fill className={s.docThumbImg} unoptimized />
+                    <CheckCircle2 className={s.docThumbCheck} size={16} aria-hidden />
+                  </div>
+                  <span className={s.docThumbLabel}>پشت مدرک</span>
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* Footer nav */}
+        {/* ── Footer Nav ── */}
         <div className={s.footer}>
-          <span className={s.stepHint}>
-            گام {step} از {STEPS.length}
-          </span>
-
-          <div style={{ display: 'flex', gap: 'var(--ds-space-2)' }}>
+          <span className={s.stepCounter}>گام {step} از {STEPS.length}</span>
+          <div className={s.footerActions}>
             {step > 1 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setStep(step - 1)}
-                disabled={isPending}
-              >
+              <Button variant="outline" size="sm" onClick={() => setStep((s) => (s - 1) as 1 | 2 | 3)} disabled={isPending}>
                 <ArrowRight size={14} aria-hidden />
                 قبلی
               </Button>
             )}
-
             {step < 3 && (
-              <Button
-                size="sm"
-                onClick={step === 1 ? handleStep1 : handleStep2}
-                disabled={isPending}
-              >
-                {isPending ? 'در حال ارسال...' : 'بعدی'}
+              <Button size="sm" onClick={step === 1 ? handleStep1 : handleStep2} disabled={isPending}>
+                {isPending ? 'در حال پردازش...' : 'بعدی'}
                 {!isPending && <ArrowLeft size={14} aria-hidden />}
               </Button>
             )}
-
             {step === 3 && (
               <Button size="sm" onClick={handleFinish} disabled={isPending}>
                 <ShieldCheck size={14} aria-hidden />

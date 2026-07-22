@@ -569,7 +569,7 @@ export function WalletClient({ walletData }: Props) {
     <div className={s.page}>
       {/* KYC Banner */}
       {!kycApproved && (
-        <output className={s.kycBanner}>
+        <div className={s.kycBanner} role="alert">
           <ShieldAlert
             size={18}
             aria-hidden
@@ -596,7 +596,7 @@ export function WalletClient({ walletData }: Props) {
           <Link href="/dashboard/kyc" className={s.kycBannerLink} aria-label="احراز هویت">
             تکمیل ←
           </Link>
-        </output>
+        </div>
       )}
 
       {/* Hero Balance Card */}

@@ -154,12 +154,13 @@ AI «تمام شد» می‌گوید ولی:
 2. آیا `npx tsc --noEmit` سبز است؟
 3. آیا همه callers و وابستگی‌ها آپدیت شدند؟
 4. آیا گزارش post-task را نوشتم؟
+→ برای چک‌لیست کامل: `AGENTS.19dqg.md §Lite` یا `§Standard` یا `§Full` (بسته به سطح تسک)
 
 ---
 
-## 🛡️ بُعدهای نُه‌گانهٔ کیفیت — اشتباهات رایج (2026-07)
+## 🛡️ بُعدهای ۱۹‌گانهٔ کیفیت — اشتباهات رایج (2026-07)
 
-این بخش تکمیل‌کنندهٔ **Nine-Dimension Quality Gate** در `AGENTS.md §Nine-Dimension Quality Gate` است.
+این بخش تکمیل‌کنندهٔ **19DQG** در `AGENTS.19dqg.md §Full` است.
 برای هر بُعد، نشانه و جلوگیری ذکر شده.
 
 ### 26. Missing Dependency Update (بُعد 2 — وابستگی فراموش شده)
@@ -197,7 +198,7 @@ AI شاخه‌هایی می‌سازد که فقط `console.log` یا `throw new
 AI می‌داند راهکار بهتری وجود دارد ولی ساکت پیش می‌رود.
 **نشانه**: کاربر بعداً می‌پرسد «چرا X را انجام دادی؟ Y بهتر نبود؟»
 **Prevention**: قبل از کد نوشتن، نتیجهٔ Research Gate را **صریحاً** در همان پیام به کاربر بگو. اگر راهکار بهتری وجود داشت ولی به دلایل scope/time اعمال نشد → در گزارش `⚠️ ناقص` ذکر کن.
-**AGENTS.md patch**: هر بار این اتفاق افتاد، مثال واقعی را به `§Pre-code Research Gate` اضافه کن.
+**AGENTS.md patch**: هر بار این اتفاق افتاد، مثال واقعی را به `🚦 PRE-CODE GATE` در `AGENTS.md` اضافه کن (ردیف Research).
 
 ### 32. Cross-section Inconsistency (بُعد 8 — ناهماهنگی بین بخش‌ها)
 
@@ -256,7 +257,8 @@ AI خروجی بصری می‌دهد که «کار می‌کند ولی معمو
 **نشانه‌های رایج**: Inter + گرادیان بنفش؛ ۳ کارت گرد یکسان؛ هیچ micro-interaction؛ بدون هویت.
 **Prevention**:
 - قبل از اعلام تمام روی UI task، روبربر §9.3 از `pdk/design-cycle.md` را چک کن
-- Craft Bar §3.6 را یک‌به‌یک مرور کن (عمق، motion، typography، restraint، wow moment)
+- Craft Bar را یک‌به‌یک مرور کن (→ `AGENTS.uidqg.md §Craft Bar`)
+- UIDQG کامل را اجرا کن (→ `AGENTS.uidqg.md`)
 - اگر خروجی را Wise یا Linear منتشر نمی‌کرد → شکست است، برگرد و redesign کن
 
 ### 39. Database Safety Skip (D14 — migration ناامن)

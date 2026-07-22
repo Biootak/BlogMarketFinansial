@@ -3,15 +3,17 @@
 import { type BillingAddressData, saveBillingAddress } from '@/actions/billingAddressActions';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import {
-  HiOutlineBuildingOffice2,
-  HiOutlineCheck,
-  HiOutlineEnvelope,
-  HiOutlineHome,
-  HiOutlineMapPin,
-  HiOutlinePhone,
-  HiOutlineUser,
-} from 'react-icons/hi2';
+  AlertCircle,
+  Building2,
+  CheckCircle2,
+  Loader2,
+  Mail,
+  MapPin,
+  Phone,
+  User,
+} from 'lucide-react';
 import { useCallback, useState, useTransition } from 'react';
+import s from './BillingAddress.module.css';
 
 type Props = { initial: BillingAddressData | null };
 
@@ -40,11 +42,27 @@ export function BillingAddressForm({ initial }: Props) {
     phoneNumber: initial?.phoneNumber ?? '',
   });
 
-  const set = (key: keyof BillingAddressData) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setForm((prev) => ({ ...prev, [key]: e.target.value }));
+  const set =
+    (key: keyof BillingAddressData) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      setForm((prev) => ({ ...prev, [key]: e.target.value }));
+      setSaved(false);
+      setError(null);
+    };
+
+  const handleReset = useCallback(() => {
+    setForm({
+      country: initial?.country ?? 'af',
+      province: initial?.province ?? '',
+      city: initial?.city ?? '',
+      address: initial?.address ?? '',
+      postalCode: initial?.postalCode ?? '',
+      recipientName: initial?.recipientName ?? '',
+      phoneNumber: initial?.phoneNumber ?? '',
+    });
     setSaved(false);
     setError(null);
-  };
+  }, [initial]);
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -64,7 +82,7 @@ export function BillingAddressForm({ initial }: Props) {
   );
 
   return (
-    <>
+    <div className={s.page} dir="rtl">
       <PageHeader
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'آدرس صورتحساب' }]}
         eyebrow="صورتحساب"
@@ -72,147 +90,168 @@ export function BillingAddressForm({ initial }: Props) {
         description="آدرسی که فاکتورها و صورتحساب‌های دوره‌ای به آن ارسال می‌شود"
       />
 
-      <form onSubmit={handleSubmit} className="at-form">
-        {error && (
-          <div className="at-alert at-alert--error" role="alert">
-            {error}
-          </div>
-        )}
-        {saved && (
-          <div className="at-alert at-alert--success" role="status">
-            آدرس با موفقیت ذخیره شد.
-          </div>
-        )}
+      {error && (
+        <div className={s.alertError} role="alert">
+          <AlertCircle size={16} className={s.alertIcon} aria-hidden />
+          <span>{error}</span>
+        </div>
+      )}
+      {saved && (
+        <div className={s.alertSuccess} role="status">
+          <CheckCircle2 size={16} className={s.alertIcon} aria-hidden />
+          <span>آدرس با موفقیت ذخیره شد.</span>
+        </div>
+      )}
 
-        <div className="at-form-section">
-          <div className="at-form-section__head">
-            <div className="at-form-section__title">
-              <span className="at-form-section__ico">
-                <HiOutlineMapPin className="size-4" />
-              </span>
-              <div>
-                <div className="at-form-section__title-text">آدرس</div>
-                <div className="at-form-section__sub">اطلاعات برای صدور فاکتور رسمی استفاده می‌شود</div>
-              </div>
+      <form onSubmit={handleSubmit}>
+        <div className={s.formCard}>
+          {/* ── Header ── */}
+          <div className={s.formCardHead}>
+            <div className={s.formCardHeadIcon} aria-hidden>
+              <MapPin size={18} />
+            </div>
+            <div className={s.formCardHeadText}>
+              <h2 className={s.formCardTitle}>اطلاعات آدرس</h2>
+              <p className={s.formCardDesc}>
+                اطلاعات برای صدور فاکتور رسمی و ارسال رسیدها استفاده می‌شود.
+              </p>
             </div>
           </div>
 
-          <div className="at-form-section__body">
-            <div className="at-form-grid">
-              <label className="at-field">
-                <span className="at-field__label">
-                  <HiOutlineUser className="at-field__ico size-4" />
+          {/* ── Fields ── */}
+          <div className={s.formCardBody}>
+            <div className={s.grid}>
+              {/* نام گیرنده */}
+              <label className={s.field}>
+                <span className={s.label}>
+                  <User size={14} className={s.labelIcon} aria-hidden />
                   نام گیرنده
                 </span>
                 <input
                   type="text"
-                  className="at-input"
+                  className={s.input}
                   placeholder="نام و نام خانوادگی"
                   value={form.recipientName ?? ''}
                   onChange={set('recipientName')}
+                  required
                 />
               </label>
 
-              <label className="at-field">
-                <span className="at-field__label">
-                  <HiOutlinePhone className="at-field__ico size-4" />
+              {/* شماره تماس */}
+              <label className={s.field}>
+                <span className={s.label}>
+                  <Phone size={14} className={s.labelIcon} aria-hidden />
                   شماره تماس
                 </span>
                 <input
                   type="tel"
                   dir="ltr"
-                  className="at-input"
+                  className={s.input}
                   placeholder="+93700000000"
                   value={form.phoneNumber ?? ''}
                   onChange={set('phoneNumber')}
                 />
               </label>
 
-              <label className="at-field">
-                <span className="at-field__label">
-                  <HiOutlineMapPin className="at-field__ico at-field__ico--emerald size-4" />
+              {/* کشور */}
+              <label className={s.field}>
+                <span className={s.label}>
+                  <MapPin size={14} className={s.labelIcon} data-color="emerald" aria-hidden />
                   کشور
                 </span>
-                <select className="at-select" value={form.country ?? 'af'} onChange={set('country')}>
+                <select className={s.select} value={form.country ?? 'af'} onChange={set('country')}>
                   {COUNTRIES.map((c) => (
-                    <option key={c.value} value={c.value}>{c.label}</option>
+                    <option key={c.value} value={c.value}>
+                      {c.label}
+                    </option>
                   ))}
                 </select>
               </label>
 
-              <label className="at-field">
-                <span className="at-field__label">
-                  <HiOutlineBuildingOffice2 className="at-field__ico at-field__ico--blue size-4" />
+              {/* استان / ولایت */}
+              <label className={s.field}>
+                <span className={s.label}>
+                  <Building2 size={14} className={s.labelIcon} data-color="blue" aria-hidden />
                   استان / ولایت
                 </span>
                 <input
                   type="text"
-                  className="at-input"
+                  className={s.input}
                   placeholder="مثلاً: کابل"
                   value={form.province ?? ''}
                   onChange={set('province')}
                 />
               </label>
 
-              <label className="at-field">
-                <span className="at-field__label">
-                  <HiOutlineBuildingOffice2 className="at-field__ico size-4" />
+              {/* شهر */}
+              <label className={s.field}>
+                <span className={s.label}>
+                  <Building2 size={14} className={s.labelIcon} aria-hidden />
                   شهر
                 </span>
                 <input
                   type="text"
-                  className="at-input"
+                  className={s.input}
                   placeholder="مثلاً: کابل"
                   value={form.city ?? ''}
                   onChange={set('city')}
                 />
               </label>
 
-              <label className="at-field">
-                <span className="at-field__label">
-                  <HiOutlineHome className="at-field__ico size-4" />
-                  آدرس کامل
-                </span>
-                <input
-                  type="text"
-                  className="at-input"
-                  placeholder="خیابان، کوچه، پلاک"
-                  value={form.address ?? ''}
-                  onChange={set('address')}
-                />
-              </label>
-
-              <label className="at-field">
-                <span className="at-field__label">
-                  <HiOutlineEnvelope className="at-field__ico size-4" />
+              {/* کد پستی */}
+              <label className={s.field}>
+                <span className={s.label}>
+                  <Mail size={14} className={s.labelIcon} data-color="amber" aria-hidden />
                   کد پستی
                 </span>
                 <input
                   type="text"
                   dir="ltr"
-                  className="at-input"
+                  className={s.input}
                   placeholder="کد پستی"
                   value={form.postalCode ?? ''}
                   onChange={set('postalCode')}
                 />
               </label>
+
+              {/* آدرس کامل — full width */}
+              <label className={`${s.field} ${s.gridFull}`}>
+                <span className={s.label}>
+                  <MapPin size={14} className={s.labelIcon} aria-hidden />
+                  آدرس کامل
+                </span>
+                <input
+                  type="text"
+                  className={s.input}
+                  placeholder="خیابان، کوچه، پلاک"
+                  value={form.address ?? ''}
+                  onChange={set('address')}
+                />
+              </label>
             </div>
           </div>
-        </div>
 
-        <div
-          className="at-form-section"
-          style={{ marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px', padding: '14px 20px' }}
-        >
-          <button type="button" className="at-btn at-btn--ghost" onClick={() => setForm({ country: initial?.country ?? 'af', province: initial?.province ?? '', city: initial?.city ?? '', address: initial?.address ?? '', postalCode: initial?.postalCode ?? '', recipientName: initial?.recipientName ?? '', phoneNumber: initial?.phoneNumber ?? '' })}>
-            انصراف
-          </button>
-          <button type="submit" disabled={isPending} className="at-btn at-btn--primary">
-            <HiOutlineCheck className="size-4" />
-            {isPending ? 'در حال ذخیره...' : 'ذخیره آدرس'}
-          </button>
+          {/* ── Footer ── */}
+          <div className={s.formFooter}>
+            <button type="button" className={s.btnGhost} onClick={handleReset} disabled={isPending}>
+              انصراف
+            </button>
+            <button type="submit" disabled={isPending} className={s.btnPrimary}>
+              {isPending ? (
+                <>
+                  <Loader2 size={15} className={s.spinner} aria-hidden />
+                  در حال ذخیره...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 size={15} aria-hidden />
+                  ذخیره آدرس
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </form>
-    </>
+    </div>
   );
 }
