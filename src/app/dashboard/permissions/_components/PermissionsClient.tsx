@@ -1,16 +1,15 @@
 'use client';
 
 /**
- * PermissionsClient — 2026 Million-Dollar RBAC Permission Matrix
+ * PermissionsClient — 2026 Atelier RBAC
  *
- * معماری UI:
- * - دو حالت دید: "ماتریس" (سنتی) و "نقش‌محور" (focus روی یک نقش)
- * - Role Health Cards با ریسک‌نمایی (نقش بدون مجوز = warning)
- * - Batch select: انتخاب چندین مجوز و اعمال همزمان
- * - Tooltip مجوز: ادمین بدون دانش فنی هم می‌فهمد چه مجوزی چیست
- * - Quick-assign chips با رنگ نقش
- * - Permission templates برای onboarding
- * - Keyboard shortcut: ⌘K / Ctrl+K برای جستجو
+ * زبان بصری: AtelierDeck (at-tile / at-grid / radial gradient / SVG mark / sparkline)
+ * - Hero command tile: gradient پس‌زمینه + SVG shield mark + stats + actions
+ * - Role cards: at-tile با رنگ نقش، progress arc SVG، health indicator
+ * - Matrix: at-tile table با sticky header، checkbox رنگ‌محور، batch ops
+ * - Role-focus: دو ستون at-tile برای مجوزهای فعال/غیرفعال
+ * - Templates dialog: کارت‌های at-tile کوچک
+ * - فونت انگلیسی: Inter + JetBrains Mono
  */
 
 import {
@@ -20,7 +19,7 @@ import {
   deletePermission,
   saveRoleMatrix,
 } from '@/actions/permission-actions';
-import { ConfirmDialog, EmptyState, PageHeader } from '@/components/Dashboard/primitives';
+import { ConfirmDialog, EmptyState } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -44,6 +43,7 @@ import {
   Key,
   LayoutGrid,
   Layers,
+  Lock,
   Plus,
   RotateCcw,
   Save,
@@ -55,7 +55,15 @@ import {
   X,
   Zap,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
 import s from './PermissionsClient.module.css';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -76,16 +84,19 @@ const ROLE_FA: Record<string, string> = {
   EXCHANGE: 'صراف',
   SUPPORT: 'پشتیبانی',
   ADMIN: 'مدیر',
+  SUPERADMIN: 'سوپرادمین',
+  OWNER: 'مالک',
 };
 
 const ROLE_DESC: Record<string, string> = {
   CUSTOMER: 'مشتری عادی — دسترسی محدود به عملیات شخصی و کیف پول.',
   MERCHANT: 'فروشنده — دسترسی به مدیریت پرداخت‌ها، معاملات تجاری و تسویه.',
   EXCHANGE: 'نماینده صرافی — قیمت‌گذاری، تسویه و مدیریت نرخ‌ها.',
-  SUPPORT: 'پشتیبانی — دسترسی read-only روی موجودیت‌های حساس برای کمک به کاربران.',
+  SUPPORT: 'پشتیبانی — دسترسی read-only روی موجودیت‌های حساس.',
   ADMIN: 'مدیر محتوا و کاربران پلتفرم — دسترسی کامل داشبورد.',
 };
 
+// رنگ هر نقش — از nova tokens پروژه
 const ROLE_COLOR: Record<string, string> = {
   CUSTOMER: 'var(--nova-cyan)',
   MERCHANT: 'var(--nova-violet)',
@@ -94,12 +105,13 @@ const ROLE_COLOR: Record<string, string> = {
   ADMIN: 'var(--ds-brand-500)',
 };
 
-const ROLE_ICON: Record<string, string> = {
-  CUSTOMER: '👤',
-  MERCHANT: '🏪',
-  EXCHANGE: '💱',
-  SUPPORT: '🎧',
-  ADMIN: '⚙️',
+// رنگ tone برای at-hero__quick-item compat
+const ROLE_TONE: Record<string, string> = {
+  CUSTOMER: 'info',
+  MERCHANT: 'violet',
+  EXCHANGE: 'gold',
+  SUPPORT: 'accent',
+  ADMIN: 'accent',
 };
 
 const CAT_FA: Record<string, string> = {
@@ -118,9 +130,26 @@ const CAT_FA: Record<string, string> = {
   fraud: 'تقلب',
 };
 
-// ─── Suggested templates برای onboarding ─────────────────────────────────────
+// CAT icon — برای header گروه‌ها
+const CAT_ICON: Record<string, string> = {
+  wallet: '💳',
+  transfer: '↔',
+  quote: '📈',
+  deal: '🤝',
+  settlement: '⚖',
+  kyc: '🪪',
+  user: '👥',
+  report: '📊',
+  exchange: '💱',
+  admin: '⚙',
+  permissions: '🔑',
+  audit: '📋',
+  fraud: '🚨',
+};
 
-const PERMISSION_TEMPLATES: Array<{ key: string; description: string; category: string }> = [
+// ─── Permission Templates ──────────────────────────────────────────────────────
+
+const PERMISSION_TEMPLATES = [
   { key: 'wallet:read', description: 'مشاهده کیف پول', category: 'wallet' },
   { key: 'wallet:deposit', description: 'واریز به کیف پول', category: 'wallet' },
   { key: 'wallet:withdraw', description: 'برداشت از کیف پول', category: 'wallet' },
@@ -136,21 +165,114 @@ const PERMISSION_TEMPLATES: Array<{ key: string; description: string; category: 
   { key: 'audit:read', description: 'مشاهده لاگ‌های سیستم', category: 'audit' },
 ];
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Helpers ───────────────────────────────────────────────────────────────────
 
-function parseCategory(key: string): string {
-  const resource = key.split(':')[0] ?? key;
-  return CAT_FA[resource] ?? resource;
+function getCatKey(key: string): string {
+  return key.split(':')[0] ?? key;
 }
 
-function getCatFaKey(key: string): string {
-  const resource = key.split(':')[0] ?? key;
-  return resource;
+// ─── SVG Progress Arc ─────────────────────────────────────────────────────────
+
+function ProgressArc({
+  pct,
+  color,
+  size = 56,
+}: {
+  pct: number;
+  color: string;
+  size?: number;
+}) {
+  const r = (size - 6) / 2;
+  const circ = 2 * Math.PI * r;
+  const dash = (pct / 100) * circ;
+  const cx = size / 2;
+  const cy = size / 2;
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      aria-hidden
+      className={s.progressArc}
+      style={{ '--arc-color': color } as React.CSSProperties}
+    >
+      {/* Track */}
+      <circle
+        cx={cx}
+        cy={cy}
+        r={r}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={3}
+        opacity={0.12}
+      />
+      {/* Progress */}
+      <circle
+        cx={cx}
+        cy={cy}
+        r={r}
+        fill="none"
+        stroke={color}
+        strokeWidth={3}
+        strokeLinecap="round"
+        strokeDasharray={`${dash} ${circ - dash}`}
+        strokeDashoffset={circ * 0.25} /* start at top */
+        className={s.progressArcFill}
+        style={{ filter: `drop-shadow(0 0 4px color-mix(in oklch, ${color} 40%, transparent))` }}
+      />
+    </svg>
+  );
 }
 
-// ─── RoleHealthCard ───────────────────────────────────────────────────────────
+// ─── SVG Shield Brand Mark ────────────────────────────────────────────────────
 
-function RoleHealthCard({
+function ShieldMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 200 200"
+      className={className}
+      aria-hidden
+    >
+      <defs>
+        <radialGradient id="shield-grad" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="var(--at-accent)" stopOpacity="0.18" />
+          <stop offset="60%" stopColor="var(--at-gold)" stopOpacity="0.08" />
+          <stop offset="100%" stopColor="var(--at-gold)" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <circle cx="100" cy="100" r="92" fill="url(#shield-grad)" />
+      <g className={s.markSpin}>
+        <circle cx="100" cy="100" r="86" fill="none" stroke="currentColor" strokeWidth="0.6" opacity="0.3" />
+        <circle cx="100" cy="100" r="70" fill="none" stroke="currentColor" strokeWidth="0.6" opacity="0.2" />
+        {/* Shield path */}
+        <path
+          d="M100 28 L152 52 L152 100 Q152 140 100 168 Q48 140 48 100 L48 52 Z"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="0.9"
+          opacity="0.45"
+        />
+        {/* Inner detail */}
+        <path
+          d="M100 44 L140 64 L140 100 Q140 130 100 152 Q60 130 60 100 L60 64 Z"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="0.6"
+          opacity="0.25"
+        />
+        {/* Lock icon inside shield */}
+        <rect x="88" y="92" width="24" height="18" rx="3" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.4" />
+        <path d="M93 92 Q93 82 100 82 Q107 82 107 92" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.4" />
+        <circle cx="100" cy="101" r="2.5" fill="currentColor" opacity="0.35" />
+      </g>
+    </svg>
+  );
+}
+
+// ─── Role Health Card ─────────────────────────────────────────────────────────
+
+function RoleCard({
   role,
   total,
   granted,
@@ -169,93 +291,99 @@ function RoleHealthCard({
   onClearAll: () => void;
   isSuperAdmin: boolean;
 }) {
-  const [showActions, setShowActions] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const pct = total > 0 ? Math.round((granted / total) * 100) : 0;
   const isEmpty = granted === 0 && total > 0;
   const isFull = granted === total && total > 0;
+  const color = ROLE_COLOR[role] ?? 'var(--at-fg-muted)';
 
   return (
     <div
-      className={`${s.roleCard} ${isSelected ? s.roleCardSelected : ''} ${isEmpty ? s.roleCardEmpty : ''}`}
-      style={{ '--role-color': ROLE_COLOR[role] } as React.CSSProperties}
+      className={`${s.roleCard} ${isSelected ? s.roleCardActive : ''} ${isEmpty ? s.roleCardEmpty : ''}`}
+      style={{ '--rc-color': color } as React.CSSProperties}
       onClick={onSelect}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(); } }}
       aria-pressed={isSelected}
-      aria-label={`نقش ${ROLE_FA[role]} — ${pct}٪ مجوز`}
+      aria-label={`نقش ${ROLE_FA[role]} — ${pct}٪`}
     >
-      <div className={s.roleCardHeader}>
-        <div className={s.roleCardDot} aria-hidden />
+      {/* Top bar indicator when selected */}
+      {isSelected && <div className={s.roleCardBar} aria-hidden />}
+
+      {/* Ambient glow circle — decorative */}
+      <div className={s.roleCardGlow} aria-hidden />
+
+      {/* Header */}
+      <div className={s.roleCardTop}>
+        <div className={s.roleCardDotWrap}>
+          <span className={s.roleCardDot} aria-hidden />
+        </div>
         <span className={s.roleCardName}>{ROLE_FA[role]}</span>
         {isEmpty && (
-          <span className={s.roleCardBadge} data-variant="warning" title="این نقش هیچ مجوزی ندارد">
-            <ShieldOff size={10} aria-hidden />
-            بدون مجوز
+          <span className={s.roleCardWarning} title="هیچ مجوزی ندارد">
+            <ShieldOff size={9} aria-hidden />
           </span>
         )}
         {isFull && (
-          <span className={s.roleCardBadge} data-variant="success">
-            <ShieldCheck size={10} aria-hidden />
-            کامل
+          <span className={s.roleCardFull} title="دسترسی کامل">
+            <ShieldCheck size={9} aria-hidden />
           </span>
         )}
       </div>
 
-      <div className={s.roleCardStats}>
-        <span className={s.roleCardGranted}>{granted}</span>
-        <span className={s.roleCardOf}>از</span>
-        <span className={s.roleCardTotal}>{total}</span>
+      {/* Arc + number */}
+      <div className={s.roleCardMid}>
+        <div className={s.roleCardArcWrap}>
+          <ProgressArc pct={pct} color={color} size={52} />
+          <span className={s.roleCardPctOverlay}>{pct}</span>
+        </div>
+        <div className={s.roleCardNums}>
+          <span className={s.roleCardGranted}>{granted}</span>
+          <span className={s.roleCardSlash}>/</span>
+          <span className={s.roleCardTotal}>{total}</span>
+        </div>
       </div>
 
-      <div className={s.roleCardBar} aria-hidden>
-        <div
-          className={s.roleCardBarFill}
-          style={{ '--pct': `${pct}%` } as React.CSSProperties}
-        />
-      </div>
-
-      <div className={s.roleCardFooter}>
-        <span className={s.roleCardPct}>{pct}٪ دسترسی</span>
+      {/* Role label + actions */}
+      <div className={s.roleCardBottom}>
+        <span className={s.roleCardLabel}>مجوز فعال</span>
         {isSuperAdmin && (
           <div
-            className={s.roleCardActions}
+            className={s.roleCardMenuWrap}
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           >
             <button
               type="button"
-              className={s.roleCardMenuBtn}
-              onClick={() => setShowActions((v) => !v)}
+              className={s.roleCardMenuTrigger}
+              onClick={() => setMenuOpen((v) => !v)}
               aria-label={`گزینه‌های ${ROLE_FA[role]}`}
-              aria-expanded={showActions}
+              aria-expanded={menuOpen}
             >
-              <ChevronDown size={11} aria-hidden />
+              <ChevronDown size={10} aria-hidden />
             </button>
-            {showActions && (
-              <div
-                className={s.roleCardMenu}
-                onMouseLeave={() => setShowActions(false)}
-              >
-                <div className={s.roleCardMenuTitle}>
+            {menuOpen && (
+              <div className={s.roleCardMenu} onMouseLeave={() => setMenuOpen(false)}>
+                <div className={s.roleCardMenuDesc}>
                   <Info size={10} aria-hidden />
-                  {ROLE_DESC[role]}
+                  <span>{ROLE_DESC[role]}</span>
                 </div>
                 <div className={s.roleCardMenuDivider} />
                 <button
                   type="button"
                   className={s.roleCardMenuItem}
-                  onClick={() => { onSelectAll(); setShowActions(false); }}
+                  onClick={() => { onSelectAll(); setMenuOpen(false); }}
                 >
-                  <CheckCircle2 size={12} aria-hidden />
+                  <CheckCircle2 size={11} aria-hidden />
                   فعال‌کردن همه
                 </button>
                 <button
                   type="button"
-                  className={s.roleCardMenuItem}
-                  onClick={() => { onClearAll(); setShowActions(false); }}
+                  className={s.roleCardMenuItemDanger}
+                  onClick={() => { onClearAll(); setMenuOpen(false); }}
                 >
-                  <X size={12} aria-hidden />
+                  <X size={11} aria-hidden />
                   غیرفعال‌کردن همه
                 </button>
               </div>
@@ -263,60 +391,58 @@ function RoleHealthCard({
           </div>
         )}
       </div>
-
-      {isSelected && <div className={s.roleCardSelectedIndicator} aria-hidden />}
     </div>
   );
 }
 
-// ─── SuperAdminCard ───────────────────────────────────────────────────────────
+// ─── SuperAdmin Card ──────────────────────────────────────────────────────────
 
-function SuperAdminCard({ total }: { total: number }) {
+function SuperAdminRoleCard({ total }: { total: number }) {
   return (
     <div className={`${s.roleCard} ${s.roleCardSuperAdmin}`}>
-      <div className={s.roleCardHeader}>
-        <ShieldAlert size={13} className={s.superAdminIcon} aria-hidden />
-        <span className={s.roleCardName}>SUPERADMIN</span>
+      <div className={s.roleCardGlow} aria-hidden />
+      <div className={s.roleCardTop}>
+        <ShieldAlert size={12} className={s.roleCardSuperAdminIcon} aria-hidden />
+        <span className={s.roleCardName}>{ROLE_FA.SUPERADMIN}</span>
       </div>
-      <div className={s.roleCardStats}>
-        <span className={s.roleCardGranted}>{total}</span>
-        <span className={s.roleCardOf}>از</span>
-        <span className={s.roleCardTotal}>{total}</span>
+      <div className={s.roleCardMid}>
+        <div className={s.roleCardArcWrap}>
+          <ProgressArc pct={100} color="var(--ds-brand-500)" size={52} />
+          <span className={s.roleCardPctOverlay}>100</span>
+        </div>
+        <div className={s.roleCardNums}>
+          <span className={s.roleCardGranted}>{total}</span>
+          <span className={s.roleCardSlash}>/</span>
+          <span className={s.roleCardTotal}>{total}</span>
+        </div>
       </div>
-      <div className={s.roleCardBar}>
-        <div className={s.roleCardBarFill} style={{ '--pct': '100%' } as React.CSSProperties} />
-      </div>
-      <div className={s.roleCardFooter}>
-        <span className={s.roleCardPct}>۱۰۰٪ دسترسی</span>
-        <span className={s.superAdminLabel}>read-only</span>
+      <div className={s.roleCardBottom}>
+        <span className={s.roleCardLabel}>دسترسی کامل</span>
+        <span className={s.roleCardReadOnly}>read-only</span>
       </div>
     </div>
   );
 }
 
-// ─── PermissionTooltip ────────────────────────────────────────────────────────
+// ─── Permission Tooltip ────────────────────────────────────────────────────────
 
-function PermTooltip({ perm }: { perm: PermissionRow }) {
+function PermTooltip({ text }: { text: string }) {
   const [show, setShow] = useState(false);
-  if (!perm.description) return null;
-
   return (
-    <span className={s.permTooltipWrap}>
+    <span className={s.tooltipWrap}>
       <button
         type="button"
-        className={s.permTooltipBtn}
+        className={s.tooltipTrigger}
         onMouseEnter={() => setShow(true)}
         onMouseLeave={() => setShow(false)}
         onFocus={() => setShow(true)}
         onBlur={() => setShow(false)}
-        aria-label={`توضیح: ${perm.description}`}
+        aria-label={`توضیح: ${text}`}
       >
-        <Info size={11} aria-hidden />
+        <Info size={10} aria-hidden />
       </button>
       {show && (
-        <div className={s.permTooltip} role="tooltip">
-          {perm.description}
-        </div>
+        <span className={s.tooltipContent} role="tooltip">{text}</span>
       )}
     </span>
   );
@@ -326,6 +452,7 @@ function PermTooltip({ perm }: { perm: PermissionRow }) {
 
 export default function PermissionsClient({ permissions, matrix, currentUserRole }: Props) {
   const { toast } = useToast();
+  const heroGradId = useId();
   const [isPending, startTransition] = useTransition();
 
   // ── Local Matrix State ────────────────────────────────────────────────────
@@ -338,7 +465,6 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
     }
     return map;
   });
-
   const [dirty, setDirty] = useState(false);
   const originalRef = useRef<Record<string, boolean>>({ ...localMatrix });
 
@@ -354,9 +480,8 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
   const [catFilter, setCatFilter] = useState<string>('all');
   const searchRef = useRef<HTMLInputElement>(null);
 
-  // ── Batch Selection ───────────────────────────────────────────────────────
+  // ── Batch ────────────────────────────────────────────────────────────────
   const [batchSelected, setBatchSelected] = useState<Set<string>>(new Set());
-  const [showBatchPanel, setShowBatchPanel] = useState(false);
 
   // ── Dialogs ───────────────────────────────────────────────────────────────
   const [showAdd, setShowAdd] = useState(false);
@@ -364,24 +489,17 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
   const [newDesc, setNewDesc] = useState('');
   const [addPending, startAddTransition] = useTransition();
   const [showTemplates, setShowTemplates] = useState(false);
-
   const [deletePending, startDeleteTransition] = useTransition();
   const [deleteTarget, setDeleteTarget] = useState<PermissionRow | null>(null);
 
-  // ── Keyboard shortcut: ⌘K / Ctrl+K ───────────────────────────────────────
+  // ── Keyboard ⌘K ──────────────────────────────────────────────────────────
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        searchRef.current?.focus();
-      }
-      if (e.key === 'Escape' && batchSelected.size > 0) {
-        setBatchSelected(new Set());
-        setShowBatchPanel(false);
-      }
+    const h = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); searchRef.current?.focus(); }
+      if (e.key === 'Escape' && batchSelected.size > 0) setBatchSelected(new Set());
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
   }, [batchSelected]);
 
   // ── Derived Data ──────────────────────────────────────────────────────────
@@ -389,50 +507,51 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
   const visiblePerms = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return localPerms.filter((p) => {
-      if (catFilter !== 'all' && getCatFaKey(p.key) !== catFilter) return false;
-      if (viewMode === 'role-focus' && focusedRole) {
-        // در حالت role-focus، فقط مجوزهای مرتبط را نشان بده
-        if (searchQuery === '') return true;
-      }
+      if (catFilter !== 'all' && getCatKey(p.key) !== catFilter) return false;
       if (!q) return true;
       return p.key.toLowerCase().includes(q) || (p.description ?? '').toLowerCase().includes(q);
     });
-  }, [localPerms, searchQuery, catFilter, viewMode, focusedRole]);
+  }, [localPerms, searchQuery, catFilter]);
 
-  const categories = useMemo(() => {
-    return Array.from(new Set(localPerms.map((p) => getCatFaKey(p.key)))).sort((a, b) =>
-      a.localeCompare(b, 'fa'),
-    );
-  }, [localPerms]);
+  const categories = useMemo(() =>
+    Array.from(new Set(localPerms.map((p) => getCatKey(p.key)))).sort((a, b) => a.localeCompare(b, 'fa')),
+    [localPerms]
+  );
 
   const grouped = useMemo(() => {
-    const groups: Record<string, PermissionRow[]> = {};
-    for (const perm of visiblePerms) {
-      const cat = getCatFaKey(perm.key);
-      if (!groups[cat]) groups[cat] = [];
-      groups[cat]?.push(perm);
+    const g: Record<string, PermissionRow[]> = {};
+    for (const p of visiblePerms) {
+      const cat = getCatKey(p.key);
+      if (!g[cat]) g[cat] = [];
+      g[cat]!.push(p);
     }
-    return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b, 'fa'));
+    return Object.entries(g).sort(([a], [b]) => a.localeCompare(b, 'fa'));
   }, [visiblePerms]);
 
-  const changeCount = useMemo(() => {
-    return Object.entries(localMatrix).filter(([k, v]) => originalRef.current[k] !== v).length;
-  }, [localMatrix]);
+  const changeCount = useMemo(() =>
+    Object.entries(localMatrix).filter(([k, v]) => originalRef.current[k] !== v).length,
+    [localMatrix]
+  );
 
-  // مجوزهای نقش focused
+  const totalGranted = useMemo(() =>
+    EDITABLE_ROLES.reduce((acc, r) => acc + localPerms.filter((p) => localMatrix[`${p.id}:${r}`]).length, 0),
+    [localMatrix, localPerms]
+  );
+
   const focusedRolePerms = useMemo(() => {
-    if (!focusedRole) return { granted: [], denied: [] };
+    if (!focusedRole) return { granted: [] as PermissionRow[], denied: [] as PermissionRow[] };
     const granted: PermissionRow[] = [];
     const denied: PermissionRow[] = [];
-    for (const perm of visiblePerms) {
-      if (localMatrix[`${perm.id}:${focusedRole}`]) {
-        granted.push(perm);
-      } else {
-        denied.push(perm);
-      }
+    for (const p of visiblePerms) {
+      (localMatrix[`${p.id}:${focusedRole}`] ? granted : denied).push(p);
     }
     return { granted, denied };
   }, [focusedRole, visiblePerms, localMatrix]);
+
+  const availableTemplates = useMemo(() => {
+    const keys = new Set(localPerms.map((p) => p.key));
+    return PERMISSION_TEMPLATES.filter((t) => !keys.has(t.key));
+  }, [localPerms]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -444,71 +563,45 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
     });
   }, []);
 
-  const handleColumnSelectAll = useCallback(
-    (role: EditableRole) => {
-      setLocalMatrix((prev) => {
-        const next = { ...prev };
-        for (const perm of localPerms) next[`${perm.id}:${role}`] = true;
-        setDirty(Object.entries(next).some(([k, v]) => originalRef.current[k] !== v));
-        return next;
-      });
-    },
-    [localPerms],
-  );
+  const handleColumnAll = useCallback((role: EditableRole, val: boolean) => {
+    setLocalMatrix((prev) => {
+      const next = { ...prev };
+      for (const p of localPerms) next[`${p.id}:${role}`] = val;
+      setDirty(Object.entries(next).some(([k, v]) => originalRef.current[k] !== v));
+      return next;
+    });
+  }, [localPerms]);
 
-  const handleColumnClearAll = useCallback(
-    (role: EditableRole) => {
-      setLocalMatrix((prev) => {
-        const next = { ...prev };
-        for (const perm of localPerms) next[`${perm.id}:${role}`] = false;
-        setDirty(Object.entries(next).some(([k, v]) => originalRef.current[k] !== v));
-        return next;
-      });
-    },
-    [localPerms],
-  );
-
-  // Batch: toggle مجوز در selection
-  const handleBatchToggle = useCallback((permId: string) => {
+  const handleBatchToggle = useCallback((id: string) => {
     setBatchSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(permId)) next.delete(permId);
-      else next.add(permId);
-      setShowBatchPanel(next.size > 0);
+      next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
   }, []);
 
-  // Batch: اعمال نقش به همه‌ی انتخاب‌شده‌ها
   const handleBatchAssign = useCallback((role: EditableRole, val: boolean) => {
     setLocalMatrix((prev) => {
       const next = { ...prev };
-      for (const permId of batchSelected) next[`${permId}:${role}`] = val;
+      for (const id of batchSelected) next[`${id}:${role}`] = val;
       setDirty(Object.entries(next).some(([k, v]) => originalRef.current[k] !== v));
       return next;
     });
   }, [batchSelected]);
 
-  const handleBatchClearSelection = useCallback(() => {
-    setBatchSelected(new Set());
-    setShowBatchPanel(false);
-  }, []);
-
   const handleSave = useCallback(() => {
-    const rows = localPerms.map((perm) => ({
-      permissionId: perm.id,
-      roles: Object.fromEntries(
-        EDITABLE_ROLES.map((role) => [role, localMatrix[`${perm.id}:${role}`] ?? false]),
-      ),
+    const rows = localPerms.map((p) => ({
+      permissionId: p.id,
+      roles: Object.fromEntries(EDITABLE_ROLES.map((r) => [r, localMatrix[`${p.id}:${r}`] ?? false])),
     }));
     startTransition(async () => {
-      const result = await saveRoleMatrix(rows);
-      if (result.success) {
+      const res = await saveRoleMatrix(rows);
+      if (res.success) {
         originalRef.current = { ...localMatrix };
         setDirty(false);
-        toast({ title: 'تغییرات ذخیره شد', description: `${result.data?.updated ?? 0} مجوز به‌روزرسانی شد` });
+        toast({ title: 'تغییرات ذخیره شد', description: `${res.data?.updated ?? 0} مجوز به‌روزرسانی شد` });
       } else {
-        toast({ title: 'خطا در ذخیره', description: result.error.message, variant: 'destructive' });
+        toast({ title: 'خطا در ذخیره', description: res.error.message, variant: 'destructive' });
       }
     });
   }, [localMatrix, localPerms, toast]);
@@ -520,50 +613,40 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
 
   const handleAdd = useCallback(() => {
     startAddTransition(async () => {
-      const result = await createPermission({ key: newKey.trim(), description: newDesc.trim() || null });
-      if (result.success && result.data) {
-        const perm = result.data;
-        setLocalPerms((prev) => [...prev, perm]);
+      const res = await createPermission({ key: newKey.trim(), description: newDesc.trim() || null });
+      if (res.success && res.data) {
+        const p = res.data;
+        setLocalPerms((prev) => [...prev, p]);
         setLocalMatrix((prev) => {
           const next = { ...prev };
-          for (const role of EDITABLE_ROLES) next[`${perm.id}:${role}`] = false;
+          for (const r of EDITABLE_ROLES) next[`${p.id}:${r}`] = false;
           originalRef.current = { ...next };
           return next;
         });
-        setNewKey('');
-        setNewDesc('');
-        setShowAdd(false);
-        setShowTemplates(false);
-        toast({ title: 'مجوز ثبت شد', description: perm.key });
-      } else if (!result.success) {
-        toast({ title: 'خطا', description: result.error.message, variant: 'destructive' });
+        setNewKey(''); setNewDesc(''); setShowAdd(false); setShowTemplates(false);
+        toast({ title: 'مجوز ثبت شد', description: p.key });
+      } else if (!res.success) {
+        toast({ title: 'خطا', description: res.error.message, variant: 'destructive' });
       }
     });
   }, [newKey, newDesc, toast]);
 
-  const handleAddFromTemplate = useCallback((template: { key: string; description: string }) => {
-    setNewKey(template.key);
-    setNewDesc(template.description);
-    setShowTemplates(false);
-    setShowAdd(true);
-  }, []);
-
   const handleDelete = useCallback(() => {
     if (!deleteTarget) return;
     startDeleteTransition(async () => {
-      const result = await deletePermission(deleteTarget.id);
-      if (result.success) {
+      const res = await deletePermission(deleteTarget.id);
+      if (res.success) {
         setLocalPerms((prev) => prev.filter((p) => p.id !== deleteTarget.id));
         setLocalMatrix((prev) => {
           const next = { ...prev };
-          for (const role of EDITABLE_ROLES) delete next[`${deleteTarget.id}:${role}`];
+          for (const r of EDITABLE_ROLES) delete next[`${deleteTarget.id}:${r}`];
           return next;
         });
         setBatchSelected((prev) => { const n = new Set(prev); n.delete(deleteTarget.id); return n; });
         setDeleteTarget(null);
         toast({ title: 'مجوز حذف شد' });
       } else {
-        toast({ title: 'خطا', description: result.error.message, variant: 'destructive' });
+        toast({ title: 'خطا', description: res.error.message, variant: 'destructive' });
         setDeleteTarget(null);
       }
     });
@@ -572,204 +655,204 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
   const isSuperAdmin = currentUserRole === 'OWNER' || currentUserRole === 'SUPERADMIN';
 
   const handleRoleCardClick = useCallback((role: string) => {
-    if (viewMode === 'role-focus') {
-      if (focusedRole === role) {
-        setFocusedRole(null);
-        setViewMode('matrix');
-      } else {
-        setFocusedRole(role);
-      }
+    if (viewMode === 'role-focus' && focusedRole === role) {
+      setFocusedRole(null); setViewMode('matrix');
     } else {
-      setViewMode('role-focus');
-      setFocusedRole(role);
+      setViewMode('role-focus'); setFocusedRole(role);
     }
   }, [viewMode, focusedRole]);
-
-  // تعداد مجوزهای ثبت‌نشده در db که template دارند
-  const availableTemplates = useMemo(() => {
-    const existingKeys = new Set(localPerms.map((p) => p.key));
-    return PERMISSION_TEMPLATES.filter((t) => !existingKeys.has(t.key));
-  }, [localPerms]);
 
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className={s.root} dir="rtl">
 
-      {/* ── Page Header ────────────────────────────────────────────────── */}
-      <PageHeader
-        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'مجوزها' }]}
-        title="مدیریت مجوزها"
-        description="ماتریس کنترل دسترسی — تعیین کنید هر نقش چه عملیاتی می‌تواند انجام دهد"
-        eyebrow="RBAC"
-        actions={
-          isSuperAdmin ? (
-            <div className={s.headerActions}>
-              {availableTemplates.length > 0 && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setShowTemplates(true)}
-                  className={s.templateBtn}
-                >
-                  <Zap size={14} aria-hidden />
-                  قالب‌های سریع
-                  <span className={s.templateCount}>{availableTemplates.length}</span>
-                </Button>
-              )}
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setShowAdd(true)}
-              >
-                <Plus size={15} aria-hidden />
-                مجوز جدید
-              </Button>
-            </div>
-          ) : null
-        }
-      />
+      {/* ── Hero Command Tile ──────────────────────────────────────────── */}
+      <section className={`at-tile ${s.heroTile}`} aria-label="مدیریت مجوزها">
+        {/* Brand mark — slow rotating shield */}
+        <div className={s.heroMark} aria-hidden>
+          <ShieldMark className={s.heroMarkSvg} />
+        </div>
 
-      {/* ── Role Health Cards ───────────────────────────────────────────── */}
-      <div className={s.rolesSection}>
-        <div className={s.rolesSectionHeader}>
-          <div className={s.rolesSectionTitle}>
-            <ShieldCheck size={14} aria-hidden />
-            پوشش مجوز به‌تفکیک نقش
+        {/* Eyebrow */}
+        <header className={s.heroHead}>
+          <span className={s.heroEyebrow}>
+            <span className={s.heroLiveDot} aria-hidden />
+            <Lock size={10} aria-hidden />
+            <span>مدیریت دسترسی · RBAC</span>
+          </span>
+          <span className={s.heroPillar}>
+            <ShieldCheck size={10} aria-hidden />
+            <span>Role-Based Access</span>
+          </span>
+        </header>
+
+        {/* Title */}
+        <h1 className={s.heroTitle}>
+          مجوزهای سیستم
+          <em className={s.heroTitleAccent}> RBAC</em>
+        </h1>
+        <p className={s.heroSubtitle}>
+          تعیین کنید هر نقش چه عملیاتی می‌تواند انجام دهد
+        </p>
+
+        {/* KPI row */}
+        <div className={s.heroKpi}>
+          <div className={s.heroKpiItem}>
+            <span className={s.heroKpiValue}>{localPerms.length}</span>
+            <span className={s.heroKpiLabel}>مجوز کل</span>
           </div>
-          <div className={s.viewToggle} role="group" aria-label="نوع نمایش">
+          <div className={s.heroKpiDivider} aria-hidden />
+          <div className={s.heroKpiItem}>
+            <span className={s.heroKpiValue}>{EDITABLE_ROLES.length + 1}</span>
+            <span className={s.heroKpiLabel}>نقش</span>
+          </div>
+          <div className={s.heroKpiDivider} aria-hidden />
+          <div className={s.heroKpiItem}>
+            <span className={s.heroKpiValue}>{totalGranted}</span>
+            <span className={s.heroKpiLabel}>تخصیص فعال</span>
+          </div>
+          <div className={s.heroKpiDivider} aria-hidden />
+          <div className={s.heroKpiItem}>
+            <span className={`${s.heroKpiValue} ${dirty ? s.heroKpiValueDirty : ''}`}>
+              {changeCount}
+            </span>
+            <span className={s.heroKpiLabel}>تغییر ذخیره‌نشده</span>
+          </div>
+        </div>
+
+        {/* Actions row */}
+        <div className={s.heroActions}>
+          {isSuperAdmin && (
+            <>
+              <button type="button" className={`${s.heroCta} at-hero__cta`} onClick={() => setShowAdd(true)}>
+                <Plus size={13} aria-hidden />
+                مجوز جدید
+              </button>
+              {availableTemplates.length > 0 && (
+                <button type="button" className={s.heroGhost} onClick={() => setShowTemplates(true)}>
+                  <Zap size={12} aria-hidden />
+                  <span>قالب‌های آماده</span>
+                  <span className={s.heroGhostBadge}>{availableTemplates.length}</span>
+                </button>
+              )}
+            </>
+          )}
+
+          {/* View toggle inside hero */}
+          <div className={s.heroViewToggle} role="group" aria-label="نوع نمایش">
             <button
               type="button"
-              className={`${s.viewToggleBtn} ${viewMode === 'matrix' ? s.viewToggleBtnActive : ''}`}
+              className={`${s.heroViewBtn} ${viewMode === 'matrix' ? s.heroViewBtnActive : ''}`}
               onClick={() => { setViewMode('matrix'); setFocusedRole(null); }}
             >
-              <LayoutGrid size={13} aria-hidden />
+              <LayoutGrid size={12} aria-hidden />
               ماتریس
             </button>
             <button
               type="button"
-              className={`${s.viewToggleBtn} ${viewMode === 'role-focus' ? s.viewToggleBtnActive : ''}`}
+              className={`${s.heroViewBtn} ${viewMode === 'role-focus' ? s.heroViewBtnActive : ''}`}
               onClick={() => setViewMode('role-focus')}
             >
-              <Eye size={13} aria-hidden />
+              <Eye size={12} aria-hidden />
               نقش‌محور
             </button>
           </div>
         </div>
+      </section>
 
-        <div className={s.rolesGrid}>
-          {EDITABLE_ROLES.map((role) => {
-            const granted = localPerms.filter((p) => localMatrix[`${p.id}:${role}`]).length;
-            return (
-              <RoleHealthCard
-                key={role}
-                role={role}
-                total={localPerms.length}
-                granted={granted}
-                isSelected={viewMode === 'role-focus' && focusedRole === role}
-                onSelect={() => handleRoleCardClick(role)}
-                onSelectAll={() => handleColumnSelectAll(role as EditableRole)}
-                onClearAll={() => handleColumnClearAll(role as EditableRole)}
-                isSuperAdmin={isSuperAdmin}
-              />
-            );
-          })}
-          <SuperAdminCard total={localPerms.length} />
-        </div>
+      {/* ── Role Cards Row ──────────────────────────────────────────────── */}
+      <div className={s.rolesRow}>
+        {EDITABLE_ROLES.map((role) => {
+          const granted = localPerms.filter((p) => localMatrix[`${p.id}:${role}`]).length;
+          return (
+            <RoleCard
+              key={role}
+              role={role}
+              total={localPerms.length}
+              granted={granted}
+              isSelected={viewMode === 'role-focus' && focusedRole === role}
+              onSelect={() => handleRoleCardClick(role)}
+              onSelectAll={() => handleColumnAll(role as EditableRole, true)}
+              onClearAll={() => handleColumnAll(role as EditableRole, false)}
+              isSuperAdmin={isSuperAdmin}
+            />
+          );
+        })}
+        <SuperAdminRoleCard total={localPerms.length} />
       </div>
 
       {/* ── Toolbar ─────────────────────────────────────────────────────── */}
       {localPerms.length > 0 && (
         <div className={s.toolbar}>
-          {/* Search */}
           <div className={s.searchWrap}>
-            <Search size={14} className={s.searchIcon} aria-hidden />
+            <Search size={13} className={s.searchIcon} aria-hidden />
             <input
               ref={searchRef}
               className={s.searchInput}
-              placeholder="جستجو مجوز... (⌘K)"
+              placeholder="جستجو... ⌘K"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               aria-label="جستجو در مجوزها"
               dir="ltr"
             />
-            {searchQuery ? (
-              <button
-                type="button"
-                className={s.searchClear}
-                onClick={() => setSearchQuery('')}
-                aria-label="پاک کردن جستجو"
-              >
-                <X size={11} />
+            {searchQuery && (
+              <button type="button" className={s.searchClear} onClick={() => setSearchQuery('')} aria-label="پاک‌کردن">
+                <X size={10} />
               </button>
-            ) : (
-              <kbd className={s.searchKbd} aria-hidden>⌘K</kbd>
             )}
           </div>
 
-          {/* Category Filter */}
-          <div className={s.catPills} role="group" aria-label="فیلتر دسته‌بندی">
+          <div className={s.catPills} role="group" aria-label="فیلتر دسته">
             <button
               type="button"
               className={`${s.catPill} ${catFilter === 'all' ? s.catPillActive : ''}`}
               onClick={() => setCatFilter('all')}
             >
-              <Filter size={11} aria-hidden />
+              <Filter size={10} aria-hidden />
               همه
-              <span className={s.catCount}>{localPerms.length}</span>
+              <span className={s.catBadge}>{localPerms.length}</span>
             </button>
-            {categories.map((cat) => {
-              const count = localPerms.filter((p) => getCatFaKey(p.key) === cat).length;
-              return (
-                <button
-                  key={cat}
-                  type="button"
-                  className={`${s.catPill} ${catFilter === cat ? s.catPillActive : ''}`}
-                  onClick={() => setCatFilter(cat)}
-                >
-                  {CAT_FA[cat] ?? cat}
-                  <span className={s.catCount}>{count}</span>
-                </button>
-              );
-            })}
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                className={`${s.catPill} ${catFilter === cat ? s.catPillActive : ''}`}
+                onClick={() => setCatFilter(cat)}
+              >
+                {CAT_FA[cat] ?? cat}
+                <span className={s.catBadge}>{localPerms.filter((p) => getCatKey(p.key) === cat).length}</span>
+              </button>
+            ))}
           </div>
 
-          {/* Batch indicator */}
           {batchSelected.size > 0 && (
-            <div className={s.batchIndicator}>
-              <span className={s.batchCount}>{batchSelected.size} انتخاب</span>
-              <button
-                type="button"
-                className={s.batchClearBtn}
-                onClick={handleBatchClearSelection}
-                aria-label="لغو انتخاب"
-              >
-                <X size={11} />
+            <div className={s.batchPill}>
+              <span>{batchSelected.size} انتخاب</span>
+              <button type="button" className={s.batchPillX} onClick={() => setBatchSelected(new Set())} aria-label="لغو">
+                <X size={9} />
               </button>
             </div>
           )}
         </div>
       )}
 
-      {/* ── Main Content ─────────────────────────────────────────────────── */}
+      {/* ── Main View ───────────────────────────────────────────────────── */}
       {localPerms.length === 0 ? (
-        /* ── Empty State ───────────────────────────────────────────────── */
-        <div className={s.emptyWrap}>
+        <div className={`at-tile ${s.emptyTile}`}>
           <EmptyState
             icon={Key}
             title="هنوز مجوزی تعریف نشده"
-            description="برای شروع، مجوزهای پلتفرم را تعریف کنید. هر مجوز یک عملیات خاص را نمایندگی می‌کند (مثال: wallet:read)"
+            description="اولین مجوز را ثبت کنید تا ماتریس دسترسی فعال شود."
             action={
               isSuperAdmin ? (
                 <div className={s.emptyActions}>
                   <Button size="sm" onClick={() => setShowAdd(true)}>
-                    <Plus size={14} aria-hidden />
-                    مجوز اول را ثبت کن
+                    <Plus size={13} /> مجوز اول
                   </Button>
                   {PERMISSION_TEMPLATES.length > 0 && (
                     <Button size="sm" variant="outline" onClick={() => setShowTemplates(true)}>
-                      <Zap size={14} aria-hidden />
-                      استفاده از قالب‌ها ({PERMISSION_TEMPLATES.length} مجوز آماده)
+                      <Zap size={13} /> قالب‌های آماده
                     </Button>
                   )}
                 </div>
@@ -778,26 +861,24 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
           />
         </div>
       ) : grouped.length === 0 ? (
-        /* ── No results ─────────────────────────────────────────────────── */
-        <EmptyState
-          icon={Search}
-          title="نتیجه‌ای یافت نشد"
-          description={`«${searchQuery}» با هیچ مجوزی مطابقت ندارد. فیلتر یا دسته را تغییر دهید.`}
-          action={
-            <Button size="sm" variant="outline" onClick={() => { setSearchQuery(''); setCatFilter('all'); }}>
-              <RotateCcw size={13} aria-hidden />
-              پاک کردن فیلتر
-            </Button>
-          }
-        />
+        <div className={`at-tile ${s.emptyTile}`}>
+          <EmptyState
+            icon={Search}
+            title="نتیجه‌ای یافت نشد"
+            description={`«${searchQuery}» با هیچ مجوزی مطابقت ندارد.`}
+            action={
+              <Button size="sm" variant="outline" onClick={() => { setSearchQuery(''); setCatFilter('all'); }}>
+                <RotateCcw size={12} /> پاک‌کردن فیلتر
+              </Button>
+            }
+          />
+        </div>
       ) : viewMode === 'role-focus' && focusedRole ? (
-        /* ── Role-Focus View ────────────────────────────────────────────── */
+        /* Role-Focus View */
         <RoleFocusView
           role={focusedRole}
-          grantedPerms={focusedRolePerms.granted}
-          deniedPerms={focusedRolePerms.denied}
-          localMatrix={localMatrix}
-          allRoles={EDITABLE_ROLES}
+          granted={focusedRolePerms.granted}
+          denied={focusedRolePerms.denied}
           isSuperAdmin={isSuperAdmin}
           onCheck={handleCheck}
           onDelete={isSuperAdmin ? setDeleteTarget : undefined}
@@ -805,13 +886,12 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
           onBatchToggle={handleBatchToggle}
         />
       ) : viewMode === 'role-focus' && !focusedRole ? (
-        /* ── Role-Focus hint: کارت انتخاب نشده ───────────────────────── */
-        <div className={s.roleFocusHint}>
-          <Layers size={32} className={s.roleFocusHintIcon} aria-hidden />
-          <p className={s.roleFocusHintText}>یک نقش از بالا انتخاب کنید تا مجوزهای آن را ببینید</p>
+        <div className={`at-tile ${s.roleFocusHint}`}>
+          <Layers size={36} className={s.roleFocusHintIcon} aria-hidden />
+          <p className={s.roleFocusHintText}>یک نقش از بالا انتخاب کنید</p>
         </div>
       ) : (
-        /* ── Matrix View ────────────────────────────────────────────────── */
+        /* Matrix View */
         <MatrixView
           grouped={grouped}
           localMatrix={localMatrix}
@@ -824,54 +904,51 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
         />
       )}
 
-      {/* ── Batch Action Panel ──────────────────────────────────────────── */}
-      {showBatchPanel && batchSelected.size > 0 && (
+      {/* ── Batch Panel ─────────────────────────────────────────────────── */}
+      {batchSelected.size > 0 && isSuperAdmin && (
         <BatchPanel
           count={batchSelected.size}
           onAssign={handleBatchAssign}
-          onClose={handleBatchClearSelection}
-          isSuperAdmin={isSuperAdmin}
+          onClose={() => setBatchSelected(new Set())}
         />
       )}
 
-      {/* ── Unsaved Changes Bar ──────────────────────────────────────────── */}
-      {dirty && !showBatchPanel && (
+      {/* ── Unsaved Bar ──────────────────────────────────────────────────── */}
+      {dirty && batchSelected.size === 0 && (
         <div className={s.unsavedBar} role="alert" aria-live="polite">
-          <span className={s.unsavedIcon} aria-hidden>
-            <AlertTriangle size={15} />
-          </span>
-          <div className={s.unsavedTextGroup}>
-            <span className={s.unsavedText}>تغییرات ذخیره نشده</span>
-            <span className={s.unsavedCount}>{changeCount} تغییر</span>
+          <AlertTriangle size={14} className={s.unsavedIcon} aria-hidden />
+          <div className={s.unsavedText}>
+            <span className={s.unsavedTitle}>تغییرات ذخیره نشده</span>
+            <span className={s.unsavedSub}>{changeCount} تغییر</span>
           </div>
-          <div className={s.unsavedActions}>
+          <div className={s.unsavedBtns}>
             <button type="button" className={s.discardBtn} onClick={handleDiscard} disabled={isPending}>
-              <X size={13} aria-hidden />
-              لغو
+              <X size={12} /> لغو
             </button>
             <button type="button" className={s.saveBtn} onClick={handleSave} disabled={isPending}>
-              {isPending ? <span className={s.spinner} aria-label="در حال ذخیره" /> : <Save size={13} aria-hidden />}
-              ذخیره تغییرات
+              {isPending ? <span className={s.spinner} /> : <Save size={12} />}
+              ذخیره
             </button>
           </div>
         </div>
       )}
 
-      {/* ── Dialog افزودن مجوز ──────────────────────────────────────────── */}
+      {/* ── Add Dialog ───────────────────────────────────────────────────── */}
       <Dialog open={showAdd} onOpenChange={setShowAdd}>
         <DialogContent dir="rtl" className={s.dialog}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Key size={17} aria-hidden />
-              مجوز جدید
+              <Key size={16} /> مجوز جدید
             </DialogTitle>
           </DialogHeader>
           <div className={s.dialogBody}>
             <div className={s.fieldGroup}>
-              <Label htmlFor="perm-key">کلید مجوز <span className={s.required}>*</span></Label>
+              <Label htmlFor="pkey">
+                کلید مجوز <span className={s.req}>*</span>
+              </Label>
               <Input
-                id="perm-key"
-                placeholder="مثال: wallet:read"
+                id="pkey"
+                placeholder="wallet:read"
                 value={newKey}
                 onChange={(e) => setNewKey(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && newKey.trim()) handleAdd(); }}
@@ -880,46 +957,41 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
                 autoFocus
               />
               <p className={s.fieldHint}>
-                فرمت: <code>resource:action</code> — فقط حروف کوچک انگلیسی، عدد، خط‌تیره و دو‌نقطه
+                فرمت: <code>resource:action</code> — حروف کوچک، خط‌تیره، دو‌نقطه
               </p>
             </div>
             <div className={s.fieldGroup}>
-              <Label htmlFor="perm-desc">توضیح فارسی</Label>
+              <Label htmlFor="pdesc">توضیح فارسی</Label>
               <Input
-                id="perm-desc"
-                placeholder="توضیح ساده برای adminهایی که نمی‌دانند این مجوز چیست"
+                id="pdesc"
+                placeholder="توضیح ساده برای adminها"
                 value={newDesc}
                 onChange={(e) => setNewDesc(e.target.value)}
               />
             </div>
-            {/* پیش‌نمایش */}
             {newKey && (
               <div className={s.permPreview}>
-                <span className={s.permPreviewLabel}>پیش‌نمایش:</span>
                 <span className={s.keyBadge}>{newKey}</span>
                 {newDesc && <span className={s.permPreviewDesc}>{newDesc}</span>}
               </div>
             )}
           </div>
           <DialogFooter className={s.dialogFooter}>
-            <Button variant="outline" onClick={() => setShowAdd(false)} disabled={addPending}>
-              انصراف
-            </Button>
+            <Button variant="outline" onClick={() => setShowAdd(false)} disabled={addPending}>انصراف</Button>
             <Button onClick={handleAdd} disabled={addPending || !newKey.trim()}>
-              {addPending ? <span className={s.spinner} aria-label="در حال ثبت" /> : <CheckCircle2 size={14} aria-hidden />}
-              ثبت مجوز
+              {addPending ? <span className={s.spinner} /> : <CheckCircle2 size={13} />}
+              ثبت
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* ── Dialog قالب‌های سریع ─────────────────────────────────────── */}
+      {/* ── Templates Dialog ─────────────────────────────────────────────── */}
       <Dialog open={showTemplates} onOpenChange={setShowTemplates}>
         <DialogContent dir="rtl" className={s.dialogWide}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Zap size={17} aria-hidden />
-              قالب‌های پیشنهادی
+              <Zap size={16} /> قالب‌های پیشنهادی
             </DialogTitle>
           </DialogHeader>
           <div className={s.templatesGrid}>
@@ -927,8 +999,8 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
               <button
                 key={t.key}
                 type="button"
-                className={s.templateCard}
-                onClick={() => handleAddFromTemplate(t)}
+                className={`at-tile ${s.templateCard}`}
+                onClick={() => { setNewKey(t.key); setNewDesc(t.description); setShowTemplates(false); setShowAdd(true); }}
               >
                 <span className={s.keyBadge}>{t.key}</span>
                 <span className={s.templateCardDesc}>{t.description}</span>
@@ -936,22 +1008,18 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
               </button>
             ))}
             {availableTemplates.length === 0 && (
-              <p className={s.templatesEmpty}>تمام قالب‌های پیشنهادی ثبت شده‌اند ✓</p>
+              <p className={s.templatesEmpty}>همه قالب‌ها ثبت شده‌اند ✓</p>
             )}
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* ── Confirm حذف ─────────────────────────────────────────────────── */}
+      {/* ── Confirm Delete ────────────────────────────────────────────────── */}
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}
         title="حذف مجوز"
-        description={
-          deleteTarget
-            ? `مجوز «${deleteTarget.key}» حذف می‌شود. این عملیات در صورتی که مجوز در نقشی استفاده شده باشد رد می‌شود.`
-            : ''
-        }
+        description={deleteTarget ? `مجوز «${deleteTarget.key}» حذف می‌شود.` : ''}
         confirmLabel="بله، حذف کن"
         cancelLabel="انصراف"
         variant="danger"
@@ -979,69 +1047,63 @@ function MatrixView({
   isSuperAdmin: boolean;
   searchQuery: string;
   batchSelected: Set<string>;
-  onCheck: (permId: string, role: EditableRole, val: boolean) => void;
-  onDelete: (perm: PermissionRow) => void;
-  onBatchToggle: (permId: string) => void;
+  onCheck: (id: string, role: EditableRole, val: boolean) => void;
+  onDelete: (p: PermissionRow) => void;
+  onBatchToggle: (id: string) => void;
 }) {
   return (
-    <div className={s.matrixWrap}>
+    <div className={`at-tile ${s.matrixTile}`}>
       <table className={s.matrixTable} aria-label="ماتریس مجوزها">
         <thead>
           <tr className={s.matrixHeader}>
-            <th scope="col" className={s.colKey}>
-              <span className={s.colKeyLabel}>کلید مجوز</span>
-              <span className={s.colKeyCount}>
-                {grouped.reduce((acc, [, p]) => acc + p.length, 0)} مجوز
-              </span>
+            <th scope="col" className={s.thKey}>
+              <span>مجوز</span>
+              <span className={s.thKeyCount}>{grouped.reduce((a, [, p]) => a + p.length, 0)}</span>
             </th>
             {EDITABLE_ROLES.map((role) => (
               <th
                 key={role}
                 scope="col"
-                className={s.colRole}
-                style={{ '--role-color': ROLE_COLOR[role] } as React.CSSProperties}
+                className={s.thRole}
+                style={{ '--rc': ROLE_COLOR[role] } as React.CSSProperties}
               >
-                <span className={s.roleHeaderLabel}>{ROLE_FA[role]}</span>
+                {ROLE_FA[role]}
               </th>
             ))}
-            <th scope="col" className={s.colSuperAdmin}>
-              <span className={s.superAdminHeaderLabel}>SUPER</span>
-            </th>
-            <th scope="col" className={s.colAction} aria-label="عملیات" />
+            <th scope="col" className={s.thSuper}>سوپر</th>
+            <th scope="col" className={s.thAct} aria-label="عملیات" />
           </tr>
         </thead>
 
         {grouped.map(([cat, perms]) => (
-          <tbody key={cat} className={s.group}>
-            <tr className={s.groupHeader}>
+          <tbody key={cat} className={s.tbody}>
+            <tr className={s.groupRow}>
               <td colSpan={EDITABLE_ROLES.length + 3}>
-                <div className={s.groupLabelWrap}>
-                  <span className={s.groupLabel}>{CAT_FA[cat] ?? cat}</span>
-                  <span className={s.groupCount}>{perms.length}</span>
-                </div>
+                <span className={s.groupIcon} aria-hidden>{CAT_ICON[cat] ?? '·'}</span>
+                <span className={s.groupLabel}>{CAT_FA[cat] ?? cat}</span>
+                <span className={s.groupCount}>{perms.length}</span>
               </td>
             </tr>
             {perms.map((perm, i) => {
-              const isSelected = batchSelected.has(perm.id);
+              const sel = batchSelected.has(perm.id);
               return (
                 <tr
                   key={perm.id}
-                  className={`${s.matrixRow} ${isSelected ? s.matrixRowSelected : ''}`}
-                  style={{ '--row-i': i } as React.CSSProperties}
+                  className={`${s.matrixRow} ${sel ? s.matrixRowSel : ''}`}
+                  style={{ '--ri': i } as React.CSSProperties}
                 >
-                  {/* Batch checkbox + key */}
-                  <td className={s.colKey}>
+                  <td className={s.tdKey}>
                     <div className={s.keyCell}>
                       <div
-                        className={`${s.batchCheck} ${isSelected ? s.batchCheckActive : ''}`}
-                        onClick={(e) => { e.stopPropagation(); onBatchToggle(perm.id); }}
+                        className={`${s.batchChk} ${sel ? s.batchChkOn : ''}`}
                         role="checkbox"
-                        aria-checked={isSelected}
+                        aria-checked={sel}
                         tabIndex={0}
+                        onClick={() => onBatchToggle(perm.id)}
                         onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); onBatchToggle(perm.id); } }}
-                        aria-label={`انتخاب ${perm.key} برای عملیات دسته‌جمعی`}
+                        aria-label={`انتخاب ${perm.key}`}
                       >
-                        {isSelected && <CheckCircle2 size={11} aria-hidden />}
+                        {sel && <CheckCircle2 size={10} aria-hidden />}
                       </div>
                       <div className={s.keyInfo}>
                         <div className={s.keyRow}>
@@ -1055,7 +1117,7 @@ function MatrixView({
                           >
                             {perm.key}
                           </span>
-                          {perm.description && <PermTooltip perm={perm} />}
+                          {perm.description && <PermTooltip text={perm.description} />}
                         </div>
                         {perm.description && (
                           <span className={s.keyDesc}>{perm.description}</span>
@@ -1064,41 +1126,33 @@ function MatrixView({
                     </div>
                   </td>
 
-                  {/* Role checkboxes */}
-                  {EDITABLE_ROLES.map((role) => {
-                    const checked = localMatrix[`${perm.id}:${role}`] ?? false;
-                    return (
-                      <td key={role} className={s.colRole}>
-                        <Checkbox
-                          id={`${perm.id}-${role}`}
-                          checked={checked}
-                          onCheckedChange={(val) => onCheck(perm.id, role as EditableRole, val === true)}
-                          aria-label={`${ROLE_FA[role]} — ${perm.key}`}
-                          className={s.checkbox}
-                          style={{ '--cb-color': ROLE_COLOR[role] } as React.CSSProperties}
-                        />
-                      </td>
-                    );
-                  })}
+                  {EDITABLE_ROLES.map((role) => (
+                    <td key={role} className={s.tdRole}>
+                      <Checkbox
+                        checked={localMatrix[`${perm.id}:${role}`] ?? false}
+                        onCheckedChange={(v) => onCheck(perm.id, role as EditableRole, v === true)}
+                        aria-label={`${ROLE_FA[role]} — ${perm.key}`}
+                        className={s.checkbox}
+                        style={{ '--cb': ROLE_COLOR[role] } as React.CSSProperties}
+                      />
+                    </td>
+                  ))}
 
-                  {/* SUPERADMIN — always checked */}
-                  <td className={s.colSuperAdmin}>
-                    <span className={s.superAdminCheck} aria-label="دسترسی کامل">
-                      <CheckCircle2 size={13} aria-hidden />
+                  <td className={s.tdSuper}>
+                    <span className={s.superCheck} aria-label="دسترسی کامل">
+                      <CheckCircle2 size={12} aria-hidden />
                     </span>
                   </td>
 
-                  {/* Delete */}
-                  <td className={s.colAction}>
+                  <td className={s.tdAct}>
                     {isSuperAdmin && (
                       <button
                         type="button"
-                        className={s.deleteRowBtn}
+                        className={s.deleteBtn}
                         onClick={() => onDelete(perm)}
                         aria-label={`حذف ${perm.key}`}
-                        title={`حذف ${perm.key}`}
                       >
-                        <Trash2 size={13} aria-hidden />
+                        <Trash2 size={12} aria-hidden />
                       </button>
                     )}
                   </td>
@@ -1116,10 +1170,8 @@ function MatrixView({
 
 function RoleFocusView({
   role,
-  grantedPerms,
-  deniedPerms,
-  localMatrix,
-  allRoles,
+  granted,
+  denied,
   isSuperAdmin,
   onCheck,
   onDelete,
@@ -1127,98 +1179,68 @@ function RoleFocusView({
   onBatchToggle,
 }: {
   role: string;
-  grantedPerms: PermissionRow[];
-  deniedPerms: PermissionRow[];
-  localMatrix: Record<string, boolean>;
-  allRoles: readonly EditableRole[];
+  granted: PermissionRow[];
+  denied: PermissionRow[];
   isSuperAdmin: boolean;
-  onCheck: (permId: string, role: EditableRole, val: boolean) => void;
-  onDelete?: (perm: PermissionRow) => void;
+  onCheck: (id: string, role: EditableRole, val: boolean) => void;
+  onDelete?: (p: PermissionRow) => void;
   batchSelected: Set<string>;
-  onBatchToggle: (permId: string) => void;
+  onBatchToggle: (id: string) => void;
 }) {
+  const color = ROLE_COLOR[role] ?? 'var(--at-fg-muted)';
   return (
-    <div className={s.roleFocusView}>
-      {/* Header */}
-      <div className={s.roleFocusHeader} style={{ '--role-color': ROLE_COLOR[role] } as React.CSSProperties}>
-        <div className={s.roleFocusHeaderInner}>
-          <div className={s.roleFocusDot} aria-hidden />
-          <h2 className={s.roleFocusTitle}>{ROLE_FA[role]}</h2>
-          <span className={s.roleFocusDesc}>{ROLE_DESC[role]}</span>
+    <div className={s.rfView}>
+      {/* Header tile */}
+      <div className={`at-tile ${s.rfHeader}`} style={{ '--rc': color } as React.CSSProperties}>
+        <div className={s.rfHeaderBar} aria-hidden />
+        <div className={s.rfHeaderInner}>
+          <span className={s.rfDot} aria-hidden />
+          <h2 className={s.rfTitle}>{ROLE_FA[role]}</h2>
+          <p className={s.rfDesc}>{ROLE_DESC[role]}</p>
         </div>
-        <div className={s.roleFocusStats}>
-          <span className={s.roleFocusStatItem} data-variant="success">
-            <ShieldCheck size={14} aria-hidden />
-            {grantedPerms.length} مجوز فعال
+        <div className={s.rfStats}>
+          <span className={s.rfStatGrant}>
+            <ShieldCheck size={12} /> {granted.length} فعال
           </span>
-          <span className={s.roleFocusStatItem} data-variant="muted">
-            <ShieldOff size={14} aria-hidden />
-            {deniedPerms.length} مجوز غیرفعال
+          <span className={s.rfStatDeny}>
+            <ShieldOff size={12} /> {denied.length} غیرفعال
           </span>
         </div>
       </div>
 
-      {/* Two columns: granted + denied */}
-      <div className={s.roleFocusColumns}>
+      {/* Two columns */}
+      <div className={s.rfCols}>
         {/* Granted */}
-        <div className={s.roleFocusSection} data-variant="granted">
-          <div className={s.roleFocusSectionHeader}>
-            <ShieldCheck size={13} aria-hidden />
-            <span>مجوزهای فعال</span>
-            <span className={s.roleFocusSectionCount}>{grantedPerms.length}</span>
+        <div className={`at-tile ${s.rfSection} ${s.rfSectionGrant}`}>
+          <div className={s.rfSectionHead}>
+            <ShieldCheck size={12} />
+            <span>فعال</span>
+            <span className={s.rfSectionCount}>{granted.length}</span>
           </div>
-          <div className={s.roleFocusPermList}>
-            {grantedPerms.length === 0 ? (
-              <div className={s.roleFocusEmpty}>
-                <ShieldOff size={20} aria-hidden />
-                <p>هیچ مجوزی فعال نیست</p>
-              </div>
-            ) : (
-              grantedPerms.map((perm) => (
-                <RoleFocusPermRow
-                  key={perm.id}
-                  perm={perm}
-                  role={role}
-                  checked={true}
-                  isSuperAdmin={isSuperAdmin}
-                  onCheck={onCheck}
-                  onDelete={onDelete}
-                  isSelected={batchSelected.has(perm.id)}
-                  onBatchToggle={onBatchToggle}
-                />
-              ))
-            )}
+          <div className={s.rfList}>
+            {granted.length === 0 ? (
+              <div className={s.rfEmpty}><ShieldOff size={20} /><p>هیچ مجوزی فعال نیست</p></div>
+            ) : granted.map((p) => (
+              <RFRow key={p.id} perm={p} role={role} checked isSuperAdmin={isSuperAdmin}
+                onCheck={onCheck} onDelete={onDelete} sel={batchSelected.has(p.id)} onToggle={onBatchToggle} />
+            ))}
           </div>
         </div>
 
         {/* Denied */}
-        <div className={s.roleFocusSection} data-variant="denied">
-          <div className={s.roleFocusSectionHeader}>
-            <ShieldOff size={13} aria-hidden />
-            <span>مجوزهای غیرفعال</span>
-            <span className={s.roleFocusSectionCount}>{deniedPerms.length}</span>
+        <div className={`at-tile ${s.rfSection}`}>
+          <div className={s.rfSectionHead}>
+            <ShieldOff size={12} />
+            <span>غیرفعال</span>
+            <span className={s.rfSectionCount}>{denied.length}</span>
           </div>
-          <div className={s.roleFocusPermList}>
-            {deniedPerms.length === 0 ? (
-              <div className={s.roleFocusEmpty} data-variant="success">
-                <ShieldCheck size={20} aria-hidden />
-                <p>تمام مجوزها فعال هستند</p>
-              </div>
-            ) : (
-              deniedPerms.map((perm) => (
-                <RoleFocusPermRow
-                  key={perm.id}
-                  perm={perm}
-                  role={role}
-                  checked={false}
-                  isSuperAdmin={isSuperAdmin}
-                  onCheck={onCheck}
-                  onDelete={onDelete}
-                  isSelected={batchSelected.has(perm.id)}
-                  onBatchToggle={onBatchToggle}
-                />
-              ))
-            )}
+          <div className={s.rfList}>
+            {denied.length === 0 ? (
+              <div className={s.rfEmptySuccess}><ShieldCheck size={20} /><p>همه فعال هستند</p></div>
+            ) : denied.map((p) => (
+              <RFRow key={p.id} perm={p} role={role} checked={false} isSuperAdmin={isSuperAdmin}
+                onCheck={onCheck} onDelete={onDelete} sel={batchSelected.has(p.id)} onToggle={onBatchToggle} />
+            ))}
           </div>
         </div>
       </div>
@@ -1226,66 +1248,47 @@ function RoleFocusView({
   );
 }
 
-// ─── RoleFocusPermRow ─────────────────────────────────────────────────────────
+// ─── RFRow ────────────────────────────────────────────────────────────────────
 
-function RoleFocusPermRow({
-  perm,
-  role,
-  checked,
-  isSuperAdmin,
-  onCheck,
-  onDelete,
-  isSelected,
-  onBatchToggle,
+function RFRow({
+  perm, role, checked, isSuperAdmin, onCheck, onDelete, sel, onToggle,
 }: {
-  perm: PermissionRow;
-  role: string;
-  checked: boolean;
-  isSuperAdmin: boolean;
-  onCheck: (permId: string, role: EditableRole, val: boolean) => void;
-  onDelete?: (perm: PermissionRow) => void;
-  isSelected: boolean;
-  onBatchToggle: (permId: string) => void;
+  perm: PermissionRow; role: string; checked: boolean; isSuperAdmin: boolean;
+  onCheck: (id: string, role: EditableRole, val: boolean) => void;
+  onDelete?: (p: PermissionRow) => void;
+  sel: boolean; onToggle: (id: string) => void;
 }) {
   return (
     <div
-      className={`${s.roleFocusPermRow} ${isSelected ? s.roleFocusPermRowSelected : ''}`}
-      style={{ '--role-color': ROLE_COLOR[role] } as React.CSSProperties}
+      className={`${s.rfRow} ${sel ? s.rfRowSel : ''}`}
+      style={{ '--rc': ROLE_COLOR[role] } as React.CSSProperties}
     >
       <div
-        className={`${s.batchCheck} ${isSelected ? s.batchCheckActive : ''}`}
-        onClick={() => onBatchToggle(perm.id)}
-        role="checkbox"
-        aria-checked={isSelected}
-        tabIndex={0}
-        onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); onBatchToggle(perm.id); } }}
+        className={`${s.batchChk} ${sel ? s.batchChkOn : ''}`}
+        role="checkbox" aria-checked={sel} tabIndex={0}
+        onClick={() => onToggle(perm.id)}
+        onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); onToggle(perm.id); } }}
         aria-label={`انتخاب ${perm.key}`}
       >
-        {isSelected && <CheckCircle2 size={11} aria-hidden />}
+        {sel && <CheckCircle2 size={10} />}
       </div>
-      <div className={s.roleFocusPermInfo}>
+      <div className={s.rfRowInfo}>
         <span className={s.keyBadge}>{perm.key}</span>
         {perm.description && <span className={s.keyDesc}>{perm.description}</span>}
       </div>
-      <div className={s.roleFocusPermActions}>
+      <div className={s.rfRowActions}>
         <button
           type="button"
-          className={`${s.toggleChip} ${checked ? s.toggleChipActive : ''}`}
+          className={`${s.toggleChip} ${checked ? s.toggleChipOn : ''}`}
           onClick={() => onCheck(perm.id, role as EditableRole, !checked)}
-          style={{ '--role-color': ROLE_COLOR[role] } as React.CSSProperties}
-          aria-label={checked ? `غیرفعال کردن ${perm.key} برای ${ROLE_FA[role]}` : `فعال کردن ${perm.key} برای ${ROLE_FA[role]}`}
+          aria-label={checked ? `غیرفعال کردن ${perm.key}` : `فعال کردن ${perm.key}`}
         >
-          {checked ? <ShieldCheck size={12} aria-hidden /> : <ShieldOff size={12} aria-hidden />}
+          {checked ? <ShieldCheck size={11} /> : <ShieldOff size={11} />}
           {checked ? 'فعال' : 'غیرفعال'}
         </button>
         {isSuperAdmin && onDelete && (
-          <button
-            type="button"
-            className={s.deleteRowBtn}
-            onClick={() => onDelete(perm)}
-            aria-label={`حذف ${perm.key}`}
-          >
-            <Trash2 size={12} aria-hidden />
+          <button type="button" className={s.deleteBtn} onClick={() => onDelete(perm)} aria-label={`حذف ${perm.key}`}>
+            <Trash2 size={11} />
           </button>
         )}
       </div>
@@ -1296,59 +1299,33 @@ function RoleFocusPermRow({
 // ─── BatchPanel ───────────────────────────────────────────────────────────────
 
 function BatchPanel({
-  count,
-  onAssign,
-  onClose,
-  isSuperAdmin,
+  count, onAssign, onClose,
 }: {
   count: number;
   onAssign: (role: EditableRole, val: boolean) => void;
   onClose: () => void;
-  isSuperAdmin: boolean;
 }) {
-  if (!isSuperAdmin) return null;
   return (
     <div className={s.batchPanel} role="toolbar" aria-label="عملیات دسته‌جمعی">
-      <div className={s.batchPanelInfo}>
-        <span className={s.batchPanelCount}>{count} مجوز انتخاب‌شده</span>
-        <span className={s.batchPanelHint}>نقش‌ها را به همه اعمال کنید:</span>
+      <div className={s.batchInfo}>
+        <span className={s.batchInfoCount}>{count} مجوز انتخاب‌شده</span>
+        <span className={s.batchInfoHint}>اعمال نقش:</span>
       </div>
-      <div className={s.batchPanelRoles}>
+      <div className={s.batchRoles}>
         {EDITABLE_ROLES.map((role) => (
-          <div key={role} className={s.batchRoleGroup} style={{ '--role-color': ROLE_COLOR[role] } as React.CSSProperties}>
-            <span className={s.batchRoleLabel}>{ROLE_FA[role]}</span>
-            <div className={s.batchRoleBtns}>
-              <button
-                type="button"
-                className={s.batchRoleBtn}
-                data-variant="grant"
-                onClick={() => onAssign(role, true)}
-                aria-label={`اعطای ${ROLE_FA[role]} به همه انتخاب‌شده‌ها`}
-              >
-                <ShieldCheck size={11} aria-hidden />
-                فعال
-              </button>
-              <button
-                type="button"
-                className={s.batchRoleBtn}
-                data-variant="revoke"
-                onClick={() => onAssign(role, false)}
-                aria-label={`لغو ${ROLE_FA[role]} از همه انتخاب‌شده‌ها`}
-              >
-                <ShieldOff size={11} aria-hidden />
-                لغو
-              </button>
-            </div>
+          <div key={role} className={s.batchRoleChip} style={{ '--rc': ROLE_COLOR[role] } as React.CSSProperties}>
+            <span className={s.batchRoleName}>{ROLE_FA[role]}</span>
+            <button type="button" className={s.batchGrant} onClick={() => onAssign(role, true)} aria-label={`اعطای ${ROLE_FA[role]}`}>
+              <ShieldCheck size={10} />
+            </button>
+            <button type="button" className={s.batchRevoke} onClick={() => onAssign(role, false)} aria-label={`لغو ${ROLE_FA[role]}`}>
+              <ShieldOff size={10} />
+            </button>
           </div>
         ))}
       </div>
-      <button
-        type="button"
-        className={s.batchPanelClose}
-        onClick={onClose}
-        aria-label="بستن پنل دسته‌جمعی"
-      >
-        <X size={14} aria-hidden />
+      <button type="button" className={s.batchClose} onClick={onClose} aria-label="بستن">
+        <X size={13} />
       </button>
     </div>
   );
