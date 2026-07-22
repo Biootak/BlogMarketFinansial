@@ -1,7 +1,7 @@
-import type { Metadata } from 'next';
-import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
 import { getMyDevices } from '@/actions/deviceActions';
+import { auth } from '@/auth';
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { DevicesClient } from './_components/DevicesClient';
 
 export const metadata: Metadata = {

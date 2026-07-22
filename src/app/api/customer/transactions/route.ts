@@ -1,3 +1,12 @@
+/**
+ * GET /api/customer/transactions
+ *
+ * cursor-based pagination روی LedgerEntry های مشتری لاگین‌شده.
+ * ?limit=20&cursor=<ledgerEntryId>
+ *
+ * امنیت: session + customer ownership + rate-limit
+ */
+
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import { checkRateLimit } from '@/lib/rate-limiter';
@@ -7,20 +16,13 @@ export const maxDuration = 20;
 
 const PRIVATE_HEADERS = { 'Cache-Control': 'no-store, private' };
 
-/**
- * GET /api/customer/transactions?cursor=&limit=
- * Authenticated. Returns the current user's LedgerEntry history (cursor-paginated).
- */
 export async function GET(request: Request) {
   // Rate limit: 60 درخواست در دقیقه بر اساس IP
   const ip = request.headers.get('x-forwarded-for')?.split(',').pop()?.trim() ?? 'unknown';
   const rl = await checkRateLimit(`customer-txn:${ip}`, 'api');
   if (!rl.success) {
     return NextResponse.json(
-      {
-        success: false,
-        error: { code: 'RATE_LIMITED', message: 'تعداد درخواست‌ها زیاد است. لطفاً کمی صبر کنید.' },
-      },
+      { success: false, error: { code: 'RATE_LIMITED', message: 'تعداد درخواست‌ها زیاد است. لطفاً کمی صبر کنید.' } },
       { status: 429, headers: PRIVATE_HEADERS },
     );
   }
@@ -38,6 +40,7 @@ export async function GET(request: Request) {
   const limitRaw = Number(url.searchParams.get('limit') ?? '20');
   const limit = Math.min(50, Math.max(1, Number.isFinite(limitRaw) ? Math.floor(limitRaw) : 20));
 
+  // پیدا کردن Customer record کاربر (ownership check — داده کاربر دیگر لیک نمی‌شود)
   const customer = await prisma.customer.findFirst({
     where: { userId: session.user.id },
     select: { id: true },
@@ -53,7 +56,7 @@ export async function GET(request: Request) {
   const entries = await prisma.ledgerEntry.findMany({
     where: { customerId: customer.id },
     orderBy: { createdAt: 'desc' },
-    take: limit + 1,
+    take: limit + 1, // یکی بیشتر برای تشخیص hasMore
     ...(cursorParam ? { cursor: { id: cursorParam }, skip: 1 } : {}),
     select: {
       id: true,

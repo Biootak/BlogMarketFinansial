@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
+import prisma from '@/lib/db';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import prisma from '@/lib/db';
 import { FraudReviewClient } from './_components/FraudReviewClient';
 
 export const metadata: Metadata = {
@@ -35,10 +35,7 @@ async function getFraudQueue() {
 
 export default async function FraudReviewPage() {
   const session = await auth();
-  if (
-    !session?.user ||
-    !['ADMIN', 'OWNER', 'SUPERADMIN'].includes(session.user.role ?? '')
-  ) {
+  if (!session?.user || !['ADMIN', 'OWNER', 'SUPERADMIN'].includes(session.user.role ?? '')) {
     redirect('/dashboard');
   }
 

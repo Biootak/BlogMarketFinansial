@@ -55,6 +55,7 @@ model User {
   VirtualCard         VirtualCard[]
   CurrencyDeal        CurrencyDeal[]
   TransactionOtp      TransactionOtp[]
+  Device              Device[]
 
   @@index([status])
   @@index([role, status])
@@ -712,6 +713,8 @@ model Device {
   createdAt   DateTime     @default(now())
   Customer    Customer?    @relation(fields: [customerId], references: [id], onDelete: Cascade)
   Exchange    Exchange?    @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  /// 2026-07-: اضافه شد — بدون این relation، DeviceActions.ts (userId query) silent fail می‌کرد
+  User        User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([customerId])
   @@index([exchangeId])

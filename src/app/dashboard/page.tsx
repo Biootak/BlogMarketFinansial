@@ -1,6 +1,7 @@
 import { auth } from '@/auth';
 import { notFound, redirect } from 'next/navigation';
 
+import { getFintechKpiData } from '@/actions/getFintechKpiData';
 import { getPopularPosts } from '@/actions/getPopularPosts';
 import { getRecentActivity } from '@/actions/getRecentActivity';
 import { getRecentDrafts } from '@/actions/getRecentDrafts';
@@ -17,6 +18,7 @@ import { getScheduledPosts, getStats } from '@/actions/postActions';
 // a real-time data layer (the ticker). Editorial module kept on disk
 // for rollback.
 import { AtelierDeck } from '@/components/Dashboard/DashboardPage/atelier';
+import { FintechKpiWidget } from '@/components/Dashboard/FintechKpi/FintechKpiWidget';
 import ServiceRequestsWidget from '@/components/Dashboard/ServiceRequests/ServiceRequestsWidget';
 import { checkRole } from '@/lib/auth';
 
@@ -41,6 +43,7 @@ export default async function Dashboard() {
     recentActivityResult,
     marketRates,
     topAuthors,
+    fintechKpi,
   ] = await Promise.all([
     getStats(),
     getScheduledPosts(),
@@ -50,6 +53,7 @@ export default async function Dashboard() {
     getRecentActivity(8),
     getMarketRates(),
     getTopAuthors(4),
+    getFintechKpiData(),
   ]);
 
   if (
@@ -93,6 +97,11 @@ export default async function Dashboard() {
         marketRates={marketRates}
         topAuthors={topAuthors}
       />
+      {isAdmin && (
+        <div className="px-4 sm:px-6 lg:px-8 pb-4">
+          <FintechKpiWidget data={fintechKpi} />
+        </div>
+      )}
       {isAdmin && (
         <div className="px-4 sm:px-6 lg:px-8 pb-8">
           <ServiceRequestsWidget />

@@ -5,7 +5,7 @@
  * pagination از getMyDeals (Server Action) دریافت می‌شوند.
  */
 
-import { auth } from '@/auth';
+import { requireUser } from '@/lib/require-auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import MyDealsClient from './_components/MyDealsClient';
@@ -16,8 +16,8 @@ export const metadata: Metadata = {
 };
 
 export default async function MyDealsPage() {
-  const session = await auth();
-  if (!session?.user) {
+  const auth = await requireUser();
+  if (!auth.success) {
     redirect('/signin?callbackUrl=/dashboard/my-deals');
   }
 

@@ -1,0 +1,133 @@
+/* ============================================================================
+   FintechKpiWidget.module.css — 2026 Admin Fintech KPI Bar
+   Linear-density · OKLCH tokens · spring micro-interactions · RTL-safe
+   ============================================================================ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  margin-block-end: var(--ds-space-5);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+}
+
+.eyebrow {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ds-text-muted);
+}
+
+.viewAll {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-brand-500);
+  text-decoration: none;
+  transition: color var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+.viewAll:hover { color: var(--ds-brand-600); }
+
+/* ─── KPI Strip ───────────────────────────────────────────────────────────── */
+.strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--ds-space-3);
+}
+
+@media (max-width: 860px) {
+  .strip { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 560px) {
+  .strip { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ─── KPI Card ────────────────────────────────────────────────────────────── */
+.kpiCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-4);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-xl);
+  text-decoration: none;
+  box-shadow: var(--ds-shadow-sm);
+  animation: fadeUp var(--ds-duration-base) var(--ds-ease-out-quart) both;
+  transition:
+    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart),
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+.kpiCard:hover {
+  box-shadow: var(--ds-shadow-md);
+  border-color: var(--ds-border-strong);
+  transform: translateY(-2px);
+}
+.kpiCard:active { transform: scale(0.98); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── KPI Icon ────────────────────────────────────────────────────────────── */
+.kpiIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-canvas-subtle);
+  border: 1px solid var(--ds-border-subtle);
+  color: var(--ds-text-muted);
+  transition: transform var(--ds-duration-fast) var(--ds-ease-spring);
+}
+.kpiCard:hover .kpiIcon { transform: translateY(-1px) scale(1.05); }
+
+/* Accent variants — CSS Modules-safe (no attribute selectors) */
+.accentProgress {
+  background: var(--ds-status-progress-bg);
+  border-color: var(--ds-status-progress-border);
+  color: var(--ds-status-progress-fg);
+}
+.accentError {
+  background: var(--ds-status-error-bg);
+  border-color: var(--ds-status-error-border);
+  color: var(--ds-status-error-fg);
+}
+.accentSuccess {
+  background: var(--ds-status-success-bg);
+  border-color: var(--ds-status-success-border);
+  color: var(--ds-status-success-fg);
+}
+.accentPending {
+  background: var(--ds-status-pending-bg);
+  border-color: var(--ds-status-pending-border);
+  color: var(--ds-status-pending-fg);
+}
+
+/* ─── KPI Values ──────────────────────────────────────────────────────────── */
+.kpiVal {
+  font-size: var(--ds-text-xl);
+  font-weight: var(--ds-weight-extrabold);
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-primary);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.kpiLabel {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-muted);
+  letter-spacing: 0.02em;
+}
