@@ -11,9 +11,9 @@ import { Toaster } from '@/components/ui/toaster';
 import { DirectionProvider } from '@radix-ui/react-direction';
 import type { ReactNode } from 'react';
 
-type AllowedRole = 'USER' | 'AUTHOR' | 'SUPPORT' | 'ADMIN' | 'OWNER';
+type AllowedRole = 'USER' | 'AUTHOR' | 'SUPPORT' | 'ADMIN' | 'OWNER' | 'SUPERADMIN';
 
-const KNOWN_ROLES = new Set<string>(['USER', 'AUTHOR', 'SUPPORT', 'ADMIN', 'OWNER']);
+const KNOWN_ROLES = new Set<string>(['USER', 'AUTHOR', 'SUPPORT', 'ADMIN', 'OWNER', 'SUPERADMIN']);
 
 interface DashboardProvidersProps {
   // accepts any string from NextAuth session; narrows to AllowedRole internally

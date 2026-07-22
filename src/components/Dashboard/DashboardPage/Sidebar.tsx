@@ -63,7 +63,7 @@ import {
 
 const ICON_CLASS = 'w-[19px] h-[19px]';
 
-type UserRole = 'USER' | 'AUTHOR' | 'SUPPORT' | 'ADMIN' | 'OWNER';
+type UserRole = 'USER' | 'AUTHOR' | 'SUPPORT' | 'ADMIN' | 'OWNER' | 'SUPERADMIN';
 
 interface SubmenuItem {
   href: string;
@@ -89,6 +89,7 @@ interface NavSection {
 
 const ROLE_LABEL: Record<UserRole, string> = {
   OWNER: 'مالک',
+  SUPERADMIN: 'سوپرادمین',
   ADMIN: 'مدیر',
   SUPPORT: 'پشتیبانی',
   AUTHOR: 'نویسنده',
@@ -97,6 +98,7 @@ const ROLE_LABEL: Record<UserRole, string> = {
 
 const ROLE_GLYPH: Record<UserRole, string> = {
   OWNER: '◆',
+  SUPERADMIN: '◆',
   ADMIN: '◇',
   SUPPORT: '△',
   AUTHOR: '○',
@@ -317,6 +319,7 @@ function getMenu(role: UserRole): NavSection[] {
 
   switch (role) {
     case 'OWNER':
+    case 'SUPERADMIN':
       return [
         { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
         { id: 'content', index: '۰۲', label: 'محتوا', items: [posts, categories] },
