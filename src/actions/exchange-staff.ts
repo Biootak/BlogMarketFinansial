@@ -87,6 +87,8 @@ export async function getAllStaff(opts?: {
   limit?: number;
   offset?: number;
 }): Promise<StaffRow[]> {
+  const auth = await requireAdmin();
+  if (!auth.success) return [];
   try {
     const where: Record<string, unknown> = {};
     if (opts?.exchangeId && opts.exchangeId !== 'all') {

@@ -184,13 +184,8 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
     };
   }
 
-  const senderAccount = senderCustomer.FintechAccount[0];
-  if (!senderAccount) {
-    return {
-      success: false,
-      error: { code: 'NO_ACCOUNT', message: 'حساب فعالی برای این ارز یافت نشد' },
-    };
-  }
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const senderAccount = senderCustomer.FintechAccount[0]!;
 
   // بررسی موجودی
   if (senderAccount.balance < BigInt(amountCents)) {

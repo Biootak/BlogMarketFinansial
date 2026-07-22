@@ -161,12 +161,17 @@ export async function getMyExchangeSettlements(
 
 // ─── COMPUTE (called by cron) ────────────────────────────────────────────────
 
-const ComputeSchema = z.object({
-  exchangeId: z.string().min(1),
-  periodStart: z.coerce.date(),
-  periodEnd: z.coerce.date(),
-  currency: z.string().default('AFN'),
-});
+const ComputeSchema = z
+  .object({
+    exchangeId: z.string().min(1),
+    periodStart: z.coerce.date(),
+    periodEnd: z.coerce.date(),
+    currency: z.string().default('AFN'),
+  })
+  .refine((d) => d.periodStart < d.periodEnd, {
+    message: 'تاریخ شروع باید قبل از تاریخ پایان باشد',
+    path: ['periodStart'],
+  });
 
 /**
  * computePeriodSettlement — محاسبه تسویه دوره‌ای برای یک صرافی
