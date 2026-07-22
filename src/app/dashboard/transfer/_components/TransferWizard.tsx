@@ -28,7 +28,6 @@ import {
   Send,
   User,
 } from 'lucide-react';
-import { randomBytes } from 'node:crypto';
 import { useCallback, useState, useTransition } from 'react';
 import s from './TransferWizard.module.css';
 
@@ -91,7 +90,7 @@ export function TransferWizard() {
     }
     setError(null);
     startTransition(async () => {
-      const idempotencyKey = randomBytes(16).toString('hex');
+      const idempotencyKey = crypto.randomUUID().replace(/-/g, '');
       const res = await initiateTransfer({
         recipientUserId: recipient.id,
         amountCents,

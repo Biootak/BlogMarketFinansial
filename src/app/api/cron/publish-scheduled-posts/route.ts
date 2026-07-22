@@ -25,8 +25,7 @@
 
 import { verifyCronSecret } from '@/lib/cron-auth';
 import prisma from '@/lib/db';
-import { revalidateTag } from '@/lib/revalidate';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from '@/lib/revalidate';
 import { NextResponse } from 'next/server';
 
 // Vercel Cron: Hobby max=10s, Pro max=60s. کوئری ما یک SELECT + چند UPDATE
