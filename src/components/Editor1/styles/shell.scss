@@ -733,8 +733,7 @@
   padding: clamp(28px, 4vw, 56px) clamp(20px, 5vw, 80px) clamp(56px, 7vw, 96px);
   min-height: 480px;
   font-feature-settings: "ss01", "tnum";
-  font-family:
-    "Vazirmatn", "IRANSansX", "Tahoma", ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-vazirmatn, system-ui, sans-serif);
   line-height: 1.95;
 }
 
@@ -2241,7 +2240,7 @@ img[data-upload-state] {
 }
 img[data-upload-state="pending"] {
   // Subtle pulse so the writer knows the upload is in flight.
-  outline: 2px solid color-mix(in oklab, var(--at-accent, #38bdf8) 60%, transparent);
+  outline: 2px solid color-mix(in oklab, var(--at-accent) 60%, transparent);
   outline-offset: 2px;
   animation: at-upload-pulse 1.4s ease-in-out infinite;
 }
@@ -2276,10 +2275,10 @@ img[data-upload-state="complete"] {
 
 @keyframes at-upload-pulse {
   0%, 100% {
-    outline-color: color-mix(in oklab, var(--at-accent, #38bdf8) 60%, transparent);
+    outline-color: color-mix(in oklab, var(--at-accent) 60%, transparent);
   }
   50% {
-    outline-color: color-mix(in oklab, var(--at-accent, #38bdf8) 30%, transparent);
+    outline-color: color-mix(in oklab, var(--at-accent) 30%, transparent);
   }
 }
 

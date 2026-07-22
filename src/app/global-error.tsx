@@ -24,7 +24,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: '#f8fafc',
-            fontFamily: 'system-ui, -apple-system, sans-serif',
+            fontFamily: 'var(--font-vazirmatn, system-ui, sans-serif)',
           }}
         >
           <div
