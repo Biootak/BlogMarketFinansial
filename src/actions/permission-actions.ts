@@ -12,6 +12,7 @@
  */
 
 import prisma from '@/lib/db';
+import { EDITABLE_ROLES } from '@/lib/permissions-constants';
 import { requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import type { FintechActionResult } from '@/types/types';
@@ -32,11 +33,6 @@ export type RoleMatrixEntry = {
   permissionKey: string;
   roles: Record<string, boolean>;
 };
-
-// نقش‌های قابل ویرایش در ماتریس (SUPERADMIN همیشه همه — read-only)
-export const EDITABLE_ROLES = ['CUSTOMER', 'MERCHANT', 'EXCHANGE', 'SUPPORT', 'ADMIN'] as const;
-
-export type EditableRole = (typeof EDITABLE_ROLES)[number];
 
 // ─── READ ─────────────────────────────────────────────────────────────────────
 

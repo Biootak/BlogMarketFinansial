@@ -105,6 +105,10 @@ export const getAllExchanges = safeCache(
 // ─── READ — Single Exchange (برای پنل صراف) ──────────────────────────────────
 
 export async function getExchangeById(id: string): Promise<ExchangeRow | null> {
+  // G1-fix: فقط admin/staff می‌تواند اطلاعات کامل صرافی را ببیند
+  const access = await requireExchangeAccess(id);
+  if (!access.ok) return null;
+
   const row = await prisma.exchange.findUnique({
     where: { id },
     include: { _count: { select: { Customer: true, Transaction: true } } },
@@ -112,14 +116,18 @@ export async function getExchangeById(id: string): Promise<ExchangeRow | null> {
   return row ? mapExchange(row) : null;
 }
 
-/** پیدا کردن صرافی که این user عضو staff آن است */
-export async function getExchangeForUser(userId: string): Promise<{
+/** پیدا کردن صرافی که کاربر فعلی عضو staff آن است */
+export async function getExchangeForUser(): Promise<{
   exchange: ExchangeRow;
   staffRole: string;
   permissions: string[];
 } | null> {
+  // G2-fix: userId را از session می‌خوانیم، نه از پارامتر خارجی
+  const auth = await requireUser();
+  if (!auth.success) return null;
+
   const staff = await prisma.exchangeStaff.findFirst({
-    where: { userId, revokedAt: null },
+    where: { userId: auth.user.id, revokedAt: null },
     include: {
       Exchange: {
         include: { _count: { select: { Customer: true, Transaction: true } } },

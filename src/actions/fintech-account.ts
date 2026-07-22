@@ -316,6 +316,7 @@ export async function confirmWithdraw(
   if (!auth.success) {
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد حساب کاربری شوید' } };
   }
+  const ip = (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
 
   const parsed = ConfirmWithdrawSchema.safeParse(raw);
   if (!parsed.success) {
@@ -393,6 +394,20 @@ export async function confirmWithdraw(
       where: { id: txn.id },
       data: { status: 'COMPLETED', updatedAt: now },
     });
+  });
+
+  // G6-fix: AuditLog برای تکمیل برداشت — C10 الزامی است
+  await prisma.auditLog.create({
+    data: {
+      id: createId(),
+      exchangeId: txn.exchangeId,
+      actorId: auth.user.id,
+      actorRole: 'USER',
+      action: 'WITHDRAWAL_COMPLETED',
+      entityType: 'Transaction',
+      entityId: txnId,
+      ip,
+    },
   });
 
   revalidateTag('wallet');

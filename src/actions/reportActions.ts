@@ -101,8 +101,9 @@ export async function checkReportAccess() {
     throw new Error('احراز هویت الزامی است');
   }
 
+  // G5-fix: SUPERADMIN هم باید دسترسی داشته باشد (مطابق requireAdmin در require-auth.ts)
   const role = session.user.role as string | undefined;
-  if (!role || !['OWNER', 'ADMIN'].includes(role)) {
+  if (!role || !['OWNER', 'ADMIN', 'SUPERADMIN'].includes(role)) {
     throw new Error('شما دسترسی لازم برای مشاهده گزارش‌ها را ندارید');
   }
 }

@@ -9,6 +9,7 @@ import type { ActionResult, UserWithProfile } from '@/types/types';
 import type { Prisma } from '@prisma/client';
 import { Role } from '@prisma/client';
 import { hash } from 'bcryptjs';
+import { v4 as createId } from 'uuid';
 import { z } from 'zod';
 
 // 2026-06-23: role hierarchy for ownership/permission checks.
@@ -325,6 +326,20 @@ export async function updateUserRole(userId: string, newRole: Role) {
       'تغییر نقش کاربر',
       `نقش کاربر "${targetUser.name || targetUser.email}" به "${newRole}" تغییر کرد`,
     );
+
+    // G9-fix: AuditLog برای تغییر نقش — C10 الزامی (تغییر نقش حساس‌ترین عملیات است)
+    await prisma.auditLog.create({
+      data: {
+        id: createId(),
+        exchangeId: 'PLATFORM',
+        actorId: session.user.id,
+        actorRole: session.user.role,
+        action: 'USER_ROLE_CHANGED',
+        entityType: 'User',
+        entityId: userId,
+        meta: { prevRole: targetUser.role, newRole } as Prisma.InputJsonValue,
+      },
+    });
 
     // Never serialize the password hash to the client (unlike updateUser,
     // this mutation returned the full row incl. `password` before).

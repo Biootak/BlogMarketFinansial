@@ -168,7 +168,8 @@ export async function createCustomer(
   exchangeId: string,
   raw: unknown,
 ): Promise<FintechActionResult<CustomerRow>> {
-  const access = await requireExchangeAccess(exchangeId);
+  // G7-fix: ساختن مشتری نیاز به write-access دارد — VIEWER مجاز نیست
+  const access = await requireExchangeAccess(exchangeId, true);
   if (!access.ok)
     return { success: false, error: { code: access.error.code, message: access.error.message } };
 
@@ -205,7 +206,8 @@ export async function updateCustomer(
   customerId: string,
   raw: unknown,
 ): Promise<FintechActionResult<CustomerRow>> {
-  const access = await requireExchangeAccess(exchangeId);
+  // G7-fix: ویرایش مشتری نیاز به write-access دارد — VIEWER مجاز نیست
+  const access = await requireExchangeAccess(exchangeId, true);
   if (!access.ok)
     return { success: false, error: { code: access.error.code, message: access.error.message } };
 
@@ -248,7 +250,8 @@ export async function setCustomerStatus(
   customerId: string,
   status: 'PROSPECT' | 'ACTIVE' | 'FROZEN' | 'CLOSED',
 ): Promise<FintechActionResult<{ id: string; status: string }>> {
-  const access = await requireExchangeAccess(exchangeId);
+  // G3-fix: تغییر وضعیت مشتری (freeze/close) نیاز به write-access دارد — VIEWER مجاز نیست
+  const access = await requireExchangeAccess(exchangeId, true);
   if (!access.ok)
     return { success: false, error: { code: access.error.code, message: access.error.message } };
 

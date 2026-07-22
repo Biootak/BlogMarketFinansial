@@ -200,6 +200,11 @@ export async function updateStaff(
       error: { code: 'VALIDATION', message: parsed.error.errors[0]?.message ?? 'داده نامعتبر' },
     };
   }
+  // G4-fix: IDOR guard — بررسی وجود staff قبل از update (تضمین scope صحیح)
+  const existing = await prisma.exchangeStaff.findUnique({ where: { id }, select: { id: true } });
+  if (!existing) {
+    return { success: false, error: { code: 'NOT_FOUND', message: 'کارمند یافت نشد' } };
+  }
   await prisma.exchangeStaff.update({ where: { id }, data: parsed.data });
   revalidateTag('exchange-staff');
   return { success: true, data: { id } };
@@ -210,6 +215,11 @@ export async function revokeStaff(id: string): Promise<FintechActionResult<{ id:
   if (!auth.success) {
     return { success: false, error: { code: auth.code, message: auth.message } };
   }
+  // G4-fix: IDOR guard
+  const existing = await prisma.exchangeStaff.findUnique({ where: { id }, select: { id: true } });
+  if (!existing) {
+    return { success: false, error: { code: 'NOT_FOUND', message: 'کارمند یافت نشد' } };
+  }
   await prisma.exchangeStaff.update({ where: { id }, data: { revokedAt: new Date() } });
   revalidateTag('exchange-staff');
   return { success: true, data: { id } };
@@ -219,6 +229,11 @@ export async function removeStaff(id: string): Promise<FintechActionResult<{ id:
   const auth = await requireAdmin();
   if (!auth.success) {
     return { success: false, error: { code: auth.code, message: auth.message } };
+  }
+  // G4-fix: IDOR guard
+  const existing = await prisma.exchangeStaff.findUnique({ where: { id }, select: { id: true } });
+  if (!existing) {
+    return { success: false, error: { code: 'NOT_FOUND', message: 'کارمند یافت نشد' } };
   }
   await prisma.exchangeStaff.delete({ where: { id } });
   revalidateTag('exchange-staff');
