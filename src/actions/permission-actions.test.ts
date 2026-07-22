@@ -253,7 +253,7 @@ describe('saveRoleMatrix', () => {
   it('roles[roleKey]=false با existing → delete branch اجرا می‌شود', async () => {
     vi.mocked(requireAdmin).mockResolvedValue(ADMIN);
     // override: $transaction به tx با findFirst=existing ارجاع می‌دهد
-    vi.mocked(prisma.$transaction).mockImplementationOnce((fn) => fn(txWithExisting));
+    vi.mocked(prisma.$transaction).mockImplementationOnce((fn) => fn(txWithExisting as never));
 
     const result = await saveRoleMatrix([
       {
