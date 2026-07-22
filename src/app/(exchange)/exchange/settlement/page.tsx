@@ -19,7 +19,7 @@ export default async function SettlementPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/signin');
 
-  const membership = await getExchangeForUser(session.user.id);
+  const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');
 
   // limit=500: settlement ماهانه است — 500 دوره ≈ ۴۰ سال، در عمل هرگز truncate نمی‌شود

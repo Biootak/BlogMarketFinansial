@@ -30,8 +30,8 @@ export default async function ExchangeLayout({
     redirect('/dashboard/exchanges');
   }
 
-  // بررسی staff بودن این user در یک صرافی
-  const membership = await getExchangeForUser(userId);
+  // بررسی staff بودن این user در یک صرافی (G2-fix: session داخل action خوانده می‌شود)
+  const membership = await getExchangeForUser();
   if (!membership) {
     redirect('/dashboard');
   }

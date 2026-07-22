@@ -15,7 +15,7 @@ export default async function CustomersPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/signin');
 
-  const membership = await getExchangeForUser(session.user.id);
+  const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');
 
   const { exchange } = membership;

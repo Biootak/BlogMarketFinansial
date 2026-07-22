@@ -19,7 +19,7 @@ export default async function ExchangeRatesPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/signin');
 
-  const membership = await getExchangeForUser(session.user.id);
+  const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');
 
   const { exchange } = membership;
