@@ -71,10 +71,10 @@
   position: absolute;
   inset-block-start: -40px;
   inset-inline-end: -40px;
-  inline-size: 300px;
-  block-size: 300px;
+  inline-size: 240px;
+  block-size: 240px;
   color: var(--at-fg-muted);
-  opacity: 0.45;
+  opacity: 0.18;
   pointer-events: none;
 }
 
@@ -84,12 +84,16 @@
 }
 
 @media (max-width: 767px) {
-  .heroMark { inline-size: 160px; block-size: 160px; inset-block-start: -20px; inset-inline-end: -20px; opacity: 0.28; }
+  .heroMark { inline-size: 120px; block-size: 120px; inset-block-start: -16px; inset-inline-end: -16px; opacity: 0.12; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .markSpin { animation: none; }
 }
 
 .markSpin {
   transform-origin: center;
-  animation: markSpin 90s linear infinite;
+  animation: markSpin 120s linear infinite;
 }
 
 /* Eyebrow row */
@@ -177,17 +181,15 @@
 /* KPI bar */
 .heroKpi {
   margin-block-start: 24px;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   align-items: center;
-  gap: 0;
-  flex-wrap: wrap;
   position: relative;
   z-index: 1;
   background: color-mix(in oklch, var(--at-fg) 4%, transparent);
   border: 1px solid var(--at-line);
   border-radius: var(--at-radius);
   overflow: hidden;
-  inline-size: fit-content;
   max-inline-size: 100%;
 }
 
@@ -197,6 +199,11 @@
   align-items: center;
   gap: 2px;
   padding: 10px 20px;
+  border-inline-end: 1px solid var(--at-line);
+}
+
+.heroKpiItem:last-child {
+  border-inline-end: none;
 }
 
 .heroKpiValue {
@@ -218,13 +225,6 @@
   color: var(--at-fg-subtle);
   font-weight: 500;
   white-space: nowrap;
-}
-
-.heroKpiDivider {
-  inline-size: 1px;
-  block-size: 36px;
-  background: var(--at-line);
-  flex-shrink: 0;
 }
 
 /* Actions */
@@ -397,8 +397,8 @@
 
 /* SUPERADMIN */
 .roleCardSuperAdmin {
-  border-color: color-mix(in oklch, var(--ds-brand-500) 30%, transparent);
-  background: color-mix(in oklch, var(--ds-brand-500) 5%, var(--at-surface)) !important;
+  border-color: color-mix(in oklch, var(--nova-rose) 30%, transparent);
+  background: color-mix(in oklch, var(--nova-rose) 5%, var(--at-surface)) !important;
   cursor: default;
 }
 
@@ -458,7 +458,7 @@
 }
 
 .roleCardSuperAdminIcon {
-  color: var(--ds-brand-500);
+  color: var(--nova-rose);
   flex-shrink: 0;
 }
 
@@ -890,8 +890,14 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--ds-brand-500);
-  opacity: 0.55;
   font-family: inherit;
+  cursor: help;
+}
+
+.thSuperInner {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
 }
 
 .thAct {
@@ -917,9 +923,10 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  padding: 7px 20px;
-  background: color-mix(in oklch, var(--at-fg) 2.5%, transparent);
+  padding: 9px 20px;
+  background: color-mix(in oklch, var(--at-accent) 4%, transparent);
   border-block-end: 1px solid var(--at-line);
+  border-inline-start: 3px solid color-mix(in oklch, var(--at-accent) 50%, transparent);
 }
 
 .groupIcon {
@@ -930,11 +937,11 @@
 }
 
 .groupLabel {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
-  color: var(--at-fg-muted);
+  color: var(--at-fg);
   text-transform: uppercase;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.06em;
   font-family: inherit;
 }
 
@@ -948,8 +955,8 @@
   border-radius: 999px;
   font-size: 10px;
   font-weight: 700;
-  background: color-mix(in oklch, var(--at-fg) 8%, transparent);
-  color: var(--at-fg-muted);
+  background: color-mix(in oklch, var(--at-accent) 14%, transparent);
+  color: var(--at-accent-fg);
 }
 
 /* Data rows */
@@ -960,8 +967,13 @@
   padding-inline: 20px;
   border-block-end: 1px solid color-mix(in oklch, var(--at-line) 70%, transparent);
   transition: background 140ms;
-  animation: rowSlide 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(var(--ri, 0) * 14ms);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .matrixRow {
+    animation: rowSlide 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(min(var(--ri, 0), 12) * 6ms);
+  }
 }
 
 .matrixRow:last-child { border-block-end: none; }
@@ -991,25 +1003,28 @@
   flex-shrink: 0;
   inline-size: 17px;
   block-size: 17px;
-  border: 1.5px solid var(--at-line);
+  border: 1.5px solid color-mix(in oklch, var(--at-fg) 20%, transparent);
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 140ms;
-  opacity: 0;
+  opacity: 0.35;
+  background: color-mix(in oklch, var(--at-fg) 3%, transparent);
   color: white;
 }
 
 .matrixRow:hover .batchChk,
-.rfRow:hover .batchChk {
+.rfRow:hover .batchChk,
+.batchChk:focus-visible {
   opacity: 1;
 }
 
 .batchChk:hover {
   border-color: var(--at-accent);
   background: color-mix(in oklch, var(--at-accent) 8%, transparent);
+  opacity: 1;
 }
 
 .batchChkOn {
@@ -1064,10 +1079,36 @@
   justify-content: center;
 }
 
-/* --cb از inline style روی <Checkbox> می‌آید (ROLE_COLOR[role]).
-   این کلاس فقط سایز را تنظیم می‌کند؛ رنگ از --cb خود element می‌آید. */
-.checkbox {
-  /* no color override — رنگ از style={{ '--cb': ROLE_COLOR[role] }} */
+/* ToggleButton در ماتریس — جایگزین checkbox */
+.matrixToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 28px;
+  block-size: 28px;
+  border-radius: 6px;
+  border: 1.5px solid color-mix(in oklch, var(--cb, var(--at-fg-muted)) 30%, transparent);
+  background: transparent;
+  color: color-mix(in oklch, var(--at-fg-muted) 60%, transparent);
+  cursor: pointer;
+  transition: background 120ms, border-color 120ms, color 120ms;
+  flex-shrink: 0;
+}
+
+.matrixToggle:hover {
+  border-color: var(--cb, var(--at-fg-muted));
+  background: color-mix(in oklch, var(--cb, var(--at-fg-muted)) 10%, transparent);
+  color: var(--cb, var(--at-fg-muted));
+}
+
+.matrixToggleOn {
+  background: color-mix(in oklch, var(--cb, var(--at-accent)) 15%, transparent);
+  border-color: var(--cb, var(--at-accent));
+  color: var(--cb, var(--at-accent));
+}
+
+.matrixToggleOn:hover {
+  background: color-mix(in oklch, var(--cb, var(--at-accent)) 24%, transparent);
 }
 
 .tdSuper {
@@ -1079,7 +1120,6 @@
 
 .superCheck {
   color: var(--ds-brand-500);
-  opacity: 0.38;
   display: flex;
 }
 
@@ -1100,14 +1140,15 @@
   border-radius: 6px;
   border: none;
   background: transparent;
-  color: var(--at-fg-subtle);
+  color: var(--at-fg-faint);
   cursor: pointer;
-  opacity: 0;
+  opacity: 0.4;
   transition: all 140ms;
 }
 
 .matrixRow:hover .deleteBtn,
-.rfRow:hover .deleteBtn {
+.rfRow:hover .deleteBtn,
+.deleteBtn:focus-visible {
   opacity: 1;
 }
 
@@ -1542,7 +1583,7 @@
   position: fixed;
   inset-inline: 24px;
   inset-block-end: 24px;
-  z-index: 50;
+  z-index: 51;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1555,6 +1596,12 @@
   max-inline-size: 440px;
   margin-inline: auto;
   backdrop-filter: blur(8px) saturate(140%);
+}
+
+/* وقتی batchPanel پایین است، unsavedBar بالای آن قرار می‌گیرد */
+.unsavedBarStacked {
+  inset-block-end: 104px;
+  z-index: 52;
 }
 
 .unsavedIcon { color: var(--at-warning); flex-shrink: 0; }
@@ -1645,13 +1692,147 @@
 
 /* ── Dialogs ──────────────────────────────────────────────────────────────── */
 .dialog { max-inline-size: 460px; }
-.dialogWide { max-inline-size: 620px; }
+.dialogWide { max-inline-size: 720px; }
+
+/* Layout دو ستونی Add dialog */
+.addDialogLayout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 600px) {
+  .addDialogLayout { grid-template-columns: 1fr; }
+}
+
+/* ستون راست: لیست سریع */
+.addDialogSuggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.addDialogSuggestLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--at-fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 2px;
+}
+
+.addDialogList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-block-size: 320px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklch, var(--at-fg) 18%, transparent) transparent;
+  padding-inline-end: 2px;
+}
+
+.addDialogList::-webkit-scrollbar { width: 3px; }
+.addDialogList::-webkit-scrollbar-track { background: transparent; }
+.addDialogList::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--at-fg) 18%, transparent);
+  border-radius: 4px;
+}
+
+.addSuggestRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: start;
+  transition: background 100ms, border-color 100ms;
+  inline-size: 100%;
+}
+
+.addSuggestRow:hover {
+  background: color-mix(in oklch, var(--at-fg) 5%, transparent);
+  border-color: color-mix(in oklch, var(--at-fg) 10%, transparent);
+}
+
+.addSuggestRowSel {
+  background: color-mix(in oklch, var(--at-accent) 10%, transparent) !important;
+  border-color: color-mix(in oklch, var(--at-accent) 35%, transparent) !important;
+}
+
+.addSuggestCat {
+  font-size: 12px;
+  flex-shrink: 0;
+  opacity: 0.6;
+  inline-size: 16px;
+  text-align: center;
+}
+
+.addSuggestKey {
+  font-family: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--at-fg);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.addSuggestRowSel .addSuggestKey {
+  color: var(--at-accent);
+}
+
+.addSuggestDesc {
+  font-size: 11.5px;
+  color: var(--at-fg-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-grow: 1;
+}
+
+/* ستون چپ: فرم */
+.addDialogForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
 
 .dialogBody {
   display: flex;
   flex-direction: column;
   gap: 16px;
   padding-block: 4px;
+}
+
+/* نسخه scrollable برای dialog‌هایی با محتوای بلند */
+.dialogBodyScroll {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-block: 4px;
+  max-block-size: 60vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* scrollbar ظریف */
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklch, var(--at-fg) 20%, transparent) transparent;
+}
+
+.dialogBodyScroll::-webkit-scrollbar {
+  width: 4px;
+}
+.dialogBodyScroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.dialogBodyScroll::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--at-fg) 20%, transparent);
+  border-radius: 4px;
 }
 
 .fieldGroup {
@@ -1753,4 +1934,264 @@
   font-size: 13px;
   color: var(--at-accent-fg);
   padding: 32px;
+}
+
+/* ── Add dialog tabs ──────────────────────────────────────────────────────── */
+.addTabs {
+  display: flex;
+  gap: 2px;
+  border-block-end: 1px solid color-mix(in oklch, var(--at-fg) 8%, transparent);
+  margin-block-end: 2px;
+}
+
+.addTab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--at-fg-muted);
+  background: transparent;
+  border: none;
+  border-block-end: 2px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 120ms, border-color 120ms;
+  margin-block-end: -1px;
+}
+
+.addTab:hover { color: var(--at-fg); }
+
+.addTabActive {
+  color: var(--at-fg);
+  border-block-end-color: var(--at-accent);
+}
+
+.addTabBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 18px;
+  block-size: 18px;
+  padding-inline: 4px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: color-mix(in oklch, var(--at-accent) 14%, transparent);
+  color: var(--at-accent);
+}
+
+/* ── Pick pane — command-palette style ───────────────────────────────────── */
+.pickPane {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.pickSearchWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-block-end: 4px;
+}
+
+.pickSearchIcon {
+  position: absolute;
+  inset-inline-start: 10px;
+  color: var(--at-fg-muted);
+  pointer-events: none;
+}
+
+.pickSearchInput {
+  inline-size: 100%;
+  padding: 8px 10px 8px 32px;
+  background: color-mix(in oklch, var(--at-fg) 4%, transparent);
+  border: 1px solid color-mix(in oklch, var(--at-fg) 10%, transparent);
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  color: var(--at-fg);
+  outline: none;
+  transition: border-color 120ms;
+}
+
+.pickSearchInput:focus {
+  border-color: var(--at-accent);
+  background: color-mix(in oklch, var(--at-accent) 3%, transparent);
+}
+
+.pickSearchClear {
+  position: absolute;
+  inset-inline-end: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 20px;
+  block-size: 20px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--at-fg-muted);
+  cursor: pointer;
+}
+
+.pickHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 2px;
+  border-block-end: 1px solid color-mix(in oklch, var(--at-fg) 6%, transparent);
+  margin-block-end: 2px;
+}
+
+.pickSelectAll {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--at-accent);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background 100ms;
+}
+
+.pickSelectAll:hover {
+  background: color-mix(in oklch, var(--at-accent) 10%, transparent);
+}
+
+.pickAvailCount {
+  font-size: 11px;
+  color: var(--at-fg-muted);
+}
+
+.pickList {
+  max-block-size: 340px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklch, var(--at-fg) 16%, transparent) transparent;
+}
+
+.pickList::-webkit-scrollbar { width: 3px; }
+.pickList::-webkit-scrollbar-track { background: transparent; }
+.pickList::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--at-fg) 16%, transparent);
+  border-radius: 4px;
+}
+
+.pickEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 20px;
+  color: var(--at-fg-muted);
+  font-size: 13px;
+}
+
+.pickGroup {
+  margin-block-end: 4px;
+}
+
+.pickGroupLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--at-fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  position: sticky;
+  inset-block-start: 0;
+  background: var(--at-surface, var(--at-bg));
+  z-index: 1;
+}
+
+.pickGroupIcon {
+  opacity: 0.55;
+  font-size: 12px;
+  inline-size: 16px;
+  text-align: center;
+}
+
+.pickGroupCount {
+  margin-inline-start: auto;
+  font-size: 10px;
+  background: color-mix(in oklch, var(--at-fg) 8%, transparent);
+  padding: 0px 5px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.pickRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  inline-size: 100%;
+  padding: 7px 8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: start;
+  transition: background 80ms, border-color 80ms;
+}
+
+.pickRow:hover {
+  background: color-mix(in oklch, var(--at-fg) 4%, transparent);
+}
+
+.pickRowOn {
+  background: color-mix(in oklch, var(--at-accent) 8%, transparent);
+  border-color: color-mix(in oklch, var(--at-accent) 22%, transparent);
+}
+
+.pickRowOn:hover {
+  background: color-mix(in oklch, var(--at-accent) 12%, transparent);
+}
+
+.pickCheck {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 16px;
+  block-size: 16px;
+  border-radius: 4px;
+  border: 1.5px solid color-mix(in oklch, var(--at-fg) 25%, transparent);
+  flex-shrink: 0;
+  color: var(--at-accent);
+  transition: background 80ms, border-color 80ms;
+}
+
+.pickCheckOn {
+  background: color-mix(in oklch, var(--at-accent) 15%, transparent);
+  border-color: var(--at-accent);
+}
+
+.pickKey {
+  font-family: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--at-fg);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.pickRowOn .pickKey {
+  color: var(--at-accent);
+}
+
+.pickDesc {
+  font-size: 12px;
+  color: var(--at-fg-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-grow: 1;
 }

@@ -208,7 +208,7 @@ export default function ServiceRequestsTable({
         data: ServiceRequest[];
         pagination: { totalPages: number; total: number };
       };
-      setRequests(data.data);
+      setRequests(data.data ?? []);
       setTotalPages(data.pagination?.totalPages || 1);
       setTotalCount(data.pagination?.total || 0);
       setSelectedIds(new Set());

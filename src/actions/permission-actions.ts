@@ -190,6 +190,84 @@ export async function createPermission(raw: unknown): Promise<FintechActionResul
   };
 }
 
+// ─── BULK CREATE ─────────────────────────────────────────────────────────────
+
+const BulkCreateSchema = z.array(
+  z.object({
+    key: z
+      .string()
+      .min(3)
+      .max(80)
+      .regex(/^[a-z0-9_:-]+$/, 'کلید مجوز باید به فرمت resource:action باشد'),
+    description: z.string().max(200).nullable().optional(),
+  }),
+).min(1).max(50);
+
+export async function createPermissions(
+  raw: unknown,
+): Promise<FintechActionResult<{ created: PermissionRow[]; skipped: string[] }>> {
+  const auth = await requireAdmin();
+  if (!auth.success) {
+    return { success: false, error: { code: auth.code, message: auth.message } };
+  }
+
+  const parsed = BulkCreateSchema.safeParse(raw);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: { code: 'INVALID_INPUT', message: parsed.error.errors[0]?.message ?? 'داده نامعتبر' },
+    };
+  }
+
+  const keys = parsed.data.map((d) => d.key);
+  const existing = await prisma.permission.findMany({
+    where: { key: { in: keys } },
+    select: { key: true },
+  });
+  const existingKeys = new Set(existing.map((e) => e.key));
+
+  const toCreate = parsed.data.filter((d) => !existingKeys.has(d.key));
+  if (toCreate.length === 0) {
+    return {
+      success: false,
+      error: { code: 'DUPLICATE_KEY', message: 'همه کلیدهای انتخابی قبلاً ثبت شده‌اند' },
+    };
+  }
+
+  const created = await prisma.$transaction(
+    toCreate.map((d) =>
+      prisma.permission.create({
+        data: { id: createId(), key: d.key, description: d.description ?? null },
+      }),
+    ),
+  );
+
+  await prisma.auditLog.create({
+    data: {
+      id: createId(),
+      actorId: auth.user.id,
+      actorRole: auth.user.role,
+      action: 'PERMISSION_BULK_CREATED',
+      entityType: 'Permission',
+      meta: { created: created.map((p) => p.key), skipped: [...existingKeys].filter((k) => keys.includes(k)) },
+    },
+  });
+
+  revalidateTag('permissions');
+  return {
+    success: true,
+    data: {
+      created: created.map((p) => ({
+        id: p.id,
+        key: p.key,
+        description: p.description,
+        createdAt: p.createdAt,
+      })),
+      skipped: [...existingKeys].filter((k) => keys.includes(k)),
+    },
+  };
+}
+
 // ─── DELETE ───────────────────────────────────────────────────────────────────
 
 export async function deletePermission(

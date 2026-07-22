@@ -16,12 +16,12 @@ import {
   type PermissionRow,
   type RoleMatrixEntry,
   createPermission,
+  createPermissions,
   deletePermission,
   saveRoleMatrix,
 } from '@/actions/permission-actions';
 import { ConfirmDialog, EmptyState } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -35,10 +35,15 @@ import { useToast } from '@/components/ui/use-toast';
 import { EDITABLE_ROLES, type EditableRole } from '@/lib/permissions-constants';
 import {
   AlertTriangle,
+  ArrowLeftRight,
+  BarChart2,
   CheckCircle2,
   ChevronDown,
+  ClipboardList,
   Eye,
   Filter,
+  Fingerprint,
+  HandCoins,
   Info,
   Key,
   LayoutGrid,
@@ -47,15 +52,19 @@ import {
   Plus,
   RotateCcw,
   Save,
+  Scale,
   Search,
+  Settings2,
   ShieldAlert,
   ShieldCheck,
   ShieldOff,
   Trash2,
+  TrendingUp,
+  Users,
+  Wallet,
   X,
-  Zap,
 } from 'lucide-react';
-import {
+import React, {
   useCallback,
   useEffect,
   useId,
@@ -103,6 +112,8 @@ const ROLE_COLOR: Record<string, string> = {
   EXCHANGE: 'var(--nova-amber)',
   SUPPORT: 'var(--nova-emerald)',
   ADMIN: 'var(--ds-brand-500)',
+  SUPERADMIN: 'var(--nova-rose)',
+  OWNER: 'var(--ds-brand-700)',
 };
 
 // رنگ tone برای at-hero__quick-item compat
@@ -131,38 +142,53 @@ const CAT_FA: Record<string, string> = {
 };
 
 // CAT icon — برای header گروه‌ها
-const CAT_ICON: Record<string, string> = {
-  wallet: '💳',
-  transfer: '↔',
-  quote: '📈',
-  deal: '🤝',
-  settlement: '⚖',
-  kyc: '🪪',
-  user: '👥',
-  report: '📊',
-  exchange: '💱',
-  admin: '⚙',
-  permissions: '🔑',
-  audit: '📋',
-  fraud: '🚨',
+const CAT_ICON: Record<string, React.ReactNode> = {
+  wallet:      <Wallet      size={12} aria-hidden />,
+  transfer:    <ArrowLeftRight size={12} aria-hidden />,
+  quote:       <TrendingUp  size={12} aria-hidden />,
+  deal:        <HandCoins   size={12} aria-hidden />,
+  settlement:  <Scale       size={12} aria-hidden />,
+  kyc:         <Fingerprint size={12} aria-hidden />,
+  user:        <Users       size={12} aria-hidden />,
+  report:      <BarChart2   size={12} aria-hidden />,
+  exchange:    <ArrowLeftRight size={12} aria-hidden />,
+  admin:       <Settings2   size={12} aria-hidden />,
+  permissions: <Key         size={12} aria-hidden />,
+  audit:       <ClipboardList size={12} aria-hidden />,
+  fraud:       <ShieldAlert size={12} aria-hidden />,
 };
 
 // ─── Permission Templates ──────────────────────────────────────────────────────
 
 const PERMISSION_TEMPLATES = [
-  { key: 'wallet:read', description: 'مشاهده کیف پول', category: 'wallet' },
-  { key: 'wallet:deposit', description: 'واریز به کیف پول', category: 'wallet' },
-  { key: 'wallet:withdraw', description: 'برداشت از کیف پول', category: 'wallet' },
-  { key: 'transfer:create', description: 'ایجاد انتقال جدید', category: 'transfer' },
-  { key: 'transfer:read', description: 'مشاهده تاریخچه انتقال', category: 'transfer' },
-  { key: 'quote:read', description: 'مشاهده نرخ‌ها', category: 'quote' },
-  { key: 'quote:create', description: 'ایجاد قیمت پیشنهادی', category: 'quote' },
-  { key: 'kyc:submit', description: 'ارسال مدارک احراز هویت', category: 'kyc' },
-  { key: 'kyc:review', description: 'بررسی مدارک احراز هویت', category: 'kyc' },
-  { key: 'user:read', description: 'مشاهده اطلاعات کاربران', category: 'user' },
-  { key: 'user:update', description: 'ویرایش کاربران', category: 'user' },
-  { key: 'report:view', description: 'مشاهده گزارش‌ها', category: 'report' },
-  { key: 'audit:read', description: 'مشاهده لاگ‌های سیستم', category: 'audit' },
+  { key: 'wallet:read',         description: 'مشاهده کیف پول',                 category: 'wallet' },
+  { key: 'wallet:deposit',      description: 'واریز به کیف پول',                category: 'wallet' },
+  { key: 'wallet:withdraw',     description: 'برداشت از کیف پول',               category: 'wallet' },
+  { key: 'transfer:create',     description: 'ایجاد انتقال جدید',               category: 'transfer' },
+  { key: 'transfer:read',       description: 'مشاهده تاریخچه انتقال',           category: 'transfer' },
+  { key: 'quote:read',          description: 'مشاهده نرخ‌ها',                   category: 'quote' },
+  { key: 'quote:create',        description: 'ایجاد قیمت پیشنهادی',            category: 'quote' },
+  { key: 'deal:read',           description: 'مشاهده معاملات',                  category: 'deal' },
+  { key: 'deal:confirm',        description: 'تأیید معامله',                    category: 'deal' },
+  { key: 'deal:complete',       description: 'تکمیل معامله',                    category: 'deal' },
+  { key: 'settlement:read',     description: 'مشاهده تسویه‌ها',                 category: 'settlement' },
+  { key: 'settlement:create',   description: 'ایجاد تسویه',                     category: 'settlement' },
+  { key: 'kyc:submit',          description: 'ارسال مدارک احراز هویت',          category: 'kyc' },
+  { key: 'kyc:review',          description: 'بررسی مدارک احراز هویت',          category: 'kyc' },
+  { key: 'kyc:approve',         description: 'تأیید احراز هویت',                category: 'kyc' },
+  { key: 'user:read',           description: 'مشاهده اطلاعات کاربران',          category: 'user' },
+  { key: 'user:update',         description: 'ویرایش کاربران',                  category: 'user' },
+  { key: 'user:block',          description: 'مسدودسازی کاربر',                 category: 'user' },
+  { key: 'report:view',         description: 'مشاهده گزارش‌ها',                 category: 'report' },
+  { key: 'report:export',       description: 'خروجی گزارش‌ها',                  category: 'report' },
+  { key: 'audit:read',          description: 'مشاهده لاگ‌های سیستم',            category: 'audit' },
+  { key: 'exchange:manage',     description: 'مدیریت صرافی',                    category: 'exchange' },
+  { key: 'exchange:rates',      description: 'تنظیم نرخ‌ها',                    category: 'exchange' },
+  { key: 'fraud:read',          description: 'مشاهده گزارش‌های تقلب',           category: 'fraud' },
+  { key: 'fraud:flag',          description: 'علامت‌گذاری تراکنش مشکوک',       category: 'fraud' },
+  { key: 'admin:users',         description: 'مدیریت کاربران پلتفرم',           category: 'admin' },
+  { key: 'admin:content',       description: 'مدیریت محتوا',                    category: 'admin' },
+  { key: 'permissions:manage',  description: 'مدیریت مجوزها',                   category: 'permissions' },
 ];
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -177,10 +203,12 @@ function ProgressArc({
   pct,
   color,
   size = 56,
+  label,
 }: {
   pct: number;
   color: string;
   size?: number;
+  label?: string;
 }) {
   const r = (size - 6) / 2;
   const circ = 2 * Math.PI * r;
@@ -193,7 +221,8 @@ function ProgressArc({
       width={size}
       height={size}
       viewBox={`0 0 ${size} ${size}`}
-      aria-hidden
+      role="img"
+      aria-label={label ? `${label}: ${pct} درصد` : `${pct} درصد`}
       className={s.progressArc}
       style={{ '--arc-color': color } as React.CSSProperties}
     >
@@ -335,7 +364,7 @@ function RoleCard({
       {/* Arc + number */}
       <div className={s.roleCardMid}>
         <div className={s.roleCardArcWrap}>
-          <ProgressArc pct={pct} color={color} size={52} />
+          <ProgressArc pct={pct} color={color} size={52} label={ROLE_FA[role]} />
           <span className={s.roleCardPctOverlay}>{pct}</span>
         </div>
         <div className={s.roleCardNums}>
@@ -399,7 +428,7 @@ function RoleCard({
 
 function SuperAdminRoleCard({ total }: { total: number }) {
   return (
-    <div className={`${s.roleCard} ${s.roleCardSuperAdmin}`}>
+    <div className={`${s.roleCard} ${s.roleCardSuperAdmin}`} style={{ '--rc-color': 'var(--nova-rose)' } as React.CSSProperties}>
       <div className={s.roleCardGlow} aria-hidden />
       <div className={s.roleCardTop}>
         <ShieldAlert size={12} className={s.roleCardSuperAdminIcon} aria-hidden />
@@ -407,7 +436,7 @@ function SuperAdminRoleCard({ total }: { total: number }) {
       </div>
       <div className={s.roleCardMid}>
         <div className={s.roleCardArcWrap}>
-          <ProgressArc pct={100} color="var(--ds-brand-500)" size={52} />
+          <ProgressArc pct={100} color="var(--nova-rose)" size={52} label="سوپرادمین" />
           <span className={s.roleCardPctOverlay}>100</span>
         </div>
         <div className={s.roleCardNums}>
@@ -437,7 +466,7 @@ function PermTooltip({ text }: { text: string }) {
         onMouseLeave={() => setShow(false)}
         onFocus={() => setShow(true)}
         onBlur={() => setShow(false)}
-        aria-label={`توضیح: ${text}`}
+        aria-label={`توضیح کامل: ${text}`}
       >
         <Info size={10} aria-hidden />
       </button>
@@ -445,6 +474,52 @@ function PermTooltip({ text }: { text: string }) {
         <span className={s.tooltipContent} role="tooltip">{text}</span>
       )}
     </span>
+  );
+}
+
+// آیکون info فقط وقتی نمایش داده می‌شود که keyDesc واقعا overflow داشته باشد
+function PermRow({
+  perm,
+  searchQuery,
+  isSelected,
+}: {
+  perm: PermissionRow;
+  searchQuery: string;
+  isSelected: boolean;
+}) {
+  const descRef = useRef<HTMLSpanElement>(null);
+  const [overflows, setOverflows] = useState(false);
+
+  useEffect(() => {
+    const el = descRef.current;
+    if (!el || !perm.description) { setOverflows(false); return; }
+    const check = () => setOverflows(el.scrollWidth > el.clientWidth + 1);
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    window.addEventListener('resize', check);
+    return () => { ro.disconnect(); window.removeEventListener('resize', check); };
+  }, [perm.description, perm.key]);
+
+  return (
+    <div className={s.keyInfo}>
+      <div className={s.keyRow}>
+        <span
+          className={s.keyBadge}
+          style={
+            searchQuery && perm.key.toLowerCase().includes(searchQuery.toLowerCase())
+              ? { outline: '1.5px solid var(--at-accent)', outlineOffset: '2px' }
+              : undefined
+          }
+        >
+          {perm.key}
+        </span>
+        {perm.description && overflows && <PermTooltip text={perm.description} />}
+      </div>
+      {perm.description && (
+        <span ref={descRef} className={s.keyDesc}>{perm.description}</span>
+      )}
+    </div>
   );
 }
 
@@ -485,10 +560,12 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
 
   // ── Dialogs ───────────────────────────────────────────────────────────────
   const [showAdd, setShowAdd] = useState(false);
+  const [addTab, setAddTab] = useState<'pick' | 'manual'>('pick');
+  const [pickSearch, setPickSearch] = useState('');
+  const [picked, setPicked] = useState<Set<string>>(new Set());
   const [newKey, setNewKey] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [addPending, startAddTransition] = useTransition();
-  const [showTemplates, setShowTemplates] = useState(false);
   const [deletePending, startDeleteTransition] = useTransition();
   const [deleteTarget, setDeleteTarget] = useState<PermissionRow | null>(null);
 
@@ -501,6 +578,13 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
     window.addEventListener('keydown', h);
     return () => window.removeEventListener('keydown', h);
   }, [batchSelected]);
+
+  // ── Auto-select first role when entering role-focus with no selection ─────
+  useEffect(() => {
+    if (viewMode === 'role-focus' && !focusedRole && EDITABLE_ROLES.length > 0) {
+      setFocusedRole(EDITABLE_ROLES[0]);
+    }
+  }, [viewMode, focusedRole]);
 
   // ── Derived Data ──────────────────────────────────────────────────────────
 
@@ -537,6 +621,12 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
     EDITABLE_ROLES.reduce((acc, r) => acc + localPerms.filter((p) => localMatrix[`${p.id}:${r}`]).length, 0),
     [localMatrix, localPerms]
   );
+
+  // درصد پوشش: نسبت تخصیص‌های فعال به حداکثر ممکن
+  const pctCovered = useMemo(() => {
+    const max = localPerms.length * EDITABLE_ROLES.length;
+    return max > 0 ? Math.round((totalGranted / max) * 100) : 0;
+  }, [localPerms.length, totalGranted]);
 
   const focusedRolePerms = useMemo(() => {
     if (!focusedRole) return { granted: [] as PermissionRow[], denied: [] as PermissionRow[] };
@@ -611,6 +701,38 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
     setDirty(false);
   }, []);
 
+  // ── bulk pick handler ─────────────────────────────────────────────────────
+  const handleBulkAdd = useCallback(() => {
+    if (picked.size === 0) return;
+    const items = PERMISSION_TEMPLATES.filter((t) => picked.has(t.key));
+    startAddTransition(async () => {
+      const res = await createPermissions(items.map((t) => ({ key: t.key, description: t.description })));
+      if (res.success && res.data) {
+        const newPerms = res.data.created;
+        setLocalPerms((prev) => [...prev, ...newPerms]);
+        setLocalMatrix((prev) => {
+          const next = { ...prev };
+          for (const p of newPerms) {
+            for (const r of EDITABLE_ROLES) next[`${p.id}:${r}`] = false;
+          }
+          originalRef.current = { ...next };
+          return next;
+        });
+        setPicked(new Set());
+        setPickSearch('');
+        setShowAdd(false);
+        const skipped = res.data.skipped.length;
+        toast({
+          title: `${newPerms.length} مجوز ثبت شد`,
+          description: skipped > 0 ? `${skipped} مورد قبلاً وجود داشت` : undefined,
+        });
+      } else if (!res.success) {
+        toast({ title: 'خطا', description: res.error.message, variant: 'destructive' });
+      }
+    });
+  }, [picked, toast]);
+
+  // ── single manual handler ────────────────────────────────────────────────
   const handleAdd = useCallback(() => {
     startAddTransition(async () => {
       const res = await createPermission({ key: newKey.trim(), description: newDesc.trim() || null });
@@ -623,7 +745,7 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
           originalRef.current = { ...next };
           return next;
         });
-        setNewKey(''); setNewDesc(''); setShowAdd(false); setShowTemplates(false);
+        setNewKey(''); setNewDesc(''); setShowAdd(false);
         toast({ title: 'مجوز ثبت شد', description: p.key });
       } else if (!res.success) {
         toast({ title: 'خطا', description: res.error.message, variant: 'destructive' });
@@ -653,6 +775,7 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
   }, [deleteTarget, toast]);
 
   const isSuperAdmin = currentUserRole === 'OWNER' || currentUserRole === 'SUPERADMIN';
+  const canManage = isSuperAdmin || currentUserRole === 'ADMIN';
 
   const handleRoleCardClick = useCallback((role: string) => {
     if (viewMode === 'role-focus' && focusedRole === role) {
@@ -683,7 +806,7 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
           </span>
           <span className={s.heroPillar}>
             <ShieldCheck size={10} aria-hidden />
-            <span>Role-Based Access</span>
+            <span>پوشش {pctCovered}٪</span>
           </span>
         </header>
 
@@ -702,17 +825,14 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
             <span className={s.heroKpiValue}>{localPerms.length}</span>
             <span className={s.heroKpiLabel}>مجوز کل</span>
           </div>
-          <div className={s.heroKpiDivider} aria-hidden />
           <div className={s.heroKpiItem}>
             <span className={s.heroKpiValue}>{EDITABLE_ROLES.length + 1}</span>
             <span className={s.heroKpiLabel}>نقش</span>
           </div>
-          <div className={s.heroKpiDivider} aria-hidden />
           <div className={s.heroKpiItem}>
             <span className={s.heroKpiValue}>{totalGranted}</span>
             <span className={s.heroKpiLabel}>تخصیص فعال</span>
           </div>
-          <div className={s.heroKpiDivider} aria-hidden />
           <div className={s.heroKpiItem}>
             <span className={`${s.heroKpiValue} ${dirty ? s.heroKpiValueDirty : ''}`}>
               {changeCount}
@@ -724,19 +844,10 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
         {/* Actions row */}
         <div className={s.heroActions}>
           {isSuperAdmin && (
-            <>
-              <button type="button" className={`${s.heroCta} at-hero__cta`} onClick={() => setShowAdd(true)}>
-                <Plus size={13} aria-hidden />
-                مجوز جدید
-              </button>
-              {availableTemplates.length > 0 && (
-                <button type="button" className={s.heroGhost} onClick={() => setShowTemplates(true)}>
-                  <Zap size={12} aria-hidden />
-                  <span>قالب‌های آماده</span>
-                  <span className={s.heroGhostBadge}>{availableTemplates.length}</span>
-                </button>
-              )}
-            </>
+            <button type="button" className={`${s.heroCta} at-hero__cta`} onClick={() => setShowAdd(true)}>
+              <Plus size={13} aria-hidden />
+              مجوز جدید
+            </button>
           )}
 
           {/* View toggle inside hero */}
@@ -775,7 +886,7 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
               onSelect={() => handleRoleCardClick(role)}
               onSelectAll={() => handleColumnAll(role as EditableRole, true)}
               onClearAll={() => handleColumnAll(role as EditableRole, false)}
-              isSuperAdmin={isSuperAdmin}
+              isSuperAdmin={canManage}
             />
           );
         })}
@@ -843,18 +954,13 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
           <EmptyState
             icon={Key}
             title="هنوز مجوزی تعریف نشده"
-            description="اولین مجوز را ثبت کنید تا ماتریس دسترسی فعال شود."
+            description={`${PERMISSION_TEMPLATES.length} مجوز استاندارد آماده ثبت است — با یک کلیک همه را اضافه کنید.`}
             action={
               isSuperAdmin ? (
                 <div className={s.emptyActions}>
-                  <Button size="sm" onClick={() => setShowAdd(true)}>
-                    <Plus size={13} /> مجوز اول
+                  <Button size="sm" onClick={() => { setShowAdd(true); setAddTab('pick'); }}>
+                    <Plus size={13} /> ثبت مجوزها
                   </Button>
-                  {PERMISSION_TEMPLATES.length > 0 && (
-                    <Button size="sm" variant="outline" onClick={() => setShowTemplates(true)}>
-                      <Zap size={13} /> قالب‌های آماده
-                    </Button>
-                  )}
                 </div>
               ) : null
             }
@@ -914,8 +1020,12 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
       )}
 
       {/* ── Unsaved Bar ──────────────────────────────────────────────────── */}
-      {dirty && batchSelected.size === 0 && (
-        <div className={s.unsavedBar} role="alert" aria-live="polite">
+      {dirty && (
+        <div
+          className={`${s.unsavedBar} ${batchSelected.size > 0 ? s.unsavedBarStacked : ''}`}
+          role="alert"
+          aria-live="polite"
+        >
           <AlertTriangle size={14} className={s.unsavedIcon} aria-hidden />
           <div className={s.unsavedText}>
             <span className={s.unsavedTitle}>تغییرات ذخیره نشده</span>
@@ -933,84 +1043,190 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
         </div>
       )}
 
-      {/* ── Add Dialog ───────────────────────────────────────────────────── */}
-      <Dialog open={showAdd} onOpenChange={setShowAdd}>
-        <DialogContent dir="rtl" className={s.dialog}>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Key size={16} /> مجوز جدید
-            </DialogTitle>
-          </DialogHeader>
-          <div className={s.dialogBody}>
-            <div className={s.fieldGroup}>
-              <Label htmlFor="pkey">
-                کلید مجوز <span className={s.req}>*</span>
-              </Label>
-              <Input
-                id="pkey"
-                placeholder="wallet:read"
-                value={newKey}
-                onChange={(e) => setNewKey(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter' && newKey.trim()) handleAdd(); }}
-                dir="ltr"
-                className={s.codeInput}
-                autoFocus
-              />
-              <p className={s.fieldHint}>
-                فرمت: <code>resource:action</code> — حروف کوچک، خط‌تیره، دو‌نقطه
-              </p>
-            </div>
-            <div className={s.fieldGroup}>
-              <Label htmlFor="pdesc">توضیح فارسی</Label>
-              <Input
-                id="pdesc"
-                placeholder="توضیح ساده برای adminها"
-                value={newDesc}
-                onChange={(e) => setNewDesc(e.target.value)}
-              />
-            </div>
-            {newKey && (
-              <div className={s.permPreview}>
-                <span className={s.keyBadge}>{newKey}</span>
-                {newDesc && <span className={s.permPreviewDesc}>{newDesc}</span>}
-              </div>
-            )}
-          </div>
-          <DialogFooter className={s.dialogFooter}>
-            <Button variant="outline" onClick={() => setShowAdd(false)} disabled={addPending}>انصراف</Button>
-            <Button onClick={handleAdd} disabled={addPending || !newKey.trim()}>
-              {addPending ? <span className={s.spinner} /> : <CheckCircle2 size={13} />}
-              ثبت
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Templates Dialog ─────────────────────────────────────────────── */}
-      <Dialog open={showTemplates} onOpenChange={setShowTemplates}>
+      {/* ── Add Dialog ─── command-palette multi-select ──────────────────── */}
+      <Dialog open={showAdd} onOpenChange={(o) => {
+        setShowAdd(o);
+        if (!o) { setNewKey(''); setNewDesc(''); setPicked(new Set()); setPickSearch(''); }
+      }}>
         <DialogContent dir="rtl" className={s.dialogWide}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Zap size={16} /> قالب‌های پیشنهادی
+              <Key size={16} /> افزودن مجوز
             </DialogTitle>
           </DialogHeader>
-          <div className={s.templatesGrid}>
-            {availableTemplates.map((t) => (
-              <button
-                key={t.key}
-                type="button"
-                className={`at-tile ${s.templateCard}`}
-                onClick={() => { setNewKey(t.key); setNewDesc(t.description); setShowTemplates(false); setShowAdd(true); }}
-              >
-                <span className={s.keyBadge}>{t.key}</span>
-                <span className={s.templateCardDesc}>{t.description}</span>
-                <span className={s.templateCardCat}>{CAT_FA[t.category] ?? t.category}</span>
-              </button>
-            ))}
-            {availableTemplates.length === 0 && (
-              <p className={s.templatesEmpty}>همه قالب‌ها ثبت شده‌اند ✓</p>
-            )}
+
+          {/* تب‌ها */}
+          <div className={s.addTabs}>
+            <button
+              type="button"
+              className={`${s.addTab} ${addTab === 'pick' ? s.addTabActive : ''}`}
+              onClick={() => setAddTab('pick')}
+            >
+              انتخاب از لیست
+              {availableTemplates.length > 0 && (
+                <span className={s.addTabBadge}>{availableTemplates.length}</span>
+              )}
+            </button>
+            <button
+              type="button"
+              className={`${s.addTab} ${addTab === 'manual' ? s.addTabActive : ''}`}
+              onClick={() => setAddTab('manual')}
+            >
+              دستی
+            </button>
           </div>
+
+          {addTab === 'pick' ? (
+            /* ── تب انتخاب از لیست ── */
+            <div className={s.pickPane}>
+              {/* سرچ */}
+              <div className={s.pickSearchWrap}>
+                <Search size={13} className={s.pickSearchIcon} aria-hidden />
+                <input
+                  className={s.pickSearchInput}
+                  placeholder="جستجو..."
+                  value={pickSearch}
+                  onChange={(e) => setPickSearch(e.target.value)}
+                  dir="ltr"
+                  autoFocus
+                />
+                {pickSearch && (
+                  <button type="button" className={s.pickSearchClear} onClick={() => setPickSearch('')} aria-label="پاک کردن">
+                    <X size={10} />
+                  </button>
+                )}
+              </div>
+
+              {/* هدر: select-all + count */}
+              {availableTemplates.length > 0 && (
+                <div className={s.pickHeader}>
+                  <button
+                    type="button"
+                    className={s.pickSelectAll}
+                    onClick={() => {
+                      const filtered = availableTemplates.filter((t) =>
+                        !pickSearch || t.key.includes(pickSearch.toLowerCase()) || t.description.includes(pickSearch)
+                      );
+                      const allPicked = filtered.every((t) => picked.has(t.key));
+                      setPicked((prev) => {
+                        const next = new Set(prev);
+                        if (allPicked) filtered.forEach((t) => next.delete(t.key));
+                        else filtered.forEach((t) => next.add(t.key));
+                        return next;
+                      });
+                    }}
+                  >
+                    {picked.size > 0 ? `${picked.size} انتخاب‌شده` : 'انتخاب همه'}
+                  </button>
+                  <span className={s.pickAvailCount}>{availableTemplates.length} مجوز موجود</span>
+                </div>
+              )}
+
+              {/* لیست */}
+              <div className={s.pickList}>
+                {availableTemplates.length === 0 ? (
+                  <div className={s.pickEmpty}>
+                    <ShieldCheck size={28} aria-hidden />
+                    <p>همه مجوزهای استاندارد ثبت شده‌اند</p>
+                  </div>
+                ) : (() => {
+                  const filtered = availableTemplates.filter((t) =>
+                    !pickSearch || t.key.includes(pickSearch.toLowerCase()) || t.description.includes(pickSearch)
+                  );
+                  if (filtered.length === 0) return (
+                    <div className={s.pickEmpty}><Search size={22} aria-hidden /><p>نتیجه‌ای یافت نشد</p></div>
+                  );
+
+                  // گروه‌بندی بر اساس category
+                  const byCategory = filtered.reduce<Record<string, typeof filtered>>((acc, t) => {
+                    if (!acc[t.category]) acc[t.category] = [];
+                    acc[t.category]!.push(t);
+                    return acc;
+                  }, {});
+
+                  return Object.entries(byCategory).map(([cat, items]) => (
+                    <div key={cat} className={s.pickGroup}>
+                      <div className={s.pickGroupLabel}>
+                        <span className={s.pickGroupIcon} aria-hidden>{CAT_ICON[cat] ?? '·'}</span>
+                        <span>{CAT_FA[cat] ?? cat}</span>
+                        <span className={s.pickGroupCount}>{items.length}</span>
+                      </div>
+                      {items.map((t) => {
+                        const on = picked.has(t.key);
+                        return (
+                          <button
+                            key={t.key}
+                            type="button"
+                            className={`${s.pickRow} ${on ? s.pickRowOn : ''}`}
+                            onClick={() => setPicked((prev) => {
+                              const next = new Set(prev);
+                              on ? next.delete(t.key) : next.add(t.key);
+                              return next;
+                            })}
+                            aria-pressed={on}
+                          >
+                            <span className={`${s.pickCheck} ${on ? s.pickCheckOn : ''}`} aria-hidden>
+                              {on && <CheckCircle2 size={11} />}
+                            </span>
+                            <code className={s.pickKey}>{t.key}</code>
+                            <span className={s.pickDesc}>{t.description}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ));
+                })()}
+              </div>
+            </div>
+          ) : (
+            /* ── تب دستی ── */
+            <div className={s.addDialogForm}>
+              <div className={s.fieldGroup}>
+                <Label htmlFor="pkey">کلید مجوز <span className={s.req}>*</span></Label>
+                <Input
+                  id="pkey"
+                  placeholder="wallet:read"
+                  value={newKey}
+                  onChange={(e) => setNewKey(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && newKey.trim()) handleAdd(); }}
+                  dir="ltr"
+                  className={s.codeInput}
+                  autoFocus
+                />
+                <p className={s.fieldHint}>فرمت: <code>resource:action</code></p>
+              </div>
+              <div className={s.fieldGroup}>
+                <Label htmlFor="pdesc">توضیح فارسی</Label>
+                <Input
+                  id="pdesc"
+                  placeholder="توضیح ساده..."
+                  value={newDesc}
+                  onChange={(e) => setNewDesc(e.target.value)}
+                />
+              </div>
+              {newKey && (
+                <div className={s.permPreview}>
+                  <span className={s.keyBadge}>{newKey}</span>
+                  {newDesc && <span className={s.permPreviewDesc}>{newDesc}</span>}
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter className={s.dialogFooter}>
+            <Button variant="outline" onClick={() => setShowAdd(false)} disabled={addPending}>انصراف</Button>
+            {addTab === 'pick' ? (
+              <Button onClick={handleBulkAdd} disabled={addPending || picked.size === 0}>
+                {addPending ? <span className={s.spinner} /> : <CheckCircle2 size={13} />}
+                {picked.size > 0 ? `ثبت ${picked.size} مجوز` : 'ثبت'}
+              </Button>
+            ) : (
+              <Button onClick={handleAdd} disabled={addPending || !newKey.trim()}>
+                {addPending ? <span className={s.spinner} /> : <CheckCircle2 size={13} />}
+                ثبت
+              </Button>
+            )}
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -1070,7 +1286,12 @@ function MatrixView({
                 {ROLE_FA[role]}
               </th>
             ))}
-            <th scope="col" className={s.thSuper}>سوپر</th>
+            <th scope="col" className={s.thSuper} title="همیشه فعال برای سوپرادمین — قابل تغییر نیست">
+              <span className={s.thSuperInner}>
+                <Lock size={9} aria-hidden />
+                سوپر
+              </span>
+            </th>
             <th scope="col" className={s.thAct} aria-label="عملیات" />
           </tr>
         </thead>
@@ -1105,38 +1326,27 @@ function MatrixView({
                       >
                         {sel && <CheckCircle2 size={10} aria-hidden />}
                       </div>
-                      <div className={s.keyInfo}>
-                        <div className={s.keyRow}>
-                          <span
-                            className={s.keyBadge}
-                            style={
-                              searchQuery && perm.key.toLowerCase().includes(searchQuery.toLowerCase())
-                                ? { outline: '1.5px solid var(--at-accent)', outlineOffset: '2px' }
-                                : undefined
-                            }
-                          >
-                            {perm.key}
-                          </span>
-                          {perm.description && <PermTooltip text={perm.description} />}
-                        </div>
-                        {perm.description && (
-                          <span className={s.keyDesc}>{perm.description}</span>
-                        )}
-                      </div>
+                      <PermRow perm={perm} searchQuery={searchQuery} isSelected={sel} />
                     </div>
                   </td>
 
-                  {EDITABLE_ROLES.map((role) => (
-                    <td key={role} className={s.tdRole}>
-                      <Checkbox
-                        checked={localMatrix[`${perm.id}:${role}`] ?? false}
-                        onCheckedChange={(v) => onCheck(perm.id, role as EditableRole, v === true)}
-                        aria-label={`${ROLE_FA[role]} — ${perm.key}`}
-                        className={s.checkbox}
-                        style={{ '--cb': ROLE_COLOR[role] } as React.CSSProperties}
-                      />
-                    </td>
-                  ))}
+                  {EDITABLE_ROLES.map((role) => {
+                    const on = localMatrix[`${perm.id}:${role}`] ?? false;
+                    return (
+                      <td key={role} className={s.tdRole}>
+                        <button
+                          type="button"
+                          className={`${s.matrixToggle} ${on ? s.matrixToggleOn : ''}`}
+                          style={{ '--cb': ROLE_COLOR[role] } as React.CSSProperties}
+                          onClick={() => onCheck(perm.id, role as EditableRole, !on)}
+                          aria-label={`${ROLE_FA[role]} — ${perm.key}: ${on ? 'فعال' : 'غیرفعال'}`}
+                          aria-pressed={on}
+                        >
+                          {on ? <ShieldCheck size={13} aria-hidden /> : <ShieldOff size={13} aria-hidden />}
+                        </button>
+                      </td>
+                    );
+                  })}
 
                   <td className={s.tdSuper}>
                     <span className={s.superCheck} aria-label="دسترسی کامل">
