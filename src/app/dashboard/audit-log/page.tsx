@@ -12,15 +12,33 @@ export const metadata: Metadata = {
 
 const PAGE_SIZE = 25;
 
+const CATEGORY_PREFIXES: Record<string, string[]> = {
+  kyc:      ['KYC'],
+  deal:     ['DEAL', 'CURRENCY_DEAL'],
+  exchange: ['EXCHANGE', 'SETTLEMENT'],
+  security: ['FRAUD', 'SECURITY'],
+  transfer: ['TRANSFER', 'PAYMENT'],
+};
+
 async function getAuditLogs(opts: {
   page: number;
   search?: string;
   entityType?: string;
   dateFrom?: string;
   dateTo?: string;
+  category?: string;
 }) {
-  const { page, search, entityType, dateFrom, dateTo } = opts;
+  const { page, search, entityType, dateFrom, dateTo, category } = opts;
   const skip = (page - 1) * PAGE_SIZE;
+
+  const categoryFilter =
+    category && CATEGORY_PREFIXES[category]
+      ? {
+          OR: CATEGORY_PREFIXES[category].map((p) => ({
+            action: { startsWith: p, mode: 'insensitive' as const },
+          })),
+        }
+      : {};
 
   const where = {
     ...(search
@@ -40,6 +58,7 @@ async function getAuditLogs(opts: {
           },
         }
       : {}),
+    ...categoryFilter,
   };
 
   const [logs, total, entityTypes] = await Promise.all([
@@ -97,6 +116,7 @@ export default async function AuditLogPage({
   const entityType = params.entityType ?? '';
   const dateFrom = params.dateFrom ?? '';
   const dateTo = params.dateTo ?? '';
+  const category = params.category ?? '';
 
   const { logs, total, totalPages, entityTypes } = await getAuditLogs({
     page,
@@ -104,6 +124,7 @@ export default async function AuditLogPage({
     entityType: entityType || undefined,
     dateFrom: dateFrom || undefined,
     dateTo: dateTo || undefined,
+    category: category || undefined,
   });
 
   return (
@@ -123,6 +144,7 @@ export default async function AuditLogPage({
           currentEntityType={entityType}
           currentDateFrom={dateFrom}
           currentDateTo={dateTo}
+          currentCategory={category}
         />
       </Suspense>
     </div>
