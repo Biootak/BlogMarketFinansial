@@ -36,6 +36,8 @@ export default async function CategoriesPage({
         eyebrow="ساختار"
         title="مدیریت دسته‌بندی‌ها"
         description="تعریف، ویرایش و سازماندهی درختی دسته‌بندی‌های محتوا"
+        icon="folder-open"
+        accent="cyan"
         actions={
           <>
             <SearchCategories />
