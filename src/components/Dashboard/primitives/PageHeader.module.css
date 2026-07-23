@@ -1,0 +1,229 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   PageHeader — Nova 2026
+   ─────────────────────────────────────────────────────────────────────────
+   الهام مستقیم از AtelierHero + Vercel/Linear page titles
+   ساختار: کارت پانورامیک با SVG geometric mark + gradient دوگانه +
+           live accent dot + title درشت + description + actions
+   بدون border، بدون shadow کلیشه‌ای — depth از gradient و mark میاد
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.header {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--ds-space-5);
+  flex-wrap: wrap;
+
+  padding: var(--ds-space-6) var(--ds-space-6) var(--ds-space-5);
+  margin-block-end: var(--ds-space-5);
+
+  background:
+    radial-gradient(ellipse 70% 140% at 100% 0%,
+      color-mix(in oklch, var(--ph-c, var(--at-accent)) 14%, transparent),
+      transparent 55%),
+    radial-gradient(ellipse 50% 90% at 0% 100%,
+      color-mix(in oklch, var(--ph-c, var(--at-accent)) 7%, transparent),
+      transparent 50%),
+    var(--at-surface);
+
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-xl, 20px);
+  box-shadow:
+    0 1px 0 oklch(100% 0 0 / 0.06) inset,
+    0 2px 8px -2px oklch(18% 0.02 255 / 0.06);
+
+  overflow: hidden;
+  isolation: isolate;
+  animation: motion-fade-in-up 280ms var(--ds-ease-out-quart) both;
+}
+
+.dark .header {
+  box-shadow:
+    0 1px 0 oklch(100% 0 0 / 0.04) inset,
+    0 2px 12px -2px oklch(0% 0 0 / 0.35);
+}
+
+/* ─── SVG geometric mark — گوشه‌ی end-top، آروم می‌چرخه ──────────────────── */
+.mark {
+  position: absolute;
+  inset-block-start: -48px;
+  inset-inline-end: -48px;
+  width: clamp(160px, 22vw, 260px);
+  height: clamp(160px, 22vw, 260px);
+  color: var(--at-fg);
+  opacity: 0.055;
+  pointer-events: none;
+  z-index: 0;
+}
+.dark .mark {
+  opacity: 0.08;
+}
+.markSpin {
+  transform-origin: center;
+  animation: ph-mark-spin 80s linear infinite;
+}
+@keyframes ph-mark-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Body ────────────────────────────────────────────────────────────────── */
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2-5);
+  min-width: 0;
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Meta row: breadcrumb / live dot / eyebrow ──────────────────────────── */
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  flex-wrap: wrap;
+}
+
+/* Live accent dot */
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ph-c, var(--at-accent));
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ph-c, var(--at-accent)) 22%, transparent);
+  flex-shrink: 0;
+  animation: ph-pulse 2s ease-in-out infinite;
+}
+@keyframes ph-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--ph-c, var(--at-accent)) 22%, transparent);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in oklch, var(--ph-c, var(--at-accent)) 0%, transparent);
+    transform: scale(0.88);
+  }
+}
+
+/* breadcrumb */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  font-size: var(--ds-text-xs);
+  color: var(--at-fg-subtle);
+}
+.breadcrumbLink {
+  color: var(--at-fg-subtle);
+  text-decoration: none;
+  transition: color 140ms var(--ds-ease-out-quart);
+}
+.breadcrumbLink:hover { color: var(--at-fg); }
+.breadcrumbSep {
+  opacity: 0.35;
+  display: inline-flex;
+  align-items: center;
+}
+.breadcrumbCurrent {
+  color: var(--at-fg-muted);
+  font-weight: 500;
+}
+
+/* eyebrow pill */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  padding: 3px var(--ds-space-2-5);
+  border-radius: 9999px;
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ph-fg, var(--at-accent-fg));
+  background: color-mix(in oklch, var(--ph-c, var(--at-accent)) 11%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ph-c, var(--at-accent)) 22%, transparent);
+  line-height: 1.4;
+}
+
+/* ─── Title row ────────────────────────────────────────────────────────────── */
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+/* Icon — لارج، روی gradient ظاهر میشه */
+.iconWrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--at-radius-lg, 14px);
+  background: color-mix(in oklch, var(--ph-c, var(--at-accent)) 12%, var(--at-surface));
+  border: 1px solid color-mix(in oklch, var(--ph-c, var(--at-accent)) 22%, transparent);
+  color: var(--ph-c, var(--at-accent));
+  animation: ph-icon-pop 360ms var(--ds-ease-spring) both;
+  animation-delay: 80ms;
+}
+@keyframes ph-icon-pop {
+  from { transform: scale(0.72) rotate(-6deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg);    opacity: 1; }
+}
+
+.title {
+  font-size: clamp(1.5rem, 3vw + 0.5rem, 2.25rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin: 0;
+  /* gradient از at-fg به accent — ظریف */
+  background: linear-gradient(
+    140deg,
+    var(--at-fg) 45%,
+    color-mix(in oklch, var(--at-fg) 55%, var(--ph-c, var(--at-accent))) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Description ──────────────────────────────────────────────────────────── */
+.description {
+  font-size: var(--ds-text-sm);
+  color: var(--at-fg-subtle);
+  margin: 0;
+  line-height: var(--ds-leading-relaxed);
+  max-width: 56ch;
+}
+
+/* ─── Actions ──────────────────────────────────────────────────────────────── */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--ds-space-2);
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACCENT VARIANTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+.accent--indigo  { --ph-c: oklch(56% 0.14 265); --ph-fg: oklch(44% 0.14 265); }
+.accent--emerald { --ph-c: oklch(55% 0.14 162); --ph-fg: oklch(42% 0.14 162); }
+.accent--amber   { --ph-c: oklch(65% 0.14 75);  --ph-fg: oklch(46% 0.14 75);  }
+.accent--rose    { --ph-c: oklch(58% 0.16 20);  --ph-fg: oklch(44% 0.15 20);  }
+.accent--violet  { --ph-c: oklch(56% 0.14 295); --ph-fg: oklch(44% 0.14 295); }
+.accent--cyan    { --ph-c: oklch(58% 0.13 210); --ph-fg: oklch(44% 0.13 210); }
+
+.dark .accent--indigo  { --ph-c: oklch(72% 0.14 265); --ph-fg: oklch(78% 0.13 268); }
+.dark .accent--emerald { --ph-c: oklch(76% 0.14 162); --ph-fg: oklch(82% 0.12 162); }
+.dark .accent--amber   { --ph-c: oklch(78% 0.14 75);  --ph-fg: oklch(82% 0.12 78);  }
+.dark .accent--rose    { --ph-c: oklch(72% 0.16 20);  --ph-fg: oklch(80% 0.14 22);  }
+.dark .accent--violet  { --ph-c: oklch(72% 0.14 295); --ph-fg: oklch(78% 0.13 295); }
+.dark .accent--cyan    { --ph-c: oklch(74% 0.13 210); --ph-fg: oklch(78% 0.12 212); }

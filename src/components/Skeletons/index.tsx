@@ -448,63 +448,97 @@ export const CategoryItemSkeleton: FC = () => (
 
 export const ProfilePageSkeleton: FC = () => (
   <div className="flex flex-col gap-5 animate-pulse">
-    {/* Hero: cover + avatar — padding-block-end mirrors .hero layout */}
-    <div className="relative pb-12">
-      <SkeletonBase className="h-40 w-full rounded-[14px]" />
-      {/* Avatar sits at bottom:0, end-5 — matching .avatarWrap */}
-      <div className="absolute bottom-0 end-5">
-        <SkeletonBase className="h-[5.5rem] w-[5.5rem] rounded-[14px] border-[3px] border-white dark:border-neutral-900" />
-      </div>
-    </div>
-
-    {/* Tab bar */}
-    <SkeletonBase className="h-[42px] w-72 rounded-[10px]" />
-
-    {/* Card 1 — personal info */}
+    {/* Identity panel: cover + avatar overlap + meta */}
     <div
       className={cn(
-        'rounded-[14px] border p-5 space-y-4',
+        'rounded-[20px] border overflow-hidden',
         'bg-white dark:bg-neutral-900',
         'border-neutral-100 dark:border-neutral-800',
       )}
     >
-      <div className="flex items-center gap-3 pb-3 border-b border-neutral-100 dark:border-neutral-800">
-        <SkeletonBase className="h-8 w-8 rounded-[6px]" />
-        <div className="space-y-1.5">
-          <SkeletonBase className="h-4 w-28 rounded" />
-          <SkeletonBase className="h-3 w-40 rounded" />
+      {/* Cover */}
+      <SkeletonBase className="h-44 w-full rounded-none" />
+      {/* Body: avatar overlapping cover + meta */}
+      <div className="flex items-end gap-4 px-5 pb-5 -mt-11">
+        {/* Avatar with ring */}
+        <SkeletonBase className="h-24 w-24 rounded-[14px] border-[3px] border-white dark:border-neutral-900 flex-shrink-0" />
+        {/* Meta */}
+        <div className="flex-1 min-w-0 pt-10 space-y-2">
+          <SkeletonBase className="h-5 w-36 rounded" />
+          <SkeletonBase className="h-3.5 w-44 rounded" />
+          <div className="flex items-center gap-3 pt-1">
+            <SkeletonBase className="h-5 w-16 rounded-full" />
+            <SkeletonBase className="h-3 w-24 rounded" />
+            <SkeletonBase className="h-2 flex-1 max-w-[120px] rounded-full" />
+          </div>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        {[...Array(4)].map((_, i) => (
-          <FormFieldSkeleton key={i} />
+    </div>
+
+    {/* Two-column layout: sidebar + content */}
+    <div className="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-4 items-start">
+      {/* Sidebar nav */}
+      <div
+        className={cn(
+          'rounded-[14px] border p-2 space-y-0.5',
+          'bg-white dark:bg-neutral-900',
+          'border-neutral-100 dark:border-neutral-800',
+        )}
+      >
+        {[...Array(3)].map((_, i) => (
+          <SkeletonBase key={i} className="h-10 w-full rounded-[8px]" />
         ))}
       </div>
-    </div>
 
-    {/* Card 2 — bio */}
-    <div
-      className={cn(
-        'rounded-[14px] border p-5 space-y-4',
-        'bg-white dark:bg-neutral-900',
-        'border-neutral-100 dark:border-neutral-800',
-      )}
-    >
-      <div className="flex items-center gap-3 pb-3 border-b border-neutral-100 dark:border-neutral-800">
-        <SkeletonBase className="h-8 w-8 rounded-[6px]" />
-        <div className="space-y-1.5">
-          <SkeletonBase className="h-4 w-24 rounded" />
-          <SkeletonBase className="h-3 w-36 rounded" />
+      {/* Content area */}
+      <div className="space-y-4">
+        {/* Card 1 — personal info */}
+        <div
+          className={cn(
+            'rounded-[14px] border p-5 space-y-4',
+            'bg-white dark:bg-neutral-900',
+            'border-neutral-100 dark:border-neutral-800',
+          )}
+        >
+          <div className="flex items-center gap-3 pb-3 border-b border-neutral-100 dark:border-neutral-800">
+            <SkeletonBase className="h-9 w-9 rounded-[6px]" />
+            <div className="space-y-1.5">
+              <SkeletonBase className="h-4 w-28 rounded" />
+              <SkeletonBase className="h-3 w-40 rounded" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <FormFieldSkeleton key={i} />
+            ))}
+          </div>
+        </div>
+
+        {/* Card 2 — bio */}
+        <div
+          className={cn(
+            'rounded-[14px] border p-5 space-y-4',
+            'bg-white dark:bg-neutral-900',
+            'border-neutral-100 dark:border-neutral-800',
+          )}
+        >
+          <div className="flex items-center gap-3 pb-3 border-b border-neutral-100 dark:border-neutral-800">
+            <SkeletonBase className="h-9 w-9 rounded-[6px]" />
+            <div className="space-y-1.5">
+              <SkeletonBase className="h-4 w-24 rounded" />
+              <SkeletonBase className="h-3 w-36 rounded" />
+            </div>
+          </div>
+          <FormFieldSkeleton />
+          <SkeletonBase className="h-[7rem] w-full rounded-xl" />
+        </div>
+
+        {/* Submit row */}
+        <div className="flex items-center justify-end gap-3 pt-1">
+          <SkeletonBase className="h-5 w-32 rounded-full" />
+          <SkeletonBase className="h-10 w-40 rounded-lg" />
         </div>
       </div>
-      <FormFieldSkeleton />
-      <SkeletonBase className="h-[6.5rem] w-full rounded-xl" />
-    </div>
-
-    {/* Submit row */}
-    <div className="flex items-center justify-end gap-3 pt-2">
-      <SkeletonBase className="h-5 w-28 rounded-full" />
-      <SkeletonBase className="h-10 w-36 rounded-lg" />
     </div>
   </div>
 );
@@ -723,70 +757,55 @@ export const InlineLoadingSkeleton: FC<{ className?: string }> = ({ className })
 );
 
 export const ServiceRequestsSkeleton: FC = () => (
-  <div className="min-h-screen">
-    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-slate-200/30 dark:bg-slate-800/20 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-slate-200/30 dark:bg-slate-800/20 rounded-full blur-3xl" />
+  <div
+    dir="rtl"
+    className="flex flex-col gap-5 max-w-[960px] py-6"
+    aria-busy="true"
+    aria-label="در حال بارگذاری درخواست‌ها"
+  >
+    {/* Header */}
+    <div className="flex items-end justify-between gap-3">
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-2">
+          <SkeletonBase className="h-9 w-9 rounded-xl" />
+          <SkeletonBase className="h-8 w-44 rounded-lg" />
+        </div>
+        <SkeletonBase className="h-4 w-56 rounded-md ms-11" />
+      </div>
+      <SkeletonBase className="h-10 w-36 rounded-xl" />
     </div>
-    <div className="space-y-8 p-8 max-w-[1600px] mx-auto">
-      <div className="flex items-start justify-between gap-6">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <SkeletonBase className="h-14 w-14 rounded-2xl" />
-            <div className="space-y-2">
-              <SkeletonBase className="h-8 w-48 rounded-lg" />
-              <SkeletonBase className="h-4 w-64 rounded-md" />
-            </div>
-          </div>
+
+    {/* Pipeline Rail */}
+    <div className="flex rounded-2xl overflow-hidden border border-gray-100/80 dark:border-gray-700/40">
+      {[...Array(4)].map((_, i) => (
+        <div key={i} className="flex-1 flex flex-col items-center gap-1 py-3 px-2">
+          <SkeletonBase className="h-7 w-10 rounded-md" />
+          <SkeletonBase className="h-3 w-14 rounded-sm" />
         </div>
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
-        {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className="p-5 rounded-2xl bg-white/80 dark:bg-gray-800/50 border border-gray-100/60 dark:border-gray-700/40"
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <SkeletonBase className="h-10 w-10 rounded-xl" />
-              <SkeletonBase className="h-4 w-16 rounded-md" />
-            </div>
-            <SkeletonBase className="h-8 w-12 rounded-lg" />
-            <SkeletonBase className="h-3 w-20 rounded-md mt-2" />
-          </div>
-        ))}
-      </div>
-      <div className="rounded-2xl overflow-hidden bg-white/80 dark:bg-gray-800/50 border border-gray-100/60 dark:border-gray-700/40">
-        <div className="px-6 py-4 border-b border-gray-100/60 dark:border-gray-700/40">
-          <div className="flex items-center justify-between">
-            <SkeletonBase className="h-6 w-40 rounded-lg" />
-            <div className="flex gap-3">
-              <SkeletonBase className="h-10 w-32 rounded-xl" />
-              <SkeletonBase className="h-10 w-48 rounded-xl" />
-            </div>
-          </div>
-        </div>
-        <div className="divide-y divide-gray-100/60 dark:divide-gray-700/40">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="px-6 py-4 flex items-center gap-4">
-              <SkeletonBase className="h-10 w-10 rounded-full flex-shrink-0" />
-              <div className="flex-1 grid grid-cols-5 gap-4">
-                <div className="space-y-2">
-                  <SkeletonBase className="h-4 w-full rounded-md" />
-                  <SkeletonBase className="h-3 w-2/3 rounded-md" />
-                </div>
-                <SkeletonBase className="h-6 w-20 rounded-full self-center" />
-                <SkeletonBase className="h-4 w-24 rounded-md self-center" />
-                <SkeletonBase className="h-4 w-20 rounded-md self-center" />
-                <div className="flex gap-2 justify-end">
-                  <SkeletonBase className="h-8 w-8 rounded-lg" />
-                  <SkeletonBase className="h-8 w-8 rounded-lg" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      ))}
     </div>
+
+    {/* Claim panel */}
+    <SkeletonBase className="h-12 rounded-2xl" />
+
+    {/* Cards */}
+    {[...Array(4)].map((_, i) => (
+      <div
+        key={i}
+        className="flex items-center gap-3 p-4 rounded-2xl border border-gray-100/80 dark:border-gray-700/40 bg-white/60 dark:bg-gray-800/40"
+        style={{ paddingInlineStart: '1.25rem' }}
+      >
+        <SkeletonBase className="h-10 w-10 rounded-xl flex-shrink-0" />
+        <div className="flex-1 flex flex-col gap-2">
+          <SkeletonBase className="h-4 w-40 rounded-md" />
+          <SkeletonBase className="h-3 w-28 rounded-sm" />
+        </div>
+        <div className="flex flex-col items-end gap-2">
+          <SkeletonBase className="h-4 w-24 rounded-md" />
+          <SkeletonBase className="h-5 w-20 rounded-full" />
+        </div>
+      </div>
+    ))}
   </div>
 );
 

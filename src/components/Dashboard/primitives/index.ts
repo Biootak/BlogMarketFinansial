@@ -7,7 +7,7 @@
  */
 
 export { PageHeader } from './PageHeader';
-export type { PageHeaderProps } from './PageHeader';
+export type { PageHeaderProps, PageHeaderAccent } from './PageHeader';
 
 export { StatCard } from './StatCard';
 export type { StatCardProps } from './StatCard';

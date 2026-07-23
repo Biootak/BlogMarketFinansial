@@ -1,0 +1,141 @@
+/* ============================================================================
+   CenterModal.module.css — Shared center-glass modal pattern
+   Used by: audit-log, settlements, fraud-review, my-deals, users, exchange-staff
+   ============================================================================
+
+   Usage:
+     import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
+     <DialogOverlay className={cm.overlay} />
+     <DialogPrimitive.Content className={cm.panel}>...</DialogPrimitive.Content>
+   ============================================================================ */
+
+/* ── Overlay ──────────────────────────────────────────────────────────────── */
+.overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 48 !important;
+  background: color-mix(in oklch, oklch(10% 0.01 250) 55%, transparent) !important;
+  backdrop-filter: blur(6px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(6px) saturate(120%) !important;
+}
+
+/* ── Panel ────────────────────────────────────────────────────────────────── */
+.panel {
+  position: fixed !important;
+  inset: 0 !important;
+  margin: auto !important;
+  transform: none !important;
+  z-index: 49 !important;
+
+  width: min(600px, 94vw) !important;
+  max-height: min(88vh, 840px) !important;
+  overflow-y: auto !important;
+
+  background: color-mix(in oklch, var(--ds-canvas) 96%, transparent) !important;
+  backdrop-filter: blur(28px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(160%) !important;
+
+  border: 1px solid color-mix(in oklch, var(--ds-border-default) 90%, transparent) !important;
+  border-radius: var(--ds-radius-2xl) !important;
+
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--ds-text-primary) 4%, transparent),
+    0 8px 32px -4px color-mix(in oklch, var(--ds-text-primary) 18%, transparent),
+    0 40px 100px -20px color-mix(in oklch, var(--ds-text-primary) 22%, transparent),
+    inset 0 1px 0 color-mix(in oklch, white 14%, transparent) !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  padding: var(--ds-space-5) !important;
+
+  animation: cmPanelIn 300ms cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
+}
+
+@keyframes cmPanelIn {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.94); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Subtle noise texture — premium depth */
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+.panel > * { position: relative; z-index: 1; }
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding-block-end: var(--ds-space-4);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  margin-block-end: var(--ds-space-4);
+  flex-shrink: 0;
+}
+
+/* ── Close button ─────────────────────────────────────────────────────────── */
+.close {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  inline-size: 28px !important;
+  block-size: 28px !important;
+  border-radius: var(--ds-radius-md) !important;
+  border: 1px solid var(--ds-border-subtle) !important;
+  background: color-mix(in oklch, var(--ds-text-muted) 7%, transparent) !important;
+  color: var(--ds-text-muted) !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  margin-inline-start: auto !important;
+  transition:
+    background var(--ds-duration-fast) ease,
+    color var(--ds-duration-fast) ease,
+    border-color var(--ds-duration-fast) ease !important;
+}
+
+.close:hover {
+  background: color-mix(in oklch, var(--ds-status-error-fg) 10%, transparent) !important;
+  color: var(--ds-status-error-fg) !important;
+  border-color: color-mix(in oklch, var(--ds-status-error-fg) 30%, transparent) !important;
+}
+
+/* ── Body scroll area ─────────────────────────────────────────────────────── */
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5);
+  overflow-y: auto;
+  padding-block-end: var(--ds-space-2);
+  scrollbar-width: thin;
+  scrollbar-color: var(--ds-border-strong) transparent;
+}
+
+.body::-webkit-scrollbar { inline-size: 4px; }
+.body::-webkit-scrollbar-thumb {
+  background: var(--ds-border-strong);
+  border-radius: var(--ds-radius-full);
+}
+
+/* ── Dark mode ────────────────────────────────────────────────────────────── */
+:global(.dark) .panel {
+  background: color-mix(in oklch, oklch(16% 0.012 265) 94%, transparent) !important;
+  border-color: oklch(30% 0.012 265 / 0.7) !important;
+  box-shadow:
+    0 0 0 1px oklch(100% 0 0 / 0.04),
+    0 8px 32px -4px oklch(0% 0 0 / 0.5),
+    0 40px 100px -20px oklch(0% 0 0 / 0.6),
+    inset 0 1px 0 oklch(100% 0 0 / 0.06) !important;
+}
+
+:global(.dark) .overlay {
+  background: color-mix(in oklch, oklch(5% 0.01 250) 70%, transparent) !important;
+}
