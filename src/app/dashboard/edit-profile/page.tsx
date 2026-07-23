@@ -22,6 +22,8 @@ export default async function ProfilePage() {
         eyebrow="حساب کاربری"
         title="ویرایش پروفایل"
         description="اطلاعات حساب، تصویر و توضیحات نمایه‌ی عمومی"
+        icon="user-circle"
+        accent="violet"
       />
 
       <div className="at-form-section">

@@ -1,11 +1,21 @@
-/* ============================================================================
-   SettlementClient.module.css — 2026 Million-dollar Settlement Panel
-   Ramp/Mercury-inspired · OKLCH --ds-* tokens · RTL logical properties ·
-   Spring micro-interactions · Staggered table rows · Persian fintech
-   ============================================================================ */
+/* =============================================================================
+   SettlementClient.module.css — 2026 Million-Dollar Settlement Management
+   Mercury × Ramp × Linear  |  Glass KPI + frosted toolbar + timeline sheet
+   Tokens: --ds-* + --at-* + --nova-*  |  RTL logical properties
+   ============================================================================= */
 
-/* ─── Keyframes ───────────────────────────────────────────────────────────── */
-@keyframes kpiFadeUp {
+/* ── Root ─────────────────────────────────────────────────────────────────── */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5);
+  padding-block-end: var(--ds-space-10);
+  animation: pageIn var(--ds-duration-base, 280ms)
+    var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+
+@keyframes pageIn {
   from {
     opacity: 0;
     transform: translateY(8px);
@@ -16,29 +26,207 @@
   }
 }
 
-@keyframes rowIn {
-  from {
-    opacity: 0;
-    transform: translateX(-4px); /* RTL: slides from inline-start */
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
+/* ── KPI Strip ────────────────────────────────────────────────────────────── */
+
+.kpiStrip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--ds-space-3);
+}
+
+@media (max-width: 1100px) {
+  .kpiStrip {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-@keyframes sheetSlideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
+@media (max-width: 700px) {
+  .kpiStrip {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@keyframes errorSlideDown {
+@media (max-width: 420px) {
+  .kpiStrip {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── KPI Card ─────────────────────────────────────────────────────────────── */
+
+.kpiCard {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  background: color-mix(in oklch, var(--at-surface, var(--ds-surface)) 92%, transparent);
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  border: 1px solid var(--at-line, var(--ds-border-default));
+  border-radius: var(--ds-radius-xl);
+  box-shadow: var(--ds-shadow-sm);
+  overflow: hidden;
+  /* staggered entrance */
+  animation: kpiIn 320ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: var(--kpi-delay, 0ms);
+  transition: box-shadow var(--ds-duration-fast) ease, transform var(--ds-duration-fast)
+    cubic-bezier(0.34, 1.56, 0.64, 1), border-color var(--ds-duration-fast) ease;
+}
+
+/* accent top hairline */
+.kpiCard::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 2px;
+  background: var(--kpi-accent, var(--ds-brand-500));
+  opacity: 0.6;
+  transition: opacity var(--ds-duration-fast) ease;
+}
+
+/* glass sheen — pseudo element overlay */
+.kpiCard::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 40%;
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--kpi-accent, var(--ds-brand-500)) 4%, transparent) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.kpiCard:hover {
+  box-shadow: var(--ds-shadow-md, 0 4px 16px -4px oklch(20% 0 0 / 0.1));
+  transform: translateY(-1px);
+  border-color: color-mix(
+    in oklch,
+    var(--kpi-accent, var(--ds-brand-500)) 30%,
+    var(--at-line, var(--ds-border-default))
+  );
+}
+
+.kpiCard:hover::before {
+  opacity: 1;
+}
+
+/* pending highlight — subtle pulse ring */
+.kpiCardHighlight {
+  border-color: color-mix(
+    in oklch,
+    var(--kpi-accent, var(--ds-accent-amber)) 40%,
+    var(--at-line, var(--ds-border-default))
+  );
+}
+
+.kpiCardHighlight::before {
+  opacity: 0.9;
+}
+
+@keyframes kpiIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* icon wrap */
+.kpiIconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: 36px;
+  block-size: 36px;
+  border-radius: var(--ds-radius-lg);
+  background: color-mix(in oklch, var(--kpi-accent, var(--ds-brand-500)) 12%, transparent);
+  color: var(--kpi-accent, var(--ds-brand-500));
+  transition: transform var(--ds-duration-fast) cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.kpiCard:hover .kpiIconWrap {
+  transform: scale(1.1) rotate(-3deg);
+}
+
+.kpiIcon {
+  flex-shrink: 0;
+}
+
+.kpiBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.kpiVal {
+  font-size: var(--ds-text-lg);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--at-fg, var(--ds-text-primary));
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kpiLabel {
+  font-size: var(--ds-text-xs);
+  color: var(--at-fg-muted, var(--ds-text-muted));
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ── Export Button ────────────────────────────────────────────────────────── */
+
+.exportBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  font-size: var(--ds-text-sm);
+  border-color: var(--at-line, var(--ds-border-default));
+  color: var(--at-fg-muted, var(--ds-text-secondary));
+  transition: background var(--ds-duration-fast) ease, border-color var(--ds-duration-fast) ease,
+    transform var(--ds-duration-fast) cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.exportBtn:hover {
+  border-color: var(--at-line-strong, var(--ds-border-strong));
+  color: var(--at-fg, var(--ds-text-primary));
+  transform: translateY(-1px);
+}
+
+.exportBtn:active {
+  transform: scale(0.97);
+}
+
+/* ── Error Banner ─────────────────────────────────────────────────────────── */
+
+.errorBanner {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  background: var(--ds-status-error-bg);
+  border: 1px solid var(--ds-status-error-border);
+  border-radius: var(--ds-radius-lg);
+  color: var(--ds-status-error-fg);
+  font-size: var(--ds-text-sm);
+  font-weight: 500;
+  animation: slideDown var(--ds-duration-base) var(--ds-ease-out-quart) both;
+}
+
+@keyframes slideDown {
   from {
     opacity: 0;
     transform: translateY(-6px);
@@ -49,125 +237,58 @@
   }
 }
 
-@keyframes breathPulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.55;
-  }
-}
-
-/* ─── Root ────────────────────────────────────────────────────────────────── */
-.root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-5);
-  max-inline-size: 1200px;
-}
-
-/* ─── KPI Strip ───────────────────────────────────────────────────────────── */
-/*
-  Horizontal band flush to card edge; each stat separated by a hairline
-  vertical divider.  Ramp-style: no padding top-level, items own the
-  vertical rhythm.  Mercury-style: hover lifts individual tile.
-*/
-.kpiStrip {
-  display: flex;
-  align-items: stretch;
-  gap: 0;
-  background: var(--ds-surface);
-  border: 1px solid var(--ds-border-default);
-  border-radius: var(--ds-radius-xl);
-  overflow: hidden;
-  box-shadow: var(--ds-shadow-sm);
-}
-
-.kpiItem {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-1);
-  padding: var(--ds-space-4) var(--ds-space-5);
-  animation: kpiFadeUp var(--ds-duration-base) var(--ds-ease-out-quart) both;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
-    var(--ds-duration-fast) var(--ds-ease-out-quart);
-}
-
-/* stagger each KPI tile */
-.kpiItem:nth-child(1) {
-  animation-delay: 0ms;
-}
-.kpiItem:nth-child(3) {
-  animation-delay: 60ms;
-}
-.kpiItem:nth-child(5) {
-  animation-delay: 120ms;
-}
-.kpiItem:nth-child(7) {
-  animation-delay: 180ms;
-}
-
-.kpiItem:hover {
-  background: var(--ds-canvas-subtle);
-}
-
-.kpiVal {
-  font-size: var(--ds-text-2xl);
-  font-weight: var(--ds-weight-extrabold);
-  font-variant-numeric: tabular-nums;
-  line-height: 1.05;
-  color: var(--ds-text-primary);
-  letter-spacing: -0.03em;
-}
-
-.kpiValPending {
-  color: var(--ds-status-pending-fg);
-  /* Subtle living pulse to draw attention to outstanding items */
-  animation: breathPulse 2.4s ease-in-out infinite;
-}
-
-.kpiLabel {
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-medium);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--ds-text-muted);
-}
-
-/* Full-height hairline divider — aligns visually with the strip content */
-.kpiDivider {
-  width: 1px;
-  flex-shrink: 0;
-  background: var(--ds-border-default);
-  align-self: stretch;
-}
-
-/* ─── Error Banner ────────────────────────────────────────────────────────── */
-.errorBanner {
+.errorClose {
+  margin-inline-start: auto;
   display: flex;
   align-items: center;
-  gap: var(--ds-space-2);
-  padding: var(--ds-space-3) var(--ds-space-4);
-  background: var(--ds-status-error-bg);
-  border: 1px solid var(--ds-status-error-border);
-  /* Mercury/Stripe: inline-start accent stripe */
-  border-inline-start-width: 3px;
-  border-inline-start-color: var(--ds-status-error-fg);
-  border-radius: var(--ds-radius-lg);
-  color: var(--ds-status-error-fg);
-  font-size: var(--ds-text-sm);
-  animation: errorSlideDown var(--ds-duration-base) var(--ds-ease-out-quart) both;
+  justify-content: center;
+  inline-size: 20px;
+  block-size: 20px;
+  border-radius: var(--ds-radius-full);
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 120ms ease;
 }
 
-/* ─── Toolbar ─────────────────────────────────────────────────────────────── */
+.errorClose:hover {
+  opacity: 1;
+}
+
+/* ── Toolbar ──────────────────────────────────────────────────────────────── */
+
 .toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--ds-space-4);
+  gap: var(--ds-space-3);
   flex-wrap: wrap;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  background: color-mix(in oklch, var(--at-surface, var(--ds-surface)) 88%, transparent);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid var(--at-line, var(--ds-border-default));
+  border-radius: var(--ds-radius-xl);
+  box-shadow: var(--ds-shadow-sm);
+  position: sticky;
+  inset-block-start: var(--ds-space-4, 1rem);
+  z-index: 20;
+  transition: box-shadow var(--ds-duration-fast) ease;
+}
+
+.toolbarStart {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.toolbarIcon {
+  color: var(--at-fg-muted, var(--ds-text-muted));
+  flex-shrink: 0;
 }
 
 .toolbarEnd {
@@ -176,629 +297,884 @@
   gap: var(--ds-space-2);
 }
 
-/*
-  Batch approve — Ramp-style: brand-filled, spring lift on hover.
-  Active state snaps back with scale (spring overshoot feel).
-*/
-.batchBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ds-space-2) !important;
-  background: var(--ds-brand-500) !important;
-  color: var(--ds-text-inverse) !important;
-  border: none !important;
-  box-shadow: 0 2px 8px -2px color-mix(in oklch, var(--ds-brand-500) 45%, transparent) !important;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
-    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
-    var(--ds-ease-spring) !important;
-}
-.batchBtn:hover:not(:disabled) {
-  background: var(--ds-brand-600) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px -4px color-mix(in oklch, var(--ds-brand-500) 50%, transparent) !important;
-}
-.batchBtn:active:not(:disabled) {
-  transform: scale(0.97);
+/* ── Tabs ─────────────────────────────────────────────────────────────────── */
+
+.tabsList {
+  height: 2.125rem;
+  padding: 2px;
+  border-radius: var(--ds-radius-lg);
+  background: color-mix(in oklch, var(--ds-canvas-subtle) 80%, transparent);
+  border: 1px solid var(--at-line, var(--ds-border-default));
+  gap: 2px;
 }
 
-/* CSV export button — subtle ghost style */
-.exportBtn {
+.tabsTrigger {
   display: inline-flex;
   align-items: center;
-  gap: var(--ds-space-2) !important;
-  font-size: var(--ds-text-xs) !important;
-  border: 1.5px solid var(--ds-border-default) !important;
-  background: var(--ds-surface) !important;
-  color: var(--ds-text-secondary) !important;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
-    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
-    var(--ds-ease-spring) !important;
+  gap: var(--ds-space-1);
+  font-size: var(--ds-text-sm);
+  height: calc(2.125rem - 6px);
+  padding-inline: var(--ds-space-3);
+  border-radius: var(--ds-radius-md);
+  white-space: nowrap;
+  transition: background var(--ds-duration-fast) ease, color var(--ds-duration-fast) ease;
 }
-.exportBtn:hover {
-  background: var(--ds-canvas-subtle) !important;
-  border-color: var(--ds-border-strong) !important;
+
+.tabCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 18px;
+  block-size: 16px;
+  padding-inline: 4px;
+  border-radius: var(--ds-radius-full);
+  font-size: 0.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: color-mix(in oklch, var(--at-fg-muted, var(--ds-text-muted)) 14%, transparent);
+  color: var(--at-fg-muted, var(--ds-text-muted));
+  line-height: 1;
+  transition: background var(--ds-duration-fast) ease, color var(--ds-duration-fast) ease;
+}
+
+.tabCountPending {
+  background: color-mix(in oklch, var(--ds-accent-amber) 18%, transparent);
+  color: var(--ds-accent-amber);
+  animation: breathPulse 2s ease-in-out infinite;
+}
+
+@keyframes breathPulse {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ── Batch Bar ────────────────────────────────────────────────────────────── */
+
+.batchBar {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-1) var(--ds-space-2);
+  background: color-mix(in oklch, var(--ds-brand-500) 8%, var(--at-surface, var(--ds-surface)));
+  border: 1px solid
+    color-mix(in oklch, var(--ds-brand-500) 25%, var(--at-line, var(--ds-border-default)));
+  border-radius: var(--ds-radius-lg);
+  animation: batchSlideIn 220ms var(--ds-ease-spring) both;
+}
+
+@keyframes batchSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.batchCount {
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  color: var(--ds-brand-500);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.batchApproveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  background: var(--ds-brand-500) !important;
+  color: white !important;
+  border: none !important;
+  font-size: var(--ds-text-xs) !important;
+  padding-inline: var(--ds-space-3) !important;
+  height: 1.875rem !important;
+  border-radius: var(--ds-radius-md) !important;
+  font-weight: 600;
+  transition: background var(--ds-duration-fast) ease, transform var(--ds-duration-fast)
+    cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.batchApproveBtn:hover:not(:disabled) {
+  background: var(--ds-brand-600) !important;
   transform: translateY(-1px);
 }
-.exportBtn:active {
+
+.batchApproveBtn:active:not(:disabled) {
   transform: scale(0.97);
 }
 
-/* ─── Table ───────────────────────────────────────────────────────────────── */
-/*
-  Scroll container keeps the table horizontally navigable on narrow
-  viewports while the sticky thead always stays visible on tall tables.
-*/
-.tableWrap {
-  overflow-x: auto;
-  border: 1px solid var(--ds-border-default);
+.batchClear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 24px;
+  block-size: 24px;
+  border-radius: var(--ds-radius-full);
+  border: none;
+  background: transparent;
+  color: var(--at-fg-muted, var(--ds-text-muted));
+  cursor: pointer;
+  transition: color 120ms ease, background 120ms ease;
+}
+
+.batchClear:hover {
+  color: var(--ds-status-error-fg);
+  background: var(--ds-status-error-bg);
+}
+
+/* ── Empty Wrap ───────────────────────────────────────────────────────────── */
+
+.emptyWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: var(--ds-space-10);
+  border: 1px solid var(--at-line, var(--ds-border-default));
   border-radius: var(--ds-radius-xl);
-  background: var(--ds-surface);
+  background: var(--at-surface, var(--ds-surface));
+}
+
+/* ── Table Wrap ───────────────────────────────────────────────────────────── */
+
+.tableWrap {
+  background: var(--at-surface, var(--ds-surface));
+  border: 1px solid var(--at-line, var(--ds-border-default));
+  border-radius: var(--ds-radius-xl);
+  overflow-x: auto;
   box-shadow: var(--ds-shadow-sm);
-  /* Prevent border-radius clip fighting with sticky header */
   isolation: isolate;
 }
 
 .table {
-  width: 100%;
+  inline-size: 100%;
+  min-inline-size: 820px;
   border-collapse: collapse;
+  font-size: var(--ds-text-sm);
 }
 
-/* Sticky header: stays pinned at top of scroll container */
-.th {
+/* ── Table Head ───────────────────────────────────────────────────────────── */
+
+.thead {
   position: sticky;
-  top: 0;
-  z-index: 2;
-  padding: 10px var(--ds-space-4);
-  text-align: start;
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-semibold);
-  color: var(--ds-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  background: var(--ds-canvas-subtle);
-  border-block-end: 1px solid var(--ds-border-default);
-  white-space: nowrap;
-  /* Glass-like backdrop for depth when scrolling */
-  backdrop-filter: blur(8px);
+  inset-block-start: 0;
+  z-index: 10;
 }
 
-/* Amount column headers — right-aligned to match numeric cells */
-.th.thAmount {
+.thead tr {
+  border-block-end: 1px solid var(--at-line, var(--ds-border-default));
+}
+
+.th {
+  padding: var(--ds-space-3);
+  font-size: 0.67rem;
+  font-weight: 700;
+  color: var(--at-fg-muted, var(--ds-text-muted));
+  text-align: start;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: color-mix(in oklch, var(--ds-canvas-subtle) 90%, transparent);
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+}
+
+.thNum {
   text-align: end;
 }
 
-/* Checkbox column — compact, no end padding */
 .thCheck {
-  width: 40px;
-  padding-inline-end: 0;
+  inline-size: 44px;
+  padding-inline: var(--ds-space-3);
 }
 
-/* Body cells */
-.td {
-  padding: var(--ds-space-3) var(--ds-space-4);
-  font-size: var(--ds-text-sm);
-  color: var(--ds-text-primary);
-  border-block-end: 1px solid var(--ds-border-subtle);
-  vertical-align: middle;
-  background: transparent;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
+.thActions {
+  text-align: end;
 }
 
-.tdCheck {
-  width: 40px;
-  padding-inline-end: 0;
+.thIconLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  cursor: default;
 }
 
-/*
-  Row stagger animation:  nth-child delay creates a cascade effect when
-  the filtered list first renders.  Row hover elevates the whole row
-  by changing each td directly (td-level background for sticky compat).
-*/
+/* ── Table Rows ───────────────────────────────────────────────────────────── */
+
 .tr {
-  animation: rowIn var(--ds-duration-base) var(--ds-ease-out-quart) both;
+  --row-bg: var(--at-surface, var(--ds-surface));
+  border-block-end: 1px solid var(--at-line, var(--ds-border-subtle));
+  cursor: pointer;
+  animation: rowIn var(--ds-duration-base, 280ms) var(--ds-ease-out-quart) both;
+  animation-delay: calc(var(--row-i, 0) * 24ms);
+  transition: transform 140ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  outline: none;
 }
 
-/* Stagger: first 20 rows get incremental delays */
-.tr:nth-child(1) {
-  animation-delay: 0ms;
-}
-.tr:nth-child(2) {
-  animation-delay: 25ms;
-}
-.tr:nth-child(3) {
-  animation-delay: 50ms;
-}
-.tr:nth-child(4) {
-  animation-delay: 75ms;
-}
-.tr:nth-child(5) {
-  animation-delay: 100ms;
-}
-.tr:nth-child(6) {
-  animation-delay: 120ms;
-}
-.tr:nth-child(7) {
-  animation-delay: 140ms;
-}
-.tr:nth-child(8) {
-  animation-delay: 160ms;
-}
-.tr:nth-child(9) {
-  animation-delay: 180ms;
-}
-.tr:nth-child(10) {
-  animation-delay: 200ms;
-}
-.tr:nth-child(11) {
-  animation-delay: 215ms;
-}
-.tr:nth-child(12) {
-  animation-delay: 230ms;
-}
-.tr:nth-child(13) {
-  animation-delay: 245ms;
-}
-.tr:nth-child(14) {
-  animation-delay: 260ms;
-}
-.tr:nth-child(15) {
-  animation-delay: 275ms;
-}
-.tr:nth-child(16) {
-  animation-delay: 285ms;
-}
-.tr:nth-child(17) {
-  animation-delay: 295ms;
-}
-.tr:nth-child(18) {
-  animation-delay: 305ms;
-}
-.tr:nth-child(19) {
-  animation-delay: 315ms;
-}
-.tr:nth-child(20) {
-  animation-delay: 325ms;
+@keyframes rowIn {
+  from {
+    opacity: 0;
+    transform: translateX(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-.tr:hover .td {
-  background: var(--ds-canvas-subtle);
-}
-
-.tr:last-child .td {
+.tr:last-child {
   border-block-end: none;
 }
 
-/* ─── Checkbox ────────────────────────────────────────────────────────────── */
-.checkbox {
-  width: 15px;
-  height: 15px;
-  cursor: pointer;
-  accent-color: var(--ds-brand-500);
-  border-radius: var(--ds-radius-sm);
-  transition: transform var(--ds-duration-fast) var(--ds-ease-spring);
-}
-.checkbox:hover {
-  transform: scale(1.1);
+.tr:hover {
+  --row-bg: var(--ds-canvas-subtle);
+  transform: translateY(-1px);
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 2px 8px oklch(0% 0 0 / 0.06);
 }
 
-/* ─── Exchange cell ───────────────────────────────────────────────────────── */
+.tr:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: -2px;
+}
+
+.trSelected {
+  --row-bg: color-mix(in oklch, var(--ds-brand-500) 5%, var(--at-surface, var(--ds-surface)));
+}
+
+.trSelected .td {
+  border-inline-start: 2px solid var(--ds-brand-500) !important;
+}
+
+/* only apply to first td of selected row */
+.trSelected > td:first-child {
+  border-inline-start: 2px solid var(--ds-brand-500);
+}
+
+/* ── Table Cells ──────────────────────────────────────────────────────────── */
+
+.td {
+  padding: var(--ds-space-3);
+  vertical-align: middle;
+  background: var(--row-bg);
+  border-block-end: 1px solid var(--at-line, var(--ds-border-subtle));
+  transition: background 140ms ease;
+}
+
+.tdNum {
+  text-align: end;
+}
+
+.tdCheck {
+  inline-size: 44px;
+  padding-inline: var(--ds-space-3);
+}
+
+.tdActions {
+  text-align: end;
+}
+
+/* ── Checkbox ─────────────────────────────────────────────────────────────── */
+
+.checkLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.checkbox {
+  inline-size: 16px;
+  block-size: 16px;
+  border-radius: var(--ds-radius-sm);
+  border: 1.5px solid var(--at-line-strong, var(--ds-border-strong));
+  cursor: pointer;
+  accent-color: var(--ds-brand-500);
+  transition: border-color 120ms ease;
+}
+
+.checkbox:hover {
+  border-color: var(--ds-brand-500);
+}
+
+/* ── Exchange Cell ────────────────────────────────────────────────────────── */
+
 .exchangeCell {
   display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-inline-size: 140px;
+}
+
+/* Deterministic color avatar using oklch hue from JS custom property */
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: var(--av-size, 32px);
+  block-size: var(--av-size, 32px);
+  border-radius: var(--ds-radius-full);
+  font-size: calc(var(--av-size, 32px) * 0.33);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  /* Use OKLCH hue from JS for color cohesion */
+  background: oklch(88% 0.05 var(--av-hue, 220));
+  color: oklch(35% 0.1 var(--av-hue, 220));
+  border: 1.5px solid oklch(80% 0.06 var(--av-hue, 220));
+  transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  user-select: none;
+}
+
+.tr:hover .avatar {
+  transform: scale(1.06);
+}
+
+.exchangeInfo {
+  display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
+  min-inline-size: 0;
 }
 
 .exchangeName {
-  font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-semibold);
-  color: var(--ds-text-primary);
-  letter-spacing: -0.01em;
-}
-
-/* Monospace ID fragment — always LTR regardless of page direction */
-.exchangeId {
-  font-size: 10px;
-  font-family: ui-monospace, "SFMono-Regular", monospace;
-  color: var(--ds-text-muted);
-  letter-spacing: 0.03em;
-  direction: ltr;
-  unicode-bidi: isolate;
-}
-
-/* ─── Period cell ─────────────────────────────────────────────────────────── */
-.period {
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
-  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--at-fg, var(--ds-text-primary));
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* ─── Amount cells ────────────────────────────────────────────────────────── */
-/*
-  All monetary + count values: tabular-nums for column alignment,
-  end-aligned so decimal points line up in RTL context.
-*/
+.exchangeId {
+  font-size: var(--ds-text-xs);
+  color: var(--at-fg-subtle, var(--ds-text-muted));
+  font-variant-numeric: tabular-nums;
+  font-family: monospace;
+  opacity: 0.8;
+}
+
+/* ── Period Cell ──────────────────────────────────────────────────────────── */
+
+.period {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  font-size: var(--ds-text-xs);
+  color: var(--at-fg-muted, var(--ds-text-muted));
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.periodSep {
+  color: var(--at-fg-faint, var(--ds-text-muted));
+  opacity: 0.5;
+}
+
+/* ── Amount Cells ─────────────────────────────────────────────────────────── */
+
 .amount,
 .count {
-  display: block;
-  font-variant-numeric: tabular-nums;
   font-size: var(--ds-text-sm);
-  color: var(--ds-text-primary);
-  text-align: end;
+  font-variant-numeric: tabular-nums;
+  color: var(--at-fg, var(--ds-text-primary));
+  font-weight: 500;
 }
 
-/* Platform fee — shown as a cost therefore error-toned */
 .feeAmount {
-  display: block;
-  font-variant-numeric: tabular-nums;
   font-size: var(--ds-text-sm);
-  color: var(--ds-status-error-fg);
-  text-align: end;
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-status-error-fg, oklch(40% 0.12 15));
+  font-weight: 500;
+  opacity: 0.85;
 }
 
-/* Exchange net — the bottom line, success-toned + heavier weight */
 .netAmount {
-  display: block;
-  font-variant-numeric: tabular-nums;
   font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-semibold);
-  color: var(--ds-status-success-fg);
-  text-align: end;
-  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--nova-emerald, oklch(58% 0.12 165));
+  font-weight: 700;
 }
 
-/* ─── Status Badges ───────────────────────────────────────────────────────── */
-/*
-  Each badge class applies bg + border + fg from the semantic status tokens.
-  !important overrides shadcn Badge's inline variant styles without adding
-  a wrapper element.
-*/
+/* ── Status Badge ─────────────────────────────────────────────────────────── */
+
 .statusBadge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-semibold);
   padding: 3px 9px;
   border-radius: var(--ds-radius-full);
-  border: 1px solid;
+  font-size: 0.68rem;
+  font-weight: 600;
   white-space: nowrap;
+  border: none;
   letter-spacing: 0.01em;
 }
 
-/* Before each badge: a 6px dot breathing indicator */
-.statusBadge::before {
-  content: "";
+.statusDot {
   display: inline-block;
-  width: 6px;
-  height: 6px;
+  inline-size: 5px;
+  block-size: 5px;
   border-radius: var(--ds-radius-full);
   background: currentColor;
   flex-shrink: 0;
+  opacity: 0.8;
 }
 
-/* PENDING → amber / warning palette */
-.pending {
-  background: var(--ds-status-pending-bg) !important;
-  color: var(--ds-status-pending-fg) !important;
-  border-color: var(--ds-status-pending-border) !important;
-}
-.pending::before {
-  animation: breathPulse 2s ease-in-out infinite;
+.badgePending {
+  background: var(--ds-status-pending-bg);
+  color: var(--ds-status-pending-fg);
+  border: 1px solid var(--ds-status-pending-border) !important;
 }
 
-/* APPROVED → blue / progress palette */
-.approved {
+.badgePending .statusDot {
+  animation: breathPulse 1.8s ease-in-out infinite;
+}
+
+.badgeApproved {
+  background: var(--ds-status-progress-bg);
+  color: var(--ds-status-progress-fg);
+  border: 1px solid var(--ds-status-progress-border) !important;
+}
+
+.badgePaid {
+  background: var(--ds-status-success-bg);
+  color: var(--ds-status-success-fg);
+  border: 1px solid var(--ds-status-success-border) !important;
+}
+
+.badgeCancelled {
+  background: var(--ds-status-cancelled-bg);
+  color: var(--ds-status-cancelled-fg);
+  border: 1px solid var(--ds-status-cancelled-border, var(--ds-border-default)) !important;
+}
+
+/* ── Action Cell ──────────────────────────────────────────────────────────── */
+
+.actionCell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  justify-content: flex-end;
+}
+
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 30px;
+  block-size: 30px;
+  border-radius: var(--ds-radius-md);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--at-fg-muted, var(--ds-text-muted));
+  cursor: pointer;
+  transition: background 120ms var(--ds-ease-out-quart), color 120ms ease, border-color 120ms ease,
+    transform 120ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.iconBtn:hover {
+  background: var(--ds-canvas-subtle);
+  color: var(--at-fg, var(--ds-text-primary));
+  border-color: var(--at-line, var(--ds-border-default));
+  transform: translateY(-1px);
+}
+
+.iconBtn:active {
+  transform: scale(0.92);
+}
+
+.iconBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.iconBtnApprove:hover {
   background: var(--ds-status-progress-bg) !important;
   color: var(--ds-status-progress-fg) !important;
   border-color: var(--ds-status-progress-border) !important;
 }
 
-/* PAID → emerald / success palette */
-.paid {
+.iconBtnPay:hover {
   background: var(--ds-status-success-bg) !important;
   color: var(--ds-status-success-fg) !important;
   border-color: var(--ds-status-success-border) !important;
 }
 
-/* REJECTED / CANCELLED → rose / error palette */
-.cancelled {
-  background: var(--ds-status-error-bg) !important;
-  color: var(--ds-status-error-fg) !important;
-  border-color: var(--ds-status-error-border) !important;
-}
+/* ── Detail Sheet ─────────────────────────────────────────────────────────── */
 
-/* ─── Action Cell ─────────────────────────────────────────────────────────── */
-.actionCell {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--ds-space-2);
-}
-
-/* Detail (eye) icon button */
-.detailBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: var(--ds-radius-md);
-  border: 1.5px solid var(--ds-border-default);
-  background: var(--ds-surface);
-  color: var(--ds-text-muted);
-  cursor: pointer;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
-    var(--ds-duration-fast) var(--ds-ease-out-quart), color var(--ds-duration-fast)
-    var(--ds-ease-out-quart), transform var(--ds-duration-fast) var(--ds-ease-spring);
-}
-.detailBtn:hover {
-  background: var(--ds-canvas-subtle);
-  border-color: var(--ds-border-strong);
-  color: var(--ds-text-primary);
-  transform: translateY(-2px);
-}
-.detailBtn:active {
-  transform: scale(0.93);
-}
-
-/* Approve action — success-tinted */
-.approveBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ds-space-2) !important;
-  color: var(--ds-status-success-fg) !important;
-  border-color: var(--ds-status-success-border) !important;
-  background: var(--ds-status-success-bg) !important;
-  font-size: var(--ds-text-xs) !important;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
-    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
-    var(--ds-ease-spring) !important;
-}
-.approveBtn:hover:not(:disabled) {
-  background: color-mix(in oklch, var(--ds-status-success-bg) 60%, var(--ds-status-success-border)) !important;
-  box-shadow: 0 2px 8px -3px color-mix(in oklch, var(--ds-status-success-fg) 30%, transparent) !important;
-  transform: translateY(-2px);
-}
-.approveBtn:active:not(:disabled) {
-  transform: scale(0.96);
-}
-
-/* Mark paid action — brand-filled, represents finality */
-.paidBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ds-space-2) !important;
-  font-size: var(--ds-text-xs) !important;
-  background: var(--ds-brand-500) !important;
-  color: var(--ds-text-inverse) !important;
-  border: none !important;
-  box-shadow: 0 2px 6px -2px color-mix(in oklch, var(--ds-brand-500) 40%, transparent) !important;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
-    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
-    var(--ds-ease-spring) !important;
-}
-.paidBtn:hover:not(:disabled) {
-  background: var(--ds-brand-600) !important;
-  box-shadow: 0 4px 12px -4px color-mix(in oklch, var(--ds-brand-500) 50%, transparent) !important;
-  transform: translateY(-2px);
-}
-.paidBtn:active:not(:disabled) {
-  transform: scale(0.96);
-}
-
-/* ─── Detail Sheet ────────────────────────────────────────────────────────── */
-/*
-  Opens from the inline-start edge (left in RTL).  The SheetContent has
-  dir="rtl" so padding is symmetric.  min() ensures it never overflows
-  tiny screens.
-*/
-.detailSheet {
-  inline-size: min(440px, 95vw) !important;
-  overflow-y: auto;
-  animation: sheetSlideIn var(--ds-duration-base) var(--ds-ease-out-expo) both;
-}
-
-/* Sheet header: avatar + exchange name + period date range */
-.detailHeader {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: var(--ds-space-3) !important;
-  padding-block-end: var(--ds-space-4) !important;
-  border-block-end: 1px solid var(--ds-border-default) !important;
-  margin-block-end: var(--ds-space-5) !important;
-}
-
-/* Circular avatar with success-toned brand icon */
-.detailExchangeAvatar {
-  inline-size: 46px;
-  block-size: 46px;
-  border-radius: var(--ds-radius-full);
-  background: var(--ds-status-success-bg);
-  color: var(--ds-status-success-fg);
-  border: 1.5px solid var(--ds-status-success-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 0 0 4px color-mix(in oklch, var(--ds-status-success-fg) 8%, transparent);
-}
-
-.detailTitle {
-  font-size: var(--ds-text-base) !important;
-  font-weight: var(--ds-weight-bold) !important;
-  color: var(--ds-text-primary) !important;
-  margin: 0 !important;
-  letter-spacing: -0.02em;
-}
-
-.detailPeriod {
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
-  font-variant-numeric: tabular-nums;
-  margin-block-start: 3px;
-}
-
-/* Sheet body: stacked sections */
-.detailBody {
+.sheet {
+  padding: 0 !important;
+  max-inline-size: min(480px, 96vw);
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-5);
+  gap: 0;
+  background: color-mix(in oklch, var(--at-surface, var(--ds-surface)) 92%, transparent) !important;
+  backdrop-filter: blur(20px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
+  border-inline-start: 1px solid var(--at-line, var(--ds-border-default)) !important;
 }
 
-/* ─── Meta Grid ─────────────────────────────────────────────────────────────
-   2-column financial breakdown grid inside the sheet.
-   Odd items (full-width label rows) span both columns when they need to.
-   ─────────────────────────────────────────────────────────────────────────── */
-.metaGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1px; /* gap = border between cells */
-  background: var(--ds-border-subtle); /* border color via bg + gap */
-  border: 1px solid var(--ds-border-subtle);
+.sheetHeader {
+  display: block !important;
+  padding: var(--ds-space-5);
+  background: color-mix(in oklch, var(--ds-canvas-subtle) 60%, transparent);
+  border-block-end: 1px solid var(--at-line, var(--ds-border-default));
+}
+
+.sheetHeaderInner {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  flex-wrap: wrap;
+}
+
+.sheetHeaderText {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.sheetTitle {
+  font-size: var(--ds-text-xl) !important;
+  font-weight: 800;
+  color: var(--at-fg, var(--ds-text-primary));
+  letter-spacing: -0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sheetPeriod {
+  font-size: var(--ds-text-xs);
+  color: var(--at-fg-muted, var(--ds-text-muted));
+  font-variant-numeric: tabular-nums;
+  margin-block-start: 2px;
+}
+
+.sheetBadge {
+  flex-shrink: 0;
+}
+
+.sheetBody {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-block-end: var(--ds-space-8);
+}
+
+/* ── Sheet Sections ───────────────────────────────────────────────────────── */
+
+.sheetSection {
+  padding: var(--ds-space-5);
+  border-block-end: 1px solid var(--at-line, var(--ds-border-default));
+}
+
+.sheetSectionTitle {
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--at-fg-muted, var(--ds-text-muted));
+  margin-block-end: var(--ds-space-3);
+}
+
+/* ── Financial Summary ────────────────────────────────────────────────────── */
+
+.finSummary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  border: 1px solid var(--at-line, var(--ds-border-default));
   border-radius: var(--ds-radius-lg);
   overflow: hidden;
 }
 
-.metaItem {
+.finItem {
   display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-1);
-  padding: var(--ds-space-3) var(--ds-space-4);
-  background: var(--ds-surface);
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-3);
+  transition: background 120ms ease;
 }
-.metaItem:hover {
+
+.finItem:not(:last-child) {
+  border-block-end: 1px solid var(--at-line, var(--ds-border-subtle));
+}
+
+.finItem:hover {
   background: var(--ds-canvas-subtle);
 }
 
-/* Span full row for the last odd item so it doesn't float alone */
-.metaItem:last-child:nth-child(odd) {
+.finItemFee {
+  background: color-mix(in oklch, var(--ds-status-error-bg) 40%, transparent);
+}
+
+.finItemNet {
+  background: color-mix(in oklch, var(--ds-status-success-bg) 50%, transparent);
+}
+
+.finIcon {
+  color: var(--at-fg-muted, var(--ds-text-muted));
+  flex-shrink: 0;
+}
+
+.finLabel {
+  font-size: var(--ds-text-sm);
+  color: var(--at-fg-muted, var(--ds-text-muted));
+  flex: 1;
+}
+
+.finVal {
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--at-fg, var(--ds-text-primary));
+}
+
+.finValFee {
+  color: var(--ds-status-error-fg);
+}
+
+.finValNet {
+  font-size: var(--ds-text-base);
+  color: var(--nova-emerald, oklch(58% 0.12 165));
+}
+
+/* ── Timeline ─────────────────────────────────────────────────────────────── */
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-inline-start: var(--ds-space-2);
+}
+
+/* connector line */
+.timeline::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: calc(var(--ds-space-2) + 7px);
+  inset-block: 12px;
+  inline-size: 1.5px;
+  background: var(--at-line, var(--ds-border-default));
+}
+
+.timelineStep {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-2);
+  position: relative;
+}
+
+.timelineDot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 24px;
+  block-size: 24px;
+  border-radius: var(--ds-radius-full);
+  background: var(--at-surface, var(--ds-surface));
+  border: 1.5px solid var(--at-line, var(--ds-border-default));
+  color: var(--at-fg-muted, var(--ds-text-muted));
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+
+.timelineDone .timelineDot {
+  background: var(--ds-status-success-bg);
+  border-color: var(--ds-status-success-border);
+  color: var(--ds-status-success-fg);
+}
+
+.timelineActive .timelineDot {
+  background: var(--ds-status-pending-bg);
+  border-color: var(--ds-status-pending-border);
+  color: var(--ds-status-pending-fg);
+  animation: breathPulse 1.8s ease-in-out infinite;
+}
+
+.timelineText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-block-start: 3px;
+}
+
+.timelineLabel {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--at-fg, var(--ds-text-primary));
+}
+
+.timelineDone .timelineLabel {
+  color: var(--at-fg, var(--ds-text-primary));
+}
+
+.timelineDate {
+  font-size: var(--ds-text-xs);
+  color: var(--at-fg-muted, var(--ds-text-muted));
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Metadata DL ──────────────────────────────────────────────────────────── */
+
+.metaDl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ds-space-2);
+}
+
+.metaRow {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: var(--ds-space-3);
+  background: color-mix(in oklch, var(--ds-canvas-subtle) 70%, transparent);
+  border: 1px solid var(--at-line, var(--ds-border-subtle));
+  border-radius: var(--ds-radius-md);
+  transition: background 120ms ease;
+}
+
+.metaRow:hover {
+  background: var(--ds-canvas-subtle);
+}
+
+.metaRowFull {
   grid-column: 1 / -1;
 }
 
 .metaKey {
   font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-medium);
-  color: var(--ds-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  color: var(--at-fg-muted, var(--ds-text-muted));
+  font-weight: 500;
 }
 
 .metaVal {
   font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-semibold);
-  color: var(--ds-text-primary);
+  font-weight: 600;
+  color: var(--at-fg, var(--ds-text-primary));
   font-variant-numeric: tabular-nums;
-  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* ─── Detail Quick Actions ────────────────────────────────────────────────── */
-.detailActions {
+/* ── Sheet Actions ────────────────────────────────────────────────────────── */
+
+.sheetActions {
+  padding: var(--ds-space-5);
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-3);
-  padding-block-start: var(--ds-space-4);
-  border-block-start: 1px solid var(--ds-border-default);
+  gap: var(--ds-space-2);
 }
 
-/* Full-width buttons in the sheet footer */
-.detailActions .approveBtn,
-.detailActions .paidBtn {
-  width: 100%;
+.sheetActionApprove {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: var(--ds-space-2) !important;
+  inline-size: 100%;
   justify-content: center;
-  min-block-size: 40px;
+  background: var(--ds-brand-500) !important;
+  color: oklch(98% 0 0) !important;
+  border: none !important;
+  height: 2.5rem !important;
+  border-radius: var(--ds-radius-lg) !important;
   font-size: var(--ds-text-sm) !important;
+  font-weight: 600 !important;
+  transition: background var(--ds-duration-fast) ease, transform var(--ds-duration-fast)
+    cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* ─── Responsive ──────────────────────────────────────────────────────────── */
+.sheetActionApprove:hover:not(:disabled) {
+  background: var(--ds-brand-600) !important;
+  transform: translateY(-1px);
+}
 
-/* Tablet / narrow desktop */
-@media (max-width: 960px) {
-  /* Hide deal count column to save space */
+.sheetActionApprove:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.sheetActionPay {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: var(--ds-space-2) !important;
+  inline-size: 100%;
+  justify-content: center;
+  background: var(--ds-status-success-fg) !important;
+  color: oklch(98% 0 0) !important;
+  border: none !important;
+  height: 2.5rem !important;
+  border-radius: var(--ds-radius-lg) !important;
+  font-size: var(--ds-text-sm) !important;
+  font-weight: 600 !important;
+  transition: background var(--ds-duration-fast) ease, transform var(--ds-duration-fast)
+    cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.sheetActionPay:hover:not(:disabled) {
+  filter: brightness(0.9);
+  transform: translateY(-1px);
+}
+
+.sheetActionPay:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+
+/* Hide deal count on medium screens */
+@media (max-width: 1024px) {
   .th:nth-child(5),
   .td:nth-child(5) {
     display: none;
   }
 }
 
-/* Mobile */
-@media (max-width: 768px) {
-  /* Stack KPI strip into 2-up grid */
-  .kpiStrip {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0;
-    border-radius: var(--ds-radius-lg);
-  }
-
-  /* Hide dividers — grid gutters take their place */
-  .kpiDivider {
+/* Hide period on small screens */
+@media (max-width: 800px) {
+  .th:nth-child(3),
+  .td:nth-child(3) {
     display: none;
   }
+}
 
-  /* KPI items: left-align in grid cells, add separating borders */
-  .kpiItem {
-    align-items: flex-start;
-    border-block-end: 1px solid var(--ds-border-subtle);
-    border-inline-end: 1px solid var(--ds-border-subtle);
-  }
-
-  /* Last-in-row items don't need right border */
-  .kpiItem:nth-child(even) {
-    border-inline-end: none;
-  }
-
-  /* Last row items don't need bottom border */
-  .kpiItem:nth-last-child(-n + 2) {
-    border-block-end: none;
-  }
-
-  /* Toolbar stacks vertically */
+@media (max-width: 768px) {
   .toolbar {
     flex-direction: column;
     align-items: flex-start;
+    gap: var(--ds-space-2);
+    position: static; /* no sticky on mobile — saves space */
   }
 
-  .toolbarEnd {
-    width: 100%;
-    justify-content: flex-end;
+  .toolbarStart {
+    flex-wrap: wrap;
   }
 
-  /* Hide fee column on narrow screens */
-  .th:nth-child(6),
-  .td:nth-child(6) {
-    display: none;
+  .tabsList {
+    flex-wrap: wrap;
+    height: auto;
   }
 }
 
-/* Extra-small: single-column KPI strip */
 @media (max-width: 480px) {
-  .kpiStrip {
+  .sheet {
+    max-inline-size: 100vw;
+  }
+
+  .metaDl {
     grid-template-columns: 1fr;
   }
-
-  .kpiItem:nth-child(even) {
-    border-inline-end: 1px solid var(--ds-border-subtle);
-  }
-
-  .kpiItem:nth-last-child(-n + 2) {
-    border-block-end: 1px solid var(--ds-border-subtle);
-  }
-
-  .kpiItem:last-child {
-    border-block-end: none;
-  }
-
-  .detailSheet {
-    inline-size: 100vw !important;
-  }
 }
-
-/* ─── Reduced-motion safety ───────────────────────────────────────────────── */
-/*
-  The global reduce-motion clamp in tokens.css already collapses all
-  animation/transition durations project-wide.  Nothing additional needed
-  here — just document the intent.
-*/

@@ -34,7 +34,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
+import { Dialog, DialogClose, DialogOverlay, DialogPortal, DialogTitle as SheetTitle } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
 import type { Role, UserWithProfile } from '@/types/types';
 import Image from 'next/image';
@@ -55,6 +57,7 @@ import {
   HiOutlineUser,
   HiOutlineUserGroup,
   HiOutlineUsers,
+  HiOutlineXMark,
 } from 'react-icons/hi2';
 import s from './UsersClient.module.css';
 
@@ -278,6 +281,8 @@ export function UsersClient({
         eyebrow="مدیریت"
         title="کاربران"
         description={`${new Intl.NumberFormat('fa-IR').format(totalCount)} کاربر در سیستم`}
+        icon="users"
+        accent="indigo"
         actions={
           <button type="button" className={s.addBtn} onClick={openCreate}>
             <HiOutlinePlus className="size-4" aria-hidden />
@@ -505,168 +510,176 @@ export function UsersClient({
         </div>
       </div>
 
-      {/* ── Create / Edit Sheet ── */}
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent dir="rtl" side="left" className={s.sheet}>
-          <SheetHeader className={s.sheetHeader}>
-            <div className={s.sheetIcon} aria-hidden>
-              {editingUser ? (
-                <HiOutlinePencil className="size-4" />
-              ) : (
-                <HiOutlinePlus className="size-4" />
-              )}
-            </div>
-            <div>
-              <SheetTitle className={s.sheetTitle}>
-                {editingUser ? 'ویرایش کاربر' : 'افزودن کاربر جدید'}
-              </SheetTitle>
-              <p className={s.sheetSub}>
-                {editingUser ? 'تغییر نقش، وضعیت یا اطلاعات حساب' : 'اطلاعات حساب، نقش و دسترسی‌ها'}
-              </p>
-            </div>
-          </SheetHeader>
-
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className={s.form}>
-              <div className={s.formGrid}>
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className={s.label}>
-                        <HiOutlineUser className="size-4" aria-hidden /> نام
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder="نام کاربر" {...field} className={s.input} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className={s.label}>
-                        <HiOutlineEnvelope className="size-4" aria-hidden /> ایمیل
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder="ایمیل" type="email" {...field} className={s.input} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {!editingUser && (
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className={s.label}>
-                        <HiOutlineLockClosed className="size-4" aria-hidden /> رمز عبور
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="رمز عبور"
-                          type="password"
-                          {...field}
-                          className={s.input}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
-
-              <div className={s.formGrid}>
-                <FormField
-                  control={form.control}
-                  name="phoneNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className={s.label}>
-                        <HiOutlinePhone className="size-4" aria-hidden /> شماره تلفن
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder="شماره تلفن" {...field} className={s.input} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="role"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className={s.label}>
-                        <HiOutlineUserGroup className="size-4" aria-hidden /> نقش
-                      </FormLabel>
-                      <Select dir="rtl" onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger className={s.input}>
-                            <SelectValue placeholder="انتخاب نقش" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="USER">کاربر</SelectItem>
-                          <SelectItem value="AUTHOR">نویسنده</SelectItem>
-                          {(currentUserRole === 'OWNER' || currentUserRole === 'SUPERADMIN') && (
-                            <>
-                              <SelectItem value="ADMIN">مدیر</SelectItem>
-                              <SelectItem value="OWNER">مالک</SelectItem>
-                            </>
-                          )}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className={s.label}>
-                      <HiOutlineCheckCircle className="size-4" aria-hidden /> وضعیت
-                    </FormLabel>
-                    <Select dir="rtl" onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger className={s.input}>
-                          <SelectValue placeholder="انتخاب وضعیت" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Active">فعال</SelectItem>
-                        <SelectItem value="Pending">در انتظار</SelectItem>
-                        <SelectItem value="Banned">مسدود</SelectItem>
-                        <SelectItem value="Rejected">رد شده</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
+      {/* ── Create / Edit Modal ── */}
+      <Dialog open={sheetOpen} onOpenChange={setSheetOpen}>
+        <DialogPortal>
+          <DialogOverlay className={cm.overlay} />
+          <DialogPrimitive.Content dir="rtl" className={cm.panel} aria-label={editingUser ? 'ویرایش کاربر' : 'افزودن کاربر'}>
+            <div className={cm.header}>
+              <div className={s.sheetIcon} aria-hidden>
+                {editingUser ? (
+                  <HiOutlinePencil className="size-4" />
+                ) : (
+                  <HiOutlinePlus className="size-4" />
                 )}
-              />
-
-              <div className={s.formFooter}>
-                <Button type="button" variant="outline" onClick={() => setSheetOpen(false)}>
-                  انصراف
-                </Button>
-                <SubmitButton isSubmitting={form.formState.isSubmitting} />
               </div>
-            </form>
-          </Form>
-        </SheetContent>
-      </Sheet>
+              <div>
+                <SheetTitle className={s.sheetTitle}>
+                  {editingUser ? 'ویرایش کاربر' : 'افزودن کاربر جدید'}
+                </SheetTitle>
+                <p className={s.sheetSub}>
+                  {editingUser ? 'تغییر نقش، وضعیت یا اطلاعات حساب' : 'اطلاعات حساب، نقش و دسترسی‌ها'}
+                </p>
+              </div>
+              <DialogClose className={cm.close} aria-label="بستن">
+                <HiOutlineXMark className="size-4" aria-hidden />
+              </DialogClose>
+            </div>
+
+            <div className={cm.body}>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className={s.form}>
+                  <div className={s.formGrid}>
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={s.label}>
+                            <HiOutlineUser className="size-4" aria-hidden /> نام
+                          </FormLabel>
+                          <FormControl>
+                            <Input placeholder="نام کاربر" {...field} className={s.input} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={s.label}>
+                            <HiOutlineEnvelope className="size-4" aria-hidden /> ایمیل
+                          </FormLabel>
+                          <FormControl>
+                            <Input placeholder="ایمیل" type="email" {...field} className={s.input} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {!editingUser && (
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={s.label}>
+                            <HiOutlineLockClosed className="size-4" aria-hidden /> رمز عبور
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="رمز عبور"
+                              type="password"
+                              {...field}
+                              className={s.input}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+
+                  <div className={s.formGrid}>
+                    <FormField
+                      control={form.control}
+                      name="phoneNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={s.label}>
+                            <HiOutlinePhone className="size-4" aria-hidden /> شماره تلفن
+                          </FormLabel>
+                          <FormControl>
+                            <Input placeholder="شماره تلفن" {...field} className={s.input} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="role"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={s.label}>
+                            <HiOutlineUserGroup className="size-4" aria-hidden /> نقش
+                          </FormLabel>
+                          <Select dir="rtl" onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger className={s.input}>
+                                <SelectValue placeholder="انتخاب نقش" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="USER">کاربر</SelectItem>
+                              <SelectItem value="AUTHOR">نویسنده</SelectItem>
+                              {(currentUserRole === 'OWNER' || currentUserRole === 'SUPERADMIN') && (
+                                <>
+                                  <SelectItem value="ADMIN">مدیر</SelectItem>
+                                  <SelectItem value="OWNER">مالک</SelectItem>
+                                </>
+                              )}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className={s.label}>
+                          <HiOutlineCheckCircle className="size-4" aria-hidden /> وضعیت
+                        </FormLabel>
+                        <Select dir="rtl" onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger className={s.input}>
+                              <SelectValue placeholder="انتخاب وضعیت" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Active">فعال</SelectItem>
+                            <SelectItem value="Pending">در انتظار</SelectItem>
+                            <SelectItem value="Banned">مسدود</SelectItem>
+                            <SelectItem value="Rejected">رد شده</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className={s.formFooter}>
+                    <Button type="button" variant="outline" onClick={() => setSheetOpen(false)}>
+                      انصراف
+                    </Button>
+                    <SubmitButton isSubmitting={form.formState.isSubmitting} />
+                  </div>
+                </form>
+              </Form>
+            </div>
+          </DialogPrimitive.Content>
+        </DialogPortal>
+      </Dialog>
 
       {/* ── Confirm Delete ── */}
       <ConfirmDialog

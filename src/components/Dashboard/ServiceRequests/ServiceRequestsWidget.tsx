@@ -115,7 +115,11 @@ export default function ServiceRequestsWidget() {
       if (cancelled) return;
 
       if (requestsResult.success && requestsResult.data) {
-        setRequests((requestsResult.data as unknown as { data: ServiceRequest[] }).data);
+        // getServiceRequests returns an envelope: { data: { requests: ServiceRequest[], pagination } }
+        const envelope = requestsResult.data as unknown as {
+          requests: ServiceRequest[];
+        };
+        setRequests(envelope.requests ?? []);
       }
       if (statsResult.success && statsResult.data) {
         const d = statsResult.data as Stats & {

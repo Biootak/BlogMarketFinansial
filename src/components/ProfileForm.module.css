@@ -1,11 +1,13 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   ProfileForm — 2026 redesign (Full)
-   زبان طراحی: Calm Confidence · Premium · RTL-first · Linear/Attio pattern
-   توکن‌ها: --at-* (dashboard) + --ds-space-* + --ds-radius-*
-   قوانین: فقط توکن، بدون hex/rgb خام — logical props — no left/right
+   ProfileForm — Meridian Profile 2026 (Complete Redesign)
+   ─────────────────────────────────────────────────────────────────────────
+   زبان طراحی: Mercury × Linear × Attio — Premium Profile Experience
+   آرکیتکچر: Hero identity strip + vertical nav (desktop) + sectioned cards
+   توکن‌ها: --at-* (dashboard canvas) + --ds-space-* + --ds-radius-*
+   قوانین: فقط توکن، بدون hex/rgb خام — logical props — RTL-first
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ─── Root wrapper ───────────────────────────────────────────────────────── */
+/* ─── Root ────────────────────────────────────────────────────────────────── */
 .root {
   display: flex;
   flex-direction: column;
@@ -14,88 +16,138 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   HERO — Cover + Avatar
+   IDENTITY HERO
    ─────────────────────────────────────────────────────────────────────────
-   Layout:
-     .hero  →  position: relative;  padding-block-end to make room for avatar
-     .cover →  image strip (height: 10rem)
-     .avatarWrap → absolute, bottom half sticking out of cover
+   یک panel کامل: cover panoramic + avatar overlap + user meta
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.hero {
+.identityPanel {
   position: relative;
-  /* bottom padding = half avatar height (2.75rem) + small gap */
-  padding-block-end: 3rem;
+  border-radius: var(--at-radius-xl, 20px);
+  border: 1px solid var(--at-line);
+  background: var(--at-surface);
+  box-shadow: var(--at-shadow);
+  overflow: hidden;
+  /* Subtle ambient radial گوشه‌ی بالا */
+  isolation: isolate;
 }
 
+.identityPanel::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  width: 55%;
+  height: 180px;
+  background: radial-gradient(
+    ellipse 100% 100% at 100% 0%,
+    color-mix(in oklch, var(--at-accent) 8%, transparent),
+    transparent 65%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Cover strip */
 .cover {
   position: relative;
   width: 100%;
-  height: 10rem;
-  border-radius: var(--at-radius-lg, 14px);
+  height: 11rem;
   overflow: hidden;
-  background: var(--at-accent-soft);
-  border: 1px solid var(--at-line);
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--at-accent) 6%, var(--at-surface)),
+    color-mix(in oklch, oklch(55% 0.13 290) 4%, var(--at-surface))
+  );
+  border-block-end: 1px solid var(--at-line);
+  z-index: 1;
 }
 
-/* Placeholder image: subtle opacity so it reads as "not uploaded yet" */
+/* Decorative grid overlay روی cover */
+.cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--at-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--at-line) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
 .coverPlaceholder {
-  opacity: 0.45;
-  filter: saturate(0.4);
+  opacity: 0.4;
+  filter: saturate(0.3);
 }
-
 .dark .coverPlaceholder {
-  opacity: 0.25;
-  filter: saturate(0.3) brightness(0.7);
+  opacity: 0.2;
+  filter: saturate(0.2) brightness(0.6);
 }
 
-/* Edit cover button — always visible (bottom-start corner) */
+/* Cover image with real upload — remove grid overlay */
+.cover:has(img:not(.coverPlaceholder))::after {
+  opacity: 0;
+}
+
+/* Edit cover btn — glass pill در گوشه‌ی پایین-start */
 .coverBtn {
   position: absolute;
   inset-block-end: var(--ds-space-3);
   inset-inline-start: var(--ds-space-3);
+  z-index: 3;
   display: inline-flex;
   align-items: center;
   gap: var(--ds-space-2);
-  padding: var(--ds-space-1-5) var(--ds-space-3);
-  background: color-mix(in oklch, var(--at-surface) 92%, transparent);
+  padding: 0 var(--ds-space-3);
+  height: 34px;
+  background: color-mix(in oklch, var(--at-surface) 88%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--at-line-strong);
   border-radius: var(--at-radius, 10px);
-  border: 1px solid var(--at-line);
   cursor: pointer;
   font-size: var(--ds-text-sm);
   font-weight: 500;
   color: var(--at-fg);
   font-family: inherit;
-  backdrop-filter: blur(8px);
-  transition: transform 160ms var(--ds-ease-spring), background 160ms,
+  transition:
+    transform 160ms var(--ds-ease-spring),
+    background 160ms,
     box-shadow 160ms;
-  /* 44px touch target minimum */
-  min-height: 36px;
 }
-
 .coverBtn:hover {
   transform: translateY(-1px);
   background: var(--at-surface);
   box-shadow: var(--at-shadow-hover);
 }
-
 .coverBtn:active {
   transform: scale(0.97);
 }
-
 .coverBtn:focus-visible {
   outline: 2px solid var(--at-accent);
   outline-offset: 2px;
 }
 
-/* ─── Avatar ─────────────────────────────────────────────────────────────── */
-.avatarWrap {
-  position: absolute;
-  bottom: 0;
-  inset-inline-end: var(--ds-space-5);
+/* ─── Identity body (avatar + meta) ─────────────────────────────────────── */
+.identityBody {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--ds-space-4);
+  padding: 0 var(--ds-space-5) var(--ds-space-5);
+  /* Negative margin-block-start so avatar overlaps cover */
+  margin-block-start: -2.75rem;
+  flex-wrap: wrap;
+  z-index: 2;
 }
 
-/* Clickable wrapper — whole avatar is the button */
+/* ─── Avatar block ───────────────────────────────────────────────────────── */
+.avatarWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
 .avatarTrigger {
   position: relative;
   display: block;
@@ -106,15 +158,12 @@
   border-radius: var(--at-radius-lg, 14px);
   transition: transform 200ms var(--ds-ease-spring);
 }
-
 .avatarTrigger:hover {
-  transform: scale(1.03);
+  transform: scale(1.04);
 }
-
 .avatarTrigger:active {
   transform: scale(0.96);
 }
-
 .avatarTrigger:focus-visible {
   outline: 2px solid var(--at-accent);
   outline-offset: 3px;
@@ -123,11 +172,15 @@
 
 .avatar {
   position: relative;
-  width: 5.5rem;
-  height: 5.5rem;
+  width: 6rem;
+  height: 6rem;
   border-radius: var(--at-radius-lg, 14px);
   overflow: hidden;
-  border: 3px solid var(--at-surface, oklch(100% 0 0));
+  /* Double ring: inner = surface, outer = accent */
+  border: 3px solid var(--at-surface);
+  box-shadow:
+    0 0 0 1px var(--at-line-strong),
+    var(--at-shadow-hover);
   background: var(--at-accent-soft);
   display: block;
 }
@@ -141,122 +194,211 @@
   color: var(--at-accent-fg);
 }
 
-/* Camera badge — bottom-end corner */
+/* Camera badge */
 .avatarEditBadge {
   position: absolute;
-  inset-inline-end: -0.375rem;
-  bottom: -0.375rem;
-  width: 1.75rem;
-  height: 1.75rem;
+  inset-inline-end: -0.4rem;
+  bottom: -0.4rem;
+  width: 1.875rem;
+  height: 1.875rem;
   border-radius: var(--at-radius-sm, 6px);
   background: var(--at-accent);
-  border: 2px solid var(--at-surface, oklch(100% 0 0));
+  border: 2px solid var(--at-surface);
   display: flex;
   align-items: center;
   justify-content: center;
   color: oklch(100% 0 0);
   pointer-events: none;
-  transition: transform 150ms var(--ds-ease-spring), background 150ms;
+  transition:
+    transform 150ms var(--ds-ease-spring),
+    background 150ms;
+}
+.avatarTrigger:hover .avatarEditBadge {
+  transform: scale(1.12) rotate(-4deg);
 }
 
-.avatarTrigger:hover .avatarEditBadge {
-  transform: scale(1.12);
-  background: var(--at-accent-fg, var(--at-accent));
+/* ─── User meta (name, email, role) ─────────────────────────────────────── */
+.userMeta {
+  flex: 1;
+  min-width: 0;
+  padding-block-start: var(--ds-space-5);
+}
+.userName {
+  font-size: var(--ds-text-xl);
+  font-weight: 700;
+  color: var(--at-fg);
+  margin: 0 0 var(--ds-space-1);
+  line-height: var(--ds-leading-tight);
+  /* truncate if long */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.userEmail {
+  font-size: var(--ds-text-sm);
+  color: var(--at-fg-subtle);
+  margin: 0 0 var(--ds-space-2);
+  direction: ltr;
+  text-align: start;
+}
+.userRole {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  background: var(--at-accent-soft);
+  color: var(--at-accent-fg);
+  border: 1px solid color-mix(in oklch, var(--at-accent) 22%, transparent);
+}
+
+/* Profile completion ring (inline beside avatar) */
+.completionWrap {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin-block-start: var(--ds-space-2);
+}
+.completionText {
+  font-size: var(--ds-text-xs);
+  color: var(--at-fg-subtle);
+}
+.completionBar {
+  flex: 1;
+  max-width: 120px;
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--at-line-strong);
+  overflow: hidden;
+}
+.completionFill {
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--at-accent);
+  transition: width 600ms var(--ds-ease-out-quart);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   TABS — override Radix ui/tabs.tsx styles with our token-based design
-   We override via className props in TSX + scoped module classes here.
+   LAYOUT: two-column (sidebar nav + content) on desktop
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.tabsRoot {
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--ds-space-4);
+}
+@media (min-width: 720px) {
+  .layout {
+    grid-template-columns: 200px 1fr;
+    align-items: start;
+  }
+}
+
+/* ─── Vertical sidebar nav ───────────────────────────────────────────────── */
+.sideNav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--ds-space-2);
+  background: var(--at-surface);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-lg, 14px);
+  box-shadow: var(--at-shadow-sm);
+  /* sticky روی دسکتاپ */
+  position: sticky;
+  top: var(--ds-space-4);
+}
+/* On mobile: horizontal scrollable row */
+@media (max-width: 719px) {
+  .sideNav {
+    flex-direction: row;
+    overflow-x: auto;
+    position: static;
+    gap: 2px;
+    padding: 3px;
+    /* Hide scrollbar */
+    scrollbar-width: none;
+  }
+  .sideNav::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.navItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2-5);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-radius: calc(var(--at-radius, 10px) - 2px);
+  font-size: var(--ds-text-sm);
+  font-weight: 500;
+  color: var(--at-fg-muted);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+  text-align: start;
+  width: 100%;
+  transition:
+    background 150ms var(--ds-ease-out-quart),
+    color 150ms var(--ds-ease-out-quart),
+    transform 120ms var(--ds-ease-spring);
+  white-space: nowrap;
+  /* 44px touch target */
+  min-height: 40px;
+}
+@media (max-width: 719px) {
+  .navItem {
+    flex-shrink: 0;
+    width: auto;
+  }
+}
+.navItem:hover {
+  background: var(--at-accent-soft);
+  color: var(--at-fg);
+}
+.navItem:active {
+  transform: scale(0.97);
+}
+.navItem[aria-selected="true"],
+.navItem[data-active="true"] {
+  background: var(--at-accent-soft);
+  color: var(--at-accent-fg);
+  font-weight: 600;
+}
+.navItemIcon {
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: opacity 150ms;
+}
+.navItem[aria-selected="true"] .navItemIcon,
+.navItem[data-active="true"] .navItemIcon,
+.navItem:hover .navItemIcon {
+  opacity: 1;
+}
+
+/* ─── Content area ───────────────────────────────────────────────────────── */
+.contentArea {
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-4);
+  min-width: 0;
 }
 
-/* TabsList override */
-.tabsList {
-  display: flex !important;
-  gap: 2px !important;
-  padding: 3px !important;
-  background: var(--at-accent-soft, oklch(96% 0.008 245)) !important;
-  border-radius: var(--at-radius, 10px) !important;
-  border: 1px solid var(--at-line) !important;
-  width: fit-content !important;
-  /* Reset Radix defaults */
-  backdrop-filter: none !important;
-}
+/* ═══════════════════════════════════════════════════════════════════════════
+   SECTION PANEL — each "tab" content
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-/* TabsTrigger override */
-.tabsTrigger {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: var(--ds-space-2) !important;
-  padding: var(--ds-space-1-5) var(--ds-space-3) !important;
-  border-radius: calc(var(--at-radius, 10px) - 2px) !important;
-  font-size: var(--ds-text-sm) !important;
-  font-weight: 500 !important;
-  color: var(--at-fg-muted) !important;
-  font-family: inherit !important;
-  white-space: nowrap !important;
-  min-height: 36px !important;
-  transition: background 160ms var(--ds-ease-out-quart),
-    color 160ms var(--ds-ease-out-quart),
-    transform 120ms var(--ds-ease-spring) !important;
-  /* Reset Radix rounded-full */
-  height: auto !important;
-  /* Reset Radix active colors */
-  background: transparent !important;
-}
-
-.tabsTrigger:hover {
-  background: oklch(100% 0 0 / 0.5) !important;
-  color: var(--at-fg) !important;
-}
-
-.tabsTrigger:active {
-  transform: scale(0.97) !important;
-}
-
-/* Active tab */
-.tabsTrigger[data-state="active"] {
-  background: var(--at-surface, oklch(100% 0 0)) !important;
-  color: var(--at-fg) !important;
-  font-weight: 600 !important;
-  box-shadow: var(--at-shadow-sm) !important;
-}
-
-/* Dark mode adjustments */
-.dark .tabsList {
-  background: oklch(18% 0.015 255 / 0.6) !important;
-}
-
-.dark .tabsTrigger:hover {
-  background: oklch(28% 0.02 255 / 0.5) !important;
-}
-
-.dark .tabsTrigger[data-state="active"] {
-  background: oklch(22% 0.022 255) !important;
-}
-
-/* TabsContent */
-.tabsPanel {
-  margin-block-start: 0 !important;
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
   animation: motion-fade-in-up 220ms var(--ds-ease-out-quart) both;
 }
 
-/* ─── Panel form ─────────────────────────────────────────────────────────── */
-.panelForm {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-4);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   CARDS — form section wrappers
-   ═══════════════════════════════════════════════════════════════════════════ */
-
+/* ─── Card ────────────────────────────────────────────────────────────────── */
 .card {
   background: var(--at-surface);
   border: 1px solid var(--at-line);
@@ -266,10 +408,10 @@
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-4);
-  transition: border-color 200ms var(--ds-ease-out-quart),
+  transition:
+    border-color 200ms var(--ds-ease-out-quart),
     box-shadow 200ms var(--ds-ease-out-quart);
 }
-
 .card:focus-within {
   border-color: var(--at-line-strong);
   box-shadow: var(--at-shadow-hover);
@@ -287,19 +429,19 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 2.25rem;
+  height: 2.25rem;
   border-radius: var(--at-radius-sm, 6px);
   flex-shrink: 0;
 }
 
 .cardTitle {
-  font-size: var(--ds-text-sm);
+  font-size: var(--ds-text-base);
   font-weight: 600;
   color: var(--at-fg);
   margin: 0;
+  line-height: 1.2;
 }
-
 .cardDesc {
   font-size: var(--ds-text-xs);
   color: var(--at-fg-subtle);
@@ -307,56 +449,57 @@
   margin-block-start: 2px;
 }
 
-/* ─── 2-column form grid ─────────────────────────────────────────────────── */
+/* ─── 2-col form grid ─────────────────────────────────────────────────────── */
 .formGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--ds-space-4);
 }
-
 .formGridFull {
   grid-column: 1 / -1;
 }
-
 @media (max-width: 600px) {
   .formGrid {
     grid-template-columns: 1fr;
   }
-
   .formGridFull {
     grid-column: auto;
   }
 }
 
-/* ─── Textarea with character counter ───────────────────────────────────── */
+/* ─── Textarea with char counter ──────────────────────────────────────────── */
 .textareaWrap {
   position: relative;
 }
-
 .textarea {
   padding-block-end: var(--ds-space-5);
 }
-
 .charCount {
   position: absolute;
   inset-block-end: var(--ds-space-2);
   inset-inline-start: var(--ds-space-3);
   font-size: var(--ds-text-xs);
-  color: var(--at-fg-subtle);
+  color: var(--at-fg-faint);
   font-variant-numeric: tabular-nums;
   pointer-events: none;
   transition: color 200ms;
 }
-
 .charCountWarn {
   color: oklch(55% 0.16 25);
 }
-
 .dark .charCountWarn {
   color: oklch(72% 0.12 25);
 }
 
-/* ─── Unsaved badge ──────────────────────────────────────────────────────── */
+/* ─── Inline field label context ─────────────────────────────────────────── */
+.fieldNote {
+  font-size: var(--ds-text-xs);
+  color: var(--at-fg-subtle);
+  margin-block-start: var(--ds-space-1);
+  line-height: var(--ds-leading-relaxed);
+}
+
+/* ─── Unsaved indicator ──────────────────────────────────────────────────── */
 .unsavedBadge {
   display: inline-flex;
   align-items: center;
@@ -367,22 +510,31 @@
   font-weight: 500;
   color: oklch(52% 0.14 75);
   background: oklch(95% 0.04 80 / 0.6);
-  border: 1px solid oklch(88% 0.08 80 / 0.6);
+  border: 1px solid oklch(88% 0.08 80 / 0.5);
+  animation: motion-fade-in-up 180ms var(--ds-ease-out-quart) both;
 }
-
 .dark .unsavedBadge {
   color: oklch(75% 0.1 75);
   background: oklch(22% 0.04 80 / 0.3);
   border-color: oklch(50% 0.1 80 / 0.3);
 }
+/* Pulse dot inside badge */
+.unsavedDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: currentColor;
+  animation: anim-ping-soft 1.4s ease-in-out infinite;
+}
 
-/* ─── Submit row ─────────────────────────────────────────────────────────── */
+/* ─── Submit row ──────────────────────────────────────────────────────────── */
 .actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: var(--ds-space-3);
   padding-block-start: var(--ds-space-2);
+  flex-wrap: wrap;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -392,8 +544,6 @@
 .passField {
   position: relative;
 }
-
-/* Toggle button — inset-inline-end so it works for both RTL/LTR */
 .passToggle {
   position: absolute;
   inset-block-start: 50%;
@@ -408,17 +558,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* 44px touch target via negative margin trick */
   min-width: 28px;
   min-height: 28px;
   transition: color 150ms, background 150ms;
 }
-
 .passToggle:hover {
   color: var(--at-fg);
   background: var(--at-accent-soft);
 }
-
 .passToggle:focus-visible {
   outline: 2px solid var(--at-accent);
   outline-offset: 1px;
@@ -431,12 +578,10 @@
   flex-direction: column;
   gap: var(--ds-space-1);
 }
-
 .strengthBar {
   display: flex;
   gap: 3px;
 }
-
 .strengthSegment {
   height: 3px;
   flex: 1;
@@ -444,60 +589,24 @@
   background: var(--at-line-strong);
   transition: background 300ms var(--ds-ease-out-quart);
 }
-
-.strengthSegment[data-active="weak"] {
-  background: oklch(55% 0.16 25);
-}
-
-.strengthSegment[data-active="fair"] {
-  background: oklch(62% 0.14 70);
-}
-
-.strengthSegment[data-active="good"] {
-  background: oklch(55% 0.14 165);
-}
-
-.strengthSegment[data-active="strong"] {
-  background: oklch(50% 0.14 162);
-}
+.strengthSegment[data-active="weak"]   { background: oklch(55% 0.16 25); }
+.strengthSegment[data-active="fair"]   { background: oklch(62% 0.14 70); }
+.strengthSegment[data-active="good"]   { background: oklch(55% 0.14 165); }
+.strengthSegment[data-active="strong"] { background: oklch(50% 0.14 162); }
 
 .strengthLabel {
   font-size: var(--ds-text-xs);
   color: var(--at-fg-subtle);
   margin: 0;
 }
-
-.strengthLabel [data-strength="weak"] {
-  color: oklch(55% 0.16 25);
-}
-
-.strengthLabel [data-strength="fair"] {
-  color: oklch(58% 0.14 70);
-}
-
-.strengthLabel [data-strength="good"] {
-  color: oklch(48% 0.14 165);
-}
-
-.strengthLabel [data-strength="strong"] {
-  color: oklch(45% 0.14 162);
-}
-
-.dark .strengthLabel [data-strength="weak"] {
-  color: oklch(72% 0.13 25);
-}
-
-.dark .strengthLabel [data-strength="fair"] {
-  color: oklch(75% 0.12 70);
-}
-
-.dark .strengthLabel [data-strength="good"] {
-  color: oklch(72% 0.12 165);
-}
-
-.dark .strengthLabel [data-strength="strong"] {
-  color: oklch(72% 0.12 162);
-}
+.strengthLabel [data-strength="weak"]   { color: oklch(55% 0.16 25); }
+.strengthLabel [data-strength="fair"]   { color: oklch(58% 0.14 70); }
+.strengthLabel [data-strength="good"]   { color: oklch(48% 0.14 165); }
+.strengthLabel [data-strength="strong"] { color: oklch(45% 0.14 162); }
+.dark .strengthLabel [data-strength="weak"]   { color: oklch(72% 0.13 25); }
+.dark .strengthLabel [data-strength="fair"]   { color: oklch(75% 0.12 70); }
+.dark .strengthLabel [data-strength="good"]   { color: oklch(72% 0.12 165); }
+.dark .strengthLabel [data-strength="strong"] { color: oklch(72% 0.12 162); }
 
 /* ─── Password match status ──────────────────────────────────────────────── */
 .matchStatus {
@@ -505,27 +614,14 @@
   align-items: center;
   gap: 4px;
   font-size: var(--ds-text-xs);
-  margin-block-start: var(--ds-space-1);
   margin: var(--ds-space-1) 0 0;
 }
+.matchOk   { color: oklch(48% 0.14 162); }
+.matchFail { color: oklch(50% 0.16 25); }
+.dark .matchOk   { color: oklch(72% 0.12 165); }
+.dark .matchFail { color: oklch(72% 0.13 25); }
 
-.matchOk {
-  color: oklch(48% 0.14 162);
-}
-
-.matchFail {
-  color: oklch(50% 0.16 25);
-}
-
-.dark .matchOk {
-  color: oklch(72% 0.12 165);
-}
-
-.dark .matchFail {
-  color: oklch(72% 0.13 25);
-}
-
-/* ─── Info tip ───────────────────────────────────────────────────────────── */
+/* ─── Security tip ───────────────────────────────────────────────────────── */
 .tip {
   display: flex;
   align-items: flex-start;
@@ -535,16 +631,29 @@
   background: var(--at-accent-soft);
   border: 1px solid color-mix(in oklch, var(--at-accent) 20%, transparent);
 }
-
 .tipIcon {
   flex-shrink: 0;
   margin-block-start: 2px;
   color: var(--at-accent-fg);
 }
-
 .tipText {
   font-size: var(--ds-text-xs);
   color: var(--at-accent-fg);
   line-height: var(--ds-leading-relaxed);
   margin: 0;
+}
+
+/* ─── Spinner utility ─────────────────────────────────────────────────────── */
+.spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 9999px;
+  border: 2px solid currentColor;
+  border-block-start-color: transparent;
+  animation: profile-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes profile-spin {
+  to { transform: rotate(360deg); }
 }

@@ -1,5 +1,12 @@
 /**
  * صفحه مدیریت صراف‌ها — فقط OWNER و ADMIN پلتفرم
+ *
+ * Atrium 2026 — server wrapper. The actual UI lives in `ExchangesWorkspace`
+ * (client). We:
+ *   1. Authenticate + role-check (server)
+ *   2. Fetch the exchange list with a single Prisma call (cached)
+ *   3. Hand the data off to the client orchestrator
+ *   4. Render the atelier PageHeader in the emerald accent (Building2 icon)
  */
 import { getAllExchanges } from '@/actions/exchanges';
 import { auth } from '@/auth';
@@ -10,6 +17,7 @@ import ExchangesWorkspace from './_components/ExchangesWorkspace';
 
 export const metadata: Metadata = {
   title: 'مدیریت صراف‌ها | داشبورد',
+  description: 'مرکز فرماندهی صرافی‌ها — مشاهده، تأیید و مدیریت صرافی‌های عضو پلتفرم در یک نگاه.',
 };
 
 export default async function ExchangesPage() {
@@ -22,19 +30,32 @@ export default async function ExchangesPage() {
 
   return (
     <main
+      dir="rtl"
       style={{
-        maxWidth: '1280px',
+        maxWidth: '1440px',
         margin: '0 auto',
-        padding: 'var(--ds-space-6) var(--ds-space-5)',
         display: 'flex',
         flexDirection: 'column',
-        gap: 'var(--ds-space-6)',
+        gap: 'var(--ds-space-5)',
       }}
     >
       <PageHeader
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'صراف‌ها' }]}
         title="مدیریت صراف‌ها"
-        description="ایجاد، تأیید و مدیریت صراف‌های عضو پلتفرم"
+        description="مرکز فرماندهی شبکهٔ صرافی‌ها — ایجاد، تأیید و مدیریت اعضای پلتفرم."
+        eyebrow="Atrium · ۲۰۲۶"
+        accent="emerald"
+        icon="building"
+        actions={
+          <a
+            href="/dashboard/exchanges?status=PENDING"
+            className="at-head__more"
+            style={{ textDecoration: 'none' }}
+          >
+            <span>{`${exchanges.filter((e) => e.status === 'PENDING').length} در انتظار تأیید`}</span>
+            <span aria-hidden>←</span>
+          </a>
+        }
       />
       <ExchangesWorkspace initialExchanges={exchanges} />
     </main>

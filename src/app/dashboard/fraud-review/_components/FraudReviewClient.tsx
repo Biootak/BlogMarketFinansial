@@ -17,14 +17,9 @@ import { DataTable } from '@/components/Dashboard/primitives/DataTable';
 import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
+import { Dialog, DialogClose, DialogOverlay, DialogPortal, DialogTitle as SheetTitle } from '@/components/ui/dialog';
 import { AlertTriangle, CheckCircle2, ShieldAlert, ShieldCheck, User, Zap } from 'lucide-react';
 import { useCallback, useMemo, useState, useTransition } from 'react';
 import s from './FraudReviewClient.module.css';
@@ -262,6 +257,8 @@ export function FraudReviewClient({ reviews: initial }: Props) {
         description={`${new Intl.NumberFormat('fa-IR').format(openCount)} مورد باز در صف`}
         eyebrow="فین‌تک — امنیت"
         breadcrumb={[{ href: '/dashboard', label: 'داشبورد' }, { label: 'بررسی تقلب' }]}
+        icon="shield-x"
+        accent="rose"
       />
 
       {/* ── KPI Strip ── */}
@@ -351,12 +348,14 @@ export function FraudReviewClient({ reviews: initial }: Props) {
         }
       />
 
-      {/* ── Detail Sheet ── */}
-      <Sheet open={!!detailRow} onOpenChange={(o) => !o && setDetailRow(null)}>
-        <SheetContent dir="rtl" side="left" className={s.detailSheet}>
+      {/* ── Detail Modal ── */}
+      <Dialog open={!!detailRow} onOpenChange={(o) => !o && setDetailRow(null)}>
+        <DialogPortal>
+          <DialogOverlay className={cm.overlay} />
+          <DialogPrimitive.Content dir="rtl" className={cm.panel} aria-label="جزئیات بررسی تقلب">
           {detailRow && (
             <>
-              <SheetHeader className={s.detailHeader}>
+              <div className={cm.header}>
                 <div className={`${s.detailIcon} ${getRiskClass(detailRow.riskScore)}`} aria-hidden>
                   <ShieldAlert size={20} aria-hidden />
                 </div>
@@ -369,7 +368,8 @@ export function FraudReviewClient({ reviews: initial }: Props) {
                 <div className={s.detailGauge} aria-hidden>
                   <RiskGauge score={detailRow.riskScore} />
                 </div>
-              </SheetHeader>
+                <DialogClose className={cm.close} aria-label="بستن"><CheckCircle2 size={15} /></DialogClose>
+              </div>
 
               <div className={s.detailBody}>
                 {/* Risk score bar */}
@@ -420,65 +420,72 @@ export function FraudReviewClient({ reviews: initial }: Props) {
               </div>
             </>
           )}
-        </SheetContent>
-      </Sheet>
+          </DialogPrimitive.Content>
+        </DialogPortal>
+      </Dialog>
 
       {/* ── Resolve Dialog ── */}
       <Dialog open={!!target} onOpenChange={(o) => !o && setTarget(null)}>
-        <DialogContent dir="rtl" className={s.resolveDialog}>
-          <DialogHeader>
-            <DialogTitle>بررسی گزارش تقلب</DialogTitle>
-          </DialogHeader>
-          <div className={s.dialogBody}>
-            {target && (
-              <>
-                <div className={s.dialogProfile}>
-                  <div
-                    className={`${s.dialogAvatar} ${getRiskClass(target.riskScore)}`}
-                    aria-hidden
-                  >
-                    <User size={16} aria-hidden />
-                  </div>
-                  <div>
-                    <span className={s.dialogName}>{target.customerName ?? '—'}</span>
-                    <div
-                      className={`${s.riskBadge} ${getRiskClass(target.riskScore)}`}
-                      style={{ marginTop: 4 }}
-                    >
-                      <AlertTriangle size={11} aria-hidden />
-                      {getRiskLabel(target.riskScore)} — {target.riskScore}
-                    </div>
-                  </div>
-                </div>
-                <div className={s.dialogReason}>
-                  <span className={s.dialogReasonLabel}>دلیل:</span>
-                  <span>{target.reason}</span>
-                </div>
-              </>
-            )}
-            <div>
-              <label className={s.dialogLabel} htmlFor="resolution">
-                نتیجه بررسی:
-              </label>
-              <textarea
-                id="resolution"
-                className={s.dialogTextarea}
-                value={resolution}
-                onChange={(e) => setResolution(e.target.value)}
-                rows={3}
-                placeholder="تراکنش معتبر است / رد شد / مسدود شد / ارجاع به تیم امنیت…"
-              />
+        <DialogPortal>
+          <DialogOverlay className={cm.overlay} />
+          <DialogPrimitive.Content dir="rtl" className={cm.panel} aria-label="بررسی گزارش تقلب">
+            <div className={cm.header}>
+              <SheetTitle>بررسی گزارش تقلب</SheetTitle>
+              <DialogClose className={cm.close} aria-label="بستن">×</DialogClose>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setTarget(null)} disabled={isPending}>
-              انصراف
-            </Button>
-            <Button onClick={handleResolve} disabled={isPending || !resolution.trim()}>
-              {isPending ? 'در حال ثبت...' : 'ثبت نتیجه'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
+            <div className={cm.body}>
+              <div className={s.dialogBody}>
+                {target && (
+                  <>
+                    <div className={s.dialogProfile}>
+                      <div
+                        className={`${s.dialogAvatar} ${getRiskClass(target.riskScore)}`}
+                        aria-hidden
+                      >
+                        <User size={16} aria-hidden />
+                      </div>
+                      <div>
+                        <span className={s.dialogName}>{target.customerName ?? '—'}</span>
+                        <div
+                          className={`${s.riskBadge} ${getRiskClass(target.riskScore)}`}
+                          style={{ marginTop: 4 }}
+                        >
+                          <AlertTriangle size={11} aria-hidden />
+                          {getRiskLabel(target.riskScore)} — {target.riskScore}
+                        </div>
+                      </div>
+                    </div>
+                    <div className={s.dialogReason}>
+                      <span className={s.dialogReasonLabel}>دلیل:</span>
+                      <span>{target.reason}</span>
+                    </div>
+                  </>
+                )}
+                <div>
+                  <label className={s.dialogLabel} htmlFor="resolution">
+                    نتیجه بررسی:
+                  </label>
+                  <textarea
+                    id="resolution"
+                    className={s.dialogTextarea}
+                    value={resolution}
+                    onChange={(e) => setResolution(e.target.value)}
+                    rows={3}
+                    placeholder="تراکنش معتبر است / رد شد / مسدود شد / ارجاع به تیم امنیت…"
+                  />
+                </div>
+                <div className={s.dialogFooter}>
+                  <Button variant="outline" onClick={() => setTarget(null)} disabled={isPending}>
+                    انصراف
+                  </Button>
+                  <Button onClick={handleResolve} disabled={isPending || !resolution.trim()}>
+                    {isPending ? 'در حال ثبت...' : 'ثبت نتیجه'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </DialogPrimitive.Content>
+        </DialogPortal>
       </Dialog>
     </div>
   );

@@ -1,7 +1,11 @@
+/**
+ * SettlementsLoading — skeleton that matches the new 2026 redesign layout:
+ * PageHeader + 5-column KPI grid + frosted toolbar strip + table rows
+ */
 export default function SettlementsLoading() {
   return (
     <div className="at-page" dir="rtl" aria-busy="true" aria-label="در حال بارگذاری…">
-      {/* PageHeader skeleton */}
+      {/* ── PageHeader skeleton ── */}
       <div
         style={{
           display: 'flex',
@@ -13,74 +17,89 @@ export default function SettlementsLoading() {
           borderRadius: '14px',
           marginBottom: 'var(--ds-space-5)',
         }}
+        aria-hidden="true"
       >
         <span
           className="animate-pulse"
           style={{
             display: 'block',
-            height: '1rem',
-            width: '7rem',
+            height: '0.7rem',
+            width: '6rem',
             borderRadius: '6px',
             background: 'var(--at-line)',
           }}
-          aria-hidden="true"
         />
         <span
           className="animate-pulse"
           style={{
             display: 'block',
             height: '1.5rem',
-            width: '14rem',
+            width: '13rem',
             borderRadius: '6px',
             background: 'var(--at-line)',
           }}
-          aria-hidden="true"
+        />
+        <span
+          className="animate-pulse"
+          style={{
+            display: 'block',
+            height: '0.75rem',
+            width: '9rem',
+            borderRadius: '6px',
+            background: 'var(--at-line)',
+          }}
         />
       </div>
 
-      {/* Stats skeleton */}
+      {/* ── KPI strip skeleton — 5 cards ── */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
+          gridTemplateColumns: 'repeat(5, 1fr)',
           gap: 'var(--ds-space-3)',
           marginBottom: 'var(--ds-space-5)',
         }}
+        aria-hidden="true"
       >
-        {[0, 1, 2].map((i) => (
+        {Array.from({ length: 5 }).map((_, i) => (
           <div
             key={i}
             className="animate-pulse"
             style={{
-              height: '5.5rem',
-              borderRadius: '12px',
+              height: '5rem',
+              borderRadius: 'var(--ds-radius-xl)',
               background: 'var(--at-line)',
+              animationDelay: `${i * 60}ms`,
             }}
-            aria-hidden="true"
           />
         ))}
       </div>
 
-      {/* Table skeleton */}
+      {/* ── Table skeleton ── */}
       <div
         style={{
           background: 'var(--at-surface)',
           border: '1px solid var(--at-line)',
-          borderRadius: '14px',
+          borderRadius: 'var(--ds-radius-xl)',
           overflow: 'hidden',
         }}
+        aria-hidden="true"
       >
-        {[0, 1, 2, 3, 4].map((i) => (
+        {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
             className="animate-pulse"
             style={{
               height: '3.25rem',
-              borderBottom: i < 4 ? '1px solid var(--at-line)' : undefined,
-              background: i % 2 === 0 ? 'var(--at-surface)' : 'var(--at-surface-hover)',
-              margin: '0 var(--ds-space-3)',
+              borderBottom: i < 5 ? '1px solid var(--at-line)' : undefined,
+              background:
+                i === 0
+                  ? 'var(--at-line)'
+                  : i % 2 === 0
+                    ? 'var(--at-surface)'
+                    : 'var(--at-surface-hover, var(--ds-canvas-subtle))',
+              animationDelay: `${i * 40}ms`,
             }}
-            aria-hidden="true"
           />
         ))}
       </div>

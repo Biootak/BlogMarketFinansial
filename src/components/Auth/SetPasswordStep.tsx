@@ -36,6 +36,7 @@ export default function SetPasswordStep({
     mode: 'onBlur',
     defaultValues: {
       email,
+      resetToken: resetToken ?? '',
       password: '',
     },
   });
@@ -71,6 +72,7 @@ export default function SetPasswordStep({
       </button>
 
       <input type="hidden" {...form.register('email')} />
+      <input type="hidden" {...form.register('resetToken')} />
 
       <div className="auth-fieldset">
         <label htmlFor="set-password" className="auth-label">

@@ -751,6 +751,15 @@
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 15%, transparent);
 }
 
+.dialogFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ds-space-3);
+  padding-block-start: var(--ds-space-4);
+  border-block-start: 1px solid var(--ds-border-muted);
+  margin-block-start: var(--ds-space-2);
+}
+
 /* ─── Batch Resolve Bar ────────────────────────────────────────────────────── */
 /* Floats above the table when multiple rows are selected.
    Unused by current TSX but fully styled for future batch resolve feature. */

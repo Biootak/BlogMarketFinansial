@@ -16085,3 +16085,16 @@
     }
   }
 }
+
+/* ── dash2-empty — EmptyState primitive (used by EmptyState.tsx) ── */
+.dash2-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-3, 0.75rem);
+  text-align: center;
+  padding: var(--ds-space-8, 2rem) var(--ds-space-6, 1.5rem);
+  max-inline-size: 28rem;
+  margin-inline: auto;
+}

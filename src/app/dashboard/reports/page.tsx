@@ -80,6 +80,8 @@ export default function ReportsPage() {
         eyebrow="تحلیل"
         title="گزارش‌ها"
         description="گزارش‌های سیستمی، فعالیت‌ها و لاگ‌های رویداد"
+        icon="bar-chart"
+        accent="cyan"
         actions={
           <button
             type="button"

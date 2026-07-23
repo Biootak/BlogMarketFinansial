@@ -14,7 +14,9 @@
 import { type DealRow, getMyDeals } from '@/actions/currency-deals';
 import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
+import { Dialog, DialogClose, DialogOverlay, DialogPortal, DialogTitle as SheetTitle } from '@/components/ui/dialog';
 import {
   AlertCircle,
   ArrowLeftRight,
@@ -23,6 +25,7 @@ import {
   PackageSearch,
   TrendingUp,
   Wallet,
+  X,
   XCircle,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -146,9 +149,11 @@ function DealDetailSheet({ deal, onClose }: { deal: DealRow; onClose: () => void
   const currentIdx = ORDER.indexOf(deal.status);
 
   return (
-    <Sheet open onOpenChange={(o) => !o && onClose()}>
-      <SheetContent dir="rtl" side="left" className={s.detailSheet}>
-        <SheetHeader className={s.detailHead}>
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogPortal>
+        <DialogOverlay className={cm.overlay} />
+        <DialogPrimitive.Content dir="rtl" className={cm.panel} aria-label="جزئیات معامله">
+        <div className={cm.header}>
           <div className={s.detailStatusIcon} data-status={meta.cssKey} aria-hidden>
             <Icon size={20} />
           </div>
@@ -158,7 +163,8 @@ function DealDetailSheet({ deal, onClose }: { deal: DealRow; onClose: () => void
               {deal.trackingCode}
             </p>
           </div>
-        </SheetHeader>
+          <DialogClose className={cm.close} aria-label="بستن"><X size={15} /></DialogClose>
+        </div>
 
         <div className={s.detailBody}>
           {/* Amount visual */}
@@ -226,8 +232,9 @@ function DealDetailSheet({ deal, onClose }: { deal: DealRow; onClose: () => void
             </div>
           )}
         </div>
-      </SheetContent>
-    </Sheet>
+        </DialogPrimitive.Content>
+      </DialogPortal>
+    </Dialog>
   );
 }
 

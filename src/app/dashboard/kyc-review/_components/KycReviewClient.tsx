@@ -1,17 +1,20 @@
 'use client';
 
 /**
- * KycReviewClient — 2026 Admin KYC Review Queue
+ * KycReviewClient — 2026 Million-Dollar KYC Admin
  *
- * طراحی: Mercury-inspired high-density admin table + document preview sheet
+ * طراحی: Linear × Mercury × Attio — high-density fintech admin
+ *
  * ویژگی‌ها:
- * - جدول با sticky header و hover states
- * - Document preview در Sheet (نه tab جدید) با ImageFallback
- * - Status chips با رنگ semantic
- * - Approve / Reject با confirmation dialog
- * - KPI counter در بالا
- * - spring micro-interactions روی row hover و دکمه‌ها
- * - همه ۵ حالت: loading / empty / error / success / disabled
+ *  - KPI cards با glass + accent top stripe + stagger animation
+ *  - Queue amber bar با breath dot برای تعداد در انتظار
+ *  - Frosted-glass sticky header در جدول
+ *  - Stagger row entrance + spring hover elevation
+ *  - Urgent badge برای رکوردهای قدیمی (بیش از ۲ روز)
+ *  - Document preview در Sheet با sticky header + image zoom
+ *  - Approve / Reject با confirm dialog + inline success/error
+ *  - کلیه states: loading / empty / error / success / disabled
+ *  - Keyboard nav: Enter/Space روی rows، Esc برای بستن sheet
  */
 
 import { reviewKycRecord } from '@/actions/kyc-onboarding';
@@ -25,11 +28,30 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { CheckCircle2, Eye, FileText, ShieldCheck, User, XCircle } from 'lucide-react';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  Eye,
+  FileText,
+  Shield,
+  ShieldCheck,
+  Users,
+  XCircle,
+} from 'lucide-react';
 import Image from 'next/image';
-import { useCallback, useState, useTransition } from 'react';
+import {
+  type KeyboardEvent,
+  useCallback,
+  useMemo,
+  useState,
+  useTransition,
+} from 'react';
 import s from './KycReviewClient.module.css';
+
+// ─── Types ─────────────────────────────────────────────────────────────────────
 
 type KycRow = {
   id: string;
@@ -44,6 +66,8 @@ type KycRow = {
 
 type Props = { records: KycRow[] };
 
+// ─── Helpers ───────────────────────────────────────────────────────────────────
+
 function formatDate(d: string | null) {
   if (!d) return '—';
   return new Date(d).toLocaleDateString('fa-IR', {
@@ -55,7 +79,6 @@ function formatDate(d: string | null) {
   });
 }
 
-/** نام مخفف برای آواتار */
 function initials(name: string | null | undefined): string {
   if (!name) return '؟';
   const parts = name.trim().split(' ');
@@ -63,8 +86,29 @@ function initials(name: string | null | undefined): string {
   return name.slice(0, 2);
 }
 
-/** Image preview با fallback — از next/image برای بهینه‌سازی لود */
-function DocImage({ src, alt }: { src: string; alt: string }) {
+/** آیا رکورد بیش از ۲ روز است — urgent */
+function isUrgent(submittedAt: string | null): boolean {
+  if (!submittedAt) return false;
+  return Date.now() - new Date(submittedAt).getTime() > 2 * 24 * 60 * 60 * 1000;
+}
+
+/** hue deterministic از نام */
+function nameHue(name: string | null | undefined): number {
+  if (!name) return 220;
+  let h = 0;
+  for (let i = 0; i < name.length; i++) {
+    h = ((h << 5) - h + name.charCodeAt(i)) & 0xffffffff;
+  }
+  return Math.abs(h) % 360;
+}
+
+function docCount(row: KycRow): number {
+  return [row.selfieUrl, row.docFrontUrl, row.docBackUrl].filter(Boolean).length;
+}
+
+// ─── DocImage with fallback ────────────────────────────────────────────────────
+
+function DocImage({ src, alt, delay = 0 }: { src: string; alt: string; delay?: number }) {
   const [error, setError] = useState(false);
   if (error) {
     return (
@@ -75,7 +119,10 @@ function DocImage({ src, alt }: { src: string; alt: string }) {
     );
   }
   return (
-    <div className={s.docImgWrap}>
+    <div
+      className={s.docImgWrap}
+      style={{ '--doc-delay': `${delay}ms` } as React.CSSProperties}
+    >
       <Image
         src={src}
         alt={alt}
@@ -83,11 +130,13 @@ function DocImage({ src, alt }: { src: string; alt: string }) {
         className={s.docImg}
         onError={() => setError(true)}
         unoptimized
-        sizes="(max-width: 768px) 100vw, 480px"
+        sizes="(max-width: 768px) 100vw, 500px"
       />
     </div>
   );
 }
+
+// ─── Main Component ────────────────────────────────────────────────────────────
 
 export function KycReviewClient({ records: initial }: Props) {
   const [rows, setRows] = useState<KycRow[]>(initial);
@@ -96,247 +145,396 @@ export function KycReviewClient({ records: initial }: Props) {
   const [previewRow, setPreviewRow] = useState<KycRow | null>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [lastAction, setLastAction] = useState<string | null>(null);
 
-  const handleApprove = useCallback((row: KycRow) => {
-    startTransition(async () => {
-      setError(null);
-      const res = await reviewKycRecord({ userId: row.userId, approved: true });
-      if (!res.success) {
-        setError(res.error.message);
-        return;
-      }
+  // ── Derived counts ─────────────────────────────────────────────────────────
+  const withDocs = useMemo(
+    () => rows.filter((r) => r.docFrontUrl || r.docBackUrl || r.selfieUrl).length,
+    [rows],
+  );
+  const withoutDocs = useMemo(
+    () => rows.filter((r) => !r.docFrontUrl && !r.docBackUrl && !r.selfieUrl).length,
+    [rows],
+  );
+  const urgentCount = useMemo(() => rows.filter((r) => isUrgent(r.submittedAt)).length, [rows]);
+
+  // ── Actions ────────────────────────────────────────────────────────────────
+
+  const handleApprove = useCallback(
+    (row: KycRow) => {
+      // Optimistic: حذف فوری — اگر server خطا داد برگردان
       setRows((prev) => prev.filter((r) => r.id !== row.id));
-      // اگر preview همین row بود ببند
       setPreviewRow((prev) => (prev?.id === row.id ? null : prev));
-    });
-  }, []);
+      setError(null);
+      setLastAction(null);
+
+      startTransition(async () => {
+        const res = await reviewKycRecord({ userId: row.userId, approved: true });
+        if (!res.success) {
+          // rollback
+          setRows((prev) => [row, ...prev].sort(
+            (a, b) => new Date(a.submittedAt ?? 0).getTime() - new Date(b.submittedAt ?? 0).getTime(),
+          ));
+          setError(res.error.message);
+          return;
+        }
+        setLastAction(`هویت «${row.fullName ?? row.user?.name ?? '—'}» تأیید شد`);
+      });
+    },
+    [],
+  );
 
   const handleRejectConfirm = useCallback(() => {
     if (!rejectTarget) return;
+    const target = rejectTarget;
+    const reason = rejectReason.trim() || 'اطلاعات ناقص یا نادرست';
+    const name = target.fullName ?? target.user?.name ?? '—';
+
+    // Optimistic: بستن dialog و حذف فوری
+    setRejectTarget(null);
+    setRejectReason('');
+    setRows((prev) => prev.filter((r) => r.id !== target.id));
+    setPreviewRow((prev) => (prev?.id === target.id ? null : prev));
+    setError(null);
+    setLastAction(null);
+
     startTransition(async () => {
-      setError(null);
       const res = await reviewKycRecord({
-        userId: rejectTarget.userId,
+        userId: target.userId,
         approved: false,
-        rejectedReason: rejectReason.trim() || 'اطلاعات ناقص یا نادرست',
+        rejectedReason: reason,
       });
       if (!res.success) {
+        // rollback
+        setRows((prev) => [target, ...prev].sort(
+          (a, b) => new Date(a.submittedAt ?? 0).getTime() - new Date(b.submittedAt ?? 0).getTime(),
+        ));
         setError(res.error.message);
         return;
       }
-      setRows((prev) => prev.filter((r) => r.id !== rejectTarget.id));
-      setPreviewRow((prev) => (prev?.id === rejectTarget.id ? null : prev));
-      setRejectTarget(null);
-      setRejectReason('');
+      setLastAction(`درخواست «${name}» رد شد`);
     });
   }, [rejectTarget, rejectReason]);
 
-  const docCount = (row: KycRow) =>
-    [row.selfieUrl, row.docFrontUrl, row.docBackUrl].filter(Boolean).length;
+  // ── KPI items config ───────────────────────────────────────────────────────
+  const kpiItems = [
+    {
+      label: 'در انتظار بررسی',
+      value: rows.length,
+      icon: <Users size={16} aria-hidden />,
+      accent: 'var(--nova-amber, oklch(60% .16 70))',
+    },
+    {
+      label: 'با مدرک کامل',
+      value: withDocs,
+      icon: <Shield size={16} aria-hidden />,
+      accent: 'var(--ds-brand-500)',
+    },
+    {
+      label: 'بدون مدرک',
+      value: withoutDocs,
+      icon: <FileText size={16} aria-hidden />,
+      accent: 'var(--at-fg-muted, var(--ds-text-muted))',
+    },
+    {
+      label: 'فوری (بیش از ۲ روز)',
+      value: urgentCount,
+      icon: <Clock size={16} aria-hidden />,
+      accent: 'var(--nova-rose, oklch(55% .18 25))',
+    },
+  ];
 
   return (
     <div className={s.root}>
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
       <PageHeader
         title="بررسی درخواست‌های KYC"
         description={`${rows.length} درخواست در صف بررسی`}
         breadcrumb={[{ href: '/dashboard', label: 'داشبورد' }, { label: 'بررسی KYC' }]}
+        eyebrow="احراز هویت"
+        icon="shield-check"
+        accent="violet"
       />
 
-      {/* ── KPI strip ── */}
+      {/* ── KPI Strip ──────────────────────────────────────────────────────── */}
       <div className={s.kpiStrip} aria-label="خلاصه صف KYC">
-        <div className={s.kpiItem}>
-          <span className={s.kpiVal}>{rows.length}</span>
-          <span className={s.kpiLabel}>در انتظار بررسی</span>
-        </div>
-        <div className={s.kpiDivider} aria-hidden />
-        <div className={s.kpiItem}>
-          <span className={s.kpiVal}>
-            {rows.filter((r) => r.docFrontUrl || r.docBackUrl || r.selfieUrl).length}
-          </span>
-          <span className={s.kpiLabel}>با مدرک کامل</span>
-        </div>
-        <div className={s.kpiDivider} aria-hidden />
-        <div className={s.kpiItem}>
-          <span className={s.kpiVal}>
-            {rows.filter((r) => !r.docFrontUrl && !r.docBackUrl && !r.selfieUrl).length}
-          </span>
-          <span className={s.kpiLabel}>بدون مدرک</span>
-        </div>
+        {kpiItems.map((item, i) => (
+          <div
+            key={item.label}
+            className={s.kpiCard}
+            style={{ '--kpi-accent': item.accent, '--kpi-delay': `${i * 60}ms` } as React.CSSProperties}
+          >
+            <div className={s.kpiTop}>
+              <span className={s.kpiIcon}>{item.icon}</span>
+            </div>
+            <span className={s.kpiValue}>
+              {new Intl.NumberFormat('fa-IR').format(item.value)}
+            </span>
+            <span className={s.kpiLabel}>{item.label}</span>
+          </div>
+        ))}
       </div>
 
-      {/* ── Error banner ── */}
+      {/* ── Urgent queue bar ───────────────────────────────────────────────── */}
+      {urgentCount > 0 && (
+        <div className={s.queueBar} role="status">
+          <span className={s.queueBarDot} aria-hidden />
+          <span className={s.queueBarText}>
+            {new Intl.NumberFormat('fa-IR').format(urgentCount)} درخواست بیش از ۲ روز در صف انتظار است — بررسی فوری توصیه می‌شود
+          </span>
+        </div>
+      )}
+
+      {/* ── Success banner ─────────────────────────────────────────────────── */}
+      {lastAction && (
+        <div className={s.successBanner} role="status" aria-live="polite">
+          <CheckCircle2 size={15} aria-hidden />
+          {lastAction}
+        </div>
+      )}
+
+      {/* ── Error banner ───────────────────────────────────────────────────── */}
       {error && (
         <div className={s.errorBanner} role="alert">
+          <AlertCircle size={15} aria-hidden />
           {error}
         </div>
       )}
 
-      {/* ── Table ── */}
+      {/* ── Table / Empty ──────────────────────────────────────────────────── */}
       {rows.length === 0 ? (
-        <EmptyState
-          icon={ShieldCheck}
-          title="همه KYC‌ها بررسی شدند"
-          description="درخواست جدیدی در صف نیست."
-        />
+        <div className={s.emptyWrap}>
+          <EmptyState
+            icon={ShieldCheck}
+            title="همه KYC‌ها بررسی شدند"
+            description="درخواست جدیدی در صف نیست. صف شما پاک است 🎉"
+          />
+        </div>
       ) : (
         <div className={s.tableWrap}>
           <table className={s.table} aria-label="صف بررسی KYC">
             <thead>
               <tr>
-                <th className={s.th}>متقاضی</th>
-                <th className={s.th}>تماس</th>
-                <th className={s.th}>تاریخ ارسال</th>
-                <th className={s.th}>مدارک</th>
-                <th className={s.th}>عملیات</th>
+                <th className={s.th} scope="col">متقاضی</th>
+                <th className={s.th} scope="col">تماس</th>
+                <th className={s.th} scope="col">تاریخ ارسال</th>
+                <th className={s.th} scope="col">مدارک</th>
+                <th className={s.th} scope="col">
+                  <span className="sr-only">عملیات</span>
+                </th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
-                <tr key={row.id} className={s.tr}>
-                  {/* Applicant */}
-                  <td className={s.td}>
-                    <div className={s.applicant}>
-                      <div className={s.avatar} aria-hidden>
-                        {initials(row.fullName ?? row.user?.name)}
+              {rows.map((row, i) => {
+                const hue = nameHue(row.fullName ?? row.user?.name);
+                const urgent = isUrgent(row.submittedAt);
+                const docs = docCount(row);
+                const displayName = row.fullName ?? row.user?.name ?? '—';
+
+                return (
+                  <tr
+                    key={row.id}
+                    className={s.tr}
+                    style={{ '--row-i': i } as React.CSSProperties}
+                    tabIndex={0}
+                    aria-label={`بررسی KYC برای ${displayName}`}
+                    onKeyDown={(e: KeyboardEvent<HTMLTableRowElement>) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setPreviewRow(row);
+                      }
+                    }}
+                  >
+                    {/* ── Applicant ── */}
+                    <td className={s.td}>
+                      <div className={s.applicant}>
+                        <div
+                          className={s.avatar}
+                          aria-hidden
+                          style={{
+                            background: `oklch(91% 0.04 ${hue})`,
+                            color: `oklch(36% 0.12 ${hue})`,
+                          }}
+                        >
+                          {initials(displayName)}
+                        </div>
+                        <div className={s.applicantInfo}>
+                          <span className={s.applicantName}>{displayName}</span>
+                          <span className={s.applicantEmail}>
+                            {row.user?.email ?? '—'}
+                          </span>
+                        </div>
                       </div>
-                      <div className={s.applicantInfo}>
-                        <span className={s.applicantName}>
-                          {row.fullName ?? row.user?.name ?? '—'}
-                        </span>
-                        <span className={s.applicantEmail}>{row.user?.email ?? '—'}</span>
+                    </td>
+
+                    {/* ── Phone ── */}
+                    <td className={s.td}>
+                      <span className={s.phone} dir="ltr">
+                        {row.user?.phone ?? '—'}
+                      </span>
+                    </td>
+
+                    {/* ── Date + Urgent ── */}
+                    <td className={s.td}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span className={s.date}>{formatDate(row.submittedAt)}</span>
+                        {urgent && (
+                          <span className={s.urgentBadge}>
+                            <span className={s.urgentDot} aria-hidden />
+                            فوری
+                          </span>
+                        )}
                       </div>
-                    </div>
-                  </td>
+                    </td>
 
-                  {/* Phone */}
-                  <td className={s.td}>
-                    <span className={s.phone} dir="ltr">
-                      {row.user?.phone ?? '—'}
-                    </span>
-                  </td>
-
-                  {/* Date */}
-                  <td className={s.td}>
-                    <span className={s.date}>{formatDate(row.submittedAt)}</span>
-                  </td>
-
-                  {/* Docs chip */}
-                  <td className={s.td}>
-                    <button
-                      type="button"
-                      className={`${s.docsChip} ${docCount(row) > 0 ? s.docsChipHasDocs : s.docsChipNoDocs}`}
-                      onClick={() => setPreviewRow(row)}
-                      aria-label={`پیش‌نمایش ${docCount(row)} مدرک`}
-                      disabled={docCount(row) === 0}
-                    >
-                      <Eye size={13} aria-hidden />
-                      {docCount(row)} مدرک
-                    </button>
-                  </td>
-
-                  {/* Actions */}
-                  <td className={s.td}>
-                    <div className={s.actionCell}>
-                      <Button
-                        size="sm"
-                        onClick={() => handleApprove(row)}
-                        disabled={isPending}
-                        className={s.approveBtn}
-                        aria-label={`تأیید ${row.fullName ?? ''}`}
+                    {/* ── Doc chip ── */}
+                    <td className={s.td}>
+                      <button
+                        type="button"
+                        className={`${s.docsChip} ${docs > 0 ? s.docsChipHasDocs : s.docsChipNoDocs}`}
+                        onClick={() => docs > 0 && setPreviewRow(row)}
+                        aria-label={`پیش‌نمایش ${docs} مدرک برای ${displayName}`}
+                        disabled={docs === 0}
                       >
-                        <CheckCircle2 size={13} aria-hidden />
-                        تأیید
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setRejectTarget(row)}
-                        disabled={isPending}
-                        className={s.rejectBtn}
-                        aria-label={`رد ${row.fullName ?? ''}`}
+                        <Eye size={12} aria-hidden />
+                        {new Intl.NumberFormat('fa-IR').format(docs)} مدرک
+                      </button>
+                    </td>
+
+                    {/* ── Actions ── */}
+                    <td className={s.td}>
+                      <div
+                        className={s.actionCell}
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
                       >
-                        <XCircle size={13} aria-hidden />
-                        رد
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleApprove(row)}
+                          disabled={isPending}
+                          className={s.approveBtn}
+                          aria-label={`تأیید هویت ${displayName}`}
+                        >
+                          <CheckCircle2 size={13} aria-hidden />
+                          تأیید
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setRejectTarget(row)}
+                          disabled={isPending}
+                          className={s.rejectBtn}
+                          aria-label={`رد درخواست ${displayName}`}
+                        >
+                          <XCircle size={13} aria-hidden />
+                          رد
+                        </Button>
+                        <button
+                          type="button"
+                          className={s.previewIconBtn}
+                          onClick={() => setPreviewRow(row)}
+                          aria-label={`مشاهده جزئیات ${displayName}`}
+                          title="مشاهده جزئیات"
+                        >
+                          <Eye size={14} aria-hidden />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       )}
 
-      {/* ── Document Preview Sheet ── */}
+      {/* ── Document Preview Sheet ─────────────────────────────────────────── */}
       <Sheet open={!!previewRow} onOpenChange={(o) => !o && setPreviewRow(null)}>
         <SheetContent dir="rtl" side="left" className={s.previewSheet}>
-          {previewRow && (
-            <>
-              <SheetHeader className={s.previewHeader}>
-                <div className={s.previewAvatar} aria-hidden>
-                  <User size={20} aria-hidden />
-                </div>
-                <div>
-                  <SheetTitle className={s.previewName}>
-                    {previewRow.fullName ?? previewRow.user?.name ?? 'بدون نام'}
-                  </SheetTitle>
-                  <p className={s.previewEmail}>{previewRow.user?.email}</p>
-                </div>
-              </SheetHeader>
+          {previewRow && (() => {
+            const hue = nameHue(previewRow.fullName ?? previewRow.user?.name);
+            const displayName = previewRow.fullName ?? previewRow.user?.name ?? 'بدون نام';
+            const docs: Array<{ src: string; label: string }> = [
+              previewRow.selfieUrl ? { src: previewRow.selfieUrl, label: 'سلفی' } : null,
+              previewRow.docFrontUrl ? { src: previewRow.docFrontUrl, label: 'روی مدرک' } : null,
+              previewRow.docBackUrl ? { src: previewRow.docBackUrl, label: 'پشت مدرک' } : null,
+            ].filter(Boolean) as Array<{ src: string; label: string }>;
 
-              <div className={s.previewBody}>
-                {/* Selfie */}
-                {previewRow.selfieUrl && (
-                  <div className={s.docBlock}>
-                    <p className={s.docBlockLabel}>سلفی</p>
-                    <DocImage src={previewRow.selfieUrl} alt="سلفی متقاضی" />
-                  </div>
-                )}
-                {/* Doc front */}
-                {previewRow.docFrontUrl && (
-                  <div className={s.docBlock}>
-                    <p className={s.docBlockLabel}>روی مدرک</p>
-                    <DocImage src={previewRow.docFrontUrl} alt="روی مدرک هویتی" />
-                  </div>
-                )}
-                {/* Doc back */}
-                {previewRow.docBackUrl && (
-                  <div className={s.docBlock}>
-                    <p className={s.docBlockLabel}>پشت مدرک</p>
-                    <DocImage src={previewRow.docBackUrl} alt="پشت مدرک هویتی" />
-                  </div>
-                )}
-
-                {/* Quick actions from preview */}
-                <div className={s.previewActions}>
-                  <Button
-                    className={s.previewApproveBtn}
-                    onClick={() => handleApprove(previewRow)}
-                    disabled={isPending}
-                  >
-                    <CheckCircle2 size={15} aria-hidden />
-                    تأیید هویت
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className={s.previewRejectBtn}
-                    onClick={() => {
-                      setRejectTarget(previewRow);
-                      setPreviewRow(null);
+            return (
+              <>
+                {/* Sticky frosted header */}
+                <div className={s.previewHeaderWrap}>
+                  <div
+                    className={s.previewAvatar}
+                    aria-hidden
+                    style={{
+                      background: `oklch(91% 0.04 ${hue})`,
+                      color: `oklch(36% 0.12 ${hue})`,
                     }}
-                    disabled={isPending}
                   >
-                    <XCircle size={15} aria-hidden />
-                    رد کردن
-                  </Button>
+                    {initials(displayName)}
+                  </div>
+                  <div className={s.previewTitleGroup}>
+                    <span className={s.previewName}>{displayName}</span>
+                    <span className={s.previewMeta}>
+                      {previewRow.user?.email}
+                      {previewRow.user?.phone && ` · ${previewRow.user.phone}`}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
+
+                {/* Body */}
+                <div className={s.previewBody}>
+                  {docs.length === 0 ? (
+                    <div className={s.imgFallback}>
+                      <FileText size={32} aria-hidden />
+                      <span>هیچ مدرکی بارگذاری نشده</span>
+                    </div>
+                  ) : (
+                    docs.map((doc, idx) => (
+                      <div
+                        key={doc.src}
+                        className={s.docBlock}
+                        style={{ '--doc-delay': `${idx * 80}ms` } as React.CSSProperties}
+                      >
+                        <p className={s.docBlockLabel}>{doc.label}</p>
+                        <DocImage src={doc.src} alt={doc.label} delay={idx * 80} />
+                      </div>
+                    ))
+                  )}
+
+                  {/* Quick actions */}
+                  <div className={s.previewActions}>
+                    <Button
+                      className={s.previewApproveBtn}
+                      onClick={() => handleApprove(previewRow)}
+                      disabled={isPending}
+                    >
+                      <CheckCircle2 size={15} aria-hidden />
+                      تأیید هویت
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className={s.previewRejectBtn}
+                      onClick={() => {
+                        setRejectTarget(previewRow);
+                        setPreviewRow(null);
+                      }}
+                      disabled={isPending}
+                    >
+                      <XCircle size={15} aria-hidden />
+                      رد کردن
+                    </Button>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
         </SheetContent>
       </Sheet>
 
-      {/* ── Reject Dialog ── */}
+      {/* ── Reject Dialog ──────────────────────────────────────────────────── */}
       <Dialog open={!!rejectTarget} onOpenChange={(o) => !o && setRejectTarget(null)}>
         <DialogContent dir="rtl" className={s.rejectDialog}>
           <DialogHeader>
@@ -345,7 +543,14 @@ export function KycReviewClient({ records: initial }: Props) {
           <div className={s.dialogBody}>
             {rejectTarget && (
               <div className={s.rejectProfile}>
-                <div className={s.rejectAvatar} aria-hidden>
+                <div
+                  className={s.rejectAvatar}
+                  aria-hidden
+                  style={{
+                    background: `oklch(96% 0.05 25)`,
+                    color: `oklch(38% 0.14 25)`,
+                  }}
+                >
                   {initials(rejectTarget.fullName ?? rejectTarget.user?.name)}
                 </div>
                 <span className={s.rejectName}>
@@ -353,24 +558,36 @@ export function KycReviewClient({ records: initial }: Props) {
                 </span>
               </div>
             )}
-            <label className={s.dialogLabel} htmlFor="rejectReason">
+            <label className={s.dialogLabel} htmlFor="kyc-reject-reason">
               دلیل رد (اختیاری):
             </label>
-            <textarea
-              id="rejectReason"
+            <Textarea
+              id="kyc-reject-reason"
               className={s.dialogTextarea}
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               rows={3}
+              dir="rtl"
               placeholder="مدارک ناخوانا / اطلاعات ناقص / عکس تیره / …"
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectTarget(null)} disabled={isPending}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setRejectTarget(null);
+                setRejectReason('');
+              }}
+              disabled={isPending}
+            >
               انصراف
             </Button>
-            <Button variant="destructive" onClick={handleRejectConfirm} disabled={isPending}>
-              {isPending ? 'در حال ارسال...' : 'رد کردن'}
+            <Button
+              variant="destructive"
+              onClick={handleRejectConfirm}
+              disabled={isPending}
+            >
+              {isPending ? 'در حال ارسال…' : 'رد کردن'}
             </Button>
           </DialogFooter>
         </DialogContent>
