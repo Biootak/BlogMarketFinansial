@@ -1,4 +1,5 @@
 import { auth } from '@/auth';
+import { serverLog } from '@/lib/server-logger';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 type Notification = {
@@ -38,7 +39,7 @@ export default async function handler(
 
     res.status(200).json(notifications);
   } catch (error) {
-    console.error('Error fetching notifications:', error);
+    serverLog.error('notifications', 'fetch', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 }

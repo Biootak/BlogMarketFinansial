@@ -2,6 +2,7 @@ import authConfig from '@/auth.config';
 import { getUserByEmail } from '@/data/user';
 import prisma from '@/lib/db';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { serverLog } from '@/lib/server-logger';
 import { consumeLoginToken } from '@/lib/tokens';
 import { LoginSchema } from '@/schemas';
 import type { Role, UserProfile } from '@/types/types';
@@ -62,7 +63,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           },
         });
       } catch (error) {
-        console.error('Error logging login activity:', error);
+        serverLog.error('auth', 'log-login-activity', error);
       }
     },
     async linkAccount({ user, account, profile }) {
@@ -103,7 +104,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           },
         });
       } catch (error) {
-        console.error('Error logging OAuth verification:', error);
+        serverLog.error('auth', 'log-oauth-verification', error);
       }
     },
     async signOut(message) {
@@ -123,7 +124,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           },
         });
       } catch (error) {
-        console.error('Error logging logout activity:', error);
+        serverLog.error('auth', 'log-logout-activity', error);
       }
     },
   },

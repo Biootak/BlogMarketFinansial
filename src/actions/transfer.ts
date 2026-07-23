@@ -62,6 +62,16 @@ export async function findTransferRecipient(
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد حساب کاربری شوید' } };
   }
 
+  // T1-P1: rate-limit ضد phone-number enumeration
+  // کاربر احراز هویت‌شده نمی‌تواند بیش از ۱۰ جستجو در دقیقه انجام دهد
+  const rl = await checkRateLimit(`transfer-find:${auth.user.id}`, 'transfer-find');
+  if (!rl.success) {
+    return {
+      success: false,
+      error: { code: 'RATE_LIMITED', message: 'تعداد جستجوی گیرنده زیاد است. لطفاً صبر کنید.' },
+    };
+  }
+
   const parsed = FindRecipientSchema.safeParse(raw);
   if (!parsed.success) {
     return {

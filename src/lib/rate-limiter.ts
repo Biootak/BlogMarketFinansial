@@ -72,6 +72,17 @@ export const rateLimiters = {
         prefix: 'ratelimit:deal-track',
       })
     : null,
+
+  // T1-P1: جستجوی گیرنده Transfer — ضد phone-number enumeration
+  // ۱۰ درخواست در دقیقه (per user). چون auth لازم است، user.id کلید است.
+  'transfer-find': redis
+    ? new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(10, '1 m'),
+        analytics: true,
+        prefix: 'ratelimit:transfer-find',
+      })
+    : null,
 };
 
 // Fallback in-memory rate limiter با LRU bounded cache
@@ -93,6 +104,7 @@ const LIMITS: Record<string, { max: number; windowMs: number }> = {
   pageview: { max: 200, windowMs: 60 * 1000 },
   'exchange-rates': { max: 60, windowMs: 60 * 1000 },
   'deal-track': { max: 20, windowMs: 60 * 1000 },
+  'transfer-find': { max: 10, windowMs: 60 * 1000 },
 };
 
 export async function checkRateLimit(

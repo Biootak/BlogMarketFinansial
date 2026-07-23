@@ -1,4 +1,5 @@
 import prisma from '@/lib/db';
+import { serverLog } from '@/lib/server-logger';
 import type { MetadataRoute } from 'next';
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://blogmarketfinansial.ir';
@@ -83,7 +84,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   } catch (error) {
     // Sitemap must never crash the build/route; fall back to static routes.
-    console.error('[sitemap] failed to load dynamic routes:', error);
+    serverLog.error('sitemap', 'load-dynamic-routes', error);
   }
 
   return entries;

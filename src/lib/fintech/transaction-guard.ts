@@ -135,8 +135,14 @@ export async function requestTransactionOtp(params: {
     }
   }
 
+  // devCode فقط در محیط development/staging برگردانده می‌شود — در production
+  // OTP فقط از طریق SMS به شماره تأیید‌شده کاربر ارسال می‌شود و هرگز در
+  // response به client نباید بیاید (P1: جلوگیری از OTP leak)
+  const isDev = process.env.NODE_ENV !== 'production';
   const devPayload =
-    smsResult.devCode !== undefined ? ({ devCode: smsResult.devCode } as { devCode: string }) : {};
+    isDev && smsResult.devCode !== undefined
+      ? ({ devCode: smsResult.devCode } as { devCode: string })
+      : {};
 
   return {
     success: true,

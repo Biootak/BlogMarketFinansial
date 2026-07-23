@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { serverLog } from './server-logger';
 import { buildDatabaseUrl } from './db-url';
 
 export { buildDatabaseUrl };
@@ -64,8 +65,8 @@ export async function checkDatabaseConnection(): Promise<boolean> {
   try {
     await prisma.$queryRaw`SELECT 1`;
     return true;
-  } catch {
-    console.error('[Database] Connection failed');
+  } catch (error) {
+    serverLog.error('db', 'check-connection', error);
     return false;
   }
 }
