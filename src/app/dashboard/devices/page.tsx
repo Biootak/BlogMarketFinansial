@@ -1,4 +1,4 @@
-import { getMyDevices } from '@/actions/deviceActions';
+import { getMyDevices, getSecurityAuditLogs } from '@/actions/deviceActions';
 import { auth } from '@/auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -15,12 +15,18 @@ export default async function DevicesPage() {
     redirect('/signin?callbackUrl=/dashboard/devices');
   }
 
-  const result = await getMyDevices();
-  const devices = result.success ? result.data : [];
+  const [devicesResult, logsResult] = await Promise.all([
+    getMyDevices(),
+    getSecurityAuditLogs(),
+  ]);
+
+  const devices = devicesResult.success ? devicesResult.data : [];
+  const logs = logsResult.success ? logsResult.data : [];
 
   return (
     <div className="at-page" dir="rtl">
-      <DevicesClient devices={devices} />
+      <DevicesClient devices={devices} securityLogs={logs} />
     </div>
   );
 }
+

@@ -112,3 +112,80 @@ export async function trustDevice(deviceId: string): Promise<FintechActionResult
 
   return { success: true, data: undefined };
 }
+
+export type SecurityLog = {
+  id: string;
+  action: string;
+  ip: string | null;
+  createdAt: string;
+};
+
+export async function getSecurityAuditLogs(): Promise<FintechActionResult<SecurityLog[]>> {
+  const auth = await requireUser();
+  if (!auth.success) {
+    return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد شوید' } };
+  }
+
+  const logs = await prisma.auditLog.findMany({
+    where: {
+      actorId: auth.user.id,
+      action: {
+        in: [
+          'DEVICE_REVOKED',
+          'DEVICE_TRUSTED',
+          'ALL_OTHER_DEVICES_REVOKED',
+          'USER_SIGNIN',
+          'USER_SIGNOUT',
+        ],
+      },
+    },
+    select: {
+      id: true,
+      action: true,
+      ip: true,
+      createdAt: true,
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 10,
+  });
+
+  return {
+    success: true,
+    data: logs.map((l) => ({
+      id: l.id,
+      action: l.action,
+      ip: l.ip,
+      createdAt: l.createdAt.toISOString(),
+    })),
+  };
+}
+
+export async function revokeAllOtherDevices(currentDeviceId: string): Promise<FintechActionResult<void>> {
+  const auth = await requireUser();
+  if (!auth.success) {
+    return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد شوید' } };
+  }
+
+  await prisma.device.updateMany({
+    where: {
+      userId: auth.user.id,
+      id: { not: currentDeviceId },
+      status: { not: 'REVOKED' },
+    },
+    data: { status: 'REVOKED' },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      id: createId(),
+      exchangeId: 'PLATFORM',
+      actorId: auth.user.id,
+      actorRole: 'USER',
+      action: 'ALL_OTHER_DEVICES_REVOKED',
+      entityType: 'Device',
+    },
+  });
+
+  return { success: true, data: undefined };
+}
+
