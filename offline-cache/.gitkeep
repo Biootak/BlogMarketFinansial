@@ -1,0 +1,4 @@
+# این پوشه توسط download-cache.sh پر می‌شود.
+# محتوای آن (Node.js tarball + RPMs) در git نیست.
+# برای آماده‌سازی روی ماشین با اینترنت اجرا کن:
+#   bash /mnt/FinancialMarket/download-cache.sh
