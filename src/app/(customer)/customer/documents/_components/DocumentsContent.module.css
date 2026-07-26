@@ -1,0 +1,269 @@
+/* DocumentsContent.module.css */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-6);
+}
+
+/* ── Overview ─────────────────────────────────────────────────────────────── */
+.overview {
+  display: flex;
+  gap: var(--ds-space-5);
+  flex-wrap: wrap;
+  padding: var(--ds-space-4) var(--ds-space-5);
+  border-radius: var(--at-radius-lg, 14px);
+  border: 1px solid var(--at-line);
+  background: var(--at-surface);
+}
+
+.overviewItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+}
+
+.overviewLabel {
+  font-size: 11px;
+  color: var(--at-fg-subtle);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.overviewValue {
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  color: var(--at-fg);
+}
+
+.overviewBadge {
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 20px;
+  background: var(--at-bg-elevated, var(--at-surface));
+  border: 1px solid var(--at-line);
+  color: var(--at-fg-subtle);
+}
+
+.overviewBadge[data-status="APPROVED"] {
+  background: var(--at-accent-soft);
+  color: var(--at-accent-fg, var(--at-accent));
+  border-color: color-mix(in oklch, var(--at-accent) 20%, transparent);
+}
+
+.overviewBadge[data-status="PENDING"] {
+  background: var(--at-gold-soft);
+  color: var(--at-gold-fg, var(--at-gold));
+  border-color: color-mix(in oklch, var(--at-gold) 20%, transparent);
+}
+
+.overviewBadge[data-status="REJECTED"],
+.overviewBadge[data-status="EXPIRED"] {
+  background: var(--at-danger-soft);
+  color: var(--at-danger-fg, var(--at-danger));
+  border-color: color-mix(in oklch, var(--at-danger) 20%, transparent);
+}
+
+/* ── Document list ────────────────────────────────────────────────────────── */
+.docList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  margin-block-start: var(--ds-space-3);
+}
+
+.docCard {
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius, 10px);
+  background: var(--at-surface);
+  overflow: hidden;
+}
+
+.docCard[data-status="APPROVED"] {
+  border-color: color-mix(in oklch, var(--at-accent) 25%, transparent);
+}
+
+.docCard[data-status="REJECTED"],
+.docCard[data-status="EXPIRED"] {
+  border-color: color-mix(in oklch, var(--at-danger) 25%, transparent);
+}
+
+.docHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-bottom: 1px solid var(--at-line);
+  background: var(--at-bg-elevated, oklch(97.5% 0.003 240));
+}
+
+.docIcon {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  flex-shrink: 0;
+  color: var(--at-fg-subtle);
+  background: var(--at-surface);
+  border: 1px solid var(--at-line);
+}
+
+.docIcon[data-status="APPROVED"] {
+  color: var(--at-accent);
+  background: var(--at-accent-soft);
+  border-color: color-mix(in oklch, var(--at-accent) 20%, transparent);
+}
+
+.docIcon[data-status="PENDING"] {
+  color: var(--at-gold);
+  background: var(--at-gold-soft);
+  border-color: color-mix(in oklch, var(--at-gold) 20%, transparent);
+}
+
+.docIcon[data-status="REJECTED"],
+.docIcon[data-status="EXPIRED"] {
+  color: var(--at-danger);
+  background: var(--at-danger-soft);
+  border-color: color-mix(in oklch, var(--at-danger) 20%, transparent);
+}
+
+.docMeta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.docType {
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  color: var(--at-fg);
+}
+
+.docLevel {
+  font-size: 11px;
+  color: var(--at-fg-subtle);
+}
+
+.docStatus {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  background: var(--at-bg-elevated, var(--at-surface));
+  color: var(--at-fg-subtle);
+  border: 1px solid var(--at-line);
+}
+
+.docStatus[data-status="APPROVED"] {
+  background: var(--at-accent-soft);
+  color: var(--at-accent-fg, var(--at-accent));
+  border-color: color-mix(in oklch, var(--at-accent) 20%, transparent);
+}
+
+.docStatus[data-status="PENDING"] {
+  background: var(--at-gold-soft);
+  color: var(--at-gold-fg, var(--at-gold));
+  border-color: color-mix(in oklch, var(--at-gold) 20%, transparent);
+}
+
+.docStatus[data-status="REJECTED"],
+.docStatus[data-status="EXPIRED"] {
+  background: var(--at-danger-soft);
+  color: var(--at-danger-fg, var(--at-danger));
+  border-color: color-mix(in oklch, var(--at-danger) 20%, transparent);
+}
+
+.docBody {
+  padding: var(--ds-space-3) var(--ds-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.docRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-4);
+  padding-block: var(--ds-space-2);
+  border-bottom: 1px solid var(--at-line);
+}
+
+.docRow:last-child {
+  border-bottom: none;
+}
+
+.docRowLabel {
+  font-size: var(--ds-text-sm);
+  color: var(--at-fg-subtle);
+  min-width: 110px;
+  flex-shrink: 0;
+}
+
+.docRowValue {
+  font-size: var(--ds-text-sm);
+  font-weight: 500;
+  color: var(--at-fg);
+}
+
+.docRowReject {
+  font-size: var(--ds-text-sm);
+  font-weight: 500;
+  color: var(--at-danger-fg, var(--at-danger));
+}
+
+.docFileLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--at-accent);
+  text-decoration: none;
+}
+
+.docFileLink:hover {
+  text-decoration: underline;
+}
+
+/* ── CTA ──────────────────────────────────────────────────────────────────── */
+.cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-4);
+  flex-wrap: wrap;
+  padding: var(--ds-space-4) var(--ds-space-5);
+  border-radius: var(--at-radius, 10px);
+  border: 1px solid color-mix(in oklch, var(--at-accent) 25%, transparent);
+  background: var(--at-accent-soft);
+}
+
+.ctaText {
+  font-size: var(--ds-text-sm);
+  color: var(--at-fg-muted);
+  flex: 1;
+}
+
+.ctaBtn {
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: var(--at-radius-sm, 6px);
+  background: var(--at-accent);
+  color: var(--at-accent-on, oklch(98% 0 0));
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity 120ms ease;
+}
+
+.ctaBtn:hover {
+  opacity: 0.88;
+}

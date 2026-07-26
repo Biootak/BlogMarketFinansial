@@ -264,21 +264,25 @@ export async function computePeriodSettlement(
     },
   });
 
-  await logSettlementAudit({
-    actorId: auth.user.id,
-    action: 'SETTLEMENT_COMPUTED',
-    entityId: id,
-    exchangeId,
-    meta: {
-      periodStart: periodStart.toISOString(),
-      periodEnd: periodEnd.toISOString(),
-      dealCount: deals.length,
-      totalVolume: totalVolumeDecimal.toString(),
-      platformFee: platformFee.toString(),
-      exchangeNet: exchangeNet.toString(),
-      currency,
-    },
-  });
+  try {
+    await logSettlementAudit({
+      actorId: auth.user.id,
+      action: 'SETTLEMENT_COMPUTED',
+      entityId: id,
+      exchangeId,
+      meta: {
+        periodStart: periodStart.toISOString(),
+        periodEnd: periodEnd.toISOString(),
+        dealCount: deals.length,
+        totalVolume: totalVolumeDecimal.toString(),
+        platformFee: platformFee.toString(),
+        exchangeNet: exchangeNet.toString(),
+        currency,
+      },
+    });
+  } catch {
+    // audit log failure نباید عملیات اصلی را fail کند
+  }
 
   revalidateTag('settlements');
 
@@ -332,12 +336,16 @@ export async function approveSettlement(settlementId: string): Promise<FintechAc
     },
   });
 
-  await logSettlementAudit({
-    actorId: auth.user.id,
-    action: 'SETTLEMENT_APPROVED',
-    entityId: settlementId,
-    exchangeId: settlement.exchangeId,
-  });
+  try {
+    await logSettlementAudit({
+      actorId: auth.user.id,
+      action: 'SETTLEMENT_APPROVED',
+      entityId: settlementId,
+      exchangeId: settlement.exchangeId,
+    });
+  } catch {
+    // audit log failure نباید تأیید را fail کند
+  }
 
   revalidateTag('settlements');
 
@@ -421,19 +429,23 @@ export async function markSettlementPaid(settlementId: string): Promise<FintechA
     return updated;
   });
 
-  await logSettlementAudit({
-    actorId: auth.user.id,
-    action: 'SETTLEMENT_PAID',
-    entityId: settlementId,
-    exchangeId: paidSettlement.exchangeId,
-    meta: {
-      platformFee: paidSettlement.platformFee.toString(),
-      exchangeNet: paidSettlement.exchangeNet.toString(),
-      currency: paidSettlement.currency,
-      totalVolume: paidSettlement.totalVolume.toString(),
-      dealCount: paidSettlement.dealCount,
-    },
-  });
+  try {
+    await logSettlementAudit({
+      actorId: auth.user.id,
+      action: 'SETTLEMENT_PAID',
+      entityId: settlementId,
+      exchangeId: paidSettlement.exchangeId,
+      meta: {
+        platformFee: paidSettlement.platformFee.toString(),
+        exchangeNet: paidSettlement.exchangeNet.toString(),
+        currency: paidSettlement.currency,
+        totalVolume: paidSettlement.totalVolume.toString(),
+        dealCount: paidSettlement.dealCount,
+      },
+    });
+  } catch {
+    // audit log failure نباید پرداخت را fail کند
+  }
 
   revalidateTag('settlements');
 

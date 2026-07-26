@@ -1,0 +1,117 @@
+/* NotificationsContent.module.css */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-radius: var(--at-radius, 10px);
+  border: 1px solid color-mix(in oklch, var(--at-accent) 25%, transparent);
+  background: var(--at-accent-soft);
+}
+
+.unreadBadge {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--at-accent-fg, var(--at-accent));
+}
+
+.markAllBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: 0.375rem 0.875rem;
+  border: 1px solid color-mix(in oklch, var(--at-accent) 30%, transparent);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--at-accent-fg, var(--at-accent));
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 100ms ease;
+}
+
+.markAllBtn:hover:not(:disabled) {
+  background: color-mix(in oklch, var(--at-accent) 12%, transparent);
+}
+
+.markAllBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius, 10px);
+  overflow: hidden;
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4) var(--ds-space-4);
+  border-bottom: 1px solid var(--at-line);
+  background: var(--at-surface);
+  transition: background 80ms ease;
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.item[data-read="false"] {
+  background: color-mix(in oklch, var(--at-accent) 3%, var(--at-surface));
+}
+
+.item:hover {
+  background: var(--at-surface-hover, oklch(97% 0.005 240));
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--at-accent);
+  flex-shrink: 0;
+  margin-block-start: 6px;
+  opacity: 0;
+}
+
+.dot[data-read="false"] {
+  opacity: 1;
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.message {
+  font-size: var(--ds-text-sm);
+  color: var(--at-fg);
+  line-height: 1.5;
+}
+
+.item[data-read="false"] .message {
+  font-weight: 500;
+}
+
+.date {
+  font-size: 11px;
+  color: var(--at-fg-subtle);
+}

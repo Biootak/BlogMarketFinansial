@@ -8,9 +8,12 @@ export {
   DashboardTableBody,
   DashboardTableRow,
   DashboardTableCell,
-  StatusBadge,
+  StatusBadge as LegacyStatusBadge,
   ActionButton,
   PrimaryActionButton,
-  EmptyState,
+  EmptyState as LegacyEmptyState,
   FilterSelect,
 } from './DashboardTableWrapper';
+
+export { default as PanelShell } from './PanelShell';
+export type { PanelShellProps, PanelNavItem } from './PanelShell';

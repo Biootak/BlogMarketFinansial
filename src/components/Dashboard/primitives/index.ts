@@ -62,3 +62,8 @@ export type {
   GeometricAccentVariant,
   GeometricFieldProps,
 } from './GeometricAccent';
+
+export { KindBadge, StatusBadge, CustomerStatusBadge } from './StatusBadge';
+
+export { PanelDrawer } from './PanelDrawer';
+export type { PanelDrawerProps } from './PanelDrawer';

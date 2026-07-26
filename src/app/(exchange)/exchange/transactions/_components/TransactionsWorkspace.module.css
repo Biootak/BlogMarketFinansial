@@ -103,30 +103,4 @@
   overflow: hidden;
 }
 
-.kindBadge {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
-  background: var(--at-accent-subtle);
-  color: var(--at-accent);
-}
-
-.statusBadge {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
-}
-.statusCompleted {
-  background: oklch(95% 0.08 145);
-  color: oklch(40% 0.12 145);
-}
-.statusPending {
-  background: oklch(95% 0.06 85);
-  color: oklch(40% 0.1 80);
-}
+/* kindBadge و statusBadge از StatusBadge primitive آمده‌اند — اینجا تعریف نمی‌شوند */

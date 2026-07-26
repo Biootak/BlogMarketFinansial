@@ -87,6 +87,8 @@ const NAVBAR_LINKS: readonly NavItem[] = [
   { id: 'money-transfer', name: 'حواله', href: '/money-transfer' },
   { id: 'online-payment', name: 'پرداخت آنلاین', href: '/online-payment' },
   { id: 'urgent', name: 'اخبار فوری', href: '/archive/category/news-urgent', isNew: true },
+  { id: 'exchanges', name: 'صرافی‌ها', href: '/exchanges' },
+  { id: 'apply-exchange', name: 'ثبت صرافی', href: '/apply-exchange', isNew: true },
   { id: 'terms', name: 'قوانین', href: '/terms' },
 ] as const;
 

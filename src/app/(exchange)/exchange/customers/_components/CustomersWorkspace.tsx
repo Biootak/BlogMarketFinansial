@@ -11,14 +11,9 @@ import {
   setCustomerStatus,
   updateCustomer,
 } from '@/actions/exchange-customers';
-import {
-  type Column,
-  ConfirmDialog,
-  DataTable,
-  EmptyState,
-} from '@/components/Dashboard/primitives';
+import { type Column, DataTable, EmptyState } from '@/components/Dashboard/primitives';
 import { useToast } from '@/components/ui/use-toast';
-import { CheckCircle2, PencilLine, Plus, Search, UserCheck, UserX } from 'lucide-react';
+import { PencilLine, Plus, Search, UserCheck, UserX } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
@@ -113,21 +108,41 @@ export default function CustomersWorkspace({
       key: 'fullName',
       header: 'مشتری',
       render: (r) => (
-        <div>
-          <div style={{ fontWeight: 600, fontSize: 'var(--ds-text-sm)', color: 'var(--at-fg)' }}>
-            {r.fullName}
+        <Link
+          href={`/exchange/customers/${r.id}`}
+          style={{ textDecoration: 'none', color: 'inherit' }}
+        >
+          <div>
+            <div
+              style={{
+                fontWeight: 600,
+                fontSize: 'var(--ds-text-sm)',
+                color: 'var(--at-accent)',
+                textDecoration: 'underline',
+                textDecorationColor: 'transparent',
+                transition: 'text-decoration-color 120ms',
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLDivElement).style.textDecorationColor = 'currentColor';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLDivElement).style.textDecorationColor = 'transparent';
+              }}
+            >
+              {r.fullName}
+            </div>
+            <div
+              style={{
+                fontSize: '11px',
+                color: 'var(--at-fg-subtle)',
+                direction: 'ltr',
+                textAlign: 'right',
+              }}
+            >
+              {r.phone}
+            </div>
           </div>
-          <div
-            style={{
-              fontSize: '11px',
-              color: 'var(--at-fg-subtle)',
-              direction: 'ltr',
-              textAlign: 'right',
-            }}
-          >
-            {r.phone}
-          </div>
-        </div>
+        </Link>
       ),
       width: '200px',
     },

@@ -1,0 +1,256 @@
+/* CustomerDetailView.module.css
+ *
+ * فقط style‌های لوکال این کامپوننت — چیزهای مشترک از primitives میان.
+ * StatCard/StatGrid/Section/DataTable هیچ class‌ای اینجا نیاز ندارند.
+ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5);
+}
+
+/* ── Top grid (پروفایل + تماس + ریسک) ─────── */
+.topGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--ds-space-4);
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .topGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .topGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Profile card ──────────────────────────── */
+.profileCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-5);
+  background: var(--at-surface);
+  border: 1px solid var(--at-line);
+  border-radius: 14px;
+}
+
+.avatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: var(--at-accent-subtle);
+  color: var(--at-accent);
+  font-size: 1.25rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.profileMeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.profileName {
+  font-size: var(--ds-text-lg);
+  font-weight: 700;
+  color: var(--at-fg);
+  margin: 0;
+}
+
+.profileSub {
+  font-size: var(--ds-text-sm);
+  color: var(--at-fg-subtle);
+  margin: 0;
+}
+
+.profileBadges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.profileActions {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding-block-start: var(--ds-space-2);
+  border-block-start: 1px solid var(--at-line);
+}
+
+/* ── Shared badge (وضعیت و KYC) ─────────────
+ * نه از CustomersWorkspace.module.css کپی — اینجا single source of truth
+ * برای CustomerDetailView است.
+ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* وضعیت مشتری */
+.badgeActive {
+  background: oklch(95% 0.08 145);
+  color: oklch(40% 0.12 145);
+}
+.badgePending {
+  background: oklch(95% 0.06 85);
+  color: oklch(40% 0.1 80);
+}
+.badgeSuspended {
+  background: oklch(95% 0.06 50);
+  color: oklch(40% 0.1 50);
+}
+.badgeClosed {
+  background: oklch(93% 0 0);
+  color: oklch(45% 0 0);
+}
+
+/* KYC level */
+.kycNone {
+  background: oklch(93% 0 0);
+  color: oklch(50% 0 0);
+}
+.kycLevel1 {
+  background: oklch(95% 0.06 220);
+  color: oklch(40% 0.12 220);
+}
+.kycLevel2 {
+  background: oklch(95% 0.08 260);
+  color: oklch(40% 0.14 260);
+}
+.kycLevel3 {
+  background: oklch(95% 0.08 145);
+  color: oklch(40% 0.12 145);
+}
+
+.kycStatusText {
+  font-size: 11px;
+  color: var(--at-fg-subtle);
+}
+
+/* ── Buttons ────────────────────────────────── */
+.editBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 var(--ds-space-4);
+  font-size: var(--ds-text-sm);
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--at-fg);
+  background: transparent;
+  border: 1px solid var(--at-line);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+.editBtn:hover {
+  border-color: var(--at-accent);
+  background: var(--at-accent-subtle);
+  color: var(--at-accent);
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--at-line);
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  color: var(--at-fg-subtle);
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.iconBtn:hover {
+  background: var(--at-accent-subtle);
+  border-color: var(--at-accent);
+  color: var(--at-accent);
+}
+
+/* ── Info list (dl داخل Section) ─────────────── */
+.infoList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  margin: 0;
+  padding-block-start: var(--ds-space-2);
+}
+
+.infoRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+}
+
+.infoRow dt {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--ds-text-sm);
+  color: var(--at-fg-subtle);
+  flex-shrink: 0;
+}
+
+.infoRow dd {
+  font-size: var(--ds-text-sm);
+  color: var(--at-fg);
+  font-weight: 500;
+  margin: 0;
+  text-align: end;
+  word-break: break-all;
+}
+
+/* ── Table cells ─────────────────────────────── */
+.tableWrap {
+  background: var(--at-surface);
+  border: 1px solid var(--at-line);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-block-start: var(--ds-space-3);
+}
+
+.cellMuted {
+  font-size: 12px;
+  color: var(--at-fg-subtle);
+}
+
+.kindBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--at-accent-subtle);
+  color: var(--at-accent);
+  white-space: nowrap;
+}
+
+.amountCell {
+  font-variant-numeric: tabular-nums;
+  color: var(--at-fg);
+  font-weight: 600;
+  font-size: var(--ds-text-sm);
+}

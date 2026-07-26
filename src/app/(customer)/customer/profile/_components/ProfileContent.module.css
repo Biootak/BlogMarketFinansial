@@ -1,0 +1,216 @@
+/* ProfileContent.module.css */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-6);
+}
+
+/* ── Info grid ────────────────────────────────────────────────────────────── */
+.infoGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-block-start: var(--ds-space-3);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius, 10px);
+  overflow: hidden;
+}
+
+.infoRow {
+  display: flex;
+  align-items: center;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-bottom: 1px solid var(--at-line);
+  gap: var(--ds-space-4);
+}
+
+.infoRow:last-child {
+  border-bottom: none;
+}
+
+.infoLabel {
+  font-size: var(--ds-text-sm);
+  color: var(--at-fg-subtle);
+  min-width: 150px;
+  flex-shrink: 0;
+}
+
+.infoValue {
+  font-size: var(--ds-text-sm);
+  font-weight: 500;
+  color: var(--at-fg);
+  word-break: break-word;
+}
+
+.statusBadge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 20px;
+  background: var(--at-accent-soft);
+  color: var(--at-accent-fg, var(--at-accent));
+  border: 1px solid color-mix(in oklch, var(--at-accent) 20%, transparent);
+}
+
+.statusBadge[data-status="FROZEN"] {
+  background: color-mix(in oklch, var(--at-info) 10%, transparent);
+  color: var(--at-info);
+  border-color: color-mix(in oklch, var(--at-info) 20%, transparent);
+}
+
+.statusBadge[data-status="PROSPECT"] {
+  background: var(--at-gold-soft);
+  color: var(--at-gold-fg, var(--at-gold));
+  border-color: color-mix(in oklch, var(--at-gold) 20%, transparent);
+}
+
+.statusBadge[data-status="CLOSED"] {
+  background: var(--at-danger-soft);
+  color: var(--at-danger-fg, var(--at-danger));
+  border-color: color-mix(in oklch, var(--at-danger) 20%, transparent);
+}
+
+.readOnlyNote {
+  margin-block-start: var(--ds-space-2);
+  font-size: 11px;
+  color: var(--at-fg-subtle);
+}
+
+.savedBanner {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  background: var(--at-accent-soft);
+  color: var(--at-accent-fg, var(--at-accent));
+  border-radius: 6px;
+  font-size: var(--ds-text-sm);
+  font-weight: 500;
+  border: 1px solid color-mix(in oklch, var(--at-accent) 20%, transparent);
+}
+
+/* ── Edit button ──────────────────────────────────────────────────────────── */
+.editBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0.375rem 0.875rem;
+  border: 1px solid var(--at-line);
+  border-radius: 6px;
+  background: var(--at-surface);
+  color: var(--at-fg-muted);
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 100ms ease, border-color 100ms ease;
+}
+
+.editBtn:hover {
+  background: var(--at-surface-hover);
+  border-color: var(--at-line-strong);
+  color: var(--at-fg);
+}
+
+/* ── Form ─────────────────────────────────────────────────────────────────── */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  margin-block-start: var(--ds-space-3);
+  max-inline-size: 520px;
+}
+
+.formRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.label {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--at-fg);
+}
+
+.input {
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-sm, 6px);
+  background: var(--at-surface);
+  color: var(--at-fg);
+  font-size: var(--ds-text-sm);
+  font-family: inherit;
+  direction: rtl;
+  outline: none;
+  transition: border-color 100ms ease, box-shadow 100ms ease;
+  appearance: none;
+}
+
+.input:focus {
+  border-color: var(--at-accent);
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--at-accent) 15%, transparent);
+}
+
+.input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.errorText {
+  font-size: var(--ds-text-sm);
+  color: var(--at-danger-fg, var(--at-danger));
+  font-weight: 500;
+}
+
+.formActions {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.cancelBtn {
+  padding: 0.5rem 1.25rem;
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-sm, 6px);
+  background: transparent;
+  color: var(--at-fg-muted);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 100ms ease;
+}
+
+.cancelBtn:hover:not(:disabled) {
+  background: var(--at-surface-hover);
+}
+
+.saveBtn {
+  padding: 0.5rem 1.5rem;
+  border: none;
+  border-radius: var(--at-radius-sm, 6px);
+  background: var(--at-accent);
+  color: var(--at-accent-on, oklch(98% 0 0));
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 120ms ease;
+}
+
+.saveBtn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.saveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

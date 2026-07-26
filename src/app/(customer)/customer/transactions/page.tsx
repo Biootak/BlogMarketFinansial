@@ -1,0 +1,56 @@
+/**
+ * /customer/transactions — تاریخچه تراکنش‌های مشتری
+ */
+import { getCustomerTransactions } from '@/actions/customer-portal';
+import { auth } from '@/auth';
+import { PageHeader } from '@/components/Dashboard/primitives';
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import TransactionsContent from './_components/TransactionsContent';
+
+export const metadata: Metadata = {
+  title: 'تراکنش‌های من',
+  description: 'تاریخچه کامل تراکنش‌های ارزی',
+};
+
+export const dynamic = 'force-dynamic';
+
+export default async function CustomerTransactionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; kind?: string; status?: string }>;
+}) {
+  const session = await auth();
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/customer/transactions');
+
+  const sp = await searchParams;
+  const page = Math.max(1, Number(sp.page) || 1);
+  const kind = sp.kind ?? '';
+  const status = sp.status ?? '';
+
+  const result = await getCustomerTransactions({
+    page,
+    limit: 20,
+    kind: kind || undefined,
+    status: status || undefined,
+  });
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
+      <PageHeader
+        title="تراکنش‌ها"
+        description={`مجموع ${new Intl.NumberFormat('fa-IR').format(result.total)} تراکنش`}
+        breadcrumb={[{ label: 'پورتال مشتری' }, { label: 'تراکنش‌ها' }]}
+        icon="arrow-left-right"
+      />
+      <TransactionsContent
+        initialRows={result.rows}
+        total={result.total}
+        page={page}
+        hasMore={result.hasMore}
+        filterKind={kind}
+        filterStatus={status}
+      />
+    </div>
+  );
+}

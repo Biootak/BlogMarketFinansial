@@ -18,20 +18,20 @@
   padding: var(--ds-space-6) var(--ds-space-6) var(--ds-space-5);
   margin-block-end: var(--ds-space-5);
 
-  background:
-    radial-gradient(ellipse 70% 140% at 100% 0%,
+  background: radial-gradient(
+      ellipse 70% 140% at 100% 0%,
       color-mix(in oklch, var(--ph-c, var(--at-accent)) 14%, transparent),
-      transparent 55%),
-    radial-gradient(ellipse 50% 90% at 0% 100%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 50% 90% at 0% 100%,
       color-mix(in oklch, var(--ph-c, var(--at-accent)) 7%, transparent),
-      transparent 50%),
-    var(--at-surface);
+      transparent 50%
+    ), var(--at-surface);
 
   border: 1px solid var(--at-line);
   border-radius: var(--at-radius-xl, 20px);
-  box-shadow:
-    0 1px 0 oklch(100% 0 0 / 0.06) inset,
-    0 2px 8px -2px oklch(18% 0.02 255 / 0.06);
+  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.06) inset, 0 2px 8px -2px oklch(18% 0.02 255 / 0.06);
 
   overflow: hidden;
   isolation: isolate;
@@ -39,9 +39,7 @@
 }
 
 .dark .header {
-  box-shadow:
-    0 1px 0 oklch(100% 0 0 / 0.04) inset,
-    0 2px 12px -2px oklch(0% 0 0 / 0.35);
+  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.04) inset, 0 2px 12px -2px oklch(0% 0 0 / 0.35);
 }
 
 /* ─── SVG geometric mark — گوشه‌ی end-top، آروم می‌چرخه ──────────────────── */
@@ -64,7 +62,9 @@
   animation: ph-mark-spin 80s linear infinite;
 }
 @keyframes ph-mark-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ─── Body ────────────────────────────────────────────────────────────────── */
@@ -97,7 +97,8 @@
   animation: ph-pulse 2s ease-in-out infinite;
 }
 @keyframes ph-pulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 3px color-mix(in oklch, var(--ph-c, var(--at-accent)) 22%, transparent);
     transform: scale(1);
   }
@@ -120,7 +121,9 @@
   text-decoration: none;
   transition: color 140ms var(--ds-ease-out-quart);
 }
-.breadcrumbLink:hover { color: var(--at-fg); }
+.breadcrumbLink:hover {
+  color: var(--at-fg);
+}
 .breadcrumbSep {
   opacity: 0.35;
   display: inline-flex;
@@ -170,8 +173,14 @@
   animation-delay: 80ms;
 }
 @keyframes ph-icon-pop {
-  from { transform: scale(0.72) rotate(-6deg); opacity: 0; }
-  to   { transform: scale(1) rotate(0deg);    opacity: 1; }
+  from {
+    transform: scale(0.72) rotate(-6deg);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
 }
 
 .title {
@@ -214,16 +223,52 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    ACCENT VARIANTS
    ═══════════════════════════════════════════════════════════════════════════ */
-.accent--indigo  { --ph-c: oklch(56% 0.14 265); --ph-fg: oklch(44% 0.14 265); }
-.accent--emerald { --ph-c: oklch(55% 0.14 162); --ph-fg: oklch(42% 0.14 162); }
-.accent--amber   { --ph-c: oklch(65% 0.14 75);  --ph-fg: oklch(46% 0.14 75);  }
-.accent--rose    { --ph-c: oklch(58% 0.16 20);  --ph-fg: oklch(44% 0.15 20);  }
-.accent--violet  { --ph-c: oklch(56% 0.14 295); --ph-fg: oklch(44% 0.14 295); }
-.accent--cyan    { --ph-c: oklch(58% 0.13 210); --ph-fg: oklch(44% 0.13 210); }
+.accent--indigo {
+  --ph-c: oklch(56% 0.14 265);
+  --ph-fg: oklch(44% 0.14 265);
+}
+.accent--emerald {
+  --ph-c: oklch(55% 0.14 162);
+  --ph-fg: oklch(42% 0.14 162);
+}
+.accent--amber {
+  --ph-c: oklch(65% 0.14 75);
+  --ph-fg: oklch(46% 0.14 75);
+}
+.accent--rose {
+  --ph-c: oklch(58% 0.16 20);
+  --ph-fg: oklch(44% 0.15 20);
+}
+.accent--violet {
+  --ph-c: oklch(56% 0.14 295);
+  --ph-fg: oklch(44% 0.14 295);
+}
+.accent--cyan {
+  --ph-c: oklch(58% 0.13 210);
+  --ph-fg: oklch(44% 0.13 210);
+}
 
-.dark .accent--indigo  { --ph-c: oklch(72% 0.14 265); --ph-fg: oklch(78% 0.13 268); }
-.dark .accent--emerald { --ph-c: oklch(76% 0.14 162); --ph-fg: oklch(82% 0.12 162); }
-.dark .accent--amber   { --ph-c: oklch(78% 0.14 75);  --ph-fg: oklch(82% 0.12 78);  }
-.dark .accent--rose    { --ph-c: oklch(72% 0.16 20);  --ph-fg: oklch(80% 0.14 22);  }
-.dark .accent--violet  { --ph-c: oklch(72% 0.14 295); --ph-fg: oklch(78% 0.13 295); }
-.dark .accent--cyan    { --ph-c: oklch(74% 0.13 210); --ph-fg: oklch(78% 0.12 212); }
+.dark .accent--indigo {
+  --ph-c: oklch(72% 0.14 265);
+  --ph-fg: oklch(78% 0.13 268);
+}
+.dark .accent--emerald {
+  --ph-c: oklch(76% 0.14 162);
+  --ph-fg: oklch(82% 0.12 162);
+}
+.dark .accent--amber {
+  --ph-c: oklch(78% 0.14 75);
+  --ph-fg: oklch(82% 0.12 78);
+}
+.dark .accent--rose {
+  --ph-c: oklch(72% 0.16 20);
+  --ph-fg: oklch(80% 0.14 22);
+}
+.dark .accent--violet {
+  --ph-c: oklch(72% 0.14 295);
+  --ph-fg: oklch(78% 0.13 295);
+}
+.dark .accent--cyan {
+  --ph-c: oklch(74% 0.13 210);
+  --ph-fg: oklch(78% 0.12 212);
+}

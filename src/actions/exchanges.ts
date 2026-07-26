@@ -116,7 +116,12 @@ export async function getExchangeById(id: string): Promise<ExchangeRow | null> {
   return row ? mapExchange(row) : null;
 }
 
-/** پیدا کردن صرافی که کاربر فعلی عضو staff آن است */
+/**
+ * پیدا کردن صرافی برای کاربر فعلی:
+ *   - OWNER / SUPERADMIN / ADMIN پلتفرم: اولین صرافی فعال (دسترسی کامل)
+ *   - EXCHANGE staff: صرافی‌ای که عضو آن است
+ *   - بقیه: null
+ */
 export async function getExchangeForUser(): Promise<{
   exchange: ExchangeRow;
   staffRole: string;
@@ -126,6 +131,25 @@ export async function getExchangeForUser(): Promise<{
   const auth = await requireUser();
   if (!auth.success) return null;
 
+  const { user } = auth;
+  const PLATFORM_ADMINS = ['OWNER', 'SUPERADMIN', 'ADMIN'] as const;
+
+  // مالک/ادمین پلتفرم: اولین صرافی فعال را برمی‌گرداند
+  if ((PLATFORM_ADMINS as readonly string[]).includes(user.role as string)) {
+    const row = await prisma.exchange.findFirst({
+      where: { status: 'ACTIVE' },
+      orderBy: { createdAt: 'asc' },
+      include: { _count: { select: { Customer: true, Transaction: true } } },
+    });
+    if (!row) return null;
+    return {
+      exchange: mapExchange(row),
+      staffRole: 'OWNER',
+      permissions: [],
+    };
+  }
+
+  // ExchangeStaff: صرافی خودشان
   const staff = await prisma.exchangeStaff.findFirst({
     where: { userId: auth.user.id, revokedAt: null },
     include: {
@@ -141,6 +165,26 @@ export async function getExchangeForUser(): Promise<{
     staffRole: staff.role,
     permissions: staff.permissions,
   };
+}
+
+/**
+ * برای OWNER / SUPERADMIN / ADMIN پلتفرم:
+ * اولین صرافی فعال را برمی‌گرداند تا بتوانند پنل /exchange را ببینند.
+ * اگر می‌خواهند صرافی خاصی ببینند از /dashboard/exchanges/[id] استفاده کنند.
+ */
+export async function getExchangeForOwner(): Promise<{
+  exchange: ExchangeRow;
+} | null> {
+  const auth = await requireAdmin();
+  if (!auth.success) return null;
+
+  const row = await prisma.exchange.findFirst({
+    where: { status: 'ACTIVE' },
+    orderBy: { createdAt: 'asc' },
+    include: { _count: { select: { Customer: true, Transaction: true } } },
+  });
+  if (!row) return null;
+  return { exchange: mapExchange(row) };
 }
 
 // ─── CREATE ───────────────────────────────────────────────────────────────────

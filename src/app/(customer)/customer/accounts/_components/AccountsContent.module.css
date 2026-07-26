@@ -1,0 +1,267 @@
+/* AccountsContent.module.css */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-6);
+}
+
+/* ── Summary row ─────────────────────────────────────────────────────────── */
+.summaryRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--ds-space-3);
+}
+
+@media (max-width: 600px) {
+  .summaryRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+.summaryCard {
+  padding: var(--ds-space-4) var(--ds-space-5);
+  border-radius: var(--at-radius-lg, 14px);
+  background: var(--at-surface);
+  border: 1px solid var(--at-line);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+}
+
+.summaryCard[data-currency="AFN"] {
+  border-color: color-mix(in oklch, var(--at-accent) 30%, transparent);
+  background: var(--at-accent-soft);
+}
+
+.summaryCur {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--at-fg-subtle);
+  text-transform: uppercase;
+}
+
+.summaryCard[data-currency="AFN"] .summaryCur {
+  color: var(--at-accent-fg, var(--at-accent));
+}
+
+.summaryBal {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--at-fg);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.summaryLabel {
+  font-size: 11px;
+  color: var(--at-fg-subtle);
+}
+
+/* ── Accounts grid ───────────────────────────────────────────────────────── */
+.accountsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--ds-space-4);
+  margin-block-start: var(--ds-space-3);
+}
+
+.accountCard {
+  padding: var(--ds-space-5);
+  border-radius: var(--at-radius-lg, 14px);
+  background: var(--at-surface);
+  border: 1px solid var(--at-line);
+  box-shadow: var(--at-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  transition: box-shadow 140ms ease, border-color 140ms ease;
+}
+
+.accountCard:hover {
+  box-shadow: var(--at-shadow-hover);
+  border-color: var(--at-line-strong);
+}
+
+.accountCard[data-status="ACTIVE"] {
+  border-color: color-mix(in oklch, var(--at-accent) 25%, transparent);
+}
+
+.accountCard[data-status="FROZEN"] {
+  opacity: 0.8;
+  border-style: dashed;
+}
+
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+
+.cardTypeBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cardType {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--at-fg);
+}
+
+.cardLabel {
+  font-size: 11px;
+  color: var(--at-fg-subtle);
+}
+
+.cardStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: var(--at-accent-soft);
+  color: var(--at-accent-fg, var(--at-accent));
+  white-space: nowrap;
+}
+
+.cardStatus[data-status="FROZEN"] {
+  background: color-mix(in oklch, var(--at-info) 10%, transparent);
+  color: var(--at-info);
+}
+
+.cardStatus[data-status="PENDING"] {
+  background: var(--at-gold-soft);
+  color: var(--at-gold-fg, var(--at-gold));
+}
+
+.cardBalance {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ds-space-2);
+}
+
+.balanceAmount {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--at-fg);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+.balanceCurrency {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--at-fg-subtle);
+  letter-spacing: 0.04em;
+}
+
+.frozenNote {
+  font-size: 11px;
+  color: var(--at-info);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  background: color-mix(in oklch, var(--at-info) 8%, transparent);
+  border-radius: 6px;
+  border: 1px solid color-mix(in oklch, var(--at-info) 20%, transparent);
+}
+
+.cardFooter {
+  border-top: 1px solid var(--at-line);
+  padding-block-start: var(--ds-space-2);
+}
+
+.cardDate {
+  font-size: 10px;
+  color: var(--at-fg-subtle);
+}
+
+/* ── Closed accounts ────────────────────────────────────────────────────── */
+.closedList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-block-start: var(--ds-space-3);
+}
+
+.closedRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-radius: 6px;
+  opacity: 0.55;
+}
+
+.closedType {
+  font-size: var(--ds-text-sm);
+  font-weight: 500;
+  color: var(--at-fg-muted);
+  flex: 1;
+}
+
+.closedCur {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--at-fg-subtle);
+  letter-spacing: 0.05em;
+}
+
+.closedDate {
+  font-size: 11px;
+  color: var(--at-fg-subtle);
+}
+
+/* ── Exchange info ──────────────────────────────────────────────────────── */
+.exchangeInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-block-start: var(--ds-space-2);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius, 10px);
+  overflow: hidden;
+}
+
+.exchangeRow {
+  display: flex;
+  align-items: center;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-bottom: 1px solid var(--at-line);
+  gap: var(--ds-space-4);
+}
+
+.exchangeRow:last-child {
+  border-bottom: none;
+}
+
+.exchangeLabel {
+  font-size: var(--ds-text-sm);
+  color: var(--at-fg-subtle);
+  min-width: 140px;
+  flex-shrink: 0;
+}
+
+.exchangeValue {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--at-fg);
+}
+
+/* Link variant for account card */
+.accountCardLink {
+  display: flex;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.accountCardLink .cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+

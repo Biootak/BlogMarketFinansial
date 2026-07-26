@@ -1,4 +1,4 @@
-# Dependencies
+﻿# Dependencies
 /node_modules
 /.pnp
 .pnp.js
@@ -8,7 +8,6 @@
 # Next.js
 /.next/
 /out/
-
 
 # Uploaded files - tracked for deployment fallback
 # public/uploads/ is now tracked in git
@@ -99,3 +98,61 @@ next-env.d.ts
 
 # Public dev/visual reports (regenerated on demand via scripts/build-tgju-visual.mjs)
 /public/dev-tools/
+
+# ============================================================================
+# LARGE BINARIES & INSTALLERS
+# فایل‌های بزرگ — هرگز در git نیستند (باید روی USB/share نگه داشته شوند)
+# ============================================================================
+# Linux IDE/editor installers
+*.rpm
+*.deb
+*.AppImage
+*.flatpak
+*.snap
+# Windows installers
+*.exe
+*.msi
+*.msix
+# macOS installers
+*.dmg
+*.pkg
+# Generic archives that likely contain binaries
+*.iso
+*.img
+# Node.js tarballs (cached by download-cache.sh)
+node-v*.tar.xz
+node-v*.tar.gz
+node-v*.zip
+
+# ============================================================================
+# OFFLINE CACHE (ساخته‌شده توسط download-cache.sh)
+# محتوا روی VirtualBox share / USB می‌ماند، نه git
+# ============================================================================
+/offline-cache/node/
+/offline-cache/rpms/
+/offline-cache/MANIFEST.txt
+# فقط .gitkeep tracked می‌ماند تا پوشه‌ساختار حفظ شود
+
+# ============================================================================
+# AGENT / AI TASK FILES
+# فایل‌های کاری agent ها — session-specific، نه source code
+# ============================================================================
+/Documents/bob-task-*.json
+/Documents/task-*.json
+/Documents/agent-*.json
+/.bob/
+/.trae/
+/.kilo/tasks/
+/.claude/tasks/
+# اگه در آینده agent جدیدی اضافه شد:
+/.agent*/
+/agent-tasks/
+/.task-*/
+
+# ============================================================================
+# RUNTIME / EXTRACTED BINARIES
+# فایل‌هایی که روی ماشین user extract می‌شوند
+# ============================================================================
+/trae-extracted/
+/app-extracted/
+*.AppDir/

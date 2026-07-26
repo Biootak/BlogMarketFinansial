@@ -8,8 +8,9 @@
 import ScrollReveal from '@/app/(site)/money-transfer/ScrollReveal';
 import ExchangeQuotesBoard from '@/components/MoneyTransfer/ExchangeQuotesBoard';
 import prisma from '@/lib/db';
-import { Building2, TrendingUp, Users, Zap } from 'lucide-react';
+import { ArrowLeft, Building2, TrendingUp, Users, Zap } from 'lucide-react';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import s from './exchanges.module.css';
 
 export const revalidate = 60;
@@ -96,6 +97,16 @@ export default async function ExchangesPage() {
               <span className={s.statNum}>۲۴/۷</span>
               <span className={s.statLabel}>به‌روزرسانی</span>
             </div>
+          </div>
+
+          {/* CTA — ثبت صرافی */}
+          <div className={s.heroCta}>
+            <Link href="/apply-exchange" className={s.heroCtaBtn}>
+              <Building2 size={15} strokeWidth={2} aria-hidden />
+              صرافی خود را ثبت کنید
+              <ArrowLeft size={13} strokeWidth={2.5} className={s.heroCtaArrow} aria-hidden />
+            </Link>
+            <p className={s.heroCtaHint}>رایگان · تأیید در ۱ تا ۲ روز کاری</p>
           </div>
         </div>
       </section>

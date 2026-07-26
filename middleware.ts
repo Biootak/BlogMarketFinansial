@@ -19,6 +19,9 @@ const DEV_COOKIE_NAME = 'authjs.session-token';
 // Set DEBUG_MODE=true in Vercel Environment Variables to enable
 const DEBUG_MODE = process.env.DEBUG_MODE === 'true';
 
+// نقش‌هایی که بعد از لاگین باید به /customer/dashboard بروند
+const CUSTOMER_PORTAL_ROLES = new Set(['CUSTOMER', 'TEST_CUSTOMER', 'MERCHANT']);
+
 const adminApiRoutes = [
   '/api/users',
   '/api/advertisements',
@@ -120,10 +123,13 @@ const isPublicApi = (pathname: string): boolean => {
   return pathname.startsWith('/api/public/') || pathname.startsWith('/api/debug');
 };
 
-// Roles that are NOT allowed in /dashboard (they belong to /exchange or public areas).
+// Roles that are NOT allowed in /dashboard (they belong to /exchange or /customer areas).
 // R8-fix: CUSTOMER, MERCHANT, EXCHANGE, TEST_CUSTOMER have no business in the blog/admin dashboard.
-// They should be redirected to /exchange (if exchange staff) or / (if customer).
+// EXCHANGE → /exchange/dashboard | CUSTOMER/TEST_CUSTOMER/MERCHANT → /customer/dashboard
 const DASHBOARD_BLOCKED_ROLES = new Set(['CUSTOMER', 'MERCHANT', 'EXCHANGE', 'TEST_CUSTOMER']);
+
+// نقش‌هایی که بعد از لاگین باید به /exchange/dashboard بروند
+const EXCHANGE_ROLES = new Set(['EXCHANGE']);
 
 const checkDashboardAccess = (pathname: string, role?: string) => {
   // R8-fix: block fintech-only roles from the entire /dashboard tree
@@ -186,6 +192,17 @@ export async function middleware(req: NextRequest) {
     );
   }
 
+  // Smart post-login redirect: بر اساس نقش → پورتال صحیح
+  // این catch کاربرانی را می‌کند که DEFAULT_REDIRECT='/dashboard' آن‌ها را اینجا آورده
+  if (isLoggedIn && pathname === '/dashboard' && role) {
+    if (EXCHANGE_ROLES.has(role)) {
+      return NextResponse.redirect(new URL('/exchange/dashboard', nextUrl));
+    }
+    if (CUSTOMER_PORTAL_ROLES.has(role)) {
+      return NextResponse.redirect(new URL('/customer/dashboard', nextUrl));
+    }
+  }
+
   // API routes - check access
   if (pathname.startsWith('/api') && !isPublicApi(pathname)) {
     if (checkApiAccess(pathname, role)) return NextResponse.next();
@@ -196,16 +213,33 @@ export async function middleware(req: NextRequest) {
   if (pathname.startsWith('/dashboard')) {
     const hasAccess = checkDashboardAccess(pathname, role);
     if (hasAccess) return NextResponse.next();
-    // R8-fix: redirect fintech roles to their correct home instead of looping back to /dashboard
+    // R8-fix: EXCHANGE → /exchange/dashboard | CUSTOMER → /customer/dashboard | بقیه → /
+    if (role && EXCHANGE_ROLES.has(role)) {
+      return NextResponse.redirect(new URL('/exchange/dashboard', nextUrl));
+    }
+    if (role && CUSTOMER_PORTAL_ROLES.has(role)) {
+      return NextResponse.redirect(new URL('/customer/dashboard', nextUrl));
+    }
     if (role && DASHBOARD_BLOCKED_ROLES.has(role)) {
-      return NextResponse.redirect(new URL('/exchange', nextUrl));
+      return NextResponse.redirect(new URL('/', nextUrl));
     }
     return NextResponse.redirect(new URL('/dashboard', nextUrl));
   }
 
-  // R12-fix: /exchange/* routes require authentication — redirect to /signin if not logged in.
+  // R12-fix: /exchange/* routes require authentication — redirect to /auth if not logged in.
   // The Exchange layout itself handles staff membership verification.
   if (pathname.startsWith('/exchange')) {
+    if (!isLoggedIn) {
+      const callbackUrl = pathname + search;
+      return NextResponse.redirect(
+        new URL(`/auth?callbackUrl=${encodeURIComponent(callbackUrl)}`, nextUrl),
+      );
+    }
+  }
+
+  // /customer/* routes require authentication — redirect to /auth if not logged in.
+  // The Customer layout handles Customer record verification.
+  if (pathname.startsWith('/customer')) {
     if (!isLoggedIn) {
       const callbackUrl = pathname + search;
       return NextResponse.redirect(
@@ -221,10 +255,12 @@ export const config = {
   // 2026-06-14: tightened the matcher.
   // 2026-07-08 (C1 fix): /api/* routes self-enforce auth via their own `auth()` checks.
   // R12-fix (2026-07): /exchange/:path* added — Exchange Panel requires authentication.
-  // The Exchange layout handles staff membership verification beyond basic login.
+  // /customer/:path* added — Customer Portal requires authentication.
+  // The Exchange/Customer layouts handle membership verification beyond basic login.
   matcher: [
     '/dashboard/:path*',
     '/exchange/:path*',
+    '/customer/:path*',
     '/auth',
     '/signin',
     '/signup',

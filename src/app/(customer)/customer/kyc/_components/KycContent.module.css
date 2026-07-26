@@ -1,0 +1,385 @@
+/* KycContent.module.css */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-6);
+}
+
+/* ── Status card ──────────────────────────────────────────────────────────── */
+.statusCard {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-5);
+  border-radius: var(--at-radius-lg, 14px);
+  border: 1px solid var(--at-line);
+  background: var(--at-surface);
+}
+
+.statusCard[data-status="APPROVED"] {
+  border-color: color-mix(in oklch, var(--at-accent) 35%, transparent);
+  background: var(--at-accent-soft);
+}
+
+.statusCard[data-status="PENDING"] {
+  border-color: color-mix(in oklch, var(--at-gold) 35%, transparent);
+  background: var(--at-gold-soft);
+}
+
+.statusCard[data-status="REJECTED"],
+.statusCard[data-status="EXPIRED"] {
+  border-color: color-mix(in oklch, var(--at-danger) 35%, transparent);
+  background: var(--at-danger-soft);
+}
+
+.statusIcon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: var(--at-bg-elevated, var(--at-surface));
+  color: var(--at-fg-subtle);
+  border: 1px solid var(--at-line);
+}
+
+.statusIcon[data-status="APPROVED"] {
+  background: var(--at-accent);
+  color: var(--at-accent-on, oklch(98% 0 0));
+  border-color: transparent;
+}
+
+.statusIcon[data-status="PENDING"] {
+  background: var(--at-gold);
+  color: oklch(98% 0 0);
+  border-color: transparent;
+}
+
+.statusIcon[data-status="REJECTED"],
+.statusIcon[data-status="EXPIRED"] {
+  background: var(--at-danger);
+  color: oklch(98% 0 0);
+  border-color: transparent;
+}
+
+.statusBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+}
+
+.statusTitle {
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  color: var(--at-fg);
+}
+
+.statusLevel {
+  font-size: 12px;
+  color: var(--at-fg-muted);
+}
+
+.statusHint {
+  font-size: 12px;
+  color: var(--at-fg-muted);
+  margin-block-start: var(--ds-space-1);
+}
+
+.statusHint[data-variant="success"] {
+  color: var(--at-accent-fg, var(--at-accent));
+}
+
+/* ── Steps ────────────────────────────────────────────────────────────────── */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-block-start: var(--ds-space-3);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius, 10px);
+  overflow: hidden;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4) var(--ds-space-4);
+  border-bottom: 1px solid var(--at-line);
+  background: var(--at-surface);
+  opacity: 0.5;
+}
+
+.step:last-child {
+  border-bottom: none;
+}
+
+.step[data-done="true"] {
+  opacity: 1;
+}
+
+.step[data-current="true"] {
+  opacity: 1;
+  background: color-mix(in oklch, var(--at-accent) 4%, var(--at-surface));
+}
+
+.stepNum {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1.5px solid var(--at-line);
+  background: var(--at-bg-elevated, var(--at-surface));
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--at-fg-subtle);
+  flex-shrink: 0;
+}
+
+.step[data-done="true"] .stepNum {
+  background: var(--at-accent);
+  border-color: transparent;
+  color: var(--at-accent-on, oklch(98% 0 0));
+}
+
+.step[data-current="true"] .stepNum {
+  border-color: var(--at-accent);
+  color: var(--at-accent);
+}
+
+.stepBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stepTitle {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--at-fg);
+}
+
+.stepDesc {
+  font-size: 12px;
+  color: var(--at-fg-subtle);
+}
+
+/* ── Form ─────────────────────────────────────────────────────────────────── */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  margin-block-start: var(--ds-space-3);
+  max-inline-size: 480px;
+}
+
+.formRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.label {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--at-fg);
+}
+
+.input,
+.select {
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-sm, 6px);
+  background: var(--at-surface);
+  color: var(--at-fg);
+  font-size: var(--ds-text-sm);
+  font-family: inherit;
+  direction: rtl;
+  outline: none;
+  transition: border-color 100ms ease, box-shadow 100ms ease;
+  appearance: none;
+}
+
+.input:focus,
+.select:focus {
+  border-color: var(--at-accent);
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--at-accent) 15%, transparent);
+}
+
+.input:disabled,
+.select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.hint {
+  font-size: 11px;
+  color: var(--at-fg-subtle);
+}
+
+.errorBox {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-radius: var(--at-radius-sm, 6px);
+  background: var(--at-danger-soft);
+  color: var(--at-danger-fg, var(--at-danger));
+  border: 1px solid color-mix(in oklch, var(--at-danger) 25%, transparent);
+  font-size: var(--ds-text-sm);
+  font-weight: 500;
+}
+
+.submitBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: 0.625rem 1.5rem;
+  border: none;
+  border-radius: var(--at-radius-sm, 6px);
+  background: var(--at-accent);
+  color: var(--at-accent-on, oklch(98% 0 0));
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 120ms ease;
+  align-self: flex-start;
+}
+
+.submitBtn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.submitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.successBox {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-4);
+  border-radius: var(--at-radius, 10px);
+  background: var(--at-accent-soft);
+  color: var(--at-accent-fg, var(--at-accent));
+  border: 1px solid color-mix(in oklch, var(--at-accent) 25%, transparent);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+}
+
+/* ── History ──────────────────────────────────────────────────────────────── */
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  margin-block-start: var(--ds-space-3);
+}
+
+.historyRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-3);
+  border-radius: var(--at-radius-sm, 6px);
+  border: 1px solid var(--at-line);
+  background: var(--at-surface);
+}
+
+.historyIcon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: var(--at-bg-elevated, var(--at-surface));
+  color: var(--at-fg-subtle);
+}
+
+.historyIcon[data-status="APPROVED"] {
+  color: var(--at-accent);
+}
+.historyIcon[data-status="PENDING"] {
+  color: var(--at-gold);
+}
+.historyIcon[data-status="REJECTED"],
+.historyIcon[data-status="EXPIRED"] {
+  color: var(--at-danger);
+}
+
+.historyBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.historyTitle {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--at-fg);
+}
+
+.historyMeta {
+  font-size: 11px;
+  color: var(--at-fg-subtle);
+}
+
+.historyReject {
+  font-size: 11px;
+  color: var(--at-danger-fg, var(--at-danger));
+}
+
+.historyRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.historyStatus {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+  background: var(--at-bg-elevated, var(--at-surface));
+  color: var(--at-fg-subtle);
+  border: 1px solid var(--at-line);
+}
+
+.historyStatus[data-status="APPROVED"] {
+  background: var(--at-accent-soft);
+  color: var(--at-accent-fg, var(--at-accent));
+  border-color: color-mix(in oklch, var(--at-accent) 20%, transparent);
+}
+
+.historyStatus[data-status="PENDING"] {
+  background: var(--at-gold-soft);
+  color: var(--at-gold-fg, var(--at-gold));
+  border-color: color-mix(in oklch, var(--at-gold) 20%, transparent);
+}
+
+.historyStatus[data-status="REJECTED"],
+.historyStatus[data-status="EXPIRED"] {
+  background: var(--at-danger-soft);
+  color: var(--at-danger-fg, var(--at-danger));
+  border-color: color-mix(in oklch, var(--at-danger) 20%, transparent);
+}
+
+.historyDate {
+  font-size: 10px;
+  color: var(--at-fg-subtle);
+}

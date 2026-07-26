@@ -5,13 +5,23 @@ import { getExchangeStats } from '@/actions/exchange-transactions';
 import { getExchangeForUser } from '@/actions/exchanges';
 import { auth } from '@/auth';
 import { PageHeader, StatCard, StatGrid } from '@/components/Dashboard/primitives';
-import { Building2, CircleDollarSign, TrendingUp, Users } from 'lucide-react';
+import { Building2, CircleDollarSign, Clock, TrendingUp, Users } from 'lucide-react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import ExchangeRecentTransactions from './_components/ExchangeRecentTransactions';
 
 export const metadata: Metadata = { title: 'داشبورد صرافی' };
+
+/** delta درصدی امروز vs دیروز — null اگر دیروز صفر بود */
+function calcDelta(
+  today: number,
+  yesterday: number,
+): { value: number; trend: 'up' | 'down' } | undefined {
+  if (yesterday === 0) return undefined;
+  const pct = Math.round(((today - yesterday) / yesterday) * 100);
+  return { value: Math.abs(pct), trend: today >= yesterday ? 'up' : 'down' };
+}
 
 export default async function ExchangeDashboardPage() {
   const session = await auth();
@@ -24,6 +34,7 @@ export default async function ExchangeDashboardPage() {
   const stats = await getExchangeStats(exchange.id);
 
   const volumeAfn = Number(stats.totalVolume) / 100;
+  const todayDelta = calcDelta(stats.todayCount, stats.yesterdayCount);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
@@ -39,20 +50,37 @@ export default async function ExchangeDashboardPage() {
           value={stats.totalCustomers}
           icon={Users}
           href="/exchange/customers"
+          delta={
+            stats.todayNewCustomers > 0
+              ? { value: stats.todayNewCustomers, trend: 'up' }
+              : undefined
+          }
+          info={
+            stats.todayNewCustomers > 0 ? `${stats.todayNewCustomers} مشتری جدید امروز` : undefined
+          }
         />
         <StatCard
           label="تراکنش‌های امروز"
           value={stats.todayCount}
           icon={TrendingUp}
           href="/exchange/transactions"
+          delta={todayDelta}
+          info={`دیروز: ${new Intl.NumberFormat('fa-IR').format(stats.yesterdayCount)}`}
         />
         <StatCard
-          label="کل تراکنش‌ها"
-          value={stats.totalTransactions}
-          icon={CircleDollarSign}
+          label="در انتظار تأیید"
+          value={stats.pendingCount}
+          icon={Clock}
           href="/exchange/transactions"
+          info="تراکنش‌های در انتظار پردازش"
         />
-        <StatCard label="حجم (افغانی)" value={volumeAfn} icon={Building2} format="compact" />
+        <StatCard
+          label={`حجم کل (${stats.statsCurrency})`}
+          value={volumeAfn}
+          icon={Building2}
+          format="compact"
+          info="مجموع تراکنش‌های تکمیل‌شده"
+        />
       </StatGrid>
 
       <Suspense

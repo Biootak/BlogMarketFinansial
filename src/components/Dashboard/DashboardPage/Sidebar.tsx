@@ -346,6 +346,14 @@ function getMenu(role: UserRole): NavSection[] {
     title: 'مدیریت مجوزهای سیستم',
   };
 
+  const roles: MenuItem = {
+    id: 'roles',
+    href: '/dashboard/roles',
+    icon: <HiOutlineShieldCheck className={ICON_CLASS} />,
+    label: 'نقش‌ها',
+    title: 'مدیریت نقش‌ها و سطوح دسترسی',
+  };
+
   const customers: MenuItem = {
     id: 'customers',
     href: '/dashboard/customers',
@@ -392,7 +400,7 @@ function getMenu(role: UserRole): NavSection[] {
           id: 'admin',
           index: '۰۵',
           label: 'مدیریت',
-          items: [users, permissions, reports, settings],
+          items: [users, roles, permissions, reports, settings],
         },
         {
           id: 'account',
@@ -435,7 +443,7 @@ function getMenu(role: UserRole): NavSection[] {
           label: 'فین‌تک',
           items: [customers, kycReview, fraudReview, settlements, auditLog],
         },
-        { id: 'admin', index: '۰۵', label: 'مدیریت', items: [users, permissions] },
+        { id: 'admin', index: '۰۵', label: 'مدیریت', items: [users, roles, permissions] },
         {
           id: 'account',
           index: '۰۶',

@@ -223,7 +223,7 @@ export async function createTransaction(
     };
   }
 
-  const access = await requireExchangeAccess(exchangeId);
+  const access = await requireExchangeAccess(exchangeId, true);
   if (!access.ok)
     return { success: false, error: { code: access.error.code, message: access.error.message } };
 
@@ -491,6 +491,10 @@ export async function getExchangeStats(exchangeId: string): Promise<{
   statsCurrency: string;
   pendingCount: number;
   todayCount: number;
+  /** تعداد تراکنش‌های دیروز برای محاسبه delta */
+  yesterdayCount: number;
+  /** تعداد مشتریان جدید امروز */
+  todayNewCustomers: number;
 }> {
   const access = await requireExchangeAccess(exchangeId);
   if (!access.ok) {
@@ -501,6 +505,8 @@ export async function getExchangeStats(exchangeId: string): Promise<{
       statsCurrency: 'AFN',
       pendingCount: 0,
       todayCount: 0,
+      yesterdayCount: 0,
+      todayNewCustomers: 0,
     };
   }
 
@@ -514,17 +520,31 @@ export async function getExchangeStats(exchangeId: string): Promise<{
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const [totalCustomers, totalTransactions, volumeResult, pendingCount, todayCount] =
-    await Promise.all([
-      prisma.customer.count({ where: { exchangeId } }),
-      prisma.transaction.count({ where: { exchangeId } }),
-      prisma.transaction.aggregate({
-        where: { exchangeId, currency: statsCurrency, status: 'COMPLETED' },
-        _sum: { amount: true },
-      }),
-      prisma.transaction.count({ where: { exchangeId, status: 'PENDING' } }),
-      prisma.transaction.count({ where: { exchangeId, createdAt: { gte: today } } }),
-    ]);
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const [
+    totalCustomers,
+    totalTransactions,
+    volumeResult,
+    pendingCount,
+    todayCount,
+    yesterdayCount,
+    todayNewCustomers,
+  ] = await Promise.all([
+    prisma.customer.count({ where: { exchangeId } }),
+    prisma.transaction.count({ where: { exchangeId } }),
+    prisma.transaction.aggregate({
+      where: { exchangeId, currency: statsCurrency, status: 'COMPLETED' },
+      _sum: { amount: true },
+    }),
+    prisma.transaction.count({ where: { exchangeId, status: 'PENDING' } }),
+    prisma.transaction.count({ where: { exchangeId, createdAt: { gte: today } } }),
+    prisma.transaction.count({
+      where: { exchangeId, createdAt: { gte: yesterday, lt: today } },
+    }),
+    prisma.customer.count({ where: { exchangeId, createdAt: { gte: today } } }),
+  ]);
 
   return {
     totalCustomers,
@@ -533,5 +553,7 @@ export async function getExchangeStats(exchangeId: string): Promise<{
     statsCurrency,
     pendingCount,
     todayCount,
+    yesterdayCount,
+    todayNewCustomers,
   };
 }

@@ -193,6 +193,8 @@ export const authorRoutes = [
 export const adminRoutes = [
   '/dashboard/users',
   '/dashboard/users/[...slug]',
+  '/dashboard/roles',
+  '/dashboard/roles/[...slug]',
   '/dashboard/advertisements',
   '/dashboard/advertisements/[...slug]',
   '/dashboard/exchange-rates',
@@ -236,8 +238,25 @@ export const postOwnershipRoutes = [
 ];
 
 /**
+ * Customer Portal routes — accessible by CUSTOMER / TEST_CUSTOMER / MERCHANT roles
+ * @type {string[]}
+ */
+export const customerRoutes = [
+  '/customer',
+  '/customer/dashboard',
+  '/customer/accounts',
+  '/customer/accounts/[id]',
+  '/customer/transactions',
+  '/customer/transactions/[id]',
+  '/customer/kyc',
+  '/customer/documents',
+  '/customer/profile',
+  '/customer/settings',
+];
+
+/**
  * Get all accessible routes for a specific role
- * @param role User role (OWNER | ADMIN | AUTHOR)
+ * @param role User role (OWNER | ADMIN | AUTHOR | CUSTOMER ...)
  * @returns string[] Array of accessible routes
  */
 export function getAccessibleRoutes(role: string): string[] {
@@ -250,6 +269,10 @@ export function getAccessibleRoutes(role: string): string[] {
       return [...routes, ...adminRoutes, ...authorRoutes];
     case 'AUTHOR':
       return [...routes, ...authorRoutes];
+    case 'CUSTOMER':
+    case 'TEST_CUSTOMER':
+    case 'MERCHANT':
+      return customerRoutes;
     default:
       return routes;
   }
