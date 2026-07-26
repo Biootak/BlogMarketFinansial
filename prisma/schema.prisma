@@ -647,6 +647,36 @@ model BillingAddress {
   User          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+/// تاریخچه رویدادهای اشتراک کاربر (ارتقاء، تنزل، تمدید، لغو)
+/// رابطه فقط از این سمت — User رابطه معکوس ندارد
+model SubscriptionEvent {
+  id            String    @id
+  userId        String
+  /// نوع رویداد: UPGRADE | DOWNGRADE | RENEWAL | CANCEL | TRIAL_START
+  kind          String
+  /// پلن مبدأ (null برای اولین ارتقاء)
+  fromPlan      String?
+  /// پلن مقصد
+  toPlan        String
+  /// مبلغ پرداخت‌شده (واحد: صدم ارز — برای AFN: 1 = 1 AFN)
+  amount        BigInt    @default(0)
+  /// واحد پول: AFN, IRR, USD
+  currency      String    @default("AFN")
+  /// شماره فاکتور
+  invoiceNo     String?   @unique
+  /// وضعیت: PENDING | PAID | FAILED | REFUNDED
+  status        String    @default("PENDING")
+  /// روش پرداخت
+  paymentMethod String?
+  meta          Json?
+  /// تاریخ انقضای پلن جدید
+  validUntil    DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([status])
+}
+
 model ContactSubmission {
   id        String   @id
   name      String
@@ -1173,6 +1203,107 @@ enum DeviceStatus {
   TRUSTED
   UNVERIFIED
   REVOKED
+}
+
+/// نوع وام — credit rate type
+enum CreditRateType {
+  /// وام مسکن
+  MORTGAGE
+  /// وام شخصی
+  PERSONAL
+  /// وام خودرو
+  AUTO
+  /// وام کسب‌وکار
+  BUSINESS
+  /// وام قرض‌الحسنه
+  QARD_AL_HASAN
+  /// وام تحصیلی
+  EDUCATION
+  /// وام کشاورزی
+  AGRICULTURE
+  /// وام تجاری
+  COMMERCIAL
+  /// سپرده سرمایه‌گذاری
+  DEPOSIT
+  /// سایر
+  OTHER
+}
+
+/// بانک — منبع نرخ‌های اعتباری
+model Bank {
+  id            String       @id
+  /// کد یکتای بانک (مثلاً «afbank»، «kabulbank»)
+  slug          String       @unique
+  /// نام رسمی
+  name          String
+  /// نام نمایشی
+  displayName   String?
+  /// کشور
+  country       String       @default("AF")
+  /// شهر مرکزی
+  city          String?
+  /// لوگو
+  logoUrl       String?
+  /// وبسایت
+  website       String?
+  /// شماره مجوز
+  licenseNo     String?
+  /// وضعیت: ACTIVE | PENDING | SUSPENDED | CLOSED
+  status        String       @default("ACTIVE")
+  /// نمایش در صفحه عمومی
+  isVisible     Boolean      @default(true)
+  /// ترتیب نمایش
+  sortOrder     Int          @default(0)
+  /// توضیح کوتاه
+  description   String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  rates         CreditRate[]
+
+  @@index([status, isVisible, sortOrder])
+}
+
+/// نرخ اعتباری — یک محصول بانکی (وام یا سپرده) با نرخ سود
+model CreditRate {
+  id            String         @id
+  bankId        String
+  /// نوع محصول
+  type          CreditRateType
+  /// عنوان فارسی
+  title         String
+  /// شرح کوتاه
+  description   String?
+  /// نرخ سود سالانه (درصد، مثلاً ۱۲.۵)
+  annualRate    Decimal        @db.Decimal(6, 3)
+  /// حداقل مبلغ (ریال/افغانی — هر چه واحد پول reference)
+  minAmountCents BigInt        @default(0)
+  /// حداکثر مبلغ
+  maxAmountCents BigInt        @default(0)
+  /// حداکثر مدت (ماه)
+  maxTermMonths Int           @default(0)
+  /// نیاز به سپرده گذاری (درصد)
+  depositRatio  Decimal?       @db.Decimal(5, 2)
+  /// واحد پول: AFN, IRR, USD
+  currency      String         @default("AFN")
+  /// وضعیت: ACTIVE | DRAFT | ARCHIVED
+  status        String         @default("ACTIVE")
+  /// تاریخ شروع اعتبار
+  effectiveFrom DateTime?
+  /// تاریخ پایان
+  effectiveTo   DateTime?
+  /// منبع (مثلاً «وبسایت رسمی»، «بانک مرکزی»)
+  source        String?
+  /// ترتیب نمایش
+  sortOrder     Int            @default(0)
+  /// یادداشت داخلی
+  internalNote  String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  bank          Bank           @relation(fields: [bankId], references: [id], onDelete: Cascade)
+
+  @@index([bankId, status, sortOrder])
+  @@index([type, status])
+  @@index([annualRate])
 }
 
 enum ExchangeAccountStatus {

@@ -19,6 +19,12 @@ import {
   requestDeposit,
   requestWithdraw,
 } from '@/actions/fintech-account';
+import {
+  type FxQuote,
+  type FxTradeResult,
+  executeFxTrade,
+  getFxQuote,
+} from '@/actions/fx-trade';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   ArrowDown,
@@ -27,6 +33,7 @@ import {
   BarChart2,
   CheckCircle2,
   Clock,
+  Coins,
   Download,
   Send,
   ShieldAlert,
@@ -56,7 +63,28 @@ type LedgerEntry = {
   runningBalance: string;
 };
 type Props = { walletData: WalletData | null };
-type ModalType = 'deposit' | 'withdraw' | null;
+type ModalType = 'deposit' | 'withdraw' | 'fx' | null;
+
+const FX_CURRENCIES = ['AFN', 'USD', 'EUR', 'IRR'] as const;
+type FxCurrency = (typeof FX_CURRENCIES)[number];
+
+const FX_LABELS: Record<FxCurrency, string> = {
+  AFN: 'افغانی',
+  USD: 'دلار',
+  EUR: 'یورو',
+  IRR: 'ریال ایران',
+};
+
+function formatFxAmount(cents: number, currency: FxCurrency): string {
+  const isDecimal = currency === 'IRR'; // ریال معمولاً اعشار ندارد ولی برای سادگی همه صحیح
+  const n = cents / 1; // amounts are integer cents
+  return new Intl.NumberFormat('fa-AF', {
+    style: 'currency',
+    currency: currency === 'AFN' ? 'AFN' : currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: isDecimal ? 0 : 0,
+  }).format(n);
+}
 
 function fmtAFN(amount: string): string {
   const n = Number(amount);
@@ -488,6 +516,376 @@ function WithdrawModal({
   );
 }
 
+// ─── FX Trade Modal ───────────────────────────────────────────────────────────
+function FxTradeModal({
+  onClose,
+  accounts,
+  defaultFrom,
+}: {
+  onClose: () => void;
+  accounts: Account[];
+  defaultFrom: string;
+}) {
+  const [step, setStep] = useState<1 | 2>(1);
+  const [fromCurrency, setFromCurrency] = useState<string>(defaultFrom);
+  const [toCurrency, setToCurrency] = useState<string>(
+    defaultFrom === 'AFN' ? 'USD' : 'AFN',
+  );
+  const [amount, setAmount] = useState('');
+  const [amountCents, setAmountCents] = useState(0);
+  const [quote, setQuote] = useState<FxQuote | null>(null);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
+  const [result, setResult] = useState<FxTradeResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startT] = useTransition();
+  const [loadingQuote, setLoadingQuote] = useState(false);
+
+  // دریافت نرخ هر بار که جفت ارز تغییر می‌کند
+  useEffect(() => {
+    if (fromCurrency === toCurrency) {
+      setQuote(null);
+      setQuoteError(null);
+      return;
+    }
+    let cancelled = false;
+    setLoadingQuote(true);
+    setQuoteError(null);
+    startT(async () => {
+      const res = await getFxQuote({
+        fromCurrency: fromCurrency as FxCurrency,
+        toCurrency: toCurrency as FxCurrency,
+      });
+      if (cancelled) return;
+      if (!res.success) {
+        setQuote(null);
+        setQuoteError(res.error.message);
+      } else {
+        setQuote(res.data);
+      }
+      setLoadingQuote(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [fromCurrency, toCurrency]);
+
+  const fromAccount = accounts.find((a) => a.currency === fromCurrency);
+  const maxCents = fromAccount ? Number(fromAccount.balance) : 0;
+
+  // محاسبه زنده مقدار مقصد
+  const previewToCents =
+    quote && amountCents > 0
+      ? Math.floor(
+          (amountCents * (1 - quote.feePercent / 100) * quote.rate),
+        )
+      : 0;
+
+  const feeCents = quote && amountCents > 0 ? Math.floor((amountCents * quote.feePercent) / 100) : 0;
+
+  function handleSwap() {
+    const prevFrom = fromCurrency;
+    setFromCurrency(toCurrency);
+    setToCurrency(prevFrom);
+    setAmount('');
+    setAmountCents(0);
+  }
+
+  const handleSubmit = useCallback(() => {
+    setError(null);
+    if (amountCents <= 0) {
+      setError('مبلغ را وارد کنید');
+      return;
+    }
+    if (amountCents > maxCents) {
+      setError('موجودی مبدأ کافی نیست');
+      return;
+    }
+    if (!quote) {
+      setError('نرخی برای این جفت ارز موجود نیست');
+      return;
+    }
+    startT(async () => {
+      const res = await executeFxTrade({
+        fromCurrency,
+        toCurrency,
+        amountCents,
+        idempotencyKey: crypto.randomUUID().replace(/-/g, ''),
+      });
+      if (!res.success) {
+        setError(res.error.message);
+        return;
+      }
+      setResult(res.data);
+      setStep(2);
+    });
+  }, [amountCents, fromCurrency, toCurrency, maxCents, quote]);
+
+  return (
+    <dialog
+      className={s.modalOverlay}
+      aria-label="تبدیل ارز"
+      open
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') onClose();
+      }}
+    >
+      <div className={s.modal}>
+        <div className={s.modalHead}>
+          <div className={s.modalTitle}>
+            <Coins size={18} aria-hidden style={{ color: 'var(--ds-brand-500)' }} />
+            تبدیل ارز
+          </div>
+          <button type="button" className={s.modalClose} onClick={onClose} aria-label="بستن">
+            <X size={16} />
+          </button>
+        </div>
+
+        {step === 1 && (
+          <div className={s.modalBody}>
+            <p className={s.modalHint}>
+              ارز مبدأ و مقصد را انتخاب کنید. نرخ از صرافی شما خوانده می‌شود.
+            </p>
+            {error && (
+              <div className={s.inlineError} role="alert">
+                {error}
+              </div>
+            )}
+
+            {/* Currency selectors */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr auto 1fr',
+                gap: 'var(--ds-space-2)',
+                alignItems: 'end',
+              }}
+            >
+              <div className={s.fieldGroup}>
+                <label htmlFor="fx-from" className={s.fieldLabel}>
+                  از ارز
+                </label>
+                <select
+                  id="fx-from"
+                  className={s.fieldInput}
+                  value={fromCurrency}
+                  onChange={(e) => setFromCurrency(e.target.value)}
+                  dir="ltr"
+                >
+                  {FX_CURRENCIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c} — {FX_LABELS[c]}
+                    </option>
+                  ))}
+                </select>
+                {fromAccount && (
+                  <p className={s.fieldHint}>
+                    موجودی: {fmtAFN(fromAccount.balance)}
+                  </p>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSwap}
+                aria-label="جابجایی"
+                style={{
+                  height: 40,
+                  width: 40,
+                  borderRadius: 999,
+                  border: '1px solid var(--ds-border-default)',
+                  background: 'var(--ds-surface-elevated)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 2,
+                }}
+              >
+                <ArrowLeftRight size={15} aria-hidden />
+              </button>
+
+              <div className={s.fieldGroup}>
+                <label htmlFor="fx-to" className={s.fieldLabel}>
+                  به ارز
+                </label>
+                <select
+                  id="fx-to"
+                  className={s.fieldInput}
+                  value={toCurrency}
+                  onChange={(e) => setToCurrency(e.target.value)}
+                  dir="ltr"
+                >
+                  {FX_CURRENCIES.filter((c) => c !== fromCurrency).map((c) => (
+                    <option key={c} value={c}>
+                      {c} — {FX_LABELS[c]}
+                    </option>
+                  ))}
+                </select>
+                {quoteError && (
+                  <p className={s.fieldHint} style={{ color: 'var(--ds-status-error-fg)' }}>
+                    {quoteError}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Amount */}
+            <div className={s.fieldGroup}>
+              <label htmlFor="fx-amount" className={s.fieldLabel}>
+                مبلغ ({fromCurrency})
+              </label>
+              <input
+                id="fx-amount"
+                type="text"
+                inputMode="decimal"
+                className={s.fieldInput}
+                dir="ltr"
+                value={amount}
+                onChange={(e) => {
+                  setAmount(e.target.value);
+                  setAmountCents(
+                    Math.round(Number(e.target.value.replace(/[^0-9.]/g, '')) * 100),
+                  );
+                  setError(null);
+                }}
+                placeholder={`مثلاً ۱۰۰۰ ${fromCurrency}`}
+                disabled={!quote || loadingQuote}
+              />
+              {amountCents > 0 && fromAccount && amountCents > maxCents && (
+                <p className={s.fieldHint} style={{ color: 'var(--ds-status-error-fg)' }}>
+                  بیش از موجودی ({fmtAFN(String(maxCents))})
+                </p>
+              )}
+            </div>
+
+            {/* Quote summary */}
+            {quote && (
+              <div
+                style={{
+                  padding: 'var(--ds-space-3) var(--ds-space-4)',
+                  background: 'var(--ds-canvas-subtle)',
+                  borderRadius: 'var(--ds-radius-md)',
+                  border: '1px solid var(--ds-border-subtle)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 6,
+                  fontSize: 'var(--ds-text-xs)',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--ds-text-muted)' }}>نرخ صرافی</span>
+                  <span dir="ltr" style={{ fontWeight: 600 }}>
+                    1 {quote.fromCurrency} ={' '}
+                    {new Intl.NumberFormat('en-US', { maximumFractionDigits: 4 }).format(
+                      quote.rate,
+                    )}{' '}
+                    {quote.toCurrency}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--ds-text-muted)' }}>کارمزد</span>
+                  <span>
+                    {quote.feePercent.toFixed(2)}٪ (
+                    {formatFxAmount(feeCents, quote.fromCurrency as FxCurrency)})
+                  </span>
+                </div>
+                {previewToCents > 0 && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      paddingTop: 6,
+                      borderTop: '1px dashed var(--ds-border-subtle)',
+                      fontSize: 'var(--ds-text-sm)',
+                      fontWeight: 700,
+                    }}
+                  >
+                    <span>دریافتی شما</span>
+                    <span style={{ color: 'var(--ds-status-success-fg)' }}>
+                      {formatFxAmount(previewToCents, quote.toCurrency as FxCurrency)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {loadingQuote && (
+              <p
+                style={{
+                  fontSize: 'var(--ds-text-xs)',
+                  color: 'var(--ds-text-muted)',
+                  textAlign: 'center',
+                }}
+              >
+                در حال دریافت نرخ…
+              </p>
+            )}
+
+            <button
+              type="button"
+              className={s.primaryBtn}
+              onClick={handleSubmit}
+              disabled={
+                isPending || amountCents <= 0 || !quote || amountCents > maxCents
+              }
+            >
+              {isPending ? 'در حال تبدیل...' : 'تأیید و تبدیل'}
+            </button>
+          </div>
+        )}
+
+        {step === 2 && result && (
+          <div className={s.modalBody}>
+            <div className={s.successBox}>
+              <CheckCircle2
+                size={32}
+                aria-hidden
+                style={{ color: 'var(--ds-status-success-fg)' }}
+              />
+              <p className={s.successTitle}>تبدیل با موفقیت انجام شد</p>
+              <p className={s.successAmt}>
+                {formatFxAmount(result.fromAmountCents, result.fromCurrency)}
+                {' → '}
+                {formatFxAmount(result.toAmountCents, result.toCurrency)}
+              </p>
+            </div>
+            <div className={s.instructionBox}>
+              <p className={s.instructionLabel}>جزئیات</p>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: 8,
+                  fontSize: 'var(--ds-text-xs)',
+                }}
+              >
+                <span style={{ color: 'var(--ds-text-muted)' }}>نرخ</span>
+                <span dir="ltr" style={{ textAlign: 'end' }}>
+                  1 {result.fromCurrency} ={' '}
+                  {new Intl.NumberFormat('en-US', { maximumFractionDigits: 4 }).format(
+                    result.rate,
+                  )}{' '}
+                  {result.toCurrency}
+                </span>
+                <span style={{ color: 'var(--ds-text-muted)' }}>کارمزد</span>
+                <span style={{ textAlign: 'end' }}>
+                  {formatFxAmount(result.feeCents, result.fromCurrency)}
+                </span>
+              </div>
+            </div>
+            <button type="button" className={s.outlineBtn} onClick={onClose}>
+              بستن
+            </button>
+          </div>
+        )}
+      </div>
+    </dialog>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export function WalletClient({ walletData }: Props) {
   const [entries, setEntries] = useState<LedgerEntry[]>([]);
@@ -659,6 +1057,13 @@ export function WalletClient({ walletData }: Props) {
           },
           { label: 'انتقال', Icon: Send, href: '/dashboard/transfer', accent: 'brand' },
           {
+            label: 'تبدیل ارز',
+            Icon: ArrowLeftRight,
+            action: () => setActiveModal('fx'),
+            disabled: !kycApproved || walletData.accounts.length === 0,
+            accent: 'default',
+          },
+          {
             label: 'معاملات',
             Icon: ArrowLeftRight,
             href: '/dashboard/my-deals',
@@ -802,6 +1207,13 @@ export function WalletClient({ walletData }: Props) {
         <WithdrawModal
           currency={primaryAccount.currency}
           maxCents={maxCents}
+          onClose={() => handleModalClose(true)}
+        />
+      )}
+      {activeModal === 'fx' && (
+        <FxTradeModal
+          accounts={walletData.accounts}
+          defaultFrom={primaryAccount?.currency ?? 'AFN'}
           onClose={() => handleModalClose(true)}
         />
       )}

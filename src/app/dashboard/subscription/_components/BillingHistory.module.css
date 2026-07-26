@@ -1,0 +1,251 @@
+/* BillingHistory.module.css — استایل تاریخچه صورتحساب */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  background: var(--ds-surface-elevated);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-xl);
+  padding: var(--ds-space-5);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  flex-wrap: wrap;
+}
+.title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--ds-text-base);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  margin: 0;
+}
+
+/* Filter tabs */
+.filter {
+  display: inline-flex;
+  background: var(--ds-canvas);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-md);
+  padding: 2px;
+  gap: 2px;
+}
+.filterTab {
+  padding: 4px 10px;
+  font-size: var(--ds-text-xs);
+  font-family: inherit;
+  font-weight: 600;
+  background: transparent;
+  color: var(--ds-text-muted);
+  border: none;
+  border-radius: var(--ds-radius-sm);
+  cursor: pointer;
+  transition: background 120ms, color 120ms;
+}
+.filterTab:hover {
+  color: var(--ds-text-primary);
+}
+.filterTabActive {
+  background: var(--ds-surface-elevated);
+  color: var(--ds-text-primary);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+/* Desktop table */
+.tableWrap {
+  display: block;
+  overflow-x: auto;
+  border-radius: var(--ds-radius-md);
+  border: 1px solid var(--ds-border-subtle);
+}
+.table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: var(--ds-text-sm);
+  min-inline-size: 720px;
+}
+.table th {
+  text-align: start;
+  padding: 12px 14px;
+  background: var(--ds-canvas-subtle);
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  border-bottom: 1px solid var(--ds-border-subtle);
+  white-space: nowrap;
+}
+.table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--ds-border-subtle);
+  color: var(--ds-text-primary);
+  vertical-align: middle;
+}
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+.table tbody tr:hover {
+  background: var(--ds-canvas-subtle);
+}
+
+.planChange {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--ds-text-sm);
+}
+.planFrom {
+  color: var(--ds-text-muted);
+}
+.planArrow {
+  color: var(--ds-text-muted);
+}
+.planTo {
+  font-weight: 600;
+}
+.amountCell {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.invoiceCell {
+  font-size: var(--ds-text-xs);
+}
+.invoiceNo {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--ds-text-muted);
+  font-family: var(--ds-font-mono, monospace);
+  font-size: 11px;
+}
+.dateCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+}
+
+/* Status badge */
+.statusBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--ds-radius-full);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.status_ok {
+  background: color-mix(in oklch, var(--nova-emerald) 12%, transparent);
+  color: var(--nova-emerald, oklch(50% 0.14 145));
+  border-color: color-mix(in oklch, var(--nova-emerald) 28%, transparent);
+}
+.status_pending {
+  background: color-mix(in oklch, var(--nova-amber) 12%, transparent);
+  color: var(--nova-amber, oklch(60% 0.16 70));
+  border-color: color-mix(in oklch, var(--nova-amber) 28%, transparent);
+}
+.status_fail {
+  background: color-mix(in oklch, var(--nova-rose) 12%, transparent);
+  color: var(--nova-rose, oklch(55% 0.18 25));
+  border-color: color-mix(in oklch, var(--nova-rose) 28%, transparent);
+}
+.status_muted {
+  background: var(--ds-canvas);
+  color: var(--ds-text-muted);
+  border-color: var(--ds-border-subtle);
+}
+
+/* Empty */
+.filterEmpty {
+  padding: var(--ds-space-8) var(--ds-space-4);
+  text-align: center;
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-sm);
+  background: var(--ds-canvas-subtle);
+  border-radius: var(--ds-radius-md);
+}
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: var(--ds-space-8);
+  background: var(--ds-surface-elevated);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-xl);
+  text-align: center;
+}
+.emptyIcon {
+  color: var(--ds-text-muted);
+  opacity: 0.5;
+}
+.emptyTitle {
+  font-size: var(--ds-text-base);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  margin: 0;
+}
+.emptyDesc {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-muted);
+  margin: 0;
+}
+
+/* Mobile list */
+.list {
+  display: none;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-direction: column;
+  gap: 10px;
+}
+.listItem {
+  background: var(--ds-canvas);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+  padding: 12px 14px;
+}
+.listHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-block-end: 10px;
+}
+.listKind {
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+}
+.listBody {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.listRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+.listRow > :last-child {
+  color: var(--ds-text-primary);
+  font-weight: 600;
+}
+
+@media (max-width: 720px) {
+  .tableWrap {
+    display: none;
+  }
+  .list {
+    display: flex;
+  }
+}

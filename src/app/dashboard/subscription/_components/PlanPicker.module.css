@@ -1,0 +1,433 @@
+/* PlanPicker.module.css — استایل انتخاب پلن اشتراک */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5);
+}
+
+/* ── Current plan banner ──────────────────────────────────────── */
+.currentBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-5) var(--ds-space-6);
+  border-radius: var(--ds-radius-xl);
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--ds-brand-500) 8%, var(--ds-surface-elevated)) 0%,
+    color-mix(in oklch, var(--nova-violet) 6%, var(--ds-surface-elevated)) 100%
+  );
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 22%, var(--ds-border-subtle));
+  flex-wrap: wrap;
+}
+.currentBanner[data-state='business'] {
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--nova-amber) 10%, var(--ds-surface-elevated)) 0%,
+    color-mix(in oklch, var(--nova-violet) 8%, var(--ds-surface-elevated)) 100%
+  );
+  border-color: color-mix(in oklch, var(--nova-amber) 28%, var(--ds-border-subtle));
+}
+.currentLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.currentEyebrow {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+.currentName {
+  font-size: var(--ds-text-2xl, 1.5rem);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  margin: 0;
+}
+.currentExpiry {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-muted);
+  margin: 0;
+}
+.downgradeBtn {
+  padding: 0 14px;
+  height: 36px;
+  background: var(--ds-surface-elevated);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-md);
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-sm);
+  cursor: pointer;
+  transition: color 120ms, border-color 120ms;
+  font-family: inherit;
+}
+.downgradeBtn:hover:not(:disabled) {
+  color: var(--nova-rose, oklch(55% 0.18 25));
+  border-color: var(--nova-rose, oklch(55% 0.18 25));
+}
+
+/* ── Cycle switcher ──────────────────────────────────────────── */
+.cycleSwitch {
+  display: inline-flex;
+  align-self: center;
+  background: var(--ds-surface-elevated);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-full);
+  padding: 4px;
+  gap: 2px;
+}
+.cycleTab {
+  position: relative;
+  padding: 8px 20px;
+  border: none;
+  background: transparent;
+  border-radius: var(--ds-radius-full);
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 120ms, background 120ms;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.cycleTabActive {
+  background: var(--ds-brand-500);
+  color: var(--ds-text-inverse);
+}
+.cycleBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: var(--ds-radius-full);
+  background: color-mix(in oklch, var(--nova-emerald) 22%, transparent);
+  color: var(--nova-emerald, oklch(50% 0.14 145));
+  margin-inline-start: 4px;
+}
+.cycleTabActive .cycleBadge {
+  background: color-mix(in oklch, white 22%, transparent);
+  color: white;
+}
+
+/* ── Plans grid ──────────────────────────────────────────────── */
+.plansGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ds-space-4);
+}
+@media (max-width: 900px) {
+  .plansGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.planCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-5);
+  background: var(--ds-surface-elevated);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-xl);
+  transition: transform 200ms var(--ds-ease-out-quart), border-color 200ms;
+}
+.planCard:hover {
+  transform: translateY(-2px);
+  border-color: var(--ds-border-strong);
+}
+
+.planCardHighlight {
+  border-color: var(--ds-brand-500);
+  box-shadow: 0 0 0 1px var(--ds-brand-500);
+}
+.planCardCurrent {
+  background: color-mix(in oklch, var(--ds-brand-500) 4%, var(--ds-surface-elevated));
+  border-color: var(--ds-brand-500);
+}
+
+.planBadge {
+  position: absolute;
+  inset-block-start: -10px;
+  inset-inline-end: 16px;
+  padding: 2px 10px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-brand-500);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.planCurrentPill {
+  position: absolute;
+  inset-block-start: 14px;
+  inset-inline-start: 14px;
+  padding: 2px 10px;
+  border-radius: var(--ds-radius-full);
+  background: color-mix(in oklch, var(--nova-emerald) 22%, transparent);
+  color: var(--nova-emerald, oklch(50% 0.14 145));
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.planCurrentPill::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--nova-emerald, oklch(50% 0.14 145));
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--nova-emerald) 30%, transparent);
+}
+
+.planHead {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-block-end: var(--ds-space-2);
+}
+.planIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--ds-radius-md);
+  background: color-mix(in oklch, var(--ds-brand-500) 10%, var(--ds-canvas));
+  color: var(--ds-brand-500);
+  margin-block-end: 8px;
+}
+.planCard[data-accent='gold'] .planIcon {
+  background: color-mix(in oklch, var(--nova-amber) 14%, var(--ds-canvas));
+  color: var(--nova-amber);
+}
+.planCard[data-accent='muted'] .planIcon {
+  background: var(--ds-canvas);
+  color: var(--ds-text-muted);
+}
+.planName {
+  font-size: var(--ds-text-lg);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  margin: 0;
+}
+.planTagline {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.planPrice {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  padding-block: var(--ds-space-3);
+  border-block-end: 1px solid var(--ds-border-subtle);
+}
+.planPriceValue {
+  font-size: var(--ds-text-2xl, 1.5rem);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.planPriceUnit {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-muted);
+}
+
+.featureList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+.featureItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: var(--ds-text-sm);
+  line-height: 1.4;
+}
+.featureOn {
+  color: var(--ds-text-primary);
+}
+.featureOff {
+  color: var(--ds-text-muted);
+  opacity: 0.6;
+}
+.featureDot {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-block-start: 2px;
+}
+.featureOn .featureDot {
+  background: color-mix(in oklch, var(--nova-emerald) 22%, transparent);
+  color: var(--nova-emerald, oklch(50% 0.14 145));
+}
+.featureOff .featureDot {
+  background: var(--ds-canvas-subtle);
+  color: var(--ds-text-muted);
+}
+
+.planCta {
+  margin-block-start: var(--ds-space-3);
+  padding: 0 16px;
+  height: 40px;
+  border: 1px solid var(--ds-border-default);
+  background: var(--ds-canvas);
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  font-family: inherit;
+  border-radius: var(--ds-radius-md);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 120ms, border-color 120ms;
+}
+.planCta:hover:not(:disabled) {
+  background: var(--ds-canvas-subtle);
+  border-color: var(--ds-border-strong);
+}
+.planCtaCurrent {
+  background: color-mix(in oklch, var(--nova-emerald) 12%, var(--ds-canvas));
+  color: var(--nova-emerald, oklch(50% 0.14 145));
+  border-color: color-mix(in oklch, var(--nova-emerald) 30%, transparent);
+  cursor: default;
+}
+.planCtaHighlight {
+  background: var(--ds-brand-500);
+  color: var(--ds-text-inverse);
+  border-color: var(--ds-brand-500);
+}
+.planCtaHighlight:hover:not(:disabled) {
+  background: color-mix(in oklch, var(--ds-brand-500) 88%, black);
+}
+.planCta:disabled {
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+/* ── Confirm modal ───────────────────────────────────────────── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ds-space-4);
+  background: color-mix(in oklch, black 50%, transparent);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 200ms var(--ds-ease-out-quart);
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.modal {
+  inline-size: 100%;
+  max-inline-size: 460px;
+  background: var(--ds-surface-elevated);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-2xl);
+  box-shadow: var(--ds-shadow-xl);
+  overflow: hidden;
+  animation: slideUp 240ms var(--ds-ease-out-quart);
+}
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.modalHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--ds-space-4) var(--ds-space-5);
+  border-bottom: 1px solid var(--ds-border-subtle);
+}
+.modalHead h3 {
+  font-size: var(--ds-text-base);
+  font-weight: 700;
+  margin: 0;
+}
+.modalClose {
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  color: var(--ds-text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+.modalClose:hover {
+  background: var(--ds-canvas-subtle);
+  color: var(--ds-text-primary);
+}
+.modalBody {
+  padding: var(--ds-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+.modalDesc {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-muted);
+  margin: 0;
+  line-height: 1.6;
+}
+.modalDesc strong {
+  color: var(--ds-text-primary);
+}
+.modalSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  background: var(--ds-canvas-subtle);
+  border-radius: var(--ds-radius-md);
+  font-size: var(--ds-text-sm);
+}
+.modalRow {
+  display: flex;
+  justify-content: space-between;
+}
+.modalRow > :first-child {
+  color: var(--ds-text-muted);
+}
+.modalRowTotal {
+  padding-block-start: 8px;
+  border-top: 1px dashed var(--ds-border-subtle);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+}
+.modalFoot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: var(--ds-space-4) var(--ds-space-5);
+  background: var(--ds-canvas-subtle);
+  border-top: 1px solid var(--ds-border-subtle);
+}

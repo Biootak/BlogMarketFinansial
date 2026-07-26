@@ -21,6 +21,7 @@ import {
   LayoutDashboard,
   Receipt,
   Settings,
+  Store,
   Tag,
   Users,
 } from 'lucide-react';
@@ -50,6 +51,12 @@ const NAV_ITEMS = [
     href: '/exchange/settlement',
     label: 'تسویه‌حساب',
     icon: Receipt,
+    roles: ['OWNER', 'MANAGER'],
+  },
+  {
+    href: '/exchange/profile',
+    label: 'پروفایل صرافی',
+    icon: Store,
     roles: ['OWNER', 'MANAGER'],
   },
   { href: '/exchange/settings', label: 'تنظیمات', icon: Settings, roles: ['OWNER', 'MANAGER'] },

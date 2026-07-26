@@ -1,0 +1,402 @@
+/**
+ * /exchange/profile/_components/ProfileWorkspace.module.css
+ *
+ * استایل صفحه پروفایل صرافی.
+ * فقط از tokens سایت — بدون رنگ/فاصله hardcoded.
+ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5);
+  max-inline-size: 980px;
+}
+
+/* ── Identity preview card ───────────────────────────────────── */
+.previewCard {
+  position: relative;
+  background: var(--at-surface);
+  border: 1px solid var(--at-line);
+  border-radius: var(--ds-radius-xl);
+  overflow: hidden;
+  box-shadow: var(--ds-shadow-sm);
+}
+
+.previewCover {
+  position: relative;
+  block-size: 96px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--at-accent) 22%, var(--at-surface)) 0%,
+    color-mix(in oklch, var(--ds-brand-500) 18%, var(--at-surface)) 100%
+  );
+  border-bottom: 1px solid var(--at-line);
+}
+
+.previewCover svg {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  opacity: 0.6;
+}
+
+.previewBody {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--ds-space-4);
+  padding: 0 var(--ds-space-5) var(--ds-space-4);
+  margin-block-start: -36px;
+}
+
+.previewLogo {
+  inline-size: 72px;
+  block-size: 72px;
+  border-radius: var(--ds-radius-lg);
+  background: var(--at-surface);
+  border: 3px solid var(--at-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: var(--ds-shadow-md);
+}
+
+.previewLogo img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+.previewLogoFallback {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--at-accent);
+}
+
+.previewMeta {
+  flex: 1;
+  min-inline-size: 0;
+  padding-block-end: 8px;
+}
+
+.previewName {
+  font-size: var(--ds-text-lg);
+  font-weight: 700;
+  color: var(--at-fg);
+  margin: 0;
+  line-height: 1.25;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.previewSlug {
+  font-size: var(--ds-text-xs);
+  color: var(--at-fg-muted);
+  margin: 4px 0 0;
+  font-family: var(--ds-font-mono, monospace);
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: var(--ds-radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.statusActive {
+  background: color-mix(in oklch, var(--nova-emerald) 12%, transparent);
+  color: var(--nova-emerald);
+  border-color: color-mix(in oklch, var(--nova-emerald) 28%, transparent);
+}
+
+.statusPending {
+  background: color-mix(in oklch, var(--nova-amber) 12%, transparent);
+  color: var(--nova-amber);
+  border-color: color-mix(in oklch, var(--nova-amber) 28%, transparent);
+}
+
+.statusOther {
+  background: var(--at-bg-elevated, color-mix(in oklch, var(--at-surface) 80%, transparent));
+  color: var(--at-fg-muted);
+  border-color: var(--at-line);
+}
+
+/* ── Section ─────────────────────────────────────────────────── */
+.section {
+  background: var(--at-surface);
+  border: 1px solid var(--at-line);
+  border-radius: var(--ds-radius-xl);
+  padding: var(--ds-space-5) var(--ds-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  box-shadow: var(--ds-shadow-sm);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  color: var(--at-fg);
+  padding-block-end: var(--ds-space-3);
+  border-bottom: 1px solid var(--at-line);
+}
+
+.sectionHeader svg {
+  color: var(--at-accent);
+  flex-shrink: 0;
+}
+
+.sectionHint {
+  font-size: var(--ds-text-xs);
+  color: var(--at-fg-muted);
+  font-weight: 400;
+  margin-inline-start: auto;
+}
+
+/* ── Grid ────────────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-4);
+}
+
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  color: var(--at-fg);
+}
+
+.required::after {
+  content: ' *';
+  color: var(--nova-rose, oklch(55% 0.18 25));
+}
+
+.hint {
+  font-size: 11px;
+  color: var(--at-fg-muted);
+  line-height: 1.4;
+}
+
+.input,
+.textarea,
+.select {
+  inline-size: 100%;
+  padding: 10px 12px;
+  font-size: var(--ds-text-sm);
+  font-family: inherit;
+  color: var(--at-fg);
+  background: var(--at-bg, var(--at-surface));
+  border: 1px solid var(--at-line);
+  border-radius: 8px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+  outline: none;
+}
+
+.textarea {
+  min-block-size: 88px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  border-color: var(--at-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 16%, transparent);
+}
+
+.input:disabled,
+.textarea:disabled,
+.select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.inputLtr {
+  direction: ltr;
+  text-align: start;
+}
+
+/* ── Logo uploader ───────────────────────────────────────────── */
+.logoUploader {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-4);
+}
+
+.logoPreview {
+  inline-size: 88px;
+  block-size: 88px;
+  border-radius: var(--ds-radius-md);
+  background: var(--at-bg, var(--at-surface));
+  border: 1px dashed var(--at-line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.logoPreview img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+.logoActions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.logoUrlRow {
+  display: flex;
+  gap: 6px;
+}
+
+.logoUrlRow .input {
+  flex: 1;
+}
+
+/* ── Hours table ─────────────────────────────────────────────── */
+.hoursGrid {
+  display: grid;
+  grid-template-columns: 110px 1fr 1fr;
+  gap: 8px 12px;
+  align-items: center;
+}
+
+@media (max-width: 600px) {
+  .hoursGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hoursLabel {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--at-fg);
+}
+
+.hoursInput {
+  padding: 8px 10px;
+  font-size: var(--ds-text-sm);
+  font-family: inherit;
+  color: var(--at-fg);
+  background: var(--at-bg, var(--at-surface));
+  border: 1px solid var(--at-line);
+  border-radius: 6px;
+  direction: ltr;
+}
+
+.hoursInput:focus {
+  border-color: var(--at-accent);
+  outline: none;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 16px;
+  block-size: 38px;
+  border-radius: 8px;
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 120ms ease, transform 120ms ease;
+  text-decoration: none;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.btnPrimary {
+  background: var(--at-accent);
+  color: var(--at-surface);
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: color-mix(in oklch, var(--at-accent) 88%, black);
+}
+
+.btnSecondary {
+  background: var(--at-surface);
+  color: var(--at-fg);
+  border-color: var(--at-line);
+}
+
+.btnSecondary:hover:not(:disabled) {
+  background: var(--at-bg-elevated, var(--at-bg));
+}
+
+/* ── Banners ─────────────────────────────────────────────────── */
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: var(--ds-text-sm);
+}
+
+.bannerInfo {
+  background: color-mix(in oklch, var(--ds-brand-500) 8%, var(--at-surface));
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 22%, transparent);
+  color: var(--at-fg);
+}
+
+.bannerSuccess {
+  background: color-mix(in oklch, var(--nova-emerald) 10%, var(--at-surface));
+  border: 1px solid color-mix(in oklch, var(--nova-emerald) 28%, transparent);
+  color: var(--nova-emerald);
+}
+
+.bannerError {
+  background: color-mix(in oklch, var(--nova-rose) 10%, var(--at-surface));
+  border: 1px solid color-mix(in oklch, var(--nova-rose) 28%, transparent);
+  color: var(--nova-rose);
+}
+
+.bannerIcon {
+  flex-shrink: 0;
+  margin-block-start: 1px;
+}
+
+/* ── Footer ──────────────────────────────────────────────────── */
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-block-start: var(--ds-space-3);
+}

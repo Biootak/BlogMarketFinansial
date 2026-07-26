@@ -48,12 +48,14 @@ export type ExchangeRow = {
   id: string;
   name: string;
   slug: string;
+  displayName: string | null;
   licenseNo: string | null;
   city: string | null;
   address: string | null;
   phone: string | null;
   email: string | null;
   logoUrl: string | null;
+  website: string | null;
   status: string;
   /** number به جای bigint — JSON-serializable */
   dailyLimitAf: number;
@@ -71,6 +73,8 @@ function mapExchange(raw: {
   id: string;
   name: string;
   slug: string;
+  displayName: string | null;
+  website: string | null;
   licenseNo: string | null;
   city: string | null;
   address: string | null;
@@ -408,12 +412,14 @@ export async function revokeExchangeStaff(
 
 const ExchangeSelfUpdateSchema = z.object({
   name: z.string().min(2, 'نام صرافی حداقل ۲ کاراکتر').max(120).optional(),
+  displayName: z.string().max(120).nullable().optional(),
   licenseNo: z.string().max(60).nullable().optional(),
   city: z.string().max(80).nullable().optional(),
-  address: z.string().max(300).nullable().optional(),
+  address: z.string().max(600).nullable().optional(),
   phone: z.string().max(30).nullable().optional(),
   email: z.string().email('ایمیل نامعتبر').nullable().optional(),
   logoUrl: z.string().url('آدرس لوگو نامعتبر').nullable().optional(),
+  website: z.string().url('آدرس وبسایت نامعتبر').max(200).nullable().optional(),
   dailyLimitAf: z.number().int().min(0).optional(),
   requireKyc: z.boolean().optional(),
 });

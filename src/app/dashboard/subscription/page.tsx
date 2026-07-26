@@ -1,6 +1,7 @@
 import getCurrentUser from '@/lib/current-user';
 import db from '@/lib/db';
 import { persianMonths, toPersianDate } from '@/lib/persian-date';
+import { getUserSubscription } from '@/actions/subscription';
 import {
   ActivitySquare,
   CalendarDays,
@@ -9,13 +10,14 @@ import {
   FileText,
   Monitor,
   ShieldCheck,
-  Sparkles,
   TriangleAlert,
   User,
 } from 'lucide-react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import s from './subscription.module.css';
+import BillingHistory from './_components/BillingHistory';
+import PlanPicker from './_components/PlanPicker';
 
 export const metadata: Metadata = {
   title: 'حساب کاربری | داشبورد',
@@ -59,7 +61,7 @@ export default async function AccountPage() {
   const user = await getCurrentUser();
   if (!user?.id) redirect('/auth/login');
 
-  const [published, drafts, dbUser, devices, logs] = await Promise.all([
+  const [published, drafts, dbUser, devices, logs, subRes] = await Promise.all([
     db.post.count({ where: { authorId: user.id, status: 'PUBLISHED' } }),
     db.post.count({ where: { authorId: user.id, status: 'DRAFT' } }),
     db.user.findUnique({
@@ -78,7 +80,10 @@ export default async function AccountPage() {
       take: 5,
       select: { id: true, action: true, createdAt: true, entityType: true },
     }),
+    getUserSubscription(),
   ]);
+
+  const subscription = subRes.success ? subRes.data : null;
 
   const roleCfg = ROLE_CONFIG[user.role ?? 'USER'] ?? ROLE_CONFIG.USER!;
   const joinedAt  = dbUser?.createdAt ? persianDate(dbUser.createdAt) : '—';
@@ -275,48 +280,17 @@ export default async function AccountPage() {
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════
-          PLAN
+          PLAN PICKER (NEW — 3 tiers + billing)
           ═══════════════════════════════════════════════════════════════ */}
-      <section className={s.planCard} aria-labelledby="plan-heading">
-        {/* decorative ambient ring */}
-        <span className={s.planRing} aria-hidden />
+      <PlanPicker
+        currentPlan={subscription?.currentPlan ?? 'free'}
+        planExpiresAt={subscription?.planExpiresAt ?? null}
+      />
 
-        <div className={s.planLeft}>
-          <span className={s.planEyebrow}>اشتراک فعلی</span>
-          <h2 id="plan-heading" className={s.planTitle}>پلن رایگان</h2>
-          <p className={s.planDesc}>
-            با ارتقاء به پلن حرفه‌ای به آمارهای پیشرفته، اولویت بررسی محتوا و قابلیت‌های بیشتر دسترسی داشته باشید.
-          </p>
-
-          <ul className={s.featureList} aria-label="ویژگی‌های پلن">
-            {[
-              { ok: true,  text: 'انتشار نامحدود پست'      },
-              { ok: true,  text: 'آپلود تصویر و رسانه'     },
-              { ok: true,  text: 'آمار پایه بازدید'         },
-              { ok: false, text: 'آمار پیشرفته و SEO'       },
-              { ok: false, text: 'Newsletter خودکار'         },
-              { ok: false, text: 'پشتیبانی اولویت‌دار'      },
-            ].map(({ ok, text }) => (
-              <li key={text} className={`${s.featureItem} ${ok ? s.featureOn : s.featureOff}`}>
-                <span className={s.featureDot} aria-hidden />
-                {text}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className={s.planRight}>
-          <div className={s.planBadge}>
-            <Sparkles size={14} aria-hidden />
-            رایگان
-          </div>
-          <button type="button" className={s.upgradeBtn} disabled aria-disabled="true">
-            <Sparkles size={14} aria-hidden />
-            ارتقاء به پرو
-            <span className={s.comingSoon}>به‌زودی</span>
-          </button>
-        </div>
-      </section>
+      {/* ═══════════════════════════════════════════════════════════════
+          BILLING HISTORY (NEW)
+          ═══════════════════════════════════════════════════════════════ */}
+      <BillingHistory events={subscription?.events ?? []} />
 
       {/* ═══════════════════════════════════════════════════════════════
           DEVICES (conditional — real data only)
