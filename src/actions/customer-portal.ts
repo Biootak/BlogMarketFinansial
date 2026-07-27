@@ -110,8 +110,20 @@ export type CustomerDashboardData = {
   stats: {
     totalTransactions: number;
     completedTransactions: number;
+    pendingTransactions: number;
+    failedTransactions: number;
     totalBalanceAfn: number;
+    /** مجموع مبالغ واریز (AFN) در ۳۰ روز اخیر */
+    deposits30dAfn: number;
+    /** مجموع مبالغ برداشت (AFN) در ۳۰ روز اخیر */
+    withdrawals30dAfn: number;
   };
+  /** Heatmap: ۳۰ روز اخیر — هر سلول = { date, count, volume } */
+  heatmap: Array<{ date: string; count: number; volume: number }>;
+  /** حجم به تفکیک نوع تراکنش (۳۰ روز اخیر) */
+  volumeByKind: Array<{ kind: string; count: number; volume: number }>;
+  /** sparkline ۷ روز اخیر — مجموع مبالغ تراکنش‌ها روزانه */
+  weeklySpark: Array<{ date: string; amount: number; count: number }>;
 };
 
 // ─── Zod schemas ─────────────────────────────────────────────────────────────
@@ -211,17 +223,17 @@ export const getCustomerAccounts = safeCache(
   async (customerId: string): Promise<CustomerAccountSummary[]> => {
     const rows = await prisma.fintechAccount.findMany({
       where: { customerId, status: { not: 'CLOSED' } },
-      select: { id: true, currency: true, balance: true, type: true, status: true },
-      orderBy: { createdAt: 'asc' },
-    });
+    select: { id: true, currency: true, balance: true, type: true, status: true },
+    orderBy: { createdAt: 'asc' },
+  });
 
-    return rows.map((r) => ({
-      ...r,
-      balance: mapBalance(r.balance),
-      type: r.type as string,
-      status: r.status as string,
-    }));
-  },
+  return rows.map((r: { id: string; currency: string; balance: bigint; type: AccountType; status: AccountStatus }) => ({
+    ...r,
+    balance: mapBalance(r.balance),
+    type: r.type as string,
+    status: r.status as string,
+  }));
+},
   [],
   { key: 'customer:accounts', ttl: 30, tags: ['customer-accounts'] },
 );
@@ -468,22 +480,55 @@ export async function updateCustomerProfile(raw: unknown): Promise<{
 
 // ─── READ — Dashboard (combined) ─────────────────────────────────────────────
 
+function dayKey(d: Date): string {
+  const c = new Date(d);
+  c.setHours(0, 0, 0, 0);
+  return c.toISOString().slice(0, 10);
+}
+
+function startOfDay(d: Date): Date {
+  const c = new Date(d);
+  c.setHours(0, 0, 0, 0);
+  return c;
+}
+
 export async function getCustomerDashboardData(): Promise<CustomerDashboardData | null> {
   const access = await requireCustomerAccess();
   if (!access.ok) return null;
 
-  const [profile, accounts, recentTransactions, stats, completedCount] = await Promise.all([
-    getCustomerProfile(),
-    getCustomerAccounts(access.customerId),
-    getCustomerRecentTransactions(8),
-    prisma.transaction.aggregate({
-      where: { customerId: access.customerId },
-      _count: { _all: true },
-    }),
-    prisma.transaction.count({
-      where: { customerId: access.customerId, status: 'COMPLETED' },
-    }),
-  ]);
+  const since30 = new Date();
+  since30.setDate(since30.getDate() - 30);
+
+  const [profile, accounts, recentTransactions, totalAgg, completedCount, pendingCount, failedCount, last30] =
+    await Promise.all([
+      getCustomerProfile(),
+      getCustomerAccounts(access.customerId),
+      getCustomerRecentTransactions(8),
+      prisma.transaction.aggregate({
+        where: { customerId: access.customerId },
+        _count: { _all: true },
+      }),
+      prisma.transaction.count({
+        where: { customerId: access.customerId, status: 'COMPLETED' },
+      }),
+      prisma.transaction.count({
+        where: { customerId: access.customerId, status: { in: ['PENDING', 'PROCESSING'] } },
+      }),
+      prisma.transaction.count({
+        where: { customerId: access.customerId, status: { in: ['FAILED', 'CANCELLED', 'REVERSED'] } },
+      }),
+      prisma.transaction.findMany({
+        where: { customerId: access.customerId, createdAt: { gte: since30 } },
+        orderBy: { createdAt: 'asc' },
+        select: {
+          id: true,
+          kind: true,
+          amount: true,
+          currency: true,
+          createdAt: true,
+        },
+      }),
+    ]);
 
   if (!profile) return null;
 
@@ -491,15 +536,86 @@ export async function getCustomerDashboardData(): Promise<CustomerDashboardData 
     .filter((a) => a.currency === 'AFN')
     .reduce((sum, a) => sum + a.balance, 0);
 
+  // ── Build heatmap (30 days) ─────────────────────────────────────────────
+  const today = startOfDay(new Date());
+  const heatmapMap = new Map<string, { count: number; volume: number }>();
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    heatmapMap.set(dayKey(d), { count: 0, volume: 0 });
+  }
+  for (const t of last30) {
+    const k = dayKey(t.createdAt);
+    const cur = heatmapMap.get(k);
+    if (cur) {
+      cur.count += 1;
+      cur.volume += mapBalance(t.amount);
+    }
+  }
+  const heatmap = Array.from(heatmapMap.entries()).map(([date, v]) => ({
+    date,
+    count: v.count,
+    volume: Math.round(v.volume * 100) / 100,
+  }));
+
+  // ── Volume by kind (30 days) ────────────────────────────────────────────
+  const kindMap = new Map<string, { count: number; volume: number }>();
+  for (const t of last30) {
+    const cur = kindMap.get(t.kind) ?? { count: 0, volume: 0 };
+    cur.count += 1;
+    cur.volume += mapBalance(t.amount);
+    kindMap.set(t.kind, cur);
+  }
+  const volumeByKind = Array.from(kindMap.entries())
+    .map(([kind, v]) => ({ kind, count: v.count, volume: Math.round(v.volume * 100) / 100 }))
+    .sort((a, b) => b.count - a.count);
+
+  // ── Weekly spark (last 7 days, total volume per day) ────────────────────
+  const sparkMap = new Map<string, { amount: number; count: number }>();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    sparkMap.set(dayKey(d), { amount: 0, count: 0 });
+  }
+  for (const t of last30) {
+    const k = dayKey(t.createdAt);
+    if (!sparkMap.has(k)) continue;
+    const cur = sparkMap.get(k);
+    if (cur) {
+      cur.amount += mapBalance(t.amount);
+      cur.count += 1;
+    }
+  }
+  const weeklySpark = Array.from(sparkMap.entries()).map(([date, v]) => ({
+    date,
+    amount: Math.round(v.amount * 100) / 100,
+    count: v.count,
+  }));
+
+  // ── 30d totals in AFN (best-effort: only AFN txns counted) ────────────
+  const deposits30dAfn = last30
+    .filter((t) => t.kind === 'DEPOSIT' && t.currency === 'AFN')
+    .reduce((s, t) => s + mapBalance(t.amount), 0);
+  const withdrawals30dAfn = last30
+    .filter((t) => t.kind === 'WITHDRAWAL' && t.currency === 'AFN')
+    .reduce((s, t) => s + mapBalance(t.amount), 0);
+
   return {
     profile,
     accounts,
     recentTransactions,
     stats: {
-      totalTransactions: stats._count._all,
+      totalTransactions: totalAgg._count._all,
       completedTransactions: completedCount,
+      pendingTransactions: pendingCount,
+      failedTransactions: failedCount,
       totalBalanceAfn,
+      deposits30dAfn: Math.round(deposits30dAfn * 100) / 100,
+      withdrawals30dAfn: Math.round(withdrawals30dAfn * 100) / 100,
     },
+    heatmap,
+    volumeByKind,
+    weeklySpark,
   };
 }
 

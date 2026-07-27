@@ -20,6 +20,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/authors',
     '/money-transfer',
     '/online-payment',
+    '/customer/dashboard',
+    '/customer/crypto',
+    '/customer/developer',
+    '/exchange/dashboard',
+    '/exchange/rates',
+    '/apply-exchange',
   ];
 
   const entries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({

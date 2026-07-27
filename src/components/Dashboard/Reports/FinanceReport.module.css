@@ -1,13 +1,116 @@
-/* =============================================================================
-   FinanceReport.module.css — 2026 Platform Finance Report
-   Ramp Analytics-inspired — SVG native charts
-   Tokens: --ds-* + --at-* + --nova-*  |  RTL logical properties
-   ============================================================================= */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-8);
+  perspective: 1000px;
+}
 
-@keyframes pageIn {
+/* Glassmorphism KPI Cards */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--ds-space-6);
+}
+
+.kpiCard {
+  background: var(--color-background-secondary);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: 24px;
+  padding: var(--ds-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--ds-shadow-sm);
+}
+
+.kpiCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--accent, var(--color-brand-accent));
+  opacity: 0.8;
+}
+
+.kpiCard:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border-color: var(--accent, var(--color-brand-accent));
+}
+
+.kpiIcon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in oklch, var(--accent, var(--color-brand-accent)) 10%, transparent);
+  color: var(--accent, var(--color-brand-accent));
+  border-radius: 12px;
+  margin-bottom: var(--ds-space-2);
+}
+
+.kpiValue {
+  font-size: var(--ds-text-2xl);
+  font-weight: 700;
+  font-family: var(--ds-font-mono);
+  color: var(--color-text-primary);
+}
+
+.kpiLabel {
+  font-size: var(--ds-text-sm);
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+}
+
+.kpiSub {
+  font-size: var(--ds-text-xs);
+  color: var(--color-text-tertiary);
+  opacity: 0.7;
+}
+
+/* Charts & Trends */
+.chartCard {
+  background: var(--color-background-secondary);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: 28px;
+  padding: var(--ds-space-8);
+  box-shadow: var(--ds-shadow-md);
+  backdrop-filter: blur(12px);
+}
+
+.chartTitle {
+  font-size: var(--ds-text-lg);
+  font-weight: 600;
+  margin-bottom: var(--ds-space-8);
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  color: var(--color-text-primary);
+}
+
+.sparklineWrap {
+  width: 100%;
+  height: 300px;
+  position: relative;
+}
+
+.bottomRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: var(--ds-space-8);
+}
+
+/* Animations & Transitions */
+@keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -15,373 +118,26 @@
   }
 }
 
-@keyframes barGrow {
-  from {
-    width: 0;
-  }
-  to {
-    width: var(--w, 0%);
-  }
+.skeletonCard {
+  background: var(--color-background-tertiary);
+  border-radius: 24px;
+  height: 160px;
+  animation: pulse 2s infinite ease-in-out;
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 0.3; }
+  100% { opacity: 0.6; }
 }
 
-/* ── Root ─────────────────────────────────────────────────────────────────── */
-.root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-5);
-  animation: pageIn var(--ds-duration-base) var(--ds-ease-out-quart) both;
-}
-
-/* ── KPI Grid ─────────────────────────────────────────────────────────────── */
-.kpiGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--ds-space-3);
-}
-
-@media (max-width: 860px) {
-  .kpiGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 480px) {
-  .kpiGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.kpiCard {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-1);
-  padding: var(--ds-space-4) var(--ds-space-4) var(--ds-space-4) calc(var(--ds-space-4) + 3px);
-  background: var(--at-surface, var(--ds-surface));
-  border: 1px solid var(--at-line, var(--ds-border-default));
-  border-radius: var(--ds-radius-xl);
-  box-shadow: var(--ds-shadow-sm);
-  position: relative;
-  overflow: hidden;
-  transition: box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart), transform
-    var(--ds-duration-fast) var(--ds-ease-spring);
-}
-
-/* left accent bar */
-.kpiCard::before {
-  content: "";
-  position: absolute;
-  inset-inline-start: 0;
-  inset-block: 0;
-  inline-size: 3px;
-  background: var(--accent, var(--ds-brand-500));
-  border-radius: var(--ds-radius-full) 0 0 var(--ds-radius-full);
-  opacity: 0.8;
-}
-
-.kpiCard:hover {
-  box-shadow: var(--ds-shadow-md);
-  transform: translateY(-2px);
-}
-
-.kpiIcon {
-  color: var(--accent, var(--ds-brand-500));
-  opacity: 0.8;
-  margin-block-end: 2px;
-}
-
-.kpiValue {
-  font-size: var(--ds-text-2xl);
-  font-weight: var(--ds-weight-extrabold);
-  font-variant-numeric: tabular-nums;
-  color: var(--at-fg, var(--ds-text-primary));
-  line-height: 1;
-  letter-spacing: -0.03em;
-}
-
-.kpiLabel {
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-semibold);
-  color: var(--at-fg-muted, var(--ds-text-secondary));
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.kpiSub {
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
-  margin-block-start: 2px;
-}
-
-/* ── Chart Card ───────────────────────────────────────────────────────────── */
-.chartCard {
-  background: var(--at-surface, var(--ds-surface));
-  border: 1px solid var(--at-line, var(--ds-border-default));
-  border-radius: var(--ds-radius-xl);
-  overflow: hidden;
-  box-shadow: var(--ds-shadow-sm);
-}
-
-.chartTitle {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-1-5);
-  font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-bold);
-  color: var(--at-fg, var(--ds-text-primary));
-  padding: var(--ds-space-4) var(--ds-space-5) var(--ds-space-3);
-  border-block-end: 1px solid var(--at-line, var(--ds-border-subtle));
-  background: var(--ds-canvas-subtle);
-  margin: 0;
-}
-
-/* chart body — inner padding */
-.chartCard > *:not(.chartTitle) {
-  padding: var(--ds-space-4) var(--ds-space-5);
-}
-
-/* ── Bottom Row ───────────────────────────────────────────────────────────── */
-.bottomRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--ds-space-5);
-}
-
+/* Responsive Overrides */
 @media (max-width: 768px) {
   .bottomRow {
     grid-template-columns: 1fr;
   }
-}
-
-/* ── Sparkline ────────────────────────────────────────────────────────────── */
-.sparklineWrap {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-1);
-}
-
-.sparklineSvg {
-  inline-size: 100%;
-  block-size: auto;
-  display: block;
-  overflow: visible;
-}
-
-.sparklineXLabels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.65rem;
-  color: var(--ds-text-muted);
-  font-variant-numeric: tabular-nums;
-  padding-inline: var(--ds-space-1);
-}
-
-.sparklineLegend {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-3);
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
-  padding-inline: var(--ds-space-1);
-}
-
-.legendDotBlue {
-  display: inline-block;
-  inline-size: 8px;
-  block-size: 8px;
-  border-radius: var(--ds-radius-full);
-  background: var(--ds-brand-500);
-  flex-shrink: 0;
-}
-
-.legendDotGreen {
-  display: inline-block;
-  inline-size: 8px;
-  block-size: 2px;
-  background: var(--nova-emerald, oklch(50% 0.14 145));
-  flex-shrink: 0;
-}
-
-.sparklineEmpty {
-  font-size: var(--ds-text-sm);
-  color: var(--ds-text-muted);
-  text-align: center;
-  padding: var(--ds-space-4);
-}
-
-/* ── Bar Chart ────────────────────────────────────────────────────────────── */
-.barsWrap {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-2);
-}
-
-.barRow {
-  display: grid;
-  grid-template-columns: 100px 1fr 44px;
-  align-items: center;
-  gap: var(--ds-space-2);
-}
-
-.barLabel {
-  font-size: var(--ds-text-xs);
-  color: var(--at-fg-muted, var(--ds-text-secondary));
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: var(--ds-weight-medium);
-}
-
-.barTrack {
-  block-size: 10px;
-  border-radius: var(--ds-radius-full);
-  background: var(--ds-canvas-subtle);
-  overflow: hidden;
-}
-
-.barFill {
-  block-size: 100%;
-  border-radius: var(--ds-radius-full);
-  background: linear-gradient(
-    to inline-end,
-    var(--ds-brand-500),
-    color-mix(in oklch, var(--ds-brand-500) 70%, var(--nova-violet, oklch(55% 0.16 280)))
-  );
-  width: var(--w, 0%);
-  animation: barGrow var(--ds-duration-slow) var(--ds-ease-out-quart) both;
-}
-
-.barCount {
-  font-size: var(--ds-text-xs);
-  font-variant-numeric: tabular-nums;
-  color: var(--at-fg-muted, var(--ds-text-muted));
-  text-align: end;
-}
-
-/* ── Donut Chart ──────────────────────────────────────────────────────────── */
-.donutWrap {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-5);
-}
-
-.donutSvg {
-  inline-size: 112px;
-  block-size: 112px;
-  flex-shrink: 0;
-}
-
-.donutCenter {
-  font-size: 13px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  fill: var(--at-fg, var(--ds-text-primary));
-}
-
-.donutLegend {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-1-5);
-}
-
-.donutLegendItem {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-1-5);
-  font-size: var(--ds-text-xs);
-  color: var(--at-fg-muted, var(--ds-text-secondary));
-}
-
-.donutDot {
-  display: inline-block;
-  inline-size: 8px;
-  block-size: 8px;
-  border-radius: var(--ds-radius-full);
-  flex-shrink: 0;
-}
-
-.donutCount {
-  margin-inline-start: auto;
-  font-variant-numeric: tabular-nums;
-  font-weight: var(--ds-weight-semibold);
-  color: var(--at-fg, var(--ds-text-primary));
-}
-
-/* ── Skeleton ─────────────────────────────────────────────────────────────── */
-.skeleton {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--ds-space-3);
-}
-
-.skeletonCard {
-  block-size: 90px;
-  border-radius: var(--ds-radius-xl);
-  background: linear-gradient(
-    90deg,
-    var(--ds-canvas-subtle) 25%,
-    var(--ds-surface) 50%,
-    var(--ds-canvas-subtle) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  animation-delay: calc(var(--i, 0) * 80ms);
-}
-
-.skeletonChart {
-  grid-column: 1 / -1;
-  block-size: 150px;
-  border-radius: var(--ds-radius-xl);
-  background: linear-gradient(
-    90deg,
-    var(--ds-canvas-subtle) 25%,
-    var(--ds-surface) 50%,
-    var(--ds-canvas-subtle) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-.skeletonChartHalf {
-  grid-column: span 2;
-  block-size: 180px;
-  border-radius: var(--ds-radius-xl);
-  background: linear-gradient(
-    90deg,
-    var(--ds-canvas-subtle) 25%,
-    var(--ds-surface) 50%,
-    var(--ds-canvas-subtle) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  animation-delay: 200ms;
-}
-
-/* ── Retry ────────────────────────────────────────────────────────────────── */
-.retryBtn {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 16px;
-  border-radius: var(--ds-radius-md);
-  border: 1px solid var(--at-line, var(--ds-border-default));
-  background: transparent;
-  color: var(--at-fg-muted, var(--ds-text-secondary));
-  font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-semibold);
-  cursor: pointer;
-  font-family: inherit;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
-}
-
-.retryBtn:hover {
-  background: var(--ds-canvas-subtle);
+  
+  .kpiGrid {
+    grid-template-columns: 1fr 1fr;
+  }
 }

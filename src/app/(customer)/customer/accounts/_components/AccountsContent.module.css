@@ -1,267 +1,523 @@
-/* AccountsContent.module.css */
+/* ============================================================================
+ * AccountsContent — دفتر کل
+ * ========================================================================== */
 
 .root {
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-6);
+  inline-size: 100%;
 }
 
-/* ── Summary row ─────────────────────────────────────────────────────────── */
-.summaryRow {
+/* ── Currency Summary Strip ─────────────────────────────────────────────── */
+
+.currencyStrip {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr;
   gap: var(--ds-space-3);
 }
 
-@media (max-width: 600px) {
-  .summaryRow {
-    grid-template-columns: 1fr;
+@media (min-width: 480px) {
+  .currencyStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-.summaryCard {
-  padding: var(--ds-space-4) var(--ds-space-5);
-  border-radius: var(--at-radius-lg, 14px);
-  background: var(--at-surface);
-  border: 1px solid var(--at-line);
+@media (min-width: 980px) {
+  .currencyStrip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.currencyEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  padding-block: var(--ds-space-6);
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+  text-align: center;
+  background: var(--ds-surface);
+  border: 1px dashed var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+  grid-column: 1 / -1;
+}
+
+.currencyCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding-block: var(--ds-space-4);
+  padding-inline: var(--ds-space-4);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+  animation: cardEnter 360ms var(--ds-ease-out-quart) both;
+  transition: transform 200ms var(--ds-ease-out-quart), border-color 200ms var(--ds-ease-out-quart);
+}
+
+.currencyCard:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in oklch, var(--ds-brand-500) 30%, var(--ds-border-subtle));
+}
+
+.currencyCard[data-currency='AFN'] {
+  border-inline-start: 3px solid var(--nova-emerald, var(--nova-up));
+}
+
+.currencyCard[data-currency='USD'] {
+  border-inline-start: 3px solid var(--nova-cyan);
+}
+
+.currencyCard[data-currency='EUR'] {
+  border-inline-start: 3px solid var(--nova-violet);
+}
+
+.currencyCard[data-currency='IRR'] {
+  border-inline-start: 3px solid var(--nova-amber);
+}
+
+.currencyHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+
+.currencyCode {
+  font-size: var(--ds-text-sm);
+  font-weight: 800;
+  color: var(--ds-text-primary);
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+.currencyName {
+  font-size: 0.625rem;
+  color: var(--ds-text-muted);
+  font-weight: 500;
+}
+
+.currencyBalance {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ds-space-2);
+  flex-wrap: wrap;
+}
+
+.currencyAmount {
+  font-size: clamp(1.125rem, 0.95rem + 0.6vw, 1.375rem);
+  font-weight: 800;
+  color: var(--ds-text-primary);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.currencyUnit {
+  font-size: 0.625rem;
+  color: var(--ds-text-muted);
+  font-weight: 600;
+}
+
+.currencyTrack {
+  block-size: 4px;
+  background: var(--ds-surface-recessed);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.currencyFill {
+  display: block;
+  block-size: 100%;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--ds-brand-500) 50%, transparent),
+    var(--ds-brand-500)
+  );
+  border-radius: 999px;
+  transition: inline-size 600ms var(--ds-ease-out-quart);
+}
+
+.currencyFoot {
+  display: flex;
+  align-items: center;
+  font-size: 0.625rem;
+  color: var(--ds-text-muted);
+}
+
+.currencyActive,
+.currencyInactive {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  font-weight: 500;
+}
+
+.currencyActive {
+  color: var(--nova-up);
+}
+
+.currencyInactive {
+  color: var(--ds-text-muted);
+}
+
+/* ── Section Frame ─────────────────────────────────────────────────────── */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+  padding-block: var(--ds-space-4);
+  padding-inline: var(--ds-space-4);
+}
+
+/* ── Accounts List (Ledger) ─────────────────────────────────────────────── */
+
+.accountsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-surface);
+  overflow: hidden;
+}
+
+.accountRow {
+  position: relative;
+  isolation: isolate;
+  animation: cardEnter 320ms var(--ds-ease-out-quart) both;
+  transition: background 160ms var(--ds-ease-out-quart);
+}
+
+.accountRow:hover {
+  background: color-mix(in oklch, var(--ds-brand-500) 3%, transparent);
+}
+
+.accountRow + .accountRow {
+  border-block-start: 1px solid var(--ds-border-subtle);
+}
+
+.accountLink {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-3);
+  padding-inline: var(--ds-space-4);
+  text-decoration: none;
+  color: inherit;
+}
+
+.accountLink:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: -2px;
+}
+
+.accountIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.875rem;
+  block-size: 1.875rem;
+  border-radius: var(--ds-radius-sm);
+  background: color-mix(in oklch, var(--ds-brand-500) 8%, transparent);
+  color: var(--ds-brand-600);
+  flex-shrink: 0;
+}
+
+.accountRow[data-status='success'] .accountIcon {
+  background: color-mix(in oklch, var(--nova-up) 12%, transparent);
+  color: var(--nova-up);
+}
+
+.accountRow[data-status='warning'] .accountIcon {
+  background: color-mix(in oklch, var(--nova-amber) 12%, transparent);
+  color: var(--nova-amber);
+}
+
+.accountRow[data-status='danger'] .accountIcon {
+  background: color-mix(in oklch, var(--nova-down) 12%, transparent);
+  color: var(--nova-down);
+}
+
+.accountRow[data-status='neutral'] .accountIcon {
+  background: color-mix(in oklch, var(--nova-cyan) 12%, transparent);
+  color: var(--nova-cyan);
+}
+
+.accountMain {
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+}
+
+.accountTopRow {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--ds-space-2);
+  flex-wrap: wrap;
+}
+
+.accountType {
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+}
+
+.accountLabel {
+  font-size: 0.6875rem;
+  color: var(--ds-text-muted);
+  font-weight: 500;
+}
+
+.accountCurrency {
+  font-size: 0.625rem;
+  color: var(--ds-brand-600);
+  font-weight: 700;
+  padding-block: 0.1em;
+  padding-inline: 0.4em;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
+}
+
+.accountBottomRow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  flex-wrap: wrap;
+  font-size: 0.6875rem;
+  color: var(--ds-text-muted);
+}
+
+.accountFrozen {
+  color: var(--nova-amber);
+  font-weight: 600;
+}
+
+.accountDate {
+  color: var(--ds-text-muted);
+}
+
+.accountRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15em;
+  min-inline-size: 0;
+  text-align: end;
+}
+
+.accountBalance {
+  font-size: var(--ds-text-sm);
+  font-weight: 800;
+  color: var(--ds-text-primary);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.005em;
+}
+
+.accountBalanceUnit {
+  font-size: 0.625rem;
+  color: var(--ds-text-muted);
+  font-weight: 600;
+}
+
+.accountChevron {
+  color: var(--ds-text-muted);
+  flex-shrink: 0;
+  transition: transform 200ms var(--ds-ease-out-quart), color 200ms var(--ds-ease-out-quart);
+}
+
+.accountLink:hover .accountChevron {
+  transform: translateX(-2px);
+  color: var(--ds-brand-600);
+}
+
+/* ── Exchange Grid ─────────────────────────────────────────────────────── */
+
+.exchangeGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-surface);
+  overflow: hidden;
+}
+
+@media (min-width: 600px) {
+  .exchangeGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.exchangeCell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-3);
+  padding-inline: var(--ds-space-4);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  font-size: var(--ds-text-xs);
+}
+
+.exchangeCell:last-child,
+.exchangeCell:nth-last-child(2):nth-child(odd) {
+  border-block-end: none;
+}
+
+@media (min-width: 600px) {
+  .exchangeCell:nth-last-child(2):nth-child(odd) {
+    border-block-end: 1px solid var(--ds-border-subtle);
+  }
+  .exchangeCell:nth-child(2n) {
+    border-inline-start: 1px solid var(--ds-border-subtle);
+  }
+}
+
+.exchangeLabel {
+  color: var(--ds-text-muted);
+  font-weight: 500;
+}
+
+.exchangeValue {
+  color: var(--ds-text-primary);
+  font-weight: 600;
+  text-align: end;
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.exchangeValue[data-mono] {
+  font-family: inherit;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+}
+
+a.exchangeValue:hover {
+  color: var(--ds-brand-600);
+}
+
+/* ── Closed List ───────────────────────────────────────────────────────── */
+
+.closedList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-1);
 }
 
-.summaryCard[data-currency="AFN"] {
-  border-color: color-mix(in oklch, var(--at-accent) 30%, transparent);
-  background: var(--at-accent-soft);
-}
-
-.summaryCur {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--at-fg-subtle);
-  text-transform: uppercase;
-}
-
-.summaryCard[data-currency="AFN"] .summaryCur {
-  color: var(--at-accent-fg, var(--at-accent));
-}
-
-.summaryBal {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--at-fg);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-}
-
-.summaryLabel {
-  font-size: 11px;
-  color: var(--at-fg-subtle);
-}
-
-/* ── Accounts grid ───────────────────────────────────────────────────────── */
-.accountsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: var(--ds-space-4);
-  margin-block-start: var(--ds-space-3);
-}
-
-.accountCard {
-  padding: var(--ds-space-5);
-  border-radius: var(--at-radius-lg, 14px);
-  background: var(--at-surface);
-  border: 1px solid var(--at-line);
-  box-shadow: var(--at-shadow-sm);
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-3);
-  transition: box-shadow 140ms ease, border-color 140ms ease;
-}
-
-.accountCard:hover {
-  box-shadow: var(--at-shadow-hover);
-  border-color: var(--at-line-strong);
-}
-
-.accountCard[data-status="ACTIVE"] {
-  border-color: color-mix(in oklch, var(--at-accent) 25%, transparent);
-}
-
-.accountCard[data-status="FROZEN"] {
-  opacity: 0.8;
-  border-style: dashed;
-}
-
-.cardTop {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--ds-space-2);
-}
-
-.cardTypeBlock {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.cardType {
-  font-size: var(--ds-text-sm);
-  font-weight: 600;
-  color: var(--at-fg);
-}
-
-.cardLabel {
-  font-size: 11px;
-  color: var(--at-fg-subtle);
-}
-
-.cardStatus {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 20px;
-  background: var(--at-accent-soft);
-  color: var(--at-accent-fg, var(--at-accent));
-  white-space: nowrap;
-}
-
-.cardStatus[data-status="FROZEN"] {
-  background: color-mix(in oklch, var(--at-info) 10%, transparent);
-  color: var(--at-info);
-}
-
-.cardStatus[data-status="PENDING"] {
-  background: var(--at-gold-soft);
-  color: var(--at-gold-fg, var(--at-gold));
-}
-
-.cardBalance {
-  display: flex;
-  align-items: baseline;
-  gap: var(--ds-space-2);
-}
-
-.balanceAmount {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: var(--at-fg);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.03em;
-}
-
-.balanceCurrency {
-  font-size: var(--ds-text-sm);
-  font-weight: 600;
-  color: var(--at-fg-subtle);
-  letter-spacing: 0.04em;
-}
-
-.frozenNote {
-  font-size: 11px;
-  color: var(--at-info);
-  padding: var(--ds-space-2) var(--ds-space-3);
-  background: color-mix(in oklch, var(--at-info) 8%, transparent);
-  border-radius: 6px;
-  border: 1px solid color-mix(in oklch, var(--at-info) 20%, transparent);
-}
-
-.cardFooter {
-  border-top: 1px solid var(--at-line);
-  padding-block-start: var(--ds-space-2);
-}
-
-.cardDate {
-  font-size: 10px;
-  color: var(--at-fg-subtle);
-}
-
-/* ── Closed accounts ────────────────────────────────────────────────────── */
-.closedList {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-block-start: var(--ds-space-3);
-}
-
 .closedRow {
   display: flex;
   align-items: center;
-  gap: var(--ds-space-4);
-  padding: var(--ds-space-2) var(--ds-space-3);
-  border-radius: 6px;
-  opacity: 0.55;
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-2);
+  padding-inline: var(--ds-space-3);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-sm);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  animation: cardEnter 280ms var(--ds-ease-out-quart) both;
 }
 
 .closedType {
-  font-size: var(--ds-text-sm);
-  font-weight: 500;
-  color: var(--at-fg-muted);
-  flex: 1;
-}
-
-.closedCur {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--at-fg-subtle);
-  letter-spacing: 0.05em;
-}
-
-.closedDate {
-  font-size: 11px;
-  color: var(--at-fg-subtle);
-}
-
-/* ── Exchange info ──────────────────────────────────────────────────────── */
-.exchangeInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  margin-block-start: var(--ds-space-2);
-  border: 1px solid var(--at-line);
-  border-radius: var(--at-radius, 10px);
-  overflow: hidden;
-}
-
-.exchangeRow {
-  display: flex;
-  align-items: center;
-  padding: var(--ds-space-3) var(--ds-space-4);
-  border-bottom: 1px solid var(--at-line);
-  gap: var(--ds-space-4);
-}
-
-.exchangeRow:last-child {
-  border-bottom: none;
-}
-
-.exchangeLabel {
-  font-size: var(--ds-text-sm);
-  color: var(--at-fg-subtle);
-  min-width: 140px;
+  font-weight: 700;
+  color: var(--ds-text-primary);
   flex-shrink: 0;
 }
 
-.exchangeValue {
-  font-size: var(--ds-text-sm);
-  font-weight: 600;
-  color: var(--at-fg);
+.closedCurrency {
+  font-weight: 700;
+  color: var(--ds-text-muted);
+  padding-block: 0.1em;
+  padding-inline: 0.4em;
+  border-radius: 999px;
+  background: var(--ds-surface-recessed);
 }
 
-/* Link variant for account card */
-.accountCardLink {
-  display: flex;
+.closedDate {
+  flex: 1 1 auto;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── CTA Pills ─────────────────────────────────────────────────────────── */
+
+.ctaPill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  padding-block: var(--ds-space-1);
+  padding-inline: var(--ds-space-2);
+  background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
+  color: var(--ds-brand-600);
   text-decoration: none;
-  cursor: pointer;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  border-radius: var(--ds-radius-sm);
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 30%, transparent);
+  transition: background 160ms var(--ds-ease-out-quart);
 }
 
-.accountCardLink .cardFooter {
+.ctaPill:hover {
+  background: color-mix(in oklch, var(--ds-brand-500) 18%, transparent);
+}
+
+.ctaPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  padding-block: var(--ds-space-2);
+  padding-inline: var(--ds-space-3);
+  background: var(--ds-brand-500);
+  color: var(--ds-canvas);
+  text-decoration: none;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  border-radius: var(--ds-radius-sm);
+  transition: background 160ms var(--ds-ease-out-quart);
+}
+
+.ctaPrimary:hover {
+  background: var(--ds-brand-600);
+}
+
+/* ── Footer ────────────────────────────────────────────────────────────── */
+
+.foot {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
+  padding-block: var(--ds-space-2);
+  border-block-start: 1px solid var(--ds-border-subtle);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .currencyCard,
+  .accountRow,
+  .closedRow {
+    animation: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .accountLink {
+    grid-template-columns: auto 1fr auto;
+  }
+  .accountChevron {
+    display: none;
+  }
+}

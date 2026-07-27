@@ -22,6 +22,9 @@ export default async function SettlementPage() {
   const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');
 
+  // فقط OWNER و MANAGER صرافی به این صفحه دسترسی دارند
+  if (!['OWNER', 'MANAGER'].includes(membership.staffRole)) redirect('/exchange/dashboard');
+
   // limit=500: settlement ماهانه است — 500 دوره ≈ ۴۰ سال، در عمل هرگز truncate نمی‌شود
   const initialRows = await getMyExchangeSettlements(membership.exchange.id, { limit: 500 });
 

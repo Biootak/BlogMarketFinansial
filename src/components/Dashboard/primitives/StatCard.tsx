@@ -4,13 +4,13 @@ import CountUp from '@/components/Dashboard/DashboardPage/CountUp';
 import { cn } from '@/lib/utils';
 import { ArrowDownRight, ArrowUpRight, Info, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
-import { type ReactNode, useEffect, useState } from 'react';
+import React, { type ReactNode, useEffect, useState } from 'react';
 
 export interface StatCardProps {
   label: string;
-  value: number;
+  value: number | string;
   delta?: { value: number; trend: 'up' | 'down' };
-  icon?: LucideIcon;
+  icon?: LucideIcon | ReactNode;
   href?: string;
   info?: string;
   format?: 'persian' | 'latin' | 'compact' | 'percent';
@@ -22,8 +22,6 @@ export interface StatCardProps {
 
 /**
  * Format a numeric value using the requested locale + notation.
- * `compact` uses fa-IR short notation (e.g. 12.3K / 12.3 هزار).
- * `percent` treats the value as a percentage (12.5 -> 12.5%).
  */
 const formatValue = (value: number, format: NonNullable<StatCardProps['format']>): string => {
   switch (format) {
@@ -43,7 +41,6 @@ const formatValue = (value: number, format: NonNullable<StatCardProps['format']>
 
 /**
  * Whether the requested format can be driven by the CountUp component
- * (it only supports locale + decimals — not compact/percent).
  */
 const isCountUpCompatible = (
   format: NonNullable<StatCardProps['format']>,
@@ -53,7 +50,7 @@ export function StatCard({
   label,
   value,
   delta,
-  icon: Icon,
+  icon,
   href,
   info,
   format = 'persian',
@@ -70,6 +67,16 @@ export function StatCard({
     className,
   );
 
+  // Handle both LucideIcon component reference and ReactNode element
+  const renderIcon = () => {
+    if (!icon) return null;
+    if (React.isValidElement(icon)) {
+      return <div className="size-4 text-muted-foreground">{icon}</div>;
+    }
+    const Icon = icon as any;
+    return <Icon className="size-4 text-muted-foreground" aria-hidden="true" />;
+  };
+
   const content = (
     <>
       <div className="flex items-center justify-between gap-2">
@@ -77,7 +84,7 @@ export function StatCard({
           {label}
         </span>
         <div className="flex items-center gap-1">
-          {Icon && <Icon className="size-4 text-muted-foreground" aria-hidden="true" />}
+          {renderIcon()}
           {info && (
             <span title={info} aria-label={info} className="text-muted-foreground">
               <Info className="size-3.5" aria-hidden="true" />
@@ -91,6 +98,8 @@ export function StatCard({
       <div className="dash2-statcard__value text-3xl font-semibold tracking-tight tabular-nums text-foreground">
         {loading ? (
           <span className="inline-block h-9 w-24 rounded bg-[color:var(--ds-color-surface-2)] motion-safe:animate-pulse" />
+        ) : typeof value === 'string' ? (
+          value
         ) : mounted && isCountUpCompatible(format) ? (
           <CountUp value={value} duration={600} locale={format === 'latin' ? 'en-US' : 'fa-IR'} />
         ) : (

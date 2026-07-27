@@ -317,9 +317,17 @@ export async function executeFxTrade(
       }
 
       // Debit fromAccount
-      const fromUpdated = await tx.fintechAccount.update({
-        where: { id: fromAccount.id },
+      // race-condition fix: شرط balance >= amount در همان UPDATE چک می‌شود تا
+      // دو درخواست هم‌زمان نتوانند موجودی را منفی کنند (double-spend).
+      const debit = await tx.fintechAccount.updateMany({
+        where: { id: fromAccount.id, balance: { gte: BigInt(amountCents) } },
         data: { balance: { decrement: BigInt(amountCents) }, updatedAt: now },
+      });
+      if (debit.count === 0) {
+        throw new Error('INSUFFICIENT_BALANCE');
+      }
+      const fromUpdated = await tx.fintechAccount.findUniqueOrThrow({
+        where: { id: fromAccount.id },
         select: { balance: true },
       });
 
@@ -436,9 +444,15 @@ export async function executeFxTrade(
       };
     });
   } catch (err) {
+    if ((err as Error).message === 'INSUFFICIENT_BALANCE') {
+      return {
+        success: false,
+        error: { code: 'INSUFFICIENT_BALANCE', message: 'موجودی مبدأ کافی نیست' },
+      };
+    }
     return {
       success: false,
-      error: { code: 'TXN_FAILED', message: (err as Error).message ?? 'خطا در تبدیل ارز' },
+      error: { code: 'TXN_FAILED', message: (err as Error).message || 'خطا در تبدیل ارز' },
     };
   }
 

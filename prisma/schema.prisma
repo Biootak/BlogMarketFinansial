@@ -34,7 +34,6 @@ model User {
   exchangePartnerId   String?
   tokenVersion        Int                   @default(0)
   accounts            Account[]
-  activity            Activity[]
   activities          ActivityLog[]
   Beneficiary         Beneficiary[]
   BillingAddress      BillingAddress?
@@ -56,6 +55,8 @@ model User {
   CurrencyDeal        CurrencyDeal[]
   TransactionOtp      TransactionOtp[]
   Device              Device[]
+  ApiKeys             ApiKey[]
+  Webhooks            Webhook[]
 
   @@index([status])
   @@index([role, status])
@@ -401,18 +402,6 @@ model ActivityLog {
   @@index([userId, createdAt])
 }
 
-/// @deprecated — از ActivityLog استفاده کنید. این مدل فقط برای backward-compat نگه داشته شده.
-model Activity {
-  id        String   @id @default(cuid())
-  userId    String
-  action    String
-  details   String
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-
-  @@index([userId])
-}
-
 model CurrencyPattern {
   id        String   @id @default(cuid())
   type      String
@@ -722,7 +711,6 @@ model Customer {
   KycVerification KycVerification[]
   LedgerEntry     LedgerEntry[]
   Transaction     Transaction[]
-  Wallet          Wallet[]
 
   @@index([createdAt(sort: Desc)])
   @@index([exchangeId])
@@ -792,7 +780,6 @@ model Exchange {
   LedgerEntry          LedgerEntry[]
   Transaction          Transaction[]
   TransferProvider     TransferProvider[]
-  Wallet               Wallet[]
   ExchangeRateQuote    ExchangeRateQuote[]
   CurrencyDeal         CurrencyDeal[]
   Settlement           Settlement[]
@@ -835,11 +822,11 @@ model FintechAccount {
   frozenUntil DateTime?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime
-  Customer    Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  Exchange    Exchange      @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
-  LedgerEntry LedgerEntry[]
-  Transaction Transaction[]
-  Wallet      Wallet?
+  Customer     Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  Exchange     Exchange      @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  LedgerEntry  LedgerEntry[]
+  Transaction  Transaction[]
+  VirtualCards VirtualCard[]
 
   @@index([customerId])
   @@index([customerId, status])
@@ -1016,8 +1003,8 @@ model TwoFactorBackupCode {
 }
 
 model VirtualCard {
-  id        String         @id
-  walletId  String
+  id        String         @id @default(cuid())
+  accountId String
   userId    String
   label     String?
   last4     String
@@ -1029,31 +1016,40 @@ model VirtualCard {
   createdAt DateTime       @default(now())
   updatedAt DateTime
   User      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Account   FintechAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([walletId])
+  @@index([accountId])
 }
 
-/// A2-note (2026-07): Wallet یک thin projection روی FintechAccount است (accountId @unique).
-/// این مدل dead code نیست — VirtualCard.walletId به آن reference دارد.
-/// balance و locked در اینجا mirror ای از FintechAccount هستند و باید همگام باشند.
-/// برای کارهای جدید: از FintechAccount مستقیم استفاده کن؛ Wallet را فقط برای VirtualCard نگه دار.
-model Wallet {
-  id             String         @id
-  exchangeId     String
-  customerId     String
-  accountId      String         @unique
-  currency       String         @default("AFN")
-  balance        BigInt         @default(0)
-  locked         BigInt         @default(0)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime
-  FintechAccount FintechAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  Customer       Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  Exchange       Exchange       @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+model ApiKey {
+  id        String    @id @default(cuid())
+  name      String
+  key       String    @unique
+  secret    String
+  userId    String
+  isActive  Boolean   @default(true)
+  lastUsed  DateTime?
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+  User      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([customerId])
-  @@index([exchangeId])
+  @@index([userId])
+  @@index([key])
+}
+
+model Webhook {
+  id         String   @id @default(cuid())
+  url        String
+  events     String[]
+  isActive   Boolean  @default(true)
+  secret     String
+  userId     String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 enum Role {
@@ -1455,14 +1451,14 @@ model CurrencyDeal {
   fromCurrency   String      // USD، EUR، …
   /// کد ارز مقصد
   toCurrency     String      // AFN، IRR، AED، …
-  /// مبلغ پرداختی مشتری — #6 fix: Decimal(20,2) مناسب مبالغ ارزی است (نه ۶ رقم اعشار)
-  fromAmount     Decimal     @db.Decimal(20, 2)
+  /// مبلغ پرداختی مشتری — #6 fix: Decimal(20,6) برای دقت بهتر مبالغ ارزی
+  fromAmount     Decimal     @db.Decimal(20, 6)
   /// مبلغ دریافتی مشتری (محاسبه‌شده)
-  toAmount       Decimal     @db.Decimal(20, 2)
+  toAmount       Decimal     @db.Decimal(20, 6)
   /// نرخ اعمال‌شده در معامله — نرخ‌ها نیاز به دقت بیشتر دارند: Decimal(20,6)
   appliedRate    Decimal     @db.Decimal(20, 6)
   /// کارمزد صرافی
-  feeAmount      Decimal     @default(0) @db.Decimal(20, 2)
+  feeAmount      Decimal     @default(0) @db.Decimal(20, 6)
   /// نرخ مرجع بازار در زمان معامله (برای سابقه) — نرخ‌ها: Decimal(20,6)
   marketRateRef  Decimal?    @db.Decimal(20, 6)
   channel        DealChannel @default(ONLINE)

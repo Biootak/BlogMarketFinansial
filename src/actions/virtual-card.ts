@@ -106,8 +106,18 @@ export async function issueVirtualCard(raw: unknown): Promise<FintechActionResul
 
   const { label, currency } = parsed.data;
 
-  // sentinel walletId — بدون FK در VirtualCard
-  const walletId = getPlatformWalletSentinel(auth.user.id);
+  // پیدا کردن یا ساخت حساب فین‌تک برای این کارت
+  const account = await prisma.fintechAccount.findFirst({
+    where: { customerId: auth.user.id, currency: currency as any },
+    select: { id: true },
+  });
+
+  if (!account) {
+    return {
+      success: false,
+      error: { code: 'NO_ACCOUNT', message: `حساب ${currency} یافت نشد` },
+    };
+  }
 
   // حداکثر ۳ کارت فعال در یک زمان
   const activeCount = await prisma.virtualCard.count({
@@ -134,7 +144,7 @@ export async function issueVirtualCard(raw: unknown): Promise<FintechActionResul
   const card = await prisma.virtualCard.create({
     data: {
       id,
-      walletId,
+      accountId: account.id,
       userId: auth.user.id,
       label: label ?? null,
       last4,

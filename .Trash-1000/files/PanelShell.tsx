@@ -19,9 +19,8 @@
  *  pendingNode      — اگر set باشه محتوای اصلی مخفی و این نمایش داده میشه
  */
 
-import { logout } from '@/actions/auth-actions';
-import { ChevronLeft, LogOut, Menu, X } from 'lucide-react';
-import Image from 'next/image';
+import { ChevronLeft, Menu, X } from 'lucide-react';
+import { UserPanelCard } from './UserPanelCard';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { type ReactNode, useState } from 'react';
@@ -89,10 +88,6 @@ export default function PanelShell({
   const visibleItems = navItems.filter(
     (item) => !item.roles || !userRole || item.roles.includes(userRole),
   );
-
-  const handleLogout = async () => {
-    await logout();
-  };
 
   return (
     <div className={s.root}>
@@ -166,34 +161,11 @@ export default function PanelShell({
         </nav>
 
         {/* User card */}
-        <div className={s.userCard}>
-          <div className={s.userAvatar}>
-            {userImage ? (
-              <Image
-                src={userImage}
-                alt={userName}
-                width={36}
-                height={36}
-                className={s.userAvatarImg}
-              />
-            ) : (
-              <span className={s.userAvatarFallback}>{userName.slice(0, 1).toUpperCase()}</span>
-            )}
-          </div>
-          <div className={s.userInfo}>
-            <span className={s.userName}>{userName}</span>
-            {userSub && <span className={s.userSub}>{userSub}</span>}
-          </div>
-          <button
-            type="button"
-            className={s.logoutBtn}
-            onClick={handleLogout}
-            title="خروج از حساب"
-            aria-label="خروج از حساب"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
+        <UserPanelCard
+          userName={userName}
+          userImage={userImage}
+          userSub={userSub}
+        />
       </aside>
 
       {/* ── Main ───────────────────────────────────────────────────────────── */}

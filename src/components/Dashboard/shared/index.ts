@@ -14,6 +14,3 @@ export {
   EmptyState as LegacyEmptyState,
   FilterSelect,
 } from './DashboardTableWrapper';
-
-export { default as PanelShell } from './PanelShell';
-export type { PanelShellProps, PanelNavItem } from './PanelShell';

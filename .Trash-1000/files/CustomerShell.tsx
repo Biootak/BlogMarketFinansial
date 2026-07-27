@@ -72,9 +72,11 @@ export default function CustomerShell({
       userSub={profile.phone}
       adminBackHref={isPlatformAdmin ? '/dashboard' : undefined}
       sidebarExtra={
-        <div className={s.kycBadge} data-kyc={profile.kycStatus}>
-          <ShieldCheck className="w-3.5 h-3.5" aria-hidden />
-          <span>KYC: {KYC_STATUS_FA[profile.kycStatus] ?? profile.kycStatus}</span>
+        <div className="px-4 py-2">
+          <div className={cn(s.kycBadge, "rounded-lg border border-neutral-200/60 bg-white/50 p-2")} data-kyc={profile.kycStatus}>
+            <ShieldCheck className="w-3.5 h-3.5" aria-hidden />
+            <span className="text-[11px] font-semibold">KYC: {KYC_STATUS_FA[profile.kycStatus] ?? profile.kycStatus}</span>
+          </div>
         </div>
       }
       topbarExtra={

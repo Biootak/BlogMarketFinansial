@@ -229,7 +229,7 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
       
       // به‌روزرسانی محلی لاگ‌های امنیتی
       const newLog: SecurityLog = {
-        id: Math.random().toString(),
+        id: crypto.randomUUID(),
         action: 'DEVICE_REVOKED',
         ip: devices.find(d => d.id === id)?.ip ?? null,
         createdAt: new Date().toISOString()
@@ -251,7 +251,7 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
       
       // به‌روزرسانی محلی لاگ‌های امنیتی
       const newLog: SecurityLog = {
-        id: Math.random().toString(),
+        id: crypto.randomUUID(),
         action: 'DEVICE_TRUSTED',
         ip: devices.find(d => d.id === id)?.ip ?? null,
         createdAt: new Date().toISOString()
@@ -281,7 +281,7 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
       setRevokeAllConfirm(false);
 
       const newLog: SecurityLog = {
-        id: Math.random().toString(),
+        id: crypto.randomUUID(),
         action: 'ALL_OTHER_DEVICES_REVOKED',
         ip: activeSorted[0]?.ip ?? null,
         createdAt: new Date().toISOString()

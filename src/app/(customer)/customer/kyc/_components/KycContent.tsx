@@ -1,9 +1,43 @@
 'use client';
 
+/**
+ * KycContent — «گیت اعتماد» (Trust Gate)
+ * ----------------------------------------------------------------------------
+ *  - Trust Hero:   status card بزرگ با rail رنگی + ۳ progress cell
+ *  - Level Funnel: سه سطح به‌صورت progress rail (LEVEL_1 → 2 → 3) با نشانگر جاری
+ *  - Submit Form:  فرم در یک کارت با فیلدهای استاندارد
+ *  - History:      دفتر مدارک ارسال‌شده با rail عمودی
+ */
+
 import { submitKycDocument } from '@/actions/customer-portal';
 import type { CustomerKycRecord, CustomerProfile } from '@/actions/customer-portal';
-import { EmptyState, Section } from '@/components/Dashboard/primitives';
-import { AlertTriangle, CheckCircle2, Clock, FileText, ShieldCheck, Upload } from 'lucide-react';
+import {
+  DOC_TYPE_LABEL,
+  KYC_LEVEL_LABEL,
+  KYC_STATUS_CSSKEY,
+  STATUS_LABEL,
+  faDate,
+  faDateTime,
+  faNum,
+} from '@/app/(customer)/customer/_lib/customer-formatters';
+import {
+  EmptyHint,
+  KycStatusIcon,
+  LiveDot,
+  SectionHeader,
+  StatusPill,
+  StatusRail,
+} from '@/app/(customer)/customer/_lib/customer-ui';
+import {
+  AlertTriangle,
+  CheckCircle2,
+  CircleDot,
+  FileText,
+  IdCard,
+  ScanFace,
+  ShieldCheck,
+  Upload,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import s from './KycContent.module.css';
@@ -13,40 +47,11 @@ interface Props {
   records: CustomerKycRecord[];
 }
 
-const KYC_LEVEL_LABEL: Record<string, string> = {
-  NONE: 'بدون تأیید',
-  LEVEL_1: 'سطح ۱ — مدرک هویتی',
-  LEVEL_2: 'سطح ۲ — تأیید چهره',
-  LEVEL_3: 'سطح ۳ — کامل',
-};
-
-const KYC_STATUS_LABEL: Record<string, string> = {
-  NOT_STARTED: 'شروع نشده',
-  PENDING: 'در انتظار بررسی',
-  APPROVED: 'تأیید شده',
-  REJECTED: 'رد شده',
-  EXPIRED: 'منقضی',
-};
-
-const DOC_TYPE_OPTIONS = [
+const DOC_TYPE_OPTIONS: Array<{ value: string; label: string }> = [
   { value: 'NATIONAL_ID', label: 'کارت ملی' },
   { value: 'PASSPORT', label: 'پاسپورت' },
   { value: 'RESIDENCE_PERMIT', label: 'اجازه اقامت' },
 ];
-
-function StatusIcon({ status }: { status: string }) {
-  switch (status) {
-    case 'APPROVED':
-      return <CheckCircle2 className="w-5 h-5" aria-hidden />;
-    case 'PENDING':
-      return <Clock className="w-5 h-5" aria-hidden />;
-    case 'REJECTED':
-    case 'EXPIRED':
-      return <AlertTriangle className="w-5 h-5" aria-hidden />;
-    default:
-      return <ShieldCheck className="w-5 h-5" aria-hidden />;
-  }
-}
 
 export default function KycContent({ profile, records }: Props) {
   const router = useRouter();
@@ -62,6 +67,10 @@ export default function KycContent({ profile, records }: Props) {
     profile.kycStatus !== 'APPROVED' &&
     profile.kycStatus !== 'PENDING' &&
     (profile.status === 'PROSPECT' || profile.status === 'ACTIVE');
+
+  const kycKey = KYC_STATUS_CSSKEY[profile.kycStatus] ?? 'warning';
+  const currentNum =
+    profile.kycLevel === 'NONE' ? 0 : Number(profile.kycLevel.replace('LEVEL_', ''));
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -92,191 +101,273 @@ export default function KycContent({ profile, records }: Props) {
   }
 
   return (
-    <div className={s.root}>
-      {/* Current KYC status */}
-      <div className={s.statusCard} data-status={profile.kycStatus}>
-        <div className={s.statusIcon} data-status={profile.kycStatus}>
-          <StatusIcon status={profile.kycStatus} />
-        </div>
-        <div className={s.statusBody}>
-          <span className={s.statusTitle}>
-            وضعیت احراز هویت: {KYC_STATUS_LABEL[profile.kycStatus] ?? profile.kycStatus}
-          </span>
-          <span className={s.statusLevel}>
-            سطح تأیید: {KYC_LEVEL_LABEL[profile.kycLevel] ?? profile.kycLevel}
-          </span>
-          {profile.kycStatus === 'REJECTED' && (
-            <span className={s.statusHint}>
-              درخواست شما رد شد. مدارک را دوباره ارسال کنید یا با پشتیبانی تماس بگیرید.
-            </span>
-          )}
-          {profile.kycStatus === 'APPROVED' && profile.exchange.requireKyc && (
-            <span className={s.statusHint} data-variant="success">
-              حساب شما تأیید شده است — می‌توانید از همه امکانات استفاده کنید.
-            </span>
-          )}
-        </div>
-      </div>
+    <div className={s.root} dir="rtl">
+      {/* ── Trust Hero ──────────────────────────────────────────────── */}
+      <section className={s.hero} data-tone={kycKey} aria-label="وضعیت احراز هویت">
+        <StatusRail variant={kycKey} />
+        <div className={s.heroInner}>
+          <div className={s.heroTop}>
+            <div className={s.heroIcon} aria-hidden>
+              <ShieldCheck size={16} />
+            </div>
+            <div className={s.heroHead}>
+              <span className={s.heroEyebrow}>
+                <LiveDot size={4} tone={kycKey === 'approved' ? 'success' : kycKey === 'danger' ? 'danger' : 'warning'} />
+                گیت اعتماد
+              </span>
+              <h2 className={s.heroTitle}>
+                {STATUS_LABEL[profile.kycStatus] ?? profile.kycStatus}
+              </h2>
+              <span className={s.heroSub}>
+                {KYC_LEVEL_LABEL[profile.kycLevel] ?? profile.kycLevel}
+              </span>
+            </div>
+            <div className={s.heroProgress} aria-label={`پیشرفت: ${currentNum} از ۳`}>
+              <span className={s.heroProgressValue}>{faNum(currentNum)}</span>
+              <span className={s.heroProgressSlash}>/</span>
+              <span className={s.heroProgressMax}>۳</span>
+            </div>
+          </div>
 
-      {/* Steps */}
-      <Section title="مراحل احراز هویت">
-        <div className={s.steps}>
+          <div className={s.heroCells}>
+            <div className={s.heroCell} data-tone={profile.kycStatus === 'NOT_STARTED' ? 'danger' : 'success'}>
+              <span className={s.heroCellLabel}>مدرک هویتی</span>
+              <span className={s.heroCellValue}>
+                {profile.kycStatus === 'NOT_STARTED' ? 'ارسال نشده' : 'ارسال شده'}
+              </span>
+            </div>
+            <div className={s.heroCell} data-tone={currentNum >= 2 ? 'success' : 'neutral'}>
+              <span className={s.heroCellLabel}>تأیید چهره</span>
+              <span className={s.heroCellValue}>
+                {currentNum >= 2 ? 'تکمیل' : 'در انتظار'}
+              </span>
+            </div>
+            <div className={s.heroCell} data-tone={currentNum >= 3 ? 'success' : 'neutral'}>
+              <span className={s.heroCellLabel}>انطباق نهایی</span>
+              <span className={s.heroCellValue}>
+                {currentNum >= 3 ? 'تأیید شد' : 'در انتظار'}
+              </span>
+            </div>
+          </div>
+
+          {profile.kycStatus === 'REJECTED' && (
+            <div className={s.heroNote} data-tone="danger">
+              <AlertTriangle size={11} aria-hidden />
+              درخواست قبلی رد شد — مدارک جدید ارسال کنید یا با پشتیبانی تماس بگیرید.
+            </div>
+          )}
+          {profile.kycStatus === 'APPROVED' && (
+            <div className={s.heroNote} data-tone="success">
+              <CheckCircle2 size={11} aria-hidden />
+              حساب شما تأیید شد — همهٔ امکانات فعال است.
+            </div>
+          )}
+          {profile.kycStatus === 'PENDING' && (
+            <div className={s.heroNote} data-tone="warning">
+              <LiveDot size={4} tone="warning" />
+              مدارک شما در صف بررسی است — معمولاً کمتر از ۲۴ ساعت.
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── Level Funnel ────────────────────────────────────────────── */}
+      <section className={s.section}>
+        <SectionHeader icon={ScanFace} title="مسیر احراز هویت" sub="۳ مرحلهٔ متوالی" />
+        <ol className={s.funnel}>
           {(['LEVEL_1', 'LEVEL_2', 'LEVEL_3'] as const).map((level, idx) => {
             const levelNum = idx + 1;
-            const currentNum =
-              profile.kycLevel === 'NONE' ? 0 : Number(profile.kycLevel.replace('LEVEL_', ''));
             const isDone = currentNum >= levelNum;
             const isCurrent = currentNum === levelNum - 1 && profile.kycStatus !== 'APPROVED';
+            const icon = idx === 0 ? IdCard : idx === 1 ? ScanFace : ShieldCheck;
+            const Icon = icon;
             return (
-              <div key={level} className={s.step} data-done={isDone} data-current={isCurrent}>
-                <div className={s.stepNum} aria-hidden>
-                  {isDone ? <CheckCircle2 className="w-4 h-4" /> : levelNum}
+              <li
+                key={level}
+                className={s.funnelStep}
+                data-done={isDone}
+                data-current={isCurrent}
+                style={{ animationDelay: `${idx * 60}ms` }}
+              >
+                <span className={s.funnelDot} aria-hidden>
+                  {isDone ? <CheckCircle2 size={11} /> : isCurrent ? <LiveDot size={6} tone="warning" /> : <Icon size={11} />}
+                </span>
+                <div className={s.funnelMain}>
+                  <span className={s.funnelTitle}>{KYC_LEVEL_LABEL[level]}</span>
+                  <span className={s.funnelDesc}>
+                    {level === 'LEVEL_1' && 'کارت ملی، پاسپورت یا اجازه اقامت'}
+                    {level === 'LEVEL_2' && 'سلفی در کنار مدرک شناسایی'}
+                    {level === 'LEVEL_3' && 'بررسی نهایی توسط تیم انطباق'}
+                  </span>
                 </div>
-                <div className={s.stepBody}>
-                  <span className={s.stepTitle}>{KYC_LEVEL_LABEL[level]}</span>
-                  {level === 'LEVEL_1' && (
-                    <span className={s.stepDesc}>ارسال کپی کارت ملی، پاسپورت یا اجازه اقامت</span>
-                  )}
-                  {level === 'LEVEL_2' && (
-                    <span className={s.stepDesc}>تأیید چهره با سلفی در کنار مدرک</span>
-                  )}
-                  {level === 'LEVEL_3' && (
-                    <span className={s.stepDesc}>بررسی نهایی توسط تیم انطباق</span>
-                  )}
-                </div>
-              </div>
+                <span className={s.funnelState} data-done={isDone} data-current={isCurrent}>
+                  {isDone ? 'تکمیل' : isCurrent ? 'جاری' : 'بعدی'}
+                </span>
+              </li>
             );
           })}
-        </div>
-      </Section>
+        </ol>
+      </section>
 
-      {/* Submit form */}
+      {/* ── Submit Form ────────────────────────────────────────────── */}
       {canSubmit && !success && (
-        <Section title="ارسال مدرک جدید">
+        <section className={s.section}>
+          <SectionHeader icon={Upload} title="ارسال مدرک جدید" sub="یک مرحلهٔ جدید به مسیر اضافه کنید" />
           <form onSubmit={handleSubmit} className={s.form} noValidate>
-            <div className={s.formRow}>
-              <label htmlFor="docType" className={s.label}>
-                نوع مدرک
-              </label>
-              <select
-                id="docType"
-                className={s.select}
-                value={docType}
-                onChange={(e) => setDocType(e.target.value)}
-                disabled={isPending}
-              >
-                {DOC_TYPE_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <div className={s.formGrid}>
+              <div className={s.formField}>
+                <label htmlFor="docType" className={s.formLabel}>
+                  نوع مدرک
+                </label>
+                <div className={s.selectWrap}>
+                  <select
+                    id="docType"
+                    className={s.formControl}
+                    value={docType}
+                    onChange={(e) => setDocType(e.target.value)}
+                    disabled={isPending}
+                  >
+                    {DOC_TYPE_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                  <span className={s.selectChevron} aria-hidden>
+                    ▾
+                  </span>
+                </div>
+              </div>
 
-            <div className={s.formRow}>
-              <label htmlFor="docNumber" className={s.label}>
-                شماره مدرک
-              </label>
-              <input
-                id="docNumber"
-                type="text"
-                className={s.input}
-                value={docNumber}
-                onChange={(e) => setDocNumber(e.target.value)}
-                placeholder="مثال: ۰۰۱۲۳۴۵۶۷۸"
-                disabled={isPending}
-                autoComplete="off"
-                maxLength={30}
-                required
-              />
-            </div>
+              <div className={s.formField}>
+                <label htmlFor="docNumber" className={s.formLabel}>
+                  شماره مدرک
+                </label>
+                <input
+                  id="docNumber"
+                  type="text"
+                  className={s.formControl}
+                  value={docNumber}
+                  onChange={(e) => setDocNumber(e.target.value)}
+                  placeholder="مثال: ۰۰۱۲۳۴۵۶۷۸"
+                  disabled={isPending}
+                  autoComplete="off"
+                  maxLength={30}
+                  required
+                  dir="ltr"
+                />
+              </div>
 
-            <div className={s.formRow}>
-              <label htmlFor="fileUrl" className={s.label}>
-                آدرس فایل مدرک
-              </label>
-              <input
-                id="fileUrl"
-                type="url"
-                className={s.input}
-                value={fileUrl}
-                onChange={(e) => setFileUrl(e.target.value)}
-                placeholder="https://..."
-                disabled={isPending}
-                autoComplete="off"
-                required
-              />
-              <span className={s.hint}>فایل را ابتدا آپلود کنید و آدرس آن را وارد کنید</span>
+              <div className={s.formField} data-span="full">
+                <label htmlFor="fileUrl" className={s.formLabel}>
+                  آدرس فایل مدرک (HTTPS)
+                </label>
+                <input
+                  id="fileUrl"
+                  type="url"
+                  className={s.formControl}
+                  value={fileUrl}
+                  onChange={(e) => setFileUrl(e.target.value)}
+                  placeholder="https://..."
+                  disabled={isPending}
+                  autoComplete="off"
+                  required
+                  dir="ltr"
+                />
+                <span className={s.formHint}>
+                  فایل را در سرویس مورد اعتماد آپلود کنید و آدرس HTTPS آن را اینجا وارد کنید
+                </span>
+              </div>
             </div>
 
             {error && (
               <div className={s.errorBox} role="alert">
-                <AlertTriangle className="w-4 h-4 flex-shrink-0" aria-hidden />
+                <AlertTriangle size={12} aria-hidden />
                 {error}
               </div>
             )}
 
-            <button type="submit" className={s.submitBtn} disabled={isPending}>
-              <Upload className="w-4 h-4" aria-hidden />
-              {isPending ? 'در حال ارسال...' : 'ارسال مدارک'}
-            </button>
+            <div className={s.formFoot}>
+              <button type="submit" className={s.submitBtn} disabled={isPending}>
+                <Upload size={11} aria-hidden />
+                {isPending ? 'در حال ارسال...' : 'ارسال مدارک'}
+              </button>
+            </div>
           </form>
-        </Section>
+        </section>
       )}
 
       {success && (
         <div className={s.successBox} role="status">
-          <CheckCircle2 className="w-5 h-5" aria-hidden />
+          <CheckCircle2 size={12} aria-hidden />
           مدارک با موفقیت ارسال شد و در صف بررسی قرار گرفت.
         </div>
       )}
 
-      {/* History */}
-      <Section title="سابقه درخواست‌ها">
+      {/* ── History ─────────────────────────────────────────────────── */}
+      <section className={s.section}>
+        <SectionHeader
+          icon={FileText}
+          title="سابقهٔ مدارک"
+          sub={`${faNum(records.length)} مدرک ثبت‌شده`}
+        />
         {records.length === 0 ? (
-          <EmptyState
+          <EmptyHint
             icon={FileText}
             title="سابقه‌ای وجود ندارد"
             description="تا به حال هیچ مدرکی ارسال نشده است"
           />
         ) : (
-          <div className={s.historyList}>
-            {records.map((rec) => (
-              <div key={rec.id} className={s.historyRow} data-status={rec.status}>
-                <div className={s.historyIcon} data-status={rec.status} aria-hidden>
-                  <StatusIcon status={rec.status} />
-                </div>
-                <div className={s.historyBody}>
-                  <span className={s.historyTitle}>
-                    {KYC_LEVEL_LABEL[rec.level]} — {rec.docType}
+          <ol className={s.historyList}>
+            {records.map((rec, i) => {
+              const statusKey = KYC_STATUS_CSSKEY[rec.status] ?? 'warning';
+              return (
+                <li
+                  key={rec.id}
+                  className={s.historyRow}
+                  data-status={rec.status}
+                  style={{ animationDelay: `${Math.min(i, 10) * 30}ms` }}
+                >
+                  <StatusRail variant={statusKey} />
+                  <span className={s.historyIcon} aria-hidden>
+                    <KycStatusIcon status={rec.status} />
                   </span>
-                  {rec.docNumber && <span className={s.historyMeta}>شماره: {rec.docNumber}</span>}
-                  {rec.rejectReason && (
-                    <span className={s.historyReject}>دلیل رد: {rec.rejectReason}</span>
-                  )}
-                  {rec.expiresAt && (
-                    <span className={s.historyMeta}>
-                      انقضا: {new Intl.DateTimeFormat('fa-IR').format(rec.expiresAt)}
+                  <div className={s.historyMain}>
+                    <div className={s.historyTopRow}>
+                      <span className={s.historyDocType}>
+                        {DOC_TYPE_LABEL[rec.docType] ?? rec.docType}
+                      </span>
+                      <span className={s.historyLevel}>
+                        {KYC_LEVEL_LABEL[rec.level] ?? rec.level}
+                      </span>
+                    </div>
+                    {rec.docNumber && (
+                      <span className={s.historyDocNumber} dir="ltr">
+                        شماره: {rec.docNumber}
+                      </span>
+                    )}
+                    {rec.rejectReason && (
+                      <span className={s.historyReject}>دلیل رد: {rec.rejectReason}</span>
+                    )}
+                    {rec.expiresAt && (
+                      <span className={s.historyMeta}>انقضا: {faDate(rec.expiresAt)}</span>
+                    )}
+                  </div>
+                  <div className={s.historyRight}>
+                    <StatusPill variant={statusKey}>
+                      <CircleDot size={8} aria-hidden style={{ marginInlineEnd: '0.3em' }} />
+                      {STATUS_LABEL[rec.status] ?? rec.status}
+                    </StatusPill>
+                    <span className={s.historyDate} title={faDateTime(rec.createdAt)}>
+                      {faDate(rec.createdAt)}
                     </span>
-                  )}
-                </div>
-                <div className={s.historyRight}>
-                  <span className={s.historyStatus} data-status={rec.status}>
-                    {KYC_STATUS_LABEL[rec.status] ?? rec.status}
-                  </span>
-                  <span className={s.historyDate}>
-                    {new Intl.DateTimeFormat('fa-IR', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    }).format(rec.createdAt)}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
         )}
-      </Section>
+      </section>
     </div>
   );
 }

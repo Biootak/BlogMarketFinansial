@@ -1,269 +1,211 @@
 'use client';
 
-import { updateCustomerProfile } from '@/actions/customer-portal';
+/**
+ * ProfileContent — «کارنامه» مشتری
+ * ----------------------------------------------------------------------------
+ *  - Identity Hero: نام + کد مشتری + status pill
+ *  - Personal info:  کلید-مقدار (نام، ایمیل، تلفن، ملیت، تاریخ تولد)
+ *  - Customer Level:  سطح KYC + سقف تراکنش
+ *  - Identity provider:  email/google/etc
+ *  - Risk:             یادداشت‌های risk
+ */
+
 import type { CustomerProfile } from '@/actions/customer-portal';
-import { Section } from '@/components/Dashboard/primitives';
-import { CheckCircle2, Edit2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import {
+  CUSTOMER_STATUS_CSSKEY,
+  KYC_LEVEL_LABEL,
+  KYC_STATUS_CSSKEY,
+  STATUS_LABEL,
+  faAmount,
+  faDate,
+  faNum,
+} from '@/app/(customer)/customer/_lib/customer-formatters';
+import {
+  KycStatusIcon,
+  LiveDot,
+  SectionHeader,
+  StatusPill,
+} from '@/app/(customer)/customer/_lib/customer-ui';
+import { Fingerprint, IdCard, Mail, Phone, ShieldCheck, User } from 'lucide-react';
 import s from './ProfileContent.module.css';
 
 interface Props {
   profile: CustomerProfile;
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  PROSPECT: 'در انتظار فعال‌سازی',
-  ACTIVE: 'فعال',
-  FROZEN: 'منجمد',
-  CLOSED: 'بسته',
-};
-
-const KYC_LEVEL_LABEL: Record<string, string> = {
-  NONE: 'بدون تأیید',
-  LEVEL_1: 'سطح ۱',
-  LEVEL_2: 'سطح ۲',
-  LEVEL_3: 'سطح ۳ — کامل',
-};
-
 export default function ProfileContent({ profile }: Props) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [editing, setEditing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
-
-  const [email, setEmail] = useState(profile.email ?? '');
-  const [city, setCity] = useState(profile.city ?? '');
-  const [address, setAddress] = useState(profile.address ?? '');
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setSaved(false);
-
-    startTransition(async () => {
-      const result = await updateCustomerProfile({
-        email: email.trim() || null,
-        city: city.trim() || null,
-        address: address.trim() || null,
-      });
-
-      if (!result.success) {
-        setError(result.error ?? 'خطایی رخ داده است');
-      } else {
-        setSaved(true);
-        setEditing(false);
-        router.refresh();
-      }
-    });
-  }
+  const kycKey = KYC_STATUS_CSSKEY[profile.kycStatus] ?? 'warning';
+  const statusKey = CUSTOMER_STATUS_CSSKEY[profile.status] ?? 'neutral';
+  const initials = profile.fullName
+    .split(' ')
+    .map((p) => p[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('');
 
   return (
-    <div className={s.root}>
-      {/* Identity info — read-only */}
-      <Section title="اطلاعات هویتی">
-        <div className={s.infoGrid}>
-          <div className={s.infoRow}>
-            <span className={s.infoLabel}>نام کامل</span>
-            <span className={s.infoValue}>{profile.fullName}</span>
-          </div>
-          {profile.fatherName && (
-            <div className={s.infoRow}>
-              <span className={s.infoLabel}>نام پدر</span>
-              <span className={s.infoValue}>{profile.fatherName}</span>
-            </div>
-          )}
-          <div className={s.infoRow}>
-            <span className={s.infoLabel}>شماره موبایل</span>
-            <span className={s.infoValue} dir="ltr">
-              {profile.phone}
+    <div className={s.root} dir="rtl">
+      {/* ── Identity Hero ──────────────────────────────────────────── */}
+      <section className={s.hero} aria-label="مشخصات هویتی">
+        <div className={s.heroAvatar} aria-hidden>
+          <span>{initials}</span>
+          <span className={s.heroAvatarRing} />
+        </div>
+        <div className={s.heroMain}>
+          <h1 className={s.heroName}>{profile.fullName}</h1>
+          <div className={s.heroMeta}>
+            <span className={s.heroMetaItem}>
+              <Fingerprint size={11} aria-hidden />
+              شناسه <strong dir="ltr">{profile.id.slice(0, 8)}</strong>
             </span>
+            <span className={s.heroSep} aria-hidden />
+            <span className={s.heroMetaItem}>
+              <LiveDot size={4} tone="brand" />
+              ثبت‌نام {faDate(profile.createdAt)}
+            </span>
+            <span className={s.heroSep} aria-hidden />
+            <StatusPill variant={statusKey}>
+              {STATUS_LABEL[profile.status] ?? profile.status}
+            </StatusPill>
           </div>
+        </div>
+      </section>
+
+      {/* ── Personal Info (KeyValue) ───────────────────────────────── */}
+      <section className={s.section}>
+        <SectionHeader icon={User} title="اطلاعات شخصی" />
+        <div className={s.kvList}>
+          {profile.fullName && (
+            <Row label="نام کامل" value={profile.fullName} icon={User} />
+          )}
+          {profile.fatherName && <Row label="نام پدر" value={profile.fatherName} icon={User} />}
+          {profile.email && (
+            <Row
+              label="ایمیل"
+              value={
+                <a href={`mailto:${profile.email}`} className={s.link}>
+                  {profile.email}
+                </a>
+              }
+              icon={Mail}
+            />
+          )}
+          {profile.phone && (
+            <Row
+              label="تلفن"
+              value={
+                <a href={`tel:${profile.phone}`} className={s.link} dir="ltr">
+                  {profile.phone}
+                </a>
+              }
+              icon={Phone}
+            />
+          )}
           {profile.nationalId && (
-            <div className={s.infoRow}>
-              <span className={s.infoLabel}>کد ملی / شناسه</span>
-              <span className={s.infoValue} dir="ltr">
-                {profile.nationalId}
-              </span>
-            </div>
+            <Row
+              label="کد ملی"
+              value={
+                <span dir="ltr" style={{ fontFeatureSettings: '"tnum" 1' }}>
+                  {profile.nationalId}
+                </span>
+              }
+              icon={IdCard}
+            />
           )}
           {profile.passportNo && (
-            <div className={s.infoRow}>
-              <span className={s.infoLabel}>شماره پاسپورت</span>
-              <span className={s.infoValue} dir="ltr">
-                {profile.passportNo}
-              </span>
-            </div>
+            <Row
+              label="شماره پاسپورت"
+              value={
+                <span dir="ltr" style={{ fontFeatureSettings: '"tnum" 1' }}>
+                  {profile.passportNo}
+                </span>
+              }
+              icon={IdCard}
+            />
           )}
-          <div className={s.infoRow}>
-            <span className={s.infoLabel}>وضعیت حساب</span>
-            <span className={s.statusBadge} data-status={profile.status}>
-              {STATUS_LABEL[profile.status] ?? profile.status}
-            </span>
-          </div>
-          <div className={s.infoRow}>
-            <span className={s.infoLabel}>سطح KYC</span>
-            <span className={s.infoValue}>
-              {KYC_LEVEL_LABEL[profile.kycLevel] ?? profile.kycLevel}
-            </span>
-          </div>
-          <div className={s.infoRow}>
-            <span className={s.infoLabel}>عضویت از</span>
-            <span className={s.infoValue}>
-              {new Intl.DateTimeFormat('fa-IR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              }).format(profile.createdAt)}
-            </span>
-          </div>
+          {profile.city && <Row label="شهر" value={profile.city} />}
+          {profile.address && <Row label="آدرس" value={profile.address} />}
         </div>
-        <p className={s.readOnlyNote}>اطلاعات هویتی برای تغییر نیازمند تماس با صرافی است</p>
-      </Section>
+      </section>
 
-      {/* Contact info — editable */}
-      <Section
-        title="اطلاعات تماس"
-        actions={
-          !editing ? (
-            <button type="button" className={s.editBtn} onClick={() => setEditing(true)}>
-              <Edit2 className="w-3.5 h-3.5" aria-hidden />
-              ویرایش
-            </button>
-          ) : undefined
-        }
-      >
-        {editing ? (
-          <form onSubmit={handleSubmit} className={s.form} noValidate>
-            <div className={s.formRow}>
-              <label htmlFor="email" className={s.label}>
-                ایمیل
-              </label>
-              <input
-                id="email"
-                type="email"
-                className={s.input}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="example@email.com"
-                dir="ltr"
-                disabled={isPending}
-                autoComplete="email"
-                maxLength={120}
-              />
-            </div>
-            <div className={s.formRow}>
-              <label htmlFor="city" className={s.label}>
-                شهر
-              </label>
-              <input
-                id="city"
-                type="text"
-                className={s.input}
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="نام شهر"
-                disabled={isPending}
-                maxLength={80}
-              />
-            </div>
-            <div className={s.formRow}>
-              <label htmlFor="address" className={s.label}>
-                آدرس
-              </label>
-              <textarea
-                id="address"
-                className={`${s.input} ${s.textarea}`}
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="آدرس کامل..."
-                disabled={isPending}
-                rows={3}
-                maxLength={300}
-              />
-            </div>
-
-            {error && (
-              <p className={s.errorText} role="alert">
-                {error}
-              </p>
-            )}
-
-            <div className={s.formActions}>
-              <button
-                type="button"
-                className={s.cancelBtn}
-                onClick={() => {
-                  setEditing(false);
-                  setError(null);
-                }}
-                disabled={isPending}
-              >
-                انصراف
-              </button>
-              <button type="submit" className={s.saveBtn} disabled={isPending}>
-                {isPending ? 'در حال ذخیره...' : 'ذخیره'}
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className={s.infoGrid}>
-            {saved && (
-              <div className={s.savedBanner} role="status">
-                <CheckCircle2 className="w-4 h-4" aria-hidden />
-                تغییرات ذخیره شد
-              </div>
-            )}
-            <div className={s.infoRow}>
-              <span className={s.infoLabel}>ایمیل</span>
-              <span className={s.infoValue} dir="ltr">
-                {profile.email ?? '—'}
-              </span>
-            </div>
-            <div className={s.infoRow}>
-              <span className={s.infoLabel}>شهر</span>
-              <span className={s.infoValue}>{profile.city ?? '—'}</span>
-            </div>
-            <div className={s.infoRow}>
-              <span className={s.infoLabel}>آدرس</span>
-              <span className={s.infoValue}>{profile.address ?? '—'}</span>
+      {/* ── KYC Level ──────────────────────────────────────────────── */}
+      <section className={s.section}>
+        <SectionHeader icon={ShieldCheck} title="سطح احراز هویت" sub={KYC_LEVEL_LABEL[profile.kycLevel] ?? profile.kycLevel} />
+        <div className={s.kycGrid}>
+          <div className={s.kycCard} data-tone={kycKey}>
+            <span className={s.kycIcon} aria-hidden>
+              <KycStatusIcon status={profile.kycStatus} />
+            </span>
+            <div className={s.kycBody}>
+              <span className={s.kycLabel}>وضعیت تأیید</span>
+              <span className={s.kycValue}>{STATUS_LABEL[profile.kycStatus] ?? profile.kycStatus}</span>
             </div>
           </div>
-        )}
-      </Section>
-
-      {/* Exchange info */}
-      <Section title="صرافی">
-        <div className={s.infoGrid}>
-          <div className={s.infoRow}>
-            <span className={s.infoLabel}>نام صرافی</span>
-            <span className={s.infoValue}>{profile.exchange.name}</span>
+          <div className={s.kycCard}>
+            <span className={s.kycIcon} aria-hidden>
+              <ShieldCheck size={13} />
+            </span>
+            <div className={s.kycBody}>
+              <span className={s.kycLabel}>سطح</span>
+              <span className={s.kycValue}>{KYC_LEVEL_LABEL[profile.kycLevel] ?? profile.kycLevel}</span>
+            </div>
           </div>
-          {profile.exchange.city && (
-            <div className={s.infoRow}>
-              <span className={s.infoLabel}>شهر صرافی</span>
-              <span className={s.infoValue}>{profile.exchange.city}</span>
-            </div>
-          )}
-          {profile.exchange.phone && (
-            <div className={s.infoRow}>
-              <span className={s.infoLabel}>تلفن</span>
-              <span className={s.infoValue} dir="ltr">
-                {profile.exchange.phone}
-              </span>
-            </div>
-          )}
           {profile.personalLimitAf !== null && (
-            <div className={s.infoRow}>
-              <span className={s.infoLabel}>سقف روزانه</span>
-              <span className={s.infoValue}>
-                {new Intl.NumberFormat('fa-IR').format(profile.personalLimitAf)} AFN
+            <div className={s.kycCard}>
+              <span className={s.kycIcon} aria-hidden>
+                <span style={{ fontSize: 11, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>$</span>
               </span>
+              <div className={s.kycBody}>
+                <span className={s.kycLabel}>سقف تراکنش</span>
+                <span className={s.kycValue}>
+                  {faAmount(profile.personalLimitAf, 'AFN')}
+                </span>
+              </div>
+            </div>
+          )}
+          {profile.riskScore !== null && (
+            <div className={s.kycCard} data-tone={profile.riskScore > 70 ? 'danger' : profile.riskScore > 40 ? 'warning' : 'success'}>
+              <span className={s.kycIcon} aria-hidden>
+                <span style={{ fontSize: 11, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>!</span>
+              </span>
+              <div className={s.kycBody}>
+                <span className={s.kycLabel}>امتیاز ریسک</span>
+                <span className={s.kycValue}>{faNum(profile.riskScore)}</span>
+              </div>
             </div>
           )}
         </div>
-      </Section>
+      </section>
+    </div>
+  );
+}
+
+function Row({
+  label,
+  value,
+  icon: Icon,
+  mono,
+  dir,
+}: {
+  label: string;
+  value: React.ReactNode;
+  icon?: React.ComponentType<{ size?: number; 'aria-hidden'?: boolean }>;
+  mono?: boolean;
+  dir?: 'ltr' | 'rtl';
+}) {
+  return (
+    <div className={s.kvRow}>
+      <span className={s.kvLabel}>
+        {Icon && <Icon size={10} aria-hidden />}
+        {label}
+      </span>
+      <span
+        className={s.kvValue}
+        data-mono={mono ? 'true' : undefined}
+        dir={dir}
+      >
+        {value}
+      </span>
     </div>
   );
 }

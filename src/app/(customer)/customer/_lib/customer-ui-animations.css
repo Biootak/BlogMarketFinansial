@@ -1,0 +1,50 @@
+/* ============================================================================
+ * Customer UI Shared Animations — فایل CSS معمولی (غیر ماژول)
+ * ----------------------------------------------------------------------------
+ * این انیمیشن‌ها به‌صورت سراسری تعریف شده‌اند تا در استایل‌های inline
+ * در سراسر پورتال مشتری قابل استفاده باشند.
+ * ========================================================================== */
+
+@keyframes livePulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklch, currentColor 40%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in oklch, currentColor 0%, transparent);
+  }
+}
+
+@keyframes pulseStrong {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

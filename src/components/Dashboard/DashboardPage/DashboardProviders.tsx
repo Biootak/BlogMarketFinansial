@@ -11,19 +11,88 @@ import { Toaster } from '@/components/ui/toaster';
 import { DirectionProvider } from '@radix-ui/react-direction';
 import type { ReactNode } from 'react';
 
-type AllowedRole = 'USER' | 'AUTHOR' | 'SUPPORT' | 'ADMIN' | 'OWNER' | 'SUPERADMIN';
+/**
+ * Portal discriminant — identifies which product area the shell is rendering.
+ * Used by Header, KeyboardShortcuts and future portal-specific chrome to scope
+ * behaviour without duplicating the entire DashboardProviders tree.
+ *
+ * 'admin'    → /dashboard/*   (OWNER / SUPERADMIN / ADMIN / SUPPORT / AUTHOR / USER)
+ * 'customer' → /customer/*    (CUSTOMER / TEST_CUSTOMER / MERCHANT, + platform admins in read-only)
+ * 'exchange' → /exchange/*    (EXCHANGE staff, + platform admins in owner view)
+ */
+export type PortalType = 'admin' | 'customer' | 'exchange';
 
-const KNOWN_ROLES = new Set<string>(['USER', 'AUTHOR', 'SUPPORT', 'ADMIN', 'OWNER', 'SUPERADMIN']);
+export type AllowedRole =
+  | 'USER'
+  | 'AUTHOR'
+  | 'SUPPORT'
+  | 'ADMIN'
+  | 'OWNER'
+  | 'SUPERADMIN'
+  | 'CUSTOMER'
+  | 'TEST_CUSTOMER'
+  | 'MERCHANT'
+  | 'EXCHANGE';
+
+/**
+ * All roles that are valid for sidebar menu resolution.
+ * TEST_CUSTOMER is included — it gets the CUSTOMER menu (not USER).
+ */
+const KNOWN_ROLES = new Set<string>([
+  'USER',
+  'AUTHOR',
+  'SUPPORT',
+  'ADMIN',
+  'OWNER',
+  'SUPERADMIN',
+  'CUSTOMER',
+  'TEST_CUSTOMER',
+  'MERCHANT',
+  'EXCHANGE',
+]);
+
+/**
+ * Platform admins (OWNER/SUPERADMIN/ADMIN) entering a customer or exchange
+ * portal should see that portal's menu, not the admin menu.
+ * This map normalises their role to the correct portal's representative role.
+ */
+const PLATFORM_ADMINS = new Set(['OWNER', 'SUPERADMIN', 'ADMIN']);
+
+function resolvePortalRole(userRole: string, portal: PortalType): AllowedRole {
+  // In customer / exchange portals, platform admins get the portal's native menu
+  // so they don't see admin-only items (posts, users, KYC review, …) while
+  // browsing a customer's data in a support context.
+  if (portal === 'customer' && PLATFORM_ADMINS.has(userRole)) return 'CUSTOMER';
+  if (portal === 'exchange' && PLATFORM_ADMINS.has(userRole)) return 'EXCHANGE';
+  if (KNOWN_ROLES.has(userRole)) return userRole as AllowedRole;
+  // Unknown / future roles fall back to the most restrictive meaningful role
+  return 'USER';
+}
 
 interface DashboardProvidersProps {
-  // accepts any string from NextAuth session; narrows to AllowedRole internally
+  /** Raw role string from the NextAuth session — widened so callers need no cast. */
   userRole: string;
+  /**
+   * Which product portal this shell is rendering.
+   * Defaults to 'admin' so existing /dashboard usage is unchanged.
+   */
+  portal?: PortalType;
+  /**
+   * Exchange-only: staff role within the exchange (OWNER/MANAGER/STAFF/VIEWER).
+   * Controls which exchange menu items are visible.
+   */
+  staffRole?: string;
   children: ReactNode;
 }
 
-export function DashboardProviders({ userRole, children }: DashboardProvidersProps) {
-  // Roles added for exchange/fintech features fall back to USER in the dashboard sidebar
-  const sidebarRole: AllowedRole = KNOWN_ROLES.has(userRole) ? (userRole as AllowedRole) : 'USER';
+export function DashboardProviders({
+  userRole,
+  portal = 'admin',
+  staffRole,
+  children,
+}: DashboardProvidersProps) {
+  const sidebarRole = resolvePortalRole(userRole, portal);
+
   return (
     <DirectionProvider dir="rtl">
       <div
@@ -31,12 +100,14 @@ export function DashboardProviders({ userRole, children }: DashboardProvidersPro
         dir="rtl"
       >
         <SidebarInitializer />
-        <KeyboardShortcuts />
-        <Sidebar userRole={sidebarRole} />
+        {/* KeyboardShortcuts contains admin-scoped hotkeys (g d → /dashboard/posts, etc.)
+            and must only run in the admin portal to avoid navigation leaks. */}
+        {portal === 'admin' && <KeyboardShortcuts />}
+        <Sidebar userRole={sidebarRole} staffRole={staffRole} />
         <SidebarToggle />
         <BreadcrumbProvider>
           <div className="flex flex-col flex-1 overflow-hidden">
-            <Header />
+            <Header portal={portal} />
             <MainContent>{children}</MainContent>
           </div>
         </BreadcrumbProvider>

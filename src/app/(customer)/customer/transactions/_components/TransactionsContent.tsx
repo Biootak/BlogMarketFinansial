@@ -1,9 +1,46 @@
 'use client';
 
+/**
+ * TransactionsContent — «دفتر اجرا» (Execution Ledger)
+ * ----------------------------------------------------------------------------
+ *  - Filter strip: کاشی‌های نوع تراکنش + وضعیت (clickable)
+ *  - Summary: کارت خلاصه (تعداد، موفق، در انتظار، ناموفق)
+ *  - Timeline: لیست ledger با rail رنگی + amount + status pill
+ *  - Pagination: صفحه‌بندی (page > 1 و hasMore)
+ *  - Empty: صفر تراکنش
+ */
+
 import type { CustomerTransactionRow } from '@/actions/customer-portal';
-import { EmptyState, Section } from '@/components/Dashboard/primitives';
-import { CircleDollarSign } from 'lucide-react';
+import {
+  KIND_CSSKEY,
+  KIND_LABEL,
+  STATUS_LABEL,
+  TXN_KIND_FILTERS,
+  TXN_STATUS_FILTERS,
+  TXN_STATUS_CSSKEY,
+  faAmount,
+  faDateTime,
+  faNum,
+  relativeTime,
+} from '@/app/(customer)/customer/_lib/customer-formatters';
+import {
+  KindIcon,
+  SectionHeader,
+  StatusPill,
+  ViewAllLink,
+} from '@/app/(customer)/customer/_lib/customer-ui';
 import { useRouter } from 'next/navigation';
+import {
+  Activity,
+  AlertCircle,
+  ArrowDownLeft,
+  ArrowUpRight,
+  CheckCircle2,
+  Clock,
+  History,
+  Inbox,
+  Send,
+} from 'lucide-react';
 import s from './TransactionsContent.module.css';
 
 interface Props {
@@ -15,60 +52,6 @@ interface Props {
   filterStatus: string;
 }
 
-const KIND_LABEL: Record<string, string> = {
-  DEPOSIT: 'واریز',
-  WITHDRAWAL: 'برداشت',
-  TRANSFER: 'انتقال',
-  EXCHANGE: 'تبدیل ارز',
-  FEE: 'کارمزد',
-  SETTLEMENT: 'تسویه',
-  ADJUSTMENT: 'اصلاح',
-};
-
-const STATUS_LABEL: Record<string, string> = {
-  PENDING: 'در انتظار',
-  PROCESSING: 'پردازش',
-  COMPLETED: 'موفق',
-  FAILED: 'ناموفق',
-  REVERSED: 'برگشتی',
-  CANCELLED: 'لغو شده',
-};
-
-function isCredit(kind: string): boolean {
-  return kind === 'DEPOSIT' || kind === 'TRANSFER';
-}
-
-function formatDate(d: Date): string {
-  return new Intl.DateTimeFormat('fa-IR', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(d));
-}
-
-function formatAmount(amount: number, currency: string): string {
-  return `${new Intl.NumberFormat('fa-IR').format(amount)} ${currency}`;
-}
-
-const KIND_OPTIONS = [
-  { value: '', label: 'همه نوع‌ها' },
-  { value: 'DEPOSIT', label: 'واریز' },
-  { value: 'WITHDRAWAL', label: 'برداشت' },
-  { value: 'TRANSFER', label: 'انتقال' },
-  { value: 'EXCHANGE', label: 'تبدیل ارز' },
-  { value: 'FEE', label: 'کارمزد' },
-];
-
-const STATUS_OPTIONS = [
-  { value: '', label: 'همه وضعیت‌ها' },
-  { value: 'PENDING', label: 'در انتظار' },
-  { value: 'COMPLETED', label: 'موفق' },
-  { value: 'FAILED', label: 'ناموفق' },
-  { value: 'CANCELLED', label: 'لغو شده' },
-];
-
 export default function TransactionsContent({
   initialRows,
   total,
@@ -79,114 +62,246 @@ export default function TransactionsContent({
 }: Props) {
   const router = useRouter();
 
-  const buildUrl = (opts: { page?: number; kind?: string; status?: string }) => {
-    const params = new URLSearchParams();
-    const p = opts.page ?? page;
-    const k = opts.kind !== undefined ? opts.kind : filterKind;
-    const st = opts.status !== undefined ? opts.status : filterStatus;
-    if (p > 1) params.set('page', String(p));
-    if (k) params.set('kind', k);
-    if (st) params.set('status', st);
-    return `/customer/transactions${params.size ? `?${params}` : ''}`;
-  };
+  // Stats
+  const completed = initialRows.filter((r) => r.status === 'COMPLETED').length;
+  const pending = initialRows.filter((r) => r.status === 'PENDING' || r.status === 'PROCESSING').length;
+  const failed = initialRows.filter((r) => r.status === 'FAILED' || r.status === 'CANCELLED').length;
+  const sumAfn = initialRows
+    .filter((r) => r.currency === 'AFN')
+    .reduce((sum, r) => sum + r.amount, 0);
+
+  function setParam(key: 'kind' | 'status' | 'page', value: string) {
+    const sp = new URLSearchParams();
+    if (key !== 'kind' && filterKind) sp.set('kind', filterKind);
+    if (key !== 'status' && filterStatus) sp.set('status', filterStatus);
+    if (value) sp.set(key, value);
+    if (key !== 'page' && page > 1) sp.set('page', String(page));
+    router.push(`/customer/transactions?${sp.toString()}`);
+  }
 
   return (
-    <div className={s.root}>
-      {/* Filters */}
-      <div className={s.filters}>
-        <select
-          className={s.select}
-          value={filterKind}
-          aria-label="فیلتر نوع تراکنش"
-          onChange={(e) => router.push(buildUrl({ kind: e.target.value, page: 1 }))}
-        >
-          {KIND_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-
-        <select
-          className={s.select}
-          value={filterStatus}
-          aria-label="فیلتر وضعیت"
-          onChange={(e) => router.push(buildUrl({ status: e.target.value, page: 1 }))}
-        >
-          {STATUS_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-
-        <span className={s.totalBadge}>{new Intl.NumberFormat('fa-IR').format(total)} تراکنش</span>
-      </div>
-
-      {/* List */}
-      <Section>
-        {initialRows.length === 0 ? (
-          <EmptyState
-            icon={CircleDollarSign}
-            title="تراکنشی یافت نشد"
-            description="با فیلتر انتخابی تراکنشی وجود ندارد"
-          />
-        ) : (
-          <div className={s.txnList}>
-            {initialRows.map((txn) => (
-              <a key={txn.id} href={`/customer/transactions/${txn.id}`} className={s.txnRow}>
-                <div className={s.txnDot} data-credit={isCredit(txn.kind)} aria-hidden />
-                <div className={s.txnBody}>
-                  <div className={s.txnTop}>
-                    <span className={s.txnKind}>{KIND_LABEL[txn.kind] ?? txn.kind}</span>
-                    <span className={s.txnAmount} data-credit={isCredit(txn.kind)}>
-                      {isCredit(txn.kind) ? '+' : '−'}
-                      {formatAmount(txn.amount, txn.currency)}
-                    </span>
-                  </div>
-                  <div className={s.txnBottom}>
-                    <span className={s.txnDate}>{formatDate(txn.createdAt)}</span>
-                    {txn.destAmount && txn.destCurrency && (
-                      <span className={s.txnDest}>
-                        ← {formatAmount(txn.destAmount, txn.destCurrency)}
-                      </span>
-                    )}
-                    {txn.counterparty && <span className={s.txnNote}>{txn.counterparty}</span>}
-                    <span className={s.txnStatus} data-status={txn.status}>
-                      {STATUS_LABEL[txn.status] ?? txn.status}
-                    </span>
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
-        )}
-      </Section>
-
-      {/* Pagination */}
-      {total > 20 && (
-        <div className={s.pagination}>
-          <button
-            type="button"
-            className={s.pageBtn}
-            disabled={page <= 1}
-            onClick={() => router.push(buildUrl({ page: page - 1 }))}
-          >
-            صفحه قبل
-          </button>
-          <span className={s.pageInfo}>
-            صفحه {new Intl.NumberFormat('fa-IR').format(page)} از{' '}
-            {new Intl.NumberFormat('fa-IR').format(Math.ceil(total / 20))}
+    <div className={s.root} dir="rtl">
+      {/* ── Summary Strip ────────────────────────────────────────────── */}
+      <section className={s.summary} aria-label="خلاصه تراکنش‌ها">
+        <article className={s.summaryCard} data-tone="neutral">
+          <span className={s.summaryIcon} aria-hidden>
+            <History size={12} />
           </span>
-          <button
-            type="button"
-            className={s.pageBtn}
-            disabled={!hasMore}
-            onClick={() => router.push(buildUrl({ page: page + 1 }))}
-          >
-            صفحه بعد
-          </button>
+          <div className={s.summaryBody}>
+            <span className={s.summaryLabel}>تعداد کل</span>
+            <span className={s.summaryValue}>{faNum(total)}</span>
+            <span className={s.summarySub}>تراکنش ثبت شده</span>
+          </div>
+        </article>
+        <article className={s.summaryCard} data-tone="credit">
+          <span className={s.summaryIcon} aria-hidden>
+            <CheckCircle2 size={12} />
+          </span>
+          <div className={s.summaryBody}>
+            <span className={s.summaryLabel}>موفق</span>
+            <span className={s.summaryValue}>{faNum(completed)}</span>
+            <span className={s.summarySub}>در این صفحه</span>
+          </div>
+        </article>
+        <article className={s.summaryCard} data-tone="warning">
+          <span className={s.summaryIcon} aria-hidden>
+            <Clock size={12} />
+          </span>
+          <div className={s.summaryBody}>
+            <span className={s.summaryLabel}>در انتظار</span>
+            <span className={s.summaryValue}>{faNum(pending)}</span>
+            <span className={s.summarySub}>نیازمند اقدام</span>
+          </div>
+        </article>
+        <article className={s.summaryCard} data-tone="danger">
+          <span className={s.summaryIcon} aria-hidden>
+            <AlertCircle size={12} />
+          </span>
+          <div className={s.summaryBody}>
+            <span className={s.summaryLabel}>ناموفق</span>
+            <span className={s.summaryValue}>{faNum(failed)}</span>
+            <span className={s.summarySub}>لغو/خطا</span>
+          </div>
+        </article>
+      </section>
+
+      {/* ── Filter Strip ────────────────────────────────────────────── */}
+      <section className={s.filters} aria-label="فیلتر تراکنش‌ها">
+        <div className={s.filterGroup}>
+          <span className={s.filterGroupLabel}>نوع تراکنش</span>
+          <div className={s.filterChips}>
+            {TXN_KIND_FILTERS.map((opt) => {
+              const active = filterKind === opt.value || (opt.value === '' && !filterKind);
+              return (
+                <button
+                  key={opt.value || 'all'}
+                  type="button"
+                  className={s.chip}
+                  data-active={active}
+                  onClick={() => setParam('kind', opt.value)}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
+        <div className={s.filterGroup}>
+          <span className={s.filterGroupLabel}>وضعیت</span>
+          <div className={s.filterChips}>
+            {TXN_STATUS_FILTERS.map((opt) => {
+              const active = filterStatus === opt.value || (opt.value === '' && !filterStatus);
+              return (
+                <button
+                  key={opt.value || 'all'}
+                  type="button"
+                  className={s.chip}
+                  data-active={active}
+                  onClick={() => setParam('status', opt.value)}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Transactions List ───────────────────────────────────────── */}
+      <section className={s.section}>
+        <SectionHeader
+          icon={Activity}
+          title="دفتر اجرا"
+          sub={`صفحه ${faNum(page)} از ${faNum(Math.max(1, Math.ceil(total / 20)))}`}
+        />
+        {initialRows.length === 0 ? (
+          <div className={s.empty}>
+            <span className={s.emptyIcon} aria-hidden>
+              <Inbox size={20} />
+            </span>
+            <strong>تراکنشی یافت نشد</strong>
+            <p>
+              {filterKind || filterStatus
+                ? 'با فیلتر فعلی تراکنشی وجود ندارد. فیلترها را تغییر دهید.'
+                : 'اولین تراکنش شما پس از فعال‌سازی اینجا نمایش داده می‌شود.'}
+            </p>
+          </div>
+        ) : (
+          <ol className={s.list}>
+            {initialRows.map((txn, i) => {
+              const statusKey = TXN_STATUS_CSSKEY[txn.status] ?? 'neutral';
+              const kindKey = KIND_CSSKEY[txn.kind] ?? 'neutral';
+              const isCredit = kindKey === 'credit';
+              const isDebit = kindKey === 'debit';
+              return (
+                <li
+                  key={txn.id}
+                  className={s.row}
+                  data-status={statusKey}
+                  style={{ animationDelay: `${Math.min(i, 10) * 30}ms` }}
+                >
+                  <a
+                    href={`/customer/transactions/${txn.id}`}
+                    className={s.rowLink}
+                    aria-label={`${KIND_LABEL[txn.kind] ?? txn.kind} - ${faAmount(txn.amount, txn.currency)}`}
+                  >
+                    <span
+                      className={s.rowRail}
+                      data-status={statusKey}
+                      aria-hidden
+                    />
+                    <span className={s.rowIcon} aria-hidden>
+                      <KindIcon kind={txn.kind} size={13} />
+                    </span>
+                    <div className={s.rowMain}>
+                      <span className={s.rowKind}>{KIND_LABEL[txn.kind] ?? txn.kind}</span>
+                      <span className={s.rowMeta}>
+                        <span title={faDateTime(txn.createdAt)}>
+                          {relativeTime(txn.createdAt)}
+                        </span>
+                        {txn.counterparty && (
+                          <>
+                            <span className={s.rowDot} aria-hidden />
+                            <span className={s.rowCounter}>{txn.counterparty}</span>
+                          </>
+                        )}
+                        {txn.note && (
+                          <>
+                            <span className={s.rowDot} aria-hidden />
+                            <span className={s.rowNote}>{txn.note}</span>
+                          </>
+                        )}
+                      </span>
+                    </div>
+                    <div className={s.rowRight}>
+                      <span
+                        className={s.rowAmount}
+                        data-tone={isDebit ? 'debit' : isCredit ? 'credit' : 'neutral'}
+                      >
+                        {isCredit ? '+' : isDebit ? '−' : ''}
+                        {faNum(txn.amount)}
+                        <span className={s.rowCurrency}> {txn.currency}</span>
+                      </span>
+                      {txn.destAmount && txn.destCurrency && (
+                        <span className={s.rowDest}>
+                          → {faNum(txn.destAmount)} {txn.destCurrency}
+                        </span>
+                      )}
+                      <StatusPill variant={statusKey}>
+                        {STATUS_LABEL[txn.status] ?? txn.status}
+                      </StatusPill>
+                    </div>
+                  </a>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+      </section>
+
+      {/* ── Pagination ──────────────────────────────────────────────── */}
+      {(page > 1 || hasMore) && (
+        <nav className={s.pagination} aria-label="صفحه‌بندی">
+          {page > 1 ? (
+            <button
+              type="button"
+              className={s.pageBtn}
+              onClick={() => setParam('page', String(page - 1))}
+              aria-label="صفحه قبلی"
+            >
+              قبلی
+            </button>
+          ) : (
+            <span className={s.pageBtn} aria-disabled>
+              قبلی
+            </span>
+          )}
+          <span className={s.pageInfo}>
+            صفحه {faNum(page)}
+          </span>
+          {hasMore ? (
+            <button
+              type="button"
+              className={s.pageBtn}
+              onClick={() => setParam('page', String(page + 1))}
+              aria-label="صفحه بعدی"
+            >
+              بعدی
+            </button>
+          ) : (
+            <span className={s.pageBtn} aria-disabled>
+              بعدی
+            </span>
+          )}
+        </nav>
+      )}
+
+      {/* ── Footer (sum) ────────────────────────────────────────────── */}
+      {initialRows.length > 0 && sumAfn > 0 && (
+        <footer className={s.sumFoot}>
+          <span className={s.sumFootLabel}>مجموع مبالغ این صفحه (AFN):</span>
+          <span className={s.sumFootValue}>{faNum(Math.round(sumAfn * 100) / 100)} AFN</span>
+        </footer>
       )}
     </div>
   );

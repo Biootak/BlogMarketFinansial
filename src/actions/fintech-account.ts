@@ -370,31 +370,46 @@ export async function confirmWithdraw(
   // accountId and customerId are guaranteed non-null by the check above
   const accountId = txn.accountId;
   const customerId = txn.customerId;
-  await prisma.$transaction(async (tx) => {
-    const updated = await tx.fintechAccount.update({
-      where: { id: accountId },
-      data: { balance: { decrement: txn.amount }, updatedAt: now },
-      select: { balance: true },
+  try {
+    await prisma.$transaction(async (tx) => {
+      // race-condition fix: شرط balance >= amount در همان UPDATE چک می‌شود تا
+      // دو درخواست هم‌زمان نتوانند موجودی را منفی کنند (double-spend).
+      const debit = await tx.fintechAccount.updateMany({
+        where: { id: accountId, balance: { gte: txn.amount } },
+        data: { balance: { decrement: txn.amount }, updatedAt: now },
+      });
+      if (debit.count === 0) {
+        throw new Error('INSUFFICIENT_BALANCE');
+      }
+      const updated = await tx.fintechAccount.findUniqueOrThrow({
+        where: { id: accountId },
+        select: { balance: true },
+      });
+      await tx.ledgerEntry.create({
+        data: {
+          id: createId(),
+          exchangeId: txn.exchangeId,
+          accountId,
+          customerId,
+          txnId: txn.id,
+          direction: 'DEBIT',
+          amount: txn.amount,
+          currency: txn.currency,
+          runningBalance: updated.balance,
+          createdAt: now,
+        },
+      });
+      await tx.transaction.update({
+        where: { id: txn.id },
+        data: { status: 'COMPLETED', updatedAt: now },
+      });
     });
-    await tx.ledgerEntry.create({
-      data: {
-        id: createId(),
-        exchangeId: txn.exchangeId,
-        accountId,
-        customerId,
-        txnId: txn.id,
-        direction: 'DEBIT',
-        amount: txn.amount,
-        currency: txn.currency,
-        runningBalance: updated.balance,
-        createdAt: now,
-      },
-    });
-    await tx.transaction.update({
-      where: { id: txn.id },
-      data: { status: 'COMPLETED', updatedAt: now },
-    });
-  });
+  } catch (err) {
+    if ((err as Error).message === 'INSUFFICIENT_BALANCE') {
+      return { success: false, error: { code: 'INSUFFICIENT_BALANCE', message: 'موجودی کافی نیست' } };
+    }
+    throw err;
+  }
 
   // G6-fix: AuditLog برای تکمیل برداشت — C10 الزامی است
   await prisma.auditLog.create({

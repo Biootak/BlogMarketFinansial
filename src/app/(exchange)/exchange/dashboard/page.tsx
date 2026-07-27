@@ -10,6 +10,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import ExchangeRecentTransactions from './_components/ExchangeRecentTransactions';
+import ExchangeDashboardEnhancements from './_components/ExchangeDashboardEnhancements';
 
 export const metadata: Metadata = { title: 'داشبورد صرافی' };
 
@@ -48,7 +49,7 @@ export default async function ExchangeDashboardPage() {
         <StatCard
           label="کل مشتریان"
           value={stats.totalCustomers}
-          icon={Users}
+          icon={<Users className="size-4" />}
           href="/exchange/customers"
           delta={
             stats.todayNewCustomers > 0
@@ -62,7 +63,7 @@ export default async function ExchangeDashboardPage() {
         <StatCard
           label="تراکنش‌های امروز"
           value={stats.todayCount}
-          icon={TrendingUp}
+          icon={<TrendingUp className="size-4" />}
           href="/exchange/transactions"
           delta={todayDelta}
           info={`دیروز: ${new Intl.NumberFormat('fa-IR').format(stats.yesterdayCount)}`}
@@ -70,18 +71,20 @@ export default async function ExchangeDashboardPage() {
         <StatCard
           label="در انتظار تأیید"
           value={stats.pendingCount}
-          icon={Clock}
+          icon={<Clock className="size-4" />}
           href="/exchange/transactions"
           info="تراکنش‌های در انتظار پردازش"
         />
         <StatCard
           label={`حجم کل (${stats.statsCurrency})`}
           value={volumeAfn}
-          icon={Building2}
+          icon={<Building2 className="size-4" />}
           format="compact"
           info="مجموع تراکنش‌های تکمیل‌شده"
         />
       </StatGrid>
+
+      <ExchangeDashboardEnhancements stats={stats} />
 
       <Suspense
         fallback={

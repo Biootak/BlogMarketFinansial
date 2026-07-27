@@ -8,7 +8,7 @@
  * between default and search states without re-mounting the subtree.
  *
  *   ┌─ ≥640px (default) ────────────────────────────────────────────────────┐
- *   │ [≡] [داشبورد · chip]    [⌘K search field]    [🟢time][🔔][☾][A]      │
+ *   │ [≡] [عنوان · chip]    [⌘K search field]    [🟢time][🔔][☾][A]        │
  *   └───────────────────────────────────────────────────────────────────────┘
  *   ┌─ <640px (default) ────────────────────────────────────────────────────┐
  *   │ [≡] [عنوان صفحه]      [🔍][🔔][☾][A]                                │
@@ -32,6 +32,9 @@
  * The component owns NO business logic — it only reads from the existing
  * `useSidebarStore`, `useCurrentUser`, `useBreadcrumb`, and dispatches the
  * global `cmd-palette:open` event for the search field.
+ *
+ * portal prop — scopes eyebrow label, notification link, and admin-only
+ * dropdown items so each product area shows only what belongs to it.
  */
 
 import { logout } from '@/actions/auth-actions';
@@ -79,13 +82,51 @@ const getRoleBadge = (role?: string) => {
   switch (role) {
     case 'OWNER':
       return { label: 'مالک', color: 'from-rose-500 to-pink-600', tone: 'rose' };
+    case 'SUPERADMIN':
+      return { label: 'سوپرادمین', color: 'from-rose-500 to-pink-600', tone: 'rose' };
     case 'ADMIN':
       return { label: 'مدیر', color: 'from-violet-500 to-purple-600', tone: 'violet' };
     case 'AUTHOR':
       return { label: 'نویسنده', color: 'from-amber-500 to-orange-500', tone: 'amber' };
+    case 'SUPPORT':
+      return { label: 'پشتیبانی', color: 'from-sky-500 to-blue-600', tone: 'sky' };
+    case 'CUSTOMER':
+    case 'TEST_CUSTOMER':
+      return { label: 'مشتری', color: 'from-emerald-500 to-teal-600', tone: 'emerald' };
+    case 'MERCHANT':
+      return { label: 'پذیرنده', color: 'from-cyan-500 to-teal-500', tone: 'cyan' };
+    case 'EXCHANGE':
+      return { label: 'صرافی', color: 'from-indigo-500 to-blue-600', tone: 'indigo' };
     default:
       return { label: 'کاربر', color: 'from-slate-500 to-gray-600', tone: 'slate' };
   }
+};
+
+/** Per-portal eyebrow label shown next to the breadcrumb chip on desktop. */
+const PORTAL_EYEBROW: Record<'admin' | 'customer' | 'exchange', string> = {
+  admin: 'داشبورد',
+  customer: 'پورتال مشتری',
+  exchange: 'پنل صرافی',
+};
+
+/** Per-portal profile/settings/reports links in the user dropdown. */
+const PORTAL_PROFILE_HREF: Record<'admin' | 'customer' | 'exchange', string> = {
+  admin: '/dashboard/edit-profile',
+  customer: '/customer/profile',
+  exchange: '/exchange/profile',
+};
+
+const PORTAL_SETTINGS_HREF: Record<'admin' | 'customer' | 'exchange', string> = {
+  admin: '/dashboard/settings',
+  customer: '/customer/settings',
+  exchange: '/exchange/settings',
+};
+
+/** Notification "view all" link — scoped per portal. */
+const PORTAL_NOTIF_HREF: Record<'admin' | 'customer' | 'exchange', string> = {
+  admin: '/dashboard/notifications',
+  customer: '/customer/notifications',
+  exchange: '/exchange/dashboard',
 };
 
 /** Map NotificationRow.isRead → visual tone */
@@ -114,7 +155,16 @@ function formatTehran(d: Date) {
   return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  /**
+   * Portal discriminant — drives eyebrow text, notification links, and which
+   * admin-only dropdown items are shown. Defaults to 'admin' for backwards
+   * compatibility with any consumer that has not yet been updated.
+   */
+  portal?: 'admin' | 'customer' | 'exchange';
+}
+
+const Header: React.FC<HeaderProps> = ({ portal = 'admin' }) => {
   const user = useCurrentUser();
   const { isOpen, setIsOpen, isMobile } = useSidebarStore();
   const { items: breadcrumbItems } = useBreadcrumb();
@@ -158,9 +208,12 @@ const Header: React.FC = () => {
     return () => window.clearInterval(t);
   }, []);
 
-  // Quick search — mirrors the global ⌘K palette for keyboard parity.
+  // Quick search — only dispatches cmd-palette:open in the admin portal where
+  // CommandPalette is actually mounted (AtelierDeck). In customer/exchange
+  // portals, the search field is a no-op visual hint (no palette listener exists).
   const [query, setQuery] = useState('');
   const openCommandPalette = () => {
+    if (portal !== 'admin') return;
     window.dispatchEvent(new CustomEvent('cmd-palette:open'));
   };
 
@@ -251,7 +304,7 @@ const Header: React.FC = () => {
               `__mobile-title` element instead. */}
           <span className="dash-header__eyebrow" aria-hidden>
             <span className="dash-header__eyebrow-dot" />
-            <span className="dash-header__eyebrow-text">داشبورد</span>
+            <span className="dash-header__eyebrow-text">{PORTAL_EYEBROW[portal]}</span>
           </span>
 
           {/* Mobile page-context title (<640px). Sourced from the
@@ -286,7 +339,7 @@ const Header: React.FC = () => {
                   setIsSearching(false);
                 }
               }}
-              onFocus={openCommandPalette}
+              onFocus={portal === 'admin' ? openCommandPalette : undefined}
               className="dash-header__search-input"
               aria-label="جستجو در داشبورد"
             />
@@ -396,7 +449,7 @@ const Header: React.FC = () => {
                           }}
                         >
                           <Link
-                            href="/dashboard/notifications"
+                            href={PORTAL_NOTIF_HREF[portal]}
                             className="dash-header__notif group"
                           >
                             <span
@@ -426,7 +479,7 @@ const Header: React.FC = () => {
 
               <footer className="dash-header__popover-foot">
                 <Link
-                  href="/dashboard/notifications"
+                  href={PORTAL_NOTIF_HREF[portal]}
                   className="text-xs font-semibold text-violet-600 hover:text-violet-700 dark:text-violet-400 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60 px-1"
                 >
                   مشاهده همه اعلان‌ها
@@ -484,31 +537,41 @@ const Header: React.FC = () => {
                 حساب
               </DropdownMenuLabel>
               <DropdownMenuItem asChild>
-                <Link href="/dashboard/edit-profile" className="flex items-center gap-3 w-full">
+                <Link href={PORTAL_PROFILE_HREF[portal]} className="flex items-center gap-3 w-full">
                   <HiOutlineUserCircle className="w-4 h-4" aria-hidden />
                   <span>مشاهده پروفایل</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/dashboard/settings" className="flex items-center gap-3 w-full">
+                <Link
+                  href={PORTAL_SETTINGS_HREF[portal]}
+                  className="flex items-center gap-3 w-full"
+                >
                   <HiOutlineCog6Tooth className="w-4 h-4" aria-hidden />
                   <span>تنظیمات</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/dashboard/reports" className="flex items-center gap-3 w-full">
-                  <HiOutlineChartBarSquare className="w-4 h-4" aria-hidden />
-                  <span>گزارش‌ها</span>
-                </Link>
-              </DropdownMenuItem>
-              {(user?.role === 'ADMIN' || user?.role === 'OWNER') && (
+              {/* Reports link — only meaningful in admin portal */}
+              {portal === 'admin' && (
                 <DropdownMenuItem asChild>
-                  <Link href="/dashboard/users" className="flex items-center gap-3 w-full">
-                    <HiOutlineUsers className="w-4 h-4" aria-hidden />
-                    <span>مدیریت کاربران</span>
+                  <Link href="/dashboard/reports" className="flex items-center gap-3 w-full">
+                    <HiOutlineChartBarSquare className="w-4 h-4" aria-hidden />
+                    <span>گزارش‌ها</span>
                   </Link>
                 </DropdownMenuItem>
               )}
+              {/* Users management — admin portal only, for ADMIN/OWNER roles */}
+              {portal === 'admin' &&
+                (user?.role === 'ADMIN' ||
+                  user?.role === 'OWNER' ||
+                  user?.role === 'SUPERADMIN') && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/users" className="flex items-center gap-3 w-full">
+                      <HiOutlineUsers className="w-4 h-4" aria-hidden />
+                      <span>مدیریت کاربران</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onSelect={(event) => {

@@ -1,146 +1,166 @@
 'use client';
 
-import { logout } from '@/actions/auth-actions';
+/**
+ * SettingsContent — «اتاق تنظیمات»
+ * ----------------------------------------------------------------------------
+ *  - Security:    تغییر رمز، 2FA، logout
+ *  - Notifications:  کانال‌های اطلاع‌رسانی
+ *  - Privacy:     لاگ‌ها و فعالیت‌ها
+ *  - Danger Zone: حذف حساب (read-only)
+ */
+
 import type { CustomerProfile } from '@/actions/customer-portal';
-import { Section } from '@/components/Dashboard/primitives';
-import { Bell, Lock, LogOut, Shield, Smartphone } from 'lucide-react';
-import Link from 'next/link';
+import { SectionHeader } from '@/app/(customer)/customer/_lib/customer-ui';
+import {
+  Bell,
+  KeyRound,
+  Lock,
+  LogOut,
+  Mail,
+  MessageCircle,
+  Phone,
+  ShieldCheck,
+  Smartphone,
+  Trash2,
+  UserCog,
+} from 'lucide-react';
 import s from './SettingsContent.module.css';
 
 interface Props {
   profile: CustomerProfile;
 }
 
-interface SettingRowProps {
-  icon: typeof Lock;
-  title: string;
-  description: string;
-  action?: React.ReactNode;
-  danger?: boolean;
-}
-
-function SettingRow({ icon: Icon, title, description, action, danger = false }: SettingRowProps) {
+export default function SettingsContent({ profile }: Props) {
   return (
-    <div className={s.settingRow} data-danger={danger}>
-      <div className={s.settingIcon} data-danger={danger} aria-hidden>
-        <Icon className="w-4 h-4" />
-      </div>
-      <div className={s.settingBody}>
-        <span className={s.settingTitle}>{title}</span>
-        <span className={s.settingDesc}>{description}</span>
-      </div>
-      {action && <div className={s.settingAction}>{action}</div>}
+    <div className={s.root} dir="rtl">
+      {/* ── Security ────────────────────────────────────────────────── */}
+      <section className={s.section}>
+        <SectionHeader icon={Lock} title="امنیت" sub="رمز عبور و احراز هویت دو مرحله‌ای" />
+        <div className={s.list}>
+          <Item
+            icon={KeyRound}
+            title="تغییر رمز عبور"
+            description="رمز فعلی و رمز جدید را وارد کنید"
+            action="تغییر"
+            tone="brand"
+          />
+          <Item
+            icon={Smartphone}
+            title="احراز هویت دو مرحله‌ای"
+            description="با اپلیکیشن تأییدکننده یا پیامک"
+            action="فعال‌سازی"
+            tone="amber"
+          />
+          <Item
+            icon={ShieldCheck}
+            title="دستگاه‌های فعال"
+            description="مدیریت دستگاه‌های متصل به حساب"
+            action="مشاهده"
+            tone="brand"
+          />
+          <Item
+            icon={LogOut}
+            title="خروج از همه دستگاه‌ها"
+            description="پایان تمام sessionهای فعال"
+            action="خروج"
+            tone="warning"
+          />
+        </div>
+      </section>
+
+      {/* ── Notification channels ────────────────────────────────────── */}
+      <section className={s.section}>
+        <SectionHeader icon={Bell} title="کانال‌های اطلاع‌رسانی" sub="از کجا می‌خواهید اعلان دریافت کنید" />
+        <div className={s.list}>
+          <Item
+            icon={Mail}
+            title="ایمیل"
+            description={profile.email ?? 'ایمیل ثبت نشده'}
+            action="ویرایش"
+            tone="brand"
+          />
+          <Item
+            icon={MessageCircle}
+            title="پیامک (SMS)"
+            description={profile.phone}
+            action="ویرایش"
+            tone="brand"
+          />
+          <Item
+            icon={Phone}
+            title="تماس صوتی"
+            description="فقط برای رویدادهای امنیتی"
+            action="غیرفعال"
+            tone="neutral"
+          />
+        </div>
+      </section>
+
+      {/* ── Privacy ──────────────────────────────────────────────────── */}
+      <section className={s.section}>
+        <SectionHeader icon={UserCog} title="حریم خصوصی" sub="مدیریت داده‌های شما" />
+        <div className={s.list}>
+          <Item
+            icon={UserCog}
+            title="اشتراک‌گذاری اطلاعات با صرافی"
+            description="صرافی می‌تواند الگوهای تراکنش شما را ببیند"
+            action="تغییر"
+            tone="brand"
+          />
+          <Item
+            icon={ShieldCheck}
+            title="گزارش فعالیت حساب"
+            description="دریافت گزارش ماهانه فعالیت‌ها"
+            action="فعال"
+            tone="amber"
+          />
+        </div>
+      </section>
+
+      {/* ── Danger Zone ─────────────────────────────────────────────── */}
+      <section className={s.danger}>
+        <SectionHeader icon={Trash2} title="منطقه خطر" sub="اقدامات برگشت‌ناپذیر" />
+        <div className={s.list}>
+          <Item
+            icon={Trash2}
+            title="حذف حساب"
+            description="حساب شما برای همیشه غیرفعال می‌شود. این عملیات قابل بازگشت نیست."
+            action="درخواست حذف"
+            tone="danger"
+          />
+        </div>
+      </section>
     </div>
   );
 }
 
-export default function SettingsContent({ profile }: Props) {
-  const handleLogout = async () => {
-    await logout();
-  };
+// ── Item helper ─────────────────────────────────────────────────────────── //
 
+function Item({
+  icon: Icon,
+  title,
+  description,
+  action,
+  tone,
+}: {
+  icon: React.ComponentType<{ size?: number; 'aria-hidden'?: boolean }>;
+  title: string;
+  description: string;
+  action: string;
+  tone: 'brand' | 'amber' | 'warning' | 'danger' | 'neutral';
+}) {
   return (
-    <div className={s.root}>
-      {/* Account status */}
-      <div className={s.statusBanner} data-status={profile.status}>
-        <Shield className="w-5 h-5 flex-shrink-0" aria-hidden />
-        <div className={s.statusText}>
-          <span className={s.statusTitle}>وضعیت حساب</span>
-          <span className={s.statusValue}>
-            {profile.status === 'ACTIVE'
-              ? 'حساب شما فعال است'
-              : profile.status === 'FROZEN'
-                ? 'حساب شما موقتاً منجمد شده — با پشتیبانی تماس بگیرید'
-                : profile.status === 'PROSPECT'
-                  ? 'حساب در انتظار فعال‌سازی'
-                  : 'حساب بسته شده است'}
-          </span>
-        </div>
+    <div className={s.item} data-tone={tone}>
+      <span className={s.itemIcon} aria-hidden>
+        <Icon size={12} />
+      </span>
+      <div className={s.itemMain}>
+        <span className={s.itemTitle}>{title}</span>
+        <span className={s.itemDesc}>{description}</span>
       </div>
-
-      {/* Security */}
-      <Section title="امنیت">
-        <div className={s.settingsList}>
-          <SettingRow
-            icon={Lock}
-            title="رمز عبور"
-            description="تغییر رمز عبور حساب کاربری"
-            action={
-              <Link href="/auth?tab=reset-password" className={s.actionLink}>
-                تغییر
-              </Link>
-            }
-          />
-          <SettingRow
-            icon={Smartphone}
-            title="احراز دو مرحله‌ای"
-            description="افزایش امنیت با تأیید دو مرحله‌ای"
-            action={
-              <Link href="/customer/settings/2fa" className={s.actionLink}>
-                پیکربندی
-              </Link>
-            }
-          />
-          <SettingRow
-            icon={Shield}
-            title="احراز هویت KYC"
-            description={
-              profile.kycStatus === 'APPROVED'
-                ? 'هویت شما تأیید شده است'
-                : 'برای تراکنش‌های بالا احراز هویت الزامی است'
-            }
-            action={
-              profile.kycStatus !== 'APPROVED' ? (
-                <Link href="/customer/kyc" className={s.actionLinkAccent}>
-                  شروع
-                </Link>
-              ) : undefined
-            }
-          />
-        </div>
-      </Section>
-
-      {/* Notifications */}
-      <Section title="اعلان‌ها">
-        <div className={s.settingsList}>
-          <SettingRow
-            icon={Bell}
-            title="اعلان‌های تراکنش"
-            description="دریافت پیام برای هر تراکنش انجام‌شده"
-            action={<span className={s.comingSoon}>به زودی</span>}
-          />
-        </div>
-      </Section>
-
-      {/* Account actions */}
-      <Section title="حساب کاربری">
-        <div className={s.settingsList}>
-          <SettingRow
-            icon={LogOut}
-            title="خروج از حساب"
-            description="خروج از پنل مشتری در این دستگاه"
-            action={
-              <button type="button" className={s.actionDanger} onClick={handleLogout}>
-                خروج
-              </button>
-            }
-            danger
-          />
-        </div>
-      </Section>
-
-      {/* Support */}
-      <div className={s.supportBlock}>
-        <p className={s.supportText}>
-          برای تغییر اطلاعات هویتی یا درخواست‌های خاص با صرافی{' '}
-          <strong>{profile.exchange.name}</strong> تماس بگیرید.
-        </p>
-        {profile.exchange.phone && (
-          <a href={`tel:${profile.exchange.phone}`} className={s.supportPhone} dir="ltr">
-            {profile.exchange.phone}
-          </a>
-        )}
-      </div>
+      <button type="button" className={s.itemAction} data-tone={tone}>
+        {action}
+      </button>
     </div>
   );
 }

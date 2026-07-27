@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 /* --------------------------------------------------------------------------
    Dashboard Sidebar — 2026 "Meridian" redesign
@@ -21,602 +21,52 @@
        overlay-click-close, route detection (incl. submenu roll-up),
        expandedItems persistence, keyboard shortcuts (1-9, S, R, P),
        logout → toast + redirect.
+
+   Split: menu definitions → sidebar-menu.ts | NavItem → NavItem.tsx
    -------------------------------------------------------------------------- */
 
 import { logout } from '@/actions/auth-actions';
 import Avatar from '@/components/Avatar/Avatar';
-import { NotificationBadge } from '@/components/Dashboard/DashboardPage/NotificationBadge';
 import Logo from '@/components/Logo/Logo';
 import { useToast } from '@/components/ui/use-toast';
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { cn } from '@/lib/utils';
 import { useSession } from 'next-auth/react';
-import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { HiOutlineArrowRightOnRectangle, HiOutlineXMark } from 'react-icons/hi2';
+import NavItem from './NavItem';
 import {
-  HiOutlineArrowRightOnRectangle,
-  HiOutlineArrowsRightLeft,
-  HiOutlineBanknotes,
-  HiOutlineBell,
-  HiOutlineBuildingStorefront,
-  HiOutlineChartBarSquare,
-  HiOutlineChevronDown,
-  HiOutlineClipboardDocumentCheck,
-  HiOutlineClipboardDocumentList,
-  HiOutlineCog6Tooth,
-  HiOutlineCreditCard,
-  HiOutlineCurrencyDollar,
-  HiOutlineDevicePhoneMobile,
-  HiOutlineDocumentText,
-  HiOutlineExclamationTriangle,
-  HiOutlineHome,
-  HiOutlineInboxArrowDown,
-  HiOutlineKey,
-  HiOutlineMegaphone,
-  HiOutlineShieldCheck,
-  HiOutlineSquares2X2,
-  HiOutlineTag,
-  HiOutlineUserCircle,
-  HiOutlineUserGroup,
-  HiOutlineUsers,
-  HiOutlineCreditCard as HiOutlineVirtualCard,
-  HiOutlineWallet,
-  HiOutlineXMark,
-} from 'react-icons/hi2';
-
-const ICON_CLASS = 'w-[19px] h-[19px]';
-
-type UserRole = 'USER' | 'AUTHOR' | 'SUPPORT' | 'ADMIN' | 'OWNER' | 'SUPERADMIN';
-
-interface SubmenuItem {
-  href: string;
-  label: string;
-}
-
-interface MenuItem {
-  id: string;
-  href: string;
-  icon: React.ReactNode;
-  label: string;
-  title?: string;
-  shortcut?: string;
-  submenu?: SubmenuItem[];
-}
-
-interface NavSection {
-  id: string;
-  index: string;
-  label?: string;
-  items: MenuItem[];
-}
-
-const ROLE_LABEL: Record<UserRole, string> = {
-  OWNER: 'مالک',
-  SUPERADMIN: 'سوپرادمین',
-  ADMIN: 'مدیر',
-  SUPPORT: 'پشتیبانی',
-  AUTHOR: 'نویسنده',
-  USER: 'کاربر',
-};
-
-const ROLE_GLYPH: Record<UserRole, string> = {
-  OWNER: '◆',
-  SUPERADMIN: '◆',
-  ADMIN: '◇',
-  SUPPORT: '△',
-  AUTHOR: '○',
-  USER: '·',
-};
-
-/* Keyboard shortcuts — visible badge; handler binds to actual navigation. */
-const SHORTCUT_KEYS: Record<string, string> = {
-  dashboard: '1',
-  posts: '2',
-  users: '3',
-  categories: '4',
-  advertisements: '5',
-  serviceRequests: '6',
-  exchangeRates: '7',
-  settings: 'S',
-  reports: 'R',
-  profile: 'P',
-};
-
-function getMenu(role: UserRole): NavSection[] {
-  const dashboard: MenuItem = {
-    id: 'dashboard',
-    href: '/dashboard',
-    icon: <HiOutlineHome className={ICON_CLASS} />,
-    label: 'داشبورد',
-    title: 'داشبورد',
-    shortcut: SHORTCUT_KEYS.dashboard,
-  };
-
-  const posts: MenuItem = {
-    id: 'posts',
-    href: '/dashboard/posts',
-    icon: <HiOutlineDocumentText className={ICON_CLASS} />,
-    label: 'پست‌ها',
-    title: 'پست‌ها',
-    shortcut: SHORTCUT_KEYS.posts,
-  };
-
-  const categories: MenuItem = {
-    id: 'categories',
-    href: '/dashboard/categories',
-    icon: <HiOutlineSquares2X2 className={ICON_CLASS} />,
-    label: 'دسته‌بندی',
-    title: 'دسته‌بندی',
-    shortcut: SHORTCUT_KEYS.categories,
-  };
-
-  const users: MenuItem = {
-    id: 'users',
-    href: '/dashboard/users',
-    icon: <HiOutlineUsers className={ICON_CLASS} />,
-    label: 'کاربران',
-    title: 'کاربران',
-    shortcut: SHORTCUT_KEYS.users,
-  };
-
-  const advertisements: MenuItem = {
-    id: 'advertisements',
-    href: '/dashboard/advertisements',
-    icon: <HiOutlineMegaphone className={ICON_CLASS} />,
-    label: 'تبلیغات',
-    title: 'تبلیغات',
-    shortcut: SHORTCUT_KEYS.advertisements,
-  };
-
-  const serviceRequests: MenuItem = {
-    id: 'serviceRequests',
-    href: '/dashboard/service-requests',
-    icon: <HiOutlineClipboardDocumentList className={ICON_CLASS} />,
-    label: 'درخواست‌ها',
-    title: 'درخواست‌های خدمات',
-    shortcut: SHORTCUT_KEYS.serviceRequests,
-  };
-
-  const exchangeRates: MenuItem = {
-    id: 'exchangeRates',
-    href: '/dashboard/exchange-rates',
-    icon: <HiOutlineCurrencyDollar className={ICON_CLASS} />,
-    label: 'نرخ ارز',
-    title: 'نرخ ارز',
-    shortcut: SHORTCUT_KEYS.exchangeRates,
-  };
-
-  const exchanges: MenuItem = {
-    id: 'exchanges',
-    href: '/dashboard/exchanges',
-    icon: <HiOutlineBuildingStorefront className={ICON_CLASS} />,
-    label: 'صراف‌ها',
-    title: 'مدیریت صراف‌ها',
-  };
-
-  const exchangeStaff: MenuItem = {
-    id: 'exchangeStaff',
-    href: '/dashboard/exchange-staff',
-    icon: <HiOutlineUserGroup className={ICON_CLASS} />,
-    label: 'کارکنان صراف‌ها',
-    title: 'مدیریت کارکنان صراف‌ها',
-  };
-
-  const exchangeQuotes: MenuItem = {
-    id: 'exchangeQuotes',
-    href: '/dashboard/exchange-quotes',
-    icon: <HiOutlineTag className={ICON_CLASS} />,
-    label: 'تایید قیمت‌ها',
-    title: 'تایید قیمت‌گذاری صراف‌ها',
-  };
-
-  const transferProviders: MenuItem = {
-    id: 'transferProviders',
-    href: '/dashboard/transfer-providers',
-    icon: <HiOutlineArrowsRightLeft className={ICON_CLASS} />,
-    label: 'جدول مقایسه',
-    title: 'صرافی‌های جدول مقایسه نرخ',
-  };
-
-  const settings: MenuItem = {
-    id: 'settings',
-    href: '/dashboard/settings',
-    icon: <HiOutlineCog6Tooth className={ICON_CLASS} />,
-    label: 'تنظیمات',
-    title: 'تنظیمات سیستم',
-    shortcut: SHORTCUT_KEYS.settings,
-  };
-
-  const reports: MenuItem = {
-    id: 'reports',
-    href: '/dashboard/reports',
-    icon: <HiOutlineChartBarSquare className={ICON_CLASS} />,
-    label: 'گزارش‌ها',
-    title: 'گزارش‌ها',
-    shortcut: SHORTCUT_KEYS.reports,
-  };
-
-  const profile: MenuItem = {
-    id: 'profile',
-    href: '/dashboard/edit-profile',
-    icon: <HiOutlineUserCircle className={ICON_CLASS} />,
-    label: 'پروفایل',
-    title: 'پروفایل من',
-    shortcut: SHORTCUT_KEYS.profile,
-  };
-
-  // 2026-07-07: «درخواست‌های من» برای همه نقش‌ها (USER و بالاتر)
-  const myRequests: MenuItem = {
-    id: 'myRequests',
-    href: '/dashboard/my-requests',
-    icon: <HiOutlineInboxArrowDown className={ICON_CLASS} />,
-    label: 'درخواست‌های من',
-    title: 'درخواست‌های من',
-  };
-
-  // ─── Fintech menu items ───────────────────────────────────────────────────
-  const wallet: MenuItem = {
-    id: 'wallet',
-    href: '/dashboard/wallet',
-    icon: <HiOutlineWallet className={ICON_CLASS} />,
-    label: 'کیف پول',
-    title: 'کیف پول',
-  };
-
-  const kyc: MenuItem = {
-    id: 'kyc',
-    href: '/dashboard/kyc',
-    icon: <HiOutlineShieldCheck className={ICON_CLASS} />,
-    label: 'احراز هویت',
-    title: 'احراز هویت (KYC)',
-  };
-
-  const myDeals: MenuItem = {
-    id: 'myDeals',
-    href: '/dashboard/my-deals',
-    icon: <HiOutlineArrowsRightLeft className={ICON_CLASS} />,
-    label: 'معاملات من',
-    title: 'معاملات ارزی من',
-  };
-
-  const transfer: MenuItem = {
-    id: 'transfer',
-    href: '/dashboard/transfer',
-    icon: <HiOutlineBanknotes className={ICON_CLASS} />,
-    label: 'انتقال وجه',
-    title: 'انتقال وجه P2P',
-  };
-
-  const virtualCards: MenuItem = {
-    id: 'virtualCards',
-    href: '/dashboard/virtual-cards',
-    icon: <HiOutlineVirtualCard className={ICON_CLASS} />,
-    label: 'کارت مجازی',
-    title: 'کارت‌های مجازی پیش‌پرداخت',
-  };
-
-  const devices: MenuItem = {
-    id: 'devices',
-    href: '/dashboard/devices',
-    icon: <HiOutlineDevicePhoneMobile className={ICON_CLASS} />,
-    label: 'دستگاه‌های من',
-    title: 'مدیریت دستگاه‌های متصل',
-  };
-
-  // ─── Admin fintech items ──────────────────────────────────────────────────
-  const kycReview: MenuItem = {
-    id: 'kycReview',
-    href: '/dashboard/kyc-review',
-    icon: <HiOutlineClipboardDocumentCheck className={ICON_CLASS} />,
-    label: 'بررسی KYC',
-    title: 'بررسی درخواست‌های احراز هویت',
-  };
-
-  const auditLog: MenuItem = {
-    id: 'auditLog',
-    href: '/dashboard/audit-log',
-    icon: <HiOutlineClipboardDocumentList className={ICON_CLASS} />,
-    label: 'گزارش ممیزی',
-    title: 'گزارش ممیزی سیستم',
-  };
-
-  const fraudReview: MenuItem = {
-    id: 'fraudReview',
-    href: '/dashboard/fraud-review',
-    icon: <HiOutlineExclamationTriangle className={ICON_CLASS} />,
-    label: 'بررسی تقلب',
-    title: 'صف بررسی تقلب',
-  };
-
-  const settlements: MenuItem = {
-    id: 'settlements',
-    href: '/dashboard/settlements',
-    icon: <HiOutlineCreditCard className={ICON_CLASS} />,
-    label: 'تسویه‌حساب',
-    title: 'تسویه‌حساب صرافی‌ها',
-  };
-
-  const permissions: MenuItem = {
-    id: 'permissions',
-    href: '/dashboard/permissions',
-    icon: <HiOutlineKey className={ICON_CLASS} />,
-    label: 'مجوزها',
-    title: 'مدیریت مجوزهای سیستم',
-  };
-
-  const roles: MenuItem = {
-    id: 'roles',
-    href: '/dashboard/roles',
-    icon: <HiOutlineShieldCheck className={ICON_CLASS} />,
-    label: 'نقش‌ها',
-    title: 'مدیریت نقش‌ها و سطوح دسترسی',
-  };
-
-  const customers: MenuItem = {
-    id: 'customers',
-    href: '/dashboard/customers',
-    icon: <HiOutlineUserGroup className={ICON_CLASS} />,
-    label: 'مشتریان',
-    title: 'مدیریت مشتریان صرافی',
-  };
-
-  const notifications: MenuItem = {
-    id: 'notifications',
-    href: '/dashboard/notifications',
-    icon: <HiOutlineBell className={ICON_CLASS} />,
-    label: 'اعلان‌ها',
-    title: 'مرکز اعلان‌ها',
-  };
-
-  switch (role) {
-    case 'OWNER':
-    case 'SUPERADMIN':
-      return [
-        { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
-        { id: 'content', index: '۰۲', label: 'محتوا', items: [posts, categories] },
-        {
-          id: 'operations',
-          index: '۰۳',
-          label: 'عملیات',
-          items: [
-            exchanges,
-            exchangeStaff,
-            transferProviders,
-            exchangeRates,
-            exchangeQuotes,
-            advertisements,
-            serviceRequests,
-          ],
-        },
-        {
-          id: 'fintech',
-          index: '۰۴',
-          label: 'فین‌تک',
-          items: [customers, kycReview, fraudReview, settlements, auditLog],
-        },
-        {
-          id: 'admin',
-          index: '۰۵',
-          label: 'مدیریت',
-          items: [users, roles, permissions, reports, settings],
-        },
-        {
-          id: 'account',
-          index: '۰۶',
-          label: 'حساب',
-          items: [
-            wallet,
-            virtualCards,
-            kyc,
-            myDeals,
-            transfer,
-            devices,
-            notifications,
-            myRequests,
-            profile,
-          ],
-        },
-      ];
-    case 'ADMIN':
-      return [
-        { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
-        { id: 'content', index: '۰۲', label: 'محتوا', items: [posts, categories] },
-        {
-          id: 'operations',
-          index: '۰۳',
-          label: 'عملیات',
-          items: [
-            exchanges,
-            exchangeStaff,
-            transferProviders,
-            exchangeRates,
-            exchangeQuotes,
-            advertisements,
-            serviceRequests,
-          ],
-        },
-        {
-          id: 'fintech',
-          index: '۰۴',
-          label: 'فین‌تک',
-          items: [customers, kycReview, fraudReview, settlements, auditLog],
-        },
-        { id: 'admin', index: '۰۵', label: 'مدیریت', items: [users, roles, permissions] },
-        {
-          id: 'account',
-          index: '۰۶',
-          label: 'حساب',
-          items: [
-            wallet,
-            virtualCards,
-            kyc,
-            myDeals,
-            transfer,
-            devices,
-            notifications,
-            myRequests,
-            profile,
-          ],
-        },
-      ];
-    case 'SUPPORT':
-      return [
-        { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
-        {
-          id: 'operations',
-          index: '۰۲',
-          label: 'عملیات',
-          items: [serviceRequests, kycReview, fraudReview],
-        },
-        {
-          id: 'account',
-          index: '۰۳',
-          label: 'حساب',
-          items: [wallet, virtualCards, kyc, myDeals, transfer, devices, myRequests, profile],
-        },
-      ];
-    case 'AUTHOR':
-      return [
-        { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
-        { id: 'content', index: '۰۲', label: 'محتوا', items: [posts, categories] },
-        {
-          id: 'account',
-          index: '۰۵',
-          label: 'حساب',
-          items: [wallet, virtualCards, kyc, myDeals, transfer, devices, myRequests, profile],
-        },
-      ];
-    default:
-      // USER role — minimal panel
-      return [
-        { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
-        {
-          id: 'fintech',
-          index: '۰۲',
-          label: 'مالی',
-          items: [wallet, virtualCards, kyc, myDeals, transfer],
-        },
-        { id: 'account', index: '۰۳', label: 'حساب', items: [devices, myRequests, profile] },
-      ];
-  }
-}
-
-/* Persist the submenu initial state across mounts. */
-function defaultExpanded(role: UserRole): string[] {
-  if (role === 'USER') return [];
-  return ['exchangeRates'];
-}
-
-interface NavItemProps {
-  item: MenuItem;
-  index: number;
-  isOpen: boolean;
-  isActive: boolean;
-  expandedItems: string[];
-  setExpandedItems: React.Dispatch<React.SetStateAction<string[]>>;
-  onClick: () => void;
-}
-
-const NavItem: React.FC<NavItemProps> = ({
-  item,
-  index,
-  isOpen,
-  isActive,
-  expandedItems,
-  setExpandedItems,
-  onClick,
-}) => {
-  const pathname = usePathname();
-  const isExpanded = expandedItems.includes(item.id);
-
-  if (item.submenu) {
-    const isSubActive = item.submenu.some((s) => pathname === s.href);
-    return (
-      <li className="dash-side__row">
-        <button
-          type="button"
-          className={cn('dash-side__item', 'dash-side__item--parent')}
-          data-active={isSubActive || undefined}
-          data-expanded={isExpanded || undefined}
-          aria-expanded={isExpanded}
-          aria-controls={`dash-side-sub-${item.id}`}
-          onClick={() =>
-            setExpandedItems((p) =>
-              p.includes(item.id) ? p.filter((x) => x !== item.id) : [...p, item.id],
-            )
-          }
-        >
-          <span className="dash-side__diamond" aria-hidden />
-          <span className="dash-side__index" aria-hidden>
-            {toPersianDigits(index)}
-          </span>
-          <span className="dash-side__item-ico">{item.icon}</span>
-          <span className="dash-side__item-label">{item.label}</span>
-          {item.shortcut && isOpen && (
-            <kbd className="dash-side__item-kbd" aria-hidden>
-              {item.shortcut}
-            </kbd>
-          )}
-          <HiOutlineChevronDown className="dash-side__item-chev" aria-hidden />
-        </button>
-        <div
-          id={`dash-side-sub-${item.id}`}
-          className="dash-side__sub"
-          data-open={isExpanded || undefined}
-        >
-          <div className="dash-side__sub-inner">
-            {item.submenu.map((sub) => (
-              <Link
-                key={sub.href}
-                href={sub.href}
-                onClick={onClick}
-                className="dash-side__item dash-side__item--sub"
-                data-active={pathname === sub.href || undefined}
-                aria-current={pathname === sub.href ? 'page' : undefined}
-              >
-                <span className="dash-side__item-tick" aria-hidden />
-                <span className="dash-side__item-label">{sub.label}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </li>
-    );
-  }
-
-  return (
-    <li className="dash-side__row">
-      <Link
-        href={item.href}
-        onClick={onClick}
-        className="dash-side__item"
-        data-active={isActive || undefined}
-        aria-current={isActive ? 'page' : undefined}
-      >
-        <span className="dash-side__diamond" aria-hidden />
-        <span className="dash-side__index" aria-hidden>
-          {toPersianDigits(index)}
-        </span>
-        <span className="dash-side__item-ico">{item.icon}</span>
-        <span className="dash-side__item-label">{item.label}</span>
-        {item.id === 'notifications' && <NotificationBadge />}
-        {item.shortcut && isOpen && (
-          <kbd className="dash-side__item-kbd" aria-hidden>
-            {item.shortcut}
-          </kbd>
-        )}
-      </Link>
-    </li>
-  );
-};
+  type MenuItem,
+  type NavSection,
+  ROLE_GLYPH,
+  ROLE_LABEL,
+  type UserRole,
+  defaultExpanded,
+  getMenu,
+} from './sidebar-menu';
 
 interface SidebarProps {
   userRole: UserRole;
+  /**
+   * برای صرافی‌ها: نقش staff (OWNER/MANAGER/STAFF/VIEWER).
+   * برای فیلتر آیتم‌های منوی EXCHANGE.
+   * برای سایر نقش‌ها نادیده گرفته می‌شود.
+   */
+  staffRole?: string;
 }
 
-const Sidebar = ({ userRole }: SidebarProps) => {
+function extractMessage(r: unknown): string | undefined {
+  if (r && typeof r === 'object') {
+    const record = r as Record<string, unknown>;
+    if (typeof record.error === 'string') return record.error;
+    if (typeof record.message === 'string') return record.message;
+  }
+  return undefined;
+}
+
+const Sidebar = ({ userRole, staffRole }: SidebarProps) => {
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
@@ -627,7 +77,28 @@ const Sidebar = ({ userRole }: SidebarProps) => {
   const { data: session } = useSession();
   const userInfo = session?.user;
 
-  const menu = useMemo(() => getMenu(userRole), [userRole]);
+  // فیلتر آیتم‌ها بر اساس نقش staff (فقط برای EXCHANGE)
+  const filterByRole = useCallback(
+    (item: MenuItem): boolean => {
+      if (userRole !== 'EXCHANGE') return true;
+      if (!item.roles || item.roles.length === 0) return true;
+      if (!staffRole) return false;
+      return item.roles.includes(staffRole);
+    },
+    [userRole, staffRole],
+  );
+
+  const rawMenu = useMemo(() => getMenu(userRole), [userRole]);
+  const menu = useMemo<NavSection[]>(
+    () =>
+      rawMenu
+        .map((section) => ({
+          ...section,
+          items: section.items.filter(filterByRole),
+        }))
+        .filter((section) => section.items.length > 0),
+    [rawMenu, filterByRole],
+  );
 
   const isActiveRoute = useCallback(
     (href: string) => {
@@ -783,7 +254,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
                     <NavItem
                       key={it.id}
                       item={it}
-                      index={it._flatIndex}
+                      index={it._flatIndex ?? 0}
                       isOpen={isOpen}
                       isActive={it.id === activeItemId}
                       expandedItems={expandedItems}
@@ -829,7 +300,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
           >
             <span className="dash-side__diamond" aria-hidden />
             <span className="dash-side__item-ico">
-              <HiOutlineArrowRightOnRectangle className={ICON_CLASS} aria-hidden />
+              <HiOutlineArrowRightOnRectangle className="w-[19px] h-[19px]" aria-hidden />
             </span>
             {isOpen && <span className="dash-side__item-label">خروج</span>}
           </button>
@@ -849,32 +320,3 @@ const Sidebar = ({ userRole }: SidebarProps) => {
 };
 
 export default Sidebar;
-
-function extractMessage(r: unknown): string | undefined {
-  if (r && typeof r === 'object') {
-    const record = r as Record<string, unknown>;
-    if (typeof record.error === 'string') return record.error;
-    if (typeof record.message === 'string') return record.message;
-  }
-  return undefined;
-}
-
-/* Convert a 1-based index to Persian digits. */
-function toPersianDigits(n: number): string {
-  const map: Record<string, string> = {
-    '0': '۰',
-    '1': '۱',
-    '2': '۲',
-    '3': '۳',
-    '4': '۴',
-    '5': '۵',
-    '6': '۶',
-    '7': '۷',
-    '8': '۸',
-    '9': '۹',
-  };
-  return String(n)
-    .split('')
-    .map((c) => map[c] ?? c)
-    .join('');
-}

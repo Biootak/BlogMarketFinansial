@@ -384,42 +384,23 @@ export async function confirmTransfer(
   const customerId = txn.customerId;
 
   // Double-entry ledger + atomic balance update
-  await prisma.$transaction(async (tx) => {
-    const now = new Date();
+  try {
+    await prisma.$transaction(async (tx) => {
+      const now = new Date();
 
-    // DEBIT از حساب فرستنده — balance کم می‌شود
-    const updatedSender = await tx.fintechAccount.update({
-      where: { id: accountId },
-      data: { balance: { decrement: txn.amount }, updatedAt: now },
-      select: { balance: true },
-    });
-
-    await tx.ledgerEntry.create({
-      data: {
-        id: createId(),
-        exchangeId: txn.exchangeId,
-        accountId: accountId,
-        customerId: customerId,
-        txnId: txn.id,
-        direction: 'DEBIT',
-        amount: txn.amount,
-        currency: txn.currency,
-        runningBalance: updatedSender.balance,
-        createdAt: now,
-      },
-    });
-
-    // پیدا کردن حساب گیرنده
-    const recipientAccount = await tx.fintechAccount.findFirst({
-      where: { customerId: recipientCustomerId, currency: txn.currency, status: 'ACTIVE' },
-      select: { id: true },
-    });
-
-    if (recipientAccount) {
-      // CREDIT به حساب گیرنده — balance زیاد می‌شود
-      const updatedRecipient = await tx.fintechAccount.update({
-        where: { id: recipientAccount.id },
-        data: { balance: { increment: txn.amount }, updatedAt: now },
+      // DEBIT از حساب فرستنده — balance کم می‌شود
+      // race-condition fix: شرط balance >= amount در همان UPDATE چک می‌شود تا
+      // دو درخواست هم‌زمان (یا retry) نتوانند موجودی را منفی کنند (double-spend).
+      // updateMany چون Prisma روی .update() اجازه شرط‌های غیر-unique در where را نمی‌دهد.
+      const debit = await tx.fintechAccount.updateMany({
+        where: { id: accountId, balance: { gte: txn.amount } },
+        data: { balance: { decrement: txn.amount }, updatedAt: now },
+      });
+      if (debit.count === 0) {
+        throw new Error('INSUFFICIENT_BALANCE');
+      }
+      const updatedSender = await tx.fintechAccount.findUniqueOrThrow({
+        where: { id: accountId },
         select: { balance: true },
       });
 
@@ -427,24 +408,59 @@ export async function confirmTransfer(
         data: {
           id: createId(),
           exchangeId: txn.exchangeId,
-          accountId: recipientAccount.id,
-          customerId: recipientCustomerId,
+          accountId: accountId,
+          customerId: customerId,
           txnId: txn.id,
-          direction: 'CREDIT',
+          direction: 'DEBIT',
           amount: txn.amount,
           currency: txn.currency,
-          runningBalance: updatedRecipient.balance,
+          runningBalance: updatedSender.balance,
           createdAt: now,
         },
       });
-    }
 
-    // COMPLETED کردن تراکنش
-    await tx.transaction.update({
-      where: { id: txn.id },
-      data: { status: 'COMPLETED', updatedAt: now },
-    });
-  }); // end $transaction
+      // پیدا کردن حساب گیرنده
+      const recipientAccount = await tx.fintechAccount.findFirst({
+        where: { customerId: recipientCustomerId, currency: txn.currency, status: 'ACTIVE' },
+        select: { id: true },
+      });
+
+      if (recipientAccount) {
+        // CREDIT به حساب گیرنده — balance زیاد می‌شود
+        const updatedRecipient = await tx.fintechAccount.update({
+          where: { id: recipientAccount.id },
+          data: { balance: { increment: txn.amount }, updatedAt: now },
+          select: { balance: true },
+        });
+
+        await tx.ledgerEntry.create({
+          data: {
+            id: createId(),
+            exchangeId: txn.exchangeId,
+            accountId: recipientAccount.id,
+            customerId: recipientCustomerId,
+            txnId: txn.id,
+            direction: 'CREDIT',
+            amount: txn.amount,
+            currency: txn.currency,
+            runningBalance: updatedRecipient.balance,
+            createdAt: now,
+          },
+        });
+      }
+
+      // COMPLETED کردن تراکنش
+      await tx.transaction.update({
+        where: { id: txn.id },
+        data: { status: 'COMPLETED', updatedAt: now },
+      });
+    }); // end $transaction
+  } catch (err) {
+    if ((err as Error).message === 'INSUFFICIENT_BALANCE') {
+      return { success: false, error: { code: 'INSUFFICIENT_BALANCE', message: 'موجودی کافی نیست' } };
+    }
+    throw err;
+  }
 
   revalidateTag('wallet');
 

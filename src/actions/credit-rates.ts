@@ -61,6 +61,7 @@ export type CreditRateRow = {
   effectiveTo: string | null;
   source: string | null;
   sortOrder: number;
+  internalNote: string | null;
   createdAt: string;
   updatedAt: string;
   bank?: Pick<BankRow, 'id' | 'slug' | 'name' | 'displayName' | 'logoUrl'>;
@@ -198,6 +199,7 @@ function mapRate(
     effectiveTo: raw.effectiveTo?.toISOString() ?? null,
     source: raw.source,
     sortOrder: raw.sortOrder,
+    internalNote: (raw as any).internalNote ?? null,
     createdAt: raw.createdAt.toISOString(),
     updatedAt: raw.updatedAt.toISOString(),
     bank: raw.bank
@@ -384,7 +386,7 @@ export async function createBank(raw: unknown): Promise<FintechActionResult<Bank
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'دسترسی ندارید' } };
   }
   const ip = (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
-  const rl = await checkRateLimit(`admin-bank:${auth.user.id}`, 'admin');
+  const rl = await checkRateLimit(`admin-bank:${auth.user.id}`, 'api');
   if (!rl.success) {
     return { success: false, error: { code: 'RATE_LIMITED', message: 'تعداد درخواست‌ها زیاد است' } };
   }

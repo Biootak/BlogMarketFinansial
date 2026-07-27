@@ -306,7 +306,7 @@ export const getActivityLog = async (): Promise<ActionResult<Activity[]>> => {
   try {
     await checkReportAccess();
 
-    const activities = await db.activity.findMany({
+    const activities = await db.activityLog.findMany({
       orderBy: {
         createdAt: 'desc',
       },

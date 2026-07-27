@@ -60,7 +60,7 @@ const CARD_ROW = {
   expiresAt: new Date('2028-01-01'),
   createdAt: new Date('2026-01-01'),
   updatedAt: new Date('2026-01-01'),
-  walletId: 'virtual:user-1',
+  accountId: 'virtual:user-1',
   userId: 'user-1',
 };
 

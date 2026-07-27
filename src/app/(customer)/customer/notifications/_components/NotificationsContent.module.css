@@ -1,117 +1,242 @@
-/* NotificationsContent.module.css */
+/* ============================================================================
+ * NotificationsContent — «اینباکس هوشمند»
+ * ========================================================================== */
 
 .root {
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-4);
+  inline-size: 100%;
 }
+
+/* ── Toolbar ───────────────────────────────────────────────────────────── */
 
 .toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--ds-space-3);
-  padding: var(--ds-space-3) var(--ds-space-4);
-  border-radius: var(--at-radius, 10px);
-  border: 1px solid color-mix(in oklch, var(--at-accent) 25%, transparent);
-  background: var(--at-accent-soft);
+  padding-block: var(--ds-space-3);
+  padding-inline: var(--ds-space-4);
+  background: color-mix(in oklch, var(--ds-brand-500) 5%, var(--ds-surface));
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 30%, var(--ds-border-subtle));
+  border-radius: var(--ds-radius-md);
+  animation: cardEnter 320ms var(--ds-ease-out-quart) both;
 }
 
-.unreadBadge {
+.toolbarLeft {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-inline-size: 0;
+}
+
+.toolbarDot {
+  display: inline-block;
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: 50%;
+  background: var(--ds-brand-500);
+  flex-shrink: 0;
+  animation: livePulse 2000ms ease-in-out infinite;
+}
+
+.toolbarLabel {
   font-size: var(--ds-text-sm);
-  font-weight: 600;
-  color: var(--at-accent-fg, var(--at-accent));
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  font-variant-numeric: tabular-nums;
 }
 
 .markAllBtn {
   display: inline-flex;
   align-items: center;
-  gap: var(--ds-space-2);
-  padding: 0.375rem 0.875rem;
-  border: 1px solid color-mix(in oklch, var(--at-accent) 30%, transparent);
-  border-radius: 6px;
-  background: transparent;
-  color: var(--at-accent-fg, var(--at-accent));
-  font-size: var(--ds-text-xs);
-  font-weight: 700;
+  gap: var(--ds-space-1);
   font-family: inherit;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding-block: var(--ds-space-2);
+  padding-inline: var(--ds-space-3);
+  background: var(--ds-brand-500);
+  color: var(--ds-canvas);
+  border: 1px solid var(--ds-brand-500);
+  border-radius: var(--ds-radius-sm);
   cursor: pointer;
-  transition: background 100ms ease;
+  transition: background 140ms var(--ds-ease-out-quart);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .markAllBtn:hover:not(:disabled) {
-  background: color-mix(in oklch, var(--at-accent) 12%, transparent);
+  background: var(--ds-brand-600);
+}
+
+.markAllBtn:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 2px;
 }
 
 .markAllBtn:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
-.list {
+/* ── Groups ────────────────────────────────────────────────────────────── */
+
+.groups {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  border: 1px solid var(--at-line);
-  border-radius: var(--at-radius, 10px);
+  gap: var(--ds-space-4);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+  padding-block: var(--ds-space-4);
+  padding-inline: var(--ds-space-4);
+  animation: cardEnter 360ms var(--ds-ease-out-quart) both;
+}
+
+.groupHead {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding-block-end: var(--ds-space-1);
+  border-block-end: 1px solid var(--ds-border-subtle);
+}
+
+.groupLabel {
+  font-size: var(--ds-text-xs);
+  font-weight: 800;
+  color: var(--ds-text-primary);
+  letter-spacing: 0.02em;
+}
+
+.groupCount {
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: var(--ds-text-muted);
+  padding-block: 0.1em;
+  padding-inline: 0.5em;
+  border-radius: 999px;
+  background: var(--ds-surface-recessed);
+  border: 1px solid var(--ds-border-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── List ──────────────────────────────────────────────────────────────── */
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-surface);
   overflow: hidden;
 }
 
 .item {
-  display: flex;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: auto 1fr;
   align-items: flex-start;
   gap: var(--ds-space-3);
-  padding: var(--ds-space-4) var(--ds-space-4);
-  border-bottom: 1px solid var(--at-line);
-  background: var(--at-surface);
-  transition: background 80ms ease;
+  padding-block: var(--ds-space-3);
+  padding-inline: var(--ds-space-4);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  background: var(--ds-surface);
+  transition: background 140ms var(--ds-ease-out-quart);
+  animation: cardEnter 320ms var(--ds-ease-out-quart) both;
 }
 
 .item:last-child {
-  border-bottom: none;
+  border-block-end: none;
 }
 
-.item[data-read="false"] {
-  background: color-mix(in oklch, var(--at-accent) 3%, var(--at-surface));
+.item[data-read='false'] {
+  background: color-mix(in oklch, var(--ds-brand-500) 3%, var(--ds-surface));
 }
 
 .item:hover {
-  background: var(--at-surface-hover, oklch(97% 0.005 240));
+  background: color-mix(in oklch, var(--ds-brand-500) 6%, var(--ds-surface));
+}
+
+.rail {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 2px;
+  background: transparent;
+  transition: background 160ms var(--ds-ease-out-quart);
+}
+
+.item[data-read='false'] .rail {
+  background: var(--ds-brand-500);
 }
 
 .dot {
-  width: 8px;
-  height: 8px;
+  display: inline-block;
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
   border-radius: 50%;
-  background: var(--at-accent);
+  background: var(--ds-brand-500);
+  margin-block-start: 0.4em;
   flex-shrink: 0;
-  margin-block-start: 6px;
   opacity: 0;
+  transition: opacity 160ms var(--ds-ease-out-quart);
 }
 
-.dot[data-read="false"] {
+.item[data-read='false'] .dot {
   opacity: 1;
+  animation: livePulse 2200ms ease-in-out infinite;
 }
 
 .body {
-  flex: 1;
-  min-width: 0;
+  flex: 1 1 auto;
+  min-inline-size: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0.25em;
 }
 
 .message {
+  margin: 0;
   font-size: var(--ds-text-sm);
-  color: var(--at-fg);
+  font-weight: 500;
+  color: var(--ds-text-primary);
   line-height: 1.5;
+  word-break: break-word;
 }
 
-.item[data-read="false"] .message {
-  font-weight: 500;
+.item[data-read='false'] .message {
+  font-weight: 700;
 }
 
 .date {
-  font-size: 11px;
-  color: var(--at-fg-subtle);
+  font-size: 0.6875rem;
+  color: var(--ds-text-muted);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toolbar,
+  .section,
+  .item {
+    animation: none;
+  }
+  .item[data-read='false'] .dot {
+    animation: none;
+  }
+  .toolbarDot {
+    animation: none;
+  }
 }

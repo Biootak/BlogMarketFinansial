@@ -23,6 +23,9 @@ export default async function ExchangeProfilePage() {
   const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');
 
+  // فقط OWNER و MANAGER صرافی به این صفحه دسترسی دارند
+  if (!['OWNER', 'MANAGER'].includes(membership.staffRole)) redirect('/exchange/dashboard');
+
   const { exchange, staffRole } = membership;
   const canEdit = staffRole === 'OWNER' || staffRole === 'MANAGER';
 

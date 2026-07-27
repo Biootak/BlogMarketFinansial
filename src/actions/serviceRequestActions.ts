@@ -951,7 +951,7 @@ export async function getServiceRequestStats(): Promise<
 }
 
 // ─── User: Get own service requests ──────────────────────────────────────── //
-export async function getMyServiceRequests(params?: { page?: number; limit?: number }): Promise<
+export async function getMyServiceRequests(params?: { page?: number; limit?: number; status?: string }): Promise<
   FintechActionResult<{
     requests: unknown[];
     pagination: { page: number; limit: number; total: number; totalPages: number };
@@ -966,10 +966,14 @@ export async function getMyServiceRequests(params?: { page?: number; limit?: num
   const page = params?.page ?? 1;
   const limit = params?.limit ?? 10;
   const skip = (page - 1) * limit;
+  const where: any = { userId: session.user.id };
+  if (params?.status && params.status !== 'ALL') {
+    where.status = params.status;
+  }
   try {
     const [requests, total] = await Promise.all([
       prisma.serviceRequest.findMany({
-        where: { userId: session.user.id },
+        where,
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
@@ -992,7 +996,7 @@ export async function getMyServiceRequests(params?: { page?: number; limit?: num
           },
         },
       }),
-      prisma.serviceRequest.count({ where: { userId: session.user.id } }),
+      prisma.serviceRequest.count({ where }),
     ]);
     return {
       success: true,
@@ -1004,6 +1008,39 @@ export async function getMyServiceRequests(params?: { page?: number; limit?: num
     };
   } catch {
     return { success: false, error: { code: 'SERVER_ERROR', message: 'خطایی رخ داد.' } };
+  }
+}
+
+// ─── User: Get own service request stats ──────────────────────────────────── //
+export async function getMyServiceRequestStats(): Promise<
+  FintechActionResult<{
+    total: number;
+    pending: number;
+    inProgress: number;
+    completed: number;
+    cancelled: number;
+  }>
+> {
+  const session = await auth();
+  if (!session?.user?.id)
+    return {
+      success: false,
+      error: { code: 'UNAUTHENTICATED', message: 'لطفاً وارد حساب کاربری خود شوید.' },
+    };
+  try {
+    const [total, pending, inProgress, completed, cancelled] = await Promise.all([
+      prisma.serviceRequest.count({ where: { userId: session.user.id } }),
+      prisma.serviceRequest.count({ where: { userId: session.user.id, status: 'PENDING' } }),
+      prisma.serviceRequest.count({ where: { userId: session.user.id, status: 'IN_PROGRESS' } }),
+      prisma.serviceRequest.count({ where: { userId: session.user.id, status: 'COMPLETED' } }),
+      prisma.serviceRequest.count({ where: { userId: session.user.id, status: 'CANCELLED' } }),
+    ]);
+    return {
+      success: true,
+      data: { total, pending, inProgress, completed, cancelled },
+    };
+  } catch {
+    return { success: false, error: { code: 'SERVER_ERROR', message: 'خطایی در دریافت آمار رخ داد.' } };
   }
 }
 

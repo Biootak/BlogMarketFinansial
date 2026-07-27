@@ -1,219 +1,183 @@
-/* SettingsContent.module.css */
+/* ============================================================================
+ * SettingsContent — اتاق تنظیمات
+ * ========================================================================== */
 
 .root {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-6);
+  gap: var(--ds-space-5);
+  inline-size: 100%;
 }
 
-/* ── Status banner ────────────────────────────────────────────────────────── */
-.statusBanner {
+.section {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: var(--ds-space-3);
-  padding: var(--ds-space-4) var(--ds-space-5);
-  border-radius: var(--at-radius-lg, 14px);
-  border: 1px solid var(--at-line);
-  background: var(--at-surface);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+  padding-block: var(--ds-space-4);
+  padding-inline: var(--ds-space-4);
 }
 
-.statusBanner[data-status="ACTIVE"] {
-  border-color: color-mix(in oklch, var(--at-accent) 30%, transparent);
-  background: var(--at-accent-soft);
-}
-
-.statusBanner[data-status="FROZEN"],
-.statusBanner[data-status="CLOSED"] {
-  border-color: color-mix(in oklch, var(--at-danger) 30%, transparent);
-  background: var(--at-danger-soft);
-}
-
-.statusBanner[data-status="PROSPECT"] {
-  border-color: color-mix(in oklch, var(--at-gold) 30%, transparent);
-  background: var(--at-gold-soft);
-}
-
-.statusText {
+.danger {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-4);
+  padding-inline: var(--ds-space-4);
+  background: color-mix(in oklch, var(--nova-down) 4%, var(--ds-surface));
+  border: 1px solid color-mix(in oklch, var(--nova-down) 30%, var(--ds-border-subtle));
+  border-radius: var(--ds-radius-md);
 }
 
-.statusTitle {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--at-fg-subtle);
-  text-transform: uppercase;
-}
-
-.statusValue {
-  font-size: var(--ds-text-sm);
-  font-weight: 500;
-  color: var(--at-fg);
-}
-
-/* ── Settings list ────────────────────────────────────────────────────────── */
-.settingsList {
+.list {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  margin-block-start: var(--ds-space-3);
-  border: 1px solid var(--at-line);
-  border-radius: var(--at-radius, 10px);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-sm);
   overflow: hidden;
+  background: var(--ds-surface);
 }
 
-.settingRow {
-  display: flex;
+.danger .list {
+  background: color-mix(in oklch, var(--nova-down) 3%, var(--ds-surface));
+  border-color: color-mix(in oklch, var(--nova-down) 20%, var(--ds-border-subtle));
+}
+
+/* ── Item ───────────────────────────────────────────────────────────────── */
+
+.item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: var(--ds-space-3);
-  padding: var(--ds-space-4) var(--ds-space-4);
-  border-bottom: 1px solid var(--at-line);
-  background: var(--at-surface);
-  transition: background 80ms ease;
+  padding-block: var(--ds-space-3);
+  padding-inline: var(--ds-space-4);
+  transition: background 160ms var(--ds-ease-out-quart);
+  border-block-end: 1px solid var(--ds-border-subtle);
 }
 
-.settingRow:last-child {
-  border-bottom: none;
+.item:last-child {
+  border-block-end: none;
 }
 
-.settingRow:hover {
-  background: var(--at-surface-hover, oklch(97% 0.005 240));
+.item:hover {
+  background: var(--ds-surface-recessed);
 }
 
-.settingIcon {
-  width: 34px;
-  height: 34px;
-  display: flex;
+.itemIcon {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  background: var(--at-bg-elevated, var(--at-surface));
-  border: 1px solid var(--at-line);
-  color: var(--at-fg-muted);
+  inline-size: 1.875rem;
+  block-size: 1.875rem;
+  border-radius: var(--ds-radius-sm);
+  background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
+  color: var(--ds-brand-600);
   flex-shrink: 0;
 }
 
-.settingIcon[data-danger="true"] {
-  border-color: color-mix(in oklch, var(--at-danger) 20%, transparent);
-  color: var(--at-danger);
-  background: var(--at-danger-soft);
+.item[data-tone='amber'] .itemIcon {
+  background: color-mix(in oklch, var(--nova-amber) 12%, transparent);
+  color: var(--nova-amber);
 }
 
-.settingBody {
-  flex: 1;
-  min-width: 0;
+.item[data-tone='warning'] .itemIcon {
+  background: color-mix(in oklch, var(--nova-amber) 12%, transparent);
+  color: var(--nova-amber);
+}
+
+.item[data-tone='danger'] .itemIcon {
+  background: color-mix(in oklch, var(--nova-down) 12%, transparent);
+  color: var(--nova-down);
+}
+
+.item[data-tone='neutral'] .itemIcon {
+  background: var(--ds-surface-recessed);
+  color: var(--ds-text-muted);
+}
+
+.itemMain {
+  min-inline-size: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0.15em;
 }
 
-.settingTitle {
-  font-size: var(--ds-text-sm);
-  font-weight: 600;
-  color: var(--at-fg);
-}
-
-.settingDesc {
-  font-size: 11px;
-  color: var(--at-fg-subtle);
-}
-
-.settingAction {
-  flex-shrink: 0;
-}
-
-/* ── Action buttons ───────────────────────────────────────────────────────── */
-.actionLink {
-  padding: 0.375rem 0.875rem;
-  border: 1px solid var(--at-line);
-  border-radius: 6px;
-  background: transparent;
-  color: var(--at-fg-muted);
-  font-size: var(--ds-text-xs);
-  font-weight: 600;
-  text-decoration: none;
-  transition: background 100ms ease, border-color 100ms ease;
-  white-space: nowrap;
-}
-
-.actionLink:hover {
-  background: var(--at-surface-hover);
-  border-color: var(--at-line-strong);
-  color: var(--at-fg);
-}
-
-.actionLinkAccent {
-  padding: 0.375rem 0.875rem;
-  border: 1px solid color-mix(in oklch, var(--at-accent) 30%, transparent);
-  border-radius: 6px;
-  background: var(--at-accent-soft);
-  color: var(--at-accent-fg, var(--at-accent));
+.itemTitle {
   font-size: var(--ds-text-xs);
   font-weight: 700;
-  text-decoration: none;
-  transition: background 100ms ease;
-  white-space: nowrap;
+  color: var(--ds-text-primary);
 }
 
-.actionLinkAccent:hover {
-  background: color-mix(in oklch, var(--at-accent) 15%, transparent);
+.item[data-tone='danger'] .itemTitle {
+  color: var(--nova-down);
 }
 
-.actionDanger {
-  padding: 0.375rem 0.875rem;
-  border: 1px solid color-mix(in oklch, var(--at-danger) 30%, transparent);
-  border-radius: 6px;
-  background: var(--at-danger-soft);
-  color: var(--at-danger-fg, var(--at-danger));
-  font-size: var(--ds-text-xs);
-  font-weight: 700;
+.itemDesc {
+  font-size: 0.6875rem;
+  color: var(--ds-text-muted);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.itemAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: var(--ds-space-1);
+  padding-inline: var(--ds-space-3);
   font-family: inherit;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
+  color: var(--ds-brand-600);
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 30%, transparent);
+  border-radius: var(--ds-radius-sm);
   cursor: pointer;
-  transition: background 100ms ease;
+  transition: background 160ms var(--ds-ease-out-quart);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.actionDanger:hover {
-  background: color-mix(in oklch, var(--at-danger) 18%, transparent);
+.itemAction:hover {
+  background: color-mix(in oklch, var(--ds-brand-500) 18%, transparent);
 }
 
-.comingSoon {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 20px;
-  background: var(--at-bg-elevated, var(--at-surface));
-  border: 1px solid var(--at-line);
-  color: var(--at-fg-subtle);
-  white-space: nowrap;
+.itemAction:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 2px;
 }
 
-/* ── Support block ────────────────────────────────────────────────────────── */
-.supportBlock {
-  padding: var(--ds-space-4) var(--ds-space-5);
-  border-radius: var(--at-radius, 10px);
-  border: 1px solid var(--at-line);
-  background: var(--at-bg-elevated, var(--at-surface));
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-2);
+.itemAction[data-tone='amber'] {
+  background: color-mix(in oklch, var(--nova-amber) 10%, transparent);
+  color: var(--nova-amber);
+  border-color: color-mix(in oklch, var(--nova-amber) 30%, transparent);
 }
 
-.supportText {
-  font-size: var(--ds-text-sm);
-  color: var(--at-fg-muted);
-  line-height: 1.6;
+.itemAction[data-tone='amber']:hover {
+  background: color-mix(in oklch, var(--nova-amber) 18%, transparent);
 }
 
-.supportPhone {
-  font-size: var(--ds-text-sm);
-  font-weight: 600;
-  color: var(--at-accent);
-  text-decoration: none;
+.itemAction[data-tone='warning'] {
+  background: color-mix(in oklch, var(--nova-amber) 10%, transparent);
+  color: var(--nova-amber);
+  border-color: color-mix(in oklch, var(--nova-amber) 30%, transparent);
 }
 
-.supportPhone:hover {
-  text-decoration: underline;
+.itemAction[data-tone='danger'] {
+  background: color-mix(in oklch, var(--nova-down) 10%, transparent);
+  color: var(--nova-down);
+  border-color: color-mix(in oklch, var(--nova-down) 30%, transparent);
+}
+
+.itemAction[data-tone='danger']:hover {
+  background: color-mix(in oklch, var(--nova-down) 18%, transparent);
+}
+
+.itemAction[data-tone='neutral'] {
+  background: var(--ds-surface-recessed);
+  color: var(--ds-text-muted);
+  border-color: var(--ds-border-subtle);
 }

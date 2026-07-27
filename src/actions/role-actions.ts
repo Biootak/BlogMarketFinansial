@@ -167,7 +167,6 @@ export async function getUsersByRole(
         image: u.image,
         status: u.status,
         createdAt: u.createdAt,
-        lastLoginAt: u.lastLoginAt,
       })),
       total,
       page,
