@@ -7,13 +7,13 @@
 import s from './ExchangeDashboard.module.css';
 import Link from 'next/link';
 import { UserPlus, ArrowLeftRight, ClipboardList, Receipt } from 'lucide-react';
-import type { ComponentType, SVGProps } from 'react';
+import type { LucideIcon } from 'lucide-react';
 
 interface ActionItem {
   label: string;
   desc: string;
   href: string;
-  Icon: ComponentType<SVGProps<SVGSVGElement>>;
+  Icon: LucideIcon;
 }
 
 const ACTIONS: ActionItem[] = [

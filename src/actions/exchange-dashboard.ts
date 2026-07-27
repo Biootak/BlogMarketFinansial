@@ -3,13 +3,14 @@
 /**
  * exchange-dashboard — یکپارچه‌سازی همهٔ aggregate های داشبورد صراف در یک roundtrip.
  *
- * قبلاً هر کامپوننت جداگانه به DB می‌زد. این فایل با ۸ کوئری موازی
+ * قبلاً هر کامپوننت جداگانه به DB می‌زد. این فایل با ۲۰ کوئری موازی
  * همه چیز را یکجا برمی‌گرداند تا N+1 در داشبورد اتفاق نیفتد.
  *
  * Tenant isolation: requireExchangeAccess (همان access-control سایر actions).
  * اعداد BigInt به string تبدیل می‌شوند (JSON-safe).
  *
  * 2026-07-27: اولین نسخه، برای بازطراحی کامل داشبورد.
+ * 2026-07-27 v2: اضافه شدن performance comparison و customer activity metrics.
  */
 
 import prisma from '@/lib/db';
@@ -114,7 +115,7 @@ export type RateSnapshot = {
   singleRate: string | null;
   unit: string | null;
   decimals: number;
-  rateType: 'BUY_SELL' | 'SINGLE' | 'BULK';
+  rateType: 'BUY_SELL' | 'SINGLE_BULK';
 };
 
 export type CustomerSegmentation = {
@@ -122,6 +123,57 @@ export type CustomerSegmentation = {
   byStatus: { status: string; count: number; share: number }[];
   /** تعداد به تفکیک KYC level */
   byKyc: { level: string; count: number; share: number }[];
+};
+
+/**
+ * مقایسه ادوار — برای PerformanceBand.
+ * هر period شامل count و volume است. prev برای delta درصد استفاده می‌شود.
+ */
+export type PeriodComparison = {
+  label: string;
+  count: number;
+  volume: string;
+  prevCount: number;
+  prevVolume: string;
+};
+
+export type PerformanceMetrics = {
+  today: PeriodComparison;
+  thisWeek: PeriodComparison;
+  thisMonth: PeriodComparison;
+};
+
+export type CustomerActivity = {
+  /** تعداد مشتریان ثبت‌نام‌شده در ۷ روز اخیر */
+  newLast7d: number;
+  /** تعداد مشتریان فعال‌سازی‌شده در ۷ روز اخیر (status تبدیل به ACTIVE) */
+  activatedLast7d: number;
+  /** میانگین تراکنش به ازای هر مشتری فعال در ۳۰ روز اخیر */
+  avgTxnPerActiveCustomer: number;
+  /** درصد مشتریان فعال از کل */
+  activeRate: number;
+};
+
+/**
+ * سلول heatmap — (dayOfWeek, hourOfDay) → count
+ * 7 روز × 24 ساعت = 168 سلول. مقدار صفر هم نگه داشته می‌شود.
+ */
+export type HeatmapCell = {
+  day: number; // 0=Sat .. 6=Fri (شنبه=0)
+  hour: number; // 0..23
+  count: number;
+};
+
+export type ActivityHeatmap = {
+  cells: HeatmapCell[];
+  /** روزهای هفته به ترتیب از شنبه */
+  daysFa: string[];
+  /** peak hour overall (0..23) */
+  peakHour: number;
+  /** peak day overall (0..6) */
+  peakDay: number;
+  /** total txn in 30 days (used for normalization) */
+  total: number;
 };
 
 export type ExchangeDashboardData = {
@@ -138,6 +190,9 @@ export type ExchangeDashboardData = {
   alerts: DashboardAlert[];
   rateSnapshot: RateSnapshot[];
   customerSegmentation: CustomerSegmentation;
+  performance: PerformanceMetrics;
+  customerActivity: CustomerActivity;
+  activityHeatmap: ActivityHeatmap;
 };
 
 // ─── Main action ─────────────────────────────────────────────────────────────
@@ -176,9 +231,18 @@ export async function getExchangeDashboardData(
   const weekAgo = new Date(today);
   weekAgo.setDate(weekAgo.getDate() - 6); // 7 روز شامل امروز
 
+  // بازه‌های مقایسه‌ای برای PerformanceBand
+  const lastWeekStart = new Date(weekAgo);
+  lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+  const lastWeekEnd = new Date(weekAgo);
+
+  const lastMonthStart = new Date(monthAgo);
+  lastMonthStart.setDate(lastMonthStart.getDate() - 30);
+  const lastMonthEnd = new Date(monthAgo);
+
   const statsCurrency = exchange.primaryCurrency || 'AFN';
 
-  // ── ۸ کوئری موازی ────────────────────────────────────────────────────────
+  // ── ۲۱ کوئری موازی (همه در یک roundtrip برای جلوگیری از N+1) ─────────
   const [
     basicAggs,
     todayAgg,
@@ -195,6 +259,12 @@ export async function getExchangeDashboardData(
     rateSnapshotRaw,
     customerStatusAgg,
     customerKycAgg,
+    yesterdayAggs,
+    weekAggs,
+    monthAggs,
+    customerActivityAggs,
+    activeCustomersCount,
+    heatmapRows,
   ] = await Promise.all([
     // 1) basic counts
     Promise.all([
@@ -306,6 +376,96 @@ export async function getExchangeDashboardData(
       by: ['kycLevel'],
       where: { exchangeId },
       _count: { _all: true },
+    }),
+    // 16) yesterday's transaction count + volume (primary currency)
+    Promise.all([
+      prisma.transaction.count({
+        where: { exchangeId, createdAt: { gte: yesterday, lt: today } },
+      }),
+      prisma.transaction.aggregate({
+        where: {
+          exchangeId,
+          currency: statsCurrency,
+          status: 'COMPLETED',
+          createdAt: { gte: yesterday, lt: today },
+        },
+        _sum: { amount: true },
+      }),
+    ]),
+    // 17) this-week vs last-week (count + volume)
+    Promise.all([
+      prisma.transaction.count({ where: { exchangeId, createdAt: { gte: weekAgo } } }),
+      prisma.transaction.aggregate({
+        where: {
+          exchangeId,
+          currency: statsCurrency,
+          status: 'COMPLETED',
+          createdAt: { gte: weekAgo },
+        },
+        _sum: { amount: true },
+      }),
+      prisma.transaction.count({
+        where: { exchangeId, createdAt: { gte: lastWeekStart, lt: lastWeekEnd } },
+      }),
+      prisma.transaction.aggregate({
+        where: {
+          exchangeId,
+          currency: statsCurrency,
+          status: 'COMPLETED',
+          createdAt: { gte: lastWeekStart, lt: lastWeekEnd },
+        },
+        _sum: { amount: true },
+      }),
+    ]),
+    // 18) this-month vs last-month
+    Promise.all([
+      prisma.transaction.count({ where: { exchangeId, createdAt: { gte: monthAgo } } }),
+      prisma.transaction.aggregate({
+        where: {
+          exchangeId,
+          currency: statsCurrency,
+          status: 'COMPLETED',
+          createdAt: { gte: monthAgo },
+        },
+        _sum: { amount: true },
+      }),
+      prisma.transaction.count({
+        where: { exchangeId, createdAt: { gte: lastMonthStart, lt: lastMonthEnd } },
+      }),
+      prisma.transaction.aggregate({
+        where: {
+          exchangeId,
+          currency: statsCurrency,
+          status: 'COMPLETED',
+          createdAt: { gte: lastMonthStart, lt: lastMonthEnd },
+        },
+        _sum: { amount: true },
+      }),
+    ]),
+    // 19) customer activity — new + activated in last 7 days
+    Promise.all([
+      prisma.customer.count({ where: { exchangeId, createdAt: { gte: weekAgo } } }),
+      prisma.customer.count({
+        where: {
+          exchangeId,
+          status: 'ACTIVE',
+          // تقریب: کسی که در ۷ روز اخیر تراکنش داشته به عنوان فعال اخیر در نظر گرفته می‌شود
+          Transaction: { some: { createdAt: { gte: weekAgo } } },
+        },
+      }),
+    ]),
+    // 20) count of active customers in last 30 days (for avg txn per customer)
+    prisma.customer.count({
+      where: {
+        exchangeId,
+        status: 'ACTIVE',
+        Transaction: { some: { createdAt: { gte: monthAgo } } },
+      },
+    }),
+    // 21) heatmap raw — createdAt timestamps for transactions in last 30 days
+    prisma.transaction.findMany({
+      where: { exchangeId, createdAt: { gte: monthAgo } },
+      select: { createdAt: true },
     }),
   ]);
 
@@ -512,6 +672,113 @@ export async function getExchangeDashboardData(
   }));
   const customerSegmentation: CustomerSegmentation = { byStatus, byKyc };
 
+  // ── Performance metrics (today / this-week / this-month) ────────────────
+  // توجه: yesterdayCount قبلاً از basicAggs استخراج شده (تعداد کل تراکنش‌های دیروز
+  // برای محاسبهٔ KPI). اینجا فقط به volume تکمیلی نیاز داریم.
+  const [, yesterdayVolumeAgg] = yesterdayAggs;
+  const [
+    thisWeekCount,
+    thisWeekVolumeAgg,
+    lastWeekCount,
+    lastWeekVolumeAgg,
+  ] = weekAggs;
+  const [
+    thisMonthCount,
+    thisMonthVolumeAgg,
+    lastMonthCount,
+    lastMonthVolumeAgg,
+  ] = monthAggs;
+
+  const performance: PerformanceMetrics = {
+    today: {
+      label: 'امروز',
+      count: todayCount,
+      volume: bigIntToStr(todayAgg._sum.amount ?? BigInt(0)),
+      prevCount: yesterdayCount,
+      prevVolume: bigIntToStr(yesterdayVolumeAgg._sum.amount ?? BigInt(0)),
+    },
+    thisWeek: {
+      label: 'این هفته',
+      count: thisWeekCount,
+      volume: bigIntToStr(thisWeekVolumeAgg._sum.amount ?? BigInt(0)),
+      prevCount: lastWeekCount,
+      prevVolume: bigIntToStr(lastWeekVolumeAgg._sum.amount ?? BigInt(0)),
+    },
+    thisMonth: {
+      label: 'این ماه',
+      count: thisMonthCount,
+      volume: bigIntToStr(thisMonthVolumeAgg._sum.amount ?? BigInt(0)),
+      prevCount: lastMonthCount,
+      prevVolume: bigIntToStr(lastMonthVolumeAgg._sum.amount ?? BigInt(0)),
+    },
+  };
+
+  // ── Customer activity ──────────────────────────────────────────────────
+  const [newLast7d, activatedLast7d] = customerActivityAggs;
+  const avgTxnPerActiveCustomer =
+    activeCustomersCount > 0 ? Math.round(totalLast30d / activeCustomersCount) : 0;
+  const activeRate = totalCustomers > 0 ? activeCustomersCount / totalCustomers : 0;
+  const customerActivity: CustomerActivity = {
+    newLast7d,
+    activatedLast7d,
+    avgTxnPerActiveCustomer,
+    activeRate,
+  };
+
+  // ── Activity heatmap (7 روز × ۲۴ ساعت) ─────────────────────────────────
+  // روزهای هفتهٔ JS: 0=Sun..6=Sat. تبدیل به ترتیب فارسی: شنبه=0
+  // 0:Sat 1:Sun 2:Mon 3:Tue 4:Wed 5:Thu 6:Fri
+  const JS_TO_FA_DAY = [6, 0, 1, 2, 3, 4, 5];
+  const counts = new Map<string, number>();
+  let totalHeatmap = 0;
+  let peakHour = 0;
+  let peakDay = 0;
+  const hourTotals = new Array(24).fill(0) as number[];
+  const dayTotals = new Array(7).fill(0) as number[];
+
+  for (const row of heatmapRows) {
+    const jsDay = row.createdAt.getDay();
+    const faDay = JS_TO_FA_DAY[jsDay];
+    const hour = row.createdAt.getHours();
+    const key = `${faDay}:${hour}`;
+    const next = (counts.get(key) ?? 0) + 1;
+    counts.set(key, next);
+    totalHeatmap += 1;
+    hourTotals[hour] += 1;
+    dayTotals[faDay] += 1;
+  }
+
+  // پیدا کردن peak
+  let maxHourTotal = 0;
+  for (let h = 0; h < 24; h++) {
+    if (hourTotals[h] > maxHourTotal) {
+      maxHourTotal = hourTotals[h];
+      peakHour = h;
+    }
+  }
+  let maxDayTotal = 0;
+  for (let d = 0; d < 7; d++) {
+    if (dayTotals[d] > maxDayTotal) {
+      maxDayTotal = dayTotals[d];
+      peakDay = d;
+    }
+  }
+
+  const cells: HeatmapCell[] = [];
+  for (let d = 0; d < 7; d++) {
+    for (let h = 0; h < 24; h++) {
+      cells.push({ day: d, hour: h, count: counts.get(`${d}:${h}`) ?? 0 });
+    }
+  }
+
+  const activityHeatmap: ActivityHeatmap = {
+    cells,
+    daysFa: ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه'],
+    peakHour,
+    peakDay,
+    total: totalHeatmap,
+  };
+
   // کش‌تگ‌ها در caller (createTransaction و ...) invalidate می‌شوند.
 
   return {
@@ -528,5 +795,8 @@ export async function getExchangeDashboardData(
     alerts,
     rateSnapshot,
     customerSegmentation,
+    performance,
+    customerActivity,
+    activityHeatmap,
   };
 }

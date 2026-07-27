@@ -8,7 +8,7 @@
 
 import Link from 'next/link';
 import { ArrowDownRight, ArrowUpRight, Minus, Users, Clock, CircleDollarSign, UserPlus } from 'lucide-react';
-import type { ComponentType, SVGProps } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import s from './ExchangeDashboard.module.css';
 import type { DashboardKpi } from '@/actions/exchange-dashboard';
 
@@ -32,7 +32,7 @@ function formatCompactNumber(n: number): string {
   return new Intl.NumberFormat('fa-IR', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
 }
 
-function pickIcon(name: Tile['icon']): ComponentType<SVGProps<SVGSVGElement>> {
+function pickIcon(name: Tile['icon']): LucideIcon {
   switch (name) {
     case 'users':
       return Users;
@@ -45,7 +45,7 @@ function pickIcon(name: Tile['icon']): ComponentType<SVGProps<SVGSVGElement>> {
   }
 }
 
-function KpiCard({ tile, Icon }: { tile: Tile; Icon: ComponentType<SVGProps<SVGSVGElement>> }) {
+function KpiCard({ tile, Icon }: { tile: Tile; Icon: LucideIcon }) {
   const body = (
     <>
       <div className={s.kpiTileHead}>

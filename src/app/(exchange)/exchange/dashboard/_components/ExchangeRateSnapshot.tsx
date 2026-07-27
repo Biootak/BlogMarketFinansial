@@ -20,7 +20,7 @@ function formatNumber(value: string, decimals: number): string {
 }
 
 function formatRate(rate: RateSnapshot): { primary: string; secondary: string | null } {
-  if (rate.rateType === 'SINGLE' && rate.singleRate) {
+  if (rate.rateType === 'SINGLE_BULK' && rate.singleRate) {
     return { primary: formatNumber(rate.singleRate, rate.decimals), secondary: null };
   }
   if (rate.buyRate && rate.sellRate) {
