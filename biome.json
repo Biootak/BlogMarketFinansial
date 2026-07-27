@@ -75,7 +75,8 @@
       "*.sass",
       "src/app/globals.css",
       "src/lib/motion-shim.tsx",
-      ".harness/**"
+      ".harness/**",
+      ".Trash-1000/**"
     ]
   },
   "overrides": [

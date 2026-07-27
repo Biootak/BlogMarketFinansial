@@ -24,7 +24,7 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import type { FintechActionResult } from '@/types/types';
-import { Prisma } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import { headers } from 'next/headers';
 import { v4 as createId } from 'uuid';
 import { z } from 'zod';
@@ -81,7 +81,10 @@ export async function getFxQuote(raw: {
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد حساب شوید' } };
   }
   if (raw.fromCurrency === raw.toCurrency) {
-    return { success: false, error: { code: 'INVALID_PAIR', message: 'ارز مبدأ و مقصد یکسان است' } };
+    return {
+      success: false,
+      error: { code: 'INVALID_PAIR', message: 'ارز مبدأ و مقصد یکسان است' },
+    };
   }
 
   const customer = await prisma.customer.findFirst({
@@ -117,9 +120,7 @@ export async function getFxQuote(raw: {
     const items = await assembleMarketRates();
     // جست‌وجوی جفت معکوس
     const inversePair = `${raw.toCurrency}/${raw.fromCurrency}`;
-    const item = items.find(
-      (it) => it.symbol === pair || it.symbol === inversePair,
-    );
+    const item = items.find((it) => it.symbol === pair || it.symbol === inversePair);
     if (!item) {
       return {
         success: false,
@@ -149,9 +150,7 @@ export async function getFxQuote(raw: {
  *
  * اگر حساب مقصد وجود نداشت → در حین تراکنش ساخته می‌شود.
  */
-export async function executeFxTrade(
-  raw: unknown,
-): Promise<FintechActionResult<FxTradeResult>> {
+export async function executeFxTrade(raw: unknown): Promise<FintechActionResult<FxTradeResult>> {
   const auth = await requireUser();
   if (!auth.success) {
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد حساب شوید' } };
@@ -285,10 +284,8 @@ export async function executeFxTrade(
   }
 
   const now = new Date();
-  let resultBalances: { from: string; to: string } = { from: '0', to: '0' };
-
   try {
-    await prisma.$transaction(async (tx) => {
+    const transactionResult = await prisma.$transaction(async (tx) => {
       // اگر account مقصد نداشت، در حین تراکنش بساز
       if (!toAccount) {
         toAccount = await tx.fintechAccount.create({
@@ -438,11 +435,29 @@ export async function executeFxTrade(
         },
       });
 
-      resultBalances = {
-        from: fromUpdated.balance.toString(),
-        to: toUpdated.balance.toString(),
+      return {
+        txnId: txn.id,
+        fromBalance: fromUpdated.balance.toString(),
+        toBalance: toUpdated.balance.toString(),
       };
     });
+
+    revalidateTag('wallet');
+
+    return {
+      success: true,
+      data: {
+        txnId: transactionResult.txnId,
+        fromCurrency,
+        toCurrency,
+        fromAmountCents: amountCents,
+        toAmountCents,
+        rate,
+        feeCents,
+        fromBalance: transactionResult.fromBalance,
+        toBalance: transactionResult.toBalance,
+      },
+    };
   } catch (err) {
     if ((err as Error).message === 'INSUFFICIENT_BALANCE') {
       return {
@@ -455,24 +470,4 @@ export async function executeFxTrade(
       error: { code: 'TXN_FAILED', message: (err as Error).message || 'خطا در تبدیل ارز' },
     };
   }
-
-  revalidateTag('wallet');
-
-  return {
-    success: true,
-    data: {
-      txnId: (await prisma.transaction.findFirst({
-        where: { idempotencyKey },
-        select: { id: true },
-      }))!.id,
-      fromCurrency,
-      toCurrency,
-      fromAmountCents: amountCents,
-      toAmountCents,
-      rate,
-      feeCents,
-      fromBalance: resultBalances.from,
-      toBalance: resultBalances.to,
-    },
-  };
 }

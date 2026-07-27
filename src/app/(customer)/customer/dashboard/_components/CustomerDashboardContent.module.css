@@ -401,6 +401,76 @@
   margin: 0;
 }
 
+/* dash2-statcard base styles — the StatCard primitive only sets the class name;
+   the actual visual rules must live in the consuming page's module. */
+.kpiStrip :global(.dash2-statcard) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-4) var(--ds-space-5);
+  border-radius: var(--ds-radius-xl);
+  background: var(--ds-surface, var(--nova-surface-solid));
+  border: 1px solid var(--ds-border-subtle, var(--nova-line));
+  box-shadow: var(--ds-shadow-sm, 0 1px 3px oklch(0% 0 0 / .06));
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  min-block-size: 108px;
+  transition:
+    border-color 200ms var(--ds-ease-out-quart, ease),
+    box-shadow   200ms var(--ds-ease-out-quart, ease),
+    transform    200ms var(--ds-ease-spring, ease);
+}
+
+/* accent stripe on inline-start */
+.kpiStrip :global(.dash2-statcard)::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 3px;
+  background: var(--ds-brand-500);
+  opacity: 0.55;
+  border-radius: 0 2px 2px 0;
+}
+
+.kpiStrip :global(.dash2-statcard):hover {
+  border-color: color-mix(in oklch, var(--ds-brand-500) 30%, var(--ds-border-default, currentColor));
+  box-shadow: var(--ds-shadow-md, 0 4px 12px oklch(0% 0 0 / .1));
+  transform: translateY(-1px);
+}
+
+.kpiStrip :global(.dash2-statcard__value) {
+  font-size: var(--ds-text-2xl, 1.5rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--ds-text-primary);
+}
+
+.kpiStrip :global(.dash2-statcard__delta) {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 6px;
+  border-radius: var(--ds-radius-full, 999px);
+  font-size: 0.65rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+  .kpiStrip :global(.dash2-statcard) {
+    padding: var(--ds-space-3) var(--ds-space-4);
+    min-block-size: 90px;
+  }
+  .kpiStrip :global(.dash2-statcard__value) {
+    font-size: var(--ds-text-xl, 1.25rem);
+  }
+}
+
 /* ─── Section Head ─────────────────────────────────────────────────────── */
 
 .section {

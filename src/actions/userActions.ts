@@ -307,9 +307,11 @@ export async function updateUserRole(userId: string, newRole: Role) {
       return { success: false, message: 'شما نمی‌توانید این نقش را اعطا کنید' };
     }
 
+    // Increment tokenVersion so the jwt callback detects the role change
+    // on the user's next request — instant revocation without forced sign-out.
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { role: newRole },
+      data: { role: newRole, tokenVersion: { increment: 1 } },
       select: {
         id: true,
         name: true,

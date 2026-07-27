@@ -130,16 +130,54 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     async jwt({ token, trigger, session, user }) {
+      // ── First sign-in: populate all fields from the DB user object ──────────
       if (user) {
         token.role = user.role || 'USER';
         token.id = user.id;
         token.emailVerified = user.emailVerified;
         token.email = user.email;
         token.name = user.name;
+        // Store tokenVersion at sign-in time so we can detect revocations later.
+        // tokenVersion is incremented in the DB whenever a role change or forced
+        // sign-out occurs. If the value in the token no longer matches the DB,
+        // we refresh the role immediately — making role revocations effective
+        // within the next request rather than waiting up to 24 h (updateAge).
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id as string },
+          select: { tokenVersion: true },
+        });
+        token.tokenVersion = dbUser?.tokenVersion ?? 0;
       }
 
+      // ── Explicit session.update() call (e.g. from useCurrentUser) ───────────
       if (trigger === 'update' && session?.user) {
         token.role = session.user.role || 'USER';
+      }
+
+      // ── Every subsequent request: verify tokenVersion matches DB ────────────
+      // This is the 2026 Auth.js pattern for immediate role invalidation:
+      //   Admin revokes a user's role → tokenVersion is incremented in DB
+      //   → next request this check fires → token.role is refreshed from DB
+      //   → user loses access within one request, not after 24 h.
+      //
+      // We only do this when the token already has a sub (i.e. not first sign-in)
+      // and no explicit update trigger is in flight. The DB query is a single
+      // indexed lookup on the primary key — negligible overhead.
+      if (!user && !trigger && token.sub) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.sub },
+          select: { role: true, tokenVersion: true },
+        });
+        if (dbUser) {
+          const storedVersion = typeof token.tokenVersion === 'number' ? token.tokenVersion : 0;
+          if (dbUser.tokenVersion !== storedVersion) {
+            // Version mismatch → role was changed or session was force-invalidated.
+            // Refresh role + version in the token so the session stays alive but
+            // reflects the new permissions immediately.
+            token.role = dbUser.role;
+            token.tokenVersion = dbUser.tokenVersion;
+          }
+        }
       }
 
       return token;

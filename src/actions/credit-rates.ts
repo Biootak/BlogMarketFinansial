@@ -145,35 +145,34 @@ function mapBank(raw: {
   };
 }
 
-function mapRate(
-  raw: {
+function mapRate(raw: {
+  id: string;
+  bankId: string;
+  type: CreditRateType;
+  title: string;
+  description: string | null;
+  annualRate: { toNumber: () => number } | number;
+  minAmountCents: bigint;
+  maxAmountCents: bigint;
+  maxTermMonths: number;
+  depositRatio: { toNumber: () => number } | number | null;
+  currency: string;
+  status: string;
+  effectiveFrom: Date | null;
+  effectiveTo: Date | null;
+  source: string | null;
+  sortOrder: number;
+  internalNote: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  bank?: {
     id: string;
-    bankId: string;
-    type: CreditRateType;
-    title: string;
-    description: string | null;
-    annualRate: { toNumber: () => number } | number;
-    minAmountCents: bigint;
-    maxAmountCents: bigint;
-    maxTermMonths: number;
-    depositRatio: { toNumber: () => number } | number | null;
-    currency: string;
-    status: string;
-    effectiveFrom: Date | null;
-    effectiveTo: Date | null;
-    source: string | null;
-    sortOrder: number;
-    createdAt: Date;
-    updatedAt: Date;
-    bank?: {
-      id: string;
-      slug: string;
-      name: string;
-      displayName: string | null;
-      logoUrl: string | null;
-    };
-  },
-): CreditRateRow {
+    slug: string;
+    name: string;
+    displayName: string | null;
+    logoUrl: string | null;
+  };
+}): CreditRateRow {
   return {
     id: raw.id,
     bankId: raw.bankId,
@@ -199,7 +198,7 @@ function mapRate(
     effectiveTo: raw.effectiveTo?.toISOString() ?? null,
     source: raw.source,
     sortOrder: raw.sortOrder,
-    internalNote: (raw as any).internalNote ?? null,
+    internalNote: raw.internalNote,
     createdAt: raw.createdAt.toISOString(),
     updatedAt: raw.updatedAt.toISOString(),
     bank: raw.bank
@@ -251,7 +250,7 @@ export async function getAllCreditRates(opts?: {
         rates: rates.map((r) => mapRate(r)),
       },
     };
-  } catch (err) {
+  } catch {
     return {
       success: false,
       error: { code: 'DB_ERROR', message: 'خطا در بارگذاری نرخ‌ها' },
@@ -259,9 +258,9 @@ export async function getAllCreditRates(opts?: {
   }
 }
 
-export async function getBankBySlug(slug: string): Promise<
-  FintechActionResult<{ bank: BankRow; rates: CreditRateRow[] }>
-> {
+export async function getBankBySlug(
+  slug: string,
+): Promise<FintechActionResult<{ bank: BankRow; rates: CreditRateRow[] }>> {
   if (!slug || typeof slug !== 'string') {
     return { success: false, error: { code: 'INVALID_SLUG', message: 'نام بانک نامعتبر' } };
   }
@@ -303,11 +302,19 @@ export async function getCreditRateAggregates(): Promise<FintechActionResult<Cre
       CreditRateType,
       { count: number; sum: number; min: number; max: number }
     >();
-    let bankIds = new Set<string>();
+    const bankIds = new Set<string>();
     for (const r of allRates) {
       bankIds.add(r.bankId);
-      const num = typeof r.annualRate === 'number' ? r.annualRate : (r.annualRate as { toNumber: () => number }).toNumber();
-      const e = byTypeMap.get(r.type) ?? { count: 0, sum: 0, min: Infinity, max: -Infinity };
+      const num =
+        typeof r.annualRate === 'number'
+          ? r.annualRate
+          : (r.annualRate as { toNumber: () => number }).toNumber();
+      const e = byTypeMap.get(r.type) ?? {
+        count: 0,
+        sum: 0,
+        min: Number.POSITIVE_INFINITY,
+        max: Number.NEGATIVE_INFINITY,
+      };
       e.count += 1;
       e.sum += num;
       e.min = Math.min(e.min, num);
@@ -327,16 +334,28 @@ export async function getCreditRateAggregates(): Promise<FintechActionResult<Cre
     const bestDeposit =
       deposits.length > 0
         ? deposits.reduce((best, r) => {
-            const num = typeof r.annualRate === 'number' ? r.annualRate : (r.annualRate as { toNumber: () => number }).toNumber();
-            const bestNum = typeof best.annualRate === 'number' ? best.annualRate : (best.annualRate as { toNumber: () => number }).toNumber();
+            const num =
+              typeof r.annualRate === 'number'
+                ? r.annualRate
+                : (r.annualRate as { toNumber: () => number }).toNumber();
+            const bestNum =
+              typeof best.annualRate === 'number'
+                ? best.annualRate
+                : (best.annualRate as { toNumber: () => number }).toNumber();
             return num > bestNum ? r : best;
           })
         : null;
     const cheapestLoan =
       loans.length > 0
         ? loans.reduce((best, r) => {
-            const num = typeof r.annualRate === 'number' ? r.annualRate : (r.annualRate as { toNumber: () => number }).toNumber();
-            const bestNum = typeof best.annualRate === 'number' ? best.annualRate : (best.annualRate as { toNumber: () => number }).toNumber();
+            const num =
+              typeof r.annualRate === 'number'
+                ? r.annualRate
+                : (r.annualRate as { toNumber: () => number }).toNumber();
+            const bestNum =
+              typeof best.annualRate === 'number'
+                ? best.annualRate
+                : (best.annualRate as { toNumber: () => number }).toNumber();
             return num < bestNum ? r : best;
           })
         : null;
@@ -403,7 +422,10 @@ export async function createBank(raw: unknown): Promise<FintechActionResult<Bank
   const d = parsed.data;
   const existing = await prisma.bank.findUnique({ where: { slug: d.slug } });
   if (existing) {
-    return { success: false, error: { code: 'DUPLICATE_SLUG', message: 'این slug قبلاً استفاده شده' } };
+    return {
+      success: false,
+      error: { code: 'DUPLICATE_SLUG', message: 'این slug قبلاً استفاده شده' },
+    };
   }
   const now = new Date();
   const bank = await prisma.bank.create({
@@ -447,9 +469,7 @@ const BankUpdateSchema = BankCreateSchema.partial().extend({
   id: z.string().min(1),
 });
 
-export async function updateBank(
-  raw: unknown,
-): Promise<FintechActionResult<BankRow>> {
+export async function updateBank(raw: unknown): Promise<FintechActionResult<BankRow>> {
   const auth = await requireAdmin();
   if (!auth.success) {
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'دسترسی ندارید' } };
@@ -588,9 +608,7 @@ export async function createCreditRate(raw: unknown): Promise<FintechActionResul
 
 const RateUpdateSchema = RateCreateSchema.partial().extend({ id: z.string() });
 
-export async function updateCreditRate(
-  raw: unknown,
-): Promise<FintechActionResult<CreditRateRow>> {
+export async function updateCreditRate(raw: unknown): Promise<FintechActionResult<CreditRateRow>> {
   const auth = await requireAdmin();
   if (!auth.success) {
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'دسترسی ندارید' } };
@@ -638,9 +656,7 @@ export async function updateCreditRate(
   return { success: true, data: mapRate(rate) };
 }
 
-export async function archiveCreditRate(
-  id: string,
-): Promise<FintechActionResult<CreditRateRow>> {
+export async function archiveCreditRate(id: string): Promise<FintechActionResult<CreditRateRow>> {
   const auth = await requireAdmin();
   if (!auth.success) {
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'دسترسی ندارید' } };

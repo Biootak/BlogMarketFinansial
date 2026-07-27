@@ -84,18 +84,19 @@ const compiledPublic = publicRoutes.map(compileRoute);
 const matchesAny = (pathname: string, routes: CompiledRoute[]): boolean =>
   routes.some((r) => r.test(pathname));
 
+// SUPERADMIN is treated identically to OWNER at the platform level.
+const SUPER_ROLES = new Set(['OWNER', 'SUPERADMIN']);
+const ADMIN_ROLES = new Set(['OWNER', 'SUPERADMIN', 'ADMIN']);
+const AUTHOR_ROLES = new Set(['OWNER', 'SUPERADMIN', 'ADMIN', 'AUTHOR']);
+
 const checkApiAccess = (pathname: string, role?: string): boolean => {
   if (pathname.startsWith('/api/public')) return true;
   if (pathname.startsWith(apiAuthPrefix)) return true;
   if (!role) return false;
-  if (role === 'OWNER') return true;
-  if ((role === 'ADMIN' || role === 'OWNER') && adminApiRoutes.some((r) => pathname.startsWith(r)))
-    return true;
-  if (
-    ['AUTHOR', 'ADMIN', 'OWNER'].includes(role) &&
-    authorApiRoutes.some((r) => pathname.startsWith(r))
-  )
-    return true;
+  // OWNER + SUPERADMIN have unrestricted access
+  if (SUPER_ROLES.has(role)) return true;
+  if (ADMIN_ROLES.has(role) && adminApiRoutes.some((r) => pathname.startsWith(r))) return true;
+  if (AUTHOR_ROLES.has(role) && authorApiRoutes.some((r) => pathname.startsWith(r))) return true;
   if (pathname.startsWith('/api/')) return false;
   return true;
 };
@@ -132,13 +133,13 @@ const DASHBOARD_BLOCKED_ROLES = new Set(['CUSTOMER', 'MERCHANT', 'EXCHANGE', 'TE
 const EXCHANGE_ROLES = new Set(['EXCHANGE']);
 
 const checkDashboardAccess = (pathname: string, role?: string) => {
-  // R8-fix: block fintech-only roles from the entire /dashboard tree
+  // Block fintech-only roles from the entire /dashboard tree
   if (role && DASHBOARD_BLOCKED_ROLES.has(role)) return false;
   if (matchesAny(pathname, compiledBaseDashboard)) return true;
-  if (role === 'OWNER' && matchesAny(pathname, compiledSuperAdmin)) return true;
-  if ((role === 'ADMIN' || role === 'OWNER') && matchesAny(pathname, compiledAdmin)) return true;
-  if (['AUTHOR', 'ADMIN', 'OWNER'].includes(role || '') && matchesAny(pathname, compiledAuthor))
-    return true;
+  // SUPERADMIN is an alias for OWNER — both get full superAdmin + admin + author routes
+  if (role && SUPER_ROLES.has(role) && matchesAny(pathname, compiledSuperAdmin)) return true;
+  if (role && ADMIN_ROLES.has(role) && matchesAny(pathname, compiledAdmin)) return true;
+  if (role && AUTHOR_ROLES.has(role) && matchesAny(pathname, compiledAuthor)) return true;
   return false;
 };
 
@@ -226,8 +227,10 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', nextUrl));
   }
 
-  // R12-fix: /exchange/* routes require authentication — redirect to /auth if not logged in.
-  // The Exchange layout itself handles staff membership verification.
+  // /exchange/* routes — require login + correct role.
+  // The Exchange layout further verifies staff membership from DB.
+  // Middleware check prevents unrelated roles (AUTHOR, USER, …) from
+  // reaching the layout at all — faster rejection at the edge.
   if (pathname.startsWith('/exchange')) {
     if (!isLoggedIn) {
       const callbackUrl = pathname + search;
@@ -235,16 +238,35 @@ export async function middleware(req: NextRequest) {
         new URL(`/auth?callbackUrl=${encodeURIComponent(callbackUrl)}`, nextUrl),
       );
     }
+    // Allow: EXCHANGE staff + platform admins (OWNER/SUPERADMIN/ADMIN for oversight)
+    const EXCHANGE_ALLOWED = new Set(['EXCHANGE', 'OWNER', 'SUPERADMIN', 'ADMIN']);
+    if (role && !EXCHANGE_ALLOWED.has(role)) {
+      return NextResponse.redirect(new URL('/', nextUrl));
+    }
   }
 
-  // /customer/* routes require authentication — redirect to /auth if not logged in.
-  // The Customer layout handles Customer record verification.
+  // /customer/* routes — require login + correct role.
+  // The Customer layout further verifies Customer record ownership from DB.
+  // Middleware check prevents unrelated roles (AUTHOR, USER, EXCHANGE, …) from
+  // reaching the layout at all — faster rejection at the edge.
   if (pathname.startsWith('/customer')) {
     if (!isLoggedIn) {
       const callbackUrl = pathname + search;
       return NextResponse.redirect(
         new URL(`/auth?callbackUrl=${encodeURIComponent(callbackUrl)}`, nextUrl),
       );
+    }
+    // Allow: customer roles + platform admins (OWNER/SUPERADMIN/ADMIN for support)
+    const CUSTOMER_ALLOWED = new Set([
+      'CUSTOMER',
+      'TEST_CUSTOMER',
+      'MERCHANT',
+      'OWNER',
+      'SUPERADMIN',
+      'ADMIN',
+    ]);
+    if (role && !CUSTOMER_ALLOWED.has(role)) {
+      return NextResponse.redirect(new URL('/', nextUrl));
     }
   }
 

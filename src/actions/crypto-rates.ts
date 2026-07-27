@@ -16,14 +16,14 @@ export const getLiveCryptoRates = safeCache(
       // در یک سناریوی واقعی اینجا به Binance یا CoinGecko متصل می‌شویم
       // برای این پیاده‌سازی، داده‌های شبیه‌سازی شده با نوسان اندک ارائه می‌دهیم
       const baseRates = [
-        { symbol: 'BTC', name: 'Bitcoin', price: 65432.10 },
+        { symbol: 'BTC', name: 'Bitcoin', price: 65432.1 },
         { symbol: 'ETH', name: 'Ethereum', price: 3456.78 },
-        { symbol: 'USDT', name: 'Tether', price: 1.00 },
+        { symbol: 'USDT', name: 'Tether', price: 1.0 },
         { symbol: 'SOL', name: 'Solana', price: 145.67 },
         { symbol: 'BNB', name: 'BNB', price: 580.23 },
       ];
 
-      return baseRates.map(r => ({
+      return baseRates.map((r) => ({
         ...r,
         price: r.price * (1 + (Math.random() * 0.002 - 0.001)), // نوسان ۰.۱٪
         change24h: Number((Math.random() * 10 - 5).toFixed(2)),
@@ -34,5 +34,5 @@ export const getLiveCryptoRates = safeCache(
     }
   },
   [],
-  { key: 'crypto:live-rates', ttl: 10 }
+  { key: 'crypto:live-rates', ttl: 10 },
 );

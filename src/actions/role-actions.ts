@@ -231,9 +231,14 @@ export async function updateUserRole(
     };
   }
 
+  // Increment tokenVersion so any active sessions for this user immediately
+  // pick up the new role on their next request (via the jwt callback check).
+  // This is the Auth.js v5 / 2026 pattern for instant role invalidation
+  // without forcing a sign-out — the session stays alive but the role is
+  // refreshed within one request rather than after up to 24 h (updateAge).
   const updated = await prisma.user.update({
     where: { id: userId },
-    data: { role: newRole },
+    data: { role: newRole, tokenVersion: { increment: 1 } },
     select: { id: true, role: true },
   });
 
