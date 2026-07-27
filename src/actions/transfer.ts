@@ -158,24 +158,7 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
 
   const { recipientUserId, amountCents, currency, note, idempotencyKey } = parsed.data;
 
-  // Idempotency check
-  const existing = await prisma.transaction.findFirst({
-    where: { idempotencyKey },
-    select: { id: true, meta: true },
-  });
-  if (existing) {
-    const meta = existing.meta as { txnRef?: string } | null;
-    return {
-      success: true,
-      data: {
-        txnId: existing.id,
-        txnRef: meta?.txnRef ?? existing.id,
-        needsOtp: false,
-      },
-    };
-  }
-
-  // پیدا کردن حساب فرستنده
+  // پیدا کردن حساب فرستنده قبل از idempotency lookup تا کلید به customer جاری scope شود.
   const senderCustomer = await prisma.customer.findFirst({
     where: { userId: auth.user.id },
     select: {
@@ -187,15 +170,53 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
     },
   });
 
-  if (!senderCustomer || senderCustomer.FintechAccount.length === 0) {
+  if (!senderCustomer) {
     return {
       success: false,
       error: { code: 'NO_ACCOUNT', message: 'حساب فعالی برای این ارز یافت نشد' },
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const senderAccount = senderCustomer.FintechAccount[0]!;
+  // Idempotency check — فقط تراکنش متعلق به customer جاری قابل replay است.
+  // اگر کلید قبلاً برای customer دیگری ثبت شده باشد، جزئیات آن افشا نمی‌شود
+  // و از تلاش مجدد برای insert با unique key جلوگیری می‌کنیم.
+  const existing = await prisma.transaction.findFirst({
+    where: { idempotencyKey },
+    select: { id: true, customerId: true, meta: true },
+  });
+  if (existing) {
+    if (existing.customerId !== senderCustomer.id) {
+      return {
+        success: false,
+        error: { code: 'IDEMPOTENCY_CONFLICT', message: 'کلید درخواست قبلاً استفاده شده است' },
+      };
+    }
+
+    const meta = existing.meta as { txnRef?: string } | null;
+    return {
+      success: true,
+      data: {
+        txnId: existing.id,
+        txnRef: meta?.txnRef ?? existing.id,
+        needsOtp: false,
+      },
+    };
+  }
+
+  if (senderCustomer.FintechAccount.length === 0) {
+    return {
+      success: false,
+      error: { code: 'NO_ACCOUNT', message: 'حساب فعالی برای این ارز یافت نشد' },
+    };
+  }
+
+  const senderAccount = senderCustomer.FintechAccount[0];
+  if (!senderAccount) {
+    return {
+      success: false,
+      error: { code: 'NO_ACCOUNT', message: 'حساب فعالی برای این ارز یافت نشد' },
+    };
+  }
 
   // بررسی موجودی
   if (senderAccount.balance < BigInt(amountCents)) {
@@ -457,7 +478,10 @@ export async function confirmTransfer(
     }); // end $transaction
   } catch (err) {
     if ((err as Error).message === 'INSUFFICIENT_BALANCE') {
-      return { success: false, error: { code: 'INSUFFICIENT_BALANCE', message: 'موجودی کافی نیست' } };
+      return {
+        success: false,
+        error: { code: 'INSUFFICIENT_BALANCE', message: 'موجودی کافی نیست' },
+      };
     }
     throw err;
   }

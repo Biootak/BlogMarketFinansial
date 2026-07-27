@@ -18,6 +18,23 @@ export const TX_KIND_FA: Record<string, string> = {
   ADJUSTMENT: 'تعدیل',
 };
 
+/** لیست کلیدهای kind — برای حلقه زدن در aggregate/legend */
+export const TX_KINDS = Object.keys(TX_KIND_FA) as Array<keyof typeof TX_KIND_FA>;
+
+/**
+ * رنگ‌های CSS token (همه به token ارجاع می‌دهند — هیچ hex اضافه نمی‌شود).
+ * برای conic-gradient و dot و legend در داشبورد و جدول تراکنش‌ها استفاده می‌شود.
+ */
+export const TX_KIND_COLOR: Record<string, string> = {
+  DEPOSIT: 'var(--at-accent)',
+  WITHDRAWAL: 'var(--at-warning)',
+  EXCHANGE: 'var(--at-info)',
+  TRANSFER: 'var(--at-violet)',
+  FEE: 'var(--at-telegram)',
+  SETTLEMENT: 'var(--at-gold)',
+  ADJUSTMENT: 'var(--at-fg-muted)',
+};
+
 // ─── Transaction status ───────────────────────────────────────────────────
 
 export type TxStatusColor = { label: string; color: string };
@@ -43,6 +60,14 @@ export const CUSTOMER_STATUS_FA: Record<string, { label: string; cls: string }> 
   PROSPECT: { label: 'احتمالی', cls: 'badgePending' },
   FROZEN: { label: 'مسدود', cls: 'badgeSuspended' },
   CLOSED: { label: 'بسته', cls: 'badgeClosed' },
+};
+
+/** tone (semantic color) برای segmented bar / chart رنگ‌بندی */
+export const CUSTOMER_STATUS_TONE: Record<string, 'emerald' | 'amber' | 'rose' | 'muted'> = {
+  ACTIVE: 'emerald',
+  PROSPECT: 'amber',
+  FROZEN: 'rose',
+  CLOSED: 'muted',
 };
 
 // ─── KYC level ────────────────────────────────────────────────────────────

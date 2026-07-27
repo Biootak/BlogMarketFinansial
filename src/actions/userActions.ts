@@ -3,7 +3,7 @@
 import { auth } from '@/auth';
 import { logActivity } from '@/lib/activity-logger';
 import prisma from '@/lib/db';
-import { requireUser } from '@/lib/require-auth';
+import { requireAdmin, requireUser } from '@/lib/require-auth';
 import { revalidatePath } from '@/lib/revalidate';
 import type { ActionResult, UserWithProfile } from '@/types/types';
 import type { Prisma } from '@prisma/client';
@@ -148,12 +148,10 @@ const createUserInputSchema = z.object({
 
 export async function createUser(data: CreateUserData): Promise<ActionResult<UserWithProfile>> {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return { success: false, message: 'شما باید وارد شوید' };
-    }
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return { success: false, message: authCheck.message };
 
-    const currentUserRole = session.user.role;
+    const currentUserRole = authCheck.user.role;
     // Check if user has permission to create users with the specified role
     if (ROLE_HIERARCHY[currentUserRole] <= ROLE_HIERARCHY[data.role]) {
       return { success: false, message: 'شما مجوز ایجاد کاربر با این نقش را ندارید' };
@@ -216,12 +214,10 @@ export async function updateUser(
   data: UpdateUserData,
 ): Promise<ActionResult<UserWithProfile>> {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return { success: false, message: 'شما باید وارد شوید' };
-    }
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return { success: false, message: authCheck.message };
 
-    const currentUserRole = session.user.role;
+    const currentUserRole = authCheck.user.role;
     const targetUser = await prisma.user.findUnique({ where: { id } });
 
     if (!targetUser) {
@@ -236,7 +232,7 @@ export async function updateUser(
     if (
       data.role &&
       (ROLE_HIERARCHY[currentUserRole] <= ROLE_HIERARCHY[data.role] ||
-        (targetUser.id === session.user.id &&
+        (targetUser.id === authCheck.user.id &&
           ROLE_HIERARCHY[data.role] >= ROLE_HIERARCHY[currentUserRole]))
     ) {
       return { success: false, message: 'شما مجوز تغییر به این نقش را ندارید' };
@@ -358,12 +354,10 @@ export async function updateUserRole(userId: string, newRole: Role) {
 
 export async function deleteUser(id: string): Promise<ActionResult> {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return { success: false, message: 'شما باید وارد شوید' };
-    }
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return { success: false, message: authCheck.message };
 
-    const currentUserRole = session.user.role;
+    const currentUserRole = authCheck.user.role;
     const targetUser = await prisma.user.findUnique({ where: { id } });
 
     if (!targetUser) {

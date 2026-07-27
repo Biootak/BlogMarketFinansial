@@ -44,11 +44,11 @@ vi.mock('next/headers', () => ({
 
 // ─── Import ───────────────────────────────────────────────────────────────────
 
+import { confirmTransfer, findTransferRecipient, initiateTransfer } from '@/actions/transfer';
 import prisma from '@/lib/db';
 import { isHighValueTransaction } from '@/lib/fintech/transaction-guard';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
-import { confirmTransfer, findTransferRecipient, initiateTransfer } from '@/actions/transfer';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -165,8 +165,10 @@ describe('initiateTransfer', () => {
   it('idempotency hit → همان txnId برمی‌گرداند', async () => {
     vi.mocked(requireUser).mockResolvedValue(AUTH_OK);
     vi.mocked(checkRateLimit).mockResolvedValue(RL_OK as never);
+    vi.mocked(prisma.customer.findFirst).mockResolvedValue(MOCK_SENDER_CUSTOMER as never);
     vi.mocked(prisma.transaction.findFirst).mockResolvedValue({
       id: 'txn-existing',
+      customerId: 'cust-1',
       meta: { txnRef: 'ref-xyz' },
     } as never);
 
@@ -177,6 +179,30 @@ describe('initiateTransfer', () => {
     });
     expect(result.success).toBe(true);
     if (result.success) expect(result.data.txnId).toBe('txn-existing');
+    expect(prisma.transaction.findFirst).toHaveBeenCalledWith({
+      where: { idempotencyKey: 'key-duplicate' },
+      select: { id: true, customerId: true, meta: true },
+    });
+  });
+
+  it('idempotency key کاربر دیگر → نباید transaction او را replay کند', async () => {
+    vi.mocked(requireUser).mockResolvedValue(AUTH_OK);
+    vi.mocked(checkRateLimit).mockResolvedValue(RL_OK as never);
+    vi.mocked(prisma.customer.findFirst).mockResolvedValue(MOCK_SENDER_CUSTOMER as never);
+    vi.mocked(prisma.transaction.findFirst).mockResolvedValue({
+      id: 'txn-other',
+      customerId: 'cust-other',
+      meta: { txnRef: 'ref-other' },
+    } as never);
+
+    const result = await initiateTransfer({
+      recipientUserId: 'u2',
+      amountCents: 500,
+      idempotencyKey: 'key-owned-by-other-user',
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error.code).toBe('IDEMPOTENCY_CONFLICT');
   });
 
   it('حساب فرستنده یافت نشد → NO_ACCOUNT', async () => {
@@ -265,7 +291,6 @@ describe('initiateTransfer', () => {
     }
     expect(requestTransactionOtp).toHaveBeenCalledOnce();
   });
-
 });
 
 // ─── confirmTransfer ──────────────────────────────────────────────────────────
@@ -399,5 +424,4 @@ describe('confirmTransfer', () => {
     expect(result.success).toBe(false);
     if (!result.success) expect(result.error.code).toBe('RECIPIENT_NO_ACCOUNT');
   });
-
 });

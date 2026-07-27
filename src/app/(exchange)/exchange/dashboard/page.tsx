@@ -1,110 +1,177 @@
 /**
- * /exchange/dashboard — داشبورد خلاصه صراف
+ * exchange/dashboard — landing page for exchange-staff workspace.
+ *
+ * version 2026-07-27: بازطراحی کامل — ساختار bento نامتقارن به جای
+ * StatCard grid. همهٔ داده‌ها real از DB.
+ *
+ *  - یک server call واحد برای همهٔ aggregate (getExchangeDashboardData)
+ *  - یک server call برای recent transactions (transactions صفحه)
+ *  - sub-components همگی Server Component (no client JS)
+ *  - 1 stagger reveal animation، 0 chart-lib، 0 hex
  */
-import { getExchangeStats } from '@/actions/exchange-transactions';
-import { getExchangeForUser } from '@/actions/exchanges';
-import { auth } from '@/auth';
-import { PageHeader, StatCard, StatGrid } from '@/components/Dashboard/primitives';
-import { Building2, CircleDollarSign, Clock, TrendingUp, Users } from 'lucide-react';
-import type { Metadata } from 'next';
+
 import { redirect } from 'next/navigation';
-import { Suspense } from 'react';
+import { Banknote, BarChart3, Bell, History, LayoutGrid, ListChecks, Users } from 'lucide-react';
+import { getSession } from '@/lib/session';
+import { getExchangeDashboardData } from '@/actions/exchange-dashboard';
+import { getTransactions } from '@/actions/exchange-transactions';
+
+import ExchangeHeroPulse from './_components/ExchangeHeroPulse';
+import ExchangeKpiRow from './_components/ExchangeKpiRow';
+import ExchangeCurrencyFlow from './_components/ExchangeCurrencyFlow';
+import ExchangeWeeklyRhythm from './_components/ExchangeWeeklyRhythm';
+import ExchangeTransactionMix from './_components/ExchangeTransactionMix';
+import ExchangeTopCustomers from './_components/ExchangeTopCustomers';
+import ExchangePendingQueue from './_components/ExchangePendingQueue';
+import ExchangeAlerts from './_components/ExchangeAlerts';
+import ExchangeQuickActions from './_components/ExchangeQuickActions';
 import ExchangeRecentTransactions from './_components/ExchangeRecentTransactions';
-import ExchangeDashboardEnhancements from './_components/ExchangeDashboardEnhancements';
+import s from './_components/ExchangeDashboard.module.css';
 
-export const metadata: Metadata = { title: 'داشبورد صرافی' };
+export const metadata = {
+  title: 'داشبورد صراف',
+  description: 'نمای کلی فعالیت صراف در لحظه',
+};
 
-/** delta درصدی امروز vs دیروز — null اگر دیروز صفر بود */
-function calcDelta(
-  today: number,
-  yesterday: number,
-): { value: number; trend: 'up' | 'down' } | undefined {
-  if (yesterday === 0) return undefined;
-  const pct = Math.round(((today - yesterday) / yesterday) * 100);
-  return { value: Math.abs(pct), trend: today >= yesterday ? 'up' : 'down' };
-}
+export const dynamic = 'force-dynamic';
 
 export default async function ExchangeDashboardPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
+  const session = await getSession();
+  if (!session?.user) redirect('/auth/signin');
 
-  const membership = await getExchangeForUser();
-  if (!membership) redirect('/dashboard');
+  const exchangeId = session.user.exchangeId;
+  if (!exchangeId) redirect('/auth/onboarding');
 
-  const { exchange } = membership;
-  const stats = await getExchangeStats(exchange.id);
+  // موازی: aggregate + recent
+  const [data, recentResp] = await Promise.all([
+    getExchangeDashboardData(exchangeId),
+    getTransactions(exchangeId, { limit: 8 }),
+  ]);
+  const recent = recentResp.rows;
 
-  const volumeAfn = Number(stats.totalVolume) / 100;
-  const todayDelta = calcDelta(stats.todayCount, stats.yesterdayCount);
+  if (!data) redirect('/auth/onboarding');
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
-      <PageHeader
-        title={`داشبورد — ${exchange.name}`}
-        description={`${exchange.city ?? 'صرافی'} · پنل مدیریت`}
-        breadcrumb={[{ label: 'پنل صرافی' }, { label: 'داشبورد' }]}
+    <div className={s.root}>
+      {/* ۱. Hero pulse — signature moment */}
+      <ExchangeHeroPulse
+        todayVolume={data.kpi.todayVolume}
+        yesterdayVolume={data.kpi.yesterdayVolume}
+        primaryCurrency={data.primaryCurrency}
+        exchangeName={data.exchangeName}
+        city={data.city}
+        sparkline={data.weeklyRhythm.map((d) => ({ volume: d.volume, count: d.count }))}
+        nowIso={new Date().toISOString()}
       />
 
-      <StatGrid cols={4}>
-        <StatCard
-          label="کل مشتریان"
-          value={stats.totalCustomers}
-          icon={<Users className="size-4" />}
-          href="/exchange/customers"
-          delta={
-            stats.todayNewCustomers > 0
-              ? { value: stats.todayNewCustomers, trend: 'up' }
-              : undefined
-          }
-          info={
-            stats.todayNewCustomers > 0 ? `${stats.todayNewCustomers} مشتری جدید امروز` : undefined
-          }
-        />
-        <StatCard
-          label="تراکنش‌های امروز"
-          value={stats.todayCount}
-          icon={<TrendingUp className="size-4" />}
-          href="/exchange/transactions"
-          delta={todayDelta}
-          info={`دیروز: ${new Intl.NumberFormat('fa-IR').format(stats.yesterdayCount)}`}
-        />
-        <StatCard
-          label="در انتظار تأیید"
-          value={stats.pendingCount}
-          icon={<Clock className="size-4" />}
-          href="/exchange/transactions"
-          info="تراکنش‌های در انتظار پردازش"
-        />
-        <StatCard
-          label={`حجم کل (${stats.statsCurrency})`}
-          value={volumeAfn}
-          icon={<Building2 className="size-4" />}
-          format="compact"
-          info="مجموع تراکنش‌های تکمیل‌شده"
-        />
-      </StatGrid>
+      {/* ۲. KPI row */}
+      <ExchangeKpiRow kpi={data.kpi} />
 
-      <ExchangeDashboardEnhancements stats={stats} />
+      {/* ۳. Quick actions */}
+      <section aria-label="اقدام‌های پرکاربرد">
+        <ExchangeQuickActions />
+      </section>
 
-      <Suspense
-        fallback={
-          <div
-            style={{
-              background: 'var(--at-surface)',
-              border: '1px solid var(--at-line)',
-              borderRadius: '14px',
-              padding: '2rem',
-              textAlign: 'center',
-              color: 'var(--at-fg-subtle)',
-              fontSize: 'var(--ds-text-sm)',
-            }}
-          >
-            در حال بارگذاری تراکنش‌ها…
+      {/* ۴. Bento grid — primary 2-column */}
+      <div className={s.bento}>
+        <section className={s.panel} aria-label="جریان ارزها">
+          <header className={s.panelHead}>
+            <h3 className={s.panelTitle}>
+              <Banknote size={16} aria-hidden />
+              جریان ارزها
+            </h3>
+            <p className={s.panelSub}>تجمیع ۳۰ روز اخیر</p>
+          </header>
+          <div className={s.panelBody}>
+            <ExchangeCurrencyFlow
+              items={data.currencyFlow}
+              primaryCurrency={data.primaryCurrency}
+            />
           </div>
-        }
-      >
-        <ExchangeRecentTransactions exchangeId={exchange.id} />
-      </Suspense>
+        </section>
+
+        <section className={s.panel} aria-label="صف در انتظار">
+          <header className={s.panelHead}>
+            <h3 className={s.panelTitle}>
+              <ListChecks size={16} aria-hidden />
+              قدیمی‌ترین در انتظارها
+            </h3>
+            <p className={s.panelSub}>پنج مورد اول</p>
+          </header>
+          <div className={s.panelBody}>
+            <ExchangePendingQueue items={data.pendingQueue} />
+          </div>
+        </section>
+
+        <section className={s.panel} aria-label="ریتم هفتگی">
+          <header className={s.panelHead}>
+            <h3 className={s.panelTitle}>
+              <BarChart3 size={16} aria-hidden />
+              ریتم هفتگی
+            </h3>
+            <p className={s.panelSub}>تعداد تراکنش هر روز</p>
+          </header>
+          <div className={s.panelBody}>
+            <ExchangeWeeklyRhythm data={data.weeklyRhythm} />
+          </div>
+        </section>
+
+        <section className={s.panel} aria-label="ترکیب تراکنش‌ها">
+          <header className={s.panelHead}>
+            <h3 className={s.panelTitle}>
+              <LayoutGrid size={16} aria-hidden />
+              ترکیب تراکنش‌ها
+            </h3>
+            <p className={s.panelSub}>توزیع نوع در ۳۰ روز</p>
+          </header>
+          <div className={s.panelBody}>
+            <ExchangeTransactionMix items={data.transactionMix} />
+          </div>
+        </section>
+      </div>
+
+      {/* ۵. Lower band — Alerts + Top customers */}
+      <div className={s.bento}>
+        <section className={s.panel} aria-label="هشدارها">
+          <header className={s.panelHead}>
+            <h3 className={s.panelTitle}>
+              <Bell size={16} aria-hidden />
+              هشدارها
+            </h3>
+            <p className={s.panelSub}>نیاز به اقدام</p>
+          </header>
+          <div className={s.panelBody}>
+            <ExchangeAlerts alerts={data.alerts} />
+          </div>
+        </section>
+
+        <section className={s.panel} aria-label="مشتریان فعال">
+          <header className={s.panelHead}>
+            <h3 className={s.panelTitle}>
+              <Users size={16} aria-hidden />
+              مشتریان فعال
+            </h3>
+            <p className={s.panelSub}>پنج برتر ۳۰ روز اخیر</p>
+          </header>
+          <div className={s.panelBody}>
+            <ExchangeTopCustomers items={data.topCustomers} />
+          </div>
+        </section>
+      </div>
+
+      {/* ۶. Recent activity — full width */}
+      <section className={s.panel} aria-label="آخرین تراکنش‌ها">
+        <header className={s.panelHead}>
+          <h3 className={s.panelTitle}>
+            <History size={16} aria-hidden />
+            آخرین تراکنش‌ها
+          </h3>
+          <p className={s.panelSub}>{recent.length} مورد اخیر</p>
+        </header>
+        <div className={s.panelBody}>
+          <ExchangeRecentTransactions transactions={recent} limit={8} />
+        </div>
+      </section>
     </div>
   );
 }
