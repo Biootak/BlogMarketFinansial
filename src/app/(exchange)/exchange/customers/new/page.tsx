@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: 'ایجاد مشتری · صرافی'
 
 export default async function NewCustomerPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/customers/new');
 
   const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');

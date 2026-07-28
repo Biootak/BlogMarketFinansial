@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 
 export default async function BeneficiariesPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin?callbackUrl=/beneficiaries');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/beneficiaries');
 
   const beneficiaries = await getMyBeneficiaries();
 

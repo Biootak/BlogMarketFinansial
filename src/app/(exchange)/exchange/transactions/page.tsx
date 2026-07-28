@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: 'تراکنش‌های صرافی' };
 
 export default async function TransactionsPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/transactions');
 
   const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');

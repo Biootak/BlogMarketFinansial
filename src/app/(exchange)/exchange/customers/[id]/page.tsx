@@ -23,7 +23,7 @@ export default async function CustomerDetailPage({ params }: Props) {
   const { id } = await params;
 
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/customers');
 
   const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');

@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: 'آرشیو مشتریان · صرا�
 
 export default async function ArchivePage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/customers/archive');
 
   const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');

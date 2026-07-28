@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: 'قیمت‌گذاری ارز' };
 
 export default async function ExchangeQuotesPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/quotes');
 
   const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');

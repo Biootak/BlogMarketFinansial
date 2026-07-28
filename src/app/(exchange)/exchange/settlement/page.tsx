@@ -18,7 +18,7 @@ export const metadata: Metadata = { title: 'تسویه‌حساب | پنل صر�
 
 export default async function SettlementPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/settlement');
 
   const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');

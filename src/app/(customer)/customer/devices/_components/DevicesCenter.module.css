@@ -1,0 +1,205 @@
+/* ════════════════════════════════════════════════════════════════════════
+   DevicesCenter.module.css — مدیریت دستگاه‌های متصل
+   Language: customer portal  |  Dir: RTL  |  Design: 2026 linear/bento
+   ════════════════════════════════════════════════════════════════════════ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5, 20px);
+  animation: pageIn 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Toolbar ─────────────────────────────────────────────────────────── */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3, 12px);
+  flex-wrap: wrap;
+}
+
+.toolbarLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2, 8px);
+}
+
+.count {
+  font-size: 13px;
+  color: var(--ds-color-text-secondary, #6b7280);
+  padding: 3px 10px;
+  background: color-mix(in srgb, var(--ds-color-text-primary, #111) 6%, transparent);
+  border-radius: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+.revokeAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ds-color-error, #ef4444);
+  background: color-mix(in srgb, var(--ds-color-error, #ef4444) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ds-color-error, #ef4444) 20%, transparent);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 150ms, border-color 150ms;
+}
+.revokeAll:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ds-color-error, #ef4444) 14%, transparent);
+}
+.revokeAll:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Device Grid ─────────────────────────────────────────────────────── */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--ds-space-4, 16px);
+}
+
+/* ── Device Card ─────────────────────────────────────────────────────── */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  background: var(--ds-color-bg-elevated, #fff);
+  border: 1px solid var(--ds-color-border-subtle, #e5e7eb);
+  border-radius: 16px;
+  transition: border-color 160ms, box-shadow 160ms;
+  animation: cardIn 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--card-idx, 0) * 35ms);
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(4px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.card:hover {
+  border-color: color-mix(in srgb, var(--ds-color-accent, #6366f1) 30%, transparent);
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--ds-color-accent, #6366f1) 8%, transparent);
+}
+
+/* current session — subtle highlight */
+.card[data-current="true"] {
+  border-color: color-mix(in srgb, var(--ds-color-success, #22c55e) 35%, transparent);
+  background: color-mix(in srgb, var(--ds-color-success, #22c55e) 4%, var(--ds-color-bg-elevated, #fff));
+}
+
+.cardHead {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.deviceIcon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--ds-color-accent, #6366f1) 10%, transparent);
+  border-radius: 12px;
+  color: var(--ds-color-accent, #6366f1);
+}
+
+.cardMeta {
+  flex: 1;
+  min-width: 0;
+}
+
+.deviceName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ds-color-text-primary, #111);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0 0 2px;
+}
+
+.deviceSub {
+  font-size: 12px;
+  color: var(--ds-color-text-secondary, #6b7280);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+}
+.badge[data-status="TRUSTED"]   { background: color-mix(in srgb,#22c55e 14%,transparent); color:#15803d; }
+.badge[data-status="UNVERIFIED"]{ background: color-mix(in srgb,#f59e0b 14%,transparent); color:#b45309; }
+.badge[data-status="REVOKED"]   { background: color-mix(in srgb,#ef4444 14%,transparent); color:#b91c1c; }
+
+.cardInfo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.infoLabel { font-size: 11px; color: var(--ds-color-text-tertiary, #9ca3af); }
+.infoValue { font-size: 13px; color: var(--ds-color-text-primary, #111); font-variant-numeric: tabular-nums; }
+
+.cardActions {
+  display: flex;
+  gap: 8px;
+  padding-block-start: 4px;
+  border-block-start: 1px solid var(--ds-color-border-subtle, #e5e7eb);
+}
+
+.actionBtn {
+  flex: 1;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 130ms;
+  border: 1px solid var(--ds-color-border-subtle, #e5e7eb);
+  color: var(--ds-color-text-secondary, #6b7280);
+  background: transparent;
+}
+.actionBtn:hover:not(:disabled) { background: color-mix(in srgb, var(--ds-color-text-primary,#111) 5%, transparent); }
+.actionBtn[data-danger="true"] { color: var(--ds-color-error, #ef4444); border-color: color-mix(in srgb,var(--ds-color-error,#ef4444) 25%,transparent); }
+.actionBtn[data-danger="true"]:hover:not(:disabled) { background: color-mix(in srgb,var(--ds-color-error,#ef4444) 8%,transparent); }
+.actionBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Empty state ─────────────────────────────────────────────────────── */
+.empty {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 56px 24px;
+  text-align: center;
+  border: 1px dashed color-mix(in srgb, var(--ds-color-text-primary,#111) 14%, transparent);
+  border-radius: 16px;
+  color: var(--ds-color-text-secondary, #6b7280);
+  font-size: 14px;
+}

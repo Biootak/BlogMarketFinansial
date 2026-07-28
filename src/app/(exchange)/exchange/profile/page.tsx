@@ -18,7 +18,7 @@ export const metadata: Metadata = { title: 'پروفایل صرافی' };
 
 export default async function ExchangeProfilePage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/profile');
 
   const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');

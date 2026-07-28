@@ -14,7 +14,7 @@ export const metadata = { title: 'ساعات کاری | تنظیمات' };
 
 export default async function WorkingHoursPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/settings/working-hours');
 
   const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');

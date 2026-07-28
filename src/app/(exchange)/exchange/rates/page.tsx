@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: 'مدیریت نرخ‌ها' };
 
 export default async function ExchangeRatesPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/rates');
 
   const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');

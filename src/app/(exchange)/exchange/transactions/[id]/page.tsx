@@ -22,7 +22,7 @@ interface PageProps {
 
 export default async function ExchangeTransactionDetailPage({ params }: PageProps) {
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/transactions');
 
   const { id } = await params;
   const tx = await getExchangeTransactionById(id);

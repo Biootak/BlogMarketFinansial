@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: 'مشتریان صرافی' };
 
 export default async function CustomersPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/customers');
 
   const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');

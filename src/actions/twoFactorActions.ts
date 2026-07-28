@@ -47,6 +47,19 @@ export async function setup2FA(): Promise<FintechActionResult<TwoFASetupData>> {
   if (!auth.success)
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد شوید' } };
 
+  // Rate limit: حداکثر ۵ بار شروع setup در ۱۵ دقیقه — جلوگیری از spam secret generation
+  const rateKey = `2fa-setup:${auth.user.id}`;
+  const limited = await checkRateLimit(rateKey, 'auth');
+  if (!limited.success) {
+    return {
+      success: false,
+      error: {
+        code: 'RATE_LIMITED',
+        message: 'تعداد تلاش‌ها بیش از حد مجاز است. لطفاً ۱۵ دقیقه صبر کنید.',
+      },
+    };
+  }
+
   const user = await prisma.user.findUnique({
     where: { id: auth.user.id },
     select: { email: true, twoFactorEnabled: true },

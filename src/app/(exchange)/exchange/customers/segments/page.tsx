@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: 'سگمنت‌های مشتریان �
 
 export default async function SegmentsPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/customers/segments');
 
   const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');

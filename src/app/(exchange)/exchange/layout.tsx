@@ -36,7 +36,7 @@ export default async function ExchangeLayout({
 
   const userId = session?.user?.id;
   if (!userId) {
-    redirect('/signin');
+    redirect('/auth?callbackUrl=/exchange');
   }
 
   const { user } = session;

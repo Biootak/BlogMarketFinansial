@@ -20,7 +20,7 @@ export const metadata: Metadata = { title: 'خدمات آنلاین | پنل ص�
 
 export default async function ExchangeServicesPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/services');
 
   const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');

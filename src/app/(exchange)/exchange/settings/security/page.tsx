@@ -18,7 +18,7 @@ export const metadata = { title: 'امنیت و دسترسی | تنظیمات' }
 
 export default async function SecurityPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/settings/security');
 
   const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');

@@ -17,7 +17,7 @@ export const metadata = { title: 'تنظیمات صرافی' };
 
 export default async function SettingsIndexPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/settings');
 
   const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');

@@ -18,7 +18,7 @@ export const metadata: Metadata = { title: 'گزارش‌ها | پنل صراف�
 
 export default async function ExchangeReportsPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/reports');
 
   const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');

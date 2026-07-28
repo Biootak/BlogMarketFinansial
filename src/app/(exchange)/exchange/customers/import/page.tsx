@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: 'ورود دسته‌جمعی مشت�
 
 export default async function ImportPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/customers/import');
 
   const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');

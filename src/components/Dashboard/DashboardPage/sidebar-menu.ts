@@ -19,11 +19,13 @@ import {
   HiOutlineDevicePhoneMobile,
   HiOutlineDocumentText,
   HiOutlineExclamationTriangle,
+  HiOutlineFingerPrint,
   HiOutlineHome,
   HiOutlineInboxArrowDown,
   HiOutlineKey,
   HiOutlineMegaphone,
   HiOutlineShieldCheck,
+  HiOutlineSparkles,
   HiOutlineSquares2X2,
   HiOutlineTag,
   HiOutlineUserCircle,
@@ -31,7 +33,6 @@ import {
   HiOutlineUsers,
   HiOutlineCreditCard as HiOutlineVirtualCard,
   HiOutlineWallet,
-  HiOutlineSparkles,
 } from 'react-icons/hi2';
 
 export const ICON_CLASS = 'w-[19px] h-[19px]';
@@ -421,6 +422,20 @@ export function getMenu(role: UserRole): NavSection[] {
     label: 'توسعه‌دهندگان',
     title: 'پنل API و کلیدها',
   };
+  const customer2FA: MenuItem = {
+    id: 'customer2FA',
+    href: '/customer/2fa',
+    icon: HiOutlineFingerPrint({ className: ICON_CLASS }),
+    label: '۲ مرحله‌ای',
+    title: 'احراز هویت دو مرحله‌ای (TOTP)',
+  };
+  const customerDevices: MenuItem = {
+    id: 'customerDevices',
+    href: '/customer/devices',
+    icon: HiOutlineDevicePhoneMobile({ className: ICON_CLASS }),
+    label: 'دستگاه‌ها',
+    title: 'مدیریت دستگاه‌های متصل',
+  };
 
   // ─── Exchange Panel menu items ───────────────────────────────────────────
   const exchangeDashboard: MenuItem = {
@@ -513,7 +528,14 @@ export function getMenu(role: UserRole): NavSection[] {
           id: 'account',
           index: '۰۴',
           label: 'حساب',
-          items: [customerNotifications, customerDeveloper, customerProfile, customerSettings],
+          items: [
+            customer2FA,
+            customerDevices,
+            customerNotifications,
+            customerDeveloper,
+            customerProfile,
+            customerSettings,
+          ],
         },
       ];
     case 'EXCHANGE':

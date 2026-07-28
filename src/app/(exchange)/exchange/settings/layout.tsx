@@ -24,7 +24,7 @@ export default async function SettingsLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/settings');
 
   const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');

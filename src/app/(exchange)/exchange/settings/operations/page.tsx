@@ -20,7 +20,7 @@ export const metadata = { title: 'عملیات و کارمزد | تنظیمات'
 
 export default async function OperationsPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/settings/operations');
 
   const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');
