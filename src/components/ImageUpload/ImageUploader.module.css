@@ -1,0 +1,272 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   ImageUploader — استایل‌های کامپوننت آپلودر
+   منبع حقیقت برای سایز thumbnail (sm/md/lg/xl) — به جای Tailwind class
+   که در purge یا dynamic class حذف می‌شد.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3, 0.75rem);
+  inline-size: 100%;
+}
+.root[data-disabled='true'] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* ── Label/Hint (بالای dropzone) ─────────────────────────────────────── */
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+}
+.headLabel {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--ds-text-muted, #6b7280);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.headHint {
+  font-size: 0.75rem;
+  color: var(--ds-text-muted, #6b7280);
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+/* ── Dropzone container ─────────────────────────────────────────────── */
+.zone {
+  inline-size: 100%;
+  border: 2px dashed var(--ds-border-default, #d2d9e6);
+  border-radius: var(--ds-radius-md, 0.5rem);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 200ms var(--ds-ease, ease),
+    background-color 200ms var(--ds-ease, ease);
+  background: transparent;
+}
+.zone:hover {
+  border-color: var(--ds-brand-500, #5e6ae6);
+}
+.zoneActive {
+  border-color: var(--ds-brand-500, #5e6ae6);
+  background: color-mix(in oklch, var(--ds-brand-500, #5e6ae6) 5%, transparent);
+}
+.zoneDisabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.zoneCompact {
+  padding: 1.5rem;
+}
+.zoneLarge {
+  padding: 2.5rem 1rem;
+}
+.zoneWithFile {
+  padding: 1rem;
+}
+.zoneWithFileLarge {
+  padding: 1.5rem;
+}
+
+/* ── Empty state (وقتی فایلی نیست) ─────────────────────────────────── */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+.emptyIcon {
+  color: var(--ds-text-muted, #6b7280);
+  opacity: 0.6;
+}
+.emptyTitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--ds-text-primary, #14171f);
+}
+.emptyTitleLarge {
+  font-size: 1rem;
+  font-weight: 600;
+}
+.emptyHint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--ds-text-muted, #6b7280);
+  font-weight: 500;
+}
+
+/* ── Thumbnails grid ───────────────────────────────────────────────── */
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+.gridLarge {
+  gap: 0.75rem;
+}
+
+/* ── Thumbnail (single file) — این مهم‌ترین بخش برای رفع باگ ارتفاع ── */
+.thumb {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: var(--ds-radius-md, 0.5rem);
+  border: 2px solid var(--ds-border-subtle, #e0e4eb);
+  background: var(--ds-surface-recessed, #f0f2f6);
+  flex-shrink: 0;
+  isolation: isolate;
+  /* Fallback visible size — حتی اگر همه چیز fail شود، یک مربع دیده شود */
+  min-inline-size: 4rem;
+  min-block-size: 4rem;
+}
+
+/* Size variants — هر کدام explicit px دارد تا هیچ ابهامی نباشد */
+.thumbSm {
+  inline-size: 64px;
+  block-size: 64px;
+}
+.thumbMd {
+  inline-size: 96px;
+  block-size: 96px;
+}
+.thumbLg {
+  inline-size: 160px;
+  block-size: 160px;
+}
+.thumbXl {
+  inline-size: 240px;
+  block-size: 240px;
+}
+
+/* The actual image — absolutely positioned to fill the thumb.
+   display: block جلوگیری از inline-element baseline gap. */
+.thumbImg {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.thumbImgError {
+  opacity: 0.5;
+}
+
+/* ── Status overlays (روی thumbnail) ──────────────────────────────── */
+.uploadingOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 0.55);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  z-index: 2;
+}
+.uploadingPct {
+  font-variant-numeric: tabular-nums;
+}
+
+.errorOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgb(220 38 38 / 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 0;
+  cursor: pointer;
+  z-index: 2;
+  transition: background-color 150ms ease;
+}
+.errorOverlay:hover {
+  background: rgb(220 38 38 / 0.92);
+}
+
+.doneBadge {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  background: rgb(16 185 129 / 0.92);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding-block: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  z-index: 1;
+}
+.doneBadgeSm {
+  font-size: 9px;
+}
+
+.removeBtn {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  background: var(--ds-brand-500, #5e6ae6);
+  color: white;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 150ms ease;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+  z-index: 3;
+}
+.thumb:hover .removeBtn,
+.removeBtn:focus-visible {
+  opacity: 1;
+}
+.removeBtnSm {
+  inline-size: 20px;
+  block-size: 20px;
+}
+.removeBtnMd {
+  inline-size: 24px;
+  block-size: 24px;
+}
+.removeBtn:disabled {
+  opacity: 0;
+  cursor: not-allowed;
+}
+
+/* ── Aggregate progress (batch) ──────────────────────────────────── */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--ds-text-muted, #6b7280);
+  font-weight: 500;
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .zone,
+  .removeBtn,
+  .errorOverlay {
+    transition: none;
+  }
+}

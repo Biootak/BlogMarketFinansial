@@ -20,6 +20,8 @@ export type CustomerAccessOk = {
   userId: string;
   customerId: string;
   exchangeId: string;
+  /** وضعیت Customer record (ACTIVE / FROZEN / CLOSED / PENDING) — برای تصمیم‌گیری UI */
+  customerStatus: string;
 };
 
 export type CustomerAccessFail = {
@@ -54,7 +56,7 @@ export async function requireCustomerAccess(): Promise<CustomerAccessResult> {
     const customer = await prisma.customer.findFirst({
       where: { status: { not: 'CLOSED' } },
       orderBy: { createdAt: 'asc' },
-      select: { id: true, exchangeId: true },
+      select: { id: true, exchangeId: true, status: true },
     });
     if (!customer) {
       return {
@@ -67,7 +69,13 @@ export async function requireCustomerAccess(): Promise<CustomerAccessResult> {
         },
       };
     }
-    return { ok: true, userId: user.id, customerId: customer.id, exchangeId: customer.exchangeId };
+    return {
+      ok: true,
+      userId: user.id,
+      customerId: customer.id,
+      exchangeId: customer.exchangeId,
+      customerStatus: customer.status,
+    };
   }
 
   if (!CUSTOMER_ROLES.has(user.role as string)) {
@@ -86,7 +94,7 @@ export async function requireCustomerAccess(): Promise<CustomerAccessResult> {
   const customer = await prisma.customer.findFirst({
     where: { userId: user.id, status: { not: 'CLOSED' } },
     orderBy: { createdAt: 'desc' },
-    select: { id: true, exchangeId: true },
+    select: { id: true, exchangeId: true, status: true },
   });
 
   if (!customer) {
@@ -106,5 +114,6 @@ export async function requireCustomerAccess(): Promise<CustomerAccessResult> {
     userId: user.id,
     customerId: customer.id,
     exchangeId: customer.exchangeId,
+    customerStatus: customer.status,
   };
 }

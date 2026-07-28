@@ -5,11 +5,11 @@
  *
  * ۳ گام: اطلاعات پایه → آپلود مدارک (drag-drop واقعی) → تأیید نهایی
  * Status views: PENDING / APPROVED / REJECTED
- * - File upload واقعی از /api/upload (نه URL دستی)
+ * - File upload واقعی از /api/upload (نه URL دستی) — از ImageUploader مشترک
  * - Drag & Drop + camera capture
  * - Preview تصاویر قبل از ارسال
  * - Spring micro-interactions
- * - همه ۵ state: loading / empty / error / success / disabled
+ * - همهٔ ۵ state: loading / empty / error / success / disabled
  */
 
 import {
@@ -17,6 +17,7 @@ import {
   submitKycBasicInfo,
   submitKycDocuments,
 } from '@/actions/kyc-onboarding';
+import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -24,18 +25,16 @@ import {
   ArrowLeft,
   ArrowRight,
   BadgeCheck,
-  Camera,
   CheckCircle2,
   Clock,
   FileText,
   ShieldCheck,
   Upload,
   User,
-  X,
   XCircle,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useCallback, useRef, useState, useTransition } from 'react';
+import { useCallback, useState, useTransition } from 'react';
 import s from './KycOnboardingClient.module.css';
 
 type Props = { initialRecord: KycRecordRow | null };
@@ -51,9 +50,6 @@ type DocFiles = {
   selfieUrl: string;
   docFrontUrl: string;
   docBackUrl: string;
-  selfiePreview: string;
-  docFrontPreview: string;
-  docBackPreview: string;
 };
 
 const STEPS = [
@@ -83,137 +79,6 @@ const STATUS_CONFIG = {
   },
 };
 
-// ── FileUploadZone ─────────────────────────────────────────────────────────
-interface UploadZoneProps {
-  label: string;
-  hint: string;
-  previewUrl: string;
-  onFile: (url: string, preview: string) => void;
-  required?: boolean;
-  disabled?: boolean;
-}
-
-function FileUploadZone({ label, hint, previewUrl, onFile, required, disabled }: UploadZoneProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-
-  const upload = useCallback(
-    async (file: File) => {
-      if (!file.type.startsWith('image/')) {
-        setUploadError('فقط تصویر قابل قبول است (JPG، PNG، WebP)');
-        return;
-      }
-      if (file.size > 8 * 1024 * 1024) {
-        setUploadError('حداکثر اندازه فایل ۸ مگابایت است');
-        return;
-      }
-      setUploadError(null);
-      setUploading(true);
-      try {
-        const formData = new FormData();
-        formData.append('files', file);
-        formData.append('folder', 'kyc');
-        const res = await fetch('/api/upload', { method: 'POST', body: formData });
-        if (!res.ok) throw new Error('خطا در آپلود تصویر');
-        const json = await res.json();
-        const url: string = json.files?.[0]?.url ?? '';
-        if (!url) throw new Error('آدرس تصویر دریافت نشد');
-        const preview = URL.createObjectURL(file);
-        onFile(url, preview);
-      } catch (err) {
-        setUploadError(err instanceof Error ? err.message : 'خطا در آپلود');
-      } finally {
-        setUploading(false);
-      }
-    },
-    [onFile],
-  );
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      setDragOver(false);
-      const file = e.dataTransfer.files[0];
-      if (file) upload(file);
-    },
-    [upload],
-  );
-
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) upload(file);
-    },
-    [upload],
-  );
-
-  return (
-    <div className={s.uploadZoneWrapper}>
-      <div className={s.uploadLabel}>
-        {label}
-        {required && <span className={s.required}>*</span>}
-      </div>
-      <button
-        type="button"
-        className={`${s.uploadZone} ${dragOver ? s.uploadZoneDrag : ''} ${previewUrl ? s.uploadZoneHasFile : ''} ${disabled ? s.uploadZoneDisabled : ''}`}
-        onClick={() => !disabled && !uploading && inputRef.current?.click()}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragOver(true);
-        }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={handleDrop}
-        disabled={disabled || uploading}
-        aria-label={`آپلود ${label}`}
-      >
-        {previewUrl ? (
-          <div className={s.uploadPreview}>
-            <Image src={previewUrl} alt={label} fill className={s.uploadPreviewImg} unoptimized />
-            <div className={s.uploadPreviewOverlay}>
-              <Camera size={20} aria-hidden />
-              <span>تغییر</span>
-            </div>
-          </div>
-        ) : (
-          <div className={s.uploadPlaceholder}>
-            {uploading ? (
-              <div className={s.uploadSpinner} aria-label="در حال آپلود" />
-            ) : (
-              <>
-                <div className={s.uploadIcon}>
-                  <Upload size={22} aria-hidden />
-                </div>
-                <span className={s.uploadTitle}>
-                  {dragOver ? 'رها کنید' : 'کلیک یا drag & drop'}
-                </span>
-                <span className={s.uploadHint}>{hint}</span>
-              </>
-            )}
-          </div>
-        )}
-      </button>
-      {uploadError && (
-        <p className={s.uploadError} role="alert">
-          <AlertCircle size={13} aria-hidden />
-          {uploadError}
-        </p>
-      )}
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        className={s.hiddenInput}
-        onChange={handleChange}
-        disabled={disabled || uploading}
-        aria-hidden="true"
-        tabIndex={-1}
-      />
-    </div>
-  );
-}
-
 // ── Main Component ──────────────────────────────────────────────────────────
 export function KycOnboardingClient({ initialRecord }: Props) {
   const [record, setRecord] = useState<KycRecordRow | null>(initialRecord);
@@ -232,9 +97,6 @@ export function KycOnboardingClient({ initialRecord }: Props) {
     selfieUrl: '',
     docFrontUrl: '',
     docBackUrl: '',
-    selfiePreview: '',
-    docFrontPreview: '',
-    docBackPreview: '',
   });
 
   const handleFormChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -501,33 +363,49 @@ export function KycOnboardingClient({ initialRecord }: Props) {
             )}
 
             <div className={s.uploadGrid}>
-              <FileUploadZone
+              <ImageUploader
+                key={`selfie-${docs.selfieUrl}`}
+                initialPreviews={docs.selfieUrl ? [docs.selfieUrl] : []}
+                onImageUpload={(urls: string[]) =>
+                  setDocs((d) => ({ ...d, selfieUrl: urls[0] ?? '' }))
+                }
+                onImageRemove={() => setDocs((d) => ({ ...d, selfieUrl: '' }))}
+                maxFiles={1}
+                multiple={false}
+                folder="kyc"
+                thumbSize="lg"
                 label="عکس سلفی"
                 hint="عکس با کیفیت از صورت خود بگیرید"
-                previewUrl={docs.selfiePreview}
-                onFile={(url, preview) =>
-                  setDocs((d) => ({ ...d, selfieUrl: url, selfiePreview: preview }))
-                }
-                required
                 disabled={isPending}
               />
-              <FileUploadZone
+              <ImageUploader
+                key={`front-${docs.docFrontUrl}`}
+                initialPreviews={docs.docFrontUrl ? [docs.docFrontUrl] : []}
+                onImageUpload={(urls: string[]) =>
+                  setDocs((d) => ({ ...d, docFrontUrl: urls[0] ?? '' }))
+                }
+                onImageRemove={() => setDocs((d) => ({ ...d, docFrontUrl: '' }))}
+                maxFiles={1}
+                multiple={false}
+                folder="kyc"
+                thumbSize="lg"
                 label="روی مدرک"
                 hint="تصویر واضح جلو کارت ملی / تذکره"
-                previewUrl={docs.docFrontPreview}
-                onFile={(url, preview) =>
-                  setDocs((d) => ({ ...d, docFrontUrl: url, docFrontPreview: preview }))
-                }
-                required
                 disabled={isPending}
               />
-              <FileUploadZone
+              <ImageUploader
+                key={`back-${docs.docBackUrl}`}
+                initialPreviews={docs.docBackUrl ? [docs.docBackUrl] : []}
+                onImageUpload={(urls: string[]) =>
+                  setDocs((d) => ({ ...d, docBackUrl: urls[0] ?? '' }))
+                }
+                onImageRemove={() => setDocs((d) => ({ ...d, docBackUrl: '' }))}
+                maxFiles={1}
+                multiple={false}
+                folder="kyc"
+                thumbSize="lg"
                 label="پشت مدرک"
                 hint="اختیاری — پشت کارت ملی / تذکره"
-                previewUrl={docs.docBackPreview}
-                onFile={(url, preview) =>
-                  setDocs((d) => ({ ...d, docBackUrl: url, docBackPreview: preview }))
-                }
                 disabled={isPending}
               />
             </div>
@@ -564,11 +442,11 @@ export function KycOnboardingClient({ initialRecord }: Props) {
             </div>
 
             <div className={s.docPreviews}>
-              {docs.selfiePreview && (
+              {docs.selfieUrl && (
                 <div className={s.docPreviewItem}>
                   <div className={s.docThumb}>
                     <Image
-                      src={docs.selfiePreview}
+                      src={docs.selfieUrl}
                       alt="سلفی"
                       fill
                       className={s.docThumbImg}
@@ -579,11 +457,11 @@ export function KycOnboardingClient({ initialRecord }: Props) {
                   <span className={s.docThumbLabel}>سلفی</span>
                 </div>
               )}
-              {docs.docFrontPreview && (
+              {docs.docFrontUrl && (
                 <div className={s.docPreviewItem}>
                   <div className={s.docThumb}>
                     <Image
-                      src={docs.docFrontPreview}
+                      src={docs.docFrontUrl}
                       alt="روی مدرک"
                       fill
                       className={s.docThumbImg}
@@ -594,11 +472,11 @@ export function KycOnboardingClient({ initialRecord }: Props) {
                   <span className={s.docThumbLabel}>روی مدرک</span>
                 </div>
               )}
-              {docs.docBackPreview && (
+              {docs.docBackUrl && (
                 <div className={s.docPreviewItem}>
                   <div className={s.docThumb}>
                     <Image
-                      src={docs.docBackPreview}
+                      src={docs.docBackUrl}
                       alt="پشت مدرک"
                       fill
                       className={s.docThumbImg}

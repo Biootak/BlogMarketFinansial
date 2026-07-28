@@ -408,13 +408,6 @@ export function getMenu(role: UserRole): NavSection[] {
     icon: HiOutlineCog6Tooth({ className: ICON_CLASS }),
     label: 'تنظیمات',
   };
-  const customerCrypto: MenuItem = {
-    id: 'customerCrypto',
-    href: '/customer/crypto',
-    icon: HiOutlineArrowsRightLeft({ className: ICON_CLASS }),
-    label: 'ارز دیجیتال',
-    title: 'تبادل ارز دیجیتال',
-  };
   const customerDeveloper: MenuItem = {
     id: 'customerDeveloper',
     href: '/customer/developer',
@@ -507,7 +500,7 @@ export function getMenu(role: UserRole): NavSection[] {
           id: 'financial',
           index: '۰۲',
           label: 'مالی',
-          items: [customerAccounts, customerTransactions, customerCrypto],
+          items: [customerAccounts, customerTransactions],
         },
         { id: 'identity', index: '۰۳', label: 'هویت', items: [customerKyc, customerDocuments] },
         {

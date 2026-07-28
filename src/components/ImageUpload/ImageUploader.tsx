@@ -1,12 +1,10 @@
 'use client';
 
-import Image from 'next/image';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type FileRejection, useDropzone } from 'react-dropzone';
 
 import { toast } from '@/components/ui/use-toast';
-import { AnimatePresence, motion } from '@/lib/motion-shim';
 import {
   RiCheckLine,
   RiCloseLine,
@@ -14,6 +12,7 @@ import {
   RiImageAddLine,
   RiUploadCloud2Line,
 } from 'react-icons/ri';
+import s from './ImageUploader.module.css';
 
 // Re-export UploadFolder so callers only need to import from this module.
 // Keeps the dependency graph clean: components → uploader (not components →
@@ -25,6 +24,7 @@ export type UploadFolder =
   | 'tags'
   | 'ads'
   | 'general'
+  | 'kyc'
   | 'logos'
   | 'exchange';
 
@@ -146,6 +146,8 @@ function uploadOneFile(
 
 // ---------- component ------------------------------------------------------
 
+export type ThumbnailSize = 'sm' | 'md' | 'lg' | 'xl';
+
 interface ImageUploaderProps {
   onImageUpload: (urls: string[]) => void;
   onImageRemove: (index: number) => void;
@@ -159,6 +161,27 @@ interface ImageUploaderProps {
    * برای فرم‌هایی که ابعاد تصویر را در DB ذخیره می‌کنند (مثل تبلیغات).
    */
   onUploadComplete?: (results: UploadedFile[]) => void;
+  /**
+   * اندازهٔ نمایش thumbnail فایل آپلودشده:
+   *  - 'sm' (64px)  — لیست‌های چندگانه (پست‌ها، تبلیغات)
+   *  - 'md' (96px)  — پیش‌فرض
+   *  - 'lg' (160px) — فرم‌های تک‌فایل (KYC، پروفایل)
+   *  - 'xl' (240px) — context تأیید/بررسی
+   */
+  thumbSize?: ThumbnailSize;
+  /**
+   * برچسب بالای dropzone — برای context فرمی.
+   * اگر ندهید، نمایش داده نمی‌شود.
+   */
+  label?: string;
+  /**
+   * راهنمای کوچک زیر برچسب.
+   */
+  hint?: string;
+  /**
+   * غیرفعال‌سازی کل اپلودر (مثلاً حین submit فرم).
+   */
+  disabled?: boolean;
 }
 
 interface FileEntry {
@@ -185,6 +208,10 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   multiple = false,
   initialPreviews = [],
   folder = 'general',
+  thumbSize = 'md',
+  label,
+  hint,
+  disabled = false,
 }) => {
   // Stable id-keyed map of file entries. We don't store File[] directly
   // because we need per-file status/progress and want to remove items
@@ -199,6 +226,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       uploaded: { url },
     })),
   );
+
+  // Mirror of `entries` in a ref so async handlers (remove, retry) can
+  // read the current list without depending on a stale closure. Updated
+  // on every render.
+  const entriesRef = useRef<FileEntry[]>(entries);
+  entriesRef.current = entries;
 
   // Track in-flight XHRs so we can abort on unmount or remove.
   const abortersRef = useRef<Map<string, AbortController>>(new Map());
@@ -333,6 +366,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
   const onDrop = useCallback(
     (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
+      if (disabled) return;
+
       if (rejectedFiles.length > 0) {
         // react-dropzone's own validation (mime/size at the edge).
         const firstReason = rejectedFiles[0]?.errors[0]?.message ?? 'فایل نامعتبر';
@@ -376,11 +411,14 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       // Kick off uploads immediately.
       void runUpload(newEntries);
     },
-    [multiple, maxFiles, runUpload],
+    [multiple, maxFiles, runUpload, disabled],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
+    disabled,
+    noClick: disabled,
+    noKeyboard: disabled,
     accept: {
       'image/jpeg': ['.jpg', '.jpeg'],
       'image/png': ['.png'],
@@ -396,6 +434,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
   const removeImage = useCallback(
     (id: string) => {
+      if (disabled) return;
+
       // Abort if still uploading.
       const ctrl = abortersRef.current.get(id);
       if (ctrl) {
@@ -403,18 +443,25 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         abortersRef.current.delete(id);
       }
 
+      // Compute the index BEFORE updating state so we can mirror the
+      // removal in the parent state without calling onImageRemove from
+      // inside a setState updater (which React 19+ flags as a render-time
+      // setState in another component).
+      const idx = entriesRef.current.findIndex((e) => e.id === id);
+
       setEntries((prev) => {
-        const idx = prev.findIndex((e) => e.id === id);
-        if (idx === -1) return prev;
-        const entry = prev[idx]!;
-        if (entry.previewUrl.startsWith('blob:')) URL.revokeObjectURL(entry.previewUrl);
         const next = prev.filter((e) => e.id !== id);
-        // Mirror removal in parent state.
-        onImageRemove(idx);
+        const removed = prev.find((e) => e.id === id);
+        if (removed?.previewUrl.startsWith('blob:')) URL.revokeObjectURL(removed.previewUrl);
         return next;
       });
+
+      // Mirror removal in parent state — after the local update is
+      // committed, so React doesn't see cross-component setState during
+      // a parent's render.
+      if (idx >= 0) onImageRemove(idx);
     },
-    [onImageRemove],
+    [onImageRemove, disabled],
   );
 
   const retryEntry = useCallback(
@@ -431,137 +478,169 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   const anyUploading = useMemo(() => entries.some((e) => e.status === 'uploading'), [entries]);
   const hasEntries = entries.length > 0;
 
+  // Map thumbSize prop → CSS module class (ابعاد explicit px) و سایز
+  // آیکون‌ها. سایز بزرگ‌تر (lg/xl) برای context فرمی تک‌فایل (KYC) است.
+  //
+  // دلیل استفاده از CSS module به جای Tailwind: کلاس‌های dynamic مثل
+  // `w-60 h-60` در purge سالم می‌ماند ولی اگر Tailwind v4 در scan fail شود
+  // یا dynamic class حذف شود، thumbnail ارتفاع/عرض خود را از دست می‌دهد.
+  // CSS module چون static است این ریسک را ندارد.
+  const thumbClass = (() => {
+    switch (thumbSize) {
+      case 'sm':
+        return s.thumbSm;
+      case 'lg':
+        return s.thumbLg;
+      case 'xl':
+        return s.thumbXl;
+      case 'md':
+      default:
+        return s.thumbMd;
+    }
+  })();
+  const isLargeThumb = thumbSize === 'lg' || thumbSize === 'xl';
+  const isSmThumb = thumbSize === 'sm';
+  const removeIconSize = isSmThumb ? 12 : 16;
+
   // ---------- render ------------------------------------------------------
 
+  const zonePadding = hasEntries
+    ? isLargeThumb
+      ? s.zoneWithFileLarge
+      : s.zoneWithFile
+    : isLargeThumb
+      ? s.zoneLarge
+      : s.zoneCompact;
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="space-y-4"
-    >
+    <div className={s.root} data-disabled={disabled ? 'true' : undefined} aria-disabled={disabled}>
+      {(label || hint) && (
+        <div className={s.head}>
+          {label && <div className={s.headLabel}>{label}</div>}
+          {hint && <div className={s.headHint}>{hint}</div>}
+        </div>
+      )}
+
       <div
         {...getRootProps()}
-        className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors duration-200 ${
-          isDragActive
-            ? 'border-secondary-500 bg-secondary-50 dark:bg-secondary-950/20'
-            : 'border-neutral-300 dark:border-neutral-700 hover:border-primary-500'
-        }`}
+        className={[
+          s.zone,
+          zonePadding,
+          isDragActive ? s.zoneActive : '',
+          disabled ? s.zoneDisabled : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
         aria-label="منطقه آپلود تصویر. فایل را بکشید یا کلیک کنید."
       >
         <input {...getInputProps()} aria-label="انتخاب فایل تصویر" />
         {hasEntries ? (
-          <div className="flex flex-wrap gap-2 justify-center">
-            <AnimatePresence initial={false}>
-              {entries.map((entry) => (
-                <motion.div
-                  key={entry.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{ duration: 0.25 }}
-                  className="relative w-24 h-24 group"
-                >
-                  <Image
-                    src={entry.previewUrl}
-                    alt={entry.file.name || 'پیش‌نمایش'}
-                    fill
-                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                    className={`rounded object-cover ${
-                      entry.status === 'error' ? 'opacity-50' : ''
-                    }`}
-                    unoptimized={entry.previewUrl.startsWith('blob:')}
-                  />
+          <div className={[s.grid, isLargeThumb ? s.gridLarge : ''].filter(Boolean).join(' ')}>
+            {entries.map((entry) => (
+              <div key={entry.id} className={[s.thumb, thumbClass].join(' ')}>
+                {/* biome-ignore lint/performance/noImgElement: dynamic user upload (blob: or relative URL not in next.config remotePatterns) */}
+                <img
+                  src={entry.previewUrl}
+                  alt={entry.file.name || 'پیش‌نمایش'}
+                  loading="lazy"
+                  draggable={false}
+                  className={[s.thumbImg, entry.status === 'error' ? s.thumbImgError : '']
+                    .filter(Boolean)
+                    .join(' ')}
+                />
 
-                  {/* status overlay */}
-                  {entry.status === 'uploading' && (
-                    <div
-                      className="absolute inset-0 bg-black/50 rounded flex flex-col items-center justify-center text-white text-xs gap-1"
-                      role="progressbar"
-                      aria-valuenow={entry.progress}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      aria-label={`در حال آپلود ${entry.file.name}`}
-                    >
-                      <RiUploadCloud2Line className="animate-pulse" size={18} />
-                      <span>
-                        {entry.progress >= 100 ? 'در حال پردازش...' : `${entry.progress}%`}
-                      </span>
-                    </div>
-                  )}
+                {/* status overlay — uploading */}
+                {entry.status === 'uploading' && (
+                  <div
+                    className={s.uploadingOverlay}
+                    role="progressbar"
+                    aria-valuenow={entry.progress}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`در حال آپلود ${entry.file.name}`}
+                  >
+                    <RiUploadCloud2Line className="animate-pulse" size={18} aria-hidden />
+                    <span className={s.uploadingPct}>
+                      {entry.progress >= 100 ? 'در حال پردازش...' : `${entry.progress}%`}
+                    </span>
+                  </div>
+                )}
 
-                  {entry.status === 'error' && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        retryEntry(entry.id);
-                      }}
-                      className="absolute inset-0 bg-red-500/80 rounded flex flex-col items-center justify-center text-white text-xs gap-1 hover:bg-red-500/90 transition"
-                      title={entry.errorMessage ?? 'خطا — برای تلاش مجدد کلیک کنید'}
-                    >
-                      <RiErrorWarningLine size={18} />
-                      <span>تلاش مجدد</span>
-                    </button>
-                  )}
-
-                  {entry.status === 'done' && (
-                    <div className="absolute bottom-0 inset-x-0 bg-emerald-500/90 text-white text-[10px] py-0.5 flex items-center justify-center gap-1 rounded-b">
-                      <RiCheckLine size={10} />
-                      <span>آپلود شد</span>
-                    </div>
-                  )}
-
+                {/* status overlay — error (click to retry) */}
+                {entry.status === 'error' && (
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      removeImage(entry.id);
+                      retryEntry(entry.id);
                     }}
-                    aria-label={`حذف ${entry.file.name}`}
-                    className="absolute top-0 right-0 bg-primary-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 transition"
+                    className={s.errorOverlay}
+                    title={entry.errorMessage ?? 'خطا — برای تلاش مجدد کلیک کنید'}
                   >
-                    <RiCloseLine size={16} />
+                    <RiErrorWarningLine size={18} />
+                    <span>تلاش مجدد</span>
                   </button>
-                </motion.div>
-              ))}
-            </AnimatePresence>
+                )}
+
+                {/* done badge */}
+                {entry.status === 'done' && (
+                  <div
+                    className={[s.doneBadge, isSmThumb ? s.doneBadgeSm : '']
+                      .filter(Boolean)
+                      .join(' ')}
+                  >
+                    <RiCheckLine size={10} />
+                    <span>آپلود شد</span>
+                  </div>
+                )}
+
+                {/* remove button */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeImage(entry.id);
+                  }}
+                  disabled={disabled}
+                  aria-label={`حذف ${entry.file.name}`}
+                  className={[s.removeBtn, isSmThumb ? s.removeBtnSm : s.removeBtnMd].join(' ')}
+                >
+                  <RiCloseLine size={removeIconSize} />
+                </button>
+              </div>
+            ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center">
-            <RiImageAddLine className="text-5xl text-neutral-400 mb-2" size={48} aria-hidden />
-            <p className="text-neutral-700 dark:text-neutral-300">
+          <div className={s.empty}>
+            <RiImageAddLine
+              size={isLargeThumb ? 56 : 48}
+              className={s.emptyIcon}
+              aria-hidden
+            />
+            <p className={[s.emptyTitle, isLargeThumb ? s.emptyTitleLarge : ''].join(' ')}>
               {isDragActive
                 ? 'فایل تصویر را اینجا رها کنید...'
                 : multiple
                   ? 'برای انتخاب تصاویر، فایل‌ها را اینجا بکشید و رها کنید یا کلیک کنید'
                   : 'برای انتخاب تصویر، فایل را اینجا بکشید و رها کنید یا کلیک کنید'}
             </p>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
+            <p className={s.emptyHint}>
               فرمت‌های مجاز: JPG, PNG, GIF, WebP, SVG — حداکثر ۱۰MB
             </p>
           </div>
         )}
       </div>
 
-      {/* Aggregate progress bar for the whole batch.
-          Per-file progress is shown on each thumbnail; this is a quick visual
-          cue for the user when the batch is still in flight. */}
+      {/* Aggregate progress cue for the whole batch.
+          Per-file progress is on each thumbnail; this is a quick visual
+          confirmation for the user when the batch is still in flight. */}
       {anyUploading && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400"
-          role="status"
-          aria-live="polite"
-        >
+        <div className={s.progress} role="status" aria-live="polite">
           <RiUploadCloud2Line className="animate-pulse" size={20} aria-hidden />
           <span>در حال آپلود...</span>
-        </motion.div>
+        </div>
       )}
-    </motion.div>
+    </div>
   );
 };
 

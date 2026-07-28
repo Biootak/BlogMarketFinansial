@@ -5,7 +5,7 @@
  * ----------------------------------------------------------------------------
  *  - Trust Hero:   status card بزرگ با rail رنگی + ۳ progress cell
  *  - Level Funnel: سه سطح به‌صورت progress rail (LEVEL_1 → 2 → 3) با نشانگر جاری
- *  - Submit Form:  فرم در یک کارت با فیلدهای استاندارد
+ *  - Submit Form:  فرم در یک کارت با فیلدهای استاندارد + آپلود واقعی فایل
  *  - History:      دفتر مدارک ارسال‌شده با rail عمودی
  */
 
@@ -28,6 +28,7 @@ import {
   StatusPill,
   StatusRail,
 } from '@/app/(customer)/customer/_lib/customer-ui';
+import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -39,7 +40,7 @@ import {
   Upload,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useCallback, useState, useTransition } from 'react';
 import s from './KycContent.module.css';
 
 interface Props {
@@ -62,6 +63,8 @@ export default function KycContent({ profile, records }: Props) {
   const [docType, setDocType] = useState<string>('NATIONAL_ID');
   const [docNumber, setDocNumber] = useState('');
   const [fileUrl, setFileUrl] = useState('');
+  const handleImageUpload = useCallback((urls: string[]) => setFileUrl(urls[0] ?? ''), []);
+  const handleImageRemove = useCallback(() => setFileUrl(''), []);
 
   const canSubmit =
     profile.kycStatus !== 'APPROVED' &&
@@ -81,7 +84,7 @@ export default function KycContent({ profile, records }: Props) {
       return;
     }
     if (!fileUrl.trim()) {
-      setError('آدرس فایل مدرک الزامی است');
+      setError('تصویر مدرک را آپلود کنید');
       return;
     }
 
@@ -259,23 +262,20 @@ export default function KycContent({ profile, records }: Props) {
               </div>
 
               <div className={s.formField} data-span="full">
-                <label htmlFor="fileUrl" className={s.formLabel}>
-                  آدرس فایل مدرک (HTTPS)
-                </label>
-                <input
-                  id="fileUrl"
-                  type="url"
-                  className={s.formControl}
-                  value={fileUrl}
-                  onChange={(e) => setFileUrl(e.target.value)}
-                  placeholder="https://..."
+                <ImageUploader
+                  initialPreviews={fileUrl ? [fileUrl] : []}
+                  onImageUpload={handleImageUpload}
+                  onImageRemove={handleImageRemove}
+                  maxFiles={1}
+                  multiple={false}
+                  folder="kyc"
+                  thumbSize="xl"
+                  label="تصویر مدرک"
+                  hint="تصویر واضح از مدرک انتخاب‌شده — JPG، PNG، WebP، GIF، SVG"
                   disabled={isPending}
-                  autoComplete="off"
-                  required
-                  dir="ltr"
                 />
                 <span className={s.formHint}>
-                  فایل را در سرویس مورد اعتماد آپلود کنید و آدرس HTTPS آن را اینجا وارد کنید
+                  فایل به‌صورت امن در سرور ما ذخیره می‌شود و فقط برای بررسی توسط تیم استفاده می‌شود.
                 </span>
               </div>
             </div>

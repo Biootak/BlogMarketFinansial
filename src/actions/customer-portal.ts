@@ -139,10 +139,12 @@ const KycSubmitSchema = z.object({
     errorMap: () => ({ message: 'نوع مدرک نامعتبر است' }),
   }),
   docNumber: z.string().min(1, 'شماره مدرک الزامی است').max(30),
+  // URL فایل توسط `/api/upload` تولید می‌شود — می‌تواند relative (مثل
+  // `/uploads/kyc/...`) یا absolute باشد. فقط لازم است non-empty باشد.
   fileUrl: z
     .string()
-    .url('آدرس فایل نامعتبر است')
-    .startsWith('https://', 'آدرس فایل باید HTTPS باشد'),
+    .min(1, 'تصویر مدرک الزامی است')
+    .max(2000, 'آدرس فایل طولانی است'),
 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -666,6 +668,98 @@ export async function markNotificationsRead(ids?: number[]): Promise<{ success: 
 
   revalidateTag('customer-notifications');
   return { success: true };
+}
+
+// ─── WRITE — Customer Request (unified) ─────────────────────────────────────
+//
+// درخواست‌های مشتری به صرافی (باز کردن حساب جدید، درخواست انتقال، درخواست
+// رفع مسدودی، ...) — فعلاً به‌صورت یک notification با prefix «[REQUEST:TYPE]»
+// ثبت می‌شوند تا:
+//  1) کاربر در inbox خود تأییدیهٔ درخواست را ببیند
+//  2) صرافی بتواند بعداً با همین prefix query بگیرد و لیست درخواست‌ها را
+//     در پنل خود ببیند (بدون نیاز به migration DB)
+//
+// اگر بعداً به جدول `CustomerRequest` نیاز شد، می‌توان prefix را به FK
+// تبدیل کرد — ساختار فعلی backward-compatible است.
+//
+const RequestTypeSchema = z.enum(
+  [
+    'ACCOUNT_NEW', // درخواست باز کردن حساب جدید
+    'ACCOUNT_UNFREEZE', // درخواست رفع مسدودی حساب
+    'TRANSFER_INITIATE', // درخواست شروع انتقال
+    'LIMIT_INCREASE', // درخواست افزایش سقف تراکنش
+    'OTHER', // سایر
+  ],
+  { errorMap: () => ({ message: 'نوع درخواست نامعتبر است' }) },
+);
+
+const CustomerRequestSchema = z.object({
+  type: RequestTypeSchema,
+  /** توضیح کوتاه کاربر — اختیاری ولی توصیه می‌شود */
+  note: z
+    .string()
+    .trim()
+    .max(500, 'توضیح حداکثر ۵۰۰ کاراکتر است')
+    .optional()
+    .or(z.literal('')),
+  /** مقادیر اضافی بر اساس نوع (مثلاً currency برای ACCOUNT_NEW، amount برای TRANSFER) */
+  payload: z.record(z.string(), z.union([z.string(), z.number()])).optional(),
+});
+
+const REQUEST_TYPE_LABEL: Record<z.infer<typeof RequestTypeSchema>, string> = {
+  ACCOUNT_NEW: 'باز کردن حساب جدید',
+  ACCOUNT_UNFREEZE: 'رفع مسدودی حساب',
+  TRANSFER_INITIATE: 'شروع انتقال',
+  LIMIT_INCREASE: 'افزایش سقف تراکنش',
+  OTHER: 'سایر',
+};
+
+export type CustomerRequestType = z.infer<typeof RequestTypeSchema>;
+
+export async function createCustomerRequest(
+  raw: unknown,
+): Promise<{ success: boolean; error?: string; requestId?: number }> {
+  const access = await requireCustomerAccess();
+  if (!access.ok) return { success: false, error: access.error.message };
+
+  const parsed = CustomerRequestSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.errors[0]?.message ?? 'داده نامعتبر' };
+  }
+
+  if (access.customerStatus === 'CLOSED' || access.customerStatus === 'FROZEN') {
+    return {
+      success: false,
+      error: 'حساب شما در وضعیت فعلی اجازهٔ ارسال درخواست ندارد. با پشتیبانی تماس بگیرید.',
+    };
+  }
+
+  const typeLabel = REQUEST_TYPE_LABEL[parsed.data.type];
+
+  // ساخت message با prefix ساختاریافته تا:
+  //  1) کاربر در inbox پیام را بفهمد
+  //  2) صرافی بتواند با regex prefix را parse کند
+  const prefix = `[REQUEST:${parsed.data.type}]`;
+  const note = parsed.data.note?.trim() ?? '';
+  const payloadJson = parsed.data.payload
+    ? `\n${JSON.stringify(parsed.data.payload, null, 0)}`
+    : '';
+  const message = `${prefix} ${typeLabel}${note ? ` — ${note}` : ''}${payloadJson}`;
+
+  // ایجاد notification برای کاربر (تأییدیهٔ درخواست) و صرافی (در inbox)
+  // — فعلاً یک notification برای خود کاربر ثبت می‌کنیم تا در inbox
+  //   تأییدیهٔ درخواست را ببیند. صرافی بعداً می‌تواند با همین prefix
+  //   از notification های exchange-level query بگیرد.
+  const created = await prisma.notification.create({
+    data: {
+      userId: access.userId,
+      message,
+      isRead: false,
+    },
+  });
+
+  revalidateTag('customer-notifications');
+  return { success: true, requestId: created.id };
 }
 
 // ─── READ — Transaction Detail ────────────────────────────────────────────

@@ -21,7 +21,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/money-transfer',
     '/online-payment',
     '/customer/dashboard',
-    '/customer/crypto',
     '/customer/developer',
     '/exchange/dashboard',
     '/exchange/rates',

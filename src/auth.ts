@@ -40,6 +40,15 @@ const InternalCredentialsSchema = z.object({
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
+  logger: {
+    // JWTSessionError fires whenever a visitor has a stale / corrupt cookie
+    // (e.g. after a secret rotation or schema change). The (auth) layout already
+    // catches and discards it — no need to spam the server log.
+    error(err: Error) {
+      if (err.name === 'JWTSessionError') return;
+      console.error(err);
+    },
+  },
   events: {
     async signIn({ user, account }) {
       if (account?.provider !== 'credentials') return;
