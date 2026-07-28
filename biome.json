@@ -12,24 +12,34 @@
       },
       "correctness": {
         "noUnusedVariables": "error",
-        "useHookAtTopLevel": "error"
+        "noUnusedImports": "error",
+        "useHookAtTopLevel": "error",
+        "useExhaustiveDependencies": "warn"
       },
       "suspicious": {
         "noExplicitAny": "warn",
-        "noArrayIndexKey": "warn"
+        "noArrayIndexKey": "warn",
+        "noImplicitAnyLet": "error",
+        "noDoubleEquals": "error",
+        "noConsole": "warn"
       },
       "style": {
         "useConst": "error",
         "noVar": "error",
         "useTemplate": "error",
-        "noNonNullAssertion": "warn"
+        "noNonNullAssertion": "warn",
+        "useConsistentArrayType": "warn",
+        "noParameterAssign": "warn"
       },
       "complexity": {
         "noForEach": "warn",
-        "useOptionalChain": "error"
+        "useOptionalChain": "error",
+        "noUselessStringConcat": "warn",
+        "noUselessTernary": "warn"
       },
       "performance": {
-        "noDelete": "warn"
+        "noDelete": "warn",
+        "noAccumulatingSpread": "warn"
       },
       "security": {
         "noDangerouslySetInnerHtml": "error"
@@ -202,7 +212,6 @@
         "src/components/Dashboard/shared/**",
         "src/components/Header/**",
         "src/components/MenuBar/**",
-        "src/components/Exchange/**",
         "src/components/Footer/**"
       ],
       "linter": {
@@ -218,6 +227,21 @@
           },
           "correctness": {
             "useExhaustiveDependencies": "off"
+          }
+        }
+      }
+    },
+    {
+      "include": ["src/components/Exchange/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useKeyWithClickEvents": "off",
+            "useSemanticElements": "off",
+            "noSvgWithoutTitle": "off"
+          },
+          "suspicious": {
+            "noArrayIndexKey": "off"
           }
         }
       }

@@ -11,10 +11,11 @@
  *   - کاملاً ریسپانسیو
  */
 
-import { type PlanDefinition, PLANS, changePlan } from '@/actions/subscription';
+import { changePlan } from '@/actions/subscription';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { PLANS, type PlanDefinition } from '@/lib/subscription-plans';
 import { cn } from '@/lib/utils';
 import { Check, CircleDot, Crown, Loader2, Sparkles, X, Zap } from 'lucide-react';
 import { useState, useTransition } from 'react';
@@ -159,7 +160,11 @@ export default function PlanPicker({ currentPlan, planExpiresAt }: Props) {
           return (
             <div
               key={plan.id}
-              className={cn(s.planCard, isCurrent && s.planCardCurrent, plan.highlight && s.planCardHighlight)}
+              className={cn(
+                s.planCard,
+                isCurrent && s.planCardCurrent,
+                plan.highlight && s.planCardHighlight,
+              )}
               data-accent={accent}
               data-state={isCurrent ? 'current' : 'available'}
             >
@@ -185,10 +190,7 @@ export default function PlanPicker({ currentPlan, planExpiresAt }: Props) {
 
               <ul className={s.featureList} aria-label={`ویژگی‌های ${plan.name}`}>
                 {plan.features.map((f) => (
-                  <li
-                    key={f.text}
-                    className={cn(s.featureItem, f.ok ? s.featureOn : s.featureOff)}
-                  >
+                  <li key={f.text} className={cn(s.featureItem, f.ok ? s.featureOn : s.featureOff)}>
                     <span className={s.featureDot} aria-hidden>
                       {f.ok ? <Check size={11} /> : <X size={11} />}
                     </span>
@@ -206,9 +208,7 @@ export default function PlanPicker({ currentPlan, planExpiresAt }: Props) {
                 )}
                 onClick={() => handleSelect(plan)}
                 disabled={isCurrent || pending}
-                aria-label={
-                  isCurrent ? 'پلن فعلی' : `انتخاب پلن ${plan.name}`
-                }
+                aria-label={isCurrent ? 'پلن فعلی' : `انتخاب پلن ${plan.name}`}
               >
                 {isCurrent ? (
                   <>
@@ -225,7 +225,7 @@ export default function PlanPicker({ currentPlan, planExpiresAt }: Props) {
 
       {/* Confirm modal */}
       {confirming && (
-        <div
+        <dialog
           className={s.modalOverlay}
           onClick={(e) => {
             if (e.target === e.currentTarget) setConfirming(null);
@@ -233,8 +233,7 @@ export default function PlanPicker({ currentPlan, planExpiresAt }: Props) {
           onKeyDown={(e) => {
             if (e.key === 'Escape') setConfirming(null);
           }}
-          role="dialog"
-          aria-modal
+          open
           aria-labelledby="confirm-plan-title"
         >
           <div className={s.modal}>
@@ -287,7 +286,7 @@ export default function PlanPicker({ currentPlan, planExpiresAt }: Props) {
               </Button>
             </footer>
           </div>
-        </div>
+        </dialog>
       )}
     </div>
   );

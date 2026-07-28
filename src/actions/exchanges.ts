@@ -61,6 +61,7 @@ export type ExchangeRow = {
   dailyLimitAf: number;
   platformFee: number;
   requireKyc: boolean;
+  primaryCurrency: string;
   createdAt: Date;
   updatedAt: Date;
   _count?: { Customer: number; Transaction: number };
@@ -85,11 +86,16 @@ function mapExchange(raw: {
   dailyLimitAf: bigint;
   platformFee: number;
   requireKyc: boolean;
+  primaryCurrency: string;
   createdAt: Date;
   updatedAt: Date;
   _count?: { Customer: number; Transaction: number };
 }): ExchangeRow {
-  return { ...raw, dailyLimitAf: Number(raw.dailyLimitAf) };
+  return {
+    ...raw,
+    dailyLimitAf: Number(raw.dailyLimitAf),
+    primaryCurrency: raw.primaryCurrency,
+  };
 }
 
 // ─── READ — Platform Admin ────────────────────────────────────────────────────

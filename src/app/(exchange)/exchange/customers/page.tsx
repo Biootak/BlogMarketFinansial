@@ -1,15 +1,14 @@
-import { getCustomers } from '@/actions/exchange-customers';
+import { getCustomers, getCustomerStats, getCustomerSegments, getCustomerRiskDistribution, getCustomerActivityPulse, getTopCustomers } from '@/actions/exchange-customers';
 import { getExchangeForUser } from '@/actions/exchanges';
 /**
- * /exchange/customers — لیست و مدیریت مشتریان
+ * /exchange/customers — لیست و مدیریت مشتریان (P2026 redesign)
  */
 import { auth } from '@/auth';
-import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import CustomersWorkspace from './_components/CustomersWorkspace';
+import { CustomerCockpit } from '@/components/exchange/customers/CustomerCockpit';
 
-export const metadata: Metadata = { title: 'مشتریان صرافی' };
+export const metadata: Metadata = { title: 'مشتریان صرافی · مرکز فرماندهی' };
 
 export default async function CustomersPage() {
   const session = await auth();
@@ -18,22 +17,38 @@ export default async function CustomersPage() {
   const membership = await getExchangeForUser();
   if (!membership) redirect('/dashboard');
 
-  const { exchange } = membership;
-  const { rows, total } = await getCustomers(exchange.id, { limit: 50 });
+  const { exchange, staffRole } = membership;
+  const exchangeId = exchange.id;
+  const canWrite = staffRole !== 'VIEWER';
+
+  // Parallel data fetching — یک roundtrip موازی
+  const [
+    { rows: customers, total },
+    stats,
+    segments,
+    riskBuckets,
+    pulse,
+    topCustomers,
+  ] = await Promise.all([
+    getCustomers(exchangeId, { limit: 200 }),
+    getCustomerStats(exchangeId),
+    getCustomerSegments(exchangeId),
+    getCustomerRiskDistribution(exchangeId),
+    getCustomerActivityPulse(exchangeId),
+    getTopCustomers(exchangeId, 5),
+  ]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-5)' }}>
-      <PageHeader
-        title="مشتریان"
-        description={`${new Intl.NumberFormat('fa-IR').format(total)} مشتری ثبت‌شده`}
-        breadcrumb={[{ label: 'پنل صرافی' }, { label: 'مشتریان' }]}
-      />
-      <CustomersWorkspace
-        exchangeId={exchange.id}
-        initialRows={rows}
-        totalCount={total}
-        staffRole={membership.staffRole}
-      />
-    </div>
+    <CustomerCockpit
+      exchangeId={exchangeId}
+      currency={exchange.primaryCurrency ?? 'AFN'}
+      customers={customers}
+      stats={stats}
+      segments={segments}
+      riskBuckets={riskBuckets}
+      pulse={pulse}
+      topCustomers={topCustomers}
+      canWrite={canWrite}
+    />
   );
 }

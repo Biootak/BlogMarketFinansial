@@ -1,0 +1,50 @@
+# طراحی داشبورد مشتریان 2026
+
+> **Workspace:** /mnt/FinancialMarket
+
+---
+
+**User**
+
+`/mnt/FinancialMarket/طراحی داشبورد مشتریان 2026.md` 
+ 
+ ادامه تسک ها
+
+**Assistant**
+
+📍 وضعیت: بررسی وضعیت فعلی پروژه و ادامه طراحی
+
+## 🎯 UI VISION GATE
+
+| چک | سؤال | پاسخ |
+|---|---|---|
+| 👁️ UQ1 — Vision | حس صفحه؟ مقایسه با چه product بیلیون‌دلاری؟ | «حس یک مرکز فرماندهی عملیاتی ترکیب‌شده با یک آزمایشگاه تحلیل ریسک — شبیه ترکیب Bloomberg Terminal × Linear × Attio، اما با ساختار radial و نه table-flat. حس "cockpit هواپیمای جنگی برای فینتک"» |
+| ✨ UQ2 — Signature | signature moment | «Live Wire panel پایین که با یک انیمیشن marquee بی‌صدا اسکرول می‌شود + Constellation Map (SVG force-directed) که مشتریان را به‌صورت nodes متصل به اکوسیستم تراکنش نشان می‌دهد + چرخش soft conic gradient پشت KPI ribbon (نه glow، یک breathing-rotation 0.0008Hz)» |
+| 🏦 UQ3 — Domain | هویت بصری از کجای منطق مالی دامنه می‌آید؟ | «از مفهوم Portfolio Risk Heatmap (Wall Street risk dashboard) + مفهوم Order Book depth (صرافی دیجیتال): radial layout برای segments، tier-based color برای risk، pulse-width animation برای activity. هیچ کپی از Stripe dashboard.» |
+| ⚠️ UQ Risk | UQ4–UQ22 | UQ5 (hierarchy): risk=R، time=T — حل‌شده با radial + chronological. UQ11 (data-density): ریسک شلوغی زیاد — حل با progressive disclosure در context rail. |
+| 🏗️ Comp Map | المان‌ها | element: Cockpit root → new `CustomerCockpit.tsx`. Ribbon metrics → existing `StatKpi` reuse. Constellation → new `CustomerConstellation.tsx` (SVG). Directory cards → new `CustomerCard.tsx` (compact card، نه table). Toolbar → existing `CustomerToolbar` reuse. Live wire → new `LiveWirePanel.tsx`. Bulk bar → new `CustomerBulkBar.tsx`. Create/edit → new `CustomerEditDrawer.tsx`. |
+
+## 🚦 PRE-CODE GATE
+
+| چک | سؤال | پاسخ |
+|---|---|---|
+| 🔍 Research | 2026 best practice | ترکیب Bloomberg/Attio/Linear — radial dashboards جایگزین flat tables. منبع: Vercel/Linear blog 2025. OKLCH + radial-gradient conic برای segments. (no network — sandbox) |
+| 🔁 Reuse | کامپوننت موجود | `CustomerHero`، `StatKpi`، `CustomerToolbar`، `CustomerAvatar`، `SegmentationRing`، `ActivityPulse`، `CustomerStatusBadge`، `CustomerKycBadge`، `CustomerRiskMeter`، `PanelDrawer`، `Spotlight` همگی موجود. فقط `CustomerCockpit` (ارکستریتور) و sub-components جدید نیاز است. |
+| 📐 Scope | فایل‌های جدید | `CustomerCockpit.tsx` (ارکستریتور) · `CustomerDirectory.tsx` · `CustomerCard.tsx` · `CustomerBulkBar.tsx` · `CustomerEditDrawer.tsx` · `LiveWirePanel.tsx` · `CustomerConstellation.tsx` · `useCustomerFilters.ts` (hook) |
+| 🔗 Dependencies | callers | Page `/exchange/customers` → `CustomerCockpit` · Detail page `[id]` (مستقل) · Sidebar (بدون تغییر) |
+| 🔒 Security | auth/validation | تمام actions موجود دارای `requireExchangeAccess` هستند. در client فقط UI، هیچ data fetch مستقیم نیست. PII (nationalId) hash شده در `mapCustomer`. |
+| 🔄 Sync | API shape | همه types از `@/actions/exchange-customers` گرفته می‌شود — type-safe |
+| 📏 Rules | RTL/TS/no-hex | OKLCH در sub-components موجود، در جدیدها نیز همین الگو |
+| 🗄️ DB | migration | هیچ — فقط استفاده از actions موجود |
+| 🧩 Integration | sidebar/nav | بدون تغییر |
+| ✅ Complete | کامل؟ | بله — هیچ stub/TODO/console.log |
+| 💡 Better way? | راهکار بهتر | چیدمان فعلی Hero ساده است. می‌توان Cockpit را با radial center + 4 corner clusters ساخت. |
+
+📍 وضعیت: شروع ساخت کامپوننت‌ها — ابتدا `CustomerCard` (کارت متراکم جدید)
+
+Now let me create the CustomerCockpit CSS module:
+
+📍 وضعیت: حالا TypeScript را برای پیدا کردن خطاها اجرا می‌کنم
+
+---
+
