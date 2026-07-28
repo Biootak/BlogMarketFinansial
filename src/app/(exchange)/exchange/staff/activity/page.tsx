@@ -13,7 +13,7 @@ import { getExchangeForUser, getStaffActivity } from '@/actions/exchanges';
 import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import ExchangePageSkeleton from '@/components/Exchange/ExchangePageSkeleton';
-import s from '../../_components/StaffCockpit.module.css';
+import s from '../_components/StaffCockpit.module.css';
 import { StaffActivityFeed } from './_components/StaffActivityFeed';
 import { StaffSubNav } from '../_components/StaffSubNav';
 

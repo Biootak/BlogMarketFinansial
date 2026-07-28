@@ -1,0 +1,392 @@
+/* CurrencyConstellation.module.css — radial SVG با nodes
+ * subtle pulse + connecting dashed lines + concentric orbit guides */
+
+.constellation {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-5) var(--ds-space-6);
+  background: var(--at-bg-elevated);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-xl);
+  box-shadow: var(--at-shadow);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.constellation::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 70% 100% at 0% 0%, var(--at-accent-soft) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 100% at 100% 100%, oklch(96% 0.04 290) 0%, transparent 60%);
+  opacity: 0.3;
+}
+
+@media (min-width: 768px) {
+  .constellation {
+    padding: var(--ds-space-6) var(--ds-space-8);
+  }
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--at-accent-fg);
+  background: var(--at-accent-soft);
+  border-radius: 999px;
+  width: max-content;
+  letter-spacing: 0.02em;
+}
+
+.eyebrowDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--at-accent);
+  animation: pulseSoft 2.4s var(--ds-ease-in-out-quart) infinite;
+}
+
+@keyframes pulseSoft {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.8);
+  }
+}
+
+.title {
+  margin: 0;
+  font-size: var(--ds-text-xl);
+  font-weight: var(--ds-weight-bold);
+  color: var(--at-fg);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.sub {
+  margin: 0;
+  font-size: var(--ds-text-sm);
+  color: var(--at-fg-muted);
+  line-height: var(--ds-leading-snug);
+  max-width: 60ch;
+}
+
+.canvas {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--ds-space-3);
+  align-items: center;
+}
+
+@media (min-width: 768px) {
+  .canvas {
+    grid-template-columns: 1fr 180px;
+    gap: var(--ds-space-4);
+  }
+}
+
+.canvas > svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 360px;
+  min-height: 260px;
+}
+
+/* hub + node animations */
+.hubGlow {
+  animation: hubBreath 4s var(--ds-ease-in-out-quart) infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+@keyframes hubBreath {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(0.9);
+  }
+}
+
+.hubRing {
+  animation: ringSpin 28s linear infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+@keyframes ringSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.hubDot {
+  animation: hubBreath 1.6s var(--ds-ease-in-out-quart) infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+.connectLine {
+  stroke-dasharray: 80;
+  stroke-dashoffset: 80;
+  animation: drawLine 1.4s var(--ds-ease-out-quart) forwards;
+}
+
+@keyframes drawLine {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.node {
+  cursor: pointer;
+  transition:
+    transform var(--ds-duration-fast) var(--ds-ease-out-quart),
+    opacity var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+.node:focus {
+  outline: none;
+}
+
+.node:focus-visible circle:nth-of-type(3) {
+  stroke: var(--at-fg);
+  stroke-width: 0.4;
+  stroke-dasharray: 2 2;
+}
+
+.node:hover {
+  transform: scale(1.08);
+}
+
+.node[data-active] {
+  transform: scale(1.12);
+  filter: drop-shadow(0 4px 8px color-mix(in oklch, currentColor 25%, transparent));
+}
+
+.node[data-dimmed] {
+  opacity: 0.4;
+  transform: scale(0.95);
+}
+
+.nodeRing {
+  animation: nodePing 3.2s var(--ds-ease-out-quart) infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+@keyframes nodePing {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.5;
+  }
+  70% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+}
+
+/* ── tooltip / details panel (replaces static legend) ──────────── */
+.tooltip {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  background: var(--at-bg);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-lg);
+  box-shadow: var(--at-shadow-sm);
+  transition:
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  min-height: 180px;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.tooltip::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse 80% 60% at 100% 0%, var(--at-accent-soft) 0%, transparent 70%);
+  opacity: 0.4;
+  pointer-events: none;
+  transition: opacity var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.tooltip[data-active="true"] {
+  border-color: var(--at-line-strong);
+  transform: translateY(-1px);
+  box-shadow: var(--at-shadow);
+}
+
+.tooltip[data-active="true"]::before {
+  opacity: 0.7;
+}
+
+.tooltipHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-block-end: 8px;
+  border-block-end: 1px dashed var(--at-line);
+}
+
+.tooltipChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 24px;
+  padding-inline: 8px;
+  font-size: 11px;
+  font-weight: var(--ds-weight-extrabold);
+  color: var(--at-fg);
+  background: var(--at-surface-hover);
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+}
+
+.tooltipChip[data-tone="emerald"] {
+  background: var(--at-accent-soft);
+  color: var(--at-accent-fg);
+}
+
+.tooltipChip[data-tone="cyan"] {
+  background: color-mix(in oklch, var(--at-info) 14%, transparent);
+  color: var(--at-info);
+}
+
+.tooltipChip[data-tone="violet"] {
+  background: oklch(96% 0.04 290);
+  color: var(--at-violet);
+}
+
+.tooltipChip[data-tone="amber"] {
+  background: var(--at-gold-soft);
+  color: var(--at-gold-fg);
+}
+
+.tooltipChip[data-tone="rose"] {
+  background: color-mix(in oklch, var(--at-danger) 14%, transparent);
+  color: var(--at-danger);
+}
+
+.tooltipChip[data-tone="muted"] {
+  background: var(--at-surface-hover);
+  color: var(--at-fg-muted);
+}
+
+.tooltipMeta {
+  font-size: 10px;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--at-fg-muted);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  text-align: end;
+}
+
+.tooltipGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+}
+
+.tooltipRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-block: 3px;
+  font-size: 11px;
+}
+
+.tooltipKey {
+  color: var(--at-fg-muted);
+  font-weight: var(--ds-weight-medium);
+  margin: 0;
+}
+
+.tooltipVal {
+  font-weight: var(--ds-weight-bold);
+  color: var(--at-fg);
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  letter-spacing: -0.005em;
+}
+
+.tooltipVal[data-tone="amber"] {
+  color: var(--at-gold-fg);
+}
+
+.tooltipCurrency {
+  font-style: normal;
+  font-size: 9px;
+  color: var(--at-fg-subtle);
+  font-weight: var(--ds-weight-semibold);
+}
+
+.tooltipHint {
+  margin: 0;
+  padding-block-start: 8px;
+  font-size: 10px;
+  color: var(--at-fg-subtle);
+  line-height: var(--ds-leading-snug);
+  border-block-start: 1px dashed var(--at-line);
+}
+
+.tooltipHint kbd {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 4px;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--at-fg);
+  background: var(--at-bg-elevated);
+  border: 1px solid var(--at-line);
+  border-radius: 3px;
+  margin-inline: 2px;
+  letter-spacing: 0.02em;
+  box-shadow: 0 1px 0 var(--at-line);
+}

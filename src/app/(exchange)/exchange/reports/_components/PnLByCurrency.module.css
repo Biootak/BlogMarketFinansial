@@ -1,0 +1,303 @@
+/* PnLByCurrency.module.css — ledger-style P&L list */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-5) var(--ds-space-6);
+  background: var(--at-bg-elevated);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-xl);
+  box-shadow: var(--at-shadow);
+}
+
+@media (min-width: 768px) {
+  .section {
+    padding: var(--ds-space-6) var(--ds-space-8);
+  }
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding-block-end: var(--ds-space-3);
+  border-block-end: 1px dashed var(--at-line);
+}
+
+@media (min-width: 768px) {
+  .head {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.headLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--at-gold-fg);
+  background: var(--at-gold-soft);
+  border-radius: 999px;
+  width: max-content;
+  letter-spacing: 0.02em;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-bold);
+  color: var(--at-fg);
+  letter-spacing: -0.01em;
+}
+
+.totalFee {
+  font-size: 12px;
+  color: var(--at-fg-muted);
+  font-weight: var(--ds-weight-medium);
+}
+
+.totalFee strong {
+  color: var(--at-fg);
+  font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
+  margin-inline-start: 4px;
+}
+
+.totalFeeCurrency {
+  font-style: normal;
+  font-size: 10px;
+  color: var(--at-fg-subtle);
+  font-weight: var(--ds-weight-semibold);
+}
+
+/* list */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  background: var(--at-bg);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  animation: rowIn 500ms var(--ds-ease-out-quart) backwards;
+  animation-delay: calc(var(--i, 0) * 50ms);
+}
+
+@keyframes rowIn {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.row:hover {
+  border-color: var(--at-line-strong);
+}
+
+.rowHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.currencyChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  height: 26px;
+  padding-inline: 10px;
+  font-size: 11px;
+  font-weight: var(--ds-weight-extrabold);
+  color: var(--at-fg);
+  background: var(--at-surface-hover);
+  border-radius: 8px;
+  letter-spacing: 0.02em;
+}
+
+.currencyChip[data-tone="emerald"] {
+  background: var(--at-accent-soft);
+  color: var(--at-accent-fg);
+}
+
+.currencyChip[data-tone="cyan"] {
+  background: color-mix(in oklch, var(--at-info) 12%, transparent);
+  color: var(--at-info);
+}
+
+.currencyChip[data-tone="violet"] {
+  background: oklch(96% 0.04 290);
+  color: var(--at-violet);
+}
+
+.currencyChip[data-tone="amber"] {
+  background: var(--at-gold-soft);
+  color: var(--at-gold-fg);
+}
+
+.currencyChip[data-tone="rose"] {
+  background: color-mix(in oklch, var(--at-danger) 12%, transparent);
+  color: var(--at-danger);
+}
+
+.rowValues {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.rowVolume {
+  font-size: var(--ds-text-base);
+  font-weight: var(--ds-weight-bold);
+  color: var(--at-fg);
+  letter-spacing: -0.015em;
+}
+
+.rowCurrency {
+  font-size: 10px;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--at-fg-subtle);
+}
+
+.barTrack {
+  position: relative;
+  height: 5px;
+  background: var(--at-surface-hover);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.barFill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  border-radius: 3px;
+  transform-origin: inline-start;
+  animation: barGrow 700ms var(--ds-ease-out-quart) both;
+  animation-delay: calc(var(--i, 0) * 50ms + 200ms);
+}
+
+@keyframes barGrow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.barFill[data-tone="emerald"] {
+  background: linear-gradient(90deg, var(--at-accent) 0%, color-mix(in oklch, var(--at-accent) 70%, var(--at-gold)) 100%);
+}
+
+.barFill[data-tone="cyan"] {
+  background: linear-gradient(90deg, var(--at-info) 0%, color-mix(in oklch, var(--at-info) 70%, var(--at-accent)) 100%);
+}
+
+.barFill[data-tone="violet"] {
+  background: linear-gradient(90deg, var(--at-violet) 0%, color-mix(in oklch, var(--at-violet) 70%, var(--at-info)) 100%);
+}
+
+.barFill[data-tone="amber"] {
+  background: linear-gradient(90deg, var(--at-gold) 0%, var(--at-warning) 100%);
+}
+
+.barFill[data-tone="rose"] {
+  background: linear-gradient(90deg, var(--at-danger) 0%, color-mix(in oklch, var(--at-danger) 70%, var(--at-gold)) 100%);
+}
+
+.barFill[data-tone="slate"] {
+  background: var(--at-fg-muted);
+}
+
+.rowMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-block-start: 2px;
+}
+
+.metaPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  background: var(--at-surface-hover);
+  border-radius: 999px;
+}
+
+.metaPill[data-fee] {
+  background: var(--at-gold-soft);
+}
+
+.metaPillLabel {
+  color: var(--at-fg-muted);
+  font-weight: var(--ds-weight-medium);
+  font-size: 10px;
+}
+
+.metaPillValue {
+  color: var(--at-fg);
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.metaPillValue[data-tone="amber"] {
+  color: var(--at-gold-fg);
+}
+
+.metaPillCurrency {
+  font-style: normal;
+  font-size: 9px;
+  color: var(--at-fg-subtle);
+  font-weight: var(--ds-weight-semibold);
+}
+
+.footnote {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding-block-start: var(--ds-space-2);
+  font-size: 10px;
+  color: var(--at-fg-subtle);
+  font-weight: var(--ds-weight-medium);
+}
+
+.footnoteItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}

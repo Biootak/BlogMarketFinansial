@@ -1,0 +1,151 @@
+/* FilterBar.module.css — toolbar با search + CurrencySelect + DatePickerWithRange
+ * همهٔ inputs بصری از shared components می‌آیند؛ این CSS فقط layout است. */
+
+.bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3);
+  background: var(--at-bg);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius);
+}
+
+@media (min-width: 768px) {
+  .bar {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+}
+
+/* search input — تنها چیزی که خودمان می‌سازیم */
+.searchWrap {
+  position: relative;
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.searchIcon {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 10px;
+  transform: translateY(-50%);
+  color: var(--at-fg-subtle);
+  display: inline-flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.search {
+  width: 100%;
+  height: 32px;
+  padding: 0 10px 0 30px;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--at-fg);
+  background: var(--at-bg-elevated);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius);
+  outline: none;
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.search::placeholder {
+  color: var(--at-fg-subtle);
+}
+
+.search:focus {
+  border-color: var(--at-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 18%, transparent);
+}
+
+/* CurrencySelect wrap — height را align می‌کنیم با سایر inputs */
+.selectGroup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.currencyWrap {
+  display: flex;
+  align-items: center;
+}
+
+.currencyWrap > * {
+  min-width: 180px;
+}
+
+/* type pills (BUY/SELL/TRANSFER) — تک‌راری نیست، به‌صورت segmented control */
+.typeGroup {
+  display: inline-flex;
+  align-items: center;
+  background: var(--at-bg-elevated);
+  border: 1px solid var(--at-line);
+  border-radius: 999px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.typeBtn {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding-inline: 12px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--at-fg-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    background var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.typeBtn:hover {
+  color: var(--at-fg);
+}
+
+.typeBtn[data-active] {
+  background: var(--at-accent);
+  color: var(--at-accent-on);
+}
+
+/* DatePickerWithRange wrap — هم‌رنگ با سایر inputs */
+.dateGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dateGroup > * {
+  min-width: 220px;
+}
+
+.clearBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
+  padding-inline: 12px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--at-danger);
+  background: color-mix(in oklch, var(--at-danger) 8%, transparent);
+  border: 1px solid color-mix(in oklch, var(--at-danger) 22%, transparent);
+  border-radius: var(--at-radius);
+  cursor: pointer;
+  transition:
+    background var(--ds-duration-fast) var(--ds-ease-out-quart),
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.clearBtn:hover {
+  background: color-mix(in oklch, var(--at-danger) 14%, transparent);
+  border-color: color-mix(in oklch, var(--at-danger) 35%, transparent);
+}

@@ -1,0 +1,243 @@
+/* SettlementPeriodCard.module.css — کارت فشرده برای هر settlement period
+ * stagger reveal + selection ring + hover lift */
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-4);
+  background: var(--at-bg);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-lg);
+  box-shadow: var(--at-shadow-sm);
+  text-align: start;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+  isolation: isolate;
+  min-height: 168px;
+  transition:
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-out-quart),
+    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  animation: cardIn 600ms var(--ds-ease-out-quart) backwards;
+  animation-delay: calc(var(--i, 0) * 50ms);
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card[data-hover] {
+  transform: translateY(-2px);
+  border-color: var(--at-line-strong);
+  box-shadow: var(--at-shadow-hover);
+}
+
+.card[data-selected] {
+  border-color: var(--at-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 22%, transparent);
+}
+
+.card[data-selected][data-tone="amber"] {
+  border-color: var(--at-gold);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-gold) 25%, transparent);
+}
+
+.card[data-selected][data-tone="violet"] {
+  border-color: var(--at-violet);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-violet) 25%, transparent);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--at-accent);
+  outline-offset: 2px;
+}
+
+/* selection ring (extra visual on top) */
+.selectionRing {
+  position: absolute;
+  inset: -1px;
+  border-radius: var(--at-radius-lg);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.card[data-selected] .selectionRing {
+  opacity: 1;
+  inset: -3px;
+  border: 1.5px solid var(--at-accent);
+}
+
+.card[data-selected][data-tone="amber"] .selectionRing {
+  border-color: var(--at-gold);
+}
+
+.card[data-selected][data-tone="violet"] .selectionRing {
+  border-color: var(--at-violet);
+}
+
+/* status icon (top corner) */
+.statusIcon {
+  position: absolute;
+  inset-block-start: var(--ds-space-3);
+  inset-inline-end: var(--ds-space-3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--at-surface-hover);
+  color: var(--at-fg-muted);
+}
+
+.statusIcon[data-tone="emerald"] {
+  background: var(--at-accent-soft);
+  color: var(--at-accent-fg);
+}
+
+.statusIcon[data-tone="amber"] {
+  background: var(--at-gold-soft);
+  color: var(--at-gold-fg);
+}
+
+.statusIcon[data-tone="violet"] {
+  background: oklch(96% 0.04 290);
+  color: var(--at-violet);
+}
+
+.statusIcon[data-tone="muted"] {
+  background: var(--at-surface-hover);
+  color: var(--at-fg-subtle);
+}
+
+/* period range */
+.period {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-inline-end: 32px;
+}
+
+.periodLabel {
+  font-size: 10px;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--at-fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.periodDate {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-bold);
+  color: var(--at-fg);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+}
+
+.periodSep {
+  color: var(--at-fg-faint);
+  font-weight: var(--ds-weight-medium);
+  margin-inline: 4px;
+}
+
+/* metric rows */
+.metric {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.metricLabel {
+  font-size: 11px;
+  color: var(--at-fg-muted);
+  font-weight: var(--ds-weight-medium);
+}
+
+.metricValue {
+  font-size: 12px;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--at-fg);
+  font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.metricValue[data-tone="emerald"] {
+  color: var(--at-accent-fg);
+}
+
+.metricValue[data-tone="violet"] {
+  color: var(--at-violet);
+}
+
+.metricCurrency {
+  font-style: normal;
+  font-size: 10px;
+  color: var(--at-fg-subtle);
+  font-weight: var(--ds-weight-medium);
+}
+
+.metric[data-focal] {
+  margin-block-start: 4px;
+  padding-block-start: 8px;
+  border-block-start: 1px dashed var(--at-line);
+}
+
+.metricValue[data-focal] {
+  font-size: var(--ds-text-base);
+  font-weight: var(--ds-weight-extrabold);
+  letter-spacing: -0.015em;
+}
+
+/* status pill (bottom) */
+.statusPill {
+  position: absolute;
+  inset-block-end: var(--ds-space-3);
+  inset-inline-start: var(--ds-space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: var(--ds-weight-semibold);
+  border-radius: 999px;
+  background: var(--at-surface-hover);
+  color: var(--at-fg-muted);
+  letter-spacing: 0.01em;
+}
+
+.statusPill[data-tone="emerald"] {
+  background: var(--at-accent-soft);
+  color: var(--at-accent-fg);
+}
+
+.statusPill[data-tone="amber"] {
+  background: var(--at-gold-soft);
+  color: var(--at-gold-fg);
+}
+
+.statusPill[data-tone="violet"] {
+  background: oklch(96% 0.04 290);
+  color: var(--at-violet);
+}
+
+.statusDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}

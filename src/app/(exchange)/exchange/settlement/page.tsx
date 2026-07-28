@@ -1,8 +1,9 @@
 /**
  * /exchange/settlement — تسویه‌حساب صرافی
  *
- * Server Component: داده‌ها اینجا fetch می‌شوند و به SettlementWorkspace پاس می‌شوند.
- * SettlementWorkspace فقط filter client-side انجام می‌دهد — بدون re-fetch.
+ * Server Component: داده‌ها اینجا fetch می‌شوند و به SettlementCockpit پاس می‌شوند.
+ * SettlementCockpit filter و selection را client-side انجام می‌دهد — بدون re-fetch.
+ * فقط OWNER/MANAGER صرافی به این صفحه دسترسی دارند.
  */
 
 import { getExchangeForUser } from '@/actions/exchanges';
@@ -11,7 +12,7 @@ import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import SettlementWorkspace from './_components/SettlementWorkspace';
+import SettlementCockpit from './_components/SettlementCockpit';
 
 export const metadata: Metadata = { title: 'تسویه‌حساب | پنل صرافی' };
 
@@ -32,10 +33,12 @@ export default async function SettlementPage() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
       <PageHeader
         title="تسویه‌حساب"
-        description="دوره‌های تسویه، حجم معاملات و کارمزد پلتفرم."
+        description="آبشار تسویه، خط زمانی دوره‌ها و جزئیات هر دوره."
         breadcrumb={[{ label: 'پنل صرافی' }, { label: 'تسویه‌حساب' }]}
+        accent="emerald"
+        icon="bar-chart"
       />
-      <SettlementWorkspace initialRows={initialRows} staffRole={membership.staffRole} />
+      <SettlementCockpit initialRows={initialRows} />
     </div>
   );
 }

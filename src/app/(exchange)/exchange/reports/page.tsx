@@ -1,10 +1,10 @@
 /**
- * /exchange/reports — گزارش مالی P&L صرافی (upgrade)
+ * /exchange/reports — گزارش‌های صرافی (P2026 redesign).
  *
- * دو تب: تراکنش‌ها (موجود) + P&L جدید
+ * Server Component: داده‌ها اینجا fetch می‌شوند و به ReportsCockpit پاس می‌شوند.
+ * ReportsCockpit تمام visualization + filter را client-side انجام می‌دهد.
  */
 
-import { getExchangeQuotes } from '@/actions/exchange-quotes';
 import { getTransactions } from '@/actions/exchange-transactions';
 import { getExchangeForUser } from '@/actions/exchanges';
 import { getExchangeReport } from '@/actions/reporting';
@@ -12,7 +12,7 @@ import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import ReportsWorkspace from './_components/ReportsWorkspace';
+import ReportsCockpit from './_components/ReportsCockpit';
 
 export const metadata: Metadata = { title: 'گزارش‌ها | پنل صرافی' };
 
@@ -30,18 +30,45 @@ export default async function ExchangeReportsPage() {
     getExchangeReport(exchange.id),
   ]);
 
+  // ReportLite — فقط فیلدهایی که ReportsCockpit مصرف می‌کند
+  const report = reportResult.success
+    ? {
+        totalVolume: reportResult.data.totalVolume,
+        totalFee: reportResult.data.totalFee,
+        totalDeals: reportResult.data.totalDeals,
+        pnlByCurrency: reportResult.data.pnlByCurrency,
+        topCustomers: reportResult.data.topCustomers.map((c) => ({
+          id: c.customerId,
+          name: c.fullName,
+          dealCount: c.dealCount,
+          totalVolume: c.totalVolume,
+          currency: reportResult.data!.pnlByCurrency[0]?.currency ?? 'AFN',
+        })),
+        dailySummary: reportResult.data.dailySummary,
+      }
+    : {
+        totalVolume: 0,
+        totalFee: 0,
+        totalDeals: 0,
+        pnlByCurrency: [],
+        topCustomers: [],
+        dailySummary: [],
+      };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
       <PageHeader
         title="گزارش‌ها"
-        description="تحلیل مالی، حجم معاملات، سود/زیان و خروجی CSV"
+        description="تحلیل مالی، شبکهٔ ارزی، ریتم هفتگی و لیست تراکنش‌ها."
         breadcrumb={[{ label: 'پنل صرافی' }, { label: 'گزارش‌ها' }]}
+        accent="violet"
+        icon="bar-chart"
       />
-      <ReportsWorkspace
+      <ReportsCockpit
         exchangeId={exchange.id}
-        initialRows={txnResult.rows}
-        initialTotal={txnResult.total}
-        initialReport={reportResult.success ? reportResult.data : null}
+        report={report}
+        txRows={txnResult.rows}
+        txTotal={txnResult.total}
       />
     </div>
   );

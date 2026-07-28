@@ -126,17 +126,53 @@
 - **Parallel data sources:** اگر دو منبع یک هدف مشترک دارند، تناقض را به کاربر بگو. → ر.ک `AGENTS.market-rates.md`.
 
 ### 2. Creating code
+
+> 🔴 **CUSTOM-FIRST, NATIVE-NEVER (P0 rule — اجباری برای همه المان‌ها)**
+>
+> **هر المان UI** — چه form control باشد، چه display، چه layout — قبل از ساختن باید این سلسله مراتب را طی کند:
+>
+> **مرحله ۱ — Repo Scan (اجباری، قبل از هر کد):**
+> 1. grep `src/components/Dashboard/primitives/` — canonical dashboard primitives
+> 2. grep `src/components/ui/` — shadcn/Radix shared components
+> 3. grep `src/components/Dashboard/` و `src/components/` — custom/domain components
+>
+> **مرحله ۲ — Decision Ladder:**
+> | یافته | اقدام |
+> |-------|-------|
+> | موجود با همان purpose | **reuse** — بدون تغییر |
+> | موجود با structure مشابه | **extend** (variant prop) — نه fork |
+> | چند primitive مرتبط | **compose** — نه از صفر |
+> | هیچ‌کدام وجود ندارد | **→ ساخت shared** در `src/components/Dashboard/primitives/` یا `src/components/ui/` — **نه page-specific inline** |
+>
+> **قانون طلایی:** اگر یک component در بیش از یک page یا feature استفاده می‌شود (یا احتمالش هست) → **باید shared باشد**.
+>
+> موجودی canonical:
+> - **Primitives:** `PageHeader`, `StatCard`, `StatGrid`, `DataTable`, `EmptyState`, `DashboardEmpty`, `Section`, `StatusBadge`, `TableToolbar`, `FormField`, `PanelDrawer`, `ConfirmDialog`, `CountUp`, `Skeleton`, `AmbientBackground`, `GeometricAccent`, `NoiseTexture`, `Spotlight`, `MagneticButton`, `Breadcrumb`
+> - **UI:** `Button`, `Input`, `Dialog`, `Card`, `Skeleton`, `Badge`, `Tabs`, `Select`, `DropdownMenu`, `Popover`, `Sheet`, `Tooltip`, `Switch`, `Toggle`, `Toolbar`, `Table`, `Progress`, `ScrollArea`, `Separator`, `Avatar`, `Alert`, `Textarea`, `Checkbox`
+> - **Custom:** `PersianDatePicker`, `PersianDateTimePicker`, `DatePickerWithRange`, `CurrencySelect`, `CustomSwitch`, `icon.tsx`, `typography.tsx`, `stat-card.tsx`, `form-field.tsx`
+
+> 🚨 **NO NATIVE FORM CONTROLS (P0 rule — learned 2026-07-28)**
+> قبل از هر `<input type="date|time|datetime-local">`, `<select>`, `<input type="checkbox|radio">`, `<input type="range">`:
+> 1. grep `src/components/ui/` برای shared alternative
+> 2. در دسترس: `DatePickerWithRange`, `PersianDatePicker`, `PersianDateTimePicker`, `CurrencySelect`, `select.tsx`, `dropdown-menu.tsx`, `checkbox.tsx`, `CustomSwitch`, `toggle.tsx`, `tabs.tsx`
+> 3. هر native control بدون grep ممنوع — حتی برای تسک‌های Trivial
+> 4. اگر shared component وجود ندارد → **ساخت shared در `src/components/ui/`، نه inline**
+>
+> این قانون به این دلیل P0 است: native dropdown/datepicker همیشه با design system (tokens, fonts, RTL, motion) ناسازگار می‌شود و design drift ایجاد می‌کند.
+
 Component Decision Protocol — همیشه به ترتیب:
 1. Search repo for existing component with the same purpose.
 2. Search for similar structure/behavior.
-3. Prefer: **reuse** → **extend** → **compose** → new **shared** → page-**specific**.
-4. Do NOT create new just because an existing one has a different name.
+3. Prefer: **reuse** → **extend** → **compose** → new **shared** → page-**specific** (فقط اگر واقعاً page-specific باشد).
+4. Do NOT create new just because an existing one has different name.
+5. **Page-specific `_components/` فقط برای orchestration/layout این page مجاز است** — هر primitive/display/control قابل‌اشتراک باید به `shared/` یا `primitives/` منتقل شود.
 
 Rules for new code:
 - Max ~400 lines; one concern per file; business logic → `lib/` or hook, never inline.
 - No `any`, `@ts-ignore`, TODO/placeholder/FIXME. Type everything.
 - No stubs: every action must do something real.
 - Co-located `*.module.css`.
+- **هر component جدید shared** → باید در `primitives/index.ts` یا `ui/` export شود تا قابل discover باشد.
 
 ### 3. UI appearance (load `DESIGN.md` + `COMPONENTS.md` first) [فقط UI]
 - **Canonical:** `src/components/ui/*` (shadcn) + `src/components/Dashboard/primitives/*`.
@@ -262,6 +298,7 @@ Rules for new code:
 | 2026-07 | تعریف صریح Trivial/Standard/Full؛ رفع تضاد scope/fix؛ periodic cleanup rule؛ mid-task state tracking |
 | 2026-07 | **Vision-First gate:** UQ1+UQ2+UQ3 پیش از grep اجباری شدند؛ §Craft Bar دو نقطه (قبل از کد + قبل از Show)؛ بلاک A در UIDQG مارک ⚡ شد |
 | 2026-07 | **UI VISION GATE جداگانه:** جدول مستقل UI VISION GATE قبل از PRE-CODE GATE اضافه شد؛ ردیف‌های UI Check و Comp Map از PRE-CODE GATE حذف و به جدول جدید منتقل شدند |
+| 2026-07 | **CUSTOM-FIRST, NATIVE-NEVER (P0):** سلسله مراتب 3-مرحله‌ای Repo Scan + Decision Ladder اضافه شد؛ موجودی کامل primitives/ui/custom ثبت شد؛ قانون page-specific فقط برای orchestration؛ export اجباری به index.ts |
 
 ---
 
