@@ -479,6 +479,148 @@
   opacity: 0.75;
 }
 
+/* ── Phone OTP verification panel ────────────────────────────── */
+.otpPanel {
+  margin-block-start: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  background: color-mix(in oklch, var(--ds-primary) 4%, var(--ds-surface-1));
+  border: 1px solid color-mix(in oklch, var(--ds-primary) 22%, transparent);
+  border-radius: var(--ds-radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+.otpHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.otpIcon {
+  inline-size: 36px;
+  block-size: 36px;
+  border-radius: 50%;
+  background: color-mix(in oklch, var(--ds-primary) 14%, transparent);
+  color: var(--ds-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.otpHeaderText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.otpTitle {
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  color: var(--ds-text-1);
+}
+
+.otpSubtitle {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted, var(--ds-text-2));
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.otpSendBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  height: 40px;
+  padding-inline: var(--ds-space-4);
+  background: var(--ds-primary);
+  color: var(--ds-bg, white);
+  border: none;
+  border-radius: var(--ds-radius-md);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  align-self: flex-start;
+}
+
+.otpSendBtn:hover:not(:disabled) { opacity: 0.88; }
+.otpSendBtn:active:not(:disabled) { transform: scale(0.98); }
+.otpSendBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.otpInputRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--ds-space-2);
+  align-items: center;
+}
+
+.otpInput {
+  height: 44px;
+  padding-inline: var(--ds-space-3);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.4em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  background: var(--ds-bg, white);
+  border: 1.5px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+  color: var(--ds-text-1);
+  font-family: var(--ds-font-mono, ui-monospace);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.otpInput:focus {
+  outline: none;
+  border-color: var(--ds-primary);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-primary) 18%, transparent);
+}
+
+.otpVerifyBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-1-5);
+  height: 44px;
+  padding-inline: var(--ds-space-4);
+  background: var(--ds-primary);
+  color: var(--ds-bg, white);
+  border: none;
+  border-radius: var(--ds-radius-md);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.otpVerifyBtn:hover:not(:disabled) { opacity: 0.88; }
+.otpVerifyBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.otpResendBtn {
+  grid-column: 1 / -1;
+  height: 32px;
+  padding-inline: var(--ds-space-2);
+  background: transparent;
+  color: var(--ds-text-muted, var(--ds-text-2));
+  border: none;
+  font-size: var(--ds-text-xs);
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s;
+}
+
+.otpResendBtn:hover:not(:disabled) { color: var(--ds-primary); }
+.otpResendBtn:disabled { color: var(--ds-text-muted); opacity: 0.5; cursor: not-allowed; text-decoration: none; }
+
 .spin {
   animation: spin 0.7s linear infinite;
 }

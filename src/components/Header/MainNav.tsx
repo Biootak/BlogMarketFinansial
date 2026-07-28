@@ -70,8 +70,19 @@ export default async function MainNav({
 
           {/* ستون چپ (در RTL: اکشن‌ها/ورود — همه سایزها) */}
           <div className="flex items-center justify-end gap-1 sm:gap-2 min-w-0 col-start-3 row-start-1">
-            {/* موبایل و تبلت: فقط user/auth */}
+            {/* موبایل و تبلت: search + user/auth */}
             <div className="flex lg:hidden items-center gap-1">
+              <div
+                className="
+                  flex items-center justify-center
+                  size-10 rounded-xl
+                  text-neutral-600 dark:text-neutral-300
+                  hover:bg-neutral-100 dark:hover:bg-neutral-800/80
+                  transition-colors duration-200
+                "
+              >
+                <SearchModal />
+              </div>
               {!session?.user ? (
                 <Link
                   href="/auth"

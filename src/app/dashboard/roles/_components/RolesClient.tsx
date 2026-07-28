@@ -15,7 +15,7 @@ import {
   getUsersByRole,
   updateUserRole,
 } from '@/actions/role-actions';
-import { ConfirmDialog, EmptyState } from '@/components/Dashboard/primitives';
+import { ConfirmDialog, EmptyState, MillionDollarEmpty } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Role } from '@prisma/client';
@@ -379,20 +379,22 @@ function RoleUsersDrawer({
               ))}
             </div>
           ) : !data || data.users.length === 0 ? (
-            <EmptyState
-              icon={Users}
+            <MillionDollarEmpty
+              variant="search"
+              tone="neutral"
+              eyebrow={`نقش ${ROLE_FA[role]}`}
               title="کاربری یافت نشد"
               description={
                 search
                   ? `جستجوی «${search}» نتیجه‌ای نداشت.`
                   : `هیچ کاربری با نقش ${ROLE_FA[role]} وجود ندارد.`
               }
-              action={
+              primaryAction={
                 search ? (
-                  <Button size="sm" variant="outline" onClick={() => setSearch('')}>
-                    <X size={12} /> پاک‌کردن
+                  <Button variant="outline" onClick={() => setSearch('')}>
+                    <X size={12} /> پاک‌کردن جستجو
                   </Button>
-                ) : null
+                ) : undefined
               }
             />
           ) : (

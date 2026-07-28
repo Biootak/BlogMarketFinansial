@@ -1,0 +1,317 @@
+/* MillionDollarEmpty — 2026 bespoke illustrated empty state
+ *  - 8 variants (inbox/search/locked/sparkles/chart/bell/card/network/shield/default)
+ *  - ambient gradient orbs × 2 (drift)
+ *  - bespoke SVG illustration per variant
+ *  - staggered fade-in (no JS — pure CSS)
+ *  - tokens only, prefers-reduced-motion کامل
+ */
+
+.root {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--ds-space-5);
+  padding: var(--ds-space-10) var(--ds-space-6);
+  overflow: hidden;
+  min-block-size: 320px;
+}
+
+.ambients {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  filter: blur(70px) saturate(140%);
+  opacity: 0.55;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+}
+
+.orbA {
+  inset-block-start: 12%;
+  inset-inline-start: 18%;
+  inline-size: 240px;
+  block-size: 240px;
+  background: radial-gradient(
+    circle,
+    var(--orb-color, var(--ds-primary)) 0%,
+    transparent 70%
+  );
+  animation: orb-a 18s var(--ds-ease-in-out-quart, ease) infinite;
+  opacity: 0.22;
+}
+
+.orbB {
+  inset-block-end: 8%;
+  inset-inline-end: 12%;
+  inline-size: 280px;
+  block-size: 280px;
+  background: radial-gradient(
+    circle,
+    var(--orb-color-2, var(--ds-primary)) 0%,
+    transparent 70%
+  );
+  animation: orb-b 24s var(--ds-ease-in-out-quart, ease) infinite;
+  opacity: 0.18;
+}
+
+.tone_primary {
+  --orb-color: color-mix(in oklch, var(--ds-primary) 60%, transparent);
+  --orb-color-2: color-mix(in oklch, var(--ds-primary) 40%, transparent);
+}
+.tone_amber {
+  --orb-color: oklch(72% 0.15 70);
+  --orb-color-2: oklch(72% 0.15 60);
+}
+.tone_rose {
+  --orb-color: oklch(60% 0.18 25);
+  --orb-color-2: oklch(60% 0.18 20);
+}
+.tone_emerald {
+  --orb-color: oklch(60% 0.14 145);
+  --orb-color-2: oklch(60% 0.14 155);
+}
+.tone_neutral {
+  --orb-color: var(--ds-fg-muted);
+  --orb-color-2: var(--ds-fg-muted);
+}
+
+@keyframes orb-a {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(30px, 20px); }
+}
+
+@keyframes orb-b {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-20px, -30px); }
+}
+
+/* ── Stage (illustration) ─────────────────────────────────────── */
+.stage {
+  position: relative;
+  inline-size: min(220px, 70vw);
+  block-size: min(180px, 60vw);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: stage-in 600ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+
+@keyframes stage-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.svg {
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+}
+
+/* ── Copy ─────────────────────────────────────────────────────── */
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-2);
+  max-inline-size: 440px;
+  animation: copy-in 600ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)) 80ms both;
+}
+
+@keyframes copy-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  padding: 4px var(--ds-space-3);
+  font-size: var(--ds-text-xs, 12px);
+  font-weight: 600;
+  color: var(--ds-primary);
+  background: color-mix(in oklch, var(--ds-primary) 8%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-primary) 22%, transparent);
+  border-radius: var(--ds-radius-full, 9999px);
+  letter-spacing: -0.01em;
+}
+
+.eyebrowDot {
+  inline-size: 5px;
+  block-size: 5px;
+  border-radius: 50%;
+  background: var(--ds-primary);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-primary) 22%, transparent);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--ds-text-lg, 18px);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  color: var(--ds-fg);
+  font-feature-settings: "ss01", "ss02";
+}
+
+.description {
+  margin: 0;
+  font-size: var(--ds-text-sm, 13px);
+  line-height: 1.65;
+  color: var(--ds-fg-muted, var(--ds-fg-subtle));
+}
+
+/* ── Actions ──────────────────────────────────────────────────── */
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-2-5);
+  margin-block-start: var(--ds-space-2);
+  animation: actions-in 600ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)) 160ms both;
+}
+
+@keyframes actions-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.secondary {
+  font-size: var(--ds-text-xs, 12px);
+  color: var(--ds-fg-muted);
+}
+
+/* ── Animations per variant ───────────────────────────────────── */
+.letter {
+  animation: letter-in 3.6s var(--ds-ease-in-out-quart, ease) infinite;
+  transform-origin: 100px 50px;
+}
+
+@keyframes letter-in {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  50% { transform: translateY(8px); opacity: 0.5; }
+}
+
+.sparkles circle {
+  animation: twinkle 2.4s var(--ds-ease-in-out-quart, ease) infinite;
+}
+.sparkles circle:nth-child(2) { animation-delay: 0.4s; }
+.sparkles circle:nth-child(3) { animation-delay: 0.8s; }
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.9; }
+}
+
+.spinSlow { animation: spin-slow 12s linear infinite; }
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+.rotateSlow { animation: spin-slow 24s linear infinite reverse; }
+
+.twinkle circle {
+  animation: twinkle 3s var(--ds-ease-in-out-quart, ease) infinite;
+}
+.twinkle circle:nth-child(2) { animation-delay: 0.6s; }
+.twinkle circle:nth-child(3) { animation-delay: 1.2s; }
+.twinkle circle:nth-child(4) { animation-delay: 1.8s; }
+
+.sparklesLarge > path {
+  animation: star-pulse 3s var(--ds-ease-in-out-quart, ease) infinite;
+  transform-origin: center;
+}
+.sparklesLarge > path:nth-child(2) { animation-delay: 0.6s; }
+.sparklesLarge > path:nth-child(3) { animation-delay: 1.2s; }
+.sparklesLarge > path:nth-child(4) { animation-delay: 1.8s; }
+
+@keyframes star-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.1); opacity: 1; }
+}
+
+.barsRise rect {
+  transform-origin: bottom;
+  animation: bar-grow 1.2s var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+.barsRise rect:nth-child(1) { animation-delay: 0.05s; }
+.barsRise rect:nth-child(2) { animation-delay: 0.15s; }
+.barsRise rect:nth-child(3) { animation-delay: 0.25s; }
+.barsRise rect:nth-child(4) { animation-delay: 0.35s; }
+.barsRise rect:nth-child(5) { animation-delay: 0.45s; }
+
+@keyframes bar-grow {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+.bellRing { animation: bell-swing 2.4s var(--ds-ease-in-out-quart, ease) infinite; }
+
+@keyframes bell-swing {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-12deg); }
+  60% { transform: rotate(10deg); }
+}
+
+.wavePulse circle {
+  animation: wave-out 2s var(--ds-ease-in-out-quart, ease) infinite;
+}
+.wavePulse circle:nth-child(2) { animation-delay: 0.5s; }
+
+@keyframes wave-out {
+  0% { transform: scale(0.4); opacity: 0; }
+  20% { opacity: 0.8; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+.cardFloat { animation: card-bob 4s var(--ds-ease-in-out-quart, ease) infinite; }
+
+@keyframes card-bob {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-4px) rotate(0.5deg); }
+}
+
+.networkPulse {
+  animation: net-pulse 2.6s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+@keyframes net-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.shieldFloat { animation: shield-glow 3s var(--ds-ease-in-out-quart, ease) infinite; }
+
+@keyframes shield-glow {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+.float { animation: float-y 4s var(--ds-ease-in-out-quart, ease) infinite; }
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbA, .orbB,
+  .stage, .copy, .actions,
+  .letter, .sparkles circle, .twinkle circle,
+  .spinSlow, .rotateSlow,
+  .sparklesLarge > path, .barsRise rect,
+  .bellRing, .wavePulse circle, .cardFloat,
+  .networkPulse, .shieldFloat, .float {
+    animation: none;
+  }
+}

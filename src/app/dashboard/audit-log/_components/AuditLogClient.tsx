@@ -18,7 +18,7 @@
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { exportAuditLogs } from '../_actions/exportAuditLog';
-import { EmptyState, PageHeader } from '@/components/Dashboard/primitives';
+import { EmptyState, MillionDollarEmpty, PageHeader } from '@/components/Dashboard/primitives';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -518,20 +518,24 @@ export function AuditLogClient({
           aria-busy={isPending}
         >
           {filteredLogs.length === 0 ? (
-            <div className={s.emptyWrap}>
-              <EmptyState
-                icon={Eye}
-                title="رویدادی یافت نشد"
-                description={hasFilters ? 'فیلترها را تغییر دهید یا پاک کنید' : 'هنوز هیچ رویدادی ثبت نشده است'}
-                action={
-                  hasFilters ? (
-                    <Button size="sm" variant="outline" onClick={clearFilters}>
-                      پاک کردن فیلترها
-                    </Button>
-                  ) : undefined
-                }
-              />
-            </div>
+            <MillionDollarEmpty
+              variant={hasFilters ? 'search' : 'sparkles'}
+              tone="primary"
+              eyebrow="مرکز رویداد"
+              title="رویدادی یافت نشد"
+              description={
+                hasFilters
+                  ? 'فیلترهای فعلی نتیجه‌ای ندارند. برای مشاهدهٔ همه رویدادها فیلترها را پاک کنید.'
+                  : 'هنوز هیچ رویدادی ثبت نشده است. وقتی کاربری عملیاتی انجام دهد، اینجا ثبت می‌شود.'
+              }
+              primaryAction={
+                hasFilters ? (
+                  <Button variant="outline" onClick={clearFilters}>
+                    پاک کردن فیلترها
+                  </Button>
+                ) : undefined
+              }
+            />
           ) : (
             <table className={s.table} aria-label="جدول رویدادهای ممیزی">
               <thead className={s.thead}>

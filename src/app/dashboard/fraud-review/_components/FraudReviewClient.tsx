@@ -15,6 +15,7 @@
 
 import { DataTable } from '@/components/Dashboard/primitives/DataTable';
 import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
+import { MillionDollarEmpty } from '@/components/Dashboard/primitives/MillionDollarEmpty';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import { Button } from '@/components/ui/button';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
@@ -340,10 +341,12 @@ export function FraudReviewClient({ reviews: initial }: Props) {
         rowKey={(r) => r.id}
         ariaLabel="صف بررسی تقلب"
         empty={
-          <EmptyState
-            icon={ShieldCheck}
+          <MillionDollarEmpty
+            variant="shield"
+            tone="emerald"
+            eyebrow="مرکز امنیت"
             title="صف تقلب خالی است"
-            description="هیچ موردی برای بررسی وجود ندارد."
+            description="هیچ مورد فعالی برای بررسی وجود ندارد. تمام تراکنش‌ها در وضعیت ایمن هستند."
           />
         }
       />

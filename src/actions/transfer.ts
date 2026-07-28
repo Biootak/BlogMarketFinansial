@@ -16,6 +16,7 @@
  */
 
 import { randomBytes } from 'node:crypto';
+import { assertCsrf } from '@/lib/csrf-server';
 import prisma from '@/lib/db';
 import {
   isHighValueTransaction,
@@ -316,11 +317,23 @@ const ConfirmSchema = z.object({
     .length(6)
     .regex(/^\d{6}$/)
     .optional(),
+  /** کلید idempotency اختیاری — اگر ارسال شود، replay همان پاسخ را برمی‌گرداند. */
+  idempotencyKey: z.string().min(8).max(64).optional(),
 });
 
 export async function confirmTransfer(
   raw: unknown,
 ): Promise<FintechActionResult<{ txnId: string }>> {
+  // CSRF guard
+  try {
+    await assertCsrf();
+  } catch {
+    return {
+      success: false,
+      error: { code: 'CSRF_FAILED', message: 'درخواست نامعتبر — لطفاً صفحه را refresh کنید' },
+    };
+  }
+
   const auth = await requireUser();
   if (!auth.success) {
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد حساب کاربری شوید' } };

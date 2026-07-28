@@ -14,14 +14,18 @@ import {
   submitKycBasicInfo,
   submitKycDocuments,
 } from '@/actions/kyc-onboarding';
+import { sendPhoneOtp, verifyPhoneOtp } from '@/actions/phone-verify';
 import { normalizeDigits } from '@/lib/utils';
 import {
   BadgeCheck,
   Camera,
   Check,
+  CheckCircle2,
   ChevronLeft,
   ClipboardList,
   Loader2,
+  MessageSquare,
+  Phone,
   RotateCcw,
   Shield,
   ShieldAlert,
@@ -29,7 +33,7 @@ import {
   Upload,
   X,
 } from 'lucide-react';
-import { useRef, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import s from './kyc.module.css';
 
 const STEPS = [
@@ -86,6 +90,23 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
 
   const [uploadingField, setUploadingField] = useState<keyof DocState | null>(null);
 
+  // ── Phone OTP verification state (Step 0.5) ─────────────────────
+  // اگر کاربر شماره تأیید‌شده نداشته باشد، باید قبل از submit، OTP را verify کند
+  const [phoneVerified, setPhoneVerified] = useState(hasPhone);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpValue, setOtpValue] = useState('');
+  const [otpCooldown, setOtpCooldown] = useState(0);
+  const [phoneForOtp, setPhoneForOtp] = useState('');
+
+  // cooldown countdown برای ارسال مجدد OTP
+  useEffect(() => {
+    if (otpCooldown <= 0) return;
+    const id = setInterval(() => {
+      setOtpCooldown((c) => (c > 0 ? c - 1 : 0));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [otpCooldown]);
+
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>, field: keyof DocState) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -125,13 +146,24 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
   function handleStep1Submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
+    const phoneRaw = normalizeDigits((fd.get('phone') as string).trim());
     const data = {
       fullName: (fd.get('fullName') as string).trim(),
       nationalId: normalizeDigits((fd.get('nationalId') as string).trim()),
       dateOfBirth: normalizeDigits((fd.get('dateOfBirth') as string).trim()),
-      phone: normalizeDigits((fd.get('phone') as string).trim()),
+      phone: phoneRaw,
     };
     setError(null);
+
+    // اگر phone verify نشده، ابتدا OTP verification لازم است
+    if (!phoneVerified) {
+      setPhoneForOtp(phoneRaw);
+      setOtpSent(false);
+      setOtpValue('');
+      // basicInfo را نگه می‌داریم تا بعد از verify از آن استفاده کنیم
+      setBasicInfo(data);
+      return;
+    }
 
     startTransition(async () => {
       const res = await submitKycBasicInfo(data);
@@ -141,6 +173,61 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         setError(res.error.message);
+      }
+    });
+  }
+
+  // ── OTP handlers ────────────────────────────────────────────────
+  async function handleSendOtp() {
+    setError(null);
+    startTransition(async () => {
+      const res = await sendPhoneOtp({ phone: phoneForOtp });
+      if (res.success) {
+        setOtpSent(true);
+        setOtpCooldown(60);
+      } else {
+        setError(res.message);
+        if (res.retryAfterMs) {
+          setOtpCooldown(Math.ceil(res.retryAfterMs / 1000));
+        }
+      }
+    });
+  }
+
+  async function handleVerifyOtp() {
+    if (otpValue.length !== 6) {
+      setError('کد باید ۶ رقم باشد');
+      return;
+    }
+    setError(null);
+    startTransition(async () => {
+      const res = await verifyPhoneOtp({ phone: phoneForOtp, code: otpValue });
+      if (res.success) {
+        setPhoneVerified(true);
+        setOtpSent(false);
+        setOtpValue('');
+        // حالا submit اصلی
+        const fd = new FormData();
+        const tmpForm = document.querySelector<HTMLFormElement>('form[data-kyc-step0]');
+        if (tmpForm) {
+          new FormData(tmpForm).forEach((v, k) => fd.set(k, v as string));
+        }
+        const data = {
+          fullName: (fd.get('fullName') as string)?.trim() ?? '',
+          nationalId: normalizeDigits((fd.get('nationalId') as string)?.trim() ?? ''),
+          dateOfBirth: normalizeDigits((fd.get('dateOfBirth') as string)?.trim() ?? ''),
+          phone: phoneForOtp,
+        };
+        const sub = await submitKycBasicInfo(data);
+        if (sub.success) {
+          setBasicInfo(data);
+          setStep(1);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          setError(sub.error.message);
+        }
+      } else {
+        setError(res.message);
       }
     });
   }
@@ -396,7 +483,7 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
         {step === 0 && (
           <div className={s.card}>
             <h2 className={s.cardTitle}>اطلاعات هویتی</h2>
-            <form onSubmit={handleStep1Submit} className={s.form}>
+            <form onSubmit={handleStep1Submit} className={s.form} data-kyc-step0>
               <div className={s.formGrid}>
                 <div className={`${s.field} ${s.fieldFull}`}>
                   <label htmlFor="kyc-name" className={s.label}>
@@ -459,7 +546,78 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
                 </div>
               )}
 
-              <div className={s.footer}>
+              {/* ── Phone OTP verification sub-step ──────────── */}
+              {!phoneVerified && phoneForOtp && (
+                <div className={s.otpPanel} role="region" aria-label="تأیید شماره موبایل">
+                  <div className={s.otpHeader}>
+                    <div className={s.otpIcon} aria-hidden>
+                      <Phone size={16} strokeWidth={1.5} />
+                    </div>
+                    <div className={s.otpHeaderText}>
+                      <div className={s.otpTitle}>تأیید شماره موبایل</div>
+                      <div className={s.otpSubtitle} dir="ltr">
+                        {phoneForOtp}
+                      </div>
+                    </div>
+                  </div>
+
+                  {!otpSent ? (
+                    <button
+                      type="button"
+                      className={s.otpSendBtn}
+                      onClick={handleSendOtp}
+                      disabled={isPending}
+                      aria-busy={isPending}
+                    >
+                      {isPending ? (
+                        <Loader2 size={14} className={s.spin} aria-hidden />
+                      ) : (
+                        <MessageSquare size={14} aria-hidden />
+                      )}
+                      ارسال کد تأیید
+                    </button>
+                  ) : (
+                    <div className={s.otpInputRow}>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        maxLength={6}
+                        value={otpValue}
+                        onChange={(e) => setOtpValue(e.target.value.replace(/\D/g, ''))}
+                        placeholder="۶ رقم کد"
+                        className={s.otpInput}
+                        dir="ltr"
+                        aria-label="کد تأیید ۶ رقمی"
+                      />
+                      <button
+                        type="button"
+                        className={s.otpVerifyBtn}
+                        onClick={handleVerifyOtp}
+                        disabled={isPending || otpValue.length !== 6}
+                        aria-busy={isPending}
+                      >
+                        {isPending ? (
+                          <Loader2 size={14} className={s.spin} aria-hidden />
+                        ) : (
+                          <CheckCircle2 size={14} aria-hidden />
+                        )}
+                        تأیید
+                      </button>
+                      <button
+                        type="button"
+                        className={s.otpResendBtn}
+                        onClick={handleSendOtp}
+                        disabled={isPending || otpCooldown > 0}
+                      >
+                        {otpCooldown > 0 ? `ارسال مجدد (${otpCooldown} ثانیه)` : 'ارسال مجدد'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!phoneVerified && !phoneForOtp && (
                 <button
                   type="submit"
                   className={s.primaryBtn}
@@ -471,9 +629,28 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
                   ) : (
                     <ChevronLeft size={16} aria-hidden />
                   )}
-                  {isPending ? 'در حال ذخیره…' : 'مرحله بعد — آپلود مدارک'}
+                  {isPending ? 'در حال ذخیره…' : 'ادامه — تأیید شماره موبایل'}
                 </button>
-              </div>
+              )}
+
+              {phoneVerified && (
+                <div className={s.footer}>
+                  <span />
+                  <button
+                    type="submit"
+                    className={s.primaryBtn}
+                    disabled={isPending}
+                    aria-busy={isPending}
+                  >
+                    {isPending ? (
+                      <Loader2 size={16} className={s.spin} aria-hidden />
+                    ) : (
+                      <ChevronLeft size={16} aria-hidden />
+                    )}
+                    {isPending ? 'در حال ذخیره…' : 'مرحله بعد — آپلود مدارک'}
+                  </button>
+                </div>
+              )}
             </form>
           </div>
         )}

@@ -463,8 +463,10 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
           {/* Device Cards Asymmetric Grid */}
           {filtered.length === 0 ? (
             <div className={s.emptyStateBox}>
-              <EmptyState
-                icon={Monitor}
+              <MillionDollarEmpty
+                variant={devices.length === 0 ? 'shield' : 'search'}
+                tone="primary"
+                eyebrow="مرکز امنیت"
                 title={devices.length === 0 ? 'هیچ نشستی یافت نشد' : 'نتیجه‌ای یافت نشد'}
                 description={
                   devices.length === 0

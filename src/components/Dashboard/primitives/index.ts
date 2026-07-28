@@ -27,6 +27,9 @@ export type { SectionProps } from './Section';
 export { EmptyState } from './EmptyState';
 export type { EmptyStateProps } from './EmptyState';
 
+export { MillionDollarEmpty } from './MillionDollarEmpty';
+export type { MillionDollarEmptyProps, MillionDollarEmptyVariant } from './MillionDollarEmpty';
+
 export { Skeleton } from './Skeleton';
 export type { SkeletonProps, SkeletonVariant } from './Skeleton';
 

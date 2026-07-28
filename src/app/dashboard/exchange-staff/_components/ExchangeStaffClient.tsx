@@ -18,7 +18,7 @@ import {
   searchUsersForStaff,
 } from '@/actions/exchange-staff';
 import type { ExchangeRow } from '@/actions/exchanges';
-import { ConfirmDialog, EmptyState, PageHeader } from '@/components/Dashboard/primitives';
+import { EmptyState, MillionDollarEmpty, PageHeader } from '@/components/Dashboard/primitives';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
 import {
@@ -459,17 +459,17 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
           {/* Table */}
           <div className={s.tableWrap}>
             {filtered.length === 0 ? (
-              <div className={s.emptyWrap}>
-                <EmptyState
-                  icon={Users}
-                  title="کارمندی یافت نشد"
-                  description={
-                    query || exchangeFilter !== 'all' || roleFilter !== 'all'
-                      ? 'فیلترهای جستجو را تغییر دهید'
-                      : 'هنوز کارمندی برای صراف‌ها تعریف نشده است'
-                  }
-                />
-              </div>
+              <MillionDollarEmpty
+                variant={query || exchangeFilter !== 'all' || roleFilter !== 'all' ? 'search' : 'inbox'}
+                tone="primary"
+                eyebrow="صراف‌ها"
+                title="کارمندی یافت نشد"
+                description={
+                  query || exchangeFilter !== 'all' || roleFilter !== 'all'
+                    ? 'فیلترهای جستجو را تغییر دهید یا پاک کنید.'
+                    : 'هنوز کارمندی برای صراف‌ها تعریف نشده است.'
+                }
+              />
             ) : (
               <table className={s.table} aria-label="لیست کارکنان صراف‌ها">
                 <thead>

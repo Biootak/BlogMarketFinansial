@@ -22,6 +22,7 @@
 import { reviewKycRecord } from '@/actions/kyc-onboarding';
 import { reviewCustomerKycRecord } from '@/actions/customer-portal';
 import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
+import { MillionDollarEmpty } from '@/components/Dashboard/primitives/MillionDollarEmpty';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import { Button } from '@/components/ui/button';
 import {
@@ -51,6 +52,7 @@ import Image from 'next/image';
 import {
   type KeyboardEvent,
   useCallback,
+  useEffect,
   useMemo,
   useState,
   useTransition,
@@ -173,6 +175,20 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
   const [error, setError] = useState<string | null>(null);
   const [lastAction, setLastAction] = useState<string | null>(null);
 
+  /**
+   * Client-side rate-limit guard: جلوگیری از کلیک‌های پشت سر هم روی دکمه‌های
+   * approve/reject که می‌تواند race condition با optimistic UI ایجاد کند.
+   * Server نیز rate-limit خودش را دارد (checkRateLimit) — این یک لایهٔ دفاع
+   * مضاعف برای UX است.
+   */
+  const [actionCooldown, setActionCooldown] = useState(0);
+  useEffect(() => {
+    if (actionCooldown <= 0) return;
+    const id = setTimeout(() => setActionCooldown(0), 800);
+    return () => clearTimeout(id);
+  }, [actionCooldown]);
+  const actionLocked = actionCooldown > 0;
+
   // ── Derived counts ─────────────────────────────────────────────────────────
   const withDocs = useMemo(
     () => rows.filter((r) => r.docFrontUrl || r.docBackUrl || r.selfieUrl).length,
@@ -240,7 +256,7 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
       }
       setLastAction(`درخواست «${name}» رد شد`);
     });
-  }, [rejectTarget, rejectReason]);
+  }, [rejectTarget, rejectReason, actionLocked]);
 
   // ── Customer KYC actions ──────────────────────────────────────────────────
   const handleCustomerApprove = useCallback((row: CustomerKycRow) => {
@@ -260,7 +276,8 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
   }, []);
 
   const handleCustomerRejectConfirm = useCallback(() => {
-    if (!customerRejectTarget) return;
+    if (!customerRejectTarget || actionLocked) return;
+    setActionCooldown(1);
     const target = customerRejectTarget;
     const reason = rejectReason.trim() || 'اطلاعات ناقص یا نادرست';
     setCustomerRejectTarget(null);
@@ -550,13 +567,13 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
       {/* ── Customer KYC Table / Empty ──────────────────────────────────────── */}
       {scope === 'customer' && (
         customerRows.length === 0 ? (
-          <div className={s.emptyWrap}>
-            <EmptyState
-              icon={Building2}
-              title="صف KYC مشتریان خالی است"
-              description="هیچ درخواست تأیید هویت از سمت مشتریان صرافی‌ها ثبت نشده است."
-            />
-          </div>
+          <MillionDollarEmpty
+            variant="shield"
+            tone="neutral"
+            eyebrow="صف KYC مشتریان"
+            title="صف KYC مشتریان خالی است"
+            description="هیچ درخواست تأیید هویت از سمت مشتریان صرافی‌ها ثبت نشده است."
+          />
         ) : (
           <div className={s.tableWrap}>
             <table className={s.table} aria-label="صف بررسی KYC مشتریان">

@@ -15,7 +15,7 @@
  */
 
 import { type SettlementRow, approveSettlement, markSettlementPaid } from '@/actions/settlement';
-import { ConfirmDialog, EmptyState, PageHeader } from '@/components/Dashboard/primitives';
+import { ConfirmDialog, EmptyState, MillionDollarEmpty, PageHeader } from '@/components/Dashboard/primitives';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
@@ -470,17 +470,17 @@ export function SettlementClient({ settlements: initial }: Props) {
 
         {/* ── Table / Empty ── */}
         {filtered.length === 0 ? (
-          <div className={s.emptyWrap}>
-            <EmptyState
-              icon={CircleDollarSign}
-              title="تسویه‌ای ثبت نشده"
-              description={
-                tab === 'all'
-                  ? 'هنوز هیچ دوره تسویه‌ای محاسبه نشده است.'
-                  : `هیچ تسویه‌ای با وضعیت «${STATUS_LABELS[tab] ?? tab}» یافت نشد.`
-              }
-            />
-          </div>
+          <MillionDollarEmpty
+            variant="chart"
+            tone={tab === 'all' ? 'neutral' : 'amber'}
+            eyebrow="تسویه‌حساب"
+            title="تسویه‌ای ثبت نشده"
+            description={
+              tab === 'all'
+                ? 'هنوز هیچ دورهٔ تسویه‌ای محاسبه نشده است. با اولین تراکنش، تسویه به‌صورت خودکار شکل می‌گیرد.'
+                : `هیچ تسویه‌ای با وضعیت «${STATUS_LABELS[tab] ?? tab}» یافت نشد.`
+            }
+          />
         ) : (
           <div className={s.tableWrap}>
             <table className={s.table} aria-label="تسویه‌حساب صرافی‌ها">

@@ -20,7 +20,7 @@ import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Clock, Send, User } from 'lucide-react';
-import { useCallback, useState, useTransition } from 'react';
+import { useCallback, useRef, useState, useTransition } from 'react';
 import s from './TransferWizard.module.css';
 
 type Step = 1 | 2 | 3 | 4;

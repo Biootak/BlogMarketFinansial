@@ -24,10 +24,10 @@ import {
   DashboardTableBody,
   DashboardTableCell,
   DashboardTableContainer,
-  DashboardTableHead,
   DashboardTableHeader,
   DashboardTableRow,
   EmptyState,
+  MillionDollarEmpty,
   PrimaryActionButton,
   StatusBadge,
 } from '@/components/Dashboard/shared/DashboardTableWrapper';
@@ -287,10 +287,18 @@ export default function HeaderAdsClient({
 
       {initialAds.length === 0 ? (
         <DashboardTableContainer>
-          <EmptyState
+          <MillionDollarEmpty
+            variant="sparkles"
+            tone="primary"
+            eyebrow="تبلیغات هدر"
             title="تبلیغی برای هدر ساخته نشده"
             description="با زدن دکمه «تبلیغ جدید» اولین نوار تبلیغ را ایجاد کنید."
-            icon={<HiOutlineSparkles className="h-8 w-8 text-neutral-400" />}
+            primaryAction={
+              <Button onClick={openCreate}>
+                <HiOutlineSparkles className="h-4 w-4" />
+                ساخت اولین تبلیغ
+              </Button>
+            }
           />
         </DashboardTableContainer>
       ) : (

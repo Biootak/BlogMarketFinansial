@@ -8,6 +8,7 @@
 
 import { getSystemLogs } from '@/actions/reportActions';
 import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
+import { MillionDollarEmpty } from '@/components/Dashboard/primitives/MillionDollarEmpty';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -165,8 +166,10 @@ export default function SystemLogsData() {
 
       {/* ── Table ── */}
       {logs.length === 0 ? (
-        <EmptyState
-          icon={Terminal}
+        <MillionDollarEmpty
+          variant="default"
+          tone="neutral"
+          eyebrow="لاگ سیستم"
           title="لاگی یافت نشد"
           description="با فیلتر انتخابی، رویدادی ثبت نشده است."
         />

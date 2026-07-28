@@ -13,6 +13,7 @@
 
 import { type DealRow, getMyDeals } from '@/actions/currency-deals';
 import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
+import { MillionDollarEmpty } from '@/components/Dashboard/primitives/MillionDollarEmpty';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
@@ -408,11 +409,13 @@ export default function MyDealsClient() {
 
       {/* ── Empty ── */}
       {!loading && !error && deals.length === 0 && (
-        <EmptyState
-          icon={PackageSearch}
+        <MillionDollarEmpty
+          variant="chart"
+          tone="primary"
+          eyebrow="مرکز معاملات"
           title="هنوز معامله‌ای ثبت نشده"
-          description="با مراجعه به صفحه نرخ‌ها، اولین معامله ارزی خود را ثبت کنید."
-          action={
+          description="با مراجعه به صفحه نرخ‌ها، اولین معامله ارزی خود را ثبت کنید. تاریخچه، قیمت لحظه‌ای و وضعیت همه معاملات در این بخش نمایش داده می‌شود."
+          primaryAction={
             <a href="/money-transfer" className={s.emptyBtn}>
               مشاهده نرخ‌ها و صرافی‌ها
             </a>

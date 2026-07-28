@@ -21,6 +21,7 @@ import {
   ConfirmDialog,
   DataTable,
   EmptyState,
+  MillionDollarEmpty,
   PageHeader,
 } from '@/components/Dashboard/primitives';
 import { toast } from '@/components/ui/use-toast';
@@ -305,11 +306,13 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
 
       {/* Table */}
       {filtered.length === 0 ? (
-        <EmptyState
-          icon={Building2}
+        <MillionDollarEmpty
+          variant="search"
+          tone="primary"
+          eyebrow="ارائه‌دهندگان"
           title="صرافی‌ای یافت نشد"
           description="هنوز هیچ صرافی‌ای برای جدول مقایسه ثبت نشده یا فیلتر شما نتیجه‌ای ندارد."
-          action={
+          primaryAction={
             <button
               type="button"
               className={s.addBtn}

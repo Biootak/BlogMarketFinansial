@@ -17,6 +17,7 @@ import {
   toggleFreezeCard,
 } from '@/actions/virtual-card';
 import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
+import { MillionDollarEmpty } from '@/components/Dashboard/primitives/MillionDollarEmpty';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import { Button } from '@/components/ui/button';
 import {
@@ -166,11 +167,13 @@ export default function VirtualCardsClient({ initialCards }: Props) {
       />
 
       {cards.length === 0 ? (
-        <EmptyState
-          icon={CreditCard}
+        <MillionDollarEmpty
+          variant="card"
+          tone="primary"
+          eyebrow="کیف پول"
           title="هنوز کارت مجازی ندارید"
-          description="با صدور کارت مجازی، می‌توانید خریدهای آنلاین امن‌تری داشته باشید."
-          action={
+          description="با صدور کارت مجازی، می‌توانید خریدهای آنلاین امن‌تری داشته باشید. سقف هزینه قابل تنظیم، فریز فوری و یکپارچه با کیف پول شما."
+          primaryAction={
             <Button onClick={() => setShowIssueDialog(true)} disabled={isPending}>
               <Plus size={15} aria-hidden />
               صدور اولین کارت

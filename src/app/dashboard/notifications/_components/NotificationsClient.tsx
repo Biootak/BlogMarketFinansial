@@ -24,12 +24,11 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
 } from '@/actions/notification-actions';
-import { PageHeader } from '@/components/Dashboard/primitives';
+import { MillionDollarEmpty, PageHeader } from '@/components/Dashboard/primitives';
 import { useToast } from '@/components/ui/use-toast';
 import {
   AlertTriangle,
   Bell,
-  BellOff,
   Check,
   CheckCheck,
   CreditCard,
@@ -494,19 +493,17 @@ export default function NotificationsClient({ notifications: initial }: Props) {
 
       {/* ── Empty State ──────────────────────────────────────────────────────── */}
       {displayed.length === 0 && (
-        <div className={s.emptyWell} role="status">
-          <span className={s.emptyIcon} aria-hidden>
-            <BellOff size={22} />
-          </span>
-          <p className={s.emptyTitle}>
-            {activeTab === 'unread' ? 'اعلان خوانده‌نشده‌ای ندارید' : 'اعلانی ندارید'}
-          </p>
-          <p className={s.emptyDesc}>
-            {activeTab === 'unread'
-              ? 'همه اعلان‌ها خوانده شده‌اند. کار خوبی است!'
-              : 'وقتی رویداد جدیدی اتفاق بیفتد، اینجا نمایش داده می‌شود'}
-          </p>
-        </div>
+        <MillionDollarEmpty
+          variant="bell"
+          tone="primary"
+          eyebrow={activeTab === 'unread' ? 'مرکز اعلان‌ها' : 'مرکز اعلان‌ها'}
+          title={activeTab === 'unread' ? 'اعلان خوانده‌نشده‌ای ندارید' : 'اعلانی ندارید'}
+          description={
+            activeTab === 'unread'
+              ? 'همهٔ اعلان‌ها خوانده شده‌اند. کار خوبی است!'
+              : 'وقتی رویداد جدیدی رخ دهد، اینجا نمایش داده می‌شود'
+          }
+        />
       )}
 
       {/* ── Grouped Timeline ─────────────────────────────────────────────────── */}

@@ -29,6 +29,7 @@ import {
 import CopyButton from '@/components/fintech/CopyButton';
 import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
 import { GeometricField } from '@/components/Dashboard/primitives/GeometricAccent';
+import { MillionDollarEmpty } from '@/components/Dashboard/primitives/MillionDollarEmpty';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import { StatCard } from '@/components/Dashboard/primitives/StatCard';
 import { StatGrid } from '@/components/Dashboard/primitives/StatGrid';
@@ -1551,11 +1552,13 @@ export default function MyRequestsClient() {
       )}
 
       {!loading && !error && requests.length === 0 && (
-        <EmptyState
-          icon={PackageSearch}
+        <MillionDollarEmpty
+          variant="inbox"
+          tone="primary"
+          eyebrow="مرکز درخواست‌ها"
           title="هنوز درخواستی ثبت نکرده‌اید"
           description="اولین درخواست‌تان را از صفحه خدمات ثبت کنید. پس از ثبت، می‌توانید وضعیت و تاریخچه‌اش را از همین‌جا دنبال کنید."
-          action={
+          primaryAction={
             <a href="/money-transfer" className={s.emptyCta}>
               <Plus size={13} aria-hidden />
               ثبت اولین درخواست

@@ -20,7 +20,7 @@
 
 import type { QuoteRow } from '@/actions/exchange-quotes';
 import { approveQuote, rejectQuote } from '@/actions/exchange-quotes';
-import { ConfirmDialog, EmptyState, PageHeader } from '@/components/Dashboard/primitives';
+import { ConfirmDialog, EmptyState, MillionDollarEmpty, PageHeader } from '@/components/Dashboard/primitives';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -739,8 +739,10 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
 
         {/* ── Empty state ── */}
         {filtered.length === 0 ? (
-          <EmptyState
-            icon={ShieldCheck}
+          <MillionDollarEmpty
+            variant="shield"
+            tone="emerald"
+            eyebrow="مرکز تأیید"
             title="صف خالی است"
             description="همه قیمت‌ها بررسی شده‌اند. وقتی صرافی قیمت جدید ثبت کند اینجا نمایش داده می‌شود."
           />

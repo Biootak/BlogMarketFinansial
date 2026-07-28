@@ -20,7 +20,7 @@ import {
   deletePermission,
   saveRoleMatrix,
 } from '@/actions/permission-actions';
-import { ConfirmDialog, EmptyState } from '@/components/Dashboard/primitives';
+import { ConfirmDialog, EmptyState, MillionDollarEmpty } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -950,35 +950,44 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
 
       {/* ── Main View ───────────────────────────────────────────────────── */}
       {localPerms.length === 0 ? (
-        <div className={`at-tile ${s.emptyTile}`}>
-          <EmptyState
-            icon={Key}
-            title="هنوز مجوزی تعریف نشده"
-            description={`${PERMISSION_TEMPLATES.length} مجوز استاندارد آماده ثبت است — با یک کلیک همه را اضافه کنید.`}
-            action={
-              isSuperAdmin ? (
-                <div className={s.emptyActions}>
-                  <Button size="sm" onClick={() => { setShowAdd(true); setAddTab('pick'); }}>
-                    <Plus size={13} /> ثبت مجوزها
-                  </Button>
-                </div>
-              ) : null
-            }
-          />
-        </div>
-      ) : grouped.length === 0 ? (
-        <div className={`at-tile ${s.emptyTile}`}>
-          <EmptyState
-            icon={Search}
-            title="نتیجه‌ای یافت نشد"
-            description={`«${searchQuery}» با هیچ مجوزی مطابقت ندارد.`}
-            action={
-              <Button size="sm" variant="outline" onClick={() => { setSearchQuery(''); setCatFilter('all'); }}>
-                <RotateCcw size={12} /> پاک‌کردن فیلتر
+        <MillionDollarEmpty
+          variant="locked"
+          tone="primary"
+          eyebrow="مدیریت دسترسی‌ها"
+          title="هنوز مجوزی تعریف نشده"
+          description={`${PERMISSION_TEMPLATES.length} مجوز استاندارد آماده ثبت است — با یک کلیک همه را اضافه کنید.`}
+          primaryAction={
+            isSuperAdmin ? (
+              <Button
+                onClick={() => {
+                  setShowAdd(true);
+                  setAddTab('pick');
+                }}
+              >
+                <Plus size={13} /> ثبت مجوزها
               </Button>
-            }
-          />
-        </div>
+            ) : undefined
+          }
+        />
+      ) : grouped.length === 0 ? (
+        <MillionDollarEmpty
+          variant="search"
+          tone="neutral"
+          eyebrow="جستجو"
+          title="نتیجه‌ای یافت نشد"
+          description={`«${searchQuery}» با هیچ مجوزی مطابقت ندارد.`}
+          primaryAction={
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchQuery('');
+                setCatFilter('all');
+              }}
+            >
+              <RotateCcw size={12} /> پاک‌کردن فیلتر
+            </Button>
+          }
+        />
       ) : viewMode === 'role-focus' && focusedRole ? (
         /* Role-Focus View */
         <RoleFocusView

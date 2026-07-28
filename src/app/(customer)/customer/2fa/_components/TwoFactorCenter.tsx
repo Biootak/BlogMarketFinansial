@@ -18,7 +18,13 @@ import {
   disable2FA,
   setup2FA,
 } from '@/actions/twoFactorActions';
-import { ConfirmDialog, EmptyState, FormField, Spotlight, StatusBadge } from '@/components/Dashboard/primitives';
+import {
+  ConfirmDialog,
+  EmptyState,
+  FormField,
+  Spotlight,
+  StatusBadge,
+} from '@/components/Dashboard/primitives';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -70,7 +76,11 @@ const formatRelativeTime = (iso: string | null): string => {
   if (hrs < 24) return `${hrs} ساعت پیش`;
   const days = Math.floor(hrs / 24);
   if (days < 30) return `${days} روز پیش`;
-  return new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(iso));
+  return new Intl.DateTimeFormat('fa-IR', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }).format(new Date(iso));
 };
 
 export default function TwoFactorCenter({ initial }: Props) {
@@ -121,7 +131,13 @@ export default function TwoFactorCenter({ initial }: Props) {
         return;
       }
       setBackupCodes(r.data?.backupCodes ?? []);
-      setMeta({ enabled: true, hasBackupCodes: true, verifiedAt: new Date().toISOString(), lastUsedAt: null, channel: 'TOTP' });
+      setMeta({
+        enabled: true,
+        hasBackupCodes: true,
+        verifiedAt: new Date().toISOString(),
+        lastUsedAt: null,
+        channel: 'TOTP',
+      });
       setFlow('JUST_ENABLED');
       setSetup(null);
       setToken('');
@@ -145,7 +161,13 @@ export default function TwoFactorCenter({ initial }: Props) {
         setError(r.error?.message ?? 'کد نامعتبر');
         return;
       }
-      setMeta({ enabled: false, hasBackupCodes: false, verifiedAt: null, lastUsedAt: null, channel: null });
+      setMeta({
+        enabled: false,
+        hasBackupCodes: false,
+        verifiedAt: null,
+        lastUsedAt: null,
+        channel: null,
+      });
       setFlow('IDLE');
       setToken('');
       setConfirmDisable(false);
@@ -163,9 +185,12 @@ export default function TwoFactorCenter({ initial }: Props) {
 
   const downloadBackupCodes = useCallback(() => {
     if (!backupCodes) return;
-    const blob = new Blob([`Two-Factor Backup Codes\n${'='.repeat(28)}\n${backupCodes.join('\n')}\n`], {
-      type: 'text/plain;charset=utf-8',
-    });
+    const blob = new Blob(
+      [`Two-Factor Backup Codes\n${'='.repeat(28)}\n${backupCodes.join('\n')}\n`],
+      {
+        type: 'text/plain;charset=utf-8',
+      },
+    );
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -229,13 +254,12 @@ export default function TwoFactorCenter({ initial }: Props) {
               استاندارد صنعتی TOTP (RFC 6238) — بدون نیاز به SMS
             </li>
           </ul>
-          <button
-            type="button"
-            className={s.primaryCta}
-            onClick={startSetup}
-            disabled={pending}
-          >
-            {pending ? <Loader2 size={14} className={s.spin} /> : <Sparkles size={14} aria-hidden />}
+          <button type="button" className={s.primaryCta} onClick={startSetup} disabled={pending}>
+            {pending ? (
+              <Loader2 size={14} className={s.spin} />
+            ) : (
+              <Sparkles size={14} aria-hidden />
+            )}
             شروع فعال‌سازی
           </button>
         </section>
@@ -272,9 +296,7 @@ export default function TwoFactorCenter({ initial }: Props) {
               <Smartphone size={16} aria-hidden />
               <h3 className={s.cardTitle}>تأیید کد</h3>
             </header>
-            <p className={s.cardLead}>
-              کد ۶ رقمی نمایش‌داده‌شده در اپلیکیشن را وارد کنید.
-            </p>
+            <p className={s.cardLead}>کد ۶ رقمی نمایش‌داده‌شده در اپلیکیشن را وارد کنید.</p>
             <FormField label="کد ۶ رقمی" htmlFor="totp-token">
               <input
                 ref={tokenInputRef}
@@ -310,7 +332,11 @@ export default function TwoFactorCenter({ initial }: Props) {
                 onClick={confirm}
                 disabled={pending || token.length !== 6}
               >
-                {pending ? <Loader2 size={14} className={s.spin} /> : <CheckCircle2 size={14} aria-hidden />}
+                {pending ? (
+                  <Loader2 size={14} className={s.spin} />
+                ) : (
+                  <CheckCircle2 size={14} aria-hidden />
+                )}
                 تأیید و فعال‌سازی
               </button>
               <button
@@ -406,7 +432,12 @@ export default function TwoFactorCenter({ initial }: Props) {
               <strong> قابل بازگشت </strong>
               است اما برای تأیید به کد فعلی ۲FA نیاز دارید.
             </p>
-            <button type="button" className={s.dangerCta} onClick={requestDisable} disabled={pending}>
+            <button
+              type="button"
+              className={s.dangerCta}
+              onClick={requestDisable}
+              disabled={pending}
+            >
               <ShieldOff size={14} aria-hidden />
               غیرفعال‌سازی ۲FA
             </button>
@@ -422,10 +453,10 @@ export default function TwoFactorCenter({ initial }: Props) {
         description="برای تأیید، کد ۶ رقمی فعلی authenticator را وارد کنید."
         confirmLabel="غیرفعال‌سازی"
         cancelLabel="انصراف"
-        destructive
+        variant="danger"
         loading={pending}
         onConfirm={performDisable}
-        extra={
+        body={
           <FormField label="کد تأیید" htmlFor="disable-token">
             <input
               id="disable-token"
@@ -448,19 +479,15 @@ export default function TwoFactorCenter({ initial }: Props) {
 
       {/* ── Empty state placeholder (used in very rare flow) ────────── */}
       {flow === 'DISABLING' && (
-        <EmptyState
-          icon={Loader2}
-          title="در حال پردازش"
-          description="لطفاً صبر کنید…"
-        />
+        <EmptyState icon={Loader2} title="در حال پردازش" description="لطفاً صبر کنید…" />
       )}
 
       {/* ── Footer Hint ─────────────────────────────────────────────── */}
       <footer className={s.foot}>
         <ShieldCheck size={11} aria-hidden />
         <span>
-          استاندارد <strong>RFC 6238 (TOTP)</strong> · هر ۳۰ ثانیه کد جدید · سازگار با
-          همهٔ اپلیکیشن‌های استاندارد.
+          استاندارد <strong>RFC 6238 (TOTP)</strong> · هر ۳۰ ثانیه کد جدید · سازگار با همهٔ
+          اپلیکیشن‌های استاندارد.
         </span>
         <ChevronLeft size={11} aria-hidden />
       </footer>

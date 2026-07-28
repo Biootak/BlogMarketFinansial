@@ -25,6 +25,7 @@ import {
   ConfirmDialog,
   EmptyState,
   FormField,
+  MillionDollarEmpty,
   PageHeader,
 } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
@@ -581,18 +582,18 @@ export default function CustomersClient({
 
         {/* ── No-exchange guard ────────────────────────────────────────── */}
         {noExchange ? (
-          <div className={s.emptyWrap}>
-            <EmptyState
-              icon={Building2}
-              title="هنوز صرافی‌ای ندارید"
-              description="برای مدیریت مشتریان، ابتدا باید یک صرافی ثبت و تأیید شده داشته باشید."
-              action={
-                <Button size="sm" asChild>
-                  <a href="/dashboard/exchanges">رفتن به مدیریت صرافی‌ها</a>
-                </Button>
-              }
-            />
-          </div>
+          <MillionDollarEmpty
+            variant="card"
+            tone="amber"
+            eyebrow="پیش‌نیاز"
+            title="برای مدیریت مشتریان، ابتدا یک صرافی ثبت کنید"
+            description="صرافی شما باید توسط ادمین تأیید شود تا بتوانید مشتری اضافه کنید."
+            primaryAction={
+              <Button asChild>
+                <a href="/dashboard/exchanges">رفتن به مدیریت صرافی‌ها</a>
+              </Button>
+            }
+          />
         ) : (
           <>
             {/* ── KPI Strip ────────────────────────────────────────────── */}
@@ -668,35 +669,34 @@ export default function CustomersClient({
 
             {/* ── Table ────────────────────────────────────────────────── */}
             {customers.length === 0 ? (
-              <div className={s.emptyWrap}>
-                <EmptyState
-                  icon={currentQuery ? Search : Users}
-                  title={currentQuery ? 'نتیجه‌ای یافت نشد' : 'مشتری‌ای ثبت نشده'}
-                  description={
-                    currentQuery
-                      ? `جستجو برای «${currentQuery}» نتیجه‌ای نداشت`
-                      : 'برای شروع، اولین مشتری این صرافی را اضافه کنید'
-                  }
-                  action={
-                    currentQuery ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setSearchInput('');
-                          navigate({ q: '', page: '1' });
-                        }}
-                      >
-                        پاک کردن جستجو
-                      </Button>
-                    ) : (
-                      <Button size="sm" onClick={openAdd}>
-                        <Plus size={13} aria-hidden /> افزودن اولین مشتری
-                      </Button>
-                    )
-                  }
-                />
-              </div>
+              <MillionDollarEmpty
+                variant={currentQuery ? 'search' : 'inbox'}
+                tone="primary"
+                eyebrow={currentQuery ? 'جستجو' : 'فهرست مشتریان'}
+                title={currentQuery ? `نتیجه‌ای برای «${currentQuery}» یافت نشد` : 'هنوز مشتری‌ای ثبت نشده'}
+                description={
+                  currentQuery
+                    ? 'پیشنهاد می‌کنیم کلمات کلیدی دیگری امتحان کنید یا فیلترها را پاک کنید.'
+                    : 'برای شروع، اولین مشتری این صرافی را اضافه کنید.'
+                }
+                primaryAction={
+                  currentQuery ? (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSearchInput('');
+                        navigate({ q: '', page: '1' });
+                      }}
+                    >
+                      پاک کردن جستجو
+                    </Button>
+                  ) : (
+                    <Button onClick={openAdd}>
+                      <Plus size={13} aria-hidden /> افزودن اولین مشتری
+                    </Button>
+                  )
+                }
+              />
             ) : (
               <div className={s.tableWrap}>
                 <table className={s.table} aria-label="جدول مشتریان">

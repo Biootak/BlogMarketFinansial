@@ -1,4 +1,5 @@
 import DashboardGate from './DashboardGate';
+import { SessionGuard } from '@/components/Dashboard/SessionGuard';
 import './dashboard.css';
 
 // 2026-06-29: Dashboard is auth-gated and user-specific — never statically
@@ -14,5 +15,9 @@ export default function DashboardLayout({
 }) {
   // auth() and getSystemSettingsData() are uncached async calls wrapped by
   // DashboardGate inside <Suspense> so the dashboard shell streams first.
-  return <DashboardGate>{children}</DashboardGate>;
+  return (
+    <SessionGuard>
+      <DashboardGate>{children}</DashboardGate>
+    </SessionGuard>
+  );
 }
