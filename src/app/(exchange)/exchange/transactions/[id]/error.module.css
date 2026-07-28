@@ -1,0 +1,72 @@
+.root {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-4);
+  padding-inline: var(--ds-space-4);
+  background: color-mix(in oklch, var(--nova-down) 6%, var(--ds-surface));
+  border: 1px solid color-mix(in oklch, var(--nova-down) 28%, var(--ds-border-subtle));
+  border-radius: var(--ds-radius-md);
+  animation: errorEnter 280ms var(--ds-ease-out-quart) both;
+}
+
+@keyframes errorEnter {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.iconBox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.4rem;
+  block-size: 2.4rem;
+  border-radius: var(--ds-radius-md);
+  background: color-mix(in oklch, var(--nova-down) 12%, transparent);
+  color: var(--nova-down);
+  flex-shrink: 0;
+}
+
+.body {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+}
+
+.desc {
+  margin: 0;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  line-height: 1.6;
+}
+
+.retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  block-size: 2.2rem;
+  padding-inline: 0.85em;
+  font-family: inherit;
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+  color: var(--nova-down);
+  background: var(--ds-surface);
+  border: 1px solid color-mix(in oklch, var(--nova-down) 35%, var(--ds-border-subtle));
+  border-radius: var(--ds-radius-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 140ms var(--ds-ease-out-quart);
+}
+
+.retry:hover {
+  background: color-mix(in oklch, var(--nova-down) 10%, transparent);
+}

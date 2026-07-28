@@ -1,0 +1,210 @@
+/* ============================================================================
+ * TransactionKpiRibbon — 4 تیر KPI متراکم (signature moment صفحه)
+ * ========================================================================== */
+
+.ribbon {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--ds-space-3);
+}
+
+@media (min-width: 640px) {
+  .ribbon {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1080px) {
+  .ribbon {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--ds-space-4);
+  }
+}
+
+/* ── Tile ───────────────────────────────────────────────────────────────── */
+
+.tile {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding-block: var(--ds-space-4);
+  padding-inline: var(--ds-space-4);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+  min-block-size: 7.5rem;
+  animation: kpiEnter 420ms var(--ds-ease-out-quart) both;
+  animation-delay: calc(var(--tile-i, 0) * 60ms);
+  transition:
+    transform 200ms var(--ds-ease-out-quart),
+    border-color 200ms var(--ds-ease-out-quart),
+    box-shadow 200ms var(--ds-ease-out-quart);
+}
+
+.tile:hover {
+  transform: translateY(-1px);
+  border-color: var(--ds-border-default);
+  box-shadow: var(--ds-shadow-sm);
+}
+
+.tile[data-tone='brand'] {
+  color: var(--ds-brand-600);
+}
+
+.tile[data-tone='up'] {
+  color: var(--nova-up);
+}
+
+.tile[data-tone='down'] {
+  color: var(--nova-down);
+}
+
+.tile[data-tone='amber'] {
+  color: var(--nova-amber);
+}
+
+/* ── Ambient mark — آرک گوشه بالا-راست ─────────────────────────────────── */
+
+.mark {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.mark svg {
+  inline-size: 100%;
+  block-size: 100%;
+  opacity: 0.85;
+}
+
+/* ── Head row: icon + label + trend pill ─────────────────────────────────── */
+
+.head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  flex-wrap: wrap;
+}
+
+.iconBox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.625rem;
+  block-size: 1.625rem;
+  border-radius: var(--ds-radius-sm);
+  background: color-mix(in oklch, currentColor 12%, transparent);
+  color: inherit;
+  flex-shrink: 0;
+  border: 1px solid color-mix(in oklch, currentColor 18%, transparent);
+}
+
+.label {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+/* ── Trend pill ─────────────────────────────────────────────────────────── */
+
+.trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding-block: 0.2em;
+  padding-inline: 0.55em;
+  border-radius: 999px;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.trendUp {
+  background: color-mix(in oklch, var(--nova-up) 12%, transparent);
+  color: var(--nova-up);
+  border: 1px solid color-mix(in oklch, var(--nova-up) 28%, transparent);
+}
+
+.trendDown {
+  background: color-mix(in oklch, var(--nova-down) 12%, transparent);
+  color: var(--nova-down);
+  border: 1px solid color-mix(in oklch, var(--nova-down) 28%, transparent);
+}
+
+.trendFlat {
+  background: color-mix(in oklch, var(--ds-text-muted) 10%, transparent);
+  color: var(--ds-text-muted);
+  border: 1px solid var(--ds-border-subtle);
+}
+
+/* ── Value + sparkline ──────────────────────────────────────────────────── */
+
+.valueRow {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  min-block-size: 1.85rem;
+}
+
+.value {
+  font-size: clamp(1.05rem, 0.95rem + 0.4vw, 1.35rem);
+  font-weight: 800;
+  color: var(--ds-text-primary);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spark {
+  flex-shrink: 0;
+  inline-size: 4.5rem;
+  block-size: 1.4rem;
+  opacity: 0.9;
+}
+
+/* ── Caption line ───────────────────────────────────────────────────────── */
+
+.caption {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-size: 0.6875rem;
+  color: var(--ds-text-muted);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* ── Animations ─────────────────────────────────────────────────────────── */
+
+@keyframes kpiEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile {
+    animation: none;
+  }
+}

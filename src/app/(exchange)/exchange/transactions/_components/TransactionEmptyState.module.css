@@ -1,0 +1,97 @@
+/* ============================================================================
+ * TransactionEmptyState — حالت خالی با illustration (system-breath)
+ * ========================================================================== */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-4);
+  padding-block: var(--ds-space-10);
+  padding-inline: var(--ds-space-4);
+  text-align: center;
+  color: var(--ds-brand-500);
+  min-block-size: 18rem;
+}
+
+.illo {
+  inline-size: clamp(140px, 18vw, 200px);
+  block-size: clamp(110px, 14vw, 160px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: illoBreathe 6s var(--ds-ease-in-out-quart) infinite;
+}
+
+@keyframes illoBreathe {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 0.85;
+  }
+}
+
+.ring {
+  transform-origin: 100px 80px;
+  animation: ringSpin 22s linear infinite;
+}
+
+.mark {
+  transform-origin: 100px 80px;
+  animation: markFloat 5s var(--ds-ease-in-out-quart) infinite;
+}
+
+@keyframes ringSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes markFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+  max-inline-size: 28rem;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--ds-text-base);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  letter-spacing: -0.005em;
+}
+
+.description {
+  margin: 0;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  line-height: 1.65;
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .illo,
+  .ring,
+  .mark {
+    animation: none;
+  }
+}

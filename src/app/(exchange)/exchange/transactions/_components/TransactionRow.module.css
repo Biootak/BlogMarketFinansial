@@ -1,0 +1,346 @@
+/* ============================================================================
+ * TransactionRow — یک ردیف تراکنش (متراكم، با rail رنگی)
+ * ========================================================================== */
+
+.row {
+  position: relative;
+  isolation: isolate;
+  list-style: none;
+  border-block-end: 1px solid var(--ds-border-subtle);
+  animation: rowEnter 360ms var(--ds-ease-out-quart) both;
+  animation-delay: calc(var(--row-i, 0) * 28ms);
+}
+
+.row:last-child {
+  border-block-end: none;
+}
+
+.rowLink {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-3);
+  padding-inline: var(--ds-space-4) var(--ds-space-3);
+  text-decoration: none;
+  color: inherit;
+  transition: background 160ms var(--ds-ease-out-quart);
+}
+
+.rowLink:hover {
+  background: color-mix(in oklch, var(--ds-brand-500) 3%, transparent);
+}
+
+.rowLink:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: -2px;
+}
+
+/* ── Rail رنگی — تک‌خط، افزایش عرض در hover ───────────────────────────── */
+
+.rail {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 2px;
+  background: var(--ds-text-muted);
+  transition: inline-size 200ms var(--ds-ease-out-quart);
+}
+
+.row[data-status='pending'] .rail {
+  background: var(--nova-amber);
+}
+.row[data-status='progress'] .rail {
+  background: var(--nova-cyan);
+}
+.row[data-status='success'] .rail {
+  background: var(--nova-up);
+}
+.row[data-status='danger'] .rail {
+  background: var(--nova-down);
+}
+.row[data-status='cancelled'] .rail {
+  background: var(--ds-text-muted);
+  opacity: 0.5;
+}
+
+.row[data-tone='credit'] .rail {
+  background: linear-gradient(180deg, var(--nova-up), color-mix(in oklch, var(--nova-up) 50%, transparent));
+}
+
+.rowLink:hover .rail,
+.rowLink:focus-visible .rail {
+  inline-size: 3px;
+}
+
+/* ── Kind icon box ──────────────────────────────────────────────────────── */
+
+.iconBox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border-radius: var(--ds-radius-md);
+  background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
+  color: var(--ds-brand-600);
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 15%, transparent);
+  flex-shrink: 0;
+  transition: transform 160ms var(--ds-ease-spring);
+}
+
+.rowLink:hover .iconBox {
+  transform: scale(1.05) rotate(-2deg);
+}
+
+.row[data-tone='credit'] .iconBox {
+  background: color-mix(in oklch, var(--nova-up) 12%, transparent);
+  color: var(--nova-up);
+  border-color: color-mix(in oklch, var(--nova-up) 22%, transparent);
+}
+
+.row[data-tone='debit'] .iconBox {
+  background: color-mix(in oklch, var(--nova-down) 12%, transparent);
+  color: var(--nova-down);
+  border-color: color-mix(in oklch, var(--nova-down) 22%, transparent);
+}
+
+/* ── Main column ────────────────────────────────────────────────────────── */
+
+.main {
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+}
+
+.topLine {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  flex-wrap: wrap;
+  min-inline-size: 0;
+}
+
+.customerName {
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-inline-size: 12rem;
+}
+
+.kindTag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding-block: 0.15em;
+  padding-inline: 0.55em;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--ds-brand-500) 8%, transparent);
+  color: var(--ds-brand-600);
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 20%, transparent);
+  white-space: nowrap;
+}
+
+.metaLine {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  font-size: 0.6875rem;
+  color: var(--ds-text-muted);
+  flex-wrap: wrap;
+  min-inline-size: 0;
+}
+
+.metaItem {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.dot {
+  inline-size: 2px;
+  block-size: 2px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+  flex-shrink: 0;
+}
+
+.metaExchange {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  font-weight: 600;
+  color: var(--ds-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.metaExchangeIcon {
+  color: var(--ds-brand-500);
+}
+
+.metaFee {
+  font-weight: 600;
+  color: var(--nova-down);
+  font-variant-numeric: tabular-nums;
+}
+
+.metaNote {
+  font-style: italic;
+  max-inline-size: 14rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Right column: amount + status ─────────────────────────────────────── */
+
+.right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3em;
+  flex-shrink: 0;
+  min-inline-size: 7.5rem;
+}
+
+.amount {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.15em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-primary);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.amountSign {
+  font-size: 0.85em;
+  font-weight: 700;
+  opacity: 0.7;
+  inline-size: 0.55em;
+}
+
+.amountValue {
+  font-size: var(--ds-text-sm);
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+.amountCurrency {
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: var(--ds-text-muted);
+  margin-inline-start: 0.25em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.amount[data-tone='credit'] .amountValue {
+  color: var(--nova-up);
+}
+
+.amount[data-tone='debit'] .amountValue {
+  color: var(--nova-down);
+}
+
+.amount[data-tone='credit'] .amountSign {
+  color: var(--nova-up);
+}
+
+.amount[data-tone='debit'] .amountSign {
+  color: var(--nova-down);
+}
+
+/* ── Status pill ────────────────────────────────────────────────────────── */
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding-block: 0.15em;
+  padding-inline: 0.55em;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border-subtle);
+  background: var(--ds-surface);
+  color: var(--ds-text-muted);
+  white-space: nowrap;
+}
+
+.statusPill[data-status='pending'] {
+  background: color-mix(in oklch, var(--nova-amber) 12%, transparent);
+  color: var(--nova-amber);
+  border-color: color-mix(in oklch, var(--nova-amber) 32%, transparent);
+}
+
+.statusPill[data-status='progress'] {
+  background: color-mix(in oklch, var(--nova-cyan) 12%, transparent);
+  color: var(--nova-cyan);
+  border-color: color-mix(in oklch, var(--nova-cyan) 32%, transparent);
+}
+
+.statusPill[data-status='success'] {
+  background: color-mix(in oklch, var(--nova-up) 12%, transparent);
+  color: var(--nova-up);
+  border-color: color-mix(in oklch, var(--nova-up) 32%, transparent);
+}
+
+.statusPill[data-status='danger'] {
+  background: color-mix(in oklch, var(--nova-down) 12%, transparent);
+  color: var(--nova-down);
+  border-color: color-mix(in oklch, var(--nova-down) 32%, transparent);
+}
+
+.statusIcon {
+  flex-shrink: 0;
+}
+
+/* ── Animations ─────────────────────────────────────────────────────────── */
+
+@keyframes rowEnter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row {
+    animation: none;
+  }
+  .rowLink:hover .iconBox {
+    transform: none;
+  }
+}
+
+/* ── Mobile: ردیف 2-ستونی (icon مخفی، meta خلاصه) ────────────────────── */
+
+@media (max-width: 640px) {
+  .rowLink {
+    grid-template-columns: auto 1fr auto;
+    gap: var(--ds-space-2);
+    padding-block: var(--ds-space-2-5, 0.625rem);
+    padding-inline: var(--ds-space-3) var(--ds-space-2);
+  }
+  .iconBox {
+    display: none;
+  }
+  .metaNote {
+    max-inline-size: 9rem;
+  }
+  .customerName {
+    max-inline-size: 9rem;
+  }
+}

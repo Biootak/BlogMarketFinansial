@@ -1,106 +1,271 @@
-/* TransactionsWorkspace.module.css */
+/* ============================================================================
+ * TransactionsWorkspace — ارکستر (root + list wrapper + pagination + active bar)
+ * ========================================================================== */
 
-.toolbar {
+.root {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-3);
+  gap: var(--ds-space-4);
+  inline-size: 100%;
 }
 
-.filterRow {
+/* ── Active filter bar (زیر command strip) ────────────────────────────── */
+
+.activeBar {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-2);
+  padding-inline: var(--ds-space-3);
+  background: color-mix(in oklch, var(--ds-brand-500) 5%, var(--ds-surface));
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 18%, var(--ds-border-subtle));
+  border-radius: var(--ds-radius-md);
+  font-size: 0.75rem;
+  color: var(--ds-text-primary);
+  animation: activeBarEnter 280ms var(--ds-ease-out-quart) both;
+}
+
+@keyframes activeBarEnter {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.activeLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
   flex-wrap: wrap;
-}
-
-.filterBtn {
-  height: 34px;
-  padding: 0 14px;
-  font-size: 12px;
-  font-family: inherit;
-  font-weight: 500;
-  color: var(--at-fg-subtle);
-  background: var(--at-surface);
-  border: 1px solid var(--at-line);
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 100ms ease;
-}
-
-.filterBtn:hover {
-  border-color: var(--at-accent);
-  color: var(--at-fg);
-}
-.filterBtnActive {
-  background: var(--at-accent-subtle);
-  border-color: var(--at-accent);
-  color: var(--at-accent);
   font-weight: 600;
 }
 
-.toolbarEnd {
-  display: flex;
+.activeChip {
+  display: inline-flex;
   align-items: center;
-  gap: var(--ds-space-3);
-  flex-wrap: wrap;
-}
-.searchWrap {
-  position: relative;
-  flex: 1;
-  min-width: 200px;
-}
-.searchIcon {
-  position: absolute;
-  inset-inline-end: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  color: var(--at-fg-subtle);
-  pointer-events: none;
-}
-.searchInput {
-  width: 100%;
-  height: 38px;
-  padding: 0 38px 0 12px;
-  font-size: var(--ds-text-sm);
-  font-family: inherit;
-  color: var(--at-fg);
-  background: var(--at-surface);
-  border: 1px solid var(--at-line);
-  border-radius: 10px;
-  outline: none;
-  transition: border-color 120ms ease;
-}
-.searchInput:focus {
-  border-color: var(--at-accent);
-  box-shadow: 0 0 0 3px var(--at-accent-subtle);
+  padding-block: 0.15em;
+  padding-inline: 0.55em;
+  background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
+  color: var(--ds-brand-700);
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 25%, transparent);
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
-.addBtn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  height: 38px;
-  padding: 0 var(--ds-space-4);
-  font-size: var(--ds-text-sm);
-  font-family: inherit;
-  font-weight: 600;
-  color: var(--ds-canvas);
-  background: var(--at-accent);
+.clearLink {
+  background: transparent;
   border: none;
-  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ds-brand-600);
   cursor: pointer;
-}
-.addBtn:hover {
-  opacity: 0.88;
+  padding-block: 0.3em;
+  padding-inline: 0.6em;
+  border-radius: var(--ds-radius-sm);
+  transition: background 160ms var(--ds-ease-out-quart), color 160ms var(--ds-ease-out-quart);
 }
 
-.tableWrap {
-  background: var(--at-surface);
-  border: 1px solid var(--at-line);
-  border-radius: 14px;
+.clearLink:hover {
+  background: color-mix(in oklch, var(--ds-brand-500) 8%, transparent);
+  color: var(--ds-brand-700);
+}
+
+/* ── List wrapper ──────────────────────────────────────────────────────── */
+
+.listWrap {
+  display: flex;
+  flex-direction: column;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
   overflow: hidden;
+  animation: listWrapEnter 380ms var(--ds-ease-out-quart) both;
+  animation-delay: 80ms;
 }
 
-/* kindBadge و statusBadge از StatusBadge primitive آمده‌اند — اینجا تعریف نمی‌شوند */
+@keyframes listWrapEnter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.listHead {
+  display: grid;
+  grid-template-columns: 6px 2.25rem 1fr 7.5rem;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-2);
+  padding-inline: var(--ds-space-4) var(--ds-space-3);
+  background: var(--ds-canvas-subtle);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: var(--ds-text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.headCell {
+  min-inline-size: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.headCellRight {
+  text-align: end;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Pagination ────────────────────────────────────────────────────────── */
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  padding-block: var(--ds-space-2);
+}
+
+.pageBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  min-inline-size: 5rem;
+  block-size: 2.4rem;
+  padding-inline: var(--ds-space-3);
+  background: var(--ds-surface);
+  color: var(--ds-text-primary);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-md);
+  font-family: inherit;
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 160ms var(--ds-ease-out-quart),
+    border-color 160ms var(--ds-ease-out-quart),
+    transform 120ms var(--ds-ease-spring);
+}
+
+.pageBtn:hover:not(:disabled) {
+  background: color-mix(in oklch, var(--ds-brand-500) 6%, transparent);
+  border-color: color-mix(in oklch, var(--ds-brand-500) 30%, var(--ds-border-default));
+}
+
+.pageBtn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.pageBtn:disabled {
+  color: var(--ds-text-muted);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pageBtn:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 2px;
+}
+
+.pageInfo {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  padding-inline: var(--ds-space-2);
+}
+
+/* ── Load more ─────────────────────────────────────────────────────────── */
+
+.loadMore {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: var(--ds-space-2);
+}
+
+.loadMoreBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  block-size: 2.4rem;
+  padding-inline: var(--ds-space-4);
+  font-family: inherit;
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  background: var(--ds-surface);
+  border: 1px dashed var(--ds-border-default);
+  border-radius: var(--ds-radius-md);
+  cursor: pointer;
+  transition:
+    background 160ms var(--ds-ease-out-quart),
+    border-color 160ms var(--ds-ease-out-quart);
+}
+
+.loadMoreBtn:hover:not(:disabled) {
+  background: color-mix(in oklch, var(--ds-brand-500) 5%, transparent);
+  border-color: color-mix(in oklch, var(--ds-brand-500) 40%, var(--ds-border-default));
+}
+
+.loadMoreBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.spin {
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Mobile tweaks ─────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .listHead {
+    grid-template-columns: 6px 1fr 6.5rem;
+    gap: var(--ds-space-2);
+    padding-inline: var(--ds-space-3) var(--ds-space-2);
+  }
+  .listHead > .headCell:nth-child(2) {
+    display: none;
+  }
+  .pageBtn {
+    min-inline-size: 4rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .listWrap,
+  .activeBar {
+    animation: none;
+  }
+  .spin {
+    animation: none;
+  }
+}

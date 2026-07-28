@@ -207,6 +207,43 @@ export async function getTransactions(
   };
 }
 
+/**
+ * دریافت یک تراکنش با id — برای زیرمسیر [id] در workspace صراف.
+ * فقط تراکنش‌های متعلق به صرافی کاربر قابل دسترسی است.
+ */
+export async function getExchangeTransactionById(id: string): Promise<TransactionRow | null> {
+  // ابتدا تراکنش را می‌گیریم تا exchangeId را بفهمیم (auth scoping)
+  const row = await prisma.transaction.findUnique({
+    where: { id },
+    include: { Customer: { select: { fullName: true, phone: true } } },
+  });
+  if (!row) return null;
+
+  const access = await requireExchangeAccess(row.exchangeId);
+  if (!access.ok) return null;
+
+  return {
+    id: row.id,
+    exchangeId: row.exchangeId,
+    customerId: row.customerId ?? null,
+    accountId: row.accountId ?? null,
+    kind: row.kind,
+    status: row.status,
+    amount: bigIntToStr(row.amount),
+    currency: row.currency,
+    rate: row.rate,
+    fee: bigIntToStr(row.fee),
+    destAmount: row.destAmount !== null ? bigIntToStr(row.destAmount) : null,
+    destCurrency: row.destCurrency,
+    note: row.note,
+    counterparty: row.counterparty,
+    idempotencyKey: row.idempotencyKey,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+    customer: row.Customer ? { fullName: row.Customer.fullName, phone: row.Customer.phone } : undefined,
+  };
+}
+
 // ─── CREATE ─────────────────────────────────────────────────────────────────
 
 export async function createTransaction(

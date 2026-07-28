@@ -1,0 +1,83 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  inline-size: 100%;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  padding-block: var(--ds-space-5);
+  padding-inline: var(--ds-space-5);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-xl);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--ds-space-4);
+}
+
+@media (min-width: 960px) {
+  .grid {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  padding: var(--ds-space-4);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+  min-block-size: 8rem;
+}
+
+.skeleton {
+  display: block;
+  border-radius: var(--ds-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--ds-canvas-subtle) 0%,
+    color-mix(in oklch, var(--ds-text-muted) 8%, var(--ds-canvas-subtle)) 50%,
+    var(--ds-canvas-subtle) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1600ms linear infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.spinWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  align-self: center;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  font-weight: 600;
+}
+
+.spin {
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton,
+  .spin {
+    animation: none;
+  }
+}

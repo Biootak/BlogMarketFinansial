@@ -35,8 +35,10 @@ export default async function TransactionsPage() {
       <TransactionsWorkspace
         exchangeId={exchange.id}
         initialRows={txResult.rows}
+        total={txResult.total}
         customers={customersResult.rows}
         staffRole={membership.staffRole}
+        primaryCurrency={exchange.primaryCurrency}
       />
     </div>
   );
