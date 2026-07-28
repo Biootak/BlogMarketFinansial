@@ -1,0 +1,134 @@
+/* RouteError.module.css — canonical error boundary UI
+ * فقط design system tokens — هیچ hex/rgb hardcode نیست. */
+
+.root {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ds-space-10) var(--ds-space-4);
+}
+
+.root[data-variant="page"] {
+  min-height: 50vh;
+}
+
+.root[data-variant="inline"] {
+  min-height: 14rem;
+  padding: var(--ds-space-6) var(--ds-space-4);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-4);
+  max-width: 24rem;
+  width: 100%;
+  text-align: center;
+}
+
+/* ── آیکن ──────────────────────────────────────────────────────── */
+.iconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  border: 1px solid color-mix(in oklch, currentColor 20%, transparent);
+  background: color-mix(in oklch, currentColor 10%, transparent);
+}
+
+.iconWrap[data-kind="network"]  { color: var(--at-accent, oklch(55% 0.14 250)); }
+.iconWrap[data-kind="auth"]     { color: oklch(55% 0.16 25); }
+.iconWrap[data-kind="notfound"] { color: oklch(60% 0.12 55); }
+.iconWrap[data-kind="server"]   { color: oklch(55% 0.14 280); }
+.iconWrap[data-kind="unknown"]  { color: oklch(60% 0.12 55); }
+
+/* ── متن ──────────────────────────────────────────────────────── */
+.title {
+  margin: 0;
+  font-size: var(--ds-text-xl, 1.25rem);
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--ds-fg, var(--at-fg));
+}
+
+.description {
+  margin: 0;
+  font-size: var(--ds-text-sm, 0.875rem);
+  line-height: 1.7;
+  color: var(--ds-fg-subtle, var(--at-fg-subtle));
+  max-width: 22rem;
+}
+
+.devInfo {
+  margin: 0;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  font-family: monospace;
+  font-size: 0.7rem;
+  color: var(--ds-fg-subtle, var(--at-fg-subtle));
+  background: var(--ds-surface-2, var(--at-bg-elevated));
+  border-radius: var(--ds-radius-sm, 4px);
+  border: 1px solid var(--ds-border-1, var(--at-line));
+  text-align: start;
+  word-break: break-all;
+  max-width: 100%;
+}
+
+/* ── دکمه‌ها ─────────────────────────────────────────────────── */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  width: 100%;
+}
+
+.retryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  min-height: 2.75rem;
+  padding: 0 var(--ds-space-5);
+  font-family: inherit;
+  font-size: var(--ds-text-sm, 0.875rem);
+  font-weight: 600;
+  color: var(--at-accent-on, #fff);
+  background: var(--at-accent, oklch(52% 0.14 250));
+  border: none;
+  border-radius: var(--at-radius, var(--ds-radius-lg, 0.75rem));
+  cursor: pointer;
+  transition: opacity var(--ds-duration-fast, 120ms) ease;
+}
+
+.retryBtn:hover {
+  opacity: 0.88;
+}
+
+.retryBtn:focus-visible {
+  outline: 2px solid var(--at-accent);
+  outline-offset: 2px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  min-height: 2.75rem;
+  padding: 0 var(--ds-space-5);
+  font-size: var(--ds-text-sm, 0.875rem);
+  font-weight: 500;
+  color: var(--ds-fg-subtle, var(--at-fg-muted));
+  background: transparent;
+  border: 1px solid var(--ds-border-1, var(--at-line));
+  border-radius: var(--at-radius, var(--ds-radius-lg, 0.75rem));
+  text-decoration: none;
+  transition: border-color var(--ds-duration-fast, 120ms) ease;
+}
+
+.backLink:hover {
+  border-color: var(--ds-border-2, var(--at-fg-subtle));
+  color: var(--ds-fg, var(--at-fg));
+}

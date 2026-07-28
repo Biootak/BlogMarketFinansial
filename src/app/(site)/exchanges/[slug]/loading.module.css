@@ -1,0 +1,107 @@
+/* loading.module.css — skeleton برای صفحهٔ عمومی صرافی */
+
+.root {
+  min-block-size: 100dvh;
+  background: var(--ds-canvas);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Hero skeleton ─────────────────────────────────────────── */
+.hero {
+  background: oklch(12% 0.05 265);
+  padding-block: clamp(3rem, 8vw, 5.5rem);
+  padding-inline: clamp(1rem, 5vw, 3rem);
+}
+
+.heroInner {
+  max-inline-size: 700px;
+  margin-inline: auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.heroLogo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 5rem;
+  block-size: 5rem;
+  border-radius: 1rem;
+  background: oklch(28% 0.09 265 / 0.45);
+  border: 1px solid oklch(55% 0.1 265 / 0.35);
+  color: oklch(78% 0.08 265);
+  margin-block-end: 0.5rem;
+}
+
+/* ── Skeleton bar ──────────────────────────────────────────── */
+.skelBar {
+  block-size: 14px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--ds-text-secondary, oklch(45% 0.02 250)) 8%, transparent) 0%,
+    color-mix(in oklch, var(--ds-text-secondary, oklch(45% 0.02 250)) 16%, transparent) 50%,
+    color-mix(in oklch, var(--ds-text-secondary, oklch(45% 0.02 250)) 8%, transparent) 100%
+  );
+  background-size: 200% 100%;
+  animation: skel 1.4s ease-in-out infinite;
+}
+
+.skelBlock {
+  padding: 1.5rem;
+  background: var(--ds-surface, #fff);
+  border: 1px solid var(--ds-border-default, oklch(93% 0.008 245));
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes skel {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ── Section ───────────────────────────────────────────────── */
+.section {
+  max-inline-size: 1100px;
+  margin-inline: auto;
+  padding-block: clamp(2rem, 5vw, 3.5rem);
+  padding-inline: clamp(1rem, 5vw, 2rem);
+  inline-size: 100%;
+}
+
+/* ── Rates grid ────────────────────────────────────────────── */
+.rateGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.875rem;
+}
+
+.rateCard {
+  padding: 1.25rem;
+  background: var(--ds-surface, #fff);
+  border: 1px solid var(--ds-border-default, oklch(93% 0.008 245));
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Two-col layout ────────────────────────────────────────── */
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+@media (max-width: 768px) {
+  .twoCol {
+    grid-template-columns: 1fr;
+  }
+}

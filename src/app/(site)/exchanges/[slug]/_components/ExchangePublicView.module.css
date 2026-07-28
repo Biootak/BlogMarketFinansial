@@ -1,0 +1,517 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   ExchangePublicView — صفحهٔ عمومی پروفایل صرافی
+   P2026 design language — هم‌خوان با token system پروژه
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.root {
+  min-block-size: 100dvh;
+  background: var(--ds-canvas);
+  color: var(--ds-text-primary, oklch(20% 0.02 255));
+}
+
+/* ── 1. Hero identity ──────────────────────────────────────── */
+.hero {
+  position: relative;
+  overflow: hidden;
+  background: oklch(12% 0.05 265);
+  padding-block: clamp(3rem, 8vw, 5.5rem);
+  padding-inline: clamp(1rem, 5vw, 3rem);
+}
+
+.heroAmbient {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+      ellipse 75% 55% at 25% 50%,
+      oklch(30% 0.12 265 / 0.18) 0%,
+      transparent 70%
+    ), radial-gradient(ellipse 55% 40% at 80% 20%, oklch(28% 0.09 295 / 0.14) 0%, transparent 65%),
+    radial-gradient(ellipse 45% 55% at 50% 100%, oklch(20% 0.07 220 / 0.12) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.heroHairline {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    oklch(55% 0.12 265 / 0.45) 40%,
+    oklch(65% 0.1 280 / 0.3) 60%,
+    transparent
+  );
+}
+
+.heroInner {
+  position: relative;
+  max-inline-size: 700px;
+  margin-inline: auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.heroLogo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 5.5rem;
+  block-size: 5.5rem;
+  border-radius: 1.1rem;
+  background: oklch(28% 0.09 265 / 0.5);
+  border: 1.5px solid oklch(60% 0.1 265 / 0.4);
+  color: oklch(82% 0.08 265);
+  box-shadow:
+    0 1px 0 oklch(100% 0 0 / 0.06) inset,
+    0 12px 30px -10px oklch(0% 0 0 / 0.4);
+  overflow: hidden;
+  margin-block-end: 0.25rem;
+}
+
+.heroLogoImg {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+  background: oklch(98% 0 0);
+}
+
+.heroLogoFallback {
+  opacity: 0.8;
+}
+
+.heroNameRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.heroName {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 800;
+  color: oklch(97% 0.005 240);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.verifiedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 99px;
+  background: oklch(70% 0.18 145 / 0.15);
+  border: 1px solid oklch(70% 0.18 145 / 0.4);
+  color: oklch(82% 0.16 145);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.heroCity {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.92rem;
+  color: oklch(72% 0.04 265);
+}
+
+.heroStats {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.625rem 1rem;
+  border-radius: 12px;
+  background: oklch(100% 0 0 / 0.04);
+  border: 1px solid oklch(100% 0 0 / 0.08);
+  margin-block-start: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: oklch(85% 0.02 265);
+}
+.stat svg {
+  color: oklch(75% 0.06 265);
+}
+
+.statNum {
+  font-weight: 800;
+  color: oklch(96% 0.005 240);
+  font-variant-numeric: tabular-nums;
+}
+
+.statLabel {
+  font-size: 0.72rem;
+  color: oklch(68% 0.04 265);
+}
+
+.statDivider {
+  inline-size: 1px;
+  block-size: 18px;
+  background: oklch(100% 0 0 / 0.12);
+}
+
+.heroCta {
+  margin-block-start: 0.5rem;
+}
+
+.heroCtaBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  background: oklch(100% 0 0 / 0.06);
+  border: 1px solid oklch(100% 0 0 / 0.12);
+  color: oklch(96% 0.005 240);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  font-family: inherit;
+}
+.heroCtaBtn:hover {
+  background: oklch(100% 0 0 / 0.1);
+  border-color: oklch(100% 0 0 / 0.2);
+  transform: translateY(-1px);
+}
+
+/* ── 2. Section shell ──────────────────────────────────────── */
+.section {
+  padding-block: clamp(2rem, 5vw, 3.5rem);
+  padding-inline: clamp(1rem, 5vw, 2rem);
+}
+
+.sectionInner {
+  max-inline-size: 1100px;
+  margin-inline: auto;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-block-end: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 99px;
+  background: color-mix(in oklch, oklch(60% 0.18 265) 10%, transparent);
+  border: 1px solid color-mix(in oklch, oklch(60% 0.18 265) 20%, transparent);
+  color: oklch(50% 0.18 265);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.sectionTitle {
+  font-size: clamp(1.25rem, 3vw, 1.65rem);
+  font-weight: 800;
+  color: var(--ds-text-primary, oklch(20% 0.02 255));
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.sectionSub {
+  font-size: 0.92rem;
+  color: var(--ds-text-secondary, oklch(45% 0.02 250));
+  line-height: 1.7;
+  max-inline-size: 560px;
+  margin: 0;
+}
+
+/* ── 3. Rates grid ─────────────────────────────────────────── */
+.rateGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.875rem;
+}
+
+.rateCard {
+  position: relative;
+  padding: 1.25rem;
+  background: var(--ds-surface, #fff);
+  border: 1px solid var(--ds-border-default, oklch(93% 0.008 245));
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  transition: all 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.rateCard:hover {
+  border-color: color-mix(in oklch, oklch(55% 0.18 265) 35%, var(--ds-border-default, oklch(93% 0.008 245)));
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -10px color-mix(in oklch, oklch(50% 0.18 265) 18%, transparent);
+}
+
+.rateHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.rateCurrency {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.rateFlag {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.rateCode {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--ds-text-primary, oklch(20% 0.02 255));
+  letter-spacing: 0.02em;
+}
+
+.rateLabel {
+  font-size: 0.72rem;
+  color: var(--ds-text-secondary, oklch(45% 0.02 250));
+  line-height: 1.2;
+}
+
+.rateSpread {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 99px;
+  background: color-mix(in oklch, oklch(60% 0.18 265) 12%, transparent);
+  color: oklch(50% 0.18 265);
+  font-variant-numeric: tabular-nums;
+}
+
+.rateBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-block-start: 0.625rem;
+  border-block-start: 1px solid var(--ds-border-default, oklch(93% 0.008 245));
+}
+
+.rateRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.rateKey {
+  font-size: 0.78rem;
+  color: var(--ds-text-secondary, oklch(45% 0.02 250));
+  font-weight: 500;
+}
+
+.rateValue {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--ds-text-primary, oklch(20% 0.02 255));
+  font-variant-numeric: tabular-nums;
+}
+
+.rateUnit {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--ds-text-secondary, oklch(45% 0.02 250));
+}
+
+/* ── 4. Empty rates ────────────────────────────────────────── */
+.emptyRates {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+  text-align: center;
+  background: var(--ds-surface, #fff);
+  border: 1.5px dashed var(--ds-border-default, oklch(93% 0.008 245));
+  border-radius: 14px;
+  color: var(--ds-text-secondary, oklch(45% 0.02 250));
+}
+.emptyRates p {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+/* ── 5. Two-column cards ───────────────────────────────────── */
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+@media (max-width: 768px) {
+  .twoCol {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  padding: 1.5rem;
+  background: var(--ds-surface, #fff);
+  border: 1px solid var(--ds-border-default, oklch(93% 0.008 245));
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.cardIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  border-radius: 8px;
+  background: color-mix(in oklch, oklch(55% 0.18 265) 12%, transparent);
+  color: oklch(50% 0.18 265);
+}
+
+.cardTitle {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--ds-text-primary, oklch(20% 0.02 255));
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+/* ── 6. KV list (about) ────────────────────────────────────── */
+.kvList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  margin: 0;
+  padding: 0;
+}
+
+.kv {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-block-end: 0.875rem;
+  border-block-end: 1px solid var(--ds-border-default, oklch(93% 0.008 245));
+}
+.kv:last-child {
+  padding-block-end: 0;
+  border-block-end: 0;
+}
+
+.kv dt {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  color: var(--ds-text-secondary, oklch(45% 0.02 250));
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.kv dt svg {
+  color: oklch(50% 0.18 265);
+}
+
+.kv dd {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ds-text-primary, oklch(20% 0.02 255));
+  line-height: 1.5;
+}
+
+/* ── 7. Contact list ───────────────────────────────────────── */
+.contactList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.contactItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0.875rem;
+  background: color-mix(in oklch, var(--ds-text-secondary, oklch(45% 0.02 250)) 4%, transparent);
+  border: 1px solid var(--ds-border-default, oklch(93% 0.008 245));
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ds-text-primary, oklch(20% 0.02 255));
+  text-decoration: none;
+  transition: all 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  inline-size: 100%;
+}
+.contactItem:hover {
+  background: color-mix(in oklch, oklch(55% 0.18 265) 8%, transparent);
+  border-color: color-mix(in oklch, oklch(55% 0.18 265) 30%, transparent);
+  transform: translateX(-2px); /* RTL: حرکت به ابتدا */
+}
+.contactItem svg {
+  color: oklch(50% 0.18 265);
+  flex-shrink: 0;
+}
+
+.contactEmpty {
+  font-size: 0.88rem;
+  color: var(--ds-text-secondary, oklch(45% 0.02 250));
+  font-style: italic;
+  text-align: center;
+  padding: 1rem;
+}
+
+/* ── 8. Disclaimer ──────────────────────────────────────────── */
+.disclaimer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.875rem 1.25rem;
+  background: color-mix(in oklch, oklch(60% 0.16 165) 8%, transparent);
+  border: 1px solid color-mix(in oklch, oklch(60% 0.16 165) 22%, transparent);
+  border-radius: 12px;
+  color: var(--ds-text-primary, oklch(20% 0.02 255));
+  font-size: 0.85rem;
+  line-height: 1.65;
+  text-align: start;
+}
+.disclaimer svg {
+  color: oklch(48% 0.16 165);
+  flex-shrink: 0;
+}
+.disclaimer strong {
+  color: oklch(48% 0.16 165);
+  font-weight: 800;
+}

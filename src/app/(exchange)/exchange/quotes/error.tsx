@@ -1,13 +1,21 @@
-'use client';
+﻿'use client';
 
-import ExchangeRouteError from '@/components/Exchange/ExchangeRouteError';
+import { RouteError } from '@/components/Dashboard/primitives';
 
-export default function QuotesError({
+export default function RouteErrorPage({
   error,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  return <ExchangeRouteError error={error} reset={reset} section="نقل‌قول‌ها" />;
+  return (
+    <RouteError
+      error={error}
+      reset={reset}
+      section="قیمت‌گذاری"
+      backHref="/exchange/dashboard"
+      backLabel="داشبورد صرافی"
+    />
+  );
 }

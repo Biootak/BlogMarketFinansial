@@ -1,13 +1,21 @@
-'use client';
+﻿'use client';
 
-import ExchangeRouteError from '@/components/Exchange/ExchangeRouteError';
+import { RouteError } from '@/components/Dashboard/primitives';
 
-export default function RatesError({
+export default function RouteErrorPage({
   error,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  return <ExchangeRouteError error={error} reset={reset} section="نرخ‌ها" />;
+  return (
+    <RouteError
+      error={error}
+      reset={reset}
+      section="نرخ‌ها"
+      backHref="/exchange/dashboard"
+      backLabel="داشبورد صرافی"
+    />
+  );
 }

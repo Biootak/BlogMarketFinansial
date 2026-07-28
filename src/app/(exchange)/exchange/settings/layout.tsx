@@ -15,13 +15,6 @@ import {
   type SettingsSubNavItem,
   SettingsSubNavHost,
 } from '@/components/Dashboard/primitives';
-import {
-  Activity,
-  Building2,
-  Clock,
-  Cog,
-  ShieldCheck,
-} from 'lucide-react';
 import { redirect } from 'next/navigation';
 import s from './layout.module.css';
 
@@ -45,14 +38,14 @@ export default async function SettingsLayout({
       href: '/exchange/settings',
       label: 'نمای کلی',
       description: 'خلاصه وضعیت و دسترسی سریع',
-      icon: Activity,
+      iconName: 'activity',
     },
     {
       key: 'identity',
       href: '/exchange/profile',
       label: 'هویت عمومی',
       description: 'نام، لوگو، تماس و ساعات کاری',
-      icon: Building2,
+      iconName: 'building',
       recommended: true,
     },
     {
@@ -60,21 +53,21 @@ export default async function SettingsLayout({
       href: '/exchange/settings/operations',
       label: 'عملیات و کارمزد',
       description: 'KYC، سقف تراکنش و کارمزدها',
-      icon: Cog,
+      iconName: 'cog',
     },
     {
       key: 'hours',
       href: '/exchange/settings/working-hours',
       label: 'ساعات کاری',
       description: 'برنامه هفتگی و روزهای تعطیل',
-      icon: Clock,
+      iconName: 'clock',
     },
     {
       key: 'security',
       href: '/exchange/settings/security',
       label: 'امنیت و دسترسی',
       description: 'اعضا، نقش‌ها و نشست‌ها',
-      icon: ShieldCheck,
+      iconName: 'shield',
     },
   ];
 

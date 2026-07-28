@@ -15,9 +15,68 @@
  */
 
 import { cn } from '@/lib/utils';
-import type { LucideIcon } from 'lucide-react';
+import {
+  Activity,
+  BarChart2,
+  Bell,
+  Building2,
+  Clock,
+  Cog,
+  CreditCard,
+  Globe,
+  Key,
+  LayoutGrid,
+  Lock,
+  type LucideIcon,
+  Settings,
+  ShieldCheck,
+  Users,
+  Wallet,
+  Zap,
+} from 'lucide-react';
 import Link from 'next/link';
 import s from './SettingsSubNav.module.css';
+
+/**
+ * نام‌های آیکن مجاز — به‌جای پاس دادن LucideIcon function از Server به Client.
+ * هر نام جدید را اینجا اضافه کن و به ICON_MAP map کن.
+ */
+export type SettingsNavIconName =
+  | 'activity'
+  | 'bar-chart'
+  | 'bell'
+  | 'building'
+  | 'clock'
+  | 'cog'
+  | 'credit-card'
+  | 'globe'
+  | 'key'
+  | 'layout-grid'
+  | 'lock'
+  | 'settings'
+  | 'shield'
+  | 'users'
+  | 'wallet'
+  | 'zap';
+
+const ICON_MAP: Record<SettingsNavIconName, LucideIcon> = {
+  'activity': Activity,
+  'bar-chart': BarChart2,
+  'bell': Bell,
+  'building': Building2,
+  'clock': Clock,
+  'cog': Cog,
+  'credit-card': CreditCard,
+  'globe': Globe,
+  'key': Key,
+  'layout-grid': LayoutGrid,
+  'lock': Lock,
+  'settings': Settings,
+  'shield': ShieldCheck,
+  'users': Users,
+  'wallet': Wallet,
+  'zap': Zap,
+};
 
 export interface SettingsSubNavItem {
   /** کلید یکتا — برای تشخیص active */
@@ -28,8 +87,11 @@ export interface SettingsSubNavItem {
   label: string;
   /** توضیح کوتاه فارسی */
   description: string;
-  /** آیکن از lucide-react */
-  icon: LucideIcon;
+  /**
+   * نام آیکن — string به جای LucideIcon function تا از Server Component قابل پاس باشد.
+   * ر.ک SettingsNavIconName برای مقادیر مجاز.
+   */
+  iconName: SettingsNavIconName;
   /** badge اختیاری — مثلاً شمارنده یا پرچم */
   badge?: { label: string; tone?: 'neutral' | 'warn' | 'success' | 'info' };
   /** علامت‌گذاری به‌عنوان "توصیه‌شده برای تکمیل" (مثل KYC) */
@@ -55,7 +117,7 @@ export function SettingsSubNav({ items, activeKey, asTabs, onSelect, className }
     >
       <ol className={s.list}>
         {items.map((item, idx) => {
-          const Icon = item.icon;
+          const Icon = ICON_MAP[item.iconName] ?? Activity;
           const isActive = item.key === activeKey;
           const isLast = idx === items.length - 1;
           const isFirst = idx === 0;

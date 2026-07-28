@@ -1,13 +1,21 @@
 'use client';
 
-import ExchangeRouteError from '@/components/Exchange/ExchangeRouteError';
+import { RouteError } from '@/components/Dashboard/primitives';
 
-export default function CustomerDetailError({
+export default function RouteErrorPage({
   error,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  return <ExchangeRouteError error={error} reset={reset} section="پروفایل مشتری" />;
+  return (
+    <RouteError
+      error={error}
+      reset={reset}
+      section="پروفایل مشتری"
+      backHref="/exchange/customers"
+      backLabel="مشتریان"
+    />
+  );
 }

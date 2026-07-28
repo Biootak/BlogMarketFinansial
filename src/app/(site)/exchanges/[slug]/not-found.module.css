@@ -1,0 +1,111 @@
+/* not-found.module.css — صفحه ۴۰۴ صرافی */
+
+.root {
+  position: relative;
+  min-block-size: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1.5rem, 5vw, 3rem);
+  background: var(--ds-canvas);
+  overflow: hidden;
+}
+
+.ambient {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 25% 30%, color-mix(in oklch, oklch(60% 0.18 265) 12%, transparent), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 80%, color-mix(in oklch, oklch(55% 0.16 295) 10%, transparent), transparent 65%);
+  pointer-events: none;
+}
+
+.card {
+  position: relative;
+  max-inline-size: 28rem;
+  inline-size: 100%;
+  padding: clamp(2rem, 5vw, 2.75rem);
+  text-align: center;
+  background: var(--ds-surface, #fff);
+  border: 1px solid var(--ds-border-default, oklch(93% 0.008 245));
+  border-radius: 18px;
+  box-shadow:
+    0 1px 0 color-mix(in oklch, oklch(100% 0 0) 80%, transparent) inset,
+    0 30px 60px -20px color-mix(in oklch, oklch(0% 0 0) 12%, transparent);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 4rem;
+  block-size: 4rem;
+  border-radius: 50%;
+  background: color-mix(in oklch, oklch(55% 0.18 265) 12%, transparent);
+  color: oklch(50% 0.18 265);
+}
+
+.title {
+  font-size: clamp(1.25rem, 3vw, 1.5rem);
+  font-weight: 800;
+  color: var(--ds-text-primary, oklch(20% 0.02 255));
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.sub {
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: var(--ds-text-secondary, oklch(45% 0.02 250));
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-block-start: 0.5rem;
+  inline-size: 100%;
+}
+
+.primary,
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0.625rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 180ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+  font-family: inherit;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.primary {
+  background: oklch(45% 0.14 265);
+  color: oklch(98% 0.005 240);
+}
+.primary:hover {
+  background: oklch(38% 0.14 265);
+  transform: translateY(-1px);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--ds-text-secondary, oklch(45% 0.02 250));
+  border-color: var(--ds-border-default, oklch(93% 0.008 245));
+}
+.ghost:hover {
+  background: color-mix(in oklch, var(--ds-text-secondary, oklch(45% 0.02 250)) 8%, transparent);
+  border-color: var(--ds-border-strong, oklch(88% 0.01 245));
+}

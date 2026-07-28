@@ -104,6 +104,7 @@
 - **`revalidateTag`** → always from `@/lib/revalidate`, never `next/cache`.
 - **Prisma** singleton → import from `@/lib/db`. Never `new PrismaClient()`.
 - **English** in code/commands/paths. **Persian** in user-facing copy only.
+- **Error boundaries** → همیشه از `RouteError` (ر.ک §Error Handling).
 
 ---
 
@@ -219,6 +220,76 @@ Rules for new code:
 
 ---
 
+## 🚨 Error Handling (always-on)
+
+> **قانون:** هر `error.tsx` جدید باید از `RouteError` استفاده کند — هرگز inline component نسازید.
+
+### معماری Error Boundary (Next.js App Router 2026)
+
+```
+global-error.tsx          ← crash کامل root layout (inline style اجباری — بدون providers)
+  └── app/error.tsx       ← root catch-all → RouteError
+        ├── (auth)/error.tsx         ← استثنا: از auth CSS classes استفاده می‌کند (حفظ شود)
+        ├── dashboard/error.tsx      → RouteError
+        ├── (exchange)/error.tsx     → RouteError
+        │     └── exchange/**/error.tsx → RouteError
+        └── (site)/**/error.tsx     → RouteError
+```
+
+### الگوی استاندارد برای هر `error.tsx` جدید
+
+```tsx
+'use client';
+
+import { RouteError } from '@/components/Dashboard/primitives';
+
+export default function RouteErrorPage({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  return (
+    <RouteError
+      error={error}
+      reset={reset}
+      section="نام بخش فارسی"
+      backHref="/مسیر-مناسب"
+      backLabel="متن دکمه بازگشت"
+    />
+  );
+}
+```
+
+### قوانین
+
+| قانون | توضیح |
+|-------|-------|
+| **یک component واحد** | فقط `RouteError` — نه `SiteRouteError`، نه `ExchangeRouteError`، نه inline |
+| **⚠️ Deprecated** | `SiteRouteError` و `ExchangeRouteError` — در کد جدید استفاده نشوند |
+| **error type detection** | خودکار داخل `RouteError` (network/auth/notfound/server/unknown) |
+| **Sentry** | داخل `RouteError` — نیازی به `Sentry.captureException` در error.tsx نیست |
+| **variant** | `page` (پیش‌فرض، center-screen) یا `inline` (داخل section) |
+| **auth استثنا** | `(auth)/error.tsx` از auth CSS classes استفاده می‌کند — دست نزنید |
+| **global-error.tsx** | نمی‌تواند از `RouteError` استفاده کند (providers موجود نیستند) — inline style اجباری |
+| **not-found ≠ error** | `not-found.tsx` جداگانه است — با `error.tsx` قاطی نکنید |
+
+### interface کامل RouteError
+
+```tsx
+interface RouteErrorProps {
+  error: Error & { digest?: string };  // اجباری
+  reset: () => void;                   // اجباری
+  section?: string;                    // نام بخش — مثلاً «گزارش‌ها»
+  backHref?: string;                   // پیش‌فرض: "/"
+  backLabel?: string;                  // پیش‌فرض: "صفحه اصلی"
+  variant?: 'page' | 'inline';         // پیش‌فرض: "page"
+}
+```
+
+---
+
 ## Post-task Report (بعد از هر تسک چند-فایلی)
 
 ```
@@ -322,6 +393,7 @@ Rules for new code:
 | 2026-07 | **Vision-First gate:** UQ1+UQ2+UQ3 پیش از grep اجباری شدند؛ §Craft Bar دو نقطه (قبل از کد + قبل از Show)؛ بلاک A در UIDQG مارک ⚡ شد |
 | 2026-07 | **UI VISION GATE جداگانه:** جدول مستقل UI VISION GATE قبل از PRE-CODE GATE اضافه شد؛ ردیف‌های UI Check و Comp Map از PRE-CODE GATE حذف و به جدول جدید منتقل شدند |
 | 2026-07 | **CUSTOM-FIRST, NATIVE-NEVER (P0):** سلسله مراتب Repo Scan + Decision Ladder برای هر المان؛ موجودی کامل primitives/ui/custom + site-level ثبت شد؛ قانون جدا برای داشبورد vs سایت؛ export اجباری؛ namespace جداگانه site/dashboard |
+| 2026-07 | **Error Handling یکپارچه:** `RouteError` canonical ساخته شد؛ همه error.tsx ها migrate شدند؛ `SiteRouteError`/`ExchangeRouteError` deprecated؛ §Error Handling section اضافه شد؛ `SettingsSubNavItem.icon` → `iconName: string` برای Server→Client safety |
 
 ---
 

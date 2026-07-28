@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
-import SiteRouteError from '@/components/ui/SiteRouteError';
+import { RouteError } from '@/components/Dashboard/primitives';
 
-export default function TrackError({
+export default function RouteErrorPage({
   error,
   reset,
 }: {
@@ -10,12 +10,12 @@ export default function TrackError({
   reset: () => void;
 }) {
   return (
-    <SiteRouteError
+    <RouteError
       error={error}
       reset={reset}
-      section="پیگیری معامله"
-      backHref="/transfer"
-      backLabel="صفحه انتقال"
+      section="پیگیری"
+      backHref="/"
+      backLabel="صفحه اصلی"
     />
   );
 }

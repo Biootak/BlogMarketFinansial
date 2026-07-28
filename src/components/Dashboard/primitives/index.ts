@@ -86,3 +86,8 @@ export { SettingsSurfaceCard } from './SettingsSurfaceCard';
 
 export { SearchInput } from './SearchInput';
 export type { SearchInputProps } from './SearchInput';
+
+export { RouteError } from './RouteError';
+export type { RouteErrorProps } from './RouteError';
+
+export type { SettingsNavIconName } from './SettingsSubNav';

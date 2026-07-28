@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
-import SiteRouteError from '@/components/ui/SiteRouteError';
+import { RouteError } from '@/components/Dashboard/primitives';
 
-export default function TermsError({
+export default function RouteErrorPage({
   error,
   reset,
 }: {
@@ -10,10 +10,10 @@ export default function TermsError({
   reset: () => void;
 }) {
   return (
-    <SiteRouteError
+    <RouteError
       error={error}
       reset={reset}
-      section="قوانین"
+      section="شرایط استفاده"
       backHref="/"
       backLabel="صفحه اصلی"
     />

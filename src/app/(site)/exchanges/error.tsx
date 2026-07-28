@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
-import SiteRouteError from '@/components/ui/SiteRouteError';
+import { RouteError } from '@/components/Dashboard/primitives';
 
-export default function ExchangesError({
+export default function RouteErrorPage({
   error,
   reset,
 }: {
@@ -10,7 +10,7 @@ export default function ExchangesError({
   reset: () => void;
 }) {
   return (
-    <SiteRouteError
+    <RouteError
       error={error}
       reset={reset}
       section="صرافی‌ها"
