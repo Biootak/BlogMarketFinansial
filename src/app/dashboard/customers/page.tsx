@@ -26,15 +26,27 @@ export default async function CustomersPage({ searchParams }: Props) {
   const sp = await searchParams;
   const query = sp.q ?? '';
   const status = sp.status ?? 'all';
-  const exchangeId = sp.exchange ?? '';
   const page = Math.max(1, Number(sp.page ?? 1));
   const limit = 20;
 
   // لیست همه صرافی‌ها برای فیلتر
   const exchanges = await getAllExchanges();
 
-  // برای admin: اولین صرافی را پیش‌فرض بگیر (یا فیلتر شده)
-  const targetExchangeId = exchangeId || exchanges[0]?.id || '';
+  // اعتبارسنجی exchangeId از URL: اگر صرافی حذف/غیرفعال شده، به صرافی معتبر اول برگردان.
+  // اگر صرافی‌ای وجود نداشته، همان پیام «هنوز صرافی ندارید» نمایش داده می‌شود.
+  const requestedId = sp.exchange ?? '';
+  const requestedExists = requestedId && exchanges.some((e) => e.id === requestedId);
+  const targetExchangeId = requestedExists ? requestedId : exchanges[0]?.id ?? '';
+
+  // اگر URL صرافی نامعتبر داشت ولی صرافی معتبر موجود است، URL را پاک کن تا انتخاب کاربر شفاف شود.
+  if (requestedId && !requestedExists && targetExchangeId) {
+    const params = new URLSearchParams();
+    if (query) params.set('q', query);
+    if (status !== 'all') params.set('status', status);
+    if (page > 1) params.set('page', String(page));
+    const qs = params.toString();
+    redirect(`/dashboard/customers${qs ? `?${qs}` : ''}`);
+  }
 
   let customersData = { rows: [], total: 0 } as Awaited<ReturnType<typeof getCustomers>>;
   if (targetExchangeId) {

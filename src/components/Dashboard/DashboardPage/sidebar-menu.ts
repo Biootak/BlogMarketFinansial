@@ -183,24 +183,24 @@ export function getMenu(role: UserRole): NavSection[] {
     id: 'exchanges',
     href: '/dashboard/exchanges',
     icon: HiOutlineBuildingStorefront({ className: ICON_CLASS }),
-    label: 'صراف‌ها',
-    title: 'مدیریت صراف‌ها',
+    label: 'صرافی‌ها',
+    title: 'مدیریت صرافی‌ها',
   };
 
   const exchangeStaff: MenuItem = {
     id: 'exchangeStaff',
     href: '/dashboard/exchange-staff',
     icon: HiOutlineUserGroup({ className: ICON_CLASS }),
-    label: 'کارکنان صراف‌ها',
-    title: 'مدیریت کارکنان صراف‌ها',
+    label: 'کارکنان صرافی‌ها',
+    title: 'مدیریت کارکنان صرافی‌ها',
   };
 
   const exchangeQuotes: MenuItem = {
     id: 'exchangeQuotes',
     href: '/dashboard/exchange-quotes',
     icon: HiOutlineTag({ className: ICON_CLASS }),
-    label: 'تایید قیمت‌ها',
-    title: 'تایید قیمت‌گذاری صراف‌ها',
+    label: 'تأیید قیمت‌ها',
+    title: 'تأیید قیمت‌گذاری صرافی‌ها',
   };
 
   const transferProviders: MenuItem = {
@@ -275,8 +275,8 @@ export function getMenu(role: UserRole): NavSection[] {
     id: 'transfer',
     href: '/dashboard/transfer',
     icon: HiOutlineBanknotes({ className: ICON_CLASS }),
-    label: 'انتقال وجه',
-    title: 'انتقال وجه P2P',
+    label: 'انتقال P2P',
+    title: 'انتقال وجه بین کاربران (P2P)',
   };
 
   const virtualCards: MenuItem = {

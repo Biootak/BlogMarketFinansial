@@ -576,6 +576,65 @@
   justify-content: center;
 }
 
+/* ── Skeleton (loading.tsx) ─────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.headerSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.skelEyebrow,
+.skelTitle,
+.skelDesc,
+.skelFormTitle,
+.skelField {
+  background: linear-gradient(
+    90deg,
+    var(--at-bg-elevated, var(--at-surface)) 0%,
+    color-mix(in oklch, var(--at-fg) 6%, transparent) 50%,
+    var(--at-bg-elevated, var(--at-surface)) 100%
+  );
+  background-size: 200% 100%;
+  border-radius: var(--at-radius);
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+.skelEyebrow {
+  height: 0.72rem;
+  width: 7rem;
+}
+
+.skelTitle {
+  height: 1.875rem;
+  width: 14rem;
+}
+
+.skelDesc {
+  height: 0.8125rem;
+  width: 22rem;
+  max-width: 100%;
+}
+
+.skelFormTitle {
+  height: 1.125rem;
+  width: 9rem;
+}
+
+.skelField {
+  height: 2.75rem;
+  width: 100%;
+  border-radius: var(--at-radius-md);
+}
+
 /* ── Reduced motion ─────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .page,
@@ -584,7 +643,12 @@
   .successView,
   .recipientCard,
   .stepDot_active,
-  .successRing {
+  .successRing,
+  .skelEyebrow,
+  .skelTitle,
+  .skelDesc,
+  .skelFormTitle,
+  .skelField {
     animation: none;
   }
   .quickBtn,

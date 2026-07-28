@@ -133,10 +133,10 @@ export function TransferWizard() {
   return (
     <div className={s.page}>
       <PageHeader
-        title="انتقال وجه"
-        description="انتقال P2P سریع و امن به سایر کاربران"
-        eyebrow="کیف پول"
-        breadcrumb={[{ href: '/dashboard/wallet', label: 'کیف پول' }, { label: 'انتقال وجه' }]}
+        title="انتقال P2P"
+        description="ارسال فوری افغانی به دوستان، همکاران و خانواده — انتقال مستقیم بین کاربران ثبت‌شده"
+        eyebrow="عملیات مالی"
+        breadcrumb={[{ href: '/dashboard', label: 'داشبورد' }, { label: 'انتقال P2P' }]}
       />
 
       <div className={s.wizardCard}>

@@ -8,13 +8,13 @@
  * اعمال شود.
  */
 
-import { TwoFactorCenter } from './_components/TwoFactorCenter';
 import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
+import { requireCustomerAccess } from '@/lib/customer-auth';
+import prisma from '@/lib/db';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import prisma from '@/lib/db';
-import { requireCustomerAccess } from '@/lib/require-customer-access';
+import TwoFactorCenter from './_components/TwoFactorCenter';
 
 export const metadata: Metadata = {
   title: 'احراز هویت دو مرحله‌ای | پنل مشتری',
@@ -37,21 +37,24 @@ async function load2FAState(userId: string): Promise<Initial2FA> {
     where: { id: userId },
     select: {
       twoFactorEnabled: true,
-      twoFactorVerifiedAt: true,
-      twoFactorLastUsedAt: true,
-      twoFactorChannel: true,
-      twoFactorBackupCodes: { select: { id: true }, take: 1 },
+      TwoFactorBackupCode: { select: { id: true }, take: 1 },
     },
   });
   if (!user) {
-    return { enabled: false, hasBackupCodes: false, verifiedAt: null, lastUsedAt: null, channel: null };
+    return {
+      enabled: false,
+      hasBackupCodes: false,
+      verifiedAt: null,
+      lastUsedAt: null,
+      channel: null,
+    };
   }
   return {
     enabled: user.twoFactorEnabled,
-    hasBackupCodes: user.twoFactorBackupCodes.length > 0,
-    verifiedAt: user.twoFactorVerifiedAt?.toISOString() ?? null,
-    lastUsedAt: user.twoFactorLastUsedAt?.toISOString() ?? null,
-    channel: (user.twoFactorChannel as 'TOTP' | null) ?? null,
+    hasBackupCodes: user.TwoFactorBackupCode.length > 0,
+    verifiedAt: null,
+    lastUsedAt: null,
+    channel: user.twoFactorEnabled ? 'TOTP' : null,
   };
 }
 
@@ -62,7 +65,7 @@ export default async function Customer2FAPage() {
   }
   // اطمینان از اینکه کاربر واقعاً Customer Portal دارد (و platform admin نیست که ناخواسته وارد شده)
   const access = await requireCustomerAccess();
-  if (!access) {
+  if (!access.ok) {
     redirect('/dashboard');
   }
 

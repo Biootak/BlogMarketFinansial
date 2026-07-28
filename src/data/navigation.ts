@@ -10,14 +10,14 @@ export const NAVBAR_LINKS = [
 
   {
     id: '1',
-    href: '/archive/demo-slug' as Route,
+    href: '/blog' as Route,
     name: 'وبلاگ',
   },
 
   {
     id: '2',
-    href: '/market',
-    name: 'مارکت',
+    href: '/exchanges',
+    name: 'بازار',
   },
   {
     id: '3',

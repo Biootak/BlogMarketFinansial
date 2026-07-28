@@ -275,6 +275,12 @@ export const superAdminRoutes = [
   '/dashboard/exchange-rates/[...slug]',
   '/dashboard/billing-address',
   '/dashboard/billing-address/[...slug]',
+  '/dashboard/transfer-providers',
+  '/dashboard/transfer-providers/[...slug]',
+  '/dashboard/exchange-staff',
+  '/dashboard/exchange-staff/[...slug]',
+  '/dashboard/exchange-quotes',
+  '/dashboard/exchange-quotes/[...slug]',
 ];
 
 /**

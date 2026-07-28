@@ -588,7 +588,7 @@ export default function CustomersClient({
               description="برای مدیریت مشتریان، ابتدا باید یک صرافی ثبت و تأیید شده داشته باشید."
               action={
                 <Button size="sm" asChild>
-                  <a href="/dashboard/exchanges">رفتن به مدیریت صراف‌ها</a>
+                  <a href="/dashboard/exchanges">رفتن به مدیریت صرافی‌ها</a>
                 </Button>
               }
             />
