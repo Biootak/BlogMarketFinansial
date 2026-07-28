@@ -62,6 +62,9 @@ export type ExchangeRow = {
   platformFee: number;
   requireKyc: boolean;
   primaryCurrency: string;
+  allowedCurrencies: string[];
+  quoteAutoExpireMin: number;
+  showInComparison: boolean;
   createdAt: Date;
   updatedAt: Date;
   _count?: { Customer: number; Transaction: number };
@@ -87,14 +90,36 @@ function mapExchange(raw: {
   platformFee: number;
   requireKyc: boolean;
   primaryCurrency: string;
+  allowedCurrencies: string[];
+  quoteAutoExpireMin: number;
+  showInComparison: boolean;
   createdAt: Date;
   updatedAt: Date;
   _count?: { Customer: number; Transaction: number };
 }): ExchangeRow {
   return {
-    ...raw,
+    id: raw.id,
+    name: raw.name,
+    slug: raw.slug,
+    displayName: raw.displayName,
+    website: raw.website,
+    licenseNo: raw.licenseNo,
+    city: raw.city,
+    address: raw.address,
+    phone: raw.phone,
+    email: raw.email,
+    logoUrl: raw.logoUrl,
+    status: raw.status,
     dailyLimitAf: Number(raw.dailyLimitAf),
+    platformFee: raw.platformFee,
+    requireKyc: raw.requireKyc,
     primaryCurrency: raw.primaryCurrency,
+    allowedCurrencies: raw.allowedCurrencies ?? [],
+    quoteAutoExpireMin: raw.quoteAutoExpireMin,
+    showInComparison: raw.showInComparison,
+    createdAt: raw.createdAt,
+    updatedAt: raw.updatedAt,
+    _count: raw._count,
   };
 }
 
@@ -453,8 +478,13 @@ const ExchangeSelfUpdateSchema = z.object({
   email: z.string().email('ایمیل نامعتبر').nullable().optional(),
   logoUrl: z.string().url('آدرس لوگو نامعتبر').nullable().optional(),
   website: z.string().url('آدرس وبسایت نامعتبر').max(200).nullable().optional(),
-  dailyLimitAf: z.number().int().min(0).optional(),
+  dailyLimitAf: z.number().int().min(0).max(1_000_000_000).optional(),
+  platformFee: z.number().min(0).max(100).optional(),
   requireKyc: z.boolean().optional(),
+  primaryCurrency: z.string().length(3, 'کد ارز باید ۳ حرفی باشد').optional(),
+  allowedCurrencies: z.array(z.string().length(3)).max(20).optional(),
+  quoteAutoExpireMin: z.number().int().min(5).max(1440).optional(),
+  showInComparison: z.boolean().optional(),
 });
 
 /**

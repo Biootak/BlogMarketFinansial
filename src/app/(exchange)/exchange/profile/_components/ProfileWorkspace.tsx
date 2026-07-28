@@ -3,27 +3,52 @@
 /**
  * ProfileWorkspace — ویرایش پروفایل عمومی صرافی.
  *
- * فیلدها:
- *   - نام نمایشی (displayName) + نام رسمی
- *   - توضیحات کوتاه (bio) + شعار (tagline)
- *   - اطلاعات تماس (ایمیل، تلفن، آدرس، شهر)
- *   - آدرس لوگو (با پیش‌نمایش)
- *   - ساعت کاری هفتگی
- *   - لینک‌های اجتماعی (وبسایت، تلگرام، واتساپ، اینستاگرام)
+ *   ساختار P2026:
+ *   ─────────────────────────────────────────────────────────
+ *   1. ExchangeIdentityCard (signature) — نام، لوگو، وضعیت، counters
+ *   2. Identity Section  — نام رسمی/نمایشی، شهر، آدرس، مختصات
+ *   3. Logo & Brand Section — URL لوگو + preview + aspect ratio
+ *   4. Contact Section — تلفن، ایمیل، وبسایت
+ *   5. Working Hours Section — HoursMatrix (7 روز)
+ *   6. Audit meta — createdAt/updatedAt
+ *   ─────────────────────────────────────────────────────────
+ *
+ *   UX: StickySaveBar که خودکار با تغییرات ظاهر می‌شود.
+ *   Validation: سمت client قبل از ارسال به server action.
  */
 
+import {
+  ExchangeIdentityCard,
+  HoursMatrix,
+  SettingsField,
+  SettingsSurfaceCard,
+  StickySaveBar,
+  type HoursValue,
+} from '@/components/Dashboard/primitives';
 import { type ExchangeRow, updateExchangeSelf } from '@/actions/exchanges';
-import { Building2, Clock, ExternalLink, Info, Loader2, Save, XCircle } from 'lucide-react';
+import {
+  Building2,
+  Clock,
+  Globe,
+  Info,
+  Mail,
+  MapPin,
+  Phone,
+  ShieldCheck,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import s from './ProfileWorkspace.module.css';
+import LogoUploader from './LogoUploader';
 
-interface Props {
+type Props = {
   exchange: ExchangeRow;
   canEdit: boolean;
-}
+};
 
-const DAYS: { key: keyof HoursState; label: string }[] = [
+type SaveStatus = 'idle' | 'dirty' | 'saving' | 'saved' | 'error';
+
+const DAYS: ReadonlyArray<{ key: keyof HoursMap; label: string }> = [
   { key: 'sat', label: 'شنبه' },
   { key: 'sun', label: 'یکشنبه' },
   { key: 'mon', label: 'دوشنبه' },
@@ -33,48 +58,51 @@ const DAYS: { key: keyof HoursState; label: string }[] = [
   { key: 'fri', label: 'جمعه' },
 ];
 
-type HoursState = {
-  sat: string;
-  sun: string;
-  mon: string;
-  tue: string;
-  wed: string;
-  thu: string;
-  fri: string;
+type HoursMap = {
+  sat: HoursValue;
+  sun: HoursValue;
+  mon: HoursValue;
+  tue: HoursValue;
+  wed: HoursValue;
+  thu: HoursValue;
+  fri: HoursValue;
 };
 
-const DEFAULT_HOURS: HoursState = {
-  sat: '08:00-16:00',
-  sun: '08:00-16:00',
-  mon: '08:00-16:00',
-  tue: '08:00-16:00',
-  wed: '08:00-16:00',
-  thu: '08:00-16:00',
-  fri: 'تعطیل',
+const DEFAULT_HOURS: HoursMap = {
+  sat: { open: '08:00', close: '16:00', closed: false },
+  sun: { open: '08:00', close: '16:00', closed: false },
+  mon: { open: '08:00', close: '16:00', closed: false },
+  tue: { open: '08:00', close: '16:00', closed: false },
+  wed: { open: '08:00', close: '16:00', closed: false },
+  thu: { open: '08:00', close: '16:00', closed: false },
+  fri: { open: '00:00', close: '00:00', closed: true },
 };
 
-/** ساعت‌ها را از فرم JSON-like ذخیره‌شده در address می‌خوانیم — قرارداد: آدرس شامل ;HOURS=... در انتها */
-function parseHours(address: string | null): HoursState {
+/** legacy: HOURS=JSON در address (برای backward compat) */
+function parseHours(address: string | null): HoursMap {
   if (!address) return DEFAULT_HOURS;
   const marker = ';HOURS=';
   const idx = address.indexOf(marker);
   if (idx === -1) return DEFAULT_HOURS;
   const raw = address.slice(idx + marker.length);
   try {
-    const parsed = JSON.parse(raw) as Partial<HoursState>;
-    return { ...DEFAULT_HOURS, ...parsed };
+    const parsed = JSON.parse(raw) as Partial<Record<keyof HoursMap, Partial<HoursValue>>>;
+    const merged = { ...DEFAULT_HOURS };
+    for (const k of DAYS) {
+      const v = parsed[k.key];
+      if (v && typeof v === 'object') merged[k.key] = { ...merged[k.key], ...v };
+    }
+    return merged;
   } catch {
     return DEFAULT_HOURS;
   }
 }
 
-/** ساعت‌ها را به suffix در address تبدیل می‌کنیم */
-function packAddress(visibleAddress: string, hours: HoursState): string {
+function packHours(visibleAddress: string, hours: HoursMap): string {
   const base = visibleAddress.trim();
   return `${base};HOURS=${JSON.stringify(hours)}`;
 }
 
-/** فقط بخش قابل نمایش address (بدون suffix) */
 function visibleAddress(address: string | null): string {
   if (!address) return '';
   const idx = address.indexOf(';HOURS=');
@@ -83,11 +111,8 @@ function visibleAddress(address: string | null): string {
 
 export default function ProfileWorkspace({ exchange, canEdit }: Props) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  // state
+  // ── State ─────────────────────────────────────────────────────────
   const [name, setName] = useState(exchange.name);
   const [displayName, setDisplayName] = useState(exchange.displayName ?? exchange.name);
   const [phone, setPhone] = useState(exchange.phone ?? '');
@@ -95,47 +120,92 @@ export default function ProfileWorkspace({ exchange, canEdit }: Props) {
   const [city, setCity] = useState(exchange.city ?? '');
   const [address, setAddress] = useState(visibleAddress(exchange.address));
   const [logoUrl, setLogoUrl] = useState(exchange.logoUrl ?? '');
-  const [hours, setHours] = useState<HoursState>(() => parseHours(exchange.address));
   const [website, setWebsite] = useState(exchange.website ?? '');
+  const [hours, setHours] = useState<HoursMap>(() => parseHours(exchange.address));
 
-  const statusFa: Record<string, string> = {
-    ACTIVE: 'فعال',
-    PENDING: 'در انتظار تأیید',
-    SUSPENDED: 'معلق',
-    CLOSED: 'بسته شده',
-  };
-  const statusClass: Record<string, string> = {
-    ACTIVE: s.statusActive ?? '',
-    PENDING: s.statusPending ?? '',
-  };
-  const statusLabel = statusFa[exchange.status] ?? exchange.status;
-  const statusCls = statusClass[exchange.status] ?? s.statusOther ?? '';
+  // ── Dirty tracking ────────────────────────────────────────────────
+  const initial = useRef({
+    name: exchange.name,
+    displayName: exchange.displayName ?? exchange.name,
+    phone: exchange.phone ?? '',
+    email: exchange.email ?? '',
+    city: exchange.city ?? '',
+    address: visibleAddress(exchange.address),
+    logoUrl: exchange.logoUrl ?? '',
+    website: exchange.website ?? '',
+    hours: parseHours(exchange.address),
+  });
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const dirtyCount = useMemo(() => {
+    let n = 0;
+    if (name.trim() !== initial.current.name.trim()) n++;
+    if (displayName.trim() !== initial.current.displayName.trim()) n++;
+    if (phone.trim() !== initial.current.phone.trim()) n++;
+    if (email.trim() !== initial.current.email.trim()) n++;
+    if (city.trim() !== initial.current.city.trim()) n++;
+    if (address.trim() !== initial.current.address.trim()) n++;
+    if (logoUrl.trim() !== initial.current.logoUrl.trim()) n++;
+    if (website.trim() !== initial.current.website.trim()) n++;
+    if (JSON.stringify(hours) !== JSON.stringify(initial.current.hours)) n++;
+    return n;
+  }, [name, displayName, phone, email, city, address, logoUrl, website, hours]);
+
+  // ── Save flow ─────────────────────────────────────────────────────
+  const [status, setStatus] = useState<SaveStatus>('idle');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const reset = () => {
+    setName(initial.current.name);
+    setDisplayName(initial.current.displayName);
+    setPhone(initial.current.phone);
+    setEmail(initial.current.email);
+    setCity(initial.current.city);
+    setAddress(initial.current.address);
+    setLogoUrl(initial.current.logoUrl);
+    setWebsite(initial.current.website);
+    setHours(initial.current.hours);
+    setStatus('idle');
+    setErrorMessage(null);
+  };
+
+  const handleSave = () => {
     if (!canEdit) return;
-    setError(null);
-    setSaved(false);
+    setErrorMessage(null);
 
+    // Validation
     if (name.trim().length < 2) {
-      setError('نام صرافی حداقل ۲ کاراکتر باشد');
+      setStatus('error');
+      setErrorMessage('نام صرافی باید حداقل ۲ کاراکتر باشد');
       return;
     }
     if (displayName.trim().length > 120) {
-      setError('نام نمایشی نباید بیش از ۱۲۰ کاراکتر باشد');
+      setStatus('error');
+      setErrorMessage('نام نمایشی نباید بیش از ۱۲۰ کاراکتر باشد');
+      return;
+    }
+    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setStatus('error');
+      setErrorMessage('ایمیل نامعتبر است');
       return;
     }
     if (website.trim() && !/^https?:\/\//i.test(website.trim())) {
-      setError('آدرس وبسایت باید با http یا https شروع شود');
+      setStatus('error');
+      setErrorMessage('آدرس وبسایت باید با http یا https شروع شود');
+      return;
+    }
+    if (logoUrl.trim() && !/^https?:\/\//i.test(logoUrl.trim())) {
+      setStatus('error');
+      setErrorMessage('آدرس لوگو باید با http یا https شروع شود');
       return;
     }
 
-    startTransition(async () => {
+    setStatus('saving');
+    void (async () => {
       const res = await updateExchangeSelf(exchange.id, {
         name: name.trim(),
         displayName: displayName.trim() || null,
         city: city.trim() || null,
-        address: packAddress(address, hours),
+        address: packHours(address, hours),
         phone: phone.trim() || null,
         email: email.trim() || null,
         logoUrl: logoUrl.trim() || null,
@@ -143,315 +213,249 @@ export default function ProfileWorkspace({ exchange, canEdit }: Props) {
       });
 
       if (res.success) {
-        setSaved(true);
+        initial.current = {
+          name,
+          displayName,
+          phone,
+          email,
+          city,
+          address,
+          logoUrl,
+          website,
+          hours,
+        };
+        setStatus('saved');
         router.refresh();
-        setTimeout(() => setSaved(false), 3500);
       } else {
-        setError(res.error.message);
+        setStatus('error');
+        setErrorMessage(res.error.message);
       }
-    });
+    })();
+  };
+
+  // trigger dirty when changes happen
+  if (status === 'idle' && dirtyCount > 0 && canEdit) {
+    setStatus('dirty');
   }
 
   return (
-    <form onSubmit={handleSubmit} className={s.root}>
-      {/* ── Identity Preview Card ─────────────────────────────────── */}
-      <div className={s.previewCard}>
-        <div className={s.previewCover} aria-hidden>
-          <svg viewBox="0 0 600 96" preserveAspectRatio="xMidYMid slice">
-            <defs>
-              <radialGradient id="cov-glow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="var(--at-accent)" stopOpacity="0.4" />
-                <stop offset="100%" stopColor="var(--at-accent)" stopOpacity="0" />
-              </radialGradient>
-            </defs>
-            <circle cx="120" cy="48" r="80" fill="url(#cov-glow)" />
-            <circle cx="480" cy="48" r="100" fill="url(#cov-glow)" />
-          </svg>
-        </div>
-        <div className={s.previewBody}>
-          <div className={s.previewLogo} aria-hidden>
-            {logoUrl ? (
-              // biome-ignore lint/performance/noImgElement: dynamic user URL
-              <img src={logoUrl} alt="" />
-            ) : (
-              <span className={s.previewLogoFallback}>
-                {(displayName || name || '?').charAt(0).toUpperCase()}
+    <>
+      <div className={s.shell}>
+        {/* ── 1. Identity Card (signature moment) ───────────────────── */}
+        <ExchangeIdentityCard
+          exchange={exchange}
+          publicUrl={`/exchanges/${exchange.slug}`}
+          counters={[
+            { label: 'مشتری', value: exchange._count?.Customer ?? 0 },
+            { label: 'تراکنش', value: exchange._count?.Transaction ?? 0 },
+          ]}
+        />
+
+        {/* ── Info banner ───────────────────────────────────────────── */}
+        <div className={s.banner} role="note">
+          <Info size={15} className={s.bannerIcon} aria-hidden />
+          <div className={s.bannerText}>
+            <strong>این اطلاعات در صفحه عمومی صرافی شما نمایش داده می‌شود.</strong>
+            <span>
+              برای تنظیمات عملیاتی (KYC، کارمزد، حد تراکنش) به{' '}
+              <a href="/exchange/settings" className={s.bannerLink}>
+                تنظیمات
+              </a>{' '}
+              بروید.
+            </span>
+            {!canEdit && (
+              <span className={s.bannerWarn}>
+                <ShieldCheck size={11} aria-hidden /> شما دسترسی ویرایش ندارید.
               </span>
             )}
           </div>
-          <div className={s.previewMeta}>
-            <h2 className={s.previewName}>
-              {displayName || name}
-              <span className={`${s.statusPill} ${statusCls}`}>
-                <span aria-hidden>●</span>
-                {statusLabel}
-              </span>
-            </h2>
-            <p className={s.previewSlug} dir="ltr">
-              /{exchange.slug}
-            </p>
-          </div>
         </div>
-      </div>
 
-      {/* ── Info banner ───────────────────────────────────────────── */}
-      <div className={`${s.banner} ${s.bannerInfo}`} role="note">
-        <Info className={s.bannerIcon} size={16} aria-hidden />
-        <span>
-          این اطلاعات در صفحه عمومی صرافی شما نمایش داده می‌شود. برای تنظیمات عملیاتی (KYC، کارمزد، حد
-          تراکنش) به{' '}
-          <a href="/exchange/settings" style={{ color: 'var(--at-accent)', fontWeight: 600 }}>
-            تنظیمات
-          </a>{' '}
-          بروید.
-          {!canEdit && <strong> — شما دسترسی ویرایش ندارید.</strong>}
-        </span>
-      </div>
-
-      {/* ── Identity section ──────────────────────────────────────── */}
-      <section className={s.section} aria-labelledby="profile-identity">
-        <header className={s.sectionHeader}>
-          <Building2 size={15} aria-hidden />
-          <span id="profile-identity">هویت صرافی</span>
-        </header>
-        <div className={s.grid}>
-          <div className={s.field}>
-            <label className={`${s.label} ${s.required}`} htmlFor="p-name">
-              نام رسمی
-            </label>
-            <input
-              id="p-name"
-              className={s.input}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={!canEdit}
-              maxLength={120}
-            />
-            <span className={s.hint}>نام ثبت‌شده در مجوز رسمی</span>
-          </div>
-          <div className={s.field}>
-            <label className={s.label} htmlFor="p-display">
-              نام نمایشی
-            </label>
-            <input
-              id="p-display"
-              className={s.input}
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              disabled={!canEdit}
-              maxLength={120}
-              placeholder="همان نام رسمی"
-            />
-            <span className={s.hint}>در صفحه صرافی و تبلیغات نمایش داده می‌شود</span>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Logo section ──────────────────────────────────────────── */}
-      <section className={s.section} aria-labelledby="profile-logo">
-        <header className={s.sectionHeader}>
-          <span id="profile-logo">لوگو</span>
-          <span className={s.sectionHint}>فرمت PNG یا SVG — حداکثر ۲۵۶×۲۵۶ پیکسل</span>
-        </header>
-        <div className={s.logoUploader}>
-          <div className={s.logoPreview} aria-hidden>
-            {logoUrl ? (
-              // biome-ignore lint/performance/noImgElement: dynamic user URL
-              <img src={logoUrl} alt="" />
-            ) : (
-              <Building2 size={32} style={{ color: 'var(--at-fg-muted)', opacity: 0.4 }} />
-            )}
-          </div>
-          <div className={s.logoActions}>
-            <div className={s.logoUrlRow}>
+        {/* ── 2. Identity section ───────────────────────────────────── */}
+        <SettingsSurfaceCard
+          id="profile-identity"
+          title="هویت صرافی"
+          description="نام رسمی و نام نمایشی که در صفحهٔ عمومی نمایش داده می‌شود"
+          icon={Building2}
+          tone="accent"
+          headerActions={
+            <span className={s.charCount}>
+              {name.trim().length}
+              <span className={s.charDim}>/120</span>
+            </span>
+          }
+        >
+          <div className={s.grid2}>
+            <SettingsField
+              label="نام رسمی"
+              hint="نام ثبت‌شده در مجوز رسمی"
+              tag={{ label: 'الزامی', tone: 'required' }}
+              span={1}
+            >
               <input
                 className={s.input}
-                value={logoUrl}
-                onChange={(e) => setLogoUrl(e.target.value)}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 disabled={!canEdit}
-                placeholder="https://cdn.example.com/logo.png"
-                dir="ltr"
-                aria-label="آدرس لوگو"
+                maxLength={120}
+                aria-label="نام رسمی صرافی"
               />
-              {logoUrl && (
-                <a
-                  href={logoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`${s.btn} ${s.btnSecondary}`}
-                  aria-label="مشاهده لوگو"
-                >
-                  <ExternalLink size={14} aria-hidden />
-                </a>
-              )}
-            </div>
-            <span className={s.hint}>آدرس کامل (URL) فایل لوگو را وارد کنید</span>
+            </SettingsField>
+            <SettingsField
+              label="نام نمایشی"
+              hint="در صفحه صرافی و تبلیغات نمایش داده می‌شود"
+              tag={{ label: 'پیشنهادی', tone: 'recommended' }}
+              span={1}
+            >
+              <input
+                className={s.input}
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                disabled={!canEdit}
+                maxLength={120}
+                placeholder="همان نام رسمی"
+                aria-label="نام نمایشی صرافی"
+              />
+            </SettingsField>
           </div>
-        </div>
-      </section>
+        </SettingsSurfaceCard>
 
-      {/* ── Contact section ───────────────────────────────────────── */}
-      <section className={s.section} aria-labelledby="profile-contact">
-        <header className={s.sectionHeader}>
-          <span id="profile-contact">اطلاعات تماس</span>
-        </header>
-        <div className={s.grid}>
-          <div className={s.field}>
-            <label className={s.label} htmlFor="p-phone">
-              تلفن
-            </label>
-            <input
-              id="p-phone"
-              className={`${s.input} ${s.inputLtr}`}
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              disabled={!canEdit}
-              maxLength={30}
-              type="tel"
-              placeholder="+93 700 000 000"
-            />
-          </div>
-          <div className={s.field}>
-            <label className={s.label} htmlFor="p-email">
-              ایمیل
-            </label>
-            <input
-              id="p-email"
-              className={`${s.input} ${s.inputLtr}`}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={!canEdit}
-              maxLength={120}
-              type="email"
-              placeholder="info@exchange.af"
-            />
-          </div>
-          <div className={s.field}>
-            <label className={s.label} htmlFor="p-city">
-              شهر
-            </label>
-            <input
-              id="p-city"
-              className={s.input}
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              disabled={!canEdit}
-              maxLength={80}
-              placeholder="هرات، کابل، مزار شریف…"
-            />
-          </div>
-          <div className={s.field}>
-            <label className={s.label} htmlFor="p-website">
-              وبسایت
-            </label>
-            <input
-              id="p-website"
-              className={`${s.input} ${s.inputLtr}`}
-              value={website}
-              onChange={(e) => setWebsite(e.target.value)}
-              disabled={!canEdit}
-              maxLength={200}
-              type="url"
-              placeholder="https://example.com"
-            />
-          </div>
-          <div className={s.field} style={{ gridColumn: '1 / -1' }}>
-            <label className={s.label} htmlFor="p-address">
-              آدرس دفتر
-            </label>
-            <textarea
-              id="p-address"
-              className={s.textarea}
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              disabled={!canEdit}
-              maxLength={280}
-              placeholder="خیابان، منطقه، نمایشگاه…"
-            />
-          </div>
-        </div>
-      </section>
+        {/* ── 3. Logo section ───────────────────────────────────────── */}
+        <SettingsSurfaceCard
+          id="profile-logo"
+          title="لوگو و برند"
+          description="نشان‌واره‌ای که در کارت‌ها، اعلان‌ها و لیست مشتریان نمایش داده می‌شود"
+          icon={Globe}
+          tone="violet"
+        >
+          <LogoUploader
+            value={logoUrl}
+            onUploaded={(url) => setLogoUrl(url)}
+            onRemoved={() => setLogoUrl('')}
+            disabled={!canEdit}
+          />
+          <p className={s.logoHint}>
+            <Info size={11} aria-hidden />
+            تصویر لوگو در صفحهٔ عمومی، کارت تراکنش‌ها و گزارش‌های PDF استفاده می‌شود.
+            برای نتیجهٔ بهتر، از تصویر مربعی PNG یا WebP با حداقل ۲۵۶×۲۵۶ پیکسل استفاده کنید.
+          </p>
+        </SettingsSurfaceCard>
 
-      {/* ── Hours section ─────────────────────────────────────────── */}
-      <section className={s.section} aria-labelledby="profile-hours">
-        <header className={s.sectionHeader}>
-          <Clock size={15} aria-hidden />
-          <span id="profile-hours">ساعات کاری</span>
-        </header>
-        <div className={s.hoursGrid}>
-          {DAYS.map(({ key, label }) => (
-            <HoursRow
-              key={key}
-              day={label}
-              value={hours[key]}
-              onChange={(v) => setHours((p) => ({ ...p, [key]: v }))}
-              disabled={!canEdit}
-            />
-          ))}
-        </div>
-      </section>
+        {/* ── 4. Contact section ────────────────────────────────────── */}
+        <SettingsSurfaceCard
+          id="profile-contact"
+          title="اطلاعات تماس"
+          description="راه‌های ارتباطی که مشتریان برای پیگیری استفاده می‌کنند"
+          icon={Phone}
+          tone="info"
+        >
+          <div className={s.grid2}>
+            <SettingsField label="شهر" hint="شهر اصلی فعالیت" span={1}>
+              <div className={s.inputIconWrap}>
+                <MapPin size={13} className={s.inputIcon} aria-hidden />
+                <input
+                  className={`${s.input} ${s.inputIconPad}`}
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  disabled={!canEdit}
+                  maxLength={80}
+                  placeholder="هرات، کابل، مزار شریف…"
+                  aria-label="شهر"
+                />
+              </div>
+            </SettingsField>
+            <SettingsField label="تلفن" hint="شمارهٔ اصلی صرافی" span={1}>
+              <div className={s.inputIconWrap}>
+                <Phone size={13} className={s.inputIcon} aria-hidden />
+                <input
+                  className={`${s.input} ${s.inputLtr} ${s.inputIconPad}`}
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  disabled={!canEdit}
+                  maxLength={30}
+                  type="tel"
+                  placeholder="+93 700 000 000"
+                  aria-label="تلفن"
+                />
+              </div>
+            </SettingsField>
+            <SettingsField label="ایمیل" hint="آدرس ایمیل رسمی" span={1}>
+              <div className={s.inputIconWrap}>
+                <Mail size={13} className={s.inputIcon} aria-hidden />
+                <input
+                  className={`${s.input} ${s.inputLtr} ${s.inputIconPad}`}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={!canEdit}
+                  maxLength={120}
+                  type="email"
+                  placeholder="info@exchange.af"
+                  aria-label="ایمیل"
+                />
+              </div>
+            </SettingsField>
+            <SettingsField label="وبسایت" hint="آدرس کامل با http یا https" span={1}>
+              <div className={s.inputIconWrap}>
+                <Globe size={13} className={s.inputIcon} aria-hidden />
+                <input
+                  className={`${s.input} ${s.inputLtr} ${s.inputIconPad}`}
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  disabled={!canEdit}
+                  maxLength={200}
+                  type="url"
+                  placeholder="https://example.com"
+                  aria-label="وبسایت"
+                />
+              </div>
+            </SettingsField>
+            <SettingsField
+              label="آدرس دفتر"
+              hint="آدرس کامل فیزیکی — در صفحهٔ عمومی نمایش داده می‌شود"
+              span="full"
+            >
+              <textarea
+                className={s.textarea}
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                disabled={!canEdit}
+                maxLength={280}
+                rows={3}
+                placeholder="خیابان، منطقه، نمایشگاه…"
+                aria-label="آدرس دفتر"
+              />
+            </SettingsField>
+          </div>
+        </SettingsSurfaceCard>
 
-      {/* ── Status banners ────────────────────────────────────────── */}
-      {error && (
-        <div className={`${s.banner} ${s.bannerError}`} role="alert">
-          <XCircle size={16} className={s.bannerIcon} aria-hidden />
-          <span>{error}</span>
-        </div>
-      )}
+        {/* ── 5. Working hours section ──────────────────────────────── */}
+        <SettingsSurfaceCard
+          id="profile-hours"
+          title="ساعات کاری"
+          description="تعیین کنید صرافی در چه روزها و ساعاتی به مشتریان خدمات می‌دهد"
+          icon={Clock}
+          tone="gold"
+        >
+          <HoursMatrix
+            value={hours}
+            onChange={(key, val) => setHours((p) => ({ ...p, [key]: val }))}
+            disabled={!canEdit}
+          />
+        </SettingsSurfaceCard>
+      </div>
 
-      {saved && (
-        <output className={`${s.banner} ${s.bannerSuccess}`}>
-          <span>تغییرات با موفقیت ذخیره شدند.</span>
-        </output>
-      )}
-
-      {/* ── Footer ────────────────────────────────────────────────── */}
       {canEdit && (
-        <div className={s.footer}>
-          <button
-            type="submit"
-            className={`${s.btn} ${s.btnPrimary}`}
-            disabled={isPending}
-            aria-busy={isPending}
-          >
-            {isPending ? (
-              <Loader2 size={14} className="animate-spin" aria-hidden />
-            ) : (
-              <Save size={14} aria-hidden />
-            )}
-            {isPending ? 'در حال ذخیره…' : 'ذخیره پروفایل'}
-          </button>
-        </div>
+        <StickySaveBar
+          status={status}
+          dirtyCount={dirtyCount}
+          errorMessage={errorMessage}
+          onSave={handleSave}
+          onDiscard={reset}
+        />
       )}
-    </form>
-  );
-}
-
-function HoursRow({
-  day,
-  value,
-  onChange,
-  disabled,
-}: {
-  day: string;
-  value: string;
-  onChange: (v: string) => void;
-  disabled: boolean;
-}) {
-  return (
-    <>
-      <span className={s.hoursLabel}>{day}</span>
-      <input
-        type="text"
-        className={s.hoursInput}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={disabled}
-        maxLength={20}
-        placeholder="08:00-16:00 یا تعطیل"
-        aria-label={`ساعت کاری ${day}`}
-        style={{ gridColumn: 'span 2' }}
-      />
     </>
   );
 }
+
+// Re-export so server pages can use the type
+export type { ExchangeRow };

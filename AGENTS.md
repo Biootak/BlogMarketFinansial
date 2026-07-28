@@ -127,14 +127,21 @@
 
 ### 2. Creating code
 
-> 🔴 **CUSTOM-FIRST, NATIVE-NEVER (P0 rule — اجباری برای همه المان‌ها)**
+> 🔴 **CUSTOM-FIRST, NATIVE-NEVER (P0 rule — اجباری برای همه المان‌ها — site و dashboard)**
 >
-> **هر المان UI** — چه form control باشد، چه display، چه layout — قبل از ساختن باید این سلسله مراتب را طی کند:
+> **هر المان UI** — چه form control باشد، چه display، چه layout، چه card، چه section — قبل از ساختن باید این سلسله مراتب را طی کند. این قانون هم برای **داشبورد** و هم برای **سایت** (صفحات عادی کاربر) اجباری است.
 >
 > **مرحله ۱ — Repo Scan (اجباری، قبل از هر کد):**
+>
+> **برای داشبورد:**
 > 1. grep `src/components/Dashboard/primitives/` — canonical dashboard primitives
 > 2. grep `src/components/ui/` — shadcn/Radix shared components
-> 3. grep `src/components/Dashboard/` و `src/components/` — custom/domain components
+> 3. grep `src/components/Dashboard/` — dashboard domain components
+>
+> **برای سایت (صفحات کاربر):**
+> 1. grep `src/components/` برای site-level custom components (Card*, Section*, Widget*, Nc*, ...)
+> 2. grep `src/components/ui/` — shadcn/Radix shared base
+> 3. grep `src/components/fintech/`, `src/components/Exchange/`, `src/components/MarketRates/` — domain components
 >
 > **مرحله ۲ — Decision Ladder:**
 > | یافته | اقدام |
@@ -142,14 +149,27 @@
 > | موجود با همان purpose | **reuse** — بدون تغییر |
 > | موجود با structure مشابه | **extend** (variant prop) — نه fork |
 > | چند primitive مرتبط | **compose** — نه از صفر |
-> | هیچ‌کدام وجود ندارد | **→ ساخت shared** در `src/components/Dashboard/primitives/` یا `src/components/ui/` — **نه page-specific inline** |
+> | هیچ‌کدام وجود ندارد — داشبورد | **→ ساخت shared** در `src/components/Dashboard/primitives/` + export به `index.ts` |
+> | هیچ‌کدام وجود ندارد — سایت | **→ ساخت shared** در `src/components/[نام-منطقی]/` یا `src/components/ui/` + **نه inline** |
 >
-> **قانون طلایی:** اگر یک component در بیش از یک page یا feature استفاده می‌شود (یا احتمالش هست) → **باید shared باشد**.
+> **قانون طلایی:** اگر یک component در بیش از یک page یا feature استفاده می‌شود (یا احتمالش هست) → **باید shared باشد**. inline page-specific فقط برای orchestration مجاز است.
 >
-> موجودی canonical:
-> - **Primitives:** `PageHeader`, `StatCard`, `StatGrid`, `DataTable`, `EmptyState`, `DashboardEmpty`, `Section`, `StatusBadge`, `TableToolbar`, `FormField`, `PanelDrawer`, `ConfirmDialog`, `CountUp`, `Skeleton`, `AmbientBackground`, `GeometricAccent`, `NoiseTexture`, `Spotlight`, `MagneticButton`, `Breadcrumb`
-> - **UI:** `Button`, `Input`, `Dialog`, `Card`, `Skeleton`, `Badge`, `Tabs`, `Select`, `DropdownMenu`, `Popover`, `Sheet`, `Tooltip`, `Switch`, `Toggle`, `Toolbar`, `Table`, `Progress`, `ScrollArea`, `Separator`, `Avatar`, `Alert`, `Textarea`, `Checkbox`
-> - **Custom:** `PersianDatePicker`, `PersianDateTimePicker`, `DatePickerWithRange`, `CurrencySelect`, `CustomSwitch`, `icon.tsx`, `typography.tsx`, `stat-card.tsx`, `form-field.tsx`
+> **موجودی canonical داشبورد:**
+> - **Primitives:** `PageHeader`, `StatCard`, `StatGrid`, `DataTable`, `EmptyState`, `DashboardEmpty`, `Section`, `StatusBadge`, `TableToolbar`, `SearchInput` *(فیلد جستجوی controlled، RTL-safe — برای همه toolbar/filterbar)*, `FormField`, `PanelDrawer`, `ConfirmDialog`, `CountUp`, `Skeleton`, `AmbientBackground`, `GeometricAccent`, `NoiseTexture`, `Spotlight`, `MagneticButton`, `Breadcrumb`
+> - **UI (shadcn):** `Button`, `Input`, `Dialog`, `Card`, `Skeleton`, `Badge`, `Tabs`, `Select`, `DropdownMenu`, `Popover`, `Sheet`, `Tooltip`, `Switch`, `Toggle`, `Toolbar`, `Table`, `Progress`, `ScrollArea`, `Separator`, `Avatar`, `Alert`, `Textarea`, `Checkbox`
+> - **Custom controls:** `PersianDatePicker`, `PersianDateTimePicker`, `PersianDateRangePicker` *(range شمسی — canonical برای بازه تاریخ)*, `CurrencySelect`, `CustomSwitch`, `icon.tsx`, `typography.tsx`, `form-field.tsx`
+> - **⚠️ Deprecated:** `DatePickerWithRange` (`date-range-picker.tsx`) — از `PersianDateRangePicker` استفاده کنید
+>
+> **موجودی canonical سایت (site-level):**
+> - **Cards:** `Card3Small`, `Card6`, `Card9`, `Card10`, `Card11`, `CardAuthor`, `CardAuthor2`, `CardAuthorBox`, `CardAuthorBox2`, `CardCategory1`, `CardCategory2`, `CryptoTickerCard`
+> - **Sections/Layout:** `SectionHeader`, `SectionHero`, `BackgroundSection`, `BgGlassmorphism`, `SectionSubscribe2`, `SectionGridCategoryBox`, `SectionSliderNewCategories`, `SectionSliderNewAthors`
+> - **Widgets:** `WidgetPosts`, `WidgetAuthors`, `WidgetCategories`, `WidgetTags`, `WidgetAds`, `WidgetHeading1`
+> - **Media/Image:** `NcImage`, `PostFeaturedMedia`, `SafeImage`, `NcBookmark`, `PostTypeFeaturedIcon`
+> - **Navigation/Meta:** `PostCardMeta`, `PostMeta2`, `PostCardLikeAndComment`, `CategoryBadgeList`, `Tag`, `Pagination`, `Nav`, `Navigation`, `MenuBar`, `NavItem`
+> - **Auth/User:** `Avatar`, `VerifyIcon`, `FollowButton`, `SocialsList`, `AccountActionDropdown`
+> - **Exchange/Fintech:** `CurrencyIcon`, `GenericCryptoIcon`, `CryptoTickerSlider`, `MarketRates/*`, `Exchange/*`, `fintech/*`, `money-transfer/*`, `online-payment/*`
+> - **Feedback/State:** `Empty`, `ErrorComponent`, `ErrorState/*`, `SkeletonLoader`, `Skeletons/*`, `LoadingMore`, `ZodErrors`
+> - **Utils/Misc:** `NcModal`, `NcDropDown`, `ShareDropdown`, `SideDropdown`, `Motion`, `MySlider`, `FormattedDate`, `SubmitButton`, `SearchBar`, `Ticker`, `TickerShell`
 
 > 🚨 **NO NATIVE FORM CONTROLS (P0 rule — learned 2026-07-28)**
 > قبل از هر `<input type="date|time|datetime-local">`, `<select>`, `<input type="checkbox|radio">`, `<input type="range">`:
@@ -161,18 +181,21 @@
 > این قانون به این دلیل P0 است: native dropdown/datepicker همیشه با design system (tokens, fonts, RTL, motion) ناسازگار می‌شود و design drift ایجاد می‌کند.
 
 Component Decision Protocol — همیشه به ترتیب:
-1. Search repo for existing component with the same purpose.
-2. Search for similar structure/behavior.
+1. Search repo for existing component (site-level AND dashboard) with the same purpose.
+2. Search for similar structure/behavior — اگر اسم فرق دارد اهمیتی ندارد؛ purpose مهم است.
 3. Prefer: **reuse** → **extend** → **compose** → new **shared** → page-**specific** (فقط اگر واقعاً page-specific باشد).
 4. Do NOT create new just because an existing one has different name.
 5. **Page-specific `_components/` فقط برای orchestration/layout این page مجاز است** — هر primitive/display/control قابل‌اشتراک باید به `shared/` یا `primitives/` منتقل شود.
+6. **محل ساخت shared component جدید:** داشبورد → `primitives/` + `index.ts`؛ سایت → `src/components/[نام-منطقی]/index.tsx` یا `src/components/ui/`.
 
 Rules for new code:
 - Max ~400 lines; one concern per file; business logic → `lib/` or hook, never inline.
 - No `any`, `@ts-ignore`, TODO/placeholder/FIXME. Type everything.
 - No stubs: every action must do something real.
 - Co-located `*.module.css`.
-- **هر component جدید shared** → باید در `primitives/index.ts` یا `ui/` export شود تا قابل discover باشد.
+- **هر component جدید shared (داشبورد)** → باید در `primitives/index.ts` export شود.
+- **هر component جدید shared (سایت)** → باید یک `index.tsx` با named export داشته باشد، داخل `src/components/[نام]/`.
+- هرگز component سایت را در `Dashboard/primitives/` نگذار و بالعکس — دو namespace جداگانه‌اند.
 
 ### 3. UI appearance (load `DESIGN.md` + `COMPONENTS.md` first) [فقط UI]
 - **Canonical:** `src/components/ui/*` (shadcn) + `src/components/Dashboard/primitives/*`.
@@ -298,7 +321,7 @@ Rules for new code:
 | 2026-07 | تعریف صریح Trivial/Standard/Full؛ رفع تضاد scope/fix؛ periodic cleanup rule؛ mid-task state tracking |
 | 2026-07 | **Vision-First gate:** UQ1+UQ2+UQ3 پیش از grep اجباری شدند؛ §Craft Bar دو نقطه (قبل از کد + قبل از Show)؛ بلاک A در UIDQG مارک ⚡ شد |
 | 2026-07 | **UI VISION GATE جداگانه:** جدول مستقل UI VISION GATE قبل از PRE-CODE GATE اضافه شد؛ ردیف‌های UI Check و Comp Map از PRE-CODE GATE حذف و به جدول جدید منتقل شدند |
-| 2026-07 | **CUSTOM-FIRST, NATIVE-NEVER (P0):** سلسله مراتب 3-مرحله‌ای Repo Scan + Decision Ladder اضافه شد؛ موجودی کامل primitives/ui/custom ثبت شد؛ قانون page-specific فقط برای orchestration؛ export اجباری به index.ts |
+| 2026-07 | **CUSTOM-FIRST, NATIVE-NEVER (P0):** سلسله مراتب Repo Scan + Decision Ladder برای هر المان؛ موجودی کامل primitives/ui/custom + site-level ثبت شد؛ قانون جدا برای داشبورد vs سایت؛ export اجباری؛ namespace جداگانه site/dashboard |
 
 ---
 

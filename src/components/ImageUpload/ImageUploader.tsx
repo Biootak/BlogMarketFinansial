@@ -18,7 +18,15 @@ import {
 // Re-export UploadFolder so callers only need to import from this module.
 // Keeps the dependency graph clean: components → uploader (not components →
 // server-action for a type).
-export type UploadFolder = 'posts' | 'avatars' | 'categories' | 'tags' | 'ads' | 'general';
+export type UploadFolder =
+  | 'posts'
+  | 'avatars'
+  | 'categories'
+  | 'tags'
+  | 'ads'
+  | 'general'
+  | 'logos'
+  | 'exchange';
 
 export interface UploadedFile {
   url: string;

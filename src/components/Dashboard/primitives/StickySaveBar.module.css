@@ -1,0 +1,164 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   StickySaveBar — footer pill bar with status feedback.
+   Pattern: Linear + Vercel — appears on dirty, shows saving/saved/error.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.bar {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 1.25rem;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  animation: ssb-slide-up 280ms var(--at-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+.bar.hiding {
+  animation: ssb-slide-down 240ms var(--at-ease) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bar,
+  .bar.hiding {
+    animation: none;
+  }
+}
+
+@keyframes ssb-slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes ssb-slide-down {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(20px); opacity: 0; }
+}
+
+.inner {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  min-inline-size: 320px;
+  max-inline-size: calc(100vw - 2rem);
+  padding: 10px 14px;
+  border-radius: 9999px;
+  background: var(--at-fg);
+  color: var(--at-fg-inv);
+  box-shadow:
+    0 1px 0 oklch(100% 0 0 / 0.15) inset,
+    0 10px 30px -8px oklch(0% 0 0 / 0.4);
+  border: 1px solid oklch(100% 0 0 / 0.06);
+}
+
+@media (max-width: 540px) {
+  .inner {
+    min-inline-size: 0;
+    inline-size: calc(100vw - 2rem);
+    border-radius: 18px;
+  }
+}
+
+.text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--ds-text-sm);
+  font-weight: 500;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+.text strong {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.dot {
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background: var(--at-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 30%, transparent);
+  animation: ssb-pulse 1.6s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes ssb-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dot { animation: none; }
+}
+
+.spin {
+  animation: ssb-spin 0.9s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes ssb-spin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spin { animation: none; }
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btnGhost {
+  display: inline-flex;
+  align-items: center;
+  block-size: 30px;
+  padding: 0 12px;
+  border-radius: 9999px;
+  border: 1px solid oklch(100% 0 0 / 0.15);
+  background: transparent;
+  color: var(--at-fg-inv);
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 180ms ease;
+}
+.btnGhost:hover {
+  background: oklch(100% 0 0 / 0.08);
+}
+
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  block-size: 30px;
+  padding: 0 14px;
+  border-radius: 9999px;
+  border: none;
+  background: var(--at-accent);
+  color: var(--at-fg-inv);
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: filter 180ms ease;
+}
+.btnPrimary:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+.btnPrimary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ── Status-tinted variants (subtle border accent) ──────────────────── */
+.bar_saving .btnPrimary {
+  background: oklch(100% 0 0 / 0.18);
+}
+.bar_saved .inner {
+  background: var(--at-accent);
+}
+.bar_saved .btnPrimary {
+  display: none;
+}
+.bar_error .inner {
+  background: var(--at-danger);
+}

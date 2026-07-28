@@ -30,39 +30,19 @@ export default async function ExchangeProfilePage() {
   const canEdit = staffRole === 'OWNER' || staffRole === 'MANAGER';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-5)' }}>
       <PageHeader
-        title="پروفایل صرافی"
-        description="اطلاعاتی که مشتریان در صفحه عمومی صرافی شما می‌بینند"
+        title="پروفایل عمومی"
+        description="هویت بصری و اطلاعاتی که مشتریان در صفحهٔ عمومی شما می‌بینند"
         breadcrumb={[
           { label: 'پنل صرافی', href: '/exchange/dashboard' },
           { label: 'پروفایل' },
         ]}
         icon="building"
-        accent="indigo"
-        actions={
-          <a
-            href={`/exchanges/${exchange.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '0 14px',
-              height: '36px',
-              borderRadius: '8px',
-              border: '1px solid var(--at-line)',
-              background: 'var(--at-surface)',
-              color: 'var(--at-fg)',
-              fontSize: 'var(--ds-text-sm)',
-              textDecoration: 'none',
-            }}
-          >
-            مشاهده صفحه عمومی
-          </a>
-        }
+        accent="emerald"
+        eyebrow="هویت عمومی"
       />
+
       <ProfileWorkspace exchange={exchange} canEdit={canEdit} />
     </div>
   );

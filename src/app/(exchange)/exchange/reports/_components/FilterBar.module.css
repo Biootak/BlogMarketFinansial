@@ -1,5 +1,6 @@
-/* FilterBar.module.css — toolbar با search + CurrencySelect + DatePickerWithRange
- * همهٔ inputs بصری از shared components می‌آیند؛ این CSS فقط layout است. */
+/* FilterBar.module.css — layout فیلترهای جدول transactions.
+ * همهٔ inputs بصری از shared components می‌آیند (SearchInput, CurrencySelect, PersianDateRangePicker).
+ * این فایل فقط layout و گروه‌بندی است. */
 
 .bar {
   display: flex;
@@ -19,45 +20,10 @@
   }
 }
 
-/* search input — تنها چیزی که خودمان می‌سازیم */
+/* SearchInput wrap */
 .searchWrap {
-  position: relative;
   flex: 1 1 220px;
   min-width: 0;
-}
-
-.searchIcon {
-  position: absolute;
-  inset-block-start: 50%;
-  inset-inline-start: 10px;
-  transform: translateY(-50%);
-  color: var(--at-fg-subtle);
-  display: inline-flex;
-  align-items: center;
-  pointer-events: none;
-}
-
-.search {
-  width: 100%;
-  height: 32px;
-  padding: 0 10px 0 30px;
-  font-family: inherit;
-  font-size: 12px;
-  color: var(--at-fg);
-  background: var(--at-bg-elevated);
-  border: 1px solid var(--at-line);
-  border-radius: var(--at-radius);
-  outline: none;
-  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
-}
-
-.search::placeholder {
-  color: var(--at-fg-subtle);
-}
-
-.search:focus {
-  border-color: var(--at-accent);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 18%, transparent);
 }
 
 /* CurrencySelect wrap — height را align می‌کنیم با سایر inputs */
@@ -115,7 +81,7 @@
   color: var(--at-accent-on);
 }
 
-/* DatePickerWithRange wrap — هم‌رنگ با سایر inputs */
+/* PersianDateRangePicker wrap */
 .dateGroup {
   display: flex;
   align-items: center;

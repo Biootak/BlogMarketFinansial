@@ -25,6 +25,8 @@ const ALLOWED_FOLDERS = [
   'ads',
   'general',
   'kyc',
+  'logos',
+  'exchange',
 ] as const;
 
 // soft max-width for the canonical rendition. We do NOT generate multiple
@@ -322,7 +324,19 @@ export async function POST(request: NextRequest) {
     // Storage-abuse hardening: a plain USER may only manage their own avatar.
     // Post/category/tag/general/ads writes require at least AUTHOR. Without
     // this, any authenticated reader could fill S3 with arbitrary files.
-    if (folder !== 'avatars' && role !== 'AUTHOR' && role !== 'ADMIN' && role !== 'OWNER') {
+    //
+    // 'logos' و 'exchange' استثنا هستند: صراف‌ها (OWNER/MANAGER صرافی) باید بتوانند
+    // لوگو و مدارک صرافی را آپلود کنند. binding به Exchange.logoUrl در خود
+    // server action (updateExchangeSelf) بررسی می‌شود — upload API فقط فایل را
+    // ذخیره می‌کند. بنابراین فقط نیاز به authenticated user داریم (نه author-only).
+    const isExchangeFolder = folder === 'logos' || folder === 'exchange';
+    if (
+      !isExchangeFolder &&
+      folder !== 'avatars' &&
+      role !== 'AUTHOR' &&
+      role !== 'ADMIN' &&
+      role !== 'OWNER'
+    ) {
       return NextResponse.json(
         {
           success: false,

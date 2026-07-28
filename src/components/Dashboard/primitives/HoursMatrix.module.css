@@ -1,0 +1,232 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   HoursMatrix — weekly operating hours grid.
+   Pattern: trading-desk terminal — 7 rows × 3 cols + summary header.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+/* ── Head (title + meta strip) ──────────────────────────────────────── */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  flex-wrap: wrap;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-radius: var(--at-radius);
+  background: var(--at-bg-elevated);
+  border: 1px solid var(--at-line);
+}
+
+.headTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  color: var(--at-fg);
+}
+.headTitle svg {
+  color: var(--at-accent);
+}
+
+.headMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.metaCell {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  align-items: flex-end;
+}
+.metaLabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--at-fg-subtle);
+  line-height: 1;
+}
+.metaValue {
+  font-size: var(--ds-text-base);
+  font-weight: 800;
+  color: var(--at-fg);
+  font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+}
+.metaDim {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--at-fg-subtle);
+}
+
+.metaSep {
+  inline-size: 1px;
+  block-size: 22px;
+  background: var(--at-line);
+}
+
+/* ── Grid ───────────────────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(80px, 1fr) minmax(110px, 1.2fr) minmax(110px, 1.2fr) auto;
+  gap: 0;
+  border-radius: var(--at-radius);
+  border: 1px solid var(--at-line);
+  background: var(--at-surface);
+  overflow: hidden;
+}
+
+@media (max-width: 540px) {
+  .grid {
+    grid-template-columns: minmax(70px, 1fr) 1fr 1fr;
+  }
+  .colHead:last-of-type,
+  .statusCell {
+    grid-column: 1 / -1;
+  }
+}
+
+.colHead {
+  padding: 10px 12px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--at-fg-subtle);
+  background: var(--at-bg-elevated);
+  border-block-end: 1px solid var(--at-line);
+}
+
+/* ── Day cell ───────────────────────────────────────────────────────── */
+.dayCell {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  justify-content: center;
+  padding: 12px;
+  background: var(--at-surface);
+  border-block-end: 1px solid var(--at-line);
+}
+.dayCell:last-child,
+.dayCell:nth-last-child(-n + 4) {
+  /* Keep borders clean — only the last row in the grid bottom border */
+}
+
+.dayCellHi {
+  background: color-mix(in oklch, var(--at-warning) 5%, var(--at-surface));
+}
+
+.dayLabel {
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  color: var(--at-fg);
+  line-height: 1.2;
+}
+.daySub {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--at-fg-subtle);
+  font-family: var(--ds-font-mono, ui-monospace, monospace);
+}
+
+/* ── Time input ─────────────────────────────────────────────────────── */
+.inputCell {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-inline-start: 1px solid var(--at-line);
+  border-block-end: 1px solid var(--at-line);
+}
+
+.timeInput {
+  inline-size: 100%;
+  padding: 7px 10px;
+  font-size: var(--ds-text-sm);
+  font-family: var(--ds-font-mono, ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+  color: var(--at-fg);
+  background: var(--at-bg-deep);
+  border: 1px solid var(--at-line);
+  border-radius: 6px;
+  transition: border-color 140ms ease, background 140ms ease;
+  outline: none;
+}
+.timeInput:hover:not(:disabled) {
+  border-color: var(--at-line-strong);
+}
+.timeInput:focus {
+  border-color: var(--at-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 18%, transparent);
+}
+.timeInput:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: transparent;
+}
+
+/* ── Status cell (open / closed toggle) ─────────────────────────────── */
+.statusCell {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-inline-start: 1px solid var(--at-line);
+  border-block-end: 1px solid var(--at-line);
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  block-size: 28px;
+  padding: 0 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 180ms ease;
+  white-space: nowrap;
+}
+.toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.toggleOn {
+  background: color-mix(in oklch, var(--at-accent) 14%, transparent);
+  color: var(--at-accent);
+  border-color: color-mix(in oklch, var(--at-accent) 30%, transparent);
+}
+.toggleOn:hover:not(:disabled) {
+  background: color-mix(in oklch, var(--at-accent) 22%, transparent);
+}
+
+.toggleOff {
+  background: var(--at-bg-elevated);
+  color: var(--at-fg-muted);
+  border-color: var(--at-line);
+}
+.toggleOff:hover:not(:disabled) {
+  background: var(--at-surface-hover);
+}
+
+.toggleDot {
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 2px color-mix(in oklch, currentColor 25%, transparent);
+}

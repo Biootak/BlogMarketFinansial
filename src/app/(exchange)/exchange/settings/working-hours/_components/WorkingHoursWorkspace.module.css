@@ -1,0 +1,102 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   /exchange/settings/working-hours/_components/WorkingHoursWorkspace.module.css
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5);
+}
+
+/* ── Presets row ───────────────────────────────────────────────────── */
+.presets {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding-block-start: 4px;
+  border-block-start: 1px dashed var(--at-line);
+  margin-block-start: var(--ds-space-2);
+  padding-block-start: var(--ds-space-3);
+}
+
+.presetsLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--at-fg-subtle);
+  margin-inline-end: 4px;
+}
+.presetsLabel svg {
+  color: var(--at-gold);
+}
+
+.presetBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--at-fg-muted);
+  background: var(--at-bg-elevated);
+  border: 1px solid var(--at-line);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 160ms var(--at-ease);
+}
+.presetBtn:hover {
+  background: color-mix(in oklch, var(--at-gold) 8%, var(--at-surface));
+  border-color: color-mix(in oklch, var(--at-gold) 35%, var(--at-line));
+  color: var(--at-gold);
+}
+
+/* ── Textarea ──────────────────────────────────────────────────────── */
+.textarea {
+  inline-size: 100%;
+  padding: 10px 12px;
+  font-size: var(--ds-text-sm);
+  font-family: inherit;
+  color: var(--at-fg);
+  background: var(--at-bg-deep);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-sm);
+  outline: none;
+  resize: vertical;
+  min-block-size: 80px;
+  line-height: 1.6;
+  transition: all 160ms var(--at-ease);
+}
+.textarea:focus {
+  border-color: var(--at-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 18%, transparent);
+}
+.textarea:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ── Info banner ───────────────────────────────────────────────────── */
+.infoBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--at-radius);
+  background: color-mix(in oklch, var(--at-info) 6%, var(--at-surface));
+  border: 1px solid color-mix(in oklch, var(--at-info) 18%, var(--at-line));
+  font-size: var(--ds-text-xs);
+  color: var(--at-fg);
+  line-height: 1.6;
+}
+.infoBanner svg {
+  color: var(--at-info);
+  flex-shrink: 0;
+  margin-block-start: 2px;
+}
+.infoBanner strong {
+  font-weight: 700;
+  color: var(--at-fg);
+}

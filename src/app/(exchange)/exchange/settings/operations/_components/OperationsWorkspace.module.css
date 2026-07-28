@@ -1,0 +1,484 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   /exchange/settings/operations/_components/OperationsWorkspace.module.css
+   P2026 — operations settings: KYC, limits, fees, currencies
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5);
+}
+
+/* ── Grid 2-col ─────────────────────────────────────────────────────── */
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-4);
+}
+@media (max-width: 720px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Inputs ─────────────────────────────────────────────────────────── */
+.input {
+  inline-size: 100%;
+  block-size: 38px;
+  padding: 0 12px;
+  font-size: var(--ds-text-sm);
+  font-family: inherit;
+  color: var(--at-fg);
+  background: var(--at-bg-deep);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-sm);
+  outline: none;
+  transition:
+    border-color 160ms var(--at-ease),
+    box-shadow 160ms var(--at-ease);
+}
+.input:hover:not(:disabled) {
+  border-color: var(--at-line-strong);
+}
+.input:focus {
+  border-color: var(--at-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 18%, transparent);
+}
+.input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.inputLtr {
+  direction: ltr;
+  text-align: start;
+}
+.inputReadonly {
+  background: var(--at-bg);
+  color: var(--at-fg-muted);
+  font-family: var(--ds-font-mono, ui-monospace, monospace);
+  font-size: 12px;
+}
+
+.inputPadUnit {
+  padding-inline-end: 44px;
+}
+
+/* ── Big toggle (KYC, comparison) ─────────────────────────────────── */
+.bigToggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  inline-size: 100%;
+  padding: 10px 14px;
+  background: var(--at-bg-deep);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: start;
+  transition: all 160ms var(--at-ease);
+}
+.bigToggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.bigToggleDot {
+  inline-size: 10px;
+  block-size: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: all 160ms var(--at-ease);
+}
+.bigToggleLabel {
+  font-size: var(--ds-text-sm);
+  font-weight: 500;
+  color: var(--at-fg);
+  line-height: 1.4;
+}
+
+.bigToggleOn {
+  background: color-mix(in oklch, var(--at-accent) 8%, var(--at-bg-deep));
+  border-color: color-mix(in oklch, var(--at-accent) 35%, var(--at-line));
+}
+.bigToggleOn .bigToggleDot {
+  background: var(--at-accent);
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--at-accent) 25%, transparent);
+}
+
+.bigToggleOff {
+  background: var(--at-bg-deep);
+}
+.bigToggleOff .bigToggleDot {
+  background: var(--at-fg-faint);
+}
+
+/* ── Small toggle (comparison) ────────────────────────────────────── */
+.smallToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  inline-size: 100%;
+  block-size: 32px;
+  padding: 0 6px 0 4px;
+  background: var(--at-bg-deep);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 160ms var(--at-ease);
+}
+.smallToggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.smallToggleThumb {
+  position: relative;
+  inline-size: 30px;
+  block-size: 18px;
+  border-radius: 9999px;
+  background: var(--at-fg-faint);
+  transition: all 200ms var(--at-ease);
+  flex-shrink: 0;
+}
+.smallToggleThumb::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 2px;
+  inset-inline-start: 2px;
+  inline-size: 14px;
+  block-size: 14px;
+  border-radius: 50%;
+  background: var(--at-fg-inv);
+  transition: transform 200ms var(--at-ease);
+}
+
+.smallToggleOn .smallToggleThumb {
+  background: var(--at-accent);
+}
+.smallToggleOn .smallToggleThumb::after {
+  transform: translateX(12px);
+}
+
+.smallToggleLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--at-fg-muted);
+}
+
+/* ── Limit hero (big number) ──────────────────────────────────────── */
+.limitHero {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: var(--ds-space-4);
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--at-gold) 6%, var(--at-surface)) 0%,
+    var(--at-surface) 100%
+  );
+  border: 1px solid color-mix(in oklch, var(--at-gold) 18%, var(--at-line));
+  border-radius: var(--at-radius);
+}
+
+.limitDisplay {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.limitAmount {
+  font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.2rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--at-fg);
+  font-variant-numeric: tabular-nums;
+}
+.limitUnit {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--at-fg-muted);
+}
+
+.limitProgress {
+  inline-size: 100%;
+  block-size: 4px;
+  border-radius: 2px;
+  background: var(--at-bg-elevated);
+  overflow: hidden;
+}
+.limitProgressBar {
+  block-size: 100%;
+  background: linear-gradient(90deg, var(--at-gold) 0%, var(--at-accent) 100%);
+  border-radius: inherit;
+  transition: width 240ms var(--at-ease);
+}
+
+/* ── Slider ────────────────────────────────────────────────────────── */
+.slider {
+  inline-size: 100%;
+  block-size: 38px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+.slider:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.slider::-webkit-slider-runnable-track {
+  block-size: 6px;
+  border-radius: 3px;
+  background: var(--at-bg-elevated);
+}
+.slider::-moz-range-track {
+  block-size: 6px;
+  border-radius: 3px;
+  background: var(--at-bg-elevated);
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  inline-size: 18px;
+  block-size: 18px;
+  border-radius: 50%;
+  background: var(--at-accent);
+  border: 2px solid var(--at-surface);
+  margin-block-start: -6px;
+  box-shadow: 0 2px 6px oklch(0% 0 0 / 0.25);
+  cursor: grab;
+  transition: transform 160ms var(--at-ease);
+}
+.slider::-moz-range-thumb {
+  inline-size: 18px;
+  block-size: 18px;
+  border-radius: 50%;
+  background: var(--at-accent);
+  border: 2px solid var(--at-surface);
+  box-shadow: 0 2px 6px oklch(0% 0 0 / 0.25);
+  cursor: grab;
+}
+.slider::-webkit-slider-thumb:hover {
+  transform: scale(1.12);
+}
+.slider:focus {
+  outline: none;
+}
+.slider:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--at-accent) 25%, transparent);
+}
+
+/* ── Preset chips ─────────────────────────────────────────────────── */
+.presetRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding-block-start: 4px;
+}
+.presetLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--at-fg-subtle);
+  margin-inline-end: 4px;
+}
+.presetChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--at-fg-muted);
+  background: var(--at-bg-elevated);
+  border: 1px solid var(--at-line);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 160ms var(--at-ease);
+}
+.presetChip:hover:not(:disabled) {
+  background: var(--at-surface-hover);
+  color: var(--at-fg);
+}
+.presetChipActive {
+  background: color-mix(in oklch, var(--at-gold) 14%, transparent);
+  color: var(--at-gold);
+  border-color: color-mix(in oklch, var(--at-gold) 32%, transparent);
+}
+.presetChip:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* ── Currencies box ────────────────────────────────────────────────── */
+.currenciesBox {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: var(--ds-space-3);
+  background: var(--at-bg-elevated);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius);
+}
+
+.currenciesHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block-end: 4px;
+  border-block-end: 1px solid var(--at-line);
+}
+
+.currenciesTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--at-fg);
+}
+.currenciesTitle svg {
+  color: var(--at-violet);
+}
+
+.currenciesCount {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--at-fg-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--at-surface);
+  color: var(--at-fg);
+  border: 1px solid var(--at-line);
+  font-variant-numeric: tabular-nums;
+}
+.chipCode {
+  font-family: var(--ds-font-mono, ui-monospace, monospace);
+  font-weight: 700;
+}
+.chipLabel {
+  color: var(--at-fg-muted);
+  font-weight: 500;
+  font-size: 10.5px;
+}
+.chipTag {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: color-mix(in oklch, var(--at-gold) 18%, transparent);
+  color: var(--at-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.chipBase {
+  background: color-mix(in oklch, var(--at-gold) 8%, var(--at-surface));
+  border-color: color-mix(in oklch, var(--at-gold) 32%, var(--at-line));
+}
+.chipX {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 16px;
+  block-size: 16px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--at-fg-muted);
+  cursor: pointer;
+  margin-inline-start: 2px;
+  transition: all 140ms var(--at-ease);
+}
+.chipX:hover {
+  background: var(--at-danger);
+  color: var(--at-fg-inv);
+}
+
+.chipAdd {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px 4px 8px;
+  border-radius: 9999px;
+  background: var(--at-bg);
+  border: 1px dashed var(--at-line-strong);
+  color: var(--at-fg-muted);
+  transition: all 160ms var(--at-ease);
+}
+.chipAdd:focus-within {
+  border-style: solid;
+  border-color: var(--at-accent);
+  background: var(--at-surface);
+  color: var(--at-fg);
+}
+.chipAddInput {
+  inline-size: 40px;
+  border: none;
+  background: transparent;
+  font-family: var(--ds-font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  color: inherit;
+  text-transform: uppercase;
+  outline: none;
+  padding: 0;
+}
+
+/* ── Percent input ─────────────────────────────────────────────────── */
+.percentInputWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  inline-size: 100%;
+}
+.percentSign {
+  position: absolute;
+  inset-inline-end: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--at-fg-subtle);
+  pointer-events: none;
+}
+
+/* ── Preview link ──────────────────────────────────────────────────── */
+.previewLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--at-info);
+  background: color-mix(in oklch, var(--at-info) 8%, var(--at-bg-deep));
+  border: 1px solid color-mix(in oklch, var(--at-info) 25%, var(--at-line));
+  text-decoration: none;
+  transition: all 160ms var(--at-ease);
+}
+.previewLink:hover {
+  background: color-mix(in oklch, var(--at-info) 14%, var(--at-bg-deep));
+  border-color: color-mix(in oklch, var(--at-info) 45%, var(--at-line));
+}
+.previewSparkle {
+  color: var(--at-info);
+  opacity: 0.6;
+}

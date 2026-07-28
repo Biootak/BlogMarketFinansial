@@ -20,7 +20,7 @@ import { Coins, FileSpreadsheet, Layers, Percent, Receipt, Users } from 'lucide-
 import { Button } from '@/components/ui/button';
 import CurrencyConstellation from './CurrencyConstellation';
 import DailyVolumeStrip, { type DailyBucket } from './DailyVolumeStrip';
-import FilterBar from './FilterBar';
+import FilterBar, { type FilterState } from './FilterBar';
 import PnLByCurrency, { type PnLRow } from './PnLByCurrency';
 import TopCustomersRail, { type TopCustomer } from './TopCustomersRail';
 import TransactionsTable from './TransactionsTable';
@@ -51,9 +51,12 @@ const fmtCompact = (v: number): string =>
 const fmtExact = (v: number): string =>
   new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 2 }).format(v);
 
+const EMPTY_FILTER: FilterState = { search: '', currency: '', type: '', range: null };
+
 export default function ReportsCockpit({ exchangeId, report, txRows, txTotal }: Props) {
   const [exporting, setExporting] = useState(false);
   const [, startTransition] = useTransition();
+  const [filter, setFilter] = useState<FilterState>(EMPTY_FILTER);
 
   // ── KPI derived values ─────────────────────────────────────────
   const avgDeal = report.totalDeals > 0 ? report.totalVolume / report.totalDeals : 0;
@@ -68,6 +71,43 @@ export default function ReportsCockpit({ exchangeId, report, txRows, txTotal }: 
 
   const topCurrency = report.pnlByCurrency[0];
   const primaryCurrency = topCurrency?.currency ?? 'AFN';
+
+  // ── فیلتر client-side روی txRows — بدون هیچ navigation ──────────
+  const filteredRows = useMemo(() => {
+    let rows = txRows;
+
+    if (filter.search.trim()) {
+      const q = filter.search.trim().toLowerCase();
+      rows = rows.filter(
+        (r) =>
+          r.customer?.fullName?.toLowerCase().includes(q) ||
+          r.counterparty?.toLowerCase().includes(q) ||
+          r.currency?.toLowerCase().includes(q) ||
+          r.id.toLowerCase().includes(q),
+      );
+    }
+
+    if (filter.currency) {
+      rows = rows.filter(
+        (r) => r.currency === filter.currency || r.destCurrency === filter.currency,
+      );
+    }
+
+    if (filter.type) {
+      rows = rows.filter((r) => r.kind === filter.type);
+    }
+
+    if (filter.range?.from && filter.range?.to) {
+      const from = filter.range.from.getTime();
+      const to = filter.range.to.getTime() + 86_400_000; // تا پایان روز انتهایی
+      rows = rows.filter((r) => {
+        const t = new Date(r.createdAt).getTime();
+        return t >= from && t <= to;
+      });
+    }
+
+    return rows;
+  }, [txRows, filter]);
 
   const handleExport = () => {
     startTransition(async () => {
@@ -202,9 +242,9 @@ export default function ReportsCockpit({ exchangeId, report, txRows, txTotal }: 
           </div>
         </header>
 
-        <FilterBar />
+        <FilterBar value={filter} onChange={setFilter} />
 
-        <TransactionsTable rows={txRows} total={txTotal} />
+        <TransactionsTable rows={filteredRows} total={filteredRows.length} />
 
         {/* summary footer */}
         <footer className={s.txFooter}>

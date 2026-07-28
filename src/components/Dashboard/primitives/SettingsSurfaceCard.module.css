@@ -1,0 +1,161 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   SettingsSurfaceCard — premium surface for settings sections.
+   Pattern: Vercel panel + Stripe card — hairline + soft shadow + icon chip.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-5);
+  background: var(--at-surface);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-lg);
+  box-shadow: var(--at-shadow);
+  transition: border-color var(--at-duration) var(--at-ease);
+}
+
+.card:hover {
+  border-color: var(--at-line-strong);
+}
+
+/* ── Header ─────────────────────────────────────────────────────────── */
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  flex-wrap: wrap;
+}
+
+.headLeft {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-3);
+  min-inline-size: 0;
+  flex: 1 1 auto;
+}
+
+.iconChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: var(--at-radius-sm);
+  flex-shrink: 0;
+  border: 1px solid transparent;
+}
+
+.tone_accent {
+  background: color-mix(in oklch, var(--at-accent) 14%, transparent);
+  color: var(--at-accent);
+  border-color: color-mix(in oklch, var(--at-accent) 28%, transparent);
+}
+.tone_info {
+  background: color-mix(in oklch, var(--at-info) 14%, transparent);
+  color: var(--at-info);
+  border-color: color-mix(in oklch, var(--at-info) 28%, transparent);
+}
+.tone_warn {
+  background: color-mix(in oklch, var(--at-warning) 14%, transparent);
+  color: var(--at-warning);
+  border-color: color-mix(in oklch, var(--at-warning) 28%, transparent);
+}
+.tone_violet {
+  background: color-mix(in oklch, var(--at-violet) 14%, transparent);
+  color: var(--at-violet);
+  border-color: color-mix(in oklch, var(--at-violet) 28%, transparent);
+}
+.tone_gold {
+  background: color-mix(in oklch, var(--at-gold) 14%, transparent);
+  color: var(--at-gold);
+  border-color: color-mix(in oklch, var(--at-gold) 28%, transparent);
+}
+.tone_danger {
+  background: color-mix(in oklch, var(--at-danger) 14%, transparent);
+  color: var(--at-danger);
+  border-color: color-mix(in oklch, var(--at-danger) 28%, transparent);
+}
+
+.headText {
+  min-inline-size: 0;
+  flex: 1 1 auto;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--ds-text-base);
+  font-weight: 700;
+  color: var(--at-fg);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.desc {
+  margin: 2px 0 0;
+  font-size: var(--ds-text-xs);
+  color: var(--at-fg-muted);
+  line-height: 1.5;
+}
+
+.headRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+}
+.badge_neutral {
+  background: var(--at-bg-elevated);
+  color: var(--at-fg-muted);
+  border-color: var(--at-line);
+}
+.badge_warn {
+  background: color-mix(in oklch, var(--at-warning) 14%, transparent);
+  color: var(--at-warning);
+  border-color: color-mix(in oklch, var(--at-warning) 28%, transparent);
+}
+.badge_success {
+  background: color-mix(in oklch, var(--at-accent) 14%, transparent);
+  color: var(--at-accent);
+  border-color: color-mix(in oklch, var(--at-accent) 28%, transparent);
+}
+.badge_info {
+  background: color-mix(in oklch, var(--at-info) 14%, transparent);
+  color: var(--at-info);
+  border-color: color-mix(in oklch, var(--at-info) 28%, transparent);
+}
+
+/* ── Body ───────────────────────────────────────────────────────────── */
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+/* ── Footer ─────────────────────────────────────────────────────────── */
+.footer {
+  padding-block-start: var(--ds-space-3);
+  border-block-start: 1px solid var(--at-line);
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  flex-wrap: wrap;
+  font-size: var(--ds-text-xs);
+  color: var(--at-fg-muted);
+}
