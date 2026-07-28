@@ -140,13 +140,8 @@ export default async function WalletPage() {
             </Link>
             <Link href="/online-payment" className={s.ctaSecondary}>
               <BarChart2 size={16} strokeWidth={1.5} aria-hidden />
-              پرداخت آنلاین
-              <ArrowLeft
-                size={15}
-                strokeWidth={1.5}
-                style={{ transform: 'scaleX(-1)' }}
-                aria-hidden
-              />
+              <span>پرداخت آنلاین</span>
+              <ArrowLeft size={15} strokeWidth={1.5} aria-hidden />
             </Link>
           </div>
         </div>

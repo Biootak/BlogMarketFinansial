@@ -76,8 +76,8 @@ export function SearchEmpty({ query, hasResults = true }: SearchEmptyProps) {
               autoFocus
             />
             <button type="submit" className={s.searchButton} aria-label="ارسال جستجو">
-              جستجو
-              <ArrowRight size={14} strokeWidth={2} style={{ transform: 'scaleX(-1)' }} aria-hidden />
+              <span>جستجو</span>
+              <ArrowLeft size={14} strokeWidth={2} aria-hidden />
             </button>
           </form>
 

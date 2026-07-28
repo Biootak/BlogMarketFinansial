@@ -3,7 +3,6 @@
 import { getPlan, type PlanId } from '@/lib/subscription-plans';
 import {
   ArrowLeft,
-  ArrowRight,
   Check,
   ChevronRight,
   CreditCard,
@@ -43,13 +42,8 @@ export function PlanDetailClient({ planId }: PlanDetailClientProps) {
               پلن انتخابی شما وجود ندارد یا حذف شده است. لطفاً از صفحه پلن‌ها یک گزینه دیگر انتخاب کنید.
             </p>
             <Link href="/subscription" className={s.purchaseCta}>
-              مشاهده پلن‌ها
-              <ArrowLeft
-                size={14}
-                strokeWidth={2}
-                style={{ transform: 'scaleX(-1)' }}
-                aria-hidden
-              />
+              <span>مشاهده پلن‌ها</span>
+              <ArrowLeft size={14} strokeWidth={2} aria-hidden />
             </Link>
           </div>
         </div>
@@ -174,13 +168,8 @@ export function PlanDetailClient({ planId }: PlanDetailClientProps) {
           <Sparkles size={14} strokeWidth={1.75} style={{ color: 'var(--ds-brand-600)' }} aria-hidden />
           <span>برای مقایسه کامل پلن‌ها در یک نگاه، جدول مقایسه را ببینید.</span>
           <Link href="/subscription">
-            جدول مقایسه
-            <ArrowLeft
-              size={12}
-              strokeWidth={2}
-              style={{ transform: 'scaleX(-1)' }}
-              aria-hidden
-            />
+            <span>جدول مقایسه</span>
+            <ArrowLeft size={12} strokeWidth={2} aria-hidden />
           </Link>
         </div>
       </div>
@@ -212,7 +201,7 @@ export function PlanDetailClient({ planId }: PlanDetailClientProps) {
               <div className={s.purchaseTotal}>
                 <span className={s.purchaseTotalLabel}>قابل پرداخت</span>
                 <span className={s.purchaseTotalValue}>
-                  {toFaPrice(price / 100)} <span style={{ fontSize: 'var(--ds-text-xs)' }}>تومان</span>
+                  {toFaPrice(price)} <span style={{ fontSize: 'var(--ds-text-xs)' }}>تومان</span>
                 </span>
               </div>
             </>
@@ -233,13 +222,13 @@ export function PlanDetailClient({ planId }: PlanDetailClientProps) {
           >
             {isFree ? (
               <>
-                شروع رایگان
-                <ArrowRight size={14} strokeWidth={2} aria-hidden />
+                <span>شروع رایگان</span>
+                <ArrowLeft size={14} strokeWidth={2} aria-hidden />
               </>
             ) : (
               <>
                 <CreditCard size={15} strokeWidth={1.75} aria-hidden />
-                ادامه فرایند پرداخت
+                <span>ادامه فرایند پرداخت</span>
               </>
             )}
           </button>

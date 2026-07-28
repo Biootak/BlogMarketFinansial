@@ -1,7 +1,7 @@
 'use client';
 
 import {
-  ArrowRight,
+  ArrowLeft,
   BookOpen,
   CircleHelp,
   CreditCard,
@@ -176,8 +176,8 @@ export function HelpCenterContent() {
             aria-label="عبارت جستجو"
           />
           <button type="submit" className={s.searchSubmit} aria-label="ارسال جستجو">
-            جستجو
-            <ArrowRight size={12} strokeWidth={2} style={{ transform: 'scaleX(-1)' }} aria-hidden />
+            <span>جستجو</span>
+            <ArrowLeft size={12} strokeWidth={2} aria-hidden />
           </button>
         </form>
       </header>
@@ -248,13 +248,8 @@ export function HelpCenterContent() {
                 ))}
               </ul>
               <span className={s.cardCta}>
-                مشاهده همه
-                <ArrowRight
-                  size={12}
-                  strokeWidth={2}
-                  style={{ transform: 'scaleX(-1)' }}
-                  aria-hidden
-                />
+                <span>مشاهده همه</span>
+                <ArrowLeft size={12} strokeWidth={2} aria-hidden />
               </span>
             </Link>
           );

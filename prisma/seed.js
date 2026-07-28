@@ -2381,6 +2381,191 @@ async function seedSettlements() {
   console.log(`   ✅ ${added} تسویه`);
 }
 
+/* ─── Customers + FintechAccounts + Transactions + LedgerEntries ─
+ *  این بلوک داده‌ای می‌سازد که داشبورد صراف (exchange-dashboard.ts)
+ *  برای نمایش KPI، نمودار هفتگی، top customers و pending queue نیاز دارد.
+ * ─────────────────────────────────────────────────────────────── */
+async function seedExchangeFintech() {
+  const existingCustomers = await p.customer.count();
+  if (existingCustomers >= 10) {
+    console.log(`   ⏭️  Exchange Fintech data قبلاً ایجاد شده (${existingCustomers} مشتری)`);
+    return;
+  }
+
+  const { v4: uuid } = require('uuid');
+
+  // فقط ۴ صرافی اول ACTIVE
+  const exchanges = await p.exchange.findMany({
+    where: { status: 'ACTIVE' },
+    take: 4,
+    select: { id: true, name: true, primaryCurrency: true },
+  });
+  if (exchanges.length === 0) { console.log('   ⚠️  صرافی فعال پیدا نشد'); return; }
+
+  // اطلاعات مشتریان نمونه
+  const CUSTOMER_TEMPLATES = [
+    { fullName: 'احمد رضایی',    phone: '0912111001', city: 'تهران',    status: 'ACTIVE',   kycStatus: 'APPROVED',     kycLevel: 'LEVEL_2' },
+    { fullName: 'مریم احمدی',    phone: '0912111002', city: 'کابل',     status: 'ACTIVE',   kycStatus: 'APPROVED',     kycLevel: 'LEVEL_1' },
+    { fullName: 'علی محمدی',     phone: '0912111003', city: 'مشهد',     status: 'ACTIVE',   kycStatus: 'PENDING',      kycLevel: 'NONE' },
+    { fullName: 'فاطمه کریمی',   phone: '0912111004', city: 'هرات',     status: 'ACTIVE',   kycStatus: 'APPROVED',     kycLevel: 'LEVEL_2' },
+    { fullName: 'حسین صادقی',    phone: '0912111005', city: 'اصفهان',   status: 'FROZEN',   kycStatus: 'APPROVED',     kycLevel: 'LEVEL_1' },
+    { fullName: 'زینب موسوی',    phone: '0912111006', city: 'تهران',    status: 'ACTIVE',   kycStatus: 'APPROVED',     kycLevel: 'LEVEL_2' },
+    { fullName: 'رضا قاسمی',     phone: '0912111007', city: 'کابل',     status: 'ACTIVE',   kycStatus: 'NOT_STARTED',  kycLevel: 'NONE' },
+    { fullName: 'نگار حسینی',    phone: '0912111008', city: 'شیراز',    status: 'PROSPECT', kycStatus: 'NOT_STARTED',  kycLevel: 'NONE' },
+    { fullName: 'کامران نوری',   phone: '0912111009', city: 'تبریز',    status: 'ACTIVE',   kycStatus: 'APPROVED',     kycLevel: 'LEVEL_1' },
+    { fullName: 'سارا جعفری',    phone: '0912111010', city: 'هرات',     status: 'ACTIVE',   kycStatus: 'APPROVED',     kycLevel: 'LEVEL_2' },
+    { fullName: 'مهدی ابراهیمی', phone: '0912111011', city: 'تهران',    status: 'ACTIVE',   kycStatus: 'REJECTED',     kycLevel: 'NONE' },
+    { fullName: 'لیلا شریفی',    phone: '0912111012', city: 'کرج',      status: 'CLOSED',   kycStatus: 'APPROVED',     kycLevel: 'LEVEL_1' },
+  ];
+
+  // نوع‌های تراکنش با احتمال‌های مختلف
+  const TX_KINDS = ['DEPOSIT', 'WITHDRAWAL', 'EXCHANGE', 'TRANSFER', 'FEE'];
+  const TX_STATUS = ['COMPLETED', 'COMPLETED', 'COMPLETED', 'PENDING', 'CANCELLED'];
+
+  let totalCustomers = 0;
+  let totalAccounts  = 0;
+  let totalTxns      = 0;
+  let totalLedger    = 0;
+  let totalKyc       = 0;
+  let totalFraud     = 0;
+
+  for (const ex of exchanges) {
+    const currency = ex.primaryCurrency || 'AFN';
+
+    // — مشتریان: هر صرافی ۴ مشتری اختصاصی —
+    const myCustomers = CUSTOMER_TEMPLATES.slice(
+      (exchanges.indexOf(ex) * 3) % CUSTOMER_TEMPLATES.length,
+    ).slice(0, 4);
+
+    for (const tmpl of myCustomers) {
+      // جلوگیری از تکرار (phone + exchangeId)
+      const exists = await p.customer.findFirst({
+        where: { phone: tmpl.phone, exchangeId: ex.id },
+      });
+      if (exists) continue;
+
+      const custId = uuid();
+      await p.customer.create({
+        data: {
+          id: custId,
+          exchangeId: ex.id,
+          fullName: tmpl.fullName,
+          phone: tmpl.phone,
+          city: tmpl.city,
+          status: tmpl.status,
+          kycStatus: tmpl.kycStatus,
+          kycLevel: tmpl.kycLevel,
+          riskScore: rand(0, 30),
+          createdAt: daysAgo(rand(10, 180)),
+          updatedAt: daysAgo(rand(0, 10)),
+        },
+      });
+      totalCustomers++;
+
+      // — حساب fintech برای هر مشتری —
+      const accId = uuid();
+      await p.fintechAccount.create({
+        data: {
+          id: accId,
+          exchangeId: ex.id,
+          customerId: custId,
+          type: 'WALLET',
+          currency,
+          status: tmpl.status === 'ACTIVE' ? 'ACTIVE' : 'FROZEN',
+          balance: BigInt(rand(50_000, 5_000_000)),
+          updatedAt: daysAgo(rand(0, 5)),
+        },
+      });
+      totalAccounts++;
+
+      // — KYC verification اگر تأیید یا در انتظار —
+      if (tmpl.kycStatus === 'APPROVED' || tmpl.kycStatus === 'PENDING') {
+        await p.kycVerification.create({
+          data: {
+            id: uuid(),
+            exchangeId: ex.id,
+            customerId: custId,
+            level: tmpl.kycLevel === 'NONE' ? 'LEVEL_1' : tmpl.kycLevel,
+            status: tmpl.kycStatus,
+            docType: 'NATIONAL_ID',
+            docNumber: `IR${rand(1000000000, 9999999999)}`,
+            createdAt: daysAgo(rand(5, 60)),
+            updatedAt: daysAgo(rand(0, 5)),
+          },
+        });
+        totalKyc++;
+      }
+
+      // — تراکنش‌های ۳۰ روز اخیر (۵-۱۵ تراکنش) —
+      const txCount = rand(5, 15);
+      let runningBalance = BigInt(0);
+      for (let t = 0; t < txCount; t++) {
+        const kind   = TX_KINDS[rand(0, TX_KINDS.length - 1)];
+        const status = TX_STATUS[rand(0, TX_STATUS.length - 1)];
+        const amount = BigInt(rand(100_000, 2_000_000));
+        const txId   = uuid();
+        const txDate = daysAgo(rand(0, 29));
+
+        await p.transaction.create({
+          data: {
+            id: txId,
+            exchangeId: ex.id,
+            customerId: custId,
+            accountId: accId,
+            kind,
+            status,
+            amount,
+            currency,
+            fee: BigInt(rand(1000, 20000)),
+            createdAt: txDate,
+            updatedAt: txDate,
+          },
+        });
+        totalTxns++;
+
+        // — Ledger entry جفت (DEBIT/CREDIT) —
+        if (status === 'COMPLETED') {
+          runningBalance += amount;
+          await p.ledgerEntry.create({
+            data: {
+              id: uuid(),
+              exchangeId: ex.id,
+              accountId: accId,
+              customerId: custId,
+              txnId: txId,
+              direction: 'CREDIT',
+              amount,
+              currency,
+              runningBalance,
+              description: `تراکنش ${kind}`,
+              createdAt: txDate,
+            },
+          });
+          totalLedger++;
+        }
+      }
+
+      // — یک FraudReview برای مشتریان با ریسک بالا —
+      if (tmpl.status === 'FROZEN' || rand(0, 10) > 8) {
+        await p.fraudReview.create({
+          data: {
+            id: uuid(),
+            exchangeId: ex.id,
+            customerId: custId,
+            reason: 'تراکنش مشکوک — بررسی الگوی رفتاری',
+            riskScore: rand(60, 95),
+            status: tmpl.status === 'FROZEN' ? 'OPEN' : 'RESOLVED',
+            createdAt: daysAgo(rand(1, 20)),
+          },
+        });
+        totalFraud++;
+      }
+    }
+  }
+
+  console.log(`   ✅ مشتری: ${totalCustomers} | حساب: ${totalAccounts} | تراکنش: ${totalTxns} | دفتر: ${totalLedger} | KYC: ${totalKyc} | تقلب: ${totalFraud}`);
+}
+
 /* ─── ExchangeStaff ───────────────────────────────────────────── */
 async function seedExchangeStaff() {
   const existing = await p.exchangeStaff.count();
@@ -2640,16 +2825,19 @@ async function main() {
   console.log('\n2️⃣9️⃣  Settlements:');
   await seedSettlements();
 
-  console.log('\n3️⃣0️⃣  ExchangeStaff:');
+  console.log('\n3️⃣0️⃣  Exchange Fintech (Customers + Accounts + Transactions + KYC + Fraud):');
+  await seedExchangeFintech();
+
+  console.log('\n3️⃣1️⃣  ExchangeStaff:');
   await seedExchangeStaff();
 
-  console.log('\n3️⃣1️⃣  ContactSubmissions:');
+  console.log('\n3️⃣2️⃣  ContactSubmissions:');
   await seedContactSubmissions();
 
-  console.log('\n3️⃣2️⃣  SubscriptionEvents:');
+  console.log('\n3️⃣3️⃣  SubscriptionEvents:');
   await seedSubscriptionEvents();
 
-  console.log('\n3️⃣3️⃣  ServiceClicks:');
+  console.log('\n3️⃣4️⃣  ServiceClicks:');
   await seedServiceClicks();
 
   /* ─── گزارش نهایی ─── */
@@ -2679,6 +2867,12 @@ async function main() {
     exchanges: await p.exchange.count(),
     transferProviders: await p.transferProvider.count(),
     exchangeServices: await p.exchangeService.count(),
+    customers:        await p.customer.count(),
+    fintechAccounts:  await p.fintechAccount.count(),
+    transactions:     await p.transaction.count(),
+    ledgerEntries:    await p.ledgerEntry.count(),
+    kycVerifications: await p.kycVerification.count(),
+    fraudReviews:     await p.fraudReview.count(),
     exchangeStaff:    await p.exchangeStaff.count(),
     banks:            await p.bank.count(),
     creditRates:      await p.creditRate.count(),

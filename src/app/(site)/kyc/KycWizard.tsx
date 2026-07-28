@@ -400,7 +400,7 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
                   {isPending ? (
                     <Loader2 size={16} className={s.spin} aria-hidden />
                   ) : (
-                    <ChevronLeft size={16} style={{ transform: 'scaleX(-1)' }} aria-hidden />
+                    <ChevronLeft size={16} aria-hidden />
                   )}
                   {isPending ? 'در حال ذخیره…' : 'مرحله بعد — آپلود مدارک'}
                 </button>
@@ -534,7 +534,7 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
                   برگشت
                 </button>
                 <button type="submit" className={s.primaryBtn}>
-                  <ChevronLeft size={16} style={{ transform: 'scaleX(-1)' }} aria-hidden />
+                  <ChevronLeft size={16} aria-hidden />
                   مرحله بعد — بررسی نهایی
                 </button>
               </div>

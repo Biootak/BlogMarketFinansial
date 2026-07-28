@@ -384,13 +384,8 @@ export function FaqContent() {
                           <p style={{ whiteSpace: 'pre-line' }}>{item.a}</p>
                           {item.link ? (
                             <Link href={item.link.href} className={s.itemLink}>
-                              {item.link.label}
-                              <ArrowLeft
-                                size={12}
-                                strokeWidth={2}
-                                style={{ transform: 'scaleX(-1)' }}
-                                aria-hidden
-                              />
+                              <span>{item.link.label}</span>
+                              <ArrowLeft size={12} strokeWidth={2} aria-hidden />
                             </Link>
                           ) : null}
                         </div>
@@ -415,8 +410,8 @@ export function FaqContent() {
               </p>
             </div>
             <Link href="/contact" className={s.helpFooterCta}>
-              تماس با پشتیبانی
-              <ArrowRight size={13} strokeWidth={2} aria-hidden />
+              <span>تماس با پشتیبانی</span>
+              <ArrowLeft size={13} strokeWidth={2} aria-hidden />
             </Link>
           </div>
         </div>

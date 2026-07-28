@@ -324,13 +324,8 @@ export default function PrivacyPolicyPage() {
                 </p>
               </div>
               <Link href="/contact" className={s.contactCta}>
-                تماس با ما
-                <ArrowLeft
-                  size={14}
-                  strokeWidth={2}
-                  style={{ transform: 'scaleX(-1)' }}
-                  aria-hidden
-                />
+                <span>تماس با ما</span>
+                <ArrowLeft size={14} strokeWidth={2} aria-hidden />
               </Link>
             </div>
           </div>
