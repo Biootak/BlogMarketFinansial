@@ -1,0 +1,225 @@
+/* LiveWirePanel.module.css
+ * نوار marquee از آخرین فعالیت‌ها — توکن‌محور.
+ */
+
+.root {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  min-height: 56px;
+  background: var(--at-bg-elevated);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-lg);
+  box-shadow: var(--at-shadow-sm);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.root::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    var(--at-accent-soft) 0%,
+    transparent 30%,
+    transparent 70%,
+    var(--at-bg-elevated) 100%
+  );
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Left rail (label) ─────────────────────────────────────────────── */
+.left {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 var(--ds-space-4);
+  border-inline-end: 1px solid var(--at-line);
+  background: var(--at-bg);
+  flex-shrink: 0;
+}
+
+.live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: var(--ds-weight-bold);
+  color: var(--at-danger);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.liveDot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--at-danger);
+  box-shadow: 0 0 0 0 var(--at-danger);
+  animation: livePulse 1.4s var(--ds-ease-out-quart) infinite;
+}
+
+@keyframes livePulse {
+  0% {
+    box-shadow: 0 0 0 0 oklch(60% 0.18 22 / 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 6px oklch(60% 0.18 22 / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 oklch(60% 0.18 22 / 0);
+  }
+}
+
+.label {
+  font-size: 11px;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--at-fg-muted);
+  white-space: nowrap;
+}
+
+/* ─── Viewport (clips marquee) ──────────────────────────────────────── */
+.viewport {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+}
+
+.track {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: 0 var(--ds-space-4);
+  white-space: nowrap;
+  animation: marquee calc(var(--count, 6) * 4s) linear infinite;
+  will-change: transform;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.viewport:hover .track,
+.viewport:focus-within .track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track { animation: none; }
+}
+
+/* ─── Chip (single datum) ───────────────────────────────────────────── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--at-bg);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius);
+  font-size: 11px;
+  font-weight: var(--ds-weight-medium);
+  color: var(--at-fg-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.chip:hover {
+  border-color: var(--at-line-strong);
+}
+
+.chipLabel {
+  color: var(--at-fg-subtle);
+  font-size: 10px;
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: 0.02em;
+}
+
+.chipValue {
+  color: var(--at-fg);
+  font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+.chip[data-tone="emerald"] {
+  border-color: oklch(86% 0.08 162 / 0.6);
+}
+.chip[data-tone="emerald"] .chipValue { color: var(--at-accent-fg); }
+
+.chip[data-tone="amber"] {
+  border-color: oklch(86% 0.1 70 / 0.6);
+}
+.chip[data-tone="amber"] .chipValue { color: var(--at-gold-fg); }
+
+.chip[data-tone="rose"] {
+  border-color: oklch(86% 0.08 22 / 0.6);
+}
+.chip[data-tone="rose"] .chipValue { color: var(--at-danger-fg); }
+
+.chipHint {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: var(--at-fg-subtle);
+}
+
+/* ─── Empty state ───────────────────────────────────────────────────── */
+.empty {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--ds-text-sm);
+  color: var(--at-fg-subtle);
+  padding: var(--ds-space-4);
+}
+
+/* ─── Corner accent (decorative) ────────────────────────────────────── */
+.corner {
+  position: absolute;
+  inset-block-start: 8px;
+  inset-inline-end: 12px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--at-accent);
+  box-shadow: 0 0 0 3px var(--at-accent-soft);
+  z-index: 2;
+  opacity: 0.6;
+}
+
+/* ─── Responsive ────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .left {
+    padding: 0 var(--ds-space-3);
+  }
+  .label { display: none; }
+}

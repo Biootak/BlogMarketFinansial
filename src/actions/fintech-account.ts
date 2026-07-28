@@ -180,7 +180,6 @@ export type WithdrawResult = {
   txnRef: string;
   needsOtp: boolean;
   expiresInSeconds?: number;
-  devCode?: string;
 };
 
 export async function requestWithdraw(raw: unknown): Promise<FintechActionResult<WithdrawResult>> {
@@ -288,7 +287,6 @@ export async function requestWithdraw(raw: unknown): Promise<FintechActionResult
         txnRef,
         needsOtp: true,
         expiresInSeconds: otpResult.success ? otpResult.data.expiresInSeconds : undefined,
-        devCode: otpResult.success ? otpResult.data.devCode : undefined,
       },
     };
   }

@@ -45,7 +45,6 @@ export type TransferResult = {
   txnRef: string;
   needsOtp: boolean;
   expiresInSeconds?: number;
-  devCode?: string;
 };
 
 // ─── FIND RECIPIENT ────────────────────────────────────────────────────────────
@@ -296,7 +295,6 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
         txnRef,
         needsOtp: true,
         expiresInSeconds: otpResult.success ? otpResult.data.expiresInSeconds : undefined,
-        devCode: otpResult.success ? otpResult.data.devCode : undefined,
       },
     };
   }
@@ -409,6 +407,18 @@ export async function confirmTransfer(
     await prisma.$transaction(async (tx) => {
       const now = new Date();
 
+      // C3-fix (P0): حساب گیرنده را قبل از DEBIT پیدا و قفل می‌کنیم تا اگر حساب
+      // گیرنده فعال نیست، کل transaction rollback شود و پول فرستنده کم نشود.
+      // بدون این چک، DEBIT از فرستنده ثبت می‌شد ولی CREDIT به گیرنده نمی‌رسید
+      // و تراکنش COMPLETED می‌شد — یعنی پول گم می‌شد.
+      const recipientAccount = await tx.fintechAccount.findFirst({
+        where: { customerId: recipientCustomerId, currency: txn.currency, status: 'ACTIVE' },
+        select: { id: true },
+      });
+      if (!recipientAccount) {
+        throw new Error('RECIPIENT_NO_ACCOUNT');
+      }
+
       // DEBIT از حساب فرستنده — balance کم می‌شود
       // race-condition fix: شرط balance >= amount در همان UPDATE چک می‌شود تا
       // دو درخواست هم‌زمان (یا retry) نتوانند موجودی را منفی کنند (double-spend).
@@ -440,35 +450,27 @@ export async function confirmTransfer(
         },
       });
 
-      // پیدا کردن حساب گیرنده
-      const recipientAccount = await tx.fintechAccount.findFirst({
-        where: { customerId: recipientCustomerId, currency: txn.currency, status: 'ACTIVE' },
-        select: { id: true },
+      // CREDIT به حساب گیرنده — balance زیاد می‌شود
+      const updatedRecipient = await tx.fintechAccount.update({
+        where: { id: recipientAccount.id },
+        data: { balance: { increment: txn.amount }, updatedAt: now },
+        select: { balance: true },
       });
 
-      if (recipientAccount) {
-        // CREDIT به حساب گیرنده — balance زیاد می‌شود
-        const updatedRecipient = await tx.fintechAccount.update({
-          where: { id: recipientAccount.id },
-          data: { balance: { increment: txn.amount }, updatedAt: now },
-          select: { balance: true },
-        });
-
-        await tx.ledgerEntry.create({
-          data: {
-            id: createId(),
-            exchangeId: txn.exchangeId,
-            accountId: recipientAccount.id,
-            customerId: recipientCustomerId,
-            txnId: txn.id,
-            direction: 'CREDIT',
-            amount: txn.amount,
-            currency: txn.currency,
-            runningBalance: updatedRecipient.balance,
-            createdAt: now,
-          },
-        });
-      }
+      await tx.ledgerEntry.create({
+        data: {
+          id: createId(),
+          exchangeId: txn.exchangeId,
+          accountId: recipientAccount.id,
+          customerId: recipientCustomerId,
+          txnId: txn.id,
+          direction: 'CREDIT',
+          amount: txn.amount,
+          currency: txn.currency,
+          runningBalance: updatedRecipient.balance,
+          createdAt: now,
+        },
+      });
 
       // COMPLETED کردن تراکنش
       await tx.transaction.update({
@@ -481,6 +483,15 @@ export async function confirmTransfer(
       return {
         success: false,
         error: { code: 'INSUFFICIENT_BALANCE', message: 'موجودی کافی نیست' },
+      };
+    }
+    if ((err as Error).message === 'RECIPIENT_NO_ACCOUNT') {
+      return {
+        success: false,
+        error: {
+          code: 'RECIPIENT_NO_ACCOUNT',
+          message: 'گیرنده دیگر حساب فعالی برای این ارز ندارد. مبلغ برگشت نخورده است.',
+        },
       };
     }
     throw err;

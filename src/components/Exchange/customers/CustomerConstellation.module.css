@@ -1,0 +1,116 @@
+/* CustomerConstellation.module.css
+ * نقشه SVG از مشتریان — توکن‌محور.
+ */
+
+.wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  width: 100%;
+}
+
+.svg {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  display: block;
+  background: var(--at-bg-elevated);
+  border-radius: var(--at-radius);
+  border: 1px solid var(--at-line);
+}
+
+.centerGroup {
+  transform-origin: center;
+  animation: centerBreathe 4.5s var(--ds-ease-in-out-quart) infinite;
+}
+
+@keyframes centerBreathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.halo {
+  transform-origin: center;
+  animation: haloPulse 3.6s var(--ds-ease-in-out-quart) infinite;
+}
+
+@keyframes haloPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.centerBreath {
+  transform-origin: center;
+  animation: centerBreath 2.8s var(--ds-ease-in-out-quart) infinite;
+}
+
+@keyframes centerBreath {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+.node {
+  cursor: pointer;
+  transition: filter var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.node:hover,
+.node:focus-visible {
+  filter: drop-shadow(0 2px 6px oklch(0% 0 0 / 0.18));
+  outline: none;
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  background: var(--at-bg-elevated);
+  border: 1px dashed var(--at-line);
+  border-radius: var(--at-radius);
+}
+
+.emptyText {
+  font-size: var(--ds-text-sm);
+  color: var(--at-fg-subtle);
+  margin: 0;
+}
+
+/* ─── Legend ────────────────────────────────────────────────────────── */
+.legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2) var(--ds-space-3);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--at-fg-muted);
+  font-weight: var(--ds-weight-medium);
+}
+
+.legendDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.legendLabel {
+  white-space: nowrap;
+}
+
+.hint {
+  margin: 0;
+  font-size: 10px;
+  color: var(--at-fg-subtle);
+  letter-spacing: 0.02em;
+}

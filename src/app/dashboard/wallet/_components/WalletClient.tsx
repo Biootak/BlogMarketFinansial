@@ -452,11 +452,6 @@ function WithdrawModal({
               <Clock size={16} aria-hidden />
               <span>کد تأیید ۶ رقمی به شماره شما ارسال شد (اعتبار ۵ دقیقه)</span>
             </div>
-            {result.devCode && (
-              <p className={s.devCode} dir="ltr">
-                کد آزمایشی: {result.devCode}
-              </p>
-            )}
             {error && (
               <div className={s.inlineError} role="alert">
                 {error}

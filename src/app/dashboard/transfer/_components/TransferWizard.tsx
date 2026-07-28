@@ -353,11 +353,6 @@ export function TransferWizard() {
                   <Clock size={15} aria-hidden />
                   <span>کد تأیید به شماره شما ارسال شد (اعتبار: ۵ دقیقه)</span>
                 </div>
-                {transferResult.devCode && (
-                  <p className={s.devCode} dir="ltr">
-                    کد آزمایشی: {transferResult.devCode}
-                  </p>
-                )}
                 <div className={s.fieldGroup}>
                   <label htmlFor="otp" className={s.fieldLabel}>
                     کد تأیید ۶ رقمی

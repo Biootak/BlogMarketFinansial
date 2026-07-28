@@ -26,6 +26,8 @@ vi.mock('@/lib/db', () => ({
         fintechAccount: {
           findFirst: vi.fn().mockResolvedValue({ id: 'acc-recv' }),
           update: vi.fn().mockResolvedValue({ balance: BigInt(0) }),
+          updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+          findUniqueOrThrow: vi.fn().mockResolvedValue({ balance: BigInt(950000) }),
         },
         ledgerEntry: { create: vi.fn() },
         transaction: { update: vi.fn() },

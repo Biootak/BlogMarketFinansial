@@ -1,0 +1,295 @@
+/* CustomerDirectory.module.css
+ * دایرکتوری مشتریان — toolbar + grid کارت‌ها.
+ * tokens only (--at-*, --ds-*).
+ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  min-width: 0;
+}
+
+/* ─── Toolbar (sticky-ish) ────────────────────────────────────────────── */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2) var(--ds-space-3);
+  padding: var(--ds-space-3);
+  background: var(--at-bg);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-lg);
+  box-shadow: var(--at-shadow-sm);
+}
+
+.searchWrap {
+  position: relative;
+  flex: 1 1 220px;
+  min-width: 200px;
+  max-width: 320px;
+}
+
+.searchIcon {
+  position: absolute;
+  inset-inline-end: 12px;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  color: var(--at-fg-subtle);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  height: 36px;
+  padding: 0 36px 0 12px;
+  font: inherit;
+  font-size: var(--ds-text-sm);
+  color: var(--at-fg);
+  background: var(--at-bg-elevated);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius);
+  outline: none;
+  transition:
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.searchInput:focus {
+  border-color: var(--at-accent);
+  box-shadow: 0 0 0 3px var(--at-accent-soft);
+}
+
+.searchInput::placeholder {
+  color: var(--at-fg-subtle);
+}
+
+/* ─── Status filter pills ────────────────────────────────────────────── */
+.filterGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: var(--at-bg-elevated);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius);
+}
+
+.filterPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--at-fg-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  cursor: pointer;
+  transition:
+    background var(--ds-duration-fast) var(--ds-ease-out-quart),
+    color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  white-space: nowrap;
+}
+
+.filterPill:hover {
+  color: var(--at-fg);
+  background: var(--at-surface-hover);
+}
+
+.filterPill[data-active] {
+  color: var(--at-accent-fg);
+  background: var(--at-bg);
+  border-color: var(--at-line);
+  box-shadow: var(--at-shadow-sm);
+}
+
+.filterPill:focus-visible {
+  outline: 2px solid var(--at-accent);
+  outline-offset: 2px;
+}
+
+/* ─── Select (KYC / Risk / City / Sort) ─────────────────────────────── */
+.select {
+  height: 36px;
+  padding: 0 28px 0 10px;
+  font: inherit;
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  color: var(--at-fg);
+  background: var(--at-bg-elevated);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--at-fg-muted) 50%),
+    linear-gradient(135deg, var(--at-fg-muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 9px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  transition:
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.select:hover {
+  border-color: var(--at-line-strong);
+}
+
+.select:focus-visible {
+  border-color: var(--at-accent);
+  box-shadow: 0 0 0 3px var(--at-accent-soft);
+}
+
+/* ─── Add button ─────────────────────────────────────────────────────── */
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--at-accent-on);
+  background: var(--at-accent);
+  border: 1px solid var(--at-accent);
+  border-radius: var(--at-radius);
+  cursor: pointer;
+  margin-inline-start: auto;
+  transition:
+    background var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.addBtn:hover {
+  background: var(--at-accent-hover);
+}
+
+.addBtn:active {
+  transform: scale(0.97);
+}
+
+.addBtn:focus-visible {
+  outline: 2px solid var(--at-accent);
+  outline-offset: 2px;
+}
+
+/* ─── Sub-bar (count + reset + select) ───────────────────────────────── */
+.subbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ds-space-3);
+  padding: 0 var(--ds-space-2);
+  font-size: var(--ds-text-xs);
+  color: var(--at-fg-muted);
+}
+
+.count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--at-fg);
+}
+
+.resetBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--at-accent-fg);
+  background: var(--at-accent-soft);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    color var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.resetBtn:hover {
+  border-color: var(--at-accent);
+  color: var(--at-accent);
+}
+
+.selectAllWrap {
+  margin-inline-start: auto;
+}
+
+.sortHint {
+  font-size: 11px;
+  color: var(--at-fg-subtle);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--ds-weight-medium);
+}
+
+/* ─── Grid ───────────────────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--ds-space-3);
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.gridItem {
+  min-width: 0;
+  animation: gridFade var(--ds-duration-slow) var(--ds-ease-out-quart) backwards;
+}
+
+@keyframes gridFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Empty wrap ─────────────────────────────────────────────────────── */
+.emptyWrap {
+  padding: var(--ds-space-8) var(--ds-space-4);
+  background: var(--at-bg);
+  border: 1px dashed var(--at-line-strong);
+  border-radius: var(--at-radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── Hidden flag (select-all telemetry) ─────────────────────────────── */
+.allSelectedFlag {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

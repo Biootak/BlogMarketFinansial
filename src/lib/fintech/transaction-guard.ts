@@ -135,18 +135,18 @@ export async function requestTransactionOtp(params: {
     }
   }
 
-  // devCode فقط در محیط development/staging برگردانده می‌شود — در production
-  // OTP فقط از طریق SMS به شماره تأیید‌شده کاربر ارسال می‌شود و هرگز در
-  // response به client نباید بیاید (P1: جلوگیری از OTP leak)
-  const isDev = process.env.NODE_ENV !== 'production';
-  const devPayload =
-    isDev && smsResult.devCode !== undefined
-      ? ({ devCode: smsResult.devCode } as { devCode: string })
-      : {};
+  // SECURITY (P0): OTP هرگز در response به client نباید بیاید — حتی در dev/staging.
+  // نشت OTP در preview/staging deployments که NODE_ENV !== 'production' دارند،
+  // به مهاجم اجازه می‌دهد کد را مستقیم از response بخواند.
+  // در dev، OTP فقط در server log چاپ می‌شود (برای تست دستی).
+  if (process.env.NODE_ENV !== 'production' && smsResult.devCode !== undefined) {
+    // biome-ignore lint/suspicious/noConsole: dev-only OTP logging for manual testing
+    console.log(`[DEV OTP] txnRef=${params.txnRef} code=${smsResult.devCode}`);
+  }
 
   return {
     success: true,
-    data: { expiresInSeconds: OTP_VALIDITY_MINUTES * 60, ...devPayload },
+    data: { expiresInSeconds: OTP_VALIDITY_MINUTES * 60 },
   };
 }
 

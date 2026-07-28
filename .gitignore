@@ -156,3 +156,9 @@ node-v*.zip
 /trae-extracted/
 /app-extracted/
 *.AppDir/
+
+# ============================================================================
+# CODEPUS — local shadow-git and task state (machine-specific, never commit)
+# ============================================================================
+/.codepus/
+.codepus-todos.json

@@ -23,7 +23,7 @@ export default async function CustomersPage() {
 
   // Parallel data fetching — یک roundtrip موازی
   const [
-    { rows: customers, total },
+    { rows: customers },
     stats,
     segments,
     riskBuckets,
