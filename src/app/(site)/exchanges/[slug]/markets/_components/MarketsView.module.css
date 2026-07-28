@@ -1,0 +1,257 @@
+/* MarketsView — sub-route /exchanges/[slug]/markets
+   Desktop table + mobile card fallback. */
+
+.section {
+  padding-block: clamp(2rem, 5vw, 3rem);
+  padding-inline: clamp(1rem, 4vw, 2rem);
+  background: var(--ds-canvas);
+}
+.inner {
+  max-inline-size: 1200px;
+  margin-inline: auto;
+}
+
+.header {
+  margin-block-end: 1.5rem;
+}
+.title {
+  margin: 0 0 0.4rem;
+  font-size: clamp(1.4rem, 3.2vw, 1.875rem);
+  font-weight: 800;
+  color: var(--ds-text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.sub {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--ds-text-secondary);
+  line-height: 1.7;
+  max-inline-size: 60ch;
+}
+
+.tableWrap {
+  background: var(--ds-surface-elevated, var(--ds-surface));
+  border: 1px solid var(--ds-border-default);
+  border-radius: 0.875rem;
+  overflow: hidden;
+  display: block;
+}
+@media (max-width: 760px) {
+  .tableWrap {
+    display: none;
+  }
+}
+
+.table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  text-align: start;
+}
+.table thead th {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--ds-text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: start;
+  padding: 0.75rem 1rem;
+  background: var(--ds-canvas-subtle);
+  border-block-end: 1px solid var(--ds-border-default);
+  white-space: nowrap;
+}
+.thBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+.thBtn:hover {
+  color: var(--ds-text-primary);
+}
+.thNum {
+  text-align: end;
+}
+.thChart {
+  text-align: center;
+}
+.thMeta {
+  text-align: end;
+}
+
+.table tbody tr {
+  border-block-end: 1px solid var(--ds-border-subtle);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+.table tbody tr:last-child {
+  border-block-end: none;
+}
+.table tbody tr:hover {
+  background: color-mix(in oklch, var(--ds-brand-500) 4%, transparent);
+}
+.table td {
+  padding: 0.75rem 1rem;
+  font-size: 0.88rem;
+  color: var(--ds-text-primary);
+}
+
+.coinCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+.coinMark {
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: 0.5rem;
+  background: linear-gradient(
+    140deg,
+    color-mix(in oklch, var(--ds-brand-500) 14%, var(--ds-canvas-subtle)),
+    color-mix(in oklch, var(--ds-brand-700) 12%, var(--ds-canvas-subtle))
+  );
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 24%, var(--ds-border-subtle));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--ds-brand-700);
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+.coinName {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.coinCode {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--ds-text-primary);
+}
+.coinFa {
+  font-size: 0.72rem;
+  color: var(--ds-text-muted);
+}
+
+.tdNum {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+.thNum .thBtn {
+  margin-inline-start: auto;
+}
+.buyVal {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  font-weight: 800;
+  color: oklch(38% 0.14 162);
+}
+.sellVal {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  font-weight: 800;
+  color: oklch(40% 0.16 22);
+}
+.spread {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: color-mix(in oklch, var(--ds-text-primary) 5%, transparent);
+  color: var(--ds-text-secondary);
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+.spreadGood {
+  background: color-mix(in oklch, oklch(60% 0.14 162) 14%, transparent);
+  color: oklch(38% 0.14 162);
+}
+.spreadBad {
+  background: color-mix(in oklch, oklch(60% 0.16 22) 12%, transparent);
+  color: oklch(40% 0.16 22);
+}
+.spreadUnit {
+  font-size: 0.62rem;
+  font-weight: 500;
+  opacity: 0.75;
+  margin-inline-start: 1px;
+}
+
+.tdChart {
+  text-align: center;
+}
+.noChart {
+  color: var(--ds-text-muted);
+  font-size: 0.85rem;
+}
+.tdMeta {
+  color: var(--ds-text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: end;
+}
+
+/* Mobile cards */
+.mobileGrid {
+  display: none;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+@media (max-width: 760px) {
+  .mobileGrid {
+    display: flex;
+  }
+}
+.mCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.875rem;
+  background: var(--ds-surface-elevated, var(--ds-surface));
+  border: 1px solid var(--ds-border-default);
+  border-radius: 0.75rem;
+}
+.mHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.mBody {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+.mBody > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0.5rem;
+  background: var(--ds-canvas-subtle);
+  border-radius: 0.5rem;
+}
+.mKey {
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: var(--ds-text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.mUnit {
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: var(--ds-text-muted);
+  margin-inline-start: 2px;
+}

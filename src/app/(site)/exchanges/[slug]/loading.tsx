@@ -1,61 +1,82 @@
 /**
- * /exchanges/[slug]/loading — skeleton برای صفحهٔ عمومی صرافی
+ * /exchanges/[slug]/loading — Skeleton P2026.
+ * Mirrors HeroIdentity + LiveRatesBoard + TrustSection skeleton.
  */
 
-import { Building2 } from 'lucide-react';
 import s from './loading.module.css';
 
 export default function ExchangePublicLoading() {
   return (
-    <main className={s.root} dir="rtl" aria-busy="true" aria-label="در حال بارگذاری صرافی">
-      {/* Hero skeleton */}
-      <section className={s.hero}>
-        <div className={s.heroInner}>
-          <div className={s.heroLogo}>
-            <Building2 size={36} strokeWidth={1.2} aria-hidden />
-          </div>
-          <div className={s.skelBar} style={{ inlineSize: '60%' }} />
-          <div className={s.skelBar} style={{ inlineSize: '40%' }} />
-          <div className={s.skelBar} style={{ inlineSize: '50%' }} />
+    <div className={s.root} dir="rtl" aria-busy="true" aria-label="در حال بارگذاری">
+      {/* Hero skeleton (dark) */}
+      <div className={s.hero}>
+        <div className={s.heroGrid} aria-hidden>
+          <svg viewBox="0 0 800 480" preserveAspectRatio="xMidYMid slice">
+            <rect width="100%" height="100%" fill="url(#lGrid)" />
+            <defs>
+              <pattern id="lGrid" width="48" height="48" patternUnits="userSpaceOnUse">
+                <path d="M 48 0 L 0 0 0 48" fill="none" stroke="currentColor" strokeWidth="0.5" />
+              </pattern>
+            </defs>
+          </svg>
         </div>
-      </section>
+        <div className={s.heroInner}>
+          <div className={s.heroLeft}>
+            <div className={s.pillRow}>
+              <div className={`${s.skel} ${s.skelPill}`} />
+              <div className={`${s.skel} ${s.skelPillSm}`} />
+            </div>
+            <div className={s.identityRow}>
+              <div className={`${s.skel} ${s.skelLogo}`} />
+              <div className={s.identityText}>
+                <div className={`${s.skel} ${s.skelName}`} />
+                <div className={`${s.skel} ${s.skelMeta}`} />
+                <div className={`${s.skel} ${s.skelMetaSm}`} />
+              </div>
+            </div>
+            <div className={s.statsRow}>
+              <div className={`${s.skel} ${s.skelStat}`} />
+              <div className={`${s.skel} ${s.skelStat}`} />
+              <div className={`${s.skel} ${s.skelStat}`} />
+            </div>
+          </div>
+          <div className={s.heroRight}>
+            <div className={s.rateCard}>
+              <div className={`${s.skel} ${s.skelRateLabel}`} />
+              <div className={`${s.skel} ${s.skelRateHero}`} />
+              <div className={`${s.skel} ${s.skelRateSpark}`} />
+              <div className={s.rateBottomRow}>
+                <div className={`${s.skel} ${s.skelRateCol}`} />
+                <div className={`${s.skel} ${s.skelRateCol}`} />
+                <div className={`${s.skel} ${s.skelRateCol}`} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Rates skeleton */}
-      <section className={s.section}>
-        <div className={s.skelBar} style={{ inlineSize: '180px', blockSize: '24px' }} />
-        <div className={s.skelBar} style={{ inlineSize: '320px', blockSize: '12px', marginBlockEnd: '1.5rem' }} />
-        <div className={s.rateGrid}>
-          {Array.from({ length: 4 }).map((_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
-            <div key={i} className={s.rateCard}>
-              <div className={s.skelBar} style={{ inlineSize: '40%', blockSize: '14px' }} />
-              <div className={s.skelBar} style={{ inlineSize: '70%', blockSize: '24px', marginBlockStart: '0.5rem' }} />
-              <div className={s.skelBar} style={{ inlineSize: '60%', blockSize: '14px', marginBlockStart: '0.5rem' }} />
+      <div className={s.section}>
+        <div className={s.sectionHeader}>
+          <div className={`${s.skel} ${s.skelTitle}`} />
+          <div className={`${s.skel} ${s.skelSub}`} />
+        </div>
+        <div className={s.grid}>
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className={s.card}>
+              <div className={s.cardHead}>
+                <div className={`${s.skel} ${s.skelCoin}`} />
+                <div className={`${s.skel} ${s.skelSpread}`} />
+              </div>
+              <div className={`${s.skel} ${s.skelSpark}`} />
+              <div className={s.cardFoot}>
+                <div className={`${s.skel} ${s.skelLine}`} />
+                <div className={`${s.skel} ${s.skelLineSm}`} />
+              </div>
             </div>
           ))}
         </div>
-      </section>
-
-      {/* Hours + Contact skeleton */}
-      <section className={s.section}>
-        <div className={s.twoCol}>
-          <div className={s.skelBlock}>
-            <div className={s.skelBar} style={{ inlineSize: '180px', blockSize: '20px' }} />
-            <div style={{ blockSize: '1.5rem' }} />
-            {Array.from({ length: 7 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
-              <div key={i} className={s.skelBar} style={{ inlineSize: '100%', blockSize: '18px', marginBlockEnd: '0.6rem' }} />
-            ))}
-          </div>
-          <div className={s.skelBlock}>
-            <div className={s.skelBar} style={{ inlineSize: '140px', blockSize: '20px' }} />
-            <div style={{ blockSize: '1.5rem' }} />
-            <div className={s.skelBar} style={{ inlineSize: '90%', blockSize: '18px', marginBlockEnd: '0.6rem' }} />
-            <div className={s.skelBar} style={{ inlineSize: '85%', blockSize: '18px', marginBlockEnd: '0.6rem' }} />
-            <div className={s.skelBar} style={{ inlineSize: '70%', blockSize: '18px' }} />
-          </div>
-        </div>
-      </section>
-    </main>
+      </div>
+    </div>
   );
 }

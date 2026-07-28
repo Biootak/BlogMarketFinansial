@@ -1,107 +1,226 @@
-/* loading.module.css — skeleton برای صفحهٔ عمومی صرافی */
+/* loading.tsx — P2026 dark hero skeleton + light card skeleton */
 
 .root {
-  min-block-size: 100dvh;
-  background: var(--ds-canvas);
   display: flex;
   flex-direction: column;
 }
 
-/* ── Hero skeleton ─────────────────────────────────────────── */
+/* ── Hero skeleton ─────────────────────────────────────── */
 .hero {
-  background: oklch(12% 0.05 265);
-  padding-block: clamp(3rem, 8vw, 5.5rem);
-  padding-inline: clamp(1rem, 5vw, 3rem);
+  position: relative;
+  padding-block: clamp(2.5rem, 6vw, 4.5rem);
+  padding-inline: clamp(1rem, 4vw, 2rem);
+  background: oklch(14% 0.04 250);
+  overflow: hidden;
 }
-
+.heroGrid {
+  position: absolute;
+  inset: 0;
+  color: oklch(100% 0 0 / 0.05);
+  pointer-events: none;
+}
 .heroInner {
-  max-inline-size: 700px;
+  position: relative;
+  max-inline-size: 1200px;
   margin-inline: auto;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.875rem;
-}
-
-.heroLogo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  inline-size: 5rem;
-  block-size: 5rem;
-  border-radius: 1rem;
-  background: oklch(28% 0.09 265 / 0.45);
-  border: 1px solid oklch(55% 0.1 265 / 0.35);
-  color: oklch(78% 0.08 265);
-  margin-block-end: 0.5rem;
-}
-
-/* ── Skeleton bar ──────────────────────────────────────────── */
-.skelBar {
-  block-size: 14px;
-  border-radius: 6px;
-  background: linear-gradient(
-    90deg,
-    color-mix(in oklch, var(--ds-text-secondary, oklch(45% 0.02 250)) 8%, transparent) 0%,
-    color-mix(in oklch, var(--ds-text-secondary, oklch(45% 0.02 250)) 16%, transparent) 50%,
-    color-mix(in oklch, var(--ds-text-secondary, oklch(45% 0.02 250)) 8%, transparent) 100%
-  );
-  background-size: 200% 100%;
-  animation: skel 1.4s ease-in-out infinite;
-}
-
-.skelBlock {
-  padding: 1.5rem;
-  background: var(--ds-surface, #fff);
-  border: 1px solid var(--ds-border-default, oklch(93% 0.008 245));
-  border-radius: 14px;
-  display: flex;
-  flex-direction: column;
-}
-
-@keyframes skel {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-/* ── Section ───────────────────────────────────────────────── */
-.section {
-  max-inline-size: 1100px;
-  margin-inline: auto;
-  padding-block: clamp(2rem, 5vw, 3.5rem);
-  padding-inline: clamp(1rem, 5vw, 2rem);
-  inline-size: 100%;
-}
-
-/* ── Rates grid ────────────────────────────────────────────── */
-.rateGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 0.875rem;
+  grid-template-columns: 7fr 5fr;
+  gap: clamp(1.25rem, 4vw, 2.5rem);
+  align-items: center;
 }
-
-.rateCard {
-  padding: 1.25rem;
-  background: var(--ds-surface, #fff);
-  border: 1px solid var(--ds-border-default, oklch(93% 0.008 245));
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-}
-
-/* ── Two-col layout ────────────────────────────────────────── */
-.twoCol {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-}
-@media (max-width: 768px) {
-  .twoCol {
+@media (max-width: 920px) {
+  .heroInner {
     grid-template-columns: 1fr;
   }
+}
+.heroLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.pillRow {
+  display: flex;
+  gap: 8px;
+}
+.identityRow {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+.identityText {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-inline-size: 0;
+}
+.statsRow {
+  display: flex;
+  gap: 0.5rem;
+}
+.heroRight {
+  display: flex;
+}
+.rateCard {
+  inline-size: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding: 1.5rem;
+  background: oklch(100% 0 0 / 0.06);
+  border: 1px solid oklch(100% 0 0 / 0.12);
+  border-radius: 1.25rem;
+}
+.rateBottomRow {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ── Section skeleton (light) ───────────────────────────── */
+.section {
+  padding-block: clamp(2.5rem, 6vw, 4rem);
+  padding-inline: clamp(1rem, 4vw, 2rem);
+  background: var(--ds-canvas);
+}
+.sectionHeader {
+  max-inline-size: 1200px;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.grid {
+  max-inline-size: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.875rem;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding: 1.125rem;
+  background: var(--ds-surface-elevated, var(--ds-surface));
+  border: 1px solid var(--ds-border-default);
+  border-radius: 0.875rem;
+}
+.cardHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.cardFoot {
+  display: flex;
+  gap: 0.5rem;
+  flex-direction: column;
+}
+
+/* ── Skeleton blocks ──────────────────────────────────── */
+.skel {
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, currentColor 8%, transparent) 0%,
+    color-mix(in oklch, currentColor 16%, transparent) 50%,
+    color-mix(in oklch, currentColor 8%, transparent) 100%
+  );
+  background-size: 200% 100%;
+  animation: skel-shimmer 1.4s ease-in-out infinite;
+  border-radius: 0.5rem;
+  color: oklch(100% 0 0);
+}
+.hero .skel {
+  color: oklch(100% 0 0);
+}
+.section .skel {
+  color: var(--ds-text-muted);
+}
+@keyframes skel-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skel { animation: none; }
+}
+
+.skelPill {
+  inline-size: 90px;
+  block-size: 22px;
+  border-radius: 9999px;
+}
+.skelPillSm {
+  inline-size: 70px;
+  block-size: 22px;
+  border-radius: 9999px;
+}
+.skelLogo {
+  inline-size: 88px;
+  block-size: 88px;
+  border-radius: 1rem;
+  flex-shrink: 0;
+}
+.skelName {
+  inline-size: min(60%, 320px);
+  block-size: 28px;
+}
+.skelMeta {
+  inline-size: 50%;
+  block-size: 12px;
+}
+.skelMetaSm {
+  inline-size: 35%;
+  block-size: 10px;
+}
+.skelStat {
+  flex: 1 1 0;
+  block-size: 56px;
+  border-radius: 0.875rem;
+}
+.skelRateLabel {
+  inline-size: 100px;
+  block-size: 14px;
+}
+.skelRateHero {
+  inline-size: 60%;
+  block-size: 56px;
+}
+.skelRateSpark {
+  inline-size: 100%;
+  block-size: 60px;
+  border-radius: 0.5rem;
+}
+.skelRateCol {
+  flex: 1 1 0;
+  block-size: 44px;
+  border-radius: 0.5rem;
+}
+.skelTitle {
+  inline-size: min(60%, 380px);
+  block-size: 32px;
+}
+.skelSub {
+  inline-size: min(80%, 540px);
+  block-size: 14px;
+}
+.skelCoin {
+  inline-size: 50%;
+  block-size: 38px;
+  border-radius: 0.5rem;
+}
+.skelSpread {
+  inline-size: 50px;
+  block-size: 22px;
+  border-radius: 9999px;
+}
+.skelSpark {
+  inline-size: 100%;
+  block-size: 36px;
+}
+.skelLine {
+  inline-size: 80%;
+  block-size: 14px;
+}
+.skelLineSm {
+  inline-size: 50%;
+  block-size: 10px;
 }

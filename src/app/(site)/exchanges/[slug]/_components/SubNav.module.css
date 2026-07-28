@@ -1,0 +1,166 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   SubNav — sticky in-page navigation for exchange profile.
+   Glass on dark hero; auto-flip to light surface after scroll.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.nav {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 30;
+  background: color-mix(in oklch, var(--ds-canvas) 80%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  transition:
+    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart),
+    background var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .nav {
+    background: var(--ds-canvas);
+  }
+}
+
+.navStuck {
+  background: color-mix(in oklch, var(--ds-canvas) 92%, transparent);
+  box-shadow: 0 1px 0 var(--ds-border-subtle), 0 6px 18px -10px oklch(20% 0.02 240 / 0.18);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding-block: 0.625rem;
+  padding-inline: clamp(1rem, 4vw, 2rem);
+  max-inline-size: 1200px;
+  margin-inline: auto;
+}
+
+/* ── Brand (mobile only) ───────────────────────────────────────────── */
+.brand {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--ds-text-primary);
+  font-weight: 700;
+  font-size: var(--ds-text-sm);
+  letter-spacing: -0.01em;
+  flex-shrink: 0;
+}
+.brandDot {
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background: var(--ds-brand-500);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 25%, transparent);
+}
+.brandName {
+  max-inline-size: 28ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Pill list ─────────────────────────────────────────────────────── */
+.list {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1 1 auto;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.list::-webkit-scrollbar {
+  display: none;
+}
+.item {
+  flex-shrink: 0;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--ds-radius-full);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--ds-text-secondary);
+  text-decoration: none;
+  border: 1px solid transparent;
+  background: transparent;
+  transition:
+    background var(--ds-duration-fast) var(--ds-ease-out-quart),
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+.pill:hover {
+  background: color-mix(in oklch, var(--ds-text-primary) 5%, transparent);
+  color: var(--ds-text-primary);
+  border-color: var(--ds-border-subtle);
+}
+.pill:active {
+  transform: scale(0.97);
+}
+.pillActive {
+  background: var(--ds-canvas-subtle);
+  color: var(--ds-text-primary);
+  border-color: var(--ds-border-default);
+  box-shadow: 0 1px 2px oklch(20% 0.02 240 / 0.06);
+}
+.pillActive svg {
+  color: var(--ds-brand-600);
+}
+
+/* ── Meta (right side, desktop only) ───────────────────────────────── */
+.meta {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--ds-radius-full);
+  background: color-mix(in oklch, var(--ds-brand-500) 8%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 18%, transparent);
+  color: var(--ds-brand-700);
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.meta svg {
+  color: var(--ds-brand-500);
+}
+.metaNum {
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-brand-700);
+}
+.metaLabel {
+  color: color-mix(in oklch, var(--ds-brand-700) 70%, transparent);
+  font-weight: 500;
+}
+
+/* ── Responsive ────────────────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .brand {
+    display: inline-flex;
+  }
+  .pill span {
+    display: none;
+  }
+  .pill {
+    padding: 0.5rem;
+  }
+}
+
+@media (min-width: 720px) {
+  .meta {
+    display: inline-flex;
+  }
+}

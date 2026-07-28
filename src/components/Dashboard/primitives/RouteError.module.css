@@ -39,11 +39,12 @@
   background: color-mix(in oklch, currentColor 10%, transparent);
 }
 
-.iconWrap[data-kind="network"]  { color: var(--at-accent, oklch(55% 0.14 250)); }
+/* رنگ‌های نوع خطا — network/unknown از رنگ اصلی سایت (سبز) */
+.iconWrap[data-kind="network"]  { color: var(--ds-brand-500, oklch(58% 0.12 165)); }
 .iconWrap[data-kind="auth"]     { color: oklch(55% 0.16 25); }
-.iconWrap[data-kind="notfound"] { color: oklch(60% 0.12 55); }
+.iconWrap[data-kind="notfound"] { color: var(--ds-brand-600, oklch(52% 0.14 162)); }
 .iconWrap[data-kind="server"]   { color: oklch(55% 0.14 280); }
-.iconWrap[data-kind="unknown"]  { color: oklch(60% 0.12 55); }
+.iconWrap[data-kind="unknown"]  { color: var(--ds-brand-500, oklch(58% 0.12 165)); }
 
 /* ── متن ──────────────────────────────────────────────────────── */
 .title {
@@ -84,6 +85,7 @@
   width: 100%;
 }
 
+/* دکمهٔ تلاش مجدد — رنگ اصلی سایت (سبز) */
 .retryBtn {
   display: inline-flex;
   align-items: center;
@@ -94,23 +96,24 @@
   font-family: inherit;
   font-size: var(--ds-text-sm, 0.875rem);
   font-weight: 600;
-  color: var(--at-accent-on, #fff);
-  background: var(--at-accent, oklch(52% 0.14 250));
+  color: #fff;
+  background: var(--ds-brand-500, oklch(58% 0.12 165));
   border: none;
-  border-radius: var(--at-radius, var(--ds-radius-lg, 0.75rem));
+  border-radius: var(--ds-radius-lg, 0.75rem);
   cursor: pointer;
-  transition: opacity var(--ds-duration-fast, 120ms) ease;
+  transition: background var(--ds-duration-fast, 120ms) ease;
 }
 
 .retryBtn:hover {
-  opacity: 0.88;
+  background: var(--ds-brand-600, oklch(52% 0.14 162));
 }
 
 .retryBtn:focus-visible {
-  outline: 2px solid var(--at-accent);
+  outline: 2px solid var(--ds-brand-500, oklch(58% 0.12 165));
   outline-offset: 2px;
 }
 
+/* لینک بازگشت — outline از جنس سبز سایت */
 .backLink {
   display: inline-flex;
   align-items: center;
@@ -120,15 +123,16 @@
   padding: 0 var(--ds-space-5);
   font-size: var(--ds-text-sm, 0.875rem);
   font-weight: 500;
-  color: var(--ds-fg-subtle, var(--at-fg-muted));
-  background: transparent;
-  border: 1px solid var(--ds-border-1, var(--at-line));
-  border-radius: var(--at-radius, var(--ds-radius-lg, 0.75rem));
+  color: var(--ds-brand-600, oklch(52% 0.14 162));
+  background: var(--ds-brand-50, oklch(96% 0.03 165));
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500, oklch(58% 0.12 165)) 35%, transparent);
+  border-radius: var(--ds-radius-lg, 0.75rem);
   text-decoration: none;
-  transition: border-color var(--ds-duration-fast, 120ms) ease;
+  transition: border-color var(--ds-duration-fast, 120ms) ease,
+              background var(--ds-duration-fast, 120ms) ease;
 }
 
 .backLink:hover {
-  border-color: var(--ds-border-2, var(--at-fg-subtle));
-  color: var(--ds-fg, var(--at-fg));
+  background: var(--ds-brand-100, oklch(92% 0.05 165));
+  border-color: color-mix(in oklch, var(--ds-brand-500, oklch(58% 0.12 165)) 55%, transparent);
 }

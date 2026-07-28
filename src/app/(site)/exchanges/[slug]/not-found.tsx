@@ -1,41 +1,34 @@
 /**
- * /exchanges/[slug]/not-found — وقتی صرافی با slug داده‌شده پیدا نشد
- *   یا status آن ACTIVE نیست (PENDING / SUSPENDED / BANNED).
+ * /exchanges/[slug]/not-found — صفحهٔ ۴۰۴ سفارشی.
  */
 
-import { ArrowRight, Building2, Search } from 'lucide-react';
-import type { Metadata } from 'next';
+import { ArrowLeft, Search } from 'lucide-react';
 import Link from 'next/link';
 import s from './not-found.module.css';
 
-export const metadata: Metadata = {
-  title: 'صرافی یافت نشد',
-  robots: { index: false },
-};
-
 export default function ExchangeNotFound() {
   return (
-    <main className={s.root} dir="rtl">
-      <div className={s.ambient} aria-hidden />
-      <div className={s.card}>
-        <div className={s.icon} aria-hidden>
-          <Building2 size={28} strokeWidth={1.5} />
+    <section className={s.section} dir="rtl">
+      <div className={s.inner}>
+        <div className={s.code} aria-hidden>
+          <span className={s.codeNum}>404</span>
         </div>
         <h1 className={s.title}>صرافی پیدا نشد</h1>
         <p className={s.sub}>
-          ممکن است صرافی مورد نظر هنوز تأیید نشده باشد، یا نام کوتاه (slug) نادرست وارد شده باشد.
+          صرافی که به دنبال آن می‌گردید وجود ندارد، منقضی شده یا هنوز فعال نشده است.
+          می‌توانید به فهرست صرافی‌های فعال مراجعه کنید.
         </p>
-        <div className={s.actions}>
-          <Link href="/exchanges" className={s.primary}>
-            <Search size={14} aria-hidden />
-            مشاهده همهٔ صرافی‌ها
+        <div className={s.cta}>
+          <Link href="/exchanges" className={s.ctaPrimary}>
+            <Search size={14} strokeWidth={1.9} aria-hidden />
+            <span>مشاهدهٔ فهرست صرافی‌ها</span>
           </Link>
-          <Link href="/" className={s.ghost}>
-            <ArrowRight size={14} aria-hidden />
+          <Link href="/" className={s.ctaGhost}>
+            <ArrowLeft size={13} strokeWidth={1.9} className={s.ctaIcon} aria-hidden />
             بازگشت به خانه
           </Link>
         </div>
       </div>
-    </main>
+    </section>
   );
 }
