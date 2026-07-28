@@ -3,23 +3,24 @@
 import {
   generateApiKey,
   getSystemSettings,
-  testDatabaseConnection,
   testSmtpConnection,
   updateCacheSettings,
   updateEmailSettings,
   updateGeneralSettings,
+  updateMaintenanceMode,
 } from '@/actions/settingsActions';
 import SocialLinksManager from '@/components/Dashboard/Settings/SocialLinksManager';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import { useToast } from '@/components/ui/use-toast';
 import {
+  AlertTriangle,
   Check,
   CheckCircle2,
-  Database,
   ImageIcon,
   Loader2,
   type LucideIcon,
   Mail,
+  PowerOff,
   RefreshCw,
   Settings,
   Share2,
@@ -40,34 +41,39 @@ interface TabType {
   icon: LucideIcon;
 }
 
-const TABS: TabType[] = [
-  { id: 'general', name: 'تنظیمات عمومی', desc: 'هویت سایت', icon: Settings },
-  { id: 'email', name: 'ایمیل / SMTP', desc: 'پیکربندی ارسال', icon: Mail },
-  { id: 'security', name: 'امنیت', desc: 'دسترسی و رمز', icon: Shield },
-  { id: 'social', name: 'شبکه‌های اجتماعی', desc: 'لینک‌های خارجی', icon: Share2 },
-  { id: 'database', name: 'پایگاه داده', desc: 'اتصال و backup', icon: Database },
-  { id: 'advanced', name: 'پیشرفته', desc: 'cache و API', icon: Wrench },
+interface TabGroup {
+  id: string;
+  label: string;
+  tabs: TabType[];
+}
+
+const TAB_GROUPS: TabGroup[] = [
+  {
+    id: 'system',
+    label: 'سیستم',
+    tabs: [
+      { id: 'general', name: 'تنظیمات عمومی', desc: 'هویت سایت', icon: Settings },
+      { id: 'email', name: 'ایمیل / SMTP', desc: 'پیکربندی ارسال', icon: Mail },
+      { id: 'maintenance', name: 'حالت تعمیرات', desc: 'کنترل دسترسی سایت', icon: Shield },
+      { id: 'advanced', name: 'پیشرفته', desc: 'cache و API', icon: Wrench },
+    ],
+  },
+  {
+    id: 'content',
+    label: 'محتوا',
+    tabs: [
+      { id: 'social', name: 'شبکه‌های اجتماعی', desc: 'لینک‌های خارجی', icon: Share2 },
+    ],
+  },
 ];
+
+const TABS: TabType[] = TAB_GROUPS.flatMap((g) => g.tabs);
 
 interface FormData {
   general: { siteTitle: string; siteDescription: string; contactEmail: string; logoUrl: string };
   email: { smtpServer: string; smtpPort: string; smtpUsername: string; smtpPassword: string };
-  security: {
-    twoFactorAuth: boolean;
-    ipRestriction: boolean;
-    minPasswordLength: number;
-    sessionDuration: number;
-  };
+  maintenance: { maintenanceMode: boolean; maintenanceMessage: string };
   social: { instagram: string; telegram: string; whatsapp: string; twitter: string };
-  database: {
-    server: string;
-    port: string;
-    name: string;
-    username: string;
-    password: string;
-    type: string;
-    autoBackup: boolean;
-  };
   advanced: {
     debugMode: boolean;
     cacheEnabled: boolean;
@@ -144,22 +150,8 @@ export default function SettingsPage() {
   const [form, setForm] = useState<FormData>({
     general: { siteTitle: '', siteDescription: '', contactEmail: '', logoUrl: '' },
     email: { smtpServer: '', smtpPort: '', smtpUsername: '', smtpPassword: '' },
-    security: {
-      twoFactorAuth: false,
-      ipRestriction: false,
-      minPasswordLength: 8,
-      sessionDuration: 30,
-    },
+    maintenance: { maintenanceMode: false, maintenanceMessage: 'سایت در حال به‌روزرسانی است...' },
     social: { instagram: '', telegram: '', whatsapp: '', twitter: '' },
-    database: {
-      server: '',
-      port: '',
-      name: '',
-      username: '',
-      password: '',
-      type: 'postgresql',
-      autoBackup: false,
-    },
     advanced: {
       debugMode: false,
       cacheEnabled: true,
@@ -200,6 +192,10 @@ export default function SettingsPage() {
               telegram: d.telegram || '',
               twitter: d.twitter || '',
               whatsapp: d.whatsapp || '',
+            },
+            maintenance: {
+              ...prev.maintenance,
+              maintenanceMode: d.maintenanceMode ?? false,
             },
             advanced: { ...prev.advanced, cacheEnabled: d.cacheEnabled ?? true },
           }));
@@ -278,6 +274,30 @@ export default function SettingsPage() {
       });
   }, [form.advanced.cacheEnabled, toast]);
 
+  const handleSaveMaintenance = useCallback(async () => {
+    setLoading(true);
+    const r = await updateMaintenanceMode({
+      maintenanceMode: form.maintenance.maintenanceMode,
+    }).catch(() => ({ success: false, error: 'خطا در ذخیره' }));
+    setLoading(false);
+    if ((r as { success: boolean }).success)
+      toast({
+        title: form.maintenance.maintenanceMode ? 'حالت تعمیرات فعال شد' : 'سایت فعال شد',
+        description: form.maintenance.maintenanceMode
+          ? 'کاربران صفحه تعمیرات را مشاهده می‌کنند'
+          : 'سایت برای همه در دسترس است',
+      });
+    else
+      toast({
+        title: 'خطا',
+        description:
+          typeof (r as { error?: unknown }).error === 'string'
+            ? (r as { error: string }).error
+            : 'خطا',
+        variant: 'destructive',
+      });
+  }, [form.maintenance.maintenanceMode, toast]);
+
   const handleTestSmtp = useCallback(async () => {
     setLoading(true);
     setTestResult(null);
@@ -296,23 +316,6 @@ export default function SettingsPage() {
           : 'اتصال ناموفق',
     });
   }, [form.email]);
-
-  const handleTestDb = useCallback(async () => {
-    setLoading(true);
-    setTestResult(null);
-    const r = await testDatabaseConnection().catch(() => ({
-      success: false,
-      message: 'خطا در تست',
-    }));
-    setLoading(false);
-    setTestResult({
-      ok: (r as { success: boolean }).success,
-      msg:
-        (r as { message?: string; error?: string }).message ||
-        (r as { error?: string }).error ||
-        ((r as { success: boolean }).success ? 'اتصال موفق' : 'اتصال ناموفق'),
-    });
-  }, []);
 
   const handleGenerateApiKey = useCallback(async () => {
     setLoading(true);
@@ -382,30 +385,35 @@ export default function SettingsPage() {
       <div className={s.body}>
         {/* ── Sidebar ── */}
         <nav className={s.sidebar} aria-label="بخش‌های تنظیمات">
-          {TABS.map((tab) => {
-            const Icon = tab.icon;
-            const active = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => {
-                  setActiveTab(tab.id);
-                  setTestResult(null);
-                }}
-                className={`${s.navBtn} ${active ? s.navBtnActive : ''}`}
-                aria-current={active ? 'page' : undefined}
-              >
-                <span className={s.navBtnIcon}>
-                  <Icon size={15} aria-hidden />
-                </span>
-                <span className={s.navBtnText}>
-                  <span>{tab.name}</span>
-                  <span className={s.navBtnDesc}>{tab.desc}</span>
-                </span>
-              </button>
-            );
-          })}
+          {TAB_GROUPS.map((group) => (
+            <div key={group.id} className={s.navGroup}>
+              <div className={s.navGroupLabel}>{group.label}</div>
+              {group.tabs.map((tab) => {
+                const Icon = tab.icon;
+                const active = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      setTestResult(null);
+                    }}
+                    className={`${s.navBtn} ${active ? s.navBtnActive : ''}`}
+                    aria-current={active ? 'page' : undefined}
+                  >
+                    <span className={s.navBtnIcon}>
+                      <Icon size={15} aria-hidden />
+                    </span>
+                    <span className={s.navBtnText}>
+                      <span>{tab.name}</span>
+                      <span className={s.navBtnDesc}>{tab.desc}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         {/* ── Content ── */}
@@ -696,8 +704,8 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {/* ── Security ── */}
-          {activeTab === 'security' && (
+          {/* ── Maintenance Mode ── */}
+          {activeTab === 'maintenance' && (
             <div className="at-form-section">
               <div className="at-form-section__head">
                 <div className="at-form-section__title">
@@ -705,89 +713,87 @@ export default function SettingsPage() {
                     <Shield size={16} />
                   </span>
                   <div>
-                    <div className="at-form-section__title-text">تنظیمات امنیتی</div>
-                    <div className="at-form-section__sub">مدیریت امنیت و دسترسی‌ها</div>
+                    <div className="at-form-section__title-text">حالت تعمیرات و نگهداری</div>
+                    <div className="at-form-section__sub">کنترل دسترسی کاربران به سایت</div>
                   </div>
                 </div>
               </div>
               <div className="at-form-section__body">
+                <div
+                  className={s.maintenanceBanner}
+                  data-active={String(form.maintenance.maintenanceMode)}
+                  role="status"
+                >
+                  <div className={s.maintenanceBannerIcon} aria-hidden>
+                    {form.maintenance.maintenanceMode ? (
+                      <PowerOff size={18} />
+                    ) : (
+                      <AlertTriangle size={18} />
+                    )}
+                  </div>
+                  <div className={s.maintenanceBannerText}>
+                    <strong>
+                      {form.maintenance.maintenanceMode
+                        ? 'سایت در حالت تعمیرات است'
+                        : 'سایت برای همه در دسترس است'}
+                    </strong>
+                    <span>
+                      {form.maintenance.maintenanceMode
+                        ? 'کاربران صفحه تعمیرات را می‌بینند؛ فقط مدیران ارشد به داشبورد دسترسی دارند.'
+                        : 'با فعال‌سازی، سایت موقتاً به حالت تعمیرات می‌رود.'}
+                    </span>
+                  </div>
+                </div>
+
                 <div className="at-form-stack" style={{ gap: 'var(--ds-space-2)' }}>
                   <ToggleRow
-                    title="احراز هویت دو مرحله‌ای (2FA)"
-                    desc="فعال‌سازی 2FA برای تمام کاربران ادمین"
-                    enabled={form.security.twoFactorAuth}
-                    onChange={() => set('security', 'twoFactorAuth', !form.security.twoFactorAuth)}
-                    disabled={loading}
-                  />
-                  <ToggleRow
-                    title="محدودیت IP"
-                    desc="محدود کردن دسترسی به IP‌های مشخص"
-                    enabled={form.security.ipRestriction}
-                    onChange={() => set('security', 'ipRestriction', !form.security.ipRestriction)}
+                    title="فعال‌سازی حالت تعمیرات"
+                    desc="نمایش صفحه تعمیرات به جای سایت اصلی برای بازدیدکنندگان"
+                    enabled={form.maintenance.maintenanceMode}
+                    onChange={() =>
+                      set('maintenance', 'maintenanceMode', !form.maintenance.maintenanceMode)
+                    }
                     disabled={loading}
                   />
                 </div>
-                <div className="at-form-grid" style={{ marginTop: 'var(--ds-space-4)' }}>
-                  <label className="at-field">
-                    <span className="at-field__label">حداقل طول رمز عبور</span>
-                    <select
-                      className="at-select"
-                      value={form.security.minPasswordLength}
-                      onChange={(e) =>
-                        set('security', 'minPasswordLength', Number.parseInt(e.target.value))
-                      }
-                      disabled={loading}
-                    >
-                      {[6, 8, 10, 12].map((v) => (
-                        <option key={v} value={v}>
-                          {v} کاراکتر
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="at-field">
-                    <span className="at-field__label">مدت زمان نشست</span>
-                    <select
-                      className="at-select"
-                      value={form.security.sessionDuration}
-                      onChange={(e) =>
-                        set('security', 'sessionDuration', Number.parseInt(e.target.value))
-                      }
-                      disabled={loading}
-                    >
-                      {[
-                        { v: 30, l: '۳۰ دقیقه' },
-                        { v: 60, l: '۱ ساعت' },
-                        { v: 120, l: '۲ ساعت' },
-                        { v: 240, l: '۴ ساعت' },
-                      ].map(({ v, l }) => (
-                        <option key={v} value={v}>
-                          {l}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
+
+                <label className="at-field" style={{ marginTop: 'var(--ds-space-4)' }}>
+                  <span className="at-field__label">پیام به کاربران (نمایش در صفحه تعمیرات)</span>
+                  <textarea
+                    className="at-input"
+                    rows={3}
+                    value={form.maintenance.maintenanceMessage}
+                    onChange={(e) => set('maintenance', 'maintenanceMessage', e.target.value)}
+                    disabled={loading}
+                    placeholder="مثال: در حال به‌روزرسانی هستیم، لطفاً چند دقیقه دیگر مراجعه کنید..."
+                  />
+                </label>
+
                 <div
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'flex-end',
-                    paddingTop: '4px',
+                    justifyContent: 'space-between',
+                    gap: 'var(--ds-space-2)',
+                    paddingTop: 'var(--ds-space-3)',
+                    flexWrap: 'wrap',
                   }}
                 >
+                  <p className={s.maintenanceHint}>
+                    تغییرات بلافاصله پس از ذخیره اعمال می‌شوند. فقط نقش «مدیر ارشد» می‌تواند این
+                    تنظیم را تغییر دهد.
+                  </p>
                   <button
                     type="button"
                     disabled={loading}
                     className="at-btn at-btn--primary"
-                    onClick={() =>
-                      toast({
-                        title: 'در دست توسعه',
-                        description: 'ذخیره تنظیمات امنیتی در نسخه آینده',
-                      })
-                    }
+                    onClick={handleSaveMaintenance}
                   >
-                    <Check size={14} />
+                    {loading ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <Check size={14} />
+                    )}
                     ذخیره تنظیمات
                   </button>
                 </div>
@@ -811,146 +817,6 @@ export default function SettingsPage() {
               </div>
               <div className="at-form-section__body">
                 <SocialLinksManager />
-              </div>
-            </div>
-          )}
-
-          {/* ── Database ── */}
-          {activeTab === 'database' && (
-            <div className="at-form-section">
-              <div className="at-form-section__head">
-                <div className="at-form-section__title">
-                  <span className="at-form-section__ico">
-                    <Database size={16} />
-                  </span>
-                  <div>
-                    <div className="at-form-section__title-text">پایگاه داده</div>
-                    <div className="at-form-section__sub">اتصال و پیکربندی دیتابیس</div>
-                  </div>
-                </div>
-              </div>
-              <div className="at-form-section__body">
-                <div className="at-form-grid">
-                  <label className="at-field">
-                    <span className="at-field__label">آدرس سرور</span>
-                    <input
-                      type="text"
-                      className="at-input"
-                      dir="ltr"
-                      value={form.database.server}
-                      onChange={(e) => set('database', 'server', e.target.value)}
-                      placeholder="localhost"
-                      disabled={loading}
-                    />
-                  </label>
-                  <label className="at-field">
-                    <span className="at-field__label">پورت</span>
-                    <input
-                      type="text"
-                      className="at-input"
-                      dir="ltr"
-                      value={form.database.port}
-                      onChange={(e) => set('database', 'port', e.target.value)}
-                      placeholder="5432"
-                      disabled={loading}
-                    />
-                  </label>
-                  <label className="at-field">
-                    <span className="at-field__label">نام پایگاه داده</span>
-                    <input
-                      type="text"
-                      className="at-input"
-                      dir="ltr"
-                      value={form.database.name}
-                      onChange={(e) => set('database', 'name', e.target.value)}
-                      placeholder="fintech_db"
-                      disabled={loading}
-                    />
-                  </label>
-                  <label className="at-field">
-                    <span className="at-field__label">نام کاربری</span>
-                    <input
-                      type="text"
-                      className="at-input"
-                      dir="ltr"
-                      value={form.database.username}
-                      onChange={(e) => set('database', 'username', e.target.value)}
-                      placeholder="postgres"
-                      disabled={loading}
-                      autoComplete="off"
-                    />
-                  </label>
-                  <label className="at-field">
-                    <span className="at-field__label">رمز عبور</span>
-                    <input
-                      type="password"
-                      className="at-input"
-                      dir="ltr"
-                      value={form.database.password}
-                      onChange={(e) => set('database', 'password', e.target.value)}
-                      placeholder="••••••••"
-                      disabled={loading}
-                      autoComplete="new-password"
-                    />
-                  </label>
-                  <label className="at-field">
-                    <span className="at-field__label">نوع پایگاه داده</span>
-                    <select
-                      className="at-select"
-                      value={form.database.type}
-                      onChange={(e) => set('database', 'type', e.target.value)}
-                      disabled={loading}
-                    >
-                      <option value="postgresql">PostgreSQL</option>
-                      <option value="mysql">MySQL</option>
-                      <option value="mongodb">MongoDB</option>
-                    </select>
-                  </label>
-                </div>
-                <div style={{ marginTop: 'var(--ds-space-3)' }}>
-                  <ToggleRow
-                    title="پشتیبان‌گیری خودکار"
-                    desc="پشتیبان‌گیری دوره‌ای از پایگاه داده"
-                    enabled={form.database.autoBackup}
-                    onChange={() => set('database', 'autoBackup', !form.database.autoBackup)}
-                    disabled={loading}
-                  />
-                </div>
-
-                {testResult && (
-                  <div className={s.testResult} data-ok={String(testResult.ok)}>
-                    {testResult.ok ? (
-                      <CheckCircle2 size={15} aria-hidden />
-                    ) : (
-                      <XCircle size={15} aria-hidden />
-                    )}
-                    {testResult.msg}
-                  </div>
-                )}
-
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'flex-end',
-                    gap: 'var(--ds-space-2)',
-                    paddingTop: '4px',
-                  }}
-                >
-                  <button
-                    type="button"
-                    onClick={handleTestDb}
-                    disabled={loading}
-                    className="at-btn"
-                  >
-                    {loading ? (
-                      <Loader2 size={14} className="animate-spin" />
-                    ) : (
-                      <Database size={14} />
-                    )}
-                    تست اتصال
-                  </button>
-                </div>
               </div>
             </div>
           )}

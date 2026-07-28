@@ -18,6 +18,7 @@ import { getScheduledPosts, getStats } from '@/actions/postActions';
 // a real-time data layer (the ticker). Editorial module kept on disk
 // for rollback.
 import { AtelierDeck } from '@/components/Dashboard/DashboardPage/atelier';
+import { LiveOpsPulseServer } from '@/components/Dashboard/DashboardPage/LiveOpsPulseServer';
 import { FintechKpiWidget } from '@/components/Dashboard/FintechKpi/FintechKpiWidget';
 import ServiceRequestsWidget from '@/components/Dashboard/ServiceRequests/ServiceRequestsWidget';
 import { checkRole } from '@/lib/auth';
@@ -100,6 +101,11 @@ export default async function Dashboard() {
       {isAdmin && (
         <div className="px-4 sm:px-6 lg:px-8 pb-4">
           <FintechKpiWidget data={fintechKpi} />
+        </div>
+      )}
+      {isAdmin && (
+        <div className="px-4 sm:px-6 lg:px-8 pb-4">
+          <LiveOpsPulseServer />
         </div>
       )}
       {isAdmin && (

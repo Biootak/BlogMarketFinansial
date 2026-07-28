@@ -41,7 +41,7 @@
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-1);
+  gap: var(--ds-space-3);
   position: sticky;
   top: 24px;
 }
@@ -49,11 +49,25 @@
 @media (max-width: 768px) {
   .sidebar {
     width: 100%;
-    flex-direction: row;
-    flex-wrap: wrap;
-    overflow-x: auto;
+    flex-direction: column;
     position: static;
   }
+}
+
+.navGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.navGroupLabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--at-muted, oklch(55% 0 0));
+  padding: 0 10px 6px;
+  user-select: none;
 }
 
 .navBtn {
@@ -230,4 +244,77 @@
 .testResult[data-ok="false"] {
   background: var(--at-danger-soft, oklch(97% 0.03 25));
   color: var(--at-danger-fg, var(--at-danger));
+}
+
+/* ── Maintenance banner (2026 — برای صفحه حالت تعمیرات) ───────────────── */
+.maintenanceBanner {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--ds-space-3);
+  align-items: flex-start;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-radius: var(--at-radius);
+  border: 1px solid var(--at-border, var(--nova-border, oklch(85% 0 0 / 0.18)));
+  background: var(--at-surface-1, oklch(98% 0 0));
+  color: var(--at-fg, var(--at-text, inherit));
+  margin-bottom: var(--ds-space-3);
+  transition:
+    background 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease;
+}
+
+.maintenanceBanner[data-active="true"] {
+  background: var(--at-warning-soft, oklch(96% 0.04 75));
+  border-color: var(--at-warning, oklch(75% 0.12 75));
+  color: var(--at-warning-fg, oklch(35% 0.12 65));
+}
+
+.maintenanceBanner[data-active="false"] {
+  background: var(--at-success-soft, oklch(96% 0.03 145));
+  border-color: var(--at-success, oklch(75% 0.1 145));
+  color: var(--at-success-fg, oklch(40% 0.13 145));
+}
+
+.maintenanceBannerIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  width: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.55);
+  flex-shrink: 0;
+}
+
+.maintenanceBannerText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.maintenanceBannerText strong {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.maintenanceBannerText span {
+  font-size: 0.8125rem;
+  opacity: 0.85;
+}
+
+.maintenanceHint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--at-muted, var(--nova-fg-muted, oklch(50% 0 0)));
+  max-width: 380px;
+  line-height: 1.7;
+}
+
+@media (max-width: 640px) {
+  .maintenanceHint {
+    max-width: 100%;
+  }
 }

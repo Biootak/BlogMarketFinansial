@@ -1,0 +1,597 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   LiveOpsPulse — مرکز عملیات زنده (2026)
+   کنترل-روم مینیمال: hairline + brand tokens، RTL-safe، mobile-first
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes lop-pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(1.18); }
+}
+
+@keyframes lop-pulse-bar {
+  0%, 100% { transform: scaleY(0.5); }
+  50% { transform: scaleY(1); }
+}
+
+@keyframes lop-pulse-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lop-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── Root layout ─────────────────────────────────────────────────────────── */
+.root {
+  width: 100%;
+  direction: rtl;
+  color: var(--at-fg, var(--at-text, inherit));
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: var(--ds-space-4);
+}
+
+@media (max-width: 960px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ── Shared surface ──────────────────────────────────────────────────────── */
+.pulsePanel,
+.feedPanel {
+  position: relative;
+  background: var(--at-surface-1, var(--at-card, oklch(99% 0 0)));
+  border: 1px solid var(--at-border, oklch(85% 0 0 / 0.18));
+  border-radius: var(--at-radius-lg, 16px);
+  padding: var(--ds-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .pulsePanel,
+  .feedPanel {
+    padding: var(--ds-space-5);
+  }
+}
+
+.pulsePanel::before,
+.feedPanel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+      ellipse at top right,
+      color-mix(in oklch, var(--ds-color-brand-primary, var(--at-primary, oklch(70% 0.13 165))) 6%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse at bottom left,
+      color-mix(in oklch, var(--at-info, oklch(70% 0.1 230)) 5%, transparent),
+      transparent 60%
+    );
+  z-index: 0;
+}
+
+.pulsePanel > *,
+.feedPanel > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Pulse head ──────────────────────────────────────────────────────────── */
+.pulseHead,
+.feedHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+}
+
+.pulseHeadMeta,
+.feedHeadMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  min-width: 0;
+}
+
+.brandDot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  color: var(--at-primary-fg, white);
+  background: linear-gradient(
+    135deg,
+    var(--ds-color-brand-primary, var(--at-primary, oklch(70% 0.13 165))),
+    color-mix(in oklch, var(--ds-color-brand-primary, var(--at-primary)) 65%, black)
+  );
+  box-shadow:
+    0 1px 0 color-mix(in oklch, white 35%, transparent) inset,
+    0 6px 18px color-mix(in oklch, var(--ds-color-brand-primary, var(--at-primary)) 28%, transparent);
+}
+
+.pulseTitle,
+.feedTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--at-fg, inherit);
+}
+
+.pulseSub {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  color: var(--at-muted, oklch(55% 0 0));
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.liveDot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--at-danger, oklch(65% 0.18 25));
+  box-shadow: 0 0 0 0 var(--at-danger);
+  animation: lop-pulse-dot 1.4s ease-in-out infinite;
+}
+
+.healthPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--at-border, oklch(85% 0 0 / 0.2));
+  background: var(--at-surface-2, oklch(97% 0 0));
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--at-muted, oklch(45% 0 0));
+  white-space: nowrap;
+}
+
+.healthPill[data-state='ok'] {
+  color: var(--at-success-fg, oklch(40% 0.13 145));
+  background: color-mix(in oklch, var(--at-success) 12%, transparent);
+  border-color: color-mix(in oklch, var(--at-success) 35%, transparent);
+}
+
+.healthPill[data-state='warn'] {
+  color: var(--at-warning-fg, oklch(40% 0.12 75));
+  background: color-mix(in oklch, var(--at-warning) 14%, transparent);
+  border-color: color-mix(in oklch, var(--at-warning) 40%, transparent);
+}
+
+.healthPill[data-state='bad'] {
+  color: var(--at-danger-fg, oklch(40% 0.18 25));
+  background: color-mix(in oklch, var(--at-danger) 12%, transparent);
+  border-color: color-mix(in oklch, var(--at-danger) 40%, transparent);
+}
+
+.healthPillLabel {
+  font-size: 0.7rem;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+/* ── Waveform ────────────────────────────────────────────────────────────── */
+.wave {
+  display: flex;
+  align-items: flex-end;
+  justify-content: stretch;
+  gap: 3px;
+  height: 64px;
+  padding: 0 4px;
+  direction: ltr; /* keep wave aligned left-to-right visually even in RTL */
+}
+
+.waveBar {
+  flex: 1;
+  min-width: 3px;
+  background: linear-gradient(
+    180deg,
+    var(--ds-color-brand-primary, var(--at-primary, oklch(70% 0.13 165))),
+    color-mix(in oklch, var(--ds-color-brand-primary, var(--at-primary)) 40%, transparent)
+  );
+  border-radius: 2px;
+  transform-origin: bottom center;
+  opacity: 0.55;
+  transition: height 200ms ease;
+}
+
+.waveBar[data-peak='true'] {
+  opacity: 1;
+  box-shadow: 0 0 12px color-mix(in oklch, var(--ds-color-brand-primary, var(--at-primary)) 60%, transparent);
+  animation: lop-pulse-bar 1.6s ease-in-out infinite;
+}
+
+/* ── 24h strip ───────────────────────────────────────────────────────────── */
+.strip {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2px;
+  height: 42px;
+  padding: var(--ds-space-2) var(--ds-space-2) 0;
+  border-top: 1px dashed var(--at-border, oklch(85% 0 0 / 0.18));
+  border-bottom: 1px dashed var(--at-border, oklch(85% 0 0 / 0.18));
+  background: var(--at-surface-2, oklch(98% 0 0 / 0.5));
+  border-radius: 8px;
+}
+
+.stripBar {
+  flex: 1;
+  min-width: 4px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--ds-color-brand-primary, var(--at-primary)) 75%, transparent),
+    color-mix(in oklch, var(--ds-color-brand-primary, var(--at-primary)) 28%, transparent)
+  );
+  border-radius: 2px;
+  transition: height 220ms ease;
+}
+
+.stripBar:hover {
+  background: linear-gradient(
+    180deg,
+    var(--ds-color-brand-primary, var(--at-primary)),
+    color-mix(in oklch, var(--ds-color-brand-primary, var(--at-primary)) 50%, transparent)
+  );
+}
+
+/* ── Services list ──────────────────────────────────────────────────────── */
+.services {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.servicesHead {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--at-muted, oklch(50% 0 0));
+  font-weight: 500;
+}
+
+.servicesCount {
+  margin-inline-start: auto;
+  font-size: 0.7rem;
+  color: var(--at-muted, oklch(55% 0 0));
+  background: var(--at-surface-2, oklch(97% 0 0));
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--at-border, oklch(85% 0 0 / 0.18));
+}
+
+.serviceList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.serviceItem {
+  border-radius: 10px;
+  transition: background 180ms ease;
+}
+
+.serviceItem:hover {
+  background: var(--at-surface-2, oklch(97% 0 0 / 0.6));
+}
+
+.serviceLink {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: 8px 10px;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 10px;
+}
+
+.serviceIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--at-surface-2, oklch(97% 0 0));
+  border: 1px solid var(--at-border, oklch(85% 0 0 / 0.18));
+}
+
+.serviceText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.serviceName {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--at-fg, inherit);
+  line-height: 1.3;
+}
+
+.serviceDesc {
+  font-size: 0.7rem;
+  color: var(--at-muted, oklch(55% 0 0));
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.serviceMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--at-muted, oklch(55% 0 0));
+  white-space: nowrap;
+}
+
+.statusDot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px color-mix(in oklch, currentColor 18%, transparent);
+}
+
+.serviceItem[data-status='healthy'] .statusDot {
+  animation: lop-pulse-dot 2.2s ease-in-out infinite;
+  color: var(--at-success, oklch(70% 0.13 145));
+}
+
+.serviceItem[data-status='degraded'] .statusDot {
+  animation: lop-pulse-dot 1.2s ease-in-out infinite;
+  color: var(--at-warning, oklch(75% 0.12 75));
+}
+
+.serviceItem[data-status='down'] .statusDot {
+  animation: lop-pulse-dot 0.6s ease-in-out infinite;
+  color: var(--at-danger, oklch(65% 0.18 25));
+}
+
+.statusLabel {
+  font-weight: 500;
+}
+
+.latency {
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  background: var(--at-surface-2, oklch(97% 0 0));
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--at-border, oklch(85% 0 0 / 0.18));
+  color: var(--at-muted, oklch(45% 0 0));
+}
+
+/* ── Feed panel ─────────────────────────────────────────────────────────── */
+.feedPanel {
+  min-height: 380px;
+}
+
+.feedCount {
+  font-size: 0.7rem;
+  color: var(--at-muted, oklch(55% 0 0));
+  background: var(--at-surface-2, oklch(97% 0 0));
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--at-border, oklch(85% 0 0 / 0.18));
+}
+
+.feedEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-6) 0;
+  color: var(--at-muted, oklch(60% 0 0));
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.feedList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 360px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.feedItem {
+  animation: lop-pulse-fade-in 220ms ease both;
+}
+
+.feedLink {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: flex-start;
+  gap: var(--ds-space-3);
+  padding: 10px 8px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 160ms ease;
+}
+
+.feedLink:hover {
+  background: var(--at-surface-2, oklch(97% 0 0 / 0.6));
+}
+
+.feedIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  border: 1px solid var(--at-border, oklch(85% 0 0 / 0.18));
+}
+
+.feedBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.feedLine1 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.feedActor {
+  font-weight: 600;
+  color: var(--at-fg, inherit);
+}
+
+.feedAction {
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--at-surface-2, oklch(97% 0 0));
+  border: 1px solid var(--at-border, oklch(85% 0 0 / 0.18));
+}
+
+.feedAmount {
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--at-fg, inherit);
+  margin-inline-start: auto;
+  background: var(--at-surface-2, oklch(97% 0 0));
+  padding: 1px 7px;
+  border-radius: 6px;
+  border: 1px solid var(--at-border, oklch(85% 0 0 / 0.18));
+}
+
+.feedCurrency {
+  font-size: 0.65rem;
+  opacity: 0.7;
+  margin-inline-start: 2px;
+}
+
+.feedLine2 {
+  font-size: 0.75rem;
+  color: var(--at-muted, oklch(55% 0 0));
+  line-height: 1.45;
+}
+
+.feedTime {
+  margin-inline-start: 4px;
+  color: var(--at-muted, oklch(60% 0 0));
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Footer ─────────────────────────────────────────────────────────────── */
+.feedFoot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  color: var(--at-muted, oklch(55% 0 0));
+  padding-top: var(--ds-space-2);
+  border-top: 1px dashed var(--at-border, oklch(85% 0 0 / 0.18));
+  margin-top: auto;
+}
+
+.feedFootTime {
+  margin-inline-start: auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--at-fg, oklch(35% 0 0));
+  background: var(--at-surface-2, oklch(97% 0 0));
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--at-border, oklch(85% 0 0 / 0.18));
+}
+
+/* ── Scroll polish ──────────────────────────────────────────────────────── */
+.feedList::-webkit-scrollbar {
+  width: 4px;
+}
+
+.feedList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.feedList::-webkit-scrollbar-thumb {
+  background: var(--at-border, oklch(85% 0 0 / 0.3));
+  border-radius: 2px;
+}
+
+/* ── Shortcut focus highlight (data-shortcut-active) ───────────────────── */
+/* وقتی chord `g l` یا URL #liveops فوکوس می‌شود، یک pulse نوری نرم روی
+   wrapper اعمال می‌شود تا کاربر متوجه scroll شود. فقط transform + opacity
+   تا با global reduced-motion سازگار باشد. */
+@keyframes lop-shortcut-pulse {
+  0% {
+    box-shadow:
+      0 0 0 0 color-mix(in oklch, var(--ds-color-brand-primary, var(--at-primary, oklch(70% 0.16 165))) 45%, transparent),
+      var(--at-shadow, 0 1px 0 oklch(0% 0 0 / 0.04));
+  }
+  35% {
+    box-shadow:
+      0 0 0 6px color-mix(in oklch, var(--ds-color-brand-primary, var(--at-primary, oklch(70% 0.16 165))) 30%, transparent),
+      var(--at-shadow, 0 1px 0 oklch(0% 0 0 / 0.04));
+  }
+  100% {
+    box-shadow:
+      0 0 0 0 color-mix(in oklch, var(--ds-color-brand-primary, var(--at-primary, oklch(70% 0.16 165))) 0%, transparent),
+      var(--at-shadow, 0 1px 0 oklch(0% 0 0 / 0.04));
+  }
+}
+
+:global([data-shortcut-target='liveops'][data-shortcut-active]) {
+  border-radius: var(--at-radius, 14px);
+  animation: lop-shortcut-pulse 1.6s ease-out 1;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .liveDot,
+  .waveBar[data-peak='true'],
+  .serviceItem[data-status] .statusDot {
+    animation: none;
+  }
+  :global([data-shortcut-target='liveops'][data-shortcut-active]) {
+    animation: none;
+    outline: 2px solid var(--ds-color-brand-primary, var(--at-primary, oklch(70% 0.16 165)));
+    outline-offset: 2px;
+  }
+}

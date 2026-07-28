@@ -100,9 +100,12 @@ export function DashboardProviders({
         dir="rtl"
       >
         <SidebarInitializer />
-        {/* KeyboardShortcuts contains admin-scoped hotkeys (g d → /dashboard/posts, etc.)
-            and must only run in the admin portal to avoid navigation leaks. */}
-        {portal === 'admin' && <KeyboardShortcuts />}
+        {/* KeyboardShortcuts handles both universal (g t theme, g k search,
+            g ? help, ⌘K palette) and admin-only (g d/p/s/r/c/a/l navigation)
+            chords. It must run in every portal so theme toggle and search
+            focus are available everywhere; the admin-only subset is gated
+            internally by the `portal` prop. */}
+        <KeyboardShortcuts portal={portal} />
         <Sidebar userRole={sidebarRole} staffRole={staffRole} />
         <SidebarToggle />
         <BreadcrumbProvider>

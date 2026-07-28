@@ -223,11 +223,38 @@ const Header: React.FC<HeaderProps> = ({ portal = 'admin' }) => {
   const [isSearching, setIsSearching] = useState(false);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
+  // Silent-focus protocol — lets keyboard shortcuts (e.g. `g k`) and the
+  // mobile search-morph auto-focus the search input WITHOUT opening the
+  // command palette. The flag is set synchronously, consumed in `onFocus`,
+  // then cleared on the next animation frame to leave manual clicks
+  // (which should still open the palette) untouched.
+  const silentFocusRef = useRef(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handler = () => {
+      const el = searchInputRef.current;
+      if (!el) return;
+      silentFocusRef.current = true;
+      el.focus();
+      el.select();
+      window.requestAnimationFrame(() => {
+        silentFocusRef.current = false;
+      });
+    };
+    window.addEventListener('cmd-search:focus-silently', handler);
+    return () => window.removeEventListener('cmd-search:focus-silently', handler);
+  }, []);
+
   // When search mode opens, auto-focus the input + lock body scroll so
-  // users stay anchored to the morph.
+  // users stay anchored to the morph. Goes through the silent-focus
+  // event so the command palette does NOT open on top — on mobile, the
+  // input itself is the primary surface, and the palette is a redundant
+  // overlay. Power users can still press `Mod+K` to summon the palette.
   useEffect(() => {
     if (!isSearching) return;
-    const t = window.setTimeout(() => searchInputRef.current?.focus(), 60);
+    const t = window.setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('cmd-search:focus-silently'));
+    }, 60);
     return () => window.clearTimeout(t);
   }, [isSearching]);
 
@@ -339,7 +366,10 @@ const Header: React.FC<HeaderProps> = ({ portal = 'admin' }) => {
                   setIsSearching(false);
                 }
               }}
-              onFocus={portal === 'admin' ? openCommandPalette : undefined}
+              onFocus={() => {
+                if (silentFocusRef.current) return;
+                if (portal === 'admin') openCommandPalette();
+              }}
               className="dash-header__search-input"
               aria-label="جستجو در داشبورد"
             />
