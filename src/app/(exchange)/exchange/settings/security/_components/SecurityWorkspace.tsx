@@ -13,6 +13,7 @@
  */
 
 import { SettingsSurfaceCard } from '@/components/Dashboard/primitives';
+import { TwoFactorSection } from '@/components/Dashboard/Profile/TwoFactorSection';
 import { type ExchangeRow } from '@/actions/exchanges';
 import { ChevronLeft, Clock, KeyRound, ShieldCheck, Users } from 'lucide-react';
 import Link from 'next/link';
@@ -33,6 +34,7 @@ type Props = {
   exchange: ExchangeRow;
   staff: StaffRow[];
   currentUserId: string;
+  currentUserEmail?: string;
   currentRole: string;
   canEdit: boolean;
 };
@@ -46,7 +48,7 @@ const ROLE_FA: Record<string, { label: string; tone: string; desc: string }> = {
 
 const dateFa = new Intl.DateTimeFormat('fa-IR', { dateStyle: 'long' });
 
-export default function SecurityWorkspace({ exchange, staff, currentUserId, currentRole, canEdit }: Props) {
+export default function SecurityWorkspace({ exchange, staff, currentUserId, currentUserEmail, currentRole, canEdit }: Props) {
   const activeStaff = staff.filter((m) => !m.revokedAt);
   const roleStats = activeStaff.reduce<Record<string, number>>((acc, m) => {
     acc[m.role] = (acc[m.role] ?? 0) + 1;
@@ -55,7 +57,7 @@ export default function SecurityWorkspace({ exchange, staff, currentUserId, curr
 
   return (
     <div className={s.root}>
-      {/* ── 2FA banner ──────────────────────────────────────────── */}
+      {/* ── 2FA banner (informational summary for the whole team) ── */}
       <div className={s.twofaBanner}>
         <span className={s.twofaIcon} aria-hidden>
           <KeyRound size={18} strokeWidth={1.85} />
@@ -64,13 +66,16 @@ export default function SecurityWorkspace({ exchange, staff, currentUserId, curr
           <strong>تأیید دو مرحله‌ای (2FA)</strong>
           <span>
             برای افزایش امنیت، توصیه می‌شود همهٔ اعضای دارای نقش حساس 2FA را
-            فعال کنند. این تنظیم در پروفایل هر عضو انجام می‌شود.
+            فعال کنند.
           </span>
         </div>
         <span className={s.twofaBadge}>
           {activeStaff.length > 1 ? 'پیشنهاد ویژه' : 'اختیاری'}
         </span>
       </div>
+
+      {/* ── Personal 2FA — interactive panel for the current staff member */}
+      <TwoFactorSection userEmail={currentUserEmail} />
 
       {/* ── Members grid ────────────────────────────────────────── */}
       <SettingsSurfaceCard

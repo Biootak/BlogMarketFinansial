@@ -5,18 +5,17 @@
  * این صفحه جایگزین redirect های semantically-غلط قبلی شده (مثلاً لینک
  * «درخواست حساب جدید» که قبلاً به /customer/notifications می‌رفت).
  *
- * جریان:
- *   1. کاربر از AccountsContent یا sidebar وارد می‌شود با ?type=ACCOUNT_NEW
+ * جریان (معماری ۲۰۲۶-۰۷-۲۸):
+ *   1. کاربر از AccountsContent یا quick action وارد می‌شود با ?type=ACCOUNT_NEW
  *      یا ?type=TRANSFER_INITIATE یا ...
  *   2. فرم را پر می‌کند (نوع + payload داینامیک + توضیح)
- *   3. submit → server action `createCustomerRequest` یک notification ثبت
- *      می‌کند (با prefix ساختاریافته `[REQUEST:TYPE]`)
- *   4. کاربر به /customer/notifications redirect می‌شود و تأییدیه را
- *      در inbox می‌بیند (پیام READ نیست تا متوجه شود)
- *
- * نکته: به جای migration DB و ساخت جدول جدید، از همین Notification
- * model استفاده می‌کنیم. prefix `[REQUEST:TYPE]` هم برای UI قابل parse
- * است و هم برای صرافی در inbox خودش.
+ *   3. submit → server action `createCustomerRequest`:
+ *      - یک CustomerRequest ثبت می‌کند (source-of-truth، trackingCode یکتا)
+ *      - یک StatusLog اولیه اضافه می‌کند
+ *      - یک notification تأییدیه cross-link می‌سازد (best of both)
+ *   4. کاربر به /customer/requests/[id] (جزئیات) redirect می‌شود
+ *      - لیست درخواست‌ها در /customer/requests است
+ *      - notification تأییدیه در inbox باقی می‌ماند
  */
 
 import { getCustomerAccounts, getCustomerProfile } from '@/actions/customer-portal';
@@ -59,13 +58,14 @@ export default async function NewRequestPage({
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
       <PageHeader
         title="درخواست جدید"
-        description="درخواست خود را برای صرافی ثبت کنید. پس از تأیید، پیامی در inbox شما قرار می‌گیرد"
+        description="درخواست خود را برای صرافی ثبت کنید. پس از ثبت، در لیست درخواست‌ها قابل پیگیری است"
         breadcrumb={[
-          { label: 'پورتال مشتری', href: '/customer' },
-          { label: 'پیام‌ها', href: '/customer/notifications' },
-          { label: 'درخواست جدید' },
+          { label: 'پورتال مشتری', href: '/customer/dashboard' },
+          { label: 'درخواست‌های من', href: '/customer/requests' },
+          { label: 'جدید' },
         ]}
-        icon="send"
+        icon="sparkles"
+        accent="violet"
       />
       <RequestForm initialType={type} accounts={accounts} profileStatus={profile.status} />
     </div>

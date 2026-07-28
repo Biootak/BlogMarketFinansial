@@ -4,7 +4,7 @@
  * RequestForm — فرم یکپارچهٔ درخواست‌های مشتری به صرافی
  * ---------------------------------------------------------------------------
  * نوع درخواست (`type`) تعیین می‌کند کدام فیلدهای اضافی نمایش داده شوند.
- * submit → server action `createCustomerRequest` → redirect به notifications
+ * submit → server action `createCustomerRequest` → redirect به لیست درخواست‌ها
  *
  * نکته: با تغییر type، فیلدهای قبلی reset می‌شوند تا کاربر اشتباه نکند.
  */
@@ -184,9 +184,13 @@ export default function RequestForm({ initialType, accounts, profileStatus }: Pr
       }
       toast({
         title: 'درخواست شما ثبت شد',
-        description: 'پیام تأیید در inbox شما قرار گرفت. صرافی به‌زودی پاسخ می‌دهد.',
+        description: res.trackingCode
+          ? `کد پیگیری ${res.trackingCode} — صرافی به‌زودی پاسخ می‌دهد.`
+          : 'صرافی به‌زودی پاسخ می‌دهد.',
       });
-      router.push('/customer/notifications');
+      // به صفحهٔ لیست درخواست‌ها هدایت شود (source-of-truth)
+      // نه notifications (که فقط تأییدیه است)
+      router.push(res.requestId ? `/customer/requests/${res.requestId}` : '/customer/requests');
       router.refresh();
     });
   }
@@ -261,7 +265,7 @@ export default function RequestForm({ initialType, accounts, profileStatus }: Pr
                 id="acc-currency"
                 value={currency}
                 onChange={setCurrency}
-                currencies={CURRENCIES}
+                currencies={CURRENCY_ITEMS}
               />
             </FormField>
           </div>

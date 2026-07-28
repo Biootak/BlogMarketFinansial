@@ -447,10 +447,10 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                       type="button"
                       onClick={() => {
                         if (rawQuery.length >= 2) {
-                          router.push(`/archive?q=${encodeURIComponent(rawQuery)}`);
+                          router.push(`/search?q=${encodeURIComponent(rawQuery)}`);
                           handleClose();
                         } else {
-                          router.push('/archive');
+                          router.push('/search');
                           handleClose();
                         }
                       }}
@@ -462,7 +462,7 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                         font-medium transition-colors
                       "
                     >
-                      {rawQuery.length >= 2 ? `جستجوی "${rawQuery}" در آرشیو` : 'صفحه آرشیو'}
+                      {rawQuery.length >= 2 ? `مشاهده همه نتایج «${rawQuery}»` : 'صفحه جستجو'}
                     </button>
                   </div>
                 </Combobox>

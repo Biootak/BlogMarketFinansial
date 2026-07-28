@@ -72,6 +72,7 @@ import {
   Wallet,
   WalletCards,
   Zap,
+  ClipboardList,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo } from 'react';
@@ -775,6 +776,7 @@ const QUICK_ACTIONS: QuickAction[] = [
   { href: '/customer/accounts', label: 'حساب جدید', icon: Plus, hint: 'افتتاح حساب', accent: 'emerald' },
   { href: '/customer/kyc', label: 'ارتقاء KYC', icon: ShieldCheck, hint: 'افزایش سقف', accent: 'violet' },
   { href: '/customer/transactions', label: 'تاریخچه', icon: History, hint: 'همه تراکنش‌ها', accent: 'cyan' },
+  { href: '/customer/requests', label: 'درخواست‌های من', icon: ClipboardList, hint: 'پیگیری درخواست‌ها', accent: 'amber' },
   { href: '/customer/notifications', label: 'اعلان‌ها', icon: Bell, hint: 'پیام‌های مهم', accent: 'amber' },
   { href: '/customer/documents', label: 'مدارک', icon: KeyRound, hint: 'بارگذاری و پیگیری', accent: 'rose' },
 ];

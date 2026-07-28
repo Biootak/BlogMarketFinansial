@@ -34,6 +34,8 @@ const widgetMenus: WidgetFooterMenu[] = [
       { href: '/archive', label: 'آرشیو اخبار' },
       { href: '/about', label: 'درباره ما' },
       { href: '/contact', label: 'تماس با ما' },
+      { href: '/help-center', label: 'مرکز راهنما' },
+      { href: '/faq', label: 'پرسش‌های متداول' },
     ],
   },
 ];
@@ -230,7 +232,7 @@ const Footer = ({ footerAd, siteName = 'Financila Market' }: FooterProps) => {
                 قوانین و مقررات
               </Link>
               <Link
-                href="/privacy"
+                href="/privacy-policy"
                 className="text-sm text-slate-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
               >
                 حریم خصوصی

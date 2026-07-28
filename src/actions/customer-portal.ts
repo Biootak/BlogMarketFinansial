@@ -18,9 +18,11 @@ import type {
   CustomerStatus,
   KycLevel,
   KycStatus,
+  Prisma,
   TransactionKind,
   TransactionStatus,
 } from '@prisma/client';
+import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -670,18 +672,28 @@ export async function markNotificationsRead(ids?: number[]): Promise<{ success: 
   return { success: true };
 }
 
-// ─── WRITE — Customer Request (unified) ─────────────────────────────────────
+// ─── WRITE — Customer Request (unified, 2026-07-28) ────────────────────────
 //
-// درخواست‌های مشتری به صرافی (باز کردن حساب جدید، درخواست انتقال، درخواست
-// رفع مسدودی، ...) — فعلاً به‌صورت یک notification با prefix «[REQUEST:TYPE]»
-// ثبت می‌شوند تا:
-//  1) کاربر در inbox خود تأییدیهٔ درخواست را ببیند
-//  2) صرافی بتواند بعداً با همین prefix query بگیرد و لیست درخواست‌ها را
-//     در پنل خود ببیند (بدون نیاز به migration DB)
+// درخواست‌های structured مشتری به صرافی (باز کردن حساب، انتقال، رفع مسدودی،
+// افزایش سقف، سایر). هر درخواست:
 //
-// اگر بعداً به جدول `CustomerRequest` نیاز شد، می‌توان prefix را به FK
-// تبدیل کرد — ساختار فعلی backward-compatible است.
+//  1) در جدول CustomerRequest ثبت می‌شود (source-of-truth)
+//  2) یک notification تأییدیه در inbox کاربر قرار می‌گیرد (cross-link)
+//  3) timeline در CustomerRequestStatusLog نگه‌داری می‌شود
 //
+// چرا دو محل؟
+//  - CustomerRequest = لیست، فیلتر، وضعیت، timeline، اقدام (لغو)
+//  - Notification = «اینباکس» تأیید سریع در کنار سایر اعلان‌ها
+//
+// معماری قبلی (notification + prefix hack) مشکلات زیر را داشت:
+//  - کاربر نمی‌توانست لیست درخواست‌هایش را ببیند
+//  - وضعیت (pending/approved/rejected) قابل track نبود
+//  - صرافی نمی‌توانست query مؤثر بگیرد
+//  - لغو یا ویرایش ممکن نبود
+//
+// این معماری: ۱ request واقعی + ۱ notification تأیید (best of both).
+// ----------------------------------------------------------------------------
+
 const RequestTypeSchema = z.enum(
   [
     'ACCOUNT_NEW', // درخواست باز کردن حساب جدید
@@ -716,9 +728,15 @@ const REQUEST_TYPE_LABEL: Record<z.infer<typeof RequestTypeSchema>, string> = {
 
 export type CustomerRequestType = z.infer<typeof RequestTypeSchema>;
 
+/** ۶ کاراکتر از uuid (حروف بزرگ + اعداد) — مثل REQ-A1B2C3. تلاش مجدد در صورت تکرار. */
+function makeTrackingCode(): string {
+  const raw = uuidv4().replace(/-/g, '').toUpperCase();
+  return `REQ-${raw.slice(0, 6)}`;
+}
+
 export async function createCustomerRequest(
   raw: unknown,
-): Promise<{ success: boolean; error?: string; requestId?: number }> {
+): Promise<{ success: boolean; error?: string; requestId?: string; trackingCode?: string }> {
   const access = await requireCustomerAccess();
   if (!access.ok) return { success: false, error: access.error.message };
 
@@ -735,31 +753,304 @@ export async function createCustomerRequest(
   }
 
   const typeLabel = REQUEST_TYPE_LABEL[parsed.data.type];
-
-  // ساخت message با prefix ساختاریافته تا:
-  //  1) کاربر در inbox پیام را بفهمد
-  //  2) صرافی بتواند با regex prefix را parse کند
-  const prefix = `[REQUEST:${parsed.data.type}]`;
   const note = parsed.data.note?.trim() ?? '';
-  const payloadJson = parsed.data.payload
-    ? `\n${JSON.stringify(parsed.data.payload, null, 0)}`
-    : '';
-  const message = `${prefix} ${typeLabel}${note ? ` — ${note}` : ''}${payloadJson}`;
 
-  // ایجاد notification برای کاربر (تأییدیهٔ درخواست) و صرافی (در inbox)
-  // — فعلاً یک notification برای خود کاربر ثبت می‌کنیم تا در inbox
-  //   تأییدیهٔ درخواست را ببیند. صرافی بعداً می‌تواند با همین prefix
-  //   از notification های exchange-level query بگیرد.
-  const created = await prisma.notification.create({
-    data: {
-      userId: access.userId,
-      message,
-      isRead: false,
+  // 1) ساخت request واقعی + initial status log + cross-link notification
+  // در یک transaction تا اگر هر کدام fail شد، هیچ‌کدام commit نشود.
+  const result = await prisma.$transaction(async (tx) => {
+    // trackingCode یکتا (تا ۳ تلاش)
+    let trackingCode = makeTrackingCode();
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const existing = await tx.customerRequest.findUnique({
+        where: { trackingCode },
+        select: { id: true },
+      });
+      if (!existing) break;
+      trackingCode = makeTrackingCode();
+    }
+
+    const created = await tx.customerRequest.create({
+      data: {
+        trackingCode,
+        customerId: access.customerId,
+        exchangeId: access.exchangeId,
+        userId: access.userId,
+        type: parsed.data.type,
+        status: 'PENDING',
+        payload: parsed.data.payload
+          ? (parsed.data.payload as import('@prisma/client').Prisma.InputJsonValue)
+          : undefined,
+        note: note || null,
+      },
+      select: { id: true, trackingCode: true },
+    });
+
+    await tx.customerRequestStatusLog.create({
+      data: {
+        requestId: created.id,
+        fromStatus: null,
+        toStatus: 'PENDING',
+        actorId: access.userId,
+        actorRole: 'CUSTOMER',
+        note: 'درخواست ایجاد شد',
+      },
+    });
+
+    // 2) notification تأییدیه در inbox (best-of-both: structured + visible)
+    await tx.notification.create({
+      data: {
+        userId: access.userId,
+        message: `درخواست «${typeLabel}» با کد پیگیری ${created.trackingCode} ثبت شد. صرافی به‌زودی رسیدگی می‌کند.`,
+        isRead: false,
+      },
+    });
+
+    return created;
+  });
+
+  revalidateTag('customer-requests');
+  revalidateTag('customer-notifications');
+  return { success: true, requestId: result.id, trackingCode: result.trackingCode };
+}
+
+// ─── READ — Customer Requests (list + detail) ─────────────────────────────
+
+export type CustomerRequestRow = {
+  id: string;
+  trackingCode: string;
+  type: CustomerRequestType;
+  status: 'PENDING' | 'IN_REVIEW' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+  note: string | null;
+  payload: Record<string, string | number> | null;
+  resolution: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  reviewedAt: Date | null;
+};
+
+export type CustomerRequestListItem = CustomerRequestRow & {
+  /** نوع درخواست به فارسی */
+  typeLabel: string;
+};
+
+export type CustomerRequestStats = {
+  total: number;
+  pending: number;
+  inReview: number;
+  approved: number;
+  rejected: number;
+  cancelled: number;
+  /** ۷ روز اخیر — تعداد ایجاد */
+  last7d: number;
+};
+
+export async function getCustomerRequests(opts?: {
+  status?: string;
+  type?: string;
+  limit?: number;
+}): Promise<CustomerRequestListItem[]> {
+  const access = await requireCustomerAccess();
+  if (!access.ok) return [];
+
+  const VALID_STATUS = new Set(['PENDING', 'IN_REVIEW', 'APPROVED', 'REJECTED', 'CANCELLED']);
+  const VALID_TYPE = new Set([
+    'ACCOUNT_NEW',
+    'ACCOUNT_UNFREEZE',
+    'TRANSFER_INITIATE',
+    'LIMIT_INCREASE',
+    'OTHER',
+  ]);
+
+  const where = {
+    customerId: access.customerId,
+    ...(opts?.status && VALID_STATUS.has(opts.status)
+      ? { status: opts.status as 'PENDING' | 'IN_REVIEW' | 'APPROVED' | 'REJECTED' | 'CANCELLED' }
+      : {}),
+    ...(opts?.type && VALID_TYPE.has(opts.type) ? { type: opts.type as CustomerRequestType } : {}),
+  };
+
+  const rows = await prisma.customerRequest.findMany({
+    where,
+    orderBy: { createdAt: 'desc' },
+    take: Math.min(50, opts?.limit ?? 50),
+    select: {
+      id: true,
+      trackingCode: true,
+      type: true,
+      status: true,
+      note: true,
+      payload: true,
+      resolution: true,
+      createdAt: true,
+      updatedAt: true,
+      reviewedAt: true,
     },
   });
 
+  return rows.map((r) => ({
+    ...r,
+    payload: r.payload as Record<string, string | number> | null,
+    typeLabel: REQUEST_TYPE_LABEL[r.type],
+  }));
+}
+
+export async function getCustomerRequestStats(): Promise<CustomerRequestStats> {
+  const access = await requireCustomerAccess();
+  if (!access.ok) {
+    return {
+      total: 0,
+      pending: 0,
+      inReview: 0,
+      approved: 0,
+      rejected: 0,
+      cancelled: 0,
+      last7d: 0,
+    };
+  }
+
+  const since7 = new Date();
+  since7.setDate(since7.getDate() - 7);
+
+  const [total, pending, inReview, approved, rejected, cancelled, last7d] = await Promise.all([
+    prisma.customerRequest.count({ where: { customerId: access.customerId } }),
+    prisma.customerRequest.count({
+      where: { customerId: access.customerId, status: 'PENDING' },
+    }),
+    prisma.customerRequest.count({
+      where: { customerId: access.customerId, status: 'IN_REVIEW' },
+    }),
+    prisma.customerRequest.count({
+      where: { customerId: access.customerId, status: 'APPROVED' },
+    }),
+    prisma.customerRequest.count({
+      where: { customerId: access.customerId, status: 'REJECTED' },
+    }),
+    prisma.customerRequest.count({
+      where: { customerId: access.customerId, status: 'CANCELLED' },
+    }),
+    prisma.customerRequest.count({
+      where: { customerId: access.customerId, createdAt: { gte: since7 } },
+    }),
+  ]);
+
+  return { total, pending, inReview, approved, rejected, cancelled, last7d };
+}
+
+export type CustomerRequestDetail = CustomerRequestListItem & {
+  resolution: string | null;
+  reviewedAt: Date | null;
+  reviewedById: string | null;
+  exchange: {
+    id: string;
+    name: string;
+    logoUrl: string | null;
+  };
+  statusLogs: Array<{
+    id: string;
+    fromStatus: string | null;
+    toStatus: string;
+    actorRole: string | null;
+    note: string | null;
+    createdAt: Date;
+  }>;
+};
+
+export async function getCustomerRequestById(
+  requestId: string,
+): Promise<CustomerRequestDetail | null> {
+  const access = await requireCustomerAccess();
+  if (!access.ok) return null;
+
+  const row = await prisma.customerRequest.findFirst({
+    where: { id: requestId, customerId: access.customerId },
+    select: {
+      id: true,
+      trackingCode: true,
+      type: true,
+      status: true,
+      note: true,
+      payload: true,
+      resolution: true,
+      reviewedById: true,
+      reviewedAt: true,
+      createdAt: true,
+      updatedAt: true,
+      exchange: {
+        select: { id: true, name: true, logoUrl: true },
+      },
+      statusLogs: {
+        orderBy: { createdAt: 'asc' },
+        select: {
+          id: true,
+          fromStatus: true,
+          toStatus: true,
+          actorRole: true,
+          note: true,
+          createdAt: true,
+        },
+      },
+    },
+  });
+
+  if (!row) return null;
+
+  return {
+    ...row,
+    payload: row.payload as Record<string, string | number> | null,
+    typeLabel: REQUEST_TYPE_LABEL[row.type],
+  };
+}
+
+// ─── WRITE — Customer Request cancel ─────────────────────────────────────
+
+export async function cancelCustomerRequest(
+  requestId: string,
+): Promise<{ success: boolean; error?: string }> {
+  const access = await requireCustomerAccess();
+  if (!access.ok) return { success: false, error: access.error.message };
+
+  const existing = await prisma.customerRequest.findFirst({
+    where: { id: requestId, customerId: access.customerId },
+    select: { id: true, status: true, type: true, trackingCode: true },
+  });
+
+  if (!existing) {
+    return { success: false, error: 'درخواست یافت نشد' };
+  }
+  if (existing.status !== 'PENDING' && existing.status !== 'IN_REVIEW') {
+    return {
+      success: false,
+      error: 'فقط درخواست‌های در انتظار یا در حال بررسی قابل لغو هستند',
+    };
+  }
+
+  await prisma.$transaction([
+    prisma.customerRequest.update({
+      where: { id: existing.id },
+      data: { status: 'CANCELLED', updatedAt: new Date() },
+    }),
+    prisma.customerRequestStatusLog.create({
+      data: {
+        requestId: existing.id,
+        fromStatus: existing.status,
+        toStatus: 'CANCELLED',
+        actorId: access.userId,
+        actorRole: 'CUSTOMER',
+        note: 'درخواست توسط مشتری لغو شد',
+      },
+    }),
+    prisma.notification.create({
+      data: {
+        userId: access.userId,
+        message: `درخواست ${existing.trackingCode} لغو شد.`,
+        isRead: false,
+      },
+    }),
+  ]);
+
+  revalidateTag('customer-requests');
   revalidateTag('customer-notifications');
-  return { success: true, requestId: created.id };
+  return { success: true };
 }
 
 // ─── READ — Transaction Detail ────────────────────────────────────────────

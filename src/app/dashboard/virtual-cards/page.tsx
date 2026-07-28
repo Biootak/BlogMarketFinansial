@@ -1,23 +1,34 @@
 import { getMyVirtualCards } from '@/actions/virtual-card';
-import { requireUser } from '@/lib/require-auth';
-import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
+import { PageHeader, Section } from '@/components/Dashboard/primitives';
 import VirtualCardsClient from './_components/VirtualCardsClient';
 
-export const metadata: Metadata = {
+export const dynamic = 'force-dynamic';
+
+export const metadata = {
   title: 'کارت‌های مجازی | داشبورد',
-  description: 'مدیریت کارت‌های مجازی پیش‌پرداخت شما',
 };
 
 export default async function VirtualCardsPage() {
-  const auth = await requireUser();
-  if (!auth.success) redirect('/signin?callbackUrl=/dashboard/virtual-cards');
-
-  const cards = await getMyVirtualCards();
+  const initialCards = await getMyVirtualCards();
 
   return (
-    <div className="at-page" dir="rtl">
-      <VirtualCardsClient initialCards={cards} />
-    </div>
+    <main className="max-w-[1440px] mx-auto flex flex-col gap-5">
+      <PageHeader
+        breadcrumb={[
+          { label: 'مرکز فرماندهی', href: '/dashboard' },
+          { label: 'حساب من' },
+          { label: 'کارت‌های مجازی' },
+        ]}
+        eyebrow="حساب من"
+        title="کارت‌های مجازی"
+        description="مدیریت کارت‌های مجازی، صدور کارت جدید، فریز و پیگیری تراکنش‌ها."
+        icon="credit-card"
+        accent="cyan"
+      />
+
+      <Section>
+        <VirtualCardsClient initialCards={initialCards} />
+      </Section>
+    </main>
   );
 }

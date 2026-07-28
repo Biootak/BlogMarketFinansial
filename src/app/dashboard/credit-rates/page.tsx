@@ -1,33 +1,31 @@
-// src/app/dashboard/credit-rates/page.tsx
-import { getAllCreditRates, getCreditRateAggregates } from '@/actions/credit-rates';
-import { requireAdmin } from '@/lib/require-auth';
-import { redirect } from 'next/navigation';
-import CreditRatesClient from './CreditRatesClient';
+import { PageHeader, Section } from '@/components/Dashboard/primitives';
+import { CreditRatesClient } from './_components/CreditRatesClient';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'مدیریت نرخ‌های اعتباری و بانک‌ها',
+  title: 'نرخ‌های اعتباری | داشبورد',
 };
 
-export default async function CreditRatesPage() {
-  const auth = await requireAdmin();
-  if (!auth.success) {
-    redirect('/dashboard');
-  }
-
-  const [ratesResult, aggregatesResult] = await Promise.all([
-    getAllCreditRates(),
-    getCreditRateAggregates(),
-  ]);
-
-  const initialBanks = ratesResult.success ? ratesResult.data.banks : [];
-  const initialRates = ratesResult.success ? ratesResult.data.rates : [];
-  const initialAggregates = aggregatesResult.success ? aggregatesResult.data : null;
-
+export default function CreditRatesPage() {
   return (
-    <CreditRatesClient
-      initialBanks={initialBanks}
-      initialRates={initialRates}
-      initialAggregates={initialAggregates}
-    />
+    <main className="max-w-[1440px] mx-auto flex flex-col gap-5">
+      <PageHeader
+        breadcrumb={[
+          { label: 'مرکز فرماندهی', href: '/dashboard' },
+          { label: 'عملیات مالی' },
+          { label: 'نرخ‌های اعتباری' },
+        ]}
+        eyebrow="عملیات مالی"
+        title="نرخ‌های اعتباری"
+        description="پایش و مدیریت نرخ سود، تسهیلات و خطوط اعتباری برای همکاری با بانک‌ها و مؤسسات."
+        icon="bar-chart"
+        accent="amber"
+      />
+
+      <Section>
+        <CreditRatesClient />
+      </Section>
+    </main>
   );
 }

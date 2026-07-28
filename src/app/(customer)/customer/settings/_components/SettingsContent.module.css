@@ -40,6 +40,15 @@
   background: var(--ds-surface);
 }
 
+/* ── 2FA slot — hosts the canonical TwoFactorSection primitive. */
+.twofaSlot {
+  margin-block-start: var(--ds-space-3);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+  padding: var(--ds-space-3);
+  background: color-mix(in oklch, var(--nova-info, #06b6d4) 2%, var(--ds-surface));
+}
+
 .danger .list {
   background: color-mix(in oklch, var(--nova-down) 3%, var(--ds-surface));
   border-color: color-mix(in oklch, var(--nova-down) 20%, var(--ds-border-subtle));

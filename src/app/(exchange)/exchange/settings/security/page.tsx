@@ -34,6 +34,7 @@ export default async function SecurityPage() {
       exchange={membership.exchange}
       staff={staff}
       currentUserId={session.user.id}
+      currentUserEmail={session.user.email ?? undefined}
       currentRole={membership.staffRole}
       canEdit={canEdit}
     />

@@ -2,6 +2,7 @@
 
 import { updateProfile } from '@/actions/profile';
 import { FormField } from '@/components/Dashboard/primitives/FormField';
+import { TwoFactorSection } from '@/components/Dashboard/Profile/TwoFactorSection';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -747,6 +748,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
                 </Button>
               </div>
             </form>
+          )}
+
+          {/* ── 2FA panel — independent of the password form above ───── */}
+          {activeTab === 'security' && (
+            <div className={s.section}>
+              <TwoFactorSection userEmail={initialData.email} />
+            </div>
           )}
 
         </div>

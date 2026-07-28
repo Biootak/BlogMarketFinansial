@@ -684,15 +684,6 @@ async function seedActivityLogs(users) {
           createdAt: daysAgo(rand(0, 60)),
         },
       });
-      // Activity مدل هم پر کنیم
-      await p.activity.create({
-        data: {
-          userId: user.id,
-          action,
-          details: `فعالیت: ${action}`,
-          createdAt: daysAgo(rand(0, 60)),
-        },
-      });
       added++;
     }
   }
@@ -2127,6 +2118,427 @@ async function seedExchangeQuotes() {
   console.log(`   ✨ ${created} quote ایجاد شد`);
 }
 
+/* ─── Banks + CreditRates ─────────────────────────────────────── */
+async function seedBanks() {
+  const existing = await p.bank.count();
+  if (existing >= 3) {
+    console.log(`   ⏭️  Banks قبلاً ایجاد شده (${existing} عدد)`);
+    return;
+  }
+  const { v4: uuid } = require('uuid');
+  const BANKS = [
+    {
+      slug: 'afbank',
+      name: 'بانک افغانستان',
+      displayName: 'Da Afghanistan Bank',
+      country: 'AF',
+      city: 'کابل',
+      website: 'https://dab.gov.af',
+      status: 'ACTIVE',
+      isVisible: true,
+      sortOrder: 1,
+      description: 'بانک مرکزی افغانستان',
+    },
+    {
+      slug: 'azizi-bank',
+      name: 'بانک عزیزی',
+      displayName: 'Azizi Bank',
+      country: 'AF',
+      city: 'کابل',
+      website: 'https://www.azizibank.af',
+      status: 'ACTIVE',
+      isVisible: true,
+      sortOrder: 2,
+      description: 'بزرگ‌ترین بانک خصوصی افغانستان',
+    },
+    {
+      slug: 'ghazanfar-bank',
+      name: 'بانک غضنفر',
+      displayName: 'Ghazanfar Bank',
+      country: 'AF',
+      city: 'کابل',
+      website: 'https://www.ghazanfarbank.com',
+      status: 'ACTIVE',
+      isVisible: true,
+      sortOrder: 3,
+      description: 'بانک تجاری غضنفر',
+    },
+    {
+      slug: 'maiwand-bank',
+      name: 'بانک میوند',
+      displayName: 'Maiwand Bank',
+      country: 'AF',
+      city: 'کابل',
+      website: 'https://www.maiwandbank.com',
+      status: 'ACTIVE',
+      isVisible: true,
+      sortOrder: 4,
+      description: 'بانک میوند افغانستان',
+    },
+    {
+      slug: 'export-development-bank-ir',
+      name: 'بانک توسعه صادرات ایران',
+      displayName: 'Export Development Bank of Iran',
+      country: 'IR',
+      city: 'تهران',
+      website: 'https://www.edbi.ir',
+      status: 'ACTIVE',
+      isVisible: true,
+      sortOrder: 10,
+      description: 'بانک توسعه صادرات — ایران',
+    },
+  ];
+  let added = 0;
+  for (const b of BANKS) {
+    const ex = await p.bank.findUnique({ where: { slug: b.slug } });
+    if (ex) continue;
+    await p.bank.create({ data: { id: uuid(), ...b } });
+    added++;
+  }
+  console.log(`   ✅ ${added} بانک`);
+}
+
+async function seedCreditRates() {
+  const existing = await p.creditRate.count();
+  if (existing >= 5) {
+    console.log(`   ⏭️  CreditRates قبلاً ایجاد شده (${existing} عدد)`);
+    return;
+  }
+  const { v4: uuid } = require('uuid');
+  const banks = await p.bank.findMany({ select: { id: true, slug: true } });
+  if (banks.length === 0) { console.log('   ⚠️  هیچ بانکی پیدا نشد'); return; }
+  const bankMap = Object.fromEntries(banks.map((b) => [b.slug, b.id]));
+
+  const RATES = [
+    // افغانستان — بانک افغانستان
+    { bankSlug: 'afbank', type: 'PERSONAL', title: 'وام شخصی کوتاه‌مدت', annualRate: 14.0, maxAmountCents: 500000, maxTermMonths: 36, currency: 'AFN', status: 'ACTIVE' },
+    { bankSlug: 'afbank', type: 'MORTGAGE', title: 'وام مسکن بلندمدت', annualRate: 12.5, maxAmountCents: 5000000, maxTermMonths: 240, currency: 'AFN', status: 'ACTIVE' },
+    { bankSlug: 'afbank', type: 'DEPOSIT', title: 'سپرده سرمایه‌گذاری یک‌ساله', annualRate: 8.5, maxAmountCents: 0, maxTermMonths: 12, currency: 'AFN', status: 'ACTIVE' },
+    // بانک عزیزی
+    { bankSlug: 'azizi-bank', type: 'PERSONAL', title: 'وام شخصی عزیزی', annualRate: 16.0, maxAmountCents: 300000, maxTermMonths: 24, currency: 'AFN', status: 'ACTIVE' },
+    { bankSlug: 'azizi-bank', type: 'BUSINESS', title: 'وام کسب‌وکار کوچک', annualRate: 18.0, maxAmountCents: 2000000, maxTermMonths: 60, currency: 'AFN', status: 'ACTIVE' },
+    { bankSlug: 'azizi-bank', type: 'DEPOSIT', title: 'سپرده سه‌ماهه', annualRate: 7.0, maxAmountCents: 0, maxTermMonths: 3, currency: 'AFN', status: 'ACTIVE' },
+    // بانک غضنفر
+    { bankSlug: 'ghazanfar-bank', type: 'AGRICULTURE', title: 'وام کشاورزی', annualRate: 10.0, maxAmountCents: 800000, maxTermMonths: 48, currency: 'AFN', status: 'ACTIVE' },
+    { bankSlug: 'ghazanfar-bank', type: 'QARD_AL_HASAN', title: 'قرض‌الحسنه', annualRate: 0, maxAmountCents: 100000, maxTermMonths: 12, currency: 'AFN', status: 'ACTIVE' },
+    // بانک میوند
+    { bankSlug: 'maiwand-bank', type: 'COMMERCIAL', title: 'اعتبار تجاری', annualRate: 15.0, maxAmountCents: 10000000, maxTermMonths: 120, currency: 'AFN', status: 'ACTIVE' },
+    { bankSlug: 'maiwand-bank', type: 'AUTO', title: 'وام خودرو', annualRate: 13.5, maxAmountCents: 1500000, maxTermMonths: 60, currency: 'AFN', status: 'ACTIVE' },
+    // ایران
+    { bankSlug: 'export-development-bank-ir', type: 'BUSINESS', title: 'تسهیلات صادراتی', annualRate: 22.0, maxAmountCents: 500000000, maxTermMonths: 84, currency: 'IRR', status: 'ACTIVE' },
+  ];
+
+  let added = 0;
+  for (const r of RATES) {
+    const bankId = bankMap[r.bankSlug];
+    if (!bankId) continue;
+    await p.creditRate.create({
+      data: {
+        id: uuid(),
+        bankId,
+        type: r.type,
+        title: r.title,
+        annualRate: r.annualRate,
+        maxAmountCents: r.maxAmountCents,
+        maxTermMonths: r.maxTermMonths,
+        currency: r.currency,
+        status: r.status,
+        sortOrder: added,
+      },
+    });
+    added++;
+  }
+  console.log(`   ✅ ${added} نرخ اعتباری`);
+}
+
+/* ─── ExchangeServices ────────────────────────────────────────── */
+async function seedExchangeServices() {
+  const existing = await p.exchangeService.count();
+  if (existing >= 10) {
+    console.log(`   ⏭️  ExchangeServices قبلاً ایجاد شده (${existing} عدد)`);
+    return;
+  }
+
+  const exchanges = await p.exchange.findMany({
+    where: { status: 'ACTIVE' },
+    select: { id: true, slug: true, name: true },
+  });
+  if (exchanges.length === 0) { console.log('   ⚠️  هیچ صرافی ACTIVE پیدا نشد'); return; }
+
+  const SERVICES_PER_EXCHANGE = [
+    { serviceKey: 'CURRENCY_BUY',           order: 1 },
+    { serviceKey: 'CURRENCY_SELL',          order: 2 },
+    { serviceKey: 'INTERNATIONAL_TRANSFER', order: 3 },
+    { serviceKey: 'ONLINE_PAYMENT',         order: 4 },
+    { serviceKey: 'CRYPTO_BUY',             order: 5 },
+  ];
+
+  let totalAdded = 0;
+  for (const ex of exchanges) {
+    for (const svc of SERVICES_PER_EXCHANGE) {
+      await p.exchangeService.upsert({
+        where: { exchangeId_serviceKey: { exchangeId: ex.id, serviceKey: svc.serviceKey } },
+        create: { exchangeId: ex.id, serviceKey: svc.serviceKey, isActive: true, order: svc.order },
+        update: { isActive: true },
+      });
+      totalAdded++;
+    }
+  }
+  console.log(`   ✅ ${totalAdded} سرویس صرافی (${exchanges.length} صرافی × ۵ سرویس)`);
+}
+
+/* ─── CurrencyDeals ────────────────────────────────────────────── */
+async function seedCurrencyDeals() {
+  const existing = await p.currencyDeal.count();
+  if (existing >= 5) {
+    console.log(`   ⏭️  CurrencyDeals قبلاً ایجاد شده (${existing} عدد)`);
+    return;
+  }
+
+  // نیاز به صرافی فعال و quote فعال داریم
+  const exchanges = await p.exchange.findMany({
+    where: { status: 'ACTIVE' },
+    take: 4,
+    select: { id: true, name: true },
+  });
+  if (exchanges.length === 0) { console.log('   ⚠️  هیچ صرافی ACTIVE پیدا نشد'); return; }
+
+  const DEALS = [
+    { customerName: 'احمد رضایی',   customerPhone: '09120000001', fromCurrency: 'USD', toCurrency: 'AFN', fromAmount: 500,   toAmount: 44250,   appliedRate: 88.5,  channel: 'ONLINE',    status: 'COMPLETED' },
+    { customerName: 'مریم احمدی',   customerPhone: '09120000002', fromCurrency: 'EUR', toCurrency: 'AFN', fromAmount: 300,   toAmount: 28830,   appliedRate: 96.1,  channel: 'ONLINE',    status: 'CONFIRMED' },
+    { customerName: 'علی محمدی',    customerPhone: '09120000003', fromCurrency: 'USD', toCurrency: 'AFN', fromAmount: 1000,  toAmount: 89000,   appliedRate: 89.0,  channel: 'INPERSON',  status: 'PENDING' },
+    { customerName: 'فاطمه کریمی',  customerPhone: '09120000004', fromCurrency: 'AED', toCurrency: 'AFN', fromAmount: 2000,  toAmount: 48200,   appliedRate: 24.1,  channel: 'ONLINE',    status: 'PENDING' },
+    { customerName: 'حسین صادقی',   customerPhone: '09120000005', fromCurrency: 'USD', toCurrency: 'IRR', fromAmount: 200,   toAmount: 1740000, appliedRate: 8700,  channel: 'ONLINE',    status: 'CANCELLED' },
+  ];
+
+  let added = 0;
+  for (let i = 0; i < DEALS.length; i++) {
+    const d = DEALS[i];
+    const ex = exchanges[i % exchanges.length];
+    const trackingCode = `DL-${Date.now()}-${String(i + 1).padStart(4, '0')}`;
+    const existing = await p.currencyDeal.findFirst({ where: { customerPhone: d.customerPhone, exchangeId: ex.id } });
+    if (existing) continue;
+    await p.currencyDeal.create({
+      data: {
+        trackingCode,
+        exchangeId: ex.id,
+        customerName: d.customerName,
+        customerPhone: d.customerPhone,
+        fromCurrency: d.fromCurrency,
+        toCurrency: d.toCurrency,
+        fromAmount: d.fromAmount,
+        toAmount: d.toAmount,
+        appliedRate: d.appliedRate,
+        channel: d.channel,
+        status: d.status,
+        note: 'seed — DEV',
+        createdAt: daysAgo(rand(0, 30)),
+      },
+    });
+    added++;
+  }
+  console.log(`   ✅ ${added} معامله ارزی`);
+}
+
+/* ─── Settlements ──────────────────────────────────────────────── */
+async function seedSettlements() {
+  const existing = await p.settlement.count();
+  if (existing >= 2) {
+    console.log(`   ⏭️  Settlements قبلاً ایجاد شده (${existing} عدد)`);
+    return;
+  }
+
+  const exchanges = await p.exchange.findMany({
+    where: { status: 'ACTIVE' },
+    take: 3,
+    select: { id: true, name: true },
+  });
+  if (exchanges.length === 0) { console.log('   ⚠️  هیچ صرافی ACTIVE پیدا نشد'); return; }
+
+  let added = 0;
+  for (let i = 0; i < Math.min(3, exchanges.length); i++) {
+    const ex = exchanges[i];
+    const periodStart = daysAgo(30);
+    const periodEnd   = daysAgo(1);
+    const existing = await p.settlement.findFirst({ where: { exchangeId: ex.id, periodStart } });
+    if (existing) continue;
+    await p.settlement.create({
+      data: {
+        exchangeId: ex.id,
+        periodStart,
+        periodEnd,
+        totalVolume: BigInt(rand(50_000_000, 500_000_000)),
+        dealCount: rand(20, 150),
+        platformFee: BigInt(rand(500_000, 5_000_000)),
+        exchangeNet: BigInt(rand(45_000_000, 490_000_000)),
+        currency: 'AFN',
+        status: i === 0 ? 'PAID' : i === 1 ? 'APPROVED' : 'PENDING',
+        note: 'seed — DEV',
+      },
+    });
+    added++;
+  }
+  console.log(`   ✅ ${added} تسویه`);
+}
+
+/* ─── ExchangeStaff ───────────────────────────────────────────── */
+async function seedExchangeStaff() {
+  const existing = await p.exchangeStaff.count();
+  if (existing >= 2) {
+    console.log(`   ⏭️  ExchangeStaff قبلاً ایجاد شده (${existing} عدد)`);
+    return;
+  }
+
+  // مالک (OWNER) را به عنوان OWNER اولین صرافی فعال اضافه می‌کنیم
+  const owner = await p.user.findFirst({ where: { role: 'OWNER' } });
+  const admin = await p.user.findFirst({ where: { role: 'ADMIN' } });
+  const exchanges = await p.exchange.findMany({
+    where: { status: 'ACTIVE' },
+    take: 3,
+    select: { id: true, name: true },
+  });
+  if (!owner || exchanges.length === 0) { console.log('   ⚠️  کاربر OWNER یا صرافی پیدا نشد'); return; }
+
+  const { v4: uuid } = require('uuid');
+  let added = 0;
+
+  // مالک به عنوان OWNER اولین صرافی
+  const ex1 = exchanges[0];
+  const exists1 = await p.exchangeStaff.findUnique({
+    where: { exchangeId_userId: { exchangeId: ex1.id, userId: owner.id } },
+  });
+  if (!exists1) {
+    await p.exchangeStaff.create({
+      data: { id: uuid(), exchangeId: ex1.id, userId: owner.id, role: 'OWNER', title: 'مالک صرافی' },
+    });
+    added++;
+  }
+
+  // ادمین به عنوان MANAGER صرافی دوم
+  if (admin && exchanges.length >= 2) {
+    const ex2 = exchanges[1];
+    const exists2 = await p.exchangeStaff.findUnique({
+      where: { exchangeId_userId: { exchangeId: ex2.id, userId: admin.id } },
+    });
+    if (!exists2) {
+      await p.exchangeStaff.create({
+        data: { id: uuid(), exchangeId: ex2.id, userId: admin.id, role: 'MANAGER', title: 'مدیر صرافی' },
+      });
+      added++;
+    }
+  }
+
+  console.log(`   ✅ ${added} کارمند صرافی`);
+}
+
+/* ─── ContactSubmissions ──────────────────────────────────────── */
+async function seedContactSubmissions() {
+  const existing = await p.contactSubmission.count();
+  if (existing >= 3) {
+    console.log(`   ⏭️  ContactSubmissions قبلاً ایجاد شده (${existing} عدد)`);
+    return;
+  }
+  const { v4: uuid } = require('uuid');
+  const CONTACTS = [
+    { name: 'احمد رضایی',  email: 'ahmad@test.ir',  subject: 'سوال درباره حواله',       message: 'آیا می‌توانم از افغانستان به ایران حواله ارسال کنم؟', status: 'NEW' },
+    { name: 'مریم کریمی',  email: 'maryam@test.ir', subject: 'مشکل پرداخت',             message: 'پرداختم گیر کرده — لطفاً بررسی کنید.', status: 'IN_PROGRESS' },
+    { name: 'علی محمدی',   email: 'ali@test.ir',    subject: 'پیشنهاد بهبود سایت',      message: 'پیشنهاد می‌دهم نمودار قیمت ارز اضافه شود.', status: 'RESOLVED' },
+    { name: 'فاطمه نوری',  email: 'fateme@test.ir', subject: 'درخواست همکاری صرافی',    message: 'صرافی ما می‌خواهد در پلتفرم شما ثبت شود.', status: 'NEW' },
+  ];
+  let added = 0;
+  for (const c of CONTACTS) {
+    await p.contactSubmission.create({
+      data: {
+        id: uuid(),
+        name: c.name,
+        email: c.email,
+        subject: c.subject,
+        message: c.message,
+        status: c.status,
+        updatedAt: new Date(),
+        createdAt: daysAgo(rand(1, 30)),
+      },
+    });
+    added++;
+  }
+  console.log(`   ✅ ${added} پیام تماس`);
+}
+
+/* ─── SubscriptionEvents ──────────────────────────────────────── */
+async function seedSubscriptionEvents() {
+  const existing = await p.subscriptionEvent.count();
+  if (existing >= 2) {
+    console.log(`   ⏭️  SubscriptionEvents قبلاً ایجاد شده (${existing} عدد)`);
+    return;
+  }
+  const { v4: uuid } = require('uuid');
+  const users = await p.user.findMany({ take: 4, select: { id: true } });
+  if (users.length === 0) { console.log('   ⚠️  کاربری پیدا نشد'); return; }
+
+  const PLANS = [
+    { fromPlan: null,      toPlan: 'FREE',    kind: 'UPGRADE',    amount: 0,       status: 'PAID' },
+    { fromPlan: 'FREE',    toPlan: 'BASIC',   kind: 'UPGRADE',    amount: 500000,  status: 'PAID' },
+    { fromPlan: 'BASIC',   toPlan: 'PRO',     kind: 'UPGRADE',    amount: 1500000, status: 'PAID' },
+    { fromPlan: 'PRO',     toPlan: 'BASIC',   kind: 'DOWNGRADE',  amount: 0,       status: 'PAID' },
+  ];
+
+  let added = 0;
+  for (let i = 0; i < Math.min(PLANS.length, users.length); i++) {
+    const plan = PLANS[i];
+    const user = users[i];
+    await p.subscriptionEvent.create({
+      data: {
+        id: uuid(),
+        userId: user.id,
+        kind: plan.kind,
+        fromPlan: plan.fromPlan,
+        toPlan: plan.toPlan,
+        amount: BigInt(plan.amount),
+        currency: 'AFN',
+        status: plan.status,
+        validUntil: plan.toPlan !== 'FREE' ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) : null,
+        createdAt: daysAgo(rand(1, 60)),
+      },
+    });
+    added++;
+  }
+  console.log(`   ✅ ${added} رویداد اشتراک`);
+}
+
+/* ─── ServiceClicks (analytics sample) ───────────────────────── */
+async function seedServiceClicks() {
+  const existing = await p.serviceClick.count();
+  if (existing >= 10) {
+    console.log(`   ⏭️  ServiceClicks قبلاً ایجاد شده (${existing} عدد)`);
+    return;
+  }
+  const exchanges = await p.exchange.findMany({
+    where: { status: 'ACTIVE' },
+    take: 4,
+    select: { id: true },
+  });
+  if (exchanges.length === 0) { console.log('   ⚠️  صرافی فعال پیدا نشد'); return; }
+
+  const SERVICES = ['CURRENCY_BUY', 'INTERNATIONAL_TRANSFER', 'ONLINE_PAYMENT', 'CRYPTO_BUY', 'CURRENCY_SELL'];
+  const SOURCES  = ['exchange-page', 'marketplace', 'homepage', 'comparison-table'];
+
+  let added = 0;
+  for (let i = 0; i < 20; i++) {
+    const ex = exchanges[i % exchanges.length];
+    await p.serviceClick.create({
+      data: {
+        exchangeId: ex.id,
+        serviceKey: SERVICES[i % SERVICES.length],
+        source: SOURCES[i % SOURCES.length],
+        ipAddress: randIP(),
+        createdAt: daysAgo(rand(0, 14)),
+      },
+    });
+    added++;
+  }
+  console.log(`   ✅ ${added} کلیک سرویس (analytics)`);
+}
+
 /* ─── main: اجرای ترتیبی seed ───────────────────────────────── */
 async function main() {
   console.log('🌱 شروع Seed کامل دیتابیس BlogMarketFinansial\n');
@@ -2213,6 +2625,33 @@ async function main() {
   console.log('\n2️⃣4️⃣  Sample ExchangeRateQuotes (DEV):');
   await seedExchangeQuotes();
 
+  console.log('\n2️⃣5️⃣  ExchangeServices:');
+  await seedExchangeServices();
+
+  console.log('\n2️⃣6️⃣  Banks:');
+  await seedBanks();
+
+  console.log('\n2️⃣7️⃣  CreditRates:');
+  await seedCreditRates();
+
+  console.log('\n2️⃣8️⃣  CurrencyDeals:');
+  await seedCurrencyDeals();
+
+  console.log('\n2️⃣9️⃣  Settlements:');
+  await seedSettlements();
+
+  console.log('\n3️⃣0️⃣  ExchangeStaff:');
+  await seedExchangeStaff();
+
+  console.log('\n3️⃣1️⃣  ContactSubmissions:');
+  await seedContactSubmissions();
+
+  console.log('\n3️⃣2️⃣  SubscriptionEvents:');
+  await seedSubscriptionEvents();
+
+  console.log('\n3️⃣3️⃣  ServiceClicks:');
+  await seedServiceClicks();
+
   /* ─── گزارش نهایی ─── */
   const stats = {
     users: await p.user.count(),
@@ -2226,7 +2665,6 @@ async function main() {
     notifications: await p.notification.count(),
     profiles: await p.profile.count(),
     activityLogs: await p.activityLog.count(),
-    activities: await p.activity.count(),
     newsletters: await p.newsletter.count(),
     socialLinks: await p.socialLink.count(),
     headerAds: await p.headerAd.count(),
@@ -2240,6 +2678,15 @@ async function main() {
     tasks: await p.task.count(),
     exchanges: await p.exchange.count(),
     transferProviders: await p.transferProvider.count(),
+    exchangeServices: await p.exchangeService.count(),
+    exchangeStaff:    await p.exchangeStaff.count(),
+    banks:            await p.bank.count(),
+    creditRates:      await p.creditRate.count(),
+    currencyDeals:    await p.currencyDeal.count(),
+    settlements:      await p.settlement.count(),
+    serviceClicks:    await p.serviceClick.count(),
+    contactSubmissions: await p.contactSubmission.count(),
+    subscriptionEvents: await p.subscriptionEvent.count(),
   };
   console.log(`\n${'═'.repeat(50)}`);
   console.log('📊 آمار نهایی دیتابیس:');

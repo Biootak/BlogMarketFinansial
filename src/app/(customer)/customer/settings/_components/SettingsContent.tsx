@@ -11,6 +11,7 @@
 
 import type { CustomerProfile } from '@/actions/customer-portal';
 import { SectionHeader } from '@/app/(customer)/customer/_lib/customer-ui';
+import { TwoFactorSection } from '@/components/Dashboard/Profile/TwoFactorSection';
 import {
   Bell,
   KeyRound,
@@ -20,7 +21,6 @@ import {
   MessageCircle,
   Phone,
   ShieldCheck,
-  Smartphone,
   Trash2,
   UserCog,
 } from 'lucide-react';
@@ -45,13 +45,6 @@ export default function SettingsContent({ profile }: Props) {
             tone="brand"
           />
           <Item
-            icon={Smartphone}
-            title="احراز هویت دو مرحله‌ای"
-            description="با اپلیکیشن تأییدکننده یا پیامک"
-            action="فعال‌سازی"
-            tone="amber"
-          />
-          <Item
             icon={ShieldCheck}
             title="دستگاه‌های فعال"
             description="مدیریت دستگاه‌های متصل به حساب"
@@ -65,6 +58,11 @@ export default function SettingsContent({ profile }: Props) {
             action="خروج"
             tone="warning"
           />
+        </div>
+
+        {/* Two-factor authentication — full management panel */}
+        <div className={s.twofaSlot}>
+          <TwoFactorSection userEmail={profile.email ?? undefined} />
         </div>
       </section>
 

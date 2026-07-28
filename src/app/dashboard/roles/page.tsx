@@ -1,24 +1,31 @@
-import { getRoleStats } from '@/actions/role-actions';
-import { requireAdmin } from '@/lib/require-auth';
-import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
-import RolesClient from './_components/RolesClient';
+import { PageHeader, Section } from '@/components/Dashboard/primitives';
+import { RolesClient } from './_components/RolesClient';
 
-export const metadata: Metadata = {
+export const dynamic = 'force-dynamic';
+
+export const metadata = {
   title: 'نقش‌ها | داشبورد',
-  description: 'مدیریت نقش‌ها و سطوح دسترسی کاربران پلتفرم',
 };
 
-export default async function RolesPage() {
-  const auth = await requireAdmin();
-  if (!auth.success) redirect('/dashboard');
-
-  const result = await getRoleStats();
-  const stats = result.success && result.data ? result.data.stats : [];
-
+export default function RolesPage() {
   return (
-    <div className="at-page" dir="rtl">
-      <RolesClient stats={stats} currentUserRole={auth.user.role} />
-    </div>
+    <main className="max-w-[1440px] mx-auto flex flex-col gap-5">
+      <PageHeader
+        breadcrumb={[
+          { label: 'مرکز فرماندهی', href: '/dashboard' },
+          { label: 'مدیریت دسترسی' },
+          { label: 'نقش‌ها' },
+        ]}
+        eyebrow="مدیریت دسترسی"
+        title="نقش‌ها"
+        description="تعریف، ویرایش و کلون نقش‌های سفارشی با ماتریس مجوز granular."
+        icon="shield-check"
+        accent="violet"
+      />
+
+      <Section>
+        <RolesClient />
+      </Section>
+    </main>
   );
 }

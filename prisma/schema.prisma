@@ -717,6 +717,7 @@ model Customer {
   KycVerification KycVerification[]
   LedgerEntry     LedgerEntry[]
   Transaction     Transaction[]
+  CustomerRequest CustomerRequest[]
 
   @@index([createdAt(sort: Desc)])
   @@index([exchangeId])
@@ -724,6 +725,76 @@ model Customer {
   @@index([kycStatus])
   @@index([nationalId])
   @@index([phone])
+}
+
+/// 2026-07-28: درخواست‌های structured مشتری به صرافی.
+/// جایگزین «هک notification با prefix [REQUEST:TYPE]» شد.
+/// هر درخواست type + payload + status + trackingCode مستقل دارد
+/// و timeline کامل از ایجاد تا تأیید/رد/لغو را نگه می‌دارد.
+model CustomerRequest {
+  id           String                @id @default(cuid())
+  /// شماره پیگیری کوتاه برای کاربر (مثلاً REQ-A1B2C3)
+  trackingCode String                @unique
+  customerId   String
+  exchangeId   String
+  /// کاربر سازنده (ممکن است admin پلتفرم باشد برای support)
+  userId       String
+  type         CustomerRequestType
+  status       CustomerRequestStatus @default(PENDING)
+  /// داده‌های ساختاریافته بر اساس نوع (مثلاً برای ACCOUNT_NEW: currency/type/label)
+  payload      Json?
+  /// توضیح کاربر
+  note         String?
+  /// پاسخ ادمین/صرافی به درخواست
+  resolution   String?
+  /// شناسه staff/exchange که رسیدگی کرده
+  reviewedById String?
+  reviewedAt   DateTime?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+
+  customer        Customer                    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  exchange        Exchange                    @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  statusLogs      CustomerRequestStatusLog[]
+
+  @@index([customerId, createdAt(sort: Desc)])
+  @@index([customerId, status])
+  @@index([exchangeId, status, createdAt(sort: Desc)])
+  @@index([status, createdAt(sort: Desc)])
+  @@index([type, status])
+  @@index([userId])
+}
+
+/// تاریخچه تغییر وضعیت — برای timeline و audit
+model CustomerRequestStatusLog {
+  id         String                  @id @default(cuid())
+  requestId  String
+  fromStatus CustomerRequestStatus?
+  toStatus   CustomerRequestStatus
+  actorId    String?
+  /// نقش: CUSTOMER | STAFF | SYSTEM
+  actorRole  String?
+  note       String?
+  createdAt  DateTime                @default(now())
+  request    CustomerRequest         @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId, createdAt(sort: Desc)])
+}
+
+enum CustomerRequestType {
+  ACCOUNT_NEW
+  ACCOUNT_UNFREEZE
+  TRANSFER_INITIATE
+  LIMIT_INCREASE
+  OTHER
+}
+
+enum CustomerRequestStatus {
+  PENDING
+  IN_REVIEW
+  APPROVED
+  REJECTED
+  CANCELLED
 }
 
 model Device {
@@ -792,6 +863,7 @@ model Exchange {
   ExchangeRateQuote    ExchangeRateQuote[]
   CurrencyDeal         CurrencyDeal[]
   Settlement           Settlement[]
+  CustomerRequest      CustomerRequest[]
 
   @@index([city])
   @@index([createdAt(sort: Desc)])

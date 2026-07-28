@@ -40,6 +40,7 @@ import { Dialog, DialogClose, DialogOverlay, DialogPortal, DialogTitle as SheetT
 import { useToast } from '@/components/ui/use-toast';
 import type { Role, UserWithProfile } from '@/types/types';
 import Image from 'next/image';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
@@ -48,6 +49,7 @@ import {
   HiOutlineCheckCircle,
   HiOutlineClock,
   HiOutlineEnvelope,
+  HiOutlineEye,
   HiOutlineLockClosed,
   HiOutlineNoSymbol,
   HiOutlinePencil,
@@ -447,6 +449,14 @@ export function UsersClient({
                       <td className={s.dateCell}>—</td>
                       <td>
                         <div className={s.actions}>
+                          <Link
+                            href={`/dashboard/users/${user.id}`}
+                            className={s.editBtn}
+                            aria-label={`مشاهده ${user.name}`}
+                          >
+                            <HiOutlineEye className="size-3.5" aria-hidden />
+                            <span className={s.btnLabel}>مشاهده</span>
+                          </Link>
                           <button
                             type="button"
                             className={s.editBtn}
