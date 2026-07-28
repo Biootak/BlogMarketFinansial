@@ -124,7 +124,7 @@ export default async function TrackPage({ params }: Props) {
               معامله‌ای با کد <strong dir="ltr">{code}</strong> یافت نشد. کد پیگیری را دوباره بررسی
               کنید.
             </p>
-            <Link href="/transfer" className={s.notFoundLink}>
+            <Link href="/money-transfer" className={s.notFoundLink}>
               ثبت درخواست جدید
             </Link>
           </div>
@@ -324,7 +324,7 @@ export default async function TrackPage({ params }: Props) {
 
         {/* Back link */}
         <div className={s.backRow}>
-          <Link href="/transfer" className={s.backLink}>
+          <Link href="/money-transfer" className={s.backLink}>
             <ArrowRight size={14} strokeWidth={1.75} aria-hidden />
             بازگشت به صفحه انتقال
           </Link>

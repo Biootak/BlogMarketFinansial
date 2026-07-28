@@ -1,4 +1,4 @@
-﻿/* kyc.module.css â€” Premium KYC wizard design */ .root {
+/* kyc.module.css â€” Premium KYC wizard design */ .root {
   min-height: 100dvh;
   padding-block: var(--ds-space-10) var(--ds-space-14);
   padding-inline: var(--ds-space-4);
@@ -212,6 +212,78 @@
   font-size: var(--ds-text-sm);
   margin-block-start: 2px;
   opacity: 0.85;
+}
+
+/* ─── Rejected — Resubmit UI ────────────────────────────────────────────── */
+.rejectedThumbs {
+  display: flex;
+  gap: var(--ds-space-2);
+  margin-block-start: var(--ds-space-3);
+  padding-block-start: var(--ds-space-3);
+  border-block-start: 1px solid color-mix(in oklch, currentColor 18%, transparent);
+}
+.rejectedThumb {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: var(--ds-radius-md);
+  border: 1px solid color-mix(in oklch, currentColor 22%, transparent);
+  background: var(--ds-surface-1);
+  cursor: pointer;
+  transition: transform var(--ds-duration-fast) var(--ds-ease-spring),
+    box-shadow var(--ds-duration-fast);
+}
+.rejectedThumb:hover {
+  transform: scale(1.06);
+  box-shadow: 0 4px 12px color-mix(in oklch, currentColor 24%, transparent);
+}
+.rejectedActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  margin-block-start: var(--ds-space-3);
+}
+.rejectedPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  padding: var(--ds-space-2) var(--ds-space-4);
+  background: var(--ds-error);
+  color: var(--ds-text-inverse, #fff);
+  border: 1px solid var(--ds-error);
+  border-radius: var(--ds-radius-md);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: filter var(--ds-duration-fast), transform var(--ds-duration-fast)
+    var(--ds-ease-spring);
+}
+.rejectedPrimary:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+.rejectedPrimary:active {
+  transform: scale(0.97);
+}
+.rejectedSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  padding: var(--ds-space-2) var(--ds-space-4);
+  background: transparent;
+  color: currentColor;
+  border: 1px solid color-mix(in oklch, currentColor 30%, transparent);
+  border-radius: var(--ds-radius-md);
+  font-size: var(--ds-text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background var(--ds-duration-fast), border-color var(--ds-duration-fast);
+}
+.rejectedSecondary:hover {
+  background: color-mix(in oklch, currentColor 8%, transparent);
+  border-color: color-mix(in oklch, currentColor 50%, transparent);
 }
 
 /* â”€â”€â”€ Form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */

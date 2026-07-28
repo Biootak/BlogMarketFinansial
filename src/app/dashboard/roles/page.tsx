@@ -1,5 +1,8 @@
+import { getRoleStats } from '@/actions/role-actions';
 import { PageHeader, Section } from '@/components/Dashboard/primitives';
-import { RolesClient } from './_components/RolesClient';
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
+import RolesClient from './_components/RolesClient';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,7 +10,13 @@ export const metadata = {
   title: 'نقش‌ها | داشبورد',
 };
 
-export default function RolesPage() {
+export default async function RolesPage() {
+  const session = await auth();
+  if (!session?.user) redirect('/auth?callbackUrl=/dashboard/roles');
+
+  const result = await getRoleStats();
+  const stats = result.success ? result.data.stats : [];
+
   return (
     <main className="max-w-[1440px] mx-auto flex flex-col gap-5">
       <PageHeader
@@ -24,7 +33,7 @@ export default function RolesPage() {
       />
 
       <Section>
-        <RolesClient />
+        <RolesClient stats={stats} currentUserRole={session.user.role ?? 'USER'} />
       </Section>
     </main>
   );

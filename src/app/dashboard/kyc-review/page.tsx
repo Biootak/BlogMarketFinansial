@@ -1,3 +1,4 @@
+import { listPendingCustomerKyc } from '@/actions/customer-portal';
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import type { Metadata } from 'next';
@@ -37,11 +38,26 @@ export default async function KycReviewPage() {
     redirect('/dashboard');
   }
 
-  const records = await getKycQueue();
+  const [records, customerRecords] = await Promise.all([getKycQueue(), listPendingCustomerKyc({ limit: 50 })]);
 
   return (
     <div className="at-page" dir="rtl">
-      <KycReviewClient records={records} />
+      <KycReviewClient
+        records={records}
+        customerRecords={customerRecords.map((c) => ({
+          id: c.id,
+          customerId: c.customerId,
+          customerName: c.customerName,
+          customerPhone: c.customerPhone,
+          docType: c.docType,
+          docNumber: c.docNumber,
+          fileUrl: c.fileUrl,
+          level: c.level,
+          exchangeId: c.exchangeId,
+          exchangeName: c.exchangeName,
+          createdAt: c.createdAt.toISOString(),
+        }))}
+      />
     </div>
   );
 }

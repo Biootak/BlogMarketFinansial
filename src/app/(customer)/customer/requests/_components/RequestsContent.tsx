@@ -298,7 +298,16 @@ function KpiCard({ label, value, sub, icon: Icon, variant }: KpiCardProps) {
           <Icon size={12} />
         </span>
         <span className={s.kpiLabel}>{label}</span>
-        <StatusDot variant={variant === 'primary' ? 'brand' : variant} pulse={variant === 'warning'} />
+        <StatusDot
+          variant={
+            variant === 'primary'
+              ? 'approved'
+              : variant === 'info'
+                ? 'neutral'
+                : variant
+          }
+          pulse={variant === 'warning'}
+        />
       </div>
       <div className={s.kpiValue}>{faNum(value)}</div>
       <div className={s.kpiSub}>{sub}</div>

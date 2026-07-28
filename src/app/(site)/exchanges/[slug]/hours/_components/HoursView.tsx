@@ -19,6 +19,7 @@ type HoursMap = Record<string, HoursValue>;
 type Props = {
   exchange: { name: string; city: string | null };
   hours: HoursMap;
+  timezone?: string;
 };
 
 const DAYS: ReadonlyArray<{ key: keyof HoursMap; label: string; sub: string }> = [

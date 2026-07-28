@@ -27,9 +27,9 @@ export const revalidate = 0;
 
 export default async function StaffPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/auth/login');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/staff');
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/auth/onboarding');
+  if (!membership) redirect('/auth?callbackUrl=/exchange/dashboard&reason=exchange-not-found');
 
   const exchangeId = membership.exchange.id;
   const exchangeName = membership.exchange.name ?? 'صرافی';

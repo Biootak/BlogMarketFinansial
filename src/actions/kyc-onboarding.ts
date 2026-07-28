@@ -372,5 +372,19 @@ export async function reviewKycRecord(raw: unknown): Promise<FintechActionResult
     },
   });
 
+  // نوتیفیکیشن برای کاربر — بفهمد نتیجه KYC چه شد.
+  // اگر reject: باید بتواند مسیر ارسال مجدد را در UI ببیند.
+  try {
+    const { createNotification } = await import('@/actions/notification-actions');
+    await createNotification(
+      userId,
+      approved
+        ? '✅ احراز هویت شما تأیید شد. اکنون به تمام امکانات دسترسی دارید.'
+        : `❌ احراز هویت رد شد. دلیل: ${rejectedReason ?? 'نامشخص'}. لطفاً مدارک را اصلاح و ارسال مجدد کنید.`,
+    );
+  } catch {
+    // best-effort: اگر نوتیفیکیشن fail شد، audit log ثبت شده و نباید کل عملیات fail شود
+  }
+
   return { success: true, data: undefined };
 }

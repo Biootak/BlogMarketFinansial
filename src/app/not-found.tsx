@@ -1,68 +1,78 @@
-import { Button } from '@/components/ui/button';
-import { ArrowRight, Home, Search } from 'lucide-react';
+import { Compass, Home, Search, ArrowLeft, BookOpen, Users, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+import s from './not-found.module.css';
+
+export const metadata: Metadata = {
+  title: 'صفحه یافت نشد | ۴۰۴',
+  description: 'صفحه‌ای که دنبال آن می‌گردید وجود ندارد یا منتقل شده است.',
+  robots: { index: false, follow: false },
+};
 
 export default function NotFound() {
   return (
-    <div
-      dir="rtl"
-      className="min-h-screen flex items-center justify-center bg-gradient-to-bl from-primary-50 via-neutral-50 to-secondary-50 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 p-4"
-    >
-      <div className="max-w-lg w-full text-center">
-        {/* 404 Number */}
-        <div className="relative mb-8">
-          <span className="text-[150px] font-black text-primary-100 dark:text-neutral-800 leading-none select-none">
-            404
-          </span>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Search className="w-20 h-20 text-primary-500 dark:text-primary-400" />
-          </div>
+    <section className={s.section} dir="rtl">
+      {/* Signature: دایرهٔ چرخان با غلظت gradient + Compass در مرکز */}
+      <div className={s.codeMark} aria-hidden>
+        <div className={s.codeRing} />
+        <div className={s.codeRingInner} />
+        <Compass className={s.codeIcon} strokeWidth={1.4} />
+        <span className={s.codeNumber}>۴۰۴</span>
+      </div>
+
+      <div className={s.content}>
+        <span className={s.eyebrow}>
+          <span className={s.eyebrowDot} aria-hidden />
+          خطای مسیریابی
+        </span>
+
+        <h1 className={s.title}>این مسیر در نقشهٔ ما نیست</h1>
+
+        <p className={s.sub}>
+          صفحه‌ای که دنبال آن می‌گردید وجود ندارد، منتقل شده یا شاید هرگز ساخته نشده است.
+          از جستجو یا لینک‌های زیر برای ادامه استفاده کنید.
+        </p>
+
+        <div className={s.cta}>
+          <Link href="/" className={s.ctaPrimary}>
+            <Home size={15} strokeWidth={1.8} aria-hidden />
+            <span>صفحهٔ اصلی</span>
+          </Link>
+          <Link href="/archive" className={s.ctaSecondary}>
+            <Search size={14} strokeWidth={1.8} aria-hidden />
+            <span>جستجو در آرشیو</span>
+          </Link>
+          <Link href="/exchanges" className={s.ctaGhost}>
+            <span>صرافی‌ها</span>
+            <ArrowLeft size={13} strokeWidth={1.8} className={s.ctaIcon} aria-hidden />
+          </Link>
         </div>
 
-        {/* Content */}
-        <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-xl p-8">
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50 mb-3">
-            صفحه مورد نظر یافت نشد
-          </h1>
-
-          <p className="text-neutral-600 dark:text-neutral-400 mb-6">
-            متأسفانه صفحه‌ای که به دنبال آن هستید وجود ندارد یا منتقل شده است.
-          </p>
-
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/">
-              <Button className="w-full sm:w-auto gap-2">
-                <Home className="w-4 h-4" />
-                صفحه اصلی
-              </Button>
-            </Link>
-
-            <Link href="/archive">
-              <Button variant="outline" className="w-full sm:w-auto gap-2">
-                <Search className="w-4 h-4" />
-                آرشیو
-              </Button>
-            </Link>
-          </div>
-        </div>
-
-        {/* Helpful links */}
-        <div className="mt-8 text-sm text-neutral-500 dark:text-neutral-400">
-          <p className="mb-2">شاید این لینک‌ها کمکتان کند:</p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/archive" className="hover:text-primary-500 transition-colors">
-              آرشیو
-            </Link>
-            <Link href="/authors" className="hover:text-primary-500 transition-colors">
-              نویسندگان
-            </Link>
-            <Link href="/contact" className="hover:text-primary-500 transition-colors">
-              تماس با ما
-            </Link>
-          </div>
+        <div className={s.helpful}>
+          <span className={s.helpfulLabel}>شاید این لینک‌ها کمکتان کند:</span>
+          <ul className={s.helpfulList}>
+            <li>
+              <Link href="/archive" className={s.helpfulLink}>
+                <BookOpen size={13} strokeWidth={1.7} aria-hidden />
+                <span>آرشیو مقالات</span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/authors" className={s.helpfulLink}>
+                <Users size={13} strokeWidth={1.7} aria-hidden />
+                <span>نویسندگان</span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/contact" className={s.helpfulLink}>
+                <MessageCircle size={13} strokeWidth={1.7} aria-hidden />
+                <span>تماس با ما</span>
+              </Link>
+            </li>
+          </ul>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

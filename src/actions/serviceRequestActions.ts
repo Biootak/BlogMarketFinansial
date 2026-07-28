@@ -444,7 +444,7 @@ export async function createServiceRequest(
         amount: data.amount,
         currency: data.currency,
         description: data.description ?? null,
-        contactMethod: data.contactMethod,
+        contactMethod: resolvedContactMethod,
         urgency: data.urgency,
       });
     }

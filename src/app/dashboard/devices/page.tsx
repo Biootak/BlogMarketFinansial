@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default async function DevicesPage() {
   const session = await auth();
   if (!session?.user) {
-    redirect('/signin?callbackUrl=/dashboard/devices');
+    redirect('/auth?callbackUrl=/dashboard/devices');
   }
 
   const [devicesResult, logsResult] = await Promise.all([

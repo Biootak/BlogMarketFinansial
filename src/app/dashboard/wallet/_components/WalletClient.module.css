@@ -543,6 +543,17 @@
 .fieldHintError {
   color: var(--ds-status-error-fg) !important;
 }
+.fieldErrorHint {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  font-size: var(--ds-text-sm);
+  color: var(--ds-status-error-fg);
+  font-variant-numeric: tabular-nums;
+  padding-inline-start: var(--ds-space-2);
+  border-inline-start: 2px solid var(--ds-status-error-border);
+  animation: fadeSlideDown 0.18s var(--ds-ease-out-quart);
+}
 
 .quickBtns {
   display: flex;
@@ -680,6 +691,113 @@
   padding: var(--ds-space-2) var(--ds-space-3);
   background: var(--ds-canvas);
   border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+}
+
+/* ── Fee breakdown (Deposit) ────────────────────────────────────────────── */
+.feeBreakdown {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2-5);
+  padding: var(--ds-space-4) var(--ds-space-4);
+  background: linear-gradient(
+    180deg,
+    var(--ds-canvas-subtle) 0%,
+    var(--ds-surface-1, var(--ds-canvas)) 100%
+  );
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+  font-variant-numeric: tabular-nums;
+  position: relative;
+  overflow: hidden;
+}
+/* subtle accent strip در سمت راست — بدون emoji، فقط یک خط رنگی */
+.feeBreakdown::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 2px;
+  background: linear-gradient(180deg, var(--ds-brand-500), var(--ds-brand-300, var(--ds-brand-500)));
+  opacity: 0.7;
+}
+.feeBreakdownHead {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  font-size: var(--ds-text-2xs, var(--ds-text-xs));
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding-block-end: var(--ds-space-1);
+}
+.feeRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-secondary);
+}
+.feeLabel {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--ds-space-1-5);
+}
+.feeValue {
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-primary);
+  letter-spacing: -0.01em;
+}
+.feeBps {
+  font-size: var(--ds-text-2xs, 0.6875rem);
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-muted);
+  padding: 1px var(--ds-space-1-5);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-canvas);
+  border: 1px solid var(--ds-border-subtle);
+  font-variant-numeric: tabular-nums;
+}
+.feeRowTotal {
+  margin-block-start: var(--ds-space-1);
+  padding-block-start: var(--ds-space-2-5);
+  border-block-start: 1px solid var(--ds-border-default);
+  align-items: center;
+}
+.feeLabelTotal {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-primary);
+}
+.feeValueTotal {
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-text-primary);
+  letter-spacing: -0.015em;
+}
+.feeEta {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  font-size: var(--ds-text-2xs, var(--ds-text-xs));
+  color: var(--ds-text-muted);
+  font-weight: var(--ds-weight-medium);
+}
+.feeEta svg {
+  color: var(--ds-status-pending-fg, var(--ds-text-muted));
+  flex-shrink: 0;
+}
+.depositEta {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-1-5);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  line-height: var(--ds-leading-relaxed);
+  padding: var(--ds-space-2-5) var(--ds-space-3);
+  background: color-mix(in oklch, var(--ds-status-pending-fg, var(--ds-text-muted)) 6%, transparent);
   border-radius: var(--ds-radius-md);
 }
 

@@ -818,3 +818,202 @@
     inline-size: 100vw !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   SCOPE TABS — User-level vs Customer-level KYC
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.scopeTabs {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--ds-color-text-primary) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ds-color-text-primary) 6%, transparent);
+  align-self: flex-start;
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.scopeTabs::-webkit-scrollbar { display: none; }
+
+.scopeTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--ds-color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.18s var(--ds-ease-out-expo, cubic-bezier(.16,1,.3,1));
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.scopeTab:hover {
+  color: var(--ds-color-text-primary);
+  background: color-mix(in srgb, var(--ds-color-text-primary) 4%, transparent);
+}
+
+.scopeTabActive {
+  background: var(--ds-color-bg-elevated, #fff);
+  color: var(--ds-color-text-primary);
+  border-color: color-mix(in srgb, var(--ds-color-text-primary) 8%, transparent);
+  box-shadow:
+    0 1px 2px color-mix(in srgb, #000 6%, transparent),
+    0 8px 16px -8px color-mix(in srgb, #000 8%, transparent);
+}
+
+[data-theme='dark'] .scopeTabActive,
+.dark .scopeTabActive {
+  background: color-mix(in srgb, #ffffff 8%, transparent);
+}
+
+.scopeTabCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 22px;
+  block-size: 20px;
+  padding-inline: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--nova-amber, oklch(78% .16 75)) 18%, transparent);
+  color: color-mix(in srgb, var(--nova-amber, oklch(50% .18 75)) 90%, currentColor);
+  font-size: 10px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.scopeTabActive .scopeTabCount {
+  background: color-mix(in srgb, var(--nova-violet, oklch(58% .18 290)) 20%, transparent);
+  color: color-mix(in srgb, var(--nova-violet, oklch(50% .18 290)) 90%, currentColor);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   CUSTOMER KYC — Exchange/Doc/Level chips
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.exchangeChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--nova-cyan, oklch(72% .12 220)) 14%, transparent);
+  color: color-mix(in srgb, var(--nova-cyan, oklch(45% .14 220)) 92%, currentColor);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  max-inline-size: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[data-theme='dark'] .exchangeChip,
+.dark .exchangeChip {
+  color: color-mix(in srgb, var(--nova-cyan, oklch(75% .12 220)) 90%, currentColor);
+}
+
+.docTypeChip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--ds-color-text-primary) 6%, transparent);
+  color: var(--ds-color-text-primary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.levelChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--nova-violet, oklch(58% .18 290)) 14%, transparent);
+  color: color-mix(in srgb, var(--nova-violet, oklch(48% .18 290)) 92%, currentColor);
+  font-size: 10px;
+  font-weight: 800;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  letter-spacing: 0.05em;
+}
+
+[data-theme='dark'] .levelChip,
+.dark .levelChip {
+  color: color-mix(in srgb, var(--nova-violet, oklch(75% .16 290)) 92%, currentColor);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   CUSTOMER KYC META — Used inside preview sheet
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.customerKycMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--ds-color-text-primary) 3%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ds-color-text-primary) 6%, transparent);
+  margin-block-end: 4px;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.metaLabel {
+  color: var(--ds-color-text-tertiary, #94a3b8);
+  font-weight: 500;
+}
+
+.metaValue {
+  color: var(--ds-color-text-primary, #0f172a);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[data-theme='dark'] .metaValue,
+.dark .metaValue {
+  color: var(--ds-color-text-primary, #f8fafc);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   REJECT PROFILE META — 2-line name + sub
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.rejectProfile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rejectProfileMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.rejectSub {
+  font-size: 11px;
+  color: var(--ds-color-text-tertiary, #94a3b8);
+  font-weight: 500;
+}

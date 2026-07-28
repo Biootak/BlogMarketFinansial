@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 export default async function MyDealsPage() {
   const auth = await requireUser();
   if (!auth.success) {
-    redirect('/signin?callbackUrl=/dashboard/my-deals');
+    redirect('/auth?callbackUrl=/dashboard/my-deals');
   }
 
   return (

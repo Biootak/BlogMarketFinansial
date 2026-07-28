@@ -42,8 +42,8 @@ interface Props {
 
 export default function SettlementPeriodCard({ row, selected, onSelect, index }: Props) {
   const [hover, setHover] = useState(false);
-  const meta = STATUS_META[row.status];
-  const Icon = STATUS_ICON[row.status] ?? Receipt;
+  const meta = STATUS_META[row.status as SettlementStatus];
+  const Icon = STATUS_ICON[row.status as SettlementStatus] ?? Receipt;
 
   return (
     <button

@@ -34,7 +34,7 @@ export default async function SettingsIndexPage() {
     (Date.now() - new Date(exchange.updatedAt).getTime()) / (1000 * 60 * 60 * 24),
   );
   const staffCount = staff.length;
-  const activeStaff = staff.filter((m) => m.active).length;
+  const activeStaff = staff.length; // getExchangeStaff already filters revokedAt: null
 
   return (
     <div className={s.root}>

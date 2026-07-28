@@ -484,7 +484,7 @@ export default function UserDetail({
         confirmLabel={user.status === 'Banned' ? 'رفع مسدودیت' : 'مسدود کردن'}
         cancelLabel="انصراف"
         onConfirm={handleStatusToggle}
-        destructive={user.status !== 'Banned'}
+        variant={user.status !== 'Banned' ? 'danger' : 'default'}
       />
 
       <ConfirmDialog
@@ -495,7 +495,7 @@ export default function UserDetail({
         confirmLabel="حذف برای همیشه"
         cancelLabel="انصراف"
         onConfirm={handleDelete}
-        destructive
+        variant="danger"
       />
     </div>
   );
@@ -904,7 +904,7 @@ function SecurityPanel({ user }: { user: UserDetailPayload }) {
                 </div>
                 <div className={s.listText}>
                   <span className={s.listTitle}>آخرین نشست</span>
-                  <span className={s.listSub} dir="ltr" className="text-start">
+                  <span className={`${s.listSub} text-start`} dir="ltr">
                     {user.lastSession.deviceId ?? 'دستگاه ناشناس'}
                   </span>
                 </div>

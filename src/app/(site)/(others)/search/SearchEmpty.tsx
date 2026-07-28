@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, FileSearch, Search as SearchIcon, TrendingUp } from 'lucide-react';
+import { ArrowLeft, ArrowRight, FileSearch, Search as SearchIcon, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';

@@ -118,7 +118,7 @@ export function TwoFactorSection({ userEmail }: TwoFactorSectionProps) {
   }, []);
 
   /* ── derived ── */
-  const qrUrl = useMemo(() => (setupData ? buildQrUrl(setupData.otpauth) : ''), [setupData]);
+  const qrUrl = useMemo(() => (setupData ? buildQrUrl(setupData.otpauthUri) : ''), [setupData]);
   const isVerifying = verifyCode.length === 6;
 
   /* ── handlers ── */
@@ -134,7 +134,7 @@ export function TwoFactorSection({ userEmail }: TwoFactorSectionProps) {
       } else {
         toast({
           title: 'خطا',
-          description: res.message ?? 'شروع فرایند فعال‌سازی با خطا مواجه شد.',
+          description: !res.success ? (res.error?.message ?? 'شروع فرایند فعال‌سازی با خطا مواجه شد.') : 'خطای ناشناخته',
           variant: 'destructive',
         });
       }
@@ -147,10 +147,10 @@ export function TwoFactorSection({ userEmail }: TwoFactorSectionProps) {
     if (!setupData || !isVerifying) return;
     setIsBusy(true);
     try {
-      const res = await confirmEnable2FA(setupData.secret, verifyCode);
+      const res = await confirmEnable2FA(verifyCode);
       if (res.success && res.data) {
         setBackupCodes(res.data.backupCodes);
-        setStatus({ enabled: true });
+        setStatus({ enabled: true, hasBackupCodes: true, backupCodesCount: res.data.backupCodes.length });
         setView('enabled');
         toast({
           title: 'احراز دو مرحله‌ای فعال شد',
@@ -160,7 +160,7 @@ export function TwoFactorSection({ userEmail }: TwoFactorSectionProps) {
       } else {
         toast({
           title: 'کد نامعتبر',
-          description: res.message ?? 'کد وارد شده معتبر نیست. دوباره تلاش کنید.',
+          description: !res.success ? (res.error?.message ?? 'کد وارد شده معتبر نیست. دوباره تلاش کنید.') : 'خطای ناشناخته',
           variant: 'destructive',
         });
       }
@@ -182,7 +182,7 @@ export function TwoFactorSection({ userEmail }: TwoFactorSectionProps) {
     try {
       const res = await disable2FA(disableCode);
       if (res.success) {
-        setStatus({ enabled: false });
+        setStatus({ enabled: false, hasBackupCodes: false, backupCodesCount: 0 });
         setView('disabled');
         setIsDisableOpen(false);
         setDisableCode('');
@@ -195,7 +195,7 @@ export function TwoFactorSection({ userEmail }: TwoFactorSectionProps) {
       } else {
         toast({
           title: 'خطا',
-          description: res.message ?? 'کد وارد شده نامعتبر است.',
+          description: !res.success ? (res.error?.message ?? 'کد وارد شده نامعتبر است.') : 'خطای ناشناخته',
           variant: 'destructive',
         });
       }

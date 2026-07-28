@@ -262,10 +262,9 @@ export default function RequestForm({ initialType, accounts, profileStatus }: Pr
 
             <FormField label="ارز" htmlFor="acc-currency">
               <CurrencySelect
-                id="acc-currency"
                 value={currency}
                 onChange={setCurrency}
-                currencies={CURRENCY_ITEMS}
+                items={CURRENCY_ITEMS}
               />
             </FormField>
           </div>

@@ -30,11 +30,11 @@ export const dynamic = 'force-dynamic';
 
 export default async function ExchangeInsightsPage() {
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/auth/onboarding');
+  if (!membership) redirect('/auth?callbackUrl=/exchange/dashboard/insights&reason=exchange-not-found');
   const exchangeId = membership.exchange.id;
 
   const data = await getExchangeDashboardData(exchangeId);
-  if (!data) redirect('/auth/onboarding');
+  if (!data) redirect('/auth?callbackUrl=/exchange/dashboard/insights&reason=exchange-data-unavailable');
 
   return (
     <div className={s.root}>

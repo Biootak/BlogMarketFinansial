@@ -59,7 +59,7 @@ function persianDateTime(d: Date) {
 
 export default async function AccountPage() {
   const user = await getCurrentUser();
-  if (!user?.id) redirect('/auth/login');
+  if (!user?.id) redirect('/auth?callbackUrl=/dashboard/subscription');
 
   const [published, drafts, dbUser, devices, logs, subRes] = await Promise.all([
     db.post.count({ where: { authorId: user.id, status: 'PUBLISHED' } }),
@@ -98,7 +98,7 @@ export default async function AccountPage() {
 
   const secColor =
     secScore >= 80 ? 'var(--nova-emerald)' :
-    secScore >= 50 ? 'var(--nova-amber)'   : 'oklch(55% 0.16 25)';
+    secScore >= 50 ? 'var(--nova-amber)'   : 'var(--nova-rose)';
 
   /* محیط دایره SVG: 2π×16 ≈ 100.5 */
   const arcLen = (secScore / 100) * 100.5;

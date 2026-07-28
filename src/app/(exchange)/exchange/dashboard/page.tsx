@@ -56,7 +56,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function ExchangeDashboardPage() {
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/auth/onboarding');
+  if (!membership) redirect('/auth?callbackUrl=/exchange/dashboard&reason=exchange-not-found');
 
   const exchangeId = membership.exchange.id;
 
@@ -67,7 +67,7 @@ export default async function ExchangeDashboardPage() {
   ]);
   const recent = recentResp.rows;
 
-  if (!data) redirect('/auth/onboarding');
+  if (!data) redirect('/auth?callbackUrl=/exchange/dashboard&reason=exchange-data-unavailable');
 
   return (
     <div className={s.root}>

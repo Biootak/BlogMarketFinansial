@@ -26,9 +26,9 @@ interface PageProps {
 
 export default async function StaffActivityPage({ searchParams }: PageProps) {
   const session = await auth();
-  if (!session?.user?.id) redirect('/auth/login');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/staff/activity');
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/auth/onboarding');
+  if (!membership) redirect('/auth?callbackUrl=/exchange/dashboard&reason=exchange-not-found');
 
   const exchangeId = membership.exchange.id;
   const sp = await searchParams;

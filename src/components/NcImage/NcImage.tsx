@@ -9,8 +9,10 @@ import { SafeImage, type SafeImageProps } from '@/components/SafeImage';
  */
 import type React from 'react';
 
-type NcOnlyImgProps = Omit<SafeImageProps, 'alt' | 'variant'> &
-  Pick<React.ImgHTMLAttributes<HTMLImageElement>, 'alt'>;
+interface NcOnlyImgProps extends Omit<SafeImageProps, 'alt' | 'variant' | 'src'> {
+  alt?: string;
+  src?: string | null;
+}
 
 const NcImage: React.FC<NcOnlyImgProps> = ({ alt, ...rest }) => {
   return <SafeImage variant="card" alt={alt ?? ''} {...rest} />;

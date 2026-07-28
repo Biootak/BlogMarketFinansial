@@ -1,72 +1,70 @@
+'use client';
+
 /**
- * not-found.tsx — Customer Portal 404
- * نمایش صفحه ۴۰۴ برای مسیرهای ناشناخته در پورتال مشتری
+ * /customer/not-found — صفحه ۴۰۴ پورتال مشتری
  */
+
+import { Spotlight } from '@/components/Dashboard/primitives';
+import { ChevronLeft, Compass, Home, Search, UserSearch } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useEffect, useRef } from 'react';
+import s from './not-found.module.css';
 
 export default function CustomerNotFound() {
+  const pathname = usePathname();
+  const root = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!root.current) return;
+    const items = root.current.querySelectorAll<HTMLElement>('[data-stagger]');
+    items.forEach((el, i) => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(6px)';
+      requestAnimationFrame(() => {
+        el.style.transition = 'opacity 0.5s var(--nova-ease), transform 0.5s var(--nova-ease)';
+        el.style.transitionDelay = `${i * 60}ms`;
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+      });
+    });
+  }, []);
+
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '40dvh',
-        gap: 'var(--ds-space-4)',
-        padding: 'var(--ds-space-6)',
-        textAlign: 'center',
-      }}
-    >
-      <div
-        style={{
-          fontSize: '3rem',
-          fontWeight: 800,
-          color: 'var(--at-fg-subtle)',
-          fontVariantNumeric: 'tabular-nums',
-          lineHeight: 1,
-        }}
-        aria-hidden
-      >
-        ۴۰۴
+    <div ref={root} className={s.root} dir="rtl">
+      <Spotlight tone="emerald" className={s.spotlight} />
+
+      <div data-stagger className={s.codeCard}>
+        <span className={s.codeNumber}>۴۰۴</span>
+        <span className={s.codeIcon} aria-hidden>
+          <UserSearch size={20} />
+        </span>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-2)' }}>
-        <h2
-          style={{
-            fontSize: 'var(--ds-text-lg)',
-            fontWeight: 700,
-            color: 'var(--at-fg)',
-            margin: 0,
-          }}
-        >
-          صفحه‌ای یافت نشد
-        </h2>
-        <p
-          style={{
-            fontSize: 'var(--ds-text-sm)',
-            color: 'var(--at-fg-muted)',
-            margin: 0,
-            maxWidth: 300,
-          }}
-        >
-          این صفحه وجود ندارد یا دسترسی شما به آن محدود شده است.
+
+      <div data-stagger className={s.headBlock}>
+        <h1 className={s.title}>این صفحه از پورتال شما پیدا نشد</h1>
+        <p className={s.lead}>
+          ممکن است به زبان دیگری منتقل شده باشد یا دسترسی لازم را نداشته باشید.
+          <br />
+          <code className={s.pathCode} dir="ltr">{pathname}</code>
         </p>
       </div>
-      <Link
-        href="/customer/dashboard"
-        style={{
-          padding: '0.5rem 1.5rem',
-          border: 'none',
-          borderRadius: 'var(--at-radius-sm, 6px)',
-          background: 'var(--at-accent)',
-          color: 'var(--at-accent-on, oklch(98% 0 0))',
-          fontSize: 'var(--ds-text-sm)',
-          fontWeight: 600,
-          textDecoration: 'none',
-        }}
-      >
-        بازگشت به داشبورد
-      </Link>
+
+      <div data-stagger className={s.actions}>
+        <Link href="/customer/dashboard" className={s.primaryCta}>
+          <Home size={14} aria-hidden />
+          پورتال مشتری
+          <ChevronLeft size={12} aria-hidden />
+        </Link>
+        <Link href="/customer/requests" className={s.ghostCta}>
+          <Search size={14} aria-hidden />
+          درخواست‌های من
+        </Link>
+        <Link href="/" className={s.ghostCta}>
+          <Compass size={14} aria-hidden />
+          صفحهٔ اصلی
+        </Link>
+      </div>
     </div>
   );
 }

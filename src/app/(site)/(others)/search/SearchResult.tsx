@@ -180,8 +180,8 @@ export function SearchResult({ q, posts, categories, authors, total }: SearchRes
                     <div className={s.postThumb} style={{ display: 'grid', placeItems: 'center' }}>
                       {a.image || a.profile?.avatar ? (
                         <NcImage
-                          src={a.image ?? a.profile?.avatar ?? ''}
-                          alt={a.name}
+                          src={String(a.image ?? a.profile?.avatar ?? '')}
+                          alt={a.name ?? ''}
                           width={88}
                           height={88}
                           className="absolute inset-0 w-full h-full object-cover"

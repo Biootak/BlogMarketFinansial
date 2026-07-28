@@ -58,7 +58,7 @@ async function getWalletData(userId: string): Promise<WalletData | null> {
 export default async function WalletPage() {
   const session = await auth();
   if (!session?.user) {
-    redirect('/signin?callbackUrl=/dashboard/wallet');
+    redirect('/auth?callbackUrl=/dashboard/wallet');
   }
 
   const walletData = await getWalletData(session.user.id ?? '');

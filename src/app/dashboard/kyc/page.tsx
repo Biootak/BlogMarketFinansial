@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default async function KycPage() {
   const session = await auth();
   if (!session?.user) {
-    redirect('/signin?callbackUrl=/dashboard/kyc');
+    redirect('/auth?callbackUrl=/dashboard/kyc');
   }
 
   const kycRecord = await getMyKycRecord();

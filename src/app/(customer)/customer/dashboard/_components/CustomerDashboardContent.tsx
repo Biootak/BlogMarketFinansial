@@ -772,7 +772,7 @@ interface QuickAction {
 }
 
 const QUICK_ACTIONS: QuickAction[] = [
-  { href: '/transfer', label: 'انتقال سریع', icon: Zap, hint: 'انتقال آنی', accent: 'primary' },
+  { href: '/money-transfer', label: 'انتقال سریع', icon: Zap, hint: 'انتقال آنی', accent: 'primary' },
   { href: '/customer/accounts', label: 'حساب جدید', icon: Plus, hint: 'افتتاح حساب', accent: 'emerald' },
   { href: '/customer/kyc', label: 'ارتقاء KYC', icon: ShieldCheck, hint: 'افزایش سقف', accent: 'violet' },
   { href: '/customer/transactions', label: 'تاریخچه', icon: History, hint: 'همه تراکنش‌ها', accent: 'cyan' },

@@ -615,16 +615,23 @@ model AuditLog {
 }
 
 model Beneficiary {
-  id         String   @id
-  userId     String
+  id         String    @id
+  /// وقتی null است، متعلق به Customer portal است.
+  userId     String?
+  /// customerId برای ذخیره مخاطب در سطح customer portal
+  /// (هر دو null نباید باشند و هر دو پر هم نباید باشند)
+  customerId String?
   name       String
   identifier String
   note       String?
-  createdAt  DateTime @default(now())
-  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+  User       User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Customer   Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   @@unique([userId, identifier])
+  @@unique([customerId, identifier])
   @@index([userId, createdAt])
+  @@index([customerId, createdAt])
 }
 
 model BillingAddress {
@@ -718,6 +725,7 @@ model Customer {
   LedgerEntry     LedgerEntry[]
   Transaction     Transaction[]
   CustomerRequest CustomerRequest[]
+  Beneficiary     Beneficiary[]
 
   @@index([createdAt(sort: Desc)])
   @@index([exchangeId])

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default async function NotificationsPage() {
   const session = await auth();
-  if (!session?.user) redirect('/signin?callbackUrl=/dashboard/notifications');
+  if (!session?.user) redirect('/auth?callbackUrl=/dashboard/notifications');
 
   const [notifications, total] = await Promise.all([
     getNotifications({ limit: 50 }),

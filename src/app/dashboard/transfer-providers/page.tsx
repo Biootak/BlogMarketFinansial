@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: 'مدیریت صرافی‌های م�
 
 export default async function TransferProvidersPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/dashboard/transfer-providers');
 
   const authResult = await requireAdmin();
   if (!authResult.success) redirect('/dashboard');

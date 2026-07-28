@@ -22,10 +22,12 @@ import {
   ChevronLeft,
   ClipboardList,
   Loader2,
+  RotateCcw,
   Shield,
   ShieldAlert,
   ShieldCheck,
   Upload,
+  X,
 } from 'lucide-react';
 import { useRef, useState, useTransition } from 'react';
 import s from './kyc.module.css';
@@ -56,6 +58,8 @@ function safeFileName(file: File): string {
 }
 
 export default function KycWizard({ initialRecord, hasPhone }: Props) {
+  // اگر قبلاً REJECTED شده، اطلاعات قبلی را pre-fill کن — کاربر نباید همه چیز را از اول وارد کند
+  const isResubmit = initialRecord?.status === 'REJECTED';
   const [step, setStep] = useState<-1 | 0 | 1 | 2>(
     // اگر تأیید شده → نمایش وضعیت، در غیر این صورت ادامه wizard
     initialRecord?.status === 'APPROVED' ? -1 : 0,
@@ -66,10 +70,15 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
     dateOfBirth: '',
     phone: '',
   });
-  const [docs, setDocs] = useState<DocState>({ selfieUrl: '', docFrontUrl: '', docBackUrl: '' });
+  const [docs, setDocs] = useState<DocState>({
+    selfieUrl: initialRecord?.selfieUrl ?? '',
+    docFrontUrl: initialRecord?.docFrontUrl ?? '',
+    docBackUrl: initialRecord?.docBackUrl ?? '',
+  });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [resubmitMode, setResubmitMode] = useState<'full' | 'docs'>(isResubmit ? 'docs' : 'full');
 
   const selfieRef = useRef<HTMLInputElement>(null);
   const frontRef = useRef<HTMLInputElement>(null);
@@ -239,15 +248,75 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
     );
   }
 
-  // ── رد شده → امکان تلاش مجدد ────────────────────────────────
+  // ── رد شده → امکان تلاش مجدد (با pre-fill اطلاعات قبلی) ────
   const rejectedBanner =
     initialRecord?.status === 'REJECTED' ? (
       <div className={`${s.statusBanner} ${s.statusBannerRejected}`}>
         <ShieldAlert size={22} strokeWidth={1.5} aria-hidden />
-        <div>
-          <div className={s.statusTitle}>درخواست رد شد</div>
+        <div style={{ flex: 1 }}>
+          <div className={s.statusTitle}>درخواست قبلی رد شد</div>
           <div className={s.statusDesc}>
             {initialRecord.rejectedReason ?? 'مدارک نامعتبر بود. لطفاً مجدداً تلاش کنید.'}
+          </div>
+          {/* پیش‌نمایش مدارک قبلی — اگر موجود باشد */}
+          {(initialRecord.selfieUrl ||
+            initialRecord.docFrontUrl ||
+            initialRecord.docBackUrl) && (
+            <div className={s.rejectedThumbs} aria-label="مدارک ارسال‌شده قبلی">
+              {initialRecord.selfieUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={initialRecord.selfieUrl}
+                  alt="سلفی قبلی"
+                  className={s.rejectedThumb}
+                />
+              )}
+              {initialRecord.docFrontUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={initialRecord.docFrontUrl}
+                  alt="مدرک جلو قبلی"
+                  className={s.rejectedThumb}
+                />
+              )}
+              {initialRecord.docBackUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={initialRecord.docBackUrl}
+                  alt="مدرک پشت قبلی"
+                  className={s.rejectedThumb}
+                />
+              )}
+            </div>
+          )}
+          <div className={s.rejectedActions}>
+            <button
+              type="button"
+              className={s.rejectedPrimary}
+              onClick={() => {
+                // فقط مدارک را دوباره ارسال کن — اطلاعات پایه معتبر است
+                setResubmitMode('docs');
+                setStep(1);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            >
+              <RotateCcw size={14} aria-hidden />
+              تلاش مجدد با اصلاح مدارک
+            </button>
+            <button
+              type="button"
+              className={s.rejectedSecondary}
+              onClick={() => {
+                // از ابتدا شروع کن
+                setResubmitMode('full');
+                setStep(0);
+                setDocs({ selfieUrl: '', docFrontUrl: '', docBackUrl: '' });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            >
+              <X size={14} aria-hidden />
+              شروع از ابتدا
+            </button>
           </div>
         </div>
       </div>

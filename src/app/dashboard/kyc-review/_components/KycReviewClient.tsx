@@ -15,9 +15,12 @@
  *  - Approve / Reject با confirm dialog + inline success/error
  *  - کلیه states: loading / empty / error / success / disabled
  *  - Keyboard nav: Enter/Space روی rows، Esc برای بستن sheet
+ *  - Dual-scope: KYC کاربران پلتفرم + KYC مشتریان صرافی‌ها (exchange-level)
+ *  - Tab segment control برای جابجایی بین دو صف
  */
 
 import { reviewKycRecord } from '@/actions/kyc-onboarding';
+import { reviewCustomerKycRecord } from '@/actions/customer-portal';
 import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import { Button } from '@/components/ui/button';
@@ -30,14 +33,17 @@ import {
 } from '@/components/ui/dialog';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 import {
   AlertCircle,
+  Building2,
   CheckCircle2,
   Clock,
   Eye,
   FileText,
   Shield,
   ShieldCheck,
+  User as UserIcon,
   Users,
   XCircle,
 } from 'lucide-react';
@@ -64,7 +70,23 @@ type KycRow = {
   user: { name: string | null; email: string; phone: string | null } | null;
 };
 
-type Props = { records: KycRow[] };
+type CustomerKycRow = {
+  id: string;
+  customerId: string;
+  customerName: string;
+  customerPhone: string;
+  docType: string;
+  docNumber: string | null;
+  fileUrl: string | null;
+  level: string;
+  exchangeId: string;
+  exchangeName: string;
+  createdAt: string;
+};
+
+type Props = { records: KycRow[]; customerRecords: CustomerKycRow[] };
+
+type Scope = 'user' | 'customer';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -138,11 +160,15 @@ function DocImage({ src, alt, delay = 0 }: { src: string; alt: string; delay?: n
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 
-export function KycReviewClient({ records: initial }: Props) {
+export function KycReviewClient({ records: initial, customerRecords: initialCustomer }: Props) {
   const [rows, setRows] = useState<KycRow[]>(initial);
+  const [customerRows, setCustomerRows] = useState<CustomerKycRow[]>(initialCustomer);
+  const [scope, setScope] = useState<Scope>('user');
   const [rejectTarget, setRejectTarget] = useState<KycRow | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [previewRow, setPreviewRow] = useState<KycRow | null>(null);
+  const [previewCustomer, setPreviewCustomer] = useState<CustomerKycRow | null>(null);
+  const [customerRejectTarget, setCustomerRejectTarget] = useState<CustomerKycRow | null>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [lastAction, setLastAction] = useState<string | null>(null);
@@ -216,6 +242,48 @@ export function KycReviewClient({ records: initial }: Props) {
     });
   }, [rejectTarget, rejectReason]);
 
+  // ── Customer KYC actions ──────────────────────────────────────────────────
+  const handleCustomerApprove = useCallback((row: CustomerKycRow) => {
+    setCustomerRows((prev) => prev.filter((r) => r.id !== row.id));
+    setPreviewCustomer((prev) => (prev?.id === row.id ? null : prev));
+    setError(null);
+    setLastAction(null);
+    startTransition(async () => {
+      const res = await reviewCustomerKycRecord({ recordId: row.id, approved: true });
+      if (!res.success) {
+        setCustomerRows((prev) => [row, ...prev]);
+        setError(res.error ?? 'خطا');
+        return;
+      }
+      setLastAction(`KYC مشتری «${row.customerName}» تأیید شد`);
+    });
+  }, []);
+
+  const handleCustomerRejectConfirm = useCallback(() => {
+    if (!customerRejectTarget) return;
+    const target = customerRejectTarget;
+    const reason = rejectReason.trim() || 'اطلاعات ناقص یا نادرست';
+    setCustomerRejectTarget(null);
+    setRejectReason('');
+    setCustomerRows((prev) => prev.filter((r) => r.id !== target.id));
+    setPreviewCustomer((prev) => (prev?.id === target.id ? null : prev));
+    setError(null);
+    setLastAction(null);
+    startTransition(async () => {
+      const res = await reviewCustomerKycRecord({
+        recordId: target.id,
+        approved: false,
+        rejectedReason: reason,
+      });
+      if (!res.success) {
+        setCustomerRows((prev) => [target, ...prev]);
+        setError(res.error ?? 'خطا');
+        return;
+      }
+      setLastAction(`KYC مشتری «${target.customerName}» رد شد`);
+    });
+  }, [customerRejectTarget, rejectReason]);
+
   // ── KPI items config ───────────────────────────────────────────────────────
   const kpiItems = [
     {
@@ -249,14 +317,41 @@ export function KycReviewClient({ records: initial }: Props) {
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <PageHeader
         title="بررسی درخواست‌های KYC"
-        description={`${rows.length} درخواست در صف بررسی`}
+        description={`${rows.length + customerRows.length} درخواست در صف بررسی`}
         breadcrumb={[{ href: '/dashboard', label: 'داشبورد' }, { label: 'بررسی KYC' }]}
         eyebrow="احراز هویت"
         icon="shield-check"
         accent="violet"
       />
 
-      {/* ── KPI Strip ──────────────────────────────────────────────────────── */}
+      {/* ── Scope Tab Segments ─────────────────────────────────────────────── */}
+      <div className={s.scopeTabs} role="tablist" aria-label="نوع KYC">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={scope === 'user'}
+          className={cn(s.scopeTab, scope === 'user' && s.scopeTabActive)}
+          onClick={() => setScope('user')}
+        >
+          <UserIcon size={14} aria-hidden />
+          <span>کاربران پلتفرم</span>
+          {rows.length > 0 && <span className={s.scopeTabCount}>{new Intl.NumberFormat('fa-IR').format(rows.length)}</span>}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={scope === 'customer'}
+          className={cn(s.scopeTab, scope === 'customer' && s.scopeTabActive)}
+          onClick={() => setScope('customer')}
+        >
+          <Building2 size={14} aria-hidden />
+          <span>مشتریان صرافی‌ها</span>
+          {customerRows.length > 0 && <span className={s.scopeTabCount}>{new Intl.NumberFormat('fa-IR').format(customerRows.length)}</span>}
+        </button>
+      </div>
+
+      {/* ── KPI Strip (only for user scope) ───────────────────────────────── */}
+      {scope === 'user' && (
       <div className={s.kpiStrip} aria-label="خلاصه صف KYC">
         {kpiItems.map((item, i) => (
           <div
@@ -274,6 +369,7 @@ export function KycReviewClient({ records: initial }: Props) {
           </div>
         ))}
       </div>
+      )}
 
       {/* ── Urgent queue bar ───────────────────────────────────────────────── */}
       {urgentCount > 0 && (
@@ -301,8 +397,9 @@ export function KycReviewClient({ records: initial }: Props) {
         </div>
       )}
 
-      {/* ── Table / Empty ──────────────────────────────────────────────────── */}
-      {rows.length === 0 ? (
+      {/* ── User KYC Table / Empty ─────────────────────────────────────────── */}
+      {scope === 'user' && (
+      rows.length === 0 ? (
         <div className={s.emptyWrap}>
           <EmptyState
             icon={ShieldCheck}
@@ -447,6 +544,142 @@ export function KycReviewClient({ records: initial }: Props) {
             </tbody>
           </table>
         </div>
+      )
+      )}
+
+      {/* ── Customer KYC Table / Empty ──────────────────────────────────────── */}
+      {scope === 'customer' && (
+        customerRows.length === 0 ? (
+          <div className={s.emptyWrap}>
+            <EmptyState
+              icon={Building2}
+              title="صف KYC مشتریان خالی است"
+              description="هیچ درخواست تأیید هویت از سمت مشتریان صرافی‌ها ثبت نشده است."
+            />
+          </div>
+        ) : (
+          <div className={s.tableWrap}>
+            <table className={s.table} aria-label="صف بررسی KYC مشتریان">
+              <thead>
+                <tr>
+                  <th className={s.th} scope="col">مشتری</th>
+                  <th className={s.th} scope="col">صرافی</th>
+                  <th className={s.th} scope="col">نوع مدرک</th>
+                  <th className={s.th} scope="col">شماره</th>
+                  <th className={s.th} scope="col">سطح</th>
+                  <th className={s.th} scope="col">تاریخ</th>
+                  <th className={s.th} scope="col">
+                    <span className="sr-only">عملیات</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {customerRows.map((row, i) => {
+                  const hue = nameHue(row.customerName);
+                  const displayName = row.customerName || '—';
+                  return (
+                    <tr
+                      key={row.id}
+                      className={s.tr}
+                      style={{ '--row-i': i } as React.CSSProperties}
+                      tabIndex={0}
+                      aria-label={`بررسی KYC برای ${displayName}`}
+                      onKeyDown={(e: KeyboardEvent<HTMLTableRowElement>) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setPreviewCustomer(row);
+                        }
+                      }}
+                    >
+                      <td className={s.td}>
+                        <div className={s.applicant}>
+                          <div
+                            className={s.avatar}
+                            aria-hidden
+                            style={{
+                              background: `oklch(91% 0.04 ${hue})`,
+                              color: `oklch(36% 0.12 ${hue})`,
+                            }}
+                          >
+                            {initials(displayName)}
+                          </div>
+                          <div className={s.applicantInfo}>
+                            <span className={s.applicantName}>{displayName}</span>
+                            <span className={s.applicantEmail} dir="ltr">
+                              {row.customerPhone}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className={s.td}>
+                        <span className={s.exchangeChip}>
+                          <Building2 size={11} aria-hidden />
+                          {row.exchangeName}
+                        </span>
+                      </td>
+                      <td className={s.td}>
+                        <span className={s.docTypeChip}>{row.docType}</span>
+                      </td>
+                      <td className={s.td}>
+                        <span className={s.phone} dir="ltr">
+                          {row.docNumber ?? '—'}
+                        </span>
+                      </td>
+                      <td className={s.td}>
+                        <span className={s.levelChip}>{row.level}</span>
+                      </td>
+                      <td className={s.td}>
+                        <span className={s.date}>{formatDate(row.createdAt)}</span>
+                      </td>
+                      <td className={s.td}>
+                        <div
+                          className={s.actionCell}
+                          onClick={(e) => e.stopPropagation()}
+                          onKeyDown={(e) => e.stopPropagation()}
+                        >
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCustomerApprove(row)}
+                            disabled={isPending}
+                            className={s.approveBtn}
+                            aria-label={`تأیید KYC ${displayName}`}
+                          >
+                            <CheckCircle2 size={13} aria-hidden />
+                            تأیید
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setCustomerRejectTarget(row);
+                              setRejectReason('');
+                            }}
+                            disabled={isPending}
+                            className={s.rejectBtn}
+                            aria-label={`رد KYC ${displayName}`}
+                          >
+                            <XCircle size={13} aria-hidden />
+                            رد
+                          </Button>
+                          <button
+                            type="button"
+                            className={s.previewIconBtn}
+                            onClick={() => setPreviewCustomer(row)}
+                            aria-label={`مشاهده مدرک ${displayName}`}
+                            title="مشاهده مدرک"
+                          >
+                            <Eye size={14} aria-hidden />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )
       )}
 
       {/* ── Document Preview Sheet ─────────────────────────────────────────── */}
@@ -586,6 +819,169 @@ export function KycReviewClient({ records: initial }: Props) {
               variant="destructive"
               onClick={handleRejectConfirm}
               disabled={isPending}
+            >
+              {isPending ? 'در حال ارسال…' : 'رد کردن'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Customer Preview Sheet ──────────────────────────────────────────── */}
+      <Sheet open={!!previewCustomer} onOpenChange={(o) => !o && setPreviewCustomer(null)}>
+        <SheetContent dir="rtl" side="left" className={s.previewSheet}>
+          {previewCustomer && (() => {
+            const hue = nameHue(previewCustomer.customerName);
+            return (
+              <>
+                <div className={s.previewHeaderWrap}>
+                  <div
+                    className={s.previewAvatar}
+                    aria-hidden
+                    style={{
+                      background: `oklch(91% 0.04 ${hue})`,
+                      color: `oklch(36% 0.12 ${hue})`,
+                    }}
+                  >
+                    {initials(previewCustomer.customerName)}
+                  </div>
+                  <div className={s.previewTitleGroup}>
+                    <span className={s.previewName}>{previewCustomer.customerName}</span>
+                    <span className={s.previewMeta}>
+                      <span dir="ltr">{previewCustomer.customerPhone}</span>
+                      {' · '}
+                      {previewCustomer.exchangeName}
+                    </span>
+                  </div>
+                </div>
+                <div className={s.previewBody}>
+                  <div className={s.customerKycMeta}>
+                    <div className={s.metaRow}>
+                      <span className={s.metaLabel}>نوع مدرک:</span>
+                      <span className={s.metaValue}>{previewCustomer.docType}</span>
+                    </div>
+                    <div className={s.metaRow}>
+                      <span className={s.metaLabel}>شماره:</span>
+                      <span className={s.metaValue} dir="ltr">
+                        {previewCustomer.docNumber ?? '—'}
+                      </span>
+                    </div>
+                    <div className={s.metaRow}>
+                      <span className={s.metaLabel}>سطح درخواستی:</span>
+                      <span className={s.metaValue}>{previewCustomer.level}</span>
+                    </div>
+                    <div className={s.metaRow}>
+                      <span className={s.metaLabel}>تاریخ ارسال:</span>
+                      <span className={s.metaValue}>
+                        {formatDate(previewCustomer.createdAt)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {previewCustomer.fileUrl ? (
+                    <div className={s.docBlock}>
+                      <p className={s.docBlockLabel}>تصویر مدرک</p>
+                      <DocImage
+                        src={previewCustomer.fileUrl}
+                        alt={`مدرک ${previewCustomer.customerName}`}
+                        delay={0}
+                      />
+                    </div>
+                  ) : (
+                    <div className={s.imgFallback}>
+                      <FileText size={32} aria-hidden />
+                      <span>مدرکی بارگذاری نشده</span>
+                    </div>
+                  )}
+
+                  <div className={s.previewActions}>
+                    <Button
+                      className={s.previewApproveBtn}
+                      onClick={() => handleCustomerApprove(previewCustomer)}
+                      disabled={isPending}
+                    >
+                      <CheckCircle2 size={15} aria-hidden />
+                      تأیید KYC
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className={s.previewRejectBtn}
+                      onClick={() => {
+                        setCustomerRejectTarget(previewCustomer);
+                        setRejectReason('');
+                        setPreviewCustomer(null);
+                      }}
+                      disabled={isPending}
+                    >
+                      <XCircle size={15} aria-hidden />
+                      رد کردن
+                    </Button>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
+        </SheetContent>
+      </Sheet>
+
+      {/* ── Customer Reject Dialog ──────────────────────────────────────────── */}
+      <Dialog
+        open={!!customerRejectTarget}
+        onOpenChange={(o) => !o && setCustomerRejectTarget(null)}
+      >
+        <DialogContent dir="rtl" className={s.rejectDialog}>
+          <DialogHeader>
+            <DialogTitle>رد KYC مشتری</DialogTitle>
+          </DialogHeader>
+          <div className={s.dialogBody}>
+            {customerRejectTarget && (
+              <div className={s.rejectProfile}>
+                <div
+                  className={s.rejectAvatar}
+                  aria-hidden
+                  style={{
+                    background: `oklch(96% 0.05 25)`,
+                    color: `oklch(38% 0.14 25)`,
+                  }}
+                >
+                  {initials(customerRejectTarget.customerName)}
+                </div>
+                <div className={s.rejectProfileMeta}>
+                  <span className={s.rejectName}>{customerRejectTarget.customerName}</span>
+                  <span className={s.rejectSub}>
+                    {customerRejectTarget.exchangeName}
+                  </span>
+                </div>
+              </div>
+            )}
+            <label className={s.dialogLabel} htmlFor="customer-kyc-reject-reason">
+              دلیل رد (الزامی):
+            </label>
+            <Textarea
+              id="customer-kyc-reject-reason"
+              className={s.dialogTextarea}
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              rows={3}
+              dir="rtl"
+              placeholder="مثلاً: تصویر مدرک ناخوانا / تاریخ انقضا گذشته / …"
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCustomerRejectTarget(null);
+                setRejectReason('');
+              }}
+              disabled={isPending}
+            >
+              انصراف
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleCustomerRejectConfirm}
+              disabled={isPending || !rejectReason.trim()}
             >
               {isPending ? 'در حال ارسال…' : 'رد کردن'}
             </Button>

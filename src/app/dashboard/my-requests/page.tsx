@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default async function MyRequestsPage() {
   const auth = await requireUser();
   if (!auth.success) {
-    redirect('/signin?callbackUrl=/dashboard/my-requests');
+    redirect('/auth?callbackUrl=/dashboard/my-requests');
   }
 
   return (

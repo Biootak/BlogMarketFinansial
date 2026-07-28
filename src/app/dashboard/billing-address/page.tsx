@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default async function BillingAddressPage() {
   const session = await auth();
-  if (!session?.user) redirect('/signin?callbackUrl=/dashboard/billing-address');
+  if (!session?.user) redirect('/auth?callbackUrl=/dashboard/billing-address');
 
   const result = await getBillingAddress();
   const initial = result.success ? result.data : null;

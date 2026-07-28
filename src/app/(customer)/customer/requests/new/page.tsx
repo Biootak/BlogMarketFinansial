@@ -18,7 +18,7 @@
  *      - notification تأییدیه در inbox باقی می‌ماند
  */
 
-import { getCustomerAccounts, getCustomerProfile } from '@/actions/customer-portal';
+import { getCustomerAccountsDetail, getCustomerProfile, type CustomerRequestType } from '@/actions/customer-portal';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -45,14 +45,16 @@ export default async function NewRequestPage({
   searchParams: Promise<{ type?: string }>;
 }) {
   const { type: typeParam } = await searchParams;
-  const type = typeParam && ALLOWED_TYPES.has(typeParam) ? typeParam : 'OTHER';
+  const type = (
+    typeParam && ALLOWED_TYPES.has(typeParam) ? typeParam : 'OTHER'
+  ) as CustomerRequestType;
 
   const [profile, accounts] = await Promise.all([
     getCustomerProfile(),
-    getCustomerAccounts(),
+    getCustomerAccountsDetail(),
   ]);
 
-  if (!profile) redirect('/customer');
+  if (!profile) redirect('/customer/dashboard');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>

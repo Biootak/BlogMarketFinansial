@@ -1,0 +1,346 @@
+/* CustomerSegmentDeepDive.module.css
+ * سگمنت‌های مشتریان — spatial bento + SVG gauge.
+ * tokens only: --at-*, --ds-*.
+ */
+
+@keyframes rowSlideIn {
+  from { opacity: 0; transform: translateX(6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Root ───────────────────────────────────────────────────────────────── */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+/* ── Overview Row ───────────────────────────────────────────────────────── */
+.overviewRow {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 1fr;
+  gap: var(--ds-space-4);
+}
+
+@media (max-width: 960px) {
+  .overviewRow { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 640px) {
+  .overviewRow { grid-template-columns: 1fr; }
+}
+
+/* Shared card base */
+.gaugeCard,
+.kycCard,
+.growthCard {
+  background: var(--at-bg-elevated);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-xl);
+  padding: var(--ds-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+.gaugeHead,
+.kycHead,
+.growthHead {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: var(--at-fs-sm);
+  font-weight: 600;
+  color: var(--at-text-secondary);
+}
+
+/* ── Risk Gauge ─────────────────────────────────────────────────────────── */
+.gaugesvg {
+  width: 100%;
+  max-width: 180px;
+  align-self: center;
+}
+
+.riskBuckets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1-5);
+}
+
+.riskBucket {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: var(--at-fs-xs);
+}
+
+.riskBucketDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.riskDot_emerald { background: #10b981; }
+.riskDot_amber   { background: #f59e0b; }
+.riskDot_rose    { background: #f43f5e; }
+
+.riskBucketLabel { flex: 1; color: var(--at-text-secondary); }
+.riskBucketCount { font-weight: 600; color: var(--at-text-primary); }
+
+/* ── KYC Funnel ─────────────────────────────────────────────────────────── */
+.kycFunnel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.kycRow {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.kycRowLabel {
+  font-size: var(--at-fs-xs);
+  color: var(--at-text-secondary);
+  white-space: nowrap;
+}
+
+.kycRowBar {
+  height: 6px;
+  background: var(--at-line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.kycRowFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 600ms cubic-bezier(.22,1,.36,1);
+}
+.kycFill_brand   { background: var(--at-accent); }
+.kycFill_emerald { background: #10b981; }
+.kycFill_amber   { background: #f59e0b; }
+.kycFill_rose    { background: #f43f5e; }
+
+.kycRowCount {
+  font-size: var(--at-fs-xs);
+  font-weight: 600;
+  color: var(--at-text-primary);
+  min-width: 2.5ch;
+  text-align: start;
+}
+
+/* ── Growth Card ────────────────────────────────────────────────────────── */
+.growthGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+.growthCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  background: var(--at-bg-canvas);
+  border-radius: var(--at-radius-md);
+  border: 1px solid var(--at-line);
+}
+
+.growthVal {
+  font-size: var(--at-fs-lg);
+  font-weight: 700;
+  color: var(--at-text-primary);
+  line-height: 1;
+}
+
+.growthLbl {
+  font-size: var(--at-fs-xs);
+  color: var(--at-text-dim);
+}
+
+/* ── Segment Cards Grid ─────────────────────────────────────────────────── */
+.segGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--ds-space-3);
+}
+
+@media (max-width: 960px) { .segGrid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .segGrid { grid-template-columns: 1fr; } }
+
+.segCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-4);
+  background: var(--at-bg-elevated);
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-xl);
+  cursor: pointer;
+  text-align: start;
+  transition: all 150ms var(--ds-ease-out);
+  font-family: inherit;
+}
+
+.segCard:hover { border-color: var(--at-accent); transform: translateY(-1px); }
+.segCardActive { border-color: var(--at-accent) !important; box-shadow: 0 0 0 2px var(--at-accent-soft); }
+
+.segCard_emerald.segCardActive { border-color: #10b981 !important; box-shadow: 0 0 0 2px rgba(16,185,129,.15); }
+.segCard_sky.segCardActive     { border-color: #0ea5e9 !important; box-shadow: 0 0 0 2px rgba(14,165,233,.15); }
+.segCard_amber.segCardActive   { border-color: #f59e0b !important; box-shadow: 0 0 0 2px rgba(245,158,11,.15); }
+
+.segCardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.segCount {
+  font-size: var(--at-fs-xl);
+  font-weight: 700;
+  color: var(--at-text-primary);
+}
+
+.segHint {
+  font-size: var(--at-fs-xs);
+  color: var(--at-text-dim);
+  margin: 0;
+}
+
+.segBarTrack {
+  height: 4px;
+  background: var(--at-line);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.segBarFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 500ms cubic-bezier(.22,1,.36,1);
+}
+.segBarFill_emerald { background: #10b981; }
+.segBarFill_sky     { background: #0ea5e9; }
+.segBarFill_amber   { background: #f59e0b; }
+.segBarFill_muted   { background: var(--at-text-dim); }
+
+.segShare {
+  font-size: var(--at-fs-xs);
+  color: var(--at-text-dim);
+}
+
+.segPill {
+  display: inline-block;
+  padding: 2px var(--ds-space-2);
+  border-radius: 999px;
+  font-size: var(--at-fs-xs);
+  font-weight: 600;
+}
+.segPill_emerald { background: rgba(16,185,129,.12); color: #10b981; }
+.segPill_sky     { background: rgba(14,165,233,.12); color: #0ea5e9; }
+.segPill_amber   { background: rgba(245,158,11,.12); color: #f59e0b; }
+.segPill_muted   { background: var(--at-bg-hover); color: var(--at-text-dim); }
+
+/* ── Mini List ──────────────────────────────────────────────────────────── */
+.miniList {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.miniRow {
+  display: grid;
+  grid-template-columns: 32px 1fr auto 16px;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-2-5) var(--ds-space-3);
+  border-radius: var(--at-radius-md);
+  text-decoration: none;
+  transition: background 120ms;
+  animation: rowSlideIn 200ms var(--ds-ease-out) both;
+}
+
+.miniRow:hover { background: var(--at-bg-hover); }
+
+.miniAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--at-accent-soft);
+  color: var(--at-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: var(--at-fs-sm);
+  flex-shrink: 0;
+}
+
+.miniInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.miniName {
+  font-size: var(--at-fs-sm);
+  font-weight: 600;
+  color: var(--at-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.miniPhone {
+  font-size: var(--at-fs-xs);
+  color: var(--at-text-dim);
+}
+
+.miniMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.miniCity {
+  font-size: var(--at-fs-xs);
+  color: var(--at-text-secondary);
+}
+
+.miniRisk {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: var(--at-fs-xs);
+  font-weight: 700;
+}
+.miniRisk_emerald { background: rgba(16,185,129,.12); color: #10b981; }
+.miniRisk_amber   { background: rgba(245,158,11,.12);  color: #f59e0b; }
+.miniRisk_rose    { background: rgba(244,63,94,.12);   color: #f43f5e; }
+
+.miniArrow { color: var(--at-text-dim); flex-shrink: 0; }
+
+.moreHint {
+  padding: var(--ds-space-3);
+  text-align: center;
+  font-size: var(--at-fs-xs);
+  color: var(--at-text-dim);
+  border-top: 1px solid var(--at-line);
+}
+
+/* ── View all link ──────────────────────────────────────────────────────── */
+.viewAllLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--at-fs-xs);
+  color: var(--at-accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+.viewAllLink:hover { text-decoration: underline; }

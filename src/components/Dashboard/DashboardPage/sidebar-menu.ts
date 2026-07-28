@@ -378,6 +378,12 @@ export function getMenu(role: UserRole): NavSection[] {
     icon: HiOutlineArrowsRightLeft({ className: ICON_CLASS }),
     label: 'تراکنش‌ها',
   };
+  const customerBeneficiaries: MenuItem = {
+    id: 'customerBeneficiaries',
+    href: '/customer/beneficiaries',
+    icon: HiOutlineUserGroup({ className: ICON_CLASS }),
+    label: 'مخاطبان',
+  };
   const customerKyc: MenuItem = {
     id: 'customerKyc',
     href: '/customer/kyc',
@@ -500,7 +506,7 @@ export function getMenu(role: UserRole): NavSection[] {
           id: 'financial',
           index: '۰۲',
           label: 'مالی',
-          items: [customerAccounts, customerTransactions],
+          items: [customerAccounts, customerBeneficiaries, customerTransactions],
         },
         { id: 'identity', index: '۰۳', label: 'هویت', items: [customerKyc, customerDocuments] },
         {

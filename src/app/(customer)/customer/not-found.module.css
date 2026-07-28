@@ -1,0 +1,138 @@
+/* customer/not-found — design tokens only */
+
+.root {
+  min-block-size: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-6);
+  padding: var(--ds-space-8) var(--ds-space-5);
+  text-align: center;
+  position: relative;
+  isolation: isolate;
+}
+
+.spotlight {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.codeCard {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4) var(--ds-space-6);
+  background: var(--at-surface);
+  border: 1px solid var(--at-line);
+  border-radius: var(--ds-radius-lg, 14px);
+  position: relative;
+  overflow: hidden;
+}
+
+.codeCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, color-mix(in oklch, var(--nova-emerald) 14%, transparent), transparent 70%);
+  pointer-events: none;
+}
+
+.codeNumber {
+  font-size: 64px;
+  font-weight: 900;
+  font-family: var(--ds-font-mono, ui-monospace);
+  color: var(--at-fg);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--at-fg) 0%, var(--nova-emerald) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-variant-numeric: tabular-nums;
+}
+
+.codeIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: var(--ds-radius-md, 10px);
+  background: color-mix(in oklch, var(--nova-emerald) 14%, transparent);
+  color: var(--nova-emerald);
+}
+
+.title {
+  margin: 0 0 var(--ds-space-2);
+  font-size: var(--ds-text-lg, 18px);
+  font-weight: 700;
+  color: var(--at-fg);
+}
+
+.lead {
+  margin: 0;
+  font-size: var(--ds-text-sm, 13px);
+  line-height: 1.7;
+  color: var(--at-fg-muted);
+}
+
+.pathCode {
+  display: inline-block;
+  margin-block-start: var(--ds-space-2);
+  padding: 2px var(--ds-space-2);
+  font-family: var(--ds-font-mono, ui-monospace);
+  font-size: var(--ds-text-2xs, 11px);
+  color: var(--at-fg);
+  background: var(--at-bg);
+  border: 1px solid var(--at-line);
+  border-radius: var(--ds-radius-sm, 6px);
+  word-break: break-all;
+  max-inline-size: 100%;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.primaryCta,
+.ghostCta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-5);
+  border-radius: var(--ds-radius-md, 10px);
+  font-size: var(--ds-text-sm, 13px);
+  font-weight: 600;
+  text-decoration: none;
+  font-family: inherit;
+  transition: transform 0.2s var(--nova-ease), background 0.2s var(--nova-ease);
+}
+
+.primaryCta {
+  background: var(--nova-emerald);
+  color: var(--at-bg);
+  border: 1px solid var(--nova-emerald);
+}
+
+.primaryCta:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.ghostCta {
+  background: var(--at-surface);
+  color: var(--at-fg);
+  border: 1px solid var(--at-line);
+}
+
+.ghostCta:hover {
+  border-color: var(--at-fg-subtle, var(--at-fg-muted));
+}

@@ -30,7 +30,7 @@ export default async function Dashboard() {
   const session = await auth();
 
   if (!session?.user) {
-    redirect('/signin');
+    redirect('/auth?callbackUrl=/dashboard');
   }
 
   const userRole = (session.user.role ?? 'AUTHOR') as 'OWNER' | 'ADMIN' | 'AUTHOR';

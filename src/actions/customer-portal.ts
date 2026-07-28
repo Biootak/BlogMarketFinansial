@@ -454,6 +454,221 @@ export async function submitKycDocument(raw: unknown): Promise<{
   return { success: true };
 }
 
+// ─── WRITE — KYC review (exchange staff / admin) ──────────────────────────────
+
+const ReviewCustomerKycSchema = z.object({
+  recordId: z.string().min(1, 'شناسه رکورد نامعتبر'),
+  approved: z.boolean(),
+  rejectedReason: z.string().max(500).optional(),
+  /** سطح KYC — فقط هنگام approve اعمال می‌شود */
+  level: z.enum(['LEVEL_1', 'LEVEL_2', 'LEVEL_3']).optional(),
+  /** مدت اعتبار به ماه — فقط هنگام approve اعمال می‌شود */
+  expiryMonths: z.number().int().min(1).max(120).default(24),
+});
+
+/**
+ * تأیید یا رد یک رکورد Customer-level KYC.
+ * دسترسی: exchange staff (همان صرافی) + پلتفرم ادمین‌ها.
+ * - وضعیت KycVerification + Customer.kycStatus + (اختیاری) Customer.kycLevel در یک تراکنش sync می‌شود
+ * - نوتیفیکیشن برای کاربر (اگر user متصل باشد) ارسال می‌شود
+ * - auditLog ثبت می‌شود
+ */
+export async function reviewCustomerKycRecord(raw: unknown): Promise<{
+  success: boolean;
+  error?: string;
+  data?: { recordId: string; newStatus: string };
+}> {
+  const auth = await requireUser();
+  if (!auth.success) {
+    return { success: false, error: auth.message };
+  }
+
+  const role = auth.user.role as string;
+  const isPlatformAdmin = role === 'OWNER' || role === 'SUPERADMIN' || role === 'ADMIN';
+  const isExchangeStaff = role === 'EXCHANGE' || role === 'EXCHANGE_STAFF';
+  if (!isPlatformAdmin && !isExchangeStaff) {
+    return { success: false, error: 'دسترسی غیرمجاز — فقط صرافی یا ادمین پلتفرم' };
+  }
+
+  const parsed = ReviewCustomerKycSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.errors[0]?.message ?? 'داده نامعتبر' };
+  }
+  const { recordId, approved, rejectedReason, level, expiryMonths } = parsed.data;
+
+  if (!approved && !rejectedReason) {
+    return { success: false, error: 'دلیل رد باید ذکر شود' };
+  }
+
+  // پیدا کردن رکورد + customer + user
+  const record = await prisma.kycVerification.findUnique({
+    where: { id: recordId },
+    select: {
+      id: true,
+      status: true,
+      customerId: true,
+      exchangeId: true,
+      Customer: { select: { id: true, userId: true, exchangeId: true } },
+    },
+  });
+  if (!record) return { success: false, error: 'رکورد KYC یافت نشد' };
+
+  // tenant isolation: exchange staff فقط به records صرافی خودش
+  if (isExchangeStaff && !isPlatformAdmin) {
+    const staffExchangeId = (auth.user as { exchangeId?: string }).exchangeId;
+    if (!staffExchangeId || staffExchangeId !== record.exchangeId) {
+      return { success: false, error: 'دسترسی به این رکورد ندارید' };
+    }
+  }
+
+  if (record.status !== 'PENDING') {
+    return { success: false, error: 'این رکورد قبلاً بررسی شده است' };
+  }
+
+  const now = new Date();
+  const expiresAt = approved
+    ? new Date(now.getFullYear(), now.getMonth() + expiryMonths, now.getDate())
+    : null;
+  const newStatus: 'APPROVED' | 'REJECTED' = approved ? 'APPROVED' : 'REJECTED';
+
+  await prisma.$transaction(async (tx) => {
+    await tx.kycVerification.update({
+      where: { id: recordId },
+      data: {
+        status: newStatus,
+        reviewedAt: now,
+        rejectReason: approved ? null : (rejectedReason ?? null),
+        expiresAt,
+        ...(approved && level ? { level } : {}),
+        updatedAt: now,
+      },
+    });
+    await tx.customer.update({
+      where: { id: record.customerId },
+      data: {
+        kycStatus: newStatus,
+        ...(approved && level ? { kycLevel: level } : {}),
+        updatedAt: now,
+      },
+    });
+  });
+
+  revalidateTag('customer-kyc');
+  revalidateTag('customer-profile');
+  revalidateTag('exchange-customers');
+
+  // audit log
+  try {
+    await prisma.auditLog.create({
+      data: {
+        id: (await import('uuid')).v4(),
+        exchangeId: record.exchangeId,
+        actorId: auth.user.id,
+        actorRole: role,
+        action: approved ? 'CUSTOMER_KYC_APPROVED' : 'CUSTOMER_KYC_REJECTED',
+        entityType: 'KycVerification',
+        entityId: recordId,
+        meta: {
+          customerId: record.customerId,
+          approved,
+          ...(rejectedReason ? { rejectedReason } : {}),
+        } as Prisma.InputJsonValue,
+      },
+    });
+  } catch {
+    // best-effort
+  }
+
+  // نوتیفیکیشن برای کاربر (اگر userId داشته باشد)
+  const userId = record.Customer?.userId;
+  if (userId) {
+    try {
+      const { createNotification } = await import('@/actions/notification-actions');
+      await createNotification(
+        userId,
+        approved
+          ? '✅ احراز هویت مشتری شما تأیید شد.'
+          : `❌ احراز هویت مشتری شما رد شد. دلیل: ${rejectedReason ?? 'نامشخص'}.`,
+      );
+    } catch {
+      // best-effort
+    }
+  }
+
+  return { success: true, data: { recordId, newStatus } };
+}
+
+/**
+ * صف رکوردهای Customer-level KYC در انتظار بررسی.
+ * exchange staff فقط records صرافی خودش را می‌بیند.
+ */
+export async function listPendingCustomerKyc(opts?: {
+  exchangeId?: string;
+  limit?: number;
+}): Promise<
+  Array<{
+    id: string;
+    customerId: string;
+    customerName: string;
+    customerPhone: string;
+    docType: string;
+    docNumber: string | null;
+    fileUrl: string | null;
+    level: string;
+    createdAt: Date;
+    exchangeId: string;
+    exchangeName: string;
+  }>
+> {
+  const auth = await requireUser();
+  if (!auth.success) return [];
+  const role = auth.user.role as string;
+  const isPlatformAdmin = role === 'OWNER' || role === 'SUPERADMIN' || role === 'ADMIN';
+  const isExchangeStaff = role === 'EXCHANGE' || role === 'EXCHANGE_STAFF';
+  if (!isPlatformAdmin && !isExchangeStaff) return [];
+
+  // tenant scope
+  let exchangeId: string | undefined = opts?.exchangeId;
+  if (isExchangeStaff && !isPlatformAdmin) {
+    exchangeId = (auth.user as { exchangeId?: string }).exchangeId;
+  }
+
+  const rows = await prisma.kycVerification.findMany({
+    where: {
+      status: 'PENDING',
+      ...(exchangeId ? { exchangeId } : {}),
+    },
+    take: Math.min(100, opts?.limit ?? 50),
+    orderBy: { createdAt: 'asc' }, // قدیمی‌ترین اول (FIFO)
+    select: {
+      id: true,
+      customerId: true,
+      docType: true,
+      docNumber: true,
+      fileUrl: true,
+      level: true,
+      createdAt: true,
+      exchangeId: true,
+      Customer: { select: { fullName: true, phone: true } },
+      Exchange: { select: { name: true, displayName: true } },
+    },
+  });
+
+  return rows.map((r) => ({
+    id: r.id,
+    customerId: r.customerId,
+    customerName: r.Customer?.fullName ?? '—',
+    customerPhone: r.Customer?.phone ?? '',
+    docType: r.docType,
+    docNumber: r.docNumber,
+    fileUrl: r.fileUrl,
+    level: r.level,
+    createdAt: r.createdAt,
+    exchangeId: r.exchangeId,
+    exchangeName: r.Exchange.displayName ?? r.Exchange.name,
+  }));
+}
+
 // ─── WRITE — Profile update ───────────────────────────────────────────────────
 
 export async function updateCustomerProfile(raw: unknown): Promise<{

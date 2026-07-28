@@ -255,7 +255,7 @@ export function CustomerCockpit({
                     </span>
                     <span className={s.topAmount}>
                       <span className={s.topAmountVal}>
-                        {formatCompact(BigInt(t.totalVolume) / BigInt(100))} {currency}
+                        {formatCompact(Number(t.totalVolume) / 100)} {currency}
                       </span>
                       <span className={s.topAmountSub}>
                         {formatNumber(t.txnCount)} تراکنش

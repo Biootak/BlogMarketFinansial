@@ -230,6 +230,12 @@ export async function getUserFinancials(userId: string) {
 
   return {
     success: true as const,
-    data: { virtualCardsCount, activeCards, dealsCount, openDeals, totalDealsVolume },
+    data: {
+      virtualCardsCount,
+      activeCards,
+      dealsCount,
+      openDeals,
+      totalDealsVolume: Number(totalDealsVolume),
+    },
   };
 }
