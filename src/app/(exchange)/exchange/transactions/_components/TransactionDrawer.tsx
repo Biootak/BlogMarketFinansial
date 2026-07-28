@@ -30,6 +30,7 @@ import { type TransactionRow, createTransaction } from '@/actions/exchange-trans
 import { EXCHANGE_CURRENCIES, TX_KIND_FA } from '@/lib/exchange-labels';
 import { faNum, formatAmount } from '@/lib/exchange-tx-formatters';
 import { FormField, PanelDrawer } from '@/components/Dashboard/primitives';
+import { SelectField } from './SelectField';
 import s from './TransactionDrawer.module.css';
 
 const KIND_ICON: Record<string, LucideIcon> = {
@@ -194,8 +195,9 @@ export function TransactionDrawer({ open, onClose, exchangeId, customers, onCrea
                   data-active={isActive}
                   onClick={() => setKind(k)}
                 >
-                  <Icon size={12} strokeWidth={1.8} aria-hidden />
+                  {/* متن در RTL سمت راست (ابتدا) — آیکون در سمت چپ (انتها) */}
                   <span>{TX_KIND_FA[k]}</span>
+                  <Icon size={12} strokeWidth={1.8} aria-hidden />
                 </button>
               );
             })}
@@ -204,9 +206,8 @@ export function TransactionDrawer({ open, onClose, exchangeId, customers, onCrea
 
         {/* ── Customer select ──────────────────────────────────────────── */}
         <FormField label="مشتری" required>
-          <select
+          <SelectField
             id={customerId$}
-            className={s.input}
             value={customerId}
             onChange={(e) => setCustomerId(e.target.value)}
           >
@@ -216,7 +217,7 @@ export function TransactionDrawer({ open, onClose, exchangeId, customers, onCrea
                 {c.fullName} — {c.phone}
               </option>
             ))}
-          </select>
+          </SelectField>
         </FormField>
 
         {/* ── Source amount + currency ────────────────────────────────── */}
@@ -233,15 +234,14 @@ export function TransactionDrawer({ open, onClose, exchangeId, customers, onCrea
             />
           </FormField>
           <FormField label="ارز">
-            <select
-              className={s.input}
+            <SelectField
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
             >
               {EXCHANGE_CURRENCIES.map((c) => (
                 <option key={c}>{c}</option>
               ))}
-            </select>
+            </SelectField>
           </FormField>
         </div>
 
@@ -288,15 +288,14 @@ export function TransactionDrawer({ open, onClose, exchangeId, customers, onCrea
                 />
               </FormField>
               <FormField label="ارز مقصد">
-                <select
-                  className={s.input}
+                <SelectField
                   value={destCurrency}
                   onChange={(e) => setDestCurrency(e.target.value)}
                 >
                   {EXCHANGE_CURRENCIES.map((c) => (
                     <option key={c}>{c}</option>
                   ))}
-                </select>
+                </SelectField>
               </FormField>
             </div>
 

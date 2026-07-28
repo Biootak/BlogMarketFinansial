@@ -1,0 +1,64 @@
+/* ============================================================================
+ * SelectField — wrapper با chevron در سمت چپ (انتهای RTL)
+ * ========================================================================== */
+
+.wrap {
+  position: relative;
+  display: block;
+  inline-size: 100%;
+}
+
+.select {
+  inline-size: 100%;
+  block-size: 2.5rem;
+  /* padding-inline-end (چپ در RTL) = جای chevron */
+  padding-inline-end: 2.25rem;
+  /* padding-inline-start (راست در RTL) = فاصله متن از لبه */
+  padding-inline-start: 0.85rem;
+  font-family: inherit;
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-primary);
+  background-color: var(--ds-canvas-subtle);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-md);
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  text-align: start;
+  cursor: pointer;
+  transition: border-color 160ms var(--ds-ease-out-quart), box-shadow 160ms var(--ds-ease-out-quart);
+}
+
+.select:hover {
+  border-color: color-mix(in oklch, var(--ds-brand-500) 30%, var(--ds-border-default));
+}
+
+.select:focus {
+  border-color: var(--ds-brand-500);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 18%, transparent);
+}
+
+.select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.chevron {
+  position: absolute;
+  /* inset-inline-end = سمت چپ در RTL، سمت راست در LTR */
+  inset-inline-end: 0.75rem;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  color: var(--ds-text-muted);
+  pointer-events: none;
+  transition: color 160ms var(--ds-ease-out-quart);
+}
+
+.wrap:hover .chevron {
+  color: var(--ds-brand-500);
+}
+
+.wrap:focus-within .chevron {
+  color: var(--ds-brand-500);
+}

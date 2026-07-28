@@ -184,11 +184,13 @@
 
 .sortIcon {
   position: absolute;
-  inset-inline-start: 0.6rem;
+  /* inset-inline-start = سمت راست در RTL (ابتدای خواندن) */
+  inset-inline-start: 0.7rem;
   inset-block-start: 50%;
   transform: translateY(-50%);
   color: var(--ds-text-muted);
   pointer-events: none;
+  z-index: 1;
 }
 
 .sortSelect {
@@ -201,11 +203,15 @@
   background: var(--ds-canvas-subtle);
   border: 1px solid var(--ds-border-default);
   border-radius: var(--ds-radius-md);
-  padding-block: 0.6em;
-  padding-inline: 1.8em 2em;
+  /* padding-inline-start (راست در RTL): جای آیکون ArrowUpDown */
+  padding-inline-start: 2em;
+  /* padding-inline-end (چپ در RTL): جای chevron */
+  padding-inline-end: 2.25em;
   cursor: pointer;
   outline: none;
   transition: border-color 160ms var(--ds-ease-out-quart);
+  block-size: 2.4rem;
+  min-inline-size: 9rem;
 }
 
 .sortSelect:hover {

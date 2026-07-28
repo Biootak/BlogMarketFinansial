@@ -29,6 +29,7 @@ import {
 import { type ReactNode, useId } from 'react';
 import { faNum } from '@/lib/exchange-tx-formatters';
 import { TX_KIND_FA, TX_STATUS_FA } from '@/lib/exchange-labels';
+import { SelectField } from './SelectField';
 import s from './TransactionCommandStrip.module.css';
 
 const KIND_ICON: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
@@ -135,7 +136,7 @@ export function TransactionCommandStrip({
 
         <div className={s.sortWrap}>
           <ArrowUpDown size={12} aria-hidden className={s.sortIcon} />
-          <select
+          <SelectField
             className={s.sortSelect}
             value={sort}
             onChange={(e) => onSortChange(e.target.value as SortKey)}
@@ -145,7 +146,7 @@ export function TransactionCommandStrip({
             <option value="oldest">قدیمی‌ترین</option>
             <option value="amount">بیشترین مبلغ</option>
             <option value="customer">نام مشتری</option>
-          </select>
+          </SelectField>
         </div>
 
         {canAdd && (

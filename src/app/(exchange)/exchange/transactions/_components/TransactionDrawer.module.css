@@ -54,15 +54,16 @@
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 18%, transparent);
 }
 
+/* select.input (legacy — SelectField جایگزین شد ولی برای fallback نگه داشته شد) */
 select.input {
   appearance: none;
   -webkit-appearance: none;
+  padding-inline-end: 2.25rem;
   background-image: linear-gradient(45deg, transparent 50%, var(--ds-text-muted) 50%),
     linear-gradient(135deg, var(--ds-text-muted) 50%, transparent 50%);
-  background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+  background-position: 14px 50%, 19px 50%;
   background-size: 5px 5px;
   background-repeat: no-repeat;
-  padding-inline-end: 2rem;
 }
 
 /* ── Kind picker (pill row) ─────────────────────────────────────────────── */
