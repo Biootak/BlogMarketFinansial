@@ -1,0 +1,65 @@
+/* LiveRateBoard.module.css — wrapper section برای تابلوی نرخ‌های زنده */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-6, 1.5rem);
+  scroll-margin-block-start: var(--ds-space-8, 2rem);
+}
+
+/* ── header ──────────────────────────────────────────────────── */
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3, 0.75rem);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1, 0.25rem);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ds-brand-500, oklch(58% 0.12 165));
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--ds-text-1, var(--ds-fg));
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: var(--ds-text-sm, 0.875rem);
+  line-height: 1.7;
+  color: var(--ds-text-3, var(--ds-fg-subtle));
+  max-width: 56ch;
+}
+
+.hint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1, 0.25rem);
+  font-size: 0.75rem;
+  color: var(--ds-brand-600, oklch(52% 0.14 162));
+  background: var(--ds-brand-50, oklch(96% 0.03 165));
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500, oklch(58% 0.12 165)) 25%, transparent);
+  border-radius: 999px;
+  padding: 3px 10px;
+  width: fit-content;
+}
+
+.scrollHint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1, 0.25rem);
+  font-size: 0.7rem;
+  color: var(--ds-text-4, var(--ds-fg-subtle));
+  opacity: 0.7;
+}

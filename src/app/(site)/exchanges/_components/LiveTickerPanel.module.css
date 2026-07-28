@@ -1,0 +1,225 @@
+/* LiveTickerPanel.module.css — پنل نرخ‌های زنده درون Hero */
+
+.panel {
+  background: oklch(15% 0.018 250 / 0.55);
+  border: 1px solid oklch(35% 0.04 250 / 0.45);
+  border-radius: var(--ds-radius-xl, 1.25rem);
+  padding: var(--ds-space-3);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow:
+    0 1px 0 oklch(100% 0 0 / 0.06) inset,
+    0 18px 50px -22px oklch(0% 0 0 / 0.55);
+  position: relative;
+  overflow: hidden;
+}
+
+.panel::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    oklch(60% 0.12 165 / 0.5) 30%,
+    oklch(70% 0.12 220 / 0.4) 60%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  margin-block-end: var(--ds-space-3);
+  padding-inline: 4px;
+}
+
+.live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: oklch(80% 0.06 165);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.liveDot {
+  inline-size: 7px;
+  block-size: 7px;
+  border-radius: 50%;
+  background: oklch(72% 0.18 145);
+  box-shadow: 0 0 0 0 oklch(72% 0.18 145 / 0.6);
+  animation: panel-pulse 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  flex-shrink: 0;
+}
+
+@keyframes panel-pulse {
+  0% {
+    box-shadow: 0 0 0 0 oklch(72% 0.18 145 / 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 8px oklch(72% 0.18 145 / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 oklch(72% 0.18 145 / 0);
+  }
+}
+
+.updating {
+  font-size: 10px;
+  color: oklch(55% 0.02 250);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: var(--ds-space-2);
+}
+
+.tile {
+  background: oklch(20% 0.022 250 / 0.5);
+  border: 1px solid oklch(35% 0.03 250 / 0.4);
+  border-radius: var(--ds-radius-lg);
+  padding: var(--ds-space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart),
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  position: relative;
+}
+
+.tile:hover {
+  background: oklch(22% 0.024 250 / 0.6);
+  border-color: oklch(45% 0.06 165 / 0.4);
+}
+
+.tileHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding-block-end: var(--ds-space-1-5);
+  border-block-end: 1px solid oklch(35% 0.03 250 / 0.3);
+}
+
+.code {
+  font-size: 14px;
+  font-weight: 800;
+  color: oklch(95% 0.005 250);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.name {
+  font-size: 10px;
+  color: oklch(60% 0.01 250);
+  font-weight: 500;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 4px;
+  padding-block: 2px;
+}
+
+.rowLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: oklch(60% 0.01 250);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rowIcon {
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+
+.rowVal {
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: oklch(95% 0.005 250);
+  letter-spacing: -0.01em;
+  text-align: end;
+  white-space: nowrap;
+}
+
+.rowUnit {
+  font-size: 9px;
+  font-weight: 500;
+  color: oklch(55% 0.01 250);
+  margin-inline-start: 3px;
+}
+
+.rowSource {
+  grid-column: 1 / -1;
+  font-size: 9.5px;
+  color: oklch(55% 0.01 250);
+  text-align: end;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rowDivider {
+  block-size: 1px;
+  background: oklch(35% 0.03 250 / 0.25);
+  margin-block: 2px;
+}
+
+.empty {
+  grid-column: 1 / -1;
+  padding: var(--ds-space-5);
+  text-align: center;
+  color: oklch(55% 0.01 250);
+  font-size: var(--ds-text-sm);
+}
+
+/* Per-row color hints (read-only visual signal) */
+.row:has(.rowLabel) {
+  /* keep selectors simple — color is set inline via component logic */
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .rowVal {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .liveDot {
+    animation: none;
+  }
+}

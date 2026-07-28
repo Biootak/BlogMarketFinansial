@@ -1,0 +1,282 @@
+/* MarketTape.module.css — نوار متحرک نرخ‌های زنده صرافی‌ها */
+
+.tape {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  inline-size: 100%;
+  block-size: 44px;
+  background: oklch(10% 0.012 250 / 0.65);
+  border-block: 1px solid oklch(35% 0.04 250 / 0.4);
+  font-family: var(--ds-font, 'Vazirmatn', system-ui, sans-serif);
+  color: oklch(85% 0.01 250);
+  overflow: hidden;
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+
+/* ── head (static) ─────────────────────────────────────────────────── */
+.head {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding-inline: 14px;
+  background: oklch(15% 0.02 250 / 0.6);
+  border-inline-end: 1px solid oklch(35% 0.04 250 / 0.4);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: oklch(82% 0.06 162);
+  position: relative;
+  z-index: 2;
+}
+
+.headLabel {
+  white-space: nowrap;
+}
+
+.pulse {
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background: oklch(70% 0.18 145);
+  box-shadow: 0 0 0 0 oklch(70% 0.18 145 / 0.6);
+  animation: pulse-ring 1.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 oklch(70% 0.18 145 / 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 10px oklch(70% 0.18 145 / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 oklch(70% 0.18 145 / 0);
+  }
+}
+
+/* ── viewport (mask) ─────────────────────────────────────────────── */
+.viewport {
+  position: relative;
+  flex: 1;
+  min-inline-size: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    oklch(0% 0 0 / 1) 6%,
+    oklch(0% 0 0 / 1) 94%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    oklch(0% 0 0 / 1) 6%,
+    oklch(0% 0 0 / 1) 94%,
+    transparent 100%
+  );
+}
+
+.fadeEnd {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  inline-size: 40px;
+  background: linear-gradient(90deg, transparent, oklch(10% 0.012 250 / 0.65));
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── track (the scrolling content) ────────────────────────────────── */
+.track {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  block-size: 100%;
+  animation: tape-scroll 60s linear infinite;
+  will-change: transform;
+}
+
+.tapeReverse .track {
+  animation-direction: reverse;
+}
+
+.tapePause:hover .track {
+  animation-play-state: paused;
+}
+
+@keyframes tape-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    /* shift by half — because content is duplicated */
+    transform: translateX(-50%);
+  }
+}
+
+/* ── row (one item) ───────────────────────────────────────────────── */
+.row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding-inline: 14px;
+  block-size: 100%;
+  border-inline-end: 1px solid oklch(35% 0.04 250 / 0.25);
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.code {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: oklch(90% 0.04 250);
+  background: oklch(25% 0.03 250 / 0.6);
+  padding: 3px 7px;
+  border-radius: 4px;
+  border: 1px solid oklch(40% 0.04 250 / 0.4);
+}
+
+.exchange {
+  font-size: 11px;
+  color: oklch(70% 0.01 250);
+  font-weight: 500;
+  max-inline-size: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.cellIcon {
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.cellLabel {
+  font-size: 10px;
+  color: oklch(60% 0.01 250);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cellVal {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.cellUnit {
+  font-size: 9px;
+  color: oklch(60% 0.01 250);
+  font-weight: 500;
+}
+
+.cellBuy {
+  color: oklch(78% 0.1 145);
+}
+.cellBuy .cellIcon {
+  color: oklch(72% 0.15 145);
+}
+.cellBuy .cellVal {
+  color: oklch(88% 0.12 145);
+}
+
+.cellSell {
+  color: oklch(80% 0.1 25);
+}
+.cellSell .cellIcon {
+  color: oklch(72% 0.15 25);
+}
+.cellSell .cellVal {
+  color: oklch(88% 0.12 25);
+}
+
+.sep {
+  color: oklch(40% 0.01 250);
+  font-size: 10px;
+  font-weight: 400;
+  margin-inline: 2px;
+  user-select: none;
+}
+
+.spread {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-variant-numeric: tabular-nums;
+  margin-inline-start: 2px;
+}
+
+.spreadPos {
+  background: oklch(40% 0.08 145 / 0.18);
+  color: oklch(80% 0.12 145);
+  border: 1px solid oklch(50% 0.1 145 / 0.3);
+}
+
+.spreadNeg {
+  background: oklch(40% 0.08 25 / 0.18);
+  color: oklch(80% 0.12 25);
+  border: 1px solid oklch(50% 0.1 25 / 0.3);
+}
+
+/* ── empty state ─────────────────────────────────────────────────── */
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 100%;
+  block-size: 100%;
+  font-size: 12px;
+  color: oklch(60% 0.01 250);
+}
+
+/* ── responsive ──────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .tape {
+    block-size: 40px;
+  }
+  .head {
+    padding-inline: 10px;
+    font-size: 10px;
+  }
+  .row {
+    gap: 7px;
+    padding-inline: 10px;
+  }
+  .exchange {
+    display: none;
+  }
+  .cellLabel {
+    display: none;
+  }
+  .code {
+    font-size: 11px;
+  }
+  .cellVal {
+    font-size: 11px;
+  }
+}
+
+/* ── reduced motion ──────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    animation-duration: 120s;
+  }
+  .pulse {
+    animation: none;
+  }
+}

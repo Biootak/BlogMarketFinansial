@@ -1,0 +1,320 @@
+/* RateCalculator.module.css — ماشین‌حساب Wise-style */
+
+.calc {
+  background: oklch(15% 0.018 250 / 0.6);
+  border: 1px solid oklch(35% 0.04 250 / 0.45);
+  border-radius: var(--ds-radius-xl, 1.25rem);
+  padding: var(--ds-space-4);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow:
+    0 1px 0 oklch(100% 0 0 / 0.06) inset,
+    0 18px 50px -22px oklch(0% 0 0 / 0.55);
+  position: relative;
+  overflow: hidden;
+  color: oklch(95% 0.005 250);
+}
+
+.calc::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    oklch(60% 0.12 165 / 0.5) 30%,
+    oklch(70% 0.12 220 / 0.4) 60%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+.calcHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-block-end: var(--ds-space-3);
+}
+
+.calcEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: oklch(80% 0.06 165);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  align-self: start;
+}
+
+.calcTitle {
+  font-size: var(--ds-text-base);
+  font-weight: 700;
+  color: oklch(98% 0.005 250);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.calcBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+/* ── input row ──────────────────────────────────────────────────── */
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.inputLabel {
+  font-size: 10.5px;
+  color: oklch(60% 0.01 250);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.inputShell {
+  display: flex;
+  align-items: center;
+  background: oklch(20% 0.022 250 / 0.6);
+  border: 1px solid oklch(40% 0.04 250 / 0.5);
+  border-radius: var(--ds-radius-md);
+  padding: 8px 12px;
+  gap: 6px;
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    background var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.inputShell:focus-within {
+  border-color: oklch(60% 0.12 165 / 0.7);
+  background: oklch(22% 0.024 250 / 0.7);
+}
+
+.input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: oklch(98% 0.005 250);
+  font-family: inherit;
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  text-align: end;
+  inline-size: 100%;
+  min-inline-size: 0;
+  /* hide native spinners */
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.input::-webkit-outer-spin-button,
+.input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.inputUnit {
+  font-size: 11px;
+  font-weight: 600;
+  color: oklch(60% 0.01 250);
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.select {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: oklch(98% 0.005 250);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.005em;
+  text-align: end;
+  inline-size: 100%;
+  min-inline-size: 0;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  /* custom caret via background svg */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none' stroke='%23ffffffcc' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left center;
+  padding-inline-start: 16px;
+}
+
+.select option {
+  background: oklch(15% 0.018 250);
+  color: oklch(98% 0.005 250);
+  font-weight: 600;
+}
+
+.swap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-block: -4px;
+  position: relative;
+  z-index: 1;
+}
+
+.swapIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 28px;
+  block-size: 28px;
+  border-radius: 50%;
+  background: oklch(20% 0.022 250 / 0.8);
+  border: 1px solid oklch(40% 0.06 165 / 0.4);
+  color: oklch(80% 0.06 165);
+  flex-shrink: 0;
+}
+
+/* ── result row ─────────────────────────────────────────────────── */
+.resultRow {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 8px;
+  margin-block-start: var(--ds-space-2);
+  padding: var(--ds-space-3);
+  background: oklch(20% 0.022 250 / 0.45);
+  border: 1px solid oklch(40% 0.04 250 / 0.3);
+  border-radius: var(--ds-radius-md);
+}
+
+.resultCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-inline-size: 0;
+}
+
+.resultCellMuted {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-inline-size: 0;
+  padding-inline-start: 8px;
+  border-inline-start: 1px solid oklch(40% 0.04 250 / 0.3);
+}
+
+.resultLabel {
+  font-size: 10px;
+  color: oklch(60% 0.01 250);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.resultVal {
+  font-size: 20px;
+  font-weight: 800;
+  color: oklch(90% 0.12 165);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  text-align: start;
+}
+
+.resultValSm {
+  font-size: 13px;
+  font-weight: 700;
+  color: oklch(75% 0.02 250);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  text-align: start;
+}
+
+.resultUnit {
+  font-size: 10px;
+  font-weight: 500;
+  color: oklch(55% 0.01 250);
+  margin-inline-start: 3px;
+}
+
+/* ── savings strip ──────────────────────────────────────────────── */
+.savings {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: oklch(35% 0.1 165 / 0.15);
+  border: 1px solid oklch(50% 0.12 165 / 0.35);
+  border-radius: var(--ds-radius-md);
+  font-size: 12px;
+  color: oklch(85% 0.05 165);
+  line-height: 1.55;
+}
+
+.savingsIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 22px;
+  block-size: 22px;
+  border-radius: 50%;
+  background: oklch(50% 0.14 162 / 0.25);
+  color: oklch(80% 0.12 165);
+  flex-shrink: 0;
+}
+
+.savingsText {
+  font-weight: 500;
+  color: oklch(85% 0.04 250);
+  letter-spacing: 0.005em;
+}
+
+.savingsStrong {
+  font-weight: 800;
+  color: oklch(92% 0.12 165);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.savingsFine {
+  font-size: 11px;
+  color: oklch(60% 0.01 250);
+  margin: 0;
+  padding: 4px 4px 0;
+  line-height: 1.5;
+}
+
+.savingsFine strong {
+  color: oklch(85% 0.06 165);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+/* ── empty state ────────────────────────────────────────────────── */
+.calcEmpty {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: oklch(20% 0.02 250 / 0.6);
+  border: 1px solid oklch(40% 0.04 250 / 0.35);
+  border-radius: var(--ds-radius-md);
+  color: oklch(60% 0.01 250);
+  font-size: 12px;
+}
+
+@media (max-width: 540px) {
+  .calc { padding: var(--ds-space-3); }
+  .input { font-size: 16px; }
+  .resultVal { font-size: 18px; }
+  .resultRow { grid-template-columns: 1fr; }
+  .resultCellMuted { border-inline-start: none; padding-inline-start: 0; padding-block-start: 6px; border-block-start: 1px solid oklch(40% 0.04 250 / 0.3); }
+}
