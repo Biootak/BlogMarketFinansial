@@ -162,3 +162,7 @@ node-v*.zip
 # ============================================================================
 /.codepus/
 .codepus-todos.json
+
+# Linux Trash (GNOME/KDE delete basket — never commit)
+/.Trash-*/
+

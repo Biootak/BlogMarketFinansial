@@ -1,39 +1,75 @@
-import { getExchangeForUser, getExchangeStaff } from '@/actions/exchanges';
 /**
- * /exchange/staff — مدیریت کارمندان صراف
+ * /exchange/staff — Team Cockpit (2026 redesign)
+ * --------------------------------------------------------------------------
+ * بازطراحی کامل از /exchange/staff:
+ *  - ساختار از «یک لیست + یک فرم» به یک Cockpit با KPI/Orbit/Directory/Activity
+ *  - زیرمسیرها: /permissions و /activity
+ *  - همه داده‌ها از Prisma aggregate (ExchangeStaff + AuditLog)
+ *  - امنیت: requireExchangeAccess (write فقط برای OWNER/MANAGER)
+ * --------------------------------------------------------------------------
  */
-import { auth } from '@/auth';
-import { PageHeader } from '@/components/Dashboard/primitives';
-import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
-import StaffWorkspace from './_components/StaffWorkspace';
 
-export const metadata: Metadata = { title: 'کارمندان صرافی' };
+import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
+import { getExchangeForUser } from '@/actions/exchanges';
+import {
+  getExchangeStaff,
+  getStaffActivity,
+  getStaffMetrics,
+} from '@/actions/exchanges';
+import { auth } from '@/auth';
+import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
+import ExchangePageSkeleton from '@/components/Exchange/ExchangePageSkeleton';
+import { StaffCockpit } from './_components/StaffCockpit';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function StaffPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/signin');
-
+  if (!session?.user?.id) redirect('/auth/login');
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/dashboard');
+  if (!membership) redirect('/auth/onboarding');
 
-  // فقط OWNER و MANAGER صرافی به این صفحه دسترسی دارند
-  if (!['OWNER', 'MANAGER'].includes(membership.staffRole)) redirect('/exchange/dashboard');
+  const exchangeId = membership.exchange.id;
+  const exchangeName = membership.exchange.name ?? 'صرافی';
+  const role = membership.staffRole;
 
-  const staff = await getExchangeStaff(membership.exchange.id);
+  const [members, metrics, activity] = await Promise.all([
+    getExchangeStaff(exchangeId),
+    getStaffMetrics(exchangeId),
+    getStaffActivity(exchangeId, 30),
+  ]);
+
+  // canWrite: OWNER یا MANAGER می‌توانند تیم را ویرایش کنند
+  const canWrite = role === 'OWNER' || role === 'MANAGER';
+  const canRevoke = canWrite;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-5)' }}>
+    <>
       <PageHeader
-        title="کارمندان"
-        description="مدیریت اعضای تیم و سطوح دسترسی"
-        breadcrumb={[{ label: 'پنل صرافی' }, { label: 'کارمندان' }]}
+        accent="emerald"
+        eyebrow="صرافی"
+        title="تیم و دسترسی‌ها"
+        description="اعضای فعال، سلسله‌مراتب اختیارات و لاگ ممیزی در یک نگاه"
+        breadcrumb={[
+          { label: 'صرافی', href: '/exchange/dashboard' },
+          { label: 'تیم' },
+        ]}
+        icon="users"
       />
-      <StaffWorkspace
-        exchangeId={membership.exchange.id}
-        initialStaff={staff}
-        currentUserId={session.user.id}
-      />
-    </div>
+      <Suspense fallback={<ExchangePageSkeleton statCount={4} tableRows={6} />}>
+        <StaffCockpit
+          exchangeId={exchangeId}
+          exchangeName={exchangeName}
+          currentUserId={session.user.id}
+          canWrite={canWrite}
+          canRevoke={canRevoke}
+          members={members}
+          metrics={metrics}
+          activity={activity}
+        />
+      </Suspense>
+    </>
   );
 }

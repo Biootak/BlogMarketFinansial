@@ -23,6 +23,7 @@ import { requireUser } from '@/lib/require-auth';
 import type { FintechActionResult } from '@/types/types';
 import { v4 as createId } from 'uuid';
 import { z } from 'zod';
+import type { WalletCurrency } from '@prisma/client';
 
 // ─── PLATFORM WALLET HELPER ──────────────────────────────────────────────────
 
@@ -106,9 +107,25 @@ export async function issueVirtualCard(raw: unknown): Promise<FintechActionResul
 
   const { label, currency } = parsed.data;
 
-  // پیدا کردن یا ساخت حساب فین‌تک برای این کارت
+  // R1-fix: resolve صحیح Customer از userId.
+  // FintechAccount.customerId کلید خارجی به Customer.id است، نه User.id.
+  // کوئری قبلی `customerId: auth.user.id` همیشه null برمی‌گرداند (NO_ACCOUNT)
+  // و در صورت تطابق تصادفی idها بین User و Customer، ریسک IDOR داشت.
+  // الگوی استاندارد: اول customer را از userId پیدا کن، سپس account را با customerId.
+  const customer = await prisma.customer.findFirst({
+    where: { userId: auth.user.id },
+    select: { id: true },
+  });
+
+  if (!customer) {
+    return {
+      success: false,
+      error: { code: 'NO_ACCOUNT', message: 'پروفایل مشتری یافت نشد' },
+    };
+  }
+
   const account = await prisma.fintechAccount.findFirst({
-    where: { customerId: auth.user.id, currency: currency as any },
+    where: { customerId: customer.id, currency, status: 'ACTIVE' },
     select: { id: true },
   });
 
@@ -151,7 +168,7 @@ export async function issueVirtualCard(raw: unknown): Promise<FintechActionResul
       brand: 'VISA',
       status: 'ACTIVE',
       balance: BigInt(0),
-      currency: currency as 'USD' | 'EUR' | 'AFN' | 'IRR',
+      currency,
       expiresAt,
       createdAt: now,
       updatedAt: now,
