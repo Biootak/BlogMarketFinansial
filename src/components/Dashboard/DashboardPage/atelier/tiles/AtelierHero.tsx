@@ -366,7 +366,7 @@ export default function AtelierHero({
         <span className="at-hero__eyebrow">
           <span className="at-hero__dot" aria-hidden />
           <HiOutlineBolt className="w-3 h-3" aria-hidden />
-          <span>پیشخوان · {now ? persianLongDate(now) : persianLongDate()}</span>
+          <span>داشبورد · {now ? persianLongDate(now) : persianLongDate()}</span>
         </span>
         <span className="at-hero__pillar">
           <HiOutlineSparkles className="w-3 h-3" aria-hidden />

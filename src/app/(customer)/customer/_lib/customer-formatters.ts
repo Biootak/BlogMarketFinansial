@@ -129,7 +129,7 @@ export const KYC_LEVEL_LABEL: Record<string, string> = {
 };
 
 export const DOC_TYPE_LABEL: Record<string, string> = {
-  NATIONAL_ID: 'کارت ملی',
+  NATIONAL_ID: 'تذکره / کارت ملی',
   PASSPORT: 'پاسپورت',
   RESIDENCE_PERMIT: 'اجازه اقامت',
 };
@@ -223,7 +223,7 @@ export const TXN_STATUS_FILTERS: Array<{ value: string; label: string }> = [
 ];
 
 export const DOC_TYPE_FILTERS: Array<{ value: string; label: string }> = [
-  { value: 'NATIONAL_ID', label: 'کارت ملی' },
+  { value: 'NATIONAL_ID', label: 'تذکره / کارت ملی' },
   { value: 'PASSPORT', label: 'پاسپورت' },
   { value: 'RESIDENCE_PERMIT', label: 'اجازه اقامت' },
 ];

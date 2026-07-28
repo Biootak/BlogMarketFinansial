@@ -48,7 +48,7 @@ interface Props {
 }
 
 const DOC_TYPE_OPTIONS: Array<{ value: string; label: string }> = [
-  { value: 'NATIONAL_ID', label: 'کارت ملی' },
+  { value: 'NATIONAL_ID', label: 'تذکره / کارت ملی' },
   { value: 'PASSPORT', label: 'پاسپورت' },
   { value: 'RESIDENCE_PERMIT', label: 'اجازه اقامت' },
 ];
@@ -195,7 +195,7 @@ export default function KycContent({ profile, records }: Props) {
                 <div className={s.funnelMain}>
                   <span className={s.funnelTitle}>{KYC_LEVEL_LABEL[level]}</span>
                   <span className={s.funnelDesc}>
-                    {level === 'LEVEL_1' && 'کارت ملی، پاسپورت یا اجازه اقامت'}
+                    {level === 'LEVEL_1' && 'تذکره، کارت ملی، پاسپورت یا اجازه اقامت'}
                     {level === 'LEVEL_2' && 'سلفی در کنار مدرک شناسایی'}
                     {level === 'LEVEL_3' && 'بررسی نهایی توسط تیم انطباق'}
                   </span>

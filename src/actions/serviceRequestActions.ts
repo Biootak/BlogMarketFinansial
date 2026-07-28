@@ -225,6 +225,8 @@ const ServiceRequestInputSchema = z.object({
     .optional()
     .transform((val) => (val ? sanitizeInput(val) : null)),
   urgency: z.enum(['NORMAL', 'URGENT']).default('NORMAL'),
+  /// 2026-07-28: درخواست مستقیم از صفحه صرافی — اختیاری.
+  targetExchangeId: z.string().min(1).max(40).optional().nullable(),
 });
 
 export type ServiceRequestInput = z.infer<typeof ServiceRequestInputSchema>;
@@ -254,6 +256,8 @@ export type ServiceRequestClientInput = {
   universityName?: string | null;
   studentId?: string | null;
   description?: string | null;
+  /// 2026-07-28: اگر درخواست از صفحه صرافی خاصی ثبت شود، صرافی مقصد اینجاست.
+  targetExchangeId?: string | null;
 };
 
 // ─── createServiceRequest ─────────────────────────────────────────────────── //
@@ -376,8 +380,22 @@ export async function createServiceRequest(
     ) as Record<string, string>;
 
     // C5: همه writeها در یک $transaction
-    await prisma.$transaction(async (tx) => {
-      await tx.serviceRequest.create({
+    let resolvedTargetExchangeId: string | null = null;
+    const createdRequestId = await prisma.$transaction(async (tx) => {
+      // 2026-07-28: validate target exchange exists & active
+      let targetExchangeId: string | null = null;
+      if (input.targetExchangeId) {
+        const exchange = await tx.exchange.findUnique({
+          where: { id: input.targetExchangeId },
+          select: { id: true, status: true },
+        });
+        if (exchange && exchange.status === 'ACTIVE') {
+          targetExchangeId = exchange.id;
+        }
+      }
+      resolvedTargetExchangeId = targetExchangeId;
+
+      const created = await tx.serviceRequest.create({
         data: {
           trackingCode,
           fullName: resolvedFullName,
@@ -392,19 +410,44 @@ export async function createServiceRequest(
           ipAddress: ip,
           userAgent: userAgent.substring(0, 500),
           userId,
+          targetExchangeId,
           metadata: Object.keys(metadataClean).length > 0 ? metadataClean : undefined,
           ...(data.idempotencyKey ? { idempotencyKey: data.idempotencyKey } : {}),
         },
+        select: { id: true },
       });
 
       await tx.systemLog.create({
         data: {
           level: 'INFO',
-          message: `New service request: ${trackingCode}`,
+          message: `New service request: ${trackingCode}${targetExchangeId ? ` (→ exchange ${targetExchangeId})` : ''}`,
           source: 'ServiceRequest',
         },
       });
+
+      return created.id;
     });
+
+    // 2026-07-28: نوتیفیکیشن به صرافی وقتی targetExchangeId تنظیم شده
+    // best-effort — اگر fail شد، request ثبت شده و فقط log می‌شود
+    if (resolvedTargetExchangeId) {
+      const { notifyExchangeOfServiceRequest } = await import(
+        '@/lib/notifications/exchange'
+      );
+      await notifyExchangeOfServiceRequest({
+        requestId: createdRequestId,
+        trackingCode,
+        serviceKey: data.serviceType,
+        exchangeId: resolvedTargetExchangeId,
+        customerName: resolvedFullName,
+        customerPhone: resolvedPhone,
+        amount: data.amount,
+        currency: data.currency,
+        description: data.description ?? null,
+        contactMethod: data.contactMethod,
+        urgency: data.urgency,
+      });
+    }
 
     // Telegram notification (fire-and-forget)
     const urgencyLabel = data.urgency === 'URGENT' ? '🔴 فوری' : '⚪ عادی';

@@ -125,14 +125,8 @@ export function StickySaveBar({
               type="button"
               className={s.btnPrimary}
               onClick={onSave}
-              disabled={status === 'saving'}
-              aria-busy={status === 'saving'}
             >
-              {status === 'saving' ? (
-                <Loader2 size={13} className={s.spin} aria-hidden />
-              ) : (
-                <Save size={13} aria-hidden />
-              )}
+              <Save size={13} aria-hidden />
               {saveLabel}
             </button>
           )}

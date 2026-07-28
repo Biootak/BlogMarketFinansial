@@ -435,7 +435,7 @@ export function KycOnboardingClient({ initialRecord }: Props) {
               </div>
               <div className={s.fieldCol}>
                 <label htmlFor="nationalId" className={s.fieldLabel}>
-                  شناسه ملی / تذکره
+                  شماره تذکره / کارت ملی
                 </label>
                 <Input
                   id="nationalId"
@@ -552,7 +552,7 @@ export function KycOnboardingClient({ initialRecord }: Props) {
             <div className={s.reviewGrid}>
               {[
                 { label: 'نام کامل', value: form.fullName },
-                { label: 'شناسه ملی', value: form.nationalId },
+                { label: 'شماره تذکره / کارت ملی', value: form.nationalId },
                 { label: 'تاریخ تولد', value: form.dateOfBirth },
                 { label: 'موبایل', value: form.phone },
               ].map(({ label, value }) => (

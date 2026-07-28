@@ -8,7 +8,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { CustomerCockpit } from '@/components/exchange/customers/CustomerCockpit';
 
-export const metadata: Metadata = { title: 'مشتریان صرافی · مرکز فرماندهی' };
+export const metadata: Metadata = { title: 'مشتریان صرافی' };
 
 export default async function CustomersPage() {
   const session = await auth();

@@ -1155,7 +1155,7 @@ export default function CustomersClient({
                       />
                     </FormField>
 
-                    <FormField label="کد ملی / شناسنامه">
+                    <FormField label="تذکره / کارت ملی">
                       <Input
                         dir="ltr"
                         value={formState.nationalId}

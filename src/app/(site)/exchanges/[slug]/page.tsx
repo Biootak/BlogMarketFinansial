@@ -10,6 +10,7 @@ import { notFound } from 'next/navigation';
 import prisma from '@/lib/db';
 import { splitHours, stripHours } from '@/lib/exchange-hours';
 import type { Metadata } from 'next';
+import { getPublicExchangeServices } from '@/actions/exchange-services';
 import ExchangePublicView from './_components/ExchangePublicView';
 
 export const revalidate = 60;
@@ -79,7 +80,7 @@ async function getSparkHistory(exchangeId: string, currencyCodes: string[]) {
     where: {
       exchangeId,
       currencyCode: { in: currencyCodes },
-      status: { in: ['ACTIVE', 'EXPIRED', 'SUPERSEDED'] },
+      status: { in: ['ACTIVE', 'EXPIRED', 'ARCHIVED'] },
     },
     select: { currencyCode: true, sellRate: true, createdAt: true },
     orderBy: { createdAt: 'desc' },
@@ -161,6 +162,9 @@ export default async function ExchangePublicPage({ params }: PageProps) {
   // ── پیدا کردن نرخ اصلی (USD) برای hero ─────────────────────────
   const usdRate = rates.find((r) => r.currencyCode === 'USD') ?? rates[0] ?? null;
 
+  // ── سرویس‌های آنلاین صرافی (لایه ۲ از ۴ لایه) ─────────────────────
+  const services = await getPublicExchangeServices(slug);
+
   return (
     <ExchangePublicView
       exchange={{
@@ -182,6 +186,7 @@ export default async function ExchangePublicPage({ params }: PageProps) {
       rates={rates}
       hours={hours}
       primaryRate={usdRate}
+      services={services}
     />
   );
 }

@@ -315,7 +315,7 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
       <PageHeader
         title="دستگاه‌ها و نشست‌های فعال"
         description="مانیتورینگ هوشمند، مدیریت دسترسی‌ها و بررسی فعالیت‌های امنیتی حساب کاربری شما"
-        eyebrow="مرکز عملیات امنیت"
+        eyebrow="امنیت حساب"
         breadcrumb={[{ href: '/dashboard', label: 'داشبورد' }, { label: 'دستگاه‌ها' }]}
         icon="shield-check"
         accent="indigo"

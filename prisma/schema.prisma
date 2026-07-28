@@ -449,6 +449,9 @@ model ServiceRequest {
   createdAt             DateTime                  @default(now())
   updatedAt             DateTime                  @updatedAt
   userId                String?
+  /// 2026-07-28: اگر درخواست از صفحه صرافی خاصی ثبت شود، صرافی مقصد اینجاست.
+  /// null = درخواست به پلتفرم (flow قدیمی).
+  targetExchangeId      String?
   metadata              Json?
   estimatedCompletionAt DateTime?
   externalTxId          String?
@@ -456,6 +459,7 @@ model ServiceRequest {
   emailVerified         Boolean                   @default(false)
   idempotencyKey        String?                   @unique
   user                  User?                       @relation(fields: [userId], references: [id])
+  targetExchange        Exchange?                  @relation(fields: [targetExchangeId], references: [id], onDelete: SetNull)
   statusLogs            ServiceRequestStatusLog[]
   notes                 ServiceRequestNote[]
   attachments           ServiceRequestAttachment[]
@@ -464,6 +468,8 @@ model ServiceRequest {
   @@index([phone])
   @@index([status])
   @@index([createdAt])
+  @@index([targetExchangeId, status])
+  @@index([targetExchangeId, createdAt(sort: Desc)])
   @@index([userId])
   @@index([idempotencyKey])
   @@index([phone, amount, currency, createdAt])
@@ -774,6 +780,9 @@ model Exchange {
   Customer             Customer[]
   Device               Device[]
   ExchangeStaff        ExchangeStaff[]
+  ExchangeService      ExchangeService[]
+  ServiceClick         ServiceClick[]
+  ServiceRequest       ServiceRequest[]
   FintechAccount       FintechAccount[]
   FraudReview          FraudReview[]
   KycVerification      KycVerification[]
@@ -808,6 +817,60 @@ model ExchangeStaff {
   @@index([exchangeId])
   @@index([role])
   @@index([userId])
+}
+
+/// 2026-07-28: خدمات آنلاین هر صرافی — many-to-many با کلید سرویس canonical.
+/// هر صرافی از داشبورد خود انتخاب می‌کند کدام سرویس‌ها را فعال کرده.
+/// serviceKey از ServiceType enum گرفته شده — canonical یکتا در کل پلتفرم.
+model ExchangeService {
+  id          String   @id @default(cuid())
+  exchangeId  String
+  /// کلید canonical — مثلاً "CURRENCY_BUY"، "INTERNATIONAL_TRANSFER".
+  /// باید یکی از مقادیر ServiceType enum باشد (سازگاری با ServiceRequest موجود).
+  serviceKey  String
+  /// آیا این سرویس الان فعال و قابل ارائه است؟
+  isActive    Boolean  @default(true)
+  /// توضیح اختصاصی صرافی (اختیاری — اگر خالی، از catalog استفاده شود)
+  description String?
+  /// لینک CTA اختصاصی (مثلاً صفحه خرید ارز در سایت صرافی)
+  ctaHref     String?
+  /// ترتیب نمایش — صرافی تعیین می‌کند
+  order       Int      @default(0)
+  /// 2026-07-28: SLA — متوسط زمان پاسخ‌گویی به دقیقه (null = نامشخص)
+  leadTimeMin Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  Exchange    Exchange @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+
+  @@unique([exchangeId, serviceKey])
+  @@index([exchangeId, isActive, order])
+  @@index([serviceKey, isActive])
+}
+
+/// 2026-07-28: analytics — هر کلیک روی کارت سرویس ثبت می‌شود.
+/// استفاده: ranking سرویس‌های محبوب، heatmap رفتار مشتری، attribution.
+model ServiceClick {
+  id          String          @id @default(cuid())
+  /// 2026-07-28: صرافی‌ای که کلیک روی کارت آن بوده. null = marketplace hub
+  exchangeId  String?
+  /// 2026-07-28: کلید سرویس کلیک‌شده
+  serviceKey  String
+  /// 2026-07-28: از کجا کلیک شده
+  source      String
+  /// 2026-07-28: کاربر لاگین‌شده (اختیاری)
+  userId      String?
+  /// 2026-07-28: IP (برای تشخیص unique)
+  ipAddress   String?
+  /// 2026-07-28: User agent
+  userAgent   String?
+  /// 2026-07-28: referer URL (URL کامل صفحه‌ای که کلیک شده)
+  referer     String?
+  createdAt   DateTime        @default(now())
+  Exchange    Exchange?       @relation(fields: [exchangeId], references: [id], onDelete: SetNull)
+
+  @@index([serviceKey, createdAt(sort: Desc)])
+  @@index([exchangeId, createdAt(sort: Desc)])
+  @@index([source, createdAt(sort: Desc)])
 }
 
 model FintechAccount {

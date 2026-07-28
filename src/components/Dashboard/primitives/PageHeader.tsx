@@ -15,6 +15,7 @@ import {
   Settings,
   ShieldCheck,
   ShieldX,
+  Sparkles,
   Tag,
   UserCircle,
   Users,
@@ -41,7 +42,8 @@ export type PageHeaderIcon =
   | 'file-text'
   | 'tag'
   | 'building'
-  | 'credit-card';
+  | 'credit-card'
+  | 'sparkles';
 
 const ICON_MAP: Record<PageHeaderIcon, FC<LucideProps>> = {
   'user-circle': UserCircle,
@@ -61,6 +63,7 @@ const ICON_MAP: Record<PageHeaderIcon, FC<LucideProps>> = {
   tag: Tag,
   building: Building2,
   'credit-card': CreditCard,
+  sparkles: Sparkles,
 };
 
 export type PageHeaderAccent = 'indigo' | 'emerald' | 'amber' | 'rose' | 'violet' | 'cyan';

@@ -1,4 +1,4 @@
-﻿// 2026-06-23: single OTP email template.
+// 2026-06-23: single OTP email template.
 //
 // One function, four intents. The body copy is Persian + a short English
 // line for support tickets; HTML uses inline CSS (Gmail strips <style>),
@@ -583,5 +583,150 @@ export function serviceRequestReceiptEmail(args: ServiceRequestReceiptArgs): Ema
     html,
     text,
     tags: [{ name: 'category', value: 'service-request:receipt' }],
+  };
+}
+
+// ─── Exchange Service Request notification email (new client → exchange) ─── //
+// 2026-07-28: وقتی درخواستی مستقیماً از صفحه صرافی ثبت می‌شود، به صرافی اطلاع
+// می‌دهیم تا بتواند سریع پاسخ دهد.
+
+export interface ExchangeServiceRequestEmailArgs {
+  to: string;
+  exchangeName: string;
+  customerName: string;
+  customerPhone: string;
+  serviceKey: string;
+  trackingCode: string;
+  amount: string;
+  currency: string;
+  description?: string | null;
+  contactMethod: string;
+  urgency: string;
+  appUrl: string;
+}
+
+export function exchangeServiceRequestEmail(
+  args: ExchangeServiceRequestEmailArgs,
+): EmailMessage {
+  const serviceLabel = SERVICE_LABELS[args.serviceKey] ?? args.serviceKey;
+  const contactMethodLabel =
+    args.contactMethod === 'telegram'
+      ? 'تلگرام'
+      : args.contactMethod === 'whatsapp'
+        ? 'واتساپ'
+        : 'تماس تلفنی';
+  const urgencyLabel = args.urgency === 'URGENT' ? 'فوری' : 'عادی';
+  const dashboardUrl = `${args.appUrl}/exchange/dashboard`;
+
+  const text = [
+    `${args.exchangeName} عزیز،`,
+    '',
+    'یک درخواست خدمات جدید از طریق پروفایل عمومی شما در سایت ثبت شد.',
+    '',
+    `کد پیگیری: ${args.trackingCode}`,
+    `نوع خدمات: ${serviceLabel}`,
+    `مبلغ: ${args.amount} ${args.currency}`,
+    `اولویت: ${urgencyLabel}`,
+    '',
+    'مشتری:',
+    `  نام: ${args.customerName}`,
+    `  تلفن: ${args.customerPhone}`,
+    `  روش تماس ترجیحی: ${contactMethodLabel}`,
+    ...(args.description ? ['', `توضیحات: ${args.description}`] : []),
+    '',
+    'لطفاً در اسرع وقت با مشتری تماس بگیرید.',
+    `پنل صرافی: ${dashboardUrl}`,
+    '',
+    '— تیم Financial Market',
+  ].join('\n');
+
+  const html = `<!doctype html>
+<html lang="fa" dir="rtl">
+  <body style="margin:0;padding:0;background:#f6f6f9;font-family:Tahoma,Arial,sans-serif;color:#1f2937">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px">
+      <tr><td align="center">
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0"
+               style="background:#ffffff;border-radius:12px;padding:32px;border:1px solid #e5e7eb">
+          <tr><td>
+            <h1 style="margin:0 0 8px 0;font-size:20px;color:#111827">
+              درخواست جدید برای ${args.exchangeName} 🔔
+            </h1>
+            <p style="margin:0 0 24px 0;line-height:1.7;color:#374151">
+              یک مشتری از طریق صفحه عمومی شما درخواست خدمات ثبت کرده است.
+              لطفاً در اسرع وقت پاسخ دهید.
+            </p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                   style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;margin:0 0 20px 0">
+              <tr><td style="padding:16px 20px">
+                <p style="margin:0 0 4px 0;font-size:11px;color:#065f46;text-transform:uppercase;letter-spacing:0.05em">کد پیگیری</p>
+                <p style="margin:0;font-family:Menlo,Consolas,'Courier New',monospace;font-size:22px;font-weight:700;letter-spacing:4px;color:#047857">${args.trackingCode}</p>
+              </td></tr>
+            </table>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                   style="border:1px solid #e5e7eb;border-radius:8px;margin:0 0 16px 0">
+              <tr>
+                <td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;font-size:13px;color:#6b7280;width:40%">نوع خدمات</td>
+                <td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;font-size:13px;font-weight:600;color:#111827;text-align:left" dir="rtl">${serviceLabel}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;font-size:13px;color:#6b7280">مبلغ</td>
+                <td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;font-size:13px;font-weight:600;color:#111827;text-align:left" dir="ltr">${args.amount} ${args.currency}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;font-size:13px;color:#6b7280">اولویت</td>
+                <td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;font-size:13px;font-weight:600;color:${args.urgency === 'URGENT' ? '#dc2626' : '#111827'};text-align:left">${urgencyLabel}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 16px;font-size:13px;color:#6b7280">روش تماس</td>
+                <td style="padding:10px 16px;font-size:13px;font-weight:600;color:#111827;text-align:left" dir="rtl">${contactMethodLabel}</td>
+              </tr>
+            </table>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                   style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;margin:0 0 20px 0">
+              <tr><td style="padding:16px 20px">
+                <p style="margin:0 0 8px 0;font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em">اطلاعات مشتری</p>
+                <p style="margin:0 0 4px 0;font-size:14px;font-weight:600;color:#111827" dir="rtl">${args.customerName}</p>
+                <p style="margin:0;font-size:14px;color:#111827" dir="ltr">${args.customerPhone}</p>
+              </td></tr>
+            </table>
+            ${
+              args.description
+                ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                   style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;margin:0 0 20px 0">
+              <tr><td style="padding:16px 20px">
+                <p style="margin:0 0 4px 0;font-size:11px;color:#92400e;text-transform:uppercase;letter-spacing:0.05em">توضیحات مشتری</p>
+                <p style="margin:0;font-size:13px;color:#451a03;line-height:1.7" dir="rtl">${args.description}</p>
+              </td></tr>
+            </table>`
+                : ''
+            }
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+              <tr><td align="center" style="padding-bottom:20px">
+                <a href="${dashboardUrl}"
+                   style="display:inline-block;background:#047857;color:#ffffff;text-decoration:none;border-radius:8px;padding:12px 28px;font-size:14px;font-weight:600">
+                  باز کردن پنل صرافی ←
+                </a>
+              </td></tr>
+            </table>
+            <p style="margin:0;font-size:12px;color:#9ca3af;line-height:1.6">
+              این ایمیل به دلیل ثبت درخواست در سایت ارسال شده. اگر فکر می‌کنید اشتباه است، با پشتیبانی تماس بگیرید.
+            </p>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>`;
+
+  return {
+    to: args.to,
+    subject: `درخواست جدید ${args.trackingCode} — ${serviceLabel}`,
+    html,
+    text,
+    tags: [
+      { name: 'category', value: 'service-request:exchange-notification' },
+      { name: 'service', value: args.serviceKey },
+      { name: 'urgency', value: args.urgency },
+    ],
   };
 }

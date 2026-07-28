@@ -17,7 +17,7 @@ import ExchangesWorkspace from './_components/ExchangesWorkspace';
 
 export const metadata: Metadata = {
   title: 'مدیریت صراف‌ها | داشبورد',
-  description: 'مرکز فرماندهی صرافی‌ها — مشاهده، تأیید و مدیریت صرافی‌های عضو پلتفرم در یک نگاه.',
+  description: 'مشاهده، تأیید و مدیریت صرافی‌های عضو پلتفرم در یک نگاه.',
 };
 
 export default async function ExchangesPage() {
@@ -42,7 +42,7 @@ export default async function ExchangesPage() {
       <PageHeader
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'صراف‌ها' }]}
         title="مدیریت صراف‌ها"
-        description="مرکز فرماندهی شبکهٔ صرافی‌ها — ایجاد، تأیید و مدیریت اعضای پلتفرم."
+        description="ایجاد، تأیید و مدیریت صرافی‌های عضو پلتفرم."
         eyebrow="Atrium · ۲۰۲۶"
         accent="emerald"
         icon="building"

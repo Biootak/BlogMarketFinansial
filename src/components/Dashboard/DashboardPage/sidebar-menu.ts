@@ -31,6 +31,7 @@ import {
   HiOutlineUsers,
   HiOutlineCreditCard as HiOutlineVirtualCard,
   HiOutlineWallet,
+  HiOutlineSparkles,
 } from 'react-icons/hi2';
 
 export const ICON_CLASS = 'w-[19px] h-[19px]';
@@ -480,6 +481,14 @@ export function getMenu(role: UserRole): NavSection[] {
     label: 'پروفایل صرافی',
     roles: ['OWNER', 'MANAGER'],
   };
+  // 2026-07-28: مدیریت خدمات آنلاین — لایه ۲ از ۴ لایه
+  const exchangeServicesPanel: MenuItem = {
+    id: 'exchangeServicesPanel',
+    href: '/exchange/services',
+    icon: HiOutlineSparkles({ className: ICON_CLASS }),
+    label: 'خدمات آنلاین',
+    roles: ['OWNER', 'MANAGER'],
+  };
   const exchangeSettingsPanel: MenuItem = {
     id: 'exchangeSettingsPanel',
     href: '/exchange/settings',
@@ -527,7 +536,7 @@ export function getMenu(role: UserRole): NavSection[] {
           id: 'account',
           index: '۰۴',
           label: 'تنظیمات',
-          items: [exchangeProfilePanel, exchangeSettingsPanel],
+          items: [exchangeProfilePanel, exchangeServicesPanel, exchangeSettingsPanel],
         },
       ];
     case 'OWNER':

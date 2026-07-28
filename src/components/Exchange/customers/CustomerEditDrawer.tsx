@@ -216,7 +216,7 @@ export function CustomerEditDrawer({
           </FormField>
           <div className={s.grid2}>
             <FormField
-              label={initialData ? 'کد ملی (برای تغییر وارد کنید)' : 'کد ملی'}
+              label={initialData ? 'تذکره / کارت ملی (برای تغییر وارد کنید)' : 'تذکره / کارت ملی'}
               error={errors.nationalId}
             >
               <input

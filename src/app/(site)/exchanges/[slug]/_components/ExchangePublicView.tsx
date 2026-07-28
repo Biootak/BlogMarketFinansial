@@ -6,6 +6,7 @@
  *   ترکیب:
  *     • HeroIdentity   (dark, asymmetric 7/5)
  *     • LiveRatesBoard (filterable/sortable rate grid)
+ *     • OnlineServices (بخش خدمات آنلاین — کارت‌های قابل کلیک)
  *     • WorkingHoursStrip (7-day schedule)
  *     • TrustSection   (about / contact / safety)
  *   از anchor scroll استفاده می‌کند؛ SubNav در layout هماهنگ می‌شود.
@@ -14,8 +15,10 @@
 import HeroIdentity from './HeroIdentity';
 import LiveRatesBoard from './LiveRatesBoard';
 import s from './ExchangePublicView.module.css';
+import OnlineServices from './OnlineServices';
 import TrustSection from './TrustSection';
 import WorkingHoursStrip from './WorkingHoursStrip';
+import type { PublicExchangeService } from '@/actions/exchange-services';
 
 type ExchangeDTO = {
   id: string;
@@ -53,9 +56,10 @@ type Props = {
   rates: RateDTO[];
   hours: HoursMap;
   primaryRate: RateDTO | null;
+  services: PublicExchangeService[];
 };
 
-export default function ExchangePublicView({ exchange, rates, hours, primaryRate }: Props) {
+export default function ExchangePublicView({ exchange, rates, hours, primaryRate, services }: Props) {
   const activeCurrencies = rates.length;
   return (
     <article className={s.page} dir="rtl">
@@ -75,6 +79,16 @@ export default function ExchangePublicView({ exchange, rates, hours, primaryRate
       />
 
       <LiveRatesBoard rates={rates} />
+
+      <OnlineServices
+        exchange={{
+          id: exchange.id,
+          slug: exchange.slug,
+          name: exchange.name,
+          displayName: exchange.displayName,
+        }}
+        services={services}
+      />
 
       {Object.keys(hours).length > 0 && <WorkingHoursStrip hours={hours} />}
 

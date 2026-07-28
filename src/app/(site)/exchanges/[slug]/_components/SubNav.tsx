@@ -9,6 +9,7 @@
  */
 
 import {
+  Banknote,
   Building2,
   ChartLine,
   Clock4,
@@ -37,6 +38,7 @@ type Props = {
     city: string | null;
     activeCurrencies: number;
     hasHours: boolean;
+    serviceCount: number;
   };
 };
 
@@ -51,6 +53,17 @@ export default function SubNav({ exchange }: Props) {
     ? [
         { key: 'hero', label: 'پروفایل', href: '#hero', icon: Building2, inPage: true },
         { key: 'rates', label: 'نرخ‌ها', href: '#rates', icon: Radio, inPage: true },
+        ...(exchange.serviceCount > 0
+          ? ([
+              {
+                key: 'services',
+                label: 'خدمات',
+                href: '#services',
+                icon: Banknote,
+                inPage: true,
+              },
+            ] as NavItem[])
+          : []),
         {
           key: 'hours',
           label: 'ساعات کاری',
@@ -69,6 +82,17 @@ export default function SubNav({ exchange }: Props) {
           href: `/exchanges/${exchange.slug}/markets`,
           icon: ChartLine,
         },
+        ...(exchange.serviceCount > 0
+          ? ([
+              {
+                key: 'services',
+                label: 'خدمات',
+                href: `/services/compare?exchange=${exchange.slug}`,
+                icon: Banknote,
+                inPage: false,
+              },
+            ] as NavItem[])
+          : []),
         {
           key: 'hours',
           label: 'ساعات کاری',
@@ -94,7 +118,7 @@ export default function SubNav({ exchange }: Props) {
   // ── Active section via IntersectionObserver (in-page mode) ──
   useEffect(() => {
     if (!isHome) return;
-    const sections = ['hero', 'rates', 'hours', 'about', 'contact']
+    const sections = ['hero', 'rates', 'services', 'hours', 'about', 'contact']
       .map((id) => document.getElementById(id))
       .filter((el): el is HTMLElement => Boolean(el));
     if (sections.length === 0) return;

@@ -143,9 +143,9 @@ export function CustomerCockpit({
       {/* ── Header ──────────────────────────────────────────────────── */}
       <PageHeader
         breadcrumb={[{ label: 'پنل صرافی' }, { label: 'مشتریان' }]}
-        title="مرکز فرماندهی مشتریان"
-        description="مدیریت، تحلیل و اقدام روی مشتریان صرافی — همه چیز در یک نما"
-        eyebrow="Cockpit ۲۰۲۶"
+        title="مدیریت مشتریان"
+        description="مدیریت، تحلیل و پیگیری مشتریان صرافی — همه اطلاعات در یک صفحه"
+        eyebrow="مشتریان ۲۰۲۶"
         icon="users"
         accent="emerald"
       />

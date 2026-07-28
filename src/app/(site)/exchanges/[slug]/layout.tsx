@@ -7,6 +7,7 @@
 
 import { notFound } from 'next/navigation';
 import prisma from '@/lib/db';
+import { getPublicExchangeServices } from '@/actions/exchange-services';
 import SubNav from './_components/SubNav';
 
 export const revalidate = 60;
@@ -49,6 +50,9 @@ export default async function ExchangeLayout({ children, params }: LayoutProps) 
 
   if (!exchange || exchange.status !== 'ACTIVE') notFound();
 
+  // 2026-07-28: تعداد سرویس‌های فعال برای نمایش pill «خدمات» در SubNav
+  const services = await getPublicExchangeServices(slug);
+
   // تبدیل به DTO ساده برای SubNav (بدون leaking Prisma types به client)
   const navData = {
     slug: exchange.slug,
@@ -56,6 +60,7 @@ export default async function ExchangeLayout({ children, params }: LayoutProps) 
     city: exchange.city ?? null,
     activeCurrencies: new Set(exchange.ExchangeRateQuote.map((q) => q.currencyCode)).size,
     hasHours: Boolean(exchange.address?.includes(';HOURS=')),
+    serviceCount: services.length,
   };
 
   return (

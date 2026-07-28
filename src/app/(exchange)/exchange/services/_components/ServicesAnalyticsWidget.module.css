@@ -1,0 +1,280 @@
+/* ServicesAnalyticsWidget — کارت آمار سرویس‌ها */
+
+.card {
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-lg);
+  padding: var(--ds-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+}
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--ds-text-xs);
+  color: var(--nova-emerald);
+  font-weight: var(--ds-weight-semibold);
+}
+
+.title {
+  font-size: var(--ds-text-base);
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-text-primary);
+  margin: 0;
+}
+
+.viewLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 10px;
+  background: var(--ds-surface-recessed);
+  border-radius: var(--ds-radius-md);
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  text-decoration: none;
+  transition: background var(--ds-duration-fast), color var(--ds-duration-fast);
+}
+
+.viewLink:hover {
+  background: var(--ds-border-default);
+  color: var(--ds-text-primary);
+}
+
+/* ── Metrics grid ────────────────────────────────── */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--ds-space-2);
+}
+
+.metric {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--ds-space-3);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface-recessed);
+  border: 1px solid var(--ds-border-default);
+}
+
+.metric-emerald {
+  border-color: oklch(60% 0.12 165 / 0.25);
+  background: oklch(60% 0.12 165 / 0.04);
+}
+
+.metric-violet {
+  border-color: oklch(60% 0.12 280 / 0.25);
+  background: oklch(60% 0.12 280 / 0.04);
+}
+
+.metric-amber {
+  border-color: oklch(70% 0.15 80 / 0.25);
+  background: oklch(70% 0.15 80 / 0.04);
+}
+
+.metric-cyan {
+  border-color: oklch(70% 0.1 200 / 0.25);
+  background: oklch(70% 0.1 200 / 0.04);
+}
+
+.metricIcon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-default);
+  color: var(--ds-text-secondary);
+}
+
+.metric-emerald .metricIcon {
+  color: var(--nova-emerald);
+  border-color: oklch(60% 0.12 165 / 0.3);
+}
+
+.metric-violet .metricIcon {
+  color: oklch(60% 0.12 280);
+  border-color: oklch(60% 0.12 280 / 0.3);
+}
+
+.metric-amber .metricIcon {
+  color: oklch(70% 0.15 80);
+  border-color: oklch(70% 0.15 80 / 0.3);
+}
+
+.metric-cyan .metricIcon {
+  color: oklch(70% 0.1 200);
+  border-color: oklch(70% 0.1 200 / 0.3);
+}
+
+.metricValue {
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  margin-block-start: 4px;
+}
+
+.metricLabel {
+  font-size: 10px;
+  color: var(--ds-text-tertiary);
+  line-height: var(--ds-leading-snug);
+}
+
+/* ── Section ─────────────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding-block-start: var(--ds-space-3);
+  border-block-start: 1px solid var(--ds-border-default);
+}
+
+.sectionTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-tertiary);
+  font-weight: var(--ds-weight-semibold);
+}
+
+/* ── Sparkline ───────────────────────────────────── */
+.spark {
+  display: flex;
+  align-items: flex-end;
+  justify-content: stretch;
+  gap: 2px;
+  height: 56px;
+  padding: var(--ds-space-1) 0;
+}
+
+.sparkCol {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+  min-width: 4px;
+}
+
+.sparkBar {
+  width: 100%;
+  background: linear-gradient(
+    to top,
+    var(--nova-emerald),
+    oklch(75% 0.12 165)
+  );
+  border-radius: 2px 2px 0 0;
+  transition: opacity var(--ds-duration-fast);
+}
+
+.sparkCol:hover .sparkBar {
+  opacity: 0.7;
+}
+
+/* ── Top services list ──────────────────────────── */
+.topList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.topItem {
+  display: grid;
+  grid-template-columns: 20px 20px 1fr auto;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: 8px 10px;
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-surface-recessed);
+  font-size: var(--ds-text-xs);
+  transition: background var(--ds-duration-fast);
+}
+
+.topItem:hover {
+  background: var(--ds-border-default);
+}
+
+.topRank {
+  font-size: 10px;
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-text-tertiary);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.topIcon {
+  display: grid;
+  place-items: center;
+  color: var(--nova-emerald);
+}
+
+.topName {
+  color: var(--ds-text-primary);
+  font-weight: var(--ds-weight-medium);
+}
+
+.topCount {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-bold);
+  color: var(--nova-emerald);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Empty state ─────────────────────────────────── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-5) var(--ds-space-3);
+  text-align: center;
+  color: var(--ds-text-tertiary);
+}
+
+.emptyText {
+  font-size: var(--ds-text-xs);
+  margin: 0;
+  max-width: 280px;
+  line-height: var(--ds-leading-relaxed);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sparkBar,
+  .topItem,
+  .viewLink,
+  .closeBtn,
+  .btnNext {
+    transition: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .metricsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

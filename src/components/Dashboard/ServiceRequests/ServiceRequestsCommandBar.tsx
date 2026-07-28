@@ -144,7 +144,7 @@ export default function ServiceRequestsCommandBar({
       : 0;
 
   return (
-    <section className="at-tile at-srq-hero" aria-label="نوار فرماندهی درخواست‌ها">
+    <section className="at-tile at-srq-hero" aria-label="مدیریت درخواست‌ها">
       {/* Brand mark — eight-point star like the dashboard at-hero */}
       <div className="at-srq-hero__mark" aria-hidden>
         <svg
@@ -178,7 +178,7 @@ export default function ServiceRequestsCommandBar({
                 <HiOutlineBolt className="w-3 h-3" aria-hidden />
                 <span>عملیات · {now ? persianLongDate(now) : persianLongDate()}</span>
               </span>
-              <span className="at-srq-hero__title">مرکز عملیات درخواست‌ها</span>
+              <span className="at-srq-hero__title">مدیریت درخواست‌ها</span>
             </h2>
             <p className="at-head__sub">
               {stats
