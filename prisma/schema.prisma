@@ -367,6 +367,8 @@ model SystemSettings {
   siteName        String?
   siteDescription String?
   logoUrl         String?
+  // دامنه اصلی سایت — منبع واحد برای robots.txt، sitemap، OG، لینک‌های اشتراک‌گذاری
+  siteUrl         String?
   maintenanceMode Boolean  @default(false)
   // 2026-07-29: پیام سفارشی نمایش‌داده‌شده در صفحه تعمیرات — ادمین ارشد ویرایش می‌کند
   maintenanceMessage String?

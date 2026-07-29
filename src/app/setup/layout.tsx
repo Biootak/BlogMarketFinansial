@@ -14,7 +14,7 @@ import { getSiteIdentity } from '@/lib/site-identity';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { siteName } = await getSiteIdentity();
-  const name = siteName || 'blogmarketfinansial.ir';
+  const name = siteName || 'financialmarket.page';
 
   return {
     title: `پیکربندی اولیه — ${name}`,

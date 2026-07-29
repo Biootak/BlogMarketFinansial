@@ -7,13 +7,17 @@
 import { LogIn, RefreshCw, ShieldAlert } from 'lucide-react';
 import type { Metadata } from 'next';
 import { StatePage } from '@/components/StatePage';
+import { getSystemSettingsData } from '@/data/getSystemSettings';
 
 export const metadata: Metadata = {
   title: 'نشست منقضی شد | ورود مجدد',
   robots: { index: false },
 };
 
-export default function SessionExpiredPage() {
+export default async function SessionExpiredPage() {
+  const settings = await getSystemSettingsData();
+  const supportEmail = settings.contactEmail ?? 'support@financialmarket.page';
+
   return (
     <StatePage
       number="۴۰۱"
@@ -41,7 +45,7 @@ export default function SessionExpiredPage() {
       ]}
       foot={{
         label: 'مشکل در ورود؟',
-        href: 'mailto:support@blogmarketfinansial.ir',
+        href: `mailto:${supportEmail}`,
       }}
       tone="info"
     />

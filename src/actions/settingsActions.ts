@@ -44,11 +44,15 @@ export async function getSystemSettings() {
         siteName: true,
         siteDescription: true,
         logoUrl: true,
+        siteUrl: true,
         maintenanceMode: true,
         cacheEnabled: true,
         smtpServer: true,
         smtpPort: true,
         smtpUsername: true,
+        contactEmail: true,
+        contactPhone: true,
+        contactAddress: true,
         telegram: true,
         instagram: true,
         whatsapp: true,
@@ -66,11 +70,15 @@ export async function getSystemSettings() {
           siteName: '',
           siteDescription: '',
           logoUrl: null,
+          siteUrl: '',
           maintenanceMode: false,
           cacheEnabled: true,
           smtpServer: '',
           smtpPort: '',
           smtpUsername: '',
+          contactEmail: '',
+          contactPhone: '',
+          contactAddress: '',
           telegram: '',
           instagram: '',
           whatsapp: '',
@@ -94,6 +102,8 @@ export async function updateGeneralSettings(data: {
   siteName: string;
   siteDescription: string;
   logoUrl?: string;
+  /** دامنه اصلی سایت — مثال: https://financialmarket.page */
+  siteUrl?: string;
   // 2026-07-29: contact fields (admin-editable)
   contactEmail?: string;
   contactPhone?: string;
@@ -112,51 +122,27 @@ export async function updateGeneralSettings(data: {
       };
     }
 
-    const contactData = {
+    const allData = {
+      siteName: parsed.data.siteName,
+      siteDescription: parsed.data.siteDescription,
+      logoUrl: parsed.data.logoUrl ?? null,
+      siteUrl: parsed.data.siteUrl?.trim() || null,
       contactEmail: parsed.data.contactEmail?.trim() || null,
       contactPhone: parsed.data.contactPhone?.trim() || null,
       contactAddress: parsed.data.contactAddress?.trim() || null,
     };
 
-    // 2026-07-29: Contact fields are new in schema; if migration not yet
-    // run, Prisma will throw on unknown args. We persist siteName/description/
-    // logo first, then attempt the contact update separately.
     let settings = await prisma.systemSettings.findFirst();
 
     if (settings) {
       settings = await prisma.systemSettings.update({
         where: { id: settings.id },
-        data: {
-          siteName: parsed.data.siteName,
-          siteDescription: parsed.data.siteDescription,
-          logoUrl: parsed.data.logoUrl ?? null,
-        },
+        data: allData,
       });
-      // Try to write contact fields separately. If schema lacks them, ignore.
-      try {
-        await prisma.systemSettings.update({
-          where: { id: settings.id },
-          data: contactData,
-        });
-      } catch {
-        // Migration pending; contact fields will be saved after migration.
-      }
     } else {
       settings = await prisma.systemSettings.create({
-        data: {
-          siteName: parsed.data.siteName,
-          siteDescription: parsed.data.siteDescription,
-          logoUrl: parsed.data.logoUrl ?? null,
-        },
+        data: allData,
       });
-      try {
-        await prisma.systemSettings.update({
-          where: { id: settings.id },
-          data: contactData,
-        });
-      } catch {
-        // Migration pending; contact fields will be saved after migration.
-      }
     }
 
     // Revalidate all pages that use site settings

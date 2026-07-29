@@ -20,7 +20,7 @@ import AtelierMasthead from '../../_components/AtelierMasthead';
 import AtelierToolbar from '../../_components/AtelierToolbar';
 import { buildArchiveCrumbs } from '../../_components/buildArchiveCrumbs';
 
-const ARCHIVE_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://blogmarketfinansial.ir';
+const ARCHIVE_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://financialmarket.page';
 
 export async function generateMetadata({
   params,

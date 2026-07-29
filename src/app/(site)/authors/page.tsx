@@ -13,7 +13,7 @@ import { getSystemSettingsData } from '@/data/getSystemSettings';
  */
 import type { Metadata } from 'next';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://blogmarketfinansial.ir';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://financialmarket.page';
 
 export async function generateMetadata(): Promise<Metadata> {
   // `getSystemSettingsData` routes through `safeCache` (in-memory) so metadata

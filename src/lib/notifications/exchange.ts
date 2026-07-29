@@ -48,7 +48,7 @@ export async function notifyExchangeOfServiceRequest(args: NotifyArgs): Promise<
       return;
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://blogmarketfinansial.ir';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://financialmarket.page';
 
     // 2) send email if address exists
     if (exchange.email) {

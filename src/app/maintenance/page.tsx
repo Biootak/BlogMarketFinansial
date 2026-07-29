@@ -61,7 +61,7 @@ export default async function MaintenancePage() {
           { label: 'تلاش مجدد', href: '/', icon: RefreshCw, variant: 'primary' },
           {
             label: 'تلگرام پشتیبانی',
-            href: settings.telegram ?? 'https://t.me/blogmarketfinansial',
+            href: settings.telegram ?? 'https://t.me/financialmarket_page',
             icon: ArrowLeft,
             variant: 'ghost',
             external: true,
@@ -75,7 +75,7 @@ export default async function MaintenancePage() {
         ]}
         foot={{
           label: 'سوال فوری دارید؟',
-          href: 'mailto:support@blogmarketfinansial.ir',
+          href: `mailto:${settings.contactEmail ?? 'support@financialmarket.page'}`,
         }}
         tone="warn"
       />

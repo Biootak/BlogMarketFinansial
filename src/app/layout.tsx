@@ -33,7 +33,7 @@ import STRIP_EXTENSION_ATTRS_SCRIPT from '@/lib/strip-extension-attrs';
    ============================================================================ */
 import { getSiteIdentity } from '@/lib/site-identity';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://blogmarketfinansial.ir';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://financialmarket.page';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { siteName, siteDescription } = await getSiteIdentity();

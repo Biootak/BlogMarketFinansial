@@ -37,12 +37,12 @@ export class CsrfError extends Error {
 function getAllowedHosts(): Set<string> {
   const set = new Set<string>();
   // default: production + preview + local
-  set.add('blogmarketfinansial.ir');
-  set.add('www.blogmarketfinansial.ir');
+  set.add('financialmarket.page');
+  set.add('www.financialmarket.page');
   set.add('localhost');
   set.add('127.0.0.1');
   set.add('0.0.0.0');
-  // optional override via env (comma-separated)
+  // optional extra hosts via env (comma-separated) — e.g. CSRF_ALLOWED_HOSTS="staging.example.com"
   if (process.env.CSRF_ALLOWED_HOSTS) {
     for (const h of process.env.CSRF_ALLOWED_HOSTS.split(',').map((s) => s.trim()).filter(Boolean)) {
       set.add(h);

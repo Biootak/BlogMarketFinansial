@@ -332,6 +332,14 @@ export const UpdateGeneralSettingsSchema = z.object({
     .optional()
     .or(z.literal(''))
     .nullable(),
+  // دامنه اصلی سایت — مثال: https://financialmarket.page
+  siteUrl: z
+    .string()
+    .url('آدرس سایت باید یک URL معتبر باشد (مثال: https://financialmarket.page)')
+    .max(255)
+    .optional()
+    .or(z.literal(''))
+    .nullable(),
   // 2026-07-29: فیلدهای تماس — اختیاری، در صورت خالی بودن null می‌شود
   contactEmail: z
     .string()

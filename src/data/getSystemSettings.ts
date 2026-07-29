@@ -5,6 +5,8 @@ export interface SiteSettings {
   siteName: string | null;
   siteDescription: string | null;
   logoUrl: string | null;
+  /** دامنه اصلی سایت — منبع واحد برای robots.txt، sitemap، OG، لینک‌های اشتراک‌گذاری */
+  siteUrl: string | null;
   // 2026-07-29: فیلدهای تماس (ادمین‌قابل‌ویرایش). null = استفاده از fallback.
   contactEmail: string | null;
   contactPhone: string | null;
@@ -23,6 +25,7 @@ const SETTINGS_FALLBACK: SiteSettings = {
   siteName: null,
   siteDescription: null,
   logoUrl: null,
+  siteUrl: null,
   contactEmail: null,
   contactPhone: null,
   contactAddress: null,
@@ -67,6 +70,7 @@ export const getSystemSettingsData = safeCache(
       siteName: settings.siteName,
       siteDescription: settings.siteDescription,
       logoUrl: settings.logoUrl,
+      siteUrl: pickString('siteUrl'),
       contactEmail: pickString('contactEmail'),
       contactPhone: pickString('contactPhone'),
       contactAddress: pickString('contactAddress'),

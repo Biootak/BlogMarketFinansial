@@ -1,14 +1,14 @@
 import prisma from '@/lib/db';
 import { serverLog } from '@/lib/server-logger';
+import { getSiteUrl } from '@/lib/site-url';
 import type { MetadataRoute } from 'next';
-
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://blogmarketfinansial.ir';
 
 // Bounded limit to keep the sitemap reasonably sized; for very large sites
 // prefer a sitemap index with per-page chunks.
 const MAX_POSTS = 5000;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const BASE_URL = await getSiteUrl();
   const now = new Date();
 
   const staticRoutes = [

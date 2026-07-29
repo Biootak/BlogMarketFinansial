@@ -24,7 +24,10 @@ import {
   HiOutlineHome,
   HiOutlineInboxArrowDown,
   HiOutlineKey,
+  HiOutlineListBullet,
+  HiOutlineMapPin,
   HiOutlineMegaphone,
+  HiOutlineReceiptPercent,
   HiOutlineShieldCheck,
   HiOutlineSparkles,
   HiOutlineSquares2X2,
@@ -32,7 +35,6 @@ import {
   HiOutlineUserCircle,
   HiOutlineUserGroup,
   HiOutlineUsers,
-  HiOutlineCreditCard as HiOutlineVirtualCard,
   HiOutlineWallet,
 } from 'react-icons/hi2';
 
@@ -283,7 +285,7 @@ export function getMenu(role: UserRole): NavSection[] {
   const virtualCards: MenuItem = {
     id: 'virtualCards',
     href: '/dashboard/virtual-cards',
-    icon: HiOutlineVirtualCard({ className: ICON_CLASS }),
+    icon: HiOutlineCreditCard({ className: ICON_CLASS }),
     label: 'کارت مجازی',
     title: 'کارت‌های مجازی پیش‌پرداخت',
   };
@@ -294,6 +296,39 @@ export function getMenu(role: UserRole): NavSection[] {
     icon: HiOutlineDevicePhoneMobile({ className: ICON_CLASS }),
     label: 'دستگاه‌های من',
     title: 'مدیریت دستگاه‌های متصل',
+  };
+
+  // ── Admin: rate-lists, credit-rates, billing-address, subscription ────
+  const rateLists: MenuItem = {
+    id: 'rateLists',
+    href: '/dashboard/rate-lists',
+    icon: HiOutlineListBullet({ className: ICON_CLASS }),
+    label: 'فهرست نرخ‌ها',
+    title: 'فهرست‌های نرخ سفارشی تیکر',
+  };
+
+  const creditRates: MenuItem = {
+    id: 'creditRates',
+    href: '/dashboard/credit-rates',
+    icon: HiOutlineReceiptPercent({ className: ICON_CLASS }),
+    label: 'نرخ‌های اعتباری',
+    title: 'نرخ سود، تسهیلات و خطوط اعتباری',
+  };
+
+  const billingAddress: MenuItem = {
+    id: 'billingAddress',
+    href: '/dashboard/billing-address',
+    icon: HiOutlineMapPin({ className: ICON_CLASS }),
+    label: 'آدرس صورتحساب',
+    title: 'آدرس صورتحساب و اطلاعات مالیاتی',
+  };
+
+  const subscriptionAdmin: MenuItem = {
+    id: 'subscriptionAdmin',
+    href: '/dashboard/subscription',
+    icon: HiOutlineSparkles({ className: ICON_CLASS }),
+    label: 'اشتراک من',
+    title: 'اشتراک و پلن صورتحساب',
   };
 
   // ─── Admin fintech items ──────────────────────────────────────────────────
@@ -597,7 +632,9 @@ export function getMenu(role: UserRole): NavSection[] {
             exchangeStaff,
             transferProviders,
             exchangeRates,
+            rateLists,
             exchangeQuotes,
+            creditRates,
             advertisements,
             serviceRequests,
           ],
@@ -612,7 +649,7 @@ export function getMenu(role: UserRole): NavSection[] {
           id: 'admin',
           index: '۰۵',
           label: 'مدیریت',
-          items: [users, roles, permissions, reports, settings],
+          items: [users, roles, permissions, reports, billingAddress, subscriptionAdmin, settings],
         },
         {
           id: 'account',
@@ -644,7 +681,9 @@ export function getMenu(role: UserRole): NavSection[] {
             exchangeStaff,
             transferProviders,
             exchangeRates,
+            rateLists,
             exchangeQuotes,
+            creditRates,
             advertisements,
             serviceRequests,
           ],
@@ -655,7 +694,12 @@ export function getMenu(role: UserRole): NavSection[] {
           label: 'فین‌تک',
           items: [customers, kycReview, fraudReview, settlements, auditLog],
         },
-        { id: 'admin', index: '۰۵', label: 'مدیریت', items: [users, roles, permissions] },
+        {
+          id: 'admin',
+          index: '۰۵',
+          label: 'مدیریت',
+          items: [users, roles, permissions, billingAddress, subscriptionAdmin],
+        },
         {
           id: 'account',
           index: '۰۶',

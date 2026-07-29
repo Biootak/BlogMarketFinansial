@@ -16,7 +16,8 @@ export async function sharePost(postId: string, platform: string) {
 
 async function getShareUrl(postId: string, platform: string) {
   // منطق ایجاد URL اشتراک‌گذاری برای هر پلتفرم
-  const baseUrl = `https://yourwebsite.com/single/${postId}`;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://financialmarket.page';
+  const baseUrl = `${appUrl}/single/${postId}`;
   switch (platform) {
     case 'facebook':
       return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(baseUrl)}`;

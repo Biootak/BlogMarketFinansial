@@ -15,7 +15,7 @@ import type { SetupFormValues, StepId } from './schema';
  * cached payload without orphaning stale data in the user's browser.
  */
 
-const STORAGE_KEY = 'blogmarketfinansial.setup.v1';
+const STORAGE_KEY = 'financialmarket.setup.v1';
 const SCHEMA_VERSION = 1;
 
 interface PersistedShape {

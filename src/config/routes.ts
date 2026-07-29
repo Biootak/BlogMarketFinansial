@@ -237,7 +237,6 @@ export const adminRoutes = [
   '/dashboard/posts/[...slug]',
   '/dashboard/service-requests',
   '/dashboard/service-requests/[...slug]',
-  '/dashboard/test-page',
 ];
 
 /**

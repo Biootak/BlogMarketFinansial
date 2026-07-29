@@ -55,12 +55,9 @@ function formatTime(d: Date) {
 }
 
 export default async function ExchangeSuspendedPage() {
-  // settings is fetched so future schema extension (e.g. contactPhone) can be
-  // read here without an additional round-trip. Today we keep a stable
-  // fallback so the page never breaks if the row is missing.
-  await getSystemSettingsData();
-  const supportPhone = '+93 700 000 000';
-  const supportEmail = 'support@blogmarketfinansial.ir';
+  const settings = await getSystemSettingsData();
+  const supportPhone = settings.contactPhone ?? '+93 700 000 000';
+  const supportEmail = settings.contactEmail ?? 'support@financialmarket.page';
   const now = new Date();
 
   return (

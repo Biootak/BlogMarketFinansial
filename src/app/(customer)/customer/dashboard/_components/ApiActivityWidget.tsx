@@ -206,7 +206,7 @@ export default function ApiActivityWidget() {
       <footer className={s.foot}>
         <span className={s.footItem}>
           <Globe size={10} aria-hidden />
-          <code dir="ltr">blogmarketfinansial.ir/api/v1</code>
+          <code dir="ltr">{(process.env.NEXT_PUBLIC_APP_URL ?? 'financialmarket.page').replace(/^https?:\/\//, '')}/api/v1</code>
         </span>
         <a href="/docs/api" className={s.footLink}>
           <Code2 size={10} aria-hidden />

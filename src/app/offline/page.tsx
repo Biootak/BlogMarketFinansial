@@ -11,13 +11,17 @@
 import { CloudOff, RefreshCw, Wifi } from 'lucide-react';
 import type { Metadata } from 'next';
 import { StatePage } from '@/components/StatePage';
+import { getSystemSettingsData } from '@/data/getSystemSettings';
 
 export const metadata: Metadata = {
   title: 'اتصال برقرار نیست | آفلاین',
   robots: { index: false },
 };
 
-export default function OfflinePage() {
+export default async function OfflinePage() {
+  const settings = await getSystemSettingsData();
+  const supportEmail = settings.contactEmail ?? 'support@financialmarket.page';
+
   return (
     <StatePage
       number="OFF"
@@ -45,7 +49,7 @@ export default function OfflinePage() {
       ]}
       foot={{
         label: 'سرویس از کار افتاده؟',
-        href: 'mailto:support@blogmarketfinansial.ir',
+        href: `mailto:${supportEmail}`,
       }}
       tone="danger"
     />

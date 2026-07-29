@@ -73,6 +73,7 @@ interface FormData {
   general: {
     siteTitle: string;
     siteDescription: string;
+    siteUrl: string;
     contactEmail: string;
     contactPhone: string;
     contactAddress: string;
@@ -156,8 +157,9 @@ export default function SettingsPage() {
 
   const [form, setForm] = useState<FormData>({
     general: {
-      siteName: '',
+      siteTitle: '',
       siteDescription: '',
+      siteUrl: '',
       contactEmail: '',
       contactPhone: '',
       contactAddress: '',
@@ -195,6 +197,7 @@ export default function SettingsPage() {
               siteTitle: pickString('siteName') || prev.general.siteTitle,
               siteDescription:
                 pickString('siteDescription') || prev.general.siteDescription,
+              siteUrl: pickString('siteUrl') || prev.general.siteUrl,
               contactEmail:
                 pickString('contactEmail') || prev.general.contactEmail,
               contactPhone:
@@ -252,6 +255,7 @@ export default function SettingsPage() {
       siteName: form.general.siteTitle,
       siteDescription: form.general.siteDescription,
       logoUrl: form.general.logoUrl,
+      siteUrl: form.general.siteUrl,
       contactEmail: form.general.contactEmail,
       contactPhone: form.general.contactPhone,
       contactAddress: form.general.contactAddress,
@@ -472,28 +476,49 @@ export default function SettingsPage() {
               </div>
               <div className="at-form-section__body">
                 <div className="at-form-grid">
-                  <label className="at-field">
-                    <span className="at-field__label">عنوان سایت</span>
-                    <input
-                      type="text"
-                      className="at-input"
-                      value={form.general.siteTitle}
-                      onChange={(e) => set('general', 'siteTitle', e.target.value)}
-                      placeholder="عنوان سایت را وارد کنید"
-                      disabled={loading}
-                    />
-                  </label>
-                  <label className="at-field">
-                    <span className="at-field__label">توضیحات سایت</span>
-                    <input
-                      type="text"
-                      className="at-input"
-                      value={form.general.siteDescription}
-                      onChange={(e) => set('general', 'siteDescription', e.target.value)}
-                      placeholder="توضیحات کوتاه"
-                      disabled={loading}
-                    />
-                  </label>
+                    <label className="at-field">
+                      <span className="at-field__label">عنوان سایت</span>
+                      <input
+                        type="text"
+                        className="at-input"
+                        value={form.general.siteTitle}
+                        onChange={(e) => set('general', 'siteTitle', e.target.value)}
+                        placeholder="عنوان سایت را وارد کنید"
+                        disabled={loading}
+                      />
+                    </label>
+                    <label className="at-field">
+                      <span className="at-field__label">آدرس سایت (دامنه)</span>
+                      <input
+                        type="url"
+                        className="at-input"
+                        dir="ltr"
+                        value={form.general.siteUrl}
+                        onChange={(e) => set('general', 'siteUrl', e.target.value)}
+                        placeholder="https://financialmarket.page"
+                        disabled={loading}
+                      />
+                      <span
+                        style={{
+                          fontSize: '0.75rem',
+                          color: 'var(--at-fg-subtle)',
+                          marginTop: '0.25rem',
+                        }}
+                      >
+                        در sitemap، robots.txt و لینک‌های اشتراک‌گذاری استفاده می‌شود
+                      </span>
+                    </label>
+                    <label className="at-field">
+                      <span className="at-field__label">توضیحات سایت</span>
+                      <input
+                        type="text"
+                        className="at-input"
+                        value={form.general.siteDescription}
+                        onChange={(e) => set('general', 'siteDescription', e.target.value)}
+                        placeholder="توضیحات کوتاه"
+                        disabled={loading}
+                      />
+                    </label>
                   <label className="at-field">
                     <span className="at-field__label">ایمیل تماس</span>
                     <input

@@ -16,7 +16,7 @@ export interface PageProps {
   params: Promise<{ slug: string[] }>;
 }
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://blogmarketfinansial.ir';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://financialmarket.page';
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;

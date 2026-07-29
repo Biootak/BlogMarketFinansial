@@ -8,13 +8,17 @@
 import { Home, LogIn, ShieldOff } from 'lucide-react';
 import type { Metadata } from 'next';
 import { StatePage } from '@/components/StatePage';
+import { getSystemSettingsData } from '@/data/getSystemSettings';
 
 export const metadata: Metadata = {
   title: 'دسترسی غیرمجاز | ۴۰۳',
   robots: { index: false },
 };
 
-export default function ForbiddenPage() {
+export default async function ForbiddenPage() {
+  const settings = await getSystemSettingsData();
+  const supportEmail = settings.contactEmail ?? 'support@financialmarket.page';
+
   return (
     <StatePage
       number="403"
@@ -41,7 +45,7 @@ export default function ForbiddenPage() {
       ]}
       foot={{
         label: 'نیاز به کمک دارید؟',
-        href: 'mailto:support@blogmarketfinansial.ir',
+        href: `mailto:${supportEmail}`,
       }}
       tone="warn"
     />

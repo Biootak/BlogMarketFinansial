@@ -8,6 +8,7 @@ const SETTINGS_FALLBACK: SiteSettings = {
   siteName: null,
   siteDescription: null,
   logoUrl: null,
+  siteUrl: null,
   contactEmail: null,
   contactPhone: null,
   contactAddress: null,
@@ -16,6 +17,7 @@ const SETTINGS_FALLBACK: SiteSettings = {
   twitter: null,
   whatsapp: null,
   maintenanceMode: false,
+  maintenanceMessage: null,
   cacheEnabled: true,
 };
 
@@ -50,6 +52,7 @@ export const getSystemSettingsCached = unstable_cache(
         siteName: settings.siteName,
         siteDescription: settings.siteDescription,
         logoUrl: settings.logoUrl,
+        siteUrl: pickString('siteUrl'),
         contactEmail: pickString('contactEmail'),
         contactPhone: pickString('contactPhone'),
         contactAddress: pickString('contactAddress'),
@@ -58,6 +61,7 @@ export const getSystemSettingsCached = unstable_cache(
         twitter: settings.twitter,
         whatsapp: settings.whatsapp,
         maintenanceMode: settings.maintenanceMode,
+        maintenanceMessage: pickString('maintenanceMessage'),
         cacheEnabled: settings.cacheEnabled,
       };
     } catch {
