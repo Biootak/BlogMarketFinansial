@@ -1,18 +1,18 @@
 // src/app/dashboard/exchange-rates/_components/SourceBadge.tsx
-// 2026-06-20: بج منبع با رنگ متمایز (auto=emerald, manual=amber)
+// 2026-07-29: Source pill — neutral English labels, no upstream source mentioned.
 
 import type { MarketRateProvider } from '@/lib/market-rates';
 
 interface SourceBadgeProps {
   provider: MarketRateProvider | string;
-  tgjuKey?: string | null;
 }
 
-export default function SourceBadge({ provider, tgjuKey }: SourceBadgeProps) {
+export default function SourceBadge({ provider }: SourceBadgeProps) {
   if (provider === 'auto') {
     return (
       <span
-        className="inline-flex items-center gap-1.5 font-semibold"
+        className="inline-flex items-center font-semibold"
+        dir="ltr"
         style={{
           fontSize: 'var(--ds-text-xs)',
           padding: '0.25rem 0.625rem',
@@ -20,8 +20,9 @@ export default function SourceBadge({ provider, tgjuKey }: SourceBadgeProps) {
           background: 'color-mix(in oklch, var(--ds-accent-emerald) 14%, transparent)',
           color: 'var(--ds-accent-emerald)',
           border: '1px solid color-mix(in oklch, var(--ds-accent-emerald) 30%, transparent)',
+          gap: '0.4rem',
         }}
-        aria-label={`منبع خودکار از ${tgjuKey ?? 'TGJU'}`}
+        aria-label="خودکار"
       >
         <span
           aria-hidden
@@ -33,14 +34,14 @@ export default function SourceBadge({ provider, tgjuKey }: SourceBadgeProps) {
             boxShadow: '0 0 0 3px color-mix(in oklch, var(--ds-accent-emerald) 18%, transparent)',
           }}
         />
-        TGJU
+        زنده
       </span>
     );
   }
 
   return (
     <span
-      className="inline-flex items-center gap-1.5 font-semibold"
+      className="inline-flex items-center font-semibold"
       style={{
         fontSize: 'var(--ds-text-xs)',
         padding: '0.25rem 0.625rem',
@@ -48,8 +49,9 @@ export default function SourceBadge({ provider, tgjuKey }: SourceBadgeProps) {
         background: 'color-mix(in oklch, var(--ds-accent-amber) 14%, transparent)',
         color: 'var(--ds-accent-amber)',
         border: '1px solid color-mix(in oklch, var(--ds-accent-amber) 30%, transparent)',
+        gap: '0.4rem',
       }}
-      aria-label="منبع دستی"
+      aria-label="دستی"
     >
       <span
         aria-hidden

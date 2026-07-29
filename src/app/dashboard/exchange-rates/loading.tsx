@@ -1,39 +1,82 @@
 // src/app/dashboard/exchange-rates/loading.tsx
-// 2026-06-20: DS-aligned loading skeleton — هم‌شکل با layout اصلی
+// 2026-07-29: Skeleton matching the new layout — header + stat strip + catalog + table.
 
-import { Skeleton } from '@/components/ui/skeleton';
+import { PageHeader } from '@/components/Dashboard/primitives';
 
-export default function ExchangeRatesLoading() {
+export default function Loading() {
   return (
     <main
       className="mx-auto flex flex-col"
       style={{
         maxWidth: '1200px',
         padding: 'var(--ds-space-6) var(--ds-space-5)',
-        gap: 'var(--ds-space-8)',
+        gap: 'var(--ds-space-7)',
       }}
       aria-busy="true"
-      aria-label="در حال بارگذاری نرخ‌ها"
+      aria-live="polite"
     >
-      {/* Header skeleton */}
-      <div className="flex flex-col" style={{ gap: 'var(--ds-space-2)' }}>
-        <Skeleton className="h-3 w-16" />
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-4 w-96 max-w-full" />
-      </div>
+      <PageHeader
+        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'نرخ ارزها' }]}
+        title="نرخ ارزها"
+        description="در حال بارگذاری…"
+      />
 
-      {/* StatCards skeleton */}
-      <div className="grid grid-cols-1 sm:grid-cols-3" style={{ gap: 'var(--ds-space-4)' }}>
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-20" style={{ borderRadius: 'var(--ds-radius-lg)' }} />
+      {/* Stat strip skeleton */}
+      <div
+        className="grid"
+        style={{
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 11rem), 1fr))',
+          gap: 'var(--ds-space-3)',
+        }}
+      >
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div
+            key={i}
+            style={{
+              height: '5.5rem',
+              background: 'var(--ds-canvas-subtle)',
+              border: '1px solid var(--ds-border-subtle)',
+              borderRadius: 'var(--ds-radius-md)',
+            }}
+            className="animate-pulse"
+          />
         ))}
       </div>
 
+      {/* Catalog skeleton */}
+      <div
+        style={{
+          background: 'var(--ds-surface)',
+          border: '1px solid var(--ds-border-subtle)',
+          borderRadius: 'var(--ds-radius-lg)',
+          padding: 'var(--ds-space-5)',
+          minHeight: '14rem',
+        }}
+        className="animate-pulse"
+      />
+
       {/* Toolbar skeleton */}
-      <Skeleton className="h-12" style={{ borderRadius: 'var(--ds-radius-md)' }} />
+      <div
+        style={{
+          height: '3rem',
+          background: 'var(--ds-canvas-subtle)',
+          border: '1px solid var(--ds-border-subtle)',
+          borderRadius: 'var(--ds-radius-md)',
+        }}
+        className="animate-pulse"
+      />
 
       {/* Table skeleton */}
-      <Skeleton className="h-96" style={{ borderRadius: 'var(--ds-radius-lg)' }} />
+      <div
+        style={{
+          background: 'var(--ds-surface)',
+          border: '1px solid var(--ds-border-subtle)',
+          borderRadius: 'var(--ds-radius-lg)',
+          padding: 'var(--ds-space-3)',
+          minHeight: '24rem',
+        }}
+        className="animate-pulse"
+      />
     </main>
   );
 }

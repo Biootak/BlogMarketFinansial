@@ -24,7 +24,7 @@ import {
   Zap,
 } from 'lucide-react';
 
-import { CountUp } from '@/components/Dashboard/primitives/CountUp';
+import CountUp from '@/components/Dashboard/primitives/CountUp';
 import { Spotlight } from '@/components/Dashboard/primitives/Spotlight';
 import type {
   ErrorEvent,

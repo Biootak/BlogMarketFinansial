@@ -20,7 +20,7 @@ import {
 
 import { Spotlight } from '@/components/Dashboard/primitives/Spotlight';
 import type { JobSnapshot, JobStatus, JobSummary } from '@/lib/jobs';
-import { cancelJob, retryJob } from '@/lib/jobs';
+import { cancelJob, retryJob } from '@/actions/jobs-actions';
 import s from './JobCenter.module.css';
 
 interface Props {

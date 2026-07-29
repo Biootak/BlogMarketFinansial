@@ -91,7 +91,7 @@ export default function DiscoveryCommand({ open, onOpenChange, onSelect }: Props
             <Command.Input
               value={query}
               onValueChange={setQuery}
-              placeholder="جست‌وجو در نرخ‌های TGJU…"
+              placeholder="جست‌وجو در نرخ‌ها…"
               autoFocus
               style={{
                 flex: 1,

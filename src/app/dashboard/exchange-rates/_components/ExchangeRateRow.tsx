@@ -1,11 +1,16 @@
 // src/app/dashboard/exchange-rates/_components/ExchangeRateRow.tsx
-// 2026-06-20: یک ردیف جدول با hover-reveal actions (ویرایش/حذف)
+// 2026-07-29: Table row with hover-reveal actions + responsive hide for
+// less-important columns.
 
 'use client';
 
 import type { MarketRateProvider, MarketRateUnit } from '@/lib/market-rates';
-import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import {
+  HiEllipsisHorizontal,
+  HiOutlinePencil,
+  HiOutlineTrash,
+} from 'react-icons/hi2';
 import SourceBadge from './SourceBadge';
 import ValueCell from './ValueCell';
 
@@ -36,7 +41,7 @@ export default function ExchangeRateRow({ row, onEdit, onDelete }: RowProps) {
   const [hovered, setHovered] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  // بستن منو با کلیک بیرون یا Escape
+  // Close menu on click outside or Escape
   useEffect(() => {
     if (!menuOpen) return;
     const onClick = (e: MouseEvent) => {
@@ -96,9 +101,9 @@ export default function ExchangeRateRow({ row, onEdit, onDelete }: RowProps) {
         {row.displayNameFa}
       </td>
 
-      {/* Symbol (monospace, LTR digits) */}
+      {/* Symbol (monospace, LTR) — hidden on small */}
       <td
-        className="font-mono"
+        className="font-mono sm:hidden md:table-cell"
         style={{
           padding: 'var(--ds-space-3) var(--ds-space-4)',
           fontSize: 'var(--ds-text-xs)',
@@ -110,8 +115,9 @@ export default function ExchangeRateRow({ row, onEdit, onDelete }: RowProps) {
         {row.symbol}
       </td>
 
-      {/* Group */}
+      {/* Group — hidden on sm+md */}
       <td
+        className="hidden md:table-cell"
         style={{
           padding: 'var(--ds-space-3) var(--ds-space-4)',
           fontSize: 'var(--ds-text-sm)',
@@ -131,20 +137,24 @@ export default function ExchangeRateRow({ row, onEdit, onDelete }: RowProps) {
         <ValueCell rawValue={rawValue} unit={row.unit} decimals={row.decimals} />
       </td>
 
-      {/* Source */}
-      <td style={{ padding: 'var(--ds-space-3) var(--ds-space-4)' }}>
-        <SourceBadge provider={row.provider} tgjuKey={row.tgjuKey} />
+      {/* Source — hidden on sm+md */}
+      <td
+        className="hidden md:table-cell"
+        style={{ padding: 'var(--ds-space-3) var(--ds-space-4)' }}
+      >
+        <SourceBadge provider={row.provider} />
       </td>
 
       {/* Active status */}
       <td style={{ padding: 'var(--ds-space-3) var(--ds-space-4)' }}>
         <span
           aria-label={row.active ? 'فعال' : 'غیرفعال'}
-          className="inline-flex items-center gap-1.5"
+          className="inline-flex items-center"
           style={{
             fontSize: 'var(--ds-text-xs)',
             fontWeight: 600,
             color: row.active ? 'var(--ds-accent-emerald)' : 'var(--ds-text-muted)',
+            gap: '0.4rem',
           }}
         >
           <span
@@ -199,7 +209,7 @@ export default function ExchangeRateRow({ row, onEdit, onDelete }: RowProps) {
               }
             }}
           >
-            <MoreHorizontal aria-hidden style={{ width: '1rem', height: '1rem' }} />
+            <HiEllipsisHorizontal aria-hidden style={{ width: '1.1rem', height: '1.1rem' }} />
           </button>
 
           {menuOpen && (
@@ -226,7 +236,7 @@ export default function ExchangeRateRow({ row, onEdit, onDelete }: RowProps) {
                   setMenuOpen(false);
                   onEdit(row);
                 }}
-                className="flex items-center gap-2 w-full text-start transition-colors"
+                className="flex items-center w-full text-start transition-colors"
                 style={{
                   padding: '0.5rem 0.75rem',
                   fontSize: 'var(--ds-text-sm)',
@@ -235,6 +245,7 @@ export default function ExchangeRateRow({ row, onEdit, onDelete }: RowProps) {
                   border: 'none',
                   borderRadius: 'var(--ds-radius-sm)',
                   cursor: 'pointer',
+                  gap: '0.5rem',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = 'var(--ds-canvas-subtle)';
@@ -243,7 +254,7 @@ export default function ExchangeRateRow({ row, onEdit, onDelete }: RowProps) {
                   e.currentTarget.style.background = 'transparent';
                 }}
               >
-                <Pencil aria-hidden style={{ width: '0.875rem', height: '0.875rem' }} />
+                <HiOutlinePencil aria-hidden style={{ width: '0.9rem', height: '0.9rem' }} />
                 ویرایش
               </button>
               <button
@@ -253,7 +264,7 @@ export default function ExchangeRateRow({ row, onEdit, onDelete }: RowProps) {
                   setMenuOpen(false);
                   onDelete(row);
                 }}
-                className="flex items-center gap-2 w-full text-start transition-colors"
+                className="flex items-center w-full text-start transition-colors"
                 style={{
                   padding: '0.5rem 0.75rem',
                   fontSize: 'var(--ds-text-sm)',
@@ -262,6 +273,7 @@ export default function ExchangeRateRow({ row, onEdit, onDelete }: RowProps) {
                   border: 'none',
                   borderRadius: 'var(--ds-radius-sm)',
                   cursor: 'pointer',
+                  gap: '0.5rem',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background =
@@ -271,7 +283,7 @@ export default function ExchangeRateRow({ row, onEdit, onDelete }: RowProps) {
                   e.currentTarget.style.background = 'transparent';
                 }}
               >
-                <Trash2 aria-hidden style={{ width: '0.875rem', height: '0.875rem' }} />
+                <HiOutlineTrash aria-hidden style={{ width: '0.9rem', height: '0.9rem' }} />
                 حذف
               </button>
             </div>

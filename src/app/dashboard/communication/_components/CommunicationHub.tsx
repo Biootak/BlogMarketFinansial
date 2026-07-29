@@ -26,7 +26,7 @@ import type {
   Channel,
   CommunicationSnapshot,
 } from '@/lib/communication';
-import { createAnnouncement, publishAnnouncement, archiveAnnouncement } from '@/lib/communication';
+import { createAnnouncement, publishAnnouncement, archiveAnnouncement } from '@/actions/communication-actions';
 import s from './CommunicationHub.module.css';
 
 interface Props {

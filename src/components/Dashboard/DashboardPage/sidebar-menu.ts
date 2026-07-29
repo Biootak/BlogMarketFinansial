@@ -25,7 +25,6 @@ import {
   HiOutlineHome,
   HiOutlineInboxArrowDown,
   HiOutlineKey,
-  HiOutlineListBullet,
   HiOutlineMapPin,
   HiOutlineMegaphone,
   HiOutlineRadio,
@@ -300,15 +299,8 @@ export function getMenu(role: UserRole): NavSection[] {
     title: 'مدیریت دستگاه‌های متصل',
   };
 
-  // ── Admin: rate-lists, credit-rates, billing-address, subscription ────
-  const rateLists: MenuItem = {
-    id: 'rateLists',
-    href: '/dashboard/rate-lists',
-    icon: HiOutlineListBullet({ className: ICON_CLASS }),
-    label: 'فهرست نرخ‌ها',
-    title: 'فهرست‌های نرخ سفارشی تیکر',
-  };
-
+  // ── Admin: credit-rates, billing-address, subscription ────
+  // Note: rate-lists (فهرست نرخ‌ها) merged into exchange-rates via tab=lists — duplicate sidebar entry removed.
   const creditRates: MenuItem = {
     id: 'creditRates',
     href: '/dashboard/credit-rates',
@@ -674,7 +666,6 @@ export function getMenu(role: UserRole): NavSection[] {
             exchangeStaff,
             transferProviders,
             exchangeRates,
-            rateLists,
             exchangeQuotes,
             creditRates,
             advertisements,
@@ -730,7 +721,6 @@ export function getMenu(role: UserRole): NavSection[] {
             exchangeStaff,
             transferProviders,
             exchangeRates,
-            rateLists,
             exchangeQuotes,
             creditRates,
             advertisements,

@@ -1,10 +1,11 @@
 // src/app/dashboard/exchange-rates/_components/ExchangeRatesTable.tsx
-// 2026-06-20: جدول با sort و filter client-side + empty state
+// 2026-07-29: Premium table with sort, filter (delegated to parent), RTL-safe
+// columns, sticky header, hover affordance, and an inline empty state.
 
 'use client';
 
-import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { HiChevronDown, HiChevronUp, HiOutlineCircleStack } from 'react-icons/hi2';
 import ExchangeRateRow, { type RateRowData } from './ExchangeRateRow';
 import type { GroupFilter, SourceFilter } from './ExchangeRatesToolbar';
 
@@ -25,18 +26,24 @@ interface ColumnDef {
   label: string;
   sortable: boolean;
   align?: 'start' | 'end' | 'center';
+  hideOn?: ('sm' | 'md' | 'lg')[];
 }
 
 const COLUMNS: ColumnDef[] = [
   { key: 'priority', label: 'اولویت', sortable: true },
   { key: 'displayNameFa', label: 'نام', sortable: true },
-  { key: null, label: 'نماد', sortable: false },
-  { key: null, label: 'گروه', sortable: false },
+  { key: null, label: 'نماد', sortable: false, hideOn: ['sm'] },
+  { key: null, label: 'گروه', sortable: false, hideOn: ['sm', 'md'] },
   { key: null, label: 'مقدار', sortable: false },
-  { key: null, label: 'منبع', sortable: false },
+  { key: null, label: 'منبع', sortable: false, hideOn: ['sm', 'md'] },
   { key: null, label: 'وضعیت', sortable: false },
   { key: null, label: '', sortable: false, align: 'end' },
 ];
+
+const hideClass = (hides?: ('sm' | 'md' | 'lg')[]) => {
+  if (!hides?.length) return '';
+  return hides.map((bp) => `${bp}:hidden`).join(' ');
+};
 
 export default function ExchangeRatesTable({
   rows,
@@ -100,13 +107,13 @@ export default function ExchangeRatesTable({
             height: '3rem',
             borderRadius: 'var(--ds-radius-full)',
             background: 'color-mix(in oklch, var(--ds-brand-500) 12%, transparent)',
+            color: 'var(--ds-brand-500)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '1.5rem',
           }}
         >
-          ◌
+          <HiOutlineCircleStack style={{ width: '1.5rem', height: '1.5rem' }} />
         </div>
         <p
           className="font-semibold"
@@ -125,7 +132,7 @@ export default function ExchangeRatesTable({
             margin: 0,
           }}
         >
-          فیلترها را تغییر دهید یا نرخ جدیدی اضافه کنید.
+          فیلترها را تغییر دهید یا از کاتالوگ بالا یک نرخ اضافه کنید.
         </p>
       </div>
     );
@@ -159,7 +166,7 @@ export default function ExchangeRatesTable({
                   aria-sort={
                     sortKey === col.key ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
                   }
-                  className="font-semibold uppercase"
+                  className={`font-semibold uppercase ${hideClass(col.hideOn)}`}
                   style={{
                     padding: 'var(--ds-space-3) var(--ds-space-4)',
                     fontSize: 'var(--ds-text-xs)',
@@ -168,13 +175,17 @@ export default function ExchangeRatesTable({
                     textAlign: align,
                     whiteSpace: 'nowrap',
                     borderBottom: '1px solid var(--ds-border-subtle)',
+                    position: 'sticky',
+                    top: 0,
+                    background: 'var(--ds-canvas-subtle)',
+                    zIndex: 1,
                   }}
                 >
                   {col.sortable && col.key ? (
                     <button
                       type="button"
                       onClick={() => toggleSort(col.key as SortKey)}
-                      className="inline-flex items-center gap-1 transition-colors"
+                      className="inline-flex items-center transition-colors"
                       style={{
                         background: 'transparent',
                         border: 'none',
@@ -184,17 +195,15 @@ export default function ExchangeRatesTable({
                         letterSpacing: 'inherit',
                         textTransform: 'inherit',
                         cursor: 'pointer',
+                        gap: '0.25rem',
                       }}
                     >
                       {col.label}
                       {sortKey === col.key ? (
                         sortDir === 'asc' ? (
-                          <ChevronUp aria-hidden style={{ width: '0.75rem', height: '0.75rem' }} />
+                          <HiChevronUp aria-hidden style={{ width: '0.8rem', height: '0.8rem' }} />
                         ) : (
-                          <ChevronDown
-                            aria-hidden
-                            style={{ width: '0.75rem', height: '0.75rem' }}
-                          />
+                          <HiChevronDown aria-hidden style={{ width: '0.8rem', height: '0.8rem' }} />
                         )
                       ) : null}
                     </button>

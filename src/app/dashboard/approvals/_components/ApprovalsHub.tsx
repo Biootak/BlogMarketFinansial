@@ -28,7 +28,7 @@ import type {
   ApprovalType,
   StepStatus,
 } from '@/lib/approvals';
-import { decideStep, cancelApproval } from '@/lib/approvals';
+import { decideStep, cancelApproval } from '@/actions/approvals-actions';
 import s from './ApprovalsHub.module.css';
 
 interface Props {

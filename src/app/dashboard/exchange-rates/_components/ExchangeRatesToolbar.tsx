@@ -1,10 +1,12 @@
 // src/app/dashboard/exchange-rates/_components/ExchangeRatesToolbar.tsx
-// 2026-06-20: نوار ابزار با جست‌وجو + SegmentedControl + CTA
+// 2026-07-29: Toolbar — search + source segmented + group filter + add CTA.
+// Uses custom select chevron and clean focus styles. RTL-safe via logical props.
+
 'use client';
 
 import { SegmentedControl } from '@/components/ds';
-import { Plus, Search } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { HiOutlineMagnifyingGlass, HiOutlinePlus } from 'react-icons/hi2';
 
 export type SourceFilter = 'all' | 'auto' | 'manual';
 export type GroupFilter =
@@ -26,16 +28,38 @@ interface ToolbarProps {
   onAddClick: () => void;
   totalShown?: number;
   totalAll?: number;
+  registryTotal?: number;
 }
 
 const GROUP_LABELS: Record<GroupFilter, string> = {
   all: 'همه گروه‌ها',
-  afghan: 'افغان',
-  'iran-forex': 'فارکس ایران',
+  afghan: 'محلی',
+  'iran-forex': 'فارکس',
   'iran-coin': 'سکه',
   'iran-gold': 'طلا',
   global: 'جهانی',
   minor: 'سایر',
+};
+
+const selectStyle: React.CSSProperties = {
+  height: '2.4rem',
+  paddingInlineStart: '0.85rem',
+  paddingInlineEnd: '2.4rem',
+  fontSize: 'var(--ds-text-sm)',
+  color: 'var(--ds-text-primary)',
+  background: 'var(--ds-canvas-subtle)',
+  border: '1px solid var(--ds-border-subtle)',
+  borderRadius: 'var(--ds-radius-md)',
+  appearance: 'none',
+  WebkitAppearance: 'none',
+  cursor: 'pointer',
+  outline: 'none',
+  fontFamily: 'inherit',
+  backgroundImage:
+    "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>\")",
+  backgroundRepeat: 'no-repeat',
+  backgroundPosition: 'left 0.8rem center',
+  backgroundSize: '12px',
 };
 
 export default function ExchangeRatesToolbar({
@@ -48,11 +72,11 @@ export default function ExchangeRatesToolbar({
   onAddClick,
   totalShown,
   totalAll,
+  registryTotal,
 }: ToolbarProps) {
   const [localQuery, setLocalQuery] = useState(query);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // وقتی query از بیرون reset شد، local را هم sync کن
   useEffect(() => {
     setLocalQuery(query);
   }, [query]);
@@ -60,25 +84,31 @@ export default function ExchangeRatesToolbar({
   const handleQueryChange = (v: string) => {
     setLocalQuery(v);
     if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => onQueryChange(v), 300);
+    timerRef.current = setTimeout(() => onQueryChange(v), 280);
   };
+
+  const coverage =
+    typeof registryTotal === 'number' && registryTotal > 0 && typeof totalAll === 'number'
+      ? Math.round((totalAll / registryTotal) * 100)
+      : null;
 
   return (
     <div
-      className="flex flex-col gap-3 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between"
+      className="flex flex-col backdrop-blur-sm gap-3 sm:flex-row sm:items-center sm:justify-between"
       style={{
         padding: 'var(--ds-space-3) var(--ds-space-4)',
         background: 'var(--ds-surface)',
         border: '1px solid var(--ds-border-subtle)',
         borderRadius: 'var(--ds-radius-md)',
+        boxShadow: 'var(--ds-shadow-sm)',
       }}
       role="search"
-      aria-label="ابزار فیلتر نرخ‌ها"
+      aria-label="فیلتر و جستجوی نرخ‌ها"
     >
       <div className="flex flex-1 flex-wrap items-center gap-3 min-w-0">
         {/* Search */}
-        <div className="relative flex-1 min-w-[12rem]">
-          <Search
+        <div className="relative flex-1" style={{ minWidth: '12rem' }}>
+          <HiOutlineMagnifyingGlass
             aria-hidden
             style={{
               position: 'absolute',
@@ -95,12 +125,12 @@ export default function ExchangeRatesToolbar({
             type="search"
             value={localQuery}
             onChange={(e) => handleQueryChange(e.target.value)}
-            placeholder="جست‌وجوی نام یا نماد…"
-            aria-label="جست‌وجوی نرخ"
+            placeholder="جستجو بر اساس نام یا نماد…"
+            aria-label="جستجوی نرخ‌ها"
             className="w-full outline-none transition-colors"
             style={{
-              height: '2.25rem',
-              paddingInlineStart: '2.25rem',
+              height: '2.4rem',
+              paddingInlineStart: '2.4rem',
               paddingInlineEnd: '0.75rem',
               fontSize: 'var(--ds-text-sm)',
               color: 'var(--ds-text-primary)',
@@ -117,7 +147,7 @@ export default function ExchangeRatesToolbar({
           onChange={(v) => onSourceChange(v as SourceFilter)}
           options={[
             { value: 'all', label: 'همه' },
-            { value: 'auto', label: 'خودکار' },
+            { value: 'auto', label: 'زنده' },
             { value: 'manual', label: 'دستی' },
           ]}
           ariaLabel="فیلتر منبع"
@@ -128,17 +158,7 @@ export default function ExchangeRatesToolbar({
           value={group}
           onChange={(e) => onGroupChange(e.target.value as GroupFilter)}
           aria-label="فیلتر گروه"
-          className="outline-none cursor-pointer"
-          style={{
-            height: '2.25rem',
-            paddingInlineStart: '0.75rem',
-            paddingInlineEnd: '2.25rem',
-            fontSize: 'var(--ds-text-sm)',
-            color: 'var(--ds-text-primary)',
-            background: 'var(--ds-canvas-subtle)',
-            border: '1px solid var(--ds-border-subtle)',
-            borderRadius: 'var(--ds-radius-md)',
-          }}
+          style={selectStyle}
         >
           {Object.entries(GROUP_LABELS).map(([k, label]) => (
             <option key={k} value={k}>
@@ -147,28 +167,36 @@ export default function ExchangeRatesToolbar({
           ))}
         </select>
 
-        {/* Result counter (اختیاری) */}
-        {typeof totalShown === 'number' && typeof totalAll === 'number' && (
-          <span
-            aria-live="polite"
-            style={{
-              fontSize: 'var(--ds-text-xs)',
-              color: 'var(--ds-text-muted)',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {totalShown.toLocaleString('fa-IR')} از {totalAll.toLocaleString('fa-IR')}
+        {/* Counter */}
+        <div
+          className="flex items-center"
+          style={{ gap: '0.4rem', fontSize: 'var(--ds-text-xs)', color: 'var(--ds-text-muted)' }}
+          aria-live="polite"
+        >
+          <span className="tabular-nums">
+            {(totalShown ?? 0).toLocaleString('fa-IR')}
+            <span style={{ opacity: 0.5 }}> / </span>
+            {(totalAll ?? 0).toLocaleString('fa-IR')}
           </span>
-        )}
+          <span>نرخ</span>
+          {coverage !== null && (
+            <span
+              className="font-semibold"
+              style={{ color: 'var(--ds-brand-500)' }}
+            >
+              · پوشش {coverage.toLocaleString('fa-IR')}٪
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Primary CTA */}
       <button
         type="button"
         onClick={onAddClick}
-        className="inline-flex items-center justify-center gap-1.5 font-semibold transition-all"
+        className="inline-flex items-center justify-center font-semibold transition-all"
         style={{
-          height: '2.25rem',
+          height: '2.4rem',
           paddingInline: 'var(--ds-space-4)',
           fontSize: 'var(--ds-text-sm)',
           color: 'var(--ds-text-inverse)',
@@ -177,6 +205,7 @@ export default function ExchangeRatesToolbar({
           boxShadow: 'var(--ds-shadow-sm)',
           border: 'none',
           cursor: 'pointer',
+          gap: '0.4rem',
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.background = 'var(--ds-brand-600)';
@@ -194,8 +223,8 @@ export default function ExchangeRatesToolbar({
           e.currentTarget.style.outline = 'none';
         }}
       >
-        <Plus aria-hidden style={{ width: '1rem', height: '1rem' }} />
-        افزودن نرخ جدید
+        <HiOutlinePlus aria-hidden style={{ width: '1rem', height: '1rem' }} />
+        افزودن دستی
       </button>
     </div>
   );

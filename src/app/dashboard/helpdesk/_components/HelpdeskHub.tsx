@@ -31,7 +31,7 @@ import {
   replyToTicket,
   updateTicketStatus,
   assignTicket,
-} from '@/lib/tickets';
+} from '@/actions/tickets-actions';
 import s from './HelpdeskHub.module.css';
 
 interface Props {
