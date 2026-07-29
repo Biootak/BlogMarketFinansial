@@ -242,7 +242,7 @@ function ProviderRow({
             {p.providerName}
             {isBest && (
               <span className={s.bestBadge} aria-label="ارزان‌ترین">
-                <BadgeCheck className="w-3 h-3" aria-hidden />
+                <BadgeCheck size={12} strokeWidth={2.5} className={s.bestBadgeIcon} aria-hidden />
                 ارزان‌ترین
               </span>
             )}

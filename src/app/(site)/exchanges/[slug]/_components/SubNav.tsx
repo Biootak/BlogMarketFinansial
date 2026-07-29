@@ -86,8 +86,11 @@ export default function SubNav({ exchange }: Props) {
           ? ([
               {
                 key: 'services',
+                // ۲۰۲۶-۰۷-۲۹: لینک در sub-route ها به صفحهٔ اصلی صرافی
+                // با anchor «#services» می‌رود تا کاربر از context صرافی جدا نشود.
+                // قبلاً: `/services/compare?exchange=...` (URL جدا و گیج‌کننده)
                 label: 'خدمات',
-                href: `/services/compare?exchange=${exchange.slug}`,
+                href: `/exchanges/${exchange.slug}#services`,
                 icon: Banknote,
                 inPage: false,
               },

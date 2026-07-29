@@ -5,7 +5,7 @@
   background: var(--ds-canvas);
   direction: rtl;
   color: var(--ds-text-primary);
-  font-family: var(--ds-font, 'Vazirmatn', system-ui, sans-serif);
+  font-family: var(--font-estedad), system-ui, sans-serif;
 }
 
 /* ═══ HERO — Trading Floor ═══════════════════════════════════════════ */
@@ -194,6 +194,12 @@
   .calcGrid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ۲۰۲۶-۰۷-۲۹: حالت تک‌ستونی وقتی فقط LiveTickerPanel هست (بدون ماشین‌حساب).
+   گرید ۲ ستون دارد ولی ستون دوم خالی‌ست — calcColFull کل عرض را می‌گیرد. */
+.calcColFull {
+  grid-column: 1 / -1;
 }
 
 /* ── stats row wrap ──────────────────────────────────────────────── */

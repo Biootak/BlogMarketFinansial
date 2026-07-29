@@ -270,3 +270,68 @@
   font-size: var(--ds-text-sm);
   color: var(--ds-text-muted);
 }
+
+/* ── Dark tone override (وقتی روی پس‌زمینه‌ی تیره استفاده می‌شود) ── */
+.panelDark {
+  background: oklch(16% 0.018 250 / 0.95);
+  border-color: oklch(35% 0.04 250 / 0.7);
+  box-shadow:
+    0 0 0 1px oklch(35% 0.04 250 / 0.5),
+    0 4px 8px -2px oklch(0% 0 0 / 0.4),
+    0 24px 60px -12px oklch(0% 0 0 / 0.55);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  color: oklch(95% 0.005 250);
+}
+
+.panelDark .search {
+  border-block-end-color: oklch(35% 0.04 250 / 0.6);
+}
+
+.panelDark .searchIcon {
+  color: oklch(60% 0.02 250);
+}
+
+.panelDark .searchInput {
+  color: oklch(95% 0.005 250);
+}
+
+.panelDark .searchInput::placeholder {
+  color: oklch(55% 0.01 250);
+}
+
+.panelDark .groupLabel {
+  color: oklch(65% 0.02 250);
+}
+
+.panelDark .option:hover,
+.panelDark .option:focus-visible {
+  background: oklch(28% 0.04 250 / 0.6);
+}
+
+.panelDark .optionSelected {
+  background: oklch(35% 0.1 165 / 0.18);
+}
+
+.panelDark .optionSelected:hover,
+.panelDark .optionSelected:focus-visible {
+  background: oklch(35% 0.1 165 / 0.28);
+}
+
+.panelDark .optBadge {
+  background: oklch(28% 0.04 250 / 0.7);
+  border-color: oklch(45% 0.06 250 / 0.5);
+  color: oklch(78% 0.12 165);
+}
+
+.panelDark .optLabel {
+  color: oklch(95% 0.005 250);
+}
+
+.panelDark .optCheck {
+  color: oklch(78% 0.12 165);
+}
+
+.panelDark .empty {
+  color: oklch(60% 0.01 250);
+}

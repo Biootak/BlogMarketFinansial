@@ -362,6 +362,7 @@ const MobileBottomNav: FC<Props> = ({ isLoggedIn }) => {
       dir="rtl"
     >
       <DndContext
+        id="mobile-bottom-nav-dnd"
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}

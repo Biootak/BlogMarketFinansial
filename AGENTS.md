@@ -1,9 +1,29 @@
 # AGENTS.md
 
-> Persian-first financial blog (`blogmarketfinansial.ir`) on Next.js 16 + Prisma + PostgreSQL + NextAuth v5.
-> User-facing copy is Persian; code/commands/paths always in English.
+> **این سایت مخصوص افغانستان است** — بازار صرافی‌های افغانستان، نرخ‌های تبدیل افغانی (AFN)، و کاربران افغان.
+> Platform: Next.js 16 + Prisma + PostgreSQL + NextAuth v5.
+> User-facing copy is Persian (Dari); code/commands/paths always in English.
 
 ---
+
+## 🇦🇫 Domain Priority — Afghanistan-first (always-on)
+
+> **قانون P0:** این سایت **مخصوص افغانستان** است. هر تصمیم UX/UI/copy باید این اولویت را رعایت کند.
+
+| قانون | جزئیات |
+|-------|---------|
+| **AFN اول** | در هر calculator، dropdown، یا لیست ارزی — AFN (افغانی) باید **اول** نمایش داده شود |
+| **ترتیب اولویت ارزها** | `AFN → USD → EUR → AED → ...` — هرگز USD یا EUR را پیش‌فرض نگذار |
+| **واحد پیش‌فرض** | `defaultCode = 'AFN'` در همه کامپوننت‌های calculator |
+| **copy فارسی** | زبان دری (فارسی افغانستان) — نه اصطلاحات ایرانی مثل «تومان» به‌عنوان واحد اصلی |
+| **unit در DB** | واحد `afn` = افغانی؛ `toman` = تومان (ایران) — این دو را قاطی نکن |
+| **cross-rate** | نرخ AFN از pivot USD محاسبه می‌شود: `1 AFN = USD.buy / AFN.rate` |
+| **rawUnit vs unit** | `rawUnit` = کلید خام DB (`'afn'`, `'toman'`, ...) برای منطق محاسبه؛ `unit` = label فارسی برای نمایش |
+
+> ⛔ هرگز ایران را به‌عنوان بازار اصلی فرض نکن. «تومان» ثانویه است؛ «افغانی» اصلی است.
+
+---
+
 
 ## تعریف سطح تسک (اجباری — قبل از هر gate)
 
@@ -121,7 +141,7 @@
 - Audit before change: grep for existing component/util; reuse before modifying.
 - Scope discipline: change only what the task requires. Note broader inconsistencies; propose a separate task.
 - Never expand global CSS: no new rules in `globals.css`, `dashboard.css`, `setup.css`, `auth.css`, `atelier-archive.css`, `money-transfer/styles.css`.
-- Keep modular: اگر فایل >600 خط شد و چندین concern داخلش هست → split (نه صرفاً به‌خاطر خط). فایل‌های data-heavy (config، schema، locale، migration) از این قانون مستثنا هستند.
+- Keep modular: فایل‌های human-written را با rule زیر ارزیابی کن (نه صرفاً با شمارش خط). فایل‌های data-heavy (config، schema، locale، migration، generated code) از این قانون مستثنا هستند.
 - No stubs / no regressions: no `console.log`, no `any`, no half-built branches.
 - **Dependency audit:** هر بار که `lib/` تغییر می‌کند → همه importers را grep کن و سازگاری را بررسی کن.
 - **Parallel data sources:** اگر دو منبع یک هدف مشترک دارند، تناقض را به کاربر بگو. → ر.ک `AGENTS.market-rates.md`.
@@ -190,7 +210,16 @@ Component Decision Protocol — همیشه به ترتیب:
 6. **محل ساخت shared component جدید:** داشبورد → `primitives/` + `index.ts`؛ سایت → `src/components/[نام-منطقی]/index.tsx` یا `src/components/ui/`.
 
 Rules for new code:
-- هدف ~400 خط؛ سقف سخت ۶۰۰ خط — اگر فایل بین ۴۰۰–۶۰۰ خط است و **یک concern** دارد نیازی به split نیست. فایل‌های config/schema/locale/migration از هر دو محدودیت مستثنا هستند. business logic → `lib/` or hook, never inline.
+- **اندازه فایل (انعطاف‌پذیر، بر اساس industry consensus 2026 — Clean Code + Biome + Aikido + Xomware):**
+
+  | بازه | وضعیت | اقدام |
+  |------|--------|-------|
+  | ≤ 500 خط | Comfortable | هدف پیش‌فرض — بدون سؤال |
+  | 500–700 خط | Acceptable | OK اگر **یک concern** است؛ در PR توضیح کوتاه بده |
+  | 700–800 خط | Warning | split پیشنهاد می‌شود مگر دلیل محکم (الگوریتم پیچیده، generated-style) |
+  | > 800 خط | Hard cap | **باید split شود** — فقط data-heavy مستثنا |
+
+  معیار اصلی single-responsibility است، نه شمارش خط. فایل‌های config/schema/locale/migration/generated از هر دو محدودیت مستثنا هستند. business logic → `lib/` or hook، never inline.
 - No `any`, `@ts-ignore`, TODO/placeholder/FIXME. Type everything.
 - No stubs: every action must do something real.
 - Co-located `*.module.css`.
@@ -387,6 +416,7 @@ interface RouteErrorProps {
 | 2026-07-09 | COMPLETE ANSWERS gate، قانون ۸ سؤال کاربر |
 | 2026-07-28 | UI-DESIGN GATE دو مرحله‌ای |
 | 2026-07-29 | PRE-CODE GATE silent-skipping rule |
+| 2026-07-29 | قانون اندازه فایل انعطاف‌پذیر شد: target ~500 / soft 700 / hard 800 (طبق industry consensus — Clean Code + Biome + Aikido + Xomware)؛ معیار single-responsibility جایگزین شمارش خط شد. |
 | 2026-07 | NO-REPEAT declaration rule (تکرار وسط تسک ممنوع) |
 | 2026-07 | AGENTS.md refactored: UIDQG→AGENTS.uidqg.md، 19DQG→AGENTS.19dqg.md، market-rates→AGENTS.market-rates.md |
 | 2026-07 | تعریف صریح Trivial/Standard/Full؛ رفع تضاد scope/fix؛ periodic cleanup rule؛ mid-task state tracking |

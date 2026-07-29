@@ -1,25 +1,21 @@
-'use client';
-
 /**
- * RateCalculator — Wise-style "Send X, Get Y" widget.
+ * RateCalculator — compact "ماشین‌حساب نرخ" widget (exchanges).
  *
- *   • User enters an amount in the source currency.
- *   • Sees the result they would receive at the **best** available sell rate
- *     (i.e. what the user gets when selling their source to buy toman).
- *   • Shows how much they would lose at the **worst** available rate
- *     (transparent savings vs worst).
- *   • Shows the saving vs. the *average* exchange on the market.
+ *   جریان صحیح صرافی: کاربر دلار/افغانی/یورو دارد و می‌خواهد بداند چه مقدار
+ *   تومان یا ارز دیگر دریافت می‌کند. بنابراین FROM روی USD پیش‌فرض است و
+ *   TO قابل انتخاب (تومان، افغانی، یورو، درهم و ...).
  *
- *   This is the single most-trust-building widget on a rate-comparison
- *   page: users get an instant answer to "is this worth it?".
- *
- *   Architecture: client component; purely presentational — the rates are
- *   server-rendered as props so we never hit the network here. This keeps
- *   the page interactive on first paint even with no JS.
+ *   - از CurrencySelect shared استفاده می‌کند (P0 — NO NATIVE FORM CONTROLS).
+ *   - منبع داده: همان Prisma query صفحه (`/exchanges`) — نرخ‌های real-time.
+ *   - pivot محاسبه: (FROM.buy / TO.sell) — همان منطق صفحه money-transfer.
  */
 
-import { ArrowLeftRight, Calculator, TrendingUp } from 'lucide-react';
-import { useMemo, useState } from 'react';
+'use client';
+
+import {
+  CurrencyConverterCard,
+  type ConverterItem,
+} from '@/components/fintech/CurrencyConverterCard';
 import s from './RateCalculator.module.css';
 
 export type CalcOption = {
@@ -35,179 +31,109 @@ export type CalcOption = {
   avgBuy: number;
   /** worst (highest) sell rate for transparency */
   worstSell: number;
+  /** label فارسی برای نمایش — مثل «افغانی»، «تومان» */
   unit: string;
+  /** کلید خام unit از DB — مثل 'afn', 'toman', 'rial' — برای منطق محاسبه */
+  rawUnit: string;
 };
 
 type Props = {
   options: CalcOption[];
-  /** default source currency code (e.g. "USD") */
+  /** default source currency code (default: "USD") */
   defaultCode?: string;
-  /** default amount the user enters */
+  /** default amount the user enters (default: 1) */
   defaultAmount?: number;
 };
 
-const formatFa = (n: number, max = 2): string => {
-  if (!Number.isFinite(n) || n === 0) return '—';
-  if (Math.abs(n) < 1) {
-    return new Intl.NumberFormat('fa-IR', { maximumFractionDigits: max }).format(n);
-  }
-  return new Intl.NumberFormat('fa-IR', { maximumFractionDigits: max }).format(Math.round(n));
-};
-
-const formatInt = (n: number): string => {
-  if (!Number.isFinite(n) || n === 0) return '—';
-  return new Intl.NumberFormat('fa-IR').format(Math.round(n));
+/**
+ * Synthetic IRT (تومان) item — used as the *target* when the user wants to
+ * know how many toman they'll receive. Rates are stored as "toman per 1 USD",
+ * so for IRT→other we invert: 1 IRT = (1 / TO.buy) TO.
+ */
+const IRT_ITEM: ConverterItem = {
+  value: '__IRT__',
+  code: 'IRT',
+  name: 'تومان',
+  buy: 1,
+  sell: 1,
+  unit: 'toman',
+  decimals: 0,
 };
 
 export default function RateCalculator({
   options,
-  defaultCode,
-  defaultAmount = 1000,
+  defaultCode = 'AFN',
+  defaultAmount = 1,
 }: Props) {
-  const usable = options.filter((o) => o.bestSell > 0 && o.bestBuy > 0);
-  const fallback = usable[0]?.code ?? '';
-  const [code, setCode] = useState<string>(defaultCode ?? fallback);
-  const [amount, setAmount] = useState<number>(defaultAmount);
+  // pivot: پیدا کردن ارزی که نرخ آن مستقیماً به تومان است (مثلاً USD، EUR، …)
+  // تا بتوانیم ارزهای با unit متفاوت (مثل AFN که نرخ‌هایش برحسب افغانی
+  // به ازای USD است) را به تومان نرمال‌سازیم.
+  //
+  //   1 USD = 70,000 Toman  → toman.buy = 70,000
+  //   1 USD = 68 AFN        → afn.buy  = 68  (rawUnit: 'afn')
+  //   ⇒ 1 AFN = 70,000 / 68 ≈ 1029 Toman
+  //
+  // این فرمول cross-rate تضمین می‌کند USD → AFN هم درست کار کند.
+  // ⚠️ مقایسه با rawUnit (کلید خام DB) انجام می‌شود، نه unit (label فارسی)
+  const pivotOption =
+    options.find((o) => o.code === 'USD' && o.rawUnit === 'toman') ??
+    options.find((o) => o.rawUnit === 'toman');
 
-  const option = useMemo(() => usable.find((o) => o.code === code) ?? usable[0], [usable, code]);
+  const toToman = (option: CalcOption): { buy: number; sell: number } => {
+    // rawUnit = 'toman' یعنی نرخ مستقیماً به تومان است
+    if (option.rawUnit === 'toman') return { buy: option.bestBuy, sell: option.bestSell };
+    // non-toman: option.bestBuy is "X per pivot" (e.g. 68 AFN per USD)
+    // pivotBuy / option.bestSell = how much toman the user gets for 1 unit of option
+    if (!pivotOption) return { buy: option.bestBuy, sell: option.bestSell };
+    const pivotBuy = pivotOption.bestBuy;
+    return {
+      buy: pivotBuy / option.bestBuy,
+      sell: pivotBuy / option.bestSell,
+    };
+  };
 
-  if (usable.length === 0 || !option) {
-    return (
-      <div className={s.calcEmpty} role="status">
-        <Calculator size={14} strokeWidth={2.5} aria-hidden />
-        نرخ فعالی برای محاسبه موجود نیست.
-      </div>
-    );
-  }
+  // ترتیب اولویت: AFN اول (سایت مخصوص افغانستان)، بقیه بر اساس داده
+  const sortedOptions = [...options].sort((a, b) => {
+    const priority: Record<string, number> = { AFN: 0, USD: 1, EUR: 2, AED: 3 };
+    return (priority[a.code] ?? 99) - (priority[b.code] ?? 99);
+  });
 
-  // For the calculator:
-  //  - "می‌دهید" = amount in toman
-  //  - "دریافت می‌کنید" = amount / bestSell in target currency
-  //  - "سود شما" = (best - worst) / best * 100
-  const tomanAmount = amount;
-  const youGet = tomanAmount / option.bestSell;
-  const youWouldGetAtWorst = option.worstSell > 0 ? tomanAmount / option.worstSell : youGet;
-  const youWouldGetAtAverage = option.avgSell > 0 ? tomanAmount / option.avgSell : youGet;
-  const savingsVsAverage = youGet - youWouldGetAtAverage;
-  const savingsVsWorst = youGet - youWouldGetAtWorst;
-  const savingsPctVsAverage =
-    option.avgSell > 0 ? ((option.bestSell - option.avgSell) / option.avgSell) * 100 : 0;
-  const isUp = savingsPctVsAverage >= 0;
+  const items: ConverterItem[] = [
+    IRT_ITEM,
+    ...sortedOptions
+      .filter((o) => o.bestSell > 0 && o.bestBuy > 0)
+      .map((o) => {
+        const { buy, sell } = toToman(o);
+        return {
+          value: o.code,
+          code: o.code,
+          name: o.name,
+          buy,
+          sell,
+          unit: o.unit,
+          // decimals بر اساس rawUnit (کلید خام) — نه unit label فارسی
+          decimals: o.rawUnit === 'afn' ? 2 : 0,
+        };
+      }),
+  ];
+
+  // defaultCode باید موجود باشد؛ اگر نبود اولین ارز موجود را برگردان
+  // جستجو بر اساس code انجام می‌شود (نه value) — پس 'IRT' درست است نه '__IRT__'
+  const resolvedDefaultCode =
+    items.some((i) => i.code === defaultCode) ? defaultCode : (items[1]?.code ?? 'AFN');
 
   return (
-    <div className={s.calc} dir="rtl" aria-label="ماشین‌حساب نرخ">
-      <header className={s.calcHeader}>
-        <span className={s.calcEyebrow}>
-          <Calculator size={12} strokeWidth={2.5} aria-hidden />
-          ماشین‌حساب نرخ
-        </span>
-        <h3 className={s.calcTitle}>چقدر دریافت می‌کنید؟</h3>
-      </header>
-
-      <div className={s.calcBody}>
-        {/* input row */}
-        <div className={s.inputGroup}>
-          <label className={s.inputLabel} htmlFor="rc-amount">
-            شما می‌دهید
-          </label>
-          <div className={s.inputShell}>
-            <input
-              id="rc-amount"
-              type="number"
-              inputMode="numeric"
-              min={0}
-              step={1000}
-              value={Number.isFinite(amount) ? amount : 0}
-              onChange={(e) => {
-                const v = Number.parseFloat(e.target.value);
-                setAmount(Number.isFinite(v) && v >= 0 ? v : 0);
-              }}
-              className={s.input}
-              aria-label="مبلغ به تومان"
-            />
-            <span className={s.inputUnit}>تومان</span>
-          </div>
-        </div>
-
-        <div className={s.swap} aria-hidden>
-          <span className={s.swapIcon}>
-            <ArrowLeftRight size={14} strokeWidth={2.5} />
-          </span>
-        </div>
-
-        <div className={s.inputGroup}>
-          <label className={s.inputLabel} htmlFor="rc-currency">
-            دریافت می‌کنید
-          </label>
-          <div className={s.inputShell}>
-            <select
-              id="rc-currency"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              className={s.select}
-              aria-label="انتخاب ارز مقصد"
-            >
-              {usable.map((o) => (
-                <option key={o.code} value={o.code}>
-                  {o.code} — {o.name}
-                </option>
-              ))}
-            </select>
-            <span className={s.inputUnit}>{option.code}</span>
-          </div>
-        </div>
-
-        {/* result row */}
-        <div className={s.resultRow}>
-          <div className={s.resultCell}>
-            <span className={s.resultLabel}>دریافت شما (بهترین نرخ)</span>
-            <span className={s.resultVal} dir="ltr">
-              {formatFa(youGet, 4)}
-              <span className={s.resultUnit}>{option.code}</span>
-            </span>
-          </div>
-          <div className={s.resultCellMuted}>
-            <span className={s.resultLabel}>اگر بدترین نرخ بگیرید</span>
-            <span className={s.resultValSm} dir="ltr">
-              {formatFa(youWouldGetAtWorst, 4)}
-              <span className={s.resultUnit}>{option.code}</span>
-            </span>
-          </div>
-        </div>
-
-        {/* savings strip */}
-        <div className={s.savings} role="status" aria-live="polite">
-          <span className={s.savingsIcon} aria-hidden>
-            <TrendingUp size={12} strokeWidth={2.5} />
-          </span>
-          <span className={s.savingsText}>
-            {isUp ? (
-              <>
-                با بهترین نرخ،{' '}
-                <span className={s.savingsStrong}>
-                  {formatInt(savingsVsAverage)} {option.code}
-                </span>{' '}
-                بیشتر از میانگین بازار دریافت می‌کنید
-              </>
-            ) : (
-              <>
-                بهترین نرخ بازار در حال حاضر{' '}
-                <span className={s.savingsStrong}>
-                  {Math.abs(savingsPctVsAverage).toFixed(2)}٪
-                </span>{' '}
-                پایین‌تر از میانگین است
-              </>
-            )}
-          </span>
-        </div>
-
-        {savingsVsWorst > 0.0001 && (
-          <p className={s.savingsFine}>
-            صرفه‌جویی در برابر بدترین نرخ:{' '}
-            <strong>{formatFa(savingsVsWorst, 4)} {option.code}</strong>
-          </p>
-        )}
-      </div>
+    <div className={s.wrap}>
+      <CurrencyConverterCard
+        items={items}
+        defaultFromCode={resolvedDefaultCode}
+        // اگر FROM=IRT باشد → TO اولین ارز غیر-IRT؛ وگرنه TO='IRT' (code، نه value)
+        defaultToCode={resolvedDefaultCode === 'IRT' ? (items[1]?.code ?? 'AFN') : 'IRT'}
+        defaultAmount={defaultAmount}
+        size="compact"
+        ariaLabel="ماشین‌حساب نرخ"
+        tone="dark"
+      />
     </div>
   );
 }

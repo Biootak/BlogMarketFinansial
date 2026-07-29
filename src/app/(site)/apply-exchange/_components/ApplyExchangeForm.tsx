@@ -22,6 +22,10 @@ interface FormValues {
   phone: string;
   email: string;
   address: string;
+  // ۲۰۲۶-۰۷-۲۹: فیلدهای عملیاتی (اختیاری — ادمین بعداً fine-tune می‌کند)
+  dailyLimitAf: number;
+  platformFee: number;
+  requireKyc: boolean;
 }
 
 export default function ApplyExchangeForm() {
@@ -41,6 +45,10 @@ export default function ApplyExchangeForm() {
       phone: '',
       email: '',
       address: '',
+      // ۲۰۲۶-۰۷-۲۹: مقادیر پیش‌فرض منطقی
+      dailyLimitAf: 5_000_000, // ۵ میلیون افغانی پیش‌فرض
+      platformFee: 0.5, // نیم درصد پیش‌فرض
+      requireKyc: true,
     },
   });
 
@@ -54,9 +62,14 @@ export default function ApplyExchangeForm() {
         phone: values.phone || null,
         email: values.email || null,
         address: values.address || null,
+        // ۲۰۲۶-۰۷-۲۹: فیلدهای جدید
+        dailyLimitAf: Number(values.dailyLimitAf) || 0,
+        platformFee: Number(values.platformFee) || 0,
+        requireKyc: Boolean(values.requireKyc),
       });
       if (result.success) {
-        router.push('/apply-exchange/success');
+        const id = result.data?.id ?? '';
+        router.push(`/apply-exchange/success${id ? `?id=${encodeURIComponent(id)}` : ''}`);
       } else {
         if (result.error.code === 'DUPLICATE_SLUG') {
           setError('slug', { message: result.error.message });
@@ -201,6 +214,83 @@ export default function ApplyExchangeForm() {
             {...register('address')}
           />
         </div>
+
+        {/* ── ۲۰۲۶-۰۷-۲۹: تنظیمات عملیاتی (اختیاری — ادمین fine-tune می‌کند) ── */}
+        <fieldset className={s.fieldset}>
+          <legend className={s.legend}>
+            تنظیمات عملیاتی
+            <span className={s.legendHint}>
+              اختیاری — تیم ما می‌تواند بعداً تنظیم کند
+            </span>
+          </legend>
+
+          <div className={s.field}>
+            <label htmlFor="ex-dailyLimit" className={s.label}>
+              سقف معامله روزانه (افغانی)
+            </label>
+            <input
+              id="ex-dailyLimit"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              step={100_000}
+              className={`${s.input}${errors.dailyLimitAf ? ` ${s.inputError}` : ''}`}
+              placeholder="5,000,000"
+              dir="ltr"
+              aria-invalid={Boolean(errors.dailyLimitAf) || undefined}
+              {...register('dailyLimitAf', {
+                valueAsNumber: true,
+                min: { value: 0, message: 'سقف نمی‌تواند منفی باشد' },
+                max: { value: 1_000_000_000_000, message: 'سقف بیش از حد بزرگ است' },
+              })}
+            />
+            {errors.dailyLimitAf ? (
+              <span className={s.error}>{errors.dailyLimitAf.message}</span>
+            ) : (
+              <span className={s.hint}>پیش‌فرض: ۵ میلیون افغانی</span>
+            )}
+          </div>
+
+          <div className={s.field}>
+            <label htmlFor="ex-platformFee" className={s.label}>
+              کارمزد پلتفرم (٪)
+            </label>
+            <input
+              id="ex-platformFee"
+              type="number"
+              inputMode="decimal"
+              min={0}
+              max={50}
+              step={0.1}
+              className={`${s.input}${errors.platformFee ? ` ${s.inputError}` : ''}`}
+              placeholder="0.5"
+              dir="ltr"
+              aria-invalid={Boolean(errors.platformFee) || undefined}
+              {...register('platformFee', {
+                valueAsNumber: true,
+                min: { value: 0, message: 'کارمزد نمی‌تواند منفی باشد' },
+                max: { value: 50, message: 'کارمزد نمی‌تواند بیش از ۵۰٪ باشد' },
+              })}
+            />
+            {errors.platformFee ? (
+              <span className={s.error}>{errors.platformFee.message}</span>
+            ) : (
+              <span className={s.hint}>پیش‌فرض: ۰.۵٪ از هر معامله</span>
+            )}
+          </div>
+
+          <div className={s.checkboxRow}>
+            <input
+              id="ex-requireKyc"
+              type="checkbox"
+              className={s.checkbox}
+              {...register('requireKyc')}
+            />
+            <label htmlFor="ex-requireKyc" className={s.checkboxLabel}>
+              احراز هویت (KYC) برای مشتریان الزامی باشد
+            </label>
+          </div>
+        </fieldset>
 
         {/* خطای کلی */}
         {errors.root ? (

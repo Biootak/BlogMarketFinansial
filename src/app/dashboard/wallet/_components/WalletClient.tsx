@@ -26,6 +26,7 @@ import {
   getFxQuote,
 } from '@/actions/fx-trade';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CurrencySelect, type CurrencyItem } from '@/components/ui/CurrencySelect';
 import {
   ArrowDown,
   ArrowLeftRight,
@@ -62,8 +63,24 @@ type LedgerEntry = {
   createdAt: string;
   runningBalance: string;
 };
-type Props = { walletData: WalletData | null };
+type Props = { walletData: WalletData | null; userRole: string };
 type ModalType = 'deposit' | 'withdraw' | 'fx' | null;
+
+/** مسیرهای نقش‌مبنا — هر نقش به مسیر خودش می‌رود. */
+function pathsFor(role: string) {
+  if (role === 'CUSTOMER' || role === 'TEST_CUSTOMER' || role === 'MERCHANT') {
+    return {
+      transfer: '/customer/transfer',
+      deals: '/customer/wallet#transactions',
+      kyc: '/customer/kyc',
+    };
+  }
+  return {
+    transfer: '/dashboard/transfer',
+    deals: '/dashboard/my-deals',
+    kyc: '/dashboard/kyc',
+  };
+}
 
 const FX_CURRENCIES = ['AFN', 'USD', 'EUR', 'IRR'] as const;
 type FxCurrency = (typeof FX_CURRENCIES)[number];
@@ -74,6 +91,12 @@ const FX_LABELS: Record<FxCurrency, string> = {
   EUR: 'یورو',
   IRR: 'ریال ایران',
 };
+
+const FX_ITEMS: CurrencyItem[] = FX_CURRENCIES.map((c) => ({
+  value: c,
+  code: c,
+  label: FX_LABELS[c],
+}));
 
 function formatFxAmount(cents: number, currency: FxCurrency): string {
   // 2026-07-29: هیچ ارزی در سیستم ما decimal نیست؛ مقدار ورودی سِنت (عدد صحیح) است
@@ -649,35 +672,20 @@ function FxTradeModal({
             )}
 
             {/* Currency selectors */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr auto 1fr',
-                gap: 'var(--ds-space-2)',
-                alignItems: 'end',
-              }}
-            >
+            <div className={s.fxRow}>
               <div className={s.fieldGroup}>
                 <label htmlFor="fx-from" className={s.fieldLabel}>
                   از ارز
                 </label>
-                <select
-                  id="fx-from"
-                  className={s.fieldInput}
+                <CurrencySelect
+                  items={FX_ITEMS}
                   value={fromCurrency}
-                  onChange={(e) => setFromCurrency(e.target.value)}
-                  dir="ltr"
-                >
-                  {FX_CURRENCIES.map((c) => (
-                    <option key={c} value={c}>
-                      {c} — {FX_LABELS[c]}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setFromCurrency}
+                  ariaLabel="ارز مبدأ"
+                  size="wide"
+                />
                 {fromAccount && (
-                  <p className={s.fieldHint}>
-                    موجودی: {fmtAFN(fromAccount.balance)}
-                  </p>
+                  <p className={s.fieldHint}>موجودی: {fmtAFN(fromAccount.balance)}</p>
                 )}
               </div>
 
@@ -685,18 +693,7 @@ function FxTradeModal({
                 type="button"
                 onClick={handleSwap}
                 aria-label="جابجایی"
-                style={{
-                  height: 40,
-                  width: 40,
-                  borderRadius: 999,
-                  border: '1px solid var(--ds-border-default)',
-                  background: 'var(--ds-surface-elevated)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: 2,
-                }}
+                className={s.fxSwapBtn}
               >
                 <ArrowLeftRight size={15} aria-hidden />
               </button>
@@ -705,24 +702,14 @@ function FxTradeModal({
                 <label htmlFor="fx-to" className={s.fieldLabel}>
                   به ارز
                 </label>
-                <select
-                  id="fx-to"
-                  className={s.fieldInput}
+                <CurrencySelect
+                  items={FX_ITEMS.filter((it) => it.value !== fromCurrency)}
                   value={toCurrency}
-                  onChange={(e) => setToCurrency(e.target.value)}
-                  dir="ltr"
-                >
-                  {FX_CURRENCIES.filter((c) => c !== fromCurrency).map((c) => (
-                    <option key={c} value={c}>
-                      {c} — {FX_LABELS[c]}
-                    </option>
-                  ))}
-                </select>
-                {quoteError && (
-                  <p className={s.fieldHint} style={{ color: 'var(--ds-status-error-fg)' }}>
-                    {quoteError}
-                  </p>
-                )}
+                  onChange={setToCurrency}
+                  ariaLabel="ارز مقصد"
+                  size="wide"
+                />
+                {quoteError && <p className={s.fxHintError}>{quoteError}</p>}
               </div>
             </div>
 
@@ -749,29 +736,16 @@ function FxTradeModal({
                 disabled={!quote || loadingQuote}
               />
               {amountCents > 0 && fromAccount && amountCents > maxCents && (
-                <p className={s.fieldHint} style={{ color: 'var(--ds-status-error-fg)' }}>
-                  بیش از موجودی ({fmtAFN(String(maxCents))})
-                </p>
+                <p className={s.fxHintError}>بیش از موجودی ({fmtAFN(String(maxCents))})</p>
               )}
             </div>
 
             {/* Quote summary */}
             {quote && (
-              <div
-                style={{
-                  padding: 'var(--ds-space-3) var(--ds-space-4)',
-                  background: 'var(--ds-canvas-subtle)',
-                  borderRadius: 'var(--ds-radius-md)',
-                  border: '1px solid var(--ds-border-subtle)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 6,
-                  fontSize: 'var(--ds-text-xs)',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: 'var(--ds-text-muted)' }}>نرخ صرافی</span>
-                  <span dir="ltr" style={{ fontWeight: 600 }}>
+              <div className={s.fxQuote}>
+                <div className={s.fxQuoteRow}>
+                  <span className={s.fxQuoteLabel}>نرخ صرافی</span>
+                  <span dir="ltr" className={s.fxQuoteValue}>
                     1 {quote.fromCurrency} ={' '}
                     {new Intl.NumberFormat('en-US', { maximumFractionDigits: 4 }).format(
                       quote.rate,
@@ -779,26 +753,17 @@ function FxTradeModal({
                     {quote.toCurrency}
                   </span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: 'var(--ds-text-muted)' }}>کارمزد</span>
+                <div className={s.fxQuoteRow}>
+                  <span className={s.fxQuoteLabel}>کارمزد</span>
                   <span>
                     {quote.feePercent.toFixed(2)}٪ (
                     {formatFxAmount(feeCents, quote.fromCurrency as FxCurrency)})
                   </span>
                 </div>
                 {previewToCents > 0 && (
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      paddingTop: 6,
-                      borderTop: '1px dashed var(--ds-border-subtle)',
-                      fontSize: 'var(--ds-text-sm)',
-                      fontWeight: 700,
-                    }}
-                  >
+                  <div className={s.fxQuoteTotalRow}>
                     <span>دریافتی شما</span>
-                    <span style={{ color: 'var(--ds-status-success-fg)' }}>
+                    <span className={s.fxQuoteValueSuccess}>
                       {formatFxAmount(previewToCents, quote.toCurrency as FxCurrency)}
                     </span>
                   </div>
@@ -806,25 +771,13 @@ function FxTradeModal({
               </div>
             )}
 
-            {loadingQuote && (
-              <p
-                style={{
-                  fontSize: 'var(--ds-text-xs)',
-                  color: 'var(--ds-text-muted)',
-                  textAlign: 'center',
-                }}
-              >
-                در حال دریافت نرخ…
-              </p>
-            )}
+            {loadingQuote && <p className={s.fxQuotePending}>در حال دریافت نرخ…</p>}
 
             <button
               type="button"
               className={s.primaryBtn}
               onClick={handleSubmit}
-              disabled={
-                isPending || amountCents <= 0 || !quote || amountCents > maxCents
-              }
+              disabled={isPending || amountCents <= 0 || !quote || amountCents > maxCents}
             >
               {isPending ? 'در حال تبدیل...' : 'تأیید و تبدیل'}
             </button>
@@ -848,24 +801,17 @@ function FxTradeModal({
             </div>
             <div className={s.instructionBox}>
               <p className={s.instructionLabel}>جزئیات</p>
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: 8,
-                  fontSize: 'var(--ds-text-xs)',
-                }}
-              >
-                <span style={{ color: 'var(--ds-text-muted)' }}>نرخ</span>
-                <span dir="ltr" style={{ textAlign: 'end' }}>
+              <div className={s.fxDetailsGrid}>
+                <span className={s.fxQuoteLabel}>نرخ</span>
+                <span dir="ltr" className={s.fxDetailsValue}>
                   1 {result.fromCurrency} ={' '}
                   {new Intl.NumberFormat('en-US', { maximumFractionDigits: 4 }).format(
                     result.rate,
                   )}{' '}
                   {result.toCurrency}
                 </span>
-                <span style={{ color: 'var(--ds-text-muted)' }}>کارمزد</span>
-                <span style={{ textAlign: 'end' }}>
+                <span className={s.fxQuoteLabel}>کارمزد</span>
+                <span className={s.fxDetailsValue}>
                   {formatFxAmount(result.feeCents, result.fromCurrency)}
                 </span>
               </div>
@@ -881,7 +827,8 @@ function FxTradeModal({
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export function WalletClient({ walletData }: Props) {
+export function WalletClient({ walletData, userRole }: Props) {
+  const paths = pathsFor(userRole);
   const [entries, setEntries] = useState<LedgerEntry[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
@@ -1049,7 +996,7 @@ export function WalletClient({ walletData }: Props) {
             disabled: !kycApproved || maxCents <= 0,
             accent: 'error',
           },
-          { label: 'انتقال', Icon: Send, href: '/dashboard/transfer', accent: 'brand' },
+          { label: 'انتقال', Icon: Send, href: paths.transfer, accent: 'brand' },
           {
             label: 'تبدیل ارز',
             Icon: ArrowLeftRight,
@@ -1060,7 +1007,7 @@ export function WalletClient({ walletData }: Props) {
           {
             label: 'معاملات',
             Icon: ArrowLeftRight,
-            href: '/dashboard/my-deals',
+            href: paths.deals,
             accent: 'default',
           },
           { label: 'گزارش', Icon: BarChart2, anchor: '#transactions', accent: 'default' },

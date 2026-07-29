@@ -6,8 +6,13 @@
  * asymmetric summary grid, asymmetric CTA pair, and a tip rail.
  *
  * Server Component. Tokens only. RTL logical props. Mobile-first.
+ *
+ * تغییر ۲۰۲۶-۰۷-۲۹:
+ *   لینک اشتباه «پیگیری درخواست‌ها → /customer/2fa» حذف شد.
+ *   customer/2fa صفحهٔ تنظیمات امنیتی است، نه پیگیری درخواست.
+ *   جایگزین: «تماس با پشتیبانی» → /contact (واقعی و در routes ثبت‌شده).
  */
-import { ArrowLeft, CheckCircle2, Home, Lightbulb, Receipt } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Home, Lightbulb, Mail } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import s from './success.module.css';
@@ -17,22 +22,32 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
-function randomTrackId() {
-  // 8-char hex token-like id. Cryptographically weak but visually
-  // plausible for the confirmation page; the real id is sent via email.
-  return Array.from({ length: 4 }, () =>
-    Math.floor(Math.random() * 0xffff)
-      .toString(16)
-      .padStart(4, '0')
-      .toUpperCase(),
-  ).join('-');
+function generateTrackId(): string {
+  // کد پیگیری deterministic مبتنی بر زمان: ۸ کاراکتر الفبایی-عددی
+  // شفافیت: هر بار reload این صفحه، کد متفاوت تولید می‌شود چون
+  // مقدار واقعی فقط در ایمیل و صف ادمین ثبت است — این کد فقط
+  // برای شناسایی بصری در همین جلسه کاربرد دارد.
+  const seed = Date.now();
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let id = '';
+  let n = seed;
+  for (let i = 0; i < 8; i++) {
+    n = (n * 1103515245 + 12345) & 0x7fffffff;
+    id += chars[n % chars.length];
+    if (i === 3) id += '-';
+  }
+  return id;
 }
 
-export default function ApplyExchangeSuccessPage() {
-  // Track id is generated server-side per request so reloading the
-  // success page gives a different visual but the real id lives in
-  // the email + admin queue. Date and ETA are stable.
-  const trackId = randomTrackId();
+export default async function ApplyExchangeSuccessPage({
+  searchParams,
+}: {
+  searchParams?: Promise<SearchParams>;
+}) {
+  // ۲۰۲۶-۰۷-۲۹: استفاده از id واقعی اگر از فرم ارسال شده باشد
+  const sp = (await searchParams) ?? {};
+  const rawId = typeof sp.id === 'string' ? sp.id : '';
+  const trackId = rawId ? shortTrackId(rawId) : generateTrackId();
   const now = new Date();
 
   const summary = {
@@ -95,9 +110,9 @@ export default function ApplyExchangeSuccessPage() {
             <Home size={16} strokeWidth={2} aria-hidden />
             بازگشت به صفحهٔ اصلی
           </Link>
-          <Link href="/customer/2fa" className={s.btnGhost}>
-            <Receipt size={16} strokeWidth={2} aria-hidden />
-            پیگیری درخواست‌ها
+          <Link href="/contact" className={s.btnGhost}>
+            <Mail size={16} strokeWidth={2} aria-hidden />
+            تماس با پشتیبانی
             <ArrowLeft size={14} strokeWidth={2} aria-hidden />
           </Link>
         </div>

@@ -65,7 +65,13 @@ export function LiveRateBoardAsync({
   }, []);
 
   return (
-    <section className={s.section} ref={rootRef} data-board-root>
+    <section
+      id="rate-board"
+      className={s.section}
+      ref={rootRef}
+      data-board-root
+      aria-label="تابلوی نرخ زنده"
+    >
       <header className={s.head}>
         <span className={s.eyebrow}>
           <BarChart3 size={12} strokeWidth={2.5} aria-hidden />

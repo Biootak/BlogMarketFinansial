@@ -33,6 +33,7 @@ import {
   HiOutlineDocumentText,
   HiOutlineUsers,
   HiOutlineWallet,
+  HiOutlineShieldCheck,
 } from 'react-icons/hi2';
 import s from '@/components/Header/MobileBottomNav.module.css';
 
@@ -62,9 +63,11 @@ const HIDE_PREFIXES = ['/auth', '/signin', '/signup', '/verify-email', '/forgot-
 interface Props {
   role?: Role | string;
   unreadCount?: number;
+  /** USER only: اگر KYC هنوز تأیید نشده، primary به «احراز هویت» تغییر می‌کند */
+  kycVerified?: boolean;
 }
 
-const DashboardBottomNav: FC<Props> = ({ role, unreadCount = 0 }) => {
+const DashboardBottomNav: FC<Props> = ({ role, unreadCount = 0, kycVerified = true }) => {
   const pathname = usePathname();
   const router = useRouter();
   const navRef = useRef<HTMLElement | null>(null);
@@ -107,13 +110,25 @@ const DashboardBottomNav: FC<Props> = ({ role, unreadCount = 0 }) => {
               matchPrefixes: ['/dashboard/customers', '/dashboard/requests'],
             }
           : {
-              // USER / SUPPORT / unknown — primary = wallet
-              id: 'wallet',
-              href: '/dashboard/wallet',
-              label: 'کیف پول',
-              icon: HiOutlineWallet,
-              primary: true,
-              matchPrefixes: ['/dashboard/wallet'],
+              // USER / SUPPORT / unknown
+              // اگر KYC تأیید نشده → primary = KYC؛ در غیر این صورت → wallet
+              ...((!kycVerified)
+                ? {
+                    id: 'kyc',
+                    href: '/dashboard/kyc',
+                    label: 'احراز هویت',
+                    icon: HiOutlineShieldCheck,
+                    primary: true,
+                    matchPrefixes: ['/dashboard/kyc'],
+                  }
+                : {
+                    id: 'wallet',
+                    href: '/dashboard/wallet',
+                    label: 'کیف پول',
+                    icon: HiOutlineWallet,
+                    primary: true,
+                    matchPrefixes: ['/dashboard/wallet'],
+                  }),
             };
 
     return [
@@ -230,25 +245,7 @@ const DashboardBottomNav: FC<Props> = ({ role, unreadCount = 0 }) => {
                   <Icon size={20} strokeWidth={isActive ? 2 : 1.6} />
                   {isActive && item.primary && <span className={s.dot} aria-hidden />}
                   {item.id === 'notifications' && unreadCount > 0 && (
-                    <span
-                      style={{
-                        position: 'absolute',
-                        top: 2,
-                        insetInlineEnd: 2,
-                        minWidth: 16,
-                        height: 16,
-                        padding: '0 4px',
-                        borderRadius: 999,
-                        background: 'var(--ds-rose, #f43f5e)',
-                        color: 'white',
-                        fontSize: 10,
-                        fontWeight: 700,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '2px solid var(--ds-bg, white)',
-                      }}
-                    >
+                    <span className={s.badge} aria-hidden>
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                   )}

@@ -36,7 +36,7 @@ import { cn } from '@/lib/utils';
 import { useSession } from 'next-auth/react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { HiOutlineArrowRightOnRectangle, HiOutlineArrowUturnLeft, HiOutlineXMark } from 'react-icons/hi2';
+import { HiOutlineArrowRightOnRectangle, HiOutlineHome, HiOutlineXMark } from 'react-icons/hi2';
 import NavItem from './NavItem';
 import {
   type MenuItem,
@@ -317,7 +317,7 @@ const Sidebar = ({ userRole, staffRole }: SidebarProps) => {
           >
             <span className="dash-side__diamond" aria-hidden />
             <span className="dash-side__item-ico">
-              <HiOutlineArrowUturnLeft className="w-[19px] h-[19px]" aria-hidden />
+              <HiOutlineHome className="w-[19px] h-[19px]" aria-hidden />
             </span>
             {isOpen && <span className="dash-side__item-label">بازگشت به سایت</span>}
           </ViewLink>

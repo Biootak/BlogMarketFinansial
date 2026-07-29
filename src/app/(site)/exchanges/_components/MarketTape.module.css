@@ -1,4 +1,6 @@
-/* MarketTape.module.css — نوار متحرک نرخ‌های زنده صرافی‌ها */
+/* MarketTape.module.css — نوار متحرک نرخ‌های زنده صرافی‌ها
+   توجه: انیمیشن چرخش توسط کامپوننت مشترک `Ticker` انجام می‌شود؛
+   فقط container, head و row را اینجا نگه می‌داریم. */
 
 .tape {
   position: relative;
@@ -8,11 +10,12 @@
   block-size: 44px;
   background: oklch(10% 0.012 250 / 0.65);
   border-block: 1px solid oklch(35% 0.04 250 / 0.4);
-  font-family: var(--ds-font, 'Vazirmatn', system-ui, sans-serif);
+  font-family: var(--font-estedad), system-ui, sans-serif;
   color: oklch(85% 0.01 250);
   overflow: hidden;
   backdrop-filter: blur(14px) saturate(140%);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
+  isolation: isolate;
 }
 
 /* ── head (static) ─────────────────────────────────────────────────── */
@@ -59,64 +62,24 @@
   }
 }
 
-/* ── viewport (mask) ─────────────────────────────────────────────── */
-.viewport {
-  position: relative;
+/* ── ticker wrapper (shared Ticker fills this) ─────────────────────── */
+.tickerShell {
   flex: 1;
   min-inline-size: 0;
-  overflow: hidden;
-  -webkit-mask-image: linear-gradient(
-    90deg,
-    transparent 0,
-    oklch(0% 0 0 / 1) 6%,
-    oklch(0% 0 0 / 1) 94%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    90deg,
-    transparent 0,
-    oklch(0% 0 0 / 1) 6%,
-    oklch(0% 0 0 / 1) 94%,
-    transparent 100%
-  );
-}
-
-.fadeEnd {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-end: 0;
-  inline-size: 40px;
-  background: linear-gradient(90deg, transparent, oklch(10% 0.012 250 / 0.65));
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* ── track (the scrolling content) ────────────────────────────────── */
-.track {
-  display: inline-flex;
-  align-items: center;
-  gap: 0;
   block-size: 100%;
-  animation: tape-scroll 60s linear infinite;
-  will-change: transform;
+  display: flex;
+  align-items: center;
 }
 
-.tapeReverse .track {
-  animation-direction: reverse;
-}
-
-.tapePause:hover .track {
-  animation-play-state: paused;
-}
-
-@keyframes tape-scroll {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    /* shift by half — because content is duplicated */
-    transform: translateX(-50%);
-  }
+/* ── empty state ─────────────────────────────────────────────────── */
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 100%;
+  block-size: 100%;
+  font-size: 12px;
+  color: oklch(60% 0.01 250);
 }
 
 /* ── row (one item) ───────────────────────────────────────────────── */
@@ -124,12 +87,28 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding-inline: 14px;
+  padding-inline: 18px;
   block-size: 100%;
-  border-inline-end: 1px solid oklch(35% 0.04 250 / 0.25);
   white-space: nowrap;
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
+}
+
+/* ── جداکننده بصری بین آیتم‌ها ─────────────────────────────────────── */
+.divider {
+  display: inline-block;
+  flex-shrink: 0;
+  inline-size: 1px;
+  block-size: 22px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    oklch(55% 0.06 250 / 0.5) 30%,
+    oklch(55% 0.06 250 / 0.5) 70%,
+    transparent
+  );
+  margin-inline: 4px;
+  align-self: center;
 }
 
 .code {
@@ -143,11 +122,12 @@
   border: 1px solid oklch(40% 0.04 250 / 0.4);
 }
 
-.exchange {
+/* نام کامل ارز — جایگزین exchangeName */
+.name {
   font-size: 11px;
-  color: oklch(70% 0.01 250);
+  color: oklch(68% 0.02 250);
   font-weight: 500;
-  max-inline-size: 90px;
+  max-inline-size: 96px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -233,17 +213,6 @@
   border: 1px solid oklch(50% 0.1 25 / 0.3);
 }
 
-/* ── empty state ─────────────────────────────────────────────────── */
-.empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  inline-size: 100%;
-  block-size: 100%;
-  font-size: 12px;
-  color: oklch(60% 0.01 250);
-}
-
 /* ── responsive ──────────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .tape {
@@ -257,7 +226,7 @@
     gap: 7px;
     padding-inline: 10px;
   }
-  .exchange {
+  .name {
     display: none;
   }
   .cellLabel {
@@ -269,13 +238,14 @@
   .cellVal {
     font-size: 11px;
   }
+  .divider {
+    block-size: 16px;
+    margin-inline: 2px;
+  }
 }
 
 /* ── reduced motion ──────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .track {
-    animation-duration: 120s;
-  }
   .pulse {
     animation: none;
   }

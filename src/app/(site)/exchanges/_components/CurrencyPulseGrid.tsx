@@ -64,8 +64,18 @@ export default function CurrencyPulseGrid({ tiles, activeCode, onSelect }: Props
     );
   }
 
-  // Sort by quote count desc → biggest tiles for most-liquid currencies
-  const sorted = [...tiles].sort((a, b) => b.quoteCount - a.quoteCount);
+  // ۲۰۲۶-۰۷-۲۹: AFN اول (طبق قانون P0 سایت افغانستان)، بعد liquidity desc
+  const AFN_PRIORITY = ['AFN', 'USD', 'EUR', 'AED', 'PKR', 'IRR', 'INR', 'CNY', 'TRY', 'GBP', 'SAR', 'RUB'];
+  const priority = (code: string) => {
+    const idx = AFN_PRIORITY.indexOf(code);
+    return idx === -1 ? 1000 + code.charCodeAt(0) : idx;
+  };
+  const sorted = [...tiles].sort((a, b) => {
+    const pa = priority(a.code);
+    const pb = priority(b.code);
+    if (pa !== pb) return pa - pb;
+    return b.quoteCount - a.quoteCount;
+  });
 
   return (
     <div className={s.wrap} role="list" aria-label="نگاه کلی نرخ ارزها">

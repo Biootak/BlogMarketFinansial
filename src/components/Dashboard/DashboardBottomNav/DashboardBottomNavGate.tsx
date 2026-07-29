@@ -13,6 +13,7 @@ const DashboardBottomNavGate = async () => {
   if (!session?.user?.id) return null;
 
   let unread = 0;
+  let kycVerified = true;
   try {
     // 2026-07-29: Notification model may not have isRead; guarded with .catch
     // so the dashboard renders even if the schema needs migration.
@@ -26,10 +27,25 @@ const DashboardBottomNavGate = async () => {
     unread = 0;
   }
 
+  // USER/SUPPORT: اگر Customer record با KYC APPROVED ندارند → primary=KYC
+  const role = session.user.role as string;
+  if (role === 'USER' || role === 'SUPPORT' || !role) {
+    try {
+      const customer = await prisma.customer.findFirst({
+        where: { userId: session.user.id },
+        select: { kycStatus: true },
+      });
+      kycVerified = customer?.kycStatus === 'APPROVED';
+    } catch {
+      kycVerified = false;
+    }
+  }
+
   return (
     <DashboardBottomNav
-      role={session.user.role as string}
+      role={role}
       unreadCount={unread}
+      kycVerified={kycVerified}
     />
   );
 };

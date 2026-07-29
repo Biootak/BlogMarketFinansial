@@ -61,11 +61,17 @@ export default async function WalletPage() {
     redirect('/auth?callbackUrl=/dashboard/wallet');
   }
 
+  // CUSTOMER/TEST_CUSTOMER/MERCHANT: پورتال اختصاصی خودشان
+  const role = session.user.role as string;
+  if (role === 'CUSTOMER' || role === 'TEST_CUSTOMER' || role === 'MERCHANT') {
+    redirect('/customer/wallet');
+  }
+
   const walletData = await getWalletData(session.user.id ?? '');
 
   return (
     <div className="at-page" dir="rtl">
-      <WalletClient walletData={walletData} />
+      <WalletClient walletData={walletData} userRole={role} />
     </div>
   );
 }

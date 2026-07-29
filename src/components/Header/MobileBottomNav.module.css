@@ -110,14 +110,14 @@
   transform: scale(1.08);
   box-shadow:
     0 12px 28px -8px color-mix(in oklch, var(--ds-fg) 32%, transparent),
-    0 0 0 1px color-mix(in oklch, var(--ds-primary, #10b981) 35%, transparent);
+    0 0 0 1px color-mix(in oklch, var(--ds-primary) 35%, transparent);
   background: color-mix(in oklch, var(--ds-bg) 92%, transparent);
   cursor: grabbing;
 }
 
 .item[data-dragging='true'] .iconWrap {
-  background: color-mix(in oklch, var(--ds-primary, #10b981) 18%, transparent);
-  color: var(--ds-primary, #10b981);
+  background: color-mix(in oklch, var(--ds-primary) 18%, transparent);
+  color: var(--ds-primary);
 }
 
 /* آیتم‌های غیر-درگ‌شونده — کمی کمرنگ‌تر برای تاکید بر آیتم فعال */
@@ -186,7 +186,7 @@
 }
 
 .link:focus-visible {
-  outline: 2px solid var(--ds-primary, #10b981);
+  outline: 2px solid var(--ds-primary);
   outline-offset: 2px;
 }
 
@@ -216,22 +216,22 @@
 
 /* Active state — pill morph */
 .link[data-active='true'] {
-  color: var(--ds-primary, #10b981);
+  color: var(--ds-primary);
 }
 
 .link[data-active='true'] .iconWrap {
-  background: color-mix(in oklch, var(--ds-primary, #10b981) 14%, transparent);
-  color: var(--ds-primary, #10b981);
+  background: color-mix(in oklch, var(--ds-primary) 14%, transparent);
+  color: var(--ds-primary);
 }
 
 .link[data-active='true'] .label {
-  color: var(--ds-primary, #10b981);
+  color: var(--ds-primary);
   font-weight: 600;
 }
 
 /* Primary (wallet) — slightly elevated, always active when on wallet */
 .link[data-primary='true'][data-active='true'] {
-  color: var(--ds-primary, #10b981);
+  color: var(--ds-primary);
 }
 
 .dot {
@@ -241,9 +241,31 @@
   width: 0.4rem;
   height: 0.4rem;
   border-radius: 999px;
-  background: var(--ds-primary, #10b981);
-  box-shadow: 0 0 0 2px var(--ds-bg, white);
+  background: var(--ds-primary);
+  box-shadow: 0 0 0 2px var(--ds-bg);
   animation: nav-dot-pulse 2.4s var(--ds-ease-out-quart) infinite;
+}
+
+/* Notification badge — used by DashboardBottomNav */
+.badge {
+  position: absolute;
+  top: 2px;
+  inset-inline-end: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--ds-rose);
+  color: var(--ds-text-inverse);
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--ds-bg);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  animation: badge-pulse 2.4s var(--ds-ease-out-quart) infinite;
 }
 
 @keyframes nav-dot-pulse {
@@ -254,6 +276,15 @@
   50% {
     transform: scale(1.35);
     opacity: 0.65;
+  }
+}
+
+@keyframes badge-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.12);
   }
 }
 

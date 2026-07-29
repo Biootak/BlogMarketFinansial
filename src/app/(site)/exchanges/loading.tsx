@@ -11,7 +11,7 @@ export default function ExchangesLoading() {
       style={{
         minBlockSize: '100dvh',
         background: 'var(--ds-canvas)',
-        fontFamily: 'var(--ds-font, "Vazirmatn", system-ui, sans-serif)',
+        fontFamily: 'var(--font-estedad), system-ui, sans-serif',
       }}
     >
       {/* Hero */}

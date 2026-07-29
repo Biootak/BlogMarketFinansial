@@ -383,6 +383,11 @@
   white-space: nowrap;
 }
 
+.bestBadgeIcon {
+  color: var(--ds-accent-emerald);
+  flex-shrink: 0;
+}
+
 /* ─── Regular cells ──────────────────────────────────────────────────────────── */
 
 .cell {

@@ -43,26 +43,41 @@ export function SessionGuard({ children }: Props) {
   const lastFetchRef = useRef(0);
 
   // ۱. fetch interceptor برای تشخیص 401
+  // 2026-07-29: با Sentry/ابزارهای monitoring همزیستی دارد با marker اختصاصی
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const original = window.fetch.bind(window);
+    // اگر قبلاً wrap شده (توسط نمونه دیگری از SessionGuard)، کاری نکن
+    const w = window as unknown as { fetch: typeof fetch; __sgWrapped__?: boolean };
+    if (w.__sgWrapped__) return;
+    w.__sgWrapped__ = true;
 
-    window.fetch = async (...args) => {
+    const original = w.fetch.bind(w);
+    // marker قابل تشخیص روی خود تابع wrap شده
+    const wrapped = async (...args: Parameters<typeof fetch>): Promise<Response> => {
       const res = await original(...args);
-      // فقط response های 401 که JSON هستند و از مسیر auth ما می‌آیند
-      if (
-        res.status === 401 &&
-        !args[0]?.toString().includes('/auth/') &&
-        !args[0]?.toString().includes('/_next/')
-      ) {
+      // فقط response های 401 که JSON هستند و از مسیر API خودمان می‌آیند
+      // /auth/ و /_next/ و external URLs (http/https غیرهم‌مبدأ) را نادیده بگیر
+      const url = (args[0] as RequestInfo | URL | string | undefined)?.toString() ?? '';
+      const isOurApi = url.startsWith('/api/');
+      const isOurApiAuth = url.includes('/auth/');
+      const isNextInternal = url.includes('/_next/');
+      const isExternal = /^https?:\/\//i.test(url) && !url.startsWith(window.location.origin);
+      if (res.status === 401 && isOurApi && !isOurApiAuth && !isNextInternal && !isExternal) {
         // session منقضی شده — نمایش expired modal
         setState('expired');
       }
       return res;
     };
+    (wrapped as unknown as { __sgIsOurs__: boolean }).__sgIsOurs__ = true;
+    w.fetch = wrapped as unknown as typeof fetch;
 
     return () => {
-      window.fetch = original;
+      // فقط اگر wrap فعلی همان wrap ما است، restore کن
+      const current = w.fetch as unknown as { __sgIsOurs__?: boolean } | undefined;
+      if (current?.__sgIsOurs__) {
+        w.fetch = original;
+        w.__sgWrapped__ = false;
+      }
     };
   }, []);
 

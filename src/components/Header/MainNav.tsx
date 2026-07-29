@@ -185,7 +185,7 @@ export default async function MainNav({
                     <span className="relative">ورود</span>
                   </Link>
                   <Link
-                    href="/signup"
+                    href="/auth?step=register"
                     className="
                       group relative inline-flex items-center justify-center
                       h-10 px-5

@@ -555,6 +555,22 @@ const ApplyForExchangeSchema = z.object({
   phone: z.string().max(30).nullable().optional(),
   email: z.string().email('ایمیل نامعتبر').nullable().optional(),
   address: z.string().max(300).nullable().optional(),
+  // ۲۰۲۶-۰۷-۲۹: فیلدهای عملیاتی صرافی (روزانه/کارمزد/KYC)
+  // ادمین بعداً می‌تواند در پنل خودش fine-tune کند.
+  dailyLimitAf: z
+    .number()
+    .int('سقف روزانه باید عدد صحیح باشد')
+    .min(0, 'سقف روزانه نمی‌تواند منفی باشد')
+    .max(1_000_000_000_000, 'سقف روزانه بیش از حد بزرگ است')
+    .optional()
+    .default(0),
+  platformFee: z
+    .number()
+    .min(0, 'کارمزد نمی‌تواند منفی باشد')
+    .max(50, 'کارمزد نمی‌تواند بیش از ۵۰٪ باشد')
+    .optional()
+    .default(0),
+  requireKyc: z.boolean().optional().default(true),
 });
 
 export async function applyForExchange(
@@ -610,6 +626,11 @@ export async function applyForExchange(
         phone: parsed.data.phone ?? null,
         email: parsed.data.email ?? null,
         address: parsed.data.address ?? null,
+        // ۲۰۲۶-۰۷-۲۹: فیلدهای عملیاتی از فرم درخواست
+        // BigInt برای dailyLimitAf، Float برای platformFee
+        dailyLimitAf: BigInt(parsed.data.dailyLimitAf ?? 0),
+        platformFee: parsed.data.platformFee ?? 0,
+        requireKyc: parsed.data.requireKyc ?? true,
         status: 'PENDING',
         updatedAt: new Date(),
         createdById: auth.user.id,

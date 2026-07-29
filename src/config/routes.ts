@@ -106,6 +106,8 @@ export const publicRoutes = [
   // صفحات سرویس
   '/subscription',
   '/subscription/[plan]',
+  '/services',
+  '/services/compare',
   '/money-transfer',
   '/money-transfer/[...slug]',
   // R15-fix: صفحه ثبت‌نام صرافی — صفحه اصلی public است؛ auth درون page.tsx با redirect مدیریت می‌شود

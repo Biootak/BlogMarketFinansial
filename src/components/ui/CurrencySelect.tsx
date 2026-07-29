@@ -75,6 +75,12 @@ export interface CurrencySelectProps {
   groups?: CurrencyGroup[];
   /** Trigger size variant */
   size?: CurrencySelectSize;
+  /**
+   * رنگ‌بندی پنل dropdown:
+   *  - "light" (پیش‌فرض): روی پس‌زمینه‌ی روشن
+   *  - "dark": روی پس‌زمینه‌ی تیره (مثل /exchanges)
+   */
+  tone?: 'light' | 'dark';
   /** aria-label for the trigger button */
   ariaLabel?: string;
   /** Placeholder shown in search input */
@@ -112,6 +118,7 @@ export function CurrencySelect({
   items,
   groups,
   size = 'default',
+  tone = 'light',
   ariaLabel,
   searchPlaceholder = 'جستجوی ارز...',
   disabled = false,
@@ -239,7 +246,11 @@ export function CurrencySelect({
 
       {/* ── Dropdown panel ── */}
       {open && (
-        <div className={s.panel} aria-label="انتخاب ارز">
+        <div
+          className={`${s.panel} ${tone === 'dark' ? s.panelDark : ''}`}
+          data-tone={tone}
+          aria-label="انتخاب ارز"
+        >
           {/* Search */}
           <div className={s.search}>
             <Search size={15} aria-hidden className={s.searchIcon} />
