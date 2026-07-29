@@ -17,6 +17,7 @@
 
 import { ChevronLeft, Search } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Activity,
   Archive,
@@ -220,7 +221,7 @@ export function SettingsSearch({
         </span>
       </button>
 
-      {open && (
+      {open && typeof document !== 'undefined' && createPortal(
         <>
           <div className={s.backdrop} onClick={() => setOpen(false)} aria-hidden />
           <div className={s.popover} role="dialog" aria-label="جست‌وجو">
@@ -229,6 +230,7 @@ export function SettingsSearch({
               <input
                 ref={inputRef}
                 type="text"
+                dir="rtl"
                 value={query}
                 onChange={(e) => {
                   setQuery(e.target.value);
@@ -299,7 +301,8 @@ export function SettingsSearch({
               </span>
             </div>
           </div>
-        </>
+        </>,
+        document.body,
       )}
     </div>
   );

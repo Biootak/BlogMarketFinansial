@@ -1,4 +1,4 @@
-/* BackupManager.module.css */
+﻿/* BackupManager.module.css */
 
 .wrap {
   display: flex;
@@ -88,7 +88,7 @@
   background: var(--ds-surface-recessed);
   padding: 1px 6px;
   border-radius: 4px;
-  color: var(--nova-cyan);
+  color: var(--nova-up);
 }
 
 /* ── Form ──────────────────────────────────────────────────────────────── */
@@ -134,7 +134,7 @@
 
 .input:focus {
   outline: none;
-  border-color: oklch(62% 0.12 220 / 0.5);
+  border-color: oklch(52% 0.14 162 / 0.5);
 }
 
 .input:disabled {
@@ -180,7 +180,7 @@
 }
 
 .toggleSwitch[data-on='true'] .toggleKnob {
-  transform: translateX(16px);
+  transform: translateX(-16px);
 }
 
 /* ── Sub sections ─────────────────────────────────────────────────────── */
@@ -328,7 +328,7 @@
 
 .triggerInput:focus {
   outline: none;
-  border-color: oklch(62% 0.12 220 / 0.5);
+  border-color: oklch(52% 0.14 162 / 0.5);
 }
 
 .triggerBtn {
@@ -337,7 +337,7 @@
   gap: 6px;
   block-size: 40px;
   padding: 0 var(--ds-space-4);
-  background: var(--nova-cyan);
+  background: var(--nova-up);
   color: oklch(20% 0.008 265);
   border: none;
   border-radius: 8px;
@@ -422,8 +422,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 7px;
-  background: oklch(62% 0.12 220 / 0.1);
-  color: var(--nova-cyan);
+  background: oklch(52% 0.14 162 / 0.1);
+  color: var(--nova-up);
 }
 
 .rowInfo {
@@ -445,6 +445,27 @@
   margin-block-start: 2px;
   font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
+}
+
+.downloadBtn {
+  flex-shrink: 0;
+  inline-size: 30px;
+  block-size: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--ds-text-muted);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.downloadBtn:hover {
+  background: var(--ds-surface-recessed);
+  color: var(--nova-up);
+  border-color: oklch(52% 0.14 162 / 0.3);
 }
 
 .deleteBtn {

@@ -383,14 +383,14 @@ export function SettingsHub({ initialData }: SettingsHubProps) {
   );
 
   return (
-    <div className={s.hub} data-tab={activeTab}>
+    <div className={s.hub} data-tab={activeTab} dir="rtl">
       <div className={s.bgPattern} aria-hidden />
       {/* Header */}
       <header className={s.pageHead}>
         <div className={s.pageHeadText}>
           <div className={s.crumbRow}>
             <span className={s.crumb}>داشبورد</span>
-            <span className={s.crumbSep}>/</span>
+            <span className={s.crumbSep}>›</span>
             <span className={s.crumbActive}>تنظیمات</span>
           </div>
           <h1 className={s.title}>تنظیمات سیستم</h1>

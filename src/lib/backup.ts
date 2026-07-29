@@ -20,6 +20,7 @@ import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { mkdir, readdir, readFile, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import prisma from '@/lib/db';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -232,7 +233,10 @@ export async function pruneBackups(retentionCount: number): Promise<number> {
   let deleted = 0;
   for (const b of toDelete) {
     try {
-      await unlink(b.path);
+      // filesystem
+      if (b.path) await unlink(b.path).catch(() => {});
+      // DB record — best-effort، ممکن است BackupRun وجود نداشته باشد
+      await prisma.backupRun.deleteMany({ where: { filename: b.filename } }).catch(() => {});
       deleted++;
     } catch {
       // ignore
@@ -260,4 +264,106 @@ export function formatSize(bytes: number): string {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
   return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`;
+}
+
+// ── runBackup — core backup logic (auth-free) ────────────────────────────────
+//
+// این تابع منطق ساخت backup را بدون نیاز به session اجرا می‌کند.
+// فراخوانی‌ها:
+//   - triggerBackup (server action) → actor = user.id
+//   - /api/cron/backup              → actor = 'cron'
+
+/**
+ * اجرای backup کامل Prisma JSON.
+ * @param reason  دلیل backup — نمایش در UI
+ * @param actor   شناسه فراخوان — user.id یا 'cron'
+ */
+export async function runBackup(
+  reason: string = 'manual',
+  actor: string = 'cron',
+): Promise<BackupFileInfo> {
+  const createdAt = new Date().toISOString();
+  const sections: BackupEnvelope['sections'] = [];
+
+  // SystemSettings
+  try {
+    const settings = await prisma.systemSettings.findFirst();
+    if (settings) {
+      const { smtpPassword: _omit, ...safe } = settings as Record<string, unknown>;
+      sections.push({ name: 'system_settings', rowCount: 1, takenAt: createdAt, data: safe });
+    } else {
+      sections.push({ name: 'system_settings', rowCount: 0, takenAt: createdAt, data: null });
+    }
+  } catch {
+    sections.push({ name: 'system_settings', rowCount: 0, takenAt: createdAt, data: null });
+  }
+
+  // Social links
+  try {
+    const social = await prisma.socialLink.findMany();
+    sections.push({ name: 'social_links', rowCount: social.length, takenAt: createdAt, data: social });
+  } catch { /* skip */ }
+
+  // Audit log — last 1000 rows
+  try {
+    const audit = await prisma.auditLog.findMany({ orderBy: { createdAt: 'desc' }, take: 1000 });
+    sections.push({ name: 'audit_log', rowCount: audit.length, takenAt: createdAt, data: audit });
+  } catch { /* skip */ }
+
+  // Exchange rates
+  try {
+    const rates = await prisma.exchangeRate.findMany({ take: 200 });
+    sections.push({ name: 'exchange_rates', rowCount: rates.length, takenAt: createdAt, data: rates });
+  } catch { /* skip */ }
+
+  const manifestWithoutChecksum = {
+    version: 1 as const,
+    source: 'financialmarket.page',
+    createdAt,
+    reason,
+    actor,
+    totalRows: sections.reduce((sum, s) => sum + s.rowCount, 0),
+    sections: sections.map((s) => ({ name: s.name, rowCount: s.rowCount })),
+    nodeVersion: process.version,
+  };
+
+  const checksum = computeChecksum({ sections, manifest: manifestWithoutChecksum });
+  const envelope: BackupEnvelope = {
+    manifest: { ...manifestWithoutChecksum, checksum },
+    sections,
+  };
+
+  const info = await writeBackup(envelope, reason);
+
+  // ثبت در جدول BackupRun
+  try {
+    await prisma.backupRun.create({
+      data: {
+        id: info.filename.replace(/[^a-z0-9]/gi, '').slice(0, 25),
+        filename: info.filename,
+        sizeBytes: info.sizeBytes,
+        totalRows: info.totalRows,
+        sections: info.sections,
+        reason: info.reason,
+        actor,
+        checksum: info.checksum,
+      },
+    });
+  } catch { /* ignore — filesystem backup already written */ }
+
+  // audit log (best-effort)
+  try {
+    await prisma.auditLog.create({
+      data: {
+        actorId: actor,
+        action: 'BACKUP_TRIGGERED',
+        meta: { filename: info.filename, sizeBytes: info.sizeBytes, totalRows: info.totalRows },
+      },
+    });
+  } catch { /* ignore */ }
+
+  // retention
+  await pruneBackups(20).catch(() => 0);
+
+  return info;
 }

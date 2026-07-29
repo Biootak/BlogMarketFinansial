@@ -276,6 +276,202 @@ model Notification {
   @@index([userId, isRead])
 }
 
+// ─── Communication Center models (Tier 1) ─────────────────────
+// Announcement: پیام یک‌بار به همه/بخشی از کاربران
+// Campaign: کمپین ایمیلی/پیامکی چندمرحله‌ای
+// CampaignRecipient: وضعیت هر گیرنده در هر کمپین
+model Announcement {
+  id            String    @id @default(cuid())
+  title         String
+  body          String
+  // نوع کانال — درون‌برنامه‌ای، ایمیل، پوش، یا همه
+  channels      String    @default("inapp") // comma-separated: inapp,email,push,sms
+  // مخاطب — all, role, segment
+  audience      String    @default("all")
+  // فیلتر اضافی (مثلاً نقش‌ها یا segment)
+  audienceFilter String?
+  // زمان‌بندی انتشار
+  scheduledAt   DateTime?
+  publishedAt   DateTime?
+  expiresAt     DateTime?
+  status        String    @default("draft") // draft, scheduled, published, archived
+  // چه کسی ساخته
+  createdById   String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([createdAt(sort: Desc)])
+}
+
+model Campaign {
+  id           String    @id @default(cuid())
+  name         String
+  description  String?
+  channel      String    @default("email") // email, sms, push
+  subject      String?
+  body         String
+  status       String    @default("draft") // draft, scheduled, sending, completed, paused
+  audience     String    @default("all")
+  audienceFilter String?
+  scheduledAt  DateTime?
+  startedAt    DateTime?
+  completedAt  DateTime?
+  statsSent    Int       @default(0)
+  statsOpened  Int       @default(0)
+  statsClicked Int       @default(0)
+  statsBounced Int       @default(0)
+  createdById  String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  recipients   CampaignRecipient[]
+
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([createdAt(sort: Desc)])
+}
+
+model CampaignRecipient {
+  id           String    @id @default(cuid())
+  campaignId   String
+  userId       String
+  status       String    @default("pending") // pending, sent, failed, opened, clicked
+  sentAt       DateTime?
+  openedAt     DateTime?
+  clickedAt    DateTime?
+  errorMessage String?
+  campaign     Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, userId])
+  @@index([campaignId, status])
+  @@index([userId])
+}
+
+// ─── Job Center models (Tier 1) ───────────────────────────
+// BackgroundJob: jobهای پس‌زمینه، cron، retry، DLQ
+model BackgroundJob {
+  id           String    @id @default(cuid())
+  type         String    // email.send, market.rates.refresh, settlement.process
+  queue        String    @default("default")
+  payload      Json?
+  status       String    @default("pending") // pending, running, completed, failed, dead
+  priority     Int       @default(0)
+  attempts     Int       @default(0)
+  maxAttempts  Int       @default(3)
+  scheduledAt  DateTime?
+  startedAt    DateTime?
+  completedAt  DateTime?
+  failedAt     DateTime?
+  errorMessage String?
+  errorStack   String?
+  result       Json?
+  triggeredBy  String?   // userId یا 'system' یا 'cron'
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([status])
+  @@index([queue, status])
+  @@index([type])
+  @@index([scheduledAt])
+  @@index([createdAt(sort: Desc)])
+}
+
+// ─── Helpdesk / Tickets models (Tier 1) ────────────────────
+model SupportTicket {
+  id            String    @id @default(cuid())
+  subject       String
+  description   String
+  status        String    @default("open") // open, pending, in_progress, resolved, closed
+  priority      String    @default("normal") // low, normal, high, urgent
+  category      String    @default("general") // general, billing, technical, kyc, account, other
+  // چه کسی تیکت را ایجاد کرده
+  requesterId   String
+  requesterRole String?
+  // ارجاع به staff
+  assignedToId  String?
+  // SLA
+  firstResponseAt DateTime?
+  resolvedAt   DateTime?
+  closedAt     DateTime?
+  // شمارنده پیام‌ها
+  messageCount Int       @default(0)
+  // تگ‌ها برای گروه‌بندی
+  tags         String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  messages     TicketMessage[]
+
+  @@index([status])
+  @@index([priority])
+  @@index([assignedToId])
+  @@index([requesterId])
+  @@index([createdAt(sort: Desc)])
+}
+
+model TicketMessage {
+  id          String   @id @default(cuid())
+  ticketId    String
+  authorId    String
+  authorRole  String?
+  body        String
+  isInternal  Boolean  @default(false) // یادداشت داخلی برای staff
+  attachments Json?
+  createdAt   DateTime @default(now())
+
+  ticket      SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId, createdAt(sort: Desc)])
+  @@index([authorId])
+}
+
+// ─── Approval Workflows models (Tier 1) ────────────────────
+model ApprovalRequest {
+  id            String    @id @default(cuid())
+  type          String    // settlement, kyc, refund, withdrawal, custom
+  title         String
+  description   String?
+  entityType    String
+  entityId      String
+  requesterId   String
+  status        String    @default("pending") // pending, approved, rejected, cancelled
+  currentStep   Int       @default(0)
+  totalSteps    Int       @default(1)
+  // payload اضافی (مثلاً amount, currency, reason)
+  payload       Json?
+  decidedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  steps         ApprovalStep[]
+
+  @@index([status])
+  @@index([type, status])
+  @@index([requesterId])
+  @@index([entityType, entityId])
+  @@index([createdAt(sort: Desc)])
+}
+
+model ApprovalStep {
+  id           String    @id @default(cuid())
+  requestId    String
+  stepIndex    Int
+  approverRole String    // ADMIN, OWNER, SUPERADMIN, CUSTOM (specific user)
+  approverId   String?   // اگر specific user باشد
+  status       String    @default("pending") // pending, approved, rejected, skipped
+  comment      String?
+  decidedAt    DateTime?
+  createdAt    DateTime  @default(now())
+
+  request      ApprovalRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@unique([requestId, stepIndex])
+  @@index([requestId, status])
+  @@index([approverId, status])
+}
+
 model Advertisement {
   id               String     @id @default(cuid())
   title            String
@@ -388,6 +584,39 @@ model SystemSettings {
   twitter         String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+// ── Backup ──────────────────────────────────────────────────
+// singleton row: id = 'singleton' — از upsert استفاده می‌شود
+model BackupConfig {
+  id                    String   @id @default("singleton")
+  enabled               Boolean  @default(true)
+  intervalHours         Int      @default(24)
+  retentionCount        Int      @default(7)
+  includeAuditLog       Boolean  @default(true)
+  includeSocialLinks    Boolean  @default(true)
+  includeSystemSettings Boolean  @default(true)
+  notifyOnSuccess       Boolean  @default(false)
+  notifyOnFailure       Boolean  @default(true)
+  notifyEmail           String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+// رکورد هر backup که اجرا شده — برای audit trail و UI لیست
+model BackupRun {
+  id         String   @id @default(cuid())
+  filename   String   @unique
+  sizeBytes  Int
+  totalRows  Int
+  sections   String[] @default([])
+  reason     String   @default("manual")
+  actor      String?
+  checksum   String?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt(sort: Desc)])
+  @@index([reason])
 }
 
 model SystemLog {

@@ -20,11 +20,7 @@ import {
 import {
   type BackupConfig,
   DEFAULT_BACKUP_CONFIG,
-  type BackupEnvelope,
   type BackupFileInfo,
-  listBackups,
-  pruneBackups,
-  writeBackup,
 } from '@/lib/backup';
 import { createHash, randomBytes } from 'node:crypto';
 
@@ -535,7 +531,7 @@ export async function updateSecuritySettings(data: {
 
 // ── API Keys ───────────────────────────────────────────────────────────────
 
-interface ApiKeyRecord {
+export interface ApiKeyRecord {
   id: string;
   name: string;
   prefix: string;
@@ -727,33 +723,49 @@ export async function getBackupStatus(): Promise<{
     const authCheck = await requireSuperAdmin();
     if (!authCheck.success) return authFailureToActionResult(authCheck);
 
-    const backups = await listBackups();
-    const lastBackupAt = backups[0]?.createdAt ?? null;
-
-    // best-effort: load last config from most recent log
-    const lastConfigLog = await prisma.auditLog
-      .findFirst({
-        where: { action: 'BACKUP_SETTINGS_UPDATED' },
-        orderBy: { createdAt: 'desc' },
-      })
+    // بارگذاری تنظیمات از جدول BackupConfig (singleton)
+    const dbConfig = await prisma.backupConfig
+      .findUnique({ where: { id: 'singleton' } })
       .catch(() => null);
 
-    let config: BackupConfig = { ...DEFAULT_BACKUP_CONFIG };
-    if (lastConfigLog) {
-      try {
-        const raw = lastConfigLog.meta;
-        const meta = (typeof raw === 'string' ? JSON.parse(raw) : (raw ?? {})) as Partial<BackupConfig>;
-        config = { ...config, ...meta };
-      } catch {
-        // ignore
-      }
-    }
+    const config: BackupConfig = dbConfig
+      ? {
+          enabled: dbConfig.enabled,
+          intervalHours: dbConfig.intervalHours,
+          retentionCount: dbConfig.retentionCount,
+          includeAuditLog: dbConfig.includeAuditLog,
+          includeSocialLinks: dbConfig.includeSocialLinks,
+          includeSystemSettings: dbConfig.includeSystemSettings,
+          notifyOnSuccess: dbConfig.notifyOnSuccess,
+          notifyOnFailure: dbConfig.notifyOnFailure,
+          notifyEmail: dbConfig.notifyEmail,
+        }
+      : { ...DEFAULT_BACKUP_CONFIG };
 
-    const nextScheduledAt = lastBackupAt && config.enabled
-      ? new Date(
-          new Date(lastBackupAt).getTime() + config.intervalHours * 60 * 60 * 1000,
-        ).toISOString()
-      : null;
+    // بارگذاری لیست backup ها از جدول BackupRun (به‌روز + filesystem)
+    const dbRuns = await prisma.backupRun
+      .findMany({ orderBy: { createdAt: 'desc' }, take: 100 })
+      .catch(() => [] as Awaited<ReturnType<typeof prisma.backupRun.findMany>>);
+
+    const backups: BackupFileInfo[] = dbRuns.map((r) => ({
+      filename: r.filename,
+      path: '',
+      sizeBytes: r.sizeBytes,
+      createdAt: r.createdAt.toISOString(),
+      reason: r.reason,
+      totalRows: r.totalRows,
+      sections: r.sections,
+      actor: r.actor ?? 'unknown',
+      checksum: r.checksum ?? '',
+    }));
+
+    const lastBackupAt = backups[0]?.createdAt ?? null;
+    const nextScheduledAt =
+      lastBackupAt && config.enabled
+        ? new Date(
+            new Date(lastBackupAt).getTime() + config.intervalHours * 60 * 60 * 1000,
+          ).toISOString()
+        : null;
 
     return {
       success: true,
@@ -790,21 +802,50 @@ export async function updateBackupSettings(data: {
       };
     }
 
+    const d = parsed.data;
+
+    // ذخیره در جدول BackupConfig (upsert singleton)
+    await prisma.backupConfig.upsert({
+      where: { id: 'singleton' },
+      create: {
+        id: 'singleton',
+        enabled: d.enabled,
+        intervalHours: d.intervalHours,
+        retentionCount: d.retentionCount,
+        includeAuditLog: d.includeAuditLog,
+        includeSocialLinks: d.includeSocialLinks,
+        includeSystemSettings: d.includeSystemSettings,
+        notifyOnSuccess: d.notifyOnSuccess,
+        notifyOnFailure: d.notifyOnFailure,
+        notifyEmail: d.notifyEmail ?? null,
+      },
+      update: {
+        enabled: d.enabled,
+        intervalHours: d.intervalHours,
+        retentionCount: d.retentionCount,
+        includeAuditLog: d.includeAuditLog,
+        includeSocialLinks: d.includeSocialLinks,
+        includeSystemSettings: d.includeSystemSettings,
+        notifyOnSuccess: d.notifyOnSuccess,
+        notifyOnFailure: d.notifyOnFailure,
+        notifyEmail: d.notifyEmail ?? null,
+      },
+    });
+
+    // audit log
     await prisma.auditLog
       .create({
         data: {
           actorId: authCheck.user.id,
           action: 'BACKUP_SETTINGS_UPDATED',
-          meta: parsed.data as unknown as object,
+          meta: d as unknown as object,
         },
       })
-      .catch(() => {
-        // best-effort
-      });
+      .catch(() => {});
 
     revalidatePath('/dashboard/settings');
     safeRevalidateTag('settings-backup');
-    return { success: true, data: parsed.data };
+    return { success: true, data: d };
   } catch (_error) {
     return { success: false, error: 'خطا در ذخیره تنظیمات backup' };
   }
@@ -827,113 +868,12 @@ export async function triggerBackup(data: { reason?: string } = {}) {
       };
     }
 
-    const createdAt = new Date().toISOString();
-    const sections: BackupEnvelope['sections'] = [];
-
-    // SystemSettings — همیشه شامل می‌شود
-    sections.push({
-      name: 'system_settings',
-      rowCount: 0,
-      takenAt: createdAt,
-      data: null,
-    });
-    try {
-      const settings = await prisma.systemSettings.findFirst();
-      if (settings) {
-        // strip secret before serializing
-        const { smtpPassword: _omit, ...safe } = settings as Record<string, unknown>;
-        sections[sections.length - 1].data = safe;
-        sections[sections.length - 1].rowCount = 1;
-      }
-    } catch {
-      // skip if DB error
-    }
-
-    // Social links
-    try {
-      const social = await prisma.socialLink.findMany();
-      sections.push({
-        name: 'social_links',
-        rowCount: social.length,
-        takenAt: createdAt,
-        data: social,
-      });
-    } catch {
-      // skip
-    }
-
-    // Audit log — last 1000 rows for context
-    try {
-      const audit = await prisma.auditLog.findMany({
-        orderBy: { createdAt: 'desc' },
-        take: 1000,
-      });
-      sections.push({
-        name: 'audit_log',
-        rowCount: audit.length,
-        takenAt: createdAt,
-        data: audit,
-      });
-    } catch {
-      // skip
-    }
-
-    // exchange / rate-lists / categories / posts — only if config allows
-    try {
-      const rates = await prisma.exchangeRate.findMany({ take: 200 });
-      sections.push({
-        name: 'exchange_rates',
-        rowCount: rates.length,
-        takenAt: createdAt,
-        data: rates,
-      });
-    } catch {
-      // skip
-    }
-
-    // integrity hash
-    const manifestWithoutChecksum = {
-      version: 1 as const,
-      source: 'financialmarket.page',
-      createdAt,
-      reason: parsed.data.reason || 'manual',
-      actor: authCheck.user.id,
-      totalRows: sections.reduce((sum, s) => sum + s.rowCount, 0),
-      sections: sections.map((s) => ({ name: s.name, rowCount: s.rowCount })),
-      nodeVersion: process.version,
-    };
-
-    // compute checksum
-    const { computeChecksum } = await import('@/lib/backup');
-    const checksum = computeChecksum({ sections, manifest: manifestWithoutChecksum });
-
-    const envelope: BackupEnvelope = {
-      manifest: { ...manifestWithoutChecksum, checksum },
-      sections,
-    };
-
-    const info = await writeBackup(envelope, parsed.data.reason || 'manual');
-
-    // log it
-    await prisma.auditLog
-      .create({
-        data: {
-          actorId: authCheck.user.id,
-          action: 'BACKUP_TRIGGERED',
-          meta: {
-            filename: info.filename,
-            sizeBytes: info.sizeBytes,
-            totalRows: info.totalRows,
-            reason: info.reason,
-          },
-        },
-      })
-      .catch(() => {
-        // best-effort
-      });
-
-    // best-effort retention
-    await pruneBackups(20).catch(() => 0);
+    // تمام منطق backup در runBackup است — از تکرار جلوگیری می‌شود
+    const { runBackup } = await import('@/lib/backup');
+    const info = await runBackup(
+      parsed.data.reason || 'manual',
+      authCheck.user.id,
+    );
 
     revalidatePath('/dashboard/settings');
     return { success: true, data: info };
@@ -958,15 +898,21 @@ export async function deleteBackup(filename: string) {
       return { success: false, error: 'نام فایل نامعتبر است' };
     }
 
+    // حذف فایل از filesystem
     const { unlink } = await import('node:fs/promises');
     const { existsSync } = await import('node:fs');
-    const path = await import('node:path');
-    const fullPath = path.join(process.cwd(), 'backups', filename);
-    if (!existsSync(fullPath)) {
-      return { success: false, error: 'فایل یافت نشد' };
+    const nodePath = await import('node:path');
+    const fullPath = nodePath.join(process.cwd(), 'backups', filename);
+    if (existsSync(fullPath)) {
+      await unlink(fullPath);
     }
-    await unlink(fullPath);
 
+    // حذف رکورد از BackupRun (best-effort — ممکن است قبلاً وجود نداشته باشد)
+    await prisma.backupRun
+      .deleteMany({ where: { filename } })
+      .catch(() => {});
+
+    // audit log
     await prisma.auditLog
       .create({
         data: {
@@ -975,9 +921,7 @@ export async function deleteBackup(filename: string) {
           meta: { filename },
         },
       })
-      .catch(() => {
-        // best-effort
-      });
+      .catch(() => {});
 
     revalidatePath('/dashboard/settings');
     return { success: true };

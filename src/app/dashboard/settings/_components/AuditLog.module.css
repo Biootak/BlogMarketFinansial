@@ -1,4 +1,4 @@
-/* AuditLog.module.css */
+﻿/* AuditLog.module.css */
 
 .wrap {
   display: flex;
@@ -57,7 +57,7 @@
 .filterInput:focus,
 .filterSelect:focus {
   outline: none;
-  border-color: oklch(62% 0.12 220 / 0.5);
+  border-color: oklch(52% 0.14 162 / 0.5);
 }
 
 .filterSelect {
@@ -71,7 +71,7 @@
   gap: 4px;
   block-size: 34px;
   padding: 0 var(--ds-space-3);
-  background: var(--nova-cyan);
+  background: var(--nova-up);
   color: oklch(20% 0.008 265);
   border: none;
   border-radius: 7px;
@@ -173,8 +173,8 @@
 }
 
 .row[data-severity='info'] .severityDot {
-  background: var(--nova-cyan);
-  box-shadow: 0 0 6px oklch(62% 0.12 220 / 0.4);
+  background: var(--nova-up);
+  box-shadow: 0 0 6px oklch(52% 0.14 162 / 0.4);
 }
 .row[data-severity='warn'] .severityDot {
   background: var(--nova-amber);

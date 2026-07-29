@@ -1,4 +1,4 @@
-/* SettingsHub.module.css
+﻿/* SettingsHub.module.css
  * ─────────────────────────────────────────────────────────────
  *  Hub layout — sidebar + main + right rail.
  *  Three-column grid که در mobile به یک ستون collapse می‌شود.
@@ -13,6 +13,7 @@
   gap: var(--ds-space-6);
   padding: var(--ds-space-5);
   min-block-size: 100dvb;
+  direction: rtl;
 }
 
 /* subtle ambient background — top right corner hairline glow */
@@ -25,7 +26,7 @@
   background:
     radial-gradient(
       circle at 90% -10%,
-      oklch(62% 0.12 220 / 0.04),
+      oklch(52% 0.14 162 / 0.04),
       transparent 40%
     ),
     radial-gradient(
@@ -38,6 +39,11 @@
 .hub > *:not(.bgPattern) {
   position: relative;
   z-index: 1;
+}
+
+/* SettingsSearch popover باید روی همه چیز باشد */
+.hub :global(.settings-search-portal) {
+  z-index: 9999;
 }
 
 /* ── Loading state ─────────────────────────────────────────────────────── */
@@ -161,9 +167,13 @@
 
 .body {
   display: grid;
+  /* RTL: sidebar راست، main وسط، rail چپ */
   grid-template-columns: 240px minmax(0, 1fr) 280px;
   gap: var(--ds-space-5);
-  align-items: flex-start;
+  align-items: start;
+  /* جلوگیری از overflow */
+  min-inline-size: 0;
+  overflow: visible;
 }
 
 @media (max-width: 1200px) {
@@ -184,6 +194,7 @@
 @media (max-width: 768px) {
   .body {
     grid-template-columns: 1fr;
+    gap: var(--ds-space-4);
   }
   .sidebar {
     position: static;
@@ -193,7 +204,9 @@
 .sidebar {
   position: sticky;
   top: var(--ds-space-4);
-  z-index: 1;
+  z-index: 2;
+  /* جلوگیری از overflow sidebar */
+  min-inline-size: 0;
 }
 
 .main {
@@ -201,12 +214,15 @@
   flex-direction: column;
   gap: var(--ds-space-4);
   min-inline-size: 0;
+  /* اطمینان از اینکه main محتوا در grid cell خودش می‌ماند */
+  overflow: hidden;
 }
 
 .rail {
   position: sticky;
   top: var(--ds-space-4);
   align-self: flex-start;
+  min-inline-size: 0;
 }
 
 /* ── Panel ────────────────────────────────────────────────────────────── */
@@ -239,8 +255,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 9px;
-  background: oklch(62% 0.12 220 / 0.1);
-  color: var(--nova-cyan);
+  background: oklch(52% 0.14 162 / 0.1);
+  color: var(--nova-up);
 }
 
 .panelInfo {
@@ -319,7 +335,7 @@
 .input:focus,
 .textarea:focus {
   outline: none;
-  border-color: oklch(62% 0.12 220 / 0.5);
+  border-color: oklch(52% 0.14 162 / 0.5);
   background: var(--ds-surface-recessed);
 }
 
@@ -418,9 +434,9 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: oklch(62% 0.12 220 / 0.1);
-  color: var(--nova-cyan);
-  border: 1px solid oklch(62% 0.12 220 / 0.3);
+  background: oklch(52% 0.14 162 / 0.1);
+  color: var(--nova-up);
+  border: 1px solid oklch(52% 0.14 162 / 0.3);
   border-radius: 7px;
   font: inherit;
   font-size: var(--ds-text-xs);
@@ -430,7 +446,7 @@
 }
 
 .uploadBtn:hover {
-  background: oklch(62% 0.12 220 / 0.18);
+  background: oklch(52% 0.14 162 / 0.18);
 }
 
 .fileInput {
@@ -502,6 +518,7 @@
 .toggleKnob {
   position: absolute;
   inset-block-start: 1px;
+  /* off حالت: knob راست سوئیچ (در RTL = inline-start) */
   inset-inline-start: 1px;
   inline-size: 20px;
   block-size: 20px;
@@ -511,8 +528,10 @@
   box-shadow: 0 1px 3px oklch(0% 0 0 / 0.3);
 }
 
+/* on حالت: در RTL translateX منفی = حرکت به چپ */
+:global([dir='rtl']) .toggleSwitch[data-on='true'] .toggleKnob,
 .toggleSwitch[data-on='true'] .toggleKnob {
-  transform: translateX(20px);
+  transform: translateX(-20px);
 }
 
 /* ── Maintenance banner ──────────────────────────────────────────────── */

@@ -304,6 +304,26 @@ body {
   overflow-x: clip;
 }
 
+/* ============================================================================
+   Font Inheritance Reset — اجباری برای همه المان‌های form و interactive
+   ----------------------------------------------------------------------------
+   مرورگرها input/button/select/textarea را با font-family: system-ui رندر
+   می‌کنند مگر صریحاً override شود. این باعث می‌شود فونت فارسی روی این المان‌ها
+   اعمال نشود. این rule گلوبال است و روی همه صفحات سایت اعمال می‌شود.
+   ============================================================================ */
+button,
+input,
+textarea,
+select,
+optgroup,
+option {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+
 /* Number rendering refined */
 .tabular-nums {
   font-variant-numeric: tabular-nums;

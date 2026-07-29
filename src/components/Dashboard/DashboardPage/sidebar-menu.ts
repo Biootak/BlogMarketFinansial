@@ -14,6 +14,7 @@ import {
   HiOutlineClipboardDocumentCheck,
   HiOutlineClipboardDocumentList,
   HiOutlineCog6Tooth,
+  HiOutlineCommandLine,
   HiOutlineCreditCard,
   HiOutlineCircleStack,
   HiOutlineCurrencyDollar,
@@ -27,6 +28,7 @@ import {
   HiOutlineListBullet,
   HiOutlineMapPin,
   HiOutlineMegaphone,
+  HiOutlineRadio,
   HiOutlineReceiptPercent,
   HiOutlineShieldCheck,
   HiOutlineSparkles,
@@ -348,6 +350,46 @@ export function getMenu(role: UserRole): NavSection[] {
     title: 'گزارش ممیزی سیستم',
   };
 
+  const observability: MenuItem = {
+    id: 'observability',
+    href: '/dashboard/observability',
+    icon: HiOutlineRadio({ className: ICON_CLASS }),
+    label: 'مرکز پایش',
+    title: 'مرکز مشاهده‌پذیری — uptime، خطا، کارایی',
+  };
+
+  const communication: MenuItem = {
+    id: 'communication',
+    href: '/dashboard/communication',
+    icon: HiOutlineMegaphone({ className: ICON_CLASS }),
+    label: 'مرکز ارتباطات',
+    title: 'مرکز ارتباطات — broadcast، کمپین، اعلان',
+  };
+
+  const jobCenter: MenuItem = {
+    id: 'jobCenter',
+    href: '/dashboard/jobs',
+    icon: HiOutlineCommandLine({ className: ICON_CLASS }),
+    label: 'مرکز Job',
+    title: 'صف job، cron، retry و DLQ',
+  };
+
+  const helpdesk: MenuItem = {
+    id: 'helpdesk',
+    href: '/dashboard/helpdesk',
+    icon: HiOutlineInboxArrowDown({ className: ICON_CLASS }),
+    label: 'تیکت‌ها',
+    title: 'سیستم تیکت داخلی — helpdesk',
+  };
+
+  const approvals: MenuItem = {
+    id: 'approvals',
+    href: '/dashboard/approvals',
+    icon: HiOutlineClipboardDocumentCheck({ className: ICON_CLASS }),
+    label: 'تأییدیه‌ها',
+    title: 'جریان‌های تأیید چندمرحله‌ای',
+  };
+
   const fraudReview: MenuItem = {
     id: 'fraudReview',
     href: '/dashboard/fraud-review',
@@ -637,6 +679,7 @@ export function getMenu(role: UserRole): NavSection[] {
             creditRates,
             advertisements,
             serviceRequests,
+            observability,
           ],
         },
         {
@@ -646,14 +689,20 @@ export function getMenu(role: UserRole): NavSection[] {
           items: [customers, kycReview, fraudReview, settlements, auditLog],
         },
         {
-          id: 'admin',
+          id: 'platform',
           index: '۰۵',
+          label: 'پلتفرم',
+          items: [communication, jobCenter, helpdesk, approvals],
+        },
+        {
+          id: 'admin',
+          index: '۰۶',
           label: 'مدیریت',
           items: [users, roles, permissions, reports, billingAddress, subscriptionAdmin, settings],
         },
         {
           id: 'account',
-          index: '۰۶',
+          index: '۰۷',
           label: 'حساب',
           items: [
             wallet,
@@ -686,6 +735,7 @@ export function getMenu(role: UserRole): NavSection[] {
             creditRates,
             advertisements,
             serviceRequests,
+            observability,
           ],
         },
         {
@@ -695,14 +745,20 @@ export function getMenu(role: UserRole): NavSection[] {
           items: [customers, kycReview, fraudReview, settlements, auditLog],
         },
         {
-          id: 'admin',
+          id: 'platform',
           index: '۰۵',
+          label: 'پلتفرم',
+          items: [communication, jobCenter, helpdesk, approvals],
+        },
+        {
+          id: 'admin',
+          index: '۰۶',
           label: 'مدیریت',
           items: [users, roles, permissions, billingAddress, subscriptionAdmin],
         },
         {
           id: 'account',
-          index: '۰۶',
+          index: '۰۷',
           label: 'حساب',
           items: [
             wallet,

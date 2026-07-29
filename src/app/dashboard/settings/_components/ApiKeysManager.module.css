@@ -1,4 +1,4 @@
-/* ApiKeysManager.module.css */
+﻿/* ApiKeysManager.module.css */
 
 .wrap {
   display: flex;
@@ -122,8 +122,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 9px;
-  background: oklch(62% 0.12 220 / 0.1);
-  color: var(--nova-cyan);
+  background: oklch(52% 0.14 162 / 0.1);
+  color: var(--nova-up);
 }
 
 .rowInfo {
@@ -316,7 +316,7 @@
 
 .formInput:focus {
   outline: none;
-  border-color: oklch(62% 0.12 220 / 0.5);
+  border-color: oklch(52% 0.14 162 / 0.5);
 }
 
 .scopes {
@@ -383,9 +383,9 @@
 }
 
 .expiryBtn[data-on='true'] {
-  background: oklch(62% 0.12 220 / 0.1);
-  border-color: oklch(62% 0.12 220 / 0.5);
-  color: var(--nova-cyan);
+  background: oklch(52% 0.14 162 / 0.1);
+  border-color: oklch(52% 0.14 162 / 0.5);
+  color: var(--nova-up);
 }
 
 .dialogFoot {
@@ -445,7 +445,7 @@
   gap: var(--ds-space-2);
   padding: var(--ds-space-3);
   background: var(--ds-canvas-subtle);
-  border: 1px solid oklch(62% 0.12 220 / 0.3);
+  border: 1px solid oklch(52% 0.14 162 / 0.3);
   border-radius: 8px;
 }
 
@@ -453,7 +453,7 @@
   flex: 1;
   font-family: ui-monospace, monospace;
   font-size: var(--ds-text-xs);
-  color: var(--nova-cyan);
+  color: var(--nova-up);
   word-break: break-all;
   line-height: 1.5;
 }

@@ -1,4 +1,4 @@
-/* RightRailPreview.module.css
+﻿/* RightRailPreview.module.css
  * ─────────────────────────────────────────────────────────────
  *  پنل سمت راست — live preview تنظیمات.
  *  رنگ‌ها فقط از توکن‌های واقعی tokens.css استفاده می‌کنند.
@@ -163,7 +163,7 @@
   flex-shrink: 0;
   border-radius: 10px;
   overflow: hidden;
-  background: linear-gradient(135deg, oklch(58% 0.12 165 / 0.18), oklch(62% 0.12 220 / 0.12));
+  background: linear-gradient(135deg, oklch(58% 0.12 165 / 0.18), oklch(52% 0.14 162 / 0.12));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -207,7 +207,7 @@
 
 .brandUrl {
   font-size: var(--ds-text-xs);
-  color: var(--nova-cyan);
+  color: var(--nova-up);
   font-family: ui-monospace, monospace;
   margin-block-start: 4px;
   white-space: nowrap;
@@ -294,8 +294,8 @@
   block-size: 22px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: oklch(62% 0.12 220 / 0.12);
-  color: var(--nova-cyan);
+  background: oklch(52% 0.14 162 / 0.12);
+  color: var(--nova-up);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -337,7 +337,7 @@
 .flowPort {
   font-size: var(--ds-text-xs);
   font-family: ui-monospace, monospace;
-  color: var(--nova-cyan);
+  color: var(--nova-up);
 }
 
 .flowHint {
@@ -415,7 +415,7 @@
 }
 
 .scoreFill[data-tone='ok'] {
-  background: linear-gradient(90deg, var(--nova-emerald), var(--nova-cyan));
+  background: linear-gradient(90deg, var(--nova-emerald), var(--nova-up));
 }
 .scoreFill[data-tone='warn'] {
   background: linear-gradient(90deg, var(--nova-amber), var(--nova-rose));
@@ -549,7 +549,7 @@
 
 .auditBar {
   inline-size: 100%;
-  background: linear-gradient(to top, var(--nova-cyan), var(--nova-emerald));
+  background: linear-gradient(to top, var(--nova-up), var(--nova-emerald));
   border-radius: 2px 2px 0 0;
   opacity: 0.6;
   transition: opacity 0.2s ease;

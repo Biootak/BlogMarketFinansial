@@ -1,0 +1,6 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-6, 1.5rem);
+  min-height: 100%;
+}

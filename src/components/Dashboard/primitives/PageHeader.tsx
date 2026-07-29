@@ -1,5 +1,7 @@
 import { cn } from '@/lib/utils';
 import {
+  Activity,
+  AlertTriangle,
   ArrowLeftRight,
   BarChart2,
   Bell,
@@ -7,19 +9,29 @@ import {
   ChevronLeft,
   ClipboardList,
   CreditCard,
+  Database,
   FileText,
   FolderOpen,
+  Gauge,
+  Inbox,
   Layers,
   LayoutDashboard,
   type LucideProps,
+  Megaphone,
+  MessageSquare,
+  Radar,
+  Send,
   Settings,
   ShieldCheck,
   ShieldX,
   Sparkles,
   Tag,
+  Ticket,
   UserCircle,
   Users,
   Wallet,
+  Workflow,
+  Zap,
 } from 'lucide-react';
 import Link from 'next/link';
 import type { FC, ReactNode } from 'react';
@@ -43,7 +55,19 @@ export type PageHeaderIcon =
   | 'tag'
   | 'building'
   | 'credit-card'
-  | 'sparkles';
+  | 'sparkles'
+  | 'activity'
+  | 'radar'
+  | 'gauge'
+  | 'zap'
+  | 'alert-triangle'
+  | 'database'
+  | 'workflow'
+  | 'inbox'
+  | 'send'
+  | 'megaphone'
+  | 'message-square'
+  | 'ticket';
 
 const ICON_MAP: Record<PageHeaderIcon, FC<LucideProps>> = {
   'user-circle': UserCircle,
@@ -64,6 +88,18 @@ const ICON_MAP: Record<PageHeaderIcon, FC<LucideProps>> = {
   building: Building2,
   'credit-card': CreditCard,
   sparkles: Sparkles,
+  activity: Activity,
+  radar: Radar,
+  gauge: Gauge,
+  zap: Zap,
+  'alert-triangle': AlertTriangle,
+  database: Database,
+  workflow: Workflow,
+  inbox: Inbox,
+  send: Send,
+  megaphone: Megaphone,
+  'message-square': MessageSquare,
+  ticket: Ticket,
 };
 
 export type PageHeaderAccent = 'indigo' | 'emerald' | 'amber' | 'rose' | 'violet' | 'cyan';

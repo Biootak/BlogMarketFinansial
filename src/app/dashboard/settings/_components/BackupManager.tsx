@@ -15,15 +15,15 @@ import {
   Archive,
   Clock,
   Database,
+  Download,
   Loader2,
   Play,
   ShieldAlert,
   Trash2,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import type { BackupConfig, BackupFileInfo } from '@/lib/backup';
 import {
-  type BackupConfig,
-  type BackupFileInfo,
   deleteBackup,
   getBackupStatus,
   triggerBackup,
@@ -112,7 +112,7 @@ export function BackupManager() {
   };
 
   const update = <K extends keyof BackupConfig>(key: K, value: BackupConfig[K]) => {
-    setConfig((prev) => ({ ...prev, [key]: value }));
+    setConfig((prev: BackupConfig) => ({ ...prev, [key]: value }));
   };
 
   const onSave = async () => {
@@ -383,6 +383,15 @@ export function BackupManager() {
                     <span title={b.createdAt}>{formatRelative(b.createdAt)}</span>
                   </div>
                 </div>
+                <a
+                  href={`/api/backup/download?filename=${encodeURIComponent(b.filename)}`}
+                  download={b.filename}
+                  className={s.downloadBtn}
+                  aria-label="دانلود backup"
+                  title="دانلود"
+                >
+                  <Download size={13} strokeWidth={2.2} />
+                </a>
                 <button
                   type="button"
                   onClick={() => setConfirmDelete(b)}
