@@ -144,6 +144,34 @@
   transform: translateY(-1px);
 }
 
+/* R14-fix (2026-07-29): ثبت درخواست — primary CTA در hero.
+   قبلاً فقط «مقایسه» بود؛ کاربران anonymous هم باید بتوانند ثبت کنند. */
+.primaryLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: 10px 20px;
+  background: linear-gradient(135deg, var(--nova-emerald) 0%, var(--nova-cyan, var(--nova-emerald)) 100%);
+  border: 1px solid transparent;
+  border-radius: var(--ds-radius-full);
+  color: var(--ds-surface);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-bold);
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 22px -10px color-mix(in srgb, var(--nova-emerald) 50%, transparent);
+  transition: transform var(--ds-duration-fast), box-shadow var(--ds-duration-fast), filter var(--ds-duration-fast);
+}
+
+.primaryLink:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.06), 0 14px 32px -10px color-mix(in srgb, var(--nova-emerald) 60%, transparent);
+  filter: brightness(1.05);
+}
+
+.primaryLink:active {
+  transform: translateY(0);
+}
+
 .heroHint {
   font-size: var(--ds-text-xs);
   color: var(--ds-text-tertiary);

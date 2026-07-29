@@ -86,6 +86,7 @@ const NAVBAR_LINKS: readonly NavItem[] = [
   { id: 'stock', name: 'بورس و سهام', href: '/archive/category/stock' },
   { id: 'money-transfer', name: 'حواله', href: '/money-transfer' },
   { id: 'online-payment', name: 'پرداخت آنلاین', href: '/online-payment' },
+  { id: 'services', name: 'سرویس‌ها', href: '/services' },
   { id: 'urgent', name: 'اخبار فوری', href: '/archive/category/news-urgent', isNew: true },
   { id: 'exchanges', name: 'صرافی‌ها', href: '/exchanges' },
   { id: 'apply-exchange', name: 'ثبت صرافی', href: '/apply-exchange', isNew: true },
@@ -121,6 +122,9 @@ const Navigation = ({ className = '', rateLists = [] }: NavigationProps): React.
 
   const isActive = (item: NavItem) => {
     if (pathname === item.href) return true;
+    // Prefix match for non-root hrefs only (so /blog, /about, etc. don't all
+    // match the "/" home item).
+    if (item.href !== '/' && pathname.startsWith(`${item.href}/`)) return true;
     if (item.subItems) {
       return item.subItems.some(
         (subItem) => pathname === subItem.href || pathname.startsWith(`${subItem.href}/`),

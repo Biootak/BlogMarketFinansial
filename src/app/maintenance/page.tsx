@@ -33,11 +33,14 @@ function formatJalali(d: Date) {
 }
 
 export default async function MaintenancePage() {
-  // we read settings so any site-specific message override can be picked up
-  // in the future without a separate round-trip. Today we render a generic
-  // but branded message.
+  // 2026-07-29: پیام سفارشی ادمین ارشد دریافت می‌شود — اگر خالی باشد متن پیش‌فرض نمایش می‌دهیم
   const settings = await getSystemSettingsData();
   const siteName = settings.siteName ?? 'Financial Market';
+  const customMessage = settings.maintenanceMessage?.trim();
+  const leadMessage =
+    customMessage && customMessage.length > 0
+      ? customMessage
+      : `${siteName} در حال ارتقای زیرساخت و بهبود تجربهٔ کاربری است. خیلی زود برمی‌گردیم. از صبر و همراهی شما سپاسگزاریم.`;
   const now = new Date();
 
   return (
@@ -45,7 +48,7 @@ export default async function MaintenancePage() {
         number="MNT"
         eyebrow="در حال به‌روزرسانی"
         title="سایت موقتاً در دسترس نیست"
-        lead={`${siteName} در حال ارتقای زیرساخت و بهبود تجربهٔ کاربری است. خیلی زود برمی‌گردیم. از صبر و همراهی شما سپاسگزاریم.`}
+        lead={leadMessage}
         cardTitle="چه خبر است؟"
         cardBody="مهندسان ما در حال اعمال تغییرات زیرساختی، بهبود امنیت، و افزایش سرعت سایت هستند. این فرایند معمولاً کمتر از ۳۰ دقیقه طول می‌کشد."
         icon={Construction}

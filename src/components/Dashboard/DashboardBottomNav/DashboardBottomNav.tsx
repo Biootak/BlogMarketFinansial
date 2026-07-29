@@ -30,7 +30,6 @@ import {
   HiOutlineHome,
   HiOutlineUserCircle,
   HiOutlineBell,
-  HiOutlineChartBarSquare,
   HiOutlineDocumentText,
   HiOutlineUsers,
   HiOutlineWallet,
@@ -78,6 +77,8 @@ const DashboardBottomNav: FC<Props> = ({ role, unreadCount = 0 }) => {
     const isCustomer = role === 'CUSTOMER' || role === 'TEST_CUSTOMER' || role === 'MERCHANT';
     const isExchange = role === 'EXCHANGE';
 
+    // R13-fix (2026-07-29): primary برای USER/SUPPORT/unknown → wallet به‌جای reports
+    // (reports در baseDashboardRoutes نیست و USER با کلیک به /dashboard برمی‌گشت).
     const primary: NavItem = isAuthor
       ? {
           id: 'posts',
@@ -106,12 +107,13 @@ const DashboardBottomNav: FC<Props> = ({ role, unreadCount = 0 }) => {
               matchPrefixes: ['/dashboard/customers', '/dashboard/requests'],
             }
           : {
-              id: 'reports',
-              href: '/dashboard/reports',
-              label: 'گزارش‌ها',
-              icon: HiOutlineChartBarSquare,
+              // USER / SUPPORT / unknown — primary = wallet
+              id: 'wallet',
+              href: '/dashboard/wallet',
+              label: 'کیف پول',
+              icon: HiOutlineWallet,
               primary: true,
-              matchPrefixes: ['/dashboard/reports', '/dashboard/audit-log'],
+              matchPrefixes: ['/dashboard/wallet'],
             };
 
     return [

@@ -76,14 +76,13 @@ const FX_LABELS: Record<FxCurrency, string> = {
 };
 
 function formatFxAmount(cents: number, currency: FxCurrency): string {
-  const isDecimal = currency === 'IRR'; // ریال معمولاً اعشار ندارد ولی برای سادگی همه صحیح
-  const n = cents / 1; // amounts are integer cents
+  // 2026-07-29: هیچ ارزی در سیستم ما decimal نیست؛ مقدار ورودی سِنت (عدد صحیح) است
   return new Intl.NumberFormat('fa-AF', {
     style: 'currency',
     currency: currency === 'AFN' ? 'AFN' : currency,
     minimumFractionDigits: 0,
-    maximumFractionDigits: isDecimal ? 0 : 0,
-  }).format(n);
+    maximumFractionDigits: 0,
+  }).format(cents);
 }
 
 function fmtAFN(amount: string): string {

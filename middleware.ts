@@ -6,6 +6,7 @@ import {
   baseDashboardRoutes,
   publicRoutes,
   superAdminRoutes,
+  userFintechRoutes,
 } from '@/config/routes';
 import { getToken } from 'next-auth/jwt';
 import { NextResponse } from 'next/server';
@@ -80,6 +81,7 @@ const compiledSuperAdmin = superAdminRoutes.map(compileRoute);
 const compiledAdmin = adminRoutes.map(compileRoute);
 const compiledAuthor = authorRoutes.map(compileRoute);
 const compiledPublic = publicRoutes.map(compileRoute);
+const compiledUserFintech = userFintechRoutes.map(compileRoute);
 
 const matchesAny = (pathname: string, routes: CompiledRoute[]): boolean =>
   routes.some((r) => r.test(pathname));
@@ -136,6 +138,9 @@ const checkDashboardAccess = (pathname: string, role?: string) => {
   // Block fintech-only roles from the entire /dashboard tree
   if (role && DASHBOARD_BLOCKED_ROLES.has(role)) return false;
   if (matchesAny(pathname, compiledBaseDashboard)) return true;
+  // R13-fix (2026-07-29): userFintechRoutes (wallet/kyc/transfer/devices/notifications)
+  // are customer-facing surfaces — accessible to ANY authenticated user (USER + staff).
+  if (matchesAny(pathname, compiledUserFintech)) return true;
   // SUPERADMIN is an alias for OWNER — both get full superAdmin + admin + author routes
   if (role && SUPER_ROLES.has(role) && matchesAny(pathname, compiledSuperAdmin)) return true;
   if (role && ADMIN_ROLES.has(role) && matchesAny(pathname, compiledAdmin)) return true;
@@ -168,8 +173,10 @@ export async function middleware(req: NextRequest) {
 
   // Check token expiration
   if (token?.exp && Date.now() / 1000 > token.exp) {
+    // 2026-07-29 (R13-fix): expired=1 اضافه می‌شود تا AuthFlow یک notice
+    // «نشست منقضی شد» نشان دهد و کاربر صفحهٔ خالی نبیند.
     return NextResponse.redirect(
-      new URL(`/auth?callbackUrl=${encodeURIComponent(pathname)}`, nextUrl),
+      new URL(`/auth?expired=1&callbackUrl=${encodeURIComponent(pathname)}`, nextUrl),
     );
   }
 
@@ -188,8 +195,9 @@ export async function middleware(req: NextRequest) {
   // Dashboard routes - require login
   if (!isLoggedIn && pathname.startsWith('/dashboard')) {
     const callbackUrl = pathname + search;
+    // 2026-07-29 (R13-fix): unauthenticated=1 تا AuthFlow پیام بدهد
     return NextResponse.redirect(
-      new URL(`/auth?callbackUrl=${encodeURIComponent(callbackUrl)}`, nextUrl),
+      new URL(`/auth?unauthenticated=1&callbackUrl=${encodeURIComponent(callbackUrl)}`, nextUrl),
     );
   }
 

@@ -14,6 +14,8 @@ export interface SiteSettings {
   twitter: string | null;
   whatsapp: string | null;
   maintenanceMode: boolean;
+  // 2026-07-29: پیام سفارشی صفحه تعمیرات — null یعنی استفاده از متن پیش‌فرض
+  maintenanceMessage: string | null;
   cacheEnabled: boolean;
 }
 
@@ -29,6 +31,7 @@ const SETTINGS_FALLBACK: SiteSettings = {
   twitter: null,
   whatsapp: null,
   maintenanceMode: false,
+  maintenanceMessage: null,
   cacheEnabled: true,
 };
 
@@ -72,6 +75,7 @@ export const getSystemSettingsData = safeCache(
       twitter: settings.twitter,
       whatsapp: settings.whatsapp,
       maintenanceMode: settings.maintenanceMode,
+      maintenanceMessage: pickString('maintenanceMessage'),
       cacheEnabled: settings.cacheEnabled,
     };
   },

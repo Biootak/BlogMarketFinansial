@@ -1,0 +1,45 @@
+/* NotificationBadge.module.css — pulse-on-activity ring
+   بدون گسترش dashboard.css — این فایل co-located است. */
+
+.wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-inline-start: auto;
+  flex: 0 0 auto;
+}
+
+/* pulse ring — وقتی count تازه افزایش یافته، یک حلقهٔ گسترش‌یابنده پشت badge ظاهر می‌شود.
+   چون این کلاس فقط وقتی count > 0 رندر می‌شود، بهینه است. */
+.pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: oklch(55% 0.18 25);
+  opacity: 0.5;
+  animation: notif-pulse 1800ms cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes notif-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  70% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+
+/* احترام به reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .pulse {
+    animation: none;
+  }
+}

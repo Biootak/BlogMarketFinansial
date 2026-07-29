@@ -29,9 +29,30 @@
     transform var(--ds-duration-base) var(--ds-ease-out-quart);
 }
 
-@media (max-width: 767px) {
+/* R20-fix (2026-07-29): BottomNav در تبلت (768-1023px) هم نمایش داده می‌شود
+   تا کاربر تبلت navigation داشته باشد (Sidebar فقط در /dashboard است).
+   دسکتاپ ≥1024px: Header اصلی navigation را می‌دهد، BottomNav مخفی. */
+@media (max-width: 1023px) {
   .nav {
     display: flex;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* تبلت: pill عریض‌تر + کمی padding بیشتر */
+  .list {
+    max-width: 36rem;
+    padding: 0.5rem;
+  }
+  .link {
+    padding: 0.625rem 0.5rem;
+  }
+  .iconWrap {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  .label {
+    font-size: 0.75rem;
   }
 }
 
@@ -75,6 +96,69 @@
   min-width: 0;
   display: flex;
   align-items: stretch;
+  touch-action: pan-y; /* dnd-kit: اجازه scroll عمودی، فقط horizontal را capture می‌کنیم */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* آیتم در حال drag — lift + shadow */
+.item[data-dragging='true'] {
+  z-index: 10;
+}
+
+.item[data-dragging='true'] .link {
+  transform: scale(1.08);
+  box-shadow:
+    0 12px 28px -8px color-mix(in oklch, var(--ds-fg) 32%, transparent),
+    0 0 0 1px color-mix(in oklch, var(--ds-primary, #10b981) 35%, transparent);
+  background: color-mix(in oklch, var(--ds-bg) 92%, transparent);
+  cursor: grabbing;
+}
+
+.item[data-dragging='true'] .iconWrap {
+  background: color-mix(in oklch, var(--ds-primary, #10b981) 18%, transparent);
+  color: var(--ds-primary, #10b981);
+}
+
+/* آیتم‌های غیر-درگ‌شونده — کمی کمرنگ‌تر برای تاکید بر آیتم فعال */
+.item[data-dragging='false'] {
+  transition: opacity var(--ds-duration-base) var(--ds-ease-out-quart);
+}
+
+/* دکمه dev برای بازنشانی ترتیب — فقط در حالت توسعه */
+.resetButton {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  inset-inline-end: 1rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  color: var(--ds-fg-muted);
+  background: color-mix(in oklch, var(--ds-bg) 80%, transparent);
+  border: 0.5px solid color-mix(in oklch, var(--ds-fg) 12%, transparent);
+  border-radius: 999px;
+  cursor: pointer;
+  pointer-events: auto;
+  opacity: 0.4;
+  transition: opacity var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.resetButton:hover {
+  opacity: 1;
+}
+
+/* R20-fix: آیتم ششم (سرویس‌ها) — در موبایل مخفی، در تبلت نمایش */
+.tabletOnly {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .tabletOnly {
+    display: flex;
+  }
 }
 
 .link {

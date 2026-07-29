@@ -53,6 +53,17 @@ export default function AuthFlow() {
   const initialEmail = searchParams.get('email') ?? '';
   const initialIntent = searchParams.get('intent');
   const callbackUrl = searchParams.get('callbackUrl');
+  // 2026-07-29 (R13-fix): وقتی middleware به‌خاطر session منقضی به /auth ریدایرکت
+  // می‌کند، پارامتر `expired=1` را هم می‌فرستد. اینجا notice می‌سازیم تا کاربر
+  // بداند چرا به اینجا برگشته و صفحهٔ خالی نبیند.
+  const expiredReason = searchParams.get('expired');
+  const reasonMessages: Record<string, string> = {
+    '1': 'نشست شما منقضی شده است. لطفاً دوباره وارد شوید.',
+    unauthenticated: 'برای دسترسی به این بخش، لطفاً وارد حساب خود شوید.',
+  };
+  const initialNotice: AuthNotice | null = expiredReason
+    ? { tone: 'info', message: reasonMessages[expiredReason] ?? reasonMessages['1'] }
+    : null;
 
   const [step, setStep] = useState<InternalStep>(initialStep);
   const [email, setEmail] = useState(initialEmail);
@@ -61,7 +72,7 @@ export default function AuthFlow() {
       ? initialIntent
       : 'register',
   );
-  const [notice, setNotice] = useState<AuthNotice | null>(null);
+  const [notice, setNotice] = useState<AuthNotice | null>(initialNotice);
   const [cooldownMs, setCooldownMs] = useState(0);
   const [otpInvalid, setOtpInvalid] = useState(false);
   const [resetToken, setResetToken] = useState<string | null>(null);

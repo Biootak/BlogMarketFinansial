@@ -175,6 +175,28 @@ export const baseDashboardRoutes = [
 ];
 
 /**
+ * Fintech routes accessible to USER + OWNER/SUPERADMIN/ADMIN/AUTHOR
+ * These are customer-facing fintech surfaces (wallet, KYC, transfer, devices,
+ * notifications). USER uses them to operate the platform — not admin tools.
+ * Pages enforce their own data-scoping (e.g. wallet shows only own accounts).
+ * @type {string[]}
+ */
+export const userFintechRoutes = [
+  '/dashboard/wallet',
+  '/dashboard/wallet/[...slug]',
+  '/dashboard/kyc',
+  '/dashboard/kyc/[...slug]',
+  '/dashboard/transfer',
+  '/dashboard/transfer/[...slug]',
+  '/dashboard/virtual-cards',
+  '/dashboard/virtual-cards/[...slug]',
+  '/dashboard/devices',
+  '/dashboard/devices/[...slug]',
+  '/dashboard/notifications',
+  '/dashboard/notifications/[...slug]',
+];
+
+/**
  * Routes that require author access
  * @type {string[]}
  */
@@ -332,16 +354,17 @@ export function getAccessibleRoutes(role: string): string[] {
 
   switch (role) {
     case 'OWNER':
-      return [...routes, ...superAdminRoutes, ...adminRoutes, ...authorRoutes];
+      return [...routes, ...superAdminRoutes, ...adminRoutes, ...authorRoutes, ...userFintechRoutes];
     case 'ADMIN':
-      return [...routes, ...adminRoutes, ...authorRoutes];
+      return [...routes, ...adminRoutes, ...authorRoutes, ...userFintechRoutes];
     case 'AUTHOR':
-      return [...routes, ...authorRoutes];
+      return [...routes, ...authorRoutes, ...userFintechRoutes];
     case 'CUSTOMER':
     case 'TEST_CUSTOMER':
     case 'MERCHANT':
       return customerRoutes;
     default:
-      return routes;
+      // USER + SUPPORT: base + user-facing fintech surfaces
+      return [...routes, ...userFintechRoutes];
   }
 }

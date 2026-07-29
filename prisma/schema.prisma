@@ -368,6 +368,8 @@ model SystemSettings {
   siteDescription String?
   logoUrl         String?
   maintenanceMode Boolean  @default(false)
+  // 2026-07-29: پیام سفارشی نمایش‌داده‌شده در صفحه تعمیرات — ادمین ارشد ویرایش می‌کند
+  maintenanceMessage String?
   cacheEnabled    Boolean  @default(true)
   smtpServer      String?
   smtpPort        String?

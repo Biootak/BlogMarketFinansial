@@ -121,7 +121,7 @@
 - Audit before change: grep for existing component/util; reuse before modifying.
 - Scope discipline: change only what the task requires. Note broader inconsistencies; propose a separate task.
 - Never expand global CSS: no new rules in `globals.css`, `dashboard.css`, `setup.css`, `auth.css`, `atelier-archive.css`, `money-transfer/styles.css`.
-- Keep modular: >400 lines → split.
+- Keep modular: اگر فایل >600 خط شد و چندین concern داخلش هست → split (نه صرفاً به‌خاطر خط). فایل‌های data-heavy (config، schema، locale، migration) از این قانون مستثنا هستند.
 - No stubs / no regressions: no `console.log`, no `any`, no half-built branches.
 - **Dependency audit:** هر بار که `lib/` تغییر می‌کند → همه importers را grep کن و سازگاری را بررسی کن.
 - **Parallel data sources:** اگر دو منبع یک هدف مشترک دارند، تناقض را به کاربر بگو. → ر.ک `AGENTS.market-rates.md`.
@@ -190,7 +190,7 @@ Component Decision Protocol — همیشه به ترتیب:
 6. **محل ساخت shared component جدید:** داشبورد → `primitives/` + `index.ts`؛ سایت → `src/components/[نام-منطقی]/index.tsx` یا `src/components/ui/`.
 
 Rules for new code:
-- Max ~400 lines; one concern per file; business logic → `lib/` or hook, never inline.
+- هدف ~400 خط؛ سقف سخت ۶۰۰ خط — اگر فایل بین ۴۰۰–۶۰۰ خط است و **یک concern** دارد نیازی به split نیست. فایل‌های config/schema/locale/migration از هر دو محدودیت مستثنا هستند. business logic → `lib/` or hook, never inline.
 - No `any`, `@ts-ignore`, TODO/placeholder/FIXME. Type everything.
 - No stubs: every action must do something real.
 - Co-located `*.module.css`.

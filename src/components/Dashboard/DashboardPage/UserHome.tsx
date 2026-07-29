@@ -34,6 +34,7 @@ import { StatCard } from '@/components/Dashboard/primitives/StatCard';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency, type SupportedCurrency } from '@/lib/afn-format';
 import { formatRelativeTime } from '@/lib/utils';
+import { EmailVerificationWatcher } from './EmailVerificationWatcher';
 import styles from './UserHome.module.css';
 
 interface UserHomeProps {
@@ -153,6 +154,9 @@ export async function UserHome({
 
   return (
     <div className={styles.root} dir="rtl">
+      {/* R17-fix (2026-07-29): وقتی session تغییر کند و emailVerified →
+          true شود، router.refresh() خودکار فراخوانی می‌شود. */}
+      <EmailVerificationWatcher initialVerified={emailVerified} />
       {/* ─── Header strip ──────────────────────────────────────────────── */}
       <section className={styles.header}>
         <div className={styles.headerMeta}>

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file Root layout (server component)
  *
  * Auth is opt-in per route — we do NOT await `auth()` here because every
@@ -6,8 +6,11 @@
  * (and bcrypt + PrismaAdapter) just to pass `session` to a client
  * `SessionProvider` that doesn't need it on first paint.
  *
- * Per route, the (site)/layout and dashboard/layout call `auth()` and
- * pass `session` to `<Providers session={session}>`.
+ * Session is fetched on demand client-side via `useSession()` (auto-fetch),
+ * so `<Providers>` is mounted WITHOUT a `session` prop. The initial render
+ * is `status: "loading"` until the auto-fetch resolves; components that
+ * need server-side session data (e.g. `MainNav` for sign-in/avatar gating)
+ * call `auth()` themselves in their server-component path.
  */
 import { Toaster } from '@/components/ui/toaster';
 import type { Metadata, Viewport } from 'next';

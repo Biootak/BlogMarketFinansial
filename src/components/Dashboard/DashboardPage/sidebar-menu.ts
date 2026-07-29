@@ -702,7 +702,8 @@ export function getMenu(role: UserRole): NavSection[] {
         },
       ];
     default:
-      // USER role — minimal panel
+      // USER role — minimal panel. R13-fix (2026-07-29): اعلان‌ها اضافه شد
+      // (در userFintechRoutes قرار گرفت) تا کاربر اعلان‌های خود را ببیند.
       return [
         { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
         {
@@ -711,7 +712,12 @@ export function getMenu(role: UserRole): NavSection[] {
           label: 'مالی',
           items: [wallet, virtualCards, kyc, myDeals, transfer],
         },
-        { id: 'account', index: '۰۳', label: 'حساب', items: [devices, myRequests, profile] },
+        {
+          id: 'account',
+          index: '۰۳',
+          label: 'حساب',
+          items: [devices, notifications, myRequests, profile],
+        },
       ];
   }
 }

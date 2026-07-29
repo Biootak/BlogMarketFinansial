@@ -12,7 +12,7 @@
  *  URL state: query params ?service=...&group=... (برای اشتراک‌گذاری)
  */
 
-import { Banknote, Filter, Search } from 'lucide-react';
+import { Banknote, Filter, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -173,6 +173,21 @@ export default function ServicesMarketplace({
               <Filter size={14} strokeWidth={1.9} aria-hidden />
               <span>مشاهده جدول مقایسه</span>
             </Link>
+            {/* R14-fix (2026-07-29): ثبت درخواست سریع — primary CTA در hero.
+                کاربران می‌توانند بدون لاگین از طریق exchangeServiceRequestDialog ثبت کنند. */}
+            <button
+              type="button"
+              className={s.primaryLink}
+              onClick={() => {
+                // به اولین سرویس فعال scroll + auto-open dialog از exchange card
+                const target = document.getElementById('services-grid');
+                target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+              aria-label="ثبت درخواست جدید"
+            >
+              <Plus size={14} strokeWidth={2.2} aria-hidden />
+              <span>ثبت درخواست جدید</span>
+            </button>
             <span className={s.heroHint}>برای مقایسه همزمان همه صرافی‌ها در یک نگاه</span>
           </div>
         </div>
@@ -245,7 +260,7 @@ export default function ServicesMarketplace({
       </div>
 
       {/* ── Result ──────────────────────────────────────── */}
-      <div className={s.resultWrap}>
+      <div className={s.resultWrap} id="services-grid">
         {filtered.length === 0 ? (
           <EmptyState onReset={resetFilters} />
         ) : (

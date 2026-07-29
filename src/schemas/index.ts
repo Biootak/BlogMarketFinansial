@@ -400,4 +400,10 @@ export const UpdateCacheSettingsSchema = z.object({
 
 export const UpdateMaintenanceModeSchema = z.object({
   maintenanceMode: z.boolean(),
+  // اختیاری — اگر خالی باشد، پیام پیش‌فرض در صفحه تعمیرات نمایش داده می‌شود
+  maintenanceMessage: z
+    .string()
+    .max(500, 'پیام نباید بیشتر از ۵۰۰ کاراکتر باشد')
+    .optional()
+    .or(z.literal('')),
 });

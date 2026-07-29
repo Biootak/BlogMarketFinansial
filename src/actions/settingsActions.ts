@@ -17,6 +17,7 @@ export interface SystemSettingsData {
   siteDescription?: string;
   logoUrl?: string;
   maintenanceMode?: boolean;
+  maintenanceMessage?: string;
   cacheEnabled?: boolean;
   smtpServer?: string;
   smtpPort?: string;
@@ -322,7 +323,11 @@ export async function updateCacheSettings(data: { cacheEnabled: boolean }) {
 }
 
 // Update maintenance mode
-export async function updateMaintenanceMode(data: { maintenanceMode: boolean }) {
+// 2026-07-29: حالا maintenanceMessage هم ذخیره می‌شود تا در صفحه /maintenance نمایش یابد
+export async function updateMaintenanceMode(data: {
+  maintenanceMode: boolean;
+  maintenanceMessage?: string;
+}) {
   try {
     const authCheck = await requireSuperAdmin();
     if (!authCheck.success) return authFailureToActionResult(authCheck);
@@ -338,18 +343,31 @@ export async function updateMaintenanceMode(data: { maintenanceMode: boolean }) 
 
     let settings = await prisma.systemSettings.findFirst();
 
+    // 2026-07-29: null را به undefined تبدیل می‌کنیم تا Prisma مقدار پیش‌فرض نگه دارد
+    const messageToStore =
+      parsed.data.maintenanceMessage && parsed.data.maintenanceMessage.length > 0
+        ? parsed.data.maintenanceMessage
+        : null;
+
     if (settings) {
       settings = await prisma.systemSettings.update({
         where: { id: settings.id },
-        data: { maintenanceMode: parsed.data.maintenanceMode },
+        data: {
+          maintenanceMode: parsed.data.maintenanceMode,
+          maintenanceMessage: messageToStore,
+        },
       });
     } else {
       settings = await prisma.systemSettings.create({
-        data: { maintenanceMode: parsed.data.maintenanceMode },
+        data: {
+          maintenanceMode: parsed.data.maintenanceMode,
+          maintenanceMessage: messageToStore,
+        },
       });
     }
 
     revalidatePath('/dashboard/settings');
+    revalidatePath('/maintenance');
     // C1 fix: never return the SMTP password (secret) to the client.
     (settings as { smtpPassword?: string }).smtpPassword = undefined;
     return { success: true, data: settings };

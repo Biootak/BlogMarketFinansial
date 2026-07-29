@@ -1,5 +1,6 @@
 import DashboardGate from './DashboardGate';
 import { SessionGuard } from '@/components/Dashboard/SessionGuard';
+import OfflineBanner from '@/components/OfflineBanner/OfflineBanner';
 import './dashboard.css';
 
 // 2026-06-29: Dashboard is auth-gated and user-specific — never statically
@@ -17,6 +18,8 @@ export default function DashboardLayout({
   // DashboardGate inside <Suspense> so the dashboard shell streams first.
   return (
     <SessionGuard>
+      {/* R16-fix (2026-07-29): هشدار sticky آفلاین بالای داشبورد */}
+      <OfflineBanner />
       <DashboardGate>{children}</DashboardGate>
     </SessionGuard>
   );

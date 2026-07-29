@@ -5,15 +5,21 @@
  *
  * هر ۶۰ ثانیه یک‌بار count را از سرور می‌گیرد.
  * وقتی کاربر روی صفحه notifications رفت، به‌طور خودکار reset می‌شود.
+ *
+ * R15-fix (2026-07-29): pulse-on-activity — یک حلقهٔ گسترش‌یابنده پشت badge
+ * اضافه شد تا کاربر متوجه اعلان جدید شود. از یک CSS module co-located استفاده
+ * می‌کنیم تا dashboard.css دست‌نخورده بماند.
  */
 
 import { getUnreadNotificationsCount } from '@/actions/notification-actions';
 import { usePathname } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import s from './NotificationBadge.module.css';
 
 export function NotificationBadge() {
   const [count, setCount] = useState(0);
   const pathname = usePathname();
+  const prevCountRef = useRef(0);
 
   const refresh = useCallback(async () => {
     try {
@@ -33,6 +39,7 @@ export function NotificationBadge() {
   useEffect(() => {
     if (pathname === '/dashboard/notifications') {
       setCount(0);
+      prevCountRef.current = 0;
     }
   }, [pathname]);
 
@@ -42,11 +49,20 @@ export function NotificationBadge() {
     return () => clearInterval(id);
   }, [refresh]);
 
+  // فقط وقتی count واقعاً افزایش یافت (نه اولین بار) → pulse
+  const showPulse = count > 0 && count > prevCountRef.current;
+  useEffect(() => {
+    prevCountRef.current = count;
+  }, [count]);
+
   if (count === 0) return null;
 
   return (
-    <span className="dash-side__notif-badge" aria-label={`${count} اعلان خوانده‌نشده`}>
-      {count > 99 ? '۹۹+' : new Intl.NumberFormat('fa-IR').format(count)}
+    <span className={s.wrap}>
+      {showPulse && <span className={s.pulse} aria-hidden />}
+      <span className="dash-side__notif-badge" aria-label={`${count} اعلان خوانده‌نشده`}>
+        {count > 99 ? '۹۹+' : new Intl.NumberFormat('fa-IR').format(count)}
+      </span>
     </span>
   );
 }

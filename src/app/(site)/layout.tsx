@@ -1,3 +1,4 @@
+import OfflineBanner from '@/components/OfflineBanner/OfflineBanner';
 import SiteFooterData, { FooterSkeleton } from '@/app/(site)/_components/SiteFooterData';
 import SiteHeaderData, { HeaderSkeleton } from '@/app/(site)/_components/SiteHeaderData';
 import SiteSettingsData from '@/app/(site)/_components/SiteSettingsData';
@@ -58,6 +59,11 @@ export default async function SiteLayout({
 }) {
   return (
     <>
+      {/* R16-fix (2026-07-29): sticky banner وضعیت آفلاین */}
+      <Suspense fallback={null}>
+        <OfflineBanner />
+      </Suspense>
+
       <Suspense fallback={<HeaderSkeleton />}>
         <SiteHeaderData />
       </Suspense>

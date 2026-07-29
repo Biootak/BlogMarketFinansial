@@ -156,7 +156,7 @@ export default function SettingsPage() {
 
   const [form, setForm] = useState<FormData>({
     general: {
-      siteTitle: '',
+      siteName: '',
       siteDescription: '',
       contactEmail: '',
       contactPhone: '',
@@ -312,8 +312,10 @@ export default function SettingsPage() {
 
   const handleSaveMaintenance = useCallback(async () => {
     setLoading(true);
+    // 2026-07-29: maintenanceMessage هم ارسال می‌شود تا در صفحه /maintenance نمایش یابد
     const r = await updateMaintenanceMode({
       maintenanceMode: form.maintenance.maintenanceMode,
+      maintenanceMessage: form.maintenance.maintenanceMessage,
     }).catch(() => ({ success: false, error: 'خطا در ذخیره' }));
     setLoading(false);
     if ((r as { success: boolean }).success)
@@ -332,7 +334,7 @@ export default function SettingsPage() {
             : 'خطا',
         variant: 'destructive',
       });
-  }, [form.maintenance.maintenanceMode, toast]);
+  }, [form.maintenance.maintenanceMode, form.maintenance.maintenanceMessage, toast]);
 
   const handleTestSmtp = useCallback(async () => {
     setLoading(true);

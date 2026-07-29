@@ -15,12 +15,30 @@
  *  - Active state با morphing pill (brand color)
  *  - prefers-reduced-motion
  *  - RTL (logical props)
+ *  - Long-press reorder (dnd-kit): ترتیب آیتم‌ها قابل تغییر است و در
+ *    localStorage ذخیره می‌شود. long-press 500ms فعال‌سازی، tolerance 8px
+ *    برای جلوگیری از فعال‌سازی تصادفی هنگام scroll. tap کوتاه همچنان
+ *    navigation را فعال می‌کند.
  */
 
 import {
-  usePathname,
-  useRouter,
-} from 'next/navigation';
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  arrayMove,
+  horizontalListSortingStrategy,
+  sortableKeyboardCoordinates,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   type FC,
   useCallback,
@@ -30,13 +48,18 @@ import {
   useState,
 } from 'react';
 import {
+  HiOutlineBriefcase,
   HiOutlineHome,
+  HiOutlineMagnifyingGlass,
   HiOutlineNewspaper,
   HiOutlineUserCircle,
-  HiOutlineMagnifyingGlass,
 } from 'react-icons/hi2';
 import { LuWallet } from 'react-icons/lu';
 import s from './MobileBottomNav.module.css';
+
+const STORAGE_KEY = 'bmf-bottomnav-order-v1';
+const LONG_PRESS_MS = 500;
+const SLOP_PX = 8;
 
 interface NavItem {
   id: string;
@@ -45,6 +68,8 @@ interface NavItem {
   icon: FC<{ size?: number; strokeWidth?: number; 'aria-hidden'?: boolean }>;
   primary?: boolean;
   matchPrefixes?: string[];
+  /** R20-fix: فقط در تبلت (≥768px) نمایش داده می‌شود. در موبایل مخفی است. */
+  tabletOnly?: boolean;
 }
 
 const HIDE_PREFIXES = [
@@ -66,74 +91,168 @@ interface Props {
   isLoggedIn: boolean;
 }
 
+const buildItems = (loggedIn: boolean): NavItem[] => [
+  {
+    id: 'home',
+    href: '/',
+    label: 'خانه',
+    icon: HiOutlineHome,
+    matchPrefixes: ['/'],
+  },
+  {
+    id: 'market',
+    href: '/exchanges',
+    label: 'بازار',
+    icon: HiOutlineNewspaper,
+    matchPrefixes: ['/exchanges', '/exchange-rates', '/money-transfer', '/online-payment'],
+  },
+  {
+    id: 'search',
+    href: '/search',
+    label: 'جستجو',
+    icon: HiOutlineMagnifyingGlass,
+    matchPrefixes: ['/search'],
+  },
+  {
+    id: 'wallet',
+    href: loggedIn ? '/dashboard/wallet' : '/wallet',
+    label: 'کیف پول',
+    icon: LuWallet,
+    primary: true,
+    matchPrefixes: ['/wallet', '/dashboard/wallet', '/beneficiaries'],
+  },
+  // R20-fix (2026-07-29): آیتم ششم فقط در تبلت
+  {
+    id: 'services',
+    href: '/services',
+    label: 'سرویس‌ها',
+    icon: HiOutlineBriefcase,
+    tabletOnly: true,
+    matchPrefixes: ['/services', '/services/compare'],
+  },
+  {
+    id: 'profile',
+    href: loggedIn ? '/dashboard' : '/auth',
+    label: loggedIn ? 'پروفایل' : 'ورود',
+    icon: HiOutlineUserCircle,
+    matchPrefixes: ['/dashboard', '/auth', '/customer', '/exchange'],
+  },
+];
+
+const DEFAULT_ORDER: readonly string[] = [
+  'home',
+  'market',
+  'search',
+  'wallet',
+  'services',
+  'profile',
+];
+
+interface SortableItemProps {
+  item: NavItem;
+  isActive: boolean;
+  onClick: (e: React.MouseEvent<HTMLAnchorElement>, item: NavItem) => void;
+}
+
+function SortableItem({ item, isActive, onClick }: SortableItemProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: item.id });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : undefined,
+  };
+
+  const Icon = item.icon;
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={style}
+      className={`${s.item} ${item.tabletOnly ? s.tabletOnly : ''}`.trim()}
+      data-dragging={isDragging ? 'true' : 'false'}
+      {...attributes}
+      {...listeners}
+    >
+      <a
+        href={item.href}
+        onClick={(e) => onClick(e, item)}
+        className={s.link}
+        data-active={isActive}
+        data-primary={item.primary ? 'true' : undefined}
+        aria-current={isActive ? 'page' : undefined}
+        aria-label={item.label}
+      >
+        <span className={s.iconWrap} aria-hidden>
+          <Icon size={20} strokeWidth={isActive ? 2 : 1.6} />
+          {isActive && item.primary && <span className={s.dot} aria-hidden />}
+        </span>
+        <span className={s.label}>{item.label}</span>
+      </a>
+    </li>
+  );
+}
+
 const MobileBottomNav: FC<Props> = ({ isLoggedIn }) => {
   const pathname = usePathname();
   const router = useRouter();
   const navRef = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [order, setOrder] = useState<readonly string[] | null>(null);
+  const [hasHydrated, setHasHydrated] = useState(false);
 
-  const items: NavItem[] = useMemo(
-    () => [
-      {
-        id: 'home',
-        href: '/',
-        label: 'خانه',
-        icon: HiOutlineHome,
-        matchPrefixes: ['/'],
+  // دکمه‌های long-press فقط روی pointer کار می‌کنند (نه touch synthetic)
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        delay: LONG_PRESS_MS,
+        tolerance: SLOP_PX,
       },
-      {
-        id: 'market',
-        href: '/exchanges',
-        label: 'بازار',
-        icon: HiOutlineNewspaper,
-        matchPrefixes: [
-          '/exchanges',
-          '/exchange-rates',
-          '/money-transfer',
-          '/online-payment',
-        ],
-      },
-      {
-        id: 'search',
-        href: '/search',
-        label: 'جستجو',
-        icon: HiOutlineMagnifyingGlass,
-        matchPrefixes: ['/search'],
-      },
-      {
-        id: 'wallet',
-        href: isLoggedIn ? '/dashboard/wallet' : '/wallet',
-        label: 'کیف پول',
-        icon: LuWallet,
-        primary: true,
-        matchPrefixes: [
-          '/wallet',
-          '/dashboard/wallet',
-          '/beneficiaries',
-        ],
-      },
-      {
-        id: 'profile',
-        href: isLoggedIn ? '/dashboard' : '/auth',
-        label: isLoggedIn ? 'پروفایل' : 'ورود',
-        icon: HiOutlineUserCircle,
-        matchPrefixes: [
-          '/dashboard',
-          '/auth',
-          '/customer',
-          '/exchange',
-        ],
-      },
-    ],
-    [isLoggedIn],
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
 
+  // Load order از localStorage پس از mount (hydration-safe)
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const ids = JSON.parse(stored) as unknown;
+        if (
+          Array.isArray(ids) &&
+          ids.length > 0 &&
+          ids.every((id) => typeof id === 'string')
+        ) {
+          setOrder(ids as string[]);
+        }
+      }
+    } catch {
+      // ignore corrupt storage
+    }
+    setHasHydrated(true);
+  }, []);
+
+  // ذخیره در localStorage فقط بعد از hydration (جلوگیری از overwrite در SSR)
+  useEffect(() => {
+    if (!hasHydrated || order === null) return;
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(order));
+    } catch {
+      // storage ممکن است در حالت private/SSR در دسترس نباشد
+    }
+  }, [order, hasHydrated]);
+
+  // Mount fade-in
   useEffect(() => {
     const t = window.setTimeout(() => setMounted(true), 60);
     return () => window.clearTimeout(t);
   }, []);
 
+  // Scroll-hide با rAF debounce
   useEffect(() => {
     if (typeof window === 'undefined') return;
     let lastY = window.scrollY;
@@ -143,8 +262,7 @@ const MobileBottomNav: FC<Props> = ({ isLoggedIn }) => {
       const y = window.scrollY;
       const delta = y - lastY;
       const atTop = y < 80;
-      const nearBottom =
-        window.innerHeight + y >= document.body.offsetHeight - 80;
+      const nearBottom = window.innerHeight + y >= document.body.offsetHeight - 80;
       if (atTop || nearBottom) {
         setVisible(true);
       } else if (delta > 6) {
@@ -167,11 +285,27 @@ const MobileBottomNav: FC<Props> = ({ isLoggedIn }) => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // ترکیب order ذخیره‌شده با template (isLoggedIn و آیتم‌های جدید)
+  const items = useMemo<NavItem[]>(() => {
+    const all = buildItems(isLoggedIn);
+    if (!order) return all;
+    const byId = new Map(all.map((i) => [i.id, i]));
+    const sorted: NavItem[] = [];
+    for (const id of order) {
+      const found = byId.get(id);
+      if (found) {
+        sorted.push(found);
+        byId.delete(id);
+      }
+    }
+    // اضافه کردن آیتم‌های جدید (که در order قبلی نبودند) به انتها
+    for (const item of byId.values()) sorted.push(item);
+    return sorted;
+  }, [isLoggedIn, order]);
+
   const shouldHide = useMemo(() => {
     if (!pathname) return false;
-    return HIDE_PREFIXES.some(
-      (p) => pathname === p || pathname.startsWith(`${p}/`),
-    );
+    return HIDE_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
   }, [pathname]);
 
   const activeId = useMemo(() => {
@@ -179,15 +313,25 @@ const MobileBottomNav: FC<Props> = ({ isLoggedIn }) => {
     for (const item of items) {
       if (item.href === pathname) return item.id;
       if (
-        item.matchPrefixes?.some(
-          (p) => pathname === p || pathname.startsWith(`${p}/`),
-        )
+        item.matchPrefixes?.some((p) => pathname === p || pathname.startsWith(`${p}/`))
       ) {
         return item.id;
       }
     }
     return 'home';
   }, [pathname, items]);
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setOrder((current) => {
+      const base = current ?? DEFAULT_ORDER;
+      const oldIndex = base.indexOf(String(active.id));
+      const newIndex = base.indexOf(String(over.id));
+      if (oldIndex === -1 || newIndex === -1) return current;
+      return arrayMove([...base], oldIndex, newIndex);
+    });
+  }, []);
 
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>, item: NavItem) => {
@@ -201,6 +345,11 @@ const MobileBottomNav: FC<Props> = ({ isLoggedIn }) => {
     [pathname, router],
   );
 
+  // بازنشانی به ترتیب پیش‌فرض (برای دسترسی آسان — مثلاً از DevTools)
+  const resetOrder = useCallback(() => {
+    setOrder(DEFAULT_ORDER);
+  }, []);
+
   if (shouldHide) return null;
 
   return (
@@ -212,33 +361,41 @@ const MobileBottomNav: FC<Props> = ({ isLoggedIn }) => {
       aria-label="ناوبری سریع موبایل"
       dir="rtl"
     >
-      <ul className={s.list} role="list">
-        {items.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeId === item.id;
-          return (
-            <li key={item.id} className={s.item}>
-              <a
-                href={item.href}
-                onClick={(e) => handleClick(e, item)}
-                className={s.link}
-                data-active={isActive}
-                data-primary={item.primary ? 'true' : undefined}
-                aria-current={isActive ? 'page' : undefined}
-                aria-label={item.label}
-              >
-                <span className={s.iconWrap} aria-hidden>
-                  <Icon size={20} strokeWidth={isActive ? 2 : 1.6} />
-                  {isActive && item.primary && (
-                    <span className={s.dot} aria-hidden />
-                  )}
-                </span>
-                <span className={s.label}>{item.label}</span>
-              </a>
-            </li>
-          );
-        })}
-      </ul>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={items.map((i) => i.id)}
+          strategy={horizontalListSortingStrategy}
+        >
+          <ul className={s.list} role="list">
+            {items.map((item) => (
+              <SortableItem
+                key={item.id}
+                item={item}
+                isActive={activeId === item.id}
+                onClick={handleClick}
+              />
+            ))}
+          </ul>
+        </SortableContext>
+      </DndContext>
+
+      {/* ابزار مخفی برای بازنشانی ترتیب — فقط در حالت توسعه قابل دسترسی
+          از طریق window.__resetBottomNavOrder() در DevTools. */}
+      {process.env.NODE_ENV === 'development' && (
+        <button
+          type="button"
+          onClick={resetOrder}
+          aria-label="بازنشانی ترتیب منو"
+          className={s.resetButton}
+          title="بازنشانی ترتیب (dev)"
+        >
+          ↺
+        </button>
+      )}
     </nav>
   );
 };

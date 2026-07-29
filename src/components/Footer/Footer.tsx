@@ -18,6 +18,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import Link from 'next/link';
+import s from './Footer.module.css';
 
 interface WidgetFooterMenu {
   id: string;
@@ -100,11 +101,12 @@ const Footer = ({
 
   return (
     <footer className="relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-slate-100 to-slate-200 dark:from-neutral-900 dark:via-neutral-950 dark:to-black" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(99,102,241,0.15),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(99,102,241,0.1),transparent)]" />
-      <div className="absolute top-0 start-1/4 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 end-1/4 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl" />
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent" />
+      {/* R18-fix (2026-07-29): لایه‌های پس‌زمینه به design tokens مهاجرت کردند. */}
+      <div className={`${s.bg} dark:${s.bgDark}`} aria-hidden />
+      <div className={`${s.glow} dark:${s.glowDark}`} aria-hidden />
+      <div className={s.orb1} aria-hidden />
+      <div className={s.orb2} aria-hidden />
+      <div className={`${s.hairline} dark:${s.hairlineDark}`} aria-hidden />
 
       {footerAd && (
         <div className="relative z-10 pt-10 pb-2">
@@ -230,51 +232,45 @@ const Footer = ({
         </div>
 
         {/* Contact Bar — 3-column with icons */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-12">
+        <div className={s.contactBar}>
           <a
             href={`tel:${displayPhone.replace(/[^0-9+]/g, '')}`}
-            className="group flex items-center gap-3 px-5 py-4 rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-300"
+            className={s.contactCard}
+            aria-label={`تماس تلفنی: ${displayPhone}`}
           >
-            <span className="flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-primary-500/15 to-indigo-500/15 group-hover:from-primary-500/25 group-hover:to-indigo-500/25 transition-all">
-              <Phone size={18} className="text-primary-600 dark:text-primary-400" aria-hidden />
+            <span className={s.contactIcon} aria-hidden>
+              <Phone size={18} strokeWidth={1.9} />
             </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mb-0.5">
-                پشتیبانی تلفنی
-              </p>
-              <p className="text-sm font-semibold text-slate-800 dark:text-slate-200" dir="ltr">
+            <div className={s.contactText}>
+              <p className={s.contactLabel}>پشتیبانی تلفنی</p>
+              <p className={s.contactValue} dir="ltr">
                 {displayPhone}
               </p>
             </div>
           </a>
           <a
             href={`mailto:${displayEmail}`}
-            className="group flex items-center gap-3 px-5 py-4 rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-300"
+            className={s.contactCard}
+            aria-label={`ایمیل: ${displayEmail}`}
           >
-            <span className="flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-primary-500/15 to-indigo-500/15 group-hover:from-primary-500/25 group-hover:to-indigo-500/25 transition-all">
-              <Mail size={18} className="text-primary-600 dark:text-primary-400" aria-hidden />
+            <span className={s.contactIcon} aria-hidden>
+              <Mail size={18} strokeWidth={1.9} />
             </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mb-0.5">
-                ایمیل پشتیبانی
-              </p>
-              <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate" dir="ltr">
+            <div className={s.contactText}>
+              <p className={s.contactLabel}>ایمیل پشتیبانی</p>
+              <p className={s.contactValue} dir="ltr">
                 {displayEmail}
               </p>
             </div>
           </a>
           {contactAddress?.trim() && (
-            <div className="group flex items-center gap-3 px-5 py-4 rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50">
-              <span className="flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-primary-500/15 to-indigo-500/15">
-                <MapPin size={18} className="text-primary-600 dark:text-primary-400" aria-hidden />
+            <div className={s.contactCard}>
+              <span className={s.contactIcon} aria-hidden>
+                <MapPin size={18} strokeWidth={1.9} />
               </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mb-0.5">
-                  دفتر مرکزی
-                </p>
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
-                  {contactAddress}
-                </p>
+              <div className={s.contactText}>
+                <p className={s.contactLabel}>دفتر مرکزی</p>
+                <p className={s.contactValue}>{contactAddress}</p>
               </div>
             </div>
           )}
@@ -287,7 +283,7 @@ const Footer = ({
           transition={{ duration: 0.5, delay: 0.5 }}
           className="relative"
         >
-          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent" />
+          <div className={`${s.hairline} ${s.hairlineDark}`} />
 
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-sm text-slate-500 dark:text-slate-500">
