@@ -313,6 +313,7 @@ export const customerRoutes = [
   '/customer/developer',
   '/customer/devices',
   '/customer/2fa',
+  '/customer/security',
   '/customer/crypto',
   '/customer/requests',
   '/customer/requests/new',

@@ -29,13 +29,14 @@ import { logout } from '@/actions/auth-actions';
 import Avatar from '@/components/Avatar/Avatar';
 import Logo from '@/components/Logo/Logo';
 import { useToast } from '@/components/ui/use-toast';
+import { ViewLink } from '@/components/ui/ViewLink';
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { cn } from '@/lib/utils';
 import { useSession } from 'next-auth/react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { HiOutlineArrowRightOnRectangle, HiOutlineXMark } from 'react-icons/hi2';
+import { HiOutlineArrowRightOnRectangle, HiOutlineArrowUturnLeft, HiOutlineXMark } from 'react-icons/hi2';
 import NavItem from './NavItem';
 import {
   type MenuItem,
@@ -304,6 +305,22 @@ const Sidebar = ({ userRole, staffRole }: SidebarProps) => {
             </span>
             {isOpen && <span className="dash-side__item-label">خروج</span>}
           </button>
+
+          {/* 2026-07-29: بازگشت به سایت عمومی — کاربر بتواند از هر پورتال
+              (admin / customer / exchange) بدون logout به صفحهٔ اصلی سایت برگردد.
+              از کلاس پایهٔ dash-side__item استفاده می‌کند؛ global CSS دست‌نخورده
+              می‌ماند (AGENTS.md: no new rules in dashboard.css). */}
+          <ViewLink
+            href="/"
+            className="dash-side__item"
+            aria-label="بازگشت به سایت"
+          >
+            <span className="dash-side__diamond" aria-hidden />
+            <span className="dash-side__item-ico">
+              <HiOutlineArrowUturnLeft className="w-[19px] h-[19px]" aria-hidden />
+            </span>
+            {isOpen && <span className="dash-side__item-label">بازگشت به سایت</span>}
+          </ViewLink>
         </footer>
       </aside>
 

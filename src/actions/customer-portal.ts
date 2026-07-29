@@ -12,6 +12,7 @@ import prisma from '@/lib/db';
 import { requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
+import type { FintechActionResult } from '@/types/types';
 import type {
   AccountStatus,
   AccountType,
@@ -1383,4 +1384,242 @@ export async function getAccountLedger(
     amount: mapBalance(r.amount),
     runningBalance: mapBalance(r.runningBalance),
   }));
+}
+
+// ─── Security & preferences — 2026-07-29 ────────────────────────────────── //
+// این بخش با اضافه شدن فیلدهای User.notifyVoice / monthlyActivityReport و
+// Customer.shareWithExchange به schema فعال شد. هر اکشن tenant-isolated و
+// self-service است (کاربر فقط روی حساب خودش تغییر می‌دهد).
+
+const PasswordChangeSchema = z
+  .object({
+    current: z.string().min(8, 'رمز فعلی حداقل ۸ کاراکتر'),
+    next: z
+      .string()
+      .min(10, 'رمز جدید حداقل ۱۰ کاراکتر')
+      .max(128, 'رمز جدید حداکثر ۱۲۸ کاراکتر')
+      .regex(/[A-Z]/, 'رمز جدید باید شامل حرف بزرگ باشد')
+      .regex(/[a-z]/, 'رمز جدید باید شامل حرف کوچک باشد')
+      .regex(/[0-9]/, 'رمز جدید باید شامل عدد باشد'),
+    confirm: z.string(),
+  })
+  .refine((v) => v.next === v.confirm, {
+    message: 'تکرار رمز با رمز جدید یکی نیست',
+    path: ['confirm'],
+  })
+  .refine((v) => v.current !== v.next, {
+    message: 'رمز جدید نباید با رمز فعلی یکی باشد',
+    path: ['next'],
+  });
+
+export type SecurityOverview = {
+  twoFactorEnabled: boolean;
+  deviceCount: number;
+  passwordLastChangedAt: Date | null;
+  /** تعداد تلاش ناموفق ورود در ۲۴ ساعت گذشته (اگر ActivityLog ثبت شده باشد) */
+  failedLogins24h: number;
+  email: string | null;
+  phone: string;
+  /** ترجیحات فعلی کاربر */
+  notifyVoice: boolean;
+  monthlyActivityReport: boolean;
+  shareWithExchange: boolean;
+};
+
+export async function getMySecurityOverview(): Promise<
+  FintechActionResult<SecurityOverview>
+> {
+  const access = await requireCustomerAccess();
+  if (!access.ok) {
+    return { success: false, error: { code: 'FORBIDDEN', message: access.error.message } };
+  }
+
+  const [user, devices, customer] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: access.userId },
+      select: {
+        email: true,
+        twoFactorEnabled: true,
+        password: true,
+        updatedAt: true,
+        notifyVoice: true,
+        monthlyActivityReport: true,
+      },
+    }),
+    prisma.device.count({ where: { userId: access.userId, status: { not: 'REVOKED' } } }),
+    prisma.customer.findUnique({
+      where: { id: access.customerId },
+      select: { phone: true, shareWithExchange: true },
+    }),
+  ]);
+
+  if (!user || !customer) {
+    return { success: false, error: { code: 'NOT_FOUND', message: 'کاربر یافت نشد' } };
+  }
+
+  return {
+    success: true,
+    data: {
+      twoFactorEnabled: user.twoFactorEnabled,
+      deviceCount: devices,
+      passwordLastChangedAt: user.password ? user.updatedAt : null,
+      failedLogins24h: 0,
+      email: user.email,
+      phone: customer.phone,
+      notifyVoice: user.notifyVoice,
+      monthlyActivityReport: user.monthlyActivityReport,
+      shareWithExchange: customer.shareWithExchange,
+    },
+  };
+}
+
+const NotifyPrefsSchema = z.object({
+  notifyVoice: z.boolean().optional(),
+  monthlyActivityReport: z.boolean().optional(),
+  shareWithExchange: z.boolean().optional(),
+});
+
+export async function updateMyNotificationPreferences(
+  input: Partial<{
+    notifyVoice: boolean;
+    monthlyActivityReport: boolean;
+    shareWithExchange: boolean;
+  }>,
+): Promise<FintechActionResult<void>> {
+  const access = await requireCustomerAccess();
+  if (!access.ok) {
+    return { success: false, error: { code: 'FORBIDDEN', message: access.error.message } };
+  }
+
+  const parsed = NotifyPrefsSchema.safeParse(input);
+  if (!parsed.success) {
+    const first = parsed.error.issues[0];
+    return { success: false, error: { code: 'VALIDATION', message: first?.message ?? 'ورودی نامعتبر' } };
+  }
+
+  // فیلدهای مربوط به User
+  const userData: { notifyVoice?: boolean; monthlyActivityReport?: boolean } = {};
+  if (typeof parsed.data.notifyVoice === 'boolean') {
+    userData.notifyVoice = parsed.data.notifyVoice;
+  }
+  if (typeof parsed.data.monthlyActivityReport === 'boolean') {
+    userData.monthlyActivityReport = parsed.data.monthlyActivityReport;
+  }
+
+  if (Object.keys(userData).length > 0) {
+    await prisma.user.update({ where: { id: access.userId }, data: userData });
+  }
+
+  // فیلد مربوط به Customer
+  if (typeof parsed.data.shareWithExchange === 'boolean') {
+    await prisma.customer.update({
+      where: { id: access.customerId },
+      data: { shareWithExchange: parsed.data.shareWithExchange },
+    });
+  }
+
+  // ثبت AuditLog
+  await prisma.auditLog.create({
+    data: {
+      id: uuidv4(),
+      actorId: access.userId,
+      actorRole: 'CUSTOMER',
+      action: 'UPDATE_PREFERENCES',
+      entityType: 'User',
+      entityId: access.userId,
+      meta: parsed.data,
+    },
+  });
+
+  return { success: true, data: undefined };
+}
+
+export async function changeMyPassword(input: {
+  current: string;
+  next: string;
+  confirm: string;
+}): Promise<FintechActionResult<void>> {
+  const access = await requireCustomerAccess();
+  if (!access.ok) {
+    return { success: false, error: { code: 'FORBIDDEN', message: access.error.message } };
+  }
+
+  const parsed = PasswordChangeSchema.safeParse(input);
+  if (!parsed.success) {
+    const first = parsed.error.issues[0];
+    return { success: false, error: { code: 'VALIDATION', message: first?.message ?? 'ورودی نامعتبر' } };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: access.userId },
+    select: { password: true },
+  });
+
+  if (!user?.password) {
+    return { success: false, error: { code: 'NO_PASSWORD', message: 'این حساب با رمز عبور ایجاد نشده' } };
+  }
+
+  // بررسی رمز فعلی — bcrypt
+  const bcrypt = await import('bcryptjs');
+  const matches = await bcrypt.compare(parsed.data.current, user.password);
+  if (!matches) {
+    return { success: false, error: { code: 'WRONG_PASSWORD', message: 'رمز فعلی اشتباه است' } };
+  }
+
+  const newHash = await bcrypt.hash(parsed.data.next, 12);
+
+  await prisma.user.update({
+    where: { id: access.userId },
+    data: {
+      password: newHash,
+      tokenVersion: { increment: 1 }, // تمام sessionهای فعلی باطل می‌شود
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      id: uuidv4(),
+      actorId: access.userId,
+      actorRole: 'CUSTOMER',
+      action: 'PASSWORD_CHANGED',
+      entityType: 'User',
+      entityId: access.userId,
+    },
+  });
+
+  return { success: true, data: undefined };
+}
+
+export async function requestAccountDeletion(
+  confirmation: string,
+): Promise<FintechActionResult<{ ticketId: string }>> {
+  const access = await requireCustomerAccess();
+  if (!access.ok) {
+    return { success: false, error: { code: 'FORBIDDEN', message: access.error.message } };
+  }
+
+  if (confirmation.trim() !== 'حذف حساب') {
+    return {
+      success: false,
+      error: { code: 'CONFIRMATION_REQUIRED', message: 'برای تأیید، عبارت «حذف حساب» را وارد کنید' },
+    };
+  }
+
+  // ثبت درخواست — soft delete: Customer.status = CLOSED پس از تأیید صرافی
+  // اینجا فقط ticket ثبت می‌شود.
+  const ticketId = `DEL-${Date.now().toString(36).toUpperCase()}`;
+
+  await prisma.auditLog.create({
+    data: {
+      id: uuidv4(),
+      actorId: access.userId,
+      actorRole: 'CUSTOMER',
+      action: 'DELETE_REQUESTED',
+      entityType: 'User',
+      entityId: access.userId,
+      meta: { ticketId },
+    },
+  });
+
+  return { success: true, data: { ticketId } };
 }

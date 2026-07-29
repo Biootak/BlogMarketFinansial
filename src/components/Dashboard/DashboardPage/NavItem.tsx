@@ -7,8 +7,8 @@
  */
 
 import { NotificationBadge } from '@/components/Dashboard/DashboardPage/NotificationBadge';
+import { ViewLink } from '@/components/ui/ViewLink';
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { HiOutlineChevronDown } from 'react-icons/hi2';
 import type { MenuItem } from './sidebar-menu';
@@ -76,7 +76,7 @@ const NavItem: React.FC<NavItemProps> = ({
         >
           <div className="dash-side__sub-inner">
             {item.submenu.map((sub) => (
-              <Link
+              <ViewLink
                 key={sub.href}
                 href={sub.href}
                 onClick={onClick}
@@ -86,7 +86,7 @@ const NavItem: React.FC<NavItemProps> = ({
               >
                 <span className="dash-side__item-tick" aria-hidden />
                 <span className="dash-side__item-label">{sub.label}</span>
-              </Link>
+              </ViewLink>
             ))}
           </div>
         </div>
@@ -96,7 +96,7 @@ const NavItem: React.FC<NavItemProps> = ({
 
   return (
     <li className="dash-side__row">
-      <Link
+      <ViewLink
         href={item.href}
         onClick={onClick}
         className="dash-side__item"
@@ -115,7 +115,7 @@ const NavItem: React.FC<NavItemProps> = ({
             {item.shortcut}
           </kbd>
         )}
-      </Link>
+      </ViewLink>
     </li>
   );
 };

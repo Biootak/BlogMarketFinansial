@@ -190,3 +190,14 @@
   color: var(--ds-text-muted);
   border-color: var(--ds-border-subtle);
 }
+
+.itemAction[data-tone='success'] {
+  background: color-mix(in oklch, var(--nova-up) 10%, transparent);
+  color: var(--nova-up);
+  border-color: color-mix(in oklch, var(--nova-up) 30%, transparent);
+}
+
+.itemAction:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

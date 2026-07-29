@@ -15,6 +15,7 @@ import {
   HiOutlineClipboardDocumentList,
   HiOutlineCog6Tooth,
   HiOutlineCreditCard,
+  HiOutlineCircleStack,
   HiOutlineCurrencyDollar,
   HiOutlineDevicePhoneMobile,
   HiOutlineDocumentText,
@@ -373,6 +374,20 @@ export function getMenu(role: UserRole): NavSection[] {
     icon: HiOutlineCreditCard({ className: ICON_CLASS }),
     label: 'حساب‌ها',
   };
+  const customerCrypto: MenuItem = {
+    id: 'customerCrypto',
+    href: '/customer/crypto',
+    icon: HiOutlineCircleStack({ className: ICON_CLASS }),
+    label: 'ارزهای دیجیتال',
+    title: 'کیف پول ارزهای دیجیتال و نرخ لحظه‌ای',
+  };
+  const customerRequests: MenuItem = {
+    id: 'customerRequests',
+    href: '/customer/requests',
+    icon: HiOutlineInboxArrowDown({ className: ICON_CLASS }),
+    label: 'درخواست‌های من',
+    title: 'درخواست‌های ارسالی به صرافی',
+  };
   const customerTransactions: MenuItem = {
     id: 'customerTransactions',
     href: '/customer/transactions',
@@ -426,8 +441,15 @@ export function getMenu(role: UserRole): NavSection[] {
     id: 'customer2FA',
     href: '/customer/2fa',
     icon: HiOutlineFingerPrint({ className: ICON_CLASS }),
-    label: '۲ مرحله‌ای',
+    label: 'احراز هویت دو مرحله‌ای',
     title: 'احراز هویت دو مرحله‌ای (TOTP)',
+  };
+  const customerSecurity: MenuItem = {
+    id: 'customerSecurity',
+    href: '/customer/security',
+    icon: HiOutlineShieldCheck({ className: ICON_CLASS }),
+    label: 'مرکز امنیت',
+    title: 'تغییر رمز، 2FA و دستگاه‌ها',
   };
   const customerDevices: MenuItem = {
     id: 'customerDevices',
@@ -521,7 +543,7 @@ export function getMenu(role: UserRole): NavSection[] {
           id: 'financial',
           index: '۰۲',
           label: 'مالی',
-          items: [customerAccounts, customerBeneficiaries, customerTransactions],
+          items: [customerAccounts, customerCrypto, customerBeneficiaries, customerTransactions, customerRequests],
         },
         { id: 'identity', index: '۰۳', label: 'هویت', items: [customerKyc, customerDocuments] },
         {
@@ -529,6 +551,7 @@ export function getMenu(role: UserRole): NavSection[] {
           index: '۰۴',
           label: 'حساب',
           items: [
+            customerSecurity,
             customer2FA,
             customerDevices,
             customerNotifications,
@@ -651,19 +674,20 @@ export function getMenu(role: UserRole): NavSection[] {
         },
       ];
     case 'SUPPORT':
+      // SUPPORT can only access baseDashboardRoutes (/dashboard, edit-profile,
+      // my-deals, my-requests). Admin/owner-only items (kycReview, fraudReview,
+      // customers, settlements, audit-log, settings, reports, …) are deliberately
+      // excluded — middleware would redirect them, which manifests as "button
+      // does nothing" from the user's perspective. The SUPPORT role is for
+      // first-line operators who triage their own assigned work; deeper
+      // verification tools require ADMIN+.
       return [
         { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
         {
-          id: 'operations',
-          index: '۰۲',
-          label: 'عملیات',
-          items: [serviceRequests, kycReview, fraudReview],
-        },
-        {
           id: 'account',
-          index: '۰۳',
+          index: '۰۲',
           label: 'حساب',
-          items: [wallet, virtualCards, kyc, myDeals, transfer, devices, myRequests, profile],
+          items: [myDeals, myRequests, devices, profile],
         },
       ];
     case 'AUTHOR':

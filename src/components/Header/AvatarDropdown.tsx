@@ -1,12 +1,31 @@
-import { PostIcon, ProfileIcon, ThemeIcon } from '@/components/Icons';
+import { PostIcon, ProfileIcon } from '@/components/Icons';
 import SideDropdown from '@/components/SideDropdown';
 import getCurrentUser from '@/lib/current-user';
 import type { Role } from '@prisma/client';
 import Link from 'next/link';
 import { Suspense } from 'react';
+import { HiOutlineHome, HiOutlineShieldCheck, HiOutlineUserCircle } from 'react-icons/hi2';
 import LogoutButton from '../Auth/LogoutButton';
 import Avatar from '../Avatar/Avatar';
 import DarkModeSwitch from '../SwitchDarkMode/SwitchDarkMode2';
+
+// 2026-07-29: هر نقش اکنون مسیر ورود صحیح خود را در منو می‌بیند.
+// قبلاً فقط ADMIN/AUTHOR/OWNER لینک پروفایل/پست‌ها داشتند — CUSTOMER،
+// MERCHANT، EXCHANGE و SUPPORT هیچ لینکی به پورتالشان نداشتند و فقط
+// Dark Mode + Logout می‌دیدند. این اصلاح، مسیر پیش‌فرض هر نقش را
+// اضافه می‌کند تا کاربر هرگز «از سایت به پورتالش» گم نشود.
+const PORTAL_HOMES: Record<string, { label: string; href: string } | null> = {
+  OWNER: { label: 'داشبورد مدیریت', href: '/dashboard' },
+  SUPERADMIN: { label: 'داشبورد مدیریت', href: '/dashboard' },
+  ADMIN: { label: 'داشبورد مدیریت', href: '/dashboard' },
+  AUTHOR: { label: 'داشبورد', href: '/dashboard' },
+  SUPPORT: { label: 'داشبورد پشتیبانی', href: '/dashboard' },
+  USER: { label: 'درخواست‌های من', href: '/dashboard/my-requests' },
+  CUSTOMER: { label: 'پورتال مشتری', href: '/customer/dashboard' },
+  TEST_CUSTOMER: { label: 'پورتال مشتری', href: '/customer/dashboard' },
+  MERCHANT: { label: 'پورتال پذیرنده', href: '/customer/dashboard' },
+  EXCHANGE: { label: 'پنل صرافی', href: '/exchange/dashboard' },
+};
 
 const isAdminOrAuthor = (userRole: Role | undefined) => {
   return userRole === 'ADMIN' || userRole === 'AUTHOR' || userRole === 'OWNER';
@@ -20,6 +39,9 @@ export default async function AvatarDropdown() {
   }
 
   const canAccessPosts = isAdminOrAuthor(user.role);
+  const portal = PORTAL_HOMES[user.role as string] ?? null;
+  const isCustomerRole =
+    user.role === 'CUSTOMER' || user.role === 'TEST_CUSTOMER' || user.role === 'MERCHANT';
 
   return (
     <div className="AvatarDropdown">
@@ -63,11 +85,28 @@ export default async function AvatarDropdown() {
               </div>
             </div>
 
-            {/* Menu Items */}
+            {/* Portal Home — برای همهٔ نقش‌ها، مسیر پیش‌فرض پورتال‌شان */}
+            {portal && (
+              <div className="space-y-1 mb-2">
+                <MenuItem href={portal.href} icon={HiOutlineHome} text={portal.label} />
+              </div>
+            )}
+
+            {/* Menu Items for content creators */}
             {canAccessPosts && (
               <div className="space-y-1 mb-2">
                 <MenuItem href="/dashboard/edit-profile" icon={ProfileIcon} text="پروفایل" />
                 <MenuItem href="/dashboard/posts" icon={PostIcon} text="پست‌های من" />
+              </div>
+            )}
+
+            {/* Customer Portal — quick links */}
+            {isCustomerRole && (
+              <div className="space-y-1 mb-2">
+                <MenuItem href="/customer/profile" icon={HiOutlineUserCircle} text="پروفایل من" />
+                <MenuItem href="/customer/accounts" icon={ProfileIcon} text="حساب‌ها" />
+                <MenuItem href="/customer/transactions" icon={PostIcon} text="تراکنش‌ها" />
+                <MenuItem href="/customer/security" icon={HiOutlineShieldCheck} text="مرکز امنیت" />
               </div>
             )}
 
@@ -99,7 +138,11 @@ function MenuItem({
   href,
   icon: Icon,
   text,
-}: { href: string; icon: React.ElementType; text: string }) {
+}: {
+  href: string;
+  icon: React.ElementType;
+  text: string;
+}) {
   return (
     <Link
       href={href}

@@ -63,6 +63,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { ViewLink } from '@/components/ui/ViewLink';
 import s from './ProfileContent.module.css';
 
 interface Props {
@@ -551,6 +552,13 @@ export default function ProfileContent({ profile }: Props) {
       {/* ═══ 7. QUICK ACTIONS ════════════════════════════════════════════ */}
       <section className={s.quickActions} aria-label="اقدامات سریع">
         <ActionCard
+          href="/customer/security"
+          icon={ShieldCheck}
+          title="مرکز امنیت"
+          desc="رمز عبور، 2FA و دستگاه‌ها"
+          tone="emerald"
+        />
+        <ActionCard
           href="/customer/settings"
           icon={Settings}
           title="تنظیمات"
@@ -630,8 +638,16 @@ function ActionCard({
   desc: string;
   tone: 'emerald' | 'violet' | 'cyan' | 'red';
 }) {
+  // مسیرهای داخلی پنل → view transition
+  // مسیرهای بیرونی (signout, …) → navigation ساده
+  const withTransition =
+    href.startsWith('/customer') || href.startsWith('/dashboard');
   return (
-    <Link href={href} className={`${s.action} ${s[`action-${tone}`]}`}>
+    <ViewLink
+      href={href}
+      withTransition={withTransition}
+      className={`${s.action} ${s[`action-${tone}`]}`}
+    >
       <span className={s.actionIcon} aria-hidden>
         <Icon size={16} strokeWidth={1.9} />
       </span>
@@ -640,7 +656,7 @@ function ActionCard({
         <span className={s.actionDesc}>{desc}</span>
       </span>
       <ChevronLeft size={14} strokeWidth={1.8} className={s.actionArrow} aria-hidden />
-    </Link>
+    </ViewLink>
   );
 }
 
