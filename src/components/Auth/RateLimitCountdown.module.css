@@ -1,0 +1,136 @@
+/* RateLimitCountdown — visual rate-limit countdown
+ * 2026-07-29: hairline-only, emerald-first, با focus ring
+ */
+
+.root {
+  --rl-color: #0f766e;
+  --rl-bg: color-mix(in srgb, #0f766e 8%, transparent);
+  --rl-border: color-mix(in srgb, #0f766e 25%, transparent);
+
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 0.4rem 0.6rem;
+  padding: 0.55rem 0.8rem;
+  margin-block-start: 0.4rem;
+  background: var(--rl-bg);
+  border: 1px solid var(--rl-border);
+  border-radius: 0.55rem;
+  font-size: 0.82rem;
+  color: color-mix(in srgb, currentColor 85%, transparent);
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.icon {
+  grid-row: 1;
+  grid-column: 1;
+  display: grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, #0f766e 18%, transparent);
+  color: #0f766e;
+  flex: 0 0 1.4rem;
+}
+
+.text {
+  grid-row: 1;
+  grid-column: 2;
+  font-size: 0.82rem;
+}
+
+.value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: #0f766e;
+  margin-inline-start: 0.2rem;
+}
+
+.bar {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  display: block;
+  height: 3px;
+  background: color-mix(in srgb, #0f766e 12%, transparent);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.barFill {
+  display: block;
+  height: 100%;
+  background: #0f766e;
+  border-radius: inherit;
+  transition: width 0.9s linear;
+}
+
+/* ─── Warning state (کمتر از ۳۰ ثانیه) ───────────────────── */
+.warning {
+  --rl-color: #b45309;
+  --rl-bg: color-mix(in srgb, #b45309 8%, transparent);
+  --rl-border: color-mix(in srgb, #b45309 25%, transparent);
+}
+
+.warning .icon {
+  background: color-mix(in srgb, #b45309 18%, transparent);
+  color: #b45309;
+}
+
+.warning .value {
+  color: #b45309;
+}
+
+.warning .bar {
+  background: color-mix(in srgb, #b45309 14%, transparent);
+}
+
+.warning .barFill {
+  background: #b45309;
+}
+
+/* ─── Urgent state (کمتر از ۱۰ ثانیه) ────────────────────── */
+.urgent {
+  --rl-color: #b91c1c;
+  --rl-bg: color-mix(in srgb, #b91c1c 8%, transparent);
+  --rl-border: color-mix(in srgb, #b91c1c 30%, transparent);
+  animation: rlPulse 0.9s ease-in-out infinite;
+}
+
+.urgent .icon {
+  background: color-mix(in srgb, #b91c1c 20%, transparent);
+  color: #b91c1c;
+}
+
+.urgent .value {
+  color: #b91c1c;
+}
+
+.urgent .bar {
+  background: color-mix(in srgb, #b91c1c 14%, transparent);
+}
+
+.urgent .barFill {
+  background: #b91c1c;
+  transition: width 0.3s linear;
+}
+
+@keyframes rlPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, #b91c1c 0%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, #b91c1c 18%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .urgent {
+    animation: none;
+  }
+
+  .barFill {
+    transition: none;
+  }
+}

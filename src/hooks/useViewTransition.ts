@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
 
 interface ViewTransitionAPI {
-  startViewTransition?: (callback: () => void | Promise<void>) => {
+  startViewTransition?: (callback: () => void) => {
     finished: Promise<void>;
     ready: Promise<void>;
     updateCallbackDone: Promise<void>;
@@ -19,9 +19,9 @@ interface ViewTransitionAPI {
  *     از رندر صفحهٔ جدید، transition را اجرا می‌کند.
  *   - اگر startViewTransition در دسترس نبود یا کاربر prefers-reduced-motion
  *     داشت، navigation معمولی Next.js (router.push) اجرا می‌شود.
- *   - Next.js router.push ناهمزمان است؛ برای اینکه snapshot جدید قبل از
- *     transition آماده باشد، دو requestAnimationFrame صبر می‌کنیم (≈ ۳۲ms).
- *     این مقدار به اندازهٔ کافی برای commit اولیهٔ App Router کافی است.
+ *   - callback داخل startViewTransition باید synchronous باشد و فقط router.push
+ *     را صدا بزند. مرورگر خودش منتظر DOM update می‌ماند — هر await اضافی
+ *     باعث timeout و "Transition was aborted" می‌شود.
  */
 export function useViewTransition(): (href: string) => void {
   const router = useRouter();
@@ -45,12 +45,10 @@ export function useViewTransition(): (href: string) => void {
         return;
       }
 
-      doc.startViewTransition(async () => {
+      // callback باید sync باشد — نه async، نه await، نه rAF
+      // مرورگر خودش DOM update را detect می‌کند
+      doc.startViewTransition(() => {
         router.push(href);
-        // دو frame صبر کن تا App Router صفحهٔ جدید را commit کند
-        await new Promise<void>((resolve) => {
-          requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-        });
       });
     },
     [router],

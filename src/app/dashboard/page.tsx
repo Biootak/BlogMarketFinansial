@@ -21,9 +21,54 @@ import { AtelierDeck } from '@/components/Dashboard/DashboardPage/atelier';
 import { LiveOpsPulseServer } from '@/components/Dashboard/DashboardPage/LiveOpsPulseServer';
 import { FintechKpiWidget } from '@/components/Dashboard/FintechKpi/FintechKpiWidget';
 import ServiceRequestsWidget from '@/components/Dashboard/ServiceRequests/ServiceRequestsWidget';
+import { UserHome } from '@/components/Dashboard/DashboardPage/UserHome';
 import { checkRole } from '@/lib/auth';
+import prisma from '@/lib/db';
 
 export default async function Dashboard() {
+  // 2026-07-29: USER role gets a clean user-facing home (not admin
+  // Atelier). Routing at the page-level keeps the layout/Sidebar
+  // happy and avoids redirect ping-pong.
+  const initialSession = await auth();
+  if (!initialSession?.user) {
+    redirect('/auth?callbackUrl=/dashboard');
+  }
+
+  if (initialSession.user.role === 'USER') {
+    const dbUser = await prisma.user
+      .findUnique({
+        where: { id: initialSession.user.id },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          emailVerified: true,
+          createdAt: true,
+          role: true,
+        },
+      })
+      .catch(() => null);
+
+    if (!dbUser) {
+      redirect('/auth?callbackUrl=/dashboard');
+    }
+
+    const accountAgeDays = dbUser.createdAt
+      ? Math.floor((Date.now() - new Date(dbUser.createdAt).getTime()) / 86_400_000)
+      : 999;
+
+    return (
+      <UserHome
+        userId={dbUser.id}
+        userName={dbUser.name ?? initialSession.user.name ?? ''}
+        userEmail={dbUser.email}
+        emailVerified={!!dbUser.emailVerified}
+        accountAgeDays={accountAgeDays}
+        role={dbUser.role}
+      />
+    );
+  }
+
   // Check user role before loading any data
   await checkRole(['OWNER', 'ADMIN', 'AUTHOR', 'SUPERADMIN']);
 

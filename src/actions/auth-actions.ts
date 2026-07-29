@@ -171,6 +171,7 @@ export async function lookupEmail(formData: FormData): Promise<AuthResult> {
       return {
         success: false,
         error: 'تعداد درخواست‌ها بیش از حد مجاز است. لحظاتی دیگر دوباره تلاش کنید',
+        cooldownMs: Math.max(0, rate.reset - Date.now()),
       };
     }
 
@@ -248,6 +249,7 @@ export async function registerUser(formData: FormData): Promise<AuthResult> {
       return {
         success: false,
         error: 'تعداد ثبت‌نام‌ها برای این ایمیل بیش از حد مجاز است. لحظاتی دیگر دوباره تلاش کنید',
+        cooldownMs: Math.max(0, rate.reset - Date.now()),
       };
     }
 
@@ -334,6 +336,7 @@ export async function loginWithPassword(formData: FormData): Promise<AuthResult>
       return {
         success: false,
         error: 'تعداد تلاش‌های ورود بیش از حد مجاز است. لحظاتی دیگر دوباره تلاش کنید',
+        cooldownMs: Math.max(0, rate.reset - Date.now()),
       };
     }
 
@@ -399,6 +402,7 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
       return {
         success: false,
         error: 'تعداد تلاش‌های تأیید بیش از حد مجاز است. لحظاتی دیگر دوباره تلاش کنید',
+        cooldownMs: Math.max(0, rate.reset - Date.now()),
       };
     }
 
@@ -496,6 +500,7 @@ export async function resendOtp(formData: FormData): Promise<AuthResult> {
       return {
         success: false,
         error: 'تعداد درخواست‌های ارسال مجدد بیش از حد مجاز است',
+        cooldownMs: Math.max(0, rate.reset - Date.now()),
       };
     }
 
@@ -536,6 +541,7 @@ export async function recoverPassword(formData: FormData): Promise<AuthResult> {
       return {
         success: false,
         error: 'تعداد درخواست‌های بازنشانی رمز عبور بیش از حد مجاز است',
+        cooldownMs: Math.max(0, rate.reset - Date.now()),
       };
     }
 
@@ -597,6 +603,7 @@ export async function setNewPassword(formData: FormData): Promise<AuthResult> {
       return {
         success: false,
         error: 'تعداد تلاش‌های تغییر رمز عبور بیش از حد مجاز است',
+        cooldownMs: Math.max(0, rate.reset - Date.now()),
       };
     }
 

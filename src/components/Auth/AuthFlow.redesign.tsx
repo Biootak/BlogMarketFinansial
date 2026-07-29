@@ -102,7 +102,17 @@ export default function AuthFlow() {
 
   const handleResult = (result: AuthResult) => {
     if (!result.success) {
-      setNotice({ tone: 'error', message: result.error });
+      // 2026-07-29: cooldownMs (اگر وجود داشته باشد) داخل notice
+      // قرار می‌گیرد تا NoticeBanner بتواند RateLimitCountdown
+      // را زیر پیام خطا نمایش دهد.
+      setNotice({
+        tone: 'error',
+        message: result.error,
+        cooldownMs:
+          typeof result.cooldownMs === 'number' && result.cooldownMs > 0
+            ? result.cooldownMs
+            : undefined,
+      });
       if (typeof result.cooldownMs === 'number') setCooldownMs(result.cooldownMs);
       return;
     }

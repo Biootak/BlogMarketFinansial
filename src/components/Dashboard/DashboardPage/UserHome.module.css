@@ -1,0 +1,591 @@
+/* UserHome — خانهٔ کاربر معمولی (USER role)
+ * 2026-07-29: ریسپانسیو، RTL-safe، بدون emoji، با tokens
+ */
+
+.root {
+  --gap: clamp(1rem, 0.6rem + 1.2vw, 1.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  padding: clamp(1rem, 0.5rem + 2vw, 2rem);
+  max-width: 1200px;
+  margin-inline: auto;
+  color: var(--ds-text, #0e1014);
+}
+
+/* ─── Header ─────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding-block-end: 0.5rem;
+  border-block-end: 1px solid color-mix(in srgb, currentColor 8%, transparent);
+}
+
+.headerMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.greeting {
+  font-size: 0.875rem;
+  color: color-mix(in srgb, currentColor 60%, transparent);
+}
+
+.name {
+  font-size: clamp(1.5rem, 1rem + 1.6vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 0;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, currentColor 100%, transparent) 0%,
+    color-mix(in srgb, currentColor 60%, transparent) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: color-mix(in srgb, currentColor 65%, transparent);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.badge {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.45rem;
+}
+
+.headerAction {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.primaryCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.15rem;
+  background: linear-gradient(135deg, #0f766e 0%, #134e4a 100%);
+  color: #fff;
+  border-radius: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    0 8px 24px -8px rgba(15, 118, 110, 0.45);
+}
+
+.primaryCta:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.08),
+    0 12px 28px -8px rgba(15, 118, 110, 0.55);
+}
+
+.primaryCta:active {
+  transform: translateY(0);
+}
+
+.primaryCta:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 3px;
+}
+
+/* ─── KYC banner ────────────────────────────────────────────── */
+.kycBanner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, #f59e0b 8%, transparent),
+    color-mix(in srgb, #f59e0b 3%, transparent)
+  );
+  border: 1px solid color-mix(in srgb, #f59e0b 25%, transparent);
+  border-radius: 1rem;
+  flex-wrap: wrap;
+}
+
+.kycIcon {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 2.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, #f59e0b 18%, transparent);
+  color: #b45309;
+}
+
+.kycText {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.kycTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.2rem;
+}
+
+.kycDesc {
+  font-size: 0.85rem;
+  color: color-mix(in srgb, currentColor 70%, transparent);
+  margin: 0;
+}
+
+.kycCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  background: #b45309;
+  color: #fff;
+  border-radius: 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.kycCta:hover {
+  background: #92400e;
+}
+
+.kycCta:focus-visible {
+  outline: 2px solid #b45309;
+  outline-offset: 2px;
+}
+
+/* ─── Stats grid ────────────────────────────────────────────── */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.85rem;
+}
+
+/* ─── Quick actions ─────────────────────────────────────────── */
+.quickActions,
+.recent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: color-mix(in srgb, currentColor 85%, transparent);
+}
+
+.actionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.actionCard {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem;
+  background: color-mix(in srgb, currentColor 3%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 8%, transparent);
+  border-radius: 0.85rem;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+
+.actionCard:hover {
+  border-color: color-mix(in srgb, #0f766e 40%, transparent);
+  background: color-mix(in srgb, #0f766e 4%, transparent);
+  transform: translateY(-1px);
+}
+
+.actionCard:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
+
+.actionIcon {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 2.25rem;
+  display: grid;
+  place-items: center;
+  border-radius: 0.6rem;
+  background: color-mix(in srgb, #0f766e 14%, transparent);
+  color: #0f766e;
+}
+
+.actionLabel {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* ─── Recent requests ───────────────────────────────────────── */
+.recentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.seeAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: #0f766e;
+  text-decoration: none;
+}
+
+.seeAll:hover {
+  text-decoration: underline;
+}
+
+.requestsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.requestItem {
+  margin: 0;
+}
+
+.requestLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  background: color-mix(in srgb, currentColor 2.5%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 7%, transparent);
+  border-radius: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, background 0.15s;
+  flex-wrap: wrap;
+}
+
+.requestLink:hover {
+  border-color: color-mix(in srgb, #0f766e 35%, transparent);
+  background: color-mix(in srgb, #0f766e 3%, transparent);
+}
+
+.requestLink:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
+
+.requestMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.requestType {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.requestCode {
+  font-size: 0.75rem;
+  color: color-mix(in srgb, currentColor 55%, transparent);
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  letter-spacing: 0.04em;
+}
+
+.requestBody {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.requestAmount {
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.requestDate {
+  font-size: 0.75rem;
+  color: color-mix(in srgb, currentColor 55%, transparent);
+}
+
+.emptyCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1rem;
+  background: #0f766e;
+  color: #fff;
+  border-radius: 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.emptyCta:hover {
+  background: #134e4a;
+  transform: translateY(-1px);
+}
+
+.emptyCta:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
+
+/* ─── Welcome banner (کاربر جدید) ────────────────────────── */
+.welcome {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.5rem 1.75rem;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, #0f766e 10%, transparent) 0%,
+    color-mix(in srgb, #0f766e 3%, transparent) 100%
+  );
+  border: 1px solid color-mix(in srgb, #0f766e 22%, transparent);
+  border-radius: 1.25rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.welcome::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      color-mix(in srgb, #0f766e 18%, transparent),
+      transparent 50%
+    );
+  pointer-events: none;
+}
+
+.welcomeIcon {
+  width: 3rem;
+  height: 3rem;
+  flex: 0 0 3rem;
+  display: grid;
+  place-items: center;
+  border-radius: 1rem;
+  background: color-mix(in srgb, #0f766e 25%, transparent);
+  color: #0f766e;
+  position: relative;
+  z-index: 1;
+}
+
+.welcomeText {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.welcomeTitle {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0 0 0.2rem;
+  color: color-mix(in srgb, currentColor 95%, transparent);
+}
+
+.welcomeDesc {
+  font-size: 0.85rem;
+  margin: 0;
+  color: color-mix(in srgb, currentColor 70%, transparent);
+}
+
+.welcomeSteps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  position: relative;
+  z-index: 1;
+  flex-wrap: wrap;
+}
+
+.welcomeStep {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.85rem;
+  background: color-mix(in srgb, #fff 12%, transparent);
+  border: 1px solid color-mix(in srgb, #0f766e 25%, transparent);
+  border-radius: 0.6rem;
+  text-decoration: none;
+  color: color-mix(in srgb, currentColor 90%, transparent);
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: background 0.15s, transform 0.15s;
+  white-space: nowrap;
+}
+
+.welcomeStep:hover {
+  background: color-mix(in srgb, #0f766e 18%, transparent);
+  transform: translateX(-2px);
+}
+
+.welcomeStep:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
+
+.welcomeStepIndex {
+  display: grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: #0f766e;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  flex: 0 0 1.4rem;
+}
+
+@media (max-width: 720px) {
+  .welcome {
+    grid-template-columns: auto 1fr;
+  }
+
+  .welcomeSteps {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+/* ─── Activity feed ─────────────────────────────────────── */
+.activity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.activityHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.activityIcon {
+  width: 1rem;
+  height: 1rem;
+  display: inline-block;
+  vertical-align: middle;
+  margin-inline-end: 0.4rem;
+  color: #0f766e;
+}
+
+.activityList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.activityItem {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  background: color-mix(in srgb, currentColor 2%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 6%, transparent);
+  border-radius: 0.7rem;
+  transition: background 0.15s;
+}
+
+.activityItem:hover {
+  background: color-mix(in srgb, #0f766e 3%, transparent);
+}
+
+.activityItemUnread {
+  background: color-mix(in srgb, #0f766e 5%, transparent);
+  border-color: color-mix(in srgb, #0f766e 18%, transparent);
+}
+
+.activityDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, currentColor 25%, transparent);
+  flex: 0 0 0.5rem;
+}
+
+.activityItemUnread .activityDot {
+  background: #0f766e;
+  box-shadow: 0 0 0 4px color-mix(in srgb, #0f766e 18%, transparent);
+}
+
+.activityMessage {
+  font-size: 0.85rem;
+  color: color-mix(in srgb, currentColor 88%, transparent);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activityTime {
+  font-size: 0.75rem;
+  color: color-mix(in srgb, currentColor 55%, transparent);
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .header {
+    align-items: flex-start;
+  }
+
+  .headerAction {
+    width: 100%;
+  }
+
+  .primaryCta {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .requestLink {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .requestBody {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

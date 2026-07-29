@@ -6,6 +6,7 @@ import type { FieldValues, Path, useForm } from 'react-hook-form';
 
 import type { AuthResult } from '@/actions/auth-actions';
 import type { VerificationEmailIntent } from '@/lib/tokens';
+import { RateLimitCountdown } from './RateLimitCountdown';
 
 export type { AuthResult };
 
@@ -13,7 +14,12 @@ export type InternalStep = 'email' | 'register' | 'login' | 'verify' | 'recover'
 
 export type FlowIntent = VerificationEmailIntent;
 export type NoticeTone = 'error' | 'success' | 'info';
-export type AuthNotice = { tone: NoticeTone; message: string };
+export type AuthNotice = {
+  tone: NoticeTone;
+  message: string;
+  /** اگر notice همراه rate-limit است، این مقدار برای شمارنده استفاده می‌شود */
+  cooldownMs?: number;
+};
 
 type StepCopy = {
   eyebrow: string;
@@ -221,7 +227,7 @@ export function LockedEmailChip({
   );
 }
 
-/** Notice / alert banner */
+/** Notice / alert banner — با پشتیبانی از rate-limit countdown */
 export function NoticeBanner({ notice }: { notice: AuthNotice | null }) {
   if (!notice) return null;
   const cls =
@@ -233,10 +239,15 @@ export function NoticeBanner({ notice }: { notice: AuthNotice | null }) {
   const Icon =
     notice.tone === 'error' ? AlertCircle : notice.tone === 'success' ? CheckCircle2 : Info;
   return (
-    <p className={cls} aria-live="polite">
-      <Icon aria-hidden="true" />
-      <span>{notice.message}</span>
-    </p>
+    <div>
+      <p className={cls} aria-live="polite">
+        <Icon aria-hidden="true" />
+        <span>{notice.message}</span>
+      </p>
+      {notice.cooldownMs && notice.cooldownMs > 0 ? (
+        <RateLimitCountdown initialMs={notice.cooldownMs} />
+      ) : null}
+    </div>
   );
 }
 
