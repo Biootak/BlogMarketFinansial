@@ -1,4 +1,5 @@
 import { DashboardProviders } from '@/components/Dashboard/DashboardPage/DashboardProviders';
+import DashboardBottomNavGate from '@/components/Dashboard/DashboardBottomNav/DashboardBottomNavGate';
 import { SiteSettingsProvider } from '@/components/SiteSettingsProvider';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
 import { checkRole } from '@/lib/auth';
@@ -32,7 +33,12 @@ async function DashboardGateInner({
         logoUrl: settings.logoUrl,
       }}
     >
-      <DashboardProviders userRole={session.user.role}>{children}</DashboardProviders>
+      <DashboardProviders userRole={session.user.role}>
+        {children}
+        {/* 2026-07-29: Mobile-first bottom nav for the dashboard.
+            Mounted here so the role-aware gate can read session. */}
+        <DashboardBottomNavGate />
+      </DashboardProviders>
     </SiteSettingsProvider>
   );
 }

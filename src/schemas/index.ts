@@ -332,6 +332,26 @@ export const UpdateGeneralSettingsSchema = z.object({
     .optional()
     .or(z.literal(''))
     .nullable(),
+  // 2026-07-29: فیلدهای تماس — اختیاری، در صورت خالی بودن null می‌شود
+  contactEmail: z
+    .string()
+    .email('ایمیل تماس نامعتبر است')
+    .max(255)
+    .optional()
+    .or(z.literal(''))
+    .nullable(),
+  contactPhone: z
+    .string()
+    .max(50, 'شماره تماس نباید بیشتر از ۵۰ کاراکتر باشد')
+    .optional()
+    .or(z.literal(''))
+    .nullable(),
+  contactAddress: z
+    .string()
+    .max(500, 'آدرس نباید بیشتر از ۵۰۰ کاراکتر باشد')
+    .optional()
+    .or(z.literal(''))
+    .nullable(),
 });
 
 export const UpdateEmailSettingsSchema = z.object({

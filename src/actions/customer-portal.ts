@@ -9,11 +9,12 @@
 
 import { requireCustomerAccess } from '@/lib/customer-auth';
 import prisma from '@/lib/db';
+import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
 import type { FintechActionResult } from '@/types/types';
-import type {
+import {
   AccountStatus,
   AccountType,
   CustomerStatus,
@@ -1622,4 +1623,384 @@ export async function requestAccountDeletion(
   });
 
   return { success: true, data: { ticketId } };
+}
+
+// ─── WRITE — Internal transfer between own accounts ──────────────────────────
+
+/**
+ * Schema اعتبارسنجی برای انتقال بین‌حسابی.
+ * هر دو حساب باید متعلق به همین customer باشند (tenant isolation).
+ * فقط ارز یکسان — تبدیل ارز از این مسیر نیست (از `executeFxTrade` استفاده شود).
+ */
+const InternalTransferSchema = z.object({
+  fromAccountId: z.string().min(1, 'حساب مبدأ نامعتبر است'),
+  toAccountId: z.string().min(1, 'حساب مقصد نامعتبر است'),
+  amountCents: z
+    .number()
+    .int()
+    .positive('مبلغ باید مثبت باشد')
+    .max(100_000_000_00, 'سقف انتقال ۱۰۰ میلیون'),
+  note: z.string().max(200, 'یادداشت حداکثر ۲۰۰ کاراکتر').optional(),
+  idempotencyKey: z.string().min(8).max(64),
+});
+
+export type InternalTransferResult = {
+  txnId: string;
+  txnRef: string;
+  fromAccountId: string;
+  toAccountId: string;
+  amountCents: number;
+  currency: string;
+  fromBalance: string;
+  toBalance: string;
+};
+
+/**
+ * انتقال بین‌حسابی داخلی — atomic.
+ *
+ * ایمنی:
+ *   - tenant isolation: هر دو حساب باید متعلق به access.customerId باشند
+ *   - currency match: هر دو حساب باید ارز یکسان داشته باشند
+ *   - status check: هر دو حساب ACTIVE باشند (نه FROZEN/CLOSED)
+ *   - balance check: atomic compare-and-set روی from.balance
+ *   - dead-lock avoidance: account IDs مرتب می‌شوند (همیشه قفل به همان ترتیب)
+ *   - idempotency: idempotencyKey برای جلوگیری از double-submit
+ *   - audit log: هم debit و هم credit در LedgerEntry ثبت می‌شوند
+ */
+export async function transferBetweenAccounts(
+  raw: unknown,
+): Promise<FintechActionResult<InternalTransferResult>> {
+  const access = await requireCustomerAccess();
+  if (!access.ok) {
+    return {
+      success: false,
+      error: { code: 'FORBIDDEN', message: access.error.message },
+    };
+  }
+
+  // Rate-limit: 30 درخواست در دقیقه per user
+  const rl = await checkRateLimit(`customer-transfer:${access.userId}`, 'api');
+  if (!rl.success) {
+    return {
+      success: false,
+      error: { code: 'RATE_LIMITED', message: 'تعداد درخواست‌های انتقال زیاد است' },
+    };
+  }
+
+  const parsed = InternalTransferSchema.safeParse(raw);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: parsed.error.errors[0]?.message ?? 'داده نامعتبر',
+      },
+    };
+  }
+
+  const { fromAccountId, toAccountId, amountCents, note, idempotencyKey } = parsed.data;
+
+  // Self-transfer
+  if (fromAccountId === toAccountId) {
+    return {
+      success: false,
+      error: { code: 'SAME_ACCOUNT', message: 'حساب مبدأ و مقصد نمی‌توانند یکسان باشند' },
+    };
+  }
+
+  // Idempotency: اگر قبلاً با این کلید ثبت شده، همان نتیجه را برگردان
+  const existing = await prisma.transaction.findFirst({
+    where: { idempotencyKey },
+    select: {
+      id: true,
+      accountId: true,
+      destAmount: true,
+      destCurrency: true,
+      amount: true,
+      currency: true,
+      meta: true,
+    },
+  });
+  if (existing) {
+    const meta = (existing.meta as Record<string, unknown> | null) ?? {};
+    return {
+      success: true,
+      data: {
+        txnId: existing.id,
+        txnRef: typeof meta.txnRef === 'string' ? meta.txnRef : existing.id,
+        fromAccountId: existing.accountId ?? fromAccountId,
+        toAccountId: typeof meta.toAccountId === 'string' ? meta.toAccountId : toAccountId,
+        amountCents: Number(existing.amount),
+        currency: existing.currency,
+        fromBalance: typeof meta.fromBalance === 'string' ? meta.fromBalance : '0',
+        toBalance: typeof meta.toBalance === 'string' ? meta.toBalance : '0',
+      },
+    };
+  }
+
+  // هر دو حساب را پیدا کن (با tenant check) — مرتب‌شده برای جلوگیری از deadlock
+  const sortedIds = [fromAccountId, toAccountId].sort();
+  const accounts = await prisma.fintechAccount.findMany({
+    where: {
+      id: { in: sortedIds },
+      customerId: access.customerId,
+    },
+    select: {
+      id: true,
+      currency: true,
+      balance: true,
+      status: true,
+      exchangeId: true,
+    },
+  });
+
+  if (accounts.length !== 2) {
+    return {
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'یکی از حساب‌ها یافت نشد' },
+    };
+  }
+
+  const from = accounts.find((a) => a.id === fromAccountId);
+  const to = accounts.find((a) => a.id === toAccountId);
+  if (!from || !to) {
+    return {
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'حساب نامعتبر' },
+    };
+  }
+
+  // Currency match
+  if (from.currency !== to.currency) {
+    return {
+      success: false,
+      error: {
+        code: 'CURRENCY_MISMATCH',
+        message: 'برای تبدیل ارز از بخش «تبدیل ارز» استفاده کنید',
+      },
+    };
+  }
+
+  // Status check
+  if (from.status !== 'ACTIVE' || to.status !== 'ACTIVE') {
+    return {
+      success: false,
+      error: {
+        code: 'ACCOUNT_INACTIVE',
+        message: 'یکی از حساب‌ها فعال نیست',
+      },
+    };
+  }
+
+  // Customer must be ACTIVE
+  const customer = await prisma.customer.findUnique({
+    where: { id: access.customerId },
+    select: { status: true, exchangeId: true },
+  });
+  if (!customer || customer.status === 'FROZEN' || customer.status === 'CLOSED') {
+    return {
+      success: false,
+      error: { code: 'CUSTOMER_LOCKED', message: 'حساب مشتری مسدود است' },
+    };
+  }
+
+  // exchange consistency
+  if (from.exchangeId !== customer.exchangeId || to.exchangeId !== customer.exchangeId) {
+    return {
+      success: false,
+      error: { code: 'EXCHANGE_MISMATCH', message: 'حساب‌ها باید از یک صرافی باشند' },
+    };
+  }
+
+  const txnRef = `TRF-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+
+  // ─── Atomic transaction ──────────────────────────────────────────────────
+  let result: InternalTransferResult | null = null;
+  try {
+    result = await prisma.$transaction(
+      async (tx) => {
+        // 1) Debit (atomic compare-and-set) — فقط اگر موجودی کافی است
+        const debit = await tx.fintechAccount.updateMany({
+          where: {
+            id: fromAccountId,
+            status: 'ACTIVE',
+            balance: { gte: BigInt(amountCents) },
+          },
+          data: {
+            balance: { decrement: BigInt(amountCents) },
+            updatedAt: new Date(),
+          },
+        });
+
+        if (debit.count === 0) {
+          // موجودی کافی نیست یا وضعیت تغییر کرده
+          throw new Error('INSUFFICIENT_BALANCE');
+        }
+
+        // 2) Credit
+        const credit = await tx.fintechAccount.updateMany({
+          where: {
+            id: toAccountId,
+            status: 'ACTIVE',
+          },
+          data: {
+            balance: { increment: BigInt(amountCents) },
+            updatedAt: new Date(),
+          },
+        });
+
+        if (credit.count === 0) {
+          throw new Error('CREDIT_FAILED');
+        }
+
+        // 3) وضعیت نهایی برای محاسبهٔ runningBalance
+        const fromAfter = await tx.fintechAccount.findUnique({
+          where: { id: fromAccountId },
+          select: { balance: true, currency: true },
+        });
+        const toAfter = await tx.fintechAccount.findUnique({
+          where: { id: toAccountId },
+          select: { balance: true, currency: true },
+        });
+        if (!fromAfter || !toAfter) throw new Error('STATE_LOST');
+
+        const txnId = uuidv4();
+        const now = new Date();
+
+        // 4) Transaction record
+        await tx.transaction.create({
+          data: {
+            id: txnId,
+            exchangeId: customer.exchangeId,
+            customerId: access.customerId,
+            accountId: fromAccountId,
+            kind: 'TRANSFER',
+            status: 'COMPLETED',
+            amount: BigInt(amountCents),
+            currency: from.currency,
+            destAmount: BigInt(amountCents),
+            destCurrency: to.currency,
+            idempotencyKey,
+            counterparty: 'انتقال داخلی',
+            note: note?.trim() || null,
+            meta: {
+              txnRef,
+              fromAccountId,
+              toAccountId,
+              internal: true,
+            },
+            createdById: access.userId,
+            createdAt: now,
+            updatedAt: now,
+          },
+        });
+
+        // 5) LedgerEntry: debit
+        await tx.ledgerEntry.create({
+          data: {
+            id: uuidv4(),
+            exchangeId: customer.exchangeId,
+            accountId: fromAccountId,
+            customerId: access.customerId,
+            txnId,
+            direction: 'DEBIT',
+            amount: BigInt(amountCents),
+            currency: from.currency,
+            runningBalance: fromAfter.balance,
+            description: note?.trim() || `انتقال به حساب ${to.currency}`,
+            createdById: access.userId,
+            createdAt: now,
+          },
+        });
+
+        // 6) LedgerEntry: credit
+        await tx.ledgerEntry.create({
+          data: {
+            id: uuidv4(),
+            exchangeId: customer.exchangeId,
+            accountId: toAccountId,
+            customerId: access.customerId,
+            txnId,
+            direction: 'CREDIT',
+            amount: BigInt(amountCents),
+            currency: to.currency,
+            runningBalance: toAfter.balance,
+            description: note?.trim() || `انتقال از حساب ${from.currency}`,
+            createdById: access.userId,
+            createdAt: now,
+          },
+        });
+
+        // 7) AuditLog
+        await tx.auditLog.create({
+          data: {
+            id: uuidv4(),
+            actorId: access.userId,
+            actorRole: 'CUSTOMER',
+            action: 'INTERNAL_TRANSFER',
+            entityType: 'Transaction',
+            entityId: txnId,
+            meta: {
+              fromAccountId,
+              toAccountId,
+              amountCents,
+              currency: from.currency,
+              txnRef,
+            },
+          },
+        });
+
+        return {
+          txnId,
+          txnRef,
+          fromAccountId,
+          toAccountId,
+          amountCents,
+          currency: from.currency,
+          fromBalance: fromAfter.balance.toString(),
+          toBalance: toAfter.balance.toString(),
+        };
+      },
+      {
+        // بالاترین isolation برای اطمینان از atomicity واقعی
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+        maxWait: 5000,
+        timeout: 10000,
+      },
+    );
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'TRANSFER_FAILED';
+    if (msg === 'INSUFFICIENT_BALANCE') {
+      return {
+        success: false,
+        error: { code: 'INSUFFICIENT_BALANCE', message: 'موجودی کافی نیست' },
+      };
+    }
+    if (msg === 'CREDIT_FAILED' || msg === 'STATE_LOST') {
+      return {
+        success: false,
+        error: { code: 'STATE_ERROR', message: 'خطا در به‌روزرسانی حساب مقصد' },
+      };
+    }
+    return {
+      success: false,
+      error: { code: 'TRANSFER_FAILED', message: 'انتقال با خطا مواجه شد' },
+    };
+  }
+
+  if (!result) {
+    return {
+      success: false,
+      error: { code: 'TRANSFER_FAILED', message: 'انتقال ناموفق بود' },
+    };
+  }
+
+  // Revalidate caches
+  revalidateTag('customer-accounts');
+  revalidateTag('customer-transactions');
+  revalidateTag('customer-dashboard');
+  revalidateTag(`account-${fromAccountId}`);
+  revalidateTag(`account-${toAccountId}`);
+
+  return { success: true, data: result };
 }

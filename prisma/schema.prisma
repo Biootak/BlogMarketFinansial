@@ -373,6 +373,11 @@ model SystemSettings {
   smtpPort        String?
   smtpUsername    String?
   smtpPassword    String?
+  // 2026-07-29: فیلدهای تماس ادمین‌قابل‌ویرایش — جایگزین مقادیر hardcode شده در Footer/Help
+  contactEmail    String?
+  contactPhone    String?
+  contactAddress  String?
+  // شبکه‌های اجتماعی (برای SocialLinks و Schema.org sameAs)
   telegram        String?
   instagram       String?
   whatsapp        String?
@@ -1179,11 +1184,33 @@ model ApiKey {
   isActive  Boolean   @default(true)
   lastUsed  DateTime?
   expiresAt DateTime?
+  // scopes: لیست دسترسی‌ها — خالی = دسترسی کامل (backward-compatible)
+  scopes    String[]  @default([])
+  // fingerprint اخیر: برای تشخیص تغییر مرورگر/IP
+  lastIp    String?
   createdAt DateTime  @default(now())
   User      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  audits    ApiKeyAudit[]
 
   @@index([userId])
   @@index([key])
+}
+
+model ApiKeyAudit {
+  id        String   @id @default(cuid())
+  apiKeyId  String
+  userId    String
+  // CREATE | VIEW | DELETE | TOGGLE | USED
+  action    String
+  ip        String?
+  userAgent String?
+  // دادهٔ اضافی (مثلاً secret نمایش داده‌شده)
+  metadata  Json?
+  createdAt DateTime @default(now())
+  ApiKey    ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([apiKeyId])
 }
 
 model Webhook {
@@ -1196,8 +1223,63 @@ model Webhook {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries WebhookDelivery[]
 
   @@index([userId])
+}
+
+model WebhookDelivery {
+  id            String   @id @default(cuid())
+  webhookId     String
+  event         String
+  payload       Json
+  responseCode  Int?
+  responseBody  String?
+  attempt       Int      @default(1)
+  status        WebhookDeliveryStatus @default(PENDING)
+  durationMs    Int?
+  error         String?
+  deliveredAt   DateTime?
+  createdAt     DateTime @default(now())
+  Webhook       Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId, createdAt])
+  @@index([status])
+}
+
+enum WebhookDeliveryStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  RETRYING
+}
+
+// لاگ درخواست‌های API — برای نمایش «فعالیت اخیر API» در داشبورد
+model ApiCallLog {
+  id          String   @id @default(cuid())
+  userId      String
+  apiKeyId    String?
+  method      String
+  path        String
+  statusCode  Int
+  durationMs  Int
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([apiKeyId])
+}
+
+// Rate limit ساده — شمارنده پنجره‌ای
+model ApiRateLimit {
+  id          String   @id @default(cuid())
+  userId      String
+  action      String
+  windowStart DateTime
+  count       Int      @default(1)
+
+  @@index([userId, action, windowStart])
 }
 
 enum Role {

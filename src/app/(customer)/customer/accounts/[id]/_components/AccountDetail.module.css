@@ -455,11 +455,130 @@
   }
 }
 
+/* ─── Quick Actions ───────────────────────────────────────────────────── */
+
+.quickActions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--ds-space-3);
+}
+
+.actionCard {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface-elevated);
+  border: 1px solid var(--ds-border-subtle);
+  text-decoration: none;
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  transition: all 200ms ease;
+  overflow: hidden;
+}
+
+.actionCard::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 3px;
+  background: var(--ds-border-default);
+  transition: inline-size 200ms ease;
+}
+
+.actionCard:hover {
+  transform: translateY(-1px);
+  border-color: var(--ds-brand-400);
+  box-shadow: 0 2px 8px color-mix(in oklch, var(--ds-brand-500) 8%, transparent);
+}
+
+.actionCard:hover::before {
+  inline-size: 4px;
+}
+
+.actionCardCredit::before {
+  background: var(--nova-up);
+}
+
+.actionCardDebit::before {
+  background: var(--nova-down);
+}
+
+.actionCardBrand::before {
+  background: var(--ds-brand-500);
+}
+
+.actionCardNeutral::before {
+  background: var(--ds-text-muted);
+}
+
+.actionCardCredit:hover {
+  border-color: var(--nova-up);
+  box-shadow: 0 2px 8px color-mix(in oklch, var(--nova-up) 8%, transparent);
+}
+
+.actionCardDebit:hover {
+  border-color: var(--nova-down);
+  box-shadow: 0 2px 8px color-mix(in oklch, var(--nova-down) 8%, transparent);
+}
+
+.actionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: 50%;
+  background: color-mix(in oklch, var(--ds-brand-500) 8%, transparent);
+  color: var(--ds-brand-500);
+  flex-shrink: 0;
+}
+
+.actionCardCredit .actionIcon {
+  background: color-mix(in oklch, var(--nova-up) 10%, transparent);
+  color: var(--nova-up);
+}
+
+.actionCardDebit .actionIcon {
+  background: color-mix(in oklch, var(--nova-down) 10%, transparent);
+  color: var(--nova-down);
+}
+
+.actionLabel {
+  flex: 1;
+  text-align: start;
+}
+
+.actionChevron {
+  color: var(--ds-text-muted);
+  transition: transform 200ms ease, color 200ms ease;
+}
+
+.actionCard:hover .actionChevron {
+  transform: translateX(-3px);
+  color: var(--ds-brand-500);
+}
+
 @media (max-width: 600px) {
   .ledgerRow {
     grid-template-columns: auto 1fr auto;
   }
   .ledgerIndex {
     display: none;
+  }
+  .quickActions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .actionCard {
+    padding: var(--ds-space-2) var(--ds-space-3);
+    font-size: var(--ds-text-xs);
+  }
+  .actionIcon {
+    inline-size: 28px;
+    block-size: 28px;
   }
 }

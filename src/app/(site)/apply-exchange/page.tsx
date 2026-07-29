@@ -10,6 +10,7 @@ import { auth } from '@/auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import ApplyExchangeForm from './_components/ApplyExchangeForm';
+import s from './apply-exchange.module.css';
 
 export const metadata: Metadata = {
   title: 'ثبت‌نام صرافی | پلتفرم انتقال ارز',
@@ -23,16 +24,7 @@ export default async function ApplyExchangePage() {
   }
 
   return (
-    <main
-      dir="rtl"
-      style={{
-        minHeight: '100dvh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 'var(--ds-space-6)',
-      }}
-    >
+    <main dir="rtl" className={s.root}>
       <ApplyExchangeForm />
     </main>
   );

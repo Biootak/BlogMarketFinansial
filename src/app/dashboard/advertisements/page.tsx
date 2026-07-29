@@ -23,6 +23,7 @@ import { PersianDatePicker } from '@/components/ui/PersianDatePicker';
 import {
   Dialog,
   DialogContent,
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -333,14 +334,16 @@ export default function AdvertisementsPage() {
                 <HiMagnifyingGlass className="at-filterbar__search__ico size-4" />
               </div>
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                  <button
-                    type="button"
-                    onClick={openNewAdDialog}
-                    className="at-btn at-btn--primary"
-                  >
-                    <HiOutlinePlus className="size-4" />
-                    <span>افزودن تبلیغ</span>
-                  </button>
+                  <DialogTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={openNewAdDialog}
+                      className="at-btn at-btn--primary"
+                    >
+                      <HiOutlinePlus className="size-4" />
+                      <span>افزودن تبلیغ</span>
+                    </button>
+                  </DialogTrigger>
                 <DialogContent
                   className="at-dialog-content max-h-[90vh] w-full max-w-5xl p-0 overflow-hidden"
                   dir="rtl"

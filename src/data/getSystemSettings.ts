@@ -5,6 +5,10 @@ export interface SiteSettings {
   siteName: string | null;
   siteDescription: string | null;
   logoUrl: string | null;
+  // 2026-07-29: فیلدهای تماس (ادمین‌قابل‌ویرایش). null = استفاده از fallback.
+  contactEmail: string | null;
+  contactPhone: string | null;
+  contactAddress: string | null;
   telegram: string | null;
   instagram: string | null;
   twitter: string | null;
@@ -17,6 +21,9 @@ const SETTINGS_FALLBACK: SiteSettings = {
   siteName: null,
   siteDescription: null,
   logoUrl: null,
+  contactEmail: null,
+  contactPhone: null,
+  contactAddress: null,
   telegram: null,
   instagram: null,
   twitter: null,
@@ -33,16 +40,33 @@ const SETTINGS_FALLBACK: SiteSettings = {
 //   - حتی اگر DB کاملاً قطع باشد، layout/page کرش نمی‌کند
 export const getSystemSettingsData = safeCache(
   async (): Promise<SiteSettings> => {
-    const settings = await prisma.systemSettings.findFirst();
+    let settings;
+    try {
+      settings = await prisma.systemSettings.findFirst();
+    } catch {
+      return SETTINGS_FALLBACK;
+    }
 
     if (!settings) {
       return SETTINGS_FALLBACK;
     }
 
+    // 2026-07-29: فیلدهای تماس اختیاری‌اند. اگر هنوز migration اجرا نشده
+    // (فیلدها در DB موجود نیستند)، با Reflect.get از prototype می‌خوانیم تا
+    // TypeError ندهد. null = استفاده از fallback در UI.
+    const raw = settings as unknown as Record<string, unknown>;
+    const pickString = (key: string): string | null => {
+      const v = raw[key];
+      return typeof v === 'string' && v.trim() ? v.trim() : null;
+    };
+
     return {
       siteName: settings.siteName,
       siteDescription: settings.siteDescription,
       logoUrl: settings.logoUrl,
+      contactEmail: pickString('contactEmail'),
+      contactPhone: pickString('contactPhone'),
+      contactAddress: pickString('contactAddress'),
       telegram: settings.telegram,
       instagram: settings.instagram,
       twitter: settings.twitter,

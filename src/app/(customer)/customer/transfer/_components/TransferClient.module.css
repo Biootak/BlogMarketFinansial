@@ -1,0 +1,446 @@
+/* TransferClient — عملیات مالی (2026)
+   Tokens only: --ds-* و --nova-*
+   RTL-first · logical properties · Mobile-first
+   Performance: no layout thrash, no expensive transitions
+*/
+
+.workspace {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5);
+  max-inline-size: 720px;
+  margin-inline: auto;
+}
+
+/* ─── Tabs ─────────────────────────────────────────────────────────────── */
+
+.tabBar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-1);
+  background: var(--ds-surface-elevated);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-2);
+  border: none;
+  background: transparent;
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  border-radius: var(--ds-radius-md);
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.tab:hover {
+  color: var(--ds-text-primary);
+  background: color-mix(in oklch, var(--ds-brand-500) 4%, transparent);
+}
+
+.tabActive {
+  background: var(--ds-surface-canvas);
+  color: var(--ds-text-primary);
+  box-shadow: 0 1px 3px color-mix(in oklch, var(--ds-text-primary) 8%, transparent);
+}
+
+.tab--success.tabActive {
+  color: var(--nova-up);
+  background: color-mix(in oklch, var(--nova-up) 8%, var(--ds-surface-canvas));
+}
+
+.tab--error.tabActive {
+  color: var(--nova-down);
+  background: color-mix(in oklch, var(--nova-down) 8%, var(--ds-surface-canvas));
+}
+
+.tab--brand.tabActive {
+  color: var(--ds-brand-600);
+  background: color-mix(in oklch, var(--ds-brand-500) 8%, var(--ds-surface-canvas));
+}
+
+/* ─── Result Banner ───────────────────────────────────────────────────── */
+
+.resultBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4) var(--ds-space-5);
+  border-radius: var(--ds-radius-md);
+  animation: slideDown 300ms ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.resultSuccess {
+  background: color-mix(in oklch, var(--nova-up) 8%, var(--ds-surface-elevated));
+  border: 1px solid color-mix(in oklch, var(--nova-up) 25%, transparent);
+  color: var(--nova-up);
+}
+
+.resultError {
+  background: color-mix(in oklch, var(--nova-down) 8%, var(--ds-surface-elevated));
+  border: 1px solid color-mix(in oklch, var(--nova-down) 25%, transparent);
+  color: var(--nova-down);
+}
+
+.resultBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+}
+
+.resultMessage {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--ds-text-primary);
+}
+
+.resultRef {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+
+.resultRef strong {
+  color: var(--ds-text-primary);
+}
+
+.resultClose {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--ds-text-muted);
+  padding: var(--ds-space-1);
+  border-radius: var(--ds-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.resultClose:hover {
+  background: color-mix(in oklch, var(--ds-text-primary) 8%, transparent);
+}
+
+/* ─── Form ────────────────────────────────────────────────────────────── */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-6);
+  background: var(--ds-surface-elevated);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.label {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--ds-text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+
+.labelCurrency {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  font-weight: 500;
+  padding: 0.15em 0.5em;
+  background: color-mix(in oklch, var(--ds-brand-500) 8%, transparent);
+  border-radius: var(--ds-radius-sm);
+}
+
+.input,
+.select,
+.textarea {
+  block-size: 44px;
+  padding-inline: var(--ds-space-3);
+  padding-block: var(--ds-space-2);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface-canvas);
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-base);
+  font-family: inherit;
+  transition: all 200ms ease;
+}
+
+.textarea {
+  block-size: auto;
+  resize: vertical;
+  min-block-size: 60px;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--ds-brand-500);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 15%, transparent);
+}
+
+.input:disabled,
+.select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.select {
+  cursor: pointer;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--ds-text-muted) 50%),
+    linear-gradient(135deg, var(--ds-text-muted) 50%, transparent 50%);
+  background-position: calc(0% + 14px) 50%, calc(0% + 20px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-inline-end: var(--ds-space-8);
+}
+
+.fieldHint {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+
+.fieldHint[data-tone="error"] {
+  color: var(--nova-down);
+}
+
+.balanceHint {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-muted);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  background: color-mix(in oklch, var(--ds-brand-500) 4%, transparent);
+  border-radius: var(--ds-radius-sm);
+  border-inline-start: 3px solid var(--ds-brand-500);
+}
+
+.balanceHint strong {
+  color: var(--ds-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.hint {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-muted);
+  padding: var(--ds-space-3);
+  background: color-mix(in oklch, var(--nova-cyan) 6%, transparent);
+  border-radius: var(--ds-radius-sm);
+  border-inline-start: 3px solid var(--nova-cyan);
+}
+
+/* ─── Submit Button ───────────────────────────────────────────────────── */
+
+.submit {
+  block-size: 48px;
+  border: none;
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-brand-500);
+  color: var(--ds-text-inverse, white);
+  font-size: var(--ds-text-base);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 200ms ease;
+  margin-block-start: var(--ds-space-2);
+}
+
+.submit:hover:not(:disabled) {
+  background: var(--ds-brand-600);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px color-mix(in oklch, var(--ds-brand-500) 25%, transparent);
+}
+
+.submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--ds-text-muted);
+}
+
+.outlineBtn {
+  block-size: 40px;
+  padding-inline: var(--ds-space-5);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-md);
+  background: transparent;
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.outlineBtn:hover {
+  background: color-mix(in oklch, var(--ds-brand-500) 4%, transparent);
+  border-color: var(--ds-brand-500);
+}
+
+/* ─── Gate (KYC / not enough accounts) ────────────────────────────────── */
+
+.gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-8);
+  text-align: center;
+  background: var(--ds-surface-elevated);
+  border: 1px dashed var(--ds-border-default);
+  border-radius: var(--ds-radius-lg);
+}
+
+.gateIcon {
+  color: var(--nova-amber);
+}
+
+.gateTitle {
+  font-size: var(--ds-text-base);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+}
+
+.gateDesc {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-muted);
+  max-inline-size: 380px;
+}
+
+/* ─── Transfer Pair (from + arrow + to) ───────────────────────────────── */
+
+.transferPair {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: var(--ds-space-2);
+  align-items: end;
+}
+
+.transferArrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 32px;
+  block-size: 44px;
+  color: var(--ds-text-muted);
+  align-self: end;
+  margin-block-end: 2px;
+}
+
+/* ─── Currency Pair (exchange) ────────────────────────────────────────── */
+
+.currencyPair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ds-space-3);
+}
+
+/* ─── Quote Box (exchange live preview) ───────────────────────────────── */
+
+.quoteBox {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-4);
+  background: color-mix(in oklch, var(--ds-brand-500) 4%, var(--ds-surface-canvas));
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 15%, transparent);
+  border-radius: var(--ds-radius-md);
+  font-size: var(--ds-text-sm);
+}
+
+.quoteRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  color: var(--ds-text-muted);
+}
+
+.quoteRow[data-highlight] {
+  padding-block-start: var(--ds-space-2);
+  border-block-start: 1px dashed var(--ds-border-subtle);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+}
+
+.quoteOut {
+  color: var(--nova-up);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Success State ───────────────────────────────────────────────────── */
+
+.successState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-8);
+  text-align: center;
+  background: color-mix(in oklch, var(--nova-up) 4%, var(--ds-surface-elevated));
+  border: 1px solid color-mix(in oklch, var(--nova-up) 20%, transparent);
+  border-radius: var(--ds-radius-lg);
+}
+
+.successIcon {
+  color: var(--nova-up);
+}
+
+.successTitle {
+  font-size: var(--ds-text-lg);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+}
+
+/* ─── Mobile ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .tabBar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .transferPair {
+    grid-template-columns: 1fr;
+  }
+
+  .transferArrow {
+    transform: rotate(90deg);
+    margin-block: var(--ds-space-1);
+    margin-inline: auto;
+  }
+
+  .currencyPair {
+    grid-template-columns: 1fr;
+  }
+
+  .form {
+    padding: var(--ds-space-4);
+  }
+}

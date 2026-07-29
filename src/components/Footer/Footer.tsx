@@ -7,35 +7,72 @@ import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { heading, radius, space, text } from '@/lib/design-tokens';
 import { motion } from '@/lib/motion-shim';
 import type { Advertisement } from '@/types/types';
-import { ArrowUpLeft, Mail, Phone } from 'lucide-react';
+import {
+  ArrowUpLeft,
+  Building2,
+  Coins,
+  Headphones,
+  Mail,
+  MapPin,
+  Phone,
+  Wallet,
+} from 'lucide-react';
 import Link from 'next/link';
 
 interface WidgetFooterMenu {
   id: string;
   title: string;
+  icon: React.ReactNode;
   menus: { href: string; label: string }[];
 }
 
 const widgetMenus: WidgetFooterMenu[] = [
   {
-    id: 'useful-links',
-    title: 'لینک‌های مفید',
+    id: 'services',
+    title: 'خدمات فین‌تک',
+    icon: <Wallet size={14} aria-hidden />,
     menus: [
-      { href: '/archive/category/crypto', label: 'ارز های دیجیتال' },
-      { href: '/terms', label: 'قوانین و مقررات' },
-      { href: '/money-transfer', label: 'حواله ارزها' },
+      { href: '/wallet', label: 'کیف پول دیجیتال' },
+      { href: '/kyc', label: 'احراز هویت' },
+      { href: '/beneficiaries', label: 'مخاطبان انتقال' },
+      { href: '/money-transfer', label: 'حواله ارزی' },
       { href: '/online-payment', label: 'پرداخت آنلاین' },
+    ],
+  },
+  {
+    id: 'exchanges',
+    title: 'صرافی‌ها',
+    icon: <Building2 size={14} aria-hidden />,
+    menus: [
+      { href: '/exchanges', label: 'همه صرافی‌ها' },
+      { href: '/exchange-rates', label: 'نرخ لحظه‌ای' },
+      { href: '/services', label: 'مقایسه خدمات' },
+      { href: '/apply-exchange', label: 'ثبت‌نام صرافی' },
+    ],
+  },
+  {
+    id: 'archive',
+    title: 'آرشیو و محتوا',
+    icon: <Coins size={14} aria-hidden />,
+    menus: [
+      { href: '/archive', label: 'آرشیو مقالات' },
+      { href: '/categories', label: 'دسته‌بندی‌ها' },
+      { href: '/tags', label: 'برچسب‌ها' },
+      { href: '/authors', label: 'نویسندگان' },
+      { href: '/blog', label: 'بلاگ' },
     ],
   },
   {
     id: 'company',
     title: 'شرکت',
+    icon: <Headphones size={14} aria-hidden />,
     menus: [
-      { href: '/archive', label: 'آرشیو اخبار' },
       { href: '/about', label: 'درباره ما' },
       { href: '/contact', label: 'تماس با ما' },
       { href: '/help-center', label: 'مرکز راهنما' },
       { href: '/faq', label: 'پرسش‌های متداول' },
+      { href: '/support', label: 'پشتیبانی' },
+      { href: '/feedback', label: 'بازخورد' },
     ],
   },
 ];
@@ -43,10 +80,23 @@ const widgetMenus: WidgetFooterMenu[] = [
 interface FooterProps {
   footerAd?: Advertisement | null;
   siteName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  contactAddress?: string;
 }
 
-const Footer = ({ footerAd, siteName = 'Financila Market' }: FooterProps) => {
+const Footer = ({
+  footerAd,
+  siteName = 'Financial Market',
+  contactEmail,
+  contactPhone,
+  contactAddress,
+}: FooterProps) => {
   const { logoUrl } = useSiteSettings();
+
+  // Normalize Persian phone for display (e.g. 09380929606)
+  const displayPhone = contactPhone?.trim() || '۰۹۳۸۰۹۲۶۰۶';
+  const displayEmail = contactEmail?.trim() || 'support@financialmarket.com';
 
   return (
     <footer className="relative overflow-hidden">
@@ -88,7 +138,10 @@ const Footer = ({ footerAd, siteName = 'Financila Market' }: FooterProps) => {
               'border border-slate-200/50 dark:border-slate-700/50',
             ].join(' ')}
           >
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="relative flex items-center justify-center w-2 h-2" aria-hidden>
+              <span className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-500/60 animate-ping" />
+              <span className="relative w-2 h-2 rounded-full bg-emerald-500" />
+            </span>
             <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
               همیشه در دسترس
             </span>
@@ -100,7 +153,7 @@ const Footer = ({ footerAd, siteName = 'Financila Market' }: FooterProps) => {
         {/* Main Grid */}
         <div
           className={[
-            'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 mb-16',
+            'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-16',
             space.gapLg,
           ].join(' ')}
         >
@@ -109,7 +162,7 @@ const Footer = ({ footerAd, siteName = 'Financila Market' }: FooterProps) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="sm:col-span-2 md:col-span-2 lg:col-span-1"
+            className="col-span-2 md:col-span-3 lg:col-span-1"
           >
             <div className="space-y-6">
               <div className="flex items-center gap-4">
@@ -135,16 +188,25 @@ const Footer = ({ footerAd, siteName = 'Financila Market' }: FooterProps) => {
               key={menu.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: (index + 1) * 0.1 }}
+              transition={{ duration: 0.5, delay: (index + 1) * 0.08 }}
             >
-              <h3 className={[heading.h5, 'mb-6'].join(' ')}>{menu.title}</h3>
+              <h3
+                className={[
+                  heading.h5,
+                  'mb-5 flex items-center gap-2 text-slate-800 dark:text-slate-100',
+                ].join(' ')}
+              >
+                <span
+                  className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-primary-500/10 text-primary-600 dark:text-primary-400"
+                  aria-hidden
+                >
+                  {menu.icon}
+                </span>
+                {menu.title}
+              </h3>
               <ul className={space.stackMd}>
                 {menu.menus.map((item) => (
-                  <motion.li
-                    key={item.href}
-                    whileHover={{ x: -4 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                  >
+                  <li key={item.href}>
                     <Link
                       href={item.href}
                       className={[
@@ -154,59 +216,68 @@ const Footer = ({ footerAd, siteName = 'Financila Market' }: FooterProps) => {
                         'transition-colors duration-200',
                       ].join(' ')}
                     >
-                      <ArrowUpLeft className="size-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                      <ArrowUpLeft
+                        className="size-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
+                        aria-hidden
+                      />
                       <span className="text-sm">{item.label}</span>
                     </Link>
-                  </motion.li>
+                  </li>
                 ))}
               </ul>
             </motion.div>
           ))}
+        </div>
 
-          {/* Contact Column */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
+        {/* Contact Bar — 3-column with icons */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-12">
+          <a
+            href={`tel:${displayPhone.replace(/[^0-9+]/g, '')}`}
+            className="group flex items-center gap-3 px-5 py-4 rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-300"
           >
-            <h3 className={[heading.h5, 'mb-6'].join(' ')}>مسیر ارتباطی</h3>
-            <ul className={space.stackMd}>
-              <li>
-                <a
-                  href="tel:09380929606"
-                  className={[
-                    'group flex items-center gap-3',
-                    'text-neutral-600 dark:text-neutral-400',
-                    'hover:text-primary-600 dark:hover:text-primary-400',
-                    'transition-colors duration-200',
-                  ].join(' ')}
-                >
-                  <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500/10 to-indigo-500/10 dark:from-primary-500/20 dark:to-indigo-500/20 group-hover:from-primary-500/20 group-hover:to-indigo-500/20 transition-all duration-300">
-                    <Phone className="size-4 text-primary-600 dark:text-primary-400" />
-                  </span>
-                  <span className="text-sm font-medium" dir="ltr">
-                    ۰۹۳۸۰۹۲۶۰۶
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="mailto:support@financialmarket.com"
-                  className={[
-                    'group flex items-center gap-3',
-                    'text-neutral-600 dark:text-neutral-400',
-                    'hover:text-primary-600 dark:hover:text-primary-400',
-                    'transition-colors duration-200',
-                  ].join(' ')}
-                >
-                  <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500/10 to-indigo-500/10 dark:from-primary-500/20 dark:to-indigo-500/20 group-hover:from-primary-500/20 group-hover:to-indigo-500/20 transition-all duration-300">
-                    <Mail className="size-4 text-primary-600 dark:text-primary-400" />
-                  </span>
-                  <span className="text-sm font-medium">support@financialmarket.com</span>
-                </a>
-              </li>
-            </ul>
-          </motion.div>
+            <span className="flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-primary-500/15 to-indigo-500/15 group-hover:from-primary-500/25 group-hover:to-indigo-500/25 transition-all">
+              <Phone size={18} className="text-primary-600 dark:text-primary-400" aria-hidden />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mb-0.5">
+                پشتیبانی تلفنی
+              </p>
+              <p className="text-sm font-semibold text-slate-800 dark:text-slate-200" dir="ltr">
+                {displayPhone}
+              </p>
+            </div>
+          </a>
+          <a
+            href={`mailto:${displayEmail}`}
+            className="group flex items-center gap-3 px-5 py-4 rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-300"
+          >
+            <span className="flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-primary-500/15 to-indigo-500/15 group-hover:from-primary-500/25 group-hover:to-indigo-500/25 transition-all">
+              <Mail size={18} className="text-primary-600 dark:text-primary-400" aria-hidden />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mb-0.5">
+                ایمیل پشتیبانی
+              </p>
+              <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate" dir="ltr">
+                {displayEmail}
+              </p>
+            </div>
+          </a>
+          {contactAddress?.trim() && (
+            <div className="group flex items-center gap-3 px-5 py-4 rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50">
+              <span className="flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-primary-500/15 to-indigo-500/15">
+                <MapPin size={18} className="text-primary-600 dark:text-primary-400" aria-hidden />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mb-0.5">
+                  دفتر مرکزی
+                </p>
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+                  {contactAddress}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Bottom Bar */}

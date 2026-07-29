@@ -70,7 +70,14 @@ const TAB_GROUPS: TabGroup[] = [
 const TABS: TabType[] = TAB_GROUPS.flatMap((g) => g.tabs);
 
 interface FormData {
-  general: { siteTitle: string; siteDescription: string; contactEmail: string; logoUrl: string };
+  general: {
+    siteTitle: string;
+    siteDescription: string;
+    contactEmail: string;
+    contactPhone: string;
+    contactAddress: string;
+    logoUrl: string;
+  };
   email: { smtpServer: string; smtpPort: string; smtpUsername: string; smtpPassword: string };
   maintenance: { maintenanceMode: boolean; maintenanceMessage: string };
   social: { instagram: string; telegram: string; whatsapp: string; twitter: string };
@@ -148,7 +155,14 @@ export default function SettingsPage() {
   const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
   const [form, setForm] = useState<FormData>({
-    general: { siteTitle: '', siteDescription: '', contactEmail: '', logoUrl: '' },
+    general: {
+      siteTitle: '',
+      siteDescription: '',
+      contactEmail: '',
+      contactPhone: '',
+      contactAddress: '',
+      logoUrl: '',
+    },
     email: { smtpServer: '', smtpPort: '', smtpUsername: '', smtpPassword: '' },
     maintenance: { maintenanceMode: false, maintenanceMessage: 'سایت در حال به‌روزرسانی است...' },
     social: { instagram: '', telegram: '', whatsapp: '', twitter: '' },
@@ -171,33 +185,52 @@ export default function SettingsPage() {
     getSystemSettings()
       .then((result) => {
         if (result.success && result.data) {
-          const d = result.data;
+          const d = result.data as Record<string, unknown>;
+          const pickString = (k: string): string =>
+            typeof d[k] === 'string' ? (d[k] as string) : '';
           setForm((prev) => ({
             ...prev,
             general: {
               ...prev.general,
-              siteTitle: d.siteName || '',
-              siteDescription: d.siteDescription || '',
-              logoUrl: d.logoUrl || '',
+              siteTitle: pickString('siteName') || prev.general.siteTitle,
+              siteDescription:
+                pickString('siteDescription') || prev.general.siteDescription,
+              contactEmail:
+                pickString('contactEmail') || prev.general.contactEmail,
+              contactPhone:
+                pickString('contactPhone') || prev.general.contactPhone,
+              contactAddress:
+                pickString('contactAddress') || prev.general.contactAddress,
+              logoUrl: pickString('logoUrl') || prev.general.logoUrl,
             },
             email: {
               ...prev.email,
-              smtpServer: d.smtpServer || '',
-              smtpPort: d.smtpPort || '',
-              smtpUsername: d.smtpUsername || '',
+              smtpServer: pickString('smtpServer') || prev.email.smtpServer,
+              smtpPort: pickString('smtpPort') || prev.email.smtpPort,
+              smtpUsername:
+                pickString('smtpUsername') || prev.email.smtpUsername,
             },
             social: {
               ...prev.social,
-              instagram: d.instagram || '',
-              telegram: d.telegram || '',
-              twitter: d.twitter || '',
-              whatsapp: d.whatsapp || '',
+              instagram: pickString('instagram') || prev.social.instagram,
+              telegram: pickString('telegram') || prev.social.telegram,
+              twitter: pickString('twitter') || prev.social.twitter,
+              whatsapp: pickString('whatsapp') || prev.social.whatsapp,
             },
             maintenance: {
               ...prev.maintenance,
-              maintenanceMode: d.maintenanceMode ?? false,
+              maintenanceMode:
+                typeof d.maintenanceMode === 'boolean'
+                  ? d.maintenanceMode
+                  : prev.maintenance.maintenanceMode,
             },
-            advanced: { ...prev.advanced, cacheEnabled: d.cacheEnabled ?? true },
+            advanced: {
+              ...prev.advanced,
+              cacheEnabled:
+                typeof d.cacheEnabled === 'boolean'
+                  ? d.cacheEnabled
+                  : prev.advanced.cacheEnabled,
+            },
           }));
         }
       })
@@ -219,6 +252,9 @@ export default function SettingsPage() {
       siteName: form.general.siteTitle,
       siteDescription: form.general.siteDescription,
       logoUrl: form.general.logoUrl,
+      contactEmail: form.general.contactEmail,
+      contactPhone: form.general.contactPhone,
+      contactAddress: form.general.contactAddress,
     }).catch(() => ({ success: false, error: 'خطا در ذخیره' }));
     setLoading(false);
     if ((r as { success: boolean }).success)
@@ -467,6 +503,40 @@ export default function SettingsPage() {
                       placeholder="contact@example.com"
                       disabled={loading}
                     />
+                  </label>
+                  <label className="at-field">
+                    <span className="at-field__label">شماره تماس</span>
+                    <input
+                      type="tel"
+                      className="at-input"
+                      dir="ltr"
+                      value={form.general.contactPhone}
+                      onChange={(e) => set('general', 'contactPhone', e.target.value)}
+                      placeholder="۰۹۱۲۳۴۵۶۷۸۹"
+                      disabled={loading}
+                    />
+                  </label>
+                  <label className="at-field" style={{ gridColumn: '1 / -1' }}>
+                    <span className="at-field__label">آدرس دفتر مرکزی</span>
+                    <input
+                      type="text"
+                      className="at-input"
+                      value={form.general.contactAddress}
+                      onChange={(e) =>
+                        set('general', 'contactAddress', e.target.value)
+                      }
+                      placeholder="تهران، خیابان ...، پلاک ..."
+                      disabled={loading}
+                    />
+                    <span
+                      style={{
+                        fontSize: '0.75rem',
+                        color: 'var(--at-fg-subtle)',
+                        marginTop: '0.25rem',
+                      }}
+                    >
+                      در فوتر و صفحه تماس نمایش داده می‌شود
+                    </span>
                   </label>
                 </div>
 

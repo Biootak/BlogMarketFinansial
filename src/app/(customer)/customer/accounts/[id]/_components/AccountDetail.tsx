@@ -25,7 +25,8 @@ import {
   StatusPill,
   StatusRail,
 } from '@/app/(customer)/customer/_lib/customer-ui';
-import { Activity, ArrowDownLeft, ArrowUpRight, CreditCard, Lock, Snowflake, Wallet } from 'lucide-react';
+import { Activity, ArrowDownLeft, ArrowLeftRight, ArrowUpRight, ChevronLeft, CreditCard, Download, Lock, Send, Snowflake, Upload, Wallet } from 'lucide-react';
+import Link from 'next/link';
 import s from './AccountDetail.module.css';
 
 interface LedgerRow {
@@ -135,6 +136,56 @@ export default function AccountDetail({ account, ledger }: Props) {
           </div>
         </div>
       </section>
+
+      {/* ── Quick Actions ─────────────────────────────────────────────── */}
+      {!isFrozen && account.status === 'ACTIVE' && (
+        <section className={s.quickActions} aria-label="اقدامات سریع">
+          <Link
+            href={`/customer/transfer?action=deposit&account=${account.id}`}
+            className={`${s.actionCard} ${s.actionCardCredit}`}
+            aria-label="واریز به این حساب"
+          >
+            <span className={s.actionIcon} aria-hidden>
+              <Download size={16} />
+            </span>
+            <span className={s.actionLabel}>واریز</span>
+            <ChevronLeft size={12} className={s.actionChevron} aria-hidden />
+          </Link>
+          <Link
+            href={`/customer/transfer?action=withdraw&account=${account.id}`}
+            className={`${s.actionCard} ${s.actionCardDebit}`}
+            aria-label="برداشت از این حساب"
+          >
+            <span className={s.actionIcon} aria-hidden>
+              <Upload size={16} />
+            </span>
+            <span className={s.actionLabel}>برداشت</span>
+            <ChevronLeft size={12} className={s.actionChevron} aria-hidden />
+          </Link>
+          <Link
+            href={`/customer/transfer?action=transfer&from=${account.id}`}
+            className={`${s.actionCard} ${s.actionCardBrand}`}
+            aria-label="انتقال از این حساب به حساب دیگر"
+          >
+            <span className={s.actionIcon} aria-hidden>
+              <Send size={16} />
+            </span>
+            <span className={s.actionLabel}>انتقال</span>
+            <ChevronLeft size={12} className={s.actionChevron} aria-hidden />
+          </Link>
+          <Link
+            href={`/customer/transfer?action=exchange&from=${account.id}`}
+            className={`${s.actionCard} ${s.actionCardNeutral}`}
+            aria-label="تبدیل ارز این حساب"
+          >
+            <span className={s.actionIcon} aria-hidden>
+              <ArrowLeftRight size={16} />
+            </span>
+            <span className={s.actionLabel}>تبدیل ارز</span>
+            <ChevronLeft size={12} className={s.actionChevron} aria-hidden />
+          </Link>
+        </section>
+      )}
 
       {/* ── Quick Stats (KeyValue) ────────────────────────────────────── */}
       <section className={s.statsCard} aria-label="آمار کلی">

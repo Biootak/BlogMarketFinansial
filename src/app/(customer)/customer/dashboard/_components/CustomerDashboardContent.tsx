@@ -28,6 +28,7 @@ import { StatCard } from '@/components/Dashboard/primitives/StatCard';
 import { StatGrid } from '@/components/Dashboard/primitives/StatGrid';
 import { GeometricField } from '@/components/Dashboard/primitives/GeometricAccent';
 import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
+import ApiActivityWidget from './ApiActivityWidget';
 import { cn } from '@/lib/utils';
 import {
   DashboardTable,
@@ -1051,6 +1052,9 @@ export default function CustomerDashboardContent({ data }: { data: CustomerDashb
 
       {/* ─── Quick Actions Grid ──────────────────────────────────────── */}
       <QuickActions />
+
+      {/* ─── Recent API Activity (Developer Portal) ─────────────────── */}
+      <ApiActivityWidget />
 
       {/* ─── Footer hint ─────────────────────────────────────────────── */}
       <footer className={s.workspaceFoot}>

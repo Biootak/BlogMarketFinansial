@@ -1,0 +1,434 @@
+/* =============================================================================
+ * ApiActivityWidget.module.css — «نبض API» (Recent API Activity 2026)
+ * ----------------------------------------------------------------------------
+ *  - Token-only (var(--ds-*), var(--nova-*))
+ *  - Logical properties for RTL
+ *  - Method badges با رنگ‌بندی semantic
+ *  - Status pills با tone موفقیت/هشدار/خطا
+ *  - Animation: pulse روی LIVE indicator
+ * ========================================================================== */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  background: var(--ds-surface-1);
+  border: 1px solid color-mix(in oklch, var(--ds-line) 80%, transparent);
+  border-radius: var(--ds-radius-lg, 18px);
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  flex-wrap: wrap;
+}
+
+.headMain {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-3);
+  min-inline-size: 0;
+  flex: 1 1 auto;
+}
+
+.headIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  border-radius: var(--ds-radius-md, 10px);
+  background: color-mix(in oklch, var(--nova-cyan, #38bdf8) 10%, transparent);
+  color: var(--nova-cyan, #38bdf8);
+  flex-shrink: 0;
+}
+
+.title {
+  margin: 0 0 0.2em;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  letter-spacing: 0.005em;
+}
+
+.sub {
+  margin: 0;
+  font-size: 0.7rem;
+  color: var(--ds-text-muted);
+  line-height: 1.55;
+}
+
+.headCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--ds-brand-600);
+  background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
+  padding-block: 0.4em;
+  padding-inline: 0.7em;
+  border-radius: 8px;
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 25%, transparent);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 180ms ease;
+}
+
+.headCta:hover {
+  background: color-mix(in oklch, var(--ds-brand-500) 18%, transparent);
+  border-color: var(--ds-brand-500);
+}
+
+/* ── Stats row ───────────────────────────────────────────────────────────── */
+.statsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-3);
+  background: var(--ds-surface-2);
+  border: 1px solid color-mix(in oklch, var(--ds-line) 70%, transparent);
+  border-radius: var(--ds-radius-md, 12px);
+  flex-wrap: wrap;
+}
+
+.statBox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+  min-inline-size: 0;
+}
+
+.statLabel {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--ds-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.statValue {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.2em;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--ds-text-primary);
+  font-feature-settings: 'tnum';
+  line-height: 1.1;
+}
+
+.statValue[data-tone='success'] {
+  color: var(--nova-up, #16a34a);
+}
+
+.statUnit {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--ds-text-muted);
+}
+
+.statDivider {
+  inline-size: 1px;
+  block-size: 28px;
+  background: color-mix(in oklch, var(--ds-line) 80%, transparent);
+}
+
+/* ── Call list ───────────────────────────────────────────────────────────── */
+.callList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+}
+
+.callItem {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto auto;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding-block: 0.5em;
+  padding-inline: var(--ds-space-2);
+  background: var(--ds-surface-2);
+  border: 1px solid color-mix(in oklch, var(--ds-line) 70%, transparent);
+  border-radius: 8px;
+  font-size: 0.7rem;
+  transition: all 180ms ease;
+}
+
+.callItem:hover {
+  border-color: color-mix(in oklch, var(--ds-brand-500) 25%, transparent);
+  background: var(--ds-surface-3, var(--ds-surface-2));
+}
+
+.methodBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.625rem;
+  font-weight: 800;
+  padding-block: 0.2em;
+  padding-inline: 0.5em;
+  border-radius: 6px;
+  white-space: nowrap;
+  min-inline-size: 50px;
+  background: color-mix(in oklch, var(--ds-text-muted) 10%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-text-muted) 25%, transparent);
+  color: var(--ds-text-secondary);
+  font-feature-settings: 'tnum';
+}
+
+.methodBadge[data-color='cyan'] {
+  background: color-mix(in oklch, var(--nova-cyan, #38bdf8) 10%, transparent);
+  border-color: color-mix(in oklch, var(--nova-cyan, #38bdf8) 30%, transparent);
+  color: var(--nova-cyan, #38bdf8);
+}
+
+.methodBadge[data-color='violet'] {
+  background: color-mix(in oklch, var(--nova-violet, #a78bfa) 10%, transparent);
+  border-color: color-mix(in oklch, var(--nova-violet, #a78bfa) 30%, transparent);
+  color: var(--nova-violet, #a78bfa);
+}
+
+.methodBadge[data-color='amber'] {
+  background: color-mix(in oklch, var(--nova-amber, #d97706) 10%, transparent);
+  border-color: color-mix(in oklch, var(--nova-amber, #d97706) 30%, transparent);
+  color: var(--nova-amber, #d97706);
+}
+
+.methodBadge[data-color='danger'] {
+  background: color-mix(in oklch, var(--nova-down, #d8485a) 10%, transparent);
+  border-color: color-mix(in oklch, var(--nova-down, #d8485a) 30%, transparent);
+  color: var(--nova-down, #d8485a);
+}
+
+.path {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.7rem;
+  color: var(--ds-text-primary);
+  background: transparent;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-inline-size: 0;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.625rem;
+  font-weight: 800;
+  padding-block: 0.15em;
+  padding-inline: 0.4em;
+  border-radius: 999px;
+  white-space: nowrap;
+  min-inline-size: 36px;
+  background: color-mix(in oklch, var(--ds-text-muted) 8%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-text-muted) 25%, transparent);
+  color: var(--ds-text-muted);
+  font-feature-settings: 'tnum';
+}
+
+.statusPill[data-tone='success'] {
+  background: color-mix(in oklch, var(--nova-up, #16a34a) 10%, transparent);
+  border-color: color-mix(in oklch, var(--nova-up, #16a34a) 30%, transparent);
+  color: var(--nova-up, #16a34a);
+}
+
+.statusPill[data-tone='warning'] {
+  background: color-mix(in oklch, var(--nova-amber, #d97706) 10%, transparent);
+  border-color: color-mix(in oklch, var(--nova-amber, #d97706) 30%, transparent);
+  color: var(--nova-amber, #d97706);
+}
+
+.statusPill[data-tone='danger'] {
+  background: color-mix(in oklch, var(--nova-down, #d8485a) 10%, transparent);
+  border-color: color-mix(in oklch, var(--nova-down, #d8485a) 30%, transparent);
+  color: var(--nova-down, #d8485a);
+}
+
+.duration {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2em;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--ds-text-muted);
+  font-feature-settings: 'tnum';
+  white-space: nowrap;
+}
+
+.time {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: var(--ds-text-muted);
+  white-space: nowrap;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  padding-block-start: var(--ds-space-2);
+  border-block-start: 1px solid color-mix(in oklch, var(--ds-line) 70%, transparent);
+  flex-wrap: wrap;
+}
+
+.footItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--ds-text-muted);
+}
+
+.footItem code {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  color: var(--ds-text-secondary);
+  font-feature-settings: 'tnum';
+}
+
+.footLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--ds-brand-600);
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+
+.footLink:hover {
+  color: var(--ds-brand-700, var(--ds-brand-600));
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+.emptyCta {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  background: var(--ds-surface-2);
+  border: 1px dashed color-mix(in oklch, var(--ds-line) 80%, transparent);
+  border-radius: var(--ds-radius-md, 12px);
+  text-decoration: none;
+  color: inherit;
+  transition: all 200ms ease;
+}
+
+.emptyCta:hover {
+  border-color: var(--ds-brand-500);
+  background: var(--ds-surface-3, var(--ds-surface-2));
+}
+
+.emptyIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border-radius: 50%;
+  background: color-mix(in oklch, var(--nova-cyan, #38bdf8) 10%, transparent);
+  color: var(--nova-cyan, #38bdf8);
+  flex-shrink: 0;
+}
+
+.emptyTitle {
+  margin: 0 0 0.2em;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ds-text-primary);
+}
+
+.emptyDesc {
+  margin: 0;
+  font-size: 0.7rem;
+  color: var(--ds-text-muted);
+  line-height: 1.5;
+}
+
+.emptyArrow {
+  margin-inline-start: auto;
+  color: var(--ds-text-muted);
+  flex-shrink: 0;
+}
+
+/* ── Skeleton ────────────────────────────────────────────────────────────── */
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.skelHead,
+.skelRow {
+  background: linear-gradient(
+    90deg,
+    var(--ds-surface-2) 0%,
+    var(--ds-surface-3, var(--ds-surface-2)) 50%,
+    var(--ds-surface-2) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+.skelHead {
+  block-size: 28px;
+}
+
+.skelRow {
+  block-size: 36px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Mobile ──────────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .callItem {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      "method path time"
+      "method status duration";
+    gap: 0.35em;
+    row-gap: 0.5em;
+  }
+  .methodBadge {
+    grid-area: method;
+  }
+  .path {
+    grid-area: path;
+  }
+  .statusPill {
+    grid-area: status;
+  }
+  .duration {
+    grid-area: duration;
+  }
+  .time {
+    grid-area: time;
+    text-align: end;
+  }
+  .statDivider {
+    display: none;
+  }
+  .statsRow {
+    justify-content: space-between;
+  }
+}

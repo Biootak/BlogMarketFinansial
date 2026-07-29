@@ -315,6 +315,8 @@ export const customerRoutes = [
   '/customer/2fa',
   '/customer/security',
   '/customer/crypto',
+  '/customer/wallet',
+  '/customer/transfer',
   '/customer/requests',
   '/customer/requests/new',
   '/customer/requests/[id]',

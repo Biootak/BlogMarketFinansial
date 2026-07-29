@@ -3,6 +3,8 @@
 # Usage (first time): sudo mkdir -p /mnt/FinancialMarket && sudo mount -t vboxsf -o uid=$(id -u),gid=$(id -g),fmode=0755,dmode=0755,exec FinancialMarket /mnt/FinancialMarket && bash /mnt/FinancialMarket/start.sh
 # Usage (after mount): bash /mnt/FinancialMarket/start.sh
 
+# NOTE: set -euo pipefail is INTENTIONAL -- fail fast on real errors.
+# Every fallible command uses || true or explicit error handling.
 set -euo pipefail
 
 MOUNT_DIR="/mnt/FinancialMarket"
@@ -19,42 +21,56 @@ fail() { echo -e "${RED}[FAIL]${NC}  $*" >&2; exit 1; }
 
 # ============================================================================
 # 1. Mount shared folder
+#    Handles both automount (appears automatically) and manual mount cases.
+#    If automounted, remounts with correct liveuser permissions.
 # ============================================================================
 step "Shared folder"
 sudo mkdir -p "$MOUNT_DIR"
-if ! mountpoint -q "$MOUNT_DIR" 2>/dev/null; then
+
+# Load vboxsf kernel module if available (harmless if built-in)
+sudo modprobe vboxsf 2>/dev/null || true
+
+if mountpoint -q "$MOUNT_DIR" 2>/dev/null; then
+    # Already mounted (e.g. automount) -- remount with correct permissions
+    sudo mount -t vboxsf -o remount,uid=$(id -u),gid=$(id -g),fmode=0755,dmode=0755,exec \
+        FinancialMarket "$MOUNT_DIR" 2>/dev/null || true
+    ok "Mounted: $MOUNT_DIR"
+else
     sudo mount -t vboxsf \
         -o uid=$(id -u),gid=$(id -g),fmode=0755,dmode=0755,exec \
         FinancialMarket "$MOUNT_DIR" \
-        || fail "Mount failed. Are Guest Additions installed?"
+        || fail "Mount failed. Did you create the VM with new-fedora-vm.ps1?"
 fi
-ok "Mounted: $MOUNT_DIR"
 [[ -f "$RPM_FILE" ]] || fail "Trae RPM not found: $RPM_FILE"
 
 # ============================================================================
 # 2. GPU + GNOME tweaks
 #    Fedora 44 kernel (6.19+) has built-in vmwgfx for VMSVGA 3D acceleration.
 #    Guest Additions only needed for mouse integration + clipboard.
-#    For short sessions (1h), vmwgfx alone is good enough.
 # ============================================================================
 step "GPU + GNOME tweaks"
 
-# -- GNOME tweaks: always apply (instant, no download needed) --
-gsettings set org.gnome.desktop.interface enable-animations false 2>/dev/null || true
-gsettings set org.gnome.shell.extensions.dash-to-dock animate-show-apps false 2>/dev/null || true
-systemctl --user mask tracker-miner-fs-3.service tracker-extract-3.service tracker-xdg-portal-3.service 2>/dev/null || true
-systemctl --user stop tracker-miner-fs-3.service tracker-extract-3.service tracker-xdg-portal-3.service 2>/dev/null || true
-if command -v powerprofilesctl &>/dev/null; then
-    powerprofilesctl set performance 2>/dev/null || true
+# -- GNOME tweaks: only apply if we have a display session --
+if [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" ]]; then
+    gsettings set org.gnome.desktop.interface enable-animations false 2>/dev/null || true
+    gsettings set org.gnome.shell.extensions.dash-to-dock animate-show-apps false 2>/dev/null || true
+    systemctl --user mask tracker-miner-fs-3.service tracker-extract-3.service 2>/dev/null || true
+    systemctl --user stop tracker-miner-fs-3.service tracker-extract-3.service 2>/dev/null || true
+    if command -v powerprofilesctl &>/dev/null; then
+        powerprofilesctl set performance 2>/dev/null || true
+    fi
+    ok "Animations off, tracker disabled."
+else
+    info "No display session -- skipping GNOME tweaks."
 fi
-ok "Animations off, tracker disabled, power profile set."
 
 # -- GPU check: vmwgfx provides hardware 3D without Guest Additions --
 if lsmod | grep -q vmwgfx 2>/dev/null; then
     ok "VMware SVGA (vmwgfx) active -- hardware 3D ready."
 else
     warn "No vmwgfx -- trying Guest Additions for GPU..."
-    if sudo dnf install -y virtualbox-guest-additions 2>/dev/null; then
+    # Add timeout to prevent hanging if no internet
+    if timeout 30 sudo dnf install -y virtualbox-guest-additions 2>/dev/null; then
         sudo modprobe vboxguest 2>/dev/null || true
         ok "Guest Additions installed."
     elif [[ -b /dev/sr1 ]]; then
@@ -83,11 +99,11 @@ ok "Workspace: $WORK_DIR  (2 GB tmpfs)"
 
 # ============================================================================
 # 4. Zram swap (doubles effective RAM for Electron)
-#    Order: algorithm -> disksize -> mkswap -> swapon
+#    Order: modprobe -> algorithm -> disksize -> mkswap -> swapon
 # ============================================================================
 step "Zram swap"
 if ! swapon --show | grep -q zram 2>/dev/null; then
-    ZRAM_MB=$(( $(grep MemTotal /proc/meminfo | awk '{print $2}') / 2 / 1024 ))
+    ZRAM_MB=$(( $(grep MemTotal /proc/meminfo | awk '{print $2}') / 2 / 1024 )) || ZRAM_MB=2048
     [[ $ZRAM_MB -gt 4096 ]] && ZRAM_MB=4096
 
     sudo modprobe zram 2>/dev/null || true
@@ -151,7 +167,7 @@ if [[ ${#NEED[@]} -gt 0 ]]; then
     # Download + cache for future VMs
     if [[ ${#NEED[@]} -gt 0 ]]; then
         info "Downloading libs (one-time, cached for next VM)..."
-        sudo dnf install -y \
+        timeout 30 sudo dnf install -y \
             --setopt=keepcache=1 \
             --setopt="cachedir=$RPM_CACHE" \
             "${NEED[@]}" 2>&1 | tail -3 || true
@@ -213,6 +229,9 @@ fi
 
 # ============================================================================
 # 9. Launch Trae
+#    --ignore-gpu-blocklist is safer than --disable-software-rasterizer:
+#    it lets Chrome use its GPU acceleration even if the GPU is blacklisted,
+#    but falls back to software rendering if GPU init actually fails.
 # ============================================================================
 echo
 echo -e "${BOLD}${GREEN}======================================================"
@@ -223,5 +242,5 @@ step "Launching Trae IDE"
 exec "$TRAE_BIN" \
     --no-sandbox --disable-gpu-sandbox \
     --enable-gpu-rasterization --enable-zero-copy \
-    --disable-software-rasterizer \
+    --ignore-gpu-blocklist \
     "$MOUNT_DIR"

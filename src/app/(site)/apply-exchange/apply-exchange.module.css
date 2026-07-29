@@ -1,0 +1,9 @@
+/* /apply-exchange — center-stage with backdrop */
+.root {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ds-space-6);
+  background: var(--ds-canvas);
+}
