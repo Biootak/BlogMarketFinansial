@@ -415,3 +415,117 @@ export const UpdateMaintenanceModeSchema = z.object({
     .optional()
     .or(z.literal('')),
 });
+
+// ─── Security Schemas (2026-07-29) ───────────────────────────────────────────
+
+// تنظیمات امنیتی (session timeout, IP allowlist, force-2FA)
+export const UpdateSecuritySettingsSchema = z.object({
+  // مدت session به دقیقه — بین ۵ دقیقه تا ۷ روز
+  sessionTimeoutMin: z
+    .number()
+    .int()
+    .min(5, 'حداقل ۵ دقیقه')
+    .max(10080, 'حداکثر ۷ روز (۱۰۰۸۰ دقیقه)'),
+  // IP allowlist — اختیاری؛ فقط ادمین‌های ارشد از این IP ها می‌توانند وارد شوند
+  ipAllowlist: z
+    .string()
+    .max(2000, 'IP allowlist نباید بیشتر از ۲۰۰۰ کاراکتر باشد')
+    .optional()
+    .or(z.literal('')),
+  // آیا 2FA برای همه ادمین‌ها اجباری است؟
+  force2faForAdmins: z.boolean(),
+  // آیا ورود از IP های جدید نیاز به تأیید ایمیل دارد؟
+  requireEmailForNewIp: z.boolean(),
+  // تعداد session همزمان مجاز برای هر کاربر
+  maxConcurrentSessions: z
+    .number()
+    .int()
+    .min(1, 'حداقل ۱ نشست')
+    .max(20, 'حداکثر ۲۰ نشست همزمان'),
+  // روزهای نگهداری audit log
+  auditRetentionDays: z
+    .number()
+    .int()
+    .min(30, 'حداقل ۳۰ روز')
+    .max(3650, 'حداکثر ۱۰ سال'),
+});
+
+// ساخت API key جدید — نام + scopes اختیاری
+export const CreateApiKeySchema = z.object({
+  name: z
+    .string()
+    .min(2, 'نام کلید باید حداقل ۲ کاراکتر باشد')
+    .max(50, 'نام کلید نباید بیشتر از ۵۰ کاراکتر باشد'),
+  scopes: z
+    .array(
+      z.enum(['read', 'write', 'admin', 'webhook', 'reports']),
+    )
+    .min(1, 'حداقل یک سطح دسترسی انتخاب کنید')
+    .max(5),
+  expiresInDays: z
+    .number()
+    .int()
+    .min(1, 'حداقل ۱ روز')
+    .max(365, 'حداکثر ۱ سال')
+    .optional()
+    .nullable(),
+});
+
+// لغو/حذف API key
+export const RevokeApiKeySchema = z.object({
+  id: z.string().min(1, 'شناسه کلید الزامی است'),
+});
+
+// ─── Backup Schemas (2026-07-29) ─────────────────────────────────────────────
+
+// تنظیمات backup خودکار
+export const UpdateBackupSettingsSchema = z.object({
+  enabled: z.boolean(),
+  // بازه زمانی بین backup ها (ساعت) — حداقل ۱، حداکثر ۱۶۸ (هفتگی)
+  intervalHours: z
+    .number()
+    .int()
+    .min(1, 'حداقل هر ۱ ساعت')
+    .max(168, 'حداکثر هر ۱۶۸ ساعت (هفتگی)'),
+  // تعداد backup های نگهداری‌شده (old ترها حذف می‌شوند)
+  retentionCount: z
+    .number()
+    .int()
+    .min(1, 'حداقل ۱ نسخه')
+    .max(100, 'حداکثر ۱۰۰ نسخه'),
+  // شامل چه بخش‌هایی باشد؟
+  includeAuditLog: z.boolean(),
+  includeSocialLinks: z.boolean(),
+  includeSystemSettings: z.boolean(),
+  // اعلان ایمیلی بعد از backup
+  notifyOnSuccess: z.boolean(),
+  notifyOnFailure: z.boolean(),
+  notifyEmail: z
+    .string()
+    .email('ایمیل نامعتبر است')
+    .max(255)
+    .optional()
+    .or(z.literal(''))
+    .nullable(),
+});
+
+// درخواست backup دستی
+export const TriggerBackupSchema = z.object({
+  reason: z
+    .string()
+    .max(200, 'دلیل نباید بیشتر از ۲۰۰ کاراکتر باشد')
+    .optional()
+    .or(z.literal('')),
+});
+
+// ─── Audit Query Schemas (2026-07-29) ────────────────────────────────────────
+
+export const AuditLogQuerySchema = z.object({
+  page: z.number().int().min(1).default(1),
+  pageSize: z.number().int().min(10).max(100).default(50),
+  action: z.string().optional(),
+  actorId: z.string().optional(),
+  fromDate: z.coerce.date().optional().nullable(),
+  toDate: z.coerce.date().optional().nullable(),
+  severity: z.enum(['info', 'warn', 'error', 'critical']).optional(),
+});

@@ -1,0 +1,324 @@
+/* SecuritySettings.module.css */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5);
+}
+
+.loading {
+  padding: var(--ds-space-6);
+  text-align: center;
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  background: var(--ds-canvas-subtle);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: 12px;
+}
+
+.sectionHead h3 {
+  margin: 0;
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--ds-text-primary);
+}
+
+.sectionHead p {
+  margin: 4px 0 0;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--ds-space-3);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: var(--ds-text-xs);
+  font-weight: 500;
+  color: var(--ds-text-secondary);
+}
+
+.input {
+  block-size: 38px;
+  padding: 0 var(--ds-space-3);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-default);
+  border-radius: 8px;
+  color: var(--ds-text-primary);
+  font: inherit;
+  font-size: var(--ds-text-xs);
+  font-family: ui-monospace, monospace;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: oklch(62% 0.12 220 / 0.5);
+  background: var(--ds-surface-recessed);
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+
+.textarea {
+  padding: var(--ds-space-3);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-default);
+  border-radius: 8px;
+  color: var(--ds-text-primary);
+  font: inherit;
+  font-size: var(--ds-text-xs);
+  font-family: ui-monospace, monospace;
+  line-height: 1.6;
+  resize: vertical;
+  min-block-size: 100px;
+  transition: border-color 0.15s ease;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: oklch(62% 0.12 220 / 0.5);
+}
+
+.textareaFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  margin-block-start: 4px;
+}
+
+.metric {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--ds-text-xs);
+}
+
+.metricLabel {
+  color: var(--ds-text-muted);
+}
+
+.metricVal {
+  font-weight: 600;
+  color: var(--nova-cyan);
+  font-family: ui-monospace, monospace;
+}
+
+.linkBtn {
+  background: none;
+  border: none;
+  color: var(--nova-rose);
+  font: inherit;
+  font-size: var(--ds-text-xs);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+
+.linkBtn:hover {
+  background: oklch(60% 0.15 25 / 0.08);
+}
+
+/* ── Toggle row ────────────────────────────────────────────────────────── */
+
+.toggleRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  margin-block-start: var(--ds-space-2);
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3);
+  background: var(--ds-canvas-subtle);
+  border-radius: 8px;
+}
+
+.toggleInfo {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.toggleLabel {
+  font-size: var(--ds-text-xs);
+  font-weight: 500;
+  color: var(--ds-text-primary);
+  cursor: pointer;
+}
+
+.toggleDesc {
+  margin: 4px 0 0;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+
+.toggleSwitch {
+  position: relative;
+  inline-size: 44px;
+  block-size: 24px;
+  flex-shrink: 0;
+  background: var(--ds-border-default);
+  border: 1px solid var(--ds-border-default);
+  border-radius: 12px;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.toggleSwitch[data-on='true'] {
+  background: var(--nova-emerald);
+  border-color: var(--nova-emerald);
+}
+
+.toggleKnob {
+  position: absolute;
+  inset-block-start: 2px;
+  inset-inline-start: 2px;
+  inline-size: 18px;
+  block-size: 18px;
+  background: oklch(100% 0 0);
+  border-radius: 50%;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px oklch(0% 0 0 / 0.3);
+}
+
+.toggleSwitch[data-on='true'] .toggleKnob {
+  transform: translateX(20px);
+}
+
+/* ── Admin list ───────────────────────────────────────────────────────── */
+
+.adminList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.adminItem {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: 10px var(--ds-space-3);
+  background: var(--ds-canvas-subtle);
+  border-radius: 8px;
+  font-size: var(--ds-text-xs);
+}
+
+.adminName {
+  font-weight: 500;
+  color: var(--ds-text-primary);
+}
+
+.adminEmail {
+  flex: 1;
+  color: var(--ds-text-muted);
+  font-family: ui-monospace, monospace;
+  font-size: var(--ds-text-xs);
+}
+
+.adminWarn {
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  padding: 3px 8px;
+  background: oklch(60% 0.15 25 / 0.12);
+  color: var(--nova-rose);
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+
+.allOk {
+  padding: var(--ds-space-3);
+  background: oklch(58% 0.12 165 / 0.1);
+  color: var(--nova-emerald);
+  border-radius: 8px;
+  font-size: var(--ds-text-xs);
+  text-align: center;
+}
+
+/* ── Action row ───────────────────────────────────────────────────────── */
+
+.actionRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding-block-start: var(--ds-space-2);
+}
+
+.saveBtn {
+  flex: 1;
+  block-size: 42px;
+  padding: 0 var(--ds-space-5);
+  background: var(--nova-emerald);
+  color: oklch(20% 0.008 265);
+  border: 1px solid var(--nova-emerald);
+  border-radius: 10px;
+  font: inherit;
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.1s ease;
+}
+
+.saveBtn:not(:disabled):hover {
+  opacity: 0.92;
+}
+
+.saveBtn:not(:disabled):active {
+  transform: scale(0.99);
+}
+
+.saveBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.resetBtn {
+  block-size: 42px;
+  padding: 0 var(--ds-space-4);
+  background: transparent;
+  color: var(--ds-text-secondary);
+  border: 1px solid var(--ds-border-default);
+  border-radius: 10px;
+  font: inherit;
+  font-size: var(--ds-text-xs);
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.resetBtn:not(:disabled):hover {
+  border-color: var(--ds-border-strong);
+  color: var(--ds-text-primary);
+}
+
+.resetBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

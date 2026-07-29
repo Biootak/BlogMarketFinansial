@@ -17,17 +17,21 @@
 import { cn } from '@/lib/utils';
 import {
   Activity,
+  Archive,
   BarChart2,
   Bell,
   Building2,
   Clock,
   Cog,
   CreditCard,
+  Database,
   Globe,
   Key,
   LayoutGrid,
   Lock,
   type LucideIcon,
+  Mail,
+  Power,
   Settings,
   ShieldCheck,
   Users,
@@ -43,16 +47,20 @@ import s from './SettingsSubNav.module.css';
  */
 export type SettingsNavIconName =
   | 'activity'
+  | 'archive'
   | 'bar-chart'
   | 'bell'
   | 'building'
   | 'clock'
   | 'cog'
   | 'credit-card'
+  | 'database'
   | 'globe'
   | 'key'
   | 'layout-grid'
   | 'lock'
+  | 'mail'
+  | 'power'
   | 'settings'
   | 'shield'
   | 'users'
@@ -61,16 +69,20 @@ export type SettingsNavIconName =
 
 const ICON_MAP: Record<SettingsNavIconName, LucideIcon> = {
   'activity': Activity,
+  'archive': Archive,
   'bar-chart': BarChart2,
   'bell': Bell,
   'building': Building2,
   'clock': Clock,
   'cog': Cog,
   'credit-card': CreditCard,
+  'database': Database,
   'globe': Globe,
   'key': Key,
   'layout-grid': LayoutGrid,
   'lock': Lock,
+  'mail': Mail,
+  'power': Power,
   'settings': Settings,
   'shield': ShieldCheck,
   'users': Users,

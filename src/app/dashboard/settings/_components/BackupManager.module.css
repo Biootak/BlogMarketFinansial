@@ -1,0 +1,490 @@
+/* BackupManager.module.css */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+/* ── Status bar ────────────────────────────────────────────────────────── */
+
+.statusBar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3);
+  background: var(--ds-canvas-subtle);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: 12px;
+}
+
+.statusItem {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2);
+}
+
+.statusIcon {
+  inline-size: 32px;
+  block-size: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--ds-surface-recessed);
+  color: var(--ds-text-secondary);
+  flex-shrink: 0;
+}
+
+.statusIcon[data-on='true'] {
+  background: oklch(58% 0.12 165 / 0.15);
+  color: var(--nova-emerald);
+}
+
+.statusLabel {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.statusVal {
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  color: var(--ds-text-primary);
+  margin-block-start: 2px;
+}
+
+/* ── Section ───────────────────────────────────────────────────────────── */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  background: var(--ds-canvas-subtle);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: 12px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--ds-text-primary);
+}
+
+.sectionDesc {
+  margin: 0;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  line-height: 1.6;
+}
+
+.path {
+  font-family: ui-monospace, monospace;
+  font-size: var(--ds-text-xs);
+  background: var(--ds-surface-recessed);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: var(--nova-cyan);
+}
+
+/* ── Form ──────────────────────────────────────────────────────────────── */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--ds-space-3);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label,
+.toggleLabel > span:first-child {
+  font-size: var(--ds-text-xs);
+  font-weight: 500;
+  color: var(--ds-text-secondary);
+}
+
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+}
+
+.input {
+  block-size: 38px;
+  padding: 0 var(--ds-space-3);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-default);
+  border-radius: 8px;
+  color: var(--ds-text-primary);
+  font: inherit;
+  font-size: var(--ds-text-xs);
+  font-family: ui-monospace, monospace;
+  transition: border-color 0.15s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: oklch(62% 0.12 220 / 0.5);
+}
+
+.input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+
+/* ── Toggle ────────────────────────────────────────────────────────────── */
+
+.toggleSwitch {
+  position: relative;
+  inline-size: 38px;
+  block-size: 22px;
+  flex-shrink: 0;
+  background: var(--ds-border-default);
+  border: 1px solid var(--ds-border-default);
+  border-radius: 11px;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.toggleSwitch[data-on='true'] {
+  background: var(--nova-emerald);
+  border-color: var(--nova-emerald);
+}
+
+.toggleKnob {
+  position: absolute;
+  inset-block-start: 1px;
+  inset-inline-start: 1px;
+  inline-size: 18px;
+  block-size: 18px;
+  background: oklch(100% 0 0);
+  border-radius: 50%;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toggleSwitch[data-on='true'] .toggleKnob {
+  transform: translateX(16px);
+}
+
+/* ── Sub sections ─────────────────────────────────────────────────────── */
+
+.subSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding-block-start: var(--ds-space-2);
+  border-block-start: 1px solid var(--ds-border-subtle);
+}
+
+.subTitle {
+  margin: 0;
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ds-text-muted);
+}
+
+.checkRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 6px;
+}
+
+.checkLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: 8px 10px;
+  background: var(--ds-canvas-subtle);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-primary);
+  transition: background 0.15s ease;
+}
+
+.checkLabel:hover {
+  background: var(--ds-surface-recessed);
+}
+
+.checkBox {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.checkBoxView {
+  inline-size: 16px;
+  block-size: 16px;
+  flex-shrink: 0;
+  border: 1.5px solid var(--ds-border-default);
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: oklch(20% 0.008 265);
+  background: transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.checkBoxView[data-on='true'] {
+  background: var(--nova-emerald);
+  border-color: var(--nova-emerald);
+}
+
+/* ── Action row ───────────────────────────────────────────────────────── */
+
+.actionRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding-block-start: var(--ds-space-2);
+}
+
+.saveBtn {
+  flex: 1;
+  block-size: 38px;
+  padding: 0 var(--ds-space-4);
+  background: var(--nova-emerald);
+  color: oklch(20% 0.008 265);
+  border: none;
+  border-radius: 8px;
+  font: inherit;
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.saveBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.saveBtn:not(:disabled):hover {
+  opacity: 0.92;
+}
+
+.resetBtn {
+  block-size: 38px;
+  padding: 0 var(--ds-space-3);
+  background: transparent;
+  color: var(--ds-text-secondary);
+  border: 1px solid var(--ds-border-default);
+  border-radius: 8px;
+  font: inherit;
+  font-size: var(--ds-text-xs);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.resetBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.resetBtn:not(:disabled):hover {
+  border-color: var(--ds-border-strong);
+}
+
+/* ── Trigger row ──────────────────────────────────────────────────────── */
+
+.triggerRow {
+  display: flex;
+  gap: var(--ds-space-2);
+  align-items: stretch;
+}
+
+.triggerInput {
+  flex: 1;
+  block-size: 40px;
+  padding: 0 var(--ds-space-3);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-default);
+  border-radius: 8px;
+  color: var(--ds-text-primary);
+  font: inherit;
+  font-size: var(--ds-text-xs);
+  transition: border-color 0.15s ease;
+}
+
+.triggerInput:focus {
+  outline: none;
+  border-color: oklch(62% 0.12 220 / 0.5);
+}
+
+.triggerBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  block-size: 40px;
+  padding: 0 var(--ds-space-4);
+  background: var(--nova-cyan);
+  color: oklch(20% 0.008 265);
+  border: none;
+  border-radius: 8px;
+  font: inherit;
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.triggerBtn:hover:not(:disabled) {
+  opacity: 0.92;
+}
+
+.triggerBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── List ─────────────────────────────────────────────────────────────── */
+
+.listHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+
+.refreshBtn {
+  background: none;
+  border: none;
+  color: var(--ds-text-muted);
+  font: inherit;
+  font-size: var(--ds-text-xs);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.refreshBtn:hover {
+  color: var(--ds-text-primary);
+}
+
+.emptyList {
+  padding: var(--ds-space-5);
+  text-align: center;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  background: var(--ds-canvas-subtle);
+  border: 1px dashed var(--ds-border-default);
+  border-radius: 8px;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: 10px var(--ds-space-3);
+  background: var(--ds-canvas-subtle);
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+.row:hover {
+  background: var(--ds-surface-recessed);
+}
+
+.rowIcon {
+  inline-size: 30px;
+  block-size: 30px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: oklch(62% 0.12 220 / 0.1);
+  color: var(--nova-cyan);
+}
+
+.rowInfo {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.rowFile {
+  font-family: ui-monospace, monospace;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-primary);
+  word-break: break-all;
+}
+
+.rowMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-block-start: 2px;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+
+.deleteBtn {
+  flex-shrink: 0;
+  inline-size: 30px;
+  block-size: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--nova-rose);
+  border: 1px solid oklch(60% 0.15 25 / 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.deleteBtn:hover {
+  background: oklch(60% 0.15 25 / 0.08);
+  border-color: oklch(60% 0.15 25 / 0.4);
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-5);
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin { animation: none; }
+}

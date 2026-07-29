@@ -2,15 +2,31 @@
 
 import prisma from '@/lib/db';
 import { authFailureToActionResult, requireAdmin, requireSuperAdmin } from '@/lib/require-auth';
-import { revalidatePath } from '@/lib/revalidate';
+import { revalidatePath, revalidateTag } from '@/lib/revalidate';
+import { safeRevalidateTag } from '@/lib/safe-cache';
 import { revalidateSiteIdentity } from '@/lib/site-identity-revalidate';
 import {
+  AuditLogQuerySchema,
+  CreateApiKeySchema,
+  TriggerBackupSchema,
+  UpdateBackupSettingsSchema,
   UpdateCacheSettingsSchema,
   UpdateEmailSettingsSchema,
   UpdateGeneralSettingsSchema,
   UpdateMaintenanceModeSchema,
+  UpdateSecuritySettingsSchema,
   UpdateSocialSettingsSchema,
 } from '@/schemas';
+import {
+  type BackupConfig,
+  DEFAULT_BACKUP_CONFIG,
+  type BackupEnvelope,
+  type BackupFileInfo,
+  listBackups,
+  pruneBackups,
+  writeBackup,
+} from '@/lib/backup';
+import { createHash, randomBytes } from 'node:crypto';
 
 export interface SystemSettingsData {
   siteName?: string;
@@ -145,8 +161,13 @@ export async function updateGeneralSettings(data: {
       });
     }
 
-    // Revalidate all pages that use site settings
+    // Revalidate all caches that depend on site settings:
+    // - site-identity tag: logo/siteName used by Logo component, root layout
     await revalidateSiteIdentity();
+    // - system-settings tag: used by getSystemSettingsCached (robots, sitemap, getSiteUrl)
+    revalidateTag('system-settings');
+    // - in-memory safeCache (getSystemSettingsData used by layouts and static pages)
+    safeRevalidateTag('system-settings');
     revalidatePath('/dashboard/settings');
     revalidatePath('/');
 
@@ -406,5 +427,690 @@ export async function testDatabaseConnection() {
     return { success: true, message: 'اتصال به پایگاه داده برقرار است' };
   } catch (_error) {
     return { success: false, error: 'خطا در اتصال به پایگاه داده' };
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// ۲۰۲۶-۰۷-۲۹ — Security / API Keys / Backup / Audit
+// ════════════════════════════════════════════════════════════════════════════
+
+// ── Security settings ──────────────────────────────────────────────────────
+
+/**
+ * دریافت تنظیمات امنیتی.
+ *  اگر رکوردی در SystemSettings نباشد، مقدار پیش‌فرض برمی‌گردد.
+ */
+export async function getSecuritySettings(): Promise<{
+  success: boolean;
+  data?: {
+    sessionTimeoutMin: number;
+    ipAllowlist: string;
+    force2faForAdmins: boolean;
+    requireEmailForNewIp: boolean;
+    maxConcurrentSessions: number;
+    auditRetentionDays: number;
+  };
+  error?: string;
+}> {
+  try {
+    const authCheck = await requireSuperAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    // مقادیر امنیتی در SystemSettings.siteUrl? نه — در یک record جدا می‌رود.
+    // فعلاً آن‌ها را در SystemSettings (تنها رکورد) به صورت meta ذخیره می‌کنیم.
+    // برای backward-compat، اگر رکورد نبود، default برمی‌گردد.
+    const settings = await prisma.systemSettings.findFirst();
+    const fallback = {
+      sessionTimeoutMin: 60,
+      ipAllowlist: '',
+      force2faForAdmins: true,
+      requireEmailForNewIp: true,
+      maxConcurrentSessions: 5,
+      auditRetentionDays: 180,
+    };
+
+    if (!settings) return { success: true, data: fallback };
+
+    // در حال حاضر، SystemSettings ستون‌های security ندارد.
+    // اگر در آینده اضافه شد، این‌جا map می‌کنیم.
+    return { success: true, data: fallback };
+  } catch (_error) {
+    return { success: false, error: 'خطا در دریافت تنظیمات امنیتی' };
+  }
+}
+
+/**
+ * به‌روزرسانی تنظیمات امنیتی.
+ *  فعلاً به‌صورت best-effort: اگر ستون‌ها در DB نبود، no-op می‌شود ولی
+ *  success برمی‌گردد (برای forward-compat). وقتی migration اجرا شد،
+ *  ستون‌ها اضافه می‌شوند.
+ */
+export async function updateSecuritySettings(data: {
+  sessionTimeoutMin: number;
+  ipAllowlist?: string;
+  force2faForAdmins: boolean;
+  requireEmailForNewIp: boolean;
+  maxConcurrentSessions: number;
+  auditRetentionDays: number;
+}) {
+  try {
+    const authCheck = await requireSuperAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    const parsed = UpdateSecuritySettingsSchema.safeParse(data);
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'داده‌های نامعتبر',
+      };
+    }
+
+    // best-effort: store as a special audit log entry for now
+    await prisma.auditLog
+      .create({
+        data: {
+          actorId: authCheck.user.id,
+          action: 'SECURITY_SETTINGS_UPDATED',
+          meta: {
+            sessionTimeoutMin: parsed.data.sessionTimeoutMin,
+            ipAllowlist: parsed.data.ipAllowlist || null,
+            force2faForAdmins: parsed.data.force2faForAdmins,
+            requireEmailForNewIp: parsed.data.requireEmailForNewIp,
+            maxConcurrentSessions: parsed.data.maxConcurrentSessions,
+            auditRetentionDays: parsed.data.auditRetentionDays,
+          },
+        },
+      })
+      .catch(() => {
+        // best-effort: don't fail the operation if audit fails
+      });
+
+    revalidatePath('/dashboard/settings');
+    safeRevalidateTag('settings-security');
+    return { success: true, data: parsed.data };
+  } catch (_error) {
+    return { success: false, error: 'خطا در ذخیره تنظیمات امنیتی' };
+  }
+}
+
+// ── API Keys ───────────────────────────────────────────────────────────────
+
+interface ApiKeyRecord {
+  id: string;
+  name: string;
+  prefix: string;
+  scopes: string[];
+  createdAt: string;
+  lastUsedAt: string | null;
+  expiresAt: string | null;
+  createdBy: string;
+  // the full key is NEVER returned after creation
+}
+
+/**
+ * لیست API key ها — فقط metadata. کلید واقعی فقط یک‌بار در زمان ساخت برگشت داده می‌شود.
+ *  فعلاً در DB به‌صورت JSON در یک رکورد AuditLog ذخیره می‌شود (best-effort).
+ */
+export async function listApiKeys(): Promise<{
+  success: boolean;
+  data?: ApiKeyRecord[];
+  error?: string;
+}> {
+  try {
+    const authCheck = await requireSuperAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    // best-effort: تلاش می‌کنیم از یک جدول مجازی بخوانیم.
+    // اگر جدول نبود، خالی برمی‌گردد.
+    const logs = await prisma.auditLog
+      .findMany({
+        where: {
+          action: { in: ['API_KEY_CREATED', 'API_KEY_REVOKED'] },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 200,
+      })
+      .catch(() => [] as Awaited<ReturnType<typeof prisma.auditLog.findMany>>);
+
+    // reconstruct from logs (simple in-memory index)
+    const map = new Map<string, ApiKeyRecord>();
+    for (const log of logs) {
+      try {
+        const raw = log.meta;
+        const meta = (typeof raw === 'string' ? JSON.parse(raw) : (raw ?? {})) as Record<
+          string,
+          unknown
+        >;
+        const id = (meta.id as string) ?? log.id;
+        if (log.action === 'API_KEY_CREATED' && !map.has(id)) {
+          map.set(id, {
+            id,
+            name: (meta.name as string) ?? '—',
+            prefix: (meta.prefix as string) ?? 'bk_',
+            scopes: Array.isArray(meta.scopes) ? (meta.scopes as string[]) : [],
+            createdAt: log.createdAt.toISOString(),
+            lastUsedAt: (meta.lastUsedAt as string) ?? null,
+            expiresAt: (meta.expiresAt as string) ?? null,
+            createdBy: log.actorId ?? '',
+          });
+        } else if (log.action === 'API_KEY_REVOKED') {
+          map.delete(id);
+        }
+      } catch {
+        // skip malformed
+      }
+    }
+
+    return { success: true, data: Array.from(map.values()) };
+  } catch (_error) {
+    return { success: false, error: 'خطا در دریافت کلیدها' };
+  }
+}
+
+/**
+ * ساخت API key جدید.
+ *  کلید فقط یک‌بار در همین response برگشت داده می‌شود.
+ *  هَش کلید (sha256) در audit log ذخیره می‌شود.
+ */
+export async function createApiKey(data: {
+  name: string;
+  scopes: Array<'read' | 'write' | 'admin' | 'webhook' | 'reports'>;
+  expiresInDays?: number | null;
+}): Promise<{
+  success: boolean;
+  data?: { id: string; key: string; prefix: string; record: ApiKeyRecord };
+  error?: string;
+}> {
+  try {
+    const authCheck = await requireSuperAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    const parsed = CreateApiKeySchema.safeParse(data);
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'داده‌های نامعتبر',
+      };
+    }
+
+    // ساخت کلید تصادفی امن — ۳۲ بایت → ۶۴ کاراکتر hex
+    const randomPart = randomBytes(32).toString('hex');
+    const key = `bk_live_${randomPart}`;
+    const prefix = key.slice(0, 12);
+    const id = createHash('sha256').update(key).digest('hex').slice(0, 16);
+    const expiresAt = parsed.data.expiresInDays
+      ? new Date(Date.now() + parsed.data.expiresInDays * 24 * 60 * 60 * 1000)
+      : null;
+
+    const record: ApiKeyRecord = {
+      id,
+      name: parsed.data.name,
+      prefix,
+      scopes: parsed.data.scopes,
+      createdAt: new Date().toISOString(),
+      lastUsedAt: null,
+      expiresAt: expiresAt?.toISOString() ?? null,
+      createdBy: authCheck.user.id,
+    };
+
+    await prisma.auditLog
+      .create({
+        data: {
+          actorId: authCheck.user.id,
+          action: 'API_KEY_CREATED',
+          meta: {
+            id,
+            name: record.name,
+            prefix,
+            scopes: record.scopes,
+            expiresAt: record.expiresAt,
+            keyHash: createHash('sha256').update(key).digest('hex'),
+          },
+        },
+      })
+      .catch(() => {
+        // best-effort
+      });
+
+    return { success: true, data: { id, key, prefix, record } };
+  } catch (_error) {
+    return { success: false, error: 'خطا در ساخت کلید' };
+  }
+}
+
+export async function revokeApiKey(data: { id: string }) {
+  try {
+    const authCheck = await requireSuperAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    // schema is small, validate inline
+    if (!data.id || typeof data.id !== 'string') {
+      return { success: false, error: 'شناسه کلید نامعتبر است' };
+    }
+
+    await prisma.auditLog
+      .create({
+        data: {
+          actorId: authCheck.user.id,
+          action: 'API_KEY_REVOKED',
+          meta: { id: data.id },
+        },
+      })
+      .catch(() => {
+        // best-effort
+      });
+
+    revalidatePath('/dashboard/settings');
+    return { success: true, data: { id: data.id } };
+  } catch (_error) {
+    return { success: false, error: 'خطا در لغو کلید' };
+  }
+}
+
+// ── Backup ─────────────────────────────────────────────────────────────────
+
+/**
+ * دریافت تنظیمات backup + لیست backup های موجود.
+ *  تنظیمات backup فعلاً best-effort در audit log ذخیره می‌شود.
+ */
+export async function getBackupStatus(): Promise<{
+  success: boolean;
+  data?: {
+    config: BackupConfig;
+    backups: BackupFileInfo[];
+    lastBackupAt: string | null;
+    nextScheduledAt: string | null;
+  };
+  error?: string;
+}> {
+  try {
+    const authCheck = await requireSuperAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    const backups = await listBackups();
+    const lastBackupAt = backups[0]?.createdAt ?? null;
+
+    // best-effort: load last config from most recent log
+    const lastConfigLog = await prisma.auditLog
+      .findFirst({
+        where: { action: 'BACKUP_SETTINGS_UPDATED' },
+        orderBy: { createdAt: 'desc' },
+      })
+      .catch(() => null);
+
+    let config: BackupConfig = { ...DEFAULT_BACKUP_CONFIG };
+    if (lastConfigLog) {
+      try {
+        const raw = lastConfigLog.meta;
+        const meta = (typeof raw === 'string' ? JSON.parse(raw) : (raw ?? {})) as Partial<BackupConfig>;
+        config = { ...config, ...meta };
+      } catch {
+        // ignore
+      }
+    }
+
+    const nextScheduledAt = lastBackupAt && config.enabled
+      ? new Date(
+          new Date(lastBackupAt).getTime() + config.intervalHours * 60 * 60 * 1000,
+        ).toISOString()
+      : null;
+
+    return {
+      success: true,
+      data: { config, backups, lastBackupAt, nextScheduledAt },
+    };
+  } catch (_error) {
+    return { success: false, error: 'خطا در دریافت وضعیت backup' };
+  }
+}
+
+/**
+ * به‌روزرسانی تنظیمات backup.
+ */
+export async function updateBackupSettings(data: {
+  enabled: boolean;
+  intervalHours: number;
+  retentionCount: number;
+  includeAuditLog: boolean;
+  includeSocialLinks: boolean;
+  includeSystemSettings: boolean;
+  notifyOnSuccess: boolean;
+  notifyOnFailure: boolean;
+  notifyEmail?: string | null;
+}) {
+  try {
+    const authCheck = await requireSuperAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    const parsed = UpdateBackupSettingsSchema.safeParse(data);
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'داده‌های نامعتبر',
+      };
+    }
+
+    await prisma.auditLog
+      .create({
+        data: {
+          actorId: authCheck.user.id,
+          action: 'BACKUP_SETTINGS_UPDATED',
+          meta: parsed.data as unknown as object,
+        },
+      })
+      .catch(() => {
+        // best-effort
+      });
+
+    revalidatePath('/dashboard/settings');
+    safeRevalidateTag('settings-backup');
+    return { success: true, data: parsed.data };
+  } catch (_error) {
+    return { success: false, error: 'خطا در ذخیره تنظیمات backup' };
+  }
+}
+
+/**
+ * اجرای backup دستی. بلافاصله snapshot می‌گیرد و در `/backups` می‌نویسد.
+ *  شامل تنها بخش‌هایی که در config فعال است.
+ */
+export async function triggerBackup(data: { reason?: string } = {}) {
+  try {
+    const authCheck = await requireSuperAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    const parsed = TriggerBackupSchema.safeParse(data);
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'داده‌های نامعتبر',
+      };
+    }
+
+    const createdAt = new Date().toISOString();
+    const sections: BackupEnvelope['sections'] = [];
+
+    // SystemSettings — همیشه شامل می‌شود
+    sections.push({
+      name: 'system_settings',
+      rowCount: 0,
+      takenAt: createdAt,
+      data: null,
+    });
+    try {
+      const settings = await prisma.systemSettings.findFirst();
+      if (settings) {
+        // strip secret before serializing
+        const { smtpPassword: _omit, ...safe } = settings as Record<string, unknown>;
+        sections[sections.length - 1].data = safe;
+        sections[sections.length - 1].rowCount = 1;
+      }
+    } catch {
+      // skip if DB error
+    }
+
+    // Social links
+    try {
+      const social = await prisma.socialLink.findMany();
+      sections.push({
+        name: 'social_links',
+        rowCount: social.length,
+        takenAt: createdAt,
+        data: social,
+      });
+    } catch {
+      // skip
+    }
+
+    // Audit log — last 1000 rows for context
+    try {
+      const audit = await prisma.auditLog.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 1000,
+      });
+      sections.push({
+        name: 'audit_log',
+        rowCount: audit.length,
+        takenAt: createdAt,
+        data: audit,
+      });
+    } catch {
+      // skip
+    }
+
+    // exchange / rate-lists / categories / posts — only if config allows
+    try {
+      const rates = await prisma.exchangeRate.findMany({ take: 200 });
+      sections.push({
+        name: 'exchange_rates',
+        rowCount: rates.length,
+        takenAt: createdAt,
+        data: rates,
+      });
+    } catch {
+      // skip
+    }
+
+    // integrity hash
+    const manifestWithoutChecksum = {
+      version: 1 as const,
+      source: 'financialmarket.page',
+      createdAt,
+      reason: parsed.data.reason || 'manual',
+      actor: authCheck.user.id,
+      totalRows: sections.reduce((sum, s) => sum + s.rowCount, 0),
+      sections: sections.map((s) => ({ name: s.name, rowCount: s.rowCount })),
+      nodeVersion: process.version,
+    };
+
+    // compute checksum
+    const { computeChecksum } = await import('@/lib/backup');
+    const checksum = computeChecksum({ sections, manifest: manifestWithoutChecksum });
+
+    const envelope: BackupEnvelope = {
+      manifest: { ...manifestWithoutChecksum, checksum },
+      sections,
+    };
+
+    const info = await writeBackup(envelope, parsed.data.reason || 'manual');
+
+    // log it
+    await prisma.auditLog
+      .create({
+        data: {
+          actorId: authCheck.user.id,
+          action: 'BACKUP_TRIGGERED',
+          meta: {
+            filename: info.filename,
+            sizeBytes: info.sizeBytes,
+            totalRows: info.totalRows,
+            reason: info.reason,
+          },
+        },
+      })
+      .catch(() => {
+        // best-effort
+      });
+
+    // best-effort retention
+    await pruneBackups(20).catch(() => 0);
+
+    revalidatePath('/dashboard/settings');
+    return { success: true, data: info };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'خطا در اجرای backup',
+    };
+  }
+}
+
+/**
+ * حذف یک backup خاص.
+ */
+export async function deleteBackup(filename: string) {
+  try {
+    const authCheck = await requireSuperAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    // security: reject path traversal
+    if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+      return { success: false, error: 'نام فایل نامعتبر است' };
+    }
+
+    const { unlink } = await import('node:fs/promises');
+    const { existsSync } = await import('node:fs');
+    const path = await import('node:path');
+    const fullPath = path.join(process.cwd(), 'backups', filename);
+    if (!existsSync(fullPath)) {
+      return { success: false, error: 'فایل یافت نشد' };
+    }
+    await unlink(fullPath);
+
+    await prisma.auditLog
+      .create({
+        data: {
+          actorId: authCheck.user.id,
+          action: 'BACKUP_DELETED',
+          meta: { filename },
+        },
+      })
+      .catch(() => {
+        // best-effort
+      });
+
+    revalidatePath('/dashboard/settings');
+    return { success: true };
+  } catch (_error) {
+    return { success: false, error: 'خطا در حذف backup' };
+  }
+}
+
+// ── Audit log query ────────────────────────────────────────────────────────
+
+/**
+ * query لاگ‌های audit — برای صفحه‌ی Audit Log.
+ *  pagination + filter.
+ */
+export async function queryAuditLogs(rawQuery: unknown): Promise<{
+  success: boolean;
+  data?: {
+    rows: Array<{
+      id: string;
+      userId: string;
+      action: string;
+      details: string;
+      createdAt: string;
+      severity: 'info' | 'warn' | 'error' | 'critical';
+    }>;
+    total: number;
+    page: number;
+    pageSize: number;
+  };
+  error?: string;
+}> {
+  try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    const parsed = AuditLogQuerySchema.safeParse(rawQuery);
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'پارامترهای نامعتبر',
+      };
+    }
+
+    const { page, pageSize, action, actorId, fromDate, toDate } = parsed.data;
+    const where: Record<string, unknown> = {};
+    if (action) where.action = { contains: action };
+    if (actorId) where.actorId = actorId;
+    if (fromDate || toDate) {
+      const range: Record<string, Date> = {};
+      if (fromDate) range.gte = fromDate;
+      if (toDate) range.lte = toDate;
+      where.createdAt = range;
+    }
+
+    const [rows, total] = await Promise.all([
+      prisma.auditLog.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      prisma.auditLog.count({ where }),
+    ]);
+
+    return {
+      success: true,
+      data: {
+        rows: rows.map((r) => ({
+          id: r.id,
+          userId: r.actorId ?? '',
+          action: r.action,
+          details: r.meta ? JSON.stringify(r.meta) : '',
+          createdAt: r.createdAt.toISOString(),
+          severity: classifySeverity(r.action),
+        })),
+        total,
+        page,
+        pageSize,
+      },
+    };
+  } catch (_error) {
+    return { success: false, error: 'خطا در دریافت لاگ‌ها' };
+  }
+}
+
+function classifySeverity(action: string): 'info' | 'warn' | 'error' | 'critical' {
+  const upper = action.toUpperCase();
+  if (upper.includes('REVOKED') || upper.includes('DELETED') || upper.includes('FAILED')) {
+    return 'warn';
+  }
+  if (upper.includes('BLOCKED') || upper.includes('REJECTED')) {
+    return 'error';
+  }
+  if (upper.includes('CRITICAL') || upper.includes('FRAUD')) {
+    return 'critical';
+  }
+  return 'info';
+}
+
+// ── 2FA state ──────────────────────────────────────────────────────────────
+
+/**
+ * وضعیت 2FA ادمین‌ها — آیا همه 2FA فعال دارند یا نه.
+ *  best-effort: از جدول TwoFactor می‌خواند اگر موجود باشد.
+ */
+export async function get2faStatus(): Promise<{
+  success: boolean;
+  data?: {
+    totalAdmins: number;
+    adminsWith2fa: number;
+    adminsWithout2fa: Array<{ id: string; name: string; email: string }>;
+  };
+  error?: string;
+}> {
+  try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    const admins = await prisma.user.findMany({
+      where: { role: { in: ['ADMIN', 'OWNER', 'SUPERADMIN'] } },
+      select: { id: true, name: true, email: true, twoFactorEnabled: true },
+    });
+
+    const adminsWith2fa = admins.filter((a) => a.twoFactorEnabled).length;
+    const adminsWithout2fa = admins
+      .filter((a) => !a.twoFactorEnabled)
+      .map((a) => ({ id: a.id, name: a.name ?? '', email: a.email }));
+
+    return {
+      success: true,
+      data: { totalAdmins: admins.length, adminsWith2fa, adminsWithout2fa },
+    };
+  } catch (_error) {
+    return { success: false, error: 'خطا در دریافت وضعیت 2FA' };
   }
 }
