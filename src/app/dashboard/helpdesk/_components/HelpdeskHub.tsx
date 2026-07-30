@@ -18,6 +18,16 @@ import {
 } from 'lucide-react';
 
 import { Spotlight } from '@/components/Dashboard/primitives/Spotlight';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { HUB_PALETTES, PriorityStack, type PriorityItem } from '@/components/Dashboard/PlatformHub';
 import type {
   TicketSnapshot,
   TicketSummary,
@@ -320,7 +330,7 @@ function NewTicketForm({ onCreated }: { onCreated: () => void }) {
     <form onSubmit={handleSubmit} className={s.form}>
       <div className={s.formGroup}>
         <label className={s.label}>موضوع</label>
-        <input
+        <Input
           type="text"
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
@@ -332,37 +342,37 @@ function NewTicketForm({ onCreated }: { onCreated: () => void }) {
       <div className={s.formRow}>
         <div className={s.formGroup}>
           <label className={s.label}>اولویت</label>
-          <select
-            value={priority}
-            onChange={(e) => setPriority(e.target.value as TicketPriority)}
-            className={s.select}
-            dir="rtl"
-          >
-            <option value="low">کم</option>
-            <option value="normal">معمولی</option>
-            <option value="high">بالا</option>
-            <option value="urgent">فوری</option>
-          </select>
+          <Select value={priority} onValueChange={(v) => setPriority(v as TicketPriority)}>
+            <SelectTrigger className={s.select} dir="rtl">
+              <SelectValue placeholder="انتخاب" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="low">کم</SelectItem>
+              <SelectItem value="normal">معمولی</SelectItem>
+              <SelectItem value="high">بالا</SelectItem>
+              <SelectItem value="urgent">فوری</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className={s.formGroup}>
           <label className={s.label}>دسته</label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value as TicketCategory)}
-            className={s.select}
-            dir="rtl"
-          >
-            {Object.entries(CATEGORY_LABEL).map(([k, v]) => (
-              <option key={k} value={k}>
-                {v}
-              </option>
-            ))}
-          </select>
+          <Select value={category} onValueChange={(v) => setCategory(v as TicketCategory)}>
+            <SelectTrigger className={s.select} dir="rtl">
+              <SelectValue placeholder="انتخاب" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(CATEGORY_LABEL).map(([k, v]) => (
+                <SelectItem key={k} value={k}>
+                  {v}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
       <div className={s.formGroup}>
         <label className={s.label}>شرح</label>
-        <textarea
+        <Textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={6}

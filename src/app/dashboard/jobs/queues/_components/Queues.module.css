@@ -1,0 +1,157 @@
+/* QueuesView — sub-route */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4, 1rem);
+}
+
+.linkBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-md, 0.625rem);
+  font-size: var(--fs-sm, 0.875rem);
+  font-weight: 600;
+  color: var(--ds-color-fg);
+  text-decoration: none;
+  transition: background 200ms ease;
+}
+.linkBtn:hover { background: var(--ds-color-surface-2); }
+
+.throughputCard,
+.queuesList,
+.groupedList {
+  background: var(--ds-color-surface);
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-lg, 1rem);
+  padding: var(--ds-space-4, 1rem) var(--ds-space-5, 1.25rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3, 0.75rem);
+}
+
+.cardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ds-space-3, 0.75rem);
+}
+
+.cardEyebrow {
+  font-size: var(--fs-xs, 0.75rem);
+  color: var(--ds-color-fg-muted);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cardTitle {
+  font-size: var(--fs-lg, 1.125rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin: 0.125rem 0 0;
+  color: var(--ds-color-fg);
+}
+
+.total {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: var(--fs-xs, 0.75rem);
+  color: var(--ds-color-fg-muted);
+  font-weight: 600;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: 999px;
+}
+
+.failed { color: var(--ds-status-error-fg); }
+
+.empty { padding: 2rem; text-align: center; color: var(--ds-color-fg-muted); }
+.emptyMini { padding: 0.75rem; text-align: center; color: var(--ds-color-fg-muted); font-size: var(--fs-xs, 0.75rem); }
+
+.groupedList {
+  gap: var(--ds-space-3, 0.75rem);
+}
+
+.queueGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.75rem 0;
+  border-block-end: 1px solid var(--ds-color-border-subtle);
+}
+.queueGroup:last-child { border-block-end: 0; }
+
+.queueGroupHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.queueGroupName {
+  font-weight: 700;
+  font-size: var(--fs-sm, 0.875rem);
+  color: var(--ds-color-fg);
+}
+
+.queueGroupMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--fs-xs, 0.75rem);
+  color: var(--ds-color-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.miniList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.miniItem {
+  display: grid;
+  grid-template-columns: 0.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  background: var(--ds-color-surface-2);
+  border-radius: 0.375rem;
+  font-size: var(--fs-xs, 0.75rem);
+}
+
+.miniStatus {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--ds-color-fg-muted);
+}
+.miniItem[data-status='running'] .miniStatus { background: oklch(60% 0.13 250); }
+.miniItem[data-status='completed'] .miniStatus { background: var(--ds-accent-emerald); }
+.miniItem[data-status='pending'] .miniStatus { background: var(--ds-accent-amber); }
+.miniItem[data-status='failed'] .miniStatus, .miniItem[data-status='dead'] .miniStatus { background: var(--ds-accent-rose); }
+
+.miniType {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ds-color-fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.miniMeta { color: var(--ds-color-fg-muted); font-variant-numeric: tabular-nums; }
+
+.moreItems {
+  padding: 0.375rem 0.5rem;
+  font-size: 0.6875rem;
+  color: var(--ds-color-fg-muted);
+  text-align: center;
+}

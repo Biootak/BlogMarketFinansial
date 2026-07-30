@@ -356,6 +356,12 @@ export function getMenu(role: UserRole): NavSection[] {
     icon: HiOutlineMegaphone({ className: ICON_CLASS }),
     label: 'مرکز ارتباطات',
     title: 'مرکز ارتباطات — broadcast، کمپین، اعلان',
+    submenu: [
+      { href: '/dashboard/communication', label: 'نمای کلی' },
+      { href: '/dashboard/communication/announcements', label: 'اعلان‌ها' },
+      { href: '/dashboard/communication/campaigns', label: 'کمپین‌ها' },
+      { href: '/dashboard/communication/audiences', label: 'مخاطبان هدف' },
+    ],
   };
 
   const jobCenter: MenuItem = {

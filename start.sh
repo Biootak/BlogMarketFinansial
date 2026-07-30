@@ -2,6 +2,12 @@
 # start.sh -- mount share + run Trae IDE on Fedora Live
 # Usage (first time): sudo mkdir -p /mnt/FinancialMarket && sudo mount -t vboxsf -o uid=$(id -u),gid=$(id -g),fmode=0755,dmode=0755,exec FinancialMarket /mnt/FinancialMarket && bash /mnt/FinancialMarket/start.sh
 # Usage (after mount): bash /mnt/FinancialMarket/start.sh
+#
+# Project access strategy:
+#   vboxsf shared folder is slow (3-layer: Trae→vboxsf→VirtualBox→NTFS).
+#   Instead, the project is rsynced once into a tmpfs RAM disk so Trae AI
+#   reads and writes at RAM speed. A background loop syncs changes back to
+#   the shared folder every 30 s so Windows always has the latest files.
 
 # NOTE: set -euo pipefail is INTENTIONAL -- fail fast on real errors.
 # Every fallible command uses || true or explicit error handling.
@@ -23,6 +29,8 @@ fail() { echo -e "${RED}[FAIL]${NC}  $*" >&2; exit 1; }
 # 1. Mount shared folder
 #    Handles both automount (appears automatically) and manual mount cases.
 #    If automounted, remounts with correct liveuser permissions.
+#    NOTE: vboxsf "remount" is unreliable on some kernels — unmount + remount
+#    is more portable and always applies correct uid/gid/fmode.
 # ============================================================================
 step "Shared folder"
 sudo mkdir -p "$MOUNT_DIR"
@@ -31,16 +39,17 @@ sudo mkdir -p "$MOUNT_DIR"
 sudo modprobe vboxsf 2>/dev/null || true
 
 if mountpoint -q "$MOUNT_DIR" 2>/dev/null; then
-    # Already mounted (e.g. automount) -- remount with correct permissions
-    sudo mount -t vboxsf -o remount,uid=$(id -u),gid=$(id -g),fmode=0755,dmode=0755,exec \
-        FinancialMarket "$MOUNT_DIR" 2>/dev/null || true
-    ok "Mounted: $MOUNT_DIR"
-else
-    sudo mount -t vboxsf \
-        -o uid=$(id -u),gid=$(id -g),fmode=0755,dmode=0755,exec \
-        FinancialMarket "$MOUNT_DIR" \
-        || fail "Mount failed. Did you create the VM with new-fedora-vm.ps1?"
+    # Already mounted — do a proper unmount + remount to guarantee correct
+    # uid/gid/fmode. "remount" on vboxsf is not guaranteed to re-apply options.
+    sudo umount "$MOUNT_DIR" 2>/dev/null || true
 fi
+
+sudo mount -t vboxsf \
+    -o uid=$(id -u),gid=$(id -g),fmode=0755,dmode=0755,exec \
+    FinancialMarket "$MOUNT_DIR" \
+    || fail "Mount failed. Did you create the VM with new-fedora-vm.ps1?"
+
+ok "Mounted: $MOUNT_DIR"
 [[ -f "$RPM_FILE" ]] || fail "Trae RPM not found: $RPM_FILE"
 
 # ============================================================================
@@ -69,8 +78,8 @@ if lsmod | grep -q vmwgfx 2>/dev/null; then
     ok "VMware SVGA (vmwgfx) active -- hardware 3D ready."
 else
     warn "No vmwgfx -- trying Guest Additions for GPU..."
-    # Add timeout to prevent hanging if no internet
-    if timeout 30 sudo dnf install -y virtualbox-guest-additions 2>/dev/null; then
+    # 90s timeout — Iranian internet can be slow
+    if timeout 90 sudo dnf install -y virtualbox-guest-additions 2>/dev/null; then
         sudo modprobe vboxguest 2>/dev/null || true
         ok "Guest Additions installed."
     elif [[ -b /dev/sr1 ]]; then
@@ -87,15 +96,16 @@ else
 fi
 
 # ============================================================================
-# 3. tmpfs workspace (2 GB) -- Trae extract goes here, NOT on the overlay
+# 3. tmpfs workspace (4 GB) -- Trae extract goes here, NOT on the overlay
+#    Increased from 2 GB so Electron + AI model cache fit without eviction.
 # ============================================================================
 step "tmpfs workspace"
 if ! mountpoint -q "$WORK_DIR" 2>/dev/null; then
     sudo mkdir -p "$WORK_DIR"
-    sudo mount -t tmpfs -o size=2G,uid=$(id -u),gid=$(id -g),mode=0755 \
+    sudo mount -t tmpfs -o size=4G,uid=$(id -u),gid=$(id -g),mode=0755 \
         tmpfs "$WORK_DIR" || fail "tmpfs mount failed"
 fi
-ok "Workspace: $WORK_DIR  (2 GB tmpfs)"
+ok "Workspace: $WORK_DIR  (4 GB tmpfs)"
 
 # ============================================================================
 # 4. Zram swap (doubles effective RAM for Electron)
@@ -103,8 +113,9 @@ ok "Workspace: $WORK_DIR  (2 GB tmpfs)"
 # ============================================================================
 step "Zram swap"
 if ! swapon --show | grep -q zram 2>/dev/null; then
+    # Use up to 8 GB of zram so AI inference doesn't OOM under load.
     ZRAM_MB=$(( $(grep MemTotal /proc/meminfo | awk '{print $2}') / 2 / 1024 )) || ZRAM_MB=2048
-    [[ $ZRAM_MB -gt 4096 ]] && ZRAM_MB=4096
+    [[ $ZRAM_MB -gt 8192 ]] && ZRAM_MB=8192
 
     sudo modprobe zram 2>/dev/null || true
     # Set compression algorithm BEFORE disksize (kernel requirement)
@@ -124,25 +135,33 @@ fi
 
 # ============================================================================
 # 5. Trae cache on tmpfs (keeps Electron writes off the overlay)
+#    Each cache dir gets 1 GB so the AI extension cache is not evicted.
 # ============================================================================
 step "Trae cache tmpfs"
 for d in "$HOME/.config/Trae/Cache" "$HOME/.cache/Trae"; do
     mkdir -p "$d"
     mountpoint -q "$d" 2>/dev/null && ok "Already tmpfs: $d" && continue
-    sudo mount -t tmpfs -o size=512m,uid=$(id -u),gid=$(id -g) tmpfs "$d" \
+    sudo mount -t tmpfs -o size=1G,uid=$(id -u),gid=$(id -g) tmpfs "$d" \
         && ok "tmpfs: $d" || warn "tmpfs failed for $d"
 done
 
 # ============================================================================
 # 6. Install missing Electron libs (one-time download, cached for reuse)
+#    Full set of libs Trae/Electron needs — same as a normal Linux desktop.
 # ============================================================================
 step "Electron libs"
 sudo ldconfig 2>/dev/null || true
 NEED=()
-ldconfig -p | grep -q libnss3.so    || NEED+=(nss)
-ldconfig -p | grep -q libgbm.so.1   || NEED+=(mesa-libgbm)
-ldconfig -p | grep -q libpango-1.0  || NEED+=(pango)
-ldconfig -p | grep -q libasound.so.2 || NEED+=(alsa-lib)
+ldconfig -p | grep -q libnss3.so       || NEED+=(nss)
+ldconfig -p | grep -q libgbm.so.1      || NEED+=(mesa-libgbm)
+ldconfig -p | grep -q libpango-1.0     || NEED+=(pango)
+ldconfig -p | grep -q libasound.so.2   || NEED+=(alsa-lib)
+ldconfig -p | grep -q libxkbcommon.so  || NEED+=(libxkbcommon)
+ldconfig -p | grep -q libdrm.so.2      || NEED+=(libdrm)
+ldconfig -p | grep -q libXcomposite.so || NEED+=(libXcomposite)
+ldconfig -p | grep -q libXdamage.so    || NEED+=(libXdamage)
+ldconfig -p | grep -q libXrandr.so     || NEED+=(libXrandr)
+ldconfig -p | grep -q libcups.so       || NEED+=(cups-libs)
 
 if [[ ${#NEED[@]} -gt 0 ]]; then
     RPM_CACHE="$MOUNT_DIR/.cache/rpms"
@@ -164,13 +183,13 @@ if [[ ${#NEED[@]} -gt 0 ]]; then
         fi
     fi
 
-    # Download + cache for future VMs
+    # Download + cache for future VMs (120s timeout — enough for slow connections)
     if [[ ${#NEED[@]} -gt 0 ]]; then
-        info "Downloading libs (one-time, cached for next VM)..."
-        timeout 30 sudo dnf install -y \
+        info "Downloading libs: ${NEED[*]}"
+        timeout 120 sudo dnf install -y \
             --setopt=keepcache=1 \
             --setopt="cachedir=$RPM_CACHE" \
-            "${NEED[@]}" 2>&1 | tail -3 || true
+            "${NEED[@]}" 2>&1 | tail -5 || true
         sudo ldconfig 2>/dev/null || true
         if ldconfig -p | grep -q libnss3.so 2>/dev/null; then
             ok "Libs installed + cached in shared folder."
@@ -183,32 +202,70 @@ else
 fi
 
 # ============================================================================
-# 7. Proxy auto-detect (PrivadoVPN / SOCKS5 on host)
+# 7. Proxy
+#    The VM uses VirtualBox NAT (10.0.2.2 = Windows host).
+#    Any VPN / filter-breaker running on Windows already covers all traffic
+#    that leaves the host — no extra proxy config needed inside the VM.
 # ============================================================================
 step "Proxy"
-HOST_IP="10.0.2.2"
-PROXY_URL=""
-for port in 1080 8080 3128; do
-    if timeout 1 bash -c "echo > /dev/tcp/$HOST_IP/$port" 2>/dev/null; then
-        PROXY_URL="socks5://${HOST_IP}:${port}"
-        break
-    fi
-done
+ok "Using host network via VirtualBox NAT — Windows VPN covers this VM automatically."
 
-if [[ -n "$PROXY_URL" ]]; then
-    export HTTP_PROXY="$PROXY_URL"
-    export HTTPS_PROXY="$PROXY_URL"
-    export http_proxy="$PROXY_URL"
-    export https_proxy="$PROXY_URL"
-    export NO_PROXY="localhost,127.0.0.1,10.0.2.2"
-    export no_proxy="localhost,127.0.0.1,10.0.2.2"
-    ok "Proxy: $PROXY_URL"
+# ============================================================================
+# 8. Project on RAM disk (tmpfs)
+#    vboxsf is slow: every file read/write crosses 3 layers
+#    (Trae → vboxsf → VirtualBox → Windows NTFS).
+#    Solution: rsync the project once into tmpfs (RAM), open Trae there,
+#    and run a background loop that syncs changes back to the shared folder
+#    every 30 s so Windows always has the latest files.
+# ============================================================================
+step "Project RAM disk"
+PROJECT_RAM="$WORK_DIR/project"
+mkdir -p "$PROJECT_RAM"
+
+# Make sure rsync is available (Fedora Live has it, but just in case)
+if ! command -v rsync &>/dev/null; then
+    info "Installing rsync..."
+    timeout 60 sudo dnf install -y rsync 2>/dev/null || true
+fi
+
+if command -v rsync &>/dev/null; then
+    info "Syncing project to RAM disk (first time may take a moment)..."
+    rsync -a --delete \
+        --exclude='.git/' \
+        --exclude='node_modules/' \
+        --exclude='.next/' \
+        --exclude='__pycache__/' \
+        --exclude='.cache/' \
+        "$MOUNT_DIR/" "$PROJECT_RAM/" \
+        && ok "Project on RAM disk: $PROJECT_RAM" \
+        || warn "rsync failed — falling back to shared folder."
+
+    # Background sync loop: RAM → shared folder every 30 s
+    # Runs in a detached subshell; killed automatically when the VM shuts down.
+    (
+        while true; do
+            sleep 30
+            rsync -a --delete \
+                --exclude='.git/' \
+                --exclude='node_modules/' \
+                --exclude='.next/' \
+                --exclude='__pycache__/' \
+                --exclude='.cache/' \
+                "$PROJECT_RAM/" "$MOUNT_DIR/" 2>/dev/null || true
+        done
+    ) &
+    SYNC_PID=$!
+    ok "Background sync started (PID $SYNC_PID) — saves to Windows every 30 s."
+    TRAE_PROJECT="$PROJECT_RAM"
 else
-    info "No proxy detected on host ($HOST_IP). Trae AI features may not connect."
+    warn "rsync not available — opening project directly from shared folder (slower)."
+    TRAE_PROJECT="$MOUNT_DIR"
 fi
 
 # ============================================================================
-# 8. Extract Trae RPM into tmpfs (skip if already done)
+# 9. Extract Trae RPM into tmpfs (skip if already done)
+#    Uses a subshell for `cd` so the working directory of this script
+#    is never changed — avoids confusing errors if `cd` fails.
 # ============================================================================
 step "Trae IDE"
 EXTRACT_DIR="$WORK_DIR/trae-app"
@@ -219,8 +276,9 @@ if [[ -n "$EXISTING" && -x "$EXISTING" ]]; then
 else
     info "Extracting Trae RPM..."
     rm -rf "$EXTRACT_DIR" && mkdir -p "$EXTRACT_DIR"
-    cd "$EXTRACT_DIR"
-    rpm2cpio "$RPM_FILE" | cpio -idm 2>/dev/null
+    # Run extraction in a subshell so `cd` doesn't affect the parent script
+    (cd "$EXTRACT_DIR" && rpm2cpio "$RPM_FILE" | cpio -idm 2>/dev/null) \
+        || fail "RPM extraction failed."
     TRAE_BIN=$(find "$EXTRACT_DIR" -type f -name "trae" | head -1)
     [[ -n "$TRAE_BIN" ]] || fail "Trae binary not found after extraction."
     chmod +x "$TRAE_BIN"
@@ -228,19 +286,34 @@ else
 fi
 
 # ============================================================================
-# 9. Launch Trae
-#    --ignore-gpu-blocklist is safer than --disable-software-rasterizer:
-#    it lets Chrome use its GPU acceleration even if the GPU is blacklisted,
-#    but falls back to software rendering if GPU init actually fails.
+# 10. Launch Trae
+#     --ozone-platform is set dynamically:
+#       - Wayland session  → wayland  (Fedora 44 default, better performance)
+#       - X11 / no session → x11      (fallback, always works)
+#     --disable-dev-shm-usage : /dev/shm is tiny on Live — use /tmp instead
+#     --ignore-gpu-blocklist  : allow GPU accel even if GPU is on blocklist
+#     --enable-gpu-rasterization : GPU-accelerated 2D paint (faster UI)
+#     --enable-zero-copy      : skip extra CPU copy for GPU textures
 # ============================================================================
+if [[ -n "${WAYLAND_DISPLAY:-}" ]]; then
+    OZONE_FLAG="--ozone-platform=wayland"
+    info "Display: Wayland"
+else
+    OZONE_FLAG="--ozone-platform=x11"
+    info "Display: X11 (Wayland not detected)"
+fi
+
 echo
 echo -e "${BOLD}${GREEN}======================================================"
 echo "  Ready!  Free RAM: $(free -m | awk '/^Mem:/{print $7}') MB"
+echo "  Project: $TRAE_PROJECT"
 echo -e "======================================================${NC}"
 echo
 step "Launching Trae IDE"
 exec "$TRAE_BIN" \
     --no-sandbox --disable-gpu-sandbox \
+    $OZONE_FLAG \
     --enable-gpu-rasterization --enable-zero-copy \
     --ignore-gpu-blocklist \
-    "$MOUNT_DIR"
+    --disable-dev-shm-usage \
+    "$TRAE_PROJECT"

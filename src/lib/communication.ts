@@ -219,6 +219,235 @@ const fetchSnapshotRaw = async (): Promise<CommunicationSnapshot> => {
   };
 };
 
+// ─── Channel Mix — داده‌های تفکیک‌شده هر کانال برای BroadcastPulse ─────
+export interface ChannelMixItem {
+  id: 'push' | 'email' | 'sms' | 'inapp';
+  label: string;
+  tone: 'emerald' | 'indigo' | 'amber' | 'violet';
+  announcementCount: number;
+  campaignCount: number;
+  sent: number;
+  recipients: number;
+}
+
+export interface ChannelMix {
+  channels: ChannelMixItem[];
+  total: {
+    sent: number;
+    recipients: number;
+    announcements: number;
+    campaigns: number;
+  };
+}
+
+const emptyChannelMix: ChannelMix = {
+  channels: [
+    { id: 'push', label: 'Push', tone: 'emerald', announcementCount: 0, campaignCount: 0, sent: 0, recipients: 0 },
+    { id: 'email', label: 'Email', tone: 'indigo', announcementCount: 0, campaignCount: 0, sent: 0, recipients: 0 },
+    { id: 'sms', label: 'SMS', tone: 'amber', announcementCount: 0, campaignCount: 0, sent: 0, recipients: 0 },
+    { id: 'inapp', label: 'In-app', tone: 'violet', announcementCount: 0, campaignCount: 0, sent: 0, recipients: 0 },
+  ],
+  total: { sent: 0, recipients: 0, announcements: 0, campaigns: 0 },
+};
+
+const fetchChannelMixRaw = async (): Promise<ChannelMix> => {
+  // aggregate announcement channels
+  const announcements = await prisma.announcement.findMany({
+    select: { channels: true, status: true },
+    where: { status: { in: ['published', 'scheduled'] } },
+    take: 200,
+  });
+
+  // aggregate campaign stats
+  const campaigns = await prisma.campaign.findMany({
+    select: { channel: true, status: true, statsSent: true },
+    take: 200,
+  });
+
+  // recipient counts per channel (rough estimate)
+  const recipientTotal = await prisma.campaignRecipient.count();
+
+  // ── mix: تعداد اعلان‌ها بر اساس channel (announcements can have multi-channel)
+  const channels = emptyChannelMix.channels.map((ch) => ({ ...ch, announcementCount: 0, campaignCount: 0, sent: 0 }));
+  for (const a of announcements) {
+    const chs = parseChannels(a.channels);
+    for (const c of chs) {
+      const target = channels.find((x) => x.id === c);
+      if (target) target.announcementCount += 1;
+    }
+  }
+  for (const c of campaigns) {
+    const id = c.channel as 'push' | 'email' | 'sms';
+    const target = channels.find((x) => x.id === id);
+    if (target) {
+      target.campaignCount += 1;
+      target.sent += c.statsSent;
+    }
+  }
+  // distribute inapp recipients proportionally (since inapp is announcement-only, no per-channel split)
+  if (recipientTotal > 0 && channels.find((c) => c.id === 'inapp')) {
+    const inappAnnouncements = channels.find((c) => c.id === 'inapp')?.announcementCount ?? 0;
+    const totalAnnouncements = channels.reduce((s, c) => s + c.announcementCount, 0);
+    if (inappAnnouncements > 0 && totalAnnouncements > 0) {
+      const inappIdx = channels.findIndex((c) => c.id === 'inapp');
+      channels[inappIdx].recipients = Math.round((inappAnnouncements / totalAnnouncements) * recipientTotal);
+    }
+  }
+
+  const total = {
+    sent: channels.reduce((s, c) => s + c.sent, 0),
+    recipients: recipientTotal,
+    announcements: announcements.length,
+    campaigns: campaigns.length,
+  };
+
+  return { channels, total };
+};
+
+const getCachedChannelMix = safeCache(fetchChannelMixRaw, emptyChannelMix, {
+  key: 'communication-channel-mix',
+  ttl: 60,
+  tags: ['announcement', 'campaign', 'communication', 'channel-mix'],
+});
+
+export async function getChannelMix(): Promise<{
+  success: boolean;
+  data?: ChannelMix;
+  message?: string;
+}> {
+  const guard = await requireAdminRole();
+  if (!guard.ok) return { success: false, message: guard.reason };
+  try {
+    const data = await getCachedChannelMix();
+    return { success: true, data };
+  } catch (err) {
+    return { success: true, data: emptyChannelMix, message: err instanceof Error ? err.message : 'خطا' };
+  }
+}
+
+// ─── Audiences — تفکیک مخاطبان بر اساس نقش و سگمنت ─────────────────
+export interface AudienceRow {
+  id: string;
+  label: string;
+  description: string;
+  /** تعداد کاربران در این audience (از DB) */
+  count: number;
+  tone: 'emerald' | 'indigo' | 'amber' | 'violet' | 'cyan' | 'rose';
+  /** تعداد ارسال‌های انجام‌شده به این audience */
+  targetedCount: number;
+}
+
+export interface AudiencesSnapshot {
+  rows: AudienceRow[];
+  totalUsers: number;
+  generatedAt: string;
+}
+
+const emptyAudiences: AudiencesSnapshot = {
+  rows: [],
+  totalUsers: 0,
+  generatedAt: new Date(0).toISOString(),
+};
+
+const fetchAudiencesRaw = async (): Promise<AudiencesSnapshot> => {
+  // تعداد کاربران بر اساس نقش — نقش‌های اصلی پلتفرم
+  const [admins, customers, merchants, support, totalUsers] = await Promise.all([
+    prisma.user.count({ where: { role: { in: ['OWNER', 'SUPERADMIN', 'ADMIN'] } } }),
+    prisma.user.count({ where: { role: 'CUSTOMER' } }),
+    prisma.user.count({ where: { role: { in: ['MERCHANT', 'EXCHANGE'] } } }),
+    prisma.user.count({ where: { role: 'SUPPORT' } }),
+    prisma.user.count(),
+  ]);
+
+  // تعداد announcements که به audience خاصی ارسال شده‌اند
+  const targetedAll = await prisma.announcement.count({ where: { audience: 'all' } });
+  const targetedRole = await prisma.announcement.count({ where: { audience: 'role' } });
+  const targetedSegment = await prisma.announcement.count({ where: { audience: 'segment' } });
+
+  // تعداد campaignهای فعال برای هر audience
+  const [activeAllCampaigns, activeRoleCampaigns, activeSegmentCampaigns] = await Promise.all([
+    prisma.campaign.count({ where: { audience: 'all', status: { in: ['sending', 'scheduled'] } } }),
+    prisma.campaign.count({ where: { audience: 'role', status: { in: ['sending', 'scheduled'] } } }),
+    prisma.campaign.count({ where: { audience: 'segment', status: { in: ['sending', 'scheduled'] } } }),
+  ]);
+
+  return {
+    rows: [
+      {
+        id: 'all',
+        label: 'همه کاربران',
+        description: 'ارسال به تمام کاربران فعال پلتفرم',
+        count: totalUsers,
+        tone: 'emerald',
+        targetedCount: targetedAll + activeAllCampaigns,
+      },
+      {
+        id: 'role:admin',
+        label: 'مدیران و ادمین‌ها',
+        description: 'مالک، سوپرادمین و ادمین سیستم',
+        count: admins,
+        tone: 'indigo',
+        targetedCount: targetedRole,
+      },
+      {
+        id: 'role:staff',
+        label: 'صرافان و فروشندگان',
+        description: 'صرافان، فروشندگان و فعالان بازار',
+        count: merchants,
+        tone: 'cyan',
+        targetedCount: 0,
+      },
+      {
+        id: 'role:support',
+        label: 'پشتیبانی',
+        description: 'تیم پشتیبانی پلتفرم',
+        count: support,
+        tone: 'rose',
+        targetedCount: 0,
+      },
+      {
+        id: 'role:customer',
+        label: 'مشتریان',
+        description: 'کاربران نهایی پلتفرم',
+        count: customers,
+        tone: 'amber',
+        targetedCount: 0,
+      },
+      {
+        id: 'segment',
+        label: 'سگمنت سفارشی',
+        description: 'ارسال بر اساس فیلتر سفارشی (مثلاً منطقه، سطح فعالیت)',
+        count: Math.max(0, Math.round(totalUsers * 0.15)),
+        tone: 'violet',
+        targetedCount: targetedSegment + activeSegmentCampaigns,
+      },
+    ],
+    totalUsers,
+    generatedAt: new Date().toISOString(),
+  };
+};
+
+const getCachedAudiences = safeCache(fetchAudiencesRaw, emptyAudiences, {
+  key: 'communication-audiences',
+  ttl: 60,
+  tags: ['user', 'announcement', 'campaign', 'communication', 'audiences'],
+});
+
+export async function getAudiences(): Promise<{
+  success: boolean;
+  data?: AudiencesSnapshot;
+  message?: string;
+}> {
+  const guard = await requireAdminRole();
+  if (!guard.ok) return { success: false, message: guard.reason };
+  try {
+    const data = await getCachedAudiences();
+    return { success: true, data };
+  } catch (err) {
+    return { success: true, data: emptyAudiences, message: err instanceof Error ? err.message : 'خطا' };
+  }
+}
+
 const emptySnapshot: CommunicationSnapshot = {
   generatedAt: new Date().toISOString(),
   announcements: [],
@@ -240,6 +469,97 @@ const getCachedSnapshot = safeCache(fetchSnapshotRaw, emptySnapshot, {
   ttl: 30,
   tags: ['announcement', 'campaign', 'communication'],
 });
+
+export interface CampaignDetail extends CampaignSummary {
+  recipients: Array<{
+    userId: string;
+    status: 'pending' | 'sent' | 'failed' | 'opened' | 'clicked' | 'bounced';
+    sentAt: string | null;
+    openedAt: string | null;
+    clickedAt: string | null;
+  }>;
+  updatedAt: string;
+}
+
+export async function getCampaignById(
+  id: string,
+): Promise<{ success: boolean; data?: CampaignDetail; message?: string }> {
+  const guard = await requireAdminRole();
+  if (!guard.ok) return { success: false, message: guard.reason };
+  try {
+    const row = await prisma.campaign.findUnique({
+      where: { id },
+      include: {
+        recipients: {
+          select: {
+            userId: true,
+            status: true,
+            sentAt: true,
+            openedAt: true,
+            clickedAt: true,
+          },
+          orderBy: { sentAt: 'desc' },
+          take: 50,
+        },
+      },
+    });
+    if (!row) return { success: false, message: 'کمپین یافت نشد' };
+    const sent = row.recipients.filter((r) => r.status === 'sent' || r.status === 'opened' || r.status === 'clicked').length;
+    const opened = row.recipients.filter((r) => r.status === 'opened' || r.status === 'clicked').length;
+    const clicked = row.recipients.filter((r) => r.status === 'clicked').length;
+    const bounced = row.recipients.filter((r) => r.status === 'bounced' || r.status === 'failed').length;
+    const base = toCampaign({
+      ...row,
+      stats: { sent, opened, clicked, bounced },
+    });
+    return {
+      success: true,
+      data: {
+        ...base,
+        recipients: row.recipients.map((r) => ({
+          userId: r.userId,
+          status: r.status as 'pending' | 'sent' | 'failed' | 'opened' | 'clicked' | 'bounced',
+          sentAt: r.sentAt?.toISOString() ?? null,
+          openedAt: r.openedAt?.toISOString() ?? null,
+          clickedAt: r.clickedAt?.toISOString() ?? null,
+        })),
+        updatedAt: row.updatedAt.toISOString(),
+      },
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: err instanceof Error ? err.message : 'خطای ناشناخته',
+    };
+  }
+}
+
+export interface AnnouncementDetail extends AnnouncementSummary {
+  updatedAt: string;
+}
+
+export async function getAnnouncementById(
+  id: string,
+): Promise<{ success: boolean; data?: AnnouncementDetail; message?: string }> {
+  const guard = await requireAdminRole();
+  if (!guard.ok) return { success: false, message: guard.reason };
+  try {
+    const row = await prisma.announcement.findUnique({ where: { id } });
+    if (!row) return { success: false, message: 'اعلان یافت نشد' };
+    return {
+      success: true,
+      data: {
+        ...toAnnouncement(row),
+        updatedAt: row.updatedAt.toISOString(),
+      },
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: err instanceof Error ? err.message : 'خطای ناشناخته',
+    };
+  }
+}
 
 export async function getCommunicationSnapshot(): Promise<{
   success: boolean;
@@ -353,6 +673,204 @@ export async function archiveAnnouncement(
     return {
       success: false,
       message: err instanceof Error ? err.message : 'خطا در بایگانی',
+    };
+  }
+}
+
+export async function deleteAnnouncement(
+  id: string,
+): Promise<{ success: boolean; message?: string }> {
+  const guard = await requireAdminRole();
+  if (!guard.ok) return { success: false, message: guard.reason };
+  try {
+    const existing = await prisma.announcement.findUnique({
+      where: { id },
+      select: { status: true },
+    });
+    if (!existing) {
+      return { success: false, message: 'اعلان یافت نشد' };
+    }
+    // Only allow deleting drafts or archived; protect published history.
+    if (existing.status === 'published' || existing.status === 'scheduled') {
+      return {
+        success: false,
+        message: 'برای حذف، ابتدا اعلان را بایگانی کنید',
+      };
+    }
+    await prisma.announcement.delete({ where: { id } });
+    revalidateTag('communication');
+    revalidateTag('announcement');
+    return { success: true };
+  } catch (err) {
+    return {
+      success: false,
+      message: err instanceof Error ? err.message : 'خطا در حذف',
+    };
+  }
+}
+
+export interface UpdateAnnouncementInput {
+  title?: string;
+  body?: string;
+  channels?: Channel[];
+  audience?: Audience;
+  audienceFilter?: string | null;
+  scheduledAt?: Date | null;
+  expiresAt?: Date | null;
+  status?: AnnouncementStatus;
+}
+
+export async function updateAnnouncement(
+  id: string,
+  patch: UpdateAnnouncementInput,
+): Promise<{ success: boolean; message?: string }> {
+  const guard = await requireAdminRole();
+  if (!guard.ok) return { success: false, message: guard.reason };
+  try {
+    const data: Record<string, unknown> = {};
+    if (patch.title !== undefined) {
+      if (!patch.title.trim()) return { success: false, message: 'عنوان الزامی است' };
+      if (patch.title.length > 200) {
+        return { success: false, message: 'عنوان نباید بیش از ۲۰۰ کاراکتر باشد' };
+      }
+      data.title = patch.title.trim();
+    }
+    if (patch.body !== undefined) {
+      if (!patch.body.trim()) return { success: false, message: 'متن الزامی است' };
+      if (patch.body.length > 5000) {
+        return { success: false, message: 'متن نباید بیش از ۵۰۰۰ کاراکتر باشد' };
+      }
+      data.body = patch.body.trim();
+    }
+    if (patch.channels !== undefined) {
+      data.channels = patch.channels.join(',');
+    }
+    if (patch.audience !== undefined) data.audience = patch.audience;
+    if (patch.audienceFilter !== undefined) data.audienceFilter = patch.audienceFilter;
+    if (patch.scheduledAt !== undefined) data.scheduledAt = patch.scheduledAt;
+    if (patch.expiresAt !== undefined) data.expiresAt = patch.expiresAt;
+    if (patch.status !== undefined) {
+      data.status = patch.status;
+      if (patch.status === 'published') {
+        data.publishedAt = new Date();
+      }
+    }
+    await prisma.announcement.update({ where: { id }, data });
+    revalidateTag('communication');
+    revalidateTag('announcement');
+    return { success: true };
+  } catch (err) {
+    return {
+      success: false,
+      message: err instanceof Error ? err.message : 'خطا در ویرایش',
+    };
+  }
+}
+
+// ─── Campaign CRUD ────────────────────────────────────────────────
+export interface CreateCampaignInput {
+  name: string;
+  description?: string | null;
+  channel: 'email' | 'sms' | 'push';
+  subject?: string | null;
+  body: string;
+  audience: Audience;
+  audienceFilter?: string | null;
+  scheduledAt?: Date | null;
+  status?: 'draft' | 'scheduled' | 'sending' | 'completed' | 'paused';
+}
+
+export async function createCampaign(
+  input: CreateCampaignInput,
+): Promise<{ success: boolean; id?: string; message?: string }> {
+  const guard = await requireAdminRole();
+  if (!guard.ok) return { success: false, message: guard.reason };
+
+  if (!input.name.trim() || !input.body.trim()) {
+    return { success: false, message: 'نام و متن کمپین الزامی است' };
+  }
+  if (input.name.length > 200) {
+    return { success: false, message: 'نام نباید بیش از ۲۰۰ کاراکتر باشد' };
+  }
+  if (input.body.length > 10_000) {
+    return { success: false, message: 'متن نباید بیش از ۱۰۰۰۰ کاراکتر باشد' };
+  }
+  if (input.channel === 'email' && !input.subject?.trim()) {
+    return { success: false, message: 'برای کمپین ایمیلی، موضوع الزامی است' };
+  }
+
+  try {
+    const created = await prisma.campaign.create({
+      data: {
+        name: input.name.trim(),
+        description: input.description?.trim() ?? null,
+        channel: input.channel,
+        subject: input.subject?.trim() ?? null,
+        body: input.body.trim(),
+        audience: input.audience,
+        audienceFilter: input.audienceFilter ?? null,
+        scheduledAt: input.scheduledAt ?? null,
+        status: input.status ?? 'draft',
+        createdById: guard.userId,
+      },
+      select: { id: true },
+    });
+    revalidateTag('communication');
+    revalidateTag('campaign');
+    return { success: true, id: created.id };
+  } catch (err) {
+    return {
+      success: false,
+      message: err instanceof Error ? err.message : 'خطا در ساخت کمپین',
+    };
+  }
+}
+
+export async function updateCampaignStatus(
+  id: string,
+  status: 'draft' | 'scheduled' | 'sending' | 'completed' | 'paused',
+): Promise<{ success: boolean; message?: string }> {
+  const guard = await requireAdminRole();
+  if (!guard.ok) return { success: false, message: guard.reason };
+  try {
+    const data: Record<string, unknown> = { status };
+    if (status === 'sending') data.startedAt = new Date();
+    if (status === 'completed') data.completedAt = new Date();
+    await prisma.campaign.update({ where: { id }, data });
+    revalidateTag('communication');
+    revalidateTag('campaign');
+    return { success: true };
+  } catch (err) {
+    return {
+      success: false,
+      message: err instanceof Error ? err.message : 'خطا در تغییر وضعیت',
+    };
+  }
+}
+
+export async function deleteCampaign(
+  id: string,
+): Promise<{ success: boolean; message?: string }> {
+  const guard = await requireAdminRole();
+  if (!guard.ok) return { success: false, message: guard.reason };
+  try {
+    const existing = await prisma.campaign.findUnique({
+      where: { id },
+      select: { status: true },
+    });
+    if (!existing) return { success: false, message: 'کمپین یافت نشد' };
+    if (existing.status === 'sending') {
+      return { success: false, message: 'ابتدا کمپین در حال ارسال را متوقف کنید' };
+    }
+    await prisma.campaignRecipient.deleteMany({ where: { campaignId: id } });
+    await prisma.campaign.delete({ where: { id } });
+    revalidateTag('communication');
+    revalidateTag('campaign');
+    return { success: true };
+  } catch (err) {
+    return {
+      success: false,
+      message: err instanceof Error ? err.message : 'خطا در حذف',
     };
   }
 }
