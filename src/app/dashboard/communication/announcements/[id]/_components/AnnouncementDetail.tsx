@@ -1,25 +1,32 @@
 'use client';
 
+/**
+ * AnnouncementDetail v2 — Editorial Article
+ * ساختار: HEADER (cover-style) → ARTICLE body → ASIDE meta → ACTIONS
+ */
+
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   Archive,
-  ArrowRight,
+  Bell,
+  CalendarClock,
   CheckCircle2,
+  ChevronLeft,
   Clock,
-  Eye,
-  Megaphone,
+  Mail,
+  MessageSquare,
   Pencil,
+  Smartphone,
   Send,
-  Sparkles,
   Trash2,
+  Users,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ConfirmDialog } from '@/components/Dashboard/primitives';
-import { Card, CardContent } from '@/components/ui/card';
+import { ConfirmDialog, Spotlight } from '@/components/Dashboard/primitives';
 import { LiveDot } from '@/components/Dashboard/PlatformHub';
-import { Spotlight, GeometricAccent } from '@/components/Dashboard/primitives';
 import s from './AnnouncementDetail.module.css';
 
 type Status = 'draft' | 'scheduled' | 'published' | 'archived';
@@ -33,25 +40,18 @@ const STATUS_LABELS: Record<Status, string> = {
   archived: 'آرشیو',
 };
 
-const STATUS_TONES: Record<Status, 'emerald' | 'indigo' | 'amber' | 'rose' | 'neutral'> = {
+const STATUS_TONES: Record<Status, 'emerald' | 'indigo' | 'amber' | 'rose'> = {
   published: 'emerald',
   scheduled: 'indigo',
   draft: 'amber',
-  archived: 'neutral',
+  archived: 'rose',
 };
 
-const CHANNEL_LABELS: Record<Channel, string> = {
-  inapp: 'In-app',
-  email: 'ایمیل',
-  push: 'Push',
-  sms: 'پیامک',
-};
-
-const CHANNEL_TONES: Record<Channel, 'emerald' | 'indigo' | 'amber' | 'violet'> = {
-  inapp: 'violet',
-  email: 'indigo',
-  push: 'emerald',
-  sms: 'amber',
+const CHANNEL_META: Record<Channel, { label: string; tone: 'emerald' | 'indigo' | 'amber' | 'violet'; icon: LucideIcon }> = {
+  email: { label: 'ایمیل', tone: 'indigo', icon: Mail },
+  push: { label: 'Push', tone: 'emerald', icon: Bell },
+  sms: { label: 'پیامک', tone: 'amber', icon: Smartphone },
+  inapp: { label: 'In-app', tone: 'violet', icon: MessageSquare },
 };
 
 const AUDIENCE_LABELS: Record<Audience, string> = {
@@ -77,24 +77,22 @@ interface Props {
 
 const PERSIAN_NUM = (n: number | string) =>
   String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)]);
+const fmt = (n: number) => PERSIAN_NUM(n.toLocaleString('en-US'));
 
-const fmtDateTime = (iso: string | null): string => {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleString('fa-IR', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
-
-const fmtDate = (iso: string | null): string => {
+const formatDate = (iso: string | null): string => {
   if (!iso) return '—';
   return new Date(iso).toLocaleDateString('fa-IR', {
     year: 'numeric',
-    month: 'short',
+    month: 'long',
     day: 'numeric',
+  });
+};
+
+const formatTime = (iso: string | null): string => {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleTimeString('fa-IR', {
+    hour: '2-digit',
+    minute: '2-digit',
   });
 };
 
@@ -102,223 +100,259 @@ export function AnnouncementDetail(props: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [actionError, setActionError] = useState<string | null>(null);
-  const [actionOk, setActionOk] = useState<string | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<boolean>(false);
 
-  const run = async (path: string, successMessage: string) => {
+  const statusTone = STATUS_TONES[props.status];
+  const statusLabel = STATUS_LABELS[props.status];
+  const channelList = props.channels.map((c) => CHANNEL_META[c]);
+  const dateIso = props.publishedAt ?? props.scheduledAt ?? props.createdAt;
+
+  const runAction = async (
+    path: string,
+    method: 'POST' | 'DELETE' = 'POST',
+  ): Promise<{ ok: boolean; message?: string }> => {
     setActionError(null);
-    setActionOk(null);
+    setActionSuccess(null);
+    try {
+      const res = await fetch(path, { method });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
+        const msg = data?.error?.message ?? 'خطا در انجام عملیات';
+        setActionError(msg);
+        return { ok: false, message: msg };
+      }
+      return { ok: true };
+    } catch {
+      const msg = 'خطای شبکه';
+      setActionError(msg);
+      return { ok: false, message: msg };
+    }
+  };
+
+  const onPublish = () => {
     startTransition(async () => {
-      try {
-        const res = await fetch(path, { method: 'POST' });
-        if (!res.ok) {
-          const data = (await res.json().catch(() => ({}))) as {
-            error?: { message?: string };
-          };
-          setActionError(data?.error?.message ?? 'خطا در انجام عملیات');
-          return;
-        }
-        setActionOk(successMessage);
-        // refresh server data so the page reflects the new status.
+      const r = await runAction(`/api/communication/announcements/${props.id}/publish`);
+      if (r.ok) {
+        setActionSuccess('اعلان منتشر شد');
         router.refresh();
-      } catch {
-        setActionError('خطای شبکه');
       }
     });
   };
-
-  const onPublish = () => run(`/api/communication/announcements/${props.id}/publish`, 'اعلان منتشر شد');
-  const onArchive = () => run(`/api/communication/announcements/${props.id}/archive`, 'اعلان بایگانی شد');
+  const onArchive = () => {
+    startTransition(async () => {
+      const r = await runAction(`/api/communication/announcements/${props.id}/archive`);
+      if (r.ok) {
+        setActionSuccess('بایگانی شد');
+        router.refresh();
+      }
+    });
+  };
   const onDelete = () => {
     setConfirmDelete(false);
     startTransition(async () => {
-      try {
-        const res = await fetch(`/api/communication/announcements/${props.id}`, { method: 'DELETE' });
-        if (!res.ok) {
-          const data = (await res.json().catch(() => ({}))) as {
-            error?: { message?: string };
-          };
-          setActionError(data?.error?.message ?? 'خطا در حذف');
-          return;
-        }
-        router.push('/dashboard/communication/announcements');
-        router.refresh();
-      } catch {
-        setActionError('خطای شبکه');
-      }
+      const r = await runAction(`/api/communication/announcements/${props.id}`, 'DELETE');
+      if (r.ok) router.push('/dashboard/communication/announcements');
     });
   };
 
-  const status = props.status;
-  const tone = STATUS_TONES[status];
+  const canEdit = props.status === 'draft' || props.status === 'scheduled';
+  const canPublish = props.status === 'draft' || props.status === 'scheduled';
+  const canArchive = props.status !== 'archived';
+  const canDelete = props.status === 'draft' || props.status === 'archived';
 
   return (
     <div className={s.page} dir="rtl">
-      <nav className={s.crumbs} aria-label="مسیر">
-        <Link href="/dashboard/communication" className={s.crumbLink}>
-          مرکز ارتباطات
-        </Link>
-        <span className={s.crumbSep}>/</span>
-        <Link href="/dashboard/communication/announcements" className={s.crumbLink}>
-          اعلان‌ها
-        </Link>
-        <span className={s.crumbSep}>/</span>
-        <span className={s.crumbCurrent} aria-current="page">
-          {props.title}
-        </span>
-      </nav>
+      {/* ═══ HEADER (cover) ═══════════════════════════════ */}
+      <header className={s.cover} data-tone={statusTone}>
+        <Spotlight tone={statusTone} size={480} className={s.coverSpot} />
+        <nav className={s.crumbs} aria-label="مسیر">
+          <Link href="/dashboard" className={s.crumbLink}>داشبورد</Link>
+          <span className={s.crumbSep}>/</span>
+          <Link href="/dashboard/communication" className={s.crumbLink}>مرکز ارتباطات</Link>
+          <span className={s.crumbSep}>/</span>
+          <Link href="/dashboard/communication/announcements" className={s.crumbLink}>اعلان‌ها</Link>
+          <span className={s.crumbSep}>/</span>
+          <span className={s.crumbCurrent} aria-current="page">{props.id.slice(0, 8)}</span>
+        </nav>
 
-      <header className={s.header}>
-        <div className={s.headerMain}>
-          <div className={s.eyebrow}>
-            <Megaphone size={14} aria-hidden />
-            <span>جزئیات اعلان</span>
-          </div>
-          <h1 className={s.title}>{props.title}</h1>
-          <div className={s.meta}>
-            <span className={s.statusBadge} data-tone={tone}>
-              <LiveDot tone={tone === 'neutral' ? 'neutral' : tone} size="xs" />
-              {STATUS_LABELS[status]}
+        <div className={s.coverMain}>
+          <div className={s.coverMainLeft}>
+            <span className={s.statusPill} data-tone={statusTone}>
+              <LiveDot tone={statusTone} size="xs" />
+              {statusLabel}
             </span>
-            <span className={s.metaDot} aria-hidden>·</span>
-            <span className={s.metaItem}>
-              <Clock size={12} aria-hidden /> ایجاد {fmtDateTime(props.createdAt)}
-            </span>
-            {props.publishedAt ? (
-              <>
-                <span className={s.metaDot} aria-hidden>·</span>
-                <span className={s.metaItem}>
-                  <CheckCircle2 size={12} aria-hidden /> انتشار {fmtDateTime(props.publishedAt)}
+            <h1 className={s.title}>{props.title}</h1>
+            <div className={s.coverMeta}>
+              <span className={s.coverMetaItem}>
+                <Clock size={11} aria-hidden /> ساخته‌شده {formatDate(props.createdAt)}
+              </span>
+              {props.publishedAt ? (
+                <span className={s.coverMetaItem}>
+                  <CheckCircle2 size={11} aria-hidden /> منتشر شده {formatDate(props.publishedAt)} ساعت {formatTime(props.publishedAt)}
                 </span>
-              </>
+              ) : null}
+              {props.scheduledAt && !props.publishedAt ? (
+                <span className={s.coverMetaItem}>
+                  <CalendarClock size={11} aria-hidden /> زمان‌بندی برای {formatDate(props.scheduledAt)} ساعت {formatTime(props.scheduledAt)}
+                </span>
+              ) : null}
+            </div>
+          </div>
+          <div className={s.coverActions}>
+            <Button variant="ghost" asChild>
+              <Link href="/dashboard/communication/announcements">
+                <ChevronLeft size={14} aria-hidden />
+                بازگشت
+              </Link>
+            </Button>
+            {canEdit ? (
+              <Button variant="outline" asChild>
+                <Link href={`/dashboard/communication/announcements/${props.id}/edit`}>
+                  <Pencil size={14} aria-hidden /> ویرایش
+                </Link>
+              </Button>
+            ) : null}
+            {canPublish ? (
+              <Button onClick={onPublish} disabled={pending}>
+                <Send size={14} aria-hidden /> انتشار فوری
+              </Button>
+            ) : null}
+            {canArchive ? (
+              <Button variant="ghost" onClick={onArchive} disabled={pending}>
+                <Archive size={14} aria-hidden /> بایگانی
+              </Button>
             ) : null}
           </div>
         </div>
-        <div className={s.headerActions}>
-          {status === 'draft' || status === 'scheduled' ? (
-            <Button onClick={onPublish} disabled={pending}>
-              <Send size={14} aria-hidden />
-              {pending ? 'در حال انتشار…' : 'انتشار فوری'}
-            </Button>
-          ) : null}
-          {status !== 'archived' ? (
-            <Button variant="outline" onClick={onArchive} disabled={pending}>
-              <Archive size={14} aria-hidden />
-              بایگانی
-            </Button>
-          ) : null}
-          <Button variant="outline" asChild>
-            <Link href={`/dashboard/communication/announcements/${props.id}/edit`}>
-              <Pencil size={14} aria-hidden />
-              ویرایش
-            </Link>
-          </Button>
-          {status === 'draft' || status === 'archived' ? (
-            <Button variant="ghost" onClick={() => setConfirmDelete(true)} disabled={pending}>
-              <Trash2 size={14} aria-hidden />
-              حذف
-            </Button>
-          ) : null}
-        </div>
       </header>
 
-      {actionError ? <div className={s.alertError}>{actionError}</div> : null}
-      {actionOk ? <div className={s.alertOk}>{actionOk}</div> : null}
+      {actionError ? <div className={s.alert} data-tone="rose">{actionError}</div> : null}
+      {actionSuccess ? <div className={s.alert} data-tone="emerald">{actionSuccess}</div> : null}
 
+      {/* ═══ MAIN GRID (article + aside) ═══════════════════════ */}
       <div className={s.grid}>
-        <Card className={s.bodyCard}>
-          <Spotlight tone="emerald" />
-          <GeometricAccent variant="dot" position="br" />
-          <CardContent className={s.bodyContent}>
-            <div className={s.bodyLabel}>
-              <Eye size={14} aria-hidden />
-              <span>متن اعلان</span>
+        {/* article body */}
+        <article className={s.article}>
+          <div className={s.articleHead}>
+            <span className={s.articleEyebrow}>متن اعلان</span>
+            <span className={s.articleMark}>{props.body.length} حرف</span>
+          </div>
+          <div className={s.body}>
+            {props.body.split('\n').map((line, i) => (
+              <p key={i} className={s.bodyLine}>{line || '\u00A0'}</p>
+            ))}
+          </div>
+
+          {/* channel distribution visual */}
+          <div className={s.distribute}>
+            <div className={s.distributeHead}>
+              <span className={s.articleEyebrow}>کانال‌های ارسال</span>
+              <span className={s.distributeMeta}>
+                {channelList.length} کانال انتخاب‌شده
+              </span>
             </div>
-            <div className={s.bodyText}>{props.body || '—'}</div>
-          </CardContent>
-        </Card>
-
-        <aside className={s.aside}>
-          <Card className={s.factCard}>
-            <Spotlight tone="indigo" />
-            <CardContent className={s.factContent}>
-              <h2 className={s.factTitle}>
-                <Sparkles size={14} aria-hidden />
-                مشخصات
-              </h2>
-              <dl className={s.facts}>
-                <div className={s.fact}>
-                  <dt>کانال‌های ارسال</dt>
-                  <dd className={s.factChannels}>
-                    {props.channels.map((c) => (
-                      <span key={c} className={s.channelPill} data-tone={CHANNEL_TONES[c]}>
-                        {CHANNEL_LABELS[c]}
-                      </span>
-                    ))}
-                  </dd>
-                </div>
-                <div className={s.fact}>
-                  <dt>مخاطب</dt>
-                  <dd>{AUDIENCE_LABELS[props.audience]}</dd>
-                </div>
-                {props.audienceFilter ? (
-                  <div className={s.fact}>
-                    <dt>فیلتر مخاطب</dt>
-                    <dd>{props.audienceFilter}</dd>
+            <div className={s.channelGrid}>
+              {channelList.map((c) => {
+                const Icon = c.icon;
+                return (
+                  <div key={c.label} className={s.channelItem} data-tone={c.tone}>
+                    <span className={s.channelIcon}>
+                      <Icon size={14} aria-hidden />
+                    </span>
+                    <div className={s.channelBody}>
+                      <span className={s.channelLabel}>{c.label}</span>
+                      <span className={s.channelSub}>ارسال فعال</span>
+                    </div>
                   </div>
-                ) : null}
-                <div className={s.fact}>
-                  <dt>زمان انتشار</dt>
-                  <dd>{fmtDateTime(props.scheduledAt)}</dd>
-                </div>
-                <div className={s.fact}>
-                  <dt>تاریخ انتشار</dt>
-                  <dd>{fmtDateTime(props.publishedAt)}</dd>
-                </div>
-                <div className={s.fact}>
-                  <dt>انقضا</dt>
-                  <dd>{fmtDateTime(props.expiresAt)}</dd>
-                </div>
-                <div className={s.fact}>
-                  <dt>آخرین به‌روزرسانی</dt>
-                  <dd>{fmtDateTime(props.updatedAt)}</dd>
-                </div>
-                <div className={s.fact}>
-                  <dt>شناسه</dt>
-                  <dd className={s.factMono}>#{props.id.slice(-10)}</dd>
-                </div>
-              </dl>
-            </CardContent>
-          </Card>
-        </aside>
-      </div>
+                );
+              })}
+            </div>
+          </div>
 
-      <div className={s.footNav}>
-        <Button variant="ghost" asChild>
-          <Link href="/dashboard/communication/announcements">
-            <ArrowRight size={14} aria-hidden />
-            بازگشت به فهرست
-          </Link>
-        </Button>
-        <span className={s.footHint}>
-          برای ارسال کمپین هدفمند، از بخش{' '}
-          <Link href="/dashboard/communication/campaigns/new" className={s.footLink}>
-            کمپین جدید
-          </Link>{' '}
-          استفاده کنید.
-        </span>
+          {/* danger zone — delete */}
+          {canDelete ? (
+            <div className={s.danger}>
+              <div className={s.dangerHead}>
+                <span className={s.dangerTitle}>حذف اعلان</span>
+                <span className={s.dangerSub}>
+                  این عملیات برگشت‌پذیر نیست. اعلان برای همیشه حذف خواهد شد.
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                onClick={() => setConfirmDelete(true)}
+                disabled={pending}
+                className={s.dangerBtn}
+              >
+                <Trash2 size={14} aria-hidden /> حذف کامل
+              </Button>
+            </div>
+          ) : null}
+        </article>
+
+        {/* aside meta */}
+        <aside className={s.aside}>
+          <section className={s.asideSection}>
+            <span className={s.asideEyebrow}>مخاطب</span>
+            <div className={s.asideBig}>
+              <Users size={16} aria-hidden />
+              <span>{AUDIENCE_LABELS[props.audience]}</span>
+            </div>
+            {props.audienceFilter ? (
+              <span className={s.asideHint}>فیلتر: {props.audienceFilter}</span>
+            ) : null}
+          </section>
+
+          <section className={s.asideSection}>
+            <span className={s.asideEyebrow}>تاریخچه</span>
+            <dl className={s.asideList}>
+              <div className={s.asideRow}>
+                <dt>ساخته</dt>
+                <dd>{formatDate(props.createdAt)}</dd>
+              </div>
+              <div className={s.asideRow}>
+                <dt>بروزرسانی</dt>
+                <dd>{formatDate(props.updatedAt)}</dd>
+              </div>
+              {props.scheduledAt ? (
+                <div className={s.asideRow}>
+                  <dt>زمان‌بندی</dt>
+                  <dd>{formatDate(props.scheduledAt)} · {formatTime(props.scheduledAt)}</dd>
+                </div>
+              ) : null}
+              {props.publishedAt ? (
+                <div className={s.asideRow}>
+                  <dt>انتشار</dt>
+                  <dd>{formatDate(props.publishedAt)} · {formatTime(props.publishedAt)}</dd>
+                </div>
+              ) : null}
+              {props.expiresAt ? (
+                <div className={s.asideRow}>
+                  <dt>انقضا</dt>
+                  <dd>{formatDate(props.expiresAt)}</dd>
+                </div>
+              ) : null}
+            </dl>
+          </section>
+
+          <section className={s.asideSection}>
+            <span className={s.asideEyebrow}>شناسه</span>
+            <code className={s.asideCode}>{props.id}</code>
+          </section>
+        </aside>
       </div>
 
       <ConfirmDialog
         open={confirmDelete}
         onOpenChange={setConfirmDelete}
         title="حذف اعلان"
-        description={`اعلان «${PERSIAN_NUM(props.title.slice(0, 40))}» برای همیشه حذف خواهد شد. این عملیات برگشت‌پذیر نیست.`}
+        description="این اعلان برای همیشه حذف خواهد شد. این عملیات برگشت‌پذیر نیست."
         confirmLabel="حذف"
         cancelLabel="انصراف"
         variant="danger"
-        onConfirm={onDelete}
         loading={pending}
+        onConfirm={onDelete}
       />
     </div>
   );

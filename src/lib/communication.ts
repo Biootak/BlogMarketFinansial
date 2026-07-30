@@ -581,6 +581,352 @@ export async function getCommunicationSnapshot(): Promise<{
   }
 }
 
+// ─── Nexus snapshot — داده‌های اضافی برای CommunicationHub ──────────
+// شامل:
+//   - heatmap 7 روز اخیر × ۲۴ ساعت از publishedAt و startedAt واقعی
+//   - pipeline: گروه‌بندی کمپین‌ها بر اساس status (max 5 per column)
+//   - channelTimeline7d: مجموع ارسال هر کانال در ۷ روز اخیر
+//   - channelRadar: metrics هر کانال برای نمودار رادار (sent/open/click/bounce)
+//
+// همه اعداد از DB می‌آیند؛ در صورت خالی بودن، صفر برمی‌گردد.
+
+export interface NexusHeatmapCell {
+  /** 0 = 6 روز قبل، 6 = امروز */
+  dayIdx: number;
+  /** 0-23 */
+  hour: number;
+  count: number;
+}
+export interface NexusHeatmap {
+  /** 7 × 24 = 168 سلول. مقدار سلول‌ها واقعی است. */
+  cells: NexusHeatmapCell[];
+  /** مجموع هر روز (برای axis label) */
+  dailyTotals: number[];
+  /** حداکثر مقدار در کل هیت‌مپ (برای نرمال‌سازی) */
+  max: number;
+}
+
+export type PipelineStatus = 'draft' | 'scheduled' | 'sending' | 'completed';
+export interface PipelineCampaign {
+  id: string;
+  name: string;
+  channel: 'email' | 'sms' | 'push';
+  status: PipelineStatus;
+  audience: Audience;
+  scheduledAt: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  sent: number;
+  opened: number;
+  clicked: number;
+}
+export interface NexusPipeline {
+  draft: PipelineCampaign[];
+  scheduled: PipelineCampaign[];
+  sending: PipelineCampaign[];
+  completed: PipelineCampaign[];
+  counts: Record<PipelineStatus, number>;
+}
+
+export interface ChannelTimelinePoint {
+  /** 0 = 6 روز قبل، 6 = امروز */
+  dayIdx: number;
+  /** YYYY-MM-DD شمسی (میلادی برای ثبات در seed) */
+  date: string;
+  sent: number;
+  opened: number;
+  clicked: number;
+}
+export interface NexusChannelTimeline {
+  push: ChannelTimelinePoint[];
+  email: ChannelTimelinePoint[];
+  sms: ChannelTimelinePoint[];
+  inapp: ChannelTimelinePoint[];
+}
+
+export interface ChannelRadarMetric {
+  id: 'push' | 'email' | 'sms' | 'inapp';
+  label: string;
+  tone: 'emerald' | 'indigo' | 'amber' | 'violet';
+  sent: number;
+  openRate: number;   // 0-100
+  clickRate: number;  // 0-100
+  bounceRate: number; // 0-100
+}
+export interface NexusChannelRadar {
+  channels: ChannelRadarMetric[];
+}
+
+export interface CommunicationNexus {
+  generatedAt: string;
+  heatmap: NexusHeatmap;
+  pipeline: NexusPipeline;
+  channelTimeline: NexusChannelTimeline;
+  channelRadar: NexusChannelRadar;
+}
+
+const emptyHeatmap: NexusHeatmap = {
+  cells: Array.from({ length: 7 * 24 }, (_, i) => ({
+    dayIdx: Math.floor(i / 24),
+    hour: i % 24,
+    count: 0,
+  })),
+  dailyTotals: [0, 0, 0, 0, 0, 0, 0],
+  max: 0,
+};
+
+const emptyPipeline: NexusPipeline = {
+  draft: [],
+  scheduled: [],
+  sending: [],
+  completed: [],
+  counts: { draft: 0, scheduled: 0, sending: 0, completed: 0 },
+};
+
+const emptyChannelTimeline: NexusChannelTimeline = {
+  push: [],
+  email: [],
+  sms: [],
+  inapp: [],
+};
+
+const emptyChannelRadar: NexusChannelRadar = { channels: [] };
+
+const fetchNexusRaw = async (): Promise<CommunicationNexus> => {
+  // بازه زمانی ۷ روز اخیر
+  const now = Date.now();
+  const sevenDaysAgo = new Date(now - 6 * 24 * 60 * 60 * 1000);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
+
+  // ── Heatmap: publishedAt (announcements) + startedAt (campaigns) ──
+  const [recentAnnouncements, recentCampaigns] = await Promise.all([
+    prisma.announcement.findMany({
+      where: { publishedAt: { gte: sevenDaysAgo } },
+      select: { publishedAt: true, channels: true },
+    }),
+    prisma.campaign.findMany({
+      where: { startedAt: { gte: sevenDaysAgo } },
+      select: { startedAt: true, channel: true, statsSent: true },
+    }),
+  ]);
+
+  const cells: NexusHeatmapCell[] = Array.from({ length: 7 * 24 }, (_, i) => ({
+    dayIdx: Math.floor(i / 24),
+    hour: i % 24,
+    count: 0,
+  }));
+  const idxFor = (d: Date): number => {
+    const dayIdx = Math.floor((d.getTime() - sevenDaysAgo.getTime()) / (24 * 60 * 60 * 1000));
+    const hour = d.getHours();
+    if (dayIdx < 0 || dayIdx > 6) return -1;
+    return dayIdx * 24 + hour;
+  };
+  for (const a of recentAnnouncements) {
+    if (!a.publishedAt) continue;
+    const i = idxFor(a.publishedAt);
+    if (i >= 0) cells[i].count += 1;
+  }
+  for (const c of recentCampaigns) {
+    if (!c.startedAt) continue;
+    const i = idxFor(c.startedAt);
+    if (i >= 0) {
+      // weight by sent — یک کمپین بزرگ تأثیر بیشتری دارد
+      const weight = Math.max(1, Math.floor(c.statsSent / 50));
+      cells[i].count += weight;
+    }
+  }
+  const dailyTotals = Array.from({ length: 7 }, () => 0);
+  for (const cell of cells) dailyTotals[cell.dayIdx] += cell.count;
+  const max = cells.reduce((m, c) => (c.count > m ? c.count : m), 0);
+
+  // ── Pipeline: گروه‌بندی campaigns بر اساس status ──
+  const allCampaigns = await prisma.campaign.findMany({
+    orderBy: { updatedAt: 'desc' },
+    take: 200,
+  });
+  const grouped: NexusPipeline = {
+    draft: [],
+    scheduled: [],
+    sending: [],
+    completed: [],
+    counts: { draft: 0, scheduled: 0, sending: 0, completed: 0 },
+  };
+  for (const c of allCampaigns) {
+    if (c.status === 'paused') continue; // paused در pipeline نمایش داده نمی‌شود
+    const status = c.status as PipelineStatus;
+    if (status !== 'draft' && status !== 'scheduled' && status !== 'sending' && status !== 'completed') continue;
+    grouped.counts[status] += 1;
+    const item: PipelineCampaign = {
+      id: c.id,
+      name: c.name,
+      channel: (['email', 'sms', 'push'].includes(c.channel) ? c.channel : 'email') as 'email' | 'sms' | 'push',
+      status,
+      audience: (['all', 'role', 'segment'].includes(c.audience) ? c.audience : 'all') as Audience,
+      scheduledAt: c.scheduledAt?.toISOString() ?? null,
+      startedAt: c.startedAt?.toISOString() ?? null,
+      completedAt: c.completedAt?.toISOString() ?? null,
+      sent: c.statsSent,
+      opened: c.statsOpened,
+      clicked: c.statsClicked,
+    };
+    grouped[status].push(item);
+  }
+  // limit to 5 per column for display
+  grouped.draft = grouped.draft.slice(0, 5);
+  grouped.scheduled = grouped.scheduled.slice(0, 5);
+  grouped.sending = grouped.sending.slice(0, 5);
+  grouped.completed = grouped.completed.slice(0, 5);
+
+  // ── Channel timeline 7d ──
+  const dailyKey = (d: Date): { dayIdx: number; date: string } => {
+    const dayIdx = Math.floor((d.getTime() - sevenDaysAgo.getTime()) / (24 * 60 * 60 * 1000));
+    const date = d.toISOString().slice(0, 10);
+    return { dayIdx: dayIdx >= 0 && dayIdx <= 6 ? dayIdx : -1, date };
+  };
+  const buildTimeline = (
+    channelId: 'push' | 'email' | 'sms' | 'inapp',
+  ): ChannelTimelinePoint[] => {
+    const points: ChannelTimelinePoint[] = Array.from({ length: 7 }, (_, i) => ({
+      dayIdx: i,
+      date: new Date(sevenDaysAgo.getTime() + i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+      sent: 0,
+      opened: 0,
+      clicked: 0,
+    }));
+    if (channelId === 'inapp') {
+      // inapp channels: تعداد announcement که شامل 'inapp' بوده و در آن روز published شده
+      for (const a of recentAnnouncements) {
+        if (!a.publishedAt) continue;
+        const channels: string[] = a.channels.split(',').map((s: string) => s.trim().toLowerCase());
+        if (!channels.includes('inapp')) continue;
+        const k = dailyKey(a.publishedAt);
+        if (k.dayIdx >= 0) {
+          points[k.dayIdx].sent += 1;
+        }
+      }
+    } else {
+      for (const c of recentCampaigns) {
+        if (c.channel !== channelId) continue;
+        if (!c.startedAt) continue;
+        const k = dailyKey(c.startedAt);
+        if (k.dayIdx >= 0) {
+          points[k.dayIdx].sent += c.statsSent;
+          points[k.dayIdx].opened += c.statsOpened;
+          points[k.dayIdx].clicked += c.statsClicked;
+        }
+      }
+    }
+    return points;
+  };
+  const channelTimeline: NexusChannelTimeline = {
+    push: buildTimeline('push'),
+    email: buildTimeline('email'),
+    sms: buildTimeline('sms'),
+    inapp: buildTimeline('inapp'),
+  };
+
+  // ── Channel radar ──
+  const channelStats = await prisma.campaign.groupBy({
+    by: ['channel'],
+    _sum: { statsSent: true, statsOpened: true, statsClicked: true, statsBounced: true },
+  });
+  const radarMap = new Map<string, { sent: number; opened: number; clicked: number; bounced: number }>();
+  for (const row of channelStats) {
+    radarMap.set(row.channel, {
+      sent: row._sum.statsSent ?? 0,
+      opened: row._sum.statsOpened ?? 0,
+      clicked: row._sum.statsClicked ?? 0,
+      bounced: row._sum.statsBounced ?? 0,
+    });
+  }
+  // announcement-based for inapp
+  let inappSent = 0;
+  for (const a of recentAnnouncements) {
+    const channels: string[] = a.channels.split(',').map((s: string) => s.trim().toLowerCase());
+    if (channels.includes('inapp')) inappSent += 1;
+  }
+  const buildRadarMetric = (
+    id: 'push' | 'email' | 'sms' | 'inapp',
+    label: string,
+    tone: 'emerald' | 'indigo' | 'amber' | 'violet',
+  ): ChannelRadarMetric => {
+    if (id === 'inapp') {
+      return {
+        id,
+        label,
+        tone,
+        sent: inappSent,
+        openRate: 0,
+        clickRate: 0,
+        bounceRate: 0,
+      };
+    }
+    const s = radarMap.get(id) ?? { sent: 0, opened: 0, clicked: 0, bounced: 0 };
+    return {
+      id,
+      label,
+      tone,
+      sent: s.sent,
+      openRate: s.sent > 0 ? Math.round((s.opened / s.sent) * 1000) / 10 : 0,
+      clickRate: s.sent > 0 ? Math.round((s.clicked / s.sent) * 1000) / 10 : 0,
+      bounceRate: s.sent > 0 ? Math.round((s.bounced / s.sent) * 1000) / 10 : 0,
+    };
+  };
+  const channelRadar: NexusChannelRadar = {
+    channels: [
+      buildRadarMetric('email', 'Email', 'indigo'),
+      buildRadarMetric('push', 'Push', 'emerald'),
+      buildRadarMetric('sms', 'SMS', 'amber'),
+      buildRadarMetric('inapp', 'In-app', 'violet'),
+    ],
+  };
+
+  return {
+    generatedAt: new Date().toISOString(),
+    heatmap: { cells, dailyTotals, max },
+    pipeline: grouped,
+    channelTimeline,
+    channelRadar,
+  };
+};
+
+const getCachedNexus = safeCache(fetchNexusRaw, {
+  heatmap: emptyHeatmap,
+  pipeline: emptyPipeline,
+  channelTimeline: emptyChannelTimeline,
+  channelRadar: emptyChannelRadar,
+  generatedAt: new Date(0).toISOString(),
+}, {
+  key: 'communication-nexus',
+  ttl: 45,
+  tags: ['announcement', 'campaign', 'communication', 'communication-nexus'],
+});
+
+export async function getCommunicationNexus(): Promise<{
+  success: boolean;
+  data?: CommunicationNexus;
+  message?: string;
+}> {
+  const guard = await requireAdminRole();
+  if (!guard.ok) return { success: false, message: guard.reason };
+  try {
+    const data = await getCachedNexus();
+    return { success: true, data };
+  } catch (err) {
+    return {
+      success: true,
+      data: {
+        generatedAt: new Date(0).toISOString(),
+        heatmap: emptyHeatmap,
+        pipeline: emptyPipeline,
+        channelTimeline: emptyChannelTimeline,
+        channelRadar: emptyChannelRadar,
+      },
+      message: err instanceof Error ? err.message : 'خطای ناشناخته',
+    };
+  }
+}
+
 export interface CreateAnnouncementInput {
   title: string;
   body: string;

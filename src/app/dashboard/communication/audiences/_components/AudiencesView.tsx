@@ -1,28 +1,25 @@
 'use client';
 
+/**
+ * AudiencesView v2 — Audience Gallery
+ * ساختار: HEADER (cover) → STAT (3 blocks) → DISTRIBUTION strip → CONTROLS → GALLERY grid
+ * هر audience = کارت افقی بزرگ با visualizer
+ */
+
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
-  ArrowRight,
   ChevronLeft,
-  Filter,
   Layers,
-  Plus,
   Search,
   Sparkles,
   Target,
   Users,
 } from 'lucide-react';
-import {
-  HUB_PALETTES,
-  HubShell,
-  type PillTabItem,
-  toOklch,
-} from '@/components/Dashboard/PlatformHub';
-import { Section, EmptyState, Spotlight, StatCard, StatGrid, GeometricAccent } from '@/components/Dashboard/primitives';
-import { Card, CardContent } from '@/components/ui/card';
+import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CountUp, EmptyState, LiveDot } from '@/components/Dashboard/primitives';
 import s from './Audiences.module.css';
 
 type AudienceTone = 'emerald' | 'indigo' | 'amber' | 'violet' | 'cyan' | 'rose';
@@ -44,13 +41,6 @@ export interface AudiencesViewData {
   activeCampaigns: number;
 }
 
-const TABS: PillTabItem[] = [
-  { id: 'all', label: 'همه', icon: <Layers size={14} aria-hidden /> },
-  { id: 'all-aud', label: 'همه کاربران', icon: <Users size={14} aria-hidden /> },
-  { id: 'role', label: 'بر اساس نقش', icon: <Target size={14} aria-hidden /> },
-  { id: 'segment', label: 'سگمنت', icon: <Sparkles size={14} aria-hidden /> },
-];
-
 const PERSIAN_NUM = (n: number | string) =>
   String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)]);
 const fmtPersian = (n: number) => PERSIAN_NUM(n.toLocaleString('en-US'));
@@ -62,22 +52,25 @@ const fmtPercent = (num: number, denom: number) => {
 function toneHue(tone: AudienceTone): number {
   return { emerald: 165, indigo: 245, amber: 70, violet: 290, cyan: 210, rose: 25 }[tone];
 }
-function toneChroma(tone: AudienceTone): number {
-  return { emerald: 0.12, indigo: 0.13, amber: 0.13, violet: 0.13, cyan: 0.12, rose: 0.13 }[tone];
+
+function getAudienceIcon(id: string): LucideIcon {
+  if (id === 'all') return Users;
+  if (id.startsWith('role:')) return Target;
+  return Sparkles;
 }
 
-function AudienceIcon({ id }: { id: string }) {
-  if (id === 'all') return <Users size={20} aria-hidden />;
-  if (id.startsWith('role:')) return <Target size={20} aria-hidden />;
-  return <Sparkles size={20} aria-hidden />;
-}
+const TABS: { id: string; label: string; icon: LucideIcon }[] = [
+  { id: 'all', label: 'همه', icon: Layers },
+  { id: 'all-aud', label: 'همه کاربران', icon: Users },
+  { id: 'role', label: 'بر اساس نقش', icon: Target },
+  { id: 'segment', label: 'سگمنت', icon: Sparkles },
+];
 
 export function AudiencesView({ initialData }: { initialData: AudiencesViewData }) {
   const [tab, setTab] = useState<string>('all');
   const [query, setQuery] = useState<string>('');
-  const palette = HUB_PALETTES.communication;
 
-  // ── filtering ────────────────────────────────────────────────
+  // ── filtering ──
   const filtered = useMemo(() => {
     let rows = initialData.audiences;
     if (tab === 'all-aud') rows = rows.filter((r) => r.id === 'all');
@@ -92,225 +85,219 @@ export function AudiencesView({ initialData }: { initialData: AudiencesViewData 
     return rows;
   }, [tab, query, initialData]);
 
-  // ── sort for ordering ────────────────────────────────────────
+  // ── sort by count desc ──
   const ordered = useMemo(() => {
     return [...filtered].sort((a, b) => b.count - a.count);
   }, [filtered]);
 
-  // ── total share (برای distribution) ──────────────────────────
-  const total = initialData.totalUsers || 1;
+  const totalUsers = initialData.totalUsers;
+  const totalTargeted = initialData.totalTargeted;
+  const coveragePct = totalUsers > 0 ? Math.round((totalTargeted / totalUsers) * 100) : 0;
 
   return (
-    <HubShell
-      meta={{
-        eyebrow: 'مرکز ارتباطات',
-        title: 'مخاطبان هدف',
-        subtitle:
-          'سگمنت‌ها و گروه‌های هدف. پیام را به گروه دقیق برسانید — نه به همه. هر audience یک جامعه با رفتار و حساسیت متفاوت است.',
-        breadcrumb: [
-          { href: '/dashboard/communication', label: 'مرکز ارتباطات' },
-          { label: 'مخاطبان هدف' },
-        ],
-        badges: [
-          { label: `${fmtPersian(initialData.audiences.length)} سگمنت فعال`, tone: 'emerald' },
-          { label: 'همگام با کاربران واقعی', tone: 'indigo' },
-        ],
-        actions: (
-          <>
-            <Button variant="outline" size="sm" asChild>
+    <div className={s.page} dir="rtl">
+      {/* ═══ HEADER ═══════════════════════════════════════ */}
+      <header className={s.header}>
+        <nav className={s.crumbs} aria-label="مسیر">
+          <Link href="/dashboard" className={s.crumbLink}>داشبورد</Link>
+          <span className={s.crumbSep}>/</span>
+          <Link href="/dashboard/communication" className={s.crumbLink}>مرکز ارتباطات</Link>
+          <span className={s.crumbSep}>/</span>
+          <span className={s.crumbCurrent} aria-current="page">مخاطبان هدف</span>
+        </nav>
+
+        <div className={s.headerMain}>
+          <div className={s.headerMainLeft}>
+            <span className={s.eyebrow}>
+              <LiveDot tone="emerald" size="sm" />
+              گالری مخاطبان
+            </span>
+            <h1 className={s.title}>مخاطبان هدف</h1>
+            <p className={s.lead}>
+              پیام را به گروه دقیق برسانید — نه به همه. هر audience یک جامعه با رفتار و حساسیت متفاوت.
+            </p>
+          </div>
+          <div className={s.headerMainRight}>
+            <Button variant="outline" asChild>
               <Link href="/dashboard/communication">
                 <ChevronLeft size={14} aria-hidden />
-                بازگشت به مرکز
+                مرکز
               </Link>
             </Button>
-            <Button size="sm" asChild>
-              <Link href="/dashboard/communication/announcements/new">
-                <Plus size={14} aria-hidden />
-                اعلان جدید
-              </Link>
-            </Button>
-          </>
-        ),
-      }}
-      tabs={TABS}
-      activeTab={tab}
-      onTabChange={setTab}
-    >
-      {/* ── KPI strip ──────────────────────────────────────────── */}
-      <StatGrid className={s.kpiGrid} cols={4}>
-        <StatCard
-          label="کل کاربران"
-          value={initialData.totalUsers}
-          icon={Users}
-          info="بر اساس نقش"
-          format="persian"
-        />
-        <StatCard
-          label="سگمنت‌ها"
-          value={initialData.audiences.length}
-          icon={Layers}
-          info="تعریف‌شده"
-          format="persian"
-        />
-        <StatCard
-          label="ارسال‌های هدفمند"
-          value={initialData.totalTargeted}
-          icon={Target}
-          info="در ۳۰ روز گذشته"
-          format="persian"
-        />
-        <StatCard
-          label="کمپین‌های فعال"
-          value={initialData.activeCampaigns}
-          icon={Sparkles}
-          info="در حال ارسال"
-          format="persian"
-        />
-      </StatGrid>
-
-      {/* ── Distribution map (donut-like horizontal) ──────────── */}
-      <Section
-        title="نقشه توزیع"
-        description="سهم هر نوع audience از کل کاربران. این نمودار، شناسایی gap های پوشش را ممکن می‌سازد."
-        icon={Layers}
-      >
-        <Card className={s.distCard}>
-          <Spotlight tone="emerald" />
-          <GeometricAccent variant="wave" position="tr" />
-          <CardContent className={s.distContent}>
-            <div className={s.distStack} role="img" aria-label="نقشه توزیع سگمنت‌ها">
-              {initialData.distribution.map((seg) => {
-                const pct = (seg.count / total) * 100;
-                return (
-                  <div
-                    key={seg.id}
-                    className={s.distSeg}
-                    data-tone={seg.tone}
-                    style={{ width: `${Math.max(8, pct)}%` }}
-                    title={`${seg.label}: ${fmtPersian(seg.count)} (${fmtPersian(Math.round(pct))}٪)`}
-                  >
-                    <span className={s.distSegLabel}>{seg.label}</span>
-                    <span className={s.distSegVal}>{fmtPersian(seg.count)}</span>
-                  </div>
-                );
-              })}
-            </div>
-            <ul className={s.distLegend}>
-              {initialData.distribution.map((seg) => (
-                <li key={seg.id}>
-                  <span className={s.distDot} data-tone={seg.tone} />
-                  <span className={s.distLegendLabel}>{seg.label}</span>
-                  <span className={s.distLegendVal}>
-                    {fmtPersian(seg.count)} کاربر · {fmtPersian(Math.round((seg.count / total) * 100))}٪
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      </Section>
-
-      {/* ── Audiences grid + search ──────────────────────────── */}
-      <Section
-        title="همه سگمنت‌ها"
-        description="روی یک audience کلیک کنید تا کمپین هدفمند برای آن بسازید."
-        actions={
-          <div className={s.searchWrap}>
-            <Search size={14} aria-hidden className={s.searchIcon} />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="جستجو در سگمنت‌ها..."
-              className={s.searchInput}
-              aria-label="جستجوی سگمنت"
-            />
           </div>
-        }
-        icon={Filter}
-      >
-        {ordered.length === 0 ? (
-          <EmptyState
-            title="سگمنتی یافت نشد"
-            description="جستجوی خود را تغییر دهید یا فیلتر فعلی را پاک کنید."
-            icon={Search}
-          />
-        ) : (
-          <ul className={s.audGrid}>
-            {ordered.map((aud) => {
-              const pct = fmtPercent(aud.count, total);
-              const hue = toneHue(aud.tone);
-              const chroma = toneChroma(aud.tone);
+        </div>
+      </header>
+
+      {/* ═══ STAT STRIP ════════════════════════════════════ */}
+      <div className={s.statStrip}>
+        <div className={s.statBlock} data-tone="emerald">
+          <span className={s.statLabel}>کل کاربران</span>
+          <span className={s.statValue}>
+            <CountUp value={totalUsers} duration={700} locale="fa-IR" />
+          </span>
+          <span className={s.statMeta}>پایه هدف‌گذاری</span>
+        </div>
+        <div className={s.statBlock} data-tone="indigo">
+          <span className={s.statLabel}>هدف‌گذاری‌شده</span>
+          <span className={s.statValue}>
+            <CountUp value={totalTargeted} duration={700} locale="fa-IR" />
+          </span>
+          <span className={s.statMeta}>
+            <span className={s.statPct}>{fmtPercent(totalTargeted, totalUsers)}٪</span> پوشش
+          </span>
+        </div>
+        <div className={s.statBlock} data-tone="violet">
+          <span className={s.statLabel}>سگمنت‌ها</span>
+          <span className={s.statValue}>
+            <CountUp value={initialData.audiences.length} duration={700} locale="fa-IR" />
+          </span>
+          <span className={s.statMeta}>سگمنت فعال</span>
+        </div>
+        <div className={s.statBlock} data-tone="amber">
+          <span className={s.statLabel}>کمپین‌های فعال</span>
+          <span className={s.statValue}>
+            <CountUp value={initialData.activeCampaigns} duration={700} locale="fa-IR" />
+          </span>
+          <span className={s.statMeta}>در حال اجرا</span>
+        </div>
+      </div>
+
+      {/* ═══ DISTRIBUTION STRIP ════════════════════════════ */}
+      {initialData.distribution.length > 0 ? (
+        <div className={s.distrib}>
+          <div className={s.distribHead}>
+            <span className={s.distribTitle}>توزیع مخاطبان</span>
+            <span className={s.distribMeta}>{fmtPersian(totalUsers)} کاربر</span>
+          </div>
+          <div className={s.distribBar} aria-hidden>
+            {initialData.distribution.map((d) => {
+              const ratio = totalUsers > 0 ? d.count / totalUsers : 0;
               return (
-                <li key={aud.id} className={s.audItem}>
-                  <Card className={s.audCard}>
-                    <Spotlight tone={aud.tone === 'rose' ? 'rose' : aud.tone} />
-                    <CardContent className={s.audContent}>
-                      <div className={s.audHeader}>
-                        <span
-                          className={s.audGlyph}
-                          data-tone={aud.tone}
-                          style={{ background: `color-mix(in oklab, oklch(60% ${chroma} ${hue}) 14%, transparent)` }}
-                        >
-                          <AudienceIcon id={aud.id} />
-                        </span>
-                        <div className={s.audIdBlock}>
-                          <span className={s.audLabel}>{aud.label}</span>
-                          <span className={s.audDesc}>{aud.description}</span>
-                        </div>
-                      </div>
-
-                      <div className={s.audStats}>
-                        <div className={s.audStat}>
-                          <span className={s.audStatKey}>کاربران</span>
-                          <span className={s.audStatVal}>{fmtPersian(aud.count)}</span>
-                        </div>
-                        <div className={s.audStat}>
-                          <span className={s.audStatKey}>سهم</span>
-                          <span className={s.audStatVal}>{fmtPersian(pct)}٪</span>
-                        </div>
-                        <div className={s.audStat}>
-                          <span className={s.audStatKey}>ارسال‌ها</span>
-                          <span className={s.audStatVal}>{fmtPersian(aud.targetedCount)}</span>
-                        </div>
-                      </div>
-
-                      <div className={s.audBar}>
-                        <span
-                          className={s.audBarFill}
-                          style={{
-                            width: `${Math.max(2, pct)}%`,
-                            background: `oklch(60% ${chroma} ${hue})`,
-                          }}
-                        />
-                      </div>
-
-                      <div className={s.audActions}>
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={`/dashboard/communication/audiences/${aud.id}`}>
-                            مشاهده جزئیات
-                            <ArrowRight size={12} aria-hidden />
-                          </Link>
-                        </Button>
-                        <Button size="sm" asChild>
-                          <Link
-                            href={{
-                              pathname: '/dashboard/communication/campaigns/new',
-                              query: { audience: aud.id },
-                            }}
-                          >
-                            <Plus size={12} aria-hidden />
-                            ارسال کمپین
-                          </Link>
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                <span
+                  key={d.id}
+                  className={s.distribSeg}
+                  data-tone={d.tone}
+                  style={{ flexGrow: Math.max(ratio, 0.005) }}
+                  title={`${d.label}: ${fmtPersian(d.count)}`}
+                />
+              );
+            })}
+          </div>
+          <ul className={s.distribList}>
+            {initialData.distribution.map((d) => {
+              const ratio = totalUsers > 0 ? d.count / totalUsers : 0;
+              return (
+                <li key={d.id} className={s.distribItem} data-tone={d.tone}>
+                  <span className={s.distribDot} aria-hidden />
+                  <span className={s.distribLabel}>{d.label}</span>
+                  <span className={s.distribCount}>{fmtPersian(d.count)}</span>
+                  <span className={s.distribPct}>
+                    {PERSIAN_NUM(Math.round(ratio * 1000) / 10)}٪
+                  </span>
                 </li>
               );
             })}
           </ul>
-        )}
-      </Section>
-    </HubShell>
+        </div>
+      ) : null}
+
+      {/* ═══ CONTROLS ═══════════════════════════════════ */}
+      <div className={s.controls}>
+        <div className={s.tabs} role="tablist">
+          {TABS.map((t) => {
+            const Icon = t.icon;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={tab === t.id}
+                className={s.tab}
+                data-active={tab === t.id}
+                onClick={() => setTab(t.id)}
+              >
+                <Icon size={12} aria-hidden />
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+        <div className={s.searchWrap}>
+          <Search size={16} aria-hidden className={s.searchIcon} />
+          <Input
+            type="search"
+            className={s.search}
+            placeholder="جستجو در نام یا توضیح…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            aria-label="جستجو"
+          />
+        </div>
+      </div>
+
+      {/* ═══ GALLERY ═════════════════════════════════════ */}
+      {ordered.length === 0 ? (
+        <EmptyState
+          title="مخاطبی یافت نشد"
+          description="فیلتر یا جستجوی خود را تغییر دهید."
+          icon={Users}
+        />
+      ) : (
+        <ul className={s.gallery}>
+          {ordered.map((row, idx) => {
+            const Icon = getAudienceIcon(row.id);
+            const hue = toneHue(row.tone);
+            const coverage = totalUsers > 0 ? row.count / totalUsers : 0;
+            const ratio = Math.max(0.04, Math.min(1, coverage * 2.5));
+            return (
+              <li key={row.id} className={s.card} data-tone={row.tone} style={{ '--aud-hue': hue } as React.CSSProperties}>
+                <Link
+                  href={`/dashboard/communication/audiences/${row.id}`}
+                  className={s.cardLink}
+                  aria-label={`جزئیات ${row.label}`}
+                />
+                <header className={s.cardHead}>
+                  <div className={s.cardHeadMain}>
+                    <span className={s.cardIcon} aria-hidden>
+                      <Icon size={16} />
+                    </span>
+                    <div className={s.cardTitleBlock}>
+                      <span className={s.cardIndex}>سگمنت {fmtPersian(idx + 1)}</span>
+                      <h2 className={s.cardTitle}>{row.label}</h2>
+                    </div>
+                  </div>
+                </header>
+                <p className={s.cardDesc}>{row.description}</p>
+
+                {/* radial visual */}
+                <div className={s.visual} aria-hidden>
+                  <div
+                    className={s.visualArc}
+                    style={{ ['--p' as string]: `${ratio * 100}%` }}
+                  />
+                  <div className={s.visualCore}>
+                    <span className={s.visualValue}>{fmtPersian(row.count)}</span>
+                    <span className={s.visualUnit}>کاربر</span>
+                  </div>
+                </div>
+
+                <footer className={s.cardFoot}>
+                  <div className={s.footMetric}>
+                    <span className={s.footKey}>هدف‌گیری</span>
+                    <span className={s.footVal}>{fmtPersian(row.targetedCount)}</span>
+                  </div>
+                  <div className={s.footMetric}>
+                    <span className={s.footKey}>سهم</span>
+                    <span className={s.footVal}>
+                      {PERSIAN_NUM((coverage * 100).toFixed(1))}٪
+                    </span>
+                  </div>
+                </footer>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
   );
 }

@@ -173,7 +173,9 @@
 > | هیچ‌کدام وجود ندارد — داشبورد | **→ ساخت shared** در `src/components/Dashboard/primitives/` + export به `index.ts` |
 > | هیچ‌کدام وجود ندارد — سایت | **→ ساخت shared** در `src/components/[نام-منطقی]/` یا `src/components/ui/` + **نه inline** |
 >
-> **قانون طلایی:** اگر یک component در بیش از یک page یا feature استفاده می‌شود (یا احتمالش هست) → **باید shared باشد**. inline page-specific فقط برای orchestration مجاز است.
+> **قانون طلایی:** اگر یک component در بیش از یک page یا feature استفاده می‌شود (یا احتمالش هست) → **باید shared باشد**.
+>
+> ⚠️ **استثنای Premium Moment:** برای «لحظات قهرمان» صفحات premium (hero، brand mark، گرافیک امضا)، page-specific creative freedom مجاز است — حتی اگر شامل container، header، یا variant رنگی اختصاصی باشد. این استثنا فقط برای **یکی-دو element در هر page** (نه همه). co-located `*.module.css` اجباری؛ export به primitives ممنوع.
 >
 > **موجودی canonical داشبورد:**
 > - **Primitives:** `PageHeader`, `StatCard`, `StatGrid`, `DataTable`, `EmptyState`, `DashboardEmpty`, `Section`, `StatusBadge`, `TableToolbar`, `SearchInput` *(فیلد جستجوی controlled، RTL-safe — برای همه toolbar/filterbar)*, `FormField`, `PanelDrawer`, `ConfirmDialog`, `CountUp`, `Skeleton`, `AmbientBackground`, `GeometricAccent`, `NoiseTexture`, `Spotlight`, `MagneticButton`, `Breadcrumb`
@@ -206,7 +208,7 @@ Component Decision Protocol — همیشه به ترتیب:
 2. Search for similar structure/behavior — اگر اسم فرق دارد اهمیتی ندارد؛ purpose مهم است.
 3. Prefer: **reuse** → **extend** → **compose** → new **shared** → page-**specific** (فقط اگر واقعاً page-specific باشد).
 4. Do NOT create new just because an existing one has different name.
-5. **Page-specific `_components/` فقط برای orchestration/layout این page مجاز است** — هر primitive/display/control قابل‌اشتراک باید به `shared/` یا `primitives/` منتقل شود.
+5. **Page-specific `_components/` مجاز است برای:** (الف) orchestration/layout این page، (ب) **creative containers/headers برای premium moments** (یکی-دو مورد). هر primitive/display/control قابل‌اشتراک (در بیش از یک page) باید به `shared/` یا `primitives/` منتقل شود.
 6. **محل ساخت shared component جدید:** داشبورد → `primitives/` + `index.ts`؛ سایت → `src/components/[نام-منطقی]/index.tsx` یا `src/components/ui/`.
 
 Rules for new code:
@@ -230,7 +232,7 @@ Rules for new code:
 ### 3. UI appearance (load `DESIGN.md` + `COMPONENTS.md` first) [فقط UI]
 - **Canonical:** `src/components/ui/*` (shadcn) + `src/components/Dashboard/primitives/*`.
 - `src/components/ds/*` is experimental — do NOT route new code to it except where already adopted.
-- **Forbidden duplicates:** never create another `Modal`/`EmptyState`/`Skeleton`/`Button`/`Card`/`Input`/`Table`.
+- **Forbidden duplicates:** never create another `Modal`/`EmptyState`/`Skeleton`/`Button`/`Card`/`Input`/`Table` **به‌عنوان shared component جدید**. ⚠️ استثنا: page-specific visual container برای premium moments (حداکثر ۱-۲ در هر page) — co-located `*.module.css`، export به `ui/` یا `primitives/` ممنوع.
 - **Tokens only:** `--ds-*` (site) / `--nova-*` (dashboard). Never hex/rgb; never px-fixed spacing where `--ds-space-*` exists.
 - **Motion:** opacity/transform only; no per-component reduced-motion (global clamp in `tokens.css:221`).
 
@@ -246,6 +248,42 @@ Rules for new code:
 - فضای باز از ریتم بخش‌ها (space-8…space-10 بین section‌ها) و `max-width` راحت.
 - عناصر compact نگه دار؛ حاشیه را در layout بساز، نه با padding چاق.
 - `--page-zoom` غیرفعال است و دیگر به‌کار نرود.
+
+### 3.7 Flexibility & Restraint [فقط UI — learned 2026-07-30]
+
+> **این بخش برای جلوگیری از تکرار اشتباه قبلی است:** یک page که ۶ zone با ۴ tone رنگ و چندین overlay تزئینی داشت. انعطاف بیشتر، بدون restraint = آشوب.
+
+#### ✅ Flexibility (مجاز است)
+
+| آیتم | جزئیات |
+|---|---|
+| **Premium container اختصاصی** | hero page می‌تواند container اختصاصی (بدون border یا bg) داشته باشد، فقط co-located CSS، فقط page-specific |
+| **Header متنوع در هر zone** | zone های مختلف page حق دارند title/description متفاوت داشته باشند (h1 inline، چسبیده به لبه، overlay، بدون عنوان). یکنواختی = ضد الگو |
+| **Color discipline شکستن** | یک page می‌تواند ۲-۳ tone داشته باشد (نه ۱، نه ۴+). یک dominant + حداکثر یک accent |
+| **Custom header treatment** | اگر `Section` هدر خسته‌کننده دارد، مجاز به استفاده نکردن از آن. ولی اگر استفاده می‌کنی، هدر **باید** متفاوت از zone های دیگر باشد |
+| **Container density متفاوت** | hero می‌تواند spacious باشد (space-10)، utility zone می‌تواند compact باشد (space-3) — تنوع intentional |
+| **Custom typography scale** | یک page می‌تواند از `--fs-display-*` یا scale clamp اختصاصی استفاده کند برای hero moments |
+
+#### ❌ Restraint (ممنوع است)
+
+| آیتم | جزئیات |
+|---|---|
+| **بیش از ۴ zone بصری اصلی** | اصل پارتو. اگر ۵+ zone دارید، تجدیدنظر کنید. ۱ hero + ۲ supporting + ۱ utility = حداکثر |
+| **بیش از ۳ tone رنگ در یک page** | ۱ dominant + ۱ accent + ۱ utility (status). بیشتر = شلوغی |
+| **Decorative overlay های چندگانه** | `GeometricField + Spotlight + NoiseTexture + GeometricAccent` همزمان در یک page = آشوب. **حداکثر ۱ overlay در هر page**، فقط اگر purposeful باشد |
+| **SVG signature بیش از ۱** | یک page حداکثر یک «graphic signature» (hero mark). بقیه نمودارها functional هستند، نه signature |
+| **Animation بیش از ۲** | opacity/transform فقط؛ حداکثر ۲ animation مستقل در یک page |
+| **همه zone با یک container style** | اگر همه چیز `Card` است یا همه چیز flat است، تنوع نیست. عمدا متنوع باشید |
+| **Header تکراری در همه zone ها** | اگر ۵ zone دارید و همه `<h3> + icon + actions` دارند، redesign لازم است |
+
+#### 🎯 Hierarchy rule (اجباری)
+
+هر page باید **یک قهرمان** داشته باشد:
+- **Hero** (۶۰-۷۰٪ عرض یا ۱ ردیف کامل) — متمایز از بقیه، spacious، signature
+- **Supporting** (هر کدام ≤ ۳۰٪ عرض) — اطلاعات مکمل، متراکم‌تر
+- **Utility** (strip پایین یا sidebar) — ابزار/فیلتر/پیمایش
+
+اگر دو zone با هم رقابت می‌کنند، یکی را حذف کن یا hierarchical subordinate کن (سایز، رنگ، density، یا opacity کمتر).
 
 ---
 
@@ -424,6 +462,7 @@ interface RouteErrorProps {
 | 2026-07 | **UI VISION GATE جداگانه:** جدول مستقل UI VISION GATE قبل از PRE-CODE GATE اضافه شد؛ ردیف‌های UI Check و Comp Map از PRE-CODE GATE حذف و به جدول جدید منتقل شدند |
 | 2026-07 | **CUSTOM-FIRST, NATIVE-NEVER (P0):** سلسله مراتب Repo Scan + Decision Ladder برای هر المان؛ موجودی کامل primitives/ui/custom + site-level ثبت شد؛ قانون جدا برای داشبورد vs سایت؛ export اجباری؛ namespace جداگانه site/dashboard |
 | 2026-07 | **Error Handling یکپارچه:** `RouteError` canonical ساخته شد؛ همه error.tsx ها migrate شدند؛ `SiteRouteError`/`ExchangeRouteError` deprecated؛ §Error Handling section اضافه شد؛ `SettingsSubNavItem.icon` → `iconName: string` برای Server→Client safety |
+| 2026-07-30 | **§3.7 Flexibility & Restraint اضافه شد:** page-specific premium containers، header متنوع در هر zone، color discipline (۲-۳ tone) — همزمان با anti-overdesign: حداکثر ۴ zone، حداکثر ۳ tone، حداکثر ۱ overlay تزئینی، حداکثر ۲ animation، حداکثر ۱ SVG signature در page. یاد گرفته شد از: ۶-zone redesign که همه zoneها با هم رقابت می‌کردند. |
 
 ---
 
