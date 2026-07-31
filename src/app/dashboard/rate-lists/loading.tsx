@@ -1,10 +1,11 @@
-import { DashboardPageSkeleton } from '@/components/Skeletons';
+import { Skeleton } from '@/components/Dashboard/primitives';
 
-/**
- * Loading state for /dashboard/rate-lists.
- * The page itself redirects to /dashboard/exchange-rates?tab=lists, but
- * this skeleton covers the brief moment before the redirect completes.
- */
 export default function RateListsLoading() {
-  return <DashboardPageSkeleton />;
+  return (
+    <div className="flex flex-col gap-4 p-6">
+      <Skeleton className="h-10 w-64 rounded-lg" />
+      <Skeleton className="h-6 w-96 rounded-md" />
+      <Skeleton className="h-[400px] w-full rounded-xl" />
+    </div>
+  );
 }

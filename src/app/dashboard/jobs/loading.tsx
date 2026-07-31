@@ -1,34 +1,21 @@
 import { Skeleton } from '@/components/Dashboard/primitives';
+import s from './jobs.module.css';
 
 export default function JobsLoading() {
   return (
-    <div
-      dir="rtl"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1.25rem',
-        padding: '0.5rem 0',
-      }}
-    >
-      <div style={{ height: 88, borderRadius: 14, overflow: 'hidden' }}>
-        <Skeleton variant="card" className="!h-full" />
+    <div dir="rtl" className={s.jobsLoading}>
+      <div className={s.jobsLoadingHero}>
+        <Skeleton variant="card" className={s.jobsLoadingFill} />
       </div>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
-          gap: '0.75rem',
-        }}
-      >
+      <div className={s.jobsLoadingGrid}>
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} style={{ height: 78, borderRadius: 10, overflow: 'hidden' }}>
-            <Skeleton variant="card" className="!h-full" />
+          <div key={i} className={s.jobsLoadingTile}>
+            <Skeleton variant="card" className={s.jobsLoadingFill} />
           </div>
         ))}
       </div>
-      <div style={{ height: 380, borderRadius: 14, overflow: 'hidden' }}>
-        <Skeleton variant="card" className="!h-full" />
+      <div className={s.jobsLoadingBody}>
+        <Skeleton variant="card" className={s.jobsLoadingFill} />
       </div>
     </div>
   );

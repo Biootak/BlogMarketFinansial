@@ -14,8 +14,8 @@ export default function RouteErrorPage({
       error={error}
       reset={reset}
       section="پنل مشتری"
-      backHref="/dashboard"
-      backLabel="داشبورد"
+      backHref="/customer/dashboard"
+      backLabel="داشبورد مشتری"
     />
   );
 }

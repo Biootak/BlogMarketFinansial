@@ -2,7 +2,7 @@
 
 import { RouteError } from '@/components/Dashboard/primitives';
 
-export default function ExchangeLayoutError({
+export default function HelpdeskMineError({
   error,
   reset,
 }: {
@@ -13,9 +13,9 @@ export default function ExchangeLayoutError({
     <RouteError
       error={error}
       reset={reset}
-      section="پنل صرافی"
-      backHref="/exchange/dashboard"
-      backLabel="داشبورد صرافی"
+      section="تیکت‌های من"
+      backHref="/dashboard/helpdesk"
+      backLabel="بازگشت به مرکز پشتیبانی"
     />
   );
 }

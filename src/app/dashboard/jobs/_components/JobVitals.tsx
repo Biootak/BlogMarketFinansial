@@ -31,7 +31,9 @@ function formatDuration(ms: number): string {
   return `${toPersianDigits((ms / 3_600_000).toFixed(1))} س`;
 }
 
-function Sparkline({ data, color }: { data: number[]; color: string }) {
+type SparklineTone = 'indigo' | 'emerald' | 'amber' | 'rose';
+
+function Sparkline({ data, tone }: { data: number[]; tone: SparklineTone }) {
   if (data.length === 0) return null;
   const max = Math.max(...data, 1);
   const w = 100;
@@ -41,25 +43,25 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
     .map((v, i) => `${(i * stepX).toFixed(2)},${(h - (v / max) * h).toFixed(2)}`)
     .join(' ');
   const areaPoints = `0,${h} ${points} ${w},${h}`;
-  const id = `spark-${color.replace(/[^a-z0-9]/gi, '')}`;
+  const id = `spark-${tone}`;
   return (
     <svg
-      className={s.vitalTileSpark}
+      className={`${s.vitalTileSpark} ${s[`sparklineSvg--${tone}`]}`}
       viewBox={`0 0 ${w} ${h}`}
       preserveAspectRatio="none"
       aria-hidden="true"
     >
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.3" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
+          <stop offset="0%" stopColor="currentColor" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
         </linearGradient>
       </defs>
       <polygon points={areaPoints} fill={`url(#${id})`} />
       <polyline
         points={points}
         fill="none"
-        stroke={color}
+        stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -100,7 +102,7 @@ export function JobVitals({
             <span className={s.vitalTileValue}>{toPersianDigits(completed24h)}</span>
             <span className={s.vitalTileUnit}>job تکمیل‌شده</span>
           </div>
-          <Sparkline data={hourly} color="oklch(60% 0.14 255)" />
+          <Sparkline data={hourly} tone="indigo" />
           <div className={s.vitalTileFooter}>
             <span>ساعتی</span>
             <span>
@@ -119,7 +121,7 @@ export function JobVitals({
             <span className={s.vitalTileValue}>{toPersianDigits(pending + running)}</span>
             <span className={s.vitalTileUnit}>در صف + اجرا</span>
           </div>
-          <div className={s.vitalTileFooter} style={{ height: 32, alignItems: 'flex-end' }}>
+          <div className={`${s.vitalTileFooter} ${s.vitalTileFooterTall}`}>
             <span>صف فعال</span>
             <span>{toPersianDigits(pending)} منتظر · {toPersianDigits(running)} اجرا</span>
           </div>
@@ -145,7 +147,7 @@ export function JobVitals({
               <span className={s.vitalTileUnit}>٪</span>
             </span>
           </div>
-          <div className={s.vitalTileFooter} style={{ height: 32, alignItems: 'flex-end' }}>
+          <div className={`${s.vitalTileFooter} ${s.vitalTileFooterTall}`}>
             <span>خطای ۲۴ ساعت</span>
             <span>{toPersianDigits(failed24h)} مورد</span>
           </div>
@@ -167,11 +169,11 @@ export function JobVitals({
             <span className={s.vitalTileValue}>{toPersianDigits(dead)}</span>
             <span className={s.vitalTileUnit}>job مرده</span>
           </div>
-          <div className={s.vitalTileFooter} style={{ height: 32, alignItems: 'flex-end' }}>
+          <div className={`${s.vitalTileFooter} ${s.vitalTileFooterTall}`}>
             <span>پایان خط لوله</span>
             <span>
               {dead > 0 ? (
-                <a href="/dashboard/jobs/dlq" style={{ color: 'inherit', textDecoration: 'underline' }}>
+                <a href="/dashboard/jobs/dlq" className={s.vitalTileAnchor}>
                   بازبینی ←
                 </a>
               ) : (

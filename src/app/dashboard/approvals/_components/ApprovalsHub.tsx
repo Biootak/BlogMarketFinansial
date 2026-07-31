@@ -1,7 +1,15 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { createPortal } from 'react-dom';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   AlertCircle,
   Check,
@@ -456,13 +464,29 @@ function RequestDetail({
 }
 
 export function ApprovalsHub({ initialData, canCreate = false }: Props) {
+  const searchParams = useSearchParams();
   const [data, setData] = useState<ApprovalSnapshot | undefined>(initialData);
-  const [filter, setFilter] = useState<Filter>('all');
+  // ?filter=mine از /dashboard/approvals/mine ریدایرکت می‌کند
+  const [filter, setFilter] = useState<Filter>(() =>
+    searchParams.get('filter') === 'mine' ? 'mine' : 'all'
+  );
   const [sort, setSort] = useState<SortKey>('newest');
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [createOpen, setCreateOpen] = useState(false);
+  // ?new=1 از /dashboard/approvals/new ریدایرکت می‌کند — panel را خودکار باز کن
+  const [createOpen, setCreateOpen] = useState(() => searchParams.get('new') === '1' && canCreate);
   const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
+
+  // یک‌بار پس از mount، URL searchParams را تمیز کن
+  useEffect(() => {
+    if ((searchParams.get('new') || searchParams.get('filter')) && typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('new');
+      url.searchParams.delete('filter');
+      window.history.replaceState({}, '', url.toString());
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchData = useCallback(async () => {
     try {
@@ -555,16 +579,16 @@ export function ApprovalsHub({ initialData, canCreate = false }: Props) {
         <div className={s.toolbarRight}>
           <div className={s.sortWrap}>
             <Filter className="h-3.5 w-3.5" />
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as SortKey)}
-              className={s.sortSelect}
-              aria-label="مرتب‌سازی"
-            >
-              {SORTS.map((so) => (
-                <option key={so.id} value={so.id}>{so.label}</option>
-              ))}
-            </select>
+            <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
+              <SelectTrigger className={s.sortSelect} aria-label="مرتب‌سازی">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent dir="rtl">
+                {SORTS.map((so) => (
+                  <SelectItem key={so.id} value={so.id}>{so.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           {canCreate ? (
             <button type="button" onClick={() => setCreateOpen(true)} className={s.createBtn}>

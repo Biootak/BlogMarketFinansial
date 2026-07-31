@@ -22,6 +22,18 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
+/** کوتاه‌سازی UUID/CUID به ۸ کاراکتر برای نمایش به کاربر */
+function shortTrackId(id: string): string {
+  if (!id) return generateTrackId();
+  // آخرین ۸ کاراکتر را بگیر و به حروف بزرگ تبدیل کن
+  const clean = id.replace(/-/g, '').toUpperCase();
+  if (clean.length >= 8) {
+    const part = clean.slice(-8);
+    return `${part.slice(0, 4)}-${part.slice(4)}`;
+  }
+  return generateTrackId();
+}
+
 function generateTrackId(): string {
   // کد پیگیری deterministic مبتنی بر زمان: ۸ کاراکتر الفبایی-عددی
   // شفافیت: هر بار reload این صفحه، کد متفاوت تولید می‌شود چون
@@ -42,7 +54,7 @@ function generateTrackId(): string {
 export default async function ApplyExchangeSuccessPage({
   searchParams,
 }: {
-  searchParams?: Promise<SearchParams>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   // ۲۰۲۶-۰۷-۲۹: استفاده از id واقعی اگر از فرم ارسال شده باشد
   const sp = (await searchParams) ?? {};

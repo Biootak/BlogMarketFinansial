@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 
 import { auth } from '@/auth';
 import { ApprovalsHub } from '@/app/dashboard/approvals/_components/ApprovalsHub';
@@ -36,7 +37,9 @@ export default async function ApprovalsPage() {
           { label: 'تأییدیه‌ها' },
         ]}
       />
-      <ApprovalsHub initialData={initialData} canCreate={canCreate} />
+      <Suspense fallback={null}>
+        <ApprovalsHub initialData={initialData} canCreate={canCreate} />
+      </Suspense>
     </div>
   );
 }

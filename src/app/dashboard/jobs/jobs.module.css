@@ -491,7 +491,10 @@
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
+  background: var(--ds-accent-indigo, oklch(58% 0.14 265));
 }
+.pipelineLegendDot--inflow { background: var(--ds-accent-emerald, oklch(60% 0.1 165)); }
+.pipelineLegendDot--outflow { background: var(--ds-accent-rose, oklch(60% 0.13 20)); }
 
 .pipelineFlow {
   position: relative;
@@ -1215,7 +1218,9 @@
    ════════════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
   .pipelineStageDot--pulse,
-  .tableStatusDot--running {
+  .tableStatusDot--running,
+  .pulseScanner,
+  .pulseCore {
     animation: none;
   }
 }
@@ -1814,4 +1819,342 @@
   justify-content: flex-end;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+/* ── Enqueue form: select trigger replacement + picker + icon rotate ── */
+.newSelectTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 2.5rem;
+  padding: 0 0.75rem;
+  background: var(--ds-surface-2, oklch(97% 0.003 245));
+  border: 1px solid var(--ds-border-subtle, oklch(92% 0.004 245));
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--ds-text-strong, var(--ds-text-primary, oklch(20% 0.012 255)));
+  font-family: inherit;
+  text-align: start;
+  transition: border-color 160ms ease, background 160ms ease;
+  cursor: pointer;
+}
+.newSelectTrigger:hover {
+  border-color: oklch(80% 0.004 245);
+  background: var(--ds-surface-1, oklch(99% 0.003 245));
+}
+.newSelectTrigger:focus-visible {
+  outline: none;
+  border-color: oklch(60% 0.14 255);
+  background: var(--ds-surface-1, oklch(99% 0.003 245));
+  box-shadow: 0 0 0 3px color-mix(in oklch, oklch(60% 0.14 255) 18%, transparent);
+}
+.newSelectTrigger[data-placeholder] {
+  color: var(--ds-text-muted, oklch(45% 0.005 245));
+}
+.newSelectContent {
+  background: var(--ds-surface-1, oklch(99% 0.003 245));
+  border: 1px solid var(--ds-border-subtle, oklch(92% 0.004 245));
+  border-radius: 8px;
+  box-shadow: 0 12px 32px -12px oklch(0% 0 0 / 0.18);
+  overflow: hidden;
+  z-index: 50;
+}
+.newSelectItem {
+  font-size: 13px;
+  padding: 0.5rem 0.75rem 0.5rem 2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  outline: none;
+  position: relative;
+  user-select: none;
+}
+.newSelectItem[data-highlighted] {
+  background: color-mix(in oklch, var(--ds-accent-indigo, oklch(58% 0.14 265)) 12%, transparent);
+  color: var(--ds-text-primary, oklch(20% 0.01 240));
+}
+.newSelectIndicator {
+  position: absolute;
+  inset-inline-start: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: var(--ds-accent-emerald, oklch(60% 0.1 165));
+}
+
+.newDatePickerWrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.newPayloadIcon {
+  transition: transform 200ms ease;
+  flex-shrink: 0;
+}
+.newPayloadIconOpen {
+  transform: rotate(45deg);
+}
+
+/* ── Stream header count (replaces inline style) ─────────────── */
+.streamCount {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--ds-text-muted, oklch(45% 0.005 245));
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Table footer link (replaces inline oklch) ──────────────── */
+.tableFooterLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ds-accent-emerald, oklch(60% 0.1 165));
+  font-weight: 600;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 160ms ease, color 160ms ease;
+}
+.tableFooterLink:hover {
+  background: color-mix(in oklch, var(--ds-accent-emerald, oklch(60% 0.1 165)) 12%, transparent);
+}
+
+/* ── shadcn Select used inside table toolbar (queue filter) ── */
+.tableQueueSelect {
+  height: auto !important;
+  padding: 4px 10px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: var(--ds-text-muted, oklch(45% 0.005 245)) !important;
+  background: var(--ds-surface-1, oklch(99% 0.003 245)) !important;
+  border: 1px solid var(--ds-border-subtle, oklch(92% 0.004 245)) !important;
+  border-radius: 999px !important;
+  cursor: pointer !important;
+  gap: 6px !important;
+  min-height: 0 !important;
+  transition: all 160ms ease !important;
+  width: auto !important;
+}
+.tableQueueSelect:hover {
+  color: var(--ds-text-strong, var(--ds-text-primary, oklch(20% 0.012 255))) !important;
+}
+.tableQueueSelect[data-state='open'] {
+  color: oklch(20% 0.02 255) !important;
+  background: oklch(95% 0.04 255) !important;
+  border-color: oklch(72% 0.10 255) !important;
+}
+.tableQueueSelect :global([data-placeholder]) {
+  color: var(--ds-text-muted, oklch(45% 0.005 245));
+}
+.tableSelectContent {
+  background: var(--ds-surface-1, oklch(99% 0.003 245)) !important;
+  border: 1px solid var(--ds-border-subtle, oklch(92% 0.004 245)) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 12px 32px -12px oklch(0% 0 0 / 0.18) !important;
+  z-index: 60 !important;
+  overflow: hidden;
+}
+.tableSelectContent :global([role='option']) {
+  font-size: 12px;
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  position: relative;
+  font-family: var(--ds-font-mono, ui-monospace, monospace);
+}
+.tableSelectContent :global([role='option'][data-highlighted]) {
+  background: color-mix(in oklch, var(--ds-accent-indigo, oklch(58% 0.14 265)) 14%, transparent) !important;
+  color: var(--ds-text-primary, oklch(20% 0.01 240)) !important;
+}
+.tableSelectContent :global([role='option'][data-state='checked']) {
+  color: var(--ds-accent-emerald, oklch(60% 0.1 165)) !important;
+  font-weight: 700;
+}
+
+/* ============================================================================
+   Hero health dot — replaces inline oklch for status indicator
+   ============================================================================ */
+.heroHealthDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--ds-accent-indigo, oklch(58% 0.14 265));
+  box-shadow: 0 0 0 3px color-mix(in oklch, currentColor 18%, transparent);
+}
+.heroHealthDot--healthy { background: var(--ds-accent-emerald, oklch(60% 0.1 165)); }
+.heroHealthDot--degraded { background: var(--ds-accent-amber, oklch(72% 0.13 70)); }
+.heroHealthDot--critical { background: var(--ds-accent-rose, oklch(60% 0.13 20)); }
+.heroHealthDot--idle { background: var(--ds-accent-indigo, oklch(58% 0.14 265)); }
+
+/* Hero title second line — replaces inline color/fontWeight */
+.heroTitleLineMuted {
+  display: block;
+  color: var(--ds-text-muted, oklch(45% 0.005 245));
+  font-weight: 500;
+}
+
+/* Hero failed-stat value — replaces conditional inline color */
+.heroStatValue--danger { color: var(--ds-accent-rose, oklch(60% 0.13 20)); }
+
+/* Hero pulse unit — inline override (replaces inline display) */
+.heroPulseUnitInline { display: inline; }
+
+/* ============================================================================
+   Vital tile footer — tall variant with end alignment
+   ============================================================================ */
+.vitalTileFooterTall {
+  height: 32px;
+  align-items: flex-end;
+}
+
+/* Vital tile anchor — replaces inline link style */
+.vitalTileAnchor {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: opacity 160ms ease;
+}
+.vitalTileAnchor:hover { opacity: 0.75; }
+
+/* ============================================================================
+   Sparkline — tone-based color (replaces raw oklch color prop)
+   ============================================================================ */
+.sparklineSvg {
+  color: var(--ds-accent-indigo, oklch(58% 0.14 265));
+}
+.sparklineSvg--indigo { color: var(--ds-accent-indigo, oklch(58% 0.14 265)); }
+.sparklineSvg--emerald { color: var(--ds-accent-emerald, oklch(60% 0.1 165)); }
+.sparklineSvg--amber { color: var(--ds-accent-amber, oklch(72% 0.13 70)); }
+.sparklineSvg--rose { color: var(--ds-accent-rose, oklch(60% 0.13 20)); }
+
+/* ============================================================================
+   Queue matrix — status pill (replaces inline 4-way conditional)
+   ============================================================================ */
+.matrixStatus {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--ds-surface-2, oklch(97% 0.003 245));
+  color: var(--ds-text-muted, oklch(55% 0.01 240));
+}
+.matrixStatus--healthy {
+  color: var(--ds-accent-emerald, oklch(60% 0.1 165));
+  background: color-mix(in oklch, var(--ds-accent-emerald, oklch(60% 0.1 165)) 12%, transparent);
+}
+.matrixStatus--degraded {
+  color: var(--ds-accent-amber, oklch(72% 0.13 70));
+  background: color-mix(in oklch, var(--ds-accent-amber, oklch(72% 0.13 70)) 12%, transparent);
+}
+.matrixStatus--critical {
+  color: var(--ds-accent-rose, oklch(60% 0.13 20));
+  background: color-mix(in oklch, var(--ds-accent-rose, oklch(60% 0.13 20)) 12%, transparent);
+}
+.matrixStatus--idle {
+  color: var(--ds-text-muted, oklch(55% 0.01 240));
+  background: var(--ds-surface-2, oklch(97% 0.003 245));
+}
+
+/* Matrix name — mono variant (replaces inline fontFamily) */
+.matrixNameMono {
+  font-family: var(--ds-font-mono, ui-monospace, monospace);
+  font-size: 13px;
+  color: var(--ds-text-primary, oklch(20% 0.01 240));
+}
+
+/* Matrix badge — muted text (replaces inline color) */
+.matrixBadgeMuted {
+  color: var(--ds-text-muted, oklch(55% 0.01 240));
+}
+
+/* ============================================================================
+   System Pulse — class-based color (replaces inline oklch + animations)
+   ============================================================================ */
+.pulseSvg {
+  width: 100%;
+  height: auto;
+  display: block;
+  color: var(--ds-accent-indigo, oklch(58% 0.14 265));
+  --pulse-ring: oklch(100% 0 0 / 0.06);
+  --pulse-core: oklch(15% 0.012 255);
+}
+.pulseSvg--healthy { color: var(--ds-accent-emerald, oklch(60% 0.1 165)); }
+.pulseSvg--degraded { color: var(--ds-accent-amber, oklch(72% 0.13 70)); }
+.pulseSvg--critical { color: var(--ds-accent-rose, oklch(60% 0.13 20)); }
+.pulseSvg--idle { color: var(--ds-accent-indigo, oklch(58% 0.14 265)); }
+
+.pulseRing1 { fill: none; stroke: var(--pulse-ring); stroke-width: 1; }
+.pulseRing2 { fill: none; stroke: color-mix(in oklch, var(--pulse-ring) 80%, transparent); stroke-width: 1; }
+.pulseRing3 { fill: none; stroke: color-mix(in oklch, var(--pulse-ring) 65%, transparent); stroke-width: 1; }
+.pulseTickMajor { stroke: var(--pulse-ring); stroke-width: 1.5; stroke-linecap: round; }
+.pulseTickMinor { stroke: var(--pulse-ring); stroke-width: 0.75; stroke-linecap: round; }
+
+.pulseScanner {
+  transform-origin: 100px 100px;
+  animation: pulseScanner 6s linear infinite;
+}
+.pulseScanner--slow { animation-duration: 8s; animation-direction: reverse; }
+.pulseScanner--slowest { animation-duration: 10s; }
+.pulseScanner--paused { animation: none; }
+
+.pulseCore {
+  fill: currentColor;
+  transform-origin: 100px 100px;
+  animation: pulseCore 1.6s ease-in-out infinite;
+}
+.pulseCore--paused { animation: none; }
+.pulseCoreInner { fill: var(--pulse-core); }
+
+@keyframes pulseScanner {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes pulseCore {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.7; }
+}
+
+/* ============================================================================
+   Loading skeleton layout (replaces all inline styles in loading.tsx)
+   ============================================================================ */
+.jobsLoading {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0.5rem 0;
+}
+.jobsLoadingHero {
+  height: 88px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.jobsLoadingGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.jobsLoadingTile {
+  height: 78px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.jobsLoadingBody {
+  height: 380px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.jobsLoadingFill {
+  height: 100%;
 }

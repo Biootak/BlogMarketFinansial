@@ -4,6 +4,10 @@ import { HelpdeskHub } from './_components/HelpdeskHub';
 import { HelpdeskLoading } from './_components/HelpdeskLoading';
 import s from './helpdesk.module.css';
 
+// HelpdeskHub uses useSearchParams — Suspense boundary needed.
+// The outer Suspense already provides the boundary, inner Suspense for polling
+// skeleton is additional. The page itself has two Suspense layers deliberately.
+
 export const revalidate = 30;
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +23,10 @@ export default async function HelpdeskPage() {
   return (
     <main className={s.page} dir="rtl">
       <Suspense fallback={<HelpdeskLoading />}>
-        <HelpdeskHub initialTickets={tickets} />
+        {/* Inner Suspense for useSearchParams in HelpdeskHub */}
+        <Suspense fallback={null}>
+          <HelpdeskHub initialTickets={tickets} />
+        </Suspense>
       </Suspense>
     </main>
   );

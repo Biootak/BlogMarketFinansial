@@ -775,7 +775,7 @@ interface QuickAction {
 }
 
 const QUICK_ACTIONS: QuickAction[] = [
-  { href: '/money-transfer', label: 'انتقال سریع', icon: Zap, hint: 'انتقال آنی', accent: 'primary' },
+  { href: '/customer/transfer?action=transfer', label: 'انتقال سریع', icon: Zap, hint: 'انتقال آنی', accent: 'primary' },
   { href: '/customer/accounts', label: 'حساب جدید', icon: Plus, hint: 'افتتاح حساب', accent: 'emerald' },
   { href: '/customer/kyc', label: 'ارتقاء KYC', icon: ShieldCheck, hint: 'افزایش سقف', accent: 'violet' },
   { href: '/customer/transactions', label: 'تاریخچه', icon: History, hint: 'همه تراکنش‌ها', accent: 'cyan' },
@@ -953,7 +953,7 @@ export default function CustomerDashboardContent({ data }: { data: CustomerDashb
         icon="layout-dashboard"
         accent="indigo"
         actions={
-          <Link href="/money-transfer" className={s.headerCta}>
+          <Link href="/customer/transfer" className={s.headerCta}>
             <Sparkles size={13} aria-hidden />
             شروع تراکنش جدید
           </Link>

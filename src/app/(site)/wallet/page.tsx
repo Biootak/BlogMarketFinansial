@@ -181,7 +181,7 @@ export default async function WalletPage() {
             <Wallet size={16} strokeWidth={1.75} aria-hidden />
             مشاهده نرخ‌ها
           </Link>
-          <Link href="/#contact" className={s.ctaSecondary}>
+          <Link href="/contact" className={s.ctaSecondary}>
             تماس با پشتیبانی
           </Link>
         </div>

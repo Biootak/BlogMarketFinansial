@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { type ReactElement, type ReactNode, cloneElement, isValidElement, useId } from 'react';
+import { Children, type ReactElement, type ReactNode, cloneElement, isValidElement, useId } from 'react';
 
 export interface FormFieldProps {
   label: string;
@@ -12,13 +12,44 @@ export interface FormFieldProps {
   /**
    * The single form control this field wraps. Must accept id,
    * aria-describedby, and aria-invalid props.
+   *
+   * If multiple children are passed (e.g. a hidden input + a visible control),
+   * the first valid element receives the id/aria wiring; the rest are left intact.
    */
-  children: ReactElement<{
+  children: ReactNode;
+  className?: string;
+}
+
+/**
+ * Find the first descendant that is a valid React element with a settable id
+ * — i.e. the interactive control we should wire aria-describedby / aria-invalid to.
+ */
+function findControl(
+  node: ReactNode,
+): ReactElement<{
+  id?: string;
+  'aria-describedby'?: string;
+  'aria-invalid'?: boolean;
+}> | null {
+  let found: ReactElement<{
     id?: string;
     'aria-describedby'?: string;
     'aria-invalid'?: boolean;
-  }>;
-  className?: string;
+  }> | null = null;
+  Children.forEach(node, (child) => {
+    if (found) return;
+    if (isValidElement(child)) {
+      // Skip hidden inputs — they don't need aria wiring.
+      const t = (child.props as { type?: unknown }).type;
+      if (t === 'hidden') return;
+      found = child as ReactElement<{
+        id?: string;
+        'aria-describedby'?: string;
+        'aria-invalid'?: boolean;
+      }>;
+    }
+  });
+  return found;
 }
 
 export function FormField({
@@ -31,7 +62,13 @@ export function FormField({
   className,
 }: FormFieldProps) {
   const reactId = useId();
-  const inputId = htmlFor ?? children.props.id ?? reactId;
+  const control = findControl(children);
+  const controlProps = (control?.props ?? {}) as {
+    id?: string;
+    'aria-describedby'?: string;
+    'aria-invalid'?: boolean;
+  };
+  const inputId = htmlFor ?? controlProps.id ?? reactId;
   const hintId = `${inputId}-hint`;
   const errorId = `${inputId}-error`;
   const describedBy = [hint && !error ? hintId : null, error ? errorId : null]
@@ -39,13 +76,27 @@ export function FormField({
     .join(' ')
     .trim();
 
-  const labelled = isValidElement(children)
-    ? cloneElement(children, {
-        ...(children.props.id === undefined ? { id: inputId } : {}),
-        'aria-describedby': describedBy || children.props['aria-describedby'],
-        'aria-invalid': error ? true : children.props['aria-invalid'],
-      })
-    : children;
+  // Re-walk children to clone only the first valid control with the id/aria wiring.
+  let wired = false;
+  const renderedChildren = Children.map(children, (child) => {
+    if (wired) return child;
+    if (!isValidElement(child)) return child;
+    const t = (child.props as { type?: unknown }).type;
+    if (t === 'hidden') return child;
+    wired = true;
+    return cloneElement(
+      child as ReactElement<{
+        id?: string;
+        'aria-describedby'?: string;
+        'aria-invalid'?: boolean;
+      }>,
+      {
+        ...(controlProps.id === undefined ? { id: inputId } : {}),
+        'aria-describedby': describedBy || controlProps['aria-describedby'],
+        'aria-invalid': error ? true : controlProps['aria-invalid'],
+      },
+    );
+  });
 
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
@@ -57,7 +108,7 @@ export function FormField({
           </span>
         )}
       </label>
-      {labelled}
+      {renderedChildren}
       {error ? (
         <p id={errorId} role="alert" className="text-xs text-rose-600">
           {error}

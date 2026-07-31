@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { QueuesView } from './_components/QueuesView';
-import { getJobSnapshot } from '@/lib/jobs';
+import { getJobSnapshot, getQueueHealth, getRecentJobTypes } from '@/lib/jobs';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,8 +17,15 @@ export default async function QueuesPage() {
     redirect('/dashboard?error=forbidden');
   }
 
-  const result = await getJobSnapshot();
-  const data = result.success ? result.data : null;
+  const [snapshotRes, healthRes, typesRes] = await Promise.all([
+    getJobSnapshot(),
+    getQueueHealth(),
+    getRecentJobTypes(),
+  ]);
+
+  const data = snapshotRes.success ? snapshotRes.data : null;
+  const health = healthRes.data ?? [];
+  const jobTypes = typesRes.data ?? [];
 
   return (
     <QueuesView
@@ -35,6 +42,8 @@ export default async function QueuesPage() {
           avgDurationMs: 0,
         }
       }
+      queueHealth={health}
+      jobTypes={jobTypes}
     />
   );
 }

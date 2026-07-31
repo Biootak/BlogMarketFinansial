@@ -32,7 +32,8 @@ import {
   enrichRows,
 } from '@/lib/exchange-tx-formatters';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import s from './TransactionsWorkspace.module.css';
 
 const PAGE_SIZE = 25;
@@ -54,16 +55,27 @@ export default function TransactionsWorkspace({
   staffRole,
   primaryCurrency,
 }: Props) {
+  const searchParams = useSearchParams();
   const [rows, setRows] = useState<TransactionRow[]>(initialRows);
   const [kindFilter, setKindFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<SortKey>('newest');
   const [page, setPage] = useState(1);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  // ?new=1 از /exchange/transactions/new ریدایرکت می‌کند — drawer را خودکار باز کن
+  const [drawerOpen, setDrawerOpen] = useState(() => searchParams.get('new') === '1');
   const [loadingMore, setLoadingMore] = useState(false);
 
   const canAdd = ['OWNER', 'MANAGER', 'STAFF'].includes(staffRole);
+
+  // یک‌بار پس از mount، URL را تمیز کن (بدون reload)
+  useEffect(() => {
+    if (searchParams.get('new') === '1' && typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('new');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [searchParams]);
 
   // ── Enrich (memoize) ──────────────────────────────────────────────────
   const enriched: TxRowEnriched[] = useMemo(() => enrichRows(rows), [rows]);

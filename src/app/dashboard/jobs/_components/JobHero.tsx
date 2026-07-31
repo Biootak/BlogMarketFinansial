@@ -61,21 +61,7 @@ export function JobHero({
         <div className={s.heroEyebrow}>
           <span
             aria-hidden="true"
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              background:
-                health === 'healthy'
-                  ? 'oklch(72% 0.14 162)'
-                  : health === 'degraded'
-                    ? 'oklch(78% 0.14 75)'
-                    : health === 'critical'
-                      ? 'oklch(68% 0.18 15)'
-                      : 'oklch(60% 0.05 255)',
-              display: 'inline-block',
-              boxShadow: '0 0 0 0 currentColor',
-            }}
+            className={`${s.heroHealthDot} ${s[`heroHealthDot--${health}`]}`}
           />
           <span>{HEALTH_LABEL[health]}</span>
           <span className={s.heroSep}>·</span>
@@ -88,7 +74,7 @@ export function JobHero({
           <span className={s.heroTitleLine}>
             مرکز <span className={s.heroAccentText}>کنترل Job</span>
           </span>
-          <span className={s.heroTitleLine} style={{ color: 'oklch(78% 0.005 245)', fontWeight: 500 }}>
+          <span className={s.heroTitleLineMuted}>
             نمای زنده‌ی صف‌ها، خطاها و جریان پردازش
           </span>
         </h1>
@@ -112,11 +98,10 @@ export function JobHero({
           <div className={s.heroStat}>
             <span className={s.heroStatLabel}>خطا ۲۴ ساعت</span>
             <span
-              className={s.heroStatValue}
-              style={
+              className={
                 failed24h > 0
-                  ? { color: 'oklch(75% 0.18 15)' }
-                  : undefined
+                  ? `${s.heroStatValue} ${s['heroStatValue--danger']}`
+                  : s.heroStatValue
               }
             >
               {toPersianDigits(failed24h)}
@@ -151,7 +136,7 @@ export function JobHero({
         <div className={s.heroPulseLabel}>
           <span className={s.heroPulseEyebrow}>شاخص کلیدی</span>
           <span className={s.heroPulseValue}>
-            {pulseValue} <span className={s.heroPulseSub} style={{ display: 'inline' }}>{pulseUnit}</span>
+            {pulseValue} <span className={`${s.heroPulseSub} ${s.heroPulseUnitInline}`}>{pulseUnit}</span>
           </span>
           <span className={s.heroPulseSub}>{pulseSub}</span>
         </div>

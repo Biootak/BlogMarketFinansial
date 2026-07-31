@@ -9,6 +9,7 @@ import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import TransactionsWorkspace from './_components/TransactionsWorkspace';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = { title: 'تراکنش‌های صرافی' };
 
@@ -26,20 +27,22 @@ export default async function TransactionsPage() {
   ]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-5)' }}>
-      <PageHeader
-        title="تراکنش‌ها"
-        description={`مجموع ${new Intl.NumberFormat('fa-IR').format(txResult.total)} تراکنش`}
-        breadcrumb={[{ label: 'پنل صرافی' }, { label: 'تراکنش‌ها' }]}
-      />
-      <TransactionsWorkspace
-        exchangeId={exchange.id}
-        initialRows={txResult.rows}
-        total={txResult.total}
-        customers={customersResult.rows}
-        staffRole={membership.staffRole}
-        primaryCurrency={exchange.primaryCurrency}
-      />
-    </div>
+    <Suspense fallback={null}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-5)' }}>
+        <PageHeader
+          title="تراکنش‌ها"
+          description={`مجموع ${new Intl.NumberFormat('fa-IR').format(txResult.total)} تراکنش`}
+          breadcrumb={[{ label: 'پنل صرافی' }, { label: 'تراکنش‌ها' }]}
+        />
+        <TransactionsWorkspace
+          exchangeId={exchange.id}
+          initialRows={txResult.rows}
+          total={txResult.total}
+          customers={customersResult.rows}
+          staffRole={membership.staffRole}
+          primaryCurrency={exchange.primaryCurrency}
+        />
+      </div>
+    </Suspense>
   );
 }

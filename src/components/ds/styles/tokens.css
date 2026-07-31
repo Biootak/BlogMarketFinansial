@@ -134,6 +134,41 @@
   --ds-accent-rose: oklch(60% 0.13 20);
   --ds-accent-violet: oklch(58% 0.13 290);
   --ds-accent-slate: oklch(60% 0.02 250);
+  /* Accent های تکمیلی (اضافه شده ۲۰۲۶-۰۷-۳۱) — استفاده در observability و
+     داشبورد. semantic هستند؛ فقط برای tone متمایز. */
+  --ds-accent-cyan: oklch(70% 0.13 200);
+  --ds-accent-indigo: oklch(58% 0.14 265);
+
+  /* ==========================================================================
+     TYPE ALIASES — backward-compat برای فایل‌هایی که از --ds-fs-* استفاده
+     می‌کنند. canonical name --ds-text-* است؛ این alias ها موقتی هستند تا
+     migration کامل شود. (یادداشت ۲۰۲۶-۰۷-۳۱)
+     ========================================================================== */
+  --ds-fs-xs: var(--ds-text-xs);
+  --ds-fs-sm: var(--ds-text-sm);
+  --ds-fs-base: var(--ds-text-base);
+  --ds-fs-lg: var(--ds-text-lg);
+  --ds-fs-xl: var(--ds-text-xl);
+  --ds-fs-2xl: var(--ds-text-2xl);
+  --ds-fs-3xl: var(--ds-text-3xl);
+  --ds-fs-4xl: var(--ds-text-4xl);
+
+  /* Surface aliases — canonical --ds-surface / --ds-surface-elevated.
+     این alias ها فقط برای compatibility؛ فایل‌های جدید نباید استفاده کنند. */
+  --ds-surface-1: var(--ds-surface);
+  --ds-surface-2: var(--ds-surface-elevated);
+
+  /* Border alias (legacy --ds-border) → --ds-border-subtle */
+  --ds-border: var(--ds-border-subtle);
+
+  /* Text alias (legacy --ds-text) → --ds-text-primary */
+  --ds-text: var(--ds-text-primary);
+
+  /* Font family — برای کد و اعداد تکنیکال. semantic؛ جایگزین hardcoded
+     ui-monospace chains. (اضافه شده ۲۰۲۶-۰۷-۳۱) */
+  --ds-font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", "Courier New", monospace;
 
   /* ==========================================================================
      SEMANTIC COLOR TOKENS — Dashboard v2 (2026)

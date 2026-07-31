@@ -29,12 +29,15 @@ export default async function Dashboard() {
   // 2026-07-29: USER role gets a clean user-facing home (not admin
   // Atelier). Routing at the page-level keeps the layout/Sidebar
   // happy and avoids redirect ping-pong.
+  // 2026-07-31: SUPPORT هم مثل USER فقط به baseDashboardRoutes دسترسی دارد
+  // (sidebar فقط dashboard/my-requests/devices/profile را نشان می‌دهد)؛
+  // بنابراین همان UserHome را می‌بیند تا صفحه خالی یا redirect به / نبیند.
   const initialSession = await auth();
   if (!initialSession?.user) {
     redirect('/auth?callbackUrl=/dashboard');
   }
 
-  if (initialSession.user.role === 'USER') {
+  if (initialSession.user.role === 'USER' || initialSession.user.role === 'SUPPORT') {
     const dbUser = await prisma.user
       .findUnique({
         where: { id: initialSession.user.id },

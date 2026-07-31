@@ -3,6 +3,14 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { toPersianDigits } from '@/lib/setup/format';
+import { SearchInput } from '@/components/Dashboard/primitives';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import s from '../jobs.module.css';
 
 export interface JobTableRow {
@@ -108,22 +116,13 @@ export function JobTable({ rows, total }: JobTableProps) {
   return (
     <div className={s.card}>
       <div className={s.tableToolbar}>
-        <input
-          type="search"
+        <SearchInput
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={setQuery}
+          onClear={() => setQuery('')}
           placeholder="جست‌وجو در نوع، صف یا شناسه…"
+          ariaLabel="جست‌وجوی job"
           className={s.tableSearch}
-          style={{
-            background: 'var(--ds-surface-1)',
-            border: '1px solid var(--ds-border-subtle)',
-            borderRadius: 8,
-            padding: '8px 12px',
-            fontSize: 12,
-            color: 'var(--ds-text-strong)',
-            fontFamily: 'inherit',
-          }}
-          aria-label="جست‌وجوی job"
         />
         <div className={s.tableFilters}>
           {STATUS_FILTERS.map((f) => (
@@ -143,20 +142,22 @@ export function JobTable({ rows, total }: JobTableProps) {
           ))}
         </div>
         {queues.length > 1 ? (
-          <select
-            value={queueFilter}
-            onChange={(e) => setQueueFilter(e.target.value)}
-            className={s.tableFilterPill}
-            style={{ appearance: 'none', paddingInlineEnd: 24 }}
-            aria-label="فیلتر صف"
-          >
-            <option value="all">همه صف‌ها</option>
-            {queues.map((q) => (
-              <option key={q} value={q}>
-                {q}
-              </option>
-            ))}
-          </select>
+          <Select value={queueFilter} onValueChange={(v) => setQueueFilter(v as QueueFilter)}>
+            <SelectTrigger
+              className={`${s.tableFilterPill} ${s.tableQueueSelect}`}
+              aria-label="فیلتر صف"
+            >
+              <SelectValue placeholder="همه صف‌ها" />
+            </SelectTrigger>
+            <SelectContent className={s.tableSelectContent} dir="rtl">
+              <SelectItem value="all">همه صف‌ها</SelectItem>
+              {queues.map((q) => (
+                <SelectItem key={q} value={q}>
+                  {q}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         ) : null}
         <span className={s.tableMeta}>
           {toPersianDigits(filtered.length)} از {toPersianDigits(total)}
@@ -227,10 +228,7 @@ export function JobTable({ rows, total }: JobTableProps) {
         <span>
           نمایش {toPersianDigits(filtered.length)} مورد · کلیک روی هر ردیف = جزئیات کامل
         </span>
-        <Link
-          href="/dashboard/jobs/new"
-          style={{ color: 'oklch(45% 0.10 162)', fontWeight: 600, textDecoration: 'none' }}
-        >
+        <Link href="/dashboard/jobs/new" className={s.tableFooterLink}>
           ساخت job جدید ←
         </Link>
       </div>

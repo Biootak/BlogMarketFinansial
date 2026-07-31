@@ -23,8 +23,16 @@ export default async function DLQPage() {
   const allJobs = (data?.jobs ?? []).filter((j) => j.status === 'dead' || j.status === 'failed');
   const deadCount = (data?.jobs ?? []).filter((j) => j.status === 'dead').length;
   const failedCount = data?.metrics.failed24h ?? 0;
+  const totalJobs = data?.jobs.length ?? 0;
+  const completed24h = data?.metrics.completed24h ?? 0;
 
   return (
-    <DLQView jobs={allJobs} deadCount={deadCount} failedCount={failedCount} />
+    <DLQView
+      jobs={allJobs}
+      deadCount={deadCount}
+      failedCount={failedCount}
+      totalJobs={totalJobs}
+      completed24h={completed24h}
+    />
   );
 }

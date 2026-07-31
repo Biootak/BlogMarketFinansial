@@ -469,6 +469,20 @@ export function getMenu(role: UserRole): NavSection[] {
     label: 'درخواست‌های من',
     title: 'درخواست‌های ارسالی به صرافی',
   };
+  const customerWallet: MenuItem = {
+    id: 'customerWallet',
+    href: '/customer/wallet',
+    icon: HiOutlineWallet({ className: ICON_CLASS }),
+    label: 'کیف پول',
+    title: 'موجودی، حساب‌ها و تاریخچهٔ تراکنش‌ها',
+  };
+  const customerTransfer: MenuItem = {
+    id: 'customerTransfer',
+    href: '/customer/transfer',
+    icon: HiOutlineBanknotes({ className: ICON_CLASS }),
+    label: 'انتقال و عملیات',
+    title: 'واریز، برداشت، انتقال داخلی و تبدیل ارز',
+  };
   const customerTransactions: MenuItem = {
     id: 'customerTransactions',
     href: '/customer/transactions',
@@ -624,7 +638,7 @@ export function getMenu(role: UserRole): NavSection[] {
           id: 'financial',
           index: '۰۲',
           label: 'مالی',
-          items: [customerAccounts, customerCrypto, customerBeneficiaries, customerTransactions, customerRequests],
+          items: [customerWallet, customerAccounts, customerCrypto, customerTransfer, customerBeneficiaries, customerTransactions, customerRequests],
         },
         { id: 'identity', index: '۰۳', label: 'هویت', items: [customerKyc, customerDocuments] },
         {
@@ -776,20 +790,23 @@ export function getMenu(role: UserRole): NavSection[] {
         },
       ];
     case 'SUPPORT':
-      // SUPPORT can only access baseDashboardRoutes (/dashboard, edit-profile,
-      // my-deals, my-requests). Admin/owner-only items (kycReview, fraudReview,
-      // customers, settlements, audit-log, settings, reports, …) are deliberately
-      // excluded — middleware would redirect them, which manifests as "button
-      // does nothing" from the user's perspective. The SUPPORT role is for
-      // first-line operators who triage their own assigned work; deeper
-      // verification tools require ADMIN+.
+      // SUPPORT can access: dashboard, helpdesk, approvals (view), service-requests,
+      // notifications, my-deals, my-requests, devices, profile.
+      // Admin-only items (kycReview, fraudReview, customers, settlements, audit-log,
+      // settings, reports, roles, …) are deliberately excluded.
       return [
         { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
         {
-          id: 'account',
+          id: 'support',
           index: '۰۲',
+          label: 'پشتیبانی',
+          items: [helpdesk, approvals, serviceRequests],
+        },
+        {
+          id: 'account',
+          index: '۰۳',
           label: 'حساب',
-          items: [myDeals, myRequests, devices, profile],
+          items: [notifications, myDeals, myRequests, devices, profile],
         },
       ];
     case 'AUTHOR':

@@ -5,6 +5,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Plus, Sparkles } from 'lucide-react';
 import { FormField } from '@/components/Dashboard/primitives';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { PersianDateTimePicker } from '@/components/ui/PersianDateTimePicker';
 import { enqueueJobAction, type EnqueueActionResult } from '@/actions/jobs-actions';
 import { toPersianDigits } from '@/lib/setup/format';
 import s from '../../jobs.module.css';
@@ -22,6 +30,10 @@ export function EnqueueJobForm({ queues, recentTypes }: EnqueueJobFormProps) {
   const [pending, startTransition] = useTransition();
   const [payloadOpen, setPayloadOpen] = useState(false);
   const redirectedRef = useRef<string | null>(null);
+
+  // controlled state برای المان‌های شمسی (قانون NO NATIVE FORM CONTROLS)
+  const [queue, setQueue] = useState<string>(queues[0] ?? 'default');
+  const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
 
   // navigate to detail page on success (only once per created id)
   useEffect(() => {
@@ -75,6 +87,15 @@ export function EnqueueJobForm({ queues, recentTypes }: EnqueueJobFormProps) {
       </header>
 
       <form action={formAction} className={s.newFormBody}>
+        {/* hidden inputs — خارج از FormField تا ساختار canonical (هر FormField فقط یک interactive control)
+            باقی بماند و ID/aria wiring به hidden input داده نشود. */}
+        <input type="hidden" name="queue" value={queue} />
+        <input
+          type="hidden"
+          name="scheduledAt"
+          value={scheduledAt ? scheduledAt.toISOString() : ''}
+        />
+
         <div className={s.newGrid}>
           <FormField
             label="نوع job"
@@ -99,19 +120,21 @@ export function EnqueueJobForm({ queues, recentTypes }: EnqueueJobFormProps) {
             hint="صف job — نوع‌های مشابه در یک صف قرار می‌گیرند"
             error={fieldError('queue')}
           >
-            <select
-              name="queue"
-              required
-              defaultValue={queues[0] ?? 'default'}
-              className={s.newInput}
-              dir="ltr"
-            >
-              {queues.map((q) => (
-                <option key={q} value={q}>
-                  {q}
-                </option>
-              ))}
-            </select>
+            <Select value={queue} onValueChange={setQueue}>
+              <SelectTrigger
+                className={s.newSelectTrigger}
+                aria-label="انتخاب صف"
+              >
+                <SelectValue placeholder="انتخاب صف" />
+              </SelectTrigger>
+              <SelectContent className={s.newSelectContent}>
+                {queues.map((q) => (
+                  <SelectItem key={q} value={q} className={s.newSelectItem}>
+                    {q}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </FormField>
 
           <FormField
@@ -152,12 +175,14 @@ export function EnqueueJobForm({ queues, recentTypes }: EnqueueJobFormProps) {
             error={fieldError('scheduledAt')}
             className={s.newFieldFull}
           >
-            <input
-              name="scheduledAt"
-              type="datetime-local"
-              className={s.newInput}
-              dir="ltr"
-            />
+            <div className={s.newDatePickerWrap}>
+              <PersianDateTimePicker
+                value={scheduledAt}
+                onChange={setScheduledAt}
+                placeholder="روی کلیک کنید تا تقویم باز شود"
+                showPresets
+              />
+            </div>
           </FormField>
 
           <div className={s.newFieldFull}>
@@ -170,10 +195,7 @@ export function EnqueueJobForm({ queues, recentTypes }: EnqueueJobFormProps) {
               <Plus
                 size={14}
                 aria-hidden
-                style={{
-                  transform: payloadOpen ? 'rotate(45deg)' : 'none',
-                  transition: 'transform 200ms ease',
-                }}
+                className={`${s.newPayloadIcon} ${payloadOpen ? s.newPayloadIconOpen : ''}`}
               />
               {payloadOpen ? 'بستن payload' : 'افزودن payload (JSON اختیاری)'}
             </button>

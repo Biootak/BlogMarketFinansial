@@ -17,6 +17,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import { PillTabs } from '@/components/Dashboard/PlatformHub';
 import { PriorityOrbit, type OrbitTicket, type OrbitPriority, type OrbitStatus } from './PriorityOrbit';
@@ -71,13 +72,25 @@ function avgFirstResponse(tickets: TicketSummary[]): string {
 }
 
 export function HelpdeskHub({ initialTickets }: HelpdeskHubProps) {
+  const searchParams = useSearchParams();
   const [tickets, setTickets] = useState<TicketSummary[]>(initialTickets);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [priorityFilter, setPriorityFilter] = useState<'all' | TicketPriority>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | TicketStatus>('all');
   const [query, setQuery] = useState('');
-  const [newTicketOpen, setNewTicketOpen] = useState(false);
+  // ?new=1 از /dashboard/helpdesk/new ریدایرکت می‌کند — drawer را خودکار باز کن
+  const [newTicketOpen, setNewTicketOpen] = useState(() => searchParams.get('new') === '1');
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // یک‌بار پس از mount، URL را تمیز کن
+  useEffect(() => {
+    if (searchParams.get('new') === '1' && typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('new');
+      window.history.replaceState({}, '', url.toString());
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── polling 30s برای تازه‌سازی snapshot (از route API) ─────
   const refresh = useCallback(async () => {

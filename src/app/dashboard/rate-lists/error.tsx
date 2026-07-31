@@ -2,7 +2,7 @@
 
 import { RouteError } from '@/components/Dashboard/primitives';
 
-export default function ExchangeLayoutError({
+export default function RateListsError({
   error,
   reset,
 }: {
@@ -13,9 +13,9 @@ export default function ExchangeLayoutError({
     <RouteError
       error={error}
       reset={reset}
-      section="پنل صرافی"
-      backHref="/exchange/dashboard"
-      backLabel="داشبورد صرافی"
+      section="فهرست نرخ‌ها"
+      backHref="/dashboard/exchange-rates"
+      backLabel="بازگشت به نرخ ارز"
     />
   );
 }

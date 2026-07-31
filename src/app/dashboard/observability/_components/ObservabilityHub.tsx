@@ -1,10 +1,18 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  type KeyboardEvent,
+  type ReactElement,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   Activity,
   AlertTriangle,
-  ArrowDown,
   ArrowUp,
   Cpu,
   Database,
@@ -42,14 +50,14 @@ interface Props {
 
 type Tab = 'overview' | 'errors' | 'performance' | 'slow';
 
-const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
+const TABS: { id: Tab; label: string; icon: ReactElement }[] = [
   { id: 'overview', label: 'نمای کلی', icon: <Radio className="h-4 w-4" /> },
   { id: 'errors', label: 'جریان خطا', icon: <AlertTriangle className="h-4 w-4" /> },
   { id: 'performance', label: 'کارایی', icon: <Gauge className="h-4 w-4" /> },
   { id: 'slow', label: 'کوئری‌های کند', icon: <Database className="h-4 w-4" /> },
 ];
 
-const SERVICE_ICON: Record<ServiceKey, React.ReactNode> = {
+const SERVICE_ICON: Record<ServiceKey, ReactElement> = {
   api: <Globe className="h-4 w-4" />,
   db: <Database className="h-4 w-4" />,
   cache: <HardDrive className="h-4 w-4" />,
@@ -115,13 +123,13 @@ function ServiceRadar({ services }: { services: ServiceHealth[] }) {
       <svg viewBox="0 0 400 400" className={s.radarSvg}>
         <defs>
           <radialGradient id="radar-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="var(--ds-accent-cyan, #06b6d4)" stopOpacity="0.18" />
-            <stop offset="60%" stopColor="var(--ds-accent-cyan, #06b6d4)" stopOpacity="0.05" />
-            <stop offset="100%" stopColor="var(--ds-accent-cyan, #06b6d4)" stopOpacity="0" />
+            <stop offset="0%" stopColor="currentColor" stopOpacity="0.18" />
+            <stop offset="60%" stopColor="currentColor" stopOpacity="0.05" />
+            <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
           </radialGradient>
           <linearGradient id="radar-sweep" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="var(--ds-accent-cyan, #06b6d4)" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="var(--ds-accent-cyan, #06b6d4)" stopOpacity="0" />
+            <stop offset="0%" stopColor="currentColor" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
           </linearGradient>
         </defs>
 
@@ -162,33 +170,34 @@ function ServiceRadar({ services }: { services: ServiceHealth[] }) {
           const y = cy + Math.sin(angle) * radius;
           const tone =
             svc.status === 'healthy'
-              ? 'var(--ds-accent-emerald, #10b981)'
+              ? 'emerald'
               : svc.status === 'degraded'
-                ? 'var(--ds-accent-amber, #f59e0b)'
+                ? 'amber'
                 : svc.status === 'down'
-                  ? 'var(--ds-accent-rose, #f43f5e)'
-                  : 'currentColor';
+                  ? 'rose'
+                  : 'neutral';
+          const fill = `var(--ds-accent-${tone === 'neutral' ? 'slate' : tone})`;
 
           return (
-            <g key={svc.id} className={s.blip}>
+            <g key={svc.id} className={s.blip} style={{ color: `var(--ds-accent-${tone === 'neutral' ? 'slate' : tone})` }}>
               <circle
                 cx={x}
                 cy={y}
                 r="14"
                 fill="none"
-                stroke={tone}
+                stroke={fill}
                 strokeWidth="1"
                 opacity="0.4"
                 className={s.blipPulse}
               />
-              <circle cx={x} cy={y} r="6" fill={tone} opacity="0.95" />
+              <circle cx={x} cy={y} r="6" fill={fill} opacity="0.95" />
               <text
                 x={x}
                 y={y - 22}
                 textAnchor="middle"
                 className={s.blipLabel}
-                fill="currentColor"
-                opacity="0.85"
+                fill={fill}
+                opacity="0.95"
               >
                 {svc.name}
               </text>
@@ -197,8 +206,8 @@ function ServiceRadar({ services }: { services: ServiceHealth[] }) {
                 y={y - 10}
                 textAnchor="middle"
                 className={s.blipMeta}
-                fill="currentColor"
-                opacity="0.55"
+                fill={fill}
+                opacity="0.7"
               >
                 {formatMs(svc.latencyMs)}
               </text>
@@ -207,7 +216,7 @@ function ServiceRadar({ services }: { services: ServiceHealth[] }) {
         })}
 
         {/* Center mark */}
-        <circle cx={cx} cy={cy} r="3" fill="var(--ds-accent-cyan, #06b6d4)" />
+        <circle cx={cx} cy={cy} r="3" fill="currentColor" />
         <text x={cx} y={cy + 18} textAnchor="middle" className={s.blipLabel} fill="currentColor" opacity="0.6">
           مرکز
         </text>
@@ -314,12 +323,12 @@ function TideChart({ hours, errors }: { hours: number[]; errors: number[] }) {
       <svg viewBox={`0 0 ${w} ${h}`} className={s.tideSvg} preserveAspectRatio="none">
         <defs>
           <linearGradient id="tide-area" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--ds-accent-cyan, #06b6d4)" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="var(--ds-accent-cyan, #06b6d4)" stopOpacity="0" />
+            <stop offset="0%" stopColor="var(--ds-accent-cyan)" stopOpacity="0.35" />
+            <stop offset="100%" stopColor="var(--ds-accent-cyan)" stopOpacity="0" />
           </linearGradient>
           <linearGradient id="tide-area-err" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--ds-accent-rose, #f43f5e)" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="var(--ds-accent-rose, #f43f5e)" stopOpacity="0" />
+            <stop offset="0%" stopColor="var(--ds-accent-rose)" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="var(--ds-accent-rose)" stopOpacity="0" />
           </linearGradient>
         </defs>
         {/* gridlines */}
@@ -337,9 +346,9 @@ function TideChart({ hours, errors }: { hours: number[]; errors: number[] }) {
           />
         ))}
         <path d={buildArea(hours)} fill="url(#tide-area)" />
-        <path d={buildPath(hours)} fill="none" stroke="var(--ds-accent-cyan, #06b6d4)" strokeWidth="1.5" />
+        <path d={buildPath(hours)} fill="none" stroke="var(--ds-accent-cyan)" strokeWidth="1.5" />
         <path d={buildArea(errors)} fill="url(#tide-area-err)" />
-        <path d={buildPath(errors)} fill="none" stroke="var(--ds-accent-rose, #f43f5e)" strokeWidth="1.2" strokeDasharray="3 2" />
+        <path d={buildPath(errors)} fill="none" stroke="var(--ds-accent-rose)" strokeWidth="1.2" strokeDasharray="3 2" />
       </svg>
       <div className={s.tideAxis}>
         <span>۲۴ ساعت پیش</span>
@@ -491,6 +500,15 @@ export function ObservabilityHub({ initialData }: Props) {
   const [tab, setTab] = useState<Tab>('overview');
   const [refreshing, setRefreshing] = useState(false);
   const [lastFetch, setLastFetch] = useState<string>(initialData?.generatedAt ?? new Date().toISOString());
+  // نگه‌دارنده برای re-render هر ثانیه (تا "X پیش" به‌روز بماند)
+  const [, setNow] = useState<number>(Date.now());
+  const tabRefs = useRef<Record<Tab, HTMLButtonElement | null>>({
+    overview: null,
+    errors: null,
+    performance: null,
+    slow: null,
+  });
+  const tabsId = useId();
 
   const fetchData = useCallback(async () => {
     setRefreshing(true);
@@ -512,15 +530,46 @@ export function ObservabilityHub({ initialData }: Props) {
     const id = setInterval(() => {
       void fetchData();
     }, 30_000);
-    return () => clearInterval(id);
+    // tick هر ثانیه برای "X پیش" (R16-fix: بدون auto-tick متن stale می‌شد)
+    const tick = setInterval(() => setNow(Date.now()), 1_000);
+    return () => {
+      clearInterval(id);
+      clearInterval(tick);
+    };
   }, [fetchData]);
+
+  // keyboard navigation برای tab list (R16-fix: قبلاً فقط click کار می‌کرد)
+  const onTabKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLDivElement>) => {
+      const order: Tab[] = TABS.map((t) => t.id);
+      const idx = order.indexOf(tab);
+      if (idx < 0) return;
+      let next: number | null = null;
+      if (e.key === 'ArrowLeft') next = (idx + 1) % order.length;
+      else if (e.key === 'ArrowRight') next = (idx - 1 + order.length) % order.length;
+      else if (e.key === 'Home') next = 0;
+      else if (e.key === 'End') next = order.length - 1;
+      if (next !== null) {
+        e.preventDefault();
+        const newTab = order[next];
+        if (newTab) {
+          setTab(newTab);
+          tabRefs.current[newTab]?.focus();
+        }
+      }
+    },
+    [tab],
+  );
 
   const summary = useMemo(() => {
     const services = data?.services ?? [];
-    const healthy = services.filter((s) => s.status === 'healthy').length;
-    const degraded = services.filter((s) => s.status === 'degraded').length;
-    const down = services.filter((s) => s.status === 'down').length;
-    const errCount = (data?.errors ?? []).reduce((sum, e) => sum + e.count, 0);
+    const healthy = services.filter((svc) => svc.status === 'healthy').length;
+    const degraded = services.filter((svc) => svc.status === 'degraded').length;
+    const down = services.filter((svc) => svc.status === 'down').length;
+    const errCount = (data?.errors ?? []).reduce(
+      (sum, err) => sum + err.count,
+      0,
+    );
     return { total: services.length, healthy, degraded, down, errCount };
   }, [data]);
 
@@ -565,7 +614,7 @@ export function ObservabilityHub({ initialData }: Props) {
           <div className={s.summaryValue}>
             <CountUp value={summary.errCount} />
           </div>
-          <ArrowDown className={s.summaryArrow} />
+          <AlertTriangle className={s.summaryArrow} />
         </div>
         <div className={s.summaryCard} data-tone="cyan">
           <div className={s.summaryLabel}>p95 latency</div>
@@ -586,22 +635,40 @@ export function ObservabilityHub({ initialData }: Props) {
 
       {/* ── Tab bar ─────────────────────────────────────────────────── */}
       <div className={s.tabBar}>
-        <div className={s.tabs}>
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setTab(t.id)}
-              className={s.tab}
-              data-active={tab === t.id}
-            >
-              {t.icon}
-              <span>{t.label}</span>
-            </button>
-          ))}
+        <div
+          className={s.tabs}
+          role="tablist"
+          aria-label="بخش‌های observability"
+          aria-orientation="horizontal"
+          onKeyDown={onTabKeyDown}
+        >
+          {TABS.map((t) => {
+            const tabId = `${tabsId}-tab-${t.id}`;
+            const panelId = `${tabsId}-panel-${t.id}`;
+            return (
+              <button
+                key={t.id}
+                id={tabId}
+                ref={(el) => {
+                  tabRefs.current[t.id] = el;
+                }}
+                type="button"
+                role="tab"
+                aria-selected={tab === t.id}
+                aria-controls={panelId}
+                tabIndex={tab === t.id ? 0 : -1}
+                onClick={() => setTab(t.id)}
+                className={s.tab}
+                data-active={tab === t.id}
+              >
+                {t.icon}
+                <span>{t.label}</span>
+              </button>
+            );
+          })}
         </div>
         <div className={s.tabBarMeta}>
-          <span className={s.lastFetch}>
+          <span className={s.lastFetch} aria-live="polite">
             آخرین به‌روزرسانی: {formatTimeAgo(lastFetch)}
           </span>
           <button
@@ -611,14 +678,19 @@ export function ObservabilityHub({ initialData }: Props) {
             disabled={refreshing}
             aria-label="به‌روزرسانی"
           >
-            <RefreshCw className={`h-4 w-4 ${refreshing ? s.spin : ''}`} />
+            <RefreshCw className={`h-4 w-4 ${refreshing ? s.spin : ''}`} aria-hidden />
           </button>
         </div>
       </div>
 
       {/* ── Tab content ──────────────────────────────────────────────── */}
       {tab === 'overview' && (
-        <div className={s.overviewGrid}>
+        <div
+          id={`${tabsId}-panel-overview`}
+          role="tabpanel"
+          aria-labelledby={`${tabsId}-tab-overview`}
+          className={s.overviewGrid}
+        >
           <section className={s.radarCard}>
             <header className={s.cardHeader}>
               <h2>
@@ -652,7 +724,12 @@ export function ObservabilityHub({ initialData }: Props) {
       )}
 
       {tab === 'errors' && (
-        <section className={s.errorsCard}>
+        <section
+          id={`${tabsId}-panel-errors`}
+          role="tabpanel"
+          aria-labelledby={`${tabsId}-tab-errors`}
+          className={s.errorsCard}
+        >
           <header className={s.cardHeader}>
             <h2>
               <AlertTriangle className="h-4 w-4" /> جریان خطا — ۲۴ ساعت گذشته
@@ -664,7 +741,12 @@ export function ObservabilityHub({ initialData }: Props) {
       )}
 
       {tab === 'performance' && (
-        <section className={s.perfCard}>
+        <section
+          id={`${tabsId}-panel-performance`}
+          role="tabpanel"
+          aria-labelledby={`${tabsId}-tab-performance`}
+          className={s.perfCard}
+        >
           <header className={s.cardHeader}>
             <h2>
               <Gauge className="h-4 w-4" /> کارایی سیستم
@@ -676,7 +758,12 @@ export function ObservabilityHub({ initialData }: Props) {
       )}
 
       {tab === 'slow' && (
-        <section className={s.slowCard}>
+        <section
+          id={`${tabsId}-panel-slow`}
+          role="tabpanel"
+          aria-labelledby={`${tabsId}-tab-slow`}
+          className={s.slowCard}
+        >
           <header className={s.cardHeader}>
             <h2>
               <Database className="h-4 w-4" /> کوئری‌های کند — ۶ ساعت گذشته

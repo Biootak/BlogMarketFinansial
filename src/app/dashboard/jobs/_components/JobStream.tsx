@@ -93,7 +93,7 @@ export function JobStream({ items }: JobStreamProps) {
           <span className={s.cardEyebrow}>Live Stream</span>
           <span className={s.cardTitle}>جریان زنده job ها</span>
         </div>
-        <span style={{ fontSize: 11, color: 'var(--ds-text-muted)' }}>
+        <span className={s.streamCount}>
           {toPersianDigits(filtered.length)} مورد
         </span>
       </div>

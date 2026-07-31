@@ -2,7 +2,7 @@
  * /exchange — ریدایرکت هوشمند به پنل صرافی
  */
 
-import { getExchangeForUser } from '@/actions/exchange-access';
+import { getExchangeForUser } from '@/actions/exchanges';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 

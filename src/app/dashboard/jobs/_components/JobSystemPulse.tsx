@@ -8,7 +8,12 @@
  *
  * عدد مرکزی (anchor) از props می‌آید؛ بنابراین SVG داده‌محور است.
  * - می‌تواند throughput ساعت گذشته، یا میانگین ms باشد.
+ *
+ * همهٔ رنگ‌ها از کلاس‌های CSS module (`pulseSvg--{health}`) می‌آیند؛
+ * SVG فقط از `currentColor` و متغیرهای CSS محلی استفاده می‌کند.
  */
+import s from '../jobs.module.css';
+
 type PulseHealth = 'healthy' | 'degraded' | 'critical' | 'idle';
 
 export interface JobSystemPulseProps {
@@ -22,25 +27,17 @@ export interface JobSystemPulseProps {
   active: boolean;
 }
 
-const HEALTH_COLORS: Record<PulseHealth, { stroke: string; fill: string; glow: string }> = {
-  healthy: { stroke: 'oklch(72% 0.14 162)', fill: 'oklch(72% 0.14 162)', glow: 'oklch(72% 0.14 162 / 0.18)' },
-  degraded: { stroke: 'oklch(78% 0.14 75)', fill: 'oklch(78% 0.14 75)', glow: 'oklch(78% 0.14 75 / 0.18)' },
-  critical: { stroke: 'oklch(68% 0.18 15)', fill: 'oklch(68% 0.18 15)', glow: 'oklch(68% 0.18 15 / 0.18)' },
-  idle: { stroke: 'oklch(60% 0.05 255)', fill: 'oklch(60% 0.05 255)', glow: 'oklch(60% 0.05 255 / 0.18)' },
-};
-
 export function JobSystemPulse({
-  value,
-  unit,
-  eyebrow,
-  sub,
+  value: _value,
+  unit: _unit,
+  eyebrow: _eyebrow,
+  sub: _sub,
   health,
   active,
 }: JobSystemPulseProps) {
-  const color = HEALTH_COLORS[health];
   return (
     <svg
-      className="job-system-pulse-svg"
+      className={`${s.pulseSvg} ${s[`pulseSvg--${health}`]}`}
       viewBox="0 0 200 200"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
@@ -48,9 +45,9 @@ export function JobSystemPulse({
     >
       <defs>
         <radialGradient id="pulseGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor={color.fill} stopOpacity="0.3" />
-          <stop offset="50%" stopColor={color.fill} stopOpacity="0.06" />
-          <stop offset="100%" stopColor={color.fill} stopOpacity="0" />
+          <stop offset="0%" stopColor="currentColor" stopOpacity="0.3" />
+          <stop offset="50%" stopColor="currentColor" stopOpacity="0.06" />
+          <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
         </radialGradient>
       </defs>
 
@@ -58,38 +55,38 @@ export function JobSystemPulse({
       <circle cx="100" cy="100" r="90" fill="url(#pulseGlow)" />
 
       {/* concentric rings */}
-      <circle cx="100" cy="100" r="40" fill="none" stroke="oklch(100% 0 0 / 0.06)" strokeWidth="1" />
-      <circle cx="100" cy="100" r="60" fill="none" stroke="oklch(100% 0 0 / 0.05)" strokeWidth="1" />
-      <circle cx="100" cy="100" r="80" fill="none" stroke="oklch(100% 0 0 / 0.04)" strokeWidth="1" />
+      <circle cx="100" cy="100" r="40" className={s.pulseRing1} />
+      <circle cx="100" cy="100" r="60" className={s.pulseRing2} />
+      <circle cx="100" cy="100" r="80" className={s.pulseRing3} />
 
       {/* rotating scanner — 3 arcs at different phases */}
       {active ? (
         <>
-          <g style={{ transformOrigin: '100px 100px', animation: 'pulseScanner 6s linear infinite' }}>
+          <g className={s.pulseScanner}>
             <path
               d="M 100 30 A 70 70 0 0 1 170 100"
               fill="none"
-              stroke={color.stroke}
+              stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
               opacity="0.8"
             />
           </g>
-          <g style={{ transformOrigin: '100px 100px', animation: 'pulseScanner 8s linear infinite reverse' }}>
+          <g className={`${s.pulseScanner} ${s['pulseScanner--slow']}`}>
             <path
               d="M 100 25 A 75 75 0 0 1 175 100"
               fill="none"
-              stroke={color.stroke}
+              stroke="currentColor"
               strokeWidth="1.5"
               strokeLinecap="round"
               opacity="0.4"
             />
           </g>
-          <g style={{ transformOrigin: '100px 100px', animation: 'pulseScanner 10s linear infinite' }}>
+          <g className={`${s.pulseScanner} ${s['pulseScanner--slowest']}`}>
             <path
               d="M 100 20 A 80 80 0 0 1 180 100"
               fill="none"
-              stroke={color.stroke}
+              stroke="currentColor"
               strokeWidth="1"
               strokeLinecap="round"
               opacity="0.2"
@@ -114,9 +111,7 @@ export function JobSystemPulse({
             y1={y1}
             x2={x2}
             y2={y2}
-            stroke="oklch(100% 0 0 / 0.18)"
-            strokeWidth={i % 3 === 0 ? 1.5 : 0.75}
-            strokeLinecap="round"
+            className={i % 3 === 0 ? s.pulseTickMajor : s.pulseTickMinor}
           />
         );
       })}
@@ -126,26 +121,9 @@ export function JobSystemPulse({
         cx="100"
         cy="100"
         r="6"
-        fill={color.fill}
-        style={active ? { transformOrigin: '100px 100px', animation: 'pulseCore 1.6s ease-in-out infinite' } : undefined}
+        className={active ? s.pulseCore : `${s.pulseCore} ${s['pulseCore--paused']}`}
       />
-      <circle cx="100" cy="100" r="3" fill="oklch(15% 0.012 255)" />
-
-      <style>{`
-        @keyframes pulseScanner {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        @keyframes pulseCore {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.4); opacity: 0.7; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          g[style*="pulseScanner"], circle[style*="pulseCore"] {
-            animation: none !important;
-          }
-        }
-      `}</style>
+      <circle cx="100" cy="100" r="3" className={s.pulseCoreInner} />
     </svg>
   );
 }

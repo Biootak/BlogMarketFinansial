@@ -56,7 +56,7 @@ export function JobQueueMatrix({ queues }: JobQueueMatrixProps) {
           <span className={s.cardEyebrow}>Queue Matrix</span>
           <span className={s.cardTitle}>سلامت صف‌ها</span>
         </div>
-        <span style={{ fontSize: 11, color: 'var(--ds-text-muted)' }}>
+        <span className={s.streamCount}>
           {toPersianDigits(queues.length)} صف
         </span>
       </div>
@@ -83,31 +83,8 @@ export function JobQueueMatrix({ queues }: JobQueueMatrixProps) {
                 </div>
                 <div className={s.matrixBody}>
                   <div className={s.matrixName}>
-                    <span style={{ fontFamily: 'var(--nova-font-mono)' }}>{q.name}</span>
-                    <span
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 600,
-                        color:
-                          q.status === 'healthy'
-                            ? 'oklch(45% 0.10 162)'
-                            : q.status === 'degraded'
-                              ? 'oklch(45% 0.10 75)'
-                              : q.status === 'critical'
-                                ? 'oklch(50% 0.14 15)'
-                                : 'var(--ds-text-muted)',
-                        background:
-                          q.status === 'healthy'
-                            ? 'oklch(95% 0.04 162)'
-                            : q.status === 'degraded'
-                              ? 'oklch(95% 0.04 75)'
-                              : q.status === 'critical'
-                                ? 'oklch(95% 0.04 15)'
-                                : 'var(--ds-surface-2)',
-                        padding: '1px 6px',
-                        borderRadius: 4,
-                      }}
-                    >
+                    <span className={s.matrixNameMono}>{q.name}</span>
+                    <span className={`${s.matrixStatus} ${s[`matrixStatus--${q.status}`]}`}>
                       {STATUS_LABEL[q.status]}
                     </span>
                   </div>
@@ -128,7 +105,7 @@ export function JobQueueMatrix({ queues }: JobQueueMatrixProps) {
                         مرده {toPersianDigits(q.dead)}
                       </span>
                     ) : null}
-                    <span style={{ color: 'var(--ds-text-muted)' }}>
+                    <span className={s.matrixBadgeMuted}>
                       نرخ خطا {toPersianDigits(q.failureRate.toFixed(1))}٪
                     </span>
                   </div>

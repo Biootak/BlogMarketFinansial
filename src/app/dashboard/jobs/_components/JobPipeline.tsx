@@ -20,14 +20,6 @@ export interface JobPipelineProps {
   outflowPerMin: number;
 }
 
-const STAGE_COLOR: Record<JobPipelineStage['key'], string> = {
-  scheduled: 'oklch(70% 0.08 255)',
-  pending: 'oklch(72% 0.14 75)',
-  running: 'oklch(64% 0.16 285)',
-  completed: 'oklch(64% 0.14 162)',
-  dead: 'oklch(60% 0.18 15)',
-};
-
 export function JobPipeline({ stages, inflowPerMin, outflowPerMin }: JobPipelineProps) {
   return (
     <section className={s.pipeline} aria-label="جریان پردازش job">
@@ -40,17 +32,11 @@ export function JobPipeline({ stages, inflowPerMin, outflowPerMin }: JobPipeline
         </div>
         <div className={s.pipelineLegend}>
           <span className={s.pipelineLegendItem}>
-            <span
-              className={s.pipelineLegendDot}
-              style={{ background: 'oklch(72% 0.14 162)' }}
-            />
+            <span className={`${s.pipelineLegendDot} ${s['pipelineLegendDot--inflow']}`} />
             ورودی: {toPersianDigits(inflowPerMin)}/min
           </span>
           <span className={s.pipelineLegendItem}>
-            <span
-              className={s.pipelineLegendDot}
-              style={{ background: 'oklch(60% 0.18 15)' }}
-            />
+            <span className={`${s.pipelineLegendDot} ${s['pipelineLegendDot--outflow']}`} />
             خروجی: {toPersianDigits(outflowPerMin)}/min
           </span>
         </div>
@@ -68,7 +54,6 @@ export function JobPipeline({ stages, inflowPerMin, outflowPerMin }: JobPipeline
                       ? `${s.pipelineStageDot} ${s['pipelineStageDot--pulse']}`
                       : s.pipelineStageDot
                   }
-                  style={{ background: STAGE_COLOR[stage.key] }}
                 />
               </div>
               <span className={s.pipelineStageValue}>{toPersianDigits(stage.value)}</span>
