@@ -1,12 +1,19 @@
 import { getUserDetail, getUserFinancials } from '@/actions/user-detail';
 import { auth } from '@/auth';
+import { notFound } from 'next/navigation';
 import UserDetail from './_components/UserDetail';
-import s from './user-detail.module.css';
 
 export const dynamic = 'force-dynamic';
 
 interface Props {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: Props) {
+  const { id } = await params;
+  const detail = await getUserDetail(id).catch(() => null);
+  if (!detail?.success) return { title: 'کاربر یافت نشد' };
+  return { title: `${detail.data.name ?? detail.data.email} | مدیریت کاربران` };
 }
 
 export default async function UserDetailPage({ params }: Props) {
@@ -22,14 +29,7 @@ export default async function UserDetailPage({ params }: Props) {
   ]);
 
   if (!detail.success) {
-    return (
-      <div className="at-page" dir="rtl">
-        <div className={s.notFound}>
-          <h2 className={s.notFoundTitle}>دسترسی ممکن نیست</h2>
-          <p className={s.notFoundText}>{detail.message}</p>
-        </div>
-      </div>
-    );
+    notFound();
   }
 
   return (

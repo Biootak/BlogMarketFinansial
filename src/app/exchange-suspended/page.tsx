@@ -132,8 +132,12 @@ export default async function ExchangeSuspendedPage() {
           </ul>
 
           <div className={s.actions}>
-            <Link href="/dashboard" className={s.btnPrimary} aria-label="بازگشت به داشبورد">
-              بازگشت به داشبورد
+            {/* 2026-07-31: لینک باید به / (صفحه اصلی) برود، نه /dashboard.
+                کاربر EXCHANGE با صرافی suspended از طریق middleware از /dashboard
+                به /exchange/dashboard و سپس دوباره به /exchange-suspended هدایت می‌شد
+                (redirect loop). با / کاربر به صفحه اصلی عمومی می‌رود و از حلقه خارج می‌شود. */}
+            <Link href="/" className={s.btnPrimary} aria-label="بازگشت به صفحه اصلی">
+              بازگشت به صفحه اصلی
               <ArrowRight size={16} strokeWidth={2} aria-hidden className={s.btnIconFlip} />
             </Link>
             <a href={`tel:${supportPhone}`} className={s.btnGhost}>

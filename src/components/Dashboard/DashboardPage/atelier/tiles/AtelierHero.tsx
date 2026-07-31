@@ -1,12 +1,16 @@
 'use client';
 
 /**
- * AtelierHero — dramatic greeting + anchor number + radial pulse + quick access grid.
+ * AtelierHero — editorial anchor number + radial pulse + quick access grid.
+ *
+ * 2026-07-31: greeting از این کارت به FintechCockpit (Hero پیشرفته)
+ * منتقل شد تا تکراری نباشد. حالا فقط metrics + sparkline + CTA +
+ * QuickAccess نگه می‌دارد. greeting فقط در FintechCockpit رندر می‌شود.
  *
  * Layout (desktop):
  *   ┌──────────────────────────────┬──────────────┐
  *   │ eyebrow  · live dot         │              │
- *   │ greeting, name              │  radial      │
+ *   │ (greeting در FintechCockpit) │  radial      │
  *   │ today views (oversized)     │  pulse       │
  *   │ delta chip + meta           │              │
  *   │ sparkline + CTAs            │              │
@@ -18,7 +22,7 @@
  * On mobile the pulse moves below the metrics and stretches full width;
  * the quick-access grid collapses to 2 columns.
  *
- * Persian date renders in poetic form above the greeting; Persian
+ * Persian date renders in poetic form above the metrics; Persian
  * numerals everywhere; Vazirmatn carries the typographic weight.
  *
  * A subtle geometric SVG (eight-point star + hairline arcs) sits in
@@ -27,10 +31,9 @@
  */
 
 import CountUp from '@/components/Dashboard/primitives/CountUp';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import {
   HiOutlineArrowDownRight,
   HiOutlineArrowTrendingUp,
@@ -48,7 +51,7 @@ import {
   HiOutlineTag,
   HiOutlineUserGroup,
 } from 'react-icons/hi2';
-import { fmt, persianLongDate, pickTrend, timeOfDay } from '../utils';
+import { fmt, persianLongDate, pickTrend } from '../utils';
 import AtelierPulse from './AtelierPulse';
 
 interface AtelierHeroProps {
@@ -75,7 +78,7 @@ interface AtelierHeroProps {
 interface HeroQuickItem {
   href: string;
   label: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   hotkey?: string;
   tone: 'accent' | 'gold' | 'info' | 'violet';
 }
@@ -283,23 +286,18 @@ export default function AtelierHero({
   publishedTotal,
   userRole,
 }: AtelierHeroProps) {
-  const user = useCurrentUser();
   const gradId = useId();
-  const [hour, setHour] = useState(12);
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
     const update = () => {
-      const d = new Date();
-      setHour(d.getHours());
-      setNow(d);
+      setNow(new Date());
     };
     update();
     const t = window.setInterval(update, 60_000);
     return () => window.clearInterval(t);
   }, []);
 
-  const greeting = timeOfDay(hour);
   const { trend, delta } = pickTrend(spark);
   const TrendIcon =
     trend === 'up'
@@ -374,13 +372,8 @@ export default function AtelierHero({
         </span>
       </header>
 
-      <h1 className="at-hero__greeting">
-        {greeting}
-        <span className="at-hero__greeting-sep" aria-hidden>
-          ،
-        </span>
-        <em className="at-hero__name">{user?.name ?? 'کاربر'}</em>
-      </h1>
+      {/* 2026-07-31: greeting منتقل شد به FintechCockpit (Hero پیشرفته).
+          این کارت فقط metrics + sparkline + CTA + QuickAccess نگه می‌دارد. */}
 
       <div className="at-hero__metric">
         <div className="at-hero__metric-text">

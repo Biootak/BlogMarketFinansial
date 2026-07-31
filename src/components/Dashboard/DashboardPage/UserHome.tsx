@@ -256,7 +256,10 @@ export async function UserHome({
 
       {/* ─── Quick actions ────────────────────────────────────────────── */}
       <section className={styles.quickActions} aria-label="اقدامات سریع">
-        <h2 className={styles.sectionTitle}>اقدامات سریع</h2>
+        <header className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>اقدامات سریع</h2>
+          <span className={styles.sectionMeta}>۴ میان‌بر</span>
+        </header>
         <div className={styles.actionsGrid}>
           <Link href="/services" className={styles.actionCard}>
             <span className={styles.actionIcon}>
@@ -287,13 +290,16 @@ export async function UserHome({
 
       {/* ─── Recent requests ─────────────────────────────────────────── */}
       <section className={styles.recent} aria-label="درخواست‌های اخیر">
-        <div className={styles.recentHeader}>
-          <h2 className={styles.sectionTitle}>درخواست‌های اخیر</h2>
+        <header className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>
+            <FileText aria-hidden className={styles.sectionTitleIcon} size={18} />
+            <span>درخواست‌های اخیر</span>
+          </h2>
           <Link href="/dashboard/my-requests" className={styles.seeAll}>
             <span>مشاهده همه</span>
             <ArrowLeft aria-hidden />
           </Link>
-        </div>
+        </header>
 
         {overview.recentRequests.length === 0 ? (
           <EmptyState
@@ -344,16 +350,16 @@ export async function UserHome({
       {/* ─── Activity feed (اعلان‌های اخیر) ──────────────────────────── */}
       {overview.recentNotifications.length > 0 ? (
         <section className={styles.activity} aria-label="اعلان‌های اخیر">
-          <div className={styles.activityHeader}>
+          <header className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>
-              <Bell aria-hidden className={styles.activityIcon} />
+              <Bell aria-hidden className={styles.sectionTitleIcon} size={18} />
               <span>آخرین اعلان‌ها</span>
             </h2>
             <Link href="/dashboard/notifications" className={styles.seeAll}>
               <span>مرکز اعلان‌ها</span>
               <ArrowLeft aria-hidden />
             </Link>
-          </div>
+          </header>
           <ul className={styles.activityList}>
             {overview.recentNotifications.map((n: (typeof overview.recentNotifications)[number]) => (
               <li

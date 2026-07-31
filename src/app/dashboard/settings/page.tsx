@@ -19,7 +19,7 @@ export const revalidate = 0;
 export default async function SettingsPage() {
   const session = await auth();
   const role = session?.user?.role;
-  if (!session?.user) redirect('/login');
+  if (!session?.user) redirect('/auth?callbackUrl=/dashboard/settings');
   if (role !== 'ADMIN' && role !== 'OWNER' && role !== 'SUPERADMIN') {
     redirect('/dashboard');
   }
