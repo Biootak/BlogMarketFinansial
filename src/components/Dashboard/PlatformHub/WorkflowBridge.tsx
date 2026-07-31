@@ -12,7 +12,7 @@ export type WorkflowBridgeStep = {
   at?: string;
 };
 
-interface WorkflowBridgeProps {
+export interface WorkflowBridgeProps {
   steps: WorkflowBridgeStep[];
   className?: string;
   ariaLabel?: string;

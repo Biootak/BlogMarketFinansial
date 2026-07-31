@@ -48,7 +48,13 @@ DBUS_REAL="unix:path=$RUNTIME_DIR/bus"
 
 as_user() { sudo -u "$REAL_USER" "$@"; }
 
-MOUNT_DIR="/mnt/hgfs/FinancialMarket"
+SHARE_NAME="FinancialMarket"
+# Preferred mountpoint is the permanent one created by install-share-permanent.sh.
+# /mnt/hgfs is only a fallback: when the HGFS PARENT mount dies, every lookup
+# below it returns EACCES, so the child directory can never be repaired in place.
+PERM_MOUNT="/mnt/$SHARE_NAME"
+LEGACY_MOUNT="/mnt/hgfs/$SHARE_NAME"
+MOUNT_DIR="$PERM_MOUNT"
 PROJECT_DIR="$REAL_HOME/FinancialMarket"
 RPM_CACHE="$REAL_HOME/.cache/trae-install/Trae-linux-x64.rpm"
 TRAE_DOWNLOAD_URL="https://download.trae.ai/application/Trae-linux-x64.rpm"
@@ -64,8 +70,6 @@ fail() { echo -e "${RED}[FAIL]${NC}  $*" >&2; exit 1; }
 # 1. VMware tools + shared folder mount
 # ============================================================================
 step "Shared folder (vmhgfs-fuse)"
-mkdir -p "$MOUNT_DIR"
-chmod 755 "$MOUNT_DIR"
 
 if ! rpm -q open-vm-tools &>/dev/null; then
     info "Installing open-vm-tools..."
@@ -77,16 +81,6 @@ systemctl enable --now vmtoolsd 2>/dev/null || true
 # Give it time to register the HGFS channel
 sleep 3
 
-# Unmount stale broken mount if present
-if mountpoint -q "$MOUNT_DIR" 2>/dev/null; then
-    # Test if it's actually readable
-    if ! timeout 2 ls "$MOUNT_DIR" &>/dev/null; then
-        warn "Stale mount detected, remounting..."
-        umount -l "$MOUNT_DIR" 2>/dev/null || true
-        sleep 1
-    fi
-fi
-
 # vmhgfs-fuse mounts as root and FUSE hides the mount from other users unless
 # allow_other is honored, which requires user_allow_other in /etc/fuse.conf.
 # Without it, a normal user gets "Permission denied" on every path in the share.
@@ -95,36 +89,135 @@ if ! grep -qs '^[[:space:]]*user_allow_other' /etc/fuse.conf 2>/dev/null; then
     info "Added user_allow_other to /etc/fuse.conf"
 fi
 
+# ---------------------------------------------------------------------------
+# Robust unmount.
+#
+# IMPORTANT: never use a bare `umount -l` immediately followed by a new mount
+# on the SAME mountpoint. A lazy unmount only detaches the mount when the last
+# reference goes away, so the fresh mount gets stacked on top of a dying FUSE
+# mount and path lookups resolve into the dead one. The kernel then answers
+# EACCES for every file -- even for root -- which shows up exactly as:
+#     bash: /mnt/hgfs/FinancialMarket/start-installed.sh: Permission denied
+# Clean order: fusermount3 -u  ->  umount  ->  umount -f  ->  umount -l,
+# then WAIT until the mountpoint is really gone before mounting again.
+# ---------------------------------------------------------------------------
+unmount_share() {
+    local dir="$1" layers i
+    # /proc/self/mounts lists ONE LINE PER STACKED LAYER, while `mountpoint`
+    # only reports the topmost mount. A repeated "umount -l ; mount" one-liner
+    # stacks several dead FUSE mounts, so every layer must be popped.
+    layers=$(awk -v d="$dir" '$2 == d { n++ } END { print n+0 }' /proc/self/mounts)
+    [[ "$layers" -eq 0 ]] && return 0
+
+    fuser -km "$dir" 2>/dev/null || true
+    for (( i = 0; i < layers * 4 + 12; i++ )); do
+        [[ "$(awk -v d="$dir" '$2 == d { n++ } END { print n+0 }' /proc/self/mounts)" -eq 0 ]] && return 0
+        fusermount3 -u "$dir" 2>/dev/null \
+            || fusermount -u "$dir" 2>/dev/null \
+            || umount "$dir" 2>/dev/null \
+            || umount -f "$dir" 2>/dev/null \
+            || umount -l "$dir" 2>/dev/null \
+            || true
+        sleep 0.4
+    done
+    # Wait for asynchronous lazy detaches to settle (up to ~10s).
+    for (( i = 0; i < 20; i++ )); do
+        [[ "$(awk -v d="$dir" '$2 == d { n++ } END { print n+0 }' /proc/self/mounts)" -eq 0 ]] && return 0
+        sleep 0.5
+    done
+    return 1
+}
+
+share_readable() {
+    local dir="$1"
+    timeout 3 ls -A "$dir" >/dev/null 2>&1 || return 1
+    # ls can succeed on a wedged mount; prove a real file read works too.
+    local probe
+    probe=$(timeout 3 find "$dir" -maxdepth 1 -type f 2>/dev/null | head -1 || true)
+    [[ -z "$probe" ]] && return 0
+    timeout 3 head -c 1 "$probe" >/dev/null 2>&1
+}
+
+mount_share() {
+    local dir="$1"
+    /usr/bin/vmhgfs-fuse ".host:/$SHARE_NAME" "$dir" \
+        -o allow_other,uid="$REAL_UID",gid="$REAL_GID",umask=022 2>/dev/null && return 0
+    /usr/bin/vmhgfs-fuse ".host:/$SHARE_NAME" "$dir" -o allow_other,umask=022 2>/dev/null
+}
+
 SHARE_OK=false
-if ! mountpoint -q "$MOUNT_DIR" 2>/dev/null; then
-    if /usr/bin/vmhgfs-fuse .host:/FinancialMarket "$MOUNT_DIR" \
-            -o allow_other,uid=$(id -u "$REAL_USER"),gid=$(id -g "$REAL_USER"),umask=022 2>/dev/null \
-       || /usr/bin/vmhgfs-fuse .host:/FinancialMarket "$MOUNT_DIR" -o allow_other 2>/dev/null; then
-        sleep 1
-        if timeout 2 ls "$MOUNT_DIR" &>/dev/null; then
-            SHARE_OK=true
-            ok "Mounted and readable: $MOUNT_DIR"
-        else
-            warn "Mounted but not readable (VMware Shared Folders may be disabled in VM settings)."
-            umount -l "$MOUNT_DIR" 2>/dev/null || true
-        fi
-    else
-        warn "vmhgfs-fuse mount failed. Shared folder unavailable."
-    fi
-else
-    if timeout 2 ls "$MOUNT_DIR" &>/dev/null; then
+
+# --- 1. Permanent mount installed by install-share-permanent.sh --------------
+if share_readable "$PERM_MOUNT"; then
+    MOUNT_DIR="$PERM_MOUNT"
+    SHARE_OK=true
+    ok "Using permanent share: $MOUNT_DIR"
+fi
+
+# --- 2. Ask the systemd unit to (re)mount it ---------------------------------
+if [[ "$SHARE_OK" != true ]] \
+   && systemctl list-unit-files financialmarket-share.service &>/dev/null; then
+    info "Restarting financialmarket-share.service..."
+    systemctl restart financialmarket-share.service 2>/dev/null || true
+    sleep 1
+    if share_readable "$PERM_MOUNT"; then
+        MOUNT_DIR="$PERM_MOUNT"
         SHARE_OK=true
-        ok "Already mounted and readable: $MOUNT_DIR"
-    else
-        warn "Already mounted but not readable."
+        ok "Permanent share remounted: $MOUNT_DIR"
     fi
 fi
 
-# Self-install so future runs never need a readable path on the share:
+# --- 3. Mount the permanent path ourselves -----------------------------------
+if [[ "$SHARE_OK" != true ]]; then
+    unmount_share "$PERM_MOUNT" || warn "$PERM_MOUNT still has stacked layers."
+    mkdir -p "$PERM_MOUNT"
+    chmod 755 "$PERM_MOUNT"
+    if mount_share "$PERM_MOUNT"; then
+        sleep 1
+        if share_readable "$PERM_MOUNT"; then
+            MOUNT_DIR="$PERM_MOUNT"
+            SHARE_OK=true
+            ok "Mounted and readable: $MOUNT_DIR"
+        else
+            warn "Mounted at $PERM_MOUNT but not readable."
+            unmount_share "$PERM_MOUNT" || true
+        fi
+    fi
+fi
+
+# --- 4. Legacy /mnt/hgfs path, only if it still happens to work --------------
+if [[ "$SHARE_OK" != true ]] && share_readable "$LEGACY_MOUNT"; then
+    MOUNT_DIR="$LEGACY_MOUNT"
+    SHARE_OK=true
+    warn "Falling back to legacy mount: $MOUNT_DIR"
+    warn "Run 'sudo bash install-share-permanent.sh' once to move off /mnt/hgfs."
+fi
+
+if [[ "$SHARE_OK" != true ]]; then
+    warn "Shared folder unavailable."
+    if command -v vmware-hgfsclient &>/dev/null; then
+        info "Shares advertised by the host: $(vmware-hgfsclient 2>/dev/null | tr '\n' ' ')"
+    fi
+    warn "Permanent fix: sudo bash install-share-permanent.sh"
+fi
+
+# Self-install so future runs never read anything from the share:
 #   sudo start-trae
-if [[ -r "$MOUNT_DIR/start-installed.sh" ]]; then
-    install -m 0755 "$MOUNT_DIR/start-installed.sh" /usr/local/bin/start-trae 2>/dev/null \
-        && ok "Installed launcher: sudo start-trae"
+# Copy through cat (not install/cp) so a partially wedged FUSE mount cannot
+# leave a truncated launcher behind.
+if [[ "$SHARE_OK" == true && -f "$MOUNT_DIR/start-installed.sh" ]]; then
+    if timeout 10 cat "$MOUNT_DIR/start-installed.sh" > /usr/local/bin/start-trae.tmp 2>/dev/null \
+       && [[ -s /usr/local/bin/start-trae.tmp ]]; then
+        # Normalize CRLF: the file is authored on Windows and bash chokes on \r.
+        sed -i 's/\r$//' /usr/local/bin/start-trae.tmp
+        mv /usr/local/bin/start-trae.tmp /usr/local/bin/start-trae
+        chmod 0755 /usr/local/bin/start-trae
+        restorecon /usr/local/bin/start-trae 2>/dev/null || true
+        ok "Installed launcher on local disk: sudo start-trae"
+    else
+        rm -f /usr/local/bin/start-trae.tmp
+        warn "Could not copy launcher from the share."
+    fi
 fi
 
 # ============================================================================

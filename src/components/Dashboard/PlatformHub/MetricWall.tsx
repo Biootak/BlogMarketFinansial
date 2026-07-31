@@ -15,7 +15,7 @@ export type MetricWallTile = {
   spark?: number[];
 };
 
-interface MetricWallProps {
+export interface MetricWallProps {
   tiles: MetricWallTile[];
   className?: string;
 }

@@ -370,6 +370,12 @@ export function getMenu(role: UserRole): NavSection[] {
     icon: HiOutlineCommandLine({ className: ICON_CLASS }),
     label: 'مرکز Job',
     title: 'صف job، cron، retry و DLQ',
+    submenu: [
+      { href: '/dashboard/jobs', label: 'نمای کلی' },
+      { href: '/dashboard/jobs/queues', label: 'صف‌ها' },
+      { href: '/dashboard/jobs/dlq', label: 'صف مرده' },
+      { href: '/dashboard/jobs/new', label: 'ساخت job جدید' },
+    ],
   };
 
   const helpdesk: MenuItem = {

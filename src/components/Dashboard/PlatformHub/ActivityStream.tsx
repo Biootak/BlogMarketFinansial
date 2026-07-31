@@ -28,7 +28,7 @@ export type ActivityStreamItem = {
   meta?: React.ReactNode;
 };
 
-interface ActivityStreamProps {
+export interface ActivityStreamProps {
   items: ActivityStreamItem[];
   emptyLabel?: string;
   maxHeight?: number;

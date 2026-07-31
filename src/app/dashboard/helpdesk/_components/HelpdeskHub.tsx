@@ -1,632 +1,331 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  AlertCircle,
-  Check,
-  Clock,
-  Eye,
-  Inbox,
-  Loader2,
-  Lock,
-  Plus,
-  Search,
-  Send,
-  Tag,
-  Ticket,
-  X,
-} from 'lucide-react';
+/**
+ * HelpdeskHub — orchestrator اصلی صفحه‌ی helpdesk.
+ * -----------------------------------------------------------------
+ *  چیدمان (mobile-first):
+ *   1. Hero (PriorityOrbit signature) + headline stats (right rail)
+ *   2. Toolbar: search + filter pills + primary CTA "تیکت جدید"
+ *   3. Workspace (2 ستونه از md:):
+ *        - left: TicketList
+ *        - right: rail (status mix donut-style + recent activity)
+ *   4. Footer/empty
+ *   5. Drawers: TicketDetail + NewTicketForm (mounted در root)
+ *
+ *  داده: initialTickets از server، بعد از هر تغییر fetch خودکار.
+ *  polling: هر ۳۰ ثانیه snapshot جدید.
+ */
 
-import { Spotlight } from '@/components/Dashboard/primitives/Spotlight';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { HUB_PALETTES, PriorityStack, type PriorityItem } from '@/components/Dashboard/PlatformHub';
-import type {
-  TicketSnapshot,
-  TicketSummary,
-  TicketPriority,
-  TicketStatus,
-  TicketCategory,
-  TicketMessageSummary,
-} from '@/lib/tickets';
-import {
-  createTicket,
-  replyToTicket,
-  updateTicketStatus,
-  assignTicket,
-} from '@/actions/tickets-actions';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { PageHeader } from '@/components/Dashboard/primitives';
+import { PillTabs } from '@/components/Dashboard/PlatformHub';
+import { PriorityOrbit, type OrbitTicket, type OrbitPriority, type OrbitStatus } from './PriorityOrbit';
+import { TicketList } from './TicketList';
+import { TicketDetail } from './TicketDetail';
+import { NewTicketForm } from './NewTicketForm';
+import { MetricWall, type MetricWallTile } from '@/components/Dashboard/PlatformHub/MetricWall';
+import { ActivityStream } from '@/components/Dashboard/PlatformHub/ActivityStream';
+import type { TicketSummary, TicketStatus, TicketPriority } from '@/lib/tickets';
 import s from './HelpdeskHub.module.css';
 
-interface Props {
-  initialData?: TicketSnapshot;
+interface HelpdeskHubProps {
+  initialTickets: TicketSummary[];
 }
 
-type Filter = 'all' | TicketStatus;
-
-const FILTERS: { id: Filter; label: string; tone?: string }[] = [
+const PRIORITY_FILTERS: Array<{ id: 'all' | TicketPriority; label: string }> = [
   { id: 'all', label: 'همه' },
-  { id: 'open', label: 'باز', tone: 'cyan' },
-  { id: 'pending', label: 'منتظر پاسخ', tone: 'amber' },
-  { id: 'in_progress', label: 'در حال بررسی', tone: 'indigo' },
-  { id: 'resolved', label: 'حل شده', tone: 'emerald' },
+  { id: 'urgent', label: 'فوری' },
+  { id: 'high', label: 'بالا' },
+  { id: 'normal', label: 'معمولی' },
+  { id: 'low', label: 'کم' },
+];
+
+const STATUS_FILTERS: Array<{ id: 'all' | TicketStatus; label: string }> = [
+  { id: 'all', label: 'همه وضعیت‌ها' },
+  { id: 'open', label: 'باز' },
+  { id: 'pending', label: 'منتظر' },
+  { id: 'in_progress', label: 'در حال بررسی' },
+  { id: 'resolved', label: 'حل شده' },
   { id: 'closed', label: 'بسته' },
 ];
 
-const STATUS_LABEL: Record<TicketStatus, string> = {
-  open: 'باز',
-  pending: 'منتظر پاسخ',
-  in_progress: 'در حال بررسی',
-  resolved: 'حل شده',
-  closed: 'بسته',
-};
-
-const STATUS_TONE: Record<TicketStatus, string> = {
-  open: 'cyan',
-  pending: 'amber',
-  in_progress: 'indigo',
-  resolved: 'emerald',
-  closed: 'neutral',
-};
-
-const PRIORITY_LABEL: Record<TicketPriority, string> = {
-  low: 'کم',
-  normal: 'معمولی',
-  high: 'بالا',
-  urgent: 'فوری',
-};
-
-const PRIORITY_TONE: Record<TicketPriority, string> = {
-  low: 'neutral',
-  normal: 'cyan',
-  high: 'amber',
-  urgent: 'rose',
-};
-
-const CATEGORY_LABEL: Record<TicketCategory, string> = {
-  general: 'عمومی',
-  billing: 'مالی',
-  technical: 'فنی',
-  kyc: 'احراز هویت',
-  account: 'حساب کاربری',
-  transfer: 'انتقال وجه',
-  rate: 'نرخ ارز',
-  other: 'سایر',
-};
-
-function formatDate(iso: string | null): string {
-  if (!iso) return '—';
-  return new Intl.DateTimeFormat('fa-IR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(iso));
+function toPersianNumber(n: number): string {
+  return String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)]);
 }
 
-function formatTimeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  if (diff < 60_000) return `${Math.floor(diff / 1000)} ثانیه پیش`;
-  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)} دقیقه پیش`;
-  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)} ساعت پیش`;
-  return `${Math.floor(diff / 86_400_000)} روز پیش`;
+function avgFirstResponse(tickets: TicketSummary[]): string {
+  const responded = tickets.filter((t) => t.firstResponseAt);
+  if (responded.length === 0) return '—';
+  const total = responded.reduce((sum, t) => {
+    const diff = new Date(t.firstResponseAt!).getTime() - new Date(t.createdAt).getTime();
+    return sum + (Number.isFinite(diff) ? diff : 0);
+  }, 0);
+  const avg = total / responded.length;
+  const minutes = Math.round(avg / 60_000);
+  if (minutes < 60) return `${toPersianNumber(minutes)} دقیقه`;
+  const hours = Math.floor(minutes / 60);
+  const remain = minutes % 60;
+  return remain === 0
+    ? `${toPersianNumber(hours)} ساعت`
+    : `${toPersianNumber(hours)}:۰${toPersianNumber(remain)}`;
 }
 
-function formatNumber(n: number): string {
-  return new Intl.NumberFormat('fa-IR').format(n);
-}
+export function HelpdeskHub({ initialTickets }: HelpdeskHubProps) {
+  const [tickets, setTickets] = useState<TicketSummary[]>(initialTickets);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [priorityFilter, setPriorityFilter] = useState<'all' | TicketPriority>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | TicketStatus>('all');
+  const [query, setQuery] = useState('');
+  const [newTicketOpen, setNewTicketOpen] = useState(false);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-function StatusPill({ status }: { status: TicketStatus }) {
-  return (
-    <span className={s.statusPill} data-tone={STATUS_TONE[status]}>
-      {STATUS_LABEL[status]}
-    </span>
-  );
-}
-
-function PriorityBadge({ priority }: { priority: TicketPriority }) {
-  return (
-    <span className={s.priorityBadge} data-tone={PRIORITY_TONE[priority]}>
-      {priority === 'urgent' ? <AlertCircle className="h-3 w-3" /> : null}
-      {PRIORITY_LABEL[priority]}
-    </span>
-  );
-}
-
-function TicketDetail({
-  ticket,
-  onClose,
-  onStatusChange,
-}: {
-  ticket: TicketSummary;
-  onClose: () => void;
-  onStatusChange: (s: TicketStatus) => void;
-}) {
-  const [messages, setMessages] = useState<TicketMessageSummary[]>([]);
-  const [loadingMsgs, setLoadingMsgs] = useState(true);
-  const [reply, setReply] = useState('');
-  const [isInternal, setIsInternal] = useState(false);
-  const [sending, setSending] = useState(false);
-
-  const loadMessages = useCallback(async () => {
-    setLoadingMsgs(true);
-    try {
-      const res = await fetch(`/api/tickets/snapshot?ticketId=${ticket.id}`, { cache: 'no-store' });
-      const json = (await res.json()) as { success: boolean; data?: TicketMessageSummary[] };
-      if (json.success && json.data) setMessages(json.data);
-    } catch {
-      /* silent */
-    } finally {
-      setLoadingMsgs(false);
-    }
-  }, [ticket.id]);
-
-  useEffect(() => {
-    void loadMessages();
-  }, [loadMessages]);
-
-  const handleSend = async () => {
-    if (!reply.trim()) return;
-    setSending(true);
-    const res = await replyToTicket(ticket.id, reply, isInternal);
-    setSending(false);
-    if (res.success) {
-      setReply('');
-      void loadMessages();
-    }
-  };
-
-  return (
-    <div className={s.detail}>
-      <header className={s.detailHeader}>
-        <div className={s.detailMeta}>
-          <h2 className={s.detailTitle}>{ticket.subject}</h2>
-          <div className={s.detailBadges}>
-            <StatusPill status={ticket.status} />
-            <PriorityBadge priority={ticket.priority} />
-            <span className={s.categoryChip}>
-              <Tag className="h-3 w-3" />
-              {CATEGORY_LABEL[ticket.category]}
-            </span>
-          </div>
-          <div className={s.detailInfo}>
-            <span>ایجاد: {formatDate(ticket.createdAt)}</span>
-            <span>{ticket.messageCount} پیام</span>
-            {ticket.firstResponseAt ? (
-              <span>اولین پاسخ: {formatDate(ticket.firstResponseAt)}</span>
-            ) : null}
-          </div>
-        </div>
-        <button type="button" onClick={onClose} className={s.closeBtn} aria-label="بستن">
-          <X className="h-4 w-4" />
-        </button>
-      </header>
-
-      <p className={s.detailDescription}>{ticket.description}</p>
-
-      <div className={s.statusActions}>
-        {(['open', 'pending', 'in_progress', 'resolved', 'closed'] as TicketStatus[]).map(
-          (st) => (
-            <button
-              key={st}
-              type="button"
-              onClick={() => onStatusChange(st)}
-              className={s.statusBtn}
-              data-active={ticket.status === st}
-            >
-              {STATUS_LABEL[st]}
-            </button>
-          ),
-        )}
-      </div>
-
-      <section className={s.threadSection}>
-        <h3 className={s.threadTitle}>
-          <Inbox className="h-4 w-4" /> گفتگو
-        </h3>
-        {loadingMsgs ? (
-          <div className={s.loadingMini}>
-            <Loader2 className={`h-4 w-4 ${s.spin}`} /> در حال بارگذاری...
-          </div>
-        ) : messages.length === 0 ? (
-          <div className={s.loadingMini}>هنوز پیامی نیست. اولین پاسخ را بنویسید.</div>
-        ) : (
-          <ol className={s.thread}>
-            {messages.map((m) => (
-              <li
-                key={m.id}
-                className={s.message}
-                data-internal={m.isInternal}
-              >
-                <div className={s.messageMeta}>
-                  <span className={s.messageAuthor}>
-                    {m.authorRole ?? 'user'} • {formatTimeAgo(m.createdAt)}
-                  </span>
-                  {m.isInternal ? (
-                    <span className={s.internalBadge}>
-                      <Lock className="h-3 w-3" /> یادداشت داخلی
-                    </span>
-                  ) : null}
-                </div>
-                <p className={s.messageBody}>{m.body}</p>
-              </li>
-            ))}
-          </ol>
-        )}
-      </section>
-
-      <section className={s.replySection}>
-        <textarea
-          value={reply}
-          onChange={(e) => setReply(e.target.value)}
-          placeholder="پاسخ خود را بنویسید..."
-          rows={4}
-          className={s.replyInput}
-          maxLength={5000}
-          dir="rtl"
-        />
-        <div className={s.replyActions}>
-          <label className={s.internalLabel}>
-            <input
-              type="checkbox"
-              checked={isInternal}
-              onChange={(e) => setIsInternal(e.target.checked)}
-            />
-            یادداشت داخلی (فقط تیم)
-          </label>
-          <button
-            type="button"
-            onClick={() => void handleSend()}
-            disabled={sending || !reply.trim()}
-            className={s.sendBtn}
-          >
-            {sending ? <Loader2 className={`h-4 w-4 ${s.spin}`} /> : <Send className="h-4 w-4" />}
-            ارسال پاسخ
-          </button>
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function NewTicketForm({ onCreated }: { onCreated: () => void }) {
-  const [subject, setSubject] = useState('');
-  const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState<TicketPriority>('normal');
-  const [category, setCategory] = useState<TicketCategory>('general');
-  const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState<{ tone: 'success' | 'error'; text: string } | null>(
-    null,
-  );
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!subject.trim() || !description.trim()) {
-      setMessage({ tone: 'error', text: 'موضوع و شرح الزامی است' });
-      return;
-    }
-    setSubmitting(true);
-    setMessage(null);
-    const res = await createTicket({ subject, description, priority, category });
-    setSubmitting(false);
-    if (res.success) {
-      setSubject('');
-      setDescription('');
-      setMessage({ tone: 'success', text: 'تیکت ساخته شد' });
-      onCreated();
-    } else {
-      setMessage({ tone: 'error', text: res.message ?? 'خطا' });
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className={s.form}>
-      <div className={s.formGroup}>
-        <label className={s.label}>موضوع</label>
-        <Input
-          type="text"
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
-          maxLength={200}
-          className={s.input}
-          dir="rtl"
-        />
-      </div>
-      <div className={s.formRow}>
-        <div className={s.formGroup}>
-          <label className={s.label}>اولویت</label>
-          <Select value={priority} onValueChange={(v) => setPriority(v as TicketPriority)}>
-            <SelectTrigger className={s.select} dir="rtl">
-              <SelectValue placeholder="انتخاب" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="low">کم</SelectItem>
-              <SelectItem value="normal">معمولی</SelectItem>
-              <SelectItem value="high">بالا</SelectItem>
-              <SelectItem value="urgent">فوری</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className={s.formGroup}>
-          <label className={s.label}>دسته</label>
-          <Select value={category} onValueChange={(v) => setCategory(v as TicketCategory)}>
-            <SelectTrigger className={s.select} dir="rtl">
-              <SelectValue placeholder="انتخاب" />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(CATEGORY_LABEL).map(([k, v]) => (
-                <SelectItem key={k} value={k}>
-                  {v}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      <div className={s.formGroup}>
-        <label className={s.label}>شرح</label>
-        <Textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={6}
-          maxLength={10000}
-          className={s.textarea}
-          dir="rtl"
-        />
-      </div>
-      {message ? (
-        <div className={s.formMessage} data-tone={message.tone}>
-          {message.text}
-        </div>
-      ) : null}
-      <div className={s.formActions}>
-        <button type="submit" disabled={submitting} className={s.submitBtn}>
-          {submitting ? <Loader2 className={`h-4 w-4 ${s.spin}`} /> : <Plus className="h-4 w-4" />}
-          ساخت تیکت
-        </button>
-      </div>
-    </form>
-  );
-}
-
-export function HelpdeskHub({ initialData }: Props) {
-  const [data, setData] = useState<TicketSnapshot | undefined>(initialData);
-  const [filter, setFilter] = useState<Filter>('all');
-  const [search, setSearch] = useState('');
-  const [selected, setSelected] = useState<TicketSummary | null>(null);
-  const [view, setView] = useState<'list' | 'new'>('list');
-
-  const fetchData = useCallback(async () => {
+  // ── polling 30s برای تازه‌سازی snapshot (از route API) ─────
+  const refresh = useCallback(async () => {
     try {
       const res = await fetch('/api/tickets/snapshot', { cache: 'no-store' });
-      const json = (await res.json()) as { success: boolean; data?: TicketSnapshot };
-      if (json.success && json.data) {
-        setData(json.data);
-        // اگر تیکت انتخاب‌شده در لیست جدید نیست، آن را به‌روز کن
-        if (selected) {
-          const updated = json.data.tickets.find((t) => t.id === selected.id);
-          if (updated) setSelected(updated);
-        }
+      const json = (await res.json()) as { success: boolean; data?: TicketSummary[] };
+      if (json.success && Array.isArray(json.data)) {
+        setTickets(json.data);
       }
     } catch {
-      /* silent */
+      // silent — polling خطاپذیر است
     }
-  }, [selected]);
+  }, []);
 
   useEffect(() => {
-    const id = setInterval(() => {
-      void fetchData();
-    }, 30_000);
-    return () => clearInterval(id);
-  }, [fetchData]);
+    if (pollingRef.current) clearInterval(pollingRef.current);
+    pollingRef.current = setInterval(() => void refresh(), 30_000);
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [refresh]);
 
+  // ── derived: orbit nodes ──────────────────────────────
+  const orbitNodes = useMemo<OrbitTicket[]>(
+    () =>
+      tickets.map((t) => ({
+        id: t.id,
+        subject: t.subject,
+        priority: t.priority as OrbitPriority,
+        status: t.status as OrbitStatus,
+      })),
+    [tickets],
+  );
+
+  // ── derived: filtered list ────────────────────────────
   const filtered = useMemo(() => {
-    if (!data) return [];
-    return data.tickets.filter((t) => {
-      if (filter !== 'all' && t.status !== filter) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        if (
-          !t.subject.toLowerCase().includes(q) &&
-          !t.description.toLowerCase().includes(q)
-        ) {
-          return false;
-        }
-      }
-      return true;
+    const q = query.trim().toLowerCase();
+    return tickets.filter((t) => {
+      if (priorityFilter !== 'all' && t.priority !== priorityFilter) return false;
+      if (statusFilter !== 'all' && t.status !== statusFilter) return false;
+      if (!q) return true;
+      return (
+        t.subject.toLowerCase().includes(q) ||
+        t.description.toLowerCase().includes(q)
+      );
     });
-  }, [data, filter, search]);
+  }, [tickets, priorityFilter, statusFilter, query]);
 
-  const handleStatusChange = async (status: TicketStatus) => {
-    if (!selected) return;
-    await updateTicketStatus(selected.id, status);
-    void fetchData();
-  };
+  // ── derived: stats ────────────────────────────────────
+  const stats = useMemo(() => {
+    const open = tickets.filter((t) => t.status === 'open').length;
+    const pending = tickets.filter((t) => t.status === 'pending').length;
+    const inProgress = tickets.filter((t) => t.status === 'in_progress').length;
+    const urgent = tickets.filter((t) => t.priority === 'urgent' && t.status !== 'closed' && t.status !== 'resolved').length;
+    const resolved = tickets.filter((t) => t.status === 'resolved' || t.status === 'closed').length;
+    return { open, pending, inProgress, urgent, resolved, total: tickets.length };
+  }, [tickets]);
 
-  if (!data) {
-    return (
-      <div className={s.empty}>
-        <Ticket className="h-10 w-10" />
-        <p>داده‌ای موجود نیست.</p>
-      </div>
-    );
-  }
+  const avgFR = useMemo(() => avgFirstResponse(tickets), [tickets]);
 
-  const m = data.metrics;
+  const selectedTicket = useMemo(
+    () => tickets.find((t) => t.id === selectedId) ?? null,
+    [tickets, selectedId],
+  );
+
+  // ── activity items (از آخرین تغییرات — اختیاری) ────────
+  const activityItems = useMemo(() => {
+    return [...tickets]
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      .slice(0, 6)
+      .map((t) => ({
+        id: t.id,
+        title: t.subject,
+        at: t.updatedAt,
+        meta: `${t.messageCount} پیام`,
+        tone: t.priority === 'urgent' ? ('rose' as const) : t.priority === 'high' ? ('amber' as const) : ('cyan' as const),
+      }));
+  }, [tickets]);
+
+  // ── status mix (donut-like برای legend) ────────────────
+  const statusMix = useMemo(() => {
+    const total = Math.max(stats.total, 1);
+    return [
+      { key: 'open', label: 'باز', value: stats.open, ratio: stats.open / total, tone: 'cyan' },
+      { key: 'pending', label: 'منتظر', value: stats.pending, ratio: stats.pending / total, tone: 'amber' },
+      { key: 'in_progress', label: 'در حال بررسی', value: stats.inProgress, ratio: stats.inProgress / total, tone: 'indigo' },
+      { key: 'resolved', label: 'حل/بسته', value: stats.resolved, ratio: stats.resolved / total, tone: 'emerald' },
+    ] as const;
+  }, [stats]);
+
+  // ── handlers ──────────────────────────────────────────
+  const handleOrbitSelect = useCallback((id: string) => setSelectedId(id), []);
+
+  const handleCloseDetail = useCallback(() => setSelectedId(null), []);
+
+  const handleChanged = useCallback(() => {
+    void refresh();
+  }, [refresh]);
 
   return (
-    <div className={s.root}>
-      <Spotlight tone="indigo" />
-
-      {/* Summary */}
-      <section className={s.summary}>
-        <div className={s.summaryCard} data-tone="cyan">
-          <div className={s.summaryLabel}>تیکت‌های باز</div>
-          <div className={s.summaryValue}>{formatNumber(m.open)}</div>
-          <Inbox className={s.summaryIcon} />
-        </div>
-        <div className={s.summaryCard} data-tone="amber">
-          <div className={s.summaryLabel}>منتظر پاسخ</div>
-          <div className={s.summaryValue}>{formatNumber(m.pending)}</div>
-          <Clock className={s.summaryIcon} />
-        </div>
-        <div className={s.summaryCard} data-tone="indigo">
-          <div className={s.summaryLabel}>در حال بررسی</div>
-          <div className={s.summaryValue}>{formatNumber(m.inProgress)}</div>
-          <Eye className={s.summaryIcon} />
-        </div>
-        <div className={s.summaryCard} data-tone="rose">
-          <div className={s.summaryLabel}>فوری / ارجاع نشده</div>
-          <div className={s.summaryValue}>
-            {formatNumber(m.urgent)} / {formatNumber(m.unassigned)}
+    <div className={s.hub}>
+      {/* ── Hero zone ──────────────────────────────────── */}
+      <section className={s.hero} aria-labelledby="helpdesk-hero-title">
+        <PageHeader
+          eyebrow="مرکز پشتیبانی"
+          title="صندوق اولویت"
+          description="نمای پروازی تیکت‌ها بر اساس اولویت و وضعیت. هر ۳۰ ثانیه تازه‌سازی می‌شود."
+        />
+        <div className={s.heroGrid}>
+          <div className={s.orbitWrap}>
+            <PriorityOrbit
+              tickets={orbitNodes}
+              onSelect={handleOrbitSelect}
+              selectedId={selectedId}
+              ariaLabel="مدار اولویت تیکت‌ها"
+            />
           </div>
-          <AlertCircle className={s.summaryIcon} />
-        </div>
-        <div className={s.summaryCard} data-tone="emerald">
-          <div className={s.summaryLabel}>حل شده</div>
-          <div className={s.summaryValue}>{formatNumber(m.resolved)}</div>
-          <Check className={s.summaryIcon} />
-        </div>
-        <div className={s.summaryCard} data-tone="cyan">
-          <div className={s.summaryLabel}>میانگین پاسخ</div>
-          <div className={s.summaryValue}>
-            {m.avgFirstResponseMin > 0 ? `${formatNumber(Math.round(m.avgFirstResponseMin))} دقیقه` : '—'}
+          <div className={s.statsWrap}>
+            <MetricWall
+              tiles={[
+                { id: 'avg-fr', label: 'میانگین اولین پاسخ', value: avgFR, tone: 'violet', emphasis: 'hero' },
+                { id: 'urgent', label: 'فوری باز', value: toPersianNumber(stats.urgent), tone: 'rose' },
+                { id: 'open', label: 'در جریان', value: toPersianNumber(stats.open + stats.inProgress), tone: 'amber' },
+                { id: 'total', label: 'کل تیکت‌ها', value: toPersianNumber(stats.total), tone: 'cyan' },
+              ] as MetricWallTile[]}
+            />
           </div>
-          <Clock className={s.summaryIcon} />
         </div>
       </section>
 
-      {/* View toggle */}
-      <div className={s.tabBar}>
-        <div className={s.tabs}>
-          <button
-            type="button"
-            onClick={() => setView('list')}
-            className={s.tab}
-            data-active={view === 'list'}
-          >
-            <Inbox className="h-4 w-4" /> فهرست
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setView('new');
-              setSelected(null);
-            }}
-            className={s.tab}
-            data-active={view === 'new'}
-          >
-            <Plus className="h-4 w-4" /> تیکت جدید
-          </button>
-        </div>
-        {view === 'list' ? (
-          <div className={s.searchBox}>
-            <Search className="h-4 w-4" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="جستجو در تیکت‌ها..."
-              className={s.searchInput}
-              dir="rtl"
-            />
-          </div>
-        ) : null}
-      </div>
-
-      {view === 'new' ? (
-        <section className={s.card}>
-          <header className={s.cardHeader}>
-            <h2>
-              <Plus className="h-4 w-4" /> تیکت جدید
-            </h2>
-            <p>یک تیکت پشتیبانی بسازید. تیم به زودی پاسخ می‌دهد.</p>
-          </header>
-          <NewTicketForm
-            onCreated={() => {
-              setView('list');
-              void fetchData();
-            }}
+      {/* ── Toolbar zone ───────────────────────────────── */}
+      <section className={s.toolbar} aria-label="ابزار">
+        <div className={s.searchWrap}>
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="جستجو در تیکت‌ها..."
+            className={s.search}
+            dir="rtl"
+            aria-label="جستجو"
           />
-        </section>
-      ) : (
-        <div className={s.dualGrid}>
-          {/* List */}
-          <section className={s.card}>
-            <header className={s.cardHeader}>
-              <h2>
-                <Inbox className="h-4 w-4" /> تیکت‌ها
-              </h2>
-              <p>{formatNumber(filtered.length)} مورد</p>
-            </header>
-            <div className={s.filters}>
-              {FILTERS.map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => setFilter(f.id)}
-                  className={s.filterBtn}
-                  data-active={filter === f.id}
-                  data-tone={f.tone}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-            {filtered.length === 0 ? (
-              <div className={s.emptyMini}>
-                <Inbox className="h-8 w-8" />
-                <p>تیکتی با این فیلتر نیست.</p>
-              </div>
-            ) : (
-              <ul className={s.ticketList}>
-                {filtered.map((t) => (
-                  <li
-                    key={t.id}
-                    className={s.ticketItem}
-                    data-active={selected?.id === t.id}
-                    onClick={() => setSelected(t)}
-                  >
-                    <div className={s.ticketHead}>
-                      <span className={s.ticketSubject}>{t.subject}</span>
-                      <PriorityBadge priority={t.priority} />
-                    </div>
-                    <p className={s.ticketPreview}>{t.description}</p>
-                    <div className={s.ticketMeta}>
-                      <StatusPill status={t.status} />
-                      <span>{CATEGORY_LABEL[t.category]}</span>
-                      <span>{formatTimeAgo(t.createdAt)}</span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-
-          {/* Detail */}
-          <section className={s.card}>
-            {selected ? (
-              <TicketDetail
-                ticket={selected}
-                onClose={() => setSelected(null)}
-                onStatusChange={handleStatusChange}
-              />
-            ) : (
-              <div className={s.placeholder}>
-                <Ticket className="h-10 w-10" />
-                <p>یک تیکت را از فهرست انتخاب کنید، یا از تب «تیکت جدید» یکی بسازید.</p>
-              </div>
-            )}
-          </section>
         </div>
-      )}
+        <div className={s.pillsWrap}>
+          <PillTabs
+            tabs={PRIORITY_FILTERS.map((f) => ({ id: f.id, label: f.label }))}
+            active={priorityFilter}
+            onChange={(v) => setPriorityFilter(v as 'all' | TicketPriority)}
+            size="sm"
+            ariaLabel="فیلتر اولویت"
+          />
+          <PillTabs
+            tabs={STATUS_FILTERS.map((f) => ({ id: f.id, label: f.label }))}
+            active={statusFilter}
+            onChange={(v) => setStatusFilter(v as 'all' | TicketStatus)}
+            size="sm"
+            ariaLabel="فیلتر وضعیت"
+          />
+        </div>
+        <div className={s.ctaWrap}>
+          <button
+            type="button"
+            onClick={() => setNewTicketOpen(true)}
+            className={s.cta}
+            aria-label="تیکت جدید"
+          >
+            <span className={s.ctaIcon} aria-hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </span>
+            تیکت جدید
+          </button>
+        </div>
+      </section>
+
+      {/* ── Workspace zone ─────────────────────────────── */}
+      <section className={s.workspace} aria-label="صندوق">
+        <div className={s.workspaceList}>
+          <header className={s.workspaceHeader}>
+            <h2 className={s.workspaceTitle}>
+              فهرست تیکت‌ها
+              <span className={s.workspaceCount}>({toPersianNumber(filtered.length)})</span>
+            </h2>
+            {selectedId ? (
+              <button
+                type="button"
+                onClick={() => setSelectedId(null)}
+                className={s.workspaceClear}
+              >
+                پاک کردن انتخاب
+              </button>
+            ) : null}
+          </header>
+          <TicketList
+            tickets={filtered}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+            emptyHint={
+              query
+                ? 'نتیجه‌ای برای جستجوی شما یافت نشد.'
+                : 'تیکتی با این فیلتر یافت نشد.'
+            }
+          />
+        </div>
+        <aside className={s.workspaceRail} aria-label="نوار کناری">
+          <div className={s.railCard}>
+            <h3 className={s.railTitle}>ترکیب وضعیت</h3>
+            <ul className={s.statusMix}>
+              {statusMix.map((m) => (
+                <li key={m.key} className={s.statusMixItem}>
+                  <div className={s.statusMixHead}>
+                    <span className={s.statusMixLabel}>
+                      <span className={s.statusMixDot} data-tone={m.tone} aria-hidden />
+                      {m.label}
+                    </span>
+                    <span className={s.statusMixValue}>{toPersianNumber(m.value)}</span>
+                  </div>
+                  <div className={s.statusMixBar} aria-hidden>
+                    <div
+                      className={s.statusMixFill}
+                      data-tone={m.tone}
+                      style={{ width: `${Math.max(2, m.ratio * 100)}%` }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className={s.railCard}>
+            <h3 className={s.railTitle}>آخرین تغییرات</h3>
+            <ActivityStream items={activityItems} />
+          </div>
+        </aside>
+      </section>
+
+      {/* ── Drawers ────────────────────────────────────── */}
+      <TicketDetail
+        ticket={selectedTicket}
+        onClose={handleCloseDetail}
+        onChanged={handleChanged}
+      />
+      <NewTicketForm
+        open={newTicketOpen}
+        onClose={() => setNewTicketOpen(false)}
+        onCreated={handleChanged}
+      />
     </div>
   );
 }

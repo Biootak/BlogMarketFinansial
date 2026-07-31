@@ -1,40 +1,26 @@
-import { redirect } from 'next/navigation';
-
-import { auth } from '@/auth';
-import { HelpdeskHub } from '@/app/dashboard/helpdesk/_components/HelpdeskHub';
-import { PageHeader } from '@/components/Dashboard/primitives';
+import { Suspense } from 'react';
 import { getTicketSnapshot } from '@/lib/tickets';
+import { HelpdeskHub } from './_components/HelpdeskHub';
+import { HelpdeskLoading } from './_components/HelpdeskLoading';
 import s from './helpdesk.module.css';
 
+export const revalidate = 30;
 export const dynamic = 'force-dynamic';
 
-export default async function HelpdeskPage() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect('/auth?callbackUrl=/dashboard/helpdesk');
-  }
-  const role = session.user.role ?? '';
-  if (!['OWNER', 'SUPERADMIN', 'ADMIN', 'AUTHOR'].includes(role)) {
-    redirect('/dashboard?error=forbidden');
-  }
+export const metadata = {
+  title: 'مرکز پشتیبانی | داشبورد',
+  description: 'نمای پروازی تیکت‌ها بر اساس اولویت و وضعیت',
+};
 
-  const result = await getTicketSnapshot();
-  const initialData = result.success ? result.data : undefined;
+export default async function HelpdeskPage() {
+  const res = await getTicketSnapshot();
+  const tickets = res.success && res.data ? res.data.tickets : [];
 
   return (
-    <div dir="rtl" className={s.page}>
-      <PageHeader
-        eyebrow="پلتفرم"
-        title="مرکز تیکت‌ها"
-        description="سیستم تیکت داخلی — پشتیبانی، SLA، ارجاع، و یادداشت‌های داخلی تیم."
-        icon="ticket"
-        accent="indigo"
-        breadcrumb={[
-          { href: '/dashboard', label: 'داشبورد' },
-          { label: 'تیکت‌ها' },
-        ]}
-      />
-      <HelpdeskHub initialData={initialData} />
-    </div>
+    <main className={s.page} dir="rtl">
+      <Suspense fallback={<HelpdeskLoading />}>
+        <HelpdeskHub initialTickets={tickets} />
+      </Suspense>
+    </main>
   );
 }

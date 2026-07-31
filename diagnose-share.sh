@@ -19,6 +19,10 @@ vmware-hgfsclient 2>/dev/null || echo "  (vmware-hgfsclient returned nothing -> 
 
 line; echo "3. Mount state"
 mount | grep -i hgfs || echo "  no hgfs mount"
+echo "stacked layers per mountpoint (one line per layer in /proc/self/mounts):"
+for d in /mnt/hgfs "$MOUNT_DIR" /mnt/FinancialMarket; do
+    printf '  %-32s %s\n' "$d" "$(awk -v p="$d" '$2 == p { n++ } END { print n+0 }' /proc/self/mounts)"
+done
 stat -c '%n mode=%a owner=%U:%G type=%F' /mnt /mnt/hgfs "$MOUNT_DIR" 2>&1
 
 line; echo "4. Read test as root"
@@ -41,14 +45,31 @@ else
 fi
 
 line; echo "7. Clean remount attempt (allow_other + root owner)"
-umount -l "$MOUNT_DIR" 2>/dev/null
+# Never lazy-unmount and immediately remount the same directory: the new mount
+# stacks on the dying FUSE mount and every lookup returns EACCES
+# ("Permission denied") even for root. Unmount properly and WAIT.
+fuser -km "$MOUNT_DIR" 2>/dev/null || true
+for cmd in "fusermount3 -u" "fusermount -u" "umount" "umount -f" "umount -l"; do
+    mountpoint -q "$MOUNT_DIR" 2>/dev/null || break
+    $cmd "$MOUNT_DIR" 2>/dev/null || true
+    sleep 0.5
+done
+for _ in $(seq 1 20); do
+    mountpoint -q "$MOUNT_DIR" 2>/dev/null || break
+    sleep 0.5
+done
+if mountpoint -q "$MOUNT_DIR" 2>/dev/null; then
+    echo "  WARNING: old mount is still attached; testing on a fresh mountpoint instead"
+    MOUNT_DIR="/mnt/hgfs/FinancialMarket-diag$$"
+fi
 mkdir -p "$MOUNT_DIR"
 chmod 755 "$MOUNT_DIR"
 grep -qs '^[[:space:]]*user_allow_other' /etc/fuse.conf 2>/dev/null || echo 'user_allow_other' >>/etc/fuse.conf
 if /usr/bin/vmhgfs-fuse .host:/FinancialMarket "$MOUNT_DIR" -o allow_other,umask=022 2>&1; then
     sleep 1
     if timeout 3 ls "$MOUNT_DIR" >/dev/null 2>&1; then
-        echo "  RESULT: mount is now READABLE"
+        echo "  RESULT: mount is now READABLE at $MOUNT_DIR"
+        echo "  read test:"; timeout 3 head -c 60 "$MOUNT_DIR/start-installed.sh" 2>&1 | head -3
     else
         echo "  RESULT: mounted but STILL unreadable"
     fi

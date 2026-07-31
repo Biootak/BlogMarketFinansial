@@ -60,7 +60,7 @@ const TONE_CHROMA: Record<BroadcastChannel['tone'], number> = {
   violet: 0.13,
 };
 
-const PERSIAN_NUM = (n: number) =>
+const PERSIAN_NUM = (n: number | string) =>
   String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)]);
 
 const fmtPersian = (n: number) => PERSIAN_NUM(n.toLocaleString('en-US'));

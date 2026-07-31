@@ -10,7 +10,7 @@ export type FilterPillItem = {
   tone?: 'emerald' | 'indigo' | 'amber' | 'rose' | 'cyan' | 'violet' | 'neutral';
 };
 
-interface FilterPillsProps {
+export interface FilterPillsProps {
   items: FilterPillItem[];
   active: string;
   onChange: (id: string) => void;

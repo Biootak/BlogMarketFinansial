@@ -1,0 +1,188 @@
+/* ================================================================
+ * PriorityOrbit — signature visual برای Helpdesk
+ * --------------------------------------------------------------
+ *  token-based, RTL-correct, GPU-friendly (transform/opacity)
+ * ================================================================ */
+
+.orbit {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-width: 480px;
+  margin-inline: auto;
+  isolation: isolate;
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── چرخش آرام گروه‌ها — سرعت بر اساس priority ───────────────── */
+.orbitGroup {
+  animation: orbit-spin 60s linear infinite;
+  transform-box: fill-box;
+}
+.orbitGroup[data-direction='reverse'] {
+  animation: orbit-spin-reverse 75s linear infinite;
+}
+.orbitGroup:nth-of-type(2) {
+  animation-duration: 72s;
+}
+.orbitGroup:nth-of-type(3) {
+  animation-duration: 88s;
+}
+.orbitGroup:nth-of-type(4) {
+  animation-duration: 100s;
+}
+
+@keyframes orbit-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes orbit-spin-reverse {
+  to { transform: rotate(-360deg); }
+}
+
+/* ── node interactions ─────────────────────────────────────── */
+.orbitNode {
+  cursor: pointer;
+  transition: transform 200ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.orbitNode:hover {
+  transform: scale(1.4);
+}
+.orbitNode[data-selected='true'] {
+  transform: scale(1.5);
+}
+.orbitNode:focus {
+  outline: none;
+  transform: scale(1.4);
+}
+.orbitNode:focus-visible > circle:first-child {
+  stroke: var(--ds-color-accent, currentColor);
+  stroke-width: 0.5;
+}
+
+/* ── دیسک مرکز — pulse ────────────────────────────────────── */
+.coreHalo {
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: orbit-core-pulse 2.6s var(--ds-ease-in-out-quart, cubic-bezier(0.76, 0, 0.24, 1)) infinite;
+}
+@keyframes orbit-core-pulse {
+  0%   { transform: scale(1);   opacity: 0.45; }
+  70%  { transform: scale(1.35); opacity: 0;   }
+  100% { transform: scale(1.35); opacity: 0;   }
+}
+
+/* ── overlay متن مرکزی ───────────────────────────────────── */
+.coreLabel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.125rem;
+  pointer-events: none;
+  text-align: center;
+  line-height: 1;
+}
+
+.coreValue {
+  font-size: clamp(1.5rem, 1rem + 1.4vw, 1.875rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--ds-color-text-primary, currentColor);
+  font-variant-numeric: tabular-nums;
+}
+
+.coreSub {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ds-color-text-muted, currentColor);
+  margin-top: 0.25rem;
+}
+
+/* ── legend — چهار گوشه ──────────────────────────────────── */
+.legend {
+  position: absolute;
+  inset: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+}
+
+.legendItem {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--ds-color-surface, white);
+  border: 1px solid var(--ds-color-border-subtle, rgba(0, 0, 0, 0.08));
+  border-radius: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px color-mix(in oklch, var(--ds-color-text-primary, #000) 6%, transparent);
+  pointer-events: auto;
+  transition: transform 200ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+}
+.legendItem:hover {
+  transform: translateY(-1px) scale(1.04);
+}
+
+.legendItem[data-tone='urgent'] {
+  inset-block-start: 6%;
+  inset-inline-end: 6%;
+}
+.legendItem[data-tone='high'] {
+  inset-block-end: 12%;
+  inset-inline-end: 4%;
+}
+.legendItem[data-tone='normal'] {
+  inset-block-end: 4%;
+  inset-inline-start: 4%;
+}
+.legendItem[data-tone='low'] {
+  inset-block-start: 14%;
+  inset-inline-start: 6%;
+}
+
+.legendDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.legendLabel {
+  color: var(--ds-color-text-secondary, currentColor);
+}
+
+.legendValue {
+  color: var(--ds-color-text-primary, currentColor);
+  font-weight: 800;
+}
+
+@media (max-width: 640px) {
+  .legendItem {
+    padding: 0.1875rem 0.375rem;
+    font-size: 0.625rem;
+  }
+  .legendItem[data-tone='high'] {
+    inset-block-end: 8%;
+  }
+  .legendItem[data-tone='normal'] {
+    inset-block-end: 2%;
+  }
+}

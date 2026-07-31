@@ -1,0 +1,163 @@
+'use client';
+
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { toPersianDigits } from '@/lib/setup/format';
+import { JobSystemPulse } from './JobSystemPulse';
+import s from '../jobs.module.css';
+
+export interface JobHeroProps {
+  health: 'healthy' | 'degraded' | 'critical' | 'idle';
+  totalJobs: number;
+  completed24h: number;
+  failed24h: number;
+  /** anchor number — مثلاً throughput ساعت گذشته */
+  pulseValue: string;
+  pulseUnit: string;
+  pulseSub: string;
+}
+
+const HEALTH_LABEL: Record<JobHeroProps['health'], string> = {
+  healthy: 'سیستم سالم',
+  degraded: 'نیاز به توجه',
+  critical: 'وضعیت بحرانی',
+  idle: 'بیکار',
+};
+
+export function JobHero({
+  health,
+  totalJobs,
+  completed24h,
+  failed24h,
+  pulseValue,
+  pulseUnit,
+  pulseSub,
+}: JobHeroProps) {
+  // Live clock — فقط client-side، هیچ hydration mismatch
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => {
+    setNow(new Date());
+    const t = setInterval(() => setNow(new Date()), 1000 * 30);
+    return () => clearInterval(t);
+  }, []);
+
+  const clockLabel = now
+    ? `${toPersianDigits(now.getHours().toString().padStart(2, '0'))}:${toPersianDigits(now.getMinutes().toString().padStart(2, '0'))}`
+    : '--:--';
+
+  const dateLabel = now
+    ? new Intl.DateTimeFormat('fa-IR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+      }).format(now)
+    : '';
+
+  return (
+    <section className={s.hero} aria-label="مرکز کنترل Job">
+      <div className={s.heroAmbient} />
+
+      <div className={s.heroContent}>
+        <div className={s.heroEyebrow}>
+          <span
+            aria-hidden="true"
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background:
+                health === 'healthy'
+                  ? 'oklch(72% 0.14 162)'
+                  : health === 'degraded'
+                    ? 'oklch(78% 0.14 75)'
+                    : health === 'critical'
+                      ? 'oklch(68% 0.18 15)'
+                      : 'oklch(60% 0.05 255)',
+              display: 'inline-block',
+              boxShadow: '0 0 0 0 currentColor',
+            }}
+          />
+          <span>{HEALTH_LABEL[health]}</span>
+          <span className={s.heroSep}>·</span>
+          <span className={s.heroClock}>{clockLabel}</span>
+          <span className={s.heroSep}>·</span>
+          <span>{dateLabel}</span>
+        </div>
+
+        <h1 className={s.heroTitle}>
+          <span className={s.heroTitleLine}>
+            مرکز <span className={s.heroAccentText}>کنترل Job</span>
+          </span>
+          <span className={s.heroTitleLine} style={{ color: 'oklch(78% 0.005 245)', fontWeight: 500 }}>
+            نمای زنده‌ی صف‌ها، خطاها و جریان پردازش
+          </span>
+        </h1>
+
+        <p className={s.heroLead}>
+          اینجا اتاق فرماندهی سامانه است. هر job که در پس‌زمینه اجرا می‌شود اینجا دیده می‌شود؛ از
+          زمان‌بندی و صف تا اجرا، خطا و انتقال به صف مرده. همه چیز از یک نقطه، با یک نگاه.
+        </p>
+
+        <div className={s.heroStatRow}>
+          <div className={s.heroStat}>
+            <span className={s.heroStatLabel}>job های اخیر</span>
+            <span className={s.heroStatValue}>{toPersianDigits(totalJobs)}</span>
+            <span className={s.heroStatSub}>۱۰۰ مورد آخر</span>
+          </div>
+          <div className={s.heroStat}>
+            <span className={s.heroStatLabel}>تکمیل ۲۴ ساعت</span>
+            <span className={s.heroStatValue}>{toPersianDigits(completed24h)}</span>
+            <span className={s.heroStatSub}>عملیات موفق</span>
+          </div>
+          <div className={s.heroStat}>
+            <span className={s.heroStatLabel}>خطا ۲۴ ساعت</span>
+            <span
+              className={s.heroStatValue}
+              style={
+                failed24h > 0
+                  ? { color: 'oklch(75% 0.18 15)' }
+                  : undefined
+              }
+            >
+              {toPersianDigits(failed24h)}
+            </span>
+            <span className={s.heroStatSub}>نیازمند بازبینی</span>
+          </div>
+        </div>
+
+        <div className={s.heroActions}>
+          <Link href="/dashboard/jobs/new" className={s.heroPrimaryAction}>
+            ساخت job جدید
+            <span aria-hidden="true">←</span>
+          </Link>
+          <Link href="/dashboard/jobs/dlq" className={s.heroSecondaryAction}>
+            صف مرده
+          </Link>
+          <Link href="/dashboard/jobs/queues" className={s.heroSecondaryAction}>
+            مدیریت صف‌ها
+          </Link>
+        </div>
+      </div>
+
+      <div className={s.heroPulse} aria-hidden="true">
+        <JobSystemPulse
+          value={pulseValue}
+          unit={pulseUnit}
+          eyebrow="نرخ پردازش"
+          sub={pulseSub}
+          health={health}
+          active={true}
+        />
+        <div className={s.heroPulseLabel}>
+          <span className={s.heroPulseEyebrow}>شاخص کلیدی</span>
+          <span className={s.heroPulseValue}>
+            {pulseValue} <span className={s.heroPulseSub} style={{ display: 'inline' }}>{pulseUnit}</span>
+          </span>
+          <span className={s.heroPulseSub}>{pulseSub}</span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default JobHero;

@@ -19,7 +19,8 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { CountUp, EmptyState, LiveDot } from '@/components/Dashboard/primitives';
+import { CountUp, EmptyState } from '@/components/Dashboard/primitives';
+import { LiveDot } from '@/components/Dashboard/PlatformHub';
 import s from './Audiences.module.css';
 
 type AudienceTone = 'emerald' | 'indigo' | 'amber' | 'violet' | 'cyan' | 'rose';
