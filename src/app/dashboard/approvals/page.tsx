@@ -21,12 +21,14 @@ export default async function ApprovalsPage() {
   const result = await getApprovalSnapshot();
   const initialData = result.success ? result.data : undefined;
 
+  const canCreate = role === 'OWNER' || role === 'SUPERADMIN';
+
   return (
     <div dir="rtl" className={s.page}>
       <PageHeader
         eyebrow="پلتفرم"
-        title="تأییدیه‌ها"
-        description="جریان‌های تأیید چندمرحله‌ای برای settlement، KYC، refund و withdrawal."
+        title="مرکز تأییدیه‌ها"
+        description="جریان‌های تأیید چندمرحله‌ای برای تسویه، احراز هویت، استرداد، برداشت و درخواست‌های سفارشی."
         icon="workflow"
         accent="emerald"
         breadcrumb={[
@@ -34,7 +36,7 @@ export default async function ApprovalsPage() {
           { label: 'تأییدیه‌ها' },
         ]}
       />
-      <ApprovalsHub initialData={initialData} />
+      <ApprovalsHub initialData={initialData} canCreate={canCreate} />
     </div>
   );
 }

@@ -36,6 +36,7 @@ export interface ApprovalSummary {
   entityType: string;
   entityId: string;
   requesterId: string;
+  requesterName: string | null;
   status: ApprovalStatus;
   currentStep: number;
   totalSteps: number;
@@ -44,6 +45,10 @@ export interface ApprovalSummary {
   createdAt: string;
   updatedAt: string;
   steps: ApprovalStepSummary[];
+  /** آیا مرحله فعلی به کاربر فعلی تعلق دارد (mine) */
+  isMine: boolean;
+  /** برچسب مرحله فعلی (نقش) */
+  currentApproverRole: string | null;
 }
 
 export interface ApprovalSnapshot {
@@ -113,25 +118,40 @@ const toRequest = (
     updatedAt: Date;
   },
   steps: ApprovalStepSummary[],
-): ApprovalSummary => ({
-  id: row.id,
-  type: (VALID_TYPE as string[]).includes(row.type) ? (row.type as ApprovalType) : 'custom',
-  title: row.title,
-  description: row.description,
-  entityType: row.entityType,
-  entityId: row.entityId,
-  requesterId: row.requesterId,
-  status: (VALID_STATUS as string[]).includes(row.status)
-    ? (row.status as ApprovalStatus)
-    : 'pending',
-  currentStep: row.currentStep,
-  totalSteps: row.totalSteps,
-  payload: row.payload,
-  decidedAt: row.decidedAt?.toISOString() ?? null,
-  createdAt: row.createdAt.toISOString(),
-  updatedAt: row.updatedAt.toISOString(),
-  steps,
-});
+  requesterName: string | null = null,
+  currentUserId?: string,
+  currentRole?: string,
+): ApprovalSummary => {
+  const currentStepRow = steps[row.currentStep];
+  const isMine =
+    row.status === 'pending' &&
+    !!currentUserId &&
+    !!currentStepRow &&
+    (currentStepRow.approverId === currentUserId ||
+      currentStepRow.approverRole === currentRole);
+  return {
+    id: row.id,
+    type: (VALID_TYPE as string[]).includes(row.type) ? (row.type as ApprovalType) : 'custom',
+    title: row.title,
+    description: row.description,
+    entityType: row.entityType,
+    entityId: row.entityId,
+    requesterId: row.requesterId,
+    requesterName,
+    status: (VALID_STATUS as string[]).includes(row.status)
+      ? (row.status as ApprovalStatus)
+      : 'pending',
+    currentStep: row.currentStep,
+    totalSteps: row.totalSteps,
+    payload: row.payload,
+    decidedAt: row.decidedAt?.toISOString() ?? null,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+    steps,
+    isMine,
+    currentApproverRole: currentStepRow?.approverRole ?? null,
+  };
+};
 
 const fetchSnapshotRaw = async (
   currentUserId: string,
@@ -139,13 +159,12 @@ const fetchSnapshotRaw = async (
 ): Promise<ApprovalSnapshot> => {
   const since24 = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-  const [requests, allSteps, pending, approved24, rejected24, decided24] = await Promise.all([
+  const [requests, pending, approved24, rejected24, decided24] = await Promise.all([
     prisma.approvalRequest.findMany({
       orderBy: { createdAt: 'desc' },
       take: 100,
       include: { steps: { orderBy: { stepIndex: 'asc' } } },
     }),
-    prisma.approvalStep.findMany({}),
     prisma.approvalRequest.count({ where: { status: 'pending' } }),
     prisma.approvalRequest.count({ where: { status: 'approved', decidedAt: { gte: since24 } } }),
     prisma.approvalRequest.count({ where: { status: 'rejected', decidedAt: { gte: since24 } } }),
@@ -155,14 +174,29 @@ const fetchSnapshotRaw = async (
     }),
   ]);
 
+  // گرفتن نام درخواست‌کننده‌ها
+  const requesterIds = Array.from(new Set(requests.map((r) => r.requesterId)));
+  const users =
+    requesterIds.length > 0
+      ? await prisma.user.findMany({
+          where: { id: { in: requesterIds } },
+          select: { id: true, name: true, email: true },
+        })
+      : [];
+  const userMap = new Map(users.map((u) => [u.id, u.name ?? u.email]));
+
+  const mapped = requests.map((r) =>
+    toRequest(
+      r,
+      r.steps.map(toStep),
+      userMap.get(r.requesterId) ?? null,
+      currentUserId,
+      currentRole,
+    ),
+  );
+
   // requests pending که مرحله فعلی متعلق به currentUser یا currentRole است
-  const myPending = requests.filter(
-    (r) =>
-      r.status === 'pending' &&
-      r.steps[r.currentStep] &&
-      (r.steps[r.currentStep]!.approverId === currentUserId ||
-        r.steps[r.currentStep]!.approverRole === currentRole),
-  ).length;
+  const myPending = mapped.filter((r) => r.isMine).length;
 
   // میانگین زمان تصمیم‌گیری
   let totalMin = 0;
@@ -177,12 +211,7 @@ const fetchSnapshotRaw = async (
 
   return {
     generatedAt: new Date().toISOString(),
-    requests: requests.map((r) =>
-      toRequest(
-        r,
-        r.steps.map(toStep),
-      ),
-    ),
+    requests: mapped,
     metrics: {
       pending,
       approved24h: approved24,
@@ -362,6 +391,39 @@ export async function decideStep(
     return {
       success: false,
       message: err instanceof Error ? err.message : 'خطا در ثبت تصمیم',
+    };
+  }
+}
+
+export async function getApprovalById(
+  id: string,
+): Promise<{ success: boolean; data?: ApprovalSummary; message?: string }> {
+  const guard = await requireStaff();
+  if (!guard.ok) return { success: false, message: guard.reason };
+  try {
+    const r = await prisma.approvalRequest.findUnique({
+      where: { id },
+      include: { steps: { orderBy: { stepIndex: 'asc' } } },
+    });
+    if (!r) return { success: false, message: 'یافت نشد' };
+    const requester = await prisma.user.findUnique({
+      where: { id: r.requesterId },
+      select: { name: true, email: true },
+    });
+    return {
+      success: true,
+      data: toRequest(
+        r,
+        r.steps.map(toStep),
+        requester?.name ?? requester?.email ?? null,
+        guard.userId,
+        guard.role,
+      ),
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: err instanceof Error ? err.message : 'خطای ناشناخته',
     };
   }
 }
