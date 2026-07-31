@@ -74,7 +74,7 @@ export default function ApiActivityWidget() {
   useEffect(() => {
     startTransition(async () => {
       try {
-        const data = (await getRecentApiActivity(10)) as ApiCall[];
+        const data = (await getRecentApiActivity(10)) as unknown as ApiCall[];
         setCalls(data);
         setHasFetched(true);
       } catch {

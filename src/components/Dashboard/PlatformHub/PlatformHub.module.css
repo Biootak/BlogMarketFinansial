@@ -259,6 +259,20 @@
   font-size: var(--fs-sm, 0.875rem);
 }
 
+.hubHeaderCompactDark {
+  background: oklch(18% 0.02 250 / 0.95);
+  color: oklch(92% 0.005 240);
+  border-block-end-color: oklch(30% 0.02 250);
+}
+
+.hubHeaderCompactDark .hubHeaderCompactTitle {
+  color: oklch(95% 0.005 240);
+}
+
+.hubHeaderCompactDark .hubHeaderCompactSubtitle {
+  color: oklch(70% 0.01 240);
+}
+
 .hubHeaderCompactActions {
   display: flex;
   align-items: center;

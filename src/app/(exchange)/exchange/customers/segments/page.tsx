@@ -10,7 +10,7 @@ import { auth } from '@/auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { PageHeader } from '@/components/Dashboard/primitives';
-import { CustomerSegmentDeepDive } from '@/components/exchange/customers/CustomerSegmentDeepDive';
+import { CustomerSegmentDeepDive } from '@/components/Exchange/customers/CustomerSegmentDeepDive';
 
 export const metadata: Metadata = { title: 'سگمنت‌های مشتریان · صرافی' };
 

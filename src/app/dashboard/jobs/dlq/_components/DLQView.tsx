@@ -287,7 +287,7 @@ export function DLQView({ jobs, deadCount, failedCount, totalJobs, completed24h 
               <span className={s.heroStatLabel}>ناموفق ۲۴ ساعت</span>
               <span className={s.heroStatValue}>{fmtPersian(failedCount)}</span>
               <span className={s.heroStatSub}>
-                {failureRate > 0 ? `${fmtPersian(failureRate.toFixed(1))}٪ از کل jobها` : 'نرخ صفر'}
+                {failureRate > 0 ? `${fmtPersian(parseFloat(failureRate.toFixed(1)))}٪ از کل jobها` : 'نرخ صفر'}
               </span>
             </div>
             <div className={s.heroStat} data-tone="indigo">

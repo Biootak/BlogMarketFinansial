@@ -1,5 +1,5 @@
 import ExchangePageSkeleton from '@/components/Exchange/ExchangePageSkeleton';
 
-export default function QuotesLoading() {
-  return <ExchangePageSkeleton statCount={4} tableRows={7} />;
+export default function ExchangeQuotesLoading() {
+  return <ExchangePageSkeleton statCount={2} tableRows={6} />;
 }

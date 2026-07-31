@@ -6,7 +6,7 @@ import { getExchangeForUser } from '@/actions/exchanges';
 import { auth } from '@/auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { CustomerCockpit } from '@/components/exchange/customers/CustomerCockpit';
+import { CustomerCockpit } from '@/components/Exchange/customers/CustomerCockpit';
 
 export const metadata: Metadata = { title: 'مشتریان صرافی' };
 

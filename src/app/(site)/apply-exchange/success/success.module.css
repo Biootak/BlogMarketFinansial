@@ -158,14 +158,17 @@
 }
 
 .btnPrimary {
-  background: linear-gradient(180deg, oklch(45% 0.14 165), oklch(38% 0.13 165));
+  background: linear-gradient(180deg, var(--ds-brand-500), var(--ds-brand-600));
   color: oklch(98% 0.005 165);
   box-shadow:
     0 1px 0 oklch(100% 0 0 / 0.18) inset,
-    0 4px 14px -4px oklch(45% 0.14 165 / 0.5);
+    0 4px 14px -4px oklch(52% 0.14 162 / 0.45);
 }
 
-.btnPrimary:hover { transform: translateY(-1px); }
+.btnPrimary:hover {
+  background: linear-gradient(180deg, var(--ds-brand-600), var(--ds-brand-700));
+  transform: translateY(-1px);
+}
 
 .btnGhost {
   background: var(--ds-surface);

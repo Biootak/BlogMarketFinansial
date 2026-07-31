@@ -302,7 +302,7 @@ export default function DeveloperPortalClient({
 
   const refreshAudits = useCallback(async () => {
     const fresh = await getMyApiKeyAudits(20);
-    setAudits(fresh as AuditRow[]);
+    setAudits(fresh as unknown as AuditRow[]);
   }, []);
 
   const copyToClipboard = useCallback(

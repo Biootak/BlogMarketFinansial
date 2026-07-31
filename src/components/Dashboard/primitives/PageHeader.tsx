@@ -7,6 +7,7 @@ import {
   Bell,
   Building2,
   ChevronLeft,
+  CircleDollarSign,
   ClipboardList,
   CreditCard,
   Database,
@@ -14,6 +15,7 @@ import {
   FolderOpen,
   Gauge,
   Inbox,
+  KeyRound,
   Layers,
   LayoutDashboard,
   type LucideProps,
@@ -24,6 +26,7 @@ import {
   Settings,
   ShieldCheck,
   ShieldX,
+  Smartphone,
   Sparkles,
   Tag,
   Ticket,
@@ -67,7 +70,10 @@ export type PageHeaderIcon =
   | 'send'
   | 'megaphone'
   | 'message-square'
-  | 'ticket';
+  | 'ticket'
+  | 'key-round'
+  | 'circle-dollar-sign'
+  | 'device-phone-mobile';
 
 const ICON_MAP: Record<PageHeaderIcon, FC<LucideProps>> = {
   'user-circle': UserCircle,
@@ -100,6 +106,9 @@ const ICON_MAP: Record<PageHeaderIcon, FC<LucideProps>> = {
   megaphone: Megaphone,
   'message-square': MessageSquare,
   ticket: Ticket,
+  'key-round': KeyRound,
+  'circle-dollar-sign': CircleDollarSign,
+  'device-phone-mobile': Smartphone,
 };
 
 export type PageHeaderAccent = 'indigo' | 'emerald' | 'amber' | 'rose' | 'violet' | 'cyan';

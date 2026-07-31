@@ -575,7 +575,7 @@ export function QueuesView({
                     <div className={s.qCardLoadMeta}>
                       <span>
                         نرخ خطا{' '}
-                        <strong>{q.failureRate > 0 ? `${fmtPersian(q.failureRate.toFixed(1))}٪` : '—'}</strong>
+                        <strong>{q.failureRate > 0 ? `${fmtPersian(parseFloat(q.failureRate.toFixed(1)))}٪` : '—'}</strong>
                       </span>
                       {q.dead > 0 ? (
                         <span className={s.qCardLoadDead}>

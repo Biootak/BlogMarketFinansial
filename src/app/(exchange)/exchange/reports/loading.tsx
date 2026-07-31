@@ -1,5 +1,5 @@
 import ExchangePageSkeleton from '@/components/Exchange/ExchangePageSkeleton';
 
-export default function ReportsLoading() {
-  return <ExchangePageSkeleton statCount={4} tableRows={5} />;
+export default function ExchangeReportsLoading() {
+  return <ExchangePageSkeleton statCount={3} tableRows={5} />;
 }

@@ -18,7 +18,7 @@ import {
   searchUsersForStaff,
 } from '@/actions/exchange-staff';
 import type { ExchangeRow } from '@/actions/exchanges';
-import { EmptyState, MillionDollarEmpty, PageHeader } from '@/components/Dashboard/primitives';
+import { ConfirmDialog, EmptyState, MillionDollarEmpty, PageHeader } from '@/components/Dashboard/primitives';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
 import {

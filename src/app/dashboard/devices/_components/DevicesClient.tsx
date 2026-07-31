@@ -24,6 +24,7 @@ import {
 import {
   ConfirmDialog,
   EmptyState,
+  MillionDollarEmpty,
   PageHeader,
   Spotlight,
 } from '@/components/Dashboard/primitives';

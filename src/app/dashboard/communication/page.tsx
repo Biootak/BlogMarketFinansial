@@ -31,15 +31,32 @@ export default async function CommunicationPage() {
   ]);
 
   // ۳. ساخت snapshot نهایی
+  const defaultExtras = {
+    series24h: [] as number[],
+    recentActivity: [] as import('./_components/types').RecentActivityItem[],
+    channelMix: {
+      channels: [
+        { id: 'push' as const, label: 'Push', tone: 'emerald' as const, announcementCount: 0, campaignCount: 0, sent: 0, recipients: 0 },
+        { id: 'email' as const, label: 'Email', tone: 'emerald' as const, announcementCount: 0, campaignCount: 0, sent: 0, recipients: 0 },
+        { id: 'sms' as const, label: 'SMS', tone: 'amber' as const, announcementCount: 0, campaignCount: 0, sent: 0, recipients: 0 },
+        { id: 'inapp' as const, label: 'In-app', tone: 'emerald' as const, announcementCount: 0, campaignCount: 0, sent: 0, recipients: 0 },
+      ],
+      total: { sent: 0, recipients: 0, announcements: 0, campaigns: 0 },
+    },
+  };
+  const audienceExtras = {
+    audienceCount: audiencesResult.success && audiencesResult.data
+      ? audiencesResult.data.rows.length
+      : 0,
+    totalUsers: audiencesResult.success && audiencesResult.data
+      ? audiencesResult.data.totalUsers
+      : 0,
+  };
   const hub: CommunicationHubData = snapshotResult.success && snapshotResult.data
     ? {
+        ...defaultExtras,
         ...snapshotResult.data,
-        audienceCount: audiencesResult.success && audiencesResult.data
-          ? audiencesResult.data.rows.length
-          : 0,
-        totalUsers: audiencesResult.success && audiencesResult.data
-          ? audiencesResult.data.totalUsers
-          : 0,
+        ...audienceExtras,
       }
     : {
         generatedAt: new Date().toISOString(),

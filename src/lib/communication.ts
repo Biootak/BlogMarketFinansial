@@ -510,7 +510,10 @@ export async function getCampaignById(
     const bounced = row.recipients.filter((r) => r.status === 'bounced' || r.status === 'failed').length;
     const base = toCampaign({
       ...row,
-      stats: { sent, opened, clicked, bounced },
+      statsSent: sent,
+      statsOpened: opened,
+      statsClicked: clicked,
+      statsBounced: bounced,
     });
     return {
       success: true,
@@ -706,7 +709,7 @@ const fetchNexusRaw = async (): Promise<CommunicationNexus> => {
     }),
     prisma.campaign.findMany({
       where: { startedAt: { gte: sevenDaysAgo } },
-      select: { startedAt: true, channel: true, statsSent: true },
+      select: { startedAt: true, channel: true, statsSent: true, statsOpened: true, statsClicked: true },
     }),
   ]);
 

@@ -10,7 +10,7 @@ import { getExchangeForUser } from '@/actions/exchanges';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { PageHeader } from '@/components/Dashboard/primitives';
-import { CustomerCreateWorkspace } from '@/components/exchange/customers/CustomerCreateWorkspace';
+import { CustomerCreateWorkspace } from '@/components/Exchange/customers/CustomerCreateWorkspace';
 
 export const metadata: Metadata = { title: 'ایجاد مشتری · صرافی' };
 

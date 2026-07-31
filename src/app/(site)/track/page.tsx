@@ -12,6 +12,8 @@ import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import s from './[code]/track.module.css';
 
 export const metadata: Metadata = {
@@ -66,24 +68,16 @@ export default async function TrackIndexPage({ searchParams }: Props) {
           <form
             method="GET"
             action="/track"
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 'var(--ds-space-4)',
-            }}
+            style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-4)' }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-2)' }}>
               <label
                 htmlFor="track-code"
-                style={{
-                  fontSize: 'var(--ds-text-sm)',
-                  fontWeight: 600,
-                  color: 'var(--ds-text)',
-                }}
+                style={{ fontSize: 'var(--ds-text-sm)', fontWeight: 600, color: 'var(--ds-text)' }}
               >
                 کد پیگیری
               </label>
-              <input
+              <Input
                 id="track-code"
                 name="code"
                 type="text"
@@ -93,53 +87,16 @@ export default async function TrackIndexPage({ searchParams }: Props) {
                 minLength={4}
                 maxLength={24}
                 autoComplete="off"
-                style={{
-                  height: '2.75rem',
-                  padding: '0 var(--ds-space-4)',
-                  fontSize: 'var(--ds-text-sm)',
-                  fontFamily: 'inherit',
-                  color: 'var(--ds-text)',
-                  background: 'var(--ds-surface-raised)',
-                  border: '1px solid var(--ds-border)',
-                  borderRadius: '10px',
-                  outline: 'none',
-                  width: '100%',
-                  textAlign: 'center',
-                  letterSpacing: '0.12em',
-                }}
+                style={{ textAlign: 'center', letterSpacing: '0.12em' }}
               />
-              <p
-                style={{
-                  fontSize: 'var(--ds-text-xs)',
-                  color: 'var(--ds-text-muted)',
-                  margin: 0,
-                }}
-              >
+              <p style={{ fontSize: 'var(--ds-text-xs)', color: 'var(--ds-text-muted)', margin: 0 }}>
                 کد پیگیری در ایمیل تأیید معامله یا داشبورد «معاملات من» موجود است.
               </p>
             </div>
-            <button
-              type="submit"
-              style={{
-                height: '2.75rem',
-                padding: '0 var(--ds-space-5)',
-                fontSize: 'var(--ds-text-sm)',
-                fontWeight: 600,
-                fontFamily: 'inherit',
-                color: 'var(--ds-text-on-accent, #fff)',
-                background: 'var(--ds-accent, var(--nova-primary))',
-                border: 'none',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 'var(--ds-space-2)',
-              }}
-            >
+            <Button type="submit" className="w-full gap-2">
               <Search size={16} strokeWidth={2} aria-hidden />
               پیگیری وضعیت
-            </button>
+            </Button>
           </form>
         </section>
 

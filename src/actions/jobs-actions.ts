@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
+import { revalidateTag } from '@/lib/revalidate';
 import { z } from 'zod';
 import {
   cancelJob as _cancelJob,
@@ -67,7 +67,7 @@ export async function enqueueJobAction(
   formData: FormData,
 ): Promise<EnqueueActionResult> {
   const guard = await requireAdmin();
-  if (!guard.ok) return { success: false, error: guard.reason };
+  if (!guard.success) return { success: false, error: guard.message };
 
   const parsed = enqueueSchema.safeParse({
     type: formData.get('type')?.toString() ?? '',

@@ -24,13 +24,15 @@ import {
   DashboardTableBody,
   DashboardTableCell,
   DashboardTableContainer,
+  DashboardTableHead,
   DashboardTableHeader,
   DashboardTableRow,
   EmptyState,
-  MillionDollarEmpty,
   PrimaryActionButton,
   StatusBadge,
 } from '@/components/Dashboard/shared/DashboardTableWrapper';
+import { MillionDollarEmpty } from '@/components/Dashboard/primitives';
+import { Button } from '@/components/ui/button';
 import SubmitButton from '@/components/SubmitButton';
 import {
   Dialog,

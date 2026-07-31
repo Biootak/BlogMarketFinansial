@@ -7,7 +7,7 @@ import { getCustomers, getCustomerStats } from '@/actions/exchange-customers';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { PageHeader } from '@/components/Dashboard/primitives';
-import { CustomerArchive } from '@/components/exchange/customers/CustomerArchive';
+import { CustomerArchive } from '@/components/Exchange/customers/CustomerArchive';
 
 export const metadata: Metadata = { title: 'آرشیو مشتریان · صرافی' };
 

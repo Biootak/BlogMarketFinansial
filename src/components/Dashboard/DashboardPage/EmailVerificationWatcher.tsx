@@ -26,7 +26,7 @@ export function EmailVerificationWatcher({ initialVerified }: Props) {
   const verifiedRef = useRef(initialVerified);
 
   useEffect(() => {
-    const current = session?.user?.emailVerified ?? false;
+    const current = Boolean(session?.user?.emailVerified);
     // فقط وقتی false → true تغییر کرد (تأیید تازه)
     if (current && !verifiedRef.current) {
       verifiedRef.current = current;

@@ -23,8 +23,8 @@ import {
   EmptyState,
   FormField,
   Spotlight,
-  StatusBadge,
 } from '@/components/Dashboard/primitives';
+import { StatusBadge } from '@/components/Dashboard/shared/DashboardTableWrapper';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -224,9 +224,9 @@ export default function TwoFactorCenter({ initial }: Props) {
         </div>
         <div className={s.heroMeta}>
           {meta.enabled ? (
-            <StatusBadge kind="success" label="فعال" />
+            <StatusBadge status="فعال" variant="success" />
           ) : (
-            <StatusBadge kind="warning" label="غیرفعال" />
+            <StatusBadge status="غیرفعال" variant="warning" />
           )}
         </div>
       </header>
@@ -398,7 +398,7 @@ export default function TwoFactorCenter({ initial }: Props) {
               <div className={s.metaRow}>
                 <dt>کانال</dt>
                 <dd>
-                  <StatusBadge kind="info" label="TOTP" />
+                  <StatusBadge status="TOTP" variant="info" />
                 </dd>
               </div>
               <div className={s.metaRow}>
@@ -413,9 +413,9 @@ export default function TwoFactorCenter({ initial }: Props) {
                 <dt>کدهای پشتیبان</dt>
                 <dd>
                   {meta.hasBackupCodes ? (
-                    <StatusBadge kind="success" label="موجود" />
+                    <StatusBadge status="موجود" variant="success" />
                   ) : (
-                    <StatusBadge kind="warning" label="تولید نشده" />
+                    <StatusBadge status="تولید نشده" variant="warning" />
                   )}
                 </dd>
               </div>

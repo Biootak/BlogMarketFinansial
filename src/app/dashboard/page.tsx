@@ -139,8 +139,8 @@ export default async function Dashboard() {
             viewStats={viewStatsResult!.data!}
             recentActivity={recentActivity}
             userRole={userRole}
-            marketRates={marketRates}
-            topAuthors={topAuthors}
+            marketRates={marketRates ?? []}
+            topAuthors={topAuthors ?? []}
           />
         </>
       );

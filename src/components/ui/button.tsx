@@ -5,15 +5,21 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:scale-[1.02] active:scale-[0.98]',
+  'inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-semibold ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variant: {
-        default: 'bg-primary-500 text-white hover:bg-primary-600',
-        destructive: 'bg-red-500 text-white hover:bg-red-600',
+        default:
+          '[background:linear-gradient(180deg,var(--ds-brand-500),var(--ds-brand-600))] text-white ' +
+          '[box-shadow:0_1px_0_oklch(100%_0_0/0.18)_inset,0_4px_14px_-4px_oklch(52%_0.14_162/0.45)] ' +
+          'hover:-translate-y-px hover:[background:linear-gradient(180deg,var(--ds-brand-600),var(--ds-brand-700))] ' +
+          'active:scale-[0.97] transition-all duration-200',
+        destructive:
+          'bg-red-500 text-white hover:bg-red-600 active:scale-[0.97]',
         outline:
-          'border border-neutral-300 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200',
-        secondary: 'bg-secondary-500 text-white hover:bg-secondary-600',
+          'border border-neutral-300 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 active:scale-[0.97]',
+        secondary:
+          'bg-secondary-500 text-white hover:bg-secondary-600 active:scale-[0.97]',
         ghost:
           'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-200',
         link: 'text-primary-500 underline-offset-4 hover:underline',

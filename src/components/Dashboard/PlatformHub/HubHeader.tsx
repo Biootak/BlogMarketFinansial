@@ -15,6 +15,8 @@ export interface HubHeaderProps {
   icon?: LucideIcon;
   actions?: React.ReactNode;
   className?: string;
+  /** visual variant — dark for forensics/DLQ */
+  variant?: 'default' | 'dark';
 }
 
 /**
@@ -29,9 +31,10 @@ export function HubHeader({
   icon: Icon,
   actions,
   className,
+  variant = 'default',
 }: HubHeaderProps) {
   return (
-    <div className={cn(s.hubHeaderCompact, className)}>
+    <div className={cn(s.hubHeaderCompact, variant === 'dark' && s.hubHeaderCompactDark, className)}>
       {backHref ? (
         <Link href={backHref} className={s.hubBack} aria-label={backLabel}>
           <ChevronLeft size={16} aria-hidden />

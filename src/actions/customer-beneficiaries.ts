@@ -12,10 +12,9 @@
  * 2026-07-28: Customer Portal به آن نیاز داشت (transfer wizard → save recipient).
  */
 
-import { revalidateTag } from 'next/cache';
-import { createId } from '@paralleldrive/cuid2';
+import { revalidateTag } from '@/lib/revalidate';
 import { z } from 'zod';
-import { prisma } from '@/lib/db';
+import prisma from '@/lib/db';
 import { requireCustomerAccess } from '@/lib/customer-auth';
 import type { Prisma } from '@prisma/client';
 
@@ -108,7 +107,7 @@ export async function createCustomerBeneficiary(
 
   const row = await prisma.beneficiary.create({
     data: {
-      id: createId(),
+      id: crypto.randomUUID(),
       customerId: auth.customerId,
       name,
       identifier,
@@ -121,7 +120,7 @@ export async function createCustomerBeneficiary(
   try {
     await prisma.auditLog.create({
       data: {
-        id: createId(),
+        id: crypto.randomUUID(),
         exchangeId: auth.exchangeId,
         actorId: auth.userId,
         actorRole: 'CUSTOMER',
@@ -200,7 +199,7 @@ export async function deleteCustomerBeneficiary(
   try {
     await prisma.auditLog.create({
       data: {
-        id: createId(),
+        id: crypto.randomUUID(),
         exchangeId: auth.exchangeId,
         actorId: auth.userId,
         actorRole: 'CUSTOMER',

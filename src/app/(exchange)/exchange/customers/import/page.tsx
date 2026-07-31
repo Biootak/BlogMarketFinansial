@@ -9,7 +9,7 @@ import { getExchangeForUser } from '@/actions/exchanges';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { PageHeader } from '@/components/Dashboard/primitives';
-import { CustomerImportWizard } from '@/components/exchange/customers/CustomerImportWizard';
+import { CustomerImportWizard } from '@/components/Exchange/customers/CustomerImportWizard';
 
 export const metadata: Metadata = { title: 'ورود دسته‌جمعی مشتریان · صرافی' };
 

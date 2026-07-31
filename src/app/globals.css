@@ -42,18 +42,21 @@
   --color-accent-foreground: rgb(20, 23, 32);
   --color-border: rgb(224, 228, 235);
   --color-input: rgb(224, 228, 235);
-  --color-ring: rgb(94, 106, 230);
+  --color-ring: oklch(52% 0.14 162);   /* = --ds-brand-600 برای focus ring واضح‌تر */
 
-  --color-primary-50: rgb(235, 240, 255);
-  --color-primary-100: rgb(215, 222, 255);
-  --color-primary-200: rgb(184, 196, 255);
-  --color-primary-300: rgb(148, 163, 255);
-  --color-primary-400: rgb(121, 134, 247);
-  --color-primary-500: rgb(94, 106, 230);
-  --color-primary-600: rgb(76, 86, 200);
-  --color-primary-700: rgb(60, 68, 162);
-  --color-primary-800: rgb(45, 51, 124);
-  --color-primary-900: rgb(30, 34, 86);
+  /* Brand: emerald — mirror از --ds-brand-* در tokens.css
+     همه Tailwind utility های bg-primary-* / text-primary-* از اینجا می‌آیند.
+     مقادیر دقیقاً همان --ds-brand-* هستند تا هر دو سیستم یکدست باشند. */
+  --color-primary-50: oklch(96% 0.03 165);   /* = --ds-brand-50  */
+  --color-primary-100: oklch(92% 0.05 165);  /* = --ds-brand-100 */
+  --color-primary-200: oklch(86% 0.08 165);
+  --color-primary-300: oklch(78% 0.1 165);
+  --color-primary-400: oklch(68% 0.11 165);
+  --color-primary-500: oklch(58% 0.12 165);  /* = --ds-brand-500 */
+  --color-primary-600: oklch(52% 0.14 162);  /* = --ds-brand-600 */
+  --color-primary-700: oklch(42% 0.14 162);  /* = --ds-brand-700 */
+  --color-primary-800: oklch(32% 0.12 162);
+  --color-primary-900: oklch(22% 0.1 162);
 
   --color-secondary-50: rgb(240, 244, 255);
   --color-secondary-100: rgb(224, 230, 255);

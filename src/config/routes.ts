@@ -115,6 +115,9 @@ export const publicRoutes = [
   '/apply-exchange/success',
   '/online-payment',
   '/online-payment/[...slug]',
+  // track: صفحه index عمومی (فرم ورود کد) + صفحه [code] عمومی
+  '/track',
+  '/track/[code]',
 
   // فایل‌های استاتیک
   '/images',
