@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   CheckCircle2,
-  ChevronLeft,
+  ChevronRight,
   Clock,
   Mail,
   Pause,
@@ -242,7 +242,7 @@ export function CampaignDetail({ campaign }: Props) {
           <div className={s.coverActions}>
             <Button variant="ghost" asChild>
               <Link href="/dashboard/communication/campaigns">
-                <ChevronLeft size={14} aria-hidden />
+                <ChevronRight size={14} aria-hidden />
                 بازگشت
               </Link>
             </Button>

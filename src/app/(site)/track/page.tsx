@@ -11,7 +11,7 @@
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowLeft, Search } from 'lucide-react';
+import { ArrowRight, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import s from './[code]/track.module.css';
@@ -102,7 +102,7 @@ export default async function TrackIndexPage({ searchParams }: Props) {
 
         <div className={s.backRow}>
           <Link href="/money-transfer" className={s.backLink}>
-            <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
+            <ArrowRight size={14} strokeWidth={1.75} aria-hidden />
             بازگشت به صفحه انتقال
           </Link>
         </div>

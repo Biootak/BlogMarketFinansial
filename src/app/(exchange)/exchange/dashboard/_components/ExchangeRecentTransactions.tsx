@@ -93,7 +93,7 @@ export default function ExchangeRecentTransactions({
         <div className={s.recentFooter}>
           <Link href="/exchange/transactions" className={s.recentFooterLink}>
             مشاهده همه ({new Intl.NumberFormat('fa-IR').format(transactions.length)} تراکنش)
-            <ChevronLeft size={12} aria-hidden style={{ transform: 'scaleX(-1)' }} />
+            <ChevronLeft size={12} aria-hidden />
           </Link>
         </div>
       )}

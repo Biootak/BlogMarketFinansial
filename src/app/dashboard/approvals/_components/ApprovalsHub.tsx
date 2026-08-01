@@ -14,7 +14,7 @@ import {
   AlertCircle,
   Check,
   CheckCircle2,
-  ChevronLeft,
+  ChevronRight,
   Circle,
   Clock,
   FileText,
@@ -746,7 +746,7 @@ export function ApprovalsHub({ initialData, canCreate = false }: Props) {
             onClick={() => setMobileDetailOpen(false)}
             aria-label="بازگشت"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4" />
             بازگشت به فهرست
           </button>
           {selected ? (

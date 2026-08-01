@@ -91,7 +91,7 @@ export function HubShell({
                       {b.label}
                     </span>
                   )}
-                  {!isLast ? <ChevronLeft size={12} aria-hidden className={s.hubBreadcrumbSep} /> : null}
+                  {!isLast ? <ChevronLeft size={12} aria-hidden className={cn(s.hubBreadcrumbSep, 'rtl:rotate-180')} /> : null}
                 </span>
               );
             })}

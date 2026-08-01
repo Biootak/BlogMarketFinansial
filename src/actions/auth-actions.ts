@@ -21,7 +21,7 @@
 import { signIn, signOut } from '@/auth';
 import prisma from '@/lib/db';
 import { getEmailProviderAsync } from '@/lib/email';
-import { otpEmail, otpExpiresLabel } from '@/lib/email/templates';
+import { otpEmail, otpExpiresLabel, type OtpEmailIntent } from '@/lib/email/templates';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { serverLog } from '@/lib/server-logger';
 import {
@@ -131,7 +131,7 @@ function getFormString(formData: FormData, key: string): string {
 async function dispatchOtpEmail(
   email: string,
   code: string,
-  intent: VerificationEmailIntent,
+  intent: OtpEmailIntent,
 ): Promise<void> {
   const provider = await getEmailProviderAsync();
   await provider.send(otpEmail({ to: email, code, intent, expiresLabel: otpExpiresLabel() }));
@@ -144,7 +144,7 @@ async function dispatchOtpEmail(
  */
 async function issueOtp(
   email: string,
-  intent: VerificationEmailIntent,
+  intent: OtpEmailIntent,
 ): Promise<{ ok: true } | { ok: false; retryAfterMs: number }> {
   const minted = await generateOtpToken({ email, intent });
   if (!minted.ok) {
@@ -350,7 +350,7 @@ export async function loginWithPassword(formData: FormData): Promise<AuthResult>
     //   3. به مرحلهٔ verify برمی‌گردیم تا کاربر کد Authenticator را وارد کند
     //   4. verifyTotpLogin آن را مصرف می‌کند و با single-use loginToken سشن می‌سازد
     // (رمز در DB ذخیره نمی‌شود؛ با همان hashing موجود)
-    const twoFaUser = await prisma.user.findUnique({
+    const twoFaUser = await prisma.user.findFirst({
       where: { email: { equals: input.email, mode: 'insensitive' } },
       select: { twoFactorEnabled: true, password: true, emailVerified: true, email: true },
     });
@@ -467,7 +467,7 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
     // نه از ایمیل. challenge قبلاً در loginWithPassword ساخته شده؛ اینجا
     // TOTP را با secret ذخیره‌شده چک و challenge را consume می‌کنیم.
     if (input.intent === '2fa') {
-      const twoFaUser = await prisma.user.findUnique({
+      const twoFaUser = await prisma.user.findFirst({
         where: { email: { equals: input.email, mode: 'insensitive' } },
         select: { twoFactorEnabled: true, twoFactorSecret: true, emailVerified: true, email: true },
       });

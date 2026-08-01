@@ -2,7 +2,7 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 
 import { auth } from '@/auth';
-import { ArrowRight, ChevronLeft, Sparkles, Target, Users } from 'lucide-react';
+import { ArrowRight, ChevronRight, Sparkles, Target, Users } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { getAudiences, getCommunicationSnapshot } from '@/lib/communication';
 import { Button } from '@/components/ui/button';
@@ -148,7 +148,7 @@ export default async function AudienceDetailPage({
           <div className={s.coverActions}>
             <Button variant="ghost" asChild>
               <Link href="/dashboard/communication/audiences">
-                <ChevronLeft size={14} aria-hidden />
+                <ChevronRight size={14} aria-hidden />
                 بازگشت
               </Link>
             </Button>

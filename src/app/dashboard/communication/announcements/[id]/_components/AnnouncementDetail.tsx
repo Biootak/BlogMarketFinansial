@@ -13,7 +13,7 @@ import {
   Bell,
   CalendarClock,
   CheckCircle2,
-  ChevronLeft,
+  ChevronRight,
   Clock,
   Mail,
   MessageSquare,
@@ -202,7 +202,7 @@ export function AnnouncementDetail(props: Props) {
           <div className={s.coverActions}>
             <Button variant="ghost" asChild>
               <Link href="/dashboard/communication/announcements">
-                <ChevronLeft size={14} aria-hidden />
+                <ChevronRight size={14} aria-hidden />
                 بازگشت
               </Link>
             </Button>

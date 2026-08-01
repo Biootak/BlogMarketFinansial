@@ -415,7 +415,7 @@
   font-size: 0.72rem;
   color: var(--at-fg-muted, var(--ds-text-muted));
   direction: ltr;
-  text-align: left;
+  text-align: start;
   white-space: nowrap;
 }
 

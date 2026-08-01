@@ -37,7 +37,6 @@ export default function ExchangeAlerts({ alerts }: { alerts: DashboardAlert[] })
               aria-hidden
               style={{
                 color: 'var(--at-fg-muted)',
-                transform: 'scaleX(-1)',
                 flexShrink: 0,
               }}
             />

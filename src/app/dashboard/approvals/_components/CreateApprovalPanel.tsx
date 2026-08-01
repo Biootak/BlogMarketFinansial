@@ -6,7 +6,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
-  ChevronLeft,
+  ChevronRight,
   FileText,
   Plus,
   Send,
@@ -196,7 +196,7 @@ export function CreateApprovalPanel({ open, onClose, onCreated }: Props) {
             <span className={s.headerSubtitle}>یک جریان تأیید چندمرحله‌ای جدید ایجاد کنید</span>
           </div>
           <button type="button" onClick={close} className={s.closeBtn} aria-label="بستن">
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronRight className="h-5 w-5" />
           </button>
         </header>
 

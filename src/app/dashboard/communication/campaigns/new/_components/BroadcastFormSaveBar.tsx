@@ -6,7 +6,7 @@
  */
 
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, Save, Send, X } from 'lucide-react';
+import { ChevronRight, Save, Send, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import s from './NewCampaign.module.css';
 
@@ -28,10 +28,9 @@ export function BroadcastFormSaveBar({
   return (
     <div className={s.saveBar}>
       <div className={s.saveBarInfo}>
-        <ChevronLeft
+        <ChevronRight
           size={14}
           aria-hidden
-          style={{ transform: 'rotate(180deg)' }}
         />
         <a href={backHref} className={s.saveBarLink}>
           بازگشت به فهرست

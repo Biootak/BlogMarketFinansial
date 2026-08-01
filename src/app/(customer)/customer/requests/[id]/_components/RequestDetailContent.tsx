@@ -24,7 +24,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import {
   AlertTriangle,
-  ArrowLeft,
+  ArrowRight,
   ArrowLeftRight,
   Building2,
   CheckCircle2,
@@ -279,7 +279,7 @@ export default function RequestDetailContent({ detail }: Props) {
 
       <div className={s.backRow}>
         <Link href="/customer/requests" className={s.backLink}>
-          <ArrowLeft size={13} aria-hidden />
+          <ArrowRight size={13} aria-hidden />
           بازگشت به لیست درخواست‌ها
         </Link>
       </div>

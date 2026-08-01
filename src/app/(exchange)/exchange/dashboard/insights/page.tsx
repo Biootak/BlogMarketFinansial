@@ -42,7 +42,7 @@ export default async function ExchangeInsightsPage() {
       <header className={s.pageHeader}>
         <nav aria-label="مسیر">
           <Link href="/exchange/dashboard" className={s.crumb}>
-            <ChevronRight size={12} aria-hidden style={{ transform: 'scaleX(-1)' }} />
+            <ChevronRight size={12} aria-hidden />
             داشبورد
           </Link>
           <span className={s.crumbSep} aria-hidden>

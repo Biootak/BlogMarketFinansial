@@ -84,7 +84,7 @@ export default function ExchangeCurrencyFlow({
         <span>۳۰ روز اخیر · {items.length} ارز فعال</span>
         <Link href="/exchange/rates" className={s.panelLink}>
           مدیریت نرخ‌ها
-          <ChevronLeft size={12} aria-hidden style={{ transform: 'scaleX(-1)' }} />
+          <ChevronLeft size={12} aria-hidden />
         </Link>
       </div>
     </div>

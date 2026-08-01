@@ -2,7 +2,7 @@
  * /exchanges/[slug]/not-found — صفحهٔ ۴۰۴ سفارشی.
  */
 
-import { ArrowLeft, Search } from 'lucide-react';
+import { ArrowRight, Search } from 'lucide-react';
 import Link from 'next/link';
 import s from './not-found.module.css';
 
@@ -24,7 +24,7 @@ export default function ExchangeNotFound() {
             <span>مشاهدهٔ فهرست صرافی‌ها</span>
           </Link>
           <Link href="/" className={s.ctaGhost}>
-            <ArrowLeft size={13} strokeWidth={1.9} className={s.ctaIcon} aria-hidden />
+            <ArrowRight size={13} strokeWidth={1.9} className={s.ctaIcon} aria-hidden />
             بازگشت به خانه
           </Link>
         </div>

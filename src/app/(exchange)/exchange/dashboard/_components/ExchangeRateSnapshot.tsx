@@ -79,7 +79,7 @@ export default function ExchangeRateSnapshot({ items }: { items: RateSnapshot[] 
         <span>۶ نرخ فعال</span>
         <Link href="/exchange/rates" className={s.panelLink}>
           مشاهده همه
-          <ChevronLeft size={12} aria-hidden style={{ transform: 'scaleX(-1)' }} />
+          <ChevronLeft size={12} aria-hidden />
         </Link>
       </div>
     </div>

@@ -334,7 +334,7 @@ export default function OnlinePaymentLanding({ onScrollToContact }: OnlinePaymen
             <div className={s.heroCtas}>
               <button type="button" onClick={scrollToContact} className={s.ctaMain}>
                 شروع کنید
-                <ArrowLeft size={16} strokeWidth={2} style={{ transform: 'scaleX(-1)' }} />
+                <ArrowLeft size={16} strokeWidth={2} />
               </button>
               <Link href="#services" className={s.ctaGhost}>
                 مشاهده خدمات

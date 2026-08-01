@@ -220,7 +220,7 @@
 
 .table thead th {
   padding: 10px 14px;
-  text-align: right;
+  text-align: start;
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
   color: var(--ds-text-muted);

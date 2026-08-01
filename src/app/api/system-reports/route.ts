@@ -15,7 +15,7 @@ async function ensureReportAccess(): Promise<NextResponse | null> {
   }
   // M2-fix: SUPERADMIN هم مثل OWNER است — قبلاً 403 می‌گرفت چون نه ADMIN بود
   // نه OWNER. ADMIN/OWNER/SUPERADMIN همه مجازند.
-  if (!['ADMIN', 'OWNER', 'SUPERADMIN'].includes(role)) {
+  if (!role || !['ADMIN', 'OWNER', 'SUPERADMIN'].includes(role)) {
     return NextResponse.json(
       { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } },
       { status: 403 },
@@ -25,7 +25,7 @@ async function ensureReportAccess(): Promise<NextResponse | null> {
 }
 
 interface MonthlyStats {
-  month: Date;
+  month: string | Date;
   count: string | number;
 }
 
