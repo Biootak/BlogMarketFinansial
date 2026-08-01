@@ -81,32 +81,6 @@ export type CreditRateAggregate = {
   cheapestLoan: CreditRateRow | null;
 };
 
-export const TYPE_FA: Record<CreditRateType, string> = {
-  MORTGAGE: 'وام مسکن',
-  PERSONAL: 'وام شخصی',
-  AUTO: 'وام خودرو',
-  BUSINESS: 'وام کسب‌وکار',
-  QARD_AL_HASAN: 'قرض‌الحسنه',
-  EDUCATION: 'وام تحصیلی',
-  AGRICULTURE: 'وام کشاورزی',
-  COMMERCIAL: 'وام تجاری',
-  DEPOSIT: 'سپرده سرمایه‌گذاری',
-  OTHER: 'سایر',
-};
-
-export const TYPE_DESC: Record<CreditRateType, string> = {
-  MORTGAGE: 'وام بلندمدت برای خرید یا ساخت مسکن',
-  PERSONAL: 'وام برای نیازهای شخصی بدون وثیقه',
-  AUTO: 'وام برای خرید خودرو',
-  BUSINESS: 'وام برای تأمین سرمایه در گردش کسب‌وکارها',
-  QARD_AL_HASAN: 'وام قرض‌الحسنه بدون بهره',
-  EDUCATION: 'وام کم‌بهره برای شهریه و هزینه تحصیل',
-  AGRICULTURE: 'وام برای کشاورزان و دامداران',
-  COMMERCIAL: 'وام تجاری برای بازرگانان',
-  DEPOSIT: 'سپرده‌گذاری بلندمدت با سود تضمینی',
-  OTHER: 'سایر محصولات اعتباری',
-};
-
 function mapBank(raw: {
   id: string;
   slug: string;

@@ -5,6 +5,13 @@
 'use client';
 
 import { SegmentedControl } from '@/components/ds';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useEffect, useRef, useState } from 'react';
 import { HiOutlineMagnifyingGlass, HiOutlinePlus } from 'react-icons/hi2';
 
@@ -43,8 +50,10 @@ const GROUP_LABELS: Record<GroupFilter, string> = {
 
 const selectStyle: React.CSSProperties = {
   height: '2.4rem',
+  width: 'auto',
+  minWidth: '9rem',
   paddingInlineStart: '0.85rem',
-  paddingInlineEnd: '2.4rem',
+  paddingInlineEnd: '0.75rem',
   fontSize: 'var(--ds-text-sm)',
   color: 'var(--ds-text-primary)',
   background: 'var(--ds-canvas-subtle)',
@@ -55,11 +64,6 @@ const selectStyle: React.CSSProperties = {
   cursor: 'pointer',
   outline: 'none',
   fontFamily: 'inherit',
-  backgroundImage:
-    "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>\")",
-  backgroundRepeat: 'no-repeat',
-  backgroundPosition: 'left 0.8rem center',
-  backgroundSize: '12px',
 };
 
 export default function ExchangeRatesToolbar({
@@ -154,18 +158,22 @@ export default function ExchangeRatesToolbar({
         />
 
         {/* Group select */}
-        <select
-          value={group}
-          onChange={(e) => onGroupChange(e.target.value as GroupFilter)}
-          aria-label="فیلتر گروه"
-          style={selectStyle}
-        >
-          {Object.entries(GROUP_LABELS).map(([k, label]) => (
-            <option key={k} value={k}>
-              {label}
-            </option>
-          ))}
-        </select>
+        <Select value={group} onValueChange={(v) => onGroupChange(v as GroupFilter)} dir="rtl">
+          <SelectTrigger
+            aria-label="فیلتر گروه"
+            style={selectStyle}
+            className="flex items-center justify-between gap-2"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(GROUP_LABELS).map(([k, label]) => (
+              <SelectItem key={k} value={k}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {/* Counter */}
         <div
@@ -180,10 +188,7 @@ export default function ExchangeRatesToolbar({
           </span>
           <span>نرخ</span>
           {coverage !== null && (
-            <span
-              className="font-semibold"
-              style={{ color: 'var(--ds-brand-500)' }}
-            >
+            <span className="font-semibold" style={{ color: 'var(--ds-brand-500)' }}>
               · پوشش {coverage.toLocaleString('fa-IR')}٪
             </span>
           )}

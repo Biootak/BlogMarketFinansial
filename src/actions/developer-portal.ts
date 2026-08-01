@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { API_SCOPES, type ApiScope } from '@/lib/developer-portal-constants';
 import { requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import { z } from 'zod';
@@ -13,18 +14,6 @@ export type ApiKeyActionResult =
   | { success: false; error: string };
 
 // ─── Constants ──────────────────────────────────────────────────────────── //
-
-/** لیست رسمی scopes — استفاده در UI و backend. */
-export const API_SCOPES = [
-  { value: 'read:accounts', label: 'خواندن حساب‌ها', category: 'read' },
-  { value: 'read:transactions', label: 'خواندن تراکنش‌ها', category: 'read' },
-  { value: 'read:profile', label: 'خواندن پروفایل', category: 'read' },
-  { value: 'write:transfers', label: 'ایجاد انتقال', category: 'write' },
-  { value: 'write:beneficiaries', label: 'مدیریت ذی‌نفعان', category: 'write' },
-  { value: 'write:webhooks', label: 'مدیریت وب‌هوک‌ها', category: 'write' },
-] as const;
-
-export type ApiScope = (typeof API_SCOPES)[number]['value'];
 
 /** محدودیت‌های rate limit — هر کاربر در یک ساعت. */
 const RATE_LIMITS: Record<string, number> = {
@@ -57,19 +46,6 @@ const WebhookUrlSchema = z.object({
     }, 'آدرس باید یک URL معتبر با http یا https باشد'),
   events: z.array(z.string()).min(1, 'حداقل یک رویداد انتخاب کنید').max(20),
 });
-
-// ─── Webhook events ─────────────────────────────────────────────────────── //
-
-export const WEBHOOK_EVENTS = [
-  { value: 'transaction.created', label: 'تراکنش ایجاد شد' },
-  { value: 'transaction.completed', label: 'تراکنش تکمیل شد' },
-  { value: 'transaction.failed', label: 'تراکنش ناموفق' },
-  { value: 'kyc.approved', label: 'احراز هویت تأیید شد' },
-  { value: 'kyc.rejected', label: 'احراز هویت رد شد' },
-  { value: 'account.frozen', label: ' حساب مسدود شد' },
-  { value: 'transfer.received', label: 'انتقال دریافت شد' },
-  { value: 'transfer.sent', label: 'انتقال ارسال شد' },
-] as const;
 
 // ─── Helpers ────────────────────────────────────────────────────────────── //
 

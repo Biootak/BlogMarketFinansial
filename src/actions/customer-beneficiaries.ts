@@ -12,6 +12,8 @@
  * 2026-07-28: Customer Portal به آن نیاز داشت (transfer wizard → save recipient).
  */
 
+'use server';
+
 import { revalidateTag } from '@/lib/revalidate';
 import { z } from 'zod';
 import prisma from '@/lib/db';

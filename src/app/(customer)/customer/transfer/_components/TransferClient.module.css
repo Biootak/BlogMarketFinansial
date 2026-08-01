@@ -223,6 +223,20 @@
   padding-inline-end: var(--ds-space-8);
 }
 
+/* Radix SelectTrigger variant — same tokens, no native chevron background */
+.selectTrigger,
+.selectTrigger:hover {
+  appearance: none;
+  background-image: none;
+  padding-inline-end: var(--ds-space-3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  width: 100%;
+  text-align: start;
+}
+
 .fieldHint {
   font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);

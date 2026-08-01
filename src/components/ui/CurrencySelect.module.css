@@ -129,11 +129,16 @@
   max-inline-size: 22rem;
   max-block-size: 21rem;
   overflow: hidden;
-  background: var(--ds-surface);
-  border: 1px solid var(--ds-border-subtle);
+  /* near-opaque frosted surface — blur keeps page text from bleeding through
+     (fallback line covers browsers without color-mix support) */
+  background: var(--ds-surface-elevated);
+  background: color-mix(in oklch, var(--ds-surface-elevated) 92%, var(--ds-canvas));
+  border: 1px solid var(--ds-border-default);
   border-radius: var(--ds-radius-xl);
-  box-shadow: 0 0 0 1px var(--ds-border-subtle), 0 4px 8px -2px oklch(0% 0 0 / 0.06), 0 16px 40px
+  box-shadow: 0 0 0 1px var(--ds-border-default), 0 4px 8px -2px oklch(0% 0 0 / 0.06), 0 16px 40px
     -8px oklch(0% 0 0 / 0.14);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
   z-index: 60;
   display: flex;
   flex-direction: column;

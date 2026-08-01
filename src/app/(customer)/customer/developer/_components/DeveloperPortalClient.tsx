@@ -21,7 +21,6 @@
 
 import {
   type ApiKeyActionResult,
-  API_SCOPES,
   createApiKey,
   createWebhook,
   deleteApiKey,
@@ -30,6 +29,7 @@ import {
   toggleApiKey,
   toggleWebhook,
 } from '@/actions/developer-portal';
+import { API_SCOPES } from '@/lib/developer-portal-constants';
 import {
   Dialog,
   DialogClose,

@@ -28,6 +28,7 @@ import { CurrencySelect } from '@/components/ui/CurrencySelect';
 import { useDirection } from '@/hooks/useDirection';
 import {
   type HeroPair,
+  computeSpreadStats,
   convertViaIRT,
   formatFaNumber,
   formatRate,

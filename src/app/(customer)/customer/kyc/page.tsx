@@ -26,7 +26,7 @@ export default async function CustomerKycPage() {
   if (!profile) redirect('/customer/dashboard');
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
+    <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
       <PageHeader
         title="احراز هویت"
         description="مدیریت مدارک هویتی و سطح تأیید حساب"

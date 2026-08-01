@@ -18,7 +18,11 @@
  *      - notification تأییدیه در inbox باقی می‌ماند
  */
 
-import { getCustomerAccountsDetail, getCustomerProfile, type CustomerRequestType } from '@/actions/customer-portal';
+import {
+  type CustomerRequestType,
+  getCustomerAccountsDetail,
+  getCustomerProfile,
+} from '@/actions/customer-portal';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -45,9 +49,9 @@ export default async function NewRequestPage({
   searchParams: Promise<{ type?: string }>;
 }) {
   const { type: typeParam } = await searchParams;
-  const type = (
-    typeParam && ALLOWED_TYPES.has(typeParam) ? typeParam : 'OTHER'
-  ) as CustomerRequestType;
+  const isValidType = typeParam && ALLOWED_TYPES.has(typeParam);
+  const type = (isValidType ? typeParam : 'OTHER') as CustomerRequestType;
+  const typeWasInvalid = typeParam && !isValidType;
 
   const [profile, accounts] = await Promise.all([
     getCustomerProfile(),
@@ -57,7 +61,7 @@ export default async function NewRequestPage({
   if (!profile) redirect('/customer/dashboard');
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
+    <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
       <PageHeader
         title="درخواست جدید"
         description="درخواست خود را برای صرافی ثبت کنید. پس از ثبت، در لیست درخواست‌ها قابل پیگیری است"
@@ -69,7 +73,12 @@ export default async function NewRequestPage({
         icon="sparkles"
         accent="violet"
       />
-      <RequestForm initialType={type} accounts={accounts} profileStatus={profile.status} />
+      <RequestForm
+        initialType={type}
+        accounts={accounts}
+        profileStatus={profile.status}
+        typeWasInvalid={typeWasInvalid ?? false}
+      />
     </div>
   );
 }

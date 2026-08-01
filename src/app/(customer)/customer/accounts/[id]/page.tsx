@@ -28,7 +28,7 @@ export default async function AccountDetailPage({
   if (!account) notFound();
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
+    <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
       <PageHeader
         title={`حساب ${account.currency}`}
         description={account.label ?? (account.type as string)}

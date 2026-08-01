@@ -22,7 +22,7 @@ export default async function CustomerNotificationsPage() {
   const notifications = await getCustomerNotifications(50);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
+    <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
       <PageHeader
         title="اعلان‌ها"
         description={`${new Intl.NumberFormat('fa-IR').format(notifications.filter((n) => !n.isRead).length)} اعلان خوانده‌نشده`}

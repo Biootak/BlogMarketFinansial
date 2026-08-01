@@ -6,13 +6,9 @@
  *  - secret 30s در client-side auto-hide می‌شود
  *  - scopes در dialog انتخاب می‌شوند و در DB ذخیره می‌گردند
  */
-import {
-  getMyApiKeyAudits,
-  getMyApiKeys,
-  getMyWebhooks,
-  WEBHOOK_EVENTS,
-} from '@/actions/developer-portal';
+import { getMyApiKeyAudits, getMyApiKeys, getMyWebhooks } from '@/actions/developer-portal';
 import { auth } from '@/auth';
+import { WEBHOOK_EVENTS } from '@/lib/developer-portal-constants';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';

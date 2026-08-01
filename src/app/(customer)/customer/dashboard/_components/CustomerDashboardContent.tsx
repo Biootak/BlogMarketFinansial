@@ -23,6 +23,19 @@
  */
 
 import type { CustomerDashboardData, CustomerTransactionRow } from '@/actions/customer-portal';
+import {
+  ACCOUNT_TYPE_LABEL,
+  KIND_CSSKEY,
+  KIND_LABEL,
+  STATUS_LABEL,
+  TXN_STATUS_CSSKEY,
+  faAmount,
+  faDate,
+  faDateTime,
+  faNum,
+  isCreditKind,
+  relativeTime,
+} from '@/app/(customer)/customer/_lib/customer-formatters';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import { StatCard } from '@/components/Dashboard/primitives/StatCard';
 import { StatGrid } from '@/components/Dashboard/primitives/StatGrid';
@@ -47,7 +60,6 @@ import {
   ArrowUpRight,
   Banknote,
   Bell,
-  CalendarClock,
   CheckCircle2,
   ChevronLeft,
   CircleDollarSign,
@@ -116,16 +128,6 @@ const KYC_CONFIG: Record<
   },
 };
 
-const KIND_LABEL: Record<string, string> = {
-  DEPOSIT: 'واریز',
-  WITHDRAWAL: 'برداشت',
-  TRANSFER: 'انتقال',
-  EXCHANGE: 'تبدیل ارز',
-  FEE: 'کارمزد',
-  SETTLEMENT: 'تسویه',
-  ADJUSTMENT: 'اصلاح',
-};
-
 const KIND_ICON: Record<string, LucideIcon> = {
   DEPOSIT: ArrowDownLeft,
   WITHDRAWAL: ArrowUpRight,
@@ -136,91 +138,16 @@ const KIND_ICON: Record<string, LucideIcon> = {
   ADJUSTMENT: RefreshCw,
 };
 
-const KIND_CSSKEY: Record<string, 'credit' | 'debit' | 'neutral'> = {
-  DEPOSIT: 'credit',
-  TRANSFER: 'neutral',
-  EXCHANGE: 'neutral',
-  WITHDRAWAL: 'debit',
-  FEE: 'debit',
-  SETTLEMENT: 'neutral',
-  ADJUSTMENT: 'neutral',
-};
-
-const STATUS_LABEL: Record<string, string> = {
-  PENDING: 'در انتظار',
-  PROCESSING: 'در حال پردازش',
-  COMPLETED: 'انجام شده',
-  FAILED: 'ناموفق',
-  REVERSED: 'برگشت خورده',
-  CANCELLED: 'لغو شده',
-};
-
-const STATUS_CSSKEY: Record<string, 'pending' | 'progress' | 'success' | 'danger' | 'cancelled'> = {
-  PENDING: 'pending',
-  PROCESSING: 'progress',
-  COMPLETED: 'success',
-  FAILED: 'danger',
-  REVERSED: 'danger',
-  CANCELLED: 'cancelled',
-};
-
-const ACCOUNT_TYPE_LABEL: Record<string, string> = {
-  WALLET: 'کیف پول',
-  SAVINGS: 'پس‌انداز',
-  CURRENT: 'جاری',
-  ESCROW: 'امانی',
-  MERCHANT: 'تجاری',
-};
+const STATUS_CSSKEY = TXN_STATUS_CSSKEY;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────── //
 
 function formatPersianNumber(value: number | string): string {
-  const n = typeof value === 'string' ? Number(value) : value;
-  if (Number.isFinite(n)) {
-    return new Intl.NumberFormat('fa-IR').format(n);
-  }
-  return String(value);
-}
-
-function formatCompact(value: number): string {
-  return new Intl.NumberFormat('fa-IR', { notation: 'compact', maximumFractionDigits: 1 }).format(value);
+  return faNum(value);
 }
 
 function formatAmount(amount: number, currency: string): string {
-  return `${formatPersianNumber(amount)} ${currency}`;
-}
-
-function formatPersianDate(date: string | Date): string {
-  return new Intl.DateTimeFormat('fa-IR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(new Date(date));
-}
-
-function formatPersianDateTime(date: string | Date): string {
-  return new Intl.DateTimeFormat('fa-IR', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(date));
-}
-
-function relativeTime(date: string | Date): string {
-  const diff = Date.now() - new Date(date).getTime();
-  const min = Math.floor(diff / 60000);
-  const hr = Math.floor(diff / 3600000);
-  const day = Math.floor(diff / 86400000);
-  if (min < 1) return 'لحظاتی پیش';
-  if (min < 60) return `${formatPersianNumber(min)} دقیقه پیش`;
-  if (hr < 24) return `${formatPersianNumber(hr)} ساعت پیش`;
-  if (day < 30) return `${formatPersianNumber(day)} روز پیش`;
-  return formatPersianDate(date);
-}
-
-function isCreditKind(kind: string): boolean {
-  return kind === 'DEPOSIT' || kind === 'TRANSFER';
+  return faAmount(amount, currency);
 }
 
 function isNegativeKind(kind: string): boolean {
@@ -317,9 +244,7 @@ function LiveBalanceRibbon({
     })
     .join(' ');
 
-  const fillD =
-    pathD +
-    ` L 100 100 L 0 100 Z`;
+  const fillD = `${pathD} L 100 100 L 0 100 Z`;
 
   return (
     <div className={s.ribbon} aria-label="نوار موجودی زنده">
@@ -349,7 +274,7 @@ function LiveBalanceRibbon({
 
         <div className={s.ribbonCenter}>
           <div className={s.ribbonSpark} aria-hidden>
-            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className={s.ribbonSparkSvg}>
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className={s.ribbonSparkSvg} aria-hidden role="presentation">
               <defs>
                 <linearGradient id="ribbon-spark-grad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="currentColor" stopOpacity="0.35" />
@@ -543,8 +468,8 @@ function ActivityHeatmap({ heatmap }: { heatmap: Array<{ date: string; count: nu
               className={s.heatmapCell}
               data-level={intensity}
               style={{ animationDelay: `${i * 6}ms` }}
-              title={`${formatPersianDate(c.date)} — ${formatPersianNumber(c.count)} تراکنش`}
-              aria-label={`${formatPersianDate(c.date)}: ${formatPersianNumber(c.count)} تراکنش`}
+              title={`${faDate(c.date)} — ${formatPersianNumber(c.count)} تراکنش`}
+              aria-label={`${faDate(c.date)}: ${formatPersianNumber(c.count)} تراکنش`}
             />
           );
         })}
@@ -719,7 +644,7 @@ function RecentTransactions({
                   {KIND_LABEL[txn.kind] ?? txn.kind}
                 </DashboardTableCell>
                 <DashboardTableCell>
-                  <span className="text-[11px] text-neutral-500" title={formatPersianDateTime(txn.createdAt)}>
+                  <span className="text-[11px] text-neutral-500" title={faDateTime(txn.createdAt)}>
                     {relativeTime(txn.createdAt)}
                   </span>
                 </DashboardTableCell>

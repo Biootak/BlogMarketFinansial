@@ -108,7 +108,7 @@ export function SecurityCenter({ overview }: Props) {
         });
         setPwd(EMPTY_PASSWORD);
         // سایر sessionها باطل شده‌اند؛ به auth برو
-        setTimeout(() => router.push('/auth?callbackUrl=/customer/dashboard'), 800);
+        setTimeout(() => router.push('/auth'), 800);
       } else {
         toast({
           title: 'خطا در تغییر رمز',
@@ -165,7 +165,7 @@ export function SecurityCenter({ overview }: Props) {
             </p>
           </div>
           <div className={s.scoreRing} aria-hidden>
-            <svg viewBox="0 0 100 100">
+            <svg viewBox="0 0 100 100" aria-hidden role="presentation">
               <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="6" opacity={0.12} />
               <circle
                 cx="50"
@@ -355,7 +355,6 @@ export function SecurityCenter({ overview }: Props) {
               onChange={(e) => setDeleteConfirm(e.target.value)}
               className={s.confirmInput}
               autoComplete="off"
-              autoFocus
               dir="rtl"
               aria-describedby="delete-hint"
             />

@@ -23,7 +23,7 @@ export default async function CustomerProfilePage() {
   if (!profile) redirect('/customer/dashboard');
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
+    <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
       <PageHeader
         title="پروفایل من"
         description="مشاهده و ویرایش اطلاعات شخصی"

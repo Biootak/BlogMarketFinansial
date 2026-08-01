@@ -447,22 +447,18 @@
   cursor: not-allowed;
 }
 
-.selectWrap {
-  position: relative;
+/* Radix SelectTrigger variant — same tokens, chevron is rendered by Radix */
+.formSelectTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  cursor: pointer;
 }
 
-.selectWrap .formControl {
-  padding-inline-end: var(--ds-space-7);
-}
-
-.selectChevron {
-  position: absolute;
-  inset-inline-end: var(--ds-space-3);
-  inset-block-start: 50%;
-  transform: translateY(-50%);
-  font-size: 0.75rem;
-  color: var(--ds-text-muted);
-  pointer-events: none;
+.formSelectTrigger[aria-expanded='true'] {
+  border-color: var(--ds-brand-500);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 18%, transparent);
 }
 
 .formHint {

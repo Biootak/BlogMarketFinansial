@@ -23,6 +23,13 @@ import { executeFxTrade, getFxQuote } from '@/actions/fx-trade';
 import { ACCOUNT_TYPE_LABEL } from '@/app/(customer)/customer/_lib/customer-formatters';
 import { type CurrencyItem, CurrencySelect } from '@/components/ui/CurrencySelect';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   AlertCircle,
   ArrowLeftRight,
   ArrowRight,
@@ -243,22 +250,24 @@ function AccountSelect({
       <label htmlFor={id} className={s.label}>
         {label}
       </label>
-      <select
-        id={id}
-        name={name}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={s.select}
-        dir="ltr"
-      >
-        {list.length === 0 && <option value="">— حسابی موجود نیست —</option>}
-        {list.map((a) => (
-          <option key={a.id} value={a.id}>
-            {a.currency} — {ACCOUNT_TYPE_LABEL[a.type] ?? a.type} (
-            {fmtAmount(Math.round(a.balance * 100), a.currency)})
-          </option>
-        ))}
-      </select>
+      <Select value={value} onValueChange={onChange} dir="rtl">
+        <SelectTrigger id={id} name={name} className={`${s.select} ${s.selectTrigger}`}>
+          <SelectValue placeholder="— حسابی موجود نیست —" />
+        </SelectTrigger>
+        <SelectContent dir="rtl">
+          {list.length === 0 && (
+            <SelectItem value="__empty" disabled>
+              — حسابی موجود نیست —
+            </SelectItem>
+          )}
+          {list.map((a) => (
+            <SelectItem key={a.id} value={a.id}>
+              {a.currency} — {ACCOUNT_TYPE_LABEL[a.type] ?? a.type} (
+              {fmtAmount(Math.round(a.balance * 100), a.currency)})
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

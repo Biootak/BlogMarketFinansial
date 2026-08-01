@@ -36,7 +36,7 @@ export default async function CustomerSettingsPage() {
     : { notifyVoice: false, monthlyActivityReport: false, shareWithExchange: false };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
+    <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
       <PageHeader
         title="تنظیمات"
         description="مدیریت امنیت و اطلاعات حساب"

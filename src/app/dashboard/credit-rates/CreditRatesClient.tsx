@@ -5,7 +5,6 @@ import {
   type BankRow,
   type CreditRateRow,
   type CreditRateAggregate,
-  TYPE_FA,
   createBank,
   updateBank,
   deleteBank,
@@ -14,6 +13,7 @@ import {
   archiveCreditRate,
 } from '@/actions/credit-rates';
 import { PageHeader, Section, StatGrid, StatCard } from '@/components/Dashboard/primitives';
+import { TYPE_FA } from '@/lib/credit-rate-constants';
 import {
   Building2,
   Percent,

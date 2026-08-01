@@ -32,7 +32,7 @@ export default async function CustomerRequestsPage() {
   ]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
+    <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
       <PageHeader
         title="درخواست‌های من"
         description="همهٔ درخواست‌هایی که به صرافی ارسال کرده‌اید. هر کدام کد پیگیری یکتا دارد."

@@ -27,7 +27,7 @@ export default async function CustomerAccountsPage() {
   if (!profile) redirect('/customer/dashboard');
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
+    <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
       <PageHeader
         title="حساب‌های من"
         description={`${new Intl.NumberFormat('fa-IR').format(accounts.length)} حساب فعال`}

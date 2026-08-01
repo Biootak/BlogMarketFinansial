@@ -36,6 +36,8 @@ interface Props {
   initialType: CustomerRequestType;
   accounts: CustomerAccountDetail[];
   profileStatus: string;
+  /** اگر typeParam ارسال شده اما نامعتبر بود، true می‌شود */
+  typeWasInvalid?: boolean;
 }
 
 const REQUEST_TYPES: Array<{
@@ -93,13 +95,15 @@ const CURRENCY_ITEMS = [
   { value: 'PKR', code: 'PKR', label: 'روپیه پاکستان' },
 ];
 
-export default function RequestForm({ initialType, accounts, profileStatus }: Props) {
+export default function RequestForm({ initialType, accounts, profileStatus, typeWasInvalid }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   const [type, setType] = useState<CustomerRequestType>(initialType);
   const [note, setNote] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    typeWasInvalid ? 'نوع درخواست مشخص نشده — به «سایر» تغییر یافت. نوع مورد نظر را انتخاب کنید.' : null,
+  );
 
   // Dynamic payload fields
   const [accountType, setAccountType] = useState('WALLET');

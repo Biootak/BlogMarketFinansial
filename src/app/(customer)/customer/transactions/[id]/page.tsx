@@ -24,7 +24,7 @@ export default async function TransactionDetailPage({
   if (!txn) notFound();
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
+    <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
       <PageHeader
         title="جزئیات تراکنش"
         description={`شناسه: ${id.slice(0, 8)}...`}

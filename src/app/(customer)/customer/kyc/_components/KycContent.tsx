@@ -30,6 +30,13 @@ import {
 } from '@/app/(customer)/customer/_lib/customer-ui';
 import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   AlertTriangle,
   CheckCircle2,
   CircleDot,
@@ -115,7 +122,12 @@ export default function KycContent({ profile, records }: Props) {
             </div>
             <div className={s.heroHead}>
               <span className={s.heroEyebrow}>
-                <LiveDot size={4} tone={kycKey === 'approved' ? 'success' : kycKey === 'danger' ? 'danger' : 'warning'} />
+                <LiveDot
+                  size={4}
+                  tone={
+                    kycKey === 'approved' ? 'success' : kycKey === 'danger' ? 'danger' : 'warning'
+                  }
+                />
                 گیت اعتماد
               </span>
               <h2 className={s.heroTitle}>
@@ -133,7 +145,10 @@ export default function KycContent({ profile, records }: Props) {
           </div>
 
           <div className={s.heroCells}>
-            <div className={s.heroCell} data-tone={profile.kycStatus === 'NOT_STARTED' ? 'danger' : 'success'}>
+            <div
+              className={s.heroCell}
+              data-tone={profile.kycStatus === 'NOT_STARTED' ? 'danger' : 'success'}
+            >
               <span className={s.heroCellLabel}>مدرک هویتی</span>
               <span className={s.heroCellValue}>
                 {profile.kycStatus === 'NOT_STARTED' ? 'ارسال نشده' : 'ارسال شده'}
@@ -141,15 +156,11 @@ export default function KycContent({ profile, records }: Props) {
             </div>
             <div className={s.heroCell} data-tone={currentNum >= 2 ? 'success' : 'neutral'}>
               <span className={s.heroCellLabel}>تأیید چهره</span>
-              <span className={s.heroCellValue}>
-                {currentNum >= 2 ? 'تکمیل' : 'در انتظار'}
-              </span>
+              <span className={s.heroCellValue}>{currentNum >= 2 ? 'تکمیل' : 'در انتظار'}</span>
             </div>
             <div className={s.heroCell} data-tone={currentNum >= 3 ? 'success' : 'neutral'}>
               <span className={s.heroCellLabel}>انطباق نهایی</span>
-              <span className={s.heroCellValue}>
-                {currentNum >= 3 ? 'تأیید شد' : 'در انتظار'}
-              </span>
+              <span className={s.heroCellValue}>{currentNum >= 3 ? 'تأیید شد' : 'در انتظار'}</span>
             </div>
           </div>
 
@@ -193,7 +204,13 @@ export default function KycContent({ profile, records }: Props) {
                 style={{ animationDelay: `${idx * 60}ms` }}
               >
                 <span className={s.funnelDot} aria-hidden>
-                  {isDone ? <CheckCircle2 size={11} /> : isCurrent ? <LiveDot size={6} tone="warning" /> : <Icon size={11} />}
+                  {isDone ? (
+                    <CheckCircle2 size={11} />
+                  ) : isCurrent ? (
+                    <LiveDot size={6} tone="warning" />
+                  ) : (
+                    <Icon size={11} />
+                  )}
                 </span>
                 <div className={s.funnelMain}>
                   <span className={s.funnelTitle}>{KYC_LEVEL_LABEL[level]}</span>
@@ -215,31 +232,29 @@ export default function KycContent({ profile, records }: Props) {
       {/* ── Submit Form ────────────────────────────────────────────── */}
       {canSubmit && !success && (
         <section className={s.section}>
-          <SectionHeader icon={Upload} title="ارسال مدرک جدید" sub="یک مرحلهٔ جدید به مسیر اضافه کنید" />
+          <SectionHeader
+            icon={Upload}
+            title="ارسال مدرک جدید"
+            sub="یک مرحلهٔ جدید به مسیر اضافه کنید"
+          />
           <form onSubmit={handleSubmit} className={s.form} noValidate>
             <div className={s.formGrid}>
               <div className={s.formField}>
                 <label htmlFor="docType" className={s.formLabel}>
                   نوع مدرک
                 </label>
-                <div className={s.selectWrap}>
-                  <select
-                    id="docType"
-                    className={s.formControl}
-                    value={docType}
-                    onChange={(e) => setDocType(e.target.value)}
-                    disabled={isPending}
-                  >
+                <Select value={docType} onValueChange={setDocType} disabled={isPending}>
+                  <SelectTrigger id="docType" className={`${s.formControl} ${s.formSelectTrigger}`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
                     {DOC_TYPE_OPTIONS.map((o) => (
-                      <option key={o.value} value={o.value}>
+                      <SelectItem key={o.value} value={o.value}>
                         {o.label}
-                      </option>
+                      </SelectItem>
                     ))}
-                  </select>
-                  <span className={s.selectChevron} aria-hidden>
-                    ▾
-                  </span>
-                </div>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className={s.formField}>
@@ -298,10 +313,10 @@ export default function KycContent({ profile, records }: Props) {
       )}
 
       {success && (
-        <div className={s.successBox} role="status">
+        <output className={s.successBox}>
           <CheckCircle2 size={12} aria-hidden />
           مدارک با موفقیت ارسال شد و در صف بررسی قرار گرفت.
-        </div>
+        </output>
       )}
 
       {/* ── History ─────────────────────────────────────────────────── */}
