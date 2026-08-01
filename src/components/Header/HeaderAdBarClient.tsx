@@ -45,9 +45,9 @@ const STORAGE_PREFIX = 'header-ad-dismissed:';
 
 const themeClasses: Record<Theme, string> = {
   PRIMARY:
-    'bg-primary-50/95 dark:bg-primary-950/90 text-primary-900 dark:text-primary-100 border-primary-200/60 dark:border-primary-800/50',
+    'bg-primary-50/95 dark:bg-primary-900/80 text-primary-900 dark:text-primary-50 border-primary-200/60 dark:border-primary-700/60',
   ACCENT:
-    'bg-amber-50/95 dark:bg-amber-950/90 text-amber-900 dark:text-amber-100 border-amber-200/60 dark:border-amber-800/50',
+    'bg-amber-50/95 dark:bg-amber-900/80 text-amber-900 dark:text-amber-50 border-amber-200/60 dark:border-amber-700/60',
   NEUTRAL:
     'bg-neutral-100/95 dark:bg-neutral-800/95 text-neutral-900 dark:text-neutral-100 border-neutral-200/60 dark:border-neutral-700/50',
   DARK: 'bg-neutral-900/95 text-white border-neutral-700/60',
@@ -56,12 +56,15 @@ const themeClasses: Record<Theme, string> = {
 };
 
 const ctaClasses: Record<Theme, string> = {
-  PRIMARY: 'bg-primary-600 hover:bg-primary-700 text-white',
-  ACCENT: 'bg-amber-600 hover:bg-amber-700 text-white',
+  PRIMARY:
+    'bg-primary-600 hover:bg-primary-500 text-white shadow-lg shadow-primary-600/30 backdrop-blur-md border border-white/25',
+  ACCENT:
+    'bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-600/30 backdrop-blur-md border border-white/25',
   NEUTRAL:
-    'bg-neutral-900 hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-100 dark:text-neutral-900',
-  DARK: 'bg-white hover:bg-neutral-100 text-neutral-900',
-  GRADIENT: 'bg-white/15 hover:bg-white/25 text-white backdrop-blur-sm border border-white/20',
+    'bg-neutral-900/90 hover:bg-neutral-800 text-white shadow-lg shadow-neutral-900/25 backdrop-blur-md border border-white/10',
+  DARK: 'bg-white/85 hover:bg-white text-neutral-900 backdrop-blur-md border border-neutral-200/70 shadow-lg shadow-neutral-900/5',
+  GRADIENT:
+    'bg-white/15 hover:bg-white/25 text-white backdrop-blur-md border border-white/20 shadow-lg shadow-black/10',
 };
 
 export default function HeaderAdBarClient({ ad }: { ad: Ad }) {

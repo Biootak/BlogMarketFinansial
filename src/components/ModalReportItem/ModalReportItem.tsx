@@ -2,11 +2,10 @@
 
 import { RadioGroup } from '@/app/headlessui';
 import ButtonPrimary from '@/components/Button/ButtonPrimary';
-import ButtonSecondary from '@/components/Button/ButtonSecondary';
 import NcModal from '@/components/NcModal/NcModal';
 import Textarea from '@/components/Textarea/Textarea';
 import twFocusClass from '@/utils/twFocusClass';
-import React, { type FC, useEffect, useRef, useState } from 'react';
+import { type FC, useEffect, useRef, useState } from 'react';
 import ButtonThird from '../Button/ButtonThird';
 
 export interface ProblemPlan {
@@ -78,8 +77,8 @@ const ModalReportItem: FC<ModalReportItemProps> = ({
                 className={({ checked }) => {
                   return `${
                     checked
-                      ? 'bg-primary-600 text-white dark:bg-primary-700'
-                      : 'bg-white border-t border-neutral-50 '
+                      ? 'bg-primary-600 text-white dark:bg-primary-700 shadow-primary-600/30 backdrop-blur-md border border-white/25'
+                      : 'bg-white/80 border-t border-neutral-50 backdrop-blur-md '
                   } relative shadow-lg rounded-lg px-3 py-3 cursor-pointer flex sm:px-5 sm:py-4 focus:outline-none ${twFocusClass(true)}`;
                 }}
               >

@@ -12,11 +12,9 @@
 
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { AnimatePresence, motion } from '@/lib/motion-shim';
 import type { TaxonomyType } from '@/types/types';
 import { ArrowUpDown, Check, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import * as React from 'react';
 import { useCallback, useState, useTransition } from 'react';
 import { HiOutlineMagnifyingGlass, HiXMark } from 'react-icons/hi2';
 import CommandPanel from './CommandPanel';
@@ -241,7 +239,7 @@ export default function MobileFilterSheet({
               پاک کردن همه
             </Button>
             <Button
-              className="flex-1 h-12 rounded-xl bg-primary-600 hover:bg-primary-700"
+              className="flex-1 h-12 rounded-xl bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-600/30 backdrop-blur-md border border-white/25"
               onClick={() => {
                 handleApply();
                 setOpen(false);

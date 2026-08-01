@@ -182,7 +182,8 @@ function FeaturedSpotlight({
                 'inline-flex items-center gap-1.5 rounded-full',
                 'bg-primary-600 hover:bg-primary-700 text-white',
                 'px-4 py-1.5 text-xs sm:text-sm font-bold',
-                'transition-colors duration-200',
+                'shadow-lg shadow-primary-600/30 backdrop-blur-md border border-white/25',
+                'transition-all duration-200 hover:-translate-y-0.5',
               )}
             >
               مشاهده پروفایل کامل

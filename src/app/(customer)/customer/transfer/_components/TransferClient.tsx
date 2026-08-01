@@ -85,10 +85,19 @@ function newIdempotencyKey() {
 
 function fmtAmount(cents: number, currency: string): string {
   const n = cents / 100;
+  // AFN: عدد فارسی + " AFN" بعد از عدد (نه «ف» جلوی عدد)
+  if (currency === 'AFN') {
+    const formatted = new Intl.NumberFormat('fa-IR', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+      useGrouping: true,
+    }).format(n);
+    return `${formatted} AFN`;
+  }
   try {
     return new Intl.NumberFormat('fa-IR', {
       style: 'currency',
-      currency: currency === 'AFN' ? 'AFN' : currency,
+      currency,
       maximumFractionDigits: 0,
     }).format(n);
   } catch {

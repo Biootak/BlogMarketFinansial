@@ -35,7 +35,7 @@ export default async function MainNav({
       <div className="container">
         <div
           className="
-            grid items-center
+            grid items-center main-nav-grid
             grid-cols-[1fr_auto_1fr]
             lg:grid-cols-[auto_1fr_auto]
             lg:grid-rows-[auto_auto]

@@ -77,8 +77,10 @@
   gap: 6px;
   padding: 7px 14px;
   border-radius: var(--ds-radius-full);
-  background: var(--ds-surface);
-  border: 1px solid var(--ds-border-subtle);
+  background: color-mix(in oklch, var(--ds-surface) 70%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in oklch, var(--ds-border-subtle) 60%, transparent);
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
   color: var(--ds-text-secondary);
@@ -90,14 +92,14 @@
 .chip:hover {
   border-color: var(--ds-brand-200);
   color: var(--ds-brand-700);
-  background: var(--ds-brand-50);
+  background: color-mix(in oklch, var(--ds-brand-50) 85%, transparent);
 }
 
 .chipActive {
   background: var(--ds-brand-500);
   color: var(--ds-brand-on);
-  border-color: var(--ds-brand-500);
-  box-shadow: 0 6px 20px -8px oklch(from var(--ds-brand-500) l c h / 0.4);
+  border-color: color-mix(in oklch, var(--ds-brand-500) 60%, white);
+  box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.16), 0 6px 20px -8px oklch(from var(--ds-brand-500) l c h / 0.4);
 }
 
 .chipActive:hover {

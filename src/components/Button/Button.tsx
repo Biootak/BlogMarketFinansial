@@ -4,7 +4,6 @@ import type { Route } from '@/routers/types';
 import Link from 'next/link';
 import type React from 'react';
 import { type ButtonHTMLAttributes, forwardRef } from 'react';
-import type { FC } from 'react';
 import Loading from './Loading';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -36,20 +35,23 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     let colors =
-      'bg-neutral-900 hover:bg-neutral-800 text-white dark:bg-neutral-100 dark:hover:bg-neutral-50 dark:text-black';
+      'bg-neutral-900/80 hover:bg-neutral-800/90 text-white backdrop-blur-md border border-white/10 shadow-lg shadow-neutral-900/25 dark:bg-neutral-100/90 dark:hover:bg-neutral-50 dark:text-black dark:border-black/5 dark:shadow-neutral-900/10';
     switch (pattern) {
       case 'primary':
-        colors = 'bg-primary-700 hover:bg-primary-600 text-primary-50';
+        colors =
+          'bg-primary-600 hover:bg-primary-500 text-white dark:bg-primary-600 dark:hover:bg-primary-500 dark:text-white backdrop-blur-md border border-white/25 shadow-lg shadow-primary-600/30';
         break;
       case 'secondary':
-        colors = 'bg-secondary-500 hover:bg-secondary-600 text-secondary-50';
+        colors =
+          'bg-secondary-500 hover:bg-secondary-600 text-white backdrop-blur-md border border-white/25 shadow-lg shadow-secondary-500/25';
         break;
       case 'white':
-        colors = 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-200';
+        colors =
+          'bg-white/85 hover:bg-white text-neutral-900 backdrop-blur-md border border-neutral-200/70 shadow-lg shadow-neutral-900/5 dark:bg-neutral-900/80 dark:hover:bg-neutral-800/90 dark:text-neutral-100 dark:border-white/10 dark:shadow-black/30';
         break;
       case 'third':
         colors =
-          'bg-white dark:bg-neutral-900 ring-1 ring-neutral-300 hover:ring-neutral-400 dark:ring-neutral-700 dark:hover:ring-neutral-500';
+          'bg-white/60 hover:bg-white/80 dark:bg-neutral-900/60 dark:hover:bg-neutral-800/75 ring-1 ring-neutral-300 hover:ring-neutral-400 dark:ring-neutral-700 dark:hover:ring-neutral-500 backdrop-blur-md shadow-md shadow-neutral-900/5 dark:shadow-black/30';
         break;
 
       default:

@@ -1,9 +1,13 @@
 'use client';
 
-import { Popover, Transition } from '@/app/headlessui';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import Avatar from '@/components/Avatar/Avatar';
 import { useThemeMode } from '@/hooks/useThemeMode';
-import { Fragment, memo, useCallback, useId, useMemo } from 'react';
+import { memo, useCallback, useId, useMemo } from 'react';
 
 interface Props {
   className?: string;
@@ -88,25 +92,24 @@ const NotifyDropdown = memo(({ className = 'hidden sm:block' }: Props) => {
 
   return (
     <div className={className}>
-      <Popover className="relative">
-        {({ open }) => (
-          <>
-            <Popover.Button
-              aria-label="اعلان‌ها"
-              className={`
-                relative
-                flex items-center justify-center
-                size-10 rounded-xl
-                text-neutral-600 dark:text-neutral-300
-                focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50
-                transition-colors duration-200
-                ${open ? 'bg-neutral-100 dark:bg-neutral-800/80' : ''}
-              `}
-            >
-              {/* Notification badge */}
-              {solutions.length > 0 && (
-                <span
-                  className="
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            aria-label="اعلان‌ها"
+            className="
+              relative
+              flex items-center justify-center
+              size-10 rounded-xl
+              text-neutral-600 dark:text-neutral-300
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50
+              transition-colors duration-200
+              data-[state=open]:bg-neutral-100 dark:data-[state=open]:bg-neutral-800/80
+            "
+          >
+            {solutions.length > 0 && (
+              <span
+                className="
                   absolute -top-0.5 -start-0.5 w-4 h-4
                   flex items-center justify-center
                   text-[10px] font-bold text-white
@@ -115,124 +118,117 @@ const NotifyDropdown = memo(({ className = 'hidden sm:block' }: Props) => {
                   shadow-sm shadow-blue-500/40
                   ring-2 ring-white dark:ring-neutral-900
                 "
-                >
-                  {solutions.length}
-                </span>
-              )}
-              <NotificationIcon />
-            </Popover.Button>
+              >
+                {solutions.length}
+              </span>
+            )}
+            <NotificationIcon />
+          </button>
+        </DropdownMenuTrigger>
 
-            <Transition
-              as={Fragment}
-              enter="transition ease-out duration-300"
-              enterFrom="opacity-0 translate-y-2 scale-95"
-              enterTo="opacity-100 translate-y-0 scale-100"
-              leave="transition ease-in duration-200"
-              leaveFrom="opacity-100 translate-y-0 scale-100"
-              leaveTo="opacity-0 translate-y-2 scale-95"
+        <DropdownMenuContent
+          align="end"
+          sideOffset={16}
+          className="w-screen max-w-sm p-0 border-0 shadow-none bg-transparent"
+        >
+          <div
+            className="
+              overflow-hidden rounded-3xl
+              bg-white/95 dark:bg-neutral-900/95
+              backdrop-blur-xl backdrop-saturate-150
+              border border-white/20 dark:border-neutral-700/50
+              shadow-[0_8px_32px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.04)]
+              dark:shadow-[0_8px_32px_rgba(0,0,0,0.4),0_2px_8px_rgba(0,0,0,0.2)]
+            "
+          >
+            {/* Header */}
+            <div
+              className="
+                flex items-center justify-between p-4 pb-3
+                border-b border-neutral-100 dark:border-neutral-800
+              "
             >
-              <Popover.Panel className="absolute z-50 w-screen max-w-sm mt-4 -end-28 sm:end-0">
-                <div
-                  className="
-                    overflow-hidden rounded-3xl
-                    bg-white/95 dark:bg-neutral-900/95
-                    backdrop-blur-xl backdrop-saturate-150
-                    border border-white/20 dark:border-neutral-700/50
-                    shadow-[0_8px_32px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.04)]
-                    dark:shadow-[0_8px_32px_rgba(0,0,0,0.4),0_2px_8px_rgba(0,0,0,0.2)]
-                  "
-                >
-                  {/* Header */}
+              <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                اعلان‌ها
+              </h3>
+              <button
+                type="button"
+                className="
+                  text-xs font-medium text-primary-600 dark:text-primary-400
+                  hover:text-primary-700 dark:hover:text-primary-300
+                  transition-colors duration-200
+                "
+              >
+                خواندن همه
+              </button>
+            </div>
+
+            {/* Notifications List */}
+            <div className="p-2 max-h-[360px] overflow-y-auto">
+              {solutions.length > 0 ? (
+                <ul className="space-y-1">
+                  {solutions.map((item) => (
+                    <NotificationItem key={`${idPrefix}-${item.name}`} item={item} />
+                  ))}
+                </ul>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-10 px-4">
                   <div
                     className="
-                      flex items-center justify-between p-4 pb-3
-                      border-b border-neutral-100 dark:border-neutral-800
+                      w-16 h-16 mb-4
+                      flex items-center justify-center
+                      rounded-2xl
+                      bg-gradient-to-br from-slate-100 to-slate-200/80
+                      dark:from-neutral-800 dark:to-neutral-700/80
                     "
                   >
-                    <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                      اعلان‌ها
-                    </h3>
-                    <button
-                      type="button"
-                      className="
-                        text-xs font-medium text-primary-600 dark:text-primary-400
-                        hover:text-primary-700 dark:hover:text-primary-300
-                        transition-colors duration-200
-                      "
+                    <svg
+                      className="w-8 h-8 text-neutral-400 dark:text-neutral-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      aria-hidden
                     >
-                      خواندن همه
-                    </button>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                      />
+                    </svg>
                   </div>
-
-                  {/* Notifications List */}
-                  <div className="p-2 max-h-[360px] overflow-y-auto">
-                    {solutions.length > 0 ? (
-                      <ul className="space-y-1">
-                        {solutions.map((item) => (
-                          <NotificationItem key={`${idPrefix}-${item.name}`} item={item} />
-                        ))}
-                      </ul>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center py-10 px-4">
-                        <div
-                          className="
-                            w-16 h-16 mb-4
-                            flex items-center justify-center
-                            rounded-2xl
-                            bg-gradient-to-br from-slate-100 to-slate-200/80
-                            dark:from-neutral-800 dark:to-neutral-700/80
-                          "
-                        >
-                          <svg
-                            className="w-8 h-8 text-neutral-400 dark:text-neutral-500"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            aria-hidden
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={1.5}
-                              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                            />
-                          </svg>
-                        </div>
-                        <p className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
-                          اعلان جدیدی ندارید
-                        </p>
-                        <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
-                          اعلان‌های جدید اینجا نمایش داده می‌شوند
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Footer */}
-                  {solutions.length > 0 && (
-                    <div className="p-3 pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                      <button
-                        type="button"
-                        className="
-                          w-full py-2.5 px-4
-                          text-sm font-medium
-                          text-primary-600 dark:text-primary-400
-                          bg-primary-50/50 dark:bg-primary-900/20
-                          hover:bg-primary-100/80 dark:hover:bg-primary-900/40
-                          rounded-xl
-                          transition-all duration-300
-                        "
-                      >
-                        مشاهده همه اعلان‌ها
-                      </button>
-                    </div>
-                  )}
+                  <p className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
+                    اعلان جدیدی ندارید
+                  </p>
+                  <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
+                    اعلان‌های جدید اینجا نمایش داده می‌شوند
+                  </p>
                 </div>
-              </Popover.Panel>
-            </Transition>
-          </>
-        )}
-      </Popover>
+              )}
+            </div>
+
+            {/* Footer */}
+            {solutions.length > 0 && (
+              <div className="p-3 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                <button
+                  type="button"
+                  className="
+                    w-full py-2.5 px-4
+                    text-sm font-medium
+                    text-primary-600 dark:text-primary-400
+                    bg-primary-50/50 dark:bg-primary-900/20
+                    hover:bg-primary-100/80 dark:hover:bg-primary-900/40
+                    rounded-xl
+                    transition-all duration-300
+                  "
+                >
+                  مشاهده همه اعلان‌ها
+                </button>
+              </div>
+            )}
+          </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 });

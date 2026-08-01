@@ -107,7 +107,7 @@ export default async function CheckoutPage({
             <div className={s.total}>
               <span className={s.totalLabel}>مبلغ قابل پرداخت</span>
               <span className={s.totalValue}>
-                {new Intl.NumberFormat('fa-AF').format(price / 100)}
+                {new Intl.NumberFormat('fa-IR').format(price / 100)}
                 <span className={s.totalUnit}>{plan.currency}</span>
               </span>
             </div>
@@ -123,7 +123,7 @@ export default async function CheckoutPage({
               planId={plan.id}
               planName={plan.name}
               billing={billing}
-              priceDisplay={new Intl.NumberFormat('fa-AF').format(price / 100)}
+              priceDisplay={new Intl.NumberFormat('fa-IR').format(price / 100)}
               currency={plan.currency}
               userEmail={userEmail}
             />

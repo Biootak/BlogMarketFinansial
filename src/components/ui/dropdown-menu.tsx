@@ -7,8 +7,8 @@ import { FaCheck, FaChevronLeft, FaCircle } from 'react-icons/fa6';
 
 import { cn } from '@/lib/utils';
 
-const DropdownMenu = ({ modal = false, ...props }: DropdownMenuPrimitive.DropdownMenuProps) => (
-  <DropdownMenuPrimitive.Root modal={modal} {...props} />
+const DropdownMenu = ({ modal = false, dir = 'rtl', ...props }: DropdownMenuPrimitive.DropdownMenuProps) => (
+  <DropdownMenuPrimitive.Root modal={modal} dir={dir} {...props} />
 );
 DropdownMenu.displayName = 'DropdownMenu';
 

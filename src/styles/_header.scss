@@ -89,6 +89,67 @@
   transition: height 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* ============================================================================
+   Compact Header on Scroll (CSS scroll-driven)
+   ----------------------------------------------------------------------------
+   وقتی کاربر اسکرول می‌کند، هدر کامپکت می‌شود: نوار قیمت جمع می‌شود و فاصله‌ی
+   عمودی منو کمتر می‌شود. هدر همیشه نمایان می‌ماند. همان پترن
+   `header-glass-scrolled` (animation-timeline: scroll) در همین فایل.
+   در مرورگرهای بدون پشتیبانی، نوار قیمت عادی می‌ماند (progressive enhancement).
+   ============================================================================ */
+
+@keyframes ticker-collapse {
+  from {
+    max-height: 64px;
+    opacity: 1;
+    padding-block: 0.25rem;
+  }
+  to {
+    max-height: 0;
+    opacity: 0;
+    padding-block: 0;
+  }
+}
+
+.nc-MarketRatesTickerSection {
+  animation: ticker-collapse linear both;
+  animation-timeline: scroll(root block);
+  animation-range: 0px 120px;
+  overflow: hidden;
+}
+
+@keyframes main-nav-compact {
+  from {
+    padding-block: 0.5rem;
+  }
+  to {
+    padding-block: 0.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .main-nav-grid {
+    animation: main-nav-compact linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0px 120px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nc-MarketRatesTickerSection {
+    animation: none;
+    max-height: 0;
+    opacity: 0;
+    padding-block: 0;
+    overflow: hidden;
+  }
+
+  .main-nav-grid {
+    animation: none;
+    padding-block: 0.25rem;
+  }
+}
+
 @media (min-width: 1024px) {
   .main-nav-container {
     height: 4rem; /* 64px - fallback on desktop */

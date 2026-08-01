@@ -15,13 +15,13 @@ const buttonVariants = cva(
           'hover:-translate-y-px hover:[background:linear-gradient(180deg,var(--ds-brand-600),var(--ds-brand-700))] ' +
           'active:scale-[0.97] transition-all duration-200',
         destructive:
-          'bg-red-500 text-white hover:bg-red-600 active:scale-[0.97]',
+          'bg-red-500 text-white hover:bg-red-600 active:scale-[0.97] shadow-lg shadow-red-500/25',
         outline:
-          'border border-neutral-300 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 active:scale-[0.97]',
+          'border border-neutral-300/80 bg-white/70 backdrop-blur-md hover:bg-white dark:bg-neutral-800/70 dark:hover:bg-neutral-700/80 text-neutral-700 dark:text-neutral-200 active:scale-[0.97] shadow-md shadow-neutral-900/5 dark:shadow-black/20',
         secondary:
-          'bg-secondary-500 text-white hover:bg-secondary-600 active:scale-[0.97]',
+          'bg-secondary-500 text-white hover:bg-secondary-600 active:scale-[0.97] shadow-lg shadow-secondary-500/25 backdrop-blur-md border border-white/25',
         ghost:
-          'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-200',
+          'hover:bg-neutral-100/70 dark:hover:bg-neutral-800/70 backdrop-blur-md text-neutral-700 dark:text-neutral-200',
         link: 'text-primary-500 underline-offset-4 hover:underline',
       },
       size: {

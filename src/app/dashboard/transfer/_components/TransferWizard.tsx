@@ -26,12 +26,12 @@ import s from './TransferWizard.module.css';
 type Step = 1 | 2 | 3 | 4;
 
 function formatAFN(cents: number): string {
-  return new Intl.NumberFormat('fa-AF', {
-    style: 'currency',
-    currency: 'AFN',
+  const formatted = new Intl.NumberFormat('fa-IR', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
+    useGrouping: true,
   }).format(cents / 100);
+  return `${formatted} AFN`;
 }
 
 const QUICK_AMOUNTS = [50_000_00, 100_000_00, 500_000_00]; // cents

@@ -124,9 +124,21 @@
   /* Brand — emerald (hue 165) هماهنگ با داشبورد و nova-emerald */
   --ds-brand-50: oklch(96% 0.03 165);
   --ds-brand-100: oklch(92% 0.05 165);
+  --ds-brand-200: oklch(86% 0.08 165);
+  --ds-brand-300: oklch(78% 0.1 165);
+  --ds-brand-400: oklch(68% 0.11 165);
   --ds-brand-500: oklch(58% 0.12 165);
   --ds-brand-600: oklch(52% 0.14 162);
   --ds-brand-700: oklch(42% 0.14 162);
+  /* متنی که روی سطوح برند (brand-500/600/700) می‌نشیند — سفیدِ near-white */
+  --ds-brand-on: oklch(99% 0.005 240);
+
+  /* Legacy semantic aliases — کامپوننت‌های قدیمی (beneficiaries/kyc/header)
+     از اینها استفاده می‌کنند. برابر با برند/وضعیت. */
+  --ds-primary: oklch(58% 0.12 165); /* = --ds-brand-500 */
+  --ds-primary-light: oklch(68% 0.11 165); /* = --ds-brand-400 */
+  --ds-rose: oklch(60% 0.15 25); /* = --nova-rose */
+  --ds-amber: oklch(72% 0.13 70); /* = --ds-accent-amber */
 
   /* Accents (low-saturation) */
   --ds-accent-amber: oklch(72% 0.13 70);
@@ -259,7 +271,18 @@
   --ds-text-primary: oklch(95% 0.005 240);
   --ds-text-secondary: oklch(70% 0.01 240);
   --ds-text-muted: oklch(55% 0.01 240);
-  --ds-text-inverse: oklch(15% 0.01 250);
+  /* متن روی بکگراند رنگی پررنگ (دکمه برند/بج status) — حتی در dark هم روشن می‌ماند.
+     قبلاً oklch(15%) بود که در dark متن سیاه روی دکمه سبز می‌ساخت. */
+  --ds-text-inverse: oklch(99% 0.005 240);
+
+  /* Brand on-brand text در dark هم سفید است — برند سبز تیره پس‌زمینه است */
+  --ds-brand-on: oklch(99% 0.005 240);
+
+  /* Legacy semantic aliases — dark variant روشن‌تر برای کنتراست */
+  --ds-primary: oklch(65% 0.12 165);
+  --ds-primary-light: oklch(72% 0.12 165);
+  --ds-rose: oklch(68% 0.12 25);
+  --ds-amber: oklch(74% 0.12 70);
 
   --ds-border-subtle: oklch(28% 0.012 250 / 0.6);
   --ds-border-default: oklch(30% 0.012 250 / 0.8);
@@ -332,10 +355,13 @@
   /* ---- NOVA Colors (light mode) ---------------------------------------- */
   --nova-primary: oklch(55% 0.14 265);
   --nova-primary-hover: oklch(50% 0.14 265);
+  --nova-accent: oklch(55% 0.14 265); /* alias برند اصلی نووا */
+  --nova-on-accent: oklch(99% 0.005 240); /* متن روی سطوح accent — همیشه روشن */
   --nova-ink: oklch(18% 0.006 265);
   --nova-ink-2: oklch(42% 0.008 265);
   --nova-muted: oklch(55% 0.008 265);
   --nova-line: oklch(90% 0.006 265);
+  --nova-border: oklch(90% 0.006 265); /* alias مرزی */
   --nova-surface: oklch(100% 0 0 / 0.65);
   --nova-surface-solid: oklch(100% 0 0);
   --nova-surface-2: oklch(96% 0.004 265);
@@ -395,10 +421,13 @@
   /* ---- NOVA Colors (dark mode) ----------------------------------------- */
   --nova-primary: oklch(65% 0.12 265);
   --nova-primary-hover: oklch(60% 0.12 265);
+  --nova-accent: oklch(65% 0.12 265);
+  --nova-on-accent: oklch(99% 0.005 240);
   --nova-ink: oklch(93% 0.004 265);
   --nova-ink-2: oklch(72% 0.006 265);
   --nova-muted: oklch(58% 0.006 265);
   --nova-line: oklch(28% 0.01 265);
+  --nova-border: oklch(28% 0.01 265);
   --nova-surface: oklch(18% 0.01 265 / 0.6);
   --nova-surface-solid: oklch(16% 0.008 265);
   --nova-surface-2: oklch(22% 0.012 265);

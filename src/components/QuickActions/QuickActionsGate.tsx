@@ -5,6 +5,8 @@ import QuickActions from './QuickActions';
  * QuickActionsGate — Server Component.
  * Resolves auth on the server, so the FAB shows the right state (signed-in
  * menu vs. guest CTA) on the very first paint.
+ * logoUrl is read client-side from the useSiteSettings Zustand store
+ * (hydrated by SiteSettingsProvider in the layout), same as Sidebar.
  */
 const QuickActionsGate = async () => {
   const session = await auth();

@@ -64,12 +64,12 @@ const STATUS_VARIANT: Record<string, string> = {
 
 function fmtAFN(val: string): string {
   const n = Number(val) / 100;
-  return new Intl.NumberFormat('fa-AF', {
-    style: 'currency',
-    currency: 'AFN',
+  const formatted = new Intl.NumberFormat('fa-IR', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
+    useGrouping: true,
   }).format(n);
+  return `${formatted} AFN`;
 }
 
 function fmtNum(n: number): string {

@@ -100,9 +100,18 @@ const FX_ITEMS: CurrencyItem[] = FX_CURRENCIES.map((c) => ({
 
 function formatFxAmount(cents: number, currency: FxCurrency): string {
   // 2026-07-29: هیچ ارزی در سیستم ما decimal نیست؛ مقدار ورودی سِنت (عدد صحیح) است
-  return new Intl.NumberFormat('fa-AF', {
+  // AFN: عدد فارسی + " AFN" بعد از عدد (نه «ف» جلوی عدد)
+  if (currency === 'AFN') {
+    const formatted = new Intl.NumberFormat('fa-IR', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+      useGrouping: true,
+    }).format(cents);
+    return `${formatted} AFN`;
+  }
+  return new Intl.NumberFormat('fa-IR', {
     style: 'currency',
-    currency: currency === 'AFN' ? 'AFN' : currency,
+    currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(cents);
@@ -111,12 +120,12 @@ function formatFxAmount(cents: number, currency: FxCurrency): string {
 function fmtAFN(amount: string): string {
   const n = Number(amount);
   if (Number.isNaN(n)) return '—';
-  return new Intl.NumberFormat('fa-AF', {
-    style: 'currency',
-    currency: 'AFN',
+  const formatted = new Intl.NumberFormat('fa-IR', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
+    useGrouping: true,
   }).format(n / 100);
+  return `${formatted} AFN`;
 }
 
 function fmtDate(iso: string): string {

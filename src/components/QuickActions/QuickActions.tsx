@@ -22,6 +22,7 @@ import {
   HiOutlineQuestionMarkCircle,
 } from 'react-icons/hi2';
 import { LuWallet } from 'react-icons/lu';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   type FC,
@@ -31,6 +32,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import s from './QuickActions.module.css';
 
 interface ActionItem {
@@ -60,6 +62,7 @@ const HIDE_PREFIXES = [
 ];
 
 const QuickActions: FC<Props> = ({ isLoggedIn, userRole }) => {
+  const { logoUrl } = useSiteSettings();
   const pathname = usePathname();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -197,6 +200,15 @@ const QuickActions: FC<Props> = ({ isLoggedIn, userRole }) => {
         <span className={s.fabIcon} data-open={open}>
           {open ? (
             <HiOutlineXMark size={20} strokeWidth={2} />
+          ) : logoUrl ? (
+            <Image
+              src={logoUrl}
+              alt="لوگو"
+              width={28}
+              height={28}
+              className={s.fabLogo}
+              unoptimized
+            />
           ) : (
             <HiOutlineSparkles size={20} strokeWidth={2} />
           )}

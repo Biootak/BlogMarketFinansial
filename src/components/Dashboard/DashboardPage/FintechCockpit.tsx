@@ -197,7 +197,8 @@ const formatIntFa = (n: number): string => new Intl.NumberFormat('fa-IR').format
 
 const formatCurrency = (n: number, currency: string): string => {
   if (currency === 'AFN') {
-    return `${new Intl.NumberFormat('fa-AF').format(Math.round(n))} ؋`;
+    // AFN: عدد فارسی + " AFN" بعد از عدد (نه «ف» جلوی عدد)
+    return `${new Intl.NumberFormat('fa-IR').format(Math.round(n))} AFN`;
   }
   try {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 2 }).format(n);
