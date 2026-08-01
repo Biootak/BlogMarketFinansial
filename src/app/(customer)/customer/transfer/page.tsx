@@ -1,3 +1,4 @@
+import { getCustomerAccountsDetail, getCustomerProfile } from '@/actions/customer-portal';
 /**
  * /customer/transfer — عملیات مالی مشتری
  *
@@ -5,10 +6,6 @@
  * دسترسی: CUSTOMER / TEST_CUSTOMER / MERCHANT
  */
 import { auth } from '@/auth';
-import {
-  getCustomerAccountsDetail,
-  getCustomerProfile,
-} from '@/actions/customer-portal';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -40,21 +37,15 @@ export default async function CustomerTransferPage({
     getCustomerAccountsDetail(),
   ]);
 
-  if (!profile) redirect('/');
+  if (!profile) redirect('/customer/dashboard');
 
   return (
-    <div
-      dir="rtl"
-      style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}
-    >
+    <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
       <PageHeader
         eyebrow="عملیات مالی"
         title="انتقال و عملیات"
         description="واریز، برداشت، انتقال داخلی و تبدیل ارز"
-        breadcrumb={[
-          { href: '/customer/dashboard', label: 'پنل مشتری' },
-          { label: 'عملیات مالی' },
-        ]}
+        breadcrumb={[{ href: '/customer/dashboard', label: 'پنل مشتری' }, { label: 'عملیات مالی' }]}
         icon="arrow-left-right"
         accent="violet"
       />

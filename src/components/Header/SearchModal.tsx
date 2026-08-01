@@ -1,6 +1,7 @@
 'use client';
 
 import { Combobox, Dialog, Transition } from '@headlessui/react';
+import { Search as SearchIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -12,6 +13,7 @@ import {
   HiOutlineMagnifyingGlass,
 } from 'react-icons/hi2';
 
+import Empty from '@/components/Empty';
 import { searchAll } from '@/actions/search';
 import { getPostLink } from '@/lib/getPostLink';
 import type { CategoryWithPostCount, PostWithRelations, UserWithProfile } from '@/types/types';
@@ -406,31 +408,19 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                     </div>
                   )}
 
-                  {/* Empty State */}
+                  {/* Empty State — canonical Empty (site-level) */}
                   {!isLoading &&
                     rawQuery.length >= 2 &&
                     rawQuery !== '?' &&
                     posts.length === 0 &&
                     categories.length === 0 &&
                     authors.length === 0 && (
-                      <div className="py-12 px-6 text-center">
-                        <div
-                          className="
-                            w-14 h-14 mx-auto mb-4 rounded-2xl
-                            bg-gradient-to-br from-neutral-100 to-neutral-200/80
-                            dark:from-neutral-800 dark:to-neutral-700/80
-                            flex items-center justify-center
-                          "
-                        >
-                          <HiOutlineMagnifyingGlass className="h-7 w-7 text-neutral-400 dark:text-neutral-500" />
-                        </div>
-                        <p className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
-                          نتیجه‌ای یافت نشد
-                        </p>
-                        <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
-                          عبارت دیگری را جستجو کنید
-                        </p>
-                      </div>
+                      <Empty
+                        icon={SearchIcon}
+                        title="نتیجه‌ای یافت نشد"
+                        description="عبارت دیگری را جستجو کنید"
+                        className="py-10"
+                      />
                     )}
 
                   {/* Footer */}

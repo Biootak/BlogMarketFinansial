@@ -1,0 +1,8 @@
+provisioned=2026-08-01T17:15:48+03:30
+user=biotak
+fedora=44
+kernel=6.19.10-300.fc44.x86_64
+node=v22.23.1
+trae=trae-1.107.1-1784361557.el8.x86_64
+inotify_watches=1048576
+data_disk=/dev/nvme0n1

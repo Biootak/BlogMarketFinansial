@@ -10,15 +10,18 @@
  * A11y: ARIA labels, keyboard nav, focus management
  */
 
-import { useState, useTransition, useId, useCallback, useMemo, useEffect } from 'react';
-import type {
-  CustomerAccountDetail,
-  CustomerProfile,
-} from '@/actions/customer-portal';
-import { ACCOUNT_TYPE_LABEL } from '@/app/(customer)/customer/_lib/customer-formatters';
-import { requestDeposit, requestWithdraw, confirmWithdraw, type DepositResult, type WithdrawResult } from '@/actions/fintech-account';
+import type { CustomerAccountDetail, CustomerProfile } from '@/actions/customer-portal';
+import { type InternalTransferResult, transferBetweenAccounts } from '@/actions/customer-portal';
+import {
+  type DepositResult,
+  type WithdrawResult,
+  confirmWithdraw,
+  requestDeposit,
+  requestWithdraw,
+} from '@/actions/fintech-account';
 import { executeFxTrade, getFxQuote } from '@/actions/fx-trade';
-import { transferBetweenAccounts, type InternalTransferResult } from '@/actions/customer-portal';
+import { ACCOUNT_TYPE_LABEL } from '@/app/(customer)/customer/_lib/customer-formatters';
+import { type CurrencyItem, CurrencySelect } from '@/components/ui/CurrencySelect';
 import {
   AlertCircle,
   ArrowLeftRight,
@@ -30,6 +33,7 @@ import {
   Upload,
   X,
 } from 'lucide-react';
+import { useCallback, useEffect, useId, useMemo, useState, useTransition } from 'react';
 import s from './TransferClient.module.css';
 
 type TabId = 'deposit' | 'withdraw' | 'transfer' | 'exchange';
@@ -250,7 +254,8 @@ function AccountSelect({
         {list.length === 0 && <option value="">— حسابی موجود نیست —</option>}
         {list.map((a) => (
           <option key={a.id} value={a.id}>
-            {a.currency} — {ACCOUNT_TYPE_LABEL[a.type] ?? a.type} ({fmtAmount(Math.round(a.balance * 100), a.currency)})
+            {a.currency} — {ACCOUNT_TYPE_LABEL[a.type] ?? a.type} (
+            {fmtAmount(Math.round(a.balance * 100), a.currency)})
           </option>
         ))}
       </select>
@@ -298,10 +303,14 @@ function AmountInput({
         autoComplete="off"
       />
       {min !== undefined && Number(value) < min && (
-        <p className={s.fieldHint} data-tone="error">حداقل مبلغ {min} است</p>
+        <p className={s.fieldHint} data-tone="error">
+          حداقل مبلغ {min} است
+        </p>
       )}
       {max !== undefined && Number(value) > max && (
-        <p className={s.fieldHint} data-tone="error">حداکثر مبلغ {max} است</p>
+        <p className={s.fieldHint} data-tone="error">
+          حداکثر مبلغ {max} است
+        </p>
       )}
     </div>
   );
@@ -324,7 +333,7 @@ function DepositForm({
   const [accountId, setAccountId] = useState(
     presetAccountId && activeAccounts.some((a) => a.id === presetAccountId)
       ? presetAccountId
-      : activeAccounts[0]?.id ?? '',
+      : (activeAccounts[0]?.id ?? ''),
   );
   const [amount, setAmount] = useState('');
   const [cents, setCents] = useState(0);
@@ -433,7 +442,7 @@ function WithdrawForm({
   const [accountId, setAccountId] = useState(
     presetAccountId && activeAccounts.some((a) => a.id === presetAccountId)
       ? presetAccountId
-      : activeAccounts[0]?.id ?? '',
+      : (activeAccounts[0]?.id ?? ''),
   );
   const [amount, setAmount] = useState('');
   const [cents, setCents] = useState(0);
@@ -526,22 +535,20 @@ function WithdrawForm({
 
   if (step === 3) {
     return (
-      <div className={s.successState} role="status">
+      <output className={s.successState}>
         <CheckCircle2 size={32} aria-hidden className={s.successIcon} />
         <p className={s.successTitle}>برداشت ثبت شد</p>
         <button type="button" onClick={reset} className={s.outlineBtn}>
           برداشت جدید
         </button>
-      </div>
+      </output>
     );
   }
 
   if (step === 2) {
     return (
       <form onSubmit={onSubmitStep2} className={s.form}>
-        <p className={s.hint}>
-          کد تأیید ارسال‌شده را وارد کنید. (در محیط تست، هر کدی معتبر است)
-        </p>
+        <p className={s.hint}>کد تأیید ارسال‌شده را وارد کنید. (در محیط تست، هر کدی معتبر است)</p>
         <div className={s.field}>
           <label htmlFor="wd-otp" className={s.label}>
             کد تأیید
@@ -634,14 +641,11 @@ function TransferForm({
   onResult: (r: ResultState) => void;
   presetAccountId?: string;
 }) {
-  const activeAccounts = useMemo(
-    () => accounts.filter((a) => a.status === 'ACTIVE'),
-    [accounts],
-  );
+  const activeAccounts = useMemo(() => accounts.filter((a) => a.status === 'ACTIVE'), [accounts]);
   const [fromId, setFromId] = useState(
     presetAccountId && activeAccounts.some((a) => a.id === presetAccountId)
       ? presetAccountId
-      : activeAccounts[0]?.id ?? '',
+      : (activeAccounts[0]?.id ?? ''),
   );
   const [toId, setToId] = useState(() => {
     // اگر preset به‌عنوان from تنظیم شد، to = دومین حساب فعال
@@ -649,14 +653,13 @@ function TransferForm({
       const other = activeAccounts.find((a) => a.id !== presetAccountId);
       return other?.id ?? '';
     }
-    return activeAccounts.length > 1 ? activeAccounts[1]?.id ?? '' : '';
+    return activeAccounts.length > 1 ? (activeAccounts[1]?.id ?? '') : '';
   });
   const [amount, setAmount] = useState('');
   const [cents, setCents] = useState(0);
   const [isPending, startT] = useTransition();
 
   const from = activeAccounts.find((a) => a.id === fromId);
-  const to = activeAccounts.find((a) => a.id === toId);
   const maxCents = from ? Math.round(from.balance * 100) : 0;
   const overBalance = cents > maxCents;
   const sameAccount = fromId === toId && !!fromId;
@@ -698,14 +701,14 @@ function TransferForm({
 
   if (activeAccounts.length < 2) {
     return (
-      <div className={s.gate} role="status">
+      <output className={s.gate}>
         <CircleDollarSign size={20} aria-hidden className={s.gateIcon} />
         <p className={s.gateTitle}>حداقل دو حساب فعال نیاز دارید</p>
         <p className={s.gateDesc}>
           برای انتقال بین‌حسابی، باید حداقل دو حساب فعال داشته باشید. در حال حاضر{' '}
           {activeAccounts.length} حساب فعال دارید.
         </p>
-      </div>
+      </output>
     );
   }
 
@@ -771,10 +774,7 @@ function ExchangeForm({
   onResult: (r: ResultState) => void;
   presetAccountId?: string;
 }) {
-  const activeAccounts = useMemo(
-    () => accounts.filter((a) => a.status === 'ACTIVE'),
-    [accounts],
-  );
+  const activeAccounts = useMemo(() => accounts.filter((a) => a.status === 'ACTIVE'), [accounts]);
   // اگر preset تنظیم شد، ارز مبدأ = ارز آن حساب
   const presetAccount = useMemo(
     () => activeAccounts.find((a) => a.id === presetAccountId),
@@ -819,7 +819,7 @@ function ExchangeForm({
     return () => {
       cancelled = true;
     };
-  }, [fromCur, toCur, sameCurrency, startT]);
+  }, [fromCur, toCur, sameCurrency]);
 
   const onSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -850,30 +850,30 @@ function ExchangeForm({
   );
 
   const previewOut =
-    quote && cents > 0
-      ? Math.floor(cents * (1 - quote.feePercent / 100) * quote.rate)
-      : 0;
+    quote && cents > 0 ? Math.floor(cents * (1 - quote.feePercent / 100) * quote.rate) : 0;
+
+  const currencyItems: CurrencyItem[] = useMemo(
+    () => CURRENCIES.map((c) => ({ value: c, code: c, label: CURRENCY_LABEL[c] })),
+    [],
+  );
+  const toItems = useMemo(
+    () => currencyItems.filter((c) => c.value !== fromCur),
+    [currencyItems, fromCur],
+  );
 
   return (
     <form onSubmit={onSubmit} className={s.form}>
       <div className={s.currencyPair}>
         <div className={s.field}>
-          <label htmlFor="fx-from" className={s.label}>
-            از ارز
-          </label>
-          <select
-            id="fx-from"
+          {/* biome-ignore lint/a11y/noLabelWithoutControl: CurrencySelect uses its own ariaLabel */}
+          <label className={s.label}>از ارز</label>
+          <CurrencySelect
+            items={currencyItems}
             value={fromCur}
-            onChange={(e) => setFromCur(e.target.value)}
-            className={s.select}
-            dir="ltr"
-          >
-            {CURRENCIES.map((c) => (
-              <option key={c} value={c}>
-                {c} — {CURRENCY_LABEL[c]}
-              </option>
-            ))}
-          </select>
+            onChange={setFromCur}
+            ariaLabel="ارز مبدأ"
+            size="default"
+          />
           {fromAccount && (
             <p className={s.balanceHint}>
               موجودی: <strong>{fmtAmount(maxCents, fromCur)}</strong>
@@ -881,23 +881,16 @@ function ExchangeForm({
           )}
         </div>
         <div className={s.field}>
-          <label htmlFor="fx-to" className={s.label}>
-            به ارز
-          </label>
-          <select
-            id="fx-to"
+          {/* biome-ignore lint/a11y/noLabelWithoutControl: CurrencySelect uses its own ariaLabel */}
+          <label className={s.label}>به ارز</label>
+          <CurrencySelect
+            items={toItems}
             value={toCur}
-            onChange={(e) => setToCur(e.target.value)}
-            className={s.select}
-            dir="ltr"
+            onChange={setToCur}
+            ariaLabel="ارز مقصد"
+            size="default"
             disabled={sameCurrency}
-          >
-            {CURRENCIES.filter((c) => c !== fromCur).map((c) => (
-              <option key={c} value={c}>
-                {c} — {CURRENCY_LABEL[c]}
-              </option>
-            ))}
-          </select>
+          />
         </div>
       </div>
       <AmountInput
@@ -927,9 +920,7 @@ function ExchangeForm({
           {previewOut > 0 && (
             <div className={s.quoteRow} data-highlight>
               <span>دریافتی شما</span>
-              <span className={s.quoteOut}>
-                {fmtAmount(previewOut, toCur)}
-              </span>
+              <span className={s.quoteOut}>{fmtAmount(previewOut, toCur)}</span>
             </div>
           )}
         </div>

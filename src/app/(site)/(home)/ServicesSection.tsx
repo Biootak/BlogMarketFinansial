@@ -26,7 +26,7 @@ const SERVICES = [
     title: 'حواله امن',
     description:
       'انتقال پول بین افغانستان و ایران با امنیت بالا، کارمزد رقابتی و پشتیبانی ۲۴ ساعته.',
-    href: '/money-transfer',
+    href: '/customer/transfer',
     cta: 'شروع حواله',
     accent: 'amber',
     stat: 'بدون کارمزد',
@@ -35,7 +35,7 @@ const SERVICES = [
     icon: BarChart2,
     title: 'تحلیل تخصصی',
     description: 'تحلیل‌های عمیق بازار، پیش‌بینی روند قیمت‌ها و اخبار اقتصادی توسط تیم متخصص.',
-    href: '/archive',
+    href: '/financial-news',
     cta: 'خواندن تحلیل‌ها',
     accent: 'violet',
     stat: '+۵۰۰ مقاله',

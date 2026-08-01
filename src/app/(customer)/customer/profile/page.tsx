@@ -20,7 +20,7 @@ export default async function CustomerProfilePage() {
   if (!session?.user?.id) redirect('/auth?callbackUrl=/customer/profile');
 
   const profile = await getCustomerProfile();
-  if (!profile) redirect('/');
+  if (!profile) redirect('/customer/dashboard');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>

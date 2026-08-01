@@ -28,8 +28,6 @@ import { CurrencySelect } from '@/components/ui/CurrencySelect';
 import { useDirection } from '@/hooks/useDirection';
 import {
   type HeroPair,
-  buildHeroPairs,
-  type computeSpreadStats,
   convertViaIRT,
   formatFaNumber,
   formatRate,
@@ -249,16 +247,14 @@ export default function HeroConverter({
       }
     }
 
-    // اگر کاربر لاگین نکرده → redirect به صفحه ورود
+    // اگر کاربر لاگین نکرده → redirect به پورتال انتقال (پس از ورود مستقیم به /customer/transfer)
     if (status !== 'authenticated') {
-      window.location.href = `/auth?callbackUrl=${encodeURIComponent('/money-transfer#contact')}`;
+      window.location.href = `/auth?callbackUrl=${encodeURIComponent('/customer/transfer?action=exchange')}`;
       return;
     }
 
-    const target = document.getElementById('contact');
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    // کاربر لاگین کرده → مستقیم به پورتال انتقال
+    window.location.href = '/customer/transfer?action=exchange';
   };
 
   // ===========================================================================
@@ -584,9 +580,11 @@ export default function HeroConverter({
                   </span>
                 </div>
 
-                {/* CTA */}
+                {/* CTA — authenticated → customer/transfer, unauthenticated → auth */}
                 <button type="submit" className={`mt-calc__cta ${styles.submit}`}>
-                  <span>تبدیل و ثبت درخواست</span>
+                  <span>
+                    {status === 'authenticated' ? 'ورود به پنل انتقال' : 'تبدیل و ثبت درخواست'}
+                  </span>
                   {/* در RTL آیکون بعد از متن (سمت چپ بصری) + flip افقی */}
                   <Send className="size-4" style={{ transform: 'scaleX(-1)' }} />
                 </button>

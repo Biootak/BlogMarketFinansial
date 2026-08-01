@@ -470,7 +470,7 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
 
     return {
       success: true,
-      message: 'تأیید شد. در حال انتقال به داشبورد…',
+      message: 'تأیید شد. در حال انتقال…',
       redirect: '/dashboard',
     };
   } catch (error) {

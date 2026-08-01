@@ -48,7 +48,7 @@ echo "============================================================"
 # ---------------------------------------------------------------------------
 # 1. Packages (ONE-TIME internet use; never again after the snapshot)
 # ---------------------------------------------------------------------------
-step "1/9 Packages"
+step "1/10 Packages"
 rpm -q open-vm-tools >/dev/null 2>&1 || dnf install -y open-vm-tools >>/var/log/bake-golden.log 2>&1
 rpm -q rsync      >/dev/null 2>&1 || dnf install -y rsync      >>/var/log/bake-golden.log 2>&1
 rpm -q fuse3      >/dev/null 2>&1 || dnf install -y fuse3      >>/var/log/bake-golden.log 2>&1
@@ -56,9 +56,23 @@ ok "open-vm-tools, rsync, fuse3 present"
 systemctl enable --now vmtoolsd 2>/dev/null || true
 
 # ---------------------------------------------------------------------------
-# 2. Mount share so we can read the Trae RPM and project
+# 2. SELinux -> permissive (REQUIRED: enforcing blocks vmhgfs-fuse share
+#    access for every context; this permanently kills the "Permission
+#    denied" problem on /mnt/FinancialMarket)
 # ---------------------------------------------------------------------------
-step "2/9 Share"
+step "2/10 SELinux"
+if [[ "$(getenforce 2>/dev/null)" != "Permissive" ]]; then
+    setenforce 0 2>/dev/null || true
+    sed -i 's/^SELINUX=.*/SELINUX=permissive/' /etc/selinux/config 2>/dev/null || true
+    ok "SELinux set to permissive (persistent)"
+else
+    ok "SELinux already permissive"
+fi
+
+# ---------------------------------------------------------------------------
+# 3. Mount share so we can read the Trae RPM and project
+# ---------------------------------------------------------------------------
+step "3/10 Share"
 mkdir -p "$MNT"; chmod 755 "$MNT"
 if ! timeout 5 ls -A "$MNT" >/dev/null 2>&1; then
     /usr/bin/vmhgfs-fuse ".host:/$SHARE" "$MNT" \
@@ -75,7 +89,7 @@ ok "fuse.conf user_allow_other"
 # ---------------------------------------------------------------------------
 # 3. Install Trae (from share RPM; fallback to cached/downloaded copies)
 # ---------------------------------------------------------------------------
-step "3/9 Trae"
+step "4/10 Trae"
 TRAE_BIN=""
 for c in /usr/share/trae/trae /usr/bin/trae /opt/Trae/trae; do
     [[ -x "$c" ]] && TRAE_BIN="$c" && break
@@ -90,12 +104,8 @@ if [[ -z "$TRAE_BIN" ]]; then
         rpm -i "$RPM" 2>/dev/null || dnf install -y "$RPM" >>/var/log/bake-golden.log 2>&1 \
             || fail "Trae RPM install failed"
     else
-        info "no RPM found -- downloading once (needs internet for this step only)"
-        mkdir -p "$REAL_HOME/.cache/trae-install"
-        curl -fL https://download.trae.ai/application/Trae-linux-x64.rpm \
-            -o "$REAL_HOME/.cache/trae-install/Trae-linux-x64.rpm" 2>/dev/null \
-            && rpm -i "$REAL_HOME/.cache/trae-install/Trae-linux-x64.rpm" 2>/dev/null \
-            || fail "could not obtain Trae. Copy Trae-linux-x64.rpm to E:\\FinancialMarket first."
+        fail "Trae RPM not found locally (share, /tmp, or ~/.cache). NO DOWNLOAD IS DONE.
+  Copy Trae-linux-x64.rpm into the guest (e.g. host LAN http server or USB) and retry."
     fi
     for c in /usr/share/trae/trae /usr/bin/trae /opt/Trae/trae; do
         [[ -x "$c" ]] && TRAE_BIN="$c" && break
@@ -106,7 +116,7 @@ fi
 # ---------------------------------------------------------------------------
 # 4. NOPASSWD sudo for $U (kills every password prompt forever)
 # ---------------------------------------------------------------------------
-step "4/9 sudo"
+step "5/10 sudo"
 echo "$U ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/sandbox
 chmod 440 /etc/sudoers.d/sandbox
 ok "NOPASSWD sudo installed"
@@ -114,7 +124,7 @@ ok "NOPASSWD sudo installed"
 # ---------------------------------------------------------------------------
 # 5. GNOME auto-login + tweaks (persist in the image)
 # ---------------------------------------------------------------------------
-step "5/9 GNOME"
+step "6/10 GNOME"
 mkdir -p /etc/gdm
 cat > /etc/gdm/custom.conf <<'GDMEOF'
 [daemon]
@@ -134,7 +144,7 @@ ok "animations off, tracker disabled"
 # ---------------------------------------------------------------------------
 # 6. Autostart files: sync service + login launcher + desktop entry
 # ---------------------------------------------------------------------------
-step "6/9 autostart"
+step "7/10 autostart"
 
 # systemd USER service for bidirectional sync (starts at every login)
 mkdir -p "$REAL_HOME/.config/systemd/user"
@@ -176,7 +186,7 @@ ok "autostart entries installed"
 # 7. Fingerprint randomizer service (runs BEFORE login, every boot)
 #    Only hostname/machine-id/ssh-keys/MAC change -- nothing else.
 # ---------------------------------------------------------------------------
-step "7/9 fingerprint service"
+step "8/10 fingerprint service"
 cat > /usr/local/sbin/sandbox-fingerprint.sh <<'FPEOF'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -222,7 +232,7 @@ ok "fingerprint service enabled"
 # ---------------------------------------------------------------------------
 # 8. Initial project pull to guest disk (so Trae has it locally right away)
 # ---------------------------------------------------------------------------
-step "8/9 project sync"
+step "9/10 project sync"
 mkdir -p "$PROJECT_DIR"
 chown "$U":"$U" "$PROJECT_DIR"
 if timeout 5 ls -A "$MNT" >/dev/null 2>&1; then
@@ -243,7 +253,7 @@ fi
 # ---------------------------------------------------------------------------
 # 9. GUEST CLEANUP: everything transient removed so the snapshot is pristine
 # ---------------------------------------------------------------------------
-step "9/9 cleanup"
+step "10/10 cleanup"
 rm -f /tmp/Trae-linux-x64.rpm "$MNT/Trae-linux-x64.rpm" 2>/dev/null || true
 rm -f "$REAL_HOME/.cache/trae-install/Trae-linux-x64.rpm" 2>/dev/null || true
 rm -f "$REAL_HOME/.bash_history" 2>/dev/null || true

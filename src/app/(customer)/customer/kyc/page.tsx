@@ -23,7 +23,7 @@ export default async function CustomerKycPage() {
 
   const [profile, kycRecords] = await Promise.all([getCustomerProfile(), getCustomerKycRecords()]);
 
-  if (!profile) redirect('/');
+  if (!profile) redirect('/customer/dashboard');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>

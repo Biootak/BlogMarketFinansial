@@ -24,7 +24,7 @@ export default async function CustomerSettingsPage() {
   if (!session?.user?.id) redirect('/auth?callbackUrl=/customer/settings');
 
   const profile = await getCustomerProfile();
-  if (!profile) redirect('/');
+  if (!profile) redirect('/customer/dashboard');
 
   const overview = await getMySecurityOverview();
   const prefs = overview.success

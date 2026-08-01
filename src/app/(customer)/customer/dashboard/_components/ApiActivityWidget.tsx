@@ -15,15 +15,8 @@
  */
 
 import { getRecentApiActivity } from '@/actions/developer-portal';
-import {
-  Activity,
-  ArrowUpRight,
-  Clock,
-  Code2,
-  ExternalLink,
-  Globe,
-  Terminal,
-} from 'lucide-react';
+import { Activity, ArrowUpRight, Clock, Code2, ExternalLink, Globe, Terminal } from 'lucide-react';
+import Link from 'next/link';
 import { useEffect, useState, useTransition } from 'react';
 import s from './ApiActivityWidget.module.css';
 
@@ -68,7 +61,7 @@ const faTime = (iso: string) => {
 
 export default function ApiActivityWidget() {
   const [calls, setCalls] = useState<ApiCall[]>([]);
-  const [loading, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const [hasFetched, setHasFetched] = useState(false);
 
   useEffect(() => {
@@ -112,20 +105,18 @@ export default function ApiActivityWidget() {
             </div>
           </div>
         </header>
-        <a href="/customer/developer" className={s.emptyCta}>
+        <Link href="/customer/developer" className={s.emptyCta}>
           <span className={s.emptyIcon} aria-hidden>
             <Terminal size={18} />
           </span>
           <div>
             <h3 className={s.emptyTitle}>هنوز درخواستی ثبت نشده</h3>
-            <p className={s.emptyDesc}>
-              برای شروع، یک کلید API بسازید و در سیستم خود استفاده کنید
-            </p>
+            <p className={s.emptyDesc}>برای شروع، یک کلید API بسازید و در سیستم خود استفاده کنید</p>
           </div>
           <span className={s.emptyArrow} aria-hidden>
             <ArrowUpRight size={14} />
           </span>
-        </a>
+        </Link>
       </section>
     );
   }
@@ -134,7 +125,8 @@ export default function ApiActivityWidget() {
   const total = calls.length;
   const successCount = calls.filter((c) => c.statusCode >= 200 && c.statusCode < 300).length;
   const successRate = total > 0 ? Math.round((successCount / total) * 100) : 0;
-  const avgDuration = total > 0 ? Math.round(calls.reduce((s, c) => s + c.durationMs, 0) / total) : 0;
+  const avgDuration =
+    total > 0 ? Math.round(calls.reduce((s, c) => s + c.durationMs, 0) / total) : 0;
 
   return (
     <section className={s.root} aria-labelledby="api-activity-title">
@@ -150,10 +142,10 @@ export default function ApiActivityWidget() {
             <p className={s.sub}>۱۰ درخواست اخیر کلیدهای API شما</p>
           </div>
         </div>
-        <a href="/customer/developer" className={s.headCta}>
+        <Link href="/customer/developer" className={s.headCta}>
           پنل توسعه
           <ExternalLink size={10} aria-hidden />
-        </a>
+        </Link>
       </header>
 
       <div className={s.statsRow}>
@@ -206,7 +198,13 @@ export default function ApiActivityWidget() {
       <footer className={s.foot}>
         <span className={s.footItem}>
           <Globe size={10} aria-hidden />
-          <code dir="ltr">{(process.env.NEXT_PUBLIC_APP_URL ?? 'financialmarket.page').replace(/^https?:\/\//, '')}/api/v1</code>
+          <code dir="ltr">
+            {(process.env.NEXT_PUBLIC_APP_URL ?? 'financialmarket.page').replace(
+              /^https?:\/\//,
+              '',
+            )}
+            /api/v1
+          </code>
         </span>
         <a href="/docs/api" className={s.footLink}>
           <Code2 size={10} aria-hidden />

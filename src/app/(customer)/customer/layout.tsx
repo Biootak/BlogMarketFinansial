@@ -22,8 +22,8 @@
 // Changes to this file will affect all portals — do not add portal-specific rules here.
 import '@/app/dashboard/dashboard.css';
 import { getCustomerProfile } from '@/actions/customer-portal';
-import { AdminCustomerSwitcher } from '@/components/Dashboard/DashboardPage/AdminCustomerSwitcher';
 import { auth } from '@/auth';
+import { AdminCustomerSwitcher } from '@/components/Dashboard/DashboardPage/AdminCustomerSwitcher';
 import { DashboardProviders } from '@/components/Dashboard/DashboardPage/DashboardProviders';
 import { SiteSettingsProvider } from '@/components/SiteSettingsProvider';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
@@ -51,14 +51,13 @@ export default async function CustomerLayout({ children }: { children: React.Rea
     if (isPlatformAdmin) {
       redirect('/dashboard');
     }
-    redirect('/');
+    redirect('/auth?callbackUrl=/customer/dashboard');
   }
 
   // برای ادمین: بررسی کن آیا explicit یک مشتری خاص را انتخاب کرده
   // (در این صورت، popover "انتخاب دستی" را نشان می‌دهد)
   const cookieStore = await cookies();
-  const hasExplicitCustomer =
-    isPlatformAdmin && !!cookieStore.get(ADMIN_CUSTOMER_COOKIE)?.value;
+  const hasExplicitCustomer = isPlatformAdmin && !!cookieStore.get(ADMIN_CUSTOMER_COOKIE)?.value;
 
   return (
     <SiteSettingsProvider

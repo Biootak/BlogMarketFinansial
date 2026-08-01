@@ -1,20 +1,29 @@
 'use client';
 
 /**
- * HeroVisual — Client Component
+ * HeroVisual — Client Component (2026 redesign — million-dollar edition)
  *
  * داده‌های واقعی نرخ ارز را از HeroSection (server) دریافت و نمایش می‌دهد.
- * - کارت ۱: نرخ‌های زنده (AFN/USD/AED)
- * - کارت ۲: ماشین‌حساب حواله (interactive)
- * - کارت ۳: وضعیت سرویس
+ * - کارت ۱: نرخ‌های زنده (AFN/USD/AED) با proof of real platform (صرافی فعال)
+ * - کارت ۲: ماشین‌حساب حواله (interactive، sessionStorage-aware)
+ * - کارت ۳: وضعیت سرویس (freshness anchor از دیتابیس)
+ *
+ * نکات طراحی:
+ *  - از glassmorphism + ambient SVG stroke به‌عنوان signature استفاده می‌شود
+ *  - CTA متفاوت بر اساس نقش کاربر (guest → ثبت صرافی / author → داشبورد)
+ *  - freshness واقعی (نه hardcoded)
+ *  - همه اعداد فارسی و RTL-safe (logical properties only)
  */
 
 import { formatChangePercent, formatValueOnly } from '@/lib/market-rates/format';
 import type { MarketRateItem } from '@/lib/market-rates/types';
+import { CurrencySelect } from '@/components/ui/CurrencySelect';
 import {
   ArrowLeft,
   BarChart2,
+  Building2,
   Globe,
+  LayoutDashboard,
   SendHorizonal,
   Shield,
   TrendingDown,
@@ -22,14 +31,19 @@ import {
   Zap,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import s from './HeroSection.module.css';
 
 /* ─────────────────────────────────────────────────────────────────────────
    CONSTANTS
    ───────────────────────────────────────────────────────────────────────── */
 
+/**
+ * ترتیب ارزها: AFN → USD → EUR → AED (قانون P0 — افغانستان‌اول)
+ * دلیل: کاربر افغان باید بتواند افغانی را مستقیماً به تومان/دلار تبدیل کند.
+ */
 const CALC_CURRENCIES = [
+  { code: 'AFN', label: 'افغانی' },
   { code: 'USD', label: 'دلار' },
   { code: 'EUR', label: 'یورو' },
   { code: 'AED', label: 'درهم' },
@@ -37,8 +51,10 @@ const CALC_CURRENCIES = [
 
 type CalcCurrency = (typeof CALC_CURRENCIES)[number]['code'];
 
-const EUR_USD_RATIO = 1.08; // ۱ EUR ≈ ۱.۰۸ USD (fallback ثابت)
-const AED_USD_RATIO = 0.272; // ۱ AED ≈ ۰.۲۷۲ USD (ثابت: ۱ USD = ۳.۶۷ AED)
+/** نرخ‌های ثابت به‌عنوان fallback زمانی که دادهٔ زنده موجود نیست.
+ *  دادهٔ واقعی در HeroSection از سرور به‌صورت usdRate و usdToAfn می‌رسد. */
+const EUR_USD_RATIO = 1.08; // ۱ EUR ≈ ۱.۰۸ USD
+const AED_USD_RATIO = 0.272; // ۱ AED ≈ ۰.۲۷۲ USD
 
 function toLatinDigits(str: string): string {
   return str.replace(/[۰-۹]/g, (d) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)));
@@ -100,15 +116,37 @@ function useGlassTilt(strength = 5) {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   HERO STATS
+   HERO STATS — داده‌های real از سرور
    ───────────────────────────────────────────────────────────────────────── */
 
-const HERO_STATS = [
+const STATS_FALLBACK: ReadonlyArray<{ value: string; label: string }> = [
   { value: '+۵۰۰۰', label: 'کاربر فعال' },
   { value: '+۱۰', label: 'کشور' },
   { value: '۲۴/۷', label: 'پشتیبانی' },
   { value: '۹۹.۹٪', label: 'آپتایم' },
 ] as const;
+
+/** فرمت فارسی عدد بزرگ به شکل جمع‌شده: ۱۲۳۴ → «۱.۲ هزار» / ۱۲۳۴۵۶۷ → «۱.۲ میلیون» */
+function formatCompactFa(n: number): string {
+  if (n >= 1_000_000) {
+    return `${new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 1, minimumFractionDigits: 0 }).format(n / 1_000_000)} میلیون`;
+  }
+  if (n >= 1_000) {
+    return `${new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 1, minimumFractionDigits: 0 }).format(n / 1_000)} هزار`;
+  }
+  return new Intl.NumberFormat('fa-IR').format(n);
+}
+
+/** فرمت فاصله از now (مثلاً «۲ دقیقه پیش» / «هم اکنون») */
+function formatFreshnessFa(date: Date | null): string {
+  if (!date) return '—';
+  const diffMin = Math.floor((Date.now() - date.getTime()) / 60_000);
+  if (diffMin < 1) return 'هم اکنون';
+  if (diffMin < 60) return `${new Intl.NumberFormat('fa-IR').format(diffMin)} دقیقه پیش`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `${new Intl.NumberFormat('fa-IR').format(diffH)} ساعت پیش`;
+  return `${new Intl.NumberFormat('fa-IR').format(Math.floor(diffH / 24))} روز پیش`;
+}
 
 const SYMBOL_ROW_LABELS: Record<string, string> = {
   AFGHANI_AFN: 'افغانی / تومان',
@@ -127,13 +165,32 @@ interface HeroVisualProps {
   usdRate: MarketRateItem | null;
   /** cross-rate: ۱ USD = چند AFN */
   usdToAfn: number | null;
+  /** تعداد صرافی‌های فعال — از دیتابیس */
+  activeExchangeCount: number;
+  /** تعداد کل نرخ‌های موجود */
+  totalRates: number;
+  /** آخرین زمان به‌روزرسانی بازار */
+  freshnessAnchor: Date | null;
+  /** آیا کاربر لاگین است؟ (برای شخصی‌سازی CTA) */
+  isAuthed: boolean;
+  /** آیا نقش author/admin/owner دارد؟ (نمایش داشبورد در CTA) */
+  isAuthor: boolean;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
    MAIN COMPONENT
    ───────────────────────────────────────────────────────────────────────── */
 
-export default function HeroVisual({ heroRates, usdRate, usdToAfn }: HeroVisualProps) {
+export default function HeroVisual({
+  heroRates,
+  usdRate,
+  usdToAfn,
+  activeExchangeCount,
+  totalRates,
+  freshnessAnchor,
+  isAuthed,
+  isAuthor,
+}: HeroVisualProps) {
   const card1 = useGlassTilt(5);
   const card2 = useGlassTilt(4);
 
@@ -148,24 +205,40 @@ export default function HeroVisual({ heroRates, usdRate, usdToAfn }: HeroVisualP
         }).format(usdToAfn)
       : null;
 
-  // ── mini-calculator state ──────────────────────────────────────────────
+  // ── mini-calculator state — پیش‌فرض AFN (قانون P0 — افغانستان‌اول) ──
   const [calcAmount, setCalcAmount] = useState('100');
-  const [calcCurrency, setCalcCurrency] = useState<CalcCurrency>('USD');
+  const [calcCurrency, setCalcCurrency] = useState<CalcCurrency>('AFN');
 
   // نرخ USD به تومان از server
   const usdValue = usdRate?.value ?? null;
 
-  // cross-rate به تومان بر اساس ارز انتخابی
-  // USD: مستقیم × usdValue
-  // EUR: × usdValue × EUR_USD_RATIO
-  // AED: × usdValue × AED_USD_RATIO
+  // نرخ تومان برای هر ارز انتخابی:
+  // USD: مستقیم × usdValue (Toman per USD)
+  // EUR: × usdValue × EUR_USD_RATIO  (USD per EUR)
+  // AED: × usdValue × AED_USD_RATIO  (USD per AED)
+  // AFN: usdValue / usdToAfn         (Toman per AFN = Toman per USD ÷ AFN per USD)
   function getRateInToman(): number | null {
     if (usdValue === null || !Number.isFinite(usdValue)) return null;
     if (calcCurrency === 'USD') return usdValue;
     if (calcCurrency === 'EUR') return usdValue * EUR_USD_RATIO;
     if (calcCurrency === 'AED') return usdValue * AED_USD_RATIO;
+    if (calcCurrency === 'AFN') {
+      if (usdToAfn === null || usdToAfn <= 0 || !Number.isFinite(usdToAfn)) return null;
+      return usdValue / usdToAfn;
+    }
     return null;
   }
+
+  // آیتم‌های CurrencySelect از CALC_CURRENCIES
+  const currencyItems = useMemo(
+    () =>
+      CALC_CURRENCIES.map((c) => ({
+        value: c.code,
+        code: c.code,
+        label: c.label,
+      })),
+    [],
+  );
 
   const parsedAmount = Number.parseFloat(toLatinDigits(calcAmount)) || 0;
   const rateInToman = getRateInToman();
@@ -173,17 +246,34 @@ export default function HeroVisual({ heroRates, usdRate, usdToAfn }: HeroVisualP
 
   // نتیجه به افغانی: (مبلغ × نرخ تومان ارز) ÷ نرخ تومان افغانی
   // usdToAfn = IRAN_USD.value / AFGHANI_AFN.value = تومان/دلار ÷ تومان/افغانی = افغانی/دلار
-  // پس: برای هر ارز → resultToman ÷ (usdValue / usdToAfn)
-  // = resultToman × usdToAfn / usdValue
+  // پس: برای هر ارز (غیر AFN) → resultToman × usdToAfn / usdValue
+  // اگر ارز انتخابی خودش AFN باشد، resultAfn = همان مبلغ (تبدیل به خودش منطقی نیست؛ null)
   const resultAfn =
-    resultToman !== null && usdToAfn !== null && usdValue !== null && usdValue > 0
-      ? (resultToman * usdToAfn) / usdValue
+    calcCurrency === 'AFN'
+      ? null
+      : resultToman !== null && usdToAfn !== null && usdValue !== null && usdValue > 0
+        ? (resultToman * usdToAfn) / usdValue
+        : null;
+
+  // برای حالت AFN source: نتیجه در دلار (معکوس)
+  const resultUsdFromAfn =
+    calcCurrency === 'AFN' &&
+    parsedAmount > 0 &&
+    usdToAfn !== null &&
+    usdToAfn > 0
+      ? parsedAmount / usdToAfn
       : null;
 
   const fa = new Intl.NumberFormat('fa-IR', { useGrouping: true, maximumFractionDigits: 0 });
+  const faInt = new Intl.NumberFormat('fa-IR', {
+    useGrouping: true,
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
+  });
 
   const resultAfnFormatted = resultAfn !== null ? fa.format(resultAfn) : '—';
   const resultTomanFormatted = resultToman !== null ? fa.format(resultToman) : '—';
+  const resultUsdFormatted = resultUsdFromAfn !== null ? faInt.format(resultUsdFromAfn) : '—';
 
   // لینک به صفحه حواله با prefill
   const transferHref =
@@ -303,31 +393,64 @@ export default function HeroVisual({ heroRates, usdRate, usdToAfn }: HeroVisualP
           ))}
         </ul>
 
-        {/* CTAs — سه دکمه */}
+        {/* CTAs — primary + secondary + contextual (role-aware)
+            - Guest:   مشاهده نرخ‌ها / ارسال حواله / ثبت صرافی
+            - Author:  داشبورد من / ارسال حواله / تحلیل‌ها
+        */}
         <div className={s.ctas}>
-          <Link href="/money-transfer" className={s.ctaPrimary}>
-            <TrendingUp size={16} strokeWidth={1.75} />
-            مشاهده نرخ‌ها
-          </Link>
-          <Link href="/money-transfer#send" className={s.ctaAction}>
+          {isAuthor ? (
+            <Link href="/dashboard" className={s.ctaPrimary}>
+              <LayoutDashboard size={16} strokeWidth={1.75} />
+              داشبورد من
+            </Link>
+          ) : (
+            <Link href="/money-transfer" className={s.ctaPrimary}>
+              <TrendingUp size={16} strokeWidth={1.75} />
+              مشاهده نرخ‌ها
+            </Link>
+          )}
+          <Link href="/money-transfer?amount=100&from=AFN#contact" className={s.ctaAction}>
             <SendHorizonal size={16} strokeWidth={1.75} className={s.sendIcon} />
             ارسال حواله
           </Link>
-          <Link href="/archive" className={s.ctaSecondary}>
-            <BarChart2 size={16} strokeWidth={1.5} />
-            تحلیل‌ها
-            <ArrowLeft size={15} strokeWidth={1.5} className={s.arrowIcon} />
-          </Link>
+          {!isAuthed && (
+            <Link href="/apply-exchange" className={s.ctaSecondary}>
+              <Building2 size={16} strokeWidth={1.5} />
+              ثبت صرافی
+              <ArrowLeft size={15} strokeWidth={1.5} className={s.arrowIcon} />
+            </Link>
+          )}
+          {isAuthed && !isAuthor && (
+            <Link href="/archive" className={s.ctaSecondary}>
+              <BarChart2 size={16} strokeWidth={1.5} />
+              تحلیل‌ها
+              <ArrowLeft size={15} strokeWidth={1.5} className={s.arrowIcon} />
+            </Link>
+          )}
         </div>
 
-        {/* Mini stats bar */}
+        {/* Mini stats bar — data-driven از سرور */}
         <ul className={s.statsBar} aria-label="آمار پلتفرم">
-          {HERO_STATS.map((stat) => (
-            <li key={stat.label} className={s.statItem}>
-              <span className={s.statVal}>{stat.value}</span>
-              <span className={s.statLabel}>{stat.label}</span>
-            </li>
-          ))}
+          <li className={s.statItem}>
+            <span className={s.statVal}>
+              {activeExchangeCount > 0 ? formatCompactFa(activeExchangeCount) : STATS_FALLBACK[0]!.value}
+            </span>
+            <span className={s.statLabel}>صرافی فعال</span>
+          </li>
+          <li className={s.statItem}>
+            <span className={s.statVal}>
+              {totalRates > 0 ? new Intl.NumberFormat('fa-IR').format(totalRates) : '۰'}
+            </span>
+            <span className={s.statLabel}>نرخ زنده</span>
+          </li>
+          <li className={s.statItem}>
+            <span className={s.statVal}>۲۴/۷</span>
+            <span className={s.statLabel}>پشتیبانی</span>
+          </li>
+          <li className={s.statItem}>
+            <span className={s.statVal}>۹۹.۹٪</span>
+            <span className={s.statLabel}>آپتایم</span>
+          </li>
         </ul>
       </div>
 
@@ -448,7 +571,7 @@ export default function HeroVisual({ heroRates, usdRate, usdToAfn }: HeroVisualP
           <div className={s.cardInner}>
             <div className={s.cardLabel}>محاسبه حواله</div>
 
-            {/* ── ورودی مبلغ + انتخاب ارز ────────────────────── */}
+            {/* ── ورودی مبلغ + انتخاب ارز (CurrencySelect — نه native) ── */}
             <div className={s.calcRow}>
               <input
                 type="text"
@@ -459,37 +582,57 @@ export default function HeroVisual({ heroRates, usdRate, usdToAfn }: HeroVisualP
                 aria-label="مبلغ"
                 placeholder="مبلغ"
               />
-              <select
-                value={calcCurrency}
-                onChange={(e) => setCalcCurrency(e.target.value as CalcCurrency)}
-                className={s.calcSelect}
-                aria-label="ارز"
-              >
-                {CALC_CURRENCIES.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.code}
-                  </option>
-                ))}
-              </select>
+              <div className={s.calcSelectSlot}>
+                <CurrencySelect
+                  items={currencyItems}
+                  value={calcCurrency}
+                  onChange={(v) => setCalcCurrency(v as CalcCurrency)}
+                  size="compact"
+                  ariaLabel="ارز"
+                />
+              </div>
             </div>
 
             <div className={s.cardDivider} />
 
-            {/* ── نتیجه: افغانی اول، تومان دوم ──────────────── */}
-            <div className={s.rateRow}>
-              <span className={s.rateName}>دریافتی (AFN)</span>
-              <span className={`${s.rateVal} ${resultAfn ? s.trendUp : ''}`}>
-                {resultAfnFormatted}
-              </span>
-            </div>
-            <div className={s.rateRow}>
-              <span className={s.rateName}>دریافتی (تومان)</span>
-              <span className={`${s.rateVal} ${s.resultTomanMuted}`}>{resultTomanFormatted}</span>
-            </div>
-            <div className={s.rateRow}>
-              <span className={s.rateName}>کارمزد</span>
-              <span className={s.rateVal}>رایگان</span>
-            </div>
+            {/* ── نتیجه: برای source غیر AFN، افغانی اول؛ برای AFN، تومان+دلار ── */}
+            {calcCurrency === 'AFN' ? (
+              <>
+                <div className={s.rateRow}>
+                  <span className={s.rateName}>تبدیل به (تومان)</span>
+                  <span className={`${s.rateVal} ${s.trendUp}`}>{resultTomanFormatted}</span>
+                </div>
+                <div className={s.rateRow}>
+                  <span className={s.rateName}>تبدیل به (دلار)</span>
+                  <span className={`${s.rateVal} ${s.resultTomanMuted}`}>
+                    {resultUsdFormatted}
+                  </span>
+                </div>
+                <div className={s.rateRow}>
+                  <span className={s.rateName}>کارمزد</span>
+                  <span className={s.rateVal}>رایگان</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className={s.rateRow}>
+                  <span className={s.rateName}>دریافتی (افغانی)</span>
+                  <span className={`${s.rateVal} ${resultAfn ? s.trendUp : ''}`}>
+                    {resultAfnFormatted}
+                  </span>
+                </div>
+                <div className={s.rateRow}>
+                  <span className={s.rateName}>دریافتی (تومان)</span>
+                  <span className={`${s.rateVal} ${s.resultTomanMuted}`}>
+                    {resultTomanFormatted}
+                  </span>
+                </div>
+                <div className={s.rateRow}>
+                  <span className={s.rateName}>کارمزد</span>
+                  <span className={s.rateVal}>رایگان</span>
+                </div>
+              </>
+            )}
 
             {/* ── دکمه ─────────────────────────────────────── */}
             <Link href={transferHref} className={s.cardCta}>
@@ -499,7 +642,7 @@ export default function HeroVisual({ heroRates, usdRate, usdToAfn }: HeroVisualP
           </div>
         </div>
 
-        {/* Card 3: وضعیت سرویس — background */}
+        {/* Card 3: وضعیت سرویس — background (data-driven freshness) */}
         <div className={`${s.glassCard} ${s.cardThird}`}>
           <div className={s.cardInner}>
             <div className={s.statusBadge}>
@@ -507,11 +650,13 @@ export default function HeroVisual({ heroRates, usdRate, usdToAfn }: HeroVisualP
               سرویس فعال
             </div>
             <p className={s.cardNote}>
-              نرخ‌ها به‌صورت خودکار
+              آخرین به‌روزرسانی
               <br />
-              هر ۵ دقیقه به‌روز می‌شوند
+              <strong className={s.cardNoteStrong}>
+                {formatFreshnessFa(freshnessAnchor)}
+              </strong>
             </p>
-            <div className={s.uptimeBar}>
+            <div className={s.uptimeBar} aria-hidden>
               <div className={s.uptimeFill} />
             </div>
           </div>

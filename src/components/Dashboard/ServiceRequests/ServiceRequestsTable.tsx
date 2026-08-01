@@ -35,6 +35,7 @@ import {
   updateServiceRequestStatus,
 } from '@/actions/serviceRequestActions';
 import { ConfirmDialog } from '@/components/Dashboard/primitives/ConfirmDialog';
+import { MillionDollarEmpty } from '@/components/Dashboard/primitives';
 import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
@@ -51,7 +52,6 @@ import {
   HiGlobe,
   HiOutlineAnnotation,
   HiOutlineExclamationCircle,
-  HiOutlineInbox,
   HiOutlinePaperClip,
   HiRefresh,
   HiSearch,
@@ -459,24 +459,17 @@ export default function ServiceRequestsTable({
                 <SkeletonRows />
               ) : requests.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-20">
-                    <div className="at-srq-empty">
-                      <span className="at-srq-empty__ico">
-                        {hasSearch ? (
-                          <HiSearch className="w-7 h-7" aria-hidden />
-                        ) : (
-                          <HiOutlineInbox className="w-7 h-7" aria-hidden />
-                        )}
-                      </span>
-                      <p className="text-sm font-semibold">
-                        {hasSearch ? 'نتیجه‌ای یافت نشد' : 'درخواستی ثبت نشده'}
-                      </p>
-                      <p className="text-xs text-[var(--at-fg-subtle)]">
-                        {hasSearch
+                  <td colSpan={8} className="px-4 py-12">
+                    <MillionDollarEmpty
+                      variant={hasSearch ? 'search' : 'inbox'}
+                      eyebrow={hasSearch ? 'نتیجه جستجو' : 'مرکز درخواست‌ها'}
+                      title={hasSearch ? 'نتیجه‌ای یافت نشد' : 'درخواستی ثبت نشده'}
+                      description={
+                        hasSearch
                           ? 'عبارت جستجو یا فیلتر فعلی نتیجه‌ای ندارد.'
-                          : 'هنوز هیچ درخواست خدماتی دریافت نشده است.'}
-                      </p>
-                    </div>
+                          : 'هنوز هیچ درخواست خدماتی دریافت نشده است.'
+                      }
+                    />
                   </td>
                 </tr>
               ) : (

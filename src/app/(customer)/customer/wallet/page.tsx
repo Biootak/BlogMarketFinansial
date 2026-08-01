@@ -1,3 +1,8 @@
+import {
+  getCustomerAccountsDetail,
+  getCustomerProfile,
+  getCustomerRecentTransactions,
+} from '@/actions/customer-portal';
 /**
  * /customer/wallet — کیف پول مشتری
  *
@@ -5,11 +10,6 @@
  * دسترسی: CUSTOMER / TEST_CUSTOMER / MERCHANT
  */
 import { auth } from '@/auth';
-import {
-  getCustomerAccountsDetail,
-  getCustomerProfile,
-  getCustomerRecentTransactions,
-} from '@/actions/customer-portal';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -33,21 +33,15 @@ export default async function CustomerWalletPage() {
     getCustomerRecentTransactions(20),
   ]);
 
-  if (!profile) redirect('/');
+  if (!profile) redirect('/customer/dashboard');
 
   return (
-    <div
-      dir="rtl"
-      style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}
-    >
+    <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
       <PageHeader
         eyebrow="کیف پول"
         title="کیف پول من"
         description="موجودی، حساب‌ها و تاریخچهٔ تراکنش‌ها"
-        breadcrumb={[
-          { href: '/customer/dashboard', label: 'پنل مشتری' },
-          { label: 'کیف پول' },
-        ]}
+        breadcrumb={[{ href: '/customer/dashboard', label: 'پنل مشتری' }, { label: 'کیف پول' }]}
         icon="wallet"
         accent="indigo"
       />

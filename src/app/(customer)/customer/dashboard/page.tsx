@@ -21,7 +21,7 @@ export default async function CustomerDashboardPage() {
   if (!session?.user?.id) redirect('/auth?callbackUrl=/customer/dashboard');
 
   const data = await getCustomerDashboardData();
-  if (!data) redirect('/');
+  if (!data) redirect('/auth?callbackUrl=/customer/dashboard');
 
   return <CustomerDashboardContent data={data} />;
 }

@@ -730,8 +730,34 @@
   border-color: var(--ds-brand-500);
 }
 
+/* Slot برای CurrencySelect — ارتفاع یکسان با calcInput */
+.calcSelectSlot {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+/* override تریگر CurrencySelect برای هماهنگی با calcInput (هم‌اندازه و هم‌رنگ) */
+.calcSelectSlot :global(.trigger) {
+  height: 36px;
+  min-height: 36px;
+  padding: 0 8px 0 6px;
+  font-size: var(--ds-text-xs);
+  border-radius: var(--ds-radius-md);
+  border: 1px solid var(--ds-border);
+  background: var(--ds-surface-raised);
+  color: var(--ds-text-primary);
+  font-weight: var(--ds-weight-semibold);
+}
+
 :global(.dark) .calcInput,
 :global(.dark) .calcSelect {
+  background: oklch(20% 0.01 250 / 0.6);
+  border-color: oklch(30% 0.015 250 / 0.6);
+}
+
+:global(.dark) .calcSelectSlot :global(.trigger) {
   background: oklch(20% 0.01 250 / 0.6);
   border-color: oklch(30% 0.015 250 / 0.6);
 }
@@ -824,6 +850,14 @@
   font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
   line-height: var(--ds-leading-normal);
+}
+
+.cardNoteStrong {
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-accent-emerald);
+  font-variant-numeric: tabular-nums;
+  display: inline-block;
+  margin-top: 2px;
 }
 
 /* ── Bottom fade ─────────────────────────────────────────────── */
