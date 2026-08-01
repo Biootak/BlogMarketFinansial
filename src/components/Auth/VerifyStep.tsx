@@ -78,21 +78,37 @@ export default function VerifyStep({
     });
   };
 
+  const is2FA = intent === '2fa';
+
   return (
     <form noValidate onSubmit={(event) => event.preventDefault()} className="auth-stage-form">
-      {/* Email destination summary */}
+      {/* Email destination summary — برای 2FA به اپ Authenticator ارجاع می‌دهیم */}
       <div className="auth-verify-summary">
         <span className="auth-verify-chip">{INTENT_LABEL[intent]}</span>
-        <p className="auth-helper">
-          کد به{' '}
-          <span dir="ltr" className="auth-inline-email">
-            {email}
-          </span>{' '}
-          ارسال شده است.{' '}
-          <button type="button" className="auth-context-link" onClick={onBack}>
-            تغییر ایمیل
-          </button>
-        </p>
+        {is2FA ? (
+          <p className="auth-helper">
+            کد ۶ رقمی را از اپلیکیشن احراز هویت (Google Authenticator / Authy) وارد کنید
+            برای حساب{' '}
+            <span dir="ltr" className="auth-inline-email">
+              {email}
+            </span>
+            .
+            <button type="button" className="auth-context-link" onClick={onBack}>
+              بازگشت
+            </button>
+          </p>
+        ) : (
+          <p className="auth-helper">
+            کد به{' '}
+            <span dir="ltr" className="auth-inline-email">
+              {email}
+            </span>{' '}
+            ارسال شده است.{' '}
+            <button type="button" className="auth-context-link" onClick={onBack}>
+              تغییر ایمیل
+            </button>
+          </p>
+        )}
       </div>
 
       {/* OTP input */}
@@ -131,48 +147,50 @@ export default function VerifyStep({
           {isPending ? 'در حال تأیید…' : 'تأیید و ادامه'}
         </button>
 
-        {/* Secondary: resend with countdown visual */}
-        <button
-          type="button"
-          className="auth-resend-btn"
-          onClick={handleResend}
-          disabled={isPending || cooldownMs > 0}
-          aria-busy={isPending || undefined}
-          aria-live="polite"
-        >
-          {cooldownMs > 0 ? (
-            <>
-              {/* Countdown arc */}
-              <svg className="auth-resend-countdown" viewBox="0 0 24 24" aria-hidden="true">
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="9"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  opacity="0.18"
-                />
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="9"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeDasharray={`${2 * Math.PI * 9}`}
-                  strokeDashoffset={`${2 * Math.PI * 9 * (1 - cooldownPct / 100)}`}
-                  strokeLinecap="round"
-                  transform="rotate(-90 12 12)"
-                  style={{ transition: 'stroke-dashoffset 0.9s linear' }}
-                />
-              </svg>
-              ارسال مجدد در {formatCooldown(cooldownSec * 1000)} ثانیه
-            </>
-          ) : (
-            'ارسال دوباره کد'
-          )}
-        </button>
+        {/* Secondary: resend — فقط برای کدهای ایمیل، نه TOTP */}
+        {!is2FA && (
+          <button
+            type="button"
+            className="auth-resend-btn"
+            onClick={handleResend}
+            disabled={isPending || cooldownMs > 0}
+            aria-busy={isPending || undefined}
+            aria-live="polite"
+          >
+            {cooldownMs > 0 ? (
+              <>
+                {/* Countdown arc */}
+                <svg className="auth-resend-countdown" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="9"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    opacity="0.18"
+                  />
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="9"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeDasharray={`${2 * Math.PI * 9}`}
+                    strokeDashoffset={`${2 * Math.PI * 9 * (1 - cooldownPct / 100)}`}
+                    strokeLinecap="round"
+                    transform="rotate(-90 12 12)"
+                    style={{ transition: 'stroke-dashoffset 0.9s linear' }}
+                  />
+                </svg>
+                ارسال مجدد در {formatCooldown(cooldownSec * 1000)} ثانیه
+              </>
+            ) : (
+              'ارسال دوباره کد'
+            )}
+          </button>
+        )}
       </div>
     </form>
   );

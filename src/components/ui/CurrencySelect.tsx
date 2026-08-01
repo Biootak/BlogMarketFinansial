@@ -87,6 +87,8 @@ export interface CurrencySelectProps {
   searchPlaceholder?: string;
   /** Disable the trigger */
   disabled?: boolean;
+  /** کلاس اضافی روی کانتینر wrap — برای استایل سفارشی از بیرون */
+  className?: string;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -122,6 +124,7 @@ export function CurrencySelect({
   ariaLabel,
   searchPlaceholder = 'جستجوی ارز...',
   disabled = false,
+  className,
 }: CurrencySelectProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -217,7 +220,7 @@ export function CurrencySelect({
   const totalVisible = filteredGroups.reduce((n, g) => n + g.items.length, 0);
 
   return (
-    <div ref={wrapRef} className={s.wrap} dir="rtl">
+    <div ref={wrapRef} className={`${s.wrap}${className ? ` ${className}` : ''}`} dir="rtl">
       {/* ── Trigger ── */}
       <button
         id={triggerId}

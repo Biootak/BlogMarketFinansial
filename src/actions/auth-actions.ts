@@ -31,8 +31,10 @@ import {
   generateLoginToken,
   generateOtpToken,
   generatePasswordResetToken,
+  generateSixDigitCode,
   invalidateOtpTokens,
 } from '@/lib/tokens';
+import { verifyTotp } from '@/lib/totp';
 import {
   EmailLookupSchema,
   LoginSchema,
@@ -340,6 +342,61 @@ export async function loginWithPassword(formData: FormData): Promise<AuthResult>
       };
     }
 
+    // C1-fix (2026-08-01): TOTP 2FA enforcement.
+    // قبلاً کاربری که 2FA فعال می‌کرد هیچ حفاظت اضافه‌ای نمی‌گرفت — login فقط
+    // bcrypt + emailVerified را چک می‌کرد. حالا اگر twoFactorEnabled است:
+    //   1. رمز را با bcrypt خودمان (بدون signIn) تأیید می‌کنیم
+    //   2. یک challenge یکبارمصرف (intent='2fa') می‌سازیم
+    //   3. به مرحلهٔ verify برمی‌گردیم تا کاربر کد Authenticator را وارد کند
+    //   4. verifyTotpLogin آن را مصرف می‌کند و با single-use loginToken سشن می‌سازد
+    // (رمز در DB ذخیره نمی‌شود؛ با همان hashing موجود)
+    const twoFaUser = await prisma.user.findUnique({
+      where: { email: { equals: input.email, mode: 'insensitive' } },
+      select: { twoFactorEnabled: true, password: true, emailVerified: true, email: true },
+    });
+
+    if (twoFaUser?.twoFactorEnabled) {
+      // اطمینان: رمز واقعاً درست است (بدون signIn — تا مرحلهٔ TOTP)
+      if (!twoFaUser.password) {
+        return { success: false, error: 'ایمیل یا رمز عبور اشتباه است' };
+      }
+      const pwOk = await bcrypt.compare(input.password, twoFaUser.password);
+      if (!pwOk) {
+        return { success: false, error: 'ایمیل یا رمز عبور اشتباه است' };
+      }
+      if (!twoFaUser.emailVerified) {
+        const sent = await issueOtp(input.email, 'reverify');
+        if (sent.ok) {
+          return {
+            success: false,
+            error:
+              'ایمیل شما هنوز تأیید نشده است. کد جدید به ایمیل‌تان ارسال شد—لطفاً ابتدا کد را وارد کنید',
+          };
+        }
+        return { success: false, error: 'ایمیل شما هنوز تأیید نشده است' };
+      }
+
+      // challenge یکبارمصرف — فقط با کد TOTP معتبر قابل مصرف
+      await prisma.verificationToken.create({
+        data: {
+          email: input.email.toLowerCase(),
+          token: generateSixDigitCode(),
+          intent: '2fa',
+          expires: new Date(Date.now() + 2 * 60 * 1000),
+          attempts: 0,
+        },
+      });
+
+      return {
+        success: true,
+        step: 'verify',
+        email: input.email,
+        intent: '2fa',
+        message: 'کد احراز هویت دو مرحله‌ای (Authenticator) را وارد کنید',
+      };
+    }
+
+    // بدون 2FA — مسیر قبلی
     await signIn('credentials', {
       email: input.email,
       password: input.password,
@@ -403,6 +460,65 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
         success: false,
         error: 'تعداد تلاش‌های تأیید بیش از حد مجاز است. لحظاتی دیگر دوباره تلاش کنید',
         cooldownMs: Math.max(0, rate.reset - Date.now()),
+      };
+    }
+
+    // C1-fix: برای intent='2fa' کد از اپلیکیشن Authenticator (TOTP) می‌آید
+    // نه از ایمیل. challenge قبلاً در loginWithPassword ساخته شده؛ اینجا
+    // TOTP را با secret ذخیره‌شده چک و challenge را consume می‌کنیم.
+    if (input.intent === '2fa') {
+      const twoFaUser = await prisma.user.findUnique({
+        where: { email: { equals: input.email, mode: 'insensitive' } },
+        select: { twoFactorEnabled: true, twoFactorSecret: true, emailVerified: true, email: true },
+      });
+      if (!twoFaUser?.twoFactorEnabled || !twoFaUser.twoFactorSecret) {
+        return {
+          success: false,
+          error: 'احراز هویت دو مرحله‌ای برای این حساب فعال نیست',
+        };
+      }
+      if (!twoFaUser.emailVerified) {
+        return { success: false, error: 'ایمیل شما تأیید نشده است' };
+      }
+      const totpOk = await verifyTotp(twoFaUser.twoFactorSecret, input.code);
+      if (!totpOk) {
+        // consume challenge را به‌گونه‌ای انجام می‌دهیم که brute-force محدود بماند
+        await prisma.verificationToken.deleteMany({
+          where: { email: input.email.toLowerCase(), intent: '2fa' },
+        });
+        return {
+          success: false,
+          error: 'کد احراز هویت نادرست است. دوباره امتحان کنید',
+        };
+      }
+
+      // challenge را مصرف کن — یکبارمصرف
+      await prisma.verificationToken.deleteMany({
+        where: { email: input.email.toLowerCase(), intent: '2fa' },
+      });
+
+      // single-use login token + signIn — همان الگوی امن after_otp
+      try {
+        const loginToken = await generateLoginToken(input.email);
+        await signIn('credentials', {
+          email: input.email,
+          kind: 'after_otp',
+          loginToken: loginToken.token,
+          intent: input.intent,
+          redirect: false,
+        });
+      } catch (signInErr) {
+        serverLog.error('auth-actions', 'verifyTotpLogin/signIn', signInErr);
+        return {
+          success: false,
+          error: 'کد تأیید شد ولی ورود با خطا مواجه شد. لطفاً دوباره از ابتدا اقدام کنید',
+        };
+      }
+
+      return {
+        success: true,
+        message: 'تأیید شد. در حال انتقال…',
+        redirect: '/dashboard',
       };
     }
 

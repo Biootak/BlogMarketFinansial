@@ -336,7 +336,14 @@ export default async function AccountPage() {
           <header className={s.panelHead}>
             <Clock3 size={15} aria-hidden />
             <h2 id="log-heading" className={s.panelTitle}>آخرین فعالیت‌ها</h2>
-            <a href="/dashboard/audit-log" className={s.panelLink}>مشاهده همه</a>
+            {/* M4-fix: audit-log فقط برای ADMIN/OWNER/SUPERADMIN است — برای
+                AUTHOR/USER این لینک به /dashboard bounce می‌خورد. فقط برای
+                نقش‌های مجاز نمایش داده می‌شود. */}
+            {['ADMIN', 'OWNER', 'SUPERADMIN'].includes(user.role ?? '') && (
+              <a href="/dashboard/audit-log" className={s.panelLink}>
+                مشاهده همه
+              </a>
+            )}
           </header>
           <ol className={s.timeline} aria-label="تاریخچه فعالیت">
             {logs.map((log, i) => (

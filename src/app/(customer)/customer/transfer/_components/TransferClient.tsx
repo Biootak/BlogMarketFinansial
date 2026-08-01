@@ -557,7 +557,7 @@ function WithdrawForm({
   if (step === 2) {
     return (
       <form onSubmit={onSubmitStep2} className={s.form}>
-        <p className={s.hint}>کد تأیید ارسال‌شده را وارد کنید. (در محیط تست، هر کدی معتبر است)</p>
+        <p className={s.hint}>کد تأیید ۶ رقمی که به شماره/ایمیل شما ارسال شد را وارد کنید.</p>
         <div className={s.field}>
           <label htmlFor="wd-otp" className={s.label}>
             کد تأیید

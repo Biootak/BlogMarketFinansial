@@ -11,6 +11,7 @@
  */
 
 import type { ProviderQuote, TransferApiResponse } from '@/lib/money-transfer/types';
+import { CurrencySelect } from '@/components/ui/CurrencySelect';
 import {
   ArrowLeft,
   BadgeCheck,
@@ -167,18 +168,20 @@ function ContextBar({
             aria-label="مبلغ"
             onChange={(e) => onAmountChange(e.target.value)}
           />
-          <select
+          {/* H15-fix: native <select> → CurrencySelect مشترک (قانون
+              «NO NATIVE FORM CONTROLS» پروژه). */}
+          <CurrencySelect
             className={s.currencySelect}
             value={symbol}
-            aria-label="ارز"
-            onChange={(e) => onSymbolChange(e.target.value as CurrencyCode)}
-          >
-            {CURRENCY_OPTIONS.map((c) => (
-              <option key={c.code} value={c.code}>
-                {c.flag} {c.code}
-              </option>
-            ))}
-          </select>
+            ariaLabel="ارز"
+            size="compact"
+            items={CURRENCY_OPTIONS.map((c) => ({
+              value: c.code,
+              code: c.code,
+              label: `${c.flag} ${c.code}`,
+            }))}
+            onChange={(v) => onSymbolChange(v as CurrencyCode)}
+          />
         </div>
 
         <fieldset className={s.presets}>

@@ -13,6 +13,7 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
+import { cache } from 'react';
 import type { FintechActionResult } from '@/types/types';
 import {
   AccountStatus,
@@ -53,6 +54,8 @@ export type CustomerProfile = {
     logoUrl: string | null;
     status: string;
     requireKyc: boolean;
+    /** M1-fix: slug برای لینک صحیح به صفحهٔ عمومی صرافی (/exchanges/[slug]) */
+    slug: string | null;
   };
 };
 
@@ -178,7 +181,11 @@ function mapTransaction(r: {
 
 // ─── READ — Customer Profile ──────────────────────────────────────────────────
 
-export async function getCustomerProfile(): Promise<CustomerProfile | null> {
+/**
+ * Performance: cache() → در یک render pass فقط یکبار اجرا می‌شود.
+ * layout.tsx و page.tsx هر دو صدا می‌زنند — فقط اولی DB query می‌کند.
+ */
+export const getCustomerProfile = cache(async (): Promise<CustomerProfile | null> => {
   const access = await requireCustomerAccess();
   if (!access.ok) return null;
 
@@ -209,6 +216,8 @@ export async function getCustomerProfile(): Promise<CustomerProfile | null> {
           logoUrl: true,
           status: true,
           requireKyc: true,
+          // M1-fix: برای لینک صحیح به صفحهٔ عمومی صرافی
+          slug: true,
         },
       },
     },
@@ -221,7 +230,7 @@ export async function getCustomerProfile(): Promise<CustomerProfile | null> {
     personalLimitAf: row.personalLimitAf ? mapBalance(row.personalLimitAf) : null,
     exchange: { ...row.Exchange },
   };
-}
+});
 
 // ─── READ — Accounts ─────────────────────────────────────────────────────────
 
@@ -301,6 +310,8 @@ export async function getCustomerTransactions(opts: {
   limit?: number;
   kind?: string;
   status?: string;
+  /** M7-fix: فیلتر بر اساس حساب (از تاریخچهٔ دارایی رمزارز) */
+  accountId?: string;
 }): Promise<CustomerTransactionPage> {
   const access = await requireCustomerAccess();
   if (!access.ok) return { rows: [], total: 0, hasMore: false };
@@ -333,6 +344,7 @@ export async function getCustomerTransactions(opts: {
     ...(opts.status && VALID_STATUSES.has(opts.status)
       ? { status: opts.status as TransactionStatus }
       : {}),
+    ...(opts.accountId ? { accountId: opts.accountId } : {}),
   };
 
   const [rows, total] = await Promise.all([
@@ -720,23 +732,16 @@ export async function getCustomerDashboardData(): Promise<CustomerDashboardData 
   const since30 = new Date();
   since30.setDate(since30.getDate() - 30);
 
-  const [profile, accounts, recentTransactions, totalAgg, completedCount, pendingCount, failedCount, last30] =
+  // P4-perf: groupBy status → یک query به‌جای ۳ count جداگانه.
+  const [profile, accounts, recentTransactions, statusGroups, last30] =
     await Promise.all([
       getCustomerProfile(),
       getCustomerAccounts(access.customerId),
       getCustomerRecentTransactions(8),
-      prisma.transaction.aggregate({
+      prisma.transaction.groupBy({
+        by: ['status'],
         where: { customerId: access.customerId },
         _count: { _all: true },
-      }),
-      prisma.transaction.count({
-        where: { customerId: access.customerId, status: 'COMPLETED' },
-      }),
-      prisma.transaction.count({
-        where: { customerId: access.customerId, status: { in: ['PENDING', 'PROCESSING'] } },
-      }),
-      prisma.transaction.count({
-        where: { customerId: access.customerId, status: { in: ['FAILED', 'CANCELLED', 'REVERSED'] } },
       }),
       prisma.transaction.findMany({
         where: { customerId: access.customerId, createdAt: { gte: since30 } },
@@ -752,6 +757,15 @@ export async function getCustomerDashboardData(): Promise<CustomerDashboardData 
     ]);
 
   if (!profile) return null;
+
+  const statusCounts = new Map(statusGroups.map((g) => [g.status, g._count._all]));
+  const totalTransactions = Array.from(statusCounts.values()).reduce((s, c) => s + c, 0);
+  const completedCount = statusCounts.get('COMPLETED') ?? 0;
+  const pendingCount = (statusCounts.get('PENDING') ?? 0) + (statusCounts.get('PROCESSING') ?? 0);
+  const failedCount =
+    (statusCounts.get('FAILED') ?? 0) +
+    (statusCounts.get('CANCELLED') ?? 0) +
+    (statusCounts.get('REVERSED') ?? 0);
 
   const totalBalanceAfn = accounts
     .filter((a) => a.currency === 'AFN')
@@ -826,7 +840,7 @@ export async function getCustomerDashboardData(): Promise<CustomerDashboardData 
     accounts,
     recentTransactions,
     stats: {
-      totalTransactions: totalAgg._count._all,
+      totalTransactions: totalTransactions,
       completedTransactions: completedCount,
       pendingTransactions: pendingCount,
       failedTransactions: failedCount,
@@ -1128,29 +1142,31 @@ export async function getCustomerRequestStats(): Promise<CustomerRequestStats> {
   const since7 = new Date();
   since7.setDate(since7.getDate() - 7);
 
-  const [total, pending, inReview, approved, rejected, cancelled, last7d] = await Promise.all([
-    prisma.customerRequest.count({ where: { customerId: access.customerId } }),
-    prisma.customerRequest.count({
-      where: { customerId: access.customerId, status: 'PENDING' },
-    }),
-    prisma.customerRequest.count({
-      where: { customerId: access.customerId, status: 'IN_REVIEW' },
-    }),
-    prisma.customerRequest.count({
-      where: { customerId: access.customerId, status: 'APPROVED' },
-    }),
-    prisma.customerRequest.count({
-      where: { customerId: access.customerId, status: 'REJECTED' },
-    }),
-    prisma.customerRequest.count({
-      where: { customerId: access.customerId, status: 'CANCELLED' },
+  // P3-perf: یک groupBy + یک count به‌جای ۷ query جداگانه.
+  // groupBy روی status تعداد را جمع می‌کند؛ last7d جداگانه با شرط تاریخ.
+  const [grouped, last7d] = await Promise.all([
+    prisma.customerRequest.groupBy({
+      by: ['status'],
+      where: { customerId: access.customerId },
+      _count: { _all: true },
     }),
     prisma.customerRequest.count({
       where: { customerId: access.customerId, createdAt: { gte: since7 } },
     }),
   ]);
 
-  return { total, pending, inReview, approved, rejected, cancelled, last7d };
+  const counts = new Map(grouped.map((g) => [g.status, g._count._all]));
+  const total = Array.from(counts.values()).reduce((s, c) => s + c, 0);
+
+  return {
+    total,
+    pending: counts.get('PENDING') ?? 0,
+    inReview: counts.get('IN_REVIEW') ?? 0,
+    approved: counts.get('APPROVED') ?? 0,
+    rejected: counts.get('REJECTED') ?? 0,
+    cancelled: counts.get('CANCELLED') ?? 0,
+    last7d,
+  };
 }
 
 export type CustomerRequestDetail = CustomerRequestListItem & {

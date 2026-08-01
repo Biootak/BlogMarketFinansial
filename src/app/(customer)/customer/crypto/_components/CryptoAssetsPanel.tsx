@@ -13,7 +13,7 @@
  * فقط توکن‌های design system، RTL-first، pure CSS/SVG.
  */
 
-import { EmptyState, PageHeader, Spotlight, StatusBadge } from '@/components/Dashboard/primitives';
+import { EmptyState, Spotlight } from '@/components/Dashboard/primitives';
 import {
   ArrowDownLeft,
   ArrowLeftRight,
@@ -68,9 +68,6 @@ const CRYPTO_DECIMALS: Record<string, number> = {
 const fmtFa = (n: number, frac = 2): string =>
   new Intl.NumberFormat('fa-IR', { minimumFractionDigits: frac, maximumFractionDigits: frac }).format(n);
 
-const fmtCompact = (n: number): string =>
-  new Intl.NumberFormat('fa-IR', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
-
 const fmtInt = (n: number): string => new Intl.NumberFormat('fa-IR').format(Math.round(n));
 
 /* ─── Sparkline (pure SVG) ───────────────────────────────────────── */
@@ -92,7 +89,14 @@ function Sparkline({ points, color }: { points: number[]; color: string }) {
   const fillD = `${pathD} L ${w} ${h} L 0 ${h} Z`;
   const id = `sl-${color.replace(/[^a-z0-9]/gi, '')}`;
   return (
-    <svg className={s.spark} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" aria-hidden>
+    <svg
+      className={s.spark}
+      viewBox={`0 0 ${w} ${h}`}
+      preserveAspectRatio="none"
+      role="img"
+      aria-label="روند قیمت"
+    >
+      <title>روند قیمت</title>
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="currentColor" stopOpacity="0.3" />
@@ -172,11 +176,14 @@ function WalletCard({ wallet, rate }: { wallet: WalletEntry; rate?: CryptoTicker
       </div>
 
       <footer className={s.walletFoot}>
+        {/* M7-fix: تاریخچه با فیلتر حساب واقعی (اکنون getCustomerTransactions
+            از accountId پشتیبانی می‌کند)؛ «انتقال» به پورتال عملیات مشتری (نه
+            سایت عمومی money-transfer که قابلیت انتقال واقعی ندارد). */}
         <Link href={`/customer/transactions?accountId=${wallet.id}`} className={s.walletLink}>
           تاریخچه
           <ChevronLeft size={10} />
         </Link>
-        <Link href={`/money-transfer?from=${wallet.id}`} className={s.walletLink}>
+        <Link href="/customer/transfer?action=transfer" className={s.walletLink}>
           انتقال
           <ArrowLeftRight size={10} />
         </Link>
@@ -318,26 +325,29 @@ export function CryptoAssetsPanel({ wallets, rates, kycStatus, exchangeName }: P
       {/* ── Quick Actions ────────────────────────────────────────── */}
       <section aria-label="اقدامات سریع">
         <div className={s.actionsGrid}>
-          <Link href="/money-transfer" className={s.actionCard} data-tone="primary">
+          {/* M7-fix: واریز/برداشت/تبدیل به پورتال عملیات مشتری (قابلیت واقعی)
+              — قبلاً به /money-transfer (سایت) یا /customer/transactions
+              (فقط لیست) می‌رفتند که قابلیت واریز/برداشت نداشت. */}
+          <Link href="/customer/transfer?action=exchange" className={s.actionCard} data-tone="primary">
             <span className={s.actionIcon} aria-hidden>
               <ArrowLeftRight size={14} />
             </span>
             <span className={s.actionLabel}>تبدیل ارز</span>
             <span className={s.actionHint}>بین ارزهای دیجیتال و فیات</span>
           </Link>
-          <Link href="/customer/transactions" className={s.actionCard} data-tone="emerald">
+          <Link href="/customer/transfer?action=deposit" className={s.actionCard} data-tone="emerald">
             <span className={s.actionIcon} aria-hidden>
               <ArrowDownLeft size={14} />
             </span>
             <span className={s.actionLabel}>واریز</span>
-            <span className={s.actionHint}>از کیف پول دیگر</span>
+            <span className={s.actionHint}>افزایش موجودی حساب</span>
           </Link>
-          <Link href="/customer/transactions" className={s.actionCard} data-tone="rose">
+          <Link href="/customer/transfer?action=withdraw" className={s.actionCard} data-tone="rose">
             <span className={s.actionIcon} aria-hidden>
               <ArrowUpRight size={14} />
             </span>
             <span className={s.actionLabel}>برداشت</span>
-            <span className={s.actionHint}>به کیف پول خارجی</span>
+            <span className={s.actionHint}>انتقال به خارج از پلتفرم</span>
           </Link>
           <Link href="/customer/requests/new?type=OTHER" className={s.actionCard} data-tone="violet">
             <span className={s.actionIcon} aria-hidden>

@@ -2,10 +2,9 @@
  * /customer/accounts/[id] — جزئیات یک حساب + دفتر‌کل
  */
 import { getAccountLedger, getCustomerAccountById } from '@/actions/customer-portal';
-import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import AccountDetail from './_components/AccountDetail';
 
 export const metadata: Metadata = { title: 'جزئیات حساب' };
@@ -16,9 +15,7 @@ export default async function AccountDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/auth');
-
+  // auth() حذف شد — layout.tsx احراز هویت را انجام داده است.
   const { id } = await params;
   const [account, ledger] = await Promise.all([
     getCustomerAccountById(id),

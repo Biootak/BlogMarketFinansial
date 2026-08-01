@@ -8,7 +8,6 @@
 import { CryptoAssetsPanel } from './_components/CryptoAssetsPanel';
 import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
 import { getCustomerProfile } from '@/actions/customer-portal';
-import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -31,6 +30,11 @@ type WalletEntry = {
   updatedAt: string;
 };
 
+// C2-fix (2026-08-01): balance در DB به‌صورت سنت (BigInt) ذخیره می‌شود و در
+// همه‌جای پلتفرم با mapBalance() (تقسیم بر ۱۰۰) نمایش داده می‌شود. این صفحه
+// قبلاً Number(a.balance) خام می‌خواند → موجودی‌های رمزارز ۱۰۰ برابر نادرست
+// نمایش داده می‌شدند (مثلاً 500000 سنت به‌جای 5000). حالا هم‌خوان با بقیهٔ
+// سطوح، /100 می‌شود.
 async function loadCryptoWallets(customerId: string): Promise<WalletEntry[]> {
   // فقط حساب‌های ارز دیجیتال (BTC, ETH, USDT, …) — شناسایی از طریق واحد ارز
   const CRYPTO_SYMBOLS = new Set(['BTC', 'ETH', 'USDT', 'USDC', 'BNB', 'SOL', 'XRP', 'ADA', 'DOGE', 'TRX', 'TON']);
@@ -44,7 +48,7 @@ async function loadCryptoWallets(customerId: string): Promise<WalletEntry[]> {
     .map((a) => ({
       id: a.id,
       currency: a.currency.toUpperCase(),
-      balance: Number(a.balance),
+      balance: Number(a.balance) / 100,
       type: a.type,
       status: a.status,
       updatedAt: a.updatedAt.toISOString(),
@@ -52,11 +56,8 @@ async function loadCryptoWallets(customerId: string): Promise<WalletEntry[]> {
 }
 
 export default async function CustomerCryptoPage() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect('/auth?callbackUrl=/customer/crypto');
-  }
-
+  // auth() اینجا حذف شد — layout.tsx قبلاً authenticate کرده.
+  // getCustomerProfile() اگر دسترسی نباشد null برمی‌گرداند.
   const profile = await getCustomerProfile();
   if (!profile) {
     redirect('/customer/dashboard');

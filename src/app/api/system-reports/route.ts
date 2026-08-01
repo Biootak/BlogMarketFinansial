@@ -13,7 +13,9 @@ async function ensureReportAccess(): Promise<NextResponse | null> {
       { status: 401 },
     );
   }
-  if (role !== 'ADMIN' && role !== 'OWNER') {
+  // M2-fix: SUPERADMIN هم مثل OWNER است — قبلاً 403 می‌گرفت چون نه ADMIN بود
+  // نه OWNER. ADMIN/OWNER/SUPERADMIN همه مجازند.
+  if (!['ADMIN', 'OWNER', 'SUPERADMIN'].includes(role)) {
     return NextResponse.json(
       { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } },
       { status: 403 },

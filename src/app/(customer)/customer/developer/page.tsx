@@ -7,11 +7,9 @@
  *  - scopes در dialog انتخاب می‌شوند و در DB ذخیره می‌گردند
  */
 import { getMyApiKeyAudits, getMyApiKeys, getMyWebhooks } from '@/actions/developer-portal';
-import { auth } from '@/auth';
 import { WEBHOOK_EVENTS } from '@/lib/developer-portal-constants';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
 import DeveloperPortalClient from './_components/DeveloperPortalClient';
 
 export const metadata: Metadata = {
@@ -53,11 +51,7 @@ type AuditRow = {
 };
 
 export default async function DeveloperPortalPage() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect('/auth?callbackUrl=/customer/developer');
-  }
-
+  // auth() حذف شد — layout.tsx احراز هویت را انجام داده است.
   const [rawKeys, rawWebhooks, rawAudits] = await Promise.all([
     getMyApiKeys(),
     getMyWebhooks(),

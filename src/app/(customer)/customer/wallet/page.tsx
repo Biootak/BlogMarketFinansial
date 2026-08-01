@@ -9,7 +9,6 @@ import {
  * نمایش موجودی، لیست حساب‌ها و تاریخچهٔ تراکنش‌ها
  * دسترسی: CUSTOMER / TEST_CUSTOMER / MERCHANT
  */
-import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -24,9 +23,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function CustomerWalletPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/auth?callbackUrl=/customer/wallet');
-
+  // auth() حذف شد — layout.tsx احراز هویت را انجام داده است.
   const [profile, accounts, recentTxns] = await Promise.all([
     getCustomerProfile(),
     getCustomerAccountsDetail(),

@@ -67,7 +67,9 @@ export const EmailLookupSchema = z.object({ email: emailSchema });
 export const VerifyOtpSchema = z.object({
   email: emailSchema,
   code: otpCodeSchema,
-  intent: z.enum(['register', 'login', 'reverify', 'recover']),
+  // C1-fix: '2fa' برای مرحلهٔ دوم ورود (TOTP Authenticator).
+  // 'service-verify' هم مجاز است (progressive capture).
+  intent: z.enum(['register', 'login', 'reverify', 'recover', '2fa', 'service-verify']),
 });
 
 // 2026-06-24: schema for the resetToken + password submission. We don't

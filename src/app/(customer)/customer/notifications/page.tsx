@@ -2,10 +2,8 @@
  * /customer/notifications — اعلان‌های مشتری
  */
 import { getCustomerNotifications } from '@/actions/customer-portal';
-import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
 import NotificationsContent from './_components/NotificationsContent';
 
 export const metadata: Metadata = {
@@ -16,9 +14,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function CustomerNotificationsPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/auth?callbackUrl=/customer/notifications');
-
+  // auth() حذف شد — layout.tsx احراز هویت را انجام داده است.
   const notifications = await getCustomerNotifications(50);
 
   return (

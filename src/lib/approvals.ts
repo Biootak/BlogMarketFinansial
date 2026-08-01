@@ -70,7 +70,8 @@ const requireStaff = async () => {
   const session = await auth();
   if (!session?.user?.id) return { ok: false as const, reason: 'احراز هویت نشده‌اید' };
   const role = session.user.role ?? '';
-  if (!['OWNER', 'SUPERADMIN', 'ADMIN'].includes(role)) {
+  // SUPPORT-fix: SUPPORT می‌تواند تأییدیه‌ها را ببیند
+  if (!['OWNER', 'SUPERADMIN', 'ADMIN', 'SUPPORT'].includes(role)) {
     return { ok: false as const, reason: 'دسترسی ندارید' };
   }
   return { ok: true as const, userId: session.user.id, role };
@@ -234,7 +235,7 @@ const getCachedSnapshot = safeCache(
     const session = await auth();
     if (!session?.user?.id) return empty;
     const role = session.user.role ?? '';
-    if (!['OWNER', 'SUPERADMIN', 'ADMIN'].includes(role)) return empty;
+    if (!['OWNER', 'SUPERADMIN', 'ADMIN', 'SUPPORT'].includes(role)) return empty;
     return fetchSnapshotRaw(session.user.id, role);
   },
   empty,

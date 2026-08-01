@@ -14,34 +14,25 @@
  */
 
 import { type CustomerRequestDetail, cancelCustomerRequest } from '@/actions/customer-portal';
-import { Button } from '@/components/ui/button';
-import { toast } from '@/components/ui/use-toast';
-import {
-  faDateTimeFull,
-  faNum,
-} from '@/app/(customer)/customer/_lib/customer-formatters';
+import { faDateTimeFull, faNum } from '@/app/(customer)/customer/_lib/customer-formatters';
 import {
   StatusDot,
   StatusPill,
   type StatusVariant,
 } from '@/app/(customer)/customer/_lib/customer-ui';
+import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/use-toast';
 import {
   AlertTriangle,
+  ArrowLeft,
   ArrowLeftRight,
   Building2,
   CheckCircle2,
   Clock,
-  Coins,
-  CreditCard,
   FileText,
-  Gauge,
   Hash,
   Loader2,
-  Lock,
   MessageSquare,
-  Send,
-  ShieldCheck,
-  Wallet,
   XCircle,
   XIcon,
 } from 'lucide-react';
@@ -124,7 +115,9 @@ export default function RequestDetailContent({ detail }: Props) {
         <div className={s.statusBody}>
           <div className={s.statusTopRow}>
             <span className={s.statusLabel}>وضعیت</span>
-            <StatusPill variant={variant}>{STATUS_LABEL[detail.status] ?? detail.status}</StatusPill>
+            <StatusPill variant={variant}>
+              {STATUS_LABEL[detail.status] ?? detail.status}
+            </StatusPill>
           </div>
           <h2 className={s.statusTitle}>{detail.typeLabel}</h2>
           <p className={s.statusDesc}>{STATUS_DESC[detail.status] ?? ''}</p>
@@ -133,9 +126,7 @@ export default function RequestDetailContent({ detail }: Props) {
               <Hash size={11} aria-hidden /> {detail.trackingCode}
             </code>
             {detail.reviewedAt && (
-              <span className={s.statusMeta}>
-                بررسی شده در {faDateTimeFull(detail.reviewedAt)}
-              </span>
+              <span className={s.statusMeta}>بررسی شده در {faDateTimeFull(detail.reviewedAt)}</span>
             )}
           </div>
         </div>
@@ -185,21 +176,9 @@ export default function RequestDetailContent({ detail }: Props) {
           ═════════════════════════════════════════════════════════════════ */}
       <section className={s.infoGrid} aria-label="اطلاعات درخواست">
         <InfoRow icon={FileText} label="نوع درخواست" value={detail.typeLabel} />
-        <InfoRow
-          icon={Building2}
-          label="صرافی مقصد"
-          value={detail.exchange.name}
-        />
-        <InfoRow
-          icon={Clock}
-          label="زمان ثبت"
-          value={faDateTimeFull(detail.createdAt)}
-        />
-        <InfoRow
-          icon={Clock}
-          label="آخرین بروزرسانی"
-          value={faDateTimeFull(detail.updatedAt)}
-        />
+        <InfoRow icon={Building2} label="صرافی مقصد" value={detail.exchange.name} />
+        <InfoRow icon={Clock} label="زمان ثبت" value={faDateTimeFull(detail.createdAt)} />
+        <InfoRow icon={Clock} label="آخرین بروزرسانی" value={faDateTimeFull(detail.updatedAt)} />
       </section>
 
       {/* ═════════════════════════════════════════════════════════════════
@@ -255,9 +234,7 @@ export default function RequestDetailContent({ detail }: Props) {
         <header className={s.sectionHead}>
           <ArrowLeftRight size={12} aria-hidden />
           <h3 className={s.sectionTitle}>تاریخچه</h3>
-          <span className={s.timelineCount}>
-            {faNum(detail.statusLogs.length)} رویداد
-          </span>
+          <span className={s.timelineCount}>{faNum(detail.statusLogs.length)} رویداد</span>
         </header>
 
         <ol className={s.timeline}>
@@ -266,11 +243,7 @@ export default function RequestDetailContent({ detail }: Props) {
             const isFirst = i === 0;
             const isLast = i === detail.statusLogs.length - 1;
             return (
-              <li
-                key={log.id}
-                className={s.timelineItem}
-                data-active={isLast ? 'true' : undefined}
-              >
+              <li key={log.id} className={s.timelineItem} data-active={isLast ? 'true' : undefined}>
                 <span className={s.timelineRail} aria-hidden />
                 <span className={s.timelineNode} data-status={log.toStatus} aria-hidden>
                   <StatusDot variant={v} pulse={isLast} />
@@ -306,6 +279,7 @@ export default function RequestDetailContent({ detail }: Props) {
 
       <div className={s.backRow}>
         <Link href="/customer/requests" className={s.backLink}>
+          <ArrowLeft size={13} aria-hidden />
           بازگشت به لیست درخواست‌ها
         </Link>
       </div>

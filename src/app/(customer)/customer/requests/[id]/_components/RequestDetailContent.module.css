@@ -1,16 +1,25 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   RequestDetailContent — جزئیات درخواست ۲۰۲۶
+   RequestDetailContent — «مرکز رهگیری» (Mission Tracking 2026)
    ---------------------------------------------------------------------------
-   - Status Hero بزرگ با rail اختصاصی
-   - Info grid ۲ ستونه RTL
-   - Timeline با rail رنگی و pulse در آخرین node
-   - Token-only, no hex
+   معماری بصری:
+   1. Status Hero        — بنر تمام‌عرض با rail اختصاصی + ambient glow
+   2. Info Mosaic        — ۲×۲ grid کارت با icon halo
+   3. Payload Vault      — جدول کلید/مقدار با separator
+   4. Timeline Chronicle — timeline با rail عمودی + pulse node
+   5. Note + Resolution  — با tone مجزا برای پاسخ صرافی
+
+   DNA بصری:
+   - Status-based ambient gradient در hero (per status color)
+   - Timeline rail عمودی با node های رنگی + pulse روی آخرین
+   - Info grid با icon cube
+   - Tracking code با monospace brand badge
+   - Token-only (no hex), RTL-first, logical properties
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .root {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-5);
+  gap: var(--ds-space-4);
   inline-size: 100%;
   container-type: inline-size;
 }
@@ -21,118 +30,159 @@
 
 .statusHero {
   position: relative;
+  isolation: isolate;
   display: flex;
   align-items: flex-start;
   gap: var(--ds-space-4);
-  padding: var(--ds-space-5);
+  padding: clamp(1.25rem, 1rem + 1vw, 1.75rem);
   background: var(--ds-surface);
   border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-lg);
+  border-radius: var(--ds-radius-xl);
   overflow: hidden;
+  animation: heroSlideIn 500ms var(--ds-ease-out-expo) both;
 }
 
-.statusHero[data-status='PENDING'] {
-  background: linear-gradient(
-    135deg,
-    var(--ds-surface) 0%,
-    color-mix(in oklch, var(--nova-amber) 6%, var(--ds-surface)) 100%
-  );
+/* ambient noise texture */
+.statusHero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  pointer-events: none;
+  opacity: 0.4;
+  z-index: -1;
 }
 
-.statusHero[data-status='APPROVED'] {
-  background: linear-gradient(
-    135deg,
-    var(--ds-surface) 0%,
-    color-mix(in oklch, var(--nova-up) 6%, var(--ds-surface)) 100%
-  );
+/* status-specific ambient */
+.statusHero[data-status="PENDING"] {
+  background: radial-gradient(
+      ellipse 80% 60% at 0% 0%,
+      color-mix(in oklch, var(--nova-amber) 10%, transparent),
+      transparent 60%
+    ), var(--ds-surface);
+  border-color: color-mix(in oklch, var(--nova-amber) 22%, var(--ds-border-subtle));
 }
 
-.statusHero[data-status='REJECTED'] {
-  background: linear-gradient(
-    135deg,
-    var(--ds-surface) 0%,
-    color-mix(in oklch, var(--nova-down) 6%, var(--ds-surface)) 100%
-  );
+.statusHero[data-status="IN_REVIEW"] {
+  background: radial-gradient(
+      ellipse 80% 60% at 0% 0%,
+      color-mix(in oklch, var(--nova-cyan) 10%, transparent),
+      transparent 60%
+    ), var(--ds-surface);
+  border-color: color-mix(in oklch, var(--nova-cyan) 22%, var(--ds-border-subtle));
 }
 
-.statusHero[data-status='CANCELLED'] {
-  background: linear-gradient(
-    135deg,
-    var(--ds-surface) 0%,
-    color-mix(in oklch, var(--ds-text-muted) 4%, var(--ds-surface)) 100%
-  );
+.statusHero[data-status="APPROVED"] {
+  background: radial-gradient(
+      ellipse 80% 60% at 0% 0%,
+      color-mix(in oklch, var(--nova-up) 10%, transparent),
+      transparent 60%
+    ), var(--ds-surface);
+  border-color: color-mix(in oklch, var(--nova-up) 22%, var(--ds-border-subtle));
 }
 
-.statusHero[data-status='IN_REVIEW'] {
-  background: linear-gradient(
-    135deg,
-    var(--ds-surface) 0%,
-    color-mix(in oklch, var(--nova-cyan) 6%, var(--ds-surface)) 100%
-  );
+.statusHero[data-status="REJECTED"] {
+  background: radial-gradient(
+      ellipse 80% 60% at 0% 0%,
+      color-mix(in oklch, var(--nova-down) 10%, transparent),
+      transparent 60%
+    ), var(--ds-surface);
+  border-color: color-mix(in oklch, var(--nova-down) 22%, var(--ds-border-subtle));
 }
 
+.statusHero[data-status="CANCELLED"] {
+  background: radial-gradient(
+      ellipse 80% 60% at 0% 0%,
+      color-mix(in oklch, var(--ds-text-muted) 6%, transparent),
+      transparent 60%
+    ), var(--ds-surface);
+}
+
+/* side status rail */
 .statusRail {
   position: absolute;
   inset-block: 0;
   inset-inline-start: 0;
   inline-size: 4px;
-  background: var(--status-rail-color, var(--ds-text-muted));
+  background: var(--status-rail-color, var(--ds-border-default));
+  border-start-start-radius: var(--ds-radius-xl);
+  border-end-start-radius: var(--ds-radius-xl);
+  transition: inline-size 200ms var(--ds-ease-out-quart);
 }
 
-.statusHero[data-status='PENDING'] .statusRail {
+.statusHero:hover .statusRail {
+  inline-size: 6px;
+}
+
+.statusHero[data-status="PENDING"] .statusRail {
   --status-rail-color: var(--nova-amber);
 }
-.statusHero[data-status='IN_REVIEW'] .statusRail {
+.statusHero[data-status="IN_REVIEW"] .statusRail {
   --status-rail-color: var(--nova-cyan);
 }
-.statusHero[data-status='APPROVED'] .statusRail {
+.statusHero[data-status="APPROVED"] .statusRail {
   --status-rail-color: var(--nova-up);
 }
-.statusHero[data-status='REJECTED'] .statusRail {
+.statusHero[data-status="REJECTED"] .statusRail {
   --status-rail-color: var(--nova-down);
 }
-.statusHero[data-status='CANCELLED'] .statusRail {
+.statusHero[data-status="CANCELLED"] .statusRail {
   --status-rail-color: var(--ds-text-muted);
 }
 
+/* status icon orb */
 .statusIcon {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: 3rem;
-  block-size: 3rem;
-  border-radius: var(--ds-radius-md);
-  background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
+  inline-size: 3.25rem;
+  block-size: 3.25rem;
+  border-radius: var(--ds-radius-lg);
+  background: color-mix(in oklch, var(--ds-brand-500) 12%, transparent);
   color: var(--ds-brand-600);
   flex-shrink: 0;
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 20%, transparent);
 }
 
-.statusIcon[data-status='PENDING'] {
-  background: color-mix(in oklch, var(--nova-amber) 15%, transparent);
+.statusIcon::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 1px solid var(--status-rail-color, transparent);
+  opacity: 0.3;
+}
+
+.statusIcon[data-status="PENDING"] {
+  background: color-mix(in oklch, var(--nova-amber) 16%, transparent);
   color: var(--nova-amber);
+  border-color: color-mix(in oklch, var(--nova-amber) 25%, transparent);
 }
-
-.statusIcon[data-status='IN_REVIEW'] {
-  background: color-mix(in oklch, var(--nova-cyan) 15%, transparent);
+.statusIcon[data-status="IN_REVIEW"] {
+  background: color-mix(in oklch, var(--nova-cyan) 16%, transparent);
   color: var(--nova-cyan);
+  border-color: color-mix(in oklch, var(--nova-cyan) 25%, transparent);
   animation: spinSlow 4s linear infinite;
 }
-
-.statusIcon[data-status='APPROVED'] {
-  background: color-mix(in oklch, var(--nova-up) 15%, transparent);
+.statusIcon[data-status="APPROVED"] {
+  background: color-mix(in oklch, var(--nova-up) 16%, transparent);
   color: var(--nova-up);
+  border-color: color-mix(in oklch, var(--nova-up) 25%, transparent);
 }
-
-.statusIcon[data-status='REJECTED'] {
-  background: color-mix(in oklch, var(--nova-down) 15%, transparent);
+.statusIcon[data-status="REJECTED"] {
+  background: color-mix(in oklch, var(--nova-down) 16%, transparent);
   color: var(--nova-down);
+  border-color: color-mix(in oklch, var(--nova-down) 25%, transparent);
 }
 
+/* body */
 .statusBody {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.4em;
+  gap: 0.45em;
   min-inline-size: 0;
 }
 
@@ -140,29 +190,32 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5em;
+  flex-wrap: wrap;
 }
 
 .statusLabel {
-  font-size: 0.6875rem;
-  font-weight: 600;
+  font-size: 0.625rem;
+  font-weight: 700;
   color: var(--ds-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.07em;
 }
 
 .statusTitle {
-  font-size: clamp(1.125rem, 0.875rem + 1vw, 1.5rem);
+  font-size: clamp(1.1rem, 0.85rem + 1.1vw, 1.6rem);
   font-weight: 800;
   color: var(--ds-text-primary);
   margin: 0;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
 }
 
 .statusDesc {
   font-size: 0.8125rem;
   color: var(--ds-text-secondary);
   margin: 0;
-  line-height: 1.6;
+  line-height: 1.65;
+  max-inline-size: 60ch;
 }
 
 .statusFoot {
@@ -170,7 +223,7 @@
   align-items: center;
   gap: 0.8em;
   flex-wrap: wrap;
-  margin-block-start: 0.3em;
+  margin-block-start: 0.25em;
   font-size: 0.6875rem;
   color: var(--ds-text-muted);
 }
@@ -179,15 +232,16 @@
   display: inline-flex;
   align-items: center;
   gap: 0.3em;
-  font-family: var(--font-mono, ui-monospace, monospace);
+  font-family: var(--ds-font-mono, ui-monospace, monospace);
   font-weight: 700;
   font-size: 0.75rem;
   color: var(--ds-brand-600);
-  background: color-mix(in oklch, var(--ds-brand-500) 8%, transparent);
-  padding-block: 0.2em;
-  padding-inline: 0.5em;
+  background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
+  padding-block: 0.25em;
+  padding-inline: 0.6em;
   border-radius: var(--ds-radius-sm);
-  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 20%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 22%, transparent);
+  letter-spacing: 0.02em;
 }
 
 .statusMeta {
@@ -197,7 +251,7 @@
 
 .statusActions {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5em;
   flex-shrink: 0;
 }
@@ -207,21 +261,23 @@
   align-items: center;
   gap: 0.3em;
   color: var(--nova-down);
-  border-color: color-mix(in oklch, var(--nova-down) 30%, var(--ds-border-subtle));
+  border-color: color-mix(in oklch, var(--nova-down) 32%, var(--ds-border-subtle));
+  transition: background 180ms var(--ds-ease-out-quart), border-color 180ms var(--ds-ease-out-quart);
 }
 
 .cancelBtn:hover {
   background: color-mix(in oklch, var(--nova-down) 8%, transparent);
+  border-color: color-mix(in oklch, var(--nova-down) 50%, transparent);
 }
 
 .confirmRow {
   display: inline-flex;
   align-items: center;
   gap: 0.5em;
-  padding-block: 0.3em;
-  padding-inline: 0.5em;
-  background: color-mix(in oklch, var(--nova-down) 6%, transparent);
-  border: 1px solid color-mix(in oklch, var(--nova-down) 25%, transparent);
+  padding-block: 0.35em;
+  padding-inline: 0.6em;
+  background: color-mix(in oklch, var(--nova-down) 7%, transparent);
+  border: 1px solid color-mix(in oklch, var(--nova-down) 28%, transparent);
   border-radius: var(--ds-radius-sm);
   font-size: 0.75rem;
   color: var(--nova-down);
@@ -232,16 +288,8 @@
   animation: spin 700ms linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes spinSlow {
-  to { transform: rotate(360deg); }
-}
-
 /* ─────────────────────────────────────────────────────────────────────────
-   §2. INFO GRID
+   §2. INFO MOSAIC
    ───────────────────────────────────────────────────────────────────────── */
 
 .infoGrid {
@@ -251,12 +299,13 @@
   padding: var(--ds-space-4);
   background: var(--ds-surface);
   border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-md);
+  border-radius: var(--ds-radius-lg);
 }
 
 @container (min-width: 560px) {
   .infoGrid {
     grid-template-columns: repeat(2, 1fr);
+    gap: var(--ds-space-2);
   }
 }
 
@@ -264,19 +313,26 @@
   display: flex;
   align-items: center;
   gap: var(--ds-space-3);
-  padding-block: 0.4em;
+  padding: 0.6em var(--ds-space-2);
+  border-radius: var(--ds-radius-sm);
+  transition: background 150ms var(--ds-ease-out-quart);
+}
+
+.infoRow:hover {
+  background: color-mix(in oklch, var(--ds-brand-500) 4%, transparent);
 }
 
 .infoIcon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: 1.7rem;
-  block-size: 1.7rem;
+  inline-size: 1.85rem;
+  block-size: 1.85rem;
   border-radius: var(--ds-radius-sm);
-  background: color-mix(in oklch, var(--ds-brand-500) 8%, transparent);
+  background: color-mix(in oklch, var(--ds-brand-500) 9%, transparent);
   color: var(--ds-brand-600);
   flex-shrink: 0;
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 15%, transparent);
 }
 
 .infoText {
@@ -289,15 +345,18 @@
 .infoLabel {
   font-size: 0.625rem;
   color: var(--ds-text-muted);
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
 }
 
 .infoValue {
   font-size: 0.8125rem;
   color: var(--ds-text-primary);
   font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -311,16 +370,17 @@
   padding: var(--ds-space-4) var(--ds-space-5);
   background: var(--ds-surface);
   border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-md);
+  border-radius: var(--ds-radius-lg);
 }
 
-.section[data-tone='resolution'] {
-  border-color: color-mix(in oklch, var(--ds-brand-500) 25%, var(--ds-border-subtle));
-  background: linear-gradient(
-    135deg,
-    var(--ds-surface) 0%,
-    color-mix(in oklch, var(--ds-brand-500) 4%, var(--ds-surface)) 100%
-  );
+/* resolution has brand accent */
+.section[data-tone="resolution"] {
+  border-color: color-mix(in oklch, var(--ds-brand-500) 28%, var(--ds-border-subtle));
+  background: radial-gradient(
+      ellipse 80% 60% at 100% 0%,
+      color-mix(in oklch, var(--ds-brand-500) 6%, transparent),
+      transparent 60%
+    ), var(--ds-surface);
 }
 
 .sectionHead {
@@ -336,14 +396,20 @@
   color: var(--ds-text-primary);
   margin: 0;
   flex: 1;
+  letter-spacing: 0.01em;
 }
 
+/* payload key/value table */
 .payloadList {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.4em;
+  gap: 0;
   padding: 0;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+  overflow: hidden;
 }
 
 .payloadRow {
@@ -351,12 +417,18 @@
   grid-template-columns: 1fr 2fr;
   align-items: center;
   gap: var(--ds-space-3);
-  padding-block: 0.4em;
-  border-block-end: 1px dashed var(--ds-border-subtle);
+  padding-block: 0.6em;
+  padding-inline: var(--ds-space-4);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  transition: background 150ms var(--ds-ease-out-quart);
 }
 
 .payloadRow:last-child {
   border-block-end: none;
+}
+
+.payloadRow:hover {
+  background: color-mix(in oklch, var(--ds-brand-500) 3%, transparent);
 }
 
 .payloadKey {
@@ -372,6 +444,7 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   margin: 0;
+  text-align: end;
 }
 
 .noteText {
@@ -379,7 +452,7 @@
   font-size: 0.875rem;
   line-height: 1.7;
   color: var(--ds-text-secondary);
-  padding-block: 0.4em;
+  padding-block: 0.25em;
 }
 
 .resolutionText {
@@ -388,11 +461,11 @@
   line-height: 1.7;
   color: var(--ds-text-primary);
   font-weight: 500;
-  padding-block: 0.4em;
+  padding-block: 0.25em;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   §4. TIMELINE
+   §4. TIMELINE CHRONICLE — rail عمودی + node pulse
    ───────────────────────────────────────────────────────────────────────── */
 
 .timelineSection {
@@ -402,17 +475,20 @@
   padding: var(--ds-space-4) var(--ds-space-5);
   background: var(--ds-surface);
   border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-md);
+  border-radius: var(--ds-radius-lg);
 }
 
 .timelineCount {
+  display: inline-flex;
+  align-items: center;
   font-size: 0.6875rem;
-  font-weight: 600;
-  color: var(--ds-text-muted);
-  background: color-mix(in oklch, var(--ds-brand-500) 8%, transparent);
+  font-weight: 700;
+  color: var(--ds-brand-600);
+  background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
   padding-block: 0.2em;
-  padding-inline: 0.5em;
+  padding-inline: 0.6em;
   border-radius: 999px;
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 18%, transparent);
 }
 
 .timeline {
@@ -421,42 +497,49 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0;
 }
 
 .timelineItem {
   position: relative;
   display: flex;
   gap: var(--ds-space-3);
-  padding-block: 0.7em;
-  min-block-size: 50px;
+  padding-block: 0.8em;
+  min-block-size: 52px;
 }
 
+/* vertical connecting rail */
 .timelineItem:not(:last-child) .timelineRail {
-  inset-block-end: -0.7em;
+  inset-block-end: -0.8em;
 }
 
 .timelineRail {
   position: absolute;
-  inset-block-start: 1.7em;
-  inset-inline-start: 0.5em;
-  block-size: calc(100% - 0.5em);
-  inline-size: 2px;
-  background: var(--ds-border);
-  transform: translateX(50%);
+  inset-block-start: 1.85em;
+  inset-inline-start: 0.6em;
+  block-size: calc(100% - 0.6em);
+  inline-size: 1.5px;
+  background: linear-gradient(to bottom, var(--ds-border-default) 0%, var(--ds-border-subtle) 100%);
 }
 
+/* node dot */
 .timelineNode {
   position: relative;
   z-index: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: 1.4rem;
-  block-size: 1.4rem;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
   flex-shrink: 0;
   background: var(--ds-surface);
   border-radius: 50%;
+  border: 2px solid var(--ds-border-default);
+  transition: border-color 200ms var(--ds-ease-out-quart);
+}
+
+.timelineItem[data-active="true"] .timelineNode {
+  border-color: var(--ds-brand-500);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 15%, transparent);
 }
 
 .timelineBody {
@@ -465,6 +548,7 @@
   flex-direction: column;
   gap: 0.3em;
   min-inline-size: 0;
+  padding-block-start: 0.1em;
 }
 
 .timelineTopRow {
@@ -477,6 +561,7 @@
 .timelineFrom {
   font-size: 0.6875rem;
   color: var(--ds-text-muted);
+  font-style: italic;
 }
 
 .timelineNote {
@@ -484,13 +569,21 @@
   font-size: 0.8125rem;
   color: var(--ds-text-secondary);
   line-height: 1.5;
+  padding-block: 0.2em;
+  padding-inline: 0.75em;
+  border-inline-start: 2px solid var(--ds-border-default);
 }
 
 .timelineDate {
   font-size: 0.6875rem;
   color: var(--ds-text-muted);
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   §7. BACK ROW
+   ───────────────────────────────────────────────────────────────────────── */
 
 .backRow {
   display: flex;
@@ -501,26 +594,62 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4em;
-  padding-block: 0.5em;
-  padding-inline: 0.9em;
+  padding-block: 0.55em;
+  padding-inline: 1em;
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--ds-text-secondary);
   background: var(--ds-surface);
   border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-sm);
+  border-radius: var(--ds-radius-md);
   text-decoration: none;
-  transition: border-color 200ms var(--ds-ease-out-quart);
+  transition: border-color 180ms var(--ds-ease-out-quart), color 180ms var(--ds-ease-out-quart),
+    transform 180ms var(--ds-ease-out-quart);
 }
 
 .backLink:hover {
   border-color: var(--ds-brand-500);
   color: var(--ds-brand-600);
+  transform: translateX(2px);
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   Keyframes
+   ───────────────────────────────────────────────────────────────────────── */
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinSlow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes heroSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Reduced motion
+   ───────────────────────────────────────────────────────────────────────── */
+
 @media (prefers-reduced-motion: reduce) {
+  .statusHero,
   .spinner,
-  .statusIcon[data-status='IN_REVIEW'] {
+  .statusIcon[data-status="IN_REVIEW"],
+  .backLink {
     animation: none;
+    transition: none;
   }
 }

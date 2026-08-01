@@ -8,10 +8,8 @@
  *  - درخواست‌های PENDING/IN_REVIEW را لغو می‌کند
  */
 import { getCustomerRequestStats, getCustomerRequests } from '@/actions/customer-portal';
-import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
 import RequestsContent from './_components/RequestsContent';
 
 export const metadata: Metadata = {
@@ -22,9 +20,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function CustomerRequestsPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/auth?callbackUrl=/customer/requests');
-
+  // auth() حذف شد — layout.tsx احراز هویت را انجام داده است.
   // موازی: لیست + آمار (هر دو از DB مستقل‌اند)
   const [rows, stats] = await Promise.all([
     getCustomerRequests({ limit: 50 }),
@@ -36,7 +32,10 @@ export default async function CustomerRequestsPage() {
       <PageHeader
         title="درخواست‌های من"
         description="همهٔ درخواست‌هایی که به صرافی ارسال کرده‌اید. هر کدام کد پیگیری یکتا دارد."
-        breadcrumb={[{ label: 'پورتال مشتری', href: '/customer/dashboard' }, { label: 'درخواست‌های من' }]}
+        breadcrumb={[
+          { label: 'پورتال مشتری', href: '/customer/dashboard' },
+          { label: 'درخواست‌های من' },
+        ]}
         icon="clipboard-list"
         accent="violet"
       />

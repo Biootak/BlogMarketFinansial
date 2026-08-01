@@ -1,5 +1,14 @@
-import { permanentRedirect } from 'next/navigation';
+import { redirect } from 'next/navigation';
 
-export default function CreditRatesCatchAll() {
-  permanentRedirect('/credit-rates');
+type Params = Promise<{ bank: string }>;
+
+/**
+ * /credit-rates/[bank] — مسیر SEO قدیمی.
+ *
+ * H7-fix: قبلاً دو-hop به /credit-rates → /archive می‌رفت. حالا به صفحهٔ واقعی
+ * نرخ‌های اعتباری با اشاره به بانک می‌رود.
+ */
+export default async function CreditRatesBankPage({ params }: { params: Params }) {
+  const { bank } = await params;
+  redirect(`/credit-rates?bank=${encodeURIComponent(bank)}`);
 }

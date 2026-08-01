@@ -2,7 +2,6 @@
  * /customer/transactions — تاریخچه تراکنش‌های مشتری
  */
 import { getCustomerTransactions } from '@/actions/customer-portal';
-import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -18,28 +17,29 @@ export const dynamic = 'force-dynamic';
 export default async function CustomerTransactionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; kind?: string; status?: string }>;
+  searchParams: Promise<{ page?: string; kind?: string; status?: string; accountId?: string }>;
 }) {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/auth?callbackUrl=/customer/transactions');
-
+  // auth() حذف شد — layout.tsx احراز هویت را انجام داده است.
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page) || 1);
   const kind = sp.kind ?? '';
   const status = sp.status ?? '';
+  // M7-fix: از تاریخچهٔ دارایی رمزارز ?accountId= می‌آید — فقط آن حساب را نشان بده
+  const accountId = sp.accountId ?? '';
 
   const result = await getCustomerTransactions({
     page,
     limit: 20,
     kind: kind || undefined,
     status: status || undefined,
+    accountId: accountId || undefined,
   });
 
   return (
     <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
       <PageHeader
         title="تراکنش‌ها"
-        description={`مجموع ${new Intl.NumberFormat('fa-IR').format(result.total)} تراکنش`}
+        description={`مجموع ${new Intl.NumberFormat('fa-IR').format(result.total)} تراکنش${accountId ? ' — فیلتر حساب' : ''}`}
         breadcrumb={[{ label: 'پورتال مشتری' }, { label: 'تراکنش‌ها' }]}
         icon="arrow-left-right"
       />

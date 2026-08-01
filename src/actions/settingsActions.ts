@@ -452,10 +452,6 @@ export async function getSecuritySettings(): Promise<{
     const authCheck = await requireSuperAdmin();
     if (!authCheck.success) return authFailureToActionResult(authCheck);
 
-    // مقادیر امنیتی در SystemSettings.siteUrl? نه — در یک record جدا می‌رود.
-    // فعلاً آن‌ها را در SystemSettings (تنها رکورد) به صورت meta ذخیره می‌کنیم.
-    // برای backward-compat، اگر رکورد نبود، default برمی‌گردد.
-    const settings = await prisma.systemSettings.findFirst();
     const fallback = {
       sessionTimeoutMin: 60,
       ipAllowlist: '',
@@ -465,11 +461,43 @@ export async function getSecuritySettings(): Promise<{
       auditRetentionDays: 180,
     };
 
-    if (!settings) return { success: true, data: fallback };
+    // m5-fix (2026-08-01): قبلاً این‌جا فقط fallback برمی‌گشت و هیچ ذخیره‌ای
+    // نبود (no-op). حالا آخرین AuditLog با action SECURITY_SETTINGS_UPDATED را
+    // می‌خوانیم — updateSecuritySettings آن را در meta ذخیره می‌کند. تا وقتی
+    // migration ستون‌های security به SystemSettings اضافه نشده، AuditLog
+    // منبع حقیقت تنظیمات امنیتی است.
+    const last = await prisma.auditLog.findFirst({
+      where: { action: 'SECURITY_SETTINGS_UPDATED' },
+      orderBy: { createdAt: 'desc' },
+      select: { meta: true },
+    });
 
-    // در حال حاضر، SystemSettings ستون‌های security ندارد.
-    // اگر در آینده اضافه شد، این‌جا map می‌کنیم.
-    return { success: true, data: fallback };
+    const meta = (last?.meta ?? {}) as Record<string, unknown>;
+    return {
+      success: true,
+      data: {
+        sessionTimeoutMin:
+          typeof meta.sessionTimeoutMin === 'number' ? meta.sessionTimeoutMin : fallback.sessionTimeoutMin,
+        ipAllowlist:
+          typeof meta.ipAllowlist === 'string' ? meta.ipAllowlist : fallback.ipAllowlist,
+        force2faForAdmins:
+          typeof meta.force2faForAdmins === 'boolean'
+            ? meta.force2faForAdmins
+            : fallback.force2faForAdmins,
+        requireEmailForNewIp:
+          typeof meta.requireEmailForNewIp === 'boolean'
+            ? meta.requireEmailForNewIp
+            : fallback.requireEmailForNewIp,
+        maxConcurrentSessions:
+          typeof meta.maxConcurrentSessions === 'number'
+            ? meta.maxConcurrentSessions
+            : fallback.maxConcurrentSessions,
+        auditRetentionDays:
+          typeof meta.auditRetentionDays === 'number'
+            ? meta.auditRetentionDays
+            : fallback.auditRetentionDays,
+      },
+    };
   } catch (_error) {
     return { success: false, error: 'خطا در دریافت تنظیمات امنیتی' };
   }

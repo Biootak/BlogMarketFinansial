@@ -49,7 +49,10 @@ export async function requireExchangeAccess(
   }
 
   const whereRole = writeAccess
-    ? { role: { in: ['OWNER', 'MANAGER'] as ('OWNER' | 'MANAGER')[] } }
+    // 2026-08-01 (STAFF-write): مطابق ماتریس مجوزها (staff-permissions.ts)، STAFF هم
+    // transactions.write و customers.write دارد. قبلاً فقط OWNER/MANAGER می‌نوشتند
+    // و UI به STAFF دکمه‌های مرده نشان می‌داد. حالا STAFF هم اجازهٔ نوشتن دارد.
+    ? { role: { in: ['OWNER', 'MANAGER', 'STAFF'] as ('OWNER' | 'MANAGER' | 'STAFF')[] } }
     : {};
 
   const staff = await prisma.exchangeStaff.findFirst({
@@ -65,7 +68,7 @@ export async function requireExchangeAccess(
         status: 403,
         code: 'FORBIDDEN',
         message: writeAccess
-          ? 'فقط مدیران صرافی می‌توانند این عملیات را انجام دهند'
+          ? 'شما دسترسی لازم برای انجام این عملیات را ندارید'
           : 'دسترسی به این صرافی ندارید',
       },
     };

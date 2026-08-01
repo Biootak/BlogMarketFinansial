@@ -51,7 +51,13 @@ export default async function CustomerLayout({ children }: { children: React.Rea
     if (isPlatformAdmin) {
       redirect('/dashboard');
     }
-    redirect('/auth?callbackUrl=/customer/dashboard');
+    // H3-fix (2026-08-01): نقش USER (کاربر تازه‌ثبت‌نام) که هنوز Customer
+    // record ندارد — قبلاً به /auth redirect می‌شد که برای کاربر لاگین‌شده
+    // گیج‌کننده بود (layout/auth → middleware bounce → حلقه). حالا به فرم
+    // ثبت درخواست سرویس عمومی می‌رویم تا کاربر بتواند همان‌جا سفارش دهد
+    // بدون نیاز به پورتال مشتری. اگر از مبدل ارز آمده باشد (?action=exchange)
+    // همان #contact مقصد است.
+    redirect('/money-transfer#contact');
   }
 
   // برای ادمین: بررسی کن آیا explicit یک مشتری خاص را انتخاب کرده

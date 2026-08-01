@@ -9,10 +9,9 @@
  *  - Resolution: پاسخ صرافی (اگر بسته شده)
  */
 import { getCustomerRequestById } from '@/actions/customer-portal';
-import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import RequestDetailContent from './_components/RequestDetailContent';
 
 export const dynamic = 'force-dynamic';
@@ -26,10 +25,8 @@ export default async function CustomerRequestDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  // auth() حذف شد — layout.tsx احراز هویت را انجام داده است.
   const { id } = await params;
-  const session = await auth();
-  if (!session?.user?.id) redirect('/auth?callbackUrl=/customer/requests');
-
   const detail = await getCustomerRequestById(id);
   if (!detail) notFound();
 

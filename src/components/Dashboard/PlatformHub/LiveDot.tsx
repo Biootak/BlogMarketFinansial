@@ -36,7 +36,7 @@ export function LiveDot({
       {label ? (
         <span className={s.liveDotLabel}>{label}</span>
       ) : (
-        <span className="sr-only">زنده</span>
+        <span className={s.srOnly}>زنده</span>
       )}
     </span>
   );

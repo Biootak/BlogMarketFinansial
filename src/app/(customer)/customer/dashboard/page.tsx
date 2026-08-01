@@ -4,7 +4,6 @@
  * نمایش موجودی حساب‌ها، آخرین تراکنش‌ها و وضعیت KYC
  */
 import { getCustomerDashboardData } from '@/actions/customer-portal';
-import { auth } from '@/auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import CustomerDashboardContent from './_components/CustomerDashboardContent';
@@ -17,9 +16,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function CustomerDashboardPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/auth?callbackUrl=/customer/dashboard');
-
+  // auth() حذف شد — layout.tsx احراز هویت را انجام داده است.
   const data = await getCustomerDashboardData();
   if (!data) redirect('/auth?callbackUrl=/customer/dashboard');
 

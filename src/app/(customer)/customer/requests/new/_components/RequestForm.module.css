@@ -1,62 +1,95 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   RequestForm — فرم درخواست یکپارچه
+   RequestForm — «پنل سفارشات» (Mission Brief 2026)
    ---------------------------------------------------------------------------
-   - استفاده از tokens پروژه (no hex)
-   - RTL-safe با logical properties
-   - Type cards grid: انتخاب سریع نوع درخواست با visual feedback
-   - Smooth focus + reduced-motion support
+   معماری بصری:
+   1. Form shell         — محفظه اصلی با ambient background
+   2. Type Card Grid     — ۵ کارت تعاملی (icon + label + desc)
+   3. Dynamic sections   — فیلدهای داینامیک بر اساس نوع انتخاب
+   4. Submit row         — دکمه ارسال با loading state
+
+   DNA بصری:
+   - Type cards با icon halo + active glow border
+   - Card hover: subtle lift + icon scale
+   - Active state: accent border + icon fill
+   - Input focus ring با brand glow
+   - Submit button با pill shape + shadow
+   - Token-only, no hex
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-6);
+  gap: var(--ds-space-5);
   inline-size: 100%;
-  max-inline-size: 720px;
+  max-inline-size: 760px;
   margin-inline: auto;
-  padding: clamp(1.25rem, 1rem + 1.5vw, 2rem);
-  background: var(--ds-surface);
-  border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-md);
+  container-type: inline-size;
 }
 
+/* select */
 .select {
   inline-size: 100%;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   Type Cards (visual fast-pick)
+   Type Cards — انتخاب سریع نوع درخواست
    ───────────────────────────────────────────────────────────────────────── */
+
 .typeCards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: var(--ds-space-2);
-  margin-block-start: var(--ds-space-1);
+  margin-block-start: var(--ds-space-2);
+}
+
+@container (min-width: 560px) {
+  .typeCards {
+    grid-template-columns: repeat(5, 1fr);
+  }
 }
 
 .typeCard {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 0.4em;
-  padding: var(--ds-space-3);
+  align-items: center;
+  gap: 0.5em;
+  padding: var(--ds-space-3) var(--ds-space-2);
   border: 1.5px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-sm);
+  border-radius: var(--ds-radius-lg);
   background: var(--ds-surface);
   cursor: pointer;
-  text-align: start;
+  text-align: center;
   font-family: inherit;
   color: inherit;
-  transition:
-    border-color 200ms var(--ds-ease-out-quart),
-    background 200ms var(--ds-ease-out-quart),
-    transform 150ms var(--ds-ease-out-quart);
+  transition: border-color 200ms var(--ds-ease-out-quart), background 200ms var(--ds-ease-out-quart),
+    transform 180ms var(--ds-ease-spring), box-shadow 200ms var(--ds-ease-out-quart);
+  position: relative;
+  overflow: hidden;
+}
+
+/* shimmer on hover */
+.typeCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 0%,
+    color-mix(in oklch, var(--ds-brand-500) 8%, transparent) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 250ms var(--ds-ease-out-quart);
+  pointer-events: none;
+}
+
+.typeCard:hover::before {
+  opacity: 1;
 }
 
 .typeCard:hover {
-  border-color: color-mix(in oklch, var(--ds-brand-500) 40%, var(--ds-border-subtle));
-  background: color-mix(in oklch, var(--ds-brand-500) 4%, var(--ds-surface));
-  transform: translateY(-1px);
+  border-color: color-mix(in oklch, var(--ds-brand-500) 45%, var(--ds-border-subtle));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px -6px color-mix(in oklch, var(--ds-brand-500) 25%, transparent);
 }
 
 .typeCard:focus-visible {
@@ -64,42 +97,59 @@
   outline-offset: 2px;
 }
 
-.typeCard[data-active='true'] {
+.typeCard[data-active="true"] {
   border-color: var(--ds-brand-500);
-  background: color-mix(in oklch, var(--ds-brand-500) 8%, var(--ds-surface));
+  background: color-mix(in oklch, var(--ds-brand-500) 7%, var(--ds-surface));
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--ds-brand-500) 20%, transparent), 0 4px 16px -6px
+    color-mix(in oklch, var(--ds-brand-500) 30%, transparent);
 }
 
+/* icon container */
 .typeCardIcon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: 1.75rem;
-  block-size: 1.75rem;
-  border-radius: var(--ds-radius-sm);
-  background: color-mix(in oklch, var(--ds-brand-500) 12%, transparent);
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border-radius: var(--ds-radius-md);
+  background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
   color: var(--ds-brand-600);
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 15%, transparent);
+  transition: background 200ms var(--ds-ease-out-quart), color 200ms var(--ds-ease-out-quart),
+    transform 200ms var(--ds-ease-spring);
 }
 
-.typeCard[data-active='true'] .typeCardIcon {
+.typeCard:hover .typeCardIcon {
+  transform: scale(1.08);
+}
+
+.typeCard[data-active="true"] .typeCardIcon {
   background: var(--ds-brand-500);
   color: var(--ds-text-inverse);
+  border-color: transparent;
 }
 
+/* label */
 .typeCardLabel {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   color: var(--ds-text-primary);
   line-height: 1.3;
 }
 
+.typeCard[data-active="true"] .typeCardLabel {
+  color: var(--ds-brand-600);
+}
+
 /* ─────────────────────────────────────────────────────────────────────────
    Select option (richer items)
    ───────────────────────────────────────────────────────────────────────── */
+
 .option {
   display: flex;
   flex-direction: column;
   gap: 0.15em;
-  padding-block: 0.1em;
+  padding-block: 0.15em;
 }
 
 .optionLabel {
@@ -116,6 +166,7 @@
 /* ─────────────────────────────────────────────────────────────────────────
    Grid (2 columns on desktop)
    ───────────────────────────────────────────────────────────────────────── */
+
 .grid2 {
   display: grid;
   grid-template-columns: 1fr;
@@ -131,15 +182,22 @@
 /* ─────────────────────────────────────────────────────────────────────────
    Error / Submit
    ───────────────────────────────────────────────────────────────────────── */
+
 .errorBox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6em;
   padding: var(--ds-space-3) var(--ds-space-4);
-  background: color-mix(in oklch, var(--nova-down) 12%, var(--ds-surface));
+  background: color-mix(in oklch, var(--nova-down) 10%, var(--ds-surface));
   color: var(--nova-down);
-  border: 1px solid color-mix(in oklch, var(--nova-down) 30%, transparent);
-  border-radius: var(--ds-radius-sm);
+  border: 1px solid color-mix(in oklch, var(--nova-down) 28%, transparent);
+  border-radius: var(--ds-radius-md);
   font-size: 0.8125rem;
   font-weight: 600;
-  animation: shake 300ms ease both;
+  line-height: 1.5;
+  animation: shake 320ms ease both;
+  border-inline-start-width: 3px;
+  border-inline-start-color: var(--nova-down);
 }
 
 .actions {
@@ -153,31 +211,40 @@
 .submit {
   display: inline-flex;
   align-items: center;
-  gap: 0.4em;
-  padding-block: 0.6em;
-  padding-inline: 1.2em;
+  gap: 0.45em;
+  padding-block: 0.65em;
+  padding-inline: 1.4em;
   background: var(--ds-brand-500);
   color: var(--ds-text-inverse);
   font-weight: 700;
+  font-size: 0.875rem;
   border-radius: 999px;
   border: 0;
   cursor: pointer;
-  transition: background 200ms var(--ds-ease-out-quart), transform 200ms var(--ds-ease-out-quart);
+  box-shadow: 0 2px 10px -3px color-mix(in oklch, var(--ds-brand-500) 40%, transparent);
+  transition: background 200ms var(--ds-ease-out-quart), transform 200ms var(--ds-ease-out-quart),
+    box-shadow 200ms var(--ds-ease-out-quart);
 }
 
 .submit:hover:not(:disabled) {
   background: var(--ds-brand-600);
   transform: translateY(-1px);
+  box-shadow: 0 4px 16px -4px color-mix(in oklch, var(--ds-brand-500) 50%, transparent);
 }
 
 .submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .spinner {
   animation: spin 700ms linear infinite;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Keyframes
+   ───────────────────────────────────────────────────────────────────────── */
 
 @keyframes spin {
   to {
@@ -190,16 +257,24 @@
   100% {
     transform: translateX(0);
   }
-  25% {
-    transform: translateX(-4px);
+  20% {
+    transform: translateX(-5px);
   }
-  75% {
-    transform: translateX(4px);
+  60% {
+    transform: translateX(5px);
+  }
+  80% {
+    transform: translateX(-3px);
   }
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   Reduced motion
+   ───────────────────────────────────────────────────────────────────────── */
+
 @media (prefers-reduced-motion: reduce) {
   .typeCard,
+  .typeCardIcon,
   .submit,
   .errorBox,
   .spinner {

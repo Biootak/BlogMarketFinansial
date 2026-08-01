@@ -2,10 +2,9 @@
  * /customer/transactions/[id] — جزئیات یک تراکنش
  */
 import { getCustomerTransactionById } from '@/actions/customer-portal';
-import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import TransactionDetail from './_components/TransactionDetail';
 
 export const metadata: Metadata = { title: 'جزئیات تراکنش' };
@@ -16,9 +15,7 @@ export default async function TransactionDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/auth');
-
+  // auth() حذف شد — layout.tsx احراز هویت را انجام داده است.
   const { id } = await params;
   const txn = await getCustomerTransactionById(id);
   if (!txn) notFound();

@@ -181,6 +181,31 @@ const CRYPTO_CURRENCIES = [
   { value: 'OTHER', code: '···', label: 'سایر کوین', symbol: '¤' },
 ];
 
+// H1-fix: هنجارسازی عنوان فارسی/لاتین ارز از پارامتر query مگامنو.
+// عنوان آیتم مگامنو می‌تواند «دلار آمریکا»، «یورو» یا کد لاتین باشد.
+function normalizeCurrency(raw: string): string {
+  const t = raw.trim();
+  if (!t) return '';
+  const up = t.toUpperCase();
+  // کد استاندارد ۳ حرفی
+  if (/^[A-Z]{3,5}$/.test(up)) return up;
+  // نقشه عنوان فارسی → کد
+  const faMap: Record<string, string> = {
+    'دلار': 'USD', 'دلار آمریکا': 'USD', 'دلار امریکا': 'USD',
+    'یورو': 'EUR', 'پوند': 'GBP', 'درهم': 'AED', 'لیر': 'TRY',
+    'فرانک': 'CHF', 'افغانی': 'AFN', 'ریال': 'IRR', 'ریال ایران': 'IRR',
+    'روپیه': 'PKR', 'ین': 'JPY', 'یوان': 'CNY',
+  };
+  const faHit = Object.entries(faMap).find(([k]) => t.includes(k));
+  if (faHit) return faHit[1];
+  return up;
+}
+
+function isCryptoCode(code?: string | null): boolean {
+  if (!code) return false;
+  return /^(USDT|BTC|ETH|BNB|TRX|TON|USDC|SOL|XRP|ADA|DOGE)$/i.test(code.toUpperCase());
+}
+
 const DIGITAL_PAYMENT_PLATFORMS = [
   { value: 'paypal', label: 'PayPal' },
   { value: 'skrill', label: 'Skrill' },
@@ -337,19 +362,35 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
     // pre-fill از HeroConverter
     try {
       const raw = sessionStorage.getItem(CONVERTER_PREFILL_KEY);
-      if (!raw) return;
-      sessionStorage.removeItem(CONVERTER_PREFILL_KEY);
-      const prefill = JSON.parse(raw) as ConverterPrefill;
+      if (raw) sessionStorage.removeItem(CONVERTER_PREFILL_KEY);
+      const prefill = raw ? (JSON.parse(raw) as ConverterPrefill) : null;
 
-      let service: ServiceTypeKey = 'CURRENCY_BUY';
-      if (prefill.category === 'crypto') service = 'CRYPTO_BUY';
-      else if (prefill.category === 'afghan') service = 'INTERNATIONAL_TRANSFER';
+      // H1-fix (2026-08-01): مگامنوی «بازار» لینک
+      // /money-transfer?currency=X&type=INTERNATIONAL_TRANSFER#contact می‌سازد.
+      // هیچ کامپوننتی این پارامترها را نمی‌خواند — prefill از مگامنو گم می‌شد.
+      // حالا هر دو منبع (sessionStorage + query params) با اولویت sessionStorage
+      // خوانده می‌شوند تا کلیک روی نرخ مگامنو به فرم پیش‌پر با ارز درست برسد.
+      const urlCurr = new URLSearchParams(window.location.search).get('currency');
+      const urlType = new URLSearchParams(window.location.search).get('type');
 
-      const targetCode = prefill.toCode === 'IRT' ? prefill.fromCode : prefill.toCode;
-      const isCrypto = prefill.category === 'crypto';
+      const toCode = prefill?.toCode;
+      const isCryptoPrefill = prefill?.category === 'crypto';
+      const targetCode =
+        toCode === 'IRT' ? prefill?.fromCode : toCode ?? (urlCurr ? normalizeCurrency(urlCurr) : null);
+      const isCrypto = isCryptoPrefill || isCryptoCode(targetCode);
       const currList = isCrypto ? CRYPTO_CURRENCIES : FIAT_CURRENCIES;
-      const matched = currList.find((c) => c.value.toUpperCase() === targetCode.toUpperCase());
+      const matched = currList.find((c) => c.value.toUpperCase() === (targetCode ?? '').toUpperCase());
       const currencyVal = matched?.value ?? (isCrypto ? 'USDT' : 'USD');
+
+      // از query param type (مگامنو) → service؛ وگرنه از prefill category
+      let service: ServiceTypeKey = 'CURRENCY_BUY';
+      if (urlType && SERVICE_OPTIONS.some((o) => o.key === urlType)) {
+        service = urlType as ServiceTypeKey;
+      } else if (prefill?.category === 'crypto') {
+        service = 'CRYPTO_BUY';
+      } else if (prefill?.category === 'afghan') {
+        service = 'INTERNATIONAL_TRANSFER';
+      }
 
       const faMap: Record<string, string> = {
         '۰': '0',
@@ -363,7 +404,7 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
         '۸': '8',
         '۹': '9',
       };
-      const latinAmount = prefill.amount
+      const latinAmount = (prefill?.amount ?? '')
         .split('')
         .map((ch) => faMap[ch] ?? ch)
         .join('')

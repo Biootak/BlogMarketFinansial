@@ -2,7 +2,6 @@
  * /customer/accounts — حساب‌های مالی مشتری
  */
 import { getCustomerAccountsDetail, getCustomerProfile } from '@/actions/customer-portal';
-import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -16,9 +15,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function CustomerAccountsPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/auth?callbackUrl=/customer/accounts');
-
+  // auth() حذف شد — layout.tsx احراز هویت را انجام داده است.
   const [profile, accounts] = await Promise.all([
     getCustomerProfile(),
     getCustomerAccountsDetail(),

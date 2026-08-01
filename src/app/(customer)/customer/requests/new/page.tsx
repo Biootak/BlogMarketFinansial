@@ -51,7 +51,7 @@ export default async function NewRequestPage({
   const { type: typeParam } = await searchParams;
   const isValidType = typeParam && ALLOWED_TYPES.has(typeParam);
   const type = (isValidType ? typeParam : 'OTHER') as CustomerRequestType;
-  const typeWasInvalid = typeParam && !isValidType;
+  const typeWasInvalid = !!(typeParam && !isValidType);
 
   const [profile, accounts] = await Promise.all([
     getCustomerProfile(),

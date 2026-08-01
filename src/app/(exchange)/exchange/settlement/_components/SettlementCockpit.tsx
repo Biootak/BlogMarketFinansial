@@ -13,10 +13,12 @@
  * Client Component — برای filter و selection state.
  */
 
+import { generateSettlementCsv } from '@/actions/settlement';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/Dashboard/primitives';
+import { useToast } from '@/components/ui/use-toast';
 import { Download, Filter, Receipt, Wallet } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import { type SettlementStatus, STATUS_META, type SettlementRow } from './settlement-state';
 import SettlementLedger from './SettlementLedger';
 import SettlementPeriodCard from './SettlementPeriodCard';
@@ -44,10 +46,38 @@ interface Props {
 }
 
 export default function SettlementCockpit({ initialRows }: Props) {
+  const { toast } = useToast();
+  const [csvPending, startCsv] = useTransition();
   const [filter, setFilter] = useState<'all' | SettlementStatus>('all');
   const [selectedId, setSelectedId] = useState<string | null>(
     initialRows[0]?.id ?? null,
   );
+
+  // Dead-button fix: «خروجی CSV» قبلاً بدون onClick بود. حالا generateSettlementCsv
+  // (server action واقعی) را صدا می‌زند و فایل دانلود می‌شود.
+  const exchangeId = initialRows[0]?.exchangeId ?? '';
+  const handleExportCsv = () => {
+    if (!exchangeId) return;
+    startCsv(async () => {
+      const res = await generateSettlementCsv(exchangeId, {
+        status: filter === 'all' ? undefined : filter,
+        limit: 500,
+      });
+      if (!res.success) {
+        toast({ title: 'خطا', description: res.error.message, variant: 'destructive' });
+        return;
+      }
+      const blob = new Blob([res.data.csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = res.data.filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+  };
 
   // filtered rows (client-side)
   const rows = useMemo(
@@ -315,9 +345,16 @@ export default function SettlementCockpit({ initialRows }: Props) {
               {selectedRow.note || 'یادداشتی برای این دوره ثبت نشده.'}
             </span>
             <div className={s.detailActions}>
-              <Button variant="outline" size="sm" type="button">
+              <Button
+                variant="outline"
+                size="sm"
+                type="button"
+                onClick={handleExportCsv}
+                disabled={csvPending || !exchangeId}
+                aria-busy={csvPending || undefined}
+              >
                 <Download size={13} aria-hidden />
-                خروجی CSV
+                {csvPending ? 'در حال ساخت…' : 'خروجی CSV'}
               </Button>
             </div>
           </footer>

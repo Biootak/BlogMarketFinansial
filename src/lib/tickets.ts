@@ -73,7 +73,8 @@ const requireStaff = async () => {
   const session = await auth();
   if (!session?.user?.id) return { ok: false as const, reason: 'احراز هویت نشده‌اید' };
   const role = session.user.role ?? '';
-  if (!['OWNER', 'SUPERADMIN', 'ADMIN', 'AUTHOR'].includes(role)) {
+  // SUPPORT-fix: SUPPORT هم در پشتیبانی تیکت نقش دارد
+  if (!['OWNER', 'SUPERADMIN', 'ADMIN', 'AUTHOR', 'SUPPORT'].includes(role)) {
     return { ok: false as const, reason: 'دسترسی ندارید' };
   }
   return { ok: true as const, userId: session.user.id, role };
@@ -365,7 +366,7 @@ export async function replyToTicket(
   if (isInternal) {
     // فقط staff می‌توانند یادداشت داخلی بگذارند
     const role = session.user.role ?? '';
-    if (!['OWNER', 'SUPERADMIN', 'ADMIN', 'AUTHOR'].includes(role)) {
+    if (!['OWNER', 'SUPERADMIN', 'ADMIN', 'AUTHOR', 'SUPPORT'].includes(role)) {
       return { success: false, message: 'دسترسی ندارید' };
     }
   }

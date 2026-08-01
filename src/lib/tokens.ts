@@ -18,7 +18,11 @@ export type VerificationEmailIntent =
   | 'login'
   | 'reverify'
   | 'recover'
-  | 'service-verify';
+  | 'service-verify'
+  // C1-fix (2026-08-01): مرحلهٔ دوم ورود — TOTP 2FA. بعد از تأیید رمز، یک
+  // challenge یکبارمصرف می‌سازیم؛ کاربر کد Authenticator را وارد می‌کند و
+  // verifyTotpLogin آن را مصرف می‌کند تا سشن امن بسازد.
+  | '2fa';
 
 export const OTP_EXPIRES_MS = 10 * 60 * 1000;
 export const OTP_RESEND_COOLDOWN_MS = 60 * 1000;

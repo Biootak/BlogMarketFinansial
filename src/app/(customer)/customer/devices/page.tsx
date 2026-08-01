@@ -6,10 +6,8 @@
  */
 
 import { getMyDevices } from '@/actions/deviceActions';
-import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
 import { DevicesCenter } from './_components/DevicesCenter';
 
 export const metadata: Metadata = {
@@ -21,11 +19,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function CustomerDevicesPage() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect('/auth?callbackUrl=/customer/devices');
-  }
-
+  // auth() حذف شد — layout.tsx احراز هویت را انجام داده است.
   const result = await getMyDevices();
   const initial = result.success ? result.data : [];
 

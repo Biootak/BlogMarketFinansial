@@ -1,5 +1,6 @@
 import ServiceRequestsClient from '@/components/Dashboard/ServiceRequests/ServiceRequestsClient';
-import { requireAdmin } from '@/lib/require-auth';
+import { requireRole } from '@/lib/require-auth';
+import { Role } from '@prisma/client';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
@@ -8,7 +9,8 @@ export const metadata: Metadata = {
 };
 
 export default async function ServiceRequestsPage() {
-  const auth = await requireAdmin();
+  // SUPPORT-fix: SUPPORT هم می‌تواند درخواست‌های خدمات را ببیند و پاسخ دهد
+  const auth = await requireRole([Role.OWNER, Role.SUPERADMIN, Role.ADMIN, Role.SUPPORT]);
   if (!auth.success) redirect('/dashboard');
 
   return (

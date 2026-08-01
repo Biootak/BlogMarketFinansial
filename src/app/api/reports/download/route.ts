@@ -12,7 +12,8 @@ export async function POST(req: Request) {
     }
 
     const userRole = (session.user as { role?: string }).role;
-    if (!['ADMIN', 'OWNER'].includes(userRole ?? '')) {
+    // M2-fix: SUPERADMIN هم مجاز است (مثل OWNER)
+    if (!['ADMIN', 'OWNER', 'SUPERADMIN'].includes(userRole ?? '')) {
       return NextResponse.json({ error: 'دسترسی غیرمجاز' }, { status: 403 });
     }
 

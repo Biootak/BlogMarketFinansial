@@ -10,8 +10,6 @@
  */
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import { listCustomerBeneficiaries } from '@/actions/customer-beneficiaries';
-import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
 import { CustomerBeneficiaryManager } from './_components/CustomerBeneficiaryManager';
 
 export const metadata = {
@@ -19,11 +17,7 @@ export const metadata = {
 };
 
 export default async function CustomerBeneficiariesPage() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect('/auth?callbackUrl=/customer/beneficiaries');
-  }
-
+  // auth() حذف شد — layout.tsx احراز هویت را انجام داده است.
   const result = await listCustomerBeneficiaries();
   const initial = result.success ? result.data : [];
 

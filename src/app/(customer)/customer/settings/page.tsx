@@ -6,7 +6,6 @@
  * واقعی از DB رندر شوند (نه فقط optimistic از کلاینت).
  */
 import { getCustomerProfile, getMySecurityOverview } from '@/actions/customer-portal';
-import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -20,9 +19,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function CustomerSettingsPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/auth?callbackUrl=/customer/settings');
-
+  // auth() حذف شد — layout.tsx احراز هویت را انجام داده است.
   const profile = await getCustomerProfile();
   if (!profile) redirect('/customer/dashboard');
 

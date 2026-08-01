@@ -682,8 +682,10 @@ function ContentPanel({ user }: { user: UserDetailPayload }) {
                     <FileText className="size-4" aria-hidden />
                   </div>
                   <div className={s.listText}>
+                    {/* C3-fix: /dashboard/posts/[id] صفحه ندارد → 404. صفحهٔ
+                        ویرایش پست (edit/[postId]) مقصد صحیح است. */}
                     <Link
-                      href={`/dashboard/posts/${post.id}`}
+                      href={`/dashboard/posts/edit/${post.id}`}
                       className={s.listTitle}
                       style={{ textDecoration: 'none' }}
                     >
@@ -725,8 +727,9 @@ function ContentPanel({ user }: { user: UserDetailPayload }) {
                     <MessageSquare className="size-4" aria-hidden />
                   </div>
                   <div className={s.listText}>
+                    {/* C3-fix: /dashboard/posts/[id] صفحه ندارد → 404. */}
                     <Link
-                      href={`/dashboard/posts/${c.post.id}`}
+                      href={`/dashboard/posts/edit/${c.post.id}`}
                       className={s.listTitle}
                       style={{ textDecoration: 'none' }}
                     >
@@ -736,7 +739,7 @@ function ContentPanel({ user }: { user: UserDetailPayload }) {
                   </div>
                   <span className={s.listMeta}>
                     <Link
-                      href={`/dashboard/posts/${c.post.id}#comment-${c.id}`}
+                      href={`/dashboard/posts/edit/${c.post.id}`}
                       className="inline-flex items-center gap-1"
                       style={{ color: 'inherit' }}
                     >

@@ -77,6 +77,8 @@ export const INTENT_LABEL: Record<FlowIntent, string> = {
   reverify: 'تأیید مجدد ایمیل',
   recover: 'بازیابی رمز عبور',
   'service-verify': 'تأیید درخواست خدمات',
+  // C1-fix: مرحلهٔ دوم ورود — TOTP از اپ Authenticator
+  '2fa': 'احراز هویت دو مرحله‌ای',
 };
 
 export function scorePassword(pw: string): { score: 0 | 1 | 2 | 3 | 4; label: string } {

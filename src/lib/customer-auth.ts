@@ -7,9 +7,13 @@
  *   OWNER / SUPERADMIN / ADMIN پلتفرم → دسترسی کامل (برای پشتیبانی)
  *   CUSTOMER / TEST_CUSTOMER / MERCHANT → اگر Customer record داشته باشند دسترسی دارند
  *   بقیه → 403 FORBIDDEN
+ *
+ * Performance: requireCustomerAccess از React.cache() استفاده می‌کند تا
+ * در یک render pass فقط یکبار اجرا شود (auth() + DB query فقط یکبار).
  */
 
 import { cookies, headers } from 'next/headers';
+import { cache } from 'react';
 import prisma from '@/lib/db';
 import { requireUser } from '@/lib/require-auth';
 
@@ -62,8 +66,12 @@ export type CustomerAccessResult = CustomerAccessOk | CustomerAccessFail;
 /**
  * بررسی دسترسی کاربر به پورتال مشتری.
  * OWNER/ADMIN پلتفرم به اولین Customer record مشتری دسترسی دارند.
+ *
+ * React.cache() تضمین می‌کند این تابع در هر render request فقط یکبار
+ * اجرا می‌شود — تمام callers در یک pass نتیجه یکسان را بدون DB round-trip
+ * اضافه دریافت می‌کنند.
  */
-export async function requireCustomerAccess(): Promise<CustomerAccessResult> {
+export const requireCustomerAccess = cache(async (): Promise<CustomerAccessResult> => {
   const auth = await requireUser();
   if (!auth.success) {
     return {
@@ -152,7 +160,7 @@ export async function requireCustomerAccess(): Promise<CustomerAccessResult> {
     exchangeId: customer.exchangeId,
     customerStatus: customer.status,
   };
-}
+});
 
 /**
  * تنظیم customer context برای ادمین پلتفرم (از طریق cookie).

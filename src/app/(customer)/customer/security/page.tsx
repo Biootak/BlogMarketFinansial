@@ -8,7 +8,6 @@
  * شامل: تغییر رمز، نمایش وضعیت 2FA، تعداد دستگاه‌های فعال، منطقهٔ خطر.
  */
 import { getMySecurityOverview } from '@/actions/customer-portal';
-import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -23,11 +22,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function CustomerSecurityPage() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect('/auth?callbackUrl=/customer/security');
-  }
-
+  // auth() حذف شد — layout.tsx احراز هویت را انجام داده است.
   const result = await getMySecurityOverview();
   if (!result.success) {
     redirect('/customer/dashboard');

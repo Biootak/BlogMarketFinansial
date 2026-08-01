@@ -5,7 +5,6 @@ import { getCustomerAccountsDetail, getCustomerProfile } from '@/actions/custome
  * شامل: واریز، برداشت، انتقال داخلی، تبدیل ارز
  * دسترسی: CUSTOMER / TEST_CUSTOMER / MERCHANT
  */
-import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -24,9 +23,7 @@ export default async function CustomerTransferPage({
 }: {
   searchParams: Promise<{ action?: string; account?: string; from?: string }>;
 }) {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/auth?callbackUrl=/customer/transfer');
-
+  // auth() حذف شد — layout.tsx احراز هویت را انجام داده است.
   const sp = await searchParams;
   const initialAction = sp?.action ?? 'deposit';
   // pre-selected accountId (برای deposit/withdraw از ?account=، برای transfer/exchange از ?from=)

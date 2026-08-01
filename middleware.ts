@@ -90,6 +90,14 @@ const matchesAny = (pathname: string, routes: CompiledRoute[]): boolean =>
 const SUPER_ROLES = new Set(['OWNER', 'SUPERADMIN']);
 const ADMIN_ROLES = new Set(['OWNER', 'SUPERADMIN', 'ADMIN']);
 const AUTHOR_ROLES = new Set(['OWNER', 'SUPERADMIN', 'ADMIN', 'AUTHOR']);
+// SUPPORT-fix (2026-08-01): sidebar SUPPORT helpdesk/approvals/service-requests را
+// نشان می‌دهد ولی middleware و صفحات اجازه نمی‌دادند → دکمه‌های مرده.
+// SUPPORT به این سه بخش + base dashboard دسترسی دارد.
+const SUPPORT_ROUTE_PREFIXES = [
+  '/dashboard/helpdesk',
+  '/dashboard/approvals',
+  '/dashboard/service-requests',
+];
 
 const checkApiAccess = (pathname: string, role?: string): boolean => {
   if (pathname.startsWith('/api/public')) return true;
@@ -145,6 +153,10 @@ const checkDashboardAccess = (pathname: string, role?: string) => {
   if (role && SUPER_ROLES.has(role) && matchesAny(pathname, compiledSuperAdmin)) return true;
   if (role && ADMIN_ROLES.has(role) && matchesAny(pathname, compiledAdmin)) return true;
   if (role && AUTHOR_ROLES.has(role) && matchesAny(pathname, compiledAuthor)) return true;
+  // SUPPORT-fix: دسترسی SUPPORT به helpdesk/approvals/service-requests
+  if (role === 'SUPPORT' && SUPPORT_ROUTE_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+    return true;
+  }
   return false;
 };
 
@@ -175,6 +187,13 @@ export async function middleware(req: NextRequest) {
   if (token?.exp && Date.now() / 1000 > token.exp) {
     // 2026-07-29 (R13-fix): expired=1 اضافه می‌شود تا AuthFlow یک notice
     // «نشست منقضی شد» نشان دهد و کاربر صفحهٔ خالی نبیند.
+    // H27-fix (2026-08-01): اگر خود pathname /auth باشد، این ریدایرکت
+    // حلقهٔ بی‌نهایت می‌سازد (token منقضی → /auth?expired=1 → middleware
+    // دوباره → token هنوز منقضی → ...). در این حالت کاربر را رها می‌کنیم
+    // تا صفحهٔ auth رندر شود و expired notice را ببیند.
+    if (pathname === '/auth' || pathname.startsWith('/auth?')) {
+      return NextResponse.next();
+    }
     return NextResponse.redirect(
       new URL(`/auth?expired=1&callbackUrl=${encodeURIComponent(pathname)}`, nextUrl),
     );
@@ -264,11 +283,16 @@ export async function middleware(req: NextRequest) {
         new URL(`/auth?callbackUrl=${encodeURIComponent(callbackUrl)}`, nextUrl),
       );
     }
-    // Allow: customer roles + platform admins (OWNER/SUPERADMIN/ADMIN for support)
+    // Allow: customer roles + platform admins (OWNER/SUPERADMIN/ADMIN for support).
+    // H3-fix (2026-08-01): USER هم مجاز است — کاربر تازه‌ثبت‌نام‌شده (نقش پیش‌فرض USER)
+    // از CTA های عمومی به /customer/transfer می‌رود (HeroConverter, ServicesSection).
+    // Middleware فقط login را تضمین می‌کند؛ layout با getCustomerProfile تصمیم
+    // نهایی را می‌گیرد (اگر Customer record ندارد → پیام «هنوز مشتری نیستید»).
     const CUSTOMER_ALLOWED = new Set([
       'CUSTOMER',
       'TEST_CUSTOMER',
       'MERCHANT',
+      'USER',
       'OWNER',
       'SUPERADMIN',
       'ADMIN',

@@ -1,0 +1,233 @@
+/**
+ * credit-rates.module.css — نرخ‌های اعتباری عمومی (H7-fix)
+ * هماهنگ با tokens پروژه (--ds-*)
+ */
+
+.page {
+  max-width: 1100px;
+  margin-inline: auto;
+  padding: clamp(1.5rem, 5vw, 3rem) clamp(0.75rem, 3vw, 1.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-7, 2rem);
+}
+
+.head {
+  text-align: center;
+}
+
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ds-brand-600, #6d28d9);
+}
+
+.title {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ds-text, #16181d);
+  margin: 0.5rem 0 0.25rem;
+}
+
+.sub {
+  font-size: 0.875rem;
+  color: var(--ds-text-muted, #6b7280);
+  margin: 0;
+}
+
+/* ── Stats ── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--ds-space-3, 0.75rem);
+}
+
+@media (max-width: 640px) {
+  .stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stat {
+  background: var(--ds-surface, #ffffff);
+  border: 1px solid var(--ds-border, #e5e7eb);
+  border-radius: var(--ds-radius-md, 0.75rem);
+  padding: var(--ds-space-4, 1rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.statLabel {
+  font-size: 0.6875rem;
+  color: var(--ds-text-muted, #6b7280);
+}
+
+.statValue {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--ds-text, #16181d);
+}
+
+.statUnit {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--ds-text-muted, #6b7280);
+}
+
+/* ── Bank cards ── */
+.bankGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--ds-space-5, 1.25rem);
+}
+
+@media (min-width: 900px) {
+  .bankGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.bankCard {
+  background: var(--ds-surface, #ffffff);
+  border: 1px solid var(--ds-border, #e5e7eb);
+  border-radius: var(--ds-radius-lg, 1rem);
+  padding: var(--ds-space-5, 1.25rem);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.bankHead {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: var(--ds-space-4, 1rem);
+  border-bottom: 1px solid var(--ds-border-subtle, #f0f1f3);
+}
+
+.bankLogo,
+.bankLogoFallback {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  object-fit: contain;
+  flex-shrink: 0;
+  background: var(--ds-bg-subtle, #f7f8fa);
+}
+
+.bankLogoFallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: var(--ds-brand-700, #5b21b6);
+}
+
+.bankMeta {
+  min-width: 0;
+}
+
+.bankName {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ds-text, #16181d);
+  margin: 0;
+}
+
+.bankSub {
+  font-size: 0.6875rem;
+  color: var(--ds-text-muted, #6b7280);
+  margin: 0.125rem 0 0;
+  direction: ltr;
+  text-align: right;
+}
+
+.noRates {
+  font-size: 0.8125rem;
+  color: var(--ds-text-muted, #6b7280);
+  padding: var(--ds-space-4, 1rem) 0;
+  margin: 0;
+}
+
+/* ── Rate items ── */
+.rateList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.rateItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: var(--ds-space-3, 0.75rem) 0;
+  border-bottom: 1px solid var(--ds-border-subtle, #f0f1f3);
+}
+
+.rateItem:last-child {
+  border-bottom: 0;
+}
+
+.rateMain {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.rateType {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--ds-brand-700, #5b21b6);
+}
+
+.rateTitle {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ds-text, #16181d);
+}
+
+.rateSide {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.125rem;
+  flex-shrink: 0;
+}
+
+.ratePct {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--nova-emerald, #059669);
+}
+
+.rateRange {
+  font-size: 0.6875rem;
+  color: var(--ds-text-muted, #6b7280);
+  direction: ltr;
+}
+
+/* ── Footer ── */
+.foot {
+  font-size: 0.75rem;
+  color: var(--ds-text-muted, #6b7280);
+  text-align: center;
+  padding-top: var(--ds-space-4, 1rem);
+  border-top: 1px solid var(--ds-border-subtle, #f0f1f3);
+}
+
+/* ── Empty ── */
+.empty {
+  padding: var(--ds-space-8, 2.5rem);
+  text-align: center;
+  color: var(--ds-text-muted, #6b7280);
+  background: var(--ds-surface, #ffffff);
+  border: 1px solid var(--ds-border, #e5e7eb);
+  border-radius: var(--ds-radius-lg, 1rem);
+}

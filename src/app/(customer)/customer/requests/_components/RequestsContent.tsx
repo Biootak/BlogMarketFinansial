@@ -1,23 +1,13 @@
 'use client';
 
 /**
- * RequestsContent — لیست ۲۰۲۶ درخواست‌های مشتری با KPI + گروه‌بندی + فیلتر
+ * RequestsContent — «مرکز فرماندهی» Mission Control 2026
  * -----------------------------------------------------------------------------
  * ساختار:
- *  §1. KPI Strip         — ۴ کارت: total / pending / in-review / approved+7d
- *  §2. Filter Bar        — جستجو + فیلتر status + CTA «درخواست جدید»
- *  §3. Grouped List      — گروه‌بندی بر اساس status (active / closed)
- *  §4. Empty state       — اگر لیست خالی
- *
- * Design DNA (هم‌خوان با AccountsContent):
- *  - Bento asymmetric KPI
- *  - Status rail رنگی روی هر ردیف
- *  - Type chip با icon اختصاصی
- *  - Sparkline-like progress روی هر گروه (از stats)
- *  - Token-only، no hex
- *  - RTL-first + logical properties
- *  - a11y: ARIA labels، keyboard nav
- *  - Mobile-first
+ *  §1. KPI Bento Strip   — ۴ کارت نامتقارن با tint + accent top-border
+ *  §2. Command Toolbar   — glass sticky + جستجو + filter chips + CTA
+ *  §3. Orbit Groups      — گروه‌بندی active/closed با rail رنگی
+ *  §4. Empty Signal      — empty state با inline prompt
  */
 
 import type {
@@ -116,7 +106,7 @@ export default function RequestsContent({ rows, stats }: Props) {
       if (!q) return true;
       if (r.trackingCode.toLowerCase().includes(q)) return true;
       if (r.typeLabel.includes(q)) return true;
-      if (r.note && r.note.toLowerCase().includes(q)) return true;
+      if (r.note?.toLowerCase().includes(q)) return true;
       return false;
     });
   }, [rows, filter, search]);
@@ -205,13 +195,12 @@ export default function RequestsContent({ rows, stats }: Props) {
           />
         </div>
 
-        <div className={s.filterChips} role="radiogroup" aria-label="فیلتر وضعیت">
+        <div className={s.filterChips} aria-label="فیلتر وضعیت">
           {FILTER_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               type="button"
-              role="radio"
-              aria-checked={filter === opt.value}
+              aria-pressed={filter === opt.value}
               data-active={filter === opt.value ? 'true' : undefined}
               onClick={() => setFilter(opt.value)}
               className={s.filterChip}
@@ -306,17 +295,16 @@ interface KpiCardProps {
 }
 
 function KpiCard({ label, value, sub, icon: Icon, variant }: KpiCardProps) {
+  const dotVariant: StatusVariant =
+    variant === 'primary' ? 'approved' : variant === 'info' ? 'neutral' : variant;
   return (
     <article className={s.kpiCard} data-variant={variant}>
       <div className={s.kpiHead}>
         <span className={s.kpiIcon} aria-hidden>
-          <Icon size={12} />
+          <Icon size={13} />
         </span>
         <span className={s.kpiLabel}>{label}</span>
-        <StatusDot
-          variant={variant === 'primary' ? 'approved' : variant === 'info' ? 'neutral' : variant}
-          pulse={variant === 'warning'}
-        />
+        <StatusDot variant={dotVariant} pulse={variant === 'warning'} />
       </div>
       <div className={s.kpiValue}>{faNum(value)}</div>
       <div className={s.kpiSub}>{sub}</div>
@@ -351,7 +339,7 @@ function RequestGroup({ title, count, rows, onCancel, pendingId }: RequestGroupP
               key={r.id}
               className={s.row}
               data-status={r.status}
-              style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}
+              style={{ animationDelay: `${Math.min(i, 10) * 25}ms` }}
             >
               <span className={s.rail} data-status={r.status} aria-hidden />
 
@@ -361,7 +349,7 @@ function RequestGroup({ title, count, rows, onCancel, pendingId }: RequestGroupP
                 aria-label={`${r.typeLabel} — کد ${r.trackingCode} — وضعیت ${STATUS_LABEL[r.status]}`}
               >
                 <span className={s.rowIcon} data-status={r.status} aria-hidden>
-                  <Icon size={14} />
+                  <Icon size={15} />
                 </span>
 
                 <div className={s.rowMain}>
@@ -372,11 +360,12 @@ function RequestGroup({ title, count, rows, onCancel, pendingId }: RequestGroupP
                   <div className={s.rowBottomRow}>
                     <StatusPill variant={variant}>{STATUS_LABEL[r.status] ?? r.status}</StatusPill>
                     <span className={s.rowMeta}>
-                      <Clock size={9} aria-hidden /> {relativeTime(r.createdAt)}
+                      <Clock size={9} aria-hidden />
+                      {relativeTime(r.createdAt)}
                     </span>
                     {r.note && (
                       <span className={s.rowNote} title={r.note}>
-                        {r.note.length > 50 ? `${r.note.slice(0, 50)}…` : r.note}
+                        {r.note.length > 48 ? `${r.note.slice(0, 48)}…` : r.note}
                       </span>
                     )}
                   </div>

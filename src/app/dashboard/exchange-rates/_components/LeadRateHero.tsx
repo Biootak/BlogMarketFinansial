@@ -75,7 +75,11 @@ export default function LeadRateHero({
 }: Props) {
   const isUp = changePercent > 0;
   const isDown = changePercent < 0;
-  const isFlat = changePercent === 0;
+  // m2-fix: وقتی changePercent=0 و sparkline خالی است، یعنی دادهٔ کافی برای
+  // روند نیست — «۰٪ بدون تغییر» دروغ می‌گوید. به‌جایش «نرخ فعلی» صادق نمایش
+  // داده می‌شود.
+  const hasTrend = sparkline.length >= 2 || changePercent !== 0;
+  const isFlat = !hasTrend || changePercent === 0;
   const trendColor = isUp
     ? 'var(--ds-accent-emerald)'
     : isDown
@@ -205,7 +209,9 @@ export default function LeadRateHero({
                 ? `افزایش ${changePercent.toLocaleString('fa-IR')} درصد`
                 : isDown
                   ? `کاهش ${Math.abs(changePercent).toLocaleString('fa-IR')} درصد`
-                  : 'بدون تغییر'
+                  : hasTrend
+                    ? 'بدون تغییر'
+                    : 'نرخ فعلی'
             }
           >
             {isUp ? (
@@ -215,7 +221,7 @@ export default function LeadRateHero({
             ) : (
               <HiMinus style={{ width: '0.95rem', height: '0.95rem' }} />
             )}
-            {isFlat ? '۰٪' : `${isUp ? '+' : ''}${changePercent.toLocaleString('fa-IR', { maximumFractionDigits: 2 })}٪`}
+            {isFlat ? (hasTrend ? '۰٪' : 'نرخ فعلی') : `${isUp ? '+' : ''}${changePercent.toLocaleString('fa-IR', { maximumFractionDigits: 2 })}٪`}
           </span>
 
           {/* Sparkline */}

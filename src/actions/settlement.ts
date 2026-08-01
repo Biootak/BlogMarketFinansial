@@ -451,3 +451,66 @@ export async function markSettlementPaid(settlementId: string): Promise<FintechA
 
   return { success: true, data: undefined };
 }
+
+// ─── CSV EXPORT (dead-button fix 2026-08-01) ────────────────────────────────
+// دکمهٔ «خروجی CSV» در SettlementCockpit بدون onClick بود — dead button.
+// این action همان دادهٔ getMyExchangeSettlements را به CSV تبدیل می‌کند
+// (الگوی generateReportCsv در reporting.ts).
+
+export async function generateSettlementCsv(
+  exchangeId: string,
+  opts?: { status?: string; limit?: number },
+): Promise<FintechActionResult<{ csv: string; filename: string }>> {
+  const access = await requireExchangeAccess(exchangeId);
+  if (!access.ok) {
+    return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
+  }
+
+  const rows = await getMyExchangeSettlements(exchangeId, opts);
+
+  // RTL-safe: ستون‌ها فارسی ولی CSV با جداساز استاندارد
+  const header = [
+    'شناسه',
+    'صرافی',
+    'از تاریخ',
+    'تا تاریخ',
+    'حجم کل',
+    'تعداد معاملات',
+    'کارمزد پلتفرم',
+    'خالص صرافی',
+    'واحد',
+    'وضعیت',
+    'یادداشت',
+  ];
+
+  const fmtDate = (d: Date | null): string =>
+    d ? new Intl.DateTimeFormat('en-CA').format(d) : '';
+
+  const esc = (v: string): string => (v.includes(',') ? `"${v.replace(/"/g, '""')}"` : v);
+
+  const lines = [header.join(',')];
+  for (const r of rows) {
+    lines.push(
+      [
+        esc(r.id),
+        esc(r.exchangeName),
+        fmtDate(r.periodStart),
+        fmtDate(r.periodEnd),
+        esc(r.totalVolume),
+        String(r.dealCount),
+        esc(r.platformFee),
+        esc(r.exchangeNet),
+        esc(r.currency),
+        esc(r.status),
+        esc(r.note ?? ''),
+      ].join(','),
+    );
+  }
+
+  const csv = `﻿${lines.join('\n')}`;
+  const filename = `settlements-${exchangeId.slice(-6)}-${new Date()
+    .toISOString()
+    .slice(0, 10)}.csv`;
+
+  return { success: true, data: { csv, filename } };
+}

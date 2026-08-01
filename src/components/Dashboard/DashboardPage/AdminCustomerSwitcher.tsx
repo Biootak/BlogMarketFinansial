@@ -24,6 +24,8 @@ import {
   setAdminCustomerContext,
 } from '@/lib/customer-auth';
 import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import {
   HiOutlineAdjustmentsHorizontal,
   HiOutlineArrowsRightLeft,
@@ -33,8 +35,6 @@ import {
   HiOutlineUserCircle,
   HiOutlineXMark,
 } from 'react-icons/hi2';
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import s from './AdminCustomerSwitcher.module.css';
 
 type CustomerRow = {
@@ -161,7 +161,9 @@ export function AdminCustomerSwitcher({
         <div className={s.target}>
           <span className={s.targetLabel}>مشتری فعلی:</span>
           <span className={s.targetName}>{currentCustomerName}</span>
-          <span className={s.targetDivider} aria-hidden>·</span>
+          <span className={s.targetDivider} aria-hidden>
+            ·
+          </span>
           <span className={s.targetExchange}>{currentExchangeName}</span>
           {isImpersonating && (
             <span className={s.targetFlag} title="ادمین یک مشتری خاص را explicit انتخاب کرده">
@@ -199,12 +201,7 @@ export function AdminCustomerSwitcher({
 
       {/* Popover */}
       {open && (
-        <div
-          ref={popoverRef}
-          className={s.popover}
-          role="dialog"
-          aria-label="انتخاب مشتری"
-        >
+        <div ref={popoverRef} className={s.popover} role="dialog" aria-label="انتخاب مشتری">
           <div className={s.popoverHead}>
             <HiOutlineAdjustmentsHorizontal className="w-4 h-4 opacity-70" />
             <span className={s.popoverTitle}>انتخاب مشتری برای پشتیبانی</span>

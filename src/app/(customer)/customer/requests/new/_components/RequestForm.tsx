@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
-import { Loader2, Send, Sparkles, Wallet } from 'lucide-react';
+import { FileText, Gauge, Loader2, Send, ShieldCheck, Wallet } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import s from './RequestForm.module.css';
@@ -95,14 +95,21 @@ const CURRENCY_ITEMS = [
   { value: 'PKR', code: 'PKR', label: 'روپیه پاکستان' },
 ];
 
-export default function RequestForm({ initialType, accounts, profileStatus, typeWasInvalid }: Props) {
+export default function RequestForm({
+  initialType,
+  accounts,
+  profileStatus,
+  typeWasInvalid,
+}: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   const [type, setType] = useState<CustomerRequestType>(initialType);
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(
-    typeWasInvalid ? 'نوع درخواست مشخص نشده — به «سایر» تغییر یافت. نوع مورد نظر را انتخاب کنید.' : null,
+    typeWasInvalid
+      ? 'نوع درخواست مشخص نشده — به «سایر» تغییر یافت. نوع مورد نظر را انتخاب کنید.'
+      : null,
   );
 
   // Dynamic payload fields
@@ -226,21 +233,27 @@ export default function RequestForm({ initialType, accounts, profileStatus, type
         </FormField>
 
         {/* Request type hint cards */}
-        <div className={s.typeCards} role="list">
+        <div className={s.typeCards}>
           {REQUEST_TYPES.map((t) => {
-            const Icon = t.icon === 'wallet' ? Wallet : t.icon === 'send' ? Send : Sparkles;
+            const ICON_MAP: Record<string, typeof Wallet> = {
+              wallet: Wallet,
+              send: Send,
+              'shield-check': ShieldCheck,
+              gauge: Gauge,
+              message: FileText,
+            };
+            const Icon = ICON_MAP[t.icon] ?? FileText;
             return (
               <button
                 type="button"
                 key={t.value}
-                role="listitem"
                 data-active={type === t.value ? 'true' : undefined}
                 onClick={() => handleTypeChange(t.value)}
                 className={s.typeCard}
                 aria-pressed={type === t.value}
               >
                 <span className={s.typeCardIcon} aria-hidden>
-                  <Icon size={14} />
+                  <Icon size={16} />
                 </span>
                 <span className={s.typeCardLabel}>{t.label}</span>
               </button>

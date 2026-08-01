@@ -15,7 +15,8 @@ export default async function ApprovalsPage() {
     redirect('/auth?callbackUrl=/dashboard/approvals');
   }
   const role = session.user.role ?? '';
-  if (!['OWNER', 'SUPERADMIN', 'ADMIN'].includes(role)) {
+  // SUPPORT-fix: SUPPORT می‌تواند تأییدیه‌ها را ببیند (نمای پشتیبانی)
+  if (!['OWNER', 'SUPERADMIN', 'ADMIN', 'SUPPORT'].includes(role)) {
     redirect('/dashboard?error=forbidden');
   }
 

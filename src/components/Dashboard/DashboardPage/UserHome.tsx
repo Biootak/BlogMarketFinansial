@@ -308,7 +308,9 @@ export async function UserHome({
           <ul className={styles.requestsList}>
             {overview.recentRequests.map((r: (typeof overview.recentRequests)[number]) => (
               <li key={r.id} className={styles.requestItem}>
-                <Link href={`/dashboard/my-requests/${r.id}`} className={styles.requestLink}>
+                {/* M6-fix: /dashboard/my-requests/[id] صفحه ندارد → 404.
+                    /track/[code] صفحهٔ پیگیری واقعی دارد. */}
+                <Link href={`/track/${encodeURIComponent(r.trackingCode)}`} className={styles.requestLink}>
                   <div className={styles.requestMeta}>
                     <span className={styles.requestType}>
                       {serviceTypeLabelMap[r.serviceType] ?? r.serviceType}

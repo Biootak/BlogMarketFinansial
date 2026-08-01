@@ -64,10 +64,13 @@ import {
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { ViewLink } from '@/components/ui/ViewLink';
+import ProfileEditForm from './ProfileEditForm';
 import s from './ProfileContent.module.css';
 
 interface Props {
   profile: CustomerProfile;
+  /** M3/M4-fix: فیلدی که باید فرم ویرایش برای آن باز شود (?field=email و ...) */
+  initialEditField?: string;
 }
 
 const MASKED = '••••••••';
@@ -104,7 +107,7 @@ const KYC_STEPS: Array<{
   },
 ];
 
-export default function ProfileContent({ profile }: Props) {
+export default function ProfileContent({ profile, initialEditField }: Props) {
   // ── Derived state ──────────────────────────────────────────
   const kycKey = KYC_STATUS_CSSKEY[profile.kycStatus] ?? 'warning';
   const statusKey = CUSTOMER_STATUS_CSSKEY[profile.status] ?? 'neutral';
@@ -117,6 +120,13 @@ export default function ProfileContent({ profile }: Props) {
 
   // Masking برای فیلدهای حساس (nationalId, phone)
   const [showSensitive, setShowSensitive] = useState(false);
+
+  // M3/M4-fix: فرم ویرایش باز — وقتی از settings با ?field= آمده باشیم
+  const [editOpen, setEditOpen] = useState<'email' | 'city' | 'address' | null>(
+    initialEditField === 'email' || initialEditField === 'city' || initialEditField === 'address'
+      ? initialEditField
+      : null,
+  );
 
   // Profile completion % — بر اساس فیلدهای اختیاری پرشده
   const completion = useMemo(() => {
@@ -208,10 +218,16 @@ export default function ProfileContent({ profile }: Props) {
           </div>
 
           <div className={s.heroActions}>
-            <Link href="/customer/settings" className={s.heroEditBtn}>
+            {/* M3-fix: «ویرایش اطلاعات» به فرم ویرایش inline (نه تنظیمات بدون فرم) */}
+            <button
+              type="button"
+              onClick={() => setEditOpen(editOpen ? null : 'email')}
+              className={s.heroEditBtn}
+              aria-expanded={Boolean(editOpen)}
+            >
               <Settings size={14} strokeWidth={2} aria-hidden />
-              <span>ویرایش اطلاعات</span>
-            </Link>
+              <span>{editOpen ? 'بستن ویرایش' : 'ویرایش اطلاعات'}</span>
+            </button>
             <button
               type="button"
               onClick={() => setShowSensitive((s) => !s)}
@@ -228,6 +244,25 @@ export default function ProfileContent({ profile }: Props) {
           </div>
         </div>
       </section>
+
+      {/* ═══ 1.5 EDIT FORM ══════════════════════════════════════════════
+          M3/M4-fix: قبلاً «ویرایش اطلاعات» به /customer/settings می‌رفت که فرم
+          ویرایش ندارد (dead end). حالا فرم inline همین‌جا باز می‌شود و
+          updateCustomerProfile (server action واقعی) را صدا می‌زند. */}
+      {editOpen && (
+        <ProfileEditForm
+          field={editOpen}
+          initialValue={
+            editOpen === 'email'
+              ? (profile.email ?? '')
+              : editOpen === 'city'
+                ? (profile.city ?? '')
+                : (profile.address ?? '')
+          }
+          onDone={() => setEditOpen(null)}
+          onSwitch={(f) => setEditOpen(f)}
+        />
+      )}
 
       {/* ═══ 2. STATS STRIP ══════════════════════════════════════════════ */}
       <section className={s.statsStrip} aria-label="آمار کلیدی">
@@ -270,7 +305,9 @@ export default function ProfileContent({ profile }: Props) {
             icon={Building2}
             tone="cyan"
             hint={profile.exchange.city ?? '—'}
-            href={`/exchanges/${profile.exchange.id}`}
+            // M1-fix: صفحهٔ عمومی صرافی با slug است نه id — قبلاً به UUID لینک
+            // می‌داد که 404 می‌شد. اگر slug نبود به فهرست صرافی‌ها برویم.
+            href={profile.exchange.slug ? `/exchanges/${profile.exchange.slug}` : '/exchanges'}
           />
         </div>
       </section>
@@ -541,7 +578,7 @@ export default function ProfileContent({ profile }: Props) {
           </div>
         </div>
         <Link
-          href={`/exchanges/${profile.exchange.id}`}
+          href={profile.exchange.slug ? `/exchanges/${profile.exchange.slug}` : '/exchanges'}
           className={s.exchangeLink}
         >
           <span>مشاهده صرافی</span>
