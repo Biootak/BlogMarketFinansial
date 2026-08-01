@@ -2,6 +2,7 @@ import {
   revalidatePath as nextRevalidatePath,
   revalidateTag as nextRevalidateTag,
 } from 'next/cache';
+import { safeRevalidateTag } from '@/lib/safe-cache';
 
 /**
  * 2026-06-14: Next.js 16 type definition for `revalidateTag` requires
@@ -12,12 +13,15 @@ import {
  * it here. Default profile is `'max'` which busts Data Cache entries
  * regardless of their `revalidate` TTL — exactly what every write
  * path in this project wants.
+ *
+ * 2026-08: safeRevalidateTag نیز صدا زده می‌شود تا in-memory safeCache
+ * همزمان با Next.js data cache invalidate بشود (H5).
  */
 export function revalidateTag(tag: string): void {
-  // The cast is necessary because Next 16's signature marks the second
-  // arg required, but the runtime accepts one. We always pass 'max' to
-  // also invalidate any time-based caches the same call would touch.
+  // Bust Next.js Data Cache (unstable_cache entries)
   (nextRevalidateTag as unknown as (t: string, p?: string) => void)(tag, 'max');
+  // Bust in-memory safeCache entries for the same tag
+  safeRevalidateTag(tag);
 }
 
 /**

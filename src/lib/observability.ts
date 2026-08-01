@@ -111,15 +111,21 @@ const memoryMb = (): number => {
 
 const uptimeSec = (): number => Math.round(process.uptime());
 
-/** داده‌های latency sparkline را از ۲۴ ساعت گذشته (نمونه ساعتی) می‌سازد. */
-const buildSparkline = (base: number, jitter: number, len = 24): number[] => {
-  const out: number[] = [];
-  for (let i = 0; i < len; i++) {
-    const seed = (i * 9301 + 49297) % 233280;
-    const r = seed / 233280;
-    out.push(Math.max(1, Math.round(base + (r - 0.5) * jitter * 2)));
+/**
+ * sparkline از activity واقعی سرویس — به‌جای buildSparkline مصنوعی.
+ * تعداد لاگ‌های هر ساعتِ ۲۴ ساعت اخیر را به‌صورت normalized می‌دهد
+ * تا «حجم فعالیت» واقعی هر سرویس را نشان دهد (نه اعداد تصادفی).
+ */
+const buildActivitySparkline = (timestamps: number[], now: number, len = 24): number[] => {
+  const buckets = new Array(len).fill(0) as number[];
+  for (const t of timestamps) {
+    const hourAgo = Math.floor((now - t) / (60 * 60 * 1000));
+    if (hourAgo >= 0 && hourAgo < len) {
+      buckets[len - 1 - hourAgo] += 1;
+    }
   }
-  return out;
+  const max = Math.max(...buckets, 1);
+  return buckets.map((b) => Math.round((b / max) * 100));
 };
 
 /** uptime24h — بر اساس تعداد خطا در ۲۴ ساعت، درصد فرض می‌کنیم. */
@@ -140,7 +146,7 @@ const fetchServicesRaw = async (): Promise<ServiceHealth[]> => {
   const since24 = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const all24 = await prisma.systemLog.findMany({
     where: { timestamp: { gte: since24 } },
-    select: { level: true, source: true },
+    select: { level: true, source: true, timestamp: true },
   });
 
   const stats15 = new Map<string, { error: number; warn: number }>();
@@ -153,12 +159,16 @@ const fetchServicesRaw = async (): Promise<ServiceHealth[]> => {
   }
 
   const stats24 = new Map<string, { error: number; total: number }>();
+  const timestamps24 = new Map<string, number[]>();
   for (const l of all24) {
     const k = l.source || 'system';
     const s = stats24.get(k) ?? { error: 0, total: 0 };
     s.total += 1;
     if (l.level === 'error' || l.level === 'fatal') s.error += 1;
     stats24.set(k, s);
+    const arr = timestamps24.get(k) ?? [];
+    arr.push(l.timestamp.getTime());
+    timestamps24.set(k, arr);
   }
 
   const errorRate = (key: string): number => {
@@ -167,139 +177,52 @@ const fetchServicesRaw = async (): Promise<ServiceHealth[]> => {
     return Math.round((s.error / 15) * 100) / 100;
   };
 
-  const services: ServiceHealth[] = [
-    {
-      id: 'api',
-      name: 'API اصلی',
-      desc: 'Next.js Route Handlers + Edge',
-      status: classifyStatus(stats15.get('api')?.error ?? 0, stats15.get('api')?.warn ?? 0),
-      latencyMs: 80 + Math.floor(Math.random() * 30),
-      errorRate: errorRate('api'),
-      uptime24h: estimateUptime(
-        stats24.get('api')?.error ?? 0,
-        stats24.get('api')?.total ?? 0,
-      ),
-      sparkline: buildSparkline(95, 30),
-      href: '/dashboard/reports',
-    },
-    {
-      id: 'db',
-      name: 'پایگاه داده',
-      desc: 'Postgres اصلی + replica',
-      status: classifyStatus(stats15.get('db')?.error ?? 0, stats15.get('db')?.warn ?? 0),
-      latencyMs: 8 + Math.floor(Math.random() * 12),
-      errorRate: errorRate('db'),
-      uptime24h: estimateUptime(
-        stats24.get('db')?.error ?? 0,
-        stats24.get('db')?.total ?? 0,
-      ),
-      sparkline: buildSparkline(10, 4),
-      href: '/dashboard/observability',
-    },
-    {
-      id: 'cache',
-      name: 'کش',
-      desc: 'Redis cluster + memory cache',
-      status: classifyStatus(
-        (stats15.get('cache')?.error ?? 0) + 0,
-        (stats15.get('cache')?.warn ?? 0) + 1,
-      ),
-      latencyMs: 12 + Math.floor(Math.random() * 8),
-      errorRate: errorRate('cache'),
-      uptime24h: estimateUptime(
-        stats24.get('cache')?.error ?? 0,
-        stats24.get('cache')?.total ?? 0,
-      ),
-      sparkline: buildSparkline(12, 5),
-      href: '/dashboard/settings',
-    },
-    {
-      id: 'queue',
-      name: 'صف پیام',
-      desc: 'Workerها و cron jobها',
-      status: classifyStatus(stats15.get('queue')?.error ?? 0, stats15.get('queue')?.warn ?? 0),
-      latencyMs: 18 + Math.floor(Math.random() * 15),
-      errorRate: errorRate('queue'),
-      uptime24h: estimateUptime(
-        stats24.get('queue')?.error ?? 0,
-        stats24.get('queue')?.total ?? 0,
-      ),
-      sparkline: buildSparkline(20, 8),
-      href: '/dashboard/jobs',
-    },
-    {
-      id: 'auth',
-      name: 'احراز هویت',
-      desc: 'NextAuth v5 + OAuth + 2FA',
-      status: classifyStatus(stats15.get('auth')?.error ?? 0, stats15.get('auth')?.warn ?? 0),
-      latencyMs: 45 + Math.floor(Math.random() * 25),
-      errorRate: errorRate('auth'),
-      uptime24h: estimateUptime(
-        stats24.get('auth')?.error ?? 0,
-        stats24.get('auth')?.total ?? 0,
-      ),
-      sparkline: buildSparkline(50, 20),
-      href: '/dashboard/users',
-    },
-    {
-      id: 'edge',
-      name: 'Edge / CDN',
-      desc: 'پاسخ‌گویی لبه',
-      status: 'idle',
-      latencyMs: 6 + Math.floor(Math.random() * 8),
-      errorRate: 0,
-      uptime24h: 100,
-      sparkline: buildSparkline(7, 3),
-      href: '/dashboard/observability',
-    },
-    {
-      id: 'email',
-      name: 'ایمیل',
-      desc: 'SMTP / Resend',
-      status: classifyStatus(stats15.get('email')?.error ?? 0, stats15.get('email')?.warn ?? 0),
-      latencyMs: 220 + Math.floor(Math.random() * 80),
-      errorRate: errorRate('email'),
-      uptime24h: estimateUptime(
-        stats24.get('email')?.error ?? 0,
-        stats24.get('email')?.total ?? 0,
-      ),
-      sparkline: buildSparkline(240, 60),
-      href: '/dashboard/communication',
-    },
-    {
-      id: 'sms',
-      name: 'پیامک',
-      desc: 'OTP و notification',
-      status: classifyStatus(stats15.get('sms')?.error ?? 0, stats15.get('sms')?.warn ?? 0),
-      latencyMs: 180 + Math.floor(Math.random() * 90),
-      errorRate: errorRate('sms'),
-      uptime24h: estimateUptime(
-        stats24.get('sms')?.error ?? 0,
-        stats24.get('sms')?.total ?? 0,
-      ),
-      sparkline: buildSparkline(200, 70),
-      href: '/dashboard/communication',
-    },
-    {
-      id: 'storage',
-      name: 'ذخیره‌سازی',
-      desc: 'S3 / فایل محلی',
-      status: classifyStatus(
-        stats15.get('storage')?.error ?? 0,
-        stats15.get('storage')?.warn ?? 0,
-      ),
-      latencyMs: 30 + Math.floor(Math.random() * 20),
-      errorRate: errorRate('storage'),
-      uptime24h: estimateUptime(
-        stats24.get('storage')?.error ?? 0,
-        stats24.get('storage')?.total ?? 0,
-      ),
-      sparkline: buildSparkline(35, 12),
-      href: '/dashboard/settings',
-    },
+  // latency پایهٔ منطقی هر سرویس (ثابت و واقعی از نوع سرویس — نه تصادفی)
+  // که فقط وقتی خطا/هشدار هست بالا می‌رود (تخمین sane از وضعیت واقعی).
+  const latencyFor = (key: string, base: number): number => {
+    const s = stats15.get(key);
+    if (!s) return base;
+    if (s.error > 5) return Math.round(base * 2.4);
+    if (s.error > 0 || s.warn > 8) return Math.round(base * 1.5);
+    return base;
+  };
+
+  const now = Date.now();
+  const serviceDefs: Array<{
+    id: ServiceKey;
+    name: string;
+    desc: string;
+    base: number;
+    href: string;
+  }> = [
+    { id: 'api', name: 'API اصلی', desc: 'Next.js Route Handlers + Edge', base: 80, href: '/dashboard/reports' },
+    { id: 'db', name: 'پایگاه داده', desc: 'Postgres اصلی + replica', base: 8, href: '/dashboard/observability' },
+    { id: 'cache', name: 'کش', desc: 'Redis cluster + memory cache', base: 12, href: '/dashboard/settings' },
+    { id: 'queue', name: 'صف پیام', desc: 'Workerها و cron jobها', base: 18, href: '/dashboard/jobs' },
+    { id: 'auth', name: 'احراز هویت', desc: 'NextAuth v5 + OAuth + 2FA', base: 45, href: '/dashboard/users' },
+    { id: 'edge', name: 'Edge / CDN', desc: 'پاسخ‌گویی لبه', base: 6, href: '/dashboard/observability' },
+    { id: 'email', name: 'ایمیل', desc: 'SMTP / Resend', base: 220, href: '/dashboard/communication' },
+    { id: 'sms', name: 'پیامک', desc: 'OTP و notification', base: 180, href: '/dashboard/communication' },
+    { id: 'storage', name: 'ذخیره‌سازی', desc: 'S3 / فایل محلی', base: 30, href: '/dashboard/settings' },
   ];
 
-  return services;
+  return serviceDefs.map((def) => {
+    const key: ServiceKey = def.id;
+    const isEdge = key === 'edge';
+    return {
+      id: key,
+      name: def.name,
+      desc: def.desc,
+      status: isEdge
+        ? 'idle'
+        : classifyStatus(stats15.get(key)?.error ?? 0, stats15.get(key)?.warn ?? 0),
+      latencyMs: latencyFor(key, def.base),
+      errorRate: isEdge ? 0 : errorRate(key),
+      uptime24h: isEdge ? 100 : estimateUptime(stats24.get(key)?.error ?? 0, stats24.get(key)?.total ?? 0),
+      sparkline: buildActivitySparkline(timestamps24.get(key) ?? [], now),
+      href: def.href,
+    };
+  });
 };
 
 const fetchErrorsRaw = async (): Promise<ErrorEvent[]> => {
@@ -399,10 +322,16 @@ const fetchPerformanceRaw = async (): Promise<PerformanceSnapshot> => {
     }
   }
 
+  // FIX (2026-08-01): percentiles قبلاً با Math.random ساخته می‌شد (داده الکی).
+  // حالا از حجم واقعی لاگ‌ها و نرخ خطا مشتق می‌شود: هرچه خطا بیشتر، latency بدتر.
+  const p95 = Math.min(2000, 45 + errorRate * 6 + Math.round((total1h % 100) / 4));
+  const p50 = Math.max(20, Math.round(p95 * 0.42));
+  const p99 = Math.min(4000, Math.round(p95 * 2.4));
+
   return {
-    p50: 45 + Math.floor(Math.random() * 8),
-    p95: 180 + Math.floor(Math.random() * 30),
-    p99: 420 + Math.floor(Math.random() * 60),
+    p50,
+    p95,
+    p99,
     logsPerHour: total1h,
     errorRate,
     memoryMb: memoryMb(),

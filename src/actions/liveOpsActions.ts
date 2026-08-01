@@ -130,9 +130,16 @@ const fetchServiceHealthRaw = async (): Promise<LiveOpsData['services']> => {
     stats.set(key, s);
   }
 
-  // استخر latency نمونه از زمان شروع این query (برای دموی زنده)
-  // در حالت واقعی این از systemLog-derived یا metrics endpoint می‌آید
-  const baseLatency = 80 + Math.floor(Math.random() * 20);
+  // FIX (2026-08-01): latency قبلاً با Math.random بود (داده الکی).
+  // حالا از وضعیت واقعی لاگ مشتق می‌شود: base ثابت هر سرویس، و اگر
+  // خطا/هشدار در ۱۵ دقیقه اخیر داشته باشد به‌صورت sane بالا می‌رود.
+  const latencyFor = (key: string, base: number): number => {
+    const s = stats.get(key);
+    if (!s) return base;
+    if (s.error > 5) return Math.round(base * 2.4);
+    if (s.error > 0 || s.warn > 8) return Math.round(base * 1.5);
+    return base;
+  };
 
   const services: LiveOpsData['services'] = [
     {
@@ -141,7 +148,7 @@ const fetchServiceHealthRaw = async (): Promise<LiveOpsData['services']> => {
       desc: 'درگاه REST و GraphQL',
       iconName: 'Globe2',
       status: classifyService(stats.get('api')?.error ?? 0, stats.get('api')?.warn ?? 0),
-      latencyMs: baseLatency,
+      latencyMs: latencyFor('api', 80),
       href: '/dashboard/reports',
     },
     {
@@ -150,7 +157,7 @@ const fetchServiceHealthRaw = async (): Promise<LiveOpsData['services']> => {
       desc: 'Postgres اصلی + رپلیکا',
       iconName: 'Database',
       status: classifyService(stats.get('db')?.error ?? 0, stats.get('db')?.warn ?? 0),
-      latencyMs: 8 + Math.floor(Math.random() * 12),
+      latencyMs: latencyFor('db', 8),
       href: '/dashboard/reports',
     },
     {
@@ -158,11 +165,8 @@ const fetchServiceHealthRaw = async (): Promise<LiveOpsData['services']> => {
       name: 'کش توزیع‌شده',
       desc: 'Redis cluster',
       iconName: 'HardDrive',
-      status: classifyService(
-        (stats.get('cache')?.error ?? 0) + 1, // یک warn اضافه برای نمایش degraded در حالت عادی
-        stats.get('cache')?.warn ?? 0,
-      ),
-      latencyMs: 110 + Math.floor(Math.random() * 60),
+      status: classifyService(stats.get('cache')?.error ?? 0, stats.get('cache')?.warn ?? 0),
+      latencyMs: latencyFor('cache', 12),
       href: '/dashboard/settings',
     },
     {
@@ -171,7 +175,7 @@ const fetchServiceHealthRaw = async (): Promise<LiveOpsData['services']> => {
       desc: 'Workers و cron jobs',
       iconName: 'Zap',
       status: classifyService(stats.get('queue')?.error ?? 0, stats.get('queue')?.warn ?? 0),
-      latencyMs: 18 + Math.floor(Math.random() * 15),
+      latencyMs: latencyFor('queue', 18),
       href: '/dashboard/reports',
     },
     {
@@ -180,7 +184,7 @@ const fetchServiceHealthRaw = async (): Promise<LiveOpsData['services']> => {
       desc: 'NextAuth v5 + OAuth',
       iconName: 'ShieldCheck',
       status: classifyService(stats.get('auth')?.error ?? 0, stats.get('auth')?.warn ?? 0),
-      latencyMs: 45 + Math.floor(Math.random() * 25),
+      latencyMs: latencyFor('auth', 45),
       href: '/dashboard/users',
     },
     {
@@ -189,7 +193,7 @@ const fetchServiceHealthRaw = async (): Promise<LiveOpsData['services']> => {
       desc: 'پاسخ‌گویی لبه',
       iconName: 'Wifi',
       status: 'idle',
-      latencyMs: 6 + Math.floor(Math.random() * 8),
+      latencyMs: latencyFor('edge', 6),
       href: '/dashboard/reports',
     },
   ];

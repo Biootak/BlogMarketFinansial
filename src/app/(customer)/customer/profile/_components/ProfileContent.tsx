@@ -22,6 +22,11 @@
  *  - masking برای nationalId/phone (toggleable)
  */
 
+import {
+  invalidateDashboardCache,
+  invalidatePublicCache,
+  invalidateUserCache,
+} from '@/actions/cacheActions';
 import type { CustomerProfile } from '@/actions/customer-portal';
 import {
   CUSTOMER_STATUS_CSSKEY,
@@ -38,6 +43,7 @@ import {
   SectionHeader,
   StatusPill,
 } from '@/app/(customer)/customer/_lib/customer-ui';
+import { ViewLink } from '@/components/ui/ViewLink';
 import {
   Building2,
   CheckCircle2,
@@ -49,6 +55,7 @@ import {
   Globe,
   IdCard,
   LogOut,
+  type LucideIcon,
   Mail,
   MapPin,
   Phone,
@@ -56,16 +63,16 @@ import {
   Shield,
   ShieldCheck,
   Sparkles,
-  type LucideIcon,
   TrendingUp,
   User,
   Wallet,
 } from 'lucide-react';
+import { signOut } from 'next-auth/react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
-import { ViewLink } from '@/components/ui/ViewLink';
-import ProfileEditForm from './ProfileEditForm';
 import s from './ProfileContent.module.css';
+import ProfileEditForm from './ProfileEditForm';
 
 interface Props {
   profile: CustomerProfile;
@@ -128,14 +135,49 @@ export default function ProfileContent({ profile, initialEditField }: Props) {
       : null,
   );
 
+  // خروج واقعی (به‌جای لینک مردهٔ /auth/signout)
+  const router = useRouter();
+  const [signingOut, setSigningOut] = useState(false);
+  const handleSignOut = async () => {
+    if (signingOut) return;
+    setSigningOut(true);
+    try {
+      const session = await import('next-auth/react').then((m) => m.getSession());
+      await Promise.all([
+        session?.user?.id ? invalidateUserCache(session.user.id) : Promise.resolve(),
+        invalidatePublicCache(),
+        invalidateDashboardCache(),
+      ]);
+      await signOut({ redirect: false });
+      router.push('/auth');
+    } catch {
+      setSigningOut(false);
+    }
+  };
+
   // Profile completion % — بر اساس فیلدهای اختیاری پرشده
   const completion = useMemo(() => {
     const fields: Array<{ key: string; label: string; href: string; filled: boolean }> = [
       { key: 'email', label: 'ایمیل', href: '/customer/settings', filled: Boolean(profile.email) },
-      { key: 'fatherName', label: 'نام پدر', href: '/customer/settings', filled: Boolean(profile.fatherName) },
-      { key: 'nationalId', label: 'شناسه هویتی', href: '/customer/settings', filled: Boolean(profile.nationalId) },
+      {
+        key: 'fatherName',
+        label: 'نام پدر',
+        href: '/customer/settings',
+        filled: Boolean(profile.fatherName),
+      },
+      {
+        key: 'nationalId',
+        label: 'شناسه هویتی',
+        href: '/customer/settings',
+        filled: Boolean(profile.nationalId),
+      },
       { key: 'city', label: 'شهر', href: '/customer/settings', filled: Boolean(profile.city) },
-      { key: 'address', label: 'آدرس', href: '/customer/settings', filled: Boolean(profile.address) },
+      {
+        key: 'address',
+        label: 'آدرس',
+        href: '/customer/settings',
+        filled: Boolean(profile.address),
+      },
     ];
     const filled = fields.filter((f) => f.filled).length;
     const total = fields.length;
@@ -275,7 +317,7 @@ export default function ProfileContent({ profile, initialEditField }: Props) {
             hint={
               profile.kycStatus === 'APPROVED'
                 ? 'تأیید شده'
-                : STATUS_LABEL[profile.kycStatus] ?? profile.kycStatus
+                : (STATUS_LABEL[profile.kycStatus] ?? profile.kycStatus)
             }
             href="/customer/kyc"
           />
@@ -289,11 +331,7 @@ export default function ProfileContent({ profile, initialEditField }: Props) {
           />
           <ProfileStat
             label="سقف تراکنش"
-            value={
-              profile.personalLimitAf != null
-                ? faAmount(profile.personalLimitAf, 'AFN')
-                : '—'
-            }
+            value={profile.personalLimitAf != null ? faAmount(profile.personalLimitAf, 'AFN') : '—'}
             icon={Wallet}
             tone="violet"
             hint="سقف شخصی"
@@ -321,15 +359,13 @@ export default function ProfileContent({ profile, initialEditField }: Props) {
                 <Sparkles size={12} strokeWidth={1.9} aria-hidden />
                 <span>پروفایل شما</span>
               </span>
-              <h2 className={s.completionTitle}>
-                {faNum(completion.percent)}٪ تکمیل شده
-              </h2>
+              <h2 className={s.completionTitle}>{faNum(completion.percent)}٪ تکمیل شده</h2>
               <p className={s.completionSub}>
                 {faNum(completion.missing.length)} فیلد اختیاری برای ارتقای سطح اعتماد باقی مانده.
               </p>
             </div>
             <div className={s.completionRing} aria-hidden>
-              <svg viewBox="0 0 100 100" className={s.completionRingSvg}>
+              <svg viewBox="0 0 100 100" className={s.completionRingSvg} role="presentation">
                 <circle
                   cx="50"
                   cy="50"
@@ -351,20 +387,25 @@ export default function ProfileContent({ profile, initialEditField }: Props) {
                   className={s.completionRingFill}
                 />
               </svg>
-              <span className={s.completionRingLabel}>
-                {faNum(completion.percent)}٪
-              </span>
+              <span className={s.completionRingLabel}>{faNum(completion.percent)}٪</span>
             </div>
           </div>
 
-          <div className={s.completionBar} role="progressbar" aria-valuenow={completion.percent} aria-valuemin={0} aria-valuemax={100}>
+          <div
+            className={s.completionBar}
+            role="progressbar"
+            aria-valuenow={completion.percent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            tabIndex={-1}
+          >
             <span
               className={s.completionBarFill}
               style={{ inlineSize: `${completion.percent}%` }}
             />
           </div>
 
-          <ul className={s.completionList} role="list">
+          <ul className={s.completionList}>
             {completion.missing.map((m) => (
               <li key={m.key} className={s.completionItem}>
                 <span className={s.completionItemDot} aria-hidden />
@@ -406,11 +447,7 @@ export default function ProfileContent({ profile, initialEditField }: Props) {
           </header>
 
           <div className={s.infoGrid}>
-            <InfoRow
-              label="نام کامل"
-              value={profile.fullName}
-              icon={User}
-            />
+            <InfoRow label="نام کامل" value={profile.fullName} icon={User} />
             {profile.fatherName && (
               <InfoRow label="نام پدر" value={profile.fatherName} icon={User} />
             )}
@@ -444,7 +481,7 @@ export default function ProfileContent({ profile, initialEditField }: Props) {
                 <a href={`tel:${profile.phone}`} dir="ltr" className={s.link}>
                   {showSensitive
                     ? profile.phone
-                    : profile.phone.slice(0, 4) + '•••' + profile.phone.slice(-3)}
+                    : `${profile.phone.slice(0, 4)}•••${profile.phone.slice(-3)}`}
                 </a>
               }
               icon={Phone}
@@ -462,9 +499,7 @@ export default function ProfileContent({ profile, initialEditField }: Props) {
                 mono
               />
             )}
-            {profile.city && (
-              <InfoRow label="شهر" value={profile.city} icon={MapPin} />
-            )}
+            {profile.city && <InfoRow label="شهر" value={profile.city} icon={MapPin} />}
             {profile.address && (
               <InfoRow
                 label="آدرس"
@@ -496,7 +531,7 @@ export default function ProfileContent({ profile, initialEditField }: Props) {
             </div>
           </div>
 
-          <ol className={s.kycSteps} role="list">
+          <ol className={s.kycSteps}>
             {kycSteps.map((step, i) => {
               const Icon = step.icon;
               return (
@@ -606,9 +641,7 @@ export default function ProfileContent({ profile, initialEditField }: Props) {
           href="/customer/kyc"
           icon={ShieldCheck}
           title="احراز هویت"
-          desc={
-            profile.kycStatus === 'APPROVED' ? 'تأیید شده' : 'تکمیل فرایند KYC'
-          }
+          desc={profile.kycStatus === 'APPROVED' ? 'تأیید شده' : 'تکمیل فرایند KYC'}
           tone="emerald"
         />
         <ActionCard
@@ -619,11 +652,11 @@ export default function ProfileContent({ profile, initialEditField }: Props) {
           tone="cyan"
         />
         <ActionCard
-          href="/auth/signout"
           icon={LogOut}
-          title="خروج"
+          title={signingOut ? 'در حال خروج...' : 'خروج'}
           desc="پایان جلسه کاری"
           tone="red"
+          onClick={() => void handleSignOut()}
         />
       </section>
     </div>
@@ -668,23 +701,17 @@ function ActionCard({
   title,
   desc,
   tone,
+  onClick,
 }: {
-  href: string;
+  href?: string;
   icon: LucideIcon;
   title: string;
   desc: string;
   tone: 'emerald' | 'violet' | 'cyan' | 'red';
+  onClick?: () => void;
 }) {
-  // مسیرهای داخلی پنل → view transition
-  // مسیرهای بیرونی (signout, …) → navigation ساده
-  const withTransition =
-    href.startsWith('/customer') || href.startsWith('/dashboard');
-  return (
-    <ViewLink
-      href={href}
-      withTransition={withTransition}
-      className={`${s.action} ${s[`action-${tone}`]}`}
-    >
+  const inner = (
+    <>
       <span className={s.actionIcon} aria-hidden>
         <Icon size={16} strokeWidth={1.9} />
       </span>
@@ -693,6 +720,22 @@ function ActionCard({
         <span className={s.actionDesc}>{desc}</span>
       </span>
       <ChevronLeft size={14} strokeWidth={1.8} className={s.actionArrow} aria-hidden />
+    </>
+  );
+  const className = `${s.action} ${s[`action-${tone}`]}`;
+  // بدون href → دکمهٔ اکشن (مثل خروج) که onClick واقعی اجرا می‌کند
+  if (!href) {
+    return (
+      <button type="button" className={className} onClick={onClick}>
+        {inner}
+      </button>
+    );
+  }
+  // مسیرهای داخلی پنل → view transition
+  const withTransition = href.startsWith('/customer') || href.startsWith('/dashboard');
+  return (
+    <ViewLink href={href} withTransition={withTransition} className={className}>
+      {inner}
     </ViewLink>
   );
 }

@@ -11,18 +11,53 @@
  *   4. EmptyState     (از primitives)
  */
 
+// ─── Intl singleton instances ────────────────────────────────────────────── //
+// ساخت Intl.NumberFormat / Intl.DateTimeFormat در هر فراخوانی هزینه‌بر است.
+// این instance ها module-level هستند و یک بار ساخته می‌شوند.
+
+const _numFa = new Intl.NumberFormat('fa-IR');
+const _numFaCompact = new Intl.NumberFormat('fa-IR', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
+
+const _dateFaFull = new Intl.DateTimeFormat('fa-IR', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+const _dateFaShort = new Intl.DateTimeFormat('fa-IR', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+const _dateFaTime = new Intl.DateTimeFormat('fa-IR', {
+  month: 'short',
+  day: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+const _dateFaTimeFull = new Intl.DateTimeFormat('fa-IR', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+});
+
 // ─── Formatters ──────────────────────────────────────────────────────────── //
 
 export function faNum(value: number | string): string {
   const n = typeof value === 'string' ? Number(value) : value;
   if (Number.isFinite(n)) {
-    return new Intl.NumberFormat('fa-IR').format(n);
+    return _numFa.format(n);
   }
   return String(value);
 }
 
 export function faNumCompact(value: number): string {
-  return new Intl.NumberFormat('fa-IR', { notation: 'compact', maximumFractionDigits: 1 }).format(value);
+  return _numFaCompact.format(value);
 }
 
 export function faAmount(amount: number, currency: string): string {
@@ -30,39 +65,19 @@ export function faAmount(amount: number, currency: string): string {
 }
 
 export function faDate(date: string | Date): string {
-  return new Intl.DateTimeFormat('fa-IR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(new Date(date));
+  return _dateFaFull.format(new Date(date));
 }
 
 export function faDateShort(date: string | Date): string {
-  return new Intl.DateTimeFormat('fa-IR', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  }).format(new Date(date));
+  return _dateFaShort.format(new Date(date));
 }
 
 export function faDateTime(date: string | Date): string {
-  return new Intl.DateTimeFormat('fa-IR', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(date));
+  return _dateFaTime.format(new Date(date));
 }
 
 export function faDateTimeFull(date: string | Date): string {
-  return new Intl.DateTimeFormat('fa-IR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  }).format(new Date(date));
+  return _dateFaTimeFull.format(new Date(date));
 }
 
 export function relativeTime(date: string | Date): string {
@@ -71,9 +86,9 @@ export function relativeTime(date: string | Date): string {
   const hr = Math.floor(diff / 3600000);
   const day = Math.floor(diff / 86400000);
   if (min < 1) return 'لحظاتی پیش';
-  if (min < 60) return `${faNum(min)} دقیقه پیش`;
-  if (hr < 24) return `${faNum(hr)} ساعت پیش`;
-  if (day < 30) return `${faNum(day)} روز پیش`;
+  if (min < 60) return `${_numFa.format(min)} دقیقه پیش`;
+  if (hr < 24) return `${_numFa.format(hr)} ساعت پیش`;
+  if (day < 30) return `${_numFa.format(day)} روز پیش`;
   return faDateShort(date);
 }
 
@@ -148,7 +163,10 @@ export const ACCOUNT_STATUS_CSSKEY: Record<string, 'success' | 'warning' | 'dang
   CLOSED: 'danger',
 };
 
-export const TXN_STATUS_CSSKEY: Record<string, 'pending' | 'progress' | 'success' | 'danger' | 'cancelled'> = {
+export const TXN_STATUS_CSSKEY: Record<
+  string,
+  'pending' | 'progress' | 'success' | 'danger' | 'cancelled'
+> = {
   PENDING: 'pending',
   PROCESSING: 'progress',
   COMPLETED: 'success',
@@ -165,12 +183,13 @@ export const KYC_STATUS_CSSKEY: Record<string, 'approved' | 'pending' | 'warning
   EXPIRED: 'warning',
 };
 
-export const CUSTOMER_STATUS_CSSKEY: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> = {
-  ACTIVE: 'success',
-  PROSPECT: 'neutral',
-  FROZEN: 'warning',
-  CLOSED: 'danger',
-};
+export const CUSTOMER_STATUS_CSSKEY: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> =
+  {
+    ACTIVE: 'success',
+    PROSPECT: 'neutral',
+    FROZEN: 'warning',
+    CLOSED: 'danger',
+  };
 
 export const KIND_CSSKEY: Record<string, 'credit' | 'debit' | 'neutral'> = {
   DEPOSIT: 'credit',

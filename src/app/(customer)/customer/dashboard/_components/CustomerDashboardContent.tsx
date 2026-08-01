@@ -97,7 +97,12 @@ import s from './CustomerDashboardContent.module.css';
 
 const KYC_CONFIG: Record<
   string,
-  { label: string; icon: LucideIcon; cssKey: 'approved' | 'pending' | 'warning' | 'danger'; cta?: string }
+  {
+    label: string;
+    icon: LucideIcon;
+    cssKey: 'approved' | 'pending' | 'warning' | 'danger';
+    cta?: string;
+  }
 > = {
   APPROVED: {
     label: 'احراز هویت تأیید شده',
@@ -162,21 +167,27 @@ function isNegativeKind(kind: string): boolean {
 // «سیستم زنده است».
 // ──────────────────────────────────────────────────────────────────────────── //
 
-function LatticePulse() {
-  // 12 × 8 = 96 نقطه
+// dots array یک‌بار در module-level محاسبه می‌شود — ثابت است و هیچ prop ندارد.
+const _LATTICE_DOTS: ReadonlyArray<{
+  x: number;
+  y: number;
+  delay: number;
+  cx: number;
+  cy: number;
+}> = (() => {
   const cols = 12;
   const rows = 8;
-  const dots: Array<{ x: number; y: number; delay: number }> = [];
+  const arr: Array<{ x: number; y: number; delay: number; cx: number; cy: number }> = [];
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
-      const cx = x - (cols - 1) / 2;
-      const cy = y - (rows - 1) / 2;
-      const distance = Math.sqrt(cx * cx + cy * cy);
-      // هرچه از مرکز دورتر، دیرتر روشن شود
-      const delay = distance * 90;
-      dots.push({ x, y, delay });
+      const distance = Math.sqrt((x - (cols - 1) / 2) ** 2 + (y - (rows - 1) / 2) ** 2);
+      arr.push({ x, y, delay: distance * 90, cx: 50 + x * 100, cy: 20 + y * 40 });
     }
   }
+  return arr;
+})();
+
+function LatticePulse() {
   return (
     <div className={s.lattice} aria-hidden>
       <svg
@@ -192,20 +203,16 @@ function LatticePulse() {
           </radialGradient>
         </defs>
         <rect width="1200" height="320" fill="url(#lattice-glow)" />
-        {dots.map((d) => {
-          const cx = 50 + d.x * 100;
-          const cy = 20 + d.y * 40;
-          return (
-            <circle
-              key={`${d.x}-${d.y}`}
-              cx={cx}
-              cy={cy}
-              r="1.4"
-              className={s.latticeDot}
-              style={{ animationDelay: `${d.delay}ms` }}
-            />
-          );
-        })}
+        {_LATTICE_DOTS.map((d) => (
+          <circle
+            key={`${d.x}-${d.y}`}
+            cx={d.cx}
+            cy={d.cy}
+            r="1.4"
+            className={s.latticeDot}
+            style={{ animationDelay: `${d.delay}ms` }}
+          />
+        ))}
       </svg>
     </div>
   );
@@ -274,7 +281,13 @@ function LiveBalanceRibbon({
 
         <div className={s.ribbonCenter}>
           <div className={s.ribbonSpark} aria-hidden>
-            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className={s.ribbonSparkSvg} aria-hidden role="presentation">
+            <svg
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+              className={s.ribbonSparkSvg}
+              aria-hidden
+              role="presentation"
+            >
               <defs>
                 <linearGradient id="ribbon-spark-grad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="currentColor" stopOpacity="0.35" />
@@ -282,7 +295,13 @@ function LiveBalanceRibbon({
                 </linearGradient>
               </defs>
               <path d={fillD} fill="url(#ribbon-spark-grad)" />
-              <path d={pathD} fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              <path
+                d={pathD}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+              />
               {points.map((p, i) => {
                 const x = (i / Math.max(1, points.length - 1)) * 100;
                 const y = 100 - ((p.y - minY) / range) * 100;
@@ -416,7 +435,9 @@ function LedgerGrid({
 // label بالا: مجموع، روزهای فعال، میانگین، رشته.
 // ──────────────────────────────────────────────────────────────────────────── //
 
-function ActivityHeatmap({ heatmap }: { heatmap: Array<{ date: string; count: number; volume: number }> }) {
+function ActivityHeatmap({
+  heatmap,
+}: { heatmap: Array<{ date: string; count: number; volume: number }> }) {
   const max = Math.max(1, ...heatmap.map((c) => c.count));
   const totalCount = heatmap.reduce((s, c) => s + c.count, 0);
   const activeDays = heatmap.filter((c) => c.count > 0).length;
@@ -492,7 +513,9 @@ function ActivityHeatmap({ heatmap }: { heatmap: Array<{ date: string; count: nu
         <div className={s.heatmapStatBox}>
           <span className={s.heatmapStatLabel}>پردسترتـرین</span>
           <span className={s.heatmapStatValue}>
-            <strong>{formatPersianNumber(heatmap.filter((c) => c.count === max && c.count > 0).length)}</strong>
+            <strong>
+              {formatPersianNumber(heatmap.filter((c) => c.count === max && c.count > 0).length)}
+            </strong>
             <span className={s.heatmapStatSub}>روز</span>
           </span>
         </div>
@@ -652,7 +675,7 @@ function RecentTransactions({
                   <span
                     className={cn(
                       'font-mono font-bold',
-                      negative ? 'text-red-600' : credit ? 'text-emerald-600' : 'text-neutral-700'
+                      negative ? 'text-red-600' : credit ? 'text-emerald-600' : 'text-neutral-700',
                     )}
                   >
                     {credit ? '+' : negative ? '−' : ''}
@@ -669,8 +692,8 @@ function RecentTransactions({
                       statusKey === 'success'
                         ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20'
                         : statusKey === 'danger'
-                        ? 'bg-red-50 text-red-700 ring-red-600/20'
-                        : 'bg-amber-50 text-amber-700 ring-amber-600/20'
+                          ? 'bg-red-50 text-red-700 ring-red-600/20'
+                          : 'bg-amber-50 text-amber-700 ring-amber-600/20',
                     )}
                   >
                     {STATUS_LABEL[txn.status] ?? txn.status}
@@ -700,14 +723,62 @@ interface QuickAction {
 }
 
 const QUICK_ACTIONS: QuickAction[] = [
-  { href: '/customer/transfer?action=transfer', label: 'انتقال سریع', icon: Zap, hint: 'انتقال آنی', accent: 'primary' },
-  { href: '/customer/accounts', label: 'حساب جدید', icon: Plus, hint: 'افتتاح حساب', accent: 'emerald' },
-  { href: '/customer/kyc', label: 'ارتقاء KYC', icon: ShieldCheck, hint: 'افزایش سقف', accent: 'violet' },
-  { href: '/customer/transactions', label: 'تاریخچه', icon: History, hint: 'همه تراکنش‌ها', accent: 'cyan' },
-  { href: '/customer/requests', label: 'درخواست‌های من', icon: ClipboardList, hint: 'پیگیری درخواست‌ها', accent: 'amber' },
-  { href: '/customer/security', label: 'مرکز امنیت', icon: Lock, hint: 'رمز، 2FA، دستگاه‌ها', accent: 'rose' },
-  { href: '/customer/notifications', label: 'اعلان‌ها', icon: Bell, hint: 'پیام‌های مهم', accent: 'amber' },
-  { href: '/customer/documents', label: 'مدارک', icon: KeyRound, hint: 'بارگذاری و پیگیری', accent: 'rose' },
+  {
+    href: '/customer/transfer?action=transfer',
+    label: 'انتقال سریع',
+    icon: Zap,
+    hint: 'انتقال آنی',
+    accent: 'primary',
+  },
+  {
+    href: '/customer/accounts',
+    label: 'حساب جدید',
+    icon: Plus,
+    hint: 'افتتاح حساب',
+    accent: 'emerald',
+  },
+  {
+    href: '/customer/kyc',
+    label: 'ارتقاء KYC',
+    icon: ShieldCheck,
+    hint: 'افزایش سقف',
+    accent: 'violet',
+  },
+  {
+    href: '/customer/transactions',
+    label: 'تاریخچه',
+    icon: History,
+    hint: 'همه تراکنش‌ها',
+    accent: 'cyan',
+  },
+  {
+    href: '/customer/requests',
+    label: 'درخواست‌های من',
+    icon: ClipboardList,
+    hint: 'پیگیری درخواست‌ها',
+    accent: 'amber',
+  },
+  {
+    href: '/customer/security',
+    label: 'مرکز امنیت',
+    icon: Lock,
+    hint: 'رمز، 2FA، دستگاه‌ها',
+    accent: 'rose',
+  },
+  {
+    href: '/customer/notifications',
+    label: 'اعلان‌ها',
+    icon: Bell,
+    hint: 'پیام‌های مهم',
+    accent: 'amber',
+  },
+  {
+    href: '/customer/documents',
+    label: 'مدارک',
+    icon: KeyRound,
+    hint: 'بارگذاری و پیگیری',
+    accent: 'rose',
+  },
 ];
 
 function QuickActions() {
@@ -727,11 +798,7 @@ function QuickActions() {
           // انتقال به سایت (money-transfer): بدون transition
           const isInternal = a.href.startsWith('/customer') || a.href.startsWith('/dashboard');
           return (
-            <li
-              key={a.href}
-              className={s.quickItem}
-              style={{ animationDelay: `${i * 40}ms` }}
-            >
+            <li key={a.href} className={s.quickItem} style={{ animationDelay: `${i * 40}ms` }}>
               <ViewLink
                 href={a.href}
                 withTransition={isInternal}
@@ -764,11 +831,7 @@ function KycAlert({ status }: { status: string }) {
   const cfg = KYC_CONFIG[status] ?? KYC_CONFIG.NOT_STARTED;
   const Icon = cfg.icon;
   return (
-    <div
-      className={cn(s.kycAlert, s[`kycAlert--${cfg.cssKey}`])}
-      role="status"
-      aria-live="polite"
-    >
+    <div className={cn(s.kycAlert, s[`kycAlert--${cfg.cssKey}`])} role="status" aria-live="polite">
       <span className={s.kycAlertIcon} aria-hidden>
         <Icon size={13} />
       </span>
@@ -852,7 +915,9 @@ export default function CustomerDashboardContent({ data }: { data: CustomerDashb
   const sparkDelta = useMemo(() => {
     if (weeklySpark.length < 8) return { sign: 'flat' as const, label: 'بدون مقایسه' };
     const last7 = weeklySpark.slice(-7).reduce((s, p) => s + p.amount, 0);
-    const prev7 = weeklySpark.slice(0, Math.max(1, weeklySpark.length - 7)).reduce((s, p) => s + p.amount, 0);
+    const prev7 = weeklySpark
+      .slice(0, Math.max(1, weeklySpark.length - 7))
+      .reduce((s, p) => s + p.amount, 0);
     if (prev7 === 0) return { sign: 'flat' as const, label: 'اولین دوره' };
     const diff = ((last7 - prev7) / prev7) * 100;
     if (Math.abs(diff) < 2) return { sign: 'flat' as const, label: 'بدون تغییر قابل توجه' };

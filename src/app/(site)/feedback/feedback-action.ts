@@ -7,6 +7,7 @@
  * contact-action.ts). امتیاز را validation می‌کند تا ورودی نامعتبر رد شود.
  */
 
+import { v4 as createId } from 'uuid';
 import prisma from '@/lib/db';
 
 export interface FeedbackFormState {
@@ -30,7 +31,6 @@ export async function submitFeedbackAction(formData: FormData): Promise<Feedback
 
   try {
     // ذخیره در DB (ContactSubmission) — برای پیگیری ادمین
-    const { v4 as createId } = await import('uuid');
     await prisma.contactSubmission.create({
       data: {
         id: createId(),
@@ -39,6 +39,7 @@ export async function submitFeedbackAction(formData: FormData): Promise<Feedback
         subject: rating ? `بازخورد — ${rating}/۵` : 'بازخورد',
         message,
         status: 'NEW',
+        updatedAt: new Date(),
       },
     });
 

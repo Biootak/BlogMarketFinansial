@@ -17,7 +17,7 @@
 import { getRecentApiActivity } from '@/actions/developer-portal';
 import { Activity, ArrowUpRight, Clock, Code2, ExternalLink, Globe, Terminal } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState } from 'react';
 import s from './ApiActivityWidget.module.css';
 
 type ApiCall = {
@@ -61,19 +61,24 @@ const faTime = (iso: string) => {
 
 export default function ApiActivityWidget() {
   const [calls, setCalls] = useState<ApiCall[]>([]);
-  const [, startTransition] = useTransition();
   const [hasFetched, setHasFetched] = useState(false);
 
   useEffect(() => {
-    startTransition(async () => {
+    let cancelled = false;
+    (async () => {
       try {
         const data = (await getRecentApiActivity(10)) as unknown as ApiCall[];
-        setCalls(data);
-        setHasFetched(true);
+        if (!cancelled) {
+          setCalls(data);
+          setHasFetched(true);
+        }
       } catch {
-        setHasFetched(true);
+        if (!cancelled) setHasFetched(true);
       }
-    });
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (!hasFetched) {
@@ -206,10 +211,10 @@ export default function ApiActivityWidget() {
             /api/v1
           </code>
         </span>
-        <a href="/docs/api" className={s.footLink}>
+        <Link href="/customer/developer" className={s.footLink}>
           <Code2 size={10} aria-hidden />
           مستندات کامل
-        </a>
+        </Link>
       </footer>
     </section>
   );

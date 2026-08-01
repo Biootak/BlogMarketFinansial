@@ -11,12 +11,12 @@ import {
   HiOutlineBell,
   HiOutlineBuildingStorefront,
   HiOutlineChartBarSquare,
+  HiOutlineCircleStack,
   HiOutlineClipboardDocumentCheck,
   HiOutlineClipboardDocumentList,
   HiOutlineCog6Tooth,
   HiOutlineCommandLine,
   HiOutlineCreditCard,
-  HiOutlineCircleStack,
   HiOutlineCurrencyDollar,
   HiOutlineDevicePhoneMobile,
   HiOutlineDocumentText,
@@ -605,6 +605,16 @@ export function getMenu(role: UserRole): NavSection[] {
     label: 'تسویه‌حساب',
     roles: ['OWNER', 'MANAGER'],
   };
+  // FIX (2026-08-01): بررسی KYC مشتریان صرافی — صراف قبلاً راهی نداشت
+  // (فقط ادمین پلتفرم از /dashboard/kyc-review). حالا از پنل خودش.
+  const exchangeKycReview: MenuItem = {
+    id: 'exchangeKycReview',
+    href: '/exchange/kyc-review',
+    icon: HiOutlineShieldCheck({ className: ICON_CLASS }),
+    label: 'بررسی KYC',
+    title: 'تأیید احراز هویت مشتریان صرافی',
+    roles: ['OWNER', 'MANAGER', 'STAFF'],
+  };
   const exchangeProfilePanel: MenuItem = {
     id: 'exchangeProfilePanel',
     href: '/exchange/profile',
@@ -638,7 +648,15 @@ export function getMenu(role: UserRole): NavSection[] {
           id: 'financial',
           index: '۰۲',
           label: 'مالی',
-          items: [customerWallet, customerAccounts, customerCrypto, customerTransfer, customerBeneficiaries, customerTransactions, customerRequests],
+          items: [
+            customerWallet,
+            customerAccounts,
+            customerCrypto,
+            customerTransfer,
+            customerBeneficiaries,
+            customerTransactions,
+            customerRequests,
+          ],
         },
         { id: 'identity', index: '۰۳', label: 'هویت', items: [customerKyc, customerDocuments] },
         {
@@ -669,7 +687,7 @@ export function getMenu(role: UserRole): NavSection[] {
           id: 'ops',
           index: '۰۳',
           label: 'عملیات',
-          items: [exchangeStaffPanel, exchangeReports, exchangeSettlement],
+          items: [exchangeStaffPanel, exchangeKycReview, exchangeReports, exchangeSettlement],
         },
         {
           id: 'account',

@@ -1,6 +1,5 @@
 'use client';
 
-import { likeItem } from '@/actions/postActions';
 import SingleCommentForm from '@/app/(site)/(singles)/SingleCommentForm';
 import Avatar from '@/components/Avatar/Avatar';
 import ModalReportItem from '@/components/ModalReportItem/ModalReportItem';
@@ -11,7 +10,7 @@ import type { CommentWithRelationsAndLikes, NcDropDownItem } from '@/types/types
 import twFocusClass from '@/utils/twFocusClass';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import React, { type FC, useRef, useState } from 'react';
+import { type FC, useRef, useState } from 'react';
 import { HiOutlineFlag, HiOutlinePencil, HiOutlineReply, HiOutlineTrash } from 'react-icons/hi';
 import CommentCardLikeReply from '../CommentCardLikeReply/CommentCardLikeReply';
 import FormattedDate from '../FormattedDate';
@@ -135,8 +134,7 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
         });
         closeModalDeleteComment();
       }
-    } catch (error) {
-      console.error('خطا در حذف نظر:', error);
+    } catch {
       toast({
         title: 'خطا',
         description: 'خطا در حذف نظر',
@@ -205,7 +203,7 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
             </div>
             <Link
               className="flex-shrink-0 font-semibold text-neutral-800 dark:text-neutral-100"
-              href={`/profile/${author.id}`}
+              href={`/author/${author.id}`}
             >
               {author.name}
             </Link>

@@ -17,25 +17,18 @@
  * hide-on-scroll, safe-area inset, RTL.
  */
 
+import s from '@/components/Header/MobileBottomNav.module.css';
 import { usePathname, useRouter } from 'next/navigation';
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  type FC,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import {
-  HiOutlineHome,
-  HiOutlineUserCircle,
   HiOutlineBell,
   HiOutlineDocumentText,
+  HiOutlineHome,
+  HiOutlineShieldCheck,
+  HiOutlineUserCircle,
   HiOutlineUsers,
   HiOutlineWallet,
-  HiOutlineShieldCheck,
 } from 'react-icons/hi2';
-import s from '@/components/Header/MobileBottomNav.module.css';
 
 type Role =
   | 'USER'
@@ -76,7 +69,8 @@ const DashboardBottomNav: FC<Props> = ({ role, unreadCount = 0, kycVerified = tr
 
   // Resolve "primary" item based on role.
   const items: NavItem[] = useMemo(() => {
-    const isAuthor = role === 'AUTHOR' || role === 'ADMIN' || role === 'OWNER' || role === 'SUPERADMIN';
+    const isAuthor =
+      role === 'AUTHOR' || role === 'ADMIN' || role === 'OWNER' || role === 'SUPERADMIN';
     const isCustomer = role === 'CUSTOMER' || role === 'TEST_CUSTOMER' || role === 'MERCHANT';
     const isExchange = role === 'EXCHANGE';
 
@@ -93,26 +87,31 @@ const DashboardBottomNav: FC<Props> = ({ role, unreadCount = 0, kycVerified = tr
         }
       : isCustomer
         ? {
+            // FIX (2026-08-01): CUSTOMER از /dashboard بلاک است (middleware
+            // DASHBOARD_BLOCKED_ROLES) — قبلاً primary به /dashboard/wallet می‌رفت
+            // و middleware آن را به /customer/dashboard redirect می‌کرد (حلقهٔ UX).
             id: 'wallet',
-            href: '/dashboard/wallet',
+            href: '/customer/wallet',
             label: 'کیف پول',
             icon: HiOutlineWallet,
             primary: true,
-            matchPrefixes: ['/dashboard/wallet', '/beneficiaries'],
+            matchPrefixes: ['/customer/wallet', '/beneficiaries'],
           }
         : isExchange
           ? {
+              // FIX (2026-08-01): EXCHANGE از /dashboard بلاک است — primary به
+              // پنل صرافی می‌رود نه /dashboard/customers (که redirect loop بود).
               id: 'customers',
-              href: '/dashboard/customers',
+              href: '/exchange/customers',
               label: 'مشتریان',
               icon: HiOutlineUsers,
               primary: true,
-              matchPrefixes: ['/dashboard/customers', '/dashboard/requests'],
+              matchPrefixes: ['/exchange/customers', '/exchange/dashboard'],
             }
           : {
               // USER / SUPPORT / unknown
               // اگر KYC تأیید نشده → primary = KYC؛ در غیر این صورت → wallet
-              ...((!kycVerified)
+              ...(!kycVerified
                 ? {
                     id: 'kyc',
                     href: '/dashboard/kyc',
@@ -131,30 +130,86 @@ const DashboardBottomNav: FC<Props> = ({ role, unreadCount = 0, kycVerified = tr
                   }),
             };
 
-    return [
-      {
-        id: 'home',
-        href: '/dashboard',
-        label: 'داشبورد',
-        icon: HiOutlineHome,
-        matchPrefixes: ['/dashboard'],
-      },
-      primary,
-      {
-        id: 'notifications',
-        href: '/dashboard/notifications',
-        label: 'اعلان‌ها',
-        icon: HiOutlineBell,
-        matchPrefixes: ['/dashboard/notifications'],
-      },
-      {
-        id: 'profile',
-        href: '/dashboard/edit-profile',
-        label: 'پروفایل',
-        icon: HiOutlineUserCircle,
-        matchPrefixes: ['/dashboard/edit-profile', '/dashboard/settings', '/dashboard/security'],
-      },
-    ];
+    // FIX (2026-08-01): home/notifications/profile برای CUSTOMER و EXCHANGE باید
+    // به پورتال خودشان بروند — /dashboard/* برای این نقش‌ها بلاک است (middleware)
+    // و قبلاً redirect loop می‌ساخت.
+    const home: NavItem = isCustomer
+      ? {
+          id: 'home',
+          href: '/customer/dashboard',
+          label: 'داشبورد',
+          icon: HiOutlineHome,
+          matchPrefixes: ['/customer/dashboard'],
+        }
+      : isExchange
+        ? {
+            id: 'home',
+            href: '/exchange/dashboard',
+            label: 'داشبورد',
+            icon: HiOutlineHome,
+            matchPrefixes: ['/exchange/dashboard'],
+          }
+        : {
+            id: 'home',
+            href: '/dashboard',
+            label: 'داشبورد',
+            icon: HiOutlineHome,
+            matchPrefixes: ['/dashboard'],
+          };
+
+    const notifications: NavItem = isCustomer
+      ? {
+          id: 'notifications',
+          href: '/customer/notifications',
+          label: 'اعلان‌ها',
+          icon: HiOutlineBell,
+          matchPrefixes: ['/customer/notifications'],
+        }
+      : isExchange
+        ? {
+            id: 'notifications',
+            href: '/exchange/dashboard',
+            label: 'اعلان‌ها',
+            icon: HiOutlineBell,
+            matchPrefixes: ['/exchange/dashboard'],
+          }
+        : {
+            id: 'notifications',
+            href: '/dashboard/notifications',
+            label: 'اعلان‌ها',
+            icon: HiOutlineBell,
+            matchPrefixes: ['/dashboard/notifications'],
+          };
+
+    const profile: NavItem = isCustomer
+      ? {
+          id: 'profile',
+          href: '/customer/profile',
+          label: 'پروفایل',
+          icon: HiOutlineUserCircle,
+          matchPrefixes: ['/customer/profile', '/customer/settings'],
+        }
+      : isExchange
+        ? {
+            id: 'profile',
+            href: '/exchange/profile',
+            label: 'پروفایل',
+            icon: HiOutlineUserCircle,
+            matchPrefixes: ['/exchange/profile', '/exchange/settings'],
+          }
+        : {
+            id: 'profile',
+            href: '/dashboard/edit-profile',
+            label: 'پروفایل',
+            icon: HiOutlineUserCircle,
+            matchPrefixes: [
+              '/dashboard/edit-profile',
+              '/dashboard/settings',
+              '/dashboard/security',
+            ],
+          };
+
+    return [home, primary, notifications, profile];
   }, [role]);
 
   useEffect(() => {

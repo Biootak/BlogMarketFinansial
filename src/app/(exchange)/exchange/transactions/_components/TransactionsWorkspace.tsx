@@ -18,22 +18,15 @@
 import type { CustomerRow } from '@/actions/exchange-customers';
 import { type TransactionRow, getTransactions } from '@/actions/exchange-transactions';
 import { TX_KIND_FA } from '@/lib/exchange-labels';
-import {
-  type SortKey,
-  TransactionCommandStrip,
-} from './TransactionCommandStrip';
+import { type TxRowEnriched, aggregateRows, enrichRows } from '@/lib/exchange-tx-formatters';
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { type SortKey, TransactionCommandStrip } from './TransactionCommandStrip';
 import { TransactionDrawer } from './TransactionDrawer';
 import { TransactionEmptyState } from './TransactionEmptyState';
 import { TransactionKpiRibbon } from './TransactionKpiRibbon';
 import { TransactionRow as TransactionRowItem } from './TransactionRow';
-import {
-  type TxRowEnriched,
-  aggregateRows,
-  enrichRows,
-} from '@/lib/exchange-tx-formatters';
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import s from './TransactionsWorkspace.module.css';
 
 const PAGE_SIZE = 25;
@@ -57,8 +50,10 @@ export default function TransactionsWorkspace({
 }: Props) {
   const searchParams = useSearchParams();
   const [rows, setRows] = useState<TransactionRow[]>(initialRows);
-  const [kindFilter, setKindFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
+  // FIX (2026-08-01): ?status=PENDING از QuickActions/links باید filter را اعمال کند.
+  // قبلاً statusFilter با 'all' شروع می‌شد → «بررسی در انتظارها» هیچ فیلتری نمی‌زد.
+  const [kindFilter, setKindFilter] = useState<string>(searchParams.get('kind') ?? 'all');
+  const [statusFilter, setStatusFilter] = useState<string>(searchParams.get('status') ?? 'all');
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<SortKey>('newest');
   const [page, setPage] = useState(1);
@@ -118,9 +113,7 @@ export default function TransactionsWorkspace({
     else if (sort === 'oldest') sorted.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
     else if (sort === 'amount') sorted.sort((a, b) => b.amount - a.amount);
     else if (sort === 'customer')
-      sorted.sort((a, b) =>
-        (a.customerName ?? '').localeCompare(b.customerName ?? '', 'fa-IR'),
-      );
+      sorted.sort((a, b) => (a.customerName ?? '').localeCompare(b.customerName ?? '', 'fa-IR'));
     return sorted;
   }, [enriched, kindFilter, statusFilter, query, sort]);
 
@@ -196,20 +189,10 @@ export default function TransactionsWorkspace({
           <span className={s.activeLabel}>
             نمایش {pageRows.length} از {totalFiltered} تراکنش
             {kindFilter !== 'all' && (
-              <span className={s.activeChip}>
-                نوع: {TX_KIND_FA[kindFilter] ?? kindFilter}
-              </span>
+              <span className={s.activeChip}>نوع: {TX_KIND_FA[kindFilter] ?? kindFilter}</span>
             )}
-            {statusFilter !== 'all' && (
-              <span className={s.activeChip}>
-                وضعیت: {statusFilter}
-              </span>
-            )}
-            {query && (
-              <span className={s.activeChip}>
-                جستجو: «{query}»
-              </span>
-            )}
+            {statusFilter !== 'all' && <span className={s.activeChip}>وضعیت: {statusFilter}</span>}
+            {query && <span className={s.activeChip}>جستجو: «{query}»</span>}
           </span>
           <button type="button" className={s.clearLink} onClick={clearFilters}>
             پاک کردن همه
@@ -273,14 +256,11 @@ export default function TransactionsWorkspace({
       {/* ── 6. Load more server (اگر داده بیشتر باشد) ────────────── */}
       {hasMore && !hasFilter && page === totalPages && (
         <div className={s.loadMore}>
-          <button
-            type="button"
-            className={s.loadMoreBtn}
-            onClick={loadMore}
-            disabled={loadingMore}
-          >
+          <button type="button" className={s.loadMoreBtn} onClick={loadMore} disabled={loadingMore}>
             {loadingMore && <Loader2 size={14} className={s.spin} aria-hidden />}
-            {loadingMore ? 'در حال بارگذاری…' : `بارگذاری ${Math.max(0, total - rows.length)} تراکنش دیگر`}
+            {loadingMore
+              ? 'در حال بارگذاری…'
+              : `بارگذاری ${Math.max(0, total - rows.length)} تراکنش دیگر`}
           </button>
         </div>
       )}

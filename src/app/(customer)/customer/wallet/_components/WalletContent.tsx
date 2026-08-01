@@ -1,5 +1,7 @@
 'use client';
 
+import { useMemo } from 'react';
+
 /**
  * CustomerWalletContent — کیف پول مشتری (2026)
  * ----------------------------------------------------------------------------
@@ -35,10 +37,7 @@ import {
   isDebitKind,
   relativeTime,
 } from '@/app/(customer)/customer/_lib/customer-formatters';
-import {
-  SectionHeader,
-  StatusPill,
-} from '@/app/(customer)/customer/_lib/customer-ui';
+import { SectionHeader, StatusPill } from '@/app/(customer)/customer/_lib/customer-ui';
 import {
   ArrowDownLeft,
   ArrowLeftRight,
@@ -78,13 +77,7 @@ const KIND_ICON: Record<string, typeof ArrowDownLeft> = {
 
 function HeroRings() {
   return (
-    <svg
-      className={s.heroRings}
-      viewBox="0 0 400 400"
-      fill="none"
-      aria-hidden
-      role="presentation"
-    >
+    <svg className={s.heroRings} viewBox="0 0 400 400" fill="none" aria-hidden role="presentation">
       <title>ambient balance rings</title>
       <circle
         cx="200"
@@ -142,18 +135,48 @@ interface QuickAction {
 }
 
 const QUICK_ACTIONS: QuickAction[] = [
-  { href: '/customer/transfer?action=deposit', label: 'واریز', icon: Download, hint: 'شارژ حساب', accent: 'success' },
-  { href: '/customer/transfer?action=withdraw', label: 'برداشت', icon: Upload, hint: 'برداشت از حساب', accent: 'error' },
-  { href: '/customer/transfer', label: 'انتقال', icon: Send, hint: 'به حساب دیگر', accent: 'brand' },
-  { href: '/customer/transfer?action=exchange', label: 'تبدیل ارز', icon: ArrowLeftRight, hint: 'تبدیل فوری', accent: 'default' },
+  {
+    href: '/customer/transfer?action=deposit',
+    label: 'واریز',
+    icon: Download,
+    hint: 'شارژ حساب',
+    accent: 'success',
+  },
+  {
+    href: '/customer/transfer?action=withdraw',
+    label: 'برداشت',
+    icon: Upload,
+    hint: 'برداشت از حساب',
+    accent: 'error',
+  },
+  {
+    href: '/customer/transfer',
+    label: 'انتقال',
+    icon: Send,
+    hint: 'به حساب دیگر',
+    accent: 'brand',
+  },
+  {
+    href: '/customer/transfer?action=exchange',
+    label: 'تبدیل ارز',
+    icon: ArrowLeftRight,
+    hint: 'تبدیل فوری',
+    accent: 'default',
+  },
 ];
 
 // ─── Main Component ─────────────────────────────────────────────────────── //
 
 export function CustomerWalletContent({ profile, accounts, recentTransactions }: Props) {
-  const activeAccounts = accounts.filter((a) => a.status === 'ACTIVE');
-  const totalBalance = activeAccounts.reduce((s, a) => s + a.balance, 0);
-  const primary = activeAccounts[0] ?? accounts[0] ?? null;
+  const activeAccounts = useMemo(() => accounts.filter((a) => a.status === 'ACTIVE'), [accounts]);
+  const totalBalance = useMemo(
+    () => activeAccounts.reduce((s, a) => s + a.balance, 0),
+    [activeAccounts],
+  );
+  const primary = useMemo(
+    () => activeAccounts[0] ?? accounts[0] ?? null,
+    [activeAccounts, accounts],
+  );
   const kycApproved = profile.kycStatus === 'APPROVED';
   const kycLevel = profile.kycLevel;
 
@@ -162,7 +185,11 @@ export function CustomerWalletContent({ profile, accounts, recentTransactions }:
       {/* ─── KYC Banner ─────────────────────────────────────────── */}
       {!kycApproved && (
         <div className={s.kycBanner} role="alert">
-          <ShieldAlert size={18} aria-hidden style={{ color: 'var(--nova-amber)', flexShrink: 0 }} />
+          <ShieldAlert
+            size={18}
+            aria-hidden
+            style={{ color: 'var(--nova-amber)', flexShrink: 0 }}
+          />
           <div className={s.kycBannerContent}>
             <p className={s.kycBannerText}>
               برای استفادهٔ کامل از کیف پول، احراز هویت خود را تکمیل کنید.
@@ -171,12 +198,7 @@ export function CustomerWalletContent({ profile, accounts, recentTransactions }:
               <div
                 className={s.kycProgressBar}
                 style={{
-                  inlineSize:
-                    kycLevel === 'NONE'
-                      ? '10%'
-                      : kycLevel === 'LEVEL_1'
-                        ? '50%'
-                        : '80%',
+                  inlineSize: kycLevel === 'NONE' ? '10%' : kycLevel === 'LEVEL_1' ? '50%' : '80%',
                 }}
               />
             </div>
@@ -214,13 +236,17 @@ export function CustomerWalletContent({ profile, accounts, recentTransactions }:
 
       {/* ─── Account Grid ─────────────────────────────────────── */}
       <section aria-label="حساب‌های من">
-        <SectionHeader title="حساب‌ها" sub={`${faNum(activeAccounts.length)} حساب فعال`} icon={CreditCard} />
+        <SectionHeader
+          title="حساب‌ها"
+          sub={`${faNum(activeAccounts.length)} حساب فعال`}
+          icon={CreditCard}
+        />
         {activeAccounts.length === 0 ? (
-          <div className={s.accountsEmpty} role="status">
+          <output className={s.accountsEmpty}>
             <Wallet size={36} aria-hidden className={s.emptyIcon} />
             <p className={s.emptyTitle}>حساب فعالی ندارید</p>
             <p className={s.emptyDesc}>برای استفاده از خدمات، با صرافی تماس بگیرید.</p>
-          </div>
+          </output>
         ) : (
           <ul className={s.accountGrid}>
             {activeAccounts.map((a, i) => {
@@ -267,11 +293,7 @@ export function CustomerWalletContent({ profile, accounts, recentTransactions }:
           {QUICK_ACTIONS.map((a, i) => {
             const Icon = a.icon;
             return (
-              <li
-                key={a.label}
-                className={s.quickItem}
-                style={{ animationDelay: `${i * 50}ms` }}
-              >
+              <li key={a.label} className={s.quickItem} style={{ animationDelay: `${i * 50}ms` }}>
                 <Link
                   href={a.href}
                   className={`${s.quickCard} ${s[`quickCard--${a.accent}`] ?? ''}`}
@@ -293,7 +315,9 @@ export function CustomerWalletContent({ profile, accounts, recentTransactions }:
       <section aria-label="تراکنش‌های اخیر">
         <SectionHeader
           title="تراکنش‌های اخیر"
-          sub={recentTransactions.length > 0 ? `${faNum(recentTransactions.length)} مورد` : undefined}
+          sub={
+            recentTransactions.length > 0 ? `${faNum(recentTransactions.length)} مورد` : undefined
+          }
           icon={History}
           actions={
             <Link href="/customer/transactions" className={s.linkAction}>
@@ -303,11 +327,11 @@ export function CustomerWalletContent({ profile, accounts, recentTransactions }:
           }
         />
         {recentTransactions.length === 0 ? (
-          <div className={s.txEmpty} role="status">
+          <output className={s.txEmpty}>
             <Clock size={32} aria-hidden className={s.emptyIcon} />
             <p className={s.emptyTitle}>هنوز تراکنشی ثبت نشده</p>
             <p className={s.emptyDesc}>اولین واریز خود را انجام دهید تا تاریخچه شروع شود.</p>
-          </div>
+          </output>
         ) : (
           <ul className={s.txList}>
             {recentTransactions.map((txn, i) => {
@@ -321,10 +345,7 @@ export function CustomerWalletContent({ profile, accounts, recentTransactions }:
                   className={s.txRow}
                   style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}
                 >
-                  <span
-                    className={`${s.txIcon} ${s[`txIcon--${statusKey}`] ?? ''}`}
-                    aria-hidden
-                  >
+                  <span className={`${s.txIcon} ${s[`txIcon--${statusKey}`] ?? ''}`} aria-hidden>
                     <Icon size={14} />
                   </span>
                   <div className={s.txBody}>

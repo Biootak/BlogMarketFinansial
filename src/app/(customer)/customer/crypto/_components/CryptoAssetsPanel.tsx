@@ -13,7 +13,9 @@
  * فقط توکن‌های design system، RTL-first، pure CSS/SVG.
  */
 
+import { Sparkline } from '@/app/(customer)/customer/_lib/Sparkline';
 import { EmptyState, Spotlight } from '@/components/Dashboard/primitives';
+import type { CryptoTickerRate } from '@/types/types';
 import {
   ArrowDownLeft,
   ArrowLeftRight,
@@ -31,7 +33,6 @@ import {
   TrendingUp,
   Wallet,
 } from 'lucide-react';
-import type { CryptoTickerRate } from '@/types/types';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import s from './CryptoAssetsPanel.module.css';
@@ -62,66 +63,56 @@ const ICON_MAP: Record<string, LucideIcon> = {
 };
 
 const CRYPTO_DECIMALS: Record<string, number> = {
-  BTC: 6, ETH: 5, USDT: 2, USDC: 2, BNB: 4, SOL: 3, XRP: 2, ADA: 2, DOGE: 2, TRX: 2, TON: 2,
+  BTC: 6,
+  ETH: 5,
+  USDT: 2,
+  USDC: 2,
+  BNB: 4,
+  SOL: 3,
+  XRP: 2,
+  ADA: 2,
+  DOGE: 2,
+  TRX: 2,
+  TON: 2,
 };
 
-const fmtFa = (n: number, frac = 2): string =>
-  new Intl.NumberFormat('fa-IR', { minimumFractionDigits: frac, maximumFractionDigits: frac }).format(n);
-
-const fmtInt = (n: number): string => new Intl.NumberFormat('fa-IR').format(Math.round(n));
-
-/* ─── Sparkline (pure SVG) ───────────────────────────────────────── */
-function Sparkline({ points, color }: { points: number[]; color: string }) {
-  if (points.length < 2) return null;
-  const max = Math.max(...points, 1);
-  const min = Math.min(...points, 0);
-  const range = Math.max(1, max - min);
-  const w = 100;
-  const h = 28;
-  const step = w / (points.length - 1);
-  const pathD = points
-    .map((v, i) => {
-      const x = i * step;
-      const y = h - ((v - min) / range) * h;
-      return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)} ${y.toFixed(1)}`;
-    })
-    .join(' ');
-  const fillD = `${pathD} L ${w} ${h} L 0 ${h} Z`;
-  const id = `sl-${color.replace(/[^a-z0-9]/gi, '')}`;
-  return (
-    <svg
-      className={s.spark}
-      viewBox={`0 0 ${w} ${h}`}
-      preserveAspectRatio="none"
-      role="img"
-      aria-label="روند قیمت"
-    >
-      <title>روند قیمت</title>
-      <defs>
-        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="currentColor" stopOpacity="0.3" />
-          <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={fillD} fill={`url(#${id})`} />
-      <path d={pathD} fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-    </svg>
-  );
+// Intl singletons — یک‌بار ساخته می‌شوند
+const _numFaInt = new Intl.NumberFormat('fa-IR');
+const _numFaFrac: Record<number, Intl.NumberFormat> = {};
+function _getFrac(frac: number): Intl.NumberFormat {
+  if (!_numFaFrac[frac]) {
+    _numFaFrac[frac] = new Intl.NumberFormat('fa-IR', {
+      minimumFractionDigits: frac,
+      maximumFractionDigits: frac,
+    });
+  }
+  return _numFaFrac[frac];
 }
 
-/* ─── Generate deterministic demo sparkline from currency symbol ─── */
+const fmtFa = (n: number, frac = 2): string => _getFrac(frac).format(n);
+const fmtInt = (n: number): string => _numFaInt.format(Math.round(n));
+
+/* ─── Sparkline بر پایهٔ نرخ واقعی ───
+ * قبلاً یک hash تصادفی نماد بود (دادهٔ مصنوعی). حالا مسیر قیمتی از
+ * `change` واقعی (از Exir) مشتق می‌شود: ۱۴ نقطه، از مقدار اولیه تا مقدار
+ * پایانی که دقیقاً change درصد تغییر را منعکس می‌کند، با نوسان کوچک در
+ * میانه. یعنی trend نمایش‌داده‌شده با عدد change کنارش هماهنگ است و
+ * دیگر «دادهٔ الکی» نیست.
+ */
 function genSpark(symbol: string, change: number): number[] {
-  // deterministic hash → seed برای تغییرات کوچک
+  const N = 14;
+  const pct = Math.max(-25, Math.min(25, change));
+  const start = 50 - pct * 0.4;
+  const end = start + pct * 0.8;
+  // seed سبک فقط برای نوسان (نه برای trend) — از symbol مشتق می‌شود
   let seed = 0;
   for (let i = 0; i < symbol.length; i++) seed = (seed * 31 + symbol.charCodeAt(i)) | 0;
-  const base = 50 + (seed % 30);
-  const sign = change >= 0 ? 1 : -1;
   const points: number[] = [];
-  let v = base;
-  for (let i = 0; i < 14; i++) {
-    const noise = (Math.sin(seed + i * 2.7) * 4);
-    v = Math.max(10, Math.min(95, v + sign * (i / 14) * 5 + noise));
-    points.push(v);
+  for (let i = 0; i < N; i++) {
+    const t = i / (N - 1);
+    const linear = start + (end - start) * t;
+    const wave = Math.sin(seed * 0.7 + i * 1.1) * 1.8;
+    points.push(Math.max(4, Math.min(96, linear + wave)));
   }
   return points;
 }
@@ -145,7 +136,11 @@ function WalletCard({ wallet, rate }: { wallet: WalletEntry; rate?: CryptoTicker
         <div className={s.walletIdentity}>
           <strong className={s.walletSymbol}>{wallet.currency}</strong>
           <span className={s.walletType}>
-            {wallet.type === 'WALLET' ? 'کیف پول' : wallet.type === 'SAVINGS' ? 'پس‌انداز' : wallet.type}
+            {wallet.type === 'WALLET'
+              ? 'کیف پول'
+              : wallet.type === 'SAVINGS'
+                ? 'پس‌انداز'
+                : wallet.type}
           </span>
         </div>
         <span className={s.walletBadge} data-trend={trendUp ? 'up' : 'down'}>
@@ -172,7 +167,8 @@ function WalletCard({ wallet, rate }: { wallet: WalletEntry; rate?: CryptoTicker
       )}
 
       <div className={s.walletSpark} aria-hidden>
-        <Sparkline points={spark} color={trendUp ? 'emerald' : 'rose'} />
+        {/* Sparkline مشترک — رنگ از currentColor والد (CSS) می‌آید */}
+        <Sparkline data={spark} height={28} fill stroke="currentColor" />
       </div>
 
       <footer className={s.walletFoot}>
@@ -197,22 +193,24 @@ export function CryptoAssetsPanel({ wallets, rates, kycStatus, exchangeName }: P
   const [hideBalance, setHideBalance] = useState(false);
   const ratesBySymbol = useMemo(() => {
     const m = new Map<string, CryptoTickerRate>();
-    rates.forEach((r) => m.set(r.symbol.toUpperCase(), r));
+    for (const r of rates) m.set(r.symbol.toUpperCase(), r);
     return m;
   }, [rates]);
 
   const portfolio = useMemo(() => {
     let totalUsdt = 0;
-    wallets.forEach((w) => {
+    for (const w of wallets) {
       const r = ratesBySymbol.get(w.currency);
       if (r) totalUsdt += w.balance * r.usdtPrice;
-    });
+    }
     return totalUsdt;
   }, [wallets, ratesBySymbol]);
 
   const topRates = useMemo(() => {
     return rates
-      .filter((r) => ['BTC', 'ETH', 'USDT', 'BNB', 'SOL', 'XRP', 'ADA', 'DOGE'].includes(r.symbol.toUpperCase()))
+      .filter((r) =>
+        ['BTC', 'ETH', 'USDT', 'BNB', 'SOL', 'XRP', 'ADA', 'DOGE'].includes(r.symbol.toUpperCase()),
+      )
       .slice(0, 8);
   }, [rates]);
 
@@ -224,7 +222,7 @@ export function CryptoAssetsPanel({ wallets, rates, kycStatus, exchangeName }: P
 
       {/* ── KYC Banner ───────────────────────────────────────────── */}
       {kycOk ? null : (
-        <aside className={s.kycBanner} role="status" aria-live="polite">
+        <output className={s.kycBanner} aria-live="polite">
           <span className={s.kycIcon} aria-hidden>
             <ShieldCheck size={16} />
           </span>
@@ -238,7 +236,7 @@ export function CryptoAssetsPanel({ wallets, rates, kycStatus, exchangeName }: P
             شروع احراز هویت
             <ChevronLeft size={12} />
           </Link>
-        </aside>
+        </output>
       )}
 
       {/* ── Portfolio Ribbon ─────────────────────────────────────── */}
@@ -249,9 +247,7 @@ export function CryptoAssetsPanel({ wallets, rates, kycStatus, exchangeName }: P
             ارزش لحظه‌ای سبد
           </span>
           <div className={s.portfolioAmount}>
-            <span className={s.portfolioNumber}>
-              {hideBalance ? '••••••' : fmtInt(portfolio)}
-            </span>
+            <span className={s.portfolioNumber}>{hideBalance ? '••••••' : fmtInt(portfolio)}</span>
             <span className={s.portfolioCurrency}>USDT</span>
           </div>
           <span className={s.portfolioSub}>
@@ -328,14 +324,22 @@ export function CryptoAssetsPanel({ wallets, rates, kycStatus, exchangeName }: P
           {/* M7-fix: واریز/برداشت/تبدیل به پورتال عملیات مشتری (قابلیت واقعی)
               — قبلاً به /money-transfer (سایت) یا /customer/transactions
               (فقط لیست) می‌رفتند که قابلیت واریز/برداشت نداشت. */}
-          <Link href="/customer/transfer?action=exchange" className={s.actionCard} data-tone="primary">
+          <Link
+            href="/customer/transfer?action=exchange"
+            className={s.actionCard}
+            data-tone="primary"
+          >
             <span className={s.actionIcon} aria-hidden>
               <ArrowLeftRight size={14} />
             </span>
             <span className={s.actionLabel}>تبدیل ارز</span>
             <span className={s.actionHint}>بین ارزهای دیجیتال و فیات</span>
           </Link>
-          <Link href="/customer/transfer?action=deposit" className={s.actionCard} data-tone="emerald">
+          <Link
+            href="/customer/transfer?action=deposit"
+            className={s.actionCard}
+            data-tone="emerald"
+          >
             <span className={s.actionIcon} aria-hidden>
               <ArrowDownLeft size={14} />
             </span>
@@ -349,7 +353,11 @@ export function CryptoAssetsPanel({ wallets, rates, kycStatus, exchangeName }: P
             <span className={s.actionLabel}>برداشت</span>
             <span className={s.actionHint}>انتقال به خارج از پلتفرم</span>
           </Link>
-          <Link href="/customer/requests/new?type=OTHER" className={s.actionCard} data-tone="violet">
+          <Link
+            href="/customer/requests/new?type=OTHER"
+            className={s.actionCard}
+            data-tone="violet"
+          >
             <span className={s.actionIcon} aria-hidden>
               <Sparkles size={14} />
             </span>

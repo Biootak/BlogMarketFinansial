@@ -1,7 +1,11 @@
 /**
  * /customer/accounts — حساب‌های مالی مشتری
  */
-import { getCustomerAccountsDetail, getCustomerProfile } from '@/actions/customer-portal';
+import {
+  getCustomerAccountsDetail,
+  getCustomerBalanceTrend,
+  getCustomerProfile,
+} from '@/actions/customer-portal';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -16,9 +20,11 @@ export const dynamic = 'force-dynamic';
 
 export default async function CustomerAccountsPage() {
   // auth() حذف شد — layout.tsx احراز هویت را انجام داده است.
-  const [profile, accounts] = await Promise.all([
+  const [profile, accounts, balanceTrend] = await Promise.all([
     getCustomerProfile(),
     getCustomerAccountsDetail(),
+    // FIX (2026-08-01): روند واقعی از تراکنش‌ها — جایگزین sparkline مصنوعی
+    getCustomerBalanceTrend(30),
   ]);
 
   if (!profile) redirect('/customer/dashboard');
@@ -31,7 +37,7 @@ export default async function CustomerAccountsPage() {
         breadcrumb={[{ label: 'پورتال مشتری' }, { label: 'حساب‌ها' }]}
         icon="credit-card"
       />
-      <AccountsContent accounts={accounts} profile={profile} />
+      <AccountsContent accounts={accounts} profile={profile} balanceTrend={balanceTrend} />
     </div>
   );
 }

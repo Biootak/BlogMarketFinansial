@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { RouteError } from '@/components/Dashboard/primitives';
 
@@ -13,9 +13,9 @@ export default function RouteErrorPage({
     <RouteError
       error={error}
       reset={reset}
-      section="اشتراک"
-      backHref="/"
-      backLabel="صفحه اصلی"
+      section="بررسی KYC"
+      backHref="/exchange/dashboard"
+      backLabel="داشبورد صرافی"
     />
   );
 }

@@ -21,32 +21,24 @@
  *  - a11y: ARIA labels، keyboard nav، focus ring
  *  - Real-time status indicators (pulse)
  *
- *  نکته: تمام trend data از `generateTrend` با seed = account.id
- *  می‌آید تا بین re-render ها stable باشد.
+ *  نکته (2026-08-01): trend data از تراکنش‌های واقعی
+ *  (getCustomerBalanceTrend) می‌آید — نه دادهٔ مصنوعی.
  */
 
-import type {
-  CustomerAccountDetail,
-  CustomerProfile,
-} from '@/actions/customer-portal';
+import type { CustomerAccountDetail, CustomerProfile } from '@/actions/customer-portal';
+import { Constellation } from '@/app/(customer)/customer/_lib/Constellation';
+import { Sparkline } from '@/app/(customer)/customer/_lib/Sparkline';
 import {
   ACCOUNT_TYPE_LABEL,
   CUSTOMER_STATUS_CSSKEY,
-  KYC_STATUS_CSSKEY,
   KYC_LEVEL_LABEL,
+  KYC_STATUS_CSSKEY,
   STATUS_LABEL,
   faAmount,
   faDate,
   faNum,
 } from '@/app/(customer)/customer/_lib/customer-formatters';
-import { Constellation } from '@/app/(customer)/customer/_lib/Constellation';
-import { Sparkline } from '@/app/(customer)/customer/_lib/Sparkline';
-import { generateTrend } from '@/app/(customer)/customer/_lib/trend';
-import {
-  EmptyHint,
-  SectionHeader,
-  StatusPill,
-} from '@/app/(customer)/customer/_lib/customer-ui';
+import { EmptyHint, SectionHeader, StatusPill } from '@/app/(customer)/customer/_lib/customer-ui';
 import {
   AlertTriangle,
   ArrowDownLeft,
@@ -69,22 +61,21 @@ import {
   TrendingUp,
   Wallet,
 } from 'lucide-react';
-import type { CSSProperties } from 'react';
 import Link from 'next/link';
+import type { CSSProperties } from 'react';
 import { useMemo } from 'react';
 import s from './AccountsContent.module.css';
 
 interface Props {
   accounts: CustomerAccountDetail[];
   profile: CustomerProfile;
+  /** FIX (2026-08-01): روند واقعی موجودی از تراکنش‌ها — جایگزین sparkline مصنوعی */
+  balanceTrend?: number[];
 }
 
 // ─── Constants ──────────────────────────────────────────────────────────── //
 
-const STATUS_CSSKEY: Record<
-  string,
-  'success' | 'warning' | 'danger' | 'neutral'
-> = {
+const STATUS_CSSKEY: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> = {
   PENDING: 'neutral',
   ACTIVE: 'success',
   FROZEN: 'warning',
@@ -127,9 +118,9 @@ const CURRENCY_COLOR_VAR: Record<string, string> = {
 
 // ─── Component ──────────────────────────────────────────────────────────── //
 
-export default function AccountsContent({ accounts, profile }: Props) {
-  const activeAccounts = accounts.filter((a) => a.status !== 'CLOSED');
-  const closedAccounts = accounts.filter((a) => a.status === 'CLOSED');
+export default function AccountsContent({ accounts, profile, balanceTrend = [] }: Props) {
+  const activeAccounts = useMemo(() => accounts.filter((a) => a.status !== 'CLOSED'), [accounts]);
+  const closedAccounts = useMemo(() => accounts.filter((a) => a.status === 'CLOSED'), [accounts]);
 
   // ─── Currency breakdown ────────────────────────────────────────────── //
   const currencyData = useMemo(() => {
@@ -183,12 +174,12 @@ export default function AccountsContent({ accounts, profile }: Props) {
   const nonAfnCurrencies = currencyData.filter(([c]) => c !== 'AFN').length;
 
   // ─── Sparkline data — برای hero (30 روز اخیر) ─────────────────────── //
+  // FIX (2026-08-01): از تراکنش‌های واقعی (getCustomerBalanceTrend) — نه generateTrend مصنوعی.
   const heroSparkData = useMemo(() => {
-    const seed = `hero-${profile.id}`;
-    return totalBalanceAfn > 0
-      ? generateTrend(seed, 30, totalBalanceAfn, 0.06)
-      : generateTrend(seed, 30, 0, 0.04);
-  }, [totalBalanceAfn, profile.id]);
+    if (balanceTrend.length > 0) return balanceTrend;
+    // fallback امن: اگر trend خالی بود (بدون تراکنش) یک خط صاف
+    return Array.from({ length: 30 }, () => totalBalanceAfn);
+  }, [balanceTrend, totalBalanceAfn]);
 
   // ─── Trend delta (مقایسه ۷ روز اول و آخر) ────────────────────────── //
   const trendDelta = useMemo(() => {
@@ -200,14 +191,32 @@ export default function AccountsContent({ accounts, profile }: Props) {
     return { value: Math.abs(delta), isUp: delta >= 0 };
   }, [heroSparkData]);
 
-  // ─── Currency trend data (stable per currency) ────────────────────── //
+  // ─── Currency trend data ────────────────────────────────────────── //
+  // FIX (2026-08-01): اگر روند واقعی موجود باشد، آن را به هر ارز توزیع می‌کنیم
+  // (نسبت سهم آن ارز از موجودی کل). دیگر دادهٔ مصنوعی نیست.
   const currencyTrends = useMemo(() => {
     const map = new Map<string, number[]>();
+    if (balanceTrend.length > 0) {
+      for (const [cur, info] of topCurrencies) {
+        const share =
+          totalBalanceAfn > 0
+            ? info.total / totalBalanceAfn
+            : 1 / Math.max(1, topCurrencies.length);
+        map.set(
+          cur,
+          balanceTrend.map((v) => Math.round(v * share * 100) / 100),
+        );
+      }
+      return map;
+    }
     for (const [cur, info] of topCurrencies) {
-      map.set(cur, generateTrend(`cur-${cur}-${profile.id}`, 14, info.total, 0.05));
+      map.set(
+        cur,
+        Array.from({ length: 14 }, () => info.total),
+      );
     }
     return map;
-  }, [topCurrencies, profile.id]);
+  }, [balanceTrend, topCurrencies, totalBalanceAfn]);
 
   // ─── Frozen accounts count ────────────────────────────────────────── //
   const frozenCount = activeAccounts.filter((a) => a.status === 'FROZEN').length;
@@ -215,17 +224,23 @@ export default function AccountsContent({ accounts, profile }: Props) {
   // ─── KYC ──────────────────────────────────────────────────────────── //
   const kycStatus = profile.kycStatus;
   const kycCssKey = KYC_STATUS_CSSKEY[kycStatus] ?? 'warning';
-  const kycLabel =
-    KYC_LEVEL_LABEL[profile.kycLevel] ?? STATUS_LABEL[kycStatus] ?? 'نامشخص';
+  const kycLabel = KYC_LEVEL_LABEL[profile.kycLevel] ?? STATUS_LABEL[kycStatus] ?? 'نامشخص';
   const KYCStatusIcon = KYC_ICON[kycStatus] ?? ShieldCheck;
 
-  // ─── Limit progress (پایدار با seed — تغییر روزانه) ──────────────── //
+  // ─── Limit progress — از فعالیت واقعی ────────────────────────────── //
+  // FIX (2026-08-01): قبلاً یک درصد seed-شده (موک) نشان می‌داد. حالا از
+  // تغییر امروز در روند واقعی مشتق می‌شود: اگر امروز برداشت/فعالیتی بوده
+  // (منفی بودن روند) نسبت آن به سقف را نشان می‌دهد؛ اگر نه، ۰.
   const limitUsagePct = useMemo(() => {
-    if (!profile.personalLimitAf) return 0;
-    const day = new Date().toISOString().slice(0, 10);
-    const seedNum = hashStrToNum(`limit-${profile.id}-${day}`);
-    return Math.min(95, Math.max(5, seedNum % 80));
-  }, [profile.id, profile.personalLimitAf]);
+    if (!profile.personalLimitAf || profile.personalLimitAf <= 0) return 0;
+    if (balanceTrend.length < 2) return 0;
+    const last = balanceTrend[balanceTrend.length - 1] ?? 0;
+    const prev = balanceTrend[balanceTrend.length - 2] ?? 0;
+    const todayDelta = Math.abs(last - prev);
+    if (todayDelta <= 0) return 0;
+    const pct = Math.min(100, Math.round((todayDelta / profile.personalLimitAf) * 100));
+    return pct;
+  }, [profile.personalLimitAf, balanceTrend]);
 
   const limitUsed = (profile.personalLimitAf ?? 0) * (limitUsagePct / 100);
 
@@ -260,11 +275,7 @@ export default function AccountsContent({ accounts, profile }: Props) {
             <div className={s.heroFoot}>
               {trendDelta.value > 0 && (
                 <span
-                  className={
-                    trendDelta.isUp
-                      ? s.heroChip
-                      : `${s.heroChip} ${s.heroChipDanger}`
-                  }
+                  className={trendDelta.isUp ? s.heroChip : `${s.heroChip} ${s.heroChipDanger}`}
                 >
                   {trendDelta.isUp ? (
                     <TrendingUp size={11} aria-hidden />
@@ -294,10 +305,7 @@ export default function AccountsContent({ accounts, profile }: Props) {
             </div>
 
             <div className={s.heroActions}>
-              <Link
-                href="/customer/requests/new?type=TRANSFER_INITIATE"
-                className={s.ctaPrimary}
-              >
+              <Link href="/customer/transfer?action=transfer" className={s.ctaPrimary}>
                 <Send size={12} aria-hidden />
                 انتقال سریع
               </Link>
@@ -335,13 +343,10 @@ export default function AccountsContent({ accounts, profile }: Props) {
           </span>
           <h3 className={s.emptyTitle}>هنوز حساب فعالی ندارید</h3>
           <p className={s.emptyDesc}>
-            برای شروع، یک حساب ارزی جدید در صرافی خود باز کنید. اولین واریز شما در
-            اینجا نمایش داده می‌شود.
+            برای شروع، یک حساب ارزی جدید در صرافی خود باز کنید. اولین واریز شما در اینجا نمایش داده
+            می‌شود.
           </p>
-          <Link
-            href="/customer/requests/new?type=ACCOUNT_NEW"
-            className={s.emptyCta}
-          >
+          <Link href="/customer/requests/new?type=ACCOUNT_NEW" className={s.emptyCta}>
             <Plus size={12} aria-hidden />
             درخواست حساب جدید
           </Link>
@@ -350,8 +355,7 @@ export default function AccountsContent({ accounts, profile }: Props) {
         <section className={s.currencies} aria-label="موجودی به تفکیک ارز">
           {topCurrencies.map(([cur, info], i) => {
             const isPrimary = i === 0;
-            const maxTotal =
-              Math.max(...topCurrencies.map(([, v]) => v.total), 1) || 1;
+            const maxTotal = Math.max(...topCurrencies.map(([, v]) => v.total), 1) || 1;
             const ratio = (info.total / maxTotal) * 100;
             const trend = currencyTrends.get(cur) ?? [];
             const colorVar = CURRENCY_COLOR_VAR[cur] ?? 'var(--ds-brand-500)';
@@ -375,9 +379,7 @@ export default function AccountsContent({ accounts, profile }: Props) {
               >
                 <header className={s.currencyHead}>
                   <span className={s.currencyCode}>{cur}</span>
-                  <span className={s.currencyName}>
-                    {CURRENCY_LABEL[cur] ?? 'ارز'}
-                  </span>
+                  <span className={s.currencyName}>{CURRENCY_LABEL[cur] ?? 'ارز'}</span>
                 </header>
 
                 <div className={s.currencyBalance}>
@@ -434,10 +436,7 @@ export default function AccountsContent({ accounts, profile }: Props) {
             title="حساب‌های فعال"
             sub={`${faNum(activeAccounts.length)} حساب`}
             actions={
-              <Link
-                href="/customer/requests/new?type=TRANSFER_INITIATE"
-                className={s.ctaPrimary}
-              >
+              <Link href="/customer/transfer?action=transfer" className={s.ctaPrimary}>
                 <Plus size={11} aria-hidden />
                 انتقال
               </Link>
@@ -451,10 +450,7 @@ export default function AccountsContent({ accounts, profile }: Props) {
             title="حسابی ندارید"
             description="برای باز کردن حساب با صرافی تماس بگیرید"
             action={
-              <Link
-                href="/customer/requests/new?type=ACCOUNT_NEW"
-                className={s.ctaPrimary}
-              >
+              <Link href="/customer/requests/new?type=ACCOUNT_NEW" className={s.ctaPrimary}>
                 <Plus size={11} aria-hidden />
                 درخواست حساب جدید
               </Link>
@@ -489,9 +485,7 @@ export default function AccountsContent({ accounts, profile }: Props) {
                         <span className={s.accountType}>
                           {ACCOUNT_TYPE_LABEL[acc.type] ?? acc.type}
                         </span>
-                        {acc.label && (
-                          <span className={s.accountLabel}>· {acc.label}</span>
-                        )}
+                        {acc.label && <span className={s.accountLabel}>· {acc.label}</span>}
                         <span className={s.accountCurrency}>{acc.currency}</span>
                       </div>
 
@@ -501,28 +495,19 @@ export default function AccountsContent({ accounts, profile }: Props) {
                         </StatusPill>
                         {isFrozen && acc.frozenUntil && (
                           <span className={s.accountFrozen}>
-                            <Snowflake size={10} aria-hidden /> تا{' '}
-                            {faDate(acc.frozenUntil)}
+                            <Snowflake size={10} aria-hidden /> تا {faDate(acc.frozenUntil)}
                           </span>
                         )}
-                        <span className={s.accountMeta}>
-                          افتتاح {faDate(acc.createdAt)}
-                        </span>
+                        <span className={s.accountMeta}>افتتاح {faDate(acc.createdAt)}</span>
                       </div>
                     </div>
 
                     <div className={s.accountRight}>
-                      <span className={s.accountBalance}>
-                        {faNum(acc.balance)}
-                      </span>
+                      <span className={s.accountBalance}>{faNum(acc.balance)}</span>
                       <span className={s.accountBalanceUnit}>{acc.currency}</span>
                     </div>
 
-                    <ChevronLeft
-                      size={14}
-                      className={s.accountChevron}
-                      aria-hidden
-                    />
+                    <ChevronLeft size={14} className={s.accountChevron} aria-hidden />
                   </Link>
                 </li>
               );
@@ -540,11 +525,7 @@ export default function AccountsContent({ accounts, profile }: Props) {
           <div className={s.exchangeBrand}>
             <div className={s.exchangeLogo} aria-hidden>
               {profile.exchange.logoUrl ? (
-                // biome-ignore lint/performance/noImgElement: user-provided logo URL not in next.config remotePatterns
-                <img
-                  src={profile.exchange.logoUrl}
-                  alt={`لوگوی ${profile.exchange.name}`}
-                />
+                <img src={profile.exchange.logoUrl} alt={`لوگوی ${profile.exchange.name}`} />
               ) : (
                 <Building2 size={18} />
               )}
@@ -599,9 +580,7 @@ export default function AccountsContent({ accounts, profile }: Props) {
               <span className={s.kycLabel}>سطح احراز هویت</span>
               <span className={s.kycValue}>{kycLabel}</span>
             </div>
-            <StatusPill variant={kycCssKey}>
-              {STATUS_LABEL[kycStatus] ?? kycStatus}
-            </StatusPill>
+            <StatusPill variant={kycCssKey}>{STATUS_LABEL[kycStatus] ?? kycStatus}</StatusPill>
           </div>
 
           {profile.personalLimitAf !== null && (
@@ -611,33 +590,26 @@ export default function AccountsContent({ accounts, profile }: Props) {
                   <Gauge size={12} aria-hidden />
                   سقف تراکنش روزانه
                 </span>
-                <span className={s.limitPercent}>
-                  {faNum(Math.round(limitUsagePct))}٪ مصرف
-                </span>
+                <span className={s.limitPercent}>{faNum(Math.round(limitUsagePct))}٪ مصرف</span>
               </div>
               <div
                 className={s.limitBar}
                 role="progressbar"
+                tabIndex={0}
                 aria-valuenow={Math.round(limitUsagePct)}
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-label={`سقف تراکنش روزانه: ${faNum(Math.round(limitUsagePct))} درصد`}
               >
-                <span
-                  className={s.limitFill}
-                  style={{ inlineSize: `${limitUsagePct}%` }}
-                />
+                <span className={s.limitFill} style={{ inlineSize: `${limitUsagePct}%` }} />
               </div>
               <div className={s.limitMeta}>
                 <span>
-                  مصرف:{' '}
-                  <span className={s.limitAmount}>{faNum(limitUsed)}</span> AFN
+                  مصرف: <span className={s.limitAmount}>{faNum(limitUsed)}</span> AFN
                 </span>
                 <span>
                   سقف:{' '}
-                  <span className={s.limitAmount}>
-                    {faAmount(profile.personalLimitAf, 'AFN')}
-                  </span>
+                  <span className={s.limitAmount}>{faAmount(profile.personalLimitAf, 'AFN')}</span>
                 </span>
               </div>
             </div>
@@ -666,14 +638,8 @@ export default function AccountsContent({ accounts, profile }: Props) {
           />
           <ul className={s.closedList}>
             {closedAccounts.map((acc, i) => (
-              <li
-                key={acc.id}
-                className={s.closedRow}
-                style={{ animationDelay: `${i * 30}ms` }}
-              >
-                <span className={s.closedType}>
-                  {ACCOUNT_TYPE_LABEL[acc.type] ?? acc.type}
-                </span>
+              <li key={acc.id} className={s.closedRow} style={{ animationDelay: `${i * 30}ms` }}>
+                <span className={s.closedType}>{ACCOUNT_TYPE_LABEL[acc.type] ?? acc.type}</span>
                 <span className={s.closedCurrency}>{acc.currency}</span>
                 <span className={s.closedDate}>{faDate(acc.createdAt)}</span>
                 <StatusPill variant="cancelled">بسته</StatusPill>
@@ -686,17 +652,4 @@ export default function AccountsContent({ accounts, profile }: Props) {
   );
 }
 
-// ─── Helpers ────────────────────────────────────────────────────────────── //
-
-/**
- * string → 0..99 hash (برای limit usage percentage).
- * پایدار است — همان ورودی همیشه همان خروجی می‌دهد.
- */
-function hashStrToNum(str: string): number {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) {
-    h = (h << 5) - h + str.charCodeAt(i);
-    h |= 0;
-  }
-  return Math.abs(h) % 100;
-}
+// ─── (Helpers) ──────────────────────────────────────────────────────────── //

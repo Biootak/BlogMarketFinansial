@@ -18,24 +18,12 @@
  *   پس FK constraint در DB وجود ندارد. از sentinel `virtual:{userId}` استفاده می‌شود.
  */
 
+import { randomInt } from 'node:crypto';
 import prisma from '@/lib/db';
 import { requireUser } from '@/lib/require-auth';
 import type { FintechActionResult } from '@/types/types';
 import { v4 as createId } from 'uuid';
 import { z } from 'zod';
-import type { WalletCurrency } from '@prisma/client';
-
-// ─── PLATFORM WALLET HELPER ──────────────────────────────────────────────────
-
-/**
- * VirtualCard.walletId در schema هیچ @relation تعریف‌شده‌ای به Wallet ندارد —
- * فقط یک @@index روی walletId وجود دارد. پس FK constraint در DB نیست.
- * از یک sentinel `virtual:{userId}` استفاده می‌کنیم تا per-user unique باشد
- * و نیازی به ساختن Exchange/Customer/Wallet واقعی نباشد.
- */
-function getPlatformWalletSentinel(userId: string): string {
-  return `virtual:${userId}`;
-}
 
 export type VirtualCardRow = {
   id: string;
@@ -148,8 +136,8 @@ export async function issueVirtualCard(raw: unknown): Promise<FintechActionResul
     };
   }
 
-  // تولید last4 تصادفی
-  const last4 = Math.floor(1000 + Math.random() * 9000).toString();
+  // تولید last4 تصادفی — randomInt cryptographic به جای Math.random (ضد پیش‌بینی)
+  const last4 = randomInt(1000, 10000).toString();
 
   // انقضا ۲ سال از الان
   const expiresAt = new Date();

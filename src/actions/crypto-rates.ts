@@ -1,5 +1,7 @@
 'use server';
 
+import { serverLog } from '@/lib/server-logger';
+import { getExirCryptoRates } from '../lib/exir-crypto-rates';
 import { safeCache } from '@/lib/safe-cache';
 
 export type CryptoRate = {
@@ -9,30 +11,27 @@ export type CryptoRate = {
   change24h: number;
 };
 
-// دریافت نرخ‌ها با کش ۱۰ ثانیه‌ای
+// دریافت نرخ‌ها از Exir با کش ۶۰ ثانیه‌ای.
+// قبلاً داده‌های شبیه‌سازی‌شده با Math.random برمی‌گرداند — حالا داده واقعی
+// از API صرافی Exir (با fallback امن به mock در صورت قطعی سرویس).
 export const getLiveCryptoRates = safeCache(
   async (): Promise<CryptoRate[]> => {
     try {
-      // در یک سناریوی واقعی اینجا به Binance یا CoinGecko متصل می‌شویم
-      // برای این پیاده‌سازی، داده‌های شبیه‌سازی شده با نوسان اندک ارائه می‌دهیم
-      const baseRates = [
-        { symbol: 'BTC', name: 'Bitcoin', price: 65432.1 },
-        { symbol: 'ETH', name: 'Ethereum', price: 3456.78 },
-        { symbol: 'USDT', name: 'Tether', price: 1.0 },
-        { symbol: 'SOL', name: 'Solana', price: 145.67 },
-        { symbol: 'BNB', name: 'BNB', price: 580.23 },
-      ];
+      const result = await getExirCryptoRates();
+      if (!result.success || !result.data) return [];
 
-      return baseRates.map((r) => ({
-        ...r,
-        price: r.price * (1 + (Math.random() * 0.002 - 0.001)), // نوسان ۰.۱٪
-        change24h: Number((Math.random() * 10 - 5).toFixed(2)),
+      // CryptoTickerRate → CryptoRate (فیلدهای عمومی + USDT-اقتباس)
+      return result.data.map((r) => ({
+        symbol: r.symbol,
+        name: r.symbol,
+        price: r.usdtPrice,
+        change24h: Number(r.change ?? 0),
       }));
     } catch (error) {
-      console.error('Error fetching crypto rates:', error);
+      serverLog.error('crypto-rates', 'Error fetching crypto rates', error);
       return [];
     }
   },
   [],
-  { key: 'crypto:live-rates', ttl: 10 },
+  { key: 'crypto:live-rates', ttl: 60 },
 );

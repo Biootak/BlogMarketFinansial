@@ -44,7 +44,7 @@ export default async function UserEditPage({ params }: Props) {
           ]}
           title="ویرایش کاربر"
           description={`ویرایش اطلاعات کاربر «${user.name ?? user.email}»`}
-          icon="user-cog"
+          icon="user-circle"
           accent="indigo"
         />
         <UserEditForm

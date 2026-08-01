@@ -7,24 +7,26 @@
  * و هرگز از پارامتر بیرونی trust نمی‌شود.
  */
 
+import { getExchangeForUser } from '@/actions/exchanges';
 import { requireCustomerAccess } from '@/lib/customer-auth';
 import prisma from '@/lib/db';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
-import { cache } from 'react';
 import type { FintechActionResult } from '@/types/types';
 import {
-  AccountStatus,
-  AccountType,
-  CustomerStatus,
-  KycLevel,
-  KycStatus,
+  type AccountStatus,
+  type AccountType,
+  type CustomerStatus,
+  type KycLevel,
+  type KycStatus,
   Prisma,
-  TransactionKind,
-  TransactionStatus,
+  type TransactionKind,
+  type TransactionStatus,
 } from '@prisma/client';
+import { randomBytes } from 'node:crypto';
+import { cache } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 
@@ -148,10 +150,7 @@ const KycSubmitSchema = z.object({
   docNumber: z.string().min(1, 'شماره مدرک الزامی است').max(30),
   // URL فایل توسط `/api/upload` تولید می‌شود — می‌تواند relative (مثل
   // `/uploads/kyc/...`) یا absolute باشد. فقط لازم است non-empty باشد.
-  fileUrl: z
-    .string()
-    .min(1, 'تصویر مدرک الزامی است')
-    .max(2000, 'آدرس فایل طولانی است'),
+  fileUrl: z.string().min(1, 'تصویر مدرک الزامی است').max(2000, 'آدرس فایل طولانی است'),
 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -238,71 +237,92 @@ export const getCustomerAccounts = safeCache(
   async (customerId: string): Promise<CustomerAccountSummary[]> => {
     const rows = await prisma.fintechAccount.findMany({
       where: { customerId, status: { not: 'CLOSED' } },
-    select: { id: true, currency: true, balance: true, type: true, status: true },
-    orderBy: { createdAt: 'asc' },
-  });
+      select: { id: true, currency: true, balance: true, type: true, status: true },
+      orderBy: { createdAt: 'asc' },
+    });
 
-  return rows.map((r: { id: string; currency: string; balance: bigint; type: AccountType; status: AccountStatus }) => ({
-    ...r,
-    balance: mapBalance(r.balance),
-    type: r.type as string,
-    status: r.status as string,
-  }));
-},
+    return rows.map(
+      (r: {
+        id: string;
+        currency: string;
+        balance: bigint;
+        type: AccountType;
+        status: AccountStatus;
+      }) => ({
+        ...r,
+        balance: mapBalance(r.balance),
+        type: r.type as string,
+        status: r.status as string,
+      }),
+    );
+  },
   [],
   { key: 'customer:accounts', ttl: 30, tags: ['customer-accounts'] },
+);
+
+const _getCustomerAccountsDetailCached = safeCache(
+  async (customerId: string): Promise<CustomerAccountDetail[]> => {
+    const rows = await prisma.fintechAccount.findMany({
+      where: { customerId },
+      select: {
+        id: true,
+        currency: true,
+        balance: true,
+        type: true,
+        status: true,
+        label: true,
+        frozenUntil: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return rows.map((r) => ({
+      ...r,
+      balance: mapBalance(r.balance),
+    }));
+  },
+  [],
+  { key: 'customer:accounts-detail', ttl: 30, tags: ['customer-accounts'] },
 );
 
 export async function getCustomerAccountsDetail(): Promise<CustomerAccountDetail[]> {
   const access = await requireCustomerAccess();
   if (!access.ok) return [];
-
-  const rows = await prisma.fintechAccount.findMany({
-    where: { customerId: access.customerId },
-    select: {
-      id: true,
-      currency: true,
-      balance: true,
-      type: true,
-      status: true,
-      label: true,
-      frozenUntil: true,
-      createdAt: true,
-    },
-    orderBy: { createdAt: 'asc' },
-  });
-
-  return rows.map((r) => ({
-    ...r,
-    balance: mapBalance(r.balance),
-  }));
+  return _getCustomerAccountsDetailCached(access.customerId);
 }
 
 // ─── READ — Transactions ──────────────────────────────────────────────────────
 
+const _getRecentTransactionsCached = safeCache(
+  async (customerId: string, limit: number): Promise<CustomerTransactionRow[]> => {
+    const rows = await prisma.transaction.findMany({
+      where: { customerId },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      select: {
+        id: true,
+        kind: true,
+        status: true,
+        amount: true,
+        currency: true,
+        destAmount: true,
+        destCurrency: true,
+        note: true,
+        counterparty: true,
+        createdAt: true,
+      },
+    });
+    return rows.map(mapTransaction);
+  },
+  [],
+  { key: 'customer:recent-transactions', ttl: 30, tags: ['customer-transactions'] },
+);
+
 export async function getCustomerRecentTransactions(limit = 10): Promise<CustomerTransactionRow[]> {
   const access = await requireCustomerAccess();
   if (!access.ok) return [];
-
-  const rows = await prisma.transaction.findMany({
-    where: { customerId: access.customerId },
-    orderBy: { createdAt: 'desc' },
-    take: limit,
-    select: {
-      id: true,
-      kind: true,
-      status: true,
-      amount: true,
-      currency: true,
-      destAmount: true,
-      destCurrency: true,
-      note: true,
-      counterparty: true,
-      createdAt: true,
-    },
-  });
-
-  return rows.map(mapTransaction);
+  return _getRecentTransactionsCached(access.customerId, limit);
 }
 
 export async function getCustomerTransactions(opts: {
@@ -378,28 +398,33 @@ export async function getCustomerTransactions(opts: {
 
 // ─── READ — KYC ──────────────────────────────────────────────────────────────
 
+const _getCustomerKycRecordsCached = safeCache(
+  async (customerId: string): Promise<CustomerKycRecord[]> => {
+    return prisma.kycVerification.findMany({
+      where: { customerId },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        level: true,
+        status: true,
+        docType: true,
+        docNumber: true,
+        fileUrl: true,
+        rejectReason: true,
+        reviewedAt: true,
+        expiresAt: true,
+        createdAt: true,
+      },
+    });
+  },
+  [],
+  { key: 'customer:kyc-records', ttl: 60, tags: ['customer-kyc'] },
+);
+
 export async function getCustomerKycRecords(): Promise<CustomerKycRecord[]> {
   const access = await requireCustomerAccess();
   if (!access.ok) return [];
-
-  const rows = await prisma.kycVerification.findMany({
-    where: { customerId: access.customerId },
-    orderBy: { createdAt: 'desc' },
-    select: {
-      id: true,
-      level: true,
-      status: true,
-      docType: true,
-      docNumber: true,
-      fileUrl: true,
-      rejectReason: true,
-      reviewedAt: true,
-      expiresAt: true,
-      createdAt: true,
-    },
-  });
-
-  return rows;
+  return _getCustomerKycRecordsCached(access.customerId);
 }
 
 // ─── WRITE — KYC submit ───────────────────────────────────────────────────────
@@ -528,8 +553,13 @@ export async function reviewCustomerKycRecord(raw: unknown): Promise<{
   if (!record) return { success: false, error: 'رکورد KYC یافت نشد' };
 
   // tenant isolation: exchange staff فقط به records صرافی خودش
+  // FIX (2026-08-01): exchangeId از JWT نمی‌آید (requireUser فقط {id, role} دارد) —
+  // قبلاً از auth.user.exchangeId می‌خواند که برای EXCHANGE staff همیشه undefined بود
+  // → صراف واقعی همیشه «دسترسی به این رکورد ندارید» می‌گرفت. حالا از
+  // getExchangeForUser() (DB) resolve می‌شود — single source of truth.
   if (isExchangeStaff && !isPlatformAdmin) {
-    const staffExchangeId = (auth.user as { exchangeId?: string }).exchangeId;
+    const membership = await getExchangeForUser();
+    const staffExchangeId = membership?.exchange.id;
     if (!staffExchangeId || staffExchangeId !== record.exchangeId) {
       return { success: false, error: 'دسترسی به این رکورد ندارید' };
     }
@@ -641,10 +671,15 @@ export async function listPendingCustomerKyc(opts?: {
   const isExchangeStaff = role === 'EXCHANGE' || role === 'EXCHANGE_STAFF';
   if (!isPlatformAdmin && !isExchangeStaff) return [];
 
-  // tenant scope
+  // tenant scope — exchangeId از DB resolve می‌شود، نه JWT
+  // FIX (2026-08-01): auth.user.exchangeId برای EXCHANGE staff همیشه undefined بود
+  // → صراف بدون exchangeId → همهٔ صرافی‌ها دیده می‌شدند (security leak).
   let exchangeId: string | undefined = opts?.exchangeId;
   if (isExchangeStaff && !isPlatformAdmin) {
-    exchangeId = (auth.user as { exchangeId?: string }).exchangeId;
+    const membership = await getExchangeForUser();
+    exchangeId = membership?.exchange.id;
+    // اگر صراف به صرافی‌ای متصل نیست، صف خالی برگردان
+    if (!exchangeId) return [];
   }
 
   const rows = await prisma.kycVerification.findMany({
@@ -733,28 +768,27 @@ export async function getCustomerDashboardData(): Promise<CustomerDashboardData 
   since30.setDate(since30.getDate() - 30);
 
   // P4-perf: groupBy status → یک query به‌جای ۳ count جداگانه.
-  const [profile, accounts, recentTransactions, statusGroups, last30] =
-    await Promise.all([
-      getCustomerProfile(),
-      getCustomerAccounts(access.customerId),
-      getCustomerRecentTransactions(8),
-      prisma.transaction.groupBy({
-        by: ['status'],
-        where: { customerId: access.customerId },
-        _count: { _all: true },
-      }),
-      prisma.transaction.findMany({
-        where: { customerId: access.customerId, createdAt: { gte: since30 } },
-        orderBy: { createdAt: 'asc' },
-        select: {
-          id: true,
-          kind: true,
-          amount: true,
-          currency: true,
-          createdAt: true,
-        },
-      }),
-    ]);
+  const [profile, accounts, recentTransactions, statusGroups, last30] = await Promise.all([
+    getCustomerProfile(),
+    getCustomerAccounts(access.customerId),
+    getCustomerRecentTransactions(8),
+    prisma.transaction.groupBy({
+      by: ['status'],
+      where: { customerId: access.customerId },
+      _count: { _all: true },
+    }),
+    prisma.transaction.findMany({
+      where: { customerId: access.customerId, createdAt: { gte: since30 } },
+      orderBy: { createdAt: 'asc' },
+      select: {
+        id: true,
+        kind: true,
+        amount: true,
+        currency: true,
+        createdAt: true,
+      },
+    }),
+  ]);
 
   if (!profile) return null;
 
@@ -865,18 +899,71 @@ export type CustomerNotification = {
 
 // ─── READ — Notifications ─────────────────────────────────────────────────
 
+const _getNotificationsCached = safeCache(
+  async (userId: string, limit: number): Promise<CustomerNotification[]> => {
+    return prisma.notification.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      select: { id: true, message: true, isRead: true, createdAt: true },
+    });
+  },
+  [],
+  { key: 'customer:notifications', ttl: 30, tags: ['customer-notifications'] },
+);
+
+/**
+ * getCustomerBalanceTrend — روند واقعی موجودی ۳۰ روز اخیر از تراکنش‌های مشتری.
+ *
+ * قبلاً AccountsContent یک sparkline مصنوعی (generateTrend با seed) می‌ساخت
+ * که دادهٔ الکی بود. حالا از تراکنش‌های واقعی (AFN + غیرAFN) یک روند
+ * cumulative می‌سازد: برای هر روز، مجموع تغییرات net تا آن روز.
+ */
+export async function getCustomerBalanceTrend(days = 30): Promise<number[]> {
+  const access = await requireCustomerAccess();
+  if (!access.ok) return [];
+
+  const since = startOfDay(new Date());
+  since.setDate(since.getDate() - (days - 1));
+
+  const txns = await prisma.transaction.findMany({
+    where: {
+      customerId: access.customerId,
+      createdAt: { gte: since },
+      status: { in: ['COMPLETED', 'PROCESSING'] },
+    },
+    select: { kind: true, amount: true, currency: true, createdAt: true },
+  });
+
+  const CREDIT_KINDS = new Set(['DEPOSIT', 'TRANSFER', 'EXCHANGE', 'SETTLEMENT', 'ADJUSTMENT']);
+  const DEBIT_KINDS = new Set(['WITHDRAWAL', 'FEE']);
+
+  // per-day net change (همه ارزها — با فرض display balance یکسان)
+  const perDay = new Map<string, number>();
+  for (const t of txns) {
+    const k = dayKey(t.createdAt);
+    const base = perDay.get(k) ?? 0;
+    if (CREDIT_KINDS.has(t.kind)) perDay.set(k, base + mapBalance(t.amount));
+    else if (DEBIT_KINDS.has(t.kind)) perDay.set(k, base - mapBalance(t.amount));
+  }
+
+  // cumulative از روز اول تا امروز (۰ برای روزهای بدون تراکنش)
+  const out: number[] = [];
+  let acc = 0;
+  const today = startOfDay(new Date());
+  for (let i = 0; i < days; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - (days - 1 - i));
+    acc += perDay.get(dayKey(d)) ?? 0;
+    out.push(acc);
+  }
+  return out;
+}
+
 export async function getCustomerNotifications(limit = 30): Promise<CustomerNotification[]> {
   const auth = await requireUser();
   if (!auth.success) return [];
-
-  const rows = await prisma.notification.findMany({
-    where: { userId: auth.user.id },
-    orderBy: { createdAt: 'desc' },
-    take: limit,
-    select: { id: true, message: true, isRead: true, createdAt: true },
-  });
-
-  return rows;
+  return _getNotificationsCached(auth.user.id, limit);
 }
 
 export async function getUnreadNotificationCount(): Promise<number> {
@@ -939,12 +1026,7 @@ const RequestTypeSchema = z.enum(
 const CustomerRequestSchema = z.object({
   type: RequestTypeSchema,
   /** توضیح کوتاه کاربر — اختیاری ولی توصیه می‌شود */
-  note: z
-    .string()
-    .trim()
-    .max(500, 'توضیح حداکثر ۵۰۰ کاراکتر است')
-    .optional()
-    .or(z.literal('')),
+  note: z.string().trim().max(500, 'توضیح حداکثر ۵۰۰ کاراکتر است').optional().or(z.literal('')),
   /** مقادیر اضافی بر اساس نوع (مثلاً currency برای ACCOUNT_NEW، amount برای TRANSFER) */
   payload: z.record(z.string(), z.union([z.string(), z.number()])).optional(),
 });
@@ -1443,9 +1525,7 @@ export type SecurityOverview = {
   shareWithExchange: boolean;
 };
 
-export async function getMySecurityOverview(): Promise<
-  FintechActionResult<SecurityOverview>
-> {
+export async function getMySecurityOverview(): Promise<FintechActionResult<SecurityOverview>> {
   const access = await requireCustomerAccess();
   if (!access.ok) {
     return { success: false, error: { code: 'FORBIDDEN', message: access.error.message } };
@@ -1511,7 +1591,10 @@ export async function updateMyNotificationPreferences(
   const parsed = NotifyPrefsSchema.safeParse(input);
   if (!parsed.success) {
     const first = parsed.error.issues[0];
-    return { success: false, error: { code: 'VALIDATION', message: first?.message ?? 'ورودی نامعتبر' } };
+    return {
+      success: false,
+      error: { code: 'VALIDATION', message: first?.message ?? 'ورودی نامعتبر' },
+    };
   }
 
   // فیلدهای مربوط به User
@@ -1523,30 +1606,33 @@ export async function updateMyNotificationPreferences(
     userData.monthlyActivityReport = parsed.data.monthlyActivityReport;
   }
 
-  if (Object.keys(userData).length > 0) {
-    await prisma.user.update({ where: { id: access.userId }, data: userData });
-  }
+  const hasUserData = Object.keys(userData).length > 0;
+  const hasCustomerData = typeof parsed.data.shareWithExchange === 'boolean';
 
-  // فیلد مربوط به Customer
-  if (typeof parsed.data.shareWithExchange === 'boolean') {
-    await prisma.customer.update({
-      where: { id: access.customerId },
-      data: { shareWithExchange: parsed.data.shareWithExchange },
-    });
-  }
-
-  // ثبت AuditLog
-  await prisma.auditLog.create({
-    data: {
-      id: uuidv4(),
-      actorId: access.userId,
-      actorRole: 'CUSTOMER',
-      action: 'UPDATE_PREFERENCES',
-      entityType: 'User',
-      entityId: access.userId,
-      meta: parsed.data,
-    },
-  });
+  // P5-perf: سه query جداگانه را در یک transaction اجرا می‌کنیم.
+  // اگر هیچ فیلدی تغییر نکرده → فقط AuditLog ثبت می‌شود.
+  await prisma.$transaction([
+    ...(hasUserData ? [prisma.user.update({ where: { id: access.userId }, data: userData })] : []),
+    ...(hasCustomerData
+      ? [
+          prisma.customer.update({
+            where: { id: access.customerId },
+            data: { shareWithExchange: parsed.data.shareWithExchange },
+          }),
+        ]
+      : []),
+    prisma.auditLog.create({
+      data: {
+        id: uuidv4(),
+        actorId: access.userId,
+        actorRole: 'CUSTOMER',
+        action: 'UPDATE_PREFERENCES',
+        entityType: 'User',
+        entityId: access.userId,
+        meta: parsed.data,
+      },
+    }),
+  ]);
 
   return { success: true, data: undefined };
 }
@@ -1564,7 +1650,10 @@ export async function changeMyPassword(input: {
   const parsed = PasswordChangeSchema.safeParse(input);
   if (!parsed.success) {
     const first = parsed.error.issues[0];
-    return { success: false, error: { code: 'VALIDATION', message: first?.message ?? 'ورودی نامعتبر' } };
+    return {
+      success: false,
+      error: { code: 'VALIDATION', message: first?.message ?? 'ورودی نامعتبر' },
+    };
   }
 
   const user = await prisma.user.findUnique({
@@ -1573,7 +1662,10 @@ export async function changeMyPassword(input: {
   });
 
   if (!user?.password) {
-    return { success: false, error: { code: 'NO_PASSWORD', message: 'این حساب با رمز عبور ایجاد نشده' } };
+    return {
+      success: false,
+      error: { code: 'NO_PASSWORD', message: 'این حساب با رمز عبور ایجاد نشده' },
+    };
   }
 
   // بررسی رمز فعلی — bcrypt
@@ -1618,7 +1710,10 @@ export async function requestAccountDeletion(
   if (confirmation.trim() !== 'حذف حساب') {
     return {
       success: false,
-      error: { code: 'CONFIRMATION_REQUIRED', message: 'برای تأیید، عبارت «حذف حساب» را وارد کنید' },
+      error: {
+        code: 'CONFIRMATION_REQUIRED',
+        message: 'برای تأیید، عبارت «حذف حساب» را وارد کنید',
+      },
     };
   }
 
@@ -1828,7 +1923,10 @@ export async function transferBetweenAccounts(
     };
   }
 
-  const txnRef = `TRF-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+  // C2-style: crypto.randomBytes به جای Math.random() — غیرقابل پیش‌بینی (anti-collision)
+  const txnRef = `TRF-${Date.now().toString(36).toUpperCase()}-${randomBytes(3)
+    .toString('hex')
+    .toUpperCase()}`;
 
   // ─── Atomic transaction ──────────────────────────────────────────────────
   let result: InternalTransferResult | null = null;

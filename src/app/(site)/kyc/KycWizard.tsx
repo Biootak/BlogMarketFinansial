@@ -33,6 +33,7 @@ import {
   Upload,
   X,
 } from 'lucide-react';
+import Link from 'next/link';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import s from './kyc.module.css';
 
@@ -346,17 +347,11 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
             {initialRecord.rejectedReason ?? 'مدارک نامعتبر بود. لطفاً مجدداً تلاش کنید.'}
           </div>
           {/* پیش‌نمایش مدارک قبلی — اگر موجود باشد */}
-          {(initialRecord.selfieUrl ||
-            initialRecord.docFrontUrl ||
-            initialRecord.docBackUrl) && (
+          {(initialRecord.selfieUrl || initialRecord.docFrontUrl || initialRecord.docBackUrl) && (
             <div className={s.rejectedThumbs} aria-label="مدارک ارسال‌شده قبلی">
               {initialRecord.selfieUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={initialRecord.selfieUrl}
-                  alt="سلفی قبلی"
-                  className={s.rejectedThumb}
-                />
+                <img src={initialRecord.selfieUrl} alt="سلفی قبلی" className={s.rejectedThumb} />
               )}
               {initialRecord.docFrontUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -466,9 +461,12 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
             <span>
               <strong>شماره تلفن ثبت نشده — </strong>
               برای تراکنش‌های بالای ۱۰۰٬۰۰۰ افغانی، کد تأیید SMS لازم است. لطفاً در{' '}
-              <a href="/profile" style={{ color: 'inherit', textDecoration: 'underline' }}>
+              <Link
+                href="/dashboard/edit-profile"
+                style={{ color: 'inherit', textDecoration: 'underline' }}
+              >
                 پروفایل
-              </a>{' '}
+              </Link>{' '}
               شماره تلفن خود را اضافه کنید.
             </span>
           </div>

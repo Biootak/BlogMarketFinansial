@@ -24,31 +24,14 @@ export const metadata: Metadata = {
 
 /** کوتاه‌سازی UUID/CUID به ۸ کاراکتر برای نمایش به کاربر */
 function shortTrackId(id: string): string {
-  if (!id) return generateTrackId();
+  if (!id) return '';
   // آخرین ۸ کاراکتر را بگیر و به حروف بزرگ تبدیل کن
   const clean = id.replace(/-/g, '').toUpperCase();
   if (clean.length >= 8) {
     const part = clean.slice(-8);
     return `${part.slice(0, 4)}-${part.slice(4)}`;
   }
-  return generateTrackId();
-}
-
-function generateTrackId(): string {
-  // کد پیگیری deterministic مبتنی بر زمان: ۸ کاراکتر الفبایی-عددی
-  // شفافیت: هر بار reload این صفحه، کد متفاوت تولید می‌شود چون
-  // مقدار واقعی فقط در ایمیل و صف ادمین ثبت است — این کد فقط
-  // برای شناسایی بصری در همین جلسه کاربرد دارد.
-  const seed = Date.now();
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let id = '';
-  let n = seed;
-  for (let i = 0; i < 8; i++) {
-    n = (n * 1103515245 + 12345) & 0x7fffffff;
-    id += chars[n % chars.length];
-    if (i === 3) id += '-';
-  }
-  return id;
+  return clean || '';
 }
 
 export default async function ApplyExchangeSuccessPage({
@@ -57,9 +40,13 @@ export default async function ApplyExchangeSuccessPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   // ۲۰۲۶-۰۷-۲۹: استفاده از id واقعی اگر از فرم ارسال شده باشد
+  // FIX (2026-08-01): کد پیگیری جعلی حذف شد — «داده واقعی، نه نمایشی».
+  // قبلاً اگر ?id= نبود، کد ساختگی با هر refresh عوض می‌شد که کاربر را گمراه
+  // می‌کرد. حالا فقط کد واقعی از فرم نمایش داده می‌شود؛ بدون آن، بخش کد
+  // حذف و پیام «در انتظار تأیید» نمایش داده می‌شود.
   const sp = (await searchParams) ?? {};
   const rawId = typeof sp.id === 'string' ? sp.id : '';
-  const trackId = rawId ? shortTrackId(rawId) : generateTrackId();
+  const trackId = rawId ? shortTrackId(rawId) : '';
   const now = new Date();
 
   const summary = {
@@ -87,15 +74,19 @@ export default async function ApplyExchangeSuccessPage({
 
         <h1 className={s.title}>درخواست شما با موفقیت ثبت شد</h1>
         <p className={s.lead}>
-          تیم ما درخواست ثبت صرافی شما را دریافت کرد. پس از بررسی مدارک و تأیید نهایی، ایمیل فعال‌سازی
-          پنل صرافی برایتان ارسال خواهد شد.
+          تیم ما درخواست ثبت صرافی شما را دریافت کرد. پس از بررسی مدارک و تأیید نهایی، ایمیل
+          فعال‌سازی پنل صرافی برایتان ارسال خواهد شد.
         </p>
 
         <dl className={s.summary} aria-label="جزئیات درخواست">
-          <div className={s.summaryItem}>
-            <dt className={s.summaryLabel}>کد پیگیری</dt>
-            <dd className={s.summaryValue}>{summary.code}</dd>
-          </div>
+          {summary.code && (
+            <div className={s.summaryItem}>
+              <dt className={s.summaryLabel}>کد پیگیری</dt>
+              <dd className={s.summaryValue} dir="ltr">
+                {summary.code}
+              </dd>
+            </div>
+          )}
           <div className={s.summaryItem}>
             <dt className={s.summaryLabel}>تاریخ ثبت</dt>
             <dd className={s.summaryValue}>{summary.date}</dd>
@@ -113,7 +104,9 @@ export default async function ApplyExchangeSuccessPage({
         <div className={s.tip} role="note">
           <Lightbulb className={s.tipIcon} aria-hidden size={16} strokeWidth={1.8} />
           <span>
-            کد پیگیری را ذخیره کنید. در صورت نیاز به پیگیری، این کد را به پشتیبانی ارائه دهید.
+            {summary.code
+              ? 'کد پیگیری را ذخیره کنید. در صورت نیاز به پیگیری، این کد را به پشتیبانی ارائه دهید.'
+              : 'برای پیگیری وضعیت درخواست، کد ارسال‌شده به ایمیل‌تان را به پشتیبانی ارائه دهید.'}
           </span>
         </div>
 
