@@ -123,7 +123,12 @@ function toFaDigits(n: number): string {
   return n.toString().replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)]);
 }
 
-export function HelpCenterContent() {
+interface HelpCenterContentProps {
+  phone?: string;
+  email?: string;
+}
+
+export function HelpCenterContent({ phone, email }: HelpCenterContentProps = {}) {
   const router = useRouter();
   const [q, setQ] = useState('');
 
@@ -162,7 +167,12 @@ export function HelpCenterContent() {
           تیم پشتیبانی ۲۴/۷ آماده کمک به شماست.
         </p>
 
-        <form onSubmit={onSearch} className={s.searchForm} role="search" aria-label="جستجو در راهنما">
+        <form
+          onSubmit={onSearch}
+          className={s.searchForm}
+          role="search"
+          aria-label="جستجو در راهنما"
+        >
           <span className={s.searchIcon} aria-hidden>
             <SearchIcon size={18} strokeWidth={1.75} />
           </span>
@@ -215,7 +225,12 @@ export function HelpCenterContent() {
 
       {/* Categories grid */}
       <h2 className={s.sectionTitle}>
-        <Sparkles size={16} strokeWidth={1.75} aria-hidden style={{ color: 'var(--ds-brand-600)' }} />
+        <Sparkles
+          size={16}
+          strokeWidth={1.75}
+          aria-hidden
+          style={{ color: 'var(--ds-brand-600)' }}
+        />
         موضوعات پرطرفدار
         <span className={s.sectionKicker}>{toFaDigits(CATEGORIES.length)} دسته</span>
       </h2>
@@ -258,33 +273,42 @@ export function HelpCenterContent() {
 
       {/* Contact channels */}
       <h2 className={s.sectionTitle}>
-        <Headphones size={16} strokeWidth={1.75} aria-hidden style={{ color: 'var(--ds-brand-600)' }} />
+        <Headphones
+          size={16}
+          strokeWidth={1.75}
+          aria-hidden
+          style={{ color: 'var(--ds-brand-600)' }}
+        />
         راه‌های ارتباط با ما
         <span className={s.sectionKicker}>پاسخ سریع</span>
       </h2>
 
       <div className={s.contact}>
-        <a href="tel:09380929606" className={s.channel} dir="ltr">
-          <span className={s.channelIcon} aria-hidden>
-            <Phone size={20} strokeWidth={1.75} />
-          </span>
-          <span className={s.channelBody}>
-            <span className={s.channelLabel}>تلفن (۹ صبح تا ۱۲ شب)</span>
-            <span className={s.channelValue}>۰۹۳۸۰۹۲۶۰۶</span>
-            <span className={s.channelSub}>پاسخگویی فوری</span>
-          </span>
-        </a>
+        {phone && (
+          <a href={`tel:${phone}`} className={s.channel} dir="ltr">
+            <span className={s.channelIcon} aria-hidden>
+              <Phone size={20} strokeWidth={1.75} />
+            </span>
+            <span className={s.channelBody}>
+              <span className={s.channelLabel}>تلفن پشتیبانی</span>
+              <span className={s.channelValue}>{phone}</span>
+              <span className={s.channelSub}>پاسخگویی فوری</span>
+            </span>
+          </a>
+        )}
 
-        <a href="mailto:support@financialmarket.com" className={s.channel}>
-          <span className={s.channelIcon} aria-hidden>
-            <Mail size={20} strokeWidth={1.75} />
-          </span>
-          <span className={s.channelBody}>
-            <span className={s.channelLabel}>ایمیل پشتیبانی</span>
-            <span className={s.channelValue}>support@financialmarket.com</span>
-            <span className={s.channelSub}>پاسخ تا ۲۴ ساعت</span>
-          </span>
-        </a>
+        {email && (
+          <a href={`mailto:${email}`} className={s.channel}>
+            <span className={s.channelIcon} aria-hidden>
+              <Mail size={20} strokeWidth={1.75} />
+            </span>
+            <span className={s.channelBody}>
+              <span className={s.channelLabel}>ایمیل پشتیبانی</span>
+              <span className={s.channelValue}>{email}</span>
+              <span className={s.channelSub}>پاسخ تا ۲۴ ساعت</span>
+            </span>
+          </a>
+        )}
 
         <Link href="/contact" className={s.channel}>
           <span className={s.channelIcon} aria-hidden>

@@ -56,7 +56,7 @@ function formatTime(d: Date) {
 
 export default async function ExchangeSuspendedPage() {
   const settings = await getSystemSettingsData();
-  const supportPhone = settings.contactPhone ?? '+93 700 000 000';
+  const supportPhone = settings.contactPhone?.trim() || null;
   const supportEmail = settings.contactEmail ?? 'support@financialmarket.page';
   const now = new Date();
 
@@ -140,18 +140,24 @@ export default async function ExchangeSuspendedPage() {
               بازگشت به صفحه اصلی
               <ArrowRight size={16} strokeWidth={2} aria-hidden className={s.btnIconFlip} />
             </Link>
-            <a href={`tel:${supportPhone}`} className={s.btnGhost}>
-              <Phone size={16} strokeWidth={2} aria-hidden />
-              تماس با پشتیبانی
-            </a>
+            {supportPhone && (
+              <a href={`tel:${supportPhone}`} className={s.btnGhost}>
+                <Phone size={16} strokeWidth={2} aria-hidden />
+                تماس با پشتیبانی
+              </a>
+            )}
           </div>
 
           <div className={s.foot}>
             <LifeBuoy className={s.footIcon} aria-hidden size={14} strokeWidth={1.8} />
             <span>نیاز به کمک بیشتر؟</span>
             <a href={`mailto:${supportEmail}`}>{supportEmail}</a>
-            <span aria-hidden>·</span>
-            <a href={`tel:${supportPhone}`}>{supportPhone}</a>
+            {supportPhone && (
+              <>
+                <span aria-hidden>·</span>
+                <a href={`tel:${supportPhone}`}>{supportPhone}</a>
+              </>
+            )}
           </div>
         </section>
       </div>

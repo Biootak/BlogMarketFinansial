@@ -1,7 +1,8 @@
+import { getSystemSettingsData } from '@/data/getSystemSettings';
 import { getSiteIdentity } from '@/lib/site-identity';
 import type { Metadata } from 'next';
-import s from './help-center.module.css';
 import { HelpCenterContent } from './HelpCenterContent';
+import s from './help-center.module.css';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { siteName } = await getSiteIdentity();
@@ -13,11 +14,15 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function HelpCenterPage() {
+export default async function HelpCenterPage() {
+  const settings = await getSystemSettingsData();
   return (
     <div className={s.page}>
       <div className="container">
-        <HelpCenterContent />
+        <HelpCenterContent
+          phone={settings.contactPhone ?? undefined}
+          email={settings.contactEmail ?? undefined}
+        />
       </div>
     </div>
   );

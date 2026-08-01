@@ -6,15 +6,15 @@ import { useActionState, useEffect, useRef } from 'react';
 import { type ContactFormState, sendContactAction } from './contact-action';
 import s from './contact.module.css';
 
-const contactInfo = [
-  { icon: MapPin, label: 'آدرس', value: 'کابل، افغانستان' },
-  { icon: Mail, label: 'ایمیل', value: 'support@financialmarket.com' },
-  { icon: Phone, label: 'تلفن', value: '۰۷۰۰ ۰۰۰ ۰۰۰' },
-] as const;
+interface ContactFormProps {
+  address: string;
+  email: string;
+  phone: string;
+}
 
 const initialState: ContactFormState = { success: false, error: null };
 
-export default function ContactForm() {
+export default function ContactForm({ address, email, phone }: ContactFormProps) {
   const [state, action, pending] = useActionState(sendContactAction, initialState);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -24,6 +24,12 @@ export default function ContactForm() {
       formRef.current?.reset();
     }
   }, [state.success]);
+
+  const contactInfo = [
+    { icon: MapPin, label: 'آدرس', value: address },
+    { icon: Mail, label: 'ایمیل', value: email, href: `mailto:${email}` },
+    ...(phone ? [{ icon: Phone, label: 'تلفن', value: phone, href: `tel:${phone}` }] : []),
+  ] as const;
 
   return (
     <div>
@@ -44,17 +50,30 @@ export default function ContactForm() {
       <div className={s.grid}>
         {/* Info column */}
         <aside className={s.infoCol} aria-label="اطلاعات تماس">
-          {contactInfo.map(({ icon: Icon, label, value }) => (
-            <div key={label} className={s.infoCard}>
-              <div className={s.infoIconWrap} aria-hidden>
-                <Icon size={18} strokeWidth={1.75} />
+          {contactInfo.map(({ icon: Icon, label, value, ...rest }) => {
+            const href = 'href' in rest ? rest.href : undefined;
+            return href ? (
+              <a key={label} href={href} className={s.infoCard} dir="ltr">
+                <div className={s.infoIconWrap} aria-hidden>
+                  <Icon size={18} strokeWidth={1.75} />
+                </div>
+                <div>
+                  <div className={s.infoTitle}>{label}</div>
+                  <div className={s.infoValue}>{value}</div>
+                </div>
+              </a>
+            ) : (
+              <div key={label} className={s.infoCard}>
+                <div className={s.infoIconWrap} aria-hidden>
+                  <Icon size={18} strokeWidth={1.75} />
+                </div>
+                <div>
+                  <div className={s.infoTitle}>{label}</div>
+                  <div className={s.infoValue}>{value}</div>
+                </div>
               </div>
-              <div>
-                <div className={s.infoTitle}>{label}</div>
-                <div className={s.infoValue}>{value}</div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
 
           <div className={s.socialSection}>
             <div className={s.socialTitle}>شبکه‌های اجتماعی</div>

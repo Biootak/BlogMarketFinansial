@@ -95,9 +95,8 @@ const Footer = ({
 }: FooterProps) => {
   const { logoUrl } = useSiteSettings();
 
-  // Normalize Persian phone for display (e.g. 09380929606)
-  const displayPhone = contactPhone?.trim() || '۰۹۳۸۰۹۲۶۰۶';
-  const displayEmail = contactEmail?.trim() || 'support@financialmarket.com';
+  const displayPhone = contactPhone?.trim() || null;
+  const displayEmail = contactEmail?.trim() || 'support@financialmarket.page';
 
   return (
     <footer className="relative overflow-hidden">
@@ -154,10 +153,9 @@ const Footer = ({
 
         {/* Main Grid */}
         <div
-          className={[
-            'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-16',
-            space.gapLg,
-          ].join(' ')}
+          className={['grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-16', space.gapLg].join(
+            ' ',
+          )}
         >
           {/* Brand Column */}
           <motion.div
@@ -233,21 +231,23 @@ const Footer = ({
 
         {/* Contact Bar — 3-column with icons */}
         <div className={s.contactBar}>
-          <a
-            href={`tel:${displayPhone.replace(/[^0-9+]/g, '')}`}
-            className={s.contactCard}
-            aria-label={`تماس تلفنی: ${displayPhone}`}
-          >
-            <span className={s.contactIcon} aria-hidden>
-              <Phone size={18} strokeWidth={1.9} />
-            </span>
-            <div className={s.contactText}>
-              <p className={s.contactLabel}>پشتیبانی تلفنی</p>
-              <p className={s.contactValue} dir="ltr">
-                {displayPhone}
-              </p>
-            </div>
-          </a>
+          {displayPhone && (
+            <a
+              href={`tel:${displayPhone.replace(/[^0-9+]/g, '')}`}
+              className={s.contactCard}
+              aria-label={`تماس تلفنی: ${displayPhone}`}
+            >
+              <span className={s.contactIcon} aria-hidden>
+                <Phone size={18} strokeWidth={1.9} />
+              </span>
+              <div className={s.contactText}>
+                <p className={s.contactLabel}>پشتیبانی تلفنی</p>
+                <p className={s.contactValue} dir="ltr">
+                  {displayPhone}
+                </p>
+              </div>
+            </a>
+          )}
           <a
             href={`mailto:${displayEmail}`}
             className={s.contactCard}

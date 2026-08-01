@@ -1,8 +1,9 @@
+import { getSystemSettingsData } from '@/data/getSystemSettings';
 import { getSiteIdentity } from '@/lib/site-identity';
 import { HelpCircle } from 'lucide-react';
 import type { Metadata } from 'next';
-import s from './faq.module.css';
 import { FaqContent } from './FaqContent';
+import s from './faq.module.css';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { siteName } = await getSiteIdentity();
@@ -14,7 +15,8 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function FaqPage() {
+export default async function FaqPage() {
+  const settings = await getSystemSettingsData();
   return (
     <div className={s.page}>
       <div className="container">
@@ -33,7 +35,7 @@ export default function FaqPage() {
           </p>
         </header>
 
-        <FaqContent />
+        <FaqContent email={settings.contactEmail ?? undefined} />
       </div>
     </div>
   );

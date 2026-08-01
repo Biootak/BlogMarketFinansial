@@ -1,3 +1,4 @@
+import { getSystemSettingsData } from '@/data/getSystemSettings';
 import { getSiteIdentity } from '@/lib/site-identity';
 import type { Metadata } from 'next';
 import ContactForm from './ContactForm';
@@ -10,6 +11,13 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function ContactPage() {
-  return <ContactForm />;
+export default async function ContactPage() {
+  const settings = await getSystemSettingsData();
+  return (
+    <ContactForm
+      address={settings.contactAddress ?? 'دبی، امارات متحده عربی'}
+      email={settings.contactEmail ?? 'support@financialmarket.page'}
+      phone={settings.contactPhone ?? ''}
+    />
+  );
 }

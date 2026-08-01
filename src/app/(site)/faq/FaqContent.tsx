@@ -53,7 +53,7 @@ const GROUPS: readonly FaqGroup[] = [
       {
         id: 'who-can-use',
         q: 'چه کسانی می‌توانند از خدمات استفاده کنند؟',
-        a: `تمام افراد بالای ۱۸ سال با مدارک شناسایی معتبر می‌توانند پس از تکمیل فرایند احراز هویت (KYC) از خدمات ما استفاده کنند. احراز هویت طبق الزامات قانونی مبارزه با پول‌شویی (AML) اجباری است و برای حفظ امنیت حساب شما انجام می‌شود.`,
+        a: 'تمام افراد بالای ۱۸ سال با مدارک شناسایی معتبر می‌توانند پس از تکمیل فرایند احراز هویت (KYC) از خدمات ما استفاده کنند. احراز هویت طبق الزامات قانونی مبارزه با پول‌شویی (AML) اجباری است و برای حفظ امنیت حساب شما انجام می‌شود.',
         link: { href: '/kyc', label: 'شروع احراز هویت' },
       },
       {
@@ -230,10 +230,10 @@ const GROUPS: readonly FaqGroup[] = [
       {
         id: 'support-hours',
         q: 'ساعات پشتیبانی چگونه است؟',
-        a: `پشتیبانی ما به‌صورت ۲۴/۷ از طریق چت آنلاین و تلفن در دسترس است.
+        a: `پشتیبانی ما از طریق چندین کانال در دسترس است.
 
 • چت آنلاین: ۲۴ ساعته
-• تلفن: ۹ صبح تا ۱۲ شب (۱۶ ساعت)
+• تلفن: در ساعات کاری
 • ایمیل: پاسخ حداکثر تا ۲۴ ساعت کاری
 • مرکز راهنما: همیشه در دسترس`,
         link: { href: '/contact', label: 'راه‌های تماس' },
@@ -247,7 +247,7 @@ const GROUPS: readonly FaqGroup[] = [
       {
         id: 'feedback',
         q: 'چگونه بازخورد یا شکایت ثبت کنم؟',
-        a: 'ما ارزشمندترین منبع بهبود را نظرات شما می‌دانیم. از طریق صفحه «تماس با ما» یا ایمیل support@financialmarket.com می‌توانید بازخورد خود را ارسال کنید. تمام پیام‌ها در کمتر از ۲۴ ساعت پاسخ داده می‌شوند.',
+        a: 'ما ارزشمندترین منبع بهبود را نظرات شما می‌دانیم. از طریق صفحه «تماس با ما» می‌توانید بازخورد خود را ارسال کنید. تمام پیام‌ها در کمتر از ۲۴ ساعت پاسخ داده می‌شوند.',
         link: { href: '/contact', label: 'ارسال بازخورد' },
       },
     ],
@@ -258,7 +258,11 @@ function toFaDigits(n: number): string {
   return n.toString().replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)]);
 }
 
-export function FaqContent() {
+interface FaqContentProps {
+  email?: string;
+}
+
+export function FaqContent({ email }: FaqContentProps = {}) {
   const [activeGroup, setActiveGroup] = useState<string | 'all'>('all');
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
 
@@ -359,10 +363,7 @@ export function FaqContent() {
                 {group.items.map((item, i) => {
                   const isOpen = !!openItems[item.id];
                   return (
-                    <article
-                      key={item.id}
-                      className={`${s.item} ${isOpen ? s.itemOpen : ''}`}
-                    >
+                    <article key={item.id} className={`${s.item} ${isOpen ? s.itemOpen : ''}`}>
                       <button
                         type="button"
                         onClick={() => toggleItem(item.id)}
@@ -404,9 +405,23 @@ export function FaqContent() {
             </div>
             <div>
               <h3 className={s.helpFooterTitle}>پاسخ سؤال خود را پیدا نکردید؟</h3>
+              {email && (
+                <p
+                  style={{
+                    fontSize: 'var(--ds-text-xs)',
+                    color: 'var(--ds-text-muted)',
+                    marginTop: 4,
+                  }}
+                >
+                  ایمیل مستقیم:{' '}
+                  <a href={`mailto:${email}`} dir="ltr" style={{ color: 'var(--ds-brand-600)' }}>
+                    {email}
+                  </a>
+                </p>
+              )}
               <p className={s.helpFooterText}>
-                تیم پشتیبانی ما به‌صورت ۲۴ ساعته آماده پاسخگویی است. کافی است از طریق یکی از راه‌های ارتباطی
-                زیر با ما در تماس باشید.
+                تیم پشتیبانی ما به‌صورت ۲۴ ساعته آماده پاسخگویی است. کافی است از طریق یکی از راه‌های
+                ارتباطی زیر با ما در تماس باشید.
               </p>
             </div>
             <Link href="/contact" className={s.helpFooterCta}>

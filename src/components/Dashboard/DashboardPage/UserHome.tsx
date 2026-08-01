@@ -17,8 +17,12 @@
  *  - Empty states با CTA
  */
 
-import Link from 'next/link';
+import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
+import { StatCard } from '@/components/Dashboard/primitives/StatCard';
+import { Badge } from '@/components/ui/badge';
+import { type SupportedCurrency, formatCurrency } from '@/lib/afn-format';
 import prisma from '@/lib/db';
+import { formatRelativeTime } from '@/lib/utils';
 import {
   ArrowLeft,
   ArrowRight,
@@ -29,11 +33,7 @@ import {
   Sparkles,
   Wallet,
 } from 'lucide-react';
-import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
-import { StatCard } from '@/components/Dashboard/primitives/StatCard';
-import { Badge } from '@/components/ui/badge';
-import { formatCurrency, type SupportedCurrency } from '@/lib/afn-format';
-import { formatRelativeTime } from '@/lib/utils';
+import Link from 'next/link';
 import { EmailVerificationWatcher } from './EmailVerificationWatcher';
 import styles from './UserHome.module.css';
 
@@ -53,12 +53,8 @@ async function getUserOverview(userId: string) {
   const [requestsCount, pendingRequests, unreadNotifications, recentRequests, recentNotifications] =
     await Promise.all([
       prisma.serviceRequest.count({ where: { userId } }).catch(() => 0),
-      prisma.serviceRequest
-        .count({ where: { userId, status: 'PENDING' } })
-        .catch(() => 0),
-      prisma.notification
-        .count({ where: { userId, isRead: false } })
-        .catch(() => 0),
+      prisma.serviceRequest.count({ where: { userId, status: 'PENDING' } }).catch(() => 0),
+      prisma.notification.count({ where: { userId, isRead: false } }).catch(() => 0),
       prisma.serviceRequest
         .findMany({
           where: { userId },
@@ -99,10 +95,7 @@ async function getUserOverview(userId: string) {
   };
 }
 
-const statusVariantMap: Record<
-  string,
-  'default' | 'secondary' | 'destructive' | 'outline'
-> = {
+const statusVariantMap: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   PENDING: 'default',
   IN_PROGRESS: 'default',
   COMPLETED: 'secondary',
@@ -149,8 +142,7 @@ export async function UserHome({
   const overview = await getUserOverview(userId);
   // اگر کاربر کمتر از ۷ روز از ساخت حسابش گذشته و هنوز ایمیل تأیید نشده
   // یا درخواستی ندارد، welcome banner نمایش داده می‌شود.
-  const showWelcome =
-    accountAgeDays < 7 && (overview.requestsCount === 0 || !emailVerified);
+  const showWelcome = accountAgeDays < 7 && (overview.requestsCount === 0 || !emailVerified);
 
   return (
     <div className={styles.root} dir="rtl">
@@ -176,7 +168,7 @@ export async function UserHome({
           </p>
         </div>
         <div className={styles.headerAction}>
-          <Link href="/services" className={styles.primaryCta}>
+          <Link href="/dashboard/my-requests" className={styles.primaryCta}>
             <Plus aria-hidden />
             <span>ثبت درخواست جدید</span>
           </Link>
@@ -206,7 +198,7 @@ export async function UserHome({
               <span className={styles.welcomeStepIndex}>۲</span>
               <span>احراز هویت</span>
             </Link>
-            <Link href="/services" className={styles.welcomeStep}>
+            <Link href="/dashboard/my-requests" className={styles.welcomeStep}>
               <span className={styles.welcomeStepIndex}>۳</span>
               <span>اولین درخواست</span>
             </Link>
@@ -222,8 +214,8 @@ export async function UserHome({
         <div className={styles.kycText}>
           <h2 className={styles.kycTitle}>احراز هویت، کلید خدمات مالی</h2>
           <p className={styles.kycDesc}>
-            برای استفاده از خدمات کامل، لطفاً احراز هویت را تکمیل کنید. این فرایند فقط چند
-            دقیقه طول می‌کشد.
+            برای استفاده از خدمات کامل، لطفاً احراز هویت را تکمیل کنید. این فرایند فقط چند دقیقه طول
+            می‌کشد.
           </p>
         </div>
         <Link href="/dashboard/kyc" className={styles.kycCta}>
@@ -261,7 +253,7 @@ export async function UserHome({
           <span className={styles.sectionMeta}>۴ میان‌بر</span>
         </header>
         <div className={styles.actionsGrid}>
-          <Link href="/services" className={styles.actionCard}>
+          <Link href="/dashboard/my-requests" className={styles.actionCard}>
             <span className={styles.actionIcon}>
               <Plus aria-hidden />
             </span>
@@ -306,7 +298,7 @@ export async function UserHome({
             title="هنوز درخواستی ثبت نکرده‌اید"
             description="با اولین درخواست، سفر مالی خود را شروع کنید."
             action={
-              <Link href="/services" className={styles.emptyCta}>
+              <Link href="/dashboard/my-requests" className={styles.emptyCta}>
                 <Plus aria-hidden />
                 <span>ثبت اولین درخواست</span>
               </Link>
@@ -316,10 +308,7 @@ export async function UserHome({
           <ul className={styles.requestsList}>
             {overview.recentRequests.map((r: (typeof overview.recentRequests)[number]) => (
               <li key={r.id} className={styles.requestItem}>
-                <Link
-                  href={`/dashboard/my-requests/${r.id}`}
-                  className={styles.requestLink}
-                >
+                <Link href={`/dashboard/my-requests/${r.id}`} className={styles.requestLink}>
                   <div className={styles.requestMeta}>
                     <span className={styles.requestType}>
                       {serviceTypeLabelMap[r.serviceType] ?? r.serviceType}
@@ -328,17 +317,12 @@ export async function UserHome({
                   </div>
                   <div className={styles.requestBody}>
                     <span className={styles.requestAmount}>
-                      {formatCurrency(
-                        Number(r.amount),
-                        (r.currency as SupportedCurrency) ?? 'USD',
-                      )}
+                      {formatCurrency(Number(r.amount), (r.currency as SupportedCurrency) ?? 'USD')}
                     </span>
                     <Badge variant={statusVariantMap[r.status] ?? 'secondary'}>
                       {statusLabelMap[r.status] ?? r.status}
                     </Badge>
-                    <span className={styles.requestDate}>
-                      {formatRelativeTime(r.createdAt)}
-                    </span>
+                    <span className={styles.requestDate}>{formatRelativeTime(r.createdAt)}</span>
                   </div>
                 </Link>
               </li>
@@ -361,18 +345,18 @@ export async function UserHome({
             </Link>
           </header>
           <ul className={styles.activityList}>
-            {overview.recentNotifications.map((n: (typeof overview.recentNotifications)[number]) => (
-              <li
-                key={n.id}
-                className={`${styles.activityItem} ${!n.isRead ? styles.activityItemUnread : ''}`}
-              >
-                <span className={styles.activityDot} aria-hidden />
-                <span className={styles.activityMessage}>{n.message}</span>
-                <span className={styles.activityTime}>
-                  {formatRelativeTime(n.createdAt)}
-                </span>
-              </li>
-            ))}
+            {overview.recentNotifications.map(
+              (n: (typeof overview.recentNotifications)[number]) => (
+                <li
+                  key={n.id}
+                  className={`${styles.activityItem} ${!n.isRead ? styles.activityItemUnread : ''}`}
+                >
+                  <span className={styles.activityDot} aria-hidden />
+                  <span className={styles.activityMessage}>{n.message}</span>
+                  <span className={styles.activityTime}>{formatRelativeTime(n.createdAt)}</span>
+                </li>
+              ),
+            )}
           </ul>
         </section>
       ) : null}

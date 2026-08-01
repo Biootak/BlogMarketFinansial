@@ -10,14 +10,14 @@
  */
 
 import {
-  createCustomerRequest,
   type CustomerAccountDetail,
   type CustomerRequestType,
+  createCustomerRequest,
 } from '@/actions/customer-portal';
+import { CurrencySelect } from '@/components/ui/CurrencySelect';
 import { Button } from '@/components/ui/button';
 import { FormField, FormSection } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { CurrencySelect } from '@/components/ui/CurrencySelect';
 import {
   Select,
   SelectContent,
@@ -38,7 +38,12 @@ interface Props {
   profileStatus: string;
 }
 
-const REQUEST_TYPES: Array<{ value: CustomerRequestType; label: string; desc: string; icon: string }> = [
+const REQUEST_TYPES: Array<{
+  value: CustomerRequestType;
+  label: string;
+  desc: string;
+  icon: string;
+}> = [
   {
     value: 'ACCOUNT_NEW',
     label: 'باز کردن حساب جدید',
@@ -219,8 +224,7 @@ export default function RequestForm({ initialType, accounts, profileStatus }: Pr
         {/* Request type hint cards */}
         <div className={s.typeCards} role="list">
           {REQUEST_TYPES.map((t) => {
-            const Icon =
-              t.icon === 'wallet' ? Wallet : t.icon === 'send' ? Send : Sparkles;
+            const Icon = t.icon === 'wallet' ? Wallet : t.icon === 'send' ? Send : Sparkles;
             return (
               <button
                 type="button"
@@ -261,11 +265,7 @@ export default function RequestForm({ initialType, accounts, profileStatus }: Pr
             </FormField>
 
             <FormField label="ارز" htmlFor="acc-currency">
-              <CurrencySelect
-                value={currency}
-                onChange={setCurrency}
-                items={CURRENCY_ITEMS}
-              />
+              <CurrencySelect value={currency} onChange={setCurrency} items={CURRENCY_ITEMS} />
             </FormField>
           </div>
 
@@ -304,7 +304,12 @@ export default function RequestForm({ initialType, accounts, profileStatus }: Pr
             </Select>
           </FormField>
 
-          <FormField label="به (شناسه مقصد)" htmlFor="t-to" required helper="مثلاً شماره حساب، IBAN، یا ID مقصد">
+          <FormField
+            label="به (شناسه مقصد)"
+            htmlFor="t-to"
+            required
+            helper="مثلاً شماره حساب، IBAN، یا ID مقصد"
+          >
             <Input
               id="t-to"
               value={toAccount}
@@ -375,11 +380,7 @@ export default function RequestForm({ initialType, accounts, profileStatus }: Pr
 
       {/* ─── Note (common) ─── */}
       <FormSection title="توضیحات" description="هر اطلاعات اضافی که صرافی باید بداند">
-        <FormField
-          label="یادداشت (اختیاری)"
-          htmlFor="note"
-          helper={`${note.length} / ۵۰۰ کاراکتر`}
-        >
+        <FormField label="یادداشت (اختیاری)" htmlFor="note" helper={`${note.length} / ۵۰۰ کاراکتر`}>
           <Textarea
             id="note"
             value={note}
@@ -412,12 +413,7 @@ export default function RequestForm({ initialType, accounts, profileStatus }: Pr
             </>
           )}
         </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={() => router.push('/customer/accounts')}
-          disabled={pending}
-        >
+        <Button type="button" variant="ghost" onClick={() => router.back()} disabled={pending}>
           انصراف
         </Button>
       </div>

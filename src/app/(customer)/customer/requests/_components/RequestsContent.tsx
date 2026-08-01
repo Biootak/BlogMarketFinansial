@@ -20,32 +20,27 @@
  *  - Mobile-first
  */
 
-import {
-  type CustomerRequestListItem,
-  type CustomerRequestStats,
-  type CustomerRequestType,
+import type {
+  CustomerRequestListItem,
+  CustomerRequestStats,
+  CustomerRequestType,
 } from '@/actions/customer-portal';
 import { cancelCustomerRequest } from '@/actions/customer-portal';
-import { Button } from '@/components/ui/button';
-import { toast } from '@/components/ui/use-toast';
-import {
-  faDateTimeFull,
-  faNum,
-  relativeTime,
-} from '@/app/(customer)/customer/_lib/customer-formatters';
+import { faNum, relativeTime } from '@/app/(customer)/customer/_lib/customer-formatters';
 import {
   EmptyHint,
   StatusDot,
   StatusPill,
   type StatusVariant,
 } from '@/app/(customer)/customer/_lib/customer-ui';
+import { ConfirmDialog } from '@/components/Dashboard/primitives';
+import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/use-toast';
 import {
-  AlertTriangle,
   CheckCircle2,
   CircleDollarSign,
   Clock,
   FileText,
-  Filter,
   Flame,
   Gauge,
   Loader2,
@@ -53,10 +48,8 @@ import {
   Search,
   Send,
   ShieldCheck,
-  ShieldX,
   Sparkles,
   Wallet,
-  XCircle,
   XIcon,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -130,20 +123,26 @@ export default function RequestsContent({ rows, stats }: Props) {
 
   // ─── Group: active (pending/in_review) vs closed (approved/rejected/cancelled) ── //
   const groups = useMemo(() => {
-    const active = filteredRows.filter(
-      (r) => r.status === 'PENDING' || r.status === 'IN_REVIEW',
-    );
+    const active = filteredRows.filter((r) => r.status === 'PENDING' || r.status === 'IN_REVIEW');
     const closed = filteredRows.filter(
       (r) => r.status === 'APPROVED' || r.status === 'REJECTED' || r.status === 'CANCELLED',
     );
     return { active, closed };
   }, [filteredRows]);
 
+  const [confirmTarget, setConfirmTarget] = useState<{ id: string; code: string } | null>(null);
+
   function handleCancel(requestId: string, trackingCode: string) {
-    if (!window.confirm(`درخواست ${trackingCode} لغو شود؟`)) return;
-    setPendingId(requestId);
+    setConfirmTarget({ id: requestId, code: trackingCode });
+  }
+
+  function doCancel() {
+    if (!confirmTarget) return;
+    const { id } = confirmTarget;
+    setConfirmTarget(null);
+    setPendingId(id);
     startTransition(async () => {
-      const res = await cancelCustomerRequest(requestId);
+      const res = await cancelCustomerRequest(id);
       setPendingId(null);
       if (!res.success) {
         toast({ variant: 'destructive', title: res.error ?? 'خطا در لغو درخواست' });
@@ -276,6 +275,22 @@ export default function RequestsContent({ rows, stats }: Props) {
           )}
         </div>
       )}
+
+      {/* ─── Confirm cancel dialog ─────────────────────────────────── */}
+      <ConfirmDialog
+        open={!!confirmTarget}
+        onOpenChange={(open) => !open && setConfirmTarget(null)}
+        onConfirm={doCancel}
+        title="لغو درخواست"
+        description={
+          confirmTarget
+            ? `درخواست با کد ${confirmTarget.code} لغو شود؟ این عمل قابل بازگشت نیست.`
+            : ''
+        }
+        confirmLabel="بله، لغو شود"
+        cancelLabel="انصراف"
+        variant="danger"
+      />
     </div>
   );
 }
@@ -299,13 +314,7 @@ function KpiCard({ label, value, sub, icon: Icon, variant }: KpiCardProps) {
         </span>
         <span className={s.kpiLabel}>{label}</span>
         <StatusDot
-          variant={
-            variant === 'primary'
-              ? 'approved'
-              : variant === 'info'
-                ? 'neutral'
-                : variant
-          }
+          variant={variant === 'primary' ? 'approved' : variant === 'info' ? 'neutral' : variant}
           pulse={variant === 'warning'}
         />
       </div>
@@ -361,9 +370,7 @@ function RequestGroup({ title, count, rows, onCancel, pendingId }: RequestGroupP
                     <code className={s.rowCode}>{r.trackingCode}</code>
                   </div>
                   <div className={s.rowBottomRow}>
-                    <StatusPill variant={variant}>
-                      {STATUS_LABEL[r.status] ?? r.status}
-                    </StatusPill>
+                    <StatusPill variant={variant}>{STATUS_LABEL[r.status] ?? r.status}</StatusPill>
                     <span className={s.rowMeta}>
                       <Clock size={9} aria-hidden /> {relativeTime(r.createdAt)}
                     </span>

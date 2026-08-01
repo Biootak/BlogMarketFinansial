@@ -1,7 +1,8 @@
-import { getSiteIdentity } from '@/lib/site-identity';
-import type { Metadata } from 'next';
 import { HelpCenterContent } from '@/app/(site)/help-center/HelpCenterContent';
 import s from '@/app/(site)/help-center/help-center.module.css';
+import { getSystemSettingsData } from '@/data/getSystemSettings';
+import { getSiteIdentity } from '@/lib/site-identity';
+import type { Metadata } from 'next';
 
 /**
  * /support — Public support landing page.
@@ -23,11 +24,15 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function SupportPage() {
+export default async function SupportPage() {
+  const settings = await getSystemSettingsData();
   return (
     <div className={s.page}>
       <div className="container">
-        <HelpCenterContent />
+        <HelpCenterContent
+          phone={settings.contactPhone ?? undefined}
+          email={settings.contactEmail ?? undefined}
+        />
       </div>
     </div>
   );

@@ -55,17 +55,21 @@ export default async function MaintenancePage() {
         helpList={[
           'تمام داده‌ها و حساب‌های شما امن هستند.',
           'تراکنش‌های در جریان پس از پایان به‌روزرسانی ادامه می‌یابند.',
-          'برای اطلاع فوری، کانال تلگرام ما را دنبال کنید.',
+          ...(settings.telegram ? ['برای اطلاع فوری، کانال تلگرام ما را دنبال کنید.'] : []),
         ]}
         actions={[
           { label: 'تلاش مجدد', href: '/', icon: RefreshCw, variant: 'primary' },
-          {
-            label: 'تلگرام پشتیبانی',
-            href: settings.telegram ?? 'https://t.me/financialmarket_page',
-            icon: ArrowLeft,
-            variant: 'ghost',
-            external: true,
-          },
+          ...(settings.telegram
+            ? [
+                {
+                  label: 'تلگرام پشتیبانی',
+                  href: settings.telegram,
+                  icon: ArrowLeft,
+                  variant: 'ghost' as const,
+                  external: true,
+                },
+              ]
+            : []),
         ]}
         meta={[
           { label: 'تخمین پایان', value: 'کمتر از ۳۰ دقیقه' },
