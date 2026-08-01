@@ -23,8 +23,8 @@ import {
 import { ArrowDownUp, Clock, History, Plus, RefreshCw, SearchX } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { QuoteCard } from './QuoteCard';
+import { QuoteComposer } from './QuoteComposer';
 import { QuoteDetailsDrawer } from './QuoteDetailsDrawer';
-import { QuoteFormDrawer } from './QuoteFormDrawer';
 import s from './QuotesWorkspace.module.css';
 
 interface Props {
@@ -325,8 +325,8 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
         </>
       )}
 
-      {/* ── Drawer ها ──────────────────────────────────────────────────── */}
-      <QuoteFormDrawer
+      {/* ── مودال‌ها ───────────────────────────────────────────────────── */}
+      <QuoteComposer
         open={formOpen}
         exchangeId={exchangeId}
         allowedCurrencies={allowedCurrencies}

@@ -164,7 +164,7 @@ export function CustomerEditDrawer({
       open={open}
       title={initialData ? `ویرایش ${initialData.fullName}` : 'مشتری جدید'}
       onClose={onClose}
-      width="min(540px, 100vw)"
+      width="min(540px, 100%)"
       footer={
         <div className={s.footer}>
           <button

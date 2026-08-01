@@ -209,7 +209,7 @@ const nextConfig: NextConfig = {
     // فرمت‌های مجاز
     formats: ['image/avif', 'image/webp'],
     // محدودیت سایز دستگاه‌ها
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
       {
@@ -317,7 +317,22 @@ const nextConfig: NextConfig = {
     staticGenerationRetryCount: 0,
     staticGenerationMaxConcurrency: 1,
     staticGenerationMinPagesPerWorker: 50,
-    optimizePackageImports: ['lucide-react', 'react-icons'],
+    optimizePackageImports: [
+      'lucide-react',
+      'react-icons',
+      'date-fns',
+      'date-fns-jalali',
+      '@radix-ui/react-avatar',
+      '@radix-ui/react-checkbox',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-popover',
+      '@radix-ui/react-scroll-area',
+      '@radix-ui/react-select',
+      '@radix-ui/react-tabs',
+      '@radix-ui/react-toast',
+      '@radix-ui/react-tooltip',
+    ],
     optimizeCss: false,
     // 2026-06-27: Turbopack's embedded lightningcss 1.0.0-alpha.70 panics on
     // some oklch()/color-mix() constructs in globals.css. Excluding the polar
@@ -352,12 +367,7 @@ const nextConfig: NextConfig = {
   // and externalizing avoids duplicate @auth/core instances.
   serverExternalPackages: ['@auth/prisma-adapter'],
 
-  transpilePackages: [
-    'next-auth',
-    '@aws-sdk/client-s3',
-    '@aws-sdk/s3-request-presigner',
-    'framer-motion',
-  ],
+  transpilePackages: ['next-auth', '@aws-sdk/client-s3', '@aws-sdk/s3-request-presigner'],
 
   // 2026-06-25: cssnano-simple crashes on `@property` at-rules and OKLCH
   // color tokens in globals.css. This webpack config block is only used

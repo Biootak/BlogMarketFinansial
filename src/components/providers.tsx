@@ -2,8 +2,19 @@
 
 import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from 'next-themes';
-import { useEffect, useState } from 'react';
 
+/**
+ * Providers — wraps the app in SessionProvider + ThemeProvider.
+ *
+ * Theme flash prevention: next-themes injects its own blocking script via
+ * `<script>` that reads localStorage before paint. We rely on that built-in
+ * mechanism instead of our own useState/useEffect mount guard, which was
+ * causing an extra render cycle (mounted=false → mounted=true) on every page.
+ *
+ * `suppressHydrationWarning` on <html> (in layout.tsx) handles the class mismatch
+ * that next-themes creates when the user has a dark preference stored — the HTML
+ * attribute is set synchronously by the injected script before React hydrates.
+ */
 export default function Providers({
   children,
   session,
@@ -11,13 +22,6 @@ export default function Providers({
   children: React.ReactNode;
   session?: unknown;
 }) {
-  // Avoid hydration mismatch — only mount next-themes on the client.
-  // The default theme is `light`/white; the inline script below keeps
-  // <html>'s class attribute in sync with the user's stored choice so
-  // we never flash the wrong palette.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
   return (
     <SessionProvider
       {...(session ? { session: session as never } : {})}
@@ -31,29 +35,6 @@ export default function Providers({
         storageKey="bmf-theme"
         disableTransitionOnChange
       >
-        {/*
-          Inline script that runs *before* paint on the client to set the
-          `class` attribute on <html> in sync with the user's stored choice.
-          Default is light/white; dark is only applied when the user explicitly
-          chose it. This prevents the light→dark flash.
-        */}
-        {mounted ? null : (
-          <script
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: intentional theme bootstrap
-            dangerouslySetInnerHTML={{
-              __html: `
-                try {
-                  var t = localStorage.getItem('bmf-theme');
-                  if (t === 'dark') {
-                    document.documentElement.classList.add('dark');
-                  } else {
-                    document.documentElement.classList.remove('dark');
-                  }
-                } catch (e) {}
-              `,
-            }}
-          />
-        )}
         {children}
       </ThemeProvider>
     </SessionProvider>

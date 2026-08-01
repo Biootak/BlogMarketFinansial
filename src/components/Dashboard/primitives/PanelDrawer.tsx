@@ -1,11 +1,12 @@
 'use client';
 
 /**
- * PanelDrawer — slide-in drawer مشترک برای همه پنل‌های سایت.
+ * PanelDrawer — مودال وسط مشترک برای همه پنل‌های سایت.
  *
- * الگوی overlay → panel → sticky header → scrollable body → sticky footer
- * در CustomerDrawer، TransactionsWorkspace و StaffWorkspace تکرار شده بود.
- * از این component جایگزین همه استفاده می‌کنند.
+ * 2026-08-01: از drawer کناری به مودال وسط (centered) تبدیل شد.
+ * الگوی overlay → panel → sticky header → scrollable body → sticky footer.
+ * همهٔ پنل‌های سایت (customers، quotes، transactions، helpdesk) از همین
+ * primitive استفاده می‌کنند — یک تغییر اینجا همه را یکدست می‌کند.
  *
  * ── Usage ───────────────────────────────────────────────────────────────────
  * <PanelDrawer
@@ -13,6 +14,7 @@
  *   title="عنوان"
  *   onClose={() => setOpen(false)}
  *   footer={<><button>ذخیره</button><button>انصراف</button></>}
+ *   width="min(560px, 100vw)"
  * >
  *   {form content}
  * </PanelDrawer>
@@ -31,7 +33,7 @@ export interface PanelDrawerProps {
   children: ReactNode;
   /** محتوای footer — دکمه‌های action */
   footer?: ReactNode;
-  /** عرض drawer — پیش‌فرض min(460px, 100vw) */
+  /** عرض مودال — پیش‌فرض min(460px, 100%) */
   width?: string;
 }
 
@@ -54,7 +56,13 @@ export function PanelDrawer({ open, title, onClose, children, footer, width }: P
       role="presentation"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <dialog open className={s.panel} style={width ? { width } : undefined} aria-label={title}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className={s.panel}
+        style={width ? { width } : undefined}
+      >
         {/* Sticky header */}
         <div className={s.header}>
           <span className={s.headerTitle}>{title}</span>
@@ -68,7 +76,7 @@ export function PanelDrawer({ open, title, onClose, children, footer, width }: P
 
         {/* Sticky footer */}
         {footer && <div className={s.footer}>{footer}</div>}
-      </dialog>
+      </div>
     </div>,
     document.body,
   );

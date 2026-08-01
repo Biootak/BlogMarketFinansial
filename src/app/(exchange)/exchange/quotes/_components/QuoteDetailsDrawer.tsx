@@ -77,7 +77,7 @@ export function QuoteDetailsDrawer({ quote, exchangeId, onClose }: Props) {
       open={!!quote}
       title={`${quote.currencyCode} — ${quote.currencyPair}`}
       onClose={onClose}
-      width="min(480px, 100vw)"
+      width="min(480px, 100%)"
     >
       <div className={s.detailBody}>
         {/* سربرگ جزئیات */}

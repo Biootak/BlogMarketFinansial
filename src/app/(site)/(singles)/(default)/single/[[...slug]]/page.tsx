@@ -82,6 +82,7 @@ export default async function PageSingle({ params }: PageProps) {
 
   const post = result.data;
 
+  // Kick off all non-blocking fetches in parallel to avoid sequential waterfalls.
   const relatedPostsPromise: Promise<ActionResult<PostWithRelations[]>> = getRelatedPosts(
     post.id,
     post.categories.map((cat) => cat.id),
@@ -90,20 +91,22 @@ export default async function PageSingle({ params }: PageProps) {
     post.authorId,
     post.id,
   );
-  const sidebarData = await getSidebarData();
-  const sidebarAdsResult = await getActiveAdvertisements({
-    limit: 3,
-    size: 'MEDIUM',
-    position: 'SIDEBAR',
-    orderBy: 'createdAt',
-    orderDirection: 'desc',
-  });
-  const inContentAdsResult = await getActiveAdvertisements({
-    limit: 1,
-    position: 'IN_CONTENT',
-    orderBy: 'createdAt',
-    orderDirection: 'desc',
-  });
+  const [sidebarData, sidebarAdsResult, inContentAdsResult] = await Promise.all([
+    getSidebarData(),
+    getActiveAdvertisements({
+      limit: 3,
+      size: 'MEDIUM',
+      position: 'SIDEBAR',
+      orderBy: 'createdAt',
+      orderDirection: 'desc',
+    }),
+    getActiveAdvertisements({
+      limit: 1,
+      position: 'IN_CONTENT',
+      orderBy: 'createdAt',
+      orderDirection: 'desc',
+    }),
+  ]);
   const inContentAd =
     inContentAdsResult.success && inContentAdsResult.data?.[0] ? inContentAdsResult.data[0] : null;
 
@@ -135,7 +138,7 @@ export default async function PageSingle({ params }: PageProps) {
                 }}
               />
 
-              {/* Image */}
+              {/* Image — priority=true for LCP preload */}
               <NcImage
                 alt={post.title}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -147,6 +150,7 @@ export default async function PageSingle({ params }: PageProps) {
                 height={600}
                 sizes="(max-width: 1024px) 100vw, 1400px"
                 fill={false}
+                priority
               />
 
               {/* Decorative Elements */}

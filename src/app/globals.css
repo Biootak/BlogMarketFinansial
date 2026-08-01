@@ -285,9 +285,14 @@ html {
   font-size: var(--fs-base);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  /* Smooth scroll only if user prefers it */
-  scroll-behavior: smooth;
   overflow-x: clip;
+}
+
+/* Smooth scrolling only for users who haven't opted out of motion */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
@@ -954,6 +959,60 @@ p {
   }
   .stagger-children > *:nth-child(n + 11) {
     animation-delay: 420ms;
+  }
+}
+
+/* ============================================================================
+   Arbitrary animation keyframe used via Tailwind's `animate-[...]` syntax.
+   (e.g. SingleRelatedPosts.tsx: animate-[fadeInUp_0.5s_ease-out_forwards])
+   ============================================================================ */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* ============================================================================
+   Ticker Component Keyframes (Ticker.tsx — replaces inline styled-jsx)
+   ----------------------------------------------------------------------------
+   These are referenced by .ticker-ltr and .ticker-rtl in Ticker.tsx.
+   --ticker-duration: animation speed (set per-instance inline)
+   --ticker-step:     translate percentage (= 100/repeat %) — default 50% (repeat=2)
+   Pause states handled by data attributes / .marquee-pause.
+   ============================================================================ */
+@keyframes ticker-scroll-ltr {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(calc(-1 * var(--ticker-step, 50%)), 0, 0); }
+}
+@keyframes ticker-scroll-rtl {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(var(--ticker-step, 50%), 0, 0); }
+}
+.ticker-ltr {
+  animation: ticker-scroll-ltr var(--ticker-duration, 40s) linear infinite;
+}
+.ticker-rtl {
+  animation: ticker-scroll-rtl var(--ticker-duration, 40s) linear infinite;
+}
+[data-pause-on-hover='true']:hover .ticker-ltr,
+[data-pause-on-hover='true']:hover .ticker-rtl,
+.marquee-pause:hover .ticker-ltr,
+.marquee-pause:hover .ticker-rtl {
+  animation-play-state: paused;
+}
+[data-holding='true'] .ticker-ltr,
+[data-holding='true'] .ticker-rtl {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker-ltr,
+  .ticker-rtl {
+    animation-play-state: paused;
   }
 }
 

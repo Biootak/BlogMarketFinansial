@@ -215,7 +215,7 @@ export function TicketDetail({ ticket, onClose, onChanged }: TicketDetailProps) 
   if (!ticket) return null;
 
   return (
-    <PanelDrawer open={!!ticket} onClose={onClose} title={ticket.subject} width="min(560px, 100vw)">
+    <PanelDrawer open={!!ticket} onClose={onClose} title={ticket.subject} width="min(560px, 100%)">
       <div className={s.body}>
         <header className={s.header}>
           <div className={s.badges}>

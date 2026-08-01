@@ -120,7 +120,7 @@ export function NewTicketForm({ open, onClose, onCreated }: NewTicketFormProps) 
   };
 
   return (
-    <PanelDrawer open={open} onClose={handleClose} title="تیکت جدید" width="min(520px, 100vw)">
+    <PanelDrawer open={open} onClose={handleClose} title="تیکت جدید" width="min(520px, 100%)">
       <div className={s.body}>
         <div className={s.field}>
           <label htmlFor="new-ticket-subject" className={s.label}>

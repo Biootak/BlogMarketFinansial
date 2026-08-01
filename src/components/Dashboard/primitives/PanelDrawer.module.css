@@ -1,85 +1,132 @@
-/* PanelDrawer.module.css */
+/* PanelDrawer.module.css — Centered modal (premium glass)
+ *
+ * 2026-08-01: از draw کناری به مودال وسط تبدیل شد — خواستهٔ کاربر:
+ * «مودال‌های سایت باید وسط باشند». همهٔ مصرف‌کننده‌ها (customers،
+ * quotes، transactions، helpdesk) از همین primitive استفاده می‌کنند.
+ *
+ * زبان بصری: glass + hairline + سایهٔ عمیق — tokens --ds-* و --at-*.
+ */
 
+/* ── Overlay ──────────────────────────────────────────────────────────────── */
 .overlay {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: oklch(0% 0 0 / 0.45);
-  backdrop-filter: blur(2px);
   display: flex;
-  align-items: stretch;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in oklch, var(--at-bg, oklch(10% 0.02 255)) 55%, transparent);
+  backdrop-filter: blur(6px) saturate(120%);
+  -webkit-backdrop-filter: blur(6px) saturate(120%);
+  padding: var(--ds-space-4);
+  animation: pdFadeIn 200ms var(--ds-ease-out-quart) both;
 }
 
+@keyframes pdFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── Panel ────────────────────────────────────────────────────────────────── */
 .panel {
-  width: min(460px, 100vw);
-  height: 100%;
-  overflow-y: auto;
-  background: var(--at-surface, #fff);
-  border-inline-start: 1px solid var(--at-line);
+  position: relative;
+  width: min(460px, 100%);
+  max-height: min(88vh, 880px);
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  border: none;
-  padding: 0;
-  margin: 0;
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius-xl);
+  background: var(--at-surface);
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--at-fg) 4%, transparent),
+    0 8px 32px -4px color-mix(in oklch, var(--at-fg) 14%, transparent),
+    0 40px 100px -20px color-mix(in oklch, var(--at-fg) 18%, transparent);
+  animation: pdPanelIn 280ms var(--ds-ease-out-quart) both;
 }
 
-/* Sticky header */
+@keyframes pdPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Sticky header ────────────────────────────────────────────────────────── */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--at-line);
-  position: sticky;
-  top: 0;
-  background: var(--at-surface, #fff);
-  z-index: 1;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4) var(--ds-space-5);
+  border-block-end: 1px solid var(--at-line);
+  background: var(--at-surface);
+  flex-shrink: 0;
 }
 
 .headerTitle {
   font-size: var(--ds-text-base);
-  font-weight: 700;
+  font-weight: var(--ds-weight-bold);
   color: var(--at-fg);
 }
 
+/* ── Close button ─────────────────────────────────────────────────────────── */
 .closeBtn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 32px;
+  height: 32px;
   border: 1px solid var(--at-line);
-  border-radius: 6px;
-  background: transparent;
+  border-radius: var(--at-radius);
+  background: var(--at-bg-elevated);
   cursor: pointer;
-  color: var(--at-fg-subtle);
-  transition: background 100ms ease, color 100ms ease;
+  color: var(--at-fg-muted);
+  transition:
+    background var(--ds-duration-fast) var(--ds-ease-out-quart),
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  flex-shrink: 0;
 }
-
 .closeBtn:hover {
-  background: var(--at-accent-subtle);
-  color: var(--at-accent);
-  border-color: var(--at-accent);
+  background: var(--at-danger-soft);
+  color: var(--at-danger-fg);
+  border-color: color-mix(in oklch, var(--at-danger) 35%, transparent);
+}
+.closeBtn:active {
+  transform: scale(0.94);
+}
+.closeBtn:focus-visible {
+  outline: 2px solid var(--at-accent);
+  outline-offset: 2px;
 }
 
-/* Scrollable body */
+/* ── Scrollable body ──────────────────────────────────────────────────────── */
 .body {
   flex: 1;
-  padding: 1.5rem;
+  padding: var(--ds-space-5);
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: var(--ds-space-5);
   overflow-y: auto;
 }
 
-/* Sticky footer */
+/* ── Sticky footer ────────────────────────────────────────────────────────── */
 .footer {
   display: flex;
-  gap: 0.75rem;
-  padding: 1rem 1.5rem;
-  border-top: 1px solid var(--at-line);
-  position: sticky;
-  bottom: 0;
-  background: var(--at-surface, #fff);
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-5);
+  border-block-start: 1px solid var(--at-line);
+  background: var(--at-surface);
+  flex-shrink: 0;
 }

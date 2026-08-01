@@ -144,7 +144,7 @@ export function TransactionDrawer({ open, onClose, exchangeId, customers, onCrea
       open={open}
       title="ثبت تراکنش جدید"
       onClose={onClose}
-      width="min(540px, 100vw)"
+      width="min(540px, 100%)"
       footer={
         <div className={s.footer}>
           <button
@@ -255,7 +255,7 @@ export function TransactionDrawer({ open, onClose, exchangeId, customers, onCrea
                       (Number.parseFloat(amount) * 100).toFixed(0),
                       currency,
                     )
-                  : '۰ ' + currency}
+                  : `۰ ${currency}`}
               </span>
               <span className={s.transitArrow} aria-hidden>
                 <ArrowLeftRight size={14} strokeWidth={2} />
@@ -271,7 +271,7 @@ export function TransactionDrawer({ open, onClose, exchangeId, customers, onCrea
                         (Number.parseFloat(livePreview.computed) * 100).toFixed(0),
                         destCurrency,
                       )
-                    : '۰ ' + destCurrency}
+                    : `۰ ${destCurrency}`}
               </span>
             </div>
 

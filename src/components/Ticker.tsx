@@ -13,8 +13,8 @@
  *  - Respects `prefers-reduced-motion`.
  *  - Configurable direction (ltr/rtl), speed/duration, and repeat count.
  *
- * The visible behavior is identical to the old components; only the API is
- * unified so every ticker on the site behaves consistently.
+ * CSS keyframes (ticker-scroll-ltr / ticker-scroll-rtl) live in globals.css
+ * to avoid per-render style tag injection from styled-jsx.
  */
 
 import { useTickerPause } from '@/hooks/useTickerPause';
@@ -65,15 +65,19 @@ function TickerFn({
     return 40;
   }, [duration, speed]);
 
-  const translateStep = 100 / repeat;
-
   return (
     <div
       {...containerProps}
       data-ticker="true"
       aria-label={ariaLabel}
       className={cn('relative w-full overflow-hidden contain-paint', className)}
-      style={{ '--ticker-duration': `${computedDuration}s`, direction } as React.CSSProperties}
+      style={
+        {
+          '--ticker-duration': `${computedDuration}s`,
+          '--ticker-step': `${100 / repeat}%`,
+          direction,
+        } as React.CSSProperties
+      }
     >
       <div
         className={cn('ticker-track flex w-max', isRTL ? 'ticker-rtl' : 'ticker-ltr')}
@@ -90,52 +94,6 @@ function TickerFn({
           </div>
         ))}
       </div>
-
-      <style jsx>{`
-        @keyframes ticker-scroll-ltr {
-          from {
-            transform: translate3d(0, 0, 0);
-          }
-          to {
-            transform: translate3d(-${translateStep}%, 0, 0);
-          }
-        }
-
-        @keyframes ticker-scroll-rtl {
-          from {
-            transform: translate3d(0, 0, 0);
-          }
-          to {
-            transform: translate3d(${translateStep}%, 0, 0);
-          }
-        }
-
-        .ticker-ltr {
-          animation: ticker-scroll-ltr var(--ticker-duration) linear infinite;
-        }
-        .ticker-rtl {
-          animation: ticker-scroll-rtl var(--ticker-duration) linear infinite;
-        }
-
-        [data-pause-on-hover='true']:hover .ticker-ltr,
-        [data-pause-on-hover='true']:hover .ticker-rtl,
-        :global(.marquee-pause:hover) .ticker-ltr,
-        :global(.marquee-pause:hover) .ticker-rtl {
-          animation-play-state: paused;
-        }
-
-        [data-holding='true'] .ticker-ltr,
-        [data-holding='true'] .ticker-rtl {
-          animation-play-state: paused;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .ticker-ltr,
-          .ticker-rtl {
-            animation-play-state: paused;
-          }
-        }
-      `}</style>
     </div>
   );
 }
