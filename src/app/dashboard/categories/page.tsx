@@ -33,6 +33,7 @@ export default async function CategoriesPage({
   return (
     <div className="at-page" dir="rtl">
       <PageHeader
+        variant="compact"
         eyebrow="ساختار"
         title="مدیریت دسته‌بندی‌ها"
         description="تعریف، ویرایش و سازماندهی درختی دسته‌بندی‌های محتوا"

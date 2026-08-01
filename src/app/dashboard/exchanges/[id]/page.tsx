@@ -56,6 +56,7 @@ export default async function ExchangeDetailPage({
       }}
     >
       <PageHeader
+        variant="minimal"
         breadcrumb={[
           { label: 'داشبورد', href: '/dashboard' },
           { label: 'صراف‌ها', href: '/dashboard/exchanges' },

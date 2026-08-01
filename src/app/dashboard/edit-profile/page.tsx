@@ -18,6 +18,7 @@ export default async function ProfilePage() {
   return (
     <div className="at-form" dir="rtl">
       <PageHeader
+        variant="strip"
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'ویرایش پروفایل' }]}
         eyebrow="حساب کاربری"
         title="ویرایش پروفایل"

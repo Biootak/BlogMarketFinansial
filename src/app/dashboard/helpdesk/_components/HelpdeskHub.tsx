@@ -195,6 +195,7 @@ export function HelpdeskHub({ initialTickets }: HelpdeskHubProps) {
       {/* ── Hero zone ──────────────────────────────────── */}
       <section className={s.hero} aria-labelledby="helpdesk-hero-title">
         <PageHeader
+          variant="minimal"
           eyebrow="مرکز پشتیبانی"
           title="صندوق اولویت"
           description="نمای پروازی تیکت‌ها بر اساس اولویت و وضعیت. هر ۳۰ ثانیه تازه‌سازی می‌شود."

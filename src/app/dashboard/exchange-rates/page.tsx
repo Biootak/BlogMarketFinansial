@@ -53,6 +53,7 @@ export default async function ExchangeRatesPage() {
       }}
     >
       <PageHeader
+        variant="compact"
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'نرخ ارزها' }]}
         title="نرخ ارزها"
         description="مرکز فرمان نرخ‌های بازار، کاتالوگ ارز، و فهرست‌های سفارشی تیکر. همه چیز یک‌جا."

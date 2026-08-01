@@ -24,6 +24,7 @@ export default async function ObservabilityPage() {
   return (
     <div dir="rtl" className={s.page}>
       <PageHeader
+        variant="minimal"
         eyebrow="مرکز عملیات"
         title="مرکز مشاهده‌پذیری"
         description="نمای زنده از سلامت سرویس‌ها، خطاها، کارایی و incidentها. همه داده‌ها از SystemLog و AuditLog خوانده می‌شوند."

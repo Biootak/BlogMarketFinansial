@@ -1,56 +1,31 @@
 'use client';
 
 /**
- * QuotesWorkspace — مدیریت قیمت‌های خرید/فروش صرافی
- * صراف از اینجا برای هر ارز قیمت ثبت می‌کند.
+ * QuotesWorkspace — کابین مالی صراف: مدیریت قیمت‌های خرید/فروش.
+ *
+ * بازطراحی v2 (2026-08-01):
+ *  - نمای شبکه‌ای کارت (موبایل/تبلت) + جدول مرتب‌پذیر (دسکتاپ)
+ *  - فیلتر وضعیت، جستجو، مرتب‌سازی (نرخ/اسپرد/زمان/نسخه)
+ *  - ثبت قیمت جدید در PanelDrawer + جزئیات/تاریخچهٔ quote در PanelDrawer
+ *  - فقط داده واقعی DB؛ هیچ mock نیست. عملیات از actions موجود.
  */
 
 import type { QuoteRow } from '@/actions/exchange-quotes';
-import { getAutoSuggestedRates, submitQuote } from '@/actions/exchange-quotes';
-import type { SuggestedRate } from '@/lib/pricing/auto-suggest';
-import { CheckCircle2, Clock, Loader2, Plus, RefreshCw, Sparkles, X, XCircle } from 'lucide-react';
-import { useCallback, useState, useTransition } from 'react';
+import { EmptyState, SearchInput } from '@/components/Dashboard/primitives';
+import {
+  QUOTE_STATUS_FA,
+  QUOTE_STATUS_KEYS,
+  countdownLabel,
+  formatDateTime,
+  quoteNumber,
+  spreadPct,
+} from '@/lib/exchange-quotes-labels';
+import { ArrowDownUp, Clock, History, Plus, RefreshCw, SearchX } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { QuoteCard } from './QuoteCard';
+import { QuoteDetailsDrawer } from './QuoteDetailsDrawer';
+import { QuoteFormDrawer } from './QuoteFormDrawer';
 import s from './QuotesWorkspace.module.css';
-
-const SUPPORTED_CURRENCIES = [
-  { code: 'USD', name: 'دلار آمریکا', pair: 'USD/AFN', unit: 'afn' },
-  { code: 'EUR', name: 'یورو', pair: 'EUR/AFN', unit: 'afn' },
-  { code: 'AED', name: 'درهم امارات', pair: 'AED/AFN', unit: 'afn' },
-  { code: 'GBP', name: 'پوند انگلیس', pair: 'GBP/AFN', unit: 'afn' },
-  { code: 'AFN', name: 'افغانی', pair: 'AFN/IRR', unit: 'toman' },
-  { code: 'TRY', name: 'لیر ترکیه', pair: 'TRY/AFN', unit: 'afn' },
-  { code: 'SAR', name: 'ریال عربستان', pair: 'SAR/AFN', unit: 'afn' },
-  { code: 'CAD', name: 'دلار کانادا', pair: 'CAD/AFN', unit: 'afn' },
-] as const;
-
-const STATUS_LABEL: Record<string, { label: string; color: string }> = {
-  PENDING: { label: 'در انتظار تایید', color: 'var(--ds-warning)' },
-  ACTIVE: { label: 'فعال — در سایت', color: 'var(--ds-success)' },
-  REJECTED: { label: 'رد شده', color: 'var(--ds-error)' },
-  EXPIRED: { label: 'منقضی', color: 'var(--ds-text-3)' },
-  ARCHIVED: { label: 'آرشیو', color: 'var(--ds-text-3)' },
-  LOCKED: { label: 'در حال معامله', color: 'var(--ds-info, #3b82f6)' },
-};
-
-interface QuoteFormState {
-  currencyCode: string;
-  buyRate: string;
-  sellRate: string;
-  unit: string;
-  minAmount: string;
-  maxAmount: string;
-  validMinutes: string;
-}
-
-const EMPTY_FORM: QuoteFormState = {
-  currencyCode: 'USD',
-  buyRate: '',
-  sellRate: '',
-  unit: 'afn',
-  minAmount: '',
-  maxAmount: '',
-  validMinutes: '60',
-};
 
 interface Props {
   exchangeId: string;
@@ -58,483 +33,311 @@ interface Props {
   initialQuotes: QuoteRow[];
 }
 
+type SortKey = 'updatedAt' | 'buyRate' | 'sellRate' | 'spread' | 'version';
+
 export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initialQuotes }: Props) {
   const [quotes, setQuotes] = useState<QuoteRow[]>(initialQuotes);
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<QuoteFormState>(EMPTY_FORM);
-  const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
-  const [isPending, startTransition] = useTransition();
-  const [suggestion, setSuggestion] = useState<SuggestedRate | null>(null);
-  const [suggestPending, setSuggestPending] = useState(false);
-  const [suggestError, setSuggestError] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [query, setQuery] = useState('');
+  const [sortKey, setSortKey] = useState<SortKey>('updatedAt');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
-  const availableCurrencies =
-    allowedCurrencies.length > 0
-      ? SUPPORTED_CURRENCIES.filter((c) => allowedCurrencies.includes(c.code))
-      : SUPPORTED_CURRENCIES;
+  // drawer ها
+  const [formOpen, setFormOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const handleCurrencyChange = useCallback((code: string) => {
-    const cur = SUPPORTED_CURRENCIES.find((c) => c.code === code);
-    setForm((f) => ({ ...f, currencyCode: code, unit: cur?.unit ?? 'afn' }));
-    setSuggestion(null);
-    setSuggestError(null);
+  // ساعت زندهٔ countdown — هر ۳۰ ثانیه
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNowMs(Date.now()), 30_000);
+    return () => clearInterval(t);
   }, []);
 
-  const handleAutoSuggest = useCallback(async () => {
-    setSuggestPending(true);
-    setSuggestError(null);
-    const res = await getAutoSuggestedRates(exchangeId, form.currencyCode, 1.5);
-    setSuggestPending(false);
-    if (res.success) {
-      const s = res.data;
-      setSuggestion(s);
-      setForm((f) => ({
-        ...f,
-        buyRate: s.suggestedBuyRate.toString(),
-        sellRate: s.suggestedSellRate.toString(),
-      }));
-    } else {
-      setSuggestError(res.error.message);
+  const selected = useMemo(
+    () => quotes.find((q) => q.id === selectedId) ?? null,
+    [quotes, selectedId],
+  );
+
+  const handleSaved = (quote: QuoteRow) => {
+    setQuotes((prev) => [
+      quote,
+      ...prev.filter((q) => !(q.currencyCode === quote.currencyCode && q.status === 'PENDING')),
+    ]);
+  };
+
+  // ── فیلتر + جستجو + مرتب‌سازی ────────────────────────────────────────
+  const filtered = useMemo(() => {
+    let list = quotes;
+    if (statusFilter !== 'ALL') list = list.filter((q) => q.status === statusFilter);
+    if (query.trim()) {
+      const q = query.trim().toLowerCase();
+      list = list.filter(
+        (x) => x.currencyCode.toLowerCase().includes(q) || x.currencyPair.toLowerCase().includes(q),
+      );
     }
-  }, [exchangeId, form.currencyCode]);
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-
-    const buy = Number(form.buyRate);
-    const sell = Number(form.sellRate);
-    if (!form.buyRate || !form.sellRate || Number.isNaN(buy) || Number.isNaN(sell)) {
-      setError('قیمت خرید و فروش الزامی است');
-      return;
-    }
-    if (buy <= 0 || sell <= 0) {
-      setError('قیمت‌ها باید مثبت باشند');
-      return;
-    }
-    if (buy > sell) {
-      setError('قیمت فروش باید بیشتر یا مساوی خرید باشد');
-      return;
-    }
-
-    const cur = SUPPORTED_CURRENCIES.find((c) => c.code === form.currencyCode);
-
-    startTransition(async () => {
-      const res = await submitQuote(exchangeId, {
-        currencyCode: form.currencyCode,
-        currencyPair: cur?.pair ?? `${form.currencyCode}/AFN`,
-        buyRate: buy,
-        sellRate: sell,
-        unit: form.unit,
-        minAmount: form.minAmount ? Number(form.minAmount) : null,
-        maxAmount: form.maxAmount ? Number(form.maxAmount) : null,
-        validMinutes: Number(form.validMinutes) || 60,
-      });
-
-      if (res.success) {
-        setQuotes((prev) => [
-          res.data,
-          ...prev.filter((q) => !(q.currencyCode === form.currencyCode && q.status === 'PENDING')),
-        ]);
-        setSaved(true);
-        setForm(EMPTY_FORM);
-        setTimeout(() => {
-          setSaved(false);
-          setShowForm(false);
-        }, 1800);
-      } else {
-        setError(res.error.message);
-      }
+    const sorted = [...list];
+    sorted.sort((a, b) => {
+      let cmp = 0;
+      if (sortKey === 'updatedAt') cmp = a.updatedAt.getTime() - b.updatedAt.getTime();
+      else if (sortKey === 'buyRate') cmp = Number(a.buyRate) - Number(b.buyRate);
+      else if (sortKey === 'sellRate') cmp = Number(a.sellRate) - Number(b.sellRate);
+      else if (sortKey === 'spread') {
+        cmp = spreadRatio(a) - spreadRatio(b);
+      } else cmp = a.version - b.version;
+      return sortDir === 'asc' ? cmp : -cmp;
     });
+    return sorted;
+  }, [quotes, statusFilter, query, sortKey, sortDir]);
+
+  function spreadRatio(q: QuoteRow): number {
+    const b = Number(q.buyRate);
+    const s = Number(q.sellRate);
+    if (!Number.isFinite(b) || !Number.isFinite(s) || b <= 0) return 0;
+    return (s - b) / b;
   }
 
-  function minutesLeft(expiresAt: Date | null): string {
-    if (!expiresAt) return '';
-    const diff = new Date(expiresAt).getTime() - Date.now();
-    if (diff <= 0) return 'منقضی';
-    const m = Math.ceil(diff / 60000);
-    return m >= 60 ? `${Math.floor(m / 60)} ساعت` : `${m} دقیقه`;
-  }
+  const toggleSort = (key: SortKey) => {
+    if (key === sortKey) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDir('desc');
+    }
+  };
+
+  const counts = useMemo(() => {
+    const m: Record<string, number> = { ALL: quotes.length };
+    for (const q of quotes) m[q.status] = (m[q.status] ?? 0) + 1;
+    return m;
+  }, [quotes]);
+
+  const showTable = filtered.length > 0;
 
   return (
     <div className={s.root}>
-      {/* دکمه افزودن */}
+      {/* ── نوار ابزار ─────────────────────────────────────────────────── */}
       <div className={s.toolbar}>
-        <button
-          type="button"
-          className={s.addBtn}
-          onClick={() => {
-            setShowForm((v) => !v);
-            setError(null);
-            setSaved(false);
-          }}
-        >
-          <Plus className="w-4 h-4" aria-hidden />
-          ثبت قیمت جدید
-        </button>
-        <p className={s.hint}>
-          پس از تایید ادمین، قیمت‌ها به مدت <strong>{form.validMinutes || 60} دقیقه</strong> در سایت
-          نمایش داده می‌شوند.
-        </p>
+        <div className={s.toolbarFilters}>
+          {(['ALL', ...QUOTE_STATUS_KEYS] as string[]).map((key) => {
+            const st = key === 'ALL' ? null : QUOTE_STATUS_FA[key];
+            const active = statusFilter === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                className={s.chip}
+                data-active={active}
+                data-tone={st?.tone}
+                onClick={() => setStatusFilter(key)}
+                aria-pressed={active}
+              >
+                {key === 'ALL' ? 'همه' : st?.label}
+                <span className={s.chipCount}>{counts[key] ?? 0}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className={s.toolbarControls}>
+          <SearchInput
+            value={query}
+            onChange={setQuery}
+            placeholder="جستجوی ارز یا جفت…"
+            ariaLabel="جستجوی قیمت"
+            className={s.search}
+          />
+          <button type="button" className={s.btnPrimary} onClick={() => setFormOpen(true)}>
+            <Plus size={16} aria-hidden />
+            ثبت قیمت جدید
+          </button>
+        </div>
       </div>
 
-      {/* فرم ثبت */}
-      {showForm && (
-        <form onSubmit={handleSubmit} className={s.form} aria-label="فرم ثبت قیمت">
-          <div className={s.formHeader}>
-            <h3 className={s.formTitle}>ثبت قیمت جدید</h3>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              {/* Auto-suggest button */}
-              <button
-                type="button"
-                onClick={handleAutoSuggest}
-                disabled={suggestPending}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  padding: '4px 10px',
-                  background: 'color-mix(in oklch, var(--ds-primary) 10%, transparent)',
-                  color: 'var(--ds-primary)',
-                  border: '1px solid color-mix(in oklch, var(--ds-primary) 25%, transparent)',
-                  borderRadius: '6px',
-                  cursor: suggestPending ? 'not-allowed' : 'pointer',
-                  opacity: suggestPending ? 0.7 : 1,
-                  transition: 'opacity 0.15s',
-                }}
-                aria-label="پیشنهاد خودکار نرخ از بازار"
-              >
-                {suggestPending ? (
-                  <Loader2
-                    className="w-3 h-3"
-                    style={{ animation: 'spin 0.7s linear infinite' }}
-                    aria-hidden
-                  />
-                ) : (
-                  <Sparkles className="w-3 h-3" aria-hidden />
-                )}
-                پیشنهاد بازار
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className={s.closeBtn}
-                aria-label="بستن"
-              >
-                <X className="w-4 h-4" aria-hidden />
-              </button>
-            </div>
-          </div>
-
-          {/* نمایش پیشنهاد بازار */}
-          {suggestion && (
-            <output
-              aria-live="polite"
-              style={{
-                display: 'block',
-                padding: '8px 12px',
-                fontSize: '12px',
-                lineHeight: 1.6,
-                background: 'color-mix(in oklch, var(--ds-primary) 7%, transparent)',
-                border: '1px solid color-mix(in oklch, var(--ds-primary) 18%, transparent)',
-                borderRadius: '8px',
-                color: 'var(--ds-text-2)',
-              }}
-            >
-              <span style={{ fontWeight: 600, color: 'var(--ds-primary)' }}>
-                <Sparkles
-                  className="w-3 h-3"
-                  style={{ display: 'inline', verticalAlign: 'middle', marginInlineEnd: '4px' }}
-                  aria-hidden
-                />
-                پیشنهاد بازار ({suggestion.currencyCode}):
-              </span>{' '}
-              خرید{' '}
-              <span dir="ltr" style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>
-                {suggestion.suggestedBuyRate.toLocaleString('fa-IR')}
-              </span>{' '}
-              · فروش{' '}
-              <span dir="ltr" style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>
-                {suggestion.suggestedSellRate.toLocaleString('fa-IR')}
-              </span>{' '}
-              · منبع: <span style={{ color: 'var(--ds-text-3)' }}>{suggestion.source}</span> ·{' '}
-              <span
-                style={{
-                  color:
-                    suggestion.confidence === 'high'
-                      ? 'var(--ds-success, #22c55e)'
-                      : 'var(--ds-warning, #f59e0b)',
-                }}
-              >
-                {suggestion.confidence === 'high'
-                  ? 'داده تازه'
-                  : suggestion.confidence === 'medium'
-                    ? 'نسبتاً تازه'
-                    : 'قدیمی'}
-              </span>
-            </output>
-          )}
-          {suggestError && (
-            <p
-              role="alert"
-              style={{ color: 'var(--ds-error, #ef4444)', fontSize: '12px', margin: 0 }}
-            >
-              {suggestError}
-            </p>
-          )}
-
-          <div className={s.formGrid}>
-            {/* ارز */}
-            <div className={s.field}>
-              <label htmlFor="q-currency" className={s.label}>
-                ارز
-              </label>
-              <select
-                id="q-currency"
-                className={s.select}
-                value={form.currencyCode}
-                onChange={(e) => handleCurrencyChange(e.target.value)}
-              >
-                {availableCurrencies.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.name} ({c.code})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* واحد */}
-            <div className={s.field}>
-              <label htmlFor="q-unit" className={s.label}>
-                واحد
-              </label>
-              <select
-                id="q-unit"
-                className={s.select}
-                value={form.unit}
-                onChange={(e) => setForm((f) => ({ ...f, unit: e.target.value }))}
-              >
-                <option value="afn">افغانی (AFN)</option>
-                <option value="toman">تومان (IRR)</option>
-                <option value="usd">دلار (USD)</option>
-              </select>
-            </div>
-
-            {/* خرید */}
-            <div className={s.field}>
-              <label htmlFor="q-buy" className={s.label}>
-                قیمت خرید
-                <span className={s.labelHint}>(صرافی از مشتری می‌خرد)</span>
-              </label>
-              <input
-                id="q-buy"
-                type="number"
-                className={s.input}
-                value={form.buyRate}
-                onChange={(e) => setForm((f) => ({ ...f, buyRate: e.target.value }))}
-                min="0"
-                step="any"
-                dir="ltr"
-                required
-                placeholder="مثال: 71.20"
-              />
-            </div>
-
-            {/* فروش */}
-            <div className={s.field}>
-              <label htmlFor="q-sell" className={s.label}>
-                قیمت فروش
-                <span className={s.labelHint}>(صرافی به مشتری می‌فروشد)</span>
-              </label>
-              <input
-                id="q-sell"
-                type="number"
-                className={s.input}
-                value={form.sellRate}
-                onChange={(e) => setForm((f) => ({ ...f, sellRate: e.target.value }))}
-                min="0"
-                step="any"
-                dir="ltr"
-                required
-                placeholder="مثال: 71.80"
-              />
-            </div>
-
-            {/* حداقل */}
-            <div className={s.field}>
-              <label htmlFor="q-min" className={s.label}>
-                حداقل مبلغ <span className={s.labelHint}>(اختیاری)</span>
-              </label>
-              <input
-                id="q-min"
-                type="number"
-                className={s.input}
-                value={form.minAmount}
-                onChange={(e) => setForm((f) => ({ ...f, minAmount: e.target.value }))}
-                min="0"
-                dir="ltr"
-                placeholder="۰"
-              />
-            </div>
-
-            {/* حداکثر */}
-            <div className={s.field}>
-              <label htmlFor="q-max" className={s.label}>
-                حداکثر مبلغ <span className={s.labelHint}>(اختیاری)</span>
-              </label>
-              <input
-                id="q-max"
-                type="number"
-                className={s.input}
-                value={form.maxAmount}
-                onChange={(e) => setForm((f) => ({ ...f, maxAmount: e.target.value }))}
-                min="0"
-                dir="ltr"
-                placeholder="بدون محدودیت"
-              />
-            </div>
-
-            {/* مدت اعتبار */}
-            <div className={s.field}>
-              <label htmlFor="q-valid" className={s.label}>
-                مدت اعتبار (دقیقه)
-              </label>
-              <select
-                id="q-valid"
-                className={s.select}
-                value={form.validMinutes}
-                onChange={(e) => setForm((f) => ({ ...f, validMinutes: e.target.value }))}
-              >
-                <option value="30">۳۰ دقیقه</option>
-                <option value="60">۱ ساعت</option>
-                <option value="120">۲ ساعت</option>
-                <option value="240">۴ ساعت</option>
-                <option value="480">۸ ساعت</option>
-                <option value="720">۱۲ ساعت</option>
-                <option value="1440">۲۴ ساعت</option>
-              </select>
-            </div>
-          </div>
-
-          {/* پیش‌نمایش */}
-          {form.buyRate && form.sellRate && (
-            <output className={s.preview} aria-live="polite">
-              <span className={s.previewLabel}>پیش‌نمایش:</span>
-              <span className={s.previewItem}>
-                خرید: <strong dir="ltr">{Number(form.buyRate).toLocaleString('fa-IR')}</strong>
-              </span>
-              <span className={s.previewSep}>|</span>
-              <span className={s.previewItem}>
-                فروش: <strong dir="ltr">{Number(form.sellRate).toLocaleString('fa-IR')}</strong>
-              </span>
-              <span className={s.previewItem}>
-                اسپرد:{' '}
-                <strong dir="ltr">
-                  {form.buyRate && form.sellRate
-                    ? (
-                        ((Number(form.sellRate) - Number(form.buyRate)) / Number(form.buyRate)) *
-                        100
-                      ).toFixed(2)
-                    : '0'}
-                  ٪
-                </strong>
-              </span>
-            </output>
-          )}
-
-          {error && (
-            <div className={s.formError} role="alert">
-              <XCircle className="w-4 h-4" aria-hidden /> {error}
-            </div>
-          )}
-          {saved && (
-            <output className={s.formSuccess}>
-              <CheckCircle2 className="w-4 h-4" aria-hidden /> ثبت شد — در انتظار تایید ادمین
-            </output>
-          )}
-
-          <div className={s.formFooter}>
-            <button
-              type="submit"
-              className={s.submitBtn}
-              disabled={isPending}
-              aria-busy={isPending}
-            >
-              {isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin" aria-hidden />
+      {/* ── لیست خالی ──────────────────────────────────────────────────── */}
+      {!showTable ? (
+        <div className={s.emptyWrap}>
+          <EmptyState
+            icon={query || statusFilter !== 'ALL' ? SearchX : RefreshCw}
+            title={query || statusFilter !== 'ALL' ? 'نتیجه‌ای یافت نشد' : 'هنوز قیمتی ثبت نشده'}
+            description={
+              query || statusFilter !== 'ALL'
+                ? 'با جستجو یا فیلتر دیگری امتحان کنید.'
+                : 'اولین قیمت را ثبت کنید تا در سایت نمایش داده شود.'
+            }
+            action={
+              query || statusFilter !== 'ALL' ? (
+                <button
+                  type="button"
+                  className={s.btnGhost}
+                  onClick={() => {
+                    setQuery('');
+                    setStatusFilter('ALL');
+                  }}
+                >
+                  پاک‌سازی فیلترها
+                </button>
               ) : (
-                <Plus className="w-4 h-4" aria-hidden />
-              )}
-              {isPending ? 'در حال ثبت…' : 'ثبت قیمت'}
-            </button>
-            <button type="button" onClick={() => setShowForm(false)} className={s.cancelBtn}>
-              انصراف
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* جدول قیمت‌های موجود */}
-      {quotes.length === 0 ? (
-        <div className={s.empty}>
-          <RefreshCw className="w-8 h-8" style={{ opacity: 0.3 }} aria-hidden />
-          <p>هنوز قیمتی ثبت نشده. اولین قیمت را ثبت کنید تا در سایت نمایش داده شود.</p>
+                <button type="button" className={s.btnPrimary} onClick={() => setFormOpen(true)}>
+                  <Plus size={16} aria-hidden />
+                  ثبت اولین قیمت
+                </button>
+              )
+            }
+          />
         </div>
       ) : (
-        <table className={s.tableWrap} aria-label="قیمت‌های ثبت‌شده">
-          <thead>
-            <tr className={s.tableHead}>
-              <th scope="col">ارز</th>
-              <th scope="col">خرید</th>
-              <th scope="col">فروش</th>
-              <th scope="col">واحد</th>
-              <th scope="col">وضعیت</th>
-              <th scope="col">انقضا</th>
-            </tr>
-          </thead>
-          <tbody>
-            {quotes.map((q) => {
-              const st = STATUS_LABEL[q.status] ?? { label: q.status, color: 'inherit' };
-              return (
-                <tr key={q.id} className={s.tableRow} data-status={q.status}>
-                  <td className={s.cellCurrency}>
-                    <strong>{q.currencyCode}</strong>
-                    <small>{q.currencyPair}</small>
-                  </td>
-                  <td className={`${s.cellNum} tabular-nums`} dir="ltr">
-                    {Number(q.buyRate).toLocaleString('fa-IR')}
-                  </td>
-                  <td className={`${s.cellNum} tabular-nums`} dir="ltr">
-                    {Number(q.sellRate).toLocaleString('fa-IR')}
-                  </td>
-                  <td>{q.unit}</td>
-                  <td className={s.statusBadge} style={{ color: st.color }}>
-                    {q.status === 'ACTIVE' && <span className={s.liveDot} aria-hidden />}
-                    {st.label}
-                  </td>
-                  <td className={s.cellExpiry}>
-                    {q.status === 'ACTIVE' && q.expiresAt ? (
-                      <span className={s.countdown}>
-                        <Clock className="w-3 h-3" aria-hidden />
-                        {minutesLeft(q.expiresAt)}
-                      </span>
-                    ) : q.status === 'REJECTED' && q.note ? (
-                      <span className={s.rejectNote} title={q.note}>
-                        دلیل: {q.note.slice(0, 40)}
-                      </span>
-                    ) : (
-                      '—'
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <>
+          {/* ── نمای موبایل/تبلت: کارت‌ها ─────────────────────────────── */}
+          <div className={s.cardGrid} aria-label="قیمت‌های ثبت‌شده">
+            {filtered.map((q) => (
+              <QuoteCard key={q.id} quote={q} nowMs={nowMs} onSelect={setSelectedId} />
+            ))}
+          </div>
+
+          {/* ── نمای دسکتاپ: جدول ─────────────────────────────────────── */}
+          <div className={s.tableWrap}>
+            <div className={s.tableScroll}>
+              <table className={s.table} aria-label="قیمت‌های ثبت‌شده">
+                <thead>
+                  <tr className={s.tableHead}>
+                    <th scope="col" className={s.thCurrency}>
+                      ارز
+                    </th>
+                    <th scope="col">
+                      <button
+                        type="button"
+                        className={s.thSort}
+                        onClick={() => toggleSort('buyRate')}
+                      >
+                        خرید
+                        <ArrowDownUp size={13} aria-hidden />
+                      </button>
+                    </th>
+                    <th scope="col">
+                      <button
+                        type="button"
+                        className={s.thSort}
+                        onClick={() => toggleSort('sellRate')}
+                      >
+                        فروش
+                        <ArrowDownUp size={13} aria-hidden />
+                      </button>
+                    </th>
+                    <th scope="col">
+                      <button
+                        type="button"
+                        className={s.thSort}
+                        onClick={() => toggleSort('spread')}
+                      >
+                        اسپرد
+                        <ArrowDownUp size={13} aria-hidden />
+                      </button>
+                    </th>
+                    <th scope="col">وضعیت</th>
+                    <th scope="col">
+                      <button
+                        type="button"
+                        className={s.thSort}
+                        onClick={() => toggleSort('updatedAt')}
+                      >
+                        آخرین تغییر
+                        <ArrowDownUp size={13} aria-hidden />
+                      </button>
+                    </th>
+                    <th scope="col" className={s.thExpiry}>
+                      انقضا / پیام
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((q) => {
+                    const st = QUOTE_STATUS_FA[q.status] ?? {
+                      label: q.status,
+                      tone: 'muted' as const,
+                    };
+                    const active = q.status === 'ACTIVE';
+                    return (
+                      <tr key={q.id} className={s.tableRow} data-status={q.status}>
+                        <td className={s.tdCurrency}>
+                          <button
+                            type="button"
+                            className={s.currencyBtn}
+                            onClick={() => setSelectedId(q.id)}
+                          >
+                            <span className={s.tdCode} dir="ltr">
+                              {q.currencyCode}
+                            </span>
+                            <span className={s.tdPair} dir="ltr">
+                              {q.currencyPair}
+                            </span>
+                          </button>
+                        </td>
+                        <td className={s.tdNum} dir="ltr">
+                          {quoteNumber(q.buyRate)}
+                        </td>
+                        <td className={s.tdNum} dir="ltr">
+                          {quoteNumber(q.sellRate)}
+                        </td>
+                        <td className={s.tdSpread} dir="ltr">
+                          {spreadPct(q.buyRate, q.sellRate)}
+                        </td>
+                        <td>
+                          <output className={s.statusPill} data-tone={st.tone}>
+                            {active && <span className={s.liveDot} aria-hidden />}
+                            {st.label}
+                          </output>
+                        </td>
+                        <td className={s.tdDate}>
+                          <span className={s.tdDateValue}>{formatDateTime(q.updatedAt)}</span>
+                        </td>
+                        <td className={s.tdExpiry}>
+                          {active && q.expiresAt ? (
+                            <span className={s.countdown}>
+                              <Clock size={12} aria-hidden />
+                              {countdownLabel(q.expiresAt, nowMs)}
+                            </span>
+                          ) : q.status === 'REJECTED' && q.note ? (
+                            <span className={s.rejectNote} title={q.note}>
+                              {q.note.slice(0, 40)}
+                              {q.note.length > 40 ? '…' : ''}
+                            </span>
+                          ) : q.status === 'PENDING' ? (
+                            <span className={s.pendingNote}>
+                              <History size={12} aria-hidden />
+                              در انتظار بررسی
+                            </span>
+                          ) : (
+                            '—'
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <div className={s.tableFoot}>
+              <span>
+                {filtered.length} از {quotes.length} قیمت
+              </span>
+            </div>
+          </div>
+        </>
       )}
+
+      {/* ── Drawer ها ──────────────────────────────────────────────────── */}
+      <QuoteFormDrawer
+        open={formOpen}
+        exchangeId={exchangeId}
+        allowedCurrencies={allowedCurrencies}
+        onClose={() => setFormOpen(false)}
+        onSaved={handleSaved}
+      />
+      <QuoteDetailsDrawer
+        quote={selected}
+        exchangeId={exchangeId}
+        onClose={() => setSelectedId(null)}
+      />
     </div>
   );
 }

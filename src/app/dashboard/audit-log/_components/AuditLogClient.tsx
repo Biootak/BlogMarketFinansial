@@ -338,6 +338,7 @@ export function AuditLogClient({
 
         {/* ── Page Header ── */}
         <PageHeader
+          variant="compact"
           title="گزارش ممیزی"
           description={`${new Intl.NumberFormat('fa-IR').format(total)} رویداد ثبت شده در سیستم`}
           breadcrumb={[{ href: '/dashboard', label: 'داشبورد' }, { label: 'گزارش ممیزی' }]}

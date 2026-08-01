@@ -565,6 +565,7 @@ export default function CustomersClient({
 
         {/* ── Header ────────────────────────────────────────────────────── */}
         <PageHeader
+          variant="compact"
           breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'مشتریان' }]}
           title="مشتریان صرافی"
           description="مدیریت مشتریان، KYC، تراکنش‌ها و وضعیت حساب"

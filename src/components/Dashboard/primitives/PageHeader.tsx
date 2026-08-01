@@ -113,6 +113,15 @@ const ICON_MAP: Record<PageHeaderIcon, FC<LucideProps>> = {
 
 export type PageHeaderAccent = 'indigo' | 'emerald' | 'amber' | 'rose' | 'violet' | 'cyan';
 
+/**
+ * variant:
+ *  - 'default'  — کارت پانورامیک کامل با SVG mark (صفحات اصلی)
+ *  - 'compact'  — کوتاه‌تر بدون SVG mark، مناسب صفحات list با KPI پایینش
+ *  - 'minimal'  — فقط eyebrow + title inline بدون card، مناسب analytics/dashboard
+ *  - 'strip'    — breadcrumb + title کوچک‌تر بدون background card، مناسب settings
+ */
+export type PageHeaderVariant = 'default' | 'compact' | 'minimal' | 'strip';
+
 export interface PageHeaderProps {
   breadcrumb?: Array<{ href?: string; label: string }>;
   title: string;
@@ -121,8 +130,11 @@ export interface PageHeaderProps {
   actions?: ReactNode;
   icon?: PageHeaderIcon;
   accent?: PageHeaderAccent;
+  variant?: PageHeaderVariant;
   transition?: 'default' | 'none';
   className?: string;
+  /** فقط در compact/minimal: متریک‌های inline کنار title */
+  meta?: Array<{ label: string; value: string | number }>;
 }
 
 const ACCENT_CLASS: Record<PageHeaderAccent, string> = {
@@ -142,11 +154,163 @@ export function PageHeader({
   actions,
   icon,
   accent = 'indigo',
+  variant = 'default',
   transition = 'none',
   className,
+  meta,
 }: PageHeaderProps) {
   const Icon = icon ? ICON_MAP[icon] : null;
 
+  // ── strip variant: breadcrumb bar بدون card ──────────────────────────────
+  if (variant === 'strip') {
+    return (
+      <header
+        className={cn(s.strip, ACCENT_CLASS[accent], className)}
+        style={transition === 'default' ? { viewTransitionName: 'dash-page' } : undefined}
+        dir="rtl"
+      >
+        {breadcrumb && breadcrumb.length > 0 && (
+          <nav aria-label="مسیر" className={s.breadcrumb}>
+            {breadcrumb.map((item, i) => {
+              const isLast = i === breadcrumb.length - 1;
+              return (
+                <span key={`${item.label}-${i}`} className="flex items-center gap-1">
+                  {item.href && !isLast ? (
+                    <Link href={item.href} className={s.breadcrumbLink}>{item.label}</Link>
+                  ) : (
+                    <span aria-current={isLast ? 'page' : undefined}
+                      className={isLast ? s.breadcrumbCurrent : undefined}>
+                      {item.label}
+                    </span>
+                  )}
+                  {!isLast && (
+                    <ChevronLeft size={10} className={cn(s.breadcrumbSep, 'rtl:rotate-180')} aria-hidden />
+                  )}
+                </span>
+              );
+            })}
+          </nav>
+        )}
+        <div className={s.stripRow}>
+          {Icon && (
+            <div className={s.stripIcon} aria-hidden>
+              <Icon size={16} strokeWidth={1.75} />
+            </div>
+          )}
+          <h1 className={s.stripTitle}>{title}</h1>
+          {meta && meta.length > 0 && (
+            <div className={s.inlineMeta}>
+              {meta.map((m) => (
+                <span key={m.label} className={s.inlineMetaItem}>
+                  <span className={s.inlineMetaValue}>{m.value}</span>
+                  <span className={s.inlineMetaLabel}>{m.label}</span>
+                </span>
+              ))}
+            </div>
+          )}
+          {actions && <div className={s.stripActions}>{actions}</div>}
+        </div>
+        {description && <p className={cn(s.description, s.stripDescription)}>{description}</p>}
+      </header>
+    );
+  }
+
+  // ── minimal variant: inline بدون card ────────────────────────────────────
+  if (variant === 'minimal') {
+    return (
+      <header
+        className={cn(s.minimal, ACCENT_CLASS[accent], className)}
+        style={transition === 'default' ? { viewTransitionName: 'dash-page' } : undefined}
+        dir="rtl"
+      >
+        {eyebrow && <span className={s.minimalEyebrow}>{eyebrow}</span>}
+        <div className={s.minimalRow}>
+          {Icon && (
+            <div className={s.minimalIcon} aria-hidden>
+              <Icon size={18} strokeWidth={1.75} />
+            </div>
+          )}
+          <h1 className={s.minimalTitle}>{title}</h1>
+          {meta && meta.length > 0 && (
+            <div className={s.inlineMeta}>
+              {meta.map((m) => (
+                <span key={m.label} className={s.inlineMetaItem}>
+                  <span className={s.inlineMetaValue}>{m.value}</span>
+                  <span className={s.inlineMetaLabel}>{m.label}</span>
+                </span>
+              ))}
+            </div>
+          )}
+          {actions && <div className={s.minimalActions}>{actions}</div>}
+        </div>
+        {description && <p className={cn(s.description, s.minimalDescription)}>{description}</p>}
+      </header>
+    );
+  }
+
+  // ── compact variant: کارت کوتاه‌تر بدون SVG mark ─────────────────────────
+  if (variant === 'compact') {
+    return (
+      <header
+        className={cn(s.compact, ACCENT_CLASS[accent], className)}
+        style={transition === 'default' ? { viewTransitionName: 'dash-page' } : undefined}
+        dir="rtl"
+      >
+        <div className={s.body}>
+          <div className={s.metaRow}>
+            <span className={s.dot} aria-hidden />
+            {breadcrumb && breadcrumb.length > 0 && (
+              <nav aria-label="مسیر" className={s.breadcrumb}>
+                {breadcrumb.map((item, i) => {
+                  const isLast = i === breadcrumb.length - 1;
+                  return (
+                    <span key={`${item.label}-${i}`} className="flex items-center gap-1">
+                      {item.href && !isLast ? (
+                        <Link href={item.href} className={s.breadcrumbLink}>{item.label}</Link>
+                      ) : (
+                        <span aria-current={isLast ? 'page' : undefined}
+                          className={isLast ? s.breadcrumbCurrent : undefined}>
+                          {item.label}
+                        </span>
+                      )}
+                      {!isLast && (
+                        <ChevronLeft size={10} className={cn(s.breadcrumbSep, 'rtl:rotate-180')} aria-hidden />
+                      )}
+                    </span>
+                  );
+                })}
+              </nav>
+            )}
+            {eyebrow && <span className={s.eyebrow}>{eyebrow}</span>}
+          </div>
+
+          <div className={s.compactRow}>
+            {Icon && (
+              <div className={s.compactIcon} aria-hidden>
+                <Icon size={18} strokeWidth={1.75} />
+              </div>
+            )}
+            <h1 className={s.compactTitle}>{title}</h1>
+            {meta && meta.length > 0 && (
+              <div className={s.inlineMeta}>
+                {meta.map((m) => (
+                  <span key={m.label} className={s.inlineMetaItem}>
+                    <span className={s.inlineMetaValue}>{m.value}</span>
+                    <span className={s.inlineMetaLabel}>{m.label}</span>
+                  </span>
+                ))}
+              </div>
+            )}
+            {actions && <div className={s.actions}>{actions}</div>}
+          </div>
+
+          {description && <p className={s.description}>{description}</p>}
+        </div>
+      </header>
+    );
+  }
+
+  // ── default variant: کارت پانورامیک کامل با SVG mark ────────────────────
   return (
     <header
       className={cn(s.header, ACCENT_CLASS[accent], className)}
@@ -164,49 +328,20 @@ export function PageHeader({
           </defs>
           <circle cx="100" cy="100" r="90" fill="url(#ph-mark-grad)" />
           <g className={s.markSpin}>
-            <circle
-              cx="100"
-              cy="100"
-              r="84"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="0.6"
-              opacity="0.4"
-            />
-            <circle
-              cx="100"
-              cy="100"
-              r="68"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="0.5"
-              opacity="0.25"
-            />
-            {/* 8-point star — مثل AtelierHero */}
-            <path
-              d="M100 20 L113 87 L180 100 L113 113 L100 180 L87 113 L20 100 L87 87 Z"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="0.9"
-              opacity="0.55"
-            />
-            <path
-              d="M100 40 L108 92 L160 100 L108 108 L100 160 L92 108 L40 100 L92 92 Z"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="0.55"
-              opacity="0.3"
-            />
+            <circle cx="100" cy="100" r="84" fill="none" stroke="currentColor" strokeWidth="0.6" opacity="0.4" />
+            <circle cx="100" cy="100" r="68" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.25" />
+            <path d="M100 20 L113 87 L180 100 L113 113 L100 180 L87 113 L20 100 L87 87 Z"
+              fill="none" stroke="currentColor" strokeWidth="0.9" opacity="0.55" />
+            <path d="M100 40 L108 92 L160 100 L108 108 L100 160 L92 108 L40 100 L92 92 Z"
+              fill="none" stroke="currentColor" strokeWidth="0.55" opacity="0.3" />
           </g>
         </svg>
       </div>
 
       {/* ── Body ── */}
       <div className={s.body}>
-        {/* Meta row: live dot + breadcrumb + eyebrow */}
         <div className={s.metaRow}>
           <span className={s.dot} aria-hidden />
-
           {breadcrumb && breadcrumb.length > 0 && (
             <nav aria-label="مسیر" className={s.breadcrumb}>
               {breadcrumb.map((item, i) => {
@@ -214,34 +349,24 @@ export function PageHeader({
                 return (
                   <span key={`${item.label}-${i}`} className="flex items-center gap-1">
                     {item.href && !isLast ? (
-                      <Link href={item.href} className={s.breadcrumbLink}>
-                        {item.label}
-                      </Link>
+                      <Link href={item.href} className={s.breadcrumbLink}>{item.label}</Link>
                     ) : (
-                      <span
-                        aria-current={isLast ? 'page' : undefined}
-                        className={isLast ? s.breadcrumbCurrent : undefined}
-                      >
+                      <span aria-current={isLast ? 'page' : undefined}
+                        className={isLast ? s.breadcrumbCurrent : undefined}>
                         {item.label}
                       </span>
                     )}
                     {!isLast && (
-                      <ChevronLeft
-                        size={10}
-                        className={cn(s.breadcrumbSep, 'rtl:rotate-180')}
-                        aria-hidden
-                      />
+                      <ChevronLeft size={10} className={cn(s.breadcrumbSep, 'rtl:rotate-180')} aria-hidden />
                     )}
                   </span>
                 );
               })}
             </nav>
           )}
-
           {eyebrow && <span className={s.eyebrow}>{eyebrow}</span>}
         </div>
 
-        {/* Title row: icon box + title */}
         <div className={s.titleRow}>
           {Icon && (
             <div className={s.iconWrap} aria-hidden>
@@ -251,11 +376,9 @@ export function PageHeader({
           <h1 className={s.title}>{title}</h1>
         </div>
 
-        {/* Description */}
         {description && <p className={s.description}>{description}</p>}
       </div>
 
-      {/* ── Actions ── */}
       {actions && <div className={s.actions}>{actions}</div>}
     </header>
   );

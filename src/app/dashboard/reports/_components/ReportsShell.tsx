@@ -81,6 +81,7 @@ export default function ReportsShell() {
   return (
     <div className="at-page" dir="rtl">
       <PageHeader
+        variant="minimal"
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'گزارش‌ها' }]}
         eyebrow="تحلیل"
         title="گزارش‌ها"

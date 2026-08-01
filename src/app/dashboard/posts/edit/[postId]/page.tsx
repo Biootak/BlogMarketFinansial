@@ -60,6 +60,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
   return (
     <div className="dash2-page">
       <PageHeader
+        variant="strip"
         breadcrumb={[
           { label: 'داشبورد', href: '/dashboard' },
           { label: 'پست‌ها', href: '/dashboard/posts' },

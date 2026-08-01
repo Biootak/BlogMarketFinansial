@@ -227,6 +227,7 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
   return (
     <div className={s.root}>
       <PageHeader
+        variant="compact"
         title="صرافی‌های جدول مقایسه"
         description="مدیریت provider های نرخ که در صفحه /money-transfer نمایش داده می‌شوند"
         breadcrumb={[{ label: 'داشبورد' }, { label: 'صرافی‌های مقایسه' }]}

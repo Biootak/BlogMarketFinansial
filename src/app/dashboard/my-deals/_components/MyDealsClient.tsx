@@ -288,6 +288,7 @@ export default function MyDealsClient() {
   return (
     <div className={s.page} dir="rtl">
       <PageHeader
+        variant="compact"
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'معاملات ارزی من' }]}
         eyebrow="پورتفولیو"
         title="معاملات ارزی من"

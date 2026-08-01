@@ -333,6 +333,7 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
     <div className={s.root}>
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <PageHeader
+        variant="compact"
         title="بررسی درخواست‌های KYC"
         description={`${rows.length + customerRows.length} درخواست در صف بررسی`}
         breadcrumb={[{ href: '/dashboard', label: 'داشبورد' }, { label: 'بررسی KYC' }]}

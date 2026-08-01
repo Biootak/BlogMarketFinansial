@@ -150,6 +150,7 @@ export default function VirtualCardsClient({ initialCards }: Props) {
   return (
     <div className={s.page}>
       <PageHeader
+        variant="compact"
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'کارت‌های مجازی' }]}
         eyebrow="پرداخت"
         title="کارت‌های مجازی"

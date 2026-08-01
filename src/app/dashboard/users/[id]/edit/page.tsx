@@ -36,6 +36,7 @@ export default async function UserEditPage({ params }: Props) {
     <div className="at-page" dir="rtl">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
         <PageHeader
+          variant="strip"
           breadcrumb={[
             { label: 'داشبورد', href: '/dashboard' },
             { label: 'کاربران', href: '/dashboard/users' },

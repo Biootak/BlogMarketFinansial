@@ -272,3 +272,246 @@
   --ph-c: oklch(74% 0.13 210);
   --ph-fg: oklch(78% 0.12 212);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMPACT VARIANT — کارت کوتاه بدون SVG mark
+   مناسب: صفحات list (customers, users, kyc, audit)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.compact {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-5);
+  flex-wrap: wrap;
+
+  padding: var(--ds-space-4) var(--ds-space-6);
+  margin-block-end: var(--ds-space-4);
+
+  background: linear-gradient(
+    105deg,
+    color-mix(in oklch, var(--ph-c, var(--at-accent)) 8%, var(--at-surface)) 0%,
+    var(--at-surface) 60%
+  );
+  border: 1px solid color-mix(in oklch, var(--ph-c, var(--at-accent)) 18%, var(--at-line));
+  border-radius: var(--at-radius-xl, 20px);
+  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.06) inset, 0 1px 4px -1px oklch(18% 0.02 255 / 0.04);
+
+  overflow: hidden;
+  isolation: isolate;
+  animation: motion-fade-in-up 240ms var(--ds-ease-out-quart) both;
+
+  /* accent stripe راست */
+  &::after {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    width: 3px;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in oklch, var(--ph-c, var(--at-accent)) 55%, transparent),
+      color-mix(in oklch, var(--ph-c, var(--at-accent)) 15%, transparent)
+    );
+    border-radius: 0 var(--at-radius-xl, 20px) var(--at-radius-xl, 20px) 0;
+  }
+}
+
+.dark .compact {
+  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.04) inset, 0 1px 8px -2px oklch(0% 0 0 / 0.3);
+}
+
+.compactRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.compactIcon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--at-radius-md, 10px);
+  background: color-mix(in oklch, var(--ph-c, var(--at-accent)) 12%, var(--at-surface));
+  border: 1px solid color-mix(in oklch, var(--ph-c, var(--at-accent)) 22%, transparent);
+  color: var(--ph-c, var(--at-accent));
+}
+
+.compactTitle {
+  font-size: clamp(1.1rem, 2vw + 0.3rem, 1.5rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  margin: 0;
+  background: linear-gradient(
+    130deg,
+    var(--at-fg) 40%,
+    color-mix(in oklch, var(--at-fg) 60%, var(--ph-c, var(--at-accent))) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MINIMAL VARIANT — inline بدون card، مناسب analytics / sub-sections
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.minimal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1-5);
+  padding-block-end: var(--ds-space-4);
+  margin-block-end: var(--ds-space-3);
+  border-block-end: 1px solid color-mix(in oklch, var(--ph-c, var(--at-accent)) 12%, var(--at-line));
+  animation: motion-fade-in-up 240ms var(--ds-ease-out-quart) both;
+}
+
+.minimalEyebrow {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ph-c, var(--at-accent));
+  opacity: 0.8;
+}
+
+.minimalRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  flex-wrap: wrap;
+}
+
+.minimalIcon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--at-radius-md, 10px);
+  background: color-mix(in oklch, var(--ph-c, var(--at-accent)) 10%, transparent);
+  color: var(--ph-c, var(--at-accent));
+}
+
+.minimalTitle {
+  font-size: clamp(1.25rem, 2vw + 0.4rem, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  margin: 0;
+  color: var(--at-fg);
+}
+
+.minimalActions {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin-inline-start: auto;
+  flex-shrink: 0;
+}
+
+.minimalDescription {
+  color: var(--at-fg-subtle);
+  font-size: var(--ds-text-sm);
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STRIP VARIANT — breadcrumb bar ساده بدون card، مناسب settings
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.strip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1-5);
+  padding-block-end: var(--ds-space-3);
+  margin-block-end: var(--ds-space-4);
+  animation: motion-fade-in-up 200ms var(--ds-ease-out-quart) both;
+}
+
+.stripRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2-5);
+  flex-wrap: wrap;
+}
+
+.stripIcon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.5rem;
+  background: color-mix(in oklch, var(--ph-c, var(--at-accent)) 10%, transparent);
+  color: var(--ph-c, var(--at-accent));
+}
+
+.stripTitle {
+  font-size: clamp(1.1rem, 1.5vw + 0.3rem, 1.35rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0;
+  color: var(--at-fg);
+}
+
+.stripActions {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin-inline-start: auto;
+  flex-shrink: 0;
+}
+
+.stripDescription {
+  font-size: var(--ds-text-sm);
+  color: var(--at-fg-subtle);
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   INLINE META — متریک‌های کنار title برای compact/minimal
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.inlineMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  margin-inline-start: var(--ds-space-1);
+}
+
+.inlineMetaItem {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  background: color-mix(in oklch, var(--ph-c, var(--at-accent)) 8%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ph-c, var(--at-accent)) 16%, transparent);
+  line-height: 1;
+}
+
+.inlineMetaValue {
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ph-c, var(--at-accent));
+}
+
+.inlineMetaLabel {
+  font-size: var(--ds-text-xs);
+  color: var(--at-fg-subtle);
+  font-weight: 500;
+}

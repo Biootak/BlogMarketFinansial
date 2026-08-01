@@ -303,6 +303,7 @@ export default function NotificationsClient({ notifications: initial }: Props) {
     <div className={s.root}>
       {/* ── Page Header ──────────────────────────────────────────────────────── */}
       <PageHeader
+        variant="compact"
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'اعلان‌ها' }]}
         title="مرکز اعلان‌ها"
         description="رویدادها، هشدارها و پیام‌های سیستم مالی"

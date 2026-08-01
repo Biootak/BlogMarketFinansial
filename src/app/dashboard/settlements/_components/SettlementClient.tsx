@@ -328,6 +328,7 @@ export function SettlementClient({ settlements: initial }: Props) {
       <div className={s.root}>
         {/* ── PageHeader ── */}
         <PageHeader
+          variant="compact"
           title="تسویه‌حساب صرافی‌ها"
           description="مدیریت و پرداخت دوره‌های تسویه پلتفرم"
           breadcrumb={[{ href: '/dashboard', label: 'داشبورد' }, { label: 'تسویه‌حساب' }]}

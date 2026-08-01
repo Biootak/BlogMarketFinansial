@@ -279,6 +279,7 @@ export function UsersClient({
   return (
     <div className={s.page}>
       <PageHeader
+        variant="compact"
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'کاربران' }]}
         eyebrow="مدیریت"
         title="کاربران"

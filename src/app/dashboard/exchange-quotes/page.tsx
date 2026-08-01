@@ -17,6 +17,7 @@ export default async function ExchangeQuotesPage() {
   return (
     <main className="max-w-[1440px] mx-auto flex flex-col gap-5">
       <PageHeader
+        variant="compact"
         breadcrumb={[
           { label: 'مرکز فرماندهی', href: '/dashboard' },
           { label: 'عملیات صرافی' },

@@ -104,6 +104,7 @@ export default function PlanPicker({ currentPlan, planExpiresAt }: Props) {
   return (
     <div className={s.root}>
       <PageHeader
+        variant="minimal"
         title="پلن اشتراک"
         description="پلن فعلی خود را ارتقاء دهید یا تغییر دهید"
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'اشتراک' }]}

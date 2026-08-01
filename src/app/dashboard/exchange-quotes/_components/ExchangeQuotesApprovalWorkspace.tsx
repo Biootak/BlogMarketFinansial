@@ -579,6 +579,7 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
     <TooltipProvider>
       <div className={s.root} dir="rtl">
         <PageHeader
+          variant="compact"
           title="صف تأیید قیمت‌گذاری"
           description="قیمت‌های خرید/فروش ثبت‌شده توسط صرافی‌ها را بررسی و تأیید یا رد کنید"
           breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'تأیید قیمت‌ها' }]}

@@ -42,6 +42,7 @@ export default async function CreatePostPage() {
   return (
     <div className="dash2-page">
       <PageHeader
+        variant="strip"
         breadcrumb={[
           { label: 'داشبورد', href: '/dashboard' },
           { label: 'پست‌ها', href: '/dashboard/posts' },

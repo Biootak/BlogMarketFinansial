@@ -84,6 +84,7 @@ export function BillingAddressForm({ initial }: Props) {
   return (
     <div className={s.page} dir="rtl">
       <PageHeader
+        variant="strip"
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'آدرس صورتحساب' }]}
         eyebrow="صورتحساب"
         title="آدرس صورتحساب"

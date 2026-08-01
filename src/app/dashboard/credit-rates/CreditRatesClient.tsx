@@ -202,6 +202,7 @@ export default function CreditRatesClient({
   return (
     <main className="mx-auto flex flex-col w-full max-w-7xl p-6 gap-8" dir="rtl">
       <PageHeader
+        variant="compact"
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'نرخ‌های اعتباری' }]}
         title="نرخ‌های اعتباری و بانک‌ها"
         description="مدیریت نرخ‌های بهره بانکی، تسهیلات اعتباری، و حساب‌های سپرده"

@@ -314,6 +314,7 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
     <div className={s.root} dir="rtl">
       {/* ── PageHeader ── */}
       <PageHeader
+        variant="minimal"
         title="دستگاه‌ها و نشست‌های فعال"
         description="مانیتورینگ هوشمند، مدیریت دسترسی‌ها و بررسی فعالیت‌های امنیتی حساب کاربری شما"
         eyebrow="امنیت حساب"

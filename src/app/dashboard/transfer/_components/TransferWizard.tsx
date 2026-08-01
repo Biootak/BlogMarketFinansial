@@ -133,6 +133,7 @@ export function TransferWizard() {
   return (
     <div className={s.page}>
       <PageHeader
+        variant="strip"
         title="انتقال P2P"
         description="ارسال فوری افغانی به دوستان، همکاران و خانواده — انتقال مستقیم بین کاربران ثبت‌شده"
         eyebrow="عملیات مالی"

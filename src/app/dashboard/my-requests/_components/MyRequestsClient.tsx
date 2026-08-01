@@ -1455,6 +1455,7 @@ export default function MyRequestsClient() {
   return (
     <section className={s.workspace} aria-labelledby="my-requests-title">
       <PageHeader
+        variant="compact"
         breadcrumb={[{ href: '/dashboard', label: 'داشبورد' }, { label: 'درخواست‌های من' }]}
         title="درخواست‌های من"
         description="پیگیری، مدیریت و لغو درخواست‌های خدماتی"

@@ -502,6 +502,50 @@ export async function expireQuotes(): Promise<{ expired: number }> {
   return { expired: expired.length };
 }
 
+// ─── STATUS LOGS (تاریخچه واقعی quote) ──────────────────────────────────────
+
+export type QuoteStatusLogRow = {
+  id: string;
+  fromStatus: string | null;
+  toStatus: string;
+  actorRole: string | null;
+  reason: string | null;
+  metadata: unknown;
+  createdAt: Date;
+};
+
+/**
+ * getQuoteStatusLogs — تاریخچهٔ کامل تغییر وضعیت یک quote (audit trail).
+ *
+ * فقط برای اعضای همان صرافی (tenant isolation): join روی quoteId + exchangeId.
+ * داده واقعی DB — برای timeline جزئیات quote.
+ */
+export async function getQuoteStatusLogs(
+  exchangeId: string,
+  quoteId: string,
+): Promise<FintechActionResult<QuoteStatusLogRow[]>> {
+  const access = await requireExchangeAccess(exchangeId);
+  if (!access.ok) {
+    return { success: false, error: { code: access.error.code, message: access.error.message } };
+  }
+
+  const logs = await prisma.quoteStatusLog.findMany({
+    where: { quoteId, Quote: { exchangeId } },
+    orderBy: { createdAt: 'asc' },
+    select: {
+      id: true,
+      fromStatus: true,
+      toStatus: true,
+      actorRole: true,
+      reason: true,
+      metadata: true,
+      createdAt: true,
+    },
+  });
+
+  return { success: true, data: logs };
+}
+
 // ─── AUTO-SUGGEST ─────────────────────────────────────────────────────────────
 
 /**

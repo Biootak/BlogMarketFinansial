@@ -254,6 +254,7 @@ export function FraudReviewClient({ reviews: initial }: Props) {
   return (
     <div className={s.root}>
       <PageHeader
+        variant="compact"
         title="مرکز بررسی تقلب"
         description={`${new Intl.NumberFormat('fa-IR').format(openCount)} مورد باز در صف`}
         eyebrow="فین‌تک — امنیت"

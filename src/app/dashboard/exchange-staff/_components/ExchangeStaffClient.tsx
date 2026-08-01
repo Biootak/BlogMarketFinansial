@@ -302,6 +302,7 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
 
       {/* PageHeader */}
       <PageHeader
+        variant="compact"
         icon="building"
         accent="indigo"
         breadcrumb={[
