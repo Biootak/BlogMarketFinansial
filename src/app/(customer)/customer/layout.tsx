@@ -23,6 +23,10 @@
 import '@/app/dashboard/dashboard.css';
 import { getCustomerProfile } from '@/actions/customer-portal';
 import { auth } from '@/auth';
+
+// auth() + cookies() are request-time APIs — without this the route flips
+// static→dynamic at runtime and 500s.
+export const dynamic = 'force-dynamic';
 import { AdminCustomerSwitcher } from '@/components/Dashboard/DashboardPage/AdminCustomerSwitcher';
 import { DashboardProviders } from '@/components/Dashboard/DashboardPage/DashboardProviders';
 import { SiteSettingsProvider } from '@/components/SiteSettingsProvider';

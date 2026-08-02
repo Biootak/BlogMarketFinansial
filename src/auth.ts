@@ -1,3 +1,10 @@
+// 2026-08-02: guard this module from ever being bundled into the client.
+// Without `server-only`, Turbopack (via `transpilePackages: ['next-auth']`)
+// treats `@auth/core` + bcrypt + prisma as universal code and ships them in
+// the shared client chunk (~860KB) — every public page pays that weight.
+// This marks the module server-only so the client bundle stays slim.
+import 'server-only';
+
 import authConfig from '@/auth.config';
 import { getUserByEmail } from '@/data/user';
 import prisma from '@/lib/db';

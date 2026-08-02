@@ -15,7 +15,7 @@ import {
   type Post,
   type PostStatus,
   type PostType,
-  Prisma,
+  type Prisma,
   type Role,
   type Tag,
   type User,
@@ -24,7 +24,7 @@ import type { IconType } from 'react-icons';
 import type { z } from 'zod';
 
 // Prisma Exact Types
-const userWithRelations = Prisma.validator<Prisma.UserDefaultArgs>()({
+const userWithRelations = {
   include: {
     profile: {
       select: {
@@ -41,9 +41,9 @@ const userWithRelations = Prisma.validator<Prisma.UserDefaultArgs>()({
       },
     },
   },
-});
+} satisfies Prisma.UserDefaultArgs;
 
-const basePostWithRelations = Prisma.validator<Prisma.PostDefaultArgs>()({
+const basePostWithRelations = {
   include: {
     author: {
       include: { profile: true },
@@ -59,9 +59,9 @@ const basePostWithRelations = Prisma.validator<Prisma.PostDefaultArgs>()({
       },
     },
   },
-});
+} satisfies Prisma.PostDefaultArgs;
 
-const fullPostWithRelations = Prisma.validator<Prisma.PostDefaultArgs>()({
+const fullPostWithRelations = {
   include: {
     author: {
       include: { profile: true },
@@ -87,9 +87,9 @@ const fullPostWithRelations = Prisma.validator<Prisma.PostDefaultArgs>()({
       },
     },
   },
-});
+} satisfies Prisma.PostDefaultArgs;
 
-const categoryWithRelations = Prisma.validator<Prisma.CategoryDefaultArgs>()({
+const categoryWithRelations = {
   include: {
     parentCategories: true,
     _count: {
@@ -103,15 +103,15 @@ const categoryWithRelations = Prisma.validator<Prisma.CategoryDefaultArgs>()({
       },
     },
   },
-});
+} satisfies Prisma.CategoryDefaultArgs;
 
-const tagWithPostCount = Prisma.validator<Prisma.TagDefaultArgs>()({
+const tagWithPostCount = {
   include: {
     _count: {
       select: { posts: true },
     },
   },
-});
+} satisfies Prisma.TagDefaultArgs;
 
 // Type Definitions
 export type CommentWithCustomRelations = Prisma.CommentGetPayload<{

@@ -134,7 +134,15 @@ export async function fetchBonbastBuySell(): Promise<BonbastBuySellRates | null>
         'Cache-Control': 'no-cache',
       },
       signal: ctrl1.signal,
-      cache: 'no-store',
+      // IMPORTANT: not `cache:'no-store'`. These scrapes run inside
+      // `getMarketRates` (safeCache / unstable_cache, ttl 60s), which is the
+      // single cache boundary. A `no-store` fetch here tells Next.js this
+      // route is dynamic at request time — the home page (static/ISR) would
+      // flip to dynamic on every request and throw "Page changed from static
+      // to dynamic at runtime". The outer cache already prevents re-fetching
+      // more than once per 60s window, so forcing the data cache here only
+      // duplicates work the outer layer does.
+      cache: 'force-cache',
     });
     clearTimeout(t1);
     if (!res1.ok) return null;
@@ -176,7 +184,7 @@ export async function fetchBonbastBuySell(): Promise<BonbastBuySellRates | null>
       headers: reqHeaders,
       body: `param=${encodeURIComponent(param)}`,
       signal: ctrl2.signal,
-      cache: 'no-store',
+      cache: 'force-cache',
     });
     clearTimeout(t2);
     if (!res2.ok) return null;

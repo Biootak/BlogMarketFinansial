@@ -54,40 +54,34 @@ function formatFa(n: number): string {
   return new Intl.NumberFormat('fa-IR').format(Math.round(n));
 }
 
-function useCountdown(expiresAt: Date | string | null): string {
-  const [label, setLabel] = useState('');
-  useEffect(() => {
-    if (!expiresAt) {
-      setLabel('');
-      return;
-    }
-    const tick = () => {
-      const diff = new Date(expiresAt).getTime() - Date.now();
-      if (diff <= 0) {
-        setLabel('منقضی');
-        return;
-      }
-      const m = Math.floor(diff / 60000);
-      const sec = Math.floor((diff % 60000) / 1000);
-      setLabel(`${m}:${String(sec).padStart(2, '0')}`);
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [expiresAt]);
-  return label;
+/**
+ * Derive the countdown label from a single shared `now` timestamp. Pure
+ * function — no per-row interval, no per-row state. Rows re-render only when
+ * the parent's single 1s tick advances `now`.
+ */
+function formatCountdown(expiresAt: Date | string | null, now: number): string {
+  if (!expiresAt) return '';
+  const diff = new Date(expiresAt).getTime() - now;
+  if (diff <= 0) return 'منقضی';
+  const m = Math.floor(diff / 60000);
+  const sec = Math.floor((diff % 60000) / 1000);
+  return `${m}:${String(sec).padStart(2, '0')}`;
 }
+
 
 function QuoteTableRow({
   quote,
   isBestBuy,
   onDeal,
+  now,
 }: {
   quote: QuoteRow;
   isBestBuy: boolean;
   onDeal: (q: QuoteRow) => void;
+  /** Shared timestamp from the parent's single interval (1s tick). */
+  now: number;
 }) {
-  const countdown = useCountdown(quote.expiresAt);
+  const countdown = formatCountdown(quote.expiresAt, now);
   const buy = Number.parseFloat(quote.buyRate);
   const sell = Number.parseFloat(quote.sellRate);
   const unit = UNIT_LABEL[quote.unit] ?? quote.unit;
@@ -153,6 +147,21 @@ export default function ExchangeQuotesBoard() {
   const [shownQuotes, setShownQuotes] = useState(QUOTES_INITIAL);
   const [dealQuote, setDealQuote] = useState<QuoteRow | null>(null);
   const fetchRef = useRef<AbortController | null>(null);
+
+  // Single board-wide countdown tick. Always mounted (rules-of-hooks); the
+  // interval only runs while a visible quote has a live expiry so the table
+  // doesn't re-render every second for nothing.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!data) return;
+    const hasLive = data.quotes.some((q) => {
+      if (!q.expiresAt) return false;
+      return new Date(q.expiresAt).getTime() > Date.now();
+    });
+    if (!hasLive) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [data]);
 
   const fetchData = useCallback(async () => {
     fetchRef.current?.abort();
@@ -308,6 +317,7 @@ export default function ExchangeQuotesBoard() {
                 quote={q}
                 isBestBuy={q.id === bestBuyId}
                 onDeal={setDealQuote}
+                now={now}
               />
             ))
           )}

@@ -19,6 +19,10 @@ import Script from 'next/script';
 
 import './globals.css';
 import '@/styles/index.scss';
+// Editor renderer styles — article bodies are now SSR'd (see
+// EditorContentHTML), so the `.editor-content` / `.at-prose--renderer` rules
+// must be present globally rather than pulled in by a client-only import.
+import '@/components/Editor1/styles/index.scss';
 
 import PageViewTracker from '@/components/PageViewTracker';
 import Providers from '@/components/providers';

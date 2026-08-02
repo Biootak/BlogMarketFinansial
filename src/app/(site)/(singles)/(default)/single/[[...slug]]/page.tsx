@@ -1,7 +1,7 @@
 import { getActiveAdvertisements } from '@/actions/advertisementActions';
 import { getMoreFromAuthor } from '@/actions/getMoreFromAuthor';
 import { getRelatedPosts } from '@/actions/getRelatedPosts';
-import { getPostBySlug } from '@/actions/postActions';
+import { getPostBySlug, getPostsForStaticParams } from '@/actions/postActions';
 import { getSidebarData } from '@/actions/sidebarActions';
 import SingleContent from '@/app/(site)/(singles)/SingleContent';
 import SingleHeader from '@/app/(site)/(singles)/SingleHeader';
@@ -12,11 +12,28 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Sidebar from '../../../Sidebar';
 
+// 2026-08-02: ISR for article pages. Header no longer awaits auth(), so single
+// pages render statically at build + revalidate every 5 min (and on publish /
+// update via revalidatePath('/single/...') + revalidateTag('post-slug')).
+export const revalidate = 300;
+export const dynamicParams = true;
+
 export interface PageProps {
   params: Promise<{ slug: string[] }>;
 }
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://financialmarket.page';
+
+/**
+ * Prerender the most recent published slugs so article pages have static HTML
+ * at build. Older / newly-added slugs render on demand (dynamicParams=true)
+ * and are cached afterwards. The DB list is bounded to keep build time and
+ * connection count low (staticGenerationMaxConcurrency=1).
+ */
+export async function generateStaticParams(): Promise<Array<{ slug: string[] }>> {
+  const posts = await getPostsForStaticParams();
+  return posts.map((s) => ({ slug: s.split('/') }));
+}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;

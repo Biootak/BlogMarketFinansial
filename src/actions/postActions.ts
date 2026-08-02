@@ -919,6 +919,32 @@ const getCachedPostBySlug = safeCache(
   },
 );
 
+/**
+ * getPostsForStaticParams — bounded slug list for single-page ISR prerender.
+ * Only PUBLISHED posts; limits to the most recent N (build-time DB stays small).
+ */
+export const getPostsForStaticParams = safeCache(
+  async (): Promise<string[]> => {
+    try {
+      const rows = await prisma.post.findMany({
+        where: { status: PostStatus.PUBLISHED },
+        select: { slug: true },
+        orderBy: { createdAt: 'desc' },
+        take: 200,
+      });
+      return rows.map((r) => r.slug);
+    } catch {
+      return [];
+    }
+  },
+  [],
+  {
+    key: 'posts:static-params',
+    ttl: 300,
+    tags: ['posts', 'post-slug'],
+  },
+);
+
 export async function listAllPosts(
   page = 1,
   limit = 12,

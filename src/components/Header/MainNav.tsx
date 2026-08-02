@@ -1,13 +1,9 @@
-import { auth } from '@/auth';
 import SiteLogo from '@/components/Logo/SiteLogo';
 import MenuBar from '@/components/MenuBar/MenuBar';
 import Navigation from '@/components/Navigation/Navigation2026';
 import type { RateListData } from '@/types/types';
-import { Sparkles, User } from 'lucide-react';
-import Link from 'next/link';
-import AvatarDropdown from './AvatarDropdown';
-import NotifyDropdown from './NotifyDropdown';
-import SearchModal from './SearchModal';
+import AuthStatus from './AuthStatus';
+import SearchModalLazy from './SearchModalLazy';
 
 /**
  * MainNav — Premium Header با تراز کاملاً متقارن
@@ -20,16 +16,16 @@ import SearchModal from './SearchModal';
  *  - در موبایل و تبلت (<1024px): hamburger + auth
  *  - در دسکتاپ (≥1024px): navigation وسط + auth در راست
  *
- * 2026-06-17: لیست‌های فعال RateList به Navigation پاس داده می‌شه
- *  تا مگامنوی «بازار» با داده‌ی زنده رندر بشه.
+ * 2026-08-02: `auth()` از این کامپوننت حذف شد. بخش ورود/آواتار به یک
+ * جزیره‌ی کلاینت (AuthStatus) منتقل شد که session را با useSession()
+ * می‌خواند. این کار کل درخت (site) را از force-dynamic آزاد کرد —
+ * صفحات عمومی حالا می‌توانند static/ISR باشند.
  */
-export default async function MainNav({
+export default function MainNav({
   activeRateLists = [],
 }: {
   activeRateLists?: RateListData[];
 }) {
-  const session = await auth();
-
   return (
     <nav className="relative z-10" aria-label="ناوبری اصلی سایت">
       <div className="container">
@@ -69,9 +65,15 @@ export default async function MainNav({
           </div>
 
           {/* ستون چپ (در RTL: اکشن‌ها/ورود — همه سایزها) */}
+          {/*
+            2026-08-02 (perf): قبلاً SearchModalLazy + AuthStatus دو بار رندر
+            می‌شدند (یک‌بار در div موبایل lg:hidden و یک‌بار در div دسکتاپ
+            hidden lg:flex) — یعنی دو اشتراک useSession، دو نمونه‌ی
+            NotifyDropdown/AvatarDropdown و DOM تکراری. حالا یک نمونه‌ی واحد
+            در یک container ریسپانسیو رندر می‌شود.
+          */}
           <div className="flex items-center justify-end gap-1 sm:gap-2 min-w-0 col-start-3 row-start-1">
-            {/* موبایل و تبلت: search + user/auth */}
-            <div className="flex lg:hidden items-center gap-1">
+            <div className="flex items-center gap-1 sm:gap-1.5">
               <div
                 className="
                   flex items-center justify-center
@@ -81,151 +83,10 @@ export default async function MainNav({
                   transition-colors duration-200
                 "
               >
-                <SearchModal />
-              </div>
-              {!session?.user ? (
-                <Link
-                  href="/auth"
-                  className="
-                    group flex items-center justify-center
-                    size-10 rounded-xl
-                    text-neutral-600 dark:text-neutral-300
-                    hover:bg-neutral-100 dark:hover:bg-neutral-800/80
-                    transition-colors duration-200
-                  "
-                  aria-label="ورود به حساب کاربری"
-                >
-                  <User className="size-5" strokeWidth={1.8} />
-                </Link>
-              ) : (
-                <div
-                  className="
-                    flex items-center justify-center
-                    size-10 rounded-xl
-                    hover:bg-neutral-100 dark:hover:bg-neutral-800/80
-                    transition-colors duration-200
-                  "
-                >
-                  <AvatarDropdown />
-                </div>
-              )}
-            </div>
-
-            {/* دسکتاپ (lg+): search + notify + avatar/sign-in */}
-            <div className="hidden lg:flex items-center gap-1.5">
-              <div
-                className="
-                  flex items-center justify-center
-                  size-10 rounded-xl
-                  text-neutral-600 dark:text-neutral-300
-                  hover:bg-neutral-100 dark:hover:bg-neutral-800/80
-                  transition-colors duration-200
-                "
-              >
-                <SearchModal />
+                <SearchModalLazy />
               </div>
 
-              {session?.user && (
-                <>
-                  <div
-                    className="
-                      flex items-center justify-center
-                      size-10 rounded-xl
-                      text-neutral-600 dark:text-neutral-300
-                      hover:bg-neutral-100 dark:hover:bg-neutral-800/80
-                      transition-colors duration-200
-                    "
-                  >
-                    <NotifyDropdown />
-                  </div>
-                  <div
-                    className="
-                      flex items-center justify-center
-                      size-10 rounded-xl
-                      hover:bg-neutral-100 dark:hover:bg-neutral-800/80
-                      transition-colors duration-200
-                    "
-                  >
-                    <AvatarDropdown />
-                  </div>
-                </>
-              )}
-
-              {!session?.user && (
-                <div className="flex items-center gap-2 me-1">
-                  <Link
-                    href="/auth"
-                    className="
-                      group relative inline-flex items-center justify-center gap-1.5
-                      h-10 px-5
-                      text-sm font-semibold text-white
-                      rounded-xl overflow-hidden
-                      transition-transform duration-200
-                      hover:scale-[1.02] active:scale-[0.98]
-                    "
-                  >
-                    <span
-                      aria-hidden
-                      className="
-                        absolute inset-0
-                        bg-gradient-to-r from-primary-500 via-primary-600 to-indigo-600
-                      "
-                    />
-                    <span
-                      aria-hidden
-                      className="
-                        absolute inset-0
-                        bg-gradient-to-r from-transparent via-white/20 to-transparent
-                        -translate-x-full
-                        group-hover:translate-x-full
-                        transition-transform duration-700
-                      "
-                    />
-                    <Sparkles className="relative size-4" aria-hidden />
-                    <span className="relative">ورود</span>
-                  </Link>
-                  <Link
-                    href="/auth?step=register"
-                    className="
-                      group relative inline-flex items-center justify-center
-                      h-10 px-5
-                      text-sm font-semibold
-                      rounded-xl overflow-hidden
-                      transition-transform duration-200
-                      hover:scale-[1.02] active:scale-[0.98]
-                    "
-                  >
-                    <span
-                      aria-hidden
-                      className="
-                        absolute inset-0 rounded-xl
-                        bg-gradient-to-r from-primary-500 to-indigo-500
-                        p-[1.5px]
-                      "
-                    >
-                      <span
-                        aria-hidden
-                        className="
-                          absolute inset-[1.5px] rounded-[10px]
-                          bg-white dark:bg-neutral-900
-                        "
-                      />
-                    </span>
-                    <span
-                      aria-hidden
-                      className="
-                        absolute inset-[1.5px] rounded-[10px]
-                        bg-gradient-to-r
-                        from-primary-50 to-indigo-50
-                        dark:from-primary-950/50 dark:to-indigo-950/50
-                        opacity-0 group-hover:opacity-100
-                        transition-opacity duration-300
-                      "
-                    />
-                    <span className="relative text-primary-600 dark:text-primary-400">ثبت‌نام</span>
-                  </Link>
-                </div>
-              )}
+              <AuthStatus />
             </div>
           </div>
 

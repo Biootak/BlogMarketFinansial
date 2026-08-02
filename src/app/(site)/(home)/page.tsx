@@ -21,12 +21,12 @@ import PostsSection from './deferred/PostsSection';
 import TopAuthorsSectionDeferred from './deferred/TopAuthorsSectionDeferred';
 import TrendingDeferred from './deferred/TrendingDeferred';
 
-// Dynamically rendered on demand: the shared site header (MainNav) reads
-// auth() to render sign-in/avatar state, which opts the whole (site) tree out
-// of static generation — so `revalidate` here would be a no-op. DB reads are
-// deduped via safeCache; HTML is edge-cached via the s-maxage header in
-// next.config.ts.
-//
+// 2026-08-02: header no longer awaits auth() (client-side session island), so
+// the home page can be ISR. Sections stream via Suspense; DB reads are deduped
+// through safeCache. HTML is revalidated every 5 minutes and on mutations
+// (revalidatePath/revalidateTag in post/rate actions).
+export const revalidate = 300;
+
 // Streaming architecture (2026): each data-heavy section is an async server
 // component wrapped in its own <Suspense> boundary so the page shell renders
 // immediately and sections stream in as their data arrives. This eliminates

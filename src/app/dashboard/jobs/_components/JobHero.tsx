@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 import { toPersianDigits } from '@/lib/setup/format';
 import { JobSystemPulse } from './JobSystemPulse';
 import s from '../jobs.module.css';
@@ -37,9 +38,8 @@ export function JobHero({
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
     setNow(new Date());
-    const t = setInterval(() => setNow(new Date()), 1000 * 30);
-    return () => clearInterval(t);
   }, []);
+  useVisibilityAwareInterval(() => setNow(new Date()), 30_000);
 
   const clockLabel = now
     ? `${toPersianDigits(now.getHours().toString().padStart(2, '0'))}:${toPersianDigits(now.getMinutes().toString().padStart(2, '0'))}`

@@ -46,7 +46,11 @@ const s3Client = new S3Client({
 const BUCKET_NAME = process.env.LIARA_BUCKET_NAME || '';
 const S3_PUBLIC_URL =
   process.env.LIARA_ENDPOINT?.replace('https://', `https://${BUCKET_NAME}.`) || '';
-const LOCAL_UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads');
+const LOCAL_UPLOAD_DIR = path.join(
+  /* turbopackIgnore: true */ process.cwd(),
+  'public',
+  'uploads',
+);
 
 // 2026-07-05: S3 is now optional. If credentials are missing, the system
 // falls back to local disk storage automatically. This supports local dev

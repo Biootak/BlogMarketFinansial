@@ -46,7 +46,8 @@ import {
   Zap,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
+import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 import s from './FintechCockpit.module.css';
 
 // ─── Types ──────────────────────────────────────────────────────────────
@@ -245,10 +246,7 @@ function CockpitHero({
 }) {
   const [now, setNow] = useState(() => Date.now());
 
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
+  useVisibilityAwareInterval(() => setNow(Date.now()), 1000);
 
   const time = new Date(now).toLocaleTimeString('en-GB', { hour12: false });
   const date = new Date(now).toLocaleDateString('fa-IR', {
@@ -603,10 +601,7 @@ function LivePanel({
 }) {
   const [now, setNow] = useState(() => Date.now());
 
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
+  useVisibilityAwareInterval(() => setNow(Date.now()), 1000);
 
   const healthy = useMemo(
     () => services.filter((x) => x.status === 'healthy').length,

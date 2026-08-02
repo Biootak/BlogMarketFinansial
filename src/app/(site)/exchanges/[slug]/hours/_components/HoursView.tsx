@@ -32,12 +32,34 @@ const DAYS: ReadonlyArray<{ key: keyof HoursMap; label: string; sub: string }> =
   { key: 'fri', label: 'جمعه', sub: 'Friday' },
 ];
 
+// Module-level formatters/caches — this component re-renders every 30s.
+const FA_INT = new Intl.NumberFormat('fa-IR', { useGrouping: false });
+const DAY_FMT_CACHE = new Map<string, Intl.DateTimeFormat>();
+function dayFmt(timeZone: string): Intl.DateTimeFormat {
+  let f = DAY_FMT_CACHE.get(timeZone);
+  if (!f) {
+    f = new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone });
+    DAY_FMT_CACHE.set(timeZone, f);
+  }
+  return f;
+}
+const TIME_FMT_CACHE = new Map<string, Intl.DateTimeFormat>();
+function timeFmt(timeZone: string): Intl.DateTimeFormat {
+  let f = TIME_FMT_CACHE.get(timeZone);
+  if (!f) {
+    f = new Intl.DateTimeFormat('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone,
+    });
+    TIME_FMT_CACHE.set(timeZone, f);
+  }
+  return f;
+}
+
 function nowDayKey(timezone = 'Asia/Tehran'): keyof HoursMap {
-  const fmt = new Intl.DateTimeFormat('en-US', {
-    weekday: 'short',
-    timeZone: timezone,
-  });
-  const wd = fmt.format(new Date());
+  const wd = dayFmt(timezone).format(new Date());
   const map: Record<string, keyof HoursMap> = {
     Sat: 'sat',
     Sun: 'sun',
@@ -73,7 +95,7 @@ function getStatus(
 function formatFaTime(t: string): string {
   // HH:MM -> فارسی
   const [h, m] = t.split(':');
-  return `${new Intl.NumberFormat('fa-IR', { useGrouping: false }).format(Number(h))}:${new Intl.NumberFormat('fa-IR', { useGrouping: false }).format(Number(m))}`;
+  return `${FA_INT.format(Number(h))}:${FA_INT.format(Number(m))}`;
 }
 
 export default function HoursView({ exchange, hours, timezone = 'Asia/Tehran' }: Props) {
@@ -83,13 +105,12 @@ export default function HoursView({ exchange, hours, timezone = 'Asia/Tehran' }:
     return () => clearInterval(id);
   }, []);
 
-  const fmt = new Intl.DateTimeFormat('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-    timeZone: timezone,
-  });
-  const [hh, mm] = fmt.format(now).split(':').map(Number);
+  const [hh, mm] = timeFmt(timezone)
+    .formatToParts(now)
+    .map((p) => p.value)
+    .join('')
+    .split(':')
+    .map(Number);
   const currentMin = hh + mm / 60;
   const todayKey = nowDayKey(timezone);
 

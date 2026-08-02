@@ -23,11 +23,12 @@ export default function ScrollReveal({ children, className = '', delay = 0 }: Pr
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           if (delay > 0) {
-            setTimeout(() => el.classList.add('mt-revealed'), delay);
+            timeoutId = setTimeout(() => el.classList.add('mt-revealed'), delay);
           } else {
             el.classList.add('mt-revealed');
           }
@@ -37,7 +38,10 @@ export default function ScrollReveal({ children, className = '', delay = 0 }: Pr
       { threshold: 0.12, rootMargin: '0px 0px -40px 0px' },
     );
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (timeoutId !== null) clearTimeout(timeoutId);
+    };
   }, [delay]);
 
   return (

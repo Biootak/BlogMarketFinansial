@@ -23,7 +23,7 @@ const ContentSecurityPolicy = `
     https://i.pravatar.cc
     https://picsum.photos
     https://placehold.co;
-  font-src 'self' data:
+  font-src 'self' data:;
   connect-src 'self' https://*.sentry.io https://api.telegram.org https://api.exir.io wss: ws:;
   frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://www.aparat.com;
   media-src 'self' https: blob:;

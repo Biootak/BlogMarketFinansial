@@ -15,6 +15,12 @@ export interface PostFeaturedMediaProps {
   post: PostWithRelations;
   isHover?: boolean;
   imageRatio?: 'portrait' | 'landscape' | 'square' | 'video' | 'cinema';
+  /**
+   * Mark the featured image as the LCP element (article covers). Passed
+   * through to next/image — emits a <link rel="preload"> and removes the
+   * loading="lazy" so the hero image starts fetching immediately.
+   */
+  priority?: boolean;
 }
 
 const aspectRatioClasses = {
@@ -30,6 +36,7 @@ const PostFeaturedMedia: FC<PostFeaturedMediaProps> = ({
   post,
   isHover = false,
   imageRatio = 'landscape',
+  priority = false,
 }) => {
   const { featuredImage, postType, videoUrl, galleryImages, audioUrl, slug } = post;
 
@@ -96,7 +103,8 @@ const PostFeaturedMedia: FC<PostFeaturedMediaProps> = ({
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover"
-          loading="lazy"
+          priority={priority}
+          {...(priority ? {} : { loading: 'lazy' })}
           unoptimized={featuredImage.includes('.svg')}
         />
       )}

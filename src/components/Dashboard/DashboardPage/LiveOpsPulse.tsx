@@ -25,7 +25,8 @@ import {
   Wallet,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 import s from './LiveOpsPulse.module.css';
 
 export type ServiceStatus = 'healthy' | 'degraded' | 'down' | 'idle';
@@ -140,22 +141,19 @@ export function LiveOpsPulse({
     Array.from({ length: 28 }, () => Math.random() * 0.6 + 0.1),
   );
 
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  useEffect(() => {
-    if (pollIntervalMs <= 0) return;
-    const id = setInterval(() => {
+  // Pause the second-by-second tick and waveform when the tab is hidden so a
+  // background dashboard doesn't re-render twice per second for nothing.
+  useVisibilityAwareInterval(() => setNow(Date.now()), 1000);
+  useVisibilityAwareInterval(
+    () => {
       setWaveform((prev) => {
         const next = prev.slice(1);
         next.push(Math.random() * 0.7 + 0.15);
         return next;
       });
-    }, pollIntervalMs);
-    return () => clearInterval(id);
-  }, [pollIntervalMs]);
+    },
+    pollIntervalMs > 0 ? pollIntervalMs : 0,
+  );
 
   const servicesHealthy = useMemo(
     () => services.filter((x) => x.status === 'healthy').length,

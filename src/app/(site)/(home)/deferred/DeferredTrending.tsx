@@ -15,7 +15,12 @@ interface DeferredTrendingProps {
 
 const ModernTrendingTopics = dynamic(
   () => import('@/components/ModernTrending/ModernTrendingTopics').then((m) => m.default),
-  { loading: () => <Skeleton className="h-[420px] rounded-3xl" /> },
+  {
+    loading: () => <Skeleton className="h-[420px] rounded-3xl" />,
+    // Below the fold on the home page — keep its JS out of the initial
+    // client bundle.
+    ssr: false,
+  },
 );
 
 export default function DeferredTrending(props: DeferredTrendingProps) {

@@ -377,9 +377,11 @@ export async function fetchTgjuPage(page: TgjuPageId): Promise<FetchTgjuResult> 
         'Accept-Language': 'fa-IR,fa;q=0.9,en;q=0.8',
       },
       signal: controller.signal,
-      // هر بار fetch تازه — Next.js Data Cache این را مستقیماً cache نکند.
-      // کش 60 ثانیه‌ای توسط unstable_cache در getMarketRates مدیریت می‌شود.
-      cache: 'no-store',
+      // Not `cache:'no-store'` — see src/lib/market-rates/bonbast.ts. The
+      // 60s cache is managed by unstable_cache (safeCache) in getMarketRates;
+      // a no-store fetch here would make the static home page flip dynamic
+      // at runtime (500 "Page changed from static to dynamic").
+      cache: 'force-cache',
       redirect: 'follow',
     });
 

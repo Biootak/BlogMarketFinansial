@@ -15,6 +15,8 @@ interface DeferredDesign7Props {
 
 const Design7 = dynamic(() => import('../designs/Design7'), {
   loading: () => <CardLarge1Skeleton />,
+  // Below the fold: skip server render AND keep its JS out of the initial
+  // bundle. Saves ~46KB (Design7 + CompactRateBridge slider) from first load.
   ssr: false,
 });
 

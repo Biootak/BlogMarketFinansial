@@ -1,6 +1,7 @@
+'use client';
+
 import { PostIcon, ProfileIcon } from '@/components/Icons';
 import SideDropdown from '@/components/SideDropdown';
-import getCurrentUser from '@/lib/current-user';
 import type { Role } from '@prisma/client';
 import Link from 'next/link';
 import { Suspense } from 'react';
@@ -31,15 +32,31 @@ const isAdminOrAuthor = (userRole: Role | undefined) => {
   return userRole === 'ADMIN' || userRole === 'AUTHOR' || userRole === 'OWNER';
 };
 
-export default async function AvatarDropdown() {
-  const user = await getCurrentUser();
+interface AvatarDropdownProps {
+  user: {
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    role?: Role;
+    profile?: { avatar?: string | null } | null;
+  };
+}
 
-  if (!user) {
+/**
+ * Client component — receives the session `user` from `AuthStatus`
+ * (`useSession`). Previously it was a server component reading
+ * `getCurrentUser()` (`auth()`), which pulled the entire `@auth/core`
+ * server runtime (bcrypt, prisma, @upstash) into the client bundle because
+ * it was rendered inside a client component. The session is already
+ * available client-side, so there is no need for a server read here.
+ */
+export default function AvatarDropdown({ user }: AvatarDropdownProps) {
+  if (!user?.name) {
     return null;
   }
 
   const canAccessPosts = isAdminOrAuthor(user.role);
-  const portal = PORTAL_HOMES[user.role as string] ?? null;
+  const portal = PORTAL_HOMES[(user.role as string | undefined) ?? ''] ?? null;
   const isCustomerRole =
     user.role === 'CUSTOMER' || user.role === 'TEST_CUSTOMER' || user.role === 'MERCHANT';
 
@@ -68,7 +85,7 @@ export default async function AvatarDropdown() {
             >
               <div className="relative">
                 <Avatar
-                  imgUrl={user?.profile?.avatar || user.image}
+                  imgUrl={user.profile?.avatar ?? user.image ?? null}
                   userName={user.name}
                   sizeClass="h-12 w-12"
                   radius="rounded-xl"

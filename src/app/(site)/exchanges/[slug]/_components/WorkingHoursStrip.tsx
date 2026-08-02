@@ -35,13 +35,36 @@ const DAYS: ReadonlyArray<{ key: keyof HoursMap; label: string; sub: string }> =
   { key: 'fri', label: 'جمعه', sub: 'Fri' },
 ];
 
+// Module-level formatters — creating Intl instances on every render (this
+// component re-renders every 30s) is wasteful; they're cheap to build once.
+const FA_NUM = new Intl.NumberFormat('fa-IR');
+const DAY_FMT_CACHE = new Map<string, Intl.DateTimeFormat>();
+function dayFmt(timeZone: string): Intl.DateTimeFormat {
+  let f = DAY_FMT_CACHE.get(timeZone);
+  if (!f) {
+    f = new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone });
+    DAY_FMT_CACHE.set(timeZone, f);
+  }
+  return f;
+}
+const TIME_FMT_CACHE = new Map<string, Intl.DateTimeFormat>();
+function timeFmt(timeZone: string): Intl.DateTimeFormat {
+  let f = TIME_FMT_CACHE.get(timeZone);
+  if (!f) {
+    f = new Intl.DateTimeFormat('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone,
+    });
+    TIME_FMT_CACHE.set(timeZone, f);
+  }
+  return f;
+}
+
 function nowDayKey(timezone = 'Asia/Tehran'): keyof HoursMap {
   // ساعت سیستم را به Asia/Tehran تبدیل می‌کنیم
-  const fmt = new Intl.DateTimeFormat('en-US', {
-    weekday: 'short',
-    timeZone: timezone,
-  });
-  const wd = fmt.format(new Date());
+  const wd = dayFmt(timezone).format(new Date());
   const map: Record<string, keyof HoursMap> = {
     Sat: 'sat',
     Sun: 'sun',
@@ -82,13 +105,12 @@ export default function WorkingHoursStrip({ hours, timezone = 'Asia/Tehran' }: P
   }, []);
 
   // current minutes-of-day in the given timezone
-  const fmt = new Intl.DateTimeFormat('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-    timeZone: timezone,
-  });
-  const [hh, mm] = fmt.format(now).split(':').map(Number);
+  const [hh, mm] = timeFmt(timezone)
+    .formatToParts(now)
+    .map((p) => p.value)
+    .join('')
+    .split(':')
+    .map(Number);
   const currentMin = hh + mm / 60;
   const todayKey = nowDayKey(timezone);
 
@@ -124,7 +146,7 @@ export default function WorkingHoursStrip({ hours, timezone = 'Asia/Tehran' }: P
             <div className={s.statItem}>
               <span className={s.statLabel}>روز فعال</span>
               <span className={s.statValue}>
-                {new Intl.NumberFormat('fa-IR').format(openDays)}
+                {FA_NUM.format(openDays)}
                 <span className={s.statUnit}>/۷</span>
               </span>
             </div>
@@ -132,7 +154,7 @@ export default function WorkingHoursStrip({ hours, timezone = 'Asia/Tehran' }: P
             <div className={s.statItem}>
               <span className={s.statLabel}>مجموع ساعت</span>
               <span className={s.statValue}>
-                {new Intl.NumberFormat('fa-IR').format(Math.round(totalOpenHours))}
+                {FA_NUM.format(Math.round(totalOpenHours))}
                 <span className={s.statUnit}>ساعت</span>
               </span>
             </div>

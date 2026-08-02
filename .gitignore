@@ -92,6 +92,8 @@ next-env.d.ts
 /playwright-report/
 /test-results/
 /.playwright/
+# Playwright MCP snapshots (session-specific accessibility snapshots, regenerated on every session)
+/.playwright-mcp/
 
 # TGJU scraper debug HTML dumps (regenerated on demand via TGJU_DEBUG_DUMP=1)
 /.tgju-debug/
@@ -166,3 +168,15 @@ node-v*.zip
 # Linux Trash (GNOME/KDE delete basket — never commit)
 /.Trash-*/
 
+# ============================================================================
+# PERF / BUILD OUTPUT
+# خروجی build های performance — generated، نه source code
+# ============================================================================
+/perf-out/
+
+# ============================================================================
+# WINDOWS MACHINE-SPECIFIC
+# ============================================================================
+# Registry patch files — machine-specific, never commit
+bypass.reg
+*.reg

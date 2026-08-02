@@ -1,15 +1,10 @@
 'use client';
 
-import BannerAds from '@/components/BannerADS/BannerADS';
-import EditorContentRenderer from '@/components/Editor1/EditorContentRenderer';
 import PostCardCommentBtn from '@/components/PostCardCommentBtn/PostCardCommentBtn';
 import Tag from '@/components/Tag/Tag';
-import useIntersectionObserver from '@/hooks/useIntersectionObserver';
-import { sanitizeHtml } from '@/lib/utils';
 import type { Advertisement, PostWithRelations } from '@/types/types';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { HiArrowUp, HiChatBubbleLeftRight, HiHashtag } from 'react-icons/hi2';
-import MarkdownRenderer from './MarkdownRenderer';
 import SingleAuthor from './SingleAuthor';
 import SingleCommentForm from './SingleCommentForm';
 import SingleCommentLists from './SingleCommentLists';
@@ -20,13 +15,22 @@ import { HiShare } from 'react-icons/hi2';
 
 interface SingleContentClientProps {
   post: PostWithRelations;
-  initialLiked: boolean;
-  initialLikeCount: number;
   commentCount: number;
   inContentAd?: Advertisement | null;
+  /**
+   * Server-rendered article body. Passing the body through the RSC children
+   * slot keeps the TipTap/markdown rendering pipeline on the server — it is
+   * serialized to static HTML, never shipped as client JS.
+   */
+  children: React.ReactNode;
 }
 
-const SingleContentClient = ({ post, commentCount, inContentAd }: SingleContentClientProps) => {
+const SingleContentClient = ({
+  post,
+  commentCount,
+  inContentAd,
+  children,
+}: SingleContentClientProps) => {
   // ساخت URL کامل پست
   const getFullUrl = useCallback(() => {
     const postLink = getPostLink(post.postType, post.slug);
@@ -41,44 +45,63 @@ const SingleContentClient = ({ post, commentCount, inContentAd }: SingleContentC
   const contentRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLButtonElement>(null);
   const [isShowScrollToTop, setIsShowScrollToTop] = useState<boolean>(false);
+  // Sticky action bar visibility — true only once the reader has scrolled to
+  // (or past) the end of the article body. Derived in the scroll handler below
+  // (same source as the progress %), not a separate IntersectionObserver, so
+  // it can't drift from what the reader actually sees.
+  const [showStickyBar, setShowStickyBar] = useState(false);
 
-  const endedAnchorEntry = useIntersectionObserver(endedAnchorRef as React.RefObject<Element>, {
-    threshold: 0,
-    root: null,
-    rootMargin: '0%',
-    freezeOnceVisible: false,
-  });
-
-  const handleProgressIndicator = useCallback(() => {
-    const entryContent = contentRef.current;
-    const progressBarContent = progressRef.current;
-
-    if (!entryContent || !progressBarContent) {
-      return;
-    }
-
-    const totalEntryH = entryContent.offsetTop + entryContent.offsetHeight;
-    const winScroll = window.scrollY;
-    const scrolled = (winScroll / totalEntryH) * 100;
-
-    progressBarContent.innerText = `${scrolled.toFixed(0)}%`;
-
-    setIsShowScrollToTop(scrolled >= 100);
-  }, []);
+  // Height of the content block is measured once via ResizeObserver (no layout
+  // read on every scroll frame). Scroll progress updates a CSS variable on the
+  // progress button — zero React re-renders during scroll. The only state
+  // writes (isShowScrollToTop, showStickyBar) are guarded so they fire only on
+  // threshold crossings, not on every frame.
+  const totalEntryHRef = useRef(0);
 
   useEffect(() => {
-    const handleProgressIndicatorHeadEvent = () => {
-      window.requestAnimationFrame(handleProgressIndicator);
+    const entryContent = contentRef.current;
+    const progressBarContent = progressRef.current;
+    if (!entryContent || !progressBarContent) return;
+
+    const measure = () => {
+      totalEntryHRef.current = entryContent.offsetTop + entryContent.offsetHeight;
     };
-    window.addEventListener('scroll', handleProgressIndicatorHeadEvent, { passive: true });
+    measure();
+
+    const ro = new ResizeObserver(measure);
+    ro.observe(entryContent);
+
+    let lastPct = '';
+    const onScroll = () => {
+      const totalEntryH = totalEntryHRef.current || 1;
+      const scrolled = (window.scrollY / totalEntryH) * 100;
+      // Update the leaf % label only when the integer digit changes — a
+      // textContent write on this one span is cheap and never re-renders React.
+      const pct = `${Math.min(99, Math.floor(scrolled))}%`;
+      if (pct !== lastPct) {
+        lastPct = pct;
+        progressBarContent.textContent = pct;
+      }
+      // Threshold state update — only on crossing the 100% boundary.
+      const atBottom = scrolled >= 100;
+      setIsShowScrollToTop((prev) => (prev === atBottom ? prev : atBottom));
+      // Sticky bar: visible once the reader has actually scrolled and the end
+      // of the content block reaches the bottom of the viewport.
+      // (scrollY + innerHeight >= contentEnd). The scrollY > 0 guard keeps it
+      // hidden on initial mount (content height may not be measured yet).
+      const nearEnd = window.scrollY > 0 && window.scrollY + window.innerHeight >= totalEntryH;
+      setShowStickyBar((prev) => (prev === nearEnd ? prev : nearEnd));
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    onScroll();
 
     return () => {
-      window.removeEventListener('scroll', handleProgressIndicatorHeadEvent);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      ro.disconnect();
     };
-  }, [handleProgressIndicator]);
-
-  const showLikeAndCommentSticky =
-    !endedAnchorEntry?.intersectionRatio && (endedAnchorEntry?.boundingClientRect.top || 0) > 0;
+  }, []);
 
   // Placeholder: comment submission is handled by CommentForm's own Server Action.
   // This handler is kept for compatibility with the CommentSection callback prop.
@@ -89,123 +112,14 @@ const SingleContentClient = ({ post, commentCount, inContentAd }: SingleContentC
   return (
     <div className="relative">
       <div className="nc-SingleContent space-y-12 lg:space-y-16">
-        {/* Article Content */}
+        {/* Article Content — server-rendered via RSC children slot */}
         <div id="single-entry-content" className="max-w-3xl mx-auto" ref={contentRef}>
           {/* Content Card */}
           <div className="relative">
             {/* Decorative Side Line */}
             <div className="absolute end-0 top-8 bottom-8 w-1 bg-gradient-to-b from-[--ds-brand-500]/50 via-[--ds-brand-500]/20 to-transparent rounded-full hidden lg:block" />
 
-            <div className="lg:pe-8">
-              {post.content ? (
-                (() => {
-                  const content = post.content as string;
-
-                  try {
-                    const parsed = JSON.parse(content);
-                    if (parsed && parsed.type === 'doc') {
-                      if (inContentAd && Array.isArray(parsed.content)) {
-                        let paragraphCount = 0;
-                        let insertIndex = -1;
-                        for (let i = 0; i < parsed.content.length; i++) {
-                          if (parsed.content[i].type === 'paragraph') {
-                            paragraphCount++;
-                            if (paragraphCount === 3) {
-                              insertIndex = i + 1;
-                              break;
-                            }
-                          }
-                        }
-                        if (insertIndex !== -1 && insertIndex < parsed.content.length) {
-                          const part1 = {
-                            ...parsed,
-                            content: parsed.content.slice(0, insertIndex),
-                          };
-                          const part2 = { ...parsed, content: parsed.content.slice(insertIndex) };
-                          return (
-                            <div className="space-y-6">
-                              <EditorContentRenderer content={part1} />
-                              <div className="my-6">
-                                <BannerAds ad={inContentAd} variant="rich" />
-                              </div>
-                              <EditorContentRenderer content={part2} />
-                            </div>
-                          );
-                        }
-                      }
-                      return <EditorContentRenderer content={parsed} />;
-                    }
-                  } catch {
-                    // Not JSON
-                  }
-
-                  if (content.trim().startsWith('<')) {
-                    if (inContentAd) {
-                      const paragraphs = content.split('</p>');
-                      if (paragraphs.length > 3) {
-                        const part1 = `${paragraphs.slice(0, 3).join('</p>')}</p>`;
-                        const part2 = paragraphs.slice(3).join('</p>');
-                        return (
-                          <div className="space-y-6">
-                            <div
-                              className="editor-content at-prose at-prose--renderer"
-                              // biome-ignore lint/security/noDangerouslySetInnerHtml: Content is sanitized with DOMPurify
-                              dangerouslySetInnerHTML={{ __html: sanitizeHtml(part1) }}
-                            />
-                            <div className="my-6">
-                              <BannerAds ad={inContentAd} variant="rich" />
-                            </div>
-                            <div
-                              className="editor-content at-prose at-prose--renderer"
-                              // biome-ignore lint/security/noDangerouslySetInnerHtml: Content is sanitized with DOMPurify
-                              dangerouslySetInnerHTML={{ __html: sanitizeHtml(part2) }}
-                            />
-                          </div>
-                        );
-                      }
-                    }
-                    return (
-                      <div
-                        className="editor-content at-prose at-prose--renderer"
-                        // biome-ignore lint/security/noDangerouslySetInnerHtml: Content is sanitized with DOMPurify
-                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
-                      />
-                    );
-                  }
-
-                  if (inContentAd) {
-                    const paragraphs = content.split(/\n\s*\n/);
-                    if (paragraphs.length > 3) {
-                      const part1 = paragraphs.slice(0, 3).join('\n\n');
-                      const part2 = paragraphs.slice(3).join('\n\n');
-                      return (
-                        <div className="space-y-6">
-                          <div className="at-prose at-prose--renderer">
-                            <MarkdownRenderer content={part1} />
-                          </div>
-                          <div className="my-6">
-                            <BannerAds ad={inContentAd} variant="rich" />
-                          </div>
-                          <div className="at-prose at-prose--renderer">
-                            <MarkdownRenderer content={part2} />
-                          </div>
-                        </div>
-                      );
-                    }
-                  }
-
-                  return (
-                    <div className="at-prose at-prose--renderer">
-                      <MarkdownRenderer content={content} />
-                    </div>
-                  );
-                })()
-              ) : (
-                <div className="text-center py-12 text-neutral-500 dark:text-neutral-400">
-                  محتوایی برای نمایش وجود ندارد.
-                </div>
-              )}
-            </div>
+            <div className="lg:pe-8">{children}</div>
           </div>
         </div>
 
@@ -288,7 +202,7 @@ const SingleContentClient = ({ post, commentCount, inContentAd }: SingleContentC
       {/* Floating Action Bar */}
       <div
         className={`sticky mt-8 bottom-6 z-40 justify-center ${
-          showLikeAndCommentSticky ? 'flex' : 'hidden'
+          showStickyBar ? 'flex' : 'hidden'
         }`}
       >
         <div className="relative overflow-hidden bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.4)] rounded-2xl border border-neutral-200/50 dark:border-neutral-700/50 p-2 flex items-center justify-center gap-1.5">
@@ -348,7 +262,7 @@ const SingleContentClient = ({ post, commentCount, inContentAd }: SingleContentC
               <HiArrowUp className="w-5 h-5" />
             ) : (
               <span ref={progressRef} className="text-xs font-semibold">
-                %
+                0%
               </span>
             )}
           </button>

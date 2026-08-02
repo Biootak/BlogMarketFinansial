@@ -113,6 +113,31 @@ const PRESETS_BY_CATEGORY: Record<CategoryId, readonly number[]> = {
 
 const DEFAULT_AMOUNT_STR = '1000';
 
+/* ────────────────────────────────────────────────────────────────────────
+   MODULE-LEVEL FORMATTERS — the converter re-renders on every keystroke,
+   so formatters are hoisted instead of re-allocated per render.
+   ──────────────────────────────────────────────────────────────────────── */
+const FA_NO_GROUP = new Intl.NumberFormat('fa-IR', { useGrouping: false });
+const FA_INT = new Intl.NumberFormat('fa-IR');
+
+/** Cache of formatters keyed by (min/max fraction digits) — result value
+ *  depends on the destination pair's decimals, but the option set is tiny
+ *  so a tiny Map is cheaper than re-creating a formatter per render. */
+const resultFormatterCache = new Map<string, Intl.NumberFormat>();
+function getResultFormatter(minFrac: number, maxFrac: number): Intl.NumberFormat {
+  const key = `${minFrac}:${maxFrac}`;
+  let fmt = resultFormatterCache.get(key);
+  if (!fmt) {
+    fmt = new Intl.NumberFormat('fa-IR', {
+      minimumFractionDigits: minFrac,
+      maximumFractionDigits: maxFrac,
+      useGrouping: true,
+    });
+    resultFormatterCache.set(key, fmt);
+  }
+  return fmt;
+}
+
 export default function HeroConverter({
   pairs,
   spreadStats,
@@ -225,7 +250,7 @@ export default function HeroConverter({
   const activePresets = PRESETS_BY_CATEGORY[category];
 
   const handlePreset = (value: number) => {
-    setAmountRaw(new Intl.NumberFormat('fa-IR', { useGrouping: false }).format(value));
+    setAmountRaw(FA_NO_GROUP.format(value));
   };
 
   const { status } = useSession();
@@ -277,26 +302,21 @@ export default function HeroConverter({
     const mins = Math.floor(ms / 60_000);
     if (mins < 1) return 'همین الآن';
     if (mins < 60) {
-      const n = new Intl.NumberFormat('fa-IR').format(mins);
-      return `${n} دقیقه پیش`;
+      return `${FA_INT.format(mins)} دقیقه پیش`;
     }
     const hours = Math.floor(mins / 60);
     if (hours < 24) {
-      const n = new Intl.NumberFormat('fa-IR').format(hours);
-      return `${n} ساعت پیش`;
+      return `${FA_INT.format(hours)} ساعت پیش`;
     }
     const days = Math.floor(hours / 24);
-    const n = new Intl.NumberFormat('fa-IR').format(days);
-    return `${n} روز پیش`;
+    return `${FA_INT.format(days)} روز پیش`;
   }, [freshnessAnchor, isMounted]);
 
   // stats تمیز: اگه count=0، متن neutral نشان بده
   const safeProviderCount = providerCount > 0 ? providerCount : 0;
   const avgSpread = spreadStats.average;
   const providersLabel =
-    safeProviderCount === 0
-      ? 'بدون صرافی'
-      : new Intl.NumberFormat('fa-IR').format(safeProviderCount);
+    safeProviderCount === 0 ? 'بدون صرافی' : FA_INT.format(safeProviderCount);
 
   // helper برای نمایش spread درصدی (۲ رقم اعشار ولی اگه 0 بود، ردش کن)
   const fmtSpreadPct = (n: number): string => {
@@ -464,9 +484,7 @@ export default function HeroConverter({
                   {/* presets */}
                   <div className="mt-calc__presets">
                     {activePresets.map((preset) => {
-                      const formatted = new Intl.NumberFormat('fa-IR', {
-                        useGrouping: false,
-                      }).format(preset);
+                      const formatted = FA_NO_GROUP.format(preset);
                       const isActive = Number.isFinite(numericAmount) && numericAmount === preset;
                       return (
                         <button
@@ -502,14 +520,11 @@ export default function HeroConverter({
                   </span>
                   <span className={styles.resultValue}>
                     {Number.isFinite(converted)
-                      ? new Intl.NumberFormat('fa-IR', {
+                      ? getResultFormatter(
                           // B2-fix: unit=toman → 0 رقم اعشار؛ بقیه از toPair.decimals
-                          minimumFractionDigits:
-                            toPair?.unit === 'toman' ? 0 : (toPair?.decimals ?? 2),
-                          maximumFractionDigits:
-                            toPair?.unit === 'toman' ? 0 : (toPair?.decimals ?? 2),
-                          useGrouping: true,
-                        }).format(converted)
+                          toPair?.unit === 'toman' ? 0 : (toPair?.decimals ?? 2),
+                          toPair?.unit === 'toman' ? 0 : (toPair?.decimals ?? 2),
+                        ).format(converted)
                       : '—'}
                     <span className={styles.resultUnit}>{toPair?.code ?? '—'}</span>
                   </span>

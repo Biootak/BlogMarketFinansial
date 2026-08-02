@@ -8,11 +8,11 @@ import { getSystemSettingsCached } from '@/data/getSystemSettingsCached';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 
-// The shared header reads auth() to render sign-in/avatar state, which opts
-// the entire (site) tree out of static generation. Declaring force-dynamic here
-// prevents Next.js from attempting a build-time DB connection on any child route.
-export const dynamic = 'force-dynamic';
-
+// 2026-08-02: `auth()` removed from the (site) server tree (MainNav,
+// MobileBottomNavGate, QuickActionsGate, HeroSection now resolve the session
+// client-side via useSession). This layout no longer forces dynamic rendering,
+// so child routes can be static or ISR. Routes that still need per-request
+// data opt in individually (e.g. credit-rates, search).
 export async function generateMetadata(): Promise<Metadata> {
   // Site settings come from `getSystemSettingsCached` (unstable_cache, 60s)
   // so metadata generation reuses the cached value instead of hitting the DB
@@ -46,11 +46,9 @@ export async function generateMetadata(): Promise<Metadata> {
  *   - Site settings hydration (no visual impact)
  *
  * The `safeCache` wrappers inside the async components guarantee graceful
- * fallbacks if the database is unreachable. Note that `MainNav` (rendered by
- * SiteHeaderData) reads `auth()`, so every (site) route is dynamically
- * rendered on demand — there is no static prerender (and therefore no
- * build-time DB connection). Performance comes from safeCache + the CDN
- * `s-maxage` header in next.config.ts, not ISR.
+ * fallbacks if the database is unreachable. No server component in this tree
+ * awaits `auth()` (session is resolved client-side via `useSession` in
+ * `AuthStatus`), so child routes can be statically prerendered or ISR'd.
  */
 export default async function SiteLayout({
   children,

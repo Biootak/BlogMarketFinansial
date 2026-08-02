@@ -11,6 +11,11 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 import { Suspense } from 'react';
 
+// `headers()` inside SetupContent is a request-time API. Without this, the
+// page is statically prerendered at build and flips dynamic at runtime
+// ("Page changed from static to dynamic ... reason: headers"), which 500s.
+export const dynamic = 'force-dynamic';
+
 /**
  * Setup page (server component shell).
  *

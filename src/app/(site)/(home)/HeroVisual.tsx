@@ -30,6 +30,7 @@ import {
   TrendingUp,
   Zap,
 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import s from './HeroSection.module.css';
@@ -61,12 +62,36 @@ function toLatinDigits(str: string): string {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
+   MODULE-LEVEL FORMATTERS — hoisted so the LCP hero never re-allocates
+   Intl.NumberFormat on every render (each keystroke in the mini-calculator
+   used to construct three new formatters per render).
+   ───────────────────────────────────────────────────────────────────────── */
+
+const FA_INT = new Intl.NumberFormat('fa-IR', { useGrouping: true, maximumFractionDigits: 0 });
+const FA_DEC_2 = new Intl.NumberFormat('fa-IR', {
+  useGrouping: true,
+  maximumFractionDigits: 2,
+  minimumFractionDigits: 2,
+});
+const FA_USD_TO_AFN = new Intl.NumberFormat('fa-IR', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+  useGrouping: false,
+});
+const FA_COMPACT = new Intl.NumberFormat('fa-IR', {
+  maximumFractionDigits: 1,
+  minimumFractionDigits: 0,
+});
+const FA_PLAIN = new Intl.NumberFormat('fa-IR');
+
+/* ─────────────────────────────────────────────────────────────────────────
    HOOK: useGlassTilt
    ───────────────────────────────────────────────────────────────────────── */
 
 function useGlassTilt(strength = 5) {
   const ref = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [reduced, setReduced] = useState(false);
 
   useEffect(() => {
@@ -99,7 +124,9 @@ function useGlassTilt(strength = 5) {
     if (ref.current) {
       ref.current.style.transition = 'transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1)';
       ref.current.style.transform = '';
-      setTimeout(() => {
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+      resetTimerRef.current = setTimeout(() => {
+        resetTimerRef.current = null;
         if (ref.current) ref.current.style.transition = 'transform 80ms ease-out';
       }, 500);
     }
@@ -108,6 +135,7 @@ function useGlassTilt(strength = 5) {
   useEffect(
     () => () => {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+      if (resetTimerRef.current !== null) clearTimeout(resetTimerRef.current);
     },
     [],
   );
@@ -129,12 +157,12 @@ const STATS_FALLBACK: ReadonlyArray<{ value: string; label: string }> = [
 /** فرمت فارسی عدد بزرگ به شکل جمع‌شده: ۱۲۳۴ → «۱.۲ هزار» / ۱۲۳۴۵۶۷ → «۱.۲ میلیون» */
 function formatCompactFa(n: number): string {
   if (n >= 1_000_000) {
-    return `${new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 1, minimumFractionDigits: 0 }).format(n / 1_000_000)} میلیون`;
+    return `${FA_COMPACT.format(n / 1_000_000)} میلیون`;
   }
   if (n >= 1_000) {
-    return `${new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 1, minimumFractionDigits: 0 }).format(n / 1_000)} هزار`;
+    return `${FA_COMPACT.format(n / 1_000)} هزار`;
   }
-  return new Intl.NumberFormat('fa-IR').format(n);
+  return FA_PLAIN.format(n);
 }
 
 /** فرمت فاصله از now (مثلاً «۲ دقیقه پیش» / «هم اکنون») */
@@ -142,10 +170,10 @@ function formatFreshnessFa(date: Date | null): string {
   if (!date) return '—';
   const diffMin = Math.floor((Date.now() - date.getTime()) / 60_000);
   if (diffMin < 1) return 'هم اکنون';
-  if (diffMin < 60) return `${new Intl.NumberFormat('fa-IR').format(diffMin)} دقیقه پیش`;
+  if (diffMin < 60) return `${FA_PLAIN.format(diffMin)} دقیقه پیش`;
   const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `${new Intl.NumberFormat('fa-IR').format(diffH)} ساعت پیش`;
-  return `${new Intl.NumberFormat('fa-IR').format(Math.floor(diffH / 24))} روز پیش`;
+  if (diffH < 24) return `${FA_PLAIN.format(diffH)} ساعت پیش`;
+  return `${FA_PLAIN.format(Math.floor(diffH / 24))} روز پیش`;
 }
 
 const SYMBOL_ROW_LABELS: Record<string, string> = {
@@ -171,10 +199,6 @@ interface HeroVisualProps {
   totalRates: number;
   /** آخرین زمان به‌روزرسانی بازار */
   freshnessAnchor: Date | null;
-  /** آیا کاربر لاگین است؟ (برای شخصی‌سازی CTA) */
-  isAuthed: boolean;
-  /** آیا نقش author/admin/owner دارد؟ (نمایش داشبورد در CTA) */
-  isAuthor: boolean;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -188,22 +212,23 @@ export default function HeroVisual({
   activeExchangeCount,
   totalRates,
   freshnessAnchor,
-  isAuthed,
-  isAuthor,
 }: HeroVisualProps) {
+  const { data: session, status } = useSession();
+  // Auth state is derived client-side here (2026-08-02) so the server Hero
+  // section no longer calls auth() — the hero streams off cached market rates
+  // and the CTA personalizes once the session resolves.
+  const isAuthed = status === 'authenticated' && !!session?.user;
+  const role = session?.user?.role as string | undefined;
+  const isAuthor =
+    isAuthed &&
+    (role === 'AUTHOR' || role === 'ADMIN' || role === 'OWNER' || role === 'SUPERADMIN');
   const card1 = useGlassTilt(5);
   const card2 = useGlassTilt(4);
 
   // فرمت headline: ۱ USD = X.XX AFN
   // مثال: 188,400 ÷ 2,900 ≈ 64.97 → «۶۴.۹۷»
   const usdToAfnFormatted =
-    usdToAfn !== null && Number.isFinite(usdToAfn)
-      ? new Intl.NumberFormat('fa-IR', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-          useGrouping: false,
-        }).format(usdToAfn)
-      : null;
+    usdToAfn !== null && Number.isFinite(usdToAfn) ? FA_USD_TO_AFN.format(usdToAfn) : null;
 
   // ── mini-calculator state — پیش‌فرض AFN (قانون P0 — افغانستان‌اول) ──
   const [calcAmount, setCalcAmount] = useState('100');
@@ -264,16 +289,9 @@ export default function HeroVisual({
       ? parsedAmount / usdToAfn
       : null;
 
-  const fa = new Intl.NumberFormat('fa-IR', { useGrouping: true, maximumFractionDigits: 0 });
-  const faInt = new Intl.NumberFormat('fa-IR', {
-    useGrouping: true,
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 2,
-  });
-
-  const resultAfnFormatted = resultAfn !== null ? fa.format(resultAfn) : '—';
-  const resultTomanFormatted = resultToman !== null ? fa.format(resultToman) : '—';
-  const resultUsdFormatted = resultUsdFromAfn !== null ? faInt.format(resultUsdFromAfn) : '—';
+  const resultAfnFormatted = resultAfn !== null ? FA_INT.format(resultAfn) : '—';
+  const resultTomanFormatted = resultToman !== null ? FA_INT.format(resultToman) : '—';
+  const resultUsdFormatted = resultUsdFromAfn !== null ? FA_DEC_2.format(resultUsdFromAfn) : '—';
 
   // لینک به صفحه حواله با prefill
   const transferHref =
@@ -439,7 +457,7 @@ export default function HeroVisual({
           </li>
           <li className={s.statItem}>
             <span className={s.statVal}>
-              {totalRates > 0 ? new Intl.NumberFormat('fa-IR').format(totalRates) : '۰'}
+              {totalRates > 0 ? FA_PLAIN.format(totalRates) : '۰'}
             </span>
             <span className={s.statLabel}>نرخ زنده</span>
           </li>

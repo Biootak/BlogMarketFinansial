@@ -11,6 +11,11 @@ import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import './auth.css';
 
+// `auth()` reads cookies via headers() — a request-time API. Without this the
+// route is statically prerendered at build and flips dynamic at runtime
+// ("Page changed from static to dynamic ... reason: headers"), which 500s.
+export const dynamic = 'force-dynamic';
+
 async function AuthGate({ children }: { children: React.ReactNode }) {
   try {
     const session = await auth();

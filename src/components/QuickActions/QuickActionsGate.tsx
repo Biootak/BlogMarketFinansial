@@ -1,21 +1,15 @@
-import { auth } from '@/auth';
 import QuickActions from './QuickActions';
 
 /**
- * QuickActionsGate — Server Component.
- * Resolves auth on the server, so the FAB shows the right state (signed-in
- * menu vs. guest CTA) on the very first paint.
- * logoUrl is read client-side from the useSiteSettings Zustand store
- * (hydrated by SiteSettingsProvider in the layout), same as Sidebar.
+ * QuickActionsGate — Server Component shell.
+ *
+ * 2026-08-02: `auth()` removed from the (site) server tree. QuickActions is
+ * already a client component and now reads the session via useSession()
+ * internally. This lets the (site) layout stop forcing dynamic rendering on
+ * every public page.
  */
-const QuickActionsGate = async () => {
-  const session = await auth();
-  return (
-    <QuickActions
-      isLoggedIn={!!session?.user?.id}
-      userRole={session?.user?.role}
-    />
-  );
+const QuickActionsGate = () => {
+  return <QuickActions />;
 };
 
 export default QuickActionsGate;

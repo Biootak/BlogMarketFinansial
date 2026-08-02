@@ -9,7 +9,6 @@
  *  - وضعیت freshness بازار
  */
 
-import { auth } from '@/auth';
 import { getMarketRates } from '@/actions/market-rates';
 import { safeCache } from '@/lib/safe-cache';
 import prisma from '@/lib/db';
@@ -49,9 +48,8 @@ const getActiveExchangeCount = safeCache(
 );
 
 export default async function HeroSection() {
-  const [allRates, session, activeExchangeCount] = await Promise.all([
+  const [allRates, activeExchangeCount] = await Promise.all([
     getMarketRates(),
-    auth().catch(() => null),
     getActiveExchangeCount(),
   ]);
 
@@ -69,13 +67,6 @@ export default async function HeroSection() {
     return !acc || t.getTime() > acc.getTime() ? t : acc;
   }, null);
 
-  // نقش کاربر → CTA متفاوت
-  const role = session?.user?.role as string | undefined;
-  const isAuthed = !!session?.user;
-  // isAuthor: هر نقشی که دسترسی داشبورد/مدیریت دارد (AUTHOR+ADMIN+OWNER+SUPERADMIN)
-  const isAuthor =
-    role === 'AUTHOR' || role === 'ADMIN' || role === 'OWNER' || role === 'SUPERADMIN';
-
   return (
     <HeroVisual
       heroRates={heroRates}
@@ -84,8 +75,6 @@ export default async function HeroSection() {
       activeExchangeCount={activeExchangeCount}
       totalRates={allRates.length}
       freshnessAnchor={freshnessAnchor}
-      isAuthed={isAuthed}
-      isAuthor={isAuthor}
     />
   );
 }

@@ -24,10 +24,16 @@ function classNames(...classes: string[]) {
 
 interface Props {
   renderTrigger?: () => ReactNode;
+  /** Controlled open state — used by the lazy wrapper to defer headlessui. */
+  open?: boolean;
+  onClose?: () => void;
 }
 
-const SearchModal: FC<Props> = ({ renderTrigger }) => {
-  const [open, setOpen] = useState(false);
+const SearchModal: FC<Props> = ({ renderTrigger, open: controlledOpen, onClose: onCloseProp }) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+
   const [rawQuery, setRawQuery] = useState('');
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
   const [categories, setCategories] = useState<CategoryWithPostCount[]>([]);
@@ -35,6 +41,18 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
   const [isLoading, setIsLoading] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
+
+  const handleClose = useCallback(() => {
+    setRawQuery('');
+    setPosts([]);
+    setCategories([]);
+    setAuthors([]);
+    if (isControlled) {
+      onCloseProp?.();
+    } else {
+      setInternalOpen(false);
+    }
+  }, [isControlled, onCloseProp]);
 
   // Prevent body scroll and layout shift when modal opens
   useEffect(() => {
@@ -102,33 +120,35 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
     };
   }, [rawQuery, handleSearch]);
 
+  // Selected combobox value — every option carries an `href` plus its own
+  // record fields (post/category/author), so the handler only reads href.
+  type ComboboxValue = { href?: string } & Record<string, unknown>;
+
   const handleItemSelect = useCallback(
-    (item: any) => {
+    (item: ComboboxValue | null) => {
       if (item?.href) {
         if (item.href.startsWith('/category')) {
           router.push(`/archive/${item.href.split('/').pop()}`);
         } else {
           router.push(item.href);
         }
-        setOpen(false);
+        handleClose();
       }
     },
-    [router],
+    [router, handleClose],
   );
-
-  const handleClose = useCallback(() => {
-    setOpen(false);
-    setRawQuery('');
-    setPosts([]);
-    setCategories([]);
-    setAuthors([]);
-  }, []);
 
   return (
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          if (isControlled) {
+            onCloseProp?.();
+          } else {
+            setInternalOpen(true);
+          }
+        }}
         className="
           relative
           flex items-center justify-center

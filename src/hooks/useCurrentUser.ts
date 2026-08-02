@@ -1,34 +1,17 @@
 import { useSession } from 'next-auth/react';
-import useSWR from 'swr';
 
+/**
+ * useCurrentUser — the current user from the client session.
+ *
+ * 2026-08-02 (perf): previously this wrapped `useSession` in a `useSWR` call
+ * whose fetcher called `session.update()`. Every revalidation path was
+ * disabled (`revalidateOnMount: false`, `revalidateOnFocus: false`,
+ * `refreshInterval: 0`, `shouldRetryOnError: false`, `dedupingInterval:
+ * 60000`), so the fetcher NEVER ran — SWR added bundle weight, a ref, and
+ * bookkeeping for zero benefit. The returned value was always `session.user`
+ * (the `fallbackData`). Simplifies to the plain session read.
+ */
 export function useCurrentUser() {
-  const { data: session, status, update } = useSession();
-
-  const { data: user } = useSWR(
-    // فقط وقتی session آماده هست fetch کن
-    session && status === 'authenticated' ? '/api/user/current' : null,
-    async () => {
-      try {
-        const updatedSession = await update();
-        return updatedSession?.user;
-      } catch {
-        // خطا رو نادیده بگیر و از session فعلی استفاده کن
-        return session?.user;
-      }
-    },
-    {
-      fallbackData: session?.user,
-      revalidateOnMount: false,
-      revalidateOnFocus: false,
-      refreshInterval: 0,
-      shouldRetryOnError: false,
-      errorRetryCount: 0,
-      dedupingInterval: 60000, // 1 minute
-      onError: () => {
-        // خطاها رو suppress کن
-      },
-    },
-  );
-
-  return user ?? session?.user;
+  const { data: session } = useSession();
+  return session?.user;
 }

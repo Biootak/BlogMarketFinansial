@@ -18,6 +18,11 @@ export interface PageProps {
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://financialmarket.page';
 
+// 2026-08-02: aligned with the default single page — header no longer awaits
+// auth(), and all data comes through safeCache, so this route can be ISR
+// instead of rendering on-demand for every visitor.
+export const revalidate = 300;
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const postSlug = slug?.join('/') || '';
@@ -119,7 +124,7 @@ export default async function PageSingleVideo({ params }: PageProps) {
           <article className="w-full @lg/single-layout:basis-[68%] @xl/single-layout:basis-[70%] grow-0 shrink">
             {/* Hero Media */}
             <div className="relative aspect-[16/9] md:aspect-[16/9] @lg/single-layout:aspect-[21/9] rounded-2xl @lg/single-layout:rounded-3xl overflow-hidden mb-8 group">
-              <PostFeaturedMedia post={post} className="w-full h-full" imageRatio="video" />
+              <PostFeaturedMedia post={post} className="w-full h-full" imageRatio="video" priority />
             </div>
 
             {/* Header Section */}

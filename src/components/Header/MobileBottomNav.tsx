@@ -4,8 +4,6 @@
  * MobileBottomNav (Client) — فقط رفتار scroll-hide اینجا کلاینت است.
  * داده‌های isLoggedIn از سرور می‌آیند (هیچ فلیکر login↔logout در SSR).
  *
- * الگو: Server Component layout → auth() → <MobileBottomNav isLoggedIn={…} />
- *
  * امکانات:
  *  - Floating glass pill (نه full-width bar)
  *  - Hide-on-scroll-down با rAF debounce
@@ -19,26 +17,15 @@
  *    localStorage ذخیره می‌شود. long-press 500ms فعال‌سازی، tolerance 8px
  *    برای جلوگیری از فعال‌سازی تصادفی هنگام scroll. tap کوتاه همچنان
  *    navigation را فعال می‌کند.
+ *
+ * 2026-08-02 perf: @dnd-kit (core+sortable+utilities, ~90KB) is now split into
+ * a lazy module (`MobileBottomNavSortable`) loaded only when reorder is
+ * engaged, so the drag-and-drop library no longer ships on every page load.
  */
 
-import {
-  closestCenter,
-  DndContext,
-  type DragEndEvent,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  arrayMove,
-  horizontalListSortingStrategy,
-  sortableKeyboardCoordinates,
-  useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import dynamic from 'next/dynamic';
 import { usePathname, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import {
   type FC,
   useCallback,
@@ -55,21 +42,15 @@ import {
   HiOutlineUserCircle,
 } from 'react-icons/hi2';
 import { LuWallet } from 'react-icons/lu';
+import type { MobileBottomNavSortableProps, SortableNavItem } from './MobileBottomNavSortable';
 import s from './MobileBottomNav.module.css';
 
 const STORAGE_KEY = 'bmf-bottomnav-order-v1';
 const LONG_PRESS_MS = 500;
 const SLOP_PX = 8;
 
-interface NavItem {
-  id: string;
-  href: string;
-  label: string;
-  icon: FC<{ size?: number; strokeWidth?: number; 'aria-hidden'?: boolean }>;
-  primary?: boolean;
+interface NavItem extends SortableNavItem {
   matchPrefixes?: string[];
-  /** R20-fix: فقط در تبلت (≥768px) نمایش داده می‌شود. در موبایل مخفی است. */
-  tabletOnly?: boolean;
 }
 
 const HIDE_PREFIXES = [
@@ -86,10 +67,6 @@ const HIDE_PREFIXES = [
   '/exchange-suspended',
   '/setup',
 ];
-
-interface Props {
-  isLoggedIn: boolean;
-}
 
 const buildItems = (loggedIn: boolean): NavItem[] => [
   {
@@ -148,73 +125,28 @@ const DEFAULT_ORDER: readonly string[] = [
   'profile',
 ];
 
-interface SortableItemProps {
-  item: NavItem;
-  isActive: boolean;
-  onClick: (e: React.MouseEvent<HTMLAnchorElement>, item: NavItem) => void;
-}
+/**
+ * Lazy sortable layer — dnd-kit loads only once the user long-presses the nav
+ * (reorder intent). ssr:false keeps the ~90KB chunk off the initial bundle.
+ */
+const MobileBottomNavSortableLazy = dynamic<MobileBottomNavSortableProps>(
+  () => import('./MobileBottomNavSortable').then((m) => m.default),
+  { ssr: false },
+);
 
-function SortableItem({ item, isActive, onClick }: SortableItemProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: item.id });
-
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    zIndex: isDragging ? 10 : undefined,
-  };
-
-  const Icon = item.icon;
-
-  return (
-    <li
-      ref={setNodeRef}
-      style={style}
-      className={`${s.item} ${item.tabletOnly ? s.tabletOnly : ''}`.trim()}
-      data-dragging={isDragging ? 'true' : 'false'}
-      {...attributes}
-      {...listeners}
-    >
-      <a
-        href={item.href}
-        onClick={(e) => onClick(e, item)}
-        className={s.link}
-        data-active={isActive}
-        data-primary={item.primary ? 'true' : undefined}
-        aria-current={isActive ? 'page' : undefined}
-        aria-label={item.label}
-      >
-        <span className={s.iconWrap} aria-hidden>
-          <Icon size={20} strokeWidth={isActive ? 2 : 1.6} />
-          {isActive && item.primary && <span className={s.dot} aria-hidden />}
-        </span>
-        <span className={s.label}>{item.label}</span>
-      </a>
-    </li>
-  );
-}
-
-const MobileBottomNav: FC<Props> = ({ isLoggedIn }) => {
+const MobileBottomNav: FC = () => {
+  const { data: session } = useSession();
+  const isLoggedIn = !!session?.user;
   const pathname = usePathname();
   const router = useRouter();
   const navRef = useRef<HTMLElement | null>(null);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const suppressNextClickRef = useRef(false);
   const [visible, setVisible] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [order, setOrder] = useState<readonly string[] | null>(null);
   const [hasHydrated, setHasHydrated] = useState(false);
-
-  // دکمه‌های long-press فقط روی pointer کار می‌کنند (نه touch synthetic)
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        delay: LONG_PRESS_MS,
-        tolerance: SLOP_PX,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
+  const [reorderActive, setReorderActive] = useState(false);
 
   // Load order از localStorage پس از mount (hydration-safe)
   useEffect(() => {
@@ -321,20 +253,14 @@ const MobileBottomNav: FC<Props> = ({ isLoggedIn }) => {
     return 'home';
   }, [pathname, items]);
 
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-    setOrder((current) => {
-      const base = current ?? DEFAULT_ORDER;
-      const oldIndex = base.indexOf(String(active.id));
-      const newIndex = base.indexOf(String(over.id));
-      if (oldIndex === -1 || newIndex === -1) return current;
-      return arrayMove([...base], oldIndex, newIndex);
-    });
-  }, []);
-
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>, item: NavItem) => {
+      // A long-press that engaged reorder must not also navigate on release.
+      if (suppressNextClickRef.current) {
+        suppressNextClickRef.current = false;
+        e.preventDefault();
+        return;
+      }
       if (item.href === pathname) {
         e.preventDefault();
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -350,6 +276,56 @@ const MobileBottomNav: FC<Props> = ({ isLoggedIn }) => {
     setOrder(DEFAULT_ORDER);
   }, []);
 
+  const handleReorder = useCallback((newOrder: readonly string[]) => {
+    setOrder(newOrder);
+  }, []);
+
+  // Long-press the nav to enter reorder mode (loads the dnd-kit chunk).
+  const handlePointerDown = useCallback(() => {
+    longPressTimerRef.current = setTimeout(() => {
+      setReorderActive(true);
+      suppressNextClickRef.current = true;
+    }, LONG_PRESS_MS);
+  }, []);
+
+  const handlePointerUp = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }, []);
+
+  // Exit reorder mode on route change or scroll (a drag may still be active,
+  // but the pill should reset to normal navigation behaviour).
+  useEffect(() => {
+    if (reorderActive) setReorderActive(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  const renderLink: MobileBottomNavSortableProps['renderLink'] = useCallback(
+    (item, { isActive }) => {
+      const Icon = item.icon;
+      return (
+        <a
+          href={item.href}
+          onClick={(e) => handleClick(e, item)}
+          className={s.link}
+          data-active={isActive}
+          data-primary={item.primary ? 'true' : undefined}
+          aria-current={isActive ? 'page' : undefined}
+          aria-label={item.label}
+        >
+          <span className={s.iconWrap} aria-hidden>
+            <Icon size={20} strokeWidth={isActive ? 2 : 1.6} />
+            {isActive && item.primary && <span className={s.dot} aria-hidden />}
+          </span>
+          <span className={s.label}>{item.label}</span>
+        </a>
+      );
+    },
+    [handleClick],
+  );
+
   if (shouldHide) return null;
 
   return (
@@ -358,31 +334,34 @@ const MobileBottomNav: FC<Props> = ({ isLoggedIn }) => {
       className={s.nav}
       data-visible={visible}
       data-mounted={mounted}
+      data-reorder={reorderActive ? 'true' : 'false'}
       aria-label="ناوبری سریع موبایل"
       dir="rtl"
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
     >
-      <DndContext
-        id="mobile-bottom-nav-dnd"
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext
-          items={items.map((i) => i.id)}
-          strategy={horizontalListSortingStrategy}
-        >
-          <ul className={s.list} role="list">
-            {items.map((item) => (
-              <SortableItem
-                key={item.id}
-                item={item}
-                isActive={activeId === item.id}
-                onClick={handleClick}
-              />
-            ))}
-          </ul>
-        </SortableContext>
-      </DndContext>
+      {reorderActive ? (
+        <MobileBottomNavSortableLazy
+          items={items}
+          activeId={activeId}
+          order={order ?? DEFAULT_ORDER}
+          onReorder={handleReorder}
+          onLinkClick={handleClick}
+          renderLink={renderLink}
+          className={s.list}
+          itemClassName={s.item}
+          tabletOnlyClassName={s.tabletOnly}
+        />
+      ) : (
+        <ul className={s.list} role="list">
+          {items.map((item) => (
+            <li key={item.id} className={`${s.item} ${item.tabletOnly ? s.tabletOnly : ''}`.trim()}>
+              {renderLink(item, { isActive: activeId === item.id })}
+            </li>
+          ))}
+        </ul>
+      )}
 
       {/* ابزار مخفی برای بازنشانی ترتیب — فقط در حالت توسعه قابل دسترسی
           از طریق window.__resetBottomNavOrder() در DevTools. */}

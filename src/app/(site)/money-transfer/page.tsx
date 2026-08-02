@@ -135,8 +135,15 @@ async function buildHeroInitial(
   };
 }
 
-// Dynamically rendered on demand — the shared site header reads auth(), which
-// opts the whole (site) tree out of static generation (see (home)/page.tsx).
+// 2026-08-02: header no longer awaits auth() (client-side session island), so
+// the (site) tree is static-friendly. This page reads no request-time APIs
+// (no cookies/headers/searchParams) — everything comes through safeCache with
+// TTLs (market rates 60s, rate lists 300s, providers 60s). Without an explicit
+// revalidate it would be statically generated at BUILD with whatever rates
+// existed then → frozen prices. ISR with 60s revalidation keeps HTML cached
+// while rates refresh at the same cadence as the market-rates cache.
+export const revalidate = 60;
+
 export default async function MoneyTransferPage() {
   const [market, rateLists] = await Promise.all([loadMarketRates(), getRateLists()]);
   const hero = await buildHeroInitial(market.rates, market.items);

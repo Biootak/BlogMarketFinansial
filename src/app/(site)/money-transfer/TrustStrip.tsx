@@ -28,17 +28,20 @@ interface Props {
   satisfactionPct?: number;
 }
 
+const FA_NUM = new Intl.NumberFormat('fa-IR');
+
 /** Count-up on scroll-into-view — respects prefers-reduced-motion */
 function CountUpNumber({ target, duration = 1600 }: { target: number; duration?: number }) {
   const ref = useRef<HTMLSpanElement>(null);
   const [display, setDisplay] = useState(0);
   const [started, setStarted] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
-  // Check reduced motion preference
-  const prefersReducedMotion =
-    typeof window !== 'undefined'
-      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      : false;
+  // Read reduced-motion once on mount (no window access during render).
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    setPrefersReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }, []);
 
   useEffect(() => {
     if (prefersReducedMotion) {
@@ -75,7 +78,7 @@ function CountUpNumber({ target, duration = 1600 }: { target: number; duration?:
     return () => cancelAnimationFrame(raf);
   }, [started, target, duration, prefersReducedMotion]);
 
-  const formatted = new Intl.NumberFormat('fa-IR').format(display);
+  const formatted = FA_NUM.format(display);
   return <span ref={ref}>{formatted}</span>;
 }
 
