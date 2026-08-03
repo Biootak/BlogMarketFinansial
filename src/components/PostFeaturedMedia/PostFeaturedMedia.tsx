@@ -4,8 +4,7 @@ import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeat
 import { getPostLink } from '@/lib/getPostLink';
 import type { PostWithRelations } from '@/types/types';
 import Image from 'next/image';
-import Link from 'next/link';
-import React, { type FC, useMemo } from 'react';
+import { type FC, useMemo } from 'react';
 import GallerySlider from './GallerySlider';
 import MediaAudio from './MediaAudio';
 import MediaVideo from './MediaVideo';

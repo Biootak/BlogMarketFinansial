@@ -34,7 +34,7 @@ type Props = {
   };
 };
 
-const FA_MONTHS = [
+const _FA_MONTHS = [
   'حمل',
   'ثور',
   'جوزا',
@@ -80,12 +80,7 @@ export default function TrustSection({ exchange }: Props) {
   const yearsActive = new Date().getFullYear() - foundedYear;
 
   return (
-    <section
-      className={s.section}
-      id="about"
-      aria-label="درباره و اطلاعات تماس"
-      dir="rtl"
-    >
+    <section className={s.section} id="about" aria-label="درباره و اطلاعات تماس" dir="rtl">
       <div className={s.inner}>
         {/* ── Header ────────────────────────────────────────────── */}
         <header className={s.header}>
@@ -95,8 +90,8 @@ export default function TrustSection({ exchange }: Props) {
           </div>
           <h2 className={s.title}>صرافی {displayName}</h2>
           <p className={s.sub}>
-            اطلاعات رسمی صرافی شامل آدرس، راه‌های ارتباطی و مجوزهای صادرشده.
-            پیش از مراجعه حضوری، حتماً ساعات کاری را بررسی کنید.
+            اطلاعات رسمی صرافی شامل آدرس، راه‌های ارتباطی و مجوزهای صادرشده. پیش از مراجعه حضوری،
+            حتماً ساعات کاری را بررسی کنید.
           </p>
         </header>
 
@@ -109,10 +104,9 @@ export default function TrustSection({ exchange }: Props) {
             </h3>
 
             <p className={s.aboutText}>
-              {displayName} یکی از صرافی‌های ثبت‌شده در پلتفرم ماست که خدمات خرید و فروش
-              ارزهای خارجی را در شهر {exchange.city ?? '—'} ارائه می‌دهد. تمامی نرخ‌های
-              نمایش داده‌شده در این صفحه مستقیماً توسط صرافی و از طریق پنل کاربری ثبت
-              می‌شوند و هر ۶۰ ثانیه به‌روزرسانی می‌گردند.
+              {displayName} یکی از صرافی‌های ثبت‌شده در پلتفرم ماست که خدمات خرید و فروش ارزهای خارجی
+              را در شهر {exchange.city ?? '—'} ارائه می‌دهد. تمامی نرخ‌های نمایش داده‌شده در این صفحه
+              مستقیماً توسط صرافی و از طریق پنل کاربری ثبت می‌شوند و هر ۶۰ ثانیه به‌روزرسانی می‌گردند.
             </p>
 
             <ul className={s.trustList} aria-label="نشانه‌های اعتماد">
@@ -122,9 +116,7 @@ export default function TrustSection({ exchange }: Props) {
                 </span>
                 <div>
                   <p className={s.trustItemTitle}>صرافی تأییدشده</p>
-                  <p className={s.trustItemDesc}>
-                    مدارک هویتی و مجوز فعالیت بررسی شده است.
-                  </p>
+                  <p className={s.trustItemDesc}>مدارک هویتی و مجوز فعالیت بررسی شده است.</p>
                 </div>
               </li>
               <li className={s.trustItem}>
@@ -138,7 +130,8 @@ export default function TrustSection({ exchange }: Props) {
                       : 'صرافی تازه‌تأسیس'}
                   </p>
                   <p className={s.trustItemDesc}>
-                    فعالیت رسمی از {gregorianDate(exchange.createdAt)} (شمسی: {persianDate(exchange.createdAt)}).
+                    فعالیت رسمی از {gregorianDate(exchange.createdAt)} (شمسی:{' '}
+                    {persianDate(exchange.createdAt)}).
                   </p>
                 </div>
               </li>
@@ -150,9 +143,7 @@ export default function TrustSection({ exchange }: Props) {
                   <p className={s.trustItemTitle}>
                     {exchange.licenseNo ? `مجوز ${exchange.licenseNo}` : 'مجوز در حال بررسی'}
                   </p>
-                  <p className={s.trustItemDesc}>
-                    شمارهٔ مجوز رسمی فعالیت از مراجع ذی‌ربط.
-                  </p>
+                  <p className={s.trustItemDesc}>شمارهٔ مجوز رسمی فعالیت از مراجع ذی‌ربط.</p>
                 </div>
               </li>
             </ul>
@@ -168,11 +159,7 @@ export default function TrustSection({ exchange }: Props) {
             <ul className={s.contactList}>
               {exchange.phone ? (
                 <li className={s.contactItem}>
-                  <a
-                    href={`tel:${phoneTel}`}
-                    className={s.contactLink}
-                    dir="ltr"
-                  >
+                  <a href={`tel:${phoneTel}`} className={s.contactLink} dir="ltr">
                     <span className={s.contactIcon} aria-hidden>
                       <Phone size={14} strokeWidth={1.9} />
                     </span>
@@ -185,11 +172,7 @@ export default function TrustSection({ exchange }: Props) {
               ) : null}
               {exchange.email ? (
                 <li className={s.contactItem}>
-                  <a
-                    href={`mailto:${exchange.email}`}
-                    className={s.contactLink}
-                    dir="ltr"
-                  >
+                  <a href={`mailto:${exchange.email}`} className={s.contactLink} dir="ltr">
                     <span className={s.contactIcon} aria-hidden>
                       <Mail size={14} strokeWidth={1.9} />
                     </span>
@@ -243,9 +226,7 @@ export default function TrustSection({ exchange }: Props) {
                 </li>
               ) : null}
               {!exchange.phone && !exchange.email && !exchange.website && !exchange.address && (
-                <li className={s.contactEmpty}>
-                  اطلاعات تماس توسط صرافی ثبت نشده است.
-                </li>
+                <li className={s.contactEmpty}>اطلاعات تماس توسط صرافی ثبت نشده است.</li>
               )}
             </ul>
           </article>
@@ -263,9 +244,7 @@ export default function TrustSection({ exchange }: Props) {
                   <span className={s.safetyLabel}>نرخ‌های زنده</span>
                   <span className={s.safetyValue}>۶۰ ثانیه</span>
                 </div>
-                <p className={s.safetyDesc}>
-                  نرخ‌ها هر دقیقه از پنل صرافی دریافت می‌شوند.
-                </p>
+                <p className={s.safetyDesc}>نرخ‌ها هر دقیقه از پنل صرافی دریافت می‌شوند.</p>
               </div>
               <div className={s.safetyItem}>
                 <div className={s.safetyTop}>
@@ -275,18 +254,14 @@ export default function TrustSection({ exchange }: Props) {
                     انجام‌شده
                   </span>
                 </div>
-                <p className={s.safetyDesc}>
-                  مدارک هویتی صرافی بررسی و تأیید شده است.
-                </p>
+                <p className={s.safetyDesc}>مدارک هویتی صرافی بررسی و تأیید شده است.</p>
               </div>
               <div className={s.safetyItem}>
                 <div className={s.safetyTop}>
                   <span className={s.safetyLabel}>دسترسی</span>
                   <span className={s.safetyValue}>۲۴/۷</span>
                 </div>
-                <p className={s.safetyDesc}>
-                  صفحهٔ پروفایل به‌صورت شبانه‌روزی در دسترس است.
-                </p>
+                <p className={s.safetyDesc}>صفحهٔ پروفایل به‌صورت شبانه‌روزی در دسترس است.</p>
               </div>
               <div className={s.safetyItem}>
                 <div className={s.safetyTop}>
@@ -296,9 +271,7 @@ export default function TrustSection({ exchange }: Props) {
                     محرمانه
                   </span>
                 </div>
-                <p className={s.safetyDesc}>
-                  اطلاعات مشتریان هرگز به اشتراک گذاشته نمی‌شود.
-                </p>
+                <p className={s.safetyDesc}>اطلاعات مشتریان هرگز به اشتراک گذاشته نمی‌شود.</p>
               </div>
             </div>
           </article>
@@ -306,10 +279,10 @@ export default function TrustSection({ exchange }: Props) {
 
         {/* ── Disclaimer ──────────────────────────────────────── */}
         <p className={s.disclaimer}>
-          نرخ‌های نمایش‌داده‌شده در این صفحه صرفاً جنبهٔ اطلاع‌رسانی دارند و به‌معنای
-          پیشنهاد رسمی خرید یا فروش نیستند. برای انجام معامله، لطفاً مستقیماً با صرافی
-          تماس بگیرید یا به‌صورت حضوری مراجعه کنید. پلتفرم هیچ‌گونه مسئولیتی در قبال
-          تغییرات لحظه‌ای نرخ یا اختلاف بین نرخ نمایشی و نرخ نهایی ندارد.
+          نرخ‌های نمایش‌داده‌شده در این صفحه صرفاً جنبهٔ اطلاع‌رسانی دارند و به‌معنای پیشنهاد رسمی خرید یا
+          فروش نیستند. برای انجام معامله، لطفاً مستقیماً با صرافی تماس بگیرید یا به‌صورت حضوری مراجعه
+          کنید. پلتفرم هیچ‌گونه مسئولیتی در قبال تغییرات لحظه‌ای نرخ یا اختلاف بین نرخ نمایشی و نرخ
+          نهایی ندارد.
         </p>
       </div>
     </section>

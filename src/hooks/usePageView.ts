@@ -56,10 +56,9 @@ export function usePageView() {
             headers: { 'Content-Type': 'application/json' },
             body,
             keepalive: true,
-          }).catch((error) => {
+          }).catch((_error) => {
             // silent fail - pageview نباید UX رو خراب کنه
             if (process.env.NODE_ENV === 'development') {
-              console.error('[usePageView] failed:', error);
             }
           });
         } catch {

@@ -2,7 +2,7 @@ import NcImage from '@/components/NcImage/NcImage';
 import { heading, radius, text } from '@/lib/design-tokens';
 import type { TaxonomyType } from '@/types/types';
 import Link from 'next/link';
-import React, { type FC } from 'react';
+import type { FC } from 'react';
 
 export interface CardCategory1Props {
   className?: string;

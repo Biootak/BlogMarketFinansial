@@ -15,8 +15,12 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .dialog {
@@ -98,9 +102,8 @@
   place-items: center;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background var(--ds-duration-fast),
-    border-color var(--ds-duration-fast),
-    color var(--ds-duration-fast);
+  transition: background var(--ds-duration-fast), border-color var(--ds-duration-fast), color
+    var(--ds-duration-fast);
 }
 
 .closeBtn:hover:not(:disabled) {
@@ -152,8 +155,7 @@
   background: var(--ds-surface);
   border: 1px solid var(--ds-border-default);
   border-radius: var(--ds-radius-md);
-  transition: border-color var(--ds-duration-fast),
-    box-shadow var(--ds-duration-fast);
+  transition: border-color var(--ds-duration-fast), box-shadow var(--ds-duration-fast);
   direction: rtl;
 }
 
@@ -203,8 +205,7 @@
   cursor: pointer;
   font-size: var(--ds-text-sm);
   color: var(--ds-text-primary);
-  transition: border-color var(--ds-duration-fast),
-    background var(--ds-duration-fast);
+  transition: border-color var(--ds-duration-fast), background var(--ds-duration-fast);
 }
 
 .radioOption:hover {
@@ -239,8 +240,8 @@
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
   cursor: pointer;
-  transition: background var(--ds-duration-fast),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast), transform var(--ds-duration-fast)
+    var(--ds-ease-spring);
 }
 
 .submitBtn:hover:not(:disabled) {
@@ -259,7 +260,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .fineprint {
@@ -348,7 +351,7 @@
 }
 
 .trackingCode {
-  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
   font-size: var(--ds-text-base);
   font-weight: var(--ds-weight-bold);
   color: var(--ds-text-primary);
@@ -368,8 +371,7 @@
   font-size: var(--ds-text-xs);
   color: var(--ds-text-secondary);
   cursor: pointer;
-  transition: background var(--ds-duration-fast),
-    color var(--ds-duration-fast);
+  transition: background var(--ds-duration-fast), color var(--ds-duration-fast);
 }
 
 .copyBtn:hover {

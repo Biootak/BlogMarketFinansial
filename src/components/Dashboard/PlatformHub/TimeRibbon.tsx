@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { useMemo } from 'react';
 import s from './PlatformHub.module.css';
 
 export type TimeRibbonPoint = {
@@ -56,14 +56,16 @@ export function TimeRibbon({
     points.forEach((p, i) => {
       const x = i * step;
       const y = h - (p.value / max) * h;
-      path.push(i === 0 ? `L ${x.toFixed(2)} ${y.toFixed(2)}` : `L ${x.toFixed(2)} ${y.toFixed(2)}`);
+      path.push(
+        i === 0 ? `L ${x.toFixed(2)} ${y.toFixed(2)}` : `L ${x.toFixed(2)} ${y.toFixed(2)}`,
+      );
     });
     path.push(`L ${w} ${baseY.toFixed(2)}`);
     path.push(`L ${w} ${h}`);
     path.push('Z');
     // peak
     let pX = 0;
-    let pV = -Infinity;
+    let pV = Number.NEGATIVE_INFINITY;
     points.forEach((p, i) => {
       if (p.value > pV) {
         pV = p.value;

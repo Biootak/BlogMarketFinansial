@@ -1,13 +1,13 @@
-import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
+import { notFound, redirect } from 'next/navigation';
 
 import { auth } from '@/auth';
+import { LiveDot } from '@/components/Dashboard/PlatformHub';
+import { CountUp, Spotlight } from '@/components/Dashboard/primitives';
+import { Button } from '@/components/ui/button';
+import { getAudiences, getCommunicationSnapshot } from '@/lib/communication';
 import { ArrowRight, ChevronRight, Sparkles, Target, Users } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { getAudiences, getCommunicationSnapshot } from '@/lib/communication';
-import { Button } from '@/components/ui/button';
-import { CountUp, Spotlight } from '@/components/Dashboard/primitives';
-import { LiveDot } from '@/components/Dashboard/PlatformHub';
 import s from './AudienceDetail.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -89,18 +89,20 @@ export default async function AudienceDetailPage({
   const Icon = getAudienceIcon(audience.id);
 
   const snapshot = snapshotResult.success ? snapshotResult.data : null;
-  const announcements = snapshot?.announcements.filter((a) => {
-    if (audience.id === 'all') return a.audience === 'all';
-    if (audience.id.startsWith('role:')) return a.audience === 'role';
-    if (audience.id === 'segment') return a.audience === 'segment';
-    return false;
-  }) ?? [];
-  const campaigns = snapshot?.campaigns.filter((c) => {
-    if (audience.id === 'all') return c.audience === 'all';
-    if (audience.id.startsWith('role:')) return c.audience === 'role';
-    if (audience.id === 'segment') return c.audience === 'segment';
-    return false;
-  }) ?? [];
+  const announcements =
+    snapshot?.announcements.filter((a) => {
+      if (audience.id === 'all') return a.audience === 'all';
+      if (audience.id.startsWith('role:')) return a.audience === 'role';
+      if (audience.id === 'segment') return a.audience === 'segment';
+      return false;
+    }) ?? [];
+  const campaigns =
+    snapshot?.campaigns.filter((c) => {
+      if (audience.id === 'all') return c.audience === 'all';
+      if (audience.id.startsWith('role:')) return c.audience === 'role';
+      if (audience.id === 'segment') return c.audience === 'segment';
+      return false;
+    }) ?? [];
 
   const totalSent = campaigns.reduce((sum, c) => sum + c.stats.sent, 0);
   const totalOpened = campaigns.reduce((sum, c) => sum + c.stats.opened, 0);
@@ -111,12 +113,13 @@ export default async function AudienceDetailPage({
 
   // ── distribution by channel ──
   const channelDistribution = (['email', 'push', 'sms'] as const).map((ch) => {
-    const sent = campaigns
-      .filter((c) => c.channel === ch)
-      .reduce((s, c) => s + c.stats.sent, 0);
+    const sent = campaigns.filter((c) => c.channel === ch).reduce((s, c) => s + c.stats.sent, 0);
     return { channel: ch, sent };
   });
-  const totalChannelSent = Math.max(channelDistribution.reduce((s, c) => s + c.sent, 0), 1);
+  const totalChannelSent = Math.max(
+    channelDistribution.reduce((s, c) => s + c.sent, 0),
+    1,
+  );
 
   return (
     <div className={s.page} dir="rtl">
@@ -124,11 +127,17 @@ export default async function AudienceDetailPage({
       <header className={s.cover} data-tone={tone}>
         <Spotlight tone={tone === 'rose' ? 'rose' : tone} size={520} className={s.coverSpot} />
         <nav className={s.crumbs} aria-label="مسیر">
-          <Link href="/dashboard" className={s.crumbLink}>داشبورد</Link>
+          <Link href="/dashboard" className={s.crumbLink}>
+            داشبورد
+          </Link>
           <span className={s.crumbSep}>/</span>
-          <Link href="/dashboard/communication" className={s.crumbLink}>مرکز ارتباطات</Link>
+          <Link href="/dashboard/communication" className={s.crumbLink}>
+            مرکز ارتباطات
+          </Link>
           <span className={s.crumbSep}>/</span>
-          <Link href="/dashboard/communication/audiences" className={s.crumbLink}>مخاطبان هدف</Link>
+          <Link href="/dashboard/communication/audiences" className={s.crumbLink}>
+            مخاطبان هدف
+          </Link>
           <span className={s.crumbSep}>/</span>
           <span className={s.crumbCurrent}>{audience.label}</span>
         </nav>

@@ -5,6 +5,9 @@
 
 'use client';
 
+import type { MarketRateGroup } from '@/lib/market-rates';
+import { SYMBOL_REGISTRY } from '@/lib/market-rates/registry';
+import { useMemo, useState } from 'react';
 import {
   HiCheckCircle,
   HiOutlineArrowDownTray,
@@ -13,9 +16,6 @@ import {
   HiOutlineSparkles,
   HiOutlineSquares2X2,
 } from 'react-icons/hi2';
-import type { MarketRateGroup } from '@/lib/market-rates';
-import { SYMBOL_REGISTRY } from '@/lib/market-rates/registry';
-import { useMemo, useState } from 'react';
 import type { RateRowData } from './ExchangeRateRow';
 
 /* ──────────────────────────────────────────────────────────────────────
@@ -184,12 +184,7 @@ function prettifyToken(t: string): string {
 
 type FilterValue = MarketRateGroup | 'all';
 
-export default function CurrencyCatalog({
-  existingRows,
-  onAdd,
-  onEdit,
-  initialLimit = 24,
-}: Props) {
+export default function CurrencyCatalog({ existingRows, onAdd, onEdit, initialLimit = 24 }: Props) {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<FilterValue>('all');
   const [expanded, setExpanded] = useState(false);
@@ -294,11 +289,7 @@ export default function CurrencyCatalog({
           </div>
 
           {/* Coverage meter */}
-          <div
-            className="flex items-center"
-            style={{ gap: '0.5rem' }}
-            aria-label="پوشش کاتالوگ"
-          >
+          <div className="flex items-center" style={{ gap: '0.5rem' }} aria-label="پوشش کاتالوگ">
             <div
               role="progressbar"
               aria-valuemin={0}
@@ -339,10 +330,7 @@ export default function CurrencyCatalog({
 
         {/* Filter row */}
         <div className="flex flex-wrap items-center" style={{ gap: '0.5rem' }}>
-          <div
-            className="relative flex-1"
-            style={{ minWidth: '14rem', maxWidth: '20rem' }}
-          >
+          <div className="relative flex-1" style={{ minWidth: '14rem', maxWidth: '20rem' }}>
             <HiOutlineMagnifyingGlass
               aria-hidden
               style={{
@@ -643,7 +631,9 @@ function CatalogCard({
                 fontSize: '0.65rem',
               }}
             >
-              <span aria-hidden style={{ marginInlineEnd: '0.25rem' }}>↳</span>
+              <span aria-hidden style={{ marginInlineEnd: '0.25rem' }}>
+                ↳
+              </span>
               <span className="truncate">{formatSourceKey(tgjuKey)}</span>
             </span>
           </>

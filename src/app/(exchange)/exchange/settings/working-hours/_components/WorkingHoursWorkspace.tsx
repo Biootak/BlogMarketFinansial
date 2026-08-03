@@ -8,19 +8,9 @@
  *   helper: splitHours / packHours از @/lib/exchange-hours.
  */
 
-import {
-  HoursMatrix,
-  SettingsSurfaceCard,
-  StickySaveBar,
-} from '@/components/Dashboard/primitives';
 import { type ExchangeRow, updateExchangeSelf } from '@/actions/exchanges';
-import {
-  DEFAULT_HOURS,
-  packHours,
-  type HoursMap,
-  type HoursValue,
-  splitHours,
-} from '@/lib/exchange-hours';
+import { HoursMatrix, SettingsSurfaceCard, StickySaveBar } from '@/components/Dashboard/primitives';
+import { DEFAULT_HOURS, type HoursMap, packHours, splitHours } from '@/lib/exchange-hours';
 import { Clock, Info, MapPin, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMemo, useRef, useState } from 'react';
@@ -33,10 +23,7 @@ type Props = { exchange: ExchangeRow; canEdit: boolean };
 export default function WorkingHoursWorkspace({ exchange, canEdit }: Props) {
   const router = useRouter();
 
-  const initialSplit = useMemo(
-    () => splitHours(exchange.address),
-    [exchange.address],
-  );
+  const initialSplit = useMemo(() => splitHours(exchange.address), [exchange.address]);
 
   const [hours, setHours] = useState<HoursMap>(initialSplit.hours);
   const [address, setAddress] = useState(initialSplit.visibleAddress);
@@ -151,11 +138,7 @@ export default function WorkingHoursWorkspace({ exchange, canEdit }: Props) {
               >
                 تعطیل کامل
               </button>
-              <button
-                type="button"
-                className={s.presetBtn}
-                onClick={() => setHours(DEFAULT_HOURS)}
-              >
+              <button type="button" className={s.presetBtn} onClick={() => setHours(DEFAULT_HOURS)}>
                 بازنشانی
               </button>
             </div>
@@ -187,9 +170,8 @@ export default function WorkingHoursWorkspace({ exchange, canEdit }: Props) {
         <div className={s.infoBanner}>
           <Info size={14} aria-hidden />
           <div>
-            <strong>نکته:</strong> ساعات کاری در صفحهٔ عمومی صرافی و در
-            اعلان‌های خودکار نمایش داده می‌شود. مشتریان می‌توانند در این ساعات
-            از خدمات شما استفاده کنند.
+            <strong>نکته:</strong> ساعات کاری در صفحهٔ عمومی صرافی و در اعلان‌های خودکار نمایش داده
+            می‌شود. مشتریان می‌توانند در این ساعات از خدمات شما استفاده کنند.
           </div>
         </div>
       </div>

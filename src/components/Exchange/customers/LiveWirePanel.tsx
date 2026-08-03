@@ -6,9 +6,9 @@
  */
 
 import type { CustomerActivityPulse } from '@/actions/exchange-customers';
+import { formatCompact, formatNumber } from '@/lib/customer-format';
 import { ArrowDownRight, ArrowUpRight, Minus, Radio } from 'lucide-react';
 import type { CSSProperties } from 'react';
-import { formatCompact, formatNumber } from '@/lib/customer-format';
 import s from './LiveWirePanel.module.css';
 
 interface Props {

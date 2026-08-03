@@ -4,18 +4,36 @@
    ============================================================================= */
 
 @keyframes enter {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes drawerIn {
-  from { opacity: 0; transform: translateX(100%); }
-  to   { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes rowIn {
-  from { opacity: 0; transform: translateX(-4px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* ── Root ─────────────────────────────────────────────────────────────────── */
@@ -34,14 +52,22 @@
   padding: 32px 28px 28px;
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(ellipse 80% 55% at 100% 0%, color-mix(in oklch, var(--ds-brand-500) 8%, transparent), transparent 60%),
-    radial-gradient(ellipse 90% 60% at 0% 100%, color-mix(in oklch, var(--nova-violet) 6%, transparent), transparent 65%),
-    var(--at-surface) !important;
+  background: radial-gradient(
+      ellipse 80% 55% at 100% 0%,
+      color-mix(in oklch, var(--ds-brand-500) 8%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 90% 60% at 0% 100%,
+      color-mix(in oklch, var(--nova-violet) 6%, transparent),
+      transparent 65%
+    ), var(--at-surface) !important;
 }
 
 @media (min-width: 1024px) {
-  .heroTile { padding: 40px 44px 36px; }
+  .heroTile {
+    padding: 40px 44px 36px;
+  }
 }
 
 .heroMark {
@@ -87,8 +113,15 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.5; transform: scale(0.85); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
 }
 
 .heroTitle {
@@ -282,7 +315,11 @@
   inline-size: 90px;
   block-size: 90px;
   border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in oklch, var(--rc-color) 20%, transparent), transparent 70%);
+  background: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--rc-color) 20%, transparent),
+    transparent 70%
+  );
   pointer-events: none;
 }
 
@@ -570,14 +607,23 @@
 .userRowSkeleton {
   block-size: 56px;
   border-radius: 8px;
-  background: linear-gradient(90deg, var(--at-border) 25%, color-mix(in oklch, var(--at-border) 50%, transparent) 50%, var(--at-border) 75%);
+  background: linear-gradient(
+    90deg,
+    var(--at-border) 25%,
+    color-mix(in oklch, var(--at-border) 50%, transparent) 50%,
+    var(--at-border) 75%
+  );
   background-size: 200% 100%;
   animation: shimmer 1.4s ease-in-out infinite;
 }
 
 @keyframes shimmer {
-  from { background-position: 200% 0; }
-  to   { background-position: -200% 0; }
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
 }
 
 .userList {

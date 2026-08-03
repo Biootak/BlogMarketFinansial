@@ -46,7 +46,7 @@ export default function SettlementWaterfall({
   const netPct = totalVolume > 0 ? (exchangeNet / totalVolume) * 100 : 0;
 
   // عرض‌ها برای bar سه‌تکه‌ای
-  const grossW = 100;
+  const _grossW = 100;
   const feeW = totalVolume > 0 ? (platformFee / totalVolume) * 100 : 0;
   const netW = totalVolume > 0 ? (exchangeNet / totalVolume) * 100 : 0;
 
@@ -59,8 +59,8 @@ export default function SettlementWaterfall({
         </span>
         <h2 className={s.title}>از حجم معاملات تا درآمد خالص</h2>
         <p className={s.sub}>
-          هر دورهٔ تسویه، یک آبشار سه‌مرحله‌ای را طی می‌کند — کارمزد پلتفرم از
-          حجم کل کسر و مابقی به صرافی تخصیص می‌یابد.
+          هر دورهٔ تسویه، یک آبشار سه‌مرحله‌ای را طی می‌کند — کارمزد پلتفرم از حجم کل کسر و مابقی به
+          صرافی تخصیص می‌یابد.
         </p>
       </div>
 
@@ -129,7 +129,9 @@ export default function SettlementWaterfall({
           </div>
           <div className={s.segmentMeta}>
             <span className={s.metaKey}>سهم پلتفرم</span>
-            <span className={s.metaVal}>{new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 2 }).format(feePct)}٪</span>
+            <span className={s.metaVal}>
+              {new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 2 }).format(feePct)}٪
+            </span>
           </div>
         </div>
 
@@ -175,7 +177,9 @@ export default function SettlementWaterfall({
           </div>
           <div className={s.segmentMeta}>
             <span className={s.metaKey}>قابل پرداخت</span>
-            <span className={s.metaVal}>{new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 2 }).format(netPct)}٪</span>
+            <span className={s.metaVal}>
+              {new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 2 }).format(netPct)}٪
+            </span>
           </div>
         </div>
       </div>

@@ -8,13 +8,9 @@
  * هدف: یک‌بار تعریف، چندین‌بار استفاده (Workspace + Detail sub-route + KPI ribbon).
  */
 
-import {
-  EXCHANGE_CURRENCIES,
-  TX_KIND_FA,
-  TX_STATUS_FA,
-} from '@/lib/exchange-labels';
-import { formatJalaliCompact, formatJalaliDateTime } from '@/lib/format-jalali';
 import type { TransactionRow } from '@/actions/exchange-transactions';
+import { EXCHANGE_CURRENCIES, TX_KIND_FA, TX_STATUS_FA } from '@/lib/exchange-labels';
+import { formatJalaliCompact, formatJalaliDateTime } from '@/lib/format-jalali';
 
 // توضیح: این ماژول فقط types و formatters دارد؛ نباید side-effect دیگری داشته باشد.
 // (قبلاً export غیرعمدی حذف شده بود که در ویرایش جدید برگشت داده شد.)
@@ -83,7 +79,10 @@ export function formatAmount(value: string | number | null | undefined, currency
   return `${faNum(amountFromBigInt(value))} ${currency}`;
 }
 
-export function formatAmountShort(value: string | number | null | undefined, currency: string): string {
+export function formatAmountShort(
+  value: string | number | null | undefined,
+  currency: string,
+): string {
   return `${faNum(Math.round(amountFromBigInt(value)))} ${currency}`;
 }
 
@@ -123,9 +122,7 @@ export function enrichRow(row: TransactionRow): TxRowEnriched {
   const destAmount = row.destAmount !== null ? amountFromBigInt(row.destAmount) : null;
   const customerName = row.customer?.fullName ?? null;
   const customerPhone = row.customer?.phone ?? null;
-  const customerInitial = customerName
-    ? customerName.trim().charAt(0)
-    : '—';
+  const customerInitial = customerName ? customerName.trim().charAt(0) : '—';
 
   return {
     id: row.id,
@@ -142,7 +139,8 @@ export function enrichRow(row: TransactionRow): TxRowEnriched {
     feeStr: formatAmount(row.fee, row.currency),
     currency: row.currency,
     destAmount,
-    destAmountStr: destAmount !== null ? formatAmount(row.destAmount, row.destCurrency ?? row.currency) : null,
+    destAmountStr:
+      destAmount !== null ? formatAmount(row.destAmount, row.destCurrency ?? row.currency) : null,
     destCurrency: row.destCurrency,
     rate: row.rate,
     note: row.note,

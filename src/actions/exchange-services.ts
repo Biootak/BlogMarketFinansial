@@ -12,17 +12,17 @@
  * serviceKey با ServiceType enum یکسان است — canonical، سازگار با ServiceRequest.
  */
 
+import { getExchangeForUser } from '@/actions/exchanges';
 import prisma from '@/lib/db';
 import { requireExchangeAccess } from '@/lib/exchange-auth';
-import { getExchangeForUser } from '@/actions/exchanges';
-import { revalidateTag } from '@/lib/revalidate';
-import { safeCache } from '@/lib/safe-cache';
 import {
   EXCHANGE_SERVICE_CATALOG,
   type ExchangeServiceKey,
   type ExchangeServiceMeta,
   getServiceMeta,
 } from '@/lib/exchange-services';
+import { revalidateTag } from '@/lib/revalidate';
+import { safeCache } from '@/lib/safe-cache';
 import type { FintechActionResult } from '@/types/types';
 import { z } from 'zod';
 
@@ -189,9 +189,7 @@ export const getMarketplaceData = safeCache(
  * اگر هیچ رکوردی برای سرویسی وجود نداشته باشد، با isActive=false نمایش داده می‌شود.
  * فقط OWNER/MANAGER صرافی.
  */
-export async function getMyExchangeServices(): Promise<
-  FintechActionResult<ExchangeServiceItem[]>
-> {
+export async function getMyExchangeServices(): Promise<FintechActionResult<ExchangeServiceItem[]>> {
   const membership = await getExchangeForUser();
   if (!membership) {
     return {
@@ -581,9 +579,7 @@ export const getComparisonMatrix = safeCache(
     }
 
     // sort by service count desc
-    const exchanges = [...byExchange.values()].sort(
-      (a, b) => b.serviceCount - a.serviceCount,
-    );
+    const exchanges = [...byExchange.values()].sort((a, b) => b.serviceCount - a.serviceCount);
 
     return {
       services: EXCHANGE_SERVICE_CATALOG.map((m) => ({

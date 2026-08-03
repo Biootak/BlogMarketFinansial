@@ -240,7 +240,9 @@ export async function getExchangeTransactionById(id: string): Promise<Transactio
     idempotencyKey: row.idempotencyKey,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
-    customer: row.Customer ? { fullName: row.Customer.fullName, phone: row.Customer.phone } : undefined,
+    customer: row.Customer
+      ? { fullName: row.Customer.fullName, phone: row.Customer.phone }
+      : undefined,
   };
 }
 

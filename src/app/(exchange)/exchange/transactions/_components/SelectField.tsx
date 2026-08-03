@@ -8,9 +8,9 @@
 
 'use client';
 
+import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
 import { type SelectHTMLAttributes, forwardRef, useId } from 'react';
-import { cn } from '@/lib/utils';
 import s from './SelectField.module.css';
 
 export interface SelectFieldProps extends SelectHTMLAttributes<HTMLSelectElement> {
@@ -26,12 +26,7 @@ export const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(
         <select ref={ref} className={cn(s.select, className)} id={rest.id ?? reactId} {...rest}>
           {children}
         </select>
-        <ChevronDown
-          size={14}
-          strokeWidth={2}
-          aria-hidden
-          className={s.chevron}
-        />
+        <ChevronDown size={14} strokeWidth={2} aria-hidden className={s.chevron} />
       </span>
     );
   },

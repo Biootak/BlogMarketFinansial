@@ -105,9 +105,7 @@ export function JobVitals({
           <Sparkline data={hourly} tone="indigo" />
           <div className={s.vitalTileFooter}>
             <span>ساعتی</span>
-            <span>
-              peak {toPersianDigits(Math.max(...hourly, 0))}/h
-            </span>
+            <span>peak {toPersianDigits(Math.max(...hourly, 0))}/h</span>
           </div>
         </div>
 
@@ -123,7 +121,9 @@ export function JobVitals({
           </div>
           <div className={`${s.vitalTileFooter} ${s.vitalTileFooterTall}`}>
             <span>صف فعال</span>
-            <span>{toPersianDigits(pending)} منتظر · {toPersianDigits(running)} اجرا</span>
+            <span>
+              {toPersianDigits(pending)} منتظر · {toPersianDigits(running)} اجرا
+            </span>
           </div>
         </div>
 
@@ -133,9 +133,7 @@ export function JobVitals({
             <span className={s.vitalTileLabel}>نرخ موفقیت</span>
             <span
               className={
-                trendDown
-                  ? `${s.vitalTileTrend} ${s['vitalTileTrend--down']}`
-                  : s.vitalTileTrend
+                trendDown ? `${s.vitalTileTrend} ${s['vitalTileTrend--down']}` : s.vitalTileTrend
               }
             >
               {trendDown ? '▼' : '▲'} {toPersianDigits(Math.abs(failureRateTrend))}٪

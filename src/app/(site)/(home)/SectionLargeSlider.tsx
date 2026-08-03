@@ -1,7 +1,7 @@
 import { getFeaturedPosts } from '@/actions/getFeaturedPosts';
 import { getRateLists } from '@/actions/rate-lists';
 import Empty from '@/components/Empty';
-import type { PostWithRelations, RateListData } from '@/types/types';
+import type { RateListData } from '@/types/types';
 import DeferredDesign7 from './deferred/DeferredDesign7';
 
 // No `react.cache()` wrappers around the server actions here: wrapping a

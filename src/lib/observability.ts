@@ -13,9 +13,9 @@
 import 'server-only';
 
 import { auth } from '@/auth';
+import type { ServiceStatus } from '@/components/Dashboard/DashboardPage/LiveOpsPulse';
 import prisma from '@/lib/db';
 import { safeCache } from '@/lib/safe-cache';
-import type { ServiceStatus } from '@/components/Dashboard/DashboardPage/LiveOpsPulse';
 
 export type ServiceKey =
   | 'api'
@@ -195,15 +195,69 @@ const fetchServicesRaw = async (): Promise<ServiceHealth[]> => {
     base: number;
     href: string;
   }> = [
-    { id: 'api', name: 'API اصلی', desc: 'Next.js Route Handlers + Edge', base: 80, href: '/dashboard/reports' },
-    { id: 'db', name: 'پایگاه داده', desc: 'Postgres اصلی + replica', base: 8, href: '/dashboard/observability' },
-    { id: 'cache', name: 'کش', desc: 'Redis cluster + memory cache', base: 12, href: '/dashboard/settings' },
-    { id: 'queue', name: 'صف پیام', desc: 'Workerها و cron jobها', base: 18, href: '/dashboard/jobs' },
-    { id: 'auth', name: 'احراز هویت', desc: 'NextAuth v5 + OAuth + 2FA', base: 45, href: '/dashboard/users' },
-    { id: 'edge', name: 'Edge / CDN', desc: 'پاسخ‌گویی لبه', base: 6, href: '/dashboard/observability' },
-    { id: 'email', name: 'ایمیل', desc: 'SMTP / Resend', base: 220, href: '/dashboard/communication' },
-    { id: 'sms', name: 'پیامک', desc: 'OTP و notification', base: 180, href: '/dashboard/communication' },
-    { id: 'storage', name: 'ذخیره‌سازی', desc: 'S3 / فایل محلی', base: 30, href: '/dashboard/settings' },
+    {
+      id: 'api',
+      name: 'API اصلی',
+      desc: 'Next.js Route Handlers + Edge',
+      base: 80,
+      href: '/dashboard/reports',
+    },
+    {
+      id: 'db',
+      name: 'پایگاه داده',
+      desc: 'Postgres اصلی + replica',
+      base: 8,
+      href: '/dashboard/observability',
+    },
+    {
+      id: 'cache',
+      name: 'کش',
+      desc: 'Redis cluster + memory cache',
+      base: 12,
+      href: '/dashboard/settings',
+    },
+    {
+      id: 'queue',
+      name: 'صف پیام',
+      desc: 'Workerها و cron jobها',
+      base: 18,
+      href: '/dashboard/jobs',
+    },
+    {
+      id: 'auth',
+      name: 'احراز هویت',
+      desc: 'NextAuth v5 + OAuth + 2FA',
+      base: 45,
+      href: '/dashboard/users',
+    },
+    {
+      id: 'edge',
+      name: 'Edge / CDN',
+      desc: 'پاسخ‌گویی لبه',
+      base: 6,
+      href: '/dashboard/observability',
+    },
+    {
+      id: 'email',
+      name: 'ایمیل',
+      desc: 'SMTP / Resend',
+      base: 220,
+      href: '/dashboard/communication',
+    },
+    {
+      id: 'sms',
+      name: 'پیامک',
+      desc: 'OTP و notification',
+      base: 180,
+      href: '/dashboard/communication',
+    },
+    {
+      id: 'storage',
+      name: 'ذخیره‌سازی',
+      desc: 'S3 / فایل محلی',
+      base: 30,
+      href: '/dashboard/settings',
+    },
   ];
 
   return serviceDefs.map((def) => {
@@ -218,7 +272,9 @@ const fetchServicesRaw = async (): Promise<ServiceHealth[]> => {
         : classifyStatus(stats15.get(key)?.error ?? 0, stats15.get(key)?.warn ?? 0),
       latencyMs: latencyFor(key, def.base),
       errorRate: isEdge ? 0 : errorRate(key),
-      uptime24h: isEdge ? 100 : estimateUptime(stats24.get(key)?.error ?? 0, stats24.get(key)?.total ?? 0),
+      uptime24h: isEdge
+        ? 100
+        : estimateUptime(stats24.get(key)?.error ?? 0, stats24.get(key)?.total ?? 0),
       sparkline: buildActivitySparkline(timestamps24.get(key) ?? [], now),
       href: def.href,
     };
@@ -357,9 +413,7 @@ const fetchSnapshotRaw = async (): Promise<ObservabilitySnapshot> => {
   const errBuckets = new Array(24).fill(0) as number[];
   for (const l of allLogs) {
     if (l.level === 'error' || l.level === 'fatal') {
-      const hourAgo = Math.floor(
-        (Date.now() - l.timestamp.getTime()) / (60 * 60 * 1000),
-      );
+      const hourAgo = Math.floor((Date.now() - l.timestamp.getTime()) / (60 * 60 * 1000));
       if (hourAgo >= 0 && hourAgo < 24) {
         errBuckets[23 - hourAgo] = (errBuckets[23 - hourAgo] ?? 0) + 1;
       }

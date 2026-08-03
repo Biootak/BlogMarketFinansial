@@ -15,14 +15,20 @@
  */
 
 import { type SettlementRow, approveSettlement, markSettlementPaid } from '@/actions/settlement';
-import { ConfirmDialog, EmptyState, MillionDollarEmpty, PageHeader } from '@/components/Dashboard/primitives';
+import { ConfirmDialog, MillionDollarEmpty, PageHeader } from '@/components/Dashboard/primitives';
+import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import * as DialogPrimitive from '@radix-ui/react-dialog';
-import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
-import { Dialog, DialogClose, DialogOverlay, DialogPortal, DialogTitle as SheetTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogClose,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle as SheetTitle,
+} from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import {
   BadgeCheck,
   Banknote,
@@ -699,140 +705,142 @@ export function SettlementClient({ settlements: initial }: Props) {
           <DialogPortal>
             <DialogOverlay className={cm.overlay} />
             <DialogPrimitive.Content dir="rtl" className={cm.panel} aria-label="جزئیات تسویه">
-            {detailRow && (
-              <>
-                {/* Header */}
-                <div className={cm.header}>
-                  <ExchangeAvatar name={detailRow.exchangeName} size={44} />
-                  <div className={s.sheetHeaderText}>
-                    <SheetTitle className={s.sheetTitle}>{detailRow.exchangeName}</SheetTitle>
-                    <p className={s.sheetPeriod}>
-                      {fmtDate(detailRow.periodStart)} — {fmtDate(detailRow.periodEnd)}
-                    </p>
+              {detailRow && (
+                <>
+                  {/* Header */}
+                  <div className={cm.header}>
+                    <ExchangeAvatar name={detailRow.exchangeName} size={44} />
+                    <div className={s.sheetHeaderText}>
+                      <SheetTitle className={s.sheetTitle}>{detailRow.exchangeName}</SheetTitle>
+                      <p className={s.sheetPeriod}>
+                        {fmtDate(detailRow.periodStart)} — {fmtDate(detailRow.periodEnd)}
+                      </p>
+                    </div>
+                    <Badge
+                      className={`${s.statusBadge} ${STATUS_VARIANT[detailRow.status] ?? s.badgePending} ${s.sheetBadge}`}
+                    >
+                      <span className={s.statusDot} aria-hidden />
+                      {STATUS_LABELS[detailRow.status] ?? detailRow.status}
+                    </Badge>
+                    <DialogClose className={cm.close} aria-label="بستن">
+                      <XCircle size={15} />
+                    </DialogClose>
                   </div>
-                  <Badge
-                    className={`${s.statusBadge} ${STATUS_VARIANT[detailRow.status] ?? s.badgePending} ${s.sheetBadge}`}
-                  >
-                    <span className={s.statusDot} aria-hidden />
-                    {STATUS_LABELS[detailRow.status] ?? detailRow.status}
-                  </Badge>
-                  <DialogClose className={cm.close} aria-label="بستن"><XCircle size={15} /></DialogClose>
-                </div>
 
-                <div className={s.sheetBody}>
-                  {/* Financial Summary */}
-                  <section className={s.sheetSection} aria-label="خلاصه مالی">
-                    <h3 className={s.sheetSectionTitle}>خلاصه مالی</h3>
-                    <div className={s.finSummary}>
-                      <div className={s.finItem}>
-                        <TrendingUp size={14} className={s.finIcon} aria-hidden />
-                        <span className={s.finLabel}>حجم کل</span>
-                        <span className={s.finVal}>{fmtAFN(detailRow.totalVolume)}</span>
-                      </div>
-                      <div className={s.finItem}>
-                        <Hash size={14} className={s.finIcon} aria-hidden />
-                        <span className={s.finLabel}>تعداد معاملات</span>
-                        <span className={s.finVal}>{fmtNum(detailRow.dealCount)}</span>
-                      </div>
-                      <div className={`${s.finItem} ${s.finItemFee}`}>
-                        <Receipt size={14} className={s.finIcon} aria-hidden />
-                        <span className={s.finLabel}>کارمزد پلتفرم</span>
-                        <span className={`${s.finVal} ${s.finValFee}`}>
-                          {fmtAFN(detailRow.platformFee)}
-                        </span>
-                      </div>
-                      <div className={`${s.finItem} ${s.finItemNet}`}>
-                        <Wallet size={14} className={s.finIcon} aria-hidden />
-                        <span className={s.finLabel}>خالص قابل پرداخت</span>
-                        <span className={`${s.finVal} ${s.finValNet}`}>
-                          {fmtAFN(detailRow.exchangeNet)}
-                        </span>
-                      </div>
-                    </div>
-                  </section>
-
-                  {/* Timeline */}
-                  <section className={s.sheetSection} aria-label="تاریخچه">
-                    <h3 className={s.sheetSectionTitle}>تاریخچه</h3>
-                    <div className={s.timeline}>
-                      <TimelineStep
-                        icon={CircleDollarSign}
-                        label="محاسبه تسویه"
-                        date={fmtDate(detailRow.createdAt)}
-                        done
-                      />
-                      <TimelineStep
-                        icon={ClipboardCheck}
-                        label="تأیید ادمین"
-                        date={detailRow.approvedAt ? fmtDate(detailRow.approvedAt) : undefined}
-                        done={!!detailRow.approvedAt}
-                        active={detailRow.status === 'PENDING'}
-                      />
-                      <TimelineStep
-                        icon={Wallet}
-                        label="پرداخت نهایی"
-                        date={detailRow.paidAt ? fmtDate(detailRow.paidAt) : undefined}
-                        done={!!detailRow.paidAt}
-                        active={detailRow.status === 'APPROVED'}
-                      />
-                    </div>
-                  </section>
-
-                  {/* Metadata */}
-                  <section className={s.sheetSection} aria-label="اطلاعات تکمیلی">
-                    <h3 className={s.sheetSectionTitle}>اطلاعات تکمیلی</h3>
-                    <dl className={s.metaDl}>
-                      <div className={s.metaRow}>
-                        <dt className={s.metaKey}>شناسه صرافی</dt>
-                        <dd className={s.metaVal} dir="ltr">
-                          {detailRow.exchangeId.slice(-8)}
-                        </dd>
-                      </div>
-                      <div className={s.metaRow}>
-                        <dt className={s.metaKey}>ارز</dt>
-                        <dd className={s.metaVal}>{detailRow.currency}</dd>
-                      </div>
-                      {detailRow.note && (
-                        <div className={`${s.metaRow} ${s.metaRowFull}`}>
-                          <dt className={s.metaKey}>یادداشت</dt>
-                          <dd className={s.metaVal}>{detailRow.note}</dd>
+                  <div className={s.sheetBody}>
+                    {/* Financial Summary */}
+                    <section className={s.sheetSection} aria-label="خلاصه مالی">
+                      <h3 className={s.sheetSectionTitle}>خلاصه مالی</h3>
+                      <div className={s.finSummary}>
+                        <div className={s.finItem}>
+                          <TrendingUp size={14} className={s.finIcon} aria-hidden />
+                          <span className={s.finLabel}>حجم کل</span>
+                          <span className={s.finVal}>{fmtAFN(detailRow.totalVolume)}</span>
                         </div>
-                      )}
-                    </dl>
-                  </section>
+                        <div className={s.finItem}>
+                          <Hash size={14} className={s.finIcon} aria-hidden />
+                          <span className={s.finLabel}>تعداد معاملات</span>
+                          <span className={s.finVal}>{fmtNum(detailRow.dealCount)}</span>
+                        </div>
+                        <div className={`${s.finItem} ${s.finItemFee}`}>
+                          <Receipt size={14} className={s.finIcon} aria-hidden />
+                          <span className={s.finLabel}>کارمزد پلتفرم</span>
+                          <span className={`${s.finVal} ${s.finValFee}`}>
+                            {fmtAFN(detailRow.platformFee)}
+                          </span>
+                        </div>
+                        <div className={`${s.finItem} ${s.finItemNet}`}>
+                          <Wallet size={14} className={s.finIcon} aria-hidden />
+                          <span className={s.finLabel}>خالص قابل پرداخت</span>
+                          <span className={`${s.finVal} ${s.finValNet}`}>
+                            {fmtAFN(detailRow.exchangeNet)}
+                          </span>
+                        </div>
+                      </div>
+                    </section>
 
-                  {/* Actions */}
-                  <div className={s.sheetActions}>
-                    {detailRow.status === 'PENDING' && (
-                      <Button
-                        className={s.sheetActionApprove}
-                        onClick={() => {
-                          setDetailRow(null);
-                          setConfirmApprove({ id: detailRow.id, name: detailRow.exchangeName });
-                        }}
-                        disabled={isPending}
-                      >
-                        <ClipboardCheck size={15} aria-hidden />
-                        تأیید تسویه
-                      </Button>
-                    )}
-                    {detailRow.status === 'APPROVED' && (
-                      <Button
-                        className={s.sheetActionPay}
-                        onClick={() => {
-                          setDetailRow(null);
-                          setConfirmPaid({ id: detailRow.id, name: detailRow.exchangeName });
-                        }}
-                        disabled={isPending}
-                      >
-                        <Wallet size={15} aria-hidden />
-                        ثبت پرداخت
-                      </Button>
-                    )}
+                    {/* Timeline */}
+                    <section className={s.sheetSection} aria-label="تاریخچه">
+                      <h3 className={s.sheetSectionTitle}>تاریخچه</h3>
+                      <div className={s.timeline}>
+                        <TimelineStep
+                          icon={CircleDollarSign}
+                          label="محاسبه تسویه"
+                          date={fmtDate(detailRow.createdAt)}
+                          done
+                        />
+                        <TimelineStep
+                          icon={ClipboardCheck}
+                          label="تأیید ادمین"
+                          date={detailRow.approvedAt ? fmtDate(detailRow.approvedAt) : undefined}
+                          done={!!detailRow.approvedAt}
+                          active={detailRow.status === 'PENDING'}
+                        />
+                        <TimelineStep
+                          icon={Wallet}
+                          label="پرداخت نهایی"
+                          date={detailRow.paidAt ? fmtDate(detailRow.paidAt) : undefined}
+                          done={!!detailRow.paidAt}
+                          active={detailRow.status === 'APPROVED'}
+                        />
+                      </div>
+                    </section>
+
+                    {/* Metadata */}
+                    <section className={s.sheetSection} aria-label="اطلاعات تکمیلی">
+                      <h3 className={s.sheetSectionTitle}>اطلاعات تکمیلی</h3>
+                      <dl className={s.metaDl}>
+                        <div className={s.metaRow}>
+                          <dt className={s.metaKey}>شناسه صرافی</dt>
+                          <dd className={s.metaVal} dir="ltr">
+                            {detailRow.exchangeId.slice(-8)}
+                          </dd>
+                        </div>
+                        <div className={s.metaRow}>
+                          <dt className={s.metaKey}>ارز</dt>
+                          <dd className={s.metaVal}>{detailRow.currency}</dd>
+                        </div>
+                        {detailRow.note && (
+                          <div className={`${s.metaRow} ${s.metaRowFull}`}>
+                            <dt className={s.metaKey}>یادداشت</dt>
+                            <dd className={s.metaVal}>{detailRow.note}</dd>
+                          </div>
+                        )}
+                      </dl>
+                    </section>
+
+                    {/* Actions */}
+                    <div className={s.sheetActions}>
+                      {detailRow.status === 'PENDING' && (
+                        <Button
+                          className={s.sheetActionApprove}
+                          onClick={() => {
+                            setDetailRow(null);
+                            setConfirmApprove({ id: detailRow.id, name: detailRow.exchangeName });
+                          }}
+                          disabled={isPending}
+                        >
+                          <ClipboardCheck size={15} aria-hidden />
+                          تأیید تسویه
+                        </Button>
+                      )}
+                      {detailRow.status === 'APPROVED' && (
+                        <Button
+                          className={s.sheetActionPay}
+                          onClick={() => {
+                            setDetailRow(null);
+                            setConfirmPaid({ id: detailRow.id, name: detailRow.exchangeName });
+                          }}
+                          disabled={isPending}
+                        >
+                          <Wallet size={15} aria-hidden />
+                          ثبت پرداخت
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </>
-            )}
+                </>
+              )}
             </DialogPrimitive.Content>
           </DialogPortal>
         </Dialog>

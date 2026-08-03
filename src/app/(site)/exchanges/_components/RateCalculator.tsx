@@ -13,8 +13,8 @@
 'use client';
 
 import {
-  CurrencyConverterCard,
   type ConverterItem,
+  CurrencyConverterCard,
 } from '@/components/fintech/CurrencyConverterCard';
 import s from './RateCalculator.module.css';
 
@@ -60,11 +60,7 @@ const IRT_ITEM: ConverterItem = {
   decimals: 0,
 };
 
-export default function RateCalculator({
-  options,
-  defaultCode = 'AFN',
-  defaultAmount = 1,
-}: Props) {
+export default function RateCalculator({ options, defaultCode = 'AFN', defaultAmount = 1 }: Props) {
   // pivot: پیدا کردن ارزی که نرخ آن مستقیماً به تومان است (مثلاً USD، EUR، …)
   // تا بتوانیم ارزهای با unit متفاوت (مثل AFN که نرخ‌هایش برحسب افغانی
   // به ازای USD است) را به تومان نرمال‌سازیم.
@@ -119,8 +115,9 @@ export default function RateCalculator({
 
   // defaultCode باید موجود باشد؛ اگر نبود اولین ارز موجود را برگردان
   // جستجو بر اساس code انجام می‌شود (نه value) — پس 'IRT' درست است نه '__IRT__'
-  const resolvedDefaultCode =
-    items.some((i) => i.code === defaultCode) ? defaultCode : (items[1]?.code ?? 'AFN');
+  const resolvedDefaultCode = items.some((i) => i.code === defaultCode)
+    ? defaultCode
+    : (items[1]?.code ?? 'AFN');
 
   return (
     <div className={s.wrap}>

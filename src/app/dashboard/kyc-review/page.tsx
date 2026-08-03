@@ -38,7 +38,10 @@ export default async function KycReviewPage() {
     redirect('/dashboard');
   }
 
-  const [records, customerRecords] = await Promise.all([getKycQueue(), listPendingCustomerKyc({ limit: 50 })]);
+  const [records, customerRecords] = await Promise.all([
+    getKycQueue(),
+    listPendingCustomerKyc({ limit: 50 }),
+  ]);
 
   return (
     <div className="at-page" dir="rtl">

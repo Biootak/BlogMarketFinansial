@@ -38,9 +38,7 @@
   min-block-size: 7.5rem;
   animation: kpiEnter 420ms var(--ds-ease-out-quart) both;
   animation-delay: calc(var(--tile-i, 0) * 60ms);
-  transition:
-    transform 200ms var(--ds-ease-out-quart),
-    border-color 200ms var(--ds-ease-out-quart),
+  transition: transform 200ms var(--ds-ease-out-quart), border-color 200ms var(--ds-ease-out-quart),
     box-shadow 200ms var(--ds-ease-out-quart);
 }
 
@@ -50,19 +48,19 @@
   box-shadow: var(--ds-shadow-sm);
 }
 
-.tile[data-tone='brand'] {
+.tile[data-tone="brand"] {
   color: var(--ds-brand-600);
 }
 
-.tile[data-tone='up'] {
+.tile[data-tone="up"] {
   color: var(--nova-up);
 }
 
-.tile[data-tone='down'] {
+.tile[data-tone="down"] {
   color: var(--nova-down);
 }
 
-.tile[data-tone='amber'] {
+.tile[data-tone="amber"] {
   color: var(--nova-amber);
 }
 

@@ -1,6 +1,4 @@
-﻿/* AuditLog.module.css */
-
-.wrap {
+﻿/* AuditLog.module.css */ .wrap {
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-3);
@@ -172,31 +170,36 @@
   flex-shrink: 0;
 }
 
-.row[data-severity='info'] .severityDot {
+.row[data-severity="info"] .severityDot {
   background: var(--nova-up);
   box-shadow: 0 0 6px oklch(52% 0.14 162 / 0.4);
 }
-.row[data-severity='warn'] .severityDot {
+.row[data-severity="warn"] .severityDot {
   background: var(--nova-amber);
   box-shadow: 0 0 6px oklch(68% 0.14 70 / 0.4);
 }
-.row[data-severity='error'] .severityDot {
+.row[data-severity="error"] .severityDot {
   background: var(--nova-rose);
   box-shadow: 0 0 6px oklch(60% 0.15 25 / 0.4);
 }
-.row[data-severity='critical'] .severityDot {
+.row[data-severity="critical"] .severityDot {
   background: var(--nova-rose);
   box-shadow: 0 0 8px oklch(60% 0.15 25 / 0.6);
   animation: pulse 1.6s ease-in-out infinite;
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .row[data-severity='critical'] .severityDot {
+  .row[data-severity="critical"] .severityDot {
     animation: none;
   }
 }
@@ -220,12 +223,12 @@
   letter-spacing: 0.02em;
 }
 
-.row[data-severity='warn'] .severityLabel {
+.row[data-severity="warn"] .severityLabel {
   background: oklch(68% 0.14 70 / 0.12);
   color: var(--nova-amber);
 }
-.row[data-severity='error'] .severityLabel,
-.row[data-severity='critical'] .severityLabel {
+.row[data-severity="error"] .severityLabel,
+.row[data-severity="critical"] .severityLabel {
   background: oklch(60% 0.15 25 / 0.12);
   color: var(--nova-rose);
 }
@@ -249,7 +252,7 @@
   display: inline-flex;
 }
 
-.chevron[data-open='true'] {
+.chevron[data-open="true"] {
   transform: rotate(90deg);
 }
 
@@ -315,11 +318,15 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .spin { animation: none; }
+  .spin {
+    animation: none;
+  }
 }
 
 @media (max-width: 640px) {

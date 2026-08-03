@@ -315,11 +315,22 @@
       }
     },
     {
-      "include": ["check-db.js", "prisma/seed.js"],
+      "include": [
+        "check-db.js",
+        "prisma/seed.js",
+        "prisma/seed-exchange-quotes.js",
+        "prisma/test-workflow.js",
+        "prisma/reset-owner-password.js",
+        "prisma/seeds/**",
+        "scripts/**"
+      ],
       "linter": {
         "rules": {
           "complexity": {
             "noForEach": "off"
+          },
+          "suspicious": {
+            "noConsole": "off"
           }
         }
       }

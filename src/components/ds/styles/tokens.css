@@ -178,9 +178,8 @@
 
   /* Font family — برای کد و اعداد تکنیکال. semantic؛ جایگزین hardcoded
      ui-monospace chains. (اضافه شده ۲۰۲۶-۰۷-۳۱) */
-  --ds-font-mono:
-    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-    "Liberation Mono", "Courier New", monospace;
+  --ds-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    "Courier New", monospace;
 
   /* ==========================================================================
      SEMANTIC COLOR TOKENS — Dashboard v2 (2026)

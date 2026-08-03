@@ -1,5 +1,5 @@
-import { Suspense } from 'react';
 import { getTicketSnapshot } from '@/lib/tickets';
+import { Suspense } from 'react';
 import { HelpdeskHub } from './_components/HelpdeskHub';
 import { HelpdeskLoading } from './_components/HelpdeskLoading';
 import s from './helpdesk.module.css';

@@ -16,7 +16,6 @@ import {
   issueVirtualCard,
   toggleFreezeCard,
 } from '@/actions/virtual-card';
-import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
 import { MillionDollarEmpty } from '@/components/Dashboard/primitives/MillionDollarEmpty';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import { Button } from '@/components/ui/button';
@@ -28,7 +27,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { AlertCircle, CreditCard, Flame, Lock, Plus, Trash2, Unlock, Wifi } from 'lucide-react';
+import { AlertCircle, Flame, Lock, Plus, Trash2, Unlock, Wifi } from 'lucide-react';
 import { useCallback, useState, useTransition } from 'react';
 import s from './VirtualCardsClient.module.css';
 

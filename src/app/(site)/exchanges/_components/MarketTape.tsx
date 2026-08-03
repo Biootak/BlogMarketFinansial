@@ -59,7 +59,9 @@ function TapeRow({ item }: { item: TapeItem }) {
           </span>
           <span className={s.cellUnit}>{item.unit}</span>
         </span>
-        <span className={s.sep} aria-hidden>/</span>
+        <span className={s.sep} aria-hidden>
+          /
+        </span>
         <span className={`${s.cell} ${s.cellSell}`}>
           <ArrowUpRight size={10} strokeWidth={2.5} className={s.cellIcon} aria-hidden />
           <span className={s.cellLabel}>فروش</span>

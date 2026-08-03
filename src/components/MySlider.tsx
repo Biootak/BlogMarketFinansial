@@ -31,9 +31,8 @@ function itemsPerRowAt(width: number, itemPerRow: number): number {
 
 // RTL is a document-level constant — resolve once, not on every render.
 // Guard for SSR: `document` is undefined on the server; `data-dir` lives on <html>.
-const IS_RTL = typeof document !== 'undefined'
-  ? document.documentElement.getAttribute('dir') === 'rtl'
-  : true;
+const IS_RTL =
+  typeof document !== 'undefined' ? document.documentElement.getAttribute('dir') === 'rtl' : true;
 
 export default function MySlider<T>({
   className = '',

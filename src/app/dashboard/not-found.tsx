@@ -40,7 +40,11 @@ export default function DashboardNotFound() {
       <div data-stagger className={s.codeCard}>
         <span className={s.codeNumber}>۴۰۴</span>
         <span className={s.codeTrail} aria-hidden>
-          <span /><span /><span /><span /><span />
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
         </span>
       </div>
 
@@ -49,7 +53,9 @@ export default function DashboardNotFound() {
         <p className={s.lead}>
           شاید منتقل شده، حذف شده، یا اصلاً وجود نداشته.
           <br />
-          <code className={s.pathCode} dir="ltr">{pathname}</code>
+          <code className={s.pathCode} dir="ltr">
+            {pathname}
+          </code>
         </p>
       </div>
 

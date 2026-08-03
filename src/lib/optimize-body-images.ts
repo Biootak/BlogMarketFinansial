@@ -29,7 +29,7 @@ const OPTIMIZABLE_HOSTS = new Set([
   'cdn.jsdelivr.net',
 ]);
 
-const srcsetPattern = /^\s*[\d\s,wx/]+(?:\s*\d+w)?\s*$/;
+const _srcsetPattern = /^\s*[\d\s,wx/]+(?:\s*\d+w)?\s*$/;
 
 /**
  * Encode a URL for use as the `url` query param of `/_next/image`.
@@ -73,7 +73,7 @@ function optimizeImgTag(tag: string): string {
   const intrinsic = wAttr ? Number.parseInt(wAttr, 10) : DEFAULT_WIDTH;
   const widths = OPTIMIZED_WIDTHS.filter((w) => w <= intrinsic);
   if (widths.length === 0) widths.push(480);
-  const maxW = widths[widths.length - 1];
+  const _maxW = widths[widths.length - 1];
 
   const srcset = widths
     .map((w) => `/_next/image?url=${encodeImageUrl(url)}&w=${w}&q=75 ${w}w`)
@@ -85,10 +85,7 @@ function optimizeImgTag(tag: string): string {
 
   // fetchpriority=high only for the very first in-body image (rough LCP proxy);
   // everything else stays lazy. Rewrite loading=lazy only if not already set.
-  let out = tag.replace(
-    /(<img[^>]*\bsrc="[^"]+")/i,
-    `$1 srcset="${srcset}" sizes="${sizes}"`,
-  );
+  let out = tag.replace(/(<img[^>]*\bsrc="[^"]+")/i, `$1 srcset="${srcset}" sizes="${sizes}"`);
 
   const hasLoading = /\bloading=/i.test(out);
   if (!hasLoading) {
@@ -111,6 +108,22 @@ function optimizeImgTag(tag: string): string {
 export function optimizeBodyImages(html: string): string {
   if (!html || !html.includes('<img')) return html;
   return html.replace(/<img[^>]*>/gi, optimizeImgTag);
+}
+
+/**
+ * Wrap every `<table>` (each rendered by TipTap/GFM as its own block) in an
+ * `overflow-x-auto` container so wide article tables can scroll horizontally
+ * on mobile instead of being clipped. Server-side only — applied to the
+ * read-only body HTML before it is set via dangerouslySetInnerHTML.
+ */
+export function wrapBodyTables(html: string): string {
+  if (!html || !html.includes('<table')) return html;
+  // Match full <table ...>...</table> blocks and wrap each one. TipTap/GFM
+  // never emit nested tables, and don't double-wrap an already-wrapped table.
+  return html.replace(
+    /<table(\b[^>]*)>(((?!<\/?table\b)[\s\S])*?)<\/table>/gi,
+    (_m) => `<div class="overflow-x-auto">${_m}</div>`,
+  );
 }
 
 export { OPTIMIZABLE_HOSTS };

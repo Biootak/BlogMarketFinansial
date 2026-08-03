@@ -8,12 +8,12 @@
  * Server Component — بدون client-side JS.
  */
 
-import { redirect } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ArrowRight, Search } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowRight, Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { redirect } from 'next/navigation';
 import s from './[code]/track.module.css';
 
 export const metadata: Metadata = {
@@ -89,7 +89,9 @@ export default async function TrackIndexPage({ searchParams }: Props) {
                 autoComplete="off"
                 style={{ textAlign: 'center', letterSpacing: '0.12em' }}
               />
-              <p style={{ fontSize: 'var(--ds-text-xs)', color: 'var(--ds-text-muted)', margin: 0 }}>
+              <p
+                style={{ fontSize: 'var(--ds-text-xs)', color: 'var(--ds-text-muted)', margin: 0 }}
+              >
                 کد پیگیری در ایمیل تأیید معامله یا داشبورد «معاملات من» موجود است.
               </p>
             </div>

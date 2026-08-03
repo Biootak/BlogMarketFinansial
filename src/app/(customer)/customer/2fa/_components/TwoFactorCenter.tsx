@@ -18,12 +18,7 @@ import {
   disable2FA,
   setup2FA,
 } from '@/actions/twoFactorActions';
-import {
-  ConfirmDialog,
-  EmptyState,
-  FormField,
-  Spotlight,
-} from '@/components/Dashboard/primitives';
+import { ConfirmDialog, EmptyState, FormField, Spotlight } from '@/components/Dashboard/primitives';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertTriangle,

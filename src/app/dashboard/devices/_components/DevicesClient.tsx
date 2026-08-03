@@ -3,7 +3,7 @@
 /**
  * DevicesClient — Security Intelligence & Session Operations Center
  * Atelier 2026 Redesign
- * 
+ *
  * ویژگی‌ها:
  * - ساختار نامتقارن (گرید ۸ ستون به ۴ ستون در دسکتاپ)
  * - نقشه شبکه فعال با انیمیشن راداری و پالس (Signature Moment)
@@ -17,39 +17,37 @@
 import {
   type DeviceRow,
   type SecurityLog,
+  revokeAllOtherDevices,
   revokeDevice,
   trustDevice,
-  revokeAllOtherDevices,
 } from '@/actions/deviceActions';
 import {
   ConfirmDialog,
-  EmptyState,
   MillionDollarEmpty,
   PageHeader,
   Spotlight,
 } from '@/components/Dashboard/primitives';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import {
+  Activity,
   AlertCircle,
+  Check,
   CheckCircle2,
   ChevronLeft,
   Clock,
+  Copy,
   Fingerprint,
   Globe,
+  Info,
+  Lock,
+  LogOut,
   Monitor,
   Search,
-  Shield,
   ShieldCheck,
   ShieldOff,
   Smartphone,
-  XCircle,
-  Copy,
-  Check,
-  Activity,
   UserCheck,
-  LogOut,
-  Info,
-  Lock,
+  XCircle,
 } from 'lucide-react';
 import { useCallback, useMemo, useState, useTransition } from 'react';
 import s from './DevicesClient.module.css';
@@ -65,21 +63,25 @@ const STATUS_MAP: Record<
   string,
   { label: string; cssClass: string; icon: React.FC<{ size?: number; 'aria-hidden'?: boolean }> }
 > = {
-  UNVERIFIED: { label: 'تأیید نشده', cssClass: s.statusUnverified, icon: (p) => <AlertCircle {...p} /> },
-  TRUSTED:    { label: 'معتمد',       cssClass: s.statusTrusted,    icon: (p) => <CheckCircle2 {...p} /> },
-  REVOKED:    { label: 'لغو شده',     cssClass: s.statusRevoked,    icon: (p) => <XCircle {...p} /> },
+  UNVERIFIED: {
+    label: 'تأیید نشده',
+    cssClass: s.statusUnverified,
+    icon: (p) => <AlertCircle {...p} />,
+  },
+  TRUSTED: { label: 'معتمد', cssClass: s.statusTrusted, icon: (p) => <CheckCircle2 {...p} /> },
+  REVOKED: { label: 'لغو شده', cssClass: s.statusRevoked, icon: (p) => <XCircle {...p} /> },
 };
 
 const CARD_STATUS_CLASS: Record<string, string> = {
-  TRUSTED:    s.deviceCardTrusted,
+  TRUSTED: s.deviceCardTrusted,
   UNVERIFIED: s.deviceCardUnverified,
-  REVOKED:    s.deviceCardRevoked,
+  REVOKED: s.deviceCardRevoked,
 };
 
 const SHEET_STATUS_CLASS: Record<string, string> = {
-  TRUSTED:    s.sheetTrusted,
+  TRUSTED: s.sheetTrusted,
   UNVERIFIED: s.sheetUnverified,
-  REVOKED:    s.sheetRevoked,
+  REVOKED: s.sheetRevoked,
 };
 
 /* ── helper functions ──────────────────────────────────────────────────────── */
@@ -131,16 +133,36 @@ function getRelativeTime(iso: string): string {
   return formatDate(iso);
 }
 
-function translateLogAction(action: string): { label: string; icon: React.ReactNode; color: string } {
+function translateLogAction(action: string): {
+  label: string;
+  icon: React.ReactNode;
+  color: string;
+} {
   switch (action) {
     case 'DEVICE_REVOKED':
-      return { label: 'لغو دسترسی دستگاه', icon: <ShieldOff size={14} />, color: 'var(--nova-down)' };
+      return {
+        label: 'لغو دسترسی دستگاه',
+        icon: <ShieldOff size={14} />,
+        color: 'var(--nova-down)',
+      };
     case 'DEVICE_TRUSTED':
-      return { label: 'تأیید اعتماد دستگاه', icon: <UserCheck size={14} />, color: 'var(--nova-up)' };
+      return {
+        label: 'تأیید اعتماد دستگاه',
+        icon: <UserCheck size={14} />,
+        color: 'var(--nova-up)',
+      };
     case 'ALL_OTHER_DEVICES_REVOKED':
-      return { label: 'لغو سراسری سایر دستگاه‌ها', icon: <Lock size={14} />, color: 'var(--nova-down)' };
+      return {
+        label: 'لغو سراسری سایر دستگاه‌ها',
+        icon: <Lock size={14} />,
+        color: 'var(--nova-down)',
+      };
     case 'USER_SIGNIN':
-      return { label: 'ورود موفق به حساب', icon: <CheckCircle2 size={14} />, color: 'var(--nova-up)' };
+      return {
+        label: 'ورود موفق به حساب',
+        icon: <CheckCircle2 size={14} />,
+        color: 'var(--nova-up)',
+      };
     case 'USER_SIGNOUT':
       return { label: 'خروج از حساب', icon: <LogOut size={14} />, color: 'var(--at-fg-subtle)' };
     default:
@@ -171,10 +193,10 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
 
   const stats = useMemo(
     () => ({
-      total:      devices.length,
-      trusted:    devices.filter((d) => d.status === 'TRUSTED').length,
+      total: devices.length,
+      trusted: devices.filter((d) => d.status === 'TRUSTED').length,
       unverified: devices.filter((d) => d.status === 'UNVERIFIED').length,
-      revoked:    devices.filter((d) => d.status === 'REVOKED').length,
+      revoked: devices.filter((d) => d.status === 'REVOKED').length,
     }),
     [devices],
   );
@@ -216,56 +238,62 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
     return list;
   }, [devices, filter, search]);
 
-  const handleRevoke = useCallback((id: string) => {
-    setError(null);
-    startTransition(async () => {
-      const res = await revokeDevice(id);
-      if (!res.success) {
-        setError(res.error.message);
-        return;
-      }
-      setDevices((prev) => prev.map((d) => (d.id === id ? { ...d, status: 'REVOKED' } : d)));
-      setRevokeTarget(null);
-      setSelectedDevice((prev) => (prev?.id === id ? { ...prev, status: 'REVOKED' } : prev));
-      
-      // به‌روزرسانی محلی لاگ‌های امنیتی
-      const newLog: SecurityLog = {
-        id: crypto.randomUUID(),
-        action: 'DEVICE_REVOKED',
-        ip: devices.find(d => d.id === id)?.ip ?? null,
-        createdAt: new Date().toISOString()
-      };
-      setLogs((prev) => [newLog, ...prev.slice(0, 9)]);
-    });
-  }, [devices]);
+  const handleRevoke = useCallback(
+    (id: string) => {
+      setError(null);
+      startTransition(async () => {
+        const res = await revokeDevice(id);
+        if (!res.success) {
+          setError(res.error.message);
+          return;
+        }
+        setDevices((prev) => prev.map((d) => (d.id === id ? { ...d, status: 'REVOKED' } : d)));
+        setRevokeTarget(null);
+        setSelectedDevice((prev) => (prev?.id === id ? { ...prev, status: 'REVOKED' } : prev));
 
-  const handleTrust = useCallback((id: string) => {
-    setError(null);
-    startTransition(async () => {
-      const res = await trustDevice(id);
-      if (!res.success) {
-        setError(res.error.message);
-        return;
-      }
-      setDevices((prev) => prev.map((d) => (d.id === id ? { ...d, status: 'TRUSTED' } : d)));
-      setSelectedDevice((prev) => (prev?.id === id ? { ...prev, status: 'TRUSTED' } : prev));
-      
-      // به‌روزرسانی محلی لاگ‌های امنیتی
-      const newLog: SecurityLog = {
-        id: crypto.randomUUID(),
-        action: 'DEVICE_TRUSTED',
-        ip: devices.find(d => d.id === id)?.ip ?? null,
-        createdAt: new Date().toISOString()
-      };
-      setLogs((prev) => [newLog, ...prev.slice(0, 9)]);
-    });
-  }, [devices]);
+        // به‌روزرسانی محلی لاگ‌های امنیتی
+        const newLog: SecurityLog = {
+          id: crypto.randomUUID(),
+          action: 'DEVICE_REVOKED',
+          ip: devices.find((d) => d.id === id)?.ip ?? null,
+          createdAt: new Date().toISOString(),
+        };
+        setLogs((prev) => [newLog, ...prev.slice(0, 9)]);
+      });
+    },
+    [devices],
+  );
+
+  const handleTrust = useCallback(
+    (id: string) => {
+      setError(null);
+      startTransition(async () => {
+        const res = await trustDevice(id);
+        if (!res.success) {
+          setError(res.error.message);
+          return;
+        }
+        setDevices((prev) => prev.map((d) => (d.id === id ? { ...d, status: 'TRUSTED' } : d)));
+        setSelectedDevice((prev) => (prev?.id === id ? { ...prev, status: 'TRUSTED' } : prev));
+
+        // به‌روزرسانی محلی لاگ‌های امنیتی
+        const newLog: SecurityLog = {
+          id: crypto.randomUUID(),
+          action: 'DEVICE_TRUSTED',
+          ip: devices.find((d) => d.id === id)?.ip ?? null,
+          createdAt: new Date().toISOString(),
+        };
+        setLogs((prev) => [newLog, ...prev.slice(0, 9)]);
+      });
+    },
+    [devices],
+  );
 
   const handleRevokeAllOthers = useCallback(() => {
     setError(null);
     // فرض می‌کنیم دستگاه فعلی اولین دستگاه فعال با جدیدترین lastSeenAt است
     const activeSorted = [...devices].sort(
-      (a, b) => new Date(b.lastSeenAt).getTime() - new Date(a.lastSeenAt).getTime()
+      (a, b) => new Date(b.lastSeenAt).getTime() - new Date(a.lastSeenAt).getTime(),
     );
     const currentId = activeSorted[0]?.id;
     if (!currentId) return;
@@ -276,16 +304,14 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
         setError(res.error.message);
         return;
       }
-      setDevices((prev) =>
-        prev.map((d) => (d.id !== currentId ? { ...d, status: 'REVOKED' } : d))
-      );
+      setDevices((prev) => prev.map((d) => (d.id !== currentId ? { ...d, status: 'REVOKED' } : d)));
       setRevokeAllConfirm(false);
 
       const newLog: SecurityLog = {
         id: crypto.randomUUID(),
         action: 'ALL_OTHER_DEVICES_REVOKED',
         ip: activeSorted[0]?.ip ?? null,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
       setLogs((prev) => [newLog, ...prev.slice(0, 9)]);
     });
@@ -299,15 +325,15 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
 
   const currentDevice = useMemo(() => {
     return [...devices].sort(
-      (a, b) => new Date(b.lastSeenAt).getTime() - new Date(a.lastSeenAt).getTime()
+      (a, b) => new Date(b.lastSeenAt).getTime() - new Date(a.lastSeenAt).getTime(),
     )[0];
   }, [devices]);
 
   const filterChips: { label: string; value: StatusFilter; dotClass: string }[] = [
-    { label: 'همه دسترسی‌ها', value: 'all',        dotClass: s.dotAll },
-    { label: 'تأیید شده (معتمد)', value: 'TRUSTED',    dotClass: s.dotTrust },
-    { label: 'تأیید نشده',     value: 'UNVERIFIED', dotClass: s.dotWarn },
-    { label: 'لغو شده',        value: 'REVOKED',    dotClass: s.dotRevoke },
+    { label: 'همه دسترسی‌ها', value: 'all', dotClass: s.dotAll },
+    { label: 'تأیید شده (معتمد)', value: 'TRUSTED', dotClass: s.dotTrust },
+    { label: 'تأیید نشده', value: 'UNVERIFIED', dotClass: s.dotWarn },
+    { label: 'لغو شده', value: 'REVOKED', dotClass: s.dotRevoke },
   ];
 
   return (
@@ -332,10 +358,8 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
 
       {/* ── Asymmetrical SOC Layout Grid ── */}
       <div className={s.socLayout}>
-        
         {/* ── LEFT PANEL (8 Columns): Connection Map & Device Management ── */}
         <div className={s.mainPanel}>
-          
           {/* Active Session Geographic Dot Grid (Signature Moment) */}
           <div className={s.mapCard}>
             <div className={s.cardHeadline}>
@@ -346,7 +370,7 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
                 زنده
               </span>
             </div>
-            
+
             <div className={s.mapWrapper}>
               {/* Background Network Map SVG */}
               <svg viewBox="0 0 800 240" className={s.svgMap}>
@@ -375,22 +399,23 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
                   strokeDasharray="4 6"
                   opacity="0.3"
                 />
-                
+
                 {/* Connecting Lines from Tehran active node */}
-                {MAP_POINTS.map((pt, i) => (
-                  !pt.active && (
-                    <path
-                      key={i}
-                      d={`M490,85 Q${(490+pt.x)/2},${Math.min(85, pt.y)-30} ${pt.x},${pt.y}`}
-                      fill="none"
-                      stroke="var(--at-accent)"
-                      strokeWidth="1"
-                      strokeDasharray="3 4"
-                      className={s.pulsePath}
-                      opacity="0.4"
-                    />
-                  )
-                ))}
+                {MAP_POINTS.map(
+                  (pt, i) =>
+                    !pt.active && (
+                      <path
+                        key={i}
+                        d={`M490,85 Q${(490 + pt.x) / 2},${Math.min(85, pt.y) - 30} ${pt.x},${pt.y}`}
+                        fill="none"
+                        stroke="var(--at-accent)"
+                        strokeWidth="1"
+                        strokeDasharray="3 4"
+                        className={s.pulsePath}
+                        opacity="0.4"
+                      />
+                    ),
+                )}
 
                 {/* Draw Dots */}
                 {MAP_POINTS.map((pt, i) => (
@@ -403,8 +428,21 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
                       </>
                     ) : (
                       <>
-                        <circle cx={pt.x} cy={pt.y} r="3" fill="var(--at-fg-subtle)" opacity="0.7" />
-                        <circle cx={pt.x} cy={pt.y} r="7" fill="none" stroke="var(--at-line)" strokeWidth="0.8" />
+                        <circle
+                          cx={pt.x}
+                          cy={pt.y}
+                          r="3"
+                          fill="var(--at-fg-subtle)"
+                          opacity="0.7"
+                        />
+                        <circle
+                          cx={pt.x}
+                          cy={pt.y}
+                          r="7"
+                          fill="none"
+                          stroke="var(--at-line)"
+                          strokeWidth="0.8"
+                        />
                       </>
                     )}
                     <text
@@ -440,10 +478,10 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
                       chip.value === 'all'
                         ? stats.total
                         : chip.value === 'TRUSTED'
-                        ? stats.trusted
-                        : chip.value === 'UNVERIFIED'
-                        ? stats.unverified
-                        : stats.revoked
+                          ? stats.trusted
+                          : chip.value === 'UNVERIFIED'
+                            ? stats.unverified
+                            : stats.revoked,
                     )}
                   </span>
                 </button>
@@ -496,7 +534,7 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
                     onClick={() => setSelectedDevice(d)}
                   >
                     <Spotlight tone="accent" size={160} />
-                    
+
                     {/* Head */}
                     <div className={s.cardHead}>
                       <div className={s.deviceIco}>
@@ -549,7 +587,11 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
                         {d.fingerprint.slice(0, 16)}...{d.fingerprint.slice(-8)}
                       </span>
                       <button type="button" className={s.copyBtn} aria-label="کپی اثر انگشت">
-                        {copiedId === d.id ? <Check size={11} className={s.checkGreen} /> : <Copy size={11} />}
+                        {copiedId === d.id ? (
+                          <Check size={11} className={s.checkGreen} />
+                        ) : (
+                          <Copy size={11} />
+                        )}
                       </button>
                     </div>
 
@@ -595,7 +637,6 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
 
         {/* ── RIGHT PANEL (4 Columns): Security dial & timeline logs ── */}
         <div className={s.sidePanel}>
-          
           {/* Security score circle dial */}
           <div className={s.scoreCard}>
             <div className={s.scoreDialWrapper}>
@@ -616,7 +657,7 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
                 <span className={s.scorePct}>٪</span>
               </div>
             </div>
-            
+
             <div className={s.scoreMeta}>
               <h5>ضریب امنیتی دسترسی‌ها</h5>
               <p className={s.scoreLabelText} style={{ color: scoreColor }}>
@@ -659,7 +700,10 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
                   const logInfo = translateLogAction(log.action);
                   return (
                     <div key={log.id} className={s.timelineItem}>
-                      <div className={s.timelineIndicator} style={{ backgroundColor: logInfo.color }} />
+                      <div
+                        className={s.timelineIndicator}
+                        style={{ backgroundColor: logInfo.color }}
+                      />
                       <div className={s.timelineContent}>
                         <div className={s.timelineLogTitle}>
                           <span className={s.logIcon} style={{ color: logInfo.color }}>
@@ -668,7 +712,11 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
                           <span className={s.logText}>{logInfo.label}</span>
                         </div>
                         <div className={s.timelineMeta}>
-                          {log.ip && <span className={s.logIp} dir="ltr">{log.ip}</span>}
+                          {log.ip && (
+                            <span className={s.logIp} dir="ltr">
+                              {log.ip}
+                            </span>
+                          )}
                           <span className={s.logTime}>{getRelativeTime(log.createdAt)}</span>
                         </div>
                       </div>
@@ -686,9 +734,14 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
               <h5>توصیه‌های حفاظتی حساب</h5>
             </div>
             <ul className={s.tipsList}>
-              <li>دستگاه‌هایی که متعلق به شما نیستند یا دیگر از آن‌ها استفاده نمی‌کنید را سریعاً لغو دسترسی کنید.</li>
+              <li>
+                دستگاه‌هایی که متعلق به شما نیستند یا دیگر از آن‌ها استفاده نمی‌کنید را سریعاً لغو
+                دسترسی کنید.
+              </li>
               <li>نشست‌های تأیید نشده را پس از اعتبارسنجی آدرس IP به وضعیت «معتمد» ارتقا دهید.</li>
-              <li>از ورود به حساب کاربری در مرورگرهای عمومی و بدون وضعیت Incognito خودداری نمایید.</li>
+              <li>
+                از ورود به حساب کاربری در مرورگرهای عمومی و بدون وضعیت Incognito خودداری نمایید.
+              </li>
             </ul>
           </div>
         </div>
@@ -722,137 +775,148 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
 
       {/* ── Details Sheet ── */}
       <Sheet open={!!selectedDevice} onOpenChange={(o) => !o && setSelectedDevice(null)}>
-        <SheetContent side="left" className="w-[360px] p-0 overflow-hidden" dir="rtl">
-          {selectedDevice && (() => {
-            const d = selectedDevice;
-            const browser = getBrowserName(d.userAgent);
-            const os = getOsName(d.userAgent);
-            const mobile = isMobile(d.userAgent);
-            const statusInfo = STATUS_MAP[d.status] ?? STATUS_MAP.UNVERIFIED;
-            const StatusIcon = statusInfo.icon;
-            const isCurrent = currentDevice?.id === d.id;
+        <SheetContent side="left" className="w-[360px] max-w-[calc(100vw-1rem)] p-0 overflow-hidden" dir="rtl">
+          {selectedDevice &&
+            (() => {
+              const d = selectedDevice;
+              const browser = getBrowserName(d.userAgent);
+              const os = getOsName(d.userAgent);
+              const mobile = isMobile(d.userAgent);
+              const statusInfo = STATUS_MAP[d.status] ?? STATUS_MAP.UNVERIFIED;
+              const StatusIcon = statusInfo.icon;
+              const isCurrent = currentDevice?.id === d.id;
 
-            return (
-              <div className={`${s.sheetInner} ${SHEET_STATUS_CLASS[d.status] || ''}`}>
-                {/* Header */}
-                <div className={s.sheetHead}>
-                  <div className={s.sheetIconWrap}>
-                    {mobile ? <Smartphone size={22} /> : <Monitor size={22} />}
-                  </div>
-                  <div className={s.sheetHeadText}>
-                    <div className={s.sheetTitle}>
-                      {browser}
-                      {isCurrent && <span className={s.sheetCurrentTag}>این دستگاه</span>}
+              return (
+                <div className={`${s.sheetInner} ${SHEET_STATUS_CLASS[d.status] || ''}`}>
+                  {/* Header */}
+                  <div className={s.sheetHead}>
+                    <div className={s.sheetIconWrap}>
+                      {mobile ? <Smartphone size={22} /> : <Monitor size={22} />}
                     </div>
-                    <div className={s.sheetSub}>
-                      {os && <span>{os} · </span>}
-                      <span className={`${s.statusBadge} ${statusInfo.cssClass}`}>
-                        <StatusIcon size={10} />
-                        {statusInfo.label}
+                    <div className={s.sheetHeadText}>
+                      <div className={s.sheetTitle}>
+                        {browser}
+                        {isCurrent && <span className={s.sheetCurrentTag}>این دستگاه</span>}
+                      </div>
+                      <div className={s.sheetSub}>
+                        {os && <span>{os} · </span>}
+                        <span className={`${s.statusBadge} ${statusInfo.cssClass}`}>
+                          <StatusIcon size={10} />
+                          {statusInfo.label}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Details list */}
+                  <div className={s.sheetSection}>
+                    <h5 className={s.sheetSecTitle}>مشخصات فنی و دسترسی</h5>
+
+                    <div className={s.sheetRow}>
+                      <span className={s.sheetRowKey}>نام مرورگر</span>
+                      <span className={s.sheetRowVal}>{browser}</span>
+                    </div>
+                    {os && (
+                      <div className={s.sheetRow}>
+                        <span className={s.sheetRowKey}>سیستم‌عامل</span>
+                        <span className={s.sheetRowVal}>{os}</span>
+                      </div>
+                    )}
+                    <div className={s.sheetRow}>
+                      <span className={s.sheetRowKey}>دسته‌بندی دستگاه</span>
+                      <span className={s.sheetRowVal}>
+                        {mobile ? 'دستگاه همراه / موبایل' : 'سیستم دسکتاپ / لپ‌تاپ'}
                       </span>
                     </div>
-                  </div>
-                </div>
-
-                {/* Details list */}
-                <div className={s.sheetSection}>
-                  <h5 className={s.sheetSecTitle}>مشخصات فنی و دسترسی</h5>
-                  
-                  <div className={s.sheetRow}>
-                    <span className={s.sheetRowKey}>نام مرورگر</span>
-                    <span className={s.sheetRowVal}>{browser}</span>
-                  </div>
-                  {os && (
+                    {d.ip && (
+                      <div className={s.sheetRow}>
+                        <span className={s.sheetRowKey}>آدرس IP ثبت شده</span>
+                        <span className={s.sheetRowValMono} dir="ltr">
+                          {d.ip}
+                        </span>
+                      </div>
+                    )}
                     <div className={s.sheetRow}>
-                      <span className={s.sheetRowKey}>سیستم‌عامل</span>
-                      <span className={s.sheetRowVal}>{os}</span>
+                      <span className={s.sheetRowKey}>وضعیت تأیید امنیتی</span>
+                      <span className={s.sheetRowVal}>{statusInfo.label}</span>
+                    </div>
+                  </div>
+
+                  {/* Timeline info */}
+                  <div className={s.sheetSection}>
+                    <h5 className={s.sheetSecTitle}>ثبت رویدادها</h5>
+                    <div className={s.sheetRow}>
+                      <span className={s.sheetRowKey}>تاریخ اولین ورود</span>
+                      <span className={s.sheetRowVal}>{formatDate(d.createdAt)}</span>
+                    </div>
+                    <div className={s.sheetRow}>
+                      <span className={s.sheetRowKey}>آخرین فعالیت مانیتور شده</span>
+                      <span className={s.sheetRowVal}>{formatDate(d.lastSeenAt)}</span>
+                    </div>
+                  </div>
+
+                  {/* Fingerprint details */}
+                  <div className={s.sheetSection}>
+                    <h5 className={s.sheetSecTitle}>امضای یکتای سخت‌افزاری</h5>
+                    <div className={s.sheetRowFingerprint}>
+                      <span className={s.fpLabel}>Fingerprint String</span>
+                      <div className={s.fpFullBox}>
+                        <span className={s.fpFullValue} dir="ltr">
+                          {d.fingerprint}
+                        </span>
+                        <button
+                          type="button"
+                          className={s.sheetCopyBtn}
+                          onClick={() => handleCopy('sheet', d.fingerprint)}
+                        >
+                          {copiedId === 'sheet' ? (
+                            <Check size={12} className={s.checkGreen} />
+                          ) : (
+                            <Copy size={12} />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Agent Detail */}
+                  {d.userAgent && (
+                    <div className={s.sheetSection}>
+                      <h5 className={s.sheetSecTitle}>رشته User Agent کلاینت</h5>
+                      <div className={s.uaDataText} dir="ltr">
+                        {d.userAgent}
+                      </div>
                     </div>
                   )}
-                  <div className={s.sheetRow}>
-                    <span className={s.sheetRowKey}>دسته‌بندی دستگاه</span>
-                    <span className={s.sheetRowVal}>{mobile ? 'دستگاه همراه / موبایل' : 'سیستم دسکتاپ / لپ‌تاپ'}</span>
-                  </div>
-                  {d.ip && (
-                    <div className={s.sheetRow}>
-                      <span className={s.sheetRowKey}>آدرس IP ثبت شده</span>
-                      <span className={s.sheetRowValMono} dir="ltr">{d.ip}</span>
-                    </div>
-                  )}
-                  <div className={s.sheetRow}>
-                    <span className={s.sheetRowKey}>وضعیت تأیید امنیتی</span>
-                    <span className={s.sheetRowVal}>{statusInfo.label}</span>
-                  </div>
-                </div>
 
-                {/* Timeline info */}
-                <div className={s.sheetSection}>
-                  <h5 className={s.sheetSecTitle}>ثبت رویدادها</h5>
-                  <div className={s.sheetRow}>
-                    <span className={s.sheetRowKey}>تاریخ اولین ورود</span>
-                    <span className={s.sheetRowVal}>{formatDate(d.createdAt)}</span>
-                  </div>
-                  <div className={s.sheetRow}>
-                    <span className={s.sheetRowKey}>آخرین فعالیت مانیتور شده</span>
-                    <span className={s.sheetRowVal}>{formatDate(d.lastSeenAt)}</span>
-                  </div>
-                </div>
-
-                {/* Fingerprint details */}
-                <div className={s.sheetSection}>
-                  <h5 className={s.sheetSecTitle}>امضای یکتای سخت‌افزاری</h5>
-                  <div className={s.sheetRowFingerprint}>
-                    <span className={s.fpLabel}>Fingerprint String</span>
-                    <div className={s.fpFullBox}>
-                      <span className={s.fpFullValue} dir="ltr">{d.fingerprint}</span>
+                  {/* Bottom Actions */}
+                  <div className={s.sheetBottomActions}>
+                    {d.status === 'UNVERIFIED' && (
                       <button
                         type="button"
-                        className={s.sheetCopyBtn}
-                        onClick={() => handleCopy('sheet', d.fingerprint)}
+                        className={s.sheetActionTrust}
+                        onClick={() => handleTrust(d.id)}
+                        disabled={isPending}
                       >
-                        {copiedId === 'sheet' ? <Check size={12} className={s.checkGreen} /> : <Copy size={12} />}
+                        <ShieldCheck size={14} />
+                        تأیید اعتماد این دستگاه
                       </button>
-                    </div>
+                    )}
+                    {d.status !== 'REVOKED' && !isCurrent && (
+                      <button
+                        type="button"
+                        className={s.sheetActionRevoke}
+                        onClick={() => setRevokeTarget(d.id)}
+                        disabled={isPending}
+                      >
+                        <ShieldOff size={14} />
+                        لغو دسترسی این دستگاه
+                      </button>
+                    )}
                   </div>
                 </div>
-
-                {/* Agent Detail */}
-                {d.userAgent && (
-                  <div className={s.sheetSection}>
-                    <h5 className={s.sheetSecTitle}>رشته User Agent کلاینت</h5>
-                    <div className={s.uaDataText} dir="ltr">
-                      {d.userAgent}
-                    </div>
-                  </div>
-                )}
-
-                {/* Bottom Actions */}
-                <div className={s.sheetBottomActions}>
-                  {d.status === 'UNVERIFIED' && (
-                    <button
-                      type="button"
-                      className={s.sheetActionTrust}
-                      onClick={() => handleTrust(d.id)}
-                      disabled={isPending}
-                    >
-                      <ShieldCheck size={14} />
-                      تأیید اعتماد این دستگاه
-                    </button>
-                  )}
-                  {d.status !== 'REVOKED' && !isCurrent && (
-                    <button
-                      type="button"
-                      className={s.sheetActionRevoke}
-                      onClick={() => setRevokeTarget(d.id)}
-                      disabled={isPending}
-                    >
-                      <ShieldOff size={14} />
-                      لغو دسترسی این دستگاه
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })()}
+              );
+            })()}
         </SheetContent>
       </Sheet>
     </div>

@@ -35,18 +35,16 @@ import { cn } from '@/lib/utils';
 import {
   AlertCircle,
   Check,
-  ChevronDown,
   Edit2,
   Loader2,
   Plus,
   Search,
   Trash2,
-  User,
   UserPlus,
   Users,
   X,
 } from 'lucide-react';
-import { useCallback, useMemo, useRef, useState, useTransition } from 'react';
+import { useCallback, useMemo, useState, useTransition } from 'react';
 import s from './CustomerBeneficiaryManager.module.css';
 
 type ModalState =
@@ -228,11 +226,7 @@ export function CustomerBeneficiaryManager({ initialBeneficiaries }: Props) {
             <div className={s.noResults}>
               <Search size={28} aria-hidden className="opacity-50" />
               <p>نتیجه‌ای برای «{search}» یافت نشد</p>
-              <button
-                type="button"
-                onClick={() => setSearch('')}
-                className={s.noResultsLink}
-              >
+              <button type="button" onClick={() => setSearch('')} className={s.noResultsLink}>
                 پاک کردن جستجو
               </button>
             </div>
@@ -376,12 +370,7 @@ export function CustomerBeneficiaryManager({ initialBeneficiaries }: Props) {
             )}
 
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={closeModal}
-                disabled={isPending}
-              >
+              <Button type="button" variant="outline" onClick={closeModal} disabled={isPending}>
                 انصراف
               </Button>
               <Button type="submit" disabled={isPending}>
@@ -402,10 +391,7 @@ export function CustomerBeneficiaryManager({ initialBeneficiaries }: Props) {
       </Dialog>
 
       {/* ── Delete confirmation ───────────────────────────────────────── */}
-      <Dialog
-        open={modal.type === 'delete'}
-        onOpenChange={(o) => !o && closeModal()}
-      >
+      <Dialog open={modal.type === 'delete'} onOpenChange={(o) => !o && closeModal()}>
         <DialogContent dir="rtl" className={s.dialog}>
           <DialogHeader>
             <DialogTitle>حذف مخاطب</DialogTitle>

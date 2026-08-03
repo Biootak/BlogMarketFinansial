@@ -13,14 +13,7 @@
 
 import type { QuoteRow } from '@/actions/exchange-quotes';
 import DealModal from '@/components/MoneyTransfer/DealModal';
-import {
-  AlertCircle,
-  Clock,
-  RefreshCw,
-  ShoppingCart,
-  TrendingDown,
-  TrendingUp,
-} from 'lucide-react';
+import { AlertCircle, Clock, ShoppingCart, TrendingDown, TrendingUp } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import s from './ExchangeQuotesBoard.module.css';
 
@@ -67,7 +60,6 @@ function formatCountdown(expiresAt: Date | string | null, now: number): string {
   const sec = Math.floor((diff % 60000) / 1000);
   return `${m}:${String(sec).padStart(2, '0')}`;
 }
-
 
 function QuoteTableRow({
   quote,

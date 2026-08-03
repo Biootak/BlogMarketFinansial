@@ -5,13 +5,13 @@
  * KYC-gated: اگر KYC تأیید نشده باشد، CTA شروع KYC نمایش داده می‌شود.
  */
 
-import { CryptoAssetsPanel } from './_components/CryptoAssetsPanel';
-import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
 import { getCustomerProfile } from '@/actions/customer-portal';
+import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
+import prisma from '@/lib/db';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import prisma from '@/lib/db';
+import { CryptoAssetsPanel } from './_components/CryptoAssetsPanel';
 
 export const metadata: Metadata = {
   title: 'ارزهای دیجیتال | پنل مشتری',
@@ -37,7 +37,19 @@ type WalletEntry = {
 // سطوح، /100 می‌شود.
 async function loadCryptoWallets(customerId: string): Promise<WalletEntry[]> {
   // فقط حساب‌های ارز دیجیتال (BTC, ETH, USDT, …) — شناسایی از طریق واحد ارز
-  const CRYPTO_SYMBOLS = new Set(['BTC', 'ETH', 'USDT', 'USDC', 'BNB', 'SOL', 'XRP', 'ADA', 'DOGE', 'TRX', 'TON']);
+  const CRYPTO_SYMBOLS = new Set([
+    'BTC',
+    'ETH',
+    'USDT',
+    'USDC',
+    'BNB',
+    'SOL',
+    'XRP',
+    'ADA',
+    'DOGE',
+    'TRX',
+    'TON',
+  ]);
   const accounts = await prisma.fintechAccount.findMany({
     where: { customerId, status: 'ACTIVE' },
     select: { id: true, currency: true, balance: true, type: true, status: true, updatedAt: true },

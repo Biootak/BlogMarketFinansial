@@ -120,34 +120,76 @@ export default function CustomerDrawer({ open, initialData, saving, onClose, onS
           <div>
             <label
               htmlFor="cdr-fullName"
-              style={{ fontSize: 12, fontWeight: 600, color: 'var(--at-text-dim)', display: 'block', marginBottom: 4 }}
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: 'var(--at-text-dim)',
+                display: 'block',
+                marginBottom: 4,
+              }}
             >
               نام کامل *
             </label>
-            <Input id="cdr-fullName" name="fullName" value={form.fullName} onChange={handleChange} required />
+            <Input
+              id="cdr-fullName"
+              name="fullName"
+              value={form.fullName}
+              onChange={handleChange}
+              required
+            />
           </div>
           <div>
             <label
               htmlFor="cdr-phone"
-              style={{ fontSize: 12, fontWeight: 600, color: 'var(--at-text-dim)', display: 'block', marginBottom: 4 }}
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: 'var(--at-text-dim)',
+                display: 'block',
+                marginBottom: 4,
+              }}
             >
               تلفن *
             </label>
-            <Input id="cdr-phone" name="phone" value={form.phone} onChange={handleChange} dir="ltr" required />
+            <Input
+              id="cdr-phone"
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              dir="ltr"
+              required
+            />
           </div>
           <div>
             <label
               htmlFor="cdr-fatherName"
-              style={{ fontSize: 12, fontWeight: 600, color: 'var(--at-text-dim)', display: 'block', marginBottom: 4 }}
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: 'var(--at-text-dim)',
+                display: 'block',
+                marginBottom: 4,
+              }}
             >
               نام پدر
             </label>
-            <Input id="cdr-fatherName" name="fatherName" value={form.fatherName} onChange={handleChange} />
+            <Input
+              id="cdr-fatherName"
+              name="fatherName"
+              value={form.fatherName}
+              onChange={handleChange}
+            />
           </div>
           <div>
             <label
               htmlFor="cdr-city"
-              style={{ fontSize: 12, fontWeight: 600, color: 'var(--at-text-dim)', display: 'block', marginBottom: 4 }}
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: 'var(--at-text-dim)',
+                display: 'block',
+                marginBottom: 4,
+              }}
             >
               شهر
             </label>
@@ -157,7 +199,13 @@ export default function CustomerDrawer({ open, initialData, saving, onClose, onS
         <div>
           <label
             htmlFor="cdr-address"
-            style={{ fontSize: 12, fontWeight: 600, color: 'var(--at-text-dim)', display: 'block', marginBottom: 4 }}
+            style={{
+              fontSize: 12,
+              fontWeight: 600,
+              color: 'var(--at-text-dim)',
+              display: 'block',
+              marginBottom: 4,
+            }}
           >
             آدرس
           </label>
@@ -166,7 +214,13 @@ export default function CustomerDrawer({ open, initialData, saving, onClose, onS
         <div>
           <label
             htmlFor="cdr-notes"
-            style={{ fontSize: 12, fontWeight: 600, color: 'var(--at-text-dim)', display: 'block', marginBottom: 4 }}
+            style={{
+              fontSize: 12,
+              fontWeight: 600,
+              color: 'var(--at-text-dim)',
+              display: 'block',
+              marginBottom: 4,
+            }}
           >
             یادداشت
           </label>

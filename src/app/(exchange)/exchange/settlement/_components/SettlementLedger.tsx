@@ -82,18 +82,14 @@ export default function SettlementLedger({ entries, currency }: Props) {
         </span>
         <h2 className={s.title}>سفر دوره‌ها از انتظار تا پرداخت</h2>
         <p className={s.sub}>
-          هر نقطه یک دورهٔ تسویه است؛ رنگ و نماد، وضعیت فعلی آن را نشان می‌دهد. دورهٔ فعلی بزرگ‌تر نمایش داده می‌شود.
+          هر نقطه یک دورهٔ تسویه است؛ رنگ و نماد، وضعیت فعلی آن را نشان می‌دهد. دورهٔ فعلی بزرگ‌تر نمایش
+          داده می‌شود.
         </p>
       </header>
 
       <div className={s.timeline} role="list" aria-label="دوره‌های تسویه">
         {/* خط اصلی (self-drawing stroke) */}
-        <svg
-          className={s.timelineRail}
-          viewBox="0 0 100 4"
-          preserveAspectRatio="none"
-          aria-hidden
-        >
+        <svg className={s.timelineRail} viewBox="0 0 100 4" preserveAspectRatio="none" aria-hidden>
           <defs>
             <linearGradient id="ledgerGrad" x1="0" y1="0" x2="1" y2="0">
               <stop offset="0%" stopColor="var(--at-gold)" stopOpacity="0.5" />

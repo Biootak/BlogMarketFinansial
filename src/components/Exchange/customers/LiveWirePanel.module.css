@@ -94,20 +94,8 @@
   overflow: hidden;
   display: flex;
   align-items: center;
-  mask-image: linear-gradient(
-    90deg,
-    transparent 0%,
-    black 8%,
-    black 92%,
-    transparent 100%
-  );
-  -webkit-mask-image: linear-gradient(
-    90deg,
-    transparent 0%,
-    black 8%,
-    black 92%,
-    transparent 100%
-  );
+  mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%);
 }
 
 .track {
@@ -121,8 +109,12 @@
 }
 
 @keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 .viewport:hover .track,
@@ -131,7 +123,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .track { animation: none; }
+  .track {
+    animation: none;
+  }
 }
 
 /* ─── Chip (single datum) ───────────────────────────────────────────── */
@@ -172,17 +166,23 @@
 .chip[data-tone="emerald"] {
   border-color: oklch(86% 0.08 162 / 0.6);
 }
-.chip[data-tone="emerald"] .chipValue { color: var(--at-accent-fg); }
+.chip[data-tone="emerald"] .chipValue {
+  color: var(--at-accent-fg);
+}
 
 .chip[data-tone="amber"] {
   border-color: oklch(86% 0.1 70 / 0.6);
 }
-.chip[data-tone="amber"] .chipValue { color: var(--at-gold-fg); }
+.chip[data-tone="amber"] .chipValue {
+  color: var(--at-gold-fg);
+}
 
 .chip[data-tone="rose"] {
   border-color: oklch(86% 0.08 22 / 0.6);
 }
-.chip[data-tone="rose"] .chipValue { color: var(--at-danger-fg); }
+.chip[data-tone="rose"] .chipValue {
+  color: var(--at-danger-fg);
+}
 
 .chipHint {
   display: inline-flex;
@@ -221,5 +221,7 @@
   .left {
     padding: 0 var(--ds-space-3);
   }
-  .label { display: none; }
+  .label {
+    display: none;
+  }
 }

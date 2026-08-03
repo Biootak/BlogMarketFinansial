@@ -5,9 +5,9 @@
  * ساختار: HEADER cover → STAT strip → MESSAGE body + RECIPIENTS (dual) → ASIDE meta
  */
 
-import { useMemo, useState, useTransition } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { LiveDot } from '@/components/Dashboard/PlatformHub';
+import { ConfirmDialog, Spotlight } from '@/components/Dashboard/primitives';
+import { Button } from '@/components/ui/button';
 import {
   CheckCircle2,
   ChevronRight,
@@ -21,9 +21,9 @@ import {
   Users,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { ConfirmDialog, Spotlight } from '@/components/Dashboard/primitives';
-import { LiveDot } from '@/components/Dashboard/PlatformHub';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useMemo, useState, useTransition } from 'react';
 import s from './CampaignDetail.module.css';
 
 type Status = 'draft' | 'scheduled' | 'sending' | 'completed' | 'paused';
@@ -45,7 +45,10 @@ const STATUS_TONES: Record<Status, 'emerald' | 'indigo' | 'amber' | 'rose' | 'vi
   draft: 'rose',
 };
 
-const CHANNEL_META: Record<Channel, { label: string; tone: 'emerald' | 'indigo' | 'amber'; icon: LucideIcon }> = {
+const CHANNEL_META: Record<
+  Channel,
+  { label: string; tone: 'emerald' | 'indigo' | 'amber'; icon: LucideIcon }
+> = {
   email: { label: 'ایمیل', tone: 'indigo', icon: Mail },
   sms: { label: 'پیامک', tone: 'amber', icon: Send },
   push: { label: 'Push', tone: 'emerald', icon: Sparkles },
@@ -74,7 +77,10 @@ const RECIPIENT_LABELS: Record<Recipient['status'], string> = {
   bounced: 'بازگشتی',
 };
 
-const RECIPIENT_TONES: Record<Recipient['status'], 'emerald' | 'indigo' | 'amber' | 'rose' | 'violet'> = {
+const RECIPIENT_TONES: Record<
+  Recipient['status'],
+  'emerald' | 'indigo' | 'amber' | 'rose' | 'violet'
+> = {
   pending: 'violet',
   sent: 'emerald',
   failed: 'rose',
@@ -188,7 +194,9 @@ export function CampaignDetail({ campaign }: Props) {
     setConfirmDelete(false);
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/communication/campaigns/${campaign.id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/communication/campaigns/${campaign.id}`, {
+          method: 'DELETE',
+        });
         if (!res.ok) {
           const data = (await res.json().catch(() => ({}))) as {
             error?: { message?: string };
@@ -210,11 +218,17 @@ export function CampaignDetail({ campaign }: Props) {
       <header className={s.cover} data-tone={stTone}>
         <Spotlight tone={stTone} size={480} className={s.coverSpot} />
         <nav className={s.crumbs} aria-label="مسیر">
-          <Link href="/dashboard" className={s.crumbLink}>داشبورد</Link>
+          <Link href="/dashboard" className={s.crumbLink}>
+            داشبورد
+          </Link>
           <span className={s.crumbSep}>/</span>
-          <Link href="/dashboard/communication" className={s.crumbLink}>مرکز ارتباطات</Link>
+          <Link href="/dashboard/communication" className={s.crumbLink}>
+            مرکز ارتباطات
+          </Link>
           <span className={s.crumbSep}>/</span>
-          <Link href="/dashboard/communication/campaigns" className={s.crumbLink}>کمپین‌ها</Link>
+          <Link href="/dashboard/communication/campaigns" className={s.crumbLink}>
+            کمپین‌ها
+          </Link>
           <span className={s.crumbSep}>/</span>
           <span className={s.crumbCurrent}>{campaign.id.slice(0, 8)}</span>
         </nav>
@@ -246,7 +260,9 @@ export function CampaignDetail({ campaign }: Props) {
                 بازگشت
               </Link>
             </Button>
-            {campaign.status === 'draft' || campaign.status === 'scheduled' || campaign.status === 'paused' ? (
+            {campaign.status === 'draft' ||
+            campaign.status === 'scheduled' ||
+            campaign.status === 'paused' ? (
               <Button onClick={() => changeStatus('sending')} disabled={pending}>
                 <Play size={14} aria-hidden />
                 ارسال کمپین
@@ -262,8 +278,16 @@ export function CampaignDetail({ campaign }: Props) {
         </div>
       </header>
 
-      {actionError ? <div className={s.alert} data-tone="rose">{actionError}</div> : null}
-      {actionOk ? <div className={s.alert} data-tone="emerald">{actionOk}</div> : null}
+      {actionError ? (
+        <div className={s.alert} data-tone="rose">
+          {actionError}
+        </div>
+      ) : null}
+      {actionOk ? (
+        <div className={s.alert} data-tone="emerald">
+          {actionOk}
+        </div>
+      ) : null}
 
       {/* ═══ STAT STRIP ════════════════════════════════════ */}
       <div className={s.statStrip}>
@@ -301,7 +325,9 @@ export function CampaignDetail({ campaign }: Props) {
           ) : null}
           <div className={s.body}>
             {campaign.body.split('\n').map((line, i) => (
-              <p key={i} className={s.bodyLine}>{line || '\u00A0'}</p>
+              <p key={i} className={s.bodyLine}>
+                {line || '\u00A0'}
+              </p>
             ))}
           </div>
 
@@ -314,19 +340,25 @@ export function CampaignDetail({ campaign }: Props) {
               </span>
             </div>
             <div className={s.recipientStat}>
-              {(['sent', 'opened', 'clicked', 'pending', 'failed', 'bounced'] as const).map((st) => (
-                <div key={st} className={s.recipientPill} data-tone={RECIPIENT_TONES[st]}>
-                  <span className={s.recipientPillLabel}>{RECIPIENT_LABELS[st]}</span>
-                  <span className={s.recipientPillCount}>{fmtPersian(recipientStats[st])}</span>
-                </div>
-              ))}
+              {(['sent', 'opened', 'clicked', 'pending', 'failed', 'bounced'] as const).map(
+                (st) => (
+                  <div key={st} className={s.recipientPill} data-tone={RECIPIENT_TONES[st]}>
+                    <span className={s.recipientPillLabel}>{RECIPIENT_LABELS[st]}</span>
+                    <span className={s.recipientPillCount}>{fmtPersian(recipientStats[st])}</span>
+                  </div>
+                ),
+              )}
             </div>
             <ul className={s.recipientList}>
               {recentRecipients.length === 0 ? (
                 <li className={s.recipientEmpty}>گیرنده‌ای ثبت نشده.</li>
               ) : (
                 recentRecipients.map((r) => (
-                  <li key={r.userId} className={s.recipientItem} data-tone={RECIPIENT_TONES[r.status]}>
+                  <li
+                    key={r.userId}
+                    className={s.recipientItem}
+                    data-tone={RECIPIENT_TONES[r.status]}
+                  >
                     <span className={s.recipientStatus} data-tone={RECIPIENT_TONES[r.status]}>
                       <LiveDot tone={RECIPIENT_TONES[r.status]} size="xs" />
                       {RECIPIENT_LABELS[r.status]}
@@ -430,9 +462,7 @@ export function CampaignDetail({ campaign }: Props) {
               <span className={s.asideEyebrow} data-tone="emerald">
                 <CheckCircle2 size={12} aria-hidden /> تکمیل شده
               </span>
-              <span className={s.asideText}>
-                کمپین با موفقیت به پایان رسید.
-              </span>
+              <span className={s.asideText}>کمپین با موفقیت به پایان رسید.</span>
             </section>
           ) : null}
         </aside>

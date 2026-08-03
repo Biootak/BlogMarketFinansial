@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import Link from 'next/link';
 import { toPersianDigits } from '@/lib/setup/format';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
 import s from '../jobs.module.css';
 
 export interface JobStreamItem {
@@ -93,9 +93,7 @@ export function JobStream({ items }: JobStreamProps) {
           <span className={s.cardEyebrow}>Live Stream</span>
           <span className={s.cardTitle}>جریان زنده job ها</span>
         </div>
-        <span className={s.streamCount}>
-          {toPersianDigits(filtered.length)} مورد
-        </span>
+        <span className={s.streamCount}>{toPersianDigits(filtered.length)} مورد</span>
       </div>
       <div className={s.streamFilters}>
         {FILTERS.map((f) => (
@@ -103,9 +101,7 @@ export function JobStream({ items }: JobStreamProps) {
             key={f.key}
             type="button"
             className={
-              filter === f.key
-                ? `${s.streamPill} ${s['streamPill--active']}`
-                : s.streamPill
+              filter === f.key ? `${s.streamPill} ${s['streamPill--active']}` : s.streamPill
             }
             onClick={() => setFilter(f.key)}
             aria-pressed={filter === f.key}
@@ -115,11 +111,9 @@ export function JobStream({ items }: JobStreamProps) {
           </button>
         ))}
       </div>
-      <div className={s.cardBody + ' ' + s['cardBody--scrollable']}>
+      <div className={`${s.cardBody} ${s['cardBody--scrollable']}`}>
         {filtered.length === 0 ? (
-          <p className={s.tableEmpty}>
-            موردی با این فیلتر یافت نشد.
-          </p>
+          <p className={s.tableEmpty}>موردی با این فیلتر یافت نشد.</p>
         ) : (
           <ul className={s.streamList}>
             {filtered.map((it) => (
@@ -136,12 +130,8 @@ export function JobStream({ items }: JobStreamProps) {
                     </div>
                     <div className={s.streamMeta}>
                       <span>{STATUS_LABEL[it.status]}</span>
-                      {it.attempts > 1 ? (
-                        <span>تلاش {toPersianDigits(it.attempts)}</span>
-                      ) : null}
-                      {it.durationMs != null ? (
-                        <span>{formatDuration(it.durationMs)}</span>
-                      ) : null}
+                      {it.attempts > 1 ? <span>تلاش {toPersianDigits(it.attempts)}</span> : null}
+                      {it.durationMs != null ? <span>{formatDuration(it.durationMs)}</span> : null}
                     </div>
                   </div>
                   <span className={s.streamTime}>{formatRelative(it.updatedAt)}</span>

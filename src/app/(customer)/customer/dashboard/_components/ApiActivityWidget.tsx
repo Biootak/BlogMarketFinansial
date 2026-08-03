@@ -45,7 +45,9 @@ const STATUS_TONE = (code: number): 'success' | 'warning' | 'danger' | 'neutral'
   return 'neutral';
 };
 
-const faNum = (n: number) => new Intl.NumberFormat('fa-IR').format(n);
+// ─── module-level Intl singleton — یک بار ساخته می‌شود، نه در هر فراخوانی ─── //
+const _numFa = new Intl.NumberFormat('fa-IR');
+const faNum = (n: number) => _numFa.format(n);
 
 const faTime = (iso: string) => {
   const diff = Date.now() - new Date(iso).getTime();

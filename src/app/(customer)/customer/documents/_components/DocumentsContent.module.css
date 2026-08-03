@@ -57,19 +57,19 @@
   animation: cardEnter 320ms var(--ds-ease-out-quart) both;
 }
 
-.summaryCard[data-tone='success'] {
+.summaryCard[data-tone="success"] {
   border-inline-start-color: var(--nova-up);
 }
 
-.summaryCard[data-tone='warning'] {
+.summaryCard[data-tone="warning"] {
   border-inline-start-color: var(--nova-amber);
 }
 
-.summaryCard[data-tone='danger'] {
+.summaryCard[data-tone="danger"] {
   border-inline-start-color: var(--nova-down);
 }
 
-.summaryCard[data-tone='neutral'] {
+.summaryCard[data-tone="neutral"] {
   border-inline-start-color: var(--ds-text-muted);
 }
 
@@ -85,17 +85,17 @@
   flex-shrink: 0;
 }
 
-.summaryCard[data-tone='success'] .summaryIcon {
+.summaryCard[data-tone="success"] .summaryIcon {
   background: color-mix(in oklch, var(--nova-up) 12%, transparent);
   color: var(--nova-up);
 }
 
-.summaryCard[data-tone='warning'] .summaryIcon {
+.summaryCard[data-tone="warning"] .summaryIcon {
   background: color-mix(in oklch, var(--nova-amber) 12%, transparent);
   color: var(--nova-amber);
 }
 
-.summaryCard[data-tone='danger'] .summaryIcon {
+.summaryCard[data-tone="danger"] .summaryIcon {
   background: color-mix(in oklch, var(--nova-down) 12%, transparent);
   color: var(--nova-down);
 }
@@ -124,15 +124,15 @@
   letter-spacing: -0.01em;
 }
 
-.summaryCard[data-tone='success'] .summaryValue {
+.summaryCard[data-tone="success"] .summaryValue {
   color: var(--nova-up);
 }
 
-.summaryCard[data-tone='warning'] .summaryValue {
+.summaryCard[data-tone="warning"] .summaryValue {
   color: var(--nova-amber);
 }
 
-.summaryCard[data-tone='danger'] .summaryValue {
+.summaryCard[data-tone="danger"] .summaryValue {
   color: var(--nova-down);
 }
 
@@ -191,18 +191,18 @@
   flex-shrink: 0;
 }
 
-.docRow[data-status='APPROVED'] .docIcon {
+.docRow[data-status="APPROVED"] .docIcon {
   background: color-mix(in oklch, var(--nova-up) 12%, transparent);
   color: var(--nova-up);
 }
 
-.docRow[data-status='PENDING'] .docIcon {
+.docRow[data-status="PENDING"] .docIcon {
   background: color-mix(in oklch, var(--nova-amber) 12%, transparent);
   color: var(--nova-amber);
 }
 
-.docRow[data-status='REJECTED'] .docIcon,
-.docRow[data-status='EXPIRED'] .docIcon {
+.docRow[data-status="REJECTED"] .docIcon,
+.docRow[data-status="EXPIRED"] .docIcon {
   background: color-mix(in oklch, var(--nova-down) 12%, transparent);
   color: var(--nova-down);
 }

@@ -145,14 +145,23 @@ async function buildHeroInitial(
 export const revalidate = 60;
 
 export default async function MoneyTransferPage() {
-  const [market, rateLists] = await Promise.all([loadMarketRates(), getRateLists()]);
-  const hero = await buildHeroInitial(market.rates, market.items);
+  // 2026-08-perf: سه منبع داده موازی — market + rateLists + hero همزمان.
+  // قبلاً: market → hero (sequential, 2 round trips)
+  // حالا: همه موازی با Promise.all — صرفه‌جویی ≈ زمان یک round trip.
+  const [market, rateLists, hero] = await Promise.all([
+    loadMarketRates(),
+    getRateLists(),
+    // hero به market نیاز دارد ولی rates داخل buildHeroInitial هم fetch می‌کند.
+    // برای اینکه موازی باشد، market را جداگانه می‌کشیم و به buildHeroInitial پاس می‌دهیم.
+    // loadMarketRates کش دارد — دومین فراخوانی فوری است.
+    loadMarketRates().then((m) => buildHeroInitial(m.rates, m.items)),
+  ]);
   const activeRateLists = rateLists.filter((list) => list.isActive);
 
   return (
     <div
       style={{
-        minHeight: '100vh',
+        minHeight: '100dvh',
         background:
           'linear-gradient(to bottom, var(--ds-bg-subtle), var(--ds-bg-primary), var(--ds-bg-subtle))',
       }}

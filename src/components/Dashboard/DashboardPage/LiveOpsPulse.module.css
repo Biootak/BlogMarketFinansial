@@ -4,23 +4,45 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @keyframes lop-pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.55; transform: scale(1.18); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.18);
+  }
 }
 
 @keyframes lop-pulse-bar {
-  0%, 100% { transform: scaleY(0.5); }
-  50% { transform: scaleY(1); }
+  0%,
+  100% {
+    transform: scaleY(0.5);
+  }
+  50% {
+    transform: scaleY(1);
+  }
 }
 
 @keyframes lop-pulse-fade-in {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes lop-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 /* ── Root layout ─────────────────────────────────────────────────────────── */
@@ -65,13 +87,17 @@
 
 .pulsePanel::before,
 .feedPanel::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
   background: radial-gradient(
       ellipse at top right,
-      color-mix(in oklch, var(--ds-color-brand-primary, var(--at-primary, oklch(70% 0.13 165))) 6%, transparent),
+      color-mix(
+        in oklch,
+        var(--ds-color-brand-primary, var(--at-primary, oklch(70% 0.13 165))) 6%,
+        transparent
+      ),
       transparent 60%
     ),
     radial-gradient(
@@ -118,9 +144,8 @@
     var(--ds-color-brand-primary, var(--at-primary, oklch(70% 0.13 165))),
     color-mix(in oklch, var(--ds-color-brand-primary, var(--at-primary)) 65%, black)
   );
-  box-shadow:
-    0 1px 0 color-mix(in oklch, white 35%, transparent) inset,
-    0 6px 18px color-mix(in oklch, var(--ds-color-brand-primary, var(--at-primary)) 28%, transparent);
+  box-shadow: 0 1px 0 color-mix(in oklch, white 35%, transparent) inset, 0 6px 18px
+    color-mix(in oklch, var(--ds-color-brand-primary, var(--at-primary)) 28%, transparent);
 }
 
 .pulseTitle,
@@ -165,19 +190,19 @@
   white-space: nowrap;
 }
 
-.healthPill[data-state='ok'] {
+.healthPill[data-state="ok"] {
   color: var(--at-success-fg, oklch(40% 0.13 145));
   background: color-mix(in oklch, var(--at-success) 12%, transparent);
   border-color: color-mix(in oklch, var(--at-success) 35%, transparent);
 }
 
-.healthPill[data-state='warn'] {
+.healthPill[data-state="warn"] {
   color: var(--at-warning-fg, oklch(40% 0.12 75));
   background: color-mix(in oklch, var(--at-warning) 14%, transparent);
   border-color: color-mix(in oklch, var(--at-warning) 40%, transparent);
 }
 
-.healthPill[data-state='bad'] {
+.healthPill[data-state="bad"] {
   color: var(--at-danger-fg, oklch(40% 0.18 25));
   background: color-mix(in oklch, var(--at-danger) 12%, transparent);
   border-color: color-mix(in oklch, var(--at-danger) 40%, transparent);
@@ -214,9 +239,10 @@
   transition: height 200ms ease;
 }
 
-.waveBar[data-peak='true'] {
+.waveBar[data-peak="true"] {
   opacity: 1;
-  box-shadow: 0 0 12px color-mix(in oklch, var(--ds-color-brand-primary, var(--at-primary)) 60%, transparent);
+  box-shadow: 0 0 12px
+    color-mix(in oklch, var(--ds-color-brand-primary, var(--at-primary)) 60%, transparent);
   animation: lop-pulse-bar 1.6s ease-in-out infinite;
 }
 
@@ -360,17 +386,17 @@
   box-shadow: 0 0 0 2px color-mix(in oklch, currentColor 18%, transparent);
 }
 
-.serviceItem[data-status='healthy'] .statusDot {
+.serviceItem[data-status="healthy"] .statusDot {
   animation: lop-pulse-dot 2.2s ease-in-out infinite;
   color: var(--at-success, oklch(70% 0.13 145));
 }
 
-.serviceItem[data-status='degraded'] .statusDot {
+.serviceItem[data-status="degraded"] .statusDot {
   animation: lop-pulse-dot 1.2s ease-in-out infinite;
   color: var(--at-warning, oklch(75% 0.12 75));
 }
 
-.serviceItem[data-status='down'] .statusDot {
+.serviceItem[data-status="down"] .statusDot {
   animation: lop-pulse-dot 0.6s ease-in-out infinite;
   color: var(--at-danger, oklch(65% 0.18 25));
 }
@@ -561,23 +587,32 @@
    تا با global reduced-motion سازگار باشد. */
 @keyframes lop-shortcut-pulse {
   0% {
-    box-shadow:
-      0 0 0 0 color-mix(in oklch, var(--ds-color-brand-primary, var(--at-primary, oklch(70% 0.16 165))) 45%, transparent),
-      var(--at-shadow, 0 1px 0 oklch(0% 0 0 / 0.04));
+    box-shadow: 0 0 0 0
+      color-mix(
+        in oklch,
+        var(--ds-color-brand-primary, var(--at-primary, oklch(70% 0.16 165))) 45%,
+        transparent
+      ), var(--at-shadow, 0 1px 0 oklch(0% 0 0 / 0.04));
   }
   35% {
-    box-shadow:
-      0 0 0 6px color-mix(in oklch, var(--ds-color-brand-primary, var(--at-primary, oklch(70% 0.16 165))) 30%, transparent),
-      var(--at-shadow, 0 1px 0 oklch(0% 0 0 / 0.04));
+    box-shadow: 0 0 0 6px
+      color-mix(
+        in oklch,
+        var(--ds-color-brand-primary, var(--at-primary, oklch(70% 0.16 165))) 30%,
+        transparent
+      ), var(--at-shadow, 0 1px 0 oklch(0% 0 0 / 0.04));
   }
   100% {
-    box-shadow:
-      0 0 0 0 color-mix(in oklch, var(--ds-color-brand-primary, var(--at-primary, oklch(70% 0.16 165))) 0%, transparent),
-      var(--at-shadow, 0 1px 0 oklch(0% 0 0 / 0.04));
+    box-shadow: 0 0 0 0
+      color-mix(
+        in oklch,
+        var(--ds-color-brand-primary, var(--at-primary, oklch(70% 0.16 165))) 0%,
+        transparent
+      ), var(--at-shadow, 0 1px 0 oklch(0% 0 0 / 0.04));
   }
 }
 
-:global([data-shortcut-target='liveops'][data-shortcut-active]) {
+:global([data-shortcut-target="liveops"][data-shortcut-active]) {
   border-radius: var(--at-radius, 14px);
   animation: lop-shortcut-pulse 1.6s ease-out 1;
 }
@@ -585,11 +620,11 @@
 /* ── Reduced motion ─────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .liveDot,
-  .waveBar[data-peak='true'],
+  .waveBar[data-peak="true"],
   .serviceItem[data-status] .statusDot {
     animation: none;
   }
-  :global([data-shortcut-target='liveops'][data-shortcut-active]) {
+  :global([data-shortcut-target="liveops"][data-shortcut-active]) {
     animation: none;
     outline: 2px solid var(--ds-color-brand-primary, var(--at-primary, oklch(70% 0.16 165)));
     outline-offset: 2px;

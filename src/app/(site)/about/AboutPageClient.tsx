@@ -7,7 +7,7 @@
  */
 
 import AnimatedNumber from '@/components/Sections/effects/AnimatedNumber';
-import { Lightbulb, Shield, Target, Users } from 'lucide-react';
+import { Lightbulb, Shield, Target } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import s from './AboutPage.module.css';
 

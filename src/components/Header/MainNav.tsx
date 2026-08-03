@@ -32,8 +32,8 @@ export default function MainNav({
         <div
           className="
             grid items-center main-nav-grid
-            grid-cols-[1fr_auto_1fr]
-            lg:grid-cols-[auto_1fr_auto]
+            grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]
+            lg:grid-cols-[auto_minmax(0,1fr)_auto]
             lg:grid-rows-[auto_auto]
             h-auto lg:py-2
             gap-2 sm:gap-4
@@ -76,7 +76,7 @@ export default function MainNav({
             <div className="flex items-center gap-1 sm:gap-1.5">
               <div
                 className="
-                  flex items-center justify-center
+                  hidden lg:flex items-center justify-center
                   size-10 rounded-xl
                   text-neutral-600 dark:text-neutral-300
                   hover:bg-neutral-100 dark:hover:bg-neutral-800/80

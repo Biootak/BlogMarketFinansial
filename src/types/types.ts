@@ -5,21 +5,11 @@ import type {
   ForgotPasswordSchema,
   LoginSchema,
   MagicLinkSchema,
-  PostSchema,
   RegisterSchema,
   UpdatePostSchema,
   UpdateProfileSchema,
 } from '@/schemas';
-import {
-  type Category,
-  type Post,
-  type PostStatus,
-  type PostType,
-  type Prisma,
-  type Role,
-  type Tag,
-  type User,
-} from '@prisma/client';
+import type { Category, Post, PostType, Prisma, Tag, User } from '@prisma/client';
 import type { IconType } from 'react-icons';
 import type { z } from 'zod';
 

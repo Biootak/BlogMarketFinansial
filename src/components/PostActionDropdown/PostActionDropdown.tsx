@@ -13,7 +13,7 @@ import { motion } from '@/lib/motion-shim';
 import type { PostWithRelations } from '@/types/types';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import React, { type FC, useState, useCallback } from 'react';
+import { type FC, useCallback, useState } from 'react';
 import { HiExclamationTriangle, HiEyeSlash, HiLink } from 'react-icons/hi2';
 import { twMerge } from 'tailwind-merge';
 import ModalHideAuthor from './ModalHideAuthor';

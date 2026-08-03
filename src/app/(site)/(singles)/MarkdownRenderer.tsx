@@ -24,6 +24,14 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
       remarkPlugins={[remarkGfm]}
       rehypePlugins={[rehypeRaw, rehypeSanitize, rehypeHighlight]}
       className="at-prose at-prose--renderer max-w-none"
+      components={{
+        table: (props) => (
+          <div className="overflow-x-auto">
+            {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
+            <table {...props} />
+          </div>
+        ),
+      }}
     >
       {content}
     </ReactMarkdown>

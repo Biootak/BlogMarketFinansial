@@ -1,3 +1,4 @@
+import { getExchangeForUser } from '@/actions/exchanges';
 /**
  * /exchange/customers/new — فرم اختصاصی ایجاد مشتری.
  *
@@ -6,11 +7,10 @@
  * لینک "مشتری جدید" به این صفحه navigate می‌کند.
  */
 import { auth } from '@/auth';
-import { getExchangeForUser } from '@/actions/exchanges';
-import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import { CustomerCreateWorkspace } from '@/components/Exchange/customers/CustomerCreateWorkspace';
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = { title: 'ایجاد مشتری · صرافی' };
 

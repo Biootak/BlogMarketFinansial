@@ -11,7 +11,7 @@
  */
 
 import prisma from '@/lib/db';
-import { requireAdmin, requireSuperAdmin } from '@/lib/require-auth';
+import { requireAdmin } from '@/lib/require-auth';
 import { revalidatePath } from '@/lib/revalidate';
 import type { FintechActionResult } from '@/types/types';
 import { Role } from '@prisma/client';

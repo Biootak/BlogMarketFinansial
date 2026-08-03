@@ -1,6 +1,6 @@
-import DashboardGate from './DashboardGate';
 import { SessionGuard } from '@/components/Dashboard/SessionGuard';
 import OfflineBanner from '@/components/OfflineBanner/OfflineBanner';
+import DashboardGate from './DashboardGate';
 import './dashboard.css';
 
 // 2026-06-29: Dashboard is auth-gated and user-specific — never statically

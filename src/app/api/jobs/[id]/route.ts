@@ -8,10 +8,7 @@ export const revalidate = 0;
  * — Job detail برای Inspector (timeline, payload, result, error)
  * — Server-side، requireAdmin دارد. هیچ اطلاعات حساس بدون احراز هویت برنمی‌گردد.
  */
-export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const result = await getJobById(id);
   if (!result.success) {

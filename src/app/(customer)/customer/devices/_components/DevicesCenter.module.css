@@ -11,8 +11,14 @@
 }
 
 @keyframes pageIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── Toolbar ─────────────────────────────────────────────────────────── */
@@ -57,14 +63,22 @@
 .revokeAll:hover:not(:disabled) {
   background: color-mix(in srgb, var(--ds-color-error, #ef4444) 14%, transparent);
 }
-.revokeAll:disabled { opacity: 0.5; cursor: not-allowed; }
+.revokeAll:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 /* ── Device Grid ─────────────────────────────────────────────────────── */
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: 1fr;
   gap: var(--ds-space-4, 16px);
+}
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
 }
 
 /* ── Device Card ─────────────────────────────────────────────────────── */
@@ -83,8 +97,14 @@
 }
 
 @keyframes cardIn {
-  from { opacity: 0; transform: translateY(4px) scale(0.99); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .card:hover {
@@ -95,7 +115,11 @@
 /* current session — subtle highlight */
 .card[data-current="true"] {
   border-color: color-mix(in srgb, var(--ds-color-success, #22c55e) 35%, transparent);
-  background: color-mix(in srgb, var(--ds-color-success, #22c55e) 4%, var(--ds-color-bg-elevated, #fff));
+  background: color-mix(
+    in srgb,
+    var(--ds-color-success, #22c55e) 4%,
+    var(--ds-color-bg-elevated, #fff)
+  );
 }
 
 .cardHead {
@@ -147,9 +171,18 @@
   border-radius: 6px;
   letter-spacing: 0.02em;
 }
-.badge[data-status="TRUSTED"]   { background: color-mix(in srgb,#22c55e 14%,transparent); color:#15803d; }
-.badge[data-status="UNVERIFIED"]{ background: color-mix(in srgb,#f59e0b 14%,transparent); color:#b45309; }
-.badge[data-status="REVOKED"]   { background: color-mix(in srgb,#ef4444 14%,transparent); color:#b91c1c; }
+.badge[data-status="TRUSTED"] {
+  background: color-mix(in srgb, #22c55e 14%, transparent);
+  color: #15803d;
+}
+.badge[data-status="UNVERIFIED"] {
+  background: color-mix(in srgb, #f59e0b 14%, transparent);
+  color: #b45309;
+}
+.badge[data-status="REVOKED"] {
+  background: color-mix(in srgb, #ef4444 14%, transparent);
+  color: #b91c1c;
+}
 
 .cardInfo {
   display: grid;
@@ -162,8 +195,15 @@
   flex-direction: column;
   gap: 1px;
 }
-.infoLabel { font-size: 11px; color: var(--ds-color-text-tertiary, #9ca3af); }
-.infoValue { font-size: 13px; color: var(--ds-color-text-primary, #111); font-variant-numeric: tabular-nums; }
+.infoLabel {
+  font-size: 11px;
+  color: var(--ds-color-text-tertiary, #9ca3af);
+}
+.infoValue {
+  font-size: 13px;
+  color: var(--ds-color-text-primary, #111);
+  font-variant-numeric: tabular-nums;
+}
 
 .cardActions {
   display: flex;
@@ -184,10 +224,20 @@
   color: var(--ds-color-text-secondary, #6b7280);
   background: transparent;
 }
-.actionBtn:hover:not(:disabled) { background: color-mix(in srgb, var(--ds-color-text-primary,#111) 5%, transparent); }
-.actionBtn[data-danger="true"] { color: var(--ds-color-error, #ef4444); border-color: color-mix(in srgb,var(--ds-color-error,#ef4444) 25%,transparent); }
-.actionBtn[data-danger="true"]:hover:not(:disabled) { background: color-mix(in srgb,var(--ds-color-error,#ef4444) 8%,transparent); }
-.actionBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+.actionBtn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ds-color-text-primary, #111) 5%, transparent);
+}
+.actionBtn[data-danger="true"] {
+  color: var(--ds-color-error, #ef4444);
+  border-color: color-mix(in srgb, var(--ds-color-error, #ef4444) 25%, transparent);
+}
+.actionBtn[data-danger="true"]:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ds-color-error, #ef4444) 8%, transparent);
+}
+.actionBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 /* ── Empty state ─────────────────────────────────────────────────────── */
 .empty {
@@ -198,7 +248,7 @@
   gap: 12px;
   padding: 56px 24px;
   text-align: center;
-  border: 1px dashed color-mix(in srgb, var(--ds-color-text-primary,#111) 14%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--ds-color-text-primary, #111) 14%, transparent);
   border-radius: 16px;
   color: var(--ds-color-text-secondary, #6b7280);
   font-size: 14px;

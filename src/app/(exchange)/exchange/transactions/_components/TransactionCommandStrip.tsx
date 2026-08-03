@@ -12,6 +12,8 @@
 
 'use client';
 
+import { TX_KIND_FA, TX_STATUS_FA } from '@/lib/exchange-labels';
+import { faNum } from '@/lib/exchange-tx-formatters';
 import {
   ArrowDownLeft,
   ArrowLeftRight,
@@ -27,8 +29,6 @@ import {
   X,
 } from 'lucide-react';
 import { type ReactNode, useId } from 'react';
-import { faNum } from '@/lib/exchange-tx-formatters';
-import { TX_KIND_FA, TX_STATUS_FA } from '@/lib/exchange-labels';
 import { SelectField } from './SelectField';
 import s from './TransactionCommandStrip.module.css';
 
@@ -89,7 +89,7 @@ export function TransactionCommandStrip({
             const isActive = kindFilter === k;
             const Icon = k === 'all' ? CircleDollarSign : (KIND_ICON[k] ?? CircleDollarSign);
             const label = k === 'all' ? 'همه' : TX_KIND_FA[k];
-            const count = k === 'all' ? totalCount : counts[k] ?? 0;
+            const count = k === 'all' ? totalCount : (counts[k] ?? 0);
             return (
               <button
                 key={k}

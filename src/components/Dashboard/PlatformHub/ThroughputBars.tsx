@@ -1,16 +1,10 @@
 'use client';
 
-import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { useMemo } from 'react';
 import s from './PlatformHub.module.css';
 
-export type ThroughputBarsTone =
-  | 'emerald'
-  | 'indigo'
-  | 'amber'
-  | 'rose'
-  | 'cyan'
-  | 'violet';
+export type ThroughputBarsTone = 'emerald' | 'indigo' | 'amber' | 'rose' | 'cyan' | 'violet';
 
 interface ThroughputBarsProps {
   values: number[];
@@ -47,13 +41,22 @@ export function ThroughputBars({
   }, [values]);
 
   return (
-    <div className={cn(s.throughputBars, className)} style={{ height: `${height}px` }} data-tone={tone} role="img" aria-label={ariaLabel}>
+    <div
+      className={cn(s.throughputBars, className)}
+      style={{ height: `${height}px` }}
+      data-tone={tone}
+      role="img"
+      aria-label={ariaLabel}
+    >
       {values.map((v, i) => {
         const h = max > 0 ? (v / max) * 100 : 0;
         const isPeak = i === peakIndex && v > 0;
         return (
           <div key={i} className={s.throughputBar} data-peak={isPeak}>
-            <div className={s.throughputBarFill} style={{ height: `${Math.max(h, v > 0 ? 4 : 0)}%` }} />
+            <div
+              className={s.throughputBarFill}
+              style={{ height: `${Math.max(h, v > 0 ? 4 : 0)}%` }}
+            />
             {labels?.[i] && i % 4 === 0 ? (
               <span className={s.throughputBarLabel}>{labels[i]}</span>
             ) : null}

@@ -11,7 +11,6 @@ import type { TaxonomyType } from '@/types/types';
 import { ArrowDownAZ, FolderOpen, Hash, RotateCcw, Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import * as React from 'react';
 import { useEffect, useState, useTransition } from 'react';
 import type { ActiveFilter } from './ActiveFilters';
 import ArchiveSearchInput, { ARCHIVE_SEARCH_INPUT_ID } from './ArchiveSearchInput';

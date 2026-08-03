@@ -17,7 +17,7 @@
 import LiveClock from '@/components/Sections/effects/LiveClock';
 import Ticker from '@/components/Ticker';
 import { AnimatePresence, motion } from '@/lib/motion-shim';
-import { type ParsedRateItem, groupRateItems, parseRateItem } from '@/lib/rateItem';
+import { groupRateItems } from '@/lib/rateItem';
 import { cn, formatNumber, toPersianNumber } from '@/lib/utils';
 import type { RateListData } from '@/types/types';
 import {

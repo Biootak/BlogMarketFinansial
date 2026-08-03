@@ -34,10 +34,7 @@ export default async function ExchangeProfilePage() {
       <PageHeader
         title="پروفایل عمومی"
         description="هویت بصری و اطلاعاتی که مشتریان در صفحهٔ عمومی شما می‌بینند"
-        breadcrumb={[
-          { label: 'پنل صرافی', href: '/exchange/dashboard' },
-          { label: 'پروفایل' },
-        ]}
+        breadcrumb={[{ label: 'پنل صرافی', href: '/exchange/dashboard' }, { label: 'پروفایل' }]}
         icon="building"
         accent="emerald"
         eyebrow="هویت عمومی"

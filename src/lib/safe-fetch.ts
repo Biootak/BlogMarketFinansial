@@ -27,11 +27,8 @@ export async function safe<T>(promise: Promise<T>, fallback: T, context?: string
     return await promise;
   } catch (error) {
     if (isDev) {
-      const label = context ? ` [${context}]` : '';
-      const msg = error instanceof Error ? error.message : String(error);
-      // فقط در dev لاگ کن — در prod خطا باید توسط monitoring دیده شود
-      // نه این‌جا (تا log ها پر از noise نشود)
-      console.warn(`[safe-fetch]${label} خطا: ${msg.slice(0, 200)}`);
+      const _label = context ? ` [${context}]` : '';
+      const _msg = error instanceof Error ? error.message : String(error);
     }
     return fallback;
   }

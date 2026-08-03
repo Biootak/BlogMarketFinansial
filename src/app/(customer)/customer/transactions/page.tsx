@@ -4,7 +4,6 @@
 import { getCustomerTransactions } from '@/actions/customer-portal';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
 import TransactionsContent from './_components/TransactionsContent';
 
 export const metadata: Metadata = {

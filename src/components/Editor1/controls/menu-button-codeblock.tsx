@@ -1,6 +1,6 @@
 import type { Editor } from '@tiptap/core';
 
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { Icon } from '../../ui/icon';
 import { Toolbar } from '../../ui/toolbar';
 import { useActive } from '../hooks/use-active';

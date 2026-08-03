@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
-import { ChevronRight, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ChevronRight, type LucideIcon } from 'lucide-react';
+import Link from 'next/link';
 import s from './PlatformHub.module.css';
 
 export interface HubHeaderProps {
@@ -34,7 +34,9 @@ export function HubHeader({
   variant = 'default',
 }: HubHeaderProps) {
   return (
-    <div className={cn(s.hubHeaderCompact, variant === 'dark' && s.hubHeaderCompactDark, className)}>
+    <div
+      className={cn(s.hubHeaderCompact, variant === 'dark' && s.hubHeaderCompactDark, className)}
+    >
       {backHref ? (
         <Link href={backHref} className={s.hubBack} aria-label={backLabel}>
           <ChevronRight size={16} aria-hidden />
@@ -42,7 +44,11 @@ export function HubHeader({
         </Link>
       ) : null}
       <div className={s.hubHeaderCompactMain}>
-        {Icon ? <span className={s.hubHeaderIcon}><Icon size={20} aria-hidden /></span> : null}
+        {Icon ? (
+          <span className={s.hubHeaderIcon}>
+            <Icon size={20} aria-hidden />
+          </span>
+        ) : null}
         <div>
           <h1 className={s.hubHeaderCompactTitle}>{title}</h1>
           {subtitle ? <p className={s.hubHeaderCompactSubtitle}>{subtitle}</p> : null}

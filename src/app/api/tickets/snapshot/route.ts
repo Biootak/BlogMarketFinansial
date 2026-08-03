@@ -1,4 +1,4 @@
-import { getTicketSnapshot, getTicketMessages } from '@/lib/tickets';
+import { getTicketMessages, getTicketSnapshot } from '@/lib/tickets';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -11,7 +11,10 @@ export async function GET(request: Request) {
       const result = await getTicketMessages(ticketId);
       if (!result.success) {
         return Response.json(
-          { success: false, error: { code: 'UNAUTHORIZED', message: result.message ?? 'دسترسی ندارید' } },
+          {
+            success: false,
+            error: { code: 'UNAUTHORIZED', message: result.message ?? 'دسترسی ندارید' },
+          },
           { status: 401 },
         );
       }
@@ -20,7 +23,10 @@ export async function GET(request: Request) {
     const result = await getTicketSnapshot();
     if (!result.success) {
       return Response.json(
-        { success: false, error: { code: 'UNAUTHORIZED', message: result.message ?? 'دسترسی ندارید' } },
+        {
+          success: false,
+          error: { code: 'UNAUTHORIZED', message: result.message ?? 'دسترسی ندارید' },
+        },
         { status: 401 },
       );
     }

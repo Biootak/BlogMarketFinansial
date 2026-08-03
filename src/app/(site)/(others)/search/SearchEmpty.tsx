@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, ArrowRight, FileSearch, Search as SearchIcon, TrendingUp } from 'lucide-react';
+import { ArrowLeft, FileSearch, Search as SearchIcon, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
@@ -73,7 +73,6 @@ export function SearchEmpty({ query, hasResults = true }: SearchEmptyProps) {
               placeholder="جستجو در مقالات، نویسندگان، دسته‌بندی‌ها…"
               className={s.searchInput}
               autoComplete="off"
-              autoFocus
             />
             <button type="submit" className={s.searchButton} aria-label="ارسال جستجو">
               <span>جستجو</span>
@@ -83,10 +82,20 @@ export function SearchEmpty({ query, hasResults = true }: SearchEmptyProps) {
 
           <div className={s.suggestions}>
             <span className={s.suggestionLabel}>
-              <TrendingUp size={11} strokeWidth={2} style={{ verticalAlign: 'middle' }} aria-hidden /> جستجوی پرطرفدار:
+              <TrendingUp
+                size={11}
+                strokeWidth={2}
+                style={{ verticalAlign: 'middle' }}
+                aria-hidden
+              />{' '}
+              جستجوی پرطرفدار:
             </span>
             {POPULAR_SEARCHES.map((term) => (
-              <Link key={term} href={`/search?q=${encodeURIComponent(term)}`} className={s.suggestionChip}>
+              <Link
+                key={term}
+                href={`/search?q=${encodeURIComponent(term)}`}
+                className={s.suggestionChip}
+              >
                 {term}
               </Link>
             ))}
@@ -100,8 +109,8 @@ export function SearchEmpty({ query, hasResults = true }: SearchEmptyProps) {
             </div>
             <h2 className={s.emptyTitle}>هیچ نتیجه‌ای پیدا نشد</h2>
             <p className={s.emptyText}>
-              ممکن است کلمه کلیدی شما اشتباه باشد یا محتوای مرتبطی با این عنوان وجود نداشته باشد. پیشنهاد
-              می‌کنیم:
+              ممکن است کلمه کلیدی شما اشتباه باشد یا محتوای مرتبطی با این عنوان وجود نداشته باشد.
+              پیشنهاد می‌کنیم:
             </p>
             <div className={s.emptyCtas}>
               <Link href="/" className={`${s.emptyCta} ${s.emptyCtaPrimary}`}>

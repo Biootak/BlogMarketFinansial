@@ -2,9 +2,9 @@
 
 import type { CreateAnnouncementInput } from '@/lib/communication';
 import {
+  archiveAnnouncement as _archiveAnnouncement,
   createAnnouncement as _createAnnouncement,
   publishAnnouncement as _publishAnnouncement,
-  archiveAnnouncement as _archiveAnnouncement,
 } from '@/lib/communication';
 
 export async function createAnnouncement(

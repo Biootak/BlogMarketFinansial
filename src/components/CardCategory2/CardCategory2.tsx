@@ -1,12 +1,12 @@
 'use client';
 
 import NcImage from '@/components/NcImage/NcImage';
-import { heading, radius, text } from '@/lib/design-tokens';
+import { heading, radius } from '@/lib/design-tokens';
 import { motion } from '@/lib/motion-shim';
-import type { TaxonomyType, TwMainColor } from '@/types/types';
+import type { TaxonomyType } from '@/types/types';
 import { FileText } from 'lucide-react';
 import Link from 'next/link';
-import React, { type FC } from 'react';
+import type { FC } from 'react';
 
 export interface CardCategory2Props {
   className?: string;

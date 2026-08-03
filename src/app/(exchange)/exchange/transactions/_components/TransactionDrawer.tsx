@@ -13,6 +13,11 @@
 
 'use client';
 
+import type { CustomerRow } from '@/actions/exchange-customers';
+import { type TransactionRow, createTransaction } from '@/actions/exchange-transactions';
+import { FormField, PanelDrawer } from '@/components/Dashboard/primitives';
+import { EXCHANGE_CURRENCIES, TX_KIND_FA } from '@/lib/exchange-labels';
+import { faNum, formatAmount } from '@/lib/exchange-tx-formatters';
 import {
   ArrowLeftRight,
   CheckCircle2,
@@ -24,12 +29,7 @@ import {
   WalletCards,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useId, useMemo, useState, type CSSProperties } from 'react';
-import type { CustomerRow } from '@/actions/exchange-customers';
-import { type TransactionRow, createTransaction } from '@/actions/exchange-transactions';
-import { EXCHANGE_CURRENCIES, TX_KIND_FA } from '@/lib/exchange-labels';
-import { faNum, formatAmount } from '@/lib/exchange-tx-formatters';
-import { FormField, PanelDrawer } from '@/components/Dashboard/primitives';
+import { type CSSProperties, useEffect, useId, useMemo, useState } from 'react';
 import { SelectField } from './SelectField';
 import s from './TransactionDrawer.module.css';
 
@@ -234,10 +234,7 @@ export function TransactionDrawer({ open, onClose, exchangeId, customers, onCrea
             />
           </FormField>
           <FormField label="ارز">
-            <SelectField
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-            >
+            <SelectField value={currency} onChange={(e) => setCurrency(e.target.value)}>
               {EXCHANGE_CURRENCIES.map((c) => (
                 <option key={c}>{c}</option>
               ))}
@@ -251,10 +248,7 @@ export function TransactionDrawer({ open, onClose, exchangeId, customers, onCrea
             <div className={s.transitTop}>
               <span className={s.transitFrom}>
                 {amount && Number.parseFloat(amount) > 0
-                  ? formatAmount(
-                      (Number.parseFloat(amount) * 100).toFixed(0),
-                      currency,
-                    )
+                  ? formatAmount((Number.parseFloat(amount) * 100).toFixed(0), currency)
                   : `۰ ${currency}`}
               </span>
               <span className={s.transitArrow} aria-hidden>
@@ -262,10 +256,7 @@ export function TransactionDrawer({ open, onClose, exchangeId, customers, onCrea
               </span>
               <span className={s.transitTo}>
                 {destAmount && Number.parseFloat(destAmount) > 0
-                  ? formatAmount(
-                      (Number.parseFloat(destAmount) * 100).toFixed(0),
-                      destCurrency,
-                    )
+                  ? formatAmount((Number.parseFloat(destAmount) * 100).toFixed(0), destCurrency)
                   : livePreview
                     ? formatAmount(
                         (Number.parseFloat(livePreview.computed) * 100).toFixed(0),
@@ -288,10 +279,7 @@ export function TransactionDrawer({ open, onClose, exchangeId, customers, onCrea
                 />
               </FormField>
               <FormField label="ارز مقصد">
-                <SelectField
-                  value={destCurrency}
-                  onChange={(e) => setDestCurrency(e.target.value)}
-                >
+                <SelectField value={destCurrency} onChange={(e) => setDestCurrency(e.target.value)}>
                   {EXCHANGE_CURRENCIES.map((c) => (
                     <option key={c}>{c}</option>
                   ))}
@@ -377,7 +365,9 @@ export function TransactionDrawer({ open, onClose, exchangeId, customers, onCrea
                 </>
               )}
               {Number.parseFloat(fee) > 0 && (
-                <span className={s.summaryFee}>+ کارمزد {faNum(Number.parseFloat(fee))} {currency}</span>
+                <span className={s.summaryFee}>
+                  + کارمزد {faNum(Number.parseFloat(fee))} {currency}
+                </span>
               )}
             </span>
           </div>

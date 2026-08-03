@@ -8,7 +8,7 @@
 //   npm install -D @types/nodemailer
 // until a real SMTP provider is wired up, keep `EMAIL_PROVIDER=resend`.
 
-import type { EmailConfigError, EmailMessage, EmailProvider, EmailSendResult } from './types';
+import type { EmailMessage, EmailProvider, EmailSendResult } from './types';
 import { EMAIL_ENV } from './types';
 
 type NodemailerTransport = {

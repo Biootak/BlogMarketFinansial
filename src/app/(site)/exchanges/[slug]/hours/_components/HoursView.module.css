@@ -49,11 +49,18 @@
   animation: open-pulse 1.6s ease-in-out infinite;
 }
 @keyframes open-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px color-mix(in oklch, oklch(60% 0.14 162) 25%, transparent); }
-  50%      { box-shadow: 0 0 0 6px color-mix(in oklch, oklch(60% 0.14 162) 0%, transparent); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px color-mix(in oklch, oklch(60% 0.14 162) 25%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in oklch, oklch(60% 0.14 162) 0%, transparent);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .statusDot { animation: none; }
+  .statusDot {
+    animation: none;
+  }
 }
 
 .statsGrid {
@@ -132,10 +139,9 @@
   border: 1px solid var(--ds-border-default);
   border-radius: 0.875rem;
   min-block-size: 180px;
-  transition:
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
 }
 .dayCard:hover {
   transform: translateY(-2px);
@@ -145,8 +151,7 @@
 .dayCardToday {
   border-color: color-mix(in oklch, var(--ds-brand-500) 50%, var(--ds-border-default));
   background: color-mix(in oklch, var(--ds-brand-500) 5%, var(--ds-surface-elevated));
-  box-shadow:
-    0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 14%, transparent),
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 14%, transparent),
     var(--ds-shadow-sm, 0 1px 2px oklch(20% 0.01 240 / 0.04));
 }
 
@@ -228,7 +233,9 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-.timeKey svg { color: var(--ds-text-muted); }
+.timeKey svg {
+  color: var(--ds-text-muted);
+}
 .timeVal {
   font-size: 0.92rem;
   font-weight: 800;
@@ -262,7 +269,10 @@
   color: oklch(38% 0.14 162);
   font-weight: 700;
 }
-.statusMuted { color: var(--ds-text-muted); font-weight: 600; }
+.statusMuted {
+  color: var(--ds-text-muted);
+  font-weight: 600;
+}
 .statusClosed {
   display: inline-flex;
   align-items: center;
@@ -299,7 +309,9 @@
   font-size: 0.88rem;
   line-height: 1.7;
 }
-.tipBox p { margin: 0; }
+.tipBox p {
+  margin: 0;
+}
 .tipBox svg {
   color: var(--ds-brand-500);
   margin-block-start: 3px;

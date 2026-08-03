@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useEffect, useRef, useState } from 'react';
 import s from './PlatformHub.module.css';
 
 export type ActivityStreamTone =
@@ -68,10 +68,7 @@ export function ActivityStream({
   }
 
   return (
-    <ol
-      className={cn(s.activityStream, className)}
-      style={{ maxHeight: `${maxHeight}px` }}
-    >
+    <ol className={cn(s.activityStream, className)} style={{ maxHeight: `${maxHeight}px` }}>
       {items.map((it) => (
         <li
           key={it.id}

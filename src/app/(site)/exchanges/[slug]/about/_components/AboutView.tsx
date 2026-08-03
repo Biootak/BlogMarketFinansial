@@ -88,7 +88,7 @@ export default function AboutView({ exchange }: Props) {
           <div className={s.heroInner}>
             <div className={s.heroLogo} aria-hidden>
               {exchange.logoUrl ? (
-                // biome-ignore lint/performance/noImgElement: dynamic user URL
+                // Dynamic user URL
                 <img src={exchange.logoUrl} alt="" className={s.heroLogoImg} />
               ) : (
                 <div className={s.heroLogoFallback}>
@@ -150,9 +150,7 @@ export default function AboutView({ exchange }: Props) {
             <span className={s.kpiIcon} aria-hidden>
               <Award size={18} strokeWidth={1.6} />
             </span>
-            <span className={s.kpiValue}>
-              {gregorianDate(exchange.createdAt)}
-            </span>
+            <span className={s.kpiValue}>{gregorianDate(exchange.createdAt)}</span>
             <span className={s.kpiLabel}>
               تاریخ عضویت (شمسی: {persianDate(exchange.createdAt)})
             </span>
@@ -169,14 +167,14 @@ export default function AboutView({ exchange }: Props) {
               </h2>
             </header>
             <p className={s.storyText}>
-              {displayName} یکی از صرافی‌های فعال در شبکهٔ ماست که با مجوز رسمی در شهر
-              {' '}{exchange.city ?? '—'} به ارائهٔ خدمات خرید و فروش ارزهای خارجی می‌پردازد.
-              تمامی نرخ‌های نمایش‌داده‌شده در صفحهٔ اصلی، مستقیماً توسط صرافی و از طریق
-              پنل کاربری وی ثبت می‌شوند و هر ۶۰ ثانیه به‌روزرسانی می‌گردند.
+              {displayName} یکی از صرافی‌های فعال در شبکهٔ ماست که با مجوز رسمی در شهر{' '}
+              {exchange.city ?? '—'} به ارائهٔ خدمات خرید و فروش ارزهای خارجی می‌پردازد. تمامی نرخ‌های
+              نمایش‌داده‌شده در صفحهٔ اصلی، مستقیماً توسط صرافی و از طریق پنل کاربری وی ثبت می‌شوند و هر
+              ۶۰ ثانیه به‌روزرسانی می‌گردند.
             </p>
             <p className={s.storyText}>
-              هدف ما ایجاد یک پلتفرم شفاف برای معرفی صرافی‌های مورد اعتماد و ارائهٔ
-              اطلاعات دقیق نرخ، ساعات کاری و راه‌های ارتباطی به کاربران است.
+              هدف ما ایجاد یک پلتفرم شفاف برای معرفی صرافی‌های مورد اعتماد و ارائهٔ اطلاعات دقیق نرخ،
+              ساعات کاری و راه‌های ارتباطی به کاربران است.
             </p>
             <ul className={s.signalList} aria-label="نشانه‌های اعتماد">
               <li className={s.signalItem}>
@@ -185,9 +183,7 @@ export default function AboutView({ exchange }: Props) {
                 </span>
                 <div>
                   <p className={s.signalTitle}>تأیید رسمی پلتفرم</p>
-                  <p className={s.signalDesc}>
-                    مدارک هویتی و مجوز فعالیت بررسی و تأیید شده است.
-                  </p>
+                  <p className={s.signalDesc}>مدارک هویتی و مجوز فعالیت بررسی و تأیید شده است.</p>
                 </div>
               </li>
               <li className={s.signalItem}>
@@ -206,7 +202,11 @@ export default function AboutView({ exchange }: Props) {
                   <Award size={14} strokeWidth={2.4} />
                 </span>
                 <div>
-                  <p className={s.signalTitle}>{yearsActive > 0 ? `${new Intl.NumberFormat('fa-IR').format(yearsActive)} سال تجربه` : 'صرافی تازه‌تأسیس'}</p>
+                  <p className={s.signalTitle}>
+                    {yearsActive > 0
+                      ? `${new Intl.NumberFormat('fa-IR').format(yearsActive)} سال تجربه`
+                      : 'صرافی تازه‌تأسیس'}
+                  </p>
                   <p className={s.signalDesc}>
                     فعالیت رسمی از سال {exchange.createdAt.getFullYear()} میلادی.
                   </p>

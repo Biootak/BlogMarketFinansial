@@ -16,9 +16,7 @@
  * - بدون hex — فقط DS tokens + at-* tokens
  */
 
-import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { exportAuditLogs } from '../_actions/exportAuditLog';
-import { EmptyState, MillionDollarEmpty, PageHeader } from '@/components/Dashboard/primitives';
+import { MillionDollarEmpty, PageHeader } from '@/components/Dashboard/primitives';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -45,6 +43,7 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import {
   Activity,
   AlertTriangle,
@@ -67,6 +66,7 @@ import {
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
+import { exportAuditLogs } from '../_actions/exportAuditLog';
 
 import s from './AuditLogClient.module.css';
 
@@ -157,17 +157,14 @@ function formatDate(iso: string) {
   });
 }
 
-function formatDateShort(iso: string) {
-  return new Date(iso).toLocaleTimeString('fa-IR', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
 function isToday(iso: string) {
   const d = new Date(iso);
   const n = new Date();
-  return d.getDate() === n.getDate() && d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear();
+  return (
+    d.getDate() === n.getDate() &&
+    d.getMonth() === n.getMonth() &&
+    d.getFullYear() === n.getFullYear()
+  );
 }
 
 /* ──────────────────────────── Copy Helper ───────────────────────────────── */
@@ -283,7 +280,13 @@ export function AuditLogClient({
     startTransition(() => router.push('?'));
   }, [router]);
 
-  const hasFilters = !!(currentSearch || currentEntityType || currentDateFrom || currentDateTo || currentCategory);
+  const hasFilters = !!(
+    currentSearch ||
+    currentEntityType ||
+    currentDateFrom ||
+    currentDateTo ||
+    currentCategory
+  );
 
   /* ── Server-side filtered — no client filter needed ── */
   const filteredLogs = logs;
@@ -335,7 +338,6 @@ export function AuditLogClient({
   return (
     <TooltipProvider delayDuration={300}>
       <div className={s.root}>
-
         {/* ── Page Header ── */}
         <PageHeader
           variant="compact"
@@ -419,7 +421,10 @@ export function AuditLogClient({
                 <button
                   type="button"
                   className={s.searchClear}
-                  onClick={() => { setSearchInput(''); updateParams({ search: '' }); }}
+                  onClick={() => {
+                    setSearchInput('');
+                    updateParams({ search: '' });
+                  }}
                   aria-label="پاک کردن جستجو"
                 >
                   <X size={12} aria-hidden />
@@ -438,7 +443,9 @@ export function AuditLogClient({
               <SelectContent>
                 <SelectItem value="all">همه موجودیت‌ها</SelectItem>
                 {entityTypes.map((t) => (
-                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                  <SelectItem key={t} value={t}>
+                    {t}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -453,7 +460,9 @@ export function AuditLogClient({
                 aria-label="از تاریخ"
                 onChange={(e) => updateParams({ dateFrom: e.target.value })}
               />
-              <span className={s.dateSep} aria-hidden>—</span>
+              <span className={s.dateSep} aria-hidden>
+                —
+              </span>
               <input
                 type="date"
                 className={s.dateInput}
@@ -504,7 +513,9 @@ export function AuditLogClient({
               <TabsTrigger key={value} value={value} className={s.tabsTrigger}>
                 <Icon size={13} aria-hidden />
                 <span>{label}</span>
-                <span className={`${s.tabCount} ${value === 'security' && tabCounts[value] > 0 ? s.tabCountAlert : ''}`}>
+                <span
+                  className={`${s.tabCount} ${value === 'security' && tabCounts[value] > 0 ? s.tabCountAlert : ''}`}
+                >
                   {new Intl.NumberFormat('fa-IR').format(tabCounts[value])}
                 </span>
               </TabsTrigger>
@@ -541,11 +552,21 @@ export function AuditLogClient({
             <table className={s.table} aria-label="جدول رویدادهای ممیزی">
               <thead className={s.thead}>
                 <tr>
-                  <th className={s.th} scope="col">زمان</th>
-                  <th className={s.th} scope="col">کنشگر</th>
-                  <th className={s.th} scope="col">اقدام</th>
-                  <th className={s.th} scope="col">موجودیت</th>
-                  <th className={`${s.th} ${s.thIp}`} scope="col">IP</th>
+                  <th className={s.th} scope="col">
+                    زمان
+                  </th>
+                  <th className={s.th} scope="col">
+                    کنشگر
+                  </th>
+                  <th className={s.th} scope="col">
+                    اقدام
+                  </th>
+                  <th className={s.th} scope="col">
+                    موجودیت
+                  </th>
+                  <th className={`${s.th} ${s.thIp}`} scope="col">
+                    IP
+                  </th>
                   <th className={`${s.th} ${s.thAction}`} scope="col">
                     <span className="sr-only">جزئیات</span>
                   </th>
@@ -568,9 +589,7 @@ export function AuditLogClient({
                     <td className={s.td}>
                       <div className={s.timeCell}>
                         <span className={s.timeMain}>{formatDate(log.createdAt)}</span>
-                        {isToday(log.createdAt) && (
-                          <span className={s.timeBadgeToday}>امروز</span>
-                        )}
+                        {isToday(log.createdAt) && <span className={s.timeBadgeToday}>امروز</span>}
                       </div>
                     </td>
 
@@ -589,9 +608,7 @@ export function AuditLogClient({
                             </TooltipContent>
                           )}
                         </Tooltip>
-                        {log.actorRole && (
-                          <span className={s.actorRole}>{log.actorRole}</span>
-                        )}
+                        {log.actorRole && <span className={s.actorRole}>{log.actorRole}</span>}
                       </div>
                     </td>
 
@@ -649,9 +666,7 @@ export function AuditLogClient({
                           side="bottom"
                           className={s.dropdownContent}
                         >
-                          <DropdownMenuLabel className={s.dropdownLabel}>
-                            اقدامات
-                          </DropdownMenuLabel>
+                          <DropdownMenuLabel className={s.dropdownLabel}>اقدامات</DropdownMenuLabel>
                           <DropdownMenuSeparator className={s.dropdownSep} />
 
                           {/* View detail */}
@@ -738,7 +753,6 @@ export function AuditLogClient({
                   <button
                     key={p}
                     type="button"
-                    role="listitem"
                     onClick={() => goPage(p as number)}
                     disabled={isPending}
                     className={`${s.pageBtn} ${p === currentPage ? s.pageBtnActive : ''}`}
@@ -782,127 +796,145 @@ export function AuditLogClient({
               className={s.modalContent}
             >
               {selectedLog && (
-              <>
-                {/* ── Modal Header ── */}
-                <div className={s.modalHeader}>
-                  <div className={s.modalHeaderInner}>
-                    {/* Accent dot */}
-                    <span
-                      className={`${s.modalDot} ${getActionDot(selectedLog.action)}`}
-                      aria-hidden
-                    />
-                    <div className={s.modalHeaderText}>
-                      <DialogTitle id="audit-modal-title" className={s.modalTitle}>
-                        {selectedLog.action}
-                      </DialogTitle>
-                      <p className={s.modalSubtitle}>
-                        {formatDate(selectedLog.createdAt)}
-                      </p>
-                    </div>
-                    <Badge className={`${s.modalBadge} ${getActionVariant(selectedLog.action)}`}>
-                      {getCategory(selectedLog.action) === 'security' ? '⚠ امنیتی' :
-                       getCategory(selectedLog.action) === 'kyc' ? 'احراز هویت' :
-                       getCategory(selectedLog.action) === 'deal' ? 'معامله' :
-                       getCategory(selectedLog.action) === 'exchange' ? 'صرافی' :
-                       getCategory(selectedLog.action) === 'transfer' ? 'انتقال' : 'سایر'}
-                    </Badge>
-                    {/* Close button */}
-                    <DialogClose className={s.modalClose} aria-label="بستن">
-                      <X size={15} aria-hidden />
-                    </DialogClose>
-                  </div>
-                </div>
-
-                {/* ── Security alert ── */}
-                {getCategory(selectedLog.action) === 'security' && (
-                  <div className={s.securityAlert} role="alert">
-                    <AlertTriangle size={15} aria-hidden />
-                    <span>این رویداد نیازمند بررسی فوری امنیتی است</span>
-                  </div>
-                )}
-
-                {/* ── Modal Body ── */}
-                <div className={s.modalBody}>
-                  {/* Meta grid */}
-                  <section className={s.sheetSection} aria-label="اطلاعات رویداد">
-                    <h3 className={s.sectionLabel}>جزئیات رویداد</h3>
-                    <div className={s.metaGrid}>
-                      {[
-                        { key: 'کنشگر', val: selectedLog.actorId, ltr: true, copyKey: 'actorId' },
-                        { key: 'نقش', val: selectedLog.actorRole, ltr: false },
-                        { key: 'نوع موجودیت', val: selectedLog.entityType, ltr: false },
-                        { key: 'شناسه موجودیت', val: selectedLog.entityId, ltr: true, copyKey: 'entityId' },
-                        { key: 'آدرس IP', val: selectedLog.ip, ltr: true, copyKey: 'ip' },
-                        { key: 'صرافی', val: selectedLog.exchangeId, ltr: true, copyKey: 'exchangeId' },
-                      ]
-                        .filter(({ val }) => val)
-                        .map(({ key, val, ltr, copyKey }) => (
-                          <div key={key} className={s.metaRow}>
-                            <span className={s.metaKey}>{key}</span>
-                            <div className={s.metaValWrap}>
-                              <span className={s.metaVal} dir={ltr ? 'ltr' : undefined}>
-                                {val}
-                              </span>
-                              {copyKey && val && (
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <button
-                                      type="button"
-                                      className={s.copyBtn}
-                                      onClick={() => copy(val as string, `${copyKey}-${selectedLog.id}`)}
-                                      aria-label={`کپی ${key}`}
-                                    >
-                                      <ClipboardCopy size={12} aria-hidden />
-                                    </button>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top" className={s.tooltip}>
-                                    {copied === `${copyKey}-${selectedLog.id}` ? '✓ کپی شد' : 'کپی'}
-                                  </TooltipContent>
-                                </Tooltip>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  </section>
-
-                  {/* JSON metadata */}
-                  {selectedLog.meta && Object.keys(selectedLog.meta).length > 0 && (
-                    <section className={s.sheetSection} aria-label="متادیتای رویداد">
-                      <div className={s.jsonHeader}>
-                        <h3 className={s.sectionLabel}>متادیتا</h3>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button
-                              type="button"
-                              className={s.copyBtnSm}
-                              onClick={() =>
-                                copy(
-                                  JSON.stringify(selectedLog.meta, null, 2),
-                                  `meta-${selectedLog.id}`,
-                                )
-                              }
-                              aria-label="کپی متادیتا"
-                            >
-                              <ClipboardCopy size={12} aria-hidden />
-                              {copied === `meta-${selectedLog.id}` ? 'کپی شد' : 'کپی'}
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className={s.tooltip}>
-                            کپی JSON
-                          </TooltipContent>
-                        </Tooltip>
+                <>
+                  {/* ── Modal Header ── */}
+                  <div className={s.modalHeader}>
+                    <div className={s.modalHeaderInner}>
+                      {/* Accent dot */}
+                      <span
+                        className={`${s.modalDot} ${getActionDot(selectedLog.action)}`}
+                        aria-hidden
+                      />
+                      <div className={s.modalHeaderText}>
+                        <DialogTitle id="audit-modal-title" className={s.modalTitle}>
+                          {selectedLog.action}
+                        </DialogTitle>
+                        <p className={s.modalSubtitle}>{formatDate(selectedLog.createdAt)}</p>
                       </div>
-                      <div className={s.jsonBlock}>
-                        <pre className={s.jsonPre}>
-                          {JSON.stringify(selectedLog.meta, null, 2)}
-                        </pre>
+                      <Badge className={`${s.modalBadge} ${getActionVariant(selectedLog.action)}`}>
+                        {getCategory(selectedLog.action) === 'security'
+                          ? '⚠ امنیتی'
+                          : getCategory(selectedLog.action) === 'kyc'
+                            ? 'احراز هویت'
+                            : getCategory(selectedLog.action) === 'deal'
+                              ? 'معامله'
+                              : getCategory(selectedLog.action) === 'exchange'
+                                ? 'صرافی'
+                                : getCategory(selectedLog.action) === 'transfer'
+                                  ? 'انتقال'
+                                  : 'سایر'}
+                      </Badge>
+                      {/* Close button */}
+                      <DialogClose className={s.modalClose} aria-label="بستن">
+                        <X size={15} aria-hidden />
+                      </DialogClose>
+                    </div>
+                  </div>
+
+                  {/* ── Security alert ── */}
+                  {getCategory(selectedLog.action) === 'security' && (
+                    <div className={s.securityAlert} role="alert">
+                      <AlertTriangle size={15} aria-hidden />
+                      <span>این رویداد نیازمند بررسی فوری امنیتی است</span>
+                    </div>
+                  )}
+
+                  {/* ── Modal Body ── */}
+                  <div className={s.modalBody}>
+                    {/* Meta grid */}
+                    <section className={s.sheetSection} aria-label="اطلاعات رویداد">
+                      <h3 className={s.sectionLabel}>جزئیات رویداد</h3>
+                      <div className={s.metaGrid}>
+                        {[
+                          { key: 'کنشگر', val: selectedLog.actorId, ltr: true, copyKey: 'actorId' },
+                          { key: 'نقش', val: selectedLog.actorRole, ltr: false },
+                          { key: 'نوع موجودیت', val: selectedLog.entityType, ltr: false },
+                          {
+                            key: 'شناسه موجودیت',
+                            val: selectedLog.entityId,
+                            ltr: true,
+                            copyKey: 'entityId',
+                          },
+                          { key: 'آدرس IP', val: selectedLog.ip, ltr: true, copyKey: 'ip' },
+                          {
+                            key: 'صرافی',
+                            val: selectedLog.exchangeId,
+                            ltr: true,
+                            copyKey: 'exchangeId',
+                          },
+                        ]
+                          .filter(({ val }) => val)
+                          .map(({ key, val, ltr, copyKey }) => (
+                            <div key={key} className={s.metaRow}>
+                              <span className={s.metaKey}>{key}</span>
+                              <div className={s.metaValWrap}>
+                                <span className={s.metaVal} dir={ltr ? 'ltr' : undefined}>
+                                  {val}
+                                </span>
+                                {copyKey && val && (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <button
+                                        type="button"
+                                        className={s.copyBtn}
+                                        onClick={() =>
+                                          copy(val as string, `${copyKey}-${selectedLog.id}`)
+                                        }
+                                        aria-label={`کپی ${key}`}
+                                      >
+                                        <ClipboardCopy size={12} aria-hidden />
+                                      </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" className={s.tooltip}>
+                                      {copied === `${copyKey}-${selectedLog.id}`
+                                        ? '✓ کپی شد'
+                                        : 'کپی'}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
+                              </div>
+                            </div>
+                          ))}
                       </div>
                     </section>
-                  )}
-                </div>
-              </>
-            )}
+
+                    {/* JSON metadata */}
+                    {selectedLog.meta && Object.keys(selectedLog.meta).length > 0 && (
+                      <section className={s.sheetSection} aria-label="متادیتای رویداد">
+                        <div className={s.jsonHeader}>
+                          <h3 className={s.sectionLabel}>متادیتا</h3>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                className={s.copyBtnSm}
+                                onClick={() =>
+                                  copy(
+                                    JSON.stringify(selectedLog.meta, null, 2),
+                                    `meta-${selectedLog.id}`,
+                                  )
+                                }
+                                aria-label="کپی متادیتا"
+                              >
+                                <ClipboardCopy size={12} aria-hidden />
+                                {copied === `meta-${selectedLog.id}` ? 'کپی شد' : 'کپی'}
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className={s.tooltip}>
+                              کپی JSON
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                        <div className={s.jsonBlock}>
+                          <pre className={s.jsonPre}>
+                            {JSON.stringify(selectedLog.meta, null, 2)}
+                          </pre>
+                        </div>
+                      </section>
+                    )}
+                  </div>
+                </>
+              )}
             </DialogPrimitive.Content>
           </DialogPortal>
         </Dialog>

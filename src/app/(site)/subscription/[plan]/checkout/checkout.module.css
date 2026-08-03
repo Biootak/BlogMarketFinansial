@@ -9,7 +9,7 @@
  */
 
 .page {
-  min-height: 100vh;
+  min-height: 100dvh;
   background: var(--ds-bg-subtle, #f7f8fa);
   padding: clamp(1rem, 4vw, 2.5rem) clamp(0.75rem, 3vw, 1.5rem);
 }

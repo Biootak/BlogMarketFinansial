@@ -1,7 +1,7 @@
-import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
-import { QueuesView } from './_components/QueuesView';
 import { getJobSnapshot, getQueueHealth, getRecentJobTypes } from '@/lib/jobs';
+import { redirect } from 'next/navigation';
+import { QueuesView } from './_components/QueuesView';
 
 export const dynamic = 'force-dynamic';
 

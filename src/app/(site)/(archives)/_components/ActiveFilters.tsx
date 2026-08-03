@@ -12,7 +12,6 @@
 import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { ArrowDownAZ, Filter, FolderOpen, Hash, RotateCcw, Search, X } from 'lucide-react';
 import Link from 'next/link';
-import * as React from 'react';
 
 export type ActiveFilter = {
   type: 'q' | 'category' | 'subcategory' | 'tag' | 'filter';

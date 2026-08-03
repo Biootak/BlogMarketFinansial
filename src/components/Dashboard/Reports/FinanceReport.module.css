@@ -8,8 +8,13 @@
 /* Glassmorphism KPI Cards */
 .kpiGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--ds-space-6);
+}
+@media (min-width: 640px) {
+  .kpiGrid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
 }
 
 .kpiCard {
@@ -27,7 +32,7 @@
 }
 
 .kpiCard::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -102,8 +107,13 @@
 
 .bottomRow {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: 1fr;
   gap: var(--ds-space-8);
+}
+@media (min-width: 900px) {
+  .bottomRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 /* Animations & Transitions */
@@ -126,9 +136,15 @@
 }
 
 @keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 0.3; }
-  100% { opacity: 0.6; }
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0.6;
+  }
 }
 
 /* Responsive Overrides */
@@ -136,7 +152,7 @@
   .bottomRow {
     grid-template-columns: 1fr;
   }
-  
+
   .kpiGrid {
     grid-template-columns: 1fr 1fr;
   }

@@ -26,14 +26,7 @@ import {
   StatusPill,
   StatusRail,
 } from '@/app/(customer)/customer/_lib/customer-ui';
-import {
-  CheckCircle2,
-  Clock,
-  ExternalLink,
-  FileText,
-  Files,
-  ShieldCheck,
-} from 'lucide-react';
+import { CheckCircle2, Clock, ExternalLink, FileText, Files, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import s from './DocumentsContent.module.css';
 
@@ -133,9 +126,7 @@ export default function DocumentsContent({ profile, kycRecords }: Props) {
                       <span className={s.docType}>
                         {DOC_TYPE_LABEL[rec.docType] ?? rec.docType}
                       </span>
-                      <span className={s.docLevel}>
-                        {KYC_LEVEL_LABEL[rec.level] ?? rec.level}
-                      </span>
+                      <span className={s.docLevel}>{KYC_LEVEL_LABEL[rec.level] ?? rec.level}</span>
                     </div>
                     <div className={s.docKvGrid}>
                       {rec.docNumber && (
@@ -210,9 +201,7 @@ export default function DocumentsContent({ profile, kycRecords }: Props) {
           <div className={s.ctaCard}>
             <div className={s.ctaBody}>
               <strong className={s.ctaTitle}>
-                {profile.kycStatus === 'NOT_STARTED'
-                  ? 'ارسال مدارک هویتی'
-                  : 'ارسال مجدد مدارک'}
+                {profile.kycStatus === 'NOT_STARTED' ? 'ارسال مدارک هویتی' : 'ارسال مجدد مدارک'}
               </strong>
               <p className={s.ctaText}>
                 {profile.kycStatus === 'NOT_STARTED'

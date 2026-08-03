@@ -1,3 +1,5 @@
+import { StatePage } from '@/components/StatePage';
+import { getSystemSettingsData } from '@/data/getSystemSettings';
 /**
  * /session-expired — Million-dollar session timeout state (2026)
  *
@@ -6,8 +8,6 @@
  */
 import { LogIn, RefreshCw, ShieldAlert } from 'lucide-react';
 import type { Metadata } from 'next';
-import { StatePage } from '@/components/StatePage';
-import { getSystemSettingsData } from '@/data/getSystemSettings';
 
 export const metadata: Metadata = {
   title: 'نشست منقضی شد | ورود مجدد',
@@ -34,7 +34,12 @@ export default async function SessionExpiredPage() {
         'اختیاری: گزینهٔ «مرا به‌خاطر بسپار» را فعال کنید.',
       ]}
       actions={[
-        { label: 'ورود دوباره', href: '/auth?step=email&intent=login', icon: LogIn, variant: 'primary' },
+        {
+          label: 'ورود دوباره',
+          href: '/auth?step=email&intent=login',
+          icon: LogIn,
+          variant: 'primary',
+        },
         { label: 'بازگشت به خانه', href: '/', icon: RefreshCw, variant: 'ghost' },
       ]}
       meta={[

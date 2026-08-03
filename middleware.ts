@@ -154,7 +154,10 @@ const checkDashboardAccess = (pathname: string, role?: string) => {
   if (role && ADMIN_ROLES.has(role) && matchesAny(pathname, compiledAdmin)) return true;
   if (role && AUTHOR_ROLES.has(role) && matchesAny(pathname, compiledAuthor)) return true;
   // SUPPORT-fix: دسترسی SUPPORT به helpdesk/approvals/service-requests
-  if (role === 'SUPPORT' && SUPPORT_ROUTE_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+  if (
+    role === 'SUPPORT' &&
+    SUPPORT_ROUTE_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+  ) {
     return true;
   }
   return false;

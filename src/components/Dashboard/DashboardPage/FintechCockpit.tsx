@@ -29,6 +29,7 @@
  */
 
 import { Badge } from '@/components/ui/badge';
+import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 import {
   AlertCircle,
   ArrowDownRight,
@@ -46,8 +47,7 @@ import {
   Zap,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useMemo, useState, type ReactNode } from 'react';
-import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
+import { type ReactNode, useMemo, useState } from 'react';
 import s from './FintechCockpit.module.css';
 
 // ─── Types ──────────────────────────────────────────────────────────────
@@ -174,8 +174,10 @@ const formatRel = (ts: number, now: number): string => {
   const diff = Math.max(0, Math.floor((now - ts) / 1000));
   if (diff < 5) return 'هم اکنون';
   if (diff < 60) return `${new Intl.NumberFormat('fa-IR').format(diff)} ثانیه پیش`;
-  if (diff < 3600) return `${new Intl.NumberFormat('fa-IR').format(Math.floor(diff / 60))} دقیقه پیش`;
-  if (diff < 86_400) return `${new Intl.NumberFormat('fa-IR').format(Math.floor(diff / 3600))} ساعت پیش`;
+  if (diff < 3600)
+    return `${new Intl.NumberFormat('fa-IR').format(Math.floor(diff / 60))} دقیقه پیش`;
+  if (diff < 86_400)
+    return `${new Intl.NumberFormat('fa-IR').format(Math.floor(diff / 3600))} ساعت پیش`;
   return `${new Intl.NumberFormat('fa-IR').format(Math.floor(diff / 86_400))} روز پیش`;
 };
 
@@ -202,7 +204,11 @@ const formatCurrency = (n: number, currency: string): string => {
     return `${new Intl.NumberFormat('fa-IR').format(Math.round(n))} AFN`;
   }
   try {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 2 }).format(n);
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: 2,
+    }).format(n);
   } catch {
     return `${new Intl.NumberFormat('fa-IR').format(Math.round(n))} ${currency}`;
   }
@@ -603,10 +609,7 @@ function LivePanel({
 
   useVisibilityAwareInterval(() => setNow(Date.now()), 1000);
 
-  const healthy = useMemo(
-    () => services.filter((x) => x.status === 'healthy').length,
-    [services],
-  );
+  const healthy = useMemo(() => services.filter((x) => x.status === 'healthy').length, [services]);
   const total = services.length || 1;
   const healthScore = Math.round((healthy / total) * 100);
   const healthState: 'ok' | 'warn' | 'bad' =
@@ -712,10 +715,7 @@ function LivePanel({
                       : Wallet;
             return (
               <li key={evt.id} className={s.eventItem}>
-                <span
-                  className={`${s.eventIcon} ${s[`eventIcon_${evt.type}`] ?? ''}`}
-                  aria-hidden
-                >
+                <span className={`${s.eventIcon} ${s[`eventIcon_${evt.type}`] ?? ''}`} aria-hidden>
                   <Icon size={12} />
                 </span>
                 <span className={s.eventBody}>

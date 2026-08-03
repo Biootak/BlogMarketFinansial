@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { getAudiences } from '@/lib/communication';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;

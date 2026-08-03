@@ -12,13 +12,13 @@
  *   از anchor scroll استفاده می‌کند؛ SubNav در layout هماهنگ می‌شود.
  */
 
+import type { PublicExchangeService } from '@/actions/exchange-services';
+import s from './ExchangePublicView.module.css';
 import HeroIdentity from './HeroIdentity';
 import LiveRatesBoard from './LiveRatesBoard';
-import s from './ExchangePublicView.module.css';
 import OnlineServices from './OnlineServices';
 import TrustSection from './TrustSection';
 import WorkingHoursStrip from './WorkingHoursStrip';
-import type { PublicExchangeService } from '@/actions/exchange-services';
 
 type ExchangeDTO = {
   id: string;
@@ -59,7 +59,13 @@ type Props = {
   services: PublicExchangeService[];
 };
 
-export default function ExchangePublicView({ exchange, rates, hours, primaryRate, services }: Props) {
+export default function ExchangePublicView({
+  exchange,
+  rates,
+  hours,
+  primaryRate,
+  services,
+}: Props) {
   const activeCurrencies = rates.length;
   return (
     <article className={s.page} dir="rtl">

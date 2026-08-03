@@ -2,7 +2,10 @@ import { Skeleton } from '@/components/Dashboard/primitives';
 
 export default function ApprovalsLoading() {
   return (
-    <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '0.5rem 0' }}>
+    <div
+      dir="rtl"
+      style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '0.5rem 0' }}
+    >
       <div style={{ height: 88, borderRadius: 14, overflow: 'hidden' }}>
         <Skeleton variant="card" className="!h-full" />
       </div>

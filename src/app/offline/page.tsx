@@ -1,3 +1,5 @@
+import { StatePage } from '@/components/StatePage';
+import { getSystemSettingsData } from '@/data/getSystemSettings';
 /**
  * /offline — Million-dollar offline/network state (2026)
  *
@@ -10,8 +12,6 @@
  */
 import { CloudOff, RefreshCw, Wifi } from 'lucide-react';
 import type { Metadata } from 'next';
-import { StatePage } from '@/components/StatePage';
-import { getSystemSettingsData } from '@/data/getSystemSettings';
 
 export const metadata: Metadata = {
   title: 'اتصال برقرار نیست | آفلاین',

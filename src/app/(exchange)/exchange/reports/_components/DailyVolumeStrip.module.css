@@ -152,11 +152,19 @@
 }
 
 .bar[data-tone="emerald"] {
-  background: linear-gradient(180deg, var(--at-accent) 0%, color-mix(in oklch, var(--at-accent) 75%, var(--at-gold)) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--at-accent) 0%,
+    color-mix(in oklch, var(--at-accent) 75%, var(--at-gold)) 100%
+  );
 }
 
 .bar[data-tone="cyan"] {
-  background: linear-gradient(180deg, var(--at-info) 0%, color-mix(in oklch, var(--at-info) 75%, var(--at-accent)) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--at-info) 0%,
+    color-mix(in oklch, var(--at-info) 75%, var(--at-accent)) 100%
+  );
 }
 
 .bar[data-tone="muted"] {

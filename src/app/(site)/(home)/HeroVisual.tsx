@@ -15,9 +15,9 @@
  *  - همه اعداد فارسی و RTL-safe (logical properties only)
  */
 
+import { CurrencySelect } from '@/components/ui/CurrencySelect';
 import { formatChangePercent, formatValueOnly } from '@/lib/market-rates/format';
 import type { MarketRateItem } from '@/lib/market-rates/types';
-import { CurrencySelect } from '@/components/ui/CurrencySelect';
 import {
   ArrowLeft,
   BarChart2,
@@ -282,10 +282,7 @@ export default function HeroVisual({
 
   // برای حالت AFN source: نتیجه در دلار (معکوس)
   const resultUsdFromAfn =
-    calcCurrency === 'AFN' &&
-    parsedAmount > 0 &&
-    usdToAfn !== null &&
-    usdToAfn > 0
+    calcCurrency === 'AFN' && parsedAmount > 0 && usdToAfn !== null && usdToAfn > 0
       ? parsedAmount / usdToAfn
       : null;
 
@@ -451,14 +448,14 @@ export default function HeroVisual({
         <ul className={s.statsBar} aria-label="آمار پلتفرم">
           <li className={s.statItem}>
             <span className={s.statVal}>
-              {activeExchangeCount > 0 ? formatCompactFa(activeExchangeCount) : STATS_FALLBACK[0]!.value}
+              {activeExchangeCount > 0
+                ? formatCompactFa(activeExchangeCount)
+                : STATS_FALLBACK[0]?.value}
             </span>
             <span className={s.statLabel}>صرافی فعال</span>
           </li>
           <li className={s.statItem}>
-            <span className={s.statVal}>
-              {totalRates > 0 ? FA_PLAIN.format(totalRates) : '۰'}
-            </span>
+            <span className={s.statVal}>{totalRates > 0 ? FA_PLAIN.format(totalRates) : '۰'}</span>
             <span className={s.statLabel}>نرخ زنده</span>
           </li>
           <li className={s.statItem}>
@@ -622,9 +619,7 @@ export default function HeroVisual({
                 </div>
                 <div className={s.rateRow}>
                   <span className={s.rateName}>تبدیل به (دلار)</span>
-                  <span className={`${s.rateVal} ${s.resultTomanMuted}`}>
-                    {resultUsdFormatted}
-                  </span>
+                  <span className={`${s.rateVal} ${s.resultTomanMuted}`}>{resultUsdFormatted}</span>
                 </div>
                 <div className={s.rateRow}>
                   <span className={s.rateName}>کارمزد</span>
@@ -670,9 +665,7 @@ export default function HeroVisual({
             <p className={s.cardNote}>
               آخرین به‌روزرسانی
               <br />
-              <strong className={s.cardNoteStrong}>
-                {formatFreshnessFa(freshnessAnchor)}
-              </strong>
+              <strong className={s.cardNoteStrong}>{formatFreshnessFa(freshnessAnchor)}</strong>
             </p>
             <div className={s.uptimeBar} aria-hidden>
               <div className={s.uptimeFill} />

@@ -57,9 +57,7 @@ export function PillTabs({
           >
             {t.icon ? <span className={s.pillIcon}>{t.icon}</span> : null}
             <span className={s.pillLabel}>{t.label}</span>
-            {t.count !== undefined ? (
-              <span className={s.pillCount}>{t.count}</span>
-            ) : null}
+            {t.count !== undefined ? <span className={s.pillCount}>{t.count}</span> : null}
           </button>
         );
       })}

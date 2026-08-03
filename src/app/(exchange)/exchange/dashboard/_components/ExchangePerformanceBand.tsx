@@ -9,9 +9,9 @@
  * Server Component. داده از قبل aggregate شده.
  */
 
+import type { PerformanceMetrics, PeriodComparison } from '@/actions/exchange-dashboard';
 import { ArrowDownRight, ArrowUpRight, Minus, TrendingUp } from 'lucide-react';
 import s from './ExchangeDashboard.module.css';
-import type { PeriodComparison, PerformanceMetrics } from '@/actions/exchange-dashboard';
 
 function formatFaNumber(n: number): string {
   return new Intl.NumberFormat('fa-IR').format(n);
@@ -43,7 +43,12 @@ function trendDir(pct: number): 'up' | 'down' | 'flat' {
   return 'flat';
 }
 
-function Metric({ label, delta, current, prev }: { label: string; delta: number; current: string; prev: string }) {
+function Metric({
+  label,
+  delta,
+  current,
+  prev,
+}: { label: string; delta: number; current: string; prev: string }) {
   const dir = trendDir(delta);
   return (
     <div className={s.perfMetric}>

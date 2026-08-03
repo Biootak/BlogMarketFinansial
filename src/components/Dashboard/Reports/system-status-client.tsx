@@ -66,7 +66,7 @@ export function SystemStatusClient({ data, error }: SystemStatusClientProps) {
             </div>
             <Progress value={data.cpu.usage} className="h-2" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">دمای CPU</p>
               <p className="text-lg font-medium">{data.cpu.temperature}°C</p>
@@ -93,7 +93,7 @@ export function SystemStatusClient({ data, error }: SystemStatusClientProps) {
             </div>
             <Progress value={data.memory.usagePercentage} className="h-2" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">حافظه کل</p>
               <p className="text-lg font-medium">{data.memory.total} GB</p>
@@ -120,7 +120,7 @@ export function SystemStatusClient({ data, error }: SystemStatusClientProps) {
             </div>
             <Progress value={data.storage.usagePercentage} className="h-2" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">فضای کل</p>
               <p className="text-lg font-medium">{data.storage.total} GB</p>

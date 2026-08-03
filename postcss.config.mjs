@@ -5,7 +5,7 @@ const config = {
     // OKLCH tokens correctly. Keep Next.js cssnano disabled; Tailwind will
     // minify the CSS during the PostCSS pass.
     '@tailwindcss/postcss': {
-      optimize: { minify: true },
+      optimize: { minify: false },
     },
   },
 };

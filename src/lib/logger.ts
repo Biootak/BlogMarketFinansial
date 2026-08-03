@@ -21,8 +21,7 @@ export async function logSystemEvent({ level, message, source }: LogParams) {
     }
 
     return await response.json();
-  } catch (error) {
-    console.error('Error logging system event:', error);
+  } catch (_error) {
     return null;
   }
 }

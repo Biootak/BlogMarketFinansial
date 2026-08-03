@@ -18,12 +18,19 @@
   flex-direction: column;
   gap: var(--ds-space-4);
   padding-block-end: var(--ds-space-10);
-  animation: pageIn var(--ds-duration-base, 280ms) var(--ds-ease-out-quart, cubic-bezier(0.22,1,0.36,1)) both;
+  animation: pageIn var(--ds-duration-base, 280ms)
+    var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
 
 @keyframes pageIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── Header Actions ───────────────────────────────────────────────────────── */
@@ -38,10 +45,9 @@
   font-size: var(--ds-text-xs) !important;
   font-weight: var(--ds-weight-semibold) !important;
   letter-spacing: 0.03em !important;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring) !important;
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
+    var(--ds-ease-spring) !important;
 }
 
 .exportBtn:hover {
@@ -60,11 +66,15 @@
 }
 
 @media (max-width: 1100px) {
-  .kpiStrip { grid-template-columns: repeat(3, 1fr); }
+  .kpiStrip {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 @media (max-width: 680px) {
-  .kpiStrip { grid-template-columns: repeat(2, 1fr); }
+  .kpiStrip {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* ── KPI Card ─────────────────────────────────────────────────────────────── */
@@ -82,10 +92,8 @@
   box-shadow: var(--ds-shadow-sm);
   overflow: hidden;
   cursor: default;
-  transition:
-    box-shadow var(--ds-duration-fast) ease,
-    transform var(--ds-duration-fast) var(--ds-ease-spring),
-    border-color var(--ds-duration-fast) ease;
+  transition: box-shadow var(--ds-duration-fast) ease, transform var(--ds-duration-fast)
+    var(--ds-ease-spring), border-color var(--ds-duration-fast) ease;
   animation: kpiIn 360ms var(--ds-ease-spring) both;
   animation-delay: var(--kpi-delay, 0ms);
 }
@@ -98,7 +106,11 @@ button.kpiCard {
 button.kpiCard:hover {
   transform: translateY(-2px);
   box-shadow: var(--ds-shadow-md, 0 4px 16px -4px oklch(20% 0 0 / 0.1));
-  border-color: color-mix(in oklch, var(--kpi-c, var(--ds-brand-500)) 30%, var(--at-line, var(--ds-border-default)));
+  border-color: color-mix(
+    in oklch,
+    var(--kpi-c, var(--ds-brand-500)) 30%,
+    var(--at-line, var(--ds-border-default))
+  );
 }
 
 button.kpiCard:active {
@@ -108,15 +120,24 @@ button.kpiCard:active {
 /* Active KPI card (when category is filtered) */
 .kpiCardActive {
   border-color: color-mix(in oklch, var(--kpi-c, var(--ds-brand-500)) 50%, transparent) !important;
-  background: color-mix(in oklch, var(--kpi-c, var(--ds-brand-500)) 8%, var(--at-surface, var(--ds-surface))) !important;
-  box-shadow:
-    0 0 0 2px color-mix(in oklch, var(--kpi-c, var(--ds-brand-500)) 18%, transparent),
+  background: color-mix(
+    in oklch,
+    var(--kpi-c, var(--ds-brand-500)) 8%,
+    var(--at-surface, var(--ds-surface))
+  ) !important;
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--kpi-c, var(--ds-brand-500)) 18%, transparent),
     var(--ds-shadow-sm) !important;
 }
 
 @keyframes kpiIn {
-  from { opacity: 0; transform: translateY(10px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* Accent top hairline */
@@ -177,12 +198,24 @@ button.kpiCard:hover::before,
 }
 
 /* ── KPI accent CSS variables ─────────────────────────────────────────────── */
-.kpiCardToday { --kpi-c: var(--ds-brand-500); }
-.kpiBlue      { --kpi-c: var(--ds-status-progress-fg); }
-.kpiEmerald   { --kpi-c: var(--ds-status-success-fg); }
-.kpiAmber     { --kpi-c: var(--ds-status-pending-fg); }
-.kpiRose      { --kpi-c: var(--ds-status-error-fg); }
-.kpiViolet    { --kpi-c: var(--ds-accent-violet, oklch(58% 0.13 290)); }
+.kpiCardToday {
+  --kpi-c: var(--ds-brand-500);
+}
+.kpiBlue {
+  --kpi-c: var(--ds-status-progress-fg);
+}
+.kpiEmerald {
+  --kpi-c: var(--ds-status-success-fg);
+}
+.kpiAmber {
+  --kpi-c: var(--ds-status-pending-fg);
+}
+.kpiRose {
+  --kpi-c: var(--ds-status-error-fg);
+}
+.kpiViolet {
+  --kpi-c: var(--ds-accent-violet, oklch(58% 0.13 290));
+}
 
 /* ── Frosted Sticky Toolbar ───────────────────────────────────────────────── */
 .toolbar {
@@ -227,8 +260,15 @@ button.kpiCard:hover::before,
 }
 
 @keyframes pendingPulse {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50%       { opacity: 1;   transform: scale(1.3); }
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
 }
 
 .resultCount {
@@ -268,12 +308,13 @@ button.kpiCard:hover::before,
   color: var(--ds-text-primary);
   font-size: var(--ds-text-sm);
   font-family: inherit;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
-.searchInput::placeholder { color: var(--ds-text-muted); }
+.searchInput::placeholder {
+  color: var(--ds-text-muted);
+}
 
 .searchInput:focus {
   outline: none;
@@ -348,7 +389,9 @@ button.kpiCard:hover::before,
   inline-size: 110px;
 }
 
-.dateInput:focus { outline: none; }
+.dateInput:focus {
+  outline: none;
+}
 
 /* ── Clear button ─────────────────────────────────────────────────────────── */
 .clearBtn {
@@ -358,7 +401,9 @@ button.kpiCard:hover::before,
   transition: color var(--ds-duration-fast) ease !important;
 }
 
-.clearBtn:hover { color: var(--ds-status-error-fg) !important; }
+.clearBtn:hover {
+  color: var(--ds-status-error-fg) !important;
+}
 
 /* ── Tabs ─────────────────────────────────────────────────────────────────── */
 .tabsList {
@@ -372,7 +417,9 @@ button.kpiCard:hover::before,
   scrollbar-width: none;
 }
 
-.tabsList::-webkit-scrollbar { display: none; }
+.tabsList::-webkit-scrollbar {
+  display: none;
+}
 
 .tabsTrigger {
   display: inline-flex !important;
@@ -383,9 +430,7 @@ button.kpiCard:hover::before,
   padding-inline: var(--ds-space-3) !important;
   border-radius: var(--ds-radius-lg) !important;
   white-space: nowrap !important;
-  transition:
-    background var(--ds-duration-fast) ease,
-    color var(--ds-duration-fast) ease !important;
+  transition: background var(--ds-duration-fast) ease, color var(--ds-duration-fast) ease !important;
 }
 
 .tabCount {
@@ -413,8 +458,13 @@ button.kpiCard:hover::before,
 }
 
 @keyframes breathPulse {
-  0%, 100% { opacity: 0.7; }
-  50%       { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 /* ── Table Wrapper ────────────────────────────────────────────────────────── */
@@ -472,7 +522,7 @@ button.kpiCard:hover::before,
 }
 
 /* Hide IP column on < 768px, action column stays */
-.thIp { }
+/* .thIp handled by responsive grid */
 .thAction {
   inline-size: 40px;
   text-align: center;
@@ -489,7 +539,7 @@ button.kpiCard:hover::before,
   transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
-.tdIp { }
+/* .tdIp handled by responsive grid */
 .tdAction {
   text-align: center;
   inline-size: 40px;
@@ -504,8 +554,14 @@ button.kpiCard:hover::before,
 }
 
 @keyframes rowIn {
-  from { opacity: 0; transform: translateX(-4px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .tr:hover .td {
@@ -522,7 +578,9 @@ button.kpiCard:hover::before,
   box-shadow: inset 3px 0 0 var(--ds-brand-500);
 }
 
-.tr:last-child .td { border-block-end: none; }
+.tr:last-child .td {
+  border-block-end: none;
+}
 
 /* Security rows — subtle rose tint + left border */
 .trSecurity .td {
@@ -657,10 +715,8 @@ button.kpiCard:hover::before,
   color: var(--ds-text-muted);
   cursor: pointer;
   opacity: 0;
-  transition:
-    opacity var(--ds-duration-fast) ease,
-    background var(--ds-duration-fast) ease,
-    color var(--ds-duration-fast) ease;
+  transition: opacity var(--ds-duration-fast) ease, background var(--ds-duration-fast) ease, color
+    var(--ds-duration-fast) ease;
 }
 
 .tr:hover .rowBtn,
@@ -717,9 +773,17 @@ button.kpiCard:hover::before,
   border-color: var(--ds-status-error-border) !important;
 }
 .badgeViolet {
-  background: color-mix(in oklch, var(--ds-accent-violet, oklch(58% 0.13 290)) 10%, var(--ds-canvas)) !important;
+  background: color-mix(
+    in oklch,
+    var(--ds-accent-violet, oklch(58% 0.13 290)) 10%,
+    var(--ds-canvas)
+  ) !important;
   color: var(--ds-accent-violet, oklch(58% 0.13 290)) !important;
-  border-color: color-mix(in oklch, var(--ds-accent-violet, oklch(58% 0.13 290)) 30%, var(--ds-border-default)) !important;
+  border-color: color-mix(
+    in oklch,
+    var(--ds-accent-violet, oklch(58% 0.13 290)) 30%,
+    var(--ds-border-default)
+  ) !important;
 }
 .badgeGray {
   background: var(--ds-canvas-subtle, var(--ds-canvas)) !important;
@@ -728,20 +792,37 @@ button.kpiCard:hover::before,
 }
 
 /* ── Status Dot colours ───────────────────────────────────────────────────── */
-.dotBlue    { background: var(--ds-status-progress-fg); }
-.dotEmerald { background: var(--ds-status-success-fg); }
-.dotAmber   { background: var(--ds-status-pending-fg); }
-.dotRose    {
+.dotBlue {
+  background: var(--ds-status-progress-fg);
+}
+.dotEmerald {
+  background: var(--ds-status-success-fg);
+}
+.dotAmber {
+  background: var(--ds-status-pending-fg);
+}
+.dotRose {
   background: var(--ds-status-error-fg);
   /* pulse for security events */
   animation: dotPulse 2s ease-in-out infinite;
 }
-.dotViolet { background: var(--ds-accent-violet, oklch(58% 0.13 290)); }
-.dotGray   { background: var(--ds-text-muted); }
+.dotViolet {
+  background: var(--ds-accent-violet, oklch(58% 0.13 290));
+}
+.dotGray {
+  background: var(--ds-text-muted);
+}
 
 @keyframes dotPulse {
-  0%, 100% { opacity: 0.7; transform: scale(1); }
-  50%       { opacity: 1;   transform: scale(1.4); }
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.4);
+  }
 }
 
 /* ── Pagination ───────────────────────────────────────────────────────────── */
@@ -781,11 +862,9 @@ button.kpiCard:hover::before,
   font-variant-numeric: tabular-nums;
   font-family: inherit;
   cursor: pointer;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), color var(--ds-duration-fast)
+    var(--ds-ease-out-quart), transform var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .pageBtn:hover:not(:disabled) {
@@ -794,7 +873,9 @@ button.kpiCard:hover::before,
   transform: translateY(-1px);
 }
 
-.pageBtn:active:not(:disabled) { transform: scale(0.95); }
+.pageBtn:active:not(:disabled) {
+  transform: scale(0.95);
+}
 
 .pageBtn:focus-visible {
   outline: none;
@@ -802,7 +883,10 @@ button.kpiCard:hover::before,
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 14%, transparent);
 }
 
-.pageBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+.pageBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 .pageBtnActive {
   background: var(--ds-brand-500) !important;
@@ -921,7 +1005,10 @@ button.kpiCard:hover::before,
   opacity: 0.6;
 }
 
-.modalContent > * { position: relative; z-index: 1; }
+.modalContent > * {
+  position: relative;
+  z-index: 1;
+}
 
 /* ── Close button ─────────────────────────────────────────────────────────── */
 .modalClose {
@@ -937,9 +1024,7 @@ button.kpiCard:hover::before,
   cursor: pointer !important;
   flex-shrink: 0 !important;
   margin-inline-start: auto !important;
-  transition:
-    background var(--ds-duration-fast) ease,
-    color var(--ds-duration-fast) ease,
+  transition: background var(--ds-duration-fast) ease, color var(--ds-duration-fast) ease,
     border-color var(--ds-duration-fast) ease !important;
 }
 
@@ -1018,7 +1103,9 @@ button.kpiCard:hover::before,
   scrollbar-color: var(--ds-border-strong) transparent;
 }
 
-.modalBody::-webkit-scrollbar { inline-size: 4px; }
+.modalBody::-webkit-scrollbar {
+  inline-size: 4px;
+}
 .modalBody::-webkit-scrollbar-thumb {
   background: var(--ds-border-strong);
   border-radius: var(--ds-radius-full);
@@ -1026,8 +1113,7 @@ button.kpiCard:hover::before,
 
 /* Dark mode modal */
 :global(.dark) .modalContent {
-  background:
-    color-mix(in oklch, oklch(16% 0.012 265) 92%, transparent) !important;
+  background: color-mix(in oklch, oklch(16% 0.012 265) 92%, transparent) !important;
   border-color: oklch(30% 0.012 265 / 0.7) !important;
   box-shadow:
     0 0 0 1px oklch(100% 0 0 / 0.04),
@@ -1085,7 +1171,9 @@ button.kpiCard:hover::before,
   background: color-mix(in oklch, var(--ds-canvas-subtle, var(--ds-canvas)) 50%, transparent);
 }
 
-.metaRow:last-child { border-block-end: none; }
+.metaRow:last-child {
+  border-block-end: none;
+}
 
 .metaRow:hover {
   background: color-mix(in oklch, var(--ds-brand-500) 5%, transparent);
@@ -1130,10 +1218,8 @@ button.kpiCard:hover::before,
   color: var(--ds-text-muted);
   cursor: pointer;
   flex-shrink: 0;
-  transition:
-    background var(--ds-duration-fast) ease,
-    color var(--ds-duration-fast) ease,
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast) ease, color var(--ds-duration-fast) ease, transform
+    var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .copyBtn:hover {
@@ -1141,7 +1227,9 @@ button.kpiCard:hover::before,
   color: var(--ds-brand-500);
 }
 
-.copyBtn:active { transform: scale(0.9); }
+.copyBtn:active {
+  transform: scale(0.9);
+}
 
 .copyBtnSm {
   display: inline-flex;
@@ -1157,9 +1245,7 @@ button.kpiCard:hover::before,
   font-family: inherit;
   font-weight: var(--ds-weight-medium);
   cursor: pointer;
-  transition:
-    background var(--ds-duration-fast) ease,
-    border-color var(--ds-duration-fast) ease,
+  transition: background var(--ds-duration-fast) ease, border-color var(--ds-duration-fast) ease,
     color var(--ds-duration-fast) ease;
 }
 
@@ -1185,8 +1271,14 @@ button.kpiCard:hover::before,
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── JSON viewer ──────────────────────────────────────────────────────────── */
@@ -1223,36 +1315,58 @@ button.kpiCard:hover::before,
   font-variant-numeric: tabular-nums;
 }
 
-.jsonPre::-webkit-scrollbar { block-size: 6px; }
+.jsonPre::-webkit-scrollbar {
+  block-size: 6px;
+}
 .jsonPre::-webkit-scrollbar-thumb {
   background: var(--ds-border-strong);
   border-radius: var(--ds-radius-full);
 }
-.jsonPre::-webkit-scrollbar-track { background: transparent; }
+.jsonPre::-webkit-scrollbar-track {
+  background: transparent;
+}
 
 /* ══════════════════════════════════════════════════════════════════════════
    Responsive
    ══════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
   .thIp,
-  .tdIp { display: none; }
+  .tdIp {
+    display: none;
+  }
 
-  .searchWrap { max-inline-size: none; }
+  .searchWrap {
+    max-inline-size: none;
+  }
 
-  .dateWrap { display: none; }
+  .dateWrap {
+    display: none;
+  }
 
-  .toolbar { gap: var(--ds-space-2); padding: var(--ds-space-2) var(--ds-space-3); }
+  .toolbar {
+    gap: var(--ds-space-2);
+    padding: var(--ds-space-2) var(--ds-space-3);
+  }
 }
 
 @media (max-width: 540px) {
   .th:nth-child(4),
-  .td:nth-child(4) { display: none; }
+  .td:nth-child(4) {
+    display: none;
+  }
 
-  .kpiStrip { grid-template-columns: repeat(2, 1fr); }
+  .kpiStrip {
+    grid-template-columns: repeat(2, 1fr);
+  }
 
-  .tabsList { gap: 1px !important; }
+  .tabsList {
+    gap: 1px !important;
+  }
 
-  .tabsTrigger { padding-inline: var(--ds-space-2) !important; font-size: 11px !important; }
+  .tabsTrigger {
+    padding-inline: var(--ds-space-2) !important;
+    font-size: 11px !important;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -1308,7 +1422,7 @@ button.kpiCard:hover::before,
 
   /* Animation — faster than default */
   animation-duration: 160ms !important;
-  animation-timing-function: var(--ds-ease-out-quart, cubic-bezier(0.22,1,0.36,1)) !important;
+  animation-timing-function: var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)) !important;
 }
 
 /* Label */
@@ -1344,9 +1458,8 @@ button.kpiCard:hover::before,
 
   /* Reset Tailwind gradient */
   background: transparent !important;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart) !important;
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart) !important;
 }
 
 .dropdownItem:hover,

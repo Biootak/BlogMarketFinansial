@@ -9,6 +9,7 @@
  *  - زمان نسبی فارسی (۲ دقیقه پیش)
  */
 
+import type { StaffActivityItem } from '@/actions/exchanges';
 import {
   Activity,
   LogIn,
@@ -20,8 +21,7 @@ import {
   UserPlus,
   Users,
 } from 'lucide-react';
-import type { StaffActivityItem } from '@/actions/exchanges';
-import { getActionLabel, getActionTone, formatRelativeFa } from '../_lib/staff-format';
+import { formatRelativeFa, getActionLabel, getActionTone } from '../_lib/staff-format';
 import s from './StaffCockpit.module.css';
 
 interface Props {
@@ -43,8 +43,8 @@ const ICON_MAP: Record<string, typeof Activity> = {
   'rate.created': Settings,
   'rate.updated': Settings,
   'settings.updated': Settings,
-  'login': LogIn,
-  'logout': LogOut,
+  login: LogIn,
+  logout: LogOut,
 };
 
 function iconFor(action: string) {
@@ -61,9 +61,7 @@ export function StaffActivityTimeline({ items, limit = 10 }: Props) {
           <Activity size={22} strokeWidth={1.75} />
         </span>
         <p className={s.emptyTitle}>فعلاً فعالیتی ثبت نشده</p>
-        <p className={s.emptySub}>
-          به‌محض اولین اقدام روی تیم یا صرافی، اینجا نمایش داده می‌شود.
-        </p>
+        <p className={s.emptySub}>به‌محض اولین اقدام روی تیم یا صرافی، اینجا نمایش داده می‌شود.</p>
       </div>
     );
   }
@@ -73,22 +71,14 @@ export function StaffActivityTimeline({ items, limit = 10 }: Props) {
       {visible.map((item, i) => {
         const Icon = iconFor(item.action);
         const tone = getActionTone(item.action);
-        const actor =
-          item.actorName ??
-          (item.actorEmail ? item.actorEmail.split('@')[0] : 'سیستم');
+        const actor = item.actorName ?? (item.actorEmail ? item.actorEmail.split('@')[0] : 'سیستم');
         return (
-          <li
-            key={item.id}
-            className={s.timelineItem}
-            style={{ animationDelay: `${i * 40}ms` }}
-          >
+          <li key={item.id} className={s.timelineItem} style={{ animationDelay: `${i * 40}ms` }}>
             <span className={s.timelineDot} data-tone={tone} aria-hidden>
               <Icon size={14} strokeWidth={2} />
             </span>
             <div className={s.timelineBody}>
-              <span className={s.timelineTitle}>
-                {getActionLabel(item.action)}
-              </span>
+              <span className={s.timelineTitle}>{getActionLabel(item.action)}</span>
               <span className={s.timelineMeta}>
                 <span className={s.timelineActor}>{actor}</span>
                 {item.entityType && (

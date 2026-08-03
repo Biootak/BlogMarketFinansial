@@ -41,13 +41,13 @@ export function SettingsField({
   htmlFor,
 }: Props) {
   return (
-    <div
-      className={`${s.field} ${s[`span_${span}`]} ${layout === 'inline' ? s.inline : ''}`}
-    >
+    <div className={`${s.field} ${s[`span_${span}`]} ${layout === 'inline' ? s.inline : ''}`}>
       <div className={s.labelRow}>
         <label className={s.label} htmlFor={htmlFor}>
           {label}
-          {tag && <span className={`${s.tag} ${s[`tag_${tag.tone ?? 'optional'}`]}`}>{tag.label}</span>}
+          {tag && (
+            <span className={`${s.tag} ${s[`tag_${tag.tone ?? 'optional'}`]}`}>{tag.label}</span>
+          )}
         </label>
         {hint && <span className={s.hint}>{hint}</span>}
       </div>

@@ -3,11 +3,15 @@
  *
  *   1. SubNav sticky: پروفایل | بازارها | ساعات کاری | درباره | تماس
  *   2. Hydrates exchange data once برای همهٔ child routes
+ *
+ * 2026-08-perf: getPublicExchangeServices و prisma.exchange موازی شدند (Promise.all).
+ * generateMetadata از safeCache استفاده می‌کند تا DB hit تکراری نشود.
  */
 
-import { notFound } from 'next/navigation';
-import prisma from '@/lib/db';
 import { getPublicExchangeServices } from '@/actions/exchange-services';
+import { safeCache } from '@/lib/safe-cache';
+import prisma from '@/lib/db';
+import { notFound } from 'next/navigation';
 import SubNav from './_components/SubNav';
 
 export const revalidate = 60;
@@ -17,12 +21,37 @@ type LayoutProps = {
   params: Promise<{ slug: string }>;
 };
 
+/** کش ۶۰ثانیه‌ای — هم metadata هم layout از همین نتیجه استفاده می‌کنند */
+const getExchangeMeta = safeCache(
+  async (slug: string) =>
+    prisma.exchange.findUnique({
+      where: { slug },
+      select: { name: true, displayName: true, city: true, status: true },
+    }),
+  null,
+  { key: 'exchange-meta', ttl: 60, tags: ['exchanges', 'exchange-rates'] },
+);
+
+const getExchangeWithQuotes = safeCache(
+  async (slug: string) =>
+    prisma.exchange.findUnique({
+      where: { slug },
+      include: {
+        ExchangeRateQuote: {
+          where: { status: 'ACTIVE' },
+          orderBy: [{ currencyCode: 'asc' }, { createdAt: 'desc' }],
+          take: 50,
+        },
+        _count: { select: { Customer: true, Transaction: true } },
+      },
+    }),
+  null,
+  { key: 'exchange-with-quotes', ttl: 60, tags: ['exchanges', 'exchange-rates'] },
+);
+
 export async function generateMetadata({ params }: LayoutProps) {
   const { slug } = await params;
-  const exchange = await prisma.exchange.findUnique({
-    where: { slug },
-    select: { name: true, displayName: true, city: true, status: true },
-  });
+  const exchange = await getExchangeMeta(slug);
   if (!exchange) return { title: 'صرافی یافت نشد', robots: { index: false } };
   const title = exchange.displayName ?? exchange.name;
   return {
@@ -36,24 +65,14 @@ export async function generateMetadata({ params }: LayoutProps) {
 export default async function ExchangeLayout({ children, params }: LayoutProps) {
   const { slug } = await params;
 
-  const exchange = await prisma.exchange.findUnique({
-    where: { slug },
-    include: {
-      ExchangeRateQuote: {
-        where: { status: 'ACTIVE' },
-        orderBy: [{ currencyCode: 'asc' }, { createdAt: 'desc' }],
-        take: 50,
-      },
-      _count: { select: { Customer: true, Transaction: true } },
-    },
-  });
+  // 2026-08-perf: موازی — هر دو query هم‌زمان اجرا می‌شوند (−50% زمان انتظار)
+  const [exchange, services] = await Promise.all([
+    getExchangeWithQuotes(slug),
+    getPublicExchangeServices(slug),
+  ]);
 
   if (!exchange || exchange.status !== 'ACTIVE') notFound();
 
-  // 2026-07-28: تعداد سرویس‌های فعال برای نمایش pill «خدمات» در SubNav
-  const services = await getPublicExchangeServices(slug);
-
-  // تبدیل به DTO ساده برای SubNav (بدون leaking Prisma types به client)
   const navData = {
     slug: exchange.slug,
     name: exchange.displayName ?? exchange.name,

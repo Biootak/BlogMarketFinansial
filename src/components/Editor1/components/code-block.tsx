@@ -1,6 +1,6 @@
 import type { NodeViewProps } from '@tiptap/core';
 import { NodeViewContent, NodeViewWrapper } from '@tiptap/react';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Icon } from '../../ui/icon';
 
 import { findLanguage } from '../lib/code-block-language-loader';

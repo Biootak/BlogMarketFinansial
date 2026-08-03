@@ -69,9 +69,8 @@ async function loadLatestPostCategories(): Promise<LatestPostCategory[]> {
         postCount: c._count.posts,
       }))
       .filter((c) => c.name.length > 0);
-  } catch (err) {
+  } catch (_err) {
     if (process.env.NODE_ENV === 'development') {
-      console.error('[getLatestPostCategories] error:', err);
     }
     return [];
   }

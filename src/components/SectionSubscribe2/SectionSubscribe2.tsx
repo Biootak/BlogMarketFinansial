@@ -1,5 +1,5 @@
 import { subscribeToNewsletter } from '@/actions/newsletter';
-import { Bell, CheckCircle2, Gift, Mail, Sparkles, Users } from 'lucide-react';
+import { Bell, CheckCircle2, Mail, Sparkles, Users } from 'lucide-react';
 import type { FC } from 'react';
 import SubscribeForm from './SubscribeForm';
 

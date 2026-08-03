@@ -14,9 +14,9 @@
  */
 
 import {
+  type SecurityOverview,
   changeMyPassword,
   requestAccountDeletion,
-  type SecurityOverview,
 } from '@/actions/customer-portal';
 import { SectionHeader } from '@/app/(customer)/customer/_lib/customer-ui';
 import { ConfirmDialog } from '@/components/Dashboard/primitives';
@@ -141,7 +141,8 @@ export function SecurityCenter({ overview }: Props) {
   }
 
   const strength = passwordStrength(pwd.next);
-  const pwdFormInvalid = !pwd.current || !pwd.next || pwd.next !== pwd.confirm || strength.score < 3;
+  const pwdFormInvalid =
+    !pwd.current || !pwd.next || pwd.next !== pwd.confirm || strength.score < 3;
 
   return (
     <div className={s.root}>
@@ -166,7 +167,15 @@ export function SecurityCenter({ overview }: Props) {
           </div>
           <div className={s.scoreRing} aria-hidden>
             <svg viewBox="0 0 100 100" aria-hidden role="presentation">
-              <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="6" opacity={0.12} />
+              <circle
+                cx="50"
+                cy="50"
+                r="44"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="6"
+                opacity={0.12}
+              />
               <circle
                 cx="50"
                 cy="50"
@@ -204,7 +213,11 @@ export function SecurityCenter({ overview }: Props) {
 
       {/* ═══ 2) Password change ═══════════════════════════════════════ */}
       <section className={s.card}>
-        <SectionHeader icon={KeyRound} title="تغییر رمز عبور" sub="رمز قوی با حرف بزرگ، کوچک و عدد" />
+        <SectionHeader
+          icon={KeyRound}
+          title="تغییر رمز عبور"
+          sub="رمز قوی با حرف بزرگ، کوچک و عدد"
+        />
         <form
           className={s.form}
           onSubmit={(e) => {
@@ -273,7 +286,11 @@ export function SecurityCenter({ overview }: Props) {
 
       {/* ═══ 3) 2FA + 4) Devices quick links ══════════════════════════ */}
       <div className={s.linkGrid}>
-        <Link href="/customer/2fa" className={s.linkCard} data-tone={overview.twoFactorEnabled ? 'success' : 'warning'}>
+        <Link
+          href="/customer/2fa"
+          className={s.linkCard}
+          data-tone={overview.twoFactorEnabled ? 'success' : 'warning'}
+        >
           <div className={s.linkIcon} aria-hidden>
             <Fingerprint size={20} />
           </div>
@@ -296,9 +313,7 @@ export function SecurityCenter({ overview }: Props) {
           </div>
           <div className={s.linkMain}>
             <h3 className={s.linkTitle}>دستگاه‌های فعال</h3>
-            <p className={s.linkSub}>
-              {overview.deviceCount} دستگاه متصل — مدیریت و لغو دسترسی
-            </p>
+            <p className={s.linkSub}>{overview.deviceCount} دستگاه متصل — مدیریت و لغو دسترسی</p>
           </div>
         </Link>
       </div>
@@ -314,8 +329,8 @@ export function SecurityCenter({ overview }: Props) {
           <div className={s.dangerInfo}>
             <h3 className={s.dangerTitle}>حذف حساب</h3>
             <p className={s.dangerSub}>
-              حساب شما برای همیشه غیرفعال می‌شود. پس از تأیید صرافی، تمام داده‌ها، تراکنش‌ها و مدارک شما
-              حذف خواهد شد. این عملیات قابل بازگشت نیست.
+              حساب شما برای همیشه غیرفعال می‌شود. پس از تأیید صرافی، تمام داده‌ها، تراکنش‌ها و مدارک
+              شما حذف خواهد شد. این عملیات قابل بازگشت نیست.
             </p>
           </div>
           <button
@@ -421,11 +436,7 @@ function Field({
         <div className={s.strength} data-tone={strength.tone} aria-live="polite">
           <div className={s.strengthBars}>
             {[0, 1, 2, 3].map((i) => (
-              <span
-                key={i}
-                className={s.strengthBar}
-                data-on={i < strength.score || undefined}
-              />
+              <span key={i} className={s.strengthBar} data-on={i < strength.score || undefined} />
             ))}
           </div>
           <span className={s.strengthLabel}>{strength.label}</span>

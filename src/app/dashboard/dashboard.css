@@ -15992,7 +15992,7 @@
     background: var(--at-surface);
     border: 1px solid var(--at-line);
     border-radius: 12px;
-    overflow: hidden;
+    overflow-x: auto;
     font-size: var(--ds-text-sm, 13px);
   }
 

@@ -134,9 +134,7 @@ export async function getUserDetail(
   // R1-fix: ADMIN can only see non-admin/non-owner users
   if (
     auth.user.role === Role.ADMIN &&
-    (user.role === Role.OWNER ||
-      user.role === Role.SUPERADMIN ||
-      user.role === Role.ADMIN)
+    (user.role === Role.OWNER || user.role === Role.SUPERADMIN || user.role === Role.ADMIN)
   ) {
     return { success: false, message: 'شما دسترسی به این کاربر را ندارید' };
   }

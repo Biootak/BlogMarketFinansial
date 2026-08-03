@@ -1,10 +1,10 @@
 /* ComparisonMatrixView — جدول مقایسه خدمات صرافی‌ها */
 
 .root {
-  min-height: 100vh;
+  min-height: 100dvh;
   background: var(--ds-surface, #0b0e14);
   color: var(--ds-text, #e8eaed);
-  font-family: var(--ds-font-fa, 'Vazirmatn', Tahoma, Arial, sans-serif);
+  font-family: var(--ds-font-fa, "Vazirmatn", Tahoma, Arial, sans-serif);
 }
 
 /* ── Hero ──────────────────────────────────────────── */
@@ -13,25 +13,23 @@
   position: relative;
   padding-block: clamp(48px, 7vw, 88px);
   padding-inline: clamp(20px, 4vw, 32px);
-  background:
-    radial-gradient(ellipse at top, rgba(99, 102, 241, 0.12) 0%, transparent 60%),
+  background: radial-gradient(ellipse at top, rgba(99, 102, 241, 0.12) 0%, transparent 60%),
     var(--ds-surface, #0b0e14);
   border-block-end: 1px solid var(--ds-border, rgba(255, 255, 255, 0.08));
   overflow: hidden;
 }
 
 .hero::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background:
-    repeating-linear-gradient(
-      45deg,
-      transparent 0,
-      transparent 32px,
-      rgba(255, 255, 255, 0.015) 32px,
-      rgba(255, 255, 255, 0.015) 33px
-    );
+  background: repeating-linear-gradient(
+    45deg,
+    transparent 0,
+    transparent 32px,
+    rgba(255, 255, 255, 0.015) 32px,
+    rgba(255, 255, 255, 0.015) 33px
+  );
   pointer-events: none;
 }
 
@@ -437,7 +435,7 @@
 /* ── Empty ──────────────────────────────────────────── */
 
 .emptyPage {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;

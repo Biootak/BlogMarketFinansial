@@ -27,7 +27,7 @@
   animation: heroEnter 440ms var(--ds-ease-out-quart) both;
 }
 
-.root[data-tone='credit'] {
+.root[data-tone="credit"] {
   background: linear-gradient(
     135deg,
     color-mix(in oklch, var(--nova-up) 4%, var(--ds-surface)) 0%,
@@ -36,7 +36,7 @@
   border-color: color-mix(in oklch, var(--nova-up) 22%, var(--ds-border-default));
 }
 
-.root[data-tone='debit'] {
+.root[data-tone="debit"] {
   background: linear-gradient(
     135deg,
     color-mix(in oklch, var(--nova-down) 4%, var(--ds-surface)) 0%,
@@ -64,12 +64,20 @@
   background: var(--ds-text-muted);
 }
 
-.root[data-tone='credit'] .heroRail {
-  background: linear-gradient(180deg, var(--nova-up), color-mix(in oklch, var(--nova-up) 30%, transparent));
+.root[data-tone="credit"] .heroRail {
+  background: linear-gradient(
+    180deg,
+    var(--nova-up),
+    color-mix(in oklch, var(--nova-up) 30%, transparent)
+  );
 }
 
-.root[data-tone='debit'] .heroRail {
-  background: linear-gradient(180deg, var(--nova-down), color-mix(in oklch, var(--nova-down) 30%, transparent));
+.root[data-tone="debit"] .heroRail {
+  background: linear-gradient(
+    180deg,
+    var(--nova-down),
+    color-mix(in oklch, var(--nova-down) 30%, transparent)
+  );
 }
 
 .heroIcon {
@@ -87,13 +95,13 @@
   flex-shrink: 0;
 }
 
-.root[data-tone='credit'] .heroIcon {
+.root[data-tone="credit"] .heroIcon {
   background: color-mix(in oklch, var(--nova-up) 12%, transparent);
   color: var(--nova-up);
   border-color: color-mix(in oklch, var(--nova-up) 28%, transparent);
 }
 
-.root[data-tone='debit'] .heroIcon {
+.root[data-tone="debit"] .heroIcon {
   background: color-mix(in oklch, var(--nova-down) 12%, transparent);
   color: var(--nova-down);
   border-color: color-mix(in oklch, var(--nova-down) 28%, transparent);
@@ -137,25 +145,25 @@
   color: var(--ds-text-muted);
 }
 
-.statusPill[data-status='pending'] {
+.statusPill[data-status="pending"] {
   background: color-mix(in oklch, var(--nova-amber) 12%, transparent);
   color: var(--nova-amber);
   border-color: color-mix(in oklch, var(--nova-amber) 32%, transparent);
 }
 
-.statusPill[data-status='progress'] {
+.statusPill[data-status="progress"] {
   background: color-mix(in oklch, var(--nova-cyan) 12%, transparent);
   color: var(--nova-cyan);
   border-color: color-mix(in oklch, var(--nova-cyan) 32%, transparent);
 }
 
-.statusPill[data-status='success'] {
+.statusPill[data-status="success"] {
   background: color-mix(in oklch, var(--nova-up) 12%, transparent);
   color: var(--nova-up);
   border-color: color-mix(in oklch, var(--nova-up) 32%, transparent);
 }
 
-.statusPill[data-status='danger'] {
+.statusPill[data-status="danger"] {
   background: color-mix(in oklch, var(--nova-down) 12%, transparent);
   color: var(--nova-down);
   border-color: color-mix(in oklch, var(--nova-down) 32%, transparent);
@@ -170,8 +178,15 @@
 }
 
 @keyframes livePulse {
-  0%, 100% { opacity: 0.4; transform: scale(0.8); }
-  50% { opacity: 1; transform: scale(1); }
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .amount {
@@ -195,19 +210,19 @@
   inline-size: 0.6em;
 }
 
-.root[data-tone='credit'] .amountValue {
+.root[data-tone="credit"] .amountValue {
   color: var(--nova-up);
 }
 
-.root[data-tone='debit'] .amountValue {
+.root[data-tone="debit"] .amountValue {
   color: var(--nova-down);
 }
 
-.root[data-tone='credit'] .amountSign {
+.root[data-tone="credit"] .amountSign {
   color: var(--nova-up);
 }
 
-.root[data-tone='debit'] .amountSign {
+.root[data-tone="debit"] .amountSign {
   color: var(--nova-down);
 }
 
@@ -278,7 +293,7 @@
   gap: 0.3em;
   font-size: 0.625rem;
   color: var(--ds-text-muted);
-  font-family: var(--ds-font-mono, ui-monospace, 'Cascadia Code', monospace);
+  font-family: var(--ds-font-mono, ui-monospace, "Cascadia Code", monospace);
   background: var(--ds-canvas-subtle);
   padding-block: 0.2em;
   padding-inline: 0.55em;
@@ -340,7 +355,7 @@
   background: color-mix(in oklch, var(--ds-text-muted) 5%, transparent);
 }
 
-.tab[data-active='true'] {
+.tab[data-active="true"] {
   background: var(--ds-brand-500);
   color: var(--ds-canvas);
   box-shadow: 0 2px 6px -2px color-mix(in oklch, var(--ds-brand-500) 35%, transparent);
@@ -360,8 +375,14 @@
 }
 
 @keyframes contentFade {
-  from { opacity: 0; transform: translateY(2px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── Details grid ──────────────────────────────────────────────────────── */
@@ -480,7 +501,7 @@
 }
 
 .mono {
-  font-family: var(--ds-font-mono, ui-monospace, 'Cascadia Code', monospace);
+  font-family: var(--ds-font-mono, ui-monospace, "Cascadia Code", monospace);
   font-size: 0.75em;
   color: var(--ds-text-primary);
 }
@@ -504,8 +525,14 @@
 }
 
 @keyframes cardEnter {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .summaryTitle {

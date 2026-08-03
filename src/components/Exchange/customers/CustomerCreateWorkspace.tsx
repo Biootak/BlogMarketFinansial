@@ -92,14 +92,17 @@ export function CustomerCreateWorkspace({ exchangeId, primaryCurrency }: Props) 
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === 'number' ? Number(value) : value,
-    }));
-    setError(null);
-  }, []);
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+      const { name, value, type } = e.target;
+      setForm((prev) => ({
+        ...prev,
+        [name]: type === 'number' ? Number(value) : value,
+      }));
+      setError(null);
+    },
+    [],
+  );
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -357,9 +360,7 @@ export function CustomerCreateWorkspace({ exchangeId, primaryCurrency }: Props) 
 
         <div className={s.sideNotice}>
           <AlertCircle size={13} aria-hidden />
-          <span>
-            وضعیت اولیه «احتمالی» تنظیم می‌شود. پس از تأیید هویت به «فعال» تغییر کنید.
-          </span>
+          <span>وضعیت اولیه «احتمالی» تنظیم می‌شود. پس از تأیید هویت به «فعال» تغییر کنید.</span>
         </div>
       </aside>
     </form>

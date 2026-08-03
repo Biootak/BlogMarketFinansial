@@ -1,10 +1,10 @@
 'use client';
 
-import { AnimatePresence, motion } from '@/lib/motion-shim';
+import { AnimatePresence } from '@/lib/motion-shim';
 import type { Route } from '@/routers/types';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import Link from 'next/link';
-import React, { type FC, Fragment, useState } from 'react';
+import { type FC, Fragment, useState } from 'react';
 import { HiChevronDown } from 'react-icons/hi2';
 import NcImage from '../NcImage/NcImage';
 import { Button } from '../ui/button';

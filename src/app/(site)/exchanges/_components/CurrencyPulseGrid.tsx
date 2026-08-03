@@ -11,8 +11,8 @@
  */
 
 import { ArrowDownRight, ArrowUpRight } from 'lucide-react';
-import { switchBoardCurrency } from './LiveRateBoardAsync';
 import s from './CurrencyPulseGrid.module.css';
+import { switchBoardCurrency } from './LiveRateBoardAsync';
 
 export type PulseTile = {
   code: string;
@@ -65,7 +65,20 @@ export default function CurrencyPulseGrid({ tiles, activeCode, onSelect }: Props
   }
 
   // ۲۰۲۶-۰۷-۲۹: AFN اول (طبق قانون P0 سایت افغانستان)، بعد liquidity desc
-  const AFN_PRIORITY = ['AFN', 'USD', 'EUR', 'AED', 'PKR', 'IRR', 'INR', 'CNY', 'TRY', 'GBP', 'SAR', 'RUB'];
+  const AFN_PRIORITY = [
+    'AFN',
+    'USD',
+    'EUR',
+    'AED',
+    'PKR',
+    'IRR',
+    'INR',
+    'CNY',
+    'TRY',
+    'GBP',
+    'SAR',
+    'RUB',
+  ];
   const priority = (code: string) => {
     const idx = AFN_PRIORITY.indexOf(code);
     return idx === -1 ? 1000 + code.charCodeAt(0) : idx;

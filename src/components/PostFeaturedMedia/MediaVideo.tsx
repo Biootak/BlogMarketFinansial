@@ -2,7 +2,7 @@
 
 import LoadingVideo from '@/components/LoadingVideo/LoadingVideo';
 import dynamic from 'next/dynamic';
-import React, { type FC, useEffect, useState } from 'react';
+import { type FC, useEffect, useState } from 'react';
 import { HiSpeakerWave, HiSpeakerXMark } from 'react-icons/hi2';
 
 const ReactPlayer = dynamic(() => import('react-player'), { ssr: false });

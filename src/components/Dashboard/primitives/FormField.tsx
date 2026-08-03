@@ -1,7 +1,14 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { Children, type ReactElement, type ReactNode, cloneElement, isValidElement, useId } from 'react';
+import {
+  Children,
+  type ReactElement,
+  type ReactNode,
+  cloneElement,
+  isValidElement,
+  useId,
+} from 'react';
 
 export interface FormFieldProps {
   label: string;
@@ -24,9 +31,7 @@ export interface FormFieldProps {
  * Find the first descendant that is a valid React element with a settable id
  * — i.e. the interactive control we should wire aria-describedby / aria-invalid to.
  */
-function findControl(
-  node: ReactNode,
-): ReactElement<{
+function findControl(node: ReactNode): ReactElement<{
   id?: string;
   'aria-describedby'?: string;
   'aria-invalid'?: boolean;

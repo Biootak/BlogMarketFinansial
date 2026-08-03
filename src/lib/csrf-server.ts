@@ -44,7 +44,9 @@ function getAllowedHosts(): Set<string> {
   set.add('0.0.0.0');
   // optional extra hosts via env (comma-separated) — e.g. CSRF_ALLOWED_HOSTS="staging.example.com"
   if (process.env.CSRF_ALLOWED_HOSTS) {
-    for (const h of process.env.CSRF_ALLOWED_HOSTS.split(',').map((s) => s.trim()).filter(Boolean)) {
+    for (const h of process.env.CSRF_ALLOWED_HOSTS.split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)) {
       set.add(h);
     }
   }

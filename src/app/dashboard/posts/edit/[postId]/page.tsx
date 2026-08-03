@@ -86,7 +86,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       {/* ── نوار KPI پست (بالای فرم، مستقیم زیر هدر) ───────────────── */}
       <div className="at-tile mb-5">
         <div
-          className="grid grid-cols-2 sm:grid-cols-4 divide-x-2 divide-x-reverse divide-[color:var(--at-line)]"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-x-2 divide-x-reverse divide-[color:var(--at-line)]"
           dir="rtl"
         >
           {stats.map(({ icon: Icon, value, label }) => (

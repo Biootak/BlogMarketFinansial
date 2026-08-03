@@ -7,7 +7,7 @@ import { useDirection } from '@/hooks/useDirection';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import type { Editor } from '@tiptap/core';
 import dynamic from 'next/dynamic';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Icon } from '../../ui/icon';
 import { Toolbar } from '../../ui/toolbar';
 

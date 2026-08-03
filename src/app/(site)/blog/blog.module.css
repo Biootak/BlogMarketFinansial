@@ -21,15 +21,19 @@
 }
 
 .hero::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   z-index: -2;
-  background: radial-gradient(ellipse 80% 60% at 50% 0%, color-mix(in oklch, var(--ds-primary, #10b981) 12%, transparent), transparent 60%);
+  background: radial-gradient(
+    ellipse 80% 60% at 50% 0%,
+    color-mix(in oklch, var(--ds-primary, #10b981) 12%, transparent),
+    transparent 60%
+  );
 }
 
 .hero::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   z-index: -1;
@@ -159,29 +163,37 @@
 /* ── Skeletons / empty ────────────────────────────────────────── */
 .skelRow {
   height: 2.5rem;
-  background: linear-gradient(90deg,
+  background: linear-gradient(
+    90deg,
     color-mix(in oklch, var(--ds-fg, #0a0a0a) 4%, transparent) 0%,
     color-mix(in oklch, var(--ds-fg, #0a0a0a) 8%, transparent) 50%,
-    color-mix(in oklch, var(--ds-fg, #0a0a0a) 4%, transparent) 100%);
+    color-mix(in oklch, var(--ds-fg, #0a0a0a) 4%, transparent) 100%
+  );
   background-size: 200% 100%;
   border-radius: 999px;
   animation: skel-shimmer 1.6s ease-in-out infinite;
 }
 
 .skelCard {
-  aspect-ratio: 4/3;
-  background: linear-gradient(90deg,
+  aspect-ratio: 4 / 3;
+  background: linear-gradient(
+    90deg,
     color-mix(in oklch, var(--ds-fg, #0a0a0a) 4%, transparent) 0%,
     color-mix(in oklch, var(--ds-fg, #0a0a0a) 8%, transparent) 50%,
-    color-mix(in oklch, var(--ds-fg, #0a0a0a) 4%, transparent) 100%);
+    color-mix(in oklch, var(--ds-fg, #0a0a0a) 4%, transparent) 100%
+  );
   background-size: 200% 100%;
   border-radius: var(--ds-radius-xl, 0.875rem);
   animation: skel-shimmer 1.6s ease-in-out infinite;
 }
 
 @keyframes skel-shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .empty {
@@ -201,9 +213,11 @@
   gap: 1.5rem;
   align-items: center;
   padding: 1.75rem;
-  background: linear-gradient(135deg,
+  background: linear-gradient(
+    135deg,
     color-mix(in oklch, var(--ds-primary, #10b981) 8%, transparent),
-    color-mix(in oklch, #6366f1 6%, transparent));
+    color-mix(in oklch, #6366f1 6%, transparent)
+  );
   border: 0.5px solid color-mix(in oklch, var(--ds-primary, #10b981) 18%, transparent);
   border-radius: var(--ds-radius-2xl, 1.25rem);
 }
@@ -256,12 +270,14 @@
 .primaryBtn {
   background: var(--ds-primary, #10b981);
   color: white;
-  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.2) inset, 0 6px 16px -6px color-mix(in oklch, var(--ds-primary, #10b981) 60%, transparent);
+  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.2) inset, 0 6px 16px -6px
+    color-mix(in oklch, var(--ds-primary, #10b981) 60%, transparent);
 }
 
 .primaryBtn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.2) inset, 0 10px 24px -8px color-mix(in oklch, var(--ds-primary, #10b981) 70%, transparent);
+  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.2) inset, 0 10px 24px -8px
+    color-mix(in oklch, var(--ds-primary, #10b981) 70%, transparent);
 }
 
 .primaryBtn:active {

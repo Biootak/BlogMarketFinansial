@@ -87,22 +87,22 @@
   flex-shrink: 0;
 }
 
-.item[data-tone='amber'] .itemIcon {
+.item[data-tone="amber"] .itemIcon {
   background: color-mix(in oklch, var(--nova-amber) 12%, transparent);
   color: var(--nova-amber);
 }
 
-.item[data-tone='warning'] .itemIcon {
+.item[data-tone="warning"] .itemIcon {
   background: color-mix(in oklch, var(--nova-amber) 12%, transparent);
   color: var(--nova-amber);
 }
 
-.item[data-tone='danger'] .itemIcon {
+.item[data-tone="danger"] .itemIcon {
   background: color-mix(in oklch, var(--nova-down) 12%, transparent);
   color: var(--nova-down);
 }
 
-.item[data-tone='neutral'] .itemIcon {
+.item[data-tone="neutral"] .itemIcon {
   background: var(--ds-surface-recessed);
   color: var(--ds-text-muted);
 }
@@ -120,7 +120,7 @@
   color: var(--ds-text-primary);
 }
 
-.item[data-tone='danger'] .itemTitle {
+.item[data-tone="danger"] .itemTitle {
   color: var(--nova-down);
 }
 
@@ -159,39 +159,39 @@
   outline-offset: 2px;
 }
 
-.itemAction[data-tone='amber'] {
+.itemAction[data-tone="amber"] {
   background: color-mix(in oklch, var(--nova-amber) 10%, transparent);
   color: var(--nova-amber);
   border-color: color-mix(in oklch, var(--nova-amber) 30%, transparent);
 }
 
-.itemAction[data-tone='amber']:hover {
+.itemAction[data-tone="amber"]:hover {
   background: color-mix(in oklch, var(--nova-amber) 18%, transparent);
 }
 
-.itemAction[data-tone='warning'] {
+.itemAction[data-tone="warning"] {
   background: color-mix(in oklch, var(--nova-amber) 10%, transparent);
   color: var(--nova-amber);
   border-color: color-mix(in oklch, var(--nova-amber) 30%, transparent);
 }
 
-.itemAction[data-tone='danger'] {
+.itemAction[data-tone="danger"] {
   background: color-mix(in oklch, var(--nova-down) 10%, transparent);
   color: var(--nova-down);
   border-color: color-mix(in oklch, var(--nova-down) 30%, transparent);
 }
 
-.itemAction[data-tone='danger']:hover {
+.itemAction[data-tone="danger"]:hover {
   background: color-mix(in oklch, var(--nova-down) 18%, transparent);
 }
 
-.itemAction[data-tone='neutral'] {
+.itemAction[data-tone="neutral"] {
   background: var(--ds-surface-recessed);
   color: var(--ds-text-muted);
   border-color: var(--ds-border-subtle);
 }
 
-.itemAction[data-tone='success'] {
+.itemAction[data-tone="success"] {
   background: color-mix(in oklch, var(--nova-up) 10%, transparent);
   color: var(--nova-up);
   border-color: color-mix(in oklch, var(--nova-up) 30%, transparent);

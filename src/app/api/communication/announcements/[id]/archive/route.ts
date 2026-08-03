@@ -1,15 +1,12 @@
+import { auth } from '@/auth';
+import { archiveAnnouncement } from '@/lib/communication';
 /**
  * POST /api/communication/announcements/[id]/archive
  * بایگانی اعلان.
  */
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import { archiveAnnouncement } from '@/lib/communication';
+import { type NextRequest, NextResponse } from 'next/server';
 
-export async function POST(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await auth();
   if (!session?.user?.id) {

@@ -203,7 +203,7 @@
   font-size: var(--ds-text-xs);
   font-weight: 600;
   color: var(--ds-accent-emerald);
-  min-inline-size: 5.5rem;
+  min-inline-size: 4rem;
   text-align: center;
 }
 
@@ -211,7 +211,7 @@
   font-size: var(--ds-text-xs);
   font-weight: 600;
   color: var(--ds-accent-rose);
-  min-inline-size: 5.5rem;
+  min-inline-size: 4rem;
   text-align: center;
 }
 
@@ -267,7 +267,7 @@
   color: var(--ds-accent-emerald);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  min-inline-size: 5.5rem;
+  min-inline-size: 4rem;
   text-align: center;
 }
 
@@ -284,7 +284,7 @@
   color: var(--ds-accent-rose);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  min-inline-size: 5.5rem;
+  min-inline-size: 4rem;
   text-align: center;
 }
 

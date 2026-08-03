@@ -14,16 +14,16 @@
  */
 
 import { generateSettlementCsv } from '@/actions/settlement';
-import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/Dashboard/primitives';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Download, Filter, Receipt, Wallet } from 'lucide-react';
 import { useMemo, useState, useTransition } from 'react';
-import { type SettlementStatus, STATUS_META, type SettlementRow } from './settlement-state';
+import s from './SettlementCockpit.module.css';
 import SettlementLedger from './SettlementLedger';
 import SettlementPeriodCard from './SettlementPeriodCard';
 import SettlementWaterfall from './SettlementWaterfall';
-import s from './SettlementCockpit.module.css';
+import { STATUS_META, type SettlementRow, type SettlementStatus } from './settlement-state';
 
 const STATUS_FILTERS: Array<{ key: 'all' | SettlementStatus; label: string }> = [
   { key: 'all', label: 'همه' },
@@ -38,8 +38,7 @@ const fmtNum = (v: number): string =>
     maximumFractionDigits: 1,
   }).format(v / 100);
 
-const fmtExact = (v: number): string =>
-  new Intl.NumberFormat('fa-IR').format(v / 100);
+const fmtExact = (v: number): string => new Intl.NumberFormat('fa-IR').format(v / 100);
 
 interface Props {
   initialRows: SettlementRow[];
@@ -49,9 +48,7 @@ export default function SettlementCockpit({ initialRows }: Props) {
   const { toast } = useToast();
   const [csvPending, startCsv] = useTransition();
   const [filter, setFilter] = useState<'all' | SettlementStatus>('all');
-  const [selectedId, setSelectedId] = useState<string | null>(
-    initialRows[0]?.id ?? null,
-  );
+  const [selectedId, setSelectedId] = useState<string | null>(initialRows[0]?.id ?? null);
 
   // Dead-button fix: «خروجی CSV» قبلاً بدون onClick بود. حالا generateSettlementCsv
   // (server action واقعی) را صدا می‌زند و فایل دانلود می‌شود.
@@ -190,11 +187,11 @@ export default function SettlementCockpit({ initialRows }: Props) {
             <span className={s.cellLabel}>توزیع وضعیت</span>
           </div>
           <div className={s.distribution}>
-            {([
+            {[
               { key: 'PAID', count: totals.paid, tone: 'emerald' as const },
               { key: 'APPROVED', count: totals.approved, tone: 'violet' as const },
               { key: 'PENDING', count: totals.pending, tone: 'amber' as const },
-            ]).map((d) => {
+            ].map((d) => {
               const total = totals.paid + totals.approved + totals.pending;
               const pct = total > 0 ? (d.count / total) * 100 : 0;
               const meta = STATUS_META[d.key];
@@ -300,13 +297,14 @@ export default function SettlementCockpit({ initialRows }: Props) {
                 new Date(selectedRow.periodStart),
               )}
               {' — '}
-              {new Intl.DateTimeFormat('fa-IR', { month: 'long', day: 'numeric', year: 'numeric' }).format(
-                new Date(selectedRow.periodEnd),
-              )}
+              {new Intl.DateTimeFormat('fa-IR', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              }).format(new Date(selectedRow.periodEnd))}
             </h3>
             <span className={s.detailId}>
-              شناسه:{' '}
-              <span className={s.detailIdVal}>{selectedRow.id.slice(-12)}</span>
+              شناسه: <span className={s.detailIdVal}>{selectedRow.id.slice(-12)}</span>
             </span>
           </header>
 

@@ -76,7 +76,8 @@ const TopAuthorsSection: React.FC<TopAuthorsSectionProps> = ({
           <Link
             href={`/author/${feature.id}`}
             className={styles.feature}
-            aria-label={`مشاهده پروفایل ${featureName}، نویسنده رتبه اول`}
+            // WCAG 2.5.3 label-in-name: visible content (name + count) is the
+            // accessible name.
           >
             {/* rank badge + avatar — همیشه کنار هم */}
             <div className={styles.featureAvatarGroup}>
@@ -148,7 +149,7 @@ const TopAuthorsSection: React.FC<TopAuthorsSectionProps> = ({
                   key={author.id}
                   href={`/author/${author.id}`}
                   className={styles.railCard}
-                  aria-label={`مشاهده پروفایل ${name}`}
+                  // WCAG 2.5.3 label-in-name: visible content is the name.
                 >
                   {/* rank badge for top 3 */}
                   {rank <= 3 && (

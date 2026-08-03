@@ -17,6 +17,7 @@
  *   Validation: سمت client قبل از ارسال به server action.
  */
 
+import { type ExchangeRow, updateExchangeSelf } from '@/actions/exchanges';
 import {
   ExchangeIdentityCard,
   HoursMatrix,
@@ -24,22 +25,12 @@ import {
   SettingsSurfaceCard,
   StickySaveBar,
 } from '@/components/Dashboard/primitives';
-import { type ExchangeRow, updateExchangeSelf } from '@/actions/exchanges';
-import {
-  Building2,
-  Clock,
-  Globe,
-  Info,
-  Mail,
-  MapPin,
-  Phone,
-  ShieldCheck,
-} from 'lucide-react';
+import { type HoursMap, packHours, splitHours } from '@/lib/exchange-hours';
+import { Building2, Clock, Globe, Info, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMemo, useRef, useState } from 'react';
-import s from './ProfileWorkspace.module.css';
 import LogoUploader from './LogoUploader';
-import { packHours, splitHours, type HoursMap } from '@/lib/exchange-hours';
+import s from './ProfileWorkspace.module.css';
 
 type Props = {
   exchange: ExchangeRow;
@@ -48,7 +39,7 @@ type Props = {
 
 type SaveStatus = 'idle' | 'dirty' | 'saving' | 'saved' | 'error';
 
-const DAYS: ReadonlyArray<{ key: keyof HoursMap; label: string }> = [
+const _DAYS: ReadonlyArray<{ key: keyof HoursMap; label: string }> = [
   { key: 'sat', label: 'شنبه' },
   { key: 'sun', label: 'یکشنبه' },
   { key: 'mon', label: 'دوشنبه' },
@@ -62,10 +53,7 @@ export default function ProfileWorkspace({ exchange, canEdit }: Props) {
   const router = useRouter();
 
   // splitHours: هم address قابل‌مشاهده، هم hours map را از address استخراج می‌کند
-  const initialSplit = useMemo(
-    () => splitHours(exchange.address),
-    [exchange.address],
-  );
+  const initialSplit = useMemo(() => splitHours(exchange.address), [exchange.address]);
 
   // ── State ─────────────────────────────────────────────────────────
   const [name, setName] = useState(exchange.name);
@@ -291,8 +279,8 @@ export default function ProfileWorkspace({ exchange, canEdit }: Props) {
           />
           <p className={s.logoHint}>
             <Info size={11} aria-hidden />
-            تصویر لوگو در صفحهٔ عمومی، کارت تراکنش‌ها و گزارش‌های PDF استفاده می‌شود.
-            برای نتیجهٔ بهتر، از تصویر مربعی PNG یا WebP با حداقل ۲۵۶×۲۵۶ پیکسل استفاده کنید.
+            تصویر لوگو در صفحهٔ عمومی، کارت تراکنش‌ها و گزارش‌های PDF استفاده می‌شود. برای نتیجهٔ بهتر،
+            از تصویر مربعی PNG یا WebP با حداقل ۲۵۶×۲۵۶ پیکسل استفاده کنید.
           </p>
         </SettingsSurfaceCard>
 

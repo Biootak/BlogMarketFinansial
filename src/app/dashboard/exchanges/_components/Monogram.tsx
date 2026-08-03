@@ -27,9 +27,9 @@ function pickInitials(name: string): string {
   if (!cleaned) return '?';
   const parts = cleaned.split(/\s+/).filter(Boolean);
   if (parts.length === 1) {
-    return parts[0]!.slice(0, 2);
+    return parts[0]?.slice(0, 2);
   }
-  return (parts[0]![0]! + parts[1]![0]!).toUpperCase();
+  return (parts[0]?.[0]! + parts[1]?.[0]!).toUpperCase();
 }
 
 const TONE_CLASS: Record<Tone, string> = {
@@ -46,7 +46,13 @@ const SIZE_CLASS: Record<Size, string> = {
   xl: s.monoXl!,
 };
 
-export default function Monogram({ name, size = 'md', shape = 'square', tone = 'slate', isLead = false }: Props) {
+export default function Monogram({
+  name,
+  size = 'md',
+  shape = 'square',
+  tone = 'slate',
+  isLead = false,
+}: Props) {
   const initials = pickInitials(name);
   return (
     <span
@@ -55,7 +61,9 @@ export default function Monogram({ name, size = 'md', shape = 'square', tone = '
         SIZE_CLASS[size],
         TONE_CLASS[tone],
         shape === 'circle' ? s.monoCircle : '',
-      ].filter(Boolean).join(' ')}
+      ]
+        .filter(Boolean)
+        .join(' ')}
       aria-hidden
     >
       <span className={s.monoChar}>{initials}</span>

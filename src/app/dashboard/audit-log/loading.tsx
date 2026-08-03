@@ -4,7 +4,6 @@ export default function AuditLogLoading() {
   return (
     <div className="at-page" dir="rtl">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-4)' }}>
-
         {/* PageHeader skeleton */}
         <div
           style={{
@@ -137,7 +136,6 @@ export default function AuditLogLoading() {
             </div>
           ))}
         </div>
-
       </div>
     </div>
   );

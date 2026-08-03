@@ -43,10 +43,10 @@ export function daysSince(value: Date | string): number {
 
 /** دو حرف اول نام (fa fallback به حرف اول) */
 export function getInitialsFa(name: string | null, email: string): string {
-  const source = (name && name.trim()) || email;
+  const source = name?.trim() || email;
   if (!source) return '؟';
   const parts = source.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0]!.slice(0, 1).toUpperCase();
+  if (parts.length === 1) return parts[0]?.slice(0, 1).toUpperCase();
   return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase();
 }
 
@@ -71,7 +71,10 @@ export const STAFF_ROLE_ORDER: Readonly<Record<StaffRole, number>> = Object.free
 
 // ─── Action label map (AuditLog.action) ───────────────────────────────────────
 
-const ACTION_FA: Record<string, { label: string; tone: 'emerald' | 'gold' | 'rose' | 'info' | 'muted' }> = {
+const ACTION_FA: Record<
+  string,
+  { label: string; tone: 'emerald' | 'gold' | 'rose' | 'info' | 'muted' }
+> = {
   'staff.invited': { label: 'عضو جدید اضافه شد', tone: 'emerald' },
   'staff.revoked': { label: 'دسترسی عضو لغو شد', tone: 'rose' },
   'staff.role.updated': { label: 'نقش عضو تغییر کرد', tone: 'gold' },
@@ -85,8 +88,8 @@ const ACTION_FA: Record<string, { label: string; tone: 'emerald' | 'gold' | 'ros
   'rate.created': { label: 'نرخ جدید ثبت شد', tone: 'emerald' },
   'rate.updated': { label: 'نرخ ویرایش شد', tone: 'info' },
   'settings.updated': { label: 'تنظیمات صرافی تغییر کرد', tone: 'gold' },
-  'login': { label: 'ورود به سامانه', tone: 'muted' },
-  'logout': { label: 'خروج از سامانه', tone: 'muted' },
+  login: { label: 'ورود به سامانه', tone: 'muted' },
+  logout: { label: 'خروج از سامانه', tone: 'muted' },
 };
 
 export function getActionLabel(action: string): string {

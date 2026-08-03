@@ -1,5 +1,5 @@
-import { DashboardProviders } from '@/components/Dashboard/DashboardPage/DashboardProviders';
 import DashboardBottomNavGate from '@/components/Dashboard/DashboardBottomNav/DashboardBottomNavGate';
+import { DashboardProviders } from '@/components/Dashboard/DashboardPage/DashboardProviders';
 import { SiteSettingsProvider } from '@/components/SiteSettingsProvider';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
 import { checkRole } from '@/lib/auth';

@@ -15,20 +15,16 @@
  *  - EmptyState برای هر سناریو
  */
 
-import {
-  type CustomerRow,
-  createCustomer,
-  setCustomerStatus,
-} from '@/actions/exchange-customers';
+import { type CustomerRow, createCustomer, setCustomerStatus } from '@/actions/exchange-customers';
 import type { ExchangeRow } from '@/actions/exchanges';
 import {
   ConfirmDialog,
-  EmptyState,
   FormField,
   MillionDollarEmpty,
   PageHeader,
 } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -37,12 +33,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/components/ui/use-toast';
@@ -197,11 +187,7 @@ function MiniSparkline({
         <stop offset="100%" stopColor="var(--spark-color)" stopOpacity="0" />
       </linearGradient>
       <polygon
-        points={[
-          `0,${H}`,
-          ...pts.map(([x, y]) => `${x},${y}`),
-          `${W},${H}`,
-        ].join(' ')}
+        points={[`0,${H}`, ...pts.map(([x, y]) => `${x},${y}`), `${W},${H}`].join(' ')}
         fill={`url(#sg-${color.replace(/[^a-z0-9]/gi, '')})`}
       />
       <polyline
@@ -213,9 +199,7 @@ function MiniSparkline({
         strokeLinejoin="round"
         opacity="0.75"
       />
-      {last && (
-        <circle cx={last[0]} cy={last[1]} r="2.5" fill="var(--spark-color)" opacity="0.9" />
-      )}
+      {last && <circle cx={last[0]} cy={last[1]} r="2.5" fill="var(--spark-color)" opacity="0.9" />}
     </svg>
   );
 }
@@ -452,7 +436,7 @@ export default function CustomersClient({
   const handlePageJump = useCallback(
     (e: KeyboardEvent<HTMLInputElement>) => {
       if (e.key !== 'Enter') return;
-      const n = parseInt(pageInput, 10);
+      const n = Number.parseInt(pageInput, 10);
       if (!Number.isNaN(n) && n >= 1 && n <= totalPages) {
         navigate({ page: String(n) });
         setPageInput('');
@@ -487,10 +471,7 @@ export default function CustomersClient({
           </SelectContent>
         </Select>
       )}
-      <Select
-        value={currentStatus}
-        onValueChange={(v) => navigate({ status: v, page: '1' })}
-      >
+      <Select value={currentStatus} onValueChange={(v) => navigate({ status: v, page: '1' })}>
         <SelectTrigger className={s.filterSelect} aria-label="فیلتر وضعیت">
           <Filter size={13} className={s.selectIcon} aria-hidden />
           <SelectValue placeholder="وضعیت…" />
@@ -638,7 +619,12 @@ export default function CustomersClient({
                 <div
                   key={item.label}
                   className={s.kpiCard}
-                  style={{ '--kpi-accent': item.accent, '--kpi-delay': `${i * 60}ms` } as React.CSSProperties}
+                  style={
+                    {
+                      '--kpi-accent': item.accent,
+                      '--kpi-delay': `${i * 60}ms`,
+                    } as React.CSSProperties
+                  }
                 >
                   {/* top row: icon + sparkline */}
                   <div className={s.kpiTop}>
@@ -663,7 +649,14 @@ export default function CustomersClient({
             <div ref={toolbarRef} className={s.toolbar} role="search">
               {toolbarFilters}
               {toolbarSearch}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-2)', marginInlineStart: 'auto' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 'var(--ds-space-2)',
+                  marginInlineStart: 'auto',
+                }}
+              >
                 {toolbarActions}
               </div>
             </div>
@@ -674,7 +667,9 @@ export default function CustomersClient({
                 variant={currentQuery ? 'search' : 'inbox'}
                 tone="primary"
                 eyebrow={currentQuery ? 'جستجو' : 'فهرست مشتریان'}
-                title={currentQuery ? `نتیجه‌ای برای «${currentQuery}» یافت نشد` : 'هنوز مشتری‌ای ثبت نشده'}
+                title={
+                  currentQuery ? `نتیجه‌ای برای «${currentQuery}» یافت نشد` : 'هنوز مشتری‌ای ثبت نشده'
+                }
                 description={
                   currentQuery
                     ? 'پیشنهاد می‌کنیم کلمات کلیدی دیگری امتحان کنید یا فیلترها را پاک کنید.'
@@ -738,10 +733,12 @@ export default function CustomersClient({
                             <div className={s.customerCell}>
                               <span
                                 className={s.avatar}
-                                style={{
-                                  background: `oklch(91% 0.04 ${hue})`,
-                                  color: `oklch(36% 0.12 ${hue})`,
-                                } as React.CSSProperties}
+                                style={
+                                  {
+                                    background: `oklch(91% 0.04 ${hue})`,
+                                    color: `oklch(36% 0.12 ${hue})`,
+                                  } as React.CSSProperties
+                                }
                                 aria-hidden
                               >
                                 {c.fullName.slice(0, 1)}
@@ -888,8 +885,7 @@ export default function CustomersClient({
                 </button>
 
                 <span className={s.pageInfo} aria-live="polite">
-                  صفحه{' '}
-                  <strong>{new Intl.NumberFormat('fa-IR').format(currentPage)}</strong>
+                  صفحه <strong>{new Intl.NumberFormat('fa-IR').format(currentPage)}</strong>
                   {' از '}
                   {new Intl.NumberFormat('fa-IR').format(totalPages)}
                 </span>
@@ -936,20 +932,22 @@ export default function CustomersClient({
                       <div className={s.modalHeaderInner}>
                         <div
                           className={s.modalAvatar}
-                          style={{
-                            background: `oklch(91% 0.04 ${avatarHue(selected.fullName)})`,
-                            color: `oklch(36% 0.12 ${avatarHue(selected.fullName)})`,
-                          } as React.CSSProperties}
+                          style={
+                            {
+                              background: `oklch(91% 0.04 ${avatarHue(selected.fullName)})`,
+                              color: `oklch(36% 0.12 ${avatarHue(selected.fullName)})`,
+                            } as React.CSSProperties
+                          }
                           aria-hidden
                         >
                           {selected.fullName.slice(0, 1)}
                         </div>
                         <div className={s.modalTitleGroup}>
-                          <DialogTitle className={s.modalName}>
-                            {selected.fullName}
-                          </DialogTitle>
+                          <DialogTitle className={s.modalName}>{selected.fullName}</DialogTitle>
                           <div className={s.modalMeta}>
-                            <span className={`${s.statusBadge} ${s[`status_${selected.status}`] ?? ''}`}>
+                            <span
+                              className={`${s.statusBadge} ${s[`status_${selected.status}`] ?? ''}`}
+                            >
                               <StatusDot status={selected.status} />
                               {STATUS_FA[selected.status] ?? selected.status}
                             </span>
@@ -1003,7 +1001,9 @@ export default function CustomersClient({
                           <dl className={s.dl}>
                             <dt>سطح</dt>
                             <dd>
-                              <span className={`${s.kycBadge} ${s[`kyc_${selected.kycStatus}`] ?? ''}`}>
+                              <span
+                                className={`${s.kycBadge} ${s[`kyc_${selected.kycStatus}`] ?? ''}`}
+                              >
                                 {KYC_FA[selected.kycLevel] ?? selected.kycLevel}
                               </span>
                             </dd>
@@ -1022,16 +1022,23 @@ export default function CustomersClient({
                           <div className={s.riskDetailWrap}>
                             <RiskArc score={selected.riskScore} />
                             <div className={s.riskDetailText}>
-                              <span className={`${s.riskLabelLg} ${riskColorClass(selected.riskScore)}`}>
+                              <span
+                                className={`${s.riskLabelLg} ${riskColorClass(selected.riskScore)}`}
+                              >
                                 {riskLabel(selected.riskScore)}
                               </span>
                               <span className={s.riskScore}>{selected.riskScore} / ۱۰۰</span>
                             </div>
                           </div>
-                          <div className={s.riskBar} style={{ marginBlockStart: 'var(--ds-space-2)' }}>
+                          <div
+                            className={s.riskBar}
+                            style={{ marginBlockStart: 'var(--ds-space-2)' }}
+                          >
                             <div
                               className={`${s.riskBarFill} ${riskColorClass(selected.riskScore)}`}
-                              style={{ '--risk-pct': `${selected.riskScore}%` } as React.CSSProperties}
+                              style={
+                                { '--risk-pct': `${selected.riskScore}%` } as React.CSSProperties
+                              }
                             />
                           </div>
                         </section>
@@ -1116,11 +1123,7 @@ export default function CustomersClient({
 
                 <div className={s.addForm}>
                   <div className={s.formGrid}>
-                    <FormField
-                      label="نام و نام خانوادگی"
-                      required
-                      error={formErrors.fullName}
-                    >
+                    <FormField label="نام و نام خانوادگی" required error={formErrors.fullName}>
                       <Input
                         value={formState.fullName}
                         onChange={(e) => {
@@ -1191,9 +1194,7 @@ export default function CustomersClient({
                   <FormField label="آدرس">
                     <Input
                       value={formState.address}
-                      onChange={(e) =>
-                        setFormState((p) => ({ ...p, address: e.target.value }))
-                      }
+                      onChange={(e) => setFormState((p) => ({ ...p, address: e.target.value }))}
                       placeholder="آدرس کامل"
                     />
                   </FormField>
@@ -1213,7 +1214,11 @@ export default function CustomersClient({
                       onClick={handleAdd}
                       disabled={addPending || !formState.fullName.trim() || !formState.phone.trim()}
                     >
-                      {addPending ? <span className={s.spinner} aria-hidden /> : <Plus size={14} aria-hidden />}
+                      {addPending ? (
+                        <span className={s.spinner} aria-hidden />
+                      ) : (
+                        <Plus size={14} aria-hidden />
+                      )}
                       {addPending ? 'در حال ذخیره…' : 'ذخیره مشتری'}
                     </Button>
                     <Button

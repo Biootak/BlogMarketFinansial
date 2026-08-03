@@ -36,8 +36,7 @@
 .heroGrid {
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(oklch(35% 0.03 250 / 0.07) 1px, transparent 1px),
+  background-image: linear-gradient(oklch(35% 0.03 250 / 0.07) 1px, transparent 1px),
     linear-gradient(90deg, oklch(35% 0.03 250 / 0.07) 1px, transparent 1px);
   background-size: 48px 48px;
   mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, black 0%, transparent 70%);
@@ -132,8 +131,15 @@
 }
 
 @keyframes hero-blink {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.55; transform: scale(0.85); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.85);
+  }
 }
 
 .headline {
@@ -268,9 +274,15 @@
 }
 
 @keyframes pulse-dot {
-  0% { box-shadow: 0 0 0 0 oklch(52% 0.14 162 / 0.55); }
-  70% { box-shadow: 0 0 0 7px oklch(52% 0.14 162 / 0); }
-  100% { box-shadow: 0 0 0 0 oklch(52% 0.14 162 / 0); }
+  0% {
+    box-shadow: 0 0 0 0 oklch(52% 0.14 162 / 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 7px oklch(52% 0.14 162 / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 oklch(52% 0.14 162 / 0);
+  }
 }
 
 .pulseTitle {

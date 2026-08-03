@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import React, { type FC } from 'react';
+import type { FC } from 'react';
 
 export interface ModalDeleteCommentProps {
   show: boolean;

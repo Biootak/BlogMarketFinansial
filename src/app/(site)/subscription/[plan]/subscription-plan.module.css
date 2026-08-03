@@ -34,7 +34,8 @@
   padding: var(--ds-space-8);
   border-radius: var(--ds-radius-2xl);
   border: 1px solid var(--ds-border-default);
-  background: linear-gradient(135deg,
+  background: linear-gradient(
+    135deg,
     oklch(from var(--ds-brand-500) l c h / 0.04),
     oklch(from var(--ds-brand-700) l c h / 0.06)
   );
@@ -46,7 +47,7 @@
 }
 
 .hero::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -120px;
   inset-inline-end: -120px;
@@ -98,7 +99,7 @@
 }
 
 .badgePopular::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: -3px;
   border-radius: var(--ds-radius-full);
@@ -355,13 +356,10 @@
 }
 
 .purchaseCard::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg,
-    oklch(from var(--ds-brand-500) l c h / 0.03),
-    transparent 30%
-  );
+  background: linear-gradient(180deg, oklch(from var(--ds-brand-500) l c h / 0.03), transparent 30%);
   pointer-events: none;
 }
 
@@ -430,23 +428,25 @@
   background: var(--ds-brand-500);
   color: var(--ds-brand-on);
   border: 0;
-  box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.16), 0 10px 28px -10px oklch(from var(--ds-brand-500) l c h / 0.5);
+  box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.16), 0 10px 28px -10px
+    oklch(from var(--ds-brand-500) l c h / 0.5);
   font-family: inherit;
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-bold);
   cursor: pointer;
   margin-top: var(--ds-space-4);
   position: relative;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
   text-decoration: none;
 }
 
 .purchaseCta:hover {
   background: var(--ds-brand-600);
   transform: translateY(-1px);
-  box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.2), 0 14px 36px -12px oklch(from var(--ds-brand-600) l c h / 0.55);
+  box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.2), 0 14px 36px -12px
+    oklch(from var(--ds-brand-600) l c h / 0.55);
 }
 
 .purchaseCta:active {

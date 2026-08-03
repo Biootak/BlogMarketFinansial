@@ -319,6 +319,18 @@
   animation-delay: 260ms;
 }
 
+@media (max-width: 640px) {
+  .statsStrip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 380px) {
+  .statsStrip {
+    grid-template-columns: 1fr;
+  }
+}
+
 .statCell {
   display: flex;
   flex-direction: column;

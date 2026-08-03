@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 
-import { auth } from '@/auth';
 import { CampaignsList } from '@/app/dashboard/communication/campaigns/_components/CampaignsList';
+import { auth } from '@/auth';
 import { getCommunicationSnapshot } from '@/lib/communication';
 
 export const dynamic = 'force-dynamic';

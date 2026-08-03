@@ -4,9 +4,9 @@
  * Server Component. avatar از initial فارسی.
  */
 
-import s from './ExchangeDashboard.module.css';
-import { KYC_LEVEL_FA } from '@/lib/exchange-labels';
 import type { TopCustomer } from '@/actions/exchange-dashboard';
+import { KYC_LEVEL_FA } from '@/lib/exchange-labels';
+import s from './ExchangeDashboard.module.css';
 
 function formatAmount(volumeStr: string, currency: string): string {
   const minor = BigInt(volumeStr);

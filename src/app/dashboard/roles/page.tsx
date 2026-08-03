@@ -1,6 +1,6 @@
 import { getRoleStats } from '@/actions/role-actions';
-import { PageHeader, Section } from '@/components/Dashboard/primitives';
 import { auth } from '@/auth';
+import { PageHeader, Section } from '@/components/Dashboard/primitives';
 import { redirect } from 'next/navigation';
 import RolesClient from './_components/RolesClient';
 

@@ -7,7 +7,6 @@
  */
 
 import { getSystemLogs } from '@/actions/reportActions';
-import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
 import { MillionDollarEmpty } from '@/components/Dashboard/primitives/MillionDollarEmpty';
 import { Button } from '@/components/ui/button';
 import {

@@ -25,7 +25,7 @@
   animation: orbit-spin 60s linear infinite;
   transform-box: fill-box;
 }
-.orbitGroup[data-direction='reverse'] {
+.orbitGroup[data-direction="reverse"] {
   animation: orbit-spin-reverse 75s linear infinite;
 }
 .orbitGroup:nth-of-type(2) {
@@ -39,10 +39,14 @@
 }
 
 @keyframes orbit-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 @keyframes orbit-spin-reverse {
-  to { transform: rotate(-360deg); }
+  to {
+    transform: rotate(-360deg);
+  }
 }
 
 /* ── node interactions ─────────────────────────────────────── */
@@ -55,7 +59,7 @@
 .orbitNode:hover {
   transform: scale(1.4);
 }
-.orbitNode[data-selected='true'] {
+.orbitNode[data-selected="true"] {
   transform: scale(1.5);
 }
 .orbitNode:focus {
@@ -71,12 +75,22 @@
 .coreHalo {
   transform-origin: center;
   transform-box: fill-box;
-  animation: orbit-core-pulse 2.6s var(--ds-ease-in-out-quart, cubic-bezier(0.76, 0, 0.24, 1)) infinite;
+  animation: orbit-core-pulse 2.6s var(--ds-ease-in-out-quart, cubic-bezier(0.76, 0, 0.24, 1))
+    infinite;
 }
 @keyframes orbit-core-pulse {
-  0%   { transform: scale(1);   opacity: 0.45; }
-  70%  { transform: scale(1.35); opacity: 0;   }
-  100% { transform: scale(1.35); opacity: 0;   }
+  0% {
+    transform: scale(1);
+    opacity: 0.45;
+  }
+  70% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
 }
 
 /* ── overlay متن مرکزی ───────────────────────────────────── */
@@ -141,19 +155,19 @@
   transform: translateY(-1px) scale(1.04);
 }
 
-.legendItem[data-tone='urgent'] {
+.legendItem[data-tone="urgent"] {
   inset-block-start: 6%;
   inset-inline-end: 6%;
 }
-.legendItem[data-tone='high'] {
+.legendItem[data-tone="high"] {
   inset-block-end: 12%;
   inset-inline-end: 4%;
 }
-.legendItem[data-tone='normal'] {
+.legendItem[data-tone="normal"] {
   inset-block-end: 4%;
   inset-inline-start: 4%;
 }
-.legendItem[data-tone='low'] {
+.legendItem[data-tone="low"] {
   inset-block-start: 14%;
   inset-inline-start: 6%;
 }
@@ -179,10 +193,10 @@
     padding: 0.1875rem 0.375rem;
     font-size: 0.625rem;
   }
-  .legendItem[data-tone='high'] {
+  .legendItem[data-tone="high"] {
     inset-block-end: 8%;
   }
-  .legendItem[data-tone='normal'] {
+  .legendItem[data-tone="normal"] {
     inset-block-end: 2%;
   }
 }

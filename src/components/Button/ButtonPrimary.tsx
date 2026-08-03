@@ -1,6 +1,6 @@
 'use client';
 
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 import Button, { type ButtonProps } from './Button';
 
 const ButtonPrimary = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {

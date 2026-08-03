@@ -232,6 +232,7 @@
 }
 
 /* ── CTA ────────────────────────────────────────────────────── */
+/* حداقل ارتفاع ۴۴px برای touch target — WCAG 2.5.5 / 2.5.8 */
 .cardCta {
   display: inline-flex;
   align-items: center;
@@ -240,7 +241,8 @@
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
   color: var(--ds-brand-600);
-  padding-block: var(--ds-space-1);
+  min-height: 44px;
+  padding-block: var(--ds-space-2);
   transition: gap var(--ds-duration-fast) var(--ds-ease-spring);
   text-decoration: none;
 }

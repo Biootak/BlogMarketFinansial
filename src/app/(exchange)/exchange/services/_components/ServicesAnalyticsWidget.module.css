@@ -180,11 +180,7 @@
 
 .sparkBar {
   width: 100%;
-  background: linear-gradient(
-    to top,
-    var(--nova-emerald),
-    oklch(75% 0.12 165)
-  );
+  background: linear-gradient(to top, var(--nova-emerald), oklch(75% 0.12 165));
   border-radius: 2px 2px 0 0;
   transition: opacity var(--ds-duration-fast);
 }

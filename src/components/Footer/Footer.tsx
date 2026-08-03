@@ -235,7 +235,10 @@ const Footer = ({
             <a
               href={`tel:${displayPhone.replace(/[^0-9+]/g, '')}`}
               className={s.contactCard}
-              aria-label={`تماس تلفنی: ${displayPhone}`}
+              // WCAG 2.5.3 label-in-name: بدون aria-label، accessible name از
+              // متن قابل مشاهده («پشتیبانی تلفنی» + شماره) ساخته می‌شود و همیشه
+              // با visible text مطابقت دارد — colon در aria-label قبلی این
+              // تطابق را می‌شکست. (R23-fix 2026-08-02)
             >
               <span className={s.contactIcon} aria-hidden>
                 <Phone size={18} strokeWidth={1.9} />
@@ -251,7 +254,10 @@ const Footer = ({
           <a
             href={`mailto:${displayEmail}`}
             className={s.contactCard}
-            aria-label={`ایمیل: ${displayEmail}`}
+            // WCAG 2.5.3 label-in-name: بدون aria-label، accessible name از
+            // متن قابل مشاهده («ایمیل پشتیبانی» + آدرس) ساخته می‌شود و همیشه
+            // با visible text مطابقت دارد — colon در aria-label قبلی این
+            // تطابق را می‌شکست. (R23-fix 2026-08-02)
           >
             <span className={s.contactIcon} aria-hidden>
               <Mail size={18} strokeWidth={1.9} />

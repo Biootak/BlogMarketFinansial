@@ -17,8 +17,8 @@
  *   - بدون hex، بدون emoji، فقط oklch + tokens
  */
 
-import { useMemo, useState } from 'react';
-import Link from 'next/link';
+import { HubHeader, LiveDot } from '@/components/Dashboard/PlatformHub';
+import { toPersianDigits } from '@/lib/setup/format';
 import {
   Activity,
   ArrowLeft,
@@ -31,8 +31,8 @@ import {
   Trash2,
   Zap,
 } from 'lucide-react';
-import { toPersianDigits } from '@/lib/setup/format';
-import { HubHeader, LiveDot } from '@/components/Dashboard/PlatformHub';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
 import s from './Queues.module.css';
 
 type JobStatus = 'pending' | 'running' | 'completed' | 'failed' | 'dead';
@@ -156,10 +156,11 @@ export function QueuesView({
   }, [hourly]);
 
   // ── derived: jobs by queue (full filter)
-  const grouped: Record<string, Job[]> = useMemo(() => {
+  const _grouped: Record<string, Job[]> = useMemo(() => {
     const g: Record<string, Job[]> = {};
     for (const j of jobs) {
-      (g[j.queue] ??= []).push(j);
+      if (!g[j.queue]) g[j.queue] = [];
+      g[j.queue].push(j);
     }
     return g;
   }, [jobs]);
@@ -172,7 +173,10 @@ export function QueuesView({
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       list = list.filter(
-        (j) => j.type.toLowerCase().includes(q) || j.queue.toLowerCase().includes(q) || j.id.toLowerCase().includes(q),
+        (j) =>
+          j.type.toLowerCase().includes(q) ||
+          j.queue.toLowerCase().includes(q) ||
+          j.id.toLowerCase().includes(q),
       );
     }
     return list.slice(0, 50);
@@ -181,7 +185,7 @@ export function QueuesView({
   // ── derived: types by queue (for Queue Profile Card)
   const typesByQueue = useMemo(() => {
     const map = new Map<string, JobTypeInfo[]>();
-    for (const t of jobTypes) {
+    for (const _t of jobTypes) {
       // Job type may not directly map to queue — show all recent types in first queue
       // (در عمل JobType از snapshot آمده — در این صفحه به صورت global استفاده می‌شود)
     }
@@ -256,8 +260,25 @@ export function QueuesView({
         </defs>
 
         {/* outer ring */}
-        <circle cx={cx} cy={cy} r={orbitR} fill="none" stroke="currentColor" strokeOpacity="0.15" strokeWidth="1" />
-        <circle cx={cx} cy={cy} r={orbitR - 24} fill="none" stroke="currentColor" strokeOpacity="0.08" strokeWidth="1" strokeDasharray="2 6" />
+        <circle
+          cx={cx}
+          cy={cy}
+          r={orbitR}
+          fill="none"
+          stroke="currentColor"
+          strokeOpacity="0.15"
+          strokeWidth="1"
+        />
+        <circle
+          cx={cx}
+          cy={cy}
+          r={orbitR - 24}
+          fill="none"
+          stroke="currentColor"
+          strokeOpacity="0.08"
+          strokeWidth="1"
+          strokeDasharray="2 6"
+        />
 
         {/* center halo */}
         <circle cx={cx} cy={cy} r={50} fill="url(#q-constellation-center)" />
@@ -287,7 +308,15 @@ export function QueuesView({
               <circle cx={x} cy={y} r={radius + 6} fill={tone} fillOpacity="0.18" />
               {/* node */}
               <circle cx={x} cy={y} r={radius} fill={tone} fillOpacity="0.85" />
-              <circle cx={x} cy={y} r={radius} fill="none" stroke="currentColor" strokeOpacity="0.6" strokeWidth="0.75" />
+              <circle
+                cx={x}
+                cy={y}
+                r={radius}
+                fill="none"
+                stroke="currentColor"
+                strokeOpacity="0.6"
+                strokeWidth="0.75"
+              />
             </g>
           );
         })}
@@ -328,7 +357,15 @@ export function QueuesView({
     const offset = dash * (1 - q.score / 100);
     return (
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
-        <circle cx={c} cy={c} r={r} fill="none" stroke="currentColor" strokeOpacity="0.10" strokeWidth="3" />
+        <circle
+          cx={c}
+          cy={c}
+          r={r}
+          fill="none"
+          stroke="currentColor"
+          strokeOpacity="0.10"
+          strokeWidth="3"
+        />
         <circle
           cx={c}
           cy={c}
@@ -396,10 +433,14 @@ export function QueuesView({
             </div>
             <div className={s.heroStat} data-tone="amber">
               <span className={s.heroStatLabel}>بار لحظه‌ای</span>
-              <span className={s.heroStatValue}>{fmtPersian(metrics.pending + metrics.running)}</span>
+              <span className={s.heroStatValue}>
+                {fmtPersian(metrics.pending + metrics.running)}
+              </span>
               <span className={s.heroStatSub}>
                 <LiveDot tone="amber" size="xs" />
-                <span style={{ marginInlineStart: 4 }}>{fmtPersian(metrics.running)} در حال اجرا</span>
+                <span style={{ marginInlineStart: 4 }}>
+                  {fmtPersian(metrics.running)} در حال اجرا
+                </span>
               </span>
             </div>
             <div className={s.heroStat} data-tone="rose">
@@ -509,7 +550,9 @@ export function QueuesView({
           <div className={s.fieldEmpty}>
             <ListTree size={28} aria-hidden />
             <p>هنوز هیچ صف فعالی شناسایی نشده است.</p>
-            <p className={s.fieldEmptySub}>به محض ثبت اولین job، pipeline اینجا نمایش داده می‌شود.</p>
+            <p className={s.fieldEmptySub}>
+              به محض ثبت اولین job، pipeline اینجا نمایش داده می‌شود.
+            </p>
           </div>
         ) : (
           <div className={s.fieldGrid}>
@@ -569,13 +612,19 @@ export function QueuesView({
                       <div
                         className={s.qCardLoadFill}
                         data-tone={q.status}
-                        style={{ width: `${Math.min(100, Math.max(2, (totalLoad / Math.max(queues.length, 1)) * 12))}%` }}
+                        style={{
+                          width: `${Math.min(100, Math.max(2, (totalLoad / Math.max(queues.length, 1)) * 12))}%`,
+                        }}
                       />
                     </div>
                     <div className={s.qCardLoadMeta}>
                       <span>
                         نرخ خطا{' '}
-                        <strong>{q.failureRate > 0 ? `${fmtPersian(parseFloat(q.failureRate.toFixed(1)))}٪` : '—'}</strong>
+                        <strong>
+                          {q.failureRate > 0
+                            ? `${fmtPersian(Number.parseFloat(q.failureRate.toFixed(1)))}٪`
+                            : '—'}
+                        </strong>
                       </span>
                       {q.dead > 0 ? (
                         <span className={s.qCardLoadDead}>
@@ -770,9 +819,7 @@ function ThroughputRiver({
   const stepX = w / Math.max(values.length - 1, 1);
 
   const buildPath = (data: number[]) =>
-    data
-      .map((v, i) => `${(i * stepX).toFixed(2)},${(h - (v / max) * h).toFixed(2)}`)
-      .join(' ');
+    data.map((v, i) => `${(i * stepX).toFixed(2)},${(h - (v / max) * h).toFixed(2)}`).join(' ');
 
   const completedPath = buildPath(values);
   const failedPath = buildPath(failedValues);

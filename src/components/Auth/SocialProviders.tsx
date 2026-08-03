@@ -51,9 +51,8 @@ const SocialProviders: React.FC = () => {
       if (result?.url) {
         window.location.assign(result.url);
       }
-    } catch (err) {
+    } catch (_err) {
       setError('اتصال به سرویس احراز هویت ناموفق بود. لطفاً کمی بعد دوباره تلاش کنید.');
-      console.error(`Social sign-in (${provider}) failed:`, err);
     } finally {
       setLoadingProvider(null);
     }

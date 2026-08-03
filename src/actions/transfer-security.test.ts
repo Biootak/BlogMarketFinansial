@@ -50,17 +50,17 @@ vi.mock('next/headers', () => ({
 
 // ─── Import ───────────────────────────────────────────────────────────────────
 
+import { confirmTransfer, initiateTransfer } from '@/actions/transfer';
 import prisma from '@/lib/db';
 import { isHighValueTransaction, verifyTransactionOtp } from '@/lib/fintech/transaction-guard';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
-import { confirmTransfer, initiateTransfer } from '@/actions/transfer';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
 const USER_1 = { success: true as const, user: { id: 'user-1', role: 'USER' as const } };
 const USER_2 = { success: true as const, user: { id: 'user-2', role: 'USER' as const } };
-const AUTH_FAIL = {
+const _AUTH_FAIL = {
   success: false as const,
   status: 401 as const,
   code: 'UNAUTHENTICATED' as const,
@@ -72,7 +72,7 @@ const SENDER_CUSTOMER = {
   id: 'cust-1',
   FintechAccount: [{ id: 'acc-1', balance: BigInt(5_000_000), exchangeId: 'exch-1' }],
 };
-const RECIPIENT_CUSTOMER = {
+const _RECIPIENT_CUSTOMER = {
   id: 'cust-recv',
   FintechAccount: [{ id: 'acc-recv' }],
 };

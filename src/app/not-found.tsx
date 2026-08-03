@@ -1,6 +1,6 @@
-import { Compass, Home, Search, ArrowLeft, BookOpen, Users, MessageCircle } from 'lucide-react';
-import Link from 'next/link';
+import { ArrowLeft, BookOpen, Compass, Home, MessageCircle, Search, Users } from 'lucide-react';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 import s from './not-found.module.css';
 
@@ -30,8 +30,8 @@ export default function NotFound() {
         <h1 className={s.title}>این مسیر در نقشهٔ ما نیست</h1>
 
         <p className={s.sub}>
-          صفحه‌ای که دنبال آن می‌گردید وجود ندارد، منتقل شده یا شاید هرگز ساخته نشده است.
-          از جستجو یا لینک‌های زیر برای ادامه استفاده کنید.
+          صفحه‌ای که دنبال آن می‌گردید وجود ندارد، منتقل شده یا شاید هرگز ساخته نشده است. از جستجو یا
+          لینک‌های زیر برای ادامه استفاده کنید.
         </p>
 
         <div className={s.cta}>

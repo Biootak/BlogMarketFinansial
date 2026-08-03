@@ -1,6 +1,6 @@
 'use client';
 
-import React, { type FC } from 'react';
+import type { FC } from 'react';
 import Button, { type ButtonProps } from './Button';
 
 export interface Props extends ButtonProps {}

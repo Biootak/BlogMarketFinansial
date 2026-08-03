@@ -46,7 +46,9 @@ export default function ExchangeNotFound() {
         <p className={s.lead}>
           ممکن است تراکنش/مشتری حذف شده یا شناسهٔ آن تغییر کرده باشد.
           <br />
-          <code className={s.pathCode} dir="ltr">{pathname}</code>
+          <code className={s.pathCode} dir="ltr">
+            {pathname}
+          </code>
         </p>
       </div>
 

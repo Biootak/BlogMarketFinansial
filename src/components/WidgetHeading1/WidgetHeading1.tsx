@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import React, { type FC, type ReactNode } from 'react';
+import type { FC, ReactNode } from 'react';
 
 export interface WidgetHeading1Props {
   className?: string;

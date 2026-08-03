@@ -6,12 +6,12 @@
  * --------------------------------------------------------------------------
  */
 
-import { redirect } from 'next/navigation';
-import { Suspense } from 'react';
 import { getExchangeForUser, getStaffMetrics } from '@/actions/exchanges';
 import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import ExchangePageSkeleton from '@/components/Exchange/ExchangePageSkeleton';
+import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 import s from '../_components/StaffCockpit.module.css';
 import { StaffRoleMatrix } from '../_components/StaffRoleMatrix';
 import { StaffSubNav } from '../_components/StaffSubNav';
@@ -43,10 +43,7 @@ export default async function StaffPermissionsPage() {
         icon="shield-check"
       />
       <Suspense fallback={<ExchangePageSkeleton statCount={0} tableRows={4} />}>
-        <StaffSubNav
-          active="permissions"
-          activityCount={metrics.activeLast30d}
-        />
+        <StaffSubNav active="permissions" activityCount={metrics.activeLast30d} />
         <div className={s.panel}>
           <header
             style={{
@@ -68,12 +65,26 @@ export default async function StaffPermissionsPage() {
             >
               سطح دسترسی
             </span>
-            <h2 style={{ margin: 0, fontSize: 'var(--ds-text-lg)', fontWeight: 700, color: 'var(--at-fg)' }}>
+            <h2
+              style={{
+                margin: 0,
+                fontSize: 'var(--ds-text-lg)',
+                fontWeight: 700,
+                color: 'var(--at-fg)',
+              }}
+            >
               ماتریس Capability ↔ Role
             </h2>
-            <p style={{ margin: 0, fontSize: 'var(--ds-text-xs)', color: 'var(--at-fg-muted)', maxWidth: '60ch' }}>
-              هر capability یک عملیات مجزا در سامانه است. OWNER همه را دارد و
-              سایر نقش‌ها به ترتیب سطح دسترسی پایین می‌آیند.
+            <p
+              style={{
+                margin: 0,
+                fontSize: 'var(--ds-text-xs)',
+                color: 'var(--at-fg-muted)',
+                maxWidth: '60ch',
+              }}
+            >
+              هر capability یک عملیات مجزا در سامانه است. OWNER همه را دارد و سایر نقش‌ها به ترتیب
+              سطح دسترسی پایین می‌آیند.
             </p>
           </header>
           <StaffRoleMatrix />

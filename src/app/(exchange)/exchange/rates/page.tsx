@@ -31,10 +31,7 @@ export default async function ExchangeRatesPage() {
       <PageHeader
         title="مدیریت نرخ‌ها"
         description="نرخ‌های صرافی خود را تنظیم کنید تا در صفحه مقایسه سایت نمایش داده شوند"
-        breadcrumb={[
-          { label: 'پنل صرافی', href: '/exchange/dashboard' },
-          { label: 'نرخ‌ها' },
-        ]}
+        breadcrumb={[{ label: 'پنل صرافی', href: '/exchange/dashboard' }, { label: 'نرخ‌ها' }]}
         icon="circle-dollar-sign"
         accent="emerald"
       />

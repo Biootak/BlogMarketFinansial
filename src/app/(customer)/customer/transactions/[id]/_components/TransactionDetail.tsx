@@ -45,7 +45,12 @@ export default function TransactionDetail({ txn }: Props) {
   return (
     <div className={s.root} dir="rtl">
       {/* ── Hero: signature receipt block ─────────────────────────────── */}
-      <section className={s.hero} data-status={statusKey} data-tone={kindKey} aria-label="جزئیات تراکنش">
+      <section
+        className={s.hero}
+        data-status={statusKey}
+        data-tone={kindKey}
+        aria-label="جزئیات تراکنش"
+      >
         <div className={s.heroTop}>
           <div className={s.heroKind}>
             <span className={s.heroIcon} aria-hidden>
@@ -53,11 +58,23 @@ export default function TransactionDetail({ txn }: Props) {
             </span>
             <span className={s.heroKindLabel}>{KIND_LABEL[txn.kind] ?? txn.kind}</span>
             <StatusPill variant={statusKey}>
-              <LiveDot size={4} tone={statusKey === 'success' ? 'success' : statusKey === 'danger' ? 'danger' : 'warning'} />
+              <LiveDot
+                size={4}
+                tone={
+                  statusKey === 'success'
+                    ? 'success'
+                    : statusKey === 'danger'
+                      ? 'danger'
+                      : 'warning'
+                }
+              />
               {STATUS_LABEL[txn.status] ?? txn.status}
             </StatusPill>
           </div>
-          <div className={s.heroAmount} data-tone={isDebit ? 'debit' : isCredit ? 'credit' : 'neutral'}>
+          <div
+            className={s.heroAmount}
+            data-tone={isDebit ? 'debit' : isCredit ? 'credit' : 'neutral'}
+          >
             <span className={s.heroAmountNumber}>
               {isCredit ? '+' : isDebit ? '−' : ''}
               {faNum(txn.amount)}
@@ -66,15 +83,13 @@ export default function TransactionDetail({ txn }: Props) {
           </div>
           {txn.destAmount && txn.destCurrency && (
             <div className={s.heroDest} aria-label="مبلغ مقصد">
-              <span className={s.heroDestIcon} aria-hidden>→</span>
+              <span className={s.heroDestIcon} aria-hidden>
+                →
+              </span>
               <span className={s.heroDestValue}>
                 {faNum(txn.destAmount)} {txn.destCurrency}
               </span>
-              {txn.rate && (
-                <span className={s.heroDestRate}>
-                  نرخ {faNum(txn.rate)}
-                </span>
-              )}
+              {txn.rate && <span className={s.heroDestRate}>نرخ {faNum(txn.rate)}</span>}
             </div>
           )}
         </div>
@@ -112,9 +127,22 @@ export default function TransactionDetail({ txn }: Props) {
               تکمیل
             </span>
           </li>
-          <li className={s.tlStep} data-done={txn.status === 'PROCESSING' || txn.status === 'COMPLETED' || txn.status === 'FAILED' || txn.status === 'REVERSED' || txn.status === 'CANCELLED'}>
+          <li
+            className={s.tlStep}
+            data-done={
+              txn.status === 'PROCESSING' ||
+              txn.status === 'COMPLETED' ||
+              txn.status === 'FAILED' ||
+              txn.status === 'REVERSED' ||
+              txn.status === 'CANCELLED'
+            }
+          >
             <span className={s.tlDot} aria-hidden>
-              {txn.status === 'PENDING' ? <LiveDot size={6} tone="warning" /> : <CheckCircle2 size={11} />}
+              {txn.status === 'PENDING' ? (
+                <LiveDot size={6} tone="warning" />
+              ) : (
+                <CheckCircle2 size={11} />
+              )}
             </span>
             <div className={s.tlMain}>
               <span className={s.tlTitle}>
@@ -124,7 +152,10 @@ export default function TransactionDetail({ txn }: Props) {
                 {txn.status === 'PENDING' ? '—' : faDateTime(txn.updatedAt)}
               </span>
             </div>
-            <span className={s.tlStatus} data-status={txn.status === 'PENDING' ? 'progress' : 'success'}>
+            <span
+              className={s.tlStatus}
+              data-status={txn.status === 'PENDING' ? 'progress' : 'success'}
+            >
               {txn.status === 'PENDING' ? 'جاری' : 'تکمیل'}
             </span>
           </li>
@@ -151,7 +182,10 @@ export default function TransactionDetail({ txn }: Props) {
                         : 'در انتظار تسویه'}
               </span>
               <span className={s.tlDate}>
-                {txn.status === 'COMPLETED' || txn.status === 'FAILED' || txn.status === 'REVERSED' || txn.status === 'CANCELLED'
+                {txn.status === 'COMPLETED' ||
+                txn.status === 'FAILED' ||
+                txn.status === 'REVERSED' ||
+                txn.status === 'CANCELLED'
                   ? faDateTime(txn.updatedAt)
                   : '—'}
               </span>
@@ -274,7 +308,11 @@ function KV({
   value: React.ReactNode;
   mono?: boolean;
   dir?: 'ltr' | 'rtl';
-  icon?: React.ComponentType<{ size?: number; 'aria-hidden'?: boolean; style?: React.CSSProperties }>;
+  icon?: React.ComponentType<{
+    size?: number;
+    'aria-hidden'?: boolean;
+    style?: React.CSSProperties;
+  }>;
 }) {
   return (
     <div className={s.kvRow}>
@@ -282,11 +320,7 @@ function KV({
         {Icon && <Icon size={10} aria-hidden style={{ color: 'var(--ds-text-muted)' }} />}
         {label}
       </span>
-      <span
-        className={s.kvValue}
-        data-mono={mono ? 'true' : undefined}
-        dir={dir}
-      >
+      <span className={s.kvValue} data-mono={mono ? 'true' : undefined} dir={dir}>
         {value}
       </span>
     </div>

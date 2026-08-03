@@ -8,15 +8,7 @@
  *   Reduced-motion safe.
  */
 
-import {
-  Banknote,
-  Building2,
-  ChartLine,
-  Clock4,
-  Info,
-  MessageSquare,
-  Radio,
-} from 'lucide-react';
+import { Banknote, Building2, ChartLine, Clock4, Info, MessageSquare, Radio } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -153,7 +145,7 @@ export default function SubNav({ exchange }: Props) {
         </Link>
 
         {/* Items */}
-        <ul className={s.list} role="list">
+        <ul className={s.list}>
           {items.map((item) => {
             const Icon = item.icon;
             const isActive =

@@ -106,9 +106,7 @@ export default function MarketsView({ exchange, rates }: Props) {
         <header className={s.header}>
           <div>
             <h1 className={s.title}>بازارهای {exchange.name}</h1>
-            <p className={s.sub}>
-              جدول کامل نرخ‌های فعال. برای مقایسهٔ سریع، روی هر ستون کلیک کنید.
-            </p>
+            <p className={s.sub}>جدول کامل نرخ‌های فعال. برای مقایسهٔ سریع، روی هر ستون کلیک کنید.</p>
           </div>
         </header>
 
@@ -144,7 +142,7 @@ export default function MarketsView({ exchange, rates }: Props) {
             <tbody>
               {sorted.map((r) => {
                 const name = FA[r.currencyCode] ?? r.currencyCode;
-                const trend =
+                const _trend =
                   r.spark.length > 1 && r.spark[r.spark.length - 1] > r.spark[0]
                     ? 'up'
                     : r.spark.length > 1 && r.spark[r.spark.length - 1] < r.spark[0]

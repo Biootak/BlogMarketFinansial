@@ -119,10 +119,10 @@ function Observatory({
 }) {
   const segments = useMemo(
     () => [
-      { id: 'ACTIVE',    label: 'فعال',       value: active,    color: 'var(--at-accent)' },
-      { id: 'PENDING',   label: 'در انتظار',  value: pending,   color: 'var(--at-gold)' },
-      { id: 'SUSPENDED', label: 'معلق',       value: suspended, color: 'var(--at-danger)' },
-      { id: 'CLOSED',    label: 'بسته',       value: closed,    color: 'var(--at-fg-faint)' },
+      { id: 'ACTIVE', label: 'فعال', value: active, color: 'var(--at-accent)' },
+      { id: 'PENDING', label: 'در انتظار', value: pending, color: 'var(--at-gold)' },
+      { id: 'SUSPENDED', label: 'معلق', value: suspended, color: 'var(--at-danger)' },
+      { id: 'CLOSED', label: 'بسته', value: closed, color: 'var(--at-fg-faint)' },
     ],
     [active, pending, suspended, closed],
   );
@@ -131,7 +131,11 @@ function Observatory({
   const hh = String(now.getHours()).padStart(2, '0');
   const mm = String(now.getMinutes()).padStart(2, '0');
   const ss = String(now.getSeconds()).padStart(2, '0');
-  const dateStr = new Intl.DateTimeFormat('fa-IR', { day: 'numeric', month: 'long', year: 'numeric' }).format(now);
+  const dateStr = new Intl.DateTimeFormat('fa-IR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(now);
 
   return (
     <div className={s.observatory} dir="rtl">
@@ -149,7 +153,9 @@ function Observatory({
           </div>
           <div className={s.observatory__mapClock}>
             <span>ساعت رسمی</span>
-            <strong dir="ltr">{hh}:{mm}:{ss}</strong>
+            <strong dir="ltr">
+              {hh}:{mm}:{ss}
+            </strong>
             <span dir="rtl">{dateStr}</span>
           </div>
         </header>
@@ -212,11 +218,14 @@ function Observatory({
             <Users size={11} strokeWidth={2} aria-hidden /> کل مشتریان شبکه
           </span>
           <span className={s.observatory__bigNumVal}>
-            {fmt(totalCustomers)}<small>نفر</small>
+            {fmt(totalCustomers)}
+            <small>نفر</small>
           </span>
           <span className={s.observatory__bigNumFoot}>
             <span>۱۴ روز اخیر</span>
-            <strong dir="ltr">+{fmt(Math.round(trendSeries.reduce((a, b) => a + b, 0) * 0.4))}٪</strong>
+            <strong dir="ltr">
+              +{fmt(Math.round(trendSeries.reduce((a, b) => a + b, 0) * 0.4))}٪
+            </strong>
           </span>
         </div>
 
@@ -225,13 +234,12 @@ function Observatory({
             <CircleCheck size={11} strokeWidth={2} aria-hidden /> صرافی‌های فعال
           </span>
           <span className={s.observatory__bigNumVal}>
-            {fmt(active)}<small>عضو</small>
+            {fmt(active)}
+            <small>عضو</small>
           </span>
           <span className={s.observatory__bigNumFoot}>
             <span>نرخ فعال‌سازی</span>
-            <strong>
-              {total > 0 ? Math.round((active / total) * 100) : 0}٪
-            </strong>
+            <strong>{total > 0 ? Math.round((active / total) * 100) : 0}٪</strong>
           </span>
         </div>
 
@@ -240,12 +248,14 @@ function Observatory({
             <Clock size={11} strokeWidth={2} aria-hidden /> در انتظار تأیید
           </span>
           <span className={s.observatory__bigNumVal}>
-            {fmt(pending)}<small>پرونده</small>
+            {fmt(pending)}
+            <small>پرونده</small>
           </span>
           <span className={s.observatory__bigNumFoot}>
             <span>{pending > 0 ? 'نیاز به بررسی' : 'صف خالی'}</span>
             <strong>
-              <Zap size={9} strokeWidth={2.5} aria-hidden style={{ verticalAlign: 'middle' }} /> فوری
+              <Zap size={9} strokeWidth={2.5} aria-hidden style={{ verticalAlign: 'middle' }} />{' '}
+              فوری
             </strong>
           </span>
         </div>
@@ -334,8 +344,12 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
     const suspended = rows.filter((r) => r.status === 'SUSPENDED').length;
     const closed = rows.filter((r) => r.status === 'CLOSED').length;
     const totalCustomers = rows.reduce((acc, r) => acc + (r._count?.Customer ?? 0), 0);
-    const trendSeries = seedSeries(rows.reduce((acc, r) => acc + (r._count?.Customer ?? 0), 1) || 5, 14);
-    const lead = [...rows].sort((a, b) => (b._count?.Customer ?? 0) - (a._count?.Customer ?? 0))[0] ?? null;
+    const trendSeries = seedSeries(
+      rows.reduce((acc, r) => acc + (r._count?.Customer ?? 0), 1) || 5,
+      14,
+    );
+    const lead =
+      [...rows].sort((a, b) => (b._count?.Customer ?? 0) - (a._count?.Customer ?? 0))[0] ?? null;
     return { all, active, pending, suspended, closed, totalCustomers, trendSeries, lead };
   }, [rows]);
 
@@ -386,11 +400,35 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
   // ── Switchboard items ──────────────────────────────────────────────────
   const switchboardItems = useMemo(
     () => [
-      { id: 'all' as const,       label: 'همه',         count: stats.all,       tone: 'mixed' as const,   icon: <Circle size={11} strokeWidth={1.75} /> },
-      { id: 'ACTIVE' as const,    label: 'فعال',        count: stats.active,    tone: 'emerald' as const, icon: <CircleCheck size={11} strokeWidth={1.75} /> },
-      { id: 'PENDING' as const,   label: 'در انتظار',   count: stats.pending,   tone: 'amber' as const,   icon: <Activity size={11} strokeWidth={1.75} /> },
-      { id: 'SUSPENDED' as const, label: 'معلق',        count: stats.suspended, tone: 'rose' as const,    icon: <PauseCircle size={11} strokeWidth={1.75} /> },
-      { id: 'CLOSED' as const,    label: 'بسته',        count: stats.closed,    tone: 'slate' as const },
+      {
+        id: 'all' as const,
+        label: 'همه',
+        count: stats.all,
+        tone: 'mixed' as const,
+        icon: <Circle size={11} strokeWidth={1.75} />,
+      },
+      {
+        id: 'ACTIVE' as const,
+        label: 'فعال',
+        count: stats.active,
+        tone: 'emerald' as const,
+        icon: <CircleCheck size={11} strokeWidth={1.75} />,
+      },
+      {
+        id: 'PENDING' as const,
+        label: 'در انتظار',
+        count: stats.pending,
+        tone: 'amber' as const,
+        icon: <Activity size={11} strokeWidth={1.75} />,
+      },
+      {
+        id: 'SUSPENDED' as const,
+        label: 'معلق',
+        count: stats.suspended,
+        tone: 'rose' as const,
+        icon: <PauseCircle size={11} strokeWidth={1.75} />,
+      },
+      { id: 'CLOSED' as const, label: 'بسته', count: stats.closed, tone: 'slate' as const },
     ],
     [stats],
   );
@@ -398,11 +436,51 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
   // ── Strata tiles ───────────────────────────────────────────────────────
   const strata = useMemo(
     () => [
-      { id: 'total',   label: 'کل صرافی‌ها',  icon: Building2,    val: stats.all,       pct: 100,                            cls: s.strata__cellTotal,    foot: `${fmt(stats.totalCustomers)} مشتری` },
-      { id: 'active',  label: 'فعال',         icon: CircleCheck,  val: stats.active,    pct: stats.all > 0 ? (stats.active / stats.all) * 100 : 0,    cls: s.strata__cellActive,   foot: stats.all > 0 ? `${Math.round((stats.active / stats.all) * 100)}٪ از کل` : '—' },
-      { id: 'pending', label: 'در انتظار',    icon: Activity,     val: stats.pending,   pct: stats.all > 0 ? (stats.pending / stats.all) * 100 : 0,   cls: s.strata__cellPending,  foot: stats.pending > 0 ? 'نیاز به بررسی' : 'صف خالی' },
-      { id: 'suspend', label: 'معلق',         icon: AlertTriangle,val: stats.suspended, pct: stats.all > 0 ? (stats.suspended / stats.all) * 100 : 0, cls: s.strata__cellSuspend,  foot: stats.suspended > 0 ? 'نیاز به بررسی' : 'پاک است' },
-      { id: 'closed',  label: 'بسته',         icon: Circle,       val: stats.closed,    pct: stats.all > 0 ? (stats.closed / stats.all) * 100 : 0,    cls: s.strata__cellClosed,   foot: 'آرشیو' },
+      {
+        id: 'total',
+        label: 'کل صرافی‌ها',
+        icon: Building2,
+        val: stats.all,
+        pct: 100,
+        cls: s.strata__cellTotal,
+        foot: `${fmt(stats.totalCustomers)} مشتری`,
+      },
+      {
+        id: 'active',
+        label: 'فعال',
+        icon: CircleCheck,
+        val: stats.active,
+        pct: stats.all > 0 ? (stats.active / stats.all) * 100 : 0,
+        cls: s.strata__cellActive,
+        foot: stats.all > 0 ? `${Math.round((stats.active / stats.all) * 100)}٪ از کل` : '—',
+      },
+      {
+        id: 'pending',
+        label: 'در انتظار',
+        icon: Activity,
+        val: stats.pending,
+        pct: stats.all > 0 ? (stats.pending / stats.all) * 100 : 0,
+        cls: s.strata__cellPending,
+        foot: stats.pending > 0 ? 'نیاز به بررسی' : 'صف خالی',
+      },
+      {
+        id: 'suspend',
+        label: 'معلق',
+        icon: AlertTriangle,
+        val: stats.suspended,
+        pct: stats.all > 0 ? (stats.suspended / stats.all) * 100 : 0,
+        cls: s.strata__cellSuspend,
+        foot: stats.suspended > 0 ? 'نیاز به بررسی' : 'پاک است',
+      },
+      {
+        id: 'closed',
+        label: 'بسته',
+        icon: Circle,
+        val: stats.closed,
+        pct: stats.all > 0 ? (stats.closed / stats.all) * 100 : 0,
+        cls: s.strata__cellClosed,
+        foot: 'آرشیو',
+      },
     ],
     [stats],
   );
@@ -499,21 +577,31 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
 
   const tileStatusClass = (status: string) => {
     switch (status) {
-      case 'ACTIVE':    return s.tileActive;
-      case 'PENDING':   return s.tilePending;
-      case 'SUSPENDED': return s.tileSuspend;
-      case 'CLOSED':    return s.tileClosed;
-      default:          return '';
+      case 'ACTIVE':
+        return s.tileActive;
+      case 'PENDING':
+        return s.tilePending;
+      case 'SUSPENDED':
+        return s.tileSuspend;
+      case 'CLOSED':
+        return s.tileClosed;
+      default:
+        return '';
     }
   };
 
   const statusTone = (status: string) => {
     switch (status) {
-      case 'ACTIVE':    return 'emerald';
-      case 'PENDING':   return 'gold';
-      case 'SUSPENDED': return 'rose';
-      case 'CLOSED':    return 'slate';
-      default:          return 'slate';
+      case 'ACTIVE':
+        return 'emerald';
+      case 'PENDING':
+        return 'gold';
+      case 'SUSPENDED':
+        return 'rose';
+      case 'CLOSED':
+        return 'slate';
+      default:
+        return 'slate';
     }
   };
 
@@ -542,7 +630,9 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
               aria-label={`${t.label}: ${fmt(t.val)}`}
             >
               <span className={s.strata__eyebrow}>
-                <span className={s.strata__ico}><Icon size={11} strokeWidth={1.75} aria-hidden /></span>
+                <span className={s.strata__ico}>
+                  <Icon size={11} strokeWidth={1.75} aria-hidden />
+                </span>
                 {t.label}
               </span>
               <span className={`${s.strata__num} ${t.id === 'total' ? s.strata__numXl : ''}`}>
@@ -583,7 +673,9 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
         {/* Pulse Ticker */}
         <section className={s.pulse} aria-label="صف زندهٔ تأیید">
           <header className={s.pulse__head}>
-            <span className={s.pulse__headIco}><Clock size={14} strokeWidth={2} aria-hidden /></span>
+            <span className={s.pulse__headIco}>
+              <Clock size={14} strokeWidth={2} aria-hidden />
+            </span>
             <h2 className={s.pulse__headTitle}>
               <span>صف تأیید</span>
               <span style={{ flex: 1 }} />
@@ -603,8 +695,19 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
                   >
                     <div className={s.pulseItem__body}>
                       <span className={s.pulseItem__name}>
-                        <Monogram name={it.name} size="sm" shape="square" tone={i === 0 ? 'gold' : 'emerald'} />
-                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <Monogram
+                          name={it.name}
+                          size="sm"
+                          shape="square"
+                          tone={i === 0 ? 'gold' : 'emerald'}
+                        />
+                        <span
+                          style={{
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
                           {it.name}
                         </span>
                       </span>
@@ -651,7 +754,9 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
             </div>
           ) : (
             <div className={s.pulseEmpty}>
-              <span className={s.pulseEmpty__ico}><CheckCircle2 size={20} strokeWidth={1.5} aria-hidden /></span>
+              <span className={s.pulseEmpty__ico}>
+                <CheckCircle2 size={20} strokeWidth={1.5} aria-hidden />
+              </span>
               <span>صرافی در انتظاری وجود ندارد — صف خالی است.</span>
             </div>
           )}
@@ -673,15 +778,21 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
                 <li
                   key={r.id}
                   className={s.activityRow}
-                  style={{ ['--row-i' as string]: r.rank - 1, ['--act-pct' as string]: `${r.pct}%` } as React.CSSProperties}
+                  style={
+                    {
+                      ['--row-i' as string]: r.rank - 1,
+                      ['--act-pct' as string]: `${r.pct}%`,
+                    } as React.CSSProperties
+                  }
                 >
-                  <span
-                    className={s.activityRow__bar}
-                    aria-hidden
-                  />
+                  <span className={s.activityRow__bar} aria-hidden />
                   <span
                     className={`${s.activityRow__rank} ${
-                      r.rank === 1 ? s.activityRow__rankGold : r.rank >= 4 ? s.activityRow__rankSlate : ''
+                      r.rank === 1
+                        ? s.activityRow__rankGold
+                        : r.rank >= 4
+                          ? s.activityRow__rankSlate
+                          : ''
                     }`}
                   >
                     {String(r.rank).padStart(2, '0')}
@@ -747,7 +858,10 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
         <button
           type="button"
           className={s.addBtn}
-          onClick={() => { setEditRow(null); setDrawerOpen(true); }}
+          onClick={() => {
+            setEditRow(null);
+            setDrawerOpen(true);
+          }}
         >
           <Plus size={14} strokeWidth={2.5} aria-hidden />
           <span>صراف جدید</span>
@@ -780,16 +894,15 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
                 aria-label={`صرافی برتر: ${mosaic.lead.name}`}
               >
                 <div className={s.tile__head}>
-                  <Monogram
-                    name={mosaic.lead.name}
-                    size="xl"
-                    shape="square"
-                    tone="gold"
-                    isLead
-                  />
+                  <Monogram name={mosaic.lead.name} size="xl" shape="square" tone="gold" isLead />
                   <div className={s.tile__headInfo}>
                     <span className={`${s.tile__name} ${s.tile__nameLg}`}>
-                      <Crown size={12} strokeWidth={2.25} aria-hidden style={{ color: 'var(--at-gold)' }} />
+                      <Crown
+                        size={12}
+                        strokeWidth={2.25}
+                        aria-hidden
+                        style={{ color: 'var(--at-gold)' }}
+                      />
                       {mosaic.lead.name}
                     </span>
                     <span className={s.tile__slug}>
@@ -830,7 +943,9 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
                 <div className={s.tile__chart}>
                   <span className={s.tile__chartCap}>
                     <span>روند ۱۴ روز اخیر</span>
-                    <strong dir="ltr">+{fmt(Math.round(stats.trendSeries.reduce((a, b) => a + b, 0) * 0.32))}</strong>
+                    <strong dir="ltr">
+                      +{fmt(Math.round(stats.trendSeries.reduce((a, b) => a + b, 0) * 0.32))}
+                    </strong>
                   </span>
                   <div className={s.tile__chartSvg}>
                     <Sparkline
@@ -855,7 +970,10 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
                   <button
                     type="button"
                     className={s.tile__actBtn}
-                    onClick={() => { setEditRow(mosaic.lead!); setDrawerOpen(true); }}
+                    onClick={() => {
+                      setEditRow(mosaic.lead!);
+                      setDrawerOpen(true);
+                    }}
                   >
                     <PencilLine size={11} strokeWidth={1.75} aria-hidden />
                     <span>ویرایش</span>
@@ -901,7 +1019,9 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
                     </div>
                     <div className={s.tile__stat}>
                       <span className={s.tile__statCap}>کارمزد</span>
-                      <span className={s.tile__statVal} dir="ltr">{r.platformFee.toFixed(2)}٪</span>
+                      <span className={s.tile__statVal} dir="ltr">
+                        {r.platformFee.toFixed(2)}٪
+                      </span>
                     </div>
                     <div className={s.tile__stat}>
                       <span className={s.tile__statCap}>وضعیت</span>
@@ -917,7 +1037,13 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
                         data={seedSeries(seed, 14)}
                         width={300}
                         height={36}
-                        tone={r.status === 'ACTIVE' ? 'accent' : r.status === 'PENDING' ? 'gold' : 'muted'}
+                        tone={
+                          r.status === 'ACTIVE'
+                            ? 'accent'
+                            : r.status === 'PENDING'
+                              ? 'gold'
+                              : 'muted'
+                        }
                         ariaLabel={`روند ${r.name}`}
                       />
                     </div>
@@ -956,7 +1082,10 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
                     <button
                       type="button"
                       className={s.tile__actBtn}
-                      onClick={() => { setEditRow(r); setDrawerOpen(true); }}
+                      onClick={() => {
+                        setEditRow(r);
+                        setDrawerOpen(true);
+                      }}
                     >
                       <PencilLine size={11} strokeWidth={1.75} aria-hidden />
                       <span>ویرایش</span>
@@ -1008,7 +1137,9 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
                     </div>
                     <div className={s.tile__stat}>
                       <span className={s.tile__statCap}>کارمزد</span>
-                      <span className={s.tile__statVal} dir="ltr">{r.platformFee.toFixed(2)}٪</span>
+                      <span className={s.tile__statVal} dir="ltr">
+                        {r.platformFee.toFixed(2)}٪
+                      </span>
                     </div>
                   </div>
 
@@ -1018,7 +1149,13 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
                         data={seedSeries(seed, 12)}
                         width={240}
                         height={28}
-                        tone={r.status === 'ACTIVE' ? 'accent' : r.status === 'PENDING' ? 'gold' : 'muted'}
+                        tone={
+                          r.status === 'ACTIVE'
+                            ? 'accent'
+                            : r.status === 'PENDING'
+                              ? 'gold'
+                              : 'muted'
+                        }
                         ariaLabel={`روند ${r.name}`}
                       />
                     </div>
@@ -1058,7 +1195,10 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
                     <button
                       type="button"
                       className={s.tile__actBtn}
-                      onClick={() => { setEditRow(r); setDrawerOpen(true); }}
+                      onClick={() => {
+                        setEditRow(r);
+                        setDrawerOpen(true);
+                      }}
                       title="ویرایش"
                       aria-label={`ویرایش ${r.name}`}
                     >
@@ -1080,7 +1220,12 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
           </div>
         ) : (
           <div className={s.mosaicEmpty}>
-            <Building2 size={32} strokeWidth={1.25} aria-hidden style={{ color: 'var(--at-fg-faint)' }} />
+            <Building2
+              size={32}
+              strokeWidth={1.25}
+              aria-hidden
+              style={{ color: 'var(--at-fg-faint)' }}
+            />
             <span className={s.mosaicEmpty__title}>
               {query ? 'صرافی‌ای با این جستجو یافت نشد' : 'هنوز صرافی‌ای اضافه نشده'}
             </span>
@@ -1094,7 +1239,10 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
                 type="button"
                 className={s.addBtn}
                 style={{ marginBlockStart: 6 }}
-                onClick={() => { setEditRow(null); setDrawerOpen(true); }}
+                onClick={() => {
+                  setEditRow(null);
+                  setDrawerOpen(true);
+                }}
               >
                 <Plus size={13} strokeWidth={2.5} aria-hidden /> صراف جدید
               </button>
@@ -1103,7 +1251,10 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
               <button
                 type="button"
                 className={s.tile__actBtn}
-                onClick={() => { setQuery(''); setStatusFilter('all'); }}
+                onClick={() => {
+                  setQuery('');
+                  setStatusFilter('all');
+                }}
               >
                 پاک کردن فیلتر
               </button>
@@ -1165,14 +1316,17 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
               insetInlineStart: 0,
               inlineSize: '100%',
               blockSize: 2,
-              background: 'linear-gradient(90deg, var(--at-accent), var(--at-gold), var(--at-accent))',
+              background:
+                'linear-gradient(90deg, var(--at-accent), var(--at-gold), var(--at-accent))',
               backgroundSize: '200% 100%',
               animation: 'nxShine 6s linear infinite',
               opacity: 0.7,
             }}
             aria-hidden
           />
-          <header style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <header
+            style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 4 }}
+          >
             <span
               style={{
                 fontSize: 9,
@@ -1202,10 +1356,30 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
           </header>
 
           {[
-            { label: 'کل مشتریان شبکه', value: fmt(stats.totalCustomers), icon: Users, color: 'var(--at-accent)' },
-            { label: 'صرافی‌های فعال', value: fmt(stats.active), icon: CircleCheck, color: 'var(--at-accent)' },
-            { label: 'در انتظار تأیید', value: fmt(stats.pending), icon: Activity, color: 'var(--at-gold)' },
-            { label: 'بسته / آرشیو', value: fmt(stats.closed), icon: Circle, color: 'var(--at-fg-faint)' },
+            {
+              label: 'کل مشتریان شبکه',
+              value: fmt(stats.totalCustomers),
+              icon: Users,
+              color: 'var(--at-accent)',
+            },
+            {
+              label: 'صرافی‌های فعال',
+              value: fmt(stats.active),
+              icon: CircleCheck,
+              color: 'var(--at-accent)',
+            },
+            {
+              label: 'در انتظار تأیید',
+              value: fmt(stats.pending),
+              icon: Activity,
+              color: 'var(--at-gold)',
+            },
+            {
+              label: 'بسته / آرشیو',
+              value: fmt(stats.closed),
+              icon: Circle,
+              color: 'var(--at-fg-faint)',
+            },
           ].map(({ label, value, icon: Icon, color }) => (
             <div
               key={label}
@@ -1291,7 +1465,10 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
           open={drawerOpen}
           initialData={editRow}
           saving={saving}
-          onClose={() => { setDrawerOpen(false); setEditRow(null); }}
+          onClose={() => {
+            setDrawerOpen(false);
+            setEditRow(null);
+          }}
           onSave={handleSave}
         />
       )}
@@ -1299,7 +1476,9 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
       {/* ── Delete confirm ──────────────────────────────────────────────── */}
       <ConfirmDialog
         open={!!deleteTarget}
-        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
         title="حذف صرافی"
         description={
           deleteTarget

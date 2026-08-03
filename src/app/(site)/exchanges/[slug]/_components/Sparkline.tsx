@@ -75,7 +75,11 @@ export default function Sparkline({
     const areaP = `${linePath} L ${padX + w} ${height} L ${padX} ${height} Z`;
 
     const trend: 'up' | 'down' | 'flat' =
-      values[values.length - 1] > values[0] ? 'up' : values[values.length - 1] < values[0] ? 'down' : 'flat';
+      values[values.length - 1] > values[0]
+        ? 'up'
+        : values[values.length - 1] < values[0]
+          ? 'down'
+          : 'flat';
 
     return {
       path: linePath,

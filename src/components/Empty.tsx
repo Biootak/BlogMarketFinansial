@@ -10,9 +10,9 @@
  * حال: lucide-react (canonical) + tokens + forward-compat API.
  */
 import { Inbox } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import type { LucideIcon } from 'lucide-react';
 
 export interface EmptyProps {
   /** آیکن اختیاری — پیش‌فرض Inbox (lucide) */

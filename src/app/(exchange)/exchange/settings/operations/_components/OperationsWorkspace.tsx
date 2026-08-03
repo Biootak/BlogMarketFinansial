@@ -10,8 +10,12 @@
  *   - SettingsSurfaceCard «پیشنهاد و مقایسه»: quoteAutoExpireMin + showInComparison
  */
 
-import { SettingsField, SettingsSurfaceCard, StickySaveBar } from '@/components/Dashboard/primitives';
 import { type ExchangeRow, updateExchangeSelf } from '@/actions/exchanges';
+import {
+  SettingsField,
+  SettingsSurfaceCard,
+  StickySaveBar,
+} from '@/components/Dashboard/primitives';
 import {
   Banknote,
   CircleDollarSign,
@@ -78,7 +82,8 @@ export default function OperationsWorkspace({ exchange, canEdit }: Props) {
     if (dailyLimit !== initial.current.dailyLimit) n++;
     if (platformFee !== initial.current.platformFee) n++;
     if (primaryCurrency !== initial.current.primaryCurrency) n++;
-    if (JSON.stringify(allowedCurrencies) !== JSON.stringify(initial.current.allowedCurrencies)) n++;
+    if (JSON.stringify(allowedCurrencies) !== JSON.stringify(initial.current.allowedCurrencies))
+      n++;
     if (quoteAutoExpireMin !== initial.current.quoteAutoExpireMin) n++;
     if (showInComparison !== initial.current.showInComparison) n++;
     return n;
@@ -220,16 +225,14 @@ export default function OperationsWorkspace({ exchange, canEdit }: Props) {
               >
                 <span className={s.bigToggleDot} aria-hidden />
                 <span className={s.bigToggleLabel}>
-                  {requireKyc ? 'الزامی — همه مشتریان احراز هویت شوند' : 'غیرفعال — مشتریان بدون KYC می‌توانند تراکنش کنند'}
+                  {requireKyc
+                    ? 'الزامی — همه مشتریان احراز هویت شوند'
+                    : 'غیرفعال — مشتریان بدون KYC می‌توانند تراکنش کنند'}
                 </span>
               </button>
             </SettingsField>
 
-            <SettingsField
-              label="شماره مجوز"
-              hint="شماره ثبت رسمی صرافی (در صورت وجود)"
-              span={1}
-            >
+            <SettingsField label="شماره مجوز" hint="شماره ثبت رسمی صرافی (در صورت وجود)" span={1}>
               <input
                 className={`${s.input} ${s.inputLtr}`}
                 value={licenseNo}
@@ -241,11 +244,7 @@ export default function OperationsWorkspace({ exchange, canEdit }: Props) {
               />
             </SettingsField>
 
-            <SettingsField
-              label="شناسه صرافی"
-              hint="شناسه داخلی سیستم"
-              span={1}
-            >
+            <SettingsField label="شناسه صرافی" hint="شناسه داخلی سیستم" span={1}>
               <input
                 className={`${s.input} ${s.inputLtr} ${s.inputReadonly}`}
                 value={exchange.id}
@@ -355,7 +354,9 @@ export default function OperationsWorkspace({ exchange, canEdit }: Props) {
                   className={`${s.input} ${s.inputLtr} ${s.inputPadUnit}`}
                   type="number"
                   value={platformFee}
-                  onChange={(e) => setPlatformFee(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
+                  onChange={(e) =>
+                    setPlatformFee(Math.max(0, Math.min(100, Number(e.target.value) || 0)))
+                  }
                   disabled={!canEdit}
                   min={0}
                   max={100}
@@ -366,11 +367,7 @@ export default function OperationsWorkspace({ exchange, canEdit }: Props) {
               </div>
             </SettingsField>
 
-            <SettingsField
-              label="ارز پایه"
-              hint="ارز اصلی محاسبات آماری"
-              span={1}
-            >
+            <SettingsField label="ارز پایه" hint="ارز اصلی محاسبات آماری" span={1}>
               <select
                 className={`${s.input} ${s.inputLtr}`}
                 value={primaryCurrency}
@@ -407,10 +404,7 @@ export default function OperationsWorkspace({ exchange, canEdit }: Props) {
                 const known = KNOWN_CURRENCIES.find((c) => c.code === code);
                 const isBase = code === primaryCurrency;
                 return (
-                  <span
-                    key={code}
-                    className={`${s.chip} ${isBase ? s.chipBase : ''}`}
-                  >
+                  <span key={code} className={`${s.chip} ${isBase ? s.chipBase : ''}`}>
                     <span className={s.chipCode}>{code}</span>
                     {known && <span className={s.chipLabel}>{known.label}</span>}
                     {isBase && <span className={s.chipTag}>پایه</span>}
@@ -471,7 +465,9 @@ export default function OperationsWorkspace({ exchange, canEdit }: Props) {
                   className={`${s.input} ${s.inputLtr} ${s.inputPadUnit}`}
                   type="number"
                   value={quoteAutoExpireMin}
-                  onChange={(e) => setQuoteAutoExpireMin(Math.max(5, Math.min(1440, Number(e.target.value) || 0)))}
+                  onChange={(e) =>
+                    setQuoteAutoExpireMin(Math.max(5, Math.min(1440, Number(e.target.value) || 0)))
+                  }
                   disabled={!canEdit}
                   min={5}
                   max={1440}
@@ -504,11 +500,7 @@ export default function OperationsWorkspace({ exchange, canEdit }: Props) {
               </button>
             </SettingsField>
 
-            <SettingsField
-              label="پیش‌نمایش عمومی"
-              hint="پیوند صفحهٔ عمومی صرافی"
-              span="full"
-            >
+            <SettingsField label="پیش‌نمایش عمومی" hint="پیوند صفحهٔ عمومی صرافی" span="full">
               <a
                 href={`/exchanges/${exchange.slug}`}
                 target="_blank"

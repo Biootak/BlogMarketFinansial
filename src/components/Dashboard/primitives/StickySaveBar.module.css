@@ -24,12 +24,24 @@
 }
 
 @keyframes ssb-slide-up {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 @keyframes ssb-slide-down {
-  from { transform: translateY(0); opacity: 1; }
-  to { transform: translateY(20px); opacity: 0; }
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(20px);
+    opacity: 0;
+  }
 }
 
 .inner {
@@ -43,9 +55,7 @@
   border-radius: 9999px;
   background: var(--at-fg);
   color: var(--at-fg-inv);
-  box-shadow:
-    0 1px 0 oklch(100% 0 0 / 0.15) inset,
-    0 10px 30px -8px oklch(0% 0 0 / 0.4);
+  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.15) inset, 0 10px 30px -8px oklch(0% 0 0 / 0.4);
   border: 1px solid oklch(100% 0 0 / 0.06);
 }
 
@@ -81,11 +91,18 @@
   flex-shrink: 0;
 }
 @keyframes ssb-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.55; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .dot { animation: none; }
+  .dot {
+    animation: none;
+  }
 }
 
 .spin {
@@ -93,10 +110,14 @@
   flex-shrink: 0;
 }
 @keyframes ssb-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .spin { animation: none; }
+  .spin {
+    animation: none;
+  }
 }
 
 .actions {

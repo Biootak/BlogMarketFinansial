@@ -128,7 +128,7 @@ export default async function PageSingle({ params }: PageProps) {
     inContentAdsResult.success && inContentAdsResult.data?.[0] ? inContentAdsResult.data[0] : null;
 
   return (
-    <div className="nc-PageSingle relative min-h-screen">
+    <div className="nc-PageSingle relative min-h-dvh">
       {/* Subtle Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-b from-neutral-50 via-white to-neutral-50/50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950/50 pointer-events-none" />
       <div

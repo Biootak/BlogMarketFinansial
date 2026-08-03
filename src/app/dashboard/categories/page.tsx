@@ -2,7 +2,6 @@ import { getAllParentCategories, getCategories } from '@/actions/categoryActions
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import { unstable_noStore as noStore } from 'next/cache';
 import { Suspense } from 'react';
-import { HiOutlineFolderOpen } from 'react-icons/hi2';
 import { CategoryForm } from './CategoryForm';
 import { CategoryList } from './CategoryList';
 import SearchCategories from './SearchCategories';

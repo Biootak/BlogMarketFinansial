@@ -1,7 +1,7 @@
 import { getActiveAdvertisements } from '@/actions/advertisementActions';
 import Footer from '@/components/Footer/Footer';
-import { getSiteIdentity } from '@/lib/site-identity';
 import { getSystemSettingsCached } from '@/data/getSystemSettingsCached';
+import { getSiteIdentity } from '@/lib/site-identity';
 import type { Advertisement } from '@/types/types';
 import { Suspense } from 'react';
 

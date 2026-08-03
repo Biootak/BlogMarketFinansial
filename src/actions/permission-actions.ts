@@ -192,16 +192,19 @@ export async function createPermission(raw: unknown): Promise<FintechActionResul
 
 // ─── BULK CREATE ─────────────────────────────────────────────────────────────
 
-const BulkCreateSchema = z.array(
-  z.object({
-    key: z
-      .string()
-      .min(3)
-      .max(80)
-      .regex(/^[a-z0-9_:-]+$/, 'کلید مجوز باید به فرمت resource:action باشد'),
-    description: z.string().max(200).nullable().optional(),
-  }),
-).min(1).max(50);
+const BulkCreateSchema = z
+  .array(
+    z.object({
+      key: z
+        .string()
+        .min(3)
+        .max(80)
+        .regex(/^[a-z0-9_:-]+$/, 'کلید مجوز باید به فرمت resource:action باشد'),
+      description: z.string().max(200).nullable().optional(),
+    }),
+  )
+  .min(1)
+  .max(50);
 
 export async function createPermissions(
   raw: unknown,
@@ -249,7 +252,10 @@ export async function createPermissions(
       actorRole: auth.user.role,
       action: 'PERMISSION_BULK_CREATED',
       entityType: 'Permission',
-      meta: { created: created.map((p) => p.key), skipped: [...existingKeys].filter((k) => keys.includes(k)) },
+      meta: {
+        created: created.map((p) => p.key),
+        skipped: [...existingKeys].filter((k) => keys.includes(k)),
+      },
     },
   });
 

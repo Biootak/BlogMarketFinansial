@@ -23,17 +23,10 @@
  * engaged, so the drag-and-drop library no longer ships on every page load.
  */
 
+import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import { usePathname, useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import {
-  type FC,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   HiOutlineBriefcase,
   HiOutlineHome,
@@ -42,12 +35,12 @@ import {
   HiOutlineUserCircle,
 } from 'react-icons/hi2';
 import { LuWallet } from 'react-icons/lu';
-import type { MobileBottomNavSortableProps, SortableNavItem } from './MobileBottomNavSortable';
 import s from './MobileBottomNav.module.css';
+import type { MobileBottomNavSortableProps, SortableNavItem } from './MobileBottomNavSortable';
 
 const STORAGE_KEY = 'bmf-bottomnav-order-v1';
 const LONG_PRESS_MS = 500;
-const SLOP_PX = 8;
+const _SLOP_PX = 8;
 
 interface NavItem extends SortableNavItem {
   matchPrefixes?: string[];
@@ -154,11 +147,7 @@ const MobileBottomNav: FC = () => {
       const stored = window.localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const ids = JSON.parse(stored) as unknown;
-        if (
-          Array.isArray(ids) &&
-          ids.length > 0 &&
-          ids.every((id) => typeof id === 'string')
-        ) {
+        if (Array.isArray(ids) && ids.length > 0 && ids.every((id) => typeof id === 'string')) {
           setOrder(ids as string[]);
         }
       }
@@ -244,9 +233,7 @@ const MobileBottomNav: FC = () => {
     if (!pathname) return 'home';
     for (const item of items) {
       if (item.href === pathname) return item.id;
-      if (
-        item.matchPrefixes?.some((p) => pathname === p || pathname.startsWith(`${p}/`))
-      ) {
+      if (item.matchPrefixes?.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
         return item.id;
       }
     }
@@ -328,6 +315,13 @@ const MobileBottomNav: FC = () => {
 
   if (shouldHide) return null;
 
+  // backdrop-filter از طریق inline style اعمال می‌شود چون Lightning CSS آن را
+  // از CSS (module و SCSS) حذف می‌کند و نتیجه شفاف/بدون بلور می‌شود.
+  const glassStyle: React.CSSProperties = {
+    backdropFilter: 'blur(20px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+  };
+
   return (
     <nav
       ref={navRef}
@@ -350,11 +344,12 @@ const MobileBottomNav: FC = () => {
           onLinkClick={handleClick}
           renderLink={renderLink}
           className={s.list}
+          style={glassStyle}
           itemClassName={s.item}
           tabletOnlyClassName={s.tabletOnly}
         />
       ) : (
-        <ul className={s.list} role="list">
+        <ul className={s.list} style={glassStyle}>
           {items.map((item) => (
             <li key={item.id} className={`${s.item} ${item.tabletOnly ? s.tabletOnly : ''}`.trim()}>
               {renderLink(item, { isActive: activeId === item.id })}

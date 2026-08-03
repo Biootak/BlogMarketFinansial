@@ -43,10 +43,33 @@ export function NotificationBadge() {
     }
   }, [pathname]);
 
-  // poll every 60s
+  // poll every 60s — paused when tab is hidden
   useEffect(() => {
-    const id = setInterval(refresh, 60_000);
-    return () => clearInterval(id);
+    let id: ReturnType<typeof setInterval> | null = null;
+    const start = () => {
+      if (!id) id = setInterval(refresh, 60_000);
+    };
+    const stop = () => {
+      if (id) {
+        clearInterval(id);
+        id = null;
+      }
+    };
+    const onVisibility = () => {
+      if (document.hidden) {
+        stop();
+      } else {
+        refresh();
+        start();
+      }
+    };
+
+    start();
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      stop();
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [refresh]);
 
   // فقط وقتی count واقعاً افزایش یافت (نه اولین بار) → pulse

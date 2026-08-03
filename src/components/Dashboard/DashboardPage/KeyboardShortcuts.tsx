@@ -98,11 +98,11 @@ export function KeyboardShortcuts({ portal = 'admin' }: { portal?: PortalType })
     'g ?': () => {
       toast({
         title: 'میان‌برهای صفحه‌کلید',
-        description:
-          '⌘/Ctrl + K فرمان · g t تغییر تم · g k جستجو' +
-          (portal === 'admin'
+        description: `⌘/Ctrl + K فرمان · g t تغییر تم · g k جستجو${
+          portal === 'admin'
             ? ' · g d داشبورد · g p نوشته‌ها · g s تنظیمات · g r گزارش‌ها · g c مشتریان · g a ممیزی · g l مرکز عملیات'
-            : ''),
+            : ''
+        }`,
         duration: 6000,
       });
     },

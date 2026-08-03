@@ -1,4 +1,5 @@
 import NcImage from '@/components/NcImage/NcImage';
+import type { CategoryWithPostCount, PostWithRelations, UserWithProfile } from '@/types/types';
 import {
   Calendar,
   FileText,
@@ -8,11 +9,6 @@ import {
   Users,
 } from 'lucide-react';
 import Link from 'next/link';
-import type {
-  CategoryWithPostCount,
-  PostWithRelations,
-  UserWithProfile,
-} from '@/types/types';
 import s from './search-results.module.css';
 
 type SearchResultProps = {
@@ -29,7 +25,11 @@ function toFaDigits(n: number): string {
 
 function formatDate(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' }).format(d);
+  return new Intl.DateTimeFormat('fa-IR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(d);
 }
 
 export function SearchResult({ q, posts, categories, authors, total }: SearchResultProps) {
@@ -42,7 +42,8 @@ export function SearchResult({ q, posts, categories, authors, total }: SearchRes
           <span className={s.resultsQuery}>{q}</span>»
         </span>
         <span style={{ color: 'var(--ds-text-muted)', fontSize: 'var(--ds-text-xs)' }}>
-          <Sparkles size={12} strokeWidth={1.75} style={{ verticalAlign: 'middle' }} /> جستجوی هوشمند
+          <Sparkles size={12} strokeWidth={1.75} style={{ verticalAlign: 'middle' }} /> جستجوی
+          هوشمند
         </span>
       </div>
 
@@ -106,7 +107,12 @@ export function SearchResult({ q, posts, categories, authors, total }: SearchRes
                 {posts.map((p) => {
                   const category = p.categories?.[0];
                   return (
-                    <Link key={p.id} href={`/${p.slug}`} className={s.postCard} aria-label={p.title}>
+                    <Link
+                      key={p.id}
+                      href={`/${p.slug}`}
+                      className={s.postCard}
+                      aria-label={p.title}
+                    >
                       <div className={s.postThumb}>
                         {p.featuredImage ? (
                           <NcImage
@@ -132,7 +138,9 @@ export function SearchResult({ q, posts, categories, authors, total }: SearchRes
                       </div>
                       <div className={s.postBody}>
                         <div className={s.postMeta}>
-                          {category ? <span className={s.postCategory}>{category.name}</span> : null}
+                          {category ? (
+                            <span className={s.postCategory}>{category.name}</span>
+                          ) : null}
                           <span>·</span>
                           <span>
                             <Calendar

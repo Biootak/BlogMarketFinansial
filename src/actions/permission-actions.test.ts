@@ -62,15 +62,15 @@ vi.mock('@/lib/revalidate', () => ({
 
 // ─── Import ───────────────────────────────────────────────────────────────────
 
-import prisma from '@/lib/db';
-import { requireAdmin } from '@/lib/require-auth';
-import { revalidateTag } from '@/lib/revalidate';
 import {
   createPermission,
   deletePermission,
   getPermissions,
   saveRoleMatrix,
 } from '@/actions/permission-actions';
+import prisma from '@/lib/db';
+import { requireAdmin } from '@/lib/require-auth';
+import { revalidateTag } from '@/lib/revalidate';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 

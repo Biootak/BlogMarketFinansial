@@ -12,7 +12,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import type { DayRange } from '@hassanmojab/react-modern-calendar-datepicker';
 import { Calendar as CalendarIcon } from 'lucide-react';
-import * as React from 'react';
 
 interface DatePickerWithRangeProps {
   className?: string;

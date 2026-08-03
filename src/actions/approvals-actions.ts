@@ -28,8 +28,10 @@ export async function createApproval(
   return _createApproval(input);
 }
 
-export async function getApprovalById(
-  id: string,
-): Promise<{ success: boolean; data?: import('@/lib/approvals').ApprovalSummary; message?: string }> {
+export async function getApprovalById(id: string): Promise<{
+  success: boolean;
+  data?: import('@/lib/approvals').ApprovalSummary;
+  message?: string;
+}> {
   return _getApprovalById(id);
 }

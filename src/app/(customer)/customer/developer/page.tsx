@@ -7,8 +7,8 @@
  *  - scopes در dialog انتخاب می‌شوند و در DB ذخیره می‌گردند
  */
 import { getMyApiKeyAudits, getMyApiKeys, getMyWebhooks } from '@/actions/developer-portal';
-import { WEBHOOK_EVENTS } from '@/lib/developer-portal-constants';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
+import { WEBHOOK_EVENTS } from '@/lib/developer-portal-constants';
 import type { Metadata } from 'next';
 import DeveloperPortalClient from './_components/DeveloperPortalClient';
 
@@ -58,7 +58,7 @@ export default async function DeveloperPortalPage() {
     getMyApiKeyAudits(20),
   ]);
 
-  const keys: ApiKeyRow[] = (rawKeys as Array<Record<string, unknown>>).map((k) => ({
+  const keys: ApiKeyRow[] = (rawKeys as Record<string, unknown>[]).map((k) => ({
     id: String(k.id),
     name: String(k.name),
     key: String(k.key),
@@ -71,7 +71,7 @@ export default async function DeveloperPortalPage() {
     createdAt: new Date(k.createdAt as string).toISOString(),
   }));
 
-  const webhooks: WebhookRow[] = (rawWebhooks as Array<Record<string, unknown>>).map((w) => ({
+  const webhooks: WebhookRow[] = (rawWebhooks as Record<string, unknown>[]).map((w) => ({
     id: String(w.id),
     url: String(w.url),
     events: Array.isArray(w.events) ? w.events.map((e) => String(e)) : [],
@@ -79,13 +79,16 @@ export default async function DeveloperPortalPage() {
     createdAt: new Date(w.createdAt as string).toISOString(),
   }));
 
-  const audits: AuditRow[] = (rawAudits as Array<Record<string, unknown>>).map((a) => ({
+  const audits: AuditRow[] = (rawAudits as Record<string, unknown>[]).map((a) => ({
     id: String(a.id),
     action: String(a.action),
     ip: a.ip ? String(a.ip) : null,
     userAgent: a.userAgent ? String(a.userAgent) : null,
     createdAt: new Date(a.createdAt as string).toISOString(),
-    ApiKey: a.ApiKey && typeof a.ApiKey === 'object' ? { name: String((a.ApiKey as { name: unknown }).name) } : null,
+    ApiKey:
+      a.ApiKey && typeof a.ApiKey === 'object'
+        ? { name: String((a.ApiKey as { name: unknown }).name) }
+        : null,
   }));
 
   return (
@@ -100,7 +103,10 @@ export default async function DeveloperPortalPage() {
       <PageHeader
         title="پنل توسعه‌دهندگان"
         description="ابزارهای اتصال پلتفرم به سیستم‌های شما — کلید API، وب‌هوک و مستندات"
-        breadcrumb={[{ href: '/customer/dashboard', label: 'پنل مشتری' }, { label: 'توسعه‌دهندگان' }]}
+        breadcrumb={[
+          { href: '/customer/dashboard', label: 'پنل مشتری' },
+          { label: 'توسعه‌دهندگان' },
+        ]}
         icon="settings"
         accent="violet"
       />

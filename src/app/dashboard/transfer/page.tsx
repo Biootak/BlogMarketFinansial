@@ -5,7 +5,8 @@ import { TransferWizard } from './_components/TransferWizard';
 
 export const metadata: Metadata = {
   title: 'انتقال P2P | داشبورد',
-  description: 'انتقال P2P سریع و امن بین کاربران ثبت‌شده — ارسال افغانی به دوستان، همکاران و خانواده',
+  description:
+    'انتقال P2P سریع و امن بین کاربران ثبت‌شده — ارسال افغانی به دوستان، همکاران و خانواده',
 };
 
 export default async function TransferPage() {

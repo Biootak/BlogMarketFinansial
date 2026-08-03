@@ -1,17 +1,31 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { cancelJob, retryJob } from '@/actions/jobs-actions';
+import type { JobDetail, JobLifecycleEvent } from '@/lib/jobs';
+import { toPersianDigits } from '@/lib/setup/format';
+import {
+  AlertTriangle,
+  ArrowLeft,
+  CheckCircle2,
+  Clock,
+  Hourglass,
+  PlayCircle,
+  RefreshCw,
+  Trash2,
+  XCircle,
+  Zap,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, RefreshCw, Trash2, Clock, Zap, AlertTriangle, CheckCircle2, PlayCircle, XCircle, Hourglass } from 'lucide-react';
-import { toPersianDigits } from '@/lib/setup/format';
-import { retryJob, cancelJob } from '@/actions/jobs-actions';
-import type { JobDetail, JobLifecycleEvent } from '@/lib/jobs';
+import { useMemo, useState, useTransition } from 'react';
 import s from '../../jobs.module.css';
 
 type Status = JobDetail['status'];
 
-const STATUS_META: Record<Status, { label: string; tone: 'emerald' | 'indigo' | 'amber' | 'rose' }> = {
+const STATUS_META: Record<
+  Status,
+  { label: string; tone: 'emerald' | 'indigo' | 'amber' | 'rose' }
+> = {
   completed: { label: 'تکمیل شده', tone: 'emerald' },
   running: { label: 'در حال اجرا', tone: 'indigo' },
   pending: { label: 'در صف', tone: 'amber' },
@@ -19,7 +33,10 @@ const STATUS_META: Record<Status, { label: string; tone: 'emerald' | 'indigo' | 
   dead: { label: 'صف مرده', tone: 'rose' },
 };
 
-const STAGE_META: Record<JobLifecycleEvent['stage'], { label: string; tone: string; Icon: typeof Clock }> = {
+const STAGE_META: Record<
+  JobLifecycleEvent['stage'],
+  { label: string; tone: string; Icon: typeof Clock }
+> = {
   created: { label: 'ساخته شد', tone: 'neutral', Icon: PlayCircle },
   scheduled: { label: 'زمان‌بندی شد', tone: 'amber', Icon: Hourglass },
   started: { label: 'شروع شد', tone: 'indigo', Icon: PlayCircle },
@@ -222,9 +239,7 @@ export function JobInspector({ job }: { job: JobDetail }) {
                       <span className={s.timelineLabel}>{stageMeta.label}</span>
                       <span className={s.timelineTime}>{fmtDate(event.at)}</span>
                     </div>
-                    {event.detail ? (
-                      <p className={s.timelineDetail}>{event.detail}</p>
-                    ) : null}
+                    {event.detail ? <p className={s.timelineDetail}>{event.detail}</p> : null}
                   </div>
                 </li>
               );

@@ -5,16 +5,17 @@
  * «rich card row» با dot رنگی kind + status pill.
  */
 
+import type { TransactionRow } from '@/actions/exchange-transactions';
+import { TX_KIND_COLOR, TX_KIND_FA, TX_STATUS_LABEL } from '@/lib/exchange-labels';
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import s from './ExchangeDashboard.module.css';
-import { TX_KIND_FA, TX_STATUS_LABEL, TX_KIND_COLOR } from '@/lib/exchange-labels';
-import type { TransactionRow } from '@/actions/exchange-transactions';
 
 function formatAmount(amountStr: string, currency: string): string {
-  return `${new Intl.NumberFormat('fa-IR', { notation: 'compact', maximumFractionDigits: 1 }).format(
-    Number(BigInt(amountStr)) / 100,
-  )} ${currency}`;
+  return `${new Intl.NumberFormat('fa-IR', {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(Number(BigInt(amountStr)) / 100)} ${currency}`;
 }
 
 function formatTime(iso: string): string {
@@ -41,11 +42,7 @@ export default function ExchangeRecentTransactions({
   const items = transactions.slice(0, limit);
 
   if (items.length === 0) {
-    return (
-      <div className={s.recentEmpty}>
-        هنوز تراکنشی ثبت نشده است.
-      </div>
-    );
+    return <div className={s.recentEmpty}>هنوز تراکنشی ثبت نشده است.</div>;
   }
 
   return (
@@ -63,11 +60,7 @@ export default function ExchangeRecentTransactions({
                 className={s.recentItem}
                 aria-label={`${t.customer?.fullName ?? 'تراکنش'} — ${TX_KIND_FA[t.kind] ?? t.kind}`}
               >
-                <span
-                  className={s.recentKindDot}
-                  style={{ background: kindColor }}
-                  aria-hidden
-                />
+                <span className={s.recentKindDot} style={{ background: kindColor }} aria-hidden />
                 <span className={s.recentMain}>
                   <span className={s.recentName}>
                     {t.customer?.fullName ?? t.counterparty ?? 'بدون نام'}

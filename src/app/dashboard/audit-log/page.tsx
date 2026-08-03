@@ -13,8 +13,8 @@ export const metadata: Metadata = {
 const PAGE_SIZE = 25;
 
 const CATEGORY_PREFIXES: Record<string, string[]> = {
-  kyc:      ['KYC'],
-  deal:     ['DEAL', 'CURRENCY_DEAL'],
+  kyc: ['KYC'],
+  deal: ['DEAL', 'CURRENCY_DEAL'],
   exchange: ['EXCHANGE', 'SETTLEMENT'],
   security: ['FRAUD', 'SECURITY'],
   transfer: ['TRANSFER', 'PAYMENT'],

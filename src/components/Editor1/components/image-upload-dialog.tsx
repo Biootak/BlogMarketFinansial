@@ -13,13 +13,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
 import type { Editor } from '@tiptap/core';
-import React, {
+import {
   forwardRef,
   useCallback,
   useEffect,
   useId,
   useImperativeHandle,
-  useMemo,
   useRef,
   useState,
 } from 'react';

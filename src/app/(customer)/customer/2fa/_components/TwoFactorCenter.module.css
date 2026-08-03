@@ -21,7 +21,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ─── Hero Status ─────────────────────────────────────────────── */
@@ -39,7 +41,7 @@
 }
 
 .hero::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-inline-start: 0;
   inset-block: 0;
@@ -170,7 +172,8 @@
   font-size: var(--ds-text-sm, 13px);
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s var(--nova-ease), background 0.2s var(--nova-ease), border-color 0.2s var(--nova-ease);
+  transition: transform 0.2s var(--nova-ease), background 0.2s var(--nova-ease), border-color 0.2s
+    var(--nova-ease);
   font-family: inherit;
   border: 1px solid transparent;
 }
@@ -331,7 +334,11 @@
 
 /* ─── JUST_ENABLED state (backup codes) ───────────────────────── */
 .backupCard {
-  background: linear-gradient(135deg, color-mix(in oklch, var(--nova-emerald) 6%, var(--at-surface)), var(--at-surface));
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--nova-emerald) 6%, var(--at-surface)),
+    var(--at-surface)
+  );
   border-color: color-mix(in oklch, var(--nova-emerald) 25%, var(--at-line));
 }
 

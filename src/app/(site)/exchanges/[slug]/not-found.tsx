@@ -15,8 +15,8 @@ export default function ExchangeNotFound() {
         </div>
         <h1 className={s.title}>صرافی پیدا نشد</h1>
         <p className={s.sub}>
-          صرافی که به دنبال آن می‌گردید وجود ندارد، منقضی شده یا هنوز فعال نشده است.
-          می‌توانید به فهرست صرافی‌های فعال مراجعه کنید.
+          صرافی که به دنبال آن می‌گردید وجود ندارد، منقضی شده یا هنوز فعال نشده است. می‌توانید به
+          فهرست صرافی‌های فعال مراجعه کنید.
         </p>
         <div className={s.cta}>
           <Link href="/exchanges" className={s.ctaPrimary}>

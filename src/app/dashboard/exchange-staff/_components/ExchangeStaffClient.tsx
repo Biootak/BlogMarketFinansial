@@ -18,8 +18,7 @@ import {
   searchUsersForStaff,
 } from '@/actions/exchange-staff';
 import type { ExchangeRow } from '@/actions/exchanges';
-import { ConfirmDialog, EmptyState, MillionDollarEmpty, PageHeader } from '@/components/Dashboard/primitives';
-import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { ConfirmDialog, MillionDollarEmpty, PageHeader } from '@/components/Dashboard/primitives';
 import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
 import {
   Dialog,
@@ -36,6 +35,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import {
   AlertCircle,
   Building2,
@@ -51,7 +51,8 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import React, {
+import type React from 'react';
+import {
   useCallback,
   useDeferredValue,
   useEffect,
@@ -74,44 +75,46 @@ type RoleFilter = 'all' | 'OWNER' | 'MANAGER' | 'STAFF' | 'VIEWER';
 // ─── Label maps ───────────────────────────────────────────────────────────────
 
 const ROLE_FA: Record<string, string> = {
-  OWNER:   'مالک',
+  OWNER: 'مالک',
   MANAGER: 'مدیر',
-  STAFF:   'کارمند',
-  VIEWER:  'ناظر',
+  STAFF: 'کارمند',
+  VIEWER: 'ناظر',
 };
 
 const ROLE_CLASS: Record<string, string> = {
-  OWNER:   s.roleOwner,
+  OWNER: s.roleOwner,
   MANAGER: s.roleManager,
-  STAFF:   s.roleStaff,
-  VIEWER:  s.roleViewer,
+  STAFF: s.roleStaff,
+  VIEWER: s.roleViewer,
 };
 
 const ROW_CLASS: Record<string, string> = {
-  OWNER:   s.rowOwner,
+  OWNER: s.rowOwner,
   MANAGER: s.rowManager,
-  STAFF:   s.rowStaff,
-  VIEWER:  s.rowViewer,
+  STAFF: s.rowStaff,
+  VIEWER: s.rowViewer,
 };
 
 const ROLE_HINT: Record<string, string> = {
-  OWNER:   'دسترسی کامل به تمام بخش‌های صرافی',
+  OWNER: 'دسترسی کامل به تمام بخش‌های صرافی',
   MANAGER: 'مدیریت معاملات، کارکنان و تنظیمات',
-  STAFF:   'ثبت و پیگیری معاملات روزانه',
-  VIEWER:  'فقط مشاهده گزارش‌ها و آمار',
+  STAFF: 'ثبت و پیگیری معاملات روزانه',
+  VIEWER: 'فقط مشاهده گزارش‌ها و آمار',
 };
 
 const ROLE_TABS: { value: RoleFilter; label: string }[] = [
-  { value: 'all',     label: 'همه' },
-  { value: 'OWNER',   label: 'مالک' },
+  { value: 'all', label: 'همه' },
+  { value: 'OWNER', label: 'مالک' },
   { value: 'MANAGER', label: 'مدیر' },
-  { value: 'STAFF',   label: 'کارمند' },
-  { value: 'VIEWER',  label: 'ناظر' },
+  { value: 'STAFF', label: 'کارمند' },
+  { value: 'VIEWER', label: 'ناظر' },
 ];
 
 function formatDate(d: Date | string): string {
   return new Date(d).toLocaleDateString('fa-IR', {
-    year: 'numeric', month: 'short', day: 'numeric',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   });
 }
 
@@ -166,9 +169,11 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
   // ── KPI ───────────────────────────────────────────────────────────────────────
 
   const kpi = useMemo(() => {
-    const active   = rows.filter((r) => !r.revokedAt).length;
-    const revoked  = rows.filter((r) => r.revokedAt).length;
-    const managers = rows.filter((r) => ['OWNER', 'MANAGER'].includes(r.role) && !r.revokedAt).length;
+    const active = rows.filter((r) => !r.revokedAt).length;
+    const revoked = rows.filter((r) => r.revokedAt).length;
+    const managers = rows.filter(
+      (r) => ['OWNER', 'MANAGER'].includes(r.role) && !r.revokedAt,
+    ).length;
     return { total: rows.length, active, revoked, managers };
   }, [rows]);
 
@@ -177,12 +182,12 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
   const filtered = useMemo(() => {
     let list = rows;
     if (exchangeFilter !== 'all') list = list.filter((r) => r.exchangeId === exchangeFilter);
-    if (roleFilter !== 'all')     list = list.filter((r) => r.role === roleFilter);
+    if (roleFilter !== 'all') list = list.filter((r) => r.role === roleFilter);
     if (deferredQuery.trim()) {
       const q = deferredQuery.trim().toLowerCase();
       list = list.filter(
         (r) =>
-          (r.userName?.toLowerCase().includes(q)  ?? false) ||
+          (r.userName?.toLowerCase().includes(q) ?? false) ||
           (r.userEmail?.toLowerCase().includes(q) ?? false) ||
           r.exchangeName.toLowerCase().includes(q),
       );
@@ -208,7 +213,10 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
         setUserSearchLoading(false);
       }
     }, 250);
-    return () => { cancelled = true; window.clearTimeout(timer); };
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
   }, [userSearch]);
 
   useEffect(() => {
@@ -258,48 +266,70 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
     setFormError('');
     setFormLoading(true);
     const res = await inviteStaff({
-      exchangeId:  inviteExchangeId,
-      userId:      inviteUserId,
-      role:        inviteRole,
-      title:       inviteTitle || null,
+      exchangeId: inviteExchangeId,
+      userId: inviteUserId,
+      role: inviteRole,
+      title: inviteTitle || null,
       permissions: [],
     });
     setFormLoading(false);
-    if (!res.success) { setFormError(res.error.message); return; }
+    if (!res.success) {
+      setFormError(res.error.message);
+      return;
+    }
     toast({ title: 'کارمند با موفقیت اضافه شد.' });
     handleSheetOpenChange(false);
     startTransition(() => router.refresh());
-  }, [inviteExchangeId, inviteUserId, inviteRole, inviteTitle, toast, router, handleSheetOpenChange]);
+  }, [
+    inviteExchangeId,
+    inviteUserId,
+    inviteRole,
+    inviteTitle,
+    toast,
+    router,
+    handleSheetOpenChange,
+  ]);
 
-  const handleRevoke = useCallback((row: StaffRow) => {
-    setConfirmTitle(`لغو دسترسی ${row.userName ?? row.userId}`);
-    setConfirmDesc(`دسترسی این کارمند به صرافی «${row.exchangeName}» لغو می‌شود.`);
-    setConfirmAction(() => async () => {
-      const res = await revokeStaff(row.id);
-      if (!res.success) { toast({ title: 'خطا', description: res.error.message, variant: 'destructive' }); return; }
-      setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, revokedAt: new Date() } : r)));
-      toast({ title: 'دسترسی با موفقیت لغو شد.' });
-    });
-    setConfirmOpen(true);
-  }, [toast]);
+  const handleRevoke = useCallback(
+    (row: StaffRow) => {
+      setConfirmTitle(`لغو دسترسی ${row.userName ?? row.userId}`);
+      setConfirmDesc(`دسترسی این کارمند به صرافی «${row.exchangeName}» لغو می‌شود.`);
+      setConfirmAction(() => async () => {
+        const res = await revokeStaff(row.id);
+        if (!res.success) {
+          toast({ title: 'خطا', description: res.error.message, variant: 'destructive' });
+          return;
+        }
+        setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, revokedAt: new Date() } : r)));
+        toast({ title: 'دسترسی با موفقیت لغو شد.' });
+      });
+      setConfirmOpen(true);
+    },
+    [toast],
+  );
 
-  const handleRemove = useCallback((row: StaffRow) => {
-    setConfirmTitle(`حذف کارمند ${row.userName ?? row.userId}`);
-    setConfirmDesc(`این کارمند به طور کامل از صرافی «${row.exchangeName}» حذف خواهد شد.`);
-    setConfirmAction(() => async () => {
-      const res = await removeStaff(row.id);
-      if (!res.success) { toast({ title: 'خطا', description: res.error.message, variant: 'destructive' }); return; }
-      setRows((prev) => prev.filter((r) => r.id !== row.id));
-      toast({ title: 'کارمند با موفقیت حذف شد.' });
-    });
-    setConfirmOpen(true);
-  }, [toast]);
+  const handleRemove = useCallback(
+    (row: StaffRow) => {
+      setConfirmTitle(`حذف کارمند ${row.userName ?? row.userId}`);
+      setConfirmDesc(`این کارمند به طور کامل از صرافی «${row.exchangeName}» حذف خواهد شد.`);
+      setConfirmAction(() => async () => {
+        const res = await removeStaff(row.id);
+        if (!res.success) {
+          toast({ title: 'خطا', description: res.error.message, variant: 'destructive' });
+          return;
+        }
+        setRows((prev) => prev.filter((r) => r.id !== row.id));
+        toast({ title: 'کارمند با موفقیت حذف شد.' });
+      });
+      setConfirmOpen(true);
+    },
+    [toast],
+  );
 
   // ── Render ────────────────────────────────────────────────────────────────────
 
   return (
     <div className={s.root}>
-
       {/* PageHeader */}
       <PageHeader
         variant="compact"
@@ -316,47 +346,60 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
 
       {/* ── KPI Strip ── */}
       <div className={s.kpiStrip} aria-label="آمار کارکنان">
-
         <div className={s.kpiCard} style={{ '--kd': '0ms' } as React.CSSProperties}>
-          <div className={s.kpiIconBox}><Users size={16} aria-hidden /></div>
+          <div className={s.kpiIconBox}>
+            <Users size={16} aria-hidden />
+          </div>
           <div className={s.kpiBody}>
             <span className={s.kpiVal}>{kpi.total.toLocaleString('fa-IR')}</span>
             <span className={s.kpiLbl}>کل کارکنان</span>
           </div>
         </div>
 
-        <div className={`${s.kpiCard} ${s.kpiCardGreen}`} style={{ '--kd': '50ms' } as React.CSSProperties}>
-          <div className={s.kpiIconBox}><ShieldCheck size={16} aria-hidden /></div>
+        <div
+          className={`${s.kpiCard} ${s.kpiCardGreen}`}
+          style={{ '--kd': '50ms' } as React.CSSProperties}
+        >
+          <div className={s.kpiIconBox}>
+            <ShieldCheck size={16} aria-hidden />
+          </div>
           <div className={s.kpiBody}>
             <span className={s.kpiVal}>{kpi.active.toLocaleString('fa-IR')}</span>
             <span className={s.kpiLbl}>دسترسی فعال</span>
           </div>
         </div>
 
-        <div className={`${s.kpiCard} ${s.kpiCardRed}`} style={{ '--kd': '100ms' } as React.CSSProperties}>
-          <div className={s.kpiIconBox}><ShieldBan size={16} aria-hidden /></div>
+        <div
+          className={`${s.kpiCard} ${s.kpiCardRed}`}
+          style={{ '--kd': '100ms' } as React.CSSProperties}
+        >
+          <div className={s.kpiIconBox}>
+            <ShieldBan size={16} aria-hidden />
+          </div>
           <div className={s.kpiBody}>
             <span className={s.kpiVal}>{kpi.revoked.toLocaleString('fa-IR')}</span>
             <span className={s.kpiLbl}>لغو شده</span>
           </div>
         </div>
 
-        <div className={`${s.kpiCard} ${s.kpiCardViolet}`} style={{ '--kd': '150ms' } as React.CSSProperties}>
-          <div className={s.kpiIconBox}><UserCog size={16} aria-hidden /></div>
+        <div
+          className={`${s.kpiCard} ${s.kpiCardViolet}`}
+          style={{ '--kd': '150ms' } as React.CSSProperties}
+        >
+          <div className={s.kpiIconBox}>
+            <UserCog size={16} aria-hidden />
+          </div>
           <div className={s.kpiBody}>
             <span className={s.kpiVal}>{kpi.managers.toLocaleString('fa-IR')}</span>
             <span className={s.kpiLbl}>مدیران و مالکان</span>
           </div>
         </div>
-
       </div>
 
       {/* ── Main Layout: filter sidebar + table ── */}
       <div className={s.layout}>
-
         {/* ── Sidebar Filters ── */}
         <aside className={s.sidebar} aria-label="فیلترها">
-
           <div className={s.sideSection}>
             <p className={s.sideLabel}>
               <Filter size={12} aria-hidden />
@@ -369,7 +412,9 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
               <SelectContent>
                 <SelectItem value="all">همه صراف‌ها</SelectItem>
                 {exchanges.map((ex) => (
-                  <SelectItem key={ex.id} value={ex.id}>{ex.name}</SelectItem>
+                  <SelectItem key={ex.id} value={ex.id}>
+                    {ex.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -433,12 +478,10 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
               دعوت کارمند جدید
             </button>
           </div>
-
         </aside>
 
         {/* ── Main Panel ── */}
         <div className={s.main}>
-
           {/* Search + count bar */}
           <div className={s.searchBar}>
             <div className={s.searchWrap}>
@@ -461,7 +504,9 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
           <div className={s.tableWrap}>
             {filtered.length === 0 ? (
               <MillionDollarEmpty
-                variant={query || exchangeFilter !== 'all' || roleFilter !== 'all' ? 'search' : 'inbox'}
+                variant={
+                  query || exchangeFilter !== 'all' || roleFilter !== 'all' ? 'search' : 'inbox'
+                }
                 tone="primary"
                 eyebrow="صراف‌ها"
                 title="کارمندی یافت نشد"
@@ -481,7 +526,9 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
                     <th className={s.th}>عنوان</th>
                     <th className={s.th}>وضعیت</th>
                     <th className={s.th}>تاریخ عضویت</th>
-                    <th className={s.th}><span className="sr-only">اقدامات</span></th>
+                    <th className={s.th}>
+                      <span className="sr-only">اقدامات</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -492,7 +539,9 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
                         s.tr,
                         ROW_CLASS[row.role] ?? s.rowStaff,
                         row.revokedAt ? s.trRevoked : '',
-                      ].filter(Boolean).join(' ')}
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
                       style={{ '--ri': idx } as React.CSSProperties}
                     >
                       <td className={s.td}>
@@ -564,7 +613,6 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
               </table>
             )}
           </div>
-
         </div>
       </div>
 
@@ -573,7 +621,6 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
         <DialogPortal>
           <DialogOverlay className={cm.overlay} />
           <DialogPrimitive.Content dir="rtl" className={cm.panel} aria-label="دعوت کارمند جدید">
-
             <div className={cm.header}>
               <SheetTitle>دعوت کارمند جدید</SheetTitle>
               <DialogClose className={cm.close} aria-label="بستن">
@@ -583,7 +630,6 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
 
             <div className={cm.body}>
               <div className={s.formBody}>
-
                 {formError && (
                   <p className={s.errorMsg} role="alert">
                     <AlertCircle size={14} className={s.errorIcon} aria-hidden />
@@ -594,15 +640,24 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
                 {/* صرافی */}
                 <div className={s.formGroup}>
                   <label className={s.formLabel} htmlFor="invite-exchange">
-                    صرافی <span className={s.req} aria-hidden>*</span>
+                    صرافی{' '}
+                    <span className={s.req} aria-hidden>
+                      *
+                    </span>
                   </label>
                   <Select value={inviteExchangeId} onValueChange={setInviteExchangeId}>
-                    <SelectTrigger id="invite-exchange" className={s.formSelect} aria-label="انتخاب صرافی">
+                    <SelectTrigger
+                      id="invite-exchange"
+                      className={s.formSelect}
+                      aria-label="انتخاب صرافی"
+                    >
                       <SelectValue placeholder="— انتخاب صرافی —" />
                     </SelectTrigger>
                     <SelectContent>
                       {exchanges.map((ex) => (
-                        <SelectItem key={ex.id} value={ex.id}>{ex.name}</SelectItem>
+                        <SelectItem key={ex.id} value={ex.id}>
+                          {ex.name}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -611,13 +666,22 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
                 {/* کاربر */}
                 <div className={s.formGroup}>
                   <label className={s.formLabel} htmlFor="invite-user-search">
-                    کاربر <span className={s.req} aria-hidden>*</span>
+                    کاربر{' '}
+                    <span className={s.req} aria-hidden>
+                      *
+                    </span>
                   </label>
                   <div className={s.autocompleteWrap} ref={searchRef}>
                     {selectedUser ? (
                       <div className={s.selectedChip}>
                         {selectedUser.image ? (
-                          <Image src={selectedUser.image} alt="" width={24} height={24} className={s.chipAvatar} />
+                          <Image
+                            src={selectedUser.image}
+                            alt=""
+                            width={24}
+                            height={24}
+                            className={s.chipAvatar}
+                          />
                         ) : (
                           <span className={s.chipAvatarFallback} aria-hidden>
                             {(selectedUser.name ?? '؟').charAt(0)}
@@ -629,7 +693,12 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
                         {selectedUser.email && (
                           <span className={s.chipEmail}>{selectedUser.email}</span>
                         )}
-                        <button type="button" onClick={clearSelectedUser} className={s.chipClear} aria-label="حذف">
+                        <button
+                          type="button"
+                          onClick={clearSelectedUser}
+                          className={s.chipClear}
+                          aria-label="حذف"
+                        >
                           <X size={12} aria-hidden />
                         </button>
                       </div>
@@ -649,11 +718,17 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
                           aria-autocomplete="list"
                           aria-controls="invite-user-listbox"
                         />
-                        {userSearchLoading && <span className={s.searchSpinner} aria-label="در حال جستجو" />}
+                        {userSearchLoading && (
+                          <span className={s.searchSpinner} aria-label="در حال جستجو" />
+                        )}
                       </div>
                     )}
                     {showDropdown && (
-                      <div id="invite-user-listbox" role="listbox" className={s.autocompleteDropdown}>
+                      <div
+                        id="invite-user-listbox"
+                        role="listbox"
+                        className={s.autocompleteDropdown}
+                      >
                         {userSearchResults.map((u) => (
                           <button
                             key={u.id}
@@ -664,7 +739,13 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
                             onClick={() => selectUser(u)}
                           >
                             {u.image ? (
-                              <Image src={u.image} alt="" width={30} height={30} className={s.optionAvatar} />
+                              <Image
+                                src={u.image}
+                                alt=""
+                                width={30}
+                                height={30}
+                                className={s.optionAvatar}
+                              />
                             ) : (
                               <span className={s.optionAvatarFallback} aria-hidden>
                                 {(u.name ?? '؟').charAt(0)}
@@ -683,7 +764,9 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
 
                 {/* نقش */}
                 <div className={s.formGroup}>
-                  <label className={s.formLabel} htmlFor="invite-role">نقش</label>
+                  <label className={s.formLabel} htmlFor="invite-role">
+                    نقش
+                  </label>
                   <Select
                     value={inviteRole}
                     onValueChange={(v) => setInviteRole(v as typeof inviteRole)}
@@ -725,7 +808,6 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
                 >
                   {formLoading ? 'در حال ثبت…' : 'ثبت کارمند'}
                 </button>
-
               </div>
             </div>
           </DialogPrimitive.Content>
@@ -740,9 +822,11 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
         description={confirmDesc}
         confirmLabel="تأیید"
         variant="danger"
-        onConfirm={() => { void confirmAction(); setConfirmOpen(false); }}
+        onConfirm={() => {
+          void confirmAction();
+          setConfirmOpen(false);
+        }}
       />
-
     </div>
   );
 }

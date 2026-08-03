@@ -30,7 +30,7 @@
 }
 
 .kycBanner::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-inline-start: 0;
   inset-block: 0;
@@ -97,10 +97,14 @@
 }
 
 .portfolio::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at top inset-inline-start, color-mix(in oklch, var(--nova-violet, var(--nova-primary)) 12%, transparent), transparent 60%);
+  background: radial-gradient(
+    ellipse at top inset-inline-start,
+    color-mix(in oklch, var(--nova-violet, var(--nova-primary)) 12%, transparent),
+    transparent 60%
+  );
   pointer-events: none;
 }
 
@@ -133,8 +137,13 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .portfolioAmount {
@@ -212,7 +221,7 @@
 }
 
 .sectionTitle::before {
-  content: '';
+  content: "";
   inline-size: 6px;
   block-size: 6px;
   border-radius: 50%;
@@ -228,8 +237,18 @@
 /* ─── Wallets Grid ────────────────────────────────────────── */
 .walletsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: 1fr;
   gap: var(--ds-space-4);
+}
+@media (min-width: 480px) {
+  .walletsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 768px) {
+  .walletsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
 }
 
 .walletCard {
@@ -497,7 +516,7 @@
 }
 
 .actionCard::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-inline-start: 0;
   inset-block: 0;
@@ -515,15 +534,35 @@
   inline-size: 4px;
 }
 
-.actionCard[data-tone="primary"]::before { background: var(--nova-primary); }
-.actionCard[data-tone="emerald"]::before { background: var(--nova-emerald); }
-.actionCard[data-tone="rose"]::before { background: var(--nova-rose); }
-.actionCard[data-tone="violet"]::before { background: var(--nova-violet, var(--nova-primary)); }
+.actionCard[data-tone="primary"]::before {
+  background: var(--nova-primary);
+}
+.actionCard[data-tone="emerald"]::before {
+  background: var(--nova-emerald);
+}
+.actionCard[data-tone="rose"]::before {
+  background: var(--nova-rose);
+}
+.actionCard[data-tone="violet"]::before {
+  background: var(--nova-violet, var(--nova-primary));
+}
 
-.actionCard[data-tone="primary"] .actionIcon { color: var(--nova-primary); background: color-mix(in oklch, var(--nova-primary) 14%, transparent); }
-.actionCard[data-tone="emerald"] .actionIcon { color: var(--nova-emerald); background: color-mix(in oklch, var(--nova-emerald) 14%, transparent); }
-.actionCard[data-tone="rose"] .actionIcon { color: var(--nova-rose); background: color-mix(in oklch, var(--nova-rose) 14%, transparent); }
-.actionCard[data-tone="violet"] .actionIcon { color: var(--nova-violet, var(--nova-primary)); background: color-mix(in oklch, var(--nova-violet, var(--nova-primary)) 14%, transparent); }
+.actionCard[data-tone="primary"] .actionIcon {
+  color: var(--nova-primary);
+  background: color-mix(in oklch, var(--nova-primary) 14%, transparent);
+}
+.actionCard[data-tone="emerald"] .actionIcon {
+  color: var(--nova-emerald);
+  background: color-mix(in oklch, var(--nova-emerald) 14%, transparent);
+}
+.actionCard[data-tone="rose"] .actionIcon {
+  color: var(--nova-rose);
+  background: color-mix(in oklch, var(--nova-rose) 14%, transparent);
+}
+.actionCard[data-tone="violet"] .actionIcon {
+  color: var(--nova-violet, var(--nova-primary));
+  background: color-mix(in oklch, var(--nova-violet, var(--nova-primary)) 14%, transparent);
+}
 
 .actionIcon {
   display: inline-flex;

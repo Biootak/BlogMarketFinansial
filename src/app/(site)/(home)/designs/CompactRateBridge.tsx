@@ -172,7 +172,9 @@ export default function CompactRateBridge({
         href={orderHref}
         onClick={(e) => e.stopPropagation()}
         className="relative flex-1 min-w-0 sm:min-w-[260px] sm:max-w-[320px] overflow-hidden cursor-pointer hover:bg-white/5 transition-colors"
-        aria-label={`${current?.title} - ثبت سفارش`}
+        // WCAG 2.5.3 label-in-name: the accessible name is derived from the
+        // visible content (title + خرید + فروش + ثبت) — no aria-label override,
+        // so the name always matches what sighted users see.
       >
         <AnimatePresence mode="wait">
           <motion.div

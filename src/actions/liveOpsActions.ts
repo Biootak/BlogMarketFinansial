@@ -12,10 +12,13 @@
  *  فقط نقش‌های ADMIN/OWNER/SUPERADMIN مجاز هستند.
  */
 
+import type {
+  LiveOpsEvent,
+  ServiceStatus,
+} from '@/components/Dashboard/DashboardPage/LiveOpsPulse';
 import prisma from '@/lib/db';
 import { requireAdmin } from '@/lib/require-auth';
 import { safeCache } from '@/lib/safe-cache';
-import type { LiveOpsEvent, ServiceStatus } from '@/components/Dashboard/DashboardPage/LiveOpsPulse';
 
 export interface LiveOpsData {
   services: Array<{
@@ -77,10 +80,7 @@ const classifyAction = (action: string) =>
  *  - warn متوسط → degraded
  *  - در غیر این صورت → healthy
  */
-const classifyService = (
-  errorCount: number,
-  warnCount: number,
-): ServiceStatus => {
+const classifyService = (errorCount: number, warnCount: number): ServiceStatus => {
   if (errorCount > 5) return 'down';
   if (errorCount > 0 || warnCount > 8) return 'degraded';
   return 'healthy';
@@ -215,7 +215,14 @@ const fetchEventsRaw = async (limit: number): Promise<LiveOpsData['events']> => 
     const meta = r.meta as Record<string, unknown> | null;
     const amount =
       meta && typeof meta === 'object' && 'amount' in meta && meta.amount
-        ? (meta.amount as { value: number; currency: LiveOpsEvent['amount'] extends infer A ? A extends { currency: infer C } ? C : never : never })
+        ? (meta.amount as {
+            value: number;
+            currency: LiveOpsEvent['amount'] extends infer A
+              ? A extends { currency: infer C }
+                ? C
+                : never
+              : never;
+          })
         : null;
     return {
       id: r.id,
@@ -243,15 +250,19 @@ const fetchLiveOpsRaw = async (): Promise<LiveOpsData> => {
   return { services, events, activityBars };
 };
 
-const getCachedLiveOps = safeCache(fetchLiveOpsRaw, {
-  services: [],
-  events: [],
-  activityBars: Array(24).fill(0),
-} as LiveOpsData, {
-  key: 'live-ops',
-  ttl: 30,
-  tags: ['live-ops', 'audit-log', 'system-log'],
-});
+const getCachedLiveOps = safeCache(
+  fetchLiveOpsRaw,
+  {
+    services: [],
+    events: [],
+    activityBars: Array(24).fill(0),
+  } as LiveOpsData,
+  {
+    key: 'live-ops',
+    ttl: 30,
+    tags: ['live-ops', 'audit-log', 'system-log'],
+  },
+);
 
 /**
  * دریافت تمام داده‌های LiveOps با احراز هویت ادمین.
@@ -303,4 +314,3 @@ export async function getSystemHealthSnapshot(): Promise<{
     })),
   };
 }
-

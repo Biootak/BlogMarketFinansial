@@ -43,7 +43,11 @@ const formatFa = (n: number | null): string => {
   return new Intl.NumberFormat('fa-IR').format(Math.round(n));
 };
 
-function Sparkline({ values, width = 160, height = 36 }: { values: number[]; width?: number; height?: number }) {
+function Sparkline({
+  values,
+  width = 160,
+  height = 36,
+}: { values: number[]; width?: number; height?: number }) {
   if (values.length < 2) {
     return (
       <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden>
@@ -82,7 +86,12 @@ function Sparkline({ values, width = 160, height = 36 }: { values: number[]; wid
     })
     .join(' ');
   const areaPath = `${linePath} L ${padX + w} ${height} L ${padX} ${height} Z`;
-  const trend = values[values.length - 1] > values[0] ? 'up' : values[values.length - 1] < values[0] ? 'down' : 'flat';
+  const trend =
+    values[values.length - 1] > values[0]
+      ? 'up'
+      : values[values.length - 1] < values[0]
+        ? 'down'
+        : 'flat';
   const gid = `bento-spark-${values[0]}-${width}-${height}`;
   return (
     <svg
@@ -124,11 +133,7 @@ function ExchangeLogo({
   if (logoUrl) {
     // simple img — we don't pull from next/image to avoid remote loader issues
     return (
-      <span
-        className={s.logo}
-        style={{ inlineSize: size, blockSize: size }}
-        aria-hidden
-      >
+      <span className={s.logo} style={{ inlineSize: size, blockSize: size }} aria-hidden>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={logoUrl} alt="" loading="lazy" decoding="async" />
       </span>
@@ -137,11 +142,7 @@ function ExchangeLogo({
   // first letter avatar
   const letter = (name?.trim() ?? '?').charAt(0);
   return (
-    <span
-      className={s.logoFallback}
-      style={{ inlineSize: size, blockSize: size }}
-      aria-hidden
-    >
+    <span className={s.logoFallback} style={{ inlineSize: size, blockSize: size }} aria-hidden>
       {letter}
     </span>
   );
@@ -156,11 +157,7 @@ function FeatureCard({ item, index }: { item: BentoExchange; index: number }) {
     >
       <div className={s.featureTop}>
         <div className={s.featureId}>
-          <ExchangeLogo
-            name={item.displayName ?? item.name}
-            logoUrl={item.logoUrl}
-            size={56}
-          />
+          <ExchangeLogo name={item.displayName ?? item.name} logoUrl={item.logoUrl} size={56} />
           <div className={s.featureIdText}>
             <h3 className={s.featureName}>
               {item.displayName ?? item.name}
@@ -172,9 +169,7 @@ function FeatureCard({ item, index }: { item: BentoExchange; index: number }) {
                 {item.city}
               </span>
             )}
-            {item.licenseNo && (
-              <span className={s.featureLicense}>مجوز {item.licenseNo}</span>
-            )}
+            {item.licenseNo && <span className={s.featureLicense}>مجوز {item.licenseNo}</span>}
           </div>
         </div>
         <div className={s.featureBadge}>
@@ -223,11 +218,7 @@ function StandardCard({ item, index }: { item: BentoExchange; index: number }) {
       style={{ ['--i' as string]: index } as React.CSSProperties}
     >
       <div className={s.cardTop}>
-        <ExchangeLogo
-          name={item.displayName ?? item.name}
-          logoUrl={item.logoUrl}
-          size={40}
-        />
+        <ExchangeLogo name={item.displayName ?? item.name} logoUrl={item.logoUrl} size={40} />
         <div className={s.cardIdText}>
           <h3 className={s.cardName}>
             {item.displayName ?? item.name}
@@ -300,12 +291,17 @@ export default function ExchangeBentoGrid({
           <p className={s.sectionSub}>{subheading}</p>
         </div>
         <div className={s.sectionStat}>
-          <span className={s.sectionStatNum}>{new Intl.NumberFormat('fa-IR').format(items.length)}</span>
+          <span className={s.sectionStatNum}>
+            {new Intl.NumberFormat('fa-IR').format(items.length)}
+          </span>
           <span className={s.sectionStatLabel}>صرافی فعال</span>
         </div>
       </header>
 
-      <div className={s.bento} style={{ ['--count' as string]: sorted.length } as React.CSSProperties}>
+      <div
+        className={s.bento}
+        style={{ ['--count' as string]: sorted.length } as React.CSSProperties}
+      >
         {first && <FeatureCard item={first} index={0} />}
         {rest.map((item, i) => (
           <StandardCard key={item.id} item={item} index={i + 1} />

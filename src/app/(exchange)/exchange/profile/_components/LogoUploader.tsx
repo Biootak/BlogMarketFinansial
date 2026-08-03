@@ -17,9 +17,9 @@
  *  folder = 'logos' (پوشه‌ی اختصاصی صراف‌ها در S3)
  */
 
+import { cn } from '@/lib/utils';
 import { CheckCircle2, ExternalLink, ImagePlus, Loader2, Upload, X } from 'lucide-react';
 import { useCallback, useId, useRef, useState } from 'react';
-import { cn } from '@/lib/utils';
 import s from './LogoUploader.module.css';
 
 type UploadStatus = 'idle' | 'uploading' | 'success' | 'error';
@@ -190,7 +190,7 @@ export default function LogoUploader({
         {/* ── Preview ────────────────────────────────────────────────── */}
         <div className={s.preview} aria-hidden={!hasLogo}>
           {hasLogo ? (
-            // biome-ignore lint/performance/noImgElement: dynamic user URL
+            // Dynamic user URL
             <img src={value} alt="" className={s.previewImg} />
           ) : (
             <div className={s.placeholder}>
@@ -246,11 +246,7 @@ export default function LogoUploader({
             </div>
             <div className={s.zoneText}>
               <span className={s.zonePrimary}>
-                {isUploading
-                  ? 'در حال آپلود…'
-                  : hasLogo
-                    ? 'جایگزینی لوگو'
-                    : 'لوگو را اینجا بکشید'}
+                {isUploading ? 'در حال آپلود…' : hasLogo ? 'جایگزینی لوگو' : 'لوگو را اینجا بکشید'}
               </span>
               <span className={s.zoneSecondary}>
                 یا کلیک کنید · PNG، JPG، WebP، GIF · حداکثر ۵MB

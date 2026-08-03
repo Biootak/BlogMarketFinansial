@@ -6,10 +6,10 @@
  * client component: state محلی برای query و role filter.
  */
 
+import type { ExchangeStaffRow } from '@/actions/exchanges';
 import { Search, Users } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import type { ExchangeStaffRow } from '@/actions/exchanges';
-import { rankRole, STAFF_ROLE_FA, type StaffRole } from '../_lib/staff-format';
+import { STAFF_ROLE_FA, type StaffRole, rankRole } from '../_lib/staff-format';
 import { StaffCard } from './StaffCard';
 import s from './StaffCockpit.module.css';
 
@@ -73,8 +73,8 @@ export function StaffDirectory({
         <div>
           <h2 className={s.directoryTitle}>اعضای تیم</h2>
           <p className={s.directorySub}>
-            {members.length.toLocaleString('fa-IR')} عضو ·{' '}
-            {filtered.length.toLocaleString('fa-IR')} نمایش داده‌شده
+            {members.length.toLocaleString('fa-IR')} عضو · {filtered.length.toLocaleString('fa-IR')}{' '}
+            نمایش داده‌شده
           </p>
         </div>
       </header>
@@ -113,9 +113,7 @@ export function StaffDirectory({
             <Users size={22} strokeWidth={1.75} />
           </span>
           <p className={s.emptyTitle}>
-            {query || filter !== 'ALL'
-              ? 'نتیجه‌ای پیدا نشد'
-              : 'تیم فعلاً فقط شما هستید'}
+            {query || filter !== 'ALL' ? 'نتیجه‌ای پیدا نشد' : 'تیم فعلاً فقط شما هستید'}
           </p>
           <p className={s.emptySub}>
             {query || filter !== 'ALL'

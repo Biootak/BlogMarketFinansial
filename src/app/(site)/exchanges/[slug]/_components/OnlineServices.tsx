@@ -15,10 +15,10 @@
  *  RTL-safe, token-only, scroll-reveal با IntersectionObserver
  */
 
+import { type PublicExchangeService, logServiceClick } from '@/actions/exchange-services';
+import { getServiceMeta } from '@/lib/exchange-services';
 import { ArrowLeft, Clock4, ExternalLink, Sparkles, Wallet } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { logServiceClick, type PublicExchangeService } from '@/actions/exchange-services';
-import { getServiceMeta } from '@/lib/exchange-services';
 import ExchangeServiceRequestDialog from './ExchangeServiceRequestDialog';
 import s from './OnlineServices.module.css';
 
@@ -129,7 +129,7 @@ export default function OnlineServices({ exchange, services }: Props) {
           </header>
 
           {/* Grid */}
-          <ul className={s.grid} role="list">
+          <ul className={s.grid}>
             {services.map((service, idx) => {
               const meta = getServiceMeta(service.serviceKey);
               if (!meta) return null;

@@ -4,7 +4,9 @@
  */
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Root: 2-col form layout ─────────────────────────────────────────── */
@@ -19,7 +21,9 @@
   .root {
     grid-template-columns: 1fr;
   }
-  .sideCol { order: -1; }
+  .sideCol {
+    order: -1;
+  }
 }
 
 /* ── Form column ─────────────────────────────────────────────────────── */
@@ -70,7 +74,9 @@
 }
 
 @media (max-width: 600px) {
-  .grid2 { grid-template-columns: 1fr; }
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── Field ───────────────────────────────────────────────────────────── */
@@ -113,8 +119,14 @@
   transition: border-color 140ms;
 }
 
-.select:focus { outline: none; border-color: var(--at-accent); }
-.select:disabled { opacity: 0.5; cursor: not-allowed; }
+.select:focus {
+  outline: none;
+  border-color: var(--at-accent);
+}
+.select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 /* ── Textarea ────────────────────────────────────────────────────────── */
 .textarea {
@@ -130,8 +142,13 @@
   transition: border-color 140ms;
 }
 
-.textarea:focus { outline: none; border-color: var(--at-accent); }
-.textarea:disabled { opacity: 0.5; }
+.textarea:focus {
+  outline: none;
+  border-color: var(--at-accent);
+}
+.textarea:disabled {
+  opacity: 0.5;
+}
 
 /* ── Error banner ────────────────────────────────────────────────────── */
 .errorBanner {
@@ -139,8 +156,8 @@
   align-items: center;
   gap: var(--ds-space-2);
   padding: var(--ds-space-3) var(--ds-space-4);
-  background: rgba(244,63,94,.08);
-  border: 1px solid rgba(244,63,94,.25);
+  background: rgba(244, 63, 94, 0.08);
+  border: 1px solid rgba(244, 63, 94, 0.25);
   border-radius: var(--at-radius-md);
   color: #f43f5e;
   font-size: var(--at-fs-sm);
@@ -155,7 +172,9 @@
   padding-block-start: var(--ds-space-2);
 }
 
-.spin { animation: spin 700ms linear infinite; }
+.spin {
+  animation: spin 700ms linear infinite;
+}
 
 /* ── Side column ─────────────────────────────────────────────────────── */
 .sideCol {

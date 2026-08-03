@@ -42,10 +42,9 @@
   border: 1px solid var(--at-line);
   border-radius: var(--at-radius-xl);
   background: var(--at-surface);
-  box-shadow:
-    0 0 0 1px color-mix(in oklch, var(--at-fg) 4%, transparent),
-    0 8px 32px -4px color-mix(in oklch, var(--at-fg) 14%, transparent),
-    0 40px 100px -20px color-mix(in oklch, var(--at-fg) 18%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--at-fg) 4%, transparent), 0 8px 32px -4px
+    color-mix(in oklch, var(--at-fg) 14%, transparent), 0 40px 100px -20px
+    color-mix(in oklch, var(--at-fg) 18%, transparent);
   animation: pdPanelIn 280ms var(--ds-ease-out-quart) both;
 }
 
@@ -90,11 +89,9 @@
   background: var(--at-bg-elevated);
   cursor: pointer;
   color: var(--at-fg-muted);
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), border-color var(--ds-duration-fast)
+    var(--ds-ease-out-quart), transform var(--ds-duration-fast) var(--ds-ease-out-quart);
   flex-shrink: 0;
 }
 .closeBtn:hover {

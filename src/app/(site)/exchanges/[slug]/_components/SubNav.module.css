@@ -11,9 +11,8 @@
   -webkit-backdrop-filter: blur(14px) saturate(140%);
   backdrop-filter: blur(14px) saturate(140%);
   border-block-end: 1px solid var(--ds-border-subtle);
-  transition:
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart),
-    background var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart), background
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 @supports not (backdrop-filter: blur(1px)) {
   .nav {
@@ -94,11 +93,9 @@
   text-decoration: none;
   border: 1px solid transparent;
   background: transparent;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), border-color var(--ds-duration-fast)
+    var(--ds-ease-out-quart), transform var(--ds-duration-fast) var(--ds-ease-out-quart);
   white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
 }

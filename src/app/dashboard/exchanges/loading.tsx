@@ -13,7 +13,14 @@ export default function Loading() {
           <header className={s.observatory__mapHead}>
             <div className={s.observatory__mapTitle}>
               <span className={s.observatory__mapEyebrow}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--at-fg-faint)' }} />
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
+                    background: 'var(--at-fg-faint)',
+                  }}
+                />
                 NEXUS · LOADING
               </span>
               <span
@@ -45,7 +52,12 @@ export default function Loading() {
                   <div className={s.mapLegend__core}>
                     <span
                       className={s.mapLegend__name}
-                      style={{ background: 'var(--at-line)', color: 'transparent', borderRadius: 4, inlineSize: '70%' }}
+                      style={{
+                        background: 'var(--at-line)',
+                        color: 'transparent',
+                        borderRadius: 4,
+                        inlineSize: '70%',
+                      }}
                     >
                       .
                     </span>
@@ -58,7 +70,12 @@ export default function Loading() {
                   </div>
                   <span
                     className={s.mapLegend__val}
-                    style={{ background: 'var(--at-line)', color: 'transparent', borderRadius: 4, inlineSize: 30 }}
+                    style={{
+                      background: 'var(--at-line)',
+                      color: 'transparent',
+                      borderRadius: 4,
+                      inlineSize: 30,
+                    }}
                   >
                     .
                   </span>
@@ -72,13 +89,25 @@ export default function Loading() {
             <div key={i} className={s.observatory__bigNum} style={{ opacity: 0.5 }}>
               <span
                 className={s.observatory__bigNumCap}
-                style={{ background: 'var(--at-line)', color: 'transparent', borderRadius: 4, inlineSize: 90, blockSize: 10 }}
+                style={{
+                  background: 'var(--at-line)',
+                  color: 'transparent',
+                  borderRadius: 4,
+                  inlineSize: 90,
+                  blockSize: 10,
+                }}
               >
                 .
               </span>
               <span
                 className={s.observatory__bigNumVal}
-                style={{ background: 'var(--at-line)', color: 'transparent', borderRadius: 8, inlineSize: 180, blockSize: 38 }}
+                style={{
+                  background: 'var(--at-line)',
+                  color: 'transparent',
+                  borderRadius: 8,
+                  inlineSize: 180,
+                  blockSize: 38,
+                }}
               >
                 .
               </span>
@@ -93,13 +122,25 @@ export default function Loading() {
           <div key={i} className={s.strata__cell}>
             <span
               className={s.strata__eyebrow}
-              style={{ background: 'var(--at-line)', color: 'transparent', borderRadius: 4, inlineSize: 80, blockSize: 10 }}
+              style={{
+                background: 'var(--at-line)',
+                color: 'transparent',
+                borderRadius: 4,
+                inlineSize: 80,
+                blockSize: 10,
+              }}
             >
               .
             </span>
             <span
               className={s.strata__num}
-              style={{ background: 'var(--at-line)', color: 'transparent', borderRadius: 8, inlineSize: 60, blockSize: 30 }}
+              style={{
+                background: 'var(--at-line)',
+                color: 'transparent',
+                borderRadius: 8,
+                inlineSize: 60,
+                blockSize: 30,
+              }}
             >
               .
             </span>

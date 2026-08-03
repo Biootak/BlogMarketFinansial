@@ -1,5 +1,5 @@
 import type { Editor } from '@tiptap/core';
-import React, { memo, useCallback } from 'react';
+import { useCallback } from 'react';
 import { Icon } from '../../ui/icon';
 import { Toolbar } from '../../ui/toolbar';
 

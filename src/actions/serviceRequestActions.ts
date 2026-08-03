@@ -11,7 +11,7 @@ import {
 } from '@/lib/email/templates';
 import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
 import { checkRateLimit } from '@/lib/rate-limiter';
-import { requireRole, requireUser } from '@/lib/require-auth';
+import { requireRole } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
 import type { FintechActionResult } from '@/types/types';
@@ -431,9 +431,7 @@ export async function createServiceRequest(
     // 2026-07-28: نوتیفیکیشن به صرافی وقتی targetExchangeId تنظیم شده
     // best-effort — اگر fail شد، request ثبت شده و فقط log می‌شود
     if (resolvedTargetExchangeId) {
-      const { notifyExchangeOfServiceRequest } = await import(
-        '@/lib/notifications/exchange'
-      );
+      const { notifyExchangeOfServiceRequest } = await import('@/lib/notifications/exchange');
       await notifyExchangeOfServiceRequest({
         requestId: createdRequestId,
         trackingCode,
@@ -994,7 +992,11 @@ export async function getServiceRequestStats(): Promise<
 }
 
 // ─── User: Get own service requests ──────────────────────────────────────── //
-export async function getMyServiceRequests(params?: { page?: number; limit?: number; status?: string }): Promise<
+export async function getMyServiceRequests(params?: {
+  page?: number;
+  limit?: number;
+  status?: string;
+}): Promise<
   FintechActionResult<{
     requests: unknown[];
     pagination: { page: number; limit: number; total: number; totalPages: number };
@@ -1083,7 +1085,10 @@ export async function getMyServiceRequestStats(): Promise<
       data: { total, pending, inProgress, completed, cancelled },
     };
   } catch {
-    return { success: false, error: { code: 'SERVER_ERROR', message: 'خطایی در دریافت آمار رخ داد.' } };
+    return {
+      success: false,
+      error: { code: 'SERVER_ERROR', message: 'خطایی در دریافت آمار رخ داد.' },
+    };
   }
 }
 

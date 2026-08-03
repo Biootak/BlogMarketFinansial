@@ -13,7 +13,6 @@
 import type { TaxonomyType } from '@/types/types';
 import { Search as SearchIcon } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import * as React from 'react';
 import { useEffect, useState, useTransition } from 'react';
 import ArchiveSearchInput, { ARCHIVE_SEARCH_INPUT_ID } from './ArchiveSearchInput';
 import ArchiveViewToggle from './ArchiveViewToggle';

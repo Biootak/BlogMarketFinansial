@@ -9,6 +9,7 @@
  *  تمام آیکون‌ها از lucide-react (حرفه‌ای و سازگار با تم).
  */
 
+import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 import {
   Activity,
   AlertCircle,
@@ -26,7 +27,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 import s from './LiveOpsPulse.module.css';
 
 export type ServiceStatus = 'healthy' | 'degraded' | 'down' | 'idle';
@@ -92,17 +92,19 @@ const STATUS_META: Record<ServiceStatus, { label: string; color: string }> = {
   idle: { label: 'بیکار', color: 'var(--at-muted, oklch(60% 0 0))' },
 };
 
-const EVENT_META: Record<
-  LiveOpsEvent['type'],
-  { label: string; icon: LucideIcon; color: string }
-> = {
-  deposit: { label: 'واریز', icon: ArrowDownRight, color: 'var(--at-success)' },
-  withdraw: { label: 'برداشت', icon: ArrowUpRight, color: 'var(--at-warning)' },
-  kyc: { label: 'احراز هویت', icon: ShieldCheck, color: 'var(--at-info)' },
-  order: { label: 'سفارش', icon: Wallet, color: 'var(--ds-color-brand-primary, var(--at-primary))' },
-  auth: { label: 'ورود', icon: CheckCircle2, color: 'var(--at-muted)' },
-  fraud: { label: 'هشدار', icon: AlertCircle, color: 'var(--at-danger)' },
-};
+const EVENT_META: Record<LiveOpsEvent['type'], { label: string; icon: LucideIcon; color: string }> =
+  {
+    deposit: { label: 'واریز', icon: ArrowDownRight, color: 'var(--at-success)' },
+    withdraw: { label: 'برداشت', icon: ArrowUpRight, color: 'var(--at-warning)' },
+    kyc: { label: 'احراز هویت', icon: ShieldCheck, color: 'var(--at-info)' },
+    order: {
+      label: 'سفارش',
+      icon: Wallet,
+      color: 'var(--ds-color-brand-primary, var(--at-primary))',
+    },
+    auth: { label: 'ورود', icon: CheckCircle2, color: 'var(--at-muted)' },
+    fraud: { label: 'هشدار', icon: AlertCircle, color: 'var(--at-danger)' },
+  };
 
 const toMs = (ts: number | string): number => {
   if (typeof ts === 'number') return ts;
@@ -180,7 +182,10 @@ export function LiveOpsPulse({
                 </p>
               </div>
             </div>
-            <div className={s.healthPill} data-state={healthScore >= 90 ? 'ok' : healthScore >= 70 ? 'warn' : 'bad'}>
+            <div
+              className={s.healthPill}
+              data-state={healthScore >= 90 ? 'ok' : healthScore >= 70 ? 'warn' : 'bad'}
+            >
               <Gauge size={13} aria-hidden />
               <span className="tabular-nums">{healthScore}</span>
               <span className={s.healthPillLabel}>٪ سلامت</span>
@@ -234,11 +239,7 @@ export function LiveOpsPulse({
                 const Icon = resolveServiceIcon(svc);
                 const inner = (
                   <>
-                    <span
-                      className={s.serviceIcon}
-                      style={{ color: meta.color }}
-                      aria-hidden
-                    >
+                    <span className={s.serviceIcon} style={{ color: meta.color }} aria-hidden>
                       <Icon size={14} />
                     </span>
                     <span className={s.serviceText}>
@@ -300,7 +301,10 @@ export function LiveOpsPulse({
                   <>
                     <span
                       className={s.feedIcon}
-                      style={{ color: meta.color, background: 'color-mix(in oklch, ' + meta.color + ' 12%, transparent)' }}
+                      style={{
+                        color: meta.color,
+                        background: `color-mix(in oklch, ${meta.color} 12%, transparent)`,
+                      }}
                       aria-hidden
                     >
                       <Icon size={13} />

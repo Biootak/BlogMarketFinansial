@@ -15,7 +15,7 @@ import {
   getUsersByRole,
   updateUserRole,
 } from '@/actions/role-actions';
-import { ConfirmDialog, EmptyState, MillionDollarEmpty } from '@/components/Dashboard/primitives';
+import { ConfirmDialog, MillionDollarEmpty } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Role } from '@prisma/client';
@@ -26,9 +26,7 @@ import {
   Lock,
   Search,
   Shield,
-  ShieldAlert,
   ShieldCheck,
-  Users,
   X,
 } from 'lucide-react';
 import React, { useCallback, useMemo, useRef, useState, useTransition } from 'react';

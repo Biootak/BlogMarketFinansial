@@ -46,11 +46,7 @@ const s3Client = new S3Client({
 const BUCKET_NAME = process.env.LIARA_BUCKET_NAME || '';
 const S3_PUBLIC_URL =
   process.env.LIARA_ENDPOINT?.replace('https://', `https://${BUCKET_NAME}.`) || '';
-const LOCAL_UPLOAD_DIR = path.join(
-  /* turbopackIgnore: true */ process.cwd(),
-  'public',
-  'uploads',
-);
+const LOCAL_UPLOAD_DIR = path.join(/* turbopackIgnore: true */ process.cwd(), 'public', 'uploads');
 
 // 2026-07-05: S3 is now optional. If credentials are missing, the system
 // falls back to local disk storage automatically. This supports local dev
@@ -78,15 +74,9 @@ function isS3Configured(): boolean {
   return true;
 }
 
-function tripCircuitBreaker(reason: string): void {
+function tripCircuitBreaker(_reason: string): void {
   if (s3DisabledUntil > Date.now()) return; // already tripped
   s3DisabledUntil = Date.now() + S3_BREAKER_TTL_MS;
-  // Single warn-level line — subsequent failures within the window don't
-  // log again (they're a no-op `isS3Configured() === false`).
-  // eslint-disable-next-line no-console
-  console.warn(
-    `[storage] S3 unavailable (${reason}). Falling back to local-only for the next ${S3_BREAKER_TTL_MS / 1000}s.`,
-  );
 }
 
 export interface UploadResult {
@@ -257,9 +247,7 @@ export async function getFileStream(
       // AWS SDK returns a Node ReadableStream in the Node runtime; the
       // types only declare a Web ReadableStream variant so we cast.
       return response.Body as unknown as NodeJS.ReadableStream;
-    } catch (error) {
-      console.error('S3 stream failed, falling back to local:', error);
-    }
+    } catch (_error) {}
   }
 
   // Local fallback (also the default when S3 is not configured).
@@ -321,8 +309,7 @@ export async function deleteFile(folder: string, filename: string): Promise<bool
         }),
       );
       return true;
-    } catch (error) {
-      console.error('خطا در حذف از S3:', error);
+    } catch (_error) {
       return false;
     }
   })();

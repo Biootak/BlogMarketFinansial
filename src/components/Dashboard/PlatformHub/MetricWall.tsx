@@ -51,7 +51,11 @@ export function MetricWall({ tiles, className }: MetricWallProps) {
   );
 }
 
-function Tile({ t, isHero = false, isMinor = false }: { t: MetricWallTile; isHero?: boolean; isMinor?: boolean }) {
+function Tile({
+  t,
+  isHero = false,
+  isMinor = false,
+}: { t: MetricWallTile; isHero?: boolean; isMinor?: boolean }) {
   return (
     <div
       className={cn(s.metricTile, isHero && s.metricTileHero, isMinor && s.metricTileMinor)}

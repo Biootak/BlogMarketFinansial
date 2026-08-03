@@ -439,17 +439,9 @@ export const UpdateSecuritySettingsSchema = z.object({
   // آیا ورود از IP های جدید نیاز به تأیید ایمیل دارد؟
   requireEmailForNewIp: z.boolean(),
   // تعداد session همزمان مجاز برای هر کاربر
-  maxConcurrentSessions: z
-    .number()
-    .int()
-    .min(1, 'حداقل ۱ نشست')
-    .max(20, 'حداکثر ۲۰ نشست همزمان'),
+  maxConcurrentSessions: z.number().int().min(1, 'حداقل ۱ نشست').max(20, 'حداکثر ۲۰ نشست همزمان'),
   // روزهای نگهداری audit log
-  auditRetentionDays: z
-    .number()
-    .int()
-    .min(30, 'حداقل ۳۰ روز')
-    .max(3650, 'حداکثر ۱۰ سال'),
+  auditRetentionDays: z.number().int().min(30, 'حداقل ۳۰ روز').max(3650, 'حداکثر ۱۰ سال'),
 });
 
 // ساخت API key جدید — نام + scopes اختیاری
@@ -459,9 +451,7 @@ export const CreateApiKeySchema = z.object({
     .min(2, 'نام کلید باید حداقل ۲ کاراکتر باشد')
     .max(50, 'نام کلید نباید بیشتر از ۵۰ کاراکتر باشد'),
   scopes: z
-    .array(
-      z.enum(['read', 'write', 'admin', 'webhook', 'reports']),
-    )
+    .array(z.enum(['read', 'write', 'admin', 'webhook', 'reports']))
     .min(1, 'حداقل یک سطح دسترسی انتخاب کنید')
     .max(5),
   expiresInDays: z
@@ -484,17 +474,9 @@ export const RevokeApiKeySchema = z.object({
 export const UpdateBackupSettingsSchema = z.object({
   enabled: z.boolean(),
   // بازه زمانی بین backup ها (ساعت) — حداقل ۱، حداکثر ۱۶۸ (هفتگی)
-  intervalHours: z
-    .number()
-    .int()
-    .min(1, 'حداقل هر ۱ ساعت')
-    .max(168, 'حداکثر هر ۱۶۸ ساعت (هفتگی)'),
+  intervalHours: z.number().int().min(1, 'حداقل هر ۱ ساعت').max(168, 'حداکثر هر ۱۶۸ ساعت (هفتگی)'),
   // تعداد backup های نگهداری‌شده (old ترها حذف می‌شوند)
-  retentionCount: z
-    .number()
-    .int()
-    .min(1, 'حداقل ۱ نسخه')
-    .max(100, 'حداکثر ۱۰۰ نسخه'),
+  retentionCount: z.number().int().min(1, 'حداقل ۱ نسخه').max(100, 'حداکثر ۱۰۰ نسخه'),
   // شامل چه بخش‌هایی باشد؟
   includeAuditLog: z.boolean(),
   includeSocialLinks: z.boolean(),
@@ -513,11 +495,7 @@ export const UpdateBackupSettingsSchema = z.object({
 
 // درخواست backup دستی
 export const TriggerBackupSchema = z.object({
-  reason: z
-    .string()
-    .max(200, 'دلیل نباید بیشتر از ۲۰۰ کاراکتر باشد')
-    .optional()
-    .or(z.literal('')),
+  reason: z.string().max(200, 'دلیل نباید بیشتر از ۲۰۰ کاراکتر باشد').optional().or(z.literal('')),
 });
 
 // ─── Audit Query Schemas (2026-07-29) ────────────────────────────────────────

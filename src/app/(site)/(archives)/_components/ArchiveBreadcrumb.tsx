@@ -1,12 +1,6 @@
-import { ArrowUpRight, ChevronLeft, Home, type LucideIcon, Sparkles } from 'lucide-react';
+import { ArrowUpRight, ChevronLeft, type LucideIcon, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import type * as React from 'react';
-import {
-  HiOutlineDocumentText,
-  HiOutlineRectangleStack,
-  HiOutlineTag,
-  HiSparkles,
-} from 'react-icons/hi2';
 
 export type Crumb = {
   href: string;

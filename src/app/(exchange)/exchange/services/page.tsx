@@ -7,14 +7,14 @@
  *  - فقط OWNER / MANAGER می‌توانند ویرایش کنند
  */
 
-import { getMyExchangeServices, getExchangeAnalyticsSummary } from '@/actions/exchange-services';
+import { getExchangeAnalyticsSummary, getMyExchangeServices } from '@/actions/exchange-services';
 import { getExchangeForUser } from '@/actions/exchanges';
 import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import ServicesWorkspace from './_components/ServicesWorkspace';
 import ServicesAnalyticsWidget from './_components/ServicesAnalyticsWidget';
+import ServicesWorkspace from './_components/ServicesWorkspace';
 
 export const metadata: Metadata = { title: 'خدمات آنلاین | پنل صرافی' };
 
@@ -52,10 +52,7 @@ export default async function ExchangeServicesPage() {
         eyebrow="پروفایل عمومی"
       />
 
-      <ServicesAnalyticsWidget
-        summary={analytics}
-        exchangeSlug={membership.exchange.slug}
-      />
+      <ServicesAnalyticsWidget summary={analytics} exchangeSlug={membership.exchange.slug} />
 
       <ServicesWorkspace initialItems={result.data} canEdit={canEdit} />
     </div>

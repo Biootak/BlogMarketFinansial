@@ -1,13 +1,13 @@
+import { getCustomerStats, getCustomers } from '@/actions/exchange-customers';
+import { getExchangeForUser } from '@/actions/exchanges';
 /**
  * /exchange/customers/archive — نمای آرشیو مشتریان بسته/مسدود.
  */
 import { auth } from '@/auth';
-import { getExchangeForUser } from '@/actions/exchanges';
-import { getCustomers, getCustomerStats } from '@/actions/exchange-customers';
-import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import { CustomerArchive } from '@/components/Exchange/customers/CustomerArchive';
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = { title: 'آرشیو مشتریان · صرافی' };
 

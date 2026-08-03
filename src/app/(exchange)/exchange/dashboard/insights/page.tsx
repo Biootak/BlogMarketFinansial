@@ -7,19 +7,19 @@
  * Server Component.
  */
 
-import { redirect } from 'next/navigation';
-import Link from 'next/link';
-import { ChevronRight, BarChart3, TrendingUp, Users, Activity, Grid3x3 } from 'lucide-react';
-import { getExchangeForUser } from '@/actions/exchanges';
 import { getExchangeDashboardData } from '@/actions/exchange-dashboard';
-import ExchangePerformanceBand from '../_components/ExchangePerformanceBand';
-import ExchangeCustomerActivity from '../_components/ExchangeCustomerActivity';
-import ExchangeCurrencyFlow from '../_components/ExchangeCurrencyFlow';
-import ExchangeWeeklyRhythm from '../_components/ExchangeWeeklyRhythm';
-import ExchangeTransactionMix from '../_components/ExchangeTransactionMix';
-import ExchangeCustomerSegmentation from '../_components/ExchangeCustomerSegmentation';
+import { getExchangeForUser } from '@/actions/exchanges';
+import { Activity, BarChart3, ChevronRight, Grid3x3, TrendingUp, Users } from 'lucide-react';
+import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import ExchangeActivityHeatmap from '../_components/ExchangeActivityHeatmap';
+import ExchangeCurrencyFlow from '../_components/ExchangeCurrencyFlow';
+import ExchangeCustomerActivity from '../_components/ExchangeCustomerActivity';
+import ExchangeCustomerSegmentation from '../_components/ExchangeCustomerSegmentation';
 import s from '../_components/ExchangeDashboard.module.css';
+import ExchangePerformanceBand from '../_components/ExchangePerformanceBand';
+import ExchangeTransactionMix from '../_components/ExchangeTransactionMix';
+import ExchangeWeeklyRhythm from '../_components/ExchangeWeeklyRhythm';
 
 export const metadata = {
   title: 'بینش‌های صراف',
@@ -30,11 +30,13 @@ export const dynamic = 'force-dynamic';
 
 export default async function ExchangeInsightsPage() {
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/auth?callbackUrl=/exchange/dashboard/insights&reason=exchange-not-found');
+  if (!membership)
+    redirect('/auth?callbackUrl=/exchange/dashboard/insights&reason=exchange-not-found');
   const exchangeId = membership.exchange.id;
 
   const data = await getExchangeDashboardData(exchangeId);
-  if (!data) redirect('/auth?callbackUrl=/exchange/dashboard/insights&reason=exchange-data-unavailable');
+  if (!data)
+    redirect('/auth?callbackUrl=/exchange/dashboard/insights&reason=exchange-data-unavailable');
 
   return (
     <div className={s.root}>

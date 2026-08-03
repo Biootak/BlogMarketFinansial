@@ -71,9 +71,7 @@ export async function logActivityMiddleware(req: NextRequest) {
         });
       }
     }
-  } catch (error) {
-    console.error('Error in activity logging middleware:', error);
-  }
+  } catch (_error) {}
 }
 
 export function withActivityLogging(

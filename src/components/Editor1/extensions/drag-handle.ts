@@ -1,6 +1,5 @@
 import { Extension } from '@tiptap/core';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
-import { NodeSelection } from '@tiptap/pm/state';
 
 export interface DragHandleOptions {
   dragHandleWidth: number;

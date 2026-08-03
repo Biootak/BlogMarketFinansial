@@ -1,8 +1,8 @@
-import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { getJobById } from '@/lib/jobs';
-import { JobInspector } from './_components/JobInspector';
+import { redirect } from 'next/navigation';
 import s from '../jobs.module.css';
+import { JobInspector } from './_components/JobInspector';
 
 export const dynamic = 'force-dynamic';
 

@@ -7,37 +7,76 @@
 /* ── Keyframes ─────────────────────────────────────────────────────────────── */
 
 @keyframes pageIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes kpiPop {
-  from { opacity: 0; transform: translateY(-8px) scale(0.95); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes cardEnter {
-  from { opacity: 0; transform: translateX(8px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes panelSlide {
-  from { opacity: 0; transform: translateX(-12px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes toastIn {
-  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes breath {
-  0%, 100% { opacity: 0.45; transform: scale(1); }
-  50%       { opacity: 1;    transform: scale(1.25); }
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Root ───────────────────────────────────────────────────────────────────── */
@@ -62,11 +101,15 @@
 }
 
 @media (max-width: 900px) {
-  .kpiStrip { grid-template-columns: repeat(2, 1fr); }
+  .kpiStrip {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 480px) {
-  .kpiStrip { grid-template-columns: 1fr; }
+  .kpiStrip {
+    grid-template-columns: 1fr;
+  }
 }
 
 .kpiCard {
@@ -86,15 +129,14 @@
   /* staggered entrance */
   animation: kpiPop 360ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
   animation-delay: var(--kpi-delay, 0ms);
-  transition:
-    box-shadow var(--ds-duration-fast, 180ms) ease,
-    transform var(--ds-duration-fast, 180ms) cubic-bezier(0.34, 1.56, 0.64, 1),
-    border-color var(--ds-duration-fast, 180ms) ease;
+  transition: box-shadow var(--ds-duration-fast, 180ms) ease, transform
+    var(--ds-duration-fast, 180ms) cubic-bezier(0.34, 1.56, 0.64, 1), border-color
+    var(--ds-duration-fast, 180ms) ease;
 }
 
 /* accent top hairline */
 .kpiCard::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block-start: 0;
   inset-inline: 0;
@@ -106,7 +148,7 @@
 
 /* glass sheen */
 .kpiCard::after {
-  content: '';
+  content: "";
   position: absolute;
   inset-block-start: 0;
   inset-inline: 0;
@@ -120,9 +162,13 @@
 }
 
 .kpiCard:hover {
-  box-shadow: var(--ds-shadow-md, 0 4px 18px -4px oklch(20% 0 0 / .1));
+  box-shadow: var(--ds-shadow-md, 0 4px 18px -4px oklch(20% 0 0 / 0.1));
   transform: translateY(-1px);
-  border-color: color-mix(in oklch, var(--kpi-accent, var(--ds-brand-500)) 30%, var(--at-line, var(--ds-border-default)));
+  border-color: color-mix(
+    in oklch,
+    var(--kpi-accent, var(--ds-brand-500)) 30%,
+    var(--at-line, var(--ds-border-default))
+  );
 }
 
 .kpiCard:hover::before {
@@ -131,7 +177,11 @@
 
 /* urgent variant — breathing border */
 .kpiCardUrgent {
-  border-color: color-mix(in oklch, var(--kpi-accent, var(--ds-accent-amber)) 40%, var(--at-line, var(--ds-border-default)));
+  border-color: color-mix(
+    in oklch,
+    var(--kpi-accent, var(--ds-accent-amber)) 40%,
+    var(--at-line, var(--ds-border-default))
+  );
 }
 
 .kpiCardUrgent::before {
@@ -208,7 +258,11 @@
 }
 
 .toastSuccess {
-  background: color-mix(in oklch, var(--ds-accent-emerald) 10%, var(--at-surface, var(--ds-surface)));
+  background: color-mix(
+    in oklch,
+    var(--ds-accent-emerald) 10%,
+    var(--at-surface, var(--ds-surface))
+  );
   border: 1px solid color-mix(in oklch, var(--ds-accent-emerald) 30%, transparent);
   color: color-mix(in oklch, var(--ds-accent-emerald) 70%, var(--at-fg, var(--ds-text-primary)));
 }
@@ -268,10 +322,9 @@
   background: transparent;
   color: var(--at-surface, var(--ds-surface));
   cursor: pointer;
-  transition:
-    background var(--ds-duration-fast, 180ms) ease,
-    border-color var(--ds-duration-fast, 180ms) ease,
-    transform var(--ds-duration-fast, 180ms) cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: background var(--ds-duration-fast, 180ms) ease, border-color
+    var(--ds-duration-fast, 180ms) ease, transform var(--ds-duration-fast, 180ms)
+    cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .checkbox:hover {
@@ -308,10 +361,8 @@
   border: 1px solid transparent;
   border-radius: var(--ds-radius-full);
   cursor: pointer;
-  transition:
-    background var(--ds-duration-fast, 180ms) ease,
-    color var(--ds-duration-fast, 180ms) ease,
-    border-color var(--ds-duration-fast, 180ms) ease;
+  transition: background var(--ds-duration-fast, 180ms) ease, color var(--ds-duration-fast, 180ms)
+    ease, border-color var(--ds-duration-fast, 180ms) ease;
   min-block-size: 28px;
 }
 
@@ -356,7 +407,8 @@
   gap: var(--ds-space-2);
   padding: var(--ds-space-1) var(--ds-space-2);
   background: color-mix(in oklch, var(--ds-brand-500) 8%, var(--at-surface, var(--ds-surface)));
-  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 25%, var(--at-line, var(--ds-border-default)));
+  border: 1px solid
+    color-mix(in oklch, var(--ds-brand-500) 25%, var(--at-line, var(--ds-border-default)));
   border-radius: var(--ds-radius-lg);
   animation: toastIn 220ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
@@ -376,8 +428,8 @@
   font-size: var(--ds-text-xs) !important;
   font-weight: 600 !important;
   gap: var(--ds-space-1) !important;
-  transition: transform var(--ds-duration-fast, 180ms) cubic-bezier(0.34, 1.56, 0.64, 1),
-    filter var(--ds-duration-fast, 180ms) ease !important;
+  transition: transform var(--ds-duration-fast, 180ms) cubic-bezier(0.34, 1.56, 0.64, 1), filter
+    var(--ds-duration-fast, 180ms) ease !important;
 }
 
 .batchApproveBtn:hover:not(:disabled) {
@@ -402,8 +454,8 @@
   background: transparent;
   color: var(--at-fg-muted, var(--ds-text-muted));
   cursor: pointer;
-  transition: background var(--ds-duration-fast, 180ms) ease,
-    color var(--ds-duration-fast, 180ms) ease;
+  transition: background var(--ds-duration-fast, 180ms) ease, color var(--ds-duration-fast, 180ms)
+    ease;
 }
 
 .hintBtn:hover {
@@ -475,17 +527,19 @@
   /* stagger */
   animation: cardEnter 300ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)) both;
   animation-delay: calc(var(--row-i, 0) * 40ms);
-  transition:
-    box-shadow var(--ds-duration-fast, 180ms) ease,
-    transform var(--ds-duration-fast, 180ms) cubic-bezier(0.34, 1.56, 0.64, 1),
-    border-color var(--ds-duration-fast, 180ms) ease,
-    background var(--ds-duration-fast, 180ms) ease;
+  transition: box-shadow var(--ds-duration-fast, 180ms) ease, transform
+    var(--ds-duration-fast, 180ms) cubic-bezier(0.34, 1.56, 0.64, 1), border-color
+    var(--ds-duration-fast, 180ms) ease, background var(--ds-duration-fast, 180ms) ease;
 }
 
 .card:hover {
-  box-shadow: var(--ds-shadow-md, 0 4px 16px -4px oklch(20% 0 0 / .1));
+  box-shadow: var(--ds-shadow-md, 0 4px 16px -4px oklch(20% 0 0 / 0.1));
   transform: translateY(-1px);
-  border-color: color-mix(in oklch, var(--ds-brand-500) 25%, var(--at-line, var(--ds-border-default)));
+  border-color: color-mix(
+    in oklch,
+    var(--ds-brand-500) 25%,
+    var(--at-line, var(--ds-border-default))
+  );
 }
 
 .card:active {
@@ -500,18 +554,25 @@
 /* selected state */
 .cardSelected {
   background: color-mix(in oklch, var(--ds-brand-500) 6%, var(--at-surface, var(--ds-surface)));
-  border-color: color-mix(in oklch, var(--ds-brand-500) 40%, var(--at-line, var(--ds-border-default)));
-  box-shadow: var(--ds-shadow-sm),
-    inset 3px 0 0 0 var(--ds-brand-500);
+  border-color: color-mix(
+    in oklch,
+    var(--ds-brand-500) 40%,
+    var(--at-line, var(--ds-border-default))
+  );
+  box-shadow: var(--ds-shadow-sm), inset 3px 0 0 0 var(--ds-brand-500);
 }
 
 /* urgent — high spread */
 .cardUrgent {
-  border-color: color-mix(in oklch, var(--ds-accent-rose) 35%, var(--at-line, var(--ds-border-default)));
+  border-color: color-mix(
+    in oklch,
+    var(--ds-accent-rose) 35%,
+    var(--at-line, var(--ds-border-default))
+  );
 }
 
 .cardUrgent::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block-start: 0;
   inset-inline: 0;
@@ -523,8 +584,7 @@
 }
 
 .cardUrgent.cardSelected {
-  box-shadow: var(--ds-shadow-sm),
-    inset 3px 0 0 0 var(--ds-accent-rose);
+  box-shadow: var(--ds-shadow-sm), inset 3px 0 0 0 var(--ds-accent-rose);
 }
 
 /* loading overlay */
@@ -706,9 +766,15 @@
   background: var(--ds-accent-emerald);
 }
 
-.spreadPulse[data-level="low"]  .spreadFill { background: var(--ds-accent-emerald); }
-.spreadPulse[data-level="mid"]  .spreadFill { background: var(--ds-accent-amber); }
-.spreadPulse[data-level="high"] .spreadFill { background: var(--ds-accent-rose); }
+.spreadPulse[data-level="low"] .spreadFill {
+  background: var(--ds-accent-emerald);
+}
+.spreadPulse[data-level="mid"] .spreadFill {
+  background: var(--ds-accent-amber);
+}
+.spreadPulse[data-level="high"] .spreadFill {
+  background: var(--ds-accent-rose);
+}
 
 /* threshold hairline marks */
 .spreadThreshold {
@@ -726,9 +792,15 @@
   white-space: nowrap;
 }
 
-.spreadPulse[data-level="low"]  .spreadLabel { color: var(--ds-accent-emerald); }
-.spreadPulse[data-level="mid"]  .spreadLabel { color: var(--ds-accent-amber); }
-.spreadPulse[data-level="high"] .spreadLabel { color: var(--ds-accent-rose); }
+.spreadPulse[data-level="low"] .spreadLabel {
+  color: var(--ds-accent-emerald);
+}
+.spreadPulse[data-level="mid"] .spreadLabel {
+  color: var(--ds-accent-amber);
+}
+.spreadPulse[data-level="high"] .spreadLabel {
+  color: var(--ds-accent-rose);
+}
 
 /* ══════════════════════════════════════════════════════════════════════════════
    DETAIL PANEL — sticky right column
@@ -826,12 +898,20 @@
 
 .dpBuyCard {
   background: color-mix(in oklch, var(--ds-accent-emerald) 6%, transparent);
-  border-color: color-mix(in oklch, var(--ds-accent-emerald) 20%, var(--at-line, var(--ds-border-default)));
+  border-color: color-mix(
+    in oklch,
+    var(--ds-accent-emerald) 20%,
+    var(--at-line, var(--ds-border-default))
+  );
 }
 
 .dpSellCard {
   background: color-mix(in oklch, var(--ds-accent-rose) 5%, transparent);
-  border-color: color-mix(in oklch, var(--ds-accent-rose) 18%, var(--at-line, var(--ds-border-default)));
+  border-color: color-mix(
+    in oklch,
+    var(--ds-accent-rose) 18%,
+    var(--at-line, var(--ds-border-default))
+  );
 }
 
 .dpRateLbl {
@@ -845,8 +925,12 @@
   color: var(--at-fg-muted, var(--ds-text-muted));
 }
 
-.dpBuyCard .dpRateLbl { color: var(--ds-accent-emerald); }
-.dpSellCard .dpRateLbl { color: var(--ds-accent-rose); }
+.dpBuyCard .dpRateLbl {
+  color: var(--ds-accent-emerald);
+}
+.dpSellCard .dpRateLbl {
+  color: var(--ds-accent-rose);
+}
 
 .dpRateVal {
   font-size: var(--ds-text-lg, 1.1rem);
@@ -998,9 +1082,8 @@
   font-weight: 600 !important;
   gap: var(--ds-space-2) !important;
   min-block-size: 44px;
-  transition:
-    transform var(--ds-duration-fast, 180ms) cubic-bezier(0.34, 1.56, 0.64, 1),
-    filter var(--ds-duration-fast, 180ms) ease !important;
+  transition: transform var(--ds-duration-fast, 180ms) cubic-bezier(0.34, 1.56, 0.64, 1), filter
+    var(--ds-duration-fast, 180ms) ease !important;
 }
 
 .dpApproveBtn:hover:not(:disabled) {
@@ -1018,10 +1101,8 @@
   gap: var(--ds-space-2) !important;
   color: var(--at-fg-muted, var(--ds-text-muted)) !important;
   border-color: var(--at-line, var(--ds-border-default)) !important;
-  transition:
-    color var(--ds-duration-fast, 180ms) ease,
-    border-color var(--ds-duration-fast, 180ms) ease,
-    transform var(--ds-duration-fast, 180ms) cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  transition: color var(--ds-duration-fast, 180ms) ease, border-color var(--ds-duration-fast, 180ms)
+    ease, transform var(--ds-duration-fast, 180ms) cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
 .dpRejectBtn:hover:not(:disabled) {
@@ -1060,7 +1141,8 @@
   gap: var(--ds-space-3);
   padding: var(--ds-space-3);
   background: color-mix(in oklch, var(--ds-accent-rose) 5%, var(--at-surface, var(--ds-surface)));
-  border: 1px solid color-mix(in oklch, var(--ds-accent-rose) 15%, var(--at-line, var(--ds-border-default)));
+  border: 1px solid
+    color-mix(in oklch, var(--ds-accent-rose) 15%, var(--at-line, var(--ds-border-default)));
   border-radius: var(--ds-radius-lg);
 }
 

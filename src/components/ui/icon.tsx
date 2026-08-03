@@ -302,8 +302,6 @@ export const Icon = memo(
 
     if (!IconComponent) {
       if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'production') {
-        // eslint-disable-next-line no-console
-        console.warn(`[Icon] Unknown icon name "${name}"`);
       }
       return null;
     }

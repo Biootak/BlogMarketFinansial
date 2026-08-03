@@ -5,7 +5,6 @@
  * داده ایستا از STAFF_CAPABILITY_GROUPS / STAFF_CAPABILITY_LABELS / STAFF_ROLE_MATRIX.
  */
 
-import { Check } from 'lucide-react';
 import {
   STAFF_CAPABILITY_GROUPS,
   STAFF_CAPABILITY_LABELS,
@@ -14,6 +13,7 @@ import {
   type StaffRole,
   type StaffRoleCapability,
 } from '@/lib/staff-permissions';
+import { Check } from 'lucide-react';
 import s from './StaffCockpit.module.css';
 
 const ROLES: StaffRole[] = ['OWNER', 'MANAGER', 'STAFF', 'VIEWER'];
@@ -24,6 +24,7 @@ function has(role: StaffRole, cap: StaffRoleCapability): boolean {
 
 export function StaffRoleMatrix() {
   return (
+    <div className="overflow-x-auto">
     <div className={s.matrix} aria-label="ماتریس دسترسی نقش‌ها">
       <div className={s.matrixHeader} role="row">
         <span>قابلیت</span>
@@ -70,6 +71,7 @@ export function StaffRoleMatrix() {
           ))}
         </div>
       ))}
+    </div>
     </div>
   );
 }

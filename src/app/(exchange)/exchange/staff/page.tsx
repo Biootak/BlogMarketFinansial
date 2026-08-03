@@ -9,17 +9,13 @@
  * --------------------------------------------------------------------------
  */
 
-import { redirect } from 'next/navigation';
-import { Suspense } from 'react';
 import { getExchangeForUser } from '@/actions/exchanges';
-import {
-  getExchangeStaff,
-  getStaffActivity,
-  getStaffMetrics,
-} from '@/actions/exchanges';
+import { getExchangeStaff, getStaffActivity, getStaffMetrics } from '@/actions/exchanges';
 import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import ExchangePageSkeleton from '@/components/Exchange/ExchangePageSkeleton';
+import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 import { StaffCockpit } from './_components/StaffCockpit';
 
 export const dynamic = 'force-dynamic';
@@ -52,10 +48,7 @@ export default async function StaffPage() {
         eyebrow="صرافی"
         title="تیم و دسترسی‌ها"
         description="اعضای فعال، سلسله‌مراتب اختیارات و لاگ ممیزی در یک نگاه"
-        breadcrumb={[
-          { label: 'صرافی', href: '/exchange/dashboard' },
-          { label: 'تیم' },
-        ]}
+        breadcrumb={[{ label: 'صرافی', href: '/exchange/dashboard' }, { label: 'تیم' }]}
         icon="users"
       />
       <Suspense fallback={<ExchangePageSkeleton statCount={4} tableRows={6} />}>

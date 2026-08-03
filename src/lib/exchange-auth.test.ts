@@ -96,13 +96,13 @@ describe('requireExchangeAccess — IDOR: staff دیگری', () => {
   it('EXCHANGE عضو صرافی A نمی‌تواند صرافی B را ببیند', async () => {
     vi.mocked(auth).mockResolvedValue(session('EXCHANGE', 'user-a') as never);
     // کاربر staff صرافی A است ولی درخواست صرافی B می‌دهد
-    vi.mocked(prisma.exchangeStaff.findFirst).mockImplementation(
-      (async ({ where }: { where?: { exchangeId?: string } }) => {
-        // staff فقط در exch-A است
-        if (where?.exchangeId === 'exch-B') return null;
-        return { id: 'staff-1' };
-      }) as never,
-    );
+    vi.mocked(prisma.exchangeStaff.findFirst).mockImplementation((async ({
+      where,
+    }: { where?: { exchangeId?: string } }) => {
+      // staff فقط در exch-A است
+      if (where?.exchangeId === 'exch-B') return null;
+      return { id: 'staff-1' };
+    }) as never);
 
     const r = await requireExchangeAccess('exch-B');
     expect(r.ok).toBe(false);

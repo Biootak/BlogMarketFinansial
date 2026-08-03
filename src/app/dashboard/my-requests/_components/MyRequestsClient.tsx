@@ -23,16 +23,15 @@ import { issueServiceOtp, verifyServiceOtpAndLink } from '@/actions/progressive-
 import {
   cancelMyServiceRequest,
   claimGuestRequest,
-  getMyServiceRequests,
   getMyServiceRequestStats,
+  getMyServiceRequests,
 } from '@/actions/serviceRequestActions';
-import CopyButton from '@/components/fintech/CopyButton';
-import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
 import { GeometricField } from '@/components/Dashboard/primitives/GeometricAccent';
 import { MillionDollarEmpty } from '@/components/Dashboard/primitives/MillionDollarEmpty';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import { StatCard } from '@/components/Dashboard/primitives/StatCard';
 import { StatGrid } from '@/components/Dashboard/primitives/StatGrid';
+import CopyButton from '@/components/fintech/CopyButton';
 import { cn } from '@/lib/utils';
 import {
   AlertCircle,
@@ -49,7 +48,6 @@ import {
   History,
   KeyRound,
   Link2,
-  PackageSearch,
   Plus,
   RefreshCw,
   RotateCcw,
@@ -258,10 +256,7 @@ function ActivityHeatmap({ requests }: { requests: MyRequest[] }) {
   })();
 
   return (
-    <section
-      className={s.heatmapPanel}
-      aria-label="نقشه فعالیت ۳۰ روز اخیر"
-    >
+    <section className={s.heatmapPanel} aria-label="نقشه فعالیت ۳۰ روز اخیر">
       <header className={s.heatmapHead}>
         <div className={s.heatmapTitle}>
           <span className={s.heatmapDot} aria-hidden />
@@ -322,7 +317,9 @@ function ActivityHeatmap({ requests }: { requests: MyRequest[] }) {
         <div className={s.heatmapStatBox}>
           <span className={s.heatmapStatLabel}>روزهای پردستور</span>
           <span className={s.heatmapStatValue}>
-            <strong>{formatPersianNumber(cells.filter((c) => c.count === max && c.count > 0).length)}</strong>
+            <strong>
+              {formatPersianNumber(cells.filter((c) => c.count === max && c.count > 0).length)}
+            </strong>
           </span>
         </div>
         <div className={s.heatmapStatBox}>
@@ -407,17 +404,11 @@ function VolumeByService({ requests }: { requests: MyRequest[] }) {
           const ratio = d.count / max;
           const share = grandTotal > 0 ? Math.round((d.count / grandTotal) * 100) : 0;
           return (
-            <li
-              key={d.key}
-              className={s.volumeItem}
-              style={{ animationDelay: `${i * 50}ms` }}
-            >
+            <li key={d.key} className={s.volumeItem} style={{ animationDelay: `${i * 50}ms` }}>
               <div className={s.volumeItemHead}>
                 <span className={s.volumeItemLabel}>{d.label}</span>
                 <span className={s.volumeItemMeta}>
-                  <span className={s.volumeItemCount}>
-                    {formatPersianNumber(d.count)} مورد
-                  </span>
+                  <span className={s.volumeItemCount}>{formatPersianNumber(d.count)} مورد</span>
                   <span className={s.volumeItemShare}>{formatPersianNumber(share)}٪</span>
                 </span>
               </div>
@@ -491,9 +482,7 @@ function PipelineOverview({
                 style={{ '--ring': `${successRate}%` } as React.CSSProperties}
                 aria-hidden
               />
-              <span className={s.pipelineSuccessNum}>
-                {formatPersianNumber(successRate)}٪
-              </span>
+              <span className={s.pipelineSuccessNum}>{formatPersianNumber(successRate)}٪</span>
               <span className={s.pipelineSuccessLabel}>تکمیل</span>
             </span>
           )}
@@ -504,8 +493,14 @@ function PipelineOverview({
         <div className={s.pipelineFlow}>
           {PIPELINE_STAGES.map((stage, idx) => {
             const meta = STATUS_META[stage];
-            const value = stage === 'PENDING' ? pending : stage === 'IN_PROGRESS' ? inProgress : completed;
-            const ratio = stage === 'PENDING' ? 1 : stage === 'IN_PROGRESS' ? inProgressRatio + completedRatio : completedRatio;
+            const value =
+              stage === 'PENDING' ? pending : stage === 'IN_PROGRESS' ? inProgress : completed;
+            const ratio =
+              stage === 'PENDING'
+                ? 1
+                : stage === 'IN_PROGRESS'
+                  ? inProgressRatio + completedRatio
+                  : completedRatio;
             const isLast = idx === PIPELINE_STAGES.length - 1;
             const nodeClass = cn(
               s.pipelineNode,
@@ -525,7 +520,11 @@ function PipelineOverview({
                     <meta.icon size={11} />
                   </span>
                   <span className={s.pipelineNodeCount}>
-                    {loading ? <span className={s.pulse} aria-hidden /> : formatPersianNumber(value)}
+                    {loading ? (
+                      <span className={s.pulse} aria-hidden />
+                    ) : (
+                      formatPersianNumber(value)
+                    )}
                   </span>
                   <span className={s.pipelineNodeLabel}>{meta.label}</span>
                 </button>
@@ -544,10 +543,7 @@ function PipelineOverview({
 
         <button
           type="button"
-          className={cn(
-            s.pipelineBranch,
-            activeFilter === 'CANCELLED' && s.pipelineBranchActive,
-          )}
+          className={cn(s.pipelineBranch, activeFilter === 'CANCELLED' && s.pipelineBranchActive)}
           onClick={() => onFilterChange(activeFilter === 'CANCELLED' ? 'ALL' : 'CANCELLED')}
           aria-pressed={activeFilter === 'CANCELLED'}
           aria-label={`لغو شده: ${formatPersianNumber(cancelled)} درخواست`}
@@ -628,7 +624,11 @@ function FilterBar({
         <button
           type="button"
           onClick={() => onUrgencyChange('URGENT')}
-          className={cn(s.urgencyChip, s.urgencyChipUrgent, urgency === 'URGENT' && s.urgencyChipActive)}
+          className={cn(
+            s.urgencyChip,
+            s.urgencyChipUrgent,
+            urgency === 'URGENT' && s.urgencyChipActive,
+          )}
           aria-pressed={urgency === 'URGENT'}
         >
           <Zap size={10} aria-hidden />
@@ -755,17 +755,10 @@ function TicketCard({
     }
   };
 
-  const cardClass = cn(
-    s.ticket,
-    isActive && s.ticketActive,
-    s[`ticket--${meta.cssKey}`],
-  );
+  const cardClass = cn(s.ticket, isActive && s.ticketActive, s[`ticket--${meta.cssKey}`]);
 
   return (
-    <li
-      className={cardClass}
-      style={{ animationDelay: `${Math.min(index, 12) * 28}ms` }}
-    >
+    <li className={cardClass} style={{ animationDelay: `${Math.min(index, 12) * 28}ms` }}>
       <span className={s.executionRail} aria-hidden>
         <span className={s.executionRailPulse} />
       </span>
@@ -841,9 +834,7 @@ function TicketCard({
               <CalendarClock size={11} aria-hidden />
               ثبت: {formatPersianDateTime(req.createdAt)}
             </span>
-            <span className={s.dateChip}>
-              به‌روزرسانی: {formatPersianDateTime(req.updatedAt)}
-            </span>
+            <span className={s.dateChip}>به‌روزرسانی: {formatPersianDateTime(req.updatedAt)}</span>
             {req.estimatedCompletionAt && (
               <span className={cn(s.dateChip, s.dateChipEta)}>
                 <CheckCircle2 size={11} aria-hidden />
@@ -857,11 +848,7 @@ function TicketCard({
               <div className={s.copyZone}>
                 <span className={s.copyLabel}>کد پیگیری:</span>
                 <code className={s.copyCode}>{req.trackingCode}</code>
-                <CopyButton
-                  text={req.trackingCode}
-                  label="کپی"
-                  className={s.copyBtn}
-                />
+                <CopyButton text={req.trackingCode} label="کپی" className={s.copyBtn} />
               </div>
 
               {(localStatus === 'PENDING' || cancelDone) && (
@@ -875,9 +862,7 @@ function TicketCard({
                         </span>
                       )}
                       {!canCancel && localStatus === 'PENDING' && !cancelDone && (
-                        <span className={s.cancelExpired}>
-                          مهلت لغو تمام شده است.
-                        </span>
+                        <span className={s.cancelExpired}>مهلت لغو تمام شده است.</span>
                       )}
                       {cancelDone && (
                         <span className={s.cancelSuccess}>
@@ -946,9 +931,7 @@ function TicketCard({
                           <span className={s.timelineStatus}>
                             {STATUS_LABELS[log.toStatus] ?? log.toStatus}
                           </span>
-                          {log.note && (
-                            <span className={s.timelineNote}>{log.note}</span>
-                          )}
+                          {log.note && <span className={s.timelineNote}>{log.note}</span>}
                           <time className={s.timelineTime}>
                             {formatPersianDateTime(log.createdAt)}
                           </time>
@@ -1148,8 +1131,8 @@ function ClaimGuestPanel({ onClaimed }: { onClaimed: () => void }) {
           {!needsOtp ? (
             <>
               <p className={s.claimDesc}>
-                اگر پیش از ساخت حساب، سفارشی ثبت کرده‌اید، کد پیگیری‌اش را وارد کنید تا به
-                حساب فعلی‌تان متصل شود.
+                اگر پیش از ساخت حساب، سفارشی ثبت کرده‌اید، کد پیگیری‌اش را وارد کنید تا به حساب
+                فعلی‌تان متصل شود.
               </p>
               <div className={s.claimRow}>
                 <input
@@ -1181,9 +1164,7 @@ function ClaimGuestPanel({ onClaimed }: { onClaimed: () => void }) {
               <div className={s.claimHelp}>
                 <span className={s.claimHelpLabel}>فرمت کد:</span>
                 <code className={s.claimHelpCode}>BT-XXXXXXXX-XXXXXX</code>
-                <span className={s.claimHelpHint}>
-                  (دو حرف، ۸ رقم، ۶ رقم — با خط تیره)
-                </span>
+                <span className={s.claimHelpHint}>(دو حرف، ۸ رقم، ۶ رقم — با خط تیره)</span>
               </div>
             </>
           ) : (
@@ -1244,11 +1225,12 @@ function ClaimGuestPanel({ onClaimed }: { onClaimed: () => void }) {
           )}
 
           {msg && (
-            <p
-              className={cn(isErr ? s.claimErr : s.claimOk)}
-              role={isErr ? 'alert' : 'status'}
-            >
-              {isErr ? <AlertCircle size={11} aria-hidden /> : <CheckCircle2 size={11} aria-hidden />}
+            <p className={cn(isErr ? s.claimErr : s.claimOk)} role={isErr ? 'alert' : 'status'}>
+              {isErr ? (
+                <AlertCircle size={11} aria-hidden />
+              ) : (
+                <CheckCircle2 size={11} aria-hidden />
+              )}
               {msg}
             </p>
           )}
@@ -1279,7 +1261,7 @@ export default function MyRequestsClient() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
+  const [_totalCount, setTotalCount] = useState(0);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('ALL');
   const [urgency, setUrgency] = useState<'ALL' | 'URGENT' | 'NORMAL'>('ALL');
@@ -1306,28 +1288,25 @@ export default function MyRequestsClient() {
     }
   }, []);
 
-  const fetchRequests = useCallback(
-    async (p: number, status: string, isRefresh = false) => {
-      if (isRefresh) setRefreshing(true);
-      else setLoading(true);
-      setError(null);
-      const result = await getMyServiceRequests({ page: p, limit: 10, status });
-      if (result.success && result.data) {
-        const resData = result.data as {
-          requests: MyRequest[];
-          pagination: { page: number; limit: number; total: number; totalPages: number };
-        };
-        setRequests(resData.requests);
-        setTotalPages(resData.pagination.totalPages ?? 1);
-        setTotalCount(resData.pagination.total ?? 0);
-      } else {
-        setError('error' in result ? result.error.message : 'خطایی رخ داد.');
-      }
-      setLoading(false);
-      setRefreshing(false);
-    },
-    [],
-  );
+  const fetchRequests = useCallback(async (p: number, status: string, isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
+    setError(null);
+    const result = await getMyServiceRequests({ page: p, limit: 10, status });
+    if (result.success && result.data) {
+      const resData = result.data as {
+        requests: MyRequest[];
+        pagination: { page: number; limit: number; total: number; totalPages: number };
+      };
+      setRequests(resData.requests);
+      setTotalPages(resData.pagination.totalPages ?? 1);
+      setTotalCount(resData.pagination.total ?? 0);
+    } else {
+      setError('error' in result ? result.error.message : 'خطایی رخ داد.');
+    }
+    setLoading(false);
+    setRefreshing(false);
+  }, []);
 
   useEffect(() => {
     fetchRequests(page, filterStatus);
@@ -1395,9 +1374,13 @@ export default function MyRequestsClient() {
 
   // Derived KPI metrics
   const kpiMetrics = useMemo(() => {
-    const urgentPending = requests.filter((r) => r.urgency === 'URGENT' && r.status === 'PENDING').length;
+    const urgentPending = requests.filter(
+      (r) => r.urgency === 'URGENT' && r.status === 'PENDING',
+    ).length;
     const successRate =
-      stats.total > 0 ? Math.round((stats.completed / Math.max(1, stats.total - stats.cancelled)) * 100) : 0;
+      stats.total > 0
+        ? Math.round((stats.completed / Math.max(1, stats.total - stats.cancelled)) * 100)
+        : 0;
     const totalVolume = requests.reduce((s, r) => s + (Number(r.amount) || 0), 0);
     return { urgentPending, successRate, totalVolume };
   }, [requests, stats]);
@@ -1421,10 +1404,12 @@ export default function MyRequestsClient() {
     fetchStats();
   }, [fetchRequests, fetchStats]);
 
-  const noResults =
-    !loading && !error && requests.length > 0 && visibleRequests.length === 0;
+  const noResults = !loading && !error && requests.length > 0 && visibleRequests.length === 0;
 
-  const groupAccent: Record<string, 'pending' | 'progress' | 'completed' | 'cancelled' | 'neutral'> = {
+  const groupAccent: Record<
+    string,
+    'pending' | 'progress' | 'completed' | 'cancelled' | 'neutral'
+  > = {
     PENDING: 'pending',
     IN_PROGRESS: 'progress',
     COMPLETED: 'completed',
@@ -1572,9 +1557,7 @@ export default function MyRequestsClient() {
         <div className={s.noResultsBox}>
           <Search size={16} aria-hidden />
           <div>
-            <p className={s.noResultsTitle}>
-              نتیجه‌ای با این فیلترها پیدا نشد.
-            </p>
+            <p className={s.noResultsTitle}>نتیجه‌ای با این فیلترها پیدا نشد.</p>
             <p className={s.noResultsSub}>
               جستجو یا فیلتر فوریت را تغییر دهید، یا فیلترها را پاک کنید.
             </p>
@@ -1595,10 +1578,7 @@ export default function MyRequestsClient() {
       {!loading && !error && visibleRequests.length > 0 && (
         <>
           {groupedRequests.map((g) => {
-            const groupTotal = g.items.reduce(
-              (sum, r) => sum + (Number(r.amount) || 0),
-              0,
-            );
+            const groupTotal = g.items.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
             return (
               <TicketGroup
                 key={g.key}
@@ -1637,8 +1617,7 @@ export default function MyRequestsClient() {
                 قبلی
               </button>
               <div className={s.pageIndicator}>
-                {formatPersianNumber(page)}{' '}
-                <span className={s.pageDivider}>/</span>{' '}
+                {formatPersianNumber(page)} <span className={s.pageDivider}>/</span>{' '}
                 {formatPersianNumber(totalPages)}
               </div>
               <button

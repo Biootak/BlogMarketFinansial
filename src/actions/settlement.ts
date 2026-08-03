@@ -483,8 +483,7 @@ export async function generateSettlementCsv(
     'یادداشت',
   ];
 
-  const fmtDate = (d: Date | null): string =>
-    d ? new Intl.DateTimeFormat('en-CA').format(d) : '';
+  const fmtDate = (d: Date | null): string => (d ? new Intl.DateTimeFormat('en-CA').format(d) : '');
 
   const esc = (v: string): string => (v.includes(',') ? `"${v.replace(/"/g, '""')}"` : v);
 

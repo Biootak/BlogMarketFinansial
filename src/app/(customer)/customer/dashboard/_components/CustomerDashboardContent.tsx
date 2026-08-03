@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 /**
  * CustomerDashboardContent — 2026 «اتاق کنترل» (Control Room)
@@ -36,13 +36,11 @@ import {
   isCreditKind,
   relativeTime,
 } from '@/app/(customer)/customer/_lib/customer-formatters';
+import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
+import { GeometricField } from '@/components/Dashboard/primitives/GeometricAccent';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import { StatCard } from '@/components/Dashboard/primitives/StatCard';
 import { StatGrid } from '@/components/Dashboard/primitives/StatGrid';
-import { GeometricField } from '@/components/Dashboard/primitives/GeometricAccent';
-import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
-import ApiActivityWidget from './ApiActivityWidget';
-import { cn } from '@/lib/utils';
 import {
   DashboardTable,
   DashboardTableBody,
@@ -52,6 +50,8 @@ import {
   DashboardTableHeader,
   DashboardTableRow,
 } from '@/components/Dashboard/shared/DashboardTableWrapper';
+import { ViewLink } from '@/components/ui/ViewLink';
+import { cn } from '@/lib/utils';
 import {
   AlertCircle,
   AlertTriangle,
@@ -63,6 +63,7 @@ import {
   CheckCircle2,
   ChevronLeft,
   CircleDollarSign,
+  ClipboardList,
   Clock,
   Coins,
   CreditCard,
@@ -73,8 +74,8 @@ import {
   Inbox,
   KeyRound,
   Layers,
-  type LucideIcon,
   Lock,
+  type LucideIcon,
   Plus,
   RefreshCw,
   Send,
@@ -86,11 +87,10 @@ import {
   Wallet,
   WalletCards,
   Zap,
-  ClipboardList,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo } from 'react';
-import { ViewLink } from '@/components/ui/ViewLink';
+import ApiActivityWidget from './ApiActivityWidget';
 import s from './CustomerDashboardContent.module.css';
 
 // ─── Constants ────────────────────────────────────────────────────────────── //
@@ -147,13 +147,10 @@ const STATUS_CSSKEY = TXN_STATUS_CSSKEY;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────── //
 
-function formatPersianNumber(value: number | string): string {
-  return faNum(value);
-}
-
-function formatAmount(amount: number, currency: string): string {
-  return faAmount(amount, currency);
-}
+// formatPersianNumber / formatAmount wrappers حذف شدند:
+// آن‌ها فقط یک لایه indirection بودند روی faNum/faAmount که در
+// customer-formatters.ts به‌عنوان singleton تعریف شده‌اند.
+// همه call site ها مستقیماً faNum / faAmount صدا می‌زنند.
 
 function isNegativeKind(kind: string): boolean {
   return kind === 'WITHDRAWAL' || kind === 'FEE';
@@ -237,21 +234,23 @@ function LiveBalanceRibbon({
   pendingCount: number;
   rateOfSuccess: number;
 }) {
-  // Spark path
-  const points = spark.map((s, i) => ({ x: i, y: s.amount }));
-  const maxY = Math.max(1, ...points.map((p) => p.y));
-  const minY = Math.min(0, ...points.map((p) => p.y));
-  const range = Math.max(1, maxY - minY);
+  // Spark path — با useMemo تا در re-render های بی‌دلیل محاسبه مجدد نشود
+  const { points, pathD, fillD, minY, range } = useMemo(() => {
+    const pts = spark.map((p, i) => ({ x: i, y: p.amount }));
+    const maxY = Math.max(1, ...pts.map((p) => p.y));
+    const mn = Math.min(0, ...pts.map((p) => p.y));
+    const rng = Math.max(1, maxY - mn);
 
-  const pathD = points
-    .map((p, i) => {
-      const x = (i / Math.max(1, points.length - 1)) * 100;
-      const y = 100 - ((p.y - minY) / range) * 100;
-      return `${i === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
-    })
-    .join(' ');
+    const d = pts
+      .map((p, i) => {
+        const x = (i / Math.max(1, pts.length - 1)) * 100;
+        const y = 100 - ((p.y - mn) / rng) * 100;
+        return `${i === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
+      })
+      .join(' ');
 
-  const fillD = `${pathD} L 100 100 L 0 100 Z`;
+    return { points: pts, pathD: d, fillD: `${d} L 100 100 L 0 100 Z`, minY: mn, range: rng };
+  }, [spark]);
 
   return (
     <div className={s.ribbon} aria-label="نوار موجودی زنده">
@@ -264,7 +263,7 @@ function LiveBalanceRibbon({
             <span>موجودی کل (افغانی)</span>
           </div>
           <div className={s.ribbonValue}>
-            <span className={s.ribbonNumber}>{formatPersianNumber(totalAfn)}</span>
+            <span className={s.ribbonNumber}>{faNum(totalAfn)}</span>
             <span className={s.ribbonCurrency}>AFN</span>
           </div>
           <div className={s.ribbonDelta} data-sign={delta.sign}>
@@ -316,14 +315,14 @@ function LiveBalanceRibbon({
             <div className={s.ribbonMetaItem}>
               <span className={s.ribbonMetaLabel}>نیازمند اقدام</span>
               <span className={s.ribbonMetaValue} data-tone="amber">
-                {formatPersianNumber(pendingCount)}
+                {faNum(pendingCount)}
               </span>
             </div>
             <span className={s.ribbonDivider} aria-hidden />
             <div className={s.ribbonMetaItem}>
               <span className={s.ribbonMetaLabel}>نرخ موفقیت</span>
               <span className={s.ribbonMetaValue} data-tone="success">
-                {formatPersianNumber(rateOfSuccess)}٪
+                {faNum(rateOfSuccess)}٪
               </span>
             </div>
           </div>
@@ -373,7 +372,7 @@ function AccountLedgerCard({
       href={`/customer/accounts/${account.id}`}
       className={cn(s.ledgerCard, s[`ledgerCard--${statusCssKey}`])}
       style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
-      aria-label={`حساب ${account.currency} ${typeLabel}، موجودی ${formatPersianNumber(account.balance)}`}
+      aria-label={`حساب ${account.currency} ${typeLabel}، موجودی ${faNum(account.balance)}`}
     >
       <span className={s.ledgerRail} aria-hidden />
       <div className={s.ledgerTop}>
@@ -384,7 +383,7 @@ function AccountLedgerCard({
         <span className={s.ledgerType}>{typeLabel}</span>
       </div>
       <div className={s.ledgerBalanceRow}>
-        <span className={s.ledgerBalance}>{formatPersianNumber(account.balance)}</span>
+        <span className={s.ledgerBalance}>{faNum(account.balance)}</span>
         <span className={s.ledgerBalanceCurrency}>{account.currency}</span>
       </div>
       <div className={s.ledgerFoot}>
@@ -461,15 +460,15 @@ function ActivityHeatmap({
         </div>
         <div className={s.heatmapMeta}>
           <span className={s.heatmapStat}>
-            <strong>{formatPersianNumber(totalCount)}</strong> تراکنش
+            <strong>{faNum(totalCount)}</strong> تراکنش
           </span>
           <span className={s.heatmapDivider} aria-hidden />
           <span className={s.heatmapStat}>
-            <strong>{formatPersianNumber(activeDays)}</strong> روز فعال
+            <strong>{faNum(activeDays)}</strong> روز فعال
           </span>
           <span className={s.heatmapDivider} aria-hidden />
           <span className={s.heatmapStat}>
-            <strong>{formatPersianNumber(Math.round(avgPerDay * 10) / 10)}</strong> میانگین روزانه
+            <strong>{faNum(Math.round(avgPerDay * 10) / 10)}</strong> میانگین روزانه
           </span>
         </div>
       </header>
@@ -477,7 +476,7 @@ function ActivityHeatmap({
       <div
         className={s.heatmapGrid}
         role="img"
-        aria-label={`${formatPersianNumber(totalCount)} تراکنش در ۳۰ روز اخیر`}
+        aria-label={`${faNum(totalCount)} تراکنش در ۳۰ روز اخیر`}
       >
         {heatmap.map((c, i) => {
           const ratio = c.count / max;
@@ -489,8 +488,8 @@ function ActivityHeatmap({
               className={s.heatmapCell}
               data-level={intensity}
               style={{ animationDelay: `${i * 6}ms` }}
-              title={`${faDate(c.date)} — ${formatPersianNumber(c.count)} تراکنش`}
-              aria-label={`${faDate(c.date)}: ${formatPersianNumber(c.count)} تراکنش`}
+              title={`${faDate(c.date)} — ${faNum(c.count)} تراکنش`}
+              aria-label={`${faDate(c.date)}: ${faNum(c.count)} تراکنش`}
             />
           );
         })}
@@ -500,21 +499,21 @@ function ActivityHeatmap({
         <div className={s.heatmapStatBox}>
           <span className={s.heatmapStatLabel}>روزهای فعال</span>
           <span className={s.heatmapStatValue}>
-            <strong>{formatPersianNumber(activeDays)}</strong>
-            <span className={s.heatmapStatSub}>/ {formatPersianNumber(heatmap.length)}</span>
+            <strong>{faNum(activeDays)}</strong>
+            <span className={s.heatmapStatSub}>/ {faNum(heatmap.length)}</span>
           </span>
         </div>
         <div className={s.heatmapStatBox}>
           <span className={s.heatmapStatLabel}>روزهای خاموش</span>
           <span className={s.heatmapStatValue}>
-            <strong>{formatPersianNumber(heatmap.length - activeDays)}</strong>
+            <strong>{faNum(heatmap.length - activeDays)}</strong>
           </span>
         </div>
         <div className={s.heatmapStatBox}>
           <span className={s.heatmapStatLabel}>پردسترتـرین</span>
           <span className={s.heatmapStatValue}>
             <strong>
-              {formatPersianNumber(heatmap.filter((c) => c.count === max && c.count > 0).length)}
+              {faNum(heatmap.filter((c) => c.count === max && c.count > 0).length)}
             </strong>
             <span className={s.heatmapStatSub}>روز</span>
           </span>
@@ -522,7 +521,7 @@ function ActivityHeatmap({
         <div className={s.heatmapStatBox}>
           <span className={s.heatmapStatLabel}>رشته فعلی</span>
           <span className={s.heatmapStatValue}>
-            <strong>{formatPersianNumber(streak)}</strong>
+            <strong>{faNum(streak)}</strong>
             <span className={s.heatmapStatSub}>روز</span>
           </span>
         </div>
@@ -580,7 +579,7 @@ function VolumeByKind({
           <span className={s.heatmapDot} aria-hidden />
           <h3 className={s.heatmapH3}>حجم تراکنش‌ها</h3>
         </div>
-        <span className={s.volumeSub}>۳۰ روز اخیر · {formatPersianNumber(total)} مورد</span>
+        <span className={s.volumeSub}>۳۰ روز اخیر · {faNum(total)} مورد</span>
       </header>
       <ul className={s.volumeList}>
         {data.slice(0, 6).map((d, i) => {
@@ -600,8 +599,8 @@ function VolumeByKind({
                 </span>
                 <span className={s.volumeItemLabel}>{KIND_LABEL[d.kind] ?? d.kind}</span>
                 <span className={s.volumeItemMeta}>
-                  <span className={s.volumeItemCount}>{formatPersianNumber(d.count)} مورد</span>
-                  <span className={s.volumeItemShare}>{formatPersianNumber(share)}٪</span>
+                  <span className={s.volumeItemCount}>{faNum(d.count)} مورد</span>
+                  <span className={s.volumeItemShare}>{faNum(share)}٪</span>
                 </span>
               </div>
               <div className={s.volumeTrack} aria-hidden>
@@ -679,7 +678,7 @@ function RecentTransactions({
                     )}
                   >
                     {credit ? '+' : negative ? '−' : ''}
-                    {formatAmount(txn.amount, txn.currency)}
+                    {faAmount(txn.amount, txn.currency)}
                   </span>
                 </DashboardTableCell>
                 <DashboardTableCell>
@@ -923,7 +922,7 @@ export default function CustomerDashboardContent({ data }: { data: CustomerDashb
     if (Math.abs(diff) < 2) return { sign: 'flat' as const, label: 'بدون تغییر قابل توجه' };
     return {
       sign: diff > 0 ? ('up' as const) : ('down' as const),
-      label: `${diff > 0 ? '+' : ''}${formatPersianNumber(Math.round(diff))}٪ در ۷ روز اخیر`,
+      label: `${diff > 0 ? '+' : ''}${faNum(Math.round(diff))}٪ در ۷ روز اخیر`,
     };
   }, [weeklySpark]);
 
@@ -1005,7 +1004,7 @@ export default function CustomerDashboardContent({ data }: { data: CustomerDashb
         <SectionHeader
           icon={Wallet}
           title="حساب‌های من"
-          sub={`${formatPersianNumber(accounts.length)} حساب`}
+          sub={`${faNum(accounts.length)} حساب`}
           actions={
             <Link href="/customer/accounts" className={s.viewAllLink}>
               <Eye size={11} aria-hidden />

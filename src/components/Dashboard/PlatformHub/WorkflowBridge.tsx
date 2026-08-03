@@ -23,11 +23,7 @@ export interface WorkflowBridgeProps {
  * Like a metro map: a continuous rail with stations, each station has
  * a colored disc indicating its state. Approved segments glow.
  */
-export function WorkflowBridge({
-  steps,
-  className,
-  ariaLabel,
-}: WorkflowBridgeProps) {
+export function WorkflowBridge({ steps, className, ariaLabel }: WorkflowBridgeProps) {
   return (
     <ol className={cn(s.workflowBridge, className)} aria-label={ariaLabel}>
       {steps.map((step, i) => {

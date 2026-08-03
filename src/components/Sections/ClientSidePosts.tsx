@@ -455,11 +455,14 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
                         'text-[12.5px] sm:text-sm font-medium rounded-xl whitespace-nowrap',
                         'transition-colors duration-200',
                         'text-neutral-600 dark:text-neutral-400',
+                        // Color-contrast fix: accent رنگ خام (مثلاً slate-400) روی
+                        // پس‌زمینه سفید کنتراست 2.56 دارد. از textClass (نسخه تیره
+                        // همان hue) استفاده می‌کنیم تا AA (≥4.5) رد شود.
+                        isActive && tabAccent.textClass,
                         'hover:text-neutral-900 dark:hover:text-neutral-200',
                         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50',
                         'cursor-pointer',
                       )}
-                      style={isActive ? { color: tabAccent.color } : undefined}
                     >
                       {isActive && (
                         <motion.span

@@ -128,8 +128,7 @@ export default function HoursView({ exchange, hours, timezone = 'Asia/Tehran' }:
         <header className={s.header}>
           <h1 className={s.title}>ساعات کاری {exchange.name}</h1>
           <p className={s.sub}>
-            برنامهٔ کامل هفتگی همراه با وضعیت لحظه‌ای باز/بسته. ساعت بر اساس منطقهٔ زمانی
-            {' '}
+            برنامهٔ کامل هفتگی همراه با وضعیت لحظه‌ای باز/بسته. ساعت بر اساس منطقهٔ زمانی{' '}
             {timezone === 'Asia/Tehran' ? 'تهران' : timezone} نمایش داده می‌شود.
           </p>
           {todayStatus === 'open' && (
@@ -182,9 +181,12 @@ export default function HoursView({ exchange, hours, timezone = 'Asia/Tehran' }:
             const open = parseTime(v.open);
             const close = parseTime(v.close);
             const span = Math.max(0, close - open);
-            const progress = isToday && status === 'open'
-              ? Math.min(1, (currentMin - open) / span)
-              : status === 'past' ? 1 : 0;
+            const progress =
+              isToday && status === 'open'
+                ? Math.min(1, (currentMin - open) / span)
+                : status === 'past'
+                  ? 1
+                  : 0;
             return (
               <article
                 key={d.key}
@@ -236,7 +238,8 @@ export default function HoursView({ exchange, hours, timezone = 'Asia/Tehran' }:
                     </div>
                     <div className={s.dayFoot}>
                       <span className={s.dayDuration}>
-                        {new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 1 }).format(span)} ساعت کار
+                        {new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 1 }).format(span)}{' '}
+                        ساعت کار
                       </span>
                       {status === 'open' && (
                         <span className={s.statusOpen}>
@@ -272,8 +275,8 @@ export default function HoursView({ exchange, hours, timezone = 'Asia/Tehran' }:
         <div className={s.tipBox}>
           <Clock4 size={14} strokeWidth={1.9} aria-hidden />
           <p>
-            پیشنهاد می‌شود قبل از مراجعه حضوری، یک تماس تلفنی با صرافی داشته باشید تا از
-            باز بودن و موجود بودن ارز مورد نظر مطمئن شوید.
+            پیشنهاد می‌شود قبل از مراجعه حضوری، یک تماس تلفنی با صرافی داشته باشید تا از باز بودن و
+            موجود بودن ارز مورد نظر مطمئن شوید.
           </p>
         </div>
       </div>

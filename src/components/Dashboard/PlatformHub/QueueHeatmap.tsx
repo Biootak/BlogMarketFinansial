@@ -3,13 +3,7 @@
 import { cn } from '@/lib/utils';
 import s from './PlatformHub.module.css';
 
-export type QueueHeatmapTone =
-  | 'emerald'
-  | 'indigo'
-  | 'amber'
-  | 'rose'
-  | 'cyan'
-  | 'violet';
+export type QueueHeatmapTone = 'emerald' | 'indigo' | 'amber' | 'rose' | 'cyan' | 'violet';
 
 export type QueueHeatmapItem = {
   /** Unique key (queue name) */

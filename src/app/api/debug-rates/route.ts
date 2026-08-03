@@ -25,7 +25,7 @@ export async function GET() {
 
   for (const q of quotes) {
     if (!grouped[q.currencyCode]) grouped[q.currencyCode] = [];
-    grouped[q.currencyCode]!.push({
+    grouped[q.currencyCode]?.push({
       unit: q.unit,
       buy: Number(q.buyRate),
       sell: Number(q.sellRate),

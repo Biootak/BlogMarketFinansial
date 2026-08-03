@@ -5,9 +5,9 @@
  *  Page-specific (right column در فرم) — co-located.
  */
 
-import type { LucideIcon } from 'lucide-react';
-import { Eye, Bell, Inbox, Mail, Smartphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { LucideIcon } from 'lucide-react';
+import { Bell, Eye, Inbox, Mail, Smartphone } from 'lucide-react';
 import s from './NewCampaign.module.css';
 
 const toPersianDigits = (n: number | string) =>

@@ -60,14 +60,14 @@ vi.mock('@/lib/revalidate', () => ({
 
 // ─── Import ───────────────────────────────────────────────────────────────────
 
-import prisma from '@/lib/db';
-import { requireAdmin } from '@/lib/require-auth';
-import { revalidateTag } from '@/lib/revalidate';
 import {
   approveSettlement,
   computePeriodSettlement,
   markSettlementPaid,
 } from '@/actions/settlement';
+import prisma from '@/lib/db';
+import { requireAdmin } from '@/lib/require-auth';
+import { revalidateTag } from '@/lib/revalidate';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 

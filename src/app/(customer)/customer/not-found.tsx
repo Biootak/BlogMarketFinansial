@@ -46,7 +46,9 @@ export default function CustomerNotFound() {
         <p className={s.lead}>
           ممکن است به زبان دیگری منتقل شده باشد یا دسترسی لازم را نداشته باشید.
           <br />
-          <code className={s.pathCode} dir="ltr">{pathname}</code>
+          <code className={s.pathCode} dir="ltr">
+            {pathname}
+          </code>
         </p>
       </div>
 

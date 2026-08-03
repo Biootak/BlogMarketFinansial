@@ -78,7 +78,7 @@ export function PersianDateRangePicker({
     onChange(null);
   };
 
-  const hasValue = !!(value?.from);
+  const hasValue = !!value?.from;
   const label = value?.from
     ? value.to
       ? `${formatPersian(value.from)}  —  ${formatPersian(value.to)}`
@@ -99,9 +99,7 @@ export function PersianDateRangePicker({
             )}
           >
             <CalendarIcon className="h-4 w-4 shrink-0 opacity-60" aria-hidden />
-            <span className="min-w-0 flex-1 truncate text-sm">
-              {label ?? placeholder}
-            </span>
+            <span className="min-w-0 flex-1 truncate text-sm">{label ?? placeholder}</span>
             {hasValue && (
               <span
                 role="button"

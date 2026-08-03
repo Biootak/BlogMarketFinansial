@@ -1,14 +1,14 @@
 'use client';
 
-import { useMemo } from 'react';
 import { toPersianDigits } from '@/lib/setup/format';
+import { useMemo } from 'react';
+import s from '../jobs.module.css';
 import { JobHero } from './JobHero';
-import { JobVitals } from './JobVitals';
 import { JobPipeline, type JobPipelineStage } from './JobPipeline';
 import { JobQueueMatrix, type QueueHealthDisplay } from './JobQueueMatrix';
 import { JobStream, type JobStreamItem } from './JobStream';
 import { JobTable, type JobTableRow } from './JobTable';
-import s from '../jobs.module.css';
+import { JobVitals } from './JobVitals';
 
 export interface JobCenterProps {
   /** total jobs ever */
@@ -47,9 +47,7 @@ export interface JobCenterProps {
   outflowPerMin: number;
 }
 
-function getStageStatus(
-  q: QueueHealthDisplay[],
-): 'healthy' | 'degraded' | 'critical' | 'idle' {
+function getStageStatus(q: QueueHealthDisplay[]): 'healthy' | 'degraded' | 'critical' | 'idle' {
   if (q.length === 0) return 'idle';
   if (q.some((x) => x.status === 'critical')) return 'critical';
   if (q.some((x) => x.status === 'degraded')) return 'degraded';
@@ -93,8 +91,7 @@ export function JobCenter({
   const scheduledCount = useMemo(() => {
     const now = Date.now();
     return recentJobs.filter(
-      (j) =>
-        j.status === 'pending' && j.scheduledAt && new Date(j.scheduledAt).getTime() > now,
+      (j) => j.status === 'pending' && j.scheduledAt && new Date(j.scheduledAt).getTime() > now,
     ).length;
   }, [recentJobs]);
 
@@ -141,13 +138,13 @@ export function JobCenter({
   const streamItems: JobStreamItem[] = useMemo(
     () =>
       recentJobs.slice(0, 60).map((j) => {
-        const updated =
-          j.completedAt ?? j.failedAt ?? j.startedAt ?? j.createdAt;
-        const durationMs = j.startedAt && j.completedAt
-          ? new Date(j.completedAt).getTime() - new Date(j.startedAt).getTime()
-          : j.startedAt && j.failedAt
-            ? new Date(j.failedAt).getTime() - new Date(j.startedAt).getTime()
-            : null;
+        const updated = j.completedAt ?? j.failedAt ?? j.startedAt ?? j.createdAt;
+        const durationMs =
+          j.startedAt && j.completedAt
+            ? new Date(j.completedAt).getTime() - new Date(j.startedAt).getTime()
+            : j.startedAt && j.failedAt
+              ? new Date(j.failedAt).getTime() - new Date(j.startedAt).getTime()
+              : null;
         return {
           id: j.id,
           type: j.type,
@@ -201,11 +198,7 @@ export function JobCenter({
         failureRateTrend={failureRateTrend}
       />
 
-      <JobPipeline
-        stages={stages}
-        inflowPerMin={inflowPerMin}
-        outflowPerMin={outflowPerMin}
-      />
+      <JobPipeline stages={stages} inflowPerMin={inflowPerMin} outflowPerMin={outflowPerMin} />
 
       <div className={s.data}>
         <div className={s.matrix}>

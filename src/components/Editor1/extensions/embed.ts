@@ -1,5 +1,4 @@
 import { Node, mergeAttributes } from '@tiptap/core';
-import type { NodeViewProps } from '@tiptap/core';
 import { ReactNodeViewRenderer } from '@tiptap/react';
 import EmbedBlock from '../components/embed-block';
 

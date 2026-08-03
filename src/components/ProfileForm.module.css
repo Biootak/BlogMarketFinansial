@@ -68,8 +68,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(var(--at-line) 1px, transparent 1px),
+  background-image: linear-gradient(var(--at-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--at-line) 1px, transparent 1px);
   background-size: 40px 40px;
   opacity: 0.35;
@@ -111,10 +110,7 @@
   font-weight: 500;
   color: var(--at-fg);
   font-family: inherit;
-  transition:
-    transform 160ms var(--ds-ease-spring),
-    background 160ms,
-    box-shadow 160ms;
+  transition: transform 160ms var(--ds-ease-spring), background 160ms, box-shadow 160ms;
 }
 .coverBtn:hover {
   transform: translateY(-1px);
@@ -178,9 +174,7 @@
   overflow: hidden;
   /* Double ring: inner = surface, outer = accent */
   border: 3px solid var(--at-surface);
-  box-shadow:
-    0 0 0 1px var(--at-line-strong),
-    var(--at-shadow-hover);
+  box-shadow: 0 0 0 1px var(--at-line-strong), var(--at-shadow-hover);
   background: var(--at-accent-soft);
   display: block;
 }
@@ -209,9 +203,7 @@
   justify-content: center;
   color: oklch(100% 0 0);
   pointer-events: none;
-  transition:
-    transform 150ms var(--ds-ease-spring),
-    background 150ms;
+  transition: transform 150ms var(--ds-ease-spring), background 150ms;
 }
 .avatarTrigger:hover .avatarEditBadge {
   transform: scale(1.12) rotate(-4deg);
@@ -341,9 +333,7 @@
   font-family: inherit;
   text-align: start;
   width: 100%;
-  transition:
-    background 150ms var(--ds-ease-out-quart),
-    color 150ms var(--ds-ease-out-quart),
+  transition: background 150ms var(--ds-ease-out-quart), color 150ms var(--ds-ease-out-quart),
     transform 120ms var(--ds-ease-spring);
   white-space: nowrap;
   /* 44px touch target */
@@ -408,9 +398,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-4);
-  transition:
-    border-color 200ms var(--ds-ease-out-quart),
-    box-shadow 200ms var(--ds-ease-out-quart);
+  transition: border-color 200ms var(--ds-ease-out-quart), box-shadow 200ms var(--ds-ease-out-quart);
 }
 .card:focus-within {
   border-color: var(--at-line-strong);
@@ -589,24 +577,48 @@
   background: var(--at-line-strong);
   transition: background 300ms var(--ds-ease-out-quart);
 }
-.strengthSegment[data-active="weak"]   { background: oklch(55% 0.16 25); }
-.strengthSegment[data-active="fair"]   { background: oklch(62% 0.14 70); }
-.strengthSegment[data-active="good"]   { background: oklch(55% 0.14 165); }
-.strengthSegment[data-active="strong"] { background: oklch(50% 0.14 162); }
+.strengthSegment[data-active="weak"] {
+  background: oklch(55% 0.16 25);
+}
+.strengthSegment[data-active="fair"] {
+  background: oklch(62% 0.14 70);
+}
+.strengthSegment[data-active="good"] {
+  background: oklch(55% 0.14 165);
+}
+.strengthSegment[data-active="strong"] {
+  background: oklch(50% 0.14 162);
+}
 
 .strengthLabel {
   font-size: var(--ds-text-xs);
   color: var(--at-fg-subtle);
   margin: 0;
 }
-.strengthLabel [data-strength="weak"]   { color: oklch(55% 0.16 25); }
-.strengthLabel [data-strength="fair"]   { color: oklch(58% 0.14 70); }
-.strengthLabel [data-strength="good"]   { color: oklch(48% 0.14 165); }
-.strengthLabel [data-strength="strong"] { color: oklch(45% 0.14 162); }
-.dark .strengthLabel [data-strength="weak"]   { color: oklch(72% 0.13 25); }
-.dark .strengthLabel [data-strength="fair"]   { color: oklch(75% 0.12 70); }
-.dark .strengthLabel [data-strength="good"]   { color: oklch(72% 0.12 165); }
-.dark .strengthLabel [data-strength="strong"] { color: oklch(72% 0.12 162); }
+.strengthLabel [data-strength="weak"] {
+  color: oklch(55% 0.16 25);
+}
+.strengthLabel [data-strength="fair"] {
+  color: oklch(58% 0.14 70);
+}
+.strengthLabel [data-strength="good"] {
+  color: oklch(48% 0.14 165);
+}
+.strengthLabel [data-strength="strong"] {
+  color: oklch(45% 0.14 162);
+}
+.dark .strengthLabel [data-strength="weak"] {
+  color: oklch(72% 0.13 25);
+}
+.dark .strengthLabel [data-strength="fair"] {
+  color: oklch(75% 0.12 70);
+}
+.dark .strengthLabel [data-strength="good"] {
+  color: oklch(72% 0.12 165);
+}
+.dark .strengthLabel [data-strength="strong"] {
+  color: oklch(72% 0.12 162);
+}
 
 /* ─── Password match status ──────────────────────────────────────────────── */
 .matchStatus {
@@ -616,10 +628,18 @@
   font-size: var(--ds-text-xs);
   margin: var(--ds-space-1) 0 0;
 }
-.matchOk   { color: oklch(48% 0.14 162); }
-.matchFail { color: oklch(50% 0.16 25); }
-.dark .matchOk   { color: oklch(72% 0.12 165); }
-.dark .matchFail { color: oklch(72% 0.13 25); }
+.matchOk {
+  color: oklch(48% 0.14 162);
+}
+.matchFail {
+  color: oklch(50% 0.16 25);
+}
+.dark .matchOk {
+  color: oklch(72% 0.12 165);
+}
+.dark .matchFail {
+  color: oklch(72% 0.13 25);
+}
 
 /* ─── Security tip ───────────────────────────────────────────────────────── */
 .tip {
@@ -655,5 +675,7 @@
   flex-shrink: 0;
 }
 @keyframes profile-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }

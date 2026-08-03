@@ -1,4 +1,4 @@
-import React, { type FC, type SelectHTMLAttributes } from 'react';
+import type { FC, SelectHTMLAttributes } from 'react';
 
 export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   className?: string;

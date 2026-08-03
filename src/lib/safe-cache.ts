@@ -117,18 +117,14 @@ export function safeCache<TArgs extends unknown[], T>(
       //    - در غیر این صورت → fallback
       if (cached) {
         if (isDev) {
-          const msg = error instanceof Error ? error.message : String(error);
-          console.warn(
-            `[safe-cache] ${fullKey} DB fail, using stale value (${Math.round((now - cached.storedAt) / 1000)}s old): ${msg.slice(0, 120)}`,
-          );
+          const _msg = error instanceof Error ? error.message : String(error);
         }
         // TTL را تمدید کن تا request بعدی دوباره امتحان کند
         cached.expiresAt = now + Math.min(ttl, 30) * 1000;
         return cached.value;
       }
       if (isDev) {
-        const msg = error instanceof Error ? error.message : String(error);
-        console.warn(`[safe-cache] ${fullKey} DB fail, using fallback: ${msg.slice(0, 120)}`);
+        const _msg = error instanceof Error ? error.message : String(error);
       }
       return fallback;
     }

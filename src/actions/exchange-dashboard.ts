@@ -281,7 +281,12 @@ export async function getExchangeDashboardData(
     ]),
     // 2) today's volume (primary currency)
     prisma.transaction.aggregate({
-      where: { exchangeId, currency: statsCurrency, status: 'COMPLETED', createdAt: { gte: today } },
+      where: {
+        exchangeId,
+        currency: statsCurrency,
+        status: 'COMPLETED',
+        createdAt: { gte: today },
+      },
       _sum: { amount: true },
     }),
     // 3) yesterday's volume (primary currency)
@@ -676,18 +681,8 @@ export async function getExchangeDashboardData(
   // توجه: yesterdayCount قبلاً از basicAggs استخراج شده (تعداد کل تراکنش‌های دیروز
   // برای محاسبهٔ KPI). اینجا فقط به volume تکمیلی نیاز داریم.
   const [, yesterdayVolumeAgg] = yesterdayAggs;
-  const [
-    thisWeekCount,
-    thisWeekVolumeAgg,
-    lastWeekCount,
-    lastWeekVolumeAgg,
-  ] = weekAggs;
-  const [
-    thisMonthCount,
-    thisMonthVolumeAgg,
-    lastMonthCount,
-    lastMonthVolumeAgg,
-  ] = monthAggs;
+  const [thisWeekCount, thisWeekVolumeAgg, lastWeekCount, lastWeekVolumeAgg] = weekAggs;
+  const [thisMonthCount, thisMonthVolumeAgg, lastMonthCount, lastMonthVolumeAgg] = monthAggs;
 
   const performance: PerformanceMetrics = {
     today: {

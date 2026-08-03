@@ -19,11 +19,7 @@
 
 import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { useCallback, useEffect, useState } from 'react';
-import {
-  HiOutlineArrowLeft,
-  HiOutlineXMark,
-  HiOutlineCheck,
-} from 'react-icons/hi2';
+import { HiOutlineArrowLeft, HiOutlineCheck, HiOutlineXMark } from 'react-icons/hi2';
 import s from './OnboardingCoachMarks.module.css';
 
 export interface OnboardingStep {
@@ -108,12 +104,7 @@ const OnboardingCoachMarks = ({ storageKey, steps, skipIfAlreadySeen = true }: P
                 />
               ))}
             </div>
-            <button
-              type="button"
-              className={s.close}
-              onClick={dismiss}
-              aria-label="بستن راهنما"
-            >
+            <button type="button" className={s.close} onClick={dismiss} aria-label="بستن راهنما">
               <HiOutlineXMark size={14} aria-hidden />
             </button>
           </div>
@@ -135,19 +126,11 @@ const OnboardingCoachMarks = ({ storageKey, steps, skipIfAlreadySeen = true }: P
 
           {/* Actions */}
           <div className={s.actions}>
-            <button
-              type="button"
-              className={s.btnSecondary}
-              onClick={dismiss}
-            >
+            <button type="button" className={s.btnSecondary} onClick={dismiss}>
               رد کردن
             </button>
             {index > 0 && (
-              <button
-                type="button"
-                className={s.btnSecondary}
-                onClick={goBack}
-              >
+              <button type="button" className={s.btnSecondary} onClick={goBack}>
                 قبلی
               </button>
             )}

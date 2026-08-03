@@ -20,6 +20,10 @@
 
 'use client';
 
+import type { CustomerRow } from '@/actions/exchange-customers';
+import type { TransactionRow } from '@/actions/exchange-transactions';
+import { TX_KIND_FA, TX_STATUS_FA } from '@/lib/exchange-labels';
+import { faNum, formatAmount, formatAmountShort } from '@/lib/exchange-tx-formatters';
 import {
   ArrowLeftRight,
   CalendarDays,
@@ -41,11 +45,7 @@ import {
   WalletCards,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useState, type ReactNode } from 'react';
-import type { CustomerRow } from '@/actions/exchange-customers';
-import { type TransactionRow } from '@/actions/exchange-transactions';
-import { TX_KIND_FA, TX_STATUS_FA } from '@/lib/exchange-labels';
-import { faNum, formatAmount, formatAmountShort } from '@/lib/exchange-tx-formatters';
+import { type ReactNode, useState } from 'react';
 import s from './TransactionDetailView.module.css';
 
 const KIND_ICON: Record<string, LucideIcon> = {
@@ -143,11 +143,7 @@ export function TransactionDetailView({
           )}
         </div>
         <div className={s.heroMeta}>
-          <time
-            className={s.heroTime}
-            dateTime={transaction.createdAt}
-            suppressHydrationWarning
-          >
+          <time className={s.heroTime} dateTime={transaction.createdAt} suppressHydrationWarning>
             {new Date(transaction.createdAt).toLocaleString('fa-IR', {
               year: 'numeric',
               month: 'long',
@@ -206,20 +202,14 @@ export function TransactionDetailView({
                   icon={Phone}
                   label="تماس"
                   value={
-                    customer?.phone ?? transaction.customer?.phone ? (
-                      <span dir="ltr">
-                        {customer?.phone ?? transaction.customer?.phone}
-                      </span>
+                    (customer?.phone ?? transaction.customer?.phone) ? (
+                      <span dir="ltr">{customer?.phone ?? transaction.customer?.phone}</span>
                     ) : (
                       '—'
                     )
                   }
                 />
-                <DetailItem
-                  icon={CreditCard}
-                  label="ارز"
-                  value={transaction.currency}
-                />
+                <DetailItem icon={CreditCard} label="ارز" value={transaction.currency} />
                 <DetailItem
                   icon={Coins}
                   label="کارمزد"
@@ -233,19 +223,11 @@ export function TransactionDetailView({
                   <DetailItem
                     icon={ArrowLeftRight}
                     label="نرخ تبدیل"
-                    value={
-                      <span dir="ltr">
-                        {faNum(transaction.rate)}
-                      </span>
-                    }
+                    value={<span dir="ltr">{faNum(transaction.rate)}</span>}
                   />
                 )}
                 {transaction.counterparty && (
-                  <DetailItem
-                    icon={MapPin}
-                    label="طرف حساب"
-                    value={transaction.counterparty}
-                  />
+                  <DetailItem icon={MapPin} label="طرف حساب" value={transaction.counterparty} />
                 )}
                 <DetailItem
                   icon={CalendarDays}
@@ -312,11 +294,7 @@ export function TransactionDetailView({
                     }
                   />
                 )}
-                <DetailItem
-                  icon={MapPin}
-                  label="صرافی"
-                  value={exchangeName}
-                />
+                <DetailItem icon={MapPin} label="صرافی" value={exchangeName} />
               </div>
             )}
           </div>

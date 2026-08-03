@@ -5,8 +5,8 @@
  * محتوای تعاملی (tab switcher) در ReportsShell (client) است.
  */
 import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import ReportsShell from './_components/ReportsShell';
 
 export const dynamic = 'force-dynamic';

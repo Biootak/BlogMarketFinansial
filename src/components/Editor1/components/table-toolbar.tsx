@@ -15,7 +15,6 @@ import { BubbleMenu } from '@tiptap/react/menus';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '../../ui/icon';
-import { hexToRgba } from '../constants/color';
 import { CellColorPicker } from './cell-color-picker';
 
 interface TableToolbarProps {

@@ -1,11 +1,11 @@
-import { type Metadata } from 'next';
-import { notFound, redirect } from 'next/navigation';
-import { auth } from '@/auth';
+import { getCustomers } from '@/actions/exchange-customers';
 import { getExchangeTransactionById } from '@/actions/exchange-transactions';
 import { getExchangeForUser } from '@/actions/exchanges';
-import { TransactionDetailView } from './_components/TransactionDetailView';
-import { getCustomers } from '@/actions/exchange-customers';
+import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
+import type { Metadata } from 'next';
+import { notFound, redirect } from 'next/navigation';
+import { TransactionDetailView } from './_components/TransactionDetailView';
 import s from './page.module.css';
 
 export const dynamic = 'force-dynamic';

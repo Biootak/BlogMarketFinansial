@@ -48,7 +48,6 @@ import {
   HiOutlineMagnifyingGlass,
   HiOutlineMegaphone,
   HiOutlinePencilSquare,
-  HiOutlineSparkles,
   HiOutlineSquares2X2,
   HiOutlineUserCircle,
   HiOutlineUsers,

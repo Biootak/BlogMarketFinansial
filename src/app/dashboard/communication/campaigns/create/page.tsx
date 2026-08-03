@@ -1,6 +1,6 @@
-import { redirect } from 'next/navigation';
-import { auth } from '@/auth';
 import { NewCampaignForm } from '@/app/dashboard/communication/campaigns/new/_components/NewCampaignForm';
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,11 +23,5 @@ export default async function CreateCampaignPage({
     redirect('/dashboard?error=forbidden');
   }
 
-  return (
-    <NewCampaignForm
-      initialAudience={audience ?? null}
-      entityLabel="کمپین"
-      campaignMode
-    />
-  );
+  return <NewCampaignForm initialAudience={audience ?? null} entityLabel="کمپین" campaignMode />;
 }

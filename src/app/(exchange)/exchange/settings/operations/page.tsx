@@ -11,9 +11,9 @@
  *   - شماره مجوز
  */
 
+import { getExchangeForUser } from '@/actions/exchanges';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { getExchangeForUser, updateExchangeSelf } from '@/actions/exchanges';
 import OperationsWorkspace from './_components/OperationsWorkspace';
 
 export const metadata = { title: 'عملیات و کارمزد | تنظیمات' };

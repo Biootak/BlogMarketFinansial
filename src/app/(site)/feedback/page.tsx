@@ -28,8 +28,8 @@ export default async function FeedbackPage() {
           <span className={s.eyebrow}>نظر شما ارزشمند است</span>
           <h1 className={s.title}>بازخورد شما</h1>
           <p className={s.sub}>
-            نظر، پیشنهاد یا مشکلی که با {siteName} داشته‌اید را با ما در میان بگذارید.
-            پاسخگویی در کمتر از ۳۰ دقیقه.
+            نظر، پیشنهاد یا مشکلی که با {siteName} داشته‌اید را با ما در میان بگذارید. پاسخگویی در
+            کمتر از ۳۰ دقیقه.
           </p>
         </header>
         <FeedbackForm />

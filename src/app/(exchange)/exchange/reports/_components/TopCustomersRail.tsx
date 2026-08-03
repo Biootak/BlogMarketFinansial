@@ -48,14 +48,8 @@ export default function TopCustomersRail({ customers }: Props) {
           const ratio = (c.totalVolume / maxVol) * 100;
           const initial = c.name.charAt(0).toUpperCase();
           return (
-            <li
-              key={c.id}
-              className={s.row}
-              style={{ '--i': i } as React.CSSProperties}
-            >
-              <span className={s.rank}>
-                {new Intl.NumberFormat('fa-IR').format(i + 1)}
-              </span>
+            <li key={c.id} className={s.row} style={{ '--i': i } as React.CSSProperties}>
+              <span className={s.rank}>{new Intl.NumberFormat('fa-IR').format(i + 1)}</span>
               <span className={s.avatar} aria-hidden>
                 {initial || <UserCircle2 size={12} />}
               </span>
@@ -63,15 +57,11 @@ export default function TopCustomersRail({ customers }: Props) {
                 <div className={s.bodyHead}>
                   <span className={s.name}>{c.name}</span>
                   <span className={s.volume}>
-                    {fmtCompact(c.totalVolume)}{' '}
-                    <em className={s.volumeCurrency}>{c.currency}</em>
+                    {fmtCompact(c.totalVolume)} <em className={s.volumeCurrency}>{c.currency}</em>
                   </span>
                 </div>
                 <div className={s.barTrack} aria-hidden>
-                  <span
-                    className={s.barFill}
-                    style={{ width: `${Math.max(2, ratio)}%` }}
-                  />
+                  <span className={s.barFill} style={{ width: `${Math.max(2, ratio)}%` }} />
                 </div>
                 <div className={s.bodyFoot}>
                   <span className={s.dealCount}>

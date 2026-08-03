@@ -15,7 +15,7 @@
 
 import prisma from '@/lib/db';
 import { checkRateLimit } from '@/lib/rate-limiter';
-import { requireAdmin, requireUser } from '@/lib/require-auth';
+import { requireAdmin } from '@/lib/require-auth';
 import { revalidatePath, revalidateTag } from '@/lib/revalidate';
 import type { FintechActionResult } from '@/types/types';
 import { CreditRateType } from '@prisma/client';

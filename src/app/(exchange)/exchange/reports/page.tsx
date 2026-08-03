@@ -42,7 +42,7 @@ export default async function ExchangeReportsPage() {
           name: c.fullName,
           dealCount: c.dealCount,
           totalVolume: c.totalVolume,
-          currency: reportResult.data!.pnlByCurrency[0]?.currency ?? 'AFN',
+          currency: reportResult.data?.pnlByCurrency[0]?.currency ?? 'AFN',
         })),
         dailySummary: reportResult.data.dailySummary,
       }

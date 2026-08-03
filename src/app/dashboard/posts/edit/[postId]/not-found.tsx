@@ -4,7 +4,7 @@
  * (به‌جای ارث‌بری از /dashboard/not-found که generic است).
  */
 
-import { FileX2, ListChecks, Plus, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, FileX2, ListChecks, Plus } from 'lucide-react';
 import Link from 'next/link';
 import s from './not-found.module.css';
 
@@ -27,8 +27,8 @@ export default function PostEditNotFound() {
         <h1 className={s.title}>این پست دیگر در دسترس نیست</h1>
 
         <p className={s.sub}>
-          پستی که می‌خواستید ویرایش کنید حذف شده، منتقل شده یا هرگز ایجاد نشده است.
-          می‌توانید به فهرست پست‌ها بازگردید یا پست جدیدی بسازید.
+          پستی که می‌خواستید ویرایش کنید حذف شده، منتقل شده یا هرگز ایجاد نشده است. می‌توانید به فهرست
+          پست‌ها بازگردید یا پست جدیدی بسازید.
         </p>
 
         <div className={s.cta}>

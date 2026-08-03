@@ -152,11 +152,15 @@ export function useTransform<TIn, TOut>(
   mv: MotionValue<TIn>,
   transform: (value: TIn) => TOut,
 ): MotionValue<TOut> {
+  // Run once on mount only — the motion-shim MotionValue is static (no live
+  // subscriptions), so re-running on every render is wasteful. Adding the
+  // dependency array prevents a rAF being scheduled on every parent re-render.
   const out = React.useMemo(() => createMotionValue<TOut>(transform(mv.get())), [mv, transform]);
   React.useEffect(() => {
     const id = requestAnimationFrame(() => out.set(transform(mv.get())));
     return () => cancelAnimationFrame(id);
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mv, transform, out]);
   return out;
 }
 

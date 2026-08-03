@@ -1,16 +1,10 @@
 'use client';
 
-import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { useMemo } from 'react';
 import s from './PlatformHub.module.css';
 
-export type ChannelRingTone =
-  | 'emerald'
-  | 'indigo'
-  | 'amber'
-  | 'rose'
-  | 'cyan'
-  | 'violet';
+export type ChannelRingTone = 'emerald' | 'indigo' | 'amber' | 'rose' | 'cyan' | 'violet';
 
 export type ChannelRingSegment = {
   id: string;
@@ -44,8 +38,11 @@ export function ChannelRing({
   centerLabel,
   centerValue,
 }: ChannelRingProps) {
-  const { r, c, total, arcs } = useMemo(() => {
-    const total = Math.max(segments.reduce((sum, x) => sum + x.value, 0), 1);
+  const { c, r, arcs } = useMemo(() => {
+    const total = Math.max(
+      segments.reduce((sum, x) => sum + x.value, 0),
+      1,
+    );
     const c = size / 2;
     const r = (size - thickness) / 2;
     let acc = 0;
@@ -77,11 +74,11 @@ export function ChannelRing({
           strokeWidth={thickness}
         />
         {arcs.map(({ seg, start, end }) => {
-          const large = end - start > Math.PI ? 1 : 0;
-          const x1 = c + r * Math.cos(start);
-          const y1 = c + r * Math.sin(start);
-          const x2 = c + r * Math.cos(end);
-          const y2 = c + r * Math.sin(end);
+          const _large = end - start > Math.PI ? 1 : 0;
+          const _x1 = c + r * Math.cos(start);
+          const _y1 = c + r * Math.sin(start);
+          const _x2 = c + r * Math.cos(end);
+          const _y2 = c + r * Math.sin(end);
           return (
             <circle
               key={seg.id}

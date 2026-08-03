@@ -17,7 +17,5 @@ export async function logActivity(action: string, details: string) {
         details,
       },
     });
-  } catch (error) {
-    console.error('Error logging activity:', error);
-  }
+  } catch (_error) {}
 }

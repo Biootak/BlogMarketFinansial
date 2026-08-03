@@ -4,12 +4,8 @@
  * همه توابع pure هستند — بدون DB، بدون mock.
  */
 
+import { applyMargin, getMarginPresets, getMarginSuggestion } from '@/lib/pricing/margin';
 import { describe, expect, it } from 'vitest';
-import {
-  applyMargin,
-  getMarginPresets,
-  getMarginSuggestion,
-} from '@/lib/pricing/margin';
 
 // ─── getMarginPresets ─────────────────────────────────────────────────────────
 

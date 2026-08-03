@@ -2,7 +2,7 @@
 
 import PostCardCommentBtn from '@/components/PostCardCommentBtn/PostCardCommentBtn';
 import Tag from '@/components/Tag/Tag';
-import type { Advertisement, PostWithRelations } from '@/types/types';
+import type { PostWithRelations } from '@/types/types';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { HiArrowUp, HiChatBubbleLeftRight, HiHashtag } from 'react-icons/hi2';
 import SingleAuthor from './SingleAuthor';
@@ -16,7 +16,6 @@ import { HiShare } from 'react-icons/hi2';
 interface SingleContentClientProps {
   post: PostWithRelations;
   commentCount: number;
-  inContentAd?: Advertisement | null;
   /**
    * Server-rendered article body. Passing the body through the RSC children
    * slot keeps the TipTap/markdown rendering pipeline on the server — it is
@@ -25,12 +24,7 @@ interface SingleContentClientProps {
   children: React.ReactNode;
 }
 
-const SingleContentClient = ({
-  post,
-  commentCount,
-  inContentAd,
-  children,
-}: SingleContentClientProps) => {
+const SingleContentClient = ({ post, commentCount, children }: SingleContentClientProps) => {
   // ساخت URL کامل پست
   const getFullUrl = useCallback(() => {
     const postLink = getPostLink(post.postType, post.slug);
@@ -201,9 +195,7 @@ const SingleContentClient = ({
 
       {/* Floating Action Bar */}
       <div
-        className={`sticky mt-8 bottom-6 z-40 justify-center ${
-          showStickyBar ? 'flex' : 'hidden'
-        }`}
+        className={`sticky mt-8 bottom-6 z-40 justify-center ${showStickyBar ? 'flex' : 'hidden'}`}
       >
         <div className="relative overflow-hidden bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.4)] rounded-2xl border border-neutral-200/50 dark:border-neutral-700/50 p-2 flex items-center justify-center gap-1.5">
           {/* Gradient Accent */}

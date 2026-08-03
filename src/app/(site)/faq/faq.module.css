@@ -99,7 +99,8 @@
   background: var(--ds-brand-500);
   color: var(--ds-brand-on);
   border-color: color-mix(in oklch, var(--ds-brand-500) 60%, white);
-  box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.16), 0 6px 20px -8px oklch(from var(--ds-brand-500) l c h / 0.4);
+  box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.16), 0 6px 20px -8px
+    oklch(from var(--ds-brand-500) l c h / 0.4);
 }
 
 .chipActive:hover {
@@ -183,8 +184,8 @@
   padding: 6px 8px;
   border-radius: var(--ds-radius-sm);
   cursor: pointer;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast);
   text-align: start;
   text-decoration: none;
 }
@@ -249,8 +250,8 @@
   background: var(--ds-surface);
   backdrop-filter: blur(12px);
   margin-bottom: var(--ds-space-3);
-  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-base) var(--ds-ease-out-quart);
   overflow: hidden;
 }
 
@@ -260,7 +261,8 @@
 
 .itemOpen {
   border-color: var(--ds-brand-300);
-  box-shadow: 0 0 0 1px var(--ds-brand-200), 0 8px 24px -12px oklch(from var(--ds-brand-500) l c h / 0.2);
+  box-shadow: 0 0 0 1px var(--ds-brand-200), 0 8px 24px -12px
+    oklch(from var(--ds-brand-500) l c h / 0.2);
 }
 
 .itemButton {
@@ -421,8 +423,8 @@
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
   text-decoration: none;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
   white-space: nowrap;
 }
 

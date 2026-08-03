@@ -3,7 +3,7 @@ import Avatar from '@/components/Avatar/Avatar';
 import NcImage from '@/components/NcImage/NcImage';
 import { heading, radius, text } from '@/lib/design-tokens';
 import Link from 'next/link';
-import React, { type FC } from 'react';
+import type { FC } from 'react';
 import { HiArrowRight } from 'react-icons/hi2';
 
 export interface CardAuthorBox2Props {

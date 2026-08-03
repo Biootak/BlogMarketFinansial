@@ -1,7 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { toPersianDigits } from '@/lib/setup/format';
+import Link from 'next/link';
 import s from '../jobs.module.css';
 
 export interface QueueHealthDisplay {
@@ -56,9 +56,7 @@ export function JobQueueMatrix({ queues }: JobQueueMatrixProps) {
           <span className={s.cardEyebrow}>Queue Matrix</span>
           <span className={s.cardTitle}>سلامت صف‌ها</span>
         </div>
-        <span className={s.streamCount}>
-          {toPersianDigits(queues.length)} صف
-        </span>
+        <span className={s.streamCount}>{toPersianDigits(queues.length)} صف</span>
       </div>
       <div className={s.cardBody}>
         <ul className={s.matrixList}>
@@ -89,12 +87,8 @@ export function JobQueueMatrix({ queues }: JobQueueMatrixProps) {
                     </span>
                   </div>
                   <div className={s.matrixBadges}>
-                    <span className={s.matrixBadge}>
-                      در انتظار {toPersianDigits(q.pending)}
-                    </span>
-                    <span className={s.matrixBadge}>
-                      تکمیل {toPersianDigits(q.completed24h)}
-                    </span>
+                    <span className={s.matrixBadge}>در انتظار {toPersianDigits(q.pending)}</span>
+                    <span className={s.matrixBadge}>تکمیل {toPersianDigits(q.completed24h)}</span>
                     {q.failed24h > 0 ? (
                       <span className={`${s.matrixBadge} ${s['matrixBadge--failed']}`}>
                         خطا {toPersianDigits(q.failed24h)}

@@ -2,7 +2,7 @@
 
 import type { NodeViewProps } from '@tiptap/core';
 import { NodeViewContent, NodeViewWrapper } from '@tiptap/react';
-import { ChevronDown, ChevronLeft } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import type React from 'react';
 import { useCallback } from 'react';
 

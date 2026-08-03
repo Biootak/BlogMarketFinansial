@@ -29,10 +29,10 @@ interface Props {
 
 const TONE_CLASS: Record<SwitchboardItem['tone'], string> = {
   emerald: s.swNodeEmerald!,
-  amber:   s.swNodeAmber!,
-  rose:    s.swNodeRose!,
-  slate:   s.swNodeSlate!,
-  mixed:   s.swNodeMixed!,
+  amber: s.swNodeAmber!,
+  rose: s.swNodeRose!,
+  slate: s.swNodeSlate!,
+  mixed: s.swNodeMixed!,
 };
 
 export default function SwitchboardFilter({ items, active, onChange }: Props) {
@@ -46,11 +46,9 @@ export default function SwitchboardFilter({ items, active, onChange }: Props) {
           <button
             key={it.id}
             type="button"
-            className={[
-              s.swNode,
-              TONE_CLASS[it.tone],
-              isActive ? s.isActive : '',
-            ].filter(Boolean).join(' ')}
+            className={[s.swNode, TONE_CLASS[it.tone], isActive ? s.isActive : '']
+              .filter(Boolean)
+              .join(' ')}
             onClick={() => onChange(it.id)}
             aria-pressed={isActive}
             aria-label={`${it.label} — ${it.count} مورد`}

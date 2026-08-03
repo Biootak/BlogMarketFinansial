@@ -1,11 +1,11 @@
 'use client';
 
+import { UserIcon } from '@/components/Icons';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { UserIcon } from '@/components/Icons';
 import type { ReactNode } from 'react';
 
 interface ClientSideDropdownProps {

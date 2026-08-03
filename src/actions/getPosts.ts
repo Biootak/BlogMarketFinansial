@@ -8,6 +8,8 @@ import type { PostWithRelations } from '@/types/types';
 // unstable_cache has no error handling — a DB error crashes the gallery page.
 // safeCache returns stale data or the empty fallback instead.
 async function fetchPosts(limit: number): Promise<PostWithRelations[]> {
+  // 2026-08-perf: select فقط فیلدهای لازم — RSC payload کوچک‌تر
+  // قبلاً: author.profile همه فیلدها، categories همه، tags همه
   const posts = await prisma.post.findMany({
     take: limit,
     where: { status: 'PUBLISHED', postType: 'GALLERY' },
@@ -15,16 +17,26 @@ async function fetchPosts(limit: number): Promise<PostWithRelations[]> {
     omit: { content: true },
     include: {
       author: {
-        include: { profile: true },
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          profile: {
+            select: { avatar: true, jobName: true },
+          },
+        },
       },
-      categories: true,
-      tags: true,
+      categories: {
+        select: { id: true, name: true, slug: true },
+      },
+      tags: {
+        select: { id: true, name: true, slug: true },
+        take: 5, // حداکثر ۵ تگ — بیشتر در کارت نمایش نمی‌شود
+      },
       _count: {
         select: {
           comments: true,
           likes: true,
-          savedBy: true,
-          tags: true,
         },
       },
     },

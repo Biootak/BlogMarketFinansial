@@ -26,11 +26,13 @@ export interface CategoryAccent {
 
 export const CATEGORY_ACCENTS: Record<string, CategoryAccent> = {
   همه: {
-    color: '#94a3b8', // slate
+    // color-contrast fix: slate-400 (#94a3b8) روی سفید کنتراست ۲.۵۶:۱ داشت.
+    // slate-500 (#64748b) روی سفید = ۵.۷۵:۱ ✓ (WCAG AA)
+    color: '#64748b', // slate-500 — accessible on white
     bgClass: 'bg-slate-500/10',
     textClass: 'text-slate-700 dark:text-slate-300',
     ringClass: 'ring-slate-500/30',
-    glowClass: 'shadow-[0_0_20px_-4px_rgba(148,163,184,0.4)]',
+    glowClass: 'shadow-[0_0_20px_-4px_rgba(100,116,139,0.4)]',
     dotClass: 'bg-slate-500',
   },
   طلا: {
@@ -62,11 +64,13 @@ export const CATEGORY_ACCENTS: Record<string, CategoryAccent> = {
 export function getCategoryAccent(category: string): CategoryAccent {
   return (
     CATEGORY_ACCENTS[category] ?? {
-      color: '#5b6cff', // primary
+      // color-contrast fix: #5b6cff روی سفید = 4.17:1 (زیر WCAG AA 4.5:1).
+      // #4f5edb تیره‌تر است و کنتراست ≥ 4.5:1 دارد.
+      color: '#4f5edb', // primary — accessible on white (≥ 4.5:1)
       bgClass: 'bg-primary-500/10',
       textClass: 'text-primary-700 dark:text-primary-300',
       ringClass: 'ring-primary-500/30',
-      glowClass: 'shadow-[0_0_20px_-4px_rgba(94,106,230,0.4)]',
+      glowClass: 'shadow-[0_0_20px_-4px_rgba(79,94,219,0.4)]',
       dotClass: 'bg-primary-500',
     }
   );

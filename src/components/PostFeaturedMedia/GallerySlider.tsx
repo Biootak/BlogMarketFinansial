@@ -130,17 +130,20 @@ export default function GallerySlider({
           </div>
         )}
 
-        <div className="flex items-center justify-center absolute bottom-2 start-1/2 transform -translate-x-1/2 gap-1.5">
+        {/* دکمه‌های navigation گالری — حداقل اندازه touch target: 44×44px
+            (WCAG 2.5.8: ۲۴px محدوده تماس با ۱۰px فاصله یا ۴۴px محدوده عملکردی) */}
+        <div className="flex items-center justify-center absolute bottom-2 start-1/2 transform -translate-x-1/2 gap-0.5">
           {images.map((_, i) => (
             <button
               type="button"
-              className={`min-h-[24px] min-w-[24px] inline-flex items-center justify-center rounded-full ${i === index ? '' : ''}`}
+              className={`h-[44px] w-[44px] inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 ${i === index ? '' : ''}`}
               onClick={() => changePhotoId(i)}
               key={i}
               aria-label={`رفتن به تصویر ${i + 1}`}
+              aria-current={i === index ? 'true' : undefined}
             >
               <span
-                aria-hidden
+                aria-hidden="true"
                 className={`w-1.5 h-1.5 rounded-full ${i === index ? 'bg-white' : 'bg-white/60'}`}
               />
             </button>

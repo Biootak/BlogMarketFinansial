@@ -6,9 +6,9 @@
  * همه‌چیز از token می‌آید.
  */
 
-import s from './ExchangeDashboard.module.css';
-import { TX_KIND_FA, TX_KIND_COLOR } from '@/lib/exchange-labels';
 import type { KindMix } from '@/actions/exchange-dashboard';
+import { TX_KIND_COLOR, TX_KIND_FA } from '@/lib/exchange-labels';
+import s from './ExchangeDashboard.module.css';
 
 function buildConicStops(items: { share: number; kind: string }[]): string {
   // آیتم‌ها به ترتیب داده شده، share مجموع = 1 (normalize می‌کنیم)
@@ -31,16 +31,16 @@ function buildConicStops(items: { share: number; kind: string }[]): string {
 }
 
 function formatPercent(share: number): string {
-  return new Intl.NumberFormat('fa-IR', { style: 'percent', maximumFractionDigits: 0 }).format(share);
+  return new Intl.NumberFormat('fa-IR', { style: 'percent', maximumFractionDigits: 0 }).format(
+    share,
+  );
 }
 
 export default function ExchangeTransactionMix({ items }: { items: KindMix[] }) {
   const total = items.reduce((sum, it) => sum + it.count, 0);
 
   if (total === 0) {
-    return (
-      <div className={s.flowEmpty}>در ۳۰ روز اخیر تراکنشی ثبت نشده است.</div>
-    );
+    return <div className={s.flowEmpty}>در ۳۰ روز اخیر تراکنشی ثبت نشده است.</div>;
   }
 
   const conicStops = buildConicStops(items);
@@ -64,7 +64,8 @@ export default function ExchangeTransactionMix({ items }: { items: KindMix[] }) 
         {items
           .sort((a, b) => b.count - a.count)
           .map((it) => {
-            const color = TX_KIND_COLOR[it.kind as keyof typeof TX_KIND_COLOR] ?? 'var(--at-accent)';
+            const color =
+              TX_KIND_COLOR[it.kind as keyof typeof TX_KIND_COLOR] ?? 'var(--at-accent)';
             return (
               <div key={it.kind} className={s.mixRow}>
                 <span className={s.mixSwatch} style={{ background: color }} aria-hidden />

@@ -21,7 +21,7 @@
 import { signIn, signOut } from '@/auth';
 import prisma from '@/lib/db';
 import { getEmailProviderAsync } from '@/lib/email';
-import { otpEmail, otpExpiresLabel, type OtpEmailIntent } from '@/lib/email/templates';
+import { type OtpEmailIntent, otpEmail, otpExpiresLabel } from '@/lib/email/templates';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { serverLog } from '@/lib/server-logger';
 import {

@@ -1,5 +1,5 @@
 import twFocusClass from '@/utils/twFocusClass';
-import React, { type ButtonHTMLAttributes, type FC } from 'react';
+import type { ButtonHTMLAttributes, FC } from 'react';
 import { HiChevronRight } from 'react-icons/hi2';
 
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {}

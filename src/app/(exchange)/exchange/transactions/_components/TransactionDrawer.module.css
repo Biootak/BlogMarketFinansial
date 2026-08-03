@@ -24,9 +24,16 @@
 }
 
 @keyframes errorShake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
 }
 
 /* ── Input base (بازنویسی FormField برای هماهنگی) ──────────────────────── */
@@ -90,11 +97,8 @@ select.input {
   color: var(--ds-text-muted);
   cursor: pointer;
   white-space: nowrap;
-  transition:
-    background 160ms var(--ds-ease-out-quart),
-    color 160ms var(--ds-ease-out-quart),
-    border-color 160ms var(--ds-ease-out-quart),
-    transform 120ms var(--ds-ease-spring);
+  transition: background 160ms var(--ds-ease-out-quart), color 160ms var(--ds-ease-out-quart),
+    border-color 160ms var(--ds-ease-out-quart), transform 120ms var(--ds-ease-spring);
 }
 
 .kindPill:hover {
@@ -106,7 +110,7 @@ select.input {
   transform: scale(0.97);
 }
 
-.kindPill[data-active='true'] {
+.kindPill[data-active="true"] {
   background: var(--ds-brand-500);
   color: var(--ds-canvas);
   border-color: var(--ds-brand-500);
@@ -237,7 +241,8 @@ select.input {
 }
 
 @keyframes livePulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.4;
     box-shadow: 0 0 0 0 color-mix(in oklch, var(--nova-up) 50%, transparent);
   }
@@ -324,9 +329,7 @@ select.input {
   border-radius: var(--ds-radius-md);
   cursor: pointer;
   flex-shrink: 0;
-  transition:
-    background 160ms var(--ds-ease-out-quart),
-    transform 120ms var(--ds-ease-spring),
+  transition: background 160ms var(--ds-ease-out-quart), transform 120ms var(--ds-ease-spring),
     box-shadow 160ms var(--ds-ease-out-quart);
   box-shadow: 0 4px 12px -4px color-mix(in oklch, var(--ds-brand-500) 40%, transparent);
 }
@@ -346,7 +349,7 @@ select.input {
   box-shadow: none;
 }
 
-.submitBtn[data-busy='true'] {
+.submitBtn[data-busy="true"] {
   cursor: wait;
 }
 

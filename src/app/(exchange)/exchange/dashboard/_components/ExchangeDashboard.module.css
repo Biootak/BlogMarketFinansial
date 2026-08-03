@@ -40,9 +40,11 @@
   content: "";
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 60% 100% at 100% 0%, var(--at-accent-soft) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 60% at 0% 100%, var(--at-gold-soft) 0%, transparent 70%);
+  background: radial-gradient(
+      ellipse 60% 100% at 100% 0%,
+      var(--at-accent-soft) 0%,
+      transparent 60%
+    ), radial-gradient(ellipse 40% 60% at 0% 100%, var(--at-gold-soft) 0%, transparent 70%);
   opacity: 0.55;
   pointer-events: none;
   z-index: 0;
@@ -195,8 +197,8 @@
   background: var(--at-bg);
   border: 1px solid var(--at-line);
   border-radius: var(--at-radius-lg);
-  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
   text-decoration: none;
   color: inherit;
   min-height: 92px;
@@ -459,12 +461,7 @@
 .flowBar {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    90deg,
-    var(--at-accent) 0%,
-    var(--at-accent) 60%,
-    var(--at-gold) 100%
-  );
+  background: linear-gradient(90deg, var(--at-accent) 0%, var(--at-accent) 60%, var(--at-gold) 100%);
   border-radius: 4px;
   transform-origin: right center;
   animation: flowGrow 600ms var(--ds-ease-out-quart) both;
@@ -540,11 +537,7 @@
   filter: brightness(1.06);
 }
 .weekBar[data-today="true"] {
-  background: linear-gradient(
-    180deg,
-    var(--at-gold) 0%,
-    var(--at-warning) 100%
-  );
+  background: linear-gradient(180deg, var(--at-gold) 0%, var(--at-warning) 100%);
   box-shadow: 0 0 0 1px var(--at-warning);
 }
 .weekBar[data-zero="true"] {
@@ -1550,12 +1543,7 @@
     display: block;
     width: 1px;
     align-self: stretch;
-    background: linear-gradient(
-      to bottom,
-      transparent,
-      var(--at-line),
-      transparent
-    );
+    background: linear-gradient(to bottom, transparent, var(--at-line), transparent);
   }
 }
 
@@ -1683,7 +1671,11 @@
   background: linear-gradient(135deg, var(--at-bg) 0%, oklch(97% 0.04 250) 200%);
 }
 .insightItem[data-accent="violet"] {
-  background: linear-gradient(135deg, var(--at-bg) 0%, var(--at-violet-soft, var(--at-surface-hover)) 200%);
+  background: linear-gradient(
+    135deg,
+    var(--at-bg) 0%,
+    var(--at-violet-soft, var(--at-surface-hover)) 200%
+  );
 }
 .insightIcon {
   display: inline-flex;
@@ -1852,11 +1844,7 @@
   inset-block: var(--ds-space-3);
   inset-inline-start: 0;
   width: 3px;
-  background: linear-gradient(
-    to bottom,
-    var(--at-accent),
-    var(--at-gold)
-  );
+  background: linear-gradient(to bottom, var(--at-accent), var(--at-gold));
   border-radius: 0 2px 2px 0;
   opacity: 0.6;
   transition: opacity var(--ds-duration-fast) var(--ds-ease-out-quart);
@@ -1952,7 +1940,7 @@
   background: oklch(88% 0.07 162);
 }
 .heatScaleBar span[data-step="3"] {
-  background: oklch(78% 0.10 162);
+  background: oklch(78% 0.1 162);
 }
 .heatScaleBar span[data-step="4"] {
   background: oklch(68% 0.13 162);
@@ -2022,7 +2010,7 @@
   background: oklch(88% 0.07 162);
 }
 .heatCell[data-step="3"] {
-  background: oklch(78% 0.10 162);
+  background: oklch(78% 0.1 162);
   color: var(--at-fg);
 }
 .heatCell[data-step="4"] {

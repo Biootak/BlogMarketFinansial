@@ -32,14 +32,6 @@ export const MenuButtonImage: React.FC<MenuButtonImageProps> = ({ editor }) => {
       open();
       return;
     }
-    // Fallback: storage wasn't wired (older editor shell without the
-    // dialog mounted). Surface a console error so it's debuggable rather
-    // than failing silently.
-    // eslint-disable-next-line no-console
-    console.error(
-      'MenuButtonImage: editor.storage.slashCommands.openImageUpload is not wired. ' +
-        'Mount <ImageUploadDialog editor={editor} /> in the editor shell.',
-    );
   }, [editor]);
 
   return (

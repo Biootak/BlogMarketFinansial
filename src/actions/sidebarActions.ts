@@ -3,7 +3,7 @@
 import prisma from '@/lib/db';
 import { safeCache } from '@/lib/safe-cache';
 import { generateColor } from '@/lib/utils';
-import type { ActionResult, PostWithRelations, SidebarData, TaxonomyType } from '@/types/types';
+import type { PostWithRelations, SidebarData, TaxonomyType } from '@/types/types';
 import { type TopAuthor, getTopAuthors } from './getTopAuthors';
 
 // 2026-06-21: همه‌ی cached functions در این فایل از safeCache استفاده می‌کنند.

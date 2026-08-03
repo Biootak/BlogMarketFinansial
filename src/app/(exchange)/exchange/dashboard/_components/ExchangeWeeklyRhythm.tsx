@@ -5,8 +5,8 @@
  * امروز highlight متمایز (gold).
  */
 
-import s from './ExchangeDashboard.module.css';
 import type { DailyPoint } from '@/actions/exchange-dashboard';
+import s from './ExchangeDashboard.module.css';
 
 export default function ExchangeWeeklyRhythm({
   data,
@@ -47,7 +47,8 @@ export default function ExchangeWeeklyRhythm({
       </div>
       <div className={s.weekFooter}>
         <span>
-          جمع هفته: <strong dir="ltr">{new Intl.NumberFormat('fa-IR').format(totalCount)}</strong> تراکنش
+          جمع هفته: <strong dir="ltr">{new Intl.NumberFormat('fa-IR').format(totalCount)}</strong>{' '}
+          تراکنش
         </span>
         <span>
           اوج روز: <strong dir="ltr">{new Intl.NumberFormat('fa-IR').format(maxCount)}</strong>

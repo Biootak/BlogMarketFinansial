@@ -34,10 +34,9 @@ export const serverLog = {
    * @param error خطا یا context
    */
   error(module: string, action: string, error: unknown): void {
-    const tag = `[${module}] ${action}`;
+    const _tag = `[${module}] ${action}`;
 
     if (isDev) {
-      console.error(tag, error);
       return;
     }
 
@@ -54,8 +53,7 @@ export const serverLog = {
    * @param message پیام
    * @param context اطلاعات اضافه
    */
-  warn(module: string, message: string, context?: LogContext): void {
+  warn(_module: string, _message: string, _context?: LogContext): void {
     if (!isDev) return;
-    console.warn(`[${module}] ${message}`, context ?? '');
   },
 };

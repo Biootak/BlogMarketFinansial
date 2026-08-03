@@ -56,17 +56,12 @@
   background: var(--ds-surface);
   border: 1px solid var(--ds-border-subtle);
   border-radius: var(--ds-radius-lg);
-  transition: border-color var(--ds-duration-fast),
-    background var(--ds-duration-fast);
+  transition: border-color var(--ds-duration-fast), background var(--ds-duration-fast);
 }
 
 .itemActive {
   border-color: oklch(60% 0.12 165 / 0.4);
-  background: linear-gradient(
-    to bottom,
-    oklch(60% 0.12 165 / 0.025) 0%,
-    var(--ds-surface) 100%
-  );
+  background: linear-gradient(to bottom, oklch(60% 0.12 165 / 0.025) 0%, var(--ds-surface) 100%);
 }
 
 .itemInactive {
@@ -102,8 +97,7 @@
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: background var(--ds-duration-fast),
-    color var(--ds-duration-fast);
+  transition: background var(--ds-duration-fast), color var(--ds-duration-fast);
 }
 
 .orderBtn:hover:not(:disabled) {
@@ -142,9 +136,8 @@
   place-items: center;
   color: var(--ds-text-secondary);
   flex-shrink: 0;
-  transition: background var(--ds-duration-fast),
-    border-color var(--ds-duration-fast),
-    color var(--ds-duration-fast);
+  transition: background var(--ds-duration-fast), border-color var(--ds-duration-fast), color
+    var(--ds-duration-fast);
 }
 
 .itemActive .itemIcon {
@@ -210,12 +203,11 @@
   background: var(--ds-surface-recessed);
   border: 1px solid var(--ds-border-default);
   border-radius: 999px;
-  transition: background var(--ds-duration-fast),
-    border-color var(--ds-duration-fast);
+  transition: background var(--ds-duration-fast), border-color var(--ds-duration-fast);
 }
 
 .toggleSlider::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 1px;
   inset-inline-start: 1px;
@@ -223,8 +215,8 @@
   height: 16px;
   background: var(--ds-text-tertiary);
   border-radius: 50%;
-  transition: transform var(--ds-duration-fast) var(--ds-ease-spring),
-    background var(--ds-duration-fast);
+  transition: transform var(--ds-duration-fast) var(--ds-ease-spring), background
+    var(--ds-duration-fast);
 }
 
 .toggle input:checked + .toggleSlider {
@@ -300,8 +292,7 @@
   background: var(--ds-surface);
   border: 1px solid var(--ds-border-default);
   border-radius: var(--ds-radius-md);
-  transition: border-color var(--ds-duration-fast),
-    box-shadow var(--ds-duration-fast);
+  transition: border-color var(--ds-duration-fast), box-shadow var(--ds-duration-fast);
 }
 
 .textarea {
@@ -355,8 +346,7 @@
   border-radius: var(--ds-radius-md);
   cursor: pointer;
   min-width: 96px;
-  transition: border-color var(--ds-duration-fast),
-    box-shadow var(--ds-duration-fast);
+  transition: border-color var(--ds-duration-fast), box-shadow var(--ds-duration-fast);
 }
 
 .select:focus {

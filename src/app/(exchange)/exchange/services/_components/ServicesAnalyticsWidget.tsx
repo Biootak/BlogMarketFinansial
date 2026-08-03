@@ -12,6 +12,7 @@
  *  Pattern: Vercel Analytics card — minimal, dense, dark.
  */
 
+import { getServiceMeta } from '@/lib/exchange-services';
 import {
   BarChart3,
   ChevronLeft,
@@ -22,7 +23,6 @@ import {
   Users,
 } from 'lucide-react';
 import Link from 'next/link';
-import { getServiceMeta } from '@/lib/exchange-services';
 import s from './ServicesAnalyticsWidget.module.css';
 
 type ServiceCount = { serviceKey: string; serviceName: string; count: number };
@@ -77,24 +77,9 @@ export default function ServicesAnalyticsWidget({ summary, exchangeSlug }: Props
           value={totalClicks}
           accent="emerald"
         />
-        <Metric
-          icon={Users}
-          label="منبع: صفحه خدمات"
-          value={marketplaceClicks}
-          accent="violet"
-        />
-        <Metric
-          icon={TrendingUp}
-          label="منبع: مقایسه"
-          value={compareClicks}
-          accent="amber"
-        />
-        <Metric
-          icon={ExternalLink}
-          label="منبع: پروفایل"
-          value={profileClicks}
-          accent="cyan"
-        />
+        <Metric icon={Users} label="منبع: صفحه خدمات" value={marketplaceClicks} accent="violet" />
+        <Metric icon={TrendingUp} label="منبع: مقایسه" value={compareClicks} accent="amber" />
+        <Metric icon={ExternalLink} label="منبع: پروفایل" value={profileClicks} accent="cyan" />
       </div>
 
       {/* ── Trend sparkline ───────────────────────────── */}
@@ -108,15 +93,8 @@ export default function ServicesAnalyticsWidget({ summary, exchangeSlug }: Props
             {trend.map((d) => {
               const h = (d.count / maxTrend) * 100;
               return (
-                <div
-                  key={d.date}
-                  className={s.sparkCol}
-                  title={`${d.date}: ${d.count} کلیک`}
-                >
-                  <span
-                    className={s.sparkBar}
-                    style={{ height: `${Math.max(4, h)}%` }}
-                  />
+                <div key={d.date} className={s.sparkCol} title={`${d.date}: ${d.count} کلیک`}>
+                  <span className={s.sparkBar} style={{ height: `${Math.max(4, h)}%` }} />
                 </div>
               );
             })}
@@ -131,7 +109,7 @@ export default function ServicesAnalyticsWidget({ summary, exchangeSlug }: Props
             <MousePointerClick size={12} strokeWidth={1.9} aria-hidden />
             <span>پرکلیک‌ترین سرویس‌ها</span>
           </div>
-          <ul className={s.topList} role="list">
+          <ul className={s.topList}>
             {byService.slice(0, 3).map((svc, idx) => {
               const meta = getServiceMeta(svc.serviceKey);
               const Icon = meta?.icon;
@@ -178,9 +156,7 @@ function Metric({
       <span className={s.metricIcon} aria-hidden>
         <Icon size={14} strokeWidth={1.8} />
       </span>
-      <span className={s.metricValue}>
-        {new Intl.NumberFormat('fa-IR').format(value)}
-      </span>
+      <span className={s.metricValue}>{new Intl.NumberFormat('fa-IR').format(value)}</span>
       <span className={s.metricLabel}>{label}</span>
     </div>
   );

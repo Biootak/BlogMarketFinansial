@@ -423,6 +423,13 @@
   transition: background 150ms var(--ds-ease-out-quart);
 }
 
+@media (max-width: 560px) {
+  .payloadRow {
+    grid-template-columns: 1fr;
+    gap: var(--ds-space-1);
+  }
+}
+
 .payloadRow:last-child {
   border-block-end: none;
 }

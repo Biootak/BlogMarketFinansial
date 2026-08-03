@@ -15,10 +15,7 @@ export default async function DevicesPage() {
     redirect('/auth?callbackUrl=/dashboard/devices');
   }
 
-  const [devicesResult, logsResult] = await Promise.all([
-    getMyDevices(),
-    getSecurityAuditLogs(),
-  ]);
+  const [devicesResult, logsResult] = await Promise.all([getMyDevices(), getSecurityAuditLogs()]);
 
   const devices = devicesResult.success ? devicesResult.data : [];
   const logs = logsResult.success ? logsResult.data : [];
@@ -29,4 +26,3 @@ export default async function DevicesPage() {
     </div>
   );
 }
-

@@ -9,10 +9,10 @@ import type { MarketRateProvider, MarketRateUnit } from '@/lib/market-rates';
 import type { RateListData } from '@/types/types';
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
+import type { RateRowData } from './ExchangeRateRow';
 import ExchangeRatesTabs from './ExchangeRatesTabs';
 import ExchangeRatesWorkspace from './ExchangeRatesWorkspace';
 import RateListsWorkspace from './RateListsWorkspace';
-import type { RateRowData } from './ExchangeRateRow';
 
 interface Props {
   initialRows: RateRowData[];
@@ -21,10 +21,7 @@ interface Props {
 
 type Tab = 'market' | 'lists';
 
-export default function ExchangeRatesShell({
-  initialRows,
-  initialLists,
-}: Props) {
+export default function ExchangeRatesShell({ initialRows, initialLists }: Props) {
   const search = useSearchParams();
   const initialTab: Tab = search.get('tab') === 'lists' ? 'lists' : 'market';
   const [tab, setTab] = useState<Tab>(initialTab);

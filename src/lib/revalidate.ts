@@ -1,8 +1,8 @@
+import { safeRevalidateTag } from '@/lib/safe-cache';
 import {
   revalidatePath as nextRevalidatePath,
   revalidateTag as nextRevalidateTag,
 } from 'next/cache';
-import { safeRevalidateTag } from '@/lib/safe-cache';
 
 /**
  * 2026-06-14: Next.js 16 type definition for `revalidateTag` requires

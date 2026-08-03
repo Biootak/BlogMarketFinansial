@@ -34,20 +34,17 @@ import {
   Clock,
   Eye,
   MessageCircle,
-  Minus,
   Pause,
   Play,
   Sparkles,
   Tag,
-  TrendingDown,
-  TrendingUp,
 } from 'lucide-react';
 import { Tag as TagIcon } from 'lucide-react';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CompactRateBridge from './CompactRateBridge';
 import MagneticSpotlightCard from './MagneticSpotlightCard';
-import { type CategoryTheme, getCategoryTheme } from './categoryTheme';
+import { getCategoryTheme } from './categoryTheme';
 
 type Props = {
   initialPosts: PostWithRelations[];
@@ -60,6 +57,9 @@ const AUTO_PLAY_INTERVAL = 8000; // ۸ ثانیه (قبلاً ۶ — کندتر 
 export default function Design7({ initialPosts, rateLists, className = '' }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  // Stable ref so the keydown handler never needs to be recreated
+  const postsLengthRef = useRef(initialPosts.length);
+  postsLengthRef.current = initialPosts.length;
 
   // Auto-slide
   useEffect(() => {
@@ -71,14 +71,14 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
   }, [isPaused, initialPosts.length]);
 
   const goNext = useCallback(() => {
-    setActiveIndex((prev) => (prev + 1) % initialPosts.length);
-  }, [initialPosts.length]);
+    setActiveIndex((prev) => (prev + 1) % postsLengthRef.current);
+  }, []);
 
   const goPrev = useCallback(() => {
-    setActiveIndex((prev) => (prev - 1 + initialPosts.length) % initialPosts.length);
-  }, [initialPosts.length]);
+    setActiveIndex((prev) => (prev - 1 + postsLengthRef.current) % postsLengthRef.current);
+  }, []);
 
-  // Keyboard navigation
+  // Keyboard navigation — stable handler (no recreate on every slide change)
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       // اگر فوکوس روی input/textarea هست، غیرفعال کن
@@ -99,6 +99,7 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
+    // goNext/goPrev are stable (empty deps), so this runs only once
   }, [goNext, goPrev]);
 
   // تم پست اصلی + تم side cards — باید قبل از early return باشد (Rules of Hooks)
@@ -671,22 +672,30 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                 ? getCategoryTheme(post.categories?.[0]?.slug, post.categories?.[0]?.name)
                 : null;
             return (
+              // 24px hit target (target-size audit): the site's html font-size
+              // (--fs-base) scales rem units by ~0.76, so h-6 (24px) renders at
+              // 18.3px. h-8 (32px) renders at 24.4px — the visible slim dot
+              // stays ~12px via the inner inset.
               <button
                 type="button"
                 key={post.id}
                 onClick={() => setActiveIndex(i)}
                 aria-label={`رفتن به اسلاید ${i + 1}`}
-                className={`group relative h-2 rounded-full transition-all duration-300 ${
-                  i === activeIndex
-                    ? 'w-10'
-                    : 'w-2 bg-neutral-300 dark:bg-neutral-700 hover:bg-neutral-400 dark:hover:bg-neutral-600'
+                className={`group relative flex h-8 items-center rounded-full transition-all duration-300 ${
+                  i === activeIndex ? 'w-10' : 'w-8'
                 }`}
               >
-                {i === activeIndex && theme && (
-                  <motion.div
+                {i === activeIndex && theme ? (
+                  <motion.span
                     layoutId="activeDotIndicator"
-                    className={`absolute inset-0 rounded-full bg-gradient-to-r ${theme.gradient}`}
+                    className={`absolute inset-y-2.5 inset-x-0 rounded-full bg-gradient-to-r ${theme.gradient}`}
                     transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                    aria-hidden
+                  />
+                ) : (
+                  <span
+                    aria-hidden
+                    className="absolute inset-y-2.5 inset-x-2.5 rounded-full bg-neutral-300 dark:bg-neutral-700 group-hover:bg-neutral-400 dark:group-hover:bg-neutral-600 transition-colors duration-300"
                   />
                 )}
               </button>

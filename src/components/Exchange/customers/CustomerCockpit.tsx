@@ -14,18 +14,16 @@
 
 'use client';
 
-import {
-  type CustomerActivityPulse,
-  type CustomerRiskBucket,
-  type CustomerRow,
-  type CustomerSegment,
-  type CustomerStats,
-  type CustomerTopRow,
+import type {
+  CustomerActivityPulse,
+  CustomerRiskBucket,
+  CustomerRow,
+  CustomerSegment,
+  CustomerStats,
+  CustomerTopRow,
 } from '@/actions/exchange-customers';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import { useToast } from '@/components/ui/use-toast';
-import { useRouter } from 'next/navigation';
-import { useCallback, useMemo, useState } from 'react';
 import { useCustomerFilters } from '@/hooks/useCustomerFilters';
 import {
   formatCompact,
@@ -38,16 +36,15 @@ import {
 } from '@/lib/customer-format';
 import { RISK_BUCKET_META, STATUS_META } from '@/lib/customer-segments';
 import { Activity, ShieldAlert, Sparkles, TrendingUp, Users } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { CustomerBulkBar } from './CustomerBulkBar';
+import s from './CustomerCockpit.module.css';
 import { CustomerConstellation } from './CustomerConstellation';
-import {
-  CustomerDirectory,
-  type CustomerDirectoryFilters,
-} from './CustomerDirectory';
+import { CustomerDirectory, type CustomerDirectoryFilters } from './CustomerDirectory';
 import { CustomerEditDrawer } from './CustomerEditDrawer';
 import { LiveWirePanel } from './LiveWirePanel';
-import s from './CustomerCockpit.module.css';
 
 interface Props {
   exchangeId: string;
@@ -97,9 +94,7 @@ export function CustomerCockpit({
 
   // wrapper برای رابط controlled directory (تحول functional update)
   const onFiltersChange = useCallback(
-    (
-      update: (prev: CustomerDirectoryFilters) => CustomerDirectoryFilters,
-    ) => {
+    (update: (prev: CustomerDirectoryFilters) => CustomerDirectoryFilters) => {
       setFilters((prev: CustomerDirectoryFilters) => update(prev));
     },
     [setFilters],
@@ -161,8 +156,8 @@ export function CustomerCockpit({
           </span>
           <h2 className={s.heroTitle}>اکوسیستم مشتریان صرافی</h2>
           <p className={s.heroSub}>
-            <span dir="ltr">{formatNumber(stats.total)}</span>{' '}
-            مشتری ثبت‌شده · <span dir="ltr">{formatNumber(stats.active)}</span> فعال
+            <span dir="ltr">{formatNumber(stats.total)}</span> مشتری ثبت‌شده ·{' '}
+            <span dir="ltr">{formatNumber(stats.active)}</span> فعال
           </p>
         </div>
 
@@ -257,9 +252,7 @@ export function CustomerCockpit({
                       <span className={s.topAmountVal}>
                         {formatCompact(Number(t.totalVolume) / 100)} {currency}
                       </span>
-                      <span className={s.topAmountSub}>
-                        {formatNumber(t.txnCount)} تراکنش
-                      </span>
+                      <span className={s.topAmountSub}>{formatNumber(t.txnCount)} تراکنش</span>
                     </span>
                   </li>
                 );
@@ -276,7 +269,7 @@ export function CustomerCockpit({
           </header>
           <ul className={s.segmentList} aria-label="سهم هر وضعیت">
             {segments.map((seg) => {
-              const meta = STATUS_META[seg.id as keyof typeof STATUS_META];
+              const _meta = STATUS_META[seg.id as keyof typeof STATUS_META];
               const pct = (seg.share * 100).toFixed(1);
               return (
                 <li key={seg.id} className={s.segmentItem}>
@@ -293,7 +286,9 @@ export function CustomerCockpit({
                   </span>
                   <span className={s.segmentValue}>
                     <span className={s.segmentCount}>{formatNumber(seg.count)}</span>
-                    <span className={s.segmentPct}>{formatNumber(Math.round(seg.share * 100))}٪</span>
+                    <span className={s.segmentPct}>
+                      {formatNumber(Math.round(seg.share * 100))}٪
+                    </span>
                   </span>
                 </li>
               );
@@ -308,7 +303,9 @@ export function CustomerCockpit({
         <article className={s.panel}>
           <header className={s.panelHead}>
             <h3 className={s.panelTitle}>توزیع ریسک</h3>
-            <span className={s.panelMeta}>میانگین {formatNumber(Math.round(stats.avgRisk))}/۱۰۰</span>
+            <span className={s.panelMeta}>
+              میانگین {formatNumber(Math.round(stats.avgRisk))}/۱۰۰
+            </span>
           </header>
           <div className={s.riskRing} role="img" aria-label="نمودار رادار ریسک">
             <svg viewBox="-110 -110 220 220" className={s.riskSvg}>
@@ -356,15 +353,9 @@ export function CustomerCockpit({
             <ul className={s.riskLegend}>
               {riskBuckets.map((b) => (
                 <li key={b.bucket} className={s.riskLegendItem}>
-                  <span
-                    className={s.riskLegendDot}
-                    data-tone={b.tone}
-                    aria-hidden
-                  />
+                  <span className={s.riskLegendDot} data-tone={b.tone} aria-hidden />
                   <span className={s.riskLegendLabel}>{RISK_BUCKET_META[b.bucket].label}</span>
-                  <span className={s.riskLegendVal}>
-                    {formatNumber(b.count)}
-                  </span>
+                  <span className={s.riskLegendVal}>{formatNumber(b.count)}</span>
                 </li>
               ))}
             </ul>
@@ -375,9 +366,7 @@ export function CustomerCockpit({
         <article className={`${s.panel} ${s.panelWide}`}>
           <header className={s.panelHead}>
             <h3 className={s.panelTitle}>نقشه هم‌بندی</h3>
-            <span className={s.panelMeta}>
-              نمایش node از تراکنش‌های ۳۰ روز اخیر
-            </span>
+            <span className={s.panelMeta}>نمایش node از تراکنش‌های ۳۰ روز اخیر</span>
           </header>
           <CustomerConstellation
             customers={topCustomers.map((t) => ({
@@ -488,9 +477,7 @@ export function CustomerCockpit({
       <section className={s.directorySection} aria-label="فهرست مشتریان">
         <header className={s.directoryHead}>
           <h2 className={s.directoryTitle}>دایرکتوری مشتریان</h2>
-          <p className={s.directorySub}>
-            جستجو، فیلتر، انتخاب گروهی و ویرایش سریع
-          </p>
+          <p className={s.directorySub}>جستجو، فیلتر، انتخاب گروهی و ویرایش سریع</p>
         </header>
         <CustomerDirectory
           rows={customers}

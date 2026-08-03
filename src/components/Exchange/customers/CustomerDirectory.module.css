@@ -50,9 +50,8 @@
   border: 1px solid var(--at-line);
   border-radius: var(--at-radius);
   outline: none;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .searchInput:focus {
@@ -87,9 +86,8 @@
   border: 1px solid transparent;
   border-radius: 7px;
   cursor: pointer;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
   white-space: nowrap;
 }
 
@@ -126,14 +124,11 @@
   appearance: none;
   background-image: linear-gradient(45deg, transparent 50%, var(--at-fg-muted) 50%),
     linear-gradient(135deg, var(--at-fg-muted) 50%, transparent 50%);
-  background-position:
-    calc(100% - 14px) 50%,
-    calc(100% - 9px) 50%;
+  background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
   background-size: 5px 5px, 5px 5px;
   background-repeat: no-repeat;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .select:hover {
@@ -161,9 +156,8 @@
   border-radius: var(--at-radius);
   cursor: pointer;
   margin-inline-start: auto;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .addBtn:hover {
@@ -211,9 +205,8 @@
   border: 1px solid transparent;
   border-radius: 999px;
   cursor: pointer;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .resetBtn:hover {

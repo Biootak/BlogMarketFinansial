@@ -21,9 +21,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { toast, useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
-import { AlertCircle, AlertTriangle, Info, Loader2 as Loader } from 'lucide-react';
+import { AlertCircle, Loader2 as Loader } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface SystemData {
@@ -138,8 +138,7 @@ export default function SystemLogs() {
         setLogs(initialData.logs);
         setSystemData(initialData.status);
         setIsLoading(false);
-      } catch (err) {
-        console.error('Error parsing initial data:', err);
+      } catch (_err) {
         setError('Failed to load initial data');
       }
     }

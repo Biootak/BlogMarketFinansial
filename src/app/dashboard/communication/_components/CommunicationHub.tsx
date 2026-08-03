@@ -21,8 +21,16 @@
  *  SVG signature (۱): BroadcastSphere در hero.
  */
 
-import Link from 'next/link';
-import { useMemo } from 'react';
+import { LiveDot } from '@/components/Dashboard/PlatformHub';
+import { CountUp } from '@/components/Dashboard/primitives';
+import { Button } from '@/components/ui/button';
+import type {
+  CommunicationNexus,
+  NexusHeatmap,
+  NexusPipeline,
+  PipelineStatus,
+} from '@/lib/communication';
+import { cn } from '@/lib/utils';
 import {
   ArrowLeft,
   Bell,
@@ -40,18 +48,10 @@ import {
   Users,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { CountUp } from '@/components/Dashboard/primitives';
-import { LiveDot } from '@/components/Dashboard/PlatformHub';
-import { cn } from '@/lib/utils';
+import Link from 'next/link';
+import { useMemo } from 'react';
 import s from './CommunicationHub.module.css';
 import type { CommunicationHubData } from './types';
-import type {
-  CommunicationNexus,
-  NexusHeatmap,
-  NexusPipeline,
-  PipelineStatus,
-} from '@/lib/communication';
 
 // ─── helpers ───────────────────────────────────────────────────────
 const PERSIAN_NUM = (n: number | string) =>
@@ -113,10 +113,7 @@ interface CommunicationHubProps {
 // ════════════════════════════════════════════════════════════════
 //  Component
 // ════════════════════════════════════════════════════════════════
-export function CommunicationHub({
-  hub,
-  nexus,
-}: CommunicationHubProps) {
+export function CommunicationHub({ hub, nexus }: CommunicationHubProps) {
   // ── Channel towers (4 vertical modules) ─────────────────────
   const channelTowers = useMemo(() => {
     const t: Array<{
@@ -255,14 +252,18 @@ export function CommunicationHub({
           <div className={s.heroEyebrow}>
             <LiveDot tone="emerald" size="sm" />
             <span>اتاق کنترل پخش</span>
-            <span className={s.heroSep} aria-hidden>·</span>
+            <span className={s.heroSep} aria-hidden>
+              ·
+            </span>
             <span className={s.heroClock}>
               {new Date(hub.generatedAt).toLocaleTimeString('fa-IR', {
                 hour: '2-digit',
                 minute: '2-digit',
               })}
             </span>
-            <span className={s.heroSep} aria-hidden>·</span>
+            <span className={s.heroSep} aria-hidden>
+              ·
+            </span>
             <span>{fmt(totalAnnouncements + totalCampaigns)} مورد در جریان</span>
           </div>
 
@@ -388,10 +389,7 @@ export function CommunicationHub({
               <span className={s.wireEyebrow}>سیم خبری</span>
               <span className={s.wireSub}>آخرین رویدادها</span>
             </div>
-            <Link
-              href="/dashboard/communication/announcements"
-              className={s.wireMore}
-            >
+            <Link href="/dashboard/communication/announcements" className={s.wireMore}>
               همه
               <ChevronLeft size={12} aria-hidden />
             </Link>
@@ -404,15 +402,8 @@ export function CommunicationHub({
               </li>
             ) : (
               wireItems.map((it, idx) => (
-                <li
-                  key={it.id}
-                  className={s.wireItem}
-                  data-tone={it.tone}
-                  data-kind={it.kind}
-                >
-                  <span className={s.wireIndex}>
-                    {fmt(String(idx + 1).padStart(2, '0'))}
-                  </span>
+                <li key={it.id} className={s.wireItem} data-tone={it.tone} data-kind={it.kind}>
+                  <span className={s.wireIndex}>{fmt(String(idx + 1).padStart(2, '0'))}</span>
                   <div className={s.wireBody}>
                     <span className={s.wireTitle}>{it.title}</span>
                     <span className={s.wireDetail}>{it.detail}</span>
@@ -435,31 +426,19 @@ export function CommunicationHub({
             <span className={s.pipelineTitle}>کمپین‌ها در گردش</span>
           </div>
           <div className={s.pipelineSubnav}>
-            <Link
-              href="/dashboard/communication/announcements"
-              className={s.pipelineLink}
-            >
+            <Link href="/dashboard/communication/announcements" className={s.pipelineLink}>
               <Radio size={11} aria-hidden />
               اعلان‌ها
             </Link>
-            <Link
-              href="/dashboard/communication/campaigns"
-              className={s.pipelineLink}
-            >
+            <Link href="/dashboard/communication/campaigns" className={s.pipelineLink}>
               <Send size={11} aria-hidden />
               کمپین‌ها
             </Link>
-            <Link
-              href="/dashboard/communication/audiences"
-              className={s.pipelineLink}
-            >
+            <Link href="/dashboard/communication/audiences" className={s.pipelineLink}>
               <Users size={11} aria-hidden />
               مخاطبان
             </Link>
-            <Link
-              href="/dashboard/communication/campaigns/create"
-              className={s.pipelineLink}
-            >
+            <Link href="/dashboard/communication/campaigns/create" className={s.pipelineLink}>
               <Plus size={11} aria-hidden />
               ساخت
             </Link>
@@ -589,13 +568,7 @@ function BroadcastSphere({
         const ratio = Math.max(0.18, Math.min(1, ch.sent / Math.max(totalSent, 1) || 0.18));
         return (
           <g key={ch.id}>
-            <circle
-              cx={x}
-              cy={y}
-              r={3.5 + ratio * 5}
-              fill={toneColor}
-              fillOpacity="0.92"
-            />
+            <circle cx={x} cy={y} r={3.5 + ratio * 5} fill={toneColor} fillOpacity="0.92" />
             <circle
               cx={x}
               cy={y}
@@ -611,7 +584,15 @@ function BroadcastSphere({
 
       {/* center core */}
       <circle cx={c} cy={c} r="9" fill="oklch(60% 0.12 165)" />
-      <circle cx={c} cy={c} r="9" fill="none" stroke="oklch(98% 0.004 245)" strokeOpacity="0.4" strokeWidth="0.8" />
+      <circle
+        cx={c}
+        cy={c}
+        r="9"
+        fill="none"
+        stroke="oklch(98% 0.004 245)"
+        strokeOpacity="0.4"
+        strokeWidth="0.8"
+      />
 
       {/* center text */}
       <text
@@ -683,10 +664,7 @@ function ChannelTower({
 
       {/* vertical bar */}
       <div className={s.towerBar} aria-hidden>
-        <span
-          className={s.towerBarFill}
-          style={{ height: `${ratio * 100}%` }}
-        />
+        <span className={s.towerBarFill} style={{ height: `${ratio * 100}%` }} />
       </div>
 
       <dl className={s.towerMeta}>
@@ -709,7 +687,15 @@ function ChannelTower({
 
 // ─── Heatmap (compact) ──────────────────────────────────────────
 function Heatmap7d({ heatmap }: { heatmap: NexusHeatmap }) {
-  const days = ['۶ روز پیش', '۵ روز پیش', '۴ روز پیش', '۳ روز پیش', '۲ روز پیش', 'دیروز', 'امروز'] as const;
+  const days = [
+    '۶ روز پیش',
+    '۵ روز پیش',
+    '۴ روز پیش',
+    '۳ روز پیش',
+    '۲ روز پیش',
+    'دیروز',
+    'امروز',
+  ] as const;
   const max = Math.max(heatmap.max, 1);
   return (
     <div className={s.heatWrap}>

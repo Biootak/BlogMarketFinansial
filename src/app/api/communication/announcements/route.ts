@@ -1,3 +1,5 @@
+import { auth } from '@/auth';
+import { createAnnouncement } from '@/lib/communication';
 /**
  * POST /api/communication/announcements
  * ایجاد اعلان جدید از داشبورد.
@@ -12,10 +14,8 @@
  *  - expiresAt?: ISO string
  *  - status?: 'draft' | 'scheduled' | 'published' | 'archived' (default: 'draft')
  */
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { auth } from '@/auth';
-import { createAnnouncement } from '@/lib/communication';
 
 const BodySchema = z.object({
   title: z.string().min(1, 'عنوان الزامی است').max(200),
@@ -33,14 +33,14 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json(
       { success: false, error: { code: 'UNAUTHORIZED', message: 'احراز هویت نشده‌اید' } },
-      { status: 401 }
+      { status: 401 },
     );
   }
   const role = session.user.role ?? '';
   if (!['OWNER', 'SUPERADMIN', 'ADMIN'].includes(role)) {
     return NextResponse.json(
       { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی ندارید' } },
-      { status: 403 }
+      { status: 403 },
     );
   }
 
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json(
       { success: false, error: { code: 'BAD_BODY', message: 'بدنه نامعتبر' } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
           message: parsed.error.issues[0]?.message ?? 'خطای اعتبارسنجی',
         },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
   if (!result.success) {
     return NextResponse.json(
       { success: false, error: { code: 'SERVER', message: result.message ?? 'خطای سرور' } },
-      { status: 500 }
+      { status: 500 },
     );
   }
 

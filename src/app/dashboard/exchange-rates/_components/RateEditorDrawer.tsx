@@ -6,18 +6,14 @@
 
 import { createMarketRate, updateMarketRate } from '@/actions/market-rates';
 import { useToast } from '@/components/ui/use-toast';
-import { cn } from '@/lib/utils';
 import type { MarketRateGroup, MarketRateUnit } from '@/lib/market-rates';
-import { DASHBOARD_UNIT_DESCRIPTIONS, DASHBOARD_UNIT_LABELS } from '../_lib/unit-labels';
+import { cn } from '@/lib/utils';
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  HiOutlineCheck,
-  HiOutlineExclamationCircle,
-  HiOutlineXMark,
-} from 'react-icons/hi2';
-import type { RateRowData } from './ExchangeRateRow';
+import { HiOutlineCheck, HiOutlineExclamationCircle, HiOutlineXMark } from 'react-icons/hi2';
+import { DASHBOARD_UNIT_DESCRIPTIONS, DASHBOARD_UNIT_LABELS } from '../_lib/unit-labels';
 import type { CatalogEntry } from './CurrencyCatalog';
+import type { RateRowData } from './ExchangeRateRow';
 
 type Mode = 'create' | 'edit';
 
@@ -343,10 +339,7 @@ export default function RateEditorDrawer({
         </div>
 
         {/* Body */}
-        <div
-          className="flex-1 overflow-y-auto"
-          style={{ padding: 'var(--ds-space-5)' }}
-        >
+        <div className="flex-1 overflow-y-auto" style={{ padding: 'var(--ds-space-5)' }}>
           <div className="flex flex-col" style={{ gap: 'var(--ds-space-5)' }}>
             {/* Section 1: Identity */}
             <Section
@@ -354,10 +347,7 @@ export default function RateEditorDrawer({
               title="هویت ارز"
               description="نماد یکتا (لاتین) و نام فارسی برای نمایش"
             >
-              <div
-                className="grid"
-                style={{ gap: 'var(--ds-space-3)' }}
-              >
+              <div className="grid" style={{ gap: 'var(--ds-space-3)' }}>
                 <Field
                   label="نماد (Symbol)"
                   required
@@ -392,16 +382,11 @@ export default function RateEditorDrawer({
               title="دسته‌بندی"
               description="گروه و واحد پولی برای نمایش در تیکر و محاسبه"
             >
-              <div
-                className="grid grid-cols-1 sm:grid-cols-2"
-                style={{ gap: 'var(--ds-space-3)' }}
-              >
+              <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 'var(--ds-space-3)' }}>
                 <Field label="گروه">
                   <select
                     value={form.group}
-                    onChange={(e) =>
-                      setForm({ ...form, group: e.target.value as MarketRateGroup })
-                    }
+                    onChange={(e) => setForm({ ...form, group: e.target.value as MarketRateGroup })}
                     style={selectBase}
                   >
                     {GROUPS.map((g) => (
@@ -414,9 +399,7 @@ export default function RateEditorDrawer({
                 <Field label="واحد">
                   <select
                     value={form.unit}
-                    onChange={(e) =>
-                      setForm({ ...form, unit: e.target.value as MarketRateUnit })
-                    }
+                    onChange={(e) => setForm({ ...form, unit: e.target.value as MarketRateUnit })}
                     style={selectBase}
                   >
                     {UNITS.map((u) => (
@@ -458,7 +441,7 @@ export default function RateEditorDrawer({
                 <div
                   role="radiogroup"
                   aria-label="نوع منبع"
-                  className="grid grid-cols-2"
+                  className="grid grid-cols-1 sm:grid-cols-2"
                   style={{ gap: 'var(--ds-space-2)' }}
                 >
                   <SourceOption
@@ -476,10 +459,7 @@ export default function RateEditorDrawer({
                 </div>
 
                 {form.provider === 'auto' ? (
-                  <Field
-                    label="کلید منبع"
-                    hint="کلید داخلی برای فید خودکار"
-                  >
+                  <Field label="کلید منبع" hint="کلید داخلی برای فید خودکار">
                     <input
                       value={form.tgjuKey}
                       onChange={(e) => setForm({ ...form, tgjuKey: e.target.value })}
@@ -512,11 +492,7 @@ export default function RateEditorDrawer({
 
             {/* Section 4: Visibility (edit only) */}
             {mode === 'edit' && (
-              <Section
-                eyebrow="۰۴"
-                title="نمایش"
-                description="کنترل نمایش در تیکر و سایر بخش‌ها"
-              >
+              <Section eyebrow="۰۴" title="نمایش" description="کنترل نمایش در تیکر و سایر بخش‌ها">
                 <label
                   className="inline-flex items-center cursor-pointer"
                   style={{ gap: '0.6rem' }}
@@ -578,10 +554,8 @@ export default function RateEditorDrawer({
                   fontSize: 'var(--ds-text-sm)',
                   color: 'var(--ds-accent-rose)',
                   padding: 'var(--ds-space-3) var(--ds-space-4)',
-                  background:
-                    'color-mix(in oklch, var(--ds-accent-rose) 10%, transparent)',
-                  border:
-                    '1px solid color-mix(in oklch, var(--ds-accent-rose) 24%, transparent)',
+                  background: 'color-mix(in oklch, var(--ds-accent-rose) 10%, transparent)',
+                  border: '1px solid color-mix(in oklch, var(--ds-accent-rose) 24%, transparent)',
                   borderRadius: 'var(--ds-radius-md)',
                 }}
               >
@@ -649,11 +623,7 @@ export default function RateEditorDrawer({
             }}
           >
             <HiOutlineCheck aria-hidden style={{ width: '1rem', height: '1rem' }} />
-            {submitting
-              ? 'در حال ذخیره…'
-              : mode === 'create'
-                ? 'ایجاد نرخ'
-                : 'ذخیره تغییرات'}
+            {submitting ? 'در حال ذخیره…' : mode === 'create' ? 'ایجاد نرخ' : 'ذخیره تغییرات'}
           </button>
         </div>
       </aside>
@@ -801,9 +771,7 @@ function SourceOption({
       role="radio"
       aria-checked={selected}
       onClick={onSelect}
-      className={cn(
-        'text-start transition-all',
-      )}
+      className={cn('text-start transition-all')}
       style={{
         padding: 'var(--ds-space-3) var(--ds-space-4)',
         background: selected

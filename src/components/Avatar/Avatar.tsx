@@ -1,7 +1,7 @@
 'use client';
 
 import Image, { type StaticImageData } from 'next/image';
-import React, { type FC, useEffect, useState } from 'react';
+import { type FC, useEffect, useState } from 'react';
 
 export interface AvatarProps {
   containerClassName?: string;
@@ -50,7 +50,7 @@ const Avatar: FC<AvatarProps> = ({
 
   return (
     <div
-      className={`wil-avatar relative flex items-center justify-center overflow-hidden font-sans text-white uppercase font-semibold shadow-inner ${radius} ${sizeClass} ${containerClassName}`}
+      className={`wil-avatar relative flex items-center justify-center overflow-hidden font-sans text-white uppercase font-semibold shadow-inner aspect-square ${radius} ${sizeClass} ${containerClassName}`}
     >
       {useNextImage && typeof url === 'string' && (
         <Image
@@ -62,10 +62,12 @@ const Avatar: FC<AvatarProps> = ({
         />
       )}
       {!useNextImage && typeof url === 'string' && url && (
+        // aspect-square روی container تضمین می‌کند تصویر به‌درستی square render شود
+        // و image-aspect-ratio audit رفع شود (WCAG/LH best practices)
         <Image
           unoptimized
           fill
-          sizes="80px"
+          sizes="100px"
           src={url}
           alt={name}
           className="absolute inset-0 w-full h-full object-cover"

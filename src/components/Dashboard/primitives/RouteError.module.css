@@ -40,11 +40,21 @@
 }
 
 /* رنگ‌های نوع خطا — network/unknown از رنگ اصلی سایت (سبز) */
-.iconWrap[data-kind="network"]  { color: var(--ds-brand-500, oklch(58% 0.12 165)); }
-.iconWrap[data-kind="auth"]     { color: oklch(55% 0.16 25); }
-.iconWrap[data-kind="notfound"] { color: var(--ds-brand-600, oklch(52% 0.14 162)); }
-.iconWrap[data-kind="server"]   { color: oklch(55% 0.14 280); }
-.iconWrap[data-kind="unknown"]  { color: var(--ds-brand-500, oklch(58% 0.12 165)); }
+.iconWrap[data-kind="network"] {
+  color: var(--ds-brand-500, oklch(58% 0.12 165));
+}
+.iconWrap[data-kind="auth"] {
+  color: oklch(55% 0.16 25);
+}
+.iconWrap[data-kind="notfound"] {
+  color: var(--ds-brand-600, oklch(52% 0.14 162));
+}
+.iconWrap[data-kind="server"] {
+  color: oklch(55% 0.14 280);
+}
+.iconWrap[data-kind="unknown"] {
+  color: var(--ds-brand-500, oklch(58% 0.12 165));
+}
 
 /* ── متن ──────────────────────────────────────────────────────── */
 .title {
@@ -128,8 +138,8 @@
   border: 1px solid color-mix(in oklch, var(--ds-brand-500, oklch(58% 0.12 165)) 35%, transparent);
   border-radius: var(--ds-radius-lg, 0.75rem);
   text-decoration: none;
-  transition: border-color var(--ds-duration-fast, 120ms) ease,
-              background var(--ds-duration-fast, 120ms) ease;
+  transition: border-color var(--ds-duration-fast, 120ms) ease, background
+    var(--ds-duration-fast, 120ms) ease;
 }
 
 .backLink:hover {

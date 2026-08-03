@@ -310,7 +310,10 @@ export async function UserHome({
               <li key={r.id} className={styles.requestItem}>
                 {/* M6-fix: /dashboard/my-requests/[id] صفحه ندارد → 404.
                     /track/[code] صفحهٔ پیگیری واقعی دارد. */}
-                <Link href={`/track/${encodeURIComponent(r.trackingCode)}`} className={styles.requestLink}>
+                <Link
+                  href={`/track/${encodeURIComponent(r.trackingCode)}`}
+                  className={styles.requestLink}
+                >
                   <div className={styles.requestMeta}>
                     <span className={styles.requestType}>
                       {serviceTypeLabelMap[r.serviceType] ?? r.serviceType}

@@ -26,9 +26,7 @@ const LinkPanelPreview = ({ url, onEdit, onRemove }: LinkPanelPreviewProps) => {
       await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      console.error('Failed to copy:', error);
-    }
+    } catch (_error) {}
   }, [url]);
 
   return (

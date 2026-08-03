@@ -73,8 +73,7 @@ const EditPostForm: React.FC<EditPostFormProps> = ({
       } else {
         throw new Error(result.message);
       }
-    } catch (error) {
-      console.error('خطا در به‌روزرسانی پست:', error);
+    } catch (_error) {
       toast({
         title: 'خطا',
         description: 'مشکلی در به‌روزرسانی پست رخ داد. لطفاً دوباره تلاش کنید.',

@@ -10,9 +10,9 @@
  */
 
 import { getMarketRates } from '@/actions/market-rates';
-import { safeCache } from '@/lib/safe-cache';
 import prisma from '@/lib/db';
 import type { MarketRateItem } from '@/lib/market-rates/types';
+import { safeCache } from '@/lib/safe-cache';
 import HeroVisual from './HeroVisual';
 
 /**
@@ -39,9 +39,7 @@ function pickHeroRates(rates: MarketRateItem[]): MarketRateItem[] {
  */
 const getActiveExchangeCount = safeCache(
   async (): Promise<number> => {
-    return prisma.exchange
-      .count({ where: { status: 'ACTIVE' } })
-      .catch(() => 0);
+    return prisma.exchange.count({ where: { status: 'ACTIVE' } }).catch(() => 0);
   },
   0,
   { key: 'hero:active-exchanges', ttl: 300, tags: ['rate-lists'] },
@@ -58,8 +56,7 @@ export default async function HeroSection() {
   const afnRate = allRates.find((r) => r.symbol === 'AFGHANI_AFN') ?? null;
 
   // cross-rate: ۱ دلار = چند افغانی
-  const usdToAfn =
-    usdRate && afnRate && afnRate.value > 0 ? usdRate.value / afnRate.value : null;
+  const usdToAfn = usdRate && afnRate && afnRate.value > 0 ? usdRate.value / afnRate.value : null;
 
   // freshness anchor — برای freshness indicator در هیرو
   const freshnessAnchor = allRates.reduce<Date | null>((acc, r) => {

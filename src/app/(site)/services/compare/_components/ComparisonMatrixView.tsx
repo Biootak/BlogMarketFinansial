@@ -18,12 +18,12 @@
  *  UX: scroll افقی smooth روی موبایل، sticky first column
  */
 
+import type { ComparisonMatrix } from '@/actions/exchange-services';
+import { SERVICE_GROUPS, getServiceMeta } from '@/lib/exchange-services';
 import { ArrowDown, ArrowUp, Filter, Info, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { ComparisonMatrix } from '@/actions/exchange-services';
-import { getServiceMeta, SERVICE_GROUPS } from '@/lib/exchange-services';
 import s from './ComparisonMatrixView.module.css';
 
 type Props = {
@@ -32,11 +32,7 @@ type Props = {
   initialGroup?: string;
 };
 
-export default function ComparisonMatrixView({
-  matrix,
-  initialExchange,
-  initialGroup,
-}: Props) {
+export default function ComparisonMatrixView({ matrix, initialExchange, initialGroup }: Props) {
   const router = useRouter();
 
   const [activeGroup, setActiveGroup] = useState<string>(initialGroup ?? 'all');
@@ -51,7 +47,10 @@ export default function ComparisonMatrixView({
     if (highlighted) params.set('exchange', highlighted);
     const qs = params.toString();
     const url = qs ? `/services/compare?${qs}` : '/services/compare';
-    if (typeof window !== 'undefined' && window.location.pathname + window.location.search !== url) {
+    if (
+      typeof window !== 'undefined' &&
+      window.location.pathname + window.location.search !== url
+    ) {
       router.replace(url, { scroll: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -62,9 +61,7 @@ export default function ComparisonMatrixView({
     if (activeGroup === 'all') {
       return new Set(matrix.services.map((s) => s.key));
     }
-    return new Set(
-      matrix.services.filter((s) => s.group === activeGroup).map((s) => s.key),
-    );
+    return new Set(matrix.services.filter((s) => s.group === activeGroup).map((s) => s.key));
   }, [matrix.services, activeGroup]);
 
   // ── filter exchanges by search ───────────────────────────────
@@ -85,10 +82,7 @@ export default function ComparisonMatrixView({
   const totalServices = visibleServiceKeys.size;
   const totalCells = visibleExchanges.length * totalServices;
   const filledCells = visibleExchanges.reduce((sum, ex) => {
-    return (
-      sum +
-      Array.from(visibleServiceKeys).filter((k) => ex.cells[k]).length
-    );
+    return sum + Array.from(visibleServiceKeys).filter((k) => ex.cells[k]).length;
   }, 0);
   const fillRate = totalCells > 0 ? Math.round((filledCells / totalCells) * 100) : 0;
 
@@ -126,9 +120,7 @@ export default function ComparisonMatrixView({
           <h1 className={s.title}>
             کدام صرافی چه خدماتی <span className={s.titleAccent}>آنلاین</span> ارائه می‌دهد؟
           </h1>
-          <p className={s.sub}>
-            یک جدول، تمام تفاوت‌ها — برای انتخاب سریع‌تر.
-          </p>
+          <p className={s.sub}>یک جدول، تمام تفاوت‌ها — برای انتخاب سریع‌تر.</p>
 
           <div className={s.counters} role="list">
             <div className={s.counter} role="listitem">
@@ -146,7 +138,9 @@ export default function ComparisonMatrixView({
             </div>
             <span className={s.counterDivider} aria-hidden />
             <div className={s.counter} role="listitem">
-              <span className={s.counterValue}>{new Intl.NumberFormat('fa-IR').format(fillRate)}٪</span>
+              <span className={s.counterValue}>
+                {new Intl.NumberFormat('fa-IR').format(fillRate)}٪
+              </span>
               <span className={s.counterLabel}>پوشش</span>
             </div>
           </div>
@@ -175,11 +169,7 @@ export default function ComparisonMatrixView({
               همه
             </GroupChip>
             {Object.entries(SERVICE_GROUPS).map(([key, meta]) => (
-              <GroupChip
-                key={key}
-                active={activeGroup === key}
-                onClick={() => setActiveGroup(key)}
-              >
+              <GroupChip key={key} active={activeGroup === key} onClick={() => setActiveGroup(key)}>
                 {meta.label}
               </GroupChip>
             ))}
@@ -266,10 +256,7 @@ export default function ComparisonMatrixView({
                       const has = ex.cells[svc.key];
                       const lead = ex.leadTimes[svc.key];
                       return (
-                        <td
-                          key={svc.key}
-                          className={`${s.cell} ${has ? s.cellYes : s.cellNo}`}
-                        >
+                        <td key={svc.key} className={`${s.cell} ${has ? s.cellYes : s.cellNo}`}>
                           {has ? (
                             <span
                               className={s.cellYesIcon}

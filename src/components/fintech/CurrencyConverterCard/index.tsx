@@ -22,17 +22,11 @@
 
 'use client';
 
+import { type CurrencyItem, CurrencySelect } from '@/components/ui/CurrencySelect';
 import { useDirection } from '@/hooks/useDirection';
-import {
-  type FormEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
-import { ArrowLeftRight, ArrowDown, Lock, Send, TrendingUp } from 'lucide-react';
-import { CurrencySelect, type CurrencyItem } from '@/components/ui/CurrencySelect';
 import { parseLocaleNumber } from '@/lib/money-transfer/hero';
+import { ArrowDown, ArrowLeftRight, Lock, Send, TrendingUp } from 'lucide-react';
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import styles from './CurrencyConverterCard.module.css';
 
 export type ConverterSize = 'compact' | 'full';
@@ -98,14 +92,6 @@ export interface CurrencyConverterCardProps {
 const DEFAULT_AMOUNT = 1000;
 const PRESETS_DEFAULT = [100, 500, 1000, 5000, 10000] as const;
 
-function formatFa(n: number, max = 2): string {
-  if (!Number.isFinite(n) || n === 0) return '—';
-  if (Math.abs(n) < 1) {
-    return new Intl.NumberFormat('fa-IR', { maximumFractionDigits: max }).format(n);
-  }
-  return new Intl.NumberFormat('fa-IR', { maximumFractionDigits: max }).format(Math.round(n));
-}
-
 function formatFaRaw(n: number, decimals: number): string {
   if (!Number.isFinite(n)) return '—';
   return new Intl.NumberFormat('fa-IR', {
@@ -161,10 +147,7 @@ export function CurrencyConverterCard({
   );
 
   // Items must have at least 2 to convert (1 in base mode since IRT is synthetic)
-  const usable = useMemo(
-    () => workingItems.filter((i) => i.buy > 0 && i.sell > 0),
-    [workingItems],
-  );
+  const usable = useMemo(() => workingItems.filter((i) => i.buy > 0 && i.sell > 0), [workingItems]);
 
   const fallback = usable[0]?.value ?? '';
   const initialFrom = useMemo(() => {
@@ -269,9 +252,7 @@ export function CurrencyConverterCard({
   );
 
   const handlePreset = (value: number) => {
-    setAmountRaw(
-      new Intl.NumberFormat('fa-IR', { useGrouping: false }).format(value),
-    );
+    setAmountRaw(new Intl.NumberFormat('fa-IR', { useGrouping: false }).format(value));
   };
 
   const handleSubmit = (e: FormEvent) => {
@@ -334,9 +315,7 @@ export function CurrencyConverterCard({
             onChange={(e) => setAmountRaw(e.target.value)}
             placeholder="مبلغ"
             className="mt-calc__amount"
-            aria-label={
-              isBaseMode ? 'مبلغ به تومان' : isFull ? 'مبلغ مبدا' : 'مبلغ به تومان'
-            }
+            aria-label={isBaseMode ? 'مبلغ به تومان' : isFull ? 'مبلغ مبدا' : 'مبلغ به تومان'}
             autoComplete="off"
             dir="ltr"
           />
@@ -362,8 +341,7 @@ export function CurrencyConverterCard({
               const formatted = new Intl.NumberFormat('fa-IR', {
                 useGrouping: false,
               }).format(preset);
-              const isActive =
-                Number.isFinite(numericAmount) && numericAmount === preset;
+              const isActive = Number.isFinite(numericAmount) && numericAmount === preset;
               return (
                 <button
                   key={preset}
@@ -428,18 +406,14 @@ export function CurrencyConverterCard({
           <span className="mt-calc__rate">
             ۱ {fromItem?.code ?? '—'}
             <span className="mt-calc__rate-eq"> = </span>
-            <strong>
-              {formatRate(rate, toItem?.unit, toItem?.decimals ?? 2)}
-            </strong>{' '}
+            <strong>{formatRate(rate, toItem?.unit, toItem?.decimals ?? 2)}</strong>{' '}
             {toItem?.code ?? '—'}
           </span>
           <span className="mt-calc__rate-sep" aria-hidden />
           <span className="mt-calc__rate">
             ۱ {toItem?.code ?? '—'}
             <span className="mt-calc__rate-eq"> = </span>
-            <strong>
-              {formatRate(inverse, fromItem?.unit, fromItem?.decimals ?? 2)}
-            </strong>{' '}
+            <strong>{formatRate(inverse, fromItem?.unit, fromItem?.decimals ?? 2)}</strong>{' '}
             {fromItem?.code ?? '—'}
           </span>
         </div>
@@ -497,9 +471,7 @@ export function CurrencyConverterCard({
           className={isFull ? `mt-calc__cta ${styles.submit}` : styles.submitCompact}
         >
           <span>{submitLabel}</span>
-          {isFull && (
-            <Send className="size-4" style={{ transform: 'scaleX(-1)' }} />
-          )}
+          {isFull && <Send className="size-4" style={{ transform: 'scaleX(-1)' }} />}
         </button>
       )}
     </form>

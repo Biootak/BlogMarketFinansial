@@ -5,29 +5,62 @@
 
 /* ─── Keyframes ─────────────────────────────────────────────────────────── */
 @keyframes sheetIn {
-  from { opacity: 0; transform: translateY(8px) scale(0.985); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 @keyframes overlayIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes sectionIn {
-  from { opacity: 0; transform: translateX(8px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 @keyframes barFill {
-  from { transform: scaleX(0); }
-  to   { transform: scaleX(1); }
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 @keyframes nodePulse {
-  0%, 100% { box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 20%, transparent); }
-  50%      { box-shadow: 0 0 0 6px color-mix(in oklch, var(--at-accent) 0%, transparent); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 20%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in oklch, var(--at-accent) 0%, transparent);
+  }
 }
 @keyframes shine {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* ─── Overlay & Sheet ─────────────────────────────────────────────────── */
@@ -55,10 +88,9 @@
   background: var(--at-surface);
   border: 1px solid var(--at-line);
   border-radius: 20px;
-  box-shadow:
-    0 1px 0 var(--at-line),
-    0 40px 90px -30px color-mix(in oklch, var(--at-fg) 45%, transparent),
-    0 0 0 1px color-mix(in oklch, var(--at-accent) 5%, transparent) inset;
+  box-shadow: 0 1px 0 var(--at-line), 0 40px 90px -30px
+    color-mix(in oklch, var(--at-fg) 45%, transparent), 0 0 0 1px
+    color-mix(in oklch, var(--at-accent) 5%, transparent) inset;
   animation: sheetIn 360ms var(--at-ease) both;
   overflow: hidden;
   isolation: isolate;
@@ -76,7 +108,10 @@
   z-index: 1;
 }
 @media (max-width: 880px) {
-  .sheet { max-inline-size: 100%; border-radius: 16px; }
+  .sheet {
+    max-inline-size: 100%;
+    border-radius: 16px;
+  }
 }
 
 /* ─── Header ─────────────────────────────────────────────────────────── */
@@ -87,7 +122,11 @@
   gap: var(--ds-space-3);
   padding: var(--ds-space-4) var(--ds-space-5) var(--ds-space-3);
   border-block-end: 1px dashed var(--at-line);
-  background: linear-gradient(180deg, color-mix(in oklch, var(--at-bg-deep) 50%, transparent), transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--at-bg-deep) 50%, transparent),
+    transparent
+  );
   z-index: 1;
 }
 
@@ -262,8 +301,13 @@
   transition: opacity 200ms var(--at-ease);
   z-index: -1;
 }
-.sectionNode:hover { border-color: var(--at-line-strong); color: var(--at-fg); }
-.sectionNode:hover::before { opacity: 0.5; }
+.sectionNode:hover {
+  border-color: var(--at-line-strong);
+  color: var(--at-fg);
+}
+.sectionNode:hover::before {
+  opacity: 0.5;
+}
 
 .sectionNodeIdx {
   display: inline-flex;
@@ -325,13 +369,17 @@
   border-color: color-mix(in oklch, var(--at-accent) 50%, var(--at-line));
   background: color-mix(in oklch, var(--at-accent) 6%, var(--at-surface));
 }
-.sectionNodeActive::before { opacity: 1; }
+.sectionNodeActive::before {
+  opacity: 1;
+}
 .sectionNodeActive .sectionNodeIdx {
   background: var(--at-accent);
   border-color: var(--at-accent);
   color: var(--at-fg-inv);
 }
-.sectionNodeActive .sectionNodeIco { color: var(--at-accent); }
+.sectionNodeActive .sectionNodeIco {
+  color: var(--at-accent);
+}
 
 /* ─── Body (2-col) ────────────────────────────────────────────────────── */
 .body {
@@ -345,7 +393,9 @@
   min-block-size: 0;
 }
 @media (max-width: 880px) {
-  .body { grid-template-columns: 1fr; }
+  .body {
+    grid-template-columns: 1fr;
+  }
 }
 
 .form {
@@ -359,13 +409,20 @@
   scrollbar-color: var(--at-line-strong) transparent;
   min-block-size: 0;
   align-self: stretch;
-  background:
-    radial-gradient(ellipse 100% 50% at 100% 0%, var(--at-accent-soft), transparent 50%);
+  background: radial-gradient(ellipse 100% 50% at 100% 0%, var(--at-accent-soft), transparent 50%);
 }
-.form::-webkit-scrollbar { inline-size: 6px; }
-.form::-webkit-scrollbar-thumb { background: var(--at-line); border-radius: 999px; }
+.form::-webkit-scrollbar {
+  inline-size: 6px;
+}
+.form::-webkit-scrollbar-thumb {
+  background: var(--at-line);
+  border-radius: 999px;
+}
 @media (max-width: 880px) {
-  .form { border-inline-end: none; border-block-end: 1px dashed var(--at-line); }
+  .form {
+    border-inline-end: none;
+    border-block-end: 1px dashed var(--at-line);
+  }
 }
 
 .section {
@@ -411,7 +468,9 @@
   gap: var(--ds-space-3);
 }
 @media (max-width: 540px) {
-  .grid2 { grid-template-columns: 1fr; }
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ─── Inputs ──────────────────────────────────────────────────────────── */
@@ -430,7 +489,9 @@
   z-index: 1;
   transition: color 180ms var(--at-ease);
 }
-.inputWrap:focus-within .inputIco { color: var(--at-accent); }
+.inputWrap:focus-within .inputIco {
+  color: var(--at-accent);
+}
 
 .inputIcoPad {
   padding-inline-start: 36px !important;
@@ -450,8 +511,12 @@
   outline: none;
   transition: all 180ms var(--at-ease);
 }
-.input::placeholder { color: var(--at-fg-faint); }
-.input:hover:not(:disabled) { border-color: var(--at-line-strong); }
+.input::placeholder {
+  color: var(--at-fg-faint);
+}
+.input:hover:not(:disabled) {
+  border-color: var(--at-line-strong);
+}
 .input:focus {
   border-color: var(--at-accent);
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 14%, transparent);
@@ -512,7 +577,9 @@
   gap: 6px;
 }
 @media (min-width: 480px) {
-  .statusPicker { grid-template-columns: repeat(4, 1fr); }
+  .statusPicker {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 .statusChip {
   position: relative;
@@ -553,10 +620,18 @@
   background: var(--chip-color, var(--at-accent));
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--chip-color, var(--at-accent)) 24%, transparent);
 }
-.statusChip_PENDING   { --chip-color: var(--at-gold); }
-.statusChip_ACTIVE    { --chip-color: var(--at-accent); }
-.statusChip_SUSPENDED { --chip-color: var(--at-danger); }
-.statusChip_CLOSED    { --chip-color: var(--at-fg-faint); }
+.statusChip_PENDING {
+  --chip-color: var(--at-gold);
+}
+.statusChip_ACTIVE {
+  --chip-color: var(--at-accent);
+}
+.statusChip_SUSPENDED {
+  --chip-color: var(--at-danger);
+}
+.statusChip_CLOSED {
+  --chip-color: var(--at-fg-faint);
+}
 
 /* ─── Toggle (KYC) ───────────────────────────────────────────────────── */
 .toggle {
@@ -573,7 +648,9 @@
   inline-size: 100%;
   transition: all 180ms var(--at-ease);
 }
-.toggle:hover { border-color: var(--at-line-strong); }
+.toggle:hover {
+  border-color: var(--at-line-strong);
+}
 .toggle input {
   position: absolute;
   opacity: 0;
@@ -700,7 +777,10 @@
   border-color: var(--at-line-strong);
   background: var(--at-surface-hover);
 }
-.navBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+.navBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 .navBtnAccent {
   color: var(--at-accent);
   border-color: color-mix(in oklch, var(--at-accent) 36%, transparent);
@@ -724,11 +804,15 @@
   scrollbar-color: var(--at-line-strong) transparent;
   min-block-size: 0;
   align-self: stretch;
-  background-image:
-    radial-gradient(ellipse 80% 40% at 50% 0%, var(--at-gold-soft), transparent 60%);
+  background-image: radial-gradient(ellipse 80% 40% at 50% 0%, var(--at-gold-soft), transparent 60%);
 }
-.preview::-webkit-scrollbar { inline-size: 6px; }
-.preview::-webkit-scrollbar-thumb { background: var(--at-line); border-radius: 999px; }
+.preview::-webkit-scrollbar {
+  inline-size: 6px;
+}
+.preview::-webkit-scrollbar-thumb {
+  background: var(--at-line);
+  border-radius: 999px;
+}
 
 .previewHead {
   display: flex;
@@ -885,7 +969,9 @@
   padding-block: 3px;
   border-block-end: 1px dashed color-mix(in oklch, var(--at-line) 50%, transparent);
 }
-.previewRow:last-child { border-block-end: none; }
+.previewRow:last-child {
+  border-block-end: none;
+}
 .previewRowK {
   font-size: 10px;
   color: var(--at-fg-subtle);
@@ -933,7 +1019,8 @@
   opacity: 0.4;
 }
 
-.footerLeft, .footerRight {
+.footerLeft,
+.footerRight {
   display: flex;
   align-items: center;
 }
@@ -984,7 +1071,11 @@
   font-size: var(--ds-text-sm);
   font-weight: 700;
   color: var(--at-fg-inv);
-  background: linear-gradient(135deg, var(--at-accent) 0%, color-mix(in oklch, var(--at-accent) 70%, var(--at-gold)) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--at-accent) 0%,
+    color-mix(in oklch, var(--at-accent) 70%, var(--at-gold)) 100%
+  );
   border: 1px solid color-mix(in oklch, var(--at-accent) 80%, var(--at-fg));
   border-radius: 10px;
   cursor: pointer;
@@ -992,13 +1083,19 @@
   overflow: hidden;
   isolation: isolate;
   transition: all 200ms var(--at-ease);
-  box-shadow: 0 1px 0 color-mix(in oklch, var(--at-fg-inv) 30%, transparent) inset, 0 4px 14px -4px color-mix(in oklch, var(--at-accent) 60%, transparent);
+  box-shadow: 0 1px 0 color-mix(in oklch, var(--at-fg-inv) 30%, transparent) inset, 0 4px 14px -4px
+    color-mix(in oklch, var(--at-accent) 60%, transparent);
 }
 .btnPrimary::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(120deg, transparent 30%, color-mix(in oklch, var(--at-fg-inv) 30%, transparent) 50%, transparent 70%);
+  background: linear-gradient(
+    120deg,
+    transparent 30%,
+    color-mix(in oklch, var(--at-fg-inv) 30%, transparent) 50%,
+    transparent 70%
+  );
   transform: translateX(-100%);
   transition: transform 600ms var(--at-ease);
   z-index: 0;
@@ -1007,11 +1104,19 @@
    ::before is z-index:0 + absolute, so siblings paint on top — no z-index needed) */
 .btnPrimary:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 1px 0 color-mix(in oklch, var(--at-fg-inv) 30%, transparent) inset, 0 8px 20px -6px color-mix(in oklch, var(--at-accent) 70%, transparent);
+  box-shadow: 0 1px 0 color-mix(in oklch, var(--at-fg-inv) 30%, transparent) inset, 0 8px 20px -6px
+    color-mix(in oklch, var(--at-accent) 70%, transparent);
 }
-.btnPrimary:hover:not(:disabled)::before { transform: translateX(100%); }
-.btnPrimary:active:not(:disabled) { transform: scale(0.98); }
-.btnPrimary:disabled { cursor: not-allowed; opacity: 0.7; }
+.btnPrimary:hover:not(:disabled)::before {
+  transform: translateX(100%);
+}
+.btnPrimary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.btnPrimary:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
 
 .btnGhost {
   display: inline-flex;

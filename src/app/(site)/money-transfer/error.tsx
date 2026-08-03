@@ -10,12 +10,6 @@ export default function RouteErrorPage({
   reset: () => void;
 }) {
   return (
-    <RouteError
-      error={error}
-      reset={reset}
-      section="حواله‌ها"
-      backHref="/"
-      backLabel="صفحه اصلی"
-    />
+    <RouteError error={error} reset={reset} section="حواله‌ها" backHref="/" backLabel="صفحه اصلی" />
   );
 }

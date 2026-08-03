@@ -49,10 +49,10 @@ export async function requireExchangeAccess(
   }
 
   const whereRole = writeAccess
-    // 2026-08-01 (STAFF-write): مطابق ماتریس مجوزها (staff-permissions.ts)، STAFF هم
-    // transactions.write و customers.write دارد. قبلاً فقط OWNER/MANAGER می‌نوشتند
-    // و UI به STAFF دکمه‌های مرده نشان می‌داد. حالا STAFF هم اجازهٔ نوشتن دارد.
-    ? { role: { in: ['OWNER', 'MANAGER', 'STAFF'] as ('OWNER' | 'MANAGER' | 'STAFF')[] } }
+    ? // 2026-08-01 (STAFF-write): مطابق ماتریس مجوزها (staff-permissions.ts)، STAFF هم
+      // transactions.write و customers.write دارد. قبلاً فقط OWNER/MANAGER می‌نوشتند
+      // و UI به STAFF دکمه‌های مرده نشان می‌داد. حالا STAFF هم اجازهٔ نوشتن دارد.
+      { role: { in: ['OWNER', 'MANAGER', 'STAFF'] as ('OWNER' | 'MANAGER' | 'STAFF')[] } }
     : {};
 
   const staff = await prisma.exchangeStaff.findFirst({

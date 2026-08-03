@@ -33,9 +33,7 @@
   border: 1px solid var(--at-line);
   border-radius: var(--at-radius-sm);
   outline: none;
-  transition:
-    border-color 160ms var(--at-ease),
-    box-shadow 160ms var(--at-ease);
+  transition: border-color 160ms var(--at-ease), box-shadow 160ms var(--at-ease);
 }
 .input:hover:not(:disabled) {
   border-color: var(--at-line-strong);
@@ -143,7 +141,7 @@
   flex-shrink: 0;
 }
 .smallToggleThumb::after {
-  content: '';
+  content: "";
   position: absolute;
   inset-block-start: 2px;
   inset-inline-start: 2px;

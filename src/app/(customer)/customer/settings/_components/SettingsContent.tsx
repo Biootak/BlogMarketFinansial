@@ -14,10 +14,7 @@
  */
 
 import { logout } from '@/actions/auth-actions';
-import {
-  type CustomerProfile,
-  updateMyNotificationPreferences,
-} from '@/actions/customer-portal';
+import { type CustomerProfile, updateMyNotificationPreferences } from '@/actions/customer-portal';
 import { SectionHeader } from '@/app/(customer)/customer/_lib/customer-ui';
 import { ConfirmDialog } from '@/components/Dashboard/primitives';
 import { useToast } from '@/components/ui/use-toast';
@@ -202,9 +199,7 @@ export default function SettingsContent({ profile, prefs }: Props) {
             description="دریافت گزارش ماهانه فعالیت‌ها"
             action={monthlyActivityReport ? 'فعال' : 'غیرفعال'}
             tone={monthlyActivityReport ? 'success' : 'neutral'}
-            onClick={() =>
-              persistPrefs({ monthlyActivityReport: !monthlyActivityReport })
-            }
+            onClick={() => persistPrefs({ monthlyActivityReport: !monthlyActivityReport })}
             disabled={prefsPending}
           />
         </div>

@@ -19,8 +19,8 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import Sparkline from './Sparkline';
 import s from './LiveRatesBoard.module.css';
+import Sparkline from './Sparkline';
 
 type RateRow = {
   currencyCode: string;
@@ -83,7 +83,8 @@ export default function LiveRatesBoard({ rates }: Props) {
       list = [...list].sort((a, b) => Number(b.sellRate) - Number(a.sellRate));
     } else {
       list = [...list].sort((a, b) => {
-        let av: number, bv: number;
+        let av: number;
+        let bv: number;
         if (sortKey === 'code') {
           return sortDir === 'asc'
             ? a.currencyCode.localeCompare(b.currencyCode)
@@ -107,8 +108,7 @@ export default function LiveRatesBoard({ rates }: Props) {
 
   const summary = useMemo(() => {
     if (rates.length === 0) return null;
-    const avgSpread =
-      rates.reduce((acc, r) => acc + r.spreadPct, 0) / rates.length;
+    const avgSpread = rates.reduce((acc, r) => acc + r.spreadPct, 0) / rates.length;
     const best = [...rates].sort((a, b) => a.spreadPct - b.spreadPct)[0];
     const worst = [...rates].sort((a, b) => b.spreadPct - a.spreadPct)[0];
     return { avgSpread, best, worst };
@@ -130,8 +130,8 @@ export default function LiveRatesBoard({ rates }: Props) {
             </div>
             <h2 className={s.title}>نرخ خرید و فروش لحظه‌ای</h2>
             <p className={s.sub}>
-              قیمت‌ها مستقیماً توسط صرافی ثبت می‌شوند. اسپرد نشان‌دهندهٔ فاصلهٔ خرید و فروش است —
-              هرچه کمتر باشد، نرخ رقابتی‌تر است.
+              قیمت‌ها مستقیماً توسط صرافی ثبت می‌شوند. اسپرد نشان‌دهندهٔ فاصلهٔ خرید و فروش است — هرچه
+              کمتر باشد، نرخ رقابتی‌تر است.
             </p>
           </div>
 
@@ -283,7 +283,13 @@ function RateCard({ rate, index }: { rate: RateRow; index: number }) {
     <article
       className={s.card}
       style={{ '--i': index } as React.CSSProperties}
-      data-trend={rate.spark.length > 1 && rate.spark[rate.spark.length - 1] > rate.spark[0] ? 'up' : rate.spark.length > 1 && rate.spark[rate.spark.length - 1] < rate.spark[0] ? 'down' : 'flat'}
+      data-trend={
+        rate.spark.length > 1 && rate.spark[rate.spark.length - 1] > rate.spark[0]
+          ? 'up'
+          : rate.spark.length > 1 && rate.spark[rate.spark.length - 1] < rate.spark[0]
+            ? 'down'
+            : 'flat'
+      }
     >
       <header className={s.cardHead}>
         <div className={s.cardCurrency}>
@@ -324,7 +330,9 @@ function RateCard({ rate, index }: { rate: RateRow; index: number }) {
           <div className={s.bsRow}>
             <span className={s.bsKey}>فروش</span>
             <span className={s.bsValSell} dir="ltr">
-              {new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 0 }).format(Math.round(sell))}
+              {new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 0 }).format(
+                Math.round(sell),
+              )}
               <span className={s.bsUnit}>{rate.unit}</span>
             </span>
           </div>

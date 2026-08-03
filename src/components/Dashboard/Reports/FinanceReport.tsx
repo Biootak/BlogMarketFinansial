@@ -1,26 +1,36 @@
 'use client';
 
 import { getPlatformFinanceReport } from '@/actions/platform-finance-report';
-import type {
-  ExchangeVolumeRow,
-  PlatformFinanceKpi,
-  SettlementStatusDist,
-  TransactionTrend,
-} from '@/actions/platform-finance-report';
 import { EmptyState } from '@/components/Dashboard/primitives';
-import { BarChart3, Building2, CheckCircle2, Clock, TrendingUp, Users, Activity, Globe } from 'lucide-react';
+import { motion } from '@/lib/motion-shim';
+import {
+  Activity,
+  BarChart3,
+  Building2,
+  CheckCircle2,
+  Globe,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { motion, AnimatePresence } from '@/lib/motion-shim';
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, BarChart, Bar, Cell, PieChart, Pie } from 'recharts';
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import s from './FinanceReport.module.css';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function fmtPersian(n: number): string {
   return new Intl.NumberFormat('fa-IR').format(n);
-}
-
-function fmtCompact(n: number): string {
-  return new Intl.NumberFormat('fa-IR', { notation: 'compact' }).format(n);
 }
 
 // ─── Components ────────────────────────────────────────────────────────────────
@@ -42,7 +52,7 @@ export default function FinanceReport() {
       } else {
         setError(result.error.message);
       }
-    } catch (e) {
+    } catch (_e) {
       setError('Internal Error');
     } finally {
       setLoading(false);
@@ -53,11 +63,14 @@ export default function FinanceReport() {
     load();
   }, [load]);
 
-  if (loading) return (
-    <div className={s.kpiGrid}>
-      {[1, 2, 3, 4, 5, 6, 7, 8].map(i => <div key={i} className={s.skeletonCard} />)}
-    </div>
-  );
+  if (loading)
+    return (
+      <div className={s.kpiGrid}>
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+          <div key={i} className={s.skeletonCard} />
+        ))}
+      </div>
+    );
 
   if (error) return <EmptyState icon={BarChart3} title="Error" description={error} />;
   if (!data) return <EmptyState icon={BarChart3} title="No Data" />;
@@ -65,20 +78,38 @@ export default function FinanceReport() {
   const { kpi, txTrend, topExchanges, settlementDist } = data;
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={s.root}
-    >
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={s.root}>
       <div className={s.kpiGrid}>
-        <KpiCard icon={<TrendingUp />} label="کل تراکنش‌ها" value={fmtPersian(kpi.totalTransactions)} accent="#3E7096" />
-        <KpiCard icon={<Activity />} label="در انتظار" value={fmtPersian(kpi.pendingTransactions)} accent="#C68E31" />
-        <KpiCard icon={<Globe />} label="صراف‌های فعال" value={fmtPersian(kpi.activeExchanges)} accent="#6F8854" />
-        <KpiCard icon={<Users />} label="مشتریان کل" value={fmtPersian(kpi.totalCustomers)} accent="#836687" />
+        <KpiCard
+          icon={<TrendingUp />}
+          label="کل تراکنش‌ها"
+          value={fmtPersian(kpi.totalTransactions)}
+          accent="#3E7096"
+        />
+        <KpiCard
+          icon={<Activity />}
+          label="در انتظار"
+          value={fmtPersian(kpi.pendingTransactions)}
+          accent="#C68E31"
+        />
+        <KpiCard
+          icon={<Globe />}
+          label="صراف‌های فعال"
+          value={fmtPersian(kpi.activeExchanges)}
+          accent="#6F8854"
+        />
+        <KpiCard
+          icon={<Users />}
+          label="مشتریان کل"
+          value={fmtPersian(kpi.totalCustomers)}
+          accent="#836687"
+        />
       </div>
 
       <div className={s.chartCard}>
-        <h3 className={s.chartTitle}><TrendingUp size={20} /> روند تراکنش‌های ۳۰ روزه</h3>
+        <h3 className={s.chartTitle}>
+          <TrendingUp size={20} /> روند تراکنش‌های ۳۰ روزه
+        </h3>
         <div style={{ width: '100%', height: 300 }}>
           <ResponsiveContainer>
             <AreaChart data={txTrend}>
@@ -90,11 +121,22 @@ export default function FinanceReport() {
               </defs>
               <XAxis dataKey="date" hide />
               <YAxis hide />
-              <Tooltip 
-                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: 'var(--ds-shadow-lg)' }}
+              <Tooltip
+                contentStyle={{
+                  borderRadius: '12px',
+                  border: 'none',
+                  boxShadow: 'var(--ds-shadow-lg)',
+                }}
                 labelStyle={{ display: 'none' }}
               />
-              <Area type="monotone" dataKey="completed" stroke="#3E7096" fillOpacity={1} fill="url(#colorTrend)" strokeWidth={3} />
+              <Area
+                type="monotone"
+                dataKey="completed"
+                stroke="#3E7096"
+                fillOpacity={1}
+                fill="url(#colorTrend)"
+                strokeWidth={3}
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -102,12 +144,20 @@ export default function FinanceReport() {
 
       <div className={s.bottomRow}>
         <div className={s.chartCard}>
-          <h3 className={s.chartTitle}><Building2 size={20} /> صرافی‌های برتر</h3>
+          <h3 className={s.chartTitle}>
+            <Building2 size={20} /> صرافی‌های برتر
+          </h3>
           <div style={{ width: '100%', height: 250 }}>
             <ResponsiveContainer>
               <BarChart data={topExchanges} layout="vertical">
                 <XAxis type="number" hide />
-                <YAxis dataKey="exchangeName" type="category" width={100} axisLine={false} tickLine={false} />
+                <YAxis
+                  dataKey="exchangeName"
+                  type="category"
+                  width={100}
+                  axisLine={false}
+                  tickLine={false}
+                />
                 <Tooltip cursor={{ fill: 'transparent' }} />
                 <Bar dataKey="txCount" fill="#3E7096" radius={[0, 4, 4, 0]} />
               </BarChart>
@@ -116,7 +166,9 @@ export default function FinanceReport() {
         </div>
 
         <div className={s.chartCard}>
-          <h3 className={s.chartTitle}><CheckCircle2 size={20} /> وضعیت تسویه‌حساب‌ها</h3>
+          <h3 className={s.chartTitle}>
+            <CheckCircle2 size={20} /> وضعیت تسویه‌حساب‌ها
+          </h3>
           <div style={{ width: '100%', height: 250 }}>
             <ResponsiveContainer>
               <PieChart>
@@ -128,8 +180,11 @@ export default function FinanceReport() {
                   dataKey="count"
                   nameKey="status"
                 >
-                  {settlementDist.map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={SETTLEMENT_COLORS[index % SETTLEMENT_COLORS.length]} />
+                  {settlementDist.map((_entry: any, index: number) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={SETTLEMENT_COLORS[index % SETTLEMENT_COLORS.length]}
+                    />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -144,11 +199,7 @@ export default function FinanceReport() {
 
 function KpiCard({ icon, label, value, accent }: any) {
   return (
-    <motion.div 
-      whileHover={{ y: -5 }}
-      className={s.kpiCard} 
-      style={{ '--accent': accent } as any}
-    >
+    <motion.div whileHover={{ y: -5 }} className={s.kpiCard} style={{ '--accent': accent } as any}>
       <div className={s.kpiIcon}>{icon}</div>
       <div className={s.kpiValue}>{value}</div>
       <div className={s.kpiLabel}>{label}</div>

@@ -1,3 +1,5 @@
+import { StatePage } from '@/components/StatePage';
+import { getSystemSettingsData } from '@/data/getSystemSettings';
 /**
  * /forbidden — 403 page (میلیون دلاری — ۲۰۲۶)
  *
@@ -7,8 +9,6 @@
  */
 import { Home, LogIn, ShieldOff } from 'lucide-react';
 import type { Metadata } from 'next';
-import { StatePage } from '@/components/StatePage';
-import { getSystemSettingsData } from '@/data/getSystemSettings';
 
 export const metadata: Metadata = {
   title: 'دسترسی غیرمجاز | ۴۰۳',

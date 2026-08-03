@@ -83,7 +83,11 @@ function formatNum(n: number): string {
 }
 
 /** محاسبه کارمزد برای یک مقدار نمونه (تومان) — بر اساس نرخ واقعی provider */
-function calcFeeForAmount(amountToman: number, spreadPercent: number, flatFeeToman: number): number {
+function calcFeeForAmount(
+  amountToman: number,
+  spreadPercent: number,
+  flatFeeToman: number,
+): number {
   const spreadFee = (amountToman * spreadPercent) / 100;
   return spreadFee + flatFeeToman;
 }
@@ -188,8 +192,8 @@ export default function ExchangeRatesWorkspace({ exchange, provider }: Props) {
           <div>
             <p className={s.setupBannerTitle}>اولین راه‌اندازی نرخ‌ها</p>
             <p className={s.setupBannerDesc}>
-              پس از ذخیره، نرخ شما در صفحه مقایسه‌ی <strong>/money-transfer</strong> سایت نمایش
-              داده می‌شود.
+              پس از ذخیره، نرخ شما در صفحه مقایسه‌ی <strong>/money-transfer</strong> سایت نمایش داده
+              می‌شود.
             </p>
           </div>
         </div>
@@ -234,8 +238,7 @@ export default function ExchangeRatesWorkspace({ exchange, provider }: Props) {
               </div>
               <div className={s.field}>
                 <label htmlFor="ex-desc" className={s.label}>
-                  توضیحات{' '}
-                  <span className={s.labelOptional}>(اختیاری)</span>
+                  توضیحات <span className={s.labelOptional}>(اختیاری)</span>
                 </label>
                 <textarea
                   id="ex-desc"
@@ -262,9 +265,7 @@ export default function ExchangeRatesWorkspace({ exchange, provider }: Props) {
                   ساختار نرخ
                 </h2>
               </div>
-              <p className={s.sectionDesc}>
-                Spread روی نرخ بازار + کارمزد ثابت به ازای هر تراکنش
-              </p>
+              <p className={s.sectionDesc}>Spread روی نرخ بازار + کارمزد ثابت به ازای هر تراکنش</p>
             </div>
             <div className={s.sectionBody}>
               <div className={s.rateGrid}>
@@ -360,19 +361,29 @@ export default function ExchangeRatesWorkspace({ exchange, provider }: Props) {
 
               {/* فرمول بصری */}
               <div className={s.formula} aria-label="فرمول محاسبه کارمزد">
-                <span className={s.formulaPart} data-role="base">نرخ بازار</span>
-                <span className={s.formulaOp} aria-hidden>+</span>
+                <span className={s.formulaPart} data-role="base">
+                  نرخ بازار
+                </span>
+                <span className={s.formulaOp} aria-hidden>
+                  +
+                </span>
                 <span className={s.formulaPart} data-role="spread">
                   <span dir="ltr">{spread.toFixed(2)}٪</span>
                   <span className={s.formulaLabel}>اسپرد</span>
                 </span>
-                <span className={s.formulaOp} aria-hidden>+</span>
+                <span className={s.formulaOp} aria-hidden>
+                  +
+                </span>
                 <span className={s.formulaPart} data-role="flat">
                   <span dir="ltr">{flat > 0 ? formatNum(flat) : '۰'}</span>
                   <span className={s.formulaLabel}>کارمزد ثابت</span>
                 </span>
-                <span className={s.formulaOp} aria-hidden>=</span>
-                <span className={s.formulaPart} data-role="result">نرخ نهایی</span>
+                <span className={s.formulaOp} aria-hidden>
+                  =
+                </span>
+                <span className={s.formulaPart} data-role="result">
+                  نرخ نهایی
+                </span>
               </div>
             </div>
           </section>
@@ -421,7 +432,11 @@ export default function ExchangeRatesWorkspace({ exchange, provider }: Props) {
           <section className={s.section} aria-labelledby="sec-visibility">
             <div className={s.visibilityRow}>
               <div className={s.visibilityLeft}>
-                <span className={s.sectionIcon} data-tone={form.active ? 'emerald' : 'neutral'} aria-hidden>
+                <span
+                  className={s.sectionIcon}
+                  data-tone={form.active ? 'emerald' : 'neutral'}
+                  aria-hidden
+                >
                   {form.active ? <Eye size={14} /> : <EyeOff size={14} />}
                 </span>
                 <div>
@@ -450,12 +465,13 @@ export default function ExchangeRatesWorkspace({ exchange, provider }: Props) {
           <div className={s.previewCard}>
             {/* سربرگ preview */}
             <div className={s.previewCardHead}>
-              <span className={s.previewLiveDot} aria-hidden data-active={form.active ? 'true' : undefined} />
-              <span className={s.previewCardTitle}>پیش‌نمایش در سایت</span>
               <span
-                className={s.previewBadge}
+                className={s.previewLiveDot}
+                aria-hidden
                 data-active={form.active ? 'true' : undefined}
-              >
+              />
+              <span className={s.previewCardTitle}>پیش‌نمایش در سایت</span>
+              <span className={s.previewBadge} data-active={form.active ? 'true' : undefined}>
                 {form.active ? 'فعال' : 'غیرفعال'}
               </span>
             </div>
@@ -482,9 +498,7 @@ export default function ExchangeRatesWorkspace({ exchange, provider }: Props) {
                 </div>
                 <div className={s.previewStat}>
                   <span className={s.previewStatLabel}>سرعت</span>
-                  <span className={s.previewStatValue}>
-                    {formatDuration(speed)}
-                  </span>
+                  <span className={s.previewStatValue}>{formatDuration(speed)}</span>
                 </div>
               </div>
 
@@ -501,9 +515,7 @@ export default function ExchangeRatesWorkspace({ exchange, provider }: Props) {
                 </div>
               )}
 
-              {form.description && (
-                <p className={s.previewMockDesc}>{form.description}</p>
-              )}
+              {form.description && <p className={s.previewMockDesc}>{form.description}</p>}
             </div>
 
             {/* جدول کارمزد بر اساس مبلغ — واقعی و محاسبه‌شده */}

@@ -5,10 +5,10 @@
  * چیدمان: ۲ کارت در هر ردیف، در دسکتاپ ۳ کارت.
  */
 
-import s from './ExchangeDashboard.module.css';
+import type { RateSnapshot } from '@/actions/exchange-dashboard';
 import { ArrowLeftRight, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
-import type { RateSnapshot } from '@/actions/exchange-dashboard';
+import s from './ExchangeDashboard.module.css';
 
 function formatNumber(value: string, decimals: number): string {
   const n = Number(value);

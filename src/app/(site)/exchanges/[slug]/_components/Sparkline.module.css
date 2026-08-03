@@ -14,10 +14,10 @@
 .line {
   stroke: var(--ds-text-muted);
 }
-.line[data-trend='up'] {
+.line[data-trend="up"] {
   stroke: oklch(58% 0.14 162);
 }
-.line[data-trend='down'] {
+.line[data-trend="down"] {
   stroke: oklch(58% 0.16 22);
 }
 
@@ -28,10 +28,10 @@
 .endpoint {
   fill: var(--ds-text-muted);
 }
-.endpoint[data-trend='up'] {
+.endpoint[data-trend="up"] {
   fill: oklch(58% 0.14 162);
 }
-.endpoint[data-trend='down'] {
+.endpoint[data-trend="down"] {
   fill: oklch(58% 0.16 22);
 }
 .endpointHalo {
@@ -39,8 +39,8 @@
   animation: spark-pulse 2.4s ease-in-out infinite;
   transform-origin: center;
 }
-.endpoint[data-trend='down'] + .endpointHalo,
-.line[data-trend='down'] ~ .endpointHalo {
+.endpoint[data-trend="down"] + .endpointHalo,
+.line[data-trend="down"] ~ .endpointHalo {
   fill: oklch(58% 0.16 22 / 0.18);
 }
 

@@ -35,9 +35,7 @@
   background: var(--at-bg-elevated);
   border: 1px solid var(--at-line-strong);
   border-radius: var(--at-radius-xl);
-  box-shadow:
-    var(--at-shadow),
-    0 24px 60px -20px oklch(0% 0 0 / 0.4);
+  box-shadow: var(--at-shadow), 0 24px 60px -20px oklch(0% 0 0 / 0.4);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   max-width: 100%;
@@ -71,8 +69,13 @@
 }
 
 @keyframes dotPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.55; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
 }
 
 .clearBtn {
@@ -86,9 +89,8 @@
   color: var(--at-fg-muted);
   border-radius: 7px;
   cursor: pointer;
-  transition:
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: color var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
   padding: 0;
 }
 
@@ -124,11 +126,9 @@
   border: 1px solid var(--at-line);
   border-radius: var(--at-radius);
   cursor: pointer;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), color var(--ds-duration-fast)
+    var(--ds-ease-out-quart), transform var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .actionBtn:hover:not(:disabled) {
@@ -179,9 +179,8 @@
   border: 1px dashed var(--at-line-strong);
   border-radius: var(--at-radius);
   cursor: pointer;
-  transition:
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: color var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .exportBtn:hover:not(:disabled) {
@@ -204,11 +203,17 @@
   animation: spinnerBounce 1.2s var(--ds-ease-in-out-quart) infinite;
 }
 
-.spinnerDot:nth-child(2) { animation-delay: 0.15s; }
-.spinnerDot:nth-child(3) { animation-delay: 0.3s; }
+.spinnerDot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.spinnerDot:nth-child(3) {
+  animation-delay: 0.3s;
+}
 
 @keyframes spinnerBounce {
-  0%, 80%, 100% {
+  0%,
+  80%,
+  100% {
     opacity: 0.3;
     transform: scale(0.8);
   }
@@ -233,8 +238,12 @@
 }
 
 @keyframes confirmFade {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .confirmPanel {
@@ -249,8 +258,12 @@
 }
 
 @keyframes confirmScale {
-  from { transform: scale(0.95); }
-  to { transform: scale(1); }
+  from {
+    transform: scale(0.95);
+  }
+  to {
+    transform: scale(1);
+  }
 }
 
 .confirmTitle {
@@ -290,8 +303,13 @@
   transition: opacity var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
-.confirmDanger:hover:not(:disabled) { opacity: 0.88; }
-.confirmDanger:disabled { opacity: 0.6; cursor: wait; }
+.confirmDanger:hover:not(:disabled) {
+  opacity: 0.88;
+}
+.confirmDanger:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
 
 .confirmCancel {
   display: inline-flex;
@@ -334,8 +352,18 @@
     align-items: stretch;
     gap: var(--ds-space-2);
   }
-  .divider { display: none; }
-  .actions { justify-content: space-between; }
-  .actionBtn { flex: 1; justify-content: center; }
-  .exportBtn { width: 100%; justify-content: center; }
+  .divider {
+    display: none;
+  }
+  .actions {
+    justify-content: space-between;
+  }
+  .actionBtn {
+    flex: 1;
+    justify-content: center;
+  }
+  .exportBtn {
+    width: 100%;
+    justify-content: center;
+  }
 }

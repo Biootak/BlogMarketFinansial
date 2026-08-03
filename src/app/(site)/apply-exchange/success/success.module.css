@@ -20,16 +20,14 @@
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background:
-    radial-gradient(40rem 40rem at 50% 0%, oklch(70% 0.15 165 / 0.08) 0%, transparent 60%);
+  background: radial-gradient(40rem 40rem at 50% 0%, oklch(70% 0.15 165 / 0.08) 0%, transparent 60%);
 }
 
 .field::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(oklch(60% 0.13 165 / 0.04) 1px, transparent 1px),
+  background-image: linear-gradient(oklch(60% 0.13 165 / 0.04) 1px, transparent 1px),
     linear-gradient(90deg, oklch(60% 0.13 165 / 0.04) 1px, transparent 1px);
   background-size: 32px 32px;
   mask: radial-gradient(ellipse 60% 60% at 50% 50%, black, transparent);
@@ -61,16 +59,22 @@
   background: linear-gradient(180deg, oklch(70% 0.15 165), oklch(58% 0.15 165));
   color: oklch(98% 0.005 165);
   border-radius: 50%;
-  box-shadow:
-    0 0 0 8px oklch(70% 0.15 165 / 0.12),
-    0 0 0 16px oklch(70% 0.15 165 / 0.05);
+  box-shadow: 0 0 0 8px oklch(70% 0.15 165 / 0.12), 0 0 0 16px oklch(70% 0.15 165 / 0.05);
   animation: pop 600ms var(--ds-ease-out-back);
 }
 
 @keyframes pop {
-  0% { opacity: 0; transform: scale(0.5); }
-  60% { transform: scale(1.08); }
-  100% { opacity: 1; transform: scale(1); }
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  60% {
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .title {
@@ -160,9 +164,7 @@
 .btnPrimary {
   background: linear-gradient(180deg, var(--ds-brand-500), var(--ds-brand-600));
   color: oklch(98% 0.005 165);
-  box-shadow:
-    0 1px 0 oklch(100% 0 0 / 0.18) inset,
-    0 4px 14px -4px oklch(52% 0.14 162 / 0.45);
+  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.18) inset, 0 4px 14px -4px oklch(52% 0.14 162 / 0.45);
 }
 
 .btnPrimary:hover {

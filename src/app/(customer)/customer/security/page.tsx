@@ -29,18 +29,12 @@ export default async function CustomerSecurityPage() {
   }
 
   return (
-    <div
-      dir="rtl"
-      style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}
-    >
+    <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
       <PageHeader
         eyebrow="امنیت"
         title="مرکز امنیت"
         description="رمز عبور، احراز هویت دو مرحله‌ای و مدیریت دستگاه‌ها"
-        breadcrumb={[
-          { href: '/customer/dashboard', label: 'پنل مشتری' },
-          { label: 'امنیت' },
-        ]}
+        breadcrumb={[{ href: '/customer/dashboard', label: 'پنل مشتری' }, { label: 'امنیت' }]}
         icon="shield-check"
         accent="emerald"
       />

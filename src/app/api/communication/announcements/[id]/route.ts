@@ -1,23 +1,26 @@
+import { auth } from '@/auth';
+import {
+  type UpdateAnnouncementInput,
+  deleteAnnouncement,
+  updateAnnouncement,
+} from '@/lib/communication';
+import prisma from '@/lib/db';
 /**
  * GET    /api/communication/announcements/[id]    — دریافت جزئیات یک اعلان
  * PATCH  /api/communication/announcements/[id]    — ویرایش اعلان
  * DELETE /api/communication/announcements/[id]    — حذف اعلان (فقط draft/archived)
  */
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { auth } from '@/auth';
-import prisma from '@/lib/db';
-import {
-  deleteAnnouncement,
-  updateAnnouncement,
-  type UpdateAnnouncementInput,
-} from '@/lib/communication';
 import { parseChannelsFromBody } from './_helpers';
 
 const PatchSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   body: z.string().min(1).max(5000).optional(),
-  channels: z.array(z.enum(['inapp', 'email', 'push', 'sms'])).min(1).optional(),
+  channels: z
+    .array(z.enum(['inapp', 'email', 'push', 'sms']))
+    .min(1)
+    .optional(),
   audience: z.enum(['all', 'role', 'segment']).optional(),
   audienceFilter: z.string().nullable().optional(),
   scheduledAt: z.string().datetime().nullable().optional(),
@@ -37,14 +40,14 @@ async function guard() {
   return { ok: true as const };
 }
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const g = await guard();
   if (!g.ok) {
     return NextResponse.json(
-      { success: false, error: { code: g.status === 401 ? 'UNAUTHORIZED' : 'FORBIDDEN', message: g.msg } },
+      {
+        success: false,
+        error: { code: g.status === 401 ? 'UNAUTHORIZED' : 'FORBIDDEN', message: g.msg },
+      },
       { status: g.status },
     );
   }
@@ -76,14 +79,14 @@ export async function GET(
   });
 }
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const g = await guard();
   if (!g.ok) {
     return NextResponse.json(
-      { success: false, error: { code: g.status === 401 ? 'UNAUTHORIZED' : 'FORBIDDEN', message: g.msg } },
+      {
+        success: false,
+        error: { code: g.status === 401 ? 'UNAUTHORIZED' : 'FORBIDDEN', message: g.msg },
+      },
       { status: g.status },
     );
   }
@@ -134,14 +137,14 @@ export async function PATCH(
   return NextResponse.json({ success: true });
 }
 
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const g = await guard();
   if (!g.ok) {
     return NextResponse.json(
-      { success: false, error: { code: g.status === 401 ? 'UNAUTHORIZED' : 'FORBIDDEN', message: g.msg } },
+      {
+        success: false,
+        error: { code: g.status === 401 ? 'UNAUTHORIZED' : 'FORBIDDEN', message: g.msg },
+      },
       { status: g.status },
     );
   }

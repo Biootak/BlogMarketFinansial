@@ -17,18 +17,19 @@
  *     • CurrencyPulseGrid: interactive — کلیک روی هر بلوک به جدول اسکرول می‌کند
  */
 
-import { Suspense } from 'react';
-// ۲۰۲۶-۰۷-۲۹: RateCalculator از /exchanges حذف شد — import نیز حذف شد.
-import { LiveRateBoardAsync } from './_components/LiveRateBoardAsync';
 import ScrollReveal from '@/app/(site)/money-transfer/ScrollReveal';
+import { safeCache } from '@/lib/safe-cache';
 import prisma from '@/lib/db';
+import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import CurrencyPulseGrid, { type PulseTile } from './_components/CurrencyPulseGrid';
 import ExchangeBentoGrid, { type BentoExchange } from './_components/ExchangeBentoGrid';
 import HeroStatsRow, { type HeroStat } from './_components/HeroStatsRow';
+// ۲۰۲۶-۰۷-۲۹: RateCalculator از /exchanges حذف شد — import نیز حذف شد.
+import { LiveRateBoardAsync } from './_components/LiveRateBoardAsync';
 import LiveTickerPanel, { type TickerStat } from './_components/LiveTickerPanel';
 import MarketTape, { type TapeItem } from './_components/MarketTape';
 import TrustStrip from './_components/TrustStrip';
-import type { Metadata } from 'next';
 import s from './exchanges.module.css';
 
 export const revalidate = 60;
@@ -96,20 +97,25 @@ type ExchangeWithQuotes = {
   }[];
 };
 
-async function getExchangesData(): Promise<ExchangeWithQuotes[]> {
-  const exchanges = await prisma.exchange.findMany({
-    where: { status: 'ACTIVE', showInComparison: true },
-    include: {
-      ExchangeRateQuote: {
-        where: { status: 'ACTIVE' },
-        orderBy: { createdAt: 'desc' },
-        take: 30,
+// 2026-08-perf: safeCache — بین request های یک revalidation window داده را share می‌کند
+const getExchangesData = safeCache(
+  async (): Promise<ExchangeWithQuotes[]> => {
+    const exchanges = await prisma.exchange.findMany({
+      where: { status: 'ACTIVE', showInComparison: true },
+      include: {
+        ExchangeRateQuote: {
+          where: { status: 'ACTIVE' },
+          orderBy: { createdAt: 'desc' },
+          take: 30,
+        },
       },
-    },
-    orderBy: { name: 'asc' },
-  });
-  return exchanges as unknown as ExchangeWithQuotes[];
-}
+      orderBy: { name: 'asc' },
+    });
+    return exchanges as unknown as ExchangeWithQuotes[];
+  },
+  [],
+  { key: 'exchanges-list', ttl: 60, tags: ['exchanges', 'exchange-rates'] },
+);
 
 /**
  * Spark history برای چند ارز به‌صورت batched — یک query به جای N.
@@ -117,11 +123,13 @@ async function getExchangesData(): Promise<ExchangeWithQuotes[]> {
  *
  * ۲۰۲۶-۰۷-۲۹: بهینه‌سازی N+1. قبلاً برای هر ارز یک query جدا زده می‌شد.
  * حالا همه ارزها در یک query — performance boost قابل‌توجه برای ۱۰+ ارز.
+ * 2026-08-perf: safeCache اضافه شد — cross-request dedup.
  */
-async function getSparkHistoryBatch(
+const getSparkHistoryBatch = safeCache(
+  async (
   exchangeIds: string[],
   currencyCodes: string[],
-): Promise<Map<string, Map<string, number[]>>> {
+): Promise<Map<string, Map<string, number[]>>> => {
   const out = new Map<string, Map<string, number[]>>();
   if (exchangeIds.length === 0 || currencyCodes.length === 0) return out;
   for (const code of currencyCodes) out.set(code, new Map());
@@ -154,13 +162,13 @@ async function getSparkHistoryBatch(
     if (!first) continue;
     const currencyMap = out.get(first.code);
     if (!currencyMap) continue;
-    currencyMap.set(
-      first.ex,
-      list.map((x) => x.buy).reverse(),
-    );
+    currencyMap.set(first.ex, list.map((x) => x.buy).reverse());
   }
-  return out;
-}
+    return out;
+  },
+  new Map(),
+  { key: 'exchanges-spark-batch', ttl: 60, tags: ['exchange-rates'] },
+);
 
 // ─── Pure helpers ───────────────────────────────────────────────────────────
 
@@ -175,7 +183,7 @@ function pickBestBy<T>(arr: T[], key: (t: T) => number, mode: 'min' | 'max'): T 
     const cur = arr[i] as T;
     const a = key(best);
     const b = key(cur);
-    best = mode === 'min' ? (b < a ? cur : best) : (b > a ? cur : best);
+    best = mode === 'min' ? (b < a ? cur : best) : b > a ? cur : best;
   }
   return best;
 }
@@ -208,14 +216,12 @@ function buildTickerStats(exchanges: ExchangeWithQuotes[]): TickerStat[] {
   return TOP_CURRENCIES_FOR_HERO.map((code) => {
     const allQuotes = exchanges
       .flatMap((ex) =>
-        ex.ExchangeRateQuote
-          .filter((q) => q.currencyCode === code)
-          .map((q) => ({
-            buy: Number(q.buyRate),
-            sell: Number(q.sellRate),
-            unit: q.unit,
-            ex: ex,
-          })),
+        ex.ExchangeRateQuote.filter((q) => q.currencyCode === code).map((q) => ({
+          buy: Number(q.buyRate),
+          sell: Number(q.sellRate),
+          unit: q.unit,
+          ex: ex,
+        })),
       )
       .filter((q) => q.buy > 0 && q.sell > 0);
 
@@ -269,7 +275,7 @@ async function buildPulseTiles(
       const sell = Number(q.sellRate);
       if (!Number.isFinite(buy) || !Number.isFinite(sell) || buy <= 0 || sell <= 0) continue;
       if (!map.has(q.currencyCode)) map.set(q.currencyCode, { buyQuotes: [] });
-      map.get(q.currencyCode)!.buyQuotes.push({ buy, sell, unit: q.unit, ex });
+      map.get(q.currencyCode)?.buyQuotes.push({ buy, sell, unit: q.unit, ex });
     }
   }
 
@@ -433,8 +439,8 @@ export default async function ExchangesPage() {
             </h1>
 
             <p className={s.sub}>
-              نرخ خرید و فروش واقعی از {formatFaCount(exchanges.length)} صرافی فعال — به‌روز هر ۳۰ ثانیه، با شفافیت
-              کامل اسپرد و زمان انقضای هر پیشنهاد.
+              نرخ خرید و فروش واقعی از {formatFaCount(exchanges.length)} صرافی فعال — به‌روز هر ۳۰
+              ثانیه، با شفافیت کامل اسپرد و زمان انقضای هر پیشنهاد.
             </p>
           </div>
 
@@ -502,8 +508,8 @@ export default async function ExchangesPage() {
                   </span>
                   <h2 className={s.pulseTitle}>همه ارزها در یک نگاه</h2>
                   <p className={s.pulseSub}>
-                    اندازه هر بلوک نشان‌دهنده تعداد صرافی‌های فعال برای آن ارز است. روی هر ارز بزنید تا تابلوی
-                    نرخ‌ها به آن ارز تغییر کند.
+                    اندازه هر بلوک نشان‌دهنده تعداد صرافی‌های فعال برای آن ارز است. روی هر ارز بزنید
+                    تا تابلوی نرخ‌ها به آن ارز تغییر کند.
                   </p>
                 </div>
               </header>
@@ -550,8 +556,8 @@ export default async function ExchangesPage() {
               <output className={s.emptyState}>
                 <h2 className={s.emptyTitle}>نرخ لحظه‌ای موجود نیست</h2>
                 <p className={s.emptySub}>
-                  {formatFaCount(exchanges.length)} صرافی فعال در سیستم وجود دارد، اما در حال حاضر هیچ نرخ فعالی
-                  ثبت نشده است. نرخ‌ها معمولاً هر ۳۰ ثانیه به‌روز می‌شوند.
+                  {formatFaCount(exchanges.length)} صرافی فعال در سیستم وجود دارد، اما در حال حاضر
+                  هیچ نرخ فعالی ثبت نشده است. نرخ‌ها معمولاً هر ۳۰ ثانیه به‌روز می‌شوند.
                 </p>
               </output>
             </ScrollReveal>

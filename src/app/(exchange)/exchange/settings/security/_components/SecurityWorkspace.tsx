@@ -12,9 +12,9 @@
  *   فقط نمایش (read-only) — تغییرات از /exchange/staff انجام می‌شود.
  */
 
-import { SettingsSurfaceCard } from '@/components/Dashboard/primitives';
+import type { ExchangeRow } from '@/actions/exchanges';
 import { TwoFactorSection } from '@/components/Dashboard/Profile/TwoFactorSection';
-import { type ExchangeRow } from '@/actions/exchanges';
+import { SettingsSurfaceCard } from '@/components/Dashboard/primitives';
 import { ChevronLeft, Clock, KeyRound, ShieldCheck, Users } from 'lucide-react';
 import Link from 'next/link';
 import s from './SecurityWorkspace.module.css';
@@ -48,7 +48,14 @@ const ROLE_FA: Record<string, { label: string; tone: string; desc: string }> = {
 
 const dateFa = new Intl.DateTimeFormat('fa-IR', { dateStyle: 'long' });
 
-export default function SecurityWorkspace({ exchange, staff, currentUserId, currentUserEmail, currentRole, canEdit }: Props) {
+export default function SecurityWorkspace({
+  exchange,
+  staff,
+  currentUserId,
+  currentUserEmail,
+  currentRole,
+  canEdit,
+}: Props) {
   const activeStaff = staff.filter((m) => !m.revokedAt);
   const roleStats = activeStaff.reduce<Record<string, number>>((acc, m) => {
     acc[m.role] = (acc[m.role] ?? 0) + 1;
@@ -64,14 +71,9 @@ export default function SecurityWorkspace({ exchange, staff, currentUserId, curr
         </span>
         <div className={s.twofaText}>
           <strong>تأیید دو مرحله‌ای (2FA)</strong>
-          <span>
-            برای افزایش امنیت، توصیه می‌شود همهٔ اعضای دارای نقش حساس 2FA را
-            فعال کنند.
-          </span>
+          <span>برای افزایش امنیت، توصیه می‌شود همهٔ اعضای دارای نقش حساس 2FA را فعال کنند.</span>
         </div>
-        <span className={s.twofaBadge}>
-          {activeStaff.length > 1 ? 'پیشنهاد ویژه' : 'اختیاری'}
-        </span>
+        <span className={s.twofaBadge}>{activeStaff.length > 1 ? 'پیشنهاد ویژه' : 'اختیاری'}</span>
       </div>
 
       {/* ── Personal 2FA — interactive panel for the current staff member */}
@@ -101,9 +103,7 @@ export default function SecurityWorkspace({ exchange, staff, currentUserId, curr
                   <span className={s.roleLabel}>{info.label}</span>
                   <span className={s.roleDesc}>{info.desc}</span>
                 </div>
-                <span className={s.roleCount}>
-                  {new Intl.NumberFormat('fa-IR').format(count)}
-                </span>
+                <span className={s.roleCount}>{new Intl.NumberFormat('fa-IR').format(count)}</span>
               </div>
             );
           })}
@@ -118,7 +118,7 @@ export default function SecurityWorkspace({ exchange, staff, currentUserId, curr
               <li key={m.id} className={s.memberItem}>
                 <div className={s.memberAvatar}>
                   {m.user.image ? (
-                    // biome-ignore lint/performance/noImgElement: avatar url
+                    // Avatar URL
                     <img src={m.user.image} alt="" />
                   ) : (
                     <span>{initials}</span>
@@ -126,9 +126,7 @@ export default function SecurityWorkspace({ exchange, staff, currentUserId, curr
                 </div>
                 <div className={s.memberInfo}>
                   <div className={s.memberNameRow}>
-                    <span className={s.memberName}>
-                      {m.user.name ?? m.user.email}
-                    </span>
+                    <span className={s.memberName}>{m.user.name ?? m.user.email}</span>
                     {isMe && <span className={s.youTag}>شما</span>}
                   </div>
                   <div className={s.memberMeta}>
@@ -142,9 +140,7 @@ export default function SecurityWorkspace({ exchange, staff, currentUserId, curr
                     </span>
                   </div>
                 </div>
-                <span className={`${s.memberRole} ${s[`role_${info.tone}`]}`}>
-                  {info.label}
-                </span>
+                <span className={`${s.memberRole} ${s[`role_${info.tone}`]}`}>{info.label}</span>
               </li>
             );
           })}
@@ -166,12 +162,7 @@ export default function SecurityWorkspace({ exchange, staff, currentUserId, curr
             tone={ROLE_FA[currentRole]?.tone ?? 'neutral'}
           />
           <PolicyRow label="صرافی" value={exchange.name} />
-          <PolicyRow
-            label="شناسه صرافی"
-            value={exchange.id}
-            mono
-            dim
-          />
+          <PolicyRow label="شناسه صرافی" value={exchange.id} mono dim />
           <PolicyRow
             label="نشست فعال"
             value={canEdit ? 'نقش با دسترسی کامل' : 'نقش فقط خواندنی'}
@@ -184,8 +175,7 @@ export default function SecurityWorkspace({ exchange, staff, currentUserId, curr
             <ShieldCheck size={13} aria-hidden />
             <span>
               شما به‌عنوان <strong>{ROLE_FA[currentRole]?.label ?? currentRole}</strong> دسترسی
-              دارید. برای تغییر تنظیمات صرافی، با مالک یا مدیر صرافی هماهنگ
-              کنید.
+              دارید. برای تغییر تنظیمات صرافی، با مالک یا مدیر صرافی هماهنگ کنید.
             </span>
           </div>
         )}
@@ -204,9 +194,7 @@ export default function SecurityWorkspace({ exchange, staff, currentUserId, curr
             <ShieldCheck size={14} strokeWidth={1.85} aria-hidden />
             <div>
               <span className={s.quickTitle}>ماتریس نقش‌ها</span>
-              <span className={s.quickDesc}>
-                تعریف دقیق مجوزها برای هر نقش
-              </span>
+              <span className={s.quickDesc}>تعریف دقیق مجوزها برای هر نقش</span>
             </div>
             <ChevronLeft size={12} className={s.quickArrow} aria-hidden />
           </Link>
@@ -214,9 +202,7 @@ export default function SecurityWorkspace({ exchange, staff, currentUserId, curr
             <Clock size={14} strokeWidth={1.85} aria-hidden />
             <div>
               <span className={s.quickTitle}>لاگ ممیزی</span>
-              <span className={s.quickDesc}>
-                همهٔ اقدامات انجام‌شده توسط اعضا
-              </span>
+              <span className={s.quickDesc}>همهٔ اقدامات انجام‌شده توسط اعضا</span>
             </div>
             <ChevronLeft size={12} className={s.quickArrow} aria-hidden />
           </Link>
@@ -224,9 +210,7 @@ export default function SecurityWorkspace({ exchange, staff, currentUserId, curr
             <KeyRound size={14} strokeWidth={1.85} aria-hidden />
             <div>
               <span className={s.quickTitle}>هویت عمومی</span>
-              <span className={s.quickDesc}>
-                تنظیم نام، لوگو و اطلاعات تماس
-              </span>
+              <span className={s.quickDesc}>تنظیم نام، لوگو و اطلاعات تماس</span>
             </div>
             <ChevronLeft size={12} className={s.quickArrow} aria-hidden />
           </Link>

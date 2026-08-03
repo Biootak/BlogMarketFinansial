@@ -28,8 +28,7 @@ const loadKatex = async () => {
     }
 
     return katex;
-  } catch (error) {
-    console.error('Failed to load KaTeX:', error);
+  } catch (_error) {
     return null;
   }
 };

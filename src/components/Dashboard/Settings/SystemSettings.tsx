@@ -78,7 +78,6 @@ export default function SystemSettings() {
           setError(data.message || 'Failed to load settings');
         }
       } catch (error) {
-        console.error('Error loading settings:', error);
         setError(
           error instanceof Error ? error.message : 'An error occurred while loading settings',
         );
@@ -111,8 +110,7 @@ export default function SystemSettings() {
       } else {
         throw new Error(data.message || 'خطا در ذخیره تنظیمات');
       }
-    } catch (error) {
-      console.error('Error saving settings:', error);
+    } catch (_error) {
       toast({
         title: 'خطا',
         description: 'خطا در ذخیره تنظیمات',

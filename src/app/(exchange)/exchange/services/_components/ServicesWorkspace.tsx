@@ -17,11 +17,8 @@
  */
 
 import { updateMyExchangeServices } from '@/actions/exchange-services';
-import { getServiceMeta, type ExchangeServiceMeta } from '@/lib/exchange-services';
-import {
-  StickySaveBar,
-  SettingsSurfaceCard,
-} from '@/components/Dashboard/primitives';
+import { SettingsSurfaceCard, StickySaveBar } from '@/components/Dashboard/primitives';
+import type { ExchangeServiceMeta } from '@/lib/exchange-services';
 import {
   ArrowDown,
   ArrowUp,
@@ -33,8 +30,8 @@ import {
   Type,
 } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
-import s from './ServicesWorkspace.module.css';
 import ServicesOnboarding from './ServicesOnboarding';
+import s from './ServicesWorkspace.module.css';
 
 type ItemState = {
   id: string;
@@ -135,7 +132,9 @@ export default function ServicesWorkspace({ initialItems, canEdit }: Props) {
         }
         if (it.ctaHref && !/^(https?:\/\/|\/)/.test(it.ctaHref)) {
           setStatus('error');
-          setErrorMessage(`لینک CTA برای "${it.meta.name}" باید با http/https شروع شود یا مسیر داخلی باشد`);
+          setErrorMessage(
+            `لینک CTA برای "${it.meta.name}" باید با http/https شروع شود یا مسیر داخلی باشد`,
+          );
           return;
         }
       }
@@ -200,7 +199,7 @@ export default function ServicesWorkspace({ initialItems, canEdit }: Props) {
         </div>
       </SettingsSurfaceCard>
 
-      <ul className={s.list} role="list">
+      <ul className={s.list}>
         {items.map((item, idx) => (
           <li
             key={item.serviceKey}
@@ -232,10 +231,7 @@ export default function ServicesWorkspace({ initialItems, canEdit }: Props) {
                 <span className={s.orderLabel}>{Math.floor(item.order / 10)}</span>
               </div>
 
-              <div
-                className={`${s.itemIcon} ${s[`accent_${item.meta.accent}`] ?? ''}`}
-                aria-hidden
-              >
+              <div className={`${s.itemIcon} ${s[`accent_${item.meta.accent}`] ?? ''}`} aria-hidden>
                 <item.meta.icon size={20} strokeWidth={1.8} />
               </div>
 
@@ -252,9 +248,7 @@ export default function ServicesWorkspace({ initialItems, canEdit }: Props) {
                   disabled={!canEdit}
                 />
                 <span className={s.toggleSlider} aria-hidden />
-                <span className={s.toggleLabel}>
-                  {item.isActive ? 'فعال' : 'غیرفعال'}
-                </span>
+                <span className={s.toggleLabel}>{item.isActive ? 'فعال' : 'غیرفعال'}</span>
               </label>
             </header>
 
@@ -280,9 +274,7 @@ export default function ServicesWorkspace({ initialItems, canEdit }: Props) {
                     rows={2}
                     disabled={!canEdit}
                   />
-                  <span className={s.counter}>
-                    {(item.description ?? '').length}/400
-                  </span>
+                  <span className={s.counter}>{(item.description ?? '').length}/400</span>
                 </div>
 
                 <div className={s.field}>
@@ -305,8 +297,8 @@ export default function ServicesWorkspace({ initialItems, canEdit }: Props) {
                     disabled={!canEdit}
                   />
                   <span className={s.hint}>
-                    اگر لینک خارجی بدهید، مشتری به سایت شما هدایت می‌شود؛ در غیر این صورت
-                    مودال درخواست در سایت باز می‌شود.
+                    اگر لینک خارجی بدهید، مشتری به سایت شما هدایت می‌شود؛ در غیر این صورت مودال
+                    درخواست در سایت باز می‌شود.
                   </span>
                 </div>
 
@@ -345,7 +337,12 @@ export default function ServicesWorkspace({ initialItems, canEdit }: Props) {
                       onChange={(e) => {
                         const unit = e.target.value as 'min' | 'hour' | 'day';
                         const current = item.leadTimeMin ?? 0;
-                        const next = unit === 'min' ? current : unit === 'hour' ? Math.max(1, Math.round(current / 60)) : Math.max(1, Math.round(current / (60 * 24)));
+                        const next =
+                          unit === 'min'
+                            ? current
+                            : unit === 'hour'
+                              ? Math.max(1, Math.round(current / 60))
+                              : Math.max(1, Math.round(current / (60 * 24)));
                         updateItem(item.serviceKey, { leadTimeMin: next });
                       }}
                       disabled={!canEdit}
@@ -357,8 +354,8 @@ export default function ServicesWorkspace({ initialItems, canEdit }: Props) {
                     </select>
                   </div>
                   <span className={s.hint}>
-                    به مشتری نشان داده می‌شود: «پاسخ‌گویی: X ساعت». خالی بگذارید اگر نمی‌توانید
-                    تخمین بزنید.
+                    به مشتری نشان داده می‌شود: «پاسخ‌گویی: X ساعت». خالی بگذارید اگر نمی‌توانید تخمین
+                    بزنید.
                   </span>
                 </div>
               </div>

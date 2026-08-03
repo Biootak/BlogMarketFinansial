@@ -6,20 +6,12 @@
  */
 
 import { bulkSetCustomerStatus } from '@/actions/exchange-customers';
+import type { CustomerRow } from '@/actions/exchange-customers';
 import { useToast } from '@/components/ui/use-toast';
-import {
-  CheckCircle2,
-  Download,
-  Lock,
-  ShieldOff,
-  Trash2,
-  Unlock,
-  X,
-} from 'lucide-react';
+import { formatNumber } from '@/lib/customer-format';
+import { CheckCircle2, Download, Lock, ShieldOff, Trash2, Unlock, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
-import { formatNumber } from '@/lib/customer-format';
-import type { CustomerRow } from '@/actions/exchange-customers';
 import s from './CustomerBulkBar.module.css';
 
 interface Props {
@@ -82,15 +74,7 @@ export function CustomerBulkBar({ exchangeId, selectedIds, rows, onClear }: Prop
   const handleExportCsv = useCallback(() => {
     if (selectedRows.length === 0) return;
 
-    const header = [
-      'نام',
-      'تلفن',
-      'شهر',
-      'وضعیت',
-      'KYC',
-      'ریسک',
-      'تاریخ ثبت',
-    ];
+    const header = ['نام', 'تلفن', 'شهر', 'وضعیت', 'KYC', 'ریسک', 'تاریخ ثبت'];
     const lines = [header.join(',')];
     for (const r of selectedRows) {
       const date = new Intl.DateTimeFormat('fa-IR', {
@@ -144,12 +128,7 @@ export function CustomerBulkBar({ exchangeId, selectedIds, rows, onClear }: Prop
           <span className={s.countText}>
             <strong>{formatNumber(count)}</strong> مشتری انتخاب شده
           </span>
-          <button
-            type="button"
-            className={s.clearBtn}
-            onClick={onClear}
-            aria-label="لغو انتخاب"
-          >
+          <button type="button" className={s.clearBtn} onClick={onClear} aria-label="لغو انتخاب">
             <X size={14} aria-hidden />
           </button>
         </div>
@@ -185,12 +164,7 @@ export function CustomerBulkBar({ exchangeId, selectedIds, rows, onClear }: Prop
         <div className={s.divider} aria-hidden />
 
         {/* Export */}
-        <button
-          type="button"
-          className={s.exportBtn}
-          onClick={handleExportCsv}
-          disabled={pending}
-        >
+        <button type="button" className={s.exportBtn} onClick={handleExportCsv} disabled={pending}>
           <Download size={13} aria-hidden />
           <span>خروجی CSV</span>
         </button>

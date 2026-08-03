@@ -1,5 +1,8 @@
 'use client';
 
+import { Sparkles } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 /**
  * AuthStatus — client island for the header's sign-in / avatar area.
  *
@@ -14,9 +17,6 @@
  * arrives. Same UX, static-friendly render path.
  */
 import type { ReactNode } from 'react';
-import { useSession } from 'next-auth/react';
-import { Sparkles } from 'lucide-react';
-import Link from 'next/link';
 import AvatarDropdown from './AvatarDropdown';
 import NotifyDropdown from './NotifyDropdown';
 

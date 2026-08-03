@@ -2,10 +2,10 @@
 
 import type { CreateTicketInput, TicketStatus } from '@/lib/tickets';
 import {
-  createTicket as _createTicket,
-  updateTicketStatus as _updateTicketStatus,
   assignTicket as _assignTicket,
+  createTicket as _createTicket,
   replyToTicket as _replyToTicket,
+  updateTicketStatus as _updateTicketStatus,
 } from '@/lib/tickets';
 
 export async function createTicket(

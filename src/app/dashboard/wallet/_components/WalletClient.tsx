@@ -19,14 +19,9 @@ import {
   requestDeposit,
   requestWithdraw,
 } from '@/actions/fintech-account';
-import {
-  type FxQuote,
-  type FxTradeResult,
-  executeFxTrade,
-  getFxQuote,
-} from '@/actions/fx-trade';
+import { type FxQuote, type FxTradeResult, executeFxTrade, getFxQuote } from '@/actions/fx-trade';
+import { type CurrencyItem, CurrencySelect } from '@/components/ui/CurrencySelect';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CurrencySelect, type CurrencyItem } from '@/components/ui/CurrencySelect';
 import {
   ArrowDown,
   ArrowLeftRight,
@@ -554,9 +549,7 @@ function FxTradeModal({
 }) {
   const [step, setStep] = useState<1 | 2>(1);
   const [fromCurrency, setFromCurrency] = useState<string>(defaultFrom);
-  const [toCurrency, setToCurrency] = useState<string>(
-    defaultFrom === 'AFN' ? 'USD' : 'AFN',
-  );
+  const [toCurrency, setToCurrency] = useState<string>(defaultFrom === 'AFN' ? 'USD' : 'AFN');
   const [amount, setAmount] = useState('');
   const [amountCents, setAmountCents] = useState(0);
   const [quote, setQuote] = useState<FxQuote | null>(null);
@@ -601,12 +594,11 @@ function FxTradeModal({
   // محاسبه زنده مقدار مقصد
   const previewToCents =
     quote && amountCents > 0
-      ? Math.floor(
-          (amountCents * (1 - quote.feePercent / 100) * quote.rate),
-        )
+      ? Math.floor(amountCents * (1 - quote.feePercent / 100) * quote.rate)
       : 0;
 
-  const feeCents = quote && amountCents > 0 ? Math.floor((amountCents * quote.feePercent) / 100) : 0;
+  const feeCents =
+    quote && amountCents > 0 ? Math.floor((amountCents * quote.feePercent) / 100) : 0;
 
   function handleSwap() {
     const prevFrom = fromCurrency;
@@ -736,9 +728,7 @@ function FxTradeModal({
                 value={amount}
                 onChange={(e) => {
                   setAmount(e.target.value);
-                  setAmountCents(
-                    Math.round(Number(e.target.value.replace(/[^0-9.]/g, '')) * 100),
-                  );
+                  setAmountCents(Math.round(Number(e.target.value.replace(/[^0-9.]/g, '')) * 100));
                   setError(null);
                 }}
                 placeholder={`مثلاً ۱۰۰۰ ${fromCurrency}`}
@@ -814,9 +804,7 @@ function FxTradeModal({
                 <span className={s.fxQuoteLabel}>نرخ</span>
                 <span dir="ltr" className={s.fxDetailsValue}>
                   1 {result.fromCurrency} ={' '}
-                  {new Intl.NumberFormat('en-US', { maximumFractionDigits: 4 }).format(
-                    result.rate,
-                  )}{' '}
+                  {new Intl.NumberFormat('en-US', { maximumFractionDigits: 4 }).format(result.rate)}{' '}
                   {result.toCurrency}
                 </span>
                 <span className={s.fxQuoteLabel}>کارمزد</span>

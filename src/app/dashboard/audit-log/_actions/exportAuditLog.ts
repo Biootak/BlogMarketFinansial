@@ -12,8 +12,8 @@ type ExportOpts = {
 };
 
 const CATEGORY_PREFIXES: Record<string, string[]> = {
-  kyc:      ['KYC'],
-  deal:     ['DEAL', 'CURRENCY_DEAL'],
+  kyc: ['KYC'],
+  deal: ['DEAL', 'CURRENCY_DEAL'],
   exchange: ['EXCHANGE', 'SETTLEMENT'],
   security: ['FRAUD', 'SECURITY'],
   transfer: ['TRANSFER', 'PAYMENT'],
@@ -34,7 +34,9 @@ function buildCategoryFilter(category: string) {
  * Returns rows as CSV string for client-side download.
  * Auth: ADMIN / OWNER / SUPERADMIN only.
  */
-export async function exportAuditLogs(opts: ExportOpts): Promise<
+export async function exportAuditLogs(
+  opts: ExportOpts,
+): Promise<
   { success: true; csv: string } | { success: false; error: { code: string; message: string } }
 > {
   const session = await auth();
@@ -47,9 +49,7 @@ export async function exportAuditLogs(opts: ExportOpts): Promise<
   const categoryFilter = category ? buildCategoryFilter(category) : undefined;
 
   const where = {
-    ...(search
-      ? { action: { contains: search, mode: 'insensitive' as const } }
-      : {}),
+    ...(search ? { action: { contains: search, mode: 'insensitive' as const } } : {}),
     ...(entityType ? { entityType } : {}),
     ...(dateFrom || dateTo
       ? {

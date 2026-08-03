@@ -31,9 +31,9 @@ vi.mock('@/lib/db', () => ({
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import {
+  authFailureToActionResult,
   requireAdmin,
   requireAuthor,
-  authFailureToActionResult,
   requirePermission,
   requireRole,
   requireSuperAdmin,

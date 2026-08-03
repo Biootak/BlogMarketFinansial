@@ -3,7 +3,6 @@
 import { ChartSkeleton, StatsCardSkeleton } from '@/components/Skeletons';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
-import { cn } from '@/lib/utils';
 import {
   BarChart3,
   Download,

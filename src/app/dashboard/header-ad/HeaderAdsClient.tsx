@@ -17,6 +17,7 @@ import {
   toggleHeaderAd,
   updateHeaderAd,
 } from '@/actions/headerAdActions';
+import { MillionDollarEmpty } from '@/components/Dashboard/primitives';
 import {
   ActionButton,
   DashboardPageHeader,
@@ -27,13 +28,10 @@ import {
   DashboardTableHead,
   DashboardTableHeader,
   DashboardTableRow,
-  EmptyState,
   PrimaryActionButton,
-  StatusBadge,
 } from '@/components/Dashboard/shared/DashboardTableWrapper';
-import { MillionDollarEmpty } from '@/components/Dashboard/primitives';
-import { Button } from '@/components/ui/button';
 import SubmitButton from '@/components/SubmitButton';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -47,13 +45,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import {
-  HiOutlinePencil,
-  HiOutlinePlus,
-  HiOutlineSparkles,
-  HiOutlineTrash,
-  HiOutlineXMark,
-} from 'react-icons/hi2';
+import { HiOutlinePencil, HiOutlinePlus, HiOutlineSparkles, HiOutlineTrash } from 'react-icons/hi2';
 
 type Theme = 'PRIMARY' | 'ACCENT' | 'NEUTRAL' | 'DARK' | 'GRADIENT';
 type Variant = 'TEXT' | 'IMAGE' | 'MIXED';

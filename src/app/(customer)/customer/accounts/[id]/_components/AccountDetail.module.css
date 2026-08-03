@@ -21,15 +21,15 @@
   animation: cardEnter 360ms var(--ds-ease-out-quart) both;
 }
 
-.hero[data-status='success'] {
+.hero[data-status="success"] {
   border-color: color-mix(in oklch, var(--nova-up) 30%, var(--ds-border-subtle));
 }
 
-.hero[data-status='warning'] {
+.hero[data-status="warning"] {
   border-color: color-mix(in oklch, var(--nova-amber) 35%, var(--ds-border-subtle));
 }
 
-.hero[data-status='danger'] {
+.hero[data-status="danger"] {
   border-color: color-mix(in oklch, var(--nova-down) 35%, var(--ds-border-subtle));
 }
 
@@ -250,11 +250,11 @@
   letter-spacing: -0.01em;
 }
 
-.statValue[data-tone='credit'] {
+.statValue[data-tone="credit"] {
   color: var(--nova-up);
 }
 
-.statValue[data-tone='debit'] {
+.statValue[data-tone="debit"] {
   color: var(--nova-down);
 }
 
@@ -384,12 +384,12 @@
   flex-shrink: 0;
 }
 
-.ledgerRow[data-tone='credit'] .ledgerIcon {
+.ledgerRow[data-tone="credit"] .ledgerIcon {
   background: color-mix(in oklch, var(--nova-up) 12%, transparent);
   color: var(--nova-up);
 }
 
-.ledgerRow[data-tone='debit'] .ledgerIcon {
+.ledgerRow[data-tone="debit"] .ledgerIcon {
   background: color-mix(in oklch, var(--nova-down) 12%, transparent);
   color: var(--nova-down);
 }
@@ -433,11 +433,11 @@
   letter-spacing: -0.005em;
 }
 
-.ledgerAmount[data-tone='credit'] {
+.ledgerAmount[data-tone="credit"] {
   color: var(--nova-up);
 }
 
-.ledgerAmount[data-tone='debit'] {
+.ledgerAmount[data-tone="debit"] {
   color: var(--nova-down);
 }
 
@@ -481,7 +481,7 @@
 }
 
 .actionCard::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block: 0;
   inset-inline-start: 0;

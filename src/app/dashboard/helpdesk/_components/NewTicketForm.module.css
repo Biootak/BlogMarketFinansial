@@ -34,7 +34,8 @@
   font-variant-numeric: tabular-nums;
 }
 
-.input, .textarea {
+.input,
+.textarea {
   width: 100%;
   padding: 0.625rem 0.75rem;
   font-size: 0.875rem;
@@ -46,12 +47,14 @@
   border-radius: var(--ds-radius-md, 0.625rem);
   box-sizing: border-box;
   transition: border-color 180ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)),
-              background 180ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+    background 180ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
 }
-.input:hover, .textarea:hover {
+.input:hover,
+.textarea:hover {
   border-color: var(--ds-color-border-strong, rgba(0, 0, 0, 0.18));
 }
-.input:focus, .textarea:focus {
+.input:focus,
+.textarea:focus {
   outline: none;
   border-color: var(--ds-color-accent, currentColor);
   background: var(--ds-color-surface, white);
@@ -71,7 +74,9 @@
   gap: 0.5rem;
 }
 @media (min-width: 480px) {
-  .priorityGrid { grid-template-columns: repeat(4, 1fr); }
+  .priorityGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .priorityBtn {
@@ -92,15 +97,23 @@
   border-color: var(--ds-color-border-strong, rgba(0, 0, 0, 0.2));
   transform: translateY(-1px);
 }
-.priorityBtn[data-active='true'] {
+.priorityBtn[data-active="true"] {
   background: color-mix(in oklch, currentColor 5%, var(--ds-color-surface, white));
   border-color: currentColor;
   color: var(--ds-color-accent, currentColor);
 }
-.priorityBtn[data-active='true'][data-tone='rose']    { color: oklch(50% 0.13 15); }
-.priorityBtn[data-active='true'][data-tone='amber']   { color: oklch(50% 0.12 70); }
-.priorityBtn[data-active='true'][data-tone='indigo']  { color: oklch(50% 0.13 245); }
-.priorityBtn[data-active='true'][data-tone='neutral'] { color: var(--ds-color-text-primary, currentColor); }
+.priorityBtn[data-active="true"][data-tone="rose"] {
+  color: oklch(50% 0.13 15);
+}
+.priorityBtn[data-active="true"][data-tone="amber"] {
+  color: oklch(50% 0.12 70);
+}
+.priorityBtn[data-active="true"][data-tone="indigo"] {
+  color: oklch(50% 0.13 245);
+}
+.priorityBtn[data-active="true"][data-tone="neutral"] {
+  color: var(--ds-color-text-primary, currentColor);
+}
 
 .priorityName {
   font-size: 0.8125rem;
@@ -138,7 +151,7 @@
   color: var(--ds-color-text-primary, currentColor);
   border-color: var(--ds-color-border-strong, rgba(0, 0, 0, 0.2));
 }
-.chip[data-active='true'] {
+.chip[data-active="true"] {
   background: var(--ds-color-text-primary, currentColor);
   color: var(--ds-color-surface, white);
   border-color: var(--ds-color-text-primary, currentColor);
@@ -154,17 +167,21 @@
   font-weight: 500;
   border-radius: var(--ds-radius-md, 0.625rem);
 }
-.feedback[data-tone='success'] {
+.feedback[data-tone="success"] {
   color: oklch(45% 0.12 165);
   background: color-mix(in oklch, oklch(60% 0.12 165) 10%, transparent);
   border: 1px solid color-mix(in oklch, oklch(60% 0.12 165) 25%, transparent);
 }
-.feedback[data-tone='error'] {
+.feedback[data-tone="error"] {
   color: oklch(45% 0.15 0);
   background: color-mix(in oklch, oklch(50% 0.15 0) 10%, transparent);
   border: 1px solid color-mix(in oklch, oklch(50% 0.15 0) 25%, transparent);
 }
-.feedbackIcon { width: 1rem; height: 1rem; flex-shrink: 0; }
+.feedbackIcon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
 
 /* ── footer ─────────────────────────────────────────────── */
 .footer {
@@ -196,8 +213,14 @@
   color: var(--ds-color-text-primary, currentColor);
   border-color: var(--ds-color-border-strong, rgba(0, 0, 0, 0.2));
 }
-.cancelBtn:disabled { opacity: 0.5; cursor: not-allowed; }
-.cancelIcon { width: 0.875rem; height: 0.875rem; }
+.cancelBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.cancelIcon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
 
 .submitBtn {
   display: inline-flex;
@@ -218,10 +241,26 @@
   transform: translateY(-1px);
   filter: brightness(1.1);
 }
-.submitBtn:disabled { opacity: 0.4; cursor: not-allowed; }
-.submitIcon, .submitIconEnd { width: 0.875rem; height: 0.875rem; }
-.submitIconEnd { opacity: 0.6; margin-inline-start: 0.125rem; }
+.submitBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.submitIcon,
+.submitIconEnd {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+.submitIconEnd {
+  opacity: 0.6;
+  margin-inline-start: 0.125rem;
+}
 
 /* ── shared ─────────────────────────────────────────────── */
-.spin { animation: new-spin 1.4s linear infinite; }
-@keyframes new-spin { to { transform: rotate(360deg); } }
+.spin {
+  animation: new-spin 1.4s linear infinite;
+}
+@keyframes new-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

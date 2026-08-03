@@ -6,21 +6,14 @@
  * هر audience = کارت افقی بزرگ با visualizer
  */
 
-import { useMemo, useState } from 'react';
-import Link from 'next/link';
-import {
-  ChevronLeft,
-  Layers,
-  Search,
-  Sparkles,
-  Target,
-  Users,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { LiveDot } from '@/components/Dashboard/PlatformHub';
+import { CountUp, EmptyState } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { CountUp, EmptyState } from '@/components/Dashboard/primitives';
-import { LiveDot } from '@/components/Dashboard/PlatformHub';
+import { ChevronLeft, Layers, Search, Sparkles, Target, Users } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
 import s from './Audiences.module.css';
 
 type AudienceTone = 'emerald' | 'indigo' | 'amber' | 'violet' | 'cyan' | 'rose';
@@ -93,18 +86,24 @@ export function AudiencesView({ initialData }: { initialData: AudiencesViewData 
 
   const totalUsers = initialData.totalUsers;
   const totalTargeted = initialData.totalTargeted;
-  const coveragePct = totalUsers > 0 ? Math.round((totalTargeted / totalUsers) * 100) : 0;
+  const _coveragePct = totalUsers > 0 ? Math.round((totalTargeted / totalUsers) * 100) : 0;
 
   return (
     <div className={s.page} dir="rtl">
       {/* ═══ HEADER ═══════════════════════════════════════ */}
       <header className={s.header}>
         <nav className={s.crumbs} aria-label="مسیر">
-          <Link href="/dashboard" className={s.crumbLink}>داشبورد</Link>
+          <Link href="/dashboard" className={s.crumbLink}>
+            داشبورد
+          </Link>
           <span className={s.crumbSep}>/</span>
-          <Link href="/dashboard/communication" className={s.crumbLink}>مرکز ارتباطات</Link>
+          <Link href="/dashboard/communication" className={s.crumbLink}>
+            مرکز ارتباطات
+          </Link>
           <span className={s.crumbSep}>/</span>
-          <span className={s.crumbCurrent} aria-current="page">مخاطبان هدف</span>
+          <span className={s.crumbCurrent} aria-current="page">
+            مخاطبان هدف
+          </span>
         </nav>
 
         <div className={s.headerMain}>
@@ -115,7 +114,8 @@ export function AudiencesView({ initialData }: { initialData: AudiencesViewData 
             </span>
             <h1 className={s.title}>مخاطبان هدف</h1>
             <p className={s.lead}>
-              پیام را به گروه دقیق برسانید — نه به همه. هر audience یک جامعه با رفتار و حساسیت متفاوت.
+              پیام را به گروه دقیق برسانید — نه به همه. هر audience یک جامعه با رفتار و حساسیت
+              متفاوت.
             </p>
           </div>
           <div className={s.headerMainRight}>
@@ -251,7 +251,12 @@ export function AudiencesView({ initialData }: { initialData: AudiencesViewData 
             const coverage = totalUsers > 0 ? row.count / totalUsers : 0;
             const ratio = Math.max(0.04, Math.min(1, coverage * 2.5));
             return (
-              <li key={row.id} className={s.card} data-tone={row.tone} style={{ '--aud-hue': hue } as React.CSSProperties}>
+              <li
+                key={row.id}
+                className={s.card}
+                data-tone={row.tone}
+                style={{ '--aud-hue': hue } as React.CSSProperties}
+              >
                 <Link
                   href={`/dashboard/communication/audiences/${row.id}`}
                   className={s.cardLink}
@@ -272,10 +277,7 @@ export function AudiencesView({ initialData }: { initialData: AudiencesViewData 
 
                 {/* radial visual */}
                 <div className={s.visual} aria-hidden>
-                  <div
-                    className={s.visualArc}
-                    style={{ ['--p' as string]: `${ratio * 100}%` }}
-                  />
+                  <div className={s.visualArc} style={{ ['--p' as string]: `${ratio * 100}%` }} />
                   <div className={s.visualCore}>
                     <span className={s.visualValue}>{fmtPersian(row.count)}</span>
                     <span className={s.visualUnit}>کاربر</span>
@@ -289,9 +291,7 @@ export function AudiencesView({ initialData }: { initialData: AudiencesViewData 
                   </div>
                   <div className={s.footMetric}>
                     <span className={s.footKey}>سهم</span>
-                    <span className={s.footVal}>
-                      {PERSIAN_NUM((coverage * 100).toFixed(1))}٪
-                    </span>
+                    <span className={s.footVal}>{PERSIAN_NUM((coverage * 100).toFixed(1))}٪</span>
                   </div>
                 </footer>
               </li>

@@ -19,9 +19,9 @@
   /* Mount fade-in */
   opacity: 0;
   transform: translateY(8px);
-  transition:
-    opacity var(--ds-duration-base) var(--ds-ease-out-quart, cubic-bezier(0.16, 1, 0.3, 1)),
-    transform var(--ds-duration-base) var(--ds-ease-out-quart, cubic-bezier(0.16, 1, 0.3, 1));
+  transition: opacity var(--ds-duration-base)
+    var(--ds-ease-out-quart, cubic-bezier(0.16, 1, 0.3, 1)), transform var(--ds-duration-base)
+    var(--ds-ease-out-quart, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 @media (min-width: 768px) {
@@ -30,7 +30,7 @@
   }
 }
 
-.container[data-mounted='true'] {
+.container[data-mounted="true"] {
   opacity: 1;
   transform: translateY(0);
 }
@@ -43,19 +43,20 @@
   height: 3.25rem;
   border-radius: 999px;
   border: 0.5px solid color-mix(in oklch, white 24%, transparent);
-  background: linear-gradient(135deg,
+  background: linear-gradient(
+    135deg,
     color-mix(in oklch, var(--ds-primary, #10b981) 100%, transparent),
-    color-mix(in oklch, #6366f1 80%, transparent));
+    color-mix(in oklch, #6366f1 80%, transparent)
+  );
   color: white;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  box-shadow:
-    0 1px 0 0 rgba(255, 255, 255, 0.2) inset,
-    0 10px 30px -8px color-mix(in oklch, var(--ds-primary, #10b981) 50%, transparent),
-    0 4px 12px -4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.2) inset, 0 10px 30px -8px
+    color-mix(in oklch, var(--ds-primary, #10b981) 50%, transparent), 0 4px 12px -4px
+    rgba(0, 0, 0, 0.2);
   transition: transform 200ms var(--ds-ease-out-quart, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
@@ -88,7 +89,7 @@
   filter: brightness(1.1) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
 }
 
-.fabIcon[data-open='true'] {
+.fabIcon[data-open="true"] {
   transform: rotate(90deg);
 }
 
@@ -105,13 +106,14 @@
 }
 
 .fab:hover .fabPulse,
-.container[data-open='true'] .fabPulse {
+.container[data-open="true"] .fabPulse {
   opacity: 0.7;
   animation: qa-fab-pulse 2.4s ease-in-out infinite;
 }
 
 @keyframes qa-fab-pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.55;
   }
@@ -138,22 +140,20 @@
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 0.5px solid color-mix(in oklch, var(--ds-text-primary) 8%, transparent);
   border-radius: var(--ds-radius-xl, 0.875rem);
-  box-shadow:
-    0 1px 0 0 color-mix(in oklch, var(--ds-text-primary) 4%, transparent) inset,
-    0 10px 30px -10px color-mix(in oklch, var(--ds-text-primary) 22%, transparent),
-    0 4px 12px -4px color-mix(in oklch, var(--ds-text-primary) 12%, transparent);
+  box-shadow: 0 1px 0 0 color-mix(in oklch, var(--ds-text-primary) 4%, transparent) inset, 0 10px
+    30px -10px color-mix(in oklch, var(--ds-text-primary) 22%, transparent), 0 4px 12px -4px
+    color-mix(in oklch, var(--ds-text-primary) 12%, transparent);
 
   /* Closed state */
   opacity: 0;
   transform: translateY(8px) scale(0.96);
   transform-origin: bottom right;
   pointer-events: none;
-  transition:
-    opacity 200ms var(--ds-ease-out-quart, cubic-bezier(0.16, 1, 0.3, 1)),
-    transform 240ms var(--ds-ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
+  transition: opacity 200ms var(--ds-ease-out-quart, cubic-bezier(0.16, 1, 0.3, 1)), transform 240ms
+    var(--ds-ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
 }
 
-.container[data-open='true'] .menu {
+.container[data-open="true"] .menu {
   opacity: 1;
   transform: translateY(0) scale(1);
   pointer-events: auto;
@@ -162,13 +162,12 @@
 .menuItem {
   transform: translateY(6px);
   opacity: 0;
-  transition:
-    transform 240ms var(--ds-ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)),
-    opacity 200ms var(--ds-ease-out-quart, cubic-bezier(0.16, 1, 0.3, 1));
+  transition: transform 240ms var(--ds-ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)), opacity
+    200ms var(--ds-ease-out-quart, cubic-bezier(0.16, 1, 0.3, 1));
   transition-delay: calc(var(--qa-i, 0) * 30ms);
 }
 
-.container[data-open='true'] .menuItem {
+.container[data-open="true"] .menuItem {
   transform: translateY(0);
   opacity: 1;
 }
@@ -224,9 +223,11 @@
   font-size: 0.6875rem;
   font-weight: 600;
   border-radius: 999px;
-  background: linear-gradient(135deg,
+  background: linear-gradient(
+    135deg,
     color-mix(in oklch, var(--ds-primary, #10b981) 18%, transparent),
-    color-mix(in oklch, #6366f1 18%, transparent));
+    color-mix(in oklch, #6366f1 18%, transparent)
+  );
   color: var(--ds-primary, #10b981);
 }
 

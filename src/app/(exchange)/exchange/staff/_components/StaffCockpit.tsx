@@ -16,24 +16,24 @@
  *  - روی optimistic update، UI فوری به‌روز می‌شود و در صورت خطا rollback.
  */
 
-import { Activity, ArrowLeft, BarChart3 } from 'lucide-react';
-import Link from 'next/link';
-import { useCallback, useState } from 'react';
-import { ConfirmDialog } from '@/components/Dashboard/primitives/ConfirmDialog';
 import {
-  revokeExchangeStaff,
-  updateStaffRole,
   type ExchangeStaffRow,
   type StaffActivityItem,
   type StaffMetrics,
+  revokeExchangeStaff,
+  updateStaffRole,
 } from '@/actions/exchanges';
+import { ConfirmDialog } from '@/components/Dashboard/primitives/ConfirmDialog';
+import { Activity, ArrowLeft, BarChart3 } from 'lucide-react';
+import Link from 'next/link';
+import { useCallback, useState } from 'react';
 import { StaffActivityTimeline } from './StaffActivityTimeline';
 import { StaffAddPanel } from './StaffAddPanel';
+import s from './StaffCockpit.module.css';
 import { StaffDirectory } from './StaffDirectory';
 import { StaffKpiRibbon } from './StaffKpiRibbon';
 import { StaffOrbit } from './StaffOrbit';
 import { StaffTabs } from './StaffTabs';
-import s from './StaffCockpit.module.css';
 
 interface Props {
   exchangeId: string;
@@ -118,35 +118,49 @@ export function StaffCockpit({
             سکان صرافی در دستان {metrics.total.toLocaleString('fa-IR')} نفر
           </h1>
           <p className={s.heroSub}>
-            اعضای فعال، دعوت‌های در انتظار و دسترسی‌ها را در یک نگاه ببینید. مالک
-            مرکز ثقل تیم است و هر تغییر نقش فوراً در سلسله‌مراتب نمایش داده می‌شود.
+            اعضای فعال، دعوت‌های در انتظار و دسترسی‌ها را در یک نگاه ببینید. مالک مرکز ثقل تیم است و
+            هر تغییر نقش فوراً در سلسله‌مراتب نمایش داده می‌شود.
           </p>
           <div className={s.heroMetaRow}>
             <span className={s.heroMeta}>
-              <span aria-hidden style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--at-accent)' }} />
+              <span
+                aria-hidden
+                style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--at-accent)' }}
+              />
               <strong>{metrics.byRole.OWNER.toLocaleString('fa-IR')}</strong> مالک
             </span>
             <span className={s.heroMeta}>
-              <span aria-hidden style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--at-gold)' }} />
+              <span
+                aria-hidden
+                style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--at-gold)' }}
+              />
               <strong>{metrics.byRole.MANAGER.toLocaleString('fa-IR')}</strong> مدیر
             </span>
             <span className={s.heroMeta}>
-              <span aria-hidden style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--at-info)' }} />
+              <span
+                aria-hidden
+                style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--at-info)' }}
+              />
               <strong>{metrics.byRole.STAFF.toLocaleString('fa-IR')}</strong> کارمند
             </span>
             <span className={s.heroMeta}>
-              <span aria-hidden style={{ width: 6, height: 6, borderRadius: '50%', background: 'transparent', border: '1px dashed var(--at-fg-faint)' }} />
+              <span
+                aria-hidden
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  background: 'transparent',
+                  border: '1px dashed var(--at-fg-faint)',
+                }}
+              />
               <strong>{metrics.byRole.VIEWER.toLocaleString('fa-IR')}</strong> مشاهده‌گر
             </span>
           </div>
         </div>
 
         <div className={s.heroOrbitCol}>
-          <StaffOrbit
-            members={members}
-            totalCount={members.length}
-            exchangeName={exchangeName}
-          />
+          <StaffOrbit members={members} totalCount={members.length} exchangeName={exchangeName} />
         </div>
       </section>
 
@@ -176,9 +190,7 @@ export function StaffCockpit({
         <div className={s.panel}>
           <div className={s.panelHead}>
             <h2 className={s.panelTitle}>فهرست اعضا</h2>
-            <span className={s.panelMeta}>
-              {members.length.toLocaleString('fa-IR')} عضو فعال
-            </span>
+            <span className={s.panelMeta}>{members.length.toLocaleString('fa-IR')} عضو فعال</span>
           </div>
           <StaffDirectory
             members={members}
@@ -197,7 +209,12 @@ export function StaffCockpit({
           <div className={s.panel}>
             <div className={s.panelHead}>
               <h2 className={s.panelTitle}>
-                <Activity size={13} strokeWidth={2} aria-hidden style={{ color: 'var(--at-accent)' }} />
+                <Activity
+                  size={13}
+                  strokeWidth={2}
+                  aria-hidden
+                  style={{ color: 'var(--at-accent)' }}
+                />
                 فعالیت‌های اخیر
               </h2>
               <Link href="/exchange/staff/activity" className={s.footerLink}>
@@ -212,13 +229,9 @@ export function StaffCockpit({
 
       {/* Footer */}
       <footer className={s.footer}>
-        <span>
-          {metrics.activeLast30d.toLocaleString('fa-IR')} نفر در ۳۰ روز اخیر فعال بوده‌اند
-        </span>
+        <span>{metrics.activeLast30d.toLocaleString('fa-IR')} نفر در ۳۰ روز اخیر فعال بوده‌اند</span>
         <span className={s.footerSep}>·</span>
-        <span>
-          {metrics.pendingInvitations.toLocaleString('fa-IR')} دعوت در انتظار
-        </span>
+        <span>{metrics.pendingInvitations.toLocaleString('fa-IR')} دعوت در انتظار</span>
         <span className={s.footerSep}>·</span>
         <Link href="/exchange/dashboard" className={s.footerLink}>
           بازگشت به داشبورد

@@ -19,7 +19,7 @@ import { useDirection } from '@/hooks/useDirection';
 import { cn } from '@/lib/utils';
 import type { Content, EditorOptions } from '@tiptap/core';
 import { EditorContent, useEditor } from '@tiptap/react';
-import React, {
+import {
   forwardRef,
   useCallback,
   useEffect,
@@ -451,7 +451,6 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
 
     const getEditorInstance = useCallback(() => {
       if (!editor) {
-        console.warn('Editor instance is not available');
         return null;
       }
       return editor;
@@ -591,10 +590,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
               });
             }
           }
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.warn('Auto-save restore failed:', e);
-        }
+        } catch (_e) {}
       }
 
       const handleUpdate = () => {
@@ -608,12 +604,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
                 savedAt: Date.now(),
               }),
             );
-          } catch (e) {
-            // QuotaExceeded یا localStorage در دسترس نبودن — silent fail
-            // بهتر از کرش کردن ویرایشگر است.
-            // eslint-disable-next-line no-console
-            console.warn('Auto-save failed:', e);
-          }
+          } catch (_e) {}
         }, AUTO_SAVE_DEBOUNCE_MS);
       };
 

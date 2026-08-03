@@ -50,10 +50,8 @@ import {
   HiOutlineArrowRight,
   HiOutlineArrowTopRightOnSquare,
   HiOutlineCalendarDays,
-  HiOutlineChartBar,
   HiOutlineHome,
   HiOutlinePencilSquare,
-  HiOutlineSparkles,
 } from 'react-icons/hi2';
 
 interface AtelierMonthCalendarProps {

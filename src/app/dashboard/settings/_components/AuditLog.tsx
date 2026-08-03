@@ -12,11 +12,11 @@
  *  نکته: داده‌های بزرگ به صورت server-side pagination لود می‌شوند.
  */
 
+import { queryAuditLogs } from '@/actions/settingsActions';
+import { useActionToast } from '@/hooks/useActionToast';
 import { ChevronRight, Filter, Loader2, RefreshCw, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { queryAuditLogs } from '@/actions/settingsActions';
 import s from './AuditLog.module.css';
-import { useActionToast } from '@/hooks/useActionToast';
 
 interface AuditRow {
   id: string;
@@ -205,11 +205,7 @@ export function AuditLog() {
         </footer>
       )}
 
-      {total > 0 && (
-        <p className={s.total}>
-          مجموع: {total.toLocaleString('fa-IR')} رویداد
-        </p>
-      )}
+      {total > 0 && <p className={s.total}>مجموع: {total.toLocaleString('fa-IR')} رویداد</p>}
     </div>
   );
 }

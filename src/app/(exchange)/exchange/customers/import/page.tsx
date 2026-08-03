@@ -1,3 +1,4 @@
+import { getExchangeForUser } from '@/actions/exchanges';
 /**
  * /exchange/customers/import — ویزارد ورود دسته‌جمعی.
  *
@@ -5,11 +6,10 @@
  * validation و pre-flight preview قبل از ثبت.
  */
 import { auth } from '@/auth';
-import { getExchangeForUser } from '@/actions/exchanges';
-import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import { CustomerImportWizard } from '@/components/Exchange/customers/CustomerImportWizard';
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = { title: 'ورود دسته‌جمعی مشتریان · صرافی' };
 

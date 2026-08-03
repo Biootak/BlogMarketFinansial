@@ -47,19 +47,19 @@
   transform: translateY(-1px);
 }
 
-.summaryCard[data-tone='neutral'] {
+.summaryCard[data-tone="neutral"] {
   border-inline-start-color: var(--ds-brand-500);
 }
 
-.summaryCard[data-tone='credit'] {
+.summaryCard[data-tone="credit"] {
   border-inline-start-color: var(--nova-up);
 }
 
-.summaryCard[data-tone='warning'] {
+.summaryCard[data-tone="warning"] {
   border-inline-start-color: var(--nova-amber);
 }
 
-.summaryCard[data-tone='danger'] {
+.summaryCard[data-tone="danger"] {
   border-inline-start-color: var(--nova-down);
 }
 
@@ -73,22 +73,22 @@
   flex-shrink: 0;
 }
 
-.summaryCard[data-tone='neutral'] .summaryIcon {
+.summaryCard[data-tone="neutral"] .summaryIcon {
   background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
   color: var(--ds-brand-600);
 }
 
-.summaryCard[data-tone='credit'] .summaryIcon {
+.summaryCard[data-tone="credit"] .summaryIcon {
   background: color-mix(in oklch, var(--nova-up) 12%, transparent);
   color: var(--nova-up);
 }
 
-.summaryCard[data-tone='warning'] .summaryIcon {
+.summaryCard[data-tone="warning"] .summaryIcon {
   background: color-mix(in oklch, var(--nova-amber) 12%, transparent);
   color: var(--nova-amber);
 }
 
-.summaryCard[data-tone='danger'] .summaryIcon {
+.summaryCard[data-tone="danger"] .summaryIcon {
   background: color-mix(in oklch, var(--nova-down) 12%, transparent);
   color: var(--nova-down);
 }
@@ -116,15 +116,15 @@
   line-height: 1.05;
 }
 
-.summaryCard[data-tone='credit'] .summaryValue {
+.summaryCard[data-tone="credit"] .summaryValue {
   color: var(--nova-up);
 }
 
-.summaryCard[data-tone='warning'] .summaryValue {
+.summaryCard[data-tone="warning"] .summaryValue {
   color: var(--nova-amber);
 }
 
-.summaryCard[data-tone='danger'] .summaryValue {
+.summaryCard[data-tone="danger"] .summaryValue {
   color: var(--nova-down);
 }
 
@@ -192,7 +192,7 @@
   border-color: color-mix(in oklch, var(--ds-brand-500) 30%, transparent);
 }
 
-.chip[data-active='true'] {
+.chip[data-active="true"] {
   background: var(--ds-brand-500);
   color: var(--ds-canvas);
   border-color: var(--ds-brand-500);
@@ -308,23 +308,23 @@
   transition: inline-size 200ms var(--ds-ease-out-quart);
 }
 
-.rowRail[data-status='pending'] {
+.rowRail[data-status="pending"] {
   background: var(--nova-amber);
 }
 
-.rowRail[data-status='progress'] {
+.rowRail[data-status="progress"] {
   background: var(--nova-cyan);
 }
 
-.rowRail[data-status='success'] {
+.rowRail[data-status="success"] {
   background: var(--nova-up);
 }
 
-.rowRail[data-status='danger'] {
+.rowRail[data-status="danger"] {
   background: var(--nova-down);
 }
 
-.rowRail[data-status='cancelled'] {
+.rowRail[data-status="cancelled"] {
   background: var(--ds-text-muted);
 }
 
@@ -407,11 +407,11 @@
   letter-spacing: -0.005em;
 }
 
-.rowAmount[data-tone='credit'] {
+.rowAmount[data-tone="credit"] {
   color: var(--nova-up);
 }
 
-.rowAmount[data-tone='debit'] {
+.rowAmount[data-tone="debit"] {
   color: var(--nova-down);
 }
 

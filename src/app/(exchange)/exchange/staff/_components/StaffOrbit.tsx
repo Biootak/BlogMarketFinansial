@@ -12,9 +12,9 @@
  *  - OWNER یک pulse نرم اطراف خود دارد (active center)
  */
 
-import Image from 'next/image';
 import type { ExchangeStaffRow } from '@/actions/exchanges';
-import { avatarTone, getInitialsFa, STAFF_ROLE_FA, type StaffRole } from '../_lib/staff-format';
+import Image from 'next/image';
+import { STAFF_ROLE_FA, type StaffRole, avatarTone, getInitialsFa } from '../_lib/staff-format';
 import s from './StaffCockpit.module.css';
 
 interface Props {
@@ -86,23 +86,24 @@ export function StaffOrbit({ members, totalCount, exchangeName }: Props) {
             </span>
           );
         })}
-        {remaining > 0 && (() => {
-          const angle = (N / Math.max(N + 1, 1)) * Math.PI * 2 - Math.PI / 2;
-          const r = 44;
-          const x = 50 + Math.cos(angle) * r;
-          const y = 50 + Math.sin(angle) * r;
-          return (
-            <span
-              key="__more"
-              className={s.orbitNode}
-              data-role="STAFF"
-              style={{ left: `${x}%`, top: `${y}%`, fontSize: 10 }}
-              title={`${remaining}+ عضو دیگر`}
-            >
-              +{remaining.toLocaleString('fa-IR')}
-            </span>
-          );
-        })()}
+        {remaining > 0 &&
+          (() => {
+            const angle = (N / Math.max(N + 1, 1)) * Math.PI * 2 - Math.PI / 2;
+            const r = 44;
+            const x = 50 + Math.cos(angle) * r;
+            const y = 50 + Math.sin(angle) * r;
+            return (
+              <span
+                key="__more"
+                className={s.orbitNode}
+                data-role="STAFF"
+                style={{ left: `${x}%`, top: `${y}%`, fontSize: 10 }}
+                title={`${remaining}+ عضو دیگر`}
+              >
+                +{remaining.toLocaleString('fa-IR')}
+              </span>
+            );
+          })()}
       </div>
 
       {/* legend */}

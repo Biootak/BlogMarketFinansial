@@ -33,9 +33,6 @@ vi.mock('@/lib/revalidate', () => ({
 
 // ─── Import های واقعی ─────────────────────────────────────────────────────────
 
-import prisma from '@/lib/db';
-import { requireAdmin } from '@/lib/require-auth';
-import { revalidateTag } from '@/lib/revalidate';
 import {
   getAllStaff,
   inviteStaff,
@@ -44,6 +41,9 @@ import {
   searchUsersForStaff,
   updateStaff,
 } from '@/actions/exchange-staff';
+import prisma from '@/lib/db';
+import { requireAdmin } from '@/lib/require-auth';
+import { revalidateTag } from '@/lib/revalidate';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -254,7 +254,10 @@ describe('revokeStaff', () => {
 
   it('با auth → revokedAt می‌گذارد و revalidate می‌کند', async () => {
     vi.mocked(requireAdmin).mockResolvedValue(MOCK_ADMIN);
-    vi.mocked(prisma.exchangeStaff.update).mockResolvedValue({ id: 'staff-1', revokedAt: new Date() } as never);
+    vi.mocked(prisma.exchangeStaff.update).mockResolvedValue({
+      id: 'staff-1',
+      revokedAt: new Date(),
+    } as never);
 
     const result = await revokeStaff('staff-1');
     expect(result.success).toBe(true);

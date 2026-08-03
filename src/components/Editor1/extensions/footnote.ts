@@ -26,8 +26,7 @@
  * ----------------------------------------------------------------------------
  */
 
-import { InputRule, Mark, Node, mergeAttributes } from '@tiptap/core';
-import type { Editor } from '@tiptap/core';
+import { Mark, Node, mergeAttributes } from '@tiptap/core';
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {

@@ -154,7 +154,7 @@
   .main-nav-container {
     height: 4rem; /* 64px - fallback on desktop */
   }
-  
+
   @supports (animation-timeline: scroll()) {
     .main-nav-container {
       height: 4.5rem; /* Start taller (72px) at the top of the page */
@@ -162,6 +162,24 @@
       animation-timeline: scroll(root block);
       animation-range: 0px 80px;
     }
+  }
+}
+
+/* ============================================================================
+   MobileBottomNav — glass backdrop-filter
+   در SCSS (غیر CSS-module) تعریف می‌شود چون Lightning CSS در CSS modules
+   `backdrop-filter` را drop می‌کند و نتیجه شفاف/بدون بلور می‌شود.
+   ============================================================================ */
+.mbn-glass {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+/* در حالت reduced-motion، بلور سنگین را غیرفعال می‌کنیم (بدون از دست دادن opacity) */
+@media (prefers-reduced-motion: reduce) {
+  .mbn-glass {
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
   }
 }
 

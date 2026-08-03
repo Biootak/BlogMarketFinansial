@@ -5,12 +5,12 @@
 import { getExchangeRateList } from '@/actions/market-rates';
 import { getRateLists } from '@/actions/rate-lists';
 import { PageHeader } from '@/components/Dashboard/primitives';
-import { SYMBOL_REGISTRY } from '@/lib/market-rates/registry';
 import type { MarketRateProvider, MarketRateUnit } from '@/lib/market-rates';
+import { SYMBOL_REGISTRY } from '@/lib/market-rates/registry';
 import { Suspense } from 'react';
+import type { RateRowData } from './_components/ExchangeRateRow';
 import ExchangeRatesHeader from './_components/ExchangeRatesHeader';
 import ExchangeRatesShell from './_components/ExchangeRatesShell';
-import type { RateRowData } from './_components/ExchangeRateRow';
 
 export const dynamic = 'force-dynamic';
 
@@ -69,10 +69,7 @@ export default async function ExchangeRatesPage() {
       />
 
       <Suspense fallback={null}>
-        <ExchangeRatesShell
-          initialRows={tableRows}
-          initialLists={lists}
-        />
+        <ExchangeRatesShell initialRows={tableRows} initialLists={lists} />
       </Suspense>
     </main>
   );

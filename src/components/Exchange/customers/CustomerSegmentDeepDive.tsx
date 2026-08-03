@@ -12,8 +12,8 @@
  */
 
 import type {
-  CustomerRow,
   CustomerRiskBucket,
+  CustomerRow,
   CustomerSegment,
   CustomerStats,
 } from '@/actions/exchange-customers';
@@ -43,10 +43,7 @@ type SegmentKey = 'ACTIVE' | 'PROSPECT' | 'FROZEN' | 'CLOSED';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const SEGMENT_META: Record<
-  SegmentKey,
-  { label: string; tone: string; hint: string }
-> = {
+const SEGMENT_META: Record<SegmentKey, { label: string; tone: string; hint: string }> = {
   ACTIVE: { label: 'فعال', tone: 'emerald', hint: 'مشتریان با تراکنش اخیر' },
   PROSPECT: { label: 'احتمالی', tone: 'sky', hint: 'در حال ثبت‌نام / بدون تراکنش' },
   FROZEN: { label: 'مسدود', tone: 'amber', hint: 'نیاز به بررسی یا مستندات' },
@@ -181,12 +178,12 @@ function MiniRow({ c, idx }: { c: CustomerRow; idx: number }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function CustomerSegmentDeepDive({
-  exchangeId,
+  exchangeId: _exchangeId,
   stats,
-  segments,
+  segments: _segments,
   riskBuckets,
   customersByStatus,
-  primaryCurrency,
+  primaryCurrency: _primaryCurrency,
 }: Props) {
   const [activeSegment, setActiveSegment] = useState<SegmentKey>('ACTIVE');
   const nr = new Intl.NumberFormat('fa-IR');
@@ -232,7 +229,12 @@ export function CustomerSegmentDeepDive({
           <div className={s.kycFunnel}>
             {[
               { label: 'کل مشتریان', count: stats.total, max: stats.total, tone: 'brand' },
-              { label: 'KYC تایید شده', count: stats.kycApproved, max: stats.total, tone: 'emerald' },
+              {
+                label: 'KYC تایید شده',
+                count: stats.kycApproved,
+                max: stats.total,
+                tone: 'emerald',
+              },
               { label: 'در انتظار', count: stats.kycPending, max: stats.total, tone: 'amber' },
               { label: 'ریسک بالا', count: stats.highRisk, max: stats.total, tone: 'rose' },
             ].map((row) => (
@@ -268,9 +270,7 @@ export function CustomerSegmentDeepDive({
               <span className={s.growthLbl}>مشتری جدید ۳۰ روز</span>
             </div>
             <div className={s.growthCell}>
-              <span className={s.growthVal}>
-                {(stats.activationRate * 100).toFixed(0)}٪
-              </span>
+              <span className={s.growthVal}>{(stats.activationRate * 100).toFixed(0)}٪</span>
               <span className={s.growthLbl}>نرخ فعال‌سازی</span>
             </div>
           </div>
@@ -314,8 +314,8 @@ export function CustomerSegmentDeepDive({
             ))}
             {currentList.length > 25 && (
               <div className={s.moreHint}>
-                +{nr.format(currentList.length - 25)} مشتری دیگر — برای مشاهده کامل به لیست
-                مراجعه کنید
+                +{nr.format(currentList.length - 25)} مشتری دیگر — برای مشاهده کامل به لیست مراجعه
+                کنید
               </div>
             )}
           </div>

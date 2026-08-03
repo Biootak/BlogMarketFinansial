@@ -30,14 +30,14 @@ vi.mock('@/lib/require-auth', () => ({
 
 // ─── Import ───────────────────────────────────────────────────────────────────
 
-import prisma from '@/lib/db';
-import { requireUser } from '@/lib/require-auth';
 import {
   cancelVirtualCard,
   getMyVirtualCards,
   issueVirtualCard,
   toggleFreezeCard,
 } from '@/actions/virtual-card';
+import prisma from '@/lib/db';
+import { requireUser } from '@/lib/require-auth';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -195,7 +195,10 @@ describe('toggleFreezeCard', () => {
 
   it('کارت BLOCKED → INVALID_STATUS', async () => {
     vi.mocked(requireUser).mockResolvedValue(AUTH_OK);
-    vi.mocked(prisma.virtualCard.findFirst).mockResolvedValue({ id: 'card-1', status: 'BLOCKED' } as never);
+    vi.mocked(prisma.virtualCard.findFirst).mockResolvedValue({
+      id: 'card-1',
+      status: 'BLOCKED',
+    } as never);
     const result = await toggleFreezeCard('card-1', true);
     expect(result.success).toBe(false);
     if (!result.success) expect(result.error.code).toBe('INVALID_STATUS');
@@ -203,7 +206,10 @@ describe('toggleFreezeCard', () => {
 
   it('freeze=true → status=FROZEN', async () => {
     vi.mocked(requireUser).mockResolvedValue(AUTH_OK);
-    vi.mocked(prisma.virtualCard.findFirst).mockResolvedValue({ id: 'card-1', status: 'ACTIVE' } as never);
+    vi.mocked(prisma.virtualCard.findFirst).mockResolvedValue({
+      id: 'card-1',
+      status: 'ACTIVE',
+    } as never);
     vi.mocked(prisma.virtualCard.update).mockResolvedValue(CARD_ROW);
 
     const result = await toggleFreezeCard('card-1', true);
@@ -215,7 +221,10 @@ describe('toggleFreezeCard', () => {
 
   it('freeze=false → status=ACTIVE', async () => {
     vi.mocked(requireUser).mockResolvedValue(AUTH_OK);
-    vi.mocked(prisma.virtualCard.findFirst).mockResolvedValue({ id: 'card-1', status: 'FROZEN' } as never);
+    vi.mocked(prisma.virtualCard.findFirst).mockResolvedValue({
+      id: 'card-1',
+      status: 'FROZEN',
+    } as never);
     vi.mocked(prisma.virtualCard.update).mockResolvedValue(CARD_ROW);
 
     const result = await toggleFreezeCard('card-1', false);
@@ -247,7 +256,10 @@ describe('cancelVirtualCard', () => {
 
   it('کارت موجود → BLOCKED می‌شود و audit ثبت می‌شود', async () => {
     vi.mocked(requireUser).mockResolvedValue(AUTH_OK);
-    vi.mocked(prisma.virtualCard.findFirst).mockResolvedValue({ id: 'card-1', status: 'ACTIVE' } as never);
+    vi.mocked(prisma.virtualCard.findFirst).mockResolvedValue({
+      id: 'card-1',
+      status: 'ACTIVE',
+    } as never);
     vi.mocked(prisma.virtualCard.update).mockResolvedValue(CARD_ROW);
     vi.mocked(prisma.auditLog.create).mockResolvedValue({} as never);
 

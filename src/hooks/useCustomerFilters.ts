@@ -5,10 +5,10 @@
  * نتیجه به‌صورت memoized برگردانده می‌شود.
  */
 
-import { useDeferredValue, useMemo, useState } from 'react';
-import { useDebounce } from '@/hooks/useDebounce';
 import type { CustomerRow } from '@/actions/exchange-customers';
-import { compareCustomers, type CustomerSort, type SortDir } from '@/lib/customer-segments';
+import { useDebounce } from '@/hooks/useDebounce';
+import { type CustomerSort, type SortDir, compareCustomers } from '@/lib/customer-segments';
+import { useDeferredValue, useMemo, useState } from 'react';
 
 export interface CustomerFilterState {
   query: string;

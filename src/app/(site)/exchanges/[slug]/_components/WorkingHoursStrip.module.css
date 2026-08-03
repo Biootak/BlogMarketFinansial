@@ -135,10 +135,9 @@
   background: var(--ds-surface-elevated, var(--ds-surface));
   border: 1px solid var(--ds-border-default);
   border-radius: 0.75rem;
-  transition:
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
   min-inline-size: 0;
 }
 .dayCard:hover {
@@ -149,8 +148,7 @@
 .dayCardToday {
   border-color: color-mix(in oklch, var(--ds-brand-500) 50%, var(--ds-border-default));
   background: color-mix(in oklch, var(--ds-brand-500) 5%, var(--ds-surface-elevated));
-  box-shadow:
-    0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 14%, transparent),
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 14%, transparent),
     var(--ds-shadow-sm, 0 1px 2px oklch(20% 0.01 240 / 0.04));
 }
 
@@ -212,7 +210,8 @@
   animation: open-pulse 1.6s ease-in-out infinite;
 }
 @keyframes open-pulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 2px color-mix(in oklch, oklch(60% 0.14 162) 30%, transparent);
   }
   50% {
@@ -282,11 +281,7 @@
 }
 .progressFill {
   block-size: 100%;
-  background: linear-gradient(
-    90deg,
-    oklch(60% 0.14 162),
-    oklch(72% 0.16 162)
-  );
+  background: linear-gradient(90deg, oklch(60% 0.14 162), oklch(72% 0.16 162));
   border-radius: inherit;
   transition: inline-size var(--ds-duration-base, 280ms) var(--ds-ease-out-quart);
 }

@@ -209,7 +209,10 @@ const nextConfig: NextConfig = {
     // فرمت‌های مجاز
     formats: ['image/avif', 'image/webp'],
     // محدودیت سایز دستگاه‌ها
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    // 2026-08-02: hero/deferred sections request w=1600 — without it the
+    // optimizer 400s and the hero image never loads (LCP falls back to a
+    // text node). 1600 is a real device width for 2x mobile / 1x laptop.
+    deviceSizes: [640, 750, 828, 1080, 1200, 1600, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
       {
@@ -334,6 +337,12 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-tooltip',
     ],
     optimizeCss: false,
+    // 2026-08-03: CSS chunking 'strict' — جلوی نشت CSS ماژول‌های dashboard
+    // (ObservabilityHub/ApprovalsHub/SessionGuard ~250KB) به صفحات عمومی را
+    // می‌گیرد. Turbopack به‌صورت پیش‌فرض CSS همهٔ مسیرها را در صفحات استاتیک
+    // ادغام می‌کند؛ 'strict' هر مسیر را جدا نگه می‌دارد (render-blocking CSS
+    // هوم‌پیج از ~1.2MB به ~850KB می‌رسد).
+    cssChunking: 'strict',
     // 2026-06-27: Turbopack's embedded lightningcss 1.0.0-alpha.70 panics on
     // some oklch()/color-mix() constructs in globals.css. Excluding the polar
     // color features from transpilation lets the CSS pass through unchanged,

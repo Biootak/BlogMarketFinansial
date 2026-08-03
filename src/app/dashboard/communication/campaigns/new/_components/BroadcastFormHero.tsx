@@ -5,8 +5,8 @@
  *  Page-specific (hero unique در فرم) — co-located، نه primitive.
  */
 
-import { CountUp } from '@/components/Dashboard/primitives';
 import { LiveDot } from '@/components/Dashboard/PlatformHub';
+import { CountUp } from '@/components/Dashboard/primitives';
 import { Megaphone } from 'lucide-react';
 import s from './NewCampaign.module.css';
 
@@ -35,9 +35,13 @@ export function BroadcastFormHero({
       <div className={s.coverGrid}>
         <div className={s.coverGridLeft}>
           <nav className={s.crumbs} aria-label="مسیر">
-            <a href="/dashboard" className={s.crumbLink}>داشبورد</a>
+            <a href="/dashboard" className={s.crumbLink}>
+              داشبورد
+            </a>
             <span className={s.crumbSep}>/</span>
-            <a href="/dashboard/communication" className={s.crumbLink}>مرکز ارتباطات</a>
+            <a href="/dashboard/communication" className={s.crumbLink}>
+              مرکز ارتباطات
+            </a>
             <span className={s.crumbSep}>/</span>
             <span className={s.crumbCurrent} aria-current="page">
               {editId ? `ویرایش ${entityLabel}` : `${entityLabel} جدید`}
@@ -49,7 +53,9 @@ export function BroadcastFormHero({
             <span>استودیوی پخش</span>
             <span className={s.coverEyebrowSep}>·</span>
             <span className={s.coverEyebrowLive}>
-              {toPersianDigits(new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }))}
+              {toPersianDigits(
+                new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }),
+              )}
             </span>
           </div>
 
@@ -90,13 +96,7 @@ export function BroadcastFormHero({
 
         <div className={s.coverGridRight}>
           {/* SVG signature: BroadcastWave */}
-          <svg
-            className={s.wave}
-            viewBox="0 0 220 220"
-            fill="none"
-            aria-hidden="true"
-            role="img"
-          >
+          <svg className={s.wave} viewBox="0 0 220 220" fill="none" aria-hidden="true" role="img">
             <defs>
               <radialGradient id="bwGlow" cx="50%" cy="50%" r="50%">
                 <stop offset="0%" stopColor="oklch(82% 0.14 165)" stopOpacity="0.55" />
@@ -110,9 +110,22 @@ export function BroadcastFormHero({
             </defs>
             <circle cx="110" cy="110" r="100" fill="url(#bwGlow)" />
             <circle cx="110" cy="110" r="92" stroke="oklch(50% 0.01 245 / 0.15)" strokeWidth="1" />
-            <circle cx="110" cy="110" r="74" stroke="url(#bwRing)" strokeWidth="1.5" strokeOpacity="0.6" />
+            <circle
+              cx="110"
+              cy="110"
+              r="74"
+              stroke="url(#bwRing)"
+              strokeWidth="1.5"
+              strokeOpacity="0.6"
+            />
             <circle cx="110" cy="110" r="56" stroke="oklch(60% 0.12 165 / 0.6)" strokeWidth="1.5" />
-            <circle cx="110" cy="110" r="38" stroke="oklch(60% 0.12 165 / 0.85)" strokeWidth="1.5" />
+            <circle
+              cx="110"
+              cy="110"
+              r="38"
+              stroke="oklch(60% 0.12 165 / 0.85)"
+              strokeWidth="1.5"
+            />
             <circle cx="110" cy="110" r="20" stroke="oklch(82% 0.14 165)" strokeWidth="2" />
             <circle cx="110" cy="110" r="6" fill="oklch(82% 0.14 165)" />
             <path

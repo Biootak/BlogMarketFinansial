@@ -41,13 +41,7 @@ const DashboardBottomNavGate = async () => {
     }
   }
 
-  return (
-    <DashboardBottomNav
-      role={role}
-      unreadCount={unread}
-      kycVerified={kycVerified}
-    />
-  );
+  return <DashboardBottomNav role={role} unreadCount={unread} kycVerified={kycVerified} />;
 };
 
 export default DashboardBottomNavGate;

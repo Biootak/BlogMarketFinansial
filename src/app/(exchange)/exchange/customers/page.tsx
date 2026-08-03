@@ -1,12 +1,19 @@
-import { getCustomers, getCustomerStats, getCustomerSegments, getCustomerRiskDistribution, getCustomerActivityPulse, getTopCustomers } from '@/actions/exchange-customers';
+import {
+  getCustomerActivityPulse,
+  getCustomerRiskDistribution,
+  getCustomerSegments,
+  getCustomerStats,
+  getCustomers,
+  getTopCustomers,
+} from '@/actions/exchange-customers';
 import { getExchangeForUser } from '@/actions/exchanges';
 /**
  * /exchange/customers — لیست و مدیریت مشتریان (P2026 redesign)
  */
 import { auth } from '@/auth';
+import { CustomerCockpit } from '@/components/Exchange/customers/CustomerCockpit';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { CustomerCockpit } from '@/components/Exchange/customers/CustomerCockpit';
 
 export const metadata: Metadata = { title: 'مشتریان صرافی' };
 
@@ -22,21 +29,15 @@ export default async function CustomersPage() {
   const canWrite = staffRole !== 'VIEWER';
 
   // Parallel data fetching — یک roundtrip موازی
-  const [
-    { rows: customers },
-    stats,
-    segments,
-    riskBuckets,
-    pulse,
-    topCustomers,
-  ] = await Promise.all([
-    getCustomers(exchangeId, { limit: 200 }),
-    getCustomerStats(exchangeId),
-    getCustomerSegments(exchangeId),
-    getCustomerRiskDistribution(exchangeId),
-    getCustomerActivityPulse(exchangeId),
-    getTopCustomers(exchangeId, 5),
-  ]);
+  const [{ rows: customers }, stats, segments, riskBuckets, pulse, topCustomers] =
+    await Promise.all([
+      getCustomers(exchangeId, { limit: 200 }),
+      getCustomerStats(exchangeId),
+      getCustomerSegments(exchangeId),
+      getCustomerRiskDistribution(exchangeId),
+      getCustomerActivityPulse(exchangeId),
+      getTopCustomers(exchangeId, 5),
+    ]);
 
   return (
     <CustomerCockpit

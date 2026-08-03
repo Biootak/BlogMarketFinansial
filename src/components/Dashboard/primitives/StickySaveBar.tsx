@@ -121,11 +121,7 @@ export function StickySaveBar({
             </button>
           )}
           {(status === 'dirty' || status === 'error') && (
-            <button
-              type="button"
-              className={s.btnPrimary}
-              onClick={onSave}
-            >
+            <button type="button" className={s.btnPrimary} onClick={onSave}>
               <Save size={13} aria-hidden />
               {saveLabel}
             </button>

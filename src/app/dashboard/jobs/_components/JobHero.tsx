@@ -1,11 +1,11 @@
 'use client';
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 import { toPersianDigits } from '@/lib/setup/format';
-import { JobSystemPulse } from './JobSystemPulse';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import s from '../jobs.module.css';
+import { JobSystemPulse } from './JobSystemPulse';
 
 export interface JobHeroProps {
   health: 'healthy' | 'degraded' | 'critical' | 'idle';
@@ -74,9 +74,7 @@ export function JobHero({
           <span className={s.heroTitleLine}>
             مرکز <span className={s.heroAccentText}>کنترل Job</span>
           </span>
-          <span className={s.heroTitleLineMuted}>
-            نمای زنده‌ی صف‌ها، خطاها و جریان پردازش
-          </span>
+          <span className={s.heroTitleLineMuted}>نمای زنده‌ی صف‌ها، خطاها و جریان پردازش</span>
         </h1>
 
         <p className={s.heroLead}>
@@ -99,9 +97,7 @@ export function JobHero({
             <span className={s.heroStatLabel}>خطا ۲۴ ساعت</span>
             <span
               className={
-                failed24h > 0
-                  ? `${s.heroStatValue} ${s['heroStatValue--danger']}`
-                  : s.heroStatValue
+                failed24h > 0 ? `${s.heroStatValue} ${s['heroStatValue--danger']}` : s.heroStatValue
               }
             >
               {toPersianDigits(failed24h)}
@@ -136,7 +132,8 @@ export function JobHero({
         <div className={s.heroPulseLabel}>
           <span className={s.heroPulseEyebrow}>شاخص کلیدی</span>
           <span className={s.heroPulseValue}>
-            {pulseValue} <span className={`${s.heroPulseSub} ${s.heroPulseUnitInline}`}>{pulseUnit}</span>
+            {pulseValue}{' '}
+            <span className={`${s.heroPulseSub} ${s.heroPulseUnitInline}`}>{pulseUnit}</span>
           </span>
           <span className={s.heroPulseSub}>{pulseSub}</span>
         </div>

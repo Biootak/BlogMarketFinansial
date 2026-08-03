@@ -6,10 +6,10 @@
  * هر کمپین یک کارت با progress visual.
  */
 
-import { useMemo, useState, useTransition } from 'react';
-import type { MouseEvent } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { LiveDot } from '@/components/Dashboard/PlatformHub';
+import { ConfirmDialog, CountUp, EmptyState } from '@/components/Dashboard/primitives';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Eye,
   Mail,
@@ -25,10 +25,10 @@ import {
   Zap,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { CountUp, ConfirmDialog, EmptyState } from '@/components/Dashboard/primitives';
-import { LiveDot } from '@/components/Dashboard/PlatformHub';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useMemo, useState, useTransition } from 'react';
+import type { MouseEvent } from 'react';
 import s from './Campaigns.module.css';
 
 type Campaign = {
@@ -59,15 +59,19 @@ const STATUS_LABELS: Record<Campaign['status'], string> = {
   paused: 'متوقف',
 };
 
-const STATUS_TONES: Record<Campaign['status'], 'emerald' | 'indigo' | 'amber' | 'rose' | 'violet'> = {
-  completed: 'emerald',
-  sending: 'indigo',
-  scheduled: 'violet',
-  paused: 'amber',
-  draft: 'rose',
-};
+const STATUS_TONES: Record<Campaign['status'], 'emerald' | 'indigo' | 'amber' | 'rose' | 'violet'> =
+  {
+    completed: 'emerald',
+    sending: 'indigo',
+    scheduled: 'violet',
+    paused: 'amber',
+    draft: 'rose',
+  };
 
-const CHANNEL_META: Record<Campaign['channel'], { label: string; tone: 'emerald' | 'indigo' | 'amber' | 'violet'; icon: LucideIcon }> = {
+const CHANNEL_META: Record<
+  Campaign['channel'],
+  { label: string; tone: 'emerald' | 'indigo' | 'amber' | 'violet'; icon: LucideIcon }
+> = {
   email: { label: 'ایمیل', tone: 'indigo', icon: Mail },
   sms: { label: 'پیامک', tone: 'amber', icon: Send },
   push: { label: 'Push', tone: 'emerald', icon: Sparkles },
@@ -93,15 +97,6 @@ const TABS: { id: string; label: string }[] = [
   { id: 'paused', label: 'متوقف' },
   { id: 'draft', label: 'پیش‌نویس' },
 ];
-
-function formatDate(iso: string | null): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('fa-IR', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
 
 function formatRelative(iso: string | null): string {
   if (!iso) return '';
@@ -175,7 +170,16 @@ export function CampaignsList({ items }: CampaignsListProps) {
 
   // ── stats ──
   const totals = useMemo(() => {
-    const acc = { sent: 0, opened: 0, clicked: 0, bounced: 0, sending: 0, scheduled: 0, completed: 0, draft: 0 };
+    const acc = {
+      sent: 0,
+      opened: 0,
+      clicked: 0,
+      bounced: 0,
+      sending: 0,
+      scheduled: 0,
+      completed: 0,
+      draft: 0,
+    };
     for (const c of items) {
       acc.sent += c.stats.sent;
       acc.opened += c.stats.opened;
@@ -227,11 +231,17 @@ export function CampaignsList({ items }: CampaignsListProps) {
       {/* ═══ HEADER ═══════════════════════════════════════ */}
       <header className={s.header}>
         <nav className={s.crumbs} aria-label="مسیر">
-          <Link href="/dashboard" className={s.crumbLink}>داشبورد</Link>
+          <Link href="/dashboard" className={s.crumbLink}>
+            داشبورد
+          </Link>
           <span className={s.crumbSep}>/</span>
-          <Link href="/dashboard/communication" className={s.crumbLink}>مرکز ارتباطات</Link>
+          <Link href="/dashboard/communication" className={s.crumbLink}>
+            مرکز ارتباطات
+          </Link>
           <span className={s.crumbSep}>/</span>
-          <span className={s.crumbCurrent} aria-current="page">کمپین‌ها</span>
+          <span className={s.crumbCurrent} aria-current="page">
+            کمپین‌ها
+          </span>
         </nav>
 
         <div className={s.headerMain}>
@@ -448,7 +458,9 @@ export function CampaignsList({ items }: CampaignsListProps) {
                           >
                             <Eye size={14} aria-hidden /> مشاهده جزئیات
                           </Link>
-                          {c.status === 'draft' || c.status === 'scheduled' || c.status === 'paused' ? (
+                          {c.status === 'draft' ||
+                          c.status === 'scheduled' ||
+                          c.status === 'paused' ? (
                             <button
                               type="button"
                               className={s.menuItem}

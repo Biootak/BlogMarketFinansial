@@ -8,7 +8,10 @@ export async function GET() {
     const result = await getApprovalSnapshot();
     if (!result.success) {
       return Response.json(
-        { success: false, error: { code: 'UNAUTHORIZED', message: result.message ?? 'دسترسی ندارید' } },
+        {
+          success: false,
+          error: { code: 'UNAUTHORIZED', message: result.message ?? 'دسترسی ندارید' },
+        },
         { status: 401 },
       );
     }

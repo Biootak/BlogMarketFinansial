@@ -1,7 +1,6 @@
 'use client';
 
 import type { SetupFormValues } from '@/lib/setup/schema';
-import * as React from 'react';
 import { Field, TextAreaField } from './Field';
 import { BadgeGlyph, BuildingGlyph, QuoteGlyph } from './WizardIcons';
 

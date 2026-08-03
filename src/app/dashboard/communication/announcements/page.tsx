@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 
-import { auth } from '@/auth';
 import { AnnouncementsList } from '@/app/dashboard/communication/announcements/_components/AnnouncementsList';
+import { auth } from '@/auth';
 import { getCommunicationSnapshot } from '@/lib/communication';
 
 export const dynamic = 'force-dynamic';

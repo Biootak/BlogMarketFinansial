@@ -46,7 +46,7 @@ const SETTINGS_FALLBACK: SiteSettings = {
 //   - حتی اگر DB کاملاً قطع باشد، layout/page کرش نمی‌کند
 export const getSystemSettingsData = safeCache(
   async (): Promise<SiteSettings> => {
-    let settings;
+    let settings: Awaited<ReturnType<typeof prisma.systemSettings.findFirst>>;
     try {
       settings = await prisma.systemSettings.findFirst();
     } catch {

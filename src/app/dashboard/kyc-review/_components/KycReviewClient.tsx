@@ -19,8 +19,8 @@
  *  - Tab segment control برای جابجایی بین دو صف
  */
 
-import { reviewKycRecord } from '@/actions/kyc-onboarding';
 import { reviewCustomerKycRecord } from '@/actions/customer-portal';
+import { reviewKycRecord } from '@/actions/kyc-onboarding';
 import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
 import { MillionDollarEmpty } from '@/components/Dashboard/primitives/MillionDollarEmpty';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
@@ -143,10 +143,7 @@ function DocImage({ src, alt, delay = 0 }: { src: string; alt: string; delay?: n
     );
   }
   return (
-    <div
-      className={s.docImgWrap}
-      style={{ '--doc-delay': `${delay}ms` } as React.CSSProperties}
-    >
+    <div className={s.docImgWrap} style={{ '--doc-delay': `${delay}ms` } as React.CSSProperties}>
       <Image
         src={src}
         alt={alt}
@@ -202,29 +199,29 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
 
   // ── Actions ────────────────────────────────────────────────────────────────
 
-  const handleApprove = useCallback(
-    (row: KycRow) => {
-      // Optimistic: حذف فوری — اگر server خطا داد برگردان
-      setRows((prev) => prev.filter((r) => r.id !== row.id));
-      setPreviewRow((prev) => (prev?.id === row.id ? null : prev));
-      setError(null);
-      setLastAction(null);
+  const handleApprove = useCallback((row: KycRow) => {
+    // Optimistic: حذف فوری — اگر server خطا داد برگردان
+    setRows((prev) => prev.filter((r) => r.id !== row.id));
+    setPreviewRow((prev) => (prev?.id === row.id ? null : prev));
+    setError(null);
+    setLastAction(null);
 
-      startTransition(async () => {
-        const res = await reviewKycRecord({ userId: row.userId, approved: true });
-        if (!res.success) {
-          // rollback
-          setRows((prev) => [row, ...prev].sort(
-            (a, b) => new Date(a.submittedAt ?? 0).getTime() - new Date(b.submittedAt ?? 0).getTime(),
-          ));
-          setError(res.error.message);
-          return;
-        }
-        setLastAction(`هویت «${row.fullName ?? row.user?.name ?? '—'}» تأیید شد`);
-      });
-    },
-    [],
-  );
+    startTransition(async () => {
+      const res = await reviewKycRecord({ userId: row.userId, approved: true });
+      if (!res.success) {
+        // rollback
+        setRows((prev) =>
+          [row, ...prev].sort(
+            (a, b) =>
+              new Date(a.submittedAt ?? 0).getTime() - new Date(b.submittedAt ?? 0).getTime(),
+          ),
+        );
+        setError(res.error.message);
+        return;
+      }
+      setLastAction(`هویت «${row.fullName ?? row.user?.name ?? '—'}» تأیید شد`);
+    });
+  }, []);
 
   const handleRejectConfirm = useCallback(() => {
     if (!rejectTarget) return;
@@ -248,9 +245,12 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
       });
       if (!res.success) {
         // rollback
-        setRows((prev) => [target, ...prev].sort(
-          (a, b) => new Date(a.submittedAt ?? 0).getTime() - new Date(b.submittedAt ?? 0).getTime(),
-        ));
+        setRows((prev) =>
+          [target, ...prev].sort(
+            (a, b) =>
+              new Date(a.submittedAt ?? 0).getTime() - new Date(b.submittedAt ?? 0).getTime(),
+          ),
+        );
         setError(res.error.message);
         return;
       }
@@ -353,7 +353,11 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
         >
           <UserIcon size={14} aria-hidden />
           <span>کاربران پلتفرم</span>
-          {rows.length > 0 && <span className={s.scopeTabCount}>{new Intl.NumberFormat('fa-IR').format(rows.length)}</span>}
+          {rows.length > 0 && (
+            <span className={s.scopeTabCount}>
+              {new Intl.NumberFormat('fa-IR').format(rows.length)}
+            </span>
+          )}
         </button>
         <button
           type="button"
@@ -364,29 +368,35 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
         >
           <Building2 size={14} aria-hidden />
           <span>مشتریان صرافی‌ها</span>
-          {customerRows.length > 0 && <span className={s.scopeTabCount}>{new Intl.NumberFormat('fa-IR').format(customerRows.length)}</span>}
+          {customerRows.length > 0 && (
+            <span className={s.scopeTabCount}>
+              {new Intl.NumberFormat('fa-IR').format(customerRows.length)}
+            </span>
+          )}
         </button>
       </div>
 
       {/* ── KPI Strip (only for user scope) ───────────────────────────────── */}
       {scope === 'user' && (
-      <div className={s.kpiStrip} aria-label="خلاصه صف KYC">
-        {kpiItems.map((item, i) => (
-          <div
-            key={item.label}
-            className={s.kpiCard}
-            style={{ '--kpi-accent': item.accent, '--kpi-delay': `${i * 60}ms` } as React.CSSProperties}
-          >
-            <div className={s.kpiTop}>
-              <span className={s.kpiIcon}>{item.icon}</span>
+        <div className={s.kpiStrip} aria-label="خلاصه صف KYC">
+          {kpiItems.map((item, i) => (
+            <div
+              key={item.label}
+              className={s.kpiCard}
+              style={
+                { '--kpi-accent': item.accent, '--kpi-delay': `${i * 60}ms` } as React.CSSProperties
+              }
+            >
+              <div className={s.kpiTop}>
+                <span className={s.kpiIcon}>{item.icon}</span>
+              </div>
+              <span className={s.kpiValue}>
+                {new Intl.NumberFormat('fa-IR').format(item.value)}
+              </span>
+              <span className={s.kpiLabel}>{item.label}</span>
             </div>
-            <span className={s.kpiValue}>
-              {new Intl.NumberFormat('fa-IR').format(item.value)}
-            </span>
-            <span className={s.kpiLabel}>{item.label}</span>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
       )}
 
       {/* ── Urgent queue bar ───────────────────────────────────────────────── */}
@@ -394,7 +404,8 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
         <div className={s.queueBar} role="status">
           <span className={s.queueBarDot} aria-hidden />
           <span className={s.queueBarText}>
-            {new Intl.NumberFormat('fa-IR').format(urgentCount)} درخواست بیش از ۲ روز در صف انتظار است — بررسی فوری توصیه می‌شود
+            {new Intl.NumberFormat('fa-IR').format(urgentCount)} درخواست بیش از ۲ روز در صف انتظار
+            است — بررسی فوری توصیه می‌شود
           </span>
         </div>
       )}
@@ -416,158 +427,163 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
       )}
 
       {/* ── User KYC Table / Empty ─────────────────────────────────────────── */}
-      {scope === 'user' && (
-      rows.length === 0 ? (
-        <div className={s.emptyWrap}>
-          <EmptyState
-            icon={ShieldCheck}
-            title="همه KYC‌ها بررسی شدند"
-            description="درخواست جدیدی در صف نیست. صف شما پاک است 🎉"
-          />
-        </div>
-      ) : (
-        <div className={s.tableWrap}>
-          <table className={s.table} aria-label="صف بررسی KYC">
-            <thead>
-              <tr>
-                <th className={s.th} scope="col">متقاضی</th>
-                <th className={s.th} scope="col">تماس</th>
-                <th className={s.th} scope="col">تاریخ ارسال</th>
-                <th className={s.th} scope="col">مدارک</th>
-                <th className={s.th} scope="col">
-                  <span className="sr-only">عملیات</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, i) => {
-                const hue = nameHue(row.fullName ?? row.user?.name);
-                const urgent = isUrgent(row.submittedAt);
-                const docs = docCount(row);
-                const displayName = row.fullName ?? row.user?.name ?? '—';
+      {scope === 'user' &&
+        (rows.length === 0 ? (
+          <div className={s.emptyWrap}>
+            <EmptyState
+              icon={ShieldCheck}
+              title="همه KYC‌ها بررسی شدند"
+              description="درخواست جدیدی در صف نیست. صف شما پاک است 🎉"
+            />
+          </div>
+        ) : (
+          <div className={s.tableWrap}>
+            <table className={s.table} aria-label="صف بررسی KYC">
+              <thead>
+                <tr>
+                  <th className={s.th} scope="col">
+                    متقاضی
+                  </th>
+                  <th className={s.th} scope="col">
+                    تماس
+                  </th>
+                  <th className={s.th} scope="col">
+                    تاریخ ارسال
+                  </th>
+                  <th className={s.th} scope="col">
+                    مدارک
+                  </th>
+                  <th className={s.th} scope="col">
+                    <span className="sr-only">عملیات</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row, i) => {
+                  const hue = nameHue(row.fullName ?? row.user?.name);
+                  const urgent = isUrgent(row.submittedAt);
+                  const docs = docCount(row);
+                  const displayName = row.fullName ?? row.user?.name ?? '—';
 
-                return (
-                  <tr
-                    key={row.id}
-                    className={s.tr}
-                    style={{ '--row-i': i } as React.CSSProperties}
-                    tabIndex={0}
-                    aria-label={`بررسی KYC برای ${displayName}`}
-                    onKeyDown={(e: KeyboardEvent<HTMLTableRowElement>) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        setPreviewRow(row);
-                      }
-                    }}
-                  >
-                    {/* ── Applicant ── */}
-                    <td className={s.td}>
-                      <div className={s.applicant}>
-                        <div
-                          className={s.avatar}
-                          aria-hidden
-                          style={{
-                            background: `oklch(91% 0.04 ${hue})`,
-                            color: `oklch(36% 0.12 ${hue})`,
-                          }}
-                        >
-                          {initials(displayName)}
+                  return (
+                    <tr
+                      key={row.id}
+                      className={s.tr}
+                      style={{ '--row-i': i } as React.CSSProperties}
+                      tabIndex={0}
+                      aria-label={`بررسی KYC برای ${displayName}`}
+                      onKeyDown={(e: KeyboardEvent<HTMLTableRowElement>) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setPreviewRow(row);
+                        }
+                      }}
+                    >
+                      {/* ── Applicant ── */}
+                      <td className={s.td}>
+                        <div className={s.applicant}>
+                          <div
+                            className={s.avatar}
+                            aria-hidden
+                            style={{
+                              background: `oklch(91% 0.04 ${hue})`,
+                              color: `oklch(36% 0.12 ${hue})`,
+                            }}
+                          >
+                            {initials(displayName)}
+                          </div>
+                          <div className={s.applicantInfo}>
+                            <span className={s.applicantName}>{displayName}</span>
+                            <span className={s.applicantEmail}>{row.user?.email ?? '—'}</span>
+                          </div>
                         </div>
-                        <div className={s.applicantInfo}>
-                          <span className={s.applicantName}>{displayName}</span>
-                          <span className={s.applicantEmail}>
-                            {row.user?.email ?? '—'}
-                          </span>
+                      </td>
+
+                      {/* ── Phone ── */}
+                      <td className={s.td}>
+                        <span className={s.phone} dir="ltr">
+                          {row.user?.phone ?? '—'}
+                        </span>
+                      </td>
+
+                      {/* ── Date + Urgent ── */}
+                      <td className={s.td}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <span className={s.date}>{formatDate(row.submittedAt)}</span>
+                          {urgent && (
+                            <span className={s.urgentBadge}>
+                              <span className={s.urgentDot} aria-hidden />
+                              فوری
+                            </span>
+                          )}
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* ── Phone ── */}
-                    <td className={s.td}>
-                      <span className={s.phone} dir="ltr">
-                        {row.user?.phone ?? '—'}
-                      </span>
-                    </td>
-
-                    {/* ── Date + Urgent ── */}
-                    <td className={s.td}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span className={s.date}>{formatDate(row.submittedAt)}</span>
-                        {urgent && (
-                          <span className={s.urgentBadge}>
-                            <span className={s.urgentDot} aria-hidden />
-                            فوری
-                          </span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* ── Doc chip ── */}
-                    <td className={s.td}>
-                      <button
-                        type="button"
-                        className={`${s.docsChip} ${docs > 0 ? s.docsChipHasDocs : s.docsChipNoDocs}`}
-                        onClick={() => docs > 0 && setPreviewRow(row)}
-                        aria-label={`پیش‌نمایش ${docs} مدرک برای ${displayName}`}
-                        disabled={docs === 0}
-                      >
-                        <Eye size={12} aria-hidden />
-                        {new Intl.NumberFormat('fa-IR').format(docs)} مدرک
-                      </button>
-                    </td>
-
-                    {/* ── Actions ── */}
-                    <td className={s.td}>
-                      <div
-                        className={s.actionCell}
-                        onClick={(e) => e.stopPropagation()}
-                        onKeyDown={(e) => e.stopPropagation()}
-                      >
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleApprove(row)}
-                          disabled={isPending}
-                          className={s.approveBtn}
-                          aria-label={`تأیید هویت ${displayName}`}
-                        >
-                          <CheckCircle2 size={13} aria-hidden />
-                          تأیید
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setRejectTarget(row)}
-                          disabled={isPending}
-                          className={s.rejectBtn}
-                          aria-label={`رد درخواست ${displayName}`}
-                        >
-                          <XCircle size={13} aria-hidden />
-                          رد
-                        </Button>
+                      {/* ── Doc chip ── */}
+                      <td className={s.td}>
                         <button
                           type="button"
-                          className={s.previewIconBtn}
-                          onClick={() => setPreviewRow(row)}
-                          aria-label={`مشاهده جزئیات ${displayName}`}
-                          title="مشاهده جزئیات"
+                          className={`${s.docsChip} ${docs > 0 ? s.docsChipHasDocs : s.docsChipNoDocs}`}
+                          onClick={() => docs > 0 && setPreviewRow(row)}
+                          aria-label={`پیش‌نمایش ${docs} مدرک برای ${displayName}`}
+                          disabled={docs === 0}
                         >
-                          <Eye size={14} aria-hidden />
+                          <Eye size={12} aria-hidden />
+                          {new Intl.NumberFormat('fa-IR').format(docs)} مدرک
                         </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )
-      )}
+                      </td>
+
+                      {/* ── Actions ── */}
+                      <td className={s.td}>
+                        <div
+                          className={s.actionCell}
+                          onClick={(e) => e.stopPropagation()}
+                          onKeyDown={(e) => e.stopPropagation()}
+                        >
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleApprove(row)}
+                            disabled={isPending}
+                            className={s.approveBtn}
+                            aria-label={`تأیید هویت ${displayName}`}
+                          >
+                            <CheckCircle2 size={13} aria-hidden />
+                            تأیید
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setRejectTarget(row)}
+                            disabled={isPending}
+                            className={s.rejectBtn}
+                            aria-label={`رد درخواست ${displayName}`}
+                          >
+                            <XCircle size={13} aria-hidden />
+                            رد
+                          </Button>
+                          <button
+                            type="button"
+                            className={s.previewIconBtn}
+                            onClick={() => setPreviewRow(row)}
+                            aria-label={`مشاهده جزئیات ${displayName}`}
+                            title="مشاهده جزئیات"
+                          >
+                            <Eye size={14} aria-hidden />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ))}
 
       {/* ── Customer KYC Table / Empty ──────────────────────────────────────── */}
-      {scope === 'customer' && (
-        customerRows.length === 0 ? (
+      {scope === 'customer' &&
+        (customerRows.length === 0 ? (
           <MillionDollarEmpty
             variant="shield"
             tone="neutral"
@@ -580,12 +596,24 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
             <table className={s.table} aria-label="صف بررسی KYC مشتریان">
               <thead>
                 <tr>
-                  <th className={s.th} scope="col">مشتری</th>
-                  <th className={s.th} scope="col">صرافی</th>
-                  <th className={s.th} scope="col">نوع مدرک</th>
-                  <th className={s.th} scope="col">شماره</th>
-                  <th className={s.th} scope="col">سطح</th>
-                  <th className={s.th} scope="col">تاریخ</th>
+                  <th className={s.th} scope="col">
+                    مشتری
+                  </th>
+                  <th className={s.th} scope="col">
+                    صرافی
+                  </th>
+                  <th className={s.th} scope="col">
+                    نوع مدرک
+                  </th>
+                  <th className={s.th} scope="col">
+                    شماره
+                  </th>
+                  <th className={s.th} scope="col">
+                    سطح
+                  </th>
+                  <th className={s.th} scope="col">
+                    تاریخ
+                  </th>
                   <th className={s.th} scope="col">
                     <span className="sr-only">عملیات</span>
                   </th>
@@ -697,91 +725,91 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
               </tbody>
             </table>
           </div>
-        )
-      )}
+        ))}
 
       {/* ── Document Preview Sheet ─────────────────────────────────────────── */}
       <Sheet open={!!previewRow} onOpenChange={(o) => !o && setPreviewRow(null)}>
         <SheetContent dir="rtl" side="left" className={s.previewSheet}>
-          {previewRow && (() => {
-            const hue = nameHue(previewRow.fullName ?? previewRow.user?.name);
-            const displayName = previewRow.fullName ?? previewRow.user?.name ?? 'بدون نام';
-            const docs: Array<{ src: string; label: string }> = [
-              previewRow.selfieUrl ? { src: previewRow.selfieUrl, label: 'سلفی' } : null,
-              previewRow.docFrontUrl ? { src: previewRow.docFrontUrl, label: 'روی مدرک' } : null,
-              previewRow.docBackUrl ? { src: previewRow.docBackUrl, label: 'پشت مدرک' } : null,
-            ].filter(Boolean) as Array<{ src: string; label: string }>;
+          {previewRow &&
+            (() => {
+              const hue = nameHue(previewRow.fullName ?? previewRow.user?.name);
+              const displayName = previewRow.fullName ?? previewRow.user?.name ?? 'بدون نام';
+              const docs: Array<{ src: string; label: string }> = [
+                previewRow.selfieUrl ? { src: previewRow.selfieUrl, label: 'سلفی' } : null,
+                previewRow.docFrontUrl ? { src: previewRow.docFrontUrl, label: 'روی مدرک' } : null,
+                previewRow.docBackUrl ? { src: previewRow.docBackUrl, label: 'پشت مدرک' } : null,
+              ].filter(Boolean) as Array<{ src: string; label: string }>;
 
-            return (
-              <>
-                {/* Sticky frosted header */}
-                <div className={s.previewHeaderWrap}>
-                  <div
-                    className={s.previewAvatar}
-                    aria-hidden
-                    style={{
-                      background: `oklch(91% 0.04 ${hue})`,
-                      color: `oklch(36% 0.12 ${hue})`,
-                    }}
-                  >
-                    {initials(displayName)}
-                  </div>
-                  <div className={s.previewTitleGroup}>
-                    <span className={s.previewName}>{displayName}</span>
-                    <span className={s.previewMeta}>
-                      {previewRow.user?.email}
-                      {previewRow.user?.phone && ` · ${previewRow.user.phone}`}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Body */}
-                <div className={s.previewBody}>
-                  {docs.length === 0 ? (
-                    <div className={s.imgFallback}>
-                      <FileText size={32} aria-hidden />
-                      <span>هیچ مدرکی بارگذاری نشده</span>
-                    </div>
-                  ) : (
-                    docs.map((doc, idx) => (
-                      <div
-                        key={doc.src}
-                        className={s.docBlock}
-                        style={{ '--doc-delay': `${idx * 80}ms` } as React.CSSProperties}
-                      >
-                        <p className={s.docBlockLabel}>{doc.label}</p>
-                        <DocImage src={doc.src} alt={doc.label} delay={idx * 80} />
-                      </div>
-                    ))
-                  )}
-
-                  {/* Quick actions */}
-                  <div className={s.previewActions}>
-                    <Button
-                      className={s.previewApproveBtn}
-                      onClick={() => handleApprove(previewRow)}
-                      disabled={isPending}
-                    >
-                      <CheckCircle2 size={15} aria-hidden />
-                      تأیید هویت
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className={s.previewRejectBtn}
-                      onClick={() => {
-                        setRejectTarget(previewRow);
-                        setPreviewRow(null);
+              return (
+                <>
+                  {/* Sticky frosted header */}
+                  <div className={s.previewHeaderWrap}>
+                    <div
+                      className={s.previewAvatar}
+                      aria-hidden
+                      style={{
+                        background: `oklch(91% 0.04 ${hue})`,
+                        color: `oklch(36% 0.12 ${hue})`,
                       }}
-                      disabled={isPending}
                     >
-                      <XCircle size={15} aria-hidden />
-                      رد کردن
-                    </Button>
+                      {initials(displayName)}
+                    </div>
+                    <div className={s.previewTitleGroup}>
+                      <span className={s.previewName}>{displayName}</span>
+                      <span className={s.previewMeta}>
+                        {previewRow.user?.email}
+                        {previewRow.user?.phone && ` · ${previewRow.user.phone}`}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </>
-            );
-          })()}
+
+                  {/* Body */}
+                  <div className={s.previewBody}>
+                    {docs.length === 0 ? (
+                      <div className={s.imgFallback}>
+                        <FileText size={32} aria-hidden />
+                        <span>هیچ مدرکی بارگذاری نشده</span>
+                      </div>
+                    ) : (
+                      docs.map((doc, idx) => (
+                        <div
+                          key={doc.src}
+                          className={s.docBlock}
+                          style={{ '--doc-delay': `${idx * 80}ms` } as React.CSSProperties}
+                        >
+                          <p className={s.docBlockLabel}>{doc.label}</p>
+                          <DocImage src={doc.src} alt={doc.label} delay={idx * 80} />
+                        </div>
+                      ))
+                    )}
+
+                    {/* Quick actions */}
+                    <div className={s.previewActions}>
+                      <Button
+                        className={s.previewApproveBtn}
+                        onClick={() => handleApprove(previewRow)}
+                        disabled={isPending}
+                      >
+                        <CheckCircle2 size={15} aria-hidden />
+                        تأیید هویت
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className={s.previewRejectBtn}
+                        onClick={() => {
+                          setRejectTarget(previewRow);
+                          setPreviewRow(null);
+                        }}
+                        disabled={isPending}
+                      >
+                        <XCircle size={15} aria-hidden />
+                        رد کردن
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
         </SheetContent>
       </Sheet>
 
@@ -798,8 +826,8 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
                   className={s.rejectAvatar}
                   aria-hidden
                   style={{
-                    background: `oklch(96% 0.05 25)`,
-                    color: `oklch(38% 0.14 25)`,
+                    background: 'oklch(96% 0.05 25)',
+                    color: 'oklch(38% 0.14 25)',
                   }}
                 >
                   {initials(rejectTarget.fullName ?? rejectTarget.user?.name)}
@@ -833,11 +861,7 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
             >
               انصراف
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleRejectConfirm}
-              disabled={isPending}
-            >
+            <Button variant="destructive" onClick={handleRejectConfirm} disabled={isPending}>
               {isPending ? 'در حال ارسال…' : 'رد کردن'}
             </Button>
           </DialogFooter>
@@ -847,97 +871,96 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
       {/* ── Customer Preview Sheet ──────────────────────────────────────────── */}
       <Sheet open={!!previewCustomer} onOpenChange={(o) => !o && setPreviewCustomer(null)}>
         <SheetContent dir="rtl" side="left" className={s.previewSheet}>
-          {previewCustomer && (() => {
-            const hue = nameHue(previewCustomer.customerName);
-            return (
-              <>
-                <div className={s.previewHeaderWrap}>
-                  <div
-                    className={s.previewAvatar}
-                    aria-hidden
-                    style={{
-                      background: `oklch(91% 0.04 ${hue})`,
-                      color: `oklch(36% 0.12 ${hue})`,
-                    }}
-                  >
-                    {initials(previewCustomer.customerName)}
-                  </div>
-                  <div className={s.previewTitleGroup}>
-                    <span className={s.previewName}>{previewCustomer.customerName}</span>
-                    <span className={s.previewMeta}>
-                      <span dir="ltr">{previewCustomer.customerPhone}</span>
-                      {' · '}
-                      {previewCustomer.exchangeName}
-                    </span>
-                  </div>
-                </div>
-                <div className={s.previewBody}>
-                  <div className={s.customerKycMeta}>
-                    <div className={s.metaRow}>
-                      <span className={s.metaLabel}>نوع مدرک:</span>
-                      <span className={s.metaValue}>{previewCustomer.docType}</span>
-                    </div>
-                    <div className={s.metaRow}>
-                      <span className={s.metaLabel}>شماره:</span>
-                      <span className={s.metaValue} dir="ltr">
-                        {previewCustomer.docNumber ?? '—'}
-                      </span>
-                    </div>
-                    <div className={s.metaRow}>
-                      <span className={s.metaLabel}>سطح درخواستی:</span>
-                      <span className={s.metaValue}>{previewCustomer.level}</span>
-                    </div>
-                    <div className={s.metaRow}>
-                      <span className={s.metaLabel}>تاریخ ارسال:</span>
-                      <span className={s.metaValue}>
-                        {formatDate(previewCustomer.createdAt)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {previewCustomer.fileUrl ? (
-                    <div className={s.docBlock}>
-                      <p className={s.docBlockLabel}>تصویر مدرک</p>
-                      <DocImage
-                        src={previewCustomer.fileUrl}
-                        alt={`مدرک ${previewCustomer.customerName}`}
-                        delay={0}
-                      />
-                    </div>
-                  ) : (
-                    <div className={s.imgFallback}>
-                      <FileText size={32} aria-hidden />
-                      <span>مدرکی بارگذاری نشده</span>
-                    </div>
-                  )}
-
-                  <div className={s.previewActions}>
-                    <Button
-                      className={s.previewApproveBtn}
-                      onClick={() => handleCustomerApprove(previewCustomer)}
-                      disabled={isPending}
-                    >
-                      <CheckCircle2 size={15} aria-hidden />
-                      تأیید KYC
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className={s.previewRejectBtn}
-                      onClick={() => {
-                        setCustomerRejectTarget(previewCustomer);
-                        setRejectReason('');
-                        setPreviewCustomer(null);
+          {previewCustomer &&
+            (() => {
+              const hue = nameHue(previewCustomer.customerName);
+              return (
+                <>
+                  <div className={s.previewHeaderWrap}>
+                    <div
+                      className={s.previewAvatar}
+                      aria-hidden
+                      style={{
+                        background: `oklch(91% 0.04 ${hue})`,
+                        color: `oklch(36% 0.12 ${hue})`,
                       }}
-                      disabled={isPending}
                     >
-                      <XCircle size={15} aria-hidden />
-                      رد کردن
-                    </Button>
+                      {initials(previewCustomer.customerName)}
+                    </div>
+                    <div className={s.previewTitleGroup}>
+                      <span className={s.previewName}>{previewCustomer.customerName}</span>
+                      <span className={s.previewMeta}>
+                        <span dir="ltr">{previewCustomer.customerPhone}</span>
+                        {' · '}
+                        {previewCustomer.exchangeName}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </>
-            );
-          })()}
+                  <div className={s.previewBody}>
+                    <div className={s.customerKycMeta}>
+                      <div className={s.metaRow}>
+                        <span className={s.metaLabel}>نوع مدرک:</span>
+                        <span className={s.metaValue}>{previewCustomer.docType}</span>
+                      </div>
+                      <div className={s.metaRow}>
+                        <span className={s.metaLabel}>شماره:</span>
+                        <span className={s.metaValue} dir="ltr">
+                          {previewCustomer.docNumber ?? '—'}
+                        </span>
+                      </div>
+                      <div className={s.metaRow}>
+                        <span className={s.metaLabel}>سطح درخواستی:</span>
+                        <span className={s.metaValue}>{previewCustomer.level}</span>
+                      </div>
+                      <div className={s.metaRow}>
+                        <span className={s.metaLabel}>تاریخ ارسال:</span>
+                        <span className={s.metaValue}>{formatDate(previewCustomer.createdAt)}</span>
+                      </div>
+                    </div>
+
+                    {previewCustomer.fileUrl ? (
+                      <div className={s.docBlock}>
+                        <p className={s.docBlockLabel}>تصویر مدرک</p>
+                        <DocImage
+                          src={previewCustomer.fileUrl}
+                          alt={`مدرک ${previewCustomer.customerName}`}
+                          delay={0}
+                        />
+                      </div>
+                    ) : (
+                      <div className={s.imgFallback}>
+                        <FileText size={32} aria-hidden />
+                        <span>مدرکی بارگذاری نشده</span>
+                      </div>
+                    )}
+
+                    <div className={s.previewActions}>
+                      <Button
+                        className={s.previewApproveBtn}
+                        onClick={() => handleCustomerApprove(previewCustomer)}
+                        disabled={isPending}
+                      >
+                        <CheckCircle2 size={15} aria-hidden />
+                        تأیید KYC
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className={s.previewRejectBtn}
+                        onClick={() => {
+                          setCustomerRejectTarget(previewCustomer);
+                          setRejectReason('');
+                          setPreviewCustomer(null);
+                        }}
+                        disabled={isPending}
+                      >
+                        <XCircle size={15} aria-hidden />
+                        رد کردن
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
         </SheetContent>
       </Sheet>
 
@@ -957,17 +980,15 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
                   className={s.rejectAvatar}
                   aria-hidden
                   style={{
-                    background: `oklch(96% 0.05 25)`,
-                    color: `oklch(38% 0.14 25)`,
+                    background: 'oklch(96% 0.05 25)',
+                    color: 'oklch(38% 0.14 25)',
                   }}
                 >
                   {initials(customerRejectTarget.customerName)}
                 </div>
                 <div className={s.rejectProfileMeta}>
                   <span className={s.rejectName}>{customerRejectTarget.customerName}</span>
-                  <span className={s.rejectSub}>
-                    {customerRejectTarget.exchangeName}
-                  </span>
+                  <span className={s.rejectSub}>{customerRejectTarget.exchangeName}</span>
                 </div>
               </div>
             )}

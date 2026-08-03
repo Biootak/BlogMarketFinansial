@@ -15,8 +15,6 @@
  *  - prefix برای شناسایی قابل نمایش است
  */
 
-import { Check, Copy, KeyRound, Loader2, Plus, ShieldOff } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import {
   type ApiKeyRecord,
   createApiKey,
@@ -25,9 +23,15 @@ import {
 } from '@/actions/settingsActions';
 import { ConfirmDialog } from '@/components/Dashboard/primitives';
 import { useActionToast } from '@/hooks/useActionToast';
+import { Check, Copy, KeyRound, Loader2, Plus, ShieldOff } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import s from './ApiKeysManager.module.css';
 
-const SCOPES: Array<{ value: 'read' | 'write' | 'admin' | 'webhook' | 'reports'; label: string; hint: string }> = [
+const SCOPES: Array<{
+  value: 'read' | 'write' | 'admin' | 'webhook' | 'reports';
+  label: string;
+  hint: string;
+}> = [
   { value: 'read', label: 'خواندن', hint: 'GET endpoints' },
   { value: 'write', label: 'نوشتن', hint: 'POST/PATCH/DELETE' },
   { value: 'admin', label: 'مدیریت', hint: 'کاربران و تنظیمات' },
@@ -71,7 +75,12 @@ export function ApiKeysManager() {
     setLoading(false);
   };
 
-  const handleCreated = (data: { id: string; key: string; prefix: string; record: ApiKeyRecord }) => {
+  const handleCreated = (data: {
+    id: string;
+    key: string;
+    prefix: string;
+    record: ApiKeyRecord;
+  }) => {
     setNewKey({ id: data.id, key: data.key, prefix: data.prefix });
     setKeys((prev) => [data.record, ...prev]);
   };
@@ -96,11 +105,7 @@ export function ApiKeysManager() {
             از کلیدها برای دسترسی برنامه‌ای (server-to-server) استفاده کنید
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowCreate(true)}
-          className={s.createBtn}
-        >
+        <button type="button" onClick={() => setShowCreate(true)} className={s.createBtn}>
           <Plus size={14} strokeWidth={2.2} />
           <span>ساخت کلید جدید</span>
         </button>
@@ -120,28 +125,16 @@ export function ApiKeysManager() {
       ) : (
         <ul className={s.list}>
           {keys.map((key) => (
-            <KeyRow
-              key={key.id}
-              record={key}
-              onRevoke={() => setConfirmRevoke(key)}
-            />
+            <KeyRow key={key.id} record={key} onRevoke={() => setConfirmRevoke(key)} />
           ))}
         </ul>
       )}
 
       {showCreate && (
-        <CreateKeyDialog
-          onClose={() => setShowCreate(false)}
-          onCreated={handleCreated}
-        />
+        <CreateKeyDialog onClose={() => setShowCreate(false)} onCreated={handleCreated} />
       )}
 
-      {newKey && (
-        <ShowNewKeyDialog
-          newKey={newKey}
-          onClose={() => setNewKey(null)}
-        />
-      )}
+      {newKey && <ShowNewKeyDialog newKey={newKey} onClose={() => setNewKey(null)} />}
 
       {confirmRevoke && (
         <ConfirmDialog
@@ -170,8 +163,7 @@ function KeyRow({
   record: ApiKeyRecord;
   onRevoke: () => void;
 }) {
-  const isExpired =
-    record.expiresAt !== null && new Date(record.expiresAt).getTime() < Date.now();
+  const isExpired = record.expiresAt !== null && new Date(record.expiresAt).getTime() < Date.now();
   return (
     <li className={s.row} data-expired={isExpired}>
       <div className={s.rowIcon} aria-hidden>
@@ -195,17 +187,13 @@ function KeyRow({
           <span>ساخته‌شده {new Date(record.createdAt).toLocaleDateString('fa-IR')}</span>
           {record.expiresAt && (
             <span>
-              {isExpired ? 'منقضی‌شده' : 'انقضا'}: {new Date(record.expiresAt).toLocaleDateString('fa-IR')}
+              {isExpired ? 'منقضی‌شده' : 'انقضا'}:{' '}
+              {new Date(record.expiresAt).toLocaleDateString('fa-IR')}
             </span>
           )}
         </div>
       </div>
-      <button
-        type="button"
-        onClick={onRevoke}
-        className={s.revokeBtn}
-        aria-label="لغو کلید"
-      >
+      <button type="button" onClick={onRevoke} className={s.revokeBtn} aria-label="لغو کلید">
         <ShieldOff size={13} strokeWidth={2.2} />
         <span>لغو</span>
       </button>
@@ -319,12 +307,7 @@ function CreateKeyDialog({
           <button type="button" onClick={onClose} className={s.cancelBtn}>
             انصراف
           </button>
-          <button
-            type="button"
-            onClick={submit}
-            disabled={creating}
-            className={s.confirmBtn}
-          >
+          <button type="button" onClick={submit} disabled={creating} className={s.confirmBtn}>
             {creating ? 'در حال ساخت…' : 'ساخت کلید'}
           </button>
         </footer>
@@ -358,7 +341,8 @@ function ShowNewKeyDialog({
         <header className={s.dialogHead}>
           <h4>کلید شما ساخته شد</h4>
           <p className={s.alertText}>
-            <strong>این کلید فقط یک‌بار نمایش داده می‌شود.</strong> لطفاً آن را در مکانی امن ذخیره کنید.
+            <strong>این کلید فقط یک‌بار نمایش داده می‌شود.</strong> لطفاً آن را در مکانی امن ذخیره
+            کنید.
           </p>
         </header>
         <div className={s.dialogBody}>
@@ -366,12 +350,7 @@ function ShowNewKeyDialog({
             <code className={s.keyText} dir="ltr">
               {newKey.key}
             </code>
-            <button
-              type="button"
-              onClick={onCopy}
-              className={s.copyBtn}
-              aria-label="کپی کلید"
-            >
+            <button type="button" onClick={onCopy} className={s.copyBtn} aria-label="کپی کلید">
               {copied ? <Check size={14} strokeWidth={2.2} /> : <Copy size={14} strokeWidth={2} />}
             </button>
           </div>

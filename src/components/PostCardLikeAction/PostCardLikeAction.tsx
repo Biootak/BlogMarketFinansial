@@ -4,7 +4,7 @@ import { likeItem } from '@/actions/postActions';
 import { motion } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
 import convertNumbThousand from '@/utils/convertNumbThousand';
-import React, { type FC, useState, useCallback } from 'react';
+import { type FC, useCallback, useState } from 'react';
 import { useTransition } from 'react';
 import { Icon } from '../ui/icon';
 

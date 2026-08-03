@@ -84,11 +84,15 @@ function TickerFn({
         style={{ gap, willChange: 'transform' }}
       >
         {Array.from({ length: repeat }, (_, i) => (
+          // نسخه‌های تکراری (i > 0) از a11y tree و tab order خارج می‌شوند.
+          // `inert` به صورت HTML attribute خالی ارسال می‌شود (نه boolean React prop)
+          // تا مرورگر آن را به درستی parse کند. cast به `unknown` سپس `object`
+          // برای دور زدن تضاد React type (boolean) با HTML attribute (empty string).
           <div
             key={i}
             className="flex shrink-0"
             style={{ direction: 'rtl' }}
-            aria-hidden={i > 0 ? true : undefined}
+            {...(i > 0 ? { 'aria-hidden': true, inert: true } : {})}
           >
             {children}
           </div>

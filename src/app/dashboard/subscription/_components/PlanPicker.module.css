@@ -22,7 +22,7 @@
   border: 1px solid color-mix(in oklch, var(--ds-brand-500) 22%, var(--ds-border-subtle));
   flex-wrap: wrap;
 }
-.currentBanner[data-state='business'] {
+.currentBanner[data-state="business"] {
   background: linear-gradient(
     135deg,
     color-mix(in oklch, var(--nova-amber) 10%, var(--ds-surface-elevated)) 0%,
@@ -179,7 +179,7 @@
   gap: 4px;
 }
 .planCurrentPill::before {
-  content: '';
+  content: "";
   display: inline-block;
   width: 6px;
   height: 6px;
@@ -205,11 +205,11 @@
   color: var(--ds-brand-500);
   margin-block-end: 8px;
 }
-.planCard[data-accent='gold'] .planIcon {
+.planCard[data-accent="gold"] .planIcon {
   background: color-mix(in oklch, var(--nova-amber) 14%, var(--ds-canvas));
   color: var(--nova-amber);
 }
-.planCard[data-accent='muted'] .planIcon {
+.planCard[data-accent="muted"] .planIcon {
   background: var(--ds-canvas);
   color: var(--ds-text-muted);
 }
@@ -341,8 +341,12 @@
   animation: fadeIn 200ms var(--ds-ease-out-quart);
 }
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .modal {
   inline-size: 100%;
@@ -355,8 +359,14 @@
   animation: slideUp 240ms var(--ds-ease-out-quart);
 }
 @keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 .modalHead {
   display: flex;

@@ -1,5 +1,5 @@
 import NcImage from '@/components/NcImage/NcImage';
-import React, { type FC } from 'react';
+import type { FC } from 'react';
 import SingleTitle from './SingleTitle';
 
 export interface SingleHeader4Props {

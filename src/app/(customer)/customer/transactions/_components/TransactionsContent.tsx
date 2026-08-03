@@ -16,31 +16,16 @@ import {
   KIND_LABEL,
   STATUS_LABEL,
   TXN_KIND_FILTERS,
-  TXN_STATUS_FILTERS,
   TXN_STATUS_CSSKEY,
+  TXN_STATUS_FILTERS,
   faAmount,
   faDateTime,
   faNum,
   relativeTime,
 } from '@/app/(customer)/customer/_lib/customer-formatters';
-import {
-  KindIcon,
-  SectionHeader,
-  StatusPill,
-  ViewAllLink,
-} from '@/app/(customer)/customer/_lib/customer-ui';
+import { KindIcon, SectionHeader, StatusPill } from '@/app/(customer)/customer/_lib/customer-ui';
+import { Activity, AlertCircle, CheckCircle2, Clock, History, Inbox } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import {
-  Activity,
-  AlertCircle,
-  ArrowDownLeft,
-  ArrowUpRight,
-  CheckCircle2,
-  Clock,
-  History,
-  Inbox,
-  Send,
-} from 'lucide-react';
 import s from './TransactionsContent.module.css';
 
 interface Props {
@@ -64,8 +49,12 @@ export default function TransactionsContent({
 
   // Stats
   const completed = initialRows.filter((r) => r.status === 'COMPLETED').length;
-  const pending = initialRows.filter((r) => r.status === 'PENDING' || r.status === 'PROCESSING').length;
-  const failed = initialRows.filter((r) => r.status === 'FAILED' || r.status === 'CANCELLED').length;
+  const pending = initialRows.filter(
+    (r) => r.status === 'PENDING' || r.status === 'PROCESSING',
+  ).length;
+  const failed = initialRows.filter(
+    (r) => r.status === 'FAILED' || r.status === 'CANCELLED',
+  ).length;
   const sumAfn = initialRows
     .filter((r) => r.currency === 'AFN')
     .reduce((sum, r) => sum + r.amount, 0);
@@ -205,20 +194,14 @@ export default function TransactionsContent({
                     className={s.rowLink}
                     aria-label={`${KIND_LABEL[txn.kind] ?? txn.kind} - ${faAmount(txn.amount, txn.currency)}`}
                   >
-                    <span
-                      className={s.rowRail}
-                      data-status={statusKey}
-                      aria-hidden
-                    />
+                    <span className={s.rowRail} data-status={statusKey} aria-hidden />
                     <span className={s.rowIcon} aria-hidden>
                       <KindIcon kind={txn.kind} size={13} />
                     </span>
                     <div className={s.rowMain}>
                       <span className={s.rowKind}>{KIND_LABEL[txn.kind] ?? txn.kind}</span>
                       <span className={s.rowMeta}>
-                        <span title={faDateTime(txn.createdAt)}>
-                          {relativeTime(txn.createdAt)}
-                        </span>
+                        <span title={faDateTime(txn.createdAt)}>{relativeTime(txn.createdAt)}</span>
                         {txn.counterparty && (
                           <>
                             <span className={s.rowDot} aria-hidden />
@@ -276,9 +259,7 @@ export default function TransactionsContent({
               قبلی
             </span>
           )}
-          <span className={s.pageInfo}>
-            صفحه {faNum(page)}
-          </span>
+          <span className={s.pageInfo}>صفحه {faNum(page)}</span>
           {hasMore ? (
             <button
               type="button"

@@ -1,14 +1,14 @@
-import { getRecentPosts } from '@/actions/sidebarActions';
 import { getCategories } from '@/actions/categoryActions';
-import { getSiteIdentity } from '@/lib/site-identity';
+import { getRecentPosts } from '@/actions/sidebarActions';
 import Card9 from '@/components/Card9/Card9';
 import SectionHeader from '@/components/SectionHeader/SectionHeader';
-import { HiOutlineSparkles } from 'react-icons/hi2';
-import { BiCategory } from 'react-icons/bi';
+import { getSiteIdentity } from '@/lib/site-identity';
+import type { PostWithRelations } from '@/types/types';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
-import type { Metadata } from 'next';
-import type { PostWithRelations } from '@/types/types';
+import { BiCategory } from 'react-icons/bi';
+import { HiOutlineSparkles } from 'react-icons/hi2';
 import s from './blog.module.css';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -37,8 +37,8 @@ export default function BlogIndexPage() {
               از دنیای بازارهای مالی
             </h1>
             <p className={s.heroLead}>
-              هر روز مقالات تازه از نویسندگان متخصص، تحلیل‌گران و اقتصاددانان منتشر می‌شود.
-              از صرافی‌های ارز دیجیتال تا بازار سرمایه، هر آنچه باید بدانید اینجاست.
+              هر روز مقالات تازه از نویسندگان متخصص، تحلیل‌گران و اقتصاددانان منتشر می‌شود. از
+              صرافی‌های ارز دیجیتال تا بازار سرمایه، هر آنچه باید بدانید اینجاست.
             </p>
             <div className={s.heroActions}>
               <Link href="/archive" className={s.primaryBtn}>
@@ -97,8 +97,8 @@ export default function BlogIndexPage() {
             <div>
               <h2 className={s.ctaTitle}>دنبال موضوع خاصی هستید؟</h2>
               <p className={s.ctaText}>
-                آرشیو کامل مقالات با فیلتر پیشرفته، جستجوی زنده و مرتب‌سازی بر اساس تاریخ،
-                محبوبیت و دسته‌بندی در دسترس است.
+                آرشیو کامل مقالات با فیلتر پیشرفته، جستجوی زنده و مرتب‌سازی بر اساس تاریخ، محبوبیت و
+                دسته‌بندی در دسترس است.
               </p>
             </div>
             <div className={s.ctaActions}>

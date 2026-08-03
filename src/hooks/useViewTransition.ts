@@ -34,7 +34,10 @@ export function useViewTransition(): (href: string) => void {
       }
 
       // prefers-reduced-motion → بدون transition
-      if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      if (
+        typeof window !== 'undefined' &&
+        window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+      ) {
         router.push(href);
         return;
       }

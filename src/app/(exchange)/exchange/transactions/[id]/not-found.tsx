@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { ArrowRight, FileSearch } from 'lucide-react';
+import Link from 'next/link';
 import s from './not-found.module.css';
 
 export default function NotFound() {
@@ -10,9 +10,7 @@ export default function NotFound() {
       </span>
       <div className={s.body}>
         <h2 className={s.title}>تراکنش یافت نشد</h2>
-        <p className={s.desc}>
-          شناسه تراکنش نامعتبر است یا این تراکنش متعلق به صرافی شما نیست.
-        </p>
+        <p className={s.desc}>شناسه تراکنش نامعتبر است یا این تراکنش متعلق به صرافی شما نیست.</p>
       </div>
       <Link href="/exchange/transactions" className={s.back}>
         <ArrowRight size={12} aria-hidden />

@@ -6,11 +6,11 @@
  */
 
 import { getExchangeForUser } from '@/actions/exchanges';
-import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
 import { getExchangeStaff } from '@/actions/exchanges';
+import { auth } from '@/auth';
 import { ChevronLeft, Clock, Cog, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import s from './_components/SettingsOverview.module.css';
 
 export const metadata = { title: 'تنظیمات صرافی' };
@@ -45,13 +45,10 @@ export default async function SettingsIndexPage() {
             <Cog size={11} strokeWidth={2.5} aria-hidden />
             Workspace
           </span>
-          <h1 className={s.heroTitle}>
-            پیکربندی عملیاتی {exchange.displayName ?? exchange.name}
-          </h1>
+          <h1 className={s.heroTitle}>پیکربندی عملیاتی {exchange.displayName ?? exchange.name}</h1>
           <p className={s.heroDesc}>
-            از اینجا تنظیمات عملیاتی (KYC، کارمزد، سقف تراکنش)، امنیتی (اعضا و
-            نقش‌ها) و ساعات کاری صرافی را مدیریت کنید. تغییرات بلافاصله در
-            سیستم اعمال می‌شود.
+            از اینجا تنظیمات عملیاتی (KYC، کارمزد، سقف تراکنش)، امنیتی (اعضا و نقش‌ها) و ساعات کاری
+            صرافی را مدیریت کنید. تغییرات بلافاصله در سیستم اعمال می‌شود.
           </p>
         </div>
         <div className={s.heroStats}>
@@ -82,9 +79,7 @@ export default async function SettingsIndexPage() {
             <ChevronLeft size={14} className={s.tileArrow} aria-hidden />
           </div>
           <h2 className={s.tileTitle}>عملیات و کارمزد</h2>
-          <p className={s.tileDesc}>
-            KYC، سقف تراکنش روزانه و درصد کارمزدها
-          </p>
+          <p className={s.tileDesc}>KYC، سقف تراکنش روزانه و درصد کارمزدها</p>
           <div className={s.tileMeta}>
             <span className={s.metaDot} aria-hidden />
             <span>{canEdit ? 'قابل ویرایش' : 'فقط مشاهده'}</span>
@@ -99,9 +94,7 @@ export default async function SettingsIndexPage() {
             <ChevronLeft size={14} className={s.tileArrow} aria-hidden />
           </div>
           <h2 className={s.tileTitle}>ساعات کاری</h2>
-          <p className={s.tileDesc}>
-            برنامه هفتگی و روزهای تعطیل
-          </p>
+          <p className={s.tileDesc}>برنامه هفتگی و روزهای تعطیل</p>
           <div className={s.tileMeta}>
             <span className={s.metaDot} aria-hidden />
             <span>{canEdit ? 'قابل ویرایش' : 'فقط مشاهده'}</span>
@@ -116,14 +109,10 @@ export default async function SettingsIndexPage() {
             <ChevronLeft size={14} className={s.tileArrow} aria-hidden />
           </div>
           <h2 className={s.tileTitle}>امنیت و دسترسی</h2>
-          <p className={s.tileDesc}>
-            اعضا، نقش‌ها و نشست‌های فعال
-          </p>
+          <p className={s.tileDesc}>اعضا، نقش‌ها و نشست‌های فعال</p>
           <div className={s.tileMeta}>
             <span className={s.metaDot} aria-hidden />
-            <span>
-              {new Intl.NumberFormat('fa-IR').format(activeStaff)} عضو فعال
-            </span>
+            <span>{new Intl.NumberFormat('fa-IR').format(activeStaff)} عضو فعال</span>
           </div>
         </Link>
 
@@ -135,9 +124,7 @@ export default async function SettingsIndexPage() {
             <ChevronLeft size={14} className={s.tileArrow} aria-hidden />
           </div>
           <h2 className={s.tileTitle}>هویت عمومی</h2>
-          <p className={s.tileDesc}>
-            نام، لوگو و اطلاعات تماس — در صفحه عمومی نمایش داده می‌شود
-          </p>
+          <p className={s.tileDesc}>نام، لوگو و اطلاعات تماس — در صفحه عمومی نمایش داده می‌شود</p>
           <div className={s.tileMeta}>
             <span className={s.metaDot} aria-hidden />
             <span>پیوند به پروفایل</span>
@@ -149,10 +136,7 @@ export default async function SettingsIndexPage() {
       <section className={s.checklist}>
         <h2 className={s.checklistTitle}>چک‌لیست راه‌اندازی</h2>
         <ul className={s.checkList}>
-          <ChecklistItem
-            done={Boolean(exchange.logoUrl)}
-            label="لوگوی صرافی تنظیم شده"
-          />
+          <ChecklistItem done={Boolean(exchange.logoUrl)} label="لوگوی صرافی تنظیم شده" />
           <ChecklistItem
             done={Boolean(exchange.phone && exchange.email)}
             label="اطلاعات تماس کامل"
@@ -161,14 +145,8 @@ export default async function SettingsIndexPage() {
             done={Boolean(exchange.city && exchange.address)}
             label="آدرس فیزیکی ثبت شده"
           />
-          <ChecklistItem
-            done={staffCount >= 2}
-            label="حداقل دو عضو فعال"
-          />
-          <ChecklistItem
-            done={Boolean(exchange.website)}
-            label="وبسایت معرفی‌شده"
-          />
+          <ChecklistItem done={staffCount >= 2} label="حداقل دو عضو فعال" />
+          <ChecklistItem done={Boolean(exchange.website)} label="وبسایت معرفی‌شده" />
         </ul>
       </section>
     </div>

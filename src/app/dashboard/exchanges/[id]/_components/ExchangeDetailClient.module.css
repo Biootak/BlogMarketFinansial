@@ -136,6 +136,7 @@
   }
 }
 
+
 /* ── Card ──────────────────────────────────────────────────────────────────── */
 .card {
   background: var(--at-surface, var(--ds-surface));
@@ -443,6 +444,16 @@
   transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
   animation: rowIn var(--ds-duration-base) var(--ds-ease-out-quart) both;
   animation-delay: calc(var(--row-i, 0) * 30ms);
+}
+
+@media (max-width: 640px) {
+  .txRow {
+    grid-template-columns: 1fr 1fr;
+    row-gap: var(--ds-space-1);
+  }
+  .txRow > :nth-child(n + 3) {
+    display: none;
+  }
 }
 
 .txRow:last-child {

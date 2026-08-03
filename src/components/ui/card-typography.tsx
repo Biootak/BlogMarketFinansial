@@ -1,4 +1,4 @@
-import { heading, radius, space, text } from '@/lib/design-tokens';
+import { heading, radius, text } from '@/lib/design-tokens';
 import { cn } from '@/lib/utils';
 import type * as React from 'react';
 

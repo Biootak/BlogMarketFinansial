@@ -324,14 +324,14 @@ export function useSetupWizard(): UseSetupWizard {
     const result = setupSchema.safeParse(values);
     if (!result.success) {
       const failingKey = result.error.issues[0]?.path[0];
-      const knownKeys = FIELD_ORDER as ReadonlyArray<string>;
+      const knownKeys = FIELD_ORDER as readonly string[];
       if (typeof failingKey === 'string' && knownKeys.includes(failingKey)) {
         const failingField = failingKey as keyof SetupFormValues;
         const target = STEPS.find(
           (s) =>
             s.id !== 'review' &&
             s.id !== 'intro' &&
-            (STEP_FIELDS[s.id] as ReadonlyArray<string>).includes(failingField),
+            (STEP_FIELDS[s.id] as readonly string[]).includes(failingField),
         );
         if (target) {
           goTo(target.id);

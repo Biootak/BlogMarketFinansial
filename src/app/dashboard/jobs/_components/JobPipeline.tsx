@@ -1,7 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { toPersianDigits } from '@/lib/setup/format';
+import Link from 'next/link';
 import s from '../jobs.module.css';
 
 export interface JobPipelineStage {
@@ -26,9 +26,7 @@ export function JobPipeline({ stages, inflowPerMin, outflowPerMin }: JobPipeline
       <div className={s.pipelineHeader}>
         <div className={s.pipelineTitle}>
           <span className={s.pipelineTitleEyebrow}>Pipeline Flow</span>
-          <span className={s.pipelineTitleText}>
-            از زمان‌بندی تا تکمیل — در یک نگاه
-          </span>
+          <span className={s.pipelineTitleText}>از زمان‌بندی تا تکمیل — در یک نگاه</span>
         </div>
         <div className={s.pipelineLegend}>
           <span className={s.pipelineLegendItem}>

@@ -216,15 +216,27 @@
 }
 
 .barFill[data-tone="emerald"] {
-  background: linear-gradient(90deg, var(--at-accent) 0%, color-mix(in oklch, var(--at-accent) 70%, var(--at-gold)) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--at-accent) 0%,
+    color-mix(in oklch, var(--at-accent) 70%, var(--at-gold)) 100%
+  );
 }
 
 .barFill[data-tone="cyan"] {
-  background: linear-gradient(90deg, var(--at-info) 0%, color-mix(in oklch, var(--at-info) 70%, var(--at-accent)) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--at-info) 0%,
+    color-mix(in oklch, var(--at-info) 70%, var(--at-accent)) 100%
+  );
 }
 
 .barFill[data-tone="violet"] {
-  background: linear-gradient(90deg, var(--at-violet) 0%, color-mix(in oklch, var(--at-violet) 70%, var(--at-info)) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--at-violet) 0%,
+    color-mix(in oklch, var(--at-violet) 70%, var(--at-info)) 100%
+  );
 }
 
 .barFill[data-tone="amber"] {
@@ -232,7 +244,11 @@
 }
 
 .barFill[data-tone="rose"] {
-  background: linear-gradient(90deg, var(--at-danger) 0%, color-mix(in oklch, var(--at-danger) 70%, var(--at-gold)) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--at-danger) 0%,
+    color-mix(in oklch, var(--at-danger) 70%, var(--at-gold)) 100%
+  );
 }
 
 .barFill[data-tone="slate"] {

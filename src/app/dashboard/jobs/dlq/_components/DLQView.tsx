@@ -16,8 +16,8 @@
  *   - ۱ SVG signature: X-Ray Pulse در HERO
  */
 
-import { useMemo, useState } from 'react';
-import Link from 'next/link';
+import { HubHeader, LiveDot } from '@/components/Dashboard/PlatformHub';
+import { toPersianDigits } from '@/lib/setup/format';
 import {
   AlertOctagon,
   ArrowLeft,
@@ -33,8 +33,8 @@ import {
   Trash2,
   XCircle,
 } from 'lucide-react';
-import { toPersianDigits } from '@/lib/setup/format';
-import { HubHeader, LiveDot } from '@/components/Dashboard/PlatformHub';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
 import s from './DLQ.module.css';
 
 type JobStatus = 'pending' | 'running' | 'completed' | 'failed' | 'dead';
@@ -93,7 +93,8 @@ function formatRelative(iso: string | null): string {
 function deriveFailureCategory(job: Job): string {
   // heuristic: infer from job type
   if (job.attempts >= job.maxAttempts) return 'TIMEOUT';
-  if (job.type.includes('fetch') || job.type.includes('http') || job.type.includes('api')) return 'NETWORK';
+  if (job.type.includes('fetch') || job.type.includes('http') || job.type.includes('api'))
+    return 'NETWORK';
   if (job.type.includes('validate') || job.type.includes('check')) return 'VALIDATION';
   return 'RUNTIME';
 }
@@ -141,7 +142,10 @@ export function DLQView({ jobs, deadCount, failedCount, totalJobs, completed24h 
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       list = list.filter(
-        (j) => j.type.toLowerCase().includes(q) || j.queue.toLowerCase().includes(q) || j.id.toLowerCase().includes(q),
+        (j) =>
+          j.type.toLowerCase().includes(q) ||
+          j.queue.toLowerCase().includes(q) ||
+          j.id.toLowerCase().includes(q),
       );
     }
     return list;
@@ -186,8 +190,24 @@ export function DLQView({ jobs, deadCount, failedCount, totalJobs, completed24h 
         ))}
 
         {/* cross-hair guides */}
-        <line x1={cx - maxR} y1={cy} x2={cx + maxR} y2={cy} stroke="currentColor" strokeOpacity="0.08" strokeWidth="1" />
-        <line x1={cx} y1={cy - maxR} x2={cx} y2={cy + maxR} stroke="currentColor" strokeOpacity="0.08" strokeWidth="1" />
+        <line
+          x1={cx - maxR}
+          y1={cy}
+          x2={cx + maxR}
+          y2={cy}
+          stroke="currentColor"
+          strokeOpacity="0.08"
+          strokeWidth="1"
+        />
+        <line
+          x1={cx}
+          y1={cy - maxR}
+          x2={cx}
+          y2={cy + maxR}
+          stroke="currentColor"
+          strokeOpacity="0.08"
+          strokeWidth="1"
+        />
 
         {/* core glow */}
         <circle cx={cx} cy={cy} r={maxR} fill="url(#dlq-xray-core)" />
@@ -236,9 +256,33 @@ export function DLQView({ jobs, deadCount, failedCount, totalJobs, completed24h 
         </text>
 
         {/* pulse wave — animated circles */}
-        <circle cx={cx} cy={cy} r="30" fill="none" stroke="currentColor" strokeWidth="1.5" className={s.xrayPulse1} />
-        <circle cx={cx} cy={cy} r="30" fill="none" stroke="currentColor" strokeWidth="1.5" className={s.xrayPulse2} />
-        <circle cx={cx} cy={cy} r="30" fill="none" stroke="currentColor" strokeWidth="1.5" className={s.xrayPulse3} />
+        <circle
+          cx={cx}
+          cy={cy}
+          r="30"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          className={s.xrayPulse1}
+        />
+        <circle
+          cx={cx}
+          cy={cy}
+          r="30"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          className={s.xrayPulse2}
+        />
+        <circle
+          cx={cx}
+          cy={cy}
+          r="30"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          className={s.xrayPulse3}
+        />
       </svg>
     );
   };
@@ -264,7 +308,9 @@ export function DLQView({ jobs, deadCount, failedCount, totalJobs, completed24h 
               <>
                 <span className={s.heroPill} data-tone={deadCount > 0 ? 'critical' : 'healthy'}>
                   <span className={s.heroPillDot} />
-                  {deadCount > 0 ? `${fmtPersian(deadCount)} مورد نیاز به تصمیم` : 'صف مرده پاک است'}
+                  {deadCount > 0
+                    ? `${fmtPersian(deadCount)} مورد نیاز به تصمیم`
+                    : 'صف مرده پاک است'}
                 </span>
                 <Link href="/dashboard/jobs" className={s.heroLink}>
                   <ArrowLeft size={13} aria-hidden />
@@ -287,7 +333,9 @@ export function DLQView({ jobs, deadCount, failedCount, totalJobs, completed24h 
               <span className={s.heroStatLabel}>ناموفق ۲۴ ساعت</span>
               <span className={s.heroStatValue}>{fmtPersian(failedCount)}</span>
               <span className={s.heroStatSub}>
-                {failureRate > 0 ? `${fmtPersian(parseFloat(failureRate.toFixed(1)))}٪ از کل jobها` : 'نرخ صفر'}
+                {failureRate > 0
+                  ? `${fmtPersian(Number.parseFloat(failureRate.toFixed(1)))}٪ از کل jobها`
+                  : 'نرخ صفر'}
               </span>
             </div>
             <div className={s.heroStat} data-tone="indigo">
@@ -338,7 +386,10 @@ export function DLQView({ jobs, deadCount, failedCount, totalJobs, completed24h 
                       </span>
                       <span className={s.dnaItemLabel}>{c.label}</span>
                       <span className={s.dnaItemBar} aria-hidden>
-                        <span className={s.dnaItemFill} style={{ inlineSize: `${Math.max(2, c.share)}%` }} />
+                        <span
+                          className={s.dnaItemFill}
+                          style={{ inlineSize: `${Math.max(2, c.share)}%` }}
+                        />
                       </span>
                       <span className={s.dnaItemValue}>{fmtPersian(c.count)}</span>
                     </div>
@@ -361,7 +412,11 @@ export function DLQView({ jobs, deadCount, failedCount, totalJobs, completed24h 
                 <div className={s.dnaEmpty}>هیچ صف فعالی گزارش نشده است.</div>
               ) : (
                 queueBreakdown.map((q) => (
-                  <div key={q.name} className={s.queueRow} data-tone={q.dead > 0 ? 'critical' : q.failed > 0 ? 'degraded' : 'healthy'}>
+                  <div
+                    key={q.name}
+                    className={s.queueRow}
+                    data-tone={q.dead > 0 ? 'critical' : q.failed > 0 ? 'degraded' : 'healthy'}
+                  >
                     <div className={s.queueRowName}>
                       <Hash size={11} aria-hidden />
                       <span>{q.name}</span>
@@ -546,30 +601,39 @@ export function DLQView({ jobs, deadCount, failedCount, totalJobs, completed24h 
         </div>
         <div className={s.playbookGrid}>
           <article className={s.playbookCard}>
-            <span className={s.playbookCardNumber} aria-hidden>۰۱</span>
+            <span className={s.playbookCardNumber} aria-hidden>
+              ۰۱
+            </span>
             <h3 className={s.playbookCardTitle}>شناسایی</h3>
             <p className={s.playbookCardBody}>
-              ابتدا دسته شکست را مشخص کنید. پایان زمان، خطای شبکه، یا خطای منطقی؟ هر دسته راهکار متفاوتی دارد.
+              ابتدا دسته شکست را مشخص کنید. پایان زمان، خطای شبکه، یا خطای منطقی؟ هر دسته راهکار
+              متفاوتی دارد.
             </p>
             <span className={s.playbookCardChip} data-tone="indigo">
               <Terminal size={11} aria-hidden /> forensic
             </span>
           </article>
           <article className={s.playbookCard}>
-            <span className={s.playbookCardNumber} aria-hidden>۰۲</span>
+            <span className={s.playbookCardNumber} aria-hidden>
+              ۰۲
+            </span>
             <h3 className={s.playbookCardTitle}>اصلاح یا retry</h3>
             <p className={s.playbookCardBody}>
-              اگر داده‌ها سالم هستند، retry خودکار کافی است. در غیر این صورت، داده‌های ورودی یا worker را اصلاح کنید.
+              اگر داده‌ها سالم هستند، retry خودکار کافی است. در غیر این صورت، داده‌های ورودی یا worker
+              را اصلاح کنید.
             </p>
             <span className={s.playbookCardChip} data-tone="emerald">
               <RotateCcw size={11} aria-hidden /> retry
             </span>
           </article>
           <article className={s.playbookCard}>
-            <span className={s.playbookCardNumber} aria-hidden>۰۳</span>
+            <span className={s.playbookCardNumber} aria-hidden>
+              ۰۳
+            </span>
             <h3 className={s.playbookCardTitle}>دور انداختن</h3>
             <p className={s.playbookCardBody}>
-              jobهایی که دیگر اهمیتی ندارند یا داده‌های آن‌ها منقضی شده را با دکمه حذف از صف خارج کنید.
+              jobهایی که دیگر اهمیتی ندارند یا داده‌های آن‌ها منقضی شده را با دکمه حذف از صف خارج
+              کنید.
             </p>
             <span className={s.playbookCardChip} data-tone="rose">
               <Trash2 size={11} aria-hidden /> discard

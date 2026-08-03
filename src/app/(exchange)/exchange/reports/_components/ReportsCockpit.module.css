@@ -35,9 +35,8 @@
   box-shadow: var(--at-shadow-sm);
   isolation: isolate;
   overflow: hidden;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
   animation: cellIn 600ms var(--ds-ease-out-quart) backwards;
 }
 

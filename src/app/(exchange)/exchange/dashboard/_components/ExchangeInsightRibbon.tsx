@@ -10,13 +10,9 @@
  * Server Component. ساده و سریع.
  */
 
-import { Sparkles, TrendingUp, Award, Clock } from 'lucide-react';
+import type { CurrencyFlow, DailyPoint, TopCustomer } from '@/actions/exchange-dashboard';
+import { Award, Clock, Sparkles, TrendingUp } from 'lucide-react';
 import s from './ExchangeDashboard.module.css';
-import type {
-  CurrencyFlow,
-  DailyPoint,
-  TopCustomer,
-} from '@/actions/exchange-dashboard';
 
 function formatCompact(volumeStr: string): string {
   const minor = BigInt(volumeStr);
@@ -58,11 +54,7 @@ export default function ExchangeInsightRibbon({
   const hasData = Boolean(dominant || champion || peakDay.count > 0);
 
   if (!hasData) {
-    return (
-      <div className={s.insightEmpty}>
-        برای نمایش insight نیاز به دادهٔ بیشتری است.
-      </div>
-    );
+    return <div className={s.insightEmpty}>برای نمایش insight نیاز به دادهٔ بیشتری است.</div>;
   }
 
   return (

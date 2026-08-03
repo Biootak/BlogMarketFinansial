@@ -52,7 +52,8 @@
   animation: live-pulse 1.6s ease-in-out infinite;
 }
 @keyframes live-pulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 25%, transparent);
   }
   50% {
@@ -195,9 +196,8 @@
   color: var(--ds-text-primary);
   font-size: 0.88rem;
   font-family: inherit;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 .search:focus {
   outline: none;
@@ -228,9 +228,8 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
   font-family: inherit;
   -webkit-tap-highlight-color: transparent;
 }
@@ -241,9 +240,7 @@
 .chipActive {
   background: var(--ds-canvas);
   color: var(--ds-text-primary);
-  box-shadow:
-    inset 0 1px 0 oklch(100% 0 0 / 0.6),
-    0 1px 2px oklch(20% 0.01 240 / 0.08);
+  box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.6), 0 1px 2px oklch(20% 0.01 240 / 0.08);
 }
 
 .sort {
@@ -270,9 +267,8 @@
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 .sortBtn:hover {
   background: var(--ds-surface);
@@ -288,8 +284,18 @@
 /* ── Grid of rate cards ─────────────────────────────────────── */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: 1fr;
   gap: 0.875rem;
+}
+@media (min-width: 480px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
 }
 
 .card {
@@ -301,10 +307,9 @@
   background: var(--ds-surface-elevated, var(--ds-surface));
   border: 1px solid var(--ds-border-default);
   border-radius: 0.875rem;
-  transition:
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
   animation: card-in 480ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)) both;
   animation-delay: calc(var(--i, 0) * 35ms);
   overflow: hidden;
@@ -325,7 +330,7 @@
   }
 }
 .card::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(
@@ -340,20 +345,23 @@
 .card:hover {
   transform: translateY(-2px);
   border-color: color-mix(in oklch, var(--ds-brand-500) 35%, var(--ds-border-default));
-  box-shadow:
-    0 1px 0 oklch(100% 0 0 / 0.6) inset,
-    0 12px 28px -12px color-mix(in oklch, var(--ds-brand-500) 25%, transparent);
+  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset, 0 12px 28px -12px
+    color-mix(in oklch, var(--ds-brand-500) 25%, transparent);
 }
 .card:hover::before {
   opacity: 1;
 }
-.card[data-trend='up']::after {
-  content: '';
+.card[data-trend="up"]::after {
+  content: "";
   position: absolute;
   inset: 0 0 auto auto;
   inline-size: 32px;
   block-size: 32px;
-  background: radial-gradient(circle at top right, color-mix(in oklch, oklch(60% 0.14 162) 18%, transparent), transparent 70%);
+  background: radial-gradient(
+    circle at top right,
+    color-mix(in oklch, oklch(60% 0.14 162) 18%, transparent),
+    transparent 70%
+  );
   pointer-events: none;
 }
 

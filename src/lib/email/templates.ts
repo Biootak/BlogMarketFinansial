@@ -605,9 +605,7 @@ export interface ExchangeServiceRequestEmailArgs {
   appUrl: string;
 }
 
-export function exchangeServiceRequestEmail(
-  args: ExchangeServiceRequestEmailArgs,
-): EmailMessage {
+export function exchangeServiceRequestEmail(args: ExchangeServiceRequestEmailArgs): EmailMessage {
   const serviceLabel = SERVICE_LABELS[args.serviceKey] ?? args.serviceKey;
   const contactMethodLabel =
     args.contactMethod === 'telegram'

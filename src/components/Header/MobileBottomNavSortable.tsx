@@ -13,11 +13,11 @@
  * drag-and-drop behaviour. `onReorder(newOrder)` fires after a drag completes.
  */
 import {
-  closestCenter,
   DndContext,
   type DragEndEvent,
   KeyboardSensor,
   PointerSensor,
+  closestCenter,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
@@ -31,7 +31,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import type { FC, ReactElement } from 'react';
 
-const LONG_PRESS_MS = 500;
+const _LONG_PRESS_MS = 500;
 const SLOP_PX = 8;
 
 export interface SortableNavItem {
@@ -52,12 +52,11 @@ export interface MobileBottomNavSortableProps {
   onReorder: (newOrder: readonly string[]) => void;
   onLinkClick: (e: React.MouseEvent<HTMLAnchorElement>, item: SortableNavItem) => void;
   /** Renders the <a> for an item (with icon + active state). */
-  renderLink: (
-    item: SortableNavItem,
-    opts: { isActive: boolean },
-  ) => ReactElement;
+  renderLink: (item: SortableNavItem, opts: { isActive: boolean }) => ReactElement;
   /** <ul> className (CSS module). */
   className: string;
+  /** <ul> inline style — برای backdrop-filter که Lightning CSS حذف می‌کند. */
+  style?: React.CSSProperties;
   /** className applied to each sortable <li>. */
   itemClassName: string;
   /** className applied to tablet-only items. */
@@ -67,7 +66,7 @@ export interface MobileBottomNavSortableProps {
 function SortableItem({
   item,
   isActive,
-  onLinkClick,
+  onLinkClick: _onLinkClick,
   renderLink,
   itemClassName,
   tabletOnlyClassName,
@@ -93,7 +92,7 @@ function SortableItem({
     <li
       ref={setNodeRef}
       style={style}
-      className={`${itemClassName} ${item.tabletOnly ? tabletOnlyClassName ?? '' : ''}`.trim()}
+      className={`${itemClassName} ${item.tabletOnly ? (tabletOnlyClassName ?? '') : ''}`.trim()}
       data-dragging={isDragging ? 'true' : 'false'}
       {...attributes}
       {...listeners}
@@ -111,6 +110,7 @@ export default function MobileBottomNavSortable({
   onLinkClick,
   renderLink,
   className,
+  style,
   itemClassName,
   tabletOnlyClassName,
 }: MobileBottomNavSortableProps) {
@@ -147,7 +147,7 @@ export default function MobileBottomNavSortable({
       onDragEnd={handleDragEnd}
     >
       <SortableContext items={order.map(String)} strategy={horizontalListSortingStrategy}>
-        <ul className={className} role="list">
+        <ul className={className} style={style}>
           {items.map((item) => (
             <SortableItem
               key={item.id}

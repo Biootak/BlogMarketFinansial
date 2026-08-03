@@ -1,9 +1,9 @@
 import { getUserDetail } from '@/actions/user-detail';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import { requireAdmin } from '@/lib/require-auth';
 import type { Role } from '@prisma/client';
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
-import { PageHeader } from '@/components/Dashboard/primitives';
 import { UserEditForm } from './UserEditForm';
 
 export const dynamic = 'force-dynamic';

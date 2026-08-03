@@ -1,8 +1,8 @@
 import { getSiteIdentity } from '@/lib/site-identity';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import s from './subscription-plan.module.css';
 import { PlanDetailClient } from './PlanDetailClient';
+import s from './subscription-plan.module.css';
 
 type Params = Promise<{ plan: string }>;
 

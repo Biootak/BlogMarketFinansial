@@ -279,8 +279,8 @@
   background: var(--at-surface-hover);
   border: 1px solid var(--at-line);
   border-radius: var(--at-radius);
-  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    background var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), background
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .rateCard:focus-within {
@@ -755,11 +755,7 @@
 
 .feeRowBarFill {
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    var(--at-accent) 0%,
-    var(--at-gold) 100%
-  );
+  background: linear-gradient(90deg, var(--at-accent) 0%, var(--at-gold) 100%);
   border-radius: 2px;
   transition: width var(--ds-duration-slow) var(--ds-ease-out-quart);
   transform-origin: right center;
@@ -872,7 +868,8 @@
 
 /* نقطه تغییرات ذخیره‌نشده */
 .saveBtn[data-changed="true"] {
-  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.15) inset, 0 0 0 3px color-mix(in oklch, var(--at-accent) 22%, transparent);
+  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.15) inset, 0 0 0 3px
+    color-mix(in oklch, var(--at-accent) 22%, transparent);
 }
 
 .saveBtnDot {

@@ -19,24 +19,24 @@ interface Props {
 }
 
 const LABEL: Record<string, string> = {
-  ACTIVE:    'فعال',
-  PENDING:   'در انتظار',
+  ACTIVE: 'فعال',
+  PENDING: 'در انتظار',
   SUSPENDED: 'معلق',
-  CLOSED:    'بسته',
+  CLOSED: 'بسته',
 };
 
 const TONE_CLASS: Record<string, string> = {
-  ACTIVE:    s.statusActive!,
-  PENDING:   s.statusPending!,
+  ACTIVE: s.statusActive!,
+  PENDING: s.statusPending!,
   SUSPENDED: s.statusSuspended!,
-  CLOSED:    s.statusClosed!,
+  CLOSED: s.statusClosed!,
 };
 
 const DOT_CLASS: Record<string, string> = {
-  ACTIVE:    s.statusDotActive!,
-  PENDING:   s.statusDotPending!,
+  ACTIVE: s.statusDotActive!,
+  PENDING: s.statusDotPending!,
   SUSPENDED: s.statusDotSuspended!,
-  CLOSED:    s.statusDotClosed!,
+  CLOSED: s.statusDotClosed!,
 };
 
 export default function StatusPill({ status, variant = 'default' }: Props) {

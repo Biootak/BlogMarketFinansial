@@ -9,8 +9,8 @@
 
 import { BadgeCheck, CheckCircle2, Clock, Receipt } from 'lucide-react';
 import { useState } from 'react';
-import { type SettlementRow, type SettlementStatus, STATUS_META } from './settlement-state';
 import s from './SettlementPeriodCard.module.css';
+import { STATUS_META, type SettlementRow, type SettlementStatus } from './settlement-state';
 
 const STATUS_ICON = {
   PENDING: Clock,

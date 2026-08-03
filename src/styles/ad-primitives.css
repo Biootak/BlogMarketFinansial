@@ -1,0 +1,259 @@
+﻿/* ============================================================================
+   Banner / Ad Motion Primitives (2026 â€” scroll-driven + hover)
+   ----------------------------------------------------------------------------
+   CSS-only. ØªÙˆØ³Ø· prefers-reduced-motion global rule Ø¯Ø± Ø¨Ø§Ù„Ø§ Ø®ÙˆØ¯Ú©Ø§Ø± clamp Ù…ÛŒâ€ŒØ´Ù†.
+   - .ad-conic-border   â†’ Ø­Ø§Ø´ÛŒÙ‡ Ú¯Ø±Ø§Ø¯ÛŒÙ†Øª Ú†Ø±Ø®Ø§Ù† Ø±ÙˆÛŒ hover
+   - .ad-cta-shimmer    â†’ Ø§ÙÚ©Øª Ø´Ø§ÛŒÙ†Ø± Ø±ÙˆÛŒ Ø¯Ú©Ù…Ù‡â€ŒÙ‡Ø§ÛŒ CTA
+   - .ad-mask-reveal    â†’ Ø±ÛŒÙˆØ§Ù„ Ù…Ø§Ø³Ú© ØªØµÙˆÛŒØ± Ù‡Ù†Ú¯Ø§Ù… Ø§Ø³Ú©Ø±ÙˆÙ„ Ø¨Ù‡ viewport (Spotlight)
+   - .ad-mesh-aurora    â†’ Ù¾Ø³â€ŒØ²Ù…ÛŒÙ†Ù‡ mesh gradient Ù…ØªØ­Ø±Ú© (Live demo)
+   - .ad-spotlight-3d   â†’ perspective + mouse-driven parallax via --mx/--my CSS vars
+   - .ad-pulse-glow     â†’ Ø­Ù„Ù‚Ù‡ glow Ø¶Ø±Ø¨Ø§Ù†â€ŒØ¯Ø§Ø± Ù¾Ø´Øª Ú©Ø§Ø±Øª
+   ============================================================================ */
+
+@keyframes ad-conic-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ad-cta-shimmer {
+  0% {
+    transform: translateX(-100%) skewX(-12deg);
+  }
+  60% {
+    transform: translateX(200%) skewX(-12deg);
+  }
+  100% {
+    transform: translateX(200%) skewX(-12deg);
+  }
+}
+
+/* Shine Ø±ÙˆÛŒ Ø¯Ú©Ù…Ù‡â€ŒÛŒ Â«Ø¨Ø§Ø±Ú¯Ø°Ø§Ø±ÛŒ Ø¨ÛŒØ´ØªØ±Â» Ø¯Ø± PulseBoard â€” Ù‡Ù…Ø§Ù† keyframeØŒ
+   ÙÙ‚Ø· ÛŒÙ‡ utility Ú©Ù…â€ŒØ­Ø¬Ù… Ú©Ù‡ Ø¯Ø± hover Ø±ÙˆÛŒ Ø¹Ù†ØµØ± ÙØ¹Ø§Ù„ Ù…ÛŒâ€ŒØ´Ù‡. */
+.ad-load-shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.ad-load-shine > .ad-load-shine__beam {
+  position: absolute;
+  top: -25%;
+  bottom: -25%;
+  inset-inline-end: 100%;
+  width: 50%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+  z-index: 1;
+}
+.ad-load-shine:hover > .ad-load-shine__beam {
+  animation: ad-cta-shimmer 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes ad-mask-reveal {
+  from {
+    mask-position: 0% 0%;
+  }
+  to {
+    mask-position: 100% 0%;
+  }
+}
+
+/* Mesh aurora â€” Ø¯Ùˆ Ù„Ø§ÛŒÙ‡ gradient Ú©Ù‡ Ø¢Ø±ÙˆÙ… drift Ù…ÛŒâ€ŒÚ©Ù†Ù† */
+@keyframes ad-mesh-drift-a {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(6%, -4%, 0) scale(1.08);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+@keyframes ad-mesh-drift-b {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-5%, 5%, 0) scale(1.1);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+/* Glow pulse Ù¾Ø´Øª Ú©Ø§Ø±Øª */
+@keyframes ad-pulse-glow {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.04);
+  }
+}
+
+@layer utilities {
+  /* Conic-gradient rotating border on hover (banner ad `image` variant) */
+  .ad-conic-border {
+    position: relative;
+    isolation: isolate;
+  }
+  .ad-conic-border::before {
+    content: "";
+    position: absolute;
+    inset: -1.5px;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: conic-gradient(
+      from 0deg,
+      var(--aurora-a) 0%,
+      var(--aurora-b) 20%,
+      var(--primary-500) 50%,
+      var(--aurora-b) 80%,
+      var(--aurora-a) 100%
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 320ms cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .ad-conic-border:hover::before {
+    opacity: 1;
+    animation: ad-conic-spin 5s linear infinite;
+  }
+
+  /* CTA shimmer (Stripe-style). Apply on `rich` + `spotlight` variants. */
+  .ad-cta-shimmer {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .ad-cta-shimmer > * {
+    position: relative;
+    z-index: 1;
+  }
+  .ad-cta-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 25%,
+      rgba(255, 255, 255, 0.22) 50%,
+      transparent 75%
+    );
+    transform: translateX(-100%) skewX(-12deg);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .ad-cta-shimmer:hover::after {
+    animation: ad-cta-shimmer 1100ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* Scroll-driven mask reveal for the Spotlight variant.
+     Chromium 115+ / Safari 18+. Older engines â†’ static fully-visible mask. */
+  .ad-mask-reveal {
+    -webkit-mask-image: linear-gradient(to end, black 60%, transparent);
+    mask-image: linear-gradient(to end, black 60%, transparent);
+    animation: ad-mask-reveal linear both;
+    animation-timeline: view();
+    animation-range: entry 30% cover 50%;
+  }
+  @supports not (animation-timeline: view()) {
+    .ad-mask-reveal {
+      -webkit-mask-image: linear-gradient(to end, black 100%);
+      mask-image: linear-gradient(to end, black 100%);
+    }
+  }
+
+  /* 3D perspective wrapper. Ù…ØªØºÛŒØ±Ù‡Ø§ÛŒ --mx/--my Ø§Ø² Ú©Ù„Ø§ÛŒÙ†Øª Ø³Øª Ù…ÛŒâ€ŒØ´Ù†
+     ØªØ§ spotlight Ú©Ø§Ø±Øª tilt Ø³Ù‡â€ŒØ¨Ø¹Ø¯ÛŒ Ø¯Ø§Ø´ØªÙ‡ Ø¨Ø§Ø´Ù‡ Ø¨Ø¯ÙˆÙ† Ù†ÛŒØ§Ø² Ø¨Ù‡ ÙØ±ÛŒÙ…â€ŒÙˆØ±Ú©. */
+  .ad-spotlight-3d {
+    perspective: 1400px;
+    transform-style: preserve-3d;
+  }
+  .ad-spotlight-3d > .ad-spotlight-inner {
+    transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  .ad-spotlight-3d:hover > .ad-spotlight-inner {
+    transform: perspective(1400px) rotateX(calc((var(--my, 0) - 0.5) * -4deg))
+      rotateY(calc((var(--mx, 0) - 0.5) * 4deg)) translateZ(0);
+  }
+
+  /* Mesh aurora background â€” gradient Ù‡Ø§ÛŒ Ø±Ù†Ú¯ÛŒ Ú©Ù‡ drift Ù…ÛŒâ€ŒÚ©Ù†Ù†. */
+  .ad-mesh-aurora {
+    position: relative;
+    isolation: isolate;
+  }
+  .ad-mesh-aurora::before,
+  .ad-mesh-aurora::after {
+    content: "";
+    position: absolute;
+    inset: -20%;
+    z-index: -1;
+    pointer-events: none;
+    filter: blur(40px);
+    opacity: 0.85;
+  }
+  .ad-mesh-aurora::before {
+    background: radial-gradient(closest-side, var(--aurora-a), transparent 70%);
+    animation: ad-mesh-drift-a 14s ease-in-out infinite;
+  }
+  .ad-mesh-aurora::after {
+    background: radial-gradient(closest-side, var(--aurora-b), transparent 70%);
+    animation: ad-mesh-drift-b 18s ease-in-out infinite;
+  }
+
+  /* Glow ring Ù¾Ø´Øª Ú©Ø§Ø±Øª â€” Ø¶Ø±Ø¨Ø§Ù† Ø¢Ø±Ø§Ù… */
+  .ad-pulse-glow {
+    position: relative;
+  }
+  .ad-pulse-glow::after {
+    content: "";
+    position: absolute;
+    inset: -8%;
+    border-radius: inherit;
+    background: radial-gradient(closest-side, var(--glow-medium), transparent 70%);
+    z-index: -1;
+    animation: ad-pulse-glow 4s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  /* Hairline Ù…ÙˆØ±Ø¨ Ø¨Ø±Ø§ÛŒ Ø­Ø§Ù„Øª spotlight */
+  .ad-spotlight-hairline {
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--hairline) 20%,
+      var(--hairline) 80%,
+      transparent 100%
+    );
+  }
+
+  /* Noise overlay Ø¨Ø±Ø§ÛŒ Ø¹Ù…Ù‚ Ø¨ØµØ±ÛŒ â€” Ø®ÛŒÙ„ÛŒ subtle (2% opacity) */
+  .ad-noise {
+    position: relative;
+  }
+  .ad-noise::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.025;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+

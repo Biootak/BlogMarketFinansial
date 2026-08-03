@@ -1,6 +1,4 @@
-﻿/* ApiKeysManager.module.css */
-
-.wrap {
+﻿/* ApiKeysManager.module.css */ .wrap {
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-4);
@@ -79,11 +77,15 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .spin { animation: none; }
+  .spin {
+    animation: none;
+  }
 }
 
 .list {
@@ -110,7 +112,7 @@
   border-color: var(--ds-border-default);
 }
 
-.row[data-expired='true'] {
+.row[data-expired="true"] {
   opacity: 0.55;
 }
 
@@ -236,12 +238,18 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dialogBackdrop { animation: none; }
+  .dialogBackdrop {
+    animation: none;
+  }
 }
 
 .dialog {
@@ -345,7 +353,7 @@
   border-color: var(--ds-border-default);
 }
 
-.scopeBtn[data-on='true'] {
+.scopeBtn[data-on="true"] {
   background: oklch(58% 0.12 165 / 0.1);
   border-color: oklch(58% 0.12 165 / 0.5);
 }
@@ -382,7 +390,7 @@
   border-color: var(--ds-border-default);
 }
 
-.expiryBtn[data-on='true'] {
+.expiryBtn[data-on="true"] {
   background: oklch(52% 0.14 162 / 0.1);
   border-color: oklch(52% 0.14 162 / 0.5);
   color: var(--nova-up);

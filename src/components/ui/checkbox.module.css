@@ -27,5 +27,9 @@
 }
 
 .root:focus-visible {
-  --tw-ring-color: color-mix(in oklch, var(--cb, var(--at-accent, var(--ds-brand-500))) 30%, transparent);
+  --tw-ring-color: color-mix(
+    in oklch,
+    var(--cb, var(--at-accent, var(--ds-brand-500))) 30%,
+    transparent
+  );
 }

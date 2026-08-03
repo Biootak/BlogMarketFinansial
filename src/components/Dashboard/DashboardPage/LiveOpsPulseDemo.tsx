@@ -8,16 +8,8 @@
  *  واقعی از سرویس‌ها جایگزین شود.
  */
 
-import {
-  Database,
-  Globe2,
-  HardDrive,
-  type LucideIcon,
-  ShieldCheck,
-  Wifi,
-  Zap,
-} from 'lucide-react';
-import { LiveOpsPulse, type LiveOpsEvent, type LiveOpsService } from './LiveOpsPulse';
+import { Database, Globe2, HardDrive, type LucideIcon, ShieldCheck, Wifi, Zap } from 'lucide-react';
+import { type LiveOpsEvent, LiveOpsPulse, type LiveOpsService } from './LiveOpsPulse';
 
 export function LiveOpsPulseDemo() {
   const now = Date.now();
@@ -132,7 +124,8 @@ export function LiveOpsPulseDemo() {
       events={events}
       pollIntervalMs={2200}
       activityBars={[
-        12, 18, 22, 30, 25, 38, 55, 62, 58, 70, 82, 78, 65, 72, 88, 92, 85, 74, 68, 60, 50, 42, 30, 22,
+        12, 18, 22, 30, 25, 38, 55, 62, 58, 70, 82, 78, 65, 72, 88, 92, 85, 74, 68, 60, 50, 42, 30,
+        22,
       ]}
     />
   );

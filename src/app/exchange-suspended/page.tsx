@@ -13,13 +13,7 @@
  */
 
 import { getSystemSettingsData } from '@/data/getSystemSettings';
-import {
-  AlertOctagon,
-  ArrowRight,
-  LifeBuoy,
-  Phone,
-  ShieldAlert,
-} from 'lucide-react';
+import { AlertOctagon, ArrowRight, LifeBuoy, Phone, ShieldAlert } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import s from './exchange-suspended.module.css';
@@ -80,8 +74,8 @@ export default async function ExchangeSuspendedPage() {
           </h1>
 
           <p className={s.railLead}>
-            به‌منظور رعایت مقررات و حفاظت از کاربران، فعالیت صرافی شما روی پلتفرم به حالت تعلیق درآمده است.
-            برای رفع انسداد، مراحل زیر را دنبال کنید.
+            به‌منظور رعایت مقررات و حفاظت از کاربران، فعالیت صرافی شما روی پلتفرم به حالت تعلیق
+            درآمده است. برای رفع انسداد، مراحل زیر را دنبال کنید.
           </p>
 
           <div className={s.railMeta}>
@@ -95,7 +89,9 @@ export default async function ExchangeSuspendedPage() {
             </div>
             <div className={s.metaItem}>
               <span className={s.metaLabel}>شناسه پیگیری</span>
-              <span className={s.metaValue}>SUS-{now.getTime().toString(36).toUpperCase().slice(-8)}</span>
+              <span className={s.metaValue}>
+                SUS-{now.getTime().toString(36).toUpperCase().slice(-8)}
+              </span>
             </div>
             <div className={s.metaItem}>
               <span className={s.metaLabel}>اولویت بررسی</span>
@@ -119,8 +115,8 @@ export default async function ExchangeSuspendedPage() {
             چرا دسترسی من مسدود شد؟
           </h2>
           <p className={s.cardBody}>
-            تیم رعایت پلتفرم، فعالیت صرافی شما را برای بررسی بیشتر در حالت تعلیق قرار داده است. معمولاً این
-            اقدام به دلایل زیر انجام می‌شود:
+            تیم رعایت پلتفرم، فعالیت صرافی شما را برای بررسی بیشتر در حالت تعلیق قرار داده است.
+            معمولاً این اقدام به دلایل زیر انجام می‌شود:
           </p>
 
           <ul className={s.helpList}>

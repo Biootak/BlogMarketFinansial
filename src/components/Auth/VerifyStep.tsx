@@ -87,8 +87,7 @@ export default function VerifyStep({
         <span className="auth-verify-chip">{INTENT_LABEL[intent]}</span>
         {is2FA ? (
           <p className="auth-helper">
-            کد ۶ رقمی را از اپلیکیشن احراز هویت (Google Authenticator / Authy) وارد کنید
-            برای حساب{' '}
+            کد ۶ رقمی را از اپلیکیشن احراز هویت (Google Authenticator / Authy) وارد کنید برای حساب{' '}
             <span dir="ltr" className="auth-inline-email">
               {email}
             </span>

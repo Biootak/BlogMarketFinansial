@@ -36,7 +36,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { type SubmitHandler, useForm, Controller } from 'react-hook-form';
+import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 import s from './ApplyExchangeForm.module.css';
 
 interface FormValues {
@@ -166,10 +166,7 @@ export default function ApplyExchangeForm() {
                 {step.label}
               </span>
               {i < STEPS.length - 1 && (
-                <span
-                  className={`${s.stepLine} ${isDone ? s.stepLineDone : ''}`}
-                  aria-hidden
-                />
+                <span className={`${s.stepLine} ${isDone ? s.stepLineDone : ''}`} aria-hidden />
               )}
             </div>
           );
@@ -178,7 +175,6 @@ export default function ApplyExchangeForm() {
 
       {/* ── Form ── */}
       <form onSubmit={handleSubmit(onSubmit)} className={s.form} noValidate>
-
         {/* ── Step 1: شناسایی ── */}
         {activeStep === 1 && (
           <div className={s.section}>
@@ -191,7 +187,10 @@ export default function ApplyExchangeForm() {
               {/* نام */}
               <div className={s.field}>
                 <label htmlFor="ex-name" className={s.label}>
-                  نام صرافی <span className={s.req} aria-label="الزامی">*</span>
+                  نام صرافی{' '}
+                  <span className={s.req} aria-label="الزامی">
+                    *
+                  </span>
                 </label>
                 <Input
                   id="ex-name"
@@ -202,13 +201,20 @@ export default function ApplyExchangeForm() {
                     minLength: { value: 2, message: 'حداقل ۲ کاراکتر' },
                   })}
                 />
-                {errors.name && <span className={s.error} role="alert">{errors.name.message}</span>}
+                {errors.name && (
+                  <span className={s.error} role="alert">
+                    {errors.name.message}
+                  </span>
+                )}
               </div>
 
               {/* slug */}
               <div className={s.field}>
                 <label htmlFor="ex-slug" className={s.label}>
-                  نام کوتاه (URL) <span className={s.req} aria-label="الزامی">*</span>
+                  نام کوتاه (URL){' '}
+                  <span className={s.req} aria-label="الزامی">
+                    *
+                  </span>
                 </label>
                 <Input
                   id="ex-slug"
@@ -217,19 +223,31 @@ export default function ApplyExchangeForm() {
                   aria-invalid={!!errors.slug}
                   {...register('slug', {
                     required: 'نام کوتاه الزامی است',
-                    pattern: { value: /^[a-z0-9-]+$/, message: 'فقط حروف انگلیسی کوچک، عدد و خط تیره' },
+                    pattern: {
+                      value: /^[a-z0-9-]+$/,
+                      message: 'فقط حروف انگلیسی کوچک، عدد و خط تیره',
+                    },
                     minLength: { value: 2, message: 'حداقل ۲ کاراکتر' },
                   })}
                 />
-                {errors.slug
-                  ? <span className={s.error} role="alert">{errors.slug.message}</span>
-                  : <span className={s.hint}>financialmarket.page/exchanges/<em>نام-کوتاه</em></span>}
+                {errors.slug ? (
+                  <span className={s.error} role="alert">
+                    {errors.slug.message}
+                  </span>
+                ) : (
+                  <span className={s.hint}>
+                    financialmarket.page/exchanges/<em>نام-کوتاه</em>
+                  </span>
+                )}
               </div>
 
               {/* شهر */}
               <div className={s.field}>
                 <label htmlFor="ex-city" className={s.label}>
-                  شهر <span className={s.req} aria-label="الزامی">*</span>
+                  شهر{' '}
+                  <span className={s.req} aria-label="الزامی">
+                    *
+                  </span>
                 </label>
                 <Input
                   id="ex-city"
@@ -237,7 +255,11 @@ export default function ApplyExchangeForm() {
                   aria-invalid={!!errors.city}
                   {...register('city', { required: 'شهر الزامی است' })}
                 />
-                {errors.city && <span className={s.error} role="alert">{errors.city.message}</span>}
+                {errors.city && (
+                  <span className={s.error} role="alert">
+                    {errors.city.message}
+                  </span>
+                )}
               </div>
 
               {/* مجوز */}
@@ -298,10 +320,17 @@ export default function ApplyExchangeForm() {
                   placeholder="info@exchange.af"
                   aria-invalid={!!errors.email}
                   {...register('email', {
-                    pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'ایمیل معتبر وارد کنید' },
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: 'ایمیل معتبر وارد کنید',
+                    },
                   })}
                 />
-                {errors.email && <span className={s.error} role="alert">{errors.email.message}</span>}
+                {errors.email && (
+                  <span className={s.error} role="alert">
+                    {errors.email.message}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -320,11 +349,7 @@ export default function ApplyExchangeForm() {
             </div>
 
             <div className={s.stepActions}>
-              <button
-                type="button"
-                className={s.backBtn}
-                onClick={() => setActiveStep(1)}
-              >
+              <button type="button" className={s.backBtn} onClick={() => setActiveStep(1)}>
                 <span aria-hidden>→</span>
                 مرحله قبل
               </button>
@@ -364,9 +389,13 @@ export default function ApplyExchangeForm() {
                     min: { value: 0, message: 'سقف نمی‌تواند منفی باشد' },
                   })}
                 />
-                {errors.dailyLimitAf
-                  ? <span className={s.error} role="alert">{errors.dailyLimitAf.message}</span>
-                  : <span className={s.hint}>پیش‌فرض: ۵,۰۰۰,۰۰۰ افغانی</span>}
+                {errors.dailyLimitAf ? (
+                  <span className={s.error} role="alert">
+                    {errors.dailyLimitAf.message}
+                  </span>
+                ) : (
+                  <span className={s.hint}>پیش‌فرض: ۵,۰۰۰,۰۰۰ افغانی</span>
+                )}
               </div>
 
               {/* کارمزد */}
@@ -389,9 +418,13 @@ export default function ApplyExchangeForm() {
                     max: { value: 50, message: 'کارمزد بیش از ۵۰٪ مجاز نیست' },
                   })}
                 />
-                {errors.platformFee
-                  ? <span className={s.error} role="alert">{errors.platformFee.message}</span>
-                  : <span className={s.hint}>پیش‌فرض: ۰.۵٪ از هر معامله</span>}
+                {errors.platformFee ? (
+                  <span className={s.error} role="alert">
+                    {errors.platformFee.message}
+                  </span>
+                ) : (
+                  <span className={s.hint}>پیش‌فرض: ۰.۵٪ از هر معامله</span>
+                )}
               </div>
             </div>
 
@@ -425,11 +458,7 @@ export default function ApplyExchangeForm() {
             )}
 
             <div className={s.stepActions}>
-              <button
-                type="button"
-                className={s.backBtn}
-                onClick={() => setActiveStep(2)}
-              >
+              <button type="button" className={s.backBtn} onClick={() => setActiveStep(2)}>
                 <span aria-hidden>→</span>
                 مرحله قبل
               </button>
@@ -439,9 +468,11 @@ export default function ApplyExchangeForm() {
                 disabled={isPending}
                 aria-busy={isPending || undefined}
               >
-                {isPending
-                  ? <Loader2 size={16} className={s.spinner} aria-hidden />
-                  : <CheckCircle2 size={16} strokeWidth={2.5} aria-hidden />}
+                {isPending ? (
+                  <Loader2 size={16} className={s.spinner} aria-hidden />
+                ) : (
+                  <CheckCircle2 size={16} strokeWidth={2.5} aria-hidden />
+                )}
                 {isPending ? 'در حال ارسال…' : 'ارسال درخواست'}
               </button>
             </div>

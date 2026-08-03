@@ -87,6 +87,9 @@ const SubscribeForm: FC<SubscribeFormProps> = ({ onSubmit }) => {
         <Button
           type="submit"
           disabled={isLoading}
+          // Text «عضویت» is hidden on <sm (icon-only) — keep an accessible name
+          // at every viewport (button-name audit).
+          aria-label="عضویت در خبرنامه"
           className="absolute end-1.5 sm:end-2 top-1/2 -translate-y-1/2 h-8 sm:h-10 px-3 sm:px-5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-neutral-900 text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl shadow-lg shadow-amber-500/30 transition-all duration-300 hover:shadow-amber-500/50 hover:scale-105 disabled:opacity-70 disabled:hover:scale-100"
         >
           {isLoading ? (

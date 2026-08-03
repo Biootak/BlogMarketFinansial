@@ -54,9 +54,7 @@ export function FilterPills({
             data-tone={it.tone ?? 'neutral'}
           >
             <span>{it.label}</span>
-            {it.count !== undefined ? (
-              <span className={s.filterPillCount}>{it.count}</span>
-            ) : null}
+            {it.count !== undefined ? <span className={s.filterPillCount}>{it.count}</span> : null}
           </button>
         );
       })}

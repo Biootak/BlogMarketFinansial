@@ -30,12 +30,7 @@
 import Ticker from '@/components/Ticker';
 import { TickerShell } from '@/components/TickerShell';
 import type { MarketRateItem } from '@/lib/market-rates';
-import {
-  UNIT_LABELS,
-  formatChangePercent,
-  formatValueOnly,
-  formatWithUnit,
-} from '@/lib/market-rates/format';
+import { UNIT_LABELS, formatChangePercent, formatValueOnly } from '@/lib/market-rates/format';
 import { cn } from '@/lib/utils';
 import { memo, useEffect, useMemo, useState } from 'react';
 
@@ -161,7 +156,7 @@ function MarketRatesTickerImpl({
         <span
           dir="ltr"
           style={{ unicodeBidi: 'isolate' }}
-          className="text-[9px] sm:text-[10px] font-medium text-neutral-500 dark:text-neutral-400 tabular-nums"
+          className="text-[9px] sm:text-[10px] font-medium text-neutral-600 dark:text-neutral-300 tabular-nums"
         >
           {now}
         </span>

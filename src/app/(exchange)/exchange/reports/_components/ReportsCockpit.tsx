@@ -14,17 +14,17 @@
  * Client Component — هیچ server data fetching.
  */
 
-import { useMemo, useState, useTransition } from 'react';
 import { generateReportCsv } from '@/actions/reporting';
-import { Coins, FileSpreadsheet, Layers, Percent, Receipt, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Coins, FileSpreadsheet, Layers, Percent, Receipt, Users } from 'lucide-react';
+import { useMemo, useState, useTransition } from 'react';
 import CurrencyConstellation from './CurrencyConstellation';
 import DailyVolumeStrip, { type DailyBucket } from './DailyVolumeStrip';
 import FilterBar, { type FilterState } from './FilterBar';
 import PnLByCurrency, { type PnLRow } from './PnLByCurrency';
+import s from './ReportsCockpit.module.css';
 import TopCustomersRail, { type TopCustomer } from './TopCustomersRail';
 import TransactionsTable from './TransactionsTable';
-import s from './ReportsCockpit.module.css';
 
 interface ReportLite {
   totalVolume: number;
@@ -38,7 +38,7 @@ interface ReportLite {
 interface Props {
   exchangeId: string;
   report: ReportLite;
-  txRows: Array<import('@/actions/exchange-transactions').TransactionRow>;
+  txRows: import('@/actions/exchange-transactions').TransactionRow[];
   txTotal: number;
 }
 
@@ -48,7 +48,7 @@ const fmtCompact = (v: number): string =>
     maximumFractionDigits: 2,
   }).format(v);
 
-const fmtExact = (v: number): string =>
+const _fmtExact = (v: number): string =>
   new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 2 }).format(v);
 
 const EMPTY_FILTER: FilterState = { search: '', currency: '', type: '', range: null };
@@ -201,10 +201,7 @@ export default function ReportsCockpit({ exchangeId, report, txRows, txTotal }: 
       </section>
 
       {/* ── 2. Currency Constellation (signature) ─────────────────── */}
-      <CurrencyConstellation
-        pnlByCurrency={report.pnlByCurrency}
-        totalDeals={report.totalDeals}
-      />
+      <CurrencyConstellation pnlByCurrency={report.pnlByCurrency} totalDeals={report.totalDeals} />
 
       {/* ── 3. Daily Volume Strip ─────────────────────────────────── */}
       {dailyBuckets.length > 0 && (
@@ -249,8 +246,8 @@ export default function ReportsCockpit({ exchangeId, report, txRows, txTotal }: 
         {/* summary footer */}
         <footer className={s.txFooter}>
           <span className={s.txFooterItem}>
-            نمایش <strong>{new Intl.NumberFormat('fa-IR').format(txRows.length)}</strong>{' '}
-            از <strong>{new Intl.NumberFormat('fa-IR').format(txTotal)}</strong> رکورد
+            نمایش <strong>{new Intl.NumberFormat('fa-IR').format(txRows.length)}</strong> از{' '}
+            <strong>{new Intl.NumberFormat('fa-IR').format(txTotal)}</strong> رکورد
           </span>
           <span className={s.txFooterItem}>
             <em className={s.txFooterCurrency}>IRR</em> واحد کارمزد

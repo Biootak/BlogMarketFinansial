@@ -15,7 +15,7 @@
  * omit `addNodeView()` (never used during SSR) and the NodeView component
  * imports. Keep the `renderHTML` rules in sync with the originals.
  */
-import { mergeAttributes, Node } from '@tiptap/core';
+import { Node, mergeAttributes } from '@tiptap/core';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import Color from '@tiptap/extension-color';
 import Highlight from '@tiptap/extension-highlight';

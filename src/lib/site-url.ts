@@ -27,7 +27,8 @@ export async function getSiteUrl(): Promise<string> {
   } catch {
     // DB unreachable — fall through to env / default
   }
-  const envUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() ?? process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  const envUrl =
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ?? process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (envUrl) {
     return envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl;
   }
@@ -39,7 +40,8 @@ export async function getSiteUrl(): Promise<string> {
  * Only reads env — does NOT hit the DB.
  */
 export function getSiteUrlSync(): string {
-  const envUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() ?? process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  const envUrl =
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ?? process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (envUrl) {
     return envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl;
   }

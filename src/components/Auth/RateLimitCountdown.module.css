@@ -117,7 +117,8 @@
 }
 
 @keyframes rlPulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 color-mix(in srgb, #b91c1c 0%, transparent);
   }
   50% {

@@ -16,21 +16,21 @@
  */
 
 import { ChevronLeft, Search } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import {
   Activity,
   Archive,
   Database,
   KeyRound,
-  Mail,
   type LucideIcon,
+  Mail,
   Power,
   Settings as SettingsIcon,
-  ShieldCheck,
   Share2,
+  ShieldCheck,
   Wrench,
 } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import s from './SettingsSearch.module.css';
 
 export type SearchIconName =
@@ -221,89 +221,86 @@ export function SettingsSearch({
         </span>
       </button>
 
-      {open && typeof document !== 'undefined' && createPortal(
-        <>
-          <div className={s.backdrop} onClick={() => setOpen(false)} aria-hidden />
-          <div className={s.popover} role="dialog" aria-label="جست‌وجو">
-            <div className={s.searchBar}>
-              <Search size={16} strokeWidth={2} aria-hidden />
-              <input
-                ref={inputRef}
-                type="text"
-                dir="rtl"
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  setHighlighted(0);
-                }}
-                onKeyDown={onKeyDown}
-                placeholder="جست‌وجو در تب‌ها و فیلدها…"
-                className={s.input}
-                autoComplete="off"
-                spellCheck={false}
-              />
-              <span className={s.kbdInline}>
-                <kbd>Esc</kbd>
-              </span>
+      {open &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <>
+            <div className={s.backdrop} onClick={() => setOpen(false)} aria-hidden />
+            <div className={s.popover} role="dialog" aria-label="جست‌وجو">
+              <div className={s.searchBar}>
+                <Search size={16} strokeWidth={2} aria-hidden />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  dir="rtl"
+                  value={query}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    setHighlighted(0);
+                  }}
+                  onKeyDown={onKeyDown}
+                  placeholder="جست‌وجو در تب‌ها و فیلدها…"
+                  className={s.input}
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                <span className={s.kbdInline}>
+                  <kbd>Esc</kbd>
+                </span>
+              </div>
+              <ul className={s.results}>
+                {results.length === 0 ? (
+                  <li className={s.empty}>نتیجه‌ای یافت نشد</li>
+                ) : (
+                  results.map((r, idx) => {
+                    const Icon = r.icon;
+                    return (
+                      <li
+                        key={r.id}
+                        aria-selected={highlighted === idx}
+                        className={s.item}
+                        data-active={highlighted === idx}
+                        onMouseEnter={() => setHighlighted(idx)}
+                        onClick={() => handleSelect(idx)}
+                      >
+                        <span className={s.itemIcon} aria-hidden>
+                          {Icon ? <Icon size={14} strokeWidth={2} /> : null}
+                        </span>
+                        <span className={s.itemBody}>
+                          <span className={s.itemLabel}>{r.label}</span>
+                          {r.kind === 'field' && r.hint && (
+                            <span className={s.itemHint}>{r.hint}</span>
+                          )}
+                          {r.kind === 'tab' && <span className={s.itemKind}>تب</span>}
+                          {r.kind === 'field' && <span className={s.itemKind}>فیلد</span>}
+                        </span>
+                        <span className={s.itemArrow} aria-hidden>
+                          <ChevronLeft size={14} strokeWidth={2} />
+                        </span>
+                      </li>
+                    );
+                  })
+                )}
+              </ul>
+              <div className={s.footer}>
+                <span>
+                  <kbd>↑</kbd>
+                  <kbd>↓</kbd>
+                  <span>حرکت</span>
+                </span>
+                <span>
+                  <kbd>↵</kbd>
+                  <span>انتخاب</span>
+                </span>
+                <span>
+                  <kbd>Esc</kbd>
+                  <span>بستن</span>
+                </span>
+              </div>
             </div>
-            <ul className={s.results} role="listbox">
-              {results.length === 0 ? (
-                <li className={s.empty}>نتیجه‌ای یافت نشد</li>
-              ) : (
-                results.map((r, idx) => {
-                  const Icon = r.icon;
-                  return (
-                    <li
-                      key={r.id}
-                      role="option"
-                      aria-selected={highlighted === idx}
-                      className={s.item}
-                      data-active={highlighted === idx}
-                      onMouseEnter={() => setHighlighted(idx)}
-                      onClick={() => handleSelect(idx)}
-                    >
-                      <span className={s.itemIcon} aria-hidden>
-                        {Icon ? <Icon size={14} strokeWidth={2} /> : null}
-                      </span>
-                      <span className={s.itemBody}>
-                        <span className={s.itemLabel}>{r.label}</span>
-                        {r.kind === 'field' && r.hint && (
-                          <span className={s.itemHint}>{r.hint}</span>
-                        )}
-                        {r.kind === 'tab' && (
-                          <span className={s.itemKind}>تب</span>
-                        )}
-                        {r.kind === 'field' && (
-                          <span className={s.itemKind}>فیلد</span>
-                        )}
-                      </span>
-                      <span className={s.itemArrow} aria-hidden>
-                        <ChevronLeft size={14} strokeWidth={2} />
-                      </span>
-                    </li>
-                  );
-                })
-              )}
-            </ul>
-            <div className={s.footer}>
-              <span>
-                <kbd>↑</kbd>
-                <kbd>↓</kbd>
-                <span>حرکت</span>
-              </span>
-              <span>
-                <kbd>↵</kbd>
-                <span>انتخاب</span>
-              </span>
-              <span>
-                <kbd>Esc</kbd>
-                <span>بستن</span>
-              </span>
-            </div>
-          </div>
-        </>,
-        document.body,
-      )}
+          </>,
+          document.body,
+        )}
     </div>
   );
 }

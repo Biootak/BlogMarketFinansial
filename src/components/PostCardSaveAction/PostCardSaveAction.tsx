@@ -2,7 +2,7 @@
 
 import { motion } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
-import React, { type FC } from 'react';
+import type { FC } from 'react';
 import NcBookmark from '../NcBookmark/NcBookmark';
 
 export interface PostCardSaveActionProps {

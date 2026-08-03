@@ -36,7 +36,7 @@ export const SkeletonBase: FC<SkeletonBaseProps> = ({ className, children, style
 export const DashboardPageSkeleton: FC = () => (
   <div
     dir="rtl"
-    className="min-h-screen py-6 sm:py-8 px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8"
+    className="min-h-dvh py-6 sm:py-8 px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8"
     aria-busy="true"
     aria-label="در حال بارگذاری داشبورد"
   >
@@ -269,7 +269,7 @@ export const TableSkeleton: FC<TableSkeletonProps> = ({
       {[...Array(rows)].map((_, rowIndex) => (
         <div key={rowIndex} className="px-6 py-4 flex items-center gap-4">
           <SkeletonBase className="h-10 w-10 rounded-full flex-shrink-0" />
-          <div className="flex-1 grid grid-cols-3 gap-4">
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-2">
               <SkeletonBase className="h-4 w-full rounded-md" />
               <SkeletonBase className="h-3 w-2/3 rounded-md" />
@@ -293,7 +293,7 @@ export const TableSkeleton: FC<TableSkeletonProps> = ({
 // Settings / Profile / Report skeletons — preserved
 // ============================================
 export const UsersTableSkeleton: FC<{ rows?: number }> = ({ rows = 8 }) => (
-  <div className="min-h-screen p-4 sm:p-6 lg:p-8 space-y-6">
+  <div className="min-h-dvh p-4 sm:p-6 lg:p-8 space-y-6">
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div className="space-y-2">
         <SkeletonBase className="h-7 w-40 rounded-lg" />
@@ -311,7 +311,7 @@ export const UsersTableSkeleton: FC<{ rows?: number }> = ({ rows = 8 }) => (
 );
 
 export const PostsListSkeleton: FC<{ rows?: number }> = ({ rows = 6 }) => (
-  <div className="min-h-screen p-4 sm:p-6 lg:p-8 space-y-6">
+  <div className="min-h-dvh p-4 sm:p-6 lg:p-8 space-y-6">
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div className="space-y-2">
         <SkeletonBase className="h-7 w-32 rounded-lg" />
@@ -365,7 +365,7 @@ export const PostCardSkeleton: FC<{ className?: string }> = ({ className }) => (
 );
 
 export const SettingsPageSkeleton: FC = () => (
-  <div className="min-h-screen p-4 sm:p-6 lg:p-8 space-y-6">
+  <div className="min-h-dvh p-4 sm:p-6 lg:p-8 space-y-6">
     <div className="space-y-2">
       <SkeletonBase className="h-8 w-36 rounded-lg" />
       <SkeletonBase className="h-4 w-64 rounded-md" />
@@ -411,7 +411,7 @@ export const FormFieldSkeleton: FC<{ className?: string }> = ({ className }) => 
 );
 
 export const CategoriesSkeleton: FC<{ count?: number }> = ({ count = 8 }) => (
-  <div className="min-h-screen p-4 sm:p-6 lg:p-8 space-y-6">
+  <div className="min-h-dvh p-4 sm:p-6 lg:p-8 space-y-6">
     <div className="flex items-center justify-between">
       <div className="space-y-2">
         <SkeletonBase className="h-7 w-36 rounded-lg" />
@@ -507,7 +507,7 @@ export const ProfilePageSkeleton: FC = () => (
               <SkeletonBase className="h-3 w-40 rounded" />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[...Array(4)].map((_, i) => (
               <FormFieldSkeleton key={i} />
             ))}
@@ -544,7 +544,7 @@ export const ProfilePageSkeleton: FC = () => (
 );
 
 export const ExchangeRatesSkeleton: FC = () => (
-  <div className="min-h-screen p-4 sm:p-6 lg:p-8 space-y-6">
+  <div className="min-h-dvh p-4 sm:p-6 lg:p-8 space-y-6">
     <div className="flex items-center justify-between">
       <div className="space-y-2">
         <SkeletonBase className="h-7 w-40 rounded-lg" />
@@ -592,7 +592,7 @@ export const RateCardSkeleton: FC = () => (
 );
 
 export const AdvertisementsSkeleton: FC = () => (
-  <div className="min-h-screen p-4 sm:p-6 lg:p-8 space-y-6">
+  <div className="min-h-dvh p-4 sm:p-6 lg:p-8 space-y-6">
     <div className="flex items-center justify-between">
       <div className="space-y-2">
         <SkeletonBase className="h-7 w-36 rounded-lg" />
@@ -632,7 +632,7 @@ export const AdCardSkeleton: FC = () => (
 );
 
 export const ReportsSkeleton: FC = () => (
-  <div className="min-h-screen p-4 sm:p-6 lg:p-8 space-y-6">
+  <div className="min-h-dvh p-4 sm:p-6 lg:p-8 space-y-6">
     <div className="flex items-center justify-between">
       <div className="space-y-2">
         <SkeletonBase className="h-7 w-32 rounded-lg" />
@@ -810,7 +810,7 @@ export const ServiceRequestsSkeleton: FC = () => (
 );
 
 export const OnlinePaymentPageSkeleton: FC = () => (
-  <main className="min-h-screen bg-white dark:bg-neutral-900">
+  <main className="min-h-dvh bg-white dark:bg-neutral-900">
     <section className="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16">
@@ -1262,7 +1262,7 @@ export const ArchivePostCardSkeleton: FC<{ className?: string }> = ({ className 
   - RelatedPosts section below
 */
 export const SinglePostSkeleton: FC = () => (
-  <div className="nc-PageSingle relative min-h-screen">
+  <div className="nc-PageSingle relative min-h-dvh">
     <div className="relative container pt-6 pb-12 lg:pt-8 lg:pb-16">
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
         {/* ── Main article col (≈70%) ── */}
@@ -1440,7 +1440,7 @@ export const AuthorPageSkeleton: FC = () => (
 
       {/* Stats strip — 4-column frosted bar at the bottom */}
       <div
-        className="relative z-10 grid grid-cols-4 divide-x divide-x-reverse"
+        className="relative z-10 grid grid-cols-2 sm:grid-cols-4 divide-x divide-x-reverse"
         style={{
           borderTop: '1px solid oklch(30% 0.02 250)',
           background: 'oklch(20% 0.015 250 / 0.7)',
@@ -1598,7 +1598,7 @@ export const ContactPageSkeleton: FC = () => (
 export const MoneyTransferSkeleton: FC = () => (
   <div
     dir="rtl"
-    className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950"
+    className="min-h-dvh bg-gradient-to-b from-slate-50 via-white to-slate-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950"
     aria-busy="true"
     aria-label="در حال بارگذاری صرافی…"
   >
@@ -1832,7 +1832,7 @@ export const MoneyTransferSkeleton: FC = () => (
 );
 
 export const AuthPageSkeleton: FC = () => (
-  <div className="min-h-screen flex items-center justify-center p-4">
+  <div className="min-h-dvh flex items-center justify-center p-4">
     <div className="w-full max-w-md p-8 rounded-2xl space-y-6 bg-white/90 dark:bg-neutral-800/90 border border-neutral-100/60 dark:border-neutral-700/40 shadow-xl">
       <SkeletonBase className="h-12 w-32 rounded-lg mx-auto" />
       <div className="space-y-2">

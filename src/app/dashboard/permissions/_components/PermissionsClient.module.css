@@ -11,33 +11,66 @@
 /* ── keyframes ─────────────────────────────────────────────────────────────── */
 
 @keyframes enter {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0);    }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes rowSlide {
-  from { opacity: 0; transform: translateX(-3px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes float {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0);    }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes arcDraw {
-  from { stroke-dashoffset: var(--arc-total, 999); }
-  to   { stroke-dashoffset: 0; }
+  from {
+    stroke-dashoffset: var(--arc-total, 999);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 @keyframes markSpin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes dotPulse {
-  0%, 100% { box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 20%, transparent); transform: scale(1); }
-  50%       { box-shadow: 0 0 0 7px color-mix(in oklch, var(--at-accent) 0%, transparent);  transform: scale(0.9); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 20%, transparent);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 7px color-mix(in oklch, var(--at-accent) 0%, transparent);
+    transform: scale(0.9);
+  }
 }
 
 /* ── Root ─────────────────────────────────────────────────────────────────── */
@@ -56,14 +89,15 @@
   padding: 32px 28px 28px;
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(ellipse 90% 60% at 100% 0%, var(--at-gold-soft), transparent 60%),
+  background: radial-gradient(ellipse 90% 60% at 100% 0%, var(--at-gold-soft), transparent 60%),
     radial-gradient(ellipse 100% 70% at 0% 100%, var(--at-accent-soft), transparent 65%),
     var(--at-surface) !important;
 }
 
 @media (min-width: 1024px) {
-  .heroTile { padding: 40px 44px 36px; }
+  .heroTile {
+    padding: 40px 44px 36px;
+  }
 }
 
 /* Brand mark — slow rotating shield SVG */
@@ -84,11 +118,19 @@
 }
 
 @media (max-width: 767px) {
-  .heroMark { inline-size: 120px; block-size: 120px; inset-block-start: -16px; inset-inline-end: -16px; opacity: 0.12; }
+  .heroMark {
+    inline-size: 120px;
+    block-size: 120px;
+    inset-block-start: -16px;
+    inset-inline-end: -16px;
+    opacity: 0.12;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .markSpin { animation: none; }
+  .markSpin {
+    animation: none;
+  }
 }
 
 .markSpin {
@@ -326,8 +368,16 @@
   gap: 14px;
 }
 
-@media (max-width: 1100px) { .rolesRow { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 640px)  { .rolesRow { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 1100px) {
+  .rolesRow {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .rolesRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 
 /* Role Card — inherits at-tile chrome if using at-tile class */
 .roleCard {
@@ -343,10 +393,8 @@
   cursor: pointer;
   user-select: none;
   overflow: hidden;
-  transition:
-    border-color 200ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: border-color 200ms cubic-bezier(0.22, 1, 0.36, 1), transform 220ms
+    cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 200ms cubic-bezier(0.22, 1, 0.36, 1);
   animation: enter 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -369,7 +417,11 @@
   inline-size: 80px;
   block-size: 80px;
   border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in oklch, var(--rc-color, var(--ds-brand-500)) 20%, transparent), transparent 70%);
+  background: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--rc-color, var(--ds-brand-500)) 20%, transparent),
+    transparent 70%
+  );
   pointer-events: none;
 }
 
@@ -402,7 +454,9 @@
   cursor: default;
 }
 
-.roleCardSuperAdmin:hover { transform: none; }
+.roleCardSuperAdmin:hover {
+  transform: none;
+}
 
 /* Header row inside card */
 .roleCardTop {
@@ -976,7 +1030,9 @@
   }
 }
 
-.matrixRow:last-child { border-block-end: none; }
+.matrixRow:last-child {
+  border-block-end: none;
+}
 
 .matrixRow:hover {
   background: color-mix(in oklch, var(--at-fg) 2.5%, transparent);
@@ -1180,7 +1236,9 @@
   transition: color 140ms;
 }
 
-.tooltipTrigger:hover { color: var(--at-fg-muted); }
+.tooltipTrigger:hover {
+  color: var(--at-fg-muted);
+}
 
 .tooltipContent {
   position: absolute;
@@ -1300,7 +1358,11 @@
   align-items: start;
 }
 
-@media (max-width: 768px) { .rfCols { grid-template-columns: 1fr; } }
+@media (max-width: 768px) {
+  .rfCols {
+    grid-template-columns: 1fr;
+  }
+}
 
 .rfSection {
   overflow: hidden;
@@ -1383,8 +1445,12 @@
   transition: background 140ms;
 }
 
-.rfRow:last-child { border-block-end: none; }
-.rfRow:hover { background: color-mix(in oklch, var(--at-fg) 2.5%, transparent); }
+.rfRow:last-child {
+  border-block-end: none;
+}
+.rfRow:hover {
+  background: color-mix(in oklch, var(--at-fg) 2.5%, transparent);
+}
 
 .rfRowSel {
   background: color-mix(in oklch, var(--at-accent) 5%, transparent) !important;
@@ -1457,7 +1523,9 @@
   border-style: dashed !important;
 }
 
-.roleFocusHintIcon { color: var(--at-fg-faint); }
+.roleFocusHintIcon {
+  color: var(--at-fg-faint);
+}
 
 .roleFocusHintText {
   font-size: 14px;
@@ -1543,7 +1611,9 @@
   transition: background 140ms;
 }
 
-.batchGrant:hover { background: color-mix(in oklch, var(--at-accent) 32%, transparent); }
+.batchGrant:hover {
+  background: color-mix(in oklch, var(--at-accent) 32%, transparent);
+}
 
 .batchRevoke {
   display: inline-flex;
@@ -1559,7 +1629,9 @@
   transition: background 140ms;
 }
 
-.batchRevoke:hover { background: color-mix(in oklch, var(--at-danger) 28%, transparent); }
+.batchRevoke:hover {
+  background: color-mix(in oklch, var(--at-danger) 28%, transparent);
+}
 
 .batchClose {
   display: flex;
@@ -1576,7 +1648,9 @@
   transition: background 140ms;
 }
 
-.batchClose:hover { background: color-mix(in oklch, var(--at-fg-inv) 20%, transparent); }
+.batchClose:hover {
+  background: color-mix(in oklch, var(--at-fg-inv) 20%, transparent);
+}
 
 /* ── Unsaved Bar ──────────────────────────────────────────────────────────── */
 .unsavedBar {
@@ -1604,7 +1678,10 @@
   z-index: 52;
 }
 
-.unsavedIcon { color: var(--at-warning); flex-shrink: 0; }
+.unsavedIcon {
+  color: var(--at-warning);
+  flex-shrink: 0;
+}
 
 .unsavedText {
   flex: 1;
@@ -1650,8 +1727,13 @@
   transition: background 140ms;
 }
 
-.discardBtn:hover:not(:disabled) { background: color-mix(in oklch, var(--at-fg) 6%, transparent); }
-.discardBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+.discardBtn:hover:not(:disabled) {
+  background: color-mix(in oklch, var(--at-fg) 6%, transparent);
+}
+.discardBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 .saveBtn {
   display: inline-flex;
@@ -1674,8 +1756,13 @@
   transform: translateY(-1px);
 }
 
-.saveBtn:active:not(:disabled) { transform: scale(0.98); }
-.saveBtn:disabled { opacity: 0.55; cursor: not-allowed; }
+.saveBtn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.saveBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 
 /* ── Spinner ──────────────────────────────────────────────────────────────── */
 .spinner {
@@ -1688,11 +1775,19 @@
   animation: spin 0.55s linear infinite;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* ── Dialogs ──────────────────────────────────────────────────────────────── */
-.dialog { max-inline-size: 460px; }
-.dialogWide { max-inline-size: 720px; }
+.dialog {
+  max-inline-size: 460px;
+}
+.dialogWide {
+  max-inline-size: 720px;
+}
 
 /* Layout دو ستونی Add dialog */
 .addDialogLayout {
@@ -1703,7 +1798,9 @@
 }
 
 @media (max-width: 600px) {
-  .addDialogLayout { grid-template-columns: 1fr; }
+  .addDialogLayout {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ستون راست: لیست سریع */
@@ -1734,8 +1831,12 @@
   padding-inline-end: 2px;
 }
 
-.addDialogList::-webkit-scrollbar { width: 3px; }
-.addDialogList::-webkit-scrollbar-track { background: transparent; }
+.addDialogList::-webkit-scrollbar {
+  width: 3px;
+}
+.addDialogList::-webkit-scrollbar-track {
+  background: transparent;
+}
 .addDialogList::-webkit-scrollbar-thumb {
   background: color-mix(in oklch, var(--at-fg) 18%, transparent);
   border-radius: 4px;
@@ -1841,7 +1942,10 @@
   gap: 6px;
 }
 
-.req { color: var(--at-danger); margin-inline-start: 2px; }
+.req {
+  color: var(--at-danger);
+  margin-inline-start: 2px;
+}
 
 /* Code input — JetBrains Mono */
 .codeInput {
@@ -1961,7 +2065,9 @@
   margin-block-end: -1px;
 }
 
-.addTab:hover { color: var(--at-fg); }
+.addTab:hover {
+  color: var(--at-fg);
+}
 
 .addTabActive {
   color: var(--at-fg);
@@ -2075,8 +2181,12 @@
   scrollbar-color: color-mix(in oklch, var(--at-fg) 16%, transparent) transparent;
 }
 
-.pickList::-webkit-scrollbar { width: 3px; }
-.pickList::-webkit-scrollbar-track { background: transparent; }
+.pickList::-webkit-scrollbar {
+  width: 3px;
+}
+.pickList::-webkit-scrollbar-track {
+  background: transparent;
+}
 .pickList::-webkit-scrollbar-thumb {
   background: color-mix(in oklch, var(--at-fg) 16%, transparent);
   border-radius: 4px;

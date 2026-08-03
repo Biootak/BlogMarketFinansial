@@ -12,12 +12,12 @@
  *  URL state: query params ?service=...&group=... (برای اشتراک‌گذاری)
  */
 
+import { type MarketplaceRow, logServiceClick } from '@/actions/exchange-services';
+import { type ExchangeServiceMeta, SERVICE_GROUPS, getServiceMeta } from '@/lib/exchange-services';
 import { Banknote, Filter, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { logServiceClick, type MarketplaceRow } from '@/actions/exchange-services';
-import { getServiceMeta, SERVICE_GROUPS, type ExchangeServiceMeta } from '@/lib/exchange-services';
 import s from './ServicesMarketplace.module.css';
 
 type Props = {
@@ -63,7 +63,10 @@ export default function ServicesMarketplace({
     const qs = params.toString();
     const url = qs ? `/services?${qs}` : '/services';
     // فقط اگر تغییر کرده
-    if (typeof window !== 'undefined' && window.location.pathname + window.location.search !== url) {
+    if (
+      typeof window !== 'undefined' &&
+      window.location.pathname + window.location.search !== url
+    ) {
       router.replace(url, { scroll: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -140,8 +143,8 @@ export default function ServicesMarketplace({
             پیدا کردن صرافی مناسب برای هر خدمت — <span className={s.titleAccent}>در یک نگاه</span>
           </h1>
           <p className={s.sub}>
-            همه خدمات آنلاین صرافی‌ها را در یک صفحه ببینید. فیلتر کنید، مقایسه کنید، درخواست
-            ثبت کنید.
+            همه خدمات آنلاین صرافی‌ها را در یک صفحه ببینید. فیلتر کنید، مقایسه کنید، درخواست ثبت
+            کنید.
           </p>
 
           {/* Counters */}
@@ -276,7 +279,7 @@ export default function ServicesMarketplace({
                   </span>
                 </header>
 
-                <ul className={s.serviceList} role="list">
+                <ul className={s.serviceList}>
                   {group.services.map((row) => {
                     const meta = getServiceMeta(row.serviceKey);
                     return (
@@ -288,14 +291,12 @@ export default function ServicesMarketplace({
                           <div className={s.serviceHeaderText}>
                             <h3 className={s.serviceName}>{row.serviceName}</h3>
                             <p className={s.serviceMeta}>
-                              <span>
-                                {new Intl.NumberFormat('fa-IR').format(row.count)} صرافی
-                              </span>
+                              <span>{new Intl.NumberFormat('fa-IR').format(row.count)} صرافی</span>
                             </p>
                           </div>
                         </header>
 
-                        <ul className={s.exchangeList} role="list">
+                        <ul className={s.exchangeList}>
                           {row.exchanges.map((ex) => (
                             <li key={ex.id} className={s.exchangeItem}>
                               <Link
@@ -315,9 +316,7 @@ export default function ServicesMarketplace({
                                 </span>
                                 <span className={s.exchangeInfo}>
                                   <span className={s.exchangeName}>{ex.name}</span>
-                                  {ex.city && (
-                                    <span className={s.exchangeCity}>{ex.city}</span>
-                                  )}
+                                  {ex.city && <span className={s.exchangeCity}>{ex.city}</span>}
                                 </span>
                                 <span className={s.exchangeArrow} aria-hidden>
                                   ←

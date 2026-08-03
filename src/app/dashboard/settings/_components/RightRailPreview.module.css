@@ -4,8 +4,7 @@
  *  رنگ‌ها فقط از توکن‌های واقعی tokens.css استفاده می‌کنند.
  *  RTL-friendly: تمام spacing با logical properties.
  */
-
-.rail {
+  .rail {
   position: sticky;
   top: var(--ds-space-6);
   display: flex;
@@ -80,8 +79,12 @@
 }
 
 @keyframes tickPulse {
-  0% { box-shadow: 0 0 0 0 oklch(58% 0.12 165 / 0.5); }
-  100% { box-shadow: 0 0 0 8px oklch(58% 0.12 165 / 0); }
+  0% {
+    box-shadow: 0 0 0 0 oklch(58% 0.12 165 / 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 8px oklch(58% 0.12 165 / 0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -109,10 +112,10 @@
   transition: border-color 0.2s ease;
 }
 
-.card[data-tone='warn'] {
+.card[data-tone="warn"] {
   border-color: oklch(68% 0.14 70 / 0.3);
 }
-.card[data-tone='ok'] {
+.card[data-tone="ok"] {
   border-color: oklch(58% 0.12 165 / 0.25);
 }
 
@@ -301,7 +304,7 @@
   justify-content: center;
 }
 
-.flowItem[data-ready='false'] .flowNode {
+.flowItem[data-ready="false"] .flowNode {
   background: var(--ds-canvas-subtle);
   color: var(--ds-text-muted);
 }
@@ -414,13 +417,13 @@
   transition: inline-size 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.scoreFill[data-tone='ok'] {
+.scoreFill[data-tone="ok"] {
   background: linear-gradient(90deg, var(--nova-emerald), var(--nova-up));
 }
-.scoreFill[data-tone='warn'] {
+.scoreFill[data-tone="warn"] {
   background: linear-gradient(90deg, var(--nova-amber), var(--nova-rose));
 }
-.scoreFill[data-tone='danger'] {
+.scoreFill[data-tone="danger"] {
   background: var(--nova-rose);
 }
 
@@ -431,15 +434,15 @@
   border-radius: 4px;
 }
 
-.scoreLabel[data-tone='ok'] {
+.scoreLabel[data-tone="ok"] {
   color: var(--nova-emerald);
   background: oklch(58% 0.12 165 / 0.1);
 }
-.scoreLabel[data-tone='warn'] {
+.scoreLabel[data-tone="warn"] {
   color: var(--nova-amber);
   background: oklch(68% 0.14 70 / 0.1);
 }
-.scoreLabel[data-tone='danger'] {
+.scoreLabel[data-tone="danger"] {
   color: var(--nova-rose);
   background: oklch(60% 0.15 25 / 0.1);
 }
@@ -468,11 +471,11 @@
   flex-shrink: 0;
 }
 
-.securityItem[data-ok='true'] .securityDot {
+.securityItem[data-ok="true"] .securityDot {
   background: var(--nova-emerald);
   box-shadow: 0 0 6px oklch(58% 0.12 165 / 0.5);
 }
-.securityItem[data-ok='false'] .securityDot {
+.securityItem[data-ok="false"] .securityDot {
   background: var(--ds-text-muted);
 }
 

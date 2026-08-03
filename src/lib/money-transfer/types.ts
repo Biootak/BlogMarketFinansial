@@ -27,7 +27,7 @@ export interface ProviderQuote {
   spreadPercent: number;
   flatFeeToman: number;
   speedMinutes: number;
-  features: ReadonlyArray<string>;
+  features: readonly string[];
   marketToman: number;
   spreadToman: number;
   flatFeeTomanApplied: number;

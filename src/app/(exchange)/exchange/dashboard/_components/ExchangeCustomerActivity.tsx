@@ -10,9 +10,9 @@
  * Server Component.
  */
 
-import { UserPlus, UserCheck, Activity, Percent } from 'lucide-react';
-import s from './ExchangeDashboard.module.css';
 import type { CustomerActivity } from '@/actions/exchange-dashboard';
+import { Activity, Percent, UserCheck, UserPlus } from 'lucide-react';
+import s from './ExchangeDashboard.module.css';
 
 function formatFaNumber(n: number): string {
   return new Intl.NumberFormat('fa-IR').format(n);

@@ -25,7 +25,7 @@ import {
   verifyTransactionOtp,
 } from '@/lib/fintech/transaction-guard';
 import { checkRateLimit } from '@/lib/rate-limiter';
-import { requireAdmin, requireUser } from '@/lib/require-auth';
+import { requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import type { FintechActionResult } from '@/types/types';
 import type { Prisma } from '@prisma/client';
@@ -404,7 +404,10 @@ export async function confirmWithdraw(
     });
   } catch (err) {
     if ((err as Error).message === 'INSUFFICIENT_BALANCE') {
-      return { success: false, error: { code: 'INSUFFICIENT_BALANCE', message: 'موجودی کافی نیست' } };
+      return {
+        success: false,
+        error: { code: 'INSUFFICIENT_BALANCE', message: 'موجودی کافی نیست' },
+      };
     }
     throw err;
   }

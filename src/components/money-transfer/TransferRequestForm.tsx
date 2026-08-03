@@ -191,10 +191,20 @@ function normalizeCurrency(raw: string): string {
   if (/^[A-Z]{3,5}$/.test(up)) return up;
   // نقشه عنوان فارسی → کد
   const faMap: Record<string, string> = {
-    'دلار': 'USD', 'دلار آمریکا': 'USD', 'دلار امریکا': 'USD',
-    'یورو': 'EUR', 'پوند': 'GBP', 'درهم': 'AED', 'لیر': 'TRY',
-    'فرانک': 'CHF', 'افغانی': 'AFN', 'ریال': 'IRR', 'ریال ایران': 'IRR',
-    'روپیه': 'PKR', 'ین': 'JPY', 'یوان': 'CNY',
+    دلار: 'USD',
+    'دلار آمریکا': 'USD',
+    'دلار امریکا': 'USD',
+    یورو: 'EUR',
+    پوند: 'GBP',
+    درهم: 'AED',
+    لیر: 'TRY',
+    فرانک: 'CHF',
+    افغانی: 'AFN',
+    ریال: 'IRR',
+    'ریال ایران': 'IRR',
+    روپیه: 'PKR',
+    ین: 'JPY',
+    یوان: 'CNY',
   };
   const faHit = Object.entries(faMap).find(([k]) => t.includes(k));
   if (faHit) return faHit[1];
@@ -376,10 +386,14 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
       const toCode = prefill?.toCode;
       const isCryptoPrefill = prefill?.category === 'crypto';
       const targetCode =
-        toCode === 'IRT' ? prefill?.fromCode : toCode ?? (urlCurr ? normalizeCurrency(urlCurr) : null);
+        toCode === 'IRT'
+          ? prefill?.fromCode
+          : (toCode ?? (urlCurr ? normalizeCurrency(urlCurr) : null));
       const isCrypto = isCryptoPrefill || isCryptoCode(targetCode);
       const currList = isCrypto ? CRYPTO_CURRENCIES : FIAT_CURRENCIES;
-      const matched = currList.find((c) => c.value.toUpperCase() === (targetCode ?? '').toUpperCase());
+      const matched = currList.find(
+        (c) => c.value.toUpperCase() === (targetCode ?? '').toUpperCase(),
+      );
       const currencyVal = matched?.value ?? (isCrypto ? 'USDT' : 'USD');
 
       // از query param type (مگامنو) → service؛ وگرنه از prefill category

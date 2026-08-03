@@ -69,11 +69,7 @@ export interface StatePageProps {
   hue?: number;
 }
 
-function renderAction(
-  action: StatePageAction,
-  index: number,
-  isPrimary: boolean,
-) {
+function renderAction(action: StatePageAction, index: number, isPrimary: boolean) {
   const Icon = action.icon;
   const className = isPrimary ? s.btnPrimary : s.btnGhost;
   const content = (
@@ -171,7 +167,7 @@ export default function StatePage({
           <p className={s.cardBody}>{cardBody}</p>
 
           {helpList && helpList.length > 0 ? (
-            <ul className={s.helpList} role="list">
+            <ul className={s.helpList}>
               {helpList.map((step) => (
                 <li key={step} className={s.helpItem}>
                   {step}

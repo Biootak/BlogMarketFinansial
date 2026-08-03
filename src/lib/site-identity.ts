@@ -45,10 +45,7 @@ async function fetchSiteIdentityRaw(): Promise<SiteIdentity> {
       logoUrl: settings?.logoUrl?.trim() || FALLBACK_LOGO_URL,
       siteDescription: settings?.siteDescription?.trim() || '',
     };
-  } catch (error) {
-    // During build or when the DB is unreachable, return fallback defaults
-    // instead of crashing static generation.
-    console.warn('[site-identity] Failed to read SystemSettings, using fallback:', error);
+  } catch (_error) {
     return getFallbackIdentity();
   }
 }

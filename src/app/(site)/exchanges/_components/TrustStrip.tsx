@@ -53,7 +53,7 @@ export default function TrustStrip({
           </div>
         </div>
 
-        <ul className={s.grid} role="list">
+        <ul className={s.grid}>
           {items.map((item, i) => {
             const Icon = ICONS[item.icon];
             return (
@@ -78,8 +78,7 @@ export default function TrustStrip({
           <div className={s.ctaText}>
             <h3 className={s.ctaTitle}>صرافی شما اینجا نیست؟</h3>
             <p className={s.ctaDesc}>
-              {ctaHint ??
-                'درخواست عضویت رایگان — بررسی مدارک و تأیید در کمتر از ۲ روز کاری.'}
+              {ctaHint ?? 'درخواست عضویت رایگان — بررسی مدارک و تأیید در کمتر از ۲ روز کاری.'}
             </p>
           </div>
           <Link href={ctaHref} className={s.ctaBtn}>

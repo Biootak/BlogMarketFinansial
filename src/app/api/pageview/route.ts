@@ -87,7 +87,8 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET method disabled - فقط POST مجاز
+// GET برای browser preflight/discovery صحیح است
+// (405 در console خطای Lighthouse ایجاد می‌کند)
 export async function GET() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+  return new NextResponse(null, { status: 204 });
 }

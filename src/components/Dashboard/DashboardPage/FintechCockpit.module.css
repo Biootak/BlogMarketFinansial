@@ -47,12 +47,19 @@
 }
 
 .hero::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 60% 80% at 100% 0%, color-mix(in oklch, var(--ds-brand-500) 18%, transparent), transparent 60%),
-    radial-gradient(ellipse 60% 80% at 0% 100%, color-mix(in oklch, var(--ds-accent-2, var(--ds-brand-500)) 10%, transparent), transparent 60%);
+  background: radial-gradient(
+      ellipse 60% 80% at 100% 0%,
+      color-mix(in oklch, var(--ds-brand-500) 18%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 60% 80% at 0% 100%,
+      color-mix(in oklch, var(--ds-accent-2, var(--ds-brand-500)) 10%, transparent),
+      transparent 60%
+    );
   pointer-events: none;
   z-index: -1;
 }
@@ -94,8 +101,15 @@
 }
 
 @keyframes fc-pulse {
-  0%, 100% { opacity: 0.9; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(0.92); }
+  0%,
+  100% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(0.92);
+  }
 }
 
 .heroEyebrowSep {
@@ -162,7 +176,8 @@
   text-decoration: none;
   color: inherit;
   position: relative;
-  transition: border-color var(--ds-duration-fast), transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast), transform var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
 }
 
 .heroVitalMain:hover {
@@ -406,15 +421,41 @@
   min-width: 0;
 }
 
-.kpi_pending .kpiCellIcon { color: var(--ds-accent-amber, var(--ds-text-primary)); background: color-mix(in oklch, var(--ds-accent-amber) 14%, var(--ds-surface)); }
-.kpi_volume .kpiCellIcon  { color: var(--ds-brand-600); background: color-mix(in oklch, var(--ds-brand-500) 12%, var(--ds-surface)); }
-.kpi_customers .kpiCellIcon { color: var(--ds-accent-indigo, var(--ds-brand-600)); background: color-mix(in oklch, var(--ds-accent-indigo, var(--ds-brand-500)) 14%, var(--ds-surface)); }
-.kpi_txn .kpiCellIcon     { color: var(--ds-accent-cyan, var(--ds-brand-600)); background: color-mix(in oklch, var(--ds-accent-cyan, var(--ds-brand-500)) 14%, var(--ds-surface)); }
-.kpi_fraud .kpiCellIcon  { color: var(--ds-accent-rose, var(--ds-text-primary)); background: color-mix(in oklch, var(--ds-accent-rose, var(--ds-brand-500)) 14%, var(--ds-surface)); }
-.kpi_idle .kpiCellIcon   { color: var(--ds-text-muted); background: var(--ds-surface-2, var(--ds-surface)); }
+.kpi_pending .kpiCellIcon {
+  color: var(--ds-accent-amber, var(--ds-text-primary));
+  background: color-mix(in oklch, var(--ds-accent-amber) 14%, var(--ds-surface));
+}
+.kpi_volume .kpiCellIcon {
+  color: var(--ds-brand-600);
+  background: color-mix(in oklch, var(--ds-brand-500) 12%, var(--ds-surface));
+}
+.kpi_customers .kpiCellIcon {
+  color: var(--ds-accent-indigo, var(--ds-brand-600));
+  background: color-mix(
+    in oklch,
+    var(--ds-accent-indigo, var(--ds-brand-500)) 14%,
+    var(--ds-surface)
+  );
+}
+.kpi_txn .kpiCellIcon {
+  color: var(--ds-accent-cyan, var(--ds-brand-600));
+  background: color-mix(in oklch, var(--ds-accent-cyan, var(--ds-brand-500)) 14%, var(--ds-surface));
+}
+.kpi_fraud .kpiCellIcon {
+  color: var(--ds-accent-rose, var(--ds-text-primary));
+  background: color-mix(in oklch, var(--ds-accent-rose, var(--ds-brand-500)) 14%, var(--ds-surface));
+}
+.kpi_idle .kpiCellIcon {
+  color: var(--ds-text-muted);
+  background: var(--ds-surface-2, var(--ds-surface));
+}
 
 .kpiAlert {
-  background: color-mix(in oklch, var(--ds-accent-rose, var(--ds-accent-amber)) 6%, var(--ds-surface));
+  background: color-mix(
+    in oklch,
+    var(--ds-accent-rose, var(--ds-accent-amber)) 6%,
+    var(--ds-surface)
+  );
 }
 
 .kpiAlert .kpiCellValue {
@@ -627,9 +668,15 @@
   color: var(--ds-text-primary);
 }
 
-.svcKpi_pending .svcKpiValue { color: var(--ds-accent-amber, var(--ds-text-primary)); }
-.svcKpi_today .svcKpiValue   { color: var(--ds-brand-600); }
-.svcKpi_urgent .svcKpiValue  { color: var(--ds-accent-rose, var(--ds-text-primary)); }
+.svcKpi_pending .svcKpiValue {
+  color: var(--ds-accent-amber, var(--ds-text-primary));
+}
+.svcKpi_today .svcKpiValue {
+  color: var(--ds-brand-600);
+}
+.svcKpi_urgent .svcKpiValue {
+  color: var(--ds-accent-rose, var(--ds-text-primary));
+}
 
 /* Service list */
 .svcList {
@@ -823,7 +870,11 @@
 }
 .isCompleted {
   color: var(--ds-accent-emerald, var(--ds-text-primary));
-  background: color-mix(in oklch, var(--ds-accent-emerald, var(--ds-brand-500)) 14%, var(--ds-surface));
+  background: color-mix(
+    in oklch,
+    var(--ds-accent-emerald, var(--ds-brand-500)) 14%,
+    var(--ds-surface)
+  );
 }
 .isCancelled {
   color: var(--ds-text-muted);
@@ -944,9 +995,15 @@
   animation: fc-pulse 1.8s ease-in-out infinite;
 }
 
-.healthPill_ok { color: var(--ds-accent-emerald, var(--ds-text-primary)); }
-.healthPill_warn { color: var(--ds-accent-amber, var(--ds-text-primary)); }
-.healthPill_bad { color: var(--ds-accent-rose, var(--ds-text-primary)); }
+.healthPill_ok {
+  color: var(--ds-accent-emerald, var(--ds-text-primary));
+}
+.healthPill_warn {
+  color: var(--ds-accent-amber, var(--ds-text-primary));
+}
+.healthPill_bad {
+  color: var(--ds-accent-rose, var(--ds-text-primary));
+}
 
 .healthPillLabel {
   color: var(--ds-text-muted);
@@ -1084,10 +1141,18 @@
   white-space: nowrap;
 }
 
-.svcLive_healthy { color: var(--ds-accent-emerald, var(--ds-text-primary)); }
-.svcLive_degraded { color: var(--ds-accent-amber, var(--ds-text-primary)); }
-.svcLive_down { color: var(--ds-accent-rose, var(--ds-text-primary)); }
-.svcLive_idle { color: var(--ds-text-muted); }
+.svcLive_healthy {
+  color: var(--ds-accent-emerald, var(--ds-text-primary));
+}
+.svcLive_degraded {
+  color: var(--ds-accent-amber, var(--ds-text-primary));
+}
+.svcLive_down {
+  color: var(--ds-accent-rose, var(--ds-text-primary));
+}
+.svcLive_idle {
+  color: var(--ds-text-muted);
+}
 
 /* Event feed */
 .eventList {
@@ -1129,12 +1194,38 @@
   flex: 0 0 1.5rem;
 }
 
-.eventIcon_deposit { color: var(--ds-accent-emerald, var(--ds-text-primary)); background: color-mix(in oklch, var(--ds-accent-emerald, var(--ds-brand-500)) 14%, var(--ds-surface)); }
-.eventIcon_withdraw { color: var(--ds-accent-rose, var(--ds-text-primary)); background: color-mix(in oklch, var(--ds-accent-rose, var(--ds-brand-500)) 14%, var(--ds-surface)); }
-.eventIcon_kyc { color: var(--ds-accent-indigo, var(--ds-text-primary)); background: color-mix(in oklch, var(--ds-accent-indigo, var(--ds-brand-500)) 14%, var(--ds-surface)); }
-.eventIcon_fraud { color: var(--ds-accent-rose, var(--ds-text-primary)); background: color-mix(in oklch, var(--ds-accent-rose) 22%, var(--ds-surface)); }
-.eventIcon_order { color: var(--ds-brand-600); background: color-mix(in oklch, var(--ds-brand-500) 12%, var(--ds-surface)); }
-.eventIcon_auth { color: var(--ds-text-secondary); background: var(--ds-surface-2, var(--ds-surface)); }
+.eventIcon_deposit {
+  color: var(--ds-accent-emerald, var(--ds-text-primary));
+  background: color-mix(
+    in oklch,
+    var(--ds-accent-emerald, var(--ds-brand-500)) 14%,
+    var(--ds-surface)
+  );
+}
+.eventIcon_withdraw {
+  color: var(--ds-accent-rose, var(--ds-text-primary));
+  background: color-mix(in oklch, var(--ds-accent-rose, var(--ds-brand-500)) 14%, var(--ds-surface));
+}
+.eventIcon_kyc {
+  color: var(--ds-accent-indigo, var(--ds-text-primary));
+  background: color-mix(
+    in oklch,
+    var(--ds-accent-indigo, var(--ds-brand-500)) 14%,
+    var(--ds-surface)
+  );
+}
+.eventIcon_fraud {
+  color: var(--ds-accent-rose, var(--ds-text-primary));
+  background: color-mix(in oklch, var(--ds-accent-rose) 22%, var(--ds-surface));
+}
+.eventIcon_order {
+  color: var(--ds-brand-600);
+  background: color-mix(in oklch, var(--ds-brand-500) 12%, var(--ds-surface));
+}
+.eventIcon_auth {
+  color: var(--ds-text-secondary);
+  background: var(--ds-surface-2, var(--ds-surface));
+}
 
 .eventBody {
   display: grid;
@@ -1215,7 +1306,7 @@
   .kpiCell:nth-child(odd) {
     border-inline-start: 0;
   }
-  .kpiCell:nth-child(-n+2) {
+  .kpiCell:nth-child(-n + 2) {
     border-block-end: 1px dashed var(--ds-border-subtle);
   }
   .quickRow {
@@ -1227,7 +1318,7 @@
   .svcKpi:nth-child(odd) {
     border-inline-start: 0;
   }
-  .svcKpi:nth-child(-n+2) {
+  .svcKpi:nth-child(-n + 2) {
     border-block-end: 1px dashed var(--ds-border-subtle);
   }
   .liveStats {

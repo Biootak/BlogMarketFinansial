@@ -8,7 +8,6 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import {
-  HiCheck,
   HiOutlineBars3,
   HiOutlineCalendarDays,
   HiOutlineClipboardDocumentCheck,

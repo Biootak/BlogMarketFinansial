@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * Constellation — پترن نقطه‌ای ambient برای پس‌زمینه
  * ---------------------------------------------------------------------------
@@ -11,10 +9,12 @@
  * - بدون انیمیشن (می‌توان به pulseGlow داد ولی فقط روی hero)
  * - استفاده در hero، modal، و هر جایی که نیاز به ambient depth داریم
  *
+ * نکته‌های performance:
+ *   - Server Component — 'use client' حذف شد (pure SVG, no hooks)
+ *   - DEFAULT_DOTS یک‌بار در module-level محاسبه می‌شود (default props ثابت)
+ *
  * استفاده:
  *   <Constellation className={s.lattice} />
- *
- * نکته: این کامپوننت pure SVG است — هیچ کتابخانهٔ سنگینی اضافه نمی‌کند.
  */
 
 interface Props {
@@ -31,35 +31,47 @@ interface Props {
   color?: string;
 }
 
-export function Constellation({
-  className,
-  cols = 16,
-  rows = 8,
-  spacing = 28,
-  r = 1,
-  color = 'currentColor',
-}: Props) {
-  const width = cols * spacing + spacing;
-  const height = rows * spacing + spacing;
+/** محاسبه dots برای props دلخواه */
+function buildDots(cols: number, rows: number, spacing: number, r: number) {
   const dots: Array<{ x: number; y: number; size: number; opacity: number }> = [];
-
-  // Generate grid with pseudo-random variation برای حس natural
   for (let row = 0; row <= rows; row++) {
     for (let col = 0; col <= cols; col++) {
       const x = col * spacing + spacing / 2;
       const y = row * spacing + spacing / 2;
-
-      // pseudo-random modulation برای natural density
       const seed = (row * 7 + col * 13) % 11;
       const sizeMul = seed > 8 ? 1.6 : seed > 5 ? 1.2 : 1;
       const opacity = seed > 7 ? 0.85 : seed > 4 ? 0.55 : 0.3;
-
-      // Sparse: skip ~30% of dots برای natural distribution
       if (seed % 3 === 0) continue;
-
       dots.push({ x, y, size: r * sizeMul, opacity });
     }
   }
+  return dots;
+}
+
+// Default configuration — یک‌بار محاسبه می‌شود
+const DEFAULT_COLS = 16;
+const DEFAULT_ROWS = 8;
+const DEFAULT_SPACING = 28;
+const DEFAULT_R = 1;
+const DEFAULT_DOTS = buildDots(DEFAULT_COLS, DEFAULT_ROWS, DEFAULT_SPACING, DEFAULT_R);
+const DEFAULT_WIDTH = DEFAULT_COLS * DEFAULT_SPACING + DEFAULT_SPACING;
+const DEFAULT_HEIGHT = DEFAULT_ROWS * DEFAULT_SPACING + DEFAULT_SPACING;
+
+export function Constellation({
+  className,
+  cols = DEFAULT_COLS,
+  rows = DEFAULT_ROWS,
+  spacing = DEFAULT_SPACING,
+  r = DEFAULT_R,
+  color = 'currentColor',
+}: Props) {
+  // اگر props پیش‌فرض باشند از cache استفاده می‌کنیم
+  const isDefault =
+    cols === DEFAULT_COLS && rows === DEFAULT_ROWS && spacing === DEFAULT_SPACING && r === DEFAULT_R;
+
+  const dots = isDefault ? DEFAULT_DOTS : buildDots(cols, rows, spacing, r);
+  const width = isDefault ? DEFAULT_WIDTH : cols * spacing + spacing;
+  const height = isDefault ? DEFAULT_HEIGHT : rows * spacing + spacing;
 
   return (
     <svg
@@ -71,14 +83,7 @@ export function Constellation({
       aria-hidden
     >
       {dots.map((dot, i) => (
-        <circle
-          key={i}
-          cx={dot.x}
-          cy={dot.y}
-          r={dot.size}
-          fill={color}
-          opacity={dot.opacity}
-        />
+        <circle key={i} cx={dot.x} cy={dot.y} r={dot.size} fill={color} opacity={dot.opacity} />
       ))}
     </svg>
   );

@@ -8,7 +8,7 @@
  * Server Component: اعداد به‌صورت string پاس می‌شوند (JSON-safe).
  */
 
-import { ArrowUpRight, ArrowDownRight, Minus, Building2, MapPin, Calendar } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, Building2, Calendar, MapPin, Minus } from 'lucide-react';
 import s from './ExchangeDashboard.module.css';
 
 interface Props {
@@ -63,10 +63,8 @@ export default function ExchangeHeroPulse({
   const todayNum = toAfnNumber(todayVolume);
   const yesterdayNum = toAfnNumber(yesterdayVolume);
 
-  const deltaPct =
-    yesterdayNum > 0 ? ((todayNum - yesterdayNum) / yesterdayNum) * 100 : 0;
-  const trend: 'up' | 'down' | 'flat' =
-    deltaPct > 0.5 ? 'up' : deltaPct < -0.5 ? 'down' : 'flat';
+  const deltaPct = yesterdayNum > 0 ? ((todayNum - yesterdayNum) / yesterdayNum) * 100 : 0;
+  const trend: 'up' | 'down' | 'flat' = deltaPct > 0.5 ? 'up' : deltaPct < -0.5 ? 'down' : 'flat';
 
   // ── Sparkline geometry ──────────────────────────────────────────────
   const W = 320;
@@ -83,7 +81,9 @@ export default function ExchangeHeroPulse({
     return [x, y] as const;
   });
   const pathLine = points
-    .map(([x, y], i) => (i === 0 ? `M${x.toFixed(1)} ${y.toFixed(1)}` : `L${x.toFixed(1)} ${y.toFixed(1)}`))
+    .map(([x, y], i) =>
+      i === 0 ? `M${x.toFixed(1)} ${y.toFixed(1)}` : `L${x.toFixed(1)} ${y.toFixed(1)}`,
+    )
     .join(' ');
   const areaPath = `${pathLine} L${points.at(-1)?.[0].toFixed(1) ?? PAD} ${
     H - PAD
@@ -103,7 +103,9 @@ export default function ExchangeHeroPulse({
           <span className={s.heroPulseDot} aria-hidden />
           <span>جریان زنده</span>
           <span aria-hidden>·</span>
-          <span>{dayFa} {monthFa}</span>
+          <span>
+            {dayFa} {monthFa}
+          </span>
         </div>
 
         <h2 className={s.heroTitle}>حجم معاملات امروز ({primaryCurrency})</h2>
@@ -112,11 +114,18 @@ export default function ExchangeHeroPulse({
           <span className={s.heroNumber}>{formatCompact(todayNum)}</span>
           <span className={s.heroCurrency}>{primaryCurrency}</span>
           {yesterdayNum > 0 && (
-            <span className={s.heroDelta} data-trend={trend} aria-label={`تغییر ${formatPercent(Math.abs(deltaPct))} نسبت به دیروز`}>
+            <span
+              className={s.heroDelta}
+              data-trend={trend}
+              aria-label={`تغییر ${formatPercent(Math.abs(deltaPct))} نسبت به دیروز`}
+            >
               {trend === 'up' && <ArrowUpRight size={14} aria-hidden />}
               {trend === 'down' && <ArrowDownRight size={14} aria-hidden />}
               {trend === 'flat' && <Minus size={14} aria-hidden />}
-              <span dir="ltr">{deltaPct > 0 ? '+' : deltaPct < 0 ? '−' : ''}{formatPercent(Math.abs(deltaPct))}</span>
+              <span dir="ltr">
+                {deltaPct > 0 ? '+' : deltaPct < 0 ? '−' : ''}
+                {formatPercent(Math.abs(deltaPct))}
+              </span>
             </span>
           )}
         </div>
@@ -135,7 +144,9 @@ export default function ExchangeHeroPulse({
           <span className={s.heroMetaItem}>
             <Calendar size={12} aria-hidden />
             دیروز:&nbsp;
-            <strong dir="ltr">{formatCompact(yesterdayNum)} {primaryCurrency}</strong>
+            <strong dir="ltr">
+              {formatCompact(yesterdayNum)} {primaryCurrency}
+            </strong>
           </span>
         </div>
       </div>

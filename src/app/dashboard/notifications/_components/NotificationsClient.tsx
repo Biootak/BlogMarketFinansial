@@ -27,12 +27,10 @@ import {
 import { MillionDollarEmpty, PageHeader } from '@/components/Dashboard/primitives';
 import { useToast } from '@/components/ui/use-toast';
 import {
-  AlertTriangle,
   Bell,
   Check,
   CheckCheck,
   CreditCard,
-  FileText,
   Info,
   MessageCircle,
   Settings,
@@ -65,16 +63,11 @@ type NotifType = 'payment' | 'security' | 'kyc' | 'system' | 'message' | 'succes
 function detectType(message: string): NotifType {
   if (/پرداخت|تراکنش|واریز|برداشت|مبلغ|ریال|تومان|کارمزد|تسویه|فاکتور/.test(message))
     return 'payment';
-  if (/امنیت|هشدار|مسدود|تعلیق|تغییر رمز|ورود مشکوک|دسترسی|تخلف/.test(message))
-    return 'security';
-  if (/احراز|KYC|هویت|مدارک|تأیید هویت|بررسی/.test(message))
-    return 'kyc';
-  if (/موفق|تأیید شد|انجام شد|کامل شد|فعال/.test(message))
-    return 'success';
-  if (/پیام|اطلاعیه|گفتگو|پشتیبانی/.test(message))
-    return 'message';
-  if (/سیستم|بروزرسانی|نسخه|تنظیمات|نگهداری|زیرساخت/.test(message))
-    return 'system';
+  if (/امنیت|هشدار|مسدود|تعلیق|تغییر رمز|ورود مشکوک|دسترسی|تخلف/.test(message)) return 'security';
+  if (/احراز|KYC|هویت|مدارک|تأیید هویت|بررسی/.test(message)) return 'kyc';
+  if (/موفق|تأیید شد|انجام شد|کامل شد|فعال/.test(message)) return 'success';
+  if (/پیام|اطلاعیه|گفتگو|پشتیبانی/.test(message)) return 'message';
+  if (/سیستم|بروزرسانی|نسخه|تنظیمات|نگهداری|زیرساخت/.test(message)) return 'system';
   return 'default';
 }
 
@@ -118,9 +111,7 @@ function isSameDay(a: Date, b: Date): boolean {
   );
 }
 
-function groupByDate(
-  items: (NotificationRow & { type: NotifType })[],
-): DateGroup[] {
+function groupByDate(items: (NotificationRow & { type: NotifType })[]): DateGroup[] {
   const now = new Date();
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
@@ -183,14 +174,12 @@ export default function NotificationsClient({ notifications: initial }: Props) {
   );
 
   const enriched = useMemo(
-    () =>
-      items.map((n) => ({ ...n, type: detectType(n.message) })),
+    () => items.map((n) => ({ ...n, type: detectType(n.message) })),
     [items],
   );
 
   const displayed = useMemo(
-    () =>
-      activeTab === 'unread' ? enriched.filter((n) => !n.isRead) : enriched,
+    () => (activeTab === 'unread' ? enriched.filter((n) => !n.isRead) : enriched),
     [enriched, activeTab],
   );
 
@@ -223,7 +212,11 @@ export default function NotificationsClient({ notifications: initial }: Props) {
     (id: number, e: React.MouseEvent) => {
       e.stopPropagation();
       setItems((prev) => prev.filter((n) => n.id !== id));
-      setSelectedIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
       startTransition(async () => {
         const result = await deleteNotification(id);
         if (!result.success) {
@@ -270,9 +263,7 @@ export default function NotificationsClient({ notifications: initial }: Props) {
   /* ── bulk mark read ────────────────────────────────────────────────────────── */
   const handleBulkRead = useCallback(() => {
     const ids = Array.from(selectedIds);
-    setItems((prev) =>
-      prev.map((n) => (ids.includes(n.id) ? { ...n, isRead: true } : n)),
-    );
+    setItems((prev) => prev.map((n) => (ids.includes(n.id) ? { ...n, isRead: true } : n)));
     setSelectedIds(new Set());
     startTransition(async () => {
       await Promise.all(ids.map((id) => markNotificationRead(id)));
@@ -348,7 +339,9 @@ export default function NotificationsClient({ notifications: initial }: Props) {
           role="button"
           tabIndex={0}
           aria-pressed={activeTab === 'all'}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActiveTab('all'); }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') setActiveTab('all');
+          }}
         >
           <span className={s.kpiIcon} aria-hidden>
             <Bell size={15} />
@@ -365,7 +358,9 @@ export default function NotificationsClient({ notifications: initial }: Props) {
           role="button"
           tabIndex={0}
           aria-pressed={activeTab === 'unread'}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActiveTab('unread'); }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') setActiveTab('unread');
+          }}
         >
           <span className={s.kpiIcon} aria-hidden>
             <Info size={15} />
@@ -457,9 +452,7 @@ export default function NotificationsClient({ notifications: initial }: Props) {
       {/* ── Bulk Action Bar ──────────────────────────────────────────────────── */}
       {selectedIds.size > 0 && (
         <div className={s.bulkBar} role="region" aria-label="عملیات دسته‌جمعی">
-          <span className={s.bulkCount}>
-            {fa.format(selectedIds.size)} مورد انتخاب شده
-          </span>
+          <span className={s.bulkCount}>{fa.format(selectedIds.size)} مورد انتخاب شده</span>
           <div className={s.bulkActions}>
             <button
               type="button"
@@ -521,7 +514,7 @@ export default function NotificationsClient({ notifications: initial }: Props) {
               {/* Items card */}
               <div
                 className={s.listCard}
-                data-pending={group.items.some((n) => isPending) ? 'true' : undefined}
+                data-pending={group.items.some((_n) => isPending) ? 'true' : undefined}
               >
                 {group.items.map((n, i) => {
                   const cfg = TYPE_CONFIG[n.type];
@@ -564,9 +557,7 @@ export default function NotificationsClient({ notifications: initial }: Props) {
                       <div className={s.itemContent}>
                         <div className={s.itemHeader}>
                           {/* Type badge */}
-                          <span className={s.itemTypeBadge}>
-                            {cfg.badge}
-                          </span>
+                          <span className={s.itemTypeBadge}>{cfg.badge}</span>
                           {/* Time */}
                           <time
                             className={s.itemTime}

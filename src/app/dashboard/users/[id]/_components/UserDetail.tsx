@@ -13,10 +13,7 @@
 
 import type { UserDetailPayload } from '@/actions/user-detail';
 import { deleteUser, updateUser, updateUserRole } from '@/actions/userActions';
-import {
-  ConfirmDialog,
-  PageHeader,
-} from '@/components/Dashboard/primitives';
+import { ConfirmDialog, PageHeader } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import {
@@ -169,12 +166,7 @@ function statusBadgeClass(status: string): string {
   }
 }
 
-export default function UserDetail({
-  user,
-  financials,
-  currentUserId,
-  currentUserRole,
-}: Props) {
+export default function UserDetail({ user, financials, currentUserId, currentUserRole }: Props) {
   const router = useRouter();
   const { toast } = useToast();
   const [tab, setTab] = useState<TabKey>('overview');
@@ -297,7 +289,11 @@ export default function UserDetail({
               {user.phoneNumber ? (
                 <>
                   <span className={s.idSubSep} />
-                  <a href={`tel:${user.phoneNumber}`} dir="ltr" className="inline-flex items-center gap-1">
+                  <a
+                    href={`tel:${user.phoneNumber}`}
+                    dir="ltr"
+                    className="inline-flex items-center gap-1"
+                  >
                     <Phone className="size-3.5" aria-hidden />
                     <span>{user.phoneNumber}</span>
                   </a>
@@ -322,7 +318,11 @@ export default function UserDetail({
                 </button>
               </Link>
               {isPrivileged && user.role !== 'OWNER' && user.role !== 'SUPERADMIN' ? (
-                <RoleMenu currentRole={user.role} onChange={handleRoleChange} disabled={isPending} />
+                <RoleMenu
+                  currentRole={user.role}
+                  onChange={handleRoleChange}
+                  disabled={isPending}
+                />
               ) : null}
               <button
                 type="button"
@@ -393,7 +393,11 @@ export default function UserDetail({
 
       {/* ── Tabs ─────────────────────────────────────────────────── */}
       <div className={s.tabs} role="tablist" aria-label="تب‌های کاربر">
-        <TabButton active={tab === 'overview'} onClick={() => setTab('overview')} label="نمای کلی" />
+        <TabButton
+          active={tab === 'overview'}
+          onClick={() => setTab('overview')}
+          label="نمای کلی"
+        />
         <TabButton
           active={tab === 'content'}
           onClick={() => setTab('content')}
@@ -406,11 +410,7 @@ export default function UserDetail({
           label="فعالیت"
           count={user._count.activities}
         />
-        <TabButton
-          active={tab === 'kyc'}
-          onClick={() => setTab('kyc')}
-          label="احراز هویت"
-        />
+        <TabButton active={tab === 'kyc'} onClick={() => setTab('kyc')} label="احراز هویت" />
         <TabButton
           active={tab === 'security'}
           onClick={() => setTab('security')}
@@ -588,7 +588,9 @@ function OverviewPanel({ user }: { user: UserDetailPayload }) {
             </dt>
             <dd>
               <span className={`${s.badge} ${user.emailVerified ? s.badgeOk : s.badgeOff}`}>
-                {user.emailVerified ? `تأیید شده · ${formatDate(user.emailVerified)}` : 'تأیید نشده'}
+                {user.emailVerified
+                  ? `تأیید شده · ${formatDate(user.emailVerified)}`
+                  : 'تأیید نشده'}
               </span>
             </dd>
 
@@ -692,11 +694,14 @@ function ContentPanel({ user }: { user: UserDetailPayload }) {
                       {post.title}
                     </Link>
                     <span className={s.listSub}>
-                      {formatNumber(post._count.comments)} دیدگاه · {formatNumber(post._count.likes)} پسند
+                      {formatNumber(post._count.comments)} دیدگاه ·{' '}
+                      {formatNumber(post._count.likes)} پسند
                     </span>
                   </div>
                   <span className={s.listMeta}>
-                    <span className={`${s.badge} ${post.status === 'PUBLISHED' ? s.badgeOk : s.badgePending}`}>
+                    <span
+                      className={`${s.badge} ${post.status === 'PUBLISHED' ? s.badgeOk : s.badgePending}`}
+                    >
                       {POST_STATUS_LABELS[post.status] ?? post.status}
                     </span>
                     <span>{timeAgo(post.createdAt)}</span>
@@ -937,7 +942,8 @@ function SecurityPanel({ user }: { user: UserDetailPayload }) {
             <div className={s.notice}>
               <Wallet className="size-4" aria-hidden />
               <span>
-                این کاربر {formatNumber(user._count.accounts)} حساب OAuth (Google/GitHub/...) متصل دارد.
+                این کاربر {formatNumber(user._count.accounts)} حساب OAuth (Google/GitHub/...) متصل
+                دارد.
               </span>
             </div>
           ) : (

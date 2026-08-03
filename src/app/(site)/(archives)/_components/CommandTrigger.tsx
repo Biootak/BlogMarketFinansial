@@ -10,7 +10,6 @@
  */
 
 import { ChevronDown, FolderOpen, Hash, X } from 'lucide-react';
-import * as React from 'react';
 import type { CommandMode } from './CommandPanel';
 
 type Props = {

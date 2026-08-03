@@ -18,13 +18,13 @@
  *    - ولی چون StickySaveBar قبلاً در page.tsx هست، اینجا فقط فرم است
  */
 
-import { useEffect, useState } from 'react';
 import {
   get2faStatus,
   getSecuritySettings,
   updateSecuritySettings,
 } from '@/actions/settingsActions';
 import { useActionToast } from '@/hooks/useActionToast';
+import { useEffect, useState } from 'react';
 import s from './SecuritySettings.module.css';
 
 interface FormState {
@@ -206,11 +206,7 @@ export function SecuritySettings({ onDirtyChange }: { onDirtyChange?: (dirty: bo
             <span className={s.metricVal}>{ipCount}</span>
           </span>
           {ipCount > 0 && (
-            <button
-              type="button"
-              onClick={() => update('ipAllowlist', '')}
-              className={s.linkBtn}
-            >
+            <button type="button" onClick={() => update('ipAllowlist', '')} className={s.linkBtn}>
               پاک کردن
             </button>
           )}
@@ -221,7 +217,9 @@ export function SecuritySettings({ onDirtyChange }: { onDirtyChange?: (dirty: bo
         <section className={s.section}>
           <header className={s.sectionHead}>
             <h3>وضعیت ۲FA ادمین‌ها</h3>
-            <p>از {twoFA.totalAdmins} ادمین، {twoFA.adminsWith2fa} مورد ۲FA فعال دارند</p>
+            <p>
+              از {twoFA.totalAdmins} ادمین، {twoFA.adminsWith2fa} مورد ۲FA فعال دارند
+            </p>
           </header>
           {twoFA.adminsWithout2fa.length > 0 ? (
             <ul className={s.adminList}>

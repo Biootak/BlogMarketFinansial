@@ -1,34 +1,31 @@
 'use client';
 
-import { useState, useTransition } from 'react';
 import {
   type BankRow,
-  type CreditRateRow,
   type CreditRateAggregate,
-  createBank,
-  updateBank,
-  deleteBank,
-  createCreditRate,
-  updateCreditRate,
+  type CreditRateRow,
   archiveCreditRate,
+  createBank,
+  createCreditRate,
+  deleteBank,
+  updateBank,
+  updateCreditRate,
 } from '@/actions/credit-rates';
-import { PageHeader, Section, StatGrid, StatCard } from '@/components/Dashboard/primitives';
+import { PageHeader, Section, StatCard, StatGrid } from '@/components/Dashboard/primitives';
 import { TYPE_FA } from '@/lib/credit-rate-constants';
+import type { CreditRateType } from '@prisma/client';
 import {
+  Archive,
   Building2,
+  Edit2,
+  Globe,
   Percent,
   Plus,
-  Edit2,
   Trash2,
-  Archive,
-  X,
-  ExternalLink,
-  Globe,
-  Coins,
-  ArrowRight,
   TrendingUp,
+  X,
 } from 'lucide-react';
-import { CreditRateType } from '@prisma/client';
+import { useState, useTransition } from 'react';
 
 interface Props {
   initialBanks: BankRow[];
@@ -43,7 +40,7 @@ export default function CreditRatesClient({
 }: Props) {
   const [banks, setBanks] = useState<BankRow[]>(initialBanks);
   const [rates, setRates] = useState<CreditRateRow[]>(initialRates);
-  const [aggregates, setAggregates] = useState<CreditRateAggregate | null>(initialAggregates);
+  const [aggregates, _setAggregates] = useState<CreditRateAggregate | null>(initialAggregates);
   const [activeTab, setActiveTab] = useState<'rates' | 'banks'>('rates');
 
   const [isPending, startTransition] = useTransition();
@@ -86,20 +83,20 @@ export default function CreditRatesClient({
       id: bankModal.data?.id,
       slug: formData.get('slug') as string,
       name: formData.get('name') as string,
-      displayName: formData.get('displayName') as string || null,
-      country: formData.get('country') as string || 'AF',
-      city: formData.get('city') as string || null,
-      logoUrl: formData.get('logoUrl') as string || null,
-      website: formData.get('website') as string || null,
-      licenseNo: formData.get('licenseNo') as string || null,
-      status: formData.get('status') as any || 'ACTIVE',
+      displayName: (formData.get('displayName') as string) || null,
+      country: (formData.get('country') as string) || 'AF',
+      city: (formData.get('city') as string) || null,
+      logoUrl: (formData.get('logoUrl') as string) || null,
+      website: (formData.get('website') as string) || null,
+      licenseNo: (formData.get('licenseNo') as string) || null,
+      status: (formData.get('status') as any) || 'ACTIVE',
       isVisible: formData.get('isVisible') === 'true',
       sortOrder: Number(formData.get('sortOrder') || 0),
-      description: formData.get('description') as string || null,
+      description: (formData.get('description') as string) || null,
     };
 
     startTransition(async () => {
-      let res;
+      let res: Awaited<ReturnType<typeof createBank>>;
       if (bankModal.mode === 'create') {
         res = await createBank(data);
       } else {
@@ -112,9 +109,7 @@ export default function CreditRatesClient({
           if (bankModal.mode === 'create') {
             setBanks((prev) => [...prev, newData]);
           } else {
-            setBanks((prev) =>
-              prev.map((b) => (b.id === newData.id ? newData : b))
-            );
+            setBanks((prev) => prev.map((b) => (b.id === newData.id ? newData : b)));
           }
           setBankModal({ open: false, mode: 'create' });
         }
@@ -125,7 +120,8 @@ export default function CreditRatesClient({
   };
 
   const handleBankDelete = async (id: string) => {
-    if (!confirm('آیا از حذف این بانک اطمینان دارید؟ تمام نرخ‌های مربوطه نیز حذف خواهند شد.')) return;
+    if (!confirm('آیا از حذف این بانک اطمینان دارید؟ تمام نرخ‌های مربوطه نیز حذف خواهند شد.'))
+      return;
     setError(null);
     startTransition(async () => {
       const res = await deleteBank(id);
@@ -147,21 +143,21 @@ export default function CreditRatesClient({
       bankId: formData.get('bankId') as string,
       type: formData.get('type') as CreditRateType,
       title: formData.get('title') as string,
-      description: formData.get('description') as string || null,
+      description: (formData.get('description') as string) || null,
       annualRate: Number(formData.get('annualRate') || 0),
       minAmountCents: Number(formData.get('minAmount') || 0) * 100,
       maxAmountCents: Number(formData.get('maxAmount') || 0) * 100,
       maxTermMonths: Number(formData.get('maxTermMonths') || 0),
       depositRatio: formData.get('depositRatio') ? Number(formData.get('depositRatio')) : null,
-      currency: formData.get('currency') as string || 'AFN',
-      status: formData.get('status') as any || 'ACTIVE',
-      source: formData.get('source') as string || null,
+      currency: (formData.get('currency') as string) || 'AFN',
+      status: (formData.get('status') as any) || 'ACTIVE',
+      source: (formData.get('source') as string) || null,
       sortOrder: Number(formData.get('sortOrder') || 0),
-      internalNote: formData.get('internalNote') as string || null,
+      internalNote: (formData.get('internalNote') as string) || null,
     };
 
     startTransition(async () => {
-      let res;
+      let res: Awaited<ReturnType<typeof createCreditRate>>;
       if (rateModal.mode === 'create') {
         res = await createCreditRate(data);
       } else {
@@ -174,9 +170,7 @@ export default function CreditRatesClient({
           if (rateModal.mode === 'create') {
             setRates((prev) => [...prev, newData]);
           } else {
-            setRates((prev) =>
-              prev.map((r) => (r.id === newData.id ? newData : r))
-            );
+            setRates((prev) => prev.map((r) => (r.id === newData.id ? newData : r)));
           }
           setRateModal({ open: false, mode: 'create' });
         }
@@ -371,9 +365,7 @@ export default function CreditRatesClient({
                           <div className="text-[10px] text-muted-foreground">{r.bank?.slug}</div>
                         </div>
                       </td>
-                      <td className="p-4 font-semibold text-muted-foreground">
-                        {TYPE_FA[r.type]}
-                      </td>
+                      <td className="p-4 font-semibold text-muted-foreground">{TYPE_FA[r.type]}</td>
                       <td className="p-4">
                         <div className="font-medium text-foreground">{r.title}</div>
                         {r.description && (
@@ -541,7 +533,7 @@ export default function CreditRatesClient({
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold">کد یکتا (Slug)</label>
                   <input
@@ -570,7 +562,7 @@ export default function CreditRatesClient({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold">نام نمایشی (فارسی)</label>
                   <input
@@ -595,7 +587,7 @@ export default function CreditRatesClient({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold">شهر</label>
                   <input
@@ -619,7 +611,7 @@ export default function CreditRatesClient({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold">آدرس لوگو (URL)</label>
                   <input
@@ -643,7 +635,7 @@ export default function CreditRatesClient({
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold">ترتیب نمایش</label>
                   <input
@@ -740,7 +732,7 @@ export default function CreditRatesClient({
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold">بانک مربوطه</label>
                   <select
@@ -787,7 +779,7 @@ export default function CreditRatesClient({
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold">نرخ بهره سالانه (درصد)</label>
                   <input
@@ -828,13 +820,17 @@ export default function CreditRatesClient({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold">حداقل مبلغ (اسمی - بدون سنت)</label>
                   <input
                     name="minAmount"
                     type="number"
-                    defaultValue={rateModal.data && rateModal.data.minAmountCents != null ? rateModal.data.minAmountCents / 100 : 0}
+                    defaultValue={
+                      rateModal.data && rateModal.data.minAmountCents != null
+                        ? rateModal.data.minAmountCents / 100
+                        : 0
+                    }
                     className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
                   />
                 </div>
@@ -844,13 +840,17 @@ export default function CreditRatesClient({
                   <input
                     name="maxAmount"
                     type="number"
-                    defaultValue={rateModal.data && rateModal.data.maxAmountCents != null ? rateModal.data.maxAmountCents / 100 : 0}
+                    defaultValue={
+                      rateModal.data && rateModal.data.maxAmountCents != null
+                        ? rateModal.data.maxAmountCents / 100
+                        : 0
+                    }
                     className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold">درصد سپرده قانونی (Loan-to-Value)</label>
                   <input
@@ -886,7 +886,7 @@ export default function CreditRatesClient({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold">منبع خبر / آدرس مستندات</label>
                   <input

@@ -8,8 +8,8 @@
  * Server Component — props از قبل serialize شده‌اند.
  */
 
+import type { TransactionRow } from '@/actions/exchange-transactions';
 import { type Column, DataTable } from '@/components/Dashboard/primitives';
-import { type TransactionRow } from '@/actions/exchange-transactions';
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -24,7 +24,11 @@ import s from './TransactionsTable.module.css';
 
 const KIND_META: Record<
   string,
-  { label: string; Icon: typeof Send; tone: 'emerald' | 'cyan' | 'violet' | 'amber' | 'rose' | 'muted' }
+  {
+    label: string;
+    Icon: typeof Send;
+    tone: 'emerald' | 'cyan' | 'violet' | 'amber' | 'rose' | 'muted';
+  }
 > = {
   DEPOSIT: { label: 'واریز', Icon: ArrowDownLeft, tone: 'emerald' },
   WITHDRAWAL: { label: 'برداشت', Icon: ArrowUpRight, tone: 'rose' },
@@ -87,9 +91,7 @@ export default function TransactionsTable({ rows, total, className }: Props) {
       header: 'مشتری / طرف حساب',
       render: (r) => (
         <div className={s.customerCell}>
-          <span className={s.customerName}>
-            {r.customer?.fullName ?? r.counterparty ?? '—'}
-          </span>
+          <span className={s.customerName}>{r.customer?.fullName ?? r.counterparty ?? '—'}</span>
           {r.customer?.phone ? <span className={s.customerPhone}>{r.customer.phone}</span> : null}
         </div>
       ),
@@ -137,7 +139,11 @@ export default function TransactionsTable({ rows, total, className }: Props) {
       header: 'وضعیت',
       width: 110,
       render: (r) => {
-        const meta = STATUS_META[r.status] ?? { label: r.status, tone: 'muted' as const, Icon: Clock };
+        const meta = STATUS_META[r.status] ?? {
+          label: r.status,
+          tone: 'muted' as const,
+          Icon: Clock,
+        };
         const Icon = meta.Icon;
         return (
           <span className={s.status} data-tone={meta.tone}>
@@ -165,17 +171,12 @@ export default function TransactionsTable({ rows, total, className }: Props) {
           </span>
           <h2 className={s.title}>لیست کامل تراکنش‌ها</h2>
         </div>
-        <span className={s.total}>
-          {new Intl.NumberFormat('fa-IR').format(total)} رکورد
-        </span>
+        <span className={s.total}>{new Intl.NumberFormat('fa-IR').format(total)} رکورد</span>
       </header>
 
-      <DataTable
-        columns={columns}
-        rows={rows}
-        rowKey={(r) => r.id}
-        ariaLabel="جدول تراکنش‌ها"
-      />
+      <div className="overflow-x-auto">
+        <DataTable columns={columns} rows={rows} rowKey={(r) => r.id} ariaLabel="جدول تراکنش‌ها" />
+      </div>
     </section>
   );
 }

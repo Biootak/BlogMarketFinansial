@@ -1,24 +1,23 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { createApproval } from '@/actions/approvals-actions';
+import type { ApprovalType } from '@/lib/approvals';
 import {
+  AlertCircle,
   ArrowLeft,
   ArrowRight,
   Check,
   ChevronRight,
   FileText,
+  Loader2,
   Plus,
   Send,
   ShieldCheck,
   Trash2,
-  User,
   Wallet,
-  Loader2,
-  AlertCircle,
 } from 'lucide-react';
-import type { ApprovalType } from '@/lib/approvals';
-import { createApproval } from '@/actions/approvals-actions';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import s from './CreateApprovalPanel.module.css';
 
 interface Props {
@@ -71,14 +70,7 @@ const TYPE_OPTIONS: {
   },
 ];
 
-const ROLE_OPTIONS = [
-  'OWNER',
-  'SUPERADMIN',
-  'ADMIN',
-  'COMPLIANCE',
-  'FINANCE',
-  'SUPPORT',
-];
+const ROLE_OPTIONS = ['OWNER', 'SUPERADMIN', 'ADMIN', 'COMPLIANCE', 'FINANCE', 'SUPPORT'];
 
 type Step = 'type' | 'details' | 'steps';
 
@@ -188,7 +180,11 @@ export function CreateApprovalPanel({ open, onClose, onCreated }: Props) {
   };
 
   return createPortal(
-    <div className={s.overlay} role="presentation" onClick={(e) => e.target === e.currentTarget && close()}>
+    <div
+      className={s.overlay}
+      role="presentation"
+      onClick={(e) => e.target === e.currentTarget && close()}
+    >
       <div className={s.panel} role="dialog" aria-label="ساخت درخواست تأیید">
         <header className={s.header}>
           <div className={s.headerLeft}>
@@ -203,7 +199,11 @@ export function CreateApprovalPanel({ open, onClose, onCreated }: Props) {
         {/* Stepper */}
         <div className={s.stepper}>
           {STEP_ORDER.map((st, i) => (
-            <div key={st} className={s.stepperItem} data-state={i === stepIndex ? 'active' : i < stepIndex ? 'done' : 'idle'}>
+            <div
+              key={st}
+              className={s.stepperItem}
+              data-state={i === stepIndex ? 'active' : i < stepIndex ? 'done' : 'idle'}
+            >
               <div className={s.stepperDot}>
                 {i < stepIndex ? <Check className="h-3.5 w-3.5" /> : <span>{i + 1}</span>}
               </div>
@@ -305,7 +305,8 @@ export function CreateApprovalPanel({ open, onClose, onCreated }: Props) {
             <div className={s.stepContent}>
               <div className={s.stepTitle}>مراحل تأیید را تعریف کنید</div>
               <p className={s.stepHint}>
-                مراحل به ترتیب از بالا به پایین اجرا می‌شوند. برای هر مرحله یک نقش تأییدکننده انتخاب کنید.
+                مراحل به ترتیب از بالا به پایین اجرا می‌شوند. برای هر مرحله یک نقش تأییدکننده انتخاب
+                کنید.
               </p>
               <div className={s.stepsList}>
                 {stepsList.map((st, i) => (
@@ -373,7 +374,11 @@ export function CreateApprovalPanel({ open, onClose, onCreated }: Props) {
                 className={s.submitBtn}
                 disabled={!canNext() || submitting}
               >
-                {submitting ? <Loader2 className={`h-4 w-4 ${s.spin}`} /> : <Check className="h-4 w-4" />}
+                {submitting ? (
+                  <Loader2 className={`h-4 w-4 ${s.spin}`} />
+                ) : (
+                  <Check className="h-4 w-4" />
+                )}
                 ساخت درخواست
               </button>
             ) : (

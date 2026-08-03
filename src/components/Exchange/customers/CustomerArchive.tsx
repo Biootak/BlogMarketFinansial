@@ -71,7 +71,7 @@ function StatusPill({ status }: { status: string }) {
 
 // ─── Row Component ────────────────────────────────────────────────────────────
 
-function CustomerRow({
+function CustomerRowRow({
   customer,
   canWrite,
   onUnfreeze,
@@ -137,7 +137,7 @@ export function CustomerArchive({
   frozen,
   totalCount,
   canWrite,
-  primaryCurrency,
+  primaryCurrency: _primaryCurrency,
 }: Props) {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<'frozen' | 'closed'>('frozen');
@@ -210,9 +210,7 @@ export function CustomerArchive({
         <div className={s.statCell}>
           <Users size={16} className={s.statIcon} aria-hidden />
           <div>
-            <span className={s.statValue}>
-              {new Intl.NumberFormat('fa-IR').format(totalCount)}
-            </span>
+            <span className={s.statValue}>{new Intl.NumberFormat('fa-IR').format(totalCount)}</span>
             <span className={s.statLabel}>کل مشتریان</span>
           </div>
         </div>
@@ -285,7 +283,7 @@ export function CustomerArchive({
                 style={{ animationDelay: `${idx * 35}ms` }}
                 className={s.rowWrapper}
               >
-                <CustomerRow
+                <CustomerRowRow
                   customer={customer}
                   canWrite={canWrite}
                   onUnfreeze={handleUnfreeze}
@@ -302,8 +300,8 @@ export function CustomerArchive({
         <div className={s.notice}>
           <Clock size={14} aria-hidden />
           <span>
-            مشتریان بسته برای مقاصد قانونی و حسابرسی حفظ می‌شوند. برای بازگشایی با تیم پشتیبانی
-            تماس بگیرید.
+            مشتریان بسته برای مقاصد قانونی و حسابرسی حفظ می‌شوند. برای بازگشایی با تیم پشتیبانی تماس
+            بگیرید.
           </span>
         </div>
       )}

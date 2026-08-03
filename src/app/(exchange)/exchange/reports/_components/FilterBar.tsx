@@ -9,7 +9,7 @@
 
 import { SearchInput } from '@/components/Dashboard/primitives';
 import { CurrencySelect } from '@/components/ui/CurrencySelect';
-import { PersianDateRangePicker, type DateRange } from '@/components/ui/PersianDateRangePicker';
+import { type DateRange, PersianDateRangePicker } from '@/components/ui/PersianDateRangePicker';
 import { X } from 'lucide-react';
 import s from './FilterBar.module.css';
 
@@ -64,10 +64,7 @@ export default function FilterBar({ value, onChange, className }: Props) {
       <div className={s.selectGroup}>
         <div className={s.currencyWrap}>
           <CurrencySelect
-            items={[
-              { value: '', code: '✦', label: 'همهٔ ارزها' },
-              ...CURRENCY_OPTIONS,
-            ]}
+            items={[{ value: '', code: '✦', label: 'همهٔ ارزها' }, ...CURRENCY_OPTIONS]}
             value={value.currency}
             onChange={(v) => set({ currency: v })}
             ariaLabel="ارز"
@@ -97,10 +94,7 @@ export default function FilterBar({ value, onChange, className }: Props) {
       </div>
 
       <div className={s.dateGroup}>
-        <PersianDateRangePicker
-          value={value.range}
-          onChange={(range) => set({ range })}
-        />
+        <PersianDateRangePicker value={value.range} onChange={(range) => set({ range })} />
       </div>
 
       {hasFilters && (

@@ -20,18 +20,8 @@ import { STRIPE_EASE } from '@/lib/motion';
 import { AnimatePresence, motion, useReducedMotion } from '@/lib/motion-shim';
 import { cn, formatNumber, toPersianNumber } from '@/lib/utils';
 import type { PostWithRelations } from '@/types/types';
-import {
-  ArrowDown,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  LayoutGrid,
-  List,
-  Loader2,
-  Sparkles,
-} from 'lucide-react';
+import { ArrowDown, Check, ChevronLeft, ChevronRight, LayoutGrid, List } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Empty from '../Empty';
 import PostItem from '../PostsDisplay.tsx/PostItem';
 import PostsList from '../PostsDisplay.tsx/PostsList';
 

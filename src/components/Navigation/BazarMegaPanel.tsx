@@ -1,19 +1,4 @@
 'use client';
-
-/**
- * BazarMegaPanel — پنل مگامنوی «بازار» (Linear-style)
- * ----------------------------------------------------------------------------
- * نمایش زنده‌ی نرخ‌های فعال RateList در قالب یک پنل شیشه‌ای ۳ ستونه.
- *  - ستون اول: ارز (forex) — emerald
- *  - ستون دوم: طلا و سکه (gold) — amber
- *  - ستون سوم: سایر (صرافی‌ها، نرخ تهران، رسمی) — primary/cyan
- *  - هر آیتم: عنوان + خرید/فروش pill + لینک به فرم ثبت سفارش
- *  - پس‌زمینه‌ی aurora خیلی subtle
- *  - prefers-reduced-motion → fade-in ساده
- * ----------------------------------------------------------------------------
- */
-
-import { motion } from '@/lib/motion-shim';
 import { type ParsedRateItem, groupRateItems } from '@/lib/rateItem';
 import { cn, formatNumber, toPersianNumber } from '@/lib/utils';
 import type { RateListData } from '@/types/types';

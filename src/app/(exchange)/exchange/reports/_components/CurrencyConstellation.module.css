@@ -20,8 +20,7 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background:
-    radial-gradient(ellipse 70% 100% at 0% 0%, var(--at-accent-soft) 0%, transparent 60%),
+  background: radial-gradient(ellipse 70% 100% at 0% 0%, var(--at-accent-soft) 0%, transparent 60%),
     radial-gradient(ellipse 60% 100% at 100% 100%, oklch(96% 0.04 290) 0%, transparent 60%);
   opacity: 0.3;
 }
@@ -167,9 +166,8 @@
 
 .node {
   cursor: pointer;
-  transition:
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart),
-    opacity var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart), opacity
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
   transform-origin: center;
   transform-box: fill-box;
 }
@@ -230,9 +228,8 @@
   border: 1px solid var(--at-line);
   border-radius: var(--at-radius-lg);
   box-shadow: var(--at-shadow-sm);
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
   min-height: 180px;
   isolation: isolate;
   overflow: hidden;
@@ -379,7 +376,7 @@
   display: inline-flex;
   align-items: center;
   padding: 1px 4px;
-  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-family: "Geist Mono", ui-monospace, monospace;
   font-size: 9px;
   font-weight: var(--ds-weight-semibold);
   color: var(--at-fg);

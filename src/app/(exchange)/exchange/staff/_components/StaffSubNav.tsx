@@ -35,8 +35,7 @@ export function StaffSubNav({ active, activityCount }: Props) {
       {TABS.map((tab) => {
         const Icon = tab.icon;
         const isActive =
-          tab.key === active ||
-          (tab.key === 'overview' && pathname === '/exchange/staff');
+          tab.key === active || (tab.key === 'overview' && pathname === '/exchange/staff');
         return (
           <Link
             key={tab.key}

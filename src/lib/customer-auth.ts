@@ -12,10 +12,10 @@
  * در یک render pass فقط یکبار اجرا شود (auth() + DB query فقط یکبار).
  */
 
-import { cookies, headers } from 'next/headers';
-import { cache } from 'react';
 import prisma from '@/lib/db';
 import { requireUser } from '@/lib/require-auth';
+import { cookies, headers } from 'next/headers';
+import { cache } from 'react';
 
 const PLATFORM_ADMINS = new Set(['OWNER', 'SUPERADMIN', 'ADMIN']);
 const CUSTOMER_ROLES = new Set(['CUSTOMER', 'TEST_CUSTOMER', 'MERCHANT']);
@@ -215,20 +215,23 @@ export async function clearAdminCustomerContext(): Promise<{ success: true }> {
  */
 export async function listCustomersForAdmin(
   search?: string,
-): Promise<Array<{ id: string; fullName: string; phone: string; exchangeName: string; city: string | null }>> {
+): Promise<
+  Array<{ id: string; fullName: string; phone: string; exchangeName: string; city: string | null }>
+> {
   const auth = await requireUser();
   if (!auth.success) return [];
   if (!PLATFORM_ADMINS.has(auth.user.role as string)) return [];
 
-  const where = search && search.length >= 2
-    ? {
-        status: { not: 'CLOSED' as const },
-        OR: [
-          { fullName: { contains: search, mode: 'insensitive' as const } },
-          { phone: { contains: search } },
-        ],
-      }
-    : { status: { not: 'CLOSED' as const } };
+  const where =
+    search && search.length >= 2
+      ? {
+          status: { not: 'CLOSED' as const },
+          OR: [
+            { fullName: { contains: search, mode: 'insensitive' as const } },
+            { phone: { contains: search } },
+          ],
+        }
+      : { status: { not: 'CLOSED' as const } };
 
   const rows = await prisma.customer.findMany({
     where,

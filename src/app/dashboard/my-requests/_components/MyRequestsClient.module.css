@@ -33,8 +33,14 @@
 }
 
 @keyframes wsIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* ─── New Request CTA ─────────────────────────────────────────────────────── */
@@ -52,22 +58,20 @@
   white-space: nowrap;
   min-block-size: 38px;
   border: 1px solid color-mix(in oklch, var(--ds-brand-600) 80%, oklch(20% 0.02 240));
-  box-shadow:
-    0 1px 0 oklch(100% 0 0 / 0.1) inset,
-    0 3px 10px -2px color-mix(in oklch, var(--ds-brand-600) 40%, transparent);
-  transition:
-    transform 180ms var(--ds-ease-spring),
-    box-shadow 160ms var(--ds-ease-out-quart),
+  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.1) inset, 0 3px 10px -2px
+    color-mix(in oklch, var(--ds-brand-600) 40%, transparent);
+  transition: transform 180ms var(--ds-ease-spring), box-shadow 160ms var(--ds-ease-out-quart),
     background 160ms;
 }
 .newBtn:hover {
   transform: translateY(-1px);
   background: color-mix(in oklch, var(--ds-brand-600) 92%, oklch(10% 0.02 240));
-  box-shadow:
-    0 1px 0 oklch(100% 0 0 / 0.12) inset,
-    0 6px 18px -3px color-mix(in oklch, var(--ds-brand-600) 45%, transparent);
+  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.12) inset, 0 6px 18px -3px
+    color-mix(in oklch, var(--ds-brand-600) 45%, transparent);
 }
-.newBtn:active { transform: scale(0.97); }
+.newBtn:active {
+  transform: scale(0.97);
+}
 
 /* ===========================================================================
    KPI STRIP
@@ -80,10 +84,14 @@
 }
 
 @media (max-width: 980px) {
-  .kpiStrip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpiStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 @media (max-width: 520px) {
-  .kpiStrip { grid-template-columns: minmax(0, 1fr); }
+  .kpiStrip {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* StatCard inside the strip — full styling (the global dash2-statcard class
@@ -102,9 +110,7 @@
   text-decoration: none;
   color: inherit;
   min-block-size: 110px;
-  transition:
-    border-color 200ms var(--ds-ease-out-quart),
-    box-shadow 200ms var(--ds-ease-out-quart),
+  transition: border-color 200ms var(--ds-ease-out-quart), box-shadow 200ms var(--ds-ease-out-quart),
     transform 200ms var(--ds-ease-spring);
 }
 
@@ -234,8 +240,15 @@
 }
 
 @keyframes pulseDot {
-  0%, 100% { opacity: 0.6; transform: scale(1); }
-  50%      { opacity: 1;   transform: scale(1.18); }
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.18);
+  }
 }
 
 .heatmapH3 {
@@ -302,7 +315,10 @@
 }
 
 @keyframes cellIn {
-  to { opacity: 1; transform: scale(1); }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .heatmapCell:hover {
@@ -456,8 +472,7 @@
   position: absolute;
   inset: 0;
   z-index: 0;
-  background-image:
-    linear-gradient(
+  background-image: linear-gradient(
       to right,
       color-mix(in oklch, var(--ds-border-subtle) 55%, transparent) 1px,
       transparent 1px
@@ -607,32 +622,52 @@
   min-inline-size: 78px;
   position: relative;
   outline: none;
-  transition:
-    transform 180ms var(--ds-ease-spring),
-    background 180ms,
-    border-color 180ms,
+  transition: transform 180ms var(--ds-ease-spring), background 180ms, border-color 180ms,
     box-shadow 180ms;
 }
 .pipelineNode:hover {
   transform: translateY(-1px);
-  background: color-mix(in oklch, var(--node-color, var(--ds-brand-500)) 6%, var(--ds-surface-elevated));
-  border-color: color-mix(in oklch, var(--node-color, var(--ds-brand-500)) 25%, var(--ds-border-subtle));
+  background: color-mix(
+    in oklch,
+    var(--node-color, var(--ds-brand-500)) 6%,
+    var(--ds-surface-elevated)
+  );
+  border-color: color-mix(
+    in oklch,
+    var(--node-color, var(--ds-brand-500)) 25%,
+    var(--ds-border-subtle)
+  );
 }
 .pipelineNode:focus-visible {
   outline: 2px solid var(--node-color, var(--ds-brand-500));
   outline-offset: 2px;
 }
 
-.pipelineNode--pending  { --node-color: var(--ds-status-pending-fg); }
-.pipelineNode--progress { --node-color: var(--ds-status-progress-fg); }
-.pipelineNode--completed { --node-color: var(--ds-status-success-fg); }
-.pipelineNode--cancelled { --node-color: var(--ds-status-error-fg); }
+.pipelineNode--pending {
+  --node-color: var(--ds-status-pending-fg);
+}
+.pipelineNode--progress {
+  --node-color: var(--ds-status-progress-fg);
+}
+.pipelineNode--completed {
+  --node-color: var(--ds-status-success-fg);
+}
+.pipelineNode--cancelled {
+  --node-color: var(--ds-status-error-fg);
+}
 
 .pipelineNodeActive {
-  background: color-mix(in oklch, var(--node-color, var(--ds-brand-500)) 12%, var(--ds-surface-elevated));
-  border-color: color-mix(in oklch, var(--node-color, var(--ds-brand-500)) 50%, var(--ds-border-subtle));
-  box-shadow:
-    0 0 0 1px color-mix(in oklch, var(--node-color, var(--ds-brand-500)) 18%, transparent),
+  background: color-mix(
+    in oklch,
+    var(--node-color, var(--ds-brand-500)) 12%,
+    var(--ds-surface-elevated)
+  );
+  border-color: color-mix(
+    in oklch,
+    var(--node-color, var(--ds-brand-500)) 50%,
+    var(--ds-border-subtle)
+  );
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--node-color, var(--ds-brand-500)) 18%, transparent),
     0 4px 14px -6px color-mix(in oklch, var(--node-color, var(--ds-brand-500)) 35%, transparent);
 }
 
@@ -708,10 +743,7 @@
   min-inline-size: 78px;
   position: relative;
   outline: none;
-  transition:
-    transform 180ms var(--ds-ease-spring),
-    background 180ms,
-    border-color 180ms;
+  transition: transform 180ms var(--ds-ease-spring), background 180ms, border-color 180ms;
 }
 .pipelineBranch:hover {
   transform: translateY(-1px);
@@ -793,11 +825,7 @@
   inset-inline-start: 0;
   inset-block: 0;
   inline-size: 3px;
-  background: linear-gradient(
-    180deg,
-    var(--ds-status-success-fg),
-    var(--ds-status-progress-fg)
-  );
+  background: linear-gradient(180deg, var(--ds-status-success-fg), var(--ds-status-progress-fg));
   opacity: 0.5;
 }
 
@@ -944,24 +972,32 @@
   position: absolute;
   inset-block: 0;
   inset-inline-start: 0;
-  background: linear-gradient(
-    90deg,
-    var(--ds-status-progress-fg),
-    var(--ds-status-success-fg)
-  );
+  background: linear-gradient(90deg, var(--ds-status-progress-fg), var(--ds-status-success-fg));
   border-radius: inherit;
   animation: fillIn 700ms var(--ds-ease-out-quart) both;
   box-shadow: 0 0 6px -1px color-mix(in oklch, var(--ds-status-progress-fg) 40%, transparent);
 }
 
 @keyframes fillIn {
-  from { transform: scaleX(0); transform-origin: inline-end; }
-  to   { transform: scaleX(1); transform-origin: inline-end; }
+  from {
+    transform: scaleX(0);
+    transform-origin: inline-end;
+  }
+  to {
+    transform: scaleX(1);
+    transform-origin: inline-end;
+  }
 }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(3px); }
-  to   { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* ===========================================================================
@@ -1146,11 +1182,8 @@
   outline: none;
   min-block-size: 30px;
   white-space: nowrap;
-  transition:
-    background 140ms,
-    color 140ms,
-    border-color 140ms,
-    transform 140ms var(--ds-ease-spring);
+  transition: background 140ms, color 140ms, border-color 140ms, transform 140ms
+    var(--ds-ease-spring);
 }
 .refreshBtn:hover:not(:disabled) {
   background: var(--ds-surface);
@@ -1158,7 +1191,9 @@
   border-color: var(--ds-border-default);
   transform: translateY(-1px);
 }
-.refreshBtn:active:not(:disabled) { transform: scale(0.97); }
+.refreshBtn:active:not(:disabled) {
+  transform: scale(0.97);
+}
 .refreshBtn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -1168,11 +1203,19 @@
   animation: spin 0.8s linear infinite;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 @keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 @media (max-width: 720px) {
@@ -1211,7 +1254,8 @@
   border-radius: var(--ds-radius-xl);
   background: color-mix(in oklch, var(--group-color, var(--ds-text-muted)) 4%, var(--ds-surface));
   padding: var(--ds-space-2);
-  border: 1px solid color-mix(in oklch, var(--group-color, var(--ds-text-muted)) 14%, var(--ds-border-subtle));
+  border: 1px solid
+    color-mix(in oklch, var(--group-color, var(--ds-text-muted)) 14%, var(--ds-border-subtle));
   position: relative;
   overflow: hidden;
   transition: background 200ms, border-color 200ms;
@@ -1227,11 +1271,21 @@
   opacity: 0.7;
 }
 
-.ticketGroup--pending  { --group-color: var(--ds-status-pending-fg); }
-.ticketGroup--progress { --group-color: var(--ds-status-progress-fg); }
-.ticketGroup--completed { --group-color: var(--ds-status-success-fg); }
-.ticketGroup--cancelled { --group-color: var(--ds-status-error-fg); }
-.ticketGroup--neutral { --group-color: var(--ds-brand-500); }
+.ticketGroup--pending {
+  --group-color: var(--ds-status-pending-fg);
+}
+.ticketGroup--progress {
+  --group-color: var(--ds-status-progress-fg);
+}
+.ticketGroup--completed {
+  --group-color: var(--ds-status-success-fg);
+}
+.ticketGroup--cancelled {
+  --group-color: var(--ds-status-error-fg);
+}
+.ticketGroup--neutral {
+  --group-color: var(--ds-brand-500);
+}
 
 .ticketGroupHead {
   inline-size: 100%;
@@ -1346,37 +1400,47 @@
   border-radius: var(--ds-radius-xl);
   overflow: hidden;
   box-shadow: var(--ds-shadow-sm);
-  transition:
-    border-color 200ms var(--ds-ease-out-quart),
-    box-shadow 200ms var(--ds-ease-out-quart),
+  transition: border-color 200ms var(--ds-ease-out-quart), box-shadow 200ms var(--ds-ease-out-quart),
     transform 200ms var(--ds-ease-out-quart);
   animation: ticketIn 360ms var(--ds-ease-out-quart) both;
   --ticket-accent: var(--ds-brand-500);
 }
 
 @keyframes ticketIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .ticket:hover {
   border-color: var(--ds-border-default);
-  box-shadow:
-    0 2px 12px -4px oklch(0% 0 0 / 0.07),
-    0 0 0 1px color-mix(in oklch, var(--ticket-accent) 8%, transparent);
+  box-shadow: 0 2px 12px -4px oklch(0% 0 0 / 0.07), 0 0 0 1px
+    color-mix(in oklch, var(--ticket-accent) 8%, transparent);
   transform: translateY(-1px);
 }
 
-.ticket--pending  { --ticket-accent: var(--ds-status-pending-fg); }
-.ticket--progress { --ticket-accent: var(--ds-status-progress-fg); }
-.ticket--completed { --ticket-accent: var(--ds-status-success-fg); }
-.ticket--cancelled { --ticket-accent: var(--ds-status-error-fg); }
+.ticket--pending {
+  --ticket-accent: var(--ds-status-pending-fg);
+}
+.ticket--progress {
+  --ticket-accent: var(--ds-status-progress-fg);
+}
+.ticket--completed {
+  --ticket-accent: var(--ds-status-success-fg);
+}
+.ticket--cancelled {
+  --ticket-accent: var(--ds-status-error-fg);
+}
 
 .ticketActive {
   border-color: color-mix(in oklch, var(--ticket-accent) 35%, var(--ds-border-subtle));
-  box-shadow:
-    0 0 0 1px color-mix(in oklch, var(--ticket-accent) 14%, transparent),
-    0 6px 22px -8px color-mix(in oklch, var(--ticket-accent) 28%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--ticket-accent) 14%, transparent), 0 6px 22px -8px
+    color-mix(in oklch, var(--ticket-accent) 28%, transparent);
 }
 
 /* ─── Execution Rail (signature) ─────────────────────────────────────────── */
@@ -1433,9 +1497,17 @@
 }
 
 @keyframes railFlow {
-  0%   { transform: translateY(-100%); opacity: 0; }
-  20%  { opacity: 0.85; }
-  100% { transform: translateY(380%); opacity: 0; }
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(380%);
+    opacity: 0;
+  }
 }
 
 /* ─── Ticket Trigger ─────────────────────────────────────────────────────── */
@@ -1470,7 +1542,9 @@
     grid-template-columns: 32px 1fr 22px;
     gap: var(--ds-space-2);
   }
-  .ticketRight { display: none; }
+  .ticketRight {
+    display: none;
+  }
 }
 
 /* ─── Icon ───────────────────────────────────────────────────────────────── */
@@ -1485,9 +1559,7 @@
   border: 1px solid color-mix(in oklch, var(--ticket-accent) 18%, transparent);
   color: var(--ticket-accent);
   flex-shrink: 0;
-  transition:
-    background 200ms,
-    transform 200ms var(--ds-ease-spring);
+  transition: background 200ms, transform 200ms var(--ds-ease-spring);
 }
 .ticketActive .ticketIcon {
   background: color-mix(in oklch, var(--ticket-accent) 18%, var(--ds-surface-elevated));
@@ -1533,7 +1605,8 @@
 }
 
 @keyframes urgentPulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 color-mix(in oklch, var(--ds-status-pending-fg) 35%, transparent);
   }
   50% {
@@ -1588,8 +1661,13 @@
 }
 
 @keyframes dotPulse {
-  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--ds-status-progress-fg) 30%, transparent); }
-  50%      { box-shadow: 0 0 0 4px color-mix(in oklch, var(--ds-status-progress-fg) 0%, transparent); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--ds-status-progress-fg) 30%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in oklch, var(--ds-status-progress-fg) 0%, transparent);
+  }
 }
 
 .ticketStatusText {
@@ -1653,11 +1731,8 @@
   color: var(--ds-text-muted);
   background: transparent;
   border: 1px solid transparent;
-  transition:
-    transform 280ms var(--ds-ease-spring),
-    background 130ms,
-    border-color 130ms,
-    color 130ms;
+  transition: transform 280ms var(--ds-ease-spring), background 130ms, border-color 130ms, color
+    130ms;
   flex-shrink: 0;
 }
 .ticketTrigger:hover .ticketChevron {
@@ -1692,8 +1767,14 @@
 }
 
 @keyframes bodyIn {
-  from { opacity: 0; transform: translateY(-3px); }
-  to   { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .adminBanner {
@@ -1819,7 +1900,8 @@
 }
 
 .cancelZone {
-  border-block-start: 1px dashed color-mix(in oklch, var(--ds-status-error-fg) 25%, var(--ds-border-subtle));
+  border-block-start: 1px dashed
+    color-mix(in oklch, var(--ds-status-error-fg) 25%, var(--ds-border-subtle));
   padding-block-start: var(--ds-space-3);
 }
 
@@ -1885,18 +1967,20 @@
   cursor: pointer;
   min-block-size: 30px;
   white-space: nowrap;
-  transition:
-    background 140ms,
-    border-color 140ms,
-    transform 160ms var(--ds-ease-spring);
+  transition: background 140ms, border-color 140ms, transform 160ms var(--ds-ease-spring);
 }
 .btnCancel:hover:not(:disabled) {
   background: color-mix(in oklch, var(--ds-status-error-fg) 12%, transparent);
   border-color: color-mix(in oklch, var(--ds-status-error-fg) 50%, transparent);
   transform: translateY(-1px);
 }
-.btnCancel:active:not(:disabled) { transform: scale(0.97); }
-.btnCancel:disabled { opacity: 0.4; cursor: not-allowed; }
+.btnCancel:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.btnCancel:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 .cancelErr {
   display: flex;
@@ -1921,10 +2005,7 @@
   border-radius: var(--ds-radius-md);
   border: 1px solid color-mix(in oklch, var(--ds-brand-500) 22%, transparent);
   background: color-mix(in oklch, var(--ds-brand-500) 5%, transparent);
-  transition:
-    background 140ms,
-    border-color 140ms,
-    transform 160ms var(--ds-ease-out-quart);
+  transition: background 140ms, border-color 140ms, transform 160ms var(--ds-ease-out-quart);
 }
 .trackLink:hover {
   background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
@@ -1989,11 +2070,19 @@
   position: relative;
   animation: timelineReveal 320ms var(--ds-ease-out-quart) both;
 }
-.timelineItem:last-child { padding-block-end: 0; }
+.timelineItem:last-child {
+  padding-block-end: 0;
+}
 
 @keyframes timelineReveal {
-  from { opacity: 0; transform: translateX(-4px); }
-  to   { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .timelineDot {
@@ -2010,7 +2099,8 @@
 }
 .timelineDot[data-first="true"] {
   transform: scale(1.25);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--timeline-accent, var(--ds-brand-600)) 22%, transparent);
+  box-shadow: 0 0 0 3px
+    color-mix(in oklch, var(--timeline-accent, var(--ds-brand-600)) 22%, transparent);
 }
 
 .timelineDot--pending {
@@ -2192,11 +2282,8 @@
   cursor: pointer;
   min-block-size: 36px;
   font-family: inherit;
-  transition:
-    background 130ms,
-    border-color 130ms,
-    color 130ms,
-    transform 160ms var(--ds-ease-out-quart);
+  transition: background 130ms, border-color 130ms, color 130ms, transform 160ms
+    var(--ds-ease-out-quart);
 }
 .pageBtn:hover:not(:disabled) {
   background: var(--ds-surface-elevated);
@@ -2204,7 +2291,10 @@
   color: var(--ds-text-primary);
   transform: translateY(-1px);
 }
-.pageBtn:disabled { opacity: 0.3; cursor: not-allowed; }
+.pageBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
 
 .pageIndicator {
   font-size: var(--ds-text-sm);
@@ -2303,7 +2393,9 @@
 }
 
 @media (max-width: 560px) {
-  .claimHint { display: none; }
+  .claimHint {
+    display: none;
+  }
 }
 
 .claimChevron {
@@ -2425,8 +2517,13 @@
   transform: translateY(-1px);
   box-shadow: 0 4px 12px -2px color-mix(in oklch, var(--ds-brand-600) 42%, transparent);
 }
-.claimBtn:active:not(:disabled) { transform: scale(0.97); }
-.claimBtn:disabled { opacity: 0.45; cursor: not-allowed; }
+.claimBtn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.claimBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 
 .claimOtpEmail {
   font-family: "Menlo", "Consolas", monospace;
@@ -2491,8 +2588,13 @@
   font-family: inherit;
   transition: opacity 130ms;
 }
-.otpResend:hover:not(:disabled) { opacity: 0.7; }
-.otpResend:disabled { opacity: 0.35; cursor: not-allowed; }
+.otpResend:hover:not(:disabled) {
+  opacity: 0.7;
+}
+.otpResend:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
 
 .claimErr {
   display: flex;

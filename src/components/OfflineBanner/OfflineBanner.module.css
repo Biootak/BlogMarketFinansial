@@ -21,7 +21,7 @@
 }
 
 :global(html.dark) .banner,
-:global([data-theme='dark']) .banner {
+:global([data-theme="dark"]) .banner {
   background: oklch(28% 0.04 50);
   color: oklch(95% 0.04 60);
   border-block-end-color: oklch(40% 0.04 50);

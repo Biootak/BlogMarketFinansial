@@ -112,12 +112,7 @@ export default function ServicesOnboarding({ hasAnyService }: Props) {
       <div className={s.backdrop} aria-hidden onClick={handleClose} />
 
       <div className={s.tooltip} role="dialog" aria-modal="false" aria-labelledby="onb-title">
-        <button
-          type="button"
-          className={s.closeBtn}
-          onClick={handleClose}
-          aria-label="بستن"
-        >
+        <button type="button" className={s.closeBtn} onClick={handleClose} aria-label="بستن">
           <X size={16} strokeWidth={2} />
         </button>
 
@@ -134,11 +129,7 @@ export default function ServicesOnboarding({ hasAnyService }: Props) {
 
         <div className={s.dots} role="presentation">
           {STEPS.map((_, i) => (
-            <span
-              key={i}
-              className={`${s.dot} ${i === step ? s.dotActive : ''}`}
-              aria-hidden
-            />
+            <span key={i} className={`${s.dot} ${i === step ? s.dotActive : ''}`} aria-hidden />
           ))}
         </div>
 

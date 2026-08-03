@@ -4,11 +4,7 @@
 .root {
   padding-block: clamp(56px, 8vw, 96px);
   padding-inline: clamp(16px, 4vw, 48px);
-  background: linear-gradient(
-    to bottom,
-    var(--ds-surface-recessed) 0%,
-    var(--ds-surface) 60%
-  );
+  background: linear-gradient(to bottom, var(--ds-surface-recessed) 0%, var(--ds-surface) 60%);
 }
 
 .container {
@@ -22,8 +18,7 @@
   margin-bottom: clamp(32px, 5vw, 56px);
   opacity: 0;
   transform: translateY(16px);
-  transition: opacity 0.5s var(--ds-ease-out-expo),
-    transform 0.5s var(--ds-ease-out-expo);
+  transition: opacity 0.5s var(--ds-ease-out-expo), transform 0.5s var(--ds-ease-out-expo);
 }
 
 .rootRevealed .header {
@@ -68,11 +63,21 @@
 /* ── Grid ─────────────────────────────────────────── */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(clamp(220px, 30%, 300px), 1fr));
+  grid-template-columns: 1fr;
   gap: clamp(12px, 2vw, 18px);
   list-style: none;
   padding: 0;
   margin: 0;
+}
+@media (min-width: 480px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 /* ── Card ─────────────────────────────────────────── */
@@ -85,7 +90,8 @@
   overflow: hidden;
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.4s var(--ds-ease-out-expo) var(--card-reveal-delay, 0ms),
+  transition:
+    opacity 0.4s var(--ds-ease-out-expo) var(--card-reveal-delay, 0ms),
     transform 0.4s var(--ds-ease-out-expo) var(--card-reveal-delay, 0ms),
     border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
     background var(--ds-duration-fast),
@@ -119,9 +125,8 @@
   background: var(--ds-surface-recessed);
   display: grid;
   place-items: center;
-  transition: background var(--ds-duration-fast),
-    border-color var(--ds-duration-fast),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast), border-color var(--ds-duration-fast), transform
+    var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .card:hover .iconWrap {
@@ -177,8 +182,7 @@
   padding: 0;
   cursor: pointer;
   text-decoration: none;
-  transition: color var(--ds-duration-fast),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: color var(--ds-duration-fast), transform var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .cardCta:hover {
@@ -187,7 +191,7 @@
 }
 
 /* In RTL, "translateX" toward outside */
-:root[dir='rtl'] .cardCta:hover {
+:root[dir="rtl"] .cardCta:hover {
   transform: translateX(2px);
 }
 

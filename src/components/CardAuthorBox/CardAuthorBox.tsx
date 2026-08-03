@@ -5,7 +5,7 @@ import Avatar from '@/components/Avatar/Avatar';
 import { heading, radius, text } from '@/lib/design-tokens';
 import { ArrowLeft, FileText } from 'lucide-react';
 import Link from 'next/link';
-import React, { type FC } from 'react';
+import type { FC } from 'react';
 
 export interface CardAuthorBoxProps {
   className?: string;

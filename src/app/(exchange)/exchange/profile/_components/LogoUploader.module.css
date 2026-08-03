@@ -143,10 +143,8 @@
   border: 1.5px dashed color-mix(in oklch, var(--at-accent) 40%, var(--at-line));
   background: color-mix(in oklch, var(--at-accent) 2%, var(--at-bg-deep));
   cursor: pointer;
-  transition:
-    border-color 180ms var(--at-ease),
-    background 180ms var(--at-ease),
-    transform 180ms var(--at-ease);
+  transition: border-color 180ms var(--at-ease), background 180ms var(--at-ease), transform 180ms
+    var(--at-ease);
   outline: none;
 }
 .dropzone:hover {

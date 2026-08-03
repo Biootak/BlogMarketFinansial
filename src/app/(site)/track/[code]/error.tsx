@@ -27,7 +27,14 @@ export default function TrackCodeError({
       <p style={{ fontSize: 'var(--ds-text-sm)', color: 'var(--ds-text-muted)', margin: 0 }}>
         {error.message || 'خطایی در بارگذاری اطلاعات پیگیری رخ داد.'}
       </p>
-      <div style={{ display: 'flex', gap: 'var(--ds-space-3)', flexWrap: 'wrap', justifyContent: 'center' }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: 'var(--ds-space-3)',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+        }}
+      >
         <button
           type="button"
           onClick={reset}

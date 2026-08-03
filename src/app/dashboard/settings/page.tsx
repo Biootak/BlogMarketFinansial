@@ -1,6 +1,6 @@
-import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
+import { redirect } from 'next/navigation';
 import { SettingsHub } from './_components/SettingsHub';
 
 // ── metadata ──────────────────────────────────────────────────────────────
@@ -36,8 +36,7 @@ export default async function SettingsPage() {
   // normalize the data shape — never let DB failure crash the page
   const data = {
     siteName: settings?.siteName ?? 'financialmarket.page',
-    siteDescription:
-      settings?.siteDescription ?? 'بازار صرافی‌های افغانستان — نرخ لحظه‌ای افغانی',
+    siteDescription: settings?.siteDescription ?? 'بازار صرافی‌های افغانستان — نرخ لحظه‌ای افغانی',
     siteUrl: settings?.siteUrl ?? 'https://financialmarket.page',
     contactEmail: settings?.contactEmail ?? 'contact@financialmarket.page',
     contactPhone: settings?.contactPhone ?? '',

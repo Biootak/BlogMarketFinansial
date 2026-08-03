@@ -1,6 +1,6 @@
-import { redirect, notFound } from 'next/navigation';
 import { auth } from '@/auth';
 import { getCampaignById } from '@/lib/communication';
+import { notFound, redirect } from 'next/navigation';
 import { CampaignDetail } from './_components/CampaignDetail';
 
 export const dynamic = 'force-dynamic';

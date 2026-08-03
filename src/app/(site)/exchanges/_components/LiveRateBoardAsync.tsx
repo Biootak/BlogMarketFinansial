@@ -12,9 +12,9 @@
  *   • Marks the section with `data-board-root` so the listener can find it.
  */
 
+import ExchangeQuotesBoard from '@/components/MoneyTransfer/ExchangeQuotesBoard';
 import { ArrowDown, BarChart3, Sparkles } from 'lucide-react';
 import { useEffect, useRef } from 'react';
-import ExchangeQuotesBoard from '@/components/MoneyTransfer/ExchangeQuotesBoard';
 import s from './LiveRateBoard.module.css';
 
 type Props = {

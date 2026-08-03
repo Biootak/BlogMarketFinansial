@@ -68,26 +68,26 @@ export type SettingsNavIconName =
   | 'zap';
 
 const ICON_MAP: Record<SettingsNavIconName, LucideIcon> = {
-  'activity': Activity,
-  'archive': Archive,
+  activity: Activity,
+  archive: Archive,
   'bar-chart': BarChart2,
-  'bell': Bell,
-  'building': Building2,
-  'clock': Clock,
-  'cog': Cog,
+  bell: Bell,
+  building: Building2,
+  clock: Clock,
+  cog: Cog,
   'credit-card': CreditCard,
-  'database': Database,
-  'globe': Globe,
-  'key': Key,
+  database: Database,
+  globe: Globe,
+  key: Key,
   'layout-grid': LayoutGrid,
-  'lock': Lock,
-  'mail': Mail,
-  'power': Power,
-  'settings': Settings,
-  'shield': ShieldCheck,
-  'users': Users,
-  'wallet': Wallet,
-  'zap': Zap,
+  lock: Lock,
+  mail: Mail,
+  power: Power,
+  settings: Settings,
+  shield: ShieldCheck,
+  users: Users,
+  wallet: Wallet,
+  zap: Zap,
 };
 
 export interface SettingsSubNavItem {
@@ -123,10 +123,7 @@ interface Props {
 
 export function SettingsSubNav({ items, activeKey, asTabs, onSelect, className }: Props) {
   return (
-    <nav
-      className={cn(s.nav, className)}
-      aria-label="بخش‌های تنظیمات"
-    >
+    <nav className={cn(s.nav, className)} aria-label="بخش‌های تنظیمات">
       <ol className={s.list}>
         {items.map((item, idx) => {
           const Icon = ICON_MAP[item.iconName] ?? Activity;
@@ -155,10 +152,7 @@ export function SettingsSubNav({ items, activeKey, asTabs, onSelect, className }
               </span>
 
               {/* Icon chip */}
-              <span
-                className={cn(s.iconChip, isActive && s.iconChipActive)}
-                aria-hidden
-              >
+              <span className={cn(s.iconChip, isActive && s.iconChipActive)} aria-hidden>
                 <Icon size={14} strokeWidth={1.85} />
               </span>
 
@@ -167,9 +161,7 @@ export function SettingsSubNav({ items, activeKey, asTabs, onSelect, className }
                 <span className={s.label}>
                   {item.label}
                   {item.badge && (
-                    <span
-                      className={cn(s.badge, s[`badge_${item.badge.tone ?? 'neutral'}`])}
-                    >
+                    <span className={cn(s.badge, s[`badge_${item.badge.tone ?? 'neutral'}`])}>
                       {item.badge.label}
                     </span>
                   )}

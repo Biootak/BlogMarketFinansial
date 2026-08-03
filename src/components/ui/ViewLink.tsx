@@ -22,9 +22,9 @@
  * CSS متناظر در `app/globals.css` تحت selector های ::view-transition-*.
  */
 
+import { useViewTransition } from '@/hooks/useViewTransition';
 import Link from 'next/link';
 import type { ComponentProps, MouseEvent } from 'react';
-import { useViewTransition } from '@/hooks/useViewTransition';
 
 type LinkProps = ComponentProps<typeof Link>;
 
@@ -44,7 +44,7 @@ export function ViewLink({
   ...rest
 }: ViewLinkProps) {
   const navigate = useViewTransition();
-  const target = typeof href === 'string' ? href : (href as { pathname?: string }).pathname ?? '';
+  const target = typeof href === 'string' ? href : ((href as { pathname?: string }).pathname ?? '');
 
   const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
     // اول onClick اصلی consumer را صدا بزن
@@ -52,13 +52,7 @@ export function ViewLink({
     if (e.defaultPrevented) return;
 
     // modifier keys → browser handles (new tab, etc.)
-    if (
-      e.metaKey ||
-      e.ctrlKey ||
-      e.shiftKey ||
-      e.altKey ||
-      e.button !== 0
-    ) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) {
       return;
     }
 

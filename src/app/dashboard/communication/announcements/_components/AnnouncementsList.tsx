@@ -12,10 +12,17 @@
  * تک‌zone، max ۳ tone، ۲ motion (LiveDot + CountUp).
  */
 
-import { useMemo, useState, useTransition } from 'react';
-import type { MouseEvent } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import {
+  type FilterPillItem,
+  FilterPills,
+  LiveDot,
+  type PillTabItem,
+  TimeRibbon,
+  type TimeRibbonPoint,
+} from '@/components/Dashboard/PlatformHub';
+import { ConfirmDialog, CountUp, EmptyState } from '@/components/Dashboard/primitives';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Archive,
   ChevronLeft,
@@ -27,17 +34,10 @@ import {
   Send,
   Trash2,
 } from 'lucide-react';
-import {
-  FilterPills,
-  type FilterPillItem,
-  LiveDot,
-  type PillTabItem,
-  type TimeRibbonPoint,
-  TimeRibbon,
-} from '@/components/Dashboard/PlatformHub';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { CountUp, ConfirmDialog, EmptyState } from '@/components/Dashboard/primitives';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useMemo, useState, useTransition } from 'react';
+import type { MouseEvent } from 'react';
 import s from './Announcements.module.css';
 
 type Announcement = {
@@ -174,9 +174,7 @@ export function AnnouncementsList({ items }: AnnouncementsListProps) {
     const result: number[] = new Array(days).fill(0);
     for (const a of items) {
       if (a.publishedAt) {
-        const daysAgo = Math.floor(
-          (Date.now() - new Date(a.publishedAt).getTime()) / 86_400_000,
-        );
+        const daysAgo = Math.floor((Date.now() - new Date(a.publishedAt).getTime()) / 86_400_000);
         if (daysAgo >= 0 && daysAgo < days) {
           result[days - 1 - daysAgo] += 1;
         }
@@ -192,7 +190,7 @@ export function AnnouncementsList({ items }: AnnouncementsListProps) {
 
   // ── actions ─────────────────────────────────────────────
   const runAction = async (
-    id: string,
+    _id: string,
     path: string,
     method: 'POST' | 'DELETE' = 'POST',
   ): Promise<{ ok: boolean; message?: string }> => {
@@ -245,11 +243,17 @@ export function AnnouncementsList({ items }: AnnouncementsListProps) {
       {/* ═══ HEADER STRIP ═══════════════════════════════════ */}
       <header className={s.header}>
         <nav className={s.crumbs} aria-label="مسیر">
-          <Link href="/dashboard" className={s.crumbLink}>داشبورد</Link>
+          <Link href="/dashboard" className={s.crumbLink}>
+            داشبورد
+          </Link>
           <span className={s.crumbSep}>/</span>
-          <Link href="/dashboard/communication" className={s.crumbLink}>مرکز ارتباطات</Link>
+          <Link href="/dashboard/communication" className={s.crumbLink}>
+            مرکز ارتباطات
+          </Link>
           <span className={s.crumbSep}>/</span>
-          <span className={s.crumbCurrent} aria-current="page">اعلان‌ها</span>
+          <span className={s.crumbCurrent} aria-current="page">
+            اعلان‌ها
+          </span>
         </nav>
 
         <div className={s.headerMain}>
@@ -484,11 +488,7 @@ export function AnnouncementsList({ items }: AnnouncementsListProps) {
                         <span className={s.metaKey}>کانال‌ها</span>
                         <div className={s.channels} aria-label="کانال‌ها">
                           {a.channels.map((c) => (
-                            <span
-                              key={c}
-                              className={s.channelChip}
-                              data-channel={c}
-                            >
+                            <span key={c} className={s.channelChip} data-channel={c}>
                               {CHANNEL_LABELS[c]}
                             </span>
                           ))}
@@ -496,9 +496,7 @@ export function AnnouncementsList({ items }: AnnouncementsListProps) {
                       </div>
                       <div className={s.metaItem}>
                         <span className={s.metaKey}>مخاطب</span>
-                        <span className={s.metaVal}>
-                          {AUDIENCE_LABELS[a.audience]}
-                        </span>
+                        <span className={s.metaVal}>{AUDIENCE_LABELS[a.audience]}</span>
                       </div>
                       <div className={s.metaItem}>
                         <span className={s.metaKey}>تاریخ</span>

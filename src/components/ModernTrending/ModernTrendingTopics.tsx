@@ -495,7 +495,8 @@ function FeaturedCard({
             'transition-all duration-500',
             'hover:shadow-[0_2px_0_0_rgba(255,255,255,0.04)_inset,0_28px_50px_-20px_rgba(20,23,32,0.4)]',
           )}
-          aria-label={`${category.name} - ${category.count} مقاله`}
+          // WCAG 2.5.3 label-in-name: the card's visible content (name + count
+          // badge + rank) is the accessible name — no aria-label override.
         >
           {/* Decorative orb — subtle */}
           <div
@@ -660,7 +661,8 @@ function TopicCard({
             wide ? 'min-h-[110px] sm:min-h-[120px]' : 'min-h-[140px] sm:min-h-[150px]',
           )}
           style={{ willChange: 'transform' }}
-          aria-label={`${category.name} - ${category.count} مقاله`}
+          // WCAG 2.5.3 label-in-name: visible content (name + count badge) is
+          // the accessible name — no aria-label override.
         >
           {/* Top row — Icon + rank */}
           <div className="relative z-10 flex items-start justify-between">

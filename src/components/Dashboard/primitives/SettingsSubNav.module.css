@@ -59,9 +59,7 @@
   cursor: pointer;
   text-decoration: none;
   border-radius: var(--at-radius);
-  transition:
-    background var(--at-duration) var(--at-ease),
-    color var(--at-duration) var(--at-ease);
+  transition: background var(--at-duration) var(--at-ease), color var(--at-duration) var(--at-ease);
   min-block-size: 64px;
 }
 

@@ -6,11 +6,19 @@
  * نه «جلب توجه». سه tone دارد: emerald/amber/rose/sky.
  */
 
-import Link from 'next/link';
-import { ArrowDownRight, ArrowUpRight, Minus, Users, Clock, CircleDollarSign, UserPlus } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-import s from './ExchangeDashboard.module.css';
 import type { DashboardKpi } from '@/actions/exchange-dashboard';
+import {
+  ArrowDownRight,
+  ArrowUpRight,
+  CircleDollarSign,
+  Clock,
+  Minus,
+  UserPlus,
+  Users,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import Link from 'next/link';
+import s from './ExchangeDashboard.module.css';
 
 type Tone = 'emerald' | 'amber' | 'rose' | 'sky';
 
@@ -29,7 +37,9 @@ function formatFaNumber(n: number): string {
 }
 
 function formatCompactNumber(n: number): string {
-  return new Intl.NumberFormat('fa-IR', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+  return new Intl.NumberFormat('fa-IR', { notation: 'compact', maximumFractionDigits: 1 }).format(
+    n,
+  );
 }
 
 function pickIcon(name: Tile['icon']): LucideIcon {

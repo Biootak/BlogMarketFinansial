@@ -48,25 +48,29 @@
   transition: inline-size 200ms var(--ds-ease-out-quart);
 }
 
-.row[data-status='pending'] .rail {
+.row[data-status="pending"] .rail {
   background: var(--nova-amber);
 }
-.row[data-status='progress'] .rail {
+.row[data-status="progress"] .rail {
   background: var(--nova-cyan);
 }
-.row[data-status='success'] .rail {
+.row[data-status="success"] .rail {
   background: var(--nova-up);
 }
-.row[data-status='danger'] .rail {
+.row[data-status="danger"] .rail {
   background: var(--nova-down);
 }
-.row[data-status='cancelled'] .rail {
+.row[data-status="cancelled"] .rail {
   background: var(--ds-text-muted);
   opacity: 0.5;
 }
 
-.row[data-tone='credit'] .rail {
-  background: linear-gradient(180deg, var(--nova-up), color-mix(in oklch, var(--nova-up) 50%, transparent));
+.row[data-tone="credit"] .rail {
+  background: linear-gradient(
+    180deg,
+    var(--nova-up),
+    color-mix(in oklch, var(--nova-up) 50%, transparent)
+  );
 }
 
 .rowLink:hover .rail,
@@ -94,13 +98,13 @@
   transform: scale(1.05) rotate(-2deg);
 }
 
-.row[data-tone='credit'] .iconBox {
+.row[data-tone="credit"] .iconBox {
   background: color-mix(in oklch, var(--nova-up) 12%, transparent);
   color: var(--nova-up);
   border-color: color-mix(in oklch, var(--nova-up) 22%, transparent);
 }
 
-.row[data-tone='debit'] .iconBox {
+.row[data-tone="debit"] .iconBox {
   background: color-mix(in oklch, var(--nova-down) 12%, transparent);
   color: var(--nova-down);
   border-color: color-mix(in oklch, var(--nova-down) 22%, transparent);
@@ -242,19 +246,19 @@
   letter-spacing: 0.04em;
 }
 
-.amount[data-tone='credit'] .amountValue {
+.amount[data-tone="credit"] .amountValue {
   color: var(--nova-up);
 }
 
-.amount[data-tone='debit'] .amountValue {
+.amount[data-tone="debit"] .amountValue {
   color: var(--nova-down);
 }
 
-.amount[data-tone='credit'] .amountSign {
+.amount[data-tone="credit"] .amountSign {
   color: var(--nova-up);
 }
 
-.amount[data-tone='debit'] .amountSign {
+.amount[data-tone="debit"] .amountSign {
   color: var(--nova-down);
 }
 
@@ -275,25 +279,25 @@
   white-space: nowrap;
 }
 
-.statusPill[data-status='pending'] {
+.statusPill[data-status="pending"] {
   background: color-mix(in oklch, var(--nova-amber) 12%, transparent);
   color: var(--nova-amber);
   border-color: color-mix(in oklch, var(--nova-amber) 32%, transparent);
 }
 
-.statusPill[data-status='progress'] {
+.statusPill[data-status="progress"] {
   background: color-mix(in oklch, var(--nova-cyan) 12%, transparent);
   color: var(--nova-cyan);
   border-color: color-mix(in oklch, var(--nova-cyan) 32%, transparent);
 }
 
-.statusPill[data-status='success'] {
+.statusPill[data-status="success"] {
   background: color-mix(in oklch, var(--nova-up) 12%, transparent);
   color: var(--nova-up);
   border-color: color-mix(in oklch, var(--nova-up) 32%, transparent);
 }
 
-.statusPill[data-status='danger'] {
+.statusPill[data-status="danger"] {
   background: color-mix(in oklch, var(--nova-down) 12%, transparent);
   color: var(--nova-down);
   border-color: color-mix(in oklch, var(--nova-down) 32%, transparent);

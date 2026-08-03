@@ -20,14 +20,12 @@ const SingleContent = async ({ post, inContentAd }: SingleContentProps) => {
   // The article body is rendered to static HTML on the server (generateHTML /
   // react-markdown) and passed through the RSC children slot — the TipTap
   // editor runtime and markdown pipeline never ship to the client.
-  const body = post.content ? <EditorContentHTML content={post.content} inContentAd={inContentAd} /> : null;
+  const body = post.content ? (
+    <EditorContentHTML content={post.content} inContentAd={inContentAd} />
+  ) : null;
 
   return (
-    <SingleContentClient
-      post={post}
-      commentCount={commentCount}
-      inContentAd={inContentAd}
-    >
+    <SingleContentClient post={post} commentCount={commentCount}>
       {body}
     </SingleContentClient>
   );

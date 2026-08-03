@@ -1,6 +1,6 @@
 'use client';
 
-import { getPlan, type PlanId } from '@/lib/subscription-plans';
+import { type PlanId, getPlan } from '@/lib/subscription-plans';
 import {
   ArrowLeft,
   Check,
@@ -39,7 +39,8 @@ export function PlanDetailClient({ planId }: PlanDetailClientProps) {
           <div className={s.hero}>
             <h1 className={s.planName}>پلن یافت نشد</h1>
             <p className={s.planTagline}>
-              پلن انتخابی شما وجود ندارد یا حذف شده است. لطفاً از صفحه پلن‌ها یک گزینه دیگر انتخاب کنید.
+              پلن انتخابی شما وجود ندارد یا حذف شده است. لطفاً از صفحه پلن‌ها یک گزینه دیگر انتخاب
+              کنید.
             </p>
             <Link href="/subscription" className={s.purchaseCta}>
               <span>مشاهده پلن‌ها</span>
@@ -53,9 +54,7 @@ export function PlanDetailClient({ planId }: PlanDetailClientProps) {
 
   const price = billing === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice;
   const isFree = plan.monthlyPrice === 0;
-  const yearlyDiscount = Math.round(
-    (1 - plan.yearlyPrice / (plan.monthlyPrice * 12 || 1)) * 100,
-  );
+  const yearlyDiscount = Math.round((1 - plan.yearlyPrice / (plan.monthlyPrice * 12 || 1)) * 100);
 
   const handleSubscribe = () => {
     // Free plan → signup; paid plan → checkout (mock)
@@ -127,9 +126,7 @@ export function PlanDetailClient({ planId }: PlanDetailClientProps) {
               <>
                 <span className={s.priceValue}>{toFaPrice(price)}</span>
                 <span className={s.priceCurrency}>تومان</span>
-                <span className={s.pricePer}>
-                  / {billing === 'monthly' ? 'ماه' : 'سال'}
-                </span>
+                <span className={s.pricePer}>/ {billing === 'monthly' ? 'ماه' : 'سال'}</span>
               </>
             )}
           </div>
@@ -138,7 +135,12 @@ export function PlanDetailClient({ planId }: PlanDetailClientProps) {
         {/* Features */}
         <article className={s.featuresCard}>
           <h2 className={s.featuresTitle}>
-            <Sparkles size={15} strokeWidth={1.75} style={{ color: 'var(--ds-brand-600)' }} aria-hidden />
+            <Sparkles
+              size={15}
+              strokeWidth={1.75}
+              style={{ color: 'var(--ds-brand-600)' }}
+              aria-hidden
+            />
             همه امکانات این پلن
           </h2>
           <ul className={s.featuresList}>
@@ -151,11 +153,7 @@ export function PlanDetailClient({ planId }: PlanDetailClientProps) {
                   className={`${s.featureIcon} ${f.ok ? s.featureIconOk : s.featureIconNo}`}
                   aria-hidden
                 >
-                  {f.ok ? (
-                    <Check size={11} strokeWidth={3} />
-                  ) : (
-                    <X size={11} strokeWidth={2.5} />
-                  )}
+                  {f.ok ? <Check size={11} strokeWidth={3} /> : <X size={11} strokeWidth={2.5} />}
                 </span>
                 <span>{f.text}</span>
               </li>
@@ -165,7 +163,12 @@ export function PlanDetailClient({ planId }: PlanDetailClientProps) {
 
         {/* Compare hint */}
         <div className={s.compareHint}>
-          <Sparkles size={14} strokeWidth={1.75} style={{ color: 'var(--ds-brand-600)' }} aria-hidden />
+          <Sparkles
+            size={14}
+            strokeWidth={1.75}
+            style={{ color: 'var(--ds-brand-600)' }}
+            aria-hidden
+          />
           <span>برای مقایسه کامل پلن‌ها در یک نگاه، جدول مقایسه را ببینید.</span>
           <Link href="/subscription">
             <span>جدول مقایسه</span>
@@ -208,7 +211,10 @@ export function PlanDetailClient({ planId }: PlanDetailClientProps) {
           ) : (
             <div className={s.purchaseTotal}>
               <span className={s.purchaseTotalLabel}>هزینه</span>
-              <span className={s.purchaseTotalValue} style={{ color: 'var(--ds-success-500, oklch(0.7 0.15 150))' }}>
+              <span
+                className={s.purchaseTotalValue}
+                style={{ color: 'var(--ds-success-500, oklch(0.7 0.15 150))' }}
+              >
                 رایگان
               </span>
             </div>

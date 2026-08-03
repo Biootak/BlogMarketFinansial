@@ -15,7 +15,9 @@
   min-block-size: 110px;
 }
 
-.tile:last-child { /* nothing */ }
+.tile:last-child {
+  /* nothing */
+}
 
 /* the visual card (a button) */
 .tileBtn {
@@ -31,11 +33,9 @@
   cursor: pointer;
   font-family: inherit;
   color: var(--ds-text-primary);
-  transition:
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart),
-    background var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow var(--ds-duration-fast)
+    var(--ds-ease-out-quart), background var(--ds-duration-fast) var(--ds-ease-out-quart);
   overflow: hidden;
   inline-size: 100%;
   block-size: 100%;
@@ -45,16 +45,24 @@
 }
 
 @keyframes tile-rise {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tileBtn { animation: none; }
+  .tileBtn {
+    animation: none;
+  }
 }
 
 .tileBtn::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(
@@ -86,9 +94,7 @@
 .tileActive .tileBtn {
   border-color: var(--ds-brand-500);
   background: color-mix(in oklch, var(--ds-brand-500) 6%, var(--ds-surface));
-  box-shadow:
-    0 0 0 1px var(--ds-brand-500) inset,
-    0 12px 30px -16px oklch(52% 0.14 162 / 0.35);
+  box-shadow: 0 0 0 1px var(--ds-brand-500) inset, 0 12px 30px -16px oklch(52% 0.14 162 / 0.35);
 }
 
 /* ── size tiers (in 12-col grid) ──────────────────────────────────── */
@@ -102,24 +108,39 @@
   grid-column: span 4;
   grid-row: span 2;
 }
-.tier_lg .tileBtn { min-block-size: 232px; }
+.tier_lg .tileBtn {
+  min-block-size: 232px;
+}
 
 @media (max-width: 960px) {
-  .tier_sm { grid-column: span 4; }
-  .tier_md { grid-column: span 6; }
-  .tier_lg { grid-column: span 6; grid-row: span 1; }
-  .tier_lg .tileBtn { min-block-size: 150px; }
+  .tier_sm {
+    grid-column: span 4;
+  }
+  .tier_md {
+    grid-column: span 6;
+  }
+  .tier_lg {
+    grid-column: span 6;
+    grid-row: span 1;
+  }
+  .tier_lg .tileBtn {
+    min-block-size: 150px;
+  }
 }
 
 @media (max-width: 640px) {
-  .wrap { gap: var(--ds-space-2); }
+  .wrap {
+    gap: var(--ds-space-2);
+  }
   .tier_sm,
   .tier_md,
   .tier_lg {
     grid-column: span 6;
     grid-row: auto;
   }
-  .tile { min-block-size: 120px; }
+  .tile {
+    min-block-size: 120px;
+  }
 }
 
 @media (max-width: 420px) {

@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
 import { NewCampaignForm } from './_components/NewCampaignForm';
 
 export const dynamic = 'force-dynamic';

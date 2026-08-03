@@ -1,3 +1,4 @@
+import '@/styles/author-hub.css';
 import { cn, toPersianNumber } from '@/lib/utils';
 import { BookOpen, Sparkles, Star, Users } from 'lucide-react';
 /**

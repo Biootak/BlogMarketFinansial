@@ -56,9 +56,6 @@ vi.mock('@/lib/revalidate', () => ({
 
 // ─── Import ───────────────────────────────────────────────────────────────────
 
-import prisma from '@/lib/db';
-import { requireExchangeAccess } from '@/lib/exchange-auth';
-import { requireAdmin } from '@/lib/require-auth';
 import {
   approveSettlement,
   computePeriodSettlement,
@@ -66,6 +63,9 @@ import {
   getSettlements,
   markSettlementPaid,
 } from '@/actions/settlement';
+import prisma from '@/lib/db';
+import { requireExchangeAccess } from '@/lib/exchange-auth';
+import { requireAdmin } from '@/lib/require-auth';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 

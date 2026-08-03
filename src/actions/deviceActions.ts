@@ -160,7 +160,9 @@ export async function getSecurityAuditLogs(): Promise<FintechActionResult<Securi
   };
 }
 
-export async function revokeAllOtherDevices(currentDeviceId: string): Promise<FintechActionResult<void>> {
+export async function revokeAllOtherDevices(
+  currentDeviceId: string,
+): Promise<FintechActionResult<void>> {
   const auth = await requireUser();
   if (!auth.success) {
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد شوید' } };
@@ -188,4 +190,3 @@ export async function revokeAllOtherDevices(currentDeviceId: string): Promise<Fi
 
   return { success: true, data: undefined };
 }
-

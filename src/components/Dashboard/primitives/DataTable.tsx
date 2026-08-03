@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { Check } from 'lucide-react';
 import { type CSSProperties, type ReactNode, useCallback, useMemo, useState } from 'react';
 import { EmptyState } from './EmptyState';
-import { type TableDensity, useTableDensity } from './TableToolbar';
+import { useTableDensity } from './TableToolbar';
 
 export interface Column<T> {
   key: string;

@@ -1,11 +1,11 @@
+import { auth } from '@/auth';
+import { deleteCampaign, updateCampaignStatus } from '@/lib/communication';
 /**
  * PATCH  /api/communication/campaigns/[id]    — تغییر وضعیت کمپین (pause/resume/send)
  * DELETE /api/communication/campaigns/[id]    — حذف کمپین
  */
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { auth } from '@/auth';
-import { deleteCampaign, updateCampaignStatus } from '@/lib/communication';
 
 const PatchSchema = z.object({
   status: z.enum(['draft', 'scheduled', 'sending', 'completed', 'paused']),
@@ -23,14 +23,14 @@ async function guard() {
   return { ok: true as const };
 }
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const g = await guard();
   if (!g.ok) {
     return NextResponse.json(
-      { success: false, error: { code: g.status === 401 ? 'UNAUTHORIZED' : 'FORBIDDEN', message: g.msg } },
+      {
+        success: false,
+        error: { code: g.status === 401 ? 'UNAUTHORIZED' : 'FORBIDDEN', message: g.msg },
+      },
       { status: g.status },
     );
   }
@@ -61,14 +61,14 @@ export async function PATCH(
   return NextResponse.json({ success: true });
 }
 
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const g = await guard();
   if (!g.ok) {
     return NextResponse.json(
-      { success: false, error: { code: g.status === 401 ? 'UNAUTHORIZED' : 'FORBIDDEN', message: g.msg } },
+      {
+        success: false,
+        error: { code: g.status === 401 ? 'UNAUTHORIZED' : 'FORBIDDEN', message: g.msg },
+      },
       { status: g.status },
     );
   }

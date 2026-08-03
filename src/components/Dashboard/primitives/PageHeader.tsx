@@ -176,15 +176,23 @@ export function PageHeader({
               return (
                 <span key={`${item.label}-${i}`} className="flex items-center gap-1">
                   {item.href && !isLast ? (
-                    <Link href={item.href} className={s.breadcrumbLink}>{item.label}</Link>
+                    <Link href={item.href} className={s.breadcrumbLink}>
+                      {item.label}
+                    </Link>
                   ) : (
-                    <span aria-current={isLast ? 'page' : undefined}
-                      className={isLast ? s.breadcrumbCurrent : undefined}>
+                    <span
+                      aria-current={isLast ? 'page' : undefined}
+                      className={isLast ? s.breadcrumbCurrent : undefined}
+                    >
                       {item.label}
                     </span>
                   )}
                   {!isLast && (
-                    <ChevronLeft size={10} className={cn(s.breadcrumbSep, 'rtl:rotate-180')} aria-hidden />
+                    <ChevronLeft
+                      size={10}
+                      className={cn(s.breadcrumbSep, 'rtl:rotate-180')}
+                      aria-hidden
+                    />
                   )}
                 </span>
               );
@@ -266,15 +274,23 @@ export function PageHeader({
                   return (
                     <span key={`${item.label}-${i}`} className="flex items-center gap-1">
                       {item.href && !isLast ? (
-                        <Link href={item.href} className={s.breadcrumbLink}>{item.label}</Link>
+                        <Link href={item.href} className={s.breadcrumbLink}>
+                          {item.label}
+                        </Link>
                       ) : (
-                        <span aria-current={isLast ? 'page' : undefined}
-                          className={isLast ? s.breadcrumbCurrent : undefined}>
+                        <span
+                          aria-current={isLast ? 'page' : undefined}
+                          className={isLast ? s.breadcrumbCurrent : undefined}
+                        >
                           {item.label}
                         </span>
                       )}
                       {!isLast && (
-                        <ChevronLeft size={10} className={cn(s.breadcrumbSep, 'rtl:rotate-180')} aria-hidden />
+                        <ChevronLeft
+                          size={10}
+                          className={cn(s.breadcrumbSep, 'rtl:rotate-180')}
+                          aria-hidden
+                        />
                       )}
                     </span>
                   );
@@ -328,12 +344,38 @@ export function PageHeader({
           </defs>
           <circle cx="100" cy="100" r="90" fill="url(#ph-mark-grad)" />
           <g className={s.markSpin}>
-            <circle cx="100" cy="100" r="84" fill="none" stroke="currentColor" strokeWidth="0.6" opacity="0.4" />
-            <circle cx="100" cy="100" r="68" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.25" />
-            <path d="M100 20 L113 87 L180 100 L113 113 L100 180 L87 113 L20 100 L87 87 Z"
-              fill="none" stroke="currentColor" strokeWidth="0.9" opacity="0.55" />
-            <path d="M100 40 L108 92 L160 100 L108 108 L100 160 L92 108 L40 100 L92 92 Z"
-              fill="none" stroke="currentColor" strokeWidth="0.55" opacity="0.3" />
+            <circle
+              cx="100"
+              cy="100"
+              r="84"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="0.6"
+              opacity="0.4"
+            />
+            <circle
+              cx="100"
+              cy="100"
+              r="68"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="0.5"
+              opacity="0.25"
+            />
+            <path
+              d="M100 20 L113 87 L180 100 L113 113 L100 180 L87 113 L20 100 L87 87 Z"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="0.9"
+              opacity="0.55"
+            />
+            <path
+              d="M100 40 L108 92 L160 100 L108 108 L100 160 L92 108 L40 100 L92 92 Z"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="0.55"
+              opacity="0.3"
+            />
           </g>
         </svg>
       </div>
@@ -349,15 +391,23 @@ export function PageHeader({
                 return (
                   <span key={`${item.label}-${i}`} className="flex items-center gap-1">
                     {item.href && !isLast ? (
-                      <Link href={item.href} className={s.breadcrumbLink}>{item.label}</Link>
+                      <Link href={item.href} className={s.breadcrumbLink}>
+                        {item.label}
+                      </Link>
                     ) : (
-                      <span aria-current={isLast ? 'page' : undefined}
-                        className={isLast ? s.breadcrumbCurrent : undefined}>
+                      <span
+                        aria-current={isLast ? 'page' : undefined}
+                        className={isLast ? s.breadcrumbCurrent : undefined}
+                      >
                         {item.label}
                       </span>
                     )}
                     {!isLast && (
-                      <ChevronLeft size={10} className={cn(s.breadcrumbSep, 'rtl:rotate-180')} aria-hidden />
+                      <ChevronLeft
+                        size={10}
+                        className={cn(s.breadcrumbSep, 'rtl:rotate-180')}
+                        aria-hidden
+                      />
                     )}
                   </span>
                 );

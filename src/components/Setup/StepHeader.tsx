@@ -1,7 +1,6 @@
 'use client';
 
 import type { StepDef } from '@/lib/setup/steps';
-import * as React from 'react';
 import { STEP_GLYPHS } from './WizardIcons';
 
 /**

@@ -1,5 +1,4 @@
 import WidgetAds from '@/components/WidgetAds/WidgetAds';
-import WidgetAuthors from '@/components/WidgetAuthors/WidgetAuthors';
 import WidgetCategories from '@/components/WidgetCategories/WidgetCategories';
 import WidgetPosts from '@/components/WidgetPosts/WidgetPosts';
 import WidgetTags from '@/components/WidgetTags/WidgetTags';

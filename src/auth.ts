@@ -12,7 +12,7 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { serverLog } from '@/lib/server-logger';
 import { consumeLoginToken } from '@/lib/tokens';
 import { LoginSchema } from '@/schemas';
-import type { Role, UserProfile } from '@/types/types';
+import type { Role } from '@/types/types';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import bcrypt from 'bcryptjs';
 import NextAuth from 'next-auth';
@@ -53,7 +53,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     // catches and discards it — no need to spam the server log.
     error(err: Error) {
       if (err.name === 'JWTSessionError') return;
-      console.error(err);
     },
   },
   events: {

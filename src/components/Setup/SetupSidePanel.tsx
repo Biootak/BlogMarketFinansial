@@ -3,7 +3,6 @@
 import { toPersianDigits } from '@/lib/setup/format';
 import type { SetupFormValues, StepId } from '@/lib/setup/schema';
 import { STEPS, stepIndex } from '@/lib/setup/steps';
-import * as React from 'react';
 import { AdminPreviewCard } from './AdminPreviewCard';
 
 /**

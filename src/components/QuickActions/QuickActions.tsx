@@ -14,26 +14,19 @@
  *  - Reduced-motion: just fades, no rotation
  */
 
-import {
-  HiOutlineSparkles,
-  HiOutlineXMark,
-  HiOutlineChatBubbleLeftRight,
-  HiOutlineShieldCheck,
-  HiOutlineQuestionMarkCircle,
-} from 'react-icons/hi2';
-import { LuWallet } from 'react-icons/lu';
-import Image from 'next/image';
-import { usePathname, useRouter } from 'next/navigation';
-import {
-  type FC,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useSession } from 'next-auth/react';
+import Image from 'next/image';
+import { usePathname, useRouter } from 'next/navigation';
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  HiOutlineChatBubbleLeftRight,
+  HiOutlineQuestionMarkCircle,
+  HiOutlineShieldCheck,
+  HiOutlineSparkles,
+  HiOutlineXMark,
+} from 'react-icons/hi2';
+import { LuWallet } from 'react-icons/lu';
 import s from './QuickActions.module.css';
 
 interface ActionItem {
@@ -60,7 +53,7 @@ const HIDE_PREFIXES = [
 const QuickActions: FC = () => {
   const { data: session } = useSession();
   const isLoggedIn = !!session?.user;
-  const userRole = session?.user?.role;
+  const _userRole = session?.user?.role;
   const { logoUrl } = useSiteSettings();
   const pathname = usePathname();
   const router = useRouter();

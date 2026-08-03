@@ -11,9 +11,9 @@
 
 import 'server-only';
 
-import { revalidateTag } from '@/lib/revalidate';
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
+import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
 
 export type AnnouncementStatus = 'draft' | 'scheduled' | 'published' | 'archived';
@@ -76,7 +76,9 @@ export interface CommunicationSnapshot {
   };
 }
 
-const requireAdminRole = async (): Promise<{ ok: true; userId: string } | { ok: false; reason: string }> => {
+const requireAdminRole = async (): Promise<
+  { ok: true; userId: string } | { ok: false; reason: string }
+> => {
   const session = await auth();
   if (!session?.user?.id) return { ok: false, reason: 'احراز هویت نشده‌اید' };
   const role = session.user.role ?? '';
@@ -148,7 +150,10 @@ const toCampaign = (row: {
   id: row.id,
   name: row.name,
   description: row.description,
-  channel: (['email', 'sms', 'push'].includes(row.channel) ? row.channel : 'email') as 'email' | 'sms' | 'push',
+  channel: (['email', 'sms', 'push'].includes(row.channel) ? row.channel : 'email') as
+    | 'email'
+    | 'sms'
+    | 'push',
   subject: row.subject,
   body: row.body,
   status: (['draft', 'scheduled', 'sending', 'completed', 'paused'].includes(row.status)
@@ -242,10 +247,42 @@ export interface ChannelMix {
 
 const emptyChannelMix: ChannelMix = {
   channels: [
-    { id: 'push', label: 'Push', tone: 'emerald', announcementCount: 0, campaignCount: 0, sent: 0, recipients: 0 },
-    { id: 'email', label: 'Email', tone: 'indigo', announcementCount: 0, campaignCount: 0, sent: 0, recipients: 0 },
-    { id: 'sms', label: 'SMS', tone: 'amber', announcementCount: 0, campaignCount: 0, sent: 0, recipients: 0 },
-    { id: 'inapp', label: 'In-app', tone: 'violet', announcementCount: 0, campaignCount: 0, sent: 0, recipients: 0 },
+    {
+      id: 'push',
+      label: 'Push',
+      tone: 'emerald',
+      announcementCount: 0,
+      campaignCount: 0,
+      sent: 0,
+      recipients: 0,
+    },
+    {
+      id: 'email',
+      label: 'Email',
+      tone: 'indigo',
+      announcementCount: 0,
+      campaignCount: 0,
+      sent: 0,
+      recipients: 0,
+    },
+    {
+      id: 'sms',
+      label: 'SMS',
+      tone: 'amber',
+      announcementCount: 0,
+      campaignCount: 0,
+      sent: 0,
+      recipients: 0,
+    },
+    {
+      id: 'inapp',
+      label: 'In-app',
+      tone: 'violet',
+      announcementCount: 0,
+      campaignCount: 0,
+      sent: 0,
+      recipients: 0,
+    },
   ],
   total: { sent: 0, recipients: 0, announcements: 0, campaigns: 0 },
 };
@@ -268,7 +305,12 @@ const fetchChannelMixRaw = async (): Promise<ChannelMix> => {
   const recipientTotal = await prisma.campaignRecipient.count();
 
   // ── mix: تعداد اعلان‌ها بر اساس channel (announcements can have multi-channel)
-  const channels = emptyChannelMix.channels.map((ch) => ({ ...ch, announcementCount: 0, campaignCount: 0, sent: 0 }));
+  const channels = emptyChannelMix.channels.map((ch) => ({
+    ...ch,
+    announcementCount: 0,
+    campaignCount: 0,
+    sent: 0,
+  }));
   for (const a of announcements) {
     const chs = parseChannels(a.channels);
     for (const c of chs) {
@@ -290,7 +332,9 @@ const fetchChannelMixRaw = async (): Promise<ChannelMix> => {
     const totalAnnouncements = channels.reduce((s, c) => s + c.announcementCount, 0);
     if (inappAnnouncements > 0 && totalAnnouncements > 0) {
       const inappIdx = channels.findIndex((c) => c.id === 'inapp');
-      channels[inappIdx].recipients = Math.round((inappAnnouncements / totalAnnouncements) * recipientTotal);
+      channels[inappIdx].recipients = Math.round(
+        (inappAnnouncements / totalAnnouncements) * recipientTotal,
+      );
     }
   }
 
@@ -321,7 +365,11 @@ export async function getChannelMix(): Promise<{
     const data = await getCachedChannelMix();
     return { success: true, data };
   } catch (err) {
-    return { success: true, data: emptyChannelMix, message: err instanceof Error ? err.message : 'خطا' };
+    return {
+      success: true,
+      data: emptyChannelMix,
+      message: err instanceof Error ? err.message : 'خطا',
+    };
   }
 }
 
@@ -365,10 +413,14 @@ const fetchAudiencesRaw = async (): Promise<AudiencesSnapshot> => {
   const targetedSegment = await prisma.announcement.count({ where: { audience: 'segment' } });
 
   // تعداد campaignهای فعال برای هر audience
-  const [activeAllCampaigns, activeRoleCampaigns, activeSegmentCampaigns] = await Promise.all([
+  const [activeAllCampaigns, _activeRoleCampaigns, activeSegmentCampaigns] = await Promise.all([
     prisma.campaign.count({ where: { audience: 'all', status: { in: ['sending', 'scheduled'] } } }),
-    prisma.campaign.count({ where: { audience: 'role', status: { in: ['sending', 'scheduled'] } } }),
-    prisma.campaign.count({ where: { audience: 'segment', status: { in: ['sending', 'scheduled'] } } }),
+    prisma.campaign.count({
+      where: { audience: 'role', status: { in: ['sending', 'scheduled'] } },
+    }),
+    prisma.campaign.count({
+      where: { audience: 'segment', status: { in: ['sending', 'scheduled'] } },
+    }),
   ]);
 
   return {
@@ -444,7 +496,11 @@ export async function getAudiences(): Promise<{
     const data = await getCachedAudiences();
     return { success: true, data };
   } catch (err) {
-    return { success: true, data: emptyAudiences, message: err instanceof Error ? err.message : 'خطا' };
+    return {
+      success: true,
+      data: emptyAudiences,
+      message: err instanceof Error ? err.message : 'خطا',
+    };
   }
 }
 
@@ -504,10 +560,16 @@ export async function getCampaignById(
       },
     });
     if (!row) return { success: false, message: 'کمپین یافت نشد' };
-    const sent = row.recipients.filter((r) => r.status === 'sent' || r.status === 'opened' || r.status === 'clicked').length;
-    const opened = row.recipients.filter((r) => r.status === 'opened' || r.status === 'clicked').length;
+    const sent = row.recipients.filter(
+      (r) => r.status === 'sent' || r.status === 'opened' || r.status === 'clicked',
+    ).length;
+    const opened = row.recipients.filter(
+      (r) => r.status === 'opened' || r.status === 'clicked',
+    ).length;
     const clicked = row.recipients.filter((r) => r.status === 'clicked').length;
-    const bounced = row.recipients.filter((r) => r.status === 'bounced' || r.status === 'failed').length;
+    const bounced = row.recipients.filter(
+      (r) => r.status === 'bounced' || r.status === 'failed',
+    ).length;
     const base = toCampaign({
       ...row,
       statsSent: sent,
@@ -652,8 +714,8 @@ export interface ChannelRadarMetric {
   label: string;
   tone: 'emerald' | 'indigo' | 'amber' | 'violet';
   sent: number;
-  openRate: number;   // 0-100
-  clickRate: number;  // 0-100
+  openRate: number; // 0-100
+  clickRate: number; // 0-100
   bounceRate: number; // 0-100
 }
 export interface NexusChannelRadar {
@@ -709,7 +771,13 @@ const fetchNexusRaw = async (): Promise<CommunicationNexus> => {
     }),
     prisma.campaign.findMany({
       where: { startedAt: { gte: sevenDaysAgo } },
-      select: { startedAt: true, channel: true, statsSent: true, statsOpened: true, statsClicked: true },
+      select: {
+        startedAt: true,
+        channel: true,
+        statsSent: true,
+        statsOpened: true,
+        statsClicked: true,
+      },
     }),
   ]);
 
@@ -757,12 +825,21 @@ const fetchNexusRaw = async (): Promise<CommunicationNexus> => {
   for (const c of allCampaigns) {
     if (c.status === 'paused') continue; // paused در pipeline نمایش داده نمی‌شود
     const status = c.status as PipelineStatus;
-    if (status !== 'draft' && status !== 'scheduled' && status !== 'sending' && status !== 'completed') continue;
+    if (
+      status !== 'draft' &&
+      status !== 'scheduled' &&
+      status !== 'sending' &&
+      status !== 'completed'
+    )
+      continue;
     grouped.counts[status] += 1;
     const item: PipelineCampaign = {
       id: c.id,
       name: c.name,
-      channel: (['email', 'sms', 'push'].includes(c.channel) ? c.channel : 'email') as 'email' | 'sms' | 'push',
+      channel: (['email', 'sms', 'push'].includes(c.channel) ? c.channel : 'email') as
+        | 'email'
+        | 'sms'
+        | 'push',
       status,
       audience: (['all', 'role', 'segment'].includes(c.audience) ? c.audience : 'all') as Audience,
       scheduledAt: c.scheduledAt?.toISOString() ?? null,
@@ -786,9 +863,7 @@ const fetchNexusRaw = async (): Promise<CommunicationNexus> => {
     const date = d.toISOString().slice(0, 10);
     return { dayIdx: dayIdx >= 0 && dayIdx <= 6 ? dayIdx : -1, date };
   };
-  const buildTimeline = (
-    channelId: 'push' | 'email' | 'sms' | 'inapp',
-  ): ChannelTimelinePoint[] => {
+  const buildTimeline = (channelId: 'push' | 'email' | 'sms' | 'inapp'): ChannelTimelinePoint[] => {
     const points: ChannelTimelinePoint[] = Array.from({ length: 7 }, (_, i) => ({
       dayIdx: i,
       date: new Date(sevenDaysAgo.getTime() + i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
@@ -833,7 +908,10 @@ const fetchNexusRaw = async (): Promise<CommunicationNexus> => {
     by: ['channel'],
     _sum: { statsSent: true, statsOpened: true, statsClicked: true, statsBounced: true },
   });
-  const radarMap = new Map<string, { sent: number; opened: number; clicked: number; bounced: number }>();
+  const radarMap = new Map<
+    string,
+    { sent: number; opened: number; clicked: number; bounced: number }
+  >();
   for (const row of channelStats) {
     radarMap.set(row.channel, {
       sent: row._sum.statsSent ?? 0,
@@ -893,17 +971,21 @@ const fetchNexusRaw = async (): Promise<CommunicationNexus> => {
   };
 };
 
-const getCachedNexus = safeCache(fetchNexusRaw, {
-  heatmap: emptyHeatmap,
-  pipeline: emptyPipeline,
-  channelTimeline: emptyChannelTimeline,
-  channelRadar: emptyChannelRadar,
-  generatedAt: new Date(0).toISOString(),
-}, {
-  key: 'communication-nexus',
-  ttl: 45,
-  tags: ['announcement', 'campaign', 'communication', 'communication-nexus'],
-});
+const getCachedNexus = safeCache(
+  fetchNexusRaw,
+  {
+    heatmap: emptyHeatmap,
+    pipeline: emptyPipeline,
+    channelTimeline: emptyChannelTimeline,
+    channelRadar: emptyChannelRadar,
+    generatedAt: new Date(0).toISOString(),
+  },
+  {
+    key: 'communication-nexus',
+    ttl: 45,
+    tags: ['announcement', 'campaign', 'communication', 'communication-nexus'],
+  },
+);
 
 export async function getCommunicationNexus(): Promise<{
   success: boolean;
@@ -1197,9 +1279,7 @@ export async function updateCampaignStatus(
   }
 }
 
-export async function deleteCampaign(
-  id: string,
-): Promise<{ success: boolean; message?: string }> {
+export async function deleteCampaign(id: string): Promise<{ success: boolean; message?: string }> {
   const guard = await requireAdminRole();
   if (!guard.ok) return { success: false, message: guard.reason };
   try {

@@ -34,10 +34,14 @@
 }
 
 .codeCard::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at center, color-mix(in oklch, var(--nova-emerald) 14%, transparent), transparent 70%);
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in oklch, var(--nova-emerald) 14%, transparent),
+    transparent 70%
+  );
   pointer-events: none;
 }
 

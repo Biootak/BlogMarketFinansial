@@ -1,23 +1,35 @@
 /**
  * /exchanges/[slug]/about — صفحهٔ کامل دربارهٔ صرافی
+ *
+ * 2026-08-perf: هر دو کوئری (metadata + page) از safeCache استفاده می‌کنند
+ * تا DB hit تکراری حذف شود.
  */
 
-import { notFound } from 'next/navigation';
+import { safeCache } from '@/lib/safe-cache';
 import prisma from '@/lib/db';
-import { stripHours, splitHours } from '@/lib/exchange-hours';
+import { splitHours, stripHours } from '@/lib/exchange-hours';
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import AboutView from './_components/AboutView';
 
 export const revalidate = 60;
 
 type Props = { params: Promise<{ slug: string }> };
 
+const getExchangeAbout = safeCache(
+  async (slug: string) =>
+    prisma.exchange.findUnique({
+      where: { slug },
+      include: { _count: { select: { Customer: true, Transaction: true } } },
+    }),
+  null,
+  { key: 'exchange-about', ttl: 60, tags: ['exchanges'] },
+);
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const ex = await prisma.exchange.findUnique({
-    where: { slug },
-    select: { name: true, displayName: true },
-  });
+  // همان slot — بدون DB hit اضافی
+  const ex = await getExchangeAbout(slug);
   if (!ex) return { title: 'صرافی یافت نشد' };
   return {
     title: `دربارهٔ ${ex.displayName ?? ex.name} | صرافی`,
@@ -27,10 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AboutPage({ params }: Props) {
   const { slug } = await params;
-  const ex = await prisma.exchange.findUnique({
-    where: { slug },
-    include: { _count: { select: { Customer: true, Transaction: true } } },
-  });
+  const ex = await getExchangeAbout(slug);
   if (!ex || ex.status !== 'ACTIVE') notFound();
   const { hours } = splitHours(ex.address);
   const visibleAddress = stripHours(ex.address);

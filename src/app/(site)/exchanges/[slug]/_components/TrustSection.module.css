@@ -79,9 +79,8 @@
   background: var(--ds-surface-elevated, var(--ds-surface));
   border: 1px solid var(--ds-border-default);
   border-radius: 0.875rem;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 .col:hover {
   border-color: var(--ds-border-strong);
@@ -173,10 +172,9 @@
   background: var(--ds-canvas-subtle);
   border: 1px solid var(--ds-border-subtle);
   border-radius: 0.625rem;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
   color: var(--ds-text-primary);
   -webkit-tap-highlight-color: transparent;
 }

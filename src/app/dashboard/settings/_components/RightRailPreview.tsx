@@ -34,7 +34,7 @@ import {
   Power,
   ShieldCheck,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import s from './RightRailPreview.module.css';
 
 export type PreviewTab =
@@ -108,11 +108,16 @@ const truncate = (str: string | undefined, max: number): string => {
 
 export function RightRailPreview(props: RightRailPreviewProps) {
   const { activeTab } = props;
-  const [tick, setTick] = useState(0);
+  // tick فقط برای pulse dot در header — DOM را مستقیم آپدیت می‌کنیم
+  // تا از re-render کل component جلوگیری شود.
+  const tickRef = useRef<HTMLSpanElement>(null);
 
-  // refresh "now" every 30s برای relative time ها
   useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), 30_000);
+    let count = 0;
+    const id = setInterval(() => {
+      count += 1;
+      if (tickRef.current) tickRef.current.dataset.tick = String(count);
+    }, 30_000);
     return () => clearInterval(id);
   }, []);
 
@@ -123,7 +128,7 @@ export function RightRailPreview(props: RightRailPreviewProps) {
           <Activity size={12} strokeWidth={2} />
         </span>
         <h3 className={s.headerTitle}>پیش‌نمایش زنده</h3>
-        <span className={s.tick} aria-hidden data-tick={tick}>
+        <span ref={tickRef} className={s.tick} aria-hidden data-tick="0">
           <span className={s.tickPulse} />
         </span>
       </header>
@@ -175,9 +180,7 @@ export function RightRailPreview(props: RightRailPreviewProps) {
           />
         )}
 
-        {activeTab === 'audit' && (
-          <AuditTimelineCard total={props.totalAuditEvents ?? 0} />
-        )}
+        {activeTab === 'audit' && <AuditTimelineCard total={props.totalAuditEvents ?? 0} />}
 
         {activeTab === 'social' && <SocialCard />}
 
@@ -199,7 +202,11 @@ export function RightRailPreview(props: RightRailPreviewProps) {
 // Sub-cards
 // ═══════════════════════════════════════════════════════════════════════════
 
-function SectionHeader({ icon: Icon, label, badge }: { icon: LucideIcon; label: string; badge?: string }) {
+function SectionHeader({
+  icon: Icon,
+  label,
+  badge,
+}: { icon: LucideIcon; label: string; badge?: string }) {
   return (
     <div className={s.sectionHead}>
       <span className={s.sectionIcon} aria-hidden>
@@ -386,7 +393,7 @@ function SecurityPostureCard({
     (requireEmail ? 25 : 0) +
     (sessionMin > 0 && sessionMin <= 240 ? 20 : 10) +
     (maxSessions > 0 && maxSessions <= 5 ? 15 : 5) +
-    (ipAllowlist && ipAllowlist.trim() ? 10 : 0);
+    (ipAllowlist?.trim() ? 10 : 0);
   const tone = score >= 80 ? 'ok' : score >= 50 ? 'warn' : 'danger';
   return (
     <section className={s.card}>
@@ -407,10 +414,7 @@ function SecurityPostureCard({
           label={`Timeout ${sessionMin} دقیقه`}
           ok={sessionMin > 0 && sessionMin <= 240}
         />
-        <SecurityItem
-          label="IP allowlist فعال"
-          ok={Boolean(ipAllowlist && ipAllowlist.trim())}
-        />
+        <SecurityItem label="IP allowlist فعال" ok={Boolean(ipAllowlist?.trim())} />
       </ul>
     </section>
   );
@@ -433,9 +437,7 @@ function ApiKeyHealthCard({ count }: { count: number }) {
         <span className={s.apiCountNum}>{count}</span>
         <span className={s.apiCountLabel}>کلید معتبر</span>
       </div>
-      <p className={s.apiHint}>
-        کلیدهای منقضی‌شده و لغو‌شده به‌طور خودکار از این شمارش حذف می‌شوند.
-      </p>
+      <p className={s.apiHint}>کلیدهای منقضی‌شده و لغو‌شده به‌طور خودکار از این شمارش حذف می‌شوند.</p>
     </section>
   );
 }
@@ -453,11 +455,7 @@ function BackupPulseCard({
 }) {
   return (
     <section className={s.card}>
-      <SectionHeader
-        icon={Archive}
-        label="پشتیبان‌گیری"
-        badge={enabled ? 'فعال' : 'غیرفعال'}
-      />
+      <SectionHeader icon={Archive} label="پشتیبان‌گیری" badge={enabled ? 'فعال' : 'غیرفعال'} />
       <div className={s.backupRow}>
         <div className={s.backupCell}>
           <div className={s.backupLabel}>آخرین</div>

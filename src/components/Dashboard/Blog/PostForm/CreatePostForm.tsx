@@ -4,7 +4,6 @@
 import { getCategories } from '@/actions/categoryActions';
 import { getTags } from '@/actions/getTags';
 import { createPost } from '@/actions/postActions';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { isSuccessResult } from '@/lib/utils';
 import { CreatePostSchema } from '@/schemas';
@@ -71,8 +70,7 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({
           variant: 'destructive',
         });
       }
-    } catch (error) {
-      console.error('خطا در ایجاد پست:', error);
+    } catch (_error) {
       toast({
         title: 'خطا',
         description: 'مشکلی در ایجاد پست رخ داد. لطفاً دوباره تلاش کنید.',
@@ -112,8 +110,7 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({
         setTags((prev) => [...prev, ...result.data.tags]);
         setTagPage((prev) => prev + 1);
       }
-    } catch (error) {
-      console.error('Error loading more tags:', error);
+    } catch (_error) {
       toast({
         title: 'خطا',
         description: 'بارگذاری برچسب‌های بیشتر با مشکل مواجه شد.',

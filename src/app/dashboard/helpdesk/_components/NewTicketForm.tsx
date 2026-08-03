@@ -7,11 +7,11 @@
  *  Validation: Zod-style (سفارشی) — همان قواعد lib/tickets را اعمال می‌کنیم.
  */
 
-import { useState } from 'react';
-import { AlertCircle, CheckCircle2, Loader2, Plus, Send, X } from 'lucide-react';
-import { PanelDrawer } from '@/components/Dashboard/primitives';
 import { createTicket } from '@/actions/tickets-actions';
+import { PanelDrawer } from '@/components/Dashboard/primitives';
 import type { TicketCategory, TicketPriority } from '@/lib/tickets';
+import { AlertCircle, CheckCircle2, Loader2, Plus, Send, X } from 'lucide-react';
+import { useState } from 'react';
 import s from './NewTicketForm.module.css';
 
 interface NewTicketFormProps {
@@ -53,7 +53,14 @@ const PRIORITY_DESCRIPTION: Record<TicketPriority, string> = {
 };
 
 const CATEGORY_LIST: TicketCategory[] = [
-  'general', 'billing', 'technical', 'kyc', 'account', 'transfer', 'rate', 'other',
+  'general',
+  'billing',
+  'technical',
+  'kyc',
+  'account',
+  'transfer',
+  'rate',
+  'other',
 ];
 
 const PRIORITY_LIST: TicketPriority[] = ['low', 'normal', 'high', 'urgent'];
@@ -68,7 +75,9 @@ export function NewTicketForm({ open, onClose, onCreated }: NewTicketFormProps) 
   const [priority, setPriority] = useState<TicketPriority>('normal');
   const [category, setCategory] = useState<TicketCategory>('general');
   const [submitting, setSubmitting] = useState(false);
-  const [feedback, setFeedback] = useState<{ tone: 'success' | 'error'; text: string } | null>(null);
+  const [feedback, setFeedback] = useState<{ tone: 'success' | 'error'; text: string } | null>(
+    null,
+  );
 
   const reset = () => {
     setSubject('');
@@ -214,12 +223,7 @@ export function NewTicketForm({ open, onClose, onCreated }: NewTicketFormProps) 
       </div>
 
       <div className={s.footer}>
-        <button
-          type="button"
-          onClick={handleClose}
-          disabled={submitting}
-          className={s.cancelBtn}
-        >
+        <button type="button" onClick={handleClose} disabled={submitting} className={s.cancelBtn}>
           <X className={s.cancelIcon} aria-hidden /> انصراف
         </button>
         <button

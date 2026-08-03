@@ -113,7 +113,7 @@ export default async function PageSingleAudio({ params }: PageProps) {
     inContentAdsResult.success && inContentAdsResult.data?.[0] ? inContentAdsResult.data[0] : null;
 
   return (
-    <div className="nc-PageSingle relative min-h-screen">
+    <div className="nc-PageSingle relative min-h-dvh">
       {/* Subtle Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-b from-neutral-50 via-white to-neutral-50/50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950/50 pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.15),transparent)] pointer-events-none" />
@@ -124,7 +124,12 @@ export default async function PageSingleAudio({ params }: PageProps) {
           <article className="w-full @lg/single-layout:basis-[68%] @xl/single-layout:basis-[70%] grow-0 shrink">
             {/* Hero Media */}
             <div className="relative aspect-[16/9] md:aspect-[16/9] @lg/single-layout:aspect-[21/9] rounded-2xl @lg/single-layout:rounded-3xl overflow-hidden mb-8 group">
-              <PostFeaturedMedia post={post} className="w-full h-full" imageRatio="video" priority />
+              <PostFeaturedMedia
+                post={post}
+                className="w-full h-full"
+                imageRatio="video"
+                priority
+              />
             </div>
 
             {/* Header Section */}

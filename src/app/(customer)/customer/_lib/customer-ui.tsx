@@ -17,7 +17,6 @@
  *   - <KindIcon>        : icon نوع تراکنش
  */
 
-import type { CSSProperties, ReactNode } from 'react';
 import {
   AlertTriangle,
   ArrowDownLeft,
@@ -33,6 +32,7 @@ import {
   WalletCards,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import type { CSSProperties, ReactNode } from 'react';
 import './customer-ui-animations.css';
 
 // ─── Shared CSS tokens (با var) ─────────────────────────────────────────── //
@@ -338,7 +338,9 @@ export function EmptyHint({
         </span>
       )}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25em' }}>
-        <strong style={{ color: 'var(--ds-text-primary)', fontSize: 'var(--ds-text-sm)' }}>{title}</strong>
+        <strong style={{ color: 'var(--ds-text-primary)', fontSize: 'var(--ds-text-sm)' }}>
+          {title}
+        </strong>
         {description && (
           <p
             style={{
@@ -396,7 +398,11 @@ export function StatusRail({ variant }: { variant: StatusVariant }) {
 
 // ─── View All Link ──────────────────────────────────────────────────────── //
 
-export function ViewAllLink({ href, children, icon: Icon }: { href: string; children: ReactNode; icon?: LucideIcon }) {
+export function ViewAllLink({
+  href,
+  children,
+  icon: Icon,
+}: { href: string; children: ReactNode; icon?: LucideIcon }) {
   return (
     <a
       href={href}
@@ -411,7 +417,8 @@ export function ViewAllLink({ href, children, icon: Icon }: { href: string; chil
         paddingInline: 'var(--ds-space-2)',
         borderRadius: 'var(--ds-radius-sm)',
         border: '1px solid var(--ds-border-subtle)',
-        transition: 'color 160ms var(--ds-ease-out-quart), border-color 160ms var(--ds-ease-out-quart)',
+        transition:
+          'color 160ms var(--ds-ease-out-quart), border-color 160ms var(--ds-ease-out-quart)',
       }}
     >
       {Icon && <Icon size={11} aria-hidden />}

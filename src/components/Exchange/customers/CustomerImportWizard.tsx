@@ -25,7 +25,6 @@ import {
   Loader2,
   RefreshCw,
   Upload,
-  X,
 } from 'lucide-react';
 import { useCallback, useRef, useState, useTransition } from 'react';
 import s from './CustomerImportWizard.module.css';
@@ -56,10 +55,7 @@ interface ImportResult {
 // ─── CSV Template ───────────────────────────────────────────────────────────
 
 const CSV_HEADERS = ['fullName', 'phone', 'city', 'notes'] as const;
-const TEMPLATE_ROWS = [
-  'احمد محمدی,0700000001,کابل,مشتری VIP',
-  'زهرا رحیمی,0700000002,هرات,',
-];
+const TEMPLATE_ROWS = ['احمد محمدی,0700000001,کابل,مشتری VIP', 'زهرا رحیمی,0700000002,هرات,'];
 const TEMPLATE_CSV = `${CSV_HEADERS.join(',')}\n${TEMPLATE_ROWS.join('\n')}`;
 
 // ─── Parser ──────────────────────────────────────────────────────────────────
@@ -79,7 +75,14 @@ function parseCSV(text: string): ParsedRow[] {
     if (!fullName || fullName.length < 2) errors.push('نام حداقل ۲ کاراکتر باشد');
     if (!phone || phone.length < 7) errors.push('شماره تلفن نامعتبر');
 
-    return { line: i + 2, fullName, phone, city: city || undefined, notes: notes || undefined, errors };
+    return {
+      line: i + 2,
+      fullName,
+      phone,
+      city: city || undefined,
+      notes: notes || undefined,
+      errors,
+    };
   });
 }
 
@@ -157,14 +160,19 @@ function StepUpload({
       {inputMode === 'upload' ? (
         <div
           className={`${s.dropZone} ${dragging ? s.dropZoneDragging : ''}`}
-          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragging(true);
+          }}
           onDragLeave={() => setDragging(false)}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
           role="button"
           tabIndex={0}
           aria-label="محل بارگذاری فایل CSV — کلیک یا کشیدن فایل"
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click(); }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click();
+          }}
         >
           <input
             ref={fileInputRef}
@@ -172,7 +180,10 @@ function StepUpload({
             accept=".csv,text/csv"
             className={s.fileInput}
             aria-hidden
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handleFile(f);
+            }}
           />
           <div className={s.dropOrbitWrap} aria-hidden>
             <div className={s.dropOrbit} />
@@ -192,7 +203,7 @@ function StepUpload({
             className={s.pasteArea}
             rows={10}
             dir="auto"
-            placeholder={`احمد محمدی,0700000001,کابل\nزهرا رحیمی,0700000002,هرات`}
+            placeholder={'احمد محمدی,0700000001,کابل\nزهرا رحیمی,0700000002,هرات'}
             value={rawText}
             onChange={(e) => setRawText(e.target.value)}
           />
@@ -213,7 +224,10 @@ function StepUpload({
       <div className={s.columnGuide}>
         <span className={s.guideTitle}>ستون‌های مورد نیاز:</span>
         {CSV_HEADERS.map((h) => (
-          <span key={h} className={`${s.guideTag} ${h === 'fullName' || h === 'phone' ? s.guideTagRequired : ''}`}>
+          <span
+            key={h}
+            className={`${s.guideTag} ${h === 'fullName' || h === 'phone' ? s.guideTagRequired : ''}`}
+          >
             {h === 'fullName' ? 'fullName *' : h === 'phone' ? 'phone *' : h}
           </span>
         ))}
@@ -284,9 +298,7 @@ function StepPreview({
               </span>
             </div>
           ))}
-          {rows.length > 50 && (
-            <div className={s.moreRows}>+{rows.length - 50} ردیف دیگر</div>
-          )}
+          {rows.length > 50 && <div className={s.moreRows}>+{rows.length - 50} ردیف دیگر</div>}
         </div>
       </div>
 
@@ -319,12 +331,8 @@ function StepResult({
         <div className={s.resultIconWrap}>
           <CheckCircle2 size={40} className={s.resultIcon} aria-hidden />
         </div>
-        <h2 className={s.resultTitle}>
-          {result.success} مشتری با موفقیت وارد شد
-        </h2>
-        {result.failed > 0 && (
-          <p className={s.resultSub}>{result.failed} ردیف با خطا مواجه شد</p>
-        )}
+        <h2 className={s.resultTitle}>{result.success} مشتری با موفقیت وارد شد</h2>
+        {result.failed > 0 && <p className={s.resultSub}>{result.failed} ردیف با خطا مواجه شد</p>}
       </div>
 
       {result.rows.filter((r) => !r.ok).length > 0 && (
@@ -349,7 +357,12 @@ function StepResult({
           <RefreshCw size={14} aria-hidden />
           ورود دسته‌جمعی جدید
         </Button>
-        <Button size="sm" onClick={() => (window.location.href = '/exchange/customers')}>
+        <Button
+          size="sm"
+          onClick={() => {
+            window.location.href = '/exchange/customers';
+          }}
+        >
           مشاهده لیست مشتریان
           <ArrowLeft size={14} aria-hidden />
         </Button>
@@ -362,18 +375,22 @@ function StepResult({
 
 const STEPS = ['آپلود', 'پیش‌نمایش', 'نتیجه'] as const;
 
-export function CustomerImportWizard({ exchangeId, primaryCurrency }: Props) {
+export function CustomerImportWizard({ exchangeId, primaryCurrency: _primaryCurrency }: Props) {
   const [step, setStep] = useState<0 | 1 | 2>(0);
   const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
   const [result, setResult] = useState<ImportResult | null>(null);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
-  const handleParsed = useCallback((rows: ParsedRow[], _raw: string) => {
-    setParsedRows(rows);
-    if (rows.length > 0) setStep(1);
-    else toast({ title: 'فایل خالی', description: 'هیچ ردیفی یافت نشد.', variant: 'destructive' });
-  }, [toast]);
+  const handleParsed = useCallback(
+    (rows: ParsedRow[], _raw: string) => {
+      setParsedRows(rows);
+      if (rows.length > 0) setStep(1);
+      else
+        toast({ title: 'فایل خالی', description: 'هیچ ردیفی یافت نشد.', variant: 'destructive' });
+    },
+    [toast],
+  );
 
   const handleConfirm = useCallback(() => {
     const valid = parsedRows.filter((r) => r.errors.length === 0);
@@ -426,17 +443,10 @@ export function CustomerImportWizard({ exchangeId, primaryCurrency }: Props) {
           return (
             <div key={label} className={`${s.stepItem} ${s[`stepItem_${state}`]}`}>
               {i > 0 && (
-                <div
-                  className={`${s.stepLine} ${i <= step ? s.stepLineDone : ''}`}
-                  aria-hidden
-                />
+                <div className={`${s.stepLine} ${i <= step ? s.stepLineDone : ''}`} aria-hidden />
               )}
               <div className={`${s.stepDot} ${s[`stepDot_${state}`]}`}>
-                {state === 'done' ? (
-                  <CheckCircle2 size={14} aria-hidden />
-                ) : (
-                  <span>{i + 1}</span>
-                )}
+                {state === 'done' ? <CheckCircle2 size={14} aria-hidden /> : <span>{i + 1}</span>}
               </div>
               <span className={s.stepLabel}>{label}</span>
             </div>
@@ -455,11 +465,7 @@ export function CustomerImportWizard({ exchangeId, primaryCurrency }: Props) {
 
         {step === 0 && <StepUpload onParsed={handleParsed} />}
         {step === 1 && (
-          <StepPreview
-            rows={parsedRows}
-            onBack={() => setStep(0)}
-            onConfirm={handleConfirm}
-          />
+          <StepPreview rows={parsedRows} onBack={() => setStep(0)} onConfirm={handleConfirm} />
         )}
         {step === 2 && result && <StepResult result={result} onReset={handleReset} />}
       </div>

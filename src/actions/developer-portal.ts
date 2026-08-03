@@ -1,12 +1,12 @@
 'use server';
 
+import { randomBytes } from 'node:crypto';
 import prisma from '@/lib/db';
 import { API_SCOPES, type ApiScope } from '@/lib/developer-portal-constants';
 import { requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
-import { z } from 'zod';
-import { randomBytes } from 'node:crypto';
 import { headers } from 'next/headers';
+import { z } from 'zod';
 
 /** نتیجهٔ uniform برای همهٔ server actions — برای type-safety در client. */
 export type ApiKeyActionResult =
@@ -65,7 +65,10 @@ async function getRequestContext() {
  * Rate limit ساده: شمارش تعداد action در پنجرهٔ ۱ ساعته.
  * اگر از سقف عبور کند، خطا برمی‌گرداند.
  */
-async function checkRateLimit(userId: string, action: string): Promise<{ ok: true } | { ok: false; error: string; retryInSec: number }> {
+async function checkRateLimit(
+  userId: string,
+  action: string,
+): Promise<{ ok: true } | { ok: false; error: string; retryInSec: number }> {
   const limit = RATE_LIMITS[action];
   if (!limit) return { ok: true };
 
@@ -261,7 +264,8 @@ export async function createWebhook(raw: unknown): Promise<ApiKeyActionResult> {
   if (!auth.success) return { success: false, error: 'احراز هویت نشد' };
 
   const parsed = WebhookUrlSchema.safeParse(raw);
-  if (!parsed.success) return { success: false, error: parsed.error.errors[0]?.message ?? 'خطای اعتبارسنجی' };
+  if (!parsed.success)
+    return { success: false, error: parsed.error.errors[0]?.message ?? 'خطای اعتبارسنجی' };
 
   const rl = await checkRateLimit(auth.user.id, 'create_webhook');
   if (!rl.ok) return { success: false, error: rl.error };

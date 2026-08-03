@@ -37,14 +37,21 @@
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background:
-    radial-gradient(60rem 60rem at 20% 10%, oklch(60% 0.13 var(--state-hue) / 0.05) 0%, transparent 60%),
-    radial-gradient(50rem 50rem at 90% 80%, oklch(55% 0.12 calc(var(--state-hue) + 60) / 0.04) 0%, transparent 65%);
+  background: radial-gradient(
+      60rem 60rem at 20% 10%,
+      oklch(60% 0.13 var(--state-hue) / 0.05) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      50rem 50rem at 90% 80%,
+      oklch(55% 0.12 calc(var(--state-hue) + 60) / 0.04) 0%,
+      transparent 65%
+    );
 }
 
 .field::before,
 .field::after {
-  content: '';
+  content: "";
   position: absolute;
   border-radius: 50%;
   filter: blur(80px);
@@ -70,8 +77,13 @@
 }
 
 @keyframes orbDrift {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(2rem, -1rem) scale(1.05); }
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(2rem, -1rem) scale(1.05);
+  }
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -92,7 +104,7 @@
 
 .geo::before,
 .geo::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 1.5rem;
   border: 1px dashed oklch(60% 0.13 var(--state-hue) / 0.12);
@@ -106,11 +118,15 @@
 }
 
 @keyframes geoSpin {
-  to { transform: translateY(-50%) rotate(360deg); }
+  to {
+    transform: translateY(-50%) rotate(360deg);
+  }
 }
 
 @media (max-width: 1023px) {
-  .geo { display: none; }
+  .geo {
+    display: none;
+  }
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -159,7 +175,7 @@
 }
 
 .eyebrow::before {
-  content: '';
+  content: "";
   width: 0.5rem;
   height: 0.5rem;
   background: oklch(55% 0.14 var(--state-hue));
@@ -168,8 +184,15 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.85); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
 }
 
 .railNumber {
@@ -180,11 +203,7 @@
   margin: 0;
   color: var(--ds-text-primary);
   font-variant-numeric: tabular-nums;
-  background: linear-gradient(
-    180deg,
-    var(--ds-text-primary) 0%,
-    oklch(50% 0.02 235) 100%
-  );
+  background: linear-gradient(180deg, var(--ds-text-primary) 0%, oklch(50% 0.02 235) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -250,9 +269,7 @@
   border: 1px solid var(--ds-border-default);
   border-radius: var(--ds-radius-2xl);
   padding: clamp(1.5rem, 1rem + 2vw, 2.75rem);
-  box-shadow:
-    var(--ds-shadow-md),
-    inset 0 1px 0 oklch(100% 0 0 / 0.6);
+  box-shadow: var(--ds-shadow-md), inset 0 1px 0 oklch(100% 0 0 / 0.6);
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-4);
@@ -261,7 +278,7 @@
 }
 
 .card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   inset-inline-start: var(--ds-space-5);
@@ -306,12 +323,22 @@
   animation: ringExpand 4s var(--ds-ease-out-quart) infinite;
 }
 
-.markRing:nth-child(2) { animation-delay: 1.3s; }
-.markRing:nth-child(3) { animation-delay: 2.6s; }
+.markRing:nth-child(2) {
+  animation-delay: 1.3s;
+}
+.markRing:nth-child(3) {
+  animation-delay: 2.6s;
+}
 
 @keyframes ringExpand {
-  0% { opacity: 0.6; transform: scale(0.9); }
-  100% { opacity: 0; transform: scale(1.4); }
+  0% {
+    opacity: 0.6;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.4);
+  }
 }
 
 .cardTitle {
@@ -356,7 +383,7 @@
 }
 
 .helpItem::before {
-  content: '';
+  content: "";
   width: 0.5rem;
   height: 0.5rem;
   background: var(--ds-brand-500);
@@ -403,19 +430,17 @@
 .btnPrimary {
   background: linear-gradient(180deg, oklch(45% 0.14 hue 235), oklch(38% 0.13 hue 235));
   color: oklch(98% 0.005 235);
-  box-shadow:
-    0 1px 0 oklch(100% 0 0 / 0.18) inset,
-    0 4px 14px -4px oklch(45% 0.14 hue 235 / 0.5);
+  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.18) inset, 0 4px 14px -4px oklch(45% 0.14 hue 235 / 0.5);
 }
 
 .btnPrimary:hover {
   transform: translateY(-1px);
-  box-shadow:
-    0 1px 0 oklch(100% 0 0 / 0.2) inset,
-    0 8px 20px -4px oklch(45% 0.14 hue 235 / 0.6);
+  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.2) inset, 0 8px 20px -4px oklch(45% 0.14 hue 235 / 0.6);
 }
 
-.btnPrimary:active { transform: translateY(0); }
+.btnPrimary:active {
+  transform: translateY(0);
+}
 
 .btnGhost {
   background: var(--ds-surface);
@@ -455,4 +480,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.foot a:hover { color: var(--ds-brand-600); }
+.foot a:hover {
+  color: var(--ds-brand-600);
+}

@@ -7,7 +7,7 @@ import { otpEmail, otpExpiresLabel } from '@/lib/email/templates';
 import { revalidateTag } from '@/lib/revalidate';
 import { generateOtpToken } from '@/lib/tokens';
 import { UpdateProfileSchema } from '@/schemas';
-import type { ActionResult, UpdateProfileInput, UserWithProfile } from '@/types/types';
+import type { ActionResult, UpdateProfileInput } from '@/types/types';
 import bcrypt from 'bcryptjs';
 import { ZodError } from 'zod';
 

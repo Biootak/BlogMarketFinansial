@@ -31,7 +31,6 @@ import type { ExchangeRow } from '@/actions/exchanges';
 import { FormField } from '@/components/Dashboard/primitives';
 import {
   ArrowLeft,
-  ArrowRight,
   Building2,
   Check,
   ChevronLeft,
@@ -49,9 +48,9 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import s from './ExchangeDrawer.module.css';
 import Monogram from './Monogram';
 import StatusPill from './StatusPill';
-import s from './ExchangeDrawer.module.css';
 
 interface Props {
   open: boolean;
@@ -70,18 +69,18 @@ const slugify = (s: string) =>
 
 // ─── sections definitions ──────────────────────────────────────────────
 const SECTIONS = [
-  { id: 'identity', label: 'هویت',  cap: '01', icon: Building2 },
-  { id: 'contact',  label: 'تماس',  cap: '02', icon: Phone },
+  { id: 'identity', label: 'هویت', cap: '01', icon: Building2 },
+  { id: 'contact', label: 'تماس', cap: '02', icon: Phone },
   { id: 'platform', label: 'پلتفرم', cap: '03', icon: Coins },
 ] as const;
 
 type SectionId = (typeof SECTIONS)[number]['id'];
 
 const STATUS_TONE = {
-  PENDING:   { label: 'در انتظار', cls: 'gold' as const },
-  ACTIVE:    { label: 'فعال',      cls: 'emerald' as const },
-  SUSPENDED: { label: 'معلق',      cls: 'rose' as const },
-  CLOSED:    { label: 'بسته',      cls: 'slate' as const },
+  PENDING: { label: 'در انتظار', cls: 'gold' as const },
+  ACTIVE: { label: 'فعال', cls: 'emerald' as const },
+  SUSPENDED: { label: 'معلق', cls: 'rose' as const },
+  CLOSED: { label: 'بسته', cls: 'slate' as const },
 } as const;
 
 const fmt = (n: number) => new Intl.NumberFormat('fa-IR').format(n);
@@ -176,11 +175,9 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
   const progress = useMemo(() => {
     const idDone = [name.trim(), slug.trim()].filter(Boolean).length;
     const ctDone = [phone.trim(), /@/.test(email) ? email : ''].filter(Boolean).length;
-    const plDone = [
-      platformFee !== '0' ? '1' : '',
-      status,
-      requireKyc ? '1' : '',
-    ].filter(Boolean).length;
+    const plDone = [platformFee !== '0' ? '1' : '', status, requireKyc ? '1' : ''].filter(
+      Boolean,
+    ).length;
     return {
       identity: idDone >= 2 ? 100 : (idDone / 2) * 100,
       contact: ctDone >= 2 ? 100 : (ctDone / 2) * 100,
@@ -275,7 +272,9 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
             <div className={s.headerMeta}>
               <span className={s.metaPill}>
                 <span className={s.metaPillKey}>پیشرفت</span>
-                <span className={s.metaPillVal} dir="ltr">{totalProgress}٪</span>
+                <span className={s.metaPillVal} dir="ltr">
+                  {totalProgress}٪
+                </span>
               </span>
               <button type="button" className={s.closeBtn} onClick={onClose} aria-label="بستن">
                 <X size={14} strokeWidth={2.25} aria-hidden />
@@ -285,7 +284,7 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
 
           {/* ریل بخش‌ها */}
           <nav className={s.sectionRail} aria-label="بخش‌های فرم">
-            {SECTIONS.map((sec, i) => {
+            {SECTIONS.map((sec, _i) => {
               const Icon = sec.icon;
               const isActive = activeSection === sec.id;
               const pct = progress[sec.id];
@@ -298,7 +297,9 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
                   aria-current={isActive ? 'step' : undefined}
                   aria-label={`بخش ${sec.cap}: ${sec.label}`}
                 >
-                  <span className={s.sectionNodeIdx} aria-hidden>{sec.cap}</span>
+                  <span className={s.sectionNodeIdx} aria-hidden>
+                    {sec.cap}
+                  </span>
                   <span className={s.sectionNodeIco} aria-hidden>
                     <Icon size={11} strokeWidth={2} aria-hidden />
                   </span>
@@ -323,7 +324,9 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
             {activeSection === 'identity' && (
               <section className={s.section} key="identity">
                 <h3 className={s.sectionTitle}>
-                  <span className={s.sectionCap} aria-hidden>۰۱</span>
+                  <span className={s.sectionCap} aria-hidden>
+                    ۰۱
+                  </span>
                   <span>هویت صرافی</span>
                   <span className={s.sectionLine} aria-hidden />
                 </h3>
@@ -346,7 +349,11 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
                   label="Slug"
                   required
                   error={errors.slug}
-                  hint={initialData ? 'برای تغییر، نام صرافی را ویرایش کنید' : 'به‌صورت خودکار از نام ساخته می‌شود'}
+                  hint={
+                    initialData
+                      ? 'برای تغییر، نام صرافی را ویرایش کنید'
+                      : 'به‌صورت خودکار از نام ساخته می‌شود'
+                  }
                 >
                   <div className={s.inputWrap}>
                     <Hash className={s.inputIco} size={14} strokeWidth={1.75} aria-hidden />
@@ -408,7 +415,9 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
             {activeSection === 'contact' && (
               <section className={s.section} key="contact">
                 <h3 className={s.sectionTitle}>
-                  <span className={s.sectionCap} aria-hidden>۰۲</span>
+                  <span className={s.sectionCap} aria-hidden>
+                    ۰۲
+                  </span>
                   <span>اطلاعات تماس</span>
                   <span className={s.sectionLine} aria-hidden />
                 </h3>
@@ -447,7 +456,11 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
                   </span>
                   <div className={s.calloutText}>
                     <strong>حریم خصوصی:</strong>
-                    <span> این اطلاعات فقط برای احراز هویت استفاده می‌شود و در پروفایل عمومی نمایش داده نمی‌شود.</span>
+                    <span>
+                      {' '}
+                      این اطلاعات فقط برای احراز هویت استفاده می‌شود و در پروفایل عمومی نمایش داده
+                      نمی‌شود.
+                    </span>
                   </div>
                 </div>
               </section>
@@ -456,17 +469,15 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
             {activeSection === 'platform' && (
               <section className={s.section} key="platform">
                 <h3 className={s.sectionTitle}>
-                  <span className={s.sectionCap} aria-hidden>۰۳</span>
+                  <span className={s.sectionCap} aria-hidden>
+                    ۰۳
+                  </span>
                   <span>تنظیمات پلتفرم</span>
                   <span className={s.sectionLine} aria-hidden />
                 </h3>
 
                 <div className={s.grid2}>
-                  <FormField
-                    label="کارمزد (٪)"
-                    error={errors.platformFee}
-                    hint="درصد از هر تراکنش"
-                  >
+                  <FormField label="کارمزد (٪)" error={errors.platformFee} hint="درصد از هر تراکنش">
                     <div className={s.inputWrap}>
                       <Coins className={s.inputIco} size={14} strokeWidth={1.75} aria-hidden />
                       <input
@@ -479,7 +490,9 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
                         step="0.01"
                         aria-invalid={!!errors.platformFee}
                       />
-                      <span className={s.inputSuffix} aria-hidden>٪</span>
+                      <span className={s.inputSuffix} aria-hidden>
+                        ٪
+                      </span>
                     </div>
                   </FormField>
                   <FormField label="سقف روزانه (افغانی)" hint="۰ = بدون محدودیت">
@@ -492,7 +505,9 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
                         min="0"
                         style={{ paddingInlineStart: 12 }}
                       />
-                      <span className={s.inputSuffix} aria-hidden>AFN</span>
+                      <span className={s.inputSuffix} aria-hidden>
+                        AFN
+                      </span>
                     </div>
                   </FormField>
                 </div>
@@ -552,11 +567,7 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
                 بخش {SECTIONS.findIndex((s) => s.id === activeSection) + 1} از {SECTIONS.length}
               </span>
               {activeSection !== 'platform' ? (
-                <button
-                  type="button"
-                  className={`${s.navBtn} ${s.navBtnAccent}`}
-                  onClick={goNext}
-                >
+                <button type="button" className={`${s.navBtn} ${s.navBtnAccent}`} onClick={goNext}>
                   <span>بعدی</span>
                   <ChevronLeft size={13} strokeWidth={2.25} aria-hidden />
                 </button>
@@ -570,7 +581,9 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
           <aside className={s.preview} aria-label="پیش‌نمایش زنده">
             <div className={s.previewHead}>
               <span className={s.previewCap}>PREVIEW · LIVE</span>
-              <span className={s.previewMeta} dir="ltr">n={fmt(Math.max(1, previewName.length))}</span>
+              <span className={s.previewMeta} dir="ltr">
+                n={fmt(Math.max(1, previewName.length))}
+              </span>
             </div>
 
             <div className={s.previewCard}>
@@ -580,10 +593,13 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
                   size="lg"
                   shape="square"
                   tone={
-                    statusMeta.cls === 'emerald' ? 'emerald'
-                    : statusMeta.cls === 'gold' ? 'gold'
-                    : statusMeta.cls === 'rose' ? 'rose'
-                    : 'slate'
+                    statusMeta.cls === 'emerald'
+                      ? 'emerald'
+                      : statusMeta.cls === 'gold'
+                        ? 'gold'
+                        : statusMeta.cls === 'rose'
+                          ? 'rose'
+                          : 'slate'
                   }
                 />
                 <div className={s.previewCardInfo}>
@@ -600,11 +616,15 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
                 </div>
                 <div className={s.previewStat}>
                   <span className={s.previewStatCap}>کارمزد</span>
-                  <span className={s.previewStatVal} dir="ltr">{previewFee}</span>
+                  <span className={s.previewStatVal} dir="ltr">
+                    {previewFee}
+                  </span>
                 </div>
                 <div className={s.previewStat}>
                   <span className={s.previewStatCap}>شهر</span>
-                  <span className={s.previewStatVal} style={{ fontSize: 12 }}>{previewCity}</span>
+                  <span className={s.previewStatVal} style={{ fontSize: 12 }}>
+                    {previewCity}
+                  </span>
                 </div>
                 <div className={s.previewStat}>
                   <span className={s.previewStatCap}>KYC</span>
@@ -623,14 +643,14 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
             {/* خلاصهٔ فیلدها */}
             <div className={s.previewSummary}>
               {[
-                { k: 'نام',  v: name || '—' },
+                { k: 'نام', v: name || '—' },
                 { k: 'Slug', v: slug || '—' },
-                { k: 'شهر',  v: city || '—' },
+                { k: 'شهر', v: city || '—' },
                 { k: 'مجوز', v: licenseNo || '—' },
                 { k: 'تلفن', v: phone || '—' },
                 { k: 'ایمیل', v: email || '—' },
                 { k: 'کارمزد', v: platformFee !== '0' ? `${platformFee}٪` : '—' },
-                { k: 'سقف',  v: dailyLimitAf !== '0' ? `${fmt(Number(dailyLimitAf))} AFN` : '∞' },
+                { k: 'سقف', v: dailyLimitAf !== '0' ? `${fmt(Number(dailyLimitAf))} AFN` : '∞' },
               ].map((row) => (
                 <div key={row.k} className={s.previewRow}>
                   <span className={s.previewRowK}>{row.k}</span>
@@ -660,7 +680,9 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
                 style={{ ['--pct' as string]: `${totalProgress}%` } as React.CSSProperties}
               />
             </span>
-            <span className={s.progressLabel} dir="ltr">{totalProgress}٪</span>
+            <span className={s.progressLabel} dir="ltr">
+              {totalProgress}٪
+            </span>
           </div>
           <div className={s.footerRight}>
             <button

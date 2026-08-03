@@ -3,7 +3,6 @@ import { getPostLink } from '@/lib/getPostLink';
 import type { PostWithRelations, TaxonomyType } from '@/types/types';
 import { ChevronLeft, Eye, MessagesSquare } from 'lucide-react';
 import Link from 'next/link';
-import * as React from 'react';
 import type { Crumb } from './ArchiveBreadcrumb';
 
 /**

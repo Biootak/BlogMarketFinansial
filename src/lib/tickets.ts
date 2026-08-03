@@ -8,9 +8,9 @@
 
 import 'server-only';
 
-import { revalidateTag } from '@/lib/revalidate';
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
+import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
 
 export type TicketStatus = 'open' | 'pending' | 'in_progress' | 'resolved' | 'closed';
@@ -114,9 +114,7 @@ const toTicket = (row: {
   id: row.id,
   subject: row.subject,
   description: row.description,
-  status: (VALID_STATUS as string[]).includes(row.status)
-    ? (row.status as TicketStatus)
-    : 'open',
+  status: (VALID_STATUS as string[]).includes(row.status) ? (row.status as TicketStatus) : 'open',
   priority: (VALID_PRIORITY as string[]).includes(row.priority)
     ? (row.priority as TicketPriority)
     : 'normal',
@@ -223,9 +221,7 @@ export async function getTicketSnapshot(): Promise<{
   }
 }
 
-export async function getTicketMessages(
-  ticketId: string,
-): Promise<{
+export async function getTicketMessages(ticketId: string): Promise<{
   success: boolean;
   data?: TicketMessageSummary[];
   message?: string;
@@ -314,7 +310,12 @@ export async function updateTicketStatus(
   if (!VALID_STATUS.includes(status)) return { success: false, message: 'وضعیت نامعتبر' };
   try {
     const now = new Date();
-    const data: { status: TicketStatus; firstResponseAt?: Date; resolvedAt?: Date; closedAt?: Date } = {
+    const data: {
+      status: TicketStatus;
+      firstResponseAt?: Date;
+      resolvedAt?: Date;
+      closedAt?: Date;
+    } = {
       status,
     };
     if (status === 'in_progress' || status === 'pending') {

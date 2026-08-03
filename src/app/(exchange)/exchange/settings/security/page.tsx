@@ -8,10 +8,10 @@
  *   - لینک به staff/permissions برای تنظیمات پیشرفته
  */
 
-import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
 import { getExchangeForUser } from '@/actions/exchanges';
 import { getExchangeStaff } from '@/actions/exchanges';
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
 import SecurityWorkspace from './_components/SecurityWorkspace';
 
 export const metadata = { title: 'امنیت و دسترسی | تنظیمات' };

@@ -6,10 +6,10 @@
  * بدون chart-lib — فقط CSS transform.
  */
 
-import { Banknote, ChevronLeft } from 'lucide-react';
+import type { CurrencyFlow } from '@/actions/exchange-dashboard';
+import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import s from './ExchangeDashboard.module.css';
-import type { CurrencyFlow } from '@/actions/exchange-dashboard';
 
 function formatAmount(volumeStr: string): string {
   const minor = BigInt(volumeStr);
@@ -26,25 +26,19 @@ export default function ExchangeCurrencyFlow({
   primaryCurrency: string;
 }) {
   if (items.length === 0) {
-    return (
-      <div className={s.flowEmpty}>
-        هنوز تراکنشی برای نمایش جریان ارزها ثبت نشده است.
-      </div>
-    );
+    return <div className={s.flowEmpty}>هنوز تراکنشی برای نمایش جریان ارزها ثبت نشده است.</div>;
   }
 
-  const maxVolume = items.reduce(
-    (m, it) => Math.max(m, Number(BigInt(it.volume))),
-    1,
-  );
+  const maxVolume = items.reduce((m, it) => Math.max(m, Number(BigInt(it.volume))), 1);
 
   return (
     <div>
       <div className={s.flowList} role="list">
         {items.map((it, idx) => {
-          const widthPct = maxVolume > 0
-            ? Math.max(8, Math.round((Number(BigInt(it.volume)) / maxVolume) * 100))
-            : 8;
+          const widthPct =
+            maxVolume > 0
+              ? Math.max(8, Math.round((Number(BigInt(it.volume)) / maxVolume) * 100))
+              : 8;
           const isPrimary = it.currency === primaryCurrency;
           return (
             <div key={it.currency} role="listitem" className={s.flowRow}>

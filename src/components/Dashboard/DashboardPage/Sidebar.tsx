@@ -28,8 +28,8 @@
 import { logout } from '@/actions/auth-actions';
 import Avatar from '@/components/Avatar/Avatar';
 import Logo from '@/components/Logo/Logo';
-import { useToast } from '@/components/ui/use-toast';
 import { ViewLink } from '@/components/ui/ViewLink';
+import { useToast } from '@/components/ui/use-toast';
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { cn } from '@/lib/utils';
@@ -310,11 +310,7 @@ const Sidebar = ({ userRole, staffRole }: SidebarProps) => {
               (admin / customer / exchange) بدون logout به صفحهٔ اصلی سایت برگردد.
               از کلاس پایهٔ dash-side__item استفاده می‌کند؛ global CSS دست‌نخورده
               می‌ماند (AGENTS.md: no new rules in dashboard.css). */}
-          <ViewLink
-            href="/"
-            className="dash-side__item"
-            aria-label="بازگشت به سایت"
-          >
+          <ViewLink href="/" className="dash-side__item" aria-label="بازگشت به سایت">
             <span className="dash-side__diamond" aria-hidden />
             <span className="dash-side__item-ico">
               <HiOutlineHome className="w-[19px] h-[19px]" aria-hidden />

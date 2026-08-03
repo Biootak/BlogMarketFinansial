@@ -1,8 +1,8 @@
 import { searchAuthors, searchCategories, searchPosts } from '@/actions/search';
 import type { Metadata } from 'next';
-import s from './search-results.module.css';
 import { SearchEmpty } from './SearchEmpty';
 import { SearchResult } from './SearchResult';
+import s from './search-results.module.css';
 
 export const metadata: Metadata = {
   title: 'جستجو | نتایج',

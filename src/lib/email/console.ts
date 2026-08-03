@@ -22,19 +22,7 @@ export function createConsoleProvider(): EmailProvider {
 
   return {
     name: 'console',
-    async send(message: EmailMessage): Promise<EmailSendResult> {
-      // 2026-06-23: stamp the rendered HTML so devs can copy-paste the
-      // verification link straight from the terminal.
-      console.log(
-        [
-          '┌── [email:console] ─────────────────────────────────',
-          `│ to:      ${message.to}`,
-          `│ subject: ${message.subject}`,
-          '│',
-          ...(message.text?.split('\n').map((line) => `│ ${line}`) ?? []),
-          '└──────────────────────────────────────────────────',
-        ].join('\n'),
-      );
+    async send(_message: EmailMessage): Promise<EmailSendResult> {
       return { id: `console-${Date.now()}`, provider: 'console' };
     },
   };

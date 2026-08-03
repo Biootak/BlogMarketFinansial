@@ -6,9 +6,9 @@
 
 import 'server-only';
 
-import { revalidateTag } from '@/lib/revalidate';
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
+import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
 
 export type JobStatus = 'pending' | 'running' | 'completed' | 'failed' | 'dead';
@@ -250,9 +250,7 @@ export async function enqueueJob(
   }
 }
 
-export async function cancelJob(
-  id: string,
-): Promise<{ success: boolean; message?: string }> {
+export async function cancelJob(id: string): Promise<{ success: boolean; message?: string }> {
   const guard = await requireAdmin();
   if (!guard.ok) return { success: false, message: guard.reason };
   try {
@@ -270,9 +268,7 @@ export async function cancelJob(
   }
 }
 
-export async function retryJob(
-  id: string,
-): Promise<{ success: boolean; message?: string }> {
+export async function retryJob(id: string): Promise<{ success: boolean; message?: string }> {
   const guard = await requireAdmin();
   if (!guard.ok) return { success: false, message: guard.reason };
   try {
@@ -336,10 +332,7 @@ export function buildJobLifecycle(row: {
     events.push({
       stage: row.attempts > 1 ? 'retried' : 'started',
       at: row.startedAt.toISOString(),
-      detail:
-        row.attempts > 1
-          ? `تلاش ${row.attempts}`
-          : 'پردازش آغاز شد',
+      detail: row.attempts > 1 ? `تلاش ${row.attempts}` : 'پردازش آغاز شد',
     });
   }
   if (row.completedAt) {
@@ -434,10 +427,7 @@ const fetchQueueHealthRaw = async (): Promise<QueueHealth[]> => {
     prisma.backgroundJob.groupBy({
       by: ['queue', 'status'],
       where: {
-        OR: [
-          { completedAt: { gte: since24 } },
-          { failedAt: { gte: since24 } },
-        ],
+        OR: [{ completedAt: { gte: since24 } }, { failedAt: { gte: since24 } }],
       },
       _count: { _all: true },
     }),

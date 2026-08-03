@@ -1,22 +1,14 @@
-import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { getRecentJobTypes } from '@/lib/jobs';
-import { EnqueueJobForm } from './_components/EnqueueJobForm';
+import { redirect } from 'next/navigation';
 import s from '../jobs.module.css';
+import { EnqueueJobForm } from './_components/EnqueueJobForm';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata = { title: 'ساخت Job جدید | مرکز Job' };
 
-const QUEUE_PRESETS = [
-  'default',
-  'email',
-  'sms',
-  'market-rates',
-  'settlement',
-  'kyc',
-  'cron',
-];
+const QUEUE_PRESETS = ['default', 'email', 'sms', 'market-rates', 'settlement', 'kyc', 'cron'];
 
 export default async function NewJobPage() {
   const session = await auth();

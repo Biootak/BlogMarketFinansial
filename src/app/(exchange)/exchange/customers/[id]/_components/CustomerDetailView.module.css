@@ -227,7 +227,7 @@
   background: var(--at-surface);
   border: 1px solid var(--at-line);
   border-radius: 14px;
-  overflow: hidden;
+  overflow-x: auto;
   margin-block-start: var(--ds-space-3);
 }
 

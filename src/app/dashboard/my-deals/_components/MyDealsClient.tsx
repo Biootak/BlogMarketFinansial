@@ -12,18 +12,22 @@
  */
 
 import { type DealRow, getMyDeals } from '@/actions/currency-deals';
-import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
+import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
 import { MillionDollarEmpty } from '@/components/Dashboard/primitives/MillionDollarEmpty';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
+import {
+  Dialog,
+  DialogClose,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle as SheetTitle,
+} from '@/components/ui/dialog';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
-import { Dialog, DialogClose, DialogOverlay, DialogPortal, DialogTitle as SheetTitle } from '@/components/ui/dialog';
 import {
   AlertCircle,
   ArrowLeftRight,
   CheckCircle2,
   Clock,
-  PackageSearch,
   TrendingUp,
   Wallet,
   X,
@@ -154,85 +158,87 @@ function DealDetailSheet({ deal, onClose }: { deal: DealRow; onClose: () => void
       <DialogPortal>
         <DialogOverlay className={cm.overlay} />
         <DialogPrimitive.Content dir="rtl" className={cm.panel} aria-label="جزئیات معامله">
-        <div className={cm.header}>
-          <div className={s.detailStatusIcon} data-status={meta.cssKey} aria-hidden>
-            <Icon size={20} />
-          </div>
-          <div>
-            <SheetTitle className={s.detailTitle}>جزئیات معامله</SheetTitle>
-            <p className={s.detailTracking} dir="ltr">
-              {deal.trackingCode}
-            </p>
-          </div>
-          <DialogClose className={cm.close} aria-label="بستن"><X size={15} /></DialogClose>
-        </div>
-
-        <div className={s.detailBody}>
-          {/* Amount visual */}
-          <div className={s.detailAmountCard}>
-            <div className={s.detailAmountFrom}>
-              {fmtAmount(deal.fromAmount, deal.fromCurrency)}
+          <div className={cm.header}>
+            <div className={s.detailStatusIcon} data-status={meta.cssKey} aria-hidden>
+              <Icon size={20} />
             </div>
-            <div className={s.detailAmountArrow} aria-hidden>
-              <ArrowLeftRight size={18} />
+            <div>
+              <SheetTitle className={s.detailTitle}>جزئیات معامله</SheetTitle>
+              <p className={s.detailTracking} dir="ltr">
+                {deal.trackingCode}
+              </p>
             </div>
-            <div className={s.detailAmountTo}>{fmtAmount(deal.toAmount, deal.toCurrency)}</div>
+            <DialogClose className={cm.close} aria-label="بستن">
+              <X size={15} />
+            </DialogClose>
           </div>
 
-          {/* Status timeline */}
-          {deal.status !== 'CANCELLED' && deal.status !== 'DISPUTED' && (
-            <div className={s.timeline} aria-label="مراحل معامله">
-              {TIMELINE.map((step, i) => {
-                const stepIdx = ORDER.indexOf(step.status);
-                const isDone = stepIdx <= currentIdx;
-                const isActive = stepIdx === currentIdx;
-                return (
-                  <div
-                    key={step.status}
-                    className={`${s.timelineStep} ${isDone ? s.timelineStepDone : ''} ${isActive ? s.timelineStepActive : ''}`}
-                  >
-                    <div className={s.timelineDot} aria-hidden>
-                      {isDone && !isActive && <CheckCircle2 size={11} />}
-                      {isActive && <div className={s.timelinePulse} aria-hidden />}
-                    </div>
-                    {i < TIMELINE.length - 1 && (
-                      <div
-                        className={`${s.timelineBar} ${isDone && !isActive ? s.timelineBarDone : ''}`}
-                        aria-hidden
-                      />
-                    )}
-                    <span className={s.timelineLabel}>{step.label}</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Meta grid */}
-          <dl className={s.metaGrid}>
-            {[
-              { term: 'صرافی', def: deal.exchangeName ?? '—' },
-              { term: 'شهر', def: deal.exchangeCity ?? '—' },
-              { term: 'کانال', def: CHANNEL_FA[deal.channel] ?? deal.channel },
-              { term: 'وضعیت', def: meta.label },
-              { term: 'تاریخ ثبت', def: fmtDate(deal.createdAt) },
-              { term: 'آخرین بروزرسانی', def: fmtDate(deal.updatedAt) },
-            ].map(({ term, def }) => (
-              <div key={term} className={s.metaItem}>
-                <dt className={s.metaTerm}>{term}</dt>
-                <dd className={s.metaDef}>{def}</dd>
+          <div className={s.detailBody}>
+            {/* Amount visual */}
+            <div className={s.detailAmountCard}>
+              <div className={s.detailAmountFrom}>
+                {fmtAmount(deal.fromAmount, deal.fromCurrency)}
               </div>
-            ))}
-          </dl>
-
-          {/* Note if exists */}
-          {deal.note && (
-            <div className={s.noteBox}>
-              <p className={s.noteLabel}>یادداشت صرافی</p>
-              <p className={s.noteText}>{deal.note}</p>
+              <div className={s.detailAmountArrow} aria-hidden>
+                <ArrowLeftRight size={18} />
+              </div>
+              <div className={s.detailAmountTo}>{fmtAmount(deal.toAmount, deal.toCurrency)}</div>
             </div>
-          )}
-        </div>
+
+            {/* Status timeline */}
+            {deal.status !== 'CANCELLED' && deal.status !== 'DISPUTED' && (
+              <div className={s.timeline} aria-label="مراحل معامله">
+                {TIMELINE.map((step, i) => {
+                  const stepIdx = ORDER.indexOf(step.status);
+                  const isDone = stepIdx <= currentIdx;
+                  const isActive = stepIdx === currentIdx;
+                  return (
+                    <div
+                      key={step.status}
+                      className={`${s.timelineStep} ${isDone ? s.timelineStepDone : ''} ${isActive ? s.timelineStepActive : ''}`}
+                    >
+                      <div className={s.timelineDot} aria-hidden>
+                        {isDone && !isActive && <CheckCircle2 size={11} />}
+                        {isActive && <div className={s.timelinePulse} aria-hidden />}
+                      </div>
+                      {i < TIMELINE.length - 1 && (
+                        <div
+                          className={`${s.timelineBar} ${isDone && !isActive ? s.timelineBarDone : ''}`}
+                          aria-hidden
+                        />
+                      )}
+                      <span className={s.timelineLabel}>{step.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Meta grid */}
+            <dl className={s.metaGrid}>
+              {[
+                { term: 'صرافی', def: deal.exchangeName ?? '—' },
+                { term: 'شهر', def: deal.exchangeCity ?? '—' },
+                { term: 'کانال', def: CHANNEL_FA[deal.channel] ?? deal.channel },
+                { term: 'وضعیت', def: meta.label },
+                { term: 'تاریخ ثبت', def: fmtDate(deal.createdAt) },
+                { term: 'آخرین بروزرسانی', def: fmtDate(deal.updatedAt) },
+              ].map(({ term, def }) => (
+                <div key={term} className={s.metaItem}>
+                  <dt className={s.metaTerm}>{term}</dt>
+                  <dd className={s.metaDef}>{def}</dd>
+                </div>
+              ))}
+            </dl>
+
+            {/* Note if exists */}
+            {deal.note && (
+              <div className={s.noteBox}>
+                <p className={s.noteLabel}>یادداشت صرافی</p>
+                <p className={s.noteText}>{deal.note}</p>
+              </div>
+            )}
+          </div>
         </DialogPrimitive.Content>
       </DialogPortal>
     </Dialog>

@@ -5,8 +5,8 @@
  *  فقط super admin.
  */
 
-import { NextResponse } from 'next/server';
 import { deleteBackup, getBackupStatus } from '@/actions/settingsActions';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;

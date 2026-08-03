@@ -14,9 +14,8 @@
  *   - focus trap ساده (اولین input)
  */
 
-import { useEffect, useRef, useState } from 'react';
-import { createServiceRequest } from '@/actions/serviceRequestActions';
 import type { PublicExchangeService } from '@/actions/exchange-services';
+import { createServiceRequest } from '@/actions/serviceRequestActions';
 import { getServiceMeta } from '@/lib/exchange-services';
 import {
   AlertCircle,
@@ -29,6 +28,7 @@ import {
   User as UserIcon,
   X,
 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import s from './ExchangeServiceRequestDialog.module.css';
 
 type Props = {
@@ -291,11 +291,7 @@ export default function ExchangeServiceRequestDialog({
               </div>
             )}
 
-            <button
-              type="submit"
-              className={s.submitBtn}
-              disabled={status === 'submitting'}
-            >
+            <button type="submit" className={s.submitBtn} disabled={status === 'submitting'}>
               {status === 'submitting' ? (
                 <>
                   <Loader2 size={16} strokeWidth={2} className={s.spin} aria-hidden />
@@ -310,8 +306,8 @@ export default function ExchangeServiceRequestDialog({
             </button>
 
             <p className={s.fineprint}>
-              با ثبت درخواست، {exchangeTitle} از طریق روش تماس انتخابی پاسخ می‌دهد. کد پیگیری
-              برای شما نمایش داده می‌شود.
+              با ثبت درخواست، {exchangeTitle} از طریق روش تماس انتخابی پاسخ می‌دهد. کد پیگیری برای
+              شما نمایش داده می‌شود.
             </p>
           </form>
         )}
@@ -349,12 +345,7 @@ function SuccessPanel({
         <span className={s.trackingLabel}>کد پیگیری</span>
         <div className={s.trackingRow}>
           <code className={s.trackingCode}>{trackingCode}</code>
-          <button
-            type="button"
-            className={s.copyBtn}
-            onClick={onCopy}
-            aria-label="کپی کد"
-          >
+          <button type="button" className={s.copyBtn} onClick={onCopy} aria-label="کپی کد">
             {copied ? (
               <CheckCircle2 size={14} strokeWidth={2} />
             ) : (

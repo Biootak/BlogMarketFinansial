@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { LockGlyph, ShieldCheckGlyph } from './WizardIcons';
 
 /**

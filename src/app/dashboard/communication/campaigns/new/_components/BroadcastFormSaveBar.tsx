@@ -5,9 +5,9 @@
  *  Page-specific (form action bar).
  */
 
-import { useRouter } from 'next/navigation';
-import { ChevronRight, Save, Send, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ChevronRight, Save, Send, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import s from './NewCampaign.module.css';
 
 interface BroadcastFormSaveBarProps {
@@ -28,21 +28,13 @@ export function BroadcastFormSaveBar({
   return (
     <div className={s.saveBar}>
       <div className={s.saveBarInfo}>
-        <ChevronRight
-          size={14}
-          aria-hidden
-        />
+        <ChevronRight size={14} aria-hidden />
         <a href={backHref} className={s.saveBarLink}>
           بازگشت به فهرست
         </a>
       </div>
       <div className={s.saveBarActions}>
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={() => router.back()}
-          disabled={pending}
-        >
+        <Button type="button" variant="ghost" onClick={() => router.back()} disabled={pending}>
           <X size={14} aria-hidden />
           انصراف
         </Button>
@@ -55,17 +47,9 @@ export function BroadcastFormSaveBar({
           <Save size={14} aria-hidden />
           {pending ? 'در حال ذخیره…' : 'ذخیره پیش‌نویس'}
         </Button>
-        <Button
-          type="button"
-          disabled={pending}
-          onClick={() => onSubmit('publish')}
-        >
+        <Button type="button" disabled={pending} onClick={() => onSubmit('publish')}>
           <Send size={14} aria-hidden />
-          {pending
-            ? 'در حال ارسال…'
-            : campaignMode
-              ? 'ارسال کمپین'
-              : 'انتشار فوری'}
+          {pending ? 'در حال ارسال…' : campaignMode ? 'ارسال کمپین' : 'انتشار فوری'}
         </Button>
       </div>
     </div>

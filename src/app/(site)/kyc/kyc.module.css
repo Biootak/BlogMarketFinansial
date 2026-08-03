@@ -230,8 +230,8 @@
   border: 1px solid color-mix(in oklch, currentColor 22%, transparent);
   background: var(--ds-surface-1);
   cursor: pointer;
-  transition: transform var(--ds-duration-fast) var(--ds-ease-spring),
-    box-shadow var(--ds-duration-fast);
+  transition: transform var(--ds-duration-fast) var(--ds-ease-spring), box-shadow
+    var(--ds-duration-fast);
 }
 .rejectedThumb:hover {
   transform: scale(1.06);
@@ -548,9 +548,16 @@
   align-self: flex-start;
 }
 
-.otpSendBtn:hover:not(:disabled) { opacity: 0.88; }
-.otpSendBtn:active:not(:disabled) { transform: scale(0.98); }
-.otpSendBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+.otpSendBtn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+.otpSendBtn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.otpSendBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 .otpInputRow {
   display: grid;
@@ -599,8 +606,13 @@
   transition: opacity 0.15s;
 }
 
-.otpVerifyBtn:hover:not(:disabled) { opacity: 0.88; }
-.otpVerifyBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+.otpVerifyBtn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+.otpVerifyBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 .otpResendBtn {
   grid-column: 1 / -1;
@@ -618,8 +630,15 @@
   transition: color 0.15s;
 }
 
-.otpResendBtn:hover:not(:disabled) { color: var(--ds-primary); }
-.otpResendBtn:disabled { color: var(--ds-text-muted); opacity: 0.5; cursor: not-allowed; text-decoration: none; }
+.otpResendBtn:hover:not(:disabled) {
+  color: var(--ds-primary);
+}
+.otpResendBtn:disabled {
+  color: var(--ds-text-muted);
+  opacity: 0.5;
+  cursor: not-allowed;
+  text-decoration: none;
+}
 
 .spin {
   animation: spin 0.7s linear infinite;

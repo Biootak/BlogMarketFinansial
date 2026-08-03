@@ -281,7 +281,7 @@ const DashboardBottomNav: FC<Props> = ({ role, unreadCount = 0, kycVerified = tr
       aria-label="ناوبری سریع داشبورد"
       dir="rtl"
     >
-      <ul className={s.list} role="list">
+      <ul className={s.list}>
         {items.map((item) => {
           const Icon = item.icon;
           const isActive = activeId === item.id;

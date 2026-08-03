@@ -43,7 +43,7 @@ export const STAFF_ROLE_ORDER: Readonly<Record<StaffRole, number>> = Object.free
 });
 
 export const STAFF_ROLE_MATRIX: Readonly<
-  Record<'OWNER' | 'MANAGER' | 'STAFF' | 'VIEWER', ReadonlyArray<StaffRoleCapability>>
+  Record<'OWNER' | 'MANAGER' | 'STAFF' | 'VIEWER', readonly StaffRoleCapability[]>
 > = Object.freeze({
   OWNER: [
     'staff.manage',
@@ -79,17 +79,11 @@ export const STAFF_ROLE_MATRIX: Readonly<
     'rates.read',
     'wallets.read',
   ],
-  VIEWER: [
-    'transactions.read',
-    'customers.read',
-    'rates.read',
-    'reports.read',
-    'wallets.read',
-  ],
+  VIEWER: ['transactions.read', 'customers.read', 'rates.read', 'reports.read', 'wallets.read'],
 });
 
-export const STAFF_CAPABILITY_LABELS: Readonly<Record<StaffRoleCapability, string>> =
-  Object.freeze({
+export const STAFF_CAPABILITY_LABELS: Readonly<Record<StaffRoleCapability, string>> = Object.freeze(
+  {
     'staff.manage': 'مدیریت تیم',
     'exchange.settings': 'تنظیمات صرافی',
     'transactions.read': 'مشاهده تراکنش',
@@ -102,12 +96,13 @@ export const STAFF_CAPABILITY_LABELS: Readonly<Record<StaffRoleCapability, strin
     'audit.read': 'لاگ ممیزی',
     'wallets.read': 'مشاهده کیف پول',
     'wallets.write': 'شارژ/برداشت',
-  });
+  },
+);
 
 export const STAFF_CAPABILITY_GROUPS: ReadonlyArray<{
   id: string;
   label: string;
-  capabilities: ReadonlyArray<StaffRoleCapability>;
+  capabilities: readonly StaffRoleCapability[];
 }> = Object.freeze([
   {
     id: 'team',

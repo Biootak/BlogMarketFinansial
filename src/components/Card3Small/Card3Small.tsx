@@ -1,6 +1,6 @@
 import PostCardMeta from '@/components/PostCardMeta/PostCardMeta';
 import { SafeImage } from '@/components/SafeImage';
-import { heading, text } from '@/lib/design-tokens';
+import { heading } from '@/lib/design-tokens';
 import type { PostWithRelations } from '@/types/types';
 import Link from 'next/link';
 import type React from 'react';

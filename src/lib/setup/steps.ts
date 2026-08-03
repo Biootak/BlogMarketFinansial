@@ -22,7 +22,7 @@ export interface StepDef {
   glyph: string;
 }
 
-export const STEPS: ReadonlyArray<StepDef> = [
+export const STEPS: readonly StepDef[] = [
   {
     id: 'intro',
     index: 0,

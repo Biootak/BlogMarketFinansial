@@ -9,12 +9,5 @@ export default function RootError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  return (
-    <RouteError
-      error={error}
-      reset={reset}
-      backHref="/"
-      backLabel="صفحه اصلی"
-    />
-  );
+  return <RouteError error={error} reset={reset} backHref="/" backLabel="صفحه اصلی" />;
 }

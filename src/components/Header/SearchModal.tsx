@@ -3,7 +3,6 @@
 import { Combobox, Dialog, Transition } from '@headlessui/react';
 import { Search as SearchIcon } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FC, Fragment, type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -13,8 +12,8 @@ import {
   HiOutlineMagnifyingGlass,
 } from 'react-icons/hi2';
 
-import Empty from '@/components/Empty';
 import { searchAll } from '@/actions/search';
+import Empty from '@/components/Empty';
 import { getPostLink } from '@/lib/getPostLink';
 import type { CategoryWithPostCount, PostWithRelations, UserWithProfile } from '@/types/types';
 

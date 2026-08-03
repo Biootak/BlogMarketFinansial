@@ -1,5 +1,7 @@
 'use client';
 
+import '@/styles/ad-primitives.css';
+
 /**
  * AdCard — سیستم کارت تبلیغاتی ۲۰۲۶
  *
@@ -27,11 +29,11 @@
 
 import { TiltCard } from '@/components/ModernTrending/effects/TiltCard';
 import { cn, toPersianNumber } from '@/lib/utils';
-import type { AdSize, Advertisement } from '@/types/types';
+import type { Advertisement } from '@/types/types';
 import { ArrowUpLeft, ExternalLink, Eye, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export type AdCardVariant = 'inline' | 'compact' | 'showcase';
 

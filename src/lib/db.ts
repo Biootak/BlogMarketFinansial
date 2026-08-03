@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { serverLog } from './server-logger';
 import { buildDatabaseUrl } from './db-url';
+import { serverLog } from './server-logger';
 
 export { buildDatabaseUrl };
 

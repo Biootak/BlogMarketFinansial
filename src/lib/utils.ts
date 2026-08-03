@@ -3,7 +3,6 @@ import type {
   CustomAdDimensions,
   NcDropDownItem,
   PostWithRelations,
-  Role,
   SocialType,
 } from '@/types/types';
 import type { Prisma } from '@prisma/client';

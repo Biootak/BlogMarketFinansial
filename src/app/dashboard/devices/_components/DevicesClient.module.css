@@ -6,33 +6,68 @@
 /* ── Keyframes & Animations ─────────────────────────────────────────────────── */
 
 @keyframes pageReveal {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes radarPulse {
-  0%   { r: 4px; opacity: 0.8; stroke-width: 1px; }
-  50%  { opacity: 0.4; }
-  100% { r: 18px; opacity: 0; stroke-width: 0.5px; }
+  0% {
+    r: 4px;
+    opacity: 0.8;
+    stroke-width: 1px;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    r: 18px;
+    opacity: 0;
+    stroke-width: 0.5px;
+  }
 }
 
 @keyframes mapLinePulse {
-  0%   { stroke-dashoffset: 0; }
-  100% { stroke-dashoffset: -20; }
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -20;
+  }
 }
 
 @keyframes pulseRed {
-  0%, 100% { transform: scale(1); opacity: 0.9; }
-  50%      { transform: scale(1.15); opacity: 0.6; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.6;
+  }
 }
 
 @keyframes cardEnter {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes dialFill {
-  from { stroke-dashoffset: 251.2; }
+  from {
+    stroke-dashoffset: 251.2;
+  }
 }
 
 /* ── Core Container ────────────────────────────────────────────────────────── */
@@ -149,7 +184,11 @@
   position: relative;
   width: 100%;
   height: 220px;
-  background: radial-gradient(circle at 50% 50%, var(--at-surface-2, oklch(98% 0 0)) 0%, var(--at-surface) 100%);
+  background: radial-gradient(
+    circle at 50% 50%,
+    var(--at-surface-2, oklch(98% 0 0)) 0%,
+    var(--at-surface) 100%
+  );
   border-radius: var(--ds-radius-xl);
   border: 1px solid var(--at-line);
   overflow: hidden;
@@ -213,10 +252,7 @@
   font-weight: 600;
   color: var(--at-fg-subtle, oklch(50% 0 0));
   cursor: pointer;
-  transition:
-    transform 160ms var(--ds-ease-spring),
-    border-color 140ms ease,
-    background 140ms ease;
+  transition: transform 160ms var(--ds-ease-spring), border-color 140ms ease, background 140ms ease;
 }
 
 .filterChip:hover {
@@ -237,10 +273,18 @@
   border-radius: 50%;
 }
 
-.dotAll    { background: var(--at-fg-subtle); }
-.dotTrust  { background: var(--nova-up, oklch(55% 0.14 162)); }
-.dotWarn   { background: var(--at-gold, oklch(65% 0.14 75)); }
-.dotRevoke { background: var(--nova-down, oklch(58% 0.16 20)); }
+.dotAll {
+  background: var(--at-fg-subtle);
+}
+.dotTrust {
+  background: var(--nova-up, oklch(55% 0.14 162));
+}
+.dotWarn {
+  background: var(--at-gold, oklch(65% 0.14 75));
+}
+.dotRevoke {
+  background: var(--nova-down, oklch(58% 0.16 20));
+}
 
 .chipCount {
   font-size: 10px;
@@ -257,7 +301,9 @@
 }
 
 @media (max-width: 600px) {
-  .searchField { width: 100%; }
+  .searchField {
+    width: 100%;
+  }
 }
 
 .searchIcon {
@@ -314,26 +360,31 @@
   cursor: pointer;
   animation: cardEnter 320ms var(--ds-ease-out-quart) both;
   animation-delay: calc(var(--index, 0) * 40ms);
-  transition:
-    transform 220ms var(--ds-ease-spring),
-    border-color 160ms ease,
-    box-shadow 160ms ease;
+  transition: transform 220ms var(--ds-ease-spring), border-color 160ms ease, box-shadow 160ms ease;
 }
 
 .deviceCard:hover {
   transform: translateY(-2px);
   border-color: color-mix(in oklch, var(--card-border-tone, var(--at-line)) 40%, var(--at-line));
-  box-shadow: 0 8px 24px -10px color-mix(in oklch, var(--card-border-tone, var(--at-fg)) 14%, transparent);
+  box-shadow: 0 8px 24px -10px
+    color-mix(in oklch, var(--card-border-tone, var(--at-fg)) 14%, transparent);
 }
 
 /* Highlight theme variations based on device status */
-.deviceCardTrusted    { --card-border-tone: var(--nova-up); }
-.deviceCardUnverified { --card-border-tone: var(--at-gold); }
-.deviceCardRevoked    { --card-border-tone: var(--nova-down); opacity: 0.65; }
+.deviceCardTrusted {
+  --card-border-tone: var(--nova-up);
+}
+.deviceCardUnverified {
+  --card-border-tone: var(--at-gold);
+}
+.deviceCardRevoked {
+  --card-border-tone: var(--nova-down);
+  opacity: 0.65;
+}
 
 /* Thin indicator line on active card */
 .deviceCard::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block: 0;
   inset-inline-start: 0;
@@ -342,7 +393,9 @@
   opacity: 0.5;
   transition: opacity 160ms ease;
 }
-.deviceCard:hover::before { opacity: 1; }
+.deviceCard:hover::before {
+  opacity: 1;
+}
 
 .deviceCardCurrent {
   border-color: var(--at-fg);
@@ -545,7 +598,9 @@
   z-index: 1;
 }
 
-.actionTrust, .actionRevoke, .actionDetails {
+.actionTrust,
+.actionRevoke,
+.actionDetails {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -555,11 +610,8 @@
   border-radius: var(--ds-radius-md);
   font-family: inherit;
   cursor: pointer;
-  transition:
-    background 140ms ease,
-    border-color 140ms ease,
-    color 140ms ease,
-    transform 120ms var(--ds-ease-spring);
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease, transform 120ms
+    var(--ds-ease-spring);
 }
 
 .actionTrust {
@@ -572,7 +624,9 @@
   color: oklch(100% 0 0);
   transform: translateY(-1px);
 }
-.actionTrust:active { transform: scale(0.97); }
+.actionTrust:active {
+  transform: scale(0.97);
+}
 
 .actionRevoke {
   background: transparent;
@@ -585,7 +639,9 @@
   color: var(--ds-status-error-fg);
   transform: translateY(-1px);
 }
-.actionRevoke:active { transform: scale(0.97); }
+.actionRevoke:active {
+  transform: scale(0.97);
+}
 
 .actionDetails {
   background: transparent;
@@ -713,10 +769,7 @@
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  transition:
-    background 140ms ease,
-    color 140ms ease,
-    transform 120ms var(--ds-ease-spring);
+  transition: background 140ms ease, color 140ms ease, transform 120ms var(--ds-ease-spring);
 }
 
 .emergencyRevokeBtn:hover {
@@ -724,7 +777,9 @@
   color: oklch(100% 0 0);
   transform: translateY(-1px);
 }
-.emergencyRevokeBtn:active { transform: scale(0.98); }
+.emergencyRevokeBtn:active {
+  transform: scale(0.98);
+}
 
 /* ── Security Timeline Card ────────────────────────────────────────────────── */
 
@@ -776,7 +831,7 @@
 
 /* Timeline vertical line */
 .timelineList::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block: 8px;
   inset-inline-start: 13px;
@@ -887,7 +942,7 @@
 }
 
 .tipsList li::before {
-  content: '·';
+  content: "·";
   position: absolute;
   inset-inline-start: 2px;
   font-size: var(--ds-text-base);
@@ -908,7 +963,7 @@
 }
 
 .sheetInner::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block: 0;
   inset-inline-start: 0;
@@ -916,9 +971,15 @@
   background: var(--sheet-border-tone, transparent);
 }
 
-.sheetTrusted    { --sheet-border-tone: var(--nova-up); }
-.sheetUnverified { --sheet-border-tone: var(--at-gold); }
-.sheetRevoked    { --sheet-border-tone: var(--nova-down); }
+.sheetTrusted {
+  --sheet-border-tone: var(--nova-up);
+}
+.sheetUnverified {
+  --sheet-border-tone: var(--at-gold);
+}
+.sheetRevoked {
+  --sheet-border-tone: var(--nova-down);
+}
 
 .sheetHead {
   display: flex;
@@ -1078,7 +1139,8 @@
   margin-block-start: auto;
 }
 
-.sheetActionTrust, .sheetActionRevoke {
+.sheetActionTrust,
+.sheetActionRevoke {
   width: 100%;
   display: flex;
   align-items: center;
@@ -1090,11 +1152,8 @@
   font-family: inherit;
   border-radius: var(--ds-radius-lg);
   cursor: pointer;
-  transition:
-    background 140ms ease,
-    border-color 140ms ease,
-    color 140ms ease,
-    transform 120ms var(--ds-ease-spring);
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease, transform 120ms
+    var(--ds-ease-spring);
 }
 
 .sheetActionTrust {
@@ -1107,7 +1166,9 @@
   color: oklch(100% 0 0);
   transform: translateY(-1px);
 }
-.sheetActionTrust:active { transform: scale(0.98); }
+.sheetActionTrust:active {
+  transform: scale(0.98);
+}
 
 .sheetActionRevoke {
   background: var(--ds-status-error-bg);
@@ -1119,4 +1180,6 @@
   color: oklch(100% 0 0);
   transform: translateY(-1px);
 }
-.sheetActionRevoke:active { transform: scale(0.98); }
+.sheetActionRevoke:active {
+  transform: scale(0.98);
+}

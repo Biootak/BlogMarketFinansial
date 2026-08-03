@@ -12,6 +12,15 @@
  */
 
 import {
+  deleteBackup,
+  getBackupStatus,
+  triggerBackup,
+  updateBackupSettings,
+} from '@/actions/settingsActions';
+import { ConfirmDialog } from '@/components/Dashboard/primitives';
+import { useActionToast } from '@/hooks/useActionToast';
+import type { BackupConfig, BackupFileInfo } from '@/lib/backup';
+import {
   Archive,
   Clock,
   Database,
@@ -22,15 +31,6 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import type { BackupConfig, BackupFileInfo } from '@/lib/backup';
-import {
-  deleteBackup,
-  getBackupStatus,
-  triggerBackup,
-  updateBackupSettings,
-} from '@/actions/settingsActions';
-import { ConfirmDialog } from '@/components/Dashboard/primitives';
-import { useActionToast } from '@/hooks/useActionToast';
 import s from './BackupManager.module.css';
 
 const DEFAULT_CFG: BackupConfig = {
@@ -305,12 +305,7 @@ export function BackupManager() {
         </div>
 
         <div className={s.actionRow}>
-          <button
-            type="button"
-            onClick={onSave}
-            disabled={saving || !dirty}
-            className={s.saveBtn}
-          >
+          <button type="button" onClick={onSave} disabled={saving || !dirty} className={s.saveBtn}>
             {saving ? 'در حال ذخیره…' : 'ذخیره تنظیمات'}
           </button>
           <button
@@ -340,13 +335,12 @@ export function BackupManager() {
             className={s.triggerInput}
             maxLength={200}
           />
-          <button
-            type="button"
-            onClick={onTrigger}
-            disabled={triggering}
-            className={s.triggerBtn}
-          >
-            {triggering ? <Loader2 size={14} className={s.spin} /> : <Play size={14} strokeWidth={2.2} />}
+          <button type="button" onClick={onTrigger} disabled={triggering} className={s.triggerBtn}>
+            {triggering ? (
+              <Loader2 size={14} className={s.spin} />
+            ) : (
+              <Play size={14} strokeWidth={2.2} />
+            )}
             <span>{triggering ? 'در حال ساخت…' : 'ایجاد backup'}</span>
           </button>
         </div>
@@ -478,7 +472,14 @@ function CheckField({
       />
       <span className={s.checkBoxView} data-on={checked} aria-hidden>
         {checked && (
-          <svg viewBox="0 0 16 16" width="11" height="11" strokeWidth="2.5" stroke="currentColor" fill="none">
+          <svg
+            viewBox="0 0 16 16"
+            width="11"
+            height="11"
+            strokeWidth="2.5"
+            stroke="currentColor"
+            fill="none"
+          >
             <polyline points="3,8 7,12 13,4" />
           </svg>
         )}

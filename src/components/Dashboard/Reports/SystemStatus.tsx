@@ -183,7 +183,7 @@ export default function SystemStatus() {
                 <span>{Math.round(memoryUsagePercent)}%</span>
               </div>
               <Progress value={memoryUsagePercent} />
-              <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                 <div>کل: {formatBytes(status.memory.total)}</div>
                 <div>آزاد: {formatBytes(status.memory.free)}</div>
               </div>
@@ -204,7 +204,7 @@ export default function SystemStatus() {
                 <span>{Math.round(diskUsagePercent)}%</span>
               </div>
               <Progress value={diskUsagePercent} />
-              <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                 <div>کل: {formatBytes(status.disk.total)}</div>
                 <div>آزاد: {formatBytes(status.disk.free)}</div>
               </div>

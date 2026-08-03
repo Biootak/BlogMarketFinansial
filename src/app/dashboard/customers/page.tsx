@@ -36,7 +36,7 @@ export default async function CustomersPage({ searchParams }: Props) {
   // اگر صرافی‌ای وجود نداشته، همان پیام «هنوز صرافی ندارید» نمایش داده می‌شود.
   const requestedId = sp.exchange ?? '';
   const requestedExists = requestedId && exchanges.some((e) => e.id === requestedId);
-  const targetExchangeId = requestedExists ? requestedId : exchanges[0]?.id ?? '';
+  const targetExchangeId = requestedExists ? requestedId : (exchanges[0]?.id ?? '');
 
   // اگر URL صرافی نامعتبر داشت ولی صرافی معتبر موجود است، URL را پاک کن تا انتخاب کاربر شفاف شود.
   if (requestedId && !requestedExists && targetExchangeId) {

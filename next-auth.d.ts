@@ -1,6 +1,5 @@
 import type { Role, UserProfile } from '@/types/types';
 import type { DefaultSession } from 'next-auth';
-import { JWT } from 'next-auth/jwt';
 
 export type ExtendUser = DefaultSession['user'] & {
   role: Role;

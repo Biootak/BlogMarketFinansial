@@ -5,9 +5,9 @@
  *   hours در address (با prefix ;HOURS=) ذخیره می‌شود (backward compatible).
  */
 
+import { getExchangeForUser } from '@/actions/exchanges';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { getExchangeForUser, updateExchangeSelf } from '@/actions/exchanges';
 import WorkingHoursWorkspace from './_components/WorkingHoursWorkspace';
 
 export const metadata = { title: 'ساعات کاری | تنظیمات' };

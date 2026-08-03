@@ -1,8 +1,8 @@
-import OfflineBanner from '@/components/OfflineBanner/OfflineBanner';
 import SiteFooterData, { FooterSkeleton } from '@/app/(site)/_components/SiteFooterData';
 import SiteHeaderData, { HeaderSkeleton } from '@/app/(site)/_components/SiteHeaderData';
 import SiteSettingsData from '@/app/(site)/_components/SiteSettingsData';
 import MobileBottomNavGate from '@/components/Header/MobileBottomNavGate';
+import OfflineBanner from '@/components/OfflineBanner/OfflineBanner';
 import QuickActionsGate from '@/components/QuickActions/QuickActionsGate';
 import { getSystemSettingsCached } from '@/data/getSystemSettingsCached';
 import type { Metadata } from 'next';

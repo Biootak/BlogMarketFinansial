@@ -1,8 +1,8 @@
 'use client';
 
 import { updateProfile } from '@/actions/profile';
-import { FormField } from '@/components/Dashboard/primitives/FormField';
 import { TwoFactorSection } from '@/components/Dashboard/Profile/TwoFactorSection';
+import { FormField } from '@/components/Dashboard/primitives/FormField';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -82,7 +82,9 @@ function getCompletionPercent(data: UserWithProfile): number {
     !!data.profile?.avatar,
     !!data.profile?.bgImage,
   ];
-  checks.forEach((c) => { if (c) score++; });
+  checks.forEach((c) => {
+    if (c) score++;
+  });
   return Math.round((score / checks.length) * 100);
 }
 
@@ -152,15 +154,19 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
   const hasPhone = !!initialData.phoneNumber;
 
   /* ── completion ── */
-  const completionPercent = useMemo(() => getCompletionPercent({
-    ...initialData,
-    profile: {
-      ...initialData.profile,
-      avatar: avatarPreview || initialData.profile?.avatar,
-      bgImage: bgImagePreview || initialData.profile?.bgImage,
-      bio: bioValue || initialData.profile?.bio,
-    } as typeof initialData.profile,
-  }), [initialData, avatarPreview, bgImagePreview, bioValue]);
+  const completionPercent = useMemo(
+    () =>
+      getCompletionPercent({
+        ...initialData,
+        profile: {
+          ...initialData.profile,
+          avatar: avatarPreview || initialData.profile?.avatar,
+          bgImage: bgImagePreview || initialData.profile?.bgImage,
+          bio: bioValue || initialData.profile?.bio,
+        } as typeof initialData.profile,
+      }),
+    [initialData, avatarPreview, bgImagePreview, bioValue],
+  );
 
   /* ─────────────────────────────────────────────────────────────────────────
      Form 1 — Info
@@ -200,13 +206,12 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
   });
 
   /* ── password strength ── */
-  const passwordStrength = useMemo(
-    () => getPasswordStrength(newPasswordValue),
-    [newPasswordValue],
-  );
+  const passwordStrength = useMemo(() => getPasswordStrength(newPasswordValue), [newPasswordValue]);
 
-  const passwordsMatch = confirmPasswordValue.length > 0 && confirmPasswordValue === newPasswordValue;
-  const passwordsMismatch = confirmPasswordValue.length > 0 && confirmPasswordValue !== newPasswordValue;
+  const passwordsMatch =
+    confirmPasswordValue.length > 0 && confirmPasswordValue === newPasswordValue;
+  const passwordsMismatch =
+    confirmPasswordValue.length > 0 && confirmPasswordValue !== newPasswordValue;
 
   /* ── image handlers ── */
   const handleImageUpload = useCallback(
@@ -282,14 +287,12 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
 
   return (
     <div className={s.root} dir="rtl">
-
       {/* ── Phone verification alert ─────────────────────────────────────────── */}
       {!hasPhone && (
         <Alert variant="warning">
           <AlertTitle>شماره موبایل تأیید نشده</AlertTitle>
           <AlertDescription>
-            برای استفاده از خدمات مالی (حواله، خرید ارز، رمزارز) باید شماره موبایل خود را
-            وارد کنید.
+            برای استفاده از خدمات مالی (حواله، خرید ارز، رمزارز) باید شماره موبایل خود را وارد کنید.
           </AlertDescription>
         </Alert>
       )}
@@ -298,7 +301,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
           IDENTITY PANEL — Cover + Avatar + User Meta
       ══════════════════════════════════════════════════════════════════════ */}
       <div className={s.identityPanel}>
-
         {/* Cover strip */}
         <div className={s.cover}>
           <Image
@@ -323,7 +325,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
 
         {/* Avatar + meta row */}
         <div className={s.identityBody}>
-
           {/* Avatar */}
           <div className={s.avatarWrap}>
             <button
@@ -355,24 +356,21 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
 
           {/* User meta */}
           <div className={s.userMeta}>
-            <h2 className={s.userName}>
-              {initialData.name || 'کاربر ناشناس'}
-            </h2>
-            {initialData.email && (
-              <p className={s.userEmail}>{initialData.email}</p>
-            )}
-            <span className={s.userRole}>
-              {userRoleLabel}
-            </span>
+            <h2 className={s.userName}>{initialData.name || 'کاربر ناشناس'}</h2>
+            {initialData.email && <p className={s.userEmail}>{initialData.email}</p>}
+            <span className={s.userRole}>{userRoleLabel}</span>
 
             {/* Completion bar */}
             <div className={s.completionWrap} aria-label={`تکمیل پروفایل: ${completionPercent}٪`}>
               <span className={s.completionText}>تکمیل پروفایل: {completionPercent}٪</span>
-              <div className={s.completionBar} role="progressbar" aria-valuenow={completionPercent} aria-valuemin={0} aria-valuemax={100}>
-                <div
-                  className={s.completionFill}
-                  style={{ width: `${completionPercent}%` }}
-                />
+              <div
+                className={s.completionBar}
+                role="progressbar"
+                aria-valuenow={completionPercent}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              >
+                <div className={s.completionFill} style={{ width: `${completionPercent}%` }} />
               </div>
             </div>
           </div>
@@ -383,7 +381,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
           LAYOUT: sidebar nav + content
       ══════════════════════════════════════════════════════════════════════ */}
       <div className={s.layout}>
-
         {/* ── Sidebar Nav ─────────────────────────────────────────────────── */}
         <nav className={s.sideNav} aria-label="بخش‌های پروفایل">
           <button
@@ -410,11 +407,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
 
         {/* ── Content area ────────────────────────────────────────────────── */}
         <div className={s.contentArea}>
-
           {/* ── Panel: Profile Info ──────────────────────────────────────── */}
           {activeTab === 'info' && (
             <form onSubmit={handleInfoSubmit(onInfoSubmit)} noValidate className={s.section}>
-
               {/* Personal info card */}
               <section className={s.card}>
                 <header className={s.cardHeader}>
@@ -536,11 +531,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
                     تغییرات ذخیره‌نشده
                   </span>
                 )}
-                <Button
-                  type="submit"
-                  disabled={isInfoSubmitting}
-                  className="min-w-[140px]"
-                >
+                <Button type="submit" disabled={isInfoSubmitting} className="min-w-[140px]">
                   {isInfoSubmitting ? (
                     <span className="flex items-center gap-2">
                       <span className={s.spinner} role="status" aria-label="در حال بارگذاری" />
@@ -695,10 +686,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
                     {/* Match indicator */}
                     {confirmPasswordValue.length > 0 && (
                       <p
-                        className={cn(
-                          s.matchStatus,
-                          passwordsMatch ? s.matchOk : s.matchFail,
-                        )}
+                        className={cn(s.matchStatus, passwordsMatch ? s.matchOk : s.matchFail)}
                         aria-live="polite"
                       >
                         {passwordsMatch ? (
@@ -729,11 +717,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
 
               {/* Action row */}
               <div className={s.actions}>
-                <Button
-                  type="submit"
-                  disabled={isSecuritySubmitting}
-                  className="min-w-[160px]"
-                >
+                <Button type="submit" disabled={isSecuritySubmitting} className="min-w-[160px]">
                   {isSecuritySubmitting ? (
                     <span className="flex items-center gap-2">
                       <span className={s.spinner} role="status" aria-label="در حال بارگذاری" />
@@ -756,7 +740,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
               <TwoFactorSection userEmail={initialData.email} />
             </div>
           )}
-
         </div>
       </div>
 

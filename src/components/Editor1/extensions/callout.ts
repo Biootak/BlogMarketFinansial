@@ -1,5 +1,4 @@
 import { Node, mergeAttributes } from '@tiptap/core';
-import type { NodeViewProps } from '@tiptap/core';
 import { ReactNodeViewRenderer } from '@tiptap/react';
 import { AlertTriangle, CheckCircle2, Info, type LucideIcon, XCircle } from 'lucide-react';
 import CalloutBlock from '../components/callout-block';

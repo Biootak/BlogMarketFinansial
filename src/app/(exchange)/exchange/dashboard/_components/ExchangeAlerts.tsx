@@ -4,16 +4,20 @@
  * Server Component. لینک مستقیم به صفحات مربوطه.
  */
 
-import s from './ExchangeDashboard.module.css';
-import Link from 'next/link';
-import { Check, ChevronLeft } from 'lucide-react';
 import type { DashboardAlert } from '@/actions/exchange-dashboard';
+import { Check, ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
+import s from './ExchangeDashboard.module.css';
 
 export default function ExchangeAlerts({ alerts }: { alerts: DashboardAlert[] }) {
   if (alerts.length === 0) {
     return (
       <div className={s.flowEmpty}>
-        <Check size={14} aria-hidden style={{ color: 'var(--at-accent)', marginInlineEnd: 6, verticalAlign: 'middle' }} />
+        <Check
+          size={14}
+          aria-hidden
+          style={{ color: 'var(--at-accent)', marginInlineEnd: 6, verticalAlign: 'middle' }}
+        />
         هیچ هشدار فعالی وجود ندارد.
       </div>
     );

@@ -69,13 +69,7 @@ function fromRow(row: CustomerRow | null): FormState {
   };
 }
 
-export function CustomerEditDrawer({
-  open,
-  exchangeId,
-  initialData,
-  onClose,
-  onSaved,
-}: Props) {
+export function CustomerEditDrawer({ open, exchangeId, initialData, onClose, onSaved }: Props) {
   const { toast } = useToast();
   const [form, setForm] = useState<FormState>(() => fromRow(initialData));
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
@@ -324,16 +318,12 @@ export function CustomerEditDrawer({
                 aria-valuenow={form.riskScore}
                 aria-valuemin={0}
                 aria-valuemax={100}
-                data-tone={
-                  form.riskScore > 70 ? 'rose' : form.riskScore > 40 ? 'amber' : 'emerald'
-                }
+                data-tone={form.riskScore > 70 ? 'rose' : form.riskScore > 40 ? 'amber' : 'emerald'}
                 style={{ '--pct': `${form.riskScore}%` } as CSSProperties}
               />
               <span
                 className={s.riskValue}
-                data-tone={
-                  form.riskScore > 70 ? 'rose' : form.riskScore > 40 ? 'amber' : 'emerald'
-                }
+                data-tone={form.riskScore > 70 ? 'rose' : form.riskScore > 40 ? 'amber' : 'emerald'}
               >
                 {form.riskScore}
               </span>

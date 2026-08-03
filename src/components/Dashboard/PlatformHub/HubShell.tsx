@@ -1,11 +1,11 @@
 'use client';
 
-import { ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import s from './PlatformHub.module.css';
+import { ChevronLeft } from 'lucide-react';
 import { LiveDot } from './LiveDot';
-import { PillTabs, type PillTabItem } from './PillTabs';
 import type { LiveDotTone } from './LiveDot';
+import { type PillTabItem, PillTabs } from './PillTabs';
+import s from './PlatformHub.module.css';
 
 export type HubShellBreadcrumb = { href?: string; label: string };
 
@@ -73,13 +73,14 @@ export function HubShell({
   children,
   className,
 }: HubShellProps) {
+  const breadcrumb = meta.breadcrumb;
   return (
     <div className={cn(s.hubShell, className)}>
       <div className={s.hubHeader}>
-        {meta.breadcrumb && meta.breadcrumb.length > 0 ? (
+        {breadcrumb && breadcrumb.length > 0 ? (
           <nav aria-label="مسیر" className={s.hubBreadcrumb}>
-            {meta.breadcrumb.map((b, i) => {
-              const isLast = i === meta.breadcrumb!.length - 1;
+            {breadcrumb.map((b, i) => {
+              const isLast = i === breadcrumb.length - 1;
               return (
                 <span key={`${b.label}-${i}`} className={s.hubBreadcrumbItem}>
                   {b.href && !isLast ? (
@@ -87,11 +88,20 @@ export function HubShell({
                       {b.label}
                     </a>
                   ) : (
-                    <span aria-current={isLast ? 'page' : undefined} className={isLast ? s.hubBreadcrumbCurrent : undefined}>
+                    <span
+                      aria-current={isLast ? 'page' : undefined}
+                      className={isLast ? s.hubBreadcrumbCurrent : undefined}
+                    >
                       {b.label}
                     </span>
                   )}
-                  {!isLast ? <ChevronLeft size={12} aria-hidden className={cn(s.hubBreadcrumbSep, 'rtl:rotate-180')} /> : null}
+                  {!isLast ? (
+                    <ChevronLeft
+                      size={12}
+                      aria-hidden
+                      className={cn(s.hubBreadcrumbSep, 'rtl:rotate-180')}
+                    />
+                  ) : null}
                 </span>
               );
             })}
@@ -101,9 +111,9 @@ export function HubShell({
           <div className={s.hubHeaderMain}>
             {meta.eyebrow ? (
               <div className={s.hubEyebrow}>
-                {meta.badges?.some((b) => b.live)
-                  ? <LiveDot tone={meta.badges.find((b) => b.live)?.tone ?? 'emerald'} size="sm" />
-                  : null}
+                {meta.badges?.some((b) => b.live) ? (
+                  <LiveDot tone={meta.badges.find((b) => b.live)?.tone ?? 'emerald'} size="sm" />
+                ) : null}
                 <span>{meta.eyebrow}</span>
               </div>
             ) : null}
@@ -129,10 +139,7 @@ export function HubShell({
           >
             {meta.stats.map((stat) => (
               <div key={stat.id} className={s.hubStat}>
-                <span
-                  className={s.hubStatIcon}
-                  style={{ color: stat.color ?? meta.statsAccent }}
-                >
+                <span className={s.hubStatIcon} style={{ color: stat.color ?? meta.statsAccent }}>
                   {stat.icon}
                 </span>
                 <div className={s.hubStatBody}>
@@ -146,7 +153,12 @@ export function HubShell({
         ) : null}
         {tabs && tabs.length > 0 ? (
           <div className={s.hubTabs}>
-            <PillTabs tabs={tabs} active={activeTab ?? tabs[0].id} onChange={(id) => onTabChange?.(id)} ariaLabel="بخش‌های مرکز" />
+            <PillTabs
+              tabs={tabs}
+              active={activeTab ?? tabs[0].id}
+              onChange={(id) => onTabChange?.(id)}
+              ariaLabel="بخش‌های مرکز"
+            />
           </div>
         ) : null}
       </div>

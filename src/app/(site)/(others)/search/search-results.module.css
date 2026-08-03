@@ -71,14 +71,13 @@
   background: var(--ds-surface);
   backdrop-filter: blur(12px);
   box-shadow: var(--ds-shadow-sm);
-  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-base) var(--ds-ease-out-quart);
 }
 
 .searchForm:focus-within {
   border-color: var(--ds-brand-500);
-  box-shadow: 0 0 0 4px oklch(from var(--ds-brand-500) l c h / 0.12),
-    var(--ds-shadow-md);
+  box-shadow: 0 0 0 4px oklch(from var(--ds-brand-500) l c h / 0.12), var(--ds-shadow-md);
 }
 
 .searchIcon {
@@ -118,8 +117,8 @@
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
   cursor: pointer;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast);
 }
 
 .searchButton:hover {
@@ -160,9 +159,8 @@
   color: var(--ds-text-secondary);
   text-decoration: none;
   font-weight: var(--ds-weight-medium);
-  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast),
-    background var(--ds-duration-fast);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast), background var(--ds-duration-fast);
 }
 
 .suggestionChip:hover {
@@ -263,8 +261,8 @@
   color: var(--ds-text-secondary);
   text-decoration: none;
   font-weight: var(--ds-weight-medium);
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast);
 }
 
 .sidebarItem:hover {
@@ -349,9 +347,9 @@
   backdrop-filter: blur(8px);
   text-decoration: none;
   color: inherit;
-  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow var(--ds-duration-base)
+    var(--ds-ease-out-quart);
 }
 
 .postCard:hover {
@@ -481,8 +479,7 @@
   color: var(--ds-text-secondary);
   text-decoration: none;
   font-weight: var(--ds-weight-medium);
-  transition: border-color var(--ds-duration-fast),
-    color var(--ds-duration-fast);
+  transition: border-color var(--ds-duration-fast), color var(--ds-duration-fast);
 }
 
 .emptyCta:hover {

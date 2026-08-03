@@ -26,11 +26,11 @@
 
 import SafeImage from '@/components/SafeImage/SafeImage';
 import { motion, useReducedMotion } from '@/lib/motion-shim';
-import { cn, toPersianNumber } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import type { Advertisement } from '@/types/types';
 import { ArrowLeft, ArrowUpRight, ExternalLink, Megaphone, Sparkles } from 'lucide-react';
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 interface AdCardStripProps {
   ads: Advertisement[];
@@ -69,7 +69,7 @@ export function AdCardStrip({
           >
             <Sparkles className="h-3 w-3" strokeWidth={2.25} />
           </span>
-          <h2 className="text-[12px] sm:text-[13px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-400">
+          <h2 className="text-[12px] sm:text-[13px] font-bold uppercase tracking-[0.18em] text-neutral-600 dark:text-neutral-300">
             {eyebrow}
           </h2>
         </div>
@@ -136,7 +136,7 @@ function HeroAdCard({
         href={ad.linkUrl}
         target="_blank"
         rel="noopener noreferrer sponsored"
-        aria-label={`تبلیغ: ${ad.title}`}
+        // WCAG 2.5.3 label-in-name: visible content is the accessible name.
         className={cn(
           'ad-spotlight-3d relative flex flex-col h-full overflow-hidden rounded-2xl sm:rounded-3xl',
           'border border-[color:var(--hairline)]',
@@ -281,7 +281,7 @@ function RichAdCard({
         href={ad.linkUrl}
         target="_blank"
         rel="noopener noreferrer sponsored"
-        aria-label={`تبلیغ: ${ad.title}`}
+        // WCAG 2.5.3 label-in-name: visible content is the accessible name.
         className={cn(
           'relative flex flex-col h-full overflow-hidden rounded-2xl',
           'border border-[color:var(--hairline)]',
@@ -363,12 +363,12 @@ function RichAdCard({
             {ad.title}
           </h4>
           {ad.description && (
-            <p className="hidden sm:block text-[11.5px] leading-relaxed text-neutral-500 dark:text-neutral-400 line-clamp-2">
+            <p className="hidden sm:block text-[11.5px] leading-relaxed text-neutral-600 dark:text-neutral-300 line-clamp-2">
               {ad.description}
             </p>
           )}
 
-          <div className="mt-auto pt-1 flex items-center justify-between text-[10.5px] font-vazirmatn tabular-nums text-neutral-500 dark:text-neutral-400">
+          <div className="mt-auto pt-1 flex items-center justify-between text-[10.5px] font-vazirmatn tabular-nums text-neutral-600 dark:text-neutral-300">
             <span>پیشنهاد ویژه</span>
             <ArrowLeft
               className={cn(

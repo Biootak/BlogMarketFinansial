@@ -1,6 +1,6 @@
 import type { TwMainColor } from '@/types/types';
 import Link from 'next/link';
-import React, { type FC, type ReactNode } from 'react';
+import type { FC, ReactNode } from 'react';
 
 export interface BadgeProps {
   className?: string;
@@ -30,7 +30,8 @@ const Badge: FC<BadgeProps> = ({
 
   const colorClass = colorClasses[color] || colorClasses.blue;
 
-  const CLASSES = `nc-Badge inline-flex px-2.5 py-1 rounded-full font-medium text-[10px]/[14px] ${className} ${colorClass} transition-colors duration-300`;
+  /* حداقل ارتفاع ۲۴px (WCAG 2.5.8) — py-1.5 = 6px بالا + پایین → 14+12=26px */
+  const CLASSES = `nc-Badge inline-flex px-2.5 py-1.5 rounded-full font-medium text-[10px]/[14px] ${className} ${colorClass} transition-colors duration-300`;
 
   if (!isLink || !href) {
     return <span className={CLASSES}>{name}</span>;

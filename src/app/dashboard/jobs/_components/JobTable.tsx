@@ -1,8 +1,5 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import Link from 'next/link';
-import { toPersianDigits } from '@/lib/setup/format';
 import { SearchInput } from '@/components/Dashboard/primitives';
 import {
   Select,
@@ -11,6 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { toPersianDigits } from '@/lib/setup/format';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
 import s from '../jobs.module.css';
 
 export interface JobTableRow {
@@ -175,9 +175,7 @@ export function JobTable({ rows, total }: JobTableProps) {
 
       <div className={s.tableBody}>
         {filtered.length === 0 ? (
-          <p className={s.tableEmpty}>
-            موردی با این فیلترها یافت نشد.
-          </p>
+          <p className={s.tableEmpty}>موردی با این فیلترها یافت نشد.</p>
         ) : (
           filtered.map((r) => {
             const pr = priorityIndicator(r.priority);
@@ -188,32 +186,21 @@ export function JobTable({ rows, total }: JobTableProps) {
                   ? 'tableAttempts--warning'
                   : '';
             return (
-              <Link
-                key={r.id}
-                href={`/dashboard/jobs/${r.id}`}
-                className={s.tableRow}
-                role="row"
-              >
+              <Link key={r.id} href={`/dashboard/jobs/${r.id}`} className={s.tableRow} role="row">
                 <div className={s.tableCellType}>
                   <span className={s.tableType}>{r.type}</span>
                   <span className={s.tableTypeId}>{r.id.slice(0, 8)}</span>
                 </div>
-                <span className={`${s.tableCell} ${s['tableCell--queue']}`}>
-                  {r.queue}
-                </span>
+                <span className={`${s.tableCell} ${s['tableCell--queue']}`}>{r.queue}</span>
                 <span>
-                  <span
-                    className={`${s.tableStatus} ${s[STATUS_CLASS[r.status]]}`}
-                  >
+                  <span className={`${s.tableStatus} ${s[STATUS_CLASS[r.status]]}`}>
                     <span
                       className={`${s.tableStatusDot} ${s[STATUS_DOT_RUNNING_CLASS[r.status]]}`}
                     />
                     {STATUS_LABEL[r.status]}
                   </span>
                 </span>
-                <span className={`${s.tablePriority} ${s[pr.cls]}`}>
-                  {pr.label}
-                </span>
+                <span className={`${s.tablePriority} ${s[pr.cls]}`}>{pr.label}</span>
                 <span className={`${s.tableAttempts} ${s[attemptsClass]}`}>
                   {toPersianDigits(r.attempts)}/{toPersianDigits(r.maxAttempts)}
                 </span>
@@ -225,9 +212,7 @@ export function JobTable({ rows, total }: JobTableProps) {
       </div>
 
       <div className={s.tableFooter}>
-        <span>
-          نمایش {toPersianDigits(filtered.length)} مورد · کلیک روی هر ردیف = جزئیات کامل
-        </span>
+        <span>نمایش {toPersianDigits(filtered.length)} مورد · کلیک روی هر ردیف = جزئیات کامل</span>
         <Link href="/dashboard/jobs/new" className={s.tableFooterLink}>
           ساخت job جدید ←
         </Link>

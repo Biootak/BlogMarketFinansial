@@ -39,16 +39,22 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background:
-    radial-gradient(ellipse 50% 100% at 100% 0%, var(--at-accent-soft) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 80% at 0% 100%, var(--at-gold-soft) 0%, transparent 60%);
+  background: radial-gradient(
+      ellipse 50% 100% at 100% 0%,
+      var(--at-accent-soft) 0%,
+      transparent 60%
+    ), radial-gradient(ellipse 50% 80% at 0% 100%, var(--at-gold-soft) 0%, transparent 60%);
   opacity: 0.55;
   animation: heroShift 18s var(--ds-ease-in-out-quart) infinite alternate;
 }
 
 @keyframes heroShift {
-  from { transform: scale(1) rotate(0deg); }
-  to { transform: scale(1.05) rotate(1.5deg); }
+  from {
+    transform: scale(1) rotate(0deg);
+  }
+  to {
+    transform: scale(1.05) rotate(1.5deg);
+  }
 }
 
 .heroHead {
@@ -113,9 +119,8 @@
   border-radius: var(--at-radius-lg);
   box-shadow: var(--at-shadow-sm);
   isolation: isolate;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
   animation: kpiReveal var(--ds-duration-slow) var(--ds-ease-out-expo) backwards;
   animation-delay: calc(var(--i, 0) * 70ms);
   min-height: 96px;
@@ -189,9 +194,15 @@
   font-variant-numeric: tabular-nums;
 }
 
-.kpi[data-tone="emerald"] .kpiSub { color: var(--at-accent-fg); }
-.kpi[data-tone="rose"] .kpiSub { color: var(--at-danger-fg); }
-.kpi[data-tone="amber"] .kpiSub { color: var(--at-gold-fg); }
+.kpi[data-tone="emerald"] .kpiSub {
+  color: var(--at-accent-fg);
+}
+.kpi[data-tone="rose"] .kpiSub {
+  color: var(--at-danger-fg);
+}
+.kpi[data-tone="amber"] .kpiSub {
+  color: var(--at-gold-fg);
+}
 
 /* ─── Bento (top section) ────────────────────────────────────────────── */
 .bento {
@@ -438,10 +449,18 @@
   border-radius: 50%;
 }
 
-.segmentDot[data-tone="emerald"] { background: var(--at-accent); }
-.segmentDot[data-tone="amber"]   { background: var(--at-gold); }
-.segmentDot[data-tone="rose"]    { background: var(--at-danger); }
-.segmentDot[data-tone="muted"]   { background: var(--at-fg-faint); }
+.segmentDot[data-tone="emerald"] {
+  background: var(--at-accent);
+}
+.segmentDot[data-tone="amber"] {
+  background: var(--at-gold);
+}
+.segmentDot[data-tone="rose"] {
+  background: var(--at-danger);
+}
+.segmentDot[data-tone="muted"] {
+  background: var(--at-fg-faint);
+}
 
 .segmentBar {
   position: relative;
@@ -459,10 +478,18 @@
   transition: width var(--ds-duration-slow) var(--ds-ease-out-expo);
 }
 
-.segmentFill[data-tone="emerald"] { background: var(--at-accent); }
-.segmentFill[data-tone="amber"]   { background: var(--at-gold); }
-.segmentFill[data-tone="rose"]    { background: var(--at-danger); }
-.segmentFill[data-tone="muted"]   { background: var(--at-fg-faint); }
+.segmentFill[data-tone="emerald"] {
+  background: var(--at-accent);
+}
+.segmentFill[data-tone="amber"] {
+  background: var(--at-gold);
+}
+.segmentFill[data-tone="rose"] {
+  background: var(--at-danger);
+}
+.segmentFill[data-tone="muted"] {
+  background: var(--at-fg-faint);
+}
 
 .segmentValue {
   display: flex;
@@ -537,9 +564,15 @@
   border-radius: 3px;
 }
 
-.riskLegendDot[data-tone="emerald"] { background: var(--at-accent); }
-.riskLegendDot[data-tone="amber"]   { background: var(--at-gold); }
-.riskLegendDot[data-tone="rose"]    { background: var(--at-danger); }
+.riskLegendDot[data-tone="emerald"] {
+  background: var(--at-accent);
+}
+.riskLegendDot[data-tone="amber"] {
+  background: var(--at-gold);
+}
+.riskLegendDot[data-tone="rose"] {
+  background: var(--at-danger);
+}
 
 .riskLegendLabel {
   color: var(--at-fg);
@@ -670,9 +703,15 @@
   font-variant-numeric: tabular-nums;
 }
 
-.riskyScore[data-tone="rose"] { color: var(--at-danger-fg); }
-.riskyScore[data-tone="amber"] { color: var(--at-gold-fg); }
-.riskyScore[data-tone="emerald"] { color: var(--at-accent-fg); }
+.riskyScore[data-tone="rose"] {
+  color: var(--at-danger-fg);
+}
+.riskyScore[data-tone="amber"] {
+  color: var(--at-gold-fg);
+}
+.riskyScore[data-tone="emerald"] {
+  color: var(--at-accent-fg);
+}
 
 .riskyLabel {
   font-size: 10px;

@@ -24,9 +24,9 @@ import {
   Globe2,
   GraduationCap,
   Layers,
+  type LucideIcon,
   ShoppingBag,
   Wallet,
-  type LucideIcon,
 } from 'lucide-react';
 
 export type ExchangeServiceKey =
@@ -51,7 +51,17 @@ export interface ExchangeServiceMeta {
   /** آیکن Lucide */
   icon: LucideIcon;
   /** accent token — به جای hex از token های ds */
-  accent: 'emerald' | 'amber' | 'sky' | 'violet' | 'rose' | 'teal' | 'orange' | 'indigo' | 'lime' | 'slate';
+  accent:
+    | 'emerald'
+    | 'amber'
+    | 'sky'
+    | 'violet'
+    | 'rose'
+    | 'teal'
+    | 'orange'
+    | 'indigo'
+    | 'lime'
+    | 'slate';
   /** گروه‌بندی برای marketplace */
   group: 'currency' | 'transfer' | 'payment' | 'crypto' | 'specialty';
   /** ترتیب پیش‌فرض (وقتی صرافی order نداده) */

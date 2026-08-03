@@ -26,16 +26,16 @@
  */
 
 import {
-  setup2FA,
+  type TwoFASetupData,
+  type TwoFAStatus,
   confirmEnable2FA,
   disable2FA,
   get2FAStatus,
-  type TwoFASetupData,
-  type TwoFAStatus,
+  setup2FA,
 } from '@/actions/twoFactorActions';
-import { SettingsSurfaceCard } from '@/components/Dashboard/primitives/SettingsSurfaceCard';
 import { ConfirmDialog } from '@/components/Dashboard/primitives/ConfirmDialog';
 import { FormField } from '@/components/Dashboard/primitives/FormField';
+import { SettingsSurfaceCard } from '@/components/Dashboard/primitives/SettingsSurfaceCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
@@ -91,7 +91,7 @@ interface TwoFactorSectionProps {
 
 export function TwoFactorSection({ userEmail }: TwoFactorSectionProps) {
   const [view, setView] = useState<View>('loading');
-  const [status, setStatus] = useState<TwoFAStatus | null>(null);
+  const [_status, setStatus] = useState<TwoFAStatus | null>(null);
   const [setupData, setSetupData] = useState<TwoFASetupData | null>(null);
   const [verifyCode, setVerifyCode] = useState('');
   const [backupCodes, setBackupCodes] = useState<string[] | null>(null);
@@ -134,7 +134,9 @@ export function TwoFactorSection({ userEmail }: TwoFactorSectionProps) {
       } else {
         toast({
           title: 'خطا',
-          description: !res.success ? (res.error?.message ?? 'شروع فرایند فعال‌سازی با خطا مواجه شد.') : 'خطای ناشناخته',
+          description: !res.success
+            ? (res.error?.message ?? 'شروع فرایند فعال‌سازی با خطا مواجه شد.')
+            : 'خطای ناشناخته',
           variant: 'destructive',
         });
       }
@@ -150,7 +152,11 @@ export function TwoFactorSection({ userEmail }: TwoFactorSectionProps) {
       const res = await confirmEnable2FA(verifyCode);
       if (res.success && res.data) {
         setBackupCodes(res.data.backupCodes);
-        setStatus({ enabled: true, hasBackupCodes: true, backupCodesCount: res.data.backupCodes.length });
+        setStatus({
+          enabled: true,
+          hasBackupCodes: true,
+          backupCodesCount: res.data.backupCodes.length,
+        });
         setView('enabled');
         toast({
           title: 'احراز دو مرحله‌ای فعال شد',
@@ -160,7 +166,9 @@ export function TwoFactorSection({ userEmail }: TwoFactorSectionProps) {
       } else {
         toast({
           title: 'کد نامعتبر',
-          description: !res.success ? (res.error?.message ?? 'کد وارد شده معتبر نیست. دوباره تلاش کنید.') : 'خطای ناشناخته',
+          description: !res.success
+            ? (res.error?.message ?? 'کد وارد شده معتبر نیست. دوباره تلاش کنید.')
+            : 'خطای ناشناخته',
           variant: 'destructive',
         });
       }
@@ -195,7 +203,9 @@ export function TwoFactorSection({ userEmail }: TwoFactorSectionProps) {
       } else {
         toast({
           title: 'خطا',
-          description: !res.success ? (res.error?.message ?? 'کد وارد شده نامعتبر است.') : 'خطای ناشناخته',
+          description: !res.success
+            ? (res.error?.message ?? 'کد وارد شده نامعتبر است.')
+            : 'خطای ناشناخته',
           variant: 'destructive',
         });
       }
@@ -269,7 +279,11 @@ export function TwoFactorSection({ userEmail }: TwoFactorSectionProps) {
               </div>
             </div>
             <Button onClick={handleStartSetup} disabled={isBusy} className={s.primaryCta}>
-              {isBusy ? <Loader2 className={s.spinner} size={16} aria-hidden /> : <KeyRound size={15} aria-hidden />}
+              {isBusy ? (
+                <Loader2 className={s.spinner} size={16} aria-hidden />
+              ) : (
+                <KeyRound size={15} aria-hidden />
+              )}
               <span>{isBusy ? 'در حال آماده‌سازی…' : 'فعال‌سازی احراز دو مرحله‌ای'}</span>
             </Button>
           </div>
@@ -351,7 +365,11 @@ export function TwoFactorSection({ userEmail }: TwoFactorSectionProps) {
                       disabled={!isVerifying || isBusy}
                       className={s.confirmBtn}
                     >
-                      {isBusy ? <Loader2 className={s.spinner} size={16} aria-hidden /> : <CheckCircle2 size={15} aria-hidden />}
+                      {isBusy ? (
+                        <Loader2 className={s.spinner} size={16} aria-hidden />
+                      ) : (
+                        <CheckCircle2 size={15} aria-hidden />
+                      )}
                       <span>{isBusy ? 'در حال تأیید…' : 'تأیید و فعال‌سازی'}</span>
                     </Button>
                   </div>
@@ -478,9 +496,7 @@ export function TwoFactorSection({ userEmail }: TwoFactorSectionProps) {
             </FormField>
             <div className={cn(s.dialogWarn)} role="alert">
               <AlertTriangle size={13} aria-hidden />
-              <span>
-                حساب شما فقط با رمز عبور محافظت خواهد شد. این عملیات قابل بازگشت است.
-              </span>
+              <span>حساب شما فقط با رمز عبور محافظت خواهد شد. این عملیات قابل بازگشت است.</span>
             </div>
           </div>
         }

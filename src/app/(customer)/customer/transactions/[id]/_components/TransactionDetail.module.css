@@ -25,19 +25,19 @@
   animation: cardEnter 360ms var(--ds-ease-out-quart) both;
 }
 
-.hero[data-tone='credit'] {
+.hero[data-tone="credit"] {
   border-inline-start-color: var(--nova-up);
 }
 
-.hero[data-tone='debit'] {
+.hero[data-tone="debit"] {
   border-inline-start-color: var(--nova-down);
 }
 
-.hero[data-tone='neutral'] {
+.hero[data-tone="neutral"] {
   border-inline-start-color: var(--ds-brand-500);
 }
 
-.hero[data-status='pending'] {
+.hero[data-status="pending"] {
   background: linear-gradient(
     135deg,
     var(--ds-surface) 0%,
@@ -45,7 +45,7 @@
   );
 }
 
-.hero[data-status='success'] {
+.hero[data-status="success"] {
   background: linear-gradient(
     135deg,
     var(--ds-surface) 0%,
@@ -53,7 +53,7 @@
   );
 }
 
-.hero[data-status='danger'] {
+.hero[data-status="danger"] {
   background: linear-gradient(
     135deg,
     var(--ds-surface) 0%,
@@ -87,12 +87,12 @@
   flex-shrink: 0;
 }
 
-.hero[data-tone='credit'] .heroIcon {
+.hero[data-tone="credit"] .heroIcon {
   background: color-mix(in oklch, var(--nova-up) 12%, transparent);
   color: var(--nova-up);
 }
 
-.hero[data-tone='debit'] .heroIcon {
+.hero[data-tone="debit"] .heroIcon {
   background: color-mix(in oklch, var(--nova-down) 12%, transparent);
   color: var(--nova-down);
 }
@@ -118,11 +118,11 @@
   line-height: 1.05;
 }
 
-.heroAmount[data-tone='credit'] .heroAmountNumber {
+.heroAmount[data-tone="credit"] .heroAmountNumber {
   color: var(--nova-up);
 }
 
-.heroAmount[data-tone='debit'] .heroAmountNumber {
+.heroAmount[data-tone="debit"] .heroAmountNumber {
   color: var(--nova-down);
 }
 
@@ -226,7 +226,7 @@
 }
 
 .timeline::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block-start: 1rem;
   inset-block-end: 1rem;
@@ -259,12 +259,12 @@
   z-index: 1;
 }
 
-.tlStep[data-done='true'] .tlDot {
+.tlStep[data-done="true"] .tlDot {
   background: var(--nova-up);
   color: var(--ds-canvas);
 }
 
-.tlStep[data-done='false'] .tlDot {
+.tlStep[data-done="false"] .tlDot {
   border-color: var(--ds-border-default);
   color: var(--ds-text-muted);
 }
@@ -299,7 +299,7 @@
   color: var(--ds-text-primary);
 }
 
-.tlStep[data-done='false'] .tlTitle {
+.tlStep[data-done="false"] .tlTitle {
   color: var(--ds-text-muted);
 }
 
@@ -322,31 +322,31 @@
   color: var(--ds-text-muted);
 }
 
-.tlStatus[data-status='success'] {
+.tlStatus[data-status="success"] {
   color: var(--nova-up);
   border-color: color-mix(in oklch, var(--nova-up) 35%, transparent);
   background: color-mix(in oklch, var(--nova-up) 10%, transparent);
 }
 
-.tlStatus[data-status='progress'] {
+.tlStatus[data-status="progress"] {
   color: var(--nova-cyan);
   border-color: color-mix(in oklch, var(--nova-cyan) 35%, transparent);
   background: color-mix(in oklch, var(--nova-cyan) 10%, transparent);
 }
 
-.tlStatus[data-status='danger'] {
+.tlStatus[data-status="danger"] {
   color: var(--nova-down);
   border-color: color-mix(in oklch, var(--nova-down) 35%, transparent);
   background: color-mix(in oklch, var(--nova-down) 10%, transparent);
 }
 
-.tlStatus[data-status='pending'] {
+.tlStatus[data-status="pending"] {
   color: var(--nova-amber);
   border-color: color-mix(in oklch, var(--nova-amber) 35%, transparent);
   background: color-mix(in oklch, var(--nova-amber) 10%, transparent);
 }
 
-.tlStatus[data-status='cancelled'] {
+.tlStatus[data-status="cancelled"] {
   color: var(--ds-text-muted);
 }
 
@@ -391,8 +391,8 @@
   font-variant-numeric: tabular-nums;
 }
 
-.kvValue[data-mono='true'] {
-  font-feature-settings: 'tnum' 1, 'lnum' 1;
+.kvValue[data-mono="true"] {
+  font-feature-settings: "tnum" 1, "lnum" 1;
 }
 
 /* ── Note Box ───────────────────────────────────────────────────────────── */

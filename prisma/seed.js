@@ -809,7 +809,7 @@ async function seedAdvertisements() {
     {
       title: 'دوره جامع تحلیل تکنیکال',
       description: 'از صفر تا حرفه‌ای با مثال‌های بازار ایران',
-      imageUrl: 'https://placehold.co/600x200/2563eb/ffffff?text=Technical+Analysis',
+      imageUrl: 'https://placehold.co/600x200/2563eb/ffffff.png?text=Technical+Analysis',
       linkUrl: '/services',
       size: 'LARGE',
       position: 'IN_CONTENT',
@@ -820,7 +820,7 @@ async function seedAdvertisements() {
     {
       title: 'مشاوره ارزی شخصی',
       description: 'با کارشناسان خبره بازارهای مالی گفتگو کنید',
-      imageUrl: 'https://placehold.co/300x250/059669/ffffff?text=Currency+Consulting',
+      imageUrl: 'https://placehold.co/300x250/059669/ffffff.png?text=Currency+Consulting',
       linkUrl: '/services',
       size: 'MEDIUM',
       position: 'SIDEBAR',
@@ -831,7 +831,7 @@ async function seedAdvertisements() {
     {
       title: 'صرافی آنلاین امن',
       description: 'خرید و فروش ارز با کمترین اسپرد',
-      imageUrl: 'https://placehold.co/728x90/d97706/ffffff?text=Exchange+Banner',
+      imageUrl: 'https://placehold.co/728x90/d97706/ffffff.png?text=Exchange+Banner',
       linkUrl: '/exchange-rates',
       size: 'CUSTOM',
       position: 'BETWEEN_POSTS',
@@ -2206,26 +2206,128 @@ async function seedCreditRates() {
   }
   const { v4: uuid } = require('uuid');
   const banks = await p.bank.findMany({ select: { id: true, slug: true } });
-  if (banks.length === 0) { console.log('   ⚠️  هیچ بانکی پیدا نشد'); return; }
+  if (banks.length === 0) {
+    console.log('   ⚠️  هیچ بانکی پیدا نشد');
+    return;
+  }
   const bankMap = Object.fromEntries(banks.map((b) => [b.slug, b.id]));
 
   const RATES = [
     // افغانستان — بانک افغانستان
-    { bankSlug: 'afbank', type: 'PERSONAL', title: 'وام شخصی کوتاه‌مدت', annualRate: 14.0, maxAmountCents: 500000, maxTermMonths: 36, currency: 'AFN', status: 'ACTIVE' },
-    { bankSlug: 'afbank', type: 'MORTGAGE', title: 'وام مسکن بلندمدت', annualRate: 12.5, maxAmountCents: 5000000, maxTermMonths: 240, currency: 'AFN', status: 'ACTIVE' },
-    { bankSlug: 'afbank', type: 'DEPOSIT', title: 'سپرده سرمایه‌گذاری یک‌ساله', annualRate: 8.5, maxAmountCents: 0, maxTermMonths: 12, currency: 'AFN', status: 'ACTIVE' },
+    {
+      bankSlug: 'afbank',
+      type: 'PERSONAL',
+      title: 'وام شخصی کوتاه‌مدت',
+      annualRate: 14.0,
+      maxAmountCents: 500000,
+      maxTermMonths: 36,
+      currency: 'AFN',
+      status: 'ACTIVE',
+    },
+    {
+      bankSlug: 'afbank',
+      type: 'MORTGAGE',
+      title: 'وام مسکن بلندمدت',
+      annualRate: 12.5,
+      maxAmountCents: 5000000,
+      maxTermMonths: 240,
+      currency: 'AFN',
+      status: 'ACTIVE',
+    },
+    {
+      bankSlug: 'afbank',
+      type: 'DEPOSIT',
+      title: 'سپرده سرمایه‌گذاری یک‌ساله',
+      annualRate: 8.5,
+      maxAmountCents: 0,
+      maxTermMonths: 12,
+      currency: 'AFN',
+      status: 'ACTIVE',
+    },
     // بانک عزیزی
-    { bankSlug: 'azizi-bank', type: 'PERSONAL', title: 'وام شخصی عزیزی', annualRate: 16.0, maxAmountCents: 300000, maxTermMonths: 24, currency: 'AFN', status: 'ACTIVE' },
-    { bankSlug: 'azizi-bank', type: 'BUSINESS', title: 'وام کسب‌وکار کوچک', annualRate: 18.0, maxAmountCents: 2000000, maxTermMonths: 60, currency: 'AFN', status: 'ACTIVE' },
-    { bankSlug: 'azizi-bank', type: 'DEPOSIT', title: 'سپرده سه‌ماهه', annualRate: 7.0, maxAmountCents: 0, maxTermMonths: 3, currency: 'AFN', status: 'ACTIVE' },
+    {
+      bankSlug: 'azizi-bank',
+      type: 'PERSONAL',
+      title: 'وام شخصی عزیزی',
+      annualRate: 16.0,
+      maxAmountCents: 300000,
+      maxTermMonths: 24,
+      currency: 'AFN',
+      status: 'ACTIVE',
+    },
+    {
+      bankSlug: 'azizi-bank',
+      type: 'BUSINESS',
+      title: 'وام کسب‌وکار کوچک',
+      annualRate: 18.0,
+      maxAmountCents: 2000000,
+      maxTermMonths: 60,
+      currency: 'AFN',
+      status: 'ACTIVE',
+    },
+    {
+      bankSlug: 'azizi-bank',
+      type: 'DEPOSIT',
+      title: 'سپرده سه‌ماهه',
+      annualRate: 7.0,
+      maxAmountCents: 0,
+      maxTermMonths: 3,
+      currency: 'AFN',
+      status: 'ACTIVE',
+    },
     // بانک غضنفر
-    { bankSlug: 'ghazanfar-bank', type: 'AGRICULTURE', title: 'وام کشاورزی', annualRate: 10.0, maxAmountCents: 800000, maxTermMonths: 48, currency: 'AFN', status: 'ACTIVE' },
-    { bankSlug: 'ghazanfar-bank', type: 'QARD_AL_HASAN', title: 'قرض‌الحسنه', annualRate: 0, maxAmountCents: 100000, maxTermMonths: 12, currency: 'AFN', status: 'ACTIVE' },
+    {
+      bankSlug: 'ghazanfar-bank',
+      type: 'AGRICULTURE',
+      title: 'وام کشاورزی',
+      annualRate: 10.0,
+      maxAmountCents: 800000,
+      maxTermMonths: 48,
+      currency: 'AFN',
+      status: 'ACTIVE',
+    },
+    {
+      bankSlug: 'ghazanfar-bank',
+      type: 'QARD_AL_HASAN',
+      title: 'قرض‌الحسنه',
+      annualRate: 0,
+      maxAmountCents: 100000,
+      maxTermMonths: 12,
+      currency: 'AFN',
+      status: 'ACTIVE',
+    },
     // بانک میوند
-    { bankSlug: 'maiwand-bank', type: 'COMMERCIAL', title: 'اعتبار تجاری', annualRate: 15.0, maxAmountCents: 10000000, maxTermMonths: 120, currency: 'AFN', status: 'ACTIVE' },
-    { bankSlug: 'maiwand-bank', type: 'AUTO', title: 'وام خودرو', annualRate: 13.5, maxAmountCents: 1500000, maxTermMonths: 60, currency: 'AFN', status: 'ACTIVE' },
+    {
+      bankSlug: 'maiwand-bank',
+      type: 'COMMERCIAL',
+      title: 'اعتبار تجاری',
+      annualRate: 15.0,
+      maxAmountCents: 10000000,
+      maxTermMonths: 120,
+      currency: 'AFN',
+      status: 'ACTIVE',
+    },
+    {
+      bankSlug: 'maiwand-bank',
+      type: 'AUTO',
+      title: 'وام خودرو',
+      annualRate: 13.5,
+      maxAmountCents: 1500000,
+      maxTermMonths: 60,
+      currency: 'AFN',
+      status: 'ACTIVE',
+    },
     // ایران
-    { bankSlug: 'export-development-bank-ir', type: 'BUSINESS', title: 'تسهیلات صادراتی', annualRate: 22.0, maxAmountCents: 500000000, maxTermMonths: 84, currency: 'IRR', status: 'ACTIVE' },
+    {
+      bankSlug: 'export-development-bank-ir',
+      type: 'BUSINESS',
+      title: 'تسهیلات صادراتی',
+      annualRate: 22.0,
+      maxAmountCents: 500000000,
+      maxTermMonths: 84,
+      currency: 'IRR',
+      status: 'ACTIVE',
+    },
   ];
 
   let added = 0;
@@ -2263,14 +2365,17 @@ async function seedExchangeServices() {
     where: { status: 'ACTIVE' },
     select: { id: true, slug: true, name: true },
   });
-  if (exchanges.length === 0) { console.log('   ⚠️  هیچ صرافی ACTIVE پیدا نشد'); return; }
+  if (exchanges.length === 0) {
+    console.log('   ⚠️  هیچ صرافی ACTIVE پیدا نشد');
+    return;
+  }
 
   const SERVICES_PER_EXCHANGE = [
-    { serviceKey: 'CURRENCY_BUY',           order: 1 },
-    { serviceKey: 'CURRENCY_SELL',          order: 2 },
+    { serviceKey: 'CURRENCY_BUY', order: 1 },
+    { serviceKey: 'CURRENCY_SELL', order: 2 },
     { serviceKey: 'INTERNATIONAL_TRANSFER', order: 3 },
-    { serviceKey: 'ONLINE_PAYMENT',         order: 4 },
-    { serviceKey: 'CRYPTO_BUY',             order: 5 },
+    { serviceKey: 'ONLINE_PAYMENT', order: 4 },
+    { serviceKey: 'CRYPTO_BUY', order: 5 },
   ];
 
   let totalAdded = 0;
@@ -2301,14 +2406,67 @@ async function seedCurrencyDeals() {
     take: 4,
     select: { id: true, name: true },
   });
-  if (exchanges.length === 0) { console.log('   ⚠️  هیچ صرافی ACTIVE پیدا نشد'); return; }
+  if (exchanges.length === 0) {
+    console.log('   ⚠️  هیچ صرافی ACTIVE پیدا نشد');
+    return;
+  }
 
   const DEALS = [
-    { customerName: 'احمد رضایی',   customerPhone: '09120000001', fromCurrency: 'USD', toCurrency: 'AFN', fromAmount: 500,   toAmount: 44250,   appliedRate: 88.5,  channel: 'ONLINE',    status: 'COMPLETED' },
-    { customerName: 'مریم احمدی',   customerPhone: '09120000002', fromCurrency: 'EUR', toCurrency: 'AFN', fromAmount: 300,   toAmount: 28830,   appliedRate: 96.1,  channel: 'ONLINE',    status: 'CONFIRMED' },
-    { customerName: 'علی محمدی',    customerPhone: '09120000003', fromCurrency: 'USD', toCurrency: 'AFN', fromAmount: 1000,  toAmount: 89000,   appliedRate: 89.0,  channel: 'INPERSON',  status: 'PENDING' },
-    { customerName: 'فاطمه کریمی',  customerPhone: '09120000004', fromCurrency: 'AED', toCurrency: 'AFN', fromAmount: 2000,  toAmount: 48200,   appliedRate: 24.1,  channel: 'ONLINE',    status: 'PENDING' },
-    { customerName: 'حسین صادقی',   customerPhone: '09120000005', fromCurrency: 'USD', toCurrency: 'IRR', fromAmount: 200,   toAmount: 1740000, appliedRate: 8700,  channel: 'ONLINE',    status: 'CANCELLED' },
+    {
+      customerName: 'احمد رضایی',
+      customerPhone: '09120000001',
+      fromCurrency: 'USD',
+      toCurrency: 'AFN',
+      fromAmount: 500,
+      toAmount: 44250,
+      appliedRate: 88.5,
+      channel: 'ONLINE',
+      status: 'COMPLETED',
+    },
+    {
+      customerName: 'مریم احمدی',
+      customerPhone: '09120000002',
+      fromCurrency: 'EUR',
+      toCurrency: 'AFN',
+      fromAmount: 300,
+      toAmount: 28830,
+      appliedRate: 96.1,
+      channel: 'ONLINE',
+      status: 'CONFIRMED',
+    },
+    {
+      customerName: 'علی محمدی',
+      customerPhone: '09120000003',
+      fromCurrency: 'USD',
+      toCurrency: 'AFN',
+      fromAmount: 1000,
+      toAmount: 89000,
+      appliedRate: 89.0,
+      channel: 'INPERSON',
+      status: 'PENDING',
+    },
+    {
+      customerName: 'فاطمه کریمی',
+      customerPhone: '09120000004',
+      fromCurrency: 'AED',
+      toCurrency: 'AFN',
+      fromAmount: 2000,
+      toAmount: 48200,
+      appliedRate: 24.1,
+      channel: 'ONLINE',
+      status: 'PENDING',
+    },
+    {
+      customerName: 'حسین صادقی',
+      customerPhone: '09120000005',
+      fromCurrency: 'USD',
+      toCurrency: 'IRR',
+      fromAmount: 200,
+      toAmount: 1740000,
+      appliedRate: 8700,
+      channel: 'ONLINE',
+      status: 'CANCELLED',
+    },
   ];
 
   let added = 0;
@@ -2316,7 +2474,9 @@ async function seedCurrencyDeals() {
     const d = DEALS[i];
     const ex = exchanges[i % exchanges.length];
     const trackingCode = `DL-${Date.now()}-${String(i + 1).padStart(4, '0')}`;
-    const existing = await p.currencyDeal.findFirst({ where: { customerPhone: d.customerPhone, exchangeId: ex.id } });
+    const existing = await p.currencyDeal.findFirst({
+      where: { customerPhone: d.customerPhone, exchangeId: ex.id },
+    });
     if (existing) continue;
     await p.currencyDeal.create({
       data: {
@@ -2353,13 +2513,16 @@ async function seedSettlements() {
     take: 3,
     select: { id: true, name: true },
   });
-  if (exchanges.length === 0) { console.log('   ⚠️  هیچ صرافی ACTIVE پیدا نشد'); return; }
+  if (exchanges.length === 0) {
+    console.log('   ⚠️  هیچ صرافی ACTIVE پیدا نشد');
+    return;
+  }
 
   let added = 0;
   for (let i = 0; i < Math.min(3, exchanges.length); i++) {
     const ex = exchanges[i];
     const periodStart = daysAgo(30);
-    const periodEnd   = daysAgo(1);
+    const periodEnd = daysAgo(1);
     const existing = await p.settlement.findFirst({ where: { exchangeId: ex.id, periodStart } });
     if (existing) continue;
     await p.settlement.create({
@@ -2400,22 +2563,109 @@ async function seedExchangeFintech() {
     take: 4,
     select: { id: true, name: true, primaryCurrency: true },
   });
-  if (exchanges.length === 0) { console.log('   ⚠️  صرافی فعال پیدا نشد'); return; }
+  if (exchanges.length === 0) {
+    console.log('   ⚠️  صرافی فعال پیدا نشد');
+    return;
+  }
 
   // اطلاعات مشتریان نمونه
   const CUSTOMER_TEMPLATES = [
-    { fullName: 'احمد رضایی',    phone: '0912111001', city: 'تهران',    status: 'ACTIVE',   kycStatus: 'APPROVED',     kycLevel: 'LEVEL_2' },
-    { fullName: 'مریم احمدی',    phone: '0912111002', city: 'کابل',     status: 'ACTIVE',   kycStatus: 'APPROVED',     kycLevel: 'LEVEL_1' },
-    { fullName: 'علی محمدی',     phone: '0912111003', city: 'مشهد',     status: 'ACTIVE',   kycStatus: 'PENDING',      kycLevel: 'NONE' },
-    { fullName: 'فاطمه کریمی',   phone: '0912111004', city: 'هرات',     status: 'ACTIVE',   kycStatus: 'APPROVED',     kycLevel: 'LEVEL_2' },
-    { fullName: 'حسین صادقی',    phone: '0912111005', city: 'اصفهان',   status: 'FROZEN',   kycStatus: 'APPROVED',     kycLevel: 'LEVEL_1' },
-    { fullName: 'زینب موسوی',    phone: '0912111006', city: 'تهران',    status: 'ACTIVE',   kycStatus: 'APPROVED',     kycLevel: 'LEVEL_2' },
-    { fullName: 'رضا قاسمی',     phone: '0912111007', city: 'کابل',     status: 'ACTIVE',   kycStatus: 'NOT_STARTED',  kycLevel: 'NONE' },
-    { fullName: 'نگار حسینی',    phone: '0912111008', city: 'شیراز',    status: 'PROSPECT', kycStatus: 'NOT_STARTED',  kycLevel: 'NONE' },
-    { fullName: 'کامران نوری',   phone: '0912111009', city: 'تبریز',    status: 'ACTIVE',   kycStatus: 'APPROVED',     kycLevel: 'LEVEL_1' },
-    { fullName: 'سارا جعفری',    phone: '0912111010', city: 'هرات',     status: 'ACTIVE',   kycStatus: 'APPROVED',     kycLevel: 'LEVEL_2' },
-    { fullName: 'مهدی ابراهیمی', phone: '0912111011', city: 'تهران',    status: 'ACTIVE',   kycStatus: 'REJECTED',     kycLevel: 'NONE' },
-    { fullName: 'لیلا شریفی',    phone: '0912111012', city: 'کرج',      status: 'CLOSED',   kycStatus: 'APPROVED',     kycLevel: 'LEVEL_1' },
+    {
+      fullName: 'احمد رضایی',
+      phone: '0912111001',
+      city: 'تهران',
+      status: 'ACTIVE',
+      kycStatus: 'APPROVED',
+      kycLevel: 'LEVEL_2',
+    },
+    {
+      fullName: 'مریم احمدی',
+      phone: '0912111002',
+      city: 'کابل',
+      status: 'ACTIVE',
+      kycStatus: 'APPROVED',
+      kycLevel: 'LEVEL_1',
+    },
+    {
+      fullName: 'علی محمدی',
+      phone: '0912111003',
+      city: 'مشهد',
+      status: 'ACTIVE',
+      kycStatus: 'PENDING',
+      kycLevel: 'NONE',
+    },
+    {
+      fullName: 'فاطمه کریمی',
+      phone: '0912111004',
+      city: 'هرات',
+      status: 'ACTIVE',
+      kycStatus: 'APPROVED',
+      kycLevel: 'LEVEL_2',
+    },
+    {
+      fullName: 'حسین صادقی',
+      phone: '0912111005',
+      city: 'اصفهان',
+      status: 'FROZEN',
+      kycStatus: 'APPROVED',
+      kycLevel: 'LEVEL_1',
+    },
+    {
+      fullName: 'زینب موسوی',
+      phone: '0912111006',
+      city: 'تهران',
+      status: 'ACTIVE',
+      kycStatus: 'APPROVED',
+      kycLevel: 'LEVEL_2',
+    },
+    {
+      fullName: 'رضا قاسمی',
+      phone: '0912111007',
+      city: 'کابل',
+      status: 'ACTIVE',
+      kycStatus: 'NOT_STARTED',
+      kycLevel: 'NONE',
+    },
+    {
+      fullName: 'نگار حسینی',
+      phone: '0912111008',
+      city: 'شیراز',
+      status: 'PROSPECT',
+      kycStatus: 'NOT_STARTED',
+      kycLevel: 'NONE',
+    },
+    {
+      fullName: 'کامران نوری',
+      phone: '0912111009',
+      city: 'تبریز',
+      status: 'ACTIVE',
+      kycStatus: 'APPROVED',
+      kycLevel: 'LEVEL_1',
+    },
+    {
+      fullName: 'سارا جعفری',
+      phone: '0912111010',
+      city: 'هرات',
+      status: 'ACTIVE',
+      kycStatus: 'APPROVED',
+      kycLevel: 'LEVEL_2',
+    },
+    {
+      fullName: 'مهدی ابراهیمی',
+      phone: '0912111011',
+      city: 'تهران',
+      status: 'ACTIVE',
+      kycStatus: 'REJECTED',
+      kycLevel: 'NONE',
+    },
+    {
+      fullName: 'لیلا شریفی',
+      phone: '0912111012',
+      city: 'کرج',
+      status: 'CLOSED',
+      kycStatus: 'APPROVED',
+      kycLevel: 'LEVEL_1',
+    },
   ];
 
   // نوع‌های تراکنش با احتمال‌های مختلف
@@ -2423,11 +2673,11 @@ async function seedExchangeFintech() {
   const TX_STATUS = ['COMPLETED', 'COMPLETED', 'COMPLETED', 'PENDING', 'CANCELLED'];
 
   let totalCustomers = 0;
-  let totalAccounts  = 0;
-  let totalTxns      = 0;
-  let totalLedger    = 0;
-  let totalKyc       = 0;
-  let totalFraud     = 0;
+  let totalAccounts = 0;
+  let totalTxns = 0;
+  let totalLedger = 0;
+  let totalKyc = 0;
+  let totalFraud = 0;
 
   for (const ex of exchanges) {
     const currency = ex.primaryCurrency || 'AFN';
@@ -2500,10 +2750,10 @@ async function seedExchangeFintech() {
       const txCount = rand(5, 15);
       let runningBalance = BigInt(0);
       for (let t = 0; t < txCount; t++) {
-        const kind   = TX_KINDS[rand(0, TX_KINDS.length - 1)];
+        const kind = TX_KINDS[rand(0, TX_KINDS.length - 1)];
         const status = TX_STATUS[rand(0, TX_STATUS.length - 1)];
         const amount = BigInt(rand(100_000, 2_000_000));
-        const txId   = uuid();
+        const txId = uuid();
         const txDate = daysAgo(rand(0, 29));
 
         await p.transaction.create({
@@ -2563,7 +2813,9 @@ async function seedExchangeFintech() {
     }
   }
 
-  console.log(`   ✅ مشتری: ${totalCustomers} | حساب: ${totalAccounts} | تراکنش: ${totalTxns} | دفتر: ${totalLedger} | KYC: ${totalKyc} | تقلب: ${totalFraud}`);
+  console.log(
+    `   ✅ مشتری: ${totalCustomers} | حساب: ${totalAccounts} | تراکنش: ${totalTxns} | دفتر: ${totalLedger} | KYC: ${totalKyc} | تقلب: ${totalFraud}`,
+  );
 }
 
 /* ─── ExchangeStaff ───────────────────────────────────────────── */
@@ -2582,7 +2834,10 @@ async function seedExchangeStaff() {
     take: 3,
     select: { id: true, name: true },
   });
-  if (!owner || exchanges.length === 0) { console.log('   ⚠️  کاربر OWNER یا صرافی پیدا نشد'); return; }
+  if (!owner || exchanges.length === 0) {
+    console.log('   ⚠️  کاربر OWNER یا صرافی پیدا نشد');
+    return;
+  }
 
   const { v4: uuid } = require('uuid');
   let added = 0;
@@ -2594,7 +2849,13 @@ async function seedExchangeStaff() {
   });
   if (!exists1) {
     await p.exchangeStaff.create({
-      data: { id: uuid(), exchangeId: ex1.id, userId: owner.id, role: 'OWNER', title: 'مالک صرافی' },
+      data: {
+        id: uuid(),
+        exchangeId: ex1.id,
+        userId: owner.id,
+        role: 'OWNER',
+        title: 'مالک صرافی',
+      },
     });
     added++;
   }
@@ -2607,7 +2868,13 @@ async function seedExchangeStaff() {
     });
     if (!exists2) {
       await p.exchangeStaff.create({
-        data: { id: uuid(), exchangeId: ex2.id, userId: admin.id, role: 'MANAGER', title: 'مدیر صرافی' },
+        data: {
+          id: uuid(),
+          exchangeId: ex2.id,
+          userId: admin.id,
+          role: 'MANAGER',
+          title: 'مدیر صرافی',
+        },
       });
       added++;
     }
@@ -2625,10 +2892,34 @@ async function seedContactSubmissions() {
   }
   const { v4: uuid } = require('uuid');
   const CONTACTS = [
-    { name: 'احمد رضایی',  email: 'ahmad@test.ir',  subject: 'سوال درباره حواله',       message: 'آیا می‌توانم از افغانستان به ایران حواله ارسال کنم؟', status: 'NEW' },
-    { name: 'مریم کریمی',  email: 'maryam@test.ir', subject: 'مشکل پرداخت',             message: 'پرداختم گیر کرده — لطفاً بررسی کنید.', status: 'IN_PROGRESS' },
-    { name: 'علی محمدی',   email: 'ali@test.ir',    subject: 'پیشنهاد بهبود سایت',      message: 'پیشنهاد می‌دهم نمودار قیمت ارز اضافه شود.', status: 'RESOLVED' },
-    { name: 'فاطمه نوری',  email: 'fateme@test.ir', subject: 'درخواست همکاری صرافی',    message: 'صرافی ما می‌خواهد در پلتفرم شما ثبت شود.', status: 'NEW' },
+    {
+      name: 'احمد رضایی',
+      email: 'ahmad@test.ir',
+      subject: 'سوال درباره حواله',
+      message: 'آیا می‌توانم از افغانستان به ایران حواله ارسال کنم؟',
+      status: 'NEW',
+    },
+    {
+      name: 'مریم کریمی',
+      email: 'maryam@test.ir',
+      subject: 'مشکل پرداخت',
+      message: 'پرداختم گیر کرده — لطفاً بررسی کنید.',
+      status: 'IN_PROGRESS',
+    },
+    {
+      name: 'علی محمدی',
+      email: 'ali@test.ir',
+      subject: 'پیشنهاد بهبود سایت',
+      message: 'پیشنهاد می‌دهم نمودار قیمت ارز اضافه شود.',
+      status: 'RESOLVED',
+    },
+    {
+      name: 'فاطمه نوری',
+      email: 'fateme@test.ir',
+      subject: 'درخواست همکاری صرافی',
+      message: 'صرافی ما می‌خواهد در پلتفرم شما ثبت شود.',
+      status: 'NEW',
+    },
   ];
   let added = 0;
   for (const c of CONTACTS) {
@@ -2658,13 +2949,16 @@ async function seedSubscriptionEvents() {
   }
   const { v4: uuid } = require('uuid');
   const users = await p.user.findMany({ take: 4, select: { id: true } });
-  if (users.length === 0) { console.log('   ⚠️  کاربری پیدا نشد'); return; }
+  if (users.length === 0) {
+    console.log('   ⚠️  کاربری پیدا نشد');
+    return;
+  }
 
   const PLANS = [
-    { fromPlan: null,      toPlan: 'FREE',    kind: 'UPGRADE',    amount: 0,       status: 'PAID' },
-    { fromPlan: 'FREE',    toPlan: 'BASIC',   kind: 'UPGRADE',    amount: 500000,  status: 'PAID' },
-    { fromPlan: 'BASIC',   toPlan: 'PRO',     kind: 'UPGRADE',    amount: 1500000, status: 'PAID' },
-    { fromPlan: 'PRO',     toPlan: 'BASIC',   kind: 'DOWNGRADE',  amount: 0,       status: 'PAID' },
+    { fromPlan: null, toPlan: 'FREE', kind: 'UPGRADE', amount: 0, status: 'PAID' },
+    { fromPlan: 'FREE', toPlan: 'BASIC', kind: 'UPGRADE', amount: 500000, status: 'PAID' },
+    { fromPlan: 'BASIC', toPlan: 'PRO', kind: 'UPGRADE', amount: 1500000, status: 'PAID' },
+    { fromPlan: 'PRO', toPlan: 'BASIC', kind: 'DOWNGRADE', amount: 0, status: 'PAID' },
   ];
 
   let added = 0;
@@ -2681,7 +2975,8 @@ async function seedSubscriptionEvents() {
         amount: BigInt(plan.amount),
         currency: 'AFN',
         status: plan.status,
-        validUntil: plan.toPlan !== 'FREE' ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) : null,
+        validUntil:
+          plan.toPlan !== 'FREE' ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) : null,
         createdAt: daysAgo(rand(1, 60)),
       },
     });
@@ -2702,10 +2997,19 @@ async function seedServiceClicks() {
     take: 4,
     select: { id: true },
   });
-  if (exchanges.length === 0) { console.log('   ⚠️  صرافی فعال پیدا نشد'); return; }
+  if (exchanges.length === 0) {
+    console.log('   ⚠️  صرافی فعال پیدا نشد');
+    return;
+  }
 
-  const SERVICES = ['CURRENCY_BUY', 'INTERNATIONAL_TRANSFER', 'ONLINE_PAYMENT', 'CRYPTO_BUY', 'CURRENCY_SELL'];
-  const SOURCES  = ['exchange-page', 'marketplace', 'homepage', 'comparison-table'];
+  const SERVICES = [
+    'CURRENCY_BUY',
+    'INTERNATIONAL_TRANSFER',
+    'ONLINE_PAYMENT',
+    'CRYPTO_BUY',
+    'CURRENCY_SELL',
+  ];
+  const SOURCES = ['exchange-page', 'marketplace', 'homepage', 'comparison-table'];
 
   let added = 0;
   for (let i = 0; i < 20; i++) {
@@ -2867,18 +3171,18 @@ async function main() {
     exchanges: await p.exchange.count(),
     transferProviders: await p.transferProvider.count(),
     exchangeServices: await p.exchangeService.count(),
-    customers:        await p.customer.count(),
-    fintechAccounts:  await p.fintechAccount.count(),
-    transactions:     await p.transaction.count(),
-    ledgerEntries:    await p.ledgerEntry.count(),
+    customers: await p.customer.count(),
+    fintechAccounts: await p.fintechAccount.count(),
+    transactions: await p.transaction.count(),
+    ledgerEntries: await p.ledgerEntry.count(),
     kycVerifications: await p.kycVerification.count(),
-    fraudReviews:     await p.fraudReview.count(),
-    exchangeStaff:    await p.exchangeStaff.count(),
-    banks:            await p.bank.count(),
-    creditRates:      await p.creditRate.count(),
-    currencyDeals:    await p.currencyDeal.count(),
-    settlements:      await p.settlement.count(),
-    serviceClicks:    await p.serviceClick.count(),
+    fraudReviews: await p.fraudReview.count(),
+    exchangeStaff: await p.exchangeStaff.count(),
+    banks: await p.bank.count(),
+    creditRates: await p.creditRate.count(),
+    currencyDeals: await p.currencyDeal.count(),
+    settlements: await p.settlement.count(),
+    serviceClicks: await p.serviceClick.count(),
     contactSubmissions: await p.contactSubmission.count(),
     subscriptionEvents: await p.subscriptionEvent.count(),
   };

@@ -161,7 +161,7 @@
   border-block-end: none;
 }
 
-.item[data-read='false'] {
+.item[data-read="false"] {
   background: color-mix(in oklch, var(--ds-brand-500) 3%, var(--ds-surface));
 }
 
@@ -178,7 +178,7 @@
   transition: background 160ms var(--ds-ease-out-quart);
 }
 
-.item[data-read='false'] .rail {
+.item[data-read="false"] .rail {
   background: var(--ds-brand-500);
 }
 
@@ -194,7 +194,7 @@
   transition: opacity 160ms var(--ds-ease-out-quart);
 }
 
-.item[data-read='false'] .dot {
+.item[data-read="false"] .dot {
   opacity: 1;
   animation: livePulse 2200ms ease-in-out infinite;
 }
@@ -216,7 +216,7 @@
   word-break: break-word;
 }
 
-.item[data-read='false'] .message {
+.item[data-read="false"] .message {
   font-weight: 700;
 }
 
@@ -233,7 +233,7 @@
   .item {
     animation: none;
   }
-  .item[data-read='false'] .dot {
+  .item[data-read="false"] .dot {
     animation: none;
   }
   .toolbarDot {

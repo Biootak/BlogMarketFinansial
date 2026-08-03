@@ -58,9 +58,9 @@ describe('isHighValueTransaction', () => {
     });
 
     it('زیر آستانه → false', () => {
-      expect(
-        isHighValueTransaction({ kind: 'TRANSFER', amountCents: THRESHOLD - BigInt(1) }),
-      ).toBe(false);
+      expect(isHighValueTransaction({ kind: 'TRANSFER', amountCents: THRESHOLD - BigInt(1) })).toBe(
+        false,
+      );
     });
   });
 
@@ -92,9 +92,9 @@ describe('isHighValueTransaction', () => {
 
   describe('edge cases', () => {
     it('kind ناشناخته → false', () => {
-      expect(
-        isHighValueTransaction({ kind: 'UNKNOWN_OP', amountCents: BigInt(999_999_999) }),
-      ).toBe(false);
+      expect(isHighValueTransaction({ kind: 'UNKNOWN_OP', amountCents: BigInt(999_999_999) })).toBe(
+        false,
+      );
     });
 
     it('string خالی → false', () => {

@@ -5,14 +5,9 @@
  * داده‌ها از StaffMetrics می‌آیند (server aggregate).
  */
 
-import {
-  Activity,
-  ShieldCheck,
-  UserPlus,
-  UserMinus,
-} from 'lucide-react';
 import type { StaffMetrics } from '@/actions/exchanges';
 import { formatNumber } from '@/lib/customer-format';
+import { Activity, ShieldCheck, UserMinus, UserPlus } from 'lucide-react';
 import s from './StaffCockpit.module.css';
 
 interface Props {
@@ -25,9 +20,7 @@ export function StaffKpiRibbon({ metrics }: Props) {
       label: 'کل اعضا',
       value: metrics.total,
       sub:
-        metrics.byRole.OWNER > 0
-          ? `${formatNumber(metrics.byRole.OWNER)} مالک`
-          : 'صرافی بدون مالک',
+        metrics.byRole.OWNER > 0 ? `${formatNumber(metrics.byRole.OWNER)} مالک` : 'صرافی بدون مالک',
       icon: ShieldCheck,
       tone: 'emerald' as const,
       trend: 'flat' as const,
@@ -36,9 +29,7 @@ export function StaffKpiRibbon({ metrics }: Props) {
       label: 'مدیران',
       value: metrics.byRole.MANAGER,
       sub:
-        metrics.byRole.STAFF > 0
-          ? `${formatNumber(metrics.byRole.STAFF)} کارمند`
-          : 'بدون کارمند',
+        metrics.byRole.STAFF > 0 ? `${formatNumber(metrics.byRole.STAFF)} کارمند` : 'بدون کارمند',
       icon: UserPlus,
       tone: 'gold' as const,
       trend: 'flat' as const,
@@ -57,10 +48,7 @@ export function StaffKpiRibbon({ metrics }: Props) {
     {
       label: 'لغو ۳۰ روز',
       value: metrics.revokedLast30d,
-      sub:
-        metrics.revokedLast30d === 0
-          ? 'پایدار'
-          : 'نیاز به بازنگری دسترسی',
+      sub: metrics.revokedLast30d === 0 ? 'پایدار' : 'نیاز به بازنگری دسترسی',
       icon: UserMinus,
       tone: 'rose' as const,
       trend: metrics.revokedLast30d > 0 ? ('down' as const) : ('flat' as const),
@@ -79,9 +67,7 @@ export function StaffKpiRibbon({ metrics }: Props) {
                 <Icon size={14} strokeWidth={2} />
               </span>
             </div>
-            <span className={s.kpiValue}>
-              {tile.value.toLocaleString('fa-IR')}
-            </span>
+            <span className={s.kpiValue}>{tile.value.toLocaleString('fa-IR')}</span>
             <div className={s.row} style={{ justifyContent: 'space-between' }}>
               <span className={s.kpiSub}>{tile.sub}</span>
               {tile.trend !== 'flat' && (

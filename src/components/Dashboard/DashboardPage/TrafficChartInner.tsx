@@ -8,7 +8,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 const CHART_MARGIN = { top: 20, right: 10, left: -10, bottom: 5 };
 
 interface InnerChartProps {
-  data: Array<Record<string, unknown>>;
+  data: Record<string, unknown>[];
   tooltip: React.ReactElement;
 }
 
@@ -38,7 +38,7 @@ interface AnimatedRectProps {
   height?: number;
   index?: number;
   fill?: string;
-  radius?: number | Array<number>;
+  radius?: number | number[];
   [key: string]: unknown;
 }
 

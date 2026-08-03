@@ -1,6 +1,5 @@
 import Heading from '@/components/Heading/Heading';
 import { Rocket } from 'lucide-react';
-import React, { FC } from 'react';
 
 export interface Statistic {
   id: string;

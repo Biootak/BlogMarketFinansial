@@ -1,6 +1,3 @@
-// components/Icons.js
-import React from 'react';
-
 export const UserIcon = ({ className = 'w-6 h-6', title = 'کاربر' }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path

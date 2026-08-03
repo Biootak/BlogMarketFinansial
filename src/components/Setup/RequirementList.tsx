@@ -1,7 +1,6 @@
 'use client';
 
 import { toPersianDigits } from '@/lib/setup/format';
-import * as React from 'react';
 import { CheckGlyph } from './WizardIcons';
 
 /**
@@ -31,7 +30,7 @@ const PRED_HAS_DIGIT: PasswordPredicate = (p) => /[0-9]/.test(p);
 const PRED_HAS_SPECIAL: PasswordPredicate = (p) => /[^A-Za-z0-9]/.test(p);
 const PRED_MIN_LENGTH: PasswordPredicate = (p) => p.length >= 12;
 
-export const DEFAULT_REQUIREMENTS: ReadonlyArray<Requirement> = [
+export const DEFAULT_REQUIREMENTS: readonly Requirement[] = [
   { id: 'length', label: 'حداقل ۱۲ کاراکتر', test: PRED_MIN_LENGTH },
   { id: 'lower', label: 'شامل حروف کوچک (a-z)', test: PRED_HAS_LOWER },
   { id: 'upper', label: 'شامل حروف بزرگ (A-Z)', test: PRED_HAS_UPPER },
@@ -41,7 +40,7 @@ export const DEFAULT_REQUIREMENTS: ReadonlyArray<Requirement> = [
 
 export interface RequirementListProps {
   password: string;
-  requirements?: ReadonlyArray<Requirement>;
+  requirements?: readonly Requirement[];
   /** Hide the list while the password field is empty (default: true). */
   hideWhenEmpty?: boolean;
 }

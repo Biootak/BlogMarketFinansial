@@ -4,11 +4,7 @@
 
 'use client';
 
-import {
-  createRateList,
-  deleteRateList,
-  updateRateList,
-} from '@/actions/rate-lists';
+import { createRateList, deleteRateList, updateRateList } from '@/actions/rate-lists';
 import { ConfirmDialog } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
 import {
@@ -470,10 +466,7 @@ function RateListDialog({
           </Field>
 
           <div className="flex flex-col" style={{ gap: '0.5rem' }}>
-            <div
-              className="flex items-center justify-between"
-              style={{ gap: '0.5rem' }}
-            >
+            <div className="flex items-center justify-between" style={{ gap: '0.5rem' }}>
               <span
                 style={{
                   fontSize: 'var(--ds-text-xs)',
@@ -498,8 +491,7 @@ function RateListDialog({
                   paddingInline: '0.6rem',
                   fontSize: '0.7rem',
                   color: 'var(--ds-brand-500)',
-                  background:
-                    'color-mix(in oklch, var(--ds-brand-500) 8%, transparent)',
+                  background: 'color-mix(in oklch, var(--ds-brand-500) 8%, transparent)',
                   border: '1px solid color-mix(in oklch, var(--ds-brand-500) 24%, transparent)',
                   borderRadius: 'var(--ds-radius-sm)',
                   cursor: 'pointer',
@@ -511,16 +503,9 @@ function RateListDialog({
               </button>
             </div>
 
-            <div
-              className="flex flex-col"
-              style={{ gap: '0.5rem' }}
-            >
+            <div className="flex flex-col" style={{ gap: '0.5rem' }}>
               {form.rates.map((rate, idx) => (
-                <div
-                  key={idx}
-                  className="grid grid-cols-[1fr_1fr_auto]"
-                  style={{ gap: '0.4rem' }}
-                >
+                <div key={idx} className="grid grid-cols-[1fr_1fr_auto]" style={{ gap: '0.4rem' }}>
                   <input
                     type="text"
                     value={rate.title}
@@ -583,19 +568,14 @@ function RateListDialog({
             </div>
           </div>
 
-          <label
-            className="inline-flex items-center"
-            style={{ gap: '0.5rem', cursor: 'pointer' }}
-          >
+          <label className="inline-flex items-center" style={{ gap: '0.5rem', cursor: 'pointer' }}>
             <input
               type="checkbox"
               checked={form.isActive}
               onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
               style={{ accentColor: 'var(--ds-brand-500)' }}
             />
-            <span
-              style={{ fontSize: 'var(--ds-text-sm)', color: 'var(--ds-text-primary)' }}
-            >
+            <span style={{ fontSize: 'var(--ds-text-sm)', color: 'var(--ds-text-primary)' }}>
               فعال و نمایش در تیکر
             </span>
           </label>
@@ -721,14 +701,10 @@ function EmptyListsState({ onCreate }: { onCreate: () => void }) {
           lineHeight: 1.5,
         }}
       >
-        فهرست‌ها به شما کمک می‌کنند تا نرخ‌ها را گروه‌بندی کنید و در تیکر سایت یا اپ به شکل دلخواه نمایش دهید.
+        فهرست‌ها به شما کمک می‌کنند تا نرخ‌ها را گروه‌بندی کنید و در تیکر سایت یا اپ به شکل دلخواه نمایش
+        دهید.
       </p>
-      <Button
-        type="button"
-        onClick={onCreate}
-        className="mt-2"
-        style={{ gap: '0.4rem' }}
-      >
+      <Button type="button" onClick={onCreate} className="mt-2" style={{ gap: '0.4rem' }}>
         <HiOutlinePlus aria-hidden style={{ width: '1rem', height: '1rem' }} />
         اولین فهرست را بساز
       </Button>

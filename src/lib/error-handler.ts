@@ -118,7 +118,7 @@ export async function safeAction<T>(
 
 // لاگ کردن خطا به Sentry و console
 export function logError(error: unknown, context?: Record<string, unknown>): void {
-  const errorInfo = {
+  const _errorInfo = {
     timestamp: new Date().toISOString(),
     error:
       error instanceof Error
@@ -133,7 +133,6 @@ export function logError(error: unknown, context?: Record<string, unknown>): voi
 
   // در development لاگ کن
   if (process.env.NODE_ENV === 'development') {
-    console.error('Error Log:', errorInfo);
   }
 
   // ارسال به Sentry در production

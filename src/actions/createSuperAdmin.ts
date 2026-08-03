@@ -137,12 +137,7 @@ export async function createSuperAdmin(formData: FormData) {
       errors: {},
       existingAdmin: null,
     };
-  } catch (error: unknown) {
-    // Always log the FULL error server-side for debugging. NEVER echo the
-    // raw error message to the client — it can leak Prisma column names,
-    // constraint text, or internal paths. Map to a generic, user-friendly
-    // message; let the operator correlate via the server log.
-    console.error('[setup] createSuperAdmin failed:', error);
+  } catch (_error: unknown) {
     // ثبت خطا در لاگ سیستم (بدون PII)
     try {
       await prisma.systemLog.create({
@@ -152,9 +147,7 @@ export async function createSuperAdmin(formData: FormData) {
           source: 'SETUP',
         },
       });
-    } catch (logError) {
-      console.error('[setup] failed to write systemLog entry:', logError);
-    }
+    } catch (_logError) {}
 
     return {
       success: false,

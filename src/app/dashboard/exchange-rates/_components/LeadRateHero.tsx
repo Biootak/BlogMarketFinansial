@@ -221,7 +221,11 @@ export default function LeadRateHero({
             ) : (
               <HiMinus style={{ width: '0.95rem', height: '0.95rem' }} />
             )}
-            {isFlat ? (hasTrend ? '۰٪' : 'نرخ فعلی') : `${isUp ? '+' : ''}${changePercent.toLocaleString('fa-IR', { maximumFractionDigits: 2 })}٪`}
+            {isFlat
+              ? hasTrend
+                ? '۰٪'
+                : 'نرخ فعلی'
+              : `${isUp ? '+' : ''}${changePercent.toLocaleString('fa-IR', { maximumFractionDigits: 2 })}٪`}
           </span>
 
           {/* Sparkline */}
@@ -284,10 +288,7 @@ function Sparkline({ points, trend }: { points: number[]; trend: number }) {
           <stop offset="100%" stopColor={stroke} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <path
-        d={`${path} L ${width} ${height} L 0 ${height} Z`}
-        fill="url(#sparkline-fill)"
-      />
+      <path d={`${path} L ${width} ${height} L 0 ${height} Z`} fill="url(#sparkline-fill)" />
       <path
         d={path}
         fill="none"

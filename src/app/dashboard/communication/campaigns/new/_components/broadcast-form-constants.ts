@@ -38,9 +38,30 @@ export interface AudienceSpec {
 }
 
 export const AUDIENCES: AudienceSpec[] = [
-  { id: 'all', label: 'همه کاربران', description: 'ارسال به تمام کاربران فعال پلتفرم', count: 12_400, tone: 'emerald', icon: Users },
-  { id: 'role', label: 'بر اساس نقش', description: 'مثلاً فقط مدیران یا صرافان', count: 280, tone: 'indigo', icon: Target },
-  { id: 'segment', label: 'سگمنت سفارشی', description: 'سگمنت تعریف‌شده در بخش مخاطبان', count: 1_850, tone: 'amber', icon: Sparkles },
+  {
+    id: 'all',
+    label: 'همه کاربران',
+    description: 'ارسال به تمام کاربران فعال پلتفرم',
+    count: 12_400,
+    tone: 'emerald',
+    icon: Users,
+  },
+  {
+    id: 'role',
+    label: 'بر اساس نقش',
+    description: 'مثلاً فقط مدیران یا صرافان',
+    count: 280,
+    tone: 'indigo',
+    icon: Target,
+  },
+  {
+    id: 'segment',
+    label: 'سگمنت سفارشی',
+    description: 'سگمنت تعریف‌شده در بخش مخاطبان',
+    count: 1_850,
+    tone: 'amber',
+    icon: Sparkles,
+  },
 ];
 
 export const toPersianDigits = (n: number | string) =>

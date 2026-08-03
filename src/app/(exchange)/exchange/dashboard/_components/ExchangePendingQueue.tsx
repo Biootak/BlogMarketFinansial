@@ -4,11 +4,11 @@
  * Server Component. لینک به صفحهٔ تراکنش‌ها (با فیلتر PENDING).
  */
 
-import s from './ExchangeDashboard.module.css';
-import Link from 'next/link';
-import { Check } from 'lucide-react';
-import { TX_KIND_FA } from '@/lib/exchange-labels';
 import type { PendingTx } from '@/actions/exchange-dashboard';
+import { TX_KIND_FA } from '@/lib/exchange-labels';
+import { Check } from 'lucide-react';
+import Link from 'next/link';
+import s from './ExchangeDashboard.module.css';
 
 function formatAge(minutes: number): string {
   if (minutes < 1) return 'لحظاتی پیش';
@@ -20,16 +20,21 @@ function formatAge(minutes: number): string {
 }
 
 function formatAmount(amountStr: string, currency: string): string {
-  return `${new Intl.NumberFormat('fa-IR', { notation: 'compact', maximumFractionDigits: 1 }).format(
-    Number(BigInt(amountStr)) / 100,
-  )} ${currency}`;
+  return `${new Intl.NumberFormat('fa-IR', {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(Number(BigInt(amountStr)) / 100)} ${currency}`;
 }
 
 export default function ExchangePendingQueue({ items }: { items: PendingTx[] }) {
   if (items.length === 0) {
     return (
       <div className={s.pendingEmpty}>
-        <Check size={14} aria-hidden style={{ color: 'var(--at-accent)', marginInlineEnd: 6, verticalAlign: 'middle' }} />
+        <Check
+          size={14}
+          aria-hidden
+          style={{ color: 'var(--at-accent)', marginInlineEnd: 6, verticalAlign: 'middle' }}
+        />
         همهٔ تراکنش‌ها تکمیل شده‌اند.
       </div>
     );
@@ -50,11 +55,10 @@ export default function ExchangePendingQueue({ items }: { items: PendingTx[] }) 
               <span className={s.pendingMain}>
                 <span className={s.pendingName}>{p.customerName ?? 'بدون نام'}</span>
                 <span className={s.pendingMeta}>
-                  <span className={s.pendingKind}>
-                    {TX_KIND_FA[p.kind] ?? p.kind}
-                  </span>
+                  <span className={s.pendingKind}>{TX_KIND_FA[p.kind] ?? p.kind}</span>
                   <span>
-                    ایجاد {new Intl.DateTimeFormat('fa-IR', {
+                    ایجاد{' '}
+                    {new Intl.DateTimeFormat('fa-IR', {
                       hour: '2-digit',
                       minute: '2-digit',
                     }).format(new Date(p.createdAt))}

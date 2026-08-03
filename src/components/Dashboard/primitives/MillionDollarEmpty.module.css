@@ -40,11 +40,7 @@
   inset-inline-start: 18%;
   inline-size: 240px;
   block-size: 240px;
-  background: radial-gradient(
-    circle,
-    var(--orb-color, var(--ds-primary)) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(circle, var(--orb-color, var(--ds-primary)) 0%, transparent 70%);
   animation: orb-a 18s var(--ds-ease-in-out-quart, ease) infinite;
   opacity: 0.22;
 }
@@ -54,11 +50,7 @@
   inset-inline-end: 12%;
   inline-size: 280px;
   block-size: 280px;
-  background: radial-gradient(
-    circle,
-    var(--orb-color-2, var(--ds-primary)) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(circle, var(--orb-color-2, var(--ds-primary)) 0%, transparent 70%);
   animation: orb-b 24s var(--ds-ease-in-out-quart, ease) infinite;
   opacity: 0.18;
 }
@@ -85,13 +77,23 @@
 }
 
 @keyframes orb-a {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(30px, 20px); }
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(30px, 20px);
+  }
 }
 
 @keyframes orb-b {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(-20px, -30px); }
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-20px, -30px);
+  }
 }
 
 /* ── Stage (illustration) ─────────────────────────────────────── */
@@ -106,8 +108,14 @@
 }
 
 @keyframes stage-in {
-  from { opacity: 0; transform: translateY(8px) scale(0.96); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .svg {
@@ -127,8 +135,14 @@
 }
 
 @keyframes copy-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .eyebrow {
@@ -181,8 +195,14 @@
 }
 
 @keyframes actions-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .secondary {
@@ -197,88 +217,169 @@
 }
 
 @keyframes letter-in {
-  0%, 100% { transform: translateY(0); opacity: 1; }
-  50% { transform: translateY(8px); opacity: 0.5; }
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(8px);
+    opacity: 0.5;
+  }
 }
 
 .sparkles circle {
   animation: twinkle 2.4s var(--ds-ease-in-out-quart, ease) infinite;
 }
-.sparkles circle:nth-child(2) { animation-delay: 0.4s; }
-.sparkles circle:nth-child(3) { animation-delay: 0.8s; }
+.sparkles circle:nth-child(2) {
+  animation-delay: 0.4s;
+}
+.sparkles circle:nth-child(3) {
+  animation-delay: 0.8s;
+}
 
 @keyframes twinkle {
-  0%, 100% { opacity: 0.2; }
-  50% { opacity: 0.9; }
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.9;
+  }
 }
 
-.spinSlow { animation: spin-slow 12s linear infinite; }
+.spinSlow {
+  animation: spin-slow 12s linear infinite;
+}
 
 @keyframes spin-slow {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.rotateSlow { animation: spin-slow 24s linear infinite reverse; }
+.rotateSlow {
+  animation: spin-slow 24s linear infinite reverse;
+}
 
 .twinkle circle {
   animation: twinkle 3s var(--ds-ease-in-out-quart, ease) infinite;
 }
-.twinkle circle:nth-child(2) { animation-delay: 0.6s; }
-.twinkle circle:nth-child(3) { animation-delay: 1.2s; }
-.twinkle circle:nth-child(4) { animation-delay: 1.8s; }
+.twinkle circle:nth-child(2) {
+  animation-delay: 0.6s;
+}
+.twinkle circle:nth-child(3) {
+  animation-delay: 1.2s;
+}
+.twinkle circle:nth-child(4) {
+  animation-delay: 1.8s;
+}
 
 .sparklesLarge > path {
   animation: star-pulse 3s var(--ds-ease-in-out-quart, ease) infinite;
   transform-origin: center;
 }
-.sparklesLarge > path:nth-child(2) { animation-delay: 0.6s; }
-.sparklesLarge > path:nth-child(3) { animation-delay: 1.2s; }
-.sparklesLarge > path:nth-child(4) { animation-delay: 1.8s; }
+.sparklesLarge > path:nth-child(2) {
+  animation-delay: 0.6s;
+}
+.sparklesLarge > path:nth-child(3) {
+  animation-delay: 1.2s;
+}
+.sparklesLarge > path:nth-child(4) {
+  animation-delay: 1.8s;
+}
 
 @keyframes star-pulse {
-  0%, 100% { transform: scale(1); opacity: 0.4; }
-  50% { transform: scale(1.1); opacity: 1; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
 }
 
 .barsRise rect {
   transform-origin: bottom;
   animation: bar-grow 1.2s var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
-.barsRise rect:nth-child(1) { animation-delay: 0.05s; }
-.barsRise rect:nth-child(2) { animation-delay: 0.15s; }
-.barsRise rect:nth-child(3) { animation-delay: 0.25s; }
-.barsRise rect:nth-child(4) { animation-delay: 0.35s; }
-.barsRise rect:nth-child(5) { animation-delay: 0.45s; }
-
-@keyframes bar-grow {
-  from { transform: scaleY(0); }
-  to { transform: scaleY(1); }
+.barsRise rect:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.barsRise rect:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.barsRise rect:nth-child(3) {
+  animation-delay: 0.25s;
+}
+.barsRise rect:nth-child(4) {
+  animation-delay: 0.35s;
+}
+.barsRise rect:nth-child(5) {
+  animation-delay: 0.45s;
 }
 
-.bellRing { animation: bell-swing 2.4s var(--ds-ease-in-out-quart, ease) infinite; }
+@keyframes bar-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.bellRing {
+  animation: bell-swing 2.4s var(--ds-ease-in-out-quart, ease) infinite;
+}
 
 @keyframes bell-swing {
-  0%, 100% { transform: rotate(0); }
-  20% { transform: rotate(-12deg); }
-  60% { transform: rotate(10deg); }
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  20% {
+    transform: rotate(-12deg);
+  }
+  60% {
+    transform: rotate(10deg);
+  }
 }
 
 .wavePulse circle {
   animation: wave-out 2s var(--ds-ease-in-out-quart, ease) infinite;
 }
-.wavePulse circle:nth-child(2) { animation-delay: 0.5s; }
-
-@keyframes wave-out {
-  0% { transform: scale(0.4); opacity: 0; }
-  20% { opacity: 0.8; }
-  100% { transform: scale(1.6); opacity: 0; }
+.wavePulse circle:nth-child(2) {
+  animation-delay: 0.5s;
 }
 
-.cardFloat { animation: card-bob 4s var(--ds-ease-in-out-quart, ease) infinite; }
+@keyframes wave-out {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.cardFloat {
+  animation: card-bob 4s var(--ds-ease-in-out-quart, ease) infinite;
+}
 
 @keyframes card-bob {
-  0%, 100% { transform: translateY(0) rotate(0); }
-  50% { transform: translateY(-4px) rotate(0.5deg); }
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  50% {
+    transform: translateY(-4px) rotate(0.5deg);
+  }
 }
 
 .networkPulse {
@@ -286,32 +387,62 @@
 }
 
 @keyframes net-pulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
-.shieldFloat { animation: shield-glow 3s var(--ds-ease-in-out-quart, ease) infinite; }
+.shieldFloat {
+  animation: shield-glow 3s var(--ds-ease-in-out-quart, ease) infinite;
+}
 
 @keyframes shield-glow {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.04); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
 }
 
-.float { animation: float-y 4s var(--ds-ease-in-out-quart, ease) infinite; }
+.float {
+  animation: float-y 4s var(--ds-ease-in-out-quart, ease) infinite;
+}
 
 @keyframes float-y {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .orbA, .orbB,
-  .stage, .copy, .actions,
-  .letter, .sparkles circle, .twinkle circle,
-  .spinSlow, .rotateSlow,
-  .sparklesLarge > path, .barsRise rect,
-  .bellRing, .wavePulse circle, .cardFloat,
-  .networkPulse, .shieldFloat, .float {
+  .orbA,
+  .orbB,
+  .stage,
+  .copy,
+  .actions,
+  .letter,
+  .sparkles circle,
+  .twinkle circle,
+  .spinSlow,
+  .rotateSlow,
+  .sparklesLarge > path,
+  .barsRise rect,
+  .bellRing,
+  .wavePulse circle,
+  .cardFloat,
+  .networkPulse,
+  .shieldFloat,
+  .float {
     animation: none;
   }
 }

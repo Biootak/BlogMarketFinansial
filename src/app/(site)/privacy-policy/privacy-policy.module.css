@@ -181,8 +181,8 @@
   padding: 5px 8px;
   border-radius: var(--ds-radius-sm);
   cursor: pointer;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast);
   text-align: start;
   text-decoration: none;
 }
@@ -214,8 +214,8 @@
   backdrop-filter: blur(12px);
   padding: var(--ds-space-6);
   margin-bottom: var(--ds-space-4);
-  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-base) var(--ds-ease-out-quart);
   scroll-margin-top: 100px;
 }
 
@@ -294,9 +294,19 @@
 /* ─── Highlights grid (rights cards) ────────────────────────────── */
 .rightsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: 1fr;
   gap: var(--ds-space-3);
   margin-block: var(--ds-space-4);
+}
+@media (min-width: 480px) {
+  .rightsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 768px) {
+  .rightsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .rightCard {
@@ -465,8 +475,8 @@
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
   text-decoration: none;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast);
 }
 
 .contactCta:hover {

@@ -1,6 +1,6 @@
-import { redirect, notFound } from 'next/navigation';
 import { auth } from '@/auth';
 import { getAnnouncementById } from '@/lib/communication';
+import { notFound, redirect } from 'next/navigation';
 import { AnnouncementDetail } from './_components/AnnouncementDetail';
 
 export const dynamic = 'force-dynamic';

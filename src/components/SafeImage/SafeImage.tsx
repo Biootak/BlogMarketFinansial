@@ -67,6 +67,47 @@ const ICON_SIZE_BY_VARIANT: Record<ImageVariant, string> = {
   thumbnail: 'w-6 h-6',
 };
 
+/**
+ * placehold.co serves SVG by default; Next's image optimizer rejects SVG
+ * (HTTP 400 on /_next/image). Append `.png` to the path so the optimizer
+ * gets a raster it can process. Only rewrites placehold.co URLs.
+ *
+ * unsplash URLs با query params مثل ?w=1600&q=80&auto=format&fit=crop باعث
+ * HTTP 400 در Next image optimizer می‌شوند چون optimizer خودش w/q را تنظیم
+ * می‌کند. این params را از unsplash URL حذف می‌کنیم (2026-08-03 fix).
+ */
+function normalizeRasterUrl(src: string): string {
+  // placehold.co: SVG → PNG
+  if (src.startsWith('https://placehold.co/')) {
+    const queryIdx = src.indexOf('?');
+    const base = queryIdx === -1 ? src : src.slice(0, queryIdx);
+    if (/\.(png|jpg|jpeg|webp|gif)$/i.test(base)) return src;
+    const query = queryIdx === -1 ? '' : src.slice(queryIdx);
+    return `${base}.png${query}`;
+  }
+
+  // unsplash: حذف size/format params که با next/image تداخل ایجاد می‌کنند
+  if (src.includes('images.unsplash.com')) {
+    try {
+      const u = new URL(src);
+      // این پارامترها توسط next/image مجدداً تنظیم می‌شوند → حذف
+      u.searchParams.delete('w');
+      u.searchParams.delete('q');
+      u.searchParams.delete('auto');
+      u.searchParams.delete('fit');
+      u.searchParams.delete('crop');
+      u.searchParams.delete('ixlib');
+      u.searchParams.delete('ixid');
+      u.searchParams.delete('cs');
+      return u.toString();
+    } catch {
+      return src;
+    }
+  }
+
+  return src;
+}
+
 export default function SafeImage({
   src,
   alt,
@@ -141,7 +182,7 @@ export default function SafeImage({
             sizes={sizes}
             priority={priority}
             fill
-            src={src as string}
+            src={normalizeRasterUrl(src as string)}
             {...props}
           />
           <Image
@@ -150,7 +191,7 @@ export default function SafeImage({
             sizes={sizes}
             priority={priority}
             fill={fill}
-            src={src as string}
+            src={normalizeRasterUrl(src as string)}
             onError={() => setHasError(true)}
             {...props}
           />
@@ -162,7 +203,7 @@ export default function SafeImage({
           sizes={sizes}
           priority={priority}
           fill={fill}
-          src={src as string}
+          src={normalizeRasterUrl(src as string)}
           onError={() => setHasError(true)}
           {...props}
         />

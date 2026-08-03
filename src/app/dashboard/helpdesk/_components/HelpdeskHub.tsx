@@ -16,18 +16,23 @@
  *  polling: هر ۳۰ ثانیه snapshot جدید.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { PageHeader } from '@/components/Dashboard/primitives';
 import { PillTabs } from '@/components/Dashboard/PlatformHub';
-import { PriorityOrbit, type OrbitTicket, type OrbitPriority, type OrbitStatus } from './PriorityOrbit';
-import { TicketList } from './TicketList';
-import { TicketDetail } from './TicketDetail';
-import { NewTicketForm } from './NewTicketForm';
-import { MetricWall, type MetricWallTile } from '@/components/Dashboard/PlatformHub/MetricWall';
 import { ActivityStream } from '@/components/Dashboard/PlatformHub/ActivityStream';
-import type { TicketSummary, TicketStatus, TicketPriority } from '@/lib/tickets';
+import { MetricWall, type MetricWallTile } from '@/components/Dashboard/PlatformHub/MetricWall';
+import { PageHeader } from '@/components/Dashboard/primitives';
+import type { TicketPriority, TicketStatus, TicketSummary } from '@/lib/tickets';
+import { useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import s from './HelpdeskHub.module.css';
+import { NewTicketForm } from './NewTicketForm';
+import {
+  type OrbitPriority,
+  type OrbitStatus,
+  type OrbitTicket,
+  PriorityOrbit,
+} from './PriorityOrbit';
+import { TicketDetail } from './TicketDetail';
+import { TicketList } from './TicketList';
 
 interface HelpdeskHubProps {
   initialTickets: TicketSummary[];
@@ -89,7 +94,7 @@ export function HelpdeskHub({ initialTickets }: HelpdeskHubProps) {
       url.searchParams.delete('new');
       window.history.replaceState({}, '', url.toString());
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── polling 30s برای تازه‌سازی snapshot (از route API) ─────
@@ -106,10 +111,31 @@ export function HelpdeskHub({ initialTickets }: HelpdeskHubProps) {
   }, []);
 
   useEffect(() => {
-    if (pollingRef.current) clearInterval(pollingRef.current);
-    pollingRef.current = setInterval(() => void refresh(), 30_000);
+    const start = () => {
+      if (pollingRef.current) return;
+      pollingRef.current = setInterval(() => void refresh(), 30_000);
+    };
+    const stop = () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    };
+    // بهینه‌سازی: polling وقتی tab پنهان است متوقف می‌شود
+    const onVisibility = () => {
+      if (document.hidden) {
+        stop();
+      } else {
+        void refresh();
+        start();
+      }
+    };
+
+    start();
+    document.addEventListener('visibilitychange', onVisibility);
     return () => {
-      if (pollingRef.current) clearInterval(pollingRef.current);
+      stop();
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [refresh]);
 
@@ -132,10 +158,7 @@ export function HelpdeskHub({ initialTickets }: HelpdeskHubProps) {
       if (priorityFilter !== 'all' && t.priority !== priorityFilter) return false;
       if (statusFilter !== 'all' && t.status !== statusFilter) return false;
       if (!q) return true;
-      return (
-        t.subject.toLowerCase().includes(q) ||
-        t.description.toLowerCase().includes(q)
-      );
+      return t.subject.toLowerCase().includes(q) || t.description.toLowerCase().includes(q);
     });
   }, [tickets, priorityFilter, statusFilter, query]);
 
@@ -144,7 +167,9 @@ export function HelpdeskHub({ initialTickets }: HelpdeskHubProps) {
     const open = tickets.filter((t) => t.status === 'open').length;
     const pending = tickets.filter((t) => t.status === 'pending').length;
     const inProgress = tickets.filter((t) => t.status === 'in_progress').length;
-    const urgent = tickets.filter((t) => t.priority === 'urgent' && t.status !== 'closed' && t.status !== 'resolved').length;
+    const urgent = tickets.filter(
+      (t) => t.priority === 'urgent' && t.status !== 'closed' && t.status !== 'resolved',
+    ).length;
     const resolved = tickets.filter((t) => t.status === 'resolved' || t.status === 'closed').length;
     return { open, pending, inProgress, urgent, resolved, total: tickets.length };
   }, [tickets]);
@@ -166,7 +191,12 @@ export function HelpdeskHub({ initialTickets }: HelpdeskHubProps) {
         title: t.subject,
         at: t.updatedAt,
         meta: `${t.messageCount} پیام`,
-        tone: t.priority === 'urgent' ? ('rose' as const) : t.priority === 'high' ? ('amber' as const) : ('cyan' as const),
+        tone:
+          t.priority === 'urgent'
+            ? ('rose' as const)
+            : t.priority === 'high'
+              ? ('amber' as const)
+              : ('cyan' as const),
       }));
   }, [tickets]);
 
@@ -175,9 +205,27 @@ export function HelpdeskHub({ initialTickets }: HelpdeskHubProps) {
     const total = Math.max(stats.total, 1);
     return [
       { key: 'open', label: 'باز', value: stats.open, ratio: stats.open / total, tone: 'cyan' },
-      { key: 'pending', label: 'منتظر', value: stats.pending, ratio: stats.pending / total, tone: 'amber' },
-      { key: 'in_progress', label: 'در حال بررسی', value: stats.inProgress, ratio: stats.inProgress / total, tone: 'indigo' },
-      { key: 'resolved', label: 'حل/بسته', value: stats.resolved, ratio: stats.resolved / total, tone: 'emerald' },
+      {
+        key: 'pending',
+        label: 'منتظر',
+        value: stats.pending,
+        ratio: stats.pending / total,
+        tone: 'amber',
+      },
+      {
+        key: 'in_progress',
+        label: 'در حال بررسی',
+        value: stats.inProgress,
+        ratio: stats.inProgress / total,
+        tone: 'indigo',
+      },
+      {
+        key: 'resolved',
+        label: 'حل/بسته',
+        value: stats.resolved,
+        ratio: stats.resolved / total,
+        tone: 'emerald',
+      },
     ] as const;
   }, [stats]);
 
@@ -211,12 +259,35 @@ export function HelpdeskHub({ initialTickets }: HelpdeskHubProps) {
           </div>
           <div className={s.statsWrap}>
             <MetricWall
-              tiles={[
-                { id: 'avg-fr', label: 'میانگین اولین پاسخ', value: avgFR, tone: 'violet', emphasis: 'hero' },
-                { id: 'urgent', label: 'فوری باز', value: toPersianNumber(stats.urgent), tone: 'rose' },
-                { id: 'open', label: 'در جریان', value: toPersianNumber(stats.open + stats.inProgress), tone: 'amber' },
-                { id: 'total', label: 'کل تیکت‌ها', value: toPersianNumber(stats.total), tone: 'cyan' },
-              ] as MetricWallTile[]}
+              tiles={
+                [
+                  {
+                    id: 'avg-fr',
+                    label: 'میانگین اولین پاسخ',
+                    value: avgFR,
+                    tone: 'violet',
+                    emphasis: 'hero',
+                  },
+                  {
+                    id: 'urgent',
+                    label: 'فوری باز',
+                    value: toPersianNumber(stats.urgent),
+                    tone: 'rose',
+                  },
+                  {
+                    id: 'open',
+                    label: 'در جریان',
+                    value: toPersianNumber(stats.open + stats.inProgress),
+                    tone: 'amber',
+                  },
+                  {
+                    id: 'total',
+                    label: 'کل تیکت‌ها',
+                    value: toPersianNumber(stats.total),
+                    tone: 'cyan',
+                  },
+                ] as MetricWallTile[]
+              }
             />
           </div>
         </div>
@@ -259,7 +330,15 @@ export function HelpdeskHub({ initialTickets }: HelpdeskHubProps) {
             aria-label="تیکت جدید"
           >
             <span className={s.ctaIcon} aria-hidden>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
@@ -291,11 +370,7 @@ export function HelpdeskHub({ initialTickets }: HelpdeskHubProps) {
             tickets={filtered}
             selectedId={selectedId}
             onSelect={setSelectedId}
-            emptyHint={
-              query
-                ? 'نتیجه‌ای برای جستجوی شما یافت نشد.'
-                : 'تیکتی با این فیلتر یافت نشد.'
-            }
+            emptyHint={query ? 'نتیجه‌ای برای جستجوی شما یافت نشد.' : 'تیکتی با این فیلتر یافت نشد.'}
           />
         </div>
         <aside className={s.workspaceRail} aria-label="نوار کناری">
@@ -330,11 +405,7 @@ export function HelpdeskHub({ initialTickets }: HelpdeskHubProps) {
       </section>
 
       {/* ── Drawers ────────────────────────────────────── */}
-      <TicketDetail
-        ticket={selectedTicket}
-        onClose={handleCloseDetail}
-        onChanged={handleChanged}
-      />
+      <TicketDetail ticket={selectedTicket} onClose={handleCloseDetail} onChanged={handleChanged} />
       <NewTicketForm
         open={newTicketOpen}
         onClose={() => setNewTicketOpen(false)}

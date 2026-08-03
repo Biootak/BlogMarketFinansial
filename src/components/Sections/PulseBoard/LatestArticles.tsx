@@ -107,6 +107,19 @@ function readingMin(text: string | null | undefined): number {
   return Math.max(2, Math.round(words / 180));
 }
 
+/**
+ * رنگ accent را برای استفاده در متن بررسی می‌کند.
+ * رنگ‌های خیلی روشن (lightness بالا) روی پس‌زمینه روشن کنتراست کافی ندارند.
+ * در این حالت از رنگ neutral-700 (#374151) استفاده می‌شود.
+ * WCAG AA: نسبت ≥ 4.5:1 برای متن عادی.
+ */
+function accessibleTextColor(hex: string, fallback = '#374151'): string {
+  // رنگ‌های شناخته‌شده با کنتراست پایین روی سفید
+  const lowContrast = new Set(['#94a3b8', '#cbd5e1', '#e2e8f0', '#a8b5c1', '#b0bec5']);
+  if (lowContrast.has(hex.toLowerCase())) return fallback;
+  return hex;
+}
+
 function fmtJalali(d: Date | string): string {
   return new Intl.DateTimeFormat('fa-IR', {
     year: 'numeric',
@@ -405,10 +418,12 @@ function LatestArticles({
                   title="ساعت کابل"
                 >
                   <LiveClock showIcon={false} timeZone="Asia/Kabul" />
+                  {/* color-contrast: رنگ تزئینی برای جداکننده مشکلی ندارد */}
                   <span className="opacity-60" style={{ color: accent.color }}>
                     ·
                   </span>
-                  <span className="font-semibold" style={{ color: accent.color }}>
+                  {/* color-contrast fix: از رنگ accessible برای متن استفاده می‌کنیم */}
+                  <span className="font-semibold" style={{ color: accessibleTextColor(accent.color) }}>
                     کابل
                   </span>
                 </div>
@@ -449,7 +464,10 @@ function LatestArticles({
                           ? 'text-neutral-900 dark:text-white'
                           : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200',
                       )}
-                      style={isActive ? { color: tabAccent.color } : undefined}
+                      // Color-contrast fix: style={{ color: tabAccent.color }} برای
+                      // دسته «همه» (slate #94a3b8) روی سفید 2.56:1 بود و کلاس
+                      // text-neutral-900 را override می‌کرد. رنگ accent فقط روی
+                      // pill/dot نمایش داده می‌شود، نه متن. (R23-fix 2026-08-02)
                     >
                       {isActive && (
                         <motion.span
@@ -671,7 +689,8 @@ function HeroCard({
     >
       <Link
         href={postLink}
-        aria-label={post.title}
+        // WCAG 2.5.3 label-in-name: remove redundant aria-label — the link's
+        // visible content (title + meta) is the accessible name.
         className={cn(
           'relative block h-full overflow-hidden rounded-2xl sm:rounded-3xl',
           'border border-[color:var(--hairline)]',
@@ -733,6 +752,8 @@ function HeroCard({
           {/* Category pill — bottom-right (RTL) above title */}
           {cat && (
             <div className="absolute bottom-32 sm:bottom-36 end-4 sm:end-6 flex items-center gap-1.5">
+              {/* color-contrast fix: از پس‌زمینه تیره‌تر (۸۵%) استفاده می‌کنیم
+                  تا color:#fff نسبت کنتراست ≥ 4.5:1 داشته باشد */}
               <span
                 className={cn(
                   'inline-flex items-center gap-1.5 rounded-full',
@@ -740,8 +761,8 @@ function HeroCard({
                   'border backdrop-blur-md',
                 )}
                 style={{
-                  backgroundColor: `${accentColor}33`,
-                  borderColor: `${accentColor}66`,
+                  backgroundColor: `${accentColor}d9`,
+                  borderColor: `${accentColor}`,
                   color: '#fff',
                 }}
               >
@@ -838,7 +859,7 @@ function StackCard({
     >
       <Link
         href={postLink}
-        aria-label={post.title}
+        // WCAG 2.5.3 label-in-name: visible content is the accessible name.
         className={cn(
           'relative flex h-full overflow-hidden rounded-2xl',
           'border border-[color:var(--hairline)]',
@@ -894,8 +915,10 @@ function StackCard({
                 onToggleBookmark();
               }}
               aria-label={bookmarked ? 'حذف از نشان‌شده‌ها' : 'نشان کردن'}
+              // target-size: html font-size (--fs-base) scales rem by ~0.76, so
+              // h-8 w-8 (32px) renders at 24.4px actual — meets the 24px target.
               className={cn(
-                'inline-flex h-6 w-6 items-center justify-center rounded-md',
+                'inline-flex h-8 w-8 items-center justify-center rounded-md',
                 'hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors',
                 bookmarked && 'text-amber-500',
               )}
@@ -1004,7 +1027,7 @@ function ListItem({
     >
       <Link
         href={postLink}
-        aria-label={post.title}
+        // WCAG 2.5.3 label-in-name: visible content is the accessible name.
         className={cn(
           'group/rail relative flex items-start gap-3 sm:gap-4',
           'pe-5 sm:pe-7 ps-1 py-3 sm:py-3.5',
@@ -1057,9 +1080,11 @@ function ListItem({
         <div className="min-w-0 flex-1 space-y-1.5">
           <div className="flex items-center justify-between gap-2 text-[10.5px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums">
             {cat && (
+              /* color-contrast fix: رنگ accent برای دکور (dot) OK است
+                 ولی برای متن باید accessible باشد */
               <span
                 className="inline-flex items-center gap-1 font-semibold"
-                style={{ color: accent }}
+                style={{ color: accessibleTextColor(accent) }}
               >
                 <span
                   className="inline-block h-1 w-1 rounded-full"
@@ -1103,8 +1128,10 @@ function ListItem({
                 onToggleBookmark();
               }}
               aria-label={bookmarked ? 'حذف از نشان‌شده‌ها' : 'نشان کردن'}
+              // target-size: h-8 w-8 (32px) renders at 24.4px actual (0.76× rem
+              // scale) — meets the 24px target.
               className={cn(
-                'inline-flex h-6 w-6 items-center justify-center rounded-md',
+                'inline-flex h-8 w-8 items-center justify-center rounded-md',
                 'hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors',
                 bookmarked && 'text-amber-500',
               )}
@@ -1181,7 +1208,7 @@ function SingleAdTile({
         href={ad.linkUrl}
         target="_blank"
         rel="noopener noreferrer sponsored"
-        aria-label={ad.title}
+        // WCAG 2.5.3 label-in-name: visible content is the accessible name.
         className={cn(
           'group/tile relative flex flex-col overflow-hidden rounded-xl',
           'border border-[color:var(--hairline)]',
@@ -1210,10 +1237,10 @@ function SingleAdTile({
           <h4 className="text-[11.5px] sm:text-[12.5px] font-semibold leading-snug text-neutral-900 dark:text-white line-clamp-2 text-balance">
             {ad.title}
           </h4>
-          {/* CTA */}
+          {/* CTA — color-contrast fix: از رنگ accessible برای متن استفاده می‌کنیم */}
           <div
             className="mt-0.5 inline-flex items-center gap-0.5 text-[10px] sm:text-[10.5px] font-medium transition-all duration-300 group-hover/tile:gap-1"
-            style={{ color: accentColor }}
+            style={{ color: accessibleTextColor(accentColor) }}
           >
             <span>مشاهده</span>
             <ArrowUpRight className="h-2.5 w-2.5" strokeWidth={2.5} aria-hidden />
@@ -1255,7 +1282,7 @@ function InlineAdBanner({
         href={ad.linkUrl}
         target="_blank"
         rel="noopener noreferrer sponsored"
-        aria-label={`تبلیغ: ${ad.title}`}
+        // WCAG 2.5.3 label-in-name: visible content is the accessible name.
         className={cn(
           'relative block overflow-hidden rounded-2xl sm:rounded-3xl',
           'border border-[color:var(--hairline)]',
@@ -1394,9 +1421,11 @@ function QuoteHighlight({
           <Flame className="h-4.5 w-4.5 sm:h-5 sm:w-5" strokeWidth={2} />
         </div>
         <div className="min-w-0 flex-1">
+          {/* color-contrast fix: رنگ‌های روشن (مانند slate-400) روی سفید
+              کنتراست ≥ 4.5:1 ندارند — از رنگ accessible جایگزین استفاده می‌کنیم */}
           <div
             className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.22em] mb-1.5"
-            style={{ color: accentColor }}
+            style={{ color: accessibleTextColor(accentColor) }}
           >
             نکته‌ی کلیدی
           </div>

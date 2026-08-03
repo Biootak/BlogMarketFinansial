@@ -21,7 +21,6 @@
 import { issueServiceOtp, verifyServiceOtpAndLink } from '@/actions/progressive-capture';
 import {
   type ServiceRequestClientInput,
-  type ServiceRequestInput,
   createServiceRequest,
 } from '@/actions/serviceRequestActions';
 import { type CurrencyGroup, CurrencySelect } from '@/components/ui/CurrencySelect';

@@ -4,12 +4,14 @@
  * Server Component. رنگ از token می‌آید.
  */
 
-import s from './ExchangeDashboard.module.css';
-import { CUSTOMER_STATUS_FA, KYC_LEVEL_FA, CUSTOMER_STATUS_TONE } from '@/lib/exchange-labels';
 import type { CustomerSegmentation } from '@/actions/exchange-dashboard';
+import { CUSTOMER_STATUS_FA, CUSTOMER_STATUS_TONE, KYC_LEVEL_FA } from '@/lib/exchange-labels';
+import s from './ExchangeDashboard.module.css';
 
 function formatPercent(share: number): string {
-  return new Intl.NumberFormat('fa-IR', { style: 'percent', maximumFractionDigits: 0 }).format(share);
+  return new Intl.NumberFormat('fa-IR', { style: 'percent', maximumFractionDigits: 0 }).format(
+    share,
+  );
 }
 
 export default function ExchangeCustomerSegmentation({ data }: { data: CustomerSegmentation }) {
@@ -94,9 +96,7 @@ export default function ExchangeCustomerSegmentation({ data }: { data: CustomerS
             {sortedKyc.map((seg) => (
               <li key={seg.level}>
                 <span className={s.segLegendDot} data-tone="kyc" aria-hidden />
-                <span className={s.segLegendLabel}>
-                  {KYC_LEVEL_FA[seg.level] ?? seg.level}
-                </span>
+                <span className={s.segLegendLabel}>{KYC_LEVEL_FA[seg.level] ?? seg.level}</span>
                 <span className={s.segLegendValue} dir="ltr">
                   {new Intl.NumberFormat('fa-IR').format(seg.count)} · {formatPercent(seg.share)}
                 </span>

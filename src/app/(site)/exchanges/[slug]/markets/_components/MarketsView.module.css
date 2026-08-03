@@ -34,7 +34,7 @@
   background: var(--ds-surface-elevated, var(--ds-surface));
   border: 1px solid var(--ds-border-default);
   border-radius: 0.875rem;
-  overflow: hidden;
+  overflow-x: auto;
   display: block;
 }
 @media (max-width: 760px) {

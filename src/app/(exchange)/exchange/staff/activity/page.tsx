@@ -6,16 +6,16 @@
  * --------------------------------------------------------------------------
  */
 
-import { Activity } from 'lucide-react';
-import { redirect } from 'next/navigation';
-import { Suspense } from 'react';
 import { getExchangeForUser, getStaffActivity } from '@/actions/exchanges';
 import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import ExchangePageSkeleton from '@/components/Exchange/ExchangePageSkeleton';
+import { Activity } from 'lucide-react';
+import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 import s from '../_components/StaffCockpit.module.css';
-import { StaffActivityFeed } from './_components/StaffActivityFeed';
 import { StaffSubNav } from '../_components/StaffSubNav';
+import { StaffActivityFeed } from './_components/StaffActivityFeed';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -49,9 +49,7 @@ export default async function StaffActivityPage({ searchParams }: PageProps) {
         icon="clipboard-list"
       />
       <Suspense fallback={<ExchangePageSkeleton statCount={0} tableRows={8} />}>
-        <StaffSubNav
-          active="activity"
-        />
+        <StaffSubNav active="activity" />
         <div className={s.panel} style={{ minHeight: 320 }}>
           <header
             style={{
@@ -75,7 +73,12 @@ export default async function StaffActivityPage({ searchParams }: PageProps) {
                 gap: 8,
               }}
             >
-              <Activity size={14} strokeWidth={2} aria-hidden style={{ color: 'var(--at-accent)' }} />
+              <Activity
+                size={14}
+                strokeWidth={2}
+                aria-hidden
+                style={{ color: 'var(--at-accent)' }}
+              />
               همه رویدادها
             </h2>
             <span style={{ fontSize: 11, color: 'var(--at-fg-subtle)', fontWeight: 500 }}>

@@ -67,9 +67,8 @@
   border: 0;
   border-radius: 999px;
   cursor: pointer;
-  transition:
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    background var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: color var(--ds-duration-fast) var(--ds-ease-out-quart), background
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .typeBtn:hover {
@@ -92,6 +91,15 @@
   min-width: 220px;
 }
 
+@media (max-width: 560px) {
+  .currencyWrap > *,
+  .dateGroup > * {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
 .clearBtn {
   display: inline-flex;
   align-items: center;
@@ -106,9 +114,8 @@
   border: 1px solid color-mix(in oklch, var(--at-danger) 22%, transparent);
   border-radius: var(--at-radius);
   cursor: pointer;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .clearBtn:hover {

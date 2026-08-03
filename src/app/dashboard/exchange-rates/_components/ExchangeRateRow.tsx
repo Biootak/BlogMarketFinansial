@@ -6,11 +6,7 @@
 
 import type { MarketRateProvider, MarketRateUnit } from '@/lib/market-rates';
 import { useEffect, useRef, useState } from 'react';
-import {
-  HiEllipsisHorizontal,
-  HiOutlinePencil,
-  HiOutlineTrash,
-} from 'react-icons/hi2';
+import { HiEllipsisHorizontal, HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi2';
 import SourceBadge from './SourceBadge';
 import ValueCell from './ValueCell';
 

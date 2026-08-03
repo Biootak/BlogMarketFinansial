@@ -21,7 +21,7 @@
  */
 
 import { LogIn, RefreshCcw, ShieldAlert } from 'lucide-react';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import s from './SessionGuard.module.css';
 
@@ -159,9 +159,10 @@ export function SessionGuard({ children }: Props) {
   // format mm:ss
   const mm = String(Math.floor(remainingSec / 60)).padStart(2, '0');
   const ss = String(remainingSec % 60).padStart(2, '0');
-  const progress = state === 'warning'
-    ? Math.max(0, Math.min(1, remainingSec / (WARNING_THRESHOLD_MS / 1000)))
-    : 0;
+  const progress =
+    state === 'warning'
+      ? Math.max(0, Math.min(1, remainingSec / (WARNING_THRESHOLD_MS / 1000)))
+      : 0;
 
   return (
     <>
@@ -216,8 +217,8 @@ export function SessionGuard({ children }: Props) {
               نشست منقضی شد
             </h2>
             <p className={s.expDesc}>
-              برای ادامه کار، لطفاً دوباره وارد حساب کاربری خود شوید. اطلاعات فعلی شما ذخیره
-              نشده است.
+              برای ادامه کار، لطفاً دوباره وارد حساب کاربری خود شوید. اطلاعات فعلی شما ذخیره نشده
+              است.
             </p>
             <div className={s.expActions}>
               <button type="button" className={s.btnPrimary} onClick={handleReAuth}>

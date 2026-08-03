@@ -5,9 +5,9 @@
  * ساختار: HEADER (cover-style) → ARTICLE body → ASIDE meta → ACTIONS
  */
 
-import { useState, useTransition } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { LiveDot } from '@/components/Dashboard/PlatformHub';
+import { ConfirmDialog, Spotlight } from '@/components/Dashboard/primitives';
+import { Button } from '@/components/ui/button';
 import {
   Archive,
   Bell,
@@ -18,15 +18,15 @@ import {
   Mail,
   MessageSquare,
   Pencil,
-  Smartphone,
   Send,
+  Smartphone,
   Trash2,
   Users,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { ConfirmDialog, Spotlight } from '@/components/Dashboard/primitives';
-import { LiveDot } from '@/components/Dashboard/PlatformHub';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState, useTransition } from 'react';
 import s from './AnnouncementDetail.module.css';
 
 type Status = 'draft' | 'scheduled' | 'published' | 'archived';
@@ -47,7 +47,10 @@ const STATUS_TONES: Record<Status, 'emerald' | 'indigo' | 'amber' | 'rose'> = {
   archived: 'rose',
 };
 
-const CHANNEL_META: Record<Channel, { label: string; tone: 'emerald' | 'indigo' | 'amber' | 'violet'; icon: LucideIcon }> = {
+const CHANNEL_META: Record<
+  Channel,
+  { label: string; tone: 'emerald' | 'indigo' | 'amber' | 'violet'; icon: LucideIcon }
+> = {
   email: { label: 'ایمیل', tone: 'indigo', icon: Mail },
   push: { label: 'Push', tone: 'emerald', icon: Bell },
   sms: { label: 'پیامک', tone: 'amber', icon: Smartphone },
@@ -77,7 +80,7 @@ interface Props {
 
 const PERSIAN_NUM = (n: number | string) =>
   String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)]);
-const fmt = (n: number) => PERSIAN_NUM(n.toLocaleString('en-US'));
+const _fmt = (n: number) => PERSIAN_NUM(n.toLocaleString('en-US'));
 
 const formatDate = (iso: string | null): string => {
   if (!iso) return '—';
@@ -106,7 +109,7 @@ export function AnnouncementDetail(props: Props) {
   const statusTone = STATUS_TONES[props.status];
   const statusLabel = STATUS_LABELS[props.status];
   const channelList = props.channels.map((c) => CHANNEL_META[c]);
-  const dateIso = props.publishedAt ?? props.scheduledAt ?? props.createdAt;
+  const _dateIso = props.publishedAt ?? props.scheduledAt ?? props.createdAt;
 
   const runAction = async (
     path: string,
@@ -167,13 +170,21 @@ export function AnnouncementDetail(props: Props) {
       <header className={s.cover} data-tone={statusTone}>
         <Spotlight tone={statusTone} size={480} className={s.coverSpot} />
         <nav className={s.crumbs} aria-label="مسیر">
-          <Link href="/dashboard" className={s.crumbLink}>داشبورد</Link>
+          <Link href="/dashboard" className={s.crumbLink}>
+            داشبورد
+          </Link>
           <span className={s.crumbSep}>/</span>
-          <Link href="/dashboard/communication" className={s.crumbLink}>مرکز ارتباطات</Link>
+          <Link href="/dashboard/communication" className={s.crumbLink}>
+            مرکز ارتباطات
+          </Link>
           <span className={s.crumbSep}>/</span>
-          <Link href="/dashboard/communication/announcements" className={s.crumbLink}>اعلان‌ها</Link>
+          <Link href="/dashboard/communication/announcements" className={s.crumbLink}>
+            اعلان‌ها
+          </Link>
           <span className={s.crumbSep}>/</span>
-          <span className={s.crumbCurrent} aria-current="page">{props.id.slice(0, 8)}</span>
+          <span className={s.crumbCurrent} aria-current="page">
+            {props.id.slice(0, 8)}
+          </span>
         </nav>
 
         <div className={s.coverMain}>
@@ -189,12 +200,14 @@ export function AnnouncementDetail(props: Props) {
               </span>
               {props.publishedAt ? (
                 <span className={s.coverMetaItem}>
-                  <CheckCircle2 size={11} aria-hidden /> منتشر شده {formatDate(props.publishedAt)} ساعت {formatTime(props.publishedAt)}
+                  <CheckCircle2 size={11} aria-hidden /> منتشر شده {formatDate(props.publishedAt)}{' '}
+                  ساعت {formatTime(props.publishedAt)}
                 </span>
               ) : null}
               {props.scheduledAt && !props.publishedAt ? (
                 <span className={s.coverMetaItem}>
-                  <CalendarClock size={11} aria-hidden /> زمان‌بندی برای {formatDate(props.scheduledAt)} ساعت {formatTime(props.scheduledAt)}
+                  <CalendarClock size={11} aria-hidden /> زمان‌بندی برای{' '}
+                  {formatDate(props.scheduledAt)} ساعت {formatTime(props.scheduledAt)}
                 </span>
               ) : null}
             </div>
@@ -227,8 +240,16 @@ export function AnnouncementDetail(props: Props) {
         </div>
       </header>
 
-      {actionError ? <div className={s.alert} data-tone="rose">{actionError}</div> : null}
-      {actionSuccess ? <div className={s.alert} data-tone="emerald">{actionSuccess}</div> : null}
+      {actionError ? (
+        <div className={s.alert} data-tone="rose">
+          {actionError}
+        </div>
+      ) : null}
+      {actionSuccess ? (
+        <div className={s.alert} data-tone="emerald">
+          {actionSuccess}
+        </div>
+      ) : null}
 
       {/* ═══ MAIN GRID (article + aside) ═══════════════════════ */}
       <div className={s.grid}>
@@ -240,7 +261,9 @@ export function AnnouncementDetail(props: Props) {
           </div>
           <div className={s.body}>
             {props.body.split('\n').map((line, i) => (
-              <p key={i} className={s.bodyLine}>{line || '\u00A0'}</p>
+              <p key={i} className={s.bodyLine}>
+                {line || '\u00A0'}
+              </p>
             ))}
           </div>
 
@@ -248,9 +271,7 @@ export function AnnouncementDetail(props: Props) {
           <div className={s.distribute}>
             <div className={s.distributeHead}>
               <span className={s.articleEyebrow}>کانال‌های ارسال</span>
-              <span className={s.distributeMeta}>
-                {channelList.length} کانال انتخاب‌شده
-              </span>
+              <span className={s.distributeMeta}>{channelList.length} کانال انتخاب‌شده</span>
             </div>
             <div className={s.channelGrid}>
               {channelList.map((c) => {
@@ -318,13 +339,17 @@ export function AnnouncementDetail(props: Props) {
               {props.scheduledAt ? (
                 <div className={s.asideRow}>
                   <dt>زمان‌بندی</dt>
-                  <dd>{formatDate(props.scheduledAt)} · {formatTime(props.scheduledAt)}</dd>
+                  <dd>
+                    {formatDate(props.scheduledAt)} · {formatTime(props.scheduledAt)}
+                  </dd>
                 </div>
               ) : null}
               {props.publishedAt ? (
                 <div className={s.asideRow}>
                   <dt>انتشار</dt>
-                  <dd>{formatDate(props.publishedAt)} · {formatTime(props.publishedAt)}</dd>
+                  <dd>
+                    {formatDate(props.publishedAt)} · {formatTime(props.publishedAt)}
+                  </dd>
                 </div>
               ) : null}
               {props.expiresAt ? (

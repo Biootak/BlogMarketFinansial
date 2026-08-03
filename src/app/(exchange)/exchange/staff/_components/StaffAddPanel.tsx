@@ -7,12 +7,9 @@
  * کنترل optimistic: پس از موفقیت، فرم reset می‌شود.
  */
 
+import { type ExchangeStaffRow, addExchangeStaff } from '@/actions/exchanges';
 import { Send, UserPlus } from 'lucide-react';
 import { type ChangeEvent, useCallback, useState } from 'react';
-import {
-  addExchangeStaff,
-  type ExchangeStaffRow,
-} from '@/actions/exchanges';
 import s from './StaffCockpit.module.css';
 
 const ROLES: ReadonlyArray<{ value: 'OWNER' | 'MANAGER' | 'STAFF' | 'VIEWER'; label: string }> = [
@@ -58,9 +55,7 @@ export function StaffAddPanel({ exchangeId, onAdded }: Props) {
           <UserPlus size={15} aria-hidden style={{ color: 'var(--at-accent)' }} />
           افزودن عضو جدید
         </h3>
-        <span className={s.addCardHint}>
-          کاربر باید از قبل در پلتفرم ثبت‌نام کرده باشد
-        </span>
+        <span className={s.addCardHint}>کاربر باید از قبل در پلتفرم ثبت‌نام کرده باشد</span>
       </div>
 
       <div className={s.addForm}>

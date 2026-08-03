@@ -19,41 +19,6 @@
  *    - audit:    لاگ رویدادها (NEW)
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Activity,
-  Archive,
-  CheckCircle2,
-  Database,
-  ImageIcon,
-  type LucideIcon,
-  Mail,
-  PowerOff,
-  Settings as SettingsIcon,
-  Shield,
-  ShieldCheck,
-  KeyRound,
-  Loader2,
-  AlertTriangle,
-  RefreshCw,
-  Share2,
-  Upload,
-  Wrench,
-  XCircle,
-} from 'lucide-react';
-import { RightRailPreview, type PreviewTab } from './RightRailPreview';
-import { SettingsSearch, type SearchableField, type SearchableTab } from './SettingsSearch';
-import { SecuritySettings } from './SecuritySettings';
-import { ApiKeysManager } from './ApiKeysManager';
-import { BackupManager } from './BackupManager';
-import { AuditLog } from './AuditLog';
-import SocialLinksManager from '@/components/Dashboard/Settings/SocialLinksManager';
-import {
-  StickySaveBar,
-  SettingsSubNav,
-  type SettingsSubNavItem,
-} from '@/components/Dashboard/primitives';
-import { useToast } from '@/components/ui/use-toast';
 import {
   generateApiKey,
   getBackupStatus,
@@ -64,8 +29,43 @@ import {
   updateGeneralSettings,
   updateMaintenanceMode,
 } from '@/actions/settingsActions';
+import SocialLinksManager from '@/components/Dashboard/Settings/SocialLinksManager';
+import {
+  SettingsSubNav,
+  type SettingsSubNavItem,
+  StickySaveBar,
+} from '@/components/Dashboard/primitives';
+import { useToast } from '@/components/ui/use-toast';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import {
+  Activity,
+  AlertTriangle,
+  Archive,
+  CheckCircle2,
+  Database,
+  ImageIcon,
+  KeyRound,
+  Loader2,
+  type LucideIcon,
+  Mail,
+  PowerOff,
+  RefreshCw,
+  Settings as SettingsIcon,
+  Share2,
+  Shield,
+  ShieldCheck,
+  Upload,
+  Wrench,
+  XCircle,
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ApiKeysManager } from './ApiKeysManager';
+import { AuditLog } from './AuditLog';
+import { BackupManager } from './BackupManager';
+import { type PreviewTab, RightRailPreview } from './RightRailPreview';
+import { SecuritySettings } from './SecuritySettings';
 import s from './SettingsHub.module.css';
+import { type SearchableField, type SearchableTab, SettingsSearch } from './SettingsSearch';
 
 export interface SettingsHubProps {
   initialData: {
@@ -175,7 +175,9 @@ export function SettingsHub({ initialData }: SettingsHubProps) {
     nextBackupAt: null as string | null,
     backupEnabled: true,
   });
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'dirty' | 'saving' | 'saved' | 'error'>('idle');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'dirty' | 'saving' | 'saved' | 'error'>(
+    'idle',
+  );
   const setSiteSettings = useSiteSettings((st) => st.setSettings);
   const tabAnchorRef = useRef<HTMLDivElement>(null);
 
@@ -241,7 +243,7 @@ export function SettingsHub({ initialData }: SettingsHubProps) {
   const handleSaveAll = useCallback(async () => {
     setSaveStatus('saving');
     try {
-      const tasks: Array<Promise<{ success: boolean; error?: unknown }>> = [];
+      const tasks: Promise<{ success: boolean; error?: unknown }>[] = [];
       if (dirtyByTab.general) {
         tasks.push(
           updateGeneralSettings({
@@ -257,7 +259,10 @@ export function SettingsHub({ initialData }: SettingsHubProps) {
       }
       if (dirtyByTab.email) {
         tasks.push(
-          updateEmailSettings(form.email) as unknown as Promise<{ success: boolean; error?: unknown }>,
+          updateEmailSettings(form.email) as unknown as Promise<{
+            success: boolean;
+            error?: unknown;
+          }>,
         );
       }
       if (dirtyByTab.maintenance) {
@@ -394,9 +399,7 @@ export function SettingsHub({ initialData }: SettingsHubProps) {
             <span className={s.crumbActive}>تنظیمات</span>
           </div>
           <h1 className={s.title}>تنظیمات سیستم</h1>
-          <p className={s.subtitle}>
-            پیکربندی هویت سایت، ارتباطات، امنیت و نگهداری — همه در یک‌جا
-          </p>
+          <p className={s.subtitle}>پیکربندی هویت سایت، ارتباطات، امنیت و نگهداری — همه در یک‌جا</p>
         </div>
         <div className={s.pageHeadMeta}>
           <SettingsSearch
@@ -410,11 +413,7 @@ export function SettingsHub({ initialData }: SettingsHubProps) {
               el?.focus({ preventScroll: true });
             }}
           />
-          <StatusPill
-            label="backup"
-            ok={counts.backupEnabled}
-            count={counts.backups}
-          />
+          <StatusPill label="backup" ok={counts.backupEnabled} count={counts.backups} />
         </div>
       </header>
 
@@ -707,21 +706,13 @@ export function SettingsHub({ initialData }: SettingsHubProps) {
           )}
 
           {activeTab === 'social' && (
-            <Panel
-              title="شبکه‌های اجتماعی"
-              description="لینک‌های خارجی سایت"
-              icon={Share2}
-            >
+            <Panel title="شبکه‌های اجتماعی" description="لینک‌های خارجی سایت" icon={Share2}>
               <SocialLinksManager />
             </Panel>
           )}
 
           {activeTab === 'advanced' && (
-            <Panel
-              title="تنظیمات پیشرفته"
-              description="cache، rate-limit و عملکرد"
-              icon={Wrench}
-            >
+            <Panel title="تنظیمات پیشرفته" description="cache، rate-limit و عملکرد" icon={Wrench}>
               <div className={s.toggleStack}>
                 <ToggleRow
                   title="کش فعال"
@@ -732,12 +723,26 @@ export function SettingsHub({ initialData }: SettingsHubProps) {
                 />
               </div>
               <div className={s.actionRow}>
-                <button type="button" onClick={handleTestDb} className={s.btnSecondary} disabled={loading}>
+                <button
+                  type="button"
+                  onClick={handleTestDb}
+                  className={s.btnSecondary}
+                  disabled={loading}
+                >
                   <Database size={13} strokeWidth={2.2} />
                   <span>تست اتصال پایگاه داده</span>
                 </button>
-                <button type="button" onClick={handleGenerateApiKey} className={s.btnSecondary} disabled={loading}>
-                  {loading ? <Loader2 size={13} className={s.spin} /> : <RefreshCw size={13} strokeWidth={2.2} />}
+                <button
+                  type="button"
+                  onClick={handleGenerateApiKey}
+                  className={s.btnSecondary}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <Loader2 size={13} className={s.spin} />
+                  ) : (
+                    <RefreshCw size={13} strokeWidth={2.2} />
+                  )}
                   <span>تولید کلید یکبارمصرف</span>
                 </button>
               </div>
@@ -755,31 +760,19 @@ export function SettingsHub({ initialData }: SettingsHubProps) {
           )}
 
           {activeTab === 'api-keys' && (
-            <Panel
-              title="کلیدهای API"
-              description="دسترسی برنامه‌ای به API"
-              icon={KeyRound}
-            >
+            <Panel title="کلیدهای API" description="دسترسی برنامه‌ای به API" icon={KeyRound}>
               <ApiKeysManager />
             </Panel>
           )}
 
           {activeTab === 'backup' && (
-            <Panel
-              title="پشتیبان‌گیری"
-              description="backup خودکار و دستی"
-              icon={Archive}
-            >
+            <Panel title="پشتیبان‌گیری" description="backup خودکار و دستی" icon={Archive}>
               <BackupManager />
             </Panel>
           )}
 
           {activeTab === 'audit' && (
-            <Panel
-              title="لاگ رویدادها"
-              description="تاریخچه کامل اقدامات ادمین"
-              icon={Activity}
-            >
+            <Panel title="لاگ رویدادها" description="تاریخچه کامل اقدامات ادمین" icon={Activity}>
               <AuditLog />
             </Panel>
           )}
@@ -811,11 +804,7 @@ export function SettingsHub({ initialData }: SettingsHubProps) {
       </div>
 
       {/* Sticky save bar — فقط وقتی dirty است */}
-      <StickySaveBar
-        status={saveStatus}
-        onSave={handleSaveAll}
-        onDiscard={handleReset}
-      />
+      <StickySaveBar status={saveStatus} onSave={handleSaveAll} onDiscard={handleReset} />
     </div>
   );
 }

@@ -181,8 +181,7 @@ export const usePostStore = create<PostsState>((set, get) => ({
         return result.data;
       }
       return null;
-    } catch (error) {
-      console.error('Error fetching post:', error);
+    } catch (_error) {
       return null;
     }
   },

@@ -127,8 +127,7 @@ export default function CurrencyConstellation({ pnlByCurrency, totalDeals }: Pro
   });
 
   // tooltip data: hovered or fallback to biggest
-  const tooltipNode =
-    nodes.find((n) => n.c.currency === activeCurrency) ?? null;
+  const tooltipNode = nodes.find((n) => n.c.currency === activeCurrency) ?? null;
   const tooltipData = tooltipNode?.c;
 
   return (
@@ -140,8 +139,8 @@ export default function CurrencyConstellation({ pnlByCurrency, totalDeals }: Pro
         </span>
         <h2 className={s.title}>اکوسیستم ارزی صرافی</h2>
         <p className={s.sub}>
-          هر حباب یک ارز است؛ اندازهٔ آن نشان‌دهندهٔ سهم از حجم کل، و رنگ آن نشان‌دهندهٔ
-          خانوادهٔ ارزی است. روی هر ارز بروید تا جزئیات آن را ببینید.
+          هر حباب یک ارز است؛ اندازهٔ آن نشان‌دهندهٔ سهم از حجم کل، و رنگ آن نشان‌دهندهٔ خانوادهٔ ارزی
+          است. روی هر ارز بروید تا جزئیات آن را ببینید.
         </p>
       </header>
 
@@ -307,7 +306,11 @@ export default function CurrencyConstellation({ pnlByCurrency, totalDeals }: Pro
         </svg>
 
         {/* Tooltip / details panel — replaces static legend */}
-        <aside className={s.tooltip} data-active={tooltipData ? 'true' : 'false'} aria-live="polite">
+        <aside
+          className={s.tooltip}
+          data-active={tooltipData ? 'true' : 'false'}
+          aria-live="polite"
+        >
           {tooltipData ? (
             <>
               <header className={s.tooltipHead}>

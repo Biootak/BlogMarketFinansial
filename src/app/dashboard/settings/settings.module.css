@@ -258,10 +258,7 @@
   background: var(--at-surface-1, oklch(98% 0 0));
   color: var(--at-fg, var(--at-text, inherit));
   margin-bottom: var(--ds-space-3);
-  transition:
-    background 200ms ease,
-    border-color 200ms ease,
-    color 200ms ease;
+  transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
 }
 
 .maintenanceBanner[data-active="true"] {

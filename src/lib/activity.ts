@@ -18,8 +18,7 @@ export async function logActivity({ action, details }: LogActivityParams) {
     }
 
     return await response.json();
-  } catch (error) {
-    console.error('Error logging activity:', error);
+  } catch (_error) {
     return null;
   }
 }

@@ -4,7 +4,7 @@ import PostCardCommentBtn from '@/components/PostCardCommentBtn/PostCardCommentB
 import PostCardLikeAction from '@/components/PostCardLikeAction/PostCardLikeAction';
 import type { PostWithRelations } from '@/types/types';
 import { useSession } from 'next-auth/react';
-import React, { type FC } from 'react';
+import type { FC } from 'react';
 
 export interface PostCardLikeAndCommentProps {
   className?: string;

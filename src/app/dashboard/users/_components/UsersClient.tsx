@@ -16,8 +16,16 @@
 
 import { createUser, deleteUser, updateUser } from '@/actions/userActions';
 import { ConfirmDialog, PageHeader } from '@/components/Dashboard/primitives';
+import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
 import SubmitButton from '@/components/SubmitButton';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogClose,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle as SheetTitle,
+} from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -34,11 +42,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import * as DialogPrimitive from '@radix-ui/react-dialog';
-import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
-import { Dialog, DialogClose, DialogOverlay, DialogPortal, DialogTitle as SheetTitle } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
 import type { Role, UserWithProfile } from '@/types/types';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -525,7 +531,11 @@ export function UsersClient({
       <Dialog open={sheetOpen} onOpenChange={setSheetOpen}>
         <DialogPortal>
           <DialogOverlay className={cm.overlay} />
-          <DialogPrimitive.Content dir="rtl" className={cm.panel} aria-label={editingUser ? 'ویرایش کاربر' : 'افزودن کاربر'}>
+          <DialogPrimitive.Content
+            dir="rtl"
+            className={cm.panel}
+            aria-label={editingUser ? 'ویرایش کاربر' : 'افزودن کاربر'}
+          >
             <div className={cm.header}>
               <div className={s.sheetIcon} aria-hidden>
                 {editingUser ? (
@@ -539,7 +549,9 @@ export function UsersClient({
                   {editingUser ? 'ویرایش کاربر' : 'افزودن کاربر جدید'}
                 </SheetTitle>
                 <p className={s.sheetSub}>
-                  {editingUser ? 'تغییر نقش، وضعیت یا اطلاعات حساب' : 'اطلاعات حساب، نقش و دسترسی‌ها'}
+                  {editingUser
+                    ? 'تغییر نقش، وضعیت یا اطلاعات حساب'
+                    : 'اطلاعات حساب، نقش و دسترسی‌ها'}
                 </p>
               </div>
               <DialogClose className={cm.close} aria-label="بستن">
@@ -575,7 +587,12 @@ export function UsersClient({
                             <HiOutlineEnvelope className="size-4" aria-hidden /> ایمیل
                           </FormLabel>
                           <FormControl>
-                            <Input placeholder="ایمیل" type="email" {...field} className={s.input} />
+                            <Input
+                              placeholder="ایمیل"
+                              type="email"
+                              {...field}
+                              className={s.input}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -639,7 +656,8 @@ export function UsersClient({
                             <SelectContent>
                               <SelectItem value="USER">کاربر</SelectItem>
                               <SelectItem value="AUTHOR">نویسنده</SelectItem>
-                              {(currentUserRole === 'OWNER' || currentUserRole === 'SUPERADMIN') && (
+                              {(currentUserRole === 'OWNER' ||
+                                currentUserRole === 'SUPERADMIN') && (
                                 <>
                                   <SelectItem value="ADMIN">مدیر</SelectItem>
                                   <SelectItem value="OWNER">مالک</SelectItem>

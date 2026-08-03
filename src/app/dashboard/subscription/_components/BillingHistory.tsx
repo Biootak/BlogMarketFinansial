@@ -9,9 +9,9 @@
  *   - responsive (در موبایل به list تبدیل می‌شود)
  */
 
+import { Calendar, ChevronLeft, FileText, Hash, Receipt } from 'lucide-react';
 import { useState } from 'react';
 import s from './BillingHistory.module.css';
-import { Calendar, ChevronLeft, FileText, Hash, Receipt, Wallet } from 'lucide-react';
 
 interface Event {
   id: string;
@@ -137,7 +137,7 @@ export default function BillingHistory({ events }: { events: Event[] }) {
         <>
           {/* Desktop table */}
           <div className={s.tableWrap}>
-            <table className={s.table} role="table">
+            <table className={s.table}>
               <thead>
                 <tr>
                   <th scope="col">نوع</th>
@@ -157,13 +157,19 @@ export default function BillingHistory({ events }: { events: Event[] }) {
                       <td>{KIND_FA[e.kind] ?? e.kind}</td>
                       <td>
                         <span className={s.planChange}>
-                          {e.fromPlan && <span className={s.planFrom}>{PLAN_FA[e.fromPlan] ?? e.fromPlan}</span>}
-                          {e.fromPlan && <ChevronLeft size={12} aria-hidden className={s.planArrow} />}
+                          {e.fromPlan && (
+                            <span className={s.planFrom}>{PLAN_FA[e.fromPlan] ?? e.fromPlan}</span>
+                          )}
+                          {e.fromPlan && (
+                            <ChevronLeft size={12} aria-hidden className={s.planArrow} />
+                          )}
                           <span className={s.planTo}>{PLAN_FA[e.toPlan] ?? e.toPlan}</span>
                         </span>
                       </td>
                       <td className={s.amountCell}>{fmtAmount(e.amount, e.currency)}</td>
-                      <td>{e.paymentMethod ? METHOD_FA[e.paymentMethod] ?? e.paymentMethod : '—'}</td>
+                      <td>
+                        {e.paymentMethod ? (METHOD_FA[e.paymentMethod] ?? e.paymentMethod) : '—'}
+                      </td>
                       <td className={s.invoiceCell} dir="ltr">
                         {e.invoiceNo ? (
                           <span className={s.invoiceNo}>
@@ -199,9 +205,7 @@ export default function BillingHistory({ events }: { events: Event[] }) {
                 <li key={e.id} className={s.listItem}>
                   <div className={s.listHead}>
                     <span className={s.listKind}>{KIND_FA[e.kind] ?? e.kind}</span>
-                    <span className={`${s.statusBadge} ${s[`status_${st.cls}`]}`}>
-                      {st.label}
-                    </span>
+                    <span className={`${s.statusBadge} ${s[`status_${st.cls}`]}`}>{st.label}</span>
                   </div>
                   <div className={s.listBody}>
                     <div className={s.listRow}>

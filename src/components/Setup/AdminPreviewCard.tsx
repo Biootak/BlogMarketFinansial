@@ -2,7 +2,6 @@
 
 import { toPersianDigits } from '@/lib/setup/format';
 import type { SetupFormValues } from '@/lib/setup/schema';
-import * as React from 'react';
 
 /**
  * AdminPreviewCard — live preview of the super-admin profile being built.

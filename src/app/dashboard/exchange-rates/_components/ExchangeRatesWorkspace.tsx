@@ -106,7 +106,9 @@ export default function ExchangeRatesWorkspace({ initialRows }: Props) {
       initialRows.find((r) => r.active);
     if (!priority) return null;
 
-    const raw = priority.singleRate ? Number.parseFloat(priority.singleRate) / priority.divisor : null;
+    const raw = priority.singleRate
+      ? Number.parseFloat(priority.singleRate) / priority.divisor
+      : null;
     return {
       symbol: priority.symbol,
       displayNameFa: priority.displayNameFa,
@@ -114,7 +116,8 @@ export default function ExchangeRatesWorkspace({ initialRows }: Props) {
       value: raw,
       unitLabel: getDashboardUnitLabel(priority.unit),
       changePercent: 0, // not provided in current data; would need a snapshot diff
-      updatedAt: priority.updatedAt instanceof Date ? priority.updatedAt : new Date(priority.updatedAt),
+      updatedAt:
+        priority.updatedAt instanceof Date ? priority.updatedAt : new Date(priority.updatedAt),
       sparkline: [],
     };
   }, [initialRows]);

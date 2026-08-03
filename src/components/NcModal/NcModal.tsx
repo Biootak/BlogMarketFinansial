@@ -1,7 +1,7 @@
 'use client';
 
 import { Dialog, Transition } from '@headlessui/react';
-import React, { type FC, Fragment, type ReactNode, useEffect, useState } from 'react';
+import { type FC, Fragment, type ReactNode, useEffect, useState } from 'react';
 import Button from '../Button/Button';
 import ButtonClose from '../ButtonClose/ButtonClose';
 
@@ -55,7 +55,7 @@ const NcModal: FC<NcModalProps> = ({
 
       <Transition appear show={isOpen} as={Fragment}>
         <Dialog as="div" className="fixed inset-0 z-50 overflow-y-auto" onClose={closeModal}>
-          <div className="min-h-screen px-1 text-center md:px-4">
+          <div className="min-h-dvh px-1 text-center md:px-4">
             <Transition.Child
               as="div"
               enter="ease-out duration-300"
@@ -69,7 +69,7 @@ const NcModal: FC<NcModalProps> = ({
             </Transition.Child>
 
             {/* This element is to trick the browser into centering the modal contents. */}
-            <span className="inline-block h-screen align-middle" aria-hidden="true">
+            <span className="inline-block h-dvh align-middle" aria-hidden="true">
               &#8203;
             </span>
             <Transition.Child

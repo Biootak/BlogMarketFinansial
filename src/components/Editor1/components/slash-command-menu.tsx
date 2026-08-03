@@ -3,14 +3,14 @@
 // 2026-07-05: dir صریح برای portal tippy که slash commands را render می‌کند.
 import { useDirection } from '@/hooks/useDirection';
 import { Search } from 'lucide-react';
-import React, {
+import {
   forwardRef,
+  useCallback,
   useEffect,
   useImperativeHandle,
-  useState,
-  useCallback,
-  useRef,
   useMemo,
+  useRef,
+  useState,
 } from 'react';
 import type { SlashCommandItem } from '../extensions/slash-commands';
 

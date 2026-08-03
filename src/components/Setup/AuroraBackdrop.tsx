@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 /**
  * AuroraBackdrop — animated, GPU-only background for the setup screen.
  *

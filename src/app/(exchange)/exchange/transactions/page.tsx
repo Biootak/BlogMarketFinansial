@@ -8,8 +8,8 @@ import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import TransactionsWorkspace from './_components/TransactionsWorkspace';
 import { Suspense } from 'react';
+import TransactionsWorkspace from './_components/TransactionsWorkspace';
 
 export const metadata: Metadata = { title: 'تراکنش‌های صرافی' };
 

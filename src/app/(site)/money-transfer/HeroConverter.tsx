@@ -28,7 +28,7 @@ import { CurrencySelect } from '@/components/ui/CurrencySelect';
 import { useDirection } from '@/hooks/useDirection';
 import {
   type HeroPair,
-  computeSpreadStats,
+  type computeSpreadStats,
   convertViaIRT,
   formatFaNumber,
   formatRate,
@@ -315,8 +315,7 @@ export default function HeroConverter({
   // stats تمیز: اگه count=0، متن neutral نشان بده
   const safeProviderCount = providerCount > 0 ? providerCount : 0;
   const avgSpread = spreadStats.average;
-  const providersLabel =
-    safeProviderCount === 0 ? 'بدون صرافی' : FA_INT.format(safeProviderCount);
+  const providersLabel = safeProviderCount === 0 ? 'بدون صرافی' : FA_INT.format(safeProviderCount);
 
   // helper برای نمایش spread درصدی (۲ رقم اعشار ولی اگه 0 بود، ردش کن)
   const fmtSpreadPct = (n: number): string => {

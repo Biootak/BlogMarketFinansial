@@ -83,7 +83,7 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [resubmitMode, setResubmitMode] = useState<'full' | 'docs'>(isResubmit ? 'docs' : 'full');
+  const [_resubmitMode, setResubmitMode] = useState<'full' | 'docs'>(isResubmit ? 'docs' : 'full');
 
   const selfieRef = useRef<HTMLInputElement>(null);
   const frontRef = useRef<HTMLInputElement>(null);

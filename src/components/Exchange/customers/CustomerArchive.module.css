@@ -4,8 +4,14 @@
  */
 
 @keyframes rowSlideIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── Root ───────────────────────────────────────────────────────────────── */
@@ -38,8 +44,12 @@
   flex-shrink: 0;
 }
 
-.iconAmber  { color: var(--at-amber, #f59e0b); }
-.iconMuted  { color: var(--at-text-dim); }
+.iconAmber {
+  color: var(--at-amber, #f59e0b);
+}
+.iconMuted {
+  color: var(--at-text-dim);
+}
 
 .statValue {
   display: block;
@@ -99,7 +109,7 @@
   background: var(--at-bg-canvas);
   color: var(--at-text-primary);
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .searchWrap {
@@ -213,7 +223,9 @@
   transition: color 120ms;
 }
 
-.rowName:hover { color: var(--at-accent); }
+.rowName:hover {
+  color: var(--at-accent);
+}
 
 .rowPhone {
   font-size: var(--at-fs-xs);
@@ -259,9 +271,15 @@
   transition: width 400ms var(--ds-ease-out);
 }
 
-.risk_low    { background: var(--at-emerald, #10b981); }
-.risk_medium { background: var(--at-amber, #f59e0b); }
-.risk_high   { background: var(--at-rose, #f43f5e); }
+.risk_low {
+  background: var(--at-emerald, #10b981);
+}
+.risk_medium {
+  background: var(--at-amber, #f59e0b);
+}
+.risk_high {
+  background: var(--at-rose, #f43f5e);
+}
 
 /* ── Pills ──────────────────────────────────────────────────────────────── */
 .pill {
@@ -273,11 +291,26 @@
   letter-spacing: 0.02em;
 }
 
-.pill_emerald { background: var(--at-emerald-soft, rgba(16,185,129,.12)); color: var(--at-emerald, #10b981); }
-.pill_amber   { background: var(--at-amber-soft, rgba(245,158,11,.12));   color: var(--at-amber, #f59e0b); }
-.pill_rose    { background: var(--at-rose-soft, rgba(244,63,94,.12));     color: var(--at-rose, #f43f5e); }
-.pill_sky     { background: var(--at-sky-soft, rgba(14,165,233,.12));     color: var(--at-sky, #0ea5e9); }
-.pill_muted   { background: var(--at-bg-hover); color: var(--at-text-dim); }
+.pill_emerald {
+  background: var(--at-emerald-soft, rgba(16, 185, 129, 0.12));
+  color: var(--at-emerald, #10b981);
+}
+.pill_amber {
+  background: var(--at-amber-soft, rgba(245, 158, 11, 0.12));
+  color: var(--at-amber, #f59e0b);
+}
+.pill_rose {
+  background: var(--at-rose-soft, rgba(244, 63, 94, 0.12));
+  color: var(--at-rose, #f43f5e);
+}
+.pill_sky {
+  background: var(--at-sky-soft, rgba(14, 165, 233, 0.12));
+  color: var(--at-sky, #0ea5e9);
+}
+.pill_muted {
+  background: var(--at-bg-hover);
+  color: var(--at-text-dim);
+}
 
 /* ── Unfreeze Button ─────────────────────────────────────────────────────── */
 .unfreezeBtn {
@@ -298,7 +331,7 @@
 }
 
 .unfreezeBtn:hover:not(:disabled) {
-  background: var(--at-emerald-soft, rgba(16,185,129,.12));
+  background: var(--at-emerald-soft, rgba(16, 185, 129, 0.12));
 }
 
 .unfreezeBtn:disabled {
@@ -325,7 +358,7 @@
   .row {
     grid-template-columns: 1fr 1fr;
   }
-  .listHeader span:nth-child(n+3),
+  .listHeader span:nth-child(n + 3),
   .rowMeta,
   .rowStatus ~ *,
   .unfreezeBtn {
@@ -334,6 +367,10 @@
   .statsBar {
     gap: var(--ds-space-3);
   }
-  .statSep { display: none; }
-  .searchWrap { max-width: 100%; }
+  .statSep {
+    display: none;
+  }
+  .searchWrap {
+    max-width: 100%;
+  }
 }

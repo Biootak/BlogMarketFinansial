@@ -6,19 +6,18 @@
  *  a single bad table never breaks the home page.
  */
 
-import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
 import { getFintechKpiData } from '@/actions/getFintechKpiData';
 import { getLiveOpsData } from '@/actions/liveOpsActions';
 import { getServiceRequestStats, getServiceRequests } from '@/actions/serviceRequestActions';
+import { auth } from '@/auth';
 import { checkRole } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 import { FintechCockpit, type FintechCockpitProps } from './FintechCockpit';
 
 const safeNum = (n: unknown, fallback = 0): number =>
   typeof n === 'number' && Number.isFinite(n) ? n : fallback;
 
-const safeString = (s: unknown, fallback = ''): string =>
-  typeof s === 'string' ? s : fallback;
+const safeString = (s: unknown, fallback = ''): string => (typeof s === 'string' ? s : fallback);
 
 export async function FintechCockpitServer() {
   const session = await auth();

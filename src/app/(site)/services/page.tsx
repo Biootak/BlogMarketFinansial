@@ -21,8 +21,7 @@ export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: 'خدمات آنلاین صرافی‌ها',
-  description:
-    'خدمات آنلاین صرافی‌ها — خرید و فروش ارز، حواله، پرداخت، رمزارز و سایر خدمات.',
+  description: 'خدمات آنلاین صرافی‌ها — خرید و فروش ارز، حواله، پرداخت، رمزارز و سایر خدمات.',
   openGraph: {
     title: 'خدمات آنلاین صرافی‌ها',
     description: 'پیدا کردن صرافی مناسب برای هر خدمت — در یک نگاه.',
@@ -36,7 +35,9 @@ type SearchParams = Promise<{
   group?: string;
 }>;
 
-export default async function ServicesMarketplacePage({ searchParams }: { searchParams: SearchParams }) {
+export default async function ServicesMarketplacePage({
+  searchParams,
+}: { searchParams: SearchParams }) {
   const sp = await searchParams;
   const data = await getMarketplaceData();
 

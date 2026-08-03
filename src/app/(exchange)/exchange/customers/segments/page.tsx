@@ -4,13 +4,18 @@
  * Drill-down هر status با KPI اختصاصی، لیست مشتریان،
  * و توصیه‌های عملیاتی.
  */
-import { getCustomers, getCustomerSegments, getCustomerRiskDistribution, getCustomerStats } from '@/actions/exchange-customers';
+import {
+  getCustomerRiskDistribution,
+  getCustomerSegments,
+  getCustomerStats,
+  getCustomers,
+} from '@/actions/exchange-customers';
 import { getExchangeForUser } from '@/actions/exchanges';
 import { auth } from '@/auth';
-import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import { CustomerSegmentDeepDive } from '@/components/Exchange/customers/CustomerSegmentDeepDive';
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = { title: 'سگمنت‌های مشتریان · صرافی' };
 
@@ -23,15 +28,16 @@ export default async function SegmentsPage() {
 
   const { exchange } = membership;
 
-  const [stats, segments, riskBuckets, activeRes, prospectRes, frozenRes, closedRes] = await Promise.all([
-    getCustomerStats(exchange.id),
-    getCustomerSegments(exchange.id),
-    getCustomerRiskDistribution(exchange.id),
-    getCustomers(exchange.id, { status: 'ACTIVE', limit: 100 }),
-    getCustomers(exchange.id, { status: 'PROSPECT', limit: 100 }),
-    getCustomers(exchange.id, { status: 'FROZEN', limit: 100 }),
-    getCustomers(exchange.id, { status: 'CLOSED', limit: 100 }),
-  ]);
+  const [stats, segments, riskBuckets, activeRes, prospectRes, frozenRes, closedRes] =
+    await Promise.all([
+      getCustomerStats(exchange.id),
+      getCustomerSegments(exchange.id),
+      getCustomerRiskDistribution(exchange.id),
+      getCustomers(exchange.id, { status: 'ACTIVE', limit: 100 }),
+      getCustomers(exchange.id, { status: 'PROSPECT', limit: 100 }),
+      getCustomers(exchange.id, { status: 'FROZEN', limit: 100 }),
+      getCustomers(exchange.id, { status: 'CLOSED', limit: 100 }),
+    ]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-5)' }}>

@@ -17,10 +17,9 @@
   color: inherit;
   isolation: isolate;
   min-height: 168px;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
   animation: cardIn 600ms var(--ds-ease-out-quart) backwards;
   animation-delay: calc(var(--i, 0) * 50ms);
 }

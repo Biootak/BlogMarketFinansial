@@ -18,7 +18,7 @@
 
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { mkdir, readdir, readFile, stat, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import prisma from '@/lib/db';
 
@@ -247,9 +247,11 @@ export async function pruneBackups(retentionCount: number): Promise<number> {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-export function computeChecksum(envelope: Omit<BackupEnvelope, 'manifest'> & {
-  manifest: Omit<BackupManifest, 'checksum'>;
-}): string {
+export function computeChecksum(
+  envelope: Omit<BackupEnvelope, 'manifest'> & {
+    manifest: Omit<BackupManifest, 'checksum'>;
+  },
+): string {
   const hash = createHash('sha256');
   hash.update(JSON.stringify(envelope.sections));
   hash.update('|');
@@ -278,10 +280,7 @@ export function formatSize(bytes: number): string {
  * @param reason  دلیل backup — نمایش در UI
  * @param actor   شناسه فراخوان — user.id یا 'cron'
  */
-export async function runBackup(
-  reason: string = 'manual',
-  actor: string = 'cron',
-): Promise<BackupFileInfo> {
+export async function runBackup(reason = 'manual', actor = 'cron'): Promise<BackupFileInfo> {
   const createdAt = new Date().toISOString();
   const sections: BackupEnvelope['sections'] = [];
 
@@ -301,20 +300,36 @@ export async function runBackup(
   // Social links
   try {
     const social = await prisma.socialLink.findMany();
-    sections.push({ name: 'social_links', rowCount: social.length, takenAt: createdAt, data: social });
-  } catch { /* skip */ }
+    sections.push({
+      name: 'social_links',
+      rowCount: social.length,
+      takenAt: createdAt,
+      data: social,
+    });
+  } catch {
+    /* skip */
+  }
 
   // Audit log — last 1000 rows
   try {
     const audit = await prisma.auditLog.findMany({ orderBy: { createdAt: 'desc' }, take: 1000 });
     sections.push({ name: 'audit_log', rowCount: audit.length, takenAt: createdAt, data: audit });
-  } catch { /* skip */ }
+  } catch {
+    /* skip */
+  }
 
   // Exchange rates
   try {
     const rates = await prisma.exchangeRate.findMany({ take: 200 });
-    sections.push({ name: 'exchange_rates', rowCount: rates.length, takenAt: createdAt, data: rates });
-  } catch { /* skip */ }
+    sections.push({
+      name: 'exchange_rates',
+      rowCount: rates.length,
+      takenAt: createdAt,
+      data: rates,
+    });
+  } catch {
+    /* skip */
+  }
 
   const manifestWithoutChecksum = {
     version: 1 as const,
@@ -349,7 +364,9 @@ export async function runBackup(
         checksum: info.checksum,
       },
     });
-  } catch { /* ignore — filesystem backup already written */ }
+  } catch {
+    /* ignore — filesystem backup already written */
+  }
 
   // audit log (best-effort)
   try {
@@ -360,7 +377,9 @@ export async function runBackup(
         meta: { filename: info.filename, sizeBytes: info.sizeBytes, totalRows: info.totalRows },
       },
     });
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   // retention
   await pruneBackups(20).catch(() => 0);

@@ -167,7 +167,8 @@ export default function ExchangeStaffLoading() {
               style={{
                 padding: '10px var(--ds-space-4)',
                 borderBlockEnd: '1px solid var(--at-line, var(--ds-border-default))',
-                background: 'color-mix(in oklch, var(--at-bg-elevated, var(--ds-surface)) 82%, transparent)',
+                background:
+                  'color-mix(in oklch, var(--at-bg-elevated, var(--ds-surface)) 82%, transparent)',
                 display: 'flex',
                 gap: 'var(--ds-space-8)',
               }}
@@ -182,14 +183,22 @@ export default function ExchangeStaffLoading() {
                 key={i}
                 style={{
                   padding: 'var(--ds-space-3) var(--ds-space-4)',
-                  borderBlockEnd: i < 6 ? '1px solid var(--at-line, var(--ds-border-default))' : 'none',
+                  borderBlockEnd:
+                    i < 6 ? '1px solid var(--at-line, var(--ds-border-default))' : 'none',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 'var(--ds-space-4)',
                 }}
               >
                 {/* Avatar + text */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-3)', flex: '1.8' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--ds-space-3)',
+                    flex: '1.8',
+                  }}
+                >
                   <Skeleton variant="avatar" className="flex-shrink-0" />
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <Skeleton variant="text" className="h-3 w-24" />
@@ -201,7 +210,9 @@ export default function ExchangeStaffLoading() {
                 <Skeleton variant="text" className="h-3 w-16" />
                 <Skeleton variant="text" className="h-5 w-14 rounded-full" />
                 <Skeleton variant="text" className="h-2.5 w-20" />
-                <div style={{ display: 'flex', gap: 'var(--ds-space-1)', marginInlineStart: 'auto' }}>
+                <div
+                  style={{ display: 'flex', gap: 'var(--ds-space-1)', marginInlineStart: 'auto' }}
+                >
                   <Skeleton variant="card" className="h-7 w-7 rounded-lg" />
                   <Skeleton variant="card" className="h-7 w-7 rounded-lg" />
                 </div>

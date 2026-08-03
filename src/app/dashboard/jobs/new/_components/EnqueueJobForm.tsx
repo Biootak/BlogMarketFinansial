@@ -1,10 +1,8 @@
 'use client';
 
-import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Plus, Sparkles } from 'lucide-react';
+import { type EnqueueActionResult, enqueueJobAction } from '@/actions/jobs-actions';
 import { FormField } from '@/components/Dashboard/primitives';
+import { PersianDateTimePicker } from '@/components/ui/PersianDateTimePicker';
 import {
   Select,
   SelectContent,
@@ -12,9 +10,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PersianDateTimePicker } from '@/components/ui/PersianDateTimePicker';
-import { enqueueJobAction, type EnqueueActionResult } from '@/actions/jobs-actions';
 import { toPersianDigits } from '@/lib/setup/format';
+import { ArrowLeft, Plus, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
 import s from '../../jobs.module.css';
 
 interface EnqueueJobFormProps {
@@ -63,8 +63,8 @@ export function EnqueueJobForm({ queues, recentTypes }: EnqueueJobFormProps) {
           <span className={s.newEyebrow}>عملیات</span>
           <h1 className={s.newTitle}>ساخت Job جدید</h1>
           <p className={s.newLead}>
-            job را در صف مورد نظر قرار بده. در صورت انتخاب زمان، در آن زمان اجرا می‌شود؛
-            در غیر این صورت، در اولین فرصت توسط worker پردازش می‌شود.
+            job را در صف مورد نظر قرار بده. در صورت انتخاب زمان، در آن زمان اجرا می‌شود؛ در غیر این
+            صورت، در اولین فرصت توسط worker پردازش می‌شود.
           </p>
         </div>
         <div className={s.newHeaderSide}>
@@ -121,10 +121,7 @@ export function EnqueueJobForm({ queues, recentTypes }: EnqueueJobFormProps) {
             error={fieldError('queue')}
           >
             <Select value={queue} onValueChange={setQueue}>
-              <SelectTrigger
-                className={s.newSelectTrigger}
-                aria-label="انتخاب صف"
-              >
+              <SelectTrigger className={s.newSelectTrigger} aria-label="انتخاب صف">
                 <SelectValue placeholder="انتخاب صف" />
               </SelectTrigger>
               <SelectContent className={s.newSelectContent}>
@@ -237,9 +234,10 @@ export function EnqueueJobForm({ queues, recentTypes }: EnqueueJobFormProps) {
           </button>
         </div>
 
-        {state && state.success ? (
+        {state?.success ? (
           <p className={s.newFormSuccess} role="status">
-            job ساخته شد — در حال انتقال به صفحه جزئیات (شناسه: {toPersianDigits(state.id.slice(0, 12))})
+            job ساخته شد — در حال انتقال به صفحه جزئیات (شناسه:{' '}
+            {toPersianDigits(state.id.slice(0, 12))})
           </p>
         ) : null}
       </form>

@@ -1,5 +1,7 @@
 'use server';
 
+import { createHash, randomBytes } from 'node:crypto';
+import { type BackupConfig, type BackupFileInfo, DEFAULT_BACKUP_CONFIG } from '@/lib/backup';
 import prisma from '@/lib/db';
 import { authFailureToActionResult, requireAdmin, requireSuperAdmin } from '@/lib/require-auth';
 import { revalidatePath, revalidateTag } from '@/lib/revalidate';
@@ -17,12 +19,6 @@ import {
   UpdateSecuritySettingsSchema,
   UpdateSocialSettingsSchema,
 } from '@/schemas';
-import {
-  type BackupConfig,
-  DEFAULT_BACKUP_CONFIG,
-  type BackupFileInfo,
-} from '@/lib/backup';
-import { createHash, randomBytes } from 'node:crypto';
 
 export interface SystemSettingsData {
   siteName?: string;
@@ -477,9 +473,10 @@ export async function getSecuritySettings(): Promise<{
       success: true,
       data: {
         sessionTimeoutMin:
-          typeof meta.sessionTimeoutMin === 'number' ? meta.sessionTimeoutMin : fallback.sessionTimeoutMin,
-        ipAllowlist:
-          typeof meta.ipAllowlist === 'string' ? meta.ipAllowlist : fallback.ipAllowlist,
+          typeof meta.sessionTimeoutMin === 'number'
+            ? meta.sessionTimeoutMin
+            : fallback.sessionTimeoutMin,
+        ipAllowlist: typeof meta.ipAllowlist === 'string' ? meta.ipAllowlist : fallback.ipAllowlist,
         force2faForAdmins:
           typeof meta.force2faForAdmins === 'boolean'
             ? meta.force2faForAdmins
@@ -898,10 +895,7 @@ export async function triggerBackup(data: { reason?: string } = {}) {
 
     // تمام منطق backup در runBackup است — از تکرار جلوگیری می‌شود
     const { runBackup } = await import('@/lib/backup');
-    const info = await runBackup(
-      parsed.data.reason || 'manual',
-      authCheck.user.id,
-    );
+    const info = await runBackup(parsed.data.reason || 'manual', authCheck.user.id);
 
     revalidatePath('/dashboard/settings');
     return { success: true, data: info };
@@ -936,9 +930,7 @@ export async function deleteBackup(filename: string) {
     }
 
     // حذف رکورد از BackupRun (best-effort — ممکن است قبلاً وجود نداشته باشد)
-    await prisma.backupRun
-      .deleteMany({ where: { filename } })
-      .catch(() => {});
+    await prisma.backupRun.deleteMany({ where: { filename } }).catch(() => {});
 
     // audit log
     await prisma.auditLog

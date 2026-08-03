@@ -14,9 +14,9 @@
  *  - interactive: hover روی هر node، node highlight + label
  */
 
-import { useMemo } from 'react';
-import { cn } from '@/lib/utils';
 import { HUB_PALETTES, toOklch } from '@/components/Dashboard/PlatformHub/HubPalette';
+import { cn } from '@/lib/utils';
+import { useMemo } from 'react';
 import s from './PriorityOrbit.module.css';
 
 export type OrbitPriority = 'urgent' | 'high' | 'normal' | 'low';
@@ -88,10 +88,10 @@ function colorForTone(tone: 'rose' | 'amber' | 'indigo' | 'emerald' | 'cyan' | '
 
 /** هر priority یک radius دارد (درصد از viewBox). */
 const LANE_RADIUS: Record<OrbitPriority, number> = {
-  urgent: 22,   // نزدیک‌ترین — بحرانی‌ترین
+  urgent: 22, // نزدیک‌ترین — بحرانی‌ترین
   high: 30,
   normal: 38,
-  low: 46,      // دورترین — کم‌اهمیت‌ترین
+  low: 46, // دورترین — کم‌اهمیت‌ترین
 };
 
 const LANE_DASH: Record<OrbitPriority, string> = {
@@ -209,7 +209,13 @@ export function PriorityOrbit({
         })}
 
         {/* خطوط راهنما از مرکز (cross-hair) */}
-        <g stroke={accentSoft} strokeOpacity="0.18" strokeWidth="0.12" strokeDasharray="0.6 1.2" vectorEffect="non-scaling-stroke">
+        <g
+          stroke={accentSoft}
+          strokeOpacity="0.18"
+          strokeWidth="0.12"
+          strokeDasharray="0.6 1.2"
+          vectorEffect="non-scaling-stroke"
+        >
           <line x1="50" y1="2" x2="50" y2="98" />
           <line x1="2" y1="50" x2="98" y2="50" />
         </g>
@@ -219,7 +225,7 @@ export function PriorityOrbit({
           const items = grouped[p];
           const tone = PRIORITY_TONE[p];
           const baseColor = colorForTone(tone, 60);
-          const baseColorDim = colorForTone(tone, 35);
+          const _baseColorDim = colorForTone(tone, 35);
           const direction = p === 'urgent' || p === 'normal' ? 'normal' : 'reverse';
           return (
             <g
@@ -285,7 +291,14 @@ export function PriorityOrbit({
         {/* دیسک مرکز — اولویت بحرانی */}
         <g transform="translate(50 50)">
           {/* outer halo (pulse) */}
-          <circle cx="0" cy="0" r="14" fill="url(#orbit-core-disc)" opacity="0.35" className={s.coreHalo} />
+          <circle
+            cx="0"
+            cy="0"
+            r="14"
+            fill="url(#orbit-core-disc)"
+            opacity="0.35"
+            className={s.coreHalo}
+          />
           {/* middle disc */}
           <circle
             cx="0"
@@ -296,13 +309,7 @@ export function PriorityOrbit({
             strokeWidth="0.5"
           />
           {/* inner accent disc */}
-          <circle
-            cx="0"
-            cy="0"
-            r="6.5"
-            fill={colorForTone('rose', 55)}
-            fillOpacity="0.12"
-          />
+          <circle cx="0" cy="0" r="6.5" fill={colorForTone('rose', 55)} fillOpacity="0.12" />
           {/* central mark — مثل یک آنتن/برج فرماندهی */}
           <g stroke={colorForTone('rose', 45)} strokeWidth="0.55" strokeLinecap="round" fill="none">
             <path d="M -3 4 L 3 4 L 0 -5 Z" />
@@ -326,7 +333,10 @@ export function PriorityOrbit({
       <ul className={s.legend} aria-hidden>
         {PRIORITY_ORDER.map((p) => (
           <li key={p} className={s.legendItem} data-tone={p}>
-            <span className={s.legendDot} style={{ background: colorForTone(PRIORITY_TONE[p], 60) }} />
+            <span
+              className={s.legendDot}
+              style={{ background: colorForTone(PRIORITY_TONE[p], 60) }}
+            />
             <span className={s.legendLabel}>{PRIORITY_LABEL[p]}</span>
             <span className={s.legendValue}>{toPersianNumber(counts[p])}</span>
           </li>

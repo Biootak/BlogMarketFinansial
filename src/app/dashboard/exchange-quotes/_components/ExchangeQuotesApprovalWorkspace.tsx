@@ -20,7 +20,7 @@
 
 import type { QuoteRow } from '@/actions/exchange-quotes';
 import { approveQuote, rejectQuote } from '@/actions/exchange-quotes';
-import { ConfirmDialog, EmptyState, MillionDollarEmpty, PageHeader } from '@/components/Dashboard/primitives';
+import { ConfirmDialog, MillionDollarEmpty, PageHeader } from '@/components/Dashboard/primitives';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -32,12 +32,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Activity,
   AlertTriangle,
@@ -458,27 +453,24 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
   }
 
   // ── Single approve ─────────────────────────────────────────────────────────
-  const handleApprove = useCallback(
-    async (id: string) => {
-      setLoadingId(id);
-      const res = await approveQuote(id);
-      setLoadingId(null);
-      if (res.success) {
-        setQuotes((prev) => {
-          const next = prev.filter((q) => q.id !== id);
-          // auto-select next item
-          const idx = prev.findIndex((q) => q.id === id);
-          const nextItem = next[idx] ?? next[idx - 1] ?? next[0] ?? null;
-          setSelectedId(nextItem?.id ?? null);
-          return next;
-        });
-        showSuccess('قیمت تأیید شد');
-      } else {
-        showError(res.error.message);
-      }
-    },
-    [],
-  );
+  const handleApprove = useCallback(async (id: string) => {
+    setLoadingId(id);
+    const res = await approveQuote(id);
+    setLoadingId(null);
+    if (res.success) {
+      setQuotes((prev) => {
+        const next = prev.filter((q) => q.id !== id);
+        // auto-select next item
+        const idx = prev.findIndex((q) => q.id === id);
+        const nextItem = next[idx] ?? next[idx - 1] ?? next[0] ?? null;
+        setSelectedId(nextItem?.id ?? null);
+        return next;
+      });
+      showSuccess('قیمت تأیید شد');
+    } else {
+      showError(res.error.message);
+    }
+  }, []);
 
   // ── Single reject ──────────────────────────────────────────────────────────
   const handleRejectConfirm = useCallback(async () => {
@@ -628,7 +620,7 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
 
         {/* ── Feedback toasts ── */}
         {successMsg && (
-          <output className={s.toastSuccess} aria-live="polite" role="status">
+          <output className={s.toastSuccess} aria-live="polite">
             <CheckCircle2 size={14} aria-hidden />
             {successMsg}
           </output>
@@ -803,12 +795,15 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
               <div className={s.rejectDialogBody}>
                 <div className={s.rejectQuoteSummary}>
                   <div className={s.rejectAvatarSmall} aria-hidden>
-                    {(selectedQuote.exchangeName ?? selectedQuote.exchangeId).charAt(0).toUpperCase()}
+                    {(selectedQuote.exchangeName ?? selectedQuote.exchangeId)
+                      .charAt(0)
+                      .toUpperCase()}
                   </div>
                   <div>
                     <strong>{selectedQuote.exchangeName ?? selectedQuote.exchangeId}</strong>
                     <span className={s.rejectRateLine}>
-                      خرید: {fmtRate(selectedQuote.buyRate)} · فروش: {fmtRate(selectedQuote.sellRate)}
+                      خرید: {fmtRate(selectedQuote.buyRate)} · فروش:{' '}
+                      {fmtRate(selectedQuote.sellRate)}
                     </span>
                   </div>
                 </div>

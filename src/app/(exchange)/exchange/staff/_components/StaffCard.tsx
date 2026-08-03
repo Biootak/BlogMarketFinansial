@@ -8,12 +8,19 @@
  * حالت self: کارت خود کاربر فعلی متمایز می‌شود و دکمه حذف ندارد.
  */
 
-import Image from 'next/image';
-import { Clock, Mail, Trash2 } from 'lucide-react';
-import type { CSSProperties } from 'react';
 import type { ExchangeStaffRow } from '@/actions/exchanges';
 import { formatNumber } from '@/lib/customer-format';
-import { isSelf, daysSince, getInitialsFa, avatarTone, STAFF_ROLE_FA, type StaffRole } from '../_lib/staff-format';
+import { Clock, Mail, Trash2 } from 'lucide-react';
+import Image from 'next/image';
+import type { CSSProperties } from 'react';
+import {
+  STAFF_ROLE_FA,
+  type StaffRole,
+  avatarTone,
+  daysSince,
+  getInitialsFa,
+  isSelf,
+} from '../_lib/staff-format';
 import s from './StaffCockpit.module.css';
 
 interface Props {
@@ -34,9 +41,7 @@ const ROLES: ReadonlyArray<{ value: 'OWNER' | 'MANAGER' | 'STAFF' | 'VIEWER'; la
 ];
 
 function roleOf(m: ExchangeStaffRow): StaffRole {
-  return (ROLES.map((r) => r.value) as string[]).includes(m.role)
-    ? (m.role as StaffRole)
-    : 'STAFF';
+  return (ROLES.map((r) => r.value) as string[]).includes(m.role) ? (m.role as StaffRole) : 'STAFF';
 }
 
 export function StaffCard({
@@ -101,9 +106,7 @@ export function StaffCard({
         </span>
         <span className={s.cardMetaItem} style={{ fontSize: 11, color: 'var(--at-fg-subtle)' }}>
           <Clock size={11} aria-hidden />
-          {days < 1
-            ? 'امروز'
-            : `${formatNumber(days)} روز پیش`}
+          {days < 1 ? 'امروز' : `${formatNumber(days)} روز پیش`}
         </span>
       </div>
 

@@ -1,6 +1,4 @@
-﻿/* BackupManager.module.css */
-
-.wrap {
+﻿/* BackupManager.module.css */ .wrap {
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-4);
@@ -37,7 +35,7 @@
   flex-shrink: 0;
 }
 
-.statusIcon[data-on='true'] {
+.statusIcon[data-on="true"] {
   background: oklch(58% 0.12 165 / 0.15);
   color: var(--nova-emerald);
 }
@@ -95,8 +93,13 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: 1fr;
   gap: var(--ds-space-3);
+}
+@media (min-width: 480px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .field {
@@ -163,7 +166,7 @@
   transition: background 0.2s ease, border-color 0.2s ease;
 }
 
-.toggleSwitch[data-on='true'] {
+.toggleSwitch[data-on="true"] {
   background: var(--nova-emerald);
   border-color: var(--nova-emerald);
 }
@@ -179,7 +182,7 @@
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.toggleSwitch[data-on='true'] .toggleKnob {
+.toggleSwitch[data-on="true"] .toggleKnob {
   transform: translateX(-16px);
 }
 
@@ -204,8 +207,13 @@
 
 .checkRow {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: 1fr;
   gap: 6px;
+}
+@media (min-width: 480px) {
+  .checkRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .checkLabel {
@@ -245,7 +253,7 @@
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.checkBoxView[data-on='true'] {
+.checkBoxView[data-on="true"] {
   background: var(--nova-emerald);
   border-color: var(--nova-emerald);
 }
@@ -503,9 +511,13 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .spin { animation: none; }
+  .spin {
+    animation: none;
+  }
 }

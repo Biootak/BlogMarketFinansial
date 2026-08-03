@@ -1,7 +1,7 @@
 import { type Editor, type Range, getMarkRange, getMarkType, posToDOMRect } from '@tiptap/core';
 import { BubbleMenu } from '@tiptap/react/menus';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // 2026-07-05: dir از hook مرکزی می‌آید تا در پورتل body جهت متن
 // مستقل از cascade <html dir> درست بماند.

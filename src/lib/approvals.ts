@@ -7,9 +7,9 @@
 
 import 'server-only';
 
-import { revalidateTag } from '@/lib/revalidate';
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
+import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
 
 export type ApprovalType = 'settlement' | 'kyc' | 'refund' | 'withdrawal' | 'custom';
@@ -128,8 +128,7 @@ const toRequest = (
     row.status === 'pending' &&
     !!currentUserId &&
     !!currentStepRow &&
-    (currentStepRow.approverId === currentUserId ||
-      currentStepRow.approverRole === currentRole);
+    (currentStepRow.approverId === currentUserId || currentStepRow.approverRole === currentRole);
   return {
     id: row.id,
     type: (VALID_TYPE as string[]).includes(row.type) ? (row.type as ApprovalType) : 'custom',

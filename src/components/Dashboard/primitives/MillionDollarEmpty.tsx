@@ -183,9 +183,33 @@ function InboxIllustration() {
           stroke="var(--ds-line, var(--ds-border))"
           strokeWidth="1"
         />
-        <line x1="68" y1="36" x2="120" y2="36" stroke="var(--ds-fg-muted)" strokeWidth="2" strokeLinecap="round" />
-        <line x1="68" y1="46" x2="132" y2="46" stroke="var(--ds-fg-muted)" strokeWidth="2" strokeLinecap="round" />
-        <line x1="68" y1="56" x2="100" y2="56" stroke="var(--ds-fg-muted)" strokeWidth="2" strokeLinecap="round" />
+        <line
+          x1="68"
+          y1="36"
+          x2="120"
+          y2="36"
+          stroke="var(--ds-fg-muted)"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <line
+          x1="68"
+          y1="46"
+          x2="132"
+          y2="46"
+          stroke="var(--ds-fg-muted)"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <line
+          x1="68"
+          y1="56"
+          x2="100"
+          y2="56"
+          stroke="var(--ds-fg-muted)"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
       </g>
       {/* front lip */}
       <path
@@ -236,14 +260,7 @@ function SearchIllustration() {
         strokeWidth="2.5"
         fill="url(#ink-lens)"
       />
-      <circle
-        cx="100"
-        cy="80"
-        r="40"
-        stroke="var(--ds-fg)"
-        strokeOpacity="0.15"
-        strokeWidth="1"
-      />
+      <circle cx="100" cy="80" r="40" stroke="var(--ds-fg)" strokeOpacity="0.15" strokeWidth="1" />
       {/* handle */}
       <line
         x1="130"
@@ -380,7 +397,15 @@ function ChartIllustration() {
         <rect x="44" y="108" width="14" height="20" rx="2" fill="var(--ds-primary)" opacity="0.4" />
         <rect x="72" y="92" width="14" height="36" rx="2" fill="var(--ds-primary)" opacity="0.55" />
         <rect x="100" y="76" width="14" height="52" rx="2" fill="var(--ds-primary)" opacity="0.7" />
-        <rect x="128" y="58" width="14" height="70" rx="2" fill="var(--ds-primary)" opacity="0.85" />
+        <rect
+          x="128"
+          y="58"
+          width="14"
+          height="70"
+          rx="2"
+          fill="var(--ds-primary)"
+          opacity="0.85"
+        />
         <rect x="156" y="40" width="14" height="88" rx="2" fill="var(--ds-primary)" />
       </g>
       {/* trend line */}
@@ -495,17 +520,56 @@ function NetworkIllustration() {
       <g className={s.networkPulse}>
         {/* central node */}
         <circle cx="100" cy="80" r="8" fill="var(--ds-primary)" />
-        <circle cx="100" cy="80" r="14" fill="none" stroke="var(--ds-primary)" strokeOpacity="0.3" />
+        <circle
+          cx="100"
+          cy="80"
+          r="14"
+          fill="none"
+          stroke="var(--ds-primary)"
+          strokeOpacity="0.3"
+        />
         {/* satellites */}
         <circle cx="48" cy="50" r="5" fill="var(--ds-fg-muted)" />
         <circle cx="152" cy="50" r="5" fill="var(--ds-fg-muted)" />
         <circle cx="48" cy="110" r="5" fill="var(--ds-fg-muted)" />
         <circle cx="152" cy="110" r="5" fill="var(--ds-fg-muted)" />
         {/* lines */}
-        <line x1="100" y1="80" x2="48" y2="50" stroke="var(--ds-fg-muted)" strokeWidth="1" strokeDasharray="2 3" />
-        <line x1="100" y1="80" x2="152" y2="50" stroke="var(--ds-fg-muted)" strokeWidth="1" strokeDasharray="2 3" />
-        <line x1="100" y1="80" x2="48" y2="110" stroke="var(--ds-fg-muted)" strokeWidth="1" strokeDasharray="2 3" />
-        <line x1="100" y1="80" x2="152" y2="110" stroke="var(--ds-fg-muted)" strokeWidth="1" strokeDasharray="2 3" />
+        <line
+          x1="100"
+          y1="80"
+          x2="48"
+          y2="50"
+          stroke="var(--ds-fg-muted)"
+          strokeWidth="1"
+          strokeDasharray="2 3"
+        />
+        <line
+          x1="100"
+          y1="80"
+          x2="152"
+          y2="50"
+          stroke="var(--ds-fg-muted)"
+          strokeWidth="1"
+          strokeDasharray="2 3"
+        />
+        <line
+          x1="100"
+          y1="80"
+          x2="48"
+          y2="110"
+          stroke="var(--ds-fg-muted)"
+          strokeWidth="1"
+          strokeDasharray="2 3"
+        />
+        <line
+          x1="100"
+          y1="80"
+          x2="152"
+          y2="110"
+          stroke="var(--ds-fg-muted)"
+          strokeWidth="1"
+          strokeDasharray="2 3"
+        />
       </g>
     </svg>
   );
@@ -534,7 +598,14 @@ function DefaultIllustration() {
   return (
     <svg viewBox="0 0 200 160" className={s.svg} fill="none" aria-hidden>
       <g className={s.float}>
-        <circle cx="100" cy="80" r="36" fill="var(--ds-bg, white)" stroke="var(--ds-line, var(--ds-border))" strokeWidth="1" />
+        <circle
+          cx="100"
+          cy="80"
+          r="36"
+          fill="var(--ds-bg, white)"
+          stroke="var(--ds-line, var(--ds-border))"
+          strokeWidth="1"
+        />
         <path
           d="M100 60 V100 M76 80 H124"
           stroke="var(--ds-fg-muted)"

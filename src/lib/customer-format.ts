@@ -26,7 +26,10 @@ export function minorToDecimal(value: string | number | bigint | null | undefine
 }
 
 /** «۱٬۲۳۴٫۵۶ AFN» */
-export function formatAmount(value: string | number | bigint | null | undefined, currency: string): string {
+export function formatAmount(
+  value: string | number | bigint | null | undefined,
+  currency: string,
+): string {
   const num = minorToDecimal(value);
   const formatted = new Intl.NumberFormat('fa-IR', {
     minimumFractionDigits: 0,

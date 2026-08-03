@@ -8,13 +8,10 @@
  * children می‌تواند server یا client component باشد.
  */
 
-import { PageHeader } from '@/components/Dashboard/primitives';
 import { getExchangeForUser } from '@/actions/exchanges';
 import { auth } from '@/auth';
-import {
-  type SettingsSubNavItem,
-  SettingsSubNavHost,
-} from '@/components/Dashboard/primitives';
+import { PageHeader } from '@/components/Dashboard/primitives';
+import { SettingsSubNavHost, type SettingsSubNavItem } from '@/components/Dashboard/primitives';
 import { redirect } from 'next/navigation';
 import s from './layout.module.css';
 
@@ -76,10 +73,7 @@ export default async function SettingsLayout({
       <PageHeader
         title="تنظیمات صرافی"
         description="پیکربندی عملیاتی، امنیتی و اطلاعات عمومی"
-        breadcrumb={[
-          { label: 'پنل صرافی', href: '/exchange/dashboard' },
-          { label: 'تنظیمات' },
-        ]}
+        breadcrumb={[{ label: 'پنل صرافی', href: '/exchange/dashboard' }, { label: 'تنظیمات' }]}
         icon="settings"
         accent="emerald"
         eyebrow="Workspace"

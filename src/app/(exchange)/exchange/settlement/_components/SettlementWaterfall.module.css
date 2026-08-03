@@ -20,8 +20,7 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background:
-    radial-gradient(ellipse 60% 100% at 0% 0%, var(--at-accent-soft) 0%, transparent 60%),
+  background: radial-gradient(ellipse 60% 100% at 0% 0%, var(--at-accent-soft) 0%, transparent 60%),
     radial-gradient(ellipse 50% 80% at 100% 100%, var(--at-violet) 0%, transparent 60%);
   opacity: 0.18;
   pointer-events: none;
@@ -228,7 +227,11 @@
 }
 
 .segmentBar[data-tone="emerald"] .barFill {
-  background: linear-gradient(90deg, var(--at-accent) 0%, color-mix(in oklch, var(--at-accent) 70%, var(--at-gold)) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--at-accent) 0%,
+    color-mix(in oklch, var(--at-accent) 70%, var(--at-gold)) 100%
+  );
 }
 
 .segmentBar[data-tone="amber"] .barFill {
@@ -236,7 +239,11 @@
 }
 
 .segmentBar[data-tone="violet"] .barFill {
-  background: linear-gradient(90deg, var(--at-violet) 0%, color-mix(in oklch, var(--at-violet) 60%, var(--at-accent)) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--at-violet) 0%,
+    color-mix(in oklch, var(--at-violet) 60%, var(--at-accent)) 100%
+  );
 }
 
 @keyframes barGrow {

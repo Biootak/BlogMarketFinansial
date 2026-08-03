@@ -21,12 +21,12 @@
  */
 import 'server-only';
 
+import MarkdownRenderer from '@/app/(site)/(singles)/MarkdownRenderer';
 import BannerAds from '@/components/BannerADS/BannerADS';
-import { optimizeBodyImages } from '@/lib/optimize-body-images';
+import { optimizeBodyImages, wrapBodyTables } from '@/lib/optimize-body-images';
 import { sanitizeHtml } from '@/lib/utils';
 import type { Advertisement } from '@/types/types';
 import { generateHTML } from '@tiptap/html/server';
-import MarkdownRenderer from '@/app/(site)/(singles)/MarkdownRenderer';
 import { renderExtensions } from './render-content';
 
 interface EditorContentHTMLProps {
@@ -47,6 +47,9 @@ export default async function EditorContentHTML({
   if (!content) {
     return null;
   }
+
+  // ترکیب هر دو تبدیل تصویر و wrap جدول برای خروجی HTML آماده نمایش
+  const renderBodyHtml = (html: string) => wrapBodyTables(optimizeBodyImages(html));
 
   const renderBody = () => {
     // ── Tiptap JSON document ─────────────────────────────────────────────
@@ -73,7 +76,7 @@ export default async function EditorContentHTML({
                 <div
                   className={`editor-content at-prose at-prose--renderer ${className}`}
                   dangerouslySetInnerHTML={{
-                    __html: optimizeBodyImages(generateHTML(part1, renderExtensions)),
+                    __html: renderBodyHtml(generateHTML(part1, renderExtensions)),
                   }}
                 />
                 <div className="my-6">
@@ -82,7 +85,7 @@ export default async function EditorContentHTML({
                 <div
                   className={`editor-content at-prose at-prose--renderer ${className}`}
                   dangerouslySetInnerHTML={{
-                    __html: optimizeBodyImages(generateHTML(part2, renderExtensions)),
+                    __html: renderBodyHtml(generateHTML(part2, renderExtensions)),
                   }}
                 />
               </div>
@@ -93,7 +96,7 @@ export default async function EditorContentHTML({
           <div
             className={`editor-content at-prose at-prose--renderer ${className}`}
             dangerouslySetInnerHTML={{
-              __html: optimizeBodyImages(generateHTML(parsed, renderExtensions)),
+              __html: renderBodyHtml(generateHTML(parsed, renderExtensions)),
             }}
           />
         );
@@ -115,14 +118,14 @@ export default async function EditorContentHTML({
             <div className="space-y-6">
               <div
                 className={`editor-content at-prose at-prose--renderer ${className}`}
-                dangerouslySetInnerHTML={{ __html: sanitizeHtml(part1) }}
+                dangerouslySetInnerHTML={{ __html: renderBodyHtml(sanitizeHtml(part1)) }}
               />
               <div className="my-6">
                 <BannerAds ad={inContentAd} variant="rich" />
               </div>
               <div
                 className={`editor-content at-prose at-prose--renderer ${className}`}
-                dangerouslySetInnerHTML={{ __html: sanitizeHtml(part2) }}
+                dangerouslySetInnerHTML={{ __html: renderBodyHtml(sanitizeHtml(part2)) }}
               />
             </div>
           );
@@ -131,7 +134,7 @@ export default async function EditorContentHTML({
       return (
         <div
           className={`editor-content at-prose at-prose--renderer ${className}`}
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(trimmed) }}
+          dangerouslySetInnerHTML={{ __html: renderBodyHtml(sanitizeHtml(trimmed)) }}
         />
       );
     }

@@ -96,7 +96,7 @@ export function DashboardProviders({
   return (
     <DirectionProvider dir="rtl">
       <div
-        className="dash-root flex h-screen overflow-hidden bg-[var(--nova-canvas)] transition-colors duration-300"
+        className="dash-root flex h-dvh overflow-hidden bg-[var(--nova-canvas)] transition-colors duration-300"
         dir="rtl"
       >
         <SidebarInitializer />

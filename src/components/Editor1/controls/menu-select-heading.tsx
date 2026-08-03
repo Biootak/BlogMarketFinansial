@@ -5,7 +5,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import type { Editor } from '@tiptap/core';
-import React, { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { Icon } from '../../ui/icon';
 import { Toolbar } from '../../ui/toolbar';
 import { useActive } from '../hooks/use-active';

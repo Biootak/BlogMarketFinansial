@@ -1,4 +1,4 @@
-﻿# Dependencies
+# Dependencies
 /node_modules
 /.pnp
 .pnp.js
@@ -23,6 +23,11 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .tmp-screenshot*
+/logs/
+tmp-*.log
+web-build.log
+cron-build.log
+debug.log
 # Environment Variables
 .env
 .env.*
@@ -53,10 +58,22 @@ next-env.d.ts
 .opencode/
 .worktrees/
 
-# Lighthouse reports
+# Lighthouse reports (lh-* & lighthouse-* variants from perf runs)
+/lh-*.json
+/lh-*.html
 /lighthouse-*.report.html
 /lighthouse-*.report.json
+/.lh-tmp/
 /.lighthouse-tmp/
+/lighthouse-report*.json
+/lighthouse-report*.html
+/home.html
+
+# Performance audit docs (generated from perf runs)
+/PERFORMANCE_ACTION_PLAN.md
+/PERFORMANCE_GUIDE.md
+/PERF_PLAN.md
+/AUDIT_REPORT.md
 
 # Sentry
 .sentryclirc
@@ -75,11 +92,11 @@ next-env.d.ts
 
 # 2026-07-06: codegraph MCP cache (SQLite DB + daemon state). Regenerated
 # from source on demand; tracked nowhere else. The 16MB `codegraph.db`
-# alone is enough reason to keep this out of git — it bloats `git status`
+# alone is enough reason to keep this out of git � it bloats `git status`
 # and inflates every shallow clone.
 /.codegraph/
 
-# Freebuff Desktop — local database and agent config (user-specific, never commit)
+# Freebuff Desktop � local database and agent config (user-specific, never commit)
 /.freebuff/
 /.claude/settings.local.json
 /.openclaude/
@@ -103,7 +120,7 @@ next-env.d.ts
 
 # ============================================================================
 # LARGE BINARIES & INSTALLERS
-# فایل‌های بزرگ — هرگز در git نیستند (باید روی USB/share نگه داشته شوند)
+# ???????? ???? � ???? ?? git ?????? (???? ??? USB/share ??? ????? ????)
 # ============================================================================
 # Linux IDE/editor installers
 *.rpm
@@ -127,17 +144,17 @@ node-v*.tar.gz
 node-v*.zip
 
 # ============================================================================
-# OFFLINE CACHE (ساخته‌شده توسط download-cache.sh)
-# محتوا روی VirtualBox share / USB می‌ماند، نه git
+# OFFLINE CACHE (????????? ???? download-cache.sh)
+# ????? ??? VirtualBox share / USB ???????? ?? git
 # ============================================================================
 /offline-cache/node/
 /offline-cache/rpms/
 /offline-cache/MANIFEST.txt
-# فقط .gitkeep tracked می‌ماند تا پوشه‌ساختار حفظ شود
+# ??? .gitkeep tracked ??????? ?? ??????????? ??? ???
 
 # ============================================================================
 # AGENT / AI TASK FILES
-# فایل‌های کاری agent ها — session-specific، نه source code
+# ???????? ???? agent ?? � session-specific? ?? source code
 # ============================================================================
 /Documents/bob-task-*.json
 /Documents/task-*.json
@@ -146,37 +163,84 @@ node-v*.zip
 /.trae/
 /.kilo/tasks/
 /.claude/tasks/
-# اگه در آینده agent جدیدی اضافه شد:
+# ??? ?? ????? agent ????? ????? ??:
 /.agent*/
 /agent-tasks/
 /.task-*/
 
 # ============================================================================
 # RUNTIME / EXTRACTED BINARIES
-# فایل‌هایی که روی ماشین user extract می‌شوند
+# ????????? ?? ??? ????? user extract ???????
 # ============================================================================
 /trae-extracted/
 /app-extracted/
 *.AppDir/
 
 # ============================================================================
-# CODEPUS — local shadow-git and task state (machine-specific, never commit)
+# CODEPUS � local shadow-git and task state (machine-specific, never commit)
 # ============================================================================
 /.codepus/
 .codepus-todos.json
 
-# Linux Trash (GNOME/KDE delete basket — never commit)
+# Linux Trash (GNOME/KDE delete basket � never commit)
 /.Trash-*/
 
 # ============================================================================
 # PERF / BUILD OUTPUT
-# خروجی build های performance — generated، نه source code
+# ????? build ??? performance � generated? ?? source code
 # ============================================================================
 /perf-out/
 
 # ============================================================================
 # WINDOWS MACHINE-SPECIFIC
 # ============================================================================
-# Registry patch files — machine-specific, never commit
+# Registry patch files � machine-specific, never commit
 bypass.reg
 *.reg
+
+# ============================================================================
+# MACHINE-SPECIFIC / SESSION TOOLING
+# ????? ? ?????? ????? ?? ????? � ????? ?? git ?????
+# ============================================================================
+# Golden-image provisioning state (regenerated per machine)
+/.golden-provisioned
+# VM setup scripts + SSH public key (machine-specific)
+/.vmsetup/
+# Browser/MCP session configs (contain localhost URLs)
+/.playwright.json
+/args.json
+# One-off audit scripts (tied to specific lighthouse report runs)
+/a11y-details.cjs
+/lcp-deep.cjs
+# One-off debug scripts (never commit)
+/check-db.js
+# Temp / personal notes
+ali.md
+# Ad-hoc SQL queries / sync test artifacts
+/tmp_query.sql
+/SYNC_TEST_FROM_GUEST.txt
+
+# ============================================================================
+# VM / VIRTUALBOX / VMWARE INFRA SCRIPTS (machine-specific, never commit)
+# ============================================================================
+auto.ks
+bake-golden.sh
+bootstrap-live.sh
+fedora-live-setup.sh
+guest-optimize.sh
+optimize-guest.sh
+fix-share.sh
+diagnose-share.sh
+enable-bidirect-sync.sh
+bidirectional-sync.sh
+install-share-permanent.sh
+start-vmware.sh
+start-installed.sh
+unstack-share.sh
+autostart-trae.sh
+.bootstrap-launcher.sh
+setup-vm.ps1
+# generated desktop screenshots in project root (root-only)
+/*.png
+/*.jpg
+/*.jpeg

@@ -29,8 +29,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import Sparkline from './Sparkline';
 import s from './HeroIdentity.module.css';
+import Sparkline from './Sparkline';
 
 type Props = {
   exchange: {
@@ -164,7 +164,7 @@ export default function HeroIdentity({ exchange, primaryRate, activeCurrencies }
           <div className={s.identityRow}>
             <div className={s.logo} aria-hidden>
               {exchange.logoUrl ? (
-                // biome-ignore lint/performance/noImgElement: dynamic user URL
+                // Dynamic user URL
                 <img src={exchange.logoUrl} alt="" className={s.logoImg} />
               ) : (
                 <div className={s.logoFallback}>
@@ -326,9 +326,7 @@ export default function HeroIdentity({ exchange, primaryRate, activeCurrencies }
               </div>
 
               <div className={s.rateFoot}>
-                <span className={s.rateFootText}>
-                  به‌روزشده {ageLabel}
-                </span>
+                <span className={s.rateFootText}>به‌روزشده {ageLabel}</span>
                 <span className={s.rateFootDot} aria-hidden />
                 <span className={s.rateFootText}>هر ۶۰ ثانیه</span>
               </div>

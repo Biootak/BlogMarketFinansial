@@ -493,7 +493,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         return s.thumbLg;
       case 'xl':
         return s.thumbXl;
-      case 'md':
       default:
         return s.thumbMd;
     }
@@ -538,7 +537,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           <div className={[s.grid, isLargeThumb ? s.gridLarge : ''].filter(Boolean).join(' ')}>
             {entries.map((entry) => (
               <div key={entry.id} className={[s.thumb, thumbClass].join(' ')}>
-                {/* biome-ignore lint/performance/noImgElement: dynamic user upload (blob: or relative URL not in next.config remotePatterns) */}
+                {/* Dynamic user upload (blob: or relative URL not in next.config remotePatterns) */}
                 <img
                   src={entry.previewUrl}
                   alt={entry.file.name || 'پیش‌نمایش'}
@@ -612,11 +611,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           </div>
         ) : (
           <div className={s.empty}>
-            <RiImageAddLine
-              size={isLargeThumb ? 56 : 48}
-              className={s.emptyIcon}
-              aria-hidden
-            />
+            <RiImageAddLine size={isLargeThumb ? 56 : 48} className={s.emptyIcon} aria-hidden />
             <p className={[s.emptyTitle, isLargeThumb ? s.emptyTitleLarge : ''].join(' ')}>
               {isDragActive
                 ? 'فایل تصویر را اینجا رها کنید...'
@@ -624,9 +619,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                   ? 'برای انتخاب تصاویر، فایل‌ها را اینجا بکشید و رها کنید یا کلیک کنید'
                   : 'برای انتخاب تصویر، فایل را اینجا بکشید و رها کنید یا کلیک کنید'}
             </p>
-            <p className={s.emptyHint}>
-              فرمت‌های مجاز: JPG, PNG, GIF, WebP, SVG — حداکثر ۱۰MB
-            </p>
+            <p className={s.emptyHint}>فرمت‌های مجاز: JPG, PNG, GIF, WebP, SVG — حداکثر ۱۰MB</p>
           </div>
         )}
       </div>

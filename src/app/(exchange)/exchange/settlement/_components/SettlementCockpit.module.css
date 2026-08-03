@@ -35,9 +35,8 @@
   box-shadow: var(--at-shadow-sm);
   isolation: isolate;
   overflow: hidden;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
   animation: cellIn 600ms var(--ds-ease-out-quart) backwards;
 }
 
@@ -300,10 +299,9 @@
   border: 1px solid var(--at-line);
   border-radius: 999px;
   cursor: pointer;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    background var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), background var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
 }
 
 .filterPill:hover {
@@ -448,7 +446,7 @@
 .detailId {
   font-size: 11px;
   color: var(--at-fg-muted);
-  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-family: "Geist Mono", ui-monospace, monospace;
 }
 
 .detailIdVal {

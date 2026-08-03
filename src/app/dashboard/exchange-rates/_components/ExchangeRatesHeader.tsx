@@ -141,10 +141,7 @@ function StatCard({
         gap: '0.4rem',
       }}
     >
-      <div
-        className="flex items-center justify-between"
-        style={{ gap: '0.4rem' }}
-      >
+      <div className="flex items-center justify-between" style={{ gap: '0.4rem' }}>
         <span
           className="font-semibold uppercase"
           style={{

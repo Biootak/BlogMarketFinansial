@@ -1,9 +1,8 @@
+import '@/styles/archive-hub.css';
 import { SafeImage } from '@/components/SafeImage';
-import { Chip } from '@/components/ds';
 import type { TaxonomyType } from '@/types/types';
 import { FolderOpen, Hash } from 'lucide-react';
 import Link from 'next/link';
-import * as React from 'react';
 import {
   HiArrowTrendingUp,
   HiOutlineCalendarDays,

@@ -2,13 +2,7 @@
 
 import { createCategory, updateCategory } from '@/actions/categoryActions';
 import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import {
   Form,
   FormControl,

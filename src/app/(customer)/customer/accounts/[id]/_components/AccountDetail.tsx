@@ -25,7 +25,20 @@ import {
   StatusPill,
   StatusRail,
 } from '@/app/(customer)/customer/_lib/customer-ui';
-import { Activity, ArrowDownLeft, ArrowLeftRight, ArrowUpRight, ChevronLeft, CreditCard, Download, Lock, Send, Snowflake, Upload, Wallet } from 'lucide-react';
+import {
+  Activity,
+  ArrowDownLeft,
+  ArrowLeftRight,
+  ArrowUpRight,
+  ChevronLeft,
+  CreditCard,
+  Download,
+  Lock,
+  Send,
+  Snowflake,
+  Upload,
+  Wallet,
+} from 'lucide-react';
 import Link from 'next/link';
 import s from './AccountDetail.module.css';
 
@@ -117,9 +130,7 @@ export default function AccountDetail({ account, ledger }: Props) {
                 </span>
                 <div className={s.frozenText}>
                   <strong>حساب منجمد</strong>
-                  {account.frozenUntil && (
-                    <span>تا {faDate(account.frozenUntil)}</span>
-                  )}
+                  {account.frozenUntil && <span>تا {faDate(account.frozenUntil)}</span>}
                 </div>
               </div>
             ) : (
@@ -236,12 +247,7 @@ export default function AccountDetail({ account, ledger }: Props) {
         <div className={s.kvList}>
           <KeyValueRow label="نوع حساب" value={ACCOUNT_TYPE_LABEL[account.type] ?? account.type} />
           <KeyValueRow label="ارز" value={account.currency} mono />
-          <KeyValueRow
-            label="شناسه حساب"
-            value={account.id.slice(0, 12) + '…'}
-            mono
-            dir="ltr"
-          />
+          <KeyValueRow label="شناسه حساب" value={`${account.id.slice(0, 12)}…`} mono dir="ltr" />
           <KeyValueRow
             label="موجودی فعلی"
             value={
@@ -251,26 +257,16 @@ export default function AccountDetail({ account, ledger }: Props) {
             }
             mono
           />
-          <KeyValueRow
-            label="تاریخ افتتاح"
-            value={faDate(account.createdAt)}
-          />
+          <KeyValueRow label="تاریخ افتتاح" value={faDate(account.createdAt)} />
           {account.frozenUntil && (
-            <KeyValueRow
-              label="پایان انجماد"
-              value={faDate(account.frozenUntil)}
-            />
+            <KeyValueRow label="پایان انجماد" value={faDate(account.frozenUntil)} />
           )}
         </div>
       </section>
 
       {/* ── Ledger ───────────────────────────────────────────────────── */}
       <section className={s.section}>
-        <SectionHeader
-          icon={Activity}
-          title="دفتر کل"
-          sub={`${faNum(ledger.length)} ردیف اخیر`}
-        />
+        <SectionHeader icon={Activity} title="دفتر کل" sub={`${faNum(ledger.length)} ردیف اخیر`} />
         {ledger.length === 0 ? (
           <div className={s.empty}>
             <span className={s.emptyIcon} aria-hidden>
@@ -306,10 +302,7 @@ export default function AccountDetail({ account, ledger }: Props) {
                     </span>
                   </div>
                   <div className={s.ledgerRight}>
-                    <span
-                      className={s.ledgerAmount}
-                      data-tone={toneKey}
-                    >
+                    <span className={s.ledgerAmount} data-tone={toneKey}>
                       {isCredit ? '+' : '−'}
                       {faNum(row.amount)}
                     </span>

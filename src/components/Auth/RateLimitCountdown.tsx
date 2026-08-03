@@ -26,8 +26,7 @@ export interface RateLimitCountdownProps {
   className?: string;
 }
 
-const formatFa = (n: number): string =>
-  n.toLocaleString('fa-IR', { useGrouping: false });
+const formatFa = (n: number): string => n.toLocaleString('fa-IR', { useGrouping: false });
 
 /**
  * تبدیل میلی‌ثانیه به رشتهٔ فارسی:
@@ -44,11 +43,7 @@ function formatDuration(ms: number): string {
   return `${formatFa(totalSec)} ثانیه`;
 }
 
-export function RateLimitCountdown({
-  initialMs,
-  onExpire,
-  className,
-}: RateLimitCountdownProps) {
+export function RateLimitCountdown({ initialMs, onExpire, className }: RateLimitCountdownProps) {
   const [ms, setMs] = useState(Math.max(0, initialMs));
 
   useEffect(() => {
@@ -99,8 +94,7 @@ export function RateLimitCountdown({
         <Clock size={14} />
       </span>
       <span className={styles.text}>
-        می‌توانید دوباره تلاش کنید در{' '}
-        <strong className={styles.value}>{formatDuration(ms)}</strong>
+        می‌توانید دوباره تلاش کنید در <strong className={styles.value}>{formatDuration(ms)}</strong>
       </span>
       <span className={styles.bar} aria-hidden>
         <span

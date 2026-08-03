@@ -27,7 +27,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import Link from 'next/link';
-import { type CSSProperties, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export type BannerAdVariant = 'rich' | 'image' | 'showcase' | 'minimal' | 'spotlight';
 
@@ -316,9 +316,7 @@ export default function BannerAds({
         if (data.success && typeof data.views === 'number') {
           setViewsCount(data.views);
         }
-      } catch (err) {
-        console.error('Failed to record ad view:', err);
-      }
+      } catch (_err) {}
     };
     recordView();
   }, [ad?.id]);

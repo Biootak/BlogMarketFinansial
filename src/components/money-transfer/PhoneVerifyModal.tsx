@@ -12,7 +12,7 @@
  */
 
 import { sendPhoneOtp, verifyPhoneOtp } from '@/actions/phone-verify';
-import { AlertCircle, ArrowRight, KeyRound, Phone, RotateCcw, ShieldCheck, X } from 'lucide-react';
+import { AlertCircle, ArrowRight, Phone, RotateCcw, ShieldCheck, X } from 'lucide-react';
 import { type FC, useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import s from './PhoneVerifyModal.module.css';

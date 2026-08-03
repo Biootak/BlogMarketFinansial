@@ -19,10 +19,12 @@ import Script from 'next/script';
 
 import './globals.css';
 import '@/styles/index.scss';
-// Editor renderer styles — article bodies are now SSR'd (see
-// EditorContentHTML), so the `.editor-content` / `.at-prose--renderer` rules
-// must be present globally rather than pulled in by a client-only import.
-import '@/components/Editor1/styles/index.scss';
+// Editor renderer styles — 2026-08-03: moved from the ROOT layout into the
+// two `(singles)` layouts. The `.editor-content` / `.at-prose--renderer`
+// rules are only needed on article pages (EditorContentHTML SSR), and the
+// root layout injected them into EVERY page (~113KB render-blocking CSS on
+// the homepage where they are 100% unused). Singles layouts wrap every
+// article route, so article pages still get the styles.
 
 import PageViewTracker from '@/components/PageViewTracker';
 import Providers from '@/components/providers';

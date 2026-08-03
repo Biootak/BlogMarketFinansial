@@ -82,9 +82,7 @@ export default function NotificationsContent({ notifications }: Props) {
         <div className={s.toolbar} role="status">
           <div className={s.toolbarLeft}>
             <span className={s.toolbarDot} aria-hidden />
-            <span className={s.toolbarLabel}>
-              {faNum(unreadCount)} اعلان خوانده‌نشده
-            </span>
+            <span className={s.toolbarLabel}>{faNum(unreadCount)} اعلان خوانده‌نشده</span>
           </div>
           <button
             type="button"

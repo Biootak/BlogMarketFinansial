@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 
-import { auth } from '@/auth';
 import { ApprovalsHub } from '@/app/dashboard/approvals/_components/ApprovalsHub';
+import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import { getApprovalSnapshot } from '@/lib/approvals';
 import s from './approvals.module.css';
@@ -33,10 +33,7 @@ export default async function ApprovalsPage() {
         description="جریان‌های تأیید چندمرحله‌ای برای تسویه، احراز هویت، استرداد، برداشت و درخواست‌های سفارشی."
         icon="workflow"
         accent="emerald"
-        breadcrumb={[
-          { href: '/dashboard', label: 'داشبورد' },
-          { label: 'تأییدیه‌ها' },
-        ]}
+        breadcrumb={[{ href: '/dashboard', label: 'داشبورد' }, { label: 'تأییدیه‌ها' }]}
       />
       <Suspense fallback={null}>
         <ApprovalsHub initialData={initialData} canCreate={canCreate} />

@@ -11,41 +11,41 @@
  *  - 12-column responsive bento با span های نامتقارن
  */
 
-import { redirect } from 'next/navigation';
-import Link from 'next/link';
-import {
-  BarChart3,
-  Bell,
-  History,
-  LayoutGrid,
-  ListChecks,
-  Users,
-  Banknote,
-  LineChart,
-  CircleDollarSign,
-  PieChart,
-  UserSquare2,
-} from 'lucide-react';
-import { getExchangeForUser } from '@/actions/exchanges';
 import { getExchangeDashboardData } from '@/actions/exchange-dashboard';
 import { getTransactions } from '@/actions/exchange-transactions';
+import { getExchangeForUser } from '@/actions/exchanges';
+import {
+  Banknote,
+  BarChart3,
+  Bell,
+  CircleDollarSign,
+  History,
+  LayoutGrid,
+  LineChart,
+  ListChecks,
+  PieChart,
+  UserSquare2,
+  Users,
+} from 'lucide-react';
+import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
-import ExchangeHeroPulse from './_components/ExchangeHeroPulse';
-import ExchangeKpiRow from './_components/ExchangeKpiRow';
-import ExchangeCurrencyFlow from './_components/ExchangeCurrencyFlow';
-import ExchangeWeeklyRhythm from './_components/ExchangeWeeklyRhythm';
-import ExchangeTransactionMix from './_components/ExchangeTransactionMix';
-import ExchangeTopCustomers from './_components/ExchangeTopCustomers';
-import ExchangePendingQueue from './_components/ExchangePendingQueue';
 import ExchangeAlerts from './_components/ExchangeAlerts';
-import ExchangeQuickActions from './_components/ExchangeQuickActions';
-import ExchangeRecentTransactions from './_components/ExchangeRecentTransactions';
-import ExchangeRateSnapshot from './_components/ExchangeRateSnapshot';
-import ExchangeCustomerSegmentation from './_components/ExchangeCustomerSegmentation';
-import ExchangePerformanceBand from './_components/ExchangePerformanceBand';
+import ExchangeCurrencyFlow from './_components/ExchangeCurrencyFlow';
 import ExchangeCustomerActivity from './_components/ExchangeCustomerActivity';
-import ExchangeInsightRibbon from './_components/ExchangeInsightRibbon';
+import ExchangeCustomerSegmentation from './_components/ExchangeCustomerSegmentation';
 import s from './_components/ExchangeDashboard.module.css';
+import ExchangeHeroPulse from './_components/ExchangeHeroPulse';
+import ExchangeInsightRibbon from './_components/ExchangeInsightRibbon';
+import ExchangeKpiRow from './_components/ExchangeKpiRow';
+import ExchangePendingQueue from './_components/ExchangePendingQueue';
+import ExchangePerformanceBand from './_components/ExchangePerformanceBand';
+import ExchangeQuickActions from './_components/ExchangeQuickActions';
+import ExchangeRateSnapshot from './_components/ExchangeRateSnapshot';
+import ExchangeRecentTransactions from './_components/ExchangeRecentTransactions';
+import ExchangeTopCustomers from './_components/ExchangeTopCustomers';
+import ExchangeTransactionMix from './_components/ExchangeTransactionMix';
+import ExchangeWeeklyRhythm from './_components/ExchangeWeeklyRhythm';
 
 export const metadata = {
   title: 'داشبورد صراف',

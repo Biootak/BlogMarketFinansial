@@ -404,7 +404,13 @@ export function getAccessibleRoutes(role: string): string[] {
 
   switch (role) {
     case 'OWNER':
-      return [...routes, ...superAdminRoutes, ...adminRoutes, ...authorRoutes, ...userFintechRoutes];
+      return [
+        ...routes,
+        ...superAdminRoutes,
+        ...adminRoutes,
+        ...authorRoutes,
+        ...userFintechRoutes,
+      ];
     case 'ADMIN':
       return [...routes, ...adminRoutes, ...authorRoutes, ...userFintechRoutes];
     case 'AUTHOR':

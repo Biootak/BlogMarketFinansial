@@ -54,9 +54,8 @@
   border: 1px solid var(--at-line);
   border-radius: var(--at-radius);
   outline: none;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .textarea {
@@ -83,9 +82,7 @@
   appearance: none;
   background-image: linear-gradient(45deg, transparent 50%, var(--at-fg-muted) 50%),
     linear-gradient(135deg, var(--at-fg-muted) 50%, transparent 50%);
-  background-position:
-    calc(100% - 16px) 50%,
-    calc(100% - 11px) 50%;
+  background-position: calc(100% - 16px) 50%, calc(100% - 11px) 50%;
   background-size: 5px 5px, 5px 5px;
   background-repeat: no-repeat;
   cursor: pointer;
@@ -159,9 +156,18 @@
   border: 1px solid var(--at-line);
 }
 
-.riskValue[data-tone="emerald"] { color: var(--at-accent-fg); border-color: var(--at-accent); }
-.riskValue[data-tone="amber"]   { color: var(--at-gold-fg);   border-color: var(--at-gold); }
-.riskValue[data-tone="rose"]    { color: var(--at-danger-fg); border-color: var(--at-danger); }
+.riskValue[data-tone="emerald"] {
+  color: var(--at-accent-fg);
+  border-color: var(--at-accent);
+}
+.riskValue[data-tone="amber"] {
+  color: var(--at-gold-fg);
+  border-color: var(--at-gold);
+}
+.riskValue[data-tone="rose"] {
+  color: var(--at-danger-fg);
+  border-color: var(--at-danger);
+}
 
 /* ─── Footer ────────────────────────────────────────────────────────── */
 .footer {
@@ -185,9 +191,8 @@
   border: 1px solid var(--at-accent);
   border-radius: var(--at-radius);
   cursor: pointer;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .btnPrimary:hover:not(:disabled) {
@@ -221,9 +226,8 @@
   border: 1px solid var(--at-line);
   border-radius: var(--at-radius);
   cursor: pointer;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .btnGhost:hover:not(:disabled) {

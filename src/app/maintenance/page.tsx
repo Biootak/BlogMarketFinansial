@@ -1,3 +1,5 @@
+import { StatePage } from '@/components/StatePage';
+import { getSystemSettingsData } from '@/data/getSystemSettings';
 /**
  * /maintenance — Million-dollar maintenance state (2026)
  *
@@ -8,8 +10,6 @@
  */
 import { ArrowLeft, Construction, RefreshCw } from 'lucide-react';
 import type { Metadata } from 'next';
-import { StatePage } from '@/components/StatePage';
-import { getSystemSettingsData } from '@/data/getSystemSettings';
 
 export const metadata: Metadata = {
   title: 'در حال به‌روزرسانی | صفحهٔ موقت',
@@ -45,43 +45,43 @@ export default async function MaintenancePage() {
 
   return (
     <StatePage
-        number="MNT"
-        eyebrow="در حال به‌روزرسانی"
-        title="سایت موقتاً در دسترس نیست"
-        lead={leadMessage}
-        cardTitle="چه خبر است؟"
-        cardBody="مهندسان ما در حال اعمال تغییرات زیرساختی، بهبود امنیت، و افزایش سرعت سایت هستند. این فرایند معمولاً کمتر از ۳۰ دقیقه طول می‌کشد."
-        icon={Construction}
-        helpList={[
-          'تمام داده‌ها و حساب‌های شما امن هستند.',
-          'تراکنش‌های در جریان پس از پایان به‌روزرسانی ادامه می‌یابند.',
-          ...(settings.telegram ? ['برای اطلاع فوری، کانال تلگرام ما را دنبال کنید.'] : []),
-        ]}
-        actions={[
-          { label: 'تلاش مجدد', href: '/', icon: RefreshCw, variant: 'primary' },
-          ...(settings.telegram
-            ? [
-                {
-                  label: 'تلگرام پشتیبانی',
-                  href: settings.telegram,
-                  icon: ArrowLeft,
-                  variant: 'ghost' as const,
-                  external: true,
-                },
-              ]
-            : []),
-        ]}
-        meta={[
-          { label: 'تخمین پایان', value: 'کمتر از ۳۰ دقیقه' },
-          { label: 'زمان فعلی', value: formatJalali(now) },
-          { label: 'نسخه', value: '۲۰۲۶.۰۷' },
-          { label: 'وضعیت', value: 'Maintenance' },
-        ]}
-        foot={{
-          label: 'سوال فوری دارید؟',
-          href: `mailto:${settings.contactEmail ?? 'support@financialmarket.page'}`,
-        }}
-        tone="warn"
-      />
+      number="MNT"
+      eyebrow="در حال به‌روزرسانی"
+      title="سایت موقتاً در دسترس نیست"
+      lead={leadMessage}
+      cardTitle="چه خبر است؟"
+      cardBody="مهندسان ما در حال اعمال تغییرات زیرساختی، بهبود امنیت، و افزایش سرعت سایت هستند. این فرایند معمولاً کمتر از ۳۰ دقیقه طول می‌کشد."
+      icon={Construction}
+      helpList={[
+        'تمام داده‌ها و حساب‌های شما امن هستند.',
+        'تراکنش‌های در جریان پس از پایان به‌روزرسانی ادامه می‌یابند.',
+        ...(settings.telegram ? ['برای اطلاع فوری، کانال تلگرام ما را دنبال کنید.'] : []),
+      ]}
+      actions={[
+        { label: 'تلاش مجدد', href: '/', icon: RefreshCw, variant: 'primary' },
+        ...(settings.telegram
+          ? [
+              {
+                label: 'تلگرام پشتیبانی',
+                href: settings.telegram,
+                icon: ArrowLeft,
+                variant: 'ghost' as const,
+                external: true,
+              },
+            ]
+          : []),
+      ]}
+      meta={[
+        { label: 'تخمین پایان', value: 'کمتر از ۳۰ دقیقه' },
+        { label: 'زمان فعلی', value: formatJalali(now) },
+        { label: 'نسخه', value: '۲۰۲۶.۰۷' },
+        { label: 'وضعیت', value: 'Maintenance' },
+      ]}
+      foot={{
+        label: 'سوال فوری دارید؟',
+        href: `mailto:${settings.contactEmail ?? 'support@financialmarket.page'}`,
+      }}
+      tone="warn"
+    />
   );
 }

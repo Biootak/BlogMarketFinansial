@@ -8,6 +8,8 @@ import { getTopAuthors } from '@/actions/getTopAuthors';
 import { getViewStats } from '@/actions/getViewStats';
 import { getMarketRates } from '@/actions/market-rates';
 import { getScheduledPosts, getStats } from '@/actions/postActions';
+import { FintechCockpitServer } from '@/components/Dashboard/DashboardPage/FintechCockpitServer';
+import { UserHome } from '@/components/Dashboard/DashboardPage/UserHome';
 // 2026-07-31: بازطراحی یکپارچه داشبورد.
 //
 // قبلاً ۴ کامپوننت مستقل (AtelierDeck + FintechKpiWidget +
@@ -22,8 +24,6 @@ import { getScheduledPosts, getStats } from '@/actions/postActions';
 //
 // برای نقش USER/SUPPORT: همان UserHome بهینه‌سازی‌شده با tokens.
 import { AtelierDeck } from '@/components/Dashboard/DashboardPage/atelier';
-import { FintechCockpitServer } from '@/components/Dashboard/DashboardPage/FintechCockpitServer';
-import { UserHome } from '@/components/Dashboard/DashboardPage/UserHome';
 import { checkRole } from '@/lib/auth';
 import prisma from '@/lib/db';
 
@@ -132,11 +132,11 @@ export default async function Dashboard() {
         <>
           <FintechCockpitServer />
           <AtelierDeck
-            stats={statsResult!.data!}
-            scheduledPosts={scheduledPostsResult!.data!}
-            popularPosts={popularPostsResult!.data!}
-            recentDrafts={recentDraftsResult!.data!}
-            viewStats={viewStatsResult!.data!}
+            stats={statsResult?.data!}
+            scheduledPosts={scheduledPostsResult?.data!}
+            popularPosts={popularPostsResult?.data!}
+            recentDrafts={recentDraftsResult?.data!}
+            viewStats={viewStatsResult?.data!}
             recentActivity={recentActivity}
             userRole={userRole}
             marketRates={marketRates ?? []}

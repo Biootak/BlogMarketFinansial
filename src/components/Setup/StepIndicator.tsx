@@ -4,7 +4,6 @@ import { toPersianDigits } from '@/lib/setup/format';
 import type { StepId } from '@/lib/setup/schema';
 import { STEPS, stepIndex } from '@/lib/setup/steps';
 import { cn } from '@/lib/utils';
-import * as React from 'react';
 import { STEP_GLYPHS } from './WizardIcons';
 
 /**

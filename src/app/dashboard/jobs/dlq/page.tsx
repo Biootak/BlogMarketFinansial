@@ -1,7 +1,7 @@
-import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
-import { DLQView } from './_components/DLQView';
 import { getJobSnapshot } from '@/lib/jobs';
+import { redirect } from 'next/navigation';
+import { DLQView } from './_components/DLQView';
 
 export const dynamic = 'force-dynamic';
 

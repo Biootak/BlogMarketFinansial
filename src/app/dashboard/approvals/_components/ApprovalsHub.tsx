@@ -1,8 +1,5 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { createPortal } from 'react-dom';
 import {
   Select,
   SelectContent,
@@ -18,7 +15,7 @@ import {
   Circle,
   Clock,
   FileText,
-  Filter,
+  Filter as FilterIcon,
   Inbox,
   Loader2,
   MessageSquare,
@@ -35,7 +32,11 @@ import {
   X,
   Zap,
 } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 
+import { cancelApproval, decideStep } from '@/actions/approvals-actions';
 import { Spotlight } from '@/components/Dashboard/primitives/Spotlight';
 import type {
   ApprovalSnapshot,
@@ -44,9 +45,8 @@ import type {
   ApprovalType,
   StepStatus,
 } from '@/lib/approvals';
-import { decideStep, cancelApproval } from '@/actions/approvals-actions';
-import { CreateApprovalPanel } from './CreateApprovalPanel';
 import s from './ApprovalsHub.module.css';
+import { CreateApprovalPanel } from './CreateApprovalPanel';
 
 interface Props {
   initialData?: ApprovalSnapshot;
@@ -143,7 +143,7 @@ function formatDate(iso: string | null): string {
 
 function formatTimeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
-  if (diff < 60_000) return `همین الان`;
+  if (diff < 60_000) return 'همین الان';
   if (diff < 3_600_000) return `${Math.floor(diff / 60_000)} دقیقه پیش`;
   if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)} ساعت پیش`;
   return `${Math.floor(diff / 86_400_000)} روز پیش`;
@@ -201,7 +201,12 @@ function TimelineNode({
         {!isLast ? <div className={s.timelineLine} data-status={status} /> : null}
       </div>
       {/* محتوای گره */}
-      <div className={s.timelineContent} data-status={status} data-current={isCurrent} data-can-decide={canDecide}>
+      <div
+        className={s.timelineContent}
+        data-status={status}
+        data-current={isCurrent}
+        data-can-decide={canDecide}
+      >
         <div className={s.timelineHead}>
           <span className={s.timelineIndex}>مرحله {formatNumber(index + 1)}</span>
           <span className={s.timelineRole}>
@@ -213,9 +218,7 @@ function TimelineNode({
           <span className={s.timelineStatus} data-tone={STEP_TONE[status]}>
             {STEP_LABEL[status]}
           </span>
-          {decidedAt ? (
-            <span className={s.timelineTime}>{formatTimeAgo(decidedAt)}</span>
-          ) : null}
+          {decidedAt ? <span className={s.timelineTime}>{formatTimeAgo(decidedAt)}</span> : null}
           {canDecide ? (
             <span className={s.timelineYours}>
               <Zap className="h-3 w-3" />
@@ -223,9 +226,7 @@ function TimelineNode({
             </span>
           ) : null}
         </div>
-        {comment ? (
-          <p className={s.timelineComment}>"{comment}"</p>
-        ) : null}
+        {comment ? <p className={s.timelineComment}>"{comment}"</p> : null}
       </div>
     </div>
   );
@@ -245,8 +246,7 @@ function RequestDetail({
   const [error, setError] = useState<string | null>(null);
   const [confirmCancel, setConfirmCancel] = useState(false);
 
-  const canDecideCurrent =
-    request.status === 'pending' && request.isMine;
+  const canDecideCurrent = request.status === 'pending' && request.isMine;
 
   const handleDecide = async (decision: 'approved' | 'rejected') => {
     setDeciding(decision);
@@ -268,9 +268,8 @@ function RequestDetail({
     else setError(res.message ?? 'خطا');
   };
 
-  const progress = request.totalSteps > 0
-    ? Math.round((request.currentStep / request.totalSteps) * 100)
-    : 0;
+  const progress =
+    request.totalSteps > 0 ? Math.round((request.currentStep / request.totalSteps) * 100) : 0;
 
   return (
     <div className={s.detail}>
@@ -288,9 +287,7 @@ function RequestDetail({
           ) : null}
         </div>
         <h2 className={s.detailTitle}>{request.title}</h2>
-        {request.description ? (
-          <p className={s.detailDescription}>{request.description}</p>
-        ) : null}
+        {request.description ? <p className={s.detailDescription}>{request.description}</p> : null}
 
         {/* متادیتا — گرید */}
         <div className={s.detailMetaGrid}>
@@ -349,7 +346,9 @@ function RequestDetail({
               total={request.steps.length}
               status={step.status}
               isCurrent={request.status === 'pending' && i === request.currentStep}
-              canDecide={request.status === 'pending' && i === request.currentStep && request.isMine}
+              canDecide={
+                request.status === 'pending' && i === request.currentStep && request.isMine
+              }
               approverRole={step.approverRole}
               comment={step.comment}
               decidedAt={step.decidedAt}
@@ -434,31 +433,53 @@ function RequestDetail({
       ) : (
         <section className={s.decideSection}>
           <div className={s.finalStatus} data-tone={STATUS_TONE[request.status]}>
-            {request.status === 'approved' ? <CheckCircle2 className="h-5 w-5" /> : <X className="h-5 w-5" />}
+            {request.status === 'approved' ? (
+              <CheckCircle2 className="h-5 w-5" />
+            ) : (
+              <X className="h-5 w-5" />
+            )}
             {STATUS_LABEL[request.status]} — {formatDate(request.decidedAt)}
           </div>
         </section>
       )}
 
       {/* دیالوگ تأیید لغو */}
-      {confirmCancel ? (
-        createPortal(
-          <div className={s.confirmOverlay} role="presentation" onClick={(e) => e.target === e.currentTarget && setConfirmCancel(false)}>
-            <div className={s.confirmDialog} role="alertdialog" aria-label="لغو درخواست">
-              <div className={s.confirmIcon}>
-                <AlertCircle className="h-6 w-6" />
+      {confirmCancel
+        ? createPortal(
+            <div
+              className={s.confirmOverlay}
+              role="presentation"
+              onClick={(e) => e.target === e.currentTarget && setConfirmCancel(false)}
+            >
+              <div className={s.confirmDialog} role="alertdialog" aria-label="لغو درخواست">
+                <div className={s.confirmIcon}>
+                  <AlertCircle className="h-6 w-6" />
+                </div>
+                <h3 className={s.confirmTitle}>لغو درخواست</h3>
+                <p className={s.confirmText}>
+                  آیا از لغو این درخواست مطمئن هستید؟ این عمل قابل بازگشت نیست.
+                </p>
+                <div className={s.confirmActions}>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmCancel(false)}
+                    className={s.confirmNo}
+                  >
+                    انصراف
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void handleCancel()}
+                    className={s.confirmYes}
+                  >
+                    بله، لغو کن
+                  </button>
+                </div>
               </div>
-              <h3 className={s.confirmTitle}>لغو درخواست</h3>
-              <p className={s.confirmText}>آیا از لغو این درخواست مطمئن هستید؟ این عمل قابل بازگشت نیست.</p>
-              <div className={s.confirmActions}>
-                <button type="button" onClick={() => setConfirmCancel(false)} className={s.confirmNo}>انصراف</button>
-                <button type="button" onClick={() => void handleCancel()} className={s.confirmYes}>بله، لغو کن</button>
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )
-      ) : null}
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }
@@ -468,7 +489,7 @@ export function ApprovalsHub({ initialData, canCreate = false }: Props) {
   const [data, setData] = useState<ApprovalSnapshot | undefined>(initialData);
   // ?filter=mine از /dashboard/approvals/mine ریدایرکت می‌کند
   const [filter, setFilter] = useState<Filter>(() =>
-    searchParams.get('filter') === 'mine' ? 'mine' : 'all'
+    searchParams.get('filter') === 'mine' ? 'mine' : 'all',
   );
   const [sort, setSort] = useState<SortKey>('newest');
   const [query, setQuery] = useState('');
@@ -485,7 +506,7 @@ export function ApprovalsHub({ initialData, canCreate = false }: Props) {
       url.searchParams.delete('filter');
       window.history.replaceState({}, '', url.toString());
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchData = useCallback(async () => {
@@ -501,10 +522,34 @@ export function ApprovalsHub({ initialData, canCreate = false }: Props) {
   }, []);
 
   useEffect(() => {
-    const id = setInterval(() => {
-      void fetchData();
-    }, 45_000);
-    return () => clearInterval(id);
+    let id: ReturnType<typeof setInterval> | null = null;
+
+    const start = () => {
+      if (id) return;
+      id = setInterval(() => void fetchData(), 45_000);
+    };
+    const stop = () => {
+      if (id) {
+        clearInterval(id);
+        id = null;
+      }
+    };
+    // بهینه‌سازی: polling وقتی tab پنهان است متوقف می‌شود
+    const onVisibility = () => {
+      if (document.hidden) {
+        stop();
+      } else {
+        void fetchData();
+        start();
+      }
+    };
+
+    start();
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      stop();
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [fetchData]);
 
   const selected = useMemo(() => {
@@ -530,8 +575,10 @@ export function ApprovalsHub({ initialData, canCreate = false }: Props) {
     }
     // sort
     list = [...list].sort((a, b) => {
-      if (sort === 'newest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      if (sort === 'oldest') return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      if (sort === 'newest')
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      if (sort === 'oldest')
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       // progress: more advanced first
       return b.currentStep / (b.totalSteps || 1) - a.currentStep / (a.totalSteps || 1);
     });
@@ -571,21 +618,28 @@ export function ApprovalsHub({ initialData, canCreate = false }: Props) {
             dir="rtl"
           />
           {query ? (
-            <button type="button" onClick={() => setQuery('')} className={s.searchClear} aria-label="پاک کردن">
+            <button
+              type="button"
+              onClick={() => setQuery('')}
+              className={s.searchClear}
+              aria-label="پاک کردن"
+            >
               <X className="h-3.5 w-3.5" />
             </button>
           ) : null}
         </div>
         <div className={s.toolbarRight}>
           <div className={s.sortWrap}>
-            <Filter className="h-3.5 w-3.5" />
+            <FilterIcon className="h-3.5 w-3.5" />
             <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
               <SelectTrigger className={s.sortSelect} aria-label="مرتب‌سازی">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent dir="rtl">
                 {SORTS.map((so) => (
-                  <SelectItem key={so.id} value={so.id}>{so.label}</SelectItem>
+                  <SelectItem key={so.id} value={so.id}>
+                    {so.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>

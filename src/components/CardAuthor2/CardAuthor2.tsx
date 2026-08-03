@@ -2,7 +2,6 @@ import Avatar from '@/components/Avatar/Avatar';
 import { getReadingMinutes } from '@/lib/readingTime';
 import type { PostWithRelations } from '@/types/types';
 import Link from 'next/link';
-import React from 'react';
 import FormattedDate from '../FormattedDate';
 
 export interface CardAuthor2Props {
@@ -34,7 +33,7 @@ const CardAuthor2 = ({
 
   const dateClass = lightText
     ? 'flex items-center mt-0.5 text-xs text-neutral-200'
-    : 'flex items-center mt-0.5 text-xs text-neutral-500 dark:text-neutral-400';
+    : 'flex items-center mt-0.5 text-xs text-neutral-600 dark:text-neutral-400';
 
   return (
     <Link href={href} className={`nc-CardAuthor2 relative inline-flex items-center ${className}`}>

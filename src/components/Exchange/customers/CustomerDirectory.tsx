@@ -7,15 +7,15 @@
 
 import type { CustomerRow } from '@/actions/exchange-customers';
 import { EmptyState } from '@/components/Dashboard/primitives';
-import { Search, UserPlus, Users } from 'lucide-react';
-import { useMemo } from 'react';
+import { formatNumber } from '@/lib/customer-format';
 import {
-  KYC_FILTERS,
-  STATUS_FILTERS,
   type CustomerSort,
   type CustomerSortKey,
+  KYC_FILTERS,
+  STATUS_FILTERS,
 } from '@/lib/customer-segments';
-import { formatNumber } from '@/lib/customer-format';
+import { Search, UserPlus, Users } from 'lucide-react';
+import { useMemo } from 'react';
 import { CustomerCard } from './CustomerCard';
 import s from './CustomerDirectory.module.css';
 
@@ -35,9 +35,7 @@ interface Props {
   cityOptions: string[];
   sort: CustomerSort;
   selectedIds: Set<string>;
-  onFiltersChange: (
-    update: (prev: CustomerDirectoryFilters) => CustomerDirectoryFilters,
-  ) => void;
+  onFiltersChange: (update: (prev: CustomerDirectoryFilters) => CustomerDirectoryFilters) => void;
   onSortChange: (sort: CustomerSort) => void;
   onToggleSort: (key: CustomerSortKey) => void;
   onToggleSelected: (id: string) => void;
@@ -97,9 +95,7 @@ export function CustomerDirectory({
             type="search"
             placeholder="جستجو نام، تلفن، شهر…"
             value={filters.query}
-            onChange={(e) =>
-              onFiltersChange((p) => ({ ...p, query: e.target.value }))
-            }
+            onChange={(e) => onFiltersChange((p) => ({ ...p, query: e.target.value }))}
             aria-label="جستجوی مشتری"
           />
         </div>
@@ -126,7 +122,10 @@ export function CustomerDirectory({
           className={s.select}
           value={filters.kycLevel}
           onChange={(e) =>
-            onFiltersChange((p) => ({ ...p, kycLevel: e.target.value as CustomerDirectoryFilters['kycLevel'] }))
+            onFiltersChange((p) => ({
+              ...p,
+              kycLevel: e.target.value as CustomerDirectoryFilters['kycLevel'],
+            }))
           }
           aria-label="سطح KYC"
         >
@@ -142,7 +141,10 @@ export function CustomerDirectory({
           className={s.select}
           value={filters.risk}
           onChange={(e) =>
-            onFiltersChange((p) => ({ ...p, risk: e.target.value as CustomerDirectoryFilters['risk'] }))
+            onFiltersChange((p) => ({
+              ...p,
+              risk: e.target.value as CustomerDirectoryFilters['risk'],
+            }))
           }
           aria-label="سطح ریسک"
         >
@@ -174,10 +176,7 @@ export function CustomerDirectory({
           className={s.select}
           value={`${sort.key}:${sort.dir}`}
           onChange={(e) => {
-            const [k, d] = e.target.value.split(':') as [
-              CustomerSortKey,
-              'asc' | 'desc',
-            ];
+            const [k, d] = e.target.value.split(':') as [CustomerSortKey, 'asc' | 'desc'];
             onSortChange({ key: k, dir: d });
           }}
           aria-label="مرتب‌سازی"
@@ -215,11 +214,7 @@ export function CustomerDirectory({
 
         <div className={s.selectAllWrap}>
           {selectedIds.size > 0 ? (
-            <button
-              type="button"
-              className={s.resetBtn}
-              onClick={onClearSelection}
-            >
+            <button type="button" className={s.resetBtn} onClick={onClearSelection}>
               لغو انتخاب ({formatNumber(selectedIds.size)})
             </button>
           ) : sorted.length > 0 ? (
@@ -260,12 +255,7 @@ export function CustomerDirectory({
           />
         </div>
       ) : (
-        <div
-          className={s.grid}
-          role="list"
-          aria-label="کارت‌های مشتری"
-          aria-multiselectable="true"
-        >
+        <div className={s.grid} role="list" aria-label="کارت‌های مشتری" aria-multiselectable="true">
           {sorted.map((c) => (
             <div
               key={c.id}

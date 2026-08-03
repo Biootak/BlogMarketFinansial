@@ -30,7 +30,7 @@
   margin-block-end: 0.5rem;
 }
 .code::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: -8px;
   border-radius: 50%;
@@ -43,7 +43,9 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .code::before { animation: none; }
+  .code::before {
+    animation: none;
+  }
 }
 .codeNum {
   font-size: 2.5rem;
@@ -86,16 +88,14 @@
   font-size: 0.88rem;
   font-weight: 700;
   text-decoration: none;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 .ctaPrimary {
   background: var(--ds-brand-500);
   color: oklch(14% 0.04 162);
-  box-shadow:
-    inset 0 1px 0 oklch(100% 0 0 / 0.18),
-    0 6px 18px -8px color-mix(in oklch, var(--ds-brand-500) 50%, transparent);
+  box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.18), 0 6px 18px -8px
+    color-mix(in oklch, var(--ds-brand-500) 50%, transparent);
 }
 .ctaPrimary:hover {
   background: var(--ds-brand-600);

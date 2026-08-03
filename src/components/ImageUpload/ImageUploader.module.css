@@ -10,7 +10,7 @@
   gap: var(--ds-space-3, 0.75rem);
   inline-size: 100%;
 }
-.root[data-disabled='true'] {
+.root[data-disabled="true"] {
   opacity: 0.6;
   pointer-events: none;
 }
@@ -42,9 +42,7 @@
   border-radius: var(--ds-radius-md, 0.5rem);
   text-align: center;
   cursor: pointer;
-  transition:
-    border-color 200ms var(--ds-ease, ease),
-    background-color 200ms var(--ds-ease, ease);
+  transition: border-color 200ms var(--ds-ease, ease), background-color 200ms var(--ds-ease, ease);
   background: transparent;
 }
 .zone:hover {

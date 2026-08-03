@@ -23,24 +23,24 @@
  *  SVG signature (۱): BroadcastWave در hero.
  */
 
-import { useMemo, useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { FormField } from '@/components/Dashboard/primitives';
 import { PersianDatePicker } from '@/components/ui/PersianDatePicker';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { useRouter } from 'next/navigation';
+import { useMemo, useState, useTransition } from 'react';
 import { BroadcastFormHero } from './BroadcastFormHero';
 import { BroadcastFormPreview } from './BroadcastFormPreview';
 import { BroadcastFormSaveBar } from './BroadcastFormSaveBar';
-import {
-  CHANNELS,
-  AUDIENCES,
-  toPersianDigits,
-  type Channel,
-  type Audience,
-  type Status,
-} from './broadcast-form-constants';
 import s from './NewCampaign.module.css';
+import {
+  AUDIENCES,
+  type Audience,
+  CHANNELS,
+  type Channel,
+  type Status,
+  toPersianDigits,
+} from './broadcast-form-constants';
 
 interface NewCampaignFormProps {
   initialAudience?: string | null;
@@ -106,9 +106,7 @@ export function NewCampaignForm({
       setChannels([id]);
       return;
     }
-    setChannels((prev) =>
-      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
-    );
+    setChannels((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]));
   };
 
   const bodyLimit = campaignMode ? 10_000 : 2_000;
@@ -228,7 +226,9 @@ export function NewCampaignForm({
             <section className={s.card} aria-labelledby="content-heading">
               <header className={s.cardHead}>
                 <div>
-                  <h2 id="content-heading" className={s.cardTitle}>محتوای پیام</h2>
+                  <h2 id="content-heading" className={s.cardTitle}>
+                    محتوای پیام
+                  </h2>
                   <p className={s.cardSub}>عنوان، موضوع (در صورت نیاز) و متن اصلی.</p>
                 </div>
                 <span className={s.cardStep}>۰۱</span>
@@ -241,9 +241,7 @@ export function NewCampaignForm({
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder={
-                      campaignMode
-                        ? 'مثلاً: خبرنامه هفتگی بازار'
-                        : 'مثلاً: به‌روزرسانی نرخ‌های ارزی'
+                      campaignMode ? 'مثلاً: خبرنامه هفتگی بازار' : 'مثلاً: به‌روزرسانی نرخ‌های ارزی'
                     }
                     maxLength={120}
                     required
@@ -295,7 +293,9 @@ export function NewCampaignForm({
               <section className={s.card} aria-labelledby="channels-heading">
                 <header className={s.cardHead}>
                   <div>
-                    <h2 id="channels-heading" className={s.cardTitle}>کانال</h2>
+                    <h2 id="channels-heading" className={s.cardTitle}>
+                      کانال
+                    </h2>
                     <p className={s.cardSub}>
                       {campaignMode ? 'یکی انتخاب کنید.' : 'می‌توانید چندتا انتخاب کنید.'}
                     </p>
@@ -336,7 +336,9 @@ export function NewCampaignForm({
 
                 {!campaignMode && channels.length > 0 ? (
                   <p className={s.channelSummary}>
-                    <span className={s.channelSummaryKey}>{toPersianDigits(channels.length)} کانال انتخاب شده:</span>
+                    <span className={s.channelSummaryKey}>
+                      {toPersianDigits(channels.length)} کانال انتخاب شده:
+                    </span>
                     <span className={s.channelSummaryVal}>
                       {channels.map((c) => CHANNELS.find((x) => x.id === c)?.label).join(' · ')}
                     </span>
@@ -354,7 +356,9 @@ export function NewCampaignForm({
               <section className={s.card} aria-labelledby="audience-heading">
                 <header className={s.cardHead}>
                   <div>
-                    <h2 id="audience-heading" className={s.cardTitle}>مخاطب</h2>
+                    <h2 id="audience-heading" className={s.cardTitle}>
+                      مخاطب
+                    </h2>
                     <p className={s.cardSub}>
                       {campaignMode ? 'گیرندگان این کمپین.' : 'پیام به چه کسی برسد؟'}
                     </p>
@@ -421,7 +425,9 @@ export function NewCampaignForm({
             <section className={s.card} aria-labelledby="schedule-heading">
               <header className={s.cardHead}>
                 <div>
-                  <h2 id="schedule-heading" className={s.cardTitle}>زمان‌بندی</h2>
+                  <h2 id="schedule-heading" className={s.cardTitle}>
+                    زمان‌بندی
+                  </h2>
                   <p className={s.cardSub}>اگر خالی بگذارید، همان لحظه ذخیره/ارسال می‌شود.</p>
                 </div>
                 <span className={s.cardStep}>۰۴</span>
@@ -430,12 +436,11 @@ export function NewCampaignForm({
               <div className={s.scheduleWrap}>
                 <FormField
                   label="زمان انتشار"
-                  hint={date ? `ارسال در ${date.toLocaleString('fa-IR')}` : 'بدون زمان‌بندی — ارسال فوری'}
+                  hint={
+                    date ? `ارسال در ${date.toLocaleString('fa-IR')}` : 'بدون زمان‌بندی — ارسال فوری'
+                  }
                 >
-                  <PersianDatePicker
-                    value={date}
-                    onChange={(d) => setDate(d)}
-                  />
+                  <PersianDatePicker value={date} onChange={(d) => setDate(d)} />
                 </FormField>
 
                 <div className={s.timeline} aria-hidden>
@@ -453,7 +458,9 @@ export function NewCampaignForm({
                       data-tone="indigo"
                       style={{ insetInlineStart: '70%' }}
                     >
-                      <span className={s.timelineMarkLabel}>{date.toLocaleDateString('fa-IR')}</span>
+                      <span className={s.timelineMarkLabel}>
+                        {date.toLocaleDateString('fa-IR')}
+                      </span>
                     </div>
                   ) : (
                     <div

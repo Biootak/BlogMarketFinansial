@@ -44,7 +44,6 @@ export async function notifyExchangeOfServiceRequest(args: NotifyArgs): Promise<
       select: { id: true, name: true, displayName: true, email: true },
     });
     if (!exchange) {
-      console.warn('exchange-notify: exchange not found', { id: args.exchangeId });
       return;
     }
 
@@ -54,7 +53,7 @@ export async function notifyExchangeOfServiceRequest(args: NotifyArgs): Promise<
     if (exchange.email) {
       try {
         const provider = await getEmailProviderAsync();
-        const result = await provider.send(
+        const _result = await provider.send(
           exchangeServiceRequestEmail({
             to: exchange.email,
             exchangeName: exchange.displayName ?? exchange.name,
@@ -70,12 +69,6 @@ export async function notifyExchangeOfServiceRequest(args: NotifyArgs): Promise<
             appUrl,
           }),
         );
-        console.info('exchange-notify: email sent', {
-          provider: result.provider,
-          messageId: result.id,
-          exchange: exchange.id,
-          request: args.requestId,
-        });
 
         // 3) log success
         await prisma.systemLog.create({
@@ -86,12 +79,6 @@ export async function notifyExchangeOfServiceRequest(args: NotifyArgs): Promise<
           },
         });
       } catch (emailErr) {
-        console.error('exchange-notify: email failed', {
-          exchange: exchange.id,
-          request: args.requestId,
-          err: emailErr instanceof Error ? emailErr.message : String(emailErr),
-        });
-
         await prisma.systemLog.create({
           data: {
             level: 'WARN',
@@ -112,10 +99,5 @@ export async function notifyExchangeOfServiceRequest(args: NotifyArgs): Promise<
         },
       });
     }
-  } catch (err) {
-    console.error('exchange-notify: unexpected error', {
-      request: args.requestId,
-      err: err instanceof Error ? err.message : String(err),
-    });
-  }
+  } catch (_err) {}
 }

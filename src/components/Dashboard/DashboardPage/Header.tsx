@@ -177,6 +177,8 @@ const Header: React.FC<HeaderProps> = ({ portal = 'admin' }) => {
 
   useEffect(() => {
     let cancelled = false;
+    let interval: number | null = null;
+
     const load = async () => {
       setNotifLoading(true);
       const rows = await getNotifications({ limit: 20 });
@@ -185,11 +187,33 @@ const Header: React.FC<HeaderProps> = ({ portal = 'admin' }) => {
         setNotifLoading(false);
       }
     };
+
+    const start = () => {
+      if (!interval) interval = window.setInterval(() => void load(), 60_000);
+    };
+    const stop = () => {
+      if (interval) {
+        window.clearInterval(interval);
+        interval = null;
+      }
+    };
+    const onVisibility = () => {
+      if (document.hidden) {
+        stop();
+      } else {
+        void load();
+        start();
+      }
+    };
+
     void load();
-    const interval = window.setInterval(() => void load(), 60_000);
+    start();
+
+    document.addEventListener('visibilitychange', onVisibility);
     return () => {
       cancelled = true;
-      window.clearInterval(interval);
+      stop();
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, []);
 

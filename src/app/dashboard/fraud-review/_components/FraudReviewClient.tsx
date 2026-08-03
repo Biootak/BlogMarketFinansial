@@ -13,15 +13,20 @@
  * - spring micro-interactions
  */
 
+import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
 import { DataTable } from '@/components/Dashboard/primitives/DataTable';
-import { EmptyState } from '@/components/Dashboard/primitives/EmptyState';
 import { MillionDollarEmpty } from '@/components/Dashboard/primitives/MillionDollarEmpty';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogClose,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle as SheetTitle,
+} from '@/components/ui/dialog';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
-import { Dialog, DialogClose, DialogOverlay, DialogPortal, DialogTitle as SheetTitle } from '@/components/ui/dialog';
-import { AlertTriangle, CheckCircle2, ShieldAlert, ShieldCheck, User, Zap } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ShieldAlert, User, Zap } from 'lucide-react';
 import { useCallback, useMemo, useState, useTransition } from 'react';
 import s from './FraudReviewClient.module.css';
 import { resolveFraudReview } from './actions';
@@ -357,73 +362,82 @@ export function FraudReviewClient({ reviews: initial }: Props) {
         <DialogPortal>
           <DialogOverlay className={cm.overlay} />
           <DialogPrimitive.Content dir="rtl" className={cm.panel} aria-label="جزئیات بررسی تقلب">
-          {detailRow && (
-            <>
-              <div className={cm.header}>
-                <div className={`${s.detailIcon} ${getRiskClass(detailRow.riskScore)}`} aria-hidden>
-                  <ShieldAlert size={20} aria-hidden />
-                </div>
-                <div>
-                  <SheetTitle className={s.detailTitle}>
-                    {getRiskLabel(detailRow.riskScore)}
-                  </SheetTitle>
-                  <p className={s.detailExchange}>{detailRow.exchangeName}</p>
-                </div>
-                <div className={s.detailGauge} aria-hidden>
-                  <RiskGauge score={detailRow.riskScore} />
-                </div>
-                <DialogClose className={cm.close} aria-label="بستن"><CheckCircle2 size={15} /></DialogClose>
-              </div>
-
-              <div className={s.detailBody}>
-                {/* Risk score bar */}
-                <div className={s.scoreBar}>
-                  <div className={s.scoreLabel}>امتیاز ریسک</div>
-                  <div className={s.scoreTrack}>
-                    <div
-                      className={`${s.scoreFill} ${getRiskClass(detailRow.riskScore)}`}
-                      style={{ width: `${detailRow.riskScore}%` }}
-                    />
-                  </div>
-                  <span className={s.scoreVal}>{detailRow.riskScore}</span>
-                </div>
-
-                {/* Info grid */}
-                <div className={s.metaGrid}>
-                  {[
-                    { label: 'دلیل شناسایی', val: detailRow.reason },
-                    { label: 'مشتری', val: detailRow.customerName ?? '—' },
-                    { label: 'تلفن', val: detailRow.customerPhone ?? '—', ltr: true },
-                    { label: 'شناسه تراکنش', val: detailRow.txnId?.slice(0, 16) ?? '—', ltr: true },
-                    { label: 'زمان گزارش', val: formatDate(detailRow.createdAt) },
-                    { label: 'وضعیت', val: detailRow.status },
-                  ].map(({ label, val, ltr }) => (
-                    <div key={label} className={s.metaItem}>
-                      <span className={s.metaKey}>{label}</span>
-                      <span className={s.metaVal} dir={ltr ? 'ltr' : undefined}>
-                        {val}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Quick resolve from sheet */}
-                <div className={s.detailActions}>
-                  <Button
-                    onClick={() => {
-                      setTarget(detailRow);
-                      setDetailRow(null);
-                    }}
-                    disabled={isPending}
-                    className={s.resolveBtn}
+            {detailRow && (
+              <>
+                <div className={cm.header}>
+                  <div
+                    className={`${s.detailIcon} ${getRiskClass(detailRow.riskScore)}`}
+                    aria-hidden
                   >
-                    <CheckCircle2 size={15} aria-hidden />
-                    ثبت نتیجه بررسی
-                  </Button>
+                    <ShieldAlert size={20} aria-hidden />
+                  </div>
+                  <div>
+                    <SheetTitle className={s.detailTitle}>
+                      {getRiskLabel(detailRow.riskScore)}
+                    </SheetTitle>
+                    <p className={s.detailExchange}>{detailRow.exchangeName}</p>
+                  </div>
+                  <div className={s.detailGauge} aria-hidden>
+                    <RiskGauge score={detailRow.riskScore} />
+                  </div>
+                  <DialogClose className={cm.close} aria-label="بستن">
+                    <CheckCircle2 size={15} />
+                  </DialogClose>
                 </div>
-              </div>
-            </>
-          )}
+
+                <div className={s.detailBody}>
+                  {/* Risk score bar */}
+                  <div className={s.scoreBar}>
+                    <div className={s.scoreLabel}>امتیاز ریسک</div>
+                    <div className={s.scoreTrack}>
+                      <div
+                        className={`${s.scoreFill} ${getRiskClass(detailRow.riskScore)}`}
+                        style={{ width: `${detailRow.riskScore}%` }}
+                      />
+                    </div>
+                    <span className={s.scoreVal}>{detailRow.riskScore}</span>
+                  </div>
+
+                  {/* Info grid */}
+                  <div className={s.metaGrid}>
+                    {[
+                      { label: 'دلیل شناسایی', val: detailRow.reason },
+                      { label: 'مشتری', val: detailRow.customerName ?? '—' },
+                      { label: 'تلفن', val: detailRow.customerPhone ?? '—', ltr: true },
+                      {
+                        label: 'شناسه تراکنش',
+                        val: detailRow.txnId?.slice(0, 16) ?? '—',
+                        ltr: true,
+                      },
+                      { label: 'زمان گزارش', val: formatDate(detailRow.createdAt) },
+                      { label: 'وضعیت', val: detailRow.status },
+                    ].map(({ label, val, ltr }) => (
+                      <div key={label} className={s.metaItem}>
+                        <span className={s.metaKey}>{label}</span>
+                        <span className={s.metaVal} dir={ltr ? 'ltr' : undefined}>
+                          {val}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Quick resolve from sheet */}
+                  <div className={s.detailActions}>
+                    <Button
+                      onClick={() => {
+                        setTarget(detailRow);
+                        setDetailRow(null);
+                      }}
+                      disabled={isPending}
+                      className={s.resolveBtn}
+                    >
+                      <CheckCircle2 size={15} aria-hidden />
+                      ثبت نتیجه بررسی
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )}
           </DialogPrimitive.Content>
         </DialogPortal>
       </Dialog>
@@ -435,7 +449,9 @@ export function FraudReviewClient({ reviews: initial }: Props) {
           <DialogPrimitive.Content dir="rtl" className={cm.panel} aria-label="بررسی گزارش تقلب">
             <div className={cm.header}>
               <SheetTitle>بررسی گزارش تقلب</SheetTitle>
-              <DialogClose className={cm.close} aria-label="بستن">×</DialogClose>
+              <DialogClose className={cm.close} aria-label="بستن">
+                ×
+              </DialogClose>
             </div>
             <div className={cm.body}>
               <div className={s.dialogBody}>

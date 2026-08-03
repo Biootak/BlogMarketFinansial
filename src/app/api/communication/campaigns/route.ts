@@ -1,3 +1,5 @@
+import { auth } from '@/auth';
+import { createCampaign } from '@/lib/communication';
 /**
  * POST /api/communication/campaigns
  * ایجاد کمپین جدید (email/sms/push).
@@ -13,10 +15,8 @@
  *  - scheduledAt?: ISO string
  *  - status?: 'draft' | 'scheduled' | 'sending' | 'completed' | 'paused' (default: 'draft')
  */
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { auth } from '@/auth';
-import { createCampaign } from '@/lib/communication';
 
 const BodySchema = z.object({
   name: z.string().min(1, 'نام الزامی است').max(200),

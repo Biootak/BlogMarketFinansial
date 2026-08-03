@@ -38,7 +38,10 @@ export default function DailyVolumeStrip({ buckets, currency }: Props) {
   while (cells.length < 7) cells.push(null);
   const last7 = cells.slice(-7);
 
-  const maxVol = Math.max(1, ...last7.filter((b): b is DailyBucket => b !== null).map((b) => b.volume));
+  const maxVol = Math.max(
+    1,
+    ...last7.filter((b): b is DailyBucket => b !== null).map((b) => b.volume),
+  );
 
   const totalVol = last7.reduce((acc, b) => acc + (b?.volume ?? 0), 0);
   const totalDeals = last7.reduce((acc, b) => acc + (b?.dealCount ?? 0), 0);
@@ -62,9 +65,7 @@ export default function DailyVolumeStrip({ buckets, currency }: Props) {
           </span>
           <span className={s.metaItem}>
             <span className={s.metaLabel}>معاملات</span>
-            <span className={s.metaValue}>
-              {new Intl.NumberFormat('fa-IR').format(totalDeals)}
-            </span>
+            <span className={s.metaValue}>{new Intl.NumberFormat('fa-IR').format(totalDeals)}</span>
           </span>
         </div>
       </header>

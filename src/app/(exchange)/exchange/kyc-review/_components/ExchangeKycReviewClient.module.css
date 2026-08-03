@@ -132,7 +132,7 @@
   border-radius: var(--nova-radius-xl);
   background: var(--nova-surface-solid);
   border: 1px solid var(--nova-line);
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .table {

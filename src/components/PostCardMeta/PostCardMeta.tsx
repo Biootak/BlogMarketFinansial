@@ -55,9 +55,9 @@ const PostCardMeta: React.FC<PostCardMetaProps> = ({
         </Link>
       )}
       {author && formattedDate && (
-        <span className="text-neutral-500 dark:text-neutral-400 mx-[6px]">·</span>
+        <span className="text-neutral-600 dark:text-neutral-400 mx-[6px]">·</span>
       )}
-      <span className="font-normal text-neutral-500 dark:text-neutral-400 font-vazirmatn">
+      <span className="font-normal text-neutral-600 dark:text-neutral-400 font-vazirmatn">
         {formattedDate}
       </span>
     </div>

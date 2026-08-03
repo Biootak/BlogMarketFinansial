@@ -31,7 +31,9 @@ export default function NotificationsLoading() {
           gap: 'var(--ds-space-4)',
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-2)', flex: 1 }}>
+        <div
+          style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-2)', flex: 1 }}
+        >
           <Skeleton variant="text" className="h-3 w-32" />
           <Skeleton variant="text" className="h-7 w-56" />
           <Skeleton variant="text" className="h-4 w-72" />
@@ -55,7 +57,8 @@ export default function NotificationsLoading() {
             key={i}
             style={{
               padding: 'var(--ds-space-4)',
-              background: 'color-mix(in oklch, var(--at-surface, oklch(100% 0 0)) 92%, transparent)',
+              background:
+                'color-mix(in oklch, var(--at-surface, oklch(100% 0 0)) 92%, transparent)',
               backdropFilter: 'blur(12px) saturate(140%)',
               WebkitBackdropFilter: 'blur(12px) saturate(140%)',
               border: '1px solid var(--at-line, oklch(93% 0.008 245))',
@@ -94,11 +97,11 @@ export default function NotificationsLoading() {
       </div>
 
       {/* Notification list skeleton — two groups */}
-      {[{ label: 'w-12', count: 3 }, { label: 'w-16', count: 2 }].map((group, gi) => (
-        <div
-          key={gi}
-          style={{ display: 'flex', flexDirection: 'column', gap: 0 }}
-        >
+      {[
+        { label: 'w-12', count: 3 },
+        { label: 'w-16', count: 2 },
+      ].map((group, gi) => (
+        <div key={gi} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
           {/* Group label */}
           <div
             style={{
@@ -122,7 +125,8 @@ export default function NotificationsLoading() {
           {/* Card */}
           <div
             style={{
-              background: 'color-mix(in oklch, var(--at-surface, oklch(100% 0 0)) 94%, transparent)',
+              background:
+                'color-mix(in oklch, var(--at-surface, oklch(100% 0 0)) 94%, transparent)',
               border: '1px solid var(--at-line, oklch(93% 0.008 245))',
               borderRadius: 'var(--ds-radius-xl)',
               overflow: 'hidden',
@@ -137,9 +141,7 @@ export default function NotificationsLoading() {
                   gap: 'var(--ds-space-3)',
                   padding: 'var(--ds-space-4)',
                   borderBlockEnd:
-                    i < group.count - 1
-                      ? '1px solid var(--at-line, oklch(93% 0.008 245))'
-                      : 'none',
+                    i < group.count - 1 ? '1px solid var(--at-line, oklch(93% 0.008 245))' : 'none',
                 }}
               >
                 <Skeleton variant="avatar" className="h-[38px] w-[38px] rounded-xl flex-shrink-0" />
@@ -155,11 +157,7 @@ export default function NotificationsLoading() {
                     <Skeleton variant="text" className="h-4 w-16" />
                     <Skeleton variant="text" className="h-3 w-24" />
                   </div>
-                  <Skeleton
-                    variant="text"
-                    lines={i % 2 === 0 ? 1 : 2}
-                    className="h-4 w-full"
-                  />
+                  <Skeleton variant="text" lines={i % 2 === 0 ? 1 : 2} className="h-4 w-full" />
                 </div>
                 <Skeleton variant="text" className="h-3 w-16 flex-shrink-0" />
               </div>

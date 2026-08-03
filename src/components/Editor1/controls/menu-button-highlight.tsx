@@ -1,6 +1,6 @@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import type { Editor } from '@tiptap/core';
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 import { Icon } from '../../ui/icon';
 import { Toolbar } from '../../ui/toolbar';
 import { ColorPicker } from '../components/color-picker';

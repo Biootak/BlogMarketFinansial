@@ -1,16 +1,10 @@
 'use client';
 
-import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { useMemo } from 'react';
 import s from './PlatformHub.module.css';
 
-export type SparklineTone =
-  | 'emerald'
-  | 'indigo'
-  | 'amber'
-  | 'rose'
-  | 'cyan'
-  | 'violet';
+export type SparklineTone = 'emerald' | 'indigo' | 'amber' | 'rose' | 'cyan' | 'violet';
 
 interface SparklineProps {
   values: number[];
@@ -39,7 +33,8 @@ export function Sparkline({
   ariaLabel,
 }: SparklineProps) {
   const path = useMemo(() => {
-    if (values.length === 0) return { line: '', area: '', last: null as null | { x: number; y: number } };
+    if (values.length === 0)
+      return { line: '', area: '', last: null as null | { x: number; y: number } };
     const max = Math.max(...values, 1);
     const min = Math.min(...values, 0);
     const range = max - min || 1;

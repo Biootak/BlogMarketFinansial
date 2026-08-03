@@ -36,22 +36,22 @@
   animation: cardEnter 360ms var(--ds-ease-out-quart) both;
 }
 
-.hero[data-tone='approved'] {
+.hero[data-tone="approved"] {
   background: color-mix(in oklch, var(--nova-up) 3%, var(--ds-surface));
   border-color: color-mix(in oklch, var(--nova-up) 25%, var(--ds-border-subtle));
 }
 
-.hero[data-tone='danger'] {
+.hero[data-tone="danger"] {
   background: color-mix(in oklch, var(--nova-down) 3%, var(--ds-surface));
   border-color: color-mix(in oklch, var(--nova-down) 25%, var(--ds-border-subtle));
 }
 
-.hero[data-tone='warning'] {
+.hero[data-tone="warning"] {
   background: color-mix(in oklch, var(--nova-amber) 3%, var(--ds-surface));
   border-color: color-mix(in oklch, var(--nova-amber) 25%, var(--ds-border-subtle));
 }
 
-.hero[data-tone='pending'] {
+.hero[data-tone="pending"] {
   background: color-mix(in oklch, var(--nova-cyan) 3%, var(--ds-surface));
   border-color: color-mix(in oklch, var(--nova-cyan) 25%, var(--ds-border-subtle));
 }
@@ -83,22 +83,22 @@
   flex-shrink: 0;
 }
 
-.hero[data-tone='approved'] .heroIcon {
+.hero[data-tone="approved"] .heroIcon {
   background: color-mix(in oklch, var(--nova-up) 12%, transparent);
   color: var(--nova-up);
 }
 
-.hero[data-tone='danger'] .heroIcon {
+.hero[data-tone="danger"] .heroIcon {
   background: color-mix(in oklch, var(--nova-down) 12%, transparent);
   color: var(--nova-down);
 }
 
-.hero[data-tone='warning'] .heroIcon {
+.hero[data-tone="warning"] .heroIcon {
   background: color-mix(in oklch, var(--nova-amber) 12%, transparent);
   color: var(--nova-amber);
 }
 
-.hero[data-tone='pending'] .heroIcon {
+.hero[data-tone="pending"] .heroIcon {
   background: color-mix(in oklch, var(--nova-cyan) 12%, transparent);
   color: var(--nova-cyan);
 }
@@ -193,19 +193,19 @@
   border-inline-start: 3px solid var(--ds-border-subtle);
 }
 
-.heroCell[data-tone='success'] {
+.heroCell[data-tone="success"] {
   border-inline-start-color: var(--nova-up);
 }
 
-.heroCell[data-tone='danger'] {
+.heroCell[data-tone="danger"] {
   border-inline-start-color: var(--nova-down);
 }
 
-.heroCell[data-tone='warning'] {
+.heroCell[data-tone="warning"] {
   border-inline-start-color: var(--nova-amber);
 }
 
-.heroCell[data-tone='neutral'] {
+.heroCell[data-tone="neutral"] {
   border-inline-start-color: var(--ds-text-muted);
 }
 
@@ -223,11 +223,11 @@
   font-weight: 700;
 }
 
-.heroCell[data-tone='success'] .heroCellValue {
+.heroCell[data-tone="success"] .heroCellValue {
   color: var(--nova-up);
 }
 
-.heroCell[data-tone='danger'] .heroCellValue {
+.heroCell[data-tone="danger"] .heroCellValue {
   color: var(--nova-down);
 }
 
@@ -244,17 +244,17 @@
   color: var(--ds-text-muted);
 }
 
-.heroNote[data-tone='success'] {
+.heroNote[data-tone="success"] {
   background: color-mix(in oklch, var(--nova-up) 8%, transparent);
   color: var(--nova-up);
 }
 
-.heroNote[data-tone='danger'] {
+.heroNote[data-tone="danger"] {
   background: color-mix(in oklch, var(--nova-down) 8%, transparent);
   color: var(--nova-down);
 }
 
-.heroNote[data-tone='warning'] {
+.heroNote[data-tone="warning"] {
   background: color-mix(in oklch, var(--nova-amber) 8%, transparent);
   color: var(--nova-amber);
 }
@@ -291,11 +291,11 @@
   border-block-end: none;
 }
 
-.funnelStep[data-current='true'] {
+.funnelStep[data-current="true"] {
   background: color-mix(in oklch, var(--nova-amber) 4%, var(--ds-surface));
 }
 
-.funnelStep[data-done='true'] {
+.funnelStep[data-done="true"] {
   background: color-mix(in oklch, var(--nova-up) 2%, var(--ds-surface));
 }
 
@@ -314,13 +314,13 @@
   font-size: 0.6875rem;
 }
 
-.funnelStep[data-done='true'] .funnelDot {
+.funnelStep[data-done="true"] .funnelDot {
   background: var(--nova-up);
   color: var(--ds-canvas);
   border-color: transparent;
 }
 
-.funnelStep[data-current='true'] .funnelDot {
+.funnelStep[data-current="true"] .funnelDot {
   border-color: var(--nova-amber);
   color: var(--nova-amber);
   background: color-mix(in oklch, var(--nova-amber) 12%, var(--ds-surface));
@@ -339,11 +339,11 @@
   color: var(--ds-text-primary);
 }
 
-.funnelStep[data-done='true'] .funnelTitle {
+.funnelStep[data-done="true"] .funnelTitle {
   color: var(--ds-text-primary);
 }
 
-.funnelStep:not([data-done='true']):not([data-current='true']) .funnelTitle {
+.funnelStep:not([data-done="true"]):not([data-current="true"]) .funnelTitle {
   color: var(--ds-text-muted);
 }
 
@@ -367,13 +367,13 @@
   flex-shrink: 0;
 }
 
-.funnelState[data-done='true'] {
+.funnelState[data-done="true"] {
   background: color-mix(in oklch, var(--nova-up) 10%, transparent);
   color: var(--nova-up);
   border-color: color-mix(in oklch, var(--nova-up) 30%, transparent);
 }
 
-.funnelState[data-current='true'] {
+.funnelState[data-current="true"] {
   background: color-mix(in oklch, var(--nova-amber) 12%, transparent);
   color: var(--nova-amber);
   border-color: color-mix(in oklch, var(--nova-amber) 35%, transparent);
@@ -402,7 +402,7 @@
   .formGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .formField[data-span='full'] {
+  .formField[data-span="full"] {
     grid-column: 1 / -1;
   }
 }
@@ -456,7 +456,7 @@
   cursor: pointer;
 }
 
-.formSelectTrigger[aria-expanded='true'] {
+.formSelectTrigger[aria-expanded="true"] {
   border-color: var(--ds-brand-500);
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 18%, transparent);
 }
@@ -583,18 +583,18 @@
   flex-shrink: 0;
 }
 
-.historyRow[data-status='APPROVED'] .historyIcon {
+.historyRow[data-status="APPROVED"] .historyIcon {
   background: color-mix(in oklch, var(--nova-up) 12%, transparent);
   color: var(--nova-up);
 }
 
-.historyRow[data-status='PENDING'] .historyIcon {
+.historyRow[data-status="PENDING"] .historyIcon {
   background: color-mix(in oklch, var(--nova-amber) 12%, transparent);
   color: var(--nova-amber);
 }
 
-.historyRow[data-status='REJECTED'] .historyIcon,
-.historyRow[data-status='EXPIRED'] .historyIcon {
+.historyRow[data-status="REJECTED"] .historyIcon,
+.historyRow[data-status="EXPIRED"] .historyIcon {
   background: color-mix(in oklch, var(--nova-down) 12%, transparent);
   color: var(--nova-down);
 }

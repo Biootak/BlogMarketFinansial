@@ -29,7 +29,6 @@ import {
   toggleApiKey,
   toggleWebhook,
 } from '@/actions/developer-portal';
-import { API_SCOPES } from '@/lib/developer-portal-constants';
 import {
   Dialog,
   DialogClose,
@@ -41,6 +40,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
+import { API_SCOPES } from '@/lib/developer-portal-constants';
 import {
   Activity,
   AlertTriangle,
@@ -62,7 +62,7 @@ import {
   Terminal,
   Timer,
   Trash2,
-  Webhook,
+  Webhook as WebhookIcon,
   Zap,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
@@ -173,7 +173,9 @@ export default function DeveloperPortalClient({
   const [audits, setAudits] = useState<AuditRow[]>(initialAudits);
 
   // ── Secret reveal state — auto-hide after 30s ──
-  const [revealedSecret, setRevealedSecret] = useState<Record<string, { value: string; expiresAt: number }>>({});
+  const [revealedSecret, setRevealedSecret] = useState<
+    Record<string, { value: string; expiresAt: number }>
+  >({});
 
   // ── Newly created key banner (shows secret + auto-hide 30s) ──
   const [newKey, setNewKey] = useState<ApiKey | null>(null);
@@ -311,22 +313,29 @@ export default function DeveloperPortalClient({
         await navigator.clipboard.writeText(text);
         toast({ title: `${label} کپی شد`, variant: 'success' });
       } catch {
-        toast({ title: 'کپی ناموفق', description: 'دسترسی به کلیپ‌بورد مسدود است', variant: 'destructive' });
+        toast({
+          title: 'کپی ناموفق',
+          description: 'دسترسی به کلیپ‌بورد مسدود است',
+          variant: 'destructive',
+        });
       }
     },
     [toast],
   );
 
-  const revealSecret = useCallback((id: string, secret: string) => {
-    setRevealedSecret((prev) => ({
-      ...prev,
-      [id]: { value: secret, expiresAt: Date.now() + SECRET_REVEAL_TIMEOUT * 1000 },
-    }));
-    toast({
-      title: `سکرت ${SECRET_REVEAL_TIMEOUT} ثانیه نمایش داده می‌شود`,
-      description: 'پس از پایان زمان، خودکار پنهان می‌شود',
-    });
-  }, [toast]);
+  const revealSecret = useCallback(
+    (id: string, secret: string) => {
+      setRevealedSecret((prev) => ({
+        ...prev,
+        [id]: { value: secret, expiresAt: Date.now() + SECRET_REVEAL_TIMEOUT * 1000 },
+      }));
+      toast({
+        title: `سکرت ${SECRET_REVEAL_TIMEOUT} ثانیه نمایش داده می‌شود`,
+        description: 'پس از پایان زمان، خودکار پنهان می‌شود',
+      });
+    },
+    [toast],
+  );
 
   return (
     <div className={s.root} dir="rtl">
@@ -340,7 +349,8 @@ export default function DeveloperPortalClient({
             <div>
               <h3 className={s.newKeyBannerTitle}>کلید API ساخته شد</h3>
               <p className={s.newKeyBannerSub}>
-                سکرت فقط {SECRET_REVEAL_TIMEOUT} ثانیه نمایش داده می‌شود. کپی کنید و در جای امن ذخیره کنید.
+                سکرت فقط {SECRET_REVEAL_TIMEOUT} ثانیه نمایش داده می‌شود. کپی کنید و در جای امن ذخیره
+                کنید.
               </p>
             </div>
             <span className={s.newKeyBannerCountdown} aria-live="off">
@@ -399,7 +409,8 @@ export default function DeveloperPortalClient({
                 کلیدهای API
               </h2>
               <p className={s.sectionSub}>
-                برای اتصال سیستمی، یک کلید با نام و scopeهای دلخواه بسازید. سکرت فقط یک‌بار نمایش داده می‌شود.
+                برای اتصال سیستمی، یک کلید با نام و scopeهای دلخواه بسازید. سکرت فقط یک‌بار نمایش
+                داده می‌شود.
               </p>
             </div>
           </div>
@@ -409,7 +420,11 @@ export default function DeveloperPortalClient({
                 const data = res.data as ApiKey;
                 setKeys((prev) => [data, ...prev]);
                 setNewKey(data);
-                toast({ title: 'کلید ساخته شد', description: 'سکرت در بالای صفحه ۳۰ ثانیه نمایش داده می‌شود.', variant: 'success' });
+                toast({
+                  title: 'کلید ساخته شد',
+                  description: 'سکرت در بالای صفحه ۳۰ ثانیه نمایش داده می‌شود.',
+                  variant: 'success',
+                });
                 refreshAudits();
               } else if (!res.success) {
                 toast({ title: 'خطا', description: res.error, variant: 'destructive' });
@@ -429,7 +444,8 @@ export default function DeveloperPortalClient({
             {keys.map((k) => {
               const revealed = revealedSecret[k.id];
               const isExpiringSoon =
-                k.expiresAt && new Date(k.expiresAt).getTime() - Date.now() < 7 * 24 * 60 * 60 * 1000;
+                k.expiresAt &&
+                new Date(k.expiresAt).getTime() - Date.now() < 7 * 24 * 60 * 60 * 1000;
               return (
                 <article key={k.id} className={s.keyCard} data-active={k.isActive}>
                   <header className={s.keyHead}>
@@ -494,7 +510,8 @@ export default function DeveloperPortalClient({
                             <Copy size={11} />
                           </button>
                           <span className={s.timerChip} aria-live="polite">
-                            <Timer size={9} /> {Math.max(0, Math.ceil((revealed.expiresAt - Date.now()) / 1000))}s
+                            <Timer size={9} />{' '}
+                            {Math.max(0, Math.ceil((revealed.expiresAt - Date.now()) / 1000))}s
                           </span>
                         </>
                       ) : (
@@ -521,7 +538,11 @@ export default function DeveloperPortalClient({
                     <span className={s.keyMeta}>
                       <span>ایجاد: {fmtDate(k.createdAt)}</span>
                       {k.lastUsed && <span>آخرین استفاده: {relativeTime(k.lastUsed)}</span>}
-                      {k.lastIp && <span className={s.ipChip} dir="ltr">IP: {k.lastIp}</span>}
+                      {k.lastIp && (
+                        <span className={s.ipChip} dir="ltr">
+                          IP: {k.lastIp}
+                        </span>
+                      )}
                     </span>
                     <div className={s.keyActions}>
                       <button
@@ -566,7 +587,7 @@ export default function DeveloperPortalClient({
         <div className={s.sectionHead}>
           <div className={s.sectionHeadMain}>
             <span className={s.sectionIcon} aria-hidden>
-              <Webhook size={14} />
+              <WebhookIcon size={14} />
             </span>
             <div>
               <h2 id="webhooks-title" className={s.sectionTitle}>
@@ -592,7 +613,7 @@ export default function DeveloperPortalClient({
 
         {webhooks.length === 0 ? (
           <EmptyHint
-            icon={Webhook}
+            icon={WebhookIcon}
             title="وب‌هوکی تعریف نشده"
             description="برای دریافت رویدادها در سیستم خود، یک endpoint اضافه کنید"
           />
@@ -732,7 +753,13 @@ export default function DeveloperPortalClient({
           {DOC_CARDS.map((d) => {
             const Icon = d.icon;
             return (
-              <a key={d.title} href={d.href} className={s.docCard} target="_blank" rel="noopener">
+              <a
+                key={d.title}
+                href={d.href}
+                className={s.docCard}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
                 <span className={s.docIcon} aria-hidden>
                   <Icon size={16} />
                 </span>
@@ -820,10 +847,14 @@ function CreateKeyDialog({
 
   function handleCreate() {
     if (name.trim().length < 3) {
-      toast({ title: 'نام کلید کوتاه است', description: 'حداقل ۳ کاراکتر وارد کنید', variant: 'destructive' });
+      toast({
+        title: 'نام کلید کوتاه است',
+        description: 'حداقل ۳ کاراکتر وارد کنید',
+        variant: 'destructive',
+      });
       return;
     }
-    const expiresInDays = expiry === 'never' ? undefined : parseInt(expiry, 10);
+    const expiresInDays = expiry === 'never' ? undefined : Number.parseInt(expiry, 10);
     startTransition(async () => {
       const res = await createApiKey({
         name: name.trim(),
@@ -845,7 +876,7 @@ function CreateKeyDialog({
 
   // Group scopes by category
   const grouped = useMemo(() => {
-    const map: Record<string, typeof API_SCOPES[number][]> = { read: [], write: [] };
+    const map: Record<string, (typeof API_SCOPES)[number][]> = { read: [], write: [] };
     for (const sc of API_SCOPES) {
       map[sc.category]?.push(sc);
     }
@@ -880,7 +911,6 @@ function CreateKeyDialog({
             placeholder="مثلاً: سرور تولید"
             className={s.formInput}
             maxLength={50}
-            autoFocus
           />
         </div>
 
@@ -908,9 +938,7 @@ function CreateKeyDialog({
           </span>
           {(['read', 'write'] as const).map((cat) => (
             <div key={cat} className={s.scopeGroup}>
-              <h4 className={s.scopeGroupTitle}>
-                {cat === 'read' ? 'خواندن' : 'نوشتن'}
-              </h4>
+              <h4 className={s.scopeGroupTitle}>{cat === 'read' ? 'خواندن' : 'نوشتن'}</h4>
               <div className={s.scopeGrid}>
                 {grouped[cat]?.map((sc) => {
                   const isOn = scopes.has(sc.value);
@@ -943,12 +971,7 @@ function CreateKeyDialog({
               انصراف
             </button>
           </DialogClose>
-          <button
-            type="button"
-            onClick={handleCreate}
-            disabled={pending}
-            className={s.primaryBtn}
-          >
+          <button type="button" onClick={handleCreate} disabled={pending} className={s.primaryBtn}>
             {pending ? <Loader2 size={12} className={s.spin} /> : <Key size={12} />}
             ساخت کلید
           </button>
@@ -1022,7 +1045,6 @@ function CreateWebhookDialog({
             placeholder="https://your-server.com/webhooks/payments"
             className={s.formInput}
             dir="ltr"
-            autoFocus
           />
         </div>
         <div className={s.formRow}>
@@ -1052,13 +1074,8 @@ function CreateWebhookDialog({
               انصراف
             </button>
           </DialogClose>
-          <button
-            type="button"
-            onClick={handleCreate}
-            disabled={pending}
-            className={s.primaryBtn}
-          >
-            {pending ? <Loader2 size={12} className={s.spin} /> : <Webhook size={12} />}
+          <button type="button" onClick={handleCreate} disabled={pending} className={s.primaryBtn}>
+            {pending ? <Loader2 size={12} className={s.spin} /> : <WebhookIcon size={12} />}
             ثبت وب‌هوک
           </button>
         </DialogFooter>
@@ -1085,7 +1102,7 @@ const DOC_CARDS = [
   {
     title: 'وب‌هوک‌ها',
     desc: 'تأیید امضا و بازپخش رویداد',
-    icon: Webhook,
+    icon: WebhookIcon,
     href: '/docs/webhooks',
   },
   {

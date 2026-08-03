@@ -1,10 +1,6 @@
 'use client';
 
-import DatePicker, {
-  type DayValue,
-  type DayRange,
-  type Day,
-} from '@hassanmojab/react-modern-calendar-datepicker';
+import DatePicker, { type DayRange, type Day } from '@hassanmojab/react-modern-calendar-datepicker';
 import type * as React from 'react';
 import '@hassanmojab/react-modern-calendar-datepicker/lib/DatePicker.css';
 import { cn } from '@/lib/utils';

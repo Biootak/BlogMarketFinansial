@@ -9,12 +9,7 @@
 export type CommunicationChannelId = 'inapp' | 'email' | 'push' | 'sms';
 
 export type AnnouncementStatus = 'draft' | 'scheduled' | 'published' | 'archived';
-export type CampaignStatus =
-  | 'draft'
-  | 'scheduled'
-  | 'sending'
-  | 'completed'
-  | 'paused';
+export type CampaignStatus = 'draft' | 'scheduled' | 'sending' | 'completed' | 'paused';
 export type Audience = 'all' | 'role' | 'segment';
 export type ChannelTone = 'emerald' | 'indigo' | 'amber' | 'violet' | 'rose' | 'cyan';
 

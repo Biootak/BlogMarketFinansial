@@ -7,13 +7,8 @@
  * قرارداد نمایش: نماد "AFN" (لاتین) بعد از عدد می‌آید، نه "ف" یا "؋" جلوی عدد.
  */
 
+import { formatAFN, formatAFNCompact, formatCurrency, formatRate } from '@/lib/afn-format';
 import { describe, expect, it } from 'vitest';
-import {
-  formatAFN,
-  formatAFNCompact,
-  formatCurrency,
-  formatRate,
-} from '@/lib/afn-format';
 
 // ─── formatAFN ────────────────────────────────────────────────────────────────
 

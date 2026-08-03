@@ -1,4 +1,3 @@
-import type { NodeViewProps } from '@tiptap/core';
 import { mergeAttributes } from '@tiptap/core';
 import { Image as BaseImage } from '@tiptap/extension-image';
 import { ReactNodeViewRenderer } from '@tiptap/react';

@@ -82,7 +82,9 @@ export default function SpotlightCard({
         </div>
         <span className={s.spotCard__statSep} aria-hidden />
         <div className={s.spotCard__stat}>
-          <span className={s.spotCard__statNum} dir="ltr">{platformFee.toFixed(2)}٪</span>
+          <span className={s.spotCard__statNum} dir="ltr">
+            {platformFee.toFixed(2)}٪
+          </span>
           <span className={s.spotCard__statLabel}>کارمزد</span>
         </div>
       </div>

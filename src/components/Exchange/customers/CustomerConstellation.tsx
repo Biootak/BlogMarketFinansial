@@ -6,9 +6,9 @@
  * انیمیشن subtle breathing (نه glow).
  */
 
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { CustomerRow } from '@/actions/exchange-customers';
 import { formatNumber } from '@/lib/customer-format';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import s from './CustomerConstellation.module.css';
 
 interface Props {
@@ -77,10 +77,7 @@ export function CustomerConstellation({ customers, activity, currency }: Props) 
 
   useEffect(() => {
     const rng = seedRandom(42);
-    const max = Math.max(
-      1,
-      ...Array.from(activity.values()).map((a) => a.count || 1),
-    );
+    const max = Math.max(1, ...Array.from(activity.values()).map((a) => a.count || 1));
     const list: Node[] = customers.slice(0, 18).map((c, i) => {
       const angle = (i / Math.max(1, customers.length)) * Math.PI * 2;
       const r = 120 + rng() * 20;
@@ -151,12 +148,9 @@ export function CustomerConstellation({ customers, activity, currency }: Props) 
     raf = requestAnimationFrame(step);
 
     // stop after 6s of settle
-    const stopTimer = setTimeout(
-      () => {
-        cancelAnimationFrame(raf);
-      },
-      6000,
-    );
+    const stopTimer = setTimeout(() => {
+      cancelAnimationFrame(raf);
+    }, 6000);
 
     return () => {
       mounted = false;
@@ -183,8 +177,8 @@ export function CustomerConstellation({ customers, activity, currency }: Props) 
       >
         <title id={titleId}>نقشه هم‌بندی مشتریان صرافی</title>
         <desc id={descId}>
-          حباب مرکزی نماینده صرافی است. هر node یک مشتری است که اندازه آن بر اساس
-          تعداد تراکنش‌های ۳۰ روز اخیر و رنگ بر اساس وضعیت حساب است.
+          حباب مرکزی نماینده صرافی است. هر node یک مشتری است که اندازه آن بر اساس تعداد تراکنش‌های ۳۰
+          روز اخیر و رنگ بر اساس وضعیت حساب است.
         </desc>
 
         {/* Background grid (subtle) */}
@@ -207,13 +201,7 @@ export function CustomerConstellation({ customers, activity, currency }: Props) 
         <rect width={W} height={H} fill="url(#constellation-grid)" />
 
         {/* Center halo + breathing */}
-        <circle
-          cx={center.x}
-          cy={center.y}
-          r="84"
-          fill="url(#center-grad)"
-          className={s.halo}
-        />
+        <circle cx={center.x} cy={center.y} r="84" fill="url(#center-grad)" className={s.halo} />
         <g className={s.centerGroup}>
           <circle
             cx={center.x}
@@ -263,13 +251,7 @@ export function CustomerConstellation({ customers, activity, currency }: Props) 
           const color = STATUS_COLOR[n.status] ?? 'var(--at-line-strong)';
           return (
             <g key={n.id} className={s.node} tabIndex={0} role="button" aria-label={n.name}>
-              <circle
-                cx={n.x}
-                cy={n.y}
-                r={n.radius + 2}
-                fill={color}
-                opacity="0.12"
-              />
+              <circle cx={n.x} cy={n.y} r={n.radius + 2} fill={color} opacity="0.12" />
               <circle
                 cx={n.x}
                 cy={n.y}
@@ -308,11 +290,7 @@ export function CustomerConstellation({ customers, activity, currency }: Props) 
       <ul className={s.legend} aria-label="راهنمای رنگ">
         {(['ACTIVE', 'PROSPECT', 'FROZEN', 'CLOSED'] as const).map((k) => (
           <li key={k} className={s.legendItem}>
-            <span
-              className={s.legendDot}
-              style={{ background: STATUS_COLOR[k] }}
-              aria-hidden
-            />
+            <span className={s.legendDot} style={{ background: STATUS_COLOR[k] }} aria-hidden />
             <span className={s.legendLabel}>
               {k === 'ACTIVE'
                 ? 'فعال'

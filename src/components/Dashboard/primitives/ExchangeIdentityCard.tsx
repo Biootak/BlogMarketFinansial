@@ -11,8 +11,8 @@
  * این کامپوننت client-safe است (هیچ state داخلی ندارد).
  */
 
-import { ExternalLink, ShieldCheck, Sparkles } from 'lucide-react';
 import type { ExchangeRow } from '@/actions/exchanges';
+import { ExternalLink, ShieldCheck, Sparkles } from 'lucide-react';
 import s from './ExchangeIdentityCard.module.css';
 
 interface Props {
@@ -90,7 +90,7 @@ export function ExchangeIdentityCard({ exchange, publicUrl, counters }: Props) {
       {/* ── Floating monogram/logo ──────────────────────────────────── */}
       <div className={s.logo} aria-hidden>
         {exchange.logoUrl ? (
-          // biome-ignore lint/performance/noImgElement: dynamic user URL
+          // Dynamic user URL
           <img src={exchange.logoUrl} alt="" className={s.logoImg} />
         ) : (
           <div className={s.logoFallback}>
@@ -127,19 +127,16 @@ export function ExchangeIdentityCard({ exchange, publicUrl, counters }: Props) {
             <span className={s.slugSep} aria-hidden>
               ·
             </span>
-            <span className={s.joined}>عضو از {dateFormatter.format(new Date(exchange.createdAt))}</span>
+            <span className={s.joined}>
+              عضو از {dateFormatter.format(new Date(exchange.createdAt))}
+            </span>
           </p>
         </div>
 
         {/* ── Side actions (CTA + counters) ─────────────────────────── */}
         <div className={s.side}>
           {publicUrl && (
-            <a
-              href={publicUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={s.cta}
-            >
+            <a href={publicUrl} target="_blank" rel="noopener noreferrer" className={s.cta}>
               <Sparkles size={13} strokeWidth={2} aria-hidden />
               <span>مشاهده صفحه عمومی</span>
               <ExternalLink size={12} strokeWidth={2} aria-hidden />

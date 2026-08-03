@@ -7,10 +7,10 @@
  * Server Component. کاملاً render در سمت سرور.
  */
 
-import { Fragment } from 'react';
-import { Flame, Clock4 } from 'lucide-react';
-import s from './ExchangeDashboard.module.css';
 import type { ActivityHeatmap } from '@/actions/exchange-dashboard';
+import { Clock4, Flame } from 'lucide-react';
+import { Fragment } from 'react';
+import s from './ExchangeDashboard.module.css';
 
 function formatFaNumber(n: number): string {
   return new Intl.NumberFormat('fa-IR').format(n);
@@ -31,9 +31,7 @@ export default function ExchangeActivityHeatmap({ data }: Props) {
 
   if (total === 0) {
     return (
-      <div className={s.heatEmpty}>
-        برای نمایش heatmap نیاز به دادهٔ تراکنش ۳۰ روز اخیر است.
-      </div>
+      <div className={s.heatEmpty}>برای نمایش heatmap نیاز به دادهٔ تراکنش ۳۰ روز اخیر است.</div>
     );
   }
 
@@ -78,11 +76,7 @@ export default function ExchangeActivityHeatmap({ data }: Props) {
         {/* header row: روزها */}
         <div className={s.heatCorner} aria-hidden />
         {daysFa.map((d, i) => (
-          <div
-            key={`day-${i}`}
-            className={s.heatDayLabel}
-            data-peak={i === peakDay}
-          >
+          <div key={`day-${i}`} className={s.heatDayLabel} data-peak={i === peakDay}>
             {d}
           </div>
         ))}

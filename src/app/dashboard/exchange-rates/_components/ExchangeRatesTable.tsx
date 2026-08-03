@@ -203,7 +203,10 @@ export default function ExchangeRatesTable({
                         sortDir === 'asc' ? (
                           <HiChevronUp aria-hidden style={{ width: '0.8rem', height: '0.8rem' }} />
                         ) : (
-                          <HiChevronDown aria-hidden style={{ width: '0.8rem', height: '0.8rem' }} />
+                          <HiChevronDown
+                            aria-hidden
+                            style={{ width: '0.8rem', height: '0.8rem' }}
+                          />
                         )
                       ) : null}
                     </button>

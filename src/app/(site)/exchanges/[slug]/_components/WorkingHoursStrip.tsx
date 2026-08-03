@@ -123,12 +123,7 @@ export default function WorkingHoursStrip({ hours, timezone = 'Asia/Tehran' }: P
   const openDays = DAYS.filter((d) => hours[d.key] && !hours[d.key].closed).length;
 
   return (
-    <section
-      className={s.section}
-      id="hours"
-      aria-label="ساعات کاری هفتگی"
-      dir="rtl"
-    >
+    <section className={s.section} id="hours" aria-label="ساعات کاری هفتگی" dir="rtl">
       <div className={s.inner}>
         <header className={s.header}>
           <div className={s.titleBlock}>
@@ -138,8 +133,8 @@ export default function WorkingHoursStrip({ hours, timezone = 'Asia/Tehran' }: P
             </div>
             <h2 className={s.title}>چه زمانی می‌توانید مراجعه کنید؟</h2>
             <p className={s.sub}>
-              برنامهٔ هفتگی صرافی به‌صورت زنده نمایش داده می‌شود. روز فعلی با رنگ متمایز
-              مشخص شده و وضعیت «باز/بسته» به‌صورت لحظه‌ای به‌روز می‌شود.
+              برنامهٔ هفتگی صرافی به‌صورت زنده نمایش داده می‌شود. روز فعلی با رنگ متمایز مشخص شده و
+              وضعیت «باز/بسته» به‌صورت لحظه‌ای به‌روز می‌شود.
             </p>
           </div>
           <div className={s.stats} aria-label="خلاصهٔ ساعات کاری">
@@ -170,9 +165,12 @@ export default function WorkingHoursStrip({ hours, timezone = 'Asia/Tehran' }: P
             const close = parseTime(v.close);
             const span = Math.max(0, close - open);
             // progress: how much of today's window is done
-            const progress = isToday && status === 'open'
-              ? Math.min(1, (currentMin - open) / span)
-              : status === 'past' ? 1 : 0;
+            const progress =
+              isToday && status === 'open'
+                ? Math.min(1, (currentMin - open) / span)
+                : status === 'past'
+                  ? 1
+                  : 0;
             return (
               <article
                 key={d.key}

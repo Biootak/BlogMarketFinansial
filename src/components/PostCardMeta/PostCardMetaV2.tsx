@@ -1,8 +1,7 @@
 import Avatar from '@/components/Avatar/Avatar';
-import React, { type FC } from 'react';
+import type { FC } from 'react';
 
 import type { PostWithRelations } from '@/types/types';
-import { formatDate } from '@/utils/formatDate';
 import Link from 'next/link';
 import FormattedDate from '../FormattedDate';
 
@@ -42,12 +41,17 @@ const PostCardMetaV2: FC<PostCardMetaV2Props> = ({
             </Link>
           </h2>
 
-          <Link href={`/author/${author.id}`} className="flex mt-1.5">
+          {/* حداقل ارتفاع ۴۴px touch target — aria-label برای screen reader */}
+          <Link
+            href={`/author/${author.id}`}
+            className="flex mt-1.5 min-h-[44px] items-center"
+            aria-label={`نویسنده: ${author.name}`}
+          >
             <span className="block text-neutral-700 hover:text-black dark:text-neutral-300 dark:hover:text-white font-medium">
               {author.name}
             </span>
-            <span className="text-neutral-500 dark:text-neutral-400 mx-[6px] font-medium">·</span>
-            <span className="text-neutral-500 dark:text-neutral-400 font-normal">
+            <span className="text-neutral-600 dark:text-neutral-400 mx-[6px] font-medium">·</span>
+            <span className="text-neutral-600 dark:text-neutral-400 font-normal">
               <FormattedDate date={createdAt} />
             </span>
           </Link>

@@ -1,16 +1,6 @@
 'use client';
 
 import {
-  type KeyboardEvent,
-  type ReactElement,
-  useCallback,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import {
   Activity,
   AlertTriangle,
   ArrowUp,
@@ -31,6 +21,16 @@ import {
   Wifi,
   Zap,
 } from 'lucide-react';
+import {
+  type KeyboardEvent,
+  type ReactElement,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import CountUp from '@/components/Dashboard/primitives/CountUp';
 import { Spotlight } from '@/components/Dashboard/primitives/Spotlight';
@@ -152,8 +152,24 @@ function ServiceRadar({ services }: { services: ServiceHealth[] }) {
         ))}
 
         {/* Cross axes */}
-        <line x1={cx - 180} y1={cy} x2={cx + 180} y2={cy} stroke="currentColor" strokeWidth="0.4" opacity="0.15" />
-        <line x1={cx} y1={cy - 180} x2={cx} y2={cy + 180} stroke="currentColor" strokeWidth="0.4" opacity="0.15" />
+        <line
+          x1={cx - 180}
+          y1={cy}
+          x2={cx + 180}
+          y2={cy}
+          stroke="currentColor"
+          strokeWidth="0.4"
+          opacity="0.15"
+        />
+        <line
+          x1={cx}
+          y1={cy - 180}
+          x2={cx}
+          y2={cy + 180}
+          stroke="currentColor"
+          strokeWidth="0.4"
+          opacity="0.15"
+        />
 
         {/* Rotating sweep */}
         <g className={s.radarSweep} style={{ transformOrigin: `${cx}px ${cy}px` }}>
@@ -179,7 +195,11 @@ function ServiceRadar({ services }: { services: ServiceHealth[] }) {
           const fill = `var(--ds-accent-${tone === 'neutral' ? 'slate' : tone})`;
 
           return (
-            <g key={svc.id} className={s.blip} style={{ color: `var(--ds-accent-${tone === 'neutral' ? 'slate' : tone})` }}>
+            <g
+              key={svc.id}
+              className={s.blip}
+              style={{ color: `var(--ds-accent-${tone === 'neutral' ? 'slate' : tone})` }}
+            >
               <circle
                 cx={x}
                 cy={y}
@@ -217,7 +237,14 @@ function ServiceRadar({ services }: { services: ServiceHealth[] }) {
 
         {/* Center mark */}
         <circle cx={cx} cy={cy} r="3" fill="currentColor" />
-        <text x={cx} y={cy + 18} textAnchor="middle" className={s.blipLabel} fill="currentColor" opacity="0.6">
+        <text
+          x={cx}
+          y={cy + 18}
+          textAnchor="middle"
+          className={s.blipLabel}
+          fill="currentColor"
+          opacity="0.6"
+        >
           مرکز
         </text>
       </svg>
@@ -269,9 +296,7 @@ function ServiceList({ services }: { services: ServiceHealth[] }) {
             </svg>
             <div className={s.serviceNumbers}>
               <span className={s.serviceLatency}>{formatMs(svc.latencyMs)}</span>
-              <span className={s.serviceUptime}>
-                {svc.uptime24h.toFixed(2)}٪ uptime
-              </span>
+              <span className={s.serviceUptime}>{svc.uptime24h.toFixed(2)}٪ uptime</span>
             </div>
             <span className={s.serviceStatus} data-tone={tone}>
               {STATUS_LABEL[svc.status] ?? svc.status}
@@ -297,7 +322,7 @@ function TideChart({ hours, errors }: { hours: number[]; errors: number[] }) {
         const y = h - (v / max) * (h - 10) - 4;
         if (i === 0) return `M ${x.toFixed(1)} ${y.toFixed(1)}`;
         const prevX = (i - 1) * stepX;
-        const prevY = h - (vals[i - 1] ?? 0) / max * (h - 10) - 4;
+        const prevY = h - ((vals[i - 1] ?? 0) / max) * (h - 10) - 4;
         const cx1 = prevX + stepX / 2;
         const cx2 = x - stepX / 2;
         return `C ${cx1.toFixed(1)} ${prevY.toFixed(1)}, ${cx2.toFixed(1)} ${y.toFixed(1)}, ${x.toFixed(1)} ${y.toFixed(1)}`;
@@ -348,7 +373,13 @@ function TideChart({ hours, errors }: { hours: number[]; errors: number[] }) {
         <path d={buildArea(hours)} fill="url(#tide-area)" />
         <path d={buildPath(hours)} fill="none" stroke="var(--ds-accent-cyan)" strokeWidth="1.5" />
         <path d={buildArea(errors)} fill="url(#tide-area-err)" />
-        <path d={buildPath(errors)} fill="none" stroke="var(--ds-accent-rose)" strokeWidth="1.2" strokeDasharray="3 2" />
+        <path
+          d={buildPath(errors)}
+          fill="none"
+          stroke="var(--ds-accent-rose)"
+          strokeWidth="1.2"
+          strokeDasharray="3 2"
+        />
       </svg>
       <div className={s.tideAxis}>
         <span>۲۴ ساعت پیش</span>
@@ -446,9 +477,7 @@ function ErrorStream({ errors }: { errors: ErrorEvent[] }) {
           </span>
           <span className={s.errorSource}>{err.source}</span>
           <span className={s.errorMessage}>{err.message}</span>
-          {err.count > 1 ? (
-            <span className={s.errorCount}>×{formatNumber(err.count)}</span>
-          ) : null}
+          {err.count > 1 ? <span className={s.errorCount}>×{formatNumber(err.count)}</span> : null}
           <span className={s.errorTime}>{formatTimeAgo(err.timestamp)}</span>
         </li>
       ))}
@@ -466,6 +495,7 @@ function SlowQueriesTable({ queries }: { queries: SlowQuery[] }) {
     );
   }
   return (
+    <div className="overflow-x-auto">
     <table className={s.slowTable}>
       <thead>
         <tr>
@@ -490,6 +520,7 @@ function SlowQueriesTable({ queries }: { queries: SlowQuery[] }) {
         ))}
       </tbody>
     </table>
+    </div>
   );
 }
 
@@ -499,7 +530,9 @@ export function ObservabilityHub({ initialData }: Props) {
   const [data, setData] = useState<ObservabilitySnapshot | undefined>(initialData);
   const [tab, setTab] = useState<Tab>('overview');
   const [refreshing, setRefreshing] = useState(false);
-  const [lastFetch, setLastFetch] = useState<string>(initialData?.generatedAt ?? new Date().toISOString());
+  const [lastFetch, setLastFetch] = useState<string>(
+    initialData?.generatedAt ?? new Date().toISOString(),
+  );
   // نگه‌دارنده برای re-render هر ثانیه (تا "X پیش" به‌روز بماند)
   const [, setNow] = useState<number>(Date.now());
   const tabRefs = useRef<Record<Tab, HTMLButtonElement | null>>({
@@ -527,14 +560,35 @@ export function ObservabilityHub({ initialData }: Props) {
   }, []);
 
   useEffect(() => {
-    const id = setInterval(() => {
-      void fetchData();
-    }, 30_000);
-    // tick هر ثانیه برای "X پیش" (R16-fix: بدون auto-tick متن stale می‌شد)
-    const tick = setInterval(() => setNow(Date.now()), 1_000);
+    let id: ReturnType<typeof setInterval> | null = null;
+    // tick هر ۳۰ ثانیه برای "X پیش" — هر ثانیه re-render کل hub غیرضروری است
+    const tick = setInterval(() => setNow(Date.now()), 30_000);
+
+    const start = () => {
+      if (id) return;
+      id = setInterval(() => void fetchData(), 30_000);
+    };
+    const stop = () => {
+      if (id) {
+        clearInterval(id);
+        id = null;
+      }
+    };
+    const onVisibility = () => {
+      if (document.hidden) {
+        stop();
+      } else {
+        void fetchData();
+        start();
+      }
+    };
+
+    start();
+    document.addEventListener('visibilitychange', onVisibility);
     return () => {
-      clearInterval(id);
+      stop();
       clearInterval(tick);
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [fetchData]);
 
@@ -566,10 +620,7 @@ export function ObservabilityHub({ initialData }: Props) {
     const healthy = services.filter((svc) => svc.status === 'healthy').length;
     const degraded = services.filter((svc) => svc.status === 'degraded').length;
     const down = services.filter((svc) => svc.status === 'down').length;
-    const errCount = (data?.errors ?? []).reduce(
-      (sum, err) => sum + err.count,
-      0,
-    );
+    const errCount = (data?.errors ?? []).reduce((sum, err) => sum + err.count, 0);
     return { total: services.length, healthy, degraded, down, errCount };
   }, [data]);
 
@@ -626,9 +677,7 @@ export function ObservabilityHub({ initialData }: Props) {
         </div>
         <div className={s.summaryCard} data-tone="indigo">
           <div className={s.summaryLabel}>Uptime process</div>
-          <div className={s.summaryValue}>
-            {formatUptime(data.performance.uptimeSec)}
-          </div>
+          <div className={s.summaryValue}>{formatUptime(data.performance.uptimeSec)}</div>
           <Cpu className={s.summaryArrow} />
         </div>
       </section>

@@ -5,21 +5,16 @@
  * (avatar + name + phone + city + status + KYC + risk + last seen).
  */
 
-import { CustomerStatusBadge } from '@/components/Dashboard/primitives';
 import type { CustomerRow } from '@/actions/exchange-customers';
+import { CustomerStatusBadge } from '@/components/Dashboard/primitives';
 import {
-  KYC_META,
-  KYC_STATUS_META,
-  STATUS_META,
-  riskBucket,
-} from '@/lib/customer-segments';
-import {
+  formatPhone,
+  formatRelative,
   getInitials,
   riskLabel,
   riskTone,
-  formatRelative,
-  formatPhone,
 } from '@/lib/customer-format';
+import { KYC_META, KYC_STATUS_META, STATUS_META, riskBucket } from '@/lib/customer-segments';
 import { Check, ShieldAlert } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import s from './CustomerCard.module.css';
@@ -49,9 +44,14 @@ export function CustomerCard({
 }: Props) {
   const hue = avatarHue(customer.fullName);
   const statusMeta = STATUS_META[customer.status as keyof typeof STATUS_META];
-  const kycMeta = KYC_META[customer.kycLevel] ?? { label: customer.kycLevel, tone: 'muted' as const };
-  const kycStatusMeta =
-    KYC_STATUS_META[customer.kycStatus] ?? { label: customer.kycStatus, tone: 'muted' as const };
+  const kycMeta = KYC_META[customer.kycLevel] ?? {
+    label: customer.kycLevel,
+    tone: 'muted' as const,
+  };
+  const kycStatusMeta = KYC_STATUS_META[customer.kycStatus] ?? {
+    label: customer.kycStatus,
+    tone: 'muted' as const,
+  };
   const tone = riskTone(customer.riskScore);
   const bucket = riskBucket(customer.riskScore);
   const riskFillPct = Math.max(2, Math.min(100, customer.riskScore));
@@ -69,8 +69,6 @@ export function CustomerCard({
           onClick?.(customer);
         }
       }}
-      role="button"
-      tabIndex={0}
       aria-label={`مشتری ${customer.fullName}`}
     >
       {/* Selection checkbox */}

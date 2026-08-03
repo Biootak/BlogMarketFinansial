@@ -1,6 +1,4 @@
 'use client';
-
-import PostStatusBadge from '@/components/Dashboard/Blog/PostStatusBadge';
 import FormattedDate from '@/components/FormattedDate';
 import {
   DropdownMenu,

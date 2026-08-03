@@ -281,7 +281,7 @@ export default function ServiceRequestsCommandBar({
       <div className="at-srq-hero__divider" aria-hidden />
       <div className="at-srq-hero__filter">
         <div role="tablist" aria-label="فیلتر وضعیت" className="at-srq-hero__segmented">
-          {(Object.keys(STATUS_META) as Array<StatusFilter>).map((key) => {
+          {(Object.keys(STATUS_META) as StatusFilter[]).map((key) => {
             const meta = STATUS_META[key];
             const isActive = activeFilter === key;
             const Icon = meta.icon;

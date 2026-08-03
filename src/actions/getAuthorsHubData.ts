@@ -51,65 +51,73 @@ const fetchHubDataRaw = async (
   topLimit: number,
   expertiseLimit: number,
 ): Promise<AuthorsHubData> => {
-  // 1. Top authors (ordered by post count) — reused by hero + grid.
-  const authors = await prisma.user.findMany({
-    where: {
-      OR: [{ role: Role.AUTHOR }, { role: Role.ADMIN }, { role: Role.OWNER }],
-    },
-    take: topLimit,
-    orderBy: { posts: { _count: 'desc' } },
-    select: {
-      id: true,
-      name: true,
-      image: true,
-      profile: {
-        select: { avatar: true, bio: true, jobName: true },
-      },
-      _count: { select: { posts: true } },
-    },
-  });
+  const STAFF_ROLES = [{ role: Role.AUTHOR }, { role: Role.ADMIN }, { role: Role.OWNER }];
 
-  // 2. Total counts (single round-trip per aggregate).
-  const [authorCount, postCount] = await Promise.all([
-    prisma.user.count({
-      where: {
-        OR: [{ role: Role.AUTHOR }, { role: Role.ADMIN }, { role: Role.OWNER }],
-      },
-    }),
-    prisma.post.count({ where: { status: 'PUBLISHED' } }),
-  ]);
-
-  // 3. Top categories by published-post count, with their top authors.
-  const topCategories = await prisma.category.findMany({
-    where: {
-      posts: { some: { status: 'PUBLISHED' } },
-    },
-    orderBy: { posts: { _count: 'desc' } },
-    take: expertiseLimit,
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-    },
-  });
-
-  const expertise: HubExpertiseCategory[] = [];
-  for (const cat of topCategories) {
-    const catAuthors = await prisma.user.findMany({
-      where: {
-        OR: [{ role: Role.AUTHOR }, { role: Role.ADMIN }, { role: Role.OWNER }],
-        posts: { some: { status: 'PUBLISHED', categories: { some: { id: cat.id } } } },
-      },
+  // 2026-08-perf: همه query ها موازی — قبلاً sequential بود (authors → counts → categories → N×catAuthors)
+  // الان: 3 query موازی به جای 3+N query sequential
+  const [authors, [authorCount, postCount], topCategories] = await Promise.all([
+    // 1. Top authors
+    prisma.user.findMany({
+      where: { OR: STAFF_ROLES },
+      take: topLimit,
       orderBy: { posts: { _count: 'desc' } },
-      take: 6,
       select: {
         id: true,
         name: true,
-        profile: { select: { avatar: true, jobName: true } },
+        image: true,
+        profile: { select: { avatar: true, bio: true, jobName: true } },
+        _count: { select: { posts: true } },
       },
-    });
-    if (catAuthors.length > 0) {
-      expertise.push({
+    }),
+    // 2. Total counts
+    Promise.all([
+      prisma.user.count({ where: { OR: STAFF_ROLES } }),
+      prisma.post.count({ where: { status: 'PUBLISHED' } }),
+    ]),
+    // 3. Top categories — یک query که author ها را هم includes می‌کند (N+1 حذف شد)
+    prisma.category.findMany({
+      where: { posts: { some: { status: 'PUBLISHED' } } },
+      orderBy: { posts: { _count: 'desc' } },
+      take: expertiseLimit,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        posts: {
+          where: { status: 'PUBLISHED' },
+          take: 1,
+          select: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                role: true,
+                profile: { select: { avatar: true, jobName: true } },
+              },
+            },
+          },
+        },
+      },
+    }),
+  ]);
+
+  // 2026-08-perf: به جای N query برای هر category، از posts.author استفاده می‌کنیم
+  // که در همان query بالا آمده است.
+  const expertise: HubExpertiseCategory[] = topCategories
+    .map((cat) => {
+      const catAuthors = cat.posts
+        .map((p) => p.author)
+        .filter(
+          (a): a is NonNullable<typeof a> =>
+            a !== null &&
+            (a.role === Role.AUTHOR || a.role === Role.ADMIN || a.role === Role.OWNER),
+        )
+        // dedupe by id
+        .filter((a, i, arr) => arr.findIndex((x) => x.id === a.id) === i)
+        .slice(0, 6);
+
+      if (catAuthors.length === 0) return null;
+      return {
         id: cat.id,
         name: cat.name,
         slug: cat.slug,
@@ -118,9 +126,9 @@ const fetchHubDataRaw = async (
           name: a.name,
           profile: a.profile ? { avatar: a.profile.avatar, jobName: a.profile.jobName } : null,
         })),
-      });
-    }
-  }
+      };
+    })
+    .filter((e): e is HubExpertiseCategory => e !== null);
 
   return {
     totalAuthors: authorCount,
@@ -130,11 +138,7 @@ const fetchHubDataRaw = async (
       name: a.name,
       image: a.image,
       profile: a.profile
-        ? {
-            avatar: a.profile.avatar,
-            bio: a.profile.bio,
-            jobName: a.profile.jobName,
-          }
+        ? { avatar: a.profile.avatar, bio: a.profile.bio, jobName: a.profile.jobName }
         : null,
       _count: a._count,
     })),

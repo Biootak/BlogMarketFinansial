@@ -17,6 +17,7 @@
 
 'use client';
 
+import type { TxRowEnriched } from '@/lib/exchange-tx-formatters';
 import {
   ArrowDownLeft,
   ArrowLeftRight,
@@ -30,8 +31,7 @@ import {
   WalletCards,
 } from 'lucide-react';
 import Link from 'next/link';
-import { type CSSProperties } from 'react';
-import { type TxRowEnriched } from '@/lib/exchange-tx-formatters';
+import type { CSSProperties } from 'react';
 import s from './TransactionRow.module.css';
 
 const KIND_ICON: Record<string, LucideIcon> = {
@@ -106,9 +106,7 @@ export function TransactionRow({
             {row.feeAmount > 0 && (
               <>
                 <span className={s.dot} aria-hidden />
-                <span className={s.metaFee}>
-                  کارمزد {row.feeStr}
-                </span>
+                <span className={s.metaFee}>کارمزد {row.feeStr}</span>
               </>
             )}
             {row.note && (
@@ -128,9 +126,7 @@ export function TransactionRow({
             <span className={s.amountSign} aria-hidden>
               {sign}
             </span>
-            <span className={s.amountValue}>
-              {row.amountStr.replace(` ${row.currency}`, '')}
-            </span>
+            <span className={s.amountValue}>{row.amountStr.replace(` ${row.currency}`, '')}</span>
             <span className={s.amountCurrency}>{row.currency}</span>
           </span>
           <span className={s.statusPill} data-status={row.statusKey}>

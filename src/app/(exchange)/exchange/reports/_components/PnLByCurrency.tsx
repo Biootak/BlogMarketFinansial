@@ -85,9 +85,7 @@ export default function PnLByCurrency({ rows }: Props) {
                   {r.currency}
                 </span>
                 <div className={s.rowValues}>
-                  <span className={s.rowVolume}>
-                    {fmtExact(r.totalVolume)}
-                  </span>
+                  <span className={s.rowVolume}>{fmtExact(r.totalVolume)}</span>
                   <span className={s.rowCurrency}>{r.currency}</span>
                 </div>
               </div>

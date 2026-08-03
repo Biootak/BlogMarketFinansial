@@ -3,13 +3,7 @@
 import { cn } from '@/lib/utils';
 import s from './PlatformHub.module.css';
 
-export type LiveDotTone =
-  | 'emerald'
-  | 'indigo'
-  | 'amber'
-  | 'rose'
-  | 'cyan'
-  | 'violet';
+export type LiveDotTone = 'emerald' | 'indigo' | 'amber' | 'rose' | 'cyan' | 'violet';
 export type LiveDotSize = 'xs' | 'sm' | 'md';
 
 interface LiveDotProps {
@@ -23,12 +17,7 @@ interface LiveDotProps {
  * LiveDot — pulsing accent indicator for "real-time" data.
  * Token-based ring + dot; animation globally clamped in tokens.css:221.
  */
-export function LiveDot({
-  tone = 'emerald',
-  size = 'sm',
-  label,
-  className,
-}: LiveDotProps) {
+export function LiveDot({ tone = 'emerald', size = 'sm', label, className }: LiveDotProps) {
   return (
     <span className={cn(s.liveDot, className)} data-tone={tone} data-size={size}>
       <span className={s.liveDotPulse} aria-hidden />

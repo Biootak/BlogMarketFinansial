@@ -34,20 +34,20 @@ vi.mock('@/lib/require-auth', () => ({
 
 // ─── Import ───────────────────────────────────────────────────────────────────
 
-import prisma from '@/lib/db';
-import { requireUser } from '@/lib/require-auth';
 import {
   cancelVirtualCard,
   getMyVirtualCards,
   issueVirtualCard,
   toggleFreezeCard,
 } from '@/actions/virtual-card';
+import prisma from '@/lib/db';
+import { requireUser } from '@/lib/require-auth';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
 const USER_1 = { success: true as const, user: { id: 'user-1', role: 'USER' as const } };
 const USER_2 = { success: true as const, user: { id: 'user-2', role: 'USER' as const } };
-const AUTH_FAIL = {
+const _AUTH_FAIL = {
   success: false as const,
   status: 401 as const,
   code: 'UNAUTHENTICATED' as const,

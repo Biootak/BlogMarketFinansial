@@ -28,9 +28,8 @@ export default async function CustomerProfilePage({
   // ProfileContent پاس داده می‌شود تا فرم ویرایش باز شود.
   const sp = (await searchParams) ?? {};
   const fieldParam = typeof sp.field === 'string' ? sp.field : '';
-  const openEdit = fieldParam === 'email' || fieldParam === 'city' || fieldParam === 'address'
-    ? fieldParam
-    : '';
+  const openEdit =
+    fieldParam === 'email' || fieldParam === 'city' || fieldParam === 'address' ? fieldParam : '';
 
   return (
     <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>

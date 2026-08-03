@@ -88,12 +88,7 @@ export default function SiteNotFound() {
               <span className={s.suggestLabel}>{link.label}</span>
               <span className={s.suggestSub}>{link.sub}</span>
             </div>
-            <ArrowRight
-              className={s.suggestArrow}
-              size={16}
-              aria-hidden
-              strokeWidth={1.5}
-            />
+            <ArrowRight className={s.suggestArrow} size={16} aria-hidden strokeWidth={1.5} />
           </Link>
         ))}
       </div>
@@ -207,17 +202,16 @@ function LostCompassIllustration() {
 
       {/* compass needle — rotates 6s, drifts */}
       <g className={s.needle}>
-        <path
-          d="M200 110 L208 200 L200 290 L192 200 Z"
-          fill="var(--ds-primary)"
-          opacity="0.85"
+        <path d="M200 110 L208 200 L200 290 L192 200 Z" fill="var(--ds-primary)" opacity="0.85" />
+        <path d="M200 110 L208 200 L200 200 L192 200 Z" fill="var(--ds-fg)" opacity="0.4" />
+        <circle
+          cx="200"
+          cy="200"
+          r="6"
+          fill="var(--ds-bg, white)"
+          stroke="var(--ds-fg)"
+          strokeWidth="1.5"
         />
-        <path
-          d="M200 110 L208 200 L200 200 L192 200 Z"
-          fill="var(--ds-fg)"
-          opacity="0.4"
-        />
-        <circle cx="200" cy="200" r="6" fill="var(--ds-bg, white)" stroke="var(--ds-fg)" strokeWidth="1.5" />
       </g>
 
       {/* dashed path leading out of compass */}

@@ -92,7 +92,9 @@ export function CryptoTickerCard({ rate }: CryptoTickerCardProps) {
 
         <span
           className={`flex items-center gap-0.5 text-[10px] font-semibold tabular-nums whitespace-nowrap ${
-            isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+            // Color-contrast fix: emerald-600 (#059669) روی سفید 3.65:1 دارد؛
+            // emerald-700 روی white ≈ 5.4:1 می‌دهد و AA (≥4.5) را رد می‌کند.
+            isPositive ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'
           }`}
         >
           {isPositive ? (

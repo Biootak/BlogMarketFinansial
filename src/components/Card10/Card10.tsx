@@ -7,7 +7,7 @@ import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia'
 import { getPostLink } from '@/lib/getPostLink';
 import type { PostWithRelations } from '@/types/types';
 import Link from 'next/link';
-import React, { type FC, useState } from 'react';
+import { type FC, useState } from 'react';
 import BookmarkCheck from '../BookmarkCheck';
 
 export interface Card10Props {
@@ -25,7 +25,13 @@ const Card10: FC<Card10Props> = ({ className = 'h-full', post }) => {
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
     >
-      <Link href={getPostLink(postType, slug)} className="absolute inset-0" tabIndex={-1} />
+      {/* لینک تزئینی - فقط برای کلیک mouse است؛ از a11y tree خارج است */}
+      <Link
+        href={getPostLink(postType, slug)}
+        className="absolute inset-0"
+        tabIndex={-1}
+        aria-hidden="true"
+      />
       <div className="block group rounded-xl sm:rounded-2xl flex-shrink-0 relative w-full aspect-[16/10] sm:aspect-[3/2] overflow-hidden z-0">
         <div>
           <PostFeaturedMedia post={post} isHover={isHover} />
@@ -39,7 +45,9 @@ const Card10: FC<Card10Props> = ({ className = 'h-full', post }) => {
               className="relative"
               postId={post.id}
               initialBookmarked={isBookmarked}
-              bookmarkClass="h-6 w-6 sm:h-8 sm:w-8 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+              // target-size: html font-size (--fs-base) scales rem by ~0.76, so
+              // h-8 (32px) renders at 24.4px actual — meets the 24px target.
+              bookmarkClass="h-8 w-8 sm:h-9 sm:w-9 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700"
             />
           )}
         </BookmarkCheck>

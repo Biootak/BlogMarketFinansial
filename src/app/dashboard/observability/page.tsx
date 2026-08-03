@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 
-import { auth } from '@/auth';
 import { ObservabilityHub } from '@/app/dashboard/observability/_components/ObservabilityHub';
+import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import { getObservabilitySnapshot } from '@/lib/observability';
 import s from './observability.module.css';
@@ -30,10 +30,7 @@ export default async function ObservabilityPage() {
         description="نمای زنده از سلامت سرویس‌ها، خطاها، کارایی و incidentها. همه داده‌ها از SystemLog و AuditLog خوانده می‌شوند."
         icon="radar"
         accent="cyan"
-        breadcrumb={[
-          { href: '/dashboard', label: 'داشبورد' },
-          { label: 'مرکز پایش' },
-        ]}
+        breadcrumb={[{ href: '/dashboard', label: 'داشبورد' }, { label: 'مرکز پایش' }]}
       />
       <ObservabilityHub initialData={initialData} />
     </div>

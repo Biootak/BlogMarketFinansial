@@ -9,7 +9,6 @@ import SingleRelatedPosts from '@/app/(site)/(singles)/SingleRelatedPosts';
 import type { ActionResult, PostWithRelations } from '@/types/types';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import React from 'react';
 import Sidebar from '../../../Sidebar';
 import GalleryImages from '../GalleryImages';
 
@@ -108,7 +107,7 @@ export default async function Page({ params }: PageProps) {
     inContentAdsResult.success && inContentAdsResult.data?.[0] ? inContentAdsResult.data[0] : null;
 
   return (
-    <div className="nc-PageSingle-Gallery relative min-h-screen">
+    <div className="nc-PageSingle-Gallery relative min-h-dvh">
       {/* Subtle Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-b from-neutral-50 via-white to-neutral-50/50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950/50 pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.15),transparent)] pointer-events-none" />

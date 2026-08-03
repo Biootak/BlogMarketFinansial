@@ -9,14 +9,10 @@
  *   - sticky footer: reply form (textarea + internal checkbox + send)
  */
 
-import { useCallback, useEffect, useState } from 'react';
-import { PanelDrawer } from '@/components/Dashboard/primitives';
 import { replyToTicket, updateTicketStatus } from '@/actions/tickets-actions';
-import type {
-  TicketMessageSummary,
-  TicketStatus,
-  TicketSummary,
-} from '@/lib/tickets';
+import { PanelDrawer } from '@/components/Dashboard/primitives';
+import type { TicketMessageSummary, TicketStatus, TicketSummary } from '@/lib/tickets';
+import { useCallback, useEffect, useState } from 'react';
 import s from './TicketDetail.module.css';
 
 interface TicketDetailProps {
@@ -27,53 +23,133 @@ interface TicketDetailProps {
 
 // ── minimal inline SVG icons (token-based) ─────────────────
 const IconCheck = (p: { className?: string }) => (
-  <svg className={p.className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+  <svg
+    className={p.className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.7"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+  >
     <circle cx="12" cy="12" r="10" />
     <path d="M9 12l2 2 4-4" />
   </svg>
 );
 const IconClock = (p: { className?: string }) => (
-  <svg className={p.className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+  <svg
+    className={p.className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.6"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+  >
     <circle cx="12" cy="12" r="10" />
     <polyline points="12 6 12 12 16 14" />
   </svg>
 );
 const IconLoader = (p: { className?: string }) => (
-  <svg className={p.className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+  <svg
+    className={p.className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    aria-hidden
+  >
     <path d="M12 2a10 10 0 0 1 10 10" />
   </svg>
 );
 const IconLock = (p: { className?: string }) => (
-  <svg className={p.className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+  <svg
+    className={p.className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.6"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+  >
     <rect x="3" y="11" width="18" height="11" rx="2" />
     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
   </svg>
 );
 const IconMessage = (p: { className?: string }) => (
-  <svg className={p.className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+  <svg
+    className={p.className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.6"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+  >
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
   </svg>
 );
 const IconSend = (p: { className?: string }) => (
-  <svg className={p.className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+  <svg
+    className={p.className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.6"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+  >
     <line x1="22" y1="2" x2="11" y2="13" />
     <polygon points="22 2 15 22 11 13 2 9 22 2" />
   </svg>
 );
 const IconSparkles = (p: { className?: string }) => (
-  <svg className={p.className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+  <svg
+    className={p.className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.6"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+  >
     <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z" />
     <path d="M19 14l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z" />
   </svg>
 );
 const IconTag = (p: { className?: string }) => (
-  <svg className={p.className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+  <svg
+    className={p.className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.6"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+  >
     <path d="M20.59 13.41l-7.18 7.18a2 2 0 0 1-2.82 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
     <circle cx="7" cy="7" r="1.4" fill="currentColor" stroke="none" />
   </svg>
 );
 const IconX = (p: { className?: string }) => (
-  <svg className={p.className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+  <svg
+    className={p.className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+  >
     <line x1="18" y1="6" x2="6" y2="18" />
     <line x1="6" y1="6" x2="18" y2="18" />
   </svg>
@@ -219,8 +295,12 @@ export function TicketDetail({ ticket, onClose, onChanged }: TicketDetailProps) 
       <div className={s.body}>
         <header className={s.header}>
           <div className={s.badges}>
-            <span className={s.pill} data-tone={STATUS_TONE[ticket.status]}>{STATUS_LABEL[ticket.status]}</span>
-            <span className={s.pill} data-tone={PRIORITY_TONE[ticket.priority]}>{PRIORITY_LABEL[ticket.priority]}</span>
+            <span className={s.pill} data-tone={STATUS_TONE[ticket.status]}>
+              {STATUS_LABEL[ticket.status]}
+            </span>
+            <span className={s.pill} data-tone={PRIORITY_TONE[ticket.priority]}>
+              {PRIORITY_LABEL[ticket.priority]}
+            </span>
             <span className={s.pillSoft}>
               <IconTag className={s.pillSoftIcon} aria-hidden />
               {CATEGORY_LABEL[ticket.category]}
@@ -228,22 +308,30 @@ export function TicketDetail({ ticket, onClose, onChanged }: TicketDetailProps) 
           </div>
           <dl className={s.metaGrid}>
             <div className={s.metaItem}>
-              <dt><IconClock className={s.metaIcon} aria-hidden /> ایجاد</dt>
+              <dt>
+                <IconClock className={s.metaIcon} aria-hidden /> ایجاد
+              </dt>
               <dd>{formatFull(ticket.createdAt)}</dd>
             </div>
             <div className={s.metaItem}>
-              <dt><IconMessage className={s.metaIcon} aria-hidden /> پیام‌ها</dt>
+              <dt>
+                <IconMessage className={s.metaIcon} aria-hidden /> پیام‌ها
+              </dt>
               <dd>{toPersianNumber(ticket.messageCount)}</dd>
             </div>
             {ticket.firstResponseAt ? (
               <div className={s.metaItem}>
-                <dt><IconSparkles className={s.metaIcon} aria-hidden /> اولین پاسخ</dt>
+                <dt>
+                  <IconSparkles className={s.metaIcon} aria-hidden /> اولین پاسخ
+                </dt>
                 <dd>{formatFull(ticket.firstResponseAt)}</dd>
               </div>
             ) : null}
             {ticket.resolvedAt ? (
               <div className={s.metaItem}>
-                <dt><IconCheck className={s.metaIcon} aria-hidden /> حل شده</dt>
+                <dt>
+                  <IconCheck className={s.metaIcon} aria-hidden /> حل شده
+                </dt>
                 <dd>{formatFull(ticket.resolvedAt)}</dd>
               </div>
             ) : null}
@@ -273,7 +361,9 @@ export function TicketDetail({ ticket, onClose, onChanged }: TicketDetailProps) 
                   data-active={isActive}
                   data-tone={STATUS_TONE[st]}
                 >
-                  {isLoading ? <IconLoader className={`${s.spin} ${s.statusIcon}`} aria-hidden /> : null}
+                  {isLoading ? (
+                    <IconLoader className={`${s.spin} ${s.statusIcon}`} aria-hidden />
+                  ) : null}
                   <span>{STATUS_LABEL[st]}</span>
                 </button>
               );
@@ -285,7 +375,8 @@ export function TicketDetail({ ticket, onClose, onChanged }: TicketDetailProps) 
           <h3 className={s.sectionTitle}>گفتگو ({toPersianNumber(messages.length)})</h3>
           {loadingMsgs ? (
             <div className={s.loading}>
-              <IconLoader className={`${s.spin} ${s.loadingIcon}`} aria-hidden /> در حال بارگذاری پیام‌ها...
+              <IconLoader className={`${s.spin} ${s.loadingIcon}`} aria-hidden /> در حال بارگذاری
+              پیام‌ها...
             </div>
           ) : messages.length === 0 ? (
             <div className={s.empty}>هنوز پیامی ارسال نشده. اولین پاسخ را بنویسید.</div>
@@ -303,9 +394,7 @@ export function TicketDetail({ ticket, onClose, onChanged }: TicketDetailProps) 
                       {m.isInternal ? <IconLock className={s.lockIcon} aria-hidden /> : null}
                       {m.authorRole ?? 'کاربر'} · {timeAgo(m.createdAt)}
                     </span>
-                    {m.isInternal ? (
-                      <span className={s.internalBadge}>یادداشت داخلی</span>
-                    ) : null}
+                    {m.isInternal ? <span className={s.internalBadge}>یادداشت داخلی</span> : null}
                   </div>
                   <p className={s.messageBody}>{m.body}</p>
                 </li>
@@ -337,7 +426,11 @@ export function TicketDetail({ ticket, onClose, onChanged }: TicketDetailProps) 
           disabled={sending || !reply.trim()}
           className={s.sendBtn}
         >
-          {sending ? <IconLoader className={`${s.spin} ${s.sendIcon}`} aria-hidden /> : <IconSend className={s.sendIcon} aria-hidden />}
+          {sending ? (
+            <IconLoader className={`${s.spin} ${s.sendIcon}`} aria-hidden />
+          ) : (
+            <IconSend className={s.sendIcon} aria-hidden />
+          )}
           ارسال پاسخ
         </button>
       </div>

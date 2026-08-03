@@ -1,5 +1,5 @@
 import type { Editor } from '@tiptap/core';
-import React, { memo, useCallback } from 'react';
+import { memo, useCallback } from 'react';
 
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Icon } from '../../ui/icon';

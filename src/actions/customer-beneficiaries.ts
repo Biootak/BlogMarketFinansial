@@ -14,11 +14,11 @@
 
 'use server';
 
-import { revalidateTag } from '@/lib/revalidate';
-import { z } from 'zod';
-import prisma from '@/lib/db';
 import { requireCustomerAccess } from '@/lib/customer-auth';
+import prisma from '@/lib/db';
+import { revalidateTag } from '@/lib/revalidate';
 import type { Prisma } from '@prisma/client';
+import { z } from 'zod';
 
 export type CustomerBeneficiaryResult<T> =
   | { success: true; data: T }
@@ -33,7 +33,10 @@ const IdentifierSchema = z
   .regex(/^[A-Z0-9\-]+$/i, 'شناسه فقط می‌تواند شامل حروف، اعداد و خط تیره باشد');
 
 const CreateSchema = z.object({
-  name: z.string().min(2, 'نام باید حداقل ۲ کاراکتر باشد').max(80, 'نام نباید بیش از ۸۰ کاراکتر باشد'),
+  name: z
+    .string()
+    .min(2, 'نام باید حداقل ۲ کاراکتر باشد')
+    .max(80, 'نام نباید بیش از ۸۰ کاراکتر باشد'),
   identifier: IdentifierSchema,
   note: z.string().max(200).optional().nullable(),
 });
@@ -57,7 +60,9 @@ export type CustomerBeneficiary = {
 /**
  * لیست مخاطبان یک مشتری (customer-scoped).
  */
-export async function listCustomerBeneficiaries(): Promise<CustomerBeneficiaryResult<CustomerBeneficiary[]>> {
+export async function listCustomerBeneficiaries(): Promise<
+  CustomerBeneficiaryResult<CustomerBeneficiary[]>
+> {
   const auth = await requireCustomerAccess();
   if (!auth.ok) {
     return { success: false, error: { code: 'UNAUTHORIZED', message: auth.error.message } };

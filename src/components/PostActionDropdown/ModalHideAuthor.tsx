@@ -2,7 +2,7 @@
 
 import ButtonPrimary from '@/components/Button/ButtonPrimary';
 import NcModal from '@/components/NcModal/NcModal';
-import React, { type FC, useEffect, useRef } from 'react';
+import { type FC, useEffect, useRef } from 'react';
 import ButtonThird from '../Button/ButtonThird';
 
 export interface ModalHideAuthorProps {

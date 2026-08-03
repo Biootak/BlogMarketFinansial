@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 /**
  * Inline SVG glyph set used by the stepper and the review screen.
  *

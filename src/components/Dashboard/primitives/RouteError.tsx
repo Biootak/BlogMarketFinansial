@@ -50,14 +50,24 @@ type ErrorKind = 'network' | 'auth' | 'notfound' | 'server' | 'unknown';
 
 function detectKind(error: Error): ErrorKind {
   const m = (error.message ?? '').toLowerCase();
-  if (m.includes('network') || m.includes('fetch') || m.includes('timeout') || m.includes('failed to fetch')) return 'network';
+  if (
+    m.includes('network') ||
+    m.includes('fetch') ||
+    m.includes('timeout') ||
+    m.includes('failed to fetch')
+  )
+    return 'network';
   if (m.includes('unauthorized') || m.includes('403') || m.includes('401')) return 'auth';
   if (m.includes('not found') || m.includes('404')) return 'notfound';
-  if (m.includes('database') || m.includes('prisma') || m.includes('server') || m.includes('500')) return 'server';
+  if (m.includes('database') || m.includes('prisma') || m.includes('server') || m.includes('500'))
+    return 'server';
   return 'unknown';
 }
 
-const KIND_META: Record<ErrorKind, { title: string; description: string; Icon: typeof AlertTriangle }> = {
+const KIND_META: Record<
+  ErrorKind,
+  { title: string; description: string; Icon: typeof AlertTriangle }
+> = {
   network: {
     title: 'خطای اتصال',
     description: 'ارتباط با سرور برقرار نشد. اینترنت خود را بررسی کنید و دوباره تلاش کنید.',

@@ -19,8 +19,7 @@ export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: 'مقایسه خدمات صرافی‌ها',
-  description:
-    'جدول مقایسه کامل خدمات آنلاین صرافی‌ها — یک نگاه، تمام تفاوت‌ها را ببینید.',
+  description: 'جدول مقایسه کامل خدمات آنلاین صرافی‌ها — یک نگاه، تمام تفاوت‌ها را ببینید.',
   openGraph: {
     title: 'مقایسه خدمات صرافی‌ها',
     description: 'کدام صرافی چه خدماتی آنلاین ارائه می‌دهد؟ در یک جدول ببینید.',
@@ -42,10 +41,6 @@ export default async function ServicesComparePage({
   const matrix = await getComparisonMatrix();
 
   return (
-    <ComparisonMatrixView
-      matrix={matrix}
-      initialExchange={sp.exchange}
-      initialGroup={sp.group}
-    />
+    <ComparisonMatrixView matrix={matrix} initialExchange={sp.exchange} initialGroup={sp.group} />
   );
 }

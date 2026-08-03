@@ -1,8 +1,8 @@
 'use server';
 
+import { safeCache } from '@/lib/safe-cache';
 import { serverLog } from '@/lib/server-logger';
 import { getExirCryptoRates } from '../lib/exir-crypto-rates';
-import { safeCache } from '@/lib/safe-cache';
 
 export type CryptoRate = {
   symbol: string;

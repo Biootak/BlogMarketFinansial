@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
 
-import { auth } from '@/auth';
 import { JobCenter } from '@/app/dashboard/jobs/_components/JobCenter';
 import type { QueueHealthDisplay } from '@/app/dashboard/jobs/_components/JobQueueMatrix';
+import { auth } from '@/auth';
 import { getJobSnapshot, getQueueHealth } from '@/lib/jobs';
 import s from './jobs.module.css';
 

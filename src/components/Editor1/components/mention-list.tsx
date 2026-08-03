@@ -2,14 +2,7 @@
 
 import { useDirection } from '@/hooks/useDirection';
 import Image from 'next/image';
-import React, {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useState,
-  useCallback,
-  useRef,
-} from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import type { MentionUser } from '../extensions/mention';
 
 export interface MentionListRef {

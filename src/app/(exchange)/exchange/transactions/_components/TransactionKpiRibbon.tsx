@@ -16,18 +16,18 @@
 
 'use client';
 
+import { type TxAggregate, faNum, formatAmountShort } from '@/lib/exchange-tx-formatters';
 import {
   ArrowDown,
   ArrowDownLeft,
   ArrowUp,
   ArrowUpRight,
   Clock,
+  type LucideIcon,
   Minus,
   Wallet,
-  type LucideIcon,
 } from 'lucide-react';
-import { type CSSProperties } from 'react';
-import { type TxAggregate, faNum, formatAmountShort } from '@/lib/exchange-tx-formatters';
+import type { CSSProperties } from 'react';
 import s from './TransactionKpiRibbon.module.css';
 
 interface KpiTile {

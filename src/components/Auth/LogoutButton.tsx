@@ -45,8 +45,7 @@ const LogoutButton = () => {
 
       await signOut({ redirect: false });
       router.push('/');
-    } catch (error) {
-      console.error('خطا در خروج:', error);
+    } catch (_error) {
       toast({
         title: 'خطا',
         description: 'مشکلی در خروج رخ داد. لطفاً دوباره تلاش کنید.',

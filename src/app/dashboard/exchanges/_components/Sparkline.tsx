@@ -24,16 +24,16 @@ interface Props {
 
 const TONE_VAR: Record<Tone, string> = {
   accent: 'var(--at-accent)',
-  gold:   'var(--at-gold)',
-  muted:  'var(--at-fg-faint)',
-  rose:   'var(--at-danger)',
+  gold: 'var(--at-gold)',
+  muted: 'var(--at-fg-faint)',
+  rose: 'var(--at-danger)',
 };
 
 const TONE_VAR_SOFT: Record<Tone, string> = {
   accent: 'var(--at-accent-soft)',
-  gold:   'var(--at-gold-soft)',
-  muted:  'var(--at-line)',
-  rose:   'color-mix(in oklch, var(--at-danger) 18%, transparent)',
+  gold: 'var(--at-gold-soft)',
+  muted: 'var(--at-line)',
+  rose: 'color-mix(in oklch, var(--at-danger) 18%, transparent)',
 };
 
 export default function Sparkline({
@@ -67,7 +67,9 @@ export default function Sparkline({
   });
 
   const pathD = points
-    .map(([x, y], i) => (i === 0 ? `M ${x.toFixed(2)} ${y.toFixed(2)}` : `L ${x.toFixed(2)} ${y.toFixed(2)}`))
+    .map(([x, y], i) =>
+      i === 0 ? `M ${x.toFixed(2)} ${y.toFixed(2)}` : `L ${x.toFixed(2)} ${y.toFixed(2)}`,
+    )
     .join(' ');
 
   const areaD = `${pathD} L ${(padX + (data.length - 1) * stepX).toFixed(2)} ${(h - padY).toFixed(2)} L ${padX.toFixed(2)} ${(h - padY).toFixed(2)} Z`;
@@ -99,15 +101,16 @@ export default function Sparkline({
         strokeLinejoin="round"
         style={{ filter: `drop-shadow(0 1px 0 ${fill})` }}
       />
-      {points.length > 0 && (() => {
-        const last = points[points.length - 1]!;
-        return (
-          <g>
-            <circle cx={last[0]} cy={last[1]} r="3" fill={fill} />
-            <circle cx={last[0]} cy={last[1]} r="1.75" fill={stroke} />
-          </g>
-        );
-      })()}
+      {points.length > 0 &&
+        (() => {
+          const last = points[points.length - 1]!;
+          return (
+            <g>
+              <circle cx={last[0]} cy={last[1]} r="3" fill={fill} />
+              <circle cx={last[0]} cy={last[1]} r="1.75" fill={stroke} />
+            </g>
+          );
+        })()}
     </svg>
   );
 }

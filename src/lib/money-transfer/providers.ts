@@ -22,7 +22,7 @@ import { safeCache } from '@/lib/safe-cache';
 // app-level constants (DB-side enum در Prisma این‌ها را enforce می‌کند)
 export type TransferKind = 'SARAJI' | 'ONLINE' | 'BANK' | 'CRYPTO';
 
-export const TRANSFER_PROVIDER_KIND: ReadonlyArray<TransferKind> = [
+export const TRANSFER_PROVIDER_KIND: readonly TransferKind[] = [
   'SARAJI',
   'ONLINE',
   'BANK',
@@ -39,7 +39,7 @@ export const TRANSFER_KIND_LABELS: Record<TransferKind, string> = {
 
 /** پرچم قابلیت‌ها — مقادیر معتبر برای فیلد `features`. */
 export type TransferFeature = 'live-rate' | 'fee-transparent' | 'cash-pickup' | 'bank-transfer';
-export const TRANSFER_FEATURES: ReadonlyArray<TransferFeature> = [
+export const TRANSFER_FEATURES: readonly TransferFeature[] = [
   'live-rate',
   'fee-transparent',
   'cash-pickup',
@@ -63,7 +63,7 @@ export interface TransferProvider {
   /** سرعت تقریبی انتقال (دقیقه) */
   speedMinutes: number;
   /** پرچم قابلیت‌ها */
-  features: ReadonlyArray<TransferFeature>;
+  features: readonly TransferFeature[];
   /** فعال/غیرفعال */
   active: boolean;
   /** ترتیب نمایش (کوچک‌تر = بالاتر) */
@@ -79,7 +79,7 @@ export interface TransferProvider {
  */
 // 2026-07-20: fallback با صرافی‌های واقعی ایرانی sync شد.
 // اگر DB در دسترس نبود، این مقادیر نمایش داده می‌شوند.
-export const FALLBACK_PROVIDERS: ReadonlyArray<TransferProvider> = [
+export const FALLBACK_PROVIDERS: readonly TransferProvider[] = [
   {
     id: 'market-mid',
     name: 'نرخ میانگین بازار',
@@ -171,7 +171,7 @@ function mapDbToProvider(row: DbTransferProvider): TransferProvider {
     ? (row.kind as TransferKind)
     : 'SARAJI';
   const features = (row.features ?? []).filter((f): f is TransferFeature =>
-    (TRANSFER_FEATURES as ReadonlyArray<string>).includes(f),
+    (TRANSFER_FEATURES as readonly string[]).includes(f),
   );
   return {
     id: row.slug,
@@ -197,7 +197,7 @@ function mapDbToProvider(row: DbTransferProvider): TransferProvider {
  * پیاده‌سازی در داشبورد).
  */
 export const loadActiveTransferProviders = safeCache(
-  async (): Promise<ReadonlyArray<TransferProvider>> => {
+  async (): Promise<readonly TransferProvider[]> => {
     const rows = await prisma.transferProvider.findMany({
       where: { active: true },
       orderBy: { order: 'asc' },

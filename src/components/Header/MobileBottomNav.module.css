@@ -24,9 +24,8 @@
   /* Mount transition (avoids flash) */
   opacity: 0;
   transform: translateY(8px);
-  transition:
-    opacity var(--ds-duration-base) var(--ds-ease-out-quart),
-    transform var(--ds-duration-base) var(--ds-ease-out-quart);
+  transition: opacity var(--ds-duration-base) var(--ds-ease-out-quart), transform
+    var(--ds-duration-base) var(--ds-ease-out-quart);
 }
 
 /* R20-fix (2026-07-29): BottomNav در تبلت (768-1023px) هم نمایش داده می‌شود
@@ -56,18 +55,19 @@
   }
 }
 
-.nav[data-mounted='true'] {
+.nav[data-mounted="true"] {
   opacity: 1;
   transform: translateY(0);
 }
 
-.nav[data-visible='false'] {
+.nav[data-visible="false"] {
   opacity: 0;
   transform: translateY(110%);
   pointer-events: none;
 }
 
 .list {
+  position: relative;
   pointer-events: auto;
   display: flex;
   align-items: stretch;
@@ -78,17 +78,25 @@
   margin: 0 auto;
   padding: 0.375rem;
   list-style: none;
-
-  /* Glass surface — dark + light aware */
-  background: color-mix(in oklch, var(--ds-bg) 78%, transparent);
+  /* Glass surface — dark + light aware.
+     NOTE: از color-mix(in oklch,...) برای پس‌زمینه استفاده نمی‌کنیم چون
+     منجر به drop شدن backdrop-filter/position توسط lightningcss می‌شود.
+     از rgba ساده + override داک مود استفاده می‌کنیم تا بلور همیشه کار کند. */
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 0.5px solid color-mix(in oklch, var(--ds-fg) 8%, transparent);
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: var(--ds-radius-2xl);
-  box-shadow:
-    0 1px 0 0 color-mix(in oklch, var(--ds-fg) 4%, transparent) inset,
-    0 10px 30px -10px color-mix(in oklch, var(--ds-fg) 22%, transparent),
-    0 4px 12px -4px color-mix(in oklch, var(--ds-fg) 12%, transparent);
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.03) inset, 0 10px 30px -10px rgba(0, 0, 0, 0.22),
+    0 4px 12px -4px rgba(0, 0, 0, 0.12);
+}
+
+:global(.dark) .list,
+:global([data-theme='dark']) .list {
+  background-color: rgba(18, 22, 28, 0.9);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.05) inset, 0 10px 30px -10px rgba(0, 0, 0, 0.5),
+    0 4px 12px -4px rgba(0, 0, 0, 0.3);
 }
 
 .item {
@@ -102,26 +110,25 @@
 }
 
 /* آیتم در حال drag — lift + shadow */
-.item[data-dragging='true'] {
+.item[data-dragging="true"] {
   z-index: 10;
 }
 
-.item[data-dragging='true'] .link {
+.item[data-dragging="true"] .link {
   transform: scale(1.08);
-  box-shadow:
-    0 12px 28px -8px color-mix(in oklch, var(--ds-fg) 32%, transparent),
-    0 0 0 1px color-mix(in oklch, var(--ds-primary) 35%, transparent);
+  box-shadow: 0 12px 28px -8px color-mix(in oklch, var(--ds-fg) 32%, transparent), 0 0 0 1px
+    color-mix(in oklch, var(--ds-primary) 35%, transparent);
   background: color-mix(in oklch, var(--ds-bg) 92%, transparent);
   cursor: grabbing;
 }
 
-.item[data-dragging='true'] .iconWrap {
+.item[data-dragging="true"] .iconWrap {
   background: color-mix(in oklch, var(--ds-primary) 18%, transparent);
   color: var(--ds-primary);
 }
 
 /* آیتم‌های غیر-درگ‌شونده — کمی کمرنگ‌تر برای تاکید بر آیتم فعال */
-.item[data-dragging='false'] {
+.item[data-dragging="false"] {
   transition: opacity var(--ds-duration-base) var(--ds-ease-out-quart);
 }
 
@@ -175,10 +182,9 @@
   color: var(--ds-fg-muted);
   background: transparent;
   -webkit-tap-highlight-color: transparent;
-  transition:
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    background-color var(--ds-duration-base) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: color var(--ds-duration-fast) var(--ds-ease-out-quart), background-color
+    var(--ds-duration-base) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
 }
 
 .link:active {
@@ -199,9 +205,8 @@
   height: 2.25rem;
   border-radius: var(--ds-radius-lg);
   color: inherit;
-  transition:
-    background-color var(--ds-duration-base) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: background-color var(--ds-duration-base) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .label {
@@ -211,26 +216,31 @@
   letter-spacing: 0;
   white-space: nowrap;
   text-align: center;
+  /* WCAG AA: contrast ≥ 4.5:1 — از --ds-fg-secondary استفاده می‌کنیم نه muted */
+  color: var(--ds-fg-secondary, var(--ds-fg-muted));
   transition: color var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 /* Active state — pill morph */
-.link[data-active='true'] {
+.link[data-active="true"] {
   color: var(--ds-primary);
 }
 
-.link[data-active='true'] .iconWrap {
+.link[data-active="true"] .iconWrap {
   background: color-mix(in oklch, var(--ds-primary) 14%, transparent);
   color: var(--ds-primary);
 }
 
-.link[data-active='true'] .label {
-  color: var(--ds-primary);
+.link[data-active="true"] .label {
+  /* Color-contrast fix (R23-fix 2026-08-02): --ds-primary خام (oklch 58%)
+     روی پس‌زمینه روشن 3.92:1 دارد — با mix به سمت سیاه تیره‌تر می‌شود تا
+     AA (≥4.5) رد شود. رنگ icon/pill دست‌نخورده می‌ماند. */
+  color: color-mix(in oklch, var(--ds-primary) 68%, black);
   font-weight: 600;
 }
 
 /* Primary (wallet) — slightly elevated, always active when on wallet */
-.link[data-primary='true'][data-active='true'] {
+.link[data-primary="true"][data-active="true"] {
   color: var(--ds-primary);
 }
 
@@ -269,7 +279,8 @@
 }
 
 @keyframes nav-dot-pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
@@ -280,7 +291,8 @@
 }
 
 @keyframes badge-pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {

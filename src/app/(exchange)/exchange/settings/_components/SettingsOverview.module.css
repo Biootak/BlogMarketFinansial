@@ -30,7 +30,7 @@
   isolation: isolate;
 }
 .hero::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block-start: 0;
   inset-inline-end: 0;
@@ -138,8 +138,18 @@
 /* ── Tile grid ─────────────────────────────────────────────────────── */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: 1fr;
   gap: var(--ds-space-3);
+}
+@media (min-width: 480px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
 }
 
 .tile {
@@ -258,7 +268,7 @@
   gap: 6px;
 }
 .checklistTitle::before {
-  content: '';
+  content: "";
   inline-size: 3px;
   block-size: 14px;
   border-radius: 2px;
@@ -270,8 +280,13 @@
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: 1fr;
   gap: 6px var(--ds-space-4);
+}
+@media (min-width: 480px) {
+  .checkList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .checkItem {

@@ -5,6 +5,7 @@
  * client component با state برای tone filter و search.
  */
 
+import type { StaffActivityItem } from '@/actions/exchanges';
 import {
   Activity,
   Filter,
@@ -18,9 +19,13 @@ import {
   Users,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import type { StaffActivityItem } from '@/actions/exchanges';
-import { getActionLabel, getActionTone, formatRelativeFa, formatFaDate } from '../../_lib/staff-format';
 import s from '../../_components/StaffCockpit.module.css';
+import {
+  formatFaDate,
+  formatRelativeFa,
+  getActionLabel,
+  getActionTone,
+} from '../../_lib/staff-format';
 
 const ICON_MAP: Record<string, typeof Activity> = {
   'staff.invited': UserPlus,
@@ -36,8 +41,8 @@ const ICON_MAP: Record<string, typeof Activity> = {
   'rate.created': Settings,
   'rate.updated': Settings,
   'settings.updated': Settings,
-  'login': LogIn,
-  'logout': LogOut,
+  login: LogIn,
+  logout: LogOut,
 };
 
 type ToneFilter = 'all' | 'emerald' | 'gold' | 'rose' | 'info' | 'muted';
@@ -182,7 +187,9 @@ export function StaffActivityFeed({ items, initialTone = 'all' }: Props) {
                       <div className={s.feedBody}>
                         <span className={s.feedTitle}>{getActionLabel(item.action)}</span>
                         <span className={s.feedMeta}>
-                          <span style={{ fontWeight: 600, color: 'var(--at-fg-muted)' }}>{actor}</span>
+                          <span style={{ fontWeight: 600, color: 'var(--at-fg-muted)' }}>
+                            {actor}
+                          </span>
                           {item.entityType && (
                             <>
                               <span style={{ color: 'var(--at-fg-faint)' }}>·</span>
