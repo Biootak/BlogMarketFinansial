@@ -177,13 +177,13 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Turbopack configuration — dev only.
-  // `next dev` uses Turbopack (default since Next.js 16). The previous
-  // lightningcss alpha panic on OKLCH/color-mix tokens is resolved for
-  // dev (PostCSS uses lightningcss 1.30.2 from npm). However, `next build`
-  // still uses the lightningcss alpha embedded in the Turbopack binary
-  // which panics on `color-mix(in oklch, ...)`, so `build` runs with
-  // `--webpack` until Turbopack bundles a stable lightningcss.
+  // Turbopack configuration — dev AND build.
+  // 2026-08-04: Turbopack build (Next.js 16.2.9) now succeeds. The previous
+  // lightningcss alpha panic on OKLCH/color-mix tokens is resolved because
+  // CSS processing goes through `@tailwindcss/postcss` (lightningcss 1.30.2
+  // stable) — NOT the alpha version embedded in the Turbopack binary.
+  // `next build` uses Turbopack (default since Next.js 16); `build:webpack`
+  // is a slow fallback only. This cut production build time materially.
   turbopack: {
     resolveAlias: {
       // Suppress source map warnings from node_modules
@@ -343,14 +343,16 @@ const nextConfig: NextConfig = {
     // ادغام می‌کند؛ 'strict' هر مسیر را جدا نگه می‌دارد (render-blocking CSS
     // هوم‌پیج از ~1.2MB به ~850KB می‌رسد).
     cssChunking: 'strict',
-    // 2026-06-27: Turbopack's embedded lightningcss 1.0.0-alpha.70 panics on
-    // some oklch()/color-mix() constructs in globals.css. Excluding the polar
+    // 2026-08-04: Turbopack's embedded lightningcss can panic on some
+    // oklch()/color-mix() constructs in globals.css. Excluding the polar
     // color features from transpilation lets the CSS pass through unchanged,
     // avoiding the parser/transformer panic while keeping modern browsers that
     // natively support oklch().
-    // NOTE: useLightningcss is only valid with Turbopack (dev). Production
-    // build uses webpack (`next build --webpack`) and this flag conflicts with
-    // PostCSS plugins, so we disable it in production.
+    // In dev, Turbopack uses its embedded lightningcss (useLightningcss=true)
+    // with the excludes below. In production build (also Turbopack now),
+    // useLightningcss=false so CSS minification flows through PostCSS
+    // (`@tailwindcss/postcss` → lightningcss 1.30.2 stable), avoiding any
+    // conflict between two lightningcss instances.
     useLightningcss: process.env.NODE_ENV !== 'production',
     lightningCssFeatures:
       process.env.NODE_ENV !== 'production'

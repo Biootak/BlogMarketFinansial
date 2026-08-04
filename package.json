@@ -28,7 +28,7 @@
     "db:seed:local": "node prisma/seed.js",
     "db:fresh:local": "prisma migrate reset --force && npm run db:seed:local",
     "dev:local": "cross-env NEXTAUTH_URL=http://localhost:3000 NODE_OPTIONS=--dns-result-order=ipv4first next dev",
-    "build:local": "next build --webpack",
+    "build:local": "next build",
     "db:migrate-ads": "node scripts/migrate-ad-images.js",
     "db:migrate-ads:dry": "node scripts/migrate-ad-images.js --dry-run",
     "assets:optimize": "node scripts/optimize-assets.mjs",
