@@ -1201,6 +1201,19 @@ function SingleAdTile({
   accentColor: string;
   index: number;
 }) {
+  // imageFit: ادمین می‌تواند از طریق customDimensions حالت نمایش را انتخاب کند.
+  //  - 'ambient' (پیش‌فرض): کل کادر پر می‌شود + کل تصویر دیده می‌شود (YouTube/Netflix/Apple TV pattern)
+  //  - 'cover'   : کل کادر پر می‌شود، بخشی از تصویر برش می‌خورد (سوژه مرکزی)
+  //  - 'contain' : کل تصویر دیده می‌شود، فضای خالی با گرادینت پر می‌شود (مناسب لوگو)
+  const customDims =
+    ad.customDimensions && typeof ad.customDimensions === 'object'
+      ? (ad.customDimensions as { imageFit?: string })
+      : null;
+  const imageFit =
+    customDims?.imageFit === 'cover' || customDims?.imageFit === 'contain'
+      ? customDims.imageFit
+      : 'ambient';
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -1224,24 +1237,36 @@ function SingleAdTile({
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50',
         )}
       >
-        {/* تصویر — ambient: کل فضا پر + تصویر کامل بدون crop (مثل YouTube) */}
+        {/* تصویر تبلیغاتی — استاندارد صنعت (MDN object-fit + IAB + YouTube/Netflix ambient):
+            - 'ambient' : کل کادر پر + کل تصویر دیده می‌شود (پیش‌فرض؛ حل مشکل "پر نشدن کارت")
+            - 'cover'   : کل کادر پر می‌شود، بخشی از تصویر برش می‌خورد (سوژه مرکزی)
+            - 'contain' : کل تصویر دیده می‌شود، فضای خالی با گرادینت پر می‌شود (مناسب لوگو)
+            با aspect-ratio ثابت ۴/۳، کادرها همیشه هم‌تراز و پر می‌مانند. */}
         <SafeImage
           src={ad.imageUrl}
           alt={ad.title}
           fill
           sizes="(min-width: 1024px) 20vw, (min-width: 640px) 25vw, 72vw"
           containerClassName="relative aspect-[4/3] shrink-0 overflow-hidden"
-          className="transition-transform duration-500 ease-out group-hover/tile:scale-[1.04]"
+          className={cn(
+            'transition-transform duration-500 ease-out group-hover/tile:scale-[1.04]',
+            imageFit === 'contain' ? 'object-contain p-2' : 'object-cover',
+          )}
           variant="thumbnail"
           ratio="4/3"
-          fillMode="ambient"
+          fillMode={imageFit === 'contain' ? 'cover' : imageFit === 'ambient' ? 'ambient' : 'cover'}
         />
 
-        {/* محتوا */}
+        {/* محتوا — نمایش کامل title + description برای ارائه کامل پیام تبلیغ */}
         <div className="flex flex-col gap-1 p-2.5 sm:p-3">
           <h4 className="text-[11.5px] sm:text-[12.5px] font-semibold leading-snug text-neutral-900 dark:text-white line-clamp-2 text-balance">
             {ad.title}
           </h4>
+          {ad.description && (
+            <p className="text-[10px] sm:text-[10.5px] leading-snug text-neutral-500 dark:text-neutral-400 line-clamp-2 text-pretty">
+              {ad.description}
+            </p>
+          )}
           {/* CTA — color-contrast fix: از رنگ accessible برای متن استفاده می‌کنیم */}
           <div
             className="mt-0.5 inline-flex items-center gap-0.5 text-[10px] sm:text-[10.5px] font-medium transition-all duration-300 group-hover/tile:gap-1"
@@ -1275,6 +1300,16 @@ function InlineAdBanner({
   ad: Advertisement;
   accentColor: string;
 }) {
+  // imageFit: بنر تمام‌عرض — پیش‌فرض ambient تا کل محتوای تبلیغ دیده شود
+  const customDims =
+    ad.customDimensions && typeof ad.customDimensions === 'object'
+      ? (ad.customDimensions as { imageFit?: string })
+      : null;
+  const imageFit =
+    customDims?.imageFit === 'cover' || customDims?.imageFit === 'contain'
+      ? customDims.imageFit
+      : 'ambient';
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -1298,7 +1333,8 @@ function InlineAdBanner({
         {/* Container با aspect-ratio ثابت — دقیقاً مثل BannerADS variant image */}
         <div className="relative w-full overflow-hidden aspect-[16/5] sm:aspect-[16/4]">
 
-          {/* لایه ۱: تصویر با fillMode ambient — کل کادر پر می‌شود */}
+          {/* لایه ۱: تصویر — ambient: کل کادر پر + کل محتوا دیده می‌شود (YouTube/Netflix)
+              cover: کل کادر پر می‌شود، برش می‌خورد (سوژه مرکزی) */}
           <SafeImage
             src={ad.imageUrl}
             alt={ad.title}
@@ -1307,7 +1343,7 @@ function InlineAdBanner({
             containerClassName="absolute inset-0"
             className="transition-transform duration-700 ease-out group-hover/bnr:scale-[1.03]"
             variant="hero"
-            fillMode={ad.imageUrl ? 'ambient' : 'cover'}
+            fillMode={imageFit === 'cover' ? 'cover' : 'ambient'}
           />
 
           {/* لایه ۲: gradient overlay برای خوانایی متن */}

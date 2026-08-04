@@ -315,6 +315,13 @@ export type CustomAdDimensions = {
   width?: string;
   height?: string;
   aspectRatio?: string;
+  /**
+   * وضع عرض الصورة الإعلانية في بطاقات PulseBoard.
+   * - 'ambient' (افتراضي): يملأ الإطار بالكامل + يُظهر كامل الصورة بدون قص (نمط YouTube/Netflix)
+   * - 'cover': يملأ الإطار بالكامل، يقص جزءاً من الصورة
+   * - 'contain': يُظهر الصورة كاملة، يملأ الفراغ بتدرّج
+   */
+  imageFit?: 'ambient' | 'cover' | 'contain';
 };
 
 export type Advertisement = {

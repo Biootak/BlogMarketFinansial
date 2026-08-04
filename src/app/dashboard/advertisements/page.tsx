@@ -74,6 +74,7 @@ const advertisementSchema = z.object({
       width: z.string().optional(),
       height: z.string().optional(),
       aspectRatio: z.string().optional(),
+      imageFit: z.enum(['ambient', 'cover', 'contain']).optional(),
     })
     .optional(),
 });
@@ -239,6 +240,7 @@ export default function AdvertisementsPage() {
     const validateCustomDimensions = (dimensions: unknown): CustomAdDimensions | undefined => {
       if (typeof dimensions === 'object' && dimensions !== null) {
         const d = dimensions as Record<string, unknown>;
+        const fit = d.imageFit;
         return {
           width:
             typeof d.width === 'number'
@@ -253,6 +255,10 @@ export default function AdvertisementsPage() {
                 ? d.height
                 : undefined,
           aspectRatio: typeof d.aspectRatio === 'string' ? d.aspectRatio : undefined,
+          imageFit:
+            fit === 'ambient' || fit === 'cover' || fit === 'contain'
+              ? (fit as CustomAdDimensions['imageFit'])
+              : undefined,
         };
       }
       return undefined;
@@ -840,8 +846,43 @@ function AdvertisementForm({
                           onImageRemove={handleImageRemove}
                           initialPreviews={field.value ? [field.value] : []}
                           folder="ads"
+                          slot="ad-tile"
                         />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="customDimensions.imageFit"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>نحوه نمایش تصویر</FormLabel>
+                      <Select
+                        value={field.value ?? 'ambient'}
+                        onValueChange={field.onChange}
+                      >
+                        <FormControl>
+                          <SelectTrigger className={inputClassName}>
+                            <SelectValue placeholder="انتخاب حالت نمایش" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="ambient">
+                            پرب (پیش‌فرض) — کل کادر پر + کل تصویر دیده می‌شود
+                          </SelectItem>
+                          <SelectItem value="cover">
+                            کادری — کل کادر پر، بخشی برش می‌خورد
+                          </SelectItem>
+                          <SelectItem value="contain">
+                            کامل — کل تصویر دیده، فراغ با گرادینت
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-[10px] text-neutral-500 mt-1">
+                        ambient (YouTube/Netflix): کل محتوا دیده + کادر پر. برای لوگو/متن تبلیغ ایده‌آل.
+                      </p>
                       <FormMessage />
                     </FormItem>
                   )}

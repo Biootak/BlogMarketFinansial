@@ -3,6 +3,7 @@
 import '@/lib/sharp-config';
 
 import { auth } from '@/auth';
+import { type ImageSlotId, getSlot } from '@/lib/image-slots';
 import { checkRateLimit as checkSharedRateLimit } from '@/lib/rate-limiter';
 import { uploadFile } from '@/lib/storage';
 import { type NextRequest, NextResponse } from 'next/server';
@@ -92,7 +93,12 @@ interface OptimizeResult {
   mime: AllowedMime;
 }
 
-async function processImage(input: Buffer, mime: AllowedMime): Promise<OptimizeResult> {
+async function processImage(
+  input: Buffer,
+  mime: AllowedMime,
+  folder: AllowedFolder,
+  slotId: ImageSlotId | string | undefined,
+): Promise<OptimizeResult> {
   if (mime === 'image/gif') {
     // Animated GIFs must be preserved as-is (re-encoding drops frames).
     const meta = await sharp(input, { animated: true }).metadata();
@@ -110,7 +116,20 @@ async function processImage(input: Buffer, mime: AllowedMime): Promise<OptimizeR
   const meta = await sharp(input).metadata();
   const sourceWidth = typeof meta.width === 'number' ? meta.width : 0;
   const sourceHeight = typeof meta.height === 'number' ? meta.height : null;
-  const needsResize = sourceWidth > MAX_CANONICAL_WIDTH;
+
+  // ── Smart cover-crop به نسبت استاندارد اسلات ───────────────────────────
+  // وقتی کاربر تصویری با هر نسبتی آپلود کند، با استراتژی attention
+  // (تمرکز بر سوژه اصلی: چهره/پوست/اشباع رنگ) به نسبت استاندارد crop
+  // می‌شود. این همان روش Facebook/Netflix برای UGC است.
+  // منبع نسبت: رجیستری مرکزی image-slots.ts (Single Source of Truth).
+  const slot = getSlot(slotId);
+  const targetRatio = slot.normalizeOnUpload ? slot.ratio : 0;
+  const sourceRatio =
+    sourceWidth > 0 && sourceHeight ? sourceWidth / sourceHeight : 0;
+  const ratioDelta = targetRatio && sourceRatio ? Math.abs(sourceRatio - targetRatio) / targetRatio : 1;
+  const needsCrop = targetRatio > 0 && sourceRatio > 0 && ratioDelta > 0.02; // >2% اختلاف
+
+  const needsResize = sourceWidth > slot.maxWidth;
 
   // Fast path: WebP that is already within canonical size limits AND under
   // a reasonable file-size threshold (300 KB). Re-encoding would be pure
@@ -120,11 +139,37 @@ async function processImage(input: Buffer, mime: AllowedMime): Promise<OptimizeR
   // Anything larger is either already bloated (rare) or a screenshot
   // that benefits from re-encoding.
   const SIZE_THRESHOLD_BYTES = 300 * 1024;
-  if (mime === 'image/webp' && !needsResize && input.byteLength <= SIZE_THRESHOLD_BYTES) {
+  if (
+    mime === 'image/webp' &&
+    !needsResize &&
+    !needsCrop &&
+    input.byteLength <= SIZE_THRESHOLD_BYTES
+  ) {
     return {
       buffer: input,
       width: sourceWidth,
       height: sourceHeight,
+      mime: 'image/webp',
+    };
+  }
+
+  // ── Smart cover crop: resize + extract به نسبت استاندارد ─────────────────
+  // استراتژی attention: سوژه‌های مهم (چهره، پوست، اشباع رنگ) را در مرکز
+  // نگه می‌دارد و حاشیه‌های کم‌اهمیت را crop می‌کند.
+  if (needsCrop) {
+    const targetWidth = Math.min(sourceWidth, slot.maxWidth);
+    const targetHeight = Math.round(targetWidth / targetRatio);
+    const pipeline = sharp(input).resize(targetWidth, targetHeight, {
+      fit: 'cover',
+      position: sharp.strategy.attention,
+      withoutEnlargement: true,
+    });
+    const buffer = await pipeline.webp({ quality: slot.quality }).toBuffer();
+    const finalMeta = await sharp(buffer).metadata();
+    return {
+      buffer,
+      width: typeof finalMeta.width === 'number' ? finalMeta.width : null,
+      height: typeof finalMeta.height === 'number' ? finalMeta.height : null,
       mime: 'image/webp',
     };
   }
@@ -138,7 +183,7 @@ async function processImage(input: Buffer, mime: AllowedMime): Promise<OptimizeR
 
   if (shouldConvertToWebp && !needsResize) {
     // Convert format only — no resize needed.
-    const buffer = await sharp(input).webp({ quality: WEBP_QUALITY }).toBuffer();
+    const buffer = await sharp(input).webp({ quality: slot.quality }).toBuffer();
     const finalMeta = await sharp(buffer).metadata();
     return {
       buffer,
@@ -151,10 +196,10 @@ async function processImage(input: Buffer, mime: AllowedMime): Promise<OptimizeR
   // Full pipeline: resize (if needed) + WebP encode.
   const pipeline = sharp(input);
   const out = needsResize
-    ? pipeline.resize(MAX_CANONICAL_WIDTH, undefined, { withoutEnlargement: true })
+    ? pipeline.resize(slot.maxWidth, undefined, { withoutEnlargement: true })
     : pipeline;
 
-  const buffer = await out.webp({ quality: WEBP_QUALITY }).toBuffer();
+  const buffer = await out.webp({ quality: slot.quality }).toBuffer();
 
   // Dimensions may have changed after resize — re-read from the encoded buffer.
   // This is a cheap metadata probe (no re-decode of pixels for the values we
@@ -202,7 +247,11 @@ interface FileFailure {
 }
 type FileOutcome = FileSuccess | FileFailure;
 
-async function processOneFile(file: File, folder: AllowedFolder): Promise<FileOutcome> {
+async function processOneFile(
+  file: File,
+  folder: AllowedFolder,
+  slotId: ImageSlotId | string | undefined,
+): Promise<FileOutcome> {
   const startMs = performance.now();
   // Timing helper — noop in all environments (no console output)
   const logStep = (_label: string) => {
@@ -241,7 +290,7 @@ async function processOneFile(file: File, folder: AllowedFolder): Promise<FileOu
   }
 
   try {
-    const optimized = await processImage(buffer, mime);
+    const optimized = await processImage(buffer, mime, folder, slotId);
     logStep('processed');
     const filename = generateFilename(file.name, mime);
 
@@ -302,6 +351,9 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
     const folder = (formData.get('folder') as string) || 'general';
+    // slot: شناسه‌ی اسلات تصویر از رجیستری مرکزی (image-slots.ts).
+    // اگه فرم آن را نفرستد، از نگاشت فولدر→اسلات پیش‌فرض استفاده می‌کنیم.
+    const slotId = (formData.get('slot') as string) || undefined;
 
     if (!ALLOWED_FOLDERS.includes(folder as AllowedFolder)) {
       return NextResponse.json(
@@ -373,7 +425,7 @@ export async function POST(request: NextRequest) {
     // Per-file outcomes are split into successes and failures; the response
     // is a 200 with per-file status unless *every* file failed.
     const outcomes = await Promise.all(
-      files.map((f) => processOneFile(f, folder as AllowedFolder)),
+      files.map((f) => processOneFile(f, folder as AllowedFolder, slotId)),
     );
 
     const successes = outcomes.filter((o): o is FileSuccess => o.ok);

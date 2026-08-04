@@ -4,6 +4,8 @@ import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type FileRejection, useDropzone } from 'react-dropzone';
 
+import { getSlot, FOLDER_TO_DEFAULT_SLOT } from '@/lib/image-slots';
+import type { ImageSlotId } from '@/lib/image-slots';
 import { toast } from '@/components/ui/use-toast';
 import {
   RiCheckLine,
@@ -27,6 +29,9 @@ export type UploadFolder =
   | 'kyc'
   | 'logos'
   | 'exchange';
+
+/** شناسه‌ی اسلات تصویر از رجیستری مرکزی (image-slots.ts). */
+export type { ImageSlotId } from '@/lib/image-slots';
 
 export interface UploadedFile {
   url: string;
@@ -109,6 +114,7 @@ function uploadOneFile(
   folder: UploadFolder,
   onProgress: (loaded: number, total: number) => void,
   signal: AbortSignal,
+  slot?: ImageSlotId,
 ): Promise<XhrResult> {
   return new Promise<XhrResult>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -117,6 +123,9 @@ function uploadOneFile(
     const formData = new FormData();
     formData.append('files', file);
     formData.append('folder', folder);
+    if (slot) {
+      formData.append('slot', slot);
+    }
 
     xhr.upload.addEventListener('progress', (e) => {
       if (e.lengthComputable) onProgress(e.loaded, e.total);
@@ -182,6 +191,13 @@ interface ImageUploaderProps {
    * غیرفعال‌سازی کل اپلودر (مثلاً حین submit فرم).
    */
   disabled?: boolean;
+  /**
+   * شناسه‌ی اسلات تصویر از رجیستری مرکزی (image-slots.ts).
+   * وقتی داده شود، سرور تصویر را با smart-crop به نسبت استاندارد نرمال‌سازی
+   * می‌کند و hint مناسب خودکار نمایش داده می‌شود.
+   * اگه ندهید، از نگاشت فولدر→اسلات پیش‌فرض استفاده می‌شود.
+   */
+  slot?: ImageSlotId;
 }
 
 interface FileEntry {
@@ -212,6 +228,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   label,
   hint,
   disabled = false,
+  slot,
 }) => {
   // Stable id-keyed map of file entries. We don't store File[] directly
   // because we need per-file status/progress and want to remove items
@@ -280,6 +297,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
               updateEntry(entry.id, { progress: pct });
             },
             controller.signal,
+            slot,
           );
 
           if (result.status >= 200 && result.status < 300 && result.body.success) {
@@ -359,7 +377,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         });
       }
     },
-    [folder, onImageUpload, onUploadComplete, updateEntry],
+    [folder, slot, onImageUpload, onUploadComplete, updateEntry],
   );
 
   // ---------- dropzone ----------------------------------------------------
@@ -511,12 +529,19 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       ? s.zoneLarge
       : s.zoneCompact;
 
+  // Per-slot guidance: وقتی slot مشخص باشد از رجیستری مرکزی می‌خوانیم
+  // تا آپلود و نمایش همیشه هماهنگ باشند. اگه slot ندهند، از نگاشت
+  // فولدر→اسلات پیش‌فرض استفاده می‌کنیم.
+  const resolvedSlot = slot ?? FOLDER_TO_DEFAULT_SLOT[folder] ?? 'custom';
+  const slotConfig = getSlot(resolvedSlot);
+  const effectiveHint = hint ?? (slotConfig.id === 'custom' ? undefined : slotConfig.hint);
+
   return (
     <div className={s.root} data-disabled={disabled ? 'true' : undefined} aria-disabled={disabled}>
-      {(label || hint) && (
+      {(label || effectiveHint) && (
         <div className={s.head}>
           {label && <div className={s.headLabel}>{label}</div>}
-          {hint && <div className={s.headHint}>{hint}</div>}
+          {effectiveHint && <div className={s.headHint}>{effectiveHint}</div>}
         </div>
       )}
 
