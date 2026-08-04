@@ -37,7 +37,7 @@ export default function SearchCategories() {
   };
 
   return (
-    <div className="at-filterbar__search" style={{ minWidth: '240px' }}>
+    <div className="at-filterbar__search">
       <input
         type="text"
         placeholder="جستجوی دسته‌بندی..."

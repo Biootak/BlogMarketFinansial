@@ -213,11 +213,19 @@
 .actions {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: center;
   gap: var(--ds-space-2);
   position: relative;
   z-index: 1;
   flex-shrink: 0;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .actions {
+    width: auto;
+    align-items: flex-end;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -281,11 +289,10 @@
 .compact {
   position: relative;
   display: flex;
-  align-items: center;
-  gap: var(--ds-space-5);
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: var(--ds-space-2-5);
 
-  padding: var(--ds-space-4) var(--ds-space-6);
+  padding: var(--ds-space-3) var(--ds-space-4);
   margin-block-end: var(--ds-space-4);
 
   background: linear-gradient(
@@ -317,16 +324,32 @@
   }
 }
 
+@media (min-width: 640px) {
+  .compact {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--ds-space-5);
+    padding: var(--ds-space-4) var(--ds-space-6);
+  }
+}
+
 .dark .compact {
   box-shadow: 0 1px 0 oklch(100% 0 0 / 0.04) inset, 0 1px 8px -2px oklch(0% 0 0 / 0.3);
+}
+
+/* ─── compactTop: بدنه‌ی چپ (metaRow + titleRow + description) ─────────── */
+.compactTop {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1-5);
+  min-width: 0;
+  flex: 1;
 }
 
 .compactRow {
   display: flex;
   align-items: center;
-  gap: var(--ds-space-3);
-  flex-wrap: wrap;
-  flex: 1;
+  gap: var(--ds-space-2-5);
   min-width: 0;
 }
 
@@ -335,8 +358,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 1.75rem;
+  height: 1.75rem;
   border-radius: var(--at-radius-md, 10px);
   background: color-mix(in oklch, var(--ph-c, var(--at-accent)) 12%, var(--at-surface));
   border: 1px solid color-mix(in oklch, var(--ph-c, var(--at-accent)) 22%, transparent);
@@ -344,11 +367,12 @@
 }
 
 .compactTitle {
-  font-size: clamp(1.1rem, 2vw + 0.3rem, 1.5rem);
+  font-size: clamp(0.875rem, 3.5vw, 1.2rem);
   font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.1;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
   margin: 0;
+  min-width: 0;
   background: linear-gradient(
     130deg,
     var(--at-fg) 40%,
@@ -357,6 +381,17 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+@media (min-width: 640px) {
+  .compactIcon {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .compactTitle {
+    font-size: clamp(1.1rem, 2vw + 0.3rem, 1.5rem);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

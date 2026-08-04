@@ -15596,21 +15596,32 @@
   .at-table table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 13px;
+    font-size: 12px;
+  }
+  @media (min-width: 640px) {
+    .at-table table {
+      font-size: 13px;
+    }
   }
   .at-table thead {
     background: var(--at-bg-deep);
     border-bottom: 1px solid var(--at-line);
   }
   .at-table th {
-    padding: 11px 16px;
+    padding: 9px 10px;
     text-align: start;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     text-transform: none;
     letter-spacing: 0.01em;
     color: var(--at-fg-muted);
     white-space: nowrap;
+  }
+  @media (min-width: 640px) {
+    .at-table th {
+      padding: 11px 16px;
+      font-size: 11px;
+    }
   }
   .at-table tbody tr {
     border-top: 1px solid var(--at-line);
@@ -15623,9 +15634,14 @@
     background: var(--at-surface-hover);
   }
   .at-table td {
-    padding: 13px 16px;
+    padding: 10px 10px;
     color: var(--at-fg);
     vertical-align: middle;
+  }
+  @media (min-width: 640px) {
+    .at-table td {
+      padding: 13px 16px;
+    }
   }
   .at-table__foot {
     padding: 12px 18px;
@@ -15688,8 +15704,9 @@
     align-items: center;
     justify-content: center;
     gap: 4px;
-    height: 28px;
-    padding: 0 9px;
+    height: 30px;
+    min-width: 30px;
+    padding: 0 6px;
     border-radius: 8px;
     background: var(--at-surface);
     border: 1px solid var(--at-line);
@@ -15699,6 +15716,12 @@
     cursor: pointer;
     transition: background var(--at-duration) var(--at-ease), color var(--at-duration)
       var(--at-ease), border-color var(--at-duration) var(--at-ease);
+  }
+  @media (min-width: 640px) {
+    .at-actions__btn {
+      height: 28px;
+      padding: 0 9px;
+    }
   }
   .at-actions__btn:hover {
     background: var(--at-surface-hover);
@@ -15864,11 +15887,20 @@
   .at-filterbar__search {
     position: relative;
     flex: 1;
-    min-width: 200px;
+    min-width: 0;
+    width: 100%;
+  }
+  @media (min-width: 640px) {
+    .at-filterbar__search {
+      min-width: 200px;
+      width: auto;
+    }
   }
   .at-filterbar__search input {
     width: 100%;
-    padding: 8px 36px 8px 14px;
+    padding-block: 8px;
+    padding-inline-start: 36px;
+    padding-inline-end: 14px;
     background: var(--at-bg);
     border: 1px solid var(--at-line);
     border-radius: var(--at-radius);
@@ -15885,7 +15917,7 @@
   }
   .at-filterbar__search__ico {
     position: absolute;
-    inset-inline-end: 12px;
+    inset-inline-start: 12px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--at-fg-subtle);

@@ -94,7 +94,7 @@ export default function CategoryItem({
             )}
           </div>
         </td>
-        <td>
+        <td className="hidden sm:table-cell">
           <code className="at-code">{category.slug}</code>
         </td>
         <td className="hidden sm:table-cell">

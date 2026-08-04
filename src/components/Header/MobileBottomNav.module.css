@@ -221,25 +221,34 @@
   transition: color var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
-/* Active state — pill morph */
+/* Active state — filled pill */
 .link[data-active="true"] {
   color: var(--ds-primary);
 }
 
 .link[data-active="true"] .iconWrap {
-  background: color-mix(in oklch, var(--ds-primary) 14%, transparent);
-  color: var(--ds-primary);
+  background: color-mix(in oklch, var(--ds-primary) 100%, transparent);
+  color: #fff;
+  box-shadow: 0 4px 12px -4px color-mix(in oklch, var(--ds-primary) 50%, transparent);
+}
+
+:global(.dark) .link[data-active="true"] .iconWrap,
+:global([data-theme='dark']) .link[data-active="true"] .iconWrap {
+  background: color-mix(in oklch, var(--ds-primary) 90%, transparent);
+  color: #fff;
 }
 
 .link[data-active="true"] .label {
-  /* Color-contrast fix (R23-fix 2026-08-02): --ds-primary خام (oklch 58%)
-     روی پس‌زمینه روشن 3.92:1 دارد — با mix به سمت سیاه تیره‌تر می‌شود تا
-     AA (≥4.5) رد شود. رنگ icon/pill دست‌نخورده می‌ماند. */
   color: color-mix(in oklch, var(--ds-primary) 68%, black);
-  font-weight: 600;
+  font-weight: 700;
 }
 
-/* Primary (wallet) — slightly elevated, always active when on wallet */
+:global(.dark) .link[data-active="true"] .label,
+:global([data-theme='dark']) .link[data-active="true"] .label {
+  color: var(--ds-primary);
+}
+
+/* Primary (wallet) — همان active state */
 .link[data-primary="true"][data-active="true"] {
   color: var(--ds-primary);
 }

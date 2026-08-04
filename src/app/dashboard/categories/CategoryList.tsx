@@ -103,7 +103,7 @@ export function CategoryList({
             <tr>
               <th>تصویر</th>
               <th>نام</th>
-              <th>اسلاگ</th>
+              <th className="hidden sm:table-cell">اسلاگ</th>
               <th className="hidden sm:table-cell">تعداد پست‌ها</th>
               <th>عملیات</th>
             </tr>

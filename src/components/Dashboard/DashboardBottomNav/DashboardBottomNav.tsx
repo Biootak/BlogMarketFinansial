@@ -66,6 +66,7 @@ const DashboardBottomNav: FC<Props> = ({ role, unreadCount = 0, kycVerified = tr
   const navRef = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [toolbarOpen, setToolbarOpen] = useState(false);
 
   // Resolve "primary" item based on role.
   const items: NavItem[] = useMemo(() => {
@@ -217,6 +218,16 @@ const DashboardBottomNav: FC<Props> = ({ role, unreadCount = 0, kycVerified = tr
     return () => window.clearTimeout(t);
   }, []);
 
+  // وقتی PostsFloatingToolbar باز/بسته میشه مخفی/نمایان بشیم
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ visible: boolean }>).detail;
+      setToolbarOpen(detail.visible);
+    };
+    window.addEventListener('posts:toolbar', handler);
+    return () => window.removeEventListener('posts:toolbar', handler);
+  }, []);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     let lastY = window.scrollY;
@@ -276,7 +287,7 @@ const DashboardBottomNav: FC<Props> = ({ role, unreadCount = 0, kycVerified = tr
     <nav
       ref={navRef}
       className={s.nav}
-      data-visible={visible}
+      data-visible={visible && !toolbarOpen}
       data-mounted={mounted}
       aria-label="ناوبری سریع داشبورد"
       dir="rtl"

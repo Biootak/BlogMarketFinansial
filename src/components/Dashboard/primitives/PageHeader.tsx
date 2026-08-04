@@ -264,7 +264,7 @@ export function PageHeader({
         style={transition === 'default' ? { viewTransitionName: 'dash-page' } : undefined}
         dir="rtl"
       >
-        <div className={s.body}>
+        <div className={s.compactTop}>
           <div className={s.metaRow}>
             <span className={s.dot} aria-hidden />
             {breadcrumb && breadcrumb.length > 0 && (
@@ -317,11 +317,12 @@ export function PageHeader({
                 ))}
               </div>
             )}
-            {actions && <div className={s.actions}>{actions}</div>}
           </div>
 
           {description && <p className={s.description}>{description}</p>}
         </div>
+
+        {actions && <div className={s.actions}>{actions}</div>}
       </header>
     );
   }

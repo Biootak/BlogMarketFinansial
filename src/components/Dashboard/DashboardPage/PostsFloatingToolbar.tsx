@@ -17,7 +17,7 @@ import type { PostStatus } from '@prisma/client';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { type FC, memo, useCallback, useState } from 'react';
+import { type FC, memo, useCallback, useEffect, useState } from 'react';
 import {
   HiArrowTopRightOnSquare,
   HiCheck,
@@ -131,6 +131,11 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
 
   const isBulkMode = bulkSelectionCount > 0;
   const isVisible = !!activePost || isBulkMode;
+
+  // وقتی toolbar ظاهر/مخفی میشه، به bottom nav اطلاع بده
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('posts:toolbar', { detail: { visible: isVisible } }));
+  }, [isVisible]);
 
   const currentMeta = activePost ? STATUS_META[activePost.status] : null;
   const canEdit = activePost
@@ -310,114 +315,125 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
 
               {/* ─── Single mode (پست فعال) ─── */}
               {!isBulkMode && activePost && currentMeta && (
-                <div className="flex items-stretch min-h-[88px]">
-                  {/* Thumbnail — بزرگ‌تر (80px) + status overlay */}
-                  <div className="relative flex-shrink-0 w-20 sm:w-24 my-3 ms-3 sm:ms-5 rounded-[12px] overflow-hidden bg-[color:var(--at-bg-elevated)] border border-[color:var(--at-line)]">
-                    {activePost.featuredImage ? (
-                      <Image
-                        src={activePost.featuredImage}
-                        alt={activePost.title}
-                        fill
-                        sizes="96px"
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full min-h-[80px] flex items-center justify-center text-[color:var(--at-fg-faint)]">
-                        <HiOutlineSparkles className="w-7 h-7" />
-                      </div>
-                    )}
-                    {/* Featured star overlay */}
-                    {activePost.isFeatured && (
-                      <div className="absolute top-1.5 start-1.5 w-6 h-6 rounded-full bg-amber-400 text-white flex items-center justify-center shadow-md">
-                        <HiOutlineStar className="w-3.5 h-3.5" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* عنوان + meta + KPIs */}
-                  <div className="flex-1 min-w-0 py-3 px-4 sm:px-5 flex flex-col gap-1.5 justify-center border-s border-[color:var(--at-line)]">
-                    {/* خط meta — status + postType + age */}
-                    <div
-                      className="flex items-center gap-2 text-xs text-[color:var(--at-fg-subtle)] flex-wrap"
-                      dir="rtl"
-                    >
-                      <span className={cn('at-badge text-[10px]', currentMeta.pillClass)}>
-                        {currentMeta.label}
-                      </span>
-                      <span aria-hidden className="opacity-40">
-                        ·
-                      </span>
-                      <span className="font-mono text-[10px] truncate max-w-[180px]">
-                        {activePost.postType}
-                      </span>
-                      <span aria-hidden className="opacity-40 hidden sm:inline">
-                        ·
-                      </span>
-                      <span className="hidden sm:inline">
-                        <FormattedDate date={activePost.createdAt} />
-                      </span>
-                      {activePost.readingTime != null && (
-                        <>
-                          <span aria-hidden className="opacity-40 hidden sm:inline">
-                            ·
-                          </span>
-                          <span className="hidden sm:inline tabular-nums">
-                            {activePost.readingTime} دقیقه
-                          </span>
-                        </>
+                <div className="flex flex-col sm:flex-row sm:items-stretch">
+                  {/* ── Row 1 (mobile) / full layout (desktop): thumbnail + info + [desktop actions] ── */}
+                  <div className="flex items-center sm:items-stretch flex-1 min-w-0 min-h-[72px] sm:min-h-[88px]">
+                    {/* Thumbnail */}
+                    <div className="relative flex-shrink-0 w-16 sm:w-24 my-3 ms-3 sm:ms-5 rounded-[10px] sm:rounded-[12px] overflow-hidden bg-[color:var(--at-bg-elevated)] border border-[color:var(--at-line)]">
+                      {activePost.featuredImage ? (
+                        <Image
+                          src={activePost.featuredImage}
+                          alt={activePost.title}
+                          fill
+                          sizes="96px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full min-h-[64px] sm:min-h-[80px] flex items-center justify-center text-[color:var(--at-fg-faint)]">
+                          <HiOutlineSparkles className="w-6 h-6 sm:w-7 sm:h-7" />
+                        </div>
+                      )}
+                      {activePost.isFeatured && (
+                        <div className="absolute top-1 start-1 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-amber-400 text-white flex items-center justify-center shadow-md">
+                          <HiOutlineStar className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                        </div>
                       )}
                     </div>
 
-                    {/* عنوان */}
-                    <h3
-                      className="text-sm sm:text-base font-black text-[color:var(--at-fg)] truncate"
-                      title={activePost.title}
-                    >
-                      {activePost.title}
-                    </h3>
+                    {/* عنوان + meta + KPIs */}
+                    <div className="flex-1 min-w-0 py-3 px-3 sm:px-5 flex flex-col gap-1 sm:gap-1.5 justify-center border-s border-[color:var(--at-line)]">
+                      {/* meta row */}
+                      <div
+                        className="flex items-center gap-1.5 sm:gap-2 text-xs text-[color:var(--at-fg-subtle)] flex-wrap"
+                        dir="rtl"
+                      >
+                        <span className={cn('at-badge text-[10px]', currentMeta.pillClass)}>
+                          {currentMeta.label}
+                        </span>
+                        <span aria-hidden className="opacity-40">·</span>
+                        <span className="font-mono text-[10px] truncate max-w-[120px] sm:max-w-[180px]">
+                          {activePost.postType}
+                        </span>
+                        <span aria-hidden className="opacity-40 hidden sm:inline">·</span>
+                        <span className="hidden sm:inline">
+                          <FormattedDate date={activePost.createdAt} />
+                        </span>
+                        {activePost.readingTime != null && (
+                          <>
+                            <span aria-hidden className="opacity-40 hidden sm:inline">·</span>
+                            <span className="hidden sm:inline tabular-nums">
+                              {activePost.readingTime} دقیقه
+                            </span>
+                          </>
+                        )}
+                      </div>
 
-                    {/* KPI micro-strip */}
-                    <div
-                      className="flex items-center gap-2 sm:gap-3 text-[11px] text-[color:var(--at-fg-muted)] flex-wrap"
-                      dir="rtl"
-                    >
-                      <span className="inline-flex items-center gap-1">
-                        <HiOutlineEye className="w-3.5 h-3.5" aria-hidden />
-                        <span className="tabular-nums font-bold">
-                          {(activePost.viewCount ?? 0).toLocaleString('fa-IR')}
+                      {/* عنوان */}
+                      <h3
+                        className="text-sm font-black text-[color:var(--at-fg)] truncate"
+                        title={activePost.title}
+                      >
+                        {activePost.title}
+                      </h3>
+
+                      {/* KPI micro-strip — hidden on mobile to save space */}
+                      <div
+                        className="hidden sm:flex items-center gap-2 sm:gap-3 text-[11px] text-[color:var(--at-fg-muted)] flex-wrap"
+                        dir="rtl"
+                      >
+                        <span className="inline-flex items-center gap-1">
+                          <HiOutlineEye className="w-3.5 h-3.5" aria-hidden />
+                          <span className="tabular-nums font-bold">
+                            {(activePost.viewCount ?? 0).toLocaleString('fa-IR')}
+                          </span>
+                          <span className="text-[color:var(--at-fg-subtle)]">بازدید</span>
                         </span>
-                        <span className="text-[color:var(--at-fg-subtle)]">بازدید</span>
-                      </span>
-                      <span aria-hidden className="opacity-30">
-                        |
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <HiOutlineChatBubbleLeftRight className="w-3.5 h-3.5" aria-hidden />
-                        <span className="tabular-nums font-bold">
-                          {(activePost._count?.comments ?? 0).toLocaleString('fa-IR')}
+                        <span aria-hidden className="opacity-30">|</span>
+                        <span className="inline-flex items-center gap-1">
+                          <HiOutlineChatBubbleLeftRight className="w-3.5 h-3.5" aria-hidden />
+                          <span className="tabular-nums font-bold">
+                            {(activePost._count?.comments ?? 0).toLocaleString('fa-IR')}
+                          </span>
                         </span>
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <HiOutlineHeart className="w-3.5 h-3.5" aria-hidden />
-                        <span className="tabular-nums font-bold">
-                          {(activePost._count?.likes ?? 0).toLocaleString('fa-IR')}
+                        <span className="inline-flex items-center gap-1">
+                          <HiOutlineHeart className="w-3.5 h-3.5" aria-hidden />
+                          <span className="tabular-nums font-bold">
+                            {(activePost._count?.likes ?? 0).toLocaleString('fa-IR')}
+                          </span>
                         </span>
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <HiOutlineBookmark className="w-3.5 h-3.5" aria-hidden />
-                        <span className="tabular-nums font-bold">
-                          {(activePost._count?.savedBy ?? 0).toLocaleString('fa-IR')}
+                        <span className="inline-flex items-center gap-1">
+                          <HiOutlineBookmark className="w-3.5 h-3.5" aria-hidden />
+                          <span className="tabular-nums font-bold">
+                            {(activePost._count?.savedBy ?? 0).toLocaleString('fa-IR')}
+                          </span>
                         </span>
-                      </span>
+                      </div>
                     </div>
+
+                    {/* Desktop-only close button (top-end corner) */}
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      aria-label="بستن نوار ابزار"
+                      title="بستن"
+                      className={cn(iconBtn, variantBtn.iconOnly, 'hidden sm:inline-flex self-center me-3 h-9 w-9')}
+                    >
+                      <HiXMark className="w-4 h-4" />
+                    </button>
                   </div>
 
-                  {/* Actions */}
+                  {/* ── Row 2 (mobile) / side panel (desktop): Actions ── */}
                   <div
-                    className="flex items-center gap-1.5 flex-shrink-0 py-3 px-3 sm:px-5 border-s border-[color:var(--at-line)]"
+                    className={cn(
+                      'flex items-center gap-1.5 flex-shrink-0',
+                      // mobile: full-width bottom strip with top border
+                      'px-3 py-2.5 border-t border-[color:var(--at-line)]',
+                      // desktop: side panel with start border, no top border
+                      'sm:py-3 sm:px-4 sm:border-t-0 sm:border-s sm:border-[color:var(--at-line)]',
+                    )}
                     dir="rtl"
                   >
-                    {/* ── Status dropdown (primary) ── */}
+                    {/* ── Status dropdown ── */}
                     <DropdownMenu dir="rtl">
                       <DropdownMenuTrigger asChild>
                         <button
@@ -425,27 +441,21 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                           disabled={statusLoading}
                           className={cn(
                             baseBtn,
-                            'h-11 px-3.5 text-sm',
+                            'h-9 sm:h-11 px-2.5 sm:px-3.5 text-xs sm:text-sm',
                             'bg-[color:var(--at-bg-elevated)] border-[color:var(--at-line-strong)]',
                             'hover:border-[color:var(--at-accent)] hover:text-[color:var(--at-accent-fg)]',
-                            'min-w-[140px] justify-between',
+                            'min-w-0 sm:min-w-[130px] justify-between',
                           )}
                           aria-label="تغییر وضعیت"
                         >
-                          <span className="flex items-center gap-2 min-w-0">
+                          <span className="flex items-center gap-1.5 min-w-0">
                             <span
-                              className={cn(
-                                'w-2 h-2 rounded-full flex-shrink-0',
-                                currentMeta.dotClass,
-                              )}
+                              className={cn('w-2 h-2 rounded-full flex-shrink-0', currentMeta.dotClass)}
                               aria-hidden
                             />
                             <span className="font-bold truncate">{currentMeta.shortLabel}</span>
                           </span>
-                          <HiOutlineBars3BottomLeft
-                            className="w-4 h-4 opacity-60 flex-shrink-0"
-                            aria-hidden
-                          />
+                          <HiOutlineBars3BottomLeft className="w-3.5 h-3.5 opacity-60 flex-shrink-0 ms-1" aria-hidden />
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
@@ -473,10 +483,7 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                             >
                               <span className="flex items-center gap-2 min-w-0">
                                 <span
-                                  className={cn(
-                                    'w-2 h-2 rounded-full flex-shrink-0',
-                                    meta.dotClass,
-                                  )}
+                                  className={cn('w-2 h-2 rounded-full flex-shrink-0', meta.dotClass)}
                                   aria-hidden
                                 />
                                 <Icon className="w-4 h-4 flex-shrink-0 opacity-80" aria-hidden />
@@ -494,12 +501,12 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                       </DropdownMenuContent>
                     </DropdownMenu>
 
-                    {/* ── Edit (primary blue) ── */}
+                    {/* ── Edit ── */}
                     <Link
                       href={`/dashboard/posts/edit/${activePost.id}`}
                       aria-label="ویرایش پست"
                       title="ویرایش"
-                      className={cn(baseBtn, variantBtn.sky, 'h-11 px-3.5')}
+                      className={cn(baseBtn, variantBtn.sky, 'h-9 sm:h-11 px-2.5 sm:px-3.5')}
                     >
                       <HiPencil className="w-4 h-4" />
                       <span className="hidden md:inline">ویرایش</span>
@@ -511,7 +518,7 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                       target="_blank"
                       aria-label="مشاهده پست در سایت"
                       title="مشاهده در سایت"
-                      className={cn(iconBtn, variantBtn.iconOnly, 'h-11 w-11')}
+                      className={cn(iconBtn, variantBtn.iconOnly, 'h-9 w-9 sm:h-11 sm:w-11')}
                     >
                       <HiArrowTopRightOnSquare className="w-4 h-4" />
                     </Link>
@@ -523,7 +530,7 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                           type="button"
                           aria-label="عملیات بیشتر"
                           title="بیشتر"
-                          className={cn(iconBtn, variantBtn.iconOnly, 'h-11 w-11')}
+                          className={cn(iconBtn, variantBtn.iconOnly, 'h-9 w-9 sm:h-11 sm:w-11')}
                         >
                           <HiOutlineBars3BottomLeft className="w-5 h-5" />
                         </button>
@@ -548,9 +555,7 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                               <HiOutlineStar
                                 className={cn(
                                   'w-4 h-4 flex-shrink-0',
-                                  activePost.isFeatured
-                                    ? 'text-amber-500 fill-current'
-                                    : 'opacity-80',
+                                  activePost.isFeatured ? 'text-amber-500 fill-current' : 'opacity-80',
                                 )}
                                 aria-hidden
                               />
@@ -614,20 +619,20 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                       onClick={handleDeleteClick}
                       aria-label="حذف پست"
                       title="حذف"
-                      className={cn(iconBtn, variantBtn.rose, 'h-11 w-11')}
+                      className={cn(iconBtn, variantBtn.rose, 'h-9 w-9 sm:h-11 sm:w-11')}
                     >
                       <HiTrash className="w-4 h-4" />
                     </button>
 
-                    {/* ── Close ── */}
+                    {/* ── Close — mobile only (desktop version is in the info row) ── */}
                     <button
                       type="button"
                       onClick={onClose}
                       aria-label="بستن نوار ابزار"
                       title="بستن"
-                      className={cn(iconBtn, variantBtn.iconOnly, 'h-11 w-11')}
+                      className={cn(iconBtn, variantBtn.iconOnly, 'sm:hidden h-9 w-9')}
                     >
-                      <HiXMark className="w-5 h-5" />
+                      <HiXMark className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
