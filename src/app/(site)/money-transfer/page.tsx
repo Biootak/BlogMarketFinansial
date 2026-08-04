@@ -184,29 +184,29 @@ export default async function MoneyTransferPage() {
       {/* Main content — mt-section handles its own spacing via + selector */}
       <div className="container py-6 sm:py-8 lg:py-10 px-4 sm:px-6">
         {/* Provider Comparison */}
-        <ScrollReveal>
-          <section aria-labelledby="mt-compare-title" className="mt-section">
+        <ScrollReveal className="mt-section">
+          <section aria-labelledby="mt-compare-title">
             <RateComparisonSection />
           </section>
         </ScrollReveal>
 
         {/* Trust Strip */}
-        <ScrollReveal>
-          <section aria-label="اعتمادسازی" className="mt-section">
+        <ScrollReveal className="mt-section">
+          <section aria-label="اعتمادسازی">
             <TrustStrip />
           </section>
         </ScrollReveal>
 
         {/* Exchange Rates */}
-        <ScrollReveal>
-          <section id="rates" className="mt-section">
+        <ScrollReveal className="mt-section">
+          <section id="rates">
             <ExchangeRateTableView rates={market.items} />
           </section>
         </ScrollReveal>
 
         {/* Rate Lists */}
-        <ScrollReveal>
-          <section className="mt-section">
+        <ScrollReveal className="mt-section">
+          <section>
             <RateListGrid rateLists={activeRateLists} liveRates={market.items} initialCount={10} />
           </section>
         </ScrollReveal>

@@ -16,7 +16,9 @@
   border: 1px solid var(--ds-border-default);
   background: var(--ds-surface);
   box-shadow: var(--ds-shadow-md);
-  overflow: hidden;
+  /* overflow:hidden بریده می‌شد dropdown رو — clip-path بجاش گوشه‌ها رو گرد می‌کنه */
+  overflow: visible;
+  clip-path: inset(0 round var(--ds-radius-xl));
 }
 
 /* ─── Context Bar ────────────────────────────────────────────────────────────── */
@@ -42,6 +44,7 @@
   align-items: center;
   gap: var(--ds-space-3);
   flex-wrap: wrap;
+  min-inline-size: 0;
 }
 
 /* Amount + currency input group */
@@ -106,6 +109,12 @@
   margin: 0;
   padding: 0;
   border: none;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.presets::-webkit-scrollbar {
+  display: none;
 }
 
 .preset {
@@ -532,28 +541,72 @@
 /* ─── Mobile ─────────────────────────────────────────────────────────────────── */
 
 @media (max-width: 640px) {
+  /* پنهان کردن ستون‌های کم‌اهمیت — فقط صرافی + زمان + مبلغ نهایی */
   .thead th:nth-child(2),
   .thead th:nth-child(3),
+  .thead th:nth-child(4),
   .row td:nth-child(2),
-  .row td:nth-child(3) {
+  .row td:nth-child(3),
+  .row td:nth-child(4) {
     display: none;
   }
 
+  /* context bar: stack در موبایل */
+  .contextBar {
+    padding: var(--ds-space-3) var(--ds-space-4);
+    gap: var(--ds-space-2);
+  }
+
+  .contextControls {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--ds-space-2);
+  }
+
+  .amountWrap {
+    width: 100%;
+  }
+
   .amountInput {
-    width: 80px;
+    flex: 1;
+    width: auto;
+    min-width: 0;
   }
 
   .presets {
-    gap: 3px;
+    gap: 6px;
+    width: 100%;
+    justify-content: flex-end;
   }
 
   .preset {
-    padding: var(--ds-space-1) var(--ds-space-2);
+    padding: var(--ds-space-1) var(--ds-space-3);
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  /* caption فشرده */
+  .tableCaption {
+    padding: var(--ds-space-2) var(--ds-space-4);
     font-size: 11px;
+    flex-wrap: wrap;
+  }
+
+  /* ردیف‌ها: padding کمتر */
+  .row td {
+    padding: var(--ds-space-2) var(--ds-space-3);
+  }
+
+  .nameCell {
+    padding-inline-start: var(--ds-space-3) !important;
   }
 
   .totalVal {
     font-size: var(--ds-text-sm);
+  }
+
+  .totalCell {
+    padding-inline-end: var(--ds-space-3);
   }
 }
 

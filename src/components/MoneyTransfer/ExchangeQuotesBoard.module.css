@@ -380,21 +380,106 @@
   margin: 0;
 }
 
+/* ─── Desktop/Mobile show-hide ───────────────────────────────────────────── */
+
+/* موبایل card row — پیش‌فرض پنهان (desktop: table row نمایش داده می‌شه) */
+.rowMobile {
+  display: none;
+}
+
 /* ─── Mobile ─────────────────────────────────────────────────────────────── */
 
 @media (max-width: 640px) {
-  .tableHeader th:nth-child(4),
-  .tableHeader th:nth-child(5) {
+  /* جدول desktop پنهان — card row نمایش */
+  .rowDesktop {
     display: none;
   }
-  .row td:nth-child(4),
-  .row td:nth-child(5) {
+  .rowMobile {
+    display: table-row;
+  }
+
+  /* thead هم پنهان می‌شه چون card خودش label داره */
+  .tableHeader {
     display: none;
   }
 
-  .dealBtn {
-    padding: 4px 8px;
+  /* ─── Card layout ─── */
+  .cardCell {
+    padding: var(--ds-space-2) var(--ds-space-3);
+    border-block-end: 1px solid var(--ds-border-subtle);
+  }
+  .rowMobile:last-child .cardCell {
+    border-block-end: none;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-2);
+  }
+
+  /* بهترین: border سبز سمت راست (RTL) */
+  .rowMobileBest .cardCell {
+    border-inline-start: 3px solid var(--ds-accent-emerald);
+    padding-inline-start: calc(var(--ds-space-3) - 3px);
+    background: oklch(96% 0.04 145 / 0.25);
+  }
+
+  /* ردیف بالا: اسم + دکمه */
+  .cardTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ds-space-2);
+  }
+
+  .cardExchange {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-inline-size: 0;
+  }
+
+  .cardActions {
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-2);
+    flex-shrink: 0;
+  }
+
+  /* ردیف پایین: خرید + فروش + countdown */
+  .cardRates {
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-3);
+    background: var(--ds-canvas-subtle);
+    border-radius: var(--ds-radius-md);
+    padding: var(--ds-space-2) var(--ds-space-3);
+  }
+
+  .cardRate {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+  }
+
+  .cardRateDivider {
+    inline-size: 1px;
+    block-size: 32px;
+    background: var(--ds-border-subtle);
+    flex-shrink: 0;
+  }
+
+  .cardCountdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
     font-size: 11px;
+    color: var(--ds-text-muted);
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+    margin-inline-start: auto;
   }
 }
 

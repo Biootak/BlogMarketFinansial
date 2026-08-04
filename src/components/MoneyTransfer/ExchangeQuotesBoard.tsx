@@ -79,52 +79,114 @@ function QuoteTableRow({
   const unit = UNIT_LABEL[quote.unit] ?? quote.unit;
 
   return (
-    <tr className={`${s.row}${isBestBuy ? ` ${s.rowBest}` : ''}`}>
-      <td className={s.exchangeCell}>
-        <div className={s.exchangeName}>{quote.exchangeName ?? 'صرافی'}</div>
-        {quote.exchangeCity && <div className={s.exchangeCity}>{quote.exchangeCity}</div>}
-      </td>
-      <td className={s.rateCell}>
-        <span className={s.rateLabel}>
-          <TrendingDown className={s.rateIcon} aria-hidden />
-          خرید
-        </span>
-        <span className={`${s.rateValue} tabular-nums`}>
-          {formatFa(buy)}
-          <span className={s.rateUnit}>{unit}</span>
-        </span>
-      </td>
-      <td className={s.rateCell}>
-        <span className={s.rateLabel}>
-          <TrendingUp className={s.rateIcon} aria-hidden />
-          فروش
-        </span>
-        <span className={`${s.rateValue} tabular-nums`}>
-          {formatFa(sell)}
-          <span className={s.rateUnit}>{unit}</span>
-        </span>
-      </td>
-      <td className={s.countdownCell} aria-label={countdown ? `انقضا: ${countdown}` : undefined}>
-        {countdown && (
-          <>
-            <Clock className={s.countdownIcon} aria-hidden />
-            <span className="tabular-nums">{countdown}</span>
-          </>
-        )}
-      </td>
-      <td className={s.badgeCell}>
-        {isBestBuy && <span className={s.bestBadge}>بهترین</span>}
-        <button
-          type="button"
-          className={s.dealBtn}
-          onClick={() => onDeal(quote)}
-          aria-label={`معامله با ${quote.exchangeName ?? 'صرافی'} برای ${quote.currencyCode}`}
-        >
-          <ShoppingCart className="w-3.5 h-3.5" aria-hidden />
-          معامله
-        </button>
-      </td>
-    </tr>
+    <>
+      {/* Desktop: table row */}
+      <tr className={`${s.row} ${s.rowDesktop}${isBestBuy ? ` ${s.rowBest}` : ''}`}>
+        <td className={s.exchangeCell}>
+          <div className={s.exchangeName}>{quote.exchangeName ?? 'صرافی'}</div>
+          {quote.exchangeCity && <div className={s.exchangeCity}>{quote.exchangeCity}</div>}
+        </td>
+        <td className={s.rateCell}>
+          <span className={s.rateLabel}>
+            <TrendingDown className={s.rateIcon} aria-hidden />
+            خرید
+          </span>
+          <span className={`${s.rateValue} tabular-nums`}>
+            {formatFa(buy)}
+            <span className={s.rateUnit}>{unit}</span>
+          </span>
+        </td>
+        <td className={s.rateCell}>
+          <span className={s.rateLabel}>
+            <TrendingUp className={s.rateIcon} aria-hidden />
+            فروش
+          </span>
+          <span className={`${s.rateValue} tabular-nums`}>
+            {formatFa(sell)}
+            <span className={s.rateUnit}>{unit}</span>
+          </span>
+        </td>
+        <td className={s.countdownCell} aria-label={countdown ? `انقضا: ${countdown}` : undefined}>
+          {countdown && (
+            <>
+              <Clock className={s.countdownIcon} aria-hidden />
+              <span className="tabular-nums">{countdown}</span>
+            </>
+          )}
+        </td>
+        <td className={s.badgeCell}>
+          {isBestBuy && <span className={s.bestBadge}>بهترین</span>}
+          <button
+            type="button"
+            className={s.dealBtn}
+            onClick={() => onDeal(quote)}
+            aria-label={`معامله با ${quote.exchangeName ?? 'صرافی'} برای ${quote.currencyCode}`}
+          >
+            <ShoppingCart className="w-3.5 h-3.5" aria-hidden />
+            معامله
+          </button>
+        </td>
+      </tr>
+
+      {/* Mobile: card row (single <tr> با یک <td> که card رو hold می‌کنه) */}
+      <tr className={`${s.rowMobile}${isBestBuy ? ` ${s.rowMobileBest}` : ''}`}>
+        <td colSpan={5} className={s.cardCell}>
+          <div className={s.card}>
+            {/* ردیف بالا: اسم صرافی + badge + دکمه */}
+            <div className={s.cardTop}>
+              <div className={s.cardExchange}>
+                <span className={s.exchangeName}>{quote.exchangeName ?? 'صرافی'}</span>
+                {quote.exchangeCity && (
+                  <span className={s.exchangeCity}>{quote.exchangeCity}</span>
+                )}
+              </div>
+              <div className={s.cardActions}>
+                {isBestBuy && <span className={s.bestBadge}>بهترین</span>}
+                <button
+                  type="button"
+                  className={s.dealBtn}
+                  onClick={() => onDeal(quote)}
+                  aria-label={`معامله با ${quote.exchangeName ?? 'صرافی'} برای ${quote.currencyCode}`}
+                >
+                  <ShoppingCart className="w-3.5 h-3.5" aria-hidden />
+                  معامله
+                </button>
+              </div>
+            </div>
+            {/* ردیف پایین: خرید + فروش کنار هم */}
+            <div className={s.cardRates}>
+              <div className={s.cardRate}>
+                <span className={s.rateLabel}>
+                  <TrendingDown className={s.rateIcon} aria-hidden />
+                  خرید
+                </span>
+                <span className={`${s.rateValue} tabular-nums`}>
+                  {formatFa(buy)}
+                  <span className={s.rateUnit}>{unit}</span>
+                </span>
+              </div>
+              <div className={s.cardRateDivider} aria-hidden />
+              <div className={s.cardRate}>
+                <span className={s.rateLabel}>
+                  <TrendingUp className={s.rateIcon} aria-hidden />
+                  فروش
+                </span>
+                <span className={`${s.rateValue} tabular-nums`}>
+                  {formatFa(sell)}
+                  <span className={s.rateUnit}>{unit}</span>
+                </span>
+              </div>
+              {countdown && (
+                <div className={s.cardCountdown}>
+                  <Clock className={s.countdownIcon} aria-hidden />
+                  <span className="tabular-nums">{countdown}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </td>
+      </tr>
+    </>
   );
 }
 

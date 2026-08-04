@@ -15,7 +15,7 @@
  */
 
 import type { MarketRateGroup, MarketRateItem } from '@/lib/market-rates';
-import { formatChangePercent, formatWithUnit } from '@/lib/market-rates/format';
+import { UNIT_LABELS, formatChangePercent, formatValueOnly } from '@/lib/market-rates/format';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
 
@@ -90,16 +90,16 @@ export function ExchangeRateTableView({ rates }: Props) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between gap-3 px-1">
-        <h3 className="text-base font-bold text-slate-900 dark:text-white">نرخ بازار</h3>
-        <span className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
+      <header className="mt-rates-header">
+        <h3 className="mt-rates-header__title">نرخ بازار</h3>
+        <span className="mt-rates-header__count tabular-nums">
           {allDisplayed.length} مورد
         </span>
-      </div>
+      </header>
 
       {/* Tabs — گروه‌بندی */}
       {tabs.length > 2 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="mt-rates-tabs">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -109,12 +109,10 @@ export function ExchangeRateTableView({ rates }: Props) {
                 setShownCount(10);
               }}
               aria-current={activeTab === tab.id ? 'true' : undefined}
-              className={['mt-tab', activeTab === tab.id ? 'mt-tab--active' : '']
-                .filter(Boolean)
-                .join(' ')}
+              className={`mt-tab${activeTab === tab.id ? ' mt-tab--active' : ''}`}
             >
               {tab.label}
-              <span className="ms-1 opacity-60 tabular-nums text-[10px]">({tab.count})</span>
+              <span className="mt-rates-tab__count">({tab.count})</span>
             </button>
           ))}
         </div>
@@ -163,10 +161,12 @@ export function ExchangeRateTableView({ rates }: Props) {
                   </div>
                 </div>
 
-                {/* Rate — با واحد درست */}
+                {/* Rate — عدد LTR + واحد جدا (RTL) */}
                 <div className="mt-table__price">
-                  <span className="mt-table__price-val" dir="ltr">
-                    {formatWithUnit(rate.value, rate.unit, rate.decimals)}
+                  <span className="mt-table__price-val">
+                    <span dir="ltr">{formatValueOnly(rate.value, rate.decimals)}</span>
+                    {' '}
+                    <span className="mt-table__price-unit">{UNIT_LABELS[rate.unit]}</span>
                   </span>
                 </div>
 
