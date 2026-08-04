@@ -1,3 +1,6 @@
+// 2026-08-04: CSS مربوط به money-transfer از globals.css استخراج شد تا
+// روی صفحات عمومی render-blocking نباشد. این فایل فقط در این مسیر لود می‌شود.
+import '@/styles/money-transfer.css';
 import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
 import { getMarketRates } from '@/actions/market-rates';
 import { getRateLists } from '@/actions/rate-lists';

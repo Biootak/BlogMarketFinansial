@@ -29,7 +29,7 @@ const MainContent: React.FC<MainContentProps> = ({ children, ambient = false }) 
   // offset is needed — the flex layout handles spacing automatically.
   // On mobile the sidebar is a fixed overlay, so no margin either.
   return (
-    <main className="dash-scope flex-1 overflow-auto">
+    <main className="dash-scope flex-1 overflow-auto overflow-x-hidden">
       {ambient ? <AmbientBackground intensity="med" /> : null}
       <AnimatePresence mode="wait">
         <motion.div
@@ -39,7 +39,7 @@ const MainContent: React.FC<MainContentProps> = ({ children, ambient = false }) 
           exit="out"
           variants={pageVariants}
           transition={pageTransition}
-          className="relative min-h-full px-3 sm:px-4 pt-4 sm:pt-5"
+          className="relative min-h-full px-3 sm:px-4 pt-4 sm:pt-5 overflow-x-hidden"
         >
           {children}
         </motion.div>

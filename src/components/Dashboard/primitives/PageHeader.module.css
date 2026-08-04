@@ -38,6 +38,14 @@
   animation: motion-fade-in-up 280ms var(--ds-ease-out-quart) both;
 }
 
+@media (max-width: 600px) {
+  .header {
+    padding: var(--ds-space-3) var(--ds-space-3) var(--ds-space-3);
+    margin-block-end: var(--ds-space-3);
+    gap: var(--ds-space-3);
+  }
+}
+
 .dark .header {
   box-shadow: 0 1px 0 oklch(100% 0 0 / 0.04) inset, 0 2px 12px -2px oklch(0% 0 0 / 0.35);
 }
@@ -172,6 +180,13 @@
   animation: ph-icon-pop 360ms var(--ds-ease-spring) both;
   animation-delay: 80ms;
 }
+
+@media (max-width: 600px) {
+  .iconWrap {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}
 @keyframes ph-icon-pop {
   from {
     transform: scale(0.72) rotate(-6deg);
@@ -184,7 +199,7 @@
 }
 
 .title {
-  font-size: clamp(1.5rem, 3vw + 0.5rem, 2.25rem);
+  font-size: clamp(1.2rem, 4vw + 0.2rem, 2.25rem);
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.05;

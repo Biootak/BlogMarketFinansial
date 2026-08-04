@@ -185,10 +185,16 @@
   gap: var(--ds-space-5);
   max-inline-size: 1480px;
   margin-inline: auto;
-  padding-inline: var(--ds-space-4);
   padding-block-end: var(--ds-space-9);
   isolation: isolate;
+  overflow-x: hidden;
   animation: nxFadeUp 480ms var(--at-ease) both;
+}
+@media (max-width: 600px) {
+  .workspace {
+    gap: var(--ds-space-3);
+    padding-block-end: var(--ds-space-7);
+  }
 }
 
 .workspace::before {
@@ -226,6 +232,11 @@
     grid-template-columns: 1fr;
   }
 }
+@media (max-width: 600px) {
+  .observatory {
+    border-radius: var(--nx-radius-md, 12px);
+  }
+}
 
 .observatory__map {
   position: relative;
@@ -237,6 +248,14 @@
   min-block-size: 380px;
   overflow: hidden;
   isolation: isolate;
+}
+@media (max-width: 600px) {
+  .observatory__map {
+    min-block-size: unset;
+    padding: var(--ds-space-4) var(--ds-space-3);
+    border-inline-end: none;
+    border-block-end: var(--nx-hair);
+  }
 }
 .observatory__map::after {
   content: "";
@@ -309,6 +328,7 @@
   font-size: 10px;
   color: var(--at-fg-muted);
   letter-spacing: 0.05em;
+  flex-shrink: 0;
 }
 .observatory__mapClock strong {
   font-size: 18px;
@@ -316,6 +336,11 @@
   color: var(--at-fg);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
+}
+@media (max-width: 400px) {
+  .observatory__mapClock {
+    display: none;
+  }
 }
 
 .observatory__mapChart {
@@ -332,6 +357,12 @@
     grid-template-columns: 1fr;
   }
 }
+@media (max-width: 600px) {
+  .observatory__mapChart {
+    margin-block-start: var(--ds-space-3);
+    gap: var(--ds-space-3);
+  }
+}
 
 /* منظومهٔ مرکزی — دوایر متحدالمرکز با حلقهٔ فعال */
 .mapConstellation {
@@ -339,6 +370,11 @@
   aspect-ratio: 1;
   max-inline-size: 280px;
   margin-inline: auto;
+}
+@media (max-width: 600px) {
+  .mapConstellation {
+    max-inline-size: 200px;
+  }
 }
 .mapConstellation__orbit {
   position: absolute;
@@ -474,6 +510,13 @@
   overflow: hidden;
   transition: all 280ms var(--at-ease);
 }
+@media (max-width: 600px) {
+  .mapLegend__row {
+    padding: 7px 10px;
+    gap: 7px;
+    grid-template-columns: 24px 1fr auto;
+  }
+}
 .mapLegend__row::before {
   content: "";
   position: absolute;
@@ -550,6 +593,37 @@
   isolation: isolate;
   overflow: hidden;
 }
+@media (max-width: 1080px) and (min-width: 601px) {
+  /* در تبلت، stats به‌صورت ۳ ستون افقی نمایش داده می‌شود */
+  .observatory__stats {
+    flex-direction: row;
+    border-block-start: var(--nx-hair);
+  }
+  .observatory__bigNum {
+    flex: 1;
+    border-block-end: none;
+    border-inline-end: 1px dashed var(--at-line);
+  }
+  .observatory__bigNum:last-of-type {
+    border-inline-end: none;
+  }
+}
+@media (max-width: 600px) {
+  .observatory__stats {
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-block-start: var(--nx-hair);
+  }
+  .observatory__bigNum {
+    flex: 1 1 calc(33% - 1px);
+    min-inline-size: 0;
+    border-block-end: none;
+    border-inline-end: 1px dashed var(--at-line);
+  }
+  .observatory__bigNum:last-of-type {
+    border-inline-end: none;
+  }
+}
 .observatory__stats::before {
   content: "";
   position: absolute;
@@ -580,6 +654,11 @@
   flex-direction: column;
   gap: 4px;
   border-block-end: 1px dashed var(--at-line);
+}
+@media (max-width: 600px) {
+  .observatory__bigNum {
+    padding: var(--ds-space-3) var(--ds-space-3);
+  }
 }
 .observatory__bigNum:last-of-type {
   border-block-end: none;
@@ -615,6 +694,11 @@
   gap: 6px;
   animation: nxFadeIn 600ms var(--at-ease) 200ms both;
 }
+@media (max-width: 600px) {
+  .observatory__bigNumVal {
+    font-size: clamp(1.4rem, 1.2rem + 1.5vw, 2rem);
+  }
+}
 .observatory__bigNumVal small {
   font-size: 0.32em;
   font-weight: 700;
@@ -637,6 +721,14 @@
   color: var(--at-accent);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
+}
+@media (max-width: 480px) {
+  .observatory__bigNumFoot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    font-size: 9px;
+  }
 }
 
 /* ─── 2. Status Strata (Horizontal Strip) ──────────────────────────────── */
@@ -662,6 +754,11 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+@media (max-width: 400px) {
+  .strata {
+    grid-template-columns: 1fr 1fr;
+  }
+}
 
 .strata__cell {
   position: relative;
@@ -672,6 +769,12 @@
   border-inline-start: 1px solid var(--at-line);
   overflow: hidden;
   isolation: isolate;
+}
+@media (max-width: 600px) {
+  .strata__cell {
+    padding: var(--ds-space-3) var(--ds-space-2);
+    gap: 5px;
+  }
 }
 .strata__cell:first-child {
   border-inline-start: none;
@@ -809,6 +912,11 @@
 @media (max-width: 760px) {
   .bay {
     grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .bay {
+    gap: var(--ds-space-2);
   }
 }
 
@@ -1463,6 +1571,25 @@
   overflow: hidden;
   isolation: isolate;
 }
+@media (max-width: 500px) {
+  .toolbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+  }
+  .toolbarView {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    border-inline-start: none;
+    border-block-start: 1px dashed var(--at-line);
+    padding: 6px 4px 2px;
+    block-size: auto;
+    justify-content: flex-start;
+  }
+  .addBtn {
+    grid-row: 1;
+    grid-column: 2;
+  }
+}
 .toolbar::before {
   content: "";
   position: absolute;
@@ -1671,6 +1798,11 @@
     transparent
   );
 }
+@media (max-width: 600px) {
+  .mosaic__head {
+    padding: var(--ds-space-3) var(--ds-space-3);
+  }
+}
 .mosaic__headLeft {
   display: flex;
   flex-direction: column;
@@ -1698,6 +1830,11 @@
   font-size: var(--ds-text-xs);
   color: var(--at-fg-subtle);
 }
+@media (max-width: 480px) {
+  .mosaic__headSub {
+    display: none;
+  }
+}
 .mosaic__headCount {
   display: inline-flex;
   align-items: baseline;
@@ -1721,10 +1858,17 @@
 .mosaic__grid {
   display: grid;
   grid-template-columns: 1fr;
-  grid-auto-rows: 168px;
+  grid-auto-rows: minmax(168px, auto);
   gap: 12px;
   padding: var(--ds-space-4);
   background: radial-gradient(circle at 1px 1px, var(--at-line) 1px, transparent 0) 0 0 / 16px 16px;
+}
+@media (max-width: 639px) {
+  .mosaic__grid {
+    grid-auto-rows: auto;
+    gap: 8px;
+    padding: var(--ds-space-3) var(--ds-space-2);
+  }
 }
 @media (min-width: 640px) {
   .mosaic__grid {
@@ -1806,6 +1950,16 @@
 .tileWide {
   grid-column: span 2;
   grid-row: span 2;
+}
+@media (max-width: 639px) {
+  /* در موبایل یک‌ستونی، span 2 باعث overflow می‌شود */
+  .tile--lead,
+  .tileLead,
+  .tile--wide,
+  .tileWide {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
 }
 
 .tile__head {
@@ -2501,11 +2655,19 @@
 }
 .heatmap__grid {
   display: grid;
-  grid-template-columns: 36px repeat(24, 1fr);
+  grid-template-columns: 36px repeat(24, minmax(0, 1fr));
   gap: 2px;
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 9px;
   color: var(--at-fg-subtle);
+  min-inline-size: 0;
+}
+@media (max-width: 600px) {
+  .heatmap__grid {
+    grid-template-columns: 26px repeat(24, minmax(0, 1fr));
+    gap: 1px;
+    font-size: 8px;
+  }
 }
 .heatmap__day {
   display: flex;
@@ -2523,6 +2685,8 @@
   transition: transform 200ms var(--at-ease);
   cursor: default;
   position: relative;
+  min-inline-size: 0;
+  overflow: hidden;
 }
 .heatmap__cell:hover {
   transform: scale(1.4);

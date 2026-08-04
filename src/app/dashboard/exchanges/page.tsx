@@ -36,7 +36,7 @@ export default async function ExchangesPage() {
         margin: '0 auto',
         display: 'flex',
         flexDirection: 'column',
-        gap: 'var(--ds-space-5)',
+        gap: 'var(--ds-space-3)',
       }}
     >
       <PageHeader
