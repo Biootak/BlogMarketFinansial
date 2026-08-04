@@ -243,7 +243,7 @@ const ModernTrendingTopics: FC<ModernTrendingTopicsProps> = ({
           'backdrop-blur-md',
         )}
       >
-        <div className="flex items-center gap-3 px-5 py-2 sm:px-8">
+        <div className="flex items-center gap-3 px-4 py-1.5 sm:px-6">
           {/* repeat={3} به جای 6: در صفحه‌های کوچک که تراکم چیپ‌ها بالاست، 3 بار
               تکرار برای seamless loop کافیه و DOM رو سنگین نمی‌کنه */}
           <Ticker speed={-25} className="flex-1 min-w-0" repeat={3} pauseOnHold>
@@ -287,7 +287,7 @@ const ModernTrendingTopics: FC<ModernTrendingTopicsProps> = ({
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-80px' }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative flex flex-wrap items-end justify-between gap-4 px-5 pt-6 pb-5 sm:px-8 sm:pt-7 sm:pb-6"
+        className="relative flex flex-wrap items-end justify-between gap-3 px-4 pt-4 pb-4 sm:px-8 sm:pt-6 sm:pb-5"
       >
         <div className="flex items-start gap-3.5 sm:gap-4">
           {/* آیکون — refined */}
@@ -386,7 +386,7 @@ const ModernTrendingTopics: FC<ModernTrendingTopicsProps> = ({
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: '-40px' }}
-        className="relative px-5 pb-6 sm:px-8 sm:pb-8"
+        className="relative px-4 pb-4 sm:px-8 sm:pb-8"
       >
         <BentoGrid
           featured={featured}
@@ -430,10 +430,10 @@ function BentoGrid({
   return (
     <div
       className={cn(
-        'grid gap-2.5 sm:gap-3 @container/bento',
+        'grid gap-2 sm:gap-2.5 lg:gap-3 @container/bento',
         // ۲ ستون موبایل، ۳ ستون تبلت، ۴ ستون دسکتاپ — auto-fit
         'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4',
-        'auto-rows-[minmax(140px,_auto)]',
+        'auto-rows-[minmax(110px,_auto)] sm:auto-rows-[minmax(130px,_auto)] lg:auto-rows-[minmax(140px,_auto)]',
       )}
     >
       {all.map((c, idx) => {
@@ -486,8 +486,8 @@ function FeaturedCard({
         <Link
           href={`/archive/category/${category.slug}`}
           className={cn(
-            'group/feat relative flex h-full flex-1 min-h-[260px] @sm/bento:min-h-[300px] @xl/bento:min-h-[340px] flex-col justify-between',
-            'rounded-2xl overflow-hidden p-5 sm:p-7',
+            'group/feat relative flex h-full flex-1 min-h-[200px] @sm/bento:min-h-[260px] @xl/bento:min-h-[320px] flex-col justify-between',
+            'rounded-2xl overflow-hidden p-4 sm:p-6',
             'border border-neutral-200/70 dark:border-neutral-800/70',
             'bg-neutral-900 dark:bg-neutral-50',
             'shadow-[0_2px_0_0_rgba(255,255,255,0.04)_inset,0_20px_40px_-20px_rgba(20,23,32,0.3)]',
@@ -516,8 +516,8 @@ function FeaturedCard({
           <div className="relative z-10 flex items-start justify-between">
             <div
               className={cn(
-                'flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center',
-                'rounded-2xl',
+                'flex h-11 w-11 sm:h-14 sm:w-14 items-center justify-center',
+                'rounded-xl sm:rounded-2xl',
                 'border border-white/10',
                 'bg-white/[0.04] dark:bg-neutral-900/[0.04]',
                 'backdrop-blur-md',
@@ -525,7 +525,7 @@ function FeaturedCard({
             >
               <span
                 className={cn(
-                  'text-2xl sm:text-3xl font-bold tracking-tight',
+                  'text-xl sm:text-2xl font-bold tracking-tight',
                   'text-white dark:text-neutral-900',
                 )}
               >

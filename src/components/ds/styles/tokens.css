@@ -26,7 +26,7 @@
       ولی بدون transform/tar شدن). همهٔ remها نسبت به این‌اند.
       zoom حذف شد چون متن را تار و fixed-elementها را خراب می‌کرد.
       ========================================================================== */
-  --fs-base: clamp(0.75rem, 0.73rem + 0.12vw, 0.875rem);
+  --fs-base: clamp(0.8125rem, 0.78rem + 0.15vw, 0.875rem);
   /* ==========================================================================
       SPACING (fluid) — clamp() برای scaling بدون breakpoint
       ========================================================================== */
@@ -176,6 +176,31 @@
   /* Text alias (legacy --ds-text) → --ds-text-primary */
   --ds-text: var(--ds-text-primary);
 
+  /* ==========================================================================
+     MISSING ALIASES — --ds-bg / --ds-fg / --ds-fg-* / --ds-surface-raised
+     --------------------------------------------------------------------------
+     16 فایل در پروژه از این توکن‌ها استفاده می‌کنند (MobileBottomNav، Footer،
+     RouteError، beneficiaries، blog، kyc، checkout، ...).
+     بدون این aliases، مرورگر fallback به مقدار پیش‌فرض (سیاه/شفاف) می‌شود
+     که باعث آیکون‌های سیاه و متن‌های تاریک در dark mode می‌شود.
+     اضافه شده: 2026-08
+     ========================================================================== */
+
+  /* پس‌زمینه عمومی صفحه — alias از canvas */
+  --ds-bg: var(--ds-canvas);
+
+  /* رنگ اصلی متن — alias از text-primary */
+  --ds-fg: var(--ds-text-primary);
+
+  /* سطوح مختلف متن */
+  --ds-fg-muted:     var(--ds-text-muted);
+  --ds-fg-secondary: var(--ds-text-secondary);
+  --ds-fg-subtle:    var(--ds-text-muted);
+  --ds-fg-inverse:   var(--ds-text-inverse);
+
+  /* Surface raised — کارت‌ها و المان‌های بالاتر از canvas */
+  --ds-surface-raised: oklch(100% 0 0 / 0.9);
+
   /* Font family — برای کد و اعداد تکنیکال. semantic؛ جایگزین hardcoded
      ui-monospace chains. (اضافه شده ۲۰۲۶-۰۷-۳۱) */
   --ds-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
@@ -266,6 +291,15 @@
   --ds-surface: oklch(20% 0.012 250 / 0.7);
   --ds-surface-elevated: oklch(22% 0.012 250 / 0.85);
   --ds-surface-recessed: oklch(17% 0.012 250 / 0.6);
+
+  /* Missing aliases — dark overrides */
+  --ds-bg: var(--ds-canvas);
+  --ds-fg: var(--ds-text-primary);
+  --ds-fg-muted:     var(--ds-text-muted);
+  --ds-fg-secondary: var(--ds-text-secondary);
+  --ds-fg-subtle:    var(--ds-text-muted);
+  --ds-fg-inverse:   var(--ds-text-inverse);
+  --ds-surface-raised: oklch(22% 0.015 250 / 0.9);
 
   --ds-text-primary: oklch(95% 0.005 240);
   --ds-text-secondary: oklch(70% 0.01 240);
@@ -374,6 +408,14 @@
   --nova-flat: oklch(55% 0.02 265);
   --nova-flat-bg: oklch(60% 0.02 265 / 0.12);
 
+  /* Semantic trend aliases (finance: up=green, down=red, flat=neutral) */
+  --trend-up: var(--nova-up);
+  --trend-up-bg: var(--nova-up-bg);
+  --trend-down: var(--nova-down);
+  --trend-down-bg: var(--nova-down-bg);
+  --trend-flat: var(--nova-flat);
+  --trend-flat-bg: var(--nova-flat-bg);
+
   /* Accent tones (per-tile) */
   --nova-cyan: oklch(62% 0.12 220);
   --nova-rose: oklch(60% 0.15 25);
@@ -390,22 +432,22 @@
   --nova-tracking-tighter: -0.025em;
   --nova-tracking-tightest: -0.035em;
 
-  /* ---- NOVA Spacing ---------------------------------------------------- */
-  --nova-space-1: 0.25rem;
-  --nova-space-2: 0.5rem;
-  --nova-space-3: 0.75rem;
-  --nova-space-4: 1rem;
-  --nova-space-5: 1.25rem;
-  --nova-space-6: 1.5rem;
-  --nova-space-8: 2rem;
+  /* ---- NOVA Spacing ---- یکپارچه با DS (fluid) — تعریف واحد */
+  --nova-space-1: var(--ds-space-1);
+  --nova-space-2: var(--ds-space-2);
+  --nova-space-3: var(--ds-space-3);
+  --nova-space-4: var(--ds-space-4);
+  --nova-space-5: var(--ds-space-5);
+  --nova-space-6: var(--ds-space-6);
+  --nova-space-8: var(--ds-space-8);
 
-  /* ---- NOVA Radius ----------------------------------------------------- */
-  --nova-radius-sm: 0.375rem; /* 6px  */
-  --nova-radius-md: 0.5rem; /* 8px  */
-  --nova-radius-lg: 0.75rem; /* 12px */
-  --nova-radius-xl: 1rem; /* 16px */
-  --nova-radius-2xl: 1.25rem; /* 20px */
-  --nova-radius-full: 9999px;
+  /* ---- NOVA Radius ---- یکپارچه با رامپ DS (8/12/16/20/24) — تعریف واحد */
+  --nova-radius-sm: var(--ds-radius-sm);
+  --nova-radius-md: var(--ds-radius-md);
+  --nova-radius-lg: var(--ds-radius-lg);
+  --nova-radius-xl: var(--ds-radius-xl);
+  --nova-radius-2xl: var(--ds-radius-2xl);
+  --nova-radius-full: var(--ds-radius-full);
 
   /* ---- NOVA Effects ---------------------------------------------------- */
   --nova-backdrop: blur(16px) saturate(140%);

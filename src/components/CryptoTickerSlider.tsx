@@ -19,11 +19,17 @@ interface CryptoTickerSliderProps {
  */
 const CryptoTickerSlider: React.FC<CryptoTickerSliderProps> = ({ rates }) => {
   return (
-    <div className="nc-CryptoTickerSlider relative">
-      <Ticker duration={50} direction="rtl">
-        <div className="flex items-center gap-2 px-2 py-1">
+    <div
+      className="nc-CryptoTickerSlider relative overflow-hidden rounded-xl sm:rounded-2xl"
+      style={{
+        background: 'var(--ds-surface-elevated)',
+        border: '1px solid var(--ds-border-subtle)',
+      }}
+    >
+      <Ticker duration={45} direction="rtl">
+        <div className="flex items-center gap-2 sm:gap-3 px-3 py-2">
           {rates.map((rate, idx) => (
-            <div key={`${rate.symbol}-${idx}`} className="shrink-0 w-auto">
+            <div key={`${rate.symbol}-${idx}`} className="shrink-0">
               <CryptoTickerCard rate={rate} />
             </div>
           ))}

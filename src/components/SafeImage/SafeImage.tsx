@@ -173,11 +173,15 @@ export default function SafeImage({
           </div>
         </div>
       ) : fillMode === 'ambient' ? (
-        // Ambient blurred backdrop (2026): تصویرِ کامل روی پس‌زمینه‌ی محوِ هم‌رنگ.
+        // Ambient blurred backdrop (2026 — YouTube / Apple TV / Spotify pattern):
+        // لایه ۱: backdrop — همان تصویر scale-125 + blur شدید → کل کادر بدون هیچ گوشه خالی
+        // لایه ۲: foreground — تصویر کامل object-contain داخل inset کوچک → بدون برش
+        // نکته: p-[x%] روی next/image با fill کار نمی‌کند — باید از wrapper div با inset استفاده شود
         <>
+          {/* لایه backdrop: scale بزرگ + blur شدید — کل کادر را می‌پوشاند */}
           <Image
             aria-hidden
-            className="object-cover scale-110 blur-2xl brightness-[0.85] saturate-150"
+            className="object-cover scale-125 blur-3xl brightness-75 saturate-150"
             alt=""
             sizes={sizes}
             priority={priority}
@@ -185,16 +189,22 @@ export default function SafeImage({
             src={normalizeRasterUrl(src as string)}
             {...props}
           />
-          <Image
-            className={cn('object-contain', className === 'object-cover' ? undefined : className)}
-            alt={alt}
-            sizes={sizes}
-            priority={priority}
-            fill={fill}
-            src={normalizeRasterUrl(src as string)}
-            onError={() => setHasError(true)}
-            {...props}
-          />
+          {/* لایه foreground: wrapper با inset → تصویر کامل بدون برش */}
+          <div className="absolute inset-[5%]">
+            <Image
+              className={cn(
+                'object-contain',
+                className === 'object-cover' ? undefined : className,
+              )}
+              alt={alt}
+              sizes={sizes}
+              priority={priority}
+              fill
+              src={normalizeRasterUrl(src as string)}
+              onError={() => setHasError(true)}
+              {...props}
+            />
+          </div>
         </>
       ) : (
         <Image

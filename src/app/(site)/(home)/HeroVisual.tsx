@@ -1,25 +1,17 @@
 'use client';
 
 /**
- * HeroVisual — Client Component (2026 redesign — million-dollar edition)
+ * HeroVisual — Client Component (2026 premium — million-dollar edition)
  *
  * داده‌های واقعی نرخ ارز را از HeroSection (server) دریافت و نمایش می‌دهد.
- * - کارت ۱: نرخ‌های زنده (AFN/USD/AED) با proof of real platform (صرافی فعال)
- * - کارت ۲: ماشین‌حساب حواله (interactive، sessionStorage-aware)
- * - کارت ۳: وضعیت سرویس (freshness anchor از دیتابیس)
- *
- * نکات طراحی:
- *  - از glassmorphism + ambient SVG stroke به‌عنوان signature استفاده می‌شود
- *  - CTA متفاوت بر اساس نقش کاربر (guest → ثبت صرافی / author → داشبورد)
- *  - freshness واقعی (نه hardcoded)
- *  - همه اعداد فارسی و RTL-safe (logical properties only)
+ * Mobile: inline mini glass rate card + stats grid با هندسه premium
+ * Desktop: floating glass card stack با tilt interaction
  */
 
 import { CurrencySelect } from '@/components/ui/CurrencySelect';
 import { formatChangePercent, formatValueOnly } from '@/lib/market-rates/format';
 import type { MarketRateItem } from '@/lib/market-rates/types';
 import {
-  ArrowLeft,
   BarChart2,
   Building2,
   Globe,
@@ -41,7 +33,6 @@ import s from './HeroSection.module.css';
 
 /**
  * ترتیب ارزها: AFN → USD → EUR → AED (قانون P0 — افغانستان‌اول)
- * دلیل: کاربر افغان باید بتواند افغانی را مستقیماً به تومان/دلار تبدیل کند.
  */
 const CALC_CURRENCIES = [
   { code: 'AFN', label: 'افغانی' },
@@ -52,158 +43,90 @@ const CALC_CURRENCIES = [
 
 type CalcCurrency = (typeof CALC_CURRENCIES)[number]['code'];
 
-/** نرخ‌های ثابت به‌عنوان fallback زمانی که دادهٔ زنده موجود نیست.
- *  دادهٔ واقعی در HeroSection از سرور به‌صورت usdRate و usdToAfn می‌رسد. */
-const EUR_USD_RATIO = 1.08; // ۱ EUR ≈ ۱.۰۸ USD
-const AED_USD_RATIO = 0.272; // ۱ AED ≈ ۰.۲۷۲ USD
+const EUR_USD_RATIO = 1.08;
+const AED_USD_RATIO = 0.272;
 
 function toLatinDigits(str: string): string {
-  return str.replace(/[۰-۹]/g, (d) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)));
+  return str.replace(/[۰-۹]/g, (d) => String(String.fromCharCode(d.charCodeAt(0) - 1728)));
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   MODULE-LEVEL FORMATTERS — hoisted so the LCP hero never re-allocates
-   Intl.NumberFormat on every render (each keystroke in the mini-calculator
-   used to construct three new formatters per render).
-   ───────────────────────────────────────────────────────────────────────── */
-
 const FA_INT = new Intl.NumberFormat('fa-IR', { useGrouping: true, maximumFractionDigits: 0 });
-const FA_DEC_2 = new Intl.NumberFormat('fa-IR', {
-  useGrouping: true,
-  maximumFractionDigits: 2,
-  minimumFractionDigits: 2,
-});
-const FA_USD_TO_AFN = new Intl.NumberFormat('fa-IR', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-  useGrouping: false,
-});
-const FA_COMPACT = new Intl.NumberFormat('fa-IR', {
-  maximumFractionDigits: 1,
-  minimumFractionDigits: 0,
-});
+const FA_DEC_2 = new Intl.NumberFormat('fa-IR',
+  { useGrouping: true, minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const FA_USD_TO_AFN = new Intl.NumberFormat('fa-IR',
+  { useGrouping: true, minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const FA_COMPACT = new Intl.NumberFormat('fa-IR',
+  { notation: 'compact', maximumFractionDigits: 1 });
 const FA_PLAIN = new Intl.NumberFormat('fa-IR');
 
-/* ─────────────────────────────────────────────────────────────────────────
-   HOOK: useGlassTilt
-   ───────────────────────────────────────────────────────────────────────── */
-
+/* ── Glass tilt hook ──────────────────────────────────────────────────── */
 function useGlassTilt(strength = 5) {
   const ref = useRef<HTMLDivElement>(null);
-  const rafRef = useRef<number | null>(null);
-  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReduced(mq.matches);
-    const h = () => setReduced(mq.matches);
-    mq.addEventListener('change', h);
-    return () => mq.removeEventListener('change', h);
-  }, []);
-
-  const handleMove = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (reduced || !ref.current) return;
-      const rect = ref.current.getBoundingClientRect();
-      const nx = (e.clientX - rect.left) / rect.width - 0.5;
-      const ny = (e.clientY - rect.top) / rect.height - 0.5;
-      if (rafRef.current === null) {
-        rafRef.current = requestAnimationFrame(() => {
-          rafRef.current = null;
-          if (ref.current) {
-            ref.current.style.transform = `perspective(1000px) rotateX(${-ny * strength}deg) rotateY(${nx * strength}deg) translateZ(6px)`;
-          }
-        });
-      }
-    },
-    [reduced, strength],
-  );
-
+  const handleMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    el.style.transform = `perspective(600px) rotateX(${-y * strength}deg) rotateY(${x * strength}deg) translateZ(4px)`;
+  }, [strength]);
   const handleLeave = useCallback(() => {
-    if (ref.current) {
-      ref.current.style.transition = 'transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1)';
-      ref.current.style.transform = '';
-      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
-      resetTimerRef.current = setTimeout(() => {
-        resetTimerRef.current = null;
-        if (ref.current) ref.current.style.transition = 'transform 80ms ease-out';
-      }, 500);
-    }
+    const el = ref.current;
+    if (!el) return;
+    el.style.transform = '';
   }, []);
-
-  useEffect(
-    () => () => {
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-      if (resetTimerRef.current !== null) clearTimeout(resetTimerRef.current);
-    },
-    [],
-  );
-
   return { ref, handleMove, handleLeave };
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   HERO STATS — داده‌های real از سرور
-   ───────────────────────────────────────────────────────────────────────── */
-
 const STATS_FALLBACK: ReadonlyArray<{ value: string; label: string }> = [
-  { value: '+۵۰۰۰', label: 'کاربر فعال' },
-  { value: '+۱۰', label: 'کشور' },
-  { value: '۲۴/۷', label: 'پشتیبانی' },
-  { value: '۹۹.۹٪', label: 'آپتایم' },
-] as const;
+  { value: '۱۰۵', label: 'صرافی فعال' },
+  { value: '۲۱', label: 'نرخ زنده' },
+];
 
-/** فرمت فارسی عدد بزرگ به شکل جمع‌شده: ۱۲۳۴ → «۱.۲ هزار» / ۱۲۳۴۵۶۷ → «۱.۲ میلیون» */
 function formatCompactFa(n: number): string {
-  if (n >= 1_000_000) {
-    return `${FA_COMPACT.format(n / 1_000_000)} میلیون`;
-  }
-  if (n >= 1_000) {
-    return `${FA_COMPACT.format(n / 1_000)} هزار`;
-  }
+  if (n >= 1000) return FA_COMPACT.format(n);
   return FA_PLAIN.format(n);
 }
 
-/** فرمت فاصله از now (مثلاً «۲ دقیقه پیش» / «هم اکنون») */
 function formatFreshnessFa(date: Date | null): string {
-  if (!date) return '—';
-  const diffMin = Math.floor((Date.now() - date.getTime()) / 60_000);
-  if (diffMin < 1) return 'هم اکنون';
-  if (diffMin < 60) return `${FA_PLAIN.format(diffMin)} دقیقه پیش`;
-  const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `${FA_PLAIN.format(diffH)} ساعت پیش`;
-  return `${FA_PLAIN.format(Math.floor(diffH / 24))} روز پیش`;
+  if (!date) return 'لحظاتی پیش';
+  const diff = Date.now() - date.getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'همین الان';
+  if (mins < 60) return `${FA_PLAIN.format(mins)} دقیقه پیش`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${FA_PLAIN.format(hrs)} ساعت پیش`;
+  return `${FA_PLAIN.format(Math.floor(hrs / 24))} روز پیش`;
 }
 
 const SYMBOL_ROW_LABELS: Record<string, string> = {
-  AFGHANI_AFN: 'افغانی / تومان',
-  IRAN_USD: 'دلار / تومان',
-  IRAN_AED: 'درهم / تومان',
+  USDT: 'تتر',
+  BTC: 'بیت‌کوین',
+  ETH: 'اتریوم',
+  USD: 'دلار آمریکا',
+  EUR: 'یورو',
+  GBP: 'پوند',
+  AED: 'درهم',
+  TRY: 'لیر ترکیه',
+  CNY: 'یوان چین',
+  CAD: 'دلار کانادا',
+  AFN: 'افغانی',
 };
 
-/* ─────────────────────────────────────────────────────────────────────────
-   PROPS
-   ───────────────────────────────────────────────────────────────────────── */
-
 interface HeroVisualProps {
-  /** نرخ‌های انتخاب‌شده برای نمایش در کارت اول */
+  /** نرخ‌های featured برای نمایش در کارت اصلی */
   heroRates: MarketRateItem[];
-  /** نرخ USD/IRR برای محاسبه حواله */
+  /** نرخ USD/IRR برای محاسبه‌گر */
   usdRate: MarketRateItem | null;
-  /** cross-rate: ۱ USD = چند AFN */
+  /** نرخ USD→AFN (تعداد افغانی در برابر ۱ دلار) */
   usdToAfn: number | null;
-  /** تعداد صرافی‌های فعال — از دیتابیس */
+  /** تعداد صرافی‌های فعال */
   activeExchangeCount: number;
-  /** تعداد کل نرخ‌های موجود */
+  /** تعداد کل نرخ‌ها */
   totalRates: number;
-  /** آخرین زمان به‌روزرسانی بازار */
+  /** آخرین زمان به‌روزرسانی */
   freshnessAnchor: Date | null;
 }
-
-/* ─────────────────────────────────────────────────────────────────────────
-   MAIN COMPONENT
-   ───────────────────────────────────────────────────────────────────────── */
 
 export default function HeroVisual({
   heroRates,
@@ -214,9 +137,6 @@ export default function HeroVisual({
   freshnessAnchor,
 }: HeroVisualProps) {
   const { data: session, status } = useSession();
-  // Auth state is derived client-side here (2026-08-02) so the server Hero
-  // section no longer calls auth() — the hero streams off cached market rates
-  // and the CTA personalizes once the session resolves.
   const isAuthed = status === 'authenticated' && !!session?.user;
   const role = session?.user?.role as string | undefined;
   const isAuthor =
@@ -225,23 +145,14 @@ export default function HeroVisual({
   const card1 = useGlassTilt(5);
   const card2 = useGlassTilt(4);
 
-  // فرمت headline: ۱ USD = X.XX AFN
-  // مثال: 188,400 ÷ 2,900 ≈ 64.97 → «۶۴.۹۷»
   const usdToAfnFormatted =
     usdToAfn !== null && Number.isFinite(usdToAfn) ? FA_USD_TO_AFN.format(usdToAfn) : null;
 
-  // ── mini-calculator state — پیش‌فرض AFN (قانون P0 — افغانستان‌اول) ──
   const [calcAmount, setCalcAmount] = useState('100');
   const [calcCurrency, setCalcCurrency] = useState<CalcCurrency>('AFN');
 
-  // نرخ USD به تومان از server
   const usdValue = usdRate?.value ?? null;
 
-  // نرخ تومان برای هر ارز انتخابی:
-  // USD: مستقیم × usdValue (Toman per USD)
-  // EUR: × usdValue × EUR_USD_RATIO  (USD per EUR)
-  // AED: × usdValue × AED_USD_RATIO  (USD per AED)
-  // AFN: usdValue / usdToAfn         (Toman per AFN = Toman per USD ÷ AFN per USD)
   function getRateInToman(): number | null {
     if (usdValue === null || !Number.isFinite(usdValue)) return null;
     if (calcCurrency === 'USD') return usdValue;
@@ -254,7 +165,6 @@ export default function HeroVisual({
     return null;
   }
 
-  // آیتم‌های CurrencySelect از CALC_CURRENCIES
   const currencyItems = useMemo(
     () =>
       CALC_CURRENCIES.map((c) => ({
@@ -269,10 +179,6 @@ export default function HeroVisual({
   const rateInToman = getRateInToman();
   const resultToman = rateInToman !== null && parsedAmount > 0 ? parsedAmount * rateInToman : null;
 
-  // نتیجه به افغانی: (مبلغ × نرخ تومان ارز) ÷ نرخ تومان افغانی
-  // usdToAfn = IRAN_USD.value / AFGHANI_AFN.value = تومان/دلار ÷ تومان/افغانی = افغانی/دلار
-  // پس: برای هر ارز (غیر AFN) → resultToman × usdToAfn / usdValue
-  // اگر ارز انتخابی خودش AFN باشد، resultAfn = همان مبلغ (تبدیل به خودش منطقی نیست؛ null)
   const resultAfn =
     calcCurrency === 'AFN'
       ? null
@@ -280,7 +186,6 @@ export default function HeroVisual({
         ? (resultToman * usdToAfn) / usdValue
         : null;
 
-  // برای حالت AFN source: نتیجه در دلار (معکوس)
   const resultUsdFromAfn =
     calcCurrency === 'AFN' && parsedAmount > 0 && usdToAfn !== null && usdToAfn > 0
       ? parsedAmount / usdToAfn
@@ -290,7 +195,6 @@ export default function HeroVisual({
   const resultTomanFormatted = resultToman !== null ? FA_INT.format(resultToman) : '—';
   const resultUsdFormatted = resultUsdFromAfn !== null ? FA_DEC_2.format(resultUsdFromAfn) : '—';
 
-  // لینک به صفحه حواله با prefill
   const transferHref =
     parsedAmount > 0
       ? `/money-transfer?amount=${parsedAmount}&from=${calcCurrency}`
@@ -300,10 +204,11 @@ export default function HeroVisual({
     <section className={s.root} aria-label="صفحه اصلی — پلتفرم مالی">
       {/* ── Ambient layered background ─────────────────────────────── */}
       <div className={s.bg} aria-hidden>
+        {/* Dot grid pattern */}
         <svg className={s.grid} role="presentation" focusable="false">
           <defs>
-            <pattern id="homeGrid" width="48" height="48" patternUnits="userSpaceOnUse">
-              <path d="M 48 0 L 0 0 0 48" fill="none" stroke="currentColor" strokeWidth="0.5" />
+            <pattern id="homeGrid" width="32" height="32" patternUnits="userSpaceOnUse">
+              <circle cx="1" cy="1" r="1" fill="currentColor" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#homeGrid)" />
@@ -370,6 +275,10 @@ export default function HeroVisual({
             </linearGradient>
           </defs>
         </svg>
+
+        {/* Geometric accent circles — فقط در بزرگ */}
+        <div className={s.geomCircle1} aria-hidden />
+        <div className={s.geomCircle2} aria-hidden />
       </div>
 
       {/* ── Text column ─────────────────────────────────────────────── */}
@@ -377,10 +286,11 @@ export default function HeroVisual({
         {/* Live badge */}
         <div className={s.badge}>
           <span className={s.badgeDot} aria-hidden />
-          پلتفرم مالی معتمد افغانستان ۱۴۰۴
+          <span>پلتفرم مالی معتمد</span>
+          <span className={s.badgeHighlight}>افغانستان ۱۴۰۴</span>
         </div>
 
-        {/* Headline — دو‌خطی قوی با focal point */}
+        {/* Headline */}
         <h1 className={s.headline}>
           <span className={s.headlineMain}>نرخ‌ها، حواله، تحلیل —</span>
           <br />
@@ -408,41 +318,80 @@ export default function HeroVisual({
           ))}
         </ul>
 
-        {/* CTAs — primary + secondary + contextual (role-aware)
-            - Guest:   مشاهده نرخ‌ها / ارسال حواله / ثبت صرافی
-            - Author:  داشبورد من / ارسال حواله / تحلیل‌ها
-        */}
+        {/* CTAs */}
         <div className={s.ctas}>
           {isAuthor ? (
             <Link href="/dashboard" className={s.ctaPrimary}>
-              <LayoutDashboard size={16} strokeWidth={1.75} />
+              <LayoutDashboard size={15} strokeWidth={1.75} />
               داشبورد من
             </Link>
           ) : (
             <Link href="/money-transfer" className={s.ctaPrimary}>
-              <TrendingUp size={16} strokeWidth={1.75} />
+              <TrendingUp size={15} strokeWidth={1.75} />
               مشاهده نرخ‌ها
             </Link>
           )}
-          <Link href="/money-transfer?amount=100&from=AFN#contact" className={s.ctaAction}>
-            <SendHorizonal size={16} strokeWidth={1.75} className={s.sendIcon} />
-            ارسال حواله
-          </Link>
-          {!isAuthed && (
-            <Link href="/apply-exchange" className={s.ctaSecondary}>
-              <Building2 size={16} strokeWidth={1.5} />
-              ثبت صرافی
-              <ArrowLeft size={15} strokeWidth={1.5} className={s.arrowIcon} />
+          <div className={s.ctasRow}>
+            <Link href="/money-transfer?amount=100&from=AFN#contact" className={s.ctaAction}>
+              <SendHorizonal size={15} strokeWidth={1.75} className={s.sendIcon} />
+              ارسال حواله
             </Link>
-          )}
-          {isAuthed && !isAuthor && (
-            <Link href="/archive" className={s.ctaSecondary}>
-              <BarChart2 size={16} strokeWidth={1.5} />
-              تحلیل‌ها
-              <ArrowLeft size={15} strokeWidth={1.5} className={s.arrowIcon} />
-            </Link>
-          )}
+            {!isAuthed && (
+              <Link href="/apply-exchange" className={s.ctaSecondary}>
+                <Building2 size={15} strokeWidth={1.5} />
+                ثبت صرافی
+              </Link>
+            )}
+            {isAuthed && !isAuthor && (
+              <Link href="/archive" className={s.ctaSecondary}>
+                <BarChart2 size={15} strokeWidth={1.5} />
+                تحلیل‌ها
+              </Link>
+            )}
+          </div>
         </div>
+
+        {/* ── Mobile Mini Rate Card — فقط در موبایل نمایش داده می‌شود ── */}
+        {heroRates.length > 0 && (
+          <div className={s.mobileRateCard} aria-label="نرخ‌های زنده">
+            {/* Header */}
+            <div className={s.mobileRateHeader}>
+              <div className={s.mobileRateTitle}>
+                <span className={s.mobileRateDot} aria-hidden />
+                نرخ‌های زنده
+              </div>
+              {usdToAfnFormatted && (
+                <div className={s.mobileRateAfn}>
+                  <span className={s.mobileRateAfnVal}>{usdToAfnFormatted}</span>
+                  <span className={s.mobileRateAfnUnit}>AFN/USD</span>
+                </div>
+              )}
+            </div>
+            {/* Rate rows */}
+            <div className={s.mobileRateRows}>
+              {heroRates.slice(0, 3).map((rate) => {
+                const trend = rate.changePercent >= 0 ? 'up' : 'down';
+                return (
+                  <div key={rate.symbol} className={s.mobileRateRow}>
+                    <span className={s.mobileRateName}>
+                      {SYMBOL_ROW_LABELS[rate.symbol] ?? rate.displayNameFa}
+                    </span>
+                    <span className={`${s.mobileRateVal} ${trend === 'up' ? s.trendUp : s.trendDown}`}>
+                      {trend === 'up'
+                        ? <TrendingUp size={9} strokeWidth={2} style={{ display: 'inline', marginInlineEnd: 3 }} />
+                        : <TrendingDown size={9} strokeWidth={2} style={{ display: 'inline', marginInlineEnd: 3 }} />
+                      }
+                      {formatValueOnly(rate.value, rate.decimals)}
+                    </span>
+                    <span className={`${s.mobileRateChange} ${trend === 'up' ? s.trendUp : s.trendDown}`}>
+                      {formatChangePercent(rate.changePercent)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Mini stats bar — data-driven از سرور */}
         <ul className={s.statsBar} aria-label="آمار پلتفرم">
@@ -469,13 +418,13 @@ export default function HeroVisual({
         </ul>
       </div>
 
-      {/* ── Visual column: floating glass cards ─────────────────────── */}
+      {/* ── Visual column: floating glass cards — فقط desktop ─────── */}
       <div className={s.visual} aria-hidden>
         {/* Ambient orbs */}
         <div className={s.orbA} />
         <div className={s.orbB} />
 
-        {/* Card 1: نرخ‌های زنده — foreground */}
+        {/* Card 1: نرخ‌های زنده */}
         <div
           ref={card1.ref}
           className={`${s.glassCard} ${s.cardMain}`}
@@ -500,14 +449,9 @@ export default function HeroVisual({
               <div className={`${s.cardAmount} ${s.cardAmountSkeleton}`} />
             )}
             <div className={s.cardDivider} />
-
-            {/* ردیف‌های نرخ — از داده‌های واقعی */}
             {heroRates.length > 0
               ? heroRates.map((rate) => {
                   const trend = rate.changePercent >= 0 ? ('up' as const) : ('down' as const);
-                  // نرخ خرید/فروش — با divisor تقسیم می‌شوند تا به تومان تبدیل شوند
-                  // null چک می‌کنیم (نه undefined) چون unstable_cache/JSON فیلدهای
-                  // optional را به null تبدیل می‌کند نه undefined
                   const hasBuySell =
                     rate.buyValue != null &&
                     rate.sellValue != null &&
@@ -526,26 +470,14 @@ export default function HeroVisual({
                           {SYMBOL_ROW_LABELS[rate.symbol] ?? rate.displayNameFa}
                         </span>
                         <div className={s.rateRight}>
-                          <span
-                            className={`${s.rateChange} ${trend === 'up' ? s.trendUp : s.trendDown}`}
-                          >
+                          <span className={`${s.rateChange} ${trend === 'up' ? s.trendUp : s.trendDown}`}>
                             {formatChangePercent(rate.changePercent)}
                           </span>
-                          <span
-                            className={`${s.rateVal} ${trend === 'up' ? s.trendUp : s.trendDown}`}
-                          >
+                          <span className={`${s.rateVal} ${trend === 'up' ? s.trendUp : s.trendDown}`}>
                             {trend === 'up' ? (
-                              <TrendingUp
-                                size={9}
-                                strokeWidth={2}
-                                style={{ display: 'inline', marginInlineEnd: 3 }}
-                              />
+                              <TrendingUp size={9} strokeWidth={2} style={{ display: 'inline', marginInlineEnd: 3 }} />
                             ) : (
-                              <TrendingDown
-                                size={9}
-                                strokeWidth={2}
-                                style={{ display: 'inline', marginInlineEnd: 3 }}
-                              />
+                              <TrendingDown size={9} strokeWidth={2} style={{ display: 'inline', marginInlineEnd: 3 }} />
                             )}
                             {formatValueOnly(rate.value, rate.decimals)}
                           </span>
@@ -559,23 +491,20 @@ export default function HeroVisual({
                           </span>
                           <span className={s.buySellItem}>
                             <span className={s.buySellLabel}>فروش:</span>
-                            <span className={`${s.buySellVal} ${s.buySellSell}`}>
-                              {sellDisplay}
-                            </span>
+                            <span className={`${s.buySellVal} ${s.buySellSell}`}>{sellDisplay}</span>
                           </span>
                         </div>
                       )}
                     </div>
                   );
                 })
-              : /* skeleton ردیف‌ها اگر داده موجود نبود */
-                [1, 2, 3].map((i) => (
+              : [1, 2, 3].map((i) => (
                   <div key={i} className={`${s.rateRow} ${s.rateRowSkeleton}`} />
                 ))}
           </div>
         </div>
 
-        {/* Card 2: انتقال پول — mid depth */}
+        {/* Card 2: انتقال پول */}
         <div
           ref={card2.ref}
           className={`${s.glassCard} ${s.cardSecond}`}
@@ -585,8 +514,6 @@ export default function HeroVisual({
         >
           <div className={s.cardInner}>
             <div className={s.cardLabel}>محاسبه حواله</div>
-
-            {/* ── ورودی مبلغ + انتخاب ارز (CurrencySelect — نه native) ── */}
             <div className={s.calcRow}>
               <input
                 type="text"
@@ -607,10 +534,7 @@ export default function HeroVisual({
                 />
               </div>
             </div>
-
             <div className={s.cardDivider} />
-
-            {/* ── نتیجه: برای source غیر AFN، افغانی اول؛ برای AFN، تومان+دلار ── */}
             {calcCurrency === 'AFN' ? (
               <>
                 <div className={s.rateRow}>
@@ -630,15 +554,11 @@ export default function HeroVisual({
               <>
                 <div className={s.rateRow}>
                   <span className={s.rateName}>دریافتی (افغانی)</span>
-                  <span className={`${s.rateVal} ${resultAfn ? s.trendUp : ''}`}>
-                    {resultAfnFormatted}
-                  </span>
+                  <span className={`${s.rateVal} ${resultAfn ? s.trendUp : ''}`}>{resultAfnFormatted}</span>
                 </div>
                 <div className={s.rateRow}>
                   <span className={s.rateName}>دریافتی (تومان)</span>
-                  <span className={`${s.rateVal} ${s.resultTomanMuted}`}>
-                    {resultTomanFormatted}
-                  </span>
+                  <span className={`${s.rateVal} ${s.resultTomanMuted}`}>{resultTomanFormatted}</span>
                 </div>
                 <div className={s.rateRow}>
                   <span className={s.rateName}>کارمزد</span>
@@ -646,8 +566,6 @@ export default function HeroVisual({
                 </div>
               </>
             )}
-
-            {/* ── دکمه ─────────────────────────────────────── */}
             <Link href={transferHref} className={s.cardCta}>
               <SendHorizonal size={11} strokeWidth={2} className={s.sendIcon} />
               ارسال حواله
@@ -655,7 +573,7 @@ export default function HeroVisual({
           </div>
         </div>
 
-        {/* Card 3: وضعیت سرویس — background (data-driven freshness) */}
+        {/* Card 3: وضعیت سرویس */}
         <div className={`${s.glassCard} ${s.cardThird}`}>
           <div className={s.cardInner}>
             <div className={s.statusBadge}>

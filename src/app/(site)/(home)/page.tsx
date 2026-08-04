@@ -35,20 +35,21 @@ export default function Home() {
   return (
     <div className="nc-HomePage relative">
       {/* ── Hero Section (async — fetches market rates) ──────── */}
-      <div className="container relative pt-6 sm:pt-8">
+      {/* ⚠️ بدون container — hero full-width است و padding خودش را دارد */}
+      <div className="container relative pt-4 sm:pt-6 lg:pt-10">
         <Suspense fallback={<HeroSectionSkeleton />}>
           <HeroSection />
         </Suspense>
       </div>
 
       {/* ── Services Section (static) ────────────────────────── */}
-      <div className="container relative mt-6 lg:mt-8">
+      <div className="container relative mt-6 sm:mt-8 lg:mt-12">
         <ServicesSection />
       </div>
 
       {/* ── Market Tickers (async, suspended) ───────────────── */}
-      <div className="container relative">
-        <Suspense fallback={<Skeleton className="h-28 rounded-2xl" />}>
+      <div className="container relative mt-6 sm:mt-8 lg:mt-12">
+        <Suspense fallback={<Skeleton className="h-24 sm:h-28 rounded-2xl" />}>
           <CryptoTickerSection />
         </Suspense>
 
@@ -58,19 +59,19 @@ export default function Home() {
       </div>
 
       {/* ── Trending Topics (async streaming) ───────────────── */}
-      <div className="container relative mt-4 lg:mt-5">
+      <div className="container relative mt-6 sm:mt-8 lg:mt-12">
         <Suspense fallback={<SectionCategoriesSkeleton />}>
           <TrendingDeferred />
         </Suspense>
       </div>
 
       {/* ── Pulse Board (async, suspended) ──────────────────── */}
-      <div className="container relative mt-4 lg:mt-6">
+      <div className="container relative mt-6 sm:mt-8 lg:mt-12">
         <Suspense
           fallback={
-            <div className="space-y-4">
-              <Skeleton className="h-10 w-full rounded-2xl" />
-              <Skeleton className="h-[480px] w-full rounded-3xl" />
+            <div className="space-y-3 sm:space-y-4">
+              <Skeleton className="h-9 sm:h-10 w-full rounded-2xl" />
+              <Skeleton className="h-[360px] sm:h-[480px] w-full rounded-3xl" />
             </div>
           }
         >
@@ -79,41 +80,41 @@ export default function Home() {
       </div>
 
       {/* ── Ad Strips + Posts + Authors (single Suspense boundary) ── */}
-      {/* Ads and posts share the same visual area — stream together */}
       <Suspense
         fallback={
           <>
-            <div className="container relative mt-4 lg:mt-6">
+            <div className="container relative mt-4 sm:mt-5 lg:mt-6">
               <AdBannerSkeleton />
             </div>
-            <div className="container relative mt-4 lg:mt-6">
+            <div className="container relative mt-4 sm:mt-5 lg:mt-6">
               <SectionMagazine7Skeleton />
             </div>
-            <div className="container relative mt-4 lg:mt-6">
+            <div className="container relative mt-4 sm:mt-5 lg:mt-6">
               <AdBannerSkeleton />
             </div>
           </>
         }
       >
         <AdStripsDeferred />
-        <div className="container relative mt-4 lg:mt-6">
+        <div className="container relative mt-4 sm:mt-5 lg:mt-6">
           <PostsSection />
         </div>
       </Suspense>
 
       {/* ── Top Authors (async streaming) ───────────────────── */}
-      <div className="container relative mt-4 lg:mt-6">
+      <div className="container relative mt-4 sm:mt-5 lg:mt-6">
         <Suspense fallback={<SectionAuthorsSkeleton />}>
           <TopAuthorsSectionDeferred />
         </Suspense>
       </div>
 
       {/* ── Trust & Stats Section (static) ──────────────────── */}
-      <div className="container relative mt-4 lg:mt-6">
+      <div className="container relative mt-4 sm:mt-6 lg:mt-8">
         <TrustSection />
       </div>
 
-      <div className="container relative mt-4 lg:mt-6 mb-8 lg:mb-12">
+      {/* ── Newsletter — آخرین section، با bottom padding برای mobile nav ── */}
+      <div className="container relative mt-6 sm:mt-8 lg:mt-12 mb-28 sm:mb-24 lg:mb-16 pb-4 sm:pb-6">
         <SectionSubscribe2 className="" />
       </div>
     </div>

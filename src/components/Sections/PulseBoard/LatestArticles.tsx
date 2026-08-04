@@ -45,6 +45,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import '@/styles/ad-primitives.css';
 
 interface CategoryItem {
   name: string;
@@ -321,7 +322,7 @@ function LatestArticles({
         {/* ================================================================== */}
         {/*  Header                                                              */}
         {/* ================================================================== */}
-        <header className="relative px-4 sm:px-7 lg:px-10 pt-5 sm:pt-7 pb-4 sm:pb-5">
+        <header className="relative px-3 sm:px-5 lg:px-8 pt-3 sm:pt-5 pb-2 sm:pb-4">
           <div className="flex flex-col gap-4 sm:gap-5">
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="relative shrink-0">
@@ -423,7 +424,10 @@ function LatestArticles({
                     ·
                   </span>
                   {/* color-contrast fix: از رنگ accessible برای متن استفاده می‌کنیم */}
-                  <span className="font-semibold" style={{ color: accessibleTextColor(accent.color) }}>
+                  <span
+                    className="font-semibold"
+                    style={{ color: accessibleTextColor(accent.color) }}
+                  >
                     کابل
                   </span>
                 </div>
@@ -527,14 +531,14 @@ function LatestArticles({
         {/* ================================================================== */}
         {/*  Content                                                             */}
         {/* ================================================================== */}
-        <div className="relative px-4 sm:px-7 lg:px-10 pb-6 sm:pb-9 pt-2 sm:pt-3">
+        <div className="relative px-3 sm:px-5 lg:px-8 pb-4 sm:pb-7 pt-2">
           {currentCategoryPosts.length === 0 ? (
-            <div className="py-16 text-center text-neutral-500 dark:text-neutral-400">
-              <Newspaper className="mx-auto h-10 w-10 opacity-40" aria-hidden />
+            <div className="py-12 sm:py-16 text-center text-neutral-500 dark:text-neutral-400">
+              <Newspaper className="mx-auto h-9 w-9 sm:h-10 sm:w-10 opacity-40" aria-hidden />
               <p className="mt-3 text-sm font-medium">در این دسته فعلاً مقاله‌ای منتشر نشده</p>
             </div>
           ) : (
-            <div className="space-y-8 sm:space-y-10">
+            <div className="space-y-5 sm:space-y-8 lg:space-y-10">
               {/* ============================================================== */}
               {/*  HERO + STACK                                                  */}
               {/* ============================================================== */}
@@ -738,20 +742,21 @@ function HeroCard({
             className={cn(
               'absolute top-3 start-3 sm:top-4 sm:start-4',
               'inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full',
-              'bg-black/45 backdrop-blur-md text-white border border-white/15',
+              'bg-white/20 backdrop-blur-md border border-white/25',
+              'text-white',
               'transition-all duration-300 hover:scale-110',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60',
             )}
           >
             <Bookmark
-              className={cn('h-4 w-4', bookmarked && 'fill-current text-amber-400')}
+              className={cn('h-4 w-4', bookmarked ? 'fill-current text-amber-400' : 'text-white')}
               strokeWidth={2}
             />
           </button>
 
           {/* Category pill — bottom-right (RTL) above title */}
           {cat && (
-            <div className="absolute bottom-32 sm:bottom-36 end-4 sm:end-6 flex items-center gap-1.5">
+            <div className="absolute bottom-24 sm:bottom-28 end-4 sm:end-6 flex items-center gap-1.5">
               {/* color-contrast fix: از پس‌زمینه تیره‌تر (۸۵%) استفاده می‌کنیم
                   تا color:#fff نسبت کنتراست ≥ 4.5:1 داشته باشد */}
               <span
@@ -777,12 +782,12 @@ function HeroCard({
           )}
 
           {/* Hero content */}
-          <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 lg:p-7 text-white">
-            <h3 className="text-lg sm:text-xl lg:text-[26px] font-bold tracking-tight leading-[1.3] line-clamp-2 text-balance">
+          <div className="absolute inset-x-0 bottom-0 p-3 sm:p-5 lg:p-7 text-white">
+            <h3 className="text-[12.5px] sm:text-[16px] lg:text-[21px] font-bold tracking-tight leading-[1.35] line-clamp-2 text-balance">
               {post.title}
             </h3>
             {post.excerpt && (
-              <p className="mt-2 text-[12.5px] sm:text-[13.5px] leading-[1.7] text-white/85 line-clamp-2 sm:line-clamp-3 max-w-2xl text-pretty">
+              <p className="mt-1.5 text-[10.5px] sm:text-[12px] leading-[1.65] text-white/85 line-clamp-2 sm:line-clamp-3 max-w-2xl text-pretty">
                 {post.excerpt
                   .replace(/<[^>]+>/g, ' ')
                   .trim()
@@ -791,7 +796,7 @@ function HeroCard({
               </p>
             )}
 
-            <div className="mt-3 sm:mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[10.5px] sm:text-[11.5px] text-white/80 font-vazirmatn tabular-nums">
+            <div className="mt-2 sm:mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[9.5px] sm:text-[10.5px] text-white/80 font-vazirmatn tabular-nums">
               <span className="inline-flex items-center gap-1.5">
                 <Calendar className="h-3 w-3" strokeWidth={2.25} aria-hidden />
                 {toPersianNumber(fmtJalali(post.createdAt))}
@@ -870,7 +875,7 @@ function StackCard({
         )}
         style={{ ['--stack-accent' as string]: accent } as React.CSSProperties}
       >
-        <div className="relative w-2/5 sm:w-2/5 shrink-0 overflow-hidden">
+        <div className="relative w-[38%] sm:w-2/5 shrink-0 overflow-hidden">
           <SafeImage
             src={post.featuredImage}
             alt={post.title}
@@ -905,7 +910,7 @@ function StackCard({
           )}
         </div>
 
-        <div className="flex-1 min-w-0 p-3.5 sm:p-4 flex flex-col">
+        <div className="flex-1 min-w-0 p-3 sm:p-4 flex flex-col">
           <div className="flex items-center justify-between text-[10px] sm:text-[10.5px] text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums">
             <span>{toPersianNumber(fmtJalaliShort(post.createdAt))}</span>
             <button
@@ -920,7 +925,7 @@ function StackCard({
               className={cn(
                 'inline-flex h-8 w-8 items-center justify-center rounded-md',
                 'hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors',
-                bookmarked && 'text-amber-500',
+                bookmarked ? 'text-amber-500' : 'text-neutral-400 dark:text-neutral-500',
               )}
             >
               <Bookmark
@@ -932,7 +937,7 @@ function StackCard({
 
           <h3
             className={cn(
-              'mt-1.5 text-[13.5px] sm:text-[14.5px] font-semibold leading-[1.45]',
+              'mt-1.5 text-[12px] sm:text-[13.5px] font-semibold leading-[1.45]',
               'text-neutral-900 dark:text-white line-clamp-2 text-balance',
               'transition-colors duration-300',
               'group-hover/stack:text-[var(--stack-accent)]',
@@ -1055,7 +1060,7 @@ function ListItem({
         <div
           className={cn(
             'relative shrink-0 overflow-hidden rounded-lg sm:rounded-xl',
-            'h-14 w-20 sm:h-[68px] sm:w-[100px]',
+            'h-20 w-28 sm:h-24 sm:w-36',
             'border border-[color:var(--hairline)]',
           )}
         >
@@ -1063,7 +1068,7 @@ function ListItem({
             src={post.featuredImage}
             alt={post.title}
             fill
-            sizes="120px"
+            sizes="(min-width: 640px) 144px, 112px"
             containerClassName="absolute inset-0"
             className="object-cover transition-transform duration-500 ease-out group-hover/rail:scale-110"
             variant="thumbnail"
@@ -1101,7 +1106,7 @@ function ListItem({
 
           <h4
             className={cn(
-              'text-[13px] sm:text-[14.5px] font-semibold leading-[1.45]',
+              'text-[11.5px] sm:text-[13px] font-semibold leading-[1.4]',
               'text-neutral-900 dark:text-white line-clamp-2 text-balance',
               'transition-colors duration-300',
               'group-hover/rail:text-[var(--rail-accent)]',
@@ -1133,7 +1138,7 @@ function ListItem({
               className={cn(
                 'inline-flex h-8 w-8 items-center justify-center rounded-md',
                 'hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors',
-                bookmarked && 'text-amber-500',
+                bookmarked ? 'text-amber-500' : 'text-neutral-400 dark:text-neutral-500',
               )}
             >
               <Bookmark
@@ -1282,94 +1287,88 @@ function InlineAdBanner({
         href={ad.linkUrl}
         target="_blank"
         rel="noopener noreferrer sponsored"
-        // WCAG 2.5.3 label-in-name: visible content is the accessible name.
         className={cn(
           'relative block overflow-hidden rounded-2xl sm:rounded-3xl',
           'border border-[color:var(--hairline)]',
-          'bg-neutral-100/40 dark:bg-neutral-900/40 backdrop-blur-md',
-          'min-h-[120px] sm:min-h-[140px]',
           'transition-shadow duration-300',
           'hover:shadow-[0_16px_40px_-12px_rgba(94,106,230,0.35)]',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50',
         )}
       >
-        {/* Image */}
-        <div className="absolute inset-0">
-          {ad.imageUrl ? (
-            <SafeImage
-              src={ad.imageUrl}
-              alt=""
-              fill
-              sizes="(min-width: 1024px) 1100px, 100vw"
-              containerClassName="absolute inset-0"
-              className="object-cover transition-transform duration-700 ease-out group-hover/bnr:scale-[1.03]"
-              variant="card"
-              ratio="16/6"
-            />
-          ) : (
-            <div
-              className="absolute inset-0"
-              style={{
-                background: `linear-gradient(135deg, ${accentColor}40 0%, ${accentColor}10 100%)`,
-              }}
-              aria-hidden
-            />
-          )}
+        {/* Container با aspect-ratio ثابت — دقیقاً مثل BannerADS variant image */}
+        <div className="relative w-full overflow-hidden aspect-[16/5] sm:aspect-[16/4]">
+
+          {/* لایه ۱: تصویر با fillMode ambient — کل کادر پر می‌شود */}
+          <SafeImage
+            src={ad.imageUrl}
+            alt={ad.title}
+            fill
+            sizes="(min-width: 1024px) 1100px, 100vw"
+            containerClassName="absolute inset-0"
+            className="transition-transform duration-700 ease-out group-hover/bnr:scale-[1.03]"
+            variant="hero"
+            fillMode={ad.imageUrl ? 'ambient' : 'cover'}
+          />
+
+          {/* لایه ۲: gradient overlay برای خوانایی متن */}
           <div
-            className="absolute inset-0"
+            className="absolute inset-0 z-10"
             aria-hidden
             style={{
               background:
-                'linear-gradient(90deg, rgba(20,23,32,0.85) 0%, rgba(20,23,32,0.55) 50%, rgba(20,23,32,0.15) 100%)',
+                'linear-gradient(90deg, rgba(10,12,20,0.88) 0%, rgba(10,12,20,0.6) 45%, rgba(10,12,20,0.15) 100%)',
             }}
           />
+
+          {/* لایه ۳: glow accent */}
           <div
-            className="absolute -top-12 -end-12 h-40 w-40 rounded-full blur-3xl opacity-30 group-hover/bnr:opacity-50 transition-opacity duration-500"
+            className="absolute -top-12 -end-12 h-40 w-40 rounded-full blur-3xl opacity-25 group-hover/bnr:opacity-45 transition-opacity duration-500 z-10"
             aria-hidden
             style={{ backgroundColor: accentColor }}
           />
-        </div>
 
-        <div className="relative h-full flex items-center gap-4 sm:gap-6 p-4 sm:p-6 lg:p-7 min-h-[inherit]">
-          <div className="min-w-0 flex-1 space-y-1.5">
-            <span
-              className={cn(
-                'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md',
-                'text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em]',
-                'text-white/90 bg-white/10 backdrop-blur-md border border-white/15',
+          {/* محتوا روی تصویر */}
+          <div className="absolute inset-0 z-20 flex items-center gap-3 sm:gap-6 p-4 sm:p-6 lg:p-8">
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <span
+                className={cn(
+                  'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md',
+                  'text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.15em]',
+                  'text-white/90 bg-white/10 backdrop-blur-md border border-white/15',
+                )}
+              >
+                <Sparkles className="h-2 w-2" strokeWidth={2.5} aria-hidden />
+                <span>تبلیغ</span>
+              </span>
+              <h4 className="text-[12px] sm:text-[15px] lg:text-[18px] font-bold leading-snug text-white text-balance line-clamp-2">
+                {ad.title}
+              </h4>
+              {ad.description && (
+                <p className="hidden sm:block text-[11px] leading-relaxed text-white/75 line-clamp-1 max-w-2xl">
+                  {ad.description}
+                </p>
               )}
-            >
-              <Sparkles className="h-2.5 w-2.5" strokeWidth={2.5} aria-hidden />
-              <span>AD · تبلیغ</span>
-            </span>
-            <h4 className="text-[14px] sm:text-[17px] lg:text-[19px] font-bold leading-snug text-white text-balance line-clamp-2">
-              {ad.title}
-            </h4>
-            {ad.description && (
-              <p className="hidden sm:block text-[12px] leading-relaxed text-white/80 line-clamp-1 max-w-2xl">
-                {ad.description}
-              </p>
-            )}
-          </div>
+            </div>
 
-          <div
-            className={cn(
-              'hidden sm:inline-flex shrink-0 items-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full',
-              'text-[12px] sm:text-[13px] font-bold text-neutral-900 dark:text-white',
-              'transition-all duration-300 group-hover/bnr:gap-2.5',
-            )}
-            style={{
-              backgroundColor: '#fff',
-              boxShadow: `0 8px 24px -8px ${accentColor}80`,
-            }}
-          >
-            <span>مشاهده</span>
-            <ArrowUpRight
-              className="h-3.5 w-3.5 transition-transform duration-300"
-              style={{ color: accentColor }}
-              strokeWidth={2.5}
-              aria-hidden
-            />
+            <div
+              className={cn(
+                'shrink-0 inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full',
+                'text-[11px] sm:text-[12px] font-bold text-neutral-900',
+                'transition-all duration-300 group-hover/bnr:gap-2.5',
+              )}
+              style={{
+                backgroundColor: '#fff',
+                boxShadow: `0 8px 24px -8px ${accentColor}80`,
+              }}
+            >
+              <span>مشاهده</span>
+              <ArrowUpRight
+                className="h-3 w-3 sm:h-3.5 sm:w-3.5 transition-transform duration-300"
+                style={{ color: accentColor }}
+                strokeWidth={2.5}
+                aria-hidden
+              />
+            </div>
           </div>
         </div>
       </Link>
@@ -1429,7 +1428,7 @@ function QuoteHighlight({
           >
             نکته‌ی کلیدی
           </div>
-          <blockquote className="text-[14px] sm:text-[15.5px] lg:text-[16.5px] leading-[1.7] text-neutral-800 dark:text-neutral-200 text-balance font-medium">
+          <blockquote className="text-[12.5px] sm:text-[14.5px] lg:text-[16px] leading-[1.75] text-neutral-800 dark:text-neutral-200 text-balance font-medium">
             «{text}
             {text.length >= 220 ? '…' : ''}»
           </blockquote>
@@ -1480,10 +1479,10 @@ function FooterActions({
             <Library className="h-4 w-4" strokeWidth={2} aria-hidden />
           </div>
           <div>
-            <p className="text-[13px] sm:text-sm font-bold text-neutral-900 dark:text-white">
+            <p className="text-[11.5px] sm:text-sm font-bold text-neutral-900 dark:text-white">
               به انتهای فهرست رسیدید
             </p>
-            <p className="text-[11px] sm:text-[12px] text-neutral-500 dark:text-neutral-400 tabular-nums">
+            <p className="text-[10px] sm:text-[11.5px] text-neutral-500 dark:text-neutral-400 tabular-nums">
               {toPersianNumber(formatNumber(totalCount))} مقاله نمایش داده شد
             </p>
           </div>
@@ -1545,16 +1544,17 @@ function FooterActions({
           <TrendingUp className="h-4 w-4" strokeWidth={2} aria-hidden />
         </div>
         <div className="min-w-0">
-          <p className="text-[13px] sm:text-sm font-bold text-neutral-900 dark:text-white">
+          <p className="text-[11.5px] sm:text-sm font-bold text-neutral-900 dark:text-white">
             هنوز مطالب بیشتری هست
           </p>
-          <p className="text-[11px] sm:text-[12px] text-neutral-500 dark:text-neutral-400 tabular-nums">
+          <p className="text-[10px] sm:text-[11.5px] text-neutral-500 dark:text-neutral-400 tabular-nums">
             مقالات بیشتر را در همین بخش یا در آرشیو ببینید
           </p>
         </div>
       </div>
 
       <div className="relative flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
+        {/* دکمه «بارگذاری بیشتر» — رنگ پس‌زمینه از accent، رنگ متن inline سفید */}
         <button
           type="button"
           disabled={loading}
@@ -1562,7 +1562,7 @@ function FooterActions({
           className={cn(
             'ad-load-shine group/load relative inline-flex items-center justify-center gap-2',
             'px-5 sm:px-6 py-2.5 sm:py-3 rounded-full',
-            'text-[12.5px] sm:text-[13.5px] font-bold text-white',
+            'text-[11.5px] sm:text-[13px] font-bold',
             'transition-all duration-300',
             'cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
@@ -1570,6 +1570,7 @@ function FooterActions({
           )}
           style={{
             backgroundColor: accent,
+            color: '#fff',
             boxShadow: `0 8px 20px -8px ${accent}80, 0 2px 6px -2px ${accent}40`,
           }}
         >
@@ -1584,28 +1585,29 @@ function FooterActions({
           )}
         </button>
 
+        {/* لینک «آرشیو کامل» — glass شفاف، متن تیره در light / روشن در dark */}
         <Link
           href={archiveHref}
           className={cn(
             'group/all inline-flex items-center justify-center gap-2',
             'px-5 py-2.5 sm:py-3 rounded-full',
-            'text-[12.5px] sm:text-[13.5px] font-semibold',
+            'text-[11.5px] sm:text-[13px] font-semibold',
             'border border-[color:var(--hairline)]',
-            'bg-white/70 dark:bg-neutral-800/50 backdrop-blur-md',
-            'text-neutral-800 dark:text-neutral-100',
-            'hover:bg-white dark:hover:bg-neutral-800',
+            'bg-white/60 dark:bg-white/8 backdrop-blur-md',
+            'text-neutral-700 dark:text-neutral-200',
+            'hover:bg-white/90 dark:hover:bg-white/12',
             'transition-all duration-300 hover:gap-2.5',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
           )}
         >
           <Library
-            className="h-3.5 w-3.5 text-neutral-500 dark:text-neutral-400"
+            className="h-3.5 w-3.5 text-neutral-400 dark:text-neutral-400"
             strokeWidth={2.25}
             aria-hidden
           />
           <span>آرشیو کامل</span>
           <ArrowLeft
-            className="h-3.5 w-3.5 transition-transform duration-300 group-hover/all:-translate-x-1"
+            className="h-3.5 w-3.5 text-neutral-400 dark:text-neutral-400 transition-transform duration-300 group-hover/all:-translate-x-1"
             strokeWidth={2.5}
             aria-hidden
           />

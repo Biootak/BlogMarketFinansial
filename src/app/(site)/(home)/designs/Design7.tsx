@@ -172,44 +172,43 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
 
   return (
     <section className={`relative ${className}`}>
-      {/* 2026-07-04: Ticker Bar از این کامپوننت حذف شد — نوار بازار
-          دیگر در صفحه‌ی اصلی نمایش داده نمی‌شود. */}
-
       {/* ─── Main Container ─── */}
       <div
-        className="relative rounded-3xl overflow-hidden bg-neutral-50 dark:bg-neutral-900 @container/main-hero"
+        className="relative rounded-3xl overflow-hidden @container/main-hero"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        {/* Animated theme glow border */}
+        {/* Animated theme gradient — کل outer را رنگی می‌کند؛
+            inner card با m-1.5 فاصله دارد → همین ۶px لبه رنگی border است */}
         <AnimatePresence mode="wait">
           <motion.div
-            key={mainPost.id}
+            key={`bg-${mainPost.id}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6 }}
-            className={`absolute inset-0 bg-gradient-to-br ${mainTheme.gradient} opacity-100 pointer-events-none`}
+            className={`absolute inset-0 bg-gradient-to-br ${mainTheme.gradient} pointer-events-none`}
           />
         </AnimatePresence>
 
-        {/* Inner subtle noise/texture (radial dots) */}
+        {/* Noise texture — جزئیات ظریف روی gradient */}
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none [background-image:radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] [background-size:24px_24px]" />
 
-        {/* Inner card (slightly inset for depth) */}
+        {/* Inner card — m-1.5 باعث می‌شود gradient لبه‌ها دیده شود */}
         <div className="relative m-1.5 sm:m-2 rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-950">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
             {/* ─── Main Featured Card ─── */}
-            <div className="lg:col-span-8 relative">
+            <div className="lg:col-span-8 relative overflow-hidden">
               {/* ─── Rotating Compact Transfer Rate Bridge — چرخش خودکار بین نرخ‌های حواله ───
                   بیرون از AnimatePresence نگه‌ش داشتیم تا موقع تعویض پست unmount نشه
                   و شمارنده چرخش از 0 ریست نشه. والدش همین column هست که relative هست. */}
+              {/* CompactRateBridge — فقط sm+ نمایش می‌شود (در موبایل overflow می‌زند) */}
               {transferRateItems.length > 0 && (
                 <motion.div
                   initial={{ y: -10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.35, type: 'spring', stiffness: 200 }}
-                  className="absolute top-14 sm:top-16 start-4 sm:start-6 z-20"
+                  className="hidden sm:block absolute top-16 start-4 sm:start-6 z-20"
                 >
                   <CompactRateBridge
                     rates={transferRateItems}
@@ -224,7 +223,7 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                   key={mainPost.id}
                   tiltStrength={0.4}
                   enableHolographic
-                  className="relative group h-[min(52dvh,240px)] sm:h-[320px] @lg/main-hero:h-[400px] @3xl/main-hero:h-[480px] overflow-hidden rounded-2xl"
+                  className="relative group h-[min(56dvh,320px)] sm:h-[380px] @lg/main-hero:h-[440px] @3xl/main-hero:h-[520px] overflow-hidden"
                   innerClassName="relative h-full"
                 >
                   <motion.div
@@ -495,10 +494,46 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                   </motion.div>
                 </MagneticSpotlightCard>
               </AnimatePresence>
+
+              {/* ─── Navigation Arrows — داخل main card col تا روی تصویر باشند ─── */}
+              <div
+                className="absolute z-30 flex items-center pointer-events-none
+                           top-[40%] -translate-y-1/2 start-0 end-0 justify-between px-2
+                           sm:top-1/2
+                           sm:px-3"
+              >
+                <button
+                  type="button"
+                  onClick={goNext}
+                  aria-label="اسلاید بعدی"
+                  className="pointer-events-auto flex items-center justify-center rounded-full
+                             bg-black/50 backdrop-blur-md border border-white/30 text-white
+                             shadow-xl transition-all duration-300 ease-out
+                             hover:bg-black/70 hover:scale-110 active:scale-95
+                             w-9 h-9 sm:w-11 sm:h-11"
+                >
+                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={goPrev}
+                  aria-label="اسلاید قبلی"
+                  className="pointer-events-auto flex items-center justify-center rounded-full
+                             bg-black/50 backdrop-blur-md border border-white/30 text-white
+                             shadow-xl transition-all duration-300 ease-out
+                             hover:bg-black/70 hover:scale-110 active:scale-95
+                             w-9 h-9 sm:w-11 sm:h-11"
+                >
+                  <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+                </button>
+              </div>
             </div>
 
-            {/* ─── Side Cards ─── */}
-            <div className="lg:col-span-4 flex flex-row lg:flex-col gap-2 sm:gap-3 p-2 sm:p-3 bg-neutral-100/80 dark:bg-neutral-950/80 backdrop-blur-sm">
+            {/* ─── Side Cards ───
+                موبایل: دو کارت کنار هم (flex-row) با ارتفاع خوب
+                lg+: ستون عمودی
+            */}
+            <div className="lg:col-span-4 flex flex-row lg:flex-col gap-2 sm:gap-2.5 p-2 sm:p-3 bg-neutral-100/80 dark:bg-neutral-950/80 backdrop-blur-sm">
               {otherPosts.slice(0, 2).map((post, i) => {
                 const theme = sideThemes[i];
                 return (
@@ -507,7 +542,7 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 + i * 0.1 }}
-                    className="flex-1 h-[100px] sm:h-[120px] @md/main-hero:flex-1 @lg/main-hero:h-auto"
+                    className="flex-1 h-[160px] sm:h-[180px] @md/main-hero:flex-1 @lg/main-hero:h-auto"
                     onClick={() => setActiveIndex(initialPosts.findIndex((p) => p.id === post.id))}
                   >
                     <MagneticSpotlightCard
@@ -569,30 +604,27 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                       </div>
 
                       {/* Content */}
-                      <div className="absolute bottom-0 start-0 end-0 p-3 sm:p-4 z-10">
-                        <h3 className="text-sm sm:text-base font-bold text-white line-clamp-2 leading-snug group-hover:text-white transition-colors">
+                      <div className="absolute bottom-0 start-0 end-0 p-2.5 sm:p-4 z-10">
+                        <h3 className="text-[13px] sm:text-sm font-bold text-white line-clamp-2 leading-snug">
                           {post.title}
                         </h3>
-                        <div className="flex items-center gap-2 mt-2">
+                        <div className="flex items-center gap-1.5 mt-1.5">
                           <Avatar
-                            sizeClass="h-5 w-5 sm:h-6 sm:w-6"
+                            sizeClass="h-5 w-5"
                             radius="rounded-full"
                             imgUrl={post.author.profile?.avatar || post.author.image}
                             userName={post.author.name || ''}
                           />
-                          <span className="text-white/70 text-[10px] sm:text-xs truncate">
+                          <span className="text-white/70 text-[10px] truncate flex-1 min-w-0">
                             {post.author.name}
                           </span>
                           {post.viewCount > 0 && (
-                            <>
-                              <span className="w-1 h-1 rounded-full bg-white/40 shrink-0" />
-                              <span className="text-white/60 text-[10px] sm:text-xs flex items-center gap-1 tabular-nums">
-                                <Eye className="w-2.5 h-2.5" />
-                                {post.viewCount > 999
-                                  ? `${(post.viewCount / 1000).toFixed(1)}K`
-                                  : post.viewCount.toLocaleString('fa-IR')}
-                              </span>
-                            </>
+                            <span className="text-white/60 text-[10px] flex items-center gap-0.5 tabular-nums shrink-0">
+                              <Eye className="w-2.5 h-2.5" />
+                              {post.viewCount > 999
+                                ? `${(post.viewCount / 1000).toFixed(1)}K`
+                                : post.viewCount.toLocaleString('fa-IR')}
+                            </span>
                           )}
                         </div>
                       </div>
@@ -609,58 +641,6 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
           </div>
         </div>
 
-        {/* ─── Navigation Arrows ───
-             چیدمان ریسپانسیو:
-             • موبایل: دکمه‌ها 36px، در طرفین، کمی بالاتر از وسط (دور از متن پایین)
-             • تبلت (sm 640px+): دکمه‌ها 44px، در طرفین، وسط عمودی
-             • دسکتاپ (lg 1024px+): دکمه‌ها 48px، در طرفین با فاصله بیشتر
-        */}
-        <div
-          className="absolute z-30 flex items-center pointer-events-none
-                     /* موبایل: طرفین، ~۴۰٪ از بالا — فاصله از CompactRateBridge بالا و متن پایین */
-                     top-[40%] -translate-y-1/2 start-0 end-0 justify-between px-2
-                     /* تبلت: وسط عمودی */
-                     sm:top-1/2
-                     /* تبلت: فاصله بیشتر از لبه */
-                     sm:px-3
-                     /* دسکتاپ: فاصله بیشتر */
-                     lg:px-4"
-        >
-          <button
-            type="button"
-            onClick={goNext}
-            aria-label="اسلاید بعدی"
-            className="pointer-events-auto flex items-center justify-center rounded-full
-                       bg-black/40 backdrop-blur-md border border-white/25 text-white
-                       shadow-xl transition-all duration-300 ease-out
-                       hover:bg-black/60 hover:scale-110 active:scale-95
-                       /* موبایل */
-                       w-9 h-9
-                       /* تبلت */
-                       sm:w-11 sm:h-11
-                       /* دسکتاپ */
-                       lg:w-12 lg:h-12"
-          >
-            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
-          </button>
-          <button
-            type="button"
-            onClick={goPrev}
-            aria-label="اسلاید قبلی"
-            className="pointer-events-auto flex items-center justify-center rounded-full
-                       bg-black/40 backdrop-blur-md border border-white/25 text-white
-                       shadow-xl transition-all duration-300 ease-out
-                       hover:bg-black/60 hover:scale-110 active:scale-95
-                       /* موبایل */
-                       w-9 h-9
-                       /* تبلت */
-                       sm:w-11 sm:h-11
-                       /* دسکتاپ */
-                       lg:w-12 lg:h-12"
-          >
-            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
-          </button>
-        </div>
       </div>
 
       {/* ─── Bottom Dot Indicators + Keyboard Hint ─── */}

@@ -1,6 +1,7 @@
 /* ============================================================================
-   HeroSection.module.css — Home landing hero (2026 redesign)
+   HeroSection.module.css — Home landing hero (2026 premium)
    billion-dollar fintech hero: ambient SVG stroke | stats bar | 3 CTAs | tokens
+   Mobile-first premium: character + depth + micro-interactions
    ============================================================================ */
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -8,7 +9,7 @@
    ────────────────────────────────────────────────────────────────────────── */
 .root {
   position: relative;
-  min-height: clamp(620px, 85vh, 860px);
+  min-height: clamp(480px, 80vh, 860px);
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
   align-items: center;
@@ -17,19 +18,18 @@
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   AMBIENT BACKGROUND — همان layered radial gradient صفحه حواله
+   AMBIENT BACKGROUND — layered radial gradient mesh
    ────────────────────────────────────────────────────────────────────────── */
 .bg {
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: radial-gradient(
-      ellipse 70% 55% at 105% -5%,
-      oklch(55% 0.1 235 / 0.17) 0%,
-      transparent 60%
-    ), radial-gradient(ellipse 55% 40% at -8% 110%, oklch(72% 0.13 70 / 0.12) 0%, transparent 60%),
-    radial-gradient(ellipse 35% 45% at 55% 115%, oklch(58% 0.13 290 / 0.07) 0%, transparent 60%),
+  background:
+    radial-gradient(ellipse 70% 55% at 105% -5%, oklch(55% 0.1 235 / 0.2) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 40% at -8% 110%, oklch(72% 0.13 70 / 0.14) 0%, transparent 60%),
+    radial-gradient(ellipse 35% 45% at 55% 115%, oklch(58% 0.13 290 / 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 90% 60% at 50% 0%, oklch(52% 0.14 162 / 0.04) 0%, transparent 55%),
     var(--ds-canvas);
 }
 
@@ -43,14 +43,65 @@
   opacity: 0.7;
 }
 
-/* SVG grid */
+/* SVG dot grid */
 .grid {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  color: var(--ds-border-subtle);
-  opacity: 0.45;
+  color: var(--ds-brand-600);
+  opacity: 0.12;
+}
+
+:global(.dark) .grid {
+  color: oklch(52% 0.14 162);
+  opacity: 0.08;
+}
+
+/* ── Geometric accent circles — background decoration ───────────── */
+.geomCircle1 {
+  position: absolute;
+  inset-inline-end: -80px;
+  top: -80px;
+  width: 320px;
+  height: 320px;
+  border-radius: 9999px;
+  border: 1px solid oklch(52% 0.14 162 / 0.12);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.geomCircle1::before {
+  content: "";
+  position: absolute;
+  inset: 32px;
+  border-radius: 9999px;
+  border: 1px solid oklch(52% 0.14 162 / 0.08);
+}
+
+.geomCircle2 {
+  position: absolute;
+  inset-inline-start: -60px;
+  bottom: -60px;
+  width: 240px;
+  height: 240px;
+  border-radius: 9999px;
+  border: 1px solid oklch(72% 0.13 70 / 0.1);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* در موبایل: circles کوچک‌تر */
+@media (max-width: 600px) {
+  .geomCircle1 {
+    width: 200px;
+    height: 200px;
+    inset-inline-end: -40px;
+    top: -40px;
+  }
+  .geomCircle2 {
+    display: none;
+  }
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -59,106 +110,126 @@
 .content {
   position: relative;
   z-index: 2;
-  padding-inline: clamp(20px, 5vw, 60px);
-  padding-block: clamp(60px, 10vw, 120px);
+  padding-inline: clamp(16px, 4vw, 60px);
+  padding-block: clamp(40px, 8vw, 100px);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  gap: clamp(16px, 3vw, 24px);
+  min-width: 0;
+  overflow: hidden;
 }
 
-/* Staggered entrance — همان pattern صفحه حواله
-   LCP-safe (2026-08-03): opacity از keyframe حذف شد. متن هیرو باید در اولین
-   paint دیده شود — با `from { opacity: 0 }` و fill-mode: both، اگر main-thread
-   شلوغ باشد (انیمیشن دیر شروع شود)، h1 هیرو در HTML هست ولی paint نمی‌شود و
-   LCP به عنصر پایین‌تر (services-title در 6.4s) می‌افتد. حالا فقط translateY
-   انیمیشن می‌شود و متن همان لحظهٔ اول قابل‌دیدن است. */
+/* Staggered entrance */
 .content > * {
   animation: staggerUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-.content > *:nth-child(1) {
-  animation-delay: 0ms;
-}
-.content > *:nth-child(2) {
-  animation-delay: 80ms;
-}
-.content > *:nth-child(3) {
-  animation-delay: 160ms;
-}
-.content > *:nth-child(4) {
-  animation-delay: 220ms;
-}
-.content > *:nth-child(5) {
-  animation-delay: 280ms;
-}
+.content > *:nth-child(1) { animation-delay: 0ms; }
+.content > *:nth-child(2) { animation-delay: 80ms; }
+.content > *:nth-child(3) { animation-delay: 160ms; }
+.content > *:nth-child(4) { animation-delay: 220ms; }
+.content > *:nth-child(5) { animation-delay: 280ms; }
 
 @keyframes staggerUp {
-  from {
-    transform: translateY(20px);
-  }
-  to {
-    transform: translateY(0);
-  }
+  from { transform: translateY(20px); }
+  to   { transform: translateY(0); }
 }
 
-/* ── Live badge — همان liveBadge صفحه حواله ───────────────── */
+/* ── Live badge — premium pill با explicit border ─────────────────── */
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 16px;
+  padding: 7px 16px 7px 12px;
   border-radius: var(--ds-radius-full);
-  border: 1px solid var(--ds-border-default);
-  background: oklch(100% 0 0 / 0.5);
-  backdrop-filter: blur(12px) saturate(1.8);
-  font-size: var(--ds-text-xs);
+  border: 1.5px solid oklch(52% 0.14 162 / 0.3);
+  background: oklch(100% 0 0 / 0.72);
+  backdrop-filter: blur(16px) saturate(2);
+  box-shadow:
+    0 2px 12px -4px oklch(52% 0.14 162 / 0.2),
+    inset 0 1px 0 oklch(100% 0 0 / 0.9);
+  font-size: clamp(12px, 3.2vw, 13.5px);
   font-weight: var(--ds-weight-semibold);
   color: var(--ds-text-secondary);
-  letter-spacing: 0.01em;
-  margin-bottom: var(--ds-space-4);
+  letter-spacing: 0.005em;
+  white-space: nowrap;
+  max-width: 100%;
+  transition:
+    border-color var(--ds-duration-base),
+    box-shadow var(--ds-duration-base);
+}
+
+.badge:hover {
+  border-color: oklch(52% 0.14 162 / 0.55);
+  box-shadow:
+    0 4px 20px -6px oklch(52% 0.14 162 / 0.3),
+    inset 0 1px 0 oklch(100% 0 0 / 0.9);
 }
 
 :global(.dark) .badge {
-  background: oklch(22% 0.015 250 / 0.65);
-  border-color: oklch(30% 0.015 250 / 0.7);
+  background: oklch(18% 0.02 250 / 0.85);
+  border-color: oklch(52% 0.14 162 / 0.4);
+  color: oklch(80% 0.02 250);
+  box-shadow:
+    0 0 0 0px transparent,
+    0 2px 12px -4px oklch(0% 0 0 / 0.4),
+    0 0 16px -8px oklch(52% 0.14 162 / 0.25),
+    inset 0 1px 0 oklch(100% 0 0 / 0.08);
 }
 
+:global(.dark) .badge:hover {
+  border-color: oklch(52% 0.14 162 / 0.65);
+  box-shadow:
+    0 4px 20px -6px oklch(52% 0.14 162 / 0.25),
+    inset 0 1px 0 oklch(100% 0 0 / 0.08);
+}
+
+/* dot با glow ring */
 .badgeDot {
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
   border-radius: 9999px;
   background: var(--ds-accent-emerald);
-  box-shadow: 0 0 0 2px oklch(60% 0.1 165 / 0.25);
+  box-shadow:
+    0 0 0 3px oklch(60% 0.1 165 / 0.25),
+    0 0 10px oklch(60% 0.1 165 / 0.5);
   animation: livePulse 2s ease-in-out infinite;
   flex-shrink: 0;
 }
 
+/* نشانگر سبز premium در badge (رنگ‌بندی افغانستان) */
+.badgeText {
+  color: var(--ds-text-secondary);
+}
+
+.badgeHighlight {
+  color: var(--ds-brand-600);
+  font-weight: var(--ds-weight-bold);
+}
+
 @keyframes livePulse {
-  0%,
-  100% {
-    transform: scale(0.9);
-    opacity: 0.7;
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 1;
-  }
+  0%, 100% { transform: scale(0.9); opacity: 0.7; }
+  50%       { transform: scale(1.15); opacity: 1; }
 }
 
 /* ── Headline ───────────────────────────────────────────────── */
 .headline {
-  font-size: clamp(2rem, 4.5vw, 3.5rem);
+  font-size: clamp(1.6rem, 5vw, 3.5rem);
   font-weight: var(--ds-weight-extrabold);
-  line-height: 1.08;
-  letter-spacing: -0.035em;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
   color: var(--ds-text-primary);
   margin-bottom: var(--ds-space-4);
+  max-width: 100%;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 .headlineMain {
   color: var(--ds-text-primary);
 }
 
-/* همان heroAccent با animated underline صفحه حواله */
+/* animated underline — thicker + glow */
 .headlineAccent {
   position: relative;
   display: inline-block;
@@ -169,42 +240,37 @@
   content: "";
   position: absolute;
   inset-inline-start: 0;
-  bottom: -3px;
+  bottom: -4px;
   width: 100%;
   height: 3px;
   border-radius: 2px;
   background: linear-gradient(to left, var(--ds-brand-500), var(--ds-accent-violet));
+  box-shadow: 0 2px 8px oklch(52% 0.14 162 / 0.35);
   transform: scaleX(0);
   transform-origin: 100% 50%;
   animation: drawLine 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.5s forwards;
 }
 
 @keyframes drawLine {
-  to {
-    transform: scaleX(1);
-  }
+  to { transform: scaleX(1); }
 }
 
 /* ── Sub ───────────────────────────────────────────────────── */
 .sub {
-  font-size: var(--ds-text-base);
+  font-size: clamp(0.875rem, 2.5vw, 1rem);
   line-height: var(--ds-leading-relaxed);
   color: var(--ds-text-secondary);
   max-width: 480px;
   margin-bottom: var(--ds-space-5);
 }
 
-.subBreak {
-  display: none;
-}
+.subBreak { display: none; }
 
 @media (min-width: 640px) {
-  .subBreak {
-    display: block;
-  }
+  .subBreak { display: block; }
 }
 
-/* ── Pills */
+/* ── Pills — premium per-pill ─────────────────── */
 .pills {
   display: flex;
   flex-wrap: wrap;
@@ -216,35 +282,79 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 12px;
+  padding: 6px 14px;
   border-radius: var(--ds-radius-full);
   border: 1px solid var(--ds-border-subtle);
-  background: oklch(100% 0 0 / 0.55);
-  backdrop-filter: blur(8px);
+  background: oklch(100% 0 0 / 0.65);
+  backdrop-filter: blur(10px);
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-medium);
   color: var(--ds-text-secondary);
-  transition: border-color var(--ds-duration-fast), background var(--ds-duration-fast);
+  transition:
+    border-color var(--ds-duration-fast),
+    background var(--ds-duration-fast),
+    transform var(--ds-duration-fast) var(--ds-ease-spring),
+    box-shadow var(--ds-duration-fast);
+  white-space: nowrap;
+  box-shadow:
+    0 1px 3px oklch(0% 0 0 / 0.05),
+    inset 0 1px 0 oklch(100% 0 0 / 0.7);
 }
 
 .pill:hover {
-  border-color: var(--ds-brand-500);
-  background: oklch(100% 0 0 / 0.75);
+  border-color: oklch(52% 0.14 162 / 0.45);
+  background: oklch(100% 0 0 / 0.85);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px -4px oklch(52% 0.14 162 / 0.2);
 }
 
-/* ── Stats bar — mini stats درون hero ─────────────────────────── */
+:global(.dark) .pill {
+  background: oklch(20% 0.02 250 / 0.75);
+  border-color: oklch(52% 0.14 162 / 0.2);
+  color: oklch(75% 0.02 250);
+  box-shadow:
+    0 1px 3px oklch(0% 0 0 / 0.2),
+    inset 0 1px 0 oklch(100% 0 0 / 0.05);
+}
+
+:global(.dark) .pill:hover {
+  background: oklch(24% 0.025 250 / 0.85);
+  border-color: oklch(52% 0.14 162 / 0.5);
+  box-shadow: 0 4px 14px -4px oklch(52% 0.14 162 / 0.2);
+}
+
+/* pill icon — رنگ accent به آیکون */
+.pill svg {
+  color: var(--ds-brand-500);
+  flex-shrink: 0;
+}
+
+:global(.dark) .pill svg {
+  color: oklch(65% 0.12 162);
+}
+
+/* ── CTAs row (wrapper for secondary buttons) ─────────────────── */
+.ctasRow {
+  display: contents; /* در دسکتاپ/تبلت: inline در .ctas flex */
+}
+
+/* ── Stats bar — premium glass با brand accent ──────────────── */
 .statsBar {
   display: flex;
   align-items: center;
   gap: 0;
   margin-top: var(--ds-space-6);
   border-radius: var(--ds-radius-xl);
-  border: 1px solid var(--ds-border-subtle);
-  background: oklch(100% 0 0 / 0.45);
-  backdrop-filter: blur(10px);
+  border: 1px solid oklch(52% 0.14 162 / 0.18);
+  background: oklch(100% 0 0 / 0.5);
+  backdrop-filter: blur(12px) saturate(1.5);
+  box-shadow:
+    0 1px 3px oklch(0% 0 0 / 0.04),
+    inset 0 1px 0 oklch(100% 0 0 / 0.8);
   overflow: hidden;
   list-style: none;
   padding: 0;
+  width: 100%;
 }
 
 .statItem {
@@ -252,23 +362,30 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 10px var(--ds-space-3);
-  border-inline-end: 1px solid var(--ds-border-subtle);
+  gap: 3px;
+  padding: 12px var(--ds-space-3);
+  border-inline-end: 1px solid oklch(52% 0.14 162 / 0.1);
   min-width: 0;
+  transition: background var(--ds-duration-fast);
+}
+
+.statItem:hover {
+  background: oklch(52% 0.14 162 / 0.05);
 }
 
 .statItem:last-child {
   border-inline-end: none;
 }
 
+/* همه اعداد hero stats به رنگ brand */
 .statVal {
-  font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-bold);
+  font-size: clamp(0.875rem, 4vw, 1rem);
+  font-weight: var(--ds-weight-extrabold);
   font-variant-numeric: tabular-nums;
-  color: var(--ds-text-primary);
-  letter-spacing: -0.02em;
+  color: var(--ds-brand-600);
+  letter-spacing: -0.025em;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .statLabel {
@@ -279,104 +396,160 @@
 }
 
 :global(.dark) .statsBar {
-  background: oklch(22% 0.015 250 / 0.5);
-  border-color: oklch(30% 0.015 250 / 0.5);
+  background: oklch(18% 0.02 250 / 0.7);
+  border-color: oklch(52% 0.14 162 / 0.25);
+  box-shadow:
+    0 1px 8px -2px oklch(0% 0 0 / 0.3),
+    inset 0 1px 0 oklch(100% 0 0 / 0.05);
+}
+
+:global(.dark) .statItem {
+  border-inline-end-color: oklch(52% 0.14 162 / 0.12);
+}
+
+:global(.dark) .statVal {
+  color: oklch(68% 0.12 162);
+}
+
+:global(.dark) .statLabel {
+  color: oklch(55% 0.02 250);
 }
 
 /* ── CTAs ─────────────────────────────────────────────────────── */
 .ctas {
   display: flex;
   align-items: center;
-  gap: var(--ds-space-3);
+  gap: var(--ds-space-2);
   flex-wrap: wrap;
 }
 
+/* ── Primary CTA — سبز premium با glow ─────── */
 .ctaPrimary {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 13px 28px;
+  justify-content: center;
+  gap: 7px;
+  padding: 12px 24px;
   border-radius: var(--ds-radius-lg);
-  background: var(--ds-brand-600);
+  background: linear-gradient(135deg, var(--ds-brand-600) 0%, oklch(50% 0.16 162) 100%);
   color: var(--ds-text-inverse);
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
-  min-height: 48px;
-  box-shadow: 0 0 0 1px oklch(58% 0.12 165 / 0.35), 0 8px 32px -8px oklch(52% 0.14 162 / 0.45),
-    inset 0 1px 0 oklch(100% 0 0 / 0.12);
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
-    var(--ds-duration-fast) var(--ds-ease-spring), box-shadow var(--ds-duration-base)
-    var(--ds-ease-out-quart);
+  min-height: 46px;
+  box-shadow:
+    0 0 0 1px oklch(52% 0.14 162 / 0.4),
+    0 8px 28px -8px oklch(52% 0.14 162 / 0.5),
+    inset 0 1px 0 oklch(100% 0 0 / 0.15);
+  transition:
+    background var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-spring),
+    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart);
+  white-space: nowrap;
 }
 
 .ctaPrimary:hover {
-  background: var(--ds-brand-700);
+  background: linear-gradient(135deg, var(--ds-brand-700) 0%, oklch(48% 0.16 162) 100%);
   transform: translateY(-2px);
-  box-shadow: 0 0 0 1px oklch(58% 0.12 165 / 0.45), 0 16px 48px -12px oklch(52% 0.14 162 / 0.5),
-    inset 0 1px 0 oklch(100% 0 0 / 0.15);
+  box-shadow:
+    0 0 0 1px oklch(52% 0.14 162 / 0.5),
+    0 14px 40px -12px oklch(52% 0.14 162 / 0.6),
+    inset 0 1px 0 oklch(100% 0 0 / 0.18);
 }
 
 .ctaPrimary:active {
-  transform: scale(0.97);
+  transform: scale(0.97) translateY(0);
+  box-shadow:
+    0 0 0 1px oklch(52% 0.14 162 / 0.35),
+    0 4px 12px -4px oklch(52% 0.14 162 / 0.3),
+    inset 0 1px 0 oklch(100% 0 0 / 0.12);
 }
 
+/* ── Secondary CTA — glass */
 .ctaSecondary {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 13px 24px;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 18px;
   border-radius: var(--ds-radius-lg);
   border: 1px solid var(--ds-border-default);
-  background: oklch(100% 0 0 / 0.5);
-  backdrop-filter: blur(10px);
+  background: oklch(100% 0 0 / 0.55);
+  backdrop-filter: blur(12px);
   color: var(--ds-text-primary);
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-medium);
-  min-height: 48px;
-  transition: border-color var(--ds-duration-fast), background var(--ds-duration-fast), transform
-    var(--ds-duration-fast) var(--ds-ease-spring);
+  min-height: 46px;
+  box-shadow:
+    0 1px 3px oklch(0% 0 0 / 0.04),
+    inset 0 1px 0 oklch(100% 0 0 / 0.8);
+  transition:
+    border-color var(--ds-duration-fast),
+    background var(--ds-duration-fast),
+    transform var(--ds-duration-fast) var(--ds-ease-spring),
+    box-shadow var(--ds-duration-fast);
+  white-space: nowrap;
 }
 
 .ctaSecondary:hover {
-  border-color: var(--ds-brand-500);
-  background: oklch(100% 0 0 / 0.7);
+  border-color: var(--ds-brand-400);
+  background: oklch(100% 0 0 / 0.78);
   transform: translateY(-1px);
+  box-shadow:
+    0 4px 16px -6px oklch(52% 0.14 162 / 0.15),
+    inset 0 1px 0 oklch(100% 0 0 / 0.9);
 }
 
 .ctaSecondary:active {
   transform: scale(0.97);
 }
 
-.arrowIcon {
-  /* ArrowLeft در RTL نشانگر «رفتن به جلو» است — نیازی به flip ندارد */
+:global(.dark) .ctaSecondary {
+  background: oklch(22% 0.015 250 / 0.55);
+  border-color: oklch(30% 0.015 250 / 0.7);
 }
 
-/* SendHorizonal در RTL باید flip شود (پیکان به سمت چپ = ارسال رو به جلو) */
+:global(.dark) .ctaSecondary:hover {
+  background: oklch(26% 0.015 250 / 0.75);
+  border-color: oklch(52% 0.14 162 / 0.35);
+}
+
+/* SendHorizonal در RTL باید flip شود */
 .sendIcon {
   transform: scaleX(-1);
 }
 
-/* دکمه سوم — حواله (accent amber) */
+/* ── Action CTA — amber premium */
 .ctaAction {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 13px 22px;
+  justify-content: center;
+  gap: 7px;
+  padding: 11px 18px;
   border-radius: var(--ds-radius-lg);
-  background: oklch(72% 0.13 70 / 0.14);
-  border: 1px solid oklch(72% 0.13 70 / 0.35);
-  color: oklch(52% 0.13 70);
+  background: oklch(72% 0.13 70 / 0.15);
+  border: 1px solid oklch(72% 0.13 70 / 0.38);
+  color: oklch(50% 0.14 70);
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
-  min-height: 48px;
-  transition: background var(--ds-duration-fast), border-color var(--ds-duration-fast), transform
-    var(--ds-duration-fast) var(--ds-ease-spring);
+  min-height: 46px;
+  box-shadow:
+    0 1px 3px oklch(72% 0.13 70 / 0.08),
+    inset 0 1px 0 oklch(100% 0 0 / 0.6);
+  transition:
+    background var(--ds-duration-fast),
+    border-color var(--ds-duration-fast),
+    transform var(--ds-duration-fast) var(--ds-ease-spring),
+    box-shadow var(--ds-duration-fast);
+  white-space: nowrap;
 }
 
 .ctaAction:hover {
-  background: oklch(72% 0.13 70 / 0.22);
-  border-color: oklch(72% 0.13 70 / 0.55);
+  background: oklch(72% 0.13 70 / 0.25);
+  border-color: oklch(72% 0.13 70 / 0.6);
   transform: translateY(-2px);
+  box-shadow:
+    0 6px 20px -6px oklch(72% 0.13 70 / 0.3),
+    inset 0 1px 0 oklch(100% 0 0 / 0.7);
 }
 
 .ctaAction:active {
@@ -384,20 +557,24 @@
 }
 
 :global(.dark) .ctaAction {
-  color: oklch(80% 0.13 70);
-  background: oklch(72% 0.13 70 / 0.08);
-  border-color: oklch(72% 0.13 70 / 0.25);
+  color: oklch(78% 0.13 70);
+  background: oklch(72% 0.13 70 / 0.1);
+  border-color: oklch(72% 0.13 70 / 0.28);
+}
+
+:global(.dark) .ctaAction:hover {
+  background: oklch(72% 0.13 70 / 0.2);
+  border-color: oklch(72% 0.13 70 / 0.5);
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
    VISUAL COLUMN — floating glass card stack
-   دقیقاً همان glassCard stack صفحه حواله
    ────────────────────────────────────────────────────────────────────────── */
 .visual {
   position: relative;
   z-index: 2;
-  height: clamp(480px, 60vw, 660px);
-  padding-inline-end: clamp(20px, 5vw, 60px);
+  height: clamp(420px, 55vw, 640px);
+  padding-inline-end: clamp(12px, 4vw, 60px);
   animation: staggerUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
 }
 
@@ -409,7 +586,7 @@
   width: clamp(200px, 28vw, 340px);
   aspect-ratio: 1;
   border-radius: 9999px;
-  background: radial-gradient(circle, oklch(55% 0.1 235 / 0.2) 0%, transparent 65%);
+  background: radial-gradient(circle, oklch(55% 0.1 235 / 0.22) 0%, transparent 65%);
   pointer-events: none;
   z-index: 0;
   animation: orbDrift 8s ease-in-out infinite;
@@ -422,46 +599,61 @@
   width: clamp(140px, 18vw, 220px);
   aspect-ratio: 1;
   border-radius: 9999px;
-  background: radial-gradient(circle, oklch(72% 0.13 70 / 0.15) 0%, transparent 65%);
+  background: radial-gradient(circle, oklch(72% 0.13 70 / 0.17) 0%, transparent 65%);
   pointer-events: none;
   z-index: 0;
   animation: orbDrift 10s ease-in-out 2s infinite reverse;
 }
 
 @keyframes orbDrift {
-  0%,
-  100% {
-    transform: scale(1) translateY(0);
-  }
-  50% {
-    transform: scale(1.07) translateY(-10px);
-  }
+  0%, 100% { transform: scale(1) translateY(0); }
+  50%       { transform: scale(1.07) translateY(-10px); }
 }
 
-/* ── Glass card — همان glassCard صفحه حواله ────────────────── */
+/* ── Glass card ────────────────────────────────────────────── */
 .glassCard {
   position: absolute;
   border-radius: var(--ds-radius-2xl);
-  border: 1px solid oklch(100% 0 0 / 0.22);
-  background: oklch(100% 0 0 / 0.65);
-  backdrop-filter: blur(24px) saturate(1.8) brightness(1.02);
-  box-shadow: 0 0 0 0.5px oklch(100% 0 0 / 0.3), 0 24px 64px -16px oklch(45% 0.08 240 / 0.28), inset
-    0 1px 0 oklch(100% 0 0 / 0.6), inset 0 -1px 0 oklch(100% 0 0 / 0.1);
+  border: 1px solid oklch(100% 0 0 / 0.28);
+  background: oklch(100% 0 0 / 0.76);
+  backdrop-filter: blur(32px) saturate(2) brightness(1.03);
+  box-shadow:
+    0 0 0 0.5px oklch(100% 0 0 / 0.4),
+    0 30px 80px -20px oklch(45% 0.08 240 / 0.35),
+    0 8px 24px -8px oklch(45% 0.08 240 / 0.15),
+    inset 0 1px 0 oklch(100% 0 0 / 0.75),
+    inset 0 -1px 0 oklch(100% 0 0 / 0.12);
   overflow: hidden;
   cursor: default;
   transform-style: preserve-3d;
   will-change: transform;
+  transition:
+    border-color 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    background 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Signature gradient ring از HeroConverter.module.css */
+.glassCard:hover {
+  border-color: oklch(100% 0 0 / 0.4);
+  background: oklch(100% 0 0 / 0.88);
+  box-shadow:
+    0 0 0 0.5px oklch(100% 0 0 / 0.5),
+    0 36px 90px -22px oklch(45% 0.08 240 / 0.42),
+    0 10px 30px -10px oklch(45% 0.08 240 / 0.18),
+    inset 0 1px 0 oklch(100% 0 0 / 0.85),
+    inset 0 -1px 0 oklch(100% 0 0 / 0.15);
+}
+
+/* Signature gradient ring */
 .glassCard::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, var(--ds-accent-emerald), var(--nova-cyan) 55%, transparent);
-  -webkit-mask: linear-gradient(var(--ds-text-inverse) 0 0) content-box,
+  background: linear-gradient(135deg, var(--ds-accent-emerald), var(--nova-cyan, oklch(60% 0.15 200)) 55%, transparent);
+  -webkit-mask:
+    linear-gradient(var(--ds-text-inverse) 0 0) content-box,
     linear-gradient(var(--ds-text-inverse) 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -478,19 +670,21 @@
   border-radius: inherit;
   background: linear-gradient(
     135deg,
-    oklch(100% 0 0 / 0.14) 0%,
+    oklch(100% 0 0 / 0.16) 0%,
     transparent 45%,
-    oklch(100% 0 0 / 0.04) 100%
+    oklch(100% 0 0 / 0.05) 100%
   );
   pointer-events: none;
   z-index: 1;
 }
 
 :global(.dark) .glassCard {
-  background: oklch(22% 0.015 250 / 0.75);
-  border-color: oklch(100% 0 0 / 0.08);
-  box-shadow: 0 0 0 0.5px oklch(100% 0 0 / 0.08), 0 24px 64px -16px oklch(0% 0 0 / 0.6), inset 0 1px
-    0 oklch(100% 0 0 / 0.08);
+  background: oklch(22% 0.015 250 / 0.78);
+  border-color: oklch(100% 0 0 / 0.09);
+  box-shadow:
+    0 0 0 0.5px oklch(100% 0 0 / 0.09),
+    0 26px 70px -18px oklch(0% 0 0 / 0.65),
+    inset 0 1px 0 oklch(100% 0 0 / 0.09);
 }
 
 /* ── Card positions + float animations ─────────────────────── */
@@ -504,13 +698,8 @@
 }
 
 @keyframes floatA {
-  0%,
-  100% {
-    transform: translateY(0px) rotate(-1.5deg);
-  }
-  50% {
-    transform: translateY(-10px) rotate(-1.5deg);
-  }
+  0%, 100% { transform: translateY(0px) rotate(-1.5deg); }
+  50%       { transform: translateY(-10px) rotate(-1.5deg); }
 }
 
 .cardSecond {
@@ -523,13 +712,8 @@
 }
 
 @keyframes floatB {
-  0%,
-  100% {
-    transform: translateY(0px) rotate(2deg);
-  }
-  50% {
-    transform: translateY(-8px) rotate(2deg);
-  }
+  0%, 100% { transform: translateY(0px) rotate(2deg); }
+  50%       { transform: translateY(-8px) rotate(2deg); }
 }
 
 .cardThird {
@@ -542,16 +726,11 @@
 }
 
 @keyframes floatC {
-  0%,
-  100% {
-    transform: translateY(0px) rotate(1deg);
-  }
-  50% {
-    transform: translateY(-6px) rotate(1deg);
-  }
+  0%, 100% { transform: translateY(0px) rotate(1deg); }
+  50%       { transform: translateY(-6px) rotate(1deg); }
 }
 
-/* ── Card internals — همان cardRow/cardLabel/cardAmount ──────── */
+/* ── Card internals ──────────────────────────────── */
 .cardInner {
   position: relative;
   z-index: 2;
@@ -651,13 +830,8 @@
   color: var(--ds-text-secondary);
 }
 
-.buySellBuy {
-  color: var(--ds-accent-emerald);
-}
-
-.buySellSell {
-  color: var(--ds-accent-rose);
-}
+.buySellBuy  { color: var(--ds-accent-emerald); }
+.buySellSell { color: var(--ds-accent-rose); }
 
 .rateRight {
   display: flex;
@@ -685,7 +859,7 @@
   color: var(--ds-text-primary);
 }
 
-/* ── Mini-calculator: input + select row ─────────────────────────────── */
+/* ── Mini-calculator ─────────────────────────────────────────────────────── */
 .calcRow {
   display: flex;
   align-items: center;
@@ -733,7 +907,6 @@
   border-color: var(--ds-brand-500);
 }
 
-/* Slot برای CurrencySelect — ارتفاع یکسان با calcInput */
 .calcSelectSlot {
   display: inline-flex;
   align-items: center;
@@ -741,7 +914,6 @@
   flex-shrink: 0;
 }
 
-/* override تریگر CurrencySelect برای هماهنگی با calcInput (هم‌اندازه و هم‌رنگ) */
 .calcSelectSlot :global(.trigger) {
   height: 36px;
   min-height: 36px;
@@ -773,17 +945,21 @@
   margin-top: var(--ds-space-3);
   padding: 7px 14px;
   border-radius: var(--ds-radius-md);
-  background: var(--ds-brand-500);
+  background: linear-gradient(135deg, var(--ds-brand-500) 0%, oklch(50% 0.16 162) 100%);
   color: var(--ds-text-inverse);
   font-size: 11px;
   font-weight: var(--ds-weight-semibold);
   width: 100%;
   justify-content: center;
-  transition: background var(--ds-duration-fast);
+  transition:
+    background var(--ds-duration-fast),
+    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  box-shadow: 0 2px 8px -2px oklch(52% 0.14 162 / 0.35);
 }
 
 .cardCta:hover {
-  background: var(--ds-brand-600);
+  background: linear-gradient(135deg, var(--ds-brand-600) 0%, oklch(48% 0.16 162) 100%);
+  transform: translateY(-1px);
 }
 
 /* Uptime bar */
@@ -799,33 +975,25 @@
   height: 100%;
   width: 99.9%;
   border-radius: var(--ds-radius-full);
-  background: linear-gradient(to left, var(--ds-accent-emerald), oklch(60% 0.1 165 / 0.4));
+  background: linear-gradient(to left, var(--ds-accent-emerald), oklch(60% 0.1 165 / 0.5));
+  box-shadow: 0 0 8px oklch(60% 0.1 165 / 0.4);
   animation: uptimeGrow 1.5s var(--ds-ease-out-quart) 0.8s both;
 }
 
 @keyframes uptimeGrow {
-  from {
-    width: 0;
-  }
-  to {
-    width: 99.9%;
-  }
+  from { width: 0; }
+  to   { width: 99.9%; }
 }
 
-.trendUp {
-  color: var(--ds-accent-emerald);
-}
-.trendDown {
-  color: var(--ds-accent-rose);
-}
+.trendUp   { color: var(--ds-accent-emerald); }
+.trendDown { color: var(--ds-accent-rose); }
 
-/* نتیجه تومان در calculator — کمرنگ‌تر از AFN */
 .resultTomanMuted {
   color: var(--ds-text-secondary);
   font-variant-numeric: tabular-nums;
 }
 
-/* Status badge — همان statusBadge صفحه حواله */
+/* Status badge */
 .statusBadge {
   display: inline-flex;
   align-items: center;
@@ -845,6 +1013,7 @@
   height: 6px;
   border-radius: 9999px;
   background: var(--ds-accent-emerald);
+  box-shadow: 0 0 6px oklch(60% 0.1 165 / 0.5);
   animation: livePulse 2s ease-in-out infinite;
   flex-shrink: 0;
 }
@@ -875,22 +1044,180 @@
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
+   MOBILE MINI RATE CARD — فقط در موبایل نمایش داده می‌شود
+   ────────────────────────────────────────────────────────────────────────── */
+.mobileRateCard {
+  display: none; /* در دسکتاپ پنهان — visual column جایش را پر می‌کند */
+  width: 100%;
+  border-radius: var(--ds-radius-2xl);
+  border: 1px solid oklch(52% 0.14 162 / 0.22);
+  background: oklch(100% 0 0 / 0.55);
+  backdrop-filter: blur(20px) saturate(1.8);
+  box-shadow:
+    0 0 0 0.5px oklch(52% 0.14 162 / 0.15),
+    0 8px 32px -8px oklch(52% 0.14 162 / 0.15),
+    inset 0 1px 0 oklch(100% 0 0 / 0.8);
+  overflow: hidden;
+  position: relative;
+}
+
+/* gradient ring روی کارت */
+.mobileRateCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, oklch(52% 0.14 162 / 0.4), oklch(58% 0.13 290 / 0.2) 55%, transparent);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+:global(.dark) .mobileRateCard {
+  background: oklch(16% 0.025 250 / 0.85);
+  border-color: oklch(52% 0.14 162 / 0.3);
+  box-shadow:
+    0 0 0 0.5px oklch(52% 0.14 162 / 0.2),
+    0 8px 32px -8px oklch(0% 0 0 / 0.4),
+    inset 0 1px 0 oklch(100% 0 0 / 0.06);
+}
+
+.mobileRateHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 10px;
+  border-block-end: 1px solid oklch(52% 0.14 162 / 0.1);
+}
+
+.mobileRateTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-text-muted);
+}
+
+.mobileRateDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--ds-accent-emerald);
+  box-shadow: 0 0 6px oklch(60% 0.1 165 / 0.6);
+  animation: livePulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.mobileRateAfn {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.mobileRateAfnVal {
+  font-size: 15px;
+  font-weight: var(--ds-weight-extrabold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+  color: var(--ds-brand-600);
+}
+
+:global(.dark) .mobileRateAfnVal {
+  color: oklch(68% 0.12 162);
+}
+
+.mobileRateAfnUnit {
+  font-size: 10px;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-muted);
+  letter-spacing: 0.02em;
+}
+
+.mobileRateRows {
+  padding: 4px 0;
+}
+
+.mobileRateRow {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-block-end: 1px solid oklch(52% 0.14 162 / 0.06);
+  transition: background var(--ds-duration-fast);
+}
+
+.mobileRateRow:last-child {
+  border-block-end: none;
+}
+
+.mobileRateRow:hover {
+  background: oklch(52% 0.14 162 / 0.03);
+}
+
+.mobileRateName {
+  font-size: 12.5px;
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-secondary);
+}
+
+.mobileRateVal {
+  font-size: 13px;
+  font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.mobileRateChange {
+  font-size: 11px;
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  opacity: 0.85;
+  min-width: 44px;
+  text-align: end;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
    RESPONSIVE
    ────────────────────────────────────────────────────────────────────────── */
+
+/* ── Tablet ≤900px ─────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .root {
     grid-template-columns: 1fr;
-    min-height: auto;
+    min-height: clamp(520px, 70vh, 760px);
+    padding-block: clamp(28px, 4.5vw, 52px);
   }
 
   .content {
     align-items: center;
     text-align: center;
-    padding-block: clamp(48px, 8vw, 80px);
+    padding-block: clamp(32px, 5vw, 56px);
+    padding-inline: clamp(24px, 5.5vw, 52px);
+    overflow: visible;
+    max-width: 680px;
+    margin-inline: auto;
+    gap: var(--ds-space-4);
+  }
+
+  .headline {
+    font-size: clamp(1.9rem, 5.5vw, 3rem);
+    margin-bottom: var(--ds-space-4);
   }
 
   .sub {
     margin-inline: auto;
+    max-width: 560px;
+    font-size: clamp(0.9375rem, 2.8vw, 1.125rem);
+    margin-bottom: var(--ds-space-4);
   }
 
   .visual {
@@ -898,58 +1225,254 @@
   }
 
   .statsBar {
-    max-width: 480px;
+    max-width: 560px;
     margin-inline: auto;
+    padding: 0;
   }
-}
 
-@media (max-width: 480px) {
+  .statItem {
+    padding: clamp(12px, 2.8vw, 16px) var(--ds-space-3);
+  }
+
+  .pills {
+    justify-content: center;
+    gap: var(--ds-space-2);
+  }
+
+  .pill {
+    min-height: 34px;
+    padding: 5px 13px;
+  }
+
   .ctas {
-    flex-direction: column;
-    align-items: stretch;
-    width: 100%;
+    justify-content: center;
+    gap: var(--ds-space-2);
   }
 
   .ctaPrimary,
   .ctaSecondary,
   .ctaAction {
+    min-height: 46px;
+    padding: 11px 22px;
+  }
+}
+
+/* ── Large tablet 601-900px ─────────────────────────────────────────────── */
+@media (min-width: 601px) and (max-width: 900px) {
+  .ctas {
+    flex-wrap: nowrap;
+    gap: var(--ds-space-2);
+  }
+
+  .ctaPrimary,
+  .ctaSecondary,
+  .ctaAction {
+    padding: 10px 18px;
+    font-size: 0.875rem;
+    min-height: 44px;
+  }
+}
+
+/* ── Mobile ≤600px: premium + هندسه + depth ───────────────────────────── */
+@media (max-width: 600px) {
+  .root {
+    min-height: unset;
+    padding-block: 0;
+  }
+
+  .content {
+    padding-inline: clamp(16px, 4.5vw, 24px);
+    padding-block: clamp(28px, 7vw, 44px) clamp(32px, 7.5vw, 48px);
+    gap: clamp(16px, 3.8vw, 22px);
+    align-items: center;
+    text-align: center;
+  }
+
+  /* mobileRateCard — نمایش داده می‌شود در موبایل */
+  .mobileRateCard {
+    display: block;
+  }
+
+  /* badge — mobile premium */
+  .badge {
+    font-size: clamp(12px, 3.2vw, 13.5px);
+    padding: 8px 16px 8px 12px;
+    gap: 8px;
+    border-width: 1.5px;
+    border-color: oklch(52% 0.14 162 / 0.4);
+  }
+
+  .badgeDot {
+    width: 10px;
+    height: 10px;
+    box-shadow:
+      0 0 0 3px oklch(60% 0.1 165 / 0.25),
+      0 0 12px oklch(60% 0.1 165 / 0.55);
+  }
+
+  .headline {
+    font-size: clamp(1.6rem, 7.5vw, 2.2rem);
+    line-height: 1.13;
+    letter-spacing: -0.028em;
+    margin-bottom: 0;
+  }
+
+  .headlineAccent::after {
+    height: 3.5px;
+    bottom: -5px;
+    box-shadow: 0 3px 10px oklch(52% 0.14 162 / 0.4);
+  }
+
+  .sub {
+    font-size: clamp(0.9375rem, 4vw, 1rem);
+    max-width: 100%;
+    line-height: 1.65;
+    margin-bottom: 0;
+  }
+
+  /* pills — بزرگتر + رنگ‌دارتر در موبایل */
+  .pills {
+    gap: 7px;
+    margin-bottom: 0;
     justify-content: center;
   }
 
+  .pill {
+    padding: 7px 14px;
+    font-size: 12.5px;
+    min-height: 34px;
+    gap: 5px;
+  }
+
+  /* CTAs — primary full-width، دومی و سومی در ردیف */
+  .ctas {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: var(--ds-space-2);
+  }
+
+  .ctaPrimary {
+    justify-content: center;
+    padding: 14px 24px;
+    min-height: 52px;
+    width: 100%;
+    font-size: 1rem;
+    border-radius: var(--ds-radius-xl);
+    box-shadow:
+      0 0 0 1px oklch(52% 0.14 162 / 0.45),
+      0 10px 32px -10px oklch(52% 0.14 162 / 0.55),
+      inset 0 1px 0 oklch(100% 0 0 / 0.18);
+  }
+
+  .ctaSecondary,
+  .ctaAction {
+    justify-content: center;
+    padding: 11px 14px;
+    min-height: 46px;
+    font-size: 0.875rem;
+    flex: 1;
+    border-radius: var(--ds-radius-xl);
+  }
+
+  .ctasRow {
+    display: flex;
+    gap: var(--ds-space-2);
+    width: 100%;
+  }
+
+  /* stats: ۲×۲ گرید premium */
   .statsBar {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    max-width: 100%;
+    width: 100%;
+    gap: 0;
+    border-radius: var(--ds-radius-xl);
   }
 
-  .statItem:nth-child(2) {
+  .statItem:nth-child(2),
+  .statItem:nth-child(4) {
     border-inline-end: none;
+  }
+
+  .statItem:nth-child(1),
+  .statItem:nth-child(2) {
+    border-block-end: 1px solid oklch(52% 0.14 162 / 0.1);
+  }
+
+  .statItem {
+    padding: clamp(14px, 3.5vw, 18px) var(--ds-space-3);
+    min-height: 80px;
+  }
+
+  /* همه اعداد در موبایل بزرگ‌تر */
+  .statVal {
+    font-size: clamp(1.0625rem, 4.5vw, 1.25rem);
+    letter-spacing: -0.03em;
+  }
+
+  .statLabel {
+    font-size: clamp(10px, 2.5vw, 11px);
+  }
+}
+
+/* ── Mobile ≤480px ─────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .headline {
+    font-size: clamp(1.45rem, 7vw, 1.9rem);
+  }
+
+  .statItem {
+    min-height: 70px;
+  }
+}
+
+/* ── Very small ≤360px ─────────────────────────────────────────────────── */
+@media (max-width: 360px) {
+  .content {
+    padding-inline: 16px;
+  }
+
+  .headline {
+    font-size: clamp(1.3rem, 8vw, 1.6rem);
+    letter-spacing: -0.02em;
+  }
+
+  .ctaPrimary {
+    font-size: 0.9375rem;
+    padding: 12px 16px;
+    min-height: 48px;
+  }
+
+  .ctaSecondary,
+  .ctaAction {
+    font-size: 13px;
+    padding: 10px 10px;
+    min-height: 42px;
   }
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   SKELETON — empty state هنگامی که داده موجود نیست
+   SKELETON — empty state
    ────────────────────────────────────────────────────────────────────────── */
 @keyframes shimmer {
-  0% {
-    background-position: -200% center;
-  }
-  100% {
-    background-position: 200% center;
-  }
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
 }
 
 .cardAmountSkeleton {
+  width: 140px;
   height: 28px;
-  width: 70%;
-  border-radius: var(--ds-radius-sm);
+  border-radius: var(--ds-radius-md);
   background: linear-gradient(
     90deg,
     var(--ds-border-subtle) 25%,
-    var(--ds-border) 50%,
+    var(--ds-border-default) 50%,
     var(--ds-border-subtle) 75%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.4s ease-in-out infinite;
+  animation: shimmer 1.8s linear infinite;
   margin-bottom: var(--ds-space-2);
 }
 
@@ -959,9 +1482,39 @@
   background: linear-gradient(
     90deg,
     var(--ds-border-subtle) 25%,
-    var(--ds-border) 50%,
+    var(--ds-border-default) 50%,
     var(--ds-border-subtle) 75%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.4s ease-in-out infinite;
+  animation: shimmer 1.8s linear infinite;
+  margin-block: 4px;
+}
+
+/* ── prefers-reduced-motion: تمام انیمیشن‌ها خاموش می‌شوند ─────── */
+@media (prefers-reduced-motion: reduce) {
+  .content > *,
+  .visual,
+  .orbA,
+  .orbB,
+  .cardMain,
+  .cardSecond,
+  .cardThird,
+  .badgeDot,
+  .cardLiveDot span,
+  .statusDot,
+  .uptimeFill,
+  .headlineAccent::after,
+  .cardAmountSkeleton,
+  .rateRowSkeleton {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .headlineAccent::after {
+    transform: scaleX(1);
+  }
+
+  .uptimeFill {
+    width: 99.9%;
+  }
 }

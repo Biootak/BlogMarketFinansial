@@ -1,31 +1,47 @@
 /* ============================================================================
    ServicesSection.module.css — سه سرویس اصلی پلتفرم
    tokens only | hover elevation | accent per-card | RTL logical props
+   2026 update: responsive polish + premium micro-interactions
    ============================================================================ */
 
 .root {
   position: relative;
-  padding-block: var(--ds-space-8);
+  padding-block: clamp(1.5rem, 4vw, 3rem);
 }
 
 /* ── Section header ─────────────────────────────────────────── */
 .header {
   text-align: center;
-  margin-bottom: var(--ds-space-8);
+  margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
 }
 
 .eyebrow {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ds-brand-600);
   margin-bottom: var(--ds-space-3);
-  padding: 4px 14px;
+  padding: 5px 14px;
   border-radius: var(--ds-radius-full);
   border: 1px solid var(--ds-brand-100);
   background: var(--ds-brand-50);
+  /* micro-interaction: ورود با stagger */
+  opacity: 0;
+  animation: fadeInUp 0.5s var(--ds-ease-out-quart) 0.1s forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 :global(.dark) .eyebrow {
@@ -35,12 +51,16 @@
 }
 
 .title {
-  font-size: var(--ds-text-3xl);
+  font-size: clamp(1.4rem, 4vw, 2.5rem);
   font-weight: var(--ds-weight-extrabold);
   line-height: var(--ds-leading-tight);
   letter-spacing: -0.03em;
   color: var(--ds-text-primary);
   margin-bottom: var(--ds-space-3);
+  /* wrap مناسب برای موبایل */
+  overflow-wrap: break-word;
+  word-break: keep-all;
+  max-width: 100%;
 }
 
 .titleAccent {
@@ -53,6 +73,7 @@
   line-height: var(--ds-leading-normal);
   max-width: 520px;
   margin-inline: auto;
+  padding-inline: var(--ds-space-2);
 }
 
 /* ── Grid ───────────────────────────────────────────────────── */
@@ -67,16 +88,19 @@
 
 @media (max-width: 900px) {
   .grid {
-    grid-template-columns: 1fr;
-    max-width: 480px;
-    margin-inline: auto;
+    grid-template-columns: repeat(2, 1fr);
+    max-width: none;
+    gap: clamp(0.75rem, 2vw, 1rem);
   }
 }
 
-@media (min-width: 640px) and (max-width: 900px) {
+@media (max-width: 540px) {
   .grid {
-    grid-template-columns: repeat(2, 1fr);
-    max-width: none;
+    /* موبایل: تک‌ستون — هر کارت row افقی */
+    grid-template-columns: 1fr;
+    max-width: 100%;
+    margin-inline: auto;
+    gap: var(--ds-space-2);
   }
 }
 
@@ -86,25 +110,34 @@
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-3);
-  padding: var(--ds-space-6);
+  padding: clamp(1.125rem, 2.5vw, 1.75rem);
   border-radius: var(--ds-radius-2xl);
   border: 1px solid var(--ds-border-subtle);
   background: var(--ds-surface-elevated);
   overflow: hidden;
   cursor: default;
-  transition: border-color var(--ds-duration-base) var(--ds-ease-out-quart), box-shadow
-    var(--ds-duration-base) var(--ds-ease-out-quart), transform var(--ds-duration-base)
-    var(--ds-ease-out-quart);
+  box-shadow:
+    0 1px 4px oklch(0% 0 0 / 0.04),
+    inset 0 1px 0 oklch(100% 0 0 / 0.6);
+  transition:
+    border-color var(--ds-duration-base) var(--ds-ease-out-quart),
+    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart),
+    transform var(--ds-duration-base) var(--ds-ease-out-quart);
 }
 
 .card:hover {
   transform: translateY(-3px);
-  box-shadow: var(--ds-shadow-lg);
+  box-shadow:
+    var(--ds-shadow-lg),
+    inset 0 1px 0 oklch(100% 0 0 / 0.8);
 }
 
 :global(.dark) .card {
   background: oklch(20% 0.015 250 / 0.6);
   border-color: oklch(28% 0.02 255 / 0.7);
+  box-shadow:
+    0 1px 4px oklch(0% 0 0 / 0.15),
+    inset 0 1px 0 oklch(100% 0 0 / 0.04);
 }
 
 /* Hover glow overlay */
@@ -187,8 +220,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--ds-radius-xl);
   border: 1px solid;
   flex-shrink: 0;
@@ -212,6 +245,7 @@
   border: 1px solid var(--ds-border-subtle);
   background: var(--ds-surface-recessed);
   letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 /* ── Card text ──────────────────────────────────────────────── */
@@ -229,6 +263,17 @@
   color: var(--ds-text-secondary);
   flex: 1;
   margin: 0;
+  /* محدود کردن متن برای یکنواختی ارتفاع کارت‌ها */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Card body wrapper (دسکتاپ: شفاف، موبایل: flex-col) ────── */
+.cardBody {
+  display: contents; /* در دسکتاپ شفاف — بچه‌ها مستقیم در .card قرار می‌گیرند */
 }
 
 /* ── CTA ────────────────────────────────────────────────────── */
@@ -261,4 +306,120 @@
 
 .cardCta:hover .ctaArrow {
   transform: translateX(-3px);
+}
+
+/* ── موبایل ≤540px: کارت‌ها به layout افقی premium تبدیل می‌شوند ──────── */
+@media (max-width: 540px) {
+  .root {
+    padding-block: clamp(1rem, 3vw, 1.5rem);
+  }
+
+  .header {
+    margin-bottom: clamp(0.875rem, 3vw, 1.25rem);
+  }
+
+  .eyebrow {
+    font-size: 10.5px;
+    padding: 4px 11px;
+    margin-bottom: var(--ds-space-2);
+  }
+
+  .title {
+    font-size: clamp(1.2rem, 5vw, 1.5rem);
+    margin-bottom: var(--ds-space-2);
+  }
+
+  .subtitle {
+    font-size: 13px;
+    padding-inline: 0;
+  }
+
+  /* ── card: row layout premium در موبایل ─────────────── */
+  .card {
+    flex-direction: row;
+    align-items: center;
+    padding: 13px 15px;
+    gap: 13px;
+    min-height: unset;
+    border-radius: var(--ds-radius-xl);
+    /* shadow ملایم‌تر در موبایل */
+    box-shadow:
+      0 1px 4px oklch(0% 0 0 / 0.05),
+      0 2px 8px -2px oklch(0% 0 0 / 0.04),
+      inset 0 1px 0 oklch(100% 0 0 / 0.7);
+  }
+
+  /* آیکون compact — رنگ accent در موبایل هم نمایش داده می‌شود */
+  .iconWrap {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    flex-shrink: 0;
+  }
+
+  /* بخش متن — flex-col درون row */
+  .cardBody {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  /* stat badge — hidden در row mode برای سادگی */
+  .statBadge {
+    display: none;
+  }
+
+  .cardTitle {
+    font-size: 14.5px;
+    font-weight: var(--ds-weight-bold);
+    line-height: 1.25;
+  }
+
+  .cardDesc {
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--ds-text-muted);
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+
+  /* CTA — با رنگ accent کارت */
+  .cardCta {
+    font-size: 12.5px;
+    min-height: unset;
+    padding-block: 0;
+    margin-top: 4px;
+    gap: 4px;
+  }
+
+  /* رنگ CTA با accent هر کارت */
+  .accent_emerald .cardCta { color: var(--ds-accent-emerald); }
+  .accent_amber   .cardCta { color: oklch(52% 0.14 70); }
+  .accent_violet  .cardCta { color: var(--ds-accent-violet); }
+
+  /* CTA arrow — منطبق با accent */
+  .accent_emerald .ctaArrow { color: var(--ds-accent-emerald); }
+  .accent_amber   .ctaArrow { color: oklch(52% 0.14 70); }
+  .accent_violet  .ctaArrow { color: var(--ds-accent-violet); }
+
+  /* hover scale برای کل کارت در موبایل */
+  .card:active {
+    transform: scale(0.985);
+    transition-duration: 80ms;
+  }
+}
+
+/* ── prefers-reduced-motion ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .card:hover,
+  .iconWrap,
+  .eyebrow,
+  .cardCta,
+  .ctaArrow {
+    animation: none !important;
+    transition: none !important;
+  }
 }

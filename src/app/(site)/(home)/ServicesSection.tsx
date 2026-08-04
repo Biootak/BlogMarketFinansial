@@ -64,21 +64,24 @@ export default function ServicesSection() {
           <li key={title} className={`${s.card} ${s[`accent_${accent}`]}`}>
             {/* Icon */}
             <div className={s.iconWrap} aria-hidden>
-              <Icon size={22} strokeWidth={1.75} />
+              <Icon size={20} strokeWidth={1.75} />
             </div>
 
-            {/* Stat badge */}
-            <div className={s.statBadge}>{stat}</div>
+            {/* بدنه کارت — در موبایل flex-col درون row */}
+            <div className={s.cardBody}>
+              {/* Stat badge */}
+              <div className={s.statBadge}>{stat}</div>
 
-            {/* Content */}
-            <h3 className={s.cardTitle}>{title}</h3>
-            <p className={s.cardDesc}>{description}</p>
+              {/* Content */}
+              <h3 className={s.cardTitle}>{title}</h3>
+              <p className={s.cardDesc}>{description}</p>
 
-            {/* CTA */}
-            <Link href={href} className={s.cardCta} aria-label={`${cta} — ${title}`}>
-              {cta}
-              <ArrowLeft size={14} strokeWidth={1.75} className={s.ctaArrow} />
-            </Link>
+              {/* CTA */}
+              <Link href={href} className={s.cardCta} aria-label={`${cta} — ${title}`}>
+                {cta}
+                <ArrowLeft size={13} strokeWidth={1.75} className={s.ctaArrow} />
+              </Link>
+            </div>
 
             {/* Hover glow */}
             <div className={s.cardGlow} aria-hidden />

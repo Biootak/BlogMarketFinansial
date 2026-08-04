@@ -69,38 +69,61 @@ export function CryptoTickerCard({ rate }: CryptoTickerCardProps) {
   const coinMarketCapUrl = getCoinMarketCapUrl(symbol);
 
   return (
-    <Link
-      href={coinMarketCapUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="block w-full group"
-    >
-      <div className="flex items-center gap-2 px-2.5 py-1.5 bg-white dark:bg-neutral-800/80 rounded-lg border border-neutral-100 dark:border-neutral-700/50 w-full transition-colors hover:border-primary-300 dark:hover:border-primary-600">
-        <CurrencyIcon symbol={symbol} className="w-4 h-4 shrink-0" />
+    <Link href={coinMarketCapUrl} target="_blank" rel="noopener noreferrer" className="block group">
+      <div
+        className="flex items-center gap-1.5 sm:gap-2.5 px-2.5 sm:px-3.5 py-2 sm:py-2.5 whitespace-nowrap min-h-[44px] sm:min-h-[50px]"
+        style={{
+          background: 'var(--ds-surface-elevated)',
+          borderRadius: 'var(--ds-radius-xl)',
+          border: '1px solid var(--ds-border-subtle)',
+          transition: 'all var(--ds-duration-base) cubic-bezier(0.22, 1, 0.36, 1)',
+          boxShadow: '0 1px 2px oklch(0% 0 0 / 0.04)',
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--ds-brand-500)';
+          (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px -4px oklch(52% 0.14 162 / 0.25)';
+          (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-1px)';
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--ds-border-subtle)';
+          (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 2px oklch(0% 0 0 / 0.04)';
+          (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
+        }}
+      >
+        <CurrencyIcon symbol={symbol} className="w-5 h-5 sm:w-5 sm:h-5 shrink-0" />
 
-        <span className="text-[11px] font-bold text-neutral-900 dark:text-neutral-100 truncate">
+        <span
+          className="text-xs sm:text-xs font-bold tabular-nums"
+          style={{ color: 'var(--ds-text-primary)' }}
+        >
           {symbol}
         </span>
 
-        <span className="text-[11px] font-semibold text-neutral-800 dark:text-neutral-200 tabular-nums whitespace-nowrap">
+        <span
+          className="text-xs sm:text-xs font-semibold tabular-nums"
+          style={{ color: 'var(--ds-text-primary)' }}
+        >
           ${displayPrice}
         </span>
 
-        <span className="text-[10px] text-neutral-500 dark:text-neutral-400 tabular-nums whitespace-nowrap">
-          تومان {formattedToman}
+        <span
+          className="hidden sm:inline text-[11px] tabular-nums"
+          style={{ color: 'var(--ds-text-muted)' }}
+        >
+          {formattedToman} تومان
         </span>
 
         <span
-          className={`flex items-center gap-0.5 text-[10px] font-semibold tabular-nums whitespace-nowrap ${
-            // Color-contrast fix: emerald-600 (#059669) روی سفید 3.65:1 دارد؛
-            // emerald-700 روی white ≈ 5.4:1 می‌دهد و AA (≥4.5) را رد می‌کند.
-            isPositive ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'
+          className={`flex items-center gap-0.5 text-[11px] font-semibold tabular-nums ${
+            isPositive
+              ? 'text-emerald-700 dark:text-emerald-400'
+              : 'text-red-700 dark:text-red-400'
           }`}
         >
           {isPositive ? (
-            <TrendingUp className="w-2.5 h-2.5" />
+            <TrendingUp className="w-3 h-3" />
           ) : (
-            <TrendingDown className="w-2.5 h-2.5" />
+            <TrendingDown className="w-3 h-3" />
           )}
           {isPositive ? '+' : ''}
           {change.toFixed(2)}%

@@ -24,6 +24,9 @@ export type CategoryTheme = {
   glow: string;
   badge: string;
   ring: string;
+  /** رنگ‌های واقعی CSS برای conic-gradient border animation */
+  glowA: string;
+  glowB: string;
 };
 
 export type SentimentType = 'bullish' | 'bearish' | 'neutral';
@@ -39,6 +42,8 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
     glow: 'shadow-violet-500/40',
     badge: 'bg-gradient-to-r from-violet-500 to-indigo-500',
     ring: 'ring-violet-400/40',
+    glowA: '#7c3aed',
+    glowB: '#4338ca',
   },
   bitcoin: {
     gradient: 'from-amber-500 via-orange-500 to-amber-600',
@@ -49,6 +54,8 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
     glow: 'shadow-amber-500/40',
     badge: 'bg-gradient-to-r from-amber-500 to-orange-500',
     ring: 'ring-amber-400/40',
+    glowA: '#f59e0b',
+    glowB: '#ea580c',
   },
   // بورس و بازار سرمایه — سبز کلاسیک
   bourse: {
@@ -60,6 +67,8 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
     glow: 'shadow-emerald-500/40',
     badge: 'bg-gradient-to-r from-emerald-500 to-teal-500',
     ring: 'ring-emerald-400/40',
+    glowA: '#059669',
+    glowB: '#0891b2',
   },
   stock: {
     gradient: 'from-emerald-600 via-teal-600 to-cyan-700',
@@ -70,6 +79,8 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
     glow: 'shadow-emerald-500/40',
     badge: 'bg-gradient-to-r from-emerald-500 to-teal-500',
     ring: 'ring-emerald-400/40',
+    glowA: '#059669',
+    glowB: '#0891b2',
   },
   // طلا و سکه — طلایی گرم
   gold: {
@@ -81,6 +92,8 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
     glow: 'shadow-amber-500/40',
     badge: 'bg-gradient-to-r from-yellow-500 to-amber-500',
     ring: 'ring-amber-400/40',
+    glowA: '#eab308',
+    glowB: '#f97316',
   },
   // مسکن — قهوه‌ای گرم
   realestate: {
@@ -92,6 +105,8 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
     glow: 'shadow-stone-500/40',
     badge: 'bg-gradient-to-r from-stone-500 to-stone-700',
     ring: 'ring-stone-400/40',
+    glowA: '#78716c',
+    glowB: '#57534e',
   },
   // اقتصاد کلان — آبی حرفه‌ای
   economy: {
@@ -103,6 +118,8 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
     glow: 'shadow-blue-500/40',
     badge: 'bg-gradient-to-r from-sky-500 to-blue-500',
     ring: 'ring-blue-400/40',
+    glowA: '#0284c7',
+    glowB: '#4338ca',
   },
   forex: {
     gradient: 'from-sky-600 via-blue-600 to-indigo-700',
@@ -113,6 +130,8 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
     glow: 'shadow-blue-500/40',
     badge: 'bg-gradient-to-r from-sky-500 to-blue-500',
     ring: 'ring-blue-400/40',
+    glowA: '#0284c7',
+    glowB: '#4338ca',
   },
   // خودرو — قرمز پویا
   car: {
@@ -124,6 +143,8 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
     glow: 'shadow-rose-500/40',
     badge: 'bg-gradient-to-r from-rose-500 to-pink-500',
     ring: 'ring-rose-400/40',
+    glowA: '#e11d48',
+    glowB: '#db2777',
   },
   // فناوری — فیروزه‌ای مدرن
   tech: {
@@ -135,6 +156,8 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
     glow: 'shadow-cyan-500/40',
     badge: 'bg-gradient-to-r from-cyan-500 to-teal-500',
     ring: 'ring-cyan-400/40',
+    glowA: '#0891b2',
+    glowB: '#059669',
   },
   // پیش‌فرض — نوترال
   default: {
@@ -146,6 +169,8 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
     glow: 'shadow-slate-500/40',
     badge: 'bg-gradient-to-r from-slate-500 to-neutral-700',
     ring: 'ring-slate-400/40',
+    glowA: '#64748b',
+    glowB: '#334155',
   },
 };
 
