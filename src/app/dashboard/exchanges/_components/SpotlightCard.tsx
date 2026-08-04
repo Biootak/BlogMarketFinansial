@@ -7,7 +7,7 @@
  *   • chart روند ۱۴ روز
  */
 
-import { ArrowUpRight, Crown, MapPin } from 'lucide-react';
+import { ArrowUpLeft, Crown, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import s from './ExchangesWorkspace.module.css';
 import Monogram from './Monogram';
@@ -66,7 +66,7 @@ export default function SpotlightCard({
           aria-label={`مشاهدهٔ ${name}`}
         >
           <span>مشاهده</span>
-          <ArrowUpRight size={12} strokeWidth={2.25} aria-hidden />
+          <ArrowUpLeft size={12} strokeWidth={2.25} aria-hidden />
         </Link>
       </header>
 

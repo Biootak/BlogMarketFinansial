@@ -151,12 +151,12 @@ function MarketRatesTickerImpl({
         <span className="absolute inset-0 inline-flex h-full w-full animate-ping rounded-full bg-emerald-500/40 opacity-60" />
         <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
       </span>
-      <span className="text-emerald-700 dark:text-emerald-300">{label ?? 'نرخ‌های زنده'}</span>
+      <span className="hidden sm:inline text-emerald-700 dark:text-emerald-300">{label ?? 'نرخ‌های زنده'}</span>
       {now && (
         <span
           dir="ltr"
           style={{ unicodeBidi: 'isolate' }}
-          className="text-[9px] sm:text-[10px] font-medium text-neutral-600 dark:text-neutral-300 tabular-nums"
+          className="hidden sm:inline text-[9px] sm:text-[10px] font-medium text-neutral-600 dark:text-neutral-300 tabular-nums"
         >
           {now}
         </span>

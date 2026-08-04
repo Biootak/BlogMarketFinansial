@@ -17,7 +17,7 @@
  */
 
 import {
-  ArrowUpRight,
+  ArrowUpLeft,
   BadgeCheck,
   Building2,
   CalendarDays,
@@ -242,12 +242,12 @@ export default function HeroIdentity({ exchange, primaryRate, activeCurrencies }
               >
                 <Building2 size={14} strokeWidth={1.9} aria-hidden />
                 <span>وبسایت رسمی</span>
-                <ArrowUpRight size={13} strokeWidth={1.9} className={s.ctaIcon} aria-hidden />
+                <ArrowUpLeft size={13} strokeWidth={1.9} className={s.ctaIcon} aria-hidden />
               </a>
             )}
             <Link href="/exchanges" className={s.ctaGhost}>
               <span>مقایسه با سایر صرافی‌ها</span>
-              <ArrowUpRight size={13} strokeWidth={1.9} className={s.ctaIcon} aria-hidden />
+              <ArrowUpLeft size={13} strokeWidth={1.9} className={s.ctaIcon} aria-hidden />
             </Link>
           </div>
         </div>

@@ -3,7 +3,7 @@
 import { getServiceRequestByTrackingCode } from '@/actions/serviceRequestActions';
 import {
   AlertCircle,
-  ArrowUpRight,
+  ArrowUpLeft,
   CalendarClock,
   Check,
   CheckCircle2,
@@ -279,7 +279,7 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
           <div className={s.cta}>
             <a href="/online-payment#contact" className={s.ctaLink}>
               <span>ثبت درخواست جدید</span>
-              <ArrowUpRight size={15} />
+              <ArrowUpLeft size={15} />
             </a>
           </div>
         </div>

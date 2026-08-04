@@ -1106,17 +1106,12 @@ function AdvertisementForm({
                 LIVE
               </span>
             </div>
-            <div className="flex items-center justify-center p-3 bg-neutral-950/5 rounded-xl min-h-[160px]">
+            <div className="overflow-hidden rounded-xl bg-neutral-950/5 min-h-[160px] flex items-center justify-center p-3">
               {previewAd.imageUrl ? (
                 <BannerADS
                   ad={previewAd}
-                  variant={
-                    previewAd.size === 'LARGE'
-                      ? 'showcase'
-                      : previewAd.size === 'MEDIUM'
-                        ? 'rich'
-                        : 'minimal'
-                  }
+                  variant="minimal"
+                  showAdLabel
                   className="w-full"
                 />
               ) : (

@@ -9,7 +9,7 @@
  *   • All cards link to /exchanges/[slug].
  */
 
-import { ArrowUpRight, BadgeCheck, Building2, MapPin, Star } from 'lucide-react';
+import { ArrowUpLeft, BadgeCheck, Building2, MapPin, Star } from 'lucide-react';
 import Link from 'next/link';
 import s from './ExchangeBentoGrid.module.css';
 
@@ -203,7 +203,7 @@ function FeatureCard({ item, index }: { item: BentoExchange; index: number }) {
         </div>
         <span className={s.featureCta}>
           مشاهده پروفایل
-          <ArrowUpRight size={14} strokeWidth={2.5} aria-hidden />
+          <ArrowUpLeft size={14} strokeWidth={2.5} aria-hidden />
         </span>
       </div>
     </Link>
@@ -258,7 +258,7 @@ function StandardCard({ item, index }: { item: BentoExchange; index: number }) {
         </span>
         <span className={s.cardCta}>
           نمایش
-          <ArrowUpRight size={11} strokeWidth={2.5} aria-hidden />
+          <ArrowUpLeft size={11} strokeWidth={2.5} aria-hidden />
         </span>
       </footer>
     </Link>

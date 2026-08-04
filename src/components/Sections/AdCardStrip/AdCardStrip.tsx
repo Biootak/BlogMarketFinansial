@@ -28,7 +28,7 @@ import SafeImage from '@/components/SafeImage/SafeImage';
 import { motion, useReducedMotion } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
 import type { Advertisement } from '@/types/types';
-import { ArrowLeft, ArrowUpRight, ExternalLink, Megaphone, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowUpLeft, ExternalLink, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo } from 'react';
 
@@ -73,9 +73,6 @@ export function AdCardStrip({
             {eyebrow}
           </h2>
         </div>
-        <span className="text-[10.5px] sm:text-[11px] text-neutral-400 dark:text-neutral-500 font-vazirmatn tabular-nums">
-          محتوای sponsor شده
-        </span>
       </div>
 
       {/* Grid: hero + 1-3 rich cards */}
@@ -193,23 +190,6 @@ function HeroAdCard({
           {/* Content */}
           <div className="relative h-full flex flex-col justify-between p-4 sm:p-5 lg:p-6 min-h-[inherit] text-white">
             <div className="flex items-center gap-2">
-              <span
-                className={cn(
-                  'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md',
-                  'text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.22em]',
-                  'text-white/90 bg-white/10 backdrop-blur-md border border-white/15',
-                )}
-              >
-                <Sparkles className="h-2.5 w-2.5" strokeWidth={2.5} aria-hidden />
-                <span>AD · ویژه</span>
-              </span>
-              <span
-                className="inline-flex items-center gap-1 text-[9.5px] sm:text-[10.5px] font-medium text-white/80"
-                aria-hidden
-              >
-                <Megaphone className="h-2.5 w-2.5" strokeWidth={2.5} />
-                <span>پیشنهاد ویژه</span>
-              </span>
             </div>
 
             <div className="space-y-2 sm:space-y-2.5">
@@ -232,7 +212,7 @@ function HeroAdCard({
                   )}
                 >
                   <span>مشاهده پیشنهاد</span>
-                  <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />
+                  <ArrowUpLeft className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />
                 </span>
                 <span className="text-[10.5px] sm:text-[11px] text-white/70 font-vazirmatn">
                   یا کلیک روی هر نقطه از کارت
@@ -325,19 +305,6 @@ function RichAdCard({
             style={{ backgroundColor: accentColor }}
           />
 
-          {/* AD eyebrow */}
-          <div className="absolute top-2.5 end-2.5 sm:top-3 sm:end-3 flex items-center gap-1.5">
-            <span
-              className={cn(
-                'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md',
-                'text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em]',
-                'text-white/90 bg-black/45 backdrop-blur-md border border-white/10',
-              )}
-            >
-              <Sparkles className="h-2 w-2" strokeWidth={2.5} aria-hidden />
-              <span>AD</span>
-            </span>
-          </div>
 
           {/* Bottom-start "مشاهده" pill (on hover) */}
           <div

@@ -28,7 +28,7 @@ import { cn, formatNumber, toPersianNumber } from '@/lib/utils';
 import type { Advertisement, PostWithRelations } from '@/types/types';
 import {
   ArrowLeft,
-  ArrowUpRight,
+  ArrowUpLeft,
   Bookmark,
   Calendar,
   ChevronDown,
@@ -1202,17 +1202,17 @@ function SingleAdTile({
   index: number;
 }) {
   // imageFit: ادمین می‌تواند از طریق customDimensions حالت نمایش را انتخاب کند.
-  //  - 'ambient' (پیش‌فرض): کل کادر پر می‌شود + کل تصویر دیده می‌شود (YouTube/Netflix/Apple TV pattern)
-  //  - 'cover'   : کل کادر پر می‌شود، بخشی از تصویر برش می‌خورد (سوژه مرکزی)
+  //  - 'cover'   (پیش‌فرض): کل کادر پر می‌شود، تصویر برش می‌خورد (سوژه مرکزی)
+  //  - 'ambient' : کل کادر پر + کل تصویر دیده می‌شود (YouTube/Netflix/Apple TV pattern)
   //  - 'contain' : کل تصویر دیده می‌شود، فضای خالی با گرادینت پر می‌شود (مناسب لوگو)
   const customDims =
     ad.customDimensions && typeof ad.customDimensions === 'object'
       ? (ad.customDimensions as { imageFit?: string })
       : null;
   const imageFit =
-    customDims?.imageFit === 'cover' || customDims?.imageFit === 'contain'
+    customDims?.imageFit === 'ambient' || customDims?.imageFit === 'contain'
       ? customDims.imageFit
-      : 'ambient';
+      : 'cover';
 
   return (
     <motion.div
@@ -1273,7 +1273,7 @@ function SingleAdTile({
             style={{ color: accessibleTextColor(accentColor) }}
           >
             <span>مشاهده</span>
-            <ArrowUpRight className="h-2.5 w-2.5" strokeWidth={2.5} aria-hidden />
+            <ArrowUpLeft className="h-2.5 w-2.5" strokeWidth={2.5} aria-hidden />
           </div>
         </div>
 
@@ -1300,15 +1300,15 @@ function InlineAdBanner({
   ad: Advertisement;
   accentColor: string;
 }) {
-  // imageFit: بنر تمام‌عرض — پیش‌فرض ambient تا کل محتوای تبلیغ دیده شود
+  // imageFit: بنر تمام‌عرض — پیش‌فرض cover تا کل کادر پر شود
   const customDims =
     ad.customDimensions && typeof ad.customDimensions === 'object'
       ? (ad.customDimensions as { imageFit?: string })
       : null;
   const imageFit =
-    customDims?.imageFit === 'cover' || customDims?.imageFit === 'contain'
+    customDims?.imageFit === 'ambient' || customDims?.imageFit === 'contain'
       ? customDims.imageFit
-      : 'ambient';
+      : 'cover';
 
   return (
     <motion.div
@@ -1331,7 +1331,7 @@ function InlineAdBanner({
         )}
       >
         {/* Container با aspect-ratio ثابت — دقیقاً مثل BannerADS variant image */}
-        <div className="relative w-full overflow-hidden aspect-[16/5] sm:aspect-[16/4]">
+        <div className="relative w-full overflow-hidden aspect-[16/7] sm:aspect-[16/4]">
 
           {/* لایه ۱: تصویر — ambient: کل کادر پر + کل محتوا دیده می‌شود (YouTube/Netflix)
               cover: کل کادر پر می‌شود، برش می‌خورد (سوژه مرکزی) */}
@@ -1352,7 +1352,7 @@ function InlineAdBanner({
             aria-hidden
             style={{
               background:
-                'linear-gradient(90deg, rgba(10,12,20,0.88) 0%, rgba(10,12,20,0.6) 45%, rgba(10,12,20,0.15) 100%)',
+                'linear-gradient(135deg, rgba(10,12,20,0.92) 0%, rgba(10,12,20,0.75) 50%, rgba(10,12,20,0.25) 100%)',
             }}
           />
 
@@ -1364,23 +1364,13 @@ function InlineAdBanner({
           />
 
           {/* محتوا روی تصویر */}
-          <div className="absolute inset-0 z-20 flex items-center gap-3 sm:gap-6 p-4 sm:p-6 lg:p-8">
-            <div className="min-w-0 flex-1 space-y-1.5">
-              <span
-                className={cn(
-                  'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md',
-                  'text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.15em]',
-                  'text-white/90 bg-white/10 backdrop-blur-md border border-white/15',
-                )}
-              >
-                <Sparkles className="h-2 w-2" strokeWidth={2.5} aria-hidden />
-                <span>تبلیغ</span>
-              </span>
-              <h4 className="text-[12px] sm:text-[15px] lg:text-[18px] font-bold leading-snug text-white text-balance line-clamp-2">
+          <div className="absolute inset-0 z-20 flex flex-col justify-between sm:flex-row sm:items-center gap-2 sm:gap-6 p-4 sm:p-6 lg:p-8">
+            <div className="min-w-0 flex-1 space-y-1">
+              <h4 className="text-[14px] sm:text-[15px] lg:text-[18px] font-bold leading-snug text-white text-balance line-clamp-2">
                 {ad.title}
               </h4>
               {ad.description && (
-                <p className="hidden sm:block text-[11px] leading-relaxed text-white/75 line-clamp-1 max-w-2xl">
+                <p className="text-[11px] leading-relaxed text-white/75 line-clamp-1 max-w-2xl sm:block">
                   {ad.description}
                 </p>
               )}
@@ -1388,7 +1378,7 @@ function InlineAdBanner({
 
             <div
               className={cn(
-                'shrink-0 inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full',
+                'self-start sm:self-auto shrink-0 inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-full',
                 'text-[11px] sm:text-[12px] font-bold text-neutral-900',
                 'transition-all duration-300 group-hover/bnr:gap-2.5',
               )}
@@ -1398,7 +1388,7 @@ function InlineAdBanner({
               }}
             >
               <span>مشاهده</span>
-              <ArrowUpRight
+              <ArrowUpLeft
                 className="h-3 w-3 sm:h-3.5 sm:w-3.5 transition-transform duration-300"
                 style={{ color: accentColor }}
                 strokeWidth={2.5}

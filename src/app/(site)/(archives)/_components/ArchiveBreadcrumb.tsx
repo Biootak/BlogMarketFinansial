@@ -1,4 +1,4 @@
-import { ArrowUpRight, ChevronLeft, type LucideIcon, Sparkles } from 'lucide-react';
+import { ArrowUpLeft, ChevronLeft, type LucideIcon, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import type * as React from 'react';
 
@@ -78,7 +78,7 @@ export default function ArchiveBreadcrumb({ crumbs, trailing, badge }: Props) {
                           </span>
                         ) : null}
                         <span className="arc-crumb__label truncate max-w-[14rem]">{c.label}</span>
-                        <ArrowUpRight className="arc-crumb__arrow w-3 h-3" aria-hidden />
+                        <ArrowUpLeft className="arc-crumb__arrow w-3 h-3" aria-hidden />
                       </Link>
                     )}
                   </li>

@@ -29,74 +29,52 @@ export default function MainNav({
   return (
     <nav className="relative z-10" aria-label="ناوبری اصلی سایت">
       <div className="container">
-        <div
-          className="
-            grid items-center main-nav-grid
-            grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]
-            lg:grid-cols-[auto_minmax(0,1fr)_auto]
-            lg:grid-rows-[auto_auto]
-            h-auto lg:py-2
-            gap-2 sm:gap-4
-          "
-        >
-          {/* ستون راست (در RTL: همبرگر منو - موبایل و تبلت <lg) */}
-          <div className="flex items-center justify-start min-w-0 col-start-1 row-start-1">
-            {/* موبایل و تبلت: همبرگر منو - در دسکتاپ مخفی */}
-            <div
-              className="
-                lg:hidden
-                flex items-center justify-center
-                size-10 rounded-xl
-                text-neutral-600 dark:text-neutral-300
-                hover:bg-neutral-100 dark:hover:bg-neutral-800/80
-                transition-colors duration-200
-              "
-            >
+        {/* ── موبایل / تبلت (<lg): grid-cols-3 — هر ستون دقیقاً ۱/۳ عرض ── */}
+        <div className="grid grid-cols-3 items-center h-14 lg:hidden">
+          {/* ستون ۱: همبرگر — چپ‌چین */}
+          <div className="flex items-center justify-start">
+            <div className="flex items-center justify-center size-10 rounded-xl text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800/80 transition-colors duration-200">
               <MenuBar />
             </div>
           </div>
 
-          {/* ستون وسط — Logo */}
-          <div
-            className="flex items-center justify-center min-w-0 col-start-2 row-start-1
-                          lg:col-start-1 lg:row-start-1 lg:justify-start"
-          >
+          {/* ستون ۲: لوگو — وسط‌چین دقیق */}
+          <div className="flex items-center justify-center">
             <SiteLogo variant="modern" />
           </div>
 
-          {/* ستون چپ (در RTL: اکشن‌ها/ورود — همه سایزها) */}
-          {/*
-            2026-08-02 (perf): قبلاً SearchModalLazy + AuthStatus دو بار رندر
-            می‌شدند (یک‌بار در div موبایل lg:hidden و یک‌بار در div دسکتاپ
-            hidden lg:flex) — یعنی دو اشتراک useSession، دو نمونه‌ی
-            NotifyDropdown/AvatarDropdown و DOM تکراری. حالا یک نمونه‌ی واحد
-            در یک container ریسپانسیو رندر می‌شود.
-          */}
-          <div className="flex items-center justify-end gap-1 sm:gap-2 min-w-0 col-start-3 row-start-1">
-            <div className="flex items-center gap-1 sm:gap-1.5">
-              <div
-                className="
-                  hidden lg:flex items-center justify-center
-                  size-10 rounded-xl
-                  text-neutral-600 dark:text-neutral-300
-                  hover:bg-neutral-100 dark:hover:bg-neutral-800/80
-                  transition-colors duration-200
-                "
-              >
-                <SearchModalLazy />
-              </div>
+          {/* ستون ۳: auth — راست‌چین */}
+          <div className="flex items-center justify-end">
+            <AuthStatus />
+          </div>
+        </div>
 
-              <AuthStatus />
-            </div>
+        {/* ── دسکتاپ (lg+): grid سه‌ستونه با Navigation وسط ── */}
+        <div
+          className="
+            hidden lg:grid items-center main-nav-grid
+            lg:grid-cols-[auto_minmax(0,1fr)_auto]
+            lg:grid-rows-[auto_auto]
+            lg:py-2
+            gap-4
+          "
+        >
+          {/* لوگو */}
+          <div className="flex items-center col-start-1 row-start-1">
+            <SiteLogo variant="modern" />
           </div>
 
-          {/* ستون وسط ردیف دوم — Navigation (فقط lg+ = دسکتاپ) */}
-          <div
-            className="hidden lg:flex items-center justify-center min-w-0
-                          col-span-3 row-start-2
-                          lg:col-span-1 lg:col-start-2 lg:row-start-1"
-          >
+          {/* Navigation وسط */}
+          <div className="flex items-center justify-center min-w-0 col-start-2 row-start-1">
             <Navigation rateLists={activeRateLists} />
+          </div>
+
+          {/* اکشن‌ها */}
+          <div className="flex items-center justify-end gap-1.5 col-start-3 row-start-1">
+            <div className="flex items-center justify-center size-10 rounded-xl text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800/80 transition-colors duration-200">
+              <SearchModalLazy />
+            </div>
+            <AuthStatus />
           </div>
         </div>
       </div>

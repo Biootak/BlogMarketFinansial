@@ -18,7 +18,7 @@ import type {
   CustomerStats,
 } from '@/actions/exchange-customers';
 import { EmptyState, Section } from '@/components/Dashboard/primitives';
-import { ArrowUpRight, Inbox, Shield, TrendingUp, Users } from 'lucide-react';
+import { ArrowUpLeft, Inbox, Shield, TrendingUp, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import s from './CustomerSegmentDeepDive.module.css';
@@ -170,7 +170,7 @@ function MiniRow({ c, idx }: { c: CustomerRow; idx: number }) {
         {c.city && <span className={s.miniCity}>{c.city}</span>}
         <span className={`${s.miniRisk} ${s[`miniRisk_${riskTone}`]}`}>{c.riskScore}</span>
       </div>
-      <ArrowUpRight size={12} className={s.miniArrow} aria-hidden />
+      <ArrowUpLeft size={12} className={s.miniArrow} aria-hidden />
     </Link>
   );
 }
@@ -297,7 +297,7 @@ export function CustomerSegmentDeepDive({
         actions={
           <Link href="/exchange/customers" className={s.viewAllLink}>
             مشاهده همه
-            <ArrowUpRight size={12} aria-hidden />
+            <ArrowUpLeft size={12} aria-hidden />
           </Link>
         }
       >

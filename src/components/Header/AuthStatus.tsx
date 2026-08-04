@@ -48,14 +48,14 @@ export default function AuthStatus() {
  */
 export function GuestAuthLinks(): ReactNode {
   return (
-    <div className="flex items-center gap-2 me-1">
+    <div className="flex items-center gap-1.5 sm:gap-2 me-1">
       <Link
         href="/auth"
         className="
-          group relative inline-flex items-center justify-center gap-1.5
-          h-10 px-5
-          text-sm font-semibold text-white
-          rounded-xl overflow-hidden
+          group relative inline-flex items-center justify-center gap-1 sm:gap-1.5
+          h-8 sm:h-10 px-3 sm:px-5
+          text-xs sm:text-sm font-semibold text-white
+          rounded-lg sm:rounded-xl overflow-hidden
           transition-transform duration-200
           hover:scale-[1.02] active:scale-[0.98]
         "
@@ -77,16 +77,16 @@ export function GuestAuthLinks(): ReactNode {
             transition-transform duration-700
           "
         />
-        <Sparkles className="relative size-4" aria-hidden />
+        <Sparkles className="relative size-3 sm:size-4" aria-hidden />
         <span className="relative">ورود</span>
       </Link>
       <Link
         href="/auth?step=register"
         className="
           group relative inline-flex items-center justify-center
-          h-10 px-5
-          text-sm font-semibold
-          rounded-xl overflow-hidden
+          h-8 sm:h-10 px-3 sm:px-5
+          text-xs sm:text-sm font-semibold
+          rounded-lg sm:rounded-xl overflow-hidden
           transition-transform duration-200
           hover:scale-[1.02] active:scale-[0.98]
         "
@@ -94,7 +94,7 @@ export function GuestAuthLinks(): ReactNode {
         <span
           aria-hidden
           className="
-            absolute inset-0 rounded-xl
+            absolute inset-0 rounded-lg sm:rounded-xl
             bg-gradient-to-r from-primary-500 to-indigo-500
             p-[1.5px]
           "
@@ -102,7 +102,7 @@ export function GuestAuthLinks(): ReactNode {
           <span
             aria-hidden
             className="
-              absolute inset-[1.5px] rounded-[10px]
+              absolute inset-[1.5px] rounded-[7px] sm:rounded-[10px]
               bg-white dark:bg-neutral-900
             "
           />
@@ -110,7 +110,7 @@ export function GuestAuthLinks(): ReactNode {
         <span
           aria-hidden
           className="
-            absolute inset-[1.5px] rounded-[10px]
+            absolute inset-[1.5px] rounded-[7px] sm:rounded-[10px]
             bg-gradient-to-r
             from-primary-50 to-indigo-50
             dark:from-primary-950/50 dark:to-indigo-950/50

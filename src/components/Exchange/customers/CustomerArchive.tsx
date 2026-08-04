@@ -15,7 +15,7 @@ import { useToast } from '@/components/ui/use-toast';
 import {
   AlertTriangle,
   Archive,
-  ArrowUpRight,
+  ArrowUpLeft,
   Clock,
   Inbox,
   Search,
@@ -93,7 +93,7 @@ function CustomerRowRow({
       <div className={s.rowInfo}>
         <Link href={`/exchange/customers/${customer.id}`} className={s.rowName}>
           {customer.fullName}
-          <ArrowUpRight size={12} strokeWidth={2} aria-hidden />
+          <ArrowUpLeft size={12} strokeWidth={2} aria-hidden />
         </Link>
         <span className={s.rowPhone} dir="ltr">
           {customer.phone}

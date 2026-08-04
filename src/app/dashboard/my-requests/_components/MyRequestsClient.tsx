@@ -35,7 +35,7 @@ import CopyButton from '@/components/fintech/CopyButton';
 import { cn } from '@/lib/utils';
 import {
   AlertCircle,
-  ArrowUpRight,
+  ArrowUpLeft,
   Ban,
   CalendarClock,
   CheckCircle2,
@@ -904,7 +904,7 @@ function TicketCard({
               >
                 <FileSearch size={12} aria-hidden />
                 پیگیری عمومی سفارش
-                <ArrowUpRight size={11} aria-hidden />
+                <ArrowUpLeft size={11} aria-hidden />
               </a>
             </div>
 
