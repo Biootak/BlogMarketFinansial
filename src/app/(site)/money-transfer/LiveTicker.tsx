@@ -22,40 +22,19 @@ import {
   formatValueOnly,
   formatWithUnit,
 } from '@/lib/market-rates/format';
-import { formatFreshness } from '@/lib/money-transfer/hero';
-import { useEffect, useState } from 'react';
-
 interface LiveTickerProps {
   rates: MarketRateItem[];
-  /** ISO timestamp of the latest rate source. null = unknown. */
-  freshnessAnchorISO?: string | null;
 }
 
-export default function LiveTicker({ rates, freshnessAnchorISO }: LiveTickerProps) {
+export default function LiveTicker({ rates }: LiveTickerProps) {
   // فقط آیتم‌های معتبر
   const items = rates.filter((r) => Number.isFinite(r.value) && r.value > 0);
-
-  // Freshness computed client-side to avoid hydration mismatch.
-  const [isMounted, setIsMounted] = useState(false);
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-  const freshness = isMounted
-    ? formatFreshness(freshnessAnchorISO ? new Date(freshnessAnchorISO) : null, new Date())
-    : '';
 
   // Duplicate items for seamless CSS loop (animation translates -50%)
   const looped = items.length > 0 ? [...items, ...items] : [];
 
   return (
     <section className="mt-ticker" aria-label="نرخ‌های لحظه‌ای ارز">
-      {/* label — ثابت، z-index بالاتر از track */}
-      <span className="mt-ticker__label">
-        <span className="mt-ticker__label-dot" aria-hidden />
-        <span>نرخ زنده</span>
-        {freshness && <span>· به‌روزرسانی {freshness}</span>}
-      </span>
-
       {/* wrapper overflow:hidden تا track از لبه‌ها بیرون نزند */}
       <div className="mt-ticker__scroll-area">
         {looped.length === 0 ? (

@@ -2,18 +2,7 @@
 
 /**
  * FAQ — Native <details> accordion with CSS interpolate-size (2026)
- * ---------------------------------------------------------------------------
- * Replaces framer-motion AnimatePresence with native <details> +
- * ::details-content + interpolate-size: allow-keywords.
- *
- * Why this is better:
- *  - Zero JS animation runtime — height transitions are CSS-native
- *  - Free keyboard handling (Enter/Space to toggle)
- *  - Screen reader announcements built-in
- *  - Works without JS (progressive enhancement)
- *  - Smaller bundle: removes motion-shim dependency from this page
- *
- * Design: Linear-style clean list with subtle borders, no heavy gradients.
+ * Design system classes only: mt-faq-item, mt-faq-trigger, mt-section-header, etc.
  */
 
 import { HelpCircle, MessageCircle } from 'lucide-react';
@@ -54,24 +43,18 @@ const faqs = [
 export default function FAQ() {
   return (
     <div dir="rtl">
-      {/* Header */}
-      <div className="text-center mb-12 lg:mb-16">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-full mb-4">
-          <HelpCircle className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-          <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
-            پاسخ به سوالات شما
-          </span>
-        </div>
-        <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white mb-4 tracking-tight">
-          سؤالات متداول
-        </h2>
-        <p className="text-slate-500 dark:text-slate-400 max-w-lg mx-auto">
-          پاسخ سوالات رایج درباره خدمات انتقال ارز
-        </p>
+      {/* Header — design system classes */}
+      <div className="mt-section-header mt-section-header--center">
+        <span className="mt-eyebrow">
+          <HelpCircle className="w-3 h-3" aria-hidden />
+          پاسخ به سوالات شما
+        </span>
+        <h2 className="mt-section-title">سؤالات متداول</h2>
+        <p className="mt-section-lead">پاسخ سوالات رایج درباره خدمات انتقال ارز</p>
       </div>
 
-      {/* FAQ Items — native <details> with CSS interpolate-size */}
-      <div className="max-w-3xl mx-auto space-y-3">
+      {/* FAQ Items — native <details> accordion */}
+      <div className="max-w-3xl mx-auto space-y-2">
         {faqs.map((faq, index) => (
           <details key={faq.question} className="mt-faq-item group">
             <summary className="mt-faq-trigger">
@@ -99,13 +82,13 @@ export default function FAQ() {
       </div>
 
       {/* Contact CTA */}
-      <div className="mt-12 text-center">
-        <p className="text-slate-500 dark:text-slate-400 mb-4">سوال دیگری دارید؟</p>
+      <div className="mt-8 text-center">
+        <p className="mt-section-lead mx-auto mb-4">سوال دیگری دارید؟</p>
         <a
           href="#contact"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-medium hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors duration-200"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-sm font-semibold hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors duration-200"
         >
-          <MessageCircle className="w-5 h-5" />
+          <MessageCircle className="w-4 h-4" />
           <span>با ما در تماس باشید</span>
         </a>
       </div>

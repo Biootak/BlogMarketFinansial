@@ -344,50 +344,17 @@ export default function HeroConverter({
               </span>
             </div>
 
-            {/* H1 — headline مستقل با proof point */}
+            {/* H1 */}
             <h1 id="hero-converter-title" className="mt-hero__title mt-fade-up mt-fade-up-d2">
               حواله با <span className="mt-hero__title-accent">بهترین نرخ بازار</span>
             </h1>
 
-            {/* Lead — عدد dynamic با fallback امن */}
+            {/* Lead */}
             <p className="mt-hero__lead mt-fade-up mt-fade-up-d3">
               از {bestSpread > 0 ? `${fmtSpreadPct(bestSpread)}٪` : 'کمترین'} اسپرد تا تسویه در{' '}
               {hasRates ? 'کمتر از چند دقیقه' : 'سریع‌ترین زمان ممکن'}، در{' '}
               {pairs.length > 0 ? `${formatFaNumber(pairs.length)} جفت ارزی` : 'صرافی‌های فعال'}.
             </p>
-
-            {/* Quick category chips */}
-            <div className="mt-hero__categories" role="tablist" aria-label="دسته‌بندی سریع">
-              {CATEGORIES.map((cat) => {
-                const Icon = cat.icon;
-                const isActive = cat.id === category;
-                return (
-                  <button
-                    key={cat.id}
-                    role="tab"
-                    aria-selected={isActive}
-                    aria-disabled={!cat.enabled}
-                    disabled={!cat.enabled}
-                    type="button"
-                    onClick={() => cat.enabled && setCategory(cat.id)}
-                    // M3-fix 2026-07: tooltip "به زودی" برای disabled chips
-                    title={!cat.enabled ? 'به زودی' : undefined}
-                    className={`mt-hero__chip ${isActive ? 'mt-hero__chip--active' : ''}`}
-                  >
-                    <Icon className="size-3.5" aria-hidden />
-                    <span>{cat.label}</span>
-                    {!cat.enabled && (
-                      <span
-                        style={{ fontSize: '0.6rem', opacity: 0.65, marginInlineStart: '0.2rem' }}
-                        aria-hidden
-                      >
-                        زودا
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
 
             {/* Stats strip — چهار شاخص data-driven */}
             <dl className="mt-hero__stats" aria-label="شاخص‌های کلیدی">
@@ -435,18 +402,46 @@ export default function HeroConverter({
               RIGHT (in RTL: left visually) — calculator
              ============================================================= */}
           <div className="mt-hero__calculator-slot">
+            {/* Category tabs — بالای ماشین حساب */}
+            <div className="mt-calc__tabs" role="tablist" aria-label="دسته‌بندی سریع">
+              {CATEGORIES.map((cat) => {
+                const Icon = cat.icon;
+                const isActive = cat.id === category;
+                return (
+                  <button
+                    key={cat.id}
+                    role="tab"
+                    aria-selected={isActive}
+                    aria-disabled={!cat.enabled}
+                    disabled={!cat.enabled}
+                    type="button"
+                    onClick={() => cat.enabled && setCategory(cat.id)}
+                    title={!cat.enabled ? 'به زودی' : undefined}
+                    className={`mt-calc__tab ${isActive ? 'mt-calc__tab--active' : ''}`}
+                  >
+                    <Icon className="size-3" aria-hidden />
+                    <span>{cat.label}</span>
+                    {!cat.enabled && (
+                      <span
+                        style={{ fontSize: '0.55rem', opacity: 0.6, marginInlineStart: '0.15rem' }}
+                        aria-hidden
+                      >
+                        زودا
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
             {hasRates ? (
               <form
                 onSubmit={handleSubmit}
-                className={`mt-calc ${styles.card} mt-fade-scale`}
+                className={`mt-calc mt-calc--tabbed ${styles.card} mt-fade-scale`}
                 aria-label="مبدل ارز"
               >
+                {/* lock badge — freshness */}
                 <div className="mt-calc__head">
-                  <span className="mt-calc__head-icon" aria-hidden>
-                    <TrendingUp className="size-3.5" />
-                  </span>
-                  <span className="mt-calc__head-title">مبدل زنده</span>
-                  <span className="mt-calc__head-meta">{activeCategory.label}</span>
                   <span
                     className={styles.lock}
                     title="نرخ بر اساس آخرین بروزرسانی بازار قفل شده است"

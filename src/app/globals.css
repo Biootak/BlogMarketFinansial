@@ -1,4 +1,4 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 @import "../components/ds/styles/tokens.css";
 
 /* ============================================================================
@@ -1147,39 +1147,51 @@ p {
     );
   }
 
-  /* Split layout â€” copy block + calculator card.
-     RTL note: visual right is the start. We use grid columns so the order
-     flips automatically with `dir`. On mobile, stack copy above calculator. */
+  /* Split layout — copy block + calculator card.
+     Mobile: calculator FIRST (order:1), copy below (order:2), both centred.
+     Desktop (≥1024): side-by-side, copy right, calculator left (RTL auto). */
   .mt-hero__inner {
     position: relative;
     z-index: 1;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: clamp(1.25rem, 1rem + 1.2vw, 2.5rem);
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    padding: clamp(1.75rem, 1.2rem + 2vw, 3.5rem) clamp(1rem, 0.7rem + 1vw, 2rem);
+    gap: clamp(0.75rem, 0.65rem + 0.8vw, 2rem);
+    padding: clamp(0.875rem, 0.7rem + 1vw, 2.75rem) clamp(0.75rem, 0.55rem + 0.8vw, 1.75rem);
   }
   @media (min-width: 1024px) {
     .mt-hero__inner {
+      display: grid;
       grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
-      gap: clamp(1.5rem, 1.1rem + 1.2vw, 2.75rem);
-      padding: clamp(1.75rem, 1.3rem + 1.4vw, 3rem) clamp(1.25rem, 0.9rem + 1vw, 2.25rem);
+      align-items: center;
+      gap: clamp(1.25rem, 1rem + 1vw, 2.5rem);
+      padding: clamp(1.5rem, 1.2rem + 1.2vw, 2.75rem) clamp(1.125rem, 0.85rem + 0.9vw, 2rem);
     }
   }
 
   .mt-hero__copy {
     display: flex;
     flex-direction: column;
-    gap: clamp(1rem, 0.85rem + 0.6vw, 1.5rem);
+    gap: clamp(0.5rem, 0.45rem + 0.4vw, 1.25rem);
     min-inline-size: 0;
+    inline-size: 100%;
+    max-inline-size: 440px;
+    /* Mobile: copy comes AFTER calculator */
+    order: 2;
+  }
+  @media (min-width: 1024px) {
+    .mt-hero__copy {
+      max-inline-size: none;
+      order: unset;
+    }
   }
 
   /* ----- live indicator pill ----- */
   .mt-hero__live {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.4rem 0.875rem 0.4rem 0.75rem;
+    gap: 0.4rem;
+    padding: 0.3rem 0.75rem 0.3rem 0.625rem;
     border-radius: 9999px;
     background: oklch(100% 0 0 / 0.04);
     border: 1px solid oklch(100% 0 0 / 0.1);
@@ -1217,8 +1229,8 @@ p {
 
   /* ----- headline ----- */
   .mt-hero__title {
-    font-size: clamp(1.7rem, 1.25rem + 2.1vw, 2.85rem);
-    line-height: 1.1;
+    font-size: clamp(1.4rem, 1.1rem + 2.1vw, 2.85rem);
+    line-height: 1.15;
     letter-spacing: -0.03em;
     font-weight: 800;
     color: oklch(98% 0.005 240);
@@ -1243,8 +1255,8 @@ p {
   }
 
   .mt-hero__lead {
-    font-size: clamp(0.95rem, 0.86rem + 0.45vw, 1.125rem);
-    line-height: 1.7;
+    font-size: clamp(0.875rem, 0.82rem + 0.35vw, 1.075rem);
+    line-height: 1.65;
     color: oklch(75% 0.02 240);
     text-wrap: pretty;
     max-inline-size: 56ch;
@@ -1271,8 +1283,8 @@ p {
   .mt-hero__stat {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
-    padding: clamp(0.7rem, 0.55rem + 0.4vw, 1rem) clamp(0.85rem, 0.65rem + 0.5vw, 1.25rem);
+    gap: 0.25rem;
+    padding: clamp(0.5rem, 0.45rem + 0.3vw, 0.875rem) clamp(0.625rem, 0.5rem + 0.4vw, 1.125rem);
     border-inline-start: 1px solid oklch(100% 0 0 / 0.08);
   }
   .mt-hero__stat:first-child {
@@ -1331,17 +1343,17 @@ p {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.75rem;
-    margin-block-start: 0.25rem;
+    gap: 0.5rem;
+    margin-block-start: 0;
   }
   .mt-hero__cta {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    padding: 0.8125rem 1.375rem;
+    padding: clamp(0.625rem, 0.55rem + 0.3vw, 0.8125rem) clamp(1rem, 0.85rem + 0.4vw, 1.375rem);
     border-radius: 0.875rem;
-    font-size: 0.9375rem;
+    font-size: clamp(0.8125rem, 0.78rem + 0.15vw, 0.9375rem);
     font-weight: 600;
     line-height: 1;
     text-decoration: none;
@@ -1397,21 +1409,21 @@ p {
   .mt-hero__categories {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-block-start: 0.25rem;
+    gap: 0.3rem;
+    margin-block-start: 0;
   }
   .mt-hero__chip {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    min-block-size: 44px;
-    padding-inline: 1rem;
-    padding-block: 0.65rem;
+    gap: 0.3rem;
+    min-block-size: 36px;
+    padding-inline: clamp(0.5rem, 0.45rem + 0.25vw, 0.875rem);
+    padding-block: 0.4rem;
     border-radius: 9999px;
     background: oklch(100% 0 0 / 0.05);
     border: 1px solid oklch(100% 0 0 / 0.12);
     color: oklch(85% 0.02 240);
-    font-size: 0.8125rem;
+    font-size: clamp(0.75rem, 0.72rem + 0.1vw, 0.8125rem);
     font-weight: 600;
     line-height: 1;
     cursor: pointer;
@@ -1487,37 +1499,6 @@ p {
   }
   .dark .mt-ticker::after {
     background: linear-gradient(to left, oklch(15% 0.012 250 / 0.95), transparent);
-  }
-
-  /* "LIVE" badge prefix */
-  .mt-ticker__label {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.3rem 0.75rem;
-    margin-inline-start: 0.875rem;
-    border-radius: 9999px;
-    background: oklch(70% 0.18 150 / 0.12);
-    color: oklch(45% 0.18 150);
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    line-height: 1;
-    /* Ø¨Ø§Ù„Ø§ØªØ± Ø§Ø² track Ú©Ù‡ Ø¯Ø± Ø­Ø±Ú©Øª Ø§Ø³Øª */
-    position: relative;
-    z-index: 3;
-  }
-  .dark .mt-ticker__label {
-    background: oklch(70% 0.18 150 / 0.18);
-    color: oklch(75% 0.18 150);
-  }
-  .mt-ticker__label-dot {
-    inline-size: 0.4rem;
-    block-size: 0.4rem;
-    border-radius: 9999px;
-    background: oklch(65% 0.18 150);
-    box-shadow: 0 0 6px oklch(65% 0.18 150 / 0.5);
   }
 
   /* Wrapper â€” flex:1 + overflow:hidden ØªØ§ track Ø§Ø² label Ø±Ø¯ Ù†Ø´ÙˆØ¯ */
@@ -1645,6 +1626,78 @@ p {
   .mt-hero__calculator-slot {
     position: relative;
     isolation: isolate;
+    inline-size: 100%;
+    max-inline-size: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    /* Mobile: calculator comes FIRST */
+    order: 1;
+  }
+  @media (min-width: 1024px) {
+    .mt-hero__calculator-slot {
+      max-inline-size: none;
+      order: unset;
+    }
+  }
+
+  /* ── Calculator tab bar — sits above the calc card ── */
+  .mt-calc__tabs {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    padding: 0.25rem 0.25rem 0;
+    background: oklch(100% 0 0 / 0.06);
+    border: 1px solid oklch(92% 0.005 240 / 0.7);
+    border-block-end: 0;
+    border-radius: clamp(0.75rem, 0.65rem + 0.3vw, 1rem) clamp(0.75rem, 0.65rem + 0.3vw, 1rem) 0 0;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .dark .mt-calc__tabs {
+    background: oklch(15% 0.015 250 / 0.7);
+    border-color: oklch(32% 0.012 250 / 0.7);
+  }
+  .mt-calc__tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex: 1;
+    justify-content: center;
+    padding: 0.45rem 0.5rem;
+    border-radius: 0.5rem 0.5rem 0 0;
+    background: transparent;
+    border: 0;
+    color: oklch(75% 0.02 240);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      color 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .mt-calc__tab:hover:not(:disabled) {
+    background: oklch(100% 0 0 / 0.08);
+    color: oklch(95% 0.005 240);
+  }
+  .mt-calc__tab:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .mt-calc__tab--active {
+    background: oklch(100% 0 0 / 0.9);
+    color: oklch(20% 0.02 250);
+  }
+  .dark .mt-calc__tab--active {
+    background: oklch(18% 0.012 250 / 0.95);
+    color: oklch(95% 0.005 240);
+  }
+
+  /* calc card: top corners flat when tabs are attached above */
+  .mt-calc--tabbed {
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+    border-block-start: 0;
   }
 
   .mt-calc {
@@ -1654,8 +1707,8 @@ p {
        so the card can't clip them. `.mt-hero` (overflow:hidden) still bounds the
        whole section, keeping rounded corners/edges clean at the section level. */
     overflow: visible;
-    padding: clamp(1rem, 0.8rem + 0.6vw, 1.5rem);
-    border-radius: clamp(1rem, 0.85rem + 0.5vw, 1.375rem);
+    padding: clamp(0.75rem, 0.65rem + 0.4vw, 1.25rem);
+    border-radius: clamp(0.875rem, 0.75rem + 0.4vw, 1.25rem);
     background: oklch(100% 0 0 / 0.86);
     border: 1px solid oklch(92% 0.005 240 / 0.9);
     box-shadow: 0 1px 0 oklch(100% 0 0 / 0.7) inset, 0 30px 80px -24px oklch(0% 0 0 / 0.55), 0 8px
@@ -1669,54 +1722,12 @@ p {
     box-shadow: 0 1px 0 oklch(100% 0 0 / 0.06) inset, 0 40px 96px -28px oklch(0% 0 0 / 0.7), 0 12px
       32px -14px oklch(0% 0 0 / 0.4);
   }
-  /* Subtle "header" of the calculator â€” gives the card a name (so users
-     don't perceive it as an anonymous glass block). */
+  /* head: only lock badge remains — slim freshness row */
   .mt-calc__head {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.25rem 0.625rem 0.25rem 0.5rem;
-    border-radius: 9999px;
-    background: oklch(60% 0.15 165 / 0.1);
-    color: oklch(42% 0.15 165);
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    line-height: 1;
-    margin-block-end: clamp(0.875rem, 0.7rem + 0.5vw, 1.125rem);
-  }
-  .dark .mt-calc__head {
-    background: oklch(60% 0.15 165 / 0.18);
-    color: oklch(82% 0.13 165);
-  }
-  .mt-calc__head-icon {
-    inline-size: 1.25rem;
-    block-size: 1.25rem;
-    border-radius: 9999px;
-    background: oklch(60% 0.15 165);
-    color: oklch(98% 0 0);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .dark .mt-calc__head-icon {
-    background: oklch(75% 0.15 165);
-    color: oklch(15% 0.015 250);
-  }
-  .mt-calc__head-title {
-    font-weight: 700;
-  }
-  .mt-calc__head-meta {
-    color: oklch(50% 0.02 240);
-    font-weight: 500;
-    padding-inline-start: 0.5rem;
-    border-inline-start: 1px solid oklch(50% 0.02 240 / 0.2);
-    font-size: 0.6875rem;
-    letter-spacing: 0;
-  }
-  .dark .mt-calc__head-meta {
-    color: oklch(70% 0.02 240);
-    border-inline-start-color: oklch(70% 0.02 240 / 0.25);
+    justify-content: flex-end;
+    margin-block-end: 0.5rem;
   }
 
   /* Two-field grid: row of two big inputs with a swap button between.
@@ -1737,9 +1748,9 @@ p {
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    padding: 0.75rem 0.875rem 0.875rem;
-    border-radius: 0.875rem;
+    gap: 0.375rem;
+    padding: 0.625rem 0.75rem 0.75rem;
+    border-radius: 0.75rem;
     background: oklch(99% 0.003 240 / 0.85);
     border: 1px solid oklch(90% 0.006 240 / 0.9);
     transition: border-color 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms
@@ -1818,16 +1829,16 @@ p {
   .mt-calc__presets {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.375rem;
-    margin-block-start: 0.5rem;
+    gap: 0.3rem;
+    margin-block-start: 0.375rem;
   }
   .mt-calc__preset {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-block-size: 36px;
-    padding-inline: 0.625rem;
-    padding-block: 0.5rem;
+    min-block-size: 32px;
+    padding-inline: 0.5rem;
+    padding-block: 0.3rem;
     border-radius: 9999px;
     background: oklch(99% 0.003 240 / 0.7);
     border: 1px solid oklch(90% 0.006 240 / 0.85);
@@ -1877,39 +1888,42 @@ p {
     color: oklch(90% 0.13 165);
   }
 
-  /* Swap button â€” sits between the two fields. */
+
+  /* Swap button - emerald brand accent, consistent with --color-primary-500 token. */
   .mt-calc__swap {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    inline-size: 2.5rem;
-    block-size: 2.5rem;
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
     border-radius: 9999px;
-    background: oklch(15% 0.015 250);
-    color: oklch(98% 0.005 240);
-    /* Ø­Ø§Ø´ÛŒÙ‡â€ŒÛŒ Ù‚Ø¨Ù„ÛŒ Ø³ÙÛŒØ¯ Ø¨ÙˆØ¯ Ú©Ù‡ Ø±ÙˆÛŒ Ù¾Ø³â€ŒØ²Ù…ÛŒÙ†Ù‡â€ŒÛŒ Ø´ÛŒØ´Ù‡â€ŒØ§ÛŒ ØªÛŒØ±Ù‡ Ø¨Ù‡â€ŒØµÙˆØ±Øª
-       Â«ØªÛŒÚ© Ø³ÙÛŒØ¯Â» Ø¯ÛŒØ¯Ù‡ Ù…ÛŒâ€ŒØ´Ø¯. Ø§Ú©Ù†ÙˆÙ† Ø§Ø² ring token Ø§Ø³ØªÙØ§Ø¯Ù‡ Ù…ÛŒâ€ŒÚ©Ù†ÛŒÙ… ØªØ§
-       Ø¨Ø§ Ø·Ø±Ø§Ø­ÛŒ Ø³Ø§ÛŒØª Ù‡Ù…Ø§Ù‡Ù†Ú¯ Ùˆ Ø¯Ø± Ù‡Ø± Ø¯Ùˆ ØªÙ… Ø®ÙˆØ§Ù†Ø§ Ø¨Ø§Ø´Ø¯. */
-    border: 1px solid color-mix(in oklab, var(--ds-text-primary, #fff) 12%, transparent);
-    outline: 2px solid transparent;
-    outline-offset: -1px;
+    background: oklch(60% 0.15 165);
+    color: oklch(99% 0 0);
+    border: 1px solid oklch(55% 0.16 165 / 0.7);
     cursor: pointer;
     align-self: center;
     justify-self: center;
     box-shadow:
-      0 1px 0 oklch(100% 0 0 / 0.05) inset,
-      0 8px 20px -6px oklch(0% 0 0 / 0.45);
+      0 1px 0 oklch(100% 0 0 / 0.18) inset,
+      0 4px 14px -4px oklch(60% 0.15 165 / 0.5);
     transition: transform 380ms cubic-bezier(0.22, 1, 0.36, 1),
-      background 220ms cubic-bezier(0.22, 1, 0.36, 1);
+      background 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1);
   }
   .mt-calc__swap:hover {
     transform: rotate(180deg);
-    background: oklch(28% 0.06 245);
+    background: oklch(55% 0.16 165);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.2) inset,
+      0 6px 18px -4px oklch(60% 0.15 165 / 0.65);
   }
   .dark .mt-calc__swap {
-    background: oklch(80% 0.1 215);
-    color: oklch(15% 0.015 250);
-    border-color: color-mix(in oklab, var(--ds-text-primary, #fff) 8%, transparent);
+    background: oklch(60% 0.15 165);
+    color: oklch(99% 0 0);
+    border-color: oklch(55% 0.16 165 / 0.6);
+  }
+  .dark .mt-calc__swap:hover {
+    background: oklch(65% 0.15 165);
   }
   @media (max-width: 767px) {
     .mt-calc__swap {
@@ -1926,9 +1940,9 @@ p {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.5rem 0.875rem;
-    margin-block-start: 1rem;
-    padding-block-start: 1rem;
+    gap: 0.375rem 0.75rem;
+    margin-block-start: 0.625rem;
+    padding-block-start: 0.625rem;
     border-block-start: 1px dashed oklch(50% 0.02 240 / 0.18);
     font-size: 0.8125rem;
     color: oklch(45% 0.02 240);
@@ -1966,11 +1980,11 @@ p {
   .mt-calc__hint {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
     flex-wrap: wrap;
-    margin-block-start: 0.875rem;
-    padding: 0.625rem 0.875rem;
-    border-radius: 0.75rem;
+    margin-block-start: 0.5rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 0.625rem;
     background: oklch(60% 0.15 165 / 0.08);
     border: 1px solid oklch(60% 0.15 165 / 0.25);
     font-size: 0.8125rem;
@@ -2023,9 +2037,9 @@ p {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    margin-block-start: 1rem;
-    padding: 0.875rem 1.125rem;
-    border-radius: 0.75rem;
+    margin-block-start: 0.5rem;
+    padding: clamp(0.5rem, 0.45rem + 0.25vw, 0.75rem) 1rem;
+    border-radius: 0.625rem;
     background: oklch(15% 0.015 250);
     color: oklch(98% 0.005 240);
     font-size: 0.9375rem;
@@ -2561,8 +2575,8 @@ p {
   .mt-trust__cell {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
-    padding: clamp(1rem, 0.8rem + 0.6vw, 1.5rem);
+    gap: 0.35rem;
+    padding: clamp(0.75rem, 0.65rem + 0.5vw, 1.25rem) clamp(0.875rem, 0.7rem + 0.5vw, 1.5rem);
     border-inline-start: 1px solid oklch(92% 0.005 240 / 0.7);
     transition: background-color 0.2s ease;
   }
@@ -2593,7 +2607,7 @@ p {
     display: inline-flex;
     align-items: baseline;
     gap: 0.2rem;
-    font-size: clamp(1.5rem, 1.2rem + 0.9vw, 2.125rem);
+    font-size: clamp(1.05rem, 0.85rem + 0.8vw, 1.875rem);
     line-height: 1;
     font-weight: 800;
     color: oklch(15% 0.015 250);
@@ -2647,8 +2661,8 @@ p {
   .mt-feature {
     display: flex;
     align-items: flex-start;
-    gap: 0.875rem;
-    padding: clamp(1.1rem, 0.9rem + 0.6vw, 1.5rem);
+    gap: 0.75rem;
+    padding: clamp(0.875rem, 0.75rem + 0.5vw, 1.25rem) clamp(1rem, 0.85rem + 0.5vw, 1.5rem);
     border-block-end: 1px solid oklch(92% 0.005 240 / 0.7);
     transition: background 220ms cubic-bezier(0.22, 1, 0.36, 1);
   }
@@ -2863,7 +2877,7 @@ p {
     position: relative;
   }
   .mt-section + .mt-section {
-    margin-block-start: clamp(2.5rem, 2rem + 2vw, 4rem);
+    margin-block-start: clamp(1.25rem, 1rem + 1.5vw, 3rem);
   }
 
   /* Section header (eyebrow + title + lead) */
@@ -2921,7 +2935,7 @@ p {
     color: oklch(80% 0.16 70);
   }
   .mt-section-title {
-    font-size: clamp(1.4rem, 1.1rem + 1.4vw, 2rem);
+    font-size: clamp(1.2rem, 1rem + 1.2vw, 2rem);
     line-height: 1.2;
     font-weight: 700;
     color: oklch(15% 0.015 250);
@@ -3452,7 +3466,7 @@ p {
 
   /* â”€â”€â”€ FAQ: Native <details> accordion â”€â”€â”€ */
   .mt-faq-item {
-    border-radius: 0.75rem;
+    border-radius: 0.625rem;
     border: 1px solid var(--ds-border-default);
     background: var(--ds-surface);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -3468,7 +3482,7 @@ p {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 1rem 1.25rem;
+    padding: 0.875rem 1.125rem;
     cursor: pointer;
     list-style: none;
     font-weight: 500;
@@ -3508,18 +3522,24 @@ p {
   }
   .mt-faq-content {
     overflow: hidden;
-    height: 0;
+    /* interpolate-size needs to be on the element whose size is transitioning */
     interpolate-size: allow-keywords;
+    height: 0;
     transition: height 0.3s cubic-bezier(0.32, 0.72, 0, 1);
   }
   .mt-faq-item[open] .mt-faq-content {
     height: auto;
   }
   .mt-faq-answer {
-    padding: 0 1.25rem 1rem 3.25rem;
+    padding: 0.25rem 1.25rem 1rem;
     color: var(--ds-text-muted);
     font-size: 0.875rem;
     line-height: 1.7;
+  }
+  @media (min-width: 480px) {
+    .mt-faq-answer {
+      padding-inline-start: 3.25rem;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -176,60 +176,56 @@ export default async function MoneyTransferPage() {
         freshnessAnchor={market.freshnessAnchor}
       />
 
-      {/* Live ticker — thin full-width strip right under the hero.
-          مستقیماً از MarketRateItem[] (نه ExchangeRateData) تا واحد + changePercent درست باشد. */}
-      <div className="mt-3 sm:mt-4">
-        <LiveTicker
-          rates={market.items}
-          freshnessAnchorISO={market.freshnessAnchor?.toISOString() ?? null}
-        />
+      {/* Live ticker — thin full-width strip right under the hero */}
+      <div className="mt-2 sm:mt-3">
+        <LiveTicker rates={market.items} />
       </div>
 
-      <div className="container py-6 sm:py-10 lg:py-14 space-y-10 sm:space-y-16 px-4 sm:px-6">
-        {/* Provider Comparison — real-time quotes from TGJU/USDT/FX × Wise/Remitly/etc.
-            Single most important decision-support section after the converter. */}
+      {/* Main content — mt-section handles its own spacing via + selector */}
+      <div className="container py-6 sm:py-8 lg:py-10 px-4 sm:px-6">
+        {/* Provider Comparison */}
         <ScrollReveal>
-          <section aria-labelledby="mt-compare-title">
+          <section aria-labelledby="mt-compare-title" className="mt-section">
             <RateComparisonSection />
           </section>
         </ScrollReveal>
 
-        {/* Trust Strip — company-wide numeric metrics */}
+        {/* Trust Strip */}
         <ScrollReveal>
-          <section aria-label="اعتمادسازی">
+          <section aria-label="اعتمادسازی" className="mt-section">
             <TrustStrip />
           </section>
         </ScrollReveal>
 
-        {/* Exchange Rates Section — مستقیماً از MarketRateItem[] */}
+        {/* Exchange Rates */}
         <ScrollReveal>
           <section id="rates" className="mt-section">
             <ExchangeRateTableView rates={market.items} />
           </section>
         </ScrollReveal>
 
-        {/* Rate Lists Section */}
+        {/* Rate Lists */}
         <ScrollReveal>
           <section className="mt-section">
             <RateListGrid rateLists={activeRateLists} liveRates={market.items} initialCount={10} />
           </section>
         </ScrollReveal>
 
-        {/* Transfer Request Form — dedicated hawala form (replaces generic ContactCTA) */}
+        {/* Transfer Request Form */}
         <ScrollReveal>
-          <section id="contact">
+          <section id="contact" className="mt-section">
             <TransferRequestCTA />
           </section>
         </ScrollReveal>
 
-        {/* Services Section */}
+        {/* Services */}
         <ScrollReveal>
           <section id="services" className="mt-section">
             <FeatureList />
           </section>
         </ScrollReveal>
 
-        {/* FAQ Section */}
+        {/* FAQ */}
         <ScrollReveal>
           <section id="faq" className="mt-section">
             <FAQ />
