@@ -36,6 +36,7 @@
 
 import { Check, ChevronDown, Search } from 'lucide-react';
 import {
+  type CSSProperties,
   type KeyboardEvent,
   useCallback,
   useEffect,
@@ -128,8 +129,10 @@ export function CurrencySelect({
 }: CurrencySelectProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [panelStyle, setPanelStyle] = useState<CSSProperties>({});
 
   const wrapRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const triggerId = useId();
   const listId = useId();
@@ -155,13 +158,27 @@ export function CurrencySelect({
   }, [open]);
 
   // ── Focus search when opened + reset query when closed ──
+  // ── Also clamp panel to viewport (prevents overflow on mobile) ──
   useEffect(() => {
     if (!open) {
       setQuery('');
+      setPanelStyle({});
       return;
     }
-    // tiny defer so the panel is rendered before focusing
-    const t = setTimeout(() => searchRef.current?.focus(), 20);
+    const t = setTimeout(() => {
+      searchRef.current?.focus();
+      // Clamp panel so it never overflows the viewport horizontally
+      if (panelRef.current) {
+        const rect = panelRef.current.getBoundingClientRect();
+        if (rect.left < 8) {
+          // panel bleeds off the inline-start edge — shift it right
+          setPanelStyle({ insetInlineEnd: 'auto', insetInlineStart: 0 });
+        } else if (rect.right > window.innerWidth - 8) {
+          // panel bleeds off the inline-end edge — shift it left
+          setPanelStyle({ insetInlineEnd: 'auto', insetInlineStart: 'auto', right: 0 });
+        }
+      }
+    }, 20);
     return () => clearTimeout(t);
   }, [open]);
 
@@ -250,9 +267,11 @@ export function CurrencySelect({
       {/* ── Dropdown panel ── */}
       {open && (
         <div
+          ref={panelRef}
           className={`${s.panel} ${tone === 'dark' ? s.panelDark : ''}`}
           data-tone={tone}
           aria-label="انتخاب ارز"
+          style={panelStyle}
         >
           {/* Search */}
           <div className={s.search}>

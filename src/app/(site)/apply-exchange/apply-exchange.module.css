@@ -2,8 +2,18 @@
 .root {
   min-height: 100dvh;
   display: flex;
-  align-items: center;
+  /* موبایل: از بالا شروع می‌شود تا فرم زیر ناوبار نیفتد */
+  align-items: flex-start;
   justify-content: center;
   padding: var(--ds-space-6);
+  padding-block-start: var(--ds-space-8);
   background: var(--ds-canvas);
+}
+
+/* دسکتاپ: وسط‌چین عمودی */
+@media (min-width: 768px) {
+  .root {
+    align-items: center;
+    padding-block-start: var(--ds-space-6);
+  }
 }

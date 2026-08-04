@@ -9,7 +9,7 @@
 .section {
   position: relative;
   isolation: isolate;
-  padding-block: var(--ds-space-10);
+  padding-block: clamp(var(--ds-space-6), 5vw, var(--ds-space-10));
   /* NO overflow:hidden here — it would clip position:absolute dropdowns (z-index:60).
      Glows are clipped inside .glowLayer instead. */
 }
@@ -56,11 +56,13 @@
 .inner {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--ds-space-8);
+  gap: var(--ds-space-5);
   max-inline-size: 1080px;
   margin-inline: auto;
-  padding-inline: var(--ds-space-4);
+  /* padding-inline حذف شد: container بیرونی (page.tsx) قبلاً padding-inline دارد */
   align-items: center;
+  min-inline-size: 0;
+  overflow: visible;
 }
 
 @media (min-width: 860px) {
@@ -75,6 +77,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-5);
+  min-inline-size: 0;
+  max-inline-size: 100%;
 }
 
 /* Eyebrow */
@@ -232,6 +236,8 @@
 .formCol {
   display: flex;
   flex-direction: column;
+  min-inline-size: 0;
+  max-inline-size: 100%;
 }
 
 /* Gradient-ring card — signature WOW: hairline gradient border via mask */
@@ -273,13 +279,16 @@
   z-index: 1;
   background: var(--ds-surface);
   border-radius: var(--ds-radius-2xl);
-  padding: clamp(1.25rem, 4vw, 2rem);
+  padding: clamp(1rem, 4vw, 1.75rem);
   box-shadow: 0 4px 24px -6px oklch(20% 0 0 / 0.1), 0 1px 4px -1px oklch(20% 0 0 / 0.06);
+  overflow: visible;
+  max-inline-size: 100%;
+  min-inline-size: 0;
 }
 
 /* Form internal header */
 .formHeader {
-  margin-block-end: var(--ds-space-5);
+  margin-block-end: var(--ds-space-4);
 }
 
 .formTitle {

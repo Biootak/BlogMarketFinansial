@@ -1,15 +1,9 @@
 'use client';
 
 /**
- * FeatureList — clean 2-column feature list (Linear-style).
- *
- * Design intent:
- * - Replaces the old 6-card colorful grid with a precise, dense list.
- * - Each cell = small icon + title + description, all aligned in 2 columns.
- * - No heavy gradients, no decorative rings.
- * - Subtle hover state (background tint, no scale).
- *
- * 2026-07-05: rewritten — replaced InfoCards.tsx.
+ * FeatureList — premium 3-column feature grid.
+ * Each card: colored icon badge (40px) + title + description.
+ * 2026 redesign: individual cards with depth, hover lift, hairline shine.
  */
 
 import { ArrowLeftRight, Clock, CreditCard, Globe, Headphones, Shield } from 'lucide-react';
@@ -19,7 +13,6 @@ interface Feature {
   icon: LucideIcon;
   title: string;
   description: string;
-  /** Tailwind-safe color variant class suffix. */
   variant: '' | '--emerald' | '--amber' | '--rose' | '--violet' | '--cyan';
 }
 
@@ -64,21 +57,28 @@ const features: Feature[] = [
 
 export default function FeatureList() {
   return (
-    <div className="mt-features">
-      {features.map((feature) => {
-        const Icon = feature.icon;
-        return (
-          <div key={feature.title} className="mt-feature">
-            <span className={`mt-feature__icon${feature.variant}`} aria-hidden>
-              <Icon className="w-4 h-4" strokeWidth={2} />
-            </span>
-            <div className="mt-feature__body">
-              <h3 className="mt-feature__title">{feature.title}</h3>
-              <p className="mt-feature__desc">{feature.description}</p>
+    <div className="mt-features-wrap">
+      <header className="mt-features-header">
+        <span className="mt-features-eyebrow">چرا ما</span>
+        <h2 className="mt-features-title">خدماتی که به آن‌ها اعتماد می‌کنید</h2>
+      </header>
+
+      <div className="mt-features">
+        {features.map((feature) => {
+          const Icon = feature.icon;
+          return (
+            <div key={feature.title} className="mt-feature">
+              <span className={`mt-feature__icon${feature.variant}`} aria-hidden>
+                <Icon size={18} strokeWidth={2} />
+              </span>
+              <div className="mt-feature__body">
+                <h3 className="mt-feature__title">{feature.title}</h3>
+                <p className="mt-feature__desc">{feature.description}</p>
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
