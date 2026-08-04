@@ -149,6 +149,7 @@ export default function ProfileContent({ profile, initialEditField }: Props) {
         invalidateDashboardCache(),
       ]);
       await signOut({ redirect: false });
+      router.refresh();
       router.push('/auth');
     } catch {
       setSigningOut(false);

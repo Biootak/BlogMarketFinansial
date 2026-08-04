@@ -100,6 +100,7 @@ export default function SettingsContent({ profile, prefs }: Props) {
           variant: 'success',
         });
         setLogoutOpen(false);
+        router.refresh();
         router.push('/auth');
       } catch {
         toast({

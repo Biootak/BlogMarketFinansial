@@ -3,6 +3,7 @@
 import { Sparkles } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 /**
  * AuthStatus — client island for the header's sign-in / avatar area.
  *
@@ -15,15 +16,36 @@ import Link from 'next/link';
  * bcrypt/Prisma on the render path). The server header renders the guest
  * branch immediately; the avatar/notify buttons appear once the session
  * arrives. Same UX, static-friendly render path.
+ *
+ * 2026-08-XX: pathname-aware session refresh.
+ * Next.js router cache (staleTimes) can serve a cached page shell without
+ * remounting this component, so useSession() may still hold the pre-login
+ * guest state when the user navigates back to a cached page.
+ * Calling update() on every pathname change forces SessionProvider to
+ * re-validate the JWT cookie and emit the correct authenticated/guest state.
  */
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect, useRef } from 'react';
 import AvatarDropdown from './AvatarDropdown';
 import NotifyDropdown from './NotifyDropdown';
 
 export default function AuthStatus() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const isLoading = status === 'loading';
   const user = session?.user;
+  const pathname = usePathname();
+  const prevPathname = useRef<string | null>(null);
+
+  // Re-validate session on every client-side navigation.
+  // This covers the router-cache case: when Next.js serves a cached page
+  // shell the component does NOT remount, so useSession() keeps the stale
+  // value from before login/logout. update() hits /api/auth/session and
+  // refreshes the in-memory session state inside SessionProvider.
+  useEffect(() => {
+    if (prevPathname.current !== null && prevPathname.current !== pathname) {
+      update();
+    }
+    prevPathname.current = pathname;
+  }, [pathname, update]);
 
   if (isLoading) {
     // Reserve space so the header doesn't shift when the session lands.

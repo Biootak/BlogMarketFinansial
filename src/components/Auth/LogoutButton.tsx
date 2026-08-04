@@ -44,6 +44,7 @@ const LogoutButton = () => {
       });
 
       await signOut({ redirect: false });
+      router.refresh();
       router.push('/');
     } catch (_error) {
       toast({

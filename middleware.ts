@@ -261,7 +261,7 @@ export async function middleware(req: NextRequest) {
   // The Exchange layout further verifies staff membership from DB.
   // Middleware check prevents unrelated roles (AUTHOR, USER, …) from
   // reaching the layout at all — faster rejection at the edge.
-  if (pathname.startsWith('/exchange')) {
+  if (pathname === '/exchange' || pathname.startsWith('/exchange/')) {
     if (!isLoggedIn) {
       const callbackUrl = pathname + search;
       return NextResponse.redirect(
@@ -279,7 +279,7 @@ export async function middleware(req: NextRequest) {
   // The Customer layout further verifies Customer record ownership from DB.
   // Middleware check prevents unrelated roles (AUTHOR, USER, EXCHANGE, …) from
   // reaching the layout at all — faster rejection at the edge.
-  if (pathname.startsWith('/customer')) {
+  if (pathname === '/customer' || pathname.startsWith('/customer/')) {
     if (!isLoggedIn) {
       const callbackUrl = pathname + search;
       return NextResponse.redirect(
@@ -322,7 +322,9 @@ export const config = {
     '/signin',
     '/signup',
     '/verify-request',
+    '/verify-email',
     '/forgot-password',
     '/reset-password',
+    '/error',
   ],
 };

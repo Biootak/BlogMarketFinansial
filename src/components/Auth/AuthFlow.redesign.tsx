@@ -139,6 +139,7 @@ export default function AuthFlow() {
         callbackUrl?.startsWith('/') && !callbackUrl.startsWith('//')
           ? callbackUrl
           : result.redirect;
+      router.refresh();
       router.push(dest);
       return;
     }

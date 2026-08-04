@@ -36,7 +36,7 @@ export function SetupWizard() {
   const w = useSetupWizard();
 
   if (w.completed) {
-    return <SetupComplete email={w.values.email} onContinue={() => router.push('/signin')} />;
+    return <SetupComplete email={w.values.email} onContinue={() => router.push('/auth')} />;
   }
 
   if (w.step === 'intro') {

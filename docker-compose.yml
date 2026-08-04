@@ -56,7 +56,9 @@ services:
       - app-network
     # Apply pending migrations before starting so a fresh DB/volume boots
     # with the required tables instead of 500-ing on every query.
-    command: sh -c "npx prisma migrate deploy && node node_modules/next/dist/bin/next start"
+    # 2026-08-04: standalone image runs `node server.js` directly — no full
+    # `next` package needed. Prisma CLI is copied explicitly in the Dockerfile.
+    command: sh -c "node node_modules/prisma/build/index.js migrate deploy && node server.js"
     healthcheck:
       # node:slim has no wget/curl, so probe with a tiny node one-liner.
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"]

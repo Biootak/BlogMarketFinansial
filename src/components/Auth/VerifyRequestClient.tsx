@@ -56,6 +56,7 @@ export default function VerifyRequestClient() {
         return;
       }
       setStatusMsg('تأیید شد. در حال انتقال…');
+      router.refresh();
       router.push(redirect);
     });
   };

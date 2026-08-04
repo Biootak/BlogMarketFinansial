@@ -36,6 +36,7 @@ import {
   ShieldX,
   Trash2,
 } from 'lucide-react';
+import { signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition } from 'react';
@@ -107,8 +108,12 @@ export function SecurityCenter({ overview }: Props) {
           variant: 'success',
         });
         setPwd(EMPTY_PASSWORD);
-        // سایر sessionها باطل شده‌اند؛ به auth برو
-        setTimeout(() => router.push('/auth'), 800);
+        // session فعلی هم باطل شود و به صفحه ورود بریم
+        setTimeout(async () => {
+          await signOut({ redirect: false });
+          router.refresh();
+          router.push('/auth');
+        }, 800);
       } else {
         toast({
           title: 'خطا در تغییر رمز',

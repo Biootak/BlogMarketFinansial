@@ -162,6 +162,7 @@ const Sidebar = ({ userRole, staffRole }: SidebarProps) => {
           description: 'شما با موفقیت از حساب کاربری خود خارج شدید.',
           variant: 'success',
         });
+        router.refresh();
         router.push('/auth');
       } else {
         toast({
