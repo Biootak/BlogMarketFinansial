@@ -3,6 +3,8 @@ import { serverLog } from '@/lib/server-logger';
 import { getSiteUrl } from '@/lib/site-url';
 import type { MetadataRoute } from 'next';
 
+export const dynamic = 'force-dynamic';
+
 // Bounded limit to keep the sitemap reasonably sized; for very large sites
 // prefer a sitemap index with per-page chunks.
 const MAX_POSTS = 5000;
