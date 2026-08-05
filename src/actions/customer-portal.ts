@@ -11,6 +11,11 @@ import { randomBytes } from 'node:crypto';
 import { getExchangeForUser } from '@/actions/exchanges';
 import { requireCustomerAccess } from '@/lib/customer-auth';
 import prisma from '@/lib/db';
+import {
+  isHighValueTransaction,
+  requestTransactionOtp,
+  verifyTransactionOtp,
+} from '@/lib/fintech/transaction-guard';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
@@ -1753,6 +1758,13 @@ const InternalTransferSchema = z.object({
     .max(100_000_000_00, 'سقف انتقال ۱۰۰ میلیون'),
   note: z.string().max(200, 'یادداشت حداکثر ۲۰۰ کاراکتر').optional(),
   idempotencyKey: z.string().min(8).max(64),
+  /** مرحله ۲ تأیید OTP — در اولین فراخوان ارسال نمی‌شود */
+  txnRef: z.string().min(8).max(64).optional(),
+  otp: z
+    .string()
+    .length(6)
+    .regex(/^\d{6}$/)
+    .optional(),
 });
 
 export type InternalTransferResult = {
@@ -1764,6 +1776,9 @@ export type InternalTransferResult = {
   currency: string;
   fromBalance: string;
   toBalance: string;
+  /** true وقتی انتقال بالای آستانه است و مرحلهٔ تأیید OTP لازم است */
+  needsOtp?: boolean;
+  expiresInSeconds?: number;
 };
 
 /**
@@ -1810,6 +1825,8 @@ export async function transferBetweenAccounts(
   }
 
   const { fromAccountId, toAccountId, amountCents, note, idempotencyKey } = parsed.data;
+  const otpInput = parsed.data.otp;
+  const otpTxnRef = parsed.data.txnRef;
 
   // Self-transfer
   if (fromAccountId === toAccountId) {
@@ -1921,6 +1938,46 @@ export async function transferBetweenAccounts(
       success: false,
       error: { code: 'EXCHANGE_MISMATCH', message: 'حساب‌ها باید از یک صرافی باشند' },
     };
+  }
+
+  // ─── OTP guard برای انتقال‌های بالای آستانه (هماهنگ با P2P و برداشت) ───────
+  // kind='TRANSFER' طبق isHighValueTransaction بالای ۱۰۰,۰۰۰ AFN نیاز به OTP دارد.
+  // جریان دو مرحله‌ای:
+  //   مرحله ۱ (بدون otp): درخواست OTP → needsOtp=true + txnRef (هیچ انتقالی اجرا نمی‌شود)
+  //   مرحله ۲ (با otp + txnRef): تأیید OTP → اجرای انتقال
+  const amountBigInt = BigInt(amountCents);
+  const needsOtp = isHighValueTransaction({ kind: 'TRANSFER', amountCents: amountBigInt });
+  if (needsOtp) {
+    if (!otpInput || !otpTxnRef) {
+      // مرحله ۱ — درخواست کد تأیید بدون اجرای تراکنش
+      const txnRef = `ITR-${Date.now().toString(36).toUpperCase()}-${randomBytes(3)
+        .toString('hex')
+        .toUpperCase()}`;
+      const otpResult = await requestTransactionOtp({
+        txnRef,
+        amountCents: amountBigInt,
+        kind: 'TRANSFER',
+      });
+      if (!otpResult.success) return otpResult;
+      return {
+        success: true,
+        data: {
+          txnId: '',
+          txnRef,
+          fromAccountId,
+          toAccountId,
+          amountCents,
+          currency: from.currency,
+          fromBalance: '0',
+          toBalance: '0',
+          needsOtp: true,
+          expiresInSeconds: otpResult.data.expiresInSeconds,
+        },
+      };
+    }
+    // مرحله ۲ — تأیید کد
+    const otpResult = await verifyTransactionOtp({ txnRef: otpTxnRef, otp: otpInput });
+    if (!otpResult.success) return otpResult;
   }
 
   // C2-style: crypto.randomBytes به جای Math.random() — غیرقابل پیش‌بینی (anti-collision)

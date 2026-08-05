@@ -127,7 +127,8 @@ export async function getFxQuote(raw: {
         error: { code: 'NO_RATE', message: 'نرخی برای این جفت ارز یافت نشد' },
       };
     }
-    rate = item.value;
+    // اگر جفت معکوس بود، rate را معکوس می‌کنیم — هماهنگ با executeFxTrade
+    rate = item.symbol === pair ? item.value : 1 / item.value;
     updatedAt = new Date(item.updatedAt);
   }
 

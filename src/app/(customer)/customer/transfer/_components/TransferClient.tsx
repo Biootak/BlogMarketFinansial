@@ -678,11 +678,21 @@ function TransferForm({
   const [amount, setAmount] = useState('');
   const [cents, setCents] = useState(0);
   const [isPending, startT] = useTransition();
+  // OTP two-step: انتقال بالای آستانه → درخواست کد → تأیید
+  const [otpStep, setOtpStep] = useState<{ txnRef: string } | null>(null);
+  const [otp, setOtp] = useState('');
+  const [flowKey, setFlowKey] = useState('');
 
   const from = activeAccounts.find((a) => a.id === fromId);
   const maxCents = from ? Math.round(from.balance * 100) : 0;
   const overBalance = cents > maxCents;
   const sameAccount = fromId === toId && !!fromId;
+
+  const cancelOtp = useCallback(() => {
+    setOtpStep(null);
+    setOtp('');
+    setFlowKey('');
+  }, []);
 
   const onSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -694,19 +704,31 @@ function TransferForm({
         });
         return;
       }
+      if (otpStep && otp.length !== 6) {
+        onResult({ kind: 'error', message: 'کد تأیید باید ۶ رقم باشد' });
+        return;
+      }
       startT(async () => {
+        const idempotencyKey = flowKey || newIdempotencyKey();
         const res = await transferBetweenAccounts({
           fromAccountId: fromId,
           toAccountId: toId,
           amountCents: cents,
           note: undefined,
-          idempotencyKey: newIdempotencyKey(),
+          idempotencyKey,
+          ...(otpStep ? { txnRef: otpStep.txnRef, otp } : {}),
         });
         if (!res.success) {
           onResult({ kind: 'error', message: res.error.message });
           return;
         }
         const data: InternalTransferResult = res.data;
+        if (data.needsOtp) {
+          // مرحله ۱ — کد ارسال شد؛ منتظر تأیید OTP
+          setFlowKey(idempotencyKey);
+          setOtpStep({ txnRef: data.txnRef });
+          return;
+        }
         onResult({
           kind: 'success',
           message: `انتقال ${fmtAmount(data.amountCents, data.currency)} با موفقیت انجام شد.`,
@@ -714,9 +736,12 @@ function TransferForm({
         });
         setAmount('');
         setCents(0);
+        setOtp('');
+        setOtpStep(null);
+        setFlowKey('');
       });
     },
-    [sameAccount, overBalance, cents, fromId, toId, onResult],
+    [sameAccount, overBalance, cents, fromId, toId, otpStep, otp, flowKey, onResult],
   );
 
   if (activeAccounts.length < 2) {
@@ -772,13 +797,44 @@ function TransferForm({
         min={1}
         max={maxCents / 100}
       />
-      <button
-        type="submit"
-        className={s.submit}
-        disabled={sameAccount || overBalance || cents <= 0 || isPending}
-      >
-        {isPending ? 'در حال انتقال...' : 'انتقال'}
-      </button>
+      {otpStep ? (
+        <>
+          <div className={s.field}>
+            <label htmlFor="tr-otp" className={s.label}>
+              کد تأیید (OTP)
+            </label>
+            <p className={s.hint}>
+              انتقال بالای ۱۰۰٬۰۰۰ افغانی است؛ کد ۶ رقمی ارسال‌شده به شماره شما را وارد کنید.
+            </p>
+            <input
+              id="tr-otp"
+              type="text"
+              className={s.input}
+              value={otp}
+              dir="ltr"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              placeholder="••••••"
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+            />
+          </div>
+          <button type="submit" className={s.submit} disabled={otp.length !== 6 || isPending}>
+            {isPending ? 'در حال تأیید...' : 'تأیید و انتقال'}
+          </button>
+          <button type="button" className={s.cancelOtp} onClick={cancelOtp} disabled={isPending}>
+            انصراف
+          </button>
+        </>
+      ) : (
+        <button
+          type="submit"
+          className={s.submit}
+          disabled={sameAccount || overBalance || cents <= 0 || isPending}
+        >
+          {isPending ? 'در حال انتقال...' : 'انتقال'}
+        </button>
+      )}
     </form>
   );
 }
