@@ -27,6 +27,7 @@ import {
   HiOutlineKey,
   HiOutlineMapPin,
   HiOutlineMegaphone,
+  HiOutlineMap,
   HiOutlineRadio,
   HiOutlineReceiptPercent,
   HiOutlineShieldCheck,
@@ -213,6 +214,14 @@ export function getMenu(role: UserRole): NavSection[] {
     icon: HiOutlineArrowsRightLeft({ className: ICON_CLASS }),
     label: 'جدول مقایسه',
     title: 'صرافی‌های جدول مقایسه نرخ',
+  };
+
+  const siteGuide: MenuItem = {
+    id: 'siteGuide',
+    href: '/dashboard/site-guide',
+    icon: HiOutlineMap({ className: ICON_CLASS }),
+    label: 'راهنمای سایت',
+    title: 'نقشه و راهنمای کامل سایت',
   };
 
   const settings: MenuItem = {
@@ -733,7 +742,7 @@ export function getMenu(role: UserRole): NavSection[] {
           id: 'admin',
           index: '۰۶',
           label: 'مدیریت',
-          items: [users, roles, permissions, reports, billingAddress, subscriptionAdmin, settings],
+          items: [users, roles, permissions, reports, billingAddress, subscriptionAdmin, settings, siteGuide],
         },
         {
           id: 'account',
@@ -788,7 +797,7 @@ export function getMenu(role: UserRole): NavSection[] {
           id: 'admin',
           index: '۰۶',
           label: 'مدیریت',
-          items: [users, roles, permissions, billingAddress, subscriptionAdmin],
+          items: [users, roles, permissions, billingAddress, subscriptionAdmin, siteGuide],
         },
         {
           id: 'account',
