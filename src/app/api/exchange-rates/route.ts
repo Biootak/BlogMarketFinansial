@@ -24,9 +24,17 @@ export async function OPTIONS() {
  * Cache: public, max-age=30, stale-while-revalidate=60.
  */
 export async function GET(request: Request) {
+  // Rightmost XFF entry (spoof-resistant) — نه leftmost که کاربر می‌تواند جعل کند.
+  const xff = request.headers.get('x-forwarded-for');
   const ip =
-    request.headers.get('x-forwarded-for')?.split(',').pop()?.trim() ??
-    request.headers.get('x-real-ip') ??
+    (xff
+      ? xff
+          .split(',')
+          .map((p) => p.trim())
+          .filter(Boolean)
+          .at(-1)
+      : null) ??
+    request.headers.get('x-real-ip')?.trim() ??
     '127.0.0.1';
 
   const rl = await checkRateLimit(`exchange-rates:${ip}`, 'api');

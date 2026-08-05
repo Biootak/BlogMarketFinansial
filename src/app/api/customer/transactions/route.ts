@@ -18,7 +18,16 @@ const PRIVATE_HEADERS = { 'Cache-Control': 'no-store, private' };
 
 export async function GET(request: Request) {
   // Rate limit: 60 درخواست در دقیقه بر اساس IP
-  const ip = request.headers.get('x-forwarded-for')?.split(',').pop()?.trim() ?? 'unknown';
+  // Rightmost XFF entry (spoof-resistant) — نه leftmost که کاربر می‌تواند جعل کند.
+  const xff = request.headers.get('x-forwarded-for');
+  const ip =
+    (xff
+      ? xff
+          .split(',')
+          .map((p) => p.trim())
+          .filter(Boolean)
+          .at(-1)
+      : null) ?? 'unknown';
   const rl = await checkRateLimit(`customer-txn:${ip}`, 'api');
   if (!rl.success) {
     return NextResponse.json(

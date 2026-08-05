@@ -111,20 +111,14 @@ export function safeCache<TArgs extends unknown[], T>(
         // فقط برای dev observability
       }
       return value;
-    } catch (error) {
+    } catch {
       // 3) خطا رخ داد:
       //    - اگر قبلاً value موفق داشتیم (stale) → آن را برگردان
       //    - در غیر این صورت → fallback
       if (cached) {
-        if (isDev) {
-          const _msg = error instanceof Error ? error.message : String(error);
-        }
         // TTL را تمدید کن تا request بعدی دوباره امتحان کند
         cached.expiresAt = now + Math.min(ttl, 30) * 1000;
         return cached.value;
-      }
-      if (isDev) {
-        const _msg = error instanceof Error ? error.message : String(error);
       }
       return fallback;
     }

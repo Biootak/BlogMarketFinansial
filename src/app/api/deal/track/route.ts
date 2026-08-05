@@ -20,9 +20,17 @@ const TrackBodySchema = z.object({
  * No sensitive fields exposed (userId, customerPhone, internalNote, idempotencyKey).
  */
 export async function POST(request: Request) {
+  // Rightmost XFF entry is the one appended by our trusted proxy — spoof-resistant.
+  const xff = request.headers.get('x-forwarded-for');
   const ip =
-    request.headers.get('x-forwarded-for')?.split(',').pop()?.trim() ??
-    request.headers.get('x-real-ip') ??
+    (xff
+      ? xff
+          .split(',')
+          .map((p) => p.trim())
+          .filter(Boolean)
+          .at(-1)
+      : null) ??
+    request.headers.get('x-real-ip')?.trim() ??
     '127.0.0.1';
 
   const rl = await checkRateLimit(`deal-track:${ip}`, 'api');

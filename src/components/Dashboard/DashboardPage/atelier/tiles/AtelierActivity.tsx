@@ -120,8 +120,30 @@ export default function AtelierActivity({ items }: AtelierActivityProps) {
 
   useEffect(() => {
     setNow(new Date());
-    const t = window.setInterval(() => setNow(new Date()), 60_000);
-    return () => window.clearInterval(t);
+    let id: number | null = null;
+    const start = () => {
+      id = window.setInterval(() => setNow(new Date()), 60_000);
+    };
+    const stop = () => {
+      if (id !== null) {
+        window.clearInterval(id);
+        id = null;
+      }
+    };
+    start();
+    const onVis = () => {
+      if (document.hidden) {
+        stop();
+      } else {
+        setNow(new Date());
+        start();
+      }
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      document.removeEventListener('visibilitychange', onVis);
+      stop();
+    };
   }, []);
 
   useEffect(() => {

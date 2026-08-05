@@ -27,8 +27,7 @@ const fmtNum = (v: string | number): string =>
     maximumFractionDigits: 1,
   }).format(Number(v) / 100);
 
-const fmtExact = (v: string | number): string =>
-  _faNum.format(Number(v) / 100);
+const fmtExact = (v: string | number): string => _faNum.format(Number(v) / 100);
 
 const fmtDate = (d: Date): string =>
   new Intl.DateTimeFormat('fa-IR', { month: 'short', day: 'numeric', year: '2-digit' }).format(
@@ -77,9 +76,7 @@ export default function SettlementPeriodCard({ row, selected, onSelect, index }:
       {/* KPI: deals */}
       <div className={s.metric}>
         <span className={s.metricLabel}>معاملات</span>
-        <span className={s.metricValue}>
-          {_faNum.format(row.dealCount)}
-        </span>
+        <span className={s.metricValue}>{_faNum.format(row.dealCount)}</span>
       </div>
 
       {/* KPI: gross volume */}

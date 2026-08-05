@@ -24,6 +24,8 @@ import { useState } from 'react';
 import s from './CustomerSegmentDeepDive.module.css';
 
 const _faNum = new Intl.NumberFormat('fa-IR');
+// nr = alias برای سازگاری با کدهای قدیمی‌تر در همین فایل
+const nr = _faNum;
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -212,7 +214,7 @@ export function CustomerSegmentDeepDive({
               <div key={b.bucket} className={s.riskBucket}>
                 <span className={`${s.riskBucketDot} ${s[`riskDot_${b.tone}`]}`} aria-hidden />
                 <span className={s.riskBucketLabel}>{b.label}</span>
-                <span className={s.riskBucketCount}>{_faNum.format(b.count)}</span>
+                <span className={s.riskBucketCount}>{nr.format(b.count)}</span>
               </div>
             ))}
           </div>
@@ -246,7 +248,7 @@ export function CustomerSegmentDeepDive({
                     }}
                   />
                 </div>
-                <span className={s.kycRowCount}>{_faNum.format(row.count)}</span>
+                <span className={s.kycRowCount}>{nr.format(row.count)}</span>
               </div>
             ))}
           </div>
@@ -260,11 +262,11 @@ export function CustomerSegmentDeepDive({
           </div>
           <div className={s.growthGrid}>
             <div className={s.growthCell}>
-              <span className={s.growthVal}>{_faNum.format(stats.newLast7d)}</span>
+              <span className={s.growthVal}>{nr.format(stats.newLast7d)}</span>
               <span className={s.growthLbl}>مشتری جدید ۷ روز</span>
             </div>
             <div className={s.growthCell}>
-              <span className={s.growthVal}>{_faNum.format(stats.newLast30d)}</span>
+              <span className={s.growthVal}>{nr.format(stats.newLast30d)}</span>
               <span className={s.growthLbl}>مشتری جدید ۳۰ روز</span>
             </div>
             <div className={s.growthCell}>
@@ -291,7 +293,7 @@ export function CustomerSegmentDeepDive({
 
       {/* ── Customer List for Selected Segment ── */}
       <Section
-        title={`${SEGMENT_META[activeSegment].label} — ${_faNum.format(currentList.length)} مشتری`}
+        title={`${SEGMENT_META[activeSegment].label} — ${nr.format(currentList.length)} مشتری`}
         actions={
           <Link href="/exchange/customers" className={s.viewAllLink}>
             مشاهده همه
@@ -312,7 +314,7 @@ export function CustomerSegmentDeepDive({
             ))}
             {currentList.length > 25 && (
               <div className={s.moreHint}>
-                +{_faNum.format(currentList.length - 25)} مشتری دیگر — برای مشاهده کامل به لیست مراجعه
+                +{nr.format(currentList.length - 25)} مشتری دیگر — برای مشاهده کامل به لیست مراجعه
                 کنید
               </div>
             )}

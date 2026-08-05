@@ -63,6 +63,9 @@ const TrafficChart: React.FC<TrafficChartProps> = ({ period = '7d' }) => {
     isLoading,
   } = useSWR(`/api/traffic-stats?period=${period}`, fetcher, {
     refreshInterval: 60000,
+    dedupingInterval: 30000,
+    refreshWhenHidden: false,
+    refreshWhenOffline: false,
   });
 
   if (error) {

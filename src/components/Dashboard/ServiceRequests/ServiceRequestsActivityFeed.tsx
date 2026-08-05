@@ -167,8 +167,31 @@ export default function ServiceRequestsActivityFeed({
 
   useEffect(() => {
     setNow(new Date());
-    const t = window.setInterval(() => setNow(new Date()), 60_000);
-    return () => window.clearInterval(t);
+    let id: number | null = null;
+    const stop = () => {
+      if (id !== null) {
+        window.clearInterval(id);
+        id = null;
+      }
+    };
+    const start = () => {
+      stop();
+      id = window.setInterval(() => setNow(new Date()), 60_000);
+    };
+    start();
+    const onVis = () => {
+      if (document.hidden) {
+        stop();
+      } else {
+        setNow(new Date());
+        start();
+      }
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      document.removeEventListener('visibilitychange', onVis);
+      stop();
+    };
   }, []);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: refreshKey is an intentional external signal prop
