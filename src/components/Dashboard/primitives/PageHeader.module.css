@@ -40,9 +40,9 @@
 
 @media (max-width: 600px) {
   .header {
-    padding: var(--ds-space-3) var(--ds-space-3) var(--ds-space-3);
+    padding: var(--ds-space-2-5) var(--ds-space-3) var(--ds-space-3);
     margin-block-end: var(--ds-space-3);
-    gap: var(--ds-space-3);
+    gap: var(--ds-space-2);
   }
 }
 
@@ -199,10 +199,10 @@
 }
 
 .title {
-  font-size: clamp(1.2rem, 4vw + 0.2rem, 2.25rem);
+  font-size: clamp(1rem, 3.5vw + 0.15rem, 2.25rem);
   font-weight: 800;
   letter-spacing: -0.03em;
-  line-height: 1.05;
+  line-height: 1.1;
   margin: 0;
   /* gradient از at-fg به accent — ظریف */
   background: linear-gradient(
@@ -222,6 +222,12 @@
   margin: 0;
   line-height: var(--ds-leading-relaxed);
   max-width: 56ch;
+}
+@media (max-width: 600px) {
+  .description {
+    font-size: var(--ds-text-xs);
+    line-height: 1.5;
+  }
 }
 
 /* ─── Actions ──────────────────────────────────────────────────────────────── */

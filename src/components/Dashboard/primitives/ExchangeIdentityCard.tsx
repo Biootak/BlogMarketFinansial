@@ -1,12 +1,12 @@
 /**
  * ExchangeIdentityCard — signature moment برای صفحه پروفایل صرافی.
  *
- * کارت شیشه‌ای مورب با:
+ * کارت با:
  *   - cover gradient + ambient radial blobs
  *   - لوگوی بزرگ با halo (در fallback = monogram حرف اول)
  *   - نام رسمی/نمایشی + status pill زنده
  *   - slug، verified badge، ایجاد/به‌روزرسانی، لینک عمومی
- *   - QR placeholder + کلید «مشاهده صفحه عمومی»
+ *   - دکمه «مشاهده صفحه عمومی» + counters
  *
  * این کامپوننت client-safe است (هیچ state داخلی ندارد).
  */
@@ -37,9 +37,17 @@ export function ExchangeIdentityCard({ exchange, publicUrl, counters }: Props) {
   const display = exchange.displayName ?? exchange.name;
   const initial = (display || '?').charAt(0).toUpperCase();
 
+  const logoContent = exchange.logoUrl ? (
+    <img src={exchange.logoUrl} alt="" className={s.logoImg} />
+  ) : (
+    <div className={s.logoFallback}>
+      <span>{initial}</span>
+    </div>
+  );
+
   return (
     <section className={s.card} aria-labelledby="exchange-identity-name">
-      {/* ── Cover layer (gradient + ambient SVG) ───────────────────── */}
+      {/* ── Cover layer ───────────────────────────────────────────────── */}
       <div className={s.cover} aria-hidden>
         <svg viewBox="0 0 800 240" preserveAspectRatio="xMidYMid slice">
           <defs>
@@ -59,7 +67,6 @@ export function ExchangeIdentityCard({ exchange, publicUrl, counters }: Props) {
           <rect width="800" height="240" fill="url(#eic-stripe)" />
           <ellipse cx="160" cy="0" rx="320" ry="200" fill="url(#eic-glow-a)" />
           <ellipse cx="680" cy="240" rx="360" ry="220" fill="url(#eic-glow-b)" />
-          {/* Hairline grid texture — فقط گوشه بالا-راست */}
           <g opacity="0.4">
             {Array.from({ length: 7 }).map((_, i) => (
               <line
@@ -87,75 +94,74 @@ export function ExchangeIdentityCard({ exchange, publicUrl, counters }: Props) {
         </svg>
       </div>
 
-      {/* ── Floating monogram/logo ──────────────────────────────────── */}
-      <div className={s.logo} aria-hidden>
-        {exchange.logoUrl ? (
-          // Dynamic user URL
-          <img src={exchange.logoUrl} alt="" className={s.logoImg} />
-        ) : (
-          <div className={s.logoFallback}>
-            <span>{initial}</span>
-          </div>
-        )}
-        <div className={s.logoHalo} />
-      </div>
+      {/* ── Cover strip (فضای بالایی gradient) ───────────────────────── */}
+      <div className={s.coverStrip} aria-hidden />
 
-      {/* ── Body grid ──────────────────────────────────────────────── */}
-      <div className={s.body}>
-        <div className={s.identity}>
-          <div className={s.eyebrowRow}>
-            <span className={`${s.statusPill} ${s[`status_${status.cls}`]}`}>
-              <span className={s.statusDot} aria-hidden />
-              {status.label}
-            </span>
-            <span className={s.verifiedPill} title="صرافی توسط پلتفرم تأیید شده">
-              <ShieldCheck size={11} strokeWidth={2.5} aria-hidden />
-              تأیید شده
-            </span>
-          </div>
-
-          <h1 id="exchange-identity-name" className={s.name}>
-            {display}
-          </h1>
-          {exchange.displayName && exchange.displayName !== exchange.name && (
-            <p className={s.legalName}>نام ثبتی: {exchange.name}</p>
-          )}
-          <p className={s.slugRow}>
-            <code className={s.slug} dir="ltr">
-              /{exchange.slug}
-            </code>
-            <span className={s.slugSep} aria-hidden>
-              ·
-            </span>
-            <span className={s.joined}>
-              عضو از {dateFormatter.format(new Date(exchange.createdAt))}
-            </span>
-          </p>
+      {/* ── Main content row: logo + body ─────────────────────────────── */}
+      <div className={s.mainRow}>
+        {/* لوگو */}
+        <div className={s.logo} aria-hidden>
+          {logoContent}
+          <div className={s.logoHalo} />
         </div>
 
-        {/* ── Side actions (CTA + counters) ─────────────────────────── */}
-        <div className={s.side}>
-          {publicUrl && (
-            <a href={publicUrl} target="_blank" rel="noopener noreferrer" className={s.cta}>
-              <Sparkles size={13} strokeWidth={2} aria-hidden />
-              <span>مشاهده صفحه عمومی</span>
-              <ExternalLink size={12} strokeWidth={2} aria-hidden />
-            </a>
-          )}
-          {counters && counters.length > 0 && (
-            <dl className={s.counters}>
-              {counters.map((c) => (
-                <div key={c.label} className={s.counterCell}>
-                  <dt className={s.counterLabel}>{c.label}</dt>
-                  <dd className={s.counterValue}>
-                    {typeof c.value === 'number'
-                      ? new Intl.NumberFormat('fa-IR').format(c.value)
-                      : c.value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          )}
+        {/* Identity + actions */}
+        <div className={s.body}>
+          {/* Identity */}
+          <div className={s.identity}>
+            <div className={s.eyebrowRow}>
+              <span className={`${s.statusPill} ${s[`status_${status.cls}`]}`}>
+                <span className={s.statusDot} aria-hidden />
+                {status.label}
+              </span>
+              <span className={s.verifiedPill} title="صرافی توسط پلتفرم تأیید شده">
+                <ShieldCheck size={11} strokeWidth={2.5} aria-hidden />
+                تأیید شده
+              </span>
+            </div>
+            <h1 id="exchange-identity-name" className={s.name}>
+              {display}
+            </h1>
+            {exchange.displayName && exchange.displayName !== exchange.name && (
+              <p className={s.legalName}>نام ثبتی: {exchange.name}</p>
+            )}
+            <p className={s.slugRow}>
+              <code className={s.slug} dir="ltr">
+                /{exchange.slug}
+              </code>
+              <span className={s.slugSep} aria-hidden>
+                ·
+              </span>
+              <span className={s.joined}>
+                عضو از {dateFormatter.format(new Date(exchange.createdAt))}
+              </span>
+            </p>
+          </div>
+
+          {/* Side actions */}
+          <div className={s.side}>
+            {publicUrl && (
+              <a href={publicUrl} target="_blank" rel="noopener noreferrer" className={s.cta}>
+                <Sparkles size={13} strokeWidth={2} aria-hidden />
+                <span>مشاهده صفحه عمومی</span>
+                <ExternalLink size={12} strokeWidth={2} aria-hidden />
+              </a>
+            )}
+            {counters && counters.length > 0 && (
+              <dl className={s.counters}>
+                {counters.map((c) => (
+                  <div key={c.label} className={s.counterCell}>
+                    <dt className={s.counterLabel}>{c.label}</dt>
+                    <dd className={s.counterValue}>
+                      {typeof c.value === 'number'
+                        ? new Intl.NumberFormat('fa-IR').format(c.value)
+                        : c.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+          </div>
         </div>
       </div>
     </section>

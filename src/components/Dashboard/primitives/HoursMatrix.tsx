@@ -81,7 +81,7 @@ export function HoursMatrix({ value, onChange, disabled }: Props) {
       </header>
 
       <div className={s.grid} role="grid" aria-label="ساعت کاری هفتگی">
-        {/* column headers */}
+        {/* column headers — desktop only */}
         <div className={s.colHead} role="presentation" />
         <div className={s.colHead} role="columnheader">
           <span>ساعت شروع</span>
@@ -123,8 +123,32 @@ interface DayRowProps {
 }
 
 function DayRow({ label, sub, highlight, value, disabled, onChange }: DayRowProps) {
+  const toggleBtn = (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={!value.closed}
+      disabled={disabled}
+      onClick={() => onChange({ ...value, closed: !value.closed })}
+      className={`${s.toggle} ${value.closed ? s.toggleOff : s.toggleOn}`}
+    >
+      {value.closed ? (
+        <>
+          <Moon size={11} strokeWidth={2} aria-hidden />
+          <span>تعطیل</span>
+        </>
+      ) : (
+        <>
+          <span className={s.toggleDot} aria-hidden />
+          <span>باز</span>
+        </>
+      )}
+    </button>
+  );
+
   return (
     <>
+      {/* ── Desktop cells (grid columns) ── */}
       <div className={`${s.dayCell} ${highlight ? s.dayCellHi : ''}`}>
         <span className={s.dayLabel}>{label}</span>
         <span className={s.daySub}>{sub}</span>
@@ -151,27 +175,45 @@ function DayRow({ label, sub, highlight, value, disabled, onChange }: DayRowProp
           aria-label={`ساعت پایان ${label}`}
         />
       </div>
-      <div className={s.statusCell}>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={!value.closed}
-          disabled={disabled}
-          onClick={() => onChange({ ...value, closed: !value.closed })}
-          className={`${s.toggle} ${value.closed ? s.toggleOff : s.toggleOn}`}
-        >
-          {value.closed ? (
-            <>
-              <Moon size={11} strokeWidth={2} aria-hidden />
-              <span>تعطیل</span>
-            </>
-          ) : (
-            <>
-              <span className={s.toggleDot} aria-hidden />
-              <span>باز</span>
-            </>
-          )}
-        </button>
+      <div className={s.statusCell}>{toggleBtn}</div>
+
+      {/* ── Mobile card (flex stack) ── */}
+      <div className={`${s.dayRow} ${highlight ? s.dayRowHi : ''}`}>
+        <div className={s.dayRowTop}>
+          <div>
+            <span className={s.dayLabel}>{label}</span>
+            <span className={s.daySub}> · {sub}</span>
+          </div>
+          {toggleBtn}
+        </div>
+        {!value.closed && (
+          <div className={`${s.dayRowInputs} ${disabled ? s.inputDisabled : ''}`}>
+            <div>
+              <div className={s.dayRowInputLabel}>شروع</div>
+              <input
+                type="time"
+                className={s.timeInput}
+                value={value.open}
+                dir="ltr"
+                disabled={disabled}
+                onChange={(e) => onChange({ ...value, open: e.target.value })}
+                aria-label={`ساعت شروع ${label}`}
+              />
+            </div>
+            <div>
+              <div className={s.dayRowInputLabel}>پایان</div>
+              <input
+                type="time"
+                className={s.timeInput}
+                value={value.close}
+                dir="ltr"
+                disabled={disabled}
+                onChange={(e) => onChange({ ...value, close: e.target.value })}
+                aria-label={`ساعت پایان ${label}`}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

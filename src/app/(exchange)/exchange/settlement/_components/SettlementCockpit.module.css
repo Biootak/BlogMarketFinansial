@@ -79,8 +79,8 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(135deg, oklch(96% 0.04 290) 0%, transparent 60%);
-  opacity: 0.4;
+  background: linear-gradient(135deg, color-mix(in oklch, var(--at-violet) 12%, transparent) 0%, transparent 55%);
+  opacity: 1;
 }
 
 .cellHead {
@@ -112,7 +112,7 @@
 }
 
 .cellIcon[data-tone="violet"] {
-  background: oklch(96% 0.04 290);
+  background: color-mix(in oklch, var(--at-violet) 12%, var(--at-bg));
   color: var(--at-violet);
 }
 
@@ -132,11 +132,11 @@
 }
 
 .cellNumber {
-  font-size: var(--ds-text-2xl);
+  font-size: var(--ds-text-xl);
   font-weight: var(--ds-weight-extrabold);
   color: var(--at-fg);
-  letter-spacing: -0.025em;
-  line-height: 1.05;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
 .cellNumber[data-tone="amber"] {
@@ -384,8 +384,8 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: radial-gradient(ellipse 70% 100% at 100% 0%, oklch(96% 0.04 290) 0%, transparent 60%);
-  opacity: 0.5;
+  background: radial-gradient(ellipse 60% 80% at 100% 0%, color-mix(in oklch, var(--at-violet) 15%, transparent) 0%, transparent 55%);
+  opacity: 1;
 }
 
 @keyframes detailIn {
@@ -421,7 +421,7 @@
   font-size: 11px;
   font-weight: var(--ds-weight-semibold);
   color: var(--at-violet);
-  background: oklch(96% 0.04 290);
+  background: color-mix(in oklch, var(--at-violet) 12%, var(--at-bg));
   border-radius: 999px;
   width: max-content;
   letter-spacing: 0.02em;
@@ -478,8 +478,8 @@
 }
 
 .detailStat[data-focal] {
-  background: oklch(96% 0.04 290);
-  border-color: color-mix(in oklch, var(--at-violet) 30%, transparent);
+  background: color-mix(in oklch, var(--at-violet) 10%, var(--at-bg));
+  border-color: color-mix(in oklch, var(--at-violet) 22%, transparent);
 }
 
 .detailStatLabel {
@@ -514,9 +514,9 @@
 }
 
 .detailStatValue[data-focal] {
-  font-size: var(--ds-text-2xl);
+  font-size: var(--ds-text-xl);
   font-weight: var(--ds-weight-extrabold);
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
 }
 
 .detailStatCurrency {

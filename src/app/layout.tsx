@@ -18,13 +18,13 @@ import localFont from 'next/font/local';
 import Script from 'next/script';
 
 import './globals.css';
-import '@/styles/index.scss';
-// Editor renderer styles — 2026-08-03: moved from the ROOT layout into the
-// two `(singles)` layouts. The `.editor-content` / `.at-prose--renderer`
-// rules are only needed on article pages (EditorContentHTML SSR), and the
-// root layout injected them into EVERY page (~113KB render-blocking CSS on
-// the homepage where they are 100% unused). Singles layouts wrap every
-// article route, so article pages still get the styles.
+// 2026-08-05 perf: `index.scss` (22KB SCSS → ~35KB compiled CSS) moved from
+// the ROOT layout to the `(site)` layout. The legacy NC theme styles
+// (header glass, RTL overrides, card animations, loading spinners) are only
+// used by public marketing/blog pages. Loading them on auth, setup,
+// dashboard, error, and maintenance pages added ~35KB of render-blocking
+// CSS to pages that never render a single NC class. The `(site)` layout
+// wraps all public routes, so those pages still get the styles.
 
 import PageViewTracker from '@/components/PageViewTracker';
 import Providers from '@/components/providers';

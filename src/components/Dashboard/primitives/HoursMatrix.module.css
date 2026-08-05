@@ -86,13 +86,68 @@
   overflow: hidden;
 }
 
+/* در desktop، mobile card مخفی است */
+.dayRow {
+  display: none;
+}
+
+/* ── Mobile: card-per-day stack ─────────────────────────────────────── */
 @media (max-width: 540px) {
+  /* جدول را مخفی کن — به card stack تبدیل می‌شود */
   .grid {
-    grid-template-columns: minmax(70px, 1fr) 1fr 1fr;
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--at-radius);
+    overflow: hidden;
   }
-  .colHead:last-of-type,
+
+  /* header ستون‌ها مخفی */
+  .colHead {
+    display: none;
+  }
+
+  /* هر روز = card */
+  .dayRow {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-2);
+    padding: var(--ds-space-3);
+    border-block-end: 1px solid var(--at-line);
+    background: var(--at-surface);
+  }
+  .dayRow:last-child {
+    border-block-end: none;
+  }
+  .dayRowHi {
+    background: color-mix(in oklch, var(--at-warning) 5%, var(--at-surface));
+  }
+
+  /* ردیف بالا: نام روز + toggle */
+  .dayRowTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ds-space-3);
+  }
+
+  /* ردیف پایین: دو input کنار هم */
+  .dayRowInputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--ds-space-2);
+  }
+  .dayRowInputLabel {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--at-fg-subtle);
+    margin-block-end: 3px;
+  }
+
+  /* cell‌های desktop در موبایل مخفی */
+  .dayCell,
+  .inputCell,
   .statusCell {
-    grid-column: 1 / -1;
+    display: none;
   }
 }
 
@@ -116,10 +171,6 @@
   padding: 12px;
   background: var(--at-surface);
   border-block-end: 1px solid var(--at-line);
-}
-.dayCell:last-child,
-.dayCell:nth-last-child(-n + 4) {
-  /* Keep borders clean — only the last row in the grid bottom border */
 }
 
 .dayCellHi {
@@ -183,6 +234,12 @@
   padding: 8px 12px;
   border-inline-start: 1px solid var(--at-line);
   border-block-end: 1px solid var(--at-line);
+}
+
+/* disabled state روی card inputs */
+.inputDisabled {
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 .toggle {

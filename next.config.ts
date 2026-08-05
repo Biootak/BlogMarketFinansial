@@ -387,9 +387,23 @@ const nextConfig: NextConfig = {
   // through Next.js's package exports instead.
   // NOTE: keep `@auth/prisma-adapter` external — it has no `next/*` imports
   // and externalizing avoids duplicate @auth/core instances.
-  serverExternalPackages: ['@auth/prisma-adapter'],
+  //
+  // 2026-08-05 perf: `@aws-sdk/client-s3` + `@aws-sdk/s3-request-presigner`
+  // moved from `transpilePackages` to `serverExternalPackages`. AWS SDK v3
+  // has 400+ internal modules; transpiling them through Turbopack forced the
+  // bundler to walk the entire dependency graph on every build, adding ~40%
+  // to build time. These packages are server-only (storage.ts, S3Actions.ts)
+  // and have no `next/*` imports, so externalizing is safe. Node resolves
+  // them natively at runtime from node_modules. The standalone bundler still
+  // copies external packages into .next/standalone/node_modules, so Docker
+  // `output: 'standalone'` continues to work without a Dockerfile change.
+  serverExternalPackages: [
+    '@auth/prisma-adapter',
+    '@aws-sdk/client-s3',
+    '@aws-sdk/s3-request-presigner',
+  ],
 
-  transpilePackages: ['next-auth', '@aws-sdk/client-s3', '@aws-sdk/s3-request-presigner'],
+  transpilePackages: ['next-auth'],
 
   // 2026-06-25: cssnano-simple crashes on `@property` at-rules and OKLCH
   // color tokens in globals.css. This webpack config block is only used

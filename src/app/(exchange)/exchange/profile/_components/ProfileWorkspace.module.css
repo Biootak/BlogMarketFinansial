@@ -9,7 +9,8 @@
   gap: var(--ds-space-5);
   max-inline-size: 1100px;
   margin-inline: auto;
-  padding-block-end: 6rem; /* فضا برای StickySaveBar */
+  inline-size: 100%;
+  padding-block-end: 5rem; /* فضا برای StickySaveBar fixed */
 }
 
 /* ── Banner ─────────────────────────────────────────────────────────── */

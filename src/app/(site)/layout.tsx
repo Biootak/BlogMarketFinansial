@@ -7,6 +7,11 @@ import QuickActionsGate from '@/components/QuickActions/QuickActionsGate';
 import { getSystemSettingsCached } from '@/data/getSystemSettingsCached';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+// 2026-08-05 perf: moved from root layout. Legacy NC theme styles (header
+// glass, RTL overrides, card animations, loading spinners) are only used
+// by public marketing/blog pages. Loading them on auth/setup/dashboard
+// pages added ~35KB render-blocking CSS to pages that never use NC classes.
+import '@/styles/index.scss';
 
 // 2026-08-02: `auth()` removed from the (site) server tree (MainNav,
 // MobileBottomNavGate, QuickActionsGate, HeroSection now resolve the session

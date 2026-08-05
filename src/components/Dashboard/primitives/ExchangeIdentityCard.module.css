@@ -1,33 +1,22 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    ExchangeIdentityCard — signature moment برای پروفایل صرافی.
-   Layout: cover ambient → logo (overlap) → body (identity + side actions)
+   ساختار: card > coverStrip (gradient header) + mainRow (logo + body)
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* ── Card shell ──────────────────────────────────────────────────────────── */
 .card {
   position: relative;
   isolation: isolate;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  grid-template-rows: auto auto;
-  column-gap: var(--ds-space-5);
-  row-gap: var(--ds-space-3);
-  align-items: flex-end;
-  padding: 0 var(--ds-space-5) var(--ds-space-5);
+  display: flex;
+  flex-direction: column;
   border-radius: var(--at-radius-xl);
   background: linear-gradient(180deg, var(--at-surface) 0%, var(--at-bg-deep) 100%);
   border: 1px solid var(--at-line);
   box-shadow: var(--at-shadow);
   overflow: hidden;
-  min-block-size: 200px;
-}
-@media (max-width: 720px) {
-  .card {
-    grid-template-columns: 1fr;
-    padding: 0 var(--ds-space-4) var(--ds-space-4);
-  }
 }
 
-/* ── Cover layer ─────────────────────────────────────────────────────── */
+/* ── Cover ambient SVG (absolute fill) ───────────────────────────────────── */
 .cover {
   position: absolute;
   inset: 0;
@@ -40,31 +29,56 @@
   display: block;
 }
 
-/* ── Logo (overlap) ──────────────────────────────────────────────────── */
+/* ── Cover strip — فضای gradient بالایی کارت ────────────────────────────── */
+.coverStrip {
+  block-size: 80px;
+  flex-shrink: 0;
+}
+@media (max-width: 720px) {
+  .coverStrip {
+    block-size: 56px;
+  }
+}
+
+/* ── Main row: logo + body ───────────────────────────────────────────────── */
+.mainRow {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--ds-space-4);
+  padding: 0 var(--ds-space-5) var(--ds-space-5);
+}
+@media (max-width: 720px) {
+  .mainRow {
+    gap: var(--ds-space-3);
+    padding: 0 var(--ds-space-4) var(--ds-space-4);
+  }
+}
+
+/* ── Logo ─────────────────────────────────────────────────────────────────── */
 .logo {
   position: relative;
   z-index: 2;
-  grid-row: 1 / span 2;
-  grid-column: 1;
-  align-self: flex-end;
-  inline-size: 92px;
-  block-size: 92px;
+  flex-shrink: 0;
+  inline-size: 88px;
+  block-size: 88px;
+  margin-block-start: -44px; /* overlap روی coverStrip */
   border-radius: var(--at-radius-lg);
   background: var(--at-surface);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-block-start: -42px;
-  margin-inline-start: var(--ds-space-4);
   box-shadow: 0 1px 0 oklch(100% 0 0 / 0.7) inset, 0 8px 24px -8px oklch(18% 0.04 250 / 0.4);
   border: 1px solid var(--at-line);
   overflow: visible;
 }
 @media (max-width: 720px) {
   .logo {
-    inline-size: 76px;
-    block-size: 76px;
-    margin-block-start: -34px;
+    inline-size: 64px;
+    block-size: 64px;
+    margin-block-start: -30px;
   }
 }
 
@@ -89,7 +103,7 @@
   );
 }
 .logoFallback span {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 800;
   color: var(--at-fg-inv);
   letter-spacing: -0.04em;
@@ -97,7 +111,7 @@
 }
 @media (max-width: 720px) {
   .logoFallback span {
-    font-size: 2rem;
+    font-size: 1.6rem;
   }
 }
 
@@ -127,33 +141,34 @@
   }
 }
 
-/* ── Body grid ───────────────────────────────────────────────────────── */
+/* ── Body: identity + side ────────────────────────────────────────────────── */
 .body {
-  position: relative;
-  z-index: 1;
+  flex: 1 1 0;
+  min-inline-size: 0;
   display: flex;
+  flex-direction: row;
   align-items: flex-end;
   justify-content: space-between;
   gap: var(--ds-space-4);
   flex-wrap: wrap;
-  grid-row: 1 / span 2;
-  grid-column: 2;
-  padding-block-end: var(--ds-space-2);
+  padding-block-start: var(--ds-space-2);
 }
 @media (max-width: 720px) {
   .body {
-    grid-column: 1;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    gap: var(--ds-space-3);
+    padding-block-start: var(--ds-space-1);
   }
 }
 
+/* ── Identity block ───────────────────────────────────────────────────────── */
 .identity {
   min-inline-size: 0;
   flex: 1 1 auto;
 }
 
-/* ── Eyebrow row (status + verified) ─────────────────────────────────── */
+/* ── Eyebrow row (status + verified) ─────────────────────────────────────── */
 .eyebrowRow {
   display: flex;
   align-items: center;
@@ -232,10 +247,10 @@
   white-space: nowrap;
 }
 
-/* ── Name + meta ─────────────────────────────────────────────────────── */
+/* ── Name + meta ──────────────────────────────────────────────────────────── */
 .name {
   margin: 0;
-  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+  font-size: clamp(1.25rem, 1rem + 1.2vw, 1.9rem);
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: -0.025em;
@@ -279,7 +294,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Side: CTA + counters ────────────────────────────────────────────── */
+/* ── Side: CTA + counters ─────────────────────────────────────────────────── */
 .side {
   display: flex;
   flex-direction: column;
@@ -289,8 +304,8 @@
 }
 @media (max-width: 720px) {
   .side {
-    align-items: flex-start;
-    inline-size: 100%;
+    align-items: stretch;
+    gap: var(--ds-space-2);
   }
 }
 
@@ -309,10 +324,17 @@
   transition: transform var(--at-duration) var(--at-ease), background var(--at-duration)
     var(--at-ease);
   box-shadow: 0 1px 0 oklch(100% 0 0 / 0.1) inset;
+  white-space: nowrap;
 }
 .cta:hover {
   background: color-mix(in oklch, var(--at-fg) 88%, var(--at-accent));
   transform: translateY(-1px);
+}
+@media (max-width: 720px) {
+  .cta {
+    justify-content: center;
+    block-size: 40px;
+  }
 }
 
 .counters {
@@ -328,15 +350,17 @@
 }
 @media (max-width: 720px) {
   .counters {
-    grid-auto-flow: row;
-    grid-auto-columns: auto;
-    inline-size: 100%;
+    padding: var(--ds-space-2);
+    gap: var(--ds-space-2);
   }
 }
+
 .counterCell {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 2px;
+  text-align: center;
   padding-inline-start: var(--ds-space-3);
   border-inline-start: 1px solid var(--at-line);
 }
@@ -344,20 +368,7 @@
   border-inline-start: none;
   padding-inline-start: 0;
 }
-@media (max-width: 720px) {
-  .counterCell {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    border-inline-start: none;
-    border-block-start: 1px solid var(--at-line);
-    padding: 6px 0;
-  }
-  .counterCell:first-child {
-    border-block-start: none;
-    padding-block-start: 0;
-  }
-}
+
 .counterLabel {
   font-size: 10px;
   font-weight: 600;

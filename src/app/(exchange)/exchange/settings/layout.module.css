@@ -6,6 +6,20 @@
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-5);
+  /* centered مثل at-page ولی بدون padding اضافی (at-main-content آن را دارد) */
+  max-inline-size: 1200px;
+  margin-inline: auto;
+  inline-size: 100%;
+  min-inline-size: 0;
+  box-sizing: border-box;
+  /* فضا برای StickySaveBar */
+  padding-block-end: 5rem;
+}
+
+@media (max-width: 600px) {
+  .shell {
+    gap: var(--ds-space-3);
+  }
 }
 
 .layout {
@@ -13,9 +27,6 @@
   grid-template-columns: 260px 1fr;
   gap: var(--ds-space-6);
   align-items: start;
-  max-inline-size: 1200px;
-  margin-inline: auto;
-  padding-block-end: 6rem; /* فضا برای StickySaveBar */
 }
 
 @media (max-width: 1024px) {
@@ -30,9 +41,19 @@
   inset-block-start: calc(64px + var(--ds-space-3));
   align-self: start;
 }
+
 @media (max-width: 1024px) {
   .aside {
     position: static;
+    /* negative margin تا تب‌ها از overflow-x-hidden parent فرار کنند
+       و scroll افقی کار کند — padding برای جبران */
+    margin-inline: calc(var(--ds-space-3) * -1);
+    padding-inline: var(--ds-space-3);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .aside::-webkit-scrollbar {
+    display: none;
   }
 }
 

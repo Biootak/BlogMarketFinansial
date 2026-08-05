@@ -20,9 +20,8 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: radial-gradient(ellipse 60% 100% at 0% 0%, var(--at-accent-soft) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 80% at 100% 100%, var(--at-violet) 0%, transparent 60%);
-  opacity: 0.18;
+  background: radial-gradient(ellipse 60% 80% at 0% 0%, color-mix(in oklch, var(--at-accent) 10%, transparent) 0%, transparent 55%);
+  opacity: 1;
   pointer-events: none;
 }
 
@@ -75,7 +74,7 @@
 
 .title {
   margin: 0;
-  font-size: var(--ds-text-xl);
+  font-size: var(--ds-text-lg);
   font-weight: var(--ds-weight-bold);
   color: var(--at-fg);
   letter-spacing: -0.01em;
@@ -84,7 +83,7 @@
 
 @media (min-width: 768px) {
   .title {
-    font-size: var(--ds-text-2xl);
+    font-size: var(--ds-text-xl);
   }
 }
 
@@ -168,7 +167,7 @@
 }
 
 .segmentIcon[data-tone="violet"] {
-  background: oklch(96% 0.04 290);
+  background: color-mix(in oklch, var(--at-violet) 12%, var(--at-bg));
   color: var(--at-violet);
 }
 
@@ -187,11 +186,11 @@
 }
 
 .valueNumber {
-  font-size: var(--ds-text-2xl);
+  font-size: var(--ds-text-xl);
   font-weight: var(--ds-weight-extrabold);
   color: var(--at-fg);
-  letter-spacing: -0.025em;
-  line-height: 1.05;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
 .valueNumber[data-tone="amber"] {

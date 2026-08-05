@@ -111,7 +111,7 @@
 }
 
 .statusIcon[data-tone="violet"] {
-  background: oklch(96% 0.04 290);
+  background: color-mix(in oklch, var(--at-violet) 12%, var(--at-bg));
   color: var(--at-violet);
 }
 
@@ -229,7 +229,7 @@
 }
 
 .statusPill[data-tone="violet"] {
-  background: oklch(96% 0.04 290);
+  background: color-mix(in oklch, var(--at-violet) 12%, var(--at-bg));
   color: var(--at-violet);
 }
 
