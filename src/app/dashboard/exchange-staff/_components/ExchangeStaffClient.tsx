@@ -18,7 +18,7 @@ import {
   searchUsersForStaff,
 } from '@/actions/exchange-staff';
 import type { ExchangeRow } from '@/actions/exchanges';
-import { ConfirmDialog, MillionDollarEmpty, PageHeader } from '@/components/Dashboard/primitives';
+import { ConfirmDialog, MillionDollarEmpty, PageHeader, SearchInput } from '@/components/Dashboard/primitives';
 import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
 import {
   Dialog,
@@ -484,17 +484,12 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
         <div className={s.main}>
           {/* Search + count bar */}
           <div className={s.searchBar}>
-            <div className={s.searchWrap}>
-              <Search size={14} className={s.searchIcon} aria-hidden />
-              <input
-                type="search"
-                placeholder="جستجو نام، ایمیل، صرافی…"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className={s.searchInput}
-                aria-label="جستجو در کارکنان"
-              />
-            </div>
+            <SearchInput
+              value={query}
+              onChange={setQuery}
+              placeholder="جستجو نام، ایمیل، صرافی…"
+              ariaLabel="جستجو در کارکنان"
+            />
             <span className={s.resultCount} aria-live="polite">
               {filtered.length.toLocaleString('fa-IR')} نفر
             </span>

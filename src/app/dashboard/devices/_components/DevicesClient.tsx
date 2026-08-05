@@ -25,6 +25,7 @@ import {
   ConfirmDialog,
   MillionDollarEmpty,
   PageHeader,
+  SearchInput,
   Spotlight,
 } from '@/components/Dashboard/primitives';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
@@ -488,16 +489,12 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
               ))}
             </div>
 
-            <div className={s.searchField}>
-              <Search size={14} className={s.searchIcon} />
-              <input
-                type="search"
-                placeholder="جستجو در شناسه، سیستم‌عامل، IP..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                aria-label="جستجوی دستگاه"
-              />
-            </div>
+            <SearchInput
+              value={search}
+              onChange={setSearch}
+              placeholder="جستجو در شناسه، سیستم‌عامل، IP..."
+              ariaLabel="جستجوی دستگاه"
+            />
           </div>
 
           {/* Device Cards Asymmetric Grid */}

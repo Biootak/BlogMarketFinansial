@@ -30,7 +30,7 @@ import {
   setExchangeStatus,
   updateExchange,
 } from '@/actions/exchanges';
-import { ConfirmDialog } from '@/components/Dashboard/primitives';
+import { ConfirmDialog, SearchInput } from '@/components/Dashboard/primitives';
 import { toast } from '@/components/ui/use-toast';
 import {
   Activity,
@@ -825,26 +825,13 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
 
       {/* ── 4. Toolbar ───────────────────────────────────────────────── */}
       <div className={s.toolbar} role="search" aria-label="ابزارها">
-        <div className={s.searchWrap}>
-          <Search size={15} className={s.searchIcon} aria-hidden />
-          <input
-            className={s.searchInput}
-            placeholder="جستجو نام، slug، شهر…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            aria-label="جستجوی صراف"
-          />
-          {query && (
-            <button
-              type="button"
-              className={s.searchClear}
-              onClick={() => setQuery('')}
-              aria-label="پاک کردن جستجو"
-            >
-              <XIcon size={11} aria-hidden />
-            </button>
-          )}
-        </div>
+        <SearchInput
+          value={query}
+          onChange={setQuery}
+          onClear={() => setQuery('')}
+          placeholder="جستجو نام، slug، شهر…"
+          ariaLabel="جستجوی صراف"
+        />
 
         <div className={s.toolbarView}>
           <span className={s.toolbarView__chip} aria-live="polite">

@@ -22,6 +22,7 @@ import {
   FormField,
   MillionDollarEmpty,
   PageHeader,
+  SearchInput,
 } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -489,31 +490,13 @@ export default function CustomersClient({
   );
 
   const toolbarSearch = (
-    <div className={s.searchWrap}>
-      <Search size={14} className={s.searchIcon} aria-hidden />
-      <input
-        ref={searchRef}
-        className={s.searchInput}
-        placeholder="جستجو نام، تلفن، شهر…"
-        value={searchInput}
-        onChange={(e) => setSearchInput(e.target.value)}
-        aria-label="جستجو مشتری"
-      />
-      {searchInput && (
-        <button
-          type="button"
-          className={s.searchClear}
-          onClick={() => {
-            setSearchInput('');
-            navigate({ q: '', page: '1' });
-            searchRef.current?.focus();
-          }}
-          aria-label="پاک کردن جستجو"
-        >
-          <X size={12} aria-hidden />
-        </button>
-      )}
-    </div>
+    <SearchInput
+      value={searchInput}
+      onChange={setSearchInput}
+      onClear={() => { setSearchInput(''); navigate({ q: '', page: '1' }); }}
+      placeholder="جستجو نام، تلفن، شهر…"
+      ariaLabel="جستجو مشتری"
+    />
   );
 
   const toolbarActions = (

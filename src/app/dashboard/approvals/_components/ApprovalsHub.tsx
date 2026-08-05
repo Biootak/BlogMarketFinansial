@@ -37,7 +37,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { cancelApproval, decideStep } from '@/actions/approvals-actions';
-import { Spotlight } from '@/components/Dashboard/primitives/Spotlight';
+import { SearchInput, Spotlight } from '@/components/Dashboard/primitives';
 import type {
   ApprovalSnapshot,
   ApprovalStatus,
@@ -607,27 +607,13 @@ export function ApprovalsHub({ initialData, canCreate = false }: Props) {
 
       {/* نوار ابزار بالا */}
       <section className={s.toolbar}>
-        <div className={s.searchWrap}>
-          <Search className={s.searchIcon} />
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="جستجو در درخواست‌ها…"
-            className={s.searchInput}
-            dir="rtl"
-          />
-          {query ? (
-            <button
-              type="button"
-              onClick={() => setQuery('')}
-              className={s.searchClear}
-              aria-label="پاک کردن"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          ) : null}
-        </div>
+        <SearchInput
+          value={query}
+          onChange={setQuery}
+          onClear={() => setQuery('')}
+          placeholder="جستجو در درخواست‌ها…"
+          ariaLabel="جستجو در درخواست‌ها"
+        />
         <div className={s.toolbarRight}>
           <div className={s.sortWrap}>
             <FilterIcon className="h-3.5 w-3.5" />

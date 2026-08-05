@@ -20,7 +20,7 @@ import {
   TimeRibbon,
   type TimeRibbonPoint,
 } from '@/components/Dashboard/PlatformHub';
-import { ConfirmDialog, CountUp, EmptyState } from '@/components/Dashboard/primitives';
+import { ConfirmDialog, CountUp, EmptyState, SearchInput } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -329,17 +329,12 @@ export function AnnouncementsList({ items }: AnnouncementsListProps) {
             </button>
           ))}
         </div>
-        <div className={s.searchWrap}>
-          <Search size={16} aria-hidden className={s.searchIcon} />
-          <Input
-            type="search"
-            className={s.search}
-            placeholder="جستجو در عنوان یا متن…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            aria-label="جستجو"
-          />
-        </div>
+        <SearchInput
+          value={query}
+          onChange={setQuery}
+          placeholder="جستجو در عنوان یا متن…"
+          ariaLabel="جستجو در اعلان‌ها"
+        />
         <FilterPills
           items={channelFilters}
           active={channel}

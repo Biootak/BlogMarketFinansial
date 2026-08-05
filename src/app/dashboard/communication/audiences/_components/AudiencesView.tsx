@@ -7,7 +7,7 @@
  */
 
 import { LiveDot } from '@/components/Dashboard/PlatformHub';
-import { CountUp, EmptyState } from '@/components/Dashboard/primitives';
+import { CountUp, EmptyState, SearchInput } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChevronLeft, Layers, Search, Sparkles, Target, Users } from 'lucide-react';
@@ -223,17 +223,12 @@ export function AudiencesView({ initialData }: { initialData: AudiencesViewData 
             );
           })}
         </div>
-        <div className={s.searchWrap}>
-          <Search size={16} aria-hidden className={s.searchIcon} />
-          <Input
-            type="search"
-            className={s.search}
-            placeholder="جستجو در نام یا توضیح…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            aria-label="جستجو"
-          />
-        </div>
+        <SearchInput
+          value={query}
+          onChange={setQuery}
+          placeholder="جستجو در نام یا توضیح…"
+          ariaLabel="جستجو در مخاطبین"
+        />
       </div>
 
       {/* ═══ GALLERY ═════════════════════════════════════ */}

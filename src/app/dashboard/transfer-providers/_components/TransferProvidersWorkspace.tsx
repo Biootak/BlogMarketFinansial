@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from '@/components/ui/use-toast';
+import { SearchInput } from '@/components/Dashboard/primitives';
 import { PencilLine, Plus, Search, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
 import { useCallback, useMemo, useState, useTransition } from 'react';
 import ProviderDrawer from './ProviderDrawer';
@@ -270,17 +271,12 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
 
       {/* ── Toolbar ── */}
       <div className={s.toolbar}>
-        <div className={s.searchWrap}>
-          <Search className={s.searchIcon} aria-hidden />
-          <input
-            type="search"
-            className={s.searchInput}
-            placeholder="جستجو در نام یا slug…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            aria-label="جستجو در صرافی‌ها"
-          />
-        </div>
+        <SearchInput
+          value={query}
+          onChange={setQuery}
+          placeholder="جستجو در نام یا slug…"
+          ariaLabel="جستجو در صرافی‌ها"
+        />
 
         <div className={s.filterRow}>
           <Select value={kindFilter} onValueChange={setKindFilter}>

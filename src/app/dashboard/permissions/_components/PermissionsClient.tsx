@@ -20,7 +20,7 @@ import {
   deletePermission,
   saveRoleMatrix,
 } from '@/actions/permission-actions';
-import { ConfirmDialog, MillionDollarEmpty } from '@/components/Dashboard/primitives';
+import { ConfirmDialog, MillionDollarEmpty, SearchInput } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -982,28 +982,13 @@ export default function PermissionsClient({ permissions, matrix, currentUserRole
       {/* ── Toolbar ─────────────────────────────────────────────────────── */}
       {localPerms.length > 0 && (
         <div className={s.toolbar}>
-          <div className={s.searchWrap}>
-            <Search size={13} className={s.searchIcon} aria-hidden />
-            <input
-              ref={searchRef}
-              className={s.searchInput}
-              placeholder="جستجو... ⌘K"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              aria-label="جستجو در مجوزها"
-              dir="ltr"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                className={s.searchClear}
-                onClick={() => setSearchQuery('')}
-                aria-label="پاک‌کردن"
-              >
-                <X size={10} />
-              </button>
-            )}
-          </div>
+          <SearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onClear={() => setSearchQuery('')}
+            placeholder="جستجو... ⌘K"
+            ariaLabel="جستجو در مجوزها"
+          />
 
           <div className={s.catPills} role="group" aria-label="فیلتر دسته">
             <button

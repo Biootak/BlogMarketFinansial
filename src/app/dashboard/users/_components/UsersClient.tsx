@@ -15,7 +15,7 @@
  */
 
 import { createUser, deleteUser, updateUser } from '@/actions/userActions';
-import { ConfirmDialog, PageHeader } from '@/components/Dashboard/primitives';
+import { ConfirmDialog, PageHeader, SearchInput } from '@/components/Dashboard/primitives';
 import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
 import SubmitButton from '@/components/SubmitButton';
 import { Button } from '@/components/ui/button';
@@ -337,17 +337,12 @@ export function UsersClient({
 
       {/* ── Filters ── */}
       <div className={s.filterBar}>
-        <div className={s.searchWrap}>
-          <HiMagnifyingGlass className={s.searchIco} aria-hidden />
-          <input
-            className={s.searchInput}
-            type="search"
-            placeholder="جستجو بر اساس نام یا ایمیل…"
-            value={searchInput}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            aria-label="جستجوی کاربر"
-          />
-        </div>
+        <SearchInput
+          value={searchInput}
+          onChange={handleSearchChange}
+          placeholder="جستجو بر اساس نام یا ایمیل…"
+          ariaLabel="جستجوی کاربر"
+        />
 
         <select
           className={s.filterSelect}

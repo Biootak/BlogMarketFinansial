@@ -19,7 +19,7 @@
 import { PillTabs } from '@/components/Dashboard/PlatformHub';
 import { ActivityStream } from '@/components/Dashboard/PlatformHub/ActivityStream';
 import { MetricWall, type MetricWallTile } from '@/components/Dashboard/PlatformHub/MetricWall';
-import { PageHeader } from '@/components/Dashboard/primitives';
+import { PageHeader, SearchInput } from '@/components/Dashboard/primitives';
 import type { TicketPriority, TicketStatus, TicketSummary } from '@/lib/tickets';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -295,17 +295,12 @@ export function HelpdeskHub({ initialTickets }: HelpdeskHubProps) {
 
       {/* ── Toolbar zone ───────────────────────────────── */}
       <section className={s.toolbar} aria-label="ابزار">
-        <div className={s.searchWrap}>
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="جستجو در تیکت‌ها..."
-            className={s.search}
-            dir="rtl"
-            aria-label="جستجو"
-          />
-        </div>
+        <SearchInput
+          value={query}
+          onChange={setQuery}
+          placeholder="جستجو در تیکت‌ها..."
+          ariaLabel="جستجو در تیکت‌ها"
+        />
         <div className={s.pillsWrap}>
           <PillTabs
             tabs={PRIORITY_FILTERS.map((f) => ({ id: f.id, label: f.label }))}

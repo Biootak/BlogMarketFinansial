@@ -15,7 +15,7 @@ import {
   getUsersByRole,
   updateUserRole,
 } from '@/actions/role-actions';
-import { ConfirmDialog, MillionDollarEmpty } from '@/components/Dashboard/primitives';
+import { ConfirmDialog, MillionDollarEmpty, SearchInput } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Role } from '@prisma/client';
@@ -339,33 +339,13 @@ function RoleUsersDrawer({
           </div>
 
           {/* Search */}
-          <div className={s.drawerSearch}>
-            <Search size={13} className={s.drawerSearchIcon} aria-hidden />
-            <input
-              ref={searchRef}
-              className={s.drawerSearchInput}
-              placeholder="جستجو در کاربران..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              aria-label="جستجو"
-            />
-            {search && (
-              <button
-                type="button"
-                className={s.drawerSearchClear}
-                onClick={() => {
-                  setSearch('');
-                  setPage(1);
-                }}
-                aria-label="پاک‌کردن"
-              >
-                <X size={10} />
-              </button>
-            )}
-          </div>
+          <SearchInput
+            value={search}
+            onChange={(v) => { setSearch(v); setPage(1); }}
+            onClear={() => { setSearch(''); setPage(1); }}
+            placeholder="جستجو در کاربران..."
+            ariaLabel="جستجو در کاربران"
+          />
         </div>
 
         {/* Body */}

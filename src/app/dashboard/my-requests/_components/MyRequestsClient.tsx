@@ -27,10 +27,7 @@ import {
   getMyServiceRequests,
 } from '@/actions/serviceRequestActions';
 import { GeometricField } from '@/components/Dashboard/primitives/GeometricAccent';
-import { MillionDollarEmpty } from '@/components/Dashboard/primitives/MillionDollarEmpty';
-import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
-import { StatCard } from '@/components/Dashboard/primitives/StatCard';
-import { StatGrid } from '@/components/Dashboard/primitives/StatGrid';
+import { MillionDollarEmpty, PageHeader, SearchInput, StatCard, StatGrid } from '@/components/Dashboard/primitives';
 import CopyButton from '@/components/fintech/CopyButton';
 import { cn } from '@/lib/utils';
 import {
@@ -589,27 +586,13 @@ function FilterBar({
 }) {
   return (
     <div className={s.filterBar}>
-      <div className={s.searchWrap}>
-        <Search size={13} className={s.searchIcon} aria-hidden />
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="جستجو در کد پیگیری یا نوع خدمت…"
-          className={s.searchInput}
-          aria-label="جستجو"
-        />
-        {search && (
-          <button
-            type="button"
-            onClick={() => onSearchChange('')}
-            className={s.searchClear}
-            aria-label="پاک کردن جستجو"
-          >
-            <XCircle size={12} />
-          </button>
-        )}
-      </div>
+      <SearchInput
+        value={search}
+        onChange={onSearchChange}
+        onClear={() => onSearchChange('')}
+        placeholder="جستجو در کد پیگیری یا نوع خدمت…"
+        ariaLabel="جستجو در درخواست‌ها"
+      />
 
       <div className={s.filterChips} role="group" aria-label="فیلتر فوریت">
         <button

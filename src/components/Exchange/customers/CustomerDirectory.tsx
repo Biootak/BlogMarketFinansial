@@ -6,7 +6,7 @@
  */
 
 import type { CustomerRow } from '@/actions/exchange-customers';
-import { EmptyState } from '@/components/Dashboard/primitives';
+import { EmptyState, SearchInput } from '@/components/Dashboard/primitives';
 import { formatNumber } from '@/lib/customer-format';
 import {
   type CustomerSort,
@@ -88,17 +88,12 @@ export function CustomerDirectory({
       {/* ── Toolbar (filters + sort + add) ────────────────────────────── */}
       <div className={s.toolbar}>
         {/* Search */}
-        <div className={s.searchWrap}>
-          <Search size={14} className={s.searchIcon} aria-hidden />
-          <input
-            className={s.searchInput}
-            type="search"
-            placeholder="جستجو نام، تلفن، شهر…"
-            value={filters.query}
-            onChange={(e) => onFiltersChange((p) => ({ ...p, query: e.target.value }))}
-            aria-label="جستجوی مشتری"
-          />
-        </div>
+        <SearchInput
+          value={filters.query}
+          onChange={(v) => onFiltersChange((p) => ({ ...p, query: v }))}
+          placeholder="جستجو نام، تلفن، شهر…"
+          ariaLabel="جستجوی مشتری"
+        />
 
         {/* Status pills */}
         <div className={s.filterGroup} role="tablist" aria-label="وضعیت">

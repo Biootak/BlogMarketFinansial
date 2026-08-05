@@ -14,9 +14,7 @@
  */
 
 import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
-import { DataTable } from '@/components/Dashboard/primitives/DataTable';
-import { MillionDollarEmpty } from '@/components/Dashboard/primitives/MillionDollarEmpty';
-import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
+import { DataTable, MillionDollarEmpty, PageHeader, SearchInput } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -322,15 +320,12 @@ export function FraudReviewClient({ reviews: initial }: Props) {
         </div>
 
         {/* Search */}
-        <div className={s.searchWrap}>
-          <input
-            className={s.searchInput}
-            placeholder="جستجو در دلیل / مشتری / صرافی…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            aria-label="جستجو در صف تقلب"
-          />
-        </div>
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="جستجو در دلیل / مشتری / صرافی…"
+          ariaLabel="جستجو در صف تقلب"
+        />
       </div>
 
       {/* Error banner */}

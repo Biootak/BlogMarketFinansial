@@ -10,7 +10,7 @@
 
 import type { CustomerRow } from '@/actions/exchange-customers';
 import { setCustomerStatus } from '@/actions/exchange-customers';
-import { EmptyState, Section } from '@/components/Dashboard/primitives';
+import { EmptyState, SearchInput, Section } from '@/components/Dashboard/primitives';
 import { useToast } from '@/components/ui/use-toast';
 import {
   AlertTriangle,
@@ -241,17 +241,12 @@ export function CustomerArchive({
           </button>
         </div>
 
-        <div className={s.searchWrap}>
-          <Search size={14} className={s.searchIcon} aria-hidden />
-          <input
-            type="search"
-            className={s.searchInput}
-            placeholder="جستجو نام، تلفن، شهر..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            aria-label="جستجو در آرشیو"
-          />
-        </div>
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="جستجو نام، تلفن، شهر..."
+          ariaLabel="جستجو در آرشیو"
+        />
       </div>
 
       {/* ── List ── */}
