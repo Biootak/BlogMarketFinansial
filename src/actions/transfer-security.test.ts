@@ -18,6 +18,7 @@ vi.mock('@/lib/db', () => ({
     user: { findFirst: vi.fn() },
     transaction: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
     customer: { findFirst: vi.fn() },
+    kycRecord: { findUnique: vi.fn().mockResolvedValue({ expiresAt: null }) },
     fintechAccount: { update: vi.fn() },
     ledgerEntry: { create: vi.fn() },
     auditLog: { create: vi.fn() },
@@ -37,6 +38,7 @@ vi.mock('@/lib/db', () => ({
 }));
 
 vi.mock('@/lib/require-auth', () => ({ requireUser: vi.fn() }));
+vi.mock('@/lib/csrf-server', () => ({ assertCsrf: vi.fn() }));
 vi.mock('@/lib/rate-limiter', () => ({ checkRateLimit: vi.fn() }));
 vi.mock('@/lib/revalidate', () => ({ revalidateTag: vi.fn() }));
 vi.mock('@/lib/fintech/transaction-guard', () => ({

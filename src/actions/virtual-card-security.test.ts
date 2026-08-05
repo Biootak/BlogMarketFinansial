@@ -15,6 +15,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/db', () => ({
   default: {
+    customer: { findFirst: vi.fn().mockResolvedValue({ id: 'cust-1' }) },
+    fintechAccount: { findFirst: vi.fn().mockResolvedValue({ id: 'acc-1' }) },
     virtualCard: {
       findMany: vi.fn(),
       count: vi.fn(),

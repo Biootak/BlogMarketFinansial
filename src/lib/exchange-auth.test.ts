@@ -151,15 +151,17 @@ describe('requireExchangeAccess — write access control', () => {
 
   it('STAFF (نه OWNER/MANAGER) با writeAccess=true → FORBIDDEN', async () => {
     vi.mocked(auth).mockResolvedValue(session('EXCHANGE', 'user-staff') as never);
-    // write=true → where شامل role: { in: [OWNER, MANAGER] } می‌شود
-    // چون نقش STAFF است → findFirst null برمی‌گرداند
+    // write=true → where شامل role: { in: [OWNER, MANAGER, STAFF] } می‌شود
+    // (2026-08-01: STAFF هم transactions.write و customers.write دارد)
+    // چون این کاربر عضو هیچ staff نیست → findFirst null برمی‌گرداند
     vi.mocked(prisma.exchangeStaff.findFirst).mockResolvedValue(null);
 
     const r = await requireExchangeAccess('exch-1', true);
     expect(r.ok).toBe(false);
     if (!r.ok) {
       expect(r.error.code).toBe('FORBIDDEN');
-      expect(r.error.message).toContain('مدیران');
+      // پیام عمومی است — نام نقش افشا نمی‌شود (prevent role enumeration)
+      expect(r.error.message).toBe('شما دسترسی لازم برای انجام این عملیات را ندارید');
     }
   });
 

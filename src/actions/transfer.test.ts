@@ -14,6 +14,7 @@ vi.mock('@/lib/db', () => ({
     user: { findFirst: vi.fn() },
     transaction: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
     customer: { findFirst: vi.fn() },
+    kycRecord: { findUnique: vi.fn().mockResolvedValue({ expiresAt: null }) },
     fintechAccount: { update: vi.fn() },
     ledgerEntry: { create: vi.fn() },
     auditLog: { create: vi.fn() },
@@ -33,6 +34,7 @@ vi.mock('@/lib/db', () => ({
 }));
 
 vi.mock('@/lib/require-auth', () => ({ requireUser: vi.fn() }));
+vi.mock('@/lib/csrf-server', () => ({ assertCsrf: vi.fn() }));
 vi.mock('@/lib/rate-limiter', () => ({ checkRateLimit: vi.fn() }));
 vi.mock('@/lib/revalidate', () => ({ revalidateTag: vi.fn() }));
 vi.mock('@/lib/fintech/transaction-guard', () => ({
@@ -77,6 +79,8 @@ const MOCK_SENDER_CUSTOMER = {
 
 const MOCK_RECIPIENT_CUSTOMER = {
   id: 'cust-recv',
+  kycStatus: 'APPROVED',
+  kycLevel: 'VERIFIED',
   FintechAccount: [{ id: 'acc-recv' }],
 };
 
@@ -136,7 +140,11 @@ describe('findTransferRecipient', () => {
 // ─── initiateTransfer ─────────────────────────────────────────────────────────
 
 describe('initiateTransfer', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // پاک‌سازی mockOnceهای مصرف‌نشده (مثلاً وقتی balance check زودتر return می‌کند)
+    vi.mocked(prisma.customer.findFirst).mockReset();
+  });
 
   it('بدون auth → UNAUTHORIZED', async () => {
     vi.mocked(requireUser).mockResolvedValue(AUTH_FAIL);
@@ -275,7 +283,10 @@ describe('initiateTransfer', () => {
     vi.mocked(checkRateLimit).mockResolvedValue(RL_OK as never);
     vi.mocked(prisma.transaction.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.customer.findFirst)
-      .mockResolvedValueOnce(MOCK_SENDER_CUSTOMER as never)
+      .mockResolvedValueOnce({
+        ...MOCK_SENDER_CUSTOMER,
+        FintechAccount: [{ id: 'acc-1', balance: BigInt(20_000_000), exchangeId: 'exch-1' }],
+      } as never)
       .mockResolvedValueOnce(MOCK_RECIPIENT_CUSTOMER as never);
     vi.mocked(prisma.transaction.create).mockResolvedValue({ id: 'txn-hv' } as never);
     vi.mocked(prisma.auditLog.create).mockResolvedValue({} as never);
@@ -302,7 +313,10 @@ describe('initiateTransfer', () => {
 // ─── confirmTransfer ──────────────────────────────────────────────────────────
 
 describe('confirmTransfer', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(prisma.customer.findFirst).mockReset();
+  });
 
   it('بدون auth → UNAUTHORIZED', async () => {
     vi.mocked(requireUser).mockResolvedValue(AUTH_FAIL);

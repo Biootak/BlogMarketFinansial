@@ -13,6 +13,7 @@ vi.mock('@/lib/db', () => ({
   default: {
     exchangeStaff: {
       findMany: vi.fn(),
+      findUnique: vi.fn(),
       upsert: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
@@ -232,6 +233,7 @@ describe('updateStaff', () => {
 
   it('ورودی معتبر → update صدا می‌زند', async () => {
     vi.mocked(requireAdmin).mockResolvedValue(MOCK_ADMIN);
+    vi.mocked(prisma.exchangeStaff.findUnique).mockResolvedValue({ id: 'staff-1' } as never);
     vi.mocked(prisma.exchangeStaff.update).mockResolvedValue({ id: 'staff-1' } as never);
 
     const result = await updateStaff('staff-1', { role: 'MANAGER' });
@@ -254,6 +256,7 @@ describe('revokeStaff', () => {
 
   it('با auth → revokedAt می‌گذارد و revalidate می‌کند', async () => {
     vi.mocked(requireAdmin).mockResolvedValue(MOCK_ADMIN);
+    vi.mocked(prisma.exchangeStaff.findUnique).mockResolvedValue({ id: 'staff-1' } as never);
     vi.mocked(prisma.exchangeStaff.update).mockResolvedValue({
       id: 'staff-1',
       revokedAt: new Date(),
@@ -279,6 +282,7 @@ describe('removeStaff', () => {
 
   it('با auth → delete صدا می‌زند', async () => {
     vi.mocked(requireAdmin).mockResolvedValue(MOCK_ADMIN);
+    vi.mocked(prisma.exchangeStaff.findUnique).mockResolvedValue({ id: 'staff-1' } as never);
     vi.mocked(prisma.exchangeStaff.delete).mockResolvedValue({ id: 'staff-1' } as never);
 
     const result = await removeStaff('staff-1');
