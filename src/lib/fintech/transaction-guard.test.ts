@@ -15,6 +15,7 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('@/lib/db', () => ({ default: {} }));
 vi.mock('@/lib/require-auth', () => ({ requireUser: vi.fn() }));
 vi.mock('@/lib/sms', () => ({ sendSms: vi.fn() }));
+vi.mock('@/lib/telegram', () => ({ sendTelegramMessage: vi.fn() }));
 
 import { isHighValueTransaction } from '@/lib/fintech/transaction-guard';
 

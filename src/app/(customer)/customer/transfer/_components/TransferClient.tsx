@@ -22,6 +22,7 @@ import {
 import { executeFxTrade, getFxQuote } from '@/actions/fx-trade';
 import { ACCOUNT_TYPE_LABEL } from '@/app/(customer)/customer/_lib/customer-formatters';
 import { type CurrencyItem, CurrencySelect } from '@/components/ui/CurrencySelect';
+import TelegramConnectLink from '@/components/telegram-otp/TelegramConnectLink';
 import {
   Select,
   SelectContent,
@@ -568,7 +569,7 @@ function WithdrawForm({
   if (step === 2) {
     return (
       <form onSubmit={onSubmitStep2} className={s.form}>
-        <p className={s.hint}>کد تأیید ۶ رقمی که به شماره/ایمیل شما ارسال شد را وارد کنید.</p>
+        <p className={s.hint}>کد تأیید ۶ رقمی که به تلگرام یا پیامک شما ارسال شد را وارد کنید.</p>
         <div className={s.field}>
           <label htmlFor="wd-otp" className={s.label}>
             کد تأیید
@@ -586,6 +587,7 @@ function WithdrawForm({
             autoComplete="one-time-code"
           />
         </div>
+        <TelegramConnectLink />
         <button type="submit" className={s.submit} disabled={isPending || otp.length < 4}>
           {isPending ? 'در حال تأیید...' : 'تأیید برداشت'}
         </button>
@@ -804,8 +806,10 @@ function TransferForm({
               کد تأیید (OTP)
             </label>
             <p className={s.hint}>
-              انتقال بالای ۱۰۰٬۰۰۰ افغانی است؛ کد ۶ رقمی ارسال‌شده به شماره شما را وارد کنید.
+              انتقال بالای ۱۰۰٬۰۰۰ افغانی است؛ کد ۶ رقمی ارسال‌شده به تلگرام یا پیامک شما را
+              وارد کنید.
             </p>
+            <TelegramConnectLink />
             <input
               id="tr-otp"
               type="text"

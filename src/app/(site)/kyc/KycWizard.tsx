@@ -14,6 +14,7 @@ import {
   submitKycDocuments,
 } from '@/actions/kyc-onboarding';
 import { sendPhoneOtp, verifyPhoneOtp } from '@/actions/phone-verify';
+import TelegramConnectLink from '@/components/telegram-otp/TelegramConnectLink';
 import { normalizeDigits } from '@/lib/utils';
 import {
   BadgeCheck,
@@ -460,7 +461,8 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
             <ShieldAlert size={18} strokeWidth={1.5} aria-hidden style={{ flexShrink: 0 }} />
             <span>
               <strong>شماره تلفن ثبت نشده — </strong>
-              برای تراکنش‌های بالای ۱۰۰٬۰۰۰ افغانی، کد تأیید SMS لازم است. لطفاً در{' '}
+              برای تراکنش‌های بالای ۱۰۰٬۰۰۰ افغانی، کد تأیید لازم است (از طریق تلگرام یا
+              پیامک). لطفاً در{' '}
               <Link
                 href="/dashboard/edit-profile"
                 style={{ color: 'inherit', textDecoration: 'underline' }}
@@ -560,20 +562,23 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
                   </div>
 
                   {!otpSent ? (
-                    <button
-                      type="button"
-                      className={s.otpSendBtn}
-                      onClick={handleSendOtp}
-                      disabled={isPending}
-                      aria-busy={isPending}
-                    >
-                      {isPending ? (
-                        <Loader2 size={14} className={s.spin} aria-hidden />
-                      ) : (
-                        <MessageSquare size={14} aria-hidden />
-                      )}
-                      ارسال کد تأیید
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        className={s.otpSendBtn}
+                        onClick={handleSendOtp}
+                        disabled={isPending}
+                        aria-busy={isPending}
+                      >
+                        {isPending ? (
+                          <Loader2 size={14} className={s.spin} aria-hidden />
+                        ) : (
+                          <MessageSquare size={14} aria-hidden />
+                        )}
+                        ارسال کد تأیید
+                      </button>
+                      <TelegramConnectLink />
+                    </>
                   ) : (
                     <div className={s.otpInputRow}>
                       <input

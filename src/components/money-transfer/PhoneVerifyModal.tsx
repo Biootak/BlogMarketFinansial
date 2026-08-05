@@ -12,6 +12,7 @@
  */
 
 import { sendPhoneOtp, verifyPhoneOtp } from '@/actions/phone-verify';
+import TelegramConnectLink from '@/components/telegram-otp/TelegramConnectLink';
 import { AlertCircle, ArrowRight, Phone, RotateCcw, ShieldCheck, X } from 'lucide-react';
 import { type FC, useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -182,7 +183,10 @@ const PhoneVerifyModal: FC<Props> = ({ onVerified, onClose }) => {
                   {phoneErr}
                 </p>
               )}
-              <p className={s.hint}>کد تأیید به این شماره SMS می‌شود.</p>
+              <p className={s.hint}>
+                کد تأیید به تلگرام شما (در صورت اتصال) یا پیامک این شماره ارسال می‌شود.
+              </p>
+              <TelegramConnectLink />
             </>
           )}
 
