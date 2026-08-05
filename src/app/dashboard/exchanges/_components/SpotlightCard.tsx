@@ -26,7 +26,8 @@ interface Props {
   growthSeries: number[];
 }
 
-const fmt = (n: number) => new Intl.NumberFormat('fa-IR').format(n);
+const _faNum = new Intl.NumberFormat('fa-IR');
+const fmt = (n: number) => _faNum.format(n);
 
 export default function SpotlightCard({
   id,

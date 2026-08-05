@@ -36,6 +36,8 @@ import { useCallback, useState } from 'react';
 import CustomerDrawer from '../../_components/CustomerDrawer';
 import s from './CustomerDetailView.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 // ─── Lookup tables ──────────────────────────────────────────────────────────
 
 const STATUS_MAP: Record<string, { label: string; cls: string }> = {
@@ -176,7 +178,7 @@ export default function CustomerDetailView({
       header: 'مبلغ',
       render: (r) => (
         <span className={s.amountCell}>
-          {new Intl.NumberFormat('fa-IR').format(Number(r.amount) / 100)} {r.currency}
+          {_faNum.format(Number(r.amount) / 100)} {r.currency}
         </span>
       ),
     },
@@ -328,7 +330,7 @@ export default function CustomerDetailView({
               <div className={s.infoRow}>
                 <dt>سقف شخصی (افغانی)</dt>
                 <dd style={{ fontVariantNumeric: 'tabular-nums' }}>
-                  {new Intl.NumberFormat('fa-IR').format(Number(customer.personalLimitAf))}
+                  {_faNum.format(Number(customer.personalLimitAf))}
                 </dd>
               </div>
             )}

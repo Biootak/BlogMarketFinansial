@@ -44,6 +44,8 @@ import type {
 } from '@/lib/observability';
 import s from './ObservabilityHub.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 interface Props {
   initialData?: ObservabilitySnapshot;
 }
@@ -93,7 +95,7 @@ function formatTimeAgo(iso: string): string {
 }
 
 function formatNumber(n: number): string {
-  return new Intl.NumberFormat('fa-IR').format(n);
+  return _faNum.format(n);
 }
 
 function formatMs(ms: number): string {

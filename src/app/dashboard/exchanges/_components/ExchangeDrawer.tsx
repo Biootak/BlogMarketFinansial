@@ -83,7 +83,8 @@ const STATUS_TONE = {
   CLOSED: { label: 'بسته', cls: 'slate' as const },
 } as const;
 
-const fmt = (n: number) => new Intl.NumberFormat('fa-IR').format(n);
+const _faNum = new Intl.NumberFormat('fa-IR');
+const fmt = (n: number) => _faNum.format(n);
 
 export default function ExchangeDrawer({ open, initialData, saving, onClose, onSave }: Props) {
   // ── form state ─────────────────────────────────────────────────────────

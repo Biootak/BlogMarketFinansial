@@ -36,6 +36,7 @@ import type { MarketRateItem } from '@/lib/market-rates';
 import { UNIT_LABELS, formatChangePercent, formatValueOnly } from '@/lib/market-rates/format';
 import { cn } from '@/lib/utils';
 import { memo, useEffect, useMemo, useState } from 'react';
+import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 
 export interface MarketRatesTickerProps {
   /** آرایه‌ی نرخ‌ها — همان `MarketRateItem[]` که در همه‌ی صفحات مشترک است. */
@@ -110,14 +111,12 @@ function MarketRatesTickerImpl({
     [rates, maxItems],
   );
 
-  // ساعت زنده برای داشبورد — visibility-aware (tab hidden → pause)
+  // ساعت زنده — visibility-aware (tab hidden → pause)
   const [now, setNow] = useState<string>('');
   useEffect(() => {
-    const update = () => setNow(faTimeFmt.format(new Date()));
-    update();
-    const t = window.setInterval(update, 60_000);
-    return () => window.clearInterval(t);
+    setNow(faTimeFmt.format(new Date()));
   }, []);
+  useVisibilityAwareInterval(() => setNow(faTimeFmt.format(new Date())), 60_000);
 
   // empty state فقط وقتی داده‌ای نیست و showEmptyState فعال است
   if (items.length === 0) {

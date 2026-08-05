@@ -19,6 +19,8 @@ import BillingHistory from './_components/BillingHistory';
 import PlanPicker from './_components/PlanPicker';
 import s from './subscription.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 export const metadata: Metadata = {
   title: 'حساب کاربری | داشبورد',
 };
@@ -213,13 +215,13 @@ export default async function AccountPage() {
         {[
           {
             icon: <FileText size={16} />,
-            value: new Intl.NumberFormat('fa-IR').format(published),
+            value: _faNum.format(published),
             label: 'منتشر شده',
             color: 'brand',
           },
           {
             icon: <FileText size={16} />,
-            value: new Intl.NumberFormat('fa-IR').format(drafts),
+            value: _faNum.format(drafts),
             label: 'پیش‌نویس',
             color: 'amber',
           },
@@ -328,9 +330,9 @@ export default async function AccountPage() {
               { term: 'وضعیت', def: 'فعال' },
               {
                 term: 'پست منتشر شده',
-                def: `${new Intl.NumberFormat('fa-IR').format(published)} پست`,
+                def: `${_faNum.format(published)} پست`,
               },
-              { term: 'پیش‌نویس', def: `${new Intl.NumberFormat('fa-IR').format(drafts)} پست` },
+              { term: 'پیش‌نویس', def: `${_faNum.format(drafts)} پست` },
               { term: 'تاریخ عضویت', def: joinedAt },
             ].map(({ term, def, ltr }) => (
               <div key={term} className={s.detailRow}>

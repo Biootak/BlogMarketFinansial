@@ -92,6 +92,9 @@ interface Props {
   currentUserId: string;
 }
 
+// ─── Module-level Intl singleton — created once at module load
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 // ─── Constants ──────────────────────────────────────────────────────────────
 
 const ROLE_LABELS: Record<string, string> = {
@@ -289,7 +292,7 @@ export function UsersClient({
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'کاربران' }]}
         eyebrow="مدیریت"
         title="کاربران"
-        description={`${new Intl.NumberFormat('fa-IR').format(totalCount)} کاربر در سیستم`}
+        description={`${_faNum.format(totalCount)} کاربر در سیستم`}
         icon="users"
         accent="indigo"
         actions={
@@ -328,7 +331,7 @@ export function UsersClient({
               <Icon className="size-4" />
             </span>
             <span className={`${s.kpiVal} ${cls}`}>
-              {new Intl.NumberFormat('fa-IR').format(value)}
+              {_faNum.format(value)}
             </span>
             <span className={s.kpiLabel}>{label}</span>
           </div>
@@ -492,8 +495,8 @@ export function UsersClient({
         {/* Footer */}
         <div className={s.tableFoot}>
           <span className={s.footCount}>
-            {new Intl.NumberFormat('fa-IR').format(users.length)} از{' '}
-            {new Intl.NumberFormat('fa-IR').format(totalCount)} کاربر
+            {_faNum.format(users.length)} از{' '}
+            {_faNum.format(totalCount)} کاربر
           </span>
           {totalPages > 1 && (
             <nav className={s.pagination} aria-label="صفحه‌بندی">
@@ -506,8 +509,8 @@ export function UsersClient({
                 قبلی
               </button>
               <span className={s.pageInfo}>
-                {new Intl.NumberFormat('fa-IR').format(currentPage)} /{' '}
-                {new Intl.NumberFormat('fa-IR').format(totalPages)}
+                {_faNum.format(currentPage)} /{' '}
+                {_faNum.format(totalPages)}
               </span>
               <button
                 type="button"

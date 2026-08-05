@@ -26,6 +26,8 @@ import {
 import Link from 'next/link';
 import s from './AboutView.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 type Props = {
   exchange: {
     name: string;
@@ -118,7 +120,7 @@ export default function AboutView({ exchange }: Props) {
                 <span className={s.heroMetaItem}>
                   <CalendarDays size={12} strokeWidth={1.9} aria-hidden />
                   {yearsActive > 0
-                    ? `${new Intl.NumberFormat('fa-IR').format(yearsActive)} سال سابقه`
+                    ? `${_faNum.format(yearsActive)} سال سابقه`
                     : 'صرافی تازه‌تأسیس'}
                 </span>
               </div>
@@ -133,7 +135,7 @@ export default function AboutView({ exchange }: Props) {
               <Users size={18} strokeWidth={1.6} />
             </span>
             <span className={s.kpiValue}>
-              {new Intl.NumberFormat('fa-IR').format(exchange._count.Customer)}
+              {_faNum.format(exchange._count.Customer)}
             </span>
             <span className={s.kpiLabel}>مشتری ثبت‌شده</span>
           </article>
@@ -142,7 +144,7 @@ export default function AboutView({ exchange }: Props) {
               <Wallet size={18} strokeWidth={1.6} />
             </span>
             <span className={s.kpiValue}>
-              {new Intl.NumberFormat('fa-IR').format(exchange._count.Transaction)}
+              {_faNum.format(exchange._count.Transaction)}
             </span>
             <span className={s.kpiLabel}>تراکنش انجام‌شده</span>
           </article>
@@ -204,7 +206,7 @@ export default function AboutView({ exchange }: Props) {
                 <div>
                   <p className={s.signalTitle}>
                     {yearsActive > 0
-                      ? `${new Intl.NumberFormat('fa-IR').format(yearsActive)} سال تجربه`
+                      ? `${_faNum.format(yearsActive)} سال تجربه`
                       : 'صرافی تازه‌تأسیس'}
                   </p>
                   <p className={s.signalDesc}>

@@ -18,6 +18,9 @@
 import { useCallback, useState } from 'react';
 import s from './CurrencyConstellation.module.css';
 
+// Module-level Intl singleton — created once at module load
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 interface PnLByCurrency {
   currency: string;
   totalVolume: number;
@@ -344,7 +347,7 @@ export default function CurrencyConstellation({ pnlByCurrency, totalDeals }: Pro
                 <div className={s.tooltipRow}>
                   <dt className={s.tooltipKey}>معاملات</dt>
                   <dd className={s.tooltipVal}>
-                    {new Intl.NumberFormat('fa-IR').format(tooltipData.dealCount)}
+                    {_faNum.format(tooltipData.dealCount)}
                   </dd>
                 </div>
                 <div className={s.tooltipRow}>

@@ -10,6 +10,8 @@ import type { KindMix } from '@/actions/exchange-dashboard';
 import { TX_KIND_COLOR, TX_KIND_FA } from '@/lib/exchange-labels';
 import s from './ExchangeDashboard.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 function buildConicStops(items: { share: number; kind: string }[]): string {
   // آیتم‌ها به ترتیب داده شده، share مجموع = 1 (normalize می‌کنیم)
   const total = items.reduce((s, it) => s + it.share, 0);
@@ -73,7 +75,7 @@ export default function ExchangeTransactionMix({ items }: { items: KindMix[] }) 
                   {TX_KIND_FA[it.kind as keyof typeof TX_KIND_FA] ?? it.kind}
                 </span>
                 <span className={s.mixCount} dir="ltr">
-                  {new Intl.NumberFormat('fa-IR').format(it.count)} · {formatPercent(it.share)}
+                  {_faNum.format(it.count)} · {formatPercent(it.share)}
                 </span>
               </div>
             );

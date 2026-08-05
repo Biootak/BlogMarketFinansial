@@ -13,6 +13,8 @@ import { Calendar, ChevronLeft, FileText, Hash, Receipt } from 'lucide-react';
 import { useState } from 'react';
 import s from './BillingHistory.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 interface Event {
   id: string;
   kind: string;
@@ -73,7 +75,7 @@ function fmtAmount(amount: string, currency: string): string {
       minimumFractionDigits: 0,
     }).format(num);
   } catch {
-    return `${new Intl.NumberFormat('fa-IR').format(num)} ${currency}`;
+    return `${_faNum.format(num)} ${currency}`;
   }
 }
 

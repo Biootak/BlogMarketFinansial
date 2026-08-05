@@ -31,6 +31,8 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useRef, useState } from 'react';
 import s from './OperationsWorkspace.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 const KNOWN_CURRENCIES = [
   { code: 'AFN', label: 'افغانی' },
   { code: 'USD', label: 'دلار' },
@@ -266,7 +268,7 @@ export default function OperationsWorkspace({ exchange, canEdit }: Props) {
           <div className={s.limitHero}>
             <div className={s.limitDisplay}>
               <span className={s.limitAmount}>
-                {new Intl.NumberFormat('fa-IR').format(dailyLimit)}
+                {_faNum.format(dailyLimit)}
               </span>
               <span className={s.limitUnit}>{primaryCurrency} / روز</span>
             </div>
@@ -328,7 +330,7 @@ export default function OperationsWorkspace({ exchange, canEdit }: Props) {
                 onClick={() => setDailyLimit(v)}
                 disabled={!canEdit}
               >
-                {new Intl.NumberFormat('fa-IR').format(v)}
+                {_faNum.format(v)}
               </button>
             ))}
           </div>
@@ -395,7 +397,7 @@ export default function OperationsWorkspace({ exchange, canEdit }: Props) {
                 ارزهای قابل معامله
               </span>
               <span className={s.currenciesCount}>
-                {new Intl.NumberFormat('fa-IR').format(allowedCurrencies.length)} ارز
+                {_faNum.format(allowedCurrencies.length)} ارز
               </span>
             </div>
 

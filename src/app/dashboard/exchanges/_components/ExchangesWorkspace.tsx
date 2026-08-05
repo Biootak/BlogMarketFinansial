@@ -81,7 +81,8 @@ function seedSeries(seed: number, length = 14): number[] {
   return out;
 }
 
-const fmt = (n: number) => new Intl.NumberFormat('fa-IR').format(n);
+const _faNum = new Intl.NumberFormat('fa-IR');
+const fmt = (n: number) => _faNum.format(n);
 
 function relativeTime(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;

@@ -145,6 +145,15 @@ export default function HeroVisual({
   const card1 = useGlassTilt(5);
   const card2 = useGlassTilt(4);
 
+  // M11-pattern: freshness با Date.now() در رندر محاسبه می‌شد که بین سرور و
+  // کلاینت mismatch هیدریشن می‌داد. فقط بعد از mount محاسبه می‌شود.
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const freshnessLabel = isMounted ? formatFreshnessFa(freshnessAnchor) : '';
+
   const usdToAfnFormatted =
     usdToAfn !== null && Number.isFinite(usdToAfn) ? FA_USD_TO_AFN.format(usdToAfn) : null;
 
@@ -583,7 +592,7 @@ export default function HeroVisual({
             <p className={s.cardNote}>
               آخرین به‌روزرسانی
               <br />
-              <strong className={s.cardNoteStrong}>{formatFreshnessFa(freshnessAnchor)}</strong>
+              <strong className={s.cardNoteStrong}>{freshnessLabel}</strong>
             </p>
             <div className={s.uptimeBar} aria-hidden>
               <div className={s.uptimeFill} />

@@ -1022,6 +1022,14 @@ function ListItem({
   const postLink = getPostLink(post.postType, post.slug);
   const reading = readingMin(post.excerpt);
 
+  // M11-pattern: relTime از Date.now() استفاده می‌کند؛ در هیدریشن (زمان
+  // سرور ≠ کلاینت) mismatch می‌داد. فقط بعد از mount مقدار واقعی را نشان بده.
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  const timeLabel = isMounted ? relTime(post.createdAt) : '';
+
   return (
     <motion.div
       ref={ref}
@@ -1100,7 +1108,7 @@ function ListItem({
               </span>
             )}
             <span className="text-neutral-500 dark:text-neutral-500 tabular-nums">
-              {relTime(post.createdAt)}
+              {timeLabel}
             </span>
           </div>
 

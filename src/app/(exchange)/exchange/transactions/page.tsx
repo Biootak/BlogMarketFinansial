@@ -11,6 +11,8 @@ import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import TransactionsWorkspace from './_components/TransactionsWorkspace';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 export const metadata: Metadata = { title: 'تراکنش‌های صرافی' };
 
 export default async function TransactionsPage() {
@@ -31,7 +33,7 @@ export default async function TransactionsPage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-5)' }}>
         <PageHeader
           title="تراکنش‌ها"
-          description={`مجموع ${new Intl.NumberFormat('fa-IR').format(txResult.total)} تراکنش`}
+          description={`مجموع ${_faNum.format(txResult.total)} تراکنش`}
           breadcrumb={[{ label: 'پنل صرافی' }, { label: 'تراکنش‌ها' }]}
         />
         <TransactionsWorkspace

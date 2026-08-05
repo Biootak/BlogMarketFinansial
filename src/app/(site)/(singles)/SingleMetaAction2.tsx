@@ -18,7 +18,7 @@ import { getPostLink } from '@/lib/getPostLink';
 import { AnimatePresence, motion } from '@/lib/motion-shim';
 import type { PostWithRelations } from '@/types/types';
 import { useSession } from 'next-auth/react';
-import { type FC, forwardRef, useCallback, useState } from 'react';
+import { type FC, forwardRef, useCallback, useEffect, useState } from 'react';
 import { HiExclamationTriangle, HiEyeSlash, HiLink } from 'react-icons/hi2';
 
 export interface SingleMetaAction2Props {
@@ -200,6 +200,11 @@ function BookmarkButton({ postId, initialBookmarked }: BookmarkButtonProps) {
   const [isBookmarked, setIsBookmarked] = useState(initialBookmarked);
   const [isPending, setIsPending] = useState(false);
   const { toast } = useToast();
+
+  // همگام‌سازی با prop — بعد از لاگین/تغییر سشن، مقدار جدید می‌آید
+  useEffect(() => {
+    setIsBookmarked(initialBookmarked);
+  }, [initialBookmarked]);
 
   const handleClick = async () => {
     setIsPending(true);

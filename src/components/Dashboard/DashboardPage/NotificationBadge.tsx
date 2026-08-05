@@ -13,6 +13,9 @@
 
 import { getUnreadNotificationsCount } from '@/actions/notification-actions';
 import { usePathname } from 'next/navigation';
+
+// Module-level Intl singleton — created once at module load
+const _faNum = new Intl.NumberFormat('fa-IR');
 import { useCallback, useEffect, useRef, useState } from 'react';
 import s from './NotificationBadge.module.css';
 
@@ -84,7 +87,7 @@ export function NotificationBadge() {
     <span className={s.wrap}>
       {showPulse && <span className={s.pulse} aria-hidden />}
       <span className="dash-side__notif-badge" aria-label={`${count} اعلان خوانده‌نشده`}>
-        {count > 99 ? '۹۹+' : new Intl.NumberFormat('fa-IR').format(count)}
+        {count > 99 ? '۹۹+' : _faNum.format(count)}
       </span>
     </span>
   );

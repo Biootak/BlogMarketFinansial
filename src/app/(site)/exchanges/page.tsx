@@ -32,6 +32,8 @@ import MarketTape, { type TapeItem } from './_components/MarketTape';
 import TrustStrip from './_components/TrustStrip';
 import s from './exchanges.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 export const revalidate = 60;
 
 export const metadata: Metadata = {
@@ -173,7 +175,7 @@ const getSparkHistoryBatch = safeCache(
 // ─── Pure helpers ───────────────────────────────────────────────────────────
 
 function formatFaCount(n: number): string {
-  return new Intl.NumberFormat('fa-IR').format(n);
+  return _faNum.format(n);
 }
 
 function pickBestBy<T>(arr: T[], key: (t: T) => number, mode: 'min' | 'max'): T | undefined {

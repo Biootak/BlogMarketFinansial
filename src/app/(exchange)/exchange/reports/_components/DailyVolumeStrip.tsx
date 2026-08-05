@@ -6,6 +6,7 @@
  * اگر داده کمتر از ۷ باشد، بقیه cell ها empty هستند.
  */
 
+import { formatFaNumber } from '@/lib/fa-number';
 import s from './DailyVolumeStrip.module.css';
 
 export interface DailyBucket {
@@ -19,14 +20,16 @@ interface Props {
   currency: string;
 }
 
-const fmtCompact = (v: number): string =>
-  new Intl.NumberFormat('fa-IR', {
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  }).format(v);
+// Module-level singletons — created once, never per call
+const _faCompact = new Intl.NumberFormat('fa-IR', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
+const _faDayFmt = new Intl.DateTimeFormat('fa-IR', { weekday: 'short' });
 
-const fmtDay = (d: Date): string =>
-  new Intl.DateTimeFormat('fa-IR', { weekday: 'short' }).format(new Date(d));
+const fmtCompact = (v: number): string => _faCompact.format(v);
+
+const fmtDay = (d: Date): string => _faDayFmt.format(new Date(d));
 
 export default function DailyVolumeStrip({ buckets, currency }: Props) {
   if (buckets.length === 0) {
@@ -65,7 +68,7 @@ export default function DailyVolumeStrip({ buckets, currency }: Props) {
           </span>
           <span className={s.metaItem}>
             <span className={s.metaLabel}>معاملات</span>
-            <span className={s.metaValue}>{new Intl.NumberFormat('fa-IR').format(totalDeals)}</span>
+            <span className={s.metaValue}>{formatFaNumber(totalDeals)}</span>
           </span>
         </div>
       </header>
@@ -98,7 +101,7 @@ export default function DailyVolumeStrip({ buckets, currency }: Props) {
               </div>
               <span className={s.dayLabel}>{day}</span>
               <span className={s.dealCount}>
-                {new Intl.NumberFormat('fa-IR').format(bucket.dealCount)}
+                {formatFaNumber(bucket.dealCount)}
               </span>
             </div>
           );

@@ -11,7 +11,8 @@
  */
 
 import { Calendar, Clock4, Moon, Sun } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
+import { useState } from 'react';
 import s from './WorkingHoursStrip.module.css';
 
 type HoursValue = { open: string; close: string; closed: boolean };
@@ -99,10 +100,8 @@ function getStatus(
 
 export default function WorkingHoursStrip({ hours, timezone = 'Asia/Tehran' }: Props) {
   const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 30_000);
-    return () => clearInterval(id);
-  }, []);
+  // کلاک ۳۰ ثانیه‌ای — در تب مخفی pause می‌شود
+  useVisibilityAwareInterval(() => setNow(new Date()), 30_000);
 
   // current minutes-of-day in the given timezone
   const [hh, mm] = timeFmt(timezone)

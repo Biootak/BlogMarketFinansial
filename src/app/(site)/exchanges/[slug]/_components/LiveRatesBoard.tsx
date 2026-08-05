@@ -22,6 +22,8 @@ import { useMemo, useState } from 'react';
 import s from './LiveRatesBoard.module.css';
 import Sparkline from './Sparkline';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 type RateRow = {
   currencyCode: string;
   currencyPair: string;
@@ -126,7 +128,7 @@ export default function LiveRatesBoard({ rates }: Props) {
               <span className={s.eyebrowSep} aria-hidden>
                 ·
               </span>
-              <span>{new Intl.NumberFormat('fa-IR').format(rates.length)} ارز فعال</span>
+              <span>{_faNum.format(rates.length)} ارز فعال</span>
             </div>
             <h2 className={s.title}>نرخ خرید و فروش لحظه‌ای</h2>
             <p className={s.sub}>

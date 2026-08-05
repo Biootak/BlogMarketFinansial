@@ -28,6 +28,9 @@ import {
 import { useState, useTransition } from 'react';
 import s from './CreditRates.module.css';
 
+// Module-level Intl singleton — created once at module load
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 interface Props {
   initialBanks: BankRow[];
   initialRates: CreditRateRow[];
@@ -70,7 +73,7 @@ export default function CreditRatesClient({
   });
 
   const fmtCents = (cents: number) =>
-    new Intl.NumberFormat('fa-IR').format(cents / 100);
+    _faNum.format(cents / 100);
 
   const handleBankSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

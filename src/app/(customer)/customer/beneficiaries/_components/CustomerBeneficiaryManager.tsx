@@ -47,6 +47,8 @@ import {
 import { useCallback, useMemo, useState, useTransition } from 'react';
 import s from './CustomerBeneficiaryManager.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 type ModalState =
   | { type: 'none' }
   | { type: 'create' }
@@ -209,13 +211,13 @@ export function CustomerBeneficiaryManager({ initialBeneficiaries }: Props) {
           <div className={s.statsStrip}>
             <div className={s.statChip}>
               <Users size={12} aria-hidden />
-              <span>{new Intl.NumberFormat('fa-IR').format(rows.length)} مخاطب</span>
+              <span>{_faNum.format(rows.length)} مخاطب</span>
             </div>
             {search && filtered.length !== rows.length && (
               <div className={s.statChipStat}>
                 <span>
-                  {new Intl.NumberFormat('fa-IR').format(filtered.length)} نتیجه از{' '}
-                  {new Intl.NumberFormat('fa-IR').format(rows.length)}
+                  {_faNum.format(filtered.length)} نتیجه از{' '}
+                  {_faNum.format(rows.length)}
                 </span>
               </div>
             )}

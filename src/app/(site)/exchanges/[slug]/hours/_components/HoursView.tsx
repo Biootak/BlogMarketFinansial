@@ -10,8 +10,11 @@
  */
 
 import { Calendar, Clock4, Moon, Sun } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
+import { useState } from 'react';
 import s from './HoursView.module.css';
+
+const _faNum = new Intl.NumberFormat('fa-IR');
 
 type HoursValue = { open: string; close: string; closed: boolean };
 type HoursMap = Record<string, HoursValue>;
@@ -100,10 +103,8 @@ function formatFaTime(t: string): string {
 
 export default function HoursView({ exchange, hours, timezone = 'Asia/Tehran' }: Props) {
   const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 30_000);
-    return () => clearInterval(id);
-  }, []);
+  // کلاک ۳۰ ثانیه‌ای — در تب مخفی pause می‌شود
+  useVisibilityAwareInterval(() => setNow(new Date()), 30_000);
 
   const [hh, mm] = timeFmt(timezone)
     .formatToParts(now)
@@ -149,14 +150,14 @@ export default function HoursView({ exchange, hours, timezone = 'Asia/Tehran' }:
           <div className={s.statCard}>
             <span className={s.statLabel}>روزهای فعال در هفته</span>
             <span className={s.statValue}>
-              {new Intl.NumberFormat('fa-IR').format(openDays)}
+              {_faNum.format(openDays)}
               <span className={s.statUnit}>/۷ روز</span>
             </span>
           </div>
           <div className={s.statCard}>
             <span className={s.statLabel}>مجموع ساعت کاری</span>
             <span className={s.statValue}>
-              {new Intl.NumberFormat('fa-IR').format(Math.round(totalOpenHours))}
+              {_faNum.format(Math.round(totalOpenHours))}
               <span className={s.statUnit}>ساعت</span>
             </span>
           </div>
@@ -164,7 +165,7 @@ export default function HoursView({ exchange, hours, timezone = 'Asia/Tehran' }:
             <span className={s.statLabel}>میانگین روزانه</span>
             <span className={s.statValue}>
               {openDays > 0
-                ? new Intl.NumberFormat('fa-IR').format(
+                ? _faNum.format(
                     Math.round((totalOpenHours / openDays) * 10) / 10,
                   )
                 : '۰'}

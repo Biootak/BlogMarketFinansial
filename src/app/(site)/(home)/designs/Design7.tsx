@@ -42,6 +42,7 @@ import {
 import { Tag as TagIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 import CompactRateBridge from './CompactRateBridge';
 import MagneticSpotlightCard from './MagneticSpotlightCard';
 import { getCategoryTheme } from './categoryTheme';
@@ -61,14 +62,11 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
   const postsLengthRef = useRef(initialPosts.length);
   postsLengthRef.current = initialPosts.length;
 
-  // Auto-slide
-  useEffect(() => {
-    if (isPaused || initialPosts.length <= 1) return;
-    const timer = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % initialPosts.length);
-    }, AUTO_PLAY_INTERVAL);
-    return () => clearInterval(timer);
-  }, [isPaused, initialPosts.length]);
+  // Auto-slide — visibility-aware (تب مخفی pause می‌شود)
+  const slideEnabled = !isPaused && initialPosts.length > 1;
+  useVisibilityAwareInterval(() => {
+    setActiveIndex((prev) => (prev + 1) % initialPosts.length);
+  }, slideEnabled ? AUTO_PLAY_INTERVAL : 0);
 
   const goNext = useCallback(() => {
     setActiveIndex((prev) => (prev + 1) % postsLengthRef.current);

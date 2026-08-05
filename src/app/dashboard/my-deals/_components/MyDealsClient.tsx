@@ -92,12 +92,15 @@ type StatusFilter = (typeof STATUS_FILTERS)[number];
 
 const PAGE_LIMIT = 12;
 
+// ─── Module-level Intl singleton — created once at module load
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 // ─── Formatters ──────────────────────────────────────────────────────────────
 
 function fmtAmount(amount: string, currency: string): string {
   const n = Number(amount);
   if (Number.isNaN(n)) return `${amount} ${currency}`;
-  return `${new Intl.NumberFormat('fa-IR').format(n)} ${currency}`;
+  return `${_faNum.format(n)} ${currency}`;
 }
 
 function fmtDate(date: Date | string): string {
@@ -302,7 +305,7 @@ export default function MyDealsClient() {
           loading
             ? 'در حال بارگذاری…'
             : total > 0
-              ? `${new Intl.NumberFormat('fa-IR').format(total)} معامله ثبت‌شده`
+              ? `${_faNum.format(total)} معامله ثبت‌شده`
               : 'تاریخچه معاملات ارزی شما با صرافی‌های پلتفرم'
         }
         actions={
@@ -321,7 +324,7 @@ export default function MyDealsClient() {
               <Wallet size={16} />
             </div>
             <div className={s.kpiBody}>
-              <span className={s.kpiVal}>{new Intl.NumberFormat('fa-IR').format(total)}</span>
+              <span className={s.kpiVal}>{_faNum.format(total)}</span>
               <span className={s.kpiLabel}>کل معاملات</span>
             </div>
           </div>
@@ -331,7 +334,7 @@ export default function MyDealsClient() {
               <Clock size={16} />
             </div>
             <div className={s.kpiBody}>
-              <span className={s.kpiVal}>{new Intl.NumberFormat('fa-IR').format(kpi.pending)}</span>
+              <span className={s.kpiVal}>{_faNum.format(kpi.pending)}</span>
               <span className={s.kpiLabel}>در انتظار</span>
             </div>
           </div>
@@ -342,7 +345,7 @@ export default function MyDealsClient() {
             </div>
             <div className={s.kpiBody}>
               <span className={s.kpiVal}>
-                {new Intl.NumberFormat('fa-IR').format(kpi.completed)}
+                {_faNum.format(kpi.completed)}
               </span>
               <span className={s.kpiLabel}>تکمیل شده</span>
             </div>
@@ -379,7 +382,7 @@ export default function MyDealsClient() {
                 {f === 'ALL' ? 'همه' : (STATUS_META[f]?.label ?? f)}
                 {count > 0 && (
                   <span className={s.filterCount}>
-                    {new Intl.NumberFormat('fa-IR').format(count)}
+                    {_faNum.format(count)}
                   </span>
                 )}
               </button>
@@ -511,8 +514,8 @@ export default function MyDealsClient() {
             ›
           </button>
           <span className={s.pageInfo}>
-            {new Intl.NumberFormat('fa-IR').format(page)} از{' '}
-            {new Intl.NumberFormat('fa-IR').format(totalPages)}
+            {_faNum.format(page)} از{' '}
+            {_faNum.format(totalPages)}
           </span>
           <button
             type="button"

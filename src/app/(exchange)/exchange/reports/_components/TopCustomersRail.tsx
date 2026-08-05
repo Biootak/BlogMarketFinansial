@@ -8,6 +8,9 @@
 import { Crown, UserCircle2 } from 'lucide-react';
 import s from './TopCustomersRail.module.css';
 
+// Module-level Intl singleton — created once at module load
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 export interface TopCustomer {
   id: string;
   name: string;
@@ -49,7 +52,7 @@ export default function TopCustomersRail({ customers }: Props) {
           const initial = c.name.charAt(0).toUpperCase();
           return (
             <li key={c.id} className={s.row} style={{ '--i': i } as React.CSSProperties}>
-              <span className={s.rank}>{new Intl.NumberFormat('fa-IR').format(i + 1)}</span>
+              <span className={s.rank}>{_faNum.format(i + 1)}</span>
               <span className={s.avatar} aria-hidden>
                 {initial || <UserCircle2 size={12} />}
               </span>
@@ -65,7 +68,7 @@ export default function TopCustomersRail({ customers }: Props) {
                 </div>
                 <div className={s.bodyFoot}>
                   <span className={s.dealCount}>
-                    {new Intl.NumberFormat('fa-IR').format(c.dealCount)} معامله
+                    {_faNum.format(c.dealCount)} معامله
                   </span>
                   <span className={s.share}>
                     {new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 1 }).format(ratio)}٪

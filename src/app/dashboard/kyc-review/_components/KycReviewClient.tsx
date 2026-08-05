@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/dialog';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
+import { formatFaNumber } from '@/lib/fa-number';
 import { cn } from '@/lib/utils';
 import {
   AlertCircle,
@@ -355,7 +356,7 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
           <span>کاربران پلتفرم</span>
           {rows.length > 0 && (
             <span className={s.scopeTabCount}>
-              {new Intl.NumberFormat('fa-IR').format(rows.length)}
+              {formatFaNumber(rows.length)}
             </span>
           )}
         </button>
@@ -370,7 +371,7 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
           <span>مشتریان صرافی‌ها</span>
           {customerRows.length > 0 && (
             <span className={s.scopeTabCount}>
-              {new Intl.NumberFormat('fa-IR').format(customerRows.length)}
+              {formatFaNumber(customerRows.length)}
             </span>
           )}
         </button>
@@ -391,7 +392,7 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
                 <span className={s.kpiIcon}>{item.icon}</span>
               </div>
               <span className={s.kpiValue}>
-                {new Intl.NumberFormat('fa-IR').format(item.value)}
+                {formatFaNumber(item.value)}
               </span>
               <span className={s.kpiLabel}>{item.label}</span>
             </div>
@@ -404,7 +405,7 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
         <div className={s.queueBar} role="status">
           <span className={s.queueBarDot} aria-hidden />
           <span className={s.queueBarText}>
-            {new Intl.NumberFormat('fa-IR').format(urgentCount)} درخواست بیش از ۲ روز در صف انتظار
+            {formatFaNumber(urgentCount)} درخواست بیش از ۲ روز در صف انتظار
             است — بررسی فوری توصیه می‌شود
           </span>
         </div>
@@ -529,7 +530,7 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
                           disabled={docs === 0}
                         >
                           <Eye size={12} aria-hidden />
-                          {new Intl.NumberFormat('fa-IR').format(docs)} مدرک
+                          {formatFaNumber(docs)} مدرک
                         </button>
                       </td>
 

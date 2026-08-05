@@ -38,6 +38,8 @@ import {
 } from 'react-icons/hi2';
 import { formatRelativeFa } from '../utils';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 /** ActivityItem = alias for ActivityEntry so callers can import either */
 export type ActivityItem = ActivityEntry;
 
@@ -274,5 +276,5 @@ export default function AtelierActivity({ items }: AtelierActivityProps) {
 // Helper to format Persian numerals — re-exported from utils inline to avoid
 // a circular import in test files.
 function fmt(n: number): string {
-  return new Intl.NumberFormat('fa-IR').format(n);
+  return _faNum.format(n);
 }

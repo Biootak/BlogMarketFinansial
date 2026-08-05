@@ -6,7 +6,7 @@ import { motion } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
 import { Check } from 'lucide-react';
 import type React from 'react';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { Icon } from '../ui/icon';
 
 export interface NcBookmarkProps {
@@ -25,6 +25,12 @@ const NcBookmark: React.FC<NcBookmarkProps> = ({
   const [isBookmarked, setIsBookmarked] = useState(initialBookmarked);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+
+  // همگام‌سازی با prop — بعد از لاگین/تغییر سشن، parent مقدار جدید
+  // initialBookmarked می‌دهد؛ بدون این، state محلی کهنه می‌ماند.
+  useEffect(() => {
+    setIsBookmarked(initialBookmarked);
+  }, [initialBookmarked]);
 
   const handleClick = () => {
     startTransition(async () => {

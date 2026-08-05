@@ -10,13 +10,16 @@ import { Check } from 'lucide-react';
 import Link from 'next/link';
 import s from './ExchangeDashboard.module.css';
 
+// Module-level Intl singleton — created once at module load
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 function formatAge(minutes: number): string {
   if (minutes < 1) return 'لحظاتی پیش';
-  if (minutes < 60) return `${new Intl.NumberFormat('fa-IR').format(minutes)} دقیقه`;
+  if (minutes < 60) return `${_faNum.format(minutes)} دقیقه`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${new Intl.NumberFormat('fa-IR').format(hours)} ساعت`;
+  if (hours < 24) return `${_faNum.format(hours)} ساعت`;
   const days = Math.floor(hours / 24);
-  return `${new Intl.NumberFormat('fa-IR').format(days)} روز`;
+  return `${_faNum.format(days)} روز`;
 }
 
 function formatAmount(amountStr: string, currency: string): string {

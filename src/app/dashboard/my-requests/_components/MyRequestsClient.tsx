@@ -29,6 +29,13 @@ import {
 import { GeometricField } from '@/components/Dashboard/primitives/GeometricAccent';
 import { MillionDollarEmpty, PageHeader, SearchInput, StatCard, StatGrid } from '@/components/Dashboard/primitives';
 import CopyButton from '@/components/fintech/CopyButton';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import {
   AlertCircle,
@@ -57,6 +64,8 @@ import {
 import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import s from './MyRequestsClient.module.css';
+
+const _faNum = new Intl.NumberFormat('fa-IR');
 
 // ─── Types ────────────────────────────────────────────────────────────────── //
 
@@ -162,7 +171,7 @@ const STATUS_GROUP_LABELS: Record<FilterStatus, string> = {
 function formatPersianNumber(value: number | string): string {
   const n = typeof value === 'string' ? Number(value) : value;
   if (Number.isFinite(n)) {
-    return new Intl.NumberFormat('fa-IR').format(n);
+    return _faNum.format(n);
   }
   return String(value);
 }
@@ -630,37 +639,33 @@ function FilterBar({
 
       <div className={s.filterControls}>
         <div className={s.sortWrap}>
-          <label className={s.sortLabel} htmlFor="my-requests-sort">
-            مرتب:
-          </label>
-          <select
-            id="my-requests-sort"
-            value={sort}
-            onChange={(e) => onSortChange(e.target.value as SortMode)}
-            className={s.sortSelect}
-          >
-            <option value="newest">جدیدترین</option>
-            <option value="oldest">قدیمی‌ترین</option>
-            <option value="amount-desc">بیشترین مبلغ</option>
-            <option value="amount-asc">کمترین مبلغ</option>
-            <option value="urgent">فوری‌ها بالا</option>
-          </select>
+          <span className={s.sortLabel}>مرتب:</span>
+          <Select value={sort} onValueChange={(v) => onSortChange(v as SortMode)}>
+            <SelectTrigger className={s.sortSelect} aria-label="مرتب‌سازی">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">جدیدترین</SelectItem>
+              <SelectItem value="oldest">قدیمی‌ترین</SelectItem>
+              <SelectItem value="amount-desc">بیشترین مبلغ</SelectItem>
+              <SelectItem value="amount-asc">کمترین مبلغ</SelectItem>
+              <SelectItem value="urgent">فوری‌ها بالا</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className={s.sortWrap}>
-          <label className={s.sortLabel} htmlFor="my-requests-group">
-            گروه:
-          </label>
-          <select
-            id="my-requests-group"
-            value={group}
-            onChange={(e) => onGroupChange(e.target.value as GroupMode)}
-            className={s.sortSelect}
-          >
-            <option value="status">وضعیت</option>
-            <option value="service">خدمت</option>
-            <option value="none">بدون گروه</option>
-          </select>
+          <span className={s.sortLabel}>گروه:</span>
+          <Select value={group} onValueChange={(v) => onGroupChange(v as GroupMode)}>
+            <SelectTrigger className={s.sortSelect} aria-label="گروه‌بندی">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="status">وضعیت</SelectItem>
+              <SelectItem value="service">خدمت</SelectItem>
+              <SelectItem value="none">بدون گروه</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

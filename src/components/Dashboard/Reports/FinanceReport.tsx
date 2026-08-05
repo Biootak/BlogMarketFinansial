@@ -46,8 +46,10 @@ import s from './FinanceReport.module.css';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 function fmt(n: number): string {
-  return new Intl.NumberFormat('fa-IR').format(n);
+  return _faNum.format(n);
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────

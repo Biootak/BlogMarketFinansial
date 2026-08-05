@@ -21,6 +21,8 @@ import { Check, CircleDot, Crown, Loader2, Sparkles, X, Zap } from 'lucide-react
 import { useState, useTransition } from 'react';
 import s from './PlanPicker.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 interface Props {
   currentPlan: string;
   planExpiresAt: string | null;
@@ -57,7 +59,7 @@ function fmtPrice(value: number, currency: string): string {
       minimumFractionDigits: 0,
     }).format(num);
   } catch {
-    return `${new Intl.NumberFormat('fa-IR').format(num)} ${currency}`;
+    return `${_faNum.format(num)} ${currency}`;
   }
 }
 

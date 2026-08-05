@@ -41,6 +41,8 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import s from './WalletClient.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 type Account = { id: string; currency: string; balance: string; status: string; type: string };
 type WalletData = {
   customerId: string;
@@ -1052,7 +1054,7 @@ export function WalletClient({ walletData, userRole }: Props) {
           <h2 className={s.txTitle}>تاریخچه تراکنش‌ها</h2>
           {entries.length > 0 && (
             <span className={s.txCount}>
-              {new Intl.NumberFormat('fa-IR').format(entries.length)} مورد
+              {_faNum.format(entries.length)} مورد
             </span>
           )}
         </div>

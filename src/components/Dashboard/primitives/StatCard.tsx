@@ -23,19 +23,22 @@ export interface StatCardProps {
 /**
  * Format a numeric value using the requested locale + notation.
  */
+// Module-level Intl singletons — created once at module load
+const _faNum = new Intl.NumberFormat('fa-IR');
+const _enNum = new Intl.NumberFormat('en-US');
+const _faCompact = new Intl.NumberFormat('fa-IR', { notation: 'compact' });
+const _faPercent = new Intl.NumberFormat('fa-IR', { style: 'percent', maximumFractionDigits: 1 });
+
 const formatValue = (value: number, format: NonNullable<StatCardProps['format']>): string => {
   switch (format) {
     case 'latin':
-      return new Intl.NumberFormat('en-US').format(value);
+      return _enNum.format(value);
     case 'compact':
-      return new Intl.NumberFormat('fa-IR', { notation: 'compact' }).format(value);
+      return _faCompact.format(value);
     case 'percent':
-      return new Intl.NumberFormat('fa-IR', {
-        style: 'percent',
-        maximumFractionDigits: 1,
-      }).format(value / 100);
+      return _faPercent.format(value / 100);
     default:
-      return new Intl.NumberFormat('fa-IR').format(value);
+      return _faNum.format(value);
   }
 };
 

@@ -9,6 +9,8 @@ import prisma from '@/lib/db';
 import { ArrowDownLeft, ArrowUpRight, Wallet } from 'lucide-react';
 import s from './WalletDashboard.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 const CURRENCY_LABELS: Record<string, string> = {
   AFN: 'افغانی',
   USD: 'دلار',
@@ -77,7 +79,7 @@ export default async function WalletDashboard({ userId }: Props) {
                   {CURRENCY_LABELS[acc.currency] ?? acc.currency}
                 </div>
                 <div className={s.accountBalance}>
-                  {new Intl.NumberFormat('fa-IR').format(Number(acc.balance) / 100)}
+                  {_faNum.format(Number(acc.balance) / 100)}
                   <span className={s.accountUnit}>{acc.currency}</span>
                 </div>
               </div>
@@ -91,7 +93,7 @@ export default async function WalletDashboard({ userId }: Props) {
         <h2 className={s.sectionTitle}>
           آخرین تراکنش‌ها
           <span className={s.sectionBadge}>
-            {new Intl.NumberFormat('fa-IR').format(Number(totalAfn) / 100)} AFN
+            {_faNum.format(Number(totalAfn) / 100)} AFN
           </span>
         </h2>
 
@@ -120,7 +122,7 @@ export default async function WalletDashboard({ userId }: Props) {
                     className={`${s.txAmount} ${isCredit ? s.txAmountCredit : s.txAmountDebit}`}
                   >
                     {isCredit ? '+' : '−'}
-                    {new Intl.NumberFormat('fa-IR').format(Number(entry.amount) / 100)}{' '}
+                    {_faNum.format(Number(entry.amount) / 100)}{' '}
                     {entry.currency}
                   </span>
                   <time className={s.txDate} dateTime={entry.createdAt.toISOString()}>

@@ -117,6 +117,9 @@ function riskColorClass(score: number): string {
   return s.riskLow;
 }
 
+// Module-level Intl singleton — created once at module load
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 function formatDate(d: Date | string): string {
   return new Date(d).toLocaleDateString('fa-IR', {
     year: 'numeric',
@@ -127,7 +130,7 @@ function formatDate(d: Date | string): string {
 
 function fmtLimit(val: string | null): string {
   if (!val) return '—';
-  return `${new Intl.NumberFormat('fa-IR').format(Number(val))} ؋`;
+  return `${_faNum.format(Number(val))} ؋`;
 }
 
 /** آواتار رنگی از نام — deterministic از charCode */
@@ -510,7 +513,7 @@ export default function CustomersClient({
       )}
       {total > 0 && (
         <span className={s.totalBadge} aria-live="polite">
-          {new Intl.NumberFormat('fa-IR').format(total)} مشتری
+          {_faNum.format(total)} مشتری
         </span>
       )}
       <Button size="sm" onClick={openAdd}>
@@ -620,7 +623,7 @@ export default function CustomersClient({
                   </div>
                   {/* big number */}
                   <span className={s.kpiValue}>
-                    {new Intl.NumberFormat('fa-IR').format(item.value)}
+                    {_faNum.format(item.value)}
                   </span>
                   {/* label */}
                   <span className={s.kpiLabel}>{item.label}</span>
@@ -868,9 +871,9 @@ export default function CustomersClient({
                 </button>
 
                 <span className={s.pageInfo} aria-live="polite">
-                  صفحه <strong>{new Intl.NumberFormat('fa-IR').format(currentPage)}</strong>
+                  صفحه <strong>{_faNum.format(currentPage)}</strong>
                   {' از '}
-                  {new Intl.NumberFormat('fa-IR').format(totalPages)}
+                  {_faNum.format(totalPages)}
                 </span>
 
                 {/* Page Jump */}

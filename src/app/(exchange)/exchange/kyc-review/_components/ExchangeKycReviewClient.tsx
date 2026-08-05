@@ -30,6 +30,8 @@ import type { CSSProperties } from 'react';
 import { useCallback, useMemo, useState, useTransition } from 'react';
 import s from './ExchangeKycReviewClient.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 export type ExchangeKycRow = {
   id: string;
   customerId: string;
@@ -183,7 +185,7 @@ export function ExchangeKycReviewClient({ records: initial, canWrite, exchangeNa
       <div className={s.kpiStrip} aria-label="خلاصه صف KYC">
         <div className={s.kpiCard} style={{ '--kpi-accent': 'var(--nova-amber)' } as CSSProperties}>
           <span className={s.kpiLabel}>در انتظار بررسی</span>
-          <span className={s.kpiValue}>{new Intl.NumberFormat('fa-IR').format(kpi.total)}</span>
+          <span className={s.kpiValue}>{_faNum.format(kpi.total)}</span>
           <span className={s.kpiSub}>{exchangeName}</span>
         </div>
         <div
@@ -191,12 +193,12 @@ export function ExchangeKycReviewClient({ records: initial, canWrite, exchangeNa
           style={{ '--kpi-accent': 'var(--nova-violet)' } as CSSProperties}
         >
           <span className={s.kpiLabel}>تذکره / کارت ملی</span>
-          <span className={s.kpiValue}>{new Intl.NumberFormat('fa-IR').format(kpi.idCard)}</span>
+          <span className={s.kpiValue}>{_faNum.format(kpi.idCard)}</span>
           <span className={s.kpiSub}>سهم از صف</span>
         </div>
         <div className={s.kpiCard} style={{ '--kpi-accent': 'var(--nova-rose)' } as CSSProperties}>
           <span className={s.kpiLabel}>فوری (بیش از ۲ روز)</span>
-          <span className={s.kpiValue}>{new Intl.NumberFormat('fa-IR').format(kpi.urgent)}</span>
+          <span className={s.kpiValue}>{_faNum.format(kpi.urgent)}</span>
           <span className={s.kpiSub}>اولویت رسیدگی</span>
         </div>
       </div>

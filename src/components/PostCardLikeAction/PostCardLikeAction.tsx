@@ -4,7 +4,7 @@ import { likeItem } from '@/actions/postActions';
 import { motion } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
 import convertNumbThousand from '@/utils/convertNumbThousand';
-import { type FC, useCallback, useState } from 'react';
+import { type FC, useCallback, useEffect, useState } from 'react';
 import { useTransition } from 'react';
 import { Icon } from '../ui/icon';
 
@@ -24,6 +24,13 @@ const PostCardLikeAction: FC<PostCardLikeActionProps> = ({
   const [isLiked, setIsLiked] = useState(initialLiked);
   const [likeCount, setLikeCount] = useState(initialLikeCount);
   const [isPending, startTransition] = useTransition();
+
+  // همگام‌سازی با props — بعد از لاگین/رفرش داده، parent مقادیر جدید
+  // می‌دهد؛ بدون این، state محلی کهنه می‌ماند.
+  useEffect(() => {
+    setIsLiked(initialLiked);
+    setLikeCount(initialLikeCount);
+  }, [initialLiked, initialLikeCount]);
 
   const handleLikeClick = useCallback(() => {
     if (!postId) return;

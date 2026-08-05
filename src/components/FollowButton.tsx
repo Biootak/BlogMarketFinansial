@@ -17,6 +17,11 @@ const FollowButton: FC<FollowButtonProps> = ({
 }) => {
   const [following, setFollowing] = React.useState(isFollowing);
 
+  // همگام‌سازی با prop — بعد از لاگین/تغییر سشن مقدار جدید می‌آید
+  React.useEffect(() => {
+    setFollowing(isFollowing);
+  }, [isFollowing]);
+
   return !following ? (
     <ButtonPrimary
       className={className}

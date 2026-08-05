@@ -28,6 +28,10 @@ const _SPRING_CRITICAL = 2 * Math.sqrt(SPRING_STIFFNESS * 1); // mass = 1
 // rAF interpolation: factor = 1 - exp(-rate * dt)
 const _SPRING_RATE = 14; // tune شده برای حس مشابه framer-motion
 
+// وقتی همه مقادیر spring به این نزدیکیِ صفر برسند، حلقه rAF می‌ایستد.
+// قبل از این، حلقه forever روی 60fps می‌چرخید حتی وقتی کارت idle بود.
+const SETTLE_EPSILON = 0.03;
+
 export function TiltCard({
   children,
   className,
@@ -41,17 +45,20 @@ export function TiltCard({
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const isCoarse = window.matchMedia('(pointer: coarse)').matches;
-    setEnabled(!isCoarse);
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setEnabled(!isCoarse && !reduce);
   }, []);
 
+  // حلقه rAF فقط وقتی اجرا می‌شود که حرکت واقعی وجود داشته باشد:
+  // ورود/خروج/حرکت پوینتر حلقه را start می‌کند؛ وقتی spring به حالت
+  // settle رسید (≈صفر) حلقه متوقف می‌شود. تب مخفی هم pause می‌کند.
   useEffect(() => {
     if (!enabled) return;
     let rafId = 0;
     const tick = () => {
       const s = stateRef.current;
-      // velocity Verlet integration برای spring
-      const ax = -SPRING_STIFFNESS * (s.rx - 0) - SPRING_DAMPING * s.vx;
-      const ay = -SPRING_STIFFNESS * (s.ry - 0) - SPRING_DAMPING * s.vy;
+      const ax = -SPRING_STIFFNESS * s.rx - SPRING_DAMPING * s.vx;
+      const ay = -SPRING_STIFFNESS * s.ry - SPRING_DAMPING * s.vy;
       const dt = 1 / 60;
       s.vx += ax * dt;
       s.vy += ay * dt;
@@ -60,10 +67,48 @@ export function TiltCard({
       if (ref.current) {
         ref.current.style.transform = `perspective(${perspective}px) rotateX(${s.rx.toFixed(3)}deg) rotateY(${s.ry.toFixed(3)}deg)`;
       }
+      const settled =
+        Math.abs(s.rx) < SETTLE_EPSILON &&
+        Math.abs(s.ry) < SETTLE_EPSILON &&
+        Math.abs(s.vx) < SETTLE_EPSILON &&
+        Math.abs(s.vy) < SETTLE_EPSILON;
+      if (settled) {
+        s.rx = 0;
+        s.ry = 0;
+        s.vx = 0;
+        s.vy = 0;
+        if (ref.current) ref.current.style.transform = '';
+        rafId = 0;
+        return;
+      }
       rafId = requestAnimationFrame(tick);
     };
-    rafId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafId);
+    const start = () => {
+      if (rafId === 0) rafId = requestAnimationFrame(tick);
+    };
+    const stop = () => {
+      if (rafId !== 0) {
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+    };
+    const onVisibility = () => (document.hidden ? stop() : start());
+    document.addEventListener('visibilitychange', onVisibility);
+    const el = ref.current;
+    if (el) {
+      el.addEventListener('pointerenter', start);
+      el.addEventListener('pointerleave', start);
+      el.addEventListener('pointermove', start);
+    }
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      if (el) {
+        el.removeEventListener('pointerenter', start);
+        el.removeEventListener('pointerleave', start);
+        el.removeEventListener('pointermove', start);
+      }
+      stop();
+    };
   }, [enabled, perspective]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {

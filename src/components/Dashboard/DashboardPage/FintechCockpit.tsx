@@ -164,6 +164,10 @@ const STATUS_LIVE_LABELS: Record<FintechCockpitLiveService['status'], string> = 
 
 // ─── Helpers ────────────────────────────────────────────────────────────
 
+// Module-level Intl singletons — created once, never per call
+const _faNum = new Intl.NumberFormat('fa-IR');
+const _faCompact = new Intl.NumberFormat('fa-IR', { notation: 'compact', maximumFractionDigits: 1 });
+
 const toMs = (ts: string | number): number => {
   if (typeof ts === 'number') return ts;
   const ms = new Date(ts).getTime();
@@ -173,35 +177,31 @@ const toMs = (ts: string | number): number => {
 const formatRel = (ts: number, now: number): string => {
   const diff = Math.max(0, Math.floor((now - ts) / 1000));
   if (diff < 5) return 'هم اکنون';
-  if (diff < 60) return `${new Intl.NumberFormat('fa-IR').format(diff)} ثانیه پیش`;
-  if (diff < 3600)
-    return `${new Intl.NumberFormat('fa-IR').format(Math.floor(diff / 60))} دقیقه پیش`;
-  if (diff < 86_400)
-    return `${new Intl.NumberFormat('fa-IR').format(Math.floor(diff / 3600))} ساعت پیش`;
-  return `${new Intl.NumberFormat('fa-IR').format(Math.floor(diff / 86_400))} روز پیش`;
+  if (diff < 60) return `${_faNum.format(diff)} ثانیه پیش`;
+  if (diff < 3600) return `${_faNum.format(Math.floor(diff / 60))} دقیقه پیش`;
+  if (diff < 86_400) return `${_faNum.format(Math.floor(diff / 3600))} ساعت پیش`;
+  return `${_faNum.format(Math.floor(diff / 86_400))} روز پیش`;
 };
 
 const formatRelDate = (iso: string | Date): string => {
   const date = typeof iso === 'string' ? new Date(iso) : iso;
   const diffMin = Math.floor((Date.now() - date.getTime()) / 60_000);
   if (diffMin < 1) return 'هم اکنون';
-  if (diffMin < 60) return `${new Intl.NumberFormat('fa-IR').format(diffMin)} دقیقه پیش`;
+  if (diffMin < 60) return `${_faNum.format(diffMin)} دقیقه پیش`;
   const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `${new Intl.NumberFormat('fa-IR').format(diffH)} ساعت پیش`;
+  if (diffH < 24) return `${_faNum.format(diffH)} ساعت پیش`;
   const diffD = Math.floor(diffH / 24);
-  if (diffD < 30) return `${new Intl.NumberFormat('fa-IR').format(diffD)} روز پیش`;
+  if (diffD < 30) return `${_faNum.format(diffD)} روز پیش`;
   return date.toLocaleDateString('fa-IR');
 };
 
-const formatCompactFa = (n: number): string =>
-  new Intl.NumberFormat('fa-IR', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+const formatCompactFa = (n: number): string => _faCompact.format(n);
 
-const formatIntFa = (n: number): string => new Intl.NumberFormat('fa-IR').format(n);
+const formatIntFa = (n: number): string => _faNum.format(n);
 
 const formatCurrency = (n: number, currency: string): string => {
   if (currency === 'AFN') {
-    // AFN: عدد فارسی + " AFN" بعد از عدد (نه «ف» جلوی عدد)
-    return `${new Intl.NumberFormat('fa-IR').format(Math.round(n))} AFN`;
+    return `${_faNum.format(Math.round(n))} AFN`;
   }
   try {
     return new Intl.NumberFormat('en-US', {
@@ -210,7 +210,7 @@ const formatCurrency = (n: number, currency: string): string => {
       maximumFractionDigits: 2,
     }).format(n);
   } catch {
-    return `${new Intl.NumberFormat('fa-IR').format(Math.round(n))} ${currency}`;
+    return `${_faNum.format(Math.round(n))} ${currency}`;
   }
 };
 

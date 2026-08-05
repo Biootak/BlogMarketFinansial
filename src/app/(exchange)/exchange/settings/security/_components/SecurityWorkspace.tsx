@@ -19,6 +19,8 @@ import { ChevronLeft, Clock, KeyRound, ShieldCheck, Users } from 'lucide-react';
 import Link from 'next/link';
 import s from './SecurityWorkspace.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 type StaffRow = {
   id: string;
   exchangeId: string;
@@ -103,7 +105,7 @@ export default function SecurityWorkspace({
                   <span className={s.roleLabel}>{info.label}</span>
                   <span className={s.roleDesc}>{info.desc}</span>
                 </div>
-                <span className={s.roleCount}>{new Intl.NumberFormat('fa-IR').format(count)}</span>
+                <span className={s.roleCount}>{_faNum.format(count)}</span>
               </div>
             );
           })}

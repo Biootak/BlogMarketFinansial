@@ -2,6 +2,8 @@ import { getAllCreditRates } from '@/actions/credit-rates';
 import type { Metadata } from 'next';
 import s from './credit-rates.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 // searchParams (فیلتر بانک) این صفحه را dynamic می‌کند — force-dynamic صریح است.
 export const dynamic = 'force-dynamic';
 
@@ -93,11 +95,11 @@ export default async function CreditRatesPage({
       <div className={s.stats}>
         <div className={s.stat}>
           <span className={s.statLabel}>بانک فعال</span>
-          <span className={s.statValue}>{new Intl.NumberFormat('fa-IR').format(totalBanks)}</span>
+          <span className={s.statValue}>{_faNum.format(totalBanks)}</span>
         </div>
         <div className={s.stat}>
           <span className={s.statLabel}>محصول اعتباری</span>
-          <span className={s.statValue}>{new Intl.NumberFormat('fa-IR').format(totalRates)}</span>
+          <span className={s.statValue}>{_faNum.format(totalRates)}</span>
         </div>
         <div className={s.stat}>
           <span className={s.statLabel}>میانگین حداقل وام</span>

@@ -32,8 +32,11 @@ function fmtCompact(v: number): string {
   }).format(v / 100);
 }
 
+// Module-level Intl singleton — created once at module load
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 function fmtExact(v: number): string {
-  return new Intl.NumberFormat('fa-IR').format(v / 100);
+  return _faNum.format(v / 100);
 }
 
 export default function SettlementWaterfall({

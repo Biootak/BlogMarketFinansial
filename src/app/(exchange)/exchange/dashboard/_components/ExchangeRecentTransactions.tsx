@@ -11,6 +11,8 @@ import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import s from './ExchangeDashboard.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 function formatAmount(amountStr: string, currency: string): string {
   return `${new Intl.NumberFormat('fa-IR', {
     notation: 'compact',
@@ -85,7 +87,7 @@ export default function ExchangeRecentTransactions({
       {transactions.length > limit && (
         <div className={s.recentFooter}>
           <Link href="/exchange/transactions" className={s.recentFooterLink}>
-            مشاهده همه ({new Intl.NumberFormat('fa-IR').format(transactions.length)} تراکنش)
+            مشاهده همه ({_faNum.format(transactions.length)} تراکنش)
             <ChevronLeft size={12} aria-hidden />
           </Link>
         </div>

@@ -47,6 +47,9 @@ type Props = { reviews: FraudRow[] };
 
 type RiskLevel = 'all' | 'high' | 'med' | 'low';
 
+// Module-level Intl singleton — created once at module load
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 function getRiskClass(score: number): string {
   if (score >= 70) return s.riskHigh;
   if (score >= 40) return s.riskMed;
@@ -259,7 +262,7 @@ export function FraudReviewClient({ reviews: initial }: Props) {
       <PageHeader
         variant="compact"
         title="مرکز بررسی تقلب"
-        description={`${new Intl.NumberFormat('fa-IR').format(openCount)} مورد باز در صف`}
+        description={`${_faNum.format(openCount)} مورد باز در صف`}
         eyebrow="فین‌تک — امنیت"
         breadcrumb={[{ href: '/dashboard', label: 'داشبورد' }, { label: 'بررسی تقلب' }]}
         icon="shield-x"
@@ -269,27 +272,27 @@ export function FraudReviewClient({ reviews: initial }: Props) {
       {/* ── KPI Strip ── */}
       <div className={s.kpiStrip}>
         <div className={s.kpiItem}>
-          <span className={s.kpiVal}>{new Intl.NumberFormat('fa-IR').format(openCount)}</span>
+          <span className={s.kpiVal}>{_faNum.format(openCount)}</span>
           <span className={s.kpiLabel}>موارد باز</span>
         </div>
         <div className={s.kpiDivider} aria-hidden />
         <div className={s.kpiItem}>
           <span className={`${s.kpiVal} ${s.kpiHigh}`}>
-            {new Intl.NumberFormat('fa-IR').format(highCount)}
+            {_faNum.format(highCount)}
           </span>
           <span className={s.kpiLabel}>پرریسک ≥۷۰</span>
         </div>
         <div className={s.kpiDivider} aria-hidden />
         <div className={s.kpiItem}>
           <span className={`${s.kpiVal} ${s.kpiMed}`}>
-            {new Intl.NumberFormat('fa-IR').format(medCount)}
+            {_faNum.format(medCount)}
           </span>
           <span className={s.kpiLabel}>متوسط ۴۰–۶۹</span>
         </div>
         <div className={s.kpiDivider} aria-hidden />
         <div className={s.kpiItem}>
           <span className={s.kpiVal}>
-            {new Intl.NumberFormat('fa-IR').format(rows.length - highCount - medCount)}
+            {_faNum.format(rows.length - highCount - medCount)}
           </span>
           <span className={s.kpiLabel}>کم‌ریسک</span>
         </div>

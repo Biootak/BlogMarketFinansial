@@ -35,12 +35,15 @@ type Props = {
   onSelect?: (code: string) => void;
 };
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+const _faNumFrac = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 4 });
+
 const formatFa = (n: number): string => {
   if (!Number.isFinite(n) || n === 0) return '—';
   if (n < 1) {
-    return new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 4 }).format(n);
+    return _faNumFrac.format(n);
   }
-  return new Intl.NumberFormat('fa-IR').format(Math.round(n));
+  return _faNum.format(Math.round(n));
 };
 
 const formatDelta = (n: number): string => {

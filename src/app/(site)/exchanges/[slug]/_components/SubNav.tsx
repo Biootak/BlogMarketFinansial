@@ -14,6 +14,8 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import s from './SubNav.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 type NavItem = {
   key: string;
   label: string;
@@ -183,7 +185,7 @@ export default function SubNav({ exchange }: Props) {
         <div className={s.meta} aria-label="خلاصه">
           <Radio size={12} strokeWidth={1.9} aria-hidden />
           <span className={s.metaNum}>
-            {new Intl.NumberFormat('fa-IR').format(exchange.activeCurrencies)}
+            {_faNum.format(exchange.activeCurrencies)}
           </span>
           <span className={s.metaLabel}>ارز فعال</span>
         </div>

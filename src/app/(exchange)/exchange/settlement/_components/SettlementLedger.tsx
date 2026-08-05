@@ -42,14 +42,16 @@ const STATUS_META: Record<
   CANCELLED: { label: 'لغو شده', tone: 'muted', Icon: Clock },
 };
 
-const fmtNum = (v: number): string =>
-  new Intl.NumberFormat('fa-IR', {
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  }).format(v / 100);
+// Module-level singletons — created once, never per call
+const _faCompact = new Intl.NumberFormat('fa-IR', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
+const _faDateFmt = new Intl.DateTimeFormat('fa-IR', { month: 'short', day: 'numeric' });
 
-const fmtDate = (d: Date): string =>
-  new Intl.DateTimeFormat('fa-IR', { month: 'short', day: 'numeric' }).format(new Date(d));
+const fmtNum = (v: number): string => _faCompact.format(v / 100);
+
+const fmtDate = (d: Date): string => _faDateFmt.format(new Date(d));
 
 export default function SettlementLedger({ entries, currency }: Props) {
   if (entries.length === 0) {

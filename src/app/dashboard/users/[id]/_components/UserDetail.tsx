@@ -45,6 +45,8 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import s from '../user-detail.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 interface Financials {
   virtualCardsCount: number;
   activeCards: number;
@@ -94,7 +96,7 @@ function getInitials(name: string | null | undefined): string {
 }
 
 function formatNumber(n: number): string {
-  return new Intl.NumberFormat('fa-IR').format(n);
+  return _faNum.format(n);
 }
 
 function formatDate(date: Date | string | null): string {

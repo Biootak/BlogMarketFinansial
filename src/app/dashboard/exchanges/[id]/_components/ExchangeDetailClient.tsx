@@ -56,6 +56,8 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
 import s from './ExchangeDetailClient.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 // ─── Label maps ────────────────────────────────────────────────────────────────
 
 const STATUS_LABEL: Record<string, string> = {
@@ -196,7 +198,7 @@ export default function ExchangeDetailClient({
         ].map(({ label, value }, i) => (
           <div key={label} className={s.kpiItem}>
             <span className={s.kpiVal}>
-              {typeof value === 'number' ? new Intl.NumberFormat('fa-IR').format(value) : value}
+              {typeof value === 'number' ? _faNum.format(value) : value}
             </span>
             <span className={s.kpiLabel}>{label}</span>
             {i < 3 && <div className={s.kpiDivider} aria-hidden />}
@@ -345,7 +347,7 @@ export default function ExchangeDetailClient({
               <span className={s.cardHeaderIcon} aria-hidden>
                 <Users size={15} />
               </span>
-              <span>کارمندان ({new Intl.NumberFormat('fa-IR').format(staffList.length)})</span>
+              <span>کارمندان ({_faNum.format(staffList.length)})</span>
               <div className={s.cardHeaderActions}>
                 <Button
                   size="sm"
@@ -508,7 +510,7 @@ export default function ExchangeDetailClient({
                     </div>
                     <span className={s.txKind}>{KIND_FA[tx.kind] ?? tx.kind}</span>
                     <span className={s.txAmount}>
-                      {new Intl.NumberFormat('fa-IR').format(Number(tx.amount) / 100)} {tx.currency}
+                      {_faNum.format(Number(tx.amount) / 100)} {tx.currency}
                     </span>
                     <span
                       className={tx.status === 'COMPLETED' ? s.txStatusCompleted : s.txStatusOther}

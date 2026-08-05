@@ -6,6 +6,8 @@ import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import TransactionsContent from './_components/TransactionsContent';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 export const metadata: Metadata = {
   title: 'تراکنش‌های من',
   description: 'تاریخچه کامل تراکنش‌های ارزی',
@@ -38,7 +40,7 @@ export default async function CustomerTransactionsPage({
     <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)', maxInlineSize: '960px', marginInline: 'auto', inlineSize: '100%' }}>
       <PageHeader
         title="تراکنش‌ها"
-        description={`مجموع ${new Intl.NumberFormat('fa-IR').format(result.total)} تراکنش${accountId ? ' — فیلتر حساب' : ''}`}
+        description={`مجموع ${_faNum.format(result.total)} تراکنش${accountId ? ' — فیلتر حساب' : ''}`}
         breadcrumb={[{ label: 'پورتال مشتری' }, { label: 'تراکنش‌ها' }]}
         icon="arrow-left-right"
       />

@@ -14,6 +14,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 export function useRateLimitFeedback() {
   const [retryAfterSeconds, setRetryAfterSeconds] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -48,7 +50,7 @@ export function useRateLimitFeedback() {
   const isRateLimited = retryAfterSeconds > 0;
 
   const rateLimitMessage = isRateLimited
-    ? `درخواست‌های زیادی ارسال شده — ${new Intl.NumberFormat('fa-IR').format(retryAfterSeconds)} ثانیه دیگر تلاش کنید`
+    ? `درخواست‌های زیادی ارسال شده — ${_faNum.format(retryAfterSeconds)} ثانیه دیگر تلاش کنید`
     : null;
 
   return { isRateLimited, retryAfterSeconds, rateLimitMessage, handleRateLimit };

@@ -32,8 +32,11 @@ interface Tile {
   sub?: string;
 }
 
+// Module-level Intl singleton — created once at module load
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 function formatFaNumber(n: number): string {
-  return new Intl.NumberFormat('fa-IR').format(n);
+  return _faNum.format(n);
 }
 
 function formatCompactNumber(n: number): string {

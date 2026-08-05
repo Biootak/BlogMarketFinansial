@@ -25,6 +25,8 @@ import {
 import Link from 'next/link';
 import s from './ServicesAnalyticsWidget.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 type ServiceCount = { serviceKey: string; serviceName: string; count: number };
 type SourceCount = { source: string; count: number };
 type DayCount = { date: string; count: number };
@@ -121,7 +123,7 @@ export default function ServicesAnalyticsWidget({ summary, exchangeSlug }: Props
                   </span>
                   <span className={s.topName}>{meta?.name ?? svc.serviceName}</span>
                   <span className={s.topCount}>
-                    {new Intl.NumberFormat('fa-IR').format(svc.count)}
+                    {_faNum.format(svc.count)}
                   </span>
                 </li>
               );
@@ -156,7 +158,7 @@ function Metric({
       <span className={s.metricIcon} aria-hidden>
         <Icon size={14} strokeWidth={1.8} />
       </span>
-      <span className={s.metricValue}>{new Intl.NumberFormat('fa-IR').format(value)}</span>
+      <span className={s.metricValue}>{_faNum.format(value)}</span>
       <span className={s.metricLabel}>{label}</span>
     </div>
   );

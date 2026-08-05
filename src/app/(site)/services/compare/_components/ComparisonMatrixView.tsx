@@ -26,6 +26,8 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import s from './ComparisonMatrixView.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 type Props = {
   matrix: ComparisonMatrix;
   initialExchange?: string;
@@ -125,21 +127,21 @@ export default function ComparisonMatrixView({ matrix, initialExchange, initialG
           <div className={s.counters} role="list">
             <div className={s.counter} role="listitem">
               <span className={s.counterValue}>
-                {new Intl.NumberFormat('fa-IR').format(visibleExchanges.length)}
+                {_faNum.format(visibleExchanges.length)}
               </span>
               <span className={s.counterLabel}>صرافی فعال</span>
             </div>
             <span className={s.counterDivider} aria-hidden />
             <div className={s.counter} role="listitem">
               <span className={s.counterValue}>
-                {new Intl.NumberFormat('fa-IR').format(totalServices)}
+                {_faNum.format(totalServices)}
               </span>
               <span className={s.counterLabel}>خدمت</span>
             </div>
             <span className={s.counterDivider} aria-hidden />
             <div className={s.counter} role="listitem">
               <span className={s.counterValue}>
-                {new Intl.NumberFormat('fa-IR').format(fillRate)}٪
+                {_faNum.format(fillRate)}٪
               </span>
               <span className={s.counterLabel}>پوشش</span>
             </div>
@@ -278,10 +280,10 @@ export default function ComparisonMatrixView({ matrix, initialExchange, initialG
                     })}
                   <td className={s.countCell}>
                     <span className={s.countValue}>
-                      {new Intl.NumberFormat('fa-IR').format(ex.serviceCount)}
+                      {_faNum.format(ex.serviceCount)}
                     </span>
                     <span className={s.countLabel}>
-                      از {new Intl.NumberFormat('fa-IR').format(visibleServiceKeys.size)}
+                      از {_faNum.format(visibleServiceKeys.size)}
                     </span>
                   </td>
                 </tr>
@@ -309,10 +311,10 @@ function formatLeadTime(min: number): string {
   if (min < 60) return `${min} دقیقه`;
   if (min < 60 * 24) {
     const hours = Math.floor(min / 60);
-    return `${new Intl.NumberFormat('fa-IR').format(hours)} ساعت`;
+    return `${_faNum.format(hours)} ساعت`;
   }
   const days = Math.floor(min / (60 * 24));
-  return `${new Intl.NumberFormat('fa-IR').format(days)} روز`;
+  return `${_faNum.format(days)} روز`;
 }
 
 /* ── Sub-components ───────────────────────────────────────── */

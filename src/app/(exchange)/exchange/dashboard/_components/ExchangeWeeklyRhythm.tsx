@@ -8,6 +8,8 @@
 import type { DailyPoint } from '@/actions/exchange-dashboard';
 import s from './ExchangeDashboard.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 export default function ExchangeWeeklyRhythm({
   data,
 }: {
@@ -25,7 +27,7 @@ export default function ExchangeWeeklyRhythm({
           return (
             <div key={d.offset} role="listitem" className={s.weekCol}>
               <span className={s.weekCount} dir="ltr">
-                {d.count > 0 ? new Intl.NumberFormat('fa-IR').format(d.count) : '۰'}
+                {d.count > 0 ? _faNum.format(d.count) : '۰'}
               </span>
               <div
                 className={s.weekBar}
@@ -47,11 +49,11 @@ export default function ExchangeWeeklyRhythm({
       </div>
       <div className={s.weekFooter}>
         <span>
-          جمع هفته: <strong dir="ltr">{new Intl.NumberFormat('fa-IR').format(totalCount)}</strong>{' '}
+          جمع هفته: <strong dir="ltr">{_faNum.format(totalCount)}</strong>{' '}
           تراکنش
         </span>
         <span>
-          اوج روز: <strong dir="ltr">{new Intl.NumberFormat('fa-IR').format(maxCount)}</strong>
+          اوج روز: <strong dir="ltr">{_faNum.format(maxCount)}</strong>
         </span>
       </div>
     </div>

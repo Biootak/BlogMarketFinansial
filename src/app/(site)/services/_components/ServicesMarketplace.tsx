@@ -20,6 +20,8 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import s from './ServicesMarketplace.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 type Props = {
   data: MarketplaceRow[];
   initialService?: string;
@@ -151,21 +153,21 @@ export default function ServicesMarketplace({
           <div className={s.counters} role="list">
             <div className={s.counter} role="listitem">
               <span className={s.counterValue}>
-                {new Intl.NumberFormat('fa-IR').format(totalExchanges)}
+                {_faNum.format(totalExchanges)}
               </span>
               <span className={s.counterLabel}>صرافی فعال</span>
             </div>
             <span className={s.counterDivider} aria-hidden />
             <div className={s.counter} role="listitem">
               <span className={s.counterValue}>
-                {new Intl.NumberFormat('fa-IR').format(totalServices)}
+                {_faNum.format(totalServices)}
               </span>
               <span className={s.counterLabel}>خدمت</span>
             </div>
             <span className={s.counterDivider} aria-hidden />
             <div className={s.counter} role="listitem">
               <span className={s.counterValue}>
-                {new Intl.NumberFormat('fa-IR').format(totalMatches)}
+                {_faNum.format(totalMatches)}
               </span>
               <span className={s.counterLabel}>صرافی-خدمت</span>
             </div>
@@ -275,7 +277,7 @@ export default function ServicesMarketplace({
                     {SERVICE_GROUPS[group.key as ExchangeServiceMeta['group']]?.label ?? group.key}
                   </h2>
                   <span className={s.groupCount}>
-                    {new Intl.NumberFormat('fa-IR').format(group.services.length)} خدمت
+                    {_faNum.format(group.services.length)} خدمت
                   </span>
                 </header>
 
@@ -291,7 +293,7 @@ export default function ServicesMarketplace({
                           <div className={s.serviceHeaderText}>
                             <h3 className={s.serviceName}>{row.serviceName}</h3>
                             <p className={s.serviceMeta}>
-                              <span>{new Intl.NumberFormat('fa-IR').format(row.count)} صرافی</span>
+                              <span>{_faNum.format(row.count)} صرافی</span>
                             </p>
                           </div>
                         </header>

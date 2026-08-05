@@ -26,6 +26,8 @@ import s from './ReportsCockpit.module.css';
 import TopCustomersRail, { type TopCustomer } from './TopCustomersRail';
 import TransactionsTable from './TransactionsTable';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 interface ReportLite {
   totalVolume: number;
   totalFee: number;
@@ -144,7 +146,7 @@ export default function ReportsCockpit({ exchangeId, report, txRows, txTotal }: 
             <span className={s.cellUnit}>{primaryCurrency}</span>
           </div>
           <span className={s.cellMeta}>
-            {new Intl.NumberFormat('fa-IR').format(report.totalDeals)} معامله
+            {_faNum.format(report.totalDeals)} معامله
           </span>
         </div>
 
@@ -192,7 +194,7 @@ export default function ReportsCockpit({ exchangeId, report, txRows, txTotal }: 
           </div>
           <div className={s.cellValue}>
             <span className={s.cellNumber}>
-              {new Intl.NumberFormat('fa-IR').format(report.topCustomers.length)}
+              {_faNum.format(report.topCustomers.length)}
             </span>
             <span className={s.cellUnit}>نفر</span>
           </div>
@@ -246,8 +248,8 @@ export default function ReportsCockpit({ exchangeId, report, txRows, txTotal }: 
         {/* summary footer */}
         <footer className={s.txFooter}>
           <span className={s.txFooterItem}>
-            نمایش <strong>{new Intl.NumberFormat('fa-IR').format(txRows.length)}</strong> از{' '}
-            <strong>{new Intl.NumberFormat('fa-IR').format(txTotal)}</strong> رکورد
+            نمایش <strong>{_faNum.format(txRows.length)}</strong> از{' '}
+            <strong>{_faNum.format(txTotal)}</strong> رکورد
           </span>
           <span className={s.txFooterItem}>
             <em className={s.txFooterCurrency}>IRR</em> واحد کارمزد

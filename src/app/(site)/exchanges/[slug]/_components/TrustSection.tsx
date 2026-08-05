@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import s from './TrustSection.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 type Props = {
   exchange: {
     name: string;
@@ -126,7 +128,7 @@ export default function TrustSection({ exchange }: Props) {
                 <div>
                   <p className={s.trustItemTitle}>
                     {yearsActive > 0
-                      ? `${new Intl.NumberFormat('fa-IR').format(yearsActive)} سال سابقه`
+                      ? `${_faNum.format(yearsActive)} سال سابقه`
                       : 'صرافی تازه‌تأسیس'}
                   </p>
                   <p className={s.trustItemDesc}>

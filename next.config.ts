@@ -184,11 +184,7 @@ const nextConfig: NextConfig = {
   // stable) — NOT the alpha version embedded in the Turbopack binary.
   // `next build` uses Turbopack (default since Next.js 16); `build:webpack`
   // is a slow fallback only. This cut production build time materially.
-  turbopack: {
-    resolveAlias: {
-      // Suppress source map warnings from node_modules
-    },
-  },
+  turbopack: {},
 
   images: {
     // 2026-06-27: `images.unsplash.com` resolves to a public IPv6
@@ -379,6 +375,12 @@ const nextConfig: NextConfig = {
   httpAgentOptions: {
     keepAlive: true,
   },
+
+  // 2026-08: logging.fetches — در dev نشان می‌دهد کدام fetch cached است
+  // و کدام شبکه می‌رود. در production فقط خطاها.
+  logging: process.env.NODE_ENV !== 'production'
+    ? { fetches: { fullUrl: true } }
+    : undefined,
 
   // 2026-07-07: `next-auth` beta.25 imports `next/server` without the `.js`
   // extension. When Turbopack externalizes the package, Node's ESM loader

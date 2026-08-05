@@ -68,6 +68,8 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import s from './DeveloperPortalClient.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 // ─── Types ──────────────────────────────────────────────────────────────── //
 
 type ApiKey = {
@@ -801,7 +803,7 @@ export default function DeveloperPortalClient({
 // ─── Sub-components ─────────────────────────────────────────────────────── //
 
 function faNum(n: number): string {
-  return new Intl.NumberFormat('fa-IR').format(n);
+  return _faNum.format(n);
 }
 
 function EmptyHint({

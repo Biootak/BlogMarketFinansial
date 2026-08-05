@@ -53,6 +53,9 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
   const readingMin = getReadingMinutes(post);
 
   // Parallax: rAF-driven smoothing مستقیم روی transform
+  // حلقه فقط وقتی پوینتر روی کارت است اجرا می‌شود و به محض settle شدن
+  // متوقف می‌شود (قبلاً forever با 60fps می‌چرخید — در کنار TiltCard
+  // یعنی ۲ حلقه همزمان روی هر کارت).
   const cardRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLDivElement>(null);
   const stateRef = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
@@ -68,18 +71,56 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
   useEffect(() => {
     if (!parallaxEnabled) return;
     let rafId = 0;
+    const PARALLAX_EPSILON = 0.01;
     const tick = () => {
       const s = stateRef.current;
-      // ease-out toward target (tx, ty)
       s.x += (s.tx - s.x) * 0.12;
       s.y += (s.ty - s.y) * 0.12;
       if (imgRef.current) {
         imgRef.current.style.transform = `translate3d(${(s.x * -8).toFixed(2)}px, ${(s.y * -8).toFixed(2)}px, 0) scale(1.05)`;
       }
+      const settled =
+        Math.abs(s.x - s.tx) < PARALLAX_EPSILON &&
+        Math.abs(s.y - s.ty) < PARALLAX_EPSILON;
+      if (settled) {
+        // اگر به مرکز برگشته، transform را به حالت پایه برمی‌گردانیم؛
+        // اگر hover باشد مقدار فعلی حفظ می‌شود — در هر دو حالت حلقه می‌ایستد.
+        if (s.tx === 0 && s.ty === 0) {
+          if (imgRef.current) imgRef.current.style.transform = 'scale(1.05)';
+        }
+        s.x = s.tx;
+        s.y = s.ty;
+        rafId = 0;
+        return;
+      }
       rafId = requestAnimationFrame(tick);
     };
-    rafId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafId);
+    const start = () => {
+      if (rafId === 0) rafId = requestAnimationFrame(tick);
+    };
+    const stop = () => {
+      if (rafId !== 0) {
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+    };
+    const onVisibility = () => (document.hidden ? stop() : start());
+    document.addEventListener('visibilitychange', onVisibility);
+    const el = cardRef.current;
+    if (el) {
+      el.addEventListener('pointerenter', start);
+      el.addEventListener('pointerleave', start);
+      el.addEventListener('pointermove', start);
+    }
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      if (el) {
+        el.removeEventListener('pointerenter', start);
+        el.removeEventListener('pointerleave', start);
+        el.removeEventListener('pointermove', start);
+      }
+      stop();
+    };
   }, [parallaxEnabled]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {

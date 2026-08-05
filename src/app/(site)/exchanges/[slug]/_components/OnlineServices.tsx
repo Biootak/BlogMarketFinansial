@@ -22,6 +22,8 @@ import { useEffect, useRef, useState } from 'react';
 import ExchangeServiceRequestDialog from './ExchangeServiceRequestDialog';
 import s from './OnlineServices.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 type Props = {
   exchange: {
     id: string;
@@ -214,11 +216,11 @@ export default function OnlineServices({ exchange, services }: Props) {
 
 /** 2026-07-28: format SLA — دقیقه → متن فارسی قابل خواندن */
 function formatLeadTime(min: number): string {
-  if (min < 60) return `${new Intl.NumberFormat('fa-IR').format(min)} دقیقه`;
+  if (min < 60) return `${_faNum.format(min)} دقیقه`;
   if (min < 60 * 24) {
     const hours = Math.floor(min / 60);
-    return `${new Intl.NumberFormat('fa-IR').format(hours)} ساعت`;
+    return `${_faNum.format(hours)} ساعت`;
   }
   const days = Math.floor(min / (60 * 24));
-  return `${new Intl.NumberFormat('fa-IR').format(days)} روز`;
+  return `${_faNum.format(days)} روز`;
 }

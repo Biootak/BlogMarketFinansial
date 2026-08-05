@@ -8,6 +8,8 @@ import type { CustomerSegmentation } from '@/actions/exchange-dashboard';
 import { CUSTOMER_STATUS_FA, CUSTOMER_STATUS_TONE, KYC_LEVEL_FA } from '@/lib/exchange-labels';
 import s from './ExchangeDashboard.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 function formatPercent(share: number): string {
   return new Intl.NumberFormat('fa-IR', { style: 'percent', maximumFractionDigits: 0 }).format(
     share,
@@ -39,7 +41,7 @@ export default function ExchangeCustomerSegmentation({ data }: { data: CustomerS
         <div className={s.segLabel}>
           <span>وضعیت مشتری</span>
           <span dir="ltr" style={{ color: 'var(--at-fg-muted)' }}>
-            {new Intl.NumberFormat('fa-IR').format(total)} نفر
+            {_faNum.format(total)} نفر
           </span>
         </div>
         <div className={s.segBar} role="list">
@@ -67,7 +69,7 @@ export default function ExchangeCustomerSegmentation({ data }: { data: CustomerS
                 <span className={s.segLegendDot} data-tone={tone} aria-hidden />
                 <span className={s.segLegendLabel}>{label}</span>
                 <span className={s.segLegendValue} dir="ltr">
-                  {new Intl.NumberFormat('fa-IR').format(seg.count)} · {formatPercent(seg.share)}
+                  {_faNum.format(seg.count)} · {formatPercent(seg.share)}
                 </span>
               </li>
             );
@@ -98,7 +100,7 @@ export default function ExchangeCustomerSegmentation({ data }: { data: CustomerS
                 <span className={s.segLegendDot} data-tone="kyc" aria-hidden />
                 <span className={s.segLegendLabel}>{KYC_LEVEL_FA[seg.level] ?? seg.level}</span>
                 <span className={s.segLegendValue} dir="ltr">
-                  {new Intl.NumberFormat('fa-IR').format(seg.count)} · {formatPercent(seg.share)}
+                  {_faNum.format(seg.count)} · {formatPercent(seg.share)}
                 </span>
               </li>
             ))}

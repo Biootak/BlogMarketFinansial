@@ -15,6 +15,7 @@
  */
 
 import { AnimatePresence, motion } from '@/lib/motion-shim';
+import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 import { parseRateItem } from '@/lib/rateItem';
 import type { RateItem } from '@/types/types';
 import {
@@ -54,7 +55,6 @@ export default function CompactRateBridge({
 }: CompactRateBridgeProps) {
   const [internalIndex, setInternalIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // isPaused ترکیبی: pause داخلی (hover) + pause خارجی (از parent)
   const effectivePaused = isPaused || externalPaused;
@@ -63,21 +63,12 @@ export default function CompactRateBridge({
   // همه rate ها رو از اول parse کن (memoize)
   const parsedRates = useMemo(() => rates.map(parseRateItem), [rates]);
 
-  // Auto-rotate
-  useEffect(() => {
-    if (!autoRotate || effectivePaused || rates.length <= 1) {
-      return;
-    }
-    intervalRef.current = setInterval(() => {
-      setInternalIndex((i) => (i + 1) % rates.length);
-    }, rotateInterval);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [autoRotate, effectivePaused, rates.length, rotateInterval]);
-
-  // وقتی hover عوض می‌شه، interval پاک و دوباره ساخته بشه
-  // (این کار explicit اطمینان می‌ده که interval جدید با state جدید ساخته می‌شه)
+  // Auto-rotate — با تب مخفی pause می‌شود (قبلاً در background tabs
+  // هر ۶ ثانیه re-render می‌کرد؛ خواهر خودش RateListsTicker همین کار را دارد).
+  const rotationEnabled = autoRotate && !effectivePaused && rates.length > 1;
+  useVisibilityAwareInterval(() => {
+    setInternalIndex((i) => (i + 1) % rates.length);
+  }, rotationEnabled ? rotateInterval : 0);
 
   // Morph tick حذف شد — تغییرات بسیار کوچک (±۰.۲۵٪) عملاً قابل دیدن نبود
   // و هر ۳ ثانیه re-render کل bridge رو trigger می‌کرد

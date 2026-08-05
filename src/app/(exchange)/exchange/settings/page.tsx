@@ -5,6 +5,9 @@
  * این صفحه server component است.
  */
 
+// Module-level Intl singleton — created once at module load
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 import { getExchangeForUser } from '@/actions/exchanges';
 import { getExchangeStaff } from '@/actions/exchanges';
 import { auth } from '@/auth';
@@ -55,14 +58,14 @@ export default async function SettingsIndexPage() {
           <div className={s.statCell}>
             <span className={s.statLabel}>آخرین تغییر</span>
             <span className={s.statValue}>
-              {new Intl.NumberFormat('fa-IR').format(daysSinceUpdate)} روز پیش
+              {_faNum.format(daysSinceUpdate)} روز پیش
             </span>
           </div>
           <span className={s.statSep} aria-hidden />
           <div className={s.statCell}>
             <span className={s.statLabel}>اعضای فعال</span>
             <span className={s.statValue}>
-              {new Intl.NumberFormat('fa-IR').format(activeStaff)}
+              {_faNum.format(activeStaff)}
               <span className={s.statDim}>/{staffCount}</span>
             </span>
           </div>
@@ -112,7 +115,7 @@ export default async function SettingsIndexPage() {
           <p className={s.tileDesc}>اعضا، نقش‌ها و نشست‌های فعال</p>
           <div className={s.tileMeta}>
             <span className={s.metaDot} aria-hidden />
-            <span>{new Intl.NumberFormat('fa-IR').format(activeStaff)} عضو فعال</span>
+            <span>{_faNum.format(activeStaff)} عضو فعال</span>
           </div>
         </Link>
 

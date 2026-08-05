@@ -9,6 +9,8 @@ import { Check, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import s from './ExchangeDashboard.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 export default function ExchangeAlerts({ alerts }: { alerts: DashboardAlert[] }) {
   if (alerts.length === 0) {
     return (
@@ -34,7 +36,7 @@ export default function ExchangeAlerts({ alerts }: { alerts: DashboardAlert[] })
               <span className={s.alertDetail}>{a.detail}</span>
             </span>
             <span className={s.alertMetric} dir="ltr">
-              {new Intl.NumberFormat('fa-IR').format(a.metric)}
+              {_faNum.format(a.metric)}
             </span>
             <ChevronLeft
               size={14}

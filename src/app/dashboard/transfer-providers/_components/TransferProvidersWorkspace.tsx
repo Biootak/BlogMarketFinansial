@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from '@/components/ui/use-toast';
 import { SearchInput } from '@/components/Dashboard/primitives';
+import { formatFaNumber } from '@/lib/fa-number';
 import { PencilLine, Plus, Search, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
 import { useCallback, useMemo, useState, useTransition } from 'react';
 import ProviderDrawer from './ProviderDrawer';
@@ -165,7 +166,7 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
       collapse: true,
       render: (r) => (
         <span className={s.numCell}>
-          {r.flatFeeToman > 0 ? `${new Intl.NumberFormat('fa-IR').format(r.flatFeeToman)} ت` : '—'}
+          {r.flatFeeToman > 0 ? `${formatFaNumber(r.flatFeeToman)} ت` : '—'}
         </span>
       ),
     },
@@ -375,7 +376,7 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
                   )}
                   {r.flatFeeToman > 0 && (
                     <span className={s.metaNum}>
-                      {new Intl.NumberFormat('fa-IR').format(r.flatFeeToman)} ت کارمزد
+                      {formatFaNumber(r.flatFeeToman)} ت کارمزد
                     </span>
                   )}
                 </div>

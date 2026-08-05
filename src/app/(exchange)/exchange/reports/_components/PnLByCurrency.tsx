@@ -9,6 +9,9 @@
 import { ArrowDown, ArrowUp, Scale } from 'lucide-react';
 import s from './PnLByCurrency.module.css';
 
+// Module-level Intl singleton — created once at module load
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 export interface PnLRow {
   currency: string;
   totalVolume: number;
@@ -102,7 +105,7 @@ export default function PnLByCurrency({ rows }: Props) {
                 <span className={s.metaPill}>
                   <span className={s.metaPillLabel}>معاملات</span>
                   <span className={s.metaPillValue}>
-                    {new Intl.NumberFormat('fa-IR').format(r.dealCount)}
+                    {_faNum.format(r.dealCount)}
                   </span>
                 </span>
                 <span className={s.metaPill}>

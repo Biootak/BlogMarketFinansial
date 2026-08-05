@@ -39,6 +39,9 @@ interface Props {
   primaryCurrency: string;
 }
 
+// ─── Module-level Intl singleton — created once at module load
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function fmtDate(d: Date): string {
@@ -181,7 +184,7 @@ export function CustomerArchive({
           <Archive size={16} className={s.statIcon} aria-hidden />
           <div>
             <span className={s.statValue}>
-              {new Intl.NumberFormat('fa-IR').format(localFrozen.length + archived.length)}
+              {_faNum.format(localFrozen.length + archived.length)}
             </span>
             <span className={s.statLabel}>کل آرشیو</span>
           </div>
@@ -191,7 +194,7 @@ export function CustomerArchive({
           <AlertTriangle size={16} className={`${s.statIcon} ${s.iconAmber}`} aria-hidden />
           <div>
             <span className={s.statValue}>
-              {new Intl.NumberFormat('fa-IR').format(localFrozen.length)}
+              {_faNum.format(localFrozen.length)}
             </span>
             <span className={s.statLabel}>مسدود</span>
           </div>
@@ -201,7 +204,7 @@ export function CustomerArchive({
           <XCircle size={16} className={`${s.statIcon} ${s.iconMuted}`} aria-hidden />
           <div>
             <span className={s.statValue}>
-              {new Intl.NumberFormat('fa-IR').format(archived.length)}
+              {_faNum.format(archived.length)}
             </span>
             <span className={s.statLabel}>بسته</span>
           </div>
@@ -210,7 +213,7 @@ export function CustomerArchive({
         <div className={s.statCell}>
           <Users size={16} className={s.statIcon} aria-hidden />
           <div>
-            <span className={s.statValue}>{new Intl.NumberFormat('fa-IR').format(totalCount)}</span>
+            <span className={s.statValue}>{_faNum.format(totalCount)}</span>
             <span className={s.statLabel}>کل مشتریان</span>
           </div>
         </div>
@@ -227,7 +230,7 @@ export function CustomerArchive({
             onClick={() => setActiveTab('frozen')}
           >
             <AlertTriangle size={14} aria-hidden />
-            مسدود ({new Intl.NumberFormat('fa-IR').format(localFrozen.length)})
+            مسدود ({_faNum.format(localFrozen.length)})
           </button>
           <button
             type="button"
@@ -237,7 +240,7 @@ export function CustomerArchive({
             onClick={() => setActiveTab('closed')}
           >
             <Archive size={14} aria-hidden />
-            بسته ({new Intl.NumberFormat('fa-IR').format(archived.length)})
+            بسته ({_faNum.format(archived.length)})
           </button>
         </div>
 

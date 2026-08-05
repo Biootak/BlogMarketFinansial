@@ -38,7 +38,8 @@ const fmtNum = (v: number): string =>
     maximumFractionDigits: 1,
   }).format(v / 100);
 
-const fmtExact = (v: number): string => new Intl.NumberFormat('fa-IR').format(v / 100);
+const _faNum = new Intl.NumberFormat('fa-IR');
+const fmtExact = (v: number): string => _faNum.format(v / 100);
 
 interface Props {
   initialRows: SettlementRow[];
@@ -138,7 +139,7 @@ export default function SettlementCockpit({ initialRows }: Props) {
             <span className={s.cellUnit}>{primaryCurrency}</span>
           </div>
           <span className={s.cellMeta}>
-            {new Intl.NumberFormat('fa-IR').format(initialRows.length)} دوره
+            {_faNum.format(initialRows.length)} دوره
           </span>
         </div>
 
@@ -206,7 +207,7 @@ export default function SettlementCockpit({ initialRows }: Props) {
                     />
                   </span>
                   <span className={s.distCount}>
-                    {new Intl.NumberFormat('fa-IR').format(d.count)}
+                    {_faNum.format(d.count)}
                   </span>
                 </div>
               );
@@ -254,7 +255,7 @@ export default function SettlementCockpit({ initialRows }: Props) {
                 >
                   <span>{f.label}</span>
                   <span className={s.filterCount}>
-                    {new Intl.NumberFormat('fa-IR').format(count)}
+                    {_faNum.format(count)}
                   </span>
                 </button>
               );
@@ -319,7 +320,7 @@ export default function SettlementCockpit({ initialRows }: Props) {
             <div className={s.detailStat}>
               <span className={s.detailStatLabel}>تعداد معاملات</span>
               <span className={s.detailStatValue}>
-                {new Intl.NumberFormat('fa-IR').format(selectedRow.dealCount)}
+                {_faNum.format(selectedRow.dealCount)}
               </span>
             </div>
             <div className={s.detailStat}>

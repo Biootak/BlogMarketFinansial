@@ -7,8 +7,8 @@ export interface Statistic {
   subHeading: string;
 }
 
-// Assuming you want the statistics to reflect the current date
-const currentDate = new Date().toLocaleDateString('fa-IR');
+// Formatted once at module load (server-side) — not on every render
+const currentDate = new Intl.DateTimeFormat('fa-IR', { dateStyle: 'short' }).format(new Date());
 
 const FOUNDER_DEMO: Statistic[] = [
   {

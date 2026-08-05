@@ -43,6 +43,8 @@ import {
 import { useCallback, useEffect, useId, useMemo, useState, useTransition } from 'react';
 import s from './TransferClient.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 type TabId = 'deposit' | 'withdraw' | 'transfer' | 'exchange';
 type ResultKind = 'success' | 'error';
 type ResultState = { kind: ResultKind; message: string; ref?: string } | null;
@@ -101,7 +103,7 @@ function fmtAmount(cents: number, currency: string): string {
       maximumFractionDigits: 0,
     }).format(n);
   } catch {
-    return `${new Intl.NumberFormat('fa-IR').format(n)} ${currency}`;
+    return `${_faNum.format(n)} ${currency}`;
   }
 }
 

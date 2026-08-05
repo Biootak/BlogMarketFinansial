@@ -31,6 +31,7 @@
  */
 
 import CountUp from '@/components/Dashboard/primitives/CountUp';
+import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
@@ -290,13 +291,10 @@ export default function AtelierHero({
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
-    const update = () => {
-      setNow(new Date());
-    };
-    update();
-    const t = window.setInterval(update, 60_000);
-    return () => window.clearInterval(t);
+    setNow(new Date());
   }, []);
+  // کلاک ۶۰ ثانیه‌ای — در تب مخفی pause می‌شود
+  useVisibilityAwareInterval(() => setNow(new Date()), 60_000);
 
   const { trend, delta } = pickTrend(spark);
   const TrendIcon =

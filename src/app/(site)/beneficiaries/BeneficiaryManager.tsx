@@ -28,6 +28,8 @@ import {
 import { useCallback, useRef, useState, useTransition } from 'react';
 import s from './beneficiaries.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 interface Props {
   initialBeneficiaries: BeneficiaryRow[];
 }
@@ -134,7 +136,7 @@ export default function BeneficiaryManager({ initialBeneficiaries }: Props) {
           <h1 className={s.pageTitle}>مخاطبان انتقال</h1>
           <p className={s.pageSubtitle}>
             {rows.length > 0
-              ? `${new Intl.NumberFormat('fa-IR').format(rows.length)} دریافت‌کننده ذخیره‌شده`
+              ? `${_faNum.format(rows.length)} دریافت‌کننده ذخیره‌شده`
               : 'اولین مخاطب خود را اضافه کنید'}
           </p>
         </div>

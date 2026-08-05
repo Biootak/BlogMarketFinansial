@@ -32,14 +32,15 @@ interface Props {
   data: FintechKpiData;
 }
 
+// ─── Module-level Intl singleton — created once at module load
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function formatVolume(n: number, currency: string): string {
-  if (n >= 1_000_000)
-    return `${new Intl.NumberFormat('fa-IR').format(Math.round(n / 1_000_000))} م ${currency}`;
-  if (n >= 1_000)
-    return `${new Intl.NumberFormat('fa-IR').format(Math.round(n / 1_000))} ه ${currency}`;
-  return `${new Intl.NumberFormat('fa-IR').format(n)} ${currency}`;
+  if (n >= 1_000_000) return `${_faNum.format(Math.round(n / 1_000_000))} م ${currency}`;
+  if (n >= 1_000) return `${_faNum.format(Math.round(n / 1_000))} ه ${currency}`;
+  return `${_faNum.format(n)} ${currency}`;
 }
 
 /** Generate a deterministic sparkline path from a seed value */
@@ -149,7 +150,7 @@ function KpiCard({
   const shown =
     rawValue > 999
       ? displayValue // for formatted values like volume
-      : new Intl.NumberFormat('fa-IR').format(animated);
+      : _faNum.format(animated);
 
   const trendDir = (trend ?? 0) > 0 ? 'up' : (trend ?? 0) < 0 ? 'down' : 'flat';
   const TrendIcon = trendDir === 'up' ? ArrowUpRight : trendDir === 'down' ? ArrowDownRight : Minus;
@@ -218,7 +219,7 @@ export function FintechKpiWidget({ data }: Props) {
           }
           label="تراکنش ۲۴ ساعت"
           rawValue={data.txn24h}
-          displayValue={new Intl.NumberFormat('fa-IR').format(data.txn24h)}
+          displayValue={_faNum.format(data.txn24h)}
           href="/dashboard/audit-log"
           accent="brand"
           trend={4.2}
@@ -228,7 +229,7 @@ export function FintechKpiWidget({ data }: Props) {
           icon={<Users size={16} aria-hidden />}
           label="مشتریان فعال"
           rawValue={data.activeCustomers}
-          displayValue={new Intl.NumberFormat('fa-IR').format(data.activeCustomers)}
+          displayValue={_faNum.format(data.activeCustomers)}
           href="/dashboard/customers"
           accent="success"
           trend={1.8}
@@ -238,7 +239,7 @@ export function FintechKpiWidget({ data }: Props) {
           icon={<ShieldAlert size={16} aria-hidden />}
           label="موارد باز تقلب"
           rawValue={data.openFraudCases}
-          displayValue={new Intl.NumberFormat('fa-IR').format(data.openFraudCases)}
+          displayValue={_faNum.format(data.openFraudCases)}
           href="/dashboard/fraud-review"
           accent={data.openFraudCases > 0 ? 'error' : 'success'}
           trend={data.openFraudCases > 0 ? -2.1 : 0}
@@ -249,7 +250,7 @@ export function FintechKpiWidget({ data }: Props) {
           icon={<Zap size={16} aria-hidden />}
           label="درخواست در انتظار"
           rawValue={data.pendingRequests}
-          displayValue={new Intl.NumberFormat('fa-IR').format(data.pendingRequests)}
+          displayValue={_faNum.format(data.pendingRequests)}
           href="/dashboard/service-requests"
           accent={data.pendingRequests > 5 ? 'warn' : 'neutral'}
           delay={180}

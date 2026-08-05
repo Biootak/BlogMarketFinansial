@@ -13,6 +13,8 @@ import { ArrowUpLeft, BadgeCheck, Building2, MapPin, Star } from 'lucide-react';
 import Link from 'next/link';
 import s from './ExchangeBentoGrid.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 export type BentoExchange = {
   id: string;
   slug: string;
@@ -40,7 +42,7 @@ type Props = {
 
 const formatFa = (n: number | null): string => {
   if (n === null || !Number.isFinite(n) || n === 0) return '—';
-  return new Intl.NumberFormat('fa-IR').format(Math.round(n));
+  return _faNum.format(Math.round(n));
 };
 
 function Sparkline({
@@ -292,7 +294,7 @@ export default function ExchangeBentoGrid({
         </div>
         <div className={s.sectionStat}>
           <span className={s.sectionStatNum}>
-            {new Intl.NumberFormat('fa-IR').format(items.length)}
+            {_faNum.format(items.length)}
           </span>
           <span className={s.sectionStatLabel}>صرافی فعال</span>
         </div>

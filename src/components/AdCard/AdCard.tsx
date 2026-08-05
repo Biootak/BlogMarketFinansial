@@ -422,9 +422,14 @@ function ShowcaseAd({
   const ref = useRef<HTMLDivElement | null>(null);
   const [views, setViews] = useState<number | null>(null);
 
-  // Record view on mount
+  // View فقط وقتی تبلیغ واقعاً وارد viewport شد ثبت می‌شود (یک بار).
+  // قبلاً روی mount بود: چند تبلیغ در صفحه = چند POST/DB write همزمان
+  // حتی برای تبلیغ‌های پایین‌تر از fold.
+  const viewRecordedRef = useRef(false);
   useEffect(() => {
-    if (!ad?.id) return;
+    if (!ad?.id || viewRecordedRef.current) return;
+    const el = ref.current;
+    if (!el) return;
     const recordView = async () => {
       try {
         const res = await fetch('/api/pageview', {
@@ -440,7 +445,18 @@ function ShowcaseAd({
         /* silent */
       }
     };
-    recordView();
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          viewRecordedRef.current = true;
+          void recordView();
+          io.disconnect();
+        }
+      },
+      { rootMargin: '150px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
   }, [ad?.id]);
 
   const onMove = (e: React.MouseEvent<HTMLDivElement>) => {

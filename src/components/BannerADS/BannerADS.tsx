@@ -301,8 +301,15 @@ export default function BannerAds({
 
   const [viewsCount, setViewsCount] = useState<number | null>(null);
 
+  // View فقط وقتی تبلیغ واقعاً وارد viewport شد ثبت می‌شود (و فقط یک بار).
+  // قبلاً روی mount ثبت می‌شد: چند تبلیغ در یک صفحه = چند POST همزمان
+  // و DB write حتی برای تبلیغ‌های پایین صفحه که هیچ‌کس نمی‌بیند.
+  const viewRef = useRef<HTMLElement | null>(null);
+  const viewRecordedRef = useRef(false);
   useEffect(() => {
-    if (!ad?.id) return;
+    if (!ad?.id || viewRecordedRef.current) return;
+    const el = viewRef.current;
+    if (!el) return;
     const recordView = async () => {
       try {
         const res = await fetch('/api/pageview', {
@@ -318,7 +325,18 @@ export default function BannerAds({
         }
       } catch (_err) {}
     };
-    recordView();
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          viewRecordedRef.current = true;
+          void recordView();
+          io.disconnect();
+        }
+      },
+      { rootMargin: '150px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
   }, [ad?.id]);
 
   /* ------------------------------------------------------------------- */
@@ -338,7 +356,10 @@ export default function BannerAds({
 
     return (
       <div
-        ref={parallax.ref}
+        ref={(el) => {
+          parallax.ref.current = el;
+          viewRef.current = el;
+        }}
         onMouseMove={parallax.onMove}
         onMouseLeave={parallax.onLeave}
         className={cn('nc-BannerADS ad-spotlight-3d relative w-full anim-fade-in-up', className)}
@@ -509,7 +530,10 @@ export default function BannerAds({
     const parallax = imageLinkParallax;
     return (
       <Link
-        ref={parallax.ref}
+        ref={(el) => {
+          imageLinkParallax.ref.current = el;
+          viewRef.current = el;
+        }}
         onMouseMove={parallax.onMove}
         onMouseLeave={parallax.onLeave}
         href={linkUrl}
@@ -603,7 +627,10 @@ export default function BannerAds({
   const parallax = richParallax;
   return (
     <div
-      ref={parallax.ref}
+      ref={(el) => {
+        richParallax.ref.current = el;
+        viewRef.current = el;
+      }}
       onMouseMove={parallax.onMove}
       onMouseLeave={parallax.onLeave}
       className={cn(

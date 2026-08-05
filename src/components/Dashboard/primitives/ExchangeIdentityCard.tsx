@@ -15,6 +15,9 @@ import type { ExchangeRow } from '@/actions/exchanges';
 import { ExternalLink, ShieldCheck, Sparkles } from 'lucide-react';
 import s from './ExchangeIdentityCard.module.css';
 
+// Module-level Intl singleton — created once at module load
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 interface Props {
   exchange: ExchangeRow;
   /** لینک صفحه عمومی — اگر undefined داده نشود، CTA نمایش داده نمی‌شود. */
@@ -154,7 +157,7 @@ export function ExchangeIdentityCard({ exchange, publicUrl, counters }: Props) {
                     <dt className={s.counterLabel}>{c.label}</dt>
                     <dd className={s.counterValue}>
                       {typeof c.value === 'number'
-                        ? new Intl.NumberFormat('fa-IR').format(c.value)
+                        ? _faNum.format(c.value)
                         : c.value}
                     </dd>
                   </div>

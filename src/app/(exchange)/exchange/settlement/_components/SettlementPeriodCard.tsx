@@ -12,6 +12,8 @@ import { useState } from 'react';
 import s from './SettlementPeriodCard.module.css';
 import { STATUS_META, type SettlementRow, type SettlementStatus } from './settlement-state';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 const STATUS_ICON = {
   PENDING: Clock,
   APPROVED: BadgeCheck,
@@ -26,7 +28,7 @@ const fmtNum = (v: string | number): string =>
   }).format(Number(v) / 100);
 
 const fmtExact = (v: string | number): string =>
-  new Intl.NumberFormat('fa-IR').format(Number(v) / 100);
+  _faNum.format(Number(v) / 100);
 
 const fmtDate = (d: Date): string =>
   new Intl.DateTimeFormat('fa-IR', { month: 'short', day: 'numeric', year: '2-digit' }).format(
@@ -76,7 +78,7 @@ export default function SettlementPeriodCard({ row, selected, onSelect, index }:
       <div className={s.metric}>
         <span className={s.metricLabel}>معاملات</span>
         <span className={s.metricValue}>
-          {new Intl.NumberFormat('fa-IR').format(row.dealCount)}
+          {_faNum.format(row.dealCount)}
         </span>
       </div>
 

@@ -22,8 +22,11 @@ function formatCompact(volumeStr: string): string {
   }).format(Number(minor) / 100);
 }
 
+// Module-level Intl singleton — created once at module load
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 function formatFaNumber(n: number): string {
-  return new Intl.NumberFormat('fa-IR').format(n);
+  return _faNum.format(n);
 }
 
 interface Props {

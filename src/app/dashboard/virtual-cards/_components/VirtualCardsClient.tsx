@@ -31,6 +31,8 @@ import { AlertCircle, Flame, Lock, Plus, Trash2, Unlock, Wifi } from 'lucide-rea
 import { useCallback, useState, useTransition } from 'react';
 import s from './VirtualCardsClient.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 type Props = { initialCards: VirtualCardRow[] };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -185,19 +187,19 @@ export default function VirtualCardsClient({ initialCards }: Props) {
           <div className={s.stats}>
             <div className={s.stat}>
               <span className={s.statValue}>
-                {new Intl.NumberFormat('fa-IR').format(cards.length)}
+                {_faNum.format(cards.length)}
               </span>
               <span className={s.statLabel}>کل کارت‌ها</span>
             </div>
             <div className={s.stat}>
               <span className={s.statValue}>
-                {new Intl.NumberFormat('fa-IR').format(activeCount)}
+                {_faNum.format(activeCount)}
               </span>
               <span className={s.statLabel}>فعال</span>
             </div>
             <div className={s.stat}>
               <span className={s.statValue}>
-                {new Intl.NumberFormat('fa-IR').format(3 - activeCount)}
+                {_faNum.format(3 - activeCount)}
               </span>
               <span className={s.statLabel}>ظرفیت باقی‌مانده</span>
             </div>

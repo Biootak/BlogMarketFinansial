@@ -48,6 +48,8 @@ import type {
 import s from './ApprovalsHub.module.css';
 import { CreateApprovalPanel } from './CreateApprovalPanel';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 interface Props {
   initialData?: ApprovalSnapshot;
   canCreate?: boolean;
@@ -150,7 +152,7 @@ function formatTimeAgo(iso: string): string {
 }
 
 function formatNumber(n: number): string {
-  return new Intl.NumberFormat('fa-IR').format(n);
+  return _faNum.format(n);
 }
 
 function StatusPill({ status }: { status: ApprovalStatus }) {

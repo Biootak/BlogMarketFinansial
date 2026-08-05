@@ -58,8 +58,11 @@ type Props = {
   activeCurrencies: number;
 };
 
-// Module-level Intl instance — created once, not on every render
+// Module-level Intl instances — created once at module load, never on render
 const faDateFmt = new Intl.DateTimeFormat('fa-IR', { dateStyle: 'long' });
+const faNumInt = new Intl.NumberFormat('fa-IR');
+const faNumNoFrac = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 0 });
+const faNumSpread = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 2 });
 
 export default function HeroIdentity({ exchange, primaryRate, activeCurrencies }: Props) {
   const displayName = exchange.displayName ?? exchange.name;
@@ -212,7 +215,7 @@ export default function HeroIdentity({ exchange, primaryRate, activeCurrencies }
                 مشتری
               </dt>
               <dd className={s.statValue}>
-                {new Intl.NumberFormat('fa-IR').format(exchange._count.Customer)}
+                {faNumInt.format(exchange._count.Customer)}
               </dd>
             </div>
             <span className={s.statDiv} aria-hidden />
@@ -222,7 +225,7 @@ export default function HeroIdentity({ exchange, primaryRate, activeCurrencies }
                 تراکنش
               </dt>
               <dd className={s.statValue}>
-                {new Intl.NumberFormat('fa-IR').format(exchange._count.Transaction)}
+                {faNumInt.format(exchange._count.Transaction)}
               </dd>
             </div>
             <span className={s.statDiv} aria-hidden />
@@ -232,7 +235,7 @@ export default function HeroIdentity({ exchange, primaryRate, activeCurrencies }
                 ارز فعال
               </dt>
               <dd className={s.statValue}>
-                {new Intl.NumberFormat('fa-IR').format(activeCurrencies)}
+                {faNumInt.format(activeCurrencies)}
               </dd>
             </div>
           </dl>
@@ -278,9 +281,7 @@ export default function HeroIdentity({ exchange, primaryRate, activeCurrencies }
 
               <div className={s.rateHero}>
                 <span className={s.rateHeroNum} dir="ltr">
-                  {new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 0 }).format(
-                    Math.round(Number(primaryRate.sellRate)),
-                  )}
+                  {faNumNoFrac.format(Math.round(Number(primaryRate.sellRate)))}
                 </span>
                 <span className={s.rateHeroUnit}>{primaryRate.unit}</span>
               </div>
@@ -303,9 +304,7 @@ export default function HeroIdentity({ exchange, primaryRate, activeCurrencies }
                 <div className={s.rateRow}>
                   <span className={s.rateKey}>خرید</span>
                   <span className={s.rateVal} dir="ltr">
-                    {new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 0 }).format(
-                      Math.round(Number(primaryRate.buyRate)),
-                    )}
+                    {faNumNoFrac.format(Math.round(Number(primaryRate.buyRate)))}
                     <span className={s.rateUnit}>{primaryRate.unit}</span>
                   </span>
                 </div>
@@ -313,9 +312,7 @@ export default function HeroIdentity({ exchange, primaryRate, activeCurrencies }
                 <div className={s.rateRow}>
                   <span className={s.rateKey}>فروش</span>
                   <span className={s.rateVal} dir="ltr">
-                    {new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 0 }).format(
-                      Math.round(Number(primaryRate.sellRate)),
-                    )}
+                    {faNumNoFrac.format(Math.round(Number(primaryRate.sellRate)))}
                     <span className={s.rateUnit}>{primaryRate.unit}</span>
                   </span>
                 </div>
@@ -323,9 +320,7 @@ export default function HeroIdentity({ exchange, primaryRate, activeCurrencies }
                 <div className={s.rateRow}>
                   <span className={s.rateKey}>اسپرد</span>
                   <span className={s.rateValSm}>
-                    {new Intl.NumberFormat('fa-IR', {
-                      maximumFractionDigits: 2,
-                    }).format(primaryRate.spreadPct)}
+                    {faNumSpread.format(primaryRate.spreadPct)}
                     <span className={s.rateUnit}>٪</span>
                   </span>
                 </div>
@@ -346,11 +341,11 @@ export default function HeroIdentity({ exchange, primaryRate, activeCurrencies }
 
 function useAgeLabel(ageSec: number): string {
   if (ageSec < 5) return 'همین الان';
-  if (ageSec < 60) return `${new Intl.NumberFormat('fa-IR').format(ageSec)} ثانیه پیش`;
+  if (ageSec < 60) return `${faNumInt.format(ageSec)} ثانیه پیش`;
   const min = Math.floor(ageSec / 60);
-  if (min < 60) return `${new Intl.NumberFormat('fa-IR').format(min)} دقیقه پیش`;
+  if (min < 60) return `${faNumInt.format(min)} دقیقه پیش`;
   const h = Math.floor(min / 60);
-  if (h < 24) return `${new Intl.NumberFormat('fa-IR').format(h)} ساعت پیش`;
+  if (h < 24) return `${faNumInt.format(h)} ساعت پیش`;
   const d = Math.floor(h / 24);
-  return `${new Intl.NumberFormat('fa-IR').format(d)} روز پیش`;
+  return `${faNumInt.format(d)} روز پیش`;
 }

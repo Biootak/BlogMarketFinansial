@@ -13,8 +13,9 @@
 
 import type { QuoteRow } from '@/actions/exchange-quotes';
 import DealModal from '@/components/MoneyTransfer/DealModal';
+import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 import { AlertCircle, Clock, ShoppingCart, TrendingDown, TrendingUp } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import s from './ExchangeQuotesBoard.module.css';
 
 interface QuotesData {
@@ -64,19 +65,37 @@ function formatCountdown(expiresAt: Date | string | null, now: number): string {
   return `${m}:${String(sec).padStart(2, '0')}`;
 }
 
+/**
+ * CountdownText — فقط همین span هر ثانیه tick می‌خورد، نه کل جدول.
+ * قبلاً یک `now` مشترک در board هر ثانیه setNow می‌کرد و کل جدول
+ * (ردیف دسکتاپ + ردیف موبایل هر quote) re-render می‌شد. حالا ردیف‌ها
+ * memo هستند و فقط این سلول کوچک interval خودش را دارد.
+ */
+function CountdownText({ expiresAt }: { expiresAt: Date | string | null }) {
+  const [now, setNow] = useState(() => Date.now());
+  const label = formatCountdown(expiresAt, now);
+  const live = !!expiresAt && new Date(expiresAt).getTime() > now;
+
+  useVisibilityAwareInterval(() => setNow(Date.now()), live ? 1000 : 0);
+
+  if (!label) return null;
+  return (
+    <>
+      <Clock className={s.countdownIcon} aria-hidden />
+      <span className="tabular-nums">{label}</span>
+    </>
+  );
+}
+
 function QuoteTableRow({
   quote,
   isBestBuy,
   onDeal,
-  now,
 }: {
   quote: QuoteRow;
   isBestBuy: boolean;
   onDeal: (q: QuoteRow) => void;
-  /** Shared timestamp from the parent's single interval (1s tick). */
-  now: number;
 }) {
-  const countdown = formatCountdown(quote.expiresAt, now);
   const buy = Number.parseFloat(quote.buyRate);
   const sell = Number.parseFloat(quote.sellRate);
   const unit = UNIT_LABEL[quote.unit] ?? quote.unit;
@@ -109,13 +128,13 @@ function QuoteTableRow({
             <span className={s.rateUnit}>{unit}</span>
           </span>
         </td>
-        <td className={s.countdownCell} aria-label={countdown ? `انقضا: ${countdown}` : undefined}>
-          {countdown && (
-            <>
-              <Clock className={s.countdownIcon} aria-hidden />
-              <span className="tabular-nums">{countdown}</span>
-            </>
-          )}
+        <td
+          className={s.countdownCell}
+          aria-label={
+            quote.expiresAt ? `انقضا: ${formatCountdown(quote.expiresAt, Date.now())}` : undefined
+          }
+        >
+          <CountdownText expiresAt={quote.expiresAt} />
         </td>
         <td className={s.badgeCell}>
           {isBestBuy && <span className={s.bestBadge}>بهترین</span>}
@@ -179,12 +198,9 @@ function QuoteTableRow({
                   <span className={s.rateUnit}>{unit}</span>
                 </span>
               </div>
-              {countdown && (
-                <div className={s.cardCountdown}>
-                  <Clock className={s.countdownIcon} aria-hidden />
-                  <span className="tabular-nums">{countdown}</span>
-                </div>
-              )}
+              <div className={s.cardCountdown}>
+                <CountdownText expiresAt={quote.expiresAt} />
+              </div>
             </div>
           </div>
         </td>
@@ -192,6 +208,8 @@ function QuoteTableRow({
     </>
   );
 }
+
+const QuoteTableRowMemo = memo(QuoteTableRow);
 
 const QUOTES_INITIAL = 4;
 const QUOTES_STEP = 4;
@@ -204,21 +222,6 @@ export default function ExchangeQuotesBoard() {
   const [shownQuotes, setShownQuotes] = useState(QUOTES_INITIAL);
   const [dealQuote, setDealQuote] = useState<QuoteRow | null>(null);
   const fetchRef = useRef<AbortController | null>(null);
-
-  // Single board-wide countdown tick. Always mounted (rules-of-hooks); the
-  // interval only runs while a visible quote has a live expiry so the table
-  // doesn't re-render every second for nothing.
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    if (!data) return;
-    const hasLive = data.quotes.some((q) => {
-      if (!q.expiresAt) return false;
-      return new Date(q.expiresAt).getTime() > Date.now();
-    });
-    if (!hasLive) return;
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, [data]);
 
   const fetchData = useCallback(async () => {
     fetchRef.current?.abort();
@@ -246,14 +249,13 @@ export default function ExchangeQuotesBoard() {
     }
   }, []);
 
-  // initial fetch + refresh every 30s
+  // initial fetch + refresh every 30s. Polling با تب مخفی pause می‌شود
+  // (قبلاً در background tabs بی‌وقفه به API عمومی درخواست می‌زد).
+  useVisibilityAwareInterval(() => void fetchData(), 30_000);
+
   useEffect(() => {
     void fetchData();
-    const id = setInterval(() => {
-      void fetchData();
-    }, 30_000);
     return () => {
-      clearInterval(id);
       fetchRef.current?.abort();
     };
   }, [fetchData]);
@@ -369,12 +371,11 @@ export default function ExchangeQuotesBoard() {
             </tr>
           ) : (
             visibleQuotes.map((q) => (
-              <QuoteTableRow
+              <QuoteTableRowMemo
                 key={q.id}
                 quote={q}
                 isBestBuy={q.id === bestBuyId}
                 onDeal={setDealQuote}
-                now={now}
               />
             ))
           )}

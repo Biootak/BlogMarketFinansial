@@ -78,8 +78,11 @@ function formatDuration(min: number): string {
   return `${Math.round(min / (60 * 24))} روز`;
 }
 
+// Module-level Intl singleton — created once at module load
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 function formatNum(n: number): string {
-  return new Intl.NumberFormat('fa-IR').format(n);
+  return _faNum.format(n);
 }
 
 /** محاسبه کارمزد برای یک مقدار نمونه (تومان) — بر اساس نرخ واقعی provider */

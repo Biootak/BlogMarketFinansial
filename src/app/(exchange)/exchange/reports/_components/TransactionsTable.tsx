@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import s from './TransactionsTable.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 const KIND_META: Record<
   string,
   {
@@ -179,7 +181,7 @@ export default function TransactionsTable({ rows, total, className }: Props) {
           </span>
           <h2 className={s.title}>لیست کامل تراکنش‌ها</h2>
         </div>
-        <span className={s.total}>{new Intl.NumberFormat('fa-IR').format(total)} رکورد</span>
+        <span className={s.total}>{_faNum.format(total)} رکورد</span>
       </header>
 
       {/* ── Desktop: DataTable (hidden on mobile) ──────────────────── */}

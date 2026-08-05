@@ -34,9 +34,11 @@ type Props = {
   headLabel?: string;
 };
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 const formatFa = (n: number): string => {
   if (!Number.isFinite(n) || n === 0) return '—';
-  return new Intl.NumberFormat('fa-IR').format(Math.round(n));
+  return _faNum.format(Math.round(n));
 };
 
 const formatSpread = (n: number): string => {

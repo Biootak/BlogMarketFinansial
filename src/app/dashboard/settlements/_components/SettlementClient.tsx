@@ -48,6 +48,8 @@ import {
 import { useCallback, useMemo, useState, useTransition } from 'react';
 import s from './SettlementClient.module.css';
 
+const _faNum = new Intl.NumberFormat('fa-IR');
+
 type Props = { settlements: SettlementRow[] };
 
 type TabValue = 'all' | 'PENDING' | 'APPROVED' | 'PAID';
@@ -79,7 +81,7 @@ function fmtAFN(val: string): string {
 }
 
 function fmtNum(n: number): string {
-  return new Intl.NumberFormat('fa-IR').format(n);
+  return _faNum.format(n);
 }
 
 function fmtDate(d: Date): string {
