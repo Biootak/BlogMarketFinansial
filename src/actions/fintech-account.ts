@@ -280,13 +280,29 @@ export async function requestWithdraw(raw: unknown): Promise<FintechActionResult
       amountCents: BigInt(amountCents),
       kind: 'WITHDRAWAL',
     });
+    if (!otpResult.success) {
+      // OTP ارسال نشد — تراکنش PENDING بی‌فایده است، با FAILED ببند تا کاربر
+      // در UI گیر نکند و PENDING مرده نماند.
+      await prisma.transaction.update({
+        where: { id: txn.id },
+        data: {
+          status: 'FAILED',
+          meta: {
+            txnRef,
+            destinationAccount,
+            failedReason: 'OTP_SEND_FAILED',
+          } as Prisma.InputJsonValue,
+        },
+      });
+      return otpResult;
+    }
     return {
       success: true,
       data: {
         txnId: txn.id,
         txnRef,
         needsOtp: true,
-        expiresInSeconds: otpResult.success ? otpResult.data.expiresInSeconds : undefined,
+        expiresInSeconds: otpResult.data.expiresInSeconds,
       },
     };
   }

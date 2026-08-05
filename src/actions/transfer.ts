@@ -318,7 +318,18 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
       amountCents: amountBigInt,
       kind: 'TRANSFER',
     });
-
+    if (!otpResult.success) {
+      // OTP ارسال نشد — تراکنش PENDING بی‌فایده است، با FAILED ببند تا user
+      // در UI گیر نکند و PENDING مرده در صف نماند.
+      await prisma.transaction.update({
+        where: { id: txn.id },
+        data: {
+          status: 'FAILED',
+          meta: { txnRef, failedReason: 'OTP_SEND_FAILED' } as Prisma.InputJsonValue,
+        },
+      });
+      return otpResult;
+    }
     return {
       success: true,
       data: {
