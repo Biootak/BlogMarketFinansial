@@ -54,7 +54,7 @@ const DropdownMenuSubContent = React.forwardRef<
   <DropdownMenuPrimitive.SubContent
     ref={ref}
     className={cn(
-      'z-50 min-w-[180px] overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 backdrop-blur-xl p-2 text-slate-900 shadow-xl shadow-slate-200/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 dark:border-slate-700/80 dark:bg-slate-900/95 dark:text-slate-50 dark:shadow-slate-900/50',
+      'nova-overlay z-50 min-w-[180px] overflow-hidden rounded-2xl border border-[var(--ds-border-subtle)] bg-[var(--nova-surface-solid)] p-2 text-[var(--ds-text-primary)] shadow-[0_8px_32px_-4px_oklch(0%_0_0/0.22),0_0_0_1px_var(--ds-border-subtle)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
       className,
     )}
     {...props}
@@ -71,17 +71,9 @@ const DropdownMenuContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        'z-50 min-w-[200px] overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 backdrop-blur-xl p-2 text-slate-900 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 dark:border-slate-700/80 dark:bg-slate-900/95 dark:text-slate-50',
+        'nova-overlay z-50 min-w-[200px] overflow-hidden rounded-2xl border border-[var(--ds-border-subtle)] bg-[var(--nova-surface-solid)] p-2 text-[var(--ds-text-primary)] shadow-[0_8px_32px_-4px_oklch(0%_0_0/0.22),0_0_0_1px_var(--ds-border-subtle)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
         className,
       )}
-      style={{
-        boxShadow: `
-          0 0 0 1px rgba(0,0,0,0.03),
-          0 4px 6px -1px rgba(0,0,0,0.05),
-          0 10px 15px -3px rgba(0,0,0,0.08),
-          0 20px 25px -5px rgba(0,0,0,0.08)
-        `,
-      }}
       {...props}
     />
   </DropdownMenuPrimitive.Portal>

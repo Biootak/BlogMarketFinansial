@@ -22,18 +22,31 @@
   inset-block-start: 0;
   z-index: 50;
   inline-size: 100%;
-  /* amber tint by default */
-  background: color-mix(in oklch, var(--nova-amber) 8%, oklch(100% 0 0 / 0.85));
-  backdrop-filter: blur(12px) saturate(140%);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  /* solid fallback — مرورگرهایی که backdrop-filter ندارند */
+  background: color-mix(in oklch, var(--nova-amber) 10%, oklch(97% 0 0));
   border-block-end: 1px solid color-mix(in oklch, var(--nova-amber) 22%, transparent);
   transition: background 250ms var(--ds-ease-out-quart), border-color 250ms var(--ds-ease-out-quart);
 }
 
+/* glass فقط وقتی مرورگر پشتیبانی می‌کند */
+@supports (backdrop-filter: blur(1px)) {
+  .shell {
+    background: color-mix(in oklch, var(--nova-amber) 8%, oklch(100% 0 0 / 0.92));
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+  }
+}
+
 /* violet when impersonating (explicit manual pick) */
 .shell[data-impersonating="true"] {
-  background: color-mix(in oklch, var(--nova-violet) 9%, oklch(100% 0 0 / 0.85));
+  background: color-mix(in oklch, var(--nova-violet) 10%, oklch(97% 0 0));
   border-block-end-color: color-mix(in oklch, var(--nova-violet) 22%, transparent);
+}
+
+@supports (backdrop-filter: blur(1px)) {
+  .shell[data-impersonating="true"] {
+    background: color-mix(in oklch, var(--nova-violet) 9%, oklch(100% 0 0 / 0.92));
+  }
 }
 
 /* ─── Inner layout ──────────────────────────────────────────────────────── */
@@ -42,12 +55,26 @@
   display: flex;
   align-items: center;
   gap: var(--ds-space-3);
-  flex-wrap: wrap;
-  padding-block: 0.45em;
-  padding-inline: var(--ds-space-4);
+  flex-wrap: nowrap;
+  padding-block: 0.4em;
+  padding-inline: var(--ds-space-5);
   max-inline-size: 1400px;
   margin-inline: auto;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
+  min-inline-size: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 479px) {
+  .inner {
+    gap: var(--ds-space-2);
+    padding-inline: var(--ds-space-3);
+    font-size: 0.625rem;
+  }
+
+  .badge {
+    display: none;
+  }
 }
 
 /* ─── Badge (حالت پشتیبانی) ─────────────────────────────────────────────── */
@@ -221,12 +248,16 @@
   position: absolute;
   inset-inline-end: var(--ds-space-4);
   inset-block-start: calc(100% + 6px);
-  inline-size: clamp(280px, 90vw, 380px);
-  background: var(--ds-surface);
+  inline-size: clamp(300px, 92vw, 400px);
+  /* سفید جامد — بدون هیچ شفافیتی */
+  background: oklch(100% 0 0);
   border: 1px solid var(--ds-border-default);
   border-radius: var(--ds-radius-lg);
-  box-shadow: 0 8px 32px -8px oklch(20% 0.01 240 / 0.14), 0 2px 8px -2px oklch(20% 0.01 240 / 0.08);
-  z-index: 100;
+  box-shadow:
+    0 4px 6px -2px oklch(20% 0.01 240 / 0.06),
+    0 12px 40px -8px oklch(20% 0.01 240 / 0.22),
+    0 0 0 1px oklch(20% 0.01 240 / 0.04);
+  z-index: 200;
   overflow: hidden;
   animation: popIn 200ms var(--ds-ease-out-expo) both;
 }
@@ -237,7 +268,7 @@
   gap: 0.5em;
   padding: var(--ds-space-3) var(--ds-space-4);
   border-block-end: 1px solid var(--ds-border-subtle);
-  background: color-mix(in oklch, var(--ds-canvas) 60%, var(--ds-surface));
+  background: oklch(98% 0 0);
 }
 
 .popoverTitle {
@@ -272,7 +303,7 @@
   gap: 0.5em;
   padding: var(--ds-space-2) var(--ds-space-3);
   border-block-end: 1px solid var(--ds-border-subtle);
-  background: var(--ds-surface);
+  background: oklch(100% 0 0);
   color: var(--ds-text-muted);
 }
 
@@ -426,7 +457,7 @@
   border-block-start: 1px solid var(--ds-border-subtle);
   font-size: 0.6375rem;
   color: var(--ds-text-muted);
-  background: color-mix(in oklch, var(--ds-canvas) 50%, transparent);
+  background: oklch(98% 0 0);
   text-align: center;
 }
 

@@ -28,7 +28,7 @@ import './globals.css';
 
 import PageViewTracker from '@/components/PageViewTracker';
 import Providers from '@/components/providers';
-import STRIP_EXTENSION_ATTRS_SCRIPT from '@/lib/strip-extension-attrs';
+import { STRIP_EXTENSION_ATTRS_SCRIPT } from '@/lib/strip-extension-attrs';
 
 /* ============================================================================
    SEO Metadata (vercel.com-style defaults)
@@ -139,9 +139,14 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <Script id="strip-extension-attrs" strategy="beforeInteractive">
-          {STRIP_EXTENSION_ATTRS_SCRIPT}
-        </Script>
+        {/* 2026-08-05 perf: MutationObserver روی کل subtree در prod فقط
+            CPU می‌سوزاند. hydration mismatch warning فقط در dev نمایش داده
+            می‌شود، پس اسکریپت strip-extension-attrs فقط در dev لود می‌شود. */}
+        {process.env.NODE_ENV === 'development' && (
+          <Script id="strip-extension-attrs" strategy="beforeInteractive">
+            {STRIP_EXTENSION_ATTRS_SCRIPT}
+          </Script>
+        )}
       </head>
       <body
         className="bg-[var(--ds-canvas)] text-[var(--ds-text-primary)] antialiased"

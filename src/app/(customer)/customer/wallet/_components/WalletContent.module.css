@@ -70,15 +70,15 @@
 .hero {
   position: relative;
   overflow: hidden;
-  padding: var(--ds-space-8) var(--ds-space-6);
+  padding: var(--ds-space-6) var(--ds-space-6);
   border-radius: var(--ds-radius-xl);
   background: linear-gradient(
     135deg,
-    color-mix(in oklch, var(--ds-brand-500) 12%, var(--ds-surface-elevated)) 0%,
-    var(--ds-surface-elevated) 60%
+    color-mix(in oklch, var(--ds-brand-500) 10%, var(--ds-surface-elevated)) 0%,
+    var(--ds-surface-elevated) 55%
   );
   border: 1px solid var(--ds-border-subtle);
-  min-block-size: 200px;
+  min-block-size: 160px;
   display: flex;
   align-items: center;
 }
@@ -86,13 +86,14 @@
 .heroRings {
   position: absolute;
   inset-block-start: 50%;
-  inset-inline-end: -80px;
+  inset-inline-end: -40px;
   transform: translateY(-50%);
-  inline-size: 400px;
-  block-size: 400px;
+  inline-size: 240px;
+  block-size: 240px;
   pointer-events: none;
   z-index: 0;
-  animation: heroSpin 60s linear infinite;
+  opacity: 0.6;
+  animation: heroSpin 80s linear infinite;
 }
 
 @keyframes heroSpin {

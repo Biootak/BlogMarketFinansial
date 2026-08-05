@@ -43,34 +43,45 @@
 }
 
 .summaryCard {
+  position: relative;
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: center;
   gap: var(--ds-space-3);
   padding-block: var(--ds-space-3);
   padding-inline: var(--ds-space-3);
-  background: var(--ds-surface);
+  background: var(--at-surface, var(--ds-surface));
   border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-sm);
-  border-inline-start: 3px solid var(--ds-border-subtle);
-  transition: border-color 200ms var(--ds-ease-out-quart);
+  border-radius: var(--ds-radius-md);
+  overflow: hidden;
+  transition: border-color 200ms var(--ds-ease-out-quart),
+    box-shadow 200ms var(--ds-ease-out-quart);
   animation: cardEnter 320ms var(--ds-ease-out-quart) both;
 }
 
-.summaryCard[data-tone="success"] {
-  border-inline-start-color: var(--nova-up);
+/* accent top stripe — کوتاه، رنگی */
+.summaryCard::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 2px;
+  border-radius: var(--ds-radius-md) var(--ds-radius-md) 0 0;
+  background: var(--ds-border-subtle);
+  opacity: 0;
+  transition: opacity 160ms var(--ds-ease-out-quart);
 }
 
-.summaryCard[data-tone="warning"] {
-  border-inline-start-color: var(--nova-amber);
-}
+.summaryCard:hover::before { opacity: 1; }
 
-.summaryCard[data-tone="danger"] {
-  border-inline-start-color: var(--nova-down);
-}
+.summaryCard[data-tone="success"]::before  { background: var(--nova-up); opacity: 1; }
+.summaryCard[data-tone="warning"]::before  { background: var(--nova-amber); opacity: 1; }
+.summaryCard[data-tone="danger"]::before   { background: var(--nova-down); opacity: 1; }
+.summaryCard[data-tone="neutral"]::before  { background: var(--ds-text-muted); opacity: 0.4; }
 
-.summaryCard[data-tone="neutral"] {
-  border-inline-start-color: var(--ds-text-muted);
+.summaryCard:hover {
+  border-color: var(--ds-border-default);
+  box-shadow: 0 2px 8px -4px oklch(0% 0 0 / 0.06);
 }
 
 .summaryIcon {

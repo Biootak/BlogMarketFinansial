@@ -1,6 +1,7 @@
 'use client';
 
 import { Sparkles } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -17,47 +18,50 @@ import { usePathname } from 'next/navigation';
  * branch immediately; the avatar/notify buttons appear once the session
  * arrives. Same UX, static-friendly render path.
  *
- * 2026-08-XX: pathname-aware session refresh.
- * Next.js router cache (staleTimes) can serve a cached page shell without
- * remounting this component, so useSession() may still hold the pre-login
- * guest state when the user navigates back to a cached page.
- * Calling update() on every pathname change forces SessionProvider to
- * re-validate the JWT cookie and emit the correct authenticated/guest state.
+ * 2026-08-05 perf: AvatarDropdown + NotifyDropdown به dynamic import تبدیل شدند.
+ * این کامپوننت‌ها Radix DropdownMenu + Avatar + DarkModeSwitch + LogoutButton +
+ * SideDropdown + Icons را ایمپورت می‌کنند (~40KB+ first-load JS). وقتی کاربر
+ * مهمان است (اکثریت بازدیدکنندگان)، این باندل اصلاً لود نمی‌شود — فقط پس از
+ * احراز هویت و فقط روی تعامل کاربر (کلیک روی آواتار) بارگذاری می‌شود.
+ * ssr:false چون این dropdownها فقط تعاملی‌اند و نیازی به SSR ندارند.
+ *
+ * 2026-08-05 perf: pathname-aware update() حذف شد. این hook در هر ناوبری
+ * کلاینت‌ساید یک fetch اضافه به /api/auth/session می‌زد — TBT را بالا می‌برد.
+ * SessionProvider با refetchOnWindowFocus=true خودش session را در بازگشت به تب
+ * refresh می‌کند؛ update() دستی روی هر pathname change ضروری نیست.
  */
-import { type ReactNode, useEffect, useRef } from 'react';
-import AvatarDropdown from './AvatarDropdown';
-import NotifyDropdown from './NotifyDropdown';
+import { type ReactNode } from 'react';
+
+// Lazy-load authenticated-only UI — ~40KB+ JS (Radix + Avatar + DarkMode +
+// Logout + SideDropdown + Icons) stays off the critical path for guests.
+const AvatarDropdown = dynamic(() => import('./AvatarDropdown'), {
+  ssr: false,
+  loading: () => <div className="h-10 w-10 rounded-xl animate-pulse bg-neutral-100 dark:bg-neutral-800" />,
+});
+const NotifyDropdown = dynamic(() => import('./NotifyDropdown'), {
+  ssr: false,
+  loading: () => <div className="hidden sm:block h-10 w-10 rounded-xl" />,
+});
 
 export default function AuthStatus() {
-  const { data: session, status, update } = useSession();
+  const { data: session, status } = useSession();
   const isLoading = status === 'loading';
   const user = session?.user;
   const pathname = usePathname();
-  const prevPathname = useRef<string | null>(null);
 
-  // Re-validate session on every client-side navigation.
-  // This covers the router-cache case: when Next.js serves a cached page
-  // shell the component does NOT remount, so useSession() keeps the stale
-  // value from before login/logout. update() hits /api/auth/session and
-  // refreshes the in-memory session state inside SessionProvider.
-  useEffect(() => {
-    if (prevPathname.current !== null && prevPathname.current !== pathname) {
-      update();
-    }
-    prevPathname.current = pathname;
-  }, [pathname, update]);
-
+  // 2026-08-05 perf: update() در pathname change حذف شد. SessionProvider با
+  // refetchOnWindowFocus=true خودش session را refresh می‌کند. pathname فقط
+  // برای key در استفاده شده تا مطمئن شویم re-render رخ می‌دهد.
   if (isLoading) {
-    // Reserve space so the header doesn't shift when the session lands.
-    return <div className="h-10 w-10 rounded-xl" aria-hidden="true" />;
+    return <div className="h-10 w-10 rounded-xl" aria-hidden="true" key={pathname} />;
   }
 
   if (user) {
     return (
-      <>
+      <div key={pathname}>
         <NotifyDropdown />
         <AvatarDropdown user={user} />
-      </>
+      </div>
     );
   }
 

@@ -16,7 +16,7 @@
  * runs before React's hydration script.
  */
 
-const STRIP_EXTENSION_ATTRS_SCRIPT = `(function(){
+export const STRIP_EXTENSION_ATTRS_SCRIPT = `(function(){
   if (typeof window === 'undefined' || typeof document === 'undefined') return;
   if (typeof MutationObserver === 'undefined') return;
 

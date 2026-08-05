@@ -73,44 +73,36 @@ export default function TransactionsContent({
       {/* ── Summary Strip ────────────────────────────────────────────── */}
       <section className={s.summary} aria-label="خلاصه تراکنش‌ها">
         <article className={s.summaryCard} data-tone="neutral">
-          <span className={s.summaryIcon} aria-hidden>
-            <History size={12} />
-          </span>
-          <div className={s.summaryBody}>
+          <div className={s.summaryTop}>
             <span className={s.summaryLabel}>تعداد کل</span>
-            <span className={s.summaryValue}>{faNum(total)}</span>
-            <span className={s.summarySub}>تراکنش ثبت شده</span>
+            <span className={s.summaryIcon} aria-hidden><History size={15} /></span>
           </div>
+          <span className={s.summaryValue}>{faNum(total)}</span>
+          <span className={s.summarySub}>تراکنش ثبت شده</span>
         </article>
         <article className={s.summaryCard} data-tone="credit">
-          <span className={s.summaryIcon} aria-hidden>
-            <CheckCircle2 size={12} />
-          </span>
-          <div className={s.summaryBody}>
+          <div className={s.summaryTop}>
             <span className={s.summaryLabel}>موفق</span>
-            <span className={s.summaryValue}>{faNum(completed)}</span>
-            <span className={s.summarySub}>در این صفحه</span>
+            <span className={s.summaryIcon} aria-hidden><CheckCircle2 size={15} /></span>
           </div>
+          <span className={s.summaryValue}>{faNum(completed)}</span>
+          <span className={s.summarySub}>در این صفحه</span>
         </article>
         <article className={s.summaryCard} data-tone="warning">
-          <span className={s.summaryIcon} aria-hidden>
-            <Clock size={12} />
-          </span>
-          <div className={s.summaryBody}>
+          <div className={s.summaryTop}>
             <span className={s.summaryLabel}>در انتظار</span>
-            <span className={s.summaryValue}>{faNum(pending)}</span>
-            <span className={s.summarySub}>نیازمند اقدام</span>
+            <span className={s.summaryIcon} aria-hidden><Clock size={15} /></span>
           </div>
+          <span className={s.summaryValue}>{faNum(pending)}</span>
+          <span className={s.summarySub}>نیازمند اقدام</span>
         </article>
         <article className={s.summaryCard} data-tone="danger">
-          <span className={s.summaryIcon} aria-hidden>
-            <AlertCircle size={12} />
-          </span>
-          <div className={s.summaryBody}>
+          <div className={s.summaryTop}>
             <span className={s.summaryLabel}>ناموفق</span>
-            <span className={s.summaryValue}>{faNum(failed)}</span>
-            <span className={s.summarySub}>لغو/خطا</span>
+            <span className={s.summaryIcon} aria-hidden><AlertCircle size={15} /></span>
           </div>
+          <span className={s.summaryValue}>{faNum(failed)}</span>
+          <span className={s.summarySub}>لغو/خطا</span>
         </article>
       </section>
 
@@ -194,9 +186,9 @@ export default function TransactionsContent({
                     className={s.rowLink}
                     aria-label={`${KIND_LABEL[txn.kind] ?? txn.kind} - ${faAmount(txn.amount, txn.currency)}`}
                   >
-                    <span className={s.rowRail} data-status={statusKey} aria-hidden />
-                    <span className={s.rowIcon} aria-hidden>
-                      <KindIcon kind={txn.kind} size={13} />
+                    <span className={s.rowDot} aria-hidden />
+                    <span className={s.rowIcon} data-kind={txn.kind} aria-hidden>
+                      <KindIcon kind={txn.kind} size={14} />
                     </span>
                     <div className={s.rowMain}>
                       <span className={s.rowKind}>{KIND_LABEL[txn.kind] ?? txn.kind}</span>
@@ -204,13 +196,13 @@ export default function TransactionsContent({
                         <span title={faDateTime(txn.createdAt)}>{relativeTime(txn.createdAt)}</span>
                         {txn.counterparty && (
                           <>
-                            <span className={s.rowDot} aria-hidden />
+                            <span className={s.rowMetaDot} aria-hidden />
                             <span className={s.rowCounter}>{txn.counterparty}</span>
                           </>
                         )}
                         {txn.note && (
                           <>
-                            <span className={s.rowDot} aria-hidden />
+                            <span className={s.rowMetaDot} aria-hidden />
                             <span className={s.rowNote}>{txn.note}</span>
                           </>
                         )}

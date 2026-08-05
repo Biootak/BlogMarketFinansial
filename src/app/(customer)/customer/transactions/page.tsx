@@ -35,7 +35,7 @@ export default async function CustomerTransactionsPage({
   });
 
   return (
-    <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
+    <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)', maxInlineSize: '960px', marginInline: 'auto', inlineSize: '100%' }}>
       <PageHeader
         title="تراکنش‌ها"
         description={`مجموع ${new Intl.NumberFormat('fa-IR').format(result.total)} تراکنش${accountId ? ' — فیلتر حساب' : ''}`}

@@ -430,16 +430,17 @@
     var(--ds-ease-out-quart, ease), transform 200ms var(--ds-ease-spring, ease);
 }
 
-/* accent stripe on inline-start */
+/* accent dot — بالا inline-start، ظریف */
 .kpiStrip :global(.dash2-statcard)::before {
   content: "";
   position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  inline-size: 3px;
+  inset-block-start: var(--ds-space-3);
+  inset-inline-start: var(--ds-space-3);
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 50%;
   background: var(--ds-brand-500);
-  opacity: 0.55;
-  border-radius: 0 2px 2px 0;
+  opacity: 0.7;
 }
 
 .kpiStrip :global(.dash2-statcard):hover {
