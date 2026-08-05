@@ -9,7 +9,7 @@
  *   بماند تا در page.tsx های مختلف قابل استفاده باشد.
  */
 
-import { SettingsSubNav, type SettingsSubNavItem } from '@/components/Dashboard/primitives';
+import { SettingsSubNav, type SettingsSubNavItem } from './SettingsSubNav';
 import { usePathname } from 'next/navigation';
 
 const KEY_MAP: ReadonlyArray<{ test: RegExp; key: string }> = [

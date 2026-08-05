@@ -46,7 +46,17 @@ const s3Client = new S3Client({
 const BUCKET_NAME = process.env.LIARA_BUCKET_NAME || '';
 const S3_PUBLIC_URL =
   process.env.LIARA_ENDPOINT?.replace('https://', `https://${BUCKET_NAME}.`) || '';
-const LOCAL_UPLOAD_DIR = path.join(/* turbopackIgnore: true */ process.cwd(), 'public', 'uploads');
+// 2026-08-05 perf: Turbopack traces `path.join(process.cwd(), 'public', 'uploads')`
+// at build time, matching every file under public/uploads (12k-48k files) into
+// the standalone bundle graph and severely bloating build time. The uploads
+// directory is per-request runtime I/O — it must never be part of the build
+// graph. We compute cwd() through an indirection the bundler cannot fold, and
+// assemble the directory via an env override or a runtime-only join so no
+// static literal path to public/uploads exists for the analyzer.
+const _cwd = (typeof process !== 'undefined' ? process.cwd() : '') as string;
+const LOCAL_UPLOAD_DIR =
+  process.env.LOCAL_UPLOAD_DIR ||
+  [_cwd, 'public', 'uploads'].join(path.sep).replace(/\/+/g, path.sep);
 
 // 2026-07-05: S3 is now optional. If credentials are missing, the system
 // falls back to local disk storage automatically. This supports local dev

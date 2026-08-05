@@ -1,5 +1,3 @@
-'use client';
-
 import { Skeleton as UiSkeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 

@@ -23,7 +23,7 @@
   }
 }
 
-/* ── Tile ───────────────────────────────────────────────────────────────── */
+/* ── Tile — یک رنگ خنثی برای همه ──────────────────────────────────────── */
 
 .tile {
   position: relative;
@@ -34,76 +34,17 @@
   gap: var(--ds-space-2);
   padding-block: var(--ds-space-3);
   padding-inline: var(--ds-space-3);
-  /* solid — نه glass */
   background: oklch(100% 0 0);
-  border: 1.5px solid var(--ds-border-default);
-  border-inline-start: 4px solid currentColor;
+  border: 1px solid var(--ds-border-default);
   border-radius: var(--ds-radius-md);
   min-block-size: 6rem;
   animation: kpiEnter 420ms var(--ds-ease-out-quart) both;
   animation-delay: calc(var(--tile-i, 0) * 60ms);
-  transition: transform 200ms var(--ds-ease-out-quart),
-    box-shadow 200ms var(--ds-ease-out-quart);
 }
 
 .dark .tile {
   background: oklch(20% 0.012 250);
   border-color: var(--ds-border-default);
-}
-
-.tile:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--ds-shadow-md);
-}
-
-/* ── Tone rنگ‌ها (رنگ‌های اصلی سایت) ──────────────────────────────────── */
-
-.tile[data-tone="brand"] {
-  color: var(--ds-brand-600);
-}
-
-.tile[data-tone="up"] {
-  color: var(--nova-up);
-}
-
-.tile[data-tone="down"] {
-  color: var(--nova-down);
-}
-
-.tile[data-tone="amber"] {
-  color: var(--nova-amber);
-}
-
-/* ── Background tint بر اساس tone ──────────────────────────────────────── */
-
-.tile[data-tone="brand"] {
-  background: color-mix(in oklch, var(--ds-brand-500) 5%, oklch(100% 0 0));
-}
-
-.tile[data-tone="up"] {
-  background: color-mix(in oklch, var(--nova-up) 5%, oklch(100% 0 0));
-}
-
-.tile[data-tone="down"] {
-  background: color-mix(in oklch, var(--nova-down) 4%, oklch(100% 0 0));
-}
-
-.tile[data-tone="amber"] {
-  background: color-mix(in oklch, var(--nova-amber) 5%, oklch(100% 0 0));
-}
-
-/* dark mode tint */
-.dark .tile[data-tone="brand"] {
-  background: color-mix(in oklch, var(--ds-brand-500) 8%, oklch(20% 0.012 250));
-}
-.dark .tile[data-tone="up"] {
-  background: color-mix(in oklch, var(--nova-up) 8%, oklch(20% 0.012 250));
-}
-.dark .tile[data-tone="down"] {
-  background: color-mix(in oklch, var(--nova-down) 6%, oklch(20% 0.012 250));
-}
-.dark .tile[data-tone="amber"] {
-  background: color-mix(in oklch, var(--nova-amber) 7%, oklch(20% 0.012 250));
 }
 
 /* ── Ambient mark — حذف: به جایش از border accent استفاده می‌کنیم ──────── */
@@ -130,10 +71,10 @@
   inline-size: 1.75rem;
   block-size: 1.75rem;
   border-radius: var(--ds-radius-sm);
-  background: color-mix(in oklch, currentColor 14%, transparent);
-  color: inherit;
+  background: var(--ds-canvas-subtle, oklch(97% 0.005 240));
+  color: var(--ds-text-secondary);
   flex-shrink: 0;
-  border: 1.5px solid color-mix(in oklch, currentColor 25%, transparent);
+  border: 1px solid var(--ds-border-default);
 }
 
 .label {
@@ -161,19 +102,19 @@
 }
 
 .trendUp {
-  background: color-mix(in oklch, var(--nova-up) 14%, transparent);
+  background: color-mix(in oklch, var(--nova-up) 10%, transparent);
   color: var(--nova-up);
-  border: 1.5px solid color-mix(in oklch, var(--nova-up) 32%, transparent);
+  border: 1px solid color-mix(in oklch, var(--nova-up) 25%, transparent);
 }
 
 .trendDown {
-  background: color-mix(in oklch, var(--nova-down) 14%, transparent);
-  color: var(--nova-down);
-  border: 1.5px solid color-mix(in oklch, var(--nova-down) 32%, transparent);
+  background: color-mix(in oklch, var(--ds-text-muted) 8%, transparent);
+  color: var(--ds-text-muted);
+  border: 1px solid var(--ds-border-default);
 }
 
 .trendFlat {
-  background: color-mix(in oklch, var(--ds-text-muted) 10%, transparent);
+  background: color-mix(in oklch, var(--ds-text-muted) 8%, transparent);
   color: var(--ds-text-muted);
   border: 1px solid var(--ds-border-subtle);
 }

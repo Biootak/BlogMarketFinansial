@@ -178,8 +178,7 @@
   font-size: var(--ds-text-xs);
   font-weight: 700;
   cursor: pointer;
-  transition: background 160ms var(--ds-ease-out-quart),
-    border-color 160ms var(--ds-ease-out-quart),
+  transition: background 160ms var(--ds-ease-out-quart), border-color 160ms var(--ds-ease-out-quart),
     transform 120ms var(--ds-ease-spring);
 }
 
@@ -234,8 +233,7 @@
   border: 1.5px dashed var(--ds-border-default);
   border-radius: var(--ds-radius-md);
   cursor: pointer;
-  transition: background 160ms var(--ds-ease-out-quart),
-    border-color 160ms var(--ds-ease-out-quart);
+  transition: background 160ms var(--ds-ease-out-quart), border-color 160ms var(--ds-ease-out-quart);
 }
 
 .loadMoreBtn:hover:not(:disabled) {

@@ -148,8 +148,7 @@
   border: 1.5px solid var(--ds-border-default);
   border-radius: var(--ds-radius-md);
   outline: none;
-  transition: border-color 160ms var(--ds-ease-out-quart),
-    box-shadow 160ms var(--ds-ease-out-quart);
+  transition: border-color 160ms var(--ds-ease-out-quart), box-shadow 160ms var(--ds-ease-out-quart);
 }
 
 .searchInput::placeholder {
@@ -245,8 +244,7 @@
   border-radius: var(--ds-radius-md);
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 160ms var(--ds-ease-out-quart),
-    transform 120ms var(--ds-ease-spring),
+  transition: background 160ms var(--ds-ease-out-quart), transform 120ms var(--ds-ease-spring),
     box-shadow 160ms var(--ds-ease-out-quart);
   box-shadow: 0 4px 12px -4px color-mix(in oklch, var(--ds-brand-500) 45%, transparent);
 }
@@ -284,15 +282,17 @@
   margin-inline-end: 0.2rem;
 }
 
+/* ── Chip — grayscale، بدون رنگ per-variant ──────────────────────────── */
+
 .chip {
   font-family: inherit;
   font-size: 0.6875rem;
-  font-weight: 700;
+  font-weight: 600;
   padding-block: 0.3em;
   padding-inline: 0.7em;
   border-radius: 999px;
   background: transparent;
-  border: 1.5px solid var(--ds-border-default);
+  border: 1px solid var(--ds-border-default);
   color: var(--ds-text-muted);
   cursor: pointer;
   white-space: nowrap;
@@ -311,54 +311,10 @@
   outline-offset: 2px;
 }
 
-.chip[data-variant="amber"]:not([data-active="true"]) {
-  border-color: color-mix(in oklch, var(--nova-amber) 30%, transparent);
-  color: var(--nova-amber);
-}
-
-.chip[data-variant="cyan"]:not([data-active="true"]) {
-  border-color: color-mix(in oklch, var(--nova-cyan) 30%, transparent);
-  color: var(--nova-cyan);
-}
-
-.chip[data-variant="up"]:not([data-active="true"]) {
-  border-color: color-mix(in oklch, var(--nova-up) 30%, transparent);
-  color: var(--nova-up);
-}
-
-.chip[data-variant="down"]:not([data-active="true"]) {
-  border-color: color-mix(in oklch, var(--nova-down) 30%, transparent);
-  color: var(--nova-down);
-}
-
 .chip[data-active="true"] {
   background: var(--ds-text-primary);
   color: var(--ds-text-inverse);
   border-color: var(--ds-text-primary);
-}
-
-.chip[data-active="true"][data-variant="amber"] {
-  background: var(--nova-amber);
-  color: oklch(100% 0 0);
-  border-color: var(--nova-amber);
-}
-
-.chip[data-active="true"][data-variant="cyan"] {
-  background: var(--nova-cyan);
-  color: oklch(100% 0 0);
-  border-color: var(--nova-cyan);
-}
-
-.chip[data-active="true"][data-variant="up"] {
-  background: var(--nova-up);
-  color: oklch(100% 0 0);
-  border-color: var(--nova-up);
-}
-
-.chip[data-active="true"][data-variant="down"] {
-  background: var(--nova-down);
-  color: oklch(100% 0 0);
-  border-color: var(--nova-down);
 }
 
 /* ── Animation ──────────────────────────────────────────────────────────── */

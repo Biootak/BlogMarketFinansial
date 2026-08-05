@@ -1,34 +1,172 @@
+/* ── override‌های dash2-table (visibility از Tailwind hidden/sm:block) ──── */
+
+/* word-break روی cell را خاموش کن — اعداد/تاریخ نباید بشکنند */
+.desktopOverrides :global(.dash2-table__cell) {
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+/* padding cell را کمپکت کن */
+.desktopOverrides :global(.dash2-table__head .dash2-table__cell) {
+  padding: 8px 8px;
+}
+
+.desktopOverrides :global(.dash2-table__row) {
+  min-height: 44px;
+}
+
+.desktopOverrides :global(.dash2-table__cell) {
+  padding: 8px 8px;
+}
+
+.mobileList {
+  flex-direction: column;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-md);
+  overflow: hidden;
+}
+
+/* ── Mobile card ────────────────────────────────────────────────────────── */
+
+.mobileCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+  padding: var(--ds-space-3) var(--ds-space-3);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  background: oklch(100% 0 0);
+}
+
+.mobileCard:last-child {
+  border-block-end: none;
+}
+
+.mobileTop {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  min-inline-size: 0;
+}
+
+.mobileKind {
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  color: var(--ds-text-secondary);
+  flex-shrink: 0;
+}
+
+.mobileExchange {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2em;
+  font-size: 0.6875rem;
+  color: var(--ds-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.mobileAmount {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.2em;
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+  color: var(--ds-text-primary);
+}
+
+.mobileAmount[data-tone="emerald"] {
+  color: var(--nova-up);
+}
+
+.mobileAmount[data-tone="rose"] {
+  color: var(--nova-down);
+}
+
+.mobileMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  flex-wrap: wrap;
+  font-size: 0.6875rem;
+  color: var(--ds-text-muted);
+}
+
+.mobileCustomer {
+  font-weight: 600;
+  color: var(--ds-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-inline-size: 9rem;
+}
+
+.dot {
+  inline-size: 2px;
+  block-size: 2px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+.mobileEmpty {
+  padding: var(--ds-space-5) var(--ds-space-4);
+  text-align: center;
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-muted);
+}
+
 /* TransactionsTable.module.css — header + table styling */
 
+/* موبایل: بدون کارت جداگانه — داخل txSection نشسته */
 .section {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-3);
-  padding: var(--ds-space-4) var(--ds-space-4);
-  background: var(--at-bg-elevated);
-  border: 1px solid var(--at-line);
-  border-radius: var(--at-radius-xl);
-  box-shadow: var(--at-shadow);
+  gap: var(--ds-space-2);
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 @media (min-width: 640px) {
   .section {
-    padding: var(--ds-space-5) var(--ds-space-6);
+    gap: var(--ds-space-3);
+    padding: var(--ds-space-4) var(--ds-space-4);
+    background: var(--at-bg-elevated);
+    border: 1px solid var(--at-line);
+    border-radius: var(--at-radius-xl);
+    box-shadow: var(--at-shadow);
   }
 }
 
 @media (min-width: 768px) {
   .section {
-    padding: var(--ds-space-6) var(--ds-space-8);
+    padding: var(--ds-space-5) var(--ds-space-6);
   }
 }
 
+/* موبایل: header داخل TransactionsTable مخفی — txHead در cockpit کافیه */
 .head {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding-block-end: var(--ds-space-3);
-  border-block-end: 1px dashed var(--at-line);
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .head {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-block-end: var(--ds-space-3);
+    border-block-end: 1px dashed var(--at-line);
+  }
 }
 
 @media (min-width: 768px) {
@@ -74,25 +212,40 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* ── override word-break از dash2-table__cell ────────────────────────────── */
+/* همه cells این جدول nowrap هستند — شکستن عدد/تاریخ مجاز نیست */
+:global(.dash2-table__cell) .kind,
+:global(.dash2-table__cell) .amount,
+:global(.dash2-table__cell) .dest,
+:global(.dash2-table__cell) .fee,
+:global(.dash2-table__cell) .status,
+:global(.dash2-table__cell) .date {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* cell styles */
 .kind {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 5px;
+  font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
   color: var(--at-fg);
+  white-space: nowrap;
 }
 
 .kindIcon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
   background: var(--at-surface-hover);
   color: var(--at-fg-muted);
+  flex-shrink: 0;
 }
 
 .kindIcon[data-tone="emerald"] {
@@ -128,23 +281,17 @@
 }
 
 .customerName {
-  font-size: 12px;
+  font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
   color: var(--at-fg);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 180px;
-}
-
-@media (max-width: 640px) {
-  .customerName {
-    max-width: 120px;
-  }
+  max-inline-size: 100%;
 }
 
 .customerPhone {
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--at-fg-muted);
   font-variant-numeric: tabular-nums;
   direction: ltr;
@@ -154,12 +301,13 @@
 .amount {
   display: inline-flex;
   align-items: baseline;
-  gap: 4px;
-  font-size: 13px;
+  gap: 3px;
+  font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-bold);
   color: var(--at-accent-fg);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
 }
 
 .amount[data-tone="rose"] {
@@ -168,61 +316,65 @@
 
 .amountCurrency {
   font-style: normal;
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--at-fg-subtle);
   font-weight: var(--ds-weight-semibold);
+  margin-inline-start: 1px;
 }
 
 .dest {
-  font-size: 12px;
+  font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
   color: var(--at-fg);
   font-variant-numeric: tabular-nums;
   display: inline-flex;
   align-items: baseline;
-  gap: 4px;
+  gap: 3px;
+  white-space: nowrap;
 }
 
 .destCurrency {
   font-style: normal;
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--at-fg-subtle);
   font-weight: var(--ds-weight-semibold);
 }
 
 .fee {
-  font-size: 11px;
+  font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
   color: var(--at-gold-fg);
   font-variant-numeric: tabular-nums;
   display: inline-flex;
   align-items: baseline;
   gap: 3px;
+  white-space: nowrap;
 }
 
 .feeCurrency {
   font-style: normal;
-  font-size: 9px;
+  font-size: 0.625rem;
   color: var(--at-fg-subtle);
   font-weight: var(--ds-weight-semibold);
 }
 
 .muted {
   color: var(--at-fg-faint);
-  font-size: 11px;
+  font-size: var(--ds-text-xs);
 }
 
 .status {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 8px;
-  font-size: 10px;
+  gap: 4px;
+  padding: 2px 7px;
+  font-size: 0.625rem;
   font-weight: var(--ds-weight-semibold);
   border-radius: 999px;
   background: var(--at-surface-hover);
   color: var(--at-fg-muted);
   letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
 .status[data-tone="emerald"] {
@@ -246,8 +398,9 @@
 }
 
 .date {
-  font-size: 11px;
+  font-size: 0.625rem;
   color: var(--at-fg-muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  letter-spacing: -0.01em;
 }

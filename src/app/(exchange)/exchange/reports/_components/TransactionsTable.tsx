@@ -1,9 +1,8 @@
 /**
  * TransactionsTable — جدول تراکنش‌های صرافی.
  *
- * از DataTable primitive (موجود در repo) استفاده می‌کند — هیچ markup تکراری.
- * ستون‌ها: ردیف، نوع/وضعیت، مشتری/طرف حساب، مبلغ، ارز، کارمزد، تاریخ، عملیات.
- * تبدیل amount از string (BigInt-safe) به فرمت قابل نمایش.
+ * دسکتاپ: DataTable primitive (flex table).
+ * موبایل (≤640px): card list — هر ردیف یه کارت کامپکت.
  *
  * Server Component — props از قبل serialize شده‌اند.
  */
@@ -12,6 +11,7 @@ import type { TransactionRow } from '@/actions/exchange-transactions';
 import { type Column, DataTable } from '@/components/Dashboard/primitives';
 import {
   ArrowDownLeft,
+  ArrowLeftRight,
   ArrowUpRight,
   CheckCircle2,
   Clock,
@@ -72,7 +72,7 @@ export default function TransactionsTable({ rows, total, className }: Props) {
     {
       key: 'kind',
       header: 'نوع',
-      width: 110,
+      width: 90,
       collapse: false,
       render: (r) => {
         const meta = KIND_META[r.kind] ?? { label: r.kind, Icon: Send, tone: 'muted' as const };
@@ -80,7 +80,7 @@ export default function TransactionsTable({ rows, total, className }: Props) {
         return (
           <span className={s.kind} data-tone={meta.tone}>
             <span className={s.kindIcon} data-tone={meta.tone} aria-hidden>
-              <Icon size={12} strokeWidth={1.75} />
+              <Icon size={11} strokeWidth={1.75} />
             </span>
             {meta.label}
           </span>
@@ -89,7 +89,8 @@ export default function TransactionsTable({ rows, total, className }: Props) {
     },
     {
       key: 'customer',
-      header: 'مشتری / طرف حساب',
+      header: 'مشتری',
+      width: 140,
       collapse: false,
       render: (r) => (
         <div className={s.customerCell}>
@@ -101,7 +102,7 @@ export default function TransactionsTable({ rows, total, className }: Props) {
     {
       key: 'amount',
       header: 'مبلغ',
-      width: 130,
+      width: 150,
       collapse: false,
       render: (r) => (
         <span className={s.amount} data-tone={r.kind === 'WITHDRAWAL' ? 'rose' : 'emerald'}>
@@ -114,7 +115,7 @@ export default function TransactionsTable({ rows, total, className }: Props) {
     {
       key: 'dest',
       header: 'مقصد',
-      width: 100,
+      width: 120,
       collapse: true,
       render: (r) =>
         r.destAmount && r.destCurrency ? (
@@ -128,7 +129,7 @@ export default function TransactionsTable({ rows, total, className }: Props) {
     {
       key: 'fee',
       header: 'کارمزد',
-      width: 90,
+      width: 110,
       collapse: true,
       render: (r) =>
         r.fee && Number(r.fee) > 0 ? (
@@ -142,7 +143,7 @@ export default function TransactionsTable({ rows, total, className }: Props) {
     {
       key: 'status',
       header: 'وضعیت',
-      width: 100,
+      width: 88,
       collapse: false,
       render: (r) => {
         const meta = STATUS_META[r.status] ?? {
@@ -153,7 +154,7 @@ export default function TransactionsTable({ rows, total, className }: Props) {
         const Icon = meta.Icon;
         return (
           <span className={s.status} data-tone={meta.tone}>
-            <Icon size={11} strokeWidth={2} aria-hidden />
+            <Icon size={10} strokeWidth={2} aria-hidden />
             {meta.label}
           </span>
         );
@@ -162,7 +163,7 @@ export default function TransactionsTable({ rows, total, className }: Props) {
     {
       key: 'date',
       header: 'تاریخ',
-      width: 120,
+      width: 130,
       collapse: true,
       render: (r) => <span className={s.date}>{fmtDate(r.createdAt)}</span>,
     },
@@ -181,9 +182,65 @@ export default function TransactionsTable({ rows, total, className }: Props) {
         <span className={s.total}>{new Intl.NumberFormat('fa-IR').format(total)} رکورد</span>
       </header>
 
-      <div className="overflow-x-auto">
+      {/* ── Desktop: DataTable (hidden on mobile) ──────────────────── */}
+      <div className={`${s.desktopOverrides} hidden sm:block overflow-x-auto`}>
         <DataTable columns={columns} rows={rows} rowKey={(r) => r.id} ariaLabel="جدول تراکنش‌ها" />
       </div>
+
+      {/* ── Mobile: card list (hidden on sm+) ──────────────────────── */}
+      <ol className={`${s.mobileList} flex sm:hidden`} aria-label="لیست تراکنش‌ها">
+        {rows.length === 0 ? (
+          <li className={s.mobileEmpty}>موردی یافت نشد</li>
+        ) : (
+          rows.map((r) => {
+            const kind = KIND_META[r.kind] ?? { label: r.kind, Icon: Send, tone: 'muted' as const };
+            const status = STATUS_META[r.status] ?? {
+              label: r.status,
+              tone: 'muted' as const,
+              Icon: Clock,
+            };
+            const KindIcon = kind.Icon;
+            const StatusIcon = status.Icon;
+            const isOut = r.kind === 'WITHDRAWAL';
+            const sign = isOut ? '−' : '+';
+            return (
+              <li key={r.id} className={s.mobileCard}>
+                {/* ردیف بالا: آیکون + نوع + مبلغ */}
+                <div className={s.mobileTop}>
+                  <span className={s.kindIcon} data-tone={kind.tone} aria-hidden>
+                    <KindIcon size={12} strokeWidth={1.75} />
+                  </span>
+                  <span className={s.mobileKind}>{kind.label}</span>
+                  {r.kind === 'EXCHANGE' && r.destAmount && r.destCurrency && (
+                    <span className={s.mobileExchange}>
+                      <ArrowLeftRight size={9} aria-hidden />
+                      {fmtNum(r.destAmount)} {r.destCurrency}
+                    </span>
+                  )}
+                  <span className={s.mobileAmount} data-tone={isOut ? 'rose' : 'emerald'}>
+                    {sign}
+                    {fmtNum(r.amount)}
+                    <em className={s.amountCurrency}>{r.currency}</em>
+                  </span>
+                </div>
+                {/* ردیف پایین: مشتری + وضعیت + تاریخ */}
+                <div className={s.mobileMeta}>
+                  <span className={s.mobileCustomer}>
+                    {r.customer?.fullName ?? r.counterparty ?? '—'}
+                  </span>
+                  <span className={s.dot} aria-hidden />
+                  <span className={s.status} data-tone={status.tone}>
+                    <StatusIcon size={9} strokeWidth={2} aria-hidden />
+                    {status.label}
+                  </span>
+                  <span className={s.dot} aria-hidden />
+                  <span className={s.date}>{fmtDate(r.createdAt)}</span>
+                </div>
+              </li>
+            );
+          })
+        )}
+      </ol>
     </section>
   );
 }
