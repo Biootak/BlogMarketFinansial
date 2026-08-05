@@ -140,12 +140,13 @@ export default function AtelierWeekRhythm({ scheduledPosts }: AtelierWeekRhythmP
         return prev;
       });
     };
-    document.addEventListener('visibilitychange', () => {
+    const onVisibility = () => {
       if (document.visibilityState === 'visible') checkDayRollover();
-    });
+    };
+    document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('focus', checkDayRollover);
     return () => {
-      document.removeEventListener('visibilitychange', checkDayRollover);
+      document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('focus', checkDayRollover);
     };
   }, []);

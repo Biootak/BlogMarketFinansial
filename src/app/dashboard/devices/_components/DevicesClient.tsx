@@ -50,7 +50,7 @@ import {
   UserCheck,
   XCircle,
 } from 'lucide-react';
-import { useCallback, useMemo, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import s from './DevicesClient.module.css';
 
 type Props = {
@@ -191,6 +191,13 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
   const [filter, setFilter] = useState<StatusFilter>('all');
   const [search, setSearch] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    };
+  }, []);
 
   const stats = useMemo(
     () => ({
@@ -318,11 +325,12 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
     });
   }, [devices]);
 
-  const handleCopy = (id: string, fp: string) => {
+  const handleCopy = useCallback((id: string, fp: string) => {
     navigator.clipboard.writeText(fp);
     setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
-  };
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    copyTimerRef.current = setTimeout(() => setCopiedId(null), 2000);
+  }, []);
 
   const currentDevice = useMemo(() => {
     return [...devices].sort(

@@ -12,7 +12,7 @@ import { RefreshCw } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import type React from 'react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   HiOutlineBanknotes,
   HiOutlineChartBar,
@@ -87,11 +87,19 @@ export default function ReportsShell() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>('finance');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+    };
+  }, []);
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
     router.refresh();
-    setTimeout(() => setIsRefreshing(false), 800);
+    if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+    refreshTimerRef.current = setTimeout(() => setIsRefreshing(false), 800);
   }, [router]);
 
   const renderActiveTab = () => {

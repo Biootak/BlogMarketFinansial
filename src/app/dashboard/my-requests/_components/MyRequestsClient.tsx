@@ -1001,6 +1001,13 @@ function ClaimGuestPanel({ onClaimed }: { onClaimed: () => void }) {
   const [otpVerifying, setOtpVerifying] = useState(false);
   const [otpTimer, setOtpTimer] = useState(0);
   const [trackingForOtp, setTrackingForOtp] = useState('');
+  const claimTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (claimTimerRef.current) clearTimeout(claimTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (otpTimer <= 0) return;
@@ -1048,7 +1055,8 @@ function ClaimGuestPanel({ onClaimed }: { onClaimed: () => void }) {
     }
     setMsg('سفارش با موفقیت به حساب شما اضافه شد!');
     setIsErr(false);
-    setTimeout(() => {
+    if (claimTimerRef.current) clearTimeout(claimTimerRef.current);
+    claimTimerRef.current = setTimeout(() => {
       setOpen(false);
       onClaimed();
     }, 1200);
@@ -1067,7 +1075,8 @@ function ClaimGuestPanel({ onClaimed }: { onClaimed: () => void }) {
     if (res.success) {
       setMsg('سفارش با موفقیت به حساب شما اضافه شد!');
       setIsErr(false);
-      setTimeout(() => {
+      if (claimTimerRef.current) clearTimeout(claimTimerRef.current);
+      claimTimerRef.current = setTimeout(() => {
         setOpen(false);
         onClaimed();
       }, 1200);

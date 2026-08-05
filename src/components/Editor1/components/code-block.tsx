@@ -1,28 +1,30 @@
 import type { NodeViewProps } from '@tiptap/core';
 import { NodeViewContent, NodeViewWrapper } from '@tiptap/react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Icon } from '../../ui/icon';
 
 import { findLanguage } from '../lib/code-block-language-loader';
 
-let copiedTimeout: ReturnType<typeof setTimeout> | undefined;
-
 const CodeBlock = ({ node: { attrs, textContent } }: NodeViewProps) => {
   const [copied, setCopied] = useState(false);
+  // per-instance ref — avoids shared module-level timer bug when multiple
+  // code blocks are mounted simultaneously
+  const copiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const onCopy = useCallback(() => {
     setCopied(true);
 
     navigator.clipboard.writeText(textContent);
 
-    copiedTimeout = setTimeout(() => {
+    clearTimeout(copiedTimeoutRef.current);
+    copiedTimeoutRef.current = setTimeout(() => {
       setCopied(false);
     }, 2500);
   }, [textContent]);
 
   useEffect(() => {
     return () => {
-      clearTimeout(copiedTimeout);
+      clearTimeout(copiedTimeoutRef.current);
     };
   }, []);
 

@@ -65,7 +65,7 @@ import {
   X,
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useState, useTransition } from 'react';
+import { useCallback, useRef, useState, useTransition } from 'react';
 import { exportAuditLogs } from '../_actions/exportAuditLog';
 
 import s from './AuditLogClient.module.css';
@@ -171,10 +171,12 @@ function isToday(iso: string) {
 
 function useCopy() {
   const [copied, setCopied] = useState<string | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const copy = useCallback((text: string, key: string) => {
     navigator.clipboard.writeText(text).then(() => {
       setCopied(key);
-      setTimeout(() => setCopied(null), 1800);
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => setCopied(null), 1800);
     });
   }, []);
   return { copied, copy };

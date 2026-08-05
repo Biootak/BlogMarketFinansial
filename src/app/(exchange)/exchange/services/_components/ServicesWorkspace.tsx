@@ -37,7 +37,7 @@ import {
   Sparkles,
   Type,
 } from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import ServicesOnboarding from './ServicesOnboarding';
 import s from './ServicesWorkspace.module.css';
 
@@ -64,6 +64,13 @@ export default function ServicesWorkspace({ initialItems, canEdit }: Props) {
   const [items, setItems] = useState<ItemState[]>(initialItems);
   const [status, setStatus] = useState<SaveStatus>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+    };
+  }, []);
 
   // Initial values برای dirty tracking
   const initialRef = useRef(
@@ -120,10 +127,11 @@ export default function ServicesWorkspace({ initialItems, canEdit }: Props) {
     return current !== initialRef.current;
   }, [items]);
 
-  if (status === 'idle' && isDirty && canEdit) {
-    // Mark dirty asynchronously
-    queueMicrotask(() => setStatus('dirty'));
-  }
+  useEffect(() => {
+    if (status === 'idle' && isDirty && canEdit) {
+      setStatus('dirty');
+    }
+  }, [status, isDirty, canEdit]);
 
   // ── save ────────────────────────────────────────────
   const handleSave = async () => {
@@ -173,7 +181,8 @@ export default function ServicesWorkspace({ initialItems, canEdit }: Props) {
         })),
       );
       setStatus('saved');
-      setTimeout(() => setStatus('idle'), 1500);
+      if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+      statusTimerRef.current = setTimeout(() => setStatus('idle'), 1500);
     } else {
       setStatus('error');
       setErrorMessage(res.error.message);

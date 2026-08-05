@@ -416,6 +416,16 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const listRef = useRef<HTMLDivElement>(null);
+  const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (successTimerRef.current) clearTimeout(successTimerRef.current);
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+    };
+  }, []);
 
   // ── KPI calculations ──────────────────────────────────────────────────────
   const kpi = useMemo(() => {
@@ -444,12 +454,14 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
 
   // ── Feedback helpers ──────────────────────────────────────────────────────
   function showSuccess(msg: string) {
+    if (successTimerRef.current) clearTimeout(successTimerRef.current);
     setSuccessMsg(msg);
-    setTimeout(() => setSuccessMsg(null), 3000);
+    successTimerRef.current = setTimeout(() => setSuccessMsg(null), 3000);
   }
   function showError(msg: string) {
+    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
     setErrorMsg(msg);
-    setTimeout(() => setErrorMsg(null), 4000);
+    errorTimerRef.current = setTimeout(() => setErrorMsg(null), 4000);
   }
 
   // ── Single approve ─────────────────────────────────────────────────────────

@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { CheckCircle2, Loader2, Save, X, XCircle } from 'lucide-react';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import s from './TransferProvidersWorkspace.module.css';
 
 const TRANSFER_KIND_VALUES = ['SARAJI', 'ONLINE', 'BANK', 'CRYPTO'] as const;
@@ -89,6 +89,13 @@ export default function ProviderDrawer({ open, editRow, onClose, onSave }: Props
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -129,7 +136,8 @@ export default function ProviderDrawer({ open, editRow, onClose, onSave }: Props
       const res = await onSave(data);
       if (res.success) {
         setSaved(true);
-        setTimeout(() => {
+        if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+        savedTimerRef.current = setTimeout(() => {
           setSaved(false);
           onClose();
         }, 1200);

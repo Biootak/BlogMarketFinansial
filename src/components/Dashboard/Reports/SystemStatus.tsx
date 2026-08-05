@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/components/ui/use-toast';
 import { AlertCircle, CheckCircle2, Database, HardDrive, Server } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface SystemStatus {
   cpu?: {
@@ -37,41 +37,49 @@ interface SystemStatus {
 
 export default function SystemStatus() {
   const { toast } = useToast();
+  // stable ref so the polling interval never needs to be recreated when
+  // toast identity changes across renders
+  const toastRef = useRef(toast);
+  useEffect(() => {
+    toastRef.current = toast;
+  }, [toast]);
+
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<SystemStatus | null | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     const loadStatus = async () => {
       try {
         const result = await getSystemStatus();
+        if (cancelled) return;
         if (result.success && result.data) {
           setStatus(result.data);
           setError(null);
-          toast({
-            title: 'موفقیت',
-            description: 'وضعیت سیستم با موفقیت دریافت شد',
-            variant: 'success',
-          });
         } else {
           throw new Error(result.message || 'Failed to load system status');
         }
       } catch {
+        if (cancelled) return;
         setError('خطا در بارگذاری وضعیت سیستم');
-        toast({
+        toastRef.current({
           title: 'خطا',
           description: 'خطا در دریافت وضعیت سیستم',
           variant: 'destructive',
         });
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     loadStatus();
     const interval = setInterval(loadStatus, 30000);
-    return () => clearInterval(interval);
-  }, [toast]);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
 
   const formatBytes = (bytes: number) => {
     if (!bytes || Number.isNaN(bytes)) return '0 بایت';
