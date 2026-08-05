@@ -1,8 +1,9 @@
 'use client';
 
 /**
- * ReportsShell — client component با tab switcher برای صفحه گزارش‌ها
- * page.tsx (Server Component) auth را enforce می‌کند، این فایل UI را مدیریت می‌کند.
+ * ReportsShell 2026 — Command-Room Layout
+ * یک صفحه‌ی «اتاق کنترل» با tab indicator slide + asymmetric layout.
+ * هیچ hex رنگ نیست — فقط DS tokens.
  */
 
 import { PageHeader } from '@/components/Dashboard/primitives';
@@ -18,6 +19,7 @@ import {
   HiOutlineCommandLine,
   HiOutlineSquares2X2,
 } from 'react-icons/hi2';
+import s from './ReportsShell.module.css';
 
 const SystemReports = dynamic(() => import('@/components/Dashboard/Reports/SystemReports'), {
   loading: () => <ReportsSkeleton />,
@@ -39,9 +41,51 @@ const FinanceReport = dynamic(() => import('@/components/Dashboard/Reports/Finan
   ssr: false,
 });
 
+const tabIds = ['finance', 'overview', 'activity', 'logs'] as const;
+type TabId = (typeof tabIds)[number];
+
+interface Tab {
+  id: TabId;
+  label: string;
+  desc: string;
+  icon: React.ComponentType<{ className?: string; size?: number }>;
+  accent: string;
+}
+
+const TABS: Tab[] = [
+  {
+    id: 'finance',
+    label: 'گزارش مالی',
+    desc: 'تراکنش‌ها · صرافی‌ها · تسویه‌ها',
+    icon: HiOutlineBanknotes,
+    accent: 'emerald',
+  },
+  {
+    id: 'overview',
+    label: 'نمای کلی',
+    desc: 'بلاگ · کاربران · بازدیدها',
+    icon: HiOutlineSquares2X2,
+    accent: 'violet',
+  },
+  {
+    id: 'activity',
+    label: 'فعالیت‌ها',
+    desc: 'تاریخچه · رویدادها · کاربران',
+    icon: HiOutlineChartBar,
+    accent: 'cyan',
+  },
+  {
+    id: 'logs',
+    label: 'لاگ سیستم',
+    desc: 'خطاها · هشدارها · رویدادها',
+    icon: HiOutlineCommandLine,
+    accent: 'rose',
+  },
+];
+
 export default function ReportsShell() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('finance');
+  const [activeTab, setActiveTab] = useState<TabId>('finance');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = useCallback(() => {
@@ -49,25 +93,6 @@ export default function ReportsShell() {
     router.refresh();
     setTimeout(() => setIsRefreshing(false), 800);
   }, [router]);
-
-  // 2026-08-perf: تعریف tabs بدون component — رندر lazy روی tab فعال.
-  // قبلاً همه ۴ component (SystemReports، FinanceReport، ActivityLog، SystemLogs)
-  // هنگام mount با هم رندر می‌شدند (حتی اگر فقط یکی دیده می‌شد). recharts و
-  // تمام side-effect های fetch آن‌ها اجرا می‌شدند. حالا فقط component tab
-  // فعال mount می‌شود.
-  const tabIds = ['finance', 'overview', 'activity', 'logs'] as const;
-  type TabId = (typeof tabIds)[number];
-
-  const tabs: Array<{
-    id: TabId;
-    label: string;
-    icon: React.ComponentType<{ className?: string }>;
-  }> = [
-    { id: 'finance', label: 'گزارش مالی', icon: HiOutlineBanknotes },
-    { id: 'overview', label: 'نمای کلی بلاگ', icon: HiOutlineSquares2X2 },
-    { id: 'activity', label: 'فعالیت‌ها', icon: HiOutlineChartBar },
-    { id: 'logs', label: 'لاگ‌های سیستم', icon: HiOutlineCommandLine },
-  ];
 
   const renderActiveTab = () => {
     switch (activeTab) {
@@ -84,14 +109,17 @@ export default function ReportsShell() {
     }
   };
 
+  const activeIdx = TABS.findIndex((t) => t.id === activeTab);
+
   return (
-    <div className="at-page" dir="rtl">
+    <div className={s.shell} dir="rtl">
+      {/* ── Page Header ── */}
       <PageHeader
         variant="minimal"
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'گزارش‌ها' }]}
-        eyebrow="تحلیل"
+        eyebrow="تحلیل و آمار"
         title="گزارش‌ها"
-        description="گزارش‌های سیستمی، فعالیت‌ها و لاگ‌های رویداد"
+        description="داده‌های مالی، فعالیت کاربران و وضعیت سیستم"
         icon="bar-chart"
         accent="cyan"
         actions={
@@ -108,9 +136,9 @@ export default function ReportsShell() {
         }
       />
 
-      {/* Tab bar — atelier */}
-      <nav className="at-form-tabs" role="tablist" style={{ marginBottom: '18px' }}>
-        {tabs.map((tab) => {
+      {/* ── Tab Navigation ── */}
+      <nav className={s.tabNav} role="tablist" aria-label="بخش‌های گزارش">
+        {TABS.map((tab) => {
           const isActive = activeTab === tab.id;
           const Icon = tab.icon;
           return (
@@ -119,21 +147,39 @@ export default function ReportsShell() {
               type="button"
               role="tab"
               aria-selected={isActive}
+              aria-controls={`tabpanel-${tab.id}`}
               onClick={() => setActiveTab(tab.id)}
-              className={`at-form-tab ${isActive ? 'is-active' : ''}`}
+              className={`${s.tabItem} ${isActive ? s.tabItemActive : ''}`}
+              data-accent={tab.accent}
             >
-              <Icon className="size-4" />
-              {tab.label}
+              <span className={s.tabIconWrap} aria-hidden>
+                <Icon size={18} />
+              </span>
+              <span className={s.tabText}>
+                <span className={s.tabLabel}>{tab.label}</span>
+                <span className={s.tabDesc}>{tab.desc}</span>
+              </span>
+              {isActive && <span className={s.tabPip} aria-hidden />}
             </button>
           );
         })}
+
+        {/* Slide indicator — positioniert via CSS custom prop */}
+        <span
+          className={s.tabSlider}
+          style={{ '--tab-idx': activeIdx } as React.CSSProperties}
+          aria-hidden
+        />
       </nav>
 
-      {/* Content */}
-      <div className="at-form-section">
-        <div className="at-form-section__body" style={{ minHeight: '480px' }}>
-          {renderActiveTab()}
-        </div>
+      {/* ── Tab Content ── */}
+      <div
+        id={`tabpanel-${activeTab}`}
+        role="tabpanel"
+        aria-label={TABS.find((t) => t.id === activeTab)?.label}
+        className={s.contentPanel}
+      >
+        {renderActiveTab()}
       </div>
     </div>
   );

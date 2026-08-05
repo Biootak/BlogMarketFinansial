@@ -1,9 +1,10 @@
 'use client';
 
 /**
- * SystemLogsData — 2026 System Logs Viewer
- * DS tokens only (--ds-* / --at-*) — no Tailwind color classes
- * Terminal-inspired · high-density · RTL-safe
+ * SystemLogsData 2026 — Terminal-Pro Viewer
+ * ─ Header bar با level filter + live badge
+ * ─ Log rows با monospace source + severity ring
+ * ─ DS tokens only · RTL-safe · no hex
  */
 
 import { getSystemLogs } from '@/actions/reportActions';
@@ -22,6 +23,7 @@ import {
   AlertTriangle,
   ChevronLeft,
   ChevronRight,
+  Circle,
   Info,
   Terminal,
 } from 'lucide-react';
@@ -38,18 +40,41 @@ interface SystemLog {
 
 type LogLevel = 'ERROR' | 'WARNING' | 'INFO';
 
-const LEVEL_META: Record<LogLevel, { label: string; icon: React.ReactNode; css: string }> = {
-  ERROR: { label: 'خطا', icon: <AlertCircle size={13} aria-hidden />, css: s.levelError },
-  WARNING: { label: 'هشدار', icon: <AlertTriangle size={13} aria-hidden />, css: s.levelWarning },
-  INFO: { label: 'اطلاعات', icon: <Info size={13} aria-hidden />, css: s.levelInfo },
+interface LevelMeta {
+  label: string;
+  icon: React.ReactNode;
+  css: string;
+  dotCss: string;
+}
+
+const LEVEL_META: Record<LogLevel, LevelMeta> = {
+  ERROR: {
+    label: 'خطا',
+    icon: <AlertCircle size={13} aria-hidden />,
+    css: s.levelError,
+    dotCss: s.dotError,
+  },
+  WARNING: {
+    label: 'هشدار',
+    icon: <AlertTriangle size={13} aria-hidden />,
+    css: s.levelWarning,
+    dotCss: s.dotWarning,
+  },
+  INFO: {
+    label: 'اطلاعات',
+    icon: <Info size={13} aria-hidden />,
+    css: s.levelInfo,
+    dotCss: s.dotInfo,
+  },
 };
 
-function getLevelMeta(level: string) {
+function getLevelMeta(level: string): LevelMeta {
   return (
     LEVEL_META[level.toUpperCase() as LogLevel] ?? {
       label: level,
-      icon: <Info size={13} aria-hidden />,
+      icon: <Circle size={13} aria-hidden />,
       css: s.levelDefault,
+      dotCss: s.dotDefault,
     }
   );
 }
@@ -60,7 +85,7 @@ export default function SystemLogsData() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [level, setLevel] = useState('all');
-  const LIMIT = 10;
+  const LIMIT = 12;
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
@@ -89,31 +114,41 @@ export default function SystemLogsData() {
   const warnCount = logs.filter((l) => l.level === 'WARNING').length;
   const infoCount = logs.filter((l) => l.level === 'INFO').length;
 
-  if (loading) {
-    return (
-      <div className={s.loading} aria-label="در حال بارگذاری">
-        {Array.from({ length: 5 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
-          <div key={i} className={s.skRow} />
-        ))}
-      </div>
-    );
-  }
-
   return (
     <div className={s.root} dir="rtl">
-      {/* ── Header ── */}
-      <div className={s.head}>
-        <div className={s.headLeft}>
-          <div className={s.headIcon} aria-hidden>
-            <Terminal size={16} />
-          </div>
+      {/* ── Terminal Header Bar ── */}
+      <div className={s.termBar}>
+        <div className={s.termBarLeft}>
+          {/* Traffic lights */}
+          <span className={s.termDots} aria-hidden>
+            <span className={s.termDot} data-color="red" />
+            <span className={s.termDot} data-color="yellow" />
+            <span className={s.termDot} data-color="green" />
+          </span>
+          <span className={s.termIcon} aria-hidden>
+            <Terminal size={15} />
+          </span>
           <div>
-            <h3 className={s.headTitle}>لاگ‌های سیستم</h3>
-            <p className={s.headDesc}>مشاهده و فیلتر رویدادهای سیستم</p>
+            <p className={s.termTitle}>لاگ‌های سیستم</p>
+            <p className={s.termSub}>System Event Log Viewer</p>
           </div>
         </div>
-        <div className={s.headRight}>
+
+        <div className={s.termBarRight}>
+          {/* Level pill counters */}
+          <span className={`${s.levelPill} ${s.levelPillError}`} aria-label={`${errCount} خطا`}>
+            <AlertCircle size={11} aria-hidden />
+            <span>{errCount.toLocaleString('fa-IR')}</span>
+          </span>
+          <span className={`${s.levelPill} ${s.levelPillWarn}`} aria-label={`${warnCount} هشدار`}>
+            <AlertTriangle size={11} aria-hidden />
+            <span>{warnCount.toLocaleString('fa-IR')}</span>
+          </span>
+          <span className={`${s.levelPill} ${s.levelPillInfo}`} aria-label={`${infoCount} اطلاعات`}>
+            <Info size={11} aria-hidden />
+            <span>{infoCount.toLocaleString('fa-IR')}</span>
+          </span>
+
           <Select
             value={level}
             onValueChange={(v) => {
@@ -134,97 +169,73 @@ export default function SystemLogsData() {
         </div>
       </div>
 
-      {/* ── KPI Strip ── */}
-      <div className={s.kpiStrip}>
-        <div className={s.kpiItem}>
-          <span className={s.kpiIcon} data-level="info" aria-hidden>
-            <Info size={14} />
-          </span>
-          <span className={`${s.kpiVal} ${s.kpiValInfo}`}>{infoCount.toLocaleString('fa-IR')}</span>
-          <span className={s.kpiLabel}>اطلاعات</span>
-        </div>
-        <div className={s.kpiDivider} aria-hidden />
-        <div className={s.kpiItem}>
-          <span className={s.kpiIcon} data-level="warning" aria-hidden>
-            <AlertTriangle size={14} />
-          </span>
-          <span className={`${s.kpiVal} ${s.kpiValWarning}`}>
-            {warnCount.toLocaleString('fa-IR')}
-          </span>
-          <span className={s.kpiLabel}>هشدار</span>
-        </div>
-        <div className={s.kpiDivider} aria-hidden />
-        <div className={s.kpiItem}>
-          <span className={s.kpiIcon} data-level="error" aria-hidden>
-            <AlertCircle size={14} />
-          </span>
-          <span className={`${s.kpiVal} ${s.kpiValError}`}>{errCount.toLocaleString('fa-IR')}</span>
-          <span className={s.kpiLabel}>خطا</span>
-        </div>
-      </div>
+      {/* ── Log Body ── */}
+      <div className={s.termBody}>
+        {loading ? (
+          <div className={s.loadRows}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static
+              <div key={i} className={s.skRow} style={{ '--sk-i': i } as React.CSSProperties} />
+            ))}
+          </div>
+        ) : logs.length === 0 ? (
+          <MillionDollarEmpty
+            variant="default"
+            tone="neutral"
+            eyebrow="لاگ سیستم"
+            title="لاگی یافت نشد"
+            description="با فیلتر انتخابی، رویدادی ثبت نشده است."
+          />
+        ) : (
+          <div className={s.logList} role="log" aria-live="polite" aria-label="لاگ‌های سیستم">
+            {logs.map((log, i) => {
+              const meta = getLevelMeta(log.level);
+              return (
+                <div
+                  key={log.id}
+                  className={s.logRow}
+                  style={{ '--row-i': i } as React.CSSProperties}
+                >
+                  {/* Severity dot */}
+                  <span className={`${s.severityDot} ${meta.dotCss}`} aria-hidden />
 
-      {/* ── Table ── */}
-      {logs.length === 0 ? (
-        <MillionDollarEmpty
-          variant="default"
-          tone="neutral"
-          eyebrow="لاگ سیستم"
-          title="لاگی یافت نشد"
-          description="با فیلتر انتخابی، رویدادی ثبت نشده است."
-        />
-      ) : (
-        <div className={s.tableWrap}>
-          <table className={s.table} aria-label="لاگ‌های سیستم">
-            <thead>
-              <tr>
-                <th className={s.th} style={{ width: '100px' }}>
-                  سطح
-                </th>
-                <th className={s.th}>پیام</th>
-                <th className={s.th} style={{ width: '120px' }}>
-                  منبع
-                </th>
-                <th className={s.th} style={{ width: '160px' }}>
-                  زمان
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {logs.map((log, i) => {
-                const meta = getLevelMeta(log.level);
-                return (
-                  <tr key={log.id} className={s.tr} style={{ '--row-i': i } as React.CSSProperties}>
-                    <td className={s.td}>
-                      <span className={`${s.levelBadge} ${meta.css}`}>
-                        {meta.icon}
-                        {meta.label}
-                      </span>
-                    </td>
-                    <td className={s.td}>
-                      <p className={s.message}>{log.message}</p>
-                    </td>
-                    <td className={s.td}>
-                      <span className={s.source}>{log.source}</span>
-                    </td>
-                    <td className={s.td}>
-                      <time className={s.time} dateTime={new Date(log.timestamp).toISOString()}>
-                        {new Date(log.timestamp).toLocaleString('fa-IR')}
-                      </time>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+                  {/* Level badge */}
+                  <span className={`${s.levelBadge} ${meta.css}`} aria-label={`سطح: ${meta.label}`}>
+                    {meta.icon}
+                    <span>{meta.label}</span>
+                  </span>
+
+                  {/* Message */}
+                  <p className={s.logMsg}>{log.message}</p>
+
+                  {/* Source */}
+                  <span className={s.logSource}>{log.source}</span>
+
+                  {/* Time */}
+                  <time
+                    className={s.logTime}
+                    dateTime={new Date(log.timestamp).toISOString()}
+                    title={new Date(log.timestamp).toLocaleString('fa-IR')}
+                  >
+                    {new Date(log.timestamp).toLocaleTimeString('fa-IR', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit',
+                    })}
+                  </time>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* ── Pagination ── */}
       {totalPages > 1 && (
         <div className={s.pagination}>
           <span className={s.paginationInfo}>
-            نمایش <strong>{Math.min(page * LIMIT, total).toLocaleString('fa-IR')}</strong> از{' '}
-            <strong>{total.toLocaleString('fa-IR')}</strong>
+            <span className={s.paginationTotal}>{total.toLocaleString('fa-IR')}</span>
+            {' '}رویداد کل
           </span>
           <div className={s.paginationBtns}>
             <Button

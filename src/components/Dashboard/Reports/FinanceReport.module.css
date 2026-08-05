@@ -1,159 +1,473 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   FinanceReport.module.css — 2026 Asymmetric Command-Center
+   DS tokens only · RTL-safe · no hex/rgb · no emoji
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Root ─────────────────────────────────────────────────────────────────── */
 .root {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-8);
-  perspective: 1000px;
-}
-
-/* Glassmorphism KPI Cards */
-.kpiGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--ds-space-6);
 }
-@media (min-width: 640px) {
-  .kpiGrid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   KPI Row
+   ═══════════════════════════════════════════════════════════════════════════ */
+.kpiRow {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--ds-space-3);
+}
+
+@media (max-width: 1100px) {
+  .kpiRow {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-.kpiCard {
-  background: var(--color-background-secondary);
-  border: 1px solid var(--color-border-secondary);
-  border-radius: 24px;
-  padding: var(--ds-space-6);
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-2);
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  position: relative;
-  overflow: hidden;
-  box-shadow: var(--ds-shadow-sm);
-}
-
-.kpiCard::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: var(--accent, var(--color-brand-accent));
-  opacity: 0.8;
-}
-
-.kpiCard:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  border-color: var(--accent, var(--color-brand-accent));
-}
-
-.kpiIcon {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: color-mix(in oklch, var(--accent, var(--color-brand-accent)) 10%, transparent);
-  color: var(--accent, var(--color-brand-accent));
-  border-radius: 12px;
-  margin-bottom: var(--ds-space-2);
-}
-
-.kpiValue {
-  font-size: var(--ds-text-2xl);
-  font-weight: 700;
-  font-family: var(--ds-font-mono);
-  color: var(--color-text-primary);
-}
-
-.kpiLabel {
-  font-size: var(--ds-text-sm);
-  color: var(--color-text-tertiary);
-  font-weight: 500;
-}
-
-.kpiSub {
-  font-size: var(--ds-text-xs);
-  color: var(--color-text-tertiary);
-  opacity: 0.7;
-}
-
-/* Charts & Trends */
-.chartCard {
-  background: var(--color-background-secondary);
-  border: 1px solid var(--color-border-secondary);
-  border-radius: 28px;
-  padding: var(--ds-space-8);
-  box-shadow: var(--ds-shadow-md);
-  backdrop-filter: blur(12px);
-}
-
-.chartTitle {
-  font-size: var(--ds-text-lg);
-  font-weight: 600;
-  margin-bottom: var(--ds-space-8);
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-3);
-  color: var(--color-text-primary);
-}
-
-.sparklineWrap {
-  width: 100%;
-  height: 300px;
-  position: relative;
-}
-
-.bottomRow {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--ds-space-8);
-}
-@media (min-width: 900px) {
-  .bottomRow {
+@media (max-width: 680px) {
+  .kpiRow {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-/* Animations & Transitions */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+@media (max-width: 360px) {
+  .kpiRow {
+    grid-template-columns: 1fr;
   }
 }
 
-.skeletonCard {
-  background: var(--color-background-tertiary);
-  border-radius: 24px;
-  height: 160px;
-  animation: pulse 2s infinite ease-in-out;
+/* ── KPI Card ── */
+.kpiCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-4);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-xl);
+  overflow: hidden;
+  box-shadow: var(--ds-shadow-sm);
+  transition:
+    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart),
+    border-color var(--ds-duration-base) var(--ds-ease-out-quart),
+    transform var(--ds-duration-base) var(--ds-ease-out-quart);
+  cursor: default;
 }
 
-@keyframes pulse {
-  0% {
-    opacity: 0.6;
-  }
-  50% {
-    opacity: 0.3;
-  }
-  100% {
-    opacity: 0.6;
-  }
+.kpiCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--ds-shadow-md);
 }
 
-/* Responsive Overrides */
-@media (max-width: 768px) {
+/* Tone variants — left border accent */
+.kpiCard::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 3px;
+  border-radius: var(--ds-radius-full) 0 0 var(--ds-radius-full);
+}
+
+.kpiCard--emerald::before { background: var(--nova-emerald); }
+.kpiCard--amber::before   { background: var(--nova-amber); }
+.kpiCard--cyan::before    { background: var(--nova-cyan); }
+.kpiCard--violet::before  { background: var(--nova-violet); }
+.kpiCard--rose::before    { background: var(--nova-rose); }
+
+/* ── KPI Top (icon + trend) ── */
+.kpiTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+
+/* ── KPI Icon ── */
+.kpiIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--ds-radius-md);
+  flex-shrink: 0;
+}
+
+.kpiIcon--emerald {
+  background: color-mix(in oklch, var(--nova-emerald) 12%, var(--ds-canvas));
+  color: var(--nova-emerald);
+}
+
+.kpiIcon--amber {
+  background: color-mix(in oklch, var(--nova-amber) 12%, var(--ds-canvas));
+  color: var(--nova-amber);
+}
+
+.kpiIcon--cyan {
+  background: color-mix(in oklch, var(--nova-cyan) 12%, var(--ds-canvas));
+  color: var(--nova-cyan);
+}
+
+.kpiIcon--violet {
+  background: color-mix(in oklch, var(--nova-violet) 12%, var(--ds-canvas));
+  color: var(--nova-violet);
+}
+
+.kpiIcon--rose {
+  background: color-mix(in oklch, var(--nova-rose) 12%, var(--ds-canvas));
+  color: var(--nova-rose);
+}
+
+/* ── KPI Trend badge ── */
+.kpiTrend {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  border-radius: var(--ds-radius-full);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  flex-shrink: 0;
+}
+
+.kpiTrend--up {
+  background: var(--nova-up-bg);
+  color: var(--nova-up);
+}
+
+.kpiTrend--down {
+  background: var(--nova-down-bg);
+  color: var(--nova-down);
+}
+
+/* ── KPI Text ── */
+.kpiValue {
+  font-size: var(--ds-text-2xl);
+  font-weight: var(--ds-weight-extrabold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--ds-text-primary);
+  margin: 0;
+}
+
+.kpiLabel {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-secondary);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.kpiSub {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Hero Chart
+   ═══════════════════════════════════════════════════════════════════════════ */
+.heroChart {
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-2xl);
+  padding: var(--ds-space-5);
+  box-shadow: var(--ds-shadow-sm);
+  overflow: hidden;
+}
+
+.heroChartHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  margin-block-end: var(--ds-space-4);
+}
+
+.heroChartEyebrow {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-text-muted);
+  margin: 0 0 var(--ds-space-1);
+}
+
+.heroChartTitle {
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.refreshBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--ds-radius-md);
+  border: 1px solid var(--ds-border-default);
+  background: transparent;
+  color: var(--ds-text-muted);
+  cursor: pointer;
+  transition:
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    background var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.refreshBtn:hover {
+  color: var(--ds-text-primary);
+  border-color: var(--ds-border-strong);
+  background: var(--ds-canvas-subtle);
+}
+
+.heroChartBody {
+  margin-block-start: var(--ds-space-2);
+}
+
+.heroLegend {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-4);
+  margin-block-start: var(--ds-space-3);
+  padding-block-start: var(--ds-space-3);
+  border-block-start: 1px solid var(--ds-border-subtle);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
+  font-weight: var(--ds-weight-medium);
+}
+
+.legendDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--ds-radius-full);
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Bottom Row
+   ═══════════════════════════════════════════════════════════════════════════ */
+.bottomRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ds-space-5);
+}
+
+@media (max-width: 840px) {
   .bottomRow {
     grid-template-columns: 1fr;
   }
+}
 
-  .kpiGrid {
-    grid-template-columns: 1fr 1fr;
-  }
+/* ── Chart Card ── */
+.chartCard {
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-2xl);
+  padding: var(--ds-space-5);
+  box-shadow: var(--ds-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.cardHeadIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--ds-radius-md);
+  flex-shrink: 0;
+}
+
+.cardHeadIcon--cyan {
+  background: color-mix(in oklch, var(--nova-cyan) 12%, var(--ds-canvas));
+  color: var(--nova-cyan);
+}
+
+.cardHeadIcon--violet {
+  background: color-mix(in oklch, var(--nova-violet) 12%, var(--ds-canvas));
+  color: var(--nova-violet);
+}
+
+.cardTitle {
+  font-size: var(--ds-text-base);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-primary);
+  margin: 0;
+  line-height: var(--ds-leading-tight);
+}
+
+.barChartWrap {
+  flex: 1;
+}
+
+/* ── Pie / Settlement ── */
+.pieWrap {
+  display: flex;
+  justify-content: center;
+}
+
+.settleLegend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.settleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.settleDot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--ds-radius-full);
+  flex-shrink: 0;
+}
+
+.settleLabel {
+  flex: 1;
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-secondary);
+}
+
+.settleCount {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-primary);
+  min-width: 40px;
+  text-align: end;
+}
+
+.settlePct {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 36px;
+  text-align: end;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Tooltip
+   ═══════════════════════════════════════════════════════════════════════════ */
+.tooltip {
+  background: var(--ds-surface-elevated);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-lg);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  box-shadow: var(--ds-shadow-md);
+  min-width: 100px;
+}
+
+.tooltipDate {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  margin: 0 0 var(--ds-space-1);
+}
+
+.tooltipRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin: 0;
+}
+
+.tooltipDot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--ds-radius-full);
+  flex-shrink: 0;
+}
+
+.tooltipVal {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Empty / No Data
+   ═══════════════════════════════════════════════════════════════════════════ */
+.noData {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ds-space-8) var(--ds-space-4);
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Skeleton
+   ═══════════════════════════════════════════════════════════════════════════ */
+@keyframes shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+.skCard {
+  height: 128px;
+  border-radius: var(--ds-radius-xl);
+  background: linear-gradient(
+    90deg,
+    var(--ds-canvas-subtle) 0%,
+    var(--ds-border-subtle) 50%,
+    var(--ds-canvas-subtle) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  animation-delay: var(--sk-delay, 0ms);
+}
+
+.skHero {
+  height: 320px;
+  border-radius: var(--ds-radius-2xl);
+  background: linear-gradient(
+    90deg,
+    var(--ds-canvas-subtle) 0%,
+    var(--ds-border-subtle) 50%,
+    var(--ds-canvas-subtle) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out 0.1s infinite;
+}
+
+.skChart {
+  height: 320px;
+  border-radius: var(--ds-radius-2xl);
+  background: linear-gradient(
+    90deg,
+    var(--ds-canvas-subtle) 0%,
+    var(--ds-border-subtle) 50%,
+    var(--ds-canvas-subtle) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out 0.2s infinite;
 }
