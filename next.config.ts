@@ -335,6 +335,17 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-tabs',
       '@radix-ui/react-toast',
       '@radix-ui/react-tooltip',
+      // 2026-08-05 perf: پکیج‌های با barrel exports سنگین که در صفحات
+      // عمومی (header/footer/auth/subscribe) ایمپورت می‌شوند. بدون این
+      // تنظیم، کل باندل پکیج (نه فقط نمونه‌ی استفاده‌شده) در first-load
+      // JS قرار می‌گیرد. react-hook-form ~60KB، @headlessui/react ~45KB.
+      'react-hook-form',
+      '@headlessui/react',
+      'react-use',
+      'use-debounce',
+      '@dnd-kit/core',
+      '@dnd-kit/sortable',
+      '@dnd-kit/utilities',
     ],
     optimizeCss: false,
     // 2026-08-03: CSS chunking 'strict' — جلوی نشت CSS ماژول‌های dashboard

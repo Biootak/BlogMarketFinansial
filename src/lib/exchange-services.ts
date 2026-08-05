@@ -48,7 +48,7 @@ export interface ExchangeServiceMeta {
   name: string;
   /** توضیح ۱ جمله‌ای — همان در همه جا استفاده می‌شود مگر صرافی override کند */
   description: string;
-  /** آیکن Lucide */
+  /** آیکن Lucide — فقط client-side استفاده می‌شود، نباید از Server→Client serialize شود */
   icon: LucideIcon;
   /** accent token — به جای hex از token های ds */
   accent:
@@ -67,6 +67,13 @@ export interface ExchangeServiceMeta {
   /** ترتیب پیش‌فرض (وقتی صرافی order نداده) */
   defaultOrder: number;
 }
+
+/**
+ * نسخه‌ای از ExchangeServiceMeta که می‌تواند از Server→Client serialize شود.
+ * icon (LucideIcon = function) حذف شده — client باید آن را از EXCHANGE_SERVICE_CATALOG
+ * بر اساس serviceKey دریافت کند.
+ */
+export type SerializableServiceMeta = Omit<ExchangeServiceMeta, 'icon'>;
 
 export const EXCHANGE_SERVICE_CATALOG: readonly ExchangeServiceMeta[] = [
   {

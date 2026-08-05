@@ -19,6 +19,7 @@ import {
   EXCHANGE_SERVICE_CATALOG,
   type ExchangeServiceKey,
   type ExchangeServiceMeta,
+  type SerializableServiceMeta,
   getServiceMeta,
 } from '@/lib/exchange-services';
 import { revalidateTag } from '@/lib/revalidate';
@@ -36,7 +37,8 @@ export type ExchangeServiceItem = {
   ctaHref: string | null;
   order: number;
   leadTimeMin: number | null;
-  meta: ExchangeServiceMeta;
+  /** بدون icon — LucideIcon serialize نمی‌شود. client آن را از catalog دریافت می‌کند. */
+  meta: SerializableServiceMeta;
 };
 
 export type PublicExchangeService = {
@@ -223,6 +225,9 @@ export async function getMyExchangeServices(): Promise<FintechActionResult<Excha
   return {
     success: true,
     data: EXCHANGE_SERVICE_CATALOG.map((meta) => {
+      // strip icon — LucideIcon (function) نمی‌تواند از Server→Client serialize شود
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { icon: _icon, ...serializableMeta } = meta;
       const row = existingMap.get(meta.key);
       if (row) {
         return {
@@ -233,7 +238,7 @@ export async function getMyExchangeServices(): Promise<FintechActionResult<Excha
           ctaHref: row.ctaHref,
           order: row.order,
           leadTimeMin: row.leadTimeMin,
-          meta,
+          meta: serializableMeta,
         };
       }
       return {
@@ -244,7 +249,7 @@ export async function getMyExchangeServices(): Promise<FintechActionResult<Excha
         ctaHref: null,
         order: meta.defaultOrder,
         leadTimeMin: null,
-        meta,
+        meta: serializableMeta,
       };
     }),
   };

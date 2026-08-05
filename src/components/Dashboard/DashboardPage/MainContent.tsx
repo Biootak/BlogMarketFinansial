@@ -39,7 +39,7 @@ const MainContent: React.FC<MainContentProps> = ({ children, ambient = false }) 
           exit="out"
           variants={pageVariants}
           transition={pageTransition}
-          className="relative min-h-full px-3 sm:px-4 pt-4 sm:pt-5 overflow-x-hidden"
+          className="relative min-h-full px-3 sm:px-4 pt-4 sm:pt-5 overflow-x-hidden at-main-content"
         >
           {children}
         </motion.div>

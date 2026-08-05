@@ -18,10 +18,11 @@
 
 import { updateMyExchangeServices } from '@/actions/exchange-services';
 import { SettingsSurfaceCard, StickySaveBar } from '@/components/Dashboard/primitives';
-import type { ExchangeServiceMeta } from '@/lib/exchange-services';
+import { type SerializableServiceMeta, getServiceMeta } from '@/lib/exchange-services';
 import {
   ArrowDown,
   ArrowUp,
+  CircleDollarSign,
   Clock4,
   ExternalLink,
   GripVertical,
@@ -41,7 +42,7 @@ type ItemState = {
   ctaHref: string | null;
   order: number;
   leadTimeMin: number | null;
-  meta: ExchangeServiceMeta;
+  meta: SerializableServiceMeta;
 };
 
 type Props = {
@@ -232,7 +233,10 @@ export default function ServicesWorkspace({ initialItems, canEdit }: Props) {
               </div>
 
               <div className={`${s.itemIcon} ${s[`accent_${item.meta.accent}`] ?? ''}`} aria-hidden>
-                <item.meta.icon size={20} strokeWidth={1.8} />
+                {(() => {
+                  const Icon = getServiceMeta(item.serviceKey)?.icon ?? CircleDollarSign;
+                  return <Icon size={20} strokeWidth={1.8} />;
+                })()}
               </div>
 
               <div className={s.itemInfo}>

@@ -252,7 +252,7 @@
 @media (max-width: 600px) {
   .observatory__map {
     min-block-size: unset;
-    padding: var(--ds-space-4) var(--ds-space-3);
+    padding: var(--ds-space-3) var(--ds-space-3);
     border-inline-end: none;
     border-block-end: var(--nx-hair);
   }
@@ -277,6 +277,11 @@
   gap: var(--ds-space-3);
   padding-block-end: var(--ds-space-3);
   border-block-end: 1px dashed var(--at-line);
+}
+@media (max-width: 600px) {
+  .observatory__mapHead {
+    padding-block-end: var(--ds-space-2);
+  }
 }
 .observatory__mapTitle {
   display: flex;
@@ -305,7 +310,7 @@
 }
 .observatory__mapName {
   margin: 0;
-  font-size: clamp(1.5rem, 1.1rem + 1vw, 2rem);
+  font-size: clamp(1.2rem, 4vw + 0.1rem, 2rem);
   font-weight: 800;
   letter-spacing: -0.025em;
   line-height: 1.1;
@@ -337,7 +342,7 @@
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }
-@media (max-width: 400px) {
+@media (max-width: 600px) {
   .observatory__mapClock {
     display: none;
   }
@@ -359,8 +364,10 @@
 }
 @media (max-width: 600px) {
   .observatory__mapChart {
-    margin-block-start: var(--ds-space-3);
-    gap: var(--ds-space-3);
+    margin-block-start: var(--ds-space-2);
+    gap: var(--ds-space-2);
+    /* constellation مخفی است — legend کل عرض را می‌گیرد */
+    grid-template-columns: 1fr;
   }
 }
 
@@ -372,8 +379,9 @@
   margin-inline: auto;
 }
 @media (max-width: 600px) {
+  /* در موبایل constellation پنهان — فضا صرفه‌جویی می‌شود */
   .mapConstellation {
-    max-inline-size: 200px;
+    display: none;
   }
 }
 .mapConstellation__orbit {
@@ -497,6 +505,13 @@
   position: relative;
   z-index: 1;
 }
+@media (max-width: 600px) {
+  .mapLegend {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+}
 .mapLegend__row {
   display: grid;
   grid-template-columns: 32px 1fr auto;
@@ -610,18 +625,41 @@
 }
 @media (max-width: 600px) {
   .observatory__stats {
-    flex-direction: row;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     border-block-start: var(--nx-hair);
   }
   .observatory__bigNum {
-    flex: 1 1 calc(33% - 1px);
-    min-inline-size: 0;
+    padding: var(--ds-space-2) 10px;
     border-block-end: none;
     border-inline-end: 1px dashed var(--at-line);
+    gap: 3px;
   }
   .observatory__bigNum:last-of-type {
     border-inline-end: none;
+  }
+  /* Cap مخفی — فقط آیکون نشان داده می‌شود */
+  .observatory__bigNumCap {
+    gap: 3px;
+    font-size: 8px;
+    letter-spacing: 0;
+    /* متن پنهان، آیکون باقی می‌ماند */
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-inline-size: 100%;
+    display: flex;
+  }
+  .observatory__bigNumVal {
+    font-size: clamp(1.25rem, 5vw, 1.75rem) !important;
+    gap: 3px;
+  }
+  .observatory__bigNumFoot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+    font-size: 9px;
+    margin-block-start: 2px;
   }
 }
 .observatory__stats::before {
@@ -654,11 +692,6 @@
   flex-direction: column;
   gap: 4px;
   border-block-end: 1px dashed var(--at-line);
-}
-@media (max-width: 600px) {
-  .observatory__bigNum {
-    padding: var(--ds-space-3) var(--ds-space-3);
-  }
 }
 .observatory__bigNum:last-of-type {
   border-block-end: none;
@@ -694,11 +727,6 @@
   gap: 6px;
   animation: nxFadeIn 600ms var(--at-ease) 200ms both;
 }
-@media (max-width: 600px) {
-  .observatory__bigNumVal {
-    font-size: clamp(1.4rem, 1.2rem + 1.5vw, 2rem);
-  }
-}
 .observatory__bigNumVal small {
   font-size: 0.32em;
   font-weight: 700;
@@ -706,6 +734,11 @@
   letter-spacing: 0;
   text-transform: uppercase;
   font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+@media (max-width: 600px) {
+  .observatory__bigNumVal small {
+    font-size: 0.45em;
+  }
 }
 .observatory__bigNumFoot {
   display: flex;
@@ -721,14 +754,6 @@
   color: var(--at-accent);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-}
-@media (max-width: 480px) {
-  .observatory__bigNumFoot {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-    font-size: 9px;
-  }
 }
 
 /* ─── 2. Status Strata (Horizontal Strip) ──────────────────────────────── */

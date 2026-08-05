@@ -5,8 +5,14 @@
 .root {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-4);
+  gap: var(--ds-space-3);
   inline-size: 100%;
+}
+
+@media (min-width: 640px) {
+  .root {
+    gap: var(--ds-space-4);
+  }
 }
 
 /* ── Active filter bar (زیر command strip) ────────────────────────────── */
@@ -18,8 +24,9 @@
   gap: var(--ds-space-3);
   padding-block: var(--ds-space-2);
   padding-inline: var(--ds-space-3);
-  background: color-mix(in oklch, var(--ds-brand-500) 5%, var(--ds-surface));
-  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 18%, var(--ds-border-subtle));
+  background: oklch(100% 0 0);
+  border: 1.5px solid color-mix(in oklch, var(--ds-brand-500) 30%, var(--ds-border-default));
+  border-inline-start: 4px solid var(--ds-brand-500);
   border-radius: var(--ds-radius-md);
   font-size: 0.75rem;
   color: var(--ds-text-primary);
@@ -29,7 +36,7 @@
 @keyframes activeBarEnter {
   from {
     opacity: 0;
-    transform: translateY(-2px);
+    transform: translateY(-3px);
   }
   to {
     opacity: 1;
@@ -42,7 +49,7 @@
   align-items: center;
   gap: 0.5em;
   flex-wrap: wrap;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .activeChip {
@@ -52,7 +59,7 @@
   padding-inline: 0.55em;
   background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
   color: var(--ds-brand-700);
-  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 25%, transparent);
+  border: 1.5px solid color-mix(in oklch, var(--ds-brand-500) 30%, transparent);
   border-radius: 999px;
   font-size: 0.6875rem;
   font-weight: 700;
@@ -83,18 +90,23 @@
 .listWrap {
   display: flex;
   flex-direction: column;
-  background: var(--ds-surface);
-  border: 1px solid var(--ds-border-subtle);
+  background: oklch(100% 0 0);
+  border: 1.5px solid var(--ds-border-default);
   border-radius: var(--ds-radius-lg);
   overflow: hidden;
   animation: listWrapEnter 380ms var(--ds-ease-out-quart) both;
   animation-delay: 80ms;
+  box-shadow: var(--ds-shadow-sm);
+}
+
+.dark .listWrap {
+  background: oklch(20% 0.012 250);
 }
 
 @keyframes listWrapEnter {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -109,13 +121,17 @@
   gap: var(--ds-space-3);
   padding-block: var(--ds-space-2);
   padding-inline: var(--ds-space-4) var(--ds-space-3);
-  background: var(--ds-canvas-subtle);
-  border-block-end: 1px solid var(--ds-border-subtle);
+  background: color-mix(in oklch, var(--ds-brand-500) 4%, oklch(98% 0.003 240));
+  border-block-end: 1.5px solid var(--ds-border-default);
   font-size: 0.625rem;
   font-weight: 700;
   color: var(--ds-text-muted);
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+.dark .listHead {
+  background: color-mix(in oklch, var(--ds-brand-500) 6%, oklch(18% 0.01 250));
 }
 
 .headCell {
@@ -154,21 +170,22 @@
   min-inline-size: 5rem;
   block-size: 2.4rem;
   padding-inline: var(--ds-space-3);
-  background: var(--ds-surface);
+  background: oklch(100% 0 0);
   color: var(--ds-text-primary);
-  border: 1px solid var(--ds-border-default);
+  border: 1.5px solid var(--ds-border-default);
   border-radius: var(--ds-radius-md);
   font-family: inherit;
   font-size: var(--ds-text-xs);
   font-weight: 700;
   cursor: pointer;
-  transition: background 160ms var(--ds-ease-out-quart), border-color 160ms var(--ds-ease-out-quart),
+  transition: background 160ms var(--ds-ease-out-quart),
+    border-color 160ms var(--ds-ease-out-quart),
     transform 120ms var(--ds-ease-spring);
 }
 
 .pageBtn:hover:not(:disabled) {
-  background: color-mix(in oklch, var(--ds-brand-500) 6%, transparent);
-  border-color: color-mix(in oklch, var(--ds-brand-500) 30%, var(--ds-border-default));
+  background: color-mix(in oklch, var(--ds-brand-500) 8%, oklch(100% 0 0));
+  border-color: var(--ds-brand-500);
 }
 
 .pageBtn:active:not(:disabled) {
@@ -189,7 +206,7 @@
 .pageInfo {
   font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
-  font-weight: 600;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   padding-inline: var(--ds-space-2);
 }
@@ -213,16 +230,17 @@
   font-size: var(--ds-text-xs);
   font-weight: 700;
   color: var(--ds-text-primary);
-  background: var(--ds-surface);
-  border: 1px dashed var(--ds-border-default);
+  background: oklch(100% 0 0);
+  border: 1.5px dashed var(--ds-border-default);
   border-radius: var(--ds-radius-md);
   cursor: pointer;
-  transition: background 160ms var(--ds-ease-out-quart), border-color 160ms var(--ds-ease-out-quart);
+  transition: background 160ms var(--ds-ease-out-quart),
+    border-color 160ms var(--ds-ease-out-quart);
 }
 
 .loadMoreBtn:hover:not(:disabled) {
-  background: color-mix(in oklch, var(--ds-brand-500) 5%, transparent);
-  border-color: color-mix(in oklch, var(--ds-brand-500) 40%, var(--ds-border-default));
+  background: color-mix(in oklch, var(--ds-brand-500) 5%, oklch(100% 0 0));
+  border-color: var(--ds-brand-500);
 }
 
 .loadMoreBtn:disabled {

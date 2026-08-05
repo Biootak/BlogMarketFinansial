@@ -151,6 +151,22 @@ export default function ExchangeHeroPulse({
         </div>
       </div>
 
+      {/* mini bar sparkline — فقط موبایل/تبلت (زیر 1024px) */}
+      <div className={s.heroMiniSpark} aria-hidden>
+        {sparkline.map((d, i) => {
+          const h = maxCount > 0 ? Math.max(4, Math.round((d.count / maxCount) * 40)) : 4;
+          const isToday = i === sparkline.length - 1;
+          return (
+            <span
+              key={i}
+              className={s.heroMiniBar}
+              data-today={isToday ? 'true' : undefined}
+              style={{ height: `${h}px` }}
+            />
+          );
+        })}
+      </div>
+
       <div className={s.heroSpark} aria-hidden>
         <svg
           viewBox={`0 0 ${W} ${H}`}

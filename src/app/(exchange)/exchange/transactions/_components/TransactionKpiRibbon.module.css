@@ -1,16 +1,18 @@
 /* ============================================================================
- * TransactionKpiRibbon — 4 تیر KPI متراکم (signature moment صفحه)
+ * TransactionKpiRibbon — 4 KPI tile، bold + brand رنگ‌های اصلی سایت
+ * بدون glass — solid surface با border accent رنگی
  * ========================================================================== */
 
+/* mobile: 2 ستون از ابتدا — کمپکت‌تر از 4 ردیف */
 .ribbon {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--ds-space-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-2);
 }
 
 @media (min-width: 640px) {
   .ribbon {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ds-space-3);
   }
 }
 
@@ -30,23 +32,31 @@
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-2);
-  padding-block: var(--ds-space-4);
-  padding-inline: var(--ds-space-4);
-  background: var(--ds-surface);
-  border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-lg);
-  min-block-size: 7.5rem;
+  padding-block: var(--ds-space-3);
+  padding-inline: var(--ds-space-3);
+  /* solid — نه glass */
+  background: oklch(100% 0 0);
+  border: 1.5px solid var(--ds-border-default);
+  border-inline-start: 4px solid currentColor;
+  border-radius: var(--ds-radius-md);
+  min-block-size: 6rem;
   animation: kpiEnter 420ms var(--ds-ease-out-quart) both;
   animation-delay: calc(var(--tile-i, 0) * 60ms);
-  transition: transform 200ms var(--ds-ease-out-quart), border-color 200ms var(--ds-ease-out-quart),
+  transition: transform 200ms var(--ds-ease-out-quart),
     box-shadow 200ms var(--ds-ease-out-quart);
 }
 
-.tile:hover {
-  transform: translateY(-1px);
+.dark .tile {
+  background: oklch(20% 0.012 250);
   border-color: var(--ds-border-default);
-  box-shadow: var(--ds-shadow-sm);
 }
+
+.tile:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--ds-shadow-md);
+}
+
+/* ── Tone rنگ‌ها (رنگ‌های اصلی سایت) ──────────────────────────────────── */
 
 .tile[data-tone="brand"] {
   color: var(--ds-brand-600);
@@ -64,19 +74,42 @@
   color: var(--nova-amber);
 }
 
-/* ── Ambient mark — آرک گوشه بالا-راست ─────────────────────────────────── */
+/* ── Background tint بر اساس tone ──────────────────────────────────────── */
 
-.mark {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
+.tile[data-tone="brand"] {
+  background: color-mix(in oklch, var(--ds-brand-500) 5%, oklch(100% 0 0));
 }
 
-.mark svg {
-  inline-size: 100%;
-  block-size: 100%;
-  opacity: 0.85;
+.tile[data-tone="up"] {
+  background: color-mix(in oklch, var(--nova-up) 5%, oklch(100% 0 0));
+}
+
+.tile[data-tone="down"] {
+  background: color-mix(in oklch, var(--nova-down) 4%, oklch(100% 0 0));
+}
+
+.tile[data-tone="amber"] {
+  background: color-mix(in oklch, var(--nova-amber) 5%, oklch(100% 0 0));
+}
+
+/* dark mode tint */
+.dark .tile[data-tone="brand"] {
+  background: color-mix(in oklch, var(--ds-brand-500) 8%, oklch(20% 0.012 250));
+}
+.dark .tile[data-tone="up"] {
+  background: color-mix(in oklch, var(--nova-up) 8%, oklch(20% 0.012 250));
+}
+.dark .tile[data-tone="down"] {
+  background: color-mix(in oklch, var(--nova-down) 6%, oklch(20% 0.012 250));
+}
+.dark .tile[data-tone="amber"] {
+  background: color-mix(in oklch, var(--nova-amber) 7%, oklch(20% 0.012 250));
+}
+
+/* ── Ambient mark — حذف: به جایش از border accent استفاده می‌کنیم ──────── */
+
+.mark {
+  display: none; /* دیگر نیازی نیست */
 }
 
 /* ── Head row: icon + label + trend pill ─────────────────────────────────── */
@@ -94,19 +127,19 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: 1.625rem;
-  block-size: 1.625rem;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
   border-radius: var(--ds-radius-sm);
-  background: color-mix(in oklch, currentColor 12%, transparent);
+  background: color-mix(in oklch, currentColor 14%, transparent);
   color: inherit;
   flex-shrink: 0;
-  border: 1px solid color-mix(in oklch, currentColor 18%, transparent);
+  border: 1.5px solid color-mix(in oklch, currentColor 25%, transparent);
 }
 
 .label {
   font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
-  font-weight: 600;
+  color: var(--ds-text-secondary);
+  font-weight: 700;
   letter-spacing: 0.01em;
   flex: 1 1 auto;
   min-inline-size: 0;
@@ -128,15 +161,15 @@
 }
 
 .trendUp {
-  background: color-mix(in oklch, var(--nova-up) 12%, transparent);
+  background: color-mix(in oklch, var(--nova-up) 14%, transparent);
   color: var(--nova-up);
-  border: 1px solid color-mix(in oklch, var(--nova-up) 28%, transparent);
+  border: 1.5px solid color-mix(in oklch, var(--nova-up) 32%, transparent);
 }
 
 .trendDown {
-  background: color-mix(in oklch, var(--nova-down) 12%, transparent);
+  background: color-mix(in oklch, var(--nova-down) 14%, transparent);
   color: var(--nova-down);
-  border: 1px solid color-mix(in oklch, var(--nova-down) 28%, transparent);
+  border: 1.5px solid color-mix(in oklch, var(--nova-down) 32%, transparent);
 }
 
 .trendFlat {
@@ -158,12 +191,13 @@
 }
 
 .value {
-  font-size: clamp(1.05rem, 0.95rem + 0.4vw, 1.35rem);
+  /* موبایل کوچک‌تر — دسکتاپ بزرگ‌تر */
+  font-size: clamp(0.95rem, 0.85rem + 0.6vw, 1.45rem);
   font-weight: 800;
   color: var(--ds-text-primary);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.015em;
-  line-height: 1.1;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -173,7 +207,7 @@
   flex-shrink: 0;
   inline-size: 4.5rem;
   block-size: 1.4rem;
-  opacity: 0.9;
+  opacity: 0.85;
 }
 
 /* ── Caption line ───────────────────────────────────────────────────────── */
@@ -193,11 +227,32 @@
 @keyframes kpiEnter {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* ── Desktop: padding کمی بیشتر ──────────────────────────────────────── */
+@media (min-width: 640px) {
+  .tile {
+    padding-block: var(--ds-space-4);
+    padding-inline: var(--ds-space-4);
+    min-block-size: 7rem;
+    border-radius: var(--ds-radius-lg);
+  }
+}
+
+/* ── Mobile: icon کوچک‌تر، caption مخفی روی خیلی کوچک ──────────────── */
+@media (max-width: 400px) {
+  .caption {
+    display: none;
+  }
+  .iconBox {
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
   }
 }
 

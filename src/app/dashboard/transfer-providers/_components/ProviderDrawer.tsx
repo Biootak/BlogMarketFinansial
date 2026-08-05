@@ -160,8 +160,8 @@ export default function ProviderDrawer({ open, editRow, onClose, onSave }: Props
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className={s.drawerForm}>
+        {/* Form body — scrollable */}
+        <form id="provider-form" onSubmit={handleSubmit} className={s.drawerForm}>
           {/* slug — فقط در حالت ایجاد */}
           {!editRow && (
             <div className={s.drawerField}>
@@ -354,22 +354,28 @@ export default function ProviderDrawer({ open, editRow, onClose, onSave }: Props
               <CheckCircle2 className="w-4 h-4" aria-hidden /> ذخیره شد
             </output>
           )}
-
-          {/* دکمه‌ها */}
-          <div className={s.drawerFooter}>
-            <button type="submit" className={s.saveBtn} disabled={isPending} aria-busy={isPending}>
-              {isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin" aria-hidden />
-              ) : (
-                <Save className="w-4 h-4" aria-hidden />
-              )}
-              {isPending ? 'در حال ذخیره…' : 'ذخیره'}
-            </button>
-            <button type="button" onClick={onClose} className={s.cancelBtn}>
-              انصراف
-            </button>
-          </div>
         </form>
+
+        {/* Footer — sticky outside form scroll area */}
+        <div className={s.drawerFooter}>
+          <button
+            type="submit"
+            form="provider-form"
+            className={s.saveBtn}
+            disabled={isPending}
+            aria-busy={isPending}
+          >
+            {isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" aria-hidden />
+            ) : (
+              <Save className="w-4 h-4" aria-hidden />
+            )}
+            {isPending ? 'در حال ذخیره…' : 'ذخیره'}
+          </button>
+          <button type="button" onClick={onClose} className={s.cancelBtn}>
+            انصراف
+          </button>
+        </div>
       </dialog>
     </div>
   );

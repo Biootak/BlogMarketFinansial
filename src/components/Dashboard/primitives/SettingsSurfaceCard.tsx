@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * SettingsSurfaceCard — یک کانتینر برای section های settings.
  *

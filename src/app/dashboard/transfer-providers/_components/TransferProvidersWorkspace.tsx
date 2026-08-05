@@ -23,6 +23,13 @@ import {
   MillionDollarEmpty,
   PageHeader,
 } from '@/components/Dashboard/primitives';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from '@/components/ui/use-toast';
 import { PencilLine, Plus, Search, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
 import { useCallback, useMemo, useState, useTransition } from 'react';
@@ -113,12 +120,23 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
     }
   }, [deleteTarget]);
 
+  const openEdit = useCallback((r: TransferProviderRow) => {
+    setEditRow(r);
+    setDrawerOpen(true);
+  }, []);
+
+  const openAdd = useCallback(() => {
+    setEditRow(null);
+    setDrawerOpen(true);
+  }, []);
+
+  // ─── Desktop columns ──────────────────────────────────────────
   const columns: Column<TransferProviderRow>[] = [
     {
       key: 'name',
       header: 'نام / slug',
       render: (r) => (
-        <div>
+        <div className={s.nameCell}>
           <div className={s.cellName}>{r.name}</div>
           <div className={s.cellSlug}>{r.slug}</div>
         </div>
@@ -127,6 +145,7 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
     {
       key: 'kind',
       header: 'نوع',
+      collapse: true,
       render: (r) => (
         <span className={s.kindBadge} data-kind={r.kind}>
           {KIND_FA[r.kind] ?? r.kind}
@@ -136,11 +155,13 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
     {
       key: 'spreadPercent',
       header: 'اسپرد٪',
+      collapse: true,
       render: (r) => <span className={s.numCell}>{r.spreadPercent.toFixed(2)}٪</span>,
     },
     {
       key: 'flatFeeToman',
       header: 'کارمزد ثابت',
+      collapse: true,
       render: (r) => (
         <span className={s.numCell}>
           {r.flatFeeToman > 0 ? `${new Intl.NumberFormat('fa-IR').format(r.flatFeeToman)} ت` : '—'}
@@ -150,6 +171,7 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
     {
       key: 'source',
       header: 'منبع',
+      collapse: true,
       render: (r) => (
         <span
           className={`${s.sourceBadge} ${r.exchangeId ? s.sourceBadgeExchange : s.sourceBadgePlatform}`}
@@ -161,6 +183,7 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
     {
       key: 'active',
       header: 'وضعیت',
+      width: 110,
       render: (r) => (
         <button
           type="button"
@@ -175,29 +198,28 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
           ) : (
             <ToggleLeft className={s.toggleIcon} aria-hidden />
           )}
-          {r.active ? 'فعال' : 'غیرفعال'}
+          <span className={s.toggleLabel}>{r.active ? 'فعال' : 'غیرفعال'}</span>
         </button>
       ),
     },
     {
       key: 'actions',
       header: '',
-      render: (r) => (
-        <div className={s.actions}>
-          {!r.exchangeId && (
+      width: 88,
+      render: (r) =>
+        r.exchangeId ? (
+          /* صرافی بیرونی — فقط toggle، بدون ویرایش/حذف */
+          <span className={s.readonlyTag}>فقط نمایش</span>
+        ) : (
+          <div className={s.actions}>
             <button
               type="button"
               className={s.actionBtn}
-              onClick={() => {
-                setEditRow(r);
-                setDrawerOpen(true);
-              }}
+              onClick={() => openEdit(r)}
               aria-label={`ویرایش ${r.name}`}
             >
               <PencilLine className={s.actionIcon} aria-hidden />
             </button>
-          )}
-          {!r.exchangeId && (
             <button
               type="button"
               className={`${s.actionBtn} ${s.actionBtnDanger}`}
@@ -206,9 +228,8 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
             >
               <Trash2 className={s.actionIcon} aria-hidden />
             </button>
-          )}
-        </div>
-      ),
+          </div>
+        ),
     },
   ];
 
@@ -220,21 +241,14 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
         description="مدیریت provider های نرخ که در صفحه /money-transfer نمایش داده می‌شوند"
         breadcrumb={[{ label: 'داشبورد' }, { label: 'صرافی‌های مقایسه' }]}
         actions={
-          <button
-            type="button"
-            className={s.addBtn}
-            onClick={() => {
-              setEditRow(null);
-              setDrawerOpen(true);
-            }}
-          >
+          <button type="button" className={s.addBtn} onClick={openAdd}>
             <Plus className={s.addBtnIcon} aria-hidden />
-            افزودن provider
+            <span>افزودن provider</span>
           </button>
         }
       />
 
-      {/* Stats */}
+      {/* ── Stats ── */}
       <div className={s.stats}>
         <div className={s.statItem}>
           <span className={s.statValue}>{rows.length}</span>
@@ -254,7 +268,7 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
         </div>
       </div>
 
-      {/* Filters */}
+      {/* ── Toolbar ── */}
       <div className={s.toolbar}>
         <div className={s.searchWrap}>
           <Search className={s.searchIcon} aria-hidden />
@@ -268,32 +282,37 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
           />
         </div>
 
-        <select
-          className={s.filterSelect}
-          value={kindFilter}
-          onChange={(e) => setKindFilter(e.target.value)}
-          aria-label="فیلتر نوع"
-        >
-          <option value="all">همه نوع‌ها</option>
-          <option value="SARAJI">صرافی</option>
-          <option value="ONLINE">آنلاین</option>
-          <option value="BANK">بانک</option>
-          <option value="CRYPTO">رمزارز</option>
-        </select>
+        <div className={s.filterRow}>
+          <Select value={kindFilter} onValueChange={setKindFilter}>
+            <SelectTrigger className={s.filterTrigger} aria-label="فیلتر نوع">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">همه نوع‌ها</SelectItem>
+              <SelectItem value="SARAJI">صرافی</SelectItem>
+              <SelectItem value="ONLINE">آنلاین</SelectItem>
+              <SelectItem value="BANK">بانک</SelectItem>
+              <SelectItem value="CRYPTO">رمزارز</SelectItem>
+            </SelectContent>
+          </Select>
 
-        <select
-          className={s.filterSelect}
-          value={scopeFilter}
-          onChange={(e) => setScopeFilter(e.target.value as 'all' | 'platform' | 'exchange')}
-          aria-label="فیلتر منبع"
-        >
-          <option value="all">همه منابع</option>
-          <option value="platform">پلتفرم</option>
-          <option value="exchange">صرافی‌ها</option>
-        </select>
+          <Select
+            value={scopeFilter}
+            onValueChange={(v) => setScopeFilter(v as 'all' | 'platform' | 'exchange')}
+          >
+            <SelectTrigger className={s.filterTrigger} aria-label="فیلتر منبع">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">همه منابع</SelectItem>
+              <SelectItem value="platform">پلتفرم</SelectItem>
+              <SelectItem value="exchange">صرافی‌ها</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      {/* Table */}
+      {/* ── Content ── */}
       {filtered.length === 0 ? (
         <MillionDollarEmpty
           variant="search"
@@ -302,21 +321,96 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
           title="صرافی‌ای یافت نشد"
           description="هنوز هیچ صرافی‌ای برای جدول مقایسه ثبت نشده یا فیلتر شما نتیجه‌ای ندارد."
           primaryAction={
-            <button
-              type="button"
-              className={s.addBtn}
-              onClick={() => {
-                setEditRow(null);
-                setDrawerOpen(true);
-              }}
-            >
+            <button type="button" className={s.addBtn} onClick={openAdd}>
               <Plus className={s.addBtnIcon} aria-hidden />
-              افزودن اولین provider
+              <span>افزودن اولین provider</span>
             </button>
           }
         />
       ) : (
-        <DataTable columns={columns} rows={filtered} rowKey={(r) => r.id} />
+        <>
+          {/* Desktop: DataTable (hidden on mobile via CSS) */}
+          <div className={s.desktopTable}>
+            <DataTable columns={columns} rows={filtered} rowKey={(r) => r.id} />
+          </div>
+
+          {/* Mobile: card list */}
+          <div className={s.mobileCards}>
+            {filtered.map((r) => (
+              <div key={r.id} className={`${s.card} ${r.active ? s.cardActive : s.cardInactive}`}>
+                {/* Card top row */}
+                <div className={s.cardRow}>
+                  <div className={s.cardLeft}>
+                    <span className={s.cardName}>{r.name}</span>
+                    <span className={s.cardSlug}>{r.slug}</span>
+                  </div>
+                  <div className={s.cardRight}>
+                    {/* Toggle */}
+                    <button
+                      type="button"
+                      className={`${s.toggleBtn} ${r.active ? s.toggleBtnOn : ''}`}
+                      onClick={() => handleToggle(r)}
+                      disabled={isPending}
+                      aria-label={r.active ? 'غیرفعال کردن' : 'فعال کردن'}
+                      aria-pressed={r.active}
+                    >
+                      {r.active ? (
+                        <ToggleRight className={s.toggleIcon} aria-hidden />
+                      ) : (
+                        <ToggleLeft className={s.toggleIcon} aria-hidden />
+                      )}
+                      <span>{r.active ? 'فعال' : 'غیرفعال'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Card meta chips */}
+                <div className={s.cardMeta}>
+                  <span className={s.kindBadge} data-kind={r.kind}>
+                    {KIND_FA[r.kind] ?? r.kind}
+                  </span>
+                  <span
+                    className={`${s.sourceBadge} ${r.exchangeId ? s.sourceBadgeExchange : s.sourceBadgePlatform}`}
+                  >
+                    {r.exchangeId ? 'صرافی' : 'پلتفرم'}
+                  </span>
+                  {r.spreadPercent > 0 && (
+                    <span className={s.metaNum}>{r.spreadPercent.toFixed(2)}٪ اسپرد</span>
+                  )}
+                  {r.flatFeeToman > 0 && (
+                    <span className={s.metaNum}>
+                      {new Intl.NumberFormat('fa-IR').format(r.flatFeeToman)} ت کارمزد
+                    </span>
+                  )}
+                </div>
+
+                {/* Card footer: actions — only for platform providers */}
+                {!r.exchangeId && (
+                  <div className={s.cardActions}>
+                    <button
+                      type="button"
+                      className={s.cardActionBtn}
+                      onClick={() => openEdit(r)}
+                      aria-label={`ویرایش ${r.name}`}
+                    >
+                      <PencilLine className={s.actionIcon} aria-hidden />
+                      <span>ویرایش</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`${s.cardActionBtn} ${s.cardActionBtnDanger}`}
+                      onClick={() => setDeleteTarget(r)}
+                      aria-label={`حذف ${r.name}`}
+                    >
+                      <Trash2 className={s.actionIcon} aria-hidden />
+                      <span>حذف</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {/* Drawer */}

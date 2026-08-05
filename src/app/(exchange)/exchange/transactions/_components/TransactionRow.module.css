@@ -1,5 +1,5 @@
 /* ============================================================================
- * TransactionRow — یک ردیف تراکنش (متراكم، با rail رنگی)
+ * TransactionRow — یک ردیف تراکنش، bold + رنگ‌های اصلی سایت
  * ========================================================================== */
 
 .row {
@@ -29,7 +29,7 @@
 }
 
 .rowLink:hover {
-  background: color-mix(in oklch, var(--ds-brand-500) 3%, transparent);
+  background: color-mix(in oklch, var(--ds-brand-500) 4%, oklch(100% 0 0));
 }
 
 .rowLink:focus-visible {
@@ -37,15 +37,16 @@
   outline-offset: -2px;
 }
 
-/* ── Rail رنگی — تک‌خط، افزایش عرض در hover ───────────────────────────── */
+/* ── Rail رنگی — ضخیم‌تر و واضح‌تر ────────────────────────────────────── */
 
 .rail {
   position: absolute;
   inset-block: 0;
   inset-inline-start: 0;
-  inline-size: 2px;
-  background: var(--ds-text-muted);
+  inline-size: 3px;
+  background: var(--ds-border-default);
   transition: inline-size 200ms var(--ds-ease-out-quart);
+  border-radius: 0 2px 2px 0;
 }
 
 .row[data-status="pending"] .rail {
@@ -62,20 +63,20 @@
 }
 .row[data-status="cancelled"] .rail {
   background: var(--ds-text-muted);
-  opacity: 0.5;
+  opacity: 0.4;
 }
 
 .row[data-tone="credit"] .rail {
-  background: linear-gradient(
-    180deg,
-    var(--nova-up),
-    color-mix(in oklch, var(--nova-up) 50%, transparent)
-  );
+  background: var(--nova-up);
+}
+
+.row[data-tone="debit"] .rail {
+  background: var(--nova-down);
 }
 
 .rowLink:hover .rail,
 .rowLink:focus-visible .rail {
-  inline-size: 3px;
+  inline-size: 4px;
 }
 
 /* ── Kind icon box ──────────────────────────────────────────────────────── */
@@ -87,27 +88,27 @@
   inline-size: 2.25rem;
   block-size: 2.25rem;
   border-radius: var(--ds-radius-md);
-  background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
+  background: color-mix(in oklch, var(--ds-brand-500) 10%, oklch(100% 0 0));
   color: var(--ds-brand-600);
-  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 15%, transparent);
+  border: 1.5px solid color-mix(in oklch, var(--ds-brand-500) 20%, transparent);
   flex-shrink: 0;
   transition: transform 160ms var(--ds-ease-spring);
 }
 
 .rowLink:hover .iconBox {
-  transform: scale(1.05) rotate(-2deg);
+  transform: scale(1.06) rotate(-3deg);
 }
 
 .row[data-tone="credit"] .iconBox {
-  background: color-mix(in oklch, var(--nova-up) 12%, transparent);
+  background: color-mix(in oklch, var(--nova-up) 12%, oklch(100% 0 0));
   color: var(--nova-up);
-  border-color: color-mix(in oklch, var(--nova-up) 22%, transparent);
+  border-color: color-mix(in oklch, var(--nova-up) 28%, transparent);
 }
 
 .row[data-tone="debit"] .iconBox {
-  background: color-mix(in oklch, var(--nova-down) 12%, transparent);
+  background: color-mix(in oklch, var(--nova-down) 10%, oklch(100% 0 0));
   color: var(--nova-down);
-  border-color: color-mix(in oklch, var(--nova-down) 22%, transparent);
+  border-color: color-mix(in oklch, var(--nova-down) 24%, transparent);
 }
 
 /* ── Main column ────────────────────────────────────────────────────────── */
@@ -131,7 +132,7 @@
   font-size: var(--ds-text-sm);
   font-weight: 700;
   color: var(--ds-text-primary);
-  letter-spacing: -0.005em;
+  letter-spacing: -0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -143,12 +144,12 @@
   align-items: center;
   font-size: 0.625rem;
   font-weight: 700;
-  padding-block: 0.15em;
-  padding-inline: 0.55em;
+  padding-block: 0.2em;
+  padding-inline: 0.6em;
   border-radius: 999px;
-  background: color-mix(in oklch, var(--ds-brand-500) 8%, transparent);
+  background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
   color: var(--ds-brand-600);
-  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 20%, transparent);
+  border: 1.5px solid color-mix(in oklch, var(--ds-brand-500) 25%, transparent);
   white-space: nowrap;
 }
 
@@ -180,7 +181,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.25em;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--ds-text-primary);
   font-variant-numeric: tabular-nums;
 }
@@ -190,7 +191,7 @@
 }
 
 .metaFee {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--nova-down);
   font-variant-numeric: tabular-nums;
 }
@@ -220,14 +221,14 @@
   gap: 0.15em;
   font-variant-numeric: tabular-nums;
   color: var(--ds-text-primary);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   white-space: nowrap;
 }
 
 .amountSign {
   font-size: 0.85em;
-  font-weight: 700;
-  opacity: 0.7;
+  font-weight: 800;
+  opacity: 0.75;
   inline-size: 0.55em;
 }
 
@@ -270,37 +271,37 @@
   gap: 0.3em;
   font-size: 0.625rem;
   font-weight: 700;
-  padding-block: 0.15em;
-  padding-inline: 0.55em;
+  padding-block: 0.2em;
+  padding-inline: 0.6em;
   border-radius: 999px;
-  border: 1px solid var(--ds-border-subtle);
-  background: var(--ds-surface);
+  border: 1.5px solid var(--ds-border-default);
+  background: oklch(100% 0 0);
   color: var(--ds-text-muted);
   white-space: nowrap;
 }
 
 .statusPill[data-status="pending"] {
-  background: color-mix(in oklch, var(--nova-amber) 12%, transparent);
+  background: color-mix(in oklch, var(--nova-amber) 12%, oklch(100% 0 0));
   color: var(--nova-amber);
-  border-color: color-mix(in oklch, var(--nova-amber) 32%, transparent);
+  border-color: color-mix(in oklch, var(--nova-amber) 40%, transparent);
 }
 
 .statusPill[data-status="progress"] {
-  background: color-mix(in oklch, var(--nova-cyan) 12%, transparent);
+  background: color-mix(in oklch, var(--nova-cyan) 12%, oklch(100% 0 0));
   color: var(--nova-cyan);
-  border-color: color-mix(in oklch, var(--nova-cyan) 32%, transparent);
+  border-color: color-mix(in oklch, var(--nova-cyan) 40%, transparent);
 }
 
 .statusPill[data-status="success"] {
-  background: color-mix(in oklch, var(--nova-up) 12%, transparent);
+  background: color-mix(in oklch, var(--nova-up) 12%, oklch(100% 0 0));
   color: var(--nova-up);
-  border-color: color-mix(in oklch, var(--nova-up) 32%, transparent);
+  border-color: color-mix(in oklch, var(--nova-up) 40%, transparent);
 }
 
 .statusPill[data-status="danger"] {
-  background: color-mix(in oklch, var(--nova-down) 12%, transparent);
+  background: color-mix(in oklch, var(--nova-down) 10%, oklch(100% 0 0));
   color: var(--nova-down);
-  border-color: color-mix(in oklch, var(--nova-down) 32%, transparent);
+  border-color: color-mix(in oklch, var(--nova-down) 35%, transparent);
 }
 
 .statusIcon {
@@ -329,7 +330,7 @@
   }
 }
 
-/* ── Mobile: ردیف 2-ستونی (icon مخفی، meta خلاصه) ────────────────────── */
+/* ── Mobile ─────────────────────────────────────────────────────────────── */
 
 @media (max-width: 640px) {
   .rowLink {

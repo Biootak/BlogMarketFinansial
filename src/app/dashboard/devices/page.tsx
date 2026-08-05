@@ -20,9 +20,5 @@ export default async function DevicesPage() {
   const devices = devicesResult.success ? devicesResult.data : [];
   const logs = logsResult.success ? logsResult.data : [];
 
-  return (
-    <div className="at-page" dir="rtl">
-      <DevicesClient devices={devices} securityLogs={logs} />
-    </div>
-  );
+  return <DevicesClient devices={devices} securityLogs={logs} />;
 }

@@ -1,5 +1,6 @@
 /* ============================================================================
  * TransactionCommandStrip — کنترل‌های سه‌لایهٔ لیست
+ * solid + brand رنگ‌های اصلی، بدون glass
  * ========================================================================== */
 
 .strip {
@@ -8,10 +9,15 @@
   gap: var(--ds-space-3);
   padding-block: var(--ds-space-3);
   padding-inline: var(--ds-space-3);
-  background: var(--ds-surface);
-  border: 1px solid var(--ds-border-subtle);
+  background: oklch(100% 0 0);
+  border: 1.5px solid var(--ds-border-default);
   border-radius: var(--ds-radius-lg);
   animation: stripEnter 380ms var(--ds-ease-out-quart) both;
+  box-shadow: var(--ds-shadow-sm);
+}
+
+.dark .strip {
+  background: oklch(20% 0.012 250);
 }
 
 @media (min-width: 720px) {
@@ -25,7 +31,7 @@
 
 .tabs {
   position: relative;
-  border-block-end: 1px solid var(--ds-border-subtle);
+  border-block-end: 1.5px solid var(--ds-border-subtle);
   margin-block-end: var(--ds-space-1);
   padding-block-end: var(--ds-space-2);
 }
@@ -50,11 +56,11 @@
   padding-block: 0.45em;
   padding-inline: 0.85em;
   background: transparent;
-  border: 1px solid transparent;
+  border: 1.5px solid transparent;
   border-radius: var(--ds-radius-md);
   font-family: inherit;
   font-size: var(--ds-text-xs);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--ds-text-muted);
   cursor: pointer;
   white-space: nowrap;
@@ -64,18 +70,20 @@
 
 .tab:hover {
   color: var(--ds-text-primary);
-  background: color-mix(in oklch, var(--ds-brand-500) 5%, transparent);
+  background: color-mix(in oklch, var(--ds-brand-500) 6%, oklch(100% 0 0));
+  border-color: color-mix(in oklch, var(--ds-brand-500) 20%, transparent);
 }
 
 .tab[data-active="true"] {
   background: var(--ds-brand-500);
-  color: var(--ds-canvas);
+  color: var(--ds-brand-on);
   border-color: var(--ds-brand-500);
-  box-shadow: 0 4px 12px -4px color-mix(in oklch, var(--ds-brand-500) 35%, transparent);
+  box-shadow: 0 4px 12px -4px color-mix(in oklch, var(--ds-brand-500) 40%, transparent);
 }
 
 .tabLabel {
   font-size: var(--ds-text-xs);
+  font-weight: 700;
 }
 
 .tabCount {
@@ -88,14 +96,14 @@
   font-size: 0.625rem;
   font-weight: 700;
   border-radius: 999px;
-  background: color-mix(in oklch, var(--ds-text-muted) 12%, transparent);
+  background: color-mix(in oklch, var(--ds-text-muted) 14%, transparent);
   color: var(--ds-text-muted);
   font-variant-numeric: tabular-nums;
 }
 
 .tab[data-active="true"] .tabCount {
-  background: color-mix(in oklch, var(--ds-canvas) 18%, transparent);
-  color: var(--ds-canvas);
+  background: color-mix(in oklch, var(--ds-canvas) 20%, transparent);
+  color: var(--ds-brand-on);
 }
 
 .tab:focus-visible {
@@ -114,8 +122,10 @@
 
 .searchWrap {
   position: relative;
-  flex: 1 1 14rem;
-  min-inline-size: 12rem;
+  /* موبایل: تمام عرض — دسکتاپ: انعطاف‌پذیر */
+  flex: 1 1 12rem;
+  min-inline-size: 0;
+  inline-size: 100%;
 }
 
 .searchIcon {
@@ -134,11 +144,12 @@
   font-family: inherit;
   font-size: var(--ds-text-sm);
   color: var(--ds-text-primary);
-  background: var(--ds-canvas-subtle);
-  border: 1px solid var(--ds-border-default);
+  background: oklch(98% 0.003 240);
+  border: 1.5px solid var(--ds-border-default);
   border-radius: var(--ds-radius-md);
   outline: none;
-  transition: border-color 160ms var(--ds-ease-out-quart), box-shadow 160ms var(--ds-ease-out-quart);
+  transition: border-color 160ms var(--ds-ease-out-quart),
+    box-shadow 160ms var(--ds-ease-out-quart);
 }
 
 .searchInput::placeholder {
@@ -148,6 +159,7 @@
 .searchInput:focus {
   border-color: var(--ds-brand-500);
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 18%, transparent);
+  background: oklch(100% 0 0);
 }
 
 .clearBtn {
@@ -182,7 +194,6 @@
 
 .sortIcon {
   position: absolute;
-  /* inset-inline-start = سمت راست در RTL (ابتدای خواندن) */
   inset-inline-start: 0.7rem;
   inset-block-start: 50%;
   transform: translateY(-50%);
@@ -196,14 +207,12 @@
   -webkit-appearance: none;
   font-family: inherit;
   font-size: var(--ds-text-xs);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--ds-text-primary);
-  background: var(--ds-canvas-subtle);
-  border: 1px solid var(--ds-border-default);
+  background: oklch(98% 0.003 240);
+  border: 1.5px solid var(--ds-border-default);
   border-radius: var(--ds-radius-md);
-  /* padding-inline-start (راست در RTL): جای آیکون ArrowUpDown */
   padding-inline-start: 2em;
-  /* padding-inline-end (چپ در RTL): جای chevron */
   padding-inline-end: 2.25em;
   cursor: pointer;
   outline: none;
@@ -213,7 +222,7 @@
 }
 
 .sortSelect:hover {
-  border-color: color-mix(in oklch, var(--ds-brand-500) 35%, var(--ds-border-default));
+  border-color: var(--ds-brand-500);
 }
 
 .sortSelect:focus {
@@ -230,21 +239,23 @@
   font-family: inherit;
   font-size: var(--ds-text-xs);
   font-weight: 700;
-  color: var(--ds-canvas);
+  color: var(--ds-brand-on);
   background: var(--ds-brand-500);
-  border: 1px solid var(--ds-brand-500);
+  border: 1.5px solid var(--ds-brand-500);
   border-radius: var(--ds-radius-md);
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 160ms var(--ds-ease-out-quart), transform 120ms var(--ds-ease-spring),
+  transition: background 160ms var(--ds-ease-out-quart),
+    transform 120ms var(--ds-ease-spring),
     box-shadow 160ms var(--ds-ease-out-quart);
-  box-shadow: 0 4px 12px -4px color-mix(in oklch, var(--ds-brand-500) 40%, transparent);
+  box-shadow: 0 4px 12px -4px color-mix(in oklch, var(--ds-brand-500) 45%, transparent);
 }
 
 .addBtn:hover {
   background: var(--ds-brand-600);
+  border-color: var(--ds-brand-600);
   transform: translateY(-1px);
-  box-shadow: 0 8px 18px -6px color-mix(in oklch, var(--ds-brand-500) 50%, transparent);
+  box-shadow: 0 8px 18px -6px color-mix(in oklch, var(--ds-brand-500) 55%, transparent);
 }
 
 .addBtn:active {
@@ -267,7 +278,7 @@
 
 .chipsLabel {
   font-size: 0.6875rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--ds-text-muted);
   letter-spacing: 0.01em;
   margin-inline-end: 0.2rem;
@@ -276,12 +287,12 @@
 .chip {
   font-family: inherit;
   font-size: 0.6875rem;
-  font-weight: 600;
+  font-weight: 700;
   padding-block: 0.3em;
   padding-inline: 0.7em;
   border-radius: 999px;
   background: transparent;
-  border: 1px solid var(--ds-border-subtle);
+  border: 1.5px solid var(--ds-border-default);
   color: var(--ds-text-muted);
   cursor: pointer;
   white-space: nowrap;
@@ -291,8 +302,8 @@
 
 .chip:hover {
   color: var(--ds-text-primary);
-  background: color-mix(in oklch, var(--ds-text-muted) 8%, transparent);
-  border-color: var(--ds-border-default);
+  background: color-mix(in oklch, var(--ds-text-muted) 8%, oklch(100% 0 0));
+  border-color: var(--ds-border-strong);
 }
 
 .chip:focus-visible {
@@ -301,52 +312,52 @@
 }
 
 .chip[data-variant="amber"]:not([data-active="true"]) {
-  border-color: color-mix(in oklch, var(--nova-amber) 25%, transparent);
+  border-color: color-mix(in oklch, var(--nova-amber) 30%, transparent);
   color: var(--nova-amber);
 }
 
 .chip[data-variant="cyan"]:not([data-active="true"]) {
-  border-color: color-mix(in oklch, var(--nova-cyan) 25%, transparent);
+  border-color: color-mix(in oklch, var(--nova-cyan) 30%, transparent);
   color: var(--nova-cyan);
 }
 
 .chip[data-variant="up"]:not([data-active="true"]) {
-  border-color: color-mix(in oklch, var(--nova-up) 25%, transparent);
+  border-color: color-mix(in oklch, var(--nova-up) 30%, transparent);
   color: var(--nova-up);
 }
 
 .chip[data-variant="down"]:not([data-active="true"]) {
-  border-color: color-mix(in oklch, var(--nova-down) 25%, transparent);
+  border-color: color-mix(in oklch, var(--nova-down) 30%, transparent);
   color: var(--nova-down);
 }
 
 .chip[data-active="true"] {
   background: var(--ds-text-primary);
-  color: var(--ds-canvas);
+  color: var(--ds-text-inverse);
   border-color: var(--ds-text-primary);
 }
 
 .chip[data-active="true"][data-variant="amber"] {
   background: var(--nova-amber);
-  color: var(--ds-canvas);
+  color: oklch(100% 0 0);
   border-color: var(--nova-amber);
 }
 
 .chip[data-active="true"][data-variant="cyan"] {
   background: var(--nova-cyan);
-  color: var(--ds-canvas);
+  color: oklch(100% 0 0);
   border-color: var(--nova-cyan);
 }
 
 .chip[data-active="true"][data-variant="up"] {
   background: var(--nova-up);
-  color: var(--ds-canvas);
+  color: oklch(100% 0 0);
   border-color: var(--nova-up);
 }
 
 .chip[data-active="true"][data-variant="down"] {
   background: var(--nova-down);
-  color: var(--ds-canvas);
+  color: oklch(100% 0 0);
   border-color: var(--nova-down);
 }
 
@@ -360,6 +371,33 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* ── Mobile tweaks ──────────────────────────────────────────────────────── */
+
+@media (min-width: 480px) {
+  .searchWrap {
+    flex: 1 1 12rem;
+    inline-size: auto;
+  }
+}
+
+/* کوچک‌ترین صفحه‌ها: padding کمتر + gap کمتر */
+@media (max-width: 400px) {
+  .strip {
+    padding-block: var(--ds-space-2);
+    padding-inline: var(--ds-space-2);
+    gap: var(--ds-space-2);
+  }
+  .sortSelect {
+    min-inline-size: 7.5rem;
+  }
+  .addBtn span {
+    display: none; /* فقط آیکون + */
+  }
+  .addBtn {
+    padding-inline: var(--ds-space-2-5, 0.625rem);
   }
 }
 
