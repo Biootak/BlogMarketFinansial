@@ -21,7 +21,7 @@
 import prisma from '@/lib/db';
 import { requireExchangeAccess } from '@/lib/exchange-auth';
 import { checkRateLimit } from '@/lib/rate-limiter';
-import { requireAdmin } from '@/lib/require-auth';
+import { requireAdmin, requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import safeCache, { safeRevalidateTag } from '@/lib/safe-cache';
 import type { FintechActionResult } from '@/types/types';
@@ -457,6 +457,75 @@ export async function rejectQuote(
       },
     });
   });
+
+  revalidateQuoteCaches();
+  return { success: true, data: { id } };
+}
+
+// ─── LOCK (مشتری هنگام ثبت معامله) ─────────────────────────────────────────
+
+/**
+ * lockQuote — قفل نرخ توسط مشتری قبل از تکمیل معامله (LOCKED).
+ *
+ * فقط quote های ACTIVE و غیرمنقضی قابل قفل هستند. quote قفل‌شده دیگر در
+ * مقایسهٔ نمایش داده نمی‌شود؛ cron (expireQuotes) آن را پس از انقضا EXPIRED می‌کند.
+ */
+export async function lockQuote(id: string): Promise<FintechActionResult<{ id: string }>> {
+  const auth = await requireUser();
+  if (!auth.success)
+    return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد حساب شوید' } };
+
+  const rl = await checkRateLimit(`quote-lock:${auth.user.id}`, 'api');
+  if (!rl.success) {
+    return {
+      success: false,
+      error: { code: 'RATE_LIMITED', message: 'تعداد درخواست‌ها زیاد است. لطفاً صبر کنید.' },
+    };
+  }
+
+  const quote = await prisma.exchangeRateQuote.findUnique({ where: { id } });
+  if (!quote) return { success: false, error: { code: 'NOT_FOUND', message: 'quote یافت نشد' } };
+
+  // idempotent: قبلاً LOCKED شده → همان نتیجه موفق
+  if (quote.status === 'LOCKED') return { success: true, data: { id } };
+  if (quote.status !== 'ACTIVE') {
+    return {
+      success: false,
+      error: { code: 'INVALID_STATE', message: 'فقط quote های ACTIVE قابل قفل شدن هستند' },
+    };
+  }
+  if (quote.expiresAt && quote.expiresAt < new Date()) {
+    return {
+      success: false,
+      error: { code: 'QUOTE_EXPIRED', message: 'نرخ منقضی شده — کد نرخ جدید درخواست دهید' },
+    };
+  }
+
+  // update + log atomic — فقط اگر هنوز ACTIVE باشد (race-safe)
+  try {
+    await prisma.$transaction(async (tx) => {
+      const updated = await tx.exchangeRateQuote.updateMany({
+        where: { id, status: 'ACTIVE' },
+        data: { status: 'LOCKED', updatedAt: new Date() },
+      });
+      if (updated.count === 0) throw new Error('QUOTE_STATE_CHANGED');
+      await tx.quoteStatusLog.create({
+        data: {
+          quoteId: id,
+          fromStatus: 'ACTIVE',
+          toStatus: 'LOCKED',
+          actorId: auth.user.id,
+          actorRole: 'CUSTOMER',
+          reason: 'قفل نرخ توسط مشتری هنگام ثبت معامله',
+        },
+      });
+    });
+  } catch {
+    return {
+      success: false,
+      error: { code: 'INVALID_STATE', message: 'نرخ هم‌زمان تغییر کرده — دوباره تلاش کنید' },
+    };
+  }
 
   revalidateQuoteCaches();
   return { success: true, data: { id } };

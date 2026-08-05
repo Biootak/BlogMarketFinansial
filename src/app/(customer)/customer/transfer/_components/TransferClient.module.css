@@ -298,6 +298,30 @@
   background: var(--ds-text-muted);
 }
 
+.cancelOtp {
+  block-size: 44px;
+  width: 100%;
+  margin-block-start: var(--ds-space-2);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-md);
+  background: transparent;
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 200ms ease, border-color 200ms ease;
+}
+
+.cancelOtp:hover:not(:disabled) {
+  color: var(--ds-text-primary);
+  border-color: var(--ds-border-hover);
+}
+
+.cancelOtp:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .outlineBtn {
   block-size: 40px;
   padding-inline: var(--ds-space-5);

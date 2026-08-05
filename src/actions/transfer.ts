@@ -227,18 +227,48 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
   }
 
   // پیدا کردن حساب گیرنده
-  const recipientCustomer = await prisma.customer.findFirst({
-    where: { userId: recipientUserId },
-    select: {
-      id: true,
-      FintechAccount: { where: { currency, status: 'ACTIVE' }, select: { id: true } },
-    },
-  });
+  const [recipientCustomer, recipientKycRecord] = await Promise.all([
+    prisma.customer.findFirst({
+      where: { userId: recipientUserId },
+      select: {
+        id: true,
+        kycLevel: true,
+        kycStatus: true,
+        FintechAccount: { where: { currency, status: 'ACTIVE' }, select: { id: true } },
+      },
+    }),
+    // KYC expiry — هماهنگ با currency-deals (پس از انقضا، kycStatus هنوز EXPIRED نشده باشد)
+    prisma.kycRecord.findUnique({
+      where: { userId: recipientUserId },
+      select: { expiresAt: true },
+    }),
+  ]);
+
+  if (recipientKycRecord?.expiresAt && recipientKycRecord.expiresAt < new Date()) {
+    return {
+      success: false,
+      error: {
+        code: 'RECIPIENT_KYC_EXPIRED',
+        message: 'احراز هویت (KYC) گیرنده منقضی شده است — گیرنده باید KYC را تمدید کند',
+      },
+    };
+  }
 
   if (!recipientCustomer || recipientCustomer.FintechAccount.length === 0) {
     return {
       success: false,
       error: { code: 'RECIPIENT_NO_ACCOUNT', message: 'گیرنده حساب فعالی برای این ارز ندارد' },
+    };
+  }
+
+  // KYC gate برای گیرنده — هماهنگ با exchange-transactions و currency-deals
+  if (recipientCustomer.kycStatus !== 'APPROVED' || recipientCustomer.kycLevel === 'NONE') {
+    return {
+      success: false,
+      error: {
+        code: 'RECIPIENT_KYC_REQUIRED',
+        message: 'گیرنده احراز هویت (KYC) تأییدشده ندارد و قادر به دریافت وجه نیست',
+      },
     };
   }
 
