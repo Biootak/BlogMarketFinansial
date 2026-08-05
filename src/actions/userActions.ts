@@ -329,7 +329,7 @@ export async function updateUserRole(userId: string, newRole: Role) {
     await prisma.auditLog.create({
       data: {
         id: createId(),
-        exchangeId: 'PLATFORM',
+        exchangeId: null,
         actorId: session.user.id,
         actorRole: session.user.role,
         action: 'USER_ROLE_CHANGED',

@@ -1,9 +1,16 @@
-/* kyc.module.css â€” Premium KYC wizard design */ .root {
+/* kyc.module.css — Premium KYC wizard design */
+.root {
   min-height: 100dvh;
   padding-block: var(--ds-space-10) var(--ds-space-14);
   padding-inline: var(--ds-space-4);
   position: relative;
   overflow-x: hidden;
+}
+
+/* وقتی فقط یک status card نمایش داده می‌شود (approved/pending/success) */
+.rootStatus {
+  min-height: auto;
+  padding-block: var(--ds-space-4) var(--ds-space-8);
 }
 
 /* Ambient â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */

@@ -41,35 +41,7 @@ const PaginationClient: React.FC<PaginationClientProps> = ({
 
   return (
     <nav aria-label="صفحه‌بندی" className={cn('arc-pagination-modern', className)}>
-      {/* Prev */}
-      <button
-        type="button"
-        className={cn(
-          'arc-pagination-modern__item',
-          (currentPage === 1 || isPending) && 'opacity-40 pointer-events-none',
-        )}
-        onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
-        disabled={currentPage === 1 || isPending}
-        aria-label="صفحه قبلی"
-      >
-        <ChevronRight className="w-4 h-4" aria-hidden />
-      </button>
-
-      {/* Pages */}
-      {pageNumbers.map((i) => (
-        <button
-          type="button"
-          key={i}
-          aria-current={i === currentPage ? 'true' : undefined}
-          className={cn('arc-pagination-modern__item', 'tabular-nums', isPending && 'opacity-60')}
-          onClick={() => handlePageChange(i)}
-          disabled={isPending}
-        >
-          {i}
-        </button>
-      ))}
-
-      {/* Next */}
+      {/* Next — در RTL سمت راست قرار می‌گیرد */}
       <button
         type="button"
         className={cn(
@@ -79,6 +51,36 @@ const PaginationClient: React.FC<PaginationClientProps> = ({
         onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
         disabled={currentPage === totalPages || isPending}
         aria-label="صفحه بعدی"
+      >
+        <ChevronRight className="w-4 h-4" aria-hidden />
+      </button>
+
+      {/* Pages — direction:ltr فقط روی اعداد تا ۱→۲→۳ درست نمایش داده شود */}
+      <span style={{ display: 'contents', direction: 'ltr' }}>
+        {pageNumbers.map((i) => (
+          <button
+            type="button"
+            key={i}
+            aria-current={i === currentPage ? 'true' : undefined}
+            className={cn('arc-pagination-modern__item', 'tabular-nums', isPending && 'opacity-60')}
+            onClick={() => handlePageChange(i)}
+            disabled={isPending}
+          >
+            {i}
+          </button>
+        ))}
+      </span>
+
+      {/* Prev — در RTL سمت چپ قرار می‌گیرد */}
+      <button
+        type="button"
+        className={cn(
+          'arc-pagination-modern__item',
+          (currentPage === 1 || isPending) && 'opacity-40 pointer-events-none',
+        )}
+        onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+        disabled={currentPage === 1 || isPending}
+        aria-label="صفحه قبلی"
       >
         <ChevronLeft className="w-4 h-4" aria-hidden />
       </button>

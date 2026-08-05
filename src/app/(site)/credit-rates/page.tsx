@@ -2,6 +2,7 @@ import { getAllCreditRates } from '@/actions/credit-rates';
 import type { Metadata } from 'next';
 import s from './credit-rates.module.css';
 
+// searchParams (فیلتر بانک) این صفحه را dynamic می‌کند — force-dynamic صریح است.
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {

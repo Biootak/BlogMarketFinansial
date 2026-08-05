@@ -24,7 +24,6 @@ import { UserHome } from '@/components/Dashboard/DashboardPage/UserHome';
 //
 // برای نقش USER/SUPPORT: همان UserHome بهینه‌سازی‌شده با tokens.
 import { AtelierDeck } from '@/components/Dashboard/DashboardPage/atelier';
-import { checkRole } from '@/lib/auth';
 import prisma from '@/lib/db';
 
 export default async function Dashboard() {
@@ -74,10 +73,14 @@ export default async function Dashboard() {
     );
   }
 
-  // Check user role before loading any data
-  await checkRole(['OWNER', 'ADMIN', 'AUTHOR', 'SUPERADMIN']);
+  // 2026-08-perf: checkRole حذف شد — auth() اضافی اجرا می‌کرد.
+  // role check inline با initialSession (که خط ۳۷ awaited شده).
+  const ALLOWED_ROLES = new Set(['OWNER', 'ADMIN', 'AUTHOR', 'SUPERADMIN']);
+  if (!ALLOWED_ROLES.has(initialSession.user.role ?? '')) {
+    redirect('/');
+  }
 
-  const session = await auth();
+  const session = initialSession;
 
   if (!session?.user) {
     redirect('/auth?callbackUrl=/dashboard');

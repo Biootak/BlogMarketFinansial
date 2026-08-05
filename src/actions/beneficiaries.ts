@@ -91,7 +91,7 @@ export async function createBeneficiary(
   await prisma.auditLog.create({
     data: {
       id: createId(),
-      exchangeId: 'PLATFORM',
+      exchangeId: null,
       actorId: auth.user.id,
       actorRole: 'USER',
       action: 'BENEFICIARY_CREATED',

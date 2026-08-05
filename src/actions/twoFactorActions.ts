@@ -156,7 +156,7 @@ export async function confirmEnable2FA(
     await tx.auditLog.create({
       data: {
         id: createId(),
-        exchangeId: 'PLATFORM',
+        exchangeId: null,
         actorId: auth.user.id,
         actorRole: 'USER',
         action: '2FA_ENABLED',
@@ -209,7 +209,7 @@ export async function disable2FA(token: string): Promise<FintechActionResult<voi
     await tx.auditLog.create({
       data: {
         id: createId(),
-        exchangeId: 'PLATFORM',
+        exchangeId: null,
         actorId: auth.user.id,
         actorRole: 'USER',
         action: '2FA_DISABLED',

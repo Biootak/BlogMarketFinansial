@@ -381,10 +381,13 @@ export async function POST(request: NextRequest) {
     // لوگو و مدارک صرافی را آپلود کنند. binding به Exchange.logoUrl در خود
     // server action (updateExchangeSelf) بررسی می‌شود — upload API فقط فایل را
     // ذخیره می‌کند. بنابراین فقط نیاز به authenticated user داریم (نه author-only).
+    // 'logos', 'exchange': صرافی‌ها لوگو/مدارک آپلود می‌کنند — فقط auth لازم است
+    // 'kyc': کاربر عادی (USER) مدارک احراز هویت آپلود می‌کند — فقط auth لازم است
     const isExchangeFolder = folder === 'logos' || folder === 'exchange';
+    const isUserFolder = folder === 'kyc' || folder === 'avatars';
     if (
       !isExchangeFolder &&
-      folder !== 'avatars' &&
+      !isUserFolder &&
       role !== 'AUTHOR' &&
       role !== 'ADMIN' &&
       role !== 'OWNER'

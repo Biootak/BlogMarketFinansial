@@ -10,6 +10,7 @@ import { ReportsSkeleton } from '@/components/Skeletons';
 import { RefreshCw } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
+import type React from 'react';
 import { useCallback, useState } from 'react';
 import {
   HiOutlineBanknotes,
@@ -49,34 +50,39 @@ export default function ReportsShell() {
     setTimeout(() => setIsRefreshing(false), 800);
   }, [router]);
 
-  const tabs = [
-    {
-      id: 'finance',
-      label: 'گزارش مالی',
-      icon: HiOutlineBanknotes,
-      component: <FinanceReport />,
-    },
-    {
-      id: 'overview',
-      label: 'نمای کلی بلاگ',
-      icon: HiOutlineSquares2X2,
-      component: <SystemReports />,
-    },
-    {
-      id: 'activity',
-      label: 'فعالیت‌ها',
-      icon: HiOutlineChartBar,
-      component: <ActivityLog />,
-    },
-    {
-      id: 'logs',
-      label: 'لاگ‌های سیستم',
-      icon: HiOutlineCommandLine,
-      component: <SystemLogsData />,
-    },
+  // 2026-08-perf: تعریف tabs بدون component — رندر lazy روی tab فعال.
+  // قبلاً همه ۴ component (SystemReports، FinanceReport، ActivityLog، SystemLogs)
+  // هنگام mount با هم رندر می‌شدند (حتی اگر فقط یکی دیده می‌شد). recharts و
+  // تمام side-effect های fetch آن‌ها اجرا می‌شدند. حالا فقط component tab
+  // فعال mount می‌شود.
+  const tabIds = ['finance', 'overview', 'activity', 'logs'] as const;
+  type TabId = (typeof tabIds)[number];
+
+  const tabs: Array<{
+    id: TabId;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }> = [
+    { id: 'finance', label: 'گزارش مالی', icon: HiOutlineBanknotes },
+    { id: 'overview', label: 'نمای کلی بلاگ', icon: HiOutlineSquares2X2 },
+    { id: 'activity', label: 'فعالیت‌ها', icon: HiOutlineChartBar },
+    { id: 'logs', label: 'لاگ‌های سیستم', icon: HiOutlineCommandLine },
   ];
 
-  const activeTabData = tabs.find((tab) => tab.id === activeTab);
+  const renderActiveTab = () => {
+    switch (activeTab) {
+      case 'finance':
+        return <FinanceReport />;
+      case 'overview':
+        return <SystemReports />;
+      case 'activity':
+        return <ActivityLog />;
+      case 'logs':
+        return <SystemLogsData />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="at-page" dir="rtl">
@@ -126,7 +132,7 @@ export default function ReportsShell() {
       {/* Content */}
       <div className="at-form-section">
         <div className="at-form-section__body" style={{ minHeight: '480px' }}>
-          {activeTabData?.component}
+          {renderActiveTab()}
         </div>
       </div>
     </div>

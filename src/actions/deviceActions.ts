@@ -78,7 +78,7 @@ export async function revokeDevice(deviceId: string): Promise<FintechActionResul
   await prisma.auditLog.create({
     data: {
       id: createId(),
-      exchangeId: 'PLATFORM',
+      exchangeId: null,
       actorId: auth.user.id,
       actorRole: 'USER',
       action: 'DEVICE_REVOKED',
@@ -180,7 +180,7 @@ export async function revokeAllOtherDevices(
   await prisma.auditLog.create({
     data: {
       id: createId(),
-      exchangeId: 'PLATFORM',
+      exchangeId: null,
       actorId: auth.user.id,
       actorRole: 'USER',
       action: 'ALL_OTHER_DEVICES_REVOKED',

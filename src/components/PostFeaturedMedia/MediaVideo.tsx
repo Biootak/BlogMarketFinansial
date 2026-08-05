@@ -2,7 +2,7 @@
 
 import LoadingVideo from '@/components/LoadingVideo/LoadingVideo';
 import dynamic from 'next/dynamic';
-import { type FC, useEffect, useState } from 'react';
+import { type FC, useRef, useState } from 'react';
 import { HiSpeakerWave, HiSpeakerXMark } from 'react-icons/hi2';
 
 const ReactPlayer = dynamic(() => import('react-player'), { ssr: false });
@@ -16,13 +16,11 @@ const MediaVideo: FC<MediaVideoProps> = ({ videoUrl, isHover }) => {
   const [isMuted, setIsMuted] = useState(true);
   const [showDescUnmuted, setShowDescUnmuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
-  let __timeOut: NodeJS.Timeout | null = null;
-
-  useEffect(() => {
-    return () => {
-      __timeOut && clearTimeout(__timeOut);
-    };
-  }, [__timeOut]);
+  // 2026-08-perf: __timeOut از body component به useRef منتقل شد.
+  // قبلاً `let __timeOut` در body component بود — هر re-render یک
+  // مقدار جدید می‌ساخت و useEffect([__timeOut]) دائماً re-run می‌شد.
+  // useRef مقدار پایدار دارد و هیچ re-render اضافه‌ای ایجاد نمی‌کند.
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   return (
     <div className="nc-MediaVideo">
@@ -38,8 +36,8 @@ const MediaVideo: FC<MediaVideoProps> = ({ videoUrl, isHover }) => {
         height="100%"
         onStart={() => {
           setIsPlaying(true);
-          __timeOut && clearTimeout(__timeOut);
-          __timeOut = setTimeout(() => {
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+          timeoutRef.current = setTimeout(() => {
             setShowDescUnmuted(false);
           }, 2500);
         }}

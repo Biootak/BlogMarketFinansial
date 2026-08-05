@@ -55,7 +55,7 @@ function LoadingSkeleton() {
 
 export default function MarketRatesTickerSection() {
   return (
-    <section className="nc-MarketRatesTickerSection py-1">
+    <section className="nc-MarketRatesTickerSection pb-1">
       <Suspense fallback={<LoadingSkeleton />}>
         <MarketRatesTickerContent />
       </Suspense>

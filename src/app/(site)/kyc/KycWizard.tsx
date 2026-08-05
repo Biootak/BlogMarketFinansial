@@ -8,7 +8,6 @@
  * مرحله ۳: تأیید و ارسال
  */
 
-import { getPresignedUrl } from '@/actions/S3Actions';
 import {
   type KycRecordRow,
   submitKycBasicInfo,
@@ -118,25 +117,25 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
     setError(null);
     setUploadingField(field);
     try {
-      // دریافت presigned URL از S3
-      const presigned = await getPresignedUrl(safeFileName(file), file.type);
-      if (!presigned.success) {
-        setError(presigned.message);
+      // آپلود از طریق سرور Next.js (server→S3) — بدون CORS
+      const formData = new FormData();
+      formData.append('files', file, safeFileName(file));
+      formData.append('folder', 'kyc');
+
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        setError(json.error?.message ?? 'آپلود فایل با خطا مواجه شد. دوباره تلاش کنید.');
         return;
       }
-      // آپلود مستقیم به S3 با presigned URL
-      const upload = await fetch(presigned.url, {
-        method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': file.type },
-      });
-      if (!upload.ok) {
+
+      const uploadedUrl: string = json.data.files[0]?.url;
+      if (!uploadedUrl) {
         setError('آپلود فایل با خطا مواجه شد. دوباره تلاش کنید.');
         return;
       }
-      // URL نهایی بدون query string پرسش‌نامه‌های presigned
-      const publicUrl = presigned.url.split('?')[0];
-      setDocs((d) => ({ ...d, [field]: publicUrl }));
+      setDocs((d) => ({ ...d, [field]: uploadedUrl }));
     } catch {
       setError('اتصال به سرویس ذخیره‌سازی ممکن نیست. دوباره تلاش کنید.');
     } finally {
@@ -262,6 +261,7 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
       });
       if (res.success) {
         setSuccess(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         setError(res.error.message);
       }
@@ -271,7 +271,7 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
   // ── وضعیت تأیید شده ─────────────────────────────────────────
   if (initialRecord?.status === 'APPROVED') {
     return (
-      <div className={s.root}>
+      <div className={`${s.root} ${s.rootStatus}`}>
         <div className={s.ambient} aria-hidden />
         <div className={s.container}>
           <div className={s.card}>
@@ -294,7 +294,7 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
   // ── تأیید موفق (submit شد) ───────────────────────────────────
   if (success) {
     return (
-      <div className={s.root}>
+      <div className={`${s.root} ${s.rootStatus}`}>
         <div className={s.ambient} aria-hidden />
         <div className={s.container}>
           <div className={s.card}>
@@ -317,7 +317,7 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
   // ── در انتظار بررسی ──────────────────────────────────────────
   if (initialRecord?.status === 'PENDING' && initialRecord.submittedAt) {
     return (
-      <div className={s.root}>
+      <div className={`${s.root} ${s.rootStatus}`}>
         <div className={s.ambient} aria-hidden />
         <div className={s.container}>
           <div className={s.card}>

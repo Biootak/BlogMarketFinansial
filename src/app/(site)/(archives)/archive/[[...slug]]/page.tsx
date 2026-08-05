@@ -214,8 +214,12 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
     total,
   });
 
-  const featuredPost = posts.length > 0 ? posts[0] : null;
-  const gridPosts = posts.length > 1 ? posts.slice(1) : [];
+  // featured post فقط در صفحه ۱ و بدون هیچ filter/search نمایش داده می‌شود.
+  // در صفحات دیگر یا وقتی filter/search فعال است، همه پست‌ها به grid می‌روند.
+  const showFeatured =
+    currentPage === 1 && !searchQuery && filter === DEFAULT_FILTER;
+  const featuredPost = showFeatured && posts.length > 0 ? posts[0] : null;
+  const gridPosts = featuredPost ? posts.slice(1) : posts;
 
   return (
     <div className="atl-page">
@@ -287,7 +291,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
         ) : null}
       </div>
 
-      <div className="relative atl-section atl-reveal">
+      <div className="relative atl-section">
         <BackgroundSection />
         <div className="container relative z-10" style={{ paddingBlock: 'var(--ds-space-2)' }}>
           <DynamicCategories
@@ -297,7 +301,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
         </div>
       </div>
 
-      <div className="container atl-section atl-reveal">
+      <div className="container atl-section">
         <SectionSliderNewAuthors
           heading="صدای تحلیلگران"
           subHeading="با ذهن‌هایی آشنا شوید که پشت هر روایت، نگاه تیزبین و قلم بی‌طرفی دارند"
@@ -306,7 +310,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
         />
       </div>
 
-      <div className="container atl-section atl-reveal mb-8 lg:mb-12">
+      <div className="container atl-section mb-8 lg:mb-12">
         <SectionSubscribe2 />
       </div>
     </div>

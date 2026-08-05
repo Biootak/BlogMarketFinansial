@@ -1,86 +1,82 @@
 import type { Advertisement, PostWithRelations } from '@/types/types';
-import type { ReactNode } from 'react';
 import ArchiveAdCard from './ArchiveAdCard';
 import AtelierCard from './AtelierCard';
 
 /**
- * AtelierGrid — dense fluid editorial grid (2026).
- * Article cards interleaved with compact, multi-ad strips: several ads are
- * spread through the page in slim rows (2 per strip) instead of one large
- * banner — more inventory, far less vertical footprint per placement.
+ * AtelierGrid — editorial grid with inline ad strips (2026).
+ *
+ * همه کارت‌ها در یک grid هستند. تبلیغ با `grid-column: 1 / -1` کل عرض را
+ * می‌گیرد و بین هر N کارت قرار می‌گیرد — بدون chunk جداگانه.
+ * این روش ردیف‌های ناقص را حذف می‌کند چون grid هرگز قطع نمی‌شود.
  */
 type Props = {
   posts: PostWithRelations[];
   ads?: Advertisement[];
 };
 
-/** Cards between two consecutive ad strips. */
-const CARDS_PER_CHUNK = 6;
-/** Ads shown side-by-side in a single strip. */
-const ADS_PER_STRIP = 2;
-
-function AdStrip({ ads }: { ads: Advertisement[] }) {
-  if (ads.length === 0) return null;
-  return (
-    <div className="atl-adstrip atl-reveal">
-      <span className="atl-adstrip__label">تبلیغات</span>
-      <div className="atl-adstrip__row">
-        {ads.map((ad) => (
-          <div key={ad.id} className="atl-adstrip__item">
-            <ArchiveAdCard ad={ad} />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+/** After how many cards to insert an ad strip */
+const AD_EVERY = 10;
 
 const AtelierGrid: React.FC<Props> = ({ posts, ads = [] }) => {
   if (posts.length === 0) return null;
 
-  // Split posts into chunks, each rendered as its own complete grid. Ad strips
-  // live BETWEEN grids (never inside), so the grid never has to break a row for
-  // a full-width ad — no empty cells are ever left before a placement.
-  const chunks: PostWithRelations[][] = [];
-  for (let i = 0; i < posts.length; i += CARDS_PER_CHUNK) {
-    chunks.push(posts.slice(i, i + CARDS_PER_CHUNK));
-  }
-
-  const items: ReactNode[] = [];
   let adCursor = 0;
-  let cardIndex = 0;
 
-  chunks.forEach((chunk, chunkIndex) => {
+  // Build a flat list of grid items: cards + full-span ad strips
+  const items: React.ReactNode[] = [];
+
+  posts.forEach((post, i) => {
     items.push(
-      // biome-ignore lint/suspicious/noArrayIndexKey: chunk key is positional/stable — chunks are derived from posts array and never re-ordered
-      <div key={`grid-${chunkIndex}`} className="atl-grid">
-        {chunk.map((post) => {
-          const priority = cardIndex < 3;
-          cardIndex += 1;
-          return (
-            <div key={post.id} className="atl-reveal">
-              <AtelierCard post={post} priority={priority} />
-            </div>
-          );
-        })}
-      </div>,
+      <AtelierCard key={post.id} post={post} priority={i < 3} />,
     );
 
-    const isLastChunk = chunkIndex === chunks.length - 1;
-    if (ads.length > 0 && adCursor < ads.length && !isLastChunk) {
-      const slice = ads.slice(adCursor, adCursor + ADS_PER_STRIP);
+    // After every AD_EVERY cards (but not after the very last card), insert an ad
+    const isLast = i === posts.length - 1;
+    if (!isLast && (i + 1) % AD_EVERY === 0 && adCursor < ads.length) {
+      const slice = ads.slice(adCursor, adCursor + 2);
       adCursor += slice.length;
-      // biome-ignore lint/suspicious/noArrayIndexKey: ad strip key is positional/stable — strips are inserted between post chunks
-      items.push(<AdStrip key={`ad-${chunkIndex}`} ads={slice} />);
+      items.push(
+        // biome-ignore lint/suspicious/noArrayIndexKey: positional ad strip — stable order
+        <div key={`ad-${i}`} className="atl-grid-ad">
+          <div className="atl-adstrip">
+            <span className="atl-adstrip__label">تبلیغات</span>
+            <div className="atl-adstrip__row">
+              {slice.map((ad) => (
+                <div key={ad.id} className="atl-adstrip__item">
+                  <ArchiveAdCard ad={ad} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>,
+      );
     }
   });
 
-  // Any ads not yet placed get one final strip so nothing is dropped silently.
-  if (ads.length > 0 && adCursor < ads.length) {
-    items.push(<AdStrip key="ad-tail" ads={ads.slice(adCursor)} />);
+  // Remaining ads at the end
+  if (adCursor < ads.length) {
+    const tail = ads.slice(adCursor);
+    items.push(
+      <div key="ad-tail" className="atl-grid-ad">
+        <div className="atl-adstrip">
+          <span className="atl-adstrip__label">تبلیغات</span>
+          <div className="atl-adstrip__row">
+            {tail.map((ad) => (
+              <div key={ad.id} className="atl-adstrip__item">
+                <ArchiveAdCard ad={ad} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>,
+    );
   }
 
-  return <div className="atl-feed">{items}</div>;
+  return (
+    <div className="atl-feed">
+      <div className="atl-grid">{items}</div>
+    </div>
+  );
 };
 
 export default AtelierGrid;

@@ -178,7 +178,7 @@ export async function issueVirtualCard(raw: unknown): Promise<FintechActionResul
   await prisma.auditLog.create({
     data: {
       id: createId(),
-      exchangeId: 'PLATFORM',
+      exchangeId: null,
       actorId: auth.user.id,
       actorRole: 'USER',
       action: 'VIRTUAL_CARD_ISSUED',
@@ -261,7 +261,7 @@ export async function cancelVirtualCard(cardId: string): Promise<FintechActionRe
   await prisma.auditLog.create({
     data: {
       id: createId(),
-      exchangeId: 'PLATFORM',
+      exchangeId: null,
       actorId: auth.user.id,
       actorRole: 'USER',
       action: 'VIRTUAL_CARD_CANCELLED',

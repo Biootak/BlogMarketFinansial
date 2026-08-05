@@ -32,11 +32,12 @@ async function logKycAudit(params: {
   entityId: string;
   meta?: Record<string, unknown>;
 }) {
-  // KYC یک عملیات سراسری (نه مختص صرافی) است — exchangeId را خالی می‌گذاریم
+  // KYC یک عملیات سراسری (نه مختص صرافی) است — exchangeId باید null باشد.
+  // مقدار 'PLATFORM' یک FK violation می‌دهد چون Exchange با آن id وجود ندارد.
   await prisma.auditLog.create({
     data: {
       id: createId(),
-      exchangeId: 'PLATFORM',
+      exchangeId: null,
       actorId: params.actorId,
       actorRole: params.actorRole,
       action: params.action,
@@ -192,20 +193,23 @@ export async function submitKycBasicInfo(
 
 // ─── STEP 2: آپلود مدارک ───────────────────────────────────────────────────
 
+// helper: URL کامل S3 (https://) یا local path نسبی (/uploads/) را قبول می‌کند.
+// وقتی S3 در دسترس است (production) مقدار absolute HTTPS است.
+// وقتی S3 در دسترس نیست (dev / S3 down) مقدار /uploads/kyc/... است.
+// هر دو حالت از /api/upload route می‌آیند و امن هستند.
+const kycUrlField = (label: string) =>
+  z
+    .string()
+    .min(1, `${label} الزامی است`)
+    .refine(
+      (v) => v.startsWith('https://') || v.startsWith('/uploads/'),
+      `آدرس ${label} نامعتبر است`,
+    );
+
 const DocumentsSchema = z.object({
-  selfieUrl: z
-    .string()
-    .url('آدرس عکس سلفی نامعتبر')
-    .startsWith('https://', 'آدرس سلفی باید HTTPS باشد'),
-  docFrontUrl: z
-    .string()
-    .url('آدرس تصویر روی مدرک نامعتبر')
-    .startsWith('https://', 'آدرس مدرک باید HTTPS باشد'),
-  docBackUrl: z
-    .string()
-    .url('آدرس تصویر پشت مدرک نامعتبر')
-    .startsWith('https://', 'آدرس پشت مدرک باید HTTPS باشد')
-    .optional(),
+  selfieUrl: kycUrlField('عکس سلفی'),
+  docFrontUrl: kycUrlField('تصویر روی مدرک'),
+  docBackUrl: kycUrlField('تصویر پشت مدرک').optional(),
 });
 
 export async function submitKycDocuments(raw: unknown): Promise<FintechActionResult<void>> {

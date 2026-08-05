@@ -4,36 +4,23 @@ import { Sparkles } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 /**
  * AuthStatus — client island for the header's sign-in / avatar area.
  *
- * Previously MainNav (a server component) awaited `auth()` to render this
- * area. That request-dependent API opted the ENTIRE (site) tree out of
- * static generation — every public page was server-rendered on demand.
+ * الگوی hydration-safe:
+ *  - سرور: GuestAuthLinks (بدون دسترسی به session)
+ *  - client اولیه (mounted=false): GuestAuthLinks — دقیقاً همان سرور → بدون mismatch
+ *  - client بعد از mount: session واقعی → اگر login بود، avatar نشان داده می‌شود
  *
- * SessionProvider is already mounted in the root layout and auto-fetches the
- * session on first load, so this island reads `useSession()` (a few KB, no
- * bcrypt/Prisma on the render path). The server header renders the guest
- * branch immediately; the avatar/notify buttons appear once the session
- * arrives. Same UX, static-friendly render path.
+ * این الگو lurch/shake را از بین می‌برد:
+ *  قبلاً: SSR=Guest → hydrate=skeleton → ms بعد=avatar/guest (دو jump)
+ *  حالا:  SSR=Guest → hydrate=Guest (match) → mount=avatar اگر login بود (یک jump صاف)
  *
- * 2026-08-05 perf: AvatarDropdown + NotifyDropdown به dynamic import تبدیل شدند.
- * این کامپوننت‌ها Radix DropdownMenu + Avatar + DarkModeSwitch + LogoutButton +
- * SideDropdown + Icons را ایمپورت می‌کنند (~40KB+ first-load JS). وقتی کاربر
- * مهمان است (اکثریت بازدیدکنندگان)، این باندل اصلاً لود نمی‌شود — فقط پس از
- * احراز هویت و فقط روی تعامل کاربر (کلیک روی آواتار) بارگذاری می‌شود.
- * ssr:false چون این dropdownها فقط تعاملی‌اند و نیازی به SSR ندارند.
- *
- * 2026-08-05 perf: pathname-aware update() حذف شد. این hook در هر ناوبری
- * کلاینت‌ساید یک fetch اضافه به /api/auth/session می‌زد — TBT را بالا می‌برد.
- * SessionProvider با refetchOnWindowFocus=true خودش session را در بازگشت به تب
- * refresh می‌کند؛ update() دستی روی هر pathname change ضروری نیست.
+ * AvatarDropdown + NotifyDropdown با ssr:false lazy-load هستند (~40KB+ JS) —
+ * برای guest‌ها اصلاً load نمی‌شوند.
  */
-import { type ReactNode } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
-// Lazy-load authenticated-only UI — ~40KB+ JS (Radix + Avatar + DarkMode +
-// Logout + SideDropdown + Icons) stays off the critical path for guests.
 const AvatarDropdown = dynamic(() => import('./AvatarDropdown'), {
   ssr: false,
   loading: () => <div className="h-10 w-10 rounded-xl animate-pulse bg-neutral-100 dark:bg-neutral-800" />,
@@ -45,22 +32,30 @@ const NotifyDropdown = dynamic(() => import('./NotifyDropdown'), {
 
 export default function AuthStatus() {
   const { data: session, status } = useSession();
-  const isLoading = status === 'loading';
-  const user = session?.user;
-  const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
 
-  // 2026-08-05 perf: update() در pathname change حذف شد. SessionProvider با
-  // refetchOnWindowFocus=true خودش session را refresh می‌کند. pathname فقط
-  // برای key در استفاده شده تا مطمئن شویم re-render رخ می‌دهد.
-  if (isLoading) {
-    return <div className="h-10 w-10 rounded-xl" aria-hidden="true" key={pathname} />;
+  // بعد از اولین mount client-side، state را به true تغییر می‌دهیم.
+  // تا قبل از mount، همان چیزی که سرور رندر کرده (GuestAuthLinks) را برمی‌گردانیم
+  // تا hydration mismatch رخ ندهد.
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // قبل از mount: همان GuestAuthLinks که سرور رندر کرده — بدون mismatch
+  if (!mounted) {
+    return <GuestAuthLinks />;
   }
 
-  if (user) {
+  // بعد از mount: session واقعی
+  if (status === 'loading') {
+    return <div className="h-10 w-10 rounded-xl animate-pulse bg-neutral-100 dark:bg-neutral-800" aria-hidden="true" />;
+  }
+
+  if (session?.user) {
     return (
-      <div key={pathname}>
+      <div className="flex items-center gap-1">
         <NotifyDropdown />
-        <AvatarDropdown user={user} />
+        <AvatarDropdown user={session.user} />
       </div>
     );
   }
