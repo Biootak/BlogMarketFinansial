@@ -10,7 +10,7 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const prismaMock = {
+const prismaMock = vi.hoisted(() => ({
   telegramLinkToken: {
     create: vi.fn(),
     findUnique: vi.fn(),
@@ -20,7 +20,7 @@ const prismaMock = {
     update: vi.fn(),
   },
   $transaction: vi.fn(),
-};
+}));
 
 vi.mock('@/lib/db', () => ({ default: prismaMock }));
 
@@ -39,7 +39,7 @@ describe('sendTelegramMessage', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     process.env = { ...ORIGINAL_ENV };
-    delete process.env.TELEGRAM_BOT_TOKEN;
+    process.env.TELEGRAM_BOT_TOKEN = undefined;
     global.fetch = vi.fn();
   });
 
@@ -117,8 +117,8 @@ describe('createTelegramLinkToken', () => {
 });
 
 describe('consumeTelegramLinkToken', () => {
-  const now = new Date('2026-08-05T10:00:00Z');
-  const future = new Date(now.getTime() + 60_000);
+  const future = new Date(Date.now() + 60_000);
+  const past = new Date(Date.now() - 60_000);
 
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -154,7 +154,7 @@ describe('consumeTelegramLinkToken', () => {
     prismaMock.telegramLinkToken.findUnique.mockResolvedValue({
       id: 't1',
       used: false,
-      expiresAt: new Date(now.getTime() - 60_000),
+      expiresAt: past,
     });
     const res = await consumeTelegramLinkToken('link_aa', 'chat-1');
     expect(res).toEqual({ ok: false, reason: 'expired' });
@@ -204,7 +204,7 @@ describe('isTelegramWebhookSecretValid', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     process.env = { ...ORIGINAL_ENV };
-    delete process.env.TELEGRAM_WEBHOOK_SECRET;
+    process.env.TELEGRAM_WEBHOOK_SECRET = undefined;
   });
 
   it('بدون env → همیشه false (fail-closed)', () => {
@@ -232,7 +232,7 @@ describe('getTelegramLinkUrl / getTelegramBotUsername', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     process.env = { ...ORIGINAL_ENV };
-    delete process.env.TELEGRAM_BOT_USERNAME;
+    process.env.TELEGRAM_BOT_USERNAME = undefined;
   });
 
   it('بدون username → رشته خالی', () => {

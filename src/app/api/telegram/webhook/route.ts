@@ -11,7 +11,7 @@ import { NextResponse } from 'next/server';
  * فقط payload های `/start link_<token>` پردازش می‌شوند (اتصال تلگرام).
  * امنیت:
  *   - secret header الزامی (fail-closed) — از Bot API setWebhook بگذار:
- *     curl -F "url=https://blogmarketfinansial.ir/api/telegram/webhook" \
+ *     curl -F "url=https://market-finansial.vercel.app/api/telegram/webhook" \
  *          -F "secret_token=$TELEGRAM_WEBHOOK_SECRET" \
  *          https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook
  *   - همیشه 200 برمی‌گردانیم تا تلگرام retry نکند (خطاها لاگ/پیام می‌شوند)
@@ -53,7 +53,10 @@ export async function POST(req: Request) {
       'db-error': '❌ خطای سرور رخ داد. لطفاً دوباره تلاش کنید.',
     };
 
-    await sendTelegramMessage(String(chatId), replies[result.ok ? 'ok' : result.reason] ?? replies['db-error']);
+    await sendTelegramMessage(
+      String(chatId),
+      replies[result.ok ? 'ok' : result.reason] ?? replies['db-error'],
+    );
   }
 
   return NextResponse.json({ ok: true });

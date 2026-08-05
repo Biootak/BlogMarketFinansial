@@ -17,8 +17,8 @@
  *   - هرگز throw نمی‌کند — نتیجه همیشه بازگردانده می‌شود
  */
 
-import prisma from '@/lib/db';
 import { randomBytes } from 'node:crypto';
+import prisma from '@/lib/db';
 
 const TELEGRAM_API = 'https://api.telegram.org';
 
@@ -56,7 +56,6 @@ export async function sendTelegramMessage(
     });
 
     if (!res.ok) {
-      const err = (await res.json().catch(() => null)) as { description?: string } | null;
       // 403: کاربر ربات را بلاک کرده یا هرگز Start نزده است
       if (res.status === 403) {
         return { success: false, errorCode: 'USER_BLOCKED' };

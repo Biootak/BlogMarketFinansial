@@ -21,8 +21,8 @@ import {
 } from '@/actions/fintech-account';
 import { executeFxTrade, getFxQuote } from '@/actions/fx-trade';
 import { ACCOUNT_TYPE_LABEL } from '@/app/(customer)/customer/_lib/customer-formatters';
-import { type CurrencyItem, CurrencySelect } from '@/components/ui/CurrencySelect';
 import TelegramConnectLink from '@/components/telegram-otp/TelegramConnectLink';
+import { type CurrencyItem, CurrencySelect } from '@/components/ui/CurrencySelect';
 import {
   Select,
   SelectContent,
@@ -806,8 +806,8 @@ function TransferForm({
               کد تأیید (OTP)
             </label>
             <p className={s.hint}>
-              انتقال بالای ۱۰۰٬۰۰۰ افغانی است؛ کد ۶ رقمی ارسال‌شده به تلگرام یا پیامک شما را
-              وارد کنید.
+              انتقال بالای ۱۰۰٬۰۰۰ افغانی است؛ کد ۶ رقمی ارسال‌شده به تلگرام یا پیامک شما را وارد
+              کنید.
             </p>
             <TelegramConnectLink />
             <input

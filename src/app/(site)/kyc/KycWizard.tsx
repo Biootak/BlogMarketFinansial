@@ -461,8 +461,8 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
             <ShieldAlert size={18} strokeWidth={1.5} aria-hidden style={{ flexShrink: 0 }} />
             <span>
               <strong>شماره تلفن ثبت نشده — </strong>
-              برای تراکنش‌های بالای ۱۰۰٬۰۰۰ افغانی، کد تأیید لازم است (از طریق تلگرام یا
-              پیامک). لطفاً در{' '}
+              برای تراکنش‌های بالای ۱۰۰٬۰۰۰ افغانی، کد تأیید لازم است (از طریق تلگرام یا پیامک). لطفاً
+              در{' '}
               <Link
                 href="/dashboard/edit-profile"
                 style={{ color: 'inherit', textDecoration: 'underline' }}
@@ -548,7 +548,7 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
 
               {/* ── Phone OTP verification sub-step ──────────── */}
               {!phoneVerified && phoneForOtp && (
-                <div className={s.otpPanel} role="region" aria-label="تأیید شماره موبایل">
+                <section className={s.otpPanel} aria-label="تأیید شماره موبایل">
                   <div className={s.otpHeader}>
                     <div className={s.otpIcon} aria-hidden>
                       <Phone size={16} strokeWidth={1.5} />
@@ -617,7 +617,7 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
                       </button>
                     </div>
                   )}
-                </div>
+                </section>
               )}
 
               {!phoneVerified && !phoneForOtp && (

@@ -110,7 +110,8 @@ WHERE v."email" = dup."email" AND v."intent" = dup."intent"
   AND v."id" <> dup."id" AND v."expires" < dup."expires";
 
 DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname='VerificationToken_email_intent_key') THEN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname='VerificationToken_email_intent_key')
+    AND NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname='VerificationToken_email_intent_key') THEN
     ALTER TABLE "VerificationToken" ADD CONSTRAINT "VerificationToken_email_intent_key" UNIQUE ("email","intent");
   END IF;
 END $$;
@@ -299,7 +300,14 @@ DO $$ BEGIN
 END $$;
 
 ALTER TABLE "ServiceRequest" ADD COLUMN IF NOT EXISTS "targetExchangeId" TEXT;
-CREATE INDEX IF NOT EXISTS "ServiceRequest_targetExchangeId_status_idx"    ON "ServiceRequest"("targetExchangeId","status");
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+    WHERE table_name='ServiceRequest' AND column_name='status') THEN
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname='ServiceRequest_targetExchangeId_status_idx') THEN
+      EXECUTE 'CREATE INDEX "ServiceRequest_targetExchangeId_status_idx" ON "ServiceRequest"("targetExchangeId","status")';
+    END IF;
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS "ServiceRequest_targetExchangeId_createdAt_idx" ON "ServiceRequest"("targetExchangeId","createdAt" DESC);
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname='ServiceRequest_targetExchangeId_fkey') THEN
@@ -620,8 +628,24 @@ CREATE TABLE IF NOT EXISTS "KycRecord" (
     CONSTRAINT "KycRecord_pkey" PRIMARY KEY ("id")
 );
 CREATE UNIQUE INDEX IF NOT EXISTS "KycRecord_userId_key"             ON "KycRecord"("userId");
-CREATE INDEX        IF NOT EXISTS "KycRecord_status_idx"             ON "KycRecord"("status");
-CREATE INDEX        IF NOT EXISTS "KycRecord_exchangeId_status_idx"  ON "KycRecord"("exchangeId","status");
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+    WHERE table_name='KycRecord' AND column_name='status') THEN
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname='KycRecord_status_idx') THEN
+      EXECUTE 'CREATE INDEX "KycRecord_status_idx" ON "KycRecord"("status")';
+    END IF;
+  END IF;
+END $$;
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+    WHERE table_name='KycRecord' AND column_name='status')
+    AND EXISTS (SELECT 1 FROM information_schema.columns
+      WHERE table_name='KycRecord' AND column_name='exchangeId') THEN
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname='KycRecord_exchangeId_status_idx') THEN
+      EXECUTE 'CREATE INDEX "KycRecord_exchangeId_status_idx" ON "KycRecord"("exchangeId","status")';
+    END IF;
+  END IF;
+END $$;
 DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname='KycRecord_userId_fkey') THEN
   ALTER TABLE "KycRecord" ADD CONSTRAINT "KycRecord_userId_fkey"
     FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
