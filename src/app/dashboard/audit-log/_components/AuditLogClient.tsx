@@ -70,6 +70,9 @@ import { exportAuditLogs } from '../_actions/exportAuditLog';
 
 import s from './AuditLogClient.module.css';
 
+// Module-level Intl singleton — created once, never on each render
+const faNum = new Intl.NumberFormat('fa-IR');
+
 /* ─────────────────────────────── Types ─────────────────────────────────── */
 
 type AuditLog = {
@@ -344,7 +347,7 @@ export function AuditLogClient({
         <PageHeader
           variant="compact"
           title="گزارش ممیزی"
-          description={`${new Intl.NumberFormat('fa-IR').format(total)} رویداد ثبت شده در سیستم`}
+          description={`${faNum.format(total)} رویداد ثبت شده در سیستم`}
           breadcrumb={[{ href: '/dashboard', label: 'داشبورد' }, { label: 'گزارش ممیزی' }]}
           icon="clipboard-list"
           accent="amber"
@@ -375,7 +378,7 @@ export function AuditLogClient({
             <div className={s.kpiBody}>
               <span className={s.kpiLabel}>امروز</span>
               <span className={s.kpiValue}>
-                {new Intl.NumberFormat('fa-IR').format(todayCount)}
+                {faNum.format(todayCount)}
               </span>
             </div>
           </div>
@@ -396,7 +399,7 @@ export function AuditLogClient({
               <div className={s.kpiBody}>
                 <span className={s.kpiLabel}>{label}</span>
                 <span className={s.kpiValue}>
-                  {new Intl.NumberFormat('fa-IR').format(kpiCounts[key])}
+                  {faNum.format(kpiCounts[key])}
                 </span>
               </div>
             </button>
@@ -494,7 +497,7 @@ export function AuditLogClient({
               <span className={s.pendingDot} aria-label="در حال بارگذاری" role="status" />
             )}
             <span className={s.resultCount} aria-live="polite">
-              {new Intl.NumberFormat('fa-IR').format(filteredLogs.length)} رویداد
+              {faNum.format(filteredLogs.length)} رویداد
             </span>
           </div>
         </div>
@@ -518,7 +521,7 @@ export function AuditLogClient({
                 <span
                   className={`${s.tabCount} ${value === 'security' && tabCounts[value] > 0 ? s.tabCountAlert : ''}`}
                 >
-                  {new Intl.NumberFormat('fa-IR').format(tabCounts[value])}
+                  {faNum.format(tabCounts[value])}
                 </span>
               </TabsTrigger>
             ))}
@@ -761,7 +764,7 @@ export function AuditLogClient({
                     aria-current={p === currentPage ? 'page' : undefined}
                     aria-label={`صفحه ${p}`}
                   >
-                    {new Intl.NumberFormat('fa-IR').format(p as number)}
+                    {faNum.format(p as number)}
                   </button>
                 ),
               )}
@@ -779,8 +782,8 @@ export function AuditLogClient({
             </Button>
 
             <span className={s.pageInfo} aria-live="polite">
-              صفحه {new Intl.NumberFormat('fa-IR').format(currentPage)} از{' '}
-              {new Intl.NumberFormat('fa-IR').format(totalPages)}
+              صفحه {faNum.format(currentPage)} از{' '}
+              {faNum.format(totalPages)}
             </span>
           </nav>
         )}

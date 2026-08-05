@@ -42,9 +42,12 @@ const UNIT_LABEL: Record<string, string> = {
   usd: 'دلار',
 };
 
+// Module-level Intl singleton
+const faNum = new Intl.NumberFormat('fa-IR');
+
 function formatFa(n: number): string {
   if (!Number.isFinite(n) || n === 0) return '—';
-  return new Intl.NumberFormat('fa-IR').format(Math.round(n));
+  return faNum.format(Math.round(n));
 }
 
 /**

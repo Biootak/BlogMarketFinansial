@@ -60,6 +60,9 @@ import {
 } from 'react';
 import s from './ExchangeQuotesApprovalWorkspace.module.css';
 
+// ─── Module-level Intl singleton — created once, never on each render ─────────
+const faNum = new Intl.NumberFormat('fa-IR');
+
 interface Props {
   initialPending: QuoteRow[];
 }
@@ -89,9 +92,9 @@ function fmtDateRelative(iso: string | Date): string {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60_000);
   if (mins < 1) return 'همین الان';
-  if (mins < 60) return `${new Intl.NumberFormat('fa-IR').format(mins)} دقیقه پیش`;
+  if (mins < 60) return `${faNum.format(mins)} دقیقه پیش`;
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${new Intl.NumberFormat('fa-IR').format(hrs)} ساعت پیش`;
+  if (hrs < 24) return `${faNum.format(hrs)} ساعت پیش`;
   return fmtDate(iso);
 }
 
@@ -233,11 +236,11 @@ function DetailPanel({ quote, onApprove, onReject, isLoading }: DetailPanelProps
         </div>
         <div className={s.dpMetaItem}>
           <dt>اعتبار</dt>
-          <dd>{new Intl.NumberFormat('fa-IR').format(quote.validMinutes)} دقیقه</dd>
+          <dd>{faNum.format(quote.validMinutes)} دقیقه</dd>
         </div>
         <div className={s.dpMetaItem}>
           <dt>نسخه</dt>
-          <dd>{new Intl.NumberFormat('fa-IR').format(quote.version)}</dd>
+          <dd>{faNum.format(quote.version)}</dd>
         </div>
         {quote.minAmount && (
           <div className={s.dpMetaItem}>
@@ -526,10 +529,10 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
     setBatchLoading(false);
     setChecked(new Set());
     if (fail === 0) {
-      showSuccess(`${new Intl.NumberFormat('fa-IR').format(ok)} قیمت تأیید شد`);
+      showSuccess(`${faNum.format(ok)} قیمت تأیید شد`);
     } else {
       showError(
-        `${new Intl.NumberFormat('fa-IR').format(ok)} تأیید، ${new Intl.NumberFormat('fa-IR').format(fail)} خطا`,
+        `${faNum.format(ok)} تأیید، ${faNum.format(fail)} خطا`,
       );
     }
   }, [checked]);
@@ -597,7 +600,7 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
           <KpiCard
             icon={Clock}
             label="در صف بررسی"
-            value={new Intl.NumberFormat('fa-IR').format(kpi.count)}
+            value={faNum.format(kpi.count)}
             accent="var(--ds-accent-amber)"
             delay={0}
             urgent={kpi.count > 0}
@@ -614,7 +617,7 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
           <KpiCard
             icon={kpi.highRisk > 0 ? AlertTriangle : ShieldCheck}
             label="اسپرد بالا (>۳٪)"
-            value={new Intl.NumberFormat('fa-IR').format(kpi.highRisk)}
+            value={faNum.format(kpi.highRisk)}
             accent={kpi.highRisk > 0 ? 'var(--ds-accent-rose)' : 'var(--ds-accent-emerald)'}
             delay={120}
             urgent={kpi.highRisk > 0}
@@ -623,7 +626,7 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
           <KpiCard
             icon={Coins}
             label="ارزهای متفاوت"
-            value={new Intl.NumberFormat('fa-IR').format(kpi.currencies.length)}
+            value={faNum.format(kpi.currencies.length)}
             accent="var(--ds-accent-violet)"
             delay={180}
             sub={kpi.currencies.slice(0, 3).join(' · ')}
@@ -679,7 +682,7 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
                 >
                   همه
                   <span className={s.filterCount}>
-                    {new Intl.NumberFormat('fa-IR').format(quotes.length)}
+                    {faNum.format(quotes.length)}
                   </span>
                 </button>
                 {kpi.currencies.map((c) => {
@@ -695,7 +698,7 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
                     >
                       {c}
                       <span className={s.filterCount}>
-                        {new Intl.NumberFormat('fa-IR').format(cnt)}
+                        {faNum.format(cnt)}
                       </span>
                     </button>
                   );
@@ -710,7 +713,7 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
               <div className={s.batchBar}>
                 <Layers size={13} aria-hidden />
                 <span className={s.batchCount}>
-                  {new Intl.NumberFormat('fa-IR').format(checked.size)} انتخاب شده
+                  {faNum.format(checked.size)} انتخاب شده
                 </span>
                 <Button
                   size="sm"
@@ -835,7 +838,7 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
                   maxLength={500}
                 />
                 <span className={s.rejectCharCount}>
-                  {new Intl.NumberFormat('fa-IR').format(rejectReason.length)} / ۵۰۰
+                  {faNum.format(rejectReason.length)} / ۵۰۰
                 </span>
               </div>
             )}
@@ -873,7 +876,7 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
           open={batchConfirmOpen}
           onOpenChange={setBatchConfirmOpen}
           title="تأیید گروهی قیمت‌ها"
-          description={`${new Intl.NumberFormat('fa-IR').format(checked.size)} قیمت تأیید خواهد شد. این عمل قابل بازگشت نیست.`}
+          description={`${faNum.format(checked.size)} قیمت تأیید خواهد شد. این عمل قابل بازگشت نیست.`}
           confirmLabel="تأیید همه"
           onConfirm={handleBatchApprove}
           loading={batchLoading}

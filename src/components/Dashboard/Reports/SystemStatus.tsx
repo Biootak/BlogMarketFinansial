@@ -5,8 +5,9 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/components/ui/use-toast';
+import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 import { AlertCircle, CheckCircle2, Database, HardDrive, Server } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface SystemStatus {
   cpu?: {
@@ -48,38 +49,34 @@ export default function SystemStatus() {
   const [status, setStatus] = useState<SystemStatus | null | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    const loadStatus = async () => {
-      try {
-        const result = await getSystemStatus();
-        if (cancelled) return;
-        if (result.success && result.data) {
-          setStatus(result.data);
-          setError(null);
-        } else {
-          throw new Error(result.message || 'Failed to load system status');
-        }
-      } catch {
-        if (cancelled) return;
-        setError('خطا در بارگذاری وضعیت سیستم');
-        toastRef.current({
-          title: 'خطا',
-          description: 'خطا در دریافت وضعیت سیستم',
-          variant: 'destructive',
-        });
-      } finally {
-        if (!cancelled) setLoading(false);
+  const loadStatus = useCallback(async () => {
+    try {
+      const result = await getSystemStatus();
+      if (result.success && result.data) {
+        setStatus(result.data);
+        setError(null);
+      } else {
+        throw new Error(result.message || 'Failed to load system status');
       }
-    };
-
-    loadStatus();
-    const interval = setInterval(loadStatus, 30000);
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
+    } catch {
+      setError('خطا در بارگذاری وضعیت سیستم');
+      toastRef.current({
+        title: 'خطا',
+        description: 'خطا در دریافت وضعیت سیستم',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  // initial load
+  useEffect(() => {
+    void loadStatus();
+  }, [loadStatus]);
+
+  // refresh every 30s — paused when tab is hidden (visibility-aware)
+  useVisibilityAwareInterval(loadStatus, 30_000);
 
   const formatBytes = (bytes: number) => {
     if (!bytes || Number.isNaN(bytes)) return '0 بایت';

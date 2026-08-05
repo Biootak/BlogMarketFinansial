@@ -54,6 +54,7 @@ import {
   XCircle,
   Zap,
 } from 'lucide-react';
+import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import s from './MyRequestsClient.module.css';
 
@@ -701,23 +702,23 @@ function TicketCard({
   const meta = STATUS_META[localStatus] ?? STATUS_META.PENDING;
   const StatusIcon = meta.icon;
 
-  // 30-minute cancel window
+  // 30-minute cancel window — compute once on status/date change, then poll
   const [cancelMinsLeft, setCancelMinsLeft] = useState<number | null>(null);
   useEffect(() => {
     if (localStatus !== 'PENDING') {
       setCancelMinsLeft(null);
       return;
     }
-    const created = new Date(req.createdAt).getTime();
-    const deadline = created + 30 * 60 * 1000;
-    const update = () => {
-      const left = Math.max(0, Math.ceil((deadline - Date.now()) / 60000));
-      setCancelMinsLeft(left);
-    };
-    update();
-    const t = setInterval(update, 30000);
-    return () => clearInterval(t);
+    const deadline = new Date(req.createdAt).getTime() + 30 * 60 * 1000;
+    setCancelMinsLeft(Math.max(0, Math.ceil((deadline - Date.now()) / 60000)));
   }, [localStatus, req.createdAt]);
+
+  // re-check every 30s only while PENDING — visibility-aware
+  useVisibilityAwareInterval(() => {
+    if (localStatus !== 'PENDING') return;
+    const deadline = new Date(req.createdAt).getTime() + 30 * 60 * 1000;
+    setCancelMinsLeft(Math.max(0, Math.ceil((deadline - Date.now()) / 60000)));
+  }, localStatus === 'PENDING' ? 30_000 : 0);
 
   const canCancel = localStatus === 'PENDING' && (cancelMinsLeft ?? 0) > 0;
   const isUrgent = req.urgency === 'URGENT';
@@ -1304,9 +1305,11 @@ export default function MyRequestsClient() {
     fetchRequests(page, filterStatus);
   }, [fetchRequests, page, filterStatus]);
 
+  // stats are global counts — re-fetch only when requests list reloads (not
+  // on every page/filter change which would double the server calls)
   useEffect(() => {
     fetchStats();
-  }, [fetchStats, page, filterStatus]);
+  }, [fetchStats]);
 
   // Client-side derived list (search + urgency + sort)
   const visibleRequests = useMemo(() => {

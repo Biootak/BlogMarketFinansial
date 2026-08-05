@@ -16,6 +16,7 @@
  *   "alive but quiet". A second kinetic stroke is drawn on mount.
  */
 
+import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 import {
   ArrowUpLeft,
   BadgeCheck,
@@ -57,23 +58,28 @@ type Props = {
   activeCurrencies: number;
 };
 
+// Module-level Intl instance — created once, not on every render
+const faDateFmt = new Intl.DateTimeFormat('fa-IR', { dateStyle: 'long' });
+
 export default function HeroIdentity({ exchange, primaryRate, activeCurrencies }: Props) {
   const displayName = exchange.displayName ?? exchange.name;
   const initial = displayName.charAt(0);
-  const fa = new Intl.DateTimeFormat('fa-IR', { dateStyle: 'long' });
   const [ageSec, setAgeSec] = useState(0);
 
-  // simulate "live" by recomputing age
+  // compute age once on mount
   useEffect(() => {
     if (!primaryRate) return;
-    const t = () => {
-      const sec = Math.floor((Date.now() - new Date(primaryRate.createdAt).getTime()) / 1000);
-      setAgeSec(Math.max(0, sec));
-    };
-    t();
-    const id = setInterval(t, 1000);
-    return () => clearInterval(id);
+    const base = new Date(primaryRate.createdAt).getTime();
+    const update = () => setAgeSec(Math.max(0, Math.floor((Date.now() - base) / 1000)));
+    update();
   }, [primaryRate]);
+
+  // tick every 10s (not 1s) — label granularity is minutes, so 1s ticks waste CPU
+  useVisibilityAwareInterval(() => {
+    if (!primaryRate) return;
+    const base = new Date(primaryRate.createdAt).getTime();
+    setAgeSec(Math.max(0, Math.floor((Date.now() - base) / 1000)));
+  }, primaryRate ? 10_000 : 0);
 
   const ageLabel = useAgeLabel(ageSec);
 
@@ -192,7 +198,7 @@ export default function HeroIdentity({ exchange, primaryRate, activeCurrencies }
                 )}
                 <span className={s.metaItem}>
                   <CalendarDays size={12} strokeWidth={1.9} aria-hidden />
-                  عضو از {fa.format(exchange.createdAt)}
+                  عضو از {faDateFmt.format(exchange.createdAt)}
                 </span>
               </div>
             </div>

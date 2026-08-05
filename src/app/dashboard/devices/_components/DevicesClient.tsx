@@ -1,5 +1,8 @@
 'use client';
 
+// Module-level Intl singleton
+const faNum = new Intl.NumberFormat('fa-IR');
+
 /**
  * DevicesClient — Security Intelligence & Session Operations Center
  * Atelier 2026 Redesign
@@ -43,7 +46,6 @@ import {
   Lock,
   LogOut,
   Monitor,
-  Search,
   ShieldCheck,
   ShieldOff,
   Smartphone,
@@ -483,7 +485,7 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
                   <span className={`${s.chipDot} ${chip.dotClass}`} />
                   {chip.label}
                   <span className={s.chipCount}>
-                    {new Intl.NumberFormat('fa-IR').format(
+                    {faNum.format(
                       chip.value === 'all'
                         ? stats.total
                         : chip.value === 'TRUSTED'

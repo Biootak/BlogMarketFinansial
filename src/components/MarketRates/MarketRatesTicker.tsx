@@ -1,5 +1,8 @@
 'use client';
 
+// Module-level Intl singletons — created once at module load, never per render
+const faTimeFmt = new Intl.DateTimeFormat('fa-IR', { hour: '2-digit', minute: '2-digit' });
+
 /**
  * MarketRatesTicker — نوار متحرک نرخ‌های زنده (داشبورد)
  * ----------------------------------------------------------------------------
@@ -107,14 +110,10 @@ function MarketRatesTickerImpl({
     [rates, maxItems],
   );
 
-  // ساعت زنده برای داشبورد
+  // ساعت زنده برای داشبورد — visibility-aware (tab hidden → pause)
   const [now, setNow] = useState<string>('');
   useEffect(() => {
-    const fmt = new Intl.DateTimeFormat('fa-IR', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-    const update = () => setNow(fmt.format(new Date()));
+    const update = () => setNow(faTimeFmt.format(new Date()));
     update();
     const t = window.setInterval(update, 60_000);
     return () => window.clearInterval(t);
