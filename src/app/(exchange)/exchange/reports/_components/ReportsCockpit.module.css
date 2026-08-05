@@ -27,8 +27,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: var(--ds-space-4) var(--ds-space-5);
+  gap: 6px;
+  padding: var(--ds-space-3) var(--ds-space-4);
   background: var(--at-bg);
   border: 1px solid var(--at-line);
   border-radius: var(--at-radius-lg);
@@ -137,7 +137,7 @@
 }
 
 .cellNumber {
-  font-size: var(--ds-text-2xl);
+  font-size: clamp(var(--ds-text-xl), 4vw, var(--ds-text-2xl));
   font-weight: var(--ds-weight-extrabold);
   color: var(--at-fg);
   letter-spacing: -0.025em;
@@ -190,12 +190,19 @@
 .txSection {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-4);
-  padding: var(--ds-space-5) var(--ds-space-6);
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4) var(--ds-space-4);
   background: var(--at-bg-elevated);
   border: 1px solid var(--at-line);
   border-radius: var(--at-radius-xl);
   box-shadow: var(--at-shadow);
+}
+
+@media (min-width: 640px) {
+  .txSection {
+    gap: var(--ds-space-4);
+    padding: var(--ds-space-5) var(--ds-space-6);
+  }
 }
 
 @media (min-width: 768px) {

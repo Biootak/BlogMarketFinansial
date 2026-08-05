@@ -37,10 +37,24 @@
 .currencyWrap {
   display: flex;
   align-items: center;
+  flex: 1;
+  min-width: 0;
 }
 
 .currencyWrap > * {
-  min-width: 180px;
+  min-width: 0;
+  width: 100%;
+}
+
+@media (min-width: 480px) {
+  .currencyWrap {
+    flex: unset;
+  }
+
+  .currencyWrap > * {
+    min-width: 160px;
+    width: auto;
+  }
 }
 
 /* type pills (BUY/SELL/TRANSFER) — تک‌راری نیست، به‌صورت segmented control */
@@ -85,10 +99,19 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  width: 100%;
 }
 
 .dateGroup > * {
-  min-width: 220px;
+  min-width: 0;
+  flex: 1;
+}
+
+@media (min-width: 560px) {
+  .dateGroup > * {
+    min-width: 220px;
+    flex: unset;
+  }
 }
 
 @media (max-width: 560px) {

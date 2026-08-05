@@ -635,8 +635,7 @@
   color: var(--at-fg-muted);
   letter-spacing: 0.02em;
 }
-.input,
-.select {
+.input {
   height: 40px;
   width: 100%;
   padding: 0 var(--ds-space-3);
@@ -650,23 +649,30 @@
   transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
     var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
-.input:focus,
-.select:focus {
+.input:focus {
   border-color: var(--at-accent);
   box-shadow: 0 0 0 3px var(--at-accent-soft);
 }
 .input::placeholder {
   color: var(--at-fg-faint);
 }
-.select {
-  appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, var(--at-fg-muted) 50%),
-    linear-gradient(135deg, var(--at-fg-muted) 50%, transparent 50%);
-  background-position: calc(100% - 16px) 50%, calc(100% - 11px) 50%;
-  background-size: 5px 5px;
-  background-repeat: no-repeat;
-  padding-inline-end: 32px;
-  cursor: pointer;
+
+/* Radix SelectTrigger — هم‌راستا با .input */
+.selectTrigger,
+.cardRoleSelect {
+  height: 40px !important;
+  width: 100% !important;
+  font-family: inherit !important;
+  font-size: var(--ds-text-sm) !important;
+  background: var(--at-bg) !important;
+  border: 1px solid var(--at-line) !important;
+  border-radius: var(--at-radius) !important;
+  color: var(--at-fg) !important;
+}
+.selectTrigger:focus,
+.cardRoleSelect:focus {
+  border-color: var(--at-accent) !important;
+  box-shadow: 0 0 0 3px var(--at-accent-soft) !important;
 }
 .error {
   font-size: 11px;

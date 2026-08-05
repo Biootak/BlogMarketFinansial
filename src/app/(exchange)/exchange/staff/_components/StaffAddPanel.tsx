@@ -8,6 +8,13 @@
  */
 
 import { type ExchangeStaffRow, addExchangeStaff } from '@/actions/exchanges';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Send, UserPlus } from 'lucide-react';
 import { type ChangeEvent, useCallback, useState } from 'react';
 import s from './StaffCockpit.module.css';
@@ -79,22 +86,25 @@ export function StaffAddPanel({ exchangeId, onAdded }: Props) {
         </div>
 
         <div className={s.field}>
-          <label className={s.fieldLabel} htmlFor="staff-role">
+          <label className={s.fieldLabel} id="staff-role-label">
             نقش
           </label>
-          <select
-            id="staff-role"
-            className={s.select}
+          <Select
             value={role}
-            onChange={(e) => setRole(e.target.value as typeof role)}
+            onValueChange={(v) => setRole(v as typeof role)}
             disabled={adding}
           >
-            {ROLES.map((r) => (
-              <option key={r.value} value={r.value}>
-                {r.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger aria-labelledby="staff-role-label" className={s.selectTrigger}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {ROLES.map((r) => (
+                <SelectItem key={r.value} value={r.value}>
+                  {r.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <button

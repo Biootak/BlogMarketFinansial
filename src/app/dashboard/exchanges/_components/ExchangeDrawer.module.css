@@ -683,7 +683,7 @@
   border-color: var(--at-accent);
 }
 .toggle input:checked + .toggleTrack .toggleThumb {
-  inset-inline-start: 17px;
+  transform: translateX(-17px);
   background: var(--at-accent);
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 24%, transparent);
 }

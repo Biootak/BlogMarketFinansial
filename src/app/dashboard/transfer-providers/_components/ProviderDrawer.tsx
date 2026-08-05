@@ -5,6 +5,13 @@
  */
 
 import type { TransferProviderRow } from '@/actions/transfer-providers';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { CheckCircle2, Loader2, Save, X, XCircle } from 'lucide-react';
 import { useEffect, useState, useTransition } from 'react';
 import s from './TransferProvidersWorkspace.module.css';
@@ -202,21 +209,24 @@ export default function ProviderDrawer({ open, editRow, onClose, onSave }: Props
 
           {/* نوع */}
           <div className={s.drawerField}>
-            <label htmlFor="p-kind" className={s.drawerLabel}>
+            <label className={s.drawerLabel} id="p-kind-label">
               نوع سرویس
             </label>
-            <select
-              id="p-kind"
-              className={s.drawerSelect}
+            <Select
               value={form.kind}
-              onChange={(e) => setForm((f) => ({ ...f, kind: e.target.value }))}
+              onValueChange={(v) => setForm((f) => ({ ...f, kind: v }))}
             >
-              {TRANSFER_KIND_VALUES.map((k) => (
-                <option key={k} value={k}>
-                  {KIND_FA[k]}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger aria-labelledby="p-kind-label" className={s.drawerSelectTrigger}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TRANSFER_KIND_VALUES.map((k) => (
+                  <SelectItem key={k} value={k}>
+                    {KIND_FA[k]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* spread, fee, speed در یک row */}

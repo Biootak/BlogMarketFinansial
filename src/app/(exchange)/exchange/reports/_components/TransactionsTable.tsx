@@ -73,6 +73,7 @@ export default function TransactionsTable({ rows, total, className }: Props) {
       key: 'kind',
       header: 'نوع',
       width: 110,
+      collapse: false,
       render: (r) => {
         const meta = KIND_META[r.kind] ?? { label: r.kind, Icon: Send, tone: 'muted' as const };
         const Icon = meta.Icon;
@@ -89,6 +90,7 @@ export default function TransactionsTable({ rows, total, className }: Props) {
     {
       key: 'customer',
       header: 'مشتری / طرف حساب',
+      collapse: false,
       render: (r) => (
         <div className={s.customerCell}>
           <span className={s.customerName}>{r.customer?.fullName ?? r.counterparty ?? '—'}</span>
@@ -99,7 +101,8 @@ export default function TransactionsTable({ rows, total, className }: Props) {
     {
       key: 'amount',
       header: 'مبلغ',
-      width: 160,
+      width: 130,
+      collapse: false,
       render: (r) => (
         <span className={s.amount} data-tone={r.kind === 'WITHDRAWAL' ? 'rose' : 'emerald'}>
           {r.kind === 'WITHDRAWAL' ? '−' : '+'}
@@ -111,7 +114,8 @@ export default function TransactionsTable({ rows, total, className }: Props) {
     {
       key: 'dest',
       header: 'مقصد',
-      width: 110,
+      width: 100,
+      collapse: true,
       render: (r) =>
         r.destAmount && r.destCurrency ? (
           <span className={s.dest}>
@@ -124,7 +128,8 @@ export default function TransactionsTable({ rows, total, className }: Props) {
     {
       key: 'fee',
       header: 'کارمزد',
-      width: 100,
+      width: 90,
+      collapse: true,
       render: (r) =>
         r.fee && Number(r.fee) > 0 ? (
           <span className={s.fee}>
@@ -137,7 +142,8 @@ export default function TransactionsTable({ rows, total, className }: Props) {
     {
       key: 'status',
       header: 'وضعیت',
-      width: 110,
+      width: 100,
+      collapse: false,
       render: (r) => {
         const meta = STATUS_META[r.status] ?? {
           label: r.status,
@@ -156,7 +162,8 @@ export default function TransactionsTable({ rows, total, className }: Props) {
     {
       key: 'date',
       header: 'تاریخ',
-      width: 140,
+      width: 120,
+      collapse: true,
       render: (r) => <span className={s.date}>{fmtDate(r.createdAt)}</span>,
     },
   ];

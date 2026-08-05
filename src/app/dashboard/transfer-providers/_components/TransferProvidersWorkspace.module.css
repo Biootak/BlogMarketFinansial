@@ -657,7 +657,6 @@
 }
 
 .drawerInput,
-.drawerSelect,
 .drawerTextarea {
   width: 100%;
   padding: var(--ds-space-2) var(--ds-space-3);
@@ -673,10 +672,27 @@
 }
 
 .drawerInput:focus,
-.drawerSelect:focus,
 .drawerTextarea:focus {
   border-color: var(--at-accent);
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 15%, transparent);
+}
+
+/* Radix SelectTrigger — جایگزین .drawerSelect */
+.drawerSelectTrigger {
+  width: 100% !important;
+  font-family: inherit !important;
+  font-size: var(--ds-text-sm) !important;
+  background: var(--at-input-bg, var(--at-surface)) !important;
+  border: 1px solid var(--at-line) !important;
+  border-radius: 8px !important;
+  color: var(--at-fg) !important;
+  min-height: 44px !important;
+  height: 44px !important;
+}
+.drawerSelectTrigger:focus,
+.drawerSelectTrigger[data-state="open"] {
+  border-color: var(--at-accent) !important;
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 15%, transparent) !important;
 }
 
 .drawerTextarea {

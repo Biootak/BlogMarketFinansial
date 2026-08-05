@@ -265,7 +265,7 @@
   }
 }
 
-@media (max-width: 380px) {
+@media (max-width: 420px) {
   .rateGrid {
     grid-template-columns: 1fr;
   }
@@ -349,6 +349,9 @@
   color: var(--at-fg-subtle);
   white-space: nowrap;
   flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 4em;
 }
 
 .rateCardHint {
@@ -367,6 +370,7 @@
   overflow: hidden;
   font-size: 11px;
   font-variant-numeric: tabular-nums;
+  flex-wrap: wrap;
 }
 
 .formulaPart {
@@ -411,7 +415,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 8px;
+  padding: 0 6px;
   font-size: 13px;
   font-weight: 300;
   color: var(--at-fg-subtle);
@@ -419,6 +423,30 @@
   border-inline: 1px solid var(--at-line);
   flex-shrink: 0;
   user-select: none;
+}
+
+@media (max-width: 480px) {
+  .formula {
+    flex-wrap: nowrap;
+  }
+
+  .formulaPart {
+    padding: 8px var(--ds-space-2);
+    font-size: 10px;
+  }
+
+  .formulaOp {
+    padding: 0 4px;
+    font-size: 11px;
+  }
+
+  .formulaLabel {
+    display: none;
+  }
+
+  .formulaPart[data-role="result"] .formulaLabel {
+    display: none;
+  }
 }
 
 .formulaLabel {

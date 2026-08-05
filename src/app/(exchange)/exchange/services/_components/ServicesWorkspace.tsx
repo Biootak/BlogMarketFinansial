@@ -18,6 +18,13 @@
 
 import { updateMyExchangeServices } from '@/actions/exchange-services';
 import { SettingsSurfaceCard, StickySaveBar } from '@/components/Dashboard/primitives';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { type SerializableServiceMeta, getServiceMeta } from '@/lib/exchange-services';
 import {
   ArrowDown,
@@ -335,11 +342,9 @@ export default function ServicesWorkspace({ initialItems, canEdit }: Props) {
                       dir="ltr"
                       disabled={!canEdit}
                     />
-                    <select
-                      className={s.select}
+                    <Select
                       value={deriveLeadUnit(item.leadTimeMin)}
-                      onChange={(e) => {
-                        const unit = e.target.value as 'min' | 'hour' | 'day';
+                      onValueChange={(unit) => {
                         const current = item.leadTimeMin ?? 0;
                         const next =
                           unit === 'min'
@@ -350,12 +355,19 @@ export default function ServicesWorkspace({ initialItems, canEdit }: Props) {
                         updateItem(item.serviceKey, { leadTimeMin: next });
                       }}
                       disabled={!canEdit}
-                      aria-label="واحد زمان"
                     >
-                      <option value="min">دقیقه</option>
-                      <option value="hour">ساعت</option>
-                      <option value="day">روز</option>
-                    </select>
+                      <SelectTrigger
+                        aria-label="واحد زمان"
+                        className={s.selectTrigger}
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="min">دقیقه</SelectItem>
+                        <SelectItem value="hour">ساعت</SelectItem>
+                        <SelectItem value="day">روز</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <span className={s.hint}>
                     به مشتری نشان داده می‌شود: «پاسخ‌گویی: X ساعت». خالی بگذارید اگر نمی‌توانید تخمین

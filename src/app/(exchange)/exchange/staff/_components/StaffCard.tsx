@@ -9,6 +9,13 @@
  */
 
 import type { ExchangeStaffRow } from '@/actions/exchanges';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { formatNumber } from '@/lib/customer-format';
 import { Clock, Mail, Trash2 } from 'lucide-react';
 import Image from 'next/image';
@@ -124,21 +131,27 @@ export function StaffCard({
 
       {canWrite && (
         <div className={s.cardActions}>
-          <select
-            className={s.cardRoleSelect}
+          <Select
             value={role}
-            onChange={(e) =>
-              onRoleChange(member.id, e.target.value as 'OWNER' | 'MANAGER' | 'STAFF' | 'VIEWER')
+            onValueChange={(v) =>
+              onRoleChange(member.id, v as 'OWNER' | 'MANAGER' | 'STAFF' | 'VIEWER')
             }
             disabled={isUpdating}
-            aria-label={`تغییر نقش ${display}`}
           >
-            {ROLES.map((r) => (
-              <option key={r.value} value={r.value}>
-                {r.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger
+              aria-label={`تغییر نقش ${display}`}
+              className={s.cardRoleSelect}
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {ROLES.map((r) => (
+                <SelectItem key={r.value} value={r.value}>
+                  {r.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {canRevoke && !self && (
             <button
               type="button"

@@ -209,7 +209,7 @@
 .toggleSlider::after {
   content: "";
   position: absolute;
-  top: 1px;
+  inset-block-start: 1px;
   inset-inline-start: 1px;
   width: 16px;
   height: 16px;
@@ -226,7 +226,7 @@
 
 .toggle input:checked + .toggleSlider::after {
   background: var(--ds-surface);
-  transform: translateX(16px);
+  transform: translateX(-16px);
 }
 
 .toggle input:disabled + .toggleSlider {
@@ -336,29 +336,25 @@
   align-items: stretch;
 }
 
-.select {
-  padding: var(--ds-space-2) var(--ds-space-3);
-  font-family: inherit;
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-primary);
-  background: var(--ds-surface);
-  border: 1px solid var(--ds-border-default);
-  border-radius: var(--ds-radius-md);
-  cursor: pointer;
-  min-width: 96px;
-  transition: border-color var(--ds-duration-fast), box-shadow var(--ds-duration-fast);
+/* Radix SelectTrigger — جایگزین .select */
+.selectTrigger {
+  font-family: inherit !important;
+  font-size: var(--ds-text-xs) !important;
+  background: var(--ds-surface) !important;
+  border: 1px solid var(--ds-border-default) !important;
+  border-radius: var(--ds-radius-md) !important;
+  min-width: 96px !important;
+  height: auto !important;
+  padding: var(--ds-space-2) var(--ds-space-3) !important;
 }
-
-.select:focus {
-  outline: none;
-  border-color: var(--nova-emerald);
-  box-shadow: 0 0 0 3px oklch(60% 0.12 165 / 0.12);
+.selectTrigger:focus,
+.selectTrigger[data-state="open"] {
+  border-color: var(--nova-emerald) !important;
+  box-shadow: 0 0 0 3px oklch(60% 0.12 165 / 0.12) !important;
 }
-
-.select:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  background: var(--ds-surface-recessed);
+.selectTrigger:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
 }
 
 /* ── Accent variants (used by itemIcon when active) ───────────────── */
