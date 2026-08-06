@@ -1,322 +1,457 @@
 /* ============================================================================
-   Observability — Operations Deck (2026)
+   Observability — سرلوحهٔ حکم + پارتیتور زمانی مشترک
    ----------------------------------------------------------------------------
-   قواعد این فایل (هم‌راستا با AGENTS.style.md / AGENTS.ui-design.md):
-   • فقط توکن‌های --ds-* / --nova-*؛ هیچ hex یا rgb.
-   • فقط property های منطقی (inline/block) — هیچ left/right.
-   • هیچ @keyframes محلی؛ حرکت فقط transition روی opacity/transform.
-   • --tone روی خودِ ریشهٔ هر بلوک ست می‌شود (scoped)، نه با سلکتور سراسری.
+   ایدهٔ ساختاری (۲۰۲۶-۰۸): به‌جای مجموعه‌ای از کارت‌های مستقل، همهٔ لایه‌های
+   زمانیِ صفحه روی **یک محور ۲۴ ساعتهٔ واحد** قفل می‌شوند. برای همین `.score`
+   یک گریدِ دو ستونی است و هر `.stratum` با `grid-template-columns: subgrid`
+   دقیقاً همان ستون‌ها را به ارث می‌برد؛ پس برچسب‌ها و ستون‌های ساعتی در تمام
+   لایه‌ها میلی‌متری روی هم می‌نشینند و چشم فقط یک محور یاد می‌گیرد.
+
+   قواعد رعایت‌شده:
+     · Mobile first — زیر ۴۸rem برچسب بالای لایه می‌رود، بالاتر ستون می‌شود.
+     · فقط logical properties؛ هیچ left/right فیزیکی.
+     · فقط توکن‌های --ds-*؛ هیچ رنگ یا فاصلهٔ hardcode.
+     · انیمیشن فقط روی transform/opacity؛ هیچ @keyframes محلی (افکت‌های
+       مشترک از globals.css می‌آیند).
+     · reduced-motion سراسری در tokens.css کلمپ می‌شود — بلوک محلی ممنوع.
    ============================================================================ */
 
-/* ── tone (scoped) ────────────────────────────────────────── */
-
+/* ── نقشهٔ تُن ───────────────────────────────────────────────────────────────
+   یک‌بار برای همهٔ عناصری که `data-tone` می‌گیرند. رنگ هرگز تنها نشانه نیست؛
+   همه‌جا کنارش متن یا برچسب هست (WCAG 2.2).
+   ------------------------------------------------------------------------- */
 .deck,
-.ring,
-.rib,
+.arc,
+.rosterItem,
 .insight,
-.chip,
-.readoutFacts li,
-.pulseTick {
-  --tone: var(--ds-accent-slate);
+.rib,
+.fact,
+.stratum,
+.tick {
+  --tone: var(--ds-text-muted);
+  --tone-soft: color-mix(in oklch, var(--ds-text-muted) 12%, transparent);
+  --tone-edge: color-mix(in oklch, var(--ds-text-muted) 32%, transparent);
 }
 
 .deck[data-tone='ok'],
-.ring[data-tone='ok'],
-.rib[data-tone='ok'],
+.arc[data-tone='ok'],
+.rosterItem[data-tone='ok'],
 .insight[data-tone='ok'],
-.chip[data-tone='ok'],
-.readoutFacts li[data-tone='ok'],
-.pulseTick[data-tone='ok'] {
-  --tone: var(--nova-up);
+.rib[data-tone='ok'],
+.fact[data-tone='ok'],
+.stratum[data-tone='ok'],
+.tick[data-tone='ok'] {
+  --tone: var(--ds-accent-emerald);
+  --tone-soft: color-mix(in oklch, var(--ds-accent-emerald) 15%, transparent);
+  --tone-edge: color-mix(in oklch, var(--ds-accent-emerald) 40%, transparent);
 }
 
 .deck[data-tone='warn'],
-.ring[data-tone='warn'],
-.rib[data-tone='warn'],
+.arc[data-tone='warn'],
+.rosterItem[data-tone='warn'],
 .insight[data-tone='warn'],
-.chip[data-tone='warn'],
-.readoutFacts li[data-tone='warn'] {
+.rib[data-tone='warn'],
+.fact[data-tone='warn'],
+.stratum[data-tone='warn'],
+.tick[data-tone='warn'] {
   --tone: var(--ds-accent-amber);
+  --tone-soft: color-mix(in oklch, var(--ds-accent-amber) 18%, transparent);
+  --tone-edge: color-mix(in oklch, var(--ds-accent-amber) 42%, transparent);
 }
 
 .deck[data-tone='bad'],
-.ring[data-tone='bad'],
-.rib[data-tone='bad'],
+.arc[data-tone='bad'],
+.rosterItem[data-tone='bad'],
 .insight[data-tone='bad'],
-.chip[data-tone='bad'],
-.readoutFacts li[data-tone='bad'],
-.pulseTick[data-tone='bad'] {
-  --tone: var(--nova-down);
+.rib[data-tone='bad'],
+.fact[data-tone='bad'],
+.stratum[data-tone='bad'],
+.tick[data-tone='bad'] {
+  --tone: var(--ds-accent-rose);
+  --tone-soft: color-mix(in oklch, var(--ds-accent-rose) 16%, transparent);
+  --tone-edge: color-mix(in oklch, var(--ds-accent-rose) 42%, transparent);
 }
 
 .deck[data-tone='info'],
-.ring[data-tone='info'],
-.rib[data-tone='info'],
+.arc[data-tone='info'],
+.rosterItem[data-tone='info'],
 .insight[data-tone='info'],
-.chip[data-tone='info'] {
-  --tone: var(--ds-accent-indigo);
+.rib[data-tone='info'],
+.fact[data-tone='info'],
+.stratum[data-tone='info'],
+.tick[data-tone='info'] {
+  --tone: var(--ds-accent-cyan);
+  --tone-soft: color-mix(in oklch, var(--ds-accent-cyan) 15%, transparent);
+  --tone-edge: color-mix(in oklch, var(--ds-accent-cyan) 40%, transparent);
 }
 
-/* ── Deck shell ───────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════════════
+   ۱. سرلوحهٔ حکم — «حال سامانه» به‌صورت یک جملهٔ تایپوگرافیک، نه کارت عدد.
+   ════════════════════════════════════════════════════════════════════════ */
 
 .deck {
-  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--ds-space-5);
-  padding: var(--ds-space-5) var(--ds-space-4) var(--ds-space-4);
-  border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-2xl);
-  background:
-    radial-gradient(
-      130% 110% at 100% 0%,
-      color-mix(in oklch, var(--tone) 8%, transparent),
-      transparent 62%
-    ),
-    var(--ds-surface-elevated);
-  box-shadow: var(--ds-shadow-md);
-  overflow: clip;
+  gap: var(--ds-space-4);
+  padding-block: var(--ds-space-4) var(--ds-space-5);
+  border-block-start: 1px solid var(--ds-border-default);
   min-inline-size: 0;
-}
-
-/* هیرلاین محیطی — نور نازکِ خودروشن به‌جای بلور و درخشش سنگین */
-.deckEdge {
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline: 0;
-  block-size: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in oklch, var(--tone) 65%, transparent),
-    transparent
-  );
-  pointer-events: none;
-}
-
-.deckFallback {
-  margin: 0;
-  font-size: var(--ds-text-sm);
-  color: var(--ds-text-muted);
 }
 
 @media (min-width: 54rem) {
   .deck {
-    grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr);
-    padding: var(--ds-space-6) var(--ds-space-5) var(--ds-space-5);
-    gap: var(--ds-space-6);
-  }
-
-  .deckVitals {
-    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    column-gap: var(--ds-space-8);
   }
 }
 
-@media (min-width: 82rem) {
-  .deck {
-    grid-template-columns: minmax(12rem, 16rem) minmax(0, 1fr) minmax(13rem, 17rem);
-  }
-
-  .deckVitals {
-    grid-column: auto;
-    border-inline-start: 1px solid var(--ds-border-subtle);
-    padding-inline-start: var(--ds-space-5);
-  }
+.deckFallback {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding-block: var(--ds-space-6);
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-sm);
+  text-align: center;
 }
 
-/* ── Zone 1 — verdict ─────────────────────────────────────── */
+/* برچسب حکم — نقطهٔ تُن + کلمه. رنگ تنها نشانه نیست. */
+.verdictTag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  margin: 0 0 var(--ds-space-2);
+  color: var(--tone);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: 0.02em;
+}
 
-.deckVerdict {
+.verdictDot {
+  inline-size: 0.4375rem;
+  block-size: 0.4375rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--tone);
+  box-shadow: 0 0 0 3px var(--tone-soft);
+}
+
+/* جملهٔ اصلی — عدد وزن نمایشی می‌گیرد، بقیه ثانویه می‌ماند.
+   کنتراست پله‌ها ≥ ۱٫۶ برابر است، پس سلسله‌مراتب واقعی است نه تزئینی. */
+.verdictLine {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--ds-space-3);
-  min-inline-size: 0;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--ds-space-2);
+  margin: 0;
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-base);
+  line-height: var(--ds-leading-snug);
+}
+
+.verdictScore {
+  color: var(--ds-text-primary);
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-4xl);
+  font-weight: var(--ds-weight-extrabold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.045em;
+  line-height: var(--ds-leading-tight);
+}
+
+.verdictOf {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-muted);
 }
 
 .deckNote {
-  margin: 0;
-  font-size: var(--ds-text-xs);
-  line-height: var(--ds-leading-normal);
+  margin: var(--ds-space-2) 0 0;
+  max-inline-size: 68ch;
   color: var(--ds-text-secondary);
-  max-inline-size: 34ch;
+  font-size: var(--ds-text-sm);
+  line-height: var(--ds-leading-normal);
 }
 
 .deckFormula {
-  margin: 0;
-  font-size: 0.66rem;
-  line-height: var(--ds-leading-snug);
+  margin: var(--ds-space-3) 0 0;
+  max-inline-size: 74ch;
   color: var(--ds-text-muted);
-  padding-block-start: var(--ds-space-2);
-  border-block-start: 1px solid var(--ds-border-subtle);
-  inline-size: 100%;
+  font-size: var(--ds-text-xs);
+  line-height: var(--ds-leading-normal);
 }
 
-/* ── Health ring ──────────────────────────────────────────── */
-
-.ring {
-  position: relative;
+/* ── فهرست سرویس‌ها: یک نوار پیوسته با جداکنندهٔ مویی، نه کارت تکراری ─────── */
+.roster {
+  grid-column: 1 / -1;
   display: grid;
-  place-items: center;
-  inline-size: clamp(7.5rem, 26vw, 9.5rem);
-  aspect-ratio: 1;
-  align-self: center;
+  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+  gap: 1px;
+  margin: 0;
+  padding: 1px;
+  list-style: none;
+  background: var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+  overflow: clip;
 }
 
-.ringSvg {
-  position: absolute;
-  inset: 0;
-  inline-size: 100%;
+.rosterItem {
+  display: grid;
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-2-5) var(--ds-space-3);
+  background: var(--ds-canvas);
+  min-inline-size: 0;
+}
+
+.rosterHead {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  min-inline-size: 0;
+}
+
+.rosterDot {
+  flex: none;
+  inline-size: 0.375rem;
+  block-size: 0.375rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--tone);
+}
+
+.rosterName {
+  overflow: hidden;
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rosterState {
+  color: var(--tone);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+}
+
+/* نوار در دسترس بودن — مقیاسِ عدد. عدد خالی بی‌مقیاس چیزی نمی‌گوید. */
+.rosterTrack {
+  display: block;
+  block-size: 2px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-border-subtle);
+  overflow: clip;
+}
+
+.rosterFill {
+  display: block;
   block-size: 100%;
-  transform: rotate(-90deg);
+  background: var(--tone);
+  transition: inline-size var(--ds-duration-base) var(--ds-ease-out-quart);
+}
+
+/* ── کمانِ شاخص: ابزار اندازه‌گیری نازک، بدون عقربه و بدون دونات ──────────── */
+.arc {
+  display: grid;
+  justify-items: center;
+  gap: var(--ds-space-1);
+  inline-size: 100%;
+  max-inline-size: 13rem;
+  margin-inline: auto;
+}
+
+@media (min-width: 54rem) {
+  .arc {
+    inline-size: 12rem;
+    margin-inline: 0;
+  }
+}
+
+.arcSvg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
   overflow: visible;
 }
 
-.ringTrack {
+.arcTrack {
   fill: none;
-  stroke: var(--ds-border-subtle);
-  stroke-width: 6;
+  stroke: var(--ds-border-default);
+  stroke-width: 3;
+  stroke-linecap: round;
 }
 
-.ringArc {
+.arcFill {
   fill: none;
   stroke: var(--tone);
-  stroke-width: 6;
+  stroke-width: 3;
   stroke-linecap: round;
   transition: stroke-dasharray var(--ds-duration-slow) var(--ds-ease-out-expo);
 }
 
-.ringInner {
-  fill: none;
-  stroke: color-mix(in oklch, var(--tone) 26%, transparent);
+.arcTick {
+  stroke: var(--ds-border-strong);
   stroke-width: 1;
-  stroke-dasharray: 2 6;
 }
 
-.ringCore {
+.arcScale {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.1rem;
-  line-height: 1;
-}
-
-.ringScore {
-  font-size: var(--ds-text-3xl);
-  font-weight: var(--ds-weight-extrabold);
-  letter-spacing: var(--nova-tracking-tightest);
-  color: var(--ds-text-primary);
+  justify-content: space-between;
+  inline-size: 100%;
+  margin: 0;
+  color: var(--ds-text-muted);
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-xs);
   font-variant-numeric: tabular-nums;
 }
 
-.ringUnit {
-  font-size: 0.62rem;
-  color: var(--ds-text-muted);
-}
-
-.ringLabel {
-  position: absolute;
-  inset-block-end: -0.35rem;
+.arcCaption {
   margin: 0;
-  padding: 0.15rem var(--ds-space-3);
-  border: 1px solid color-mix(in oklch, var(--tone) 38%, transparent);
-  border-radius: var(--ds-radius-full);
-  background: var(--ds-surface-elevated);
-  color: var(--tone);
+  color: var(--ds-text-muted);
   font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-bold);
-  white-space: nowrap;
+  text-align: center;
 }
 
-/* ── Status chips ─────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════════════
+   ۲. پارتیتور زمانی — چند لایه، یک محور.
+   ------------------------------------------------------------------------
+   `.scoreScroll` تنها اسکرول‌کنندهٔ افقی است؛ چون همهٔ لایه‌ها داخل آن‌اند،
+   روی موبایل هم هم‌ترازی به‌هم نمی‌خورد و هر ساعت هدف لمسی ۴۴px می‌گیرد.
+   ════════════════════════════════════════════════════════════════════════ */
 
-.chips {
+.scoreShell {
+  display: grid;
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-4);
+  border-block-start: 1px solid var(--ds-border-subtle);
+  min-inline-size: 0;
+}
+
+.scoreHead {
   display: flex;
   flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ds-space-2) var(--ds-space-4);
+}
+
+.scoreTitle {
+  display: flex;
+  align-items: center;
   gap: var(--ds-space-2);
   margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--ds-space-1);
-  padding: 0.2rem var(--ds-space-2);
-  border: 1px solid color-mix(in oklch, var(--tone) 30%, var(--ds-border-subtle));
-  border-radius: var(--ds-radius-sm);
-  background: color-mix(in oklch, var(--tone) 8%, transparent);
-  font-size: 0.66rem;
-  color: var(--ds-text-secondary);
-}
-
-.chip b {
-  color: var(--tone);
-  font-weight: var(--ds-weight-bold);
-  font-variant-numeric: tabular-nums;
-}
-
-/* ── Zone 2 — ridge ───────────────────────────────────────── */
-
-.deckFlow {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-3);
-  min-inline-size: 0;
-}
-
-.deckFlowHead {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-1);
-}
-
-.deckFlowTitle {
-  margin: 0;
+  color: var(--ds-text-primary);
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
-  letter-spacing: var(--nova-tracking-tight);
-  color: var(--ds-text-primary);
+  letter-spacing: -0.01em;
 }
 
-.deckFlowHint {
+.scoreHint {
   margin: 0;
-  font-size: var(--ds-text-xs);
-  line-height: var(--ds-leading-snug);
+  max-inline-size: 62ch;
   color: var(--ds-text-muted);
-  max-inline-size: 64ch;
+  font-size: var(--ds-text-xs);
+  line-height: var(--ds-leading-normal);
 }
 
-.ridge {
-  display: flex;
-  flex-direction: column;
+.scoreScroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
+  padding-block-end: var(--ds-space-1);
+}
+
+.score {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--ds-space-2);
-  min-inline-size: 0;
+  min-inline-size: calc(var(--hours, 24) * 2.75rem + 7rem);
 }
 
-.ridgePlot {
-  position: relative;
-  block-size: 8.5rem;
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-surface-recessed);
-  box-shadow: inset 0 0 0 1px var(--ds-border-subtle);
-  overflow: hidden;
-  min-inline-size: 0;
-}
-
-@media (min-width: 62rem) {
-  .ridgePlot {
-    block-size: 10.5rem;
+@media (min-width: 64rem) {
+  .score {
+    grid-template-columns: minmax(0, 7rem) minmax(0, 1fr);
+    column-gap: var(--ds-space-4);
+    row-gap: var(--ds-space-1-5);
+    min-inline-size: 0;
   }
 }
 
-/*
-   SVG در مختصات چپ‌به‌راست رسم شده (قدیمی‌ترین ساعت در x=0). در RTL کل بوم
-   آینه می‌شود تا قدیمی‌ترین سمت راست بیفتد و با جهت خواندن فارسی و با لایهٔ
-   flex هدف‌های لمسی هم‌راستا شود. هیچ متنی داخل SVG نیست، پس چیزی برعکس
-   خوانده نمی‌شود.
-*/
+/* ── یک لایه ─────────────────────────────────────────────────────────────── */
+.stratum {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ds-space-1);
+  min-inline-size: 0;
+}
+
+@media (min-width: 64rem) {
+  .stratum {
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    align-items: center;
+    gap: 0 var(--ds-space-4);
+  }
+}
+
+.stratumLabel {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.stratumName {
+  overflow: hidden;
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stratumMeta {
+  color: var(--ds-text-muted);
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── ناحیهٔ ترسیم مشترک ──────────────────────────────────────────────────── */
+.plot {
+  --obs-dir: 1;
+  position: relative;
+  min-inline-size: 0;
+}
+
+:where([dir='rtl']) .plot {
+  --obs-dir: -1;
+}
+
+/* playhead — با transform جابه‌جا می‌شود نه با inset، پس هیچ layout thrash
+   نداریم. `--obs-dir` علامت را در RTL برمی‌گرداند تا دقیقاً روی همان ستون
+   بنشیند. */
+.playhead {
+  position: absolute;
+  inset-block: -2px;
+  inset-inline-start: 0;
+  inline-size: calc(100% / var(--hours, 24));
+  border-inline: 1px solid var(--ds-brand-500);
+  background: color-mix(in oklch, var(--ds-brand-500) 9%, transparent);
+  pointer-events: none;
+  transform: translateX(calc(var(--hour, 0) * 100% * var(--obs-dir)));
+  transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+/* ── لایهٔ خط‌الرأس (حجم) ────────────────────────────────────────────────── */
+.ridgeBox {
+  position: relative;
+  block-size: 4.5rem;
+}
+
+@media (min-width: 64rem) {
+  .ridgeBox {
+    block-size: 5.5rem;
+  }
+}
+
 .ridgeSvg {
   position: absolute;
   inset: 0;
@@ -324,327 +459,313 @@
   block-size: 100%;
 }
 
-:global(html[dir='rtl']) .ridgeSvg {
+/* SVG در مختصات چپ‌به‌راست رسم می‌شود و فقط در RTL آینه می‌شود؛
+   هیچ متنی داخلش نیست پس چیزی برعکس خوانده نمی‌شود. */
+:where([dir='rtl']) .ridgeSvg {
   transform: scaleX(-1);
 }
 
 .ridgeGrid line {
   stroke: var(--ds-border-subtle);
   stroke-width: 1;
-  stroke-dasharray: 3 5;
-}
-
-.ridgeStopTop {
-  stop-color: var(--nova-up);
-  stop-opacity: 0.3;
-}
-
-.ridgeStopBottom {
-  stop-color: var(--nova-up);
-  stop-opacity: 0.02;
 }
 
 .ridgeArea {
   stroke: none;
 }
 
+.ridgeStopTop {
+  stop-color: var(--ds-brand-500);
+  stop-opacity: 0.24;
+}
+
+.ridgeStopBottom {
+  stop-color: var(--ds-brand-500);
+  stop-opacity: 0.02;
+}
+
 .ridgeLine {
   fill: none;
-  stroke: var(--nova-up);
-  stroke-width: 1.75;
-  stroke-linejoin: round;
+  stroke: var(--ds-brand-600);
+  stroke-width: 1.5;
   stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .ridgeErrLine {
   fill: none;
-  stroke: var(--nova-down);
+  stroke: var(--ds-accent-rose);
   stroke-width: 1.25;
-  stroke-linejoin: round;
-  stroke-dasharray: 4 3;
-  opacity: 0.85;
+  stroke-dasharray: 3 3;
+  stroke-linecap: round;
 }
 
-/* لایهٔ تعامل — HTML و flex، پس در RTL خودش از راست شروع می‌کند */
-.ridgeHits {
+/* لایهٔ هدف‌های لمسی — گرید است نه SVG، پس در RTL خودش از راست شروع می‌کند و
+   همیشه روی همان ستونِ زیرش می‌نشیند. */
+.hits {
   position: absolute;
   inset: 0;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(var(--hours, 24), minmax(0, 1fr));
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.ridgeHit {
-  flex: 1 1 0;
-  min-inline-size: 0;
+.hit {
   display: flex;
+  min-inline-size: 0;
 }
 
-.ridgeBtn {
-  position: relative;
-  inline-size: 100%;
-  min-block-size: 2.75rem;
+.hitBtn {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
   padding: 0;
   border: 0;
-  background: none;
+  border-radius: 2px;
+  background: transparent;
   cursor: pointer;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
+  opacity: 0;
+  transition: opacity var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
-.ridgeBtn:hover {
-  background: color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
+.hitBtn:hover,
+.hitBtn[data-active='true'] {
+  opacity: 1;
+  background: color-mix(in oklch, var(--ds-brand-500) 8%, transparent);
 }
 
-.ridgeBtn:focus-visible {
-  outline: 2px solid var(--nova-primary);
+.hitBtn:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--ds-brand-600);
   outline-offset: -2px;
 }
 
-.ridgeStem {
+.hitDrop {
+  inline-size: 2px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-accent-rose);
+}
+
+/* ── لایهٔ سلولی (گرمای منبع، باندهای بحران) ─────────────────────────────── */
+.cells {
+  display: grid;
+  grid-template-columns: repeat(var(--hours, 24), minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-inline-size: 0;
+}
+
+.cell {
+  --level: 0;
+  block-size: 1.125rem;
+  border-radius: 2px;
+  background: color-mix(
+    in oklch,
+    var(--ds-brand-500) calc(var(--level) * 0.62%),
+    var(--ds-canvas-subtle)
+  );
+  transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.cell[data-error='true'] {
+  background: color-mix(
+    in oklch,
+    var(--ds-accent-rose) calc(28% + var(--level) * 0.45%),
+    var(--ds-canvas-subtle)
+  );
+}
+
+.cell[data-empty='true'] {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--ds-border-subtle);
+}
+
+/* باند بحران — بازهٔ پیوسته، با متن کنارش تا رنگ تنها نشانه نباشد. */
+.band {
+  position: relative;
+  block-size: 1.125rem;
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-canvas-subtle);
+  overflow: clip;
+}
+
+.bandFill {
   position: absolute;
   inset-block: 0;
-  inset-inline-start: 50%;
-  inline-size: 1px;
-  background: var(--ds-text-primary);
-  opacity: 0;
-  transform: scaleY(0.6);
-  transform-origin: bottom center;
-  transition:
-    opacity var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-base) var(--ds-ease-spring);
+  border-radius: var(--ds-radius-sm);
+  background: color-mix(in oklch, var(--ds-accent-rose) 46%, transparent);
+  box-shadow: inset 0 0 0 1px var(--ds-accent-rose);
 }
 
-.ridgeBtn[data-active='true'] .ridgeStem {
-  opacity: 0.45;
-  transform: scaleY(1);
+/* ── محور ────────────────────────────────────────────────────────────────── */
+.axis {
+  display: grid;
+  grid-template-columns: repeat(var(--hours, 24), minmax(0, 1fr));
+  margin: var(--ds-space-1) 0 0;
+  padding-block-start: var(--ds-space-1);
+  border-block-start: 1px solid var(--ds-border-subtle);
 }
 
-.ridgeDrop {
-  position: absolute;
-  inset-block-end: 0;
-  inset-inline: 22%;
-  border-start-start-radius: 2px;
-  border-start-end-radius: 2px;
-  background: color-mix(in oklch, var(--nova-down) 55%, transparent);
-}
-
-.ridgeBtn[data-error='false'] .ridgeDrop {
-  display: none;
-}
-
-.ridgeAxis {
-  display: flex;
-  justify-content: space-between;
-  margin: 0;
-  font-size: 0.64rem;
+.tick {
   color: var(--ds-text-muted);
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  white-space: nowrap;
 }
 
-/* ── Readout ──────────────────────────────────────────────── */
+.tickOn {
+  color: var(--ds-brand-600);
+  font-weight: var(--ds-weight-semibold);
+}
 
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1-5) var(--ds-space-4);
+  margin: 0;
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+}
+
+.swatchLine {
+  inline-size: 1.25rem;
+  block-size: 2px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-brand-600);
+}
+
+.swatchDash {
+  inline-size: 1.25rem;
+  block-size: 0;
+  border-block-start: 2px dashed var(--ds-accent-rose);
+}
+
+.swatchBox {
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+  border-radius: 2px;
+  background: color-mix(in oklch, var(--ds-brand-500) 55%, var(--ds-canvas-subtle));
+}
+
+/* ── خوانش ساعت انتخاب‌شده ───────────────────────────────────────────────── */
 .readout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
   gap: var(--ds-space-2);
-  padding: var(--ds-space-3);
-  border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-surface);
+  padding-block-start: var(--ds-space-3);
+  border-block-start: 1px solid var(--ds-border-subtle);
 }
 
 @media (min-width: 44rem) {
   .readout {
     grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    gap: var(--ds-space-4);
-  }
-
-  .readoutHour {
-    grid-column: 1 / -1;
+    align-items: end;
+    column-gap: var(--ds-space-6);
   }
 }
 
 .readoutHour {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ds-space-2);
   margin: 0;
-  font-size: 0.66rem;
-  color: var(--ds-text-muted);
-  font-variant-numeric: tabular-nums;
 }
 
-.readoutMain {
-  margin: 0;
+.readoutValue {
+  color: var(--ds-text-primary);
+  font-family: var(--ds-font-mono);
   font-size: var(--ds-text-2xl);
   font-weight: var(--ds-weight-bold);
-  line-height: var(--ds-leading-tight);
-  letter-spacing: var(--nova-tracking-tighter);
-  color: var(--ds-text-primary);
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+  letter-spacing: -0.035em;
 }
 
 .readoutUnit {
-  margin-inline-start: var(--ds-space-1);
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-medium);
   color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
 }
 
-.readoutFacts {
+.readoutRange {
+  color: var(--ds-text-muted);
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.facts {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--ds-space-2) var(--ds-space-4);
+  gap: var(--ds-space-1) var(--ds-space-5);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.readoutFacts li {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  font-size: 0.66rem;
-  color: var(--ds-text-muted);
-}
-
-.readoutFacts b {
-  font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-bold);
-  color: var(--tone);
-  font-variant-numeric: tabular-nums;
-}
-
-.readoutFacts li[data-tone='idle'] b {
-  color: var(--ds-text-primary);
-}
-
-/* ── Zone 3 — vital ribs ──────────────────────────────────── */
-
-.deckVitals {
-  min-inline-size: 0;
-}
-
-.vitals {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-3);
-}
-
-.vitalsHead {
-  margin: 0;
-  font-size: 0.66rem;
-  font-weight: var(--ds-weight-semibold);
-  letter-spacing: 0.04em;
-  color: var(--ds-text-muted);
-}
-
-.ribs {
+.fact {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ds-space-2) var(--ds-space-4);
-  margin: 0;
-}
-
-@media (min-width: 82rem) {
-  .ribs {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0;
-  }
-}
-
-.rib {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: baseline;
-  gap: 0 var(--ds-space-2);
-  padding-block: var(--ds-space-1-5);
-}
-
-@media (min-width: 82rem) {
-  .rib {
-    border-block-start: 1px solid var(--ds-border-subtle);
-    padding-block: var(--ds-space-2);
-  }
-
-  .rib:first-of-type {
-    border-block-start: 0;
-  }
-}
-
-.ribKey {
-  font-size: 0.68rem;
-  color: var(--ds-text-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.ribVal {
-  margin: 0;
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-semibold);
-  color: var(--tone);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.rib[data-tone='idle'] .ribVal {
-  color: var(--ds-text-primary);
-}
-
-.ribTrack {
-  grid-column: 1 / -1;
-  block-size: 2px;
-  margin-block-start: 0.2rem;
-  border-radius: var(--ds-radius-full);
-  background: var(--ds-surface-recessed);
-  overflow: hidden;
-}
-
-.ribFill {
-  display: block;
-  block-size: 100%;
-  background: color-mix(in oklch, var(--tone) 65%, transparent);
-  transition: inline-size var(--ds-duration-slow) var(--ds-ease-out-expo);
-}
-
-/* نبض فشرده — ۲۴ خط مویی، تازه‌ترین در inline-end */
-.pulse {
-  display: flex;
-  align-items: flex-end;
   gap: 1px;
-  block-size: 2rem;
-  padding-block-start: var(--ds-space-2);
-  border-block-start: 1px solid var(--ds-border-subtle);
 }
 
-.pulseTick {
-  flex: 1 1 0;
-  min-inline-size: 1px;
-  border-radius: 1px;
-  background: color-mix(in oklch, var(--tone) 48%, transparent);
-}
-
-.vitalsNote {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--ds-space-2);
-  margin: 0;
-  font-size: 0.64rem;
-  line-height: var(--ds-leading-snug);
+.factKey {
   color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
 }
 
-.vitalsNote svg {
-  flex: none;
-  margin-block-start: 0.1rem;
+.factVal {
+  color: var(--tone);
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
 }
 
-/* ── Insight stack ────────────────────────────────────────── */
+.pinned {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ds-brand-600);
+  font: inherit;
+  font-size: var(--ds-text-xs);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: opacity var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.pinned:hover {
+  opacity: 0.7;
+}
+
+.pinned:focus-visible {
+  outline: 2px solid var(--ds-brand-600);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   ۳. یافته‌های خودکار — یادداشت‌های حاشیه، نه کارت.
+   ════════════════════════════════════════════════════════════════════════ */
 
 .insights {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  gap: 0;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -653,70 +774,133 @@
 .insight {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--ds-space-3);
+  align-items: start;
+  column-gap: var(--ds-space-3);
   padding-block: var(--ds-space-3);
   border-block-start: 1px solid var(--ds-border-subtle);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 5rem;
 }
 
 .insight:first-child {
   border-block-start: 0;
+  padding-block-start: 0;
 }
 
 .insightIcon {
   display: grid;
   place-items: center;
-  inline-size: 1.85rem;
-  block-size: 1.85rem;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
   border-radius: var(--ds-radius-sm);
-  border: 1px solid color-mix(in oklch, var(--tone) 30%, transparent);
-  background: color-mix(in oklch, var(--tone) 10%, transparent);
+  background: var(--tone-soft);
   color: var(--tone);
-  flex: none;
 }
 
 .insightBody {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
   min-inline-size: 0;
 }
 
 .insightTitle {
   margin: 0;
+  color: var(--ds-text-primary);
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
-  color: var(--ds-text-primary);
-  line-height: var(--ds-leading-snug);
+  letter-spacing: -0.01em;
 }
 
 .insightText {
-  margin: 0;
+  margin: var(--ds-space-1) 0 0;
+  max-inline-size: 66ch;
+  color: var(--ds-text-secondary);
   font-size: var(--ds-text-xs);
   line-height: var(--ds-leading-normal);
-  color: var(--ds-text-muted);
-  overflow-wrap: anywhere;
 }
 
 .insightLink {
   display: inline-flex;
   align-items: center;
   gap: var(--ds-space-1);
-  align-self: flex-start;
-  min-block-size: 2.25rem;
+  margin-block-start: var(--ds-space-2);
+  color: var(--ds-brand-600);
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-medium);
-  color: var(--nova-primary);
-  text-decoration: none;
   cursor: pointer;
-  transition: opacity var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: gap var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .insightLink:hover {
-  opacity: 0.75;
+  gap: var(--ds-space-2);
 }
 
 .insightLink:focus-visible {
-  outline: 2px solid var(--nova-primary);
-  outline-offset: 2px;
-  border-radius: var(--ds-radius-sm);
+  outline: 2px solid var(--ds-brand-600);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   ۴. نشانه‌های حیاتی — ستونی فشرده با هیرلاین مقیاس.
+   ════════════════════════════════════════════════════════════════════════ */
+
+.vitals {
+  display: grid;
+  gap: var(--ds-space-3);
+  min-inline-size: 0;
+}
+
+.ribs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: var(--ds-space-3) var(--ds-space-4);
+  margin: 0;
+}
+
+.rib {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.ribKey {
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+}
+
+.ribVal {
+  margin: 0;
+  color: var(--tone);
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.ribTrack {
+  display: block;
+  block-size: 2px;
+  margin-block-start: var(--ds-space-1);
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-border-subtle);
+  overflow: clip;
+}
+
+.ribFill {
+  display: block;
+  block-size: 100%;
+  background: var(--tone);
+  transition: inline-size var(--ds-duration-base) var(--ds-ease-out-quart);
+}
+
+.vitalsNote {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-1-5);
+  margin: 0;
+  padding-block-start: var(--ds-space-2);
+  border-block-start: 1px solid var(--ds-border-subtle);
+  color: var(--ds-accent-amber);
+  font-size: var(--ds-text-xs);
+  line-height: var(--ds-leading-normal);
 }

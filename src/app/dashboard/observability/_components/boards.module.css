@@ -4,35 +4,44 @@
    کلاس‌های span فقط داخل breakpoint تعریف می‌شوند. دلیلش مهم است: در موبایل
    والد تک‌ستونی است و اگر `span 8` آنجا هم اعمال شود، گرید ستون ضمنی می‌سازد و
    چیدمان می‌شکند. پیش‌فرض همه `auto` یعنی تمام‌عرض.
+
+   نام‌گذاری معنایی است نه عددی: هر بلوک بر اساس **وزن روایی**اش جا می‌گیرد،
+   پس هیچ‌وقت به شبکهٔ کارت‌های هم‌اندازه برنمی‌گردیم.
+     full  → تمام‌عرض (جدول‌ها و دفترها)
+     lead  → روایت اصلی صفحه (۸ ستون)
+     note  → حاشیهٔ همان روایت (۴ ستون)
+     wide  → بلوک عریض ولی نه تمام‌عرض (۷ ستون)
+     side  → همراه wide (۵ ستون)
+     half  → دو بلوک هم‌وزن (۶ ستون) — عمداً کم استفاده می‌شود
    ============================================================================ */
 
+.full,
+.lead,
+.note,
 .wide,
-.eight,
-.seven,
-.six,
-.five,
-.four {
+.side,
+.half {
   grid-column: auto;
   min-inline-size: 0;
 }
 
 @media (min-width: 64rem) {
-  .wide {
+  .full {
     grid-column: 1 / -1;
   }
-  .eight {
+  .lead {
     grid-column: span 8;
   }
-  .seven {
+  .note {
+    grid-column: span 4;
+  }
+  .wide {
     grid-column: span 7;
   }
-  .six {
-    grid-column: span 6;
-  }
-  .five {
+  .side {
     grid-column: span 5;
   }
-  .four {
-    grid-column: span 4;
+  .half {
+    grid-column: span 6;
   }
 }
