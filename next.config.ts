@@ -44,10 +44,10 @@ const nextConfig: NextConfig = {
   // NEXT_DIST_DIR=/tmp/next-dev-$USER routes the .next directory
   // (and its lockfile) to native ext4 where locking works.
   ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
-  // output: 'standalone' is for self-hosted (PM2/Docker) deployments.
-  // On Vercel, standalone output causes build failures (ENOENT index.html).
-  // Vercel manages its own output format. Enable standalone only outside Vercel.
-  ...(process.env.VERCEL ? {} : { output: 'standalone' }),
+  // output: 'standalone' — disabled because Vercel's onBuildComplete hook cannot
+  // find index.html when standalone mode is active (ENOENT lstat index.html).
+  // For self-hosted (PM2/Docker) builds, set OUTPUT_STANDALONE=1 locally.
+  ...(process.env.OUTPUT_STANDALONE === '1' ? { output: 'standalone' } : {}),
   reactStrictMode: true,
   // 2026-06-29: cacheComponents (PPR) disabled. With it on, the static shell
   // streamed while dynamic holes (e.g. the auth-aware header) deferred — but
