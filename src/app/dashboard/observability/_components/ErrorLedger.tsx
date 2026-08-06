@@ -3,24 +3,10 @@
 import { ShieldCheck } from 'lucide-react';
 import { useId, useMemo, useState } from 'react';
 
-import { faNum, relative } from './format';
+import { faNum, levelLabel, levelTone, relative } from './format';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
 import s from './obs.module.css';
-
-const LEVEL_LABEL: Record<string, string> = {
-  info: 'اطلاع',
-  warn: 'هشدار',
-  error: 'خطا',
-  fatal: 'بحرانی',
-};
-
-const LEVEL_TONE: Record<string, 'bad' | 'warn' | 'info'> = {
-  fatal: 'bad',
-  error: 'bad',
-  warn: 'warn',
-  info: 'info',
-};
 
 type Filter = 'all' | 'fatal' | 'error';
 
@@ -75,6 +61,7 @@ export function ErrorLedger() {
             {item.label}
           </button>
         ))}
+
         <label className="sr-only" htmlFor={searchId}>
           جست‌وجو در پیام و منبع خطا
         </label>
@@ -97,8 +84,8 @@ export function ErrorLedger() {
       ) : (
         <ol className={s.ledger}>
           {visible.map((item) => (
-            <li key={item.id} className={s.ledgerRow} data-tone={LEVEL_TONE[item.level] ?? 'info'}>
-              <span className={s.level}>{LEVEL_LABEL[item.level] ?? item.level}</span>
+            <li key={item.id} className={s.ledgerRow} data-tone={levelTone(item.level)}>
+              <span className={s.level}>{levelLabel(item.level)}</span>
               <span className={s.source}>{item.source}</span>
               <span className={s.message}>{item.message}</span>
               <span className={s.count}>

@@ -2,7 +2,7 @@
 
 import { ShieldAlert } from 'lucide-react';
 
-import { faNum, faPercent, hourKey, mbShort, ratio, uptimeFa, type ToneKey } from './format';
+import { faNum, faPercent, mbShort, ratio, uptimeFa, type ToneKey } from './format';
 import { useObs } from './ObsProvider';
 import d from './deck.module.css';
 
@@ -16,9 +16,10 @@ interface Rib {
 }
 
 /**
- * دنده‌های حیاتی — هشت عدد واقعی سامانه در یک ستون فشرده.
- * هر دنده یک هیرلاین دارد که «بزرگی نسبی» را می‌رساند؛ عدد خالی بدون مقیاس
- * چیزی نمی‌گوید. هیچ عددی اینجا تخمینی نیست؛ همه از snapshot می‌آید.
+ * دنده‌های حیاتی — هشت عدد واقعی سامانه.
+ * هر دنده یک هیرلاین مقیاس دارد؛ عدد خالی بدون مقیاس چیزی نمی‌گوید.
+ * نوار ساعتی اینجا عمداً نیست: همان اطلاعات در پارتیتور زمانی بالای صفحه با
+ * دقت بیشتر آمده و تکرارش صفحه را دو صدایی می‌کرد.
  */
 export function SystemVitals() {
   const { data } = useObs();
@@ -64,8 +65,6 @@ export function SystemVitals() {
 
   return (
     <div className={d.vitals}>
-      <p className={d.vitalsHead}>نشانه‌های حیاتی</p>
-
       <dl className={d.ribs}>
         {ribs.map((rib) => (
           <div key={rib.id} className={d.rib} data-tone={rib.tone}>
@@ -79,17 +78,6 @@ export function SystemVitals() {
           </div>
         ))}
       </dl>
-
-      <div className={d.pulse} aria-hidden="true">
-        {data.hourly.map((value, index) => (
-          <span
-            key={hourKey(index)}
-            className={d.pulseTick}
-            data-tone={(data.hourlyErrors[index] ?? 0) > 0 ? 'bad' : 'ok'}
-            style={{ blockSize: `${ratio(value, maxHour, 8)}%` }}
-          />
-        ))}
-      </div>
 
       {totals.sampled ? (
         <p className={d.vitalsNote}>

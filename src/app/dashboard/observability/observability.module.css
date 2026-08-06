@@ -1,17 +1,17 @@
 /* ============================================================================
-   Observability — route shell
+   Observability — پوستهٔ مسیر
    ----------------------------------------------------------------------------
-   Mobile first. Logical properties only. Tokens only.
+   Mobile first · فقط logical properties · فقط توکن‌های --ds-*
 
-   ساختار (۲۰۲۶-۰۸): ریلِ چسبانِ سمتِ کناری حذف شد. نشانه‌های حیاتی حالا داخل
-   ObsPulseDeck هستند، پس هر عدد فقط یک‌بار در صفحه دیده می‌شود و بدنه تمام‌عرض
-   می‌ماند تا گرید ۱۲ ستونی boardها جا داشته باشد.
+   ساختار (۲۰۲۶-۰۸، بازطراحی): سرلوحهٔ حکم و پارتیتور زمانی در layout می‌مانند
+   چون «حال سامانه» و «محور ۲۴ ساعته» زمینهٔ همهٔ تب‌ها هستند؛ بدنه فقط
+   لایه‌های اختصاصی هر تب را می‌گیرد.
    ============================================================================ */
 
 .page {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-5);
+  gap: var(--ds-space-4);
   min-block-size: 100%;
   min-inline-size: 0;
 }
@@ -25,33 +25,33 @@
   position: sticky;
   inset-block-start: 0;
   z-index: 5;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-3);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ds-space-2);
   padding-block: var(--ds-space-2);
   border-block-end: 1px solid var(--ds-border-subtle);
-  background: color-mix(in oklch, var(--ds-canvas) 82%, transparent);
+  background: color-mix(in oklch, var(--ds-canvas) 86%, transparent);
   backdrop-filter: blur(10px) saturate(130%);
+  -webkit-backdrop-filter: blur(10px) saturate(130%);
   min-inline-size: 0;
 }
 
-@media (min-width: 60rem) {
+@media (min-width: 62rem) {
   .command {
-    flex-direction: row;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    justify-content: space-between;
-    gap: var(--ds-space-5);
+    column-gap: var(--ds-space-5);
   }
 }
 
 /*
-   گرید boardها. زیر ۶۴rem تک‌ستونی است و کلاس‌های span اصلاً وجود ندارند
-   (به boards.module.css نگاه کن) تا ستون ضمنی ساخته نشود.
+   گرید بدنه — نامتقارن و ۱۲ ستونی. زیر ۶۴rem تک‌ستونی است و کلاس‌های span
+   اصلاً وجود ندارند (به boards.module.css نگاه کن) تا ستون ضمنی ساخته نشود.
 */
 .main {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--ds-space-8);
+  gap: var(--ds-space-6);
   min-inline-size: 0;
 }
 

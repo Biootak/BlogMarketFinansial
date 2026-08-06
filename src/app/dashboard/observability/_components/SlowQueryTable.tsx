@@ -34,8 +34,8 @@ export function SlowQueryTable() {
         <caption className="sr-only">کوئری‌های کند شش ساعت اخیر</caption>
         <thead>
           <tr>
-            <th scope="col">منبع</th>
             <th scope="col">مدت</th>
+            <th scope="col">منبع</th>
             <th scope="col">پیام</th>
             <th scope="col">زمان</th>
           </tr>
@@ -44,10 +44,10 @@ export function SlowQueryTable() {
           {data.slowQueries.map((item) => (
             <tr key={item.id} data-tone={toneFor(item.durationMs)}>
               <td>
-                <span className={s.source}>{item.source}</span>
+                <span className={s.duration}>{msShort(item.durationMs)}</span>
               </td>
               <td>
-                <span className={s.duration}>{msShort(item.durationMs)}</span>
+                <span className={s.source}>{item.source}</span>
               </td>
               <td>
                 <span className={s.message}>{item.message}</span>

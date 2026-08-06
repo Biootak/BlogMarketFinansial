@@ -1,88 +1,108 @@
 'use client';
 
-import { faNum, faPercent } from './format';
-import { HealthRing } from './HealthRing';
+import type { ServiceHealth } from '@/lib/observability';
+
+import { faNum, faPercent, statusLabel, statusTone } from './format';
+import { HealthArc } from './HealthArc';
 import { readHealth } from './obsHealth';
 import { useObs } from './ObsProvider';
-import { RidgeChart } from './RidgeChart';
-import { SystemVitals } from './SystemVitals';
 import d from './deck.module.css';
 
 /**
- * پوستهٔ فرماندهی — سه ناحیهٔ نامتقارن که با هم یک جمله می‌سازند:
- *   «حال سامانه این است» ← «در شبانه‌روز این‌طور نفس کشیده» ← «اعدادش این‌هاست».
+ * سرلوحهٔ حکم — «حال سامانه» به‌صورت یک جملهٔ خوانا، نه شبکه‌ای از کارت عدد.
  *
- * چیدمان از موبایل شروع می‌شود (تک‌ستون، حلقه بالا)، در ۵۴rem به دو ستون و در
- * ۸۲rem به سه ستونِ نامساوی می‌رسد. هیچ‌جا سه کارت هم‌اندازه نداریم؛ وزن هر
- * ناحیه با اهمیتش تعیین شده نه با تقارن.
+ * چیدمان عمداً نامتقارن است: ستون روایت (حکم + دلیل + فرمول) وزن بیشتری از
+ * ستون ابزار (کمان) دارد، چون خواننده اول باید بفهمد «چه خبر است» و بعد
+ * «چقدر». فهرست سرویس‌ها یک نوار پیوسته با جداکنندهٔ مویی است تا ۹ سرویس در
+ * یک نگاه دیده شوند بدون اینکه به ۹ کارت هم‌اندازه تبدیل شوند.
+ *
+ * هیچ عددی اینجا تخمینی یا نمایشی نیست؛ همه از snapshot دیتابیس می‌آید.
  */
+
+const RISK: Record<string, number> = { down: 0, degraded: 1, healthy: 2, idle: 3 };
+
+const byRisk = (a: ServiceHealth, b: ServiceHealth): number => {
+  const delta = (RISK[a.status] ?? 9) - (RISK[b.status] ?? 9);
+  return delta !== 0 ? delta : b.errors24h - a.errors24h;
+};
+
+/**
+ * در دسترس بودن از ۹۰٪ به بالا محاسبه می‌شود (کفِ محاسبهٔ لایهٔ داده)، پس
+ * مقیاس نوار هم از ۹۰ شروع می‌شود؛ وگرنه همهٔ نوارها تقریباً پر دیده می‌شدند و
+ * تفاوت معنادار پنهان می‌ماند.
+ */
+const uptimeFill = (uptime: number): number =>
+  Math.max(3, Math.min(100, Math.round((uptime - 90) * 10)));
+
 export function ObsPulseDeck() {
   const { data } = useObs();
 
   if (!data) {
     return (
-      <section className={d.deck} data-tone="idle" aria-label="وضعیت کلی سامانه">
+      <section className={d.deck} data-tone="idle" aria-label="حکم کلی سامانه">
         <p className={d.deckFallback}>هنوز خوانشی از سامانه ثبت نشده است.</p>
       </section>
     );
   }
 
   const health = readHealth(data);
-
-  const chips = [
-    { id: 'down', label: 'قطع', value: health.down, tone: health.down > 0 ? 'bad' : 'idle' },
-    {
-      id: 'degraded',
-      label: 'کند',
-      value: health.degraded,
-      tone: health.degraded > 0 ? 'warn' : 'idle',
-    },
-    { id: 'healthy', label: 'سالم', value: health.healthy, tone: health.healthy > 0 ? 'ok' : 'idle' },
-    { id: 'idle', label: 'بی‌ترافیک', value: health.idle, tone: 'idle' },
-  ] as const;
+  const roster = [...data.services].sort(byRisk);
 
   return (
-    <section className={d.deck} data-tone={health.tone} aria-label="وضعیت کلی سامانه">
-      <span className={d.deckEdge} aria-hidden="true" />
+    <section className={d.deck} data-tone={health.tone} aria-label="حکم کلی سامانه">
+      <div>
+        <p className={d.verdictTag}>
+          <span className={d.verdictDot} aria-hidden="true" />
+          {health.label}
+        </p>
 
-      <div className={d.deckVerdict}>
-        <HealthRing
-          score={health.score}
-          tone={health.tone}
-          label={health.label}
-          unknown={health.silent}
-        />
+        <p className={d.verdictLine}>
+          <span className={d.verdictScore}>{health.silent ? '—' : faNum(health.score)}</span>
+          <span className={d.verdictOf}>{health.silent ? 'بدون خوانش' : 'از ۱۰۰'}</span>
+          <span>شاخص ترکیبی سلامت در پنجرهٔ {faNum(data.windowHours)} ساعت</span>
+        </p>
+
         <p className={d.deckNote}>{health.note}</p>
 
-        <ul className={d.chips}>
-          {chips.map((chip) => (
-            <li key={chip.id} className={d.chip} data-tone={chip.tone}>
-              <b>{faNum(chip.value)}</b>
-              <span>{chip.label}</span>
-            </li>
-          ))}
-        </ul>
-
         <p className={d.deckFormula}>
-          شاخص ترکیبی: ۴۰٪ در دسترس بودن ({faPercent(health.availability, 2)}) · ۳۵٪ نرخ خطا (
-          {faPercent(data.performance.errorRate)}) · ۲۵٪ پایداری سرویس‌ها
+          ترکیب: {faPercent(40, 0)} در دسترس بودن سرویس‌های دیده‌شده (
+          {faPercent(health.availability, 2)}) · {faPercent(35, 0)} نرخ خطای ساعت اخیر (
+          {faPercent(data.performance.errorRate)}) · {faPercent(25, 0)} پایداری ساختاری (
+          {faNum(health.down)} قطع، {faNum(health.degraded)} کند)
         </p>
       </div>
 
-      <div className={d.deckFlow}>
-        <div className={d.deckFlowHead}>
-          <h2 className={d.deckFlowTitle}>نفسِ شبانه‌روز</h2>
-          <p className={d.deckFlowHint}>
-            خط‌الرأس، حجم رویداد هر ساعت است و بندِ سرخ زیرش سهم خطا. با کلیک یا Tab روی هر ساعت،
-            خوانش همان بازه باز می‌شود.
-          </p>
-        </div>
-        <RidgeChart />
-      </div>
+      <HealthArc score={health.score} tone={health.tone} unknown={health.silent} />
 
-      <div className={d.deckVitals}>
-        <SystemVitals />
-      </div>
+      <ul className={d.roster}>
+        {roster.map((service) => {
+          const observed = service.status !== 'idle';
+          return (
+            <li key={service.id} className={d.rosterItem} data-tone={statusTone(service.status)}>
+              <span className={d.rosterHead}>
+                <span className={d.rosterDot} aria-hidden="true" />
+                <span className={d.rosterName} title={service.name}>
+                  {service.name}
+                </span>
+              </span>
+
+              <span className={d.rosterState}>
+                {statusLabel(service.status)}
+                {observed ? ` · ${faPercent(service.uptime24h, 2)}` : null}
+              </span>
+
+              {observed ? (
+                <span className={d.rosterTrack} aria-hidden="true">
+                  <span
+                    className={d.rosterFill}
+                    style={{ inlineSize: `${uptimeFill(service.uptime24h)}%` }}
+                  />
+                </span>
+              ) : null}
+            </li>
+          );
+        })}
+      </ul>
     </section>
   );
 }
