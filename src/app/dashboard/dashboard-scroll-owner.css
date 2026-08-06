@@ -1,0 +1,62 @@
+/* One scroll owner for dashboard pages.
+   The old shell locked the root to 100dvh, hid the viewport overflow, and then
+   gave .dash-scope its own overflow-y:auto. That creates a second page-sized
+   scrollbar beside the document. Let the document flow vertically instead. */
+
+html,
+body {
+  min-block-size: 100%;
+}
+
+body:has(.dash-root) {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.dash-root {
+  block-size: auto;
+  min-block-size: 100dvh;
+  overflow: visible;
+}
+
+.dash-root .dashboard-shell__viewport {
+  overflow: visible;
+  min-block-size: 100dvh;
+}
+
+.dash-root .dashboard-shell__main,
+.dash-root .dash-scope {
+  block-size: auto;
+  min-block-size: calc(100dvh - 4.5rem);
+  overflow: visible;
+  scrollbar-gutter: auto;
+}
+
+.dash-root .dashboard-shell__content {
+  min-block-size: auto;
+}
+
+/* The sidebar is the only intentional internal scroll region because its menu
+   can exceed the viewport. The page canvas itself must never scroll inside a
+   second container. */
+.dash-root > .dash-side {
+  block-size: 100dvh;
+  position: sticky !important;
+  inset-block-start: 0;
+}
+
+@media (max-width: 47.9375rem) {
+  .dash-root {
+    min-block-size: 100dvh;
+  }
+
+  .dash-root .dashboard-shell__viewport,
+  .dash-root .dashboard-shell__main,
+  .dash-root .dash-scope {
+    min-block-size: auto;
+  }
+
+  .dash-root > .dash-side {
+    position: fixed !important;
+  }
+}
