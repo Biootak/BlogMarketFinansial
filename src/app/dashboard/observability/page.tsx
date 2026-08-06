@@ -16,66 +16,65 @@ export const metadata: Metadata = {
 };
 
 /**
- * نمای کلی. جریان شبانه‌روز و نشانه‌های حیاتی در deck (layout) هستند، پس اینجا
- * تکرار نمی‌شوند؛ این صفحه به «کجا را نگاه کنم» پاسخ می‌دهد نه «چقدر ترافیک
- * داشتیم». وزن هر board با اهمیتش تعیین شده، نه با تقارن.
+ * نمای کلی با ترتیب incident-first: ابتدا سطح خطر و مقصد اقدام، بعد context
+ * زمانی و در پایان تحلیل‌های زمینه‌ای. هیچ داده‌ای اینجا تولید نمی‌شود.
  */
 export default function ObservabilityOverviewPage() {
   return (
-    <>
+    <div className={b.commandDeck}>
       <ObsSection
-        className={b.eight}
+        className={b.lead}
         icon={ServerCog}
-        title="پرخطرترین سرویس‌ها"
-        hint="پنج سرویسی که همین حالا بیشترین ریسک را دارند؛ ترتیب از وضعیت و شمار خطای واقعی می‌آید."
+        title="اول کجا را نگاه کنم؟"
+        hint="سرویس‌ها بر اساس وضعیت فعلی و تعداد خطای واقعی ۲۴ ساعت اخیر مرتب شده‌اند."
       >
         <ServiceLadder limit={5} />
       </ObsSection>
 
       <ObsSection
-        className={b.four}
+        className={b.signal}
         icon={Sparkles}
-        title="یافته‌های خودکار"
-        hint="هر جمله از همین snapshot ساخته شده؛ اگر شرطش برقرار نباشد اصلاً نمایش داده نمی‌شود."
+        title="نشانه‌های قابل اقدام"
+        hint="این خلاصه فقط از snapshot دیتابیس ساخته می‌شود؛ چیزی برای پر کردن فضا نمایش داده نمی‌شود."
       >
         <InsightStack />
       </ObsSection>
 
       <ObsSection
-        className={b.seven}
+        className={b.full}
         icon={Grid2x2}
-        title="نقشهٔ گرمای منابع"
-        hint="پرحجم‌ترین منابع لاگ در برابر ساعت‌های شبانه‌روز."
+        title="ریتم سامانه در ۲۴ ساعت"
+        hint="حجم رویداد و سهم خطا را به‌صورت منبع‌محور ببینید، نه به شکل دیوار نمودارهای هم‌اندازه."
       >
         <SourceHeat />
       </ObsSection>
 
       <ObsSection
-        className={b.five}
+        className={b.contextWide}
         icon={Siren}
         title="پنجره‌های بحرانی"
-        hint="بازه‌هایی که نرخ خطا از سه برابر میانگین شبانه‌روز گذشته است."
+        hint="بازه‌هایی که نرخ خطا از آستانهٔ سه‌برابری میانگین عبور کرده است."
       >
         <IncidentTimeline />
       </ObsSection>
 
       <ObsSection
-        className={b.seven}
+        className={b.contextNarrow}
         icon={PieChart}
-        title="سهم منابع از ترافیک"
-        hint="چه بخشی از حجم لاگ از کدام منبع می‌آید و چقدرش خطاست."
+        title="سهم منابع"
+        hint="حجم و خطای هر منبع در همان پنجرهٔ تحلیل."
       >
         <SourceBreakdown />
       </ObsSection>
 
       <ObsSection
-        className={b.five}
+        className={b.contextNarrow}
         icon={Layers3}
-        title="توزیع سطوح لاگ"
-        hint="نسبت info و warn و error در کل حجم پنجره."
+        title="ترکیب سطوح لاگ"
+        hint="نسبت info، warn و error برای تشخیص تغییر کیفیت سیگنال."
       >
         <LevelDistribution />
       </ObsSection>
-    </>
+    </div>
   );
 }

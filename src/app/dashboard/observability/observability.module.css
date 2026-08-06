@@ -1,37 +1,33 @@
-/* ============================================================================
-   Observability — route shell
-   ----------------------------------------------------------------------------
-   Mobile first. Logical properties only. Tokens only.
-
-   ساختار (۲۰۲۶-۰۸): ریلِ چسبانِ سمتِ کناری حذف شد. نشانه‌های حیاتی حالا داخل
-   ObsPulseDeck هستند، پس هر عدد فقط یک‌بار در صفحه دیده می‌شود و بدنه تمام‌عرض
-   می‌ماند تا گرید ۱۲ ستونی boardها جا داشته باشد.
-   ============================================================================ */
-
 .page {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-5);
+  gap: var(--ds-space-6);
   min-block-size: 100%;
   min-inline-size: 0;
 }
 
-/*
-   نوار فرمان — ناوبری فرعی + وضعیت زنده.
-   چسبان است چون در اسکرول‌های بلندِ لاگ باید همیشه بدانی کدام تب باز است و
-   داده چقدر تازه است. شیشه فقط همین‌جا مجاز است: blur کم، شفافیت کم، مرز مویی.
-*/
+.page::before {
+  content: '';
+  position: absolute;
+  inset-block-start: calc(var(--ds-space-8) * -1);
+  inset-inline: 8%;
+  block-size: 1px;
+  background: var(--ds-border-subtle);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
 .command {
   position: sticky;
   inset-block-start: 0;
   z-index: 5;
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-3);
+  gap: var(--ds-space-2);
   padding-block: var(--ds-space-2);
-  border-block-end: 1px solid var(--ds-border-subtle);
-  background: color-mix(in oklch, var(--ds-canvas) 82%, transparent);
-  backdrop-filter: blur(10px) saturate(130%);
+  border-block: 1px solid var(--ds-border-subtle);
+  background: var(--ds-canvas);
   min-inline-size: 0;
 }
 
@@ -44,21 +40,28 @@
   }
 }
 
-/*
-   گرید boardها. زیر ۶۴rem تک‌ستونی است و کلاس‌های span اصلاً وجود ندارند
-   (به boards.module.css نگاه کن) تا ستون ضمنی ساخته نشود.
-*/
 .main {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--ds-space-8);
+  display: block;
   min-inline-size: 0;
 }
 
-@media (min-width: 64rem) {
-  .main {
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: var(--ds-space-8) var(--ds-space-6);
-    align-items: start;
+.masthead {
+  min-inline-size: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .page::before {
+    animation: obsLine 2s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes obsLine {
+  from {
+    opacity: 0.35;
+    transform: scaleX(0.92);
+  }
+  to {
+    opacity: 0.8;
+    transform: scaleX(1);
   }
 }

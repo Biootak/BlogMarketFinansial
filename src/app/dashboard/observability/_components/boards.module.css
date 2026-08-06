@@ -1,38 +1,42 @@
-/* ============================================================================
-   Observability boards — گرید نامتقارن ۱۲ ستونی
-   ----------------------------------------------------------------------------
-   کلاس‌های span فقط داخل breakpoint تعریف می‌شوند. دلیلش مهم است: در موبایل
-   والد تک‌ستونی است و اگر `span 8` آنجا هم اعمال شود، گرید ستون ضمنی می‌سازد و
-   چیدمان می‌شکند. پیش‌فرض همه `auto` یعنی تمام‌عرض.
-   ============================================================================ */
+.commandDeck {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ds-space-8) var(--ds-space-6);
+  min-inline-size: 0;
+  align-items: start;
+}
 
-.wide,
-.eight,
-.seven,
-.six,
-.five,
-.four {
+.lead,
+.signal,
+.full,
+.contextWide,
+.contextNarrow {
   grid-column: auto;
   min-inline-size: 0;
 }
 
 @media (min-width: 64rem) {
-  .wide {
-    grid-column: 1 / -1;
+  .commandDeck {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
   }
-  .eight {
+
+  .lead {
     grid-column: span 8;
   }
-  .seven {
+
+  .signal {
+    grid-column: span 4;
+  }
+
+  .full {
+    grid-column: 1 / -1;
+  }
+
+  .contextWide {
     grid-column: span 7;
   }
-  .six {
-    grid-column: span 6;
-  }
-  .five {
+
+  .contextNarrow {
     grid-column: span 5;
-  }
-  .four {
-    grid-column: span 4;
   }
 }
