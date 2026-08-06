@@ -25,6 +25,64 @@ const META: Array<[string, Meta]> = [
   ['/helpdesk', { label: 'پشتیبانی', family: 'support', description: 'درخواست‌های پشتیبانی و پیگیری پاسخ‌ها.', icon: LifeBuoy, sibling: '/dashboard/helpdesk/mine', siblingLabel: 'درخواست‌های من' }],
 ];
 
+/**
+ * مسیرهایی که PageHeader خودشان را دارند — RouteFrame برای این‌ها
+ * فقط wrapper می‌شود بدون اینکه header خودش را رندر کند.
+ *
+ * قانون: اگر یک page یا client component در این مسیر <PageHeader> رندر
+ * می‌کند، مسیر را اینجا اضافه کن تا header تکراری نداشته باشیم.
+ */
+const PAGES_WITH_OWN_HEADER: readonly string[] = [
+  // root dashboard — FintechCockpit header خودش را دارد
+  '/dashboard',
+  // صفحاتی که page.tsx یا layout یا client آن‌ها PageHeader دارد
+  '/dashboard/advertisements',
+  '/dashboard/approvals',
+  '/dashboard/audit-log',
+  '/dashboard/billing-address',
+  '/dashboard/categories',
+  '/dashboard/credit-rates',
+  '/dashboard/customers',
+  '/dashboard/devices',
+  '/dashboard/edit-profile',
+  '/dashboard/exchange-quotes',
+  '/dashboard/exchange-rates',
+  '/dashboard/exchange-staff',
+  '/dashboard/exchanges',
+  '/dashboard/fraud-review',
+  '/dashboard/header-ad',
+  '/dashboard/helpdesk',
+  '/dashboard/kyc-review',
+  '/dashboard/my-deals',
+  '/dashboard/my-requests',
+  '/dashboard/notifications',
+  '/dashboard/observability',
+  '/dashboard/permissions',
+  '/dashboard/posts',
+  '/dashboard/reports',
+  '/dashboard/roles',
+  '/dashboard/settlements',
+  '/dashboard/subscription',
+  '/dashboard/transfer',
+  '/dashboard/transfer-providers',
+  '/dashboard/users',
+  '/dashboard/virtual-cards',
+];
+
+/**
+ * آیا مسیر جاری header خودش را دارد؟
+ * از دقیق‌ترین match استفاده می‌کنیم — مثلاً /dashboard/exchanges/[id] هم
+ * زیر /dashboard/exchanges قرار می‌گیرد.
+ */
+const hasOwnHeader = (pathname: string): boolean => {
+  // دقیقاً /dashboard
+  if (pathname === '/dashboard') return true;
+  // زیرمسیر یکی از مسیرهای لیست
+  return PAGES_WITH_OWN_HEADER.some(
+    (p) => p !== '/dashboard' && (pathname === p || pathname.startsWith(p + '/'))
+  );
+};
+
 const resolve = (path: string): Meta => {
   for (const [match, meta] of META) if (path.includes(match)) return meta;
   if (path === '/dashboard' || path.endsWith('/dashboard')) return { label: 'مرکز فرمان', family: 'home', description: 'تصویر زنده‌ای از مهم‌ترین کارهایی که همین حالا نیاز به توجه دارند.', icon: BarChart3 };
@@ -37,6 +95,15 @@ export function RouteFrame({ children }: { children: ReactNode }) {
   const Icon = meta.icon;
   const base = pathname.startsWith('/customer') ? '/customer/dashboard' : pathname.startsWith('/exchange') ? '/exchange/dashboard' : '/dashboard';
   const isHome = pathname === base;
+
+  // اگر صفحه header خودش را دارد — فقط wrapper بدون header RouteFrame
+  if (hasOwnHeader(pathname)) {
+    return (
+      <div className="route-frame" data-route-family={meta.family} data-route-path={pathname}>
+        <div className="route-frame__body">{children}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="route-frame" data-route-family={meta.family} data-route-path={pathname}>
