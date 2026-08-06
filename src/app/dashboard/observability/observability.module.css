@@ -1,53 +1,44 @@
 /* ============================================================================
-   Observability — route shell
+   Observability — route shell · «Instrument Console» (بازطراحی ۲۰۲۶-۰۸)
    ----------------------------------------------------------------------------
-   Mobile first. Logical properties only. Tokens only.
+   Mobile first · فقط logical properties · فقط توکن · بدون کارت.
 
-   ساختار (۲۰۲۶-۰۸): ریلِ چسبانِ سمتِ کناری حذف شد. نشانه‌های حیاتی حالا داخل
-   ObsPulseDeck هستند، پس هر عدد فقط یک‌بار در صفحه دیده می‌شود و بدنه تمام‌عرض
-   می‌ماند تا گرید ۱۲ ستونی boardها جا داشته باشد.
+   ساختار تازه سه لایه دارد و ترتیبش عمدی است:
+     ۱) commandSlot — نوار فرمان چسبان (ناوبری + وضعیت زنده + اسکرابر ساعت)
+     ۲) bridge      — «پل سیگنال»: صفحهٔ ابزارِ سه‌ناحیه‌ای (deck.module.css)
+     ۳) main        — گرید نامتقارن boardها (boards.module.css)
+
+   چرا کارت نداریم: هر board با یک «تیغهٔ» مویی در لبهٔ inline-start و فاصله
+   تعریف می‌شود، نه با جعبه. نتیجه‌اش صفحه‌ای است که در آن چشم روی «داده»
+   می‌نشیند نه روی قاب — همان چیزی که در کنسول‌های عملیاتی حرفه‌ای می‌بینی.
    ============================================================================ */
 
 .page {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-5);
+  gap: var(--ds-space-4);
   min-block-size: 100%;
   min-inline-size: 0;
+  isolation: isolate;
+  container-type: inline-size;
+  container-name: obs;
 }
 
-/*
-   نوار فرمان — ناوبری فرعی + وضعیت زنده.
-   چسبان است چون در اسکرول‌های بلندِ لاگ باید همیشه بدانی کدام تب باز است و
-   داده چقدر تازه است. شیشه فقط همین‌جا مجاز است: blur کم، شفافیت کم، مرز مویی.
-*/
-.command {
+/* ── نوار فرمان ─────────────────────────────────────────────────────────────
+   چسبان است چون در اسکرول‌های بلندِ لاگ باید همیشه بدانی کدام تب باز است،
+   داده چقدر تازه است و مکان‌نمای ساعت کجاست. تنها جایی از این مسیر که شیشه
+   مجاز است: blur کم، شفافیت کم، مرز مویی. */
+.commandSlot {
   position: sticky;
   inset-block-start: 0;
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-3);
-  padding-block: var(--ds-space-2);
-  border-block-end: 1px solid var(--ds-border-subtle);
-  background: color-mix(in oklch, var(--ds-canvas) 82%, transparent);
-  backdrop-filter: blur(10px) saturate(130%);
+  z-index: 6;
   min-inline-size: 0;
 }
 
-@media (min-width: 60rem) {
-  .command {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--ds-space-5);
-  }
-}
-
-/*
-   گرید boardها. زیر ۶۴rem تک‌ستونی است و کلاس‌های span اصلاً وجود ندارند
-   (به boards.module.css نگاه کن) تا ستون ضمنی ساخته نشود.
-*/
+/* ── گرید boardها ───────────────────────────────────────────────────────────
+   زیر ۴۸rem تک‌ستونی، تا ۶۴rem شش‌ستونی و بالاتر دوازده‌ستونی. کلاس‌های span
+   داخل همان breakpointها تعریف شده‌اند تا در موبایل ستون ضمنی ساخته نشود. */
 .main {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -55,10 +46,36 @@
   min-inline-size: 0;
 }
 
-@media (min-width: 64rem) {
+@media (min-width: 48rem) {
   .main {
-    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: var(--ds-space-8) var(--ds-space-6);
     align-items: start;
   }
+}
+
+@media (min-width: 64rem) {
+  .main {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--ds-space-10) var(--ds-space-6);
+  }
+}
+
+/* پانوشت مسیر — منبع هر عدد. صداقت داده بخشی از طراحی است، نه ضمیمه. */
+.provenance {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-3);
+  padding-block-start: var(--ds-space-4);
+  border-block-start: 1px solid var(--ds-border-subtle);
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+  line-height: var(--ds-leading-snug);
+}
+
+.provenance b {
+  color: var(--ds-text-secondary);
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
 }

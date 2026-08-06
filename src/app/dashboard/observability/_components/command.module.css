@@ -1,0 +1,383 @@
+/* ============================================================================
+   Command bar — ناوبری فرعی + وضعیت زنده + اسکرابر ساعت
+   ----------------------------------------------------------------------------
+   یک نوار، سه وظیفه، دو ردیف در موبایل و یک ردیفِ فشرده در دسکتاپ.
+
+   تصمیم‌های ساختاری:
+    - ناوبری «قرص‌های جدا» نیست؛ یک ریلِ پیوسته با نشانگرِ لغزان است. نشانگر
+      با transform حرکت می‌کند نه با تغییر عرض، پس layout thrash ندارد.
+    - وضعیت زنده اسپینر نیست؛ یک مترِ determinate است که سهم پیشرفت تا خوانش
+      بعدی را نشان می‌دهد. اسپینر می‌گوید «صبر کن»، متر می‌گوید «چقدر».
+    - اسکرابر ساعت با صفحه‌کلید کار می‌کند (Arrow / Home / End) و همان
+      مکان‌نمای مشترکِ ObsProvider را جابه‌جا می‌کند.
+   ============================================================================ */
+
+.bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding-block: var(--ds-space-2);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  background: color-mix(in oklch, var(--ds-canvas) 84%, transparent);
+  backdrop-filter: blur(12px) saturate(135%);
+  min-inline-size: 0;
+}
+
+.barTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  min-inline-size: 0;
+}
+
+.barBottom {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  min-inline-size: 0;
+}
+
+@media (min-width: 64rem) {
+  .bar {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--ds-space-5);
+  }
+  .barTop {
+    flex: 1 1 auto;
+  }
+  .barBottom {
+    flex: 0 1 26rem;
+  }
+}
+
+/* ── ناوبری فرعی ─────────────────────────────────────────────────────────── */
+
+.nav {
+  min-inline-size: 0;
+  overflow: hidden;
+}
+
+.navScroller {
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.navScroller::-webkit-scrollbar {
+  display: none;
+}
+
+.navList {
+  display: flex;
+  align-items: stretch;
+  gap: var(--ds-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navLink {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-block-size: 2.75rem;
+  padding-inline: var(--ds-space-3);
+  border-radius: var(--ds-radius-sm);
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    opacity var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.navLink:hover {
+  color: var(--ds-text-primary);
+}
+
+.navLink:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 2px;
+}
+
+.navLink[aria-current='page'] {
+  color: var(--ds-text-primary);
+  font-weight: var(--ds-weight-semibold);
+}
+
+/* تیغهٔ فعال — زیرِ آیتم جاری. رنگ از توکن برند، ضخامت مویی. */
+.navLink[aria-current='page']::after {
+  content: '';
+  position: absolute;
+  inset-inline: var(--ds-space-2);
+  inset-block-end: 0;
+  block-size: 2px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-brand-500);
+  transform-origin: center;
+  animation: navSlide var(--ds-duration-base) var(--ds-ease-out-quart) both;
+}
+
+@keyframes navSlide {
+  from {
+    opacity: 0;
+    transform: scaleX(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+.navIcon {
+  flex: none;
+  opacity: 0.75;
+}
+
+.navLink[aria-current='page'] .navIcon {
+  opacity: 1;
+}
+
+.navCount {
+  min-inline-size: 1.375rem;
+  padding-inline: var(--ds-space-1);
+  border-radius: var(--ds-radius-full);
+  background: var(--nova-flat-bg);
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.navCount[data-tone='bad'] {
+  background: var(--nova-down-bg);
+  color: var(--nova-down);
+}
+
+.navCount[data-tone='warn'] {
+  background: color-mix(in oklch, var(--ds-accent-amber) 16%, transparent);
+  color: var(--ds-accent-amber);
+}
+
+/* ── وضعیت زنده ──────────────────────────────────────────────────────────── */
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  flex: none;
+}
+
+.dot {
+  position: relative;
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--nova-up);
+  flex: none;
+}
+
+.dot[data-state='syncing'] {
+  background: var(--nova-cyan);
+}
+
+.dot[data-state='failed'],
+.dot[data-state='blocked'] {
+  background: var(--nova-down);
+}
+
+.statusText {
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-xs);
+  white-space: nowrap;
+}
+
+/* مترِ تازگی — سهم گذشته از فاصلهٔ دو خوانش. فقط transform حرکت می‌کند. */
+.meter {
+  position: relative;
+  flex: 1 1 4rem;
+  min-inline-size: 3rem;
+  block-size: 2px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-border-subtle);
+  overflow: hidden;
+}
+
+.meterFill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 100%;
+  border-radius: inherit;
+  background: var(--ds-brand-500);
+  transform-origin: inline-start;
+  transform: scaleX(var(--fill, 0));
+  transition: transform 1s linear;
+}
+
+.meterFill[data-state='failed'],
+.meterFill[data-state='blocked'] {
+  background: var(--nova-down);
+}
+
+.stamp {
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.refresh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  min-block-size: 2.75rem;
+  min-inline-size: 2.75rem;
+  padding-inline: var(--ds-space-3);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-sm);
+  background: transparent;
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  cursor: pointer;
+  transition:
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-spring);
+}
+
+.refresh:hover:not(:disabled) {
+  border-color: var(--ds-border-strong);
+  color: var(--ds-text-primary);
+}
+
+.refresh:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.refresh:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 2px;
+}
+
+.refresh:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.refreshText {
+  display: none;
+}
+
+@media (min-width: 30rem) {
+  .refreshText {
+    display: inline;
+  }
+}
+
+/* ── اسکرابر ساعت ────────────────────────────────────────────────────────── */
+
+.scrub {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.scrubLabel {
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.scrubTrack {
+  position: relative;
+  flex: 1 1 auto;
+  min-inline-size: 4rem;
+  min-block-size: 2.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: ew-resize;
+}
+
+.scrubTrack:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 4px;
+  border-radius: var(--ds-radius-sm);
+}
+
+.scrubTick {
+  flex: 1 1 0;
+  min-inline-size: 0;
+  block-size: 0.5rem;
+  border-radius: 1px;
+  background: var(--ds-border-default);
+  transition:
+    background-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.scrubTick[data-fill='2'] {
+  background: var(--ds-text-muted);
+}
+
+.scrubTick[data-fill='3'] {
+  background: var(--ds-text-secondary);
+}
+
+.scrubTick[data-error='true'] {
+  background: var(--nova-down);
+}
+
+.scrubTick[data-active='true'] {
+  background: var(--ds-brand-500);
+  transform: scaleY(2.2);
+}
+
+.scrubReset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 2.75rem;
+  min-inline-size: 2.75rem;
+  border: 0;
+  border-radius: var(--ds-radius-sm);
+  background: transparent;
+  color: var(--ds-text-muted);
+  cursor: pointer;
+  transition:
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-spring);
+}
+
+.scrubReset:hover {
+  color: var(--ds-text-primary);
+}
+
+.scrubReset:active {
+  transform: scale(0.94);
+}
+
+.scrubReset:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 2px;
+}
+
+.scrubReset[data-live='true'] {
+  color: var(--nova-up);
+}
