@@ -1,0 +1,45 @@
+/* Sidebar state corrections, Atlas 2026-08-06.
+   The mobile drawer rule set a width for every state, including
+   `mobile-closed`, so the closed drawer stayed visible as a tall strip and
+   covered the page. State selectors must win over the generic mobile width. */
+
+@media (max-width: 47.9375rem) {
+  .dash-root > .dash-side[data-state="mobile-closed"] {
+    inline-size: 0;
+    max-inline-size: 0;
+    transform: translateX(100%);
+    border-inline-end-width: 0;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .dash-root > .dash-side[data-state="mobile-open"] {
+    inline-size: min(19rem, 86vw);
+    max-inline-size: min(19rem, 86vw);
+    transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .dash-root > .dash-side__overlay {
+    display: block;
+  }
+}
+
+@media (min-width: 48rem) {
+  .dash-root > .dash-side[data-state="expanded"] {
+    inline-size: var(--ds-side-w-expanded);
+    max-inline-size: none;
+    transform: none;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .dash-root > .dash-side[data-state="rail"] {
+    inline-size: var(--ds-side-w-rail);
+    max-inline-size: var(--ds-side-w-rail);
+    transform: none;
+    visibility: visible;
+    pointer-events: auto;
+  }
+}
