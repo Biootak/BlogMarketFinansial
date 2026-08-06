@@ -1,0 +1,7 @@
+:global(.spine) {
+  display: none !important;
+}
+
+:global(.sheet) {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
