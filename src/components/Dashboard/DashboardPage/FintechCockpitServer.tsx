@@ -18,12 +18,8 @@ import { getServiceRequestStats, getServiceRequests } from '@/actions/serviceReq
 import { auth } from '@/auth';
 import { checkRole } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import type React from 'react';
-import {
-  FintechCockpit,
-  type CockpitRate,
-  type FintechCockpitProps,
-} from './FintechCockpit';
+import type { ReactNode } from 'react';
+import { type CockpitRate, FintechCockpit, type FintechCockpitProps } from './FintechCockpit';
 
 const num = (value: unknown, fallback = 0) =>
   typeof value === 'number' && Number.isFinite(value) ? value : fallback;
@@ -32,7 +28,7 @@ const str = (value: unknown, fallback = '') => (typeof value === 'string' ? valu
 /** حداکثر تعداد نرخی که در نوار بازار نمایش داده می‌شود. */
 const TAPE_LIMIT = 10;
 
-export async function FintechCockpitServer({ editorial }: { editorial?: React.ReactNode }) {
+export async function FintechCockpitServer({ editorial }: { editorial?: ReactNode }) {
   const session = await auth();
   if (!session?.user) redirect('/auth?callbackUrl=/dashboard');
   await checkRole(['OWNER', 'ADMIN', 'AUTHOR', 'SUPERADMIN']).catch(() => undefined);
@@ -93,8 +89,7 @@ export async function FintechCockpitServer({ editorial }: { editorial?: React.Re
         id: str(item.id),
         name: str(item.name),
         desc: str(item.desc),
-        status:
-          (item.status as FintechCockpitProps['live']['services'][number]['status']) ?? 'idle',
+        status: (item.status as FintechCockpitProps['live']['services'][number]['status']) ?? 'idle',
         latencyMs: item.latencyMs,
         href: item.href,
         iconName: item.iconName,

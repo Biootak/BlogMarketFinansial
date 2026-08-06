@@ -49,8 +49,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import Link from 'next/link';
-import type React from 'react';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import s from './FintechCockpit.module.css';
 
 // ─── Types ────────────────────────────────────────────────────────────────
@@ -149,7 +148,7 @@ export interface FintechCockpitProps {
   };
   insights?: CockpitInsights;
   rates?: CockpitRate[];
-  editorial?: React.ReactNode;
+  editorial?: ReactNode;
 }
 
 // ─── Formatting ───────────────────────────────────────────────────────────
@@ -302,8 +301,20 @@ const ROUTES: Array<{
     icon: Layers,
     roles: ADMINS,
   },
-  { href: '/dashboard/exchanges', label: 'صرافی‌ها', hint: 'اعضا و نقش‌ها', icon: Landmark, roles: ADMINS },
-  { href: '/dashboard/exchange-rates', label: 'نرخ ارز', hint: 'بازار زنده', icon: Coins, roles: ALL },
+  {
+    href: '/dashboard/exchanges',
+    label: 'صرافی‌ها',
+    hint: 'اعضا و نقش‌ها',
+    icon: Landmark,
+    roles: ADMINS,
+  },
+  {
+    href: '/dashboard/exchange-rates',
+    label: 'نرخ ارز',
+    hint: 'بازار زنده',
+    icon: Coins,
+    roles: ALL,
+  },
   {
     href: '/dashboard/fraud-review',
     label: 'بازبینی ریسک',
@@ -318,10 +329,41 @@ const ROUTES: Array<{
     icon: BadgeCheck,
     roles: ADMINS,
   },
-  { href: '/dashboard/reports', label: 'گزارش‌ها', hint: 'تحلیل مالی', icon: Activity, roles: ALL },
-  { href: '/dashboard/audit-log', label: 'دفتر رویداد', hint: 'ردپای سیستم', icon: ScrollText, roles: ADMINS },
-  { href: '/dashboard/helpdesk', label: 'پشتیبانی', hint: 'تیکت‌های باز', icon: LifeBuoy, roles: ALL },
-  { href: '/dashboard/posts', label: 'نوشته‌ها', hint: 'تحریریه', icon: FileText, roles: ALL },
+  {
+    href: '/dashboard/users',
+    label: 'کاربران',
+    hint: 'حساب‌ها و دسترسی',
+    icon: Users,
+    roles: ADMINS,
+  },
+  {
+    href: '/dashboard/reports',
+    label: 'گزارش‌ها',
+    hint: 'تحلیل مالی',
+    icon: Activity,
+    roles: ALL,
+  },
+  {
+    href: '/dashboard/audit-log',
+    label: 'دفتر رویداد',
+    hint: 'ردپای سیستم',
+    icon: ScrollText,
+    roles: ADMINS,
+  },
+  {
+    href: '/dashboard/helpdesk',
+    label: 'پشتیبانی',
+    hint: 'تیکت‌های باز',
+    icon: LifeBuoy,
+    roles: ALL,
+  },
+  {
+    href: '/dashboard/posts',
+    label: 'نوشته‌ها',
+    hint: 'تحریریه',
+    icon: FileText,
+    roles: ALL,
+  },
 ];
 
 // ─── Shared bits ──────────────────────────────────────────────────────────
@@ -335,7 +377,7 @@ function Rule({
   index: string;
   title: string;
   note?: string;
-  action?: React.ReactNode;
+  action?: ReactNode;
 }) {
   return (
     <div className={s.rule}>
@@ -350,7 +392,7 @@ function Rule({
   );
 }
 
-function More({ href, children }: { href: string; children: React.ReactNode }) {
+function More({ href, children }: { href: string; children: ReactNode }) {
   return (
     <Link href={href} className={s.more}>
       {children}
@@ -406,7 +448,15 @@ function Masthead({
 }) {
   const hour = new Date(now).getHours();
   const greeting =
-    hour < 5 ? 'شب بخیر' : hour < 12 ? 'صبح بخیر' : hour < 17 ? 'ظهر بخیر' : hour < 21 ? 'عصر بخیر' : 'شب بخیر';
+    hour < 5
+      ? 'شب بخیر'
+      : hour < 12
+        ? 'صبح بخیر'
+        : hour < 17
+          ? 'ظهر بخیر'
+          : hour < 21
+            ? 'عصر بخیر'
+            : 'شب بخیر';
 
   const facts: string[] = [];
   if (stats.pending > 0) facts.push(`${fa.format(stats.pending)} درخواست در صف`);
@@ -440,9 +490,7 @@ function Masthead({
         </div>
         <div>
           <dt>سلامت سرویس</dt>
-          <dd aria-live="polite">
-            {health === null ? 'بدون سنجه' : `${fa.format(health)}٪ سالم`}
-          </dd>
+          <dd aria-live="polite">{health === null ? 'بدون سنجه' : `${fa.format(health)}٪ سالم`}</dd>
         </div>
         <div>
           <dt>مشتری فعال</dt>
@@ -551,8 +599,22 @@ function Pulse({
             role="img"
             aria-label={`فعالیت ۲۴ ساعت گذشته، بیشترین شدت در ساعت ${hourLabel(peakIndex)}`}
           >
-            <line className={s.chartGrid} x1="0" y1="32" x2="100" y2="32" vectorEffect="non-scaling-stroke" />
-            <line className={s.chartGrid} x1="0" y1="64" x2="100" y2="64" vectorEffect="non-scaling-stroke" />
+            <line
+              className={s.chartGrid}
+              x1="0"
+              y1="32"
+              x2="100"
+              y2="32"
+              vectorEffect="non-scaling-stroke"
+            />
+            <line
+              className={s.chartGrid}
+              x1="0"
+              y1="64"
+              x2="100"
+              y2="64"
+              vectorEffect="non-scaling-stroke"
+            />
             <polygon className={s.chartArea} points={`0,100 ${coords} 100,100`} />
             <polyline className={s.chartLine} points={coords} vectorEffect="non-scaling-stroke" />
           </svg>
@@ -708,9 +770,7 @@ function Posture({
       label: 'صف تصمیم',
       value: fa.format(stats.pending),
       note:
-        stats.pendingUrgent > 0
-          ? `${fa.format(stats.pendingUrgent)} مورد فوری`
-          : 'بدون مورد فوری',
+        stats.pendingUrgent > 0 ? `${fa.format(stats.pendingUrgent)} مورد فوری` : 'بدون مورد فوری',
       href: '/dashboard/service-requests',
       tone: stats.pendingUrgent > 0 ? 'rose' : stats.pending > 0 ? 'amber' : 'emerald',
       lead: true,
@@ -780,10 +840,7 @@ function Systems({ services }: { services: FintechCockpitLiveService[] }) {
       <ul className={s.systems}>
         {services.map((service) => (
           <li key={service.id} className={s.sysRow}>
-            <span
-              className={`${s.glyph} ${s[`glyph_${service.status}`]}`}
-              aria-hidden="true"
-            />
+            <span className={`${s.glyph} ${s[`glyph_${service.status}`]}`} aria-hidden="true" />
             <span className={s.sysName}>{service.name}</span>
             <span className={s.sysState}>{SERVICE_HEALTH[service.status]}</span>
             <span className={s.sysLatency} dir="ltr">
