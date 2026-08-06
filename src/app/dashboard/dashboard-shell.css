@@ -1,21 +1,79 @@
-/* Atlas Shell — layout override for the dashboard content frame. */
-
-/* Keep the content attached to the available viewport. The previous max-width
-   + auto margins centered a narrow canvas inside the already-flexed viewport,
-   leaving a large dead strip opposite the sidebar on wide screens. */
-.dashboard-shell__content {
-  position: relative;
-  inline-size: 100%;
-  max-inline-size: none;
-  margin-inline: 0;
-  padding-inline: calc(var(--dashboard-gutter) + var(--atlas-spine) + var(--atlas-spine-gap))
-    var(--dashboard-gutter);
-  padding-block: clamp(1rem, 0.75rem + 1vw, 2rem) clamp(4rem, 2.5rem + 3vw, 6rem);
+/* Atlas dashboard shell: structural layout only. */
+.dashboard-shell,
+.dash-root {
+  --dashboard-gutter: clamp(0.875rem, 0.5rem + 1.4vw, 2.25rem);
+  --dashboard-accent: var(--ds-brand-600);
+  --dashboard-accent-soft: color-mix(in oklch, var(--dashboard-accent) 9%, var(--ds-surface));
+  --dashboard-accent-line: color-mix(in oklch, var(--dashboard-accent) 26%, var(--atlas-hairline));
 }
+.dashboard-shell[data-portal="customer"], .dash-root[data-portal="customer"] { --dashboard-accent: var(--ds-accent-emerald); }
+.dashboard-shell[data-portal="exchange"], .dash-root[data-portal="exchange"] { --dashboard-accent: var(--ds-accent-cyan); }
+.dashboard-shell[data-portal="admin"], .dash-root[data-portal="admin"] { --dashboard-accent: var(--ds-brand-600); }
+
+.dashboard-shell { inline-size: 100%; min-block-size: 100dvh; background: var(--ds-canvas); color: var(--ds-text-primary); }
+.dash-root { display: flex !important; flex-direction: row !important; align-items: stretch; inline-size: 100%; block-size: 100dvh; min-inline-size: 0; min-block-size: 0; overflow: hidden; background: var(--ds-canvas); color: var(--ds-text-primary); }
+.dashboard-shell__viewport { display: flex; flex: 1 1 auto; flex-direction: column; inline-size: auto; min-inline-size: 0; min-block-size: 0; overflow: hidden; }
+.dashboard-shell__main, .dash-scope { display: block; flex: 1 1 auto; inline-size: 100%; min-inline-size: 0; min-block-size: 0; overflow: auto; background: var(--ds-canvas); scrollbar-gutter: stable; }
+.dashboard-shell__content { position: relative; inline-size: 100%; max-inline-size: none; margin: 0; padding-inline: calc(var(--dashboard-gutter) + var(--atlas-spine) + var(--atlas-spine-gap)) var(--dashboard-gutter); padding-block: clamp(1rem, 0.75rem + 1vw, 2rem) clamp(4rem, 2.5rem + 3vw, 6rem); }
+.dashboard-shell__content::before { content: ""; position: absolute; z-index: var(--atlas-z-spine); inset-block: 0; inset-inline-start: calc(var(--dashboard-gutter) + var(--atlas-spine)); inline-size: var(--atlas-rule); background: linear-gradient(to bottom, var(--dashboard-accent-line), var(--atlas-hairline) 6rem, var(--atlas-hairline) calc(100% - 8rem), transparent); pointer-events: none; }
+
+.dash-root > .dash-side { position: relative !important; inset: auto !important; z-index: var(--atlas-z-side); flex: 0 0 auto; block-size: 100%; min-block-size: 0; }
+:is(.dash-root, .dashboard-shell) .dash-side { display: flex; flex-direction: column; inline-size: var(--ds-side-w-expanded); background: var(--ds-color-side); border-inline-end: var(--atlas-rule) solid var(--atlas-hairline); box-shadow: none; transition: inline-size var(--atlas-dur-panel) var(--atlas-ease); }
+:is(.dash-root, .dashboard-shell) .dash-side[data-state="rail"] { inline-size: var(--ds-side-w-rail); }
+:is(.dash-root, .dashboard-shell) .dash-side__top { display: flex; align-items: center; gap: var(--ds-space-2); min-block-size: 4.25rem; padding-inline: var(--ds-space-3); border-block-end: var(--atlas-rule) solid var(--atlas-hairline); }
+:is(.dash-root, .dashboard-shell) .dash-side__brand { display: flex; flex: 1 1 auto; align-items: center; gap: var(--ds-space-2-5); min-inline-size: 0; }
+:is(.dash-root, .dashboard-shell) .dash-side__brand-logo { display: grid; flex: 0 0 auto; place-items: center; inline-size: 2.25rem; block-size: 2.25rem; border: var(--atlas-rule) solid var(--dashboard-accent-line); border-radius: var(--atlas-radius-md); background: var(--dashboard-accent-soft); overflow: hidden; }
+:is(.dash-root, .dashboard-shell) .dash-side__brand-logo-img { max-inline-size: 100%; max-block-size: 100%; object-fit: contain; }
+:is(.dash-root, .dashboard-shell) .dash-side__brand-text { display: grid; gap: .125rem; min-inline-size: 0; }
+:is(.dash-root, .dashboard-shell) .dash-side__brand-name { color: var(--ds-text-primary); font-size: var(--ds-text-sm); font-weight: var(--ds-weight-bold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+:is(.dash-root, .dashboard-shell) .dash-side__brand-sub { display: inline-flex; align-items: center; gap: .375rem; color: var(--ds-text-muted); font-size: var(--ds-text-xs); }
+:is(.dash-root, .dashboard-shell) .dash-side__brand-dot { inline-size: .375rem; block-size: .375rem; border-radius: var(--ds-radius-full); background: var(--dashboard-accent); }
+:is(.dash-root, .dashboard-shell) .dash-side__nav { flex: 1 1 auto; min-block-size: 0; overflow-y: auto; overscroll-behavior: contain; }
+:is(.dash-root, .dashboard-shell) .dash-side__nav-inner { display: grid; gap: var(--ds-space-5); padding-block: var(--ds-space-4); padding-inline: var(--ds-space-2); }
+:is(.dash-root, .dashboard-shell) .dash-side__section { display: grid; gap: var(--ds-space-1); }
+:is(.dash-root, .dashboard-shell) .dash-side__section-head { display: flex; align-items: center; gap: .5rem; padding-inline: var(--ds-space-2); padding-block-end: var(--ds-space-2); }
+:is(.dash-root, .dashboard-shell) .dash-side__section-tick { display: none; }
+:is(.dash-root, .dashboard-shell) .dash-side__section-rule { flex: 1 1 auto; block-size: var(--atlas-rule); background: var(--atlas-hairline); }
+:is(.dash-root, .dashboard-shell) .dash-side__list { display: grid; gap: .125rem; margin: 0; padding: 0; list-style: none; }
+:is(.dash-root, .dashboard-shell) .dash-side__item { position: relative; display: flex; align-items: center; gap: var(--ds-space-2-5); inline-size: 100%; min-block-size: 2.5rem; padding-inline: var(--ds-space-2-5); padding-block: .5rem; color: var(--ds-text-secondary); font-size: var(--ds-text-sm); font-weight: var(--ds-weight-medium); text-align: start; text-decoration: none; border: var(--atlas-rule) solid transparent; border-radius: var(--atlas-radius-md); background: transparent; cursor: pointer; }
+:is(.dash-root, .dashboard-shell) .dash-side__item:hover { color: var(--ds-text-primary); background: var(--ds-color-side-hover-bg); }
+:is(.dash-root, .dashboard-shell) .dash-side__item[data-active="true"], :is(.dash-root, .dashboard-shell) .dash-side__item--active { color: var(--ds-color-side-active-fg); font-weight: var(--ds-weight-semibold); border-color: var(--dashboard-accent-line); background: var(--ds-color-side-active-bg); }
+:is(.dash-root, .dashboard-shell) .dash-side__diamond { position: absolute; inset-inline-start: -.3125rem; inset-block-start: 50%; inline-size: .25rem; block-size: .25rem; border-radius: var(--ds-radius-full); background: var(--dashboard-accent); opacity: 0; transform: translateY(-50%) scale(.5); }
+:is(.dash-root, .dashboard-shell) .dash-side__item[data-active="true"] .dash-side__diamond { opacity: 1; transform: translateY(-50%) scale(1); }
+:is(.dash-root, .dashboard-shell) .dash-side__item-ico { display: grid; flex: 0 0 auto; place-items: center; inline-size: 1.25rem; block-size: 1.25rem; color: currentColor; }
+:is(.dash-root, .dashboard-shell) .dash-side__item-label { flex: 1 1 auto; min-inline-size: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+:is(.dash-root, .dashboard-shell) .dash-side__item-kbd { flex: 0 0 auto; opacity: 0; }
+:is(.dash-root, .dashboard-shell) .dash-side__item:hover .dash-side__item-kbd { opacity: 1; }
+:is(.dash-root, .dashboard-shell) .dash-side__item-chev { flex: 0 0 auto; inline-size: .875rem; block-size: .875rem; color: var(--ds-text-muted); }
+:is(.dash-root, .dashboard-shell) .dash-side__item[data-expanded] .dash-side__item-chev { transform: rotate(180deg); }
+:is(.dash-root, .dashboard-shell) .dash-side__sub { display: grid; grid-template-rows: 0fr; }
+:is(.dash-root, .dashboard-shell) .dash-side__sub[data-open] { grid-template-rows: 1fr; }
+:is(.dash-root, .dashboard-shell) .dash-side__sub-inner { display: grid; gap: .125rem; min-block-size: 0; margin-inline-start: calc(var(--ds-space-2-5) + 1.125rem); padding-inline-start: var(--ds-space-3); border-inline-start: var(--atlas-rule) solid var(--atlas-hairline); overflow: hidden; }
+:is(.dash-root, .dashboard-shell) .dash-side__foot { display: grid; gap: .125rem; flex: 0 0 auto; padding-inline: var(--ds-space-2); padding-block: var(--ds-space-3); border-block-start: var(--atlas-rule) solid var(--atlas-hairline); }
+:is(.dash-root, .dashboard-shell) .dash-side__user { display: flex; align-items: center; gap: var(--ds-space-2-5); margin-block-end: var(--ds-space-2); padding-inline: var(--ds-space-2-5); padding-block: var(--ds-space-2); border-radius: var(--atlas-radius-md); background: var(--ds-surface-recessed); }
+:is(.dash-root, .dashboard-shell) .dash-side__user--rail { justify-content: center; padding-inline: 0; background: transparent; }
+:is(.dash-root, .dashboard-shell) .dash-side__user-avatar { position: relative; flex: 0 0 auto; }
+:is(.dash-root, .dashboard-shell) .dash-side__user-glyph { position: absolute; inset-block-end: -.125rem; inset-inline-end: -.125rem; display: grid; place-items: center; inline-size: 1rem; block-size: 1rem; color: var(--ds-brand-on); font-size: .5rem; font-weight: var(--ds-weight-bold); border-radius: var(--ds-radius-full); background: var(--dashboard-accent); }
+:is(.dash-root, .dashboard-shell) .dash-side__user-meta { display: grid; gap: .0625rem; min-inline-size: 0; }
+:is(.dash-root, .dashboard-shell) .dash-side__user-name, :is(.dash-root, .dashboard-shell) .dash-side__user-email { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+:is(.dash-root, .dashboard-shell) .dash-side__user-name { color: var(--ds-text-primary); font-size: var(--ds-text-xs); font-weight: var(--ds-weight-semibold); }
+:is(.dash-root, .dashboard-shell) .dash-side__user-email { color: var(--ds-text-muted); font-size: .6875rem; direction: ltr; text-align: start; }
+:is(.dash-root, .dashboard-shell) .dash-side__user-role { color: var(--dashboard-accent); font-size: .625rem; font-weight: var(--ds-weight-semibold); }
+:is(.dash-root, .dashboard-shell) .dash-side[data-state="rail"] .dash-side__item { justify-content: center; padding-inline: 0; }
+:is(.dash-root, .dashboard-shell) .dash-side[data-state="rail"] .dash-side__index, :is(.dash-root, .dashboard-shell) .dash-side[data-state="rail"] .dash-side__item-chev, :is(.dash-root, .dashboard-shell) .dash-side[data-state="rail"] .dash-side__section-head, :is(.dash-root, .dashboard-shell) .dash-side[data-state="rail"] .dash-side__item-label, :is(.dash-root, .dashboard-shell) .dash-side[data-state="rail"] .dash-side__item-kbd { display: none; }
+:is(.dash-root, .dashboard-shell) .dash-side__overlay { position: fixed; z-index: var(--atlas-z-scrim); inset: 0; border: 0; background: var(--ds-overlay-scrim); cursor: pointer; }
+
+.dash-root .dash-header { position: sticky; z-index: var(--atlas-z-sticky); inset-block-start: 0; flex: 0 0 auto; border-block-end: var(--atlas-rule) solid var(--atlas-hairline); background: color-mix(in oklch, var(--ds-canvas) 88%, transparent); backdrop-filter: blur(10px) saturate(120%); }
+.dash-root .dash-header__inner { display: flex; align-items: center; gap: var(--ds-space-3); min-block-size: 3.75rem; padding-inline: var(--dashboard-gutter); }
+.dash-root .dash-header__search { min-block-size: 2.25rem; color: var(--ds-text-secondary); border: var(--atlas-rule) solid var(--atlas-hairline); border-radius: var(--atlas-radius-md); background: var(--ds-surface-recessed); }
+.dash-root .dash-header__iconbtn { display: grid; place-items: center; inline-size: 2.25rem; block-size: 2.25rem; color: var(--ds-text-secondary); border-radius: var(--atlas-radius-md); background: transparent; }
+.dash-root .dash-header__iconbtn:hover, .dash-root .dash-header__avatar:hover { color: var(--ds-text-primary); background: var(--ds-overlay-hover); }
+.dash-root .dash-header__divider { inline-size: var(--atlas-rule); block-size: 1.25rem; background: var(--atlas-hairline); }
 
 @media (max-width: 47.9375rem) {
-  .dashboard-shell__content {
-    padding-inline: 0.875rem;
-    padding-block-start: 0.75rem;
-  }
+  .dash-root { flex-direction: column !important; block-size: 100dvh; }
+  .dash-root > .dash-side { position: fixed !important; inset-block: 0; inset-inline-start: 0; z-index: var(--atlas-z-drawer); inline-size: min(19rem, 86vw); block-size: 100dvh; }
+  .dashboard-shell__content { padding-inline: .875rem; padding-block-start: .75rem; }
+  .dash-root .dash-header__inner { min-block-size: 3.5rem; padding-inline: .875rem; }
+  :is(.dash-root, .dashboard-shell) .dash-side__item { min-block-size: var(--atlas-tap-min); }
 }
