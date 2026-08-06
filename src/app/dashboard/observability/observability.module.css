@@ -2,32 +2,56 @@
    Observability — route shell
    ----------------------------------------------------------------------------
    Mobile first. Logical properties only. Tokens only.
+
+   نکتهٔ هویتی: رنگ کل مسیر از خودِ وضعیت سامانه می‌آید. `.scope` یک
+   data-tone می‌گیرد که از verdict محاسبه شده و `--obs-tone` را می‌چرخاند.
+   همهٔ زیرکامپوننت‌ها از همین متغیر ارث می‌برند — یعنی رنگ «اطلاعات» است،
+   نه تزئین. این تنها dominant tone صفحه است.
    ============================================================================ */
 
 .page {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-5);
+  gap: var(--ds-space-4);
   min-block-size: 100%;
 }
 
-/* نوار فرمان: ناوبری فرعی + وضعیت زنده */
-.bar {
+/* ── tone scope ─────────────────────────────────────────────────────────── */
+
+.scope {
+  /* dominant — از سلامت سامانه می‌آید */
+  --obs-tone: var(--ds-accent-emerald);
+  /* accent — رمزگذاری حجم داده، همیشه ثابت تا مقایسه ممکن باشد */
+  --obs-data: var(--ds-accent-indigo);
+  /* utility — فقط وضعیت */
+  --obs-ok: var(--nova-up);
+  --obs-warn: var(--ds-accent-amber);
+  --obs-bad: var(--nova-down);
+  --obs-info: var(--ds-accent-cyan);
+  --obs-idle: var(--ds-accent-slate);
+
+  --obs-rule: var(--ds-border-subtle);
+  --obs-rule-strong: var(--ds-border-default);
+  --obs-gutter: 2.25rem;
+
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-3);
-  padding-block-end: var(--ds-space-2);
-  border-block-end: 1px solid var(--ds-border-subtle);
+  gap: var(--ds-space-5);
 }
 
-@media (min-width: 60rem) {
-  .bar {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--ds-space-5);
-  }
+.scope[data-tone='warn'] {
+  --obs-tone: var(--obs-warn);
 }
+
+.scope[data-tone='bad'] {
+  --obs-tone: var(--obs-bad);
+}
+
+.scope[data-tone='idle'] {
+  --obs-tone: var(--obs-idle);
+}
+
+/* ── grid: main + vitals rail ───────────────────────────────────────────── */
 
 .shell {
   display: grid;
@@ -42,6 +66,7 @@
   min-inline-size: 0;
 }
 
+/* روی موبایل ریل حیاتی قبل از محتوا می‌آید — اول «آیا چیزی خراب است؟» */
 .rail {
   order: -1;
   min-inline-size: 0;
@@ -49,7 +74,7 @@
 
 @media (min-width: 68rem) {
   .shell {
-    grid-template-columns: minmax(0, 1fr) clamp(15rem, 21vw, 18rem);
+    grid-template-columns: minmax(0, 1fr) clamp(16rem, 22vw, 19.5rem);
     align-items: start;
     gap: var(--ds-space-6);
   }

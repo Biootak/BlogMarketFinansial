@@ -1,123 +1,202 @@
 /**
- * format.ts — قالب‌بندی و توکن‌های مشترک مرکز مشاهده‌پذیری.
+ * format.ts — زبان عددی مشترک مرکز مشاهده‌پذیری.
  * ─────────────────────────────────────────────────────────────
- *  چرا اینجا: هر چهار board (نمای کلی، خطا، تأخیر، کوئری) به یک زبان عددی
- *  واحد نیاز دارند. تکرار Intl در هر فایل هم هزینهٔ runtime دارد هم drift.
+ *  چرا اینجا: هر شش board (نمای کلی، سرویس، خطا، تأخیر، کوئری، ممیزی) به یک
+ *  زبان عددی واحد نیاز دارند. تکرار Intl در هر فایل هم هزینهٔ runtime دارد و
+ *  هم باعث drift می‌شود.
  *
- *  قاعدهٔ زمان: هیچ ساعت مطلقی روی سرور فرمت نمی‌شود. timezone سرور و مرورگر
- *  یکی نیست و باعث hydration mismatch می‌شد. همه‌ی زمان‌ها «نسبی» هستند و
- *  مبنایشان `now` است که از `generatedAt` می‌آید (پایدار بین SSR و client).
+ *  قاعدهٔ زمان (hydration-safe):
+ *   همهٔ فرمترهای زمان با `timeZone` ثابت «Asia/Kabul» ساخته می‌شوند. پلتفرم
+ *   افغانستان-محور است، پس ساعت مرجع هم کابل است — و چون timezone صریح است،
+ *   سرور و مرورگر دقیقاً یک رشته تولید می‌کنند و hydration mismatch رخ نمی‌دهد.
+ *
+ *  قاعدهٔ bidi:
+ *   واحدهای لاتین (`ms` / `s`) داخل متن فارسی برعکس رندر می‌شوند. هر جایی که
+ *   خروجی `msShort` نمایش داده می‌شود باید کلاس `.metric` (direction: ltr +
+ *   unicode-bidi: isolate) بگیرد. این قرارداد در obs.module.css تعریف شده.
  */
 
 import type { CSSProperties } from 'react';
 
-export type Tone = 'cyan' | 'emerald' | 'amber' | 'rose' | 'indigo' | 'slate';
+export type Tone = 'ok' | 'warn' | 'bad' | 'info' | 'idle';
 
-const TONE_VAR: Record<Tone, string> = {
-  cyan: 'var(--ds-accent-cyan)',
-  emerald: 'var(--ds-accent-emerald)',
-  amber: 'var(--ds-accent-amber)',
-  rose: 'var(--ds-accent-rose)',
-  indigo: 'var(--ds-accent-indigo)',
-  slate: 'var(--ds-accent-slate)',
-};
+const LOCALE = 'fa-IR';
+/** ساعت مرجع پلتفرم — کابل. ثابت بودنش hydration را امن می‌کند. */
+const TIME_ZONE = 'Asia/Kabul';
 
-const INTEGER = new Intl.NumberFormat('fa-IR');
-const decimalFormatters = new Map<number, Intl.NumberFormat>();
+const HOUR_MS = 3_600_000;
 
-/** عدد صحیح با ارقام فارسی و جداکنندهٔ هزارگان. */
-export function formatNumber(value: number): string {
-  return INTEGER.format(Math.round(value));
-}
+/* ───────────────────────── numbers ───────────────────────── */
 
-/** عدد اعشاری با تعداد رقم ثابت — برای درصد و ثانیه. */
-export function formatDecimal(value: number, digits = 1): string {
-  const cached = decimalFormatters.get(digits);
-  if (cached) return cached.format(value);
-  const formatter = new Intl.NumberFormat('fa-IR', {
+const INTEGER = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 0 });
+const decimalCache = new Map<number, Intl.NumberFormat>();
+
+function decimalFormatter(digits: number): Intl.NumberFormat {
+  const cached = decimalCache.get(digits);
+  if (cached) return cached;
+  const created = new Intl.NumberFormat(LOCALE, {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   });
-  decimalFormatters.set(digits, formatter);
-  return formatter.format(value);
+  decimalCache.set(digits, created);
+  return created;
+}
+
+/** عدد صحیح با ارقام فارسی و جداکنندهٔ هزارگان. */
+export function faNum(value: number): string {
+  if (!Number.isFinite(value)) return INTEGER.format(0);
+  return INTEGER.format(Math.round(value));
+}
+
+/** عدد اعشاری با تعداد رقم ثابت. */
+export function faDec(value: number, digits = 1): string {
+  if (!Number.isFinite(value)) return decimalFormatter(digits).format(0);
+  return decimalFormatter(digits).format(value);
 }
 
 /** درصد با علامت فارسی. */
-export function formatShare(value: number): string {
-  return `${formatDecimal(value, 1)}٪`;
+export function faPercent(value: number, digits = 1): string {
+  return `${faDec(value, digits)}٪`;
 }
 
 /**
- * عدد و واحد جدا برگردانده می‌شوند تا واحد لاتین (`ms` / `s`) داخل یک span
- * با `dir="ltr"` رندر شود و bidi متن فارسی را نشکند.
+ * مدت زمان کوتاه. زیر یک ثانیه با `ms`، بالاتر با `s`.
+ * خروجی باید داخل عنصری با کلاس `.metric` بنشیند تا bidi نشکند.
  */
-export interface Measure {
-  value: string;
-  unit: string;
+export function msShort(ms: number): string {
+  if (!Number.isFinite(ms) || ms <= 0) return `${faNum(0)}ms`;
+  if (ms < 1000) return `${faNum(ms)}ms`;
+  return `${faDec(ms / 1000, 2)}s`;
 }
 
-export function msMeasure(ms: number): Measure {
-  if (ms < 1000) return { value: formatNumber(ms), unit: 'ms' };
-  return { value: formatDecimal(ms / 1000, 2), unit: 's' };
+/** حافظه بر حسب مگابایت — واحد فارسی، پس نیازی به isolate ندارد. */
+export function mbFa(mb: number): string {
+  if (mb >= 1024) return `${faDec(mb / 1024, 2)} گیگابایت`;
+  return `${faNum(mb)} مگابایت`;
 }
 
-export function formatUptime(seconds: number): string {
-  const days = Math.floor(seconds / 86_400);
-  const hours = Math.floor((seconds % 86_400) / 3_600);
-  const minutes = Math.floor((seconds % 3_600) / 60);
-  if (days > 0) return `${formatNumber(days)} روز و ${formatNumber(hours)} ساعت`;
-  if (hours > 0) return `${formatNumber(hours)} ساعت و ${formatNumber(minutes)} دقیقه`;
-  return `${formatNumber(minutes)} دقیقه`;
+/** عمر پروسه به زبان آدمیزاد. */
+export function uptimeFa(seconds: number): string {
+  const safe = Number.isFinite(seconds) ? Math.max(0, seconds) : 0;
+  const days = Math.floor(safe / 86_400);
+  const hours = Math.floor((safe % 86_400) / 3_600);
+  const minutes = Math.floor((safe % 3_600) / 60);
+  if (days > 0) return `${faNum(days)} روز و ${faNum(hours)} ساعت`;
+  if (hours > 0) return `${faNum(hours)} ساعت و ${faNum(minutes)} دقیقه`;
+  if (minutes > 0) return `${faNum(minutes)} دقیقه`;
+  return `${faNum(safe)} ثانیه`;
 }
 
-/** فاصلهٔ نسبی تا `now` — hydration-safe چون به timezone وابسته نیست. */
-export function formatTimeAgo(iso: string, now: number): string {
-  const diff = Math.max(0, now - Date.parse(iso));
-  if (diff < 60_000) return `${formatNumber(Math.floor(diff / 1000))} ثانیه پیش`;
-  if (diff < 3_600_000) return `${formatNumber(Math.floor(diff / 60_000))} دقیقه پیش`;
-  if (diff < 86_400_000) return `${formatNumber(Math.floor(diff / 3_600_000))} ساعت پیش`;
-  return `${formatNumber(Math.floor(diff / 86_400_000))} روز پیش`;
+/* ───────────────────────── time ───────────────────────── */
+
+const HM = new Intl.DateTimeFormat(LOCALE, {
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+  timeZone: TIME_ZONE,
+});
+
+const HMS = new Intl.DateTimeFormat(LOCALE, {
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hourCycle: 'h23',
+  timeZone: TIME_ZONE,
+});
+
+const STAMP = new Intl.DateTimeFormat(LOCALE, {
+  month: 'short',
+  day: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+  timeZone: TIME_ZONE,
+});
+
+/** ساعت و دقیقهٔ یک لحظه — برای برچسب محور. */
+export function clock(iso: string): string {
+  const at = Date.parse(iso);
+  if (Number.isNaN(at)) return '—';
+  return HMS.format(new Date(at));
 }
 
-/** برچسب کامل سطل ساعتی — `offset` یعنی چند ساعت قبل از اکنون. */
-export function hourOffsetLabel(offset: number): string {
-  if (offset <= 0) return 'ساعت جاری';
-  return `${formatNumber(offset)} ساعت پیش`;
+/** تاریخ و ساعت کامل (تقویم شمسی، ساعت کابل). */
+export function stamp(iso: string): string {
+  const at = Date.parse(iso);
+  if (Number.isNaN(at)) return '—';
+  return STAMP.format(new Date(at));
 }
 
-/** نسخهٔ کوتاه برای خط‌کش و برچسب ردیف‌های موبایل. */
-export function hourOffsetShort(offset: number): string {
-  if (offset <= 0) return 'اکنون';
-  return `${formatNumber(offset)}س`;
+export interface HourRange {
+  /** ساعت شروع سطل، مثلاً «۱۴:۰۰» */
+  start: string;
+  /** ساعت پایان سطل، مثلاً «۱۵:۰۰» */
+  end: string;
+  /** برچسب کامل، مثلاً «۱۴:۰۰ تا ۱۵:۰۰» */
+  label: string;
 }
 
 /**
- * کلیدهای پایدار سطل‌های ساعتی. کلید نباید index باشد (هم lint، هم باعث
+ * بازهٔ یک سطل ساعتی.
+ * اندیس ۰ = قدیمی‌ترین سطل پنجره، اندیس `windowHours - 1` = ساعت جاری.
+ * دقیقاً هم‌راستا با `bucketStartIso` در `src/lib/observability.ts`.
+ *
+ * برچسب‌ها به‌صورت ساختاریافته برمی‌گردند (نه یک رشتهٔ قابل slice) چون
+ * Intl گاهی نشانه‌های bidi نامرئی اضافه می‌کند و slice آن‌ها را می‌شکست.
+ */
+export function hourRange(generatedAt: string, index: number, windowHours: number): HourRange {
+  const now = Date.parse(generatedAt);
+  if (Number.isNaN(now)) return { start: '—', end: '—', label: '—' };
+  const startMs = now - (windowHours - index) * HOUR_MS;
+  const start = HM.format(new Date(startMs));
+  const end = HM.format(new Date(startMs + HOUR_MS));
+  return { start, end, label: `${start} تا ${end}` };
+}
+
+/** «چند وقت پیش» نسبت به لحظهٔ تولید snapshot — مستقل از timezone. */
+export function relative(iso: string, referenceIso: string): string {
+  const at = Date.parse(iso);
+  const reference = Date.parse(referenceIso);
+  if (Number.isNaN(at) || Number.isNaN(reference)) return '—';
+  const diff = Math.max(0, reference - at);
+  if (diff < 60_000) return `${faNum(Math.floor(diff / 1000))} ثانیه پیش`;
+  if (diff < HOUR_MS) return `${faNum(Math.floor(diff / 60_000))} دقیقه پیش`;
+  if (diff < 86_400_000) return `${faNum(Math.floor(diff / HOUR_MS))} ساعت پیش`;
+  return `${faNum(Math.floor(diff / 86_400_000))} روز پیش`;
+}
+
+/** فاصلهٔ نسبی سطل تا اکنون — برای خط‌کش فشرده. */
+export function hourOffsetShort(index: number, windowHours: number): string {
+  const offset = windowHours - 1 - index;
+  if (offset <= 0) return 'اکنون';
+  return `${faNum(offset)}س`;
+}
+
+/* ───────────────────────── keys & math ───────────────────────── */
+
+/**
+ * کلید پایدار سطل ساعتی. کلید نباید خودِ index باشد (هم قانون lint، هم باعث
  * remount کل ستون‌ها در هر refresh می‌شود).
  */
-export const HOUR_KEYS: string[] = Array.from({ length: 24 }, (_, index) => `bucket-${index}`);
-
-export function hourKey(index: number): string {
-  return HOUR_KEYS[index] ?? `bucket-${index}`;
+export function bucketKey(index: number): string {
+  return `bucket-${index}`;
 }
 
-export const STATUS_LABEL: Record<string, string> = {
-  healthy: 'سالم',
-  degraded: 'کند',
-  down: 'قطع',
-  idle: 'بی‌ترافیک',
-  unknown: 'نامشخص',
-};
+/** نسبت به درصد، محدودشده به ۰..۱۰۰ — ورودی مستقیم متغیرهای CSS. */
+export function ratio(value: number, max: number, digits = 1): number {
+  if (!Number.isFinite(value) || !Number.isFinite(max) || max <= 0) return 0;
+  const clamped = Math.min(1, Math.max(0, value / max));
+  return Number((clamped * 100).toFixed(digits));
+}
 
-export const STATUS_TONE: Record<string, Tone> = {
-  healthy: 'emerald',
-  degraded: 'amber',
-  down: 'rose',
-  idle: 'slate',
-  unknown: 'slate',
-};
+/** پاس دادن custom property به style بدون any. */
+export function cssVars(vars: Record<string, string | number>): CSSProperties {
+  return vars as CSSProperties;
+}
 
-export const LEVEL_LABEL: Record<string, string> = {
+/* ───────────────────────── vocabulary ───────────────────────── */
+
+const LEVEL_LABEL: Record<string, string> = {
   debug: 'اشکال‌زدایی',
   info: 'اطلاع',
   warn: 'هشدار',
@@ -125,41 +204,50 @@ export const LEVEL_LABEL: Record<string, string> = {
   fatal: 'بحرانی',
 };
 
-export const LEVEL_TONE: Record<string, Tone> = {
-  debug: 'slate',
-  info: 'cyan',
-  warn: 'amber',
-  error: 'rose',
-  fatal: 'rose',
+const LEVEL_TONE: Record<string, Tone> = {
+  debug: 'idle',
+  info: 'info',
+  warn: 'warn',
+  error: 'bad',
+  fatal: 'bad',
 };
 
-export function statusLabel(status: string): string {
-  return STATUS_LABEL[status] ?? status;
-}
+const STATUS_LABEL: Record<string, string> = {
+  healthy: 'سالم',
+  degraded: 'کند',
+  down: 'قطع',
+  idle: 'بی‌ترافیک',
+  unknown: 'نامشخص',
+};
 
-export function statusTone(status: string): Tone {
-  return STATUS_TONE[status] ?? 'slate';
-}
+const STATUS_TONE: Record<string, Tone> = {
+  healthy: 'ok',
+  degraded: 'warn',
+  down: 'bad',
+  idle: 'idle',
+  unknown: 'idle',
+};
 
 export function levelLabel(level: string): string {
   return LEVEL_LABEL[level] ?? level;
 }
 
 export function levelTone(level: string): Tone {
-  return LEVEL_TONE[level] ?? 'slate';
+  return LEVEL_TONE[level] ?? 'info';
 }
 
-export function toneVar(tone: Tone): string {
-  return TONE_VAR[tone];
+export function statusLabel(status: string): string {
+  return STATUS_LABEL[status] ?? status;
 }
 
-/** نسبت محدودشده به بازهٔ ۰..۱ — ورودی مستقیم متغیرهای CSS. */
-export function ratio(value: number, max: number): number {
-  if (max <= 0) return 0;
-  return Math.min(1, Math.max(0, value / max));
+export function statusTone(status: string): Tone {
+  return STATUS_TONE[status] ?? 'idle';
 }
 
-/** پاس دادن custom property به style بدون any. */
-export function cssVars(vars: Record<string, string | number>): CSSProperties {
-  return vars as unknown as CSSProperties;
-}
+/** رتبهٔ ریسک — پرخطرترین اول. مبنای مرتب‌سازی نردبان سرویس‌ها. */
+export const STATUS_RISK: Record<string, number> = {
+  down: 0,
+  degraded: 1,
+  healthy: 2,
+  idle: 3,
+};
