@@ -1,12 +1,15 @@
-/**
- * DEBUG ONLY — حذف شود بعد از تشخیص مشکل
- * GET /api/debug-rates
- * نرخ‌های خام DB را نشان می‌دهد تا unit و مقادیر AFN بررسی شوند
- */
+import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import { NextResponse } from 'next/server';
 
+/** Internal diagnostics only. Never expose raw exchange quotes publicly. */
 export async function GET() {
+  const session = await auth();
+  const role = session?.user?.role;
+  if (!session?.user?.id || !['ADMIN', 'OWNER', 'SUPERADMIN'].includes(role ?? '')) {
+    return NextResponse.json({ error: 'FORBIDDEN' }, { status: 403 });
+  }
+
   const quotes = await prisma.exchangeRateQuote.findMany({
     where: { status: 'ACTIVE' },
     select: {
@@ -20,9 +23,7 @@ export async function GET() {
     take: 60,
   });
 
-  const grouped: Record<string, { unit: string; buy: number; sell: number; exchange: string }[]> =
-    {};
-
+  const grouped: Record<string, { unit: string; buy: number; sell: number; exchange: string }[]> = {};
   for (const q of quotes) {
     if (!grouped[q.currencyCode]) grouped[q.currencyCode] = [];
     grouped[q.currencyCode]?.push({
@@ -33,5 +34,8 @@ export async function GET() {
     });
   }
 
-  return NextResponse.json(grouped, { status: 200 });
+  return NextResponse.json(grouped, {
+    status: 200,
+    headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' },
+  });
 }
