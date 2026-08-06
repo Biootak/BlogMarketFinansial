@@ -1,4 +1,4 @@
-/* Atlas dashboard shell: structural layout only. */
+/* Atlas dashboard shell: layout and the sidebar fulcrum. */
 .dashboard-shell,
 .dash-root {
   --dashboard-gutter: clamp(0.875rem, 0.5rem + 1.4vw, 2.25rem);
@@ -11,11 +11,20 @@
 .dashboard-shell[data-portal="admin"], .dash-root[data-portal="admin"] { --dashboard-accent: var(--ds-brand-600); }
 
 .dashboard-shell { inline-size: 100%; min-block-size: 100dvh; background: var(--ds-canvas); color: var(--ds-text-primary); }
-.dash-root { display: flex !important; flex-direction: row !important; align-items: stretch; inline-size: 100%; block-size: 100dvh; min-inline-size: 0; min-block-size: 0; overflow: hidden; background: var(--ds-canvas); color: var(--ds-text-primary); }
+.dash-root { position: relative; display: flex !important; flex-direction: row !important; align-items: stretch; inline-size: 100%; block-size: 100dvh; min-inline-size: 0; min-block-size: 0; overflow: hidden; background: var(--ds-canvas); color: var(--ds-text-primary); }
 .dashboard-shell__viewport { display: flex; flex: 1 1 auto; flex-direction: column; inline-size: auto; min-inline-size: 0; min-block-size: 0; overflow: hidden; }
 .dashboard-shell__main, .dash-scope { display: block; flex: 1 1 auto; inline-size: 100%; min-inline-size: 0; min-block-size: 0; overflow: auto; background: var(--ds-canvas); scrollbar-gutter: stable; }
 .dashboard-shell__content { position: relative; inline-size: 100%; max-inline-size: none; margin: 0; padding-inline: calc(var(--dashboard-gutter) + var(--atlas-spine) + var(--atlas-spine-gap)) var(--dashboard-gutter); padding-block: clamp(1rem, 0.75rem + 1vw, 2rem) clamp(4rem, 2.5rem + 3vw, 6rem); }
 .dashboard-shell__content::before { content: ""; position: absolute; z-index: var(--atlas-z-spine); inset-block: 0; inset-inline-start: calc(var(--dashboard-gutter) + var(--atlas-spine)); inline-size: var(--atlas-rule); background: linear-gradient(to bottom, var(--dashboard-accent-line), var(--atlas-hairline) 6rem, var(--atlas-hairline) calc(100% - 8rem), transparent); pointer-events: none; }
+
+/* The toggle is a direct child of the flex root. It must be an overlay, not a
+   flex item, otherwise it steals a column and makes the content look empty. */
+.dash-root > .dash-side__toggle-zone { position: absolute; inset-block-start: 50%; inset-inline-start: calc(var(--ds-side-w-expanded) - 0.875rem); z-index: calc(var(--atlas-z-side) + 2); display: flex; flex-direction: column; align-items: center; gap: var(--ds-space-2); inline-size: 1.75rem; transform: translateY(-50%); pointer-events: none; }
+.dash-root > .dash-side__toggle-zone[data-open="false"] { inset-inline-start: calc(var(--ds-side-w-rail) - 0.875rem); }
+.dash-root > .dash-side__toggle-zone .dash-side__toggle-line { inline-size: 1px; flex: 1 1 auto; min-block-size: 2rem; background: var(--atlas-hairline); opacity: 0.7; }
+.dash-root > .dash-side__toggle-zone .dash-side__toggle { display: grid; place-items: center; inline-size: 1.75rem; block-size: 1.75rem; padding: 0; pointer-events: auto; border: 1px solid color-mix(in oklch, var(--dashboard-accent) 22%, var(--atlas-hairline)); border-radius: var(--ds-radius-full); background: var(--ds-surface); color: var(--dashboard-accent); box-shadow: 0 0.25rem 1rem -0.5rem var(--ds-text-primary); cursor: pointer; }
+.dash-root > .dash-side__toggle-zone .dash-side__toggle:hover { background: var(--dashboard-accent-soft); }
+.dash-root > .dash-side__toggle-zone .dash-side__toggle-logo { inline-size: 1rem; block-size: 1rem; object-fit: contain; }
 
 .dash-root > .dash-side { position: relative !important; inset: auto !important; z-index: var(--atlas-z-side); flex: 0 0 auto; block-size: 100%; min-block-size: 0; }
 :is(.dash-root, .dashboard-shell) .dash-side { display: flex; flex-direction: column; inline-size: var(--ds-side-w-expanded); background: var(--ds-color-side); border-inline-end: var(--atlas-rule) solid var(--atlas-hairline); box-shadow: none; transition: inline-size var(--atlas-dur-panel) var(--atlas-ease); }
