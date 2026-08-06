@@ -1,0 +1,80 @@
+:root {
+  --cockpit-gutter: clamp(0.875rem, 0.5rem + 1.3vw, 2rem);
+  --cockpit-content-max: 92rem;
+}
+
+.dash-root {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch;
+  inline-size: 100%;
+  block-size: 100dvh;
+  min-block-size: 0;
+  min-inline-size: 0;
+  overflow: hidden;
+}
+
+.dash-root > .dash-side {
+  position: relative !important;
+  inset: auto !important;
+  flex: 0 0 auto !important;
+  block-size: 100%;
+  min-block-size: 0;
+}
+
+.dashboard-shell__viewport {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: column;
+  min-inline-size: 0;
+  min-block-size: 0;
+  overflow: hidden;
+}
+
+.dashboard-shell__main {
+  display: block !important;
+  flex: 1 1 auto !important;
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: 0;
+  overflow: auto;
+  overflow-x: hidden;
+}
+
+.dashboard-shell__content {
+  inline-size: min(100%, var(--cockpit-content-max));
+  min-block-size: 100%;
+  margin-inline: auto;
+  padding-inline: var(--cockpit-gutter);
+  padding-block: clamp(1rem, 0.75rem + 1vw, 2rem) 5rem;
+}
+
+.dash-root .dash-header {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 768px) {
+  .dash-root {
+    flex-direction: column !important;
+  }
+
+  .dash-root > .dash-side {
+    position: fixed !important;
+    inset-block: 0;
+    inset-inline-start: 0;
+    block-size: 100dvh;
+  }
+
+  .dashboard-shell__content {
+    padding-inline: 0.875rem;
+    padding-block-start: 0.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-root,
+  .dashboard-shell__viewport,
+  .dashboard-shell__main {
+    scroll-behavior: auto;
+  }
+}
