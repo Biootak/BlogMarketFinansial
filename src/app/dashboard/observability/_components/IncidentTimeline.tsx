@@ -2,7 +2,7 @@
 
 import { ShieldCheck } from 'lucide-react';
 
-import { bucketLabel, faNum } from './format';
+import { faNum, hourRange } from './format';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
 import s from './obs.module.css';
@@ -31,8 +31,8 @@ export function IncidentTimeline() {
     <ul className={s.incidents}>
       {data.incidents.map((incident) => {
         const span = incident.toHour - incident.fromHour + 1;
-        const from = bucketLabel(data.generatedAt, incident.fromHour, hours).slice(0, 5);
-        const to = bucketLabel(data.generatedAt, incident.toHour, hours).slice(-5);
+        const from = hourRange(data.generatedAt, incident.fromHour, hours).start;
+        const to = hourRange(data.generatedAt, incident.toHour, hours).end;
 
         return (
           <li key={incident.id} className={s.incidentRow}>

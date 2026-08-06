@@ -428,7 +428,9 @@ export default function HeroVisual({
       </div>
 
       {/* ── Visual column: floating glass cards — فقط desktop ─────── */}
-      <div className={s.visual} aria-hidden>
+      {/* aria-hidden حذف شد: کارت‌ها شامل calculator تعاملی هستند که برای
+          screen reader ارزش دارد (ورودی + لینک قابل focus). */}
+      <div className={s.visual}>
         {/* Ambient orbs */}
         <div className={s.orbA} />
         <div className={s.orbB} />

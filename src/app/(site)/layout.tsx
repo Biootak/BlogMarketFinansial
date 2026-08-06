@@ -12,6 +12,12 @@ import { Suspense } from 'react';
 // by public marketing/blog pages. Loading them on auth/setup/dashboard
 // pages added ~35KB render-blocking CSS to pages that never use NC classes.
 import '@/styles/index.scss';
+// 2026-08-06: ad-primitives.css (8.5KB) قبلاً فقط از داخل `LatestArticles`
+// import می‌شد. با lazy شدن آن (ssr:false) کلاس‌های ad-* (که `BannerADS` در
+// Footer/HeaderAdBar/SectionAds استفاده می‌کند) از bundle اولیه حذف می‌شد و
+// تبلیغات تا هیدریشن بدون استایل می‌ماندند. import اینجا = در bundle اولیه
+// SSR می‌ماند و همه‌ی مصرف‌کننده‌ها پوشش دارند.
+import '@/styles/ad-primitives.css';
 
 // 2026-08-02: `auth()` removed from the (site) server tree (MainNav,
 // MobileBottomNavGate, QuickActionsGate, HeroSection now resolve the session

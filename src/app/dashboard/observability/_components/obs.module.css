@@ -11,23 +11,23 @@
 /* ── tone palette ─────────────────────────────────────────── */
 
 .tone,
-[data-tone] {
+:global([data-tone]) {
   --tone: var(--ds-accent-slate);
 }
 
-[data-tone='ok'] {
+:global([data-tone='ok']) {
   --tone: var(--nova-up);
 }
-[data-tone='warn'] {
+:global([data-tone='warn']) {
   --tone: var(--ds-accent-amber);
 }
-[data-tone='bad'] {
+:global([data-tone='bad']) {
   --tone: var(--nova-down);
 }
-[data-tone='idle'] {
+:global([data-tone='idle']) {
   --tone: var(--ds-accent-slate);
 }
-[data-tone='info'] {
+:global([data-tone='info']) {
   --tone: var(--ds-accent-indigo);
 }
 

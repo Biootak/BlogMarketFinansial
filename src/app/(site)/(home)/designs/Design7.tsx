@@ -21,6 +21,7 @@
 import Avatar from '@/components/Avatar/Avatar';
 import { SafeImage } from '@/components/SafeImage';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
+import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 import { getPostLink } from '@/lib/getPostLink';
 import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { formatRelativeTime } from '@/lib/utils';
@@ -42,7 +43,6 @@ import {
 import { Tag as TagIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 import CompactRateBridge from './CompactRateBridge';
 import MagneticSpotlightCard from './MagneticSpotlightCard';
 import { getCategoryTheme } from './categoryTheme';
@@ -64,9 +64,12 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
 
   // Auto-slide — visibility-aware (تب مخفی pause می‌شود)
   const slideEnabled = !isPaused && initialPosts.length > 1;
-  useVisibilityAwareInterval(() => {
-    setActiveIndex((prev) => (prev + 1) % initialPosts.length);
-  }, slideEnabled ? AUTO_PLAY_INTERVAL : 0);
+  useVisibilityAwareInterval(
+    () => {
+      setActiveIndex((prev) => (prev + 1) % initialPosts.length);
+    },
+    slideEnabled ? AUTO_PLAY_INTERVAL : 0,
+  );
 
   const goNext = useCallback(() => {
     setActiveIndex((prev) => (prev + 1) % postsLengthRef.current);
@@ -638,7 +641,6 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
             </div>
           </div>
         </div>
-
       </div>
 
       {/* ─── Bottom Dot Indicators + Keyboard Hint ─── */}
@@ -682,11 +684,11 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
         </div>
 
         {/* Keyboard hint — فقط در sm+ */}
-        <div className="hidden sm:flex items-center gap-1 text-[10px] text-neutral-500 dark:text-neutral-500 tabular-nums">
-          <kbd className="px-1.5 py-0.5 bg-neutral-200/60 dark:bg-neutral-800/60 rounded border border-neutral-300/60 dark:border-neutral-700/60 font-mono">
+        <div className="hidden sm:flex items-center gap-1 text-[10px] text-neutral-700 dark:text-neutral-300 tabular-nums">
+          <kbd className="px-1.5 py-0.5 bg-neutral-200/60 dark:bg-neutral-800/60 rounded border border-neutral-300/60 dark:border-neutral-700/60 font-mono text-neutral-700 dark:text-neutral-300">
             ←
           </kbd>
-          <kbd className="px-1.5 py-0.5 bg-neutral-200/60 dark:bg-neutral-800/60 rounded border border-neutral-300/60 dark:border-neutral-700/60 font-mono">
+          <kbd className="px-1.5 py-0.5 bg-neutral-200/60 dark:bg-neutral-800/60 rounded border border-neutral-300/60 dark:border-neutral-700/60 font-mono text-neutral-700 dark:text-neutral-300">
             →
           </kbd>
           <span>برای جابه‌جایی</span>

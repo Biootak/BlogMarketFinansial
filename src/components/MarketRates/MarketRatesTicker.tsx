@@ -32,11 +32,11 @@ const faTimeFmt = new Intl.DateTimeFormat('fa-IR', { hour: '2-digit', minute: '2
 
 import Ticker from '@/components/Ticker';
 import { TickerShell } from '@/components/TickerShell';
+import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 import type { MarketRateItem } from '@/lib/market-rates';
 import { UNIT_LABELS, formatChangePercent, formatValueOnly } from '@/lib/market-rates/format';
 import { cn } from '@/lib/utils';
 import { memo, useEffect, useMemo, useState } from 'react';
-import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 
 export interface MarketRatesTickerProps {
   /** آرایه‌ی نرخ‌ها — همان `MarketRateItem[]` که در همه‌ی صفحات مشترک است. */
@@ -128,7 +128,7 @@ function MarketRatesTickerImpl({
           'h-10 sm:h-11 rounded-2xl',
           'border border-neutral-200/70 dark:border-neutral-800/80',
           'bg-neutral-50/70 dark:bg-neutral-900/70 backdrop-blur-lg',
-          'text-xs sm:text-sm text-neutral-500 dark:text-neutral-400',
+          'text-xs sm:text-sm text-neutral-700 dark:text-neutral-300',
           className,
         )}
         aria-live="polite"
@@ -149,7 +149,9 @@ function MarketRatesTickerImpl({
         <span className="absolute inset-0 inline-flex h-full w-full animate-ping rounded-full bg-emerald-500/40 opacity-60" />
         <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
       </span>
-      <span className="hidden sm:inline text-emerald-700 dark:text-emerald-300">{label ?? 'نرخ‌های زنده'}</span>
+      <span className="hidden sm:inline text-emerald-700 dark:text-emerald-300">
+        {label ?? 'نرخ‌های زنده'}
+      </span>
       {now && (
         <span
           dir="ltr"
@@ -190,7 +192,7 @@ function MarketRatesTickerImpl({
                   </span>
                   {/* واحد + عدد در دو span جداگانه داخل ltr container */}
                   <span className="inline-flex items-baseline gap-0.5" dir="ltr">
-                    <span className="text-[10px] sm:text-[11px] text-neutral-500 dark:text-neutral-400">
+                    <span className="text-[10px] sm:text-[11px] text-neutral-700 dark:text-neutral-300">
                       {UNIT_LABELS[rate.unit]}
                     </span>
                     <span

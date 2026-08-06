@@ -168,7 +168,7 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
     // اگر phone verify نشده، ابتدا OTP verification لازم است
     if (!phoneVerified) {
       setPhoneForOtp(phoneRaw);
-      setOtpSent(false);
+      setOtpStep('idle');
       setOtpValue('');
       // basicInfo را نگه می‌داریم تا بعد از verify از آن استفاده کنیم
       setBasicInfo(data);
@@ -240,7 +240,7 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
       const res = await verifyPhoneOtp({ phone: phoneForOtp, code: otpValue });
       if (res.success) {
         setPhoneVerified(true);
-        setOtpSent(false);
+        setOtpStep('idle');
         setOtpValue('');
         // حالا submit اصلی
         const fd = new FormData();

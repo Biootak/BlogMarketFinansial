@@ -36,17 +36,16 @@ const PostCardMetaV2: FC<PostCardMetaV2Props> = ({
         )}
         <div>
           <h2 className={`block font-semibold ${titleClassName}`}>
-            <Link href={`/author/${author.id}`} className="line-clamp-1">
+            {/* WCAG 2.5.3 label-in-name + target-size: aria-label حذف شد تا نام
+                دسترس‌پذیر دقیقاً همان متنِ دیده‌شده باشد و با آن تناقض نکند. */}
+            <Link href={`/author/${author.id}`} className="line-clamp-1 block py-1.5 -my-1.5">
               {title}
             </Link>
           </h2>
 
-          {/* حداقل ارتفاع ۴۴px touch target — aria-label برای screen reader */}
-          <Link
-            href={`/author/${author.id}`}
-            className="flex mt-1.5 min-h-[44px] items-center"
-            aria-label={`نویسنده: ${author.name}`}
-          >
+          {/* حداقل ارتفاع ۴۴px touch target — بدون aria-label اضافی تا
+              accessible name دقیقاً متنِ دیده‌شده (نام + تاریخ) باشد */}
+          <Link href={`/author/${author.id}`} className="flex mt-1.5 min-h-[44px] items-center">
             <span className="block text-neutral-700 hover:text-black dark:text-neutral-300 dark:hover:text-white font-medium">
               {author.name}
             </span>

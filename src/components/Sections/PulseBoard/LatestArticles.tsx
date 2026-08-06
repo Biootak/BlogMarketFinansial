@@ -45,7 +45,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
-import '@/styles/ad-primitives.css';
+
+// ad-primitives.css از (site)/layout.tsx سراسری import می‌شود — اینجا لازم نیست
 
 interface CategoryItem {
   name: string;
@@ -403,7 +404,9 @@ function LatestArticles({
                 >
                   <LiveClock showIcon={false} timeZone="Asia/Tehran" />
                   <span className="text-neutral-400 dark:text-neutral-500">·</span>
-                  <span className="text-neutral-500 dark:text-neutral-400">تهران</span>
+                  {/* color-contrast: neutral-600 به‌جای 500 — روی bg-neutral-100
+                      کنتراست ≥ 4.5:1 دارد (AA برای متن کوچک) */}
+                  <span className="text-neutral-600 dark:text-neutral-300">تهران</span>
                 </div>
                 <div
                   className={cn(
@@ -1107,9 +1110,7 @@ function ListItem({
                 {cat.name}
               </span>
             )}
-            <span className="text-neutral-500 dark:text-neutral-500 tabular-nums">
-              {timeLabel}
-            </span>
+            <span className="text-neutral-500 dark:text-neutral-500 tabular-nums">{timeLabel}</span>
           </div>
 
           <h4
@@ -1340,7 +1341,6 @@ function InlineAdBanner({
       >
         {/* Container با aspect-ratio ثابت — دقیقاً مثل BannerADS variant image */}
         <div className="relative w-full overflow-hidden aspect-[16/7] sm:aspect-[16/4]">
-
           {/* لایه ۱: تصویر — ambient: کل کادر پر + کل محتوا دیده می‌شود (YouTube/Netflix)
               cover: کل کادر پر می‌شود، برش می‌خورد (سوژه مرکزی) */}
           <SafeImage

@@ -14,8 +14,8 @@
  * ----------------------------------------------------------------------------
  */
 
-import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
+import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { parseRateItem } from '@/lib/rateItem';
 import type { RateItem } from '@/types/types';
 import {
@@ -66,9 +66,12 @@ export default function CompactRateBridge({
   // Auto-rotate — با تب مخفی pause می‌شود (قبلاً در background tabs
   // هر ۶ ثانیه re-render می‌کرد؛ خواهر خودش RateListsTicker همین کار را دارد).
   const rotationEnabled = autoRotate && !effectivePaused && rates.length > 1;
-  useVisibilityAwareInterval(() => {
-    setInternalIndex((i) => (i + 1) % rates.length);
-  }, rotationEnabled ? rotateInterval : 0);
+  useVisibilityAwareInterval(
+    () => {
+      setInternalIndex((i) => (i + 1) % rates.length);
+    },
+    rotationEnabled ? rotateInterval : 0,
+  );
 
   // Morph tick حذف شد — تغییرات بسیار کوچک (±۰.۲۵٪) عملاً قابل دیدن نبود
   // و هر ۳ ثانیه re-render کل bridge رو trigger می‌کرد
@@ -152,7 +155,8 @@ export default function CompactRateBridge({
           goPrev();
         }}
         onMouseDown={(e) => e.stopPropagation()}
-        className="hidden sm:flex w-6 items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition-colors cursor-pointer border-l border-white/10"
+        // target-size: w-8 (32px → ~24px actual با rem scale) — حداقل لمسی 24px
+        className="hidden sm:flex w-8 items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition-colors cursor-pointer border-l border-white/10"
         aria-label="نرخ قبلی"
       >
         <ChevronRight className="w-3 h-3" />
@@ -240,7 +244,8 @@ export default function CompactRateBridge({
           goNextBridge();
         }}
         onMouseDown={(e) => e.stopPropagation()}
-        className="hidden sm:flex w-6 items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition-colors cursor-pointer border-l border-white/10"
+        // target-size: w-8 (32px → ~24px actual با rem scale) — حداقل لمسی 24px
+        className="hidden sm:flex w-8 items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition-colors cursor-pointer border-l border-white/10"
         aria-label="نرخ بعدی"
       >
         <ChevronLeft className="w-3 h-3" />

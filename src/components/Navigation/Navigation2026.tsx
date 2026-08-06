@@ -277,7 +277,7 @@ const Navigation = ({ className = '', rateLists = [] }: NavigationProps): React.
                   'transition-colors duration-200',
                   active
                     ? 'text-neutral-900 dark:text-neutral-50'
-                    : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-50',
+                    : 'text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-50',
                 )}
               >
                 <span className="relative z-10 tracking-[-0.005em]">{item.name}</span>
@@ -402,7 +402,7 @@ const Navigation = ({ className = '', rateLists = [] }: NavigationProps): React.
             'transition-colors duration-200',
             active
               ? 'text-neutral-900 dark:text-neutral-50'
-              : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-50',
+              : 'text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-50',
           )}
         >
           <span className="relative z-10 tracking-[-0.005em]">{item.name}</span>
@@ -463,7 +463,7 @@ const Navigation = ({ className = '', rateLists = [] }: NavigationProps): React.
           : NAVBAR_LINKS.map((item) => (
               <li key={item.id} className="relative flex-shrink-0" suppressHydrationWarning>
                 <span
-                  className="inline-flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium rounded-full whitespace-nowrap text-neutral-500 dark:text-neutral-400"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium rounded-full whitespace-nowrap text-neutral-700 dark:text-neutral-300"
                   suppressHydrationWarning
                 >
                   {item.name}

@@ -150,7 +150,7 @@ function MarketTicker({
                 )}
               >
                 <span className="font-bold text-neutral-900 dark:text-white">{item.symbol}</span>
-                <span className="text-neutral-500 dark:text-neutral-400 text-[10px] sm:text-[11px] hidden sm:inline">
+                <span className="text-neutral-700 dark:text-neutral-300 text-[10px] sm:text-[11px] hidden sm:inline">
                   {item.name}
                 </span>
                 <span className="font-medium tabular-nums">{formatPrice(item)}</span>

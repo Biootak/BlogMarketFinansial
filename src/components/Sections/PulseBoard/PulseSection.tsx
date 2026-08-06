@@ -4,7 +4,7 @@ import { getLatestPosts, getPublishedPostCount } from '@/actions/getLatestPosts'
 import { getCryptoTickerData } from '@/actions/marketTickerActions';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Advertisement, PostWithRelations } from '@/types/types';
-import LatestArticles from './LatestArticles';
+import PulseArticlesLazy from './PulseArticlesLazy';
 
 /* ---------- Helpers ---------- */
 
@@ -54,7 +54,7 @@ export default async function PulseSection({ className = '' }: PulseSectionProps
 
   return (
     <div className={`nc-PulseSection ${className}`}>
-      <LatestArticles
+      <PulseArticlesLazy
         posts={posts}
         categories={categories}
         initialAds={initialAds}

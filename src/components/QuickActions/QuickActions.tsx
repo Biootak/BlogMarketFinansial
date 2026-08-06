@@ -157,6 +157,9 @@ const QuickActions: FC = () => {
               key={item.id}
               className={s.menuItem}
               style={{ ['--qa-i' as string]: i } as React.CSSProperties}
+              // ARIA menu pattern: li فرزند role=menu است → role=presentation
+              // (در غیر این صورت listitem ضمنی با منوی ARIA تناقض دارد)
+              role="presentation"
             >
               <button
                 type="button"

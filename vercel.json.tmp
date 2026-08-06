@@ -1,0 +1,29 @@
+﻿{
+  "crons": [
+    {
+      "path": "/api/cron/refresh-market-rates",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/sync-rate-lists",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/expire-quotes",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/publish-scheduled-posts",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/expire-kyc",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/backup",
+      "schedule": "0 3 * * *"
+    }
+  ]
+}
+
