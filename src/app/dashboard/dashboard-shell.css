@@ -17,10 +17,112 @@
 .dashboard-shell__content { position: relative; inline-size: 100%; max-inline-size: none; margin: 0; padding-inline: calc(var(--dashboard-gutter) + var(--atlas-spine) + var(--atlas-spine-gap)) var(--dashboard-gutter); padding-block: clamp(1rem, 0.75rem + 1vw, 2rem) clamp(4rem, 2.5rem + 3vw, 6rem); }
 .dashboard-shell__content::before { content: ""; position: absolute; z-index: var(--atlas-z-spine); inset-block: 0; inset-inline-start: calc(var(--dashboard-gutter) + var(--atlas-spine)); inline-size: var(--atlas-rule); background: linear-gradient(to bottom, var(--dashboard-accent-line), var(--atlas-hairline) 6rem, var(--atlas-hairline) calc(100% - 8rem), transparent); pointer-events: none; }
 
+/* Desktop sidebar is outside the scroll owner: keep it full-height and stable. */
+@media (min-width: 48rem) {
+  .dash-root > .dash-side {
+    position: sticky !important;
+    inset-block-start: 0;
+    flex: 0 0 auto;
+    block-size: 100dvh;
+    align-self: flex-start;
+  }
+}
+
+/* Atlas section index: compact horizontal tabs above the content. The CSS
+   module keeps the semantic classes; these selectors intentionally match the
+   generated class names without coupling to a build hash. */
+@media (min-width: 48rem) {
+  .dash-root [class*="_spine_"] {
+    position: sticky !important;
+    inset-block-start: 0;
+    z-index: 6;
+    display: block !important;
+    inline-size: 100% !important;
+    block-size: auto !important;
+    padding-block: 0.25rem;
+    padding-inline: 0;
+    border-block-end: 1px solid var(--atlas-hairline-strong, var(--ds-border-default));
+    border-inline-end: 0 !important;
+    background: color-mix(in oklch, var(--ds-canvas) 94%, transparent);
+    backdrop-filter: blur(8px);
+  }
+
+  .dash-root [class*="_spineList_"] {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 0.25rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-block: 0.15rem;
+  }
+
+  .dash-root [class*="_spineList_"]::-webkit-scrollbar { display: none; }
+
+  .dash-root [class*="_spineItem_"] {
+    display: inline-flex !important;
+    flex: 0 0 auto;
+    grid-template-columns: none !important;
+    align-items: center;
+    gap: 0.45rem;
+    min-block-size: 2.5rem;
+    padding-block: 0.45rem;
+    padding-inline: 0.75rem;
+    border: 1px solid transparent;
+    border-radius: var(--ds-radius-full, 9999px);
+    white-space: nowrap;
+  }
+
+  .dash-root [class*="_spineItem_"][data-on="true"] {
+    border-color: color-mix(in oklch, var(--ds-brand-600) 35%, var(--atlas-hairline));
+    background: color-mix(in oklch, var(--ds-brand-600) 8%, var(--ds-canvas));
+  }
+
+  .dash-root [class*="_spineLabel_"] {
+    position: static !important;
+    inline-size: auto !important;
+    block-size: auto !important;
+    overflow: visible !important;
+    clip-path: none !important;
+    white-space: nowrap;
+    opacity: 1 !important;
+    transform: none !important;
+    font-size: var(--ds-text-xs);
+  }
+
+  .dash-root [class*="_spineDot_"] { flex: 0 0 auto; }
+
+  /* The old content gutter reserved room for the vertical spine. */
+  .dashboard-shell__content {
+    padding-inline-start: var(--dashboard-gutter);
+  }
+
+  /* The tab rail belongs to the scroll owner, not the viewport chrome. */
+  .dash-root [class*="_body_"] {
+    grid-column: 1 / -1 !important;
+  }
+}
+
 @media (max-width: 47.9375rem) {
   .dash-root { flex-direction: column !important; block-size: 100dvh; }
   .dash-root > .dash-side { position: fixed !important; inset-block: 0; inset-inline-start: 0; z-index: var(--atlas-z-drawer); inline-size: min(19rem, 86vw); block-size: 100dvh; }
   .dashboard-shell__content { padding-inline: .875rem; padding-block-start: .75rem; }
   .dash-root .dash-header__inner { min-block-size: 3.5rem; padding-inline: .875rem; }
   :is(.dash-root, .dashboard-shell) .dash-side__item { min-block-size: var(--atlas-tap-min); }
+
+  .dash-root [class*="_spine_"] {
+    position: sticky !important;
+    inset-block-start: 0;
+    z-index: 6;
+    display: block !important;
+    inline-size: 100% !important;
+    padding-block: 0.15rem;
+    border-block-end: 1px solid var(--atlas-hairline-strong, var(--ds-border-default));
+    background: var(--ds-canvas);
+  }
+
+  .dash-root [class*="_spineList_"] { display: flex !important; flex-direction: row !important; overflow-x: auto; scrollbar-width: none; }
+  .dash-root [class*="_spineList_"]::-webkit-scrollbar { display: none; }
+  .dash-root [class*="_spineItem_"] { display: inline-flex !important; flex: 0 0 auto; min-block-size: 2.5rem; padding-inline: 0.65rem; }
+  .dash-root [class*="_spineLabel_"] { position: static !important; inline-size: auto !important; block-size: auto !important; clip-path: none !important; opacity: 1 !important; transform: none !important; }
 }
