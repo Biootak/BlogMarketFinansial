@@ -1,0 +1,100 @@
+/* Atlas top bar, pass 2: a real three-zone workspace header. */
+.dash-root .dash-header__inner {
+  display: grid;
+  grid-template-columns: minmax(13rem, 0.8fr) minmax(18rem, 1.8fr) minmax(max-content, 0.8fr);
+  grid-template-areas: "actions search context";
+  align-items: center;
+  gap: var(--ds-space-4);
+  min-block-size: 4.25rem;
+  padding-inline: clamp(1rem, 2.4vw, 2.75rem);
+}
+
+.dash-root .dash-header__zone--start {
+  grid-area: context;
+  justify-self: end;
+  min-inline-size: 0;
+}
+
+.dash-root .dash-header__zone--search {
+  grid-area: search;
+  display: flex;
+  justify-self: stretch;
+  min-inline-size: 0;
+}
+
+.dash-root .dash-header__search {
+  inline-size: 100%;
+  min-block-size: 2.625rem;
+  padding-inline: var(--ds-space-4);
+  border-radius: var(--atlas-radius-lg);
+  background: var(--ds-surface);
+  box-shadow: inset 0 0 0 1px var(--atlas-hairline), 0 8px 20px -18px var(--ds-text-primary);
+}
+
+.dash-root .dash-header__search-input {
+  font-size: var(--ds-text-sm);
+}
+
+.dash-root .dash-header__zone--end {
+  grid-area: actions;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-inline-size: max-content;
+}
+
+/* The left cluster reads as a workspace utility rail, not a random pile of icons. */
+.dash-root .dash-header__zone--end::before {
+  content: "فضای کاری";
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.25rem;
+  padding-inline: var(--ds-space-3);
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  border-inline-end: var(--atlas-rule) solid var(--atlas-hairline);
+  white-space: nowrap;
+}
+
+.dash-root .dash-header__avatar {
+  min-block-size: 2.625rem;
+  padding-inline: var(--ds-space-2) var(--ds-space-3);
+  border-radius: var(--atlas-radius-lg);
+  background: var(--ds-surface);
+  box-shadow: inset 0 0 0 1px var(--atlas-hairline);
+}
+
+.dash-root .dash-header__iconbtn {
+  inline-size: 2.625rem;
+  block-size: 2.625rem;
+  border-radius: var(--atlas-radius-lg);
+  background: var(--ds-surface);
+  box-shadow: inset 0 0 0 1px var(--atlas-hairline);
+}
+
+.dash-root .dash-header__zone--end > .dash-header__iconbtn,
+.dash-root .dash-header__zone--end > .transition-transform {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 64rem) {
+  .dash-root .dash-header__inner {
+    grid-template-columns: minmax(max-content, 1fr) minmax(14rem, 1.6fr) minmax(max-content, 1fr);
+    gap: var(--ds-space-3);
+    padding-inline: var(--ds-space-4);
+  }
+  .dash-root .dash-header__zone--end::before { display: none; }
+}
+
+@media (max-width: 47.9375rem) {
+  .dash-root .dash-header__inner {
+    display: flex;
+    min-block-size: 3.5rem;
+    padding-inline: .875rem;
+  }
+  .dash-root .dash-header__zone--search { flex: 1 1 auto; }
+  .dash-root .dash-header__search { min-block-size: 2.375rem; }
+  .dash-root .dash-header__zone--end { gap: .25rem; }
+}
