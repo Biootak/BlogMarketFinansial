@@ -12,44 +12,18 @@ const PLATFORM_ADMINS = new Set(['OWNER', 'SUPERADMIN', 'ADMIN']);
 
 export default async function ExchangeLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) redirect('/auth?callbackUrl=/exchange');
-
-  const { user } = session;
-  const role = user.role as string;
+  if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange');
+  const role = session.user.role as string;
   const settings = await getSystemSettingsData();
-
-  if (PLATFORM_ADMINS.has(role)) {
-    const membership = await getExchangeForOwner();
-    if (!membership) redirect('/dashboard/exchanges');
-    return (
-      <SiteSettingsProvider
-        initialSettings={{ siteName: settings.siteName, siteDescription: settings.siteDescription, logoUrl: settings.logoUrl }}
-      >
-        <Suspense fallback={null}>
-          <DashboardProviders userRole={role} portal="exchange" staffRole="OWNER">
-            <DashboardCommandSurface userName={membership.exchange.name} role={role}>
-              {children}
-            </DashboardCommandSurface>
-          </DashboardProviders>
-        </Suspense>
-      </SiteSettingsProvider>
-    );
-  }
-
-  const membership = await getExchangeForUser();
-  if (!membership) redirect('/');
+  const membership = PLATFORM_ADMINS.has(role) ? await getExchangeForOwner() : await getExchangeForUser();
+  if (!membership) redirect(PLATFORM_ADMINS.has(role) ? '/dashboard/exchanges' : '/');
   if (membership.exchange.status === 'SUSPENDED') redirect('/exchange-suspended');
 
   return (
-    <SiteSettingsProvider
-      initialSettings={{ siteName: settings.siteName, siteDescription: settings.siteDescription, logoUrl: settings.logoUrl }}
-    >
+    <SiteSettingsProvider initialSettings={{ siteName: settings.siteName, siteDescription: settings.siteDescription, logoUrl: settings.logoUrl }}>
       <Suspense fallback={null}>
-        <DashboardProviders userRole={role} portal="exchange" staffRole={membership.staffRole}>
-          <DashboardCommandSurface userName={membership.exchange.name} role={role}>
-            {children}
-          </DashboardCommandSurface>
+        <DashboardProviders userRole={role} portal="exchange" staffRole={PLATFORM_ADMINS.has(role) ? 'OWNER' : membership.staffRole}>
+          <DashboardCommandSurface portal="exchange" userName={membership.exchange.name} role={role}>{children}</DashboardCommandSurface>
         </DashboardProviders>
       </Suspense>
     </SiteSettingsProvider>
