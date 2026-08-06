@@ -1,1 +1,138 @@
-/* Dashboard 2026 shared visual system.\n * Imported by admin, customer, and exchange portals.\n * This file owns cross-portal rhythm only. Portal-specific data stays in\n * route components and their co-located modules.\n */\n\n@layer utilities {\n  .dashboard-cockpit-root,\n  [data-portal] {\n    --portal-ink: var(--ds-text-primary);\n    --portal-muted: var(--ds-text-muted);\n    --portal-line: var(--ds-border-subtle);\n    --portal-surface: var(--ds-surface-elevated);\n    --portal-accent: var(--ds-brand-600);\n    --portal-accent-soft: color-mix(in oklch, var(--portal-accent) 8%, transparent);\n    color: var(--portal-ink);\n  }\n\n  [data-portal='customer'] {\n    --portal-accent: var(--ds-accent-indigo);\n  }\n\n  [data-portal='exchange'] {\n    --portal-accent: var(--ds-accent-cyan);\n  }\n\n  .dashboard-cockpit-root,\n  [data-portal] {\n    position: relative;\n    isolation: isolate;\n    min-inline-size: 0;\n    container-type: inline-size;\n    background:\n      radial-gradient(75% 34% at 100% 0%, var(--portal-accent-soft), transparent 70%),\n      var(--ds-canvas);\n  }\n\n  .dashboard-cockpit-root::before,\n  [data-portal]::before {\n    content: '';\n    position: absolute;\n    inset-block-start: 0;\n    inset-inline: 0;\n    block-size: 1px;\n    background: linear-gradient(90deg, transparent, color-mix(in oklch, var(--portal-accent) 44%, transparent), transparent);\n    pointer-events: none;\n  }\n\n  .dashboard-cockpit-root > *,\n  [data-portal] > * {\n    position: relative;\n    z-index: 1;\n  }\n\n  [data-portal] :where(a, button, input, select, textarea):focus-visible {\n    outline: 2px solid var(--portal-accent);\n    outline-offset: 3px;\n  }\n\n  [data-portal] :where(.dash-panel, .dash-pane, .panel, .heatmapPanel, .volumePanel, .quickSection, .svcPanel, .livePanel, .signature, .ribbon, .lattice, .kpiStrip, .workspace) {\n    border-color: color-mix(in oklch, var(--portal-line) 86%, var(--portal-accent) 14%);\n  }\n\n  [data-portal] :where(.dash-panel, .dash-pane, .panel, .heatmapPanel, .volumePanel, .quickSection, .svcPanel, .livePanel, .signature, .ribbon, .lattice, .kpiStrip) {\n    box-shadow: var(--ds-shadow-sm);\n  }\n\n  [data-portal] :where(.dash-panel, .dash-pane, .panel, .heatmapPanel, .volumePanel, .quickSection, .svcPanel, .livePanel, .signature, .ribbon, .lattice, .kpiStrip):hover {\n    border-color: color-mix(in oklch, var(--portal-accent) 28%, var(--portal-line));\n  }\n\n  [data-portal] :where(.panelHeader, .panelHead, .sectionHead, .heatmapHead, .volumeHead, .quickHead) {\n    border-block-end-color: var(--portal-line);\n  }\n\n  [data-portal] :where(.viewAllLink, .panelMore, .footerLink, .headerCta, .quickChip, .quickCard) {\n    color: var(--portal-accent);\n  }\n\n  [data-portal] :where(.quickChip, .quickCard, .commandLink, .commandButton):hover {\n    background: color-mix(in oklch, var(--portal-accent) 7%, var(--portal-surface));\n  }\n\n  [data-portal] :where(.kpiCellIcon, .quickChipIcon, .quickIcon, .secHeadIcon, .eventIcon) {\n    background: color-mix(in oklch, var(--portal-accent) 11%, transparent);\n    color: var(--portal-accent);\n  }\n\n  [data-portal] :where(.tableWrap, .txnList, .svcList, .eventList) {\n    scrollbar-width: thin;\n    scrollbar-color: color-mix(in oklch, var(--portal-accent) 35%, var(--portal-line)) transparent;\n  }\n\n  @media (max-width: 48rem) {\n    .dashboard-cockpit-root,\n    [data-portal] {\n      padding-inline: var(--ds-space-2);\n      gap: var(--ds-space-4);\n    }\n\n    [data-portal] :where(.dash-pane, .panel, .heatmapPanel, .volumePanel, .quickSection, .svcPanel, .livePanel, .ribbon, .lattice) {\n      border-radius: var(--ds-radius-lg);\n    }\n  }\n\n  @media (prefers-reduced-motion: reduce) {\n    .dashboard-cockpit-root *,\n    [data-portal] * {\n      scroll-behavior: auto;\n    }\n  }\n}\n
+/* Dashboard 2026 shared visual system.
+ * Imported by admin, customer, and exchange portals.
+ * This file owns cross-portal rhythm only. Portal-specific data stays in
+ * route components and their co-located modules.
+ */
+
+@layer utilities {
+  .dashboard-cockpit-root,
+  [data-portal] {
+    --portal-ink: var(--ds-text-primary);
+    --portal-muted: var(--ds-text-muted);
+    --portal-line: var(--ds-border-subtle);
+    --portal-surface: var(--ds-surface-elevated);
+    --portal-accent: var(--ds-brand-600);
+    --portal-accent-soft: color-mix(in oklch, var(--portal-accent) 8%, transparent);
+    color: var(--portal-ink);
+  }
+
+  [data-portal='customer'] { --portal-accent: var(--ds-accent-indigo); }
+  [data-portal='exchange'] { --portal-accent: var(--ds-accent-cyan); }
+
+  .dashboard-cockpit-root,
+  [data-portal] {
+    position: relative;
+    isolation: isolate;
+    min-inline-size: 0;
+    container-type: inline-size;
+    background: radial-gradient(75% 34% at 100% 0%, var(--portal-accent-soft), transparent 70%), var(--ds-canvas);
+  }
+
+  .dashboard-cockpit-root::before,
+  [data-portal]::before {
+    content: '';
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    block-size: 1px;
+    background: linear-gradient(90deg, transparent, color-mix(in oklch, var(--portal-accent) 44%, transparent), transparent);
+    pointer-events: none;
+  }
+
+  .dashboard-cockpit-root > *,
+  [data-portal] > * { position: relative; z-index: 1; }
+
+  [data-portal] :where(a, button, input, select, textarea):focus-visible {
+    outline: 2px solid var(--portal-accent);
+    outline-offset: 3px;
+  }
+
+  [data-portal] :where(.dash-panel, .dash-pane, .panel, .heatmapPanel, .volumePanel, .quickSection, .svcPanel, .livePanel, .signature, .ribbon, .lattice, .kpiStrip, .workspace) {
+    border-color: color-mix(in oklch, var(--portal-line) 86%, var(--portal-accent) 14%);
+  }
+
+  [data-portal] :where(.dash-panel, .dash-pane, .panel, .heatmapPanel, .volumePanel, .quickSection, .svcPanel, .livePanel, .signature, .ribbon, .lattice, .kpiStrip) {
+    box-shadow: var(--ds-shadow-sm);
+  }
+
+  [data-portal] :where(.dash-panel, .dash-pane, .panel, .heatmapPanel, .volumePanel, .quickSection, .svcPanel, .livePanel, .signature, .ribbon, .lattice, .kpiStrip):hover {
+    border-color: color-mix(in oklch, var(--portal-accent) 28%, var(--portal-line));
+  }
+
+  [data-portal] :where(.panelHeader, .panelHead, .sectionHead, .heatmapHead, .volumeHead, .quickHead) { border-block-end-color: var(--portal-line); }
+  [data-portal] :where(.viewAllLink, .panelMore, .footerLink, .headerCta, .quickChip, .quickCard) { color: var(--portal-accent); }
+  [data-portal] :where(.quickChip, .quickCard, .commandLink, .commandButton):hover { background: color-mix(in oklch, var(--portal-accent) 7%, var(--portal-surface)); }
+  [data-portal] :where(.kpiCellIcon, .quickChipIcon, .quickIcon, .secHeadIcon, .eventIcon) { background: color-mix(in oklch, var(--portal-accent) 11%, transparent); color: var(--portal-accent); }
+
+  [data-portal] :where(.tableWrap, .txnList, .svcList, .eventList) {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklch, var(--portal-accent) 35%, var(--portal-line)) transparent;
+  }
+
+  /* Sidebar: the PR had replaced the shared stylesheet and dropped these rules. */
+  .dash-side {
+    position: relative;
+    z-index: 10;
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    inline-size: var(--ds-side-w-expanded, 268px);
+    block-size: 100%;
+    min-block-size: 100%;
+    overflow: hidden;
+    background: var(--ds-surface-elevated, #fff);
+    border-inline-start: 1px solid var(--ds-border-subtle, #e5e7eb);
+    transition: inline-size 240ms ease;
+  }
+  .dash-side[data-state='expanded'] { inline-size: var(--ds-side-w-expanded, 268px); }
+  .dash-side[data-state='rail'] { inline-size: var(--ds-side-w-rail, 76px); }
+  .dash-side[data-state='mobile-open'] { position: fixed; inset-block: 0; inset-inline-start: 0; z-index: 50; inline-size: min(304px, 86vw); }
+  .dash-side[data-state='mobile-closed'] { position: fixed; inset-block: 0; inset-inline-start: 0; z-index: 50; inline-size: 0; pointer-events: none; }
+  .dash-side__top { display: flex; align-items: center; justify-content: space-between; gap: 13px; min-block-size: 64px; padding-inline: 13px 21px; border-block-end: 1px solid var(--ds-border-subtle, #e5e7eb); }
+  .dash-side__brand { display: flex; align-items: center; gap: 11px; min-inline-size: 0; }
+  .dash-side[data-state='rail'] .dash-side__brand { justify-content: center; }
+  .dash-side__brand-logo, .dash-side__brand-logo-img { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+  .dash-side__brand-logo { inline-size: 46px; block-size: 46px; overflow: hidden; }
+  .dash-side__brand-logo-img { inline-size: 36px; block-size: 36px; }
+  .dash-side__brand-logo-img img, .dash-side__brand-logo-img svg { max-inline-size: 100%; max-block-size: 100%; object-fit: contain; }
+  .dash-side__brand-text, .dash-side__item-label, .dash-side__item-kbd, .dash-side__item-chev, .dash-side__section-head, .dash-side__user-meta { opacity: 1; overflow: hidden; transition: opacity 180ms ease, max-inline-size 180ms ease; }
+  .dash-side__brand-text { display: flex; flex-direction: column; gap: 4px; max-inline-size: 180px; }
+  .dash-side__brand-name { font-size: 15px; font-weight: 800; white-space: nowrap; }
+  .dash-side__brand-sub { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; }
+  .dash-side__brand-dot { inline-size: 5px; block-size: 5px; border-radius: 999px; background: var(--portal-accent, #2563eb); }
+  .dash-side__nav { flex: 1 1 auto; min-block-size: 0; overflow-y: auto; overflow-x: hidden; padding-block: 13px 21px; }
+  .dash-side__nav-inner { display: flex; flex-direction: column; gap: 21px; padding-inline: 13px 21px; }
+  .dash-side__section { display: flex; flex-direction: column; gap: 8px; }
+  .dash-side__section-head { display: flex; align-items: center; gap: 8px; block-size: 13px; max-block-size: 13px; white-space: nowrap; }
+  .dash-side__section-rule { flex: 1 1 auto; block-size: 1px; background: var(--ds-border-subtle, #e5e7eb); }
+  .dash-side__list { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
+  .dash-side__item { position: relative; display: flex; align-items: center; gap: 10px; inline-size: 100%; min-block-size: 44px; padding-inline: 10px 12px; border: 0; border-radius: 10px; background: transparent; color: var(--ds-text-secondary, #475569); font: inherit; text-decoration: none; cursor: pointer; }
+  .dash-side__item:hover, .dash-side__item[data-active] { color: var(--portal-accent, #2563eb); background: color-mix(in oklch, var(--portal-accent, #2563eb) 9%, transparent); }
+  .dash-side__item-ico { display: inline-flex; align-items: center; justify-content: center; inline-size: 22px; block-size: 22px; flex: 0 0 auto; }
+  .dash-side__item-label { flex: 1 1 auto; min-inline-size: 0; max-inline-size: 200px; white-space: nowrap; text-overflow: ellipsis; }
+  .dash-side__diamond { inline-size: 7px; block-size: 7px; flex: 0 0 auto; transform: rotate(45deg) scale(0); border: 1px solid currentColor; }
+  .dash-side__item[data-active] .dash-side__diamond { transform: rotate(45deg) scale(1); }
+  .dash-side__foot { flex: 0 0 auto; padding: 13px; border-block-start: 1px solid var(--ds-border-subtle, #e5e7eb); }
+  .dash-side__user { display: flex; align-items: center; gap: 10px; min-block-size: 44px; }
+  .dash-side__user-avatar { position: relative; flex: 0 0 auto; }
+  .dash-side__logout { margin-block-start: 4px; }
+  .dash-side__overlay { position: fixed; inset: 0; z-index: 40; border: 0; background: rgb(15 23 42 / 0.35); }
+  .dash-side[data-state='rail'] .dash-side__top { justify-content: center; padding-inline: 8px; }
+  .dash-side[data-state='rail'] .dash-side__brand-text,
+  .dash-side[data-state='rail'] .dash-side__item-label,
+  .dash-side[data-state='rail'] .dash-side__item-kbd,
+  .dash-side[data-state='rail'] .dash-side__item-chev,
+  .dash-side[data-state='rail'] .dash-side__section-head,
+  .dash-side[data-state='rail'] .dash-side__user-meta { opacity: 0; max-inline-size: 0; pointer-events: none; }
+  .dash-side[data-state='rail'] .dash-side__nav-inner { align-items: center; padding-inline: 0; }
+  .dash-side[data-state='rail'] .dash-side__item { justify-content: center; gap: 0; padding-inline: 8px; }
+
+  @media (max-width: 48rem) {
+    .dashboard-cockpit-root, [data-portal] { padding-inline: var(--ds-space-2); gap: var(--ds-space-4); }
+    [data-portal] :where(.dash-pane, .panel, .heatmapPanel, .volumePanel, .quickSection, .svcPanel, .livePanel, .ribbon, .lattice) { border-radius: var(--ds-radius-lg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dashboard-cockpit-root *, [data-portal] * { scroll-behavior: auto; }
+  }
+}
