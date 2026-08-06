@@ -1,32 +1,21 @@
 import type { Metadata } from 'next';
-import { Activity, Gauge } from 'lucide-react';
+import { redirect } from 'next/navigation';
 
-import { DayStrip } from '../_components/DayStrip';
-import { LatencyScale } from '../_components/LatencyScale';
-import { ObsSection } from '../_components/ObsSection';
+import { getObservabilitySnapshot } from '@/lib/observability';
+import { LatencyBoard } from '../_components/LatencyBoard';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'تأخیر · مشاهده‌پذیری',
+  title: 'تأخیر — مرکز پایش',
+  description: 'صدک‌های پاسخ‌گویی و تأخیر هر سرویس بر پایهٔ لاگ‌های duration.',
 };
 
-export default function ObservabilityLatencyPage() {
-  return (
-    <>
-      <ObsSection
-        icon={Gauge}
-        title="محور صدک‌ها"
-        hint="p50 و p95 و p99 روی یک محور مشترک تا کشیدگی دم توزیع دیده شود، نه سه عدد جدا افتاده."
-      >
-        <LatencyScale />
-      </ObsSection>
+export default async function ObservabilityLatencyPage() {
+  const result = await getObservabilitySnapshot();
+  if (!result.success || !result.data) {
+    redirect('/dashboard?error=forbidden');
+  }
 
-      <ObsSection
-        icon={Activity}
-        title="بار سامانه در شبانه‌روز"
-        hint="حجم رویداد هر ساعت در کنار سهم خطای همان ساعت."
-      >
-        <DayStrip />
-      </ObsSection>
-    </>
-  );
+  return <LatencyBoard initialData={result.data} />;
 }
