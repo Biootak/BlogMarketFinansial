@@ -1,278 +1,327 @@
 /* ============================================================================
-   Observability — Operations Deck (2026)
+   Signal Wall — دیوار سیگنال (گیج ترکیبی · خط‌الرأس شبانه‌روز · دنده‌های حیاتی)
    ----------------------------------------------------------------------------
-   قواعد این فایل (هم‌راستا با AGENTS.style.md / AGENTS.ui-design.md):
-   • فقط توکن‌های --ds-* / --nova-*؛ هیچ hex یا rgb.
-   • فقط property های منطقی (inline/block) — هیچ left/right.
-   • هیچ @keyframes محلی؛ حرکت فقط transition روی opacity/transform.
-   • --tone روی خودِ ریشهٔ هر بلوک ست می‌شود (scoped)، نه با سلکتور سراسری.
+   سه ناحیهٔ نامتقارن که با هم یک جمله می‌سازند:
+     «حال سامانه این است» ← «در شبانه‌روز این‌طور نفس کشیده» ← «اعدادش این‌هاست».
+
+   هیچ‌جا سه کارتِ هم‌اندازه نداریم؛ وزن هر ناحیه با اهمیتش تعیین شده نه با
+   تقارن. چیدمان با grid-template-areas است، پس در RTL هم دقیقاً همین ترتیب
+   منطقی می‌ماند (ستون اول = ابتدای خط).
    ============================================================================ */
 
-/* ── tone (scoped) ────────────────────────────────────────── */
-
-.deck,
-.ring,
-.rib,
-.insight,
-.chip,
-.readoutFacts li,
-.pulseTick {
-  --tone: var(--ds-accent-slate);
-}
-
-.deck[data-tone='ok'],
-.ring[data-tone='ok'],
-.rib[data-tone='ok'],
-.insight[data-tone='ok'],
-.chip[data-tone='ok'],
-.readoutFacts li[data-tone='ok'],
-.pulseTick[data-tone='ok'] {
+.t[data-tone='ok'] {
   --tone: var(--nova-up);
+  --tone-soft: color-mix(in oklch, var(--nova-up) 14%, transparent);
 }
-
-.deck[data-tone='warn'],
-.ring[data-tone='warn'],
-.rib[data-tone='warn'],
-.insight[data-tone='warn'],
-.chip[data-tone='warn'],
-.readoutFacts li[data-tone='warn'] {
+.t[data-tone='warn'] {
   --tone: var(--ds-accent-amber);
+  --tone-soft: color-mix(in oklch, var(--ds-accent-amber) 16%, transparent);
 }
-
-.deck[data-tone='bad'],
-.ring[data-tone='bad'],
-.rib[data-tone='bad'],
-.insight[data-tone='bad'],
-.chip[data-tone='bad'],
-.readoutFacts li[data-tone='bad'],
-.pulseTick[data-tone='bad'] {
+.t[data-tone='bad'] {
   --tone: var(--nova-down);
+  --tone-soft: color-mix(in oklch, var(--nova-down) 16%, transparent);
+}
+.t[data-tone='info'] {
+  --tone: var(--ds-accent-cyan);
+  --tone-soft: color-mix(in oklch, var(--ds-accent-cyan) 14%, transparent);
+}
+.t[data-tone='idle'] {
+  --tone: var(--ds-text-muted);
+  --tone-soft: color-mix(in oklch, var(--ds-text-muted) 10%, transparent);
 }
 
-.deck[data-tone='info'],
-.ring[data-tone='info'],
-.rib[data-tone='info'],
-.insight[data-tone='info'],
-.chip[data-tone='info'] {
-  --tone: var(--ds-accent-indigo);
-}
+/* ─────────────────────────── قالب دیوار ─────────────────────────── */
 
-/* ── Deck shell ───────────────────────────────────────────── */
-
-.deck {
+.wall {
   position: relative;
   display: grid;
+  grid-template-areas:
+    'dial'
+    'flow'
+    'vitals';
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--ds-space-5);
-  padding: var(--ds-space-5) var(--ds-space-4) var(--ds-space-4);
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-4);
   border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-2xl);
+  border-radius: var(--ds-radius-lg);
   background:
     radial-gradient(
-      130% 110% at 100% 0%,
-      color-mix(in oklch, var(--tone) 8%, transparent),
-      transparent 62%
+      120% 90% at 100% 0%,
+      var(--tone-soft, transparent) 0%,
+      transparent 55%
     ),
-    var(--ds-surface-elevated);
-  box-shadow: var(--ds-shadow-md);
-  overflow: clip;
+    var(--ds-surface-recessed);
+  min-inline-size: 0;
+  isolation: isolate;
+}
+
+@container obs (min-width: 54rem) {
+  .wall {
+    grid-template-areas:
+      'dial flow'
+      'vitals flow';
+    grid-template-columns: minmax(13rem, 17rem) minmax(0, 1fr);
+    gap: var(--ds-space-4) var(--ds-space-5);
+  }
+}
+
+@container obs (min-width: 82rem) {
+  .wall {
+    grid-template-areas: 'dial flow vitals';
+    grid-template-columns: minmax(13rem, 16rem) minmax(0, 1fr) minmax(12rem, 15rem);
+    align-items: stretch;
+  }
+}
+
+@supports not (container-type: inline-size) {
+  @media (min-width: 82rem) {
+    .wall {
+      grid-template-areas: 'dial flow vitals';
+      grid-template-columns: minmax(13rem, 16rem) minmax(0, 1fr) minmax(12rem, 15rem);
+    }
+  }
+}
+
+.zoneDial {
+  grid-area: dial;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
   min-inline-size: 0;
 }
 
-/* هیرلاین محیطی — نور نازکِ خودروشن به‌جای بلور و درخشش سنگین */
-.deckEdge {
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline: 0;
-  block-size: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in oklch, var(--tone) 65%, transparent),
-    transparent
-  );
-  pointer-events: none;
+.zoneFlow {
+  grid-area: flow;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  min-inline-size: 0;
+  /* جداکنندهٔ منطقی، نه خط تزئینی: مرز بین «حکم» و «جریان» */
+  border-block-start: 1px solid var(--ds-border-subtle);
+  padding-block-start: var(--ds-space-3);
 }
 
-.deckFallback {
-  margin: 0;
-  font-size: var(--ds-text-sm);
-  color: var(--ds-text-muted);
-}
-
-@media (min-width: 54rem) {
-  .deck {
-    grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr);
-    padding: var(--ds-space-6) var(--ds-space-5) var(--ds-space-5);
-    gap: var(--ds-space-6);
-  }
-
-  .deckVitals {
-    grid-column: 1 / -1;
-  }
-}
-
-@media (min-width: 82rem) {
-  .deck {
-    grid-template-columns: minmax(12rem, 16rem) minmax(0, 1fr) minmax(13rem, 17rem);
-  }
-
-  .deckVitals {
-    grid-column: auto;
+@container obs (min-width: 54rem) {
+  .zoneFlow {
+    border-block-start: 0;
+    padding-block-start: 0;
     border-inline-start: 1px solid var(--ds-border-subtle);
     padding-inline-start: var(--ds-space-5);
   }
 }
 
-/* ── Zone 1 — verdict ─────────────────────────────────────── */
-
-.deckVerdict {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--ds-space-3);
+.zoneVitals {
+  grid-area: vitals;
   min-inline-size: 0;
-}
-
-.deckNote {
-  margin: 0;
-  font-size: var(--ds-text-xs);
-  line-height: var(--ds-leading-normal);
-  color: var(--ds-text-secondary);
-  max-inline-size: 34ch;
-}
-
-.deckFormula {
-  margin: 0;
-  font-size: 0.66rem;
-  line-height: var(--ds-leading-snug);
-  color: var(--ds-text-muted);
-  padding-block-start: var(--ds-space-2);
   border-block-start: 1px solid var(--ds-border-subtle);
-  inline-size: 100%;
+  padding-block-start: var(--ds-space-3);
 }
 
-/* ── Health ring ──────────────────────────────────────────── */
+@container obs (min-width: 82rem) {
+  .zoneVitals {
+    border-block-start: 0;
+    padding-block-start: 0;
+    border-inline-start: 1px solid var(--ds-border-subtle);
+    padding-inline-start: var(--ds-space-4);
+  }
+}
 
-.ring {
+.wallFallback {
+  margin: 0;
+  padding-block: var(--ds-space-4);
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-muted);
+  text-align: center;
+}
+
+/* ─────────────────────────── گیج ترکیبی ─────────────────────────── */
+
+/*
+   سه کمانِ هم‌مرکز، هرکدام یکی از سه مؤلفهٔ شاخص سلامت:
+     بیرونی  = در دسترس بودن (وزن ۴۰٪)
+     میانی   = سلامت نرخ خطا (وزن ۳۵٪)
+     درونی   = پایداری ساختاری (وزن ۲۵٪)
+   یعنی گیج تزئینی نیست؛ خودِ فرمول را نشان می‌دهد. کاربر می‌بیند کدام مؤلفه
+   عدد را پایین کشیده، نه فقط اینکه عدد پایین است.
+
+   SVG هیچ متنی ندارد و جهت‌مستقل است، پس در RTL نیازی به flip نیست.
+*/
+.dial {
   position: relative;
   display: grid;
   place-items: center;
-  inline-size: clamp(7.5rem, 26vw, 9.5rem);
+  inline-size: 100%;
+  max-inline-size: 12.5rem;
   aspect-ratio: 1;
-  align-self: center;
+  margin-inline: auto;
 }
 
-.ringSvg {
-  position: absolute;
-  inset: 0;
+.dialSvg {
   inline-size: 100%;
   block-size: 100%;
-  transform: rotate(-90deg);
   overflow: visible;
+  transform: rotate(-90deg);
 }
 
-.ringTrack {
+.dialTrack {
   fill: none;
   stroke: var(--ds-border-subtle);
-  stroke-width: 6;
+  stroke-width: 5;
 }
 
-.ringArc {
+.dialArc {
   fill: none;
-  stroke: var(--tone);
-  stroke-width: 6;
   stroke-linecap: round;
-  transition: stroke-dasharray var(--ds-duration-slow) var(--ds-ease-out-expo);
+  stroke-width: 5;
+  transition: stroke-dasharray var(--ds-duration-slow) var(--ds-ease-out-quart);
 }
 
-.ringInner {
-  fill: none;
-  stroke: color-mix(in oklch, var(--tone) 26%, transparent);
-  stroke-width: 1;
-  stroke-dasharray: 2 6;
+.arcOuter {
+  stroke: var(--tone, var(--nova-up));
 }
 
-.ringCore {
+.arcMid {
+  stroke: color-mix(in oklch, var(--tone, var(--nova-up)) 62%, var(--ds-canvas));
+  stroke-width: 4;
+}
+
+.arcInner {
+  stroke: color-mix(in oklch, var(--tone, var(--nova-up)) 38%, var(--ds-canvas));
+  stroke-width: 3;
+}
+
+/* نفسِ سامانه — نوسان ۰٫۵ هرتز روی کمان بیرونی، فقط وقتی چیزی خراب است.
+   تنها opacity حرکت می‌کند، پس هزینهٔ رندر صفر است. */
+.dial[data-breathe='true'] .arcOuter {
+  animation: breathe 2s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.dialCore {
+  position: absolute;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.1rem;
-  line-height: 1;
+  pointer-events: none;
 }
 
-.ringScore {
+.dialScore {
   font-size: var(--ds-text-3xl);
   font-weight: var(--ds-weight-extrabold);
+  line-height: var(--ds-leading-tight);
   letter-spacing: var(--nova-tracking-tightest);
-  color: var(--ds-text-primary);
   font-variant-numeric: tabular-nums;
+  color: var(--ds-text-primary);
 }
 
-.ringUnit {
-  font-size: 0.62rem;
+.dialUnit {
+  font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
 }
 
-.ringLabel {
-  position: absolute;
-  inset-block-end: -0.35rem;
-  margin: 0;
-  padding: 0.15rem var(--ds-space-3);
-  border: 1px solid color-mix(in oklch, var(--tone) 38%, transparent);
-  border-radius: var(--ds-radius-full);
-  background: var(--ds-surface-elevated);
-  color: var(--tone);
+.dialLabel {
   font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-bold);
-  white-space: nowrap;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--tone);
+  padding-inline: var(--ds-space-2);
+  padding-block: 0.1rem;
+  border-radius: var(--ds-radius-full);
+  border: 1px solid color-mix(in oklch, var(--tone) 32%, transparent);
+  background: var(--tone-soft);
+  margin-block-start: 0.15rem;
 }
 
-/* ── Status chips ─────────────────────────────────────────── */
+/* افسانهٔ گیج — همان سه مؤلفه، این‌بار با عدد */
+.dialLegend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1-5);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
 
+.dialLegendRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
+}
+
+.dialSwatch {
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: 2px;
+  background: var(--swatch, var(--ds-text-muted));
+}
+
+.dialLegendVal {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-primary);
+}
+
+.dialLegendWeight {
+  color: var(--ds-text-muted);
+}
+
+.dialNote {
+  margin: 0;
+  font-size: var(--ds-text-xs);
+  line-height: var(--ds-leading-snug);
+  color: var(--ds-text-secondary);
+}
+
+/* شمارندهٔ وضعیت سرویس‌ها */
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--ds-space-2);
+  gap: var(--ds-space-1-5);
+  list-style: none;
   margin: 0;
   padding: 0;
-  list-style: none;
 }
 
 .chip {
   display: inline-flex;
   align-items: baseline;
-  gap: var(--ds-space-1);
-  padding: 0.2rem var(--ds-space-2);
-  border: 1px solid color-mix(in oklch, var(--tone) 30%, var(--ds-border-subtle));
-  border-radius: var(--ds-radius-sm);
-  background: color-mix(in oklch, var(--tone) 8%, transparent);
-  font-size: 0.66rem;
+  gap: 0.3rem;
+  padding-inline: var(--ds-space-2);
+  padding-block: 0.2rem;
+  border-radius: var(--ds-radius-full);
+  border: 1px solid color-mix(in oklch, var(--tone) 28%, var(--ds-border-subtle));
+  background: var(--tone-soft);
+  font-size: var(--ds-text-xs);
   color: var(--ds-text-secondary);
 }
 
 .chip b {
-  color: var(--tone);
-  font-weight: var(--ds-weight-bold);
   font-variant-numeric: tabular-nums;
+  font-weight: var(--ds-weight-bold);
+  color: var(--tone);
 }
 
-/* ── Zone 2 — ridge ───────────────────────────────────────── */
+/* ─────────────────────────── خط‌الرأس شبانه‌روز ─────────────────────────── */
 
-.deckFlow {
+.flowHead {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-3);
-  min-inline-size: 0;
+  gap: 0.2rem;
 }
 
-.deckFlowHead {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-1);
-}
-
-.deckFlowTitle {
+.flowTitle {
   margin: 0;
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
@@ -280,12 +329,12 @@
   color: var(--ds-text-primary);
 }
 
-.deckFlowHint {
+.flowHint {
   margin: 0;
   font-size: var(--ds-text-xs);
   line-height: var(--ds-leading-snug);
   color: var(--ds-text-muted);
-  max-inline-size: 64ch;
+  max-inline-size: 62ch;
 }
 
 .ridge {
@@ -297,25 +346,23 @@
 
 .ridgePlot {
   position: relative;
-  block-size: 8.5rem;
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-surface-recessed);
-  box-shadow: inset 0 0 0 1px var(--ds-border-subtle);
-  overflow: hidden;
+  inline-size: 100%;
+  block-size: 8rem;
   min-inline-size: 0;
+  contain: paint;
 }
 
-@media (min-width: 62rem) {
+@container obs (min-width: 54rem) {
   .ridgePlot {
-    block-size: 10.5rem;
+    block-size: 9.5rem;
   }
 }
 
 /*
-   SVG در مختصات چپ‌به‌راست رسم شده (قدیمی‌ترین ساعت در x=0). در RTL کل بوم
-   آینه می‌شود تا قدیمی‌ترین سمت راست بیفتد و با جهت خواندن فارسی و با لایهٔ
-   flex هدف‌های لمسی هم‌راستا شود. هیچ متنی داخل SVG نیست، پس چیزی برعکس
-   خوانده نمی‌شود.
+   RTL: خودِ SVG در مختصات چپ‌به‌راست رسم می‌شود (قدیمی‌ترین در x=0) و با یک
+   scaleX(-1) آینه می‌شود تا «هم‌اکنون» سمت چپ بیفتد. هیچ متنی داخل SVG نیست،
+   پس چیزی برعکس خوانده نمی‌شود. لایهٔ هدف‌ها HTML و flex است و خودش در RTL
+   از راست شروع می‌کند، یعنی دقیقاً روی همان ساعتِ زیرش می‌نشیند.
 */
 .ridgeSvg {
   position: absolute;
@@ -324,33 +371,33 @@
   block-size: 100%;
 }
 
-:global(html[dir='rtl']) .ridgeSvg {
+[dir='rtl'] .ridgeSvg {
   transform: scaleX(-1);
 }
 
 .ridgeGrid line {
   stroke: var(--ds-border-subtle);
   stroke-width: 1;
-  stroke-dasharray: 3 5;
-}
-
-.ridgeStopTop {
-  stop-color: var(--nova-up);
-  stop-opacity: 0.3;
-}
-
-.ridgeStopBottom {
-  stop-color: var(--nova-up);
-  stop-opacity: 0.02;
+  stroke-dasharray: 2 4;
 }
 
 .ridgeArea {
   stroke: none;
 }
 
+.ridgeStopTop {
+  stop-color: var(--ds-brand-500);
+  stop-opacity: 0.22;
+}
+
+.ridgeStopBottom {
+  stop-color: var(--ds-brand-500);
+  stop-opacity: 0;
+}
+
 .ridgeLine {
   fill: none;
-  stroke: var(--nova-up);
+  stroke: var(--ds-brand-500);
   stroke-width: 1.75;
   stroke-linejoin: round;
   stroke-linecap: round;
@@ -361,18 +408,19 @@
   stroke: var(--nova-down);
   stroke-width: 1.25;
   stroke-linejoin: round;
-  stroke-dasharray: 4 3;
+  stroke-linecap: round;
   opacity: 0.85;
 }
 
-/* لایهٔ تعامل — HTML و flex، پس در RTL خودش از راست شروع می‌کند */
 .ridgeHits {
   position: absolute;
   inset: 0;
   display: flex;
+  align-items: stretch;
+  gap: 1px;
+  list-style: none;
   margin: 0;
   padding: 0;
-  list-style: none;
 }
 
 .ridgeHit {
@@ -384,171 +432,102 @@
 .ridgeBtn {
   position: relative;
   inline-size: 100%;
-  min-block-size: 2.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
   padding: 0;
   border: 0;
-  background: none;
+  background: transparent;
   cursor: pointer;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
-}
-
-.ridgeBtn:hover {
-  background: color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
 }
 
 .ridgeBtn:focus-visible {
-  outline: 2px solid var(--nova-primary);
+  outline: 2px solid var(--ds-brand-500);
   outline-offset: -2px;
+  border-radius: var(--ds-radius-sm);
 }
 
+/* ساقهٔ مکان‌نما — فقط روی ساعت انتخاب‌شده دیده می‌شود */
 .ridgeStem {
   position: absolute;
   inset-block: 0;
   inset-inline-start: 50%;
   inline-size: 1px;
-  background: var(--ds-text-primary);
+  background: var(--ds-brand-500);
   opacity: 0;
   transform: scaleY(0.6);
-  transform-origin: bottom center;
+  transform-origin: bottom;
   transition:
     opacity var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-base) var(--ds-ease-spring);
+    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
-.ridgeBtn[data-active='true'] .ridgeStem {
-  opacity: 0.45;
+.ridgeBtn:hover .ridgeStem {
+  opacity: 0.35;
   transform: scaleY(1);
 }
 
-.ridgeDrop {
-  position: absolute;
-  inset-block-end: 0;
-  inset-inline: 22%;
-  border-start-start-radius: 2px;
-  border-start-end-radius: 2px;
-  background: color-mix(in oklch, var(--nova-down) 55%, transparent);
+.ridgeBtn[data-active='true'] .ridgeStem {
+  opacity: 0.8;
+  transform: scaleY(1);
 }
 
-.ridgeBtn[data-error='false'] .ridgeDrop {
-  display: none;
+/* بندِ خطا — قطره‌ای که از پایین بالا می‌آید؛ ارتفاعش سهم خطای همان ساعت */
+.ridgeDrop {
+  inline-size: 100%;
+  max-inline-size: 0.5rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--nova-down);
+  opacity: 0;
+  transition: opacity var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.ridgeBtn[data-error='true'] .ridgeDrop {
+  opacity: 0.75;
 }
 
 .ridgeAxis {
   display: flex;
   justify-content: space-between;
-  margin: 0;
-  font-size: 0.64rem;
-  color: var(--ds-text-muted);
-}
-
-/* ── Readout ──────────────────────────────────────────────── */
-
-.readout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
   gap: var(--ds-space-2);
-  padding: var(--ds-space-3);
-  border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-surface);
-}
-
-@media (min-width: 44rem) {
-  .readout {
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    gap: var(--ds-space-4);
-  }
-
-  .readoutHour {
-    grid-column: 1 / -1;
-  }
-}
-
-.readoutHour {
   margin: 0;
-  font-size: 0.66rem;
-  color: var(--ds-text-muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.readoutMain {
-  margin: 0;
-  font-size: var(--ds-text-2xl);
-  font-weight: var(--ds-weight-bold);
-  line-height: var(--ds-leading-tight);
-  letter-spacing: var(--nova-tracking-tighter);
-  color: var(--ds-text-primary);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.readoutUnit {
-  margin-inline-start: var(--ds-space-1);
   font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-medium);
   color: var(--ds-text-muted);
-}
-
-.readoutFacts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ds-space-2) var(--ds-space-4);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.readoutFacts li {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  font-size: 0.66rem;
-  color: var(--ds-text-muted);
-}
-
-.readoutFacts b {
-  font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-bold);
-  color: var(--tone);
   font-variant-numeric: tabular-nums;
 }
 
-.readoutFacts li[data-tone='idle'] b {
-  color: var(--ds-text-primary);
-}
-
-/* ── Zone 3 — vital ribs ──────────────────────────────────── */
-
-.deckVitals {
-  min-inline-size: 0;
-}
+/* ─────────────────────────── دنده‌های حیاتی ─────────────────────────── */
 
 .vitals {
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-3);
+  min-inline-size: 0;
 }
 
 .vitalsHead {
   margin: 0;
-  font-size: 0.66rem;
+  font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--nova-tracking-tight);
   color: var(--ds-text-muted);
 }
 
+/*
+   دنده‌ها روی موبایل دو ستون می‌شوند (تراکم بیشتر، اسکرول کمتر) و در ستون
+   باریکِ دسکتاپ تک‌ستونی.
+*/
 .ribs {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ds-space-2) var(--ds-space-4);
+  gap: var(--ds-space-2) var(--ds-space-3);
   margin: 0;
 }
 
-@media (min-width: 82rem) {
+@container obs (min-width: 82rem) {
   .ribs {
     grid-template-columns: minmax(0, 1fr);
-    gap: 0;
   }
 }
 
@@ -557,23 +536,15 @@
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
   gap: 0 var(--ds-space-2);
-  padding-block: var(--ds-space-1-5);
-}
-
-@media (min-width: 82rem) {
-  .rib {
-    border-block-start: 1px solid var(--ds-border-subtle);
-    padding-block: var(--ds-space-2);
-  }
-
-  .rib:first-of-type {
-    border-block-start: 0;
-  }
+  padding-block-end: var(--ds-space-1);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  min-inline-size: 0;
 }
 
 .ribKey {
-  font-size: 0.68rem;
+  font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
+  min-inline-size: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -581,103 +552,108 @@
 
 .ribVal {
   margin: 0;
-  font-size: var(--ds-text-xs);
+  font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
-  color: var(--tone);
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.rib[data-tone='idle'] .ribVal {
-  color: var(--ds-text-primary);
+  color: var(--tone, var(--ds-text-primary));
+  text-align: start;
 }
 
 .ribTrack {
   grid-column: 1 / -1;
   block-size: 2px;
-  margin-block-start: 0.2rem;
+  margin-block-start: 0.25rem;
   border-radius: var(--ds-radius-full);
-  background: var(--ds-surface-recessed);
+  background: var(--ds-border-subtle);
   overflow: hidden;
 }
 
 .ribFill {
   display: block;
   block-size: 100%;
-  background: color-mix(in oklch, var(--tone) 65%, transparent);
-  transition: inline-size var(--ds-duration-slow) var(--ds-ease-out-expo);
+  border-radius: inherit;
+  background: var(--tone, var(--ds-brand-500));
+  transition: inline-size var(--ds-duration-slow) var(--ds-ease-out-quart);
 }
 
-/* نبض فشرده — ۲۴ خط مویی، تازه‌ترین در inline-end */
+/* نبض ۲۴ ساعته — نوار مینیاتوری زیر دنده‌ها */
 .pulse {
   display: flex;
   align-items: flex-end;
   gap: 1px;
-  block-size: 2rem;
-  padding-block-start: var(--ds-space-2);
-  border-block-start: 1px solid var(--ds-border-subtle);
+  block-size: 1.75rem;
 }
 
 .pulseTick {
   flex: 1 1 0;
-  min-inline-size: 1px;
+  min-inline-size: 0;
   border-radius: 1px;
-  background: color-mix(in oklch, var(--tone) 48%, transparent);
+  background: color-mix(in oklch, var(--ds-brand-500) 45%, transparent);
+}
+
+.pulseTick[data-tone='bad'] {
+  background: color-mix(in oklch, var(--nova-down) 70%, transparent);
 }
 
 .vitalsNote {
   display: flex;
   align-items: flex-start;
-  gap: var(--ds-space-2);
+  gap: var(--ds-space-1-5);
   margin: 0;
-  font-size: 0.64rem;
+  font-size: var(--ds-text-xs);
   line-height: var(--ds-leading-snug);
-  color: var(--ds-text-muted);
+  color: var(--ds-accent-amber);
 }
 
-.vitalsNote svg {
-  flex: none;
-  margin-block-start: 0.1rem;
-}
-
-/* ── Insight stack ────────────────────────────────────────── */
+/* ─────────────────────────── یافته‌های خودکار ─────────────────────────── */
 
 .insights {
   display: flex;
   flex-direction: column;
+  gap: var(--ds-space-2-5);
+  list-style: none;
   margin: 0;
   padding: 0;
-  list-style: none;
 }
 
 .insight {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--ds-space-3);
-  padding-block: var(--ds-space-3);
-  border-block-start: 1px solid var(--ds-border-subtle);
+  gap: var(--ds-space-2-5);
+  padding: var(--ds-space-2-5) var(--ds-space-3);
+  border: 1px solid var(--ds-border-subtle);
+  border-inline-start: 2px solid var(--tone);
+  border-radius: var(--ds-radius-md);
+  background: linear-gradient(
+    to inline-end,
+    var(--tone-soft),
+    transparent 60%
+  );
+  transition:
+    transform var(--ds-duration-fast) var(--ds-ease-out-quart),
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
-.insight:first-child {
-  border-block-start: 0;
+.insight:hover {
+  transform: translateY(-1px);
+  border-color: var(--ds-border-default);
 }
 
 .insightIcon {
   display: grid;
   place-items: center;
-  inline-size: 1.85rem;
-  block-size: 1.85rem;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
   border-radius: var(--ds-radius-sm);
   border: 1px solid color-mix(in oklch, var(--tone) 30%, transparent);
-  background: color-mix(in oklch, var(--tone) 10%, transparent);
   color: var(--tone);
-  flex: none;
+  flex-shrink: 0;
 }
 
 .insightBody {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.25rem;
   min-inline-size: 0;
 }
 
@@ -686,26 +662,24 @@
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
   color: var(--ds-text-primary);
-  line-height: var(--ds-leading-snug);
 }
 
 .insightText {
   margin: 0;
   font-size: var(--ds-text-xs);
   line-height: var(--ds-leading-normal);
-  color: var(--ds-text-muted);
+  color: var(--ds-text-secondary);
   overflow-wrap: anywhere;
 }
 
 .insightLink {
   display: inline-flex;
   align-items: center;
-  gap: var(--ds-space-1);
+  gap: 0.25rem;
   align-self: flex-start;
-  min-block-size: 2.25rem;
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-medium);
-  color: var(--nova-primary);
+  color: var(--ds-brand-600);
   text-decoration: none;
   cursor: pointer;
   transition: opacity var(--ds-duration-fast) var(--ds-ease-out-quart);
@@ -716,7 +690,7 @@
 }
 
 .insightLink:focus-visible {
-  outline: 2px solid var(--nova-primary);
+  outline: 2px solid var(--ds-brand-500);
   outline-offset: 2px;
   border-radius: var(--ds-radius-sm);
 }
