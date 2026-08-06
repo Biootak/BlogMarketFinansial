@@ -1,0 +1,294 @@
+/* ============================================================================
+   QueryBoard — عملیات کند
+   ============================================================================ */
+
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  min-inline-size: 0;
+}
+
+@media (min-width: 64rem) {
+  .board {
+    gap: var(--ds-space-5);
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-3);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
+}
+
+.chip {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.chip[data-strong='true'] {
+  color: var(--ds-text-primary);
+  font-weight: var(--ds-weight-medium);
+}
+
+.unit {
+  margin-inline-start: 0.2rem;
+  font-size: 0.7rem;
+  color: var(--ds-text-muted);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-surface);
+  animation: anim-fade-in-up var(--ds-duration-base) var(--ds-ease-out-quart) both;
+}
+
+@media (min-width: 64rem) {
+  .panel {
+    padding: var(--ds-space-5);
+  }
+}
+
+.panelHead {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.panelTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin: 0;
+  font-size: var(--ds-text-base);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-primary);
+}
+
+.panelTitle svg {
+  color: var(--ds-accent-amber);
+}
+
+.panelCaption {
+  margin: 0;
+  max-inline-size: 70ch;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  line-height: var(--ds-leading-snug);
+}
+
+/* ── کنترل‌ها ───────────────────────────────────────────── */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+@media (min-width: 62rem) {
+  .controls {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--ds-space-3);
+  }
+}
+
+.sortGroup {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: var(--ds-radius-full);
+  border: 1px solid var(--ds-border-subtle);
+  background: var(--ds-surface-recessed);
+  align-self: flex-start;
+}
+
+.sortBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  min-block-size: 30px;
+  padding: 0.2rem var(--ds-space-3);
+  border: none;
+  border-radius: var(--ds-radius-full);
+  background: transparent;
+  color: var(--ds-text-muted);
+  font-family: inherit;
+  font-size: var(--ds-text-xs);
+  cursor: pointer;
+  transition:
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    background-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.sortBtn:hover {
+  color: var(--ds-text-primary);
+}
+
+.sortBtn:focus-visible {
+  outline: 2px solid var(--ds-accent-cyan);
+  outline-offset: 1px;
+}
+
+.sortBtn[data-active='true'] {
+  color: var(--ds-text-primary);
+  background: var(--ds-surface-elevated);
+  box-shadow: var(--ds-shadow-sm);
+}
+
+.sourceChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-1);
+  min-inline-size: 0;
+}
+
+.sourceChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  min-block-size: 30px;
+  padding: 0.2rem var(--ds-space-2);
+  border-radius: var(--ds-radius-full);
+  border: 1px solid var(--ds-border-subtle);
+  background: transparent;
+  color: var(--ds-text-secondary);
+  font-family: var(--ds-font-mono);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition:
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.sourceChip:hover {
+  color: var(--ds-text-primary);
+  border-color: var(--ds-border-strong);
+}
+
+.sourceChip:focus-visible {
+  outline: 2px solid var(--ds-accent-cyan);
+  outline-offset: 2px;
+}
+
+.sourceChip[data-active='true'] {
+  color: var(--ds-accent-cyan);
+  border-color: color-mix(in oklch, var(--ds-accent-cyan) 45%, transparent);
+  background: color-mix(in oklch, var(--ds-accent-cyan) 8%, transparent);
+}
+
+.chipCount {
+  color: var(--ds-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.search {
+  inline-size: 100%;
+}
+
+@media (min-width: 62rem) {
+  .search {
+    margin-inline-start: auto;
+    inline-size: clamp(11rem, 20vw, 16rem);
+  }
+}
+
+/* ── ردیف‌ها ────────────────────────────────────────────── */
+.queries {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.query {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'duration source time'
+    'bar bar bar'
+    'message message message';
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-1);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 78px;
+}
+
+.query:last-child {
+  border-block-end: none;
+}
+
+@media (min-width: 62rem) {
+  .query {
+    grid-template-columns: 5rem 8rem 8rem minmax(0, 1fr) auto;
+    grid-template-areas: 'duration bar source message time';
+    gap: var(--ds-space-3);
+    contain-intrinsic-size: auto 42px;
+  }
+}
+
+.duration {
+  grid-area: duration;
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-accent-amber);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.bar {
+  grid-area: bar;
+  block-size: 5px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-surface-recessed);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  block-size: 100%;
+  border-radius: var(--ds-radius-full);
+  background: color-mix(in oklch, var(--ds-accent-amber) 65%, transparent);
+  transform-origin: 100% 50%;
+  scale: var(--v) 1;
+  transition: scale var(--ds-duration-base) var(--ds-ease-out-quart);
+}
+
+.source {
+  grid-area: source;
+  font-size: var(--ds-text-xs);
+  font-family: var(--ds-font-mono);
+  color: var(--ds-accent-cyan);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.message {
+  grid-area: message;
+  min-inline-size: 0;
+  font-size: var(--ds-text-xs);
+  font-family: var(--ds-font-mono);
+  color: var(--ds-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.time {
+  grid-area: time;
+  justify-self: end;
+  font-size: 0.7rem;
+  color: var(--ds-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
