@@ -2,7 +2,7 @@
 
 import { RefreshCw } from 'lucide-react';
 
-import { faNum, relative } from './format';
+import { clock, faNum } from './format';
 import { useObs } from './ObsProvider';
 import s from './obs.module.css';
 
@@ -15,10 +15,10 @@ const SYNC_TEXT: Record<string, string> = {
 /**
  * نوار وضعیت زنده. به‌جای اسپینر چرخان یک خط مویی determinate داریم:
  * فقط transform/opacity حرکت می‌کند و هیچ keyframe محلی لازم نیست.
+ * زمان‌ها با timeZone ثابت فرمت می‌شوند تا SSR و کلاینت یکی باشند.
  */
 export function ObsToolbar() {
   const { data, sync, refresh } = useObs();
-  const generatedAt = data?.generatedAt ?? null;
 
   return (
     <div className={s.toolbar}>
@@ -40,15 +40,10 @@ export function ObsToolbar() {
       </span>
 
       <span className={s.stamp}>
-        {generatedAt ? `خوانش: ${relative(generatedAt, new Date().toISOString())}` : 'بدون خوانش'}
+        {data ? `خوانش ${clock(data.generatedAt)}` : 'بدون خوانش'}
       </span>
 
-      <button
-        type="button"
-        className={s.refresh}
-        onClick={refresh}
-        disabled={sync === 'syncing'}
-      >
+      <button type="button" className={s.refresh} onClick={refresh} disabled={sync === 'syncing'}>
         <RefreshCw size={16} strokeWidth={1.5} aria-hidden />
         <span>خواندن دوباره</span>
       </button>

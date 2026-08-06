@@ -1,6 +1,8 @@
 'use client';
 
 import { Grid2x2 } from 'lucide-react';
+import { Fragment } from 'react';
+import type { CSSProperties } from 'react';
 
 import { bucketLabel, faNum } from './format';
 import { useObs } from './ObsProvider';
@@ -25,36 +27,36 @@ export function SourceHeat() {
     );
   }
 
-  const max = Math.max(
-    1,
-    ...data.heat.flatMap((row) => row.cells.map((cell) => cell.total)),
-  );
+  const max = Math.max(1, ...data.heat.flatMap((row) => row.cells.map((cell) => cell.total)));
 
   return (
     <div className={h.wrap}>
       <div className={h.grid}>
         {data.heat.map((row) => (
-          <div key={row.source} className={h.cells} style={{ gridColumn: 2 }}>
-            {row.cells.map((cell, index) => (
-              <span
-                // biome-ignore lint/suspicious/noArrayIndexKey: ساعت‌ها اندیس ثابت دارند
-                key={index}
-                className={h.cell}
-                data-error={cell.errors > 0}
-                style={{ ['--level' as string]: Math.round((cell.total / max) * 100) }}
-                title={`${row.source} · ${bucketLabel(data.generatedAt, index, data.windowHours)} · ${faNum(cell.total)} رویداد`}
-              />
-            ))}
-          </div>
+          <Fragment key={row.source}>
+            <span className={h.label} title={`${row.source} · ${faNum(row.total)} رویداد`}>
+              {row.source}
+            </span>
+            <div className={h.cells}>
+              {row.cells.map((cell, index) => (
+                <span
+                  // biome-ignore lint/suspicious/noArrayIndexKey: ساعت‌ها اندیس ثابت دارند
+                  key={index}
+                  className={h.cell}
+                  data-error={cell.errors > 0}
+                  style={{ '--level': Math.round((cell.total / max) * 100) } as CSSProperties}
+                  title={`${row.source} · ${bucketLabel(data.generatedAt, index, data.windowHours)} · ${faNum(cell.total)} رویداد`}
+                />
+              ))}
+            </div>
+          </Fragment>
         ))}
-      </div>
 
-      <div className={h.grid}>
-        {data.heat.map((row) => (
-          <span key={`${row.source}-label`} className={h.label}>
-            {row.source}
-          </span>
-        ))}
+        <span aria-hidden />
+        <p className={h.axis}>
+          <span>{faNum(data.windowHours)} ساعت پیش</span>
+          <span>هم‌اکنون</span>
+        </p>
       </div>
 
       <p className={h.legend}>
