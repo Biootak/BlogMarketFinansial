@@ -63,35 +63,35 @@ export default function ObservabilityLatencyPage() {
       </nav>
 
       <main className={styles.board}>
-        <section id="percentiles" className={`${styles.primary} ${b.wide}`}>
-          <ObsSection
-            icon={Gauge}
-            title="محور صدک‌ها"
-            hint="p50، p95 و p99 روی یک محور مشترک؛ فاصلهٔ بین آن‌ها شکل واقعی تجربهٔ کاربر را لو می‌دهد."
-          >
-            <LatencyScale />
-          </ObsSection>
-        </section>
+        <ObsSection
+          id="percentiles"
+          className={`${styles.primary} ${b.wide}`}
+          icon={Gauge}
+          title="محور صدک‌ها"
+          hint="p50، p95 و p99 روی یک محور مشترک؛ فاصلهٔ بین آن‌ها شکل واقعی تجربهٔ کاربر را لو می‌دهد."
+        >
+          <LatencyScale />
+        </ObsSection>
 
-        <section id="traffic" className={`${styles.traffic} ${b.seven}`}>
-          <ObsSection
-            icon={Activity}
-            title="بار سامانه در شبانه‌روز"
-            hint="یک ساعت را انتخاب کن تا حجم، خطا و سهم آن از پنجره را بخوانی."
-          >
-            <DayStrip />
-          </ObsSection>
-        </section>
+        <ObsSection
+          id="traffic"
+          className={`${styles.traffic} ${b.seven}`}
+          icon={Activity}
+          title="بار سامانه در شبانه‌روز"
+          hint="یک ساعت را انتخاب کن تا حجم، خطا و سهم آن از پنجره را بخوانی."
+        >
+          <DayStrip />
+        </ObsSection>
 
-        <section id="services" className={`${styles.services} ${b.five}`}>
-          <ObsSection
-            icon={ServerCog}
-            title="تأخیر به تفکیک سرویس"
-            hint="پرریسک‌ترین سرویس‌ها بالا می‌آیند، نه آن‌هایی که فقط اسم بیشتری دارند."
-          >
-            <ServiceLadder limit={6} />
-          </ObsSection>
-        </section>
+        <ObsSection
+          id="services"
+          className={`${styles.services} ${b.five}`}
+          icon={ServerCog}
+          title="تأخیر به تفکیک سرویس"
+          hint="پرریسک‌ترین سرویس‌ها بالا می‌آیند، نه آن‌هایی که فقط اسم بیشتری دارند."
+        >
+          <ServiceLadder limit={6} />
+        </ObsSection>
       </main>
     </div>
   );
