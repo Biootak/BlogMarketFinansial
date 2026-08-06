@@ -1,312 +1,349 @@
-/* FintechCockpit — «میز فرماندهی» / Ledger Desk (2026-08)
- * ---------------------------------------------------------------------------
- * زبان بصری: یک برگه‌ی پیوسته که با خط مو تقسیم می‌شود. بدون کارت، بدون گلاس،
- * بدون گرادیان تزئینی. عمق از hairline و ریتم فاصله می‌آید، نه از سایه.
- *
- * قواعد:
- *   - فقط توکن (`--ds-*` / `--atlas-*` / `--nova-*`). هیچ hex/rgb.
- *   - فقط logical properties (RTL/LTR هر دو درست کار می‌کنند).
- *   - mobile-first: پایه = یک ستون، بعد min-width breakpoints.
- *   - انیمیشن فقط روی opacity / transform / translate / scale.
- *   - بدون بلوک reduced-motion محلی (سراسری در tokens.css کلمپ شده).
- */
+/* ============================================================================
+   FintechCockpit.module.css — «Atlas Console» ۲۰۲۶
+   ----------------------------------------------------------------------------
+   زبان بصری: کنسول تحریری. ساختار از خط مو و گرید نامتقارن می‌آید، نه از
+   ردیف کارت‌های گرد هم‌اندازه. هیچ رنگ تازه‌ای اینجا ساخته نمی‌شود؛ بلوک
+   زیر فقط نام‌های کوتاه محلی (--k-*) روی توکن‌های موجود می‌گذارد تا این
+   فایل خوانا بماند و هیچ hex/rgb خامی وارد نشود.
+
+   RTL: همه‌جا logical properties. تنها استثناها داخل ظرف‌های `dir="ltr"`
+   هستند (نمودار و محور زمان) که آنجا هم از inset-inline-* استفاده شده.
+   Motion: فقط opacity و transform. reduced-motion سراسری کلمپ شده.
+   ============================================================================ */
 
 .sheet {
+  /* ---- alias محلی روی توکن‌های موجود (بدون تعریف رنگ جدید) ---- */
+  --k-line: var(--atlas-hairline, var(--ds-border-subtle));
+  --k-line-2: var(--atlas-hairline-strong, var(--ds-border-default));
+  --k-ink: var(--ds-text-primary);
+  --k-ink-2: var(--ds-text-secondary);
+  --k-ink-3: var(--ds-text-muted);
+  --k-brand: var(--nova-primary, var(--ds-brand-600));
+  --k-up: var(--nova-up, var(--ds-accent-emerald));
+  --k-down: var(--nova-down, var(--ds-accent-rose));
+  --k-flat: var(--nova-flat, var(--ds-text-muted));
+  --k-amber: var(--ds-accent-amber, var(--nova-amber, var(--ds-text-secondary)));
+  --k-emerald: var(--ds-accent-emerald, var(--nova-emerald, var(--ds-text-secondary)));
+  --k-rose: var(--ds-accent-rose, var(--nova-rose, var(--ds-text-secondary)));
+  --k-cyan: var(--nova-cyan, var(--ds-brand-500, var(--ds-text-secondary)));
+  --k-slate: var(--ds-accent-slate, var(--ds-text-muted));
+  --k-recessed: var(--ds-surface-recessed);
+  --k-elevated: var(--ds-surface-elevated, var(--ds-surface));
+  --k-hover: var(--ds-overlay-hover);
+  --k-press: var(--ds-overlay-press, var(--ds-overlay-hover));
+  --k-mono: var(--ds-font-mono, ui-monospace, "SFMono-Regular", monospace);
+  --k-ease: var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+  --k-fast: var(--ds-duration-fast, 180ms);
+  --k-base: var(--ds-duration-base, 280ms);
+  --k-rule: 1px;
+
   display: grid;
-  gap: var(--ds-space-8);
-  inline-size: 100%;
-  max-inline-size: 90rem;
-  margin-inline: auto;
-  padding-block: var(--ds-space-4) var(--ds-space-12);
-  padding-inline: var(--ds-space-4);
-  color: var(--ds-text-primary);
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ds-space-6);
+  min-inline-size: 0;
+  padding-block-end: var(--ds-space-8);
+  color: var(--k-ink);
+}
+
+.srOnly {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   SPINE — فهرست بخش‌ها (فقط دسکتاپ عریض)
+   ========================================================================== */
+
+.spine {
+  display: none;
+}
+
+.spineList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.spineItem {
+  display: grid;
+  grid-template-columns: 1.4rem 0.5rem auto;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-block-size: 2rem;
+  padding-block: var(--ds-space-1);
+  color: var(--k-ink-3);
+  text-decoration: none;
+  transition:
+    color var(--k-fast) var(--k-ease),
+    opacity var(--k-fast) var(--k-ease);
+}
+
+.spineItem:hover {
+  color: var(--k-ink-2);
+}
+
+.spineItem:focus-visible {
+  outline: 2px solid var(--k-brand);
+  outline-offset: 2px;
+  border-radius: var(--ds-radius-sm);
+}
+
+.spineItem[data-on='true'] {
+  color: var(--k-brand);
+}
+
+.spineNum {
+  font-family: var(--k-mono);
+  font-size: 0.6875rem;
+  font-weight: var(--ds-weight-bold);
+  letter-spacing: 0.06em;
   font-variant-numeric: tabular-nums;
 }
 
-@media (min-width: 48rem) {
-  .sheet {
-    padding-inline: var(--ds-space-6);
-    gap: var(--ds-space-10);
-  }
+.spineDot {
+  inline-size: 0.375rem;
+  block-size: 0.375rem;
+  border-radius: 50%;
+  border: var(--k-rule) solid currentColor;
+  transition: transform var(--k-base) var(--k-ease);
 }
 
-@media (min-width: 75rem) {
-  .sheet {
-    padding-inline: var(--ds-space-7);
-  }
+.spineItem[data-on='true'] .spineDot {
+  background: currentColor;
+  transform: scale(1.35);
 }
 
-/* ─── Section rule ──────────────────────────────────────────────────────── */
-
-.rule {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-2-5);
-  min-block-size: 2.25rem;
-  margin-block-end: var(--ds-space-3);
-}
-
-.ruleIndex {
-  flex: 0 0 auto;
-  font-family: var(--ds-font-mono);
+.spineLabel {
   font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-bold);
-  letter-spacing: var(--ds-tracking-caps);
-  color: var(--ds-brand-600);
-}
-
-.ruleTitle {
-  flex: 0 0 auto;
-  margin: 0;
-  font-size: var(--ds-text-lg);
-  font-weight: var(--ds-weight-bold);
-  letter-spacing: var(--ds-tracking-tight);
-  line-height: var(--ds-leading-tight);
-}
-
-.ruleLine {
-  flex: 1 1 var(--ds-space-4);
-  min-inline-size: var(--ds-space-4);
-  block-size: var(--atlas-rule);
-  background: var(--atlas-hairline);
-}
-
-.ruleNote {
-  flex: 0 1 auto;
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
+  font-weight: var(--ds-weight-semibold);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  opacity: 0;
+  transform: translateX(0.25rem);
+  transition:
+    opacity var(--k-base) var(--k-ease),
+    transform var(--k-base) var(--k-ease);
 }
 
-.more {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ds-space-1);
-  min-block-size: 2rem;
-  padding-inline: var(--ds-space-2);
-  color: var(--ds-brand-600);
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-semibold);
-  text-decoration: none;
-  border-radius: var(--atlas-radius-sm);
-  transition: opacity var(--atlas-dur-tap) var(--atlas-ease);
+.spine:hover .spineLabel,
+.spineItem[data-on='true'] .spineLabel,
+.spineItem:focus-visible .spineLabel {
+  opacity: 1;
+  transform: translateX(0);
 }
 
-.more:hover {
-  opacity: 0.72;
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-6);
+  min-inline-size: 0;
 }
 
-.more:focus-visible,
-.route:focus-visible,
-.row:focus-visible,
-.postureRow:focus-visible,
-.tapeItem:focus-visible,
-.pipeTotal:focus-visible,
-.blankCta:focus-visible {
-  outline: 2px solid var(--ds-brand-500);
-  outline-offset: 2px;
-}
-
-.miniLabel {
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-semibold);
-  letter-spacing: var(--ds-tracking-caps);
-  color: var(--ds-text-muted);
-}
-
-.mono {
-  font-family: var(--ds-font-mono);
-  font-size: 0.92em;
-}
-
-.dotSep {
-  display: inline-block;
-  inline-size: 2px;
-  block-size: 2px;
-  margin-inline: var(--ds-space-1-5);
-  vertical-align: middle;
-  border-radius: var(--ds-radius-full);
-  background: var(--ds-border-strong);
-}
-
-/* ─── Trend / tone helpers ──────────────────────────────────────────────── */
-
-.trend_up {
-  color: var(--trend-up);
-}
-
-.trend_down {
-  color: var(--trend-down);
-}
-
-.trend_flat {
-  color: var(--trend-flat);
-}
-
-.tone_rose {
-  color: var(--ds-accent-rose);
-}
-
-.tone_amber {
-  color: var(--ds-accent-amber);
-}
-
-.tone_emerald {
-  color: var(--ds-accent-emerald);
-}
-
-/* ─── 1. Masthead ───────────────────────────────────────────────────────── */
+/* ==========================================================================
+   MASTHEAD
+   ========================================================================== */
 
 .masthead {
-  position: relative;
   display: grid;
-  gap: var(--ds-space-5);
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ds-space-6);
   padding-block-end: var(--ds-space-5);
-  border-block-end: var(--atlas-rule) solid var(--atlas-hairline-strong);
-}
-
-@media (min-width: 60rem) {
-  .masthead {
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: end;
-    gap: var(--ds-space-8);
-  }
+  border-block-end: var(--k-rule) solid var(--k-line-2);
 }
 
 .mastheadMain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
   min-inline-size: 0;
 }
 
 .kicker {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--ds-space-2);
   margin: 0;
+  color: var(--k-ink-3);
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
-  letter-spacing: var(--ds-tracking-caps);
-  color: var(--ds-text-muted);
-}
-
-.kicker time {
-  color: var(--ds-text-secondary);
-  font-family: var(--ds-font-mono);
-}
-
-.kickerSep {
-  inline-size: var(--ds-space-4);
-  block-size: var(--atlas-rule);
-  background: var(--atlas-hairline);
+  font-variant-numeric: tabular-nums;
 }
 
 .pulseDot {
   inline-size: 0.4375rem;
   block-size: 0.4375rem;
-  border-radius: var(--ds-radius-full);
-  background: var(--ds-brand-500);
-  box-shadow: 0 0 0 0.2rem color-mix(in oklch, var(--ds-brand-500) 14%, transparent);
+  border-radius: 50%;
+  background: var(--k-up);
+  animation: breath 4s var(--ds-ease-in-out-quart, ease-in-out) infinite;
+}
+
+@keyframes breath {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.kickerSep {
+  inline-size: 0.75rem;
+  block-size: var(--k-rule);
+  background: var(--k-line-2);
 }
 
 .greeting {
-  margin-block: var(--ds-space-2) 0;
-  font-size: var(--ds-text-2xl);
-  font-weight: var(--ds-weight-extrabold);
-  letter-spacing: var(--ds-tracking-tighter);
-  line-height: var(--ds-leading-tight);
+  margin: 0;
+  color: var(--k-ink);
+  font-size: clamp(1.75rem, 1.2rem + 2.2vw, 3rem);
+  font-weight: var(--ds-weight-extrabold, 800);
+  letter-spacing: var(--ds-tracking-tighter, -0.02em);
+  line-height: 1.12;
   text-wrap: balance;
 }
 
 .greeting em {
   font-style: normal;
-  color: var(--ds-brand-600);
+  color: var(--k-brand);
 }
 
 .runIn {
-  margin-block: var(--ds-space-2) 0;
-  max-inline-size: var(--ds-measure);
-  font-size: var(--ds-text-base);
-  line-height: var(--ds-leading-snug);
-  color: var(--ds-text-secondary);
-}
-
-.mastheadMeta {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
-  gap: var(--ds-space-4);
+  max-inline-size: 46ch;
   margin: 0;
-  padding-block-start: var(--ds-space-4);
-  border-block-start: var(--atlas-rule) solid var(--atlas-hairline);
+  color: var(--k-ink-2);
+  font-size: var(--ds-text-base, 1rem);
+  line-height: var(--ds-leading-normal, 1.65);
+  text-wrap: pretty;
 }
 
-@media (min-width: 60rem) {
-  .mastheadMeta {
-    grid-template-columns: repeat(3, auto);
-    padding-block-start: 0;
-    border-block-start: 0;
-    text-align: end;
-  }
-}
-
-.mastheadMeta dt {
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
-}
-
-.mastheadMeta dd {
+.mastheadTail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
   margin: var(--ds-space-1) 0 0;
-  font-size: var(--ds-text-sm);
+  color: var(--k-ink-3);
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.mastheadTail b {
+  color: var(--k-ink);
+  font-weight: var(--ds-weight-bold);
+}
+
+.mastheadAside {
+  min-inline-size: 0;
+}
+
+/* ---- Standing: چهار باند نسبت واقعی ---- */
+
+.standing {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: var(--ds-space-4) var(--ds-space-5);
+  margin: 0;
+}
+
+.band {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-inline-size: 0;
+  padding-block-start: var(--ds-space-2);
+  border-block-start: var(--k-rule) solid var(--k-line-2);
+}
+
+.bandLabel {
+  color: var(--k-ink-3);
+  font-size: 0.6875rem;
   font-weight: var(--ds-weight-semibold);
-  color: var(--ds-text-primary);
+  letter-spacing: 0.01em;
 }
 
-/* «نفس سیستم» — نوسان آرام ۰٫۵Hz فقط روی opacity. */
-.breath {
-  position: absolute;
-  inset-inline: 0;
-  inset-block-end: calc(var(--atlas-rule) * -1);
-  block-size: var(--atlas-rule);
+.bandValue {
+  margin: 0;
+  color: var(--k-ink);
+  font-size: var(--ds-text-xl, 1.375rem);
+  font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ds-tracking-tighter, -0.02em);
+  line-height: 1.15;
+}
+
+.bandTrack {
+  position: relative;
+  block-size: 0.25rem;
   overflow: hidden;
-  pointer-events: none;
+  border-radius: var(--ds-radius-full, 9999px);
+  background: var(--k-recessed);
 }
 
-.breath i {
+.bandFill,
+.bandNull {
+  position: absolute;
+  inset: 0;
   display: block;
-  inline-size: 34%;
-  block-size: 100%;
-  background: linear-gradient(
-    to right,
-    transparent,
-    var(--ds-brand-500),
-    transparent
-  );
-  animation: fcBreath 2s var(--ds-ease-in-out-quart) infinite alternate;
+  border-radius: inherit;
 }
 
-@keyframes fcBreath {
+.bandFill {
+  background: currentColor;
+  transform-origin: right center;
+  transform: scaleX(var(--fill, 0));
+  animation: bandIn 620ms var(--k-ease) both;
+}
+
+@keyframes bandIn {
   from {
-    opacity: 0.12;
+    transform: scaleX(0);
   }
   to {
-    opacity: 0.65;
+    transform: scaleX(var(--fill, 0));
   }
 }
 
-/* ─── 2. Market tape ────────────────────────────────────────────────────── */
+.bandNull {
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--k-line-2) 0 3px,
+    transparent 3px 7px
+  );
+  opacity: 0.8;
+}
+
+.bandNote {
+  margin: 0;
+  color: var(--k-ink-3);
+  font-size: 0.6875rem;
+  line-height: var(--ds-leading-snug, 1.45);
+  text-wrap: pretty;
+}
+
+/* ==========================================================================
+   TAPE — نوار نرخ بازار
+   ========================================================================== */
 
 .tapeWrap {
-  border-block: var(--atlas-rule) solid var(--atlas-hairline);
+  border-block: var(--k-rule) solid var(--k-line-2);
 }
 
 .tape {
   display: flex;
   overflow-x: auto;
-  overscroll-behavior-inline: contain;
-  scroll-snap-type: inline mandatory;
+  scroll-snap-type: x proximity;
   scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-inline: contain;
 }
 
 .tape::-webkit-scrollbar {
@@ -315,217 +352,326 @@
 
 .tapeItem {
   flex: 0 0 auto;
-  scroll-snap-align: start;
-  display: grid;
-  gap: var(--ds-space-1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
   min-inline-size: 9rem;
-  min-block-size: var(--atlas-tap-min);
-  padding-block: var(--ds-space-3);
+  padding-block: var(--ds-space-2-5, 0.625rem);
   padding-inline: var(--ds-space-4);
+  border-inline-end: var(--k-rule) solid var(--k-line);
   color: inherit;
   text-decoration: none;
-  transition: background var(--atlas-dur-tap) var(--atlas-ease);
+  scroll-snap-align: start;
+  transition: background-color var(--k-fast) var(--k-ease);
 }
 
-.tapeItem + .tapeItem {
-  border-inline-start: var(--atlas-rule) solid var(--atlas-hairline);
+.tapeItem:first-child {
+  padding-inline-start: 0;
+}
+
+.tapeItem:last-child {
+  border-inline-end: 0;
 }
 
 .tapeItem:hover {
-  background: var(--ds-overlay-hover);
+  background: var(--k-hover);
+}
+
+.tapeItem:focus-visible {
+  outline: 2px solid var(--k-brand);
+  outline-offset: -2px;
 }
 
 .tapeName {
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
+  color: var(--k-ink-3);
+  font-size: 0.6875rem;
+  font-weight: var(--ds-weight-semibold);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .tapeValue {
-  font-size: var(--ds-text-lg);
+  color: var(--k-ink);
+  font-size: var(--ds-text-base, 1rem);
   font-weight: var(--ds-weight-bold);
-  letter-spacing: var(--ds-tracking-tight);
-  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.tapeFoot {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1-5, 0.375rem);
 }
 
 .tapeDelta {
   display: inline-flex;
   align-items: center;
-  gap: var(--ds-space-1);
-  font-size: var(--ds-text-xs);
+  gap: 0.15rem;
+  font-size: 0.6875rem;
   font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
 }
 
-.tapeDelta small {
-  margin-inline-start: auto;
-  color: var(--ds-text-muted);
-  font-weight: var(--ds-weight-regular);
+.tapeUnit {
+  color: var(--k-ink-3);
+  font-size: 0.625rem;
 }
 
-/* ─── Split ─────────────────────────────────────────────────────────────── */
+/* ==========================================================================
+   GRID — چیدمان نامتقارن ۱۲ ستونه
+   ========================================================================== */
 
-.split {
+.grid {
   display: grid;
-  gap: var(--ds-space-8);
-  align-items: start;
-}
-
-@media (min-width: 75rem) {
-  .split {
-    grid-template-columns: minmax(0, 1.6fr) minmax(18rem, 0.82fr);
-    gap: var(--ds-space-7);
-  }
-}
-
-.track,
-.rail {
-  display: grid;
-  gap: var(--ds-space-8);
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: var(--ds-space-6);
+  row-gap: var(--ds-space-8);
   min-inline-size: 0;
 }
 
-@media (min-width: 48rem) and (max-width: 74.99rem) {
-  .rail {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--ds-space-6) var(--ds-space-7);
-    align-items: start;
-  }
-
-  .postureWrap {
-    grid-column: 1 / -1;
-  }
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  min-inline-size: 0;
 }
 
-@media (min-width: 75rem) {
-  .rail {
-    position: sticky;
-    inset-block-start: var(--ds-space-4);
-    gap: var(--ds-space-7);
-  }
+/* ---- سربرگ بخش ---- */
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--ds-space-2-5, 0.625rem);
+  padding-block-end: var(--ds-space-2);
+  border-block-end: var(--k-rule) solid var(--k-line-2);
 }
 
-/* ─── 3. Pulse chart ────────────────────────────────────────────────────── */
+.headIndex {
+  color: var(--k-brand);
+  font-family: var(--k-mono);
+  font-size: 0.6875rem;
+  font-weight: var(--ds-weight-bold);
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
 
-.chart {
+.headTitle {
+  margin: 0;
+  color: var(--k-ink);
+  font-size: var(--ds-text-lg, 1.125rem);
+  font-weight: var(--ds-weight-bold);
+  letter-spacing: var(--ds-tracking-tighter, -0.02em);
+  line-height: 1.2;
+}
+
+.headRule {
+  flex: 1 1 1.5rem;
+  align-self: center;
+  block-size: var(--k-rule);
+  min-inline-size: 1rem;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--k-line) 0 2px,
+    transparent 2px 6px
+  );
+}
+
+.headNote {
+  color: var(--k-ink-3);
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--k-ink-2);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  text-decoration: none;
+  transition: color var(--k-fast) var(--k-ease);
+}
+
+.more > svg {
+  transition: transform var(--k-fast) var(--k-ease);
+}
+
+.more:hover {
+  color: var(--k-brand);
+}
+
+.more:hover > svg {
+  transform: translateX(-0.15rem);
+}
+
+.more:focus-visible {
+  outline: 2px solid var(--k-brand);
+  outline-offset: 3px;
+  border-radius: var(--ds-radius-sm);
+}
+
+/* ==========================================================================
+   PULSE — منحنی تعاملی
+   ========================================================================== */
+
+.ridge {
   position: relative;
-  block-size: clamp(6rem, 20vw, 9.5rem);
-  border-block-end: var(--atlas-rule) solid var(--atlas-hairline);
+  inline-size: 100%;
+  aspect-ratio: 16 / 5;
+  min-block-size: 7rem;
+  cursor: crosshair;
+  touch-action: pan-y;
 }
 
-.chartSvg {
+.ridge:focus-visible {
+  outline: 2px solid var(--k-brand);
+  outline-offset: 4px;
+  border-radius: var(--ds-radius-sm);
+}
+
+.ridgeSvg {
   display: block;
   inline-size: 100%;
   block-size: 100%;
 }
 
-.chartGrid {
-  stroke: var(--atlas-hairline);
+.gridLine {
+  stroke: var(--k-line);
   stroke-width: 1;
-  stroke-dasharray: 2 4;
+  stroke-dasharray: 2 5;
 }
 
-.chartArea {
-  fill: color-mix(in oklch, var(--ds-brand-500) 11%, transparent);
+.baseLine {
+  stroke: var(--k-line-2);
+  stroke-width: 1;
 }
 
-.chartLine {
+.area {
+  fill: color-mix(in oklch, var(--k-brand) 11%, transparent);
+}
+
+.line {
   fill: none;
-  stroke: var(--ds-brand-600);
-  stroke-width: 1.5;
-  stroke-linejoin: round;
+  stroke: var(--k-brand);
+  stroke-width: 1.75;
   stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.chartHours {
-  position: absolute;
-  inset: 0;
-  display: flex;
+.cursorDot {
+  fill: var(--k-brand);
+  stroke: var(--ds-canvas, var(--k-elevated));
+  stroke-width: 2;
 }
 
-.chartHours > span {
-  position: relative;
-  flex: 1 1 0;
-  min-inline-size: 0;
-  cursor: crosshair;
-}
-
-.chartHours > span::before {
-  content: '';
+.cross {
   position: absolute;
   inset-block: 0;
-  inset-inline-start: 50%;
-  inline-size: 1px;
-  background: var(--ds-brand-600);
-  opacity: 0;
-  transition: opacity var(--atlas-dur-tap) var(--atlas-ease);
-}
-
-.chartHours > span::after {
-  content: attr(data-label);
-  position: absolute;
-  inset-block-end: calc(100% + var(--ds-space-1));
-  inset-inline-start: 50%;
-  translate: -50% 0;
-  padding: var(--ds-space-1) var(--ds-space-2);
-  border: var(--atlas-rule) solid var(--ds-border-default);
-  border-radius: var(--atlas-radius-sm);
-  background: var(--ds-surface-elevated);
-  box-shadow: var(--ds-shadow-md);
-  color: var(--ds-text-primary);
-  font-size: var(--ds-text-xs);
-  white-space: nowrap;
-  unicode-bidi: plaintext;
-  opacity: 0;
+  inset-inline-start: var(--x, 0%);
+  inline-size: var(--k-rule);
+  background: var(--k-ink-3);
+  opacity: 0.55;
   pointer-events: none;
-  transition: opacity var(--atlas-dur-tap) var(--atlas-ease);
 }
 
-.chartHours > span:hover::before,
-.chartHours > span:hover::after {
-  opacity: 1;
+.ridgeFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  padding-block-start: var(--ds-space-2);
+  border-block-start: var(--k-rule) solid var(--k-line);
 }
 
-/* ستون‌های ۱۴ روزه */
+.readout {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  color: var(--k-ink-2);
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.readout b {
+  color: var(--k-ink);
+  font-weight: var(--ds-weight-bold);
+}
+
+.readoutHint {
+  color: var(--k-ink-3);
+}
+
+.readoutValue {
+  color: var(--k-ink);
+  font-family: var(--k-mono);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-bold);
+}
+
+.readoutSep {
+  inline-size: 0.75rem;
+  block-size: var(--k-rule);
+  background: var(--k-line-2);
+}
+
+.ridgeScale {
+  color: var(--k-ink-3);
+  font-family: var(--k-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.04em;
+}
+
+/* ---- ستون‌های ۱۴ روز ---- */
 
 .trend {
-  display: grid;
-  gap: var(--ds-space-3);
-  padding-block-start: var(--ds-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding-block-start: var(--ds-space-3);
+  border-block-start: var(--k-rule) solid var(--k-line);
 }
 
 .trendHead {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--ds-space-2) var(--ds-space-3);
+  gap: var(--ds-space-2);
+}
+
+.miniLabel {
+  color: var(--k-ink-3);
+  font-size: 0.6875rem;
+  font-weight: var(--ds-weight-semibold);
 }
 
 .trendPeak {
   margin-inline-start: auto;
-  font-family: var(--ds-font-mono);
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
+  color: var(--k-ink-3);
+  font-family: var(--k-mono);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: var(--ds-space-1);
-  font-size: var(--ds-text-xs);
+  gap: 0.25rem;
+  padding-block: 0.1rem;
+  padding-inline: 0.4rem;
+  border: var(--k-rule) solid var(--k-line-2);
+  border-radius: var(--ds-radius-full, 9999px);
+  font-size: 0.6875rem;
   font-weight: var(--ds-weight-semibold);
-}
-
-.chip small {
-  color: var(--ds-text-muted);
-  font-weight: var(--ds-weight-regular);
+  font-variant-numeric: tabular-nums;
 }
 
 .trendBars {
   display: flex;
   align-items: flex-end;
-  gap: 0.2rem;
+  gap: 3px;
   block-size: 3.25rem;
   margin: 0;
   padding: 0;
@@ -534,114 +680,280 @@
 
 .trendBars > li {
   position: relative;
-  flex: 1 1 0;
   display: flex;
+  flex: 1 1 0;
   align-items: flex-end;
+  min-inline-size: 0;
   block-size: 100%;
 }
 
 .trendBars > li > i {
+  display: block;
   inline-size: 100%;
-  background: color-mix(in oklch, var(--ds-brand-500) 34%, transparent);
   border-radius: 1px 1px 0 0;
-  transition: background var(--atlas-dur-tap) var(--atlas-ease);
-}
-
-.trendBars > li:last-child > i {
-  background: var(--ds-brand-600);
+  background: color-mix(in oklch, var(--k-brand) 38%, transparent);
+  transition: background-color var(--k-fast) var(--k-ease);
 }
 
 .trendBars > li:hover > i {
-  background: var(--ds-brand-600);
+  background: var(--k-brand);
 }
 
 .trendBars > li::after {
   content: attr(data-label);
   position: absolute;
-  inset-block-end: calc(100% + var(--ds-space-1));
+  z-index: 2;
+  inset-block-end: calc(100% + 0.4rem);
   inset-inline-start: 50%;
-  translate: -50% 0;
-  padding: var(--ds-space-1) var(--ds-space-2);
-  border: var(--atlas-rule) solid var(--ds-border-default);
-  border-radius: var(--atlas-radius-sm);
-  background: var(--ds-surface-elevated);
-  box-shadow: var(--ds-shadow-md);
-  font-size: var(--ds-text-xs);
+  padding-block: 0.2rem;
+  padding-inline: 0.4rem;
+  border: var(--k-rule) solid var(--k-line-2);
+  border-radius: var(--ds-radius-sm);
+  background: var(--k-elevated);
+  color: var(--k-ink);
+  font-size: 0.625rem;
   white-space: nowrap;
-  unicode-bidi: plaintext;
   opacity: 0;
+  transform: translate(-50%, 0.2rem);
   pointer-events: none;
-  transition: opacity var(--atlas-dur-tap) var(--atlas-ease);
-  z-index: var(--atlas-z-spine);
+  transition:
+    opacity var(--k-fast) var(--k-ease),
+    transform var(--k-fast) var(--k-ease);
 }
 
 .trendBars > li:hover::after {
   opacity: 1;
+  transform: translate(-50%, 0);
 }
 
-/* ─── 4. Decision ledger ────────────────────────────────────────────────── */
+/* ==========================================================================
+   READOUTS
+   ========================================================================== */
 
-.ledger {
+.readouts {
+  display: flex;
+  flex-direction: column;
+}
+
+.readRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 0.9rem;
+  grid-template-areas:
+    'label value go'
+    'note note go';
+  align-items: baseline;
+  gap: 0.15rem var(--ds-space-3);
+  padding-block: var(--ds-space-3);
+  border-block-end: var(--k-rule) solid var(--k-line);
+  color: inherit;
+  text-decoration: none;
+  transition: background-color var(--k-fast) var(--k-ease);
+}
+
+.readRow:last-child {
+  border-block-end: 0;
+}
+
+.readRow:hover {
+  background: var(--k-hover);
+}
+
+.readRow:focus-visible {
+  outline: 2px solid var(--k-brand);
+  outline-offset: -2px;
+  border-radius: var(--ds-radius-sm);
+}
+
+.readLabel {
+  grid-area: label;
+  color: var(--k-ink-2);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+}
+
+.readValue {
+  grid-area: value;
+  color: var(--k-ink);
+  font-size: var(--ds-text-lg, 1.125rem);
+  font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.readNote {
+  grid-area: note;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--k-ink-3);
+  font-size: 0.6875rem;
+}
+
+.readGo {
+  grid-area: go;
+  align-self: center;
+  color: var(--k-ink-3);
+  opacity: 0;
+  transform: translateX(0.2rem);
+  transition:
+    opacity var(--k-fast) var(--k-ease),
+    transform var(--k-fast) var(--k-ease);
+}
+
+.readRow:hover .readGo,
+.readRow:focus-visible .readGo {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.readRow[data-lead='true'] .readValue {
+  font-size: var(--ds-text-2xl, 1.5rem);
+}
+
+.degraded {
+  margin: 0;
+  padding-block-start: var(--ds-space-2);
+  color: var(--k-ink-3);
+  font-size: 0.6875rem;
+  line-height: var(--ds-leading-snug, 1.45);
+}
+
+/* ==========================================================================
+   DOCKET — صف تصمیم
+   ========================================================================== */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-1);
+}
+
+.filterBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-block-size: 2.25rem;
+  padding-block: 0.3rem;
+  padding-inline: var(--ds-space-3);
+  border: var(--k-rule) solid var(--k-line-2);
+  border-radius: var(--ds-radius-full, 9999px);
+  background: transparent;
+  color: var(--k-ink-2);
+  font: inherit;
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  cursor: pointer;
+  transition:
+    color var(--k-fast) var(--k-ease),
+    border-color var(--k-fast) var(--k-ease),
+    background-color var(--k-fast) var(--k-ease),
+    transform var(--k-fast) var(--k-ease);
+}
+
+.filterBtn:hover {
+  color: var(--k-ink);
+  border-color: var(--k-ink-3);
+}
+
+.filterBtn:active {
+  transform: scale(0.97);
+}
+
+.filterBtn:focus-visible {
+  outline: 2px solid var(--k-brand);
+  outline-offset: 2px;
+}
+
+.filterBtn[data-on='true'] {
+  color: var(--k-brand);
+  border-color: var(--k-brand);
+  background: color-mix(in oklch, var(--k-brand) 8%, transparent);
+}
+
+.filterCount {
+  color: var(--k-ink-3);
+  font-family: var(--k-mono);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.filterBtn[data-on='true'] .filterCount {
+  color: inherit;
+}
+
+.filterEmpty {
+  margin: 0;
+  padding-block: var(--ds-space-5);
+  color: var(--k-ink-3);
+  font-size: var(--ds-text-sm);
+  text-align: center;
+}
+
+.linkBtn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--k-brand);
+  font: inherit;
+  font-weight: var(--ds-weight-semibold);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.linkBtn:focus-visible {
+  outline: 2px solid var(--k-brand);
+  outline-offset: 2px;
+}
+
+.docket {
   margin: 0;
   padding: 0;
   list-style: none;
-  border-block-start: var(--atlas-rule) solid var(--atlas-hairline);
-}
-
-.ledger > li {
-  border-block-end: var(--atlas-rule) solid var(--atlas-hairline);
+  border-block-start: var(--k-rule) solid var(--k-line);
 }
 
 .row {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-areas: 'index body go' 'index side go';
+  grid-template-columns: 1.6rem minmax(0, 1fr) auto 0.95rem;
   align-items: center;
-  gap: var(--ds-space-1) var(--ds-space-3);
-  min-block-size: var(--atlas-tap-min);
+  gap: var(--ds-space-3);
+  min-block-size: var(--atlas-tap-min, 2.75rem);
   padding-block: var(--ds-space-3);
   padding-inline: var(--ds-space-1);
+  border-block-end: var(--k-rule) solid var(--k-line);
   color: inherit;
   text-decoration: none;
-  transition:
-    background var(--atlas-dur-tap) var(--atlas-ease),
-    translate var(--atlas-dur-tap) var(--atlas-ease);
-}
-
-@media (min-width: 40rem) {
-  .row {
-    grid-template-columns: auto minmax(0, 1fr) auto auto;
-    grid-template-areas: 'index body side go';
-    gap: var(--ds-space-4);
-    padding-inline: var(--ds-space-2);
-  }
+  transition: background-color var(--k-fast) var(--k-ease);
 }
 
 .row:hover {
-  background: var(--ds-overlay-hover);
+  background: var(--k-hover);
 }
 
-.row:active {
-  scale: 0.995;
+.row:focus-visible {
+  outline: 2px solid var(--k-brand);
+  outline-offset: -2px;
+  border-radius: var(--ds-radius-sm);
 }
 
 .rowIndex {
-  grid-area: index;
-  align-self: start;
-  font-family: var(--ds-font-mono);
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
-  padding-block-start: 0.15rem;
+  color: var(--k-ink-3);
+  font-family: var(--k-mono);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .rowBody {
-  grid-area: body;
-  display: grid;
-  gap: 0.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
   min-inline-size: 0;
 }
 
-.rowBody strong {
+.rowName {
+  color: var(--k-ink);
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
   overflow: hidden;
@@ -649,192 +961,90 @@
   white-space: nowrap;
 }
 
-.rowBody small {
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.rowMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-inline-size: 0;
+  color: var(--k-ink-3);
+  font-size: 0.6875rem;
+}
+
+.dotSep {
+  inline-size: 2px;
+  block-size: 2px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+.mono {
+  font-family: var(--k-mono);
+  font-size: 0.95em;
+  unicode-bidi: isolate;
 }
 
 .rowSide {
-  grid-area: side;
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--ds-space-1) var(--ds-space-3);
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+  text-align: end;
 }
 
-@media (min-width: 40rem) {
-  .rowSide {
-    display: grid;
-    justify-items: end;
-    gap: 0.15rem;
-  }
-}
-
-.rowSide b {
+.rowAmount {
+  color: var(--k-ink);
+  font-family: var(--k-mono);
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
+  unicode-bidi: isolate;
   white-space: nowrap;
 }
 
 .rowTags {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: var(--ds-space-2);
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
+  gap: 0.35rem;
+  color: var(--k-ink-3);
+  font-size: 0.625rem;
 }
 
 .tag {
   display: inline-flex;
   align-items: center;
   gap: 0.2rem;
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-secondary);
+  padding-block: 0.05rem;
+  padding-inline: 0.35rem;
+  border: var(--k-rule) solid var(--k-line-2);
+  border-radius: var(--ds-radius-sm);
+  color: var(--k-ink-2);
+  white-space: nowrap;
 }
 
 .tagUrgent {
-  color: var(--ds-accent-rose);
-  font-weight: var(--ds-weight-semibold);
+  border-color: color-mix(in oklch, var(--k-rose) 45%, transparent);
+  color: var(--k-rose);
 }
 
 .rowGo {
-  grid-area: go;
-  color: var(--ds-text-muted);
-  opacity: 0.4;
-  transition: opacity var(--atlas-dur-tap) var(--atlas-ease);
+  color: var(--k-ink-3);
+  opacity: 0;
+  transform: translateX(0.2rem);
+  transition:
+    opacity var(--k-fast) var(--k-ease),
+    transform var(--k-fast) var(--k-ease);
 }
 
 .row:hover .rowGo,
 .row:focus-visible .rowGo {
   opacity: 1;
+  transform: translateX(0);
 }
 
-/* ─── 5. Posture ────────────────────────────────────────────────────────── */
-
-.posture {
-  display: grid;
-  border-block-start: var(--atlas-rule) solid var(--atlas-hairline);
-}
-
-.postureRow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas: 'label value' 'note value';
-  align-items: baseline;
-  gap: 0.1rem var(--ds-space-3);
-  min-block-size: var(--atlas-tap-min);
-  padding-block: var(--ds-space-3);
-  padding-inline: var(--ds-space-1);
-  border-block-end: var(--atlas-rule) solid var(--atlas-hairline);
-  color: inherit;
-  text-decoration: none;
-  transition: background var(--atlas-dur-tap) var(--atlas-ease);
-}
-
-.postureRow:hover {
-  background: var(--ds-overlay-hover);
-}
-
-.postureLabel {
-  grid-area: label;
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-semibold);
-  color: var(--ds-text-secondary);
-}
-
-.postureValue {
-  grid-area: value;
-  align-self: center;
-  font-size: var(--ds-text-xl);
-  font-weight: var(--ds-weight-bold);
-  letter-spacing: var(--ds-tracking-tight);
-  line-height: 1;
-}
-
-.postureLead .postureValue {
-  font-size: var(--ds-text-3xl);
-}
-
-.postureLead {
-  padding-block: var(--ds-space-4);
-}
-
-.postureNote {
-  grid-area: note;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
-}
-
-/* ─── 6. Systems ────────────────────────────────────────────────────────── */
-
-.systems {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-block-start: var(--atlas-rule) solid var(--atlas-hairline);
-}
-
-.sysRow {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: var(--ds-space-2-5);
-  padding-block: var(--ds-space-2-5);
-  border-block-end: var(--atlas-rule) solid var(--atlas-hairline);
-  font-size: var(--ds-text-xs);
-}
-
-/* لوزی وضعیت — رنگ تنها نشانه نیست؛ برچسب متنی کنارش هست. */
-.glyph {
-  inline-size: 0.5rem;
-  block-size: 0.5rem;
-  rotate: 45deg;
-  border-radius: 1px;
-  background: var(--ds-border-strong);
-}
-
-.glyph_healthy {
-  background: var(--ds-accent-emerald);
-}
-
-.glyph_degraded {
-  background: var(--ds-accent-amber);
-}
-
-.glyph_down {
-  background: var(--ds-accent-rose);
-}
-
-.glyph_idle {
-  background: transparent;
-  box-shadow: inset 0 0 0 1px var(--ds-border-strong);
-}
-
-.sysName {
-  color: var(--ds-text-primary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sysState {
-  color: var(--ds-text-secondary);
-}
-
-.sysLatency {
-  font-family: var(--ds-font-mono);
-  color: var(--ds-text-muted);
-  min-inline-size: 3.25rem;
-  text-align: end;
-}
-
-/* ─── 7. Events timeline ────────────────────────────────────────────────── */
+/* ==========================================================================
+   EVENTS
+   ========================================================================== */
 
 .events {
   position: relative;
@@ -846,19 +1056,19 @@
 .events::before {
   content: '';
   position: absolute;
-  inset-block: 1.1rem;
+  inset-block: 0.9rem;
   inset-inline-start: 0.6875rem;
-  inline-size: var(--atlas-rule);
-  background: var(--atlas-hairline);
+  inline-size: var(--k-rule);
+  background: var(--k-line);
 }
 
 .event {
   position: relative;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: 1.375rem minmax(0, 1fr) auto;
   align-items: start;
-  gap: var(--ds-space-3);
-  padding-block: var(--ds-space-2-5);
+  gap: var(--ds-space-2-5, 0.625rem);
+  padding-block: var(--ds-space-2-5, 0.625rem);
 }
 
 .eventMark {
@@ -866,70 +1076,191 @@
   place-items: center;
   inline-size: 1.375rem;
   block-size: 1.375rem;
-  border-radius: var(--ds-radius-full);
-  border: var(--atlas-rule) solid var(--atlas-hairline);
-  background: var(--ds-canvas);
-  color: var(--ds-text-muted);
+  border: var(--k-rule) solid var(--k-line-2);
+  border-radius: 50%;
+  background: var(--ds-canvas, var(--k-elevated));
+  color: var(--k-ink-2);
 }
 
 .eventBody {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 0.1rem;
   min-inline-size: 0;
 }
 
 .eventBody strong {
+  color: var(--k-ink);
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .eventBody small {
-  font-family: var(--ds-font-mono);
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
+  color: var(--k-ink-3);
+  font-size: 0.6875rem;
+  line-height: var(--ds-leading-snug, 1.45);
+  overflow-wrap: anywhere;
+}
+
+.eventTime {
+  color: var(--k-ink-3);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   SYSTEMS
+   ========================================================================== */
+
+.systems {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sysRow {
+  display: grid;
+  grid-template-columns: 0.5rem minmax(0, 1fr) auto;
+  grid-template-areas:
+    'glyph name state'
+    'glyph bar latency';
+  align-items: center;
+  gap: 0.3rem var(--ds-space-2);
+  padding-block: var(--ds-space-2-5, 0.625rem);
+  border-block-end: var(--k-rule) solid var(--k-line);
+}
+
+.sysRow:last-child {
+  border-block-end: 0;
+}
+
+.glyph {
+  grid-area: glyph;
+  align-self: start;
+  margin-block-start: 0.35rem;
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: 1px;
+  transform: rotate(45deg);
+}
+
+.glyph_healthy {
+  background: var(--k-up);
+}
+
+.glyph_degraded {
+  background: var(--k-amber);
+}
+
+.glyph_down {
+  background: var(--k-down);
+}
+
+.glyph_idle {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--k-line-2);
+}
+
+.sysName {
+  grid-area: name;
+  color: var(--k-ink);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.event time {
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
-  white-space: nowrap;
+.sysState {
+  grid-area: state;
+  color: var(--k-ink-2);
+  font-size: 0.6875rem;
+  font-weight: var(--ds-weight-semibold);
 }
 
-/* ─── 8. Pipelines ──────────────────────────────────────────────────────── */
+.sysBar {
+  grid-area: bar;
+  position: relative;
+  block-size: 0.1875rem;
+  overflow: hidden;
+  border-radius: var(--ds-radius-full, 9999px);
+  background: var(--k-recessed);
+}
+
+.sysBarFill,
+.sysBarNull {
+  position: absolute;
+  inset: 0;
+  display: block;
+  border-radius: inherit;
+}
+
+.sysBarFill {
+  background: currentColor;
+  transform-origin: right center;
+  transform: scaleX(var(--fill, 0));
+}
+
+.glyphFill_healthy {
+  color: var(--k-up);
+}
+
+.glyphFill_degraded {
+  color: var(--k-amber);
+}
+
+.glyphFill_down {
+  color: var(--k-down);
+}
+
+.glyphFill_idle {
+  color: var(--k-slate);
+}
+
+.sysBarNull {
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--k-line-2) 0 3px,
+    transparent 3px 7px
+  );
+}
+
+.sysLatency {
+  grid-area: latency;
+  color: var(--k-ink-3);
+  font-family: var(--k-mono);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   PIPELINES
+   ========================================================================== */
 
 .pipes {
   display: grid;
-  gap: var(--ds-space-7);
-}
-
-@media (min-width: 52rem) {
-  .pipes {
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr);
-    gap: var(--ds-space-8);
-  }
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--ds-space-5) var(--ds-space-6);
 }
 
 .pipe {
-  display: grid;
-  gap: var(--ds-space-3);
-  align-content: start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  min-inline-size: 0;
 }
 
 .pipeHead {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--ds-space-3);
+  gap: var(--ds-space-2);
 }
 
-.pipeHead h3 {
+.pipeTitle {
   margin: 0;
+  color: var(--k-ink);
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
 }
@@ -937,58 +1268,41 @@
 .pipeTotal {
   display: inline-flex;
   align-items: center;
-  gap: var(--ds-space-1);
-  color: var(--ds-text-primary);
-  font-size: var(--ds-text-lg);
+  gap: 0.25rem;
+  color: var(--k-ink-2);
+  font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
   text-decoration: none;
-  transition: opacity var(--atlas-dur-tap) var(--atlas-ease);
+  transition: color var(--k-fast) var(--k-ease);
 }
 
 .pipeTotal:hover {
-  opacity: 0.7;
+  color: var(--k-brand);
 }
 
-.pipeTotal svg {
-  color: var(--ds-text-muted);
+.pipeTotal:focus-visible {
+  outline: 2px solid var(--k-brand);
+  outline-offset: 3px;
+  border-radius: var(--ds-radius-sm);
 }
 
 .bar {
   display: flex;
-  block-size: 0.5rem;
+  block-size: 0.375rem;
   overflow: hidden;
-  border-radius: var(--atlas-radius-xs);
-  background: var(--ds-surface-recessed);
+  border-radius: var(--ds-radius-full, 9999px);
+  background: var(--k-recessed);
 }
 
 .bar > span {
+  display: block;
   block-size: 100%;
-  min-inline-size: 2px;
-}
-
-.seg_amber {
-  background: var(--ds-accent-amber);
-}
-
-.seg_cyan {
-  background: var(--ds-accent-cyan);
-}
-
-.seg_emerald {
-  background: var(--ds-accent-emerald);
-}
-
-.seg_rose {
-  background: var(--ds-accent-rose);
-}
-
-.seg_slate {
-  background: var(--ds-accent-slate);
 }
 
 .legend {
-  display: grid;
-  gap: var(--ds-space-1-5);
+  display: flex;
+  flex-direction: column;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -996,191 +1310,411 @@
 
 .legend > li {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: 0.5rem minmax(0, 1fr) auto auto;
   align-items: center;
   gap: var(--ds-space-2);
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-secondary);
+  padding-block: 0.3rem;
+  border-block-end: var(--k-rule) solid var(--k-line);
+  font-size: 0.6875rem;
+}
+
+.legend > li:last-child {
+  border-block-end: 0;
 }
 
 .dot {
-  inline-size: 0.4375rem;
-  block-size: 0.4375rem;
-  border-radius: 1px;
-  rotate: 45deg;
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: 50%;
 }
 
 .legendLabel {
+  color: var(--k-ink-2);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .legend b {
-  color: var(--ds-text-primary);
-  font-weight: var(--ds-weight-semibold);
+  color: var(--k-ink);
+  font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.legendPct {
+  min-inline-size: 2.5rem;
+  color: var(--k-ink-3);
+  font-family: var(--k-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
 }
 
 .pipeEmpty {
   margin: 0;
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
+  color: var(--k-ink-3);
+  font-size: 0.6875rem;
+  line-height: var(--ds-leading-snug, 1.45);
+}
+
+.seg_amber {
+  background: var(--k-amber);
+}
+
+.seg_cyan {
+  background: var(--k-cyan);
+}
+
+.seg_emerald {
+  background: var(--k-emerald);
+}
+
+.seg_rose {
+  background: var(--k-rose);
+}
+
+.seg_slate {
+  background: var(--k-slate);
 }
 
 .load {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: var(--ds-space-2);
-  margin-block-start: var(--ds-space-6);
-  padding-block-start: var(--ds-space-4);
-  border-block-start: var(--atlas-rule) solid var(--atlas-hairline);
+  padding-block-start: var(--ds-space-3);
+  border-block-start: var(--k-rule) solid var(--k-line);
 }
 
-.load ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ds-space-2) var(--ds-space-6);
+.loadList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0 var(--ds-space-5);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.load li {
-  display: inline-flex;
+.loadList > li {
+  display: flex;
   align-items: baseline;
+  justify-content: space-between;
   gap: var(--ds-space-2);
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-secondary);
+  padding-block: 0.35rem;
+  border-block-end: var(--k-rule) solid var(--k-line);
+  color: var(--k-ink-2);
+  font-size: 0.6875rem;
 }
 
-.load b {
-  font-size: var(--ds-text-sm);
-  color: var(--ds-text-primary);
+.loadList b {
+  color: var(--k-ink);
+  font-family: var(--k-mono);
+  font-variant-numeric: tabular-nums;
 }
 
-/* ─── 9. Routes ─────────────────────────────────────────────────────────── */
+/* ==========================================================================
+   ROUTES — فهرست مسیرها
+   ========================================================================== */
 
-/* شبکه‌ی خط‌مو: gap رنگی + پس‌زمینه‌ی هم‌رنگ بوم روی آیتم‌ها.
-   هر تعداد ستون که wrap شود، خطوط دقیق می‌مانند. */
 .routes {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-  gap: var(--atlas-rule);
-  background: var(--atlas-hairline);
-  border: var(--atlas-rule) solid var(--atlas-hairline);
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0 var(--ds-space-6);
 }
 
 .route {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: 1.5rem 1.1rem minmax(0, 1fr) 0.9rem;
   align-items: center;
-  gap: var(--ds-space-3);
-  min-block-size: 3.5rem;
-  padding-inline: var(--ds-space-3);
-  background: var(--ds-canvas);
+  gap: var(--ds-space-2);
+  min-block-size: var(--atlas-tap-min, 2.75rem);
+  padding-block: var(--ds-space-2-5, 0.625rem);
+  padding-inline: var(--ds-space-1);
+  border-block-end: var(--k-rule) solid var(--k-line);
   color: inherit;
   text-decoration: none;
   transition:
-    background var(--atlas-dur-tap) var(--atlas-ease),
-    translate var(--atlas-dur-tap) var(--atlas-ease);
+    background-color var(--k-fast) var(--k-ease),
+    transform var(--k-fast) var(--k-ease);
 }
 
 .route:hover {
-  background: color-mix(in oklch, var(--ds-brand-500) 5%, var(--ds-surface));
-  translate: 0 -1px;
+  background: var(--k-hover);
+  transform: translateY(-1px);
 }
 
-.route:active {
-  scale: 0.99;
+.route:focus-visible {
+  outline: 2px solid var(--k-brand);
+  outline-offset: -2px;
+  border-radius: var(--ds-radius-sm);
 }
 
-.route > svg:first-child {
-  color: var(--ds-brand-600);
+.routeNum {
+  color: var(--k-ink-3);
+  font-family: var(--k-mono);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
 }
 
-.route b,
-.route small {
-  display: block;
+.routeIcon {
+  color: var(--k-ink-3);
+  transition: color var(--k-fast) var(--k-ease);
+}
+
+.route:hover .routeIcon {
+  color: var(--k-brand);
+}
+
+.routeBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  min-inline-size: 0;
+}
+
+.routeBody b {
+  color: var(--k-ink);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.route b {
-  font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-semibold);
+.routeBody small {
+  color: var(--k-ink-3);
+  font-size: 0.625rem;
 }
 
-.route small {
-  margin-block-start: 0.1rem;
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
+.routeGo {
+  color: var(--k-ink-3);
+  opacity: 0;
+  transform: translateX(0.2rem);
+  transition:
+    opacity var(--k-fast) var(--k-ease),
+    transform var(--k-fast) var(--k-ease);
 }
 
-.route > svg:last-child {
-  color: var(--ds-text-muted);
-  opacity: 0.5;
-  transition: opacity var(--atlas-dur-tap) var(--atlas-ease);
-}
-
-.route:hover > svg:last-child {
+.route:hover .routeGo,
+.route:focus-visible .routeGo {
   opacity: 1;
+  transform: translateX(0);
 }
 
-/* ─── Empty state ───────────────────────────────────────────────────────── */
+/* ==========================================================================
+   BLANK — حالت خالی
+   ========================================================================== */
 
 .blank {
-  display: grid;
-  justify-items: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: var(--ds-space-2);
-  padding-block: var(--ds-space-7);
-  padding-inline: var(--ds-space-1);
-  border-block-start: var(--atlas-rule) solid var(--atlas-hairline);
+  padding-block: var(--ds-space-8);
+  padding-inline: var(--ds-space-4);
+  border-radius: var(--ds-radius-lg, 1rem);
+  background: var(--k-recessed);
+  text-align: center;
 }
 
 .blankMark {
   display: grid;
   place-items: center;
-  inline-size: 2.25rem;
-  block-size: 2.25rem;
-  border: var(--atlas-rule) solid var(--atlas-hairline);
-  border-radius: var(--atlas-radius-md);
-  color: var(--ds-text-muted);
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border: var(--k-rule) solid var(--k-line-2);
+  border-radius: 50%;
+  color: var(--k-ink-3);
 }
 
 .blank strong {
-  font-size: var(--ds-text-base);
-  font-weight: var(--ds-weight-semibold);
+  color: var(--k-ink);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-bold);
 }
 
 .blank p {
+  max-inline-size: 42ch;
   margin: 0;
-  max-inline-size: var(--ds-measure-narrow);
-  font-size: var(--ds-text-sm);
-  line-height: var(--ds-leading-snug);
-  color: var(--ds-text-muted);
+  color: var(--k-ink-3);
+  font-size: 0.6875rem;
+  line-height: var(--ds-leading-snug, 1.45);
+  text-wrap: pretty;
 }
 
 .blankCta {
   display: inline-flex;
   align-items: center;
-  gap: var(--ds-space-1);
+  gap: 0.25rem;
   min-block-size: 2.25rem;
-  margin-block-start: var(--ds-space-1);
-  color: var(--ds-brand-600);
-  font-size: var(--ds-text-sm);
+  color: var(--k-brand);
+  font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
   text-decoration: none;
 }
 
 .blankCta:hover {
-  opacity: 0.75;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
 }
 
-/* ─── Editorial slot ────────────────────────────────────────────────────── */
+.blankCta:focus-visible {
+  outline: 2px solid var(--k-brand);
+  outline-offset: 3px;
+  border-radius: var(--ds-radius-sm);
+}
+
+/* ==========================================================================
+   TONE / TREND
+   ========================================================================== */
+
+.tone_brand {
+  color: var(--k-brand);
+}
+
+.tone_emerald {
+  color: var(--k-emerald);
+}
+
+.tone_amber {
+  color: var(--k-amber);
+}
+
+.tone_rose {
+  color: var(--k-rose);
+}
+
+.tone_cyan {
+  color: var(--k-cyan);
+}
+
+.tone_slate {
+  color: var(--k-slate);
+}
+
+.trend_up {
+  color: var(--k-up);
+}
+
+.trend_down {
+  color: var(--k-down);
+}
+
+.trend_flat {
+  color: var(--k-flat);
+}
+
+/* ==========================================================================
+   EDITORIAL SLOT
+   ========================================================================== */
 
 .editorial {
-  display: grid;
-  gap: var(--ds-space-6);
   padding-block-start: var(--ds-space-8);
-  border-block-start: var(--atlas-rule) solid var(--atlas-hairline-strong);
+  border-block-start: var(--k-rule) solid var(--k-line-2);
+}
+
+/* ==========================================================================
+   RESPONSIVE — mobile-first، هر breakpoint چیدمان را بازطراحی می‌کند
+   ========================================================================== */
+
+@media (min-width: 48rem) {
+  .masthead {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ds-space-5);
+  }
+
+  .row {
+    grid-template-columns: 1.8rem minmax(0, 1fr) auto 1rem;
+    gap: var(--ds-space-4);
+  }
+}
+
+@media (min-width: 64rem) {
+  .sheet {
+    gap: var(--ds-space-8);
+  }
+
+  .masthead {
+    grid-template-columns: minmax(0, 1.05fr) minmax(20rem, 0.95fr);
+    align-items: end;
+    gap: var(--ds-space-8);
+    padding-block-end: var(--ds-space-6);
+  }
+
+  .grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    row-gap: var(--ds-space-10);
+  }
+
+  .panel[data-span='4'] {
+    grid-column: span 4;
+  }
+
+  .panel[data-span='5'] {
+    grid-column: span 5;
+  }
+
+  .panel[data-span='7'] {
+    grid-column: span 7;
+  }
+
+  .panel[data-span='8'] {
+    grid-column: span 8;
+  }
+
+  .panel[data-span='12'] {
+    grid-column: span 12;
+  }
+
+  .routes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 82rem) {
+  .sheet {
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    align-items: start;
+    gap: var(--ds-space-4);
+  }
+
+  .spine {
+    display: block;
+    position: sticky;
+    inset-block-start: var(--ds-space-8);
+    grid-column: 1;
+    padding-inline-end: var(--ds-space-2);
+    border-inline-end: var(--k-rule) solid var(--k-line);
+  }
+
+  .spine:hover {
+    /* برچسب‌ها روی محتوا نمی‌افتند چون ستون خودش عرض دارد و متن nowrap است */
+    z-index: 1;
+  }
+
+  .body {
+    grid-column: 2;
+  }
+
+  .routes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* چاپ: گزارش‌های مالی چاپ می‌شوند. */
+@media print {
+  .spine,
+  .filters,
+  .tapeWrap,
+  .rowGo,
+  .readGo,
+  .routeGo {
+    display: none;
+  }
+
+  .grid {
+    row-gap: var(--ds-space-6);
+  }
+
+  .pulseDot {
+    animation: none;
+  }
 }

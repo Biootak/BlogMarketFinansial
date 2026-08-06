@@ -1,28 +1,35 @@
 'use client';
 
 /**
- * FintechCockpit — «میز فرماندهی» (Ledger Desk)
+ * FintechCockpit — «میز فرماندهی» / Atlas Console
  * ──────────────────────────────────────────────────────────────────────────
- * بازطراحی ۲۰۲۶-۰۸. ساختار قبلی (تیتر ۴٫۸rem + ریل سیگنال + دو پنل هم‌اندازه)
- * کنار گذاشته شد. زبان جدید «دفتر ثبت» است: یک برگه‌ی پیوسته که با خط مو
- * (hairline) تقسیم می‌شود، نه مجموعه‌ای از کارت‌های گرد هم‌اندازه.
+ * بازطراحی ۲۰۲۶-۰۸ (نسل دوم). نسخه‌ی قبلی یک «برگه‌ی پیوسته» بود با یک
+ * split ثابت (track + rail) و هفت بخش که همه یک وزن بصری داشتند. مشکلش این
+ * بود که چشم نقطه‌ی ورود نداشت و هیچ بخشی تعاملی نبود؛ فقط خوانده می‌شد.
  *
- *   Masthead   → سلام + جمله‌ی وضعیت واقعی + ساعت/تاریخ جلالی + نوار «نفس»
- *   Tape       → نوار نرخ بازار (داده‌ی واقعی ExchangeRate)
- *   Pulse      → نمودار SVG فعالیت ۲۴ ساعت + ستون‌های ۱۴ روز تراکنش
- *   Ledger     → صف تصمیم، سطرهای شماره‌دار و متراکم
- *   Posture    → ریل خوانش‌های ریسک/حجم با delta واقعی
- *   Systems    → سلامت سرویس‌ها (لوزی وضعیت + برچسب متنی، نه فقط رنگ)
+ * زبان جدید: «کنسول تحریری». ساختار از یک گرید ۱۲ ستونه‌ی نامتقارن می‌آید
+ * (۸/۴ ، ۷/۵ ، ۴/۸ ، ۱۲) نه از ردیف کارت‌های هم‌اندازه، و یک ستون فهرست
+ * چسبان (spine) در لبه‌ی شروع، موقعیت خواندن را نشان می‌دهد.
+ *
+ *   Spine      → فهرست بخش‌ها، بخش فعال با IntersectionObserver
+ *   Masthead   → بیانیه‌ی وضعیت + ساز «Standing» (چهار باند نسبت واقعی)
+ *   Tape       → نوار نرخ بازار (ExchangeRate واقعی)، اسکرول snap
+ *   Pulse      → منحنی ۲۴ ساعت با crosshair تعاملی + ستون‌های ۱۴ روز
+ *   Readouts   → خوانش‌های ریسک/حجم با delta واقعی
+ *   Docket     → صف تصمیم، فیلتر سگمنتی روی همان داده
  *   Events     → تایم‌لاین رویدادهای زنده
- *   Pipelines  → قیف‌های واقعی: درخواست‌ها / احراز هویت / معاملات
- *   Routes     → شبکه‌ی مسیرهای پرکاربرد، محدود به نقش کاربر
+ *   Systems    → سلامت سرویس‌ها + نوار تأخیر نسبی
+ *   Pipelines  → قیف‌ها با باند درصدی و legend جدولی
+ *   Index      → فهرست شماره‌دار مسیرها، محدود به نقش کاربر
  *
- * قواعد رعایت‌شده: توکن‌only (بدون hex)، فقط logical properties، mobile-first،
+ * قرارداد props عوض نشده: `FintechCockpitServer` تنها مرز fetch است و این
+ * فایل هیچ داده‌ای نمی‌سازد. هیچ عدد ساختگی، هیچ mock، هیچ placeholder.
+ *
+ * قواعد: توکن-only (بدون hex)، فقط logical properties، mobile-first،
  * انیمیشن فقط روی opacity/transform، بدون emoji، بدون glass تزئینی،
- * بدون reduced-motion محلی (سراسری در tokens.css کلمپ شده).
+ * بدون بلوک reduced-motion محلی (سراسری در tokens.css کلمپ شده).
  *
- * زمان از سرور تزریق می‌شود (`serverNow`) تا رندر سرور و کلاینت یکی باشد و
- * hydration mismatch ساعت/«چند دقیقه پیش» از بین برود.
+ * زمان از سرور تزریق می‌شود (`serverNow`) تا رندر سرور و کلاینت یکی باشد.
  */
 
 import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
@@ -45,14 +52,14 @@ import {
   ShieldCheck,
   TrendingDown,
   TrendingUp,
-  Users,
   Wallet,
 } from 'lucide-react';
 import Link from 'next/link';
-import { type ReactNode, useState } from 'react';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import s from './FintechCockpit.module.css';
 
-// ─── Types ────────────────────────────────────────────────────────────────
+// ─── Types (قرارداد عمومی — تغییر نکرده) ──────────────────────────────────
 
 export interface FintechCockpitService {
   id: string;
@@ -148,7 +155,7 @@ export interface FintechCockpitProps {
   };
   insights?: CockpitInsights;
   rates?: CockpitRate[];
-  editorial?: ReactNode;
+  editorial?: React.ReactNode;
 }
 
 // ─── Formatting ───────────────────────────────────────────────────────────
@@ -175,6 +182,9 @@ const compact = (value: number): string => {
   return fa.format(Math.round(value));
 };
 
+/** نسبت ۰..۱ → درصد فارسی. */
+const pct = (ratio: number): string => `${fa.format(Math.round(ratio * 100))}٪`;
+
 type Trend = 'up' | 'down' | 'flat';
 
 const deltaOf = (current: number, previous: number): { trend: Trend; label: string } => {
@@ -189,13 +199,14 @@ const deltaOf = (current: number, previous: number): { trend: Trend; label: stri
   return { trend: 'flat', label: 'بدون تغییر معنادار' };
 };
 
+/** پیکان روند معنای جهانی دارد و در RTL آینه نمی‌شود. */
 const TrendGlyph = ({ trend }: { trend: Trend }) =>
   trend === 'up' ? (
-    <TrendingUp size={13} strokeWidth={1.75} />
+    <TrendingUp size={13} strokeWidth={1.75} aria-hidden="true" />
   ) : trend === 'down' ? (
-    <TrendingDown size={13} strokeWidth={1.75} />
+    <TrendingDown size={13} strokeWidth={1.75} aria-hidden="true" />
   ) : (
-    <Minus size={13} strokeWidth={1.75} />
+    <Minus size={13} strokeWidth={1.75} aria-hidden="true" />
   );
 
 const ago = (value: string | Date | number, now: number): string => {
@@ -205,6 +216,16 @@ const ago = (value: string | Date | number, now: number): string => {
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${fa.format(hours)} ساعت پیش`;
   return `${fa.format(Math.floor(hours / 24))} روز پیش`;
+};
+
+const isSameDay = (value: string | Date, now: number): boolean => {
+  const a = new Date(value);
+  const b = new Date(now);
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
 };
 
 const clock = (value: number) =>
@@ -329,20 +350,7 @@ const ROUTES: Array<{
     icon: BadgeCheck,
     roles: ADMINS,
   },
-  {
-    href: '/dashboard/users',
-    label: 'کاربران',
-    hint: 'حساب‌ها و دسترسی',
-    icon: Users,
-    roles: ADMINS,
-  },
-  {
-    href: '/dashboard/reports',
-    label: 'گزارش‌ها',
-    hint: 'تحلیل مالی',
-    icon: Activity,
-    roles: ALL,
-  },
+  { href: '/dashboard/reports', label: 'گزارش‌ها', hint: 'تحلیل مالی', icon: Activity, roles: ALL },
   {
     href: '/dashboard/audit-log',
     label: 'دفتر رویداد',
@@ -350,53 +358,67 @@ const ROUTES: Array<{
     icon: ScrollText,
     roles: ADMINS,
   },
-  {
-    href: '/dashboard/helpdesk',
-    label: 'پشتیبانی',
-    hint: 'تیکت‌های باز',
-    icon: LifeBuoy,
-    roles: ALL,
-  },
-  {
-    href: '/dashboard/posts',
-    label: 'نوشته‌ها',
-    hint: 'تحریریه',
-    icon: FileText,
-    roles: ALL,
-  },
+  { href: '/dashboard/helpdesk', label: 'پشتیبانی', hint: 'تیکت‌های باز', icon: LifeBuoy, roles: ALL },
+  { href: '/dashboard/posts', label: 'نوشته‌ها', hint: 'تحریریه', icon: FileText, roles: ALL },
 ];
 
 // ─── Shared bits ──────────────────────────────────────────────────────────
 
-function Rule({
+function Head({
+  id,
   index,
   title,
   note,
   action,
 }: {
+  id: string;
   index: string;
   title: string;
   note?: string;
-  action?: ReactNode;
+  action?: React.ReactNode;
 }) {
   return (
-    <div className={s.rule}>
-      <span className={s.ruleIndex} aria-hidden="true" dir="ltr">
+    <div className={s.head}>
+      <span className={s.headIndex} aria-hidden="true" dir="ltr">
         {index}
       </span>
-      <h2 className={s.ruleTitle}>{title}</h2>
-      <span className={s.ruleLine} aria-hidden="true" />
-      {note ? <span className={s.ruleNote}>{note}</span> : null}
-      {action}
+      <h2 className={s.headTitle} id={`${id}-title`}>
+        {title}
+      </h2>
+      <span className={s.headRule} aria-hidden="true" />
+      {note ? <span className={s.headNote}>{note}</span> : null}
+      {action ?? null}
     </div>
   );
 }
 
-function More({ href, children }: { href: string; children: ReactNode }) {
+function Panel({
+  id,
+  span,
+  children,
+}: {
+  id: string;
+  span: 4 | 5 | 7 | 8 | 12;
+  children: React.ReactNode;
+}) {
+  return (
+    <section
+      id={id}
+      aria-labelledby={`${id}-title`}
+      className={s.panel}
+      data-span={span}
+      style={{ scrollMarginBlockStart: '6rem' }}
+    >
+      {children}
+    </section>
+  );
+}
+
+function More({ href, children }: { href: string; children: React.ReactNode }) {
   return (
     <Link href={href} className={s.more}>
       {children}
-      <ArrowLeft size={14} strokeWidth={1.75} />
+      <ArrowLeft size={14} strokeWidth={1.75} aria-hidden="true" />
     </Link>
   );
 }
@@ -424,14 +446,108 @@ function Blank({
       {href && cta ? (
         <Link href={href} className={s.blankCta}>
           {cta}
-          <ArrowLeft size={14} strokeWidth={1.75} />
+          <ArrowLeft size={14} strokeWidth={1.75} aria-hidden="true" />
         </Link>
       ) : null}
     </div>
   );
 }
 
-// ─── 1. Masthead ──────────────────────────────────────────────────────────
+// ─── Spine — فهرست بخش‌ها ─────────────────────────────────────────────────
+
+interface SpineItem {
+  id: string;
+  index: string;
+  label: string;
+}
+
+function Spine({ items }: { items: SpineItem[] }) {
+  const [active, setActive] = useState<string>(items[0]?.id ?? '');
+
+  useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') return;
+    const nodes = items
+      .map((item) => document.getElementById(item.id))
+      .filter((node): node is HTMLElement => node !== null);
+    if (nodes.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const first = entries.find((entry) => entry.isIntersecting);
+        if (first) setActive(first.target.id);
+      },
+      { rootMargin: '-38% 0px -56% 0px', threshold: 0 },
+    );
+    for (const node of nodes) observer.observe(node);
+    return () => observer.disconnect();
+  }, [items]);
+
+  return (
+    <nav className={s.spine} aria-label="فهرست بخش‌های میز فرماندهی">
+      <ol className={s.spineList}>
+        {items.map((item) => {
+          const on = item.id === active;
+          return (
+            <li key={item.id}>
+              <a
+                href={`#${item.id}`}
+                className={s.spineItem}
+                data-on={on}
+                aria-current={on ? 'true' : undefined}
+              >
+                <span className={s.spineNum} dir="ltr">
+                  {item.index}
+                </span>
+                <span className={s.spineDot} aria-hidden="true" />
+                <span className={s.spineLabel}>{item.label}</span>
+              </a>
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+}
+
+// ─── Standing — ساز وضعیت (چهار باند نسبت واقعی) ──────────────────────────
+
+interface StandingBand {
+  key: string;
+  label: string;
+  value: string;
+  /** نسبت واقعی ۰..۱ — اگر مبنای واقعی وجود ندارد `null` (باند خط‌چین می‌شود). */
+  ratio: number | null;
+  note: string;
+  tone: 'brand' | 'emerald' | 'amber' | 'rose';
+}
+
+function Standing({ bands }: { bands: StandingBand[] }) {
+  return (
+    <dl className={s.standing}>
+      {bands.map((band) => (
+        <div key={band.key} className={s.band}>
+          <dt className={s.bandLabel}>{band.label}</dt>
+          <dd className={s.bandValue} dir="ltr">
+            {band.value}
+          </dd>
+          <div className={s.bandTrack} aria-hidden="true">
+            {band.ratio === null ? (
+              <span className={s.bandNull} />
+            ) : (
+              <span
+                className={`${s.bandFill} ${s[`tone_${band.tone}`]}`}
+                style={{ '--fill': Math.max(0.015, Math.min(1, band.ratio)) } as React.CSSProperties}
+              />
+            )}
+          </div>
+          <p className={s.bandNote}>{band.note}</p>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+// ─── 0. Masthead ──────────────────────────────────────────────────────────
 
 function Masthead({
   userName,
@@ -439,12 +555,14 @@ function Masthead({
   stats,
   kpi,
   health,
+  measured,
 }: {
   userName: string;
   now: number;
   stats: FintechCockpitServiceStats;
   kpi: FintechCockpitProps['kpi'];
   health: number | null;
+  measured: number;
 }) {
   const hour = new Date(now).getHours();
   const greeting =
@@ -464,6 +582,47 @@ function Masthead({
   if (kpi.openFraudCases > 0) facts.push(`${fa.format(kpi.openFraudCases)} پرونده‌ی ریسک باز`);
   if (stats.todayCount > 0) facts.push(`${fa.format(stats.todayCount)} ثبت امروز`);
 
+  const bands: StandingBand[] = [
+    {
+      key: 'health',
+      label: 'سلامت سرویس‌ها',
+      value: health === null ? '—' : pct(health / 100),
+      ratio: health === null ? null : health / 100,
+      note:
+        measured === 0
+          ? 'هیچ سرویسی سنجه‌ی زنده ندارد'
+          : `${fa.format(measured)} سرویس سنجیده‌شده`,
+      tone: health === null ? 'brand' : health >= 90 ? 'emerald' : health >= 60 ? 'amber' : 'rose',
+    },
+    {
+      key: 'queue',
+      label: 'صف در انتظار',
+      value: fa.format(stats.pending),
+      ratio: stats.total > 0 ? stats.pending / stats.total : null,
+      note: stats.total > 0 ? `از ${fa.format(stats.total)} درخواست ثبت‌شده` : 'هنوز درخواستی ثبت نشده',
+      tone: stats.pending === 0 ? 'emerald' : 'brand',
+    },
+    {
+      key: 'urgent',
+      label: 'فوری در صف',
+      value: fa.format(stats.pendingUrgent),
+      ratio: stats.pending > 0 ? stats.pendingUrgent / stats.pending : null,
+      note:
+        stats.pending > 0
+          ? `${pct(stats.pendingUrgent / stats.pending)} از صف`
+          : 'صف خالی است',
+      tone: stats.pendingUrgent > 0 ? 'rose' : 'emerald',
+    },
+    {
+      key: 'risk',
+      label: 'پرونده‌ی ریسک باز',
+      value: fa.format(kpi.openFraudCases),
+      ratio: null,
+      note: kpi.openFraudCases > 0 ? 'نیازمند بازبینی دستی' : 'هیچ پرونده‌ی بازی نیست',
+      tone: kpi.openFraudCases > 0 ? 'rose' : 'emerald',
+    },
+  ];
+
   return (
     <header className={s.masthead}>
       <div className={s.mastheadMain}>
@@ -474,38 +633,39 @@ function Masthead({
           <time dir="ltr" dateTime={new Date(now).toISOString()}>
             {clock(now)}
           </time>
+          <span className={s.kickerSep} aria-hidden="true" />
+          {jalali(now)}
         </p>
+
         <h1 className={s.greeting}>
           {greeting}، <em>{userName || 'مدیر'}</em>
         </h1>
+
         <p className={s.runIn}>
-          {facts.length > 0 ? facts.join(' · ') : 'هیچ موردی منتظر تصمیم تو نیست. میز تمیز است.'}
+          {facts.length > 0
+            ? facts.join(' · ')
+            : 'هیچ موردی منتظر تصمیم تو نیست. میز تمیز است.'}
+        </p>
+
+        <p className={s.mastheadTail}>
+          <span>
+            مشتری فعال <b dir="ltr">{fa.format(kpi.activeCustomers)}</b>
+          </span>
+          <span className={s.kickerSep} aria-hidden="true" />
+          <span>
+            تراکنش ۲۴ ساعت <b dir="ltr">{fa.format(kpi.txn24h)}</b>
+          </span>
         </p>
       </div>
 
-      <dl className={s.mastheadMeta}>
-        <div>
-          <dt>تاریخ</dt>
-          <dd>{jalali(now)}</dd>
-        </div>
-        <div>
-          <dt>سلامت سرویس</dt>
-          <dd aria-live="polite">{health === null ? 'بدون سنجه' : `${fa.format(health)}٪ سالم`}</dd>
-        </div>
-        <div>
-          <dt>مشتری فعال</dt>
-          <dd>{fa.format(kpi.activeCustomers)}</dd>
-        </div>
-      </dl>
-
-      <span className={s.breath} aria-hidden="true">
-        <i />
-      </span>
+      <div className={s.mastheadAside}>
+        <Standing bands={bands} />
+      </div>
     </header>
   );
 }
 
-// ─── 2. Market tape ───────────────────────────────────────────────────────
+// ─── Tape — نوار نرخ بازار ────────────────────────────────────────────────
 
 function Tape({ rates }: { rates: CockpitRate[] }) {
   if (rates.length === 0) return null;
@@ -527,10 +687,12 @@ function Tape({ rates }: { rates: CockpitRate[] }) {
               <span className={s.tapeValue} dir="ltr">
                 {decimalFormatter(rate.decimals).format(rate.value)}
               </span>
-              <span className={`${s.tapeDelta} ${s[`trend_${trend}`]}`}>
-                <TrendGlyph trend={trend} />
-                {trend === 'flat' ? 'ثابت' : `${fa1.format(Math.abs(rate.changePercent))}٪`}
-                <small>{UNIT_LABELS[rate.unit] ?? rate.unit}</small>
+              <span className={s.tapeFoot}>
+                <span className={`${s.tapeDelta} ${s[`trend_${trend}`]}`}>
+                  <TrendGlyph trend={trend} />
+                  {trend === 'flat' ? 'ثابت' : `${fa1.format(Math.abs(rate.changePercent))}٪`}
+                </span>
+                <small className={s.tapeUnit}>{UNIT_LABELS[rate.unit] ?? rate.unit}</small>
               </span>
             </Link>
           );
@@ -540,7 +702,7 @@ function Tape({ rates }: { rates: CockpitRate[] }) {
   );
 }
 
-// ─── 3. Pulse (24h SVG + 14d columns) ─────────────────────────────────────
+// ─── 01. Pulse — منحنی تعاملی ۲۴ ساعت + ستون‌های ۱۴ روز ───────────────────
 
 function Pulse({
   bars,
@@ -551,29 +713,58 @@ function Pulse({
   insights?: CockpitInsights;
   now: number;
 }) {
-  const series = bars.length > 1 ? bars : new Array(24).fill(0);
+  const [cursor, setCursor] = useState<number | null>(null);
+
+  const series = bars.length > 1 ? bars : [];
   const count = series.length;
-  const peak = Math.max(...series);
-  const peakIndex = series.indexOf(peak);
+  const peak = count > 0 ? Math.max(...series) : 0;
+  const peakIndex = count > 0 ? series.indexOf(peak) : 0;
   const hasSignal = peak > 0;
-
-  const coords = series
-    .map((value, index) => {
-      const x = (index / (count - 1)) * 100;
-      const y = 96 - Math.max(0, Math.min(100, value)) * 0.9;
-      return `${x.toFixed(2)},${y.toFixed(2)}`;
-    })
-    .join(' ');
-
-  const trend = insights?.txnTrend ?? [];
-  const trendMax = Math.max(...trend, 1);
-  const txnDelta = insights ? deltaOf(insights.txn24h, insights.txnPrev24h) : null;
 
   const hourLabel = (index: number) =>
     new Date(now - (count - 1 - index) * HOUR).toLocaleTimeString('en-GB', {
       hour: '2-digit',
       minute: '2-digit',
     });
+
+  const yOf = (value: number) => 96 - Math.max(0, Math.min(100, value)) * 0.9;
+  const xOf = (index: number) => (count > 1 ? (index / (count - 1)) * 100 : 0);
+
+  const coords = series.map((value, index) => `${xOf(index).toFixed(2)},${yOf(value).toFixed(2)}`).join(' ');
+
+  const move = (clientX: number, element: HTMLElement) => {
+    if (count < 2) return;
+    const rect = element.getBoundingClientRect();
+    if (rect.width === 0) return;
+    const ratio = (clientX - rect.left) / rect.width;
+    const index = Math.round(ratio * (count - 1));
+    setCursor(Math.max(0, Math.min(count - 1, index)));
+  };
+
+  const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (count < 2) return;
+    const current = cursor ?? count - 1;
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      setCursor(Math.min(count - 1, current + 1));
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      setCursor(Math.max(0, current - 1));
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      setCursor(0);
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      setCursor(count - 1);
+    } else if (event.key === 'Escape') {
+      setCursor(null);
+    }
+  };
+
+  const trend = insights?.txnTrend ?? [];
+  const trendMax = trend.length > 0 ? Math.max(...trend, 1) : 1;
+  const trendLast = trend.length > 0 ? (trend[trend.length - 1] ?? 0) : 0;
+  const txnDelta = insights ? deltaOf(insights.txn24h, insights.txnPrev24h) : null;
 
   const dayLabel = (index: number) =>
     new Date(now - (trend.length - 1 - index) * DAY).toLocaleDateString('fa-IR', {
@@ -582,8 +773,9 @@ function Pulse({
     });
 
   return (
-    <section className={s.pulse} aria-label="نبض پلتفرم">
-      <Rule
+    <Panel id="pulse" span={8}>
+      <Head
+        id="pulse"
         index="01"
         title="نبض پلتفرم"
         note={hasSignal ? `اوج در ${hourLabel(peakIndex)}` : 'بدون رویداد ثبت‌شده'}
@@ -591,42 +783,67 @@ function Pulse({
       />
 
       {hasSignal ? (
-        <div className={s.chart} dir="ltr">
-          <svg
-            className={s.chartSvg}
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-            role="img"
-            aria-label={`فعالیت ۲۴ ساعت گذشته، بیشترین شدت در ساعت ${hourLabel(peakIndex)}`}
+        <>
+          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+          <div
+            className={s.ridge}
+            dir="ltr"
+            tabIndex={0}
+            role="group"
+            aria-label={`فعالیت ۲۴ ساعت گذشته. بیشترین شدت در ساعت ${hourLabel(peakIndex)}. با کلید جهت‌نما مقدار هر ساعت را بخوان.`}
+            onPointerMove={(event) => move(event.clientX, event.currentTarget)}
+            onPointerDown={(event) => move(event.clientX, event.currentTarget)}
+            onPointerLeave={() => setCursor(null)}
+            onKeyDown={onKeyDown}
+            onBlur={() => setCursor(null)}
           >
-            <line
-              className={s.chartGrid}
-              x1="0"
-              y1="32"
-              x2="100"
-              y2="32"
-              vectorEffect="non-scaling-stroke"
-            />
-            <line
-              className={s.chartGrid}
-              x1="0"
-              y1="64"
-              x2="100"
-              y2="64"
-              vectorEffect="non-scaling-stroke"
-            />
-            <polygon className={s.chartArea} points={`0,100 ${coords} 100,100`} />
-            <polyline className={s.chartLine} points={coords} vectorEffect="non-scaling-stroke" />
-          </svg>
-          <div className={s.chartHours} aria-hidden="true">
-            {series.map((value, index) => (
+            <svg className={s.ridgeSvg} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              <line className={s.gridLine} x1="0" y1="33" x2="100" y2="33" vectorEffect="non-scaling-stroke" />
+              <line className={s.gridLine} x1="0" y1="64" x2="100" y2="64" vectorEffect="non-scaling-stroke" />
+              <line className={s.baseLine} x1="0" y1="96" x2="100" y2="96" vectorEffect="non-scaling-stroke" />
+              <polygon className={s.area} points={`0,100 ${coords} 100,100`} />
+              <polyline className={s.line} points={coords} vectorEffect="non-scaling-stroke" />
+              {cursor !== null ? (
+                <circle
+                  className={s.cursorDot}
+                  cx={xOf(cursor)}
+                  cy={yOf(series[cursor] ?? 0)}
+                  r="1.6"
+                  vectorEffect="non-scaling-stroke"
+                />
+              ) : null}
+            </svg>
+
+            {cursor !== null ? (
               <span
-                key={`h${index}-${value}`}
-                data-label={`${hourLabel(index)} · ${fa.format(value)}`}
+                className={s.cross}
+                style={{ '--x': `${xOf(cursor)}%` } as React.CSSProperties}
+                aria-hidden="true"
               />
-            ))}
+            ) : null}
           </div>
-        </div>
+
+          <div className={s.ridgeFoot}>
+            <output className={s.readout}>
+              {cursor === null ? (
+                <span className={s.readoutHint}>نشانگر را روی منحنی ببر یا با کلید جهت‌نما بخوان</span>
+              ) : (
+                <>
+                  <span className={s.readoutValue} dir="ltr">
+                    {hourLabel(cursor)}
+                  </span>
+                  <span className={s.readoutSep} aria-hidden="true" />
+                  <span>
+                    شدت فعالیت <b>{fa.format(series[cursor] ?? 0)}</b>
+                  </span>
+                </>
+              )}
+            </output>
+            <span className={s.ridgeScale} dir="ltr" aria-hidden="true">
+              {hourLabel(0)} → {hourLabel(count - 1)}
+            </span>
+          </div>
+        </>
       ) : (
         <Blank
           icon={Activity}
@@ -643,109 +860,39 @@ function Pulse({
               <span className={`${s.chip} ${s[`trend_${txnDelta.trend}`]}`}>
                 <TrendGlyph trend={txnDelta.trend} />
                 {txnDelta.label}
-                <small>نسبت به ۲۴ ساعت قبل</small>
               </span>
             ) : null}
             <span className={s.trendPeak} dir="ltr">
               {fa.format(trendMax)}
             </span>
           </div>
-          <ol className={s.trendBars} dir="ltr">
+
+          <ol
+            className={s.trendBars}
+            dir="ltr"
+            role="img"
+            aria-label={`روند تراکنش ۱۴ روز گذشته. بیشینه ${fa.format(trendMax)}، آخرین روز ${fa.format(trendLast)}.`}
+          >
             {trend.map((value, index) => (
-              <li key={`d${index}-${value}`} data-label={`${dayLabel(index)} · ${fa.format(value)}`}>
+              <li
+                // biome-ignore lint/suspicious/noArrayIndexKey: سری زمانی ثابت‌طول، کلید معنادار دیگری ندارد
+                key={`day-${index}`}
+                data-label={`${dayLabel(index)} · ${fa.format(value)}`}
+                aria-hidden="true"
+              >
                 <i style={{ blockSize: `${Math.max(2, (value / trendMax) * 100)}%` }} />
               </li>
             ))}
           </ol>
         </div>
       ) : null}
-    </section>
+    </Panel>
   );
 }
 
-// ─── 4. Decision ledger ───────────────────────────────────────────────────
+// ─── 02. Readouts ─────────────────────────────────────────────────────────
 
-function Ledger({
-  recent,
-  stats,
-  now,
-}: {
-  recent: FintechCockpitService[];
-  stats: FintechCockpitServiceStats;
-  now: number;
-}) {
-  return (
-    <section className={s.ledgerWrap} aria-label="صف تصمیم">
-      <Rule
-        index="02"
-        title="صف تصمیم"
-        note={`${fa.format(stats.pending)} در انتظار · ${fa.format(stats.todayCount)} امروز`}
-        action={<More href="/dashboard/service-requests">همه‌ی درخواست‌ها</More>}
-      />
-
-      {recent.length > 0 ? (
-        <ol className={s.ledger}>
-          {recent.map((item, index) => {
-            const urgent = item.urgency === 'URGENT';
-            return (
-              <li key={item.id}>
-                <Link href="/dashboard/service-requests" className={s.row}>
-                  <span className={s.rowIndex} aria-hidden="true" dir="ltr">
-                    {String(index + 1).padStart(2, '0')}
-                  </span>
-
-                  <span className={s.rowBody}>
-                    <strong>{item.fullName || 'بدون نام'}</strong>
-                    <small>
-                      {SERVICE_LABELS[item.serviceType] ?? item.serviceType}
-                      <span className={s.dotSep} aria-hidden="true" />
-                      <span dir="ltr" className={s.mono}>
-                        {item.trackingCode}
-                      </span>
-                    </small>
-                  </span>
-
-                  <span className={s.rowSide}>
-                    <b dir="ltr" className={s.mono}>
-                      {item.amount} {item.currency}
-                    </b>
-                    <span className={s.rowTags}>
-                      {urgent ? (
-                        <span className={`${s.tag} ${s.tagUrgent}`}>
-                          <ShieldAlert size={12} strokeWidth={2} />
-                          فوری
-                        </span>
-                      ) : (
-                        <span className={s.tag}>{STATUS_LABELS[item.status] ?? item.status}</span>
-                      )}
-                      <time dateTime={new Date(item.createdAt).toISOString()}>
-                        {ago(item.createdAt, now)}
-                      </time>
-                    </span>
-                  </span>
-
-                  <ArrowLeft size={15} strokeWidth={1.75} className={s.rowGo} aria-hidden="true" />
-                </Link>
-              </li>
-            );
-          })}
-        </ol>
-      ) : (
-        <Blank
-          icon={CheckCircle2}
-          title="صف خالی است"
-          body="هیچ درخواست خدماتی منتظر تصمیم نیست. تاریخچه‌ی کامل در مرکز درخواست‌ها باقی است."
-          href="/dashboard/service-requests"
-          cta="مرور تاریخچه"
-        />
-      )}
-    </section>
-  );
-}
-
-// ─── 5. Posture rail ──────────────────────────────────────────────────────
-
-function Posture({
+function Readouts({
   kpi,
   stats,
   insights,
@@ -785,14 +932,14 @@ function Posture({
     {
       label: 'تراکنش ۲۴ ساعت',
       value: fa.format(insights?.txn24h ?? kpi.txn24h),
-      note: txnDelta ? txnDelta.label : 'بدون مقایسه',
+      note: txnDelta ? txnDelta.label : 'بدون مبنای مقایسه',
       href: '/dashboard/audit-log',
       trend: txnDelta?.trend,
     },
     {
       label: `حجم معاملات ۷ روز (${insights?.volumeCurrency ?? kpi.dealsCurrency})`,
       value: compact(insights?.volume7d ?? kpi.dealsVolume),
-      note: volumeDelta ? volumeDelta.label : 'بدون مقایسه',
+      note: volumeDelta ? volumeDelta.label : 'بدون مبنای مقایسه',
       href: '/dashboard/my-deals',
       trend: volumeDelta?.trend,
     },
@@ -805,63 +952,193 @@ function Posture({
   ];
 
   return (
-    <section className={s.postureWrap} aria-label="وضعیت کلی">
-      <Rule index="03" title="خوانش وضعیت" />
-      <div className={s.posture}>
+    <Panel id="readouts" span={4}>
+      <Head id="readouts" index="02" title="خوانش وضعیت" />
+      <div className={s.readouts}>
         {rows.map((row) => (
           <Link
             key={row.label}
             href={row.href}
-            className={`${s.postureRow} ${row.lead ? s.postureLead : ''}`}
+            className={s.readRow}
+            data-lead={row.lead ? 'true' : undefined}
           >
-            <span className={s.postureLabel}>{row.label}</span>
-            <strong className={`${s.postureValue} ${row.tone ? s[`tone_${row.tone}`] : ''}`}>
+            <span className={s.readLabel}>{row.label}</span>
+            <strong className={`${s.readValue} ${row.tone ? s[`tone_${row.tone}`] : ''}`} dir="ltr">
               {row.value}
             </strong>
-            <span className={`${s.postureNote} ${row.trend ? s[`trend_${row.trend}`] : ''}`}>
+            <span className={`${s.readNote} ${row.trend ? s[`trend_${row.trend}`] : ''}`}>
               {row.trend ? <TrendGlyph trend={row.trend} /> : null}
               {row.note}
             </span>
+            <ArrowLeft size={14} strokeWidth={1.75} className={s.readGo} aria-hidden="true" />
           </Link>
         ))}
       </div>
-    </section>
+      {!insights ? (
+        <p className={s.degraded}>
+          سنجه‌های تجمیعی این لحظه در دسترس نیست؛ اعداد پایه از KPI زنده خوانده شده‌اند.
+        </p>
+      ) : null}
+    </Panel>
   );
 }
 
-// ─── 6. Systems ───────────────────────────────────────────────────────────
+// ─── 03. Docket — صف تصمیم با فیلتر ───────────────────────────────────────
 
-function Systems({ services }: { services: FintechCockpitLiveService[] }) {
-  if (services.length === 0) return null;
+type DocketFilter = 'all' | 'urgent' | 'today';
+
+function Docket({
+  recent,
+  stats,
+  now,
+}: {
+  recent: FintechCockpitService[];
+  stats: FintechCockpitServiceStats;
+  now: number;
+}) {
+  const [filter, setFilter] = useState<DocketFilter>('all');
+
+  const counts = useMemo(
+    () => ({
+      all: recent.length,
+      urgent: recent.filter((item) => item.urgency === 'URGENT').length,
+      today: recent.filter((item) => isSameDay(item.createdAt, now)).length,
+    }),
+    [recent, now],
+  );
+
+  const rows = useMemo(() => {
+    if (filter === 'urgent') return recent.filter((item) => item.urgency === 'URGENT');
+    if (filter === 'today') return recent.filter((item) => isSameDay(item.createdAt, now));
+    return recent;
+  }, [recent, filter, now]);
+
+  const tabs: Array<{ key: DocketFilter; label: string; count: number }> = [
+    { key: 'all', label: 'همه', count: counts.all },
+    { key: 'urgent', label: 'فوری', count: counts.urgent },
+    { key: 'today', label: 'امروز', count: counts.today },
+  ];
 
   return (
-    <section className={s.systemsWrap} aria-label="سلامت سرویس‌ها">
-      <Rule index="04" title="سرویس‌ها" />
-      <ul className={s.systems}>
-        {services.map((service) => (
-          <li key={service.id} className={s.sysRow}>
-            <span className={`${s.glyph} ${s[`glyph_${service.status}`]}`} aria-hidden="true" />
-            <span className={s.sysName}>{service.name}</span>
-            <span className={s.sysState}>{SERVICE_HEALTH[service.status]}</span>
-            <span className={s.sysLatency} dir="ltr">
-              {service.latencyMs == null ? '—' : `${Math.round(service.latencyMs)}ms`}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </section>
+    <Panel id="docket" span={7}>
+      <Head
+        id="docket"
+        index="03"
+        title="صف تصمیم"
+        note={`${fa.format(stats.pending)} در انتظار · ${fa.format(stats.todayCount)} امروز`}
+        action={<More href="/dashboard/service-requests">همه‌ی درخواست‌ها</More>}
+      />
+
+      {recent.length > 0 ? (
+        <>
+          <div className={s.filters} role="group" aria-label="فیلتر صف تصمیم">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={s.filterBtn}
+                data-on={filter === tab.key}
+                aria-pressed={filter === tab.key}
+                onClick={() => setFilter(tab.key)}
+              >
+                {tab.label}
+                <span className={s.filterCount} dir="ltr">
+                  {fa.format(tab.count)}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {rows.length > 0 ? (
+            <ol className={s.docket}>
+              {rows.map((item, index) => {
+                const urgent = item.urgency === 'URGENT';
+                return (
+                  <li key={item.id}>
+                    <Link href="/dashboard/service-requests" className={s.row}>
+                      <span className={s.rowIndex} aria-hidden="true" dir="ltr">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+
+                      <span className={s.rowBody}>
+                        <strong className={s.rowName}>{item.fullName || 'بدون نام'}</strong>
+                        <small className={s.rowMeta}>
+                          {SERVICE_LABELS[item.serviceType] ?? item.serviceType}
+                          <span className={s.dotSep} aria-hidden="true" />
+                          <span dir="ltr" className={s.mono}>
+                            {item.trackingCode}
+                          </span>
+                        </small>
+                      </span>
+
+                      <span className={s.rowSide}>
+                        <b dir="ltr" className={s.rowAmount}>
+                          {item.amount} {item.currency}
+                        </b>
+                        <span className={s.rowTags}>
+                          {urgent ? (
+                            <span className={`${s.tag} ${s.tagUrgent}`}>
+                              <ShieldAlert size={12} strokeWidth={2} aria-hidden="true" />
+                              فوری
+                            </span>
+                          ) : (
+                            <span className={s.tag}>
+                              {STATUS_LABELS[item.status] ?? item.status}
+                            </span>
+                          )}
+                          <time dateTime={new Date(item.createdAt).toISOString()}>
+                            {ago(item.createdAt, now)}
+                          </time>
+                        </span>
+                      </span>
+
+                      <ArrowLeft
+                        size={15}
+                        strokeWidth={1.75}
+                        className={s.rowGo}
+                        aria-hidden="true"
+                      />
+                    </Link>
+                  </li>
+                );
+              })}
+            </ol>
+          ) : (
+            <p className={s.filterEmpty}>
+              با این فیلتر موردی نیست.{' '}
+              <button type="button" className={s.linkBtn} onClick={() => setFilter('all')}>
+                نمایش همه
+              </button>
+            </p>
+          )}
+        </>
+      ) : (
+        <Blank
+          icon={CheckCircle2}
+          title="صف خالی است"
+          body="هیچ درخواست خدماتی منتظر تصمیم نیست. تاریخچه‌ی کامل در مرکز درخواست‌ها باقی است."
+          href="/dashboard/service-requests"
+          cta="مرور تاریخچه"
+        />
+      )}
+    </Panel>
   );
 }
 
-// ─── 7. Event timeline ────────────────────────────────────────────────────
+// ─── 04. Events ───────────────────────────────────────────────────────────
 
 function Events({ events, now }: { events: FintechCockpitLiveEvent[]; now: number }) {
   return (
-    <section className={s.eventsWrap} aria-label="رویدادهای اخیر">
-      <Rule index="05" title="رویدادها" action={<More href="/dashboard/audit-log">همه</More>} />
+    <Panel id="events" span={5}>
+      <Head
+        id="events"
+        index="04"
+        title="رویدادها"
+        action={<More href="/dashboard/audit-log">همه</More>}
+      />
       {events.length > 0 ? (
         <ol className={s.events}>
-          {events.slice(0, 6).map((event) => {
+          {events.slice(0, 7).map((event) => {
             const Icon = eventIcon(event.type);
             return (
               <li key={event.id} className={s.event}>
@@ -872,7 +1149,7 @@ function Events({ events, now }: { events: FintechCockpitLiveEvent[]; now: numbe
                   <strong>{event.actor}</strong>
                   <small dir="auto">{event.detail}</small>
                 </span>
-                <time dateTime={new Date(event.timestamp).toISOString()}>
+                <time className={s.eventTime} dateTime={new Date(event.timestamp).toISOString()}>
                   {ago(event.timestamp, now)}
                 </time>
               </li>
@@ -886,11 +1163,62 @@ function Events({ events, now }: { events: FintechCockpitLiveEvent[]; now: numbe
           body="هر ورود، حواله یا تغییر وضعیت به‌محض ثبت اینجا ظاهر می‌شود."
         />
       )}
-    </section>
+    </Panel>
   );
 }
 
-// ─── 8. Pipelines ─────────────────────────────────────────────────────────
+// ─── 05. Systems ──────────────────────────────────────────────────────────
+
+function Systems({ services }: { services: FintechCockpitLiveService[] }) {
+  if (services.length === 0) return null;
+
+  const latencies = services
+    .map((service) => service.latencyMs)
+    .filter((value): value is number => typeof value === 'number' && Number.isFinite(value));
+  const maxLatency = latencies.length > 0 ? Math.max(...latencies, 1) : 0;
+
+  return (
+    <Panel id="systems" span={4}>
+      <Head
+        id="systems"
+        index="05"
+        title="سرویس‌ها"
+        note={maxLatency > 0 ? `کندترین ${Math.round(maxLatency)}ms` : undefined}
+      />
+      <ul className={s.systems}>
+        {services.map((service) => {
+          const latency = service.latencyMs;
+          const ratio =
+            typeof latency === 'number' && maxLatency > 0
+              ? Math.max(0.04, Math.min(1, latency / maxLatency))
+              : null;
+          return (
+            <li key={service.id} className={s.sysRow} title={service.desc}>
+              <span className={`${s.glyph} ${s[`glyph_${service.status}`]}`} aria-hidden="true" />
+              <span className={s.sysName}>{service.name}</span>
+              <span className={s.sysState}>{SERVICE_HEALTH[service.status]}</span>
+              <span className={s.sysBar} aria-hidden="true">
+                {ratio === null ? (
+                  <i className={s.sysBarNull} />
+                ) : (
+                  <i
+                    className={`${s.sysBarFill} ${s[`glyphFill_${service.status}`]}`}
+                    style={{ '--fill': ratio } as React.CSSProperties}
+                  />
+                )}
+              </span>
+              <span className={s.sysLatency} dir="ltr">
+                {latency == null ? '—' : `${Math.round(latency)}ms`}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </Panel>
+  );
+}
+
+// ─── 06. Pipelines ────────────────────────────────────────────────────────
 
 function Pipeline({
   title,
@@ -908,10 +1236,10 @@ function Pipeline({
   return (
     <div className={s.pipe}>
       <div className={s.pipeHead}>
-        <h3>{title}</h3>
+        <h3 className={s.pipeTitle}>{title}</h3>
         <Link href={href} className={s.pipeTotal}>
-          {fa.format(total)}
-          <ArrowLeft size={13} strokeWidth={1.75} />
+          <span dir="ltr">{fa.format(total)}</span>
+          <ArrowLeft size={13} strokeWidth={1.75} aria-hidden="true" />
         </Link>
       </div>
 
@@ -935,9 +1263,15 @@ function Pipeline({
           <ul className={s.legend}>
             {segments.slice(0, 5).map((segment) => (
               <li key={segment.key}>
-                <span className={`${s.dot} ${s[`seg_${toneFor(segment.key)}`]}`} aria-hidden="true" />
+                <span
+                  className={`${s.dot} ${s[`seg_${toneFor(segment.key)}`]}`}
+                  aria-hidden="true"
+                />
                 <span className={s.legendLabel}>{labelFor(segment.key)}</span>
-                <b>{fa.format(segment.count)}</b>
+                <b dir="ltr">{fa.format(segment.count)}</b>
+                <span className={s.legendPct} dir="ltr">
+                  {pct(segment.count / total)}
+                </span>
               </li>
             ))}
           </ul>
@@ -957,8 +1291,8 @@ function Pipelines({ insights }: { insights: CockpitInsights }) {
   if (!hasAny) return null;
 
   return (
-    <section className={s.pipesWrap} aria-label="قیف‌های عملیاتی">
-      <Rule index="06" title="قیف‌های عملیاتی" note="سهم هر وضعیت از کل رکوردها" />
+    <Panel id="pipelines" span={8}>
+      <Head id="pipelines" index="06" title="قیف‌های عملیاتی" note="سهم هر وضعیت از کل رکوردها" />
       <div className={s.pipes}>
         <Pipeline
           title="درخواست‌های خدمات"
@@ -983,42 +1317,45 @@ function Pipelines({ insights }: { insights: CockpitInsights }) {
       {insights.pendingByService.length > 0 ? (
         <div className={s.load}>
           <span className={s.miniLabel}>بار صف به تفکیک خدمت</span>
-          <ul>
+          <ul className={s.loadList}>
             {insights.pendingByService.map((segment) => (
               <li key={segment.key}>
                 <span>{SERVICE_LABELS[segment.key] ?? segment.key}</span>
-                <b>{fa.format(segment.count)}</b>
+                <b dir="ltr">{fa.format(segment.count)}</b>
               </li>
             ))}
           </ul>
         </div>
       ) : null}
-    </section>
+    </Panel>
   );
 }
 
-// ─── 9. Routes ────────────────────────────────────────────────────────────
+// ─── 07. Index — مسیرها ───────────────────────────────────────────────────
 
-function Routes({ userRole }: { userRole: Role }) {
+function RouteIndex({ userRole }: { userRole: Role }) {
   const allowed = ROUTES.filter((route) => route.roles.includes(userRole));
   if (allowed.length === 0) return null;
 
   return (
-    <section className={s.routesWrap} aria-label="مسیرهای پرکاربرد">
-      <Rule index="07" title="مسیرها" />
+    <Panel id="index" span={12}>
+      <Head id="index" index="07" title="مسیرها" note={`${fa.format(allowed.length)} مقصد در دسترس نقش تو`} />
       <nav className={s.routes}>
-        {allowed.map(({ href, label, hint, icon: Icon }) => (
+        {allowed.map(({ href, label, hint, icon: Icon }, position) => (
           <Link key={href} href={href} className={s.route}>
-            <Icon size={17} strokeWidth={1.5} aria-hidden="true" />
-            <span>
+            <span className={s.routeNum} aria-hidden="true" dir="ltr">
+              {String(position + 1).padStart(2, '0')}
+            </span>
+            <Icon size={17} strokeWidth={1.5} className={s.routeIcon} aria-hidden="true" />
+            <span className={s.routeBody}>
               <b>{label}</b>
               <small>{hint}</small>
             </span>
-            <ArrowLeft size={14} strokeWidth={1.75} aria-hidden="true" />
+            <ArrowLeft size={14} strokeWidth={1.75} className={s.routeGo} aria-hidden="true" />
           </Link>
         ))}
       </nav>
-    </section>
+    </Panel>
   );
 }
 
@@ -1048,30 +1385,55 @@ export function FintechCockpit({
         )
       : null;
 
+  const hasSystems = live.services.length > 0;
+  const hasPipelines =
+    !!insights &&
+    (insights.requestFunnel.length > 0 ||
+      insights.kycFunnel.length > 0 ||
+      insights.dealFunnel.length > 0);
+  const hasRoutes = ROUTES.some((route) => route.roles.includes(userRole));
+
+  const spineItems = useMemo<SpineItem[]>(() => {
+    const items: SpineItem[] = [
+      { id: 'pulse', index: '01', label: 'نبض' },
+      { id: 'readouts', index: '02', label: 'خوانش' },
+      { id: 'docket', index: '03', label: 'صف' },
+      { id: 'events', index: '04', label: 'رویداد' },
+    ];
+    if (hasSystems) items.push({ id: 'systems', index: '05', label: 'سرویس' });
+    if (hasPipelines) items.push({ id: 'pipelines', index: '06', label: 'قیف' });
+    if (hasRoutes) items.push({ id: 'index', index: '07', label: 'مسیر' });
+    return items;
+  }, [hasSystems, hasPipelines, hasRoutes]);
+
   return (
     <div className={s.sheet} dir="rtl">
-      <Masthead userName={userName} now={now} stats={services.stats} kpi={kpi} health={health} />
+      <Spine items={spineItems} />
 
-      <Tape rates={rates ?? []} />
+      <div className={s.body}>
+        <Masthead
+          userName={userName}
+          now={now}
+          stats={services.stats}
+          kpi={kpi}
+          health={health}
+          measured={measured.length}
+        />
 
-      <div className={s.split}>
-        <div className={s.track}>
+        <Tape rates={rates ?? []} />
+
+        <div className={s.grid}>
           <Pulse bars={live.activityBars} insights={insights} now={now} />
-          <Ledger recent={services.recent} stats={services.stats} now={now} />
+          <Readouts kpi={kpi} stats={services.stats} insights={insights} />
+          <Docket recent={services.recent} stats={services.stats} now={now} />
+          <Events events={live.events} now={now} />
+          <Systems services={live.services} />
+          {insights ? <Pipelines insights={insights} /> : null}
+          <RouteIndex userRole={userRole} />
         </div>
 
-        <aside className={s.rail}>
-          <Posture kpi={kpi} stats={services.stats} insights={insights} />
-          <Systems services={live.services} />
-          <Events events={live.events} now={now} />
-        </aside>
+        {editorial ? <div className={s.editorial}>{editorial}</div> : null}
       </div>
-
-      {insights ? <Pipelines insights={insights} /> : null}
-
-      <Routes userRole={userRole} />
-
-      {editorial ? <div className={s.editorial}>{editorial}</div> : null}
     </div>
   );
 }
