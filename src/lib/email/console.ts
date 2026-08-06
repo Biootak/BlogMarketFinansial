@@ -22,8 +22,26 @@ export function createConsoleProvider(): EmailProvider {
 
   return {
     name: 'console',
-    async send(_message: EmailMessage): Promise<EmailSendResult> {
-      return { id: `console-${Date.now()}`, provider: 'console' };
+    async send(message: EmailMessage): Promise<EmailSendResult> {
+      const id = `console-${Date.now()}`;
+      // استخراج کد OTP از متن ایمیل (۶ رقمی)
+      const codeMatch = message.html.match(/\b(\d{6})\b/) ?? message.text?.match(/\b(\d{6})\b/);
+      const code = codeMatch?.[1];
+
+      const lines = [
+        '',
+        '┌─────────────────────────────────────────┐',
+        '│         📧  DEV EMAIL (console)          │',
+        '├─────────────────────────────────────────┤',
+        `│  To:      ${message.to.padEnd(29)}│`,
+        `│  Subject: ${message.subject.slice(0, 29).padEnd(29)}│`,
+        code ? `│  🔑 CODE:  ${code.padEnd(29)}│` : '│  (no 6-digit code found in body)        │',
+        '└─────────────────────────────────────────┘',
+        '',
+      ].join('\n');
+      process.stdout.write(`${lines}\n`);
+
+      return { id, provider: 'console' };
     },
   };
 }

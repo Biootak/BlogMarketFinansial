@@ -4,9 +4,9 @@ import { PageHeader } from '@/components/Dashboard/primitives';
 import { getObservabilitySnapshot } from '@/lib/observability';
 
 import { ObsProvider } from './_components/ObsProvider';
+import { ObsPulseDeck } from './_components/ObsPulseDeck';
 import { ObsSubNav } from './_components/ObsSubNav';
 import { ObsToolbar } from './_components/ObsToolbar';
-import { SystemVitals } from './_components/SystemVitals';
 import { requireObservabilityAccess } from './_lib/guard';
 import s from './observability.module.css';
 
@@ -14,8 +14,12 @@ export const dynamic = 'force-dynamic';
 
 /**
  * پوستهٔ مشترک همهٔ زیرمسیرهای مشاهده‌پذیری.
- * داده یک‌بار اینجا خوانده می‌شود و از طریق ObsProvider بین زیرمسیرها
- * به اشتراک می‌رود؛ جابه‌جایی بین تب‌ها هیچ درخواست تازه‌ای نمی‌زند.
+ *
+ * داده یک‌بار اینجا خوانده می‌شود و از طریق ObsProvider بین زیرمسیرها به
+ * اشتراک می‌رود؛ جابه‌جایی بین تب‌ها هیچ درخواست تازه‌ای نمی‌زند.
+ *
+ * ObsPulseDeck هم عمداً در layout است نه در page: «حال سامانه» زمینهٔ همهٔ
+ * تب‌هاست، پس نباید با هر ناوبری unmount و دوباره رسم شود.
  */
 export default async function ObservabilityLayout({ children }: { children: ReactNode }) {
   await requireObservabilityAccess();
@@ -36,17 +40,14 @@ export default async function ObservabilityLayout({ children }: { children: Reac
       />
 
       <ObsProvider initialData={initialData}>
-        <div className={s.bar}>
+        <div className={s.command}>
           <ObsSubNav />
           <ObsToolbar />
         </div>
 
-        <div className={s.shell}>
-          <main className={s.main}>{children}</main>
-          <aside className={s.rail} aria-label="نشانه‌های حیاتی سامانه">
-            <SystemVitals />
-          </aside>
-        </div>
+        <ObsPulseDeck />
+
+        <main className={s.main}>{children}</main>
       </ObsProvider>
     </div>
   );

@@ -1,25 +1,35 @@
 /* ============================================================================
    Source heat matrix — منبع × ساعت
-   RTL امن: چیدمان با grid و property های منطقی؛ ساعت‌ها از inline-start شروع
-   می‌شوند یعنی در فارسی از راست (قدیمی‌ترین) به چپ (هم‌اکنون).
+   ----------------------------------------------------------------------------
+   RTL امن: چیدمان با grid و property های منطقی. ستون ۱ گرید در RTL سمت راست
+   می‌نشیند، پس سطل ۰ (قدیمی‌ترین) در inline-start است — دقیقاً هم‌جهت با
+   زلزله‌نگار hero. هر دو نمایش یک زبان زمانی دارند.
+
+   جمع حاشیه (marginal total) عمداً وجود دارد: دفتر مالی همیشه جمع ستون را
+   کنار ردیف می‌نویسد. اینجا هم همان کار را می‌کنیم.
    ============================================================================ */
 
 .wrap {
   min-inline-size: 0;
+}
+
+.scroller {
+  min-inline-size: 0;
   overflow-x: auto;
+  padding-block-end: var(--ds-space-1);
 }
 
 .grid {
   display: grid;
-  grid-template-columns: minmax(6rem, max-content) minmax(0, 1fr);
+  grid-template-columns: minmax(5.5rem, max-content) minmax(0, 1fr) minmax(2.5rem, max-content);
   align-items: center;
-  gap: 3px var(--ds-space-3);
-  min-inline-size: 22rem;
+  gap: 3px var(--ds-space-2);
+  min-inline-size: 26rem;
 }
 
 .label {
   font-family: var(--ds-font-mono);
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   direction: ltr;
   unicode-bidi: isolate;
   text-align: start;
@@ -31,57 +41,87 @@
 
 .cells {
   display: grid;
-  grid-template-columns: repeat(24, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--obs-hours, 24), minmax(0, 1fr));
   gap: 2px;
 }
 
 .cell {
-  block-size: 1.15rem;
+  block-size: 1.1rem;
   border-radius: 2px;
-  background: color-mix(in oklch, var(--ds-accent-indigo) calc(var(--level, 0) * 1%), var(--ds-surface-recessed));
+  background: color-mix(
+    in oklch,
+    var(--obs-data) calc(var(--level, 0) * 1%),
+    var(--ds-surface-recessed)
+  );
   transition: transform var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .cell[data-error='true'] {
-  background: color-mix(in oklch, var(--nova-down) calc(30% + var(--level, 0) * 0.6%), transparent);
+  background: color-mix(
+    in oklch,
+    var(--obs-bad) calc(28% + var(--level, 0) * 0.62%),
+    transparent
+  );
+}
+
+/* ساعت انتخاب‌شده در hero — همان ستون اینجا هم روشن می‌شود */
+.cell[data-cursor='true'] {
+  box-shadow: inset 0 0 0 1px var(--ds-text-primary);
 }
 
 .cell:hover {
-  transform: scaleY(1.15);
+  transform: scaleY(1.2);
+}
+
+.total {
+  font-size: 0.66rem;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-muted);
+  text-align: end;
+  font-variant-numeric: tabular-nums;
 }
 
 .axis {
   grid-column: 2;
   display: flex;
   justify-content: space-between;
+  margin: 0;
   margin-block-start: var(--ds-space-1);
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   color: var(--ds-text-muted);
 }
 
 .legend {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--ds-space-2);
+  gap: var(--ds-space-1-5) var(--ds-space-3);
+  margin: 0;
   margin-block-start: var(--ds-space-3);
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   color: var(--ds-text-muted);
 }
 
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+}
+
 .swatch {
-  inline-size: 0.75rem;
-  block-size: 0.75rem;
+  inline-size: 0.7rem;
+  block-size: 0.7rem;
   border-radius: 2px;
 }
 
 .swatchLow {
-  background: color-mix(in oklch, var(--ds-accent-indigo) 18%, var(--ds-surface-recessed));
+  background: color-mix(in oklch, var(--obs-data) 18%, var(--ds-surface-recessed));
 }
 
 .swatchHigh {
-  background: color-mix(in oklch, var(--ds-accent-indigo) 85%, var(--ds-surface-recessed));
+  background: color-mix(in oklch, var(--obs-data) 85%, var(--ds-surface-recessed));
 }
 
 .swatchError {
-  background: var(--nova-down);
+  background: var(--obs-bad);
 }
