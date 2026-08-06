@@ -2,24 +2,27 @@
 
 import { Waves } from 'lucide-react';
 
-import { bucketLabel, faNum, faPercent, ratio } from './format';
+import { bucketLabel, faNum, hourKey, ratio } from './format';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
+import { ScopeReadout } from './ScopeReadout';
 import s from './obs.module.css';
 
 /**
  * نوار روز — ستون‌های ساعتی حجم رویداد با کلاهکِ خطا.
  *
- * ستون‌ها با flex چیده می‌شوند نه با مختصات SVG، پس در RTL خودبه‌خود
- * از راست (قدیمی‌ترین) به چپ (هم‌اکنون) می‌روند و محور و ستون هرگز
- * برعکس هم نمی‌افتند. روی موبایل نوار اسکرول افقی می‌شود تا هر ستون
- * هدف لمسی ۴۴ پیکسلی داشته باشد.
+ * ستون‌ها با flex چیده می‌شوند نه با مختصات SVG، پس در RTL خودبه‌خود از راست
+ * (قدیمی‌ترین) به چپ (هم‌اکنون) می‌روند و محور و ستون هرگز برعکس هم نمی‌افتند.
+ * روی موبایل نوار اسکرول افقی می‌شود تا هر ستون هدف لمسی ۴۴ پیکسلی داشته باشد.
+ *
+ * خوانش ساعت از `ScopeReadout` مشترک می‌آید؛ قبلاً همان چهار عدد اینجا و در
+ * نمودار deck دو بار جدا حساب می‌شد.
  */
 export function DayStrip() {
-  const { data, hour, setHour } = useObs();
+  const { data, hour, setHour, windowHours } = useObs();
   if (!data) return null;
 
-  const { hourly, hourlyErrors, windowHours, generatedAt } = data;
+  const { hourly, hourlyErrors, generatedAt } = data;
   const total = hourly.reduce((sum, value) => sum + value, 0);
 
   if (total === 0) {
@@ -33,37 +36,28 @@ export function DayStrip() {
   }
 
   const max = Math.max(...hourly, 1);
-  const selected = hour ?? windowHours - 1;
-  const selectedTotal = hourly[selected] ?? 0;
-  const selectedErrors = hourlyErrors[selected] ?? 0;
-  const selectedRate = selectedTotal > 0 ? (selectedErrors / selectedTotal) * 100 : 0;
-
   let peakIndex = 0;
-  for (let i = 1; i < hourly.length; i += 1) {
-    if ((hourly[i] ?? 0) > (hourly[peakIndex] ?? 0)) peakIndex = i;
+  for (let index = 1; index < hourly.length; index += 1) {
+    if ((hourly[index] ?? 0) > (hourly[peakIndex] ?? 0)) peakIndex = index;
   }
 
   return (
     <div className={s.strip}>
-      <div>
+      <div className={s.stripMain}>
         <div className={s.stripScroller}>
           <ul className={s.stripList}>
             {hourly.map((value, index) => {
               const errors = hourlyErrors[index] ?? 0;
               const label = bucketLabel(generatedAt, index, windowHours);
-              const showTick = index % 4 === 0;
 
               return (
-                <li
-                  // biome-ignore lint/suspicious/noArrayIndexKey: سطل‌های ساعتی اندیس ثابت دارند
-                  key={index}
-                  className={s.stripCol}
-                >
+                <li key={hourKey(index)} className={s.stripCol}>
                   <button
                     type="button"
                     className={s.stripBtn}
-                    data-active={index === selected}
-                    aria-pressed={index === selected}
+                    data-active={index === hour}
+                    data-peak={index === peakIndex}
+                    aria-pressed={index === hour}
                     aria-label={`${label} — ${faNum(value)} رویداد، ${faNum(errors)} خطا`}
                     onClick={() => setHour(index)}
                     onFocus={() => setHour(index)}
@@ -80,46 +74,26 @@ export function DayStrip() {
                         />
                       ) : null}
                     </span>
-                    <span className={s.stripTick}>{showTick ? label.slice(0, 5) : ''}</span>
+                    <span className={s.stripTick}>
+                      {index % 4 === 0 ? label.slice(0, 5) : ''}
+                    </span>
                   </button>
                 </li>
               );
             })}
           </ul>
         </div>
+
         <p className={s.stripAxis}>
           <span>{faNum(windowHours)} ساعت پیش</span>
+          <span>
+            شلوغ‌ترین ساعت {bucketLabel(generatedAt, peakIndex, windowHours).slice(0, 5)}
+          </span>
           <span>هم‌اکنون</span>
         </p>
       </div>
 
-      <aside className={s.readout} aria-live="polite">
-        <p className={s.readoutHour}>{bucketLabel(generatedAt, selected, windowHours)}</p>
-        <p className={s.readoutValue}>
-          {faNum(selectedTotal)}
-          <span className={s.readoutUnit}>رویداد</span>
-        </p>
-        <dl className={s.rows}>
-          <div className={s.row}>
-            <dt className={s.rowKey}>خطا</dt>
-            <dd className={s.rowVal} data-tone={selectedErrors > 0 ? 'bad' : 'ok'}>
-              {faNum(selectedErrors)}
-            </dd>
-          </div>
-          <div className={s.row}>
-            <dt className={s.rowKey}>نرخ خطا</dt>
-            <dd className={s.rowVal}>{faPercent(selectedRate)}</dd>
-          </div>
-          <div className={s.row}>
-            <dt className={s.rowKey}>سهم از شبانه‌روز</dt>
-            <dd className={s.rowVal}>{faPercent((selectedTotal / total) * 100)}</dd>
-          </div>
-          <div className={s.row}>
-            <dt className={s.rowKey}>شلوغ‌ترین ساعت</dt>
-            <dd className={s.rowVal}>{bucketLabel(generatedAt, peakIndex, windowHours).slice(0, 5)}</dd>
-          </div>
-        </dl>
-      </aside>
+      <ScopeReadout layout="column" />
     </div>
   );
 }

@@ -2,28 +2,19 @@
 
 import { Layers3 } from 'lucide-react';
 
-import { faNum, faPercent, ratio } from './format';
+import { faNum, faPercent, levelLabel, levelTone, ratio } from './format';
+import { MeterBar } from './MeterBar';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
 import s from './obs.module.css';
 
-const LEVEL_LABEL: Record<string, string> = {
-  info: 'اطلاع',
-  warn: 'هشدار',
-  error: 'خطا',
-  fatal: 'بحرانی',
-  debug: 'اشکال‌زدایی',
-};
-
-const LEVEL_TONE: Record<string, 'ok' | 'warn' | 'bad' | 'info' | 'idle'> = {
-  info: 'info',
-  debug: 'idle',
-  warn: 'warn',
-  error: 'bad',
-  fatal: 'bad',
-};
-
-/** توزیع سطوح لاگ — دقیقاً همان مقادیری که در ستون level دیتابیس وجود دارد. */
+/**
+ * توزیع سطوح لاگ — دقیقاً همان مقادیری که در ستون level دیتابیس وجود دارد.
+ *
+ * نوار طیف بالای فهرست، ترکیب کل پنجره را در یک خط می‌گوید؛ ردیف‌ها عدد و سهم
+ * دقیق را. برچسب و تُن هر سطح از `format.ts` می‌آید نه از نقشهٔ محلی، چون سه
+ * کامپوننت دیگر هم همان برچسب‌ها را لازم دارند و دو نسخه یعنی drift.
+ */
 export function LevelDistribution() {
   const { data } = useObs();
   if (!data) return null;
@@ -41,18 +32,30 @@ export function LevelDistribution() {
   const max = Math.max(...data.levels.map((item) => item.count), 1);
 
   return (
-    <ul className={s.levels}>
-      {data.levels.map((item) => (
-        <li key={item.level} className={s.levelRow} data-tone={LEVEL_TONE[item.level] ?? 'info'}>
-          <span>{LEVEL_LABEL[item.level] ?? item.level}</span>
-          <span className={s.levelBar}>
-            <span className={s.levelFill} style={{ inlineSize: `${ratio(item.count, max, 2)}%` }} />
-          </span>
-          <span className={s.sourceMeta}>
-            {faNum(item.count)} · {faPercent(item.share)}
-          </span>
-        </li>
-      ))}
-    </ul>
+    <div>
+      <div className={s.spectrum} aria-hidden="true">
+        {data.levels.map((item) => (
+          <span
+            key={item.level}
+            className={s.spectrumSeg}
+            data-tone={levelTone(item.level)}
+            style={{ inlineSize: `${Math.max(1, item.share)}%` }}
+          />
+        ))}
+      </div>
+
+      <ul className={s.levels}>
+        {data.levels.map((item) => (
+          <li key={item.level} className={s.levelRow} data-tone={levelTone(item.level)}>
+            <span className={s.levelKey}>{levelLabel(item.level)}</span>
+            <MeterBar value={ratio(item.count, max, 2)} tone={levelTone(item.level)} />
+            <span className={s.levelVal}>
+              <b>{faNum(item.count)}</b>
+              <span>{faPercent(item.share)}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

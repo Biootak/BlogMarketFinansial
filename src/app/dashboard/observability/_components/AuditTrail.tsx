@@ -3,7 +3,7 @@
 import { Activity, LogIn, ScrollText, ShieldAlert, ShieldCheck, Wallet } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
-import { relative, stamp } from './format';
+import { hhmm, relative, stamp, type ToneKey } from './format';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
 import s from './obs.module.css';
@@ -11,7 +11,7 @@ import s from './obs.module.css';
 interface ActionMeta {
   label: string;
   icon: LucideIcon;
-  tone: 'ok' | 'warn' | 'bad' | 'info' | 'idle';
+  tone: ToneKey;
 }
 
 const ACTION_META: Record<string, ActionMeta> = {
@@ -34,7 +34,14 @@ const fallbackMeta = (action: string): ActionMeta => ({
   tone: 'idle',
 });
 
-/** رد ممیزی — رویدادهای واقعی AuditLog در پنجرهٔ جاری. */
+/**
+ * رد ممیزی — رویدادهای واقعی AuditLog در پنجرهٔ جاری.
+ *
+ * چیدمان تازه: یک **ستون زمانِ** ثابت در inline-start و یک تیغهٔ عمودیِ مویی
+ * که ردیف‌ها را به هم می‌بندد. چشم اول «چه ساعتی» را می‌خواند و بعد «چه شد» —
+ * همان ترتیبی که در بازخوانی حادثه لازم است. مهرِ کامل شمسی به‌عنوان title
+ * باقی می‌ماند تا ردیف شلوغ نشود.
+ */
 export function AuditTrail() {
   const { data } = useObs();
   if (!data) return null;
@@ -50,23 +57,31 @@ export function AuditTrail() {
   }
 
   return (
-    <ul className={s.trail}>
+    <ol className={s.trail}>
       {data.audit.map((entry) => {
         const meta = ACTION_META[entry.action] ?? fallbackMeta(entry.action);
         const Icon = meta.icon;
         return (
           <li key={entry.id} className={s.trailRow} data-tone={meta.tone}>
-            <Icon size={16} strokeWidth={1.5} className={s.trailIcon} aria-hidden />
-            <span>
+            <span className={s.trailTime} title={stamp(entry.createdAt)}>
+              {hhmm(entry.createdAt)}
+            </span>
+
+            <span className={s.trailIcon} aria-hidden="true">
+              <Icon size={14} strokeWidth={1.5} />
+            </span>
+
+            <span className={s.trailBody}>
               <span className={s.trailAction}>{meta.label}</span>
               <span className={s.trailMeta}>
-                {entry.actorRole} · {entry.entityType} · {stamp(entry.createdAt)}
+                {entry.actorRole} · {entry.entityType}
               </span>
             </span>
+
             <span className={s.time}>{relative(entry.createdAt, data.generatedAt)}</span>
           </li>
         );
       })}
-    </ul>
+    </ol>
   );
 }

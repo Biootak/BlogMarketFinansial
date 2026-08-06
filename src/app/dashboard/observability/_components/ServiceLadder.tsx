@@ -1,28 +1,15 @@
 'use client';
 
-import { ServerOff } from 'lucide-react';
+import { ArrowUpLeft, ServerOff } from 'lucide-react';
 import Link from 'next/link';
 
 import type { ServiceHealth } from '@/lib/observability';
-import { faNum, faPercent, msShort, ratio } from './format';
+import { faNum, faPercent, msShort, statusLabel, statusTone } from './format';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
+import { Sparkline } from './Sparkline';
+import { StatusGlyph } from './StatusGlyph';
 import s from './obs.module.css';
-
-const STATUS_LABEL: Record<string, string> = {
-  healthy: 'سالم',
-  degraded: 'کند',
-  down: 'قطع',
-  idle: 'بی‌صدا',
-  unknown: 'نامشخص',
-};
-
-const STATUS_TONE: Record<string, 'ok' | 'warn' | 'bad' | 'idle'> = {
-  healthy: 'ok',
-  degraded: 'warn',
-  down: 'bad',
-  idle: 'idle',
-};
 
 const RISK: Record<string, number> = { down: 0, degraded: 1, healthy: 2, idle: 3 };
 
@@ -31,7 +18,16 @@ const byRisk = (a: ServiceHealth, b: ServiceHealth): number => {
   return delta !== 0 ? delta : b.errors24h - a.errors24h;
 };
 
-/** نردبان سرویس‌ها — پرخطرترین بالا. ردیف است، نه کارت. */
+/**
+ * نردبان سرویس‌ها — پرخطرترین بالا.
+ *
+ * ردیف است نه کارت: مقایسهٔ عمودی اعداد هم‌ستون کارِ چشم را می‌کند، کارت آن را
+ * می‌شکند. نام سرویس به کارنامهٔ اختصاصی‌اش می‌رود و آیکون پرش به مسیر عملیاتی
+ * مرتبط (jobs / queries / settings) که خودِ لایهٔ داده تعیین کرده است.
+ *
+ * نقاطِ داغ ریزنمودار از ماتریس گرمای همان منبع می‌آید، نه از حدس: ساعتی که
+ * خطا داشته روی خط علامت می‌خورد.
+ */
 export function ServiceLadder({ limit }: { limit?: number }) {
   const { data } = useObs();
   const services = [...(data?.services ?? [])].sort(byRisk);
@@ -51,44 +47,61 @@ export function ServiceLadder({ limit }: { limit?: number }) {
   return (
     <ul className={s.ladder}>
       {rows.map((service) => {
-        const tone = STATUS_TONE[service.status] ?? 'idle';
-        const max = Math.max(...service.sparkline, 1);
+        const tone = statusTone(service.status);
+        const heatRow = data?.heat.find((row) => row.source === service.id);
+        const marks = heatRow
+          ? heatRow.cells.reduce<number[]>((acc, cell, index) => {
+              if (cell.errors > 0) acc.push(index);
+              return acc;
+            }, [])
+          : [];
 
         return (
           <li key={service.id} className={s.ladderRow} data-tone={tone}>
-            <span className={s.ladderDot} aria-hidden />
+            <StatusGlyph tone={tone} emphasis={tone === 'bad'} />
 
             <span className={s.ladderName}>
-              <Link href={service.href} className={s.ladderTitle}>
+              <Link
+                href={`/dashboard/observability/services/${service.id}`}
+                className={s.ladderTitle}
+              >
                 {service.name}
               </Link>
               <span className={s.ladderDesc}>{service.desc}</span>
             </span>
 
-            <span className={s.ladderSpark} aria-hidden>
-              {service.sparkline.map((value, index) => (
-                <span
-                  // biome-ignore lint/suspicious/noArrayIndexKey: نقاط ساعتی ترتیب ثابت دارند
-                  key={index}
-                  className={s.sparkBar}
-                  style={{ blockSize: `${ratio(value, max, 6)}%` }}
-                />
-              ))}
-            </span>
+            <Sparkline values={service.sparkline} marks={marks} className={s.ladderSpark} />
 
             <span className={s.ladderNums}>
-              <span>
-                تأخیر <strong>{msShort(service.latencyMs)}</strong>
+              <span className={s.num}>
+                <span className={s.numKey}>تأخیر</span>
+                <b className={s.numVal}>{msShort(service.latencyMs)}</b>
               </span>
-              <span>
-                در دسترس <strong>{faPercent(service.uptime24h, 2)}</strong>
+              <span className={s.num}>
+                <span className={s.numKey}>در دسترس</span>
+                <b className={s.numVal}>{faPercent(service.uptime24h, 2)}</b>
               </span>
-              <span>
-                خطا <strong>{faNum(service.errors24h)}</strong>
+              <span className={s.num}>
+                <span className={s.numKey}>خطا</span>
+                <b className={s.numVal} data-hot={service.errors24h > 0}>
+                  {faNum(service.errors24h)}
+                </b>
+              </span>
+              <span className={s.num}>
+                <span className={s.numKey}>رویداد</span>
+                <b className={s.numVal}>{faNum(service.events24h)}</b>
               </span>
             </span>
 
-            <span className={s.ladderStatus}>{STATUS_LABEL[service.status] ?? service.status}</span>
+            <span className={s.ladderStatus}>{statusLabel(service.status)}</span>
+
+            <Link
+              href={service.href}
+              className={s.ladderJump}
+              aria-label={`مسیر عملیاتی مرتبط با ${service.name}`}
+            >
+              <ArrowUpLeft size={14} strokeWidth={1.75} aria-hidden="true" />
+            </Link>
           </li>
         );
       })}

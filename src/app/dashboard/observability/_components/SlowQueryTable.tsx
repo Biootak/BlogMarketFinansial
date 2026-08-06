@@ -2,7 +2,7 @@
 
 import { Timer } from 'lucide-react';
 
-import { msShort, relative } from './format';
+import { msShort, ratio, relative } from './format';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
 import s from './obs.module.css';
@@ -13,8 +13,14 @@ const toneFor = (durationMs: number): 'ok' | 'warn' | 'bad' => {
   return 'ok';
 };
 
-/** کوئری‌ها و مسیرهای کند ۶ ساعت اخیر، مرتب‌شده بر اساس بدترین زمان. */
-export function SlowQueryTable() {
+/**
+ * کوئری‌ها و مسیرهای کند ۶ ساعت اخیر، مرتب‌شده بر اساس بدترین زمان.
+ *
+ * جدول واقعی مانده (semantics مهم است و ستون‌ها قابل مقایسه‌اند)، ولی ستون
+ * «مدت» حالا یک ریل نسبی هم دارد: عددِ ۱٫۲ ثانیه در کنار بدترین رکورد پنجره
+ * معنا پیدا می‌کند، تنها که باشد نه.
+ */
+export function SlowQueryTable({ limit }: { limit?: number }) {
   const { data } = useObs();
   if (!data) return null;
 
@@ -27,6 +33,10 @@ export function SlowQueryTable() {
       />
     );
   }
+
+  const rows =
+    typeof limit === 'number' ? data.slowQueries.slice(0, limit) : data.slowQueries;
+  const worst = Math.max(...data.slowQueries.map((item) => item.durationMs), 1);
 
   return (
     <div className={s.tableWrap}>
@@ -41,13 +51,16 @@ export function SlowQueryTable() {
           </tr>
         </thead>
         <tbody>
-          {data.slowQueries.map((item) => (
+          {rows.map((item) => (
             <tr key={item.id} data-tone={toneFor(item.durationMs)}>
               <td>
                 <span className={s.source}>{item.source}</span>
               </td>
               <td>
                 <span className={s.duration}>{msShort(item.durationMs)}</span>
+                <span className={s.durBar} aria-hidden="true">
+                  <span style={{ inlineSize: `${ratio(item.durationMs, worst, 2)}%` }} />
+                </span>
               </td>
               <td>
                 <span className={s.message}>{item.message}</span>

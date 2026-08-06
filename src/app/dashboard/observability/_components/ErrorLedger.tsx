@@ -1,26 +1,13 @@
 'use client';
 
-import { ShieldCheck } from 'lucide-react';
+import { Search, ShieldCheck } from 'lucide-react';
 import { useId, useMemo, useState } from 'react';
 
-import { faNum, relative } from './format';
+import { faNum, levelLabel, levelTone, relative } from './format';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
+import { StatusGlyph } from './StatusGlyph';
 import s from './obs.module.css';
-
-const LEVEL_LABEL: Record<string, string> = {
-  info: 'اطلاع',
-  warn: 'هشدار',
-  error: 'خطا',
-  fatal: 'بحرانی',
-};
-
-const LEVEL_TONE: Record<string, 'bad' | 'warn' | 'info'> = {
-  fatal: 'bad',
-  error: 'bad',
-  warn: 'warn',
-  info: 'info',
-};
 
 type Filter = 'all' | 'fatal' | 'error';
 
@@ -30,7 +17,15 @@ const FILTERS: Array<{ id: Filter; label: string }> = [
   { id: 'error', label: 'خطا' },
 ];
 
-/** دفتر خطا — متراکم، قابل جست‌وجو، بدون کارت و بدون مودال. */
+/**
+ * دفتر خطا — متراکم، قابل جست‌وجو، بدون کارت و بدون مودال.
+ *
+ * رکوردهای هم‌شکل در لایهٔ داده گروه شده‌اند، پس یک خطای تکراری صفحه را پر
+ * نمی‌کند و شمارندهٔ «چند بار» همان گروه است.
+ *
+ * فیلترها شمارندهٔ واقعی خودشان را نشان می‌دهند تا کاربر قبل از کلیک بداند
+ * پشت هر فیلتر چیزی هست یا نه — فیلتر خالی بدترین نوع بن‌بست UI است.
+ */
 export function ErrorLedger() {
   const { data } = useObs();
   const [filter, setFilter] = useState<Filter>('all');
@@ -39,6 +34,15 @@ export function ErrorLedger() {
 
   const errors = data?.errors ?? [];
   const reference = data?.generatedAt ?? new Date(0).toISOString();
+
+  const counts = useMemo(
+    () => ({
+      all: errors.length,
+      fatal: errors.filter((item) => item.level === 'fatal').length,
+      error: errors.filter((item) => item.level === 'error').length,
+    }),
+    [errors],
+  );
 
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -64,28 +68,37 @@ export function ErrorLedger() {
   return (
     <div>
       <div className={s.filters}>
-        {FILTERS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className={s.chip}
-            aria-pressed={filter === item.id}
-            onClick={() => setFilter(item.id)}
-          >
-            {item.label}
-          </button>
-        ))}
-        <label className="sr-only" htmlFor={searchId}>
-          جست‌وجو در پیام و منبع خطا
+        <div className={s.segmented} role="group" aria-label="فیلتر سطح خطا">
+          {FILTERS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={s.chip}
+              aria-pressed={filter === item.id}
+              onClick={() => setFilter(item.id)}
+            >
+              {item.label}
+              <span className={s.chipCount}>{faNum(counts[item.id])}</span>
+            </button>
+          ))}
+        </div>
+
+        <label className={s.searchWrap} htmlFor={searchId}>
+          <Search size={16} strokeWidth={1.5} aria-hidden="true" />
+          <span className="sr-only">جست‌وجو در پیام و منبع خطا</span>
+          <input
+            id={searchId}
+            type="search"
+            className={s.search}
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="جست‌وجو در پیام یا منبع"
+          />
         </label>
-        <input
-          id={searchId}
-          type="search"
-          className={s.search}
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="جست‌وجو در پیام یا منبع"
-        />
+
+        <p className={s.filterMeta} aria-live="polite">
+          {faNum(visible.length)} از {faNum(errors.length)} گروه
+        </p>
       </div>
 
       {visible.length === 0 ? (
@@ -96,17 +109,23 @@ export function ErrorLedger() {
         />
       ) : (
         <ol className={s.ledger}>
-          {visible.map((item) => (
-            <li key={item.id} className={s.ledgerRow} data-tone={LEVEL_TONE[item.level] ?? 'info'}>
-              <span className={s.level}>{LEVEL_LABEL[item.level] ?? item.level}</span>
-              <span className={s.source}>{item.source}</span>
-              <span className={s.message}>{item.message}</span>
-              <span className={s.count}>
-                {item.count > 1 ? `${faNum(item.count)} بار` : 'یک‌بار'}
-              </span>
-              <span className={s.time}>{relative(item.timestamp, reference)}</span>
-            </li>
-          ))}
+          {visible.map((item) => {
+            const tone = levelTone(item.level);
+            return (
+              <li key={item.id} className={s.ledgerRow} data-tone={tone}>
+                <span className={s.level}>
+                  <StatusGlyph tone={tone} />
+                  {levelLabel(item.level)}
+                </span>
+                <span className={s.source}>{item.source}</span>
+                <span className={s.message}>{item.message}</span>
+                <span className={s.count} data-hot={item.count > 1}>
+                  {item.count > 1 ? `${faNum(item.count)} بار` : 'یک‌بار'}
+                </span>
+                <span className={s.time}>{relative(item.timestamp, reference)}</span>
+              </li>
+            );
+          })}
         </ol>
       )}
     </div>
