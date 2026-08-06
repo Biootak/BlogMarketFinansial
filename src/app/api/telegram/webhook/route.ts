@@ -41,7 +41,7 @@ export async function POST(req: Request) {
   const text = update.message?.text?.trim() ?? '';
 
   if (chatId !== undefined && text.startsWith('/start link_')) {
-    const token = text.split(' ')[0] ?? '';
+    const token = text.split(' ')[1] ?? '';
     const result = await consumeTelegramLinkToken(token, String(chatId));
 
     const replies: Record<string, string> = {
