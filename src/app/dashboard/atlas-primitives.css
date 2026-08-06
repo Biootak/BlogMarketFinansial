@@ -1,327 +1,405 @@
 /* ============================================================================
-   Atlas Primitives — پوسته‌ی اجزای مشترک داشبورد (۲۰۲۶-۰۸)
+   atlas-primitives.css — لایه‌ی ظاهری مشترک primitives داشبورد
    ----------------------------------------------------------------------------
-   dashboard-shell.css فقط چیدمان و پوسته را می‌گیرد؛ این فایل ظاهر اجزای
-   مشترک را. جداسازی عمدی است تا هرکدام یک مسئولیت داشته باشند.
+   چرا این فایل وجود دارد:
 
-   بعد از dashboard-shell.css ایمپورت می‌شود. ترتیب صریح است، نه تصادفی.
-   فقط توکن، فقط ویژگی منطقی، انیمیشن فقط transform/opacity.
+   کامپوننت‌های `@/components/Dashboard/primitives` فقط نام کلاس می‌گذارند
+   (`dash2-statcard`, `dash2-table`, `dash2-section`, `dash2-skeleton`, ...)
+   ولی هیچ‌جای پروژه این کلاس‌ها به‌صورت سراسری تعریف نشده بودند. نتیجه:
+   هر صفحه‌ای که قوانین را در CSS-module خودش تکرار نکرده بود، primitive را
+   بدون استایل رندر می‌کرد — و صفحاتی که تکرار کرده بودند (credit-rates،
+   my-requests، customer/dashboard) سه نسخه‌ی واگرای یک ظاهر داشتند.
+   این فایل آن منبع حقیقت واحد است.
+
+   زبان بصری: «دفتر ثبت» (ledger).
+   ساختار از خط مو می‌آید نه از جعبه. سنجه‌ها یک نوار خط‌کشی‌شده‌اند نه شبکه‌ای
+   از کارت‌های هم‌اندازه. جدول ردیف‌های سطردار است نه کارت‌های تودرتو.
+   هیچ رنگ جدیدی اینجا ساخته نمی‌شود — فقط توکن‌های --ds-* / --atlas-* .
+
+   RTL: همه‌جا logical properties. جهت‌های فیزیکی فقط در محور block.
+   Motion: فقط opacity و transform.
    ============================================================================ */
 
 /* ==========================================================================
-   سنجه‌ی عددی — اجزای درونی
-   چند سنجه کنار هم یک «نوار سنجه» می‌سازند که با خط مو تقسیم شده است.
-   طرح جعبه‌ای در dashboard-shell.css خنثی شده؛ اینجا فقط درون آن را می‌چینیم.
+   1. SECTION — گروه‌بندی محتوا
    ========================================================================== */
-.dashboard-shell .dash2-statcard__top {
+
+.dash2-section {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ds-space-2);
+  flex-direction: column;
+  gap: var(--ds-space-4);
   min-inline-size: 0;
+  margin-block-end: var(--ds-space-8);
 }
 
-.dashboard-shell .dash2-statcard__adornments {
+.dash2-section:last-child {
+  margin-block-end: 0;
+}
+
+.dash2-section > header {
+  padding-block-end: var(--ds-space-3);
+  border-block-end: var(--atlas-rule) solid var(--atlas-hairline);
+}
+
+/* ==========================================================================
+   2. STATCARD — سنجه‌ی عددی
+   --------------------------------------------------------------------------
+   عمداً «کارت» نیست. هر سنجه یک ستون خط‌کشی‌شده است: یک خط مو در بالا،
+   برچسب زیر آن، عدد بزرگ با ارقام هم‌عرض. چند تای کنار هم = یک نوار ثبت.
+   ========================================================================== */
+
+.dash2-statcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1-5);
+  min-inline-size: 0;
+  padding-block: var(--ds-space-3) var(--ds-space-4);
+  /* تورفتگی نامتقارن: خط مو تا لبه می‌رود، محتوا تو می‌نشیند. */
+  padding-inline: var(--ds-space-3) var(--ds-space-2);
+  border-block-start: var(--atlas-rule) solid var(--atlas-hairline-strong);
+  color: var(--ds-text-primary);
+  background: transparent;
+  text-decoration: none;
+  transition:
+    background-color var(--atlas-dur-ui) var(--atlas-ease),
+    box-shadow var(--atlas-dur-ui) var(--atlas-ease);
+}
+
+.dash2-statcard[data-interactive='true'] {
+  cursor: pointer;
+}
+
+.dash2-statcard[data-interactive='true']:hover {
+  background: var(--ds-overlay-hover);
+  box-shadow: inset 0 1px 0 0 var(--ds-brand-600);
+}
+
+.dash2-statcard[data-interactive='true']:active {
+  background: var(--ds-overlay-press);
+}
+
+.dash2-statcard__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  min-block-size: 1.5rem;
+}
+
+.dash2-statcard__label {
+  min-inline-size: 0;
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  line-height: var(--ds-leading-snug);
+  text-wrap: balance;
+}
+
+.dash2-statcard__adornments {
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
   gap: var(--ds-space-1);
-  color: var(--ds-text-muted);
 }
 
-.dashboard-shell .dash2-statcard__icon {
-  display: grid;
+.dash2-statcard__icon,
+.dash2-statcard__info {
+  display: inline-grid;
   place-items: center;
-  inline-size: 1rem;
-  block-size: 1rem;
+  inline-size: 1.375rem;
+  block-size: 1.375rem;
   color: var(--ds-text-muted);
+  transition: color var(--atlas-dur-tap) var(--atlas-ease);
 }
 
-.dashboard-shell .dash2-statcard__icon > svg {
-  inline-size: 0.9375rem;
-  block-size: 0.9375rem;
-}
-
-.dashboard-shell .dash2-statcard__info {
-  display: grid;
-  place-items: center;
-  inline-size: 1rem;
-  block-size: 1rem;
-  color: var(--ds-text-muted);
+.dash2-statcard__info {
   cursor: help;
-  transition: color var(--atlas-dur-ui) var(--atlas-ease);
 }
 
-.dashboard-shell .dash2-statcard__info:hover {
-  color: var(--ds-text-secondary);
+.dash2-statcard:hover .dash2-statcard__icon,
+.dash2-statcard__info:hover {
+  color: var(--ds-brand-600);
 }
 
-.dashboard-shell .dash2-statcard__value-skeleton {
-  display: inline-block;
-  inline-size: 5rem;
-  block-size: 1.5rem;
-  vertical-align: middle;
+.dash2-statcard__spark {
+  block-size: 2.25rem;
+  margin-block: var(--ds-space-1) 0;
+  opacity: 0.85;
 }
 
-/* روی سنجه‌ی کلیک‌پذیر، فقط زمینه تغییر می‌کند. بالا-پریدن کارت ممنوع. */
-.dashboard-shell .dash2-statcard[data-interactive="true"] .dash2-statcard__label {
-  transition: color var(--atlas-dur-ui) var(--atlas-ease);
+.dash2-statcard__spark > svg,
+.dash2-statcard__spark > * {
+  inline-size: 100%;
+  block-size: 100%;
 }
 
-.dashboard-shell .dash2-statcard[data-interactive="true"]:hover .dash2-statcard__label {
-  color: var(--ds-text-secondary);
+.dash2-statcard__value {
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-2xl);
+  font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ds-tracking-tighter);
+  line-height: var(--ds-leading-tight);
+  overflow-wrap: anywhere;
 }
 
-/* ==========================================================================
-   نوار سنجه — ظرف چند سنجه
-   auto-fit با minmax یعنی بدون breakpoint، ستون‌ها خودشان تصمیم می‌گیرند.
-   ========================================================================== */
-.dashboard-shell .dash2-statstrip,
-.dashboard-shell [data-atlas="stat-strip"] {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-  margin-block: var(--ds-space-4);
-  padding-block: var(--ds-space-2);
-  border-block: var(--atlas-rule) solid var(--atlas-hairline);
+.dash2-statcard__value-skeleton {
+  inline-size: 4.5rem;
+  block-size: 1.5em;
 }
 
-/* ==========================================================================
-   نوار ابزار جدول
-   ========================================================================== */
-.dashboard-shell .dash2-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ds-space-2);
-  margin-block-end: var(--ds-space-3);
-  min-block-size: 2.5rem;
-}
-
-.dashboard-shell .dash2-toolbar > :last-child {
-  margin-inline-start: auto;
-}
-
-/* ==========================================================================
-   بج وضعیت — رنگ هرگز تنها نشانه نیست؛ متن همیشه همراهش است.
-   ========================================================================== */
-.dashboard-shell .dash2-badge,
-.dashboard-shell [data-atlas="badge"] {
+.dash2-statcard__delta {
   display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
-  padding-inline: var(--ds-space-2);
-  padding-block: 0.125rem;
+  gap: 0.25rem;
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
-  white-space: nowrap;
-  border: var(--atlas-rule) solid var(--ds-status-cancelled-border);
-  border-radius: var(--atlas-radius-sm);
-  background: var(--ds-status-cancelled-bg);
-  color: var(--ds-status-cancelled-fg);
-}
-
-.dashboard-shell [data-status="pending"] {
-  border-color: var(--ds-status-pending-border);
-  background: var(--ds-status-pending-bg);
-  color: var(--ds-status-pending-fg);
-}
-
-.dashboard-shell [data-status="progress"],
-.dashboard-shell [data-status="info"] {
-  border-color: var(--ds-status-progress-border);
-  background: var(--ds-status-progress-bg);
-  color: var(--ds-status-progress-fg);
-}
-
-.dashboard-shell [data-status="success"],
-.dashboard-shell [data-status="done"] {
-  border-color: var(--ds-status-success-border);
-  background: var(--ds-status-success-bg);
-  color: var(--ds-status-success-fg);
-}
-
-.dashboard-shell [data-status="error"],
-.dashboard-shell [data-status="failed"] {
-  border-color: var(--ds-status-error-border);
-  background: var(--ds-status-error-bg);
-  color: var(--ds-status-error-fg);
-}
-
-/* ==========================================================================
-   حالت خالی — باید رابط را آموزش بدهد، نه بگوید «چیزی نیست».
-   ========================================================================== */
-.dashboard-shell .dash2-empty,
-.dashboard-shell [data-atlas="empty"] {
-  display: grid;
-  justify-items: start;
-  gap: var(--ds-space-2);
-  max-inline-size: var(--ds-measure-narrow);
-  padding-block: var(--ds-space-8);
-  padding-inline: var(--ds-space-4);
-}
-
-.dashboard-shell .dash2-empty__title {
-  color: var(--ds-text-primary);
-  font-size: var(--ds-text-base);
-  font-weight: var(--ds-weight-bold);
-  letter-spacing: var(--ds-tracking-tight);
-}
-
-.dashboard-shell .dash2-empty__body {
-  color: var(--ds-text-secondary);
-  font-size: var(--ds-text-sm);
-  line-height: var(--ds-leading-normal);
-}
-
-/* ==========================================================================
-   بخش — عنوان بخش با قاعده‌ی افقی، بدون جعبه
-   ========================================================================== */
-.dashboard-shell .dash2-section {
-  display: grid;
-  gap: var(--ds-space-3);
-  margin-block-start: var(--ds-space-7);
-}
-
-.dashboard-shell .dash2-section__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--ds-space-2);
-  padding-block-end: var(--ds-space-2);
-  border-block-end: var(--atlas-rule) solid var(--atlas-hairline);
-}
-
-.dashboard-shell .dash2-section__title {
-  color: var(--ds-text-primary);
-  font-size: var(--ds-text-base);
-  font-weight: var(--ds-weight-bold);
-  letter-spacing: var(--ds-tracking-tight);
-}
-
-.dashboard-shell .dash2-section__hint {
-  color: var(--ds-text-muted);
-  font-size: var(--ds-text-xs);
-}
-
-.dashboard-shell .dash2-section__actions {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-2);
-  margin-inline-start: auto;
-}
-
-/* ==========================================================================
-   کنترل‌های فرم — یک واژگان واحد در کل داشبورد
-   ========================================================================== */
-.dashboard-shell :where(input[type="text"], input[type="email"], input[type="search"],
-  input[type="number"], input[type="tel"], input[type="url"], input[type="password"],
-  input[type="date"], select, textarea):not([class*="dash-header"]) {
-  min-block-size: 2.375rem;
-  padding-inline: var(--ds-space-2-5);
-  padding-block: var(--ds-space-1-5);
-  color: var(--ds-text-primary);
-  font: inherit;
-  font-size: var(--ds-text-sm);
-  border: var(--atlas-rule) solid var(--ds-border-default);
-  border-radius: var(--atlas-radius-md);
-  background: var(--ds-surface);
-  transition:
-    border-color var(--atlas-dur-ui) var(--atlas-ease),
-    box-shadow var(--atlas-dur-ui) var(--atlas-ease);
-}
-
-.dashboard-shell :where(input, select, textarea):not([class*="dash-header"]):hover:not(:disabled) {
-  border-color: var(--ds-border-strong);
-}
-
-.dashboard-shell :where(input, select, textarea):not([class*="dash-header"]):focus {
-  border-color: var(--dashboard-accent);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--dashboard-accent) 12%, transparent);
-  outline: none;
-}
-
-.dashboard-shell :where(input, select, textarea):disabled {
-  color: var(--ds-text-muted);
-  background: var(--ds-surface-recessed);
-  cursor: not-allowed;
-}
-
-.dashboard-shell :where(input, textarea)[aria-invalid="true"] {
-  border-color: var(--ds-status-error-fg);
-}
-
-.dashboard-shell :where(input, textarea)::placeholder {
-  color: var(--ds-text-muted);
-  opacity: 0.8;
-}
-
-/* اعداد در فیلدهای مالی باید هم‌عرض باشند */
-.dashboard-shell input[type="number"],
-.dashboard-shell input[inputmode="numeric"],
-.dashboard-shell input[inputmode="decimal"] {
   font-variant-numeric: tabular-nums;
 }
 
+/* جهت پیکان صعود/نزول معنای جهانی دارد و در RTL نباید آینه شود. */
+.dash2-statcard__delta > svg {
+  flex: 0 0 auto;
+}
+
+.dash2-statcard__delta[data-trend='up'] {
+  color: var(--nova-up);
+}
+
+.dash2-statcard__delta[data-trend='down'] {
+  color: var(--nova-down);
+}
+
+.dash2-statcard__delta[data-trend='flat'] {
+  color: var(--nova-flat);
+}
+
 /* ==========================================================================
-   دکمه‌ها — سطح برند از brand-600 می‌آید تا متن رویش AA بگیرد
+   3. TOOLBAR — نوار فیلتر/جستجو بالای جدول
    ========================================================================== */
-.dashboard-shell .dash2-btn,
-.dashboard-shell [data-atlas="btn"] {
-  display: inline-flex;
+
+.dash2-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-block-size: var(--atlas-tap-min);
+  padding-block: var(--ds-space-2);
+  margin-block-end: var(--ds-space-3);
+  border-block-end: var(--atlas-rule) solid var(--atlas-hairline);
+}
+
+/* ==========================================================================
+   4. DATA TABLE — ردیف‌های سطردار
+   --------------------------------------------------------------------------
+   خودش container است تا ستون‌های collapse بر اساس عرض واقعی جدول پنهان شوند،
+   نه بر اساس عرض پنجره. یعنی همان جدول داخل drawer باریک هم درست رفتار می‌کند.
+   ========================================================================== */
+
+.dash2-table {
+  container: dash2table / inline-size;
+  inline-size: 100%;
+  min-inline-size: 0;
+  border-block: var(--atlas-rule) solid var(--atlas-hairline-strong);
+  color: var(--ds-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.dash2-table__head {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding-inline: var(--ds-space-3);
+  padding-block: var(--ds-space-2-5);
+  border-block-end: var(--atlas-rule) solid var(--atlas-hairline);
+  background: var(--ds-surface-recessed);
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-bold);
+  line-height: var(--ds-leading-snug);
+}
+
+.dash2-table__row {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding-inline: var(--ds-space-3);
+  border-block-end: var(--atlas-rule) solid var(--atlas-hairline);
+  transition: background-color var(--atlas-dur-tap) var(--atlas-ease);
+}
+
+.dash2-table__row:last-child {
+  border-block-end: 0;
+}
+
+.dash2-table__row:hover {
+  background: var(--ds-overlay-hover);
+}
+
+.dash2-table__row[data-density='compact'] {
+  min-block-size: 2.75rem;
+  padding-block: var(--ds-space-2);
+}
+
+.dash2-table__row[data-density='comfortable'] {
+  min-block-size: 3.5rem;
+  padding-block: var(--ds-space-3-5);
+}
+
+.dash2-table__cell {
+  flex: 1 1 0;
+  min-inline-size: 0;
+  font-size: var(--ds-text-sm);
+  line-height: var(--ds-leading-snug);
+  overflow-wrap: break-word;
+}
+
+.dash2-table__head .dash2-table__cell {
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+}
+
+/* شناسه‌ها و مبالغ لاتین داخل متن فارسی باید جهت خودشان را داشته باشند. */
+.dash2-table__cell [data-ltr],
+.dash2-table__cell code {
+  display: inline-block;
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-family: var(--ds-font-mono);
+  font-size: 0.95em;
+}
+
+@container dash2table (max-width: 46rem) {
+  .dash2-table__cell[data-collapse] {
+    display: none;
+  }
+
+  .dash2-table__head,
+  .dash2-table__row {
+    gap: var(--ds-space-2);
+    padding-inline: var(--ds-space-2-5);
+  }
+}
+
+/* ==========================================================================
+   5. EMPTY — حالت خالی
+   --------------------------------------------------------------------------
+   پس‌زمینه‌ی خط‌کشی‌شده = صفحه‌ی خالی دفتر ثبت. بدون تصویر، بدون asset.
+   ========================================================================== */
+
+.dash2-empty {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.4375rem;
-  min-block-size: 2.375rem;
-  padding-inline: var(--ds-space-3-5);
-  color: var(--ds-text-primary);
-  font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-semibold);
-  white-space: nowrap;
-  text-decoration: none;
-  border: var(--atlas-rule) solid var(--ds-border-default);
-  border-radius: var(--atlas-radius-md);
-  background: var(--ds-surface);
-  cursor: pointer;
-  transition:
-    background-color var(--atlas-dur-ui) var(--atlas-ease),
-    border-color var(--atlas-dur-ui) var(--atlas-ease);
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-10);
+  padding-inline: var(--ds-space-5);
+  border-radius: var(--atlas-radius-lg);
+  background: var(--ds-surface-recessed);
+  color: var(--ds-text-secondary);
+  text-align: center;
 }
 
-.dashboard-shell .dash2-btn:hover {
-  border-color: var(--ds-border-strong);
+.dash2-empty::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 1.75rem,
+    var(--atlas-hairline) 1.75rem calc(1.75rem + 1px)
+  );
+  mask-image: radial-gradient(ellipse at center, oklch(0% 0 0) 20%, transparent 72%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.dash2-empty > * {
+  position: relative;
+}
+
+/* ==========================================================================
+   6. SKELETON — بارگذاری
+   --------------------------------------------------------------------------
+   جاروب با transform انجام می‌شود نه background-position، تا در لایه‌ی
+   compositor بماند و layout/paint را درگیر نکند.
+   ========================================================================== */
+
+.dash2-skeleton {
+  position: relative;
+  overflow: hidden;
+  display: block;
+  border-radius: var(--atlas-radius-sm);
   background: var(--ds-surface-recessed);
 }
 
-.dashboard-shell [data-atlas="btn"][data-variant="primary"],
-.dashboard-shell .dash2-btn--primary {
-  color: var(--ds-brand-on);
-  border-color: transparent;
-  background: var(--ds-brand-600);
+.dash2-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklch, var(--ds-text-primary) 7%, transparent),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: dash2-sweep 1.4s var(--ds-ease-in-out-quart) infinite;
+  will-change: transform;
 }
 
-.dashboard-shell [data-atlas="btn"][data-variant="primary"]:hover,
-.dashboard-shell .dash2-btn--primary:hover {
-  background: var(--ds-brand-700);
+@keyframes dash2-sweep {
+  to {
+    transform: translateX(100%);
+  }
 }
 
-.dashboard-shell [data-atlas="btn"][data-variant="danger"],
-.dashboard-shell .dash2-btn--danger {
-  color: var(--ds-status-error-fg);
-  border-color: var(--ds-status-error-border);
-  background: var(--ds-status-error-bg);
+[dir='rtl'] .dash2-skeleton::after {
+  transform: translateX(100%);
+  animation-name: dash2-sweep-rtl;
 }
 
-.dashboard-shell .dash2-btn:disabled,
-.dashboard-shell [data-atlas="btn"][aria-disabled="true"] {
-  color: var(--ds-text-muted);
-  border-color: var(--ds-border-subtle);
-  background: var(--ds-surface-recessed);
-  cursor: not-allowed;
+@keyframes dash2-sweep-rtl {
+  to {
+    transform: translateX(-100%);
+  }
 }
 
-/* روی صفحه‌های لمسی هدف کلیک هرگز زیر ۴۴px نمی‌رود */
-@media (pointer: coarse) {
-  .dashboard-shell :where(.dash2-btn, [data-atlas="btn"], button, [role="button"]) {
-    min-block-size: var(--atlas-tap-min);
+/* ==========================================================================
+   7. RTL — اصلاح آیکون‌های جهت‌دار
+   --------------------------------------------------------------------------
+   در RTL «جلو» سمت چپ است، پس «بازگشت» باید به راست اشاره کند. کامپوننت‌ها
+   ArrowLeft / ArrowUpLeft را ثابت رندر می‌کنند؛ آینه‌کردن اینجا انجام می‌شود
+   تا نیازی به شاخه‌ی جهت در JS نباشد.
+   پیکان‌های روند (صعود/نزول) عمداً مستثنا هستند.
+   ========================================================================== */
+
+[dir='rtl'] .route-frame__back > svg,
+[dir='rtl'] .route-frame__sibling > svg {
+  transform: scaleX(-1);
+}
+
+/* ==========================================================================
+   8. PRINT — گزارش‌های مالی چاپ می‌شوند
+   ========================================================================== */
+
+@media print {
+  .dash2-toolbar,
+  .dash2-statcard__spark {
+    display: none;
+  }
+
+  .dash2-table__row:hover {
+    background: transparent;
+  }
+
+  .dash2-skeleton::after {
+    animation: none;
   }
 }
