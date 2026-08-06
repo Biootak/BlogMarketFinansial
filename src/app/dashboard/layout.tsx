@@ -9,6 +9,7 @@ import './dashboard-sidebar-state.css';
 import './dashboard-atlas-surfaces.css';
 import './dashboard-atlas-glass.css';
 import './dashboard-scroll-owner.css';
+import './dashboard-atlas-tabs.css';
 
 export const dynamic = 'force-dynamic';
 

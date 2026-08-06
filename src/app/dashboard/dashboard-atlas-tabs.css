@@ -1,0 +1,126 @@
+/* Atlas section tabs: move the cockpit index above the masthead. */
+@media (min-width: 48rem) {
+  /* The module classes are hashed, so target their stable semantic fragments. */
+  .dash-root [class*="_sheet_"] {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: var(--ds-space-4, 1rem) !important;
+  }
+
+  .dash-root [class*="_spine_"] {
+    position: sticky !important;
+    inset-block-start: 0 !important;
+    z-index: 8;
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    inline-size: 100% !important;
+    block-size: auto !important;
+    padding-block: 0.25rem;
+    padding-inline: 0;
+    border-block-end: 1px solid var(--atlas-hairline-strong, var(--ds-border-default));
+    border-inline-end: 0 !important;
+    background: color-mix(in oklch, var(--ds-canvas) 96%, transparent);
+    backdrop-filter: blur(8px);
+  }
+
+  .dash-root [class*="_spineList_"] {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 0.25rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-block: 0.15rem;
+  }
+
+  .dash-root [class*="_spineList_"]::-webkit-scrollbar { display: none; }
+
+  .dash-root [class*="_spineItem_"] {
+    display: inline-flex !important;
+    flex: 0 0 auto;
+    grid-template-columns: none !important;
+    align-items: center;
+    gap: 0.45rem;
+    min-block-size: 2.5rem;
+    padding-block: 0.45rem;
+    padding-inline: 0.75rem;
+    border: 1px solid transparent;
+    border-radius: var(--ds-radius-full, 9999px);
+    white-space: nowrap;
+  }
+
+  .dash-root [class*="_spineItem_"][data-on="true"] {
+    border-color: color-mix(in oklch, var(--ds-brand-600) 35%, var(--atlas-hairline));
+    background: color-mix(in oklch, var(--ds-brand-600) 8%, var(--ds-canvas));
+  }
+
+  .dash-root [class*="_spineLabel_"] {
+    position: static !important;
+    inline-size: auto !important;
+    block-size: auto !important;
+    overflow: visible !important;
+    clip-path: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    white-space: nowrap;
+  }
+
+  .dash-root [class*="_spineDot_"] { flex: 0 0 auto; }
+
+  .dash-root [class*="_body_"] {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    min-inline-size: 0;
+  }
+}
+
+@media (max-width: 47.9375rem) {
+  .dash-root [class*="_sheet_"] {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: var(--ds-space-3, 0.75rem) !important;
+  }
+
+  .dash-root [class*="_spine_"] {
+    position: sticky !important;
+    inset-block-start: 0 !important;
+    z-index: 8;
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    display: block !important;
+    inline-size: 100% !important;
+    padding-block: 0.15rem;
+    border-block-end: 1px solid var(--atlas-hairline-strong, var(--ds-border-default));
+    background: var(--ds-canvas);
+  }
+
+  .dash-root [class*="_spineList_"] {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .dash-root [class*="_spineList_"]::-webkit-scrollbar { display: none; }
+
+  .dash-root [class*="_spineItem_"] {
+    display: inline-flex !important;
+    flex: 0 0 auto;
+    min-block-size: 2.5rem;
+    padding-inline: 0.65rem;
+  }
+
+  .dash-root [class*="_spineLabel_"] {
+    position: static !important;
+    inline-size: auto !important;
+    block-size: auto !important;
+    clip-path: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .dash-root [class*="_body_"] {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+  }
+}
