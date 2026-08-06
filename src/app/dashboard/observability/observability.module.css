@@ -1,64 +1,178 @@
 /* ============================================================================
-   Observability — route shell
+   Observability — route shell · «ابزار دقیق ۲۰۲۶»
    ----------------------------------------------------------------------------
-   Mobile first. Logical properties only. Tokens only.
+   Mobile first · فقط logical properties · فقط توکن‌های --ds-*.
 
-   ساختار (۲۰۲۶-۰۸): ریلِ چسبانِ سمتِ کناری حذف شد. نشانه‌های حیاتی حالا داخل
-   ObsPulseDeck هستند، پس هر عدد فقط یک‌بار در صفحه دیده می‌شود و بدنه تمام‌عرض
-   می‌ماند تا گرید ۱۲ ستونی boardها جا داشته باشد.
+   بازطراحی ساختاری (۲۰۲۶-۰۸-۰۶):
+     پیش از این صفحه «هدر + deck + گرید board» بود و زمان سه بار جداگانه رسم
+     می‌شد (ریج، نوار روز، محور نقشهٔ گرما). حالا چهار ناحیهٔ معنادار داریم:
+
+       mast  → حکم سامانه + نوار ناوگان (چه سهمی از ترافیک ناسالم است)
+       spine → تنها بازنماییِ زمان در کل مرکز؛ مکان‌نمای ساعتیِ مشترک
+       main  → شاهد؛ با تب عوض می‌شود
+       aside → زمینه؛ چسبان و مشترک بین همهٔ تب‌ها، پس عددی تکرار نمی‌شود
+
+   زبان رنگ: «چگالی مرکب» کمیت را می‌رساند و فام فقط وضعیت را. رنگ اطلاعات
+   است نه تزئین — نه نئون، نه گرادیان تزئینی، نه شیشهٔ همه‌جایی.
    ============================================================================ */
 
 .page {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-5);
+  /* ── مرکب و خط ─────────────────────────────────────────── */
+  --obs-ink: var(--ds-text-primary);
+  --obs-ink-2: var(--ds-text-secondary);
+  --obs-ink-3: var(--ds-text-muted);
+  --obs-rule: var(--ds-border-subtle);
+  --obs-rule-2: var(--ds-border-default);
+  --obs-rule-3: var(--ds-border-strong);
+  --obs-plate: var(--ds-canvas-subtle);
+  --obs-mono: var(--ds-font-mono);
+
+  /* ── فام‌های وضعیت (فقط برای وضعیت، نه برای زیبایی) ────── */
+  --obs-ok: var(--ds-accent-emerald);
+  --obs-warn: var(--ds-accent-amber);
+  --obs-bad: var(--ds-accent-rose);
+  --obs-info: var(--ds-accent-cyan);
+  --obs-idle: var(--ds-accent-slate);
+  /* تُن جاری — با data-tone روی هر گره بازنویسی می‌شود و به فرزندان می‌رسد. */
+  --obs-tone: var(--obs-idle);
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'head'
+    'mast'
+    'spine'
+    'rail'
+    'aside'
+    'main';
+  row-gap: var(--ds-space-4);
+  min-inline-size: 0;
   min-block-size: 100%;
+}
+
+/*
+   تُن ارثی — تنها مکانیزم رنگِ وضعیت در کل مرکز.
+   هر گره‌ای که data-tone بگذارد، فام خودش و همهٔ فرزندانش را تعیین می‌کند؛
+   پس هیچ کامپوننتی لازم نیست نقشهٔ رنگ خودش را داشته باشد.
+*/
+.page [data-tone='ok'] {
+  --obs-tone: var(--obs-ok);
+}
+.page [data-tone='warn'] {
+  --obs-tone: var(--obs-warn);
+}
+.page [data-tone='bad'] {
+  --obs-tone: var(--obs-bad);
+}
+.page [data-tone='info'] {
+  --obs-tone: var(--obs-info);
+}
+.page [data-tone='idle'] {
+  --obs-tone: var(--obs-idle);
+}
+
+.head {
+  grid-area: head;
+  min-inline-size: 0;
+}
+
+.mast {
+  grid-area: mast;
+  min-inline-size: 0;
+}
+
+.spine {
+  grid-area: spine;
   min-inline-size: 0;
 }
 
 /*
-   نوار فرمان — ناوبری فرعی + وضعیت زنده.
-   چسبان است چون در اسکرول‌های بلندِ لاگ باید همیشه بدانی کدام تب باز است و
-   داده چقدر تازه است. شیشه فقط همین‌جا مجاز است: blur کم، شفافیت کم، مرز مویی.
+   نوار فرمان — ناوبری فرعی و وضعیت زنده.
+   چسبان است چون در اسکرول بلندِ لاگ باید همیشه بدانی کدام تب باز است و داده
+   چقدر تازه است. شیشه فقط همین‌جا مجاز است: blur کم، شفافیت کم، مرز مویی.
 */
-.command {
+.rail {
+  grid-area: rail;
   position: sticky;
   inset-block-start: 0;
   z-index: 5;
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-3);
+  gap: var(--ds-space-2);
   padding-block: var(--ds-space-2);
-  border-block-end: 1px solid var(--ds-border-subtle);
-  background: color-mix(in oklch, var(--ds-canvas) 82%, transparent);
-  backdrop-filter: blur(10px) saturate(130%);
+  border-block: 1px solid var(--obs-rule);
+  background: color-mix(in oklch, var(--ds-canvas) 84%, transparent);
+  backdrop-filter: blur(10px) saturate(125%);
   min-inline-size: 0;
 }
 
-@media (min-width: 60rem) {
-  .command {
+.main {
+  grid-area: main;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: var(--ds-space-8);
+  margin-block-start: var(--ds-space-2);
+  min-inline-size: 0;
+}
+
+/*
+   ستون زمینه. زیر ۹۲rem یک نوار افقیِ فشرده است (نه ستونِ فشرده‌شده): دنده‌های
+   حیاتی به یک ریلِ اسکرولی و یافته‌ها به یک کاروسل snap تبدیل می‌شوند تا بدنهٔ
+   اصلی را روی موبایل به پایین نراند.
+*/
+.aside {
+  grid-area: aside;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  min-inline-size: 0;
+}
+
+@media (min-width: 64rem) {
+  .page {
+    row-gap: var(--ds-space-5);
+  }
+
+  .rail {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
     gap: var(--ds-space-5);
   }
-}
 
-/*
-   گرید boardها. زیر ۶۴rem تک‌ستونی است و کلاس‌های span اصلاً وجود ندارند
-   (به boards.module.css نگاه کن) تا ستون ضمنی ساخته نشود.
-*/
-.main {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--ds-space-8);
-  min-inline-size: 0;
-}
-
-@media (min-width: 64rem) {
   .main {
     grid-template-columns: repeat(12, minmax(0, 1fr));
     gap: var(--ds-space-8) var(--ds-space-6);
     align-items: start;
+  }
+}
+
+@media (min-width: 92rem) {
+  .page {
+    grid-template-columns: minmax(0, 1fr) 21rem;
+    grid-template-areas:
+      'head  head'
+      'mast  mast'
+      'spine spine'
+      'rail  rail'
+      'main  aside';
+    column-gap: var(--ds-space-6);
+  }
+
+  .main {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+
+  .aside {
+    position: sticky;
+    inset-block-start: 4.75rem;
+    align-self: start;
+    gap: var(--ds-space-5);
+    padding-inline-start: var(--ds-space-5);
+    border-inline-start: 1px solid var(--obs-rule);
+    max-block-size: calc(100vh - 6rem);
+    overflow: hidden auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
   }
 }
