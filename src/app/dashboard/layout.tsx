@@ -8,6 +8,7 @@ import './dashboard-header-overrides.css';
 import './dashboard-sidebar-state.css';
 import './dashboard-atlas-surfaces.css';
 import './dashboard-atlas-glass.css';
+import './dashboard-scroll-owner.css';
 
 export const dynamic = 'force-dynamic';
 
