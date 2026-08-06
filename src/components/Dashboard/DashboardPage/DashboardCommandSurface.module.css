@@ -1,0 +1,78 @@
+.surface {
+  --cmd-line: color-mix(in oklch, var(--ds-border-default) 76%, transparent);
+  --cmd-surface: color-mix(in oklch, var(--ds-surface-elevated) 92%, var(--ds-canvas));
+  --cmd-accent: var(--ds-brand-600);
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5);
+  padding-block: var(--ds-space-2) var(--ds-space-8);
+  color: var(--ds-text-primary);
+  container-type: inline-size;
+}
+
+.surface[data-portal='customer'] { --cmd-accent: var(--ds-accent-indigo); }
+.surface[data-portal='exchange'] { --cmd-accent: var(--ds-accent-cyan); }
+
+.commandBar {
+  position: sticky;
+  inset-block-start: 0.5rem;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--ds-space-3);
+  min-block-size: 3.75rem;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border: 1px solid var(--cmd-line);
+  border-radius: var(--ds-radius-xl);
+  background: var(--cmd-surface);
+  box-shadow: var(--ds-shadow-md);
+  backdrop-filter: blur(10px) saturate(125%);
+}
+
+.identity,
+.commandMeta,
+.commandNav,
+.commandLink,
+.commandButton,
+.commandHint,
+.mobileGuide { display: inline-flex; align-items: center; }
+.identity { gap: var(--ds-space-2); min-inline-size: 0; }
+.signal { inline-size: 0.55rem; block-size: 0.55rem; flex: none; border-radius: var(--ds-radius-full); background: var(--cmd-accent); box-shadow: 0 0 0 4px color-mix(in oklch, var(--cmd-accent) 14%, transparent); }
+.identityCopy { display: grid; gap: 0.1rem; min-inline-size: 0; }
+.kicker { color: var(--ds-text-muted); font-size: var(--ds-text-xs); }
+.greeting { color: var(--ds-text-primary); font-size: var(--ds-text-sm); font-weight: var(--ds-weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.commandNav { justify-content: center; gap: var(--ds-space-1); min-inline-size: 0; overflow-x: auto; scrollbar-width: none; }
+.commandNav::-webkit-scrollbar { display: none; }
+.commandLink { gap: var(--ds-space-1-5); min-block-size: 2.75rem; padding-inline: var(--ds-space-2); border-radius: var(--ds-radius-md); color: var(--ds-text-secondary); font-size: var(--ds-text-xs); text-decoration: none; white-space: nowrap; transition: color var(--ds-duration-fast) var(--ds-ease-out-quart), background-color var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast) var(--ds-ease-spring); }
+.commandLink:hover { color: var(--cmd-accent); background: color-mix(in oklch, var(--cmd-accent) 8%, transparent); }
+.commandLink:active { transform: scale(0.98); }
+.commandLink:focus-visible, .commandButton:focus-visible, .mobileGuide:focus-visible { outline: 2px solid var(--cmd-accent); outline-offset: 2px; }
+.commandMeta { justify-content: flex-end; gap: var(--ds-space-2); }
+.time { color: var(--ds-text-primary); font-size: var(--ds-text-xs); font-variant-numeric: tabular-nums; }
+.role { padding: 0.25rem var(--ds-space-2); border: 1px solid color-mix(in oklch, var(--cmd-accent) 24%, var(--cmd-line)); border-radius: var(--ds-radius-full); color: var(--cmd-accent); font-size: 0.68rem; white-space: nowrap; }
+.commandButton { justify-content: center; inline-size: 2.75rem; block-size: 2.75rem; border: 1px solid var(--cmd-line); border-radius: var(--ds-radius-md); color: var(--ds-text-secondary); background: var(--ds-surface); text-decoration: none; transition: transform var(--ds-duration-fast) var(--ds-ease-spring), color var(--ds-duration-fast) var(--ds-ease-out-quart); }
+.commandButton:hover { color: var(--cmd-accent); transform: translateY(-1px); }
+.commandHint { gap: 0.15rem; color: var(--ds-text-muted); font-size: 0.66rem; }
+.content { min-inline-size: 0; }
+.mobileGuide { display: none; justify-content: center; gap: var(--ds-space-1); min-block-size: 2.75rem; padding: var(--ds-space-2); color: var(--cmd-accent); font-size: var(--ds-text-xs); text-decoration: none; }
+
+@media (max-width: 52rem) {
+  .commandBar { grid-template-columns: minmax(0, 1fr) auto; }
+  .commandNav { grid-column: 1 / -1; grid-row: 2; justify-content: flex-start; border-block-start: 1px solid var(--cmd-line); padding-block-start: var(--ds-space-1); }
+  .commandHint { display: none; }
+}
+
+@media (max-width: 34rem) {
+  .commandBar { inset-block-start: 0; border-radius: var(--ds-radius-lg); }
+  .kicker { display: none; }
+  .commandLink { padding-inline: var(--ds-space-1-5); }
+  .commandLink span { display: none; }
+  .commandLink svg { inline-size: 18px; block-size: 18px; }
+  .mobileGuide { display: inline-flex; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .commandLink, .commandButton { transition: none; }
+}
