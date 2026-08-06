@@ -3,94 +3,55 @@ import { auth } from '@/auth';
 import { NextResponse } from 'next/server';
 import * as XLSX from 'xlsx';
 
+const MAX_REPORT_RANGE_MS = 366 * 24 * 60 * 60 * 1000;
+
 export async function POST(req: Request) {
   try {
-    // چک احراز هویت - فقط ادمین‌ها
     const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: 'احراز هویت الزامی است' }, { status: 401 });
-    }
-
-    const userRole = (session.user as { role?: string }).role;
-    // M2-fix: SUPERADMIN هم مجاز است (مثل OWNER)
-    if (!['ADMIN', 'OWNER', 'SUPERADMIN'].includes(userRole ?? '')) {
+    if (!session?.user) return NextResponse.json({ error: 'احراز هویت الزامی است' }, { status: 401 });
+    const userRole = session.user.role ?? '';
+    if (!['ADMIN', 'OWNER', 'SUPERADMIN'].includes(userRole)) {
       return NextResponse.json({ error: 'دسترسی غیرمجاز' }, { status: 403 });
     }
 
     const body = await req.json();
     const { from, to } = body as { from?: unknown; to?: unknown };
-    // 2026-07-08: validate dates — `new Date('garbage')` produced Invalid Date
-    // and an uncaught 500 (cheap DoS). Also sanitize the filename to block
-    // header/CRLF injection (H10).
     const fromDate = typeof from === 'string' ? new Date(from) : null;
     const toDate = typeof to === 'string' ? new Date(to) : null;
-    if (
-      !fromDate ||
-      !toDate ||
-      Number.isNaN(fromDate.getTime()) ||
-      Number.isNaN(toDate.getTime())
-    ) {
+    if (!fromDate || !toDate || Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
       return NextResponse.json({ error: 'تاریخ نامعتبر است' }, { status: 400 });
+    }
+    if (fromDate > toDate || toDate.getTime() - fromDate.getTime() > MAX_REPORT_RANGE_MS) {
+      return NextResponse.json({ error: 'بازه گزارش نامعتبر یا بیش از یک سال است' }, { status: 400 });
     }
 
     const result = await getSystemReports(fromDate, toDate);
-
-    if (!result.success) {
-      return NextResponse.json({ error: result.message }, { status: 400 });
-    }
+    if (!result.success) return NextResponse.json({ error: result.message }, { status: 400 });
+    if (!result.data) return NextResponse.json({ error: 'داده‌ای یافت نشد' }, { status: 404 });
 
     const { data } = result;
-
-    if (!data) {
-      return NextResponse.json({ error: 'داده‌ای یافت نشد' }, { status: 404 });
-    }
-
-    // تبدیل داده‌ها به فرمت مناسب برای اکسل
     const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([
+      ['آمار کاربران'], ['تعداد کل', data.userStats.total], ['کاربران جدید این ماه', data.userStats.newThisMonth],
+    ]), 'آمار کاربران');
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([
+      ['آمار مطالب'], ['تعداد کل', data.postStats.total], ['منتشر شده', data.postStats.published],
+    ]), 'آمار مطالب');
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([
+      ['آمار نظرات'], ['تعداد کل', data.commentStats.total], ['در انتظار تایید', data.commentStats.pending],
+    ]), 'آمار نظرات');
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([
+      ['آمار بازدید'], ['تعداد کل', data.viewStats.total], ['امروز', data.viewStats.today],
+    ]), 'آمار بازدید');
 
-    // صفحه آمار کاربران
-    const userStats = [
-      ['آمار کاربران'],
-      ['تعداد کل', data.userStats.total],
-      ['کاربران جدید این ماه', data.userStats.newThisMonth],
-    ];
-    const userSheet = XLSX.utils.aoa_to_sheet(userStats);
-    XLSX.utils.book_append_sheet(workbook, userSheet, 'آمار کاربران');
-
-    // صفحه آمار مطالب
-    const postStats = [
-      ['آمار مطالب'],
-      ['تعداد کل', data.postStats.total],
-      ['منتشر شده', data.postStats.published],
-    ];
-    const postSheet = XLSX.utils.aoa_to_sheet(postStats);
-    XLSX.utils.book_append_sheet(workbook, postSheet, 'آمار مطالب');
-
-    // صفحه آمار نظرات
-    const commentStats = [
-      ['آمار نظرات'],
-      ['تعداد کل', data.commentStats.total],
-      ['در انتظار تایید', data.commentStats.pending],
-    ];
-    const commentSheet = XLSX.utils.aoa_to_sheet(commentStats);
-    XLSX.utils.book_append_sheet(workbook, commentSheet, 'آمار نظرات');
-
-    // صفحه آمار بازدید
-    const viewStats = [
-      ['آمار بازدید'],
-      ['تعداد کل', data.viewStats.total],
-      ['امروز', data.viewStats.today],
-    ];
-    const viewSheet = XLSX.utils.aoa_to_sheet(viewStats);
-    XLSX.utils.book_append_sheet(workbook, viewSheet, 'آمار بازدید');
-
-    // تبدیل به باینری
     const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
-
+    const filename = `system-report-${fromDate.toISOString().slice(0, 10)}-to-${toDate.toISOString().slice(0, 10)}.xlsx`;
     return new NextResponse(buffer, {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'Content-Disposition': `attachment; filename="system-report-${encodeURIComponent(String(from))}-to-${encodeURIComponent(String(to))}.xlsx"`,
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Cache-Control': 'private, no-store',
+        'X-Content-Type-Options': 'nosniff',
       },
     });
   } catch {
