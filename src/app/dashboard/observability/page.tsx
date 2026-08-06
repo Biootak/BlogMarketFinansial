@@ -10,78 +10,20 @@ import { ServiceLadder } from './_components/ServiceLadder';
 import { SourceBreakdown } from './_components/SourceBreakdown';
 import { SourceHeat } from './_components/SourceHeat';
 
-export const metadata: Metadata = {
-  title: 'مرکز مشاهده‌پذیری',
-  description: 'نمای زندهٔ سلامت سامانه بر پایهٔ لاگ‌های واقعی سیستم.',
-};
+export const metadata: Metadata = { title: 'مرکز مشاهده‌پذیری', description: 'نمای زندهٔ سلامت سامانه بر پایهٔ لاگ‌های واقعی سیستم.' };
 
-/**
- * نمای کلی. جریان شبانه‌روز و نشانه‌های حیاتی در deck (layout) هستند، پس اینجا
- * تکرار نمی‌شوند؛ این صفحه به «کجا را نگاه کنم» پاسخ می‌دهد نه «چقدر ترافیک
- * داشتیم». وزن هر مدخل با اهمیتش تعیین شده، نه با تقارن.
- *
- * ترتیب عمدی است و روایت دارد: چه چیزی خراب است ← سامانه خودش چه می‌گوید ←
- * کِی خراب شد ← کجا خراب شد ← از چه حجمی حرف می‌زنیم ← ترکیب کل.
- * ریتم ستون‌ها هم عوض می‌شود (۸/۴ ← ۵/۷ ← ۷/۵) تا سه ردیفِ هم‌شکل پشت هم
- * نیفتد؛ همان چیزی که داشبوردها را «تولیدشده» نشان می‌دهد.
- */
 export default function ObservabilityOverviewPage() {
   return (
-    <>
-      <ObsSection
-        className={b.eight}
-        icon={ServerCog}
-        title="پرخطرترین سرویس‌ها"
-        hint="پنج سرویسی که همین حالا بیشترین ریسک را دارند؛ ترتیب از وضعیت و شمار خطای واقعی می‌آید."
-      >
-        <ServiceLadder limit={5} />
-      </ObsSection>
-
-      <ObsSection
-        className={b.four}
-        icon={Sparkles}
-        title="یافته‌های خودکار"
-        hint="هر جمله از همین snapshot ساخته شده؛ اگر شرطش برقرار نباشد اصلاً نمایش داده نمی‌شود."
-      >
-        <InsightStack />
-      </ObsSection>
-
-      <ObsSection
-        className={b.five}
-        icon={Siren}
-        title="پنجره‌های بحرانی"
-        tone="bad"
-        hint="بازه‌هایی که نرخ خطا از سه برابر میانگین شبانه‌روز گذشته است."
-      >
-        <IncidentTimeline />
-      </ObsSection>
-
-      <ObsSection
-        className={b.seven}
-        icon={Grid2x2}
-        title="نقشهٔ گرمای منابع"
-        hint="پرحجم‌ترین منابع لاگ در برابر ساعت‌های شبانه‌روز."
-      >
-        <SourceHeat />
-      </ObsSection>
-
-      <ObsSection
-        className={b.seven}
-        icon={PieChart}
-        title="سهم منابع از ترافیک"
-        hint="چه بخشی از حجم لاگ از کدام منبع می‌آید و چقدرش خطاست."
-      >
-        <SourceBreakdown />
-      </ObsSection>
-
-      <ObsSection
-        className={b.five}
-        icon={Layers3}
-        title="توزیع سطوح لاگ"
-        hint="نسبت info و warn و error در کل حجم پنجره."
-      >
-        <LevelDistribution />
-      </ObsSection>
-    </>
+    <div className={b.tabLayout} data-tab="overview">
+      <div className={b.tabIntro}><div><span className={b.tabEyebrow}>OPERATIONS / OVERVIEW</span><h2 className={b.tabTitle}>اول آتش را پیدا کن، بعد نمودار را بخوان</h2><p className={b.tabLead}>این نمای کلی از مهم‌ترین نشانه‌ها شروع می‌کند: سرویس‌های پرریسک، یافته‌های قابل اقدام و پنجره‌های بحرانی.</p></div><div className={b.tabStamp}><strong>خوانش زنده</strong><span>بر پایهٔ snapshot فعلی سامانه</span></div></div>
+      <div className={b.tabGrid}>
+        <ObsSection className={`${b.eight} ${b.featured}`} icon={ServerCog} title="پرخطرترین سرویس‌ها" hint="پنج سرویس اول بر اساس وضعیت و شمار خطای واقعی."><ServiceLadder limit={5} /></ObsSection>
+        <ObsSection className={`${b.four} ${b.insightPanel}`} icon={Sparkles} title="یافته‌های خودکار" hint="هر یافته یک مسیر بررسی دارد."><InsightStack /></ObsSection>
+        <ObsSection className={b.seven} icon={Grid2x2} title="نقشهٔ گرمای منابع" hint="پرحجم‌ترین منابع لاگ در برابر ساعت‌های شبانه‌روز."><SourceHeat /></ObsSection>
+        <ObsSection className={b.five} icon={Siren} title="پنجره‌های بحرانی" hint="بازه‌هایی که نرخ خطا از میانگین فاصله گرفته است."><IncidentTimeline /></ObsSection>
+        <ObsSection className={b.seven} icon={PieChart} title="سهم منابع از ترافیک" hint="حجم هر منبع و سهم خطای آن."><SourceBreakdown /></ObsSection>
+        <ObsSection className={b.five} icon={Layers3} title="توزیع سطوح لاگ" hint="نسبت info، warn و error در پنجره."><LevelDistribution /></ObsSection>
+      </div>
+    </div>
   );
 }
