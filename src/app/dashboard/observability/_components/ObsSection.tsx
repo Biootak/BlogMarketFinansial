@@ -1,10 +1,12 @@
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
-import type { ToneKey } from './format';
+import { toFa, type ToneKey } from './format';
 import s from './obs.module.css';
 
 interface ObsSectionProps {
+  /** شمارهٔ ترتیبی بخش در همان صفحه — ریتم عمودی می‌سازد و جای «کارت» را می‌گیرد. */
+  index: number;
   icon: LucideIcon;
   title: string;
   hint?: string;
@@ -15,8 +17,15 @@ interface ObsSectionProps {
   children: ReactNode;
 }
 
-/** پوستهٔ استاندارد هر بلوک — تیتر، توضیح کوتاه، خط مویی، بدنه. بدون کارت. */
+/**
+ * پوستهٔ استاندارد هر بلوک — شمارهٔ ترتیبی، تیتر، توضیح کوتاه، خط مویی، بدنه.
+ *
+ * **کارت نیست و نباید بشود.** شبکهٔ کارت‌های هم‌اندازه همه‌چیز را هم‌وزن نشان
+ * می‌دهد؛ این صفحه اولویت دارد و اولویت باید در چیدمان دیده شود، پس وزن هر
+ * بلوک با کلاس span در گرید ۱۲ ستونی تعیین می‌شود نه با اندازهٔ کارت.
+ */
 export function ObsSection({
+  index,
   icon: Icon,
   title,
   hint,
@@ -28,6 +37,10 @@ export function ObsSection({
   return (
     <section className={className ? `${s.section} ${className}` : s.section} data-tone={tone}>
       <header className={s.sectionHead}>
+        <span className={s.sectionIndex} aria-hidden="true">
+          {toFa(String(index).padStart(2, '0'))}
+        </span>
+
         <div className={s.sectionHeadText}>
           <h2 className={s.sectionTitle}>
             <Icon size={16} strokeWidth={1.5} aria-hidden="true" />
@@ -35,8 +48,10 @@ export function ObsSection({
           </h2>
           {hint ? <p className={s.sectionHint}>{hint}</p> : null}
         </div>
+
         {actions ? <div className={s.sectionActions}>{actions}</div> : null}
       </header>
+
       <div className={s.sectionBody}>{children}</div>
     </section>
   );

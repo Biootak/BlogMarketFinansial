@@ -19,6 +19,12 @@ const ITEMS = [
   { segment: '/audit', label: 'رد ممیزی', icon: ScrollText },
 ] as const;
 
+/**
+ * ناوبری فرعی — ریلِ قطعه‌ای با نشانگر زیرین.
+ * نشانگر با transform می‌آید نه با تغییر ابعاد، پس هیچ layout thrash نداریم.
+ * هر لینک حداقل ۴۴px ارتفاع دارد (هدف لمسی) و در موبایل ریل افقی اسکرول
+ * می‌شود بدون اینکه نوار اسکرول دیده شود.
+ */
 export function ObsSubNav() {
   const pathname = usePathname();
   const { data } = useObs();
@@ -45,7 +51,7 @@ export function ObsSubNav() {
           return (
             <li key={href}>
               <Link href={href} className={s.navLink} aria-current={active ? 'page' : undefined}>
-                <Icon size={16} strokeWidth={1.5} aria-hidden />
+                <Icon size={16} strokeWidth={1.5} aria-hidden="true" />
                 <span>{label}</span>
                 {count && count.value > 0 ? (
                   <span className={s.navCount} data-tone={count.alarming ? 'bad' : 'idle'}>

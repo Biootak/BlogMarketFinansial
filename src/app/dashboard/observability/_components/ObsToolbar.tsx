@@ -10,11 +10,12 @@ const SYNC_TEXT: Record<string, string> = {
   idle: 'زنده',
   syncing: 'در حال هم‌گام‌سازی',
   failed: 'اتصال قطع شد',
+  blocked: 'نشست منقضی شده',
 };
 
 /**
  * نوار وضعیت زنده. به‌جای اسپینر چرخان یک خط مویی determinate داریم:
- * فقط transform/opacity حرکت می‌کند و هیچ keyframe محلی لازم نیست.
+ * فقط transform روی محور inline حرکت می‌کند و هیچ keyframe محلی لازم نیست.
  * زمان‌ها با timeZone ثابت فرمت می‌شوند تا SSR و کلاینت یکی باشند.
  */
 export function ObsToolbar() {
@@ -26,25 +27,23 @@ export function ObsToolbar() {
         <span
           className={sync === 'idle' ? `${s.liveDot} anim-ping-soft` : s.liveDot}
           data-state={sync}
-          aria-hidden
+          aria-hidden="true"
         />
         <span aria-live="polite">{SYNC_TEXT[sync] ?? 'زنده'}</span>
       </span>
 
-      <span className={s.window}>
-        {faNum(data?.windowHours ?? 24)} ساعت گذشته · هر {faNum(30)} ثانیه
-      </span>
-
-      <span className={s.syncTrack} aria-hidden>
+      <span className={s.syncTrack} aria-hidden="true">
         <span className={s.syncBar} data-state={sync} />
       </span>
 
-      <span className={s.stamp}>
-        {data ? `خوانش ${clock(data.generatedAt)}` : 'بدون خوانش'}
+      <span className={s.window}>
+        {faNum(data?.windowHours ?? 24)} ساعت · هر {faNum(30)} ثانیه
       </span>
 
+      <span className={s.stamp}>{data ? `خوانش ${clock(data.generatedAt)}` : 'بدون خوانش'}</span>
+
       <button type="button" className={s.refresh} onClick={refresh} disabled={sync === 'syncing'}>
-        <RefreshCw size={16} strokeWidth={1.5} aria-hidden />
+        <RefreshCw size={16} strokeWidth={1.5} aria-hidden="true" />
         <span>خواندن دوباره</span>
       </button>
     </div>

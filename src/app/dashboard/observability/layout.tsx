@@ -7,6 +7,7 @@ import { ObsProvider } from './_components/ObsProvider';
 import { ObsPulseDeck } from './_components/ObsPulseDeck';
 import { ObsSubNav } from './_components/ObsSubNav';
 import { ObsToolbar } from './_components/ObsToolbar';
+import { TimeScore } from './_components/TimeScore';
 import { requireObservabilityAccess } from './_lib/guard';
 import s from './observability.module.css';
 
@@ -18,8 +19,9 @@ export const dynamic = 'force-dynamic';
  * داده یک‌بار اینجا خوانده می‌شود و از طریق ObsProvider بین زیرمسیرها به
  * اشتراک می‌رود؛ جابه‌جایی بین تب‌ها هیچ درخواست تازه‌ای نمی‌زند.
  *
- * ObsPulseDeck هم عمداً در layout است نه در page: «حال سامانه» زمینهٔ همهٔ
- * تب‌هاست، پس نباید با هر ناوبری unmount و دوباره رسم شود.
+ * سرلوحهٔ حکم و پارتیتور زمانی عمداً در layout هستند نه در page: «حال سامانه»
+ * و «محور ۲۴ ساعته» زمینهٔ همهٔ تب‌ها هستند، پس نباید با هر ناوبری unmount و
+ * دوباره رسم شوند — و مکان‌نمای ساعت هم بین تب‌ها حفظ می‌شود.
  */
 export default async function ObservabilityLayout({ children }: { children: ReactNode }) {
   await requireObservabilityAccess();
@@ -46,6 +48,7 @@ export default async function ObservabilityLayout({ children }: { children: Reac
         </div>
 
         <ObsPulseDeck />
+        <TimeScore />
 
         <main className={s.main}>{children}</main>
       </ObsProvider>
