@@ -1,5 +1,4 @@
 import { getPendingQuotes } from '@/actions/exchange-quotes';
-import { PageHeader, Section } from '@/components/Dashboard/primitives';
 import { requireAdmin } from '@/lib/require-auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -8,6 +7,12 @@ import ExchangeQuotesApprovalWorkspace from './_components/ExchangeQuotesApprova
 export const metadata: Metadata = { title: 'تایید قیمت‌گذاری صرافی‌ها' };
 export const dynamic = 'force-dynamic';
 
+/**
+ * سربرگ این مسیر عمداً اینجا نیست.
+ * `ExchangeQuotesApprovalWorkspace` مالک سربرگ است (اکشن‌ها و شمارندهٔ صف
+ * کلاینتی‌اند). قبلاً هر دو لایه سربرگ می‌زدند.
+ * قرارداد در `primitives/pageHeaders.ts` → owner: 'client'.
+ */
 export default async function ExchangeQuotesPage() {
   const auth = await requireAdmin();
   if (!auth.success) redirect('/dashboard');
@@ -15,24 +20,8 @@ export default async function ExchangeQuotesPage() {
   const pending = await getPendingQuotes();
 
   return (
-    <main className="max-w-[1440px] mx-auto flex flex-col gap-5">
-      <PageHeader
-        variant="compact"
-        breadcrumb={[
-          { label: 'مرکز فرماندهی', href: '/dashboard' },
-          { label: 'عملیات صرافی' },
-          { label: 'تأیید قیمت‌ها' },
-        ]}
-        eyebrow="عملیات صرافی"
-        title="صف تأیید قیمت‌گذاری"
-        description="بررسی و تأیید قیمت‌های ارسالی صرافی‌ها با مقایسه با نرخ بازار."
-        icon="bar-chart"
-        accent="amber"
-      />
-
-      <Section>
-        <ExchangeQuotesApprovalWorkspace initialPending={pending} />
-      </Section>
+    <main className="max-w-[1440px] mx-auto">
+      <ExchangeQuotesApprovalWorkspace initialPending={pending} />
     </main>
   );
 }

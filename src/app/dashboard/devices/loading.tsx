@@ -1,3 +1,8 @@
+// 2026-08: بلوک `h-[110px]` جای سربرگ حدسی بود و با ارتفاع واقعی سربرگ
+// `minimal` نمی‌خواند. PageHeaderSkeleton همان CSS سربرگ را مصرف می‌کند،
+// پس دیگر layout shift نداریم.
+
+import { PageHeaderSkeleton } from '@/components/Dashboard/primitives';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DevicesLoading() {
@@ -10,16 +15,16 @@ export default function DevicesLoading() {
         padding: 'var(--ds-space-5)',
         paddingBlockEnd: 'var(--ds-space-10)',
       }}
-      dir="rtl"
+      aria-busy="true"
+      aria-live="polite"
     >
-      {/* PageHeader skeleton */}
-      <Skeleton className="h-[110px] w-full rounded-[20px]" />
+      <PageHeaderSkeleton route="/dashboard/devices" />
 
       {/* KPI Grid */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 12rem), 1fr))',
           gap: 'var(--ds-space-3)',
         }}
       >
@@ -38,7 +43,7 @@ export default function DevicesLoading() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 20rem), 1fr))',
           gap: 'var(--ds-space-3)',
         }}
       >

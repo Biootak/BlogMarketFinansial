@@ -1,7 +1,9 @@
 // src/app/dashboard/exchange-rates/loading.tsx
-// 2026-07-29: Skeleton matching the new layout — header + stat strip + catalog + table.
+// 2026-08: اسکلتون سربرگ دیگر یک `<PageHeader>` واقعی با متن «در حال بارگذاری…»
+// نیست — آن نسخه سربرگ را دو بار (یک‌بار جعلی، یک‌بار واقعی) رندر می‌کرد و
+// هنگام hydrate صفحه می‌پرید. حالا از PageHeaderSkeleton با همان هندسه.
 
-import { PageHeader } from '@/components/Dashboard/primitives';
+import { PageHeaderSkeleton } from '@/components/Dashboard/primitives';
 
 export default function Loading() {
   return (
@@ -15,11 +17,7 @@ export default function Loading() {
       aria-busy="true"
       aria-live="polite"
     >
-      <PageHeader
-        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'نرخ ارزها' }]}
-        title="نرخ ارزها"
-        description="در حال بارگذاری…"
-      />
+      <PageHeaderSkeleton route="/dashboard/exchange-rates" withActions />
 
       {/* Stat strip skeleton */}
       <div
