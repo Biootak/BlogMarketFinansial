@@ -10,19 +10,14 @@ import { getMarketRates } from '@/actions/market-rates';
 import { getScheduledPosts, getStats } from '@/actions/postActions';
 import { FintechCockpitServer } from '@/components/Dashboard/DashboardPage/FintechCockpitServer';
 import { UserHome } from '@/components/Dashboard/DashboardPage/UserHome';
-// 2026-07-31: بازطراحی یکپارچه داشبورد.
+// 2026-08-06: بازطراحی «میز فرماندهی».
 //
-// قبلاً ۴ کامپوننت مستقل (AtelierDeck + FintechKpiWidget +
-// LiveOpsPulse + ServiceRequestsWidget) روی هم چیده می‌شد که هر کدام
-// زبان بصری خودشان را داشتند و صفحه را تکه‌تکه نشان می‌داد.
+// قبلاً FintechCockpitServer و AtelierDeck دو خواهر و برادر جدا بودند و
+// صفحه دو زبان بصری پشت سر هم نشان می‌داد. حالا deck تحریریه از طریق
+// slot `editorial` (که تا امروز مرده بود) داخل همان برگه رندر می‌شود،
+// پس ریتم صفحه یکپارچه است.
 //
-// حالا برای نقش‌های ادمین/مالک/نویسنده/سوپرادمین:
-//   - FintechCockpitServer → یکپارچه و coheisve (Hero + KPI strip +
-//     Services + Live Ops + Quick Actions همگی در یک زبان بصری)
-//   - Editorial deck هنوز به‌عنوان ردیف اختیاری پایین FintechCockpit
-//     نمایش داده می‌شود (اگر داده موجود باشد)
-//
-// برای نقش USER/SUPPORT: همان UserHome بهینه‌سازی‌شده با tokens.
+// نقش‌های USER/SUPPORT همچنان UserHome را می‌بینند.
 import { AtelierDeck } from '@/components/Dashboard/DashboardPage/atelier';
 import prisma from '@/lib/db';
 
@@ -74,7 +69,7 @@ export default async function Dashboard() {
   }
 
   // 2026-08-perf: checkRole حذف شد — auth() اضافی اجرا می‌کرد.
-  // role check inline با initialSession (که خط ۳۷ awaited شده).
+  // role check inline با initialSession.
   const ALLOWED_ROLES = new Set(['OWNER', 'ADMIN', 'AUTHOR', 'SUPERADMIN']);
   if (!ALLOWED_ROLES.has(initialSession.user.role ?? '')) {
     redirect('/');
@@ -132,20 +127,21 @@ export default async function Dashboard() {
           : [];
 
       return (
-        <>
-          <FintechCockpitServer />
-          <AtelierDeck
-            stats={statsResult?.data!}
-            scheduledPosts={scheduledPostsResult?.data!}
-            popularPosts={popularPostsResult?.data!}
-            recentDrafts={recentDraftsResult?.data!}
-            viewStats={viewStatsResult?.data!}
-            recentActivity={recentActivity}
-            userRole={userRole}
-            marketRates={marketRates ?? []}
-            topAuthors={topAuthors ?? []}
-          />
-        </>
+        <FintechCockpitServer
+          editorial={
+            <AtelierDeck
+              stats={statsResult?.data!}
+              scheduledPosts={scheduledPostsResult?.data!}
+              popularPosts={popularPostsResult?.data!}
+              recentDrafts={recentDraftsResult?.data!}
+              viewStats={viewStatsResult?.data!}
+              recentActivity={recentActivity}
+              userRole={userRole}
+              marketRates={marketRates ?? []}
+              topAuthors={topAuthors ?? []}
+            />
+          }
+        />
       );
     }
   }
