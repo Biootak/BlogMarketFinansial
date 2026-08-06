@@ -1,0 +1,585 @@
+/* ============================================================================
+   Chrono console — حکم وضعیت، تب‌های ابزار، نوار زنده، مکان‌نمای زمان
+   ----------------------------------------------------------------------------
+   چهار قطعهٔ کنسول فرمان در یک فایل‌اند چون یک واحد بصری‌اند: با هم یک نوار
+   می‌سازند و اگر جدا باشند drift می‌گیرند.
+
+   نقشهٔ تُن: هر عنصری که `data-tone` دارد کلاس `.t` را هم می‌گیرد و از آن
+   `--tone` را ارث می‌برد. یعنی رنگ «اطلاعات» است نه تزئین، و هیچ رنگی در
+   کامپوننت hardcode نمی‌شود.
+   ============================================================================ */
+
+.t[data-tone='ok'] {
+  --tone: var(--nova-up);
+  --tone-soft: color-mix(in oklch, var(--nova-up) 14%, transparent);
+}
+.t[data-tone='warn'] {
+  --tone: var(--ds-accent-amber);
+  --tone-soft: color-mix(in oklch, var(--ds-accent-amber) 16%, transparent);
+}
+.t[data-tone='bad'] {
+  --tone: var(--nova-down);
+  --tone-soft: color-mix(in oklch, var(--nova-down) 16%, transparent);
+}
+.t[data-tone='info'] {
+  --tone: var(--ds-accent-cyan);
+  --tone-soft: color-mix(in oklch, var(--ds-accent-cyan) 14%, transparent);
+}
+.t[data-tone='idle'] {
+  --tone: var(--ds-text-muted);
+  --tone-soft: color-mix(in oklch, var(--ds-text-muted) 10%, transparent);
+}
+
+/* ═══════════════════════ ۱. تیغهٔ حکم ═══════════════════════ */
+
+/*
+   نه کارت، نه بنر: یک تیغه با لبهٔ تُن‌دار در ابتدای خط. سه چیز را در یک
+   خط می‌گوید — «چه وضعی»، «چه شد»، «چه کنم». تنها جایی از صفحه که
+   جمله می‌خوانی؛ باقی صفحه عدد است.
+*/
+.spine {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-2-5) var(--ds-space-3);
+  border: 1px solid var(--ds-border-subtle);
+  border-inline-start: 2px solid var(--tone, var(--ds-border-strong));
+  border-radius: var(--ds-radius-md);
+  background: linear-gradient(
+    to inline-end,
+    var(--tone-soft, transparent),
+    color-mix(in oklch, var(--ds-surface-recessed) 60%, transparent) 45%
+  );
+  min-inline-size: 0;
+}
+
+.spineGlyph {
+  display: grid;
+  place-items: center;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border-radius: var(--ds-radius-sm);
+  border: 1px solid color-mix(in oklch, var(--tone) 40%, transparent);
+  background: color-mix(in oklch, var(--tone) 12%, transparent);
+  color: var(--tone);
+  flex-shrink: 0;
+}
+
+.spineBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-inline-size: 0;
+}
+
+.spineHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--ds-space-2);
+  min-inline-size: 0;
+}
+
+.spineLabel {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-bold);
+  letter-spacing: var(--nova-tracking-tight);
+  color: var(--tone);
+}
+
+.spineText {
+  font-size: var(--ds-text-sm);
+  line-height: var(--ds-leading-snug);
+  color: var(--ds-text-primary);
+  margin: 0;
+}
+
+.spineAction {
+  font-size: var(--ds-text-xs);
+  line-height: var(--ds-leading-snug);
+  color: var(--ds-text-muted);
+  margin: 0;
+}
+
+/* شمارندهٔ سرویس‌ها در انتهای تیغه — فقط وقتی چیزی خراب است */
+.spineTally {
+  display: flex;
+  gap: var(--ds-space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-wrap: wrap;
+}
+
+.spineTallyItem {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
+}
+
+.spineTallyItem b {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--tone);
+}
+
+/* ═══════════════════════ ۲. تب‌های ابزار ═══════════════════════ */
+
+.nav {
+  min-inline-size: 0;
+}
+
+.navList {
+  display: flex;
+  align-items: stretch;
+  gap: var(--ds-space-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: inline mandatory;
+  overscroll-behavior-inline: contain;
+}
+
+.navList::-webkit-scrollbar {
+  display: none;
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  padding: var(--ds-space-2) var(--ds-space-2-5);
+  border-radius: var(--ds-radius-sm);
+  border: 1px solid transparent;
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+  min-block-size: 2.75rem; /* ۴۴px هدف لمسی */
+  scroll-snap-align: start;
+  cursor: pointer;
+  transition:
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    opacity var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.navLink:hover {
+  color: var(--ds-text-primary);
+  border-color: var(--ds-border-subtle);
+}
+
+.navLink:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 2px;
+}
+
+.navLink[aria-current='page'] {
+  color: var(--ds-text-primary);
+  border-color: var(--ds-border-default);
+  background: var(--ds-surface-elevated);
+  box-shadow: var(--ds-shadow-sm);
+}
+
+/* ریلِ فعال — خط مویی برند زیر تب جاری. block-end است پس در RTL هم درست است. */
+.navRail {
+  display: block;
+  position: absolute;
+  inset-inline: var(--ds-space-2-5);
+  inset-block-end: -1px;
+  block-size: 2px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-brand-500);
+  opacity: 0;
+  transform: scaleX(0.4);
+  transform-origin: center;
+  transition:
+    opacity var(--ds-duration-base) var(--ds-ease-out-quart),
+    transform var(--ds-duration-base) var(--ds-ease-out-quart);
+}
+
+.navLink {
+  position: relative;
+}
+
+.navLink[aria-current='page'] .navRail {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.navCount {
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+  padding-inline: 0.4rem;
+  border-radius: var(--ds-radius-full);
+  border: 1px solid color-mix(in oklch, var(--tone) 35%, transparent);
+  background: var(--tone-soft);
+  color: var(--tone);
+  line-height: 1.5;
+}
+
+/* ═══════════════════════ ۳. نوار زنده ═══════════════════════ */
+
+.rail {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2) var(--ds-space-3);
+  min-inline-size: 0;
+}
+
+.live {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
+}
+
+.liveDot {
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-text-muted);
+}
+
+.liveDot[data-state='idle'] {
+  background: var(--nova-up);
+}
+.liveDot[data-state='syncing'] {
+  background: var(--ds-accent-cyan);
+}
+.liveDot[data-state='failed'] {
+  background: var(--nova-down);
+}
+.liveDot[data-state='blocked'] {
+  background: var(--ds-accent-amber);
+}
+
+.railMeta {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* خط مویی determinate به‌جای اسپینر چرخان — فقط transform حرکت می‌کند */
+.syncTrack {
+  position: relative;
+  flex: 1 1 4rem;
+  min-inline-size: 3rem;
+  max-inline-size: 9rem;
+  block-size: 2px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-border-subtle);
+  overflow: hidden;
+}
+
+.syncBar {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 100%;
+  border-radius: inherit;
+  background: var(--ds-brand-500);
+  transform: scaleX(1);
+  transform-origin: inline-start;
+  opacity: 0.35;
+  transition:
+    transform var(--ds-duration-slow) var(--ds-ease-out-quart),
+    opacity var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.syncBar[data-state='syncing'] {
+  animation: sweep 1.1s var(--ds-ease-in-out-quart) infinite;
+  opacity: 0.9;
+}
+
+.syncBar[data-state='failed'] {
+  background: var(--nova-down);
+  opacity: 0.8;
+  transform: scaleX(1);
+}
+
+.syncBar[data-state='blocked'] {
+  background: var(--ds-accent-amber);
+  opacity: 0.8;
+}
+
+@keyframes sweep {
+  0% {
+    transform: scaleX(0.15) translateX(0);
+  }
+  50% {
+    transform: scaleX(0.55) translateX(45%);
+  }
+  100% {
+    transform: scaleX(0.15) translateX(100%);
+  }
+}
+
+.refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  min-block-size: 2.75rem;
+  padding-inline: var(--ds-space-3);
+  border-radius: var(--ds-radius-sm);
+  border: 1px solid var(--ds-border-default);
+  background: var(--ds-surface);
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  cursor: pointer;
+  transition:
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-spring),
+    opacity var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.refresh:hover:not(:disabled) {
+  color: var(--ds-text-primary);
+  transform: translateY(-1px);
+}
+
+.refresh:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.refresh:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 2px;
+}
+
+.refresh:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ═══════════════════════ ۴. مکان‌نمای زمان ═══════════════════════ */
+
+/*
+   ایدهٔ مرکزی این بازطراحی: یک مکان‌نمای زمانِ مشترک در کنسول.
+   ریلش خودش نوار چگالی است — قد هر تیغه حجم آن ساعت و رنگش سهم خطای همان
+   ساعت. یعنی هم کنترل است هم نمودار؛ دو المان جدا لازم نیست.
+
+   تناقض هدف لمسی: ۲۴ تیغه در عرض موبایل هرگز ۴۴px نمی‌شود. راه‌حل صادقانه:
+   تیغه‌ها هدف دقیق (اشاره‌گر/کیبورد) می‌مانند و کنارشان دکمه‌های ≥۴۴px برای
+   جابه‌جایی گام‌به‌گام و بازگشت به «هم‌اکنون» گذاشته شده.
+*/
+.scrub {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ds-space-2);
+  min-inline-size: 0;
+}
+
+@media (min-width: 48rem) {
+  .scrub {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: var(--ds-space-3);
+  }
+}
+
+.scrubMain {
+  min-inline-size: 0;
+}
+
+.scrubHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  margin-block-end: var(--ds-space-1-5);
+  min-inline-size: 0;
+}
+
+.scrubTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-muted);
+  margin: 0;
+}
+
+.scrubCursor {
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-primary);
+  font-weight: var(--ds-weight-semibold);
+}
+
+.scrubLiveTag {
+  font-size: var(--ds-text-xs);
+  color: var(--nova-up);
+  font-weight: var(--ds-weight-medium);
+}
+
+.scrubStrip {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  block-size: 2.25rem;
+  min-inline-size: 0;
+  border-block-end: 1px solid var(--ds-border-subtle);
+}
+
+.scrubCell {
+  flex: 1 1 0;
+  min-inline-size: 0;
+  display: flex;
+  align-items: flex-end;
+  block-size: 100%;
+}
+
+.scrubBtn {
+  position: relative;
+  inline-size: 100%;
+  block-size: 100%;
+  display: flex;
+  align-items: flex-end;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 2px 2px 0 0;
+}
+
+.scrubBtn:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 1px;
+}
+
+.scrubBar {
+  inline-size: 100%;
+  border-radius: 2px 2px 0 0;
+  background: color-mix(in oklch, var(--ds-text-muted) 32%, transparent);
+  transform-origin: bottom;
+  transition:
+    background-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.scrubBtn:hover .scrubBar {
+  background: color-mix(in oklch, var(--ds-text-secondary) 55%, transparent);
+}
+
+.scrubBtn[data-error='true'] .scrubBar {
+  background: color-mix(in oklch, var(--nova-down) 60%, transparent);
+}
+
+.scrubBtn[data-active='true'] .scrubBar {
+  background: var(--ds-brand-500);
+}
+
+.scrubBtn[data-active='true'][data-error='true'] .scrubBar {
+  background: var(--nova-down);
+}
+
+/* نشانگر مکان‌نما — خط عمودی نازک روی تیغهٔ فعال */
+.scrubBtn[data-active='true']::after {
+  content: '';
+  position: absolute;
+  inset-block: -0.25rem -0.35rem;
+  inset-inline-start: 50%;
+  inline-size: 1px;
+  background: var(--ds-brand-500);
+  opacity: 0.55;
+}
+
+.scrubAxis {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  margin-block-start: var(--ds-space-1);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.scrubCtrls {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+}
+
+.scrubStep {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border-radius: var(--ds-radius-sm);
+  border: 1px solid var(--ds-border-default);
+  background: var(--ds-surface);
+  color: var(--ds-text-secondary);
+  cursor: pointer;
+  transition:
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-spring);
+}
+
+.scrubStep:hover:not(:disabled) {
+  color: var(--ds-text-primary);
+}
+
+.scrubStep:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.scrubStep:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 2px;
+}
+
+.scrubStep:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.scrubLive {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  min-block-size: 2.75rem;
+  padding-inline: var(--ds-space-3);
+  border-radius: var(--ds-radius-sm);
+  border: 1px solid var(--ds-border-default);
+  background: var(--ds-surface);
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-spring);
+}
+
+.scrubLive:hover:not(:disabled) {
+  color: var(--ds-text-primary);
+}
+
+.scrubLive:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.scrubLive:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 2px;
+}
+
+.scrubLive:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
