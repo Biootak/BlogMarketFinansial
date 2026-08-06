@@ -1,25 +1,62 @@
 /* ============================================================================
    Observability — route shell
    ----------------------------------------------------------------------------
-   Mobile first · logical properties only · فقط توکن --ds-*
-   این فایل فقط قاب مسیر است: سرصفحه، ناوبری فرعی، بدنه.
-   چیدمان هر بخش داخل ماژول همان board زندگی می‌کند.
+   Mobile first. Logical properties only. Tokens only.
    ============================================================================ */
 
 .page {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-4);
+  gap: var(--ds-space-5);
   min-block-size: 100%;
-  padding-block-end: var(--ds-space-8);
 }
 
-@media (min-width: 64rem) {
-  .page {
+/* نوار فرمان: ناوبری فرعی + وضعیت زنده */
+.bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding-block-end: var(--ds-space-2);
+  border-block-end: 1px solid var(--ds-border-subtle);
+}
+
+@media (min-width: 60rem) {
+  .bar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
     gap: var(--ds-space-5);
   }
 }
 
-.body {
+.shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ds-space-5);
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-8);
   min-inline-size: 0;
+}
+
+.rail {
+  order: -1;
+  min-inline-size: 0;
+}
+
+@media (min-width: 68rem) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr) clamp(15rem, 21vw, 18rem);
+    align-items: start;
+    gap: var(--ds-space-6);
+  }
+
+  .rail {
+    order: 0;
+    position: sticky;
+    inset-block-start: var(--ds-space-4);
+  }
 }

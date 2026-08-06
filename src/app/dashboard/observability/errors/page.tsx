@@ -1,21 +1,41 @@
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
+import { AlertTriangle, Layers3, Siren } from 'lucide-react';
 
-import { getObservabilitySnapshot } from '@/lib/observability';
-import { ErrorBoard } from '../_components/ErrorBoard';
-
-export const dynamic = 'force-dynamic';
+import { ErrorLedger } from '../_components/ErrorLedger';
+import { IncidentTimeline } from '../_components/IncidentTimeline';
+import { LevelDistribution } from '../_components/LevelDistribution';
+import { ObsSection } from '../_components/ObsSection';
 
 export const metadata: Metadata = {
-  title: 'خطا و رخداد — مرکز پایش',
-  description: 'جریان خطای گروه‌بندی‌شده، پنجره‌های رخداد و رد ممیزی ۲۴ ساعت گذشته.',
+  title: 'خطاها · مشاهده‌پذیری',
 };
 
-export default async function ObservabilityErrorsPage() {
-  const result = await getObservabilitySnapshot();
-  if (!result.success || !result.data) {
-    redirect('/dashboard?error=forbidden');
-  }
+export default function ObservabilityErrorsPage() {
+  return (
+    <>
+      <ObsSection
+        icon={AlertTriangle}
+        title="دفتر خطا"
+        hint="رکوردهای هم‌شکل با هم گروه شده‌اند تا یک خطای تکراری، صفحه را پر نکند."
+      >
+        <ErrorLedger />
+      </ObsSection>
 
-  return <ErrorBoard initialData={result.data} />;
+      <ObsSection
+        icon={Layers3}
+        title="توزیع سطوح"
+        hint="نسبت info و warn و error در کل حجم پنجره."
+      >
+        <LevelDistribution />
+      </ObsSection>
+
+      <ObsSection
+        icon={Siren}
+        title="پنجره‌های بحرانی"
+        hint="تجمع خطا در بازه‌های پیوسته."
+      >
+        <IncidentTimeline />
+      </ObsSection>
+    </>
+  );
 }

@@ -1,21 +1,32 @@
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
+import { Database, PieChart } from 'lucide-react';
 
-import { getObservabilitySnapshot } from '@/lib/observability';
-import { QueryBoard } from '../_components/QueryBoard';
-
-export const dynamic = 'force-dynamic';
+import { ObsSection } from '../_components/ObsSection';
+import { SlowQueryTable } from '../_components/SlowQueryTable';
+import { SourceBreakdown } from '../_components/SourceBreakdown';
 
 export const metadata: Metadata = {
-  title: 'کوئری کند — مرکز پایش',
-  description: 'عملیات کند شش ساعت گذشته و منابع پرحجم لاگ.',
+  title: 'کوئری‌های کند · مشاهده‌پذیری',
 };
 
-export default async function ObservabilityQueriesPage() {
-  const result = await getObservabilitySnapshot();
-  if (!result.success || !result.data) {
-    redirect('/dashboard?error=forbidden');
-  }
+export default function ObservabilityQueriesPage() {
+  return (
+    <>
+      <ObsSection
+        icon={Database}
+        title="کندترین مسیرها"
+        hint="شش ساعت اخیر، مرتب‌شده بر اساس بدترین زمان اجرا."
+      >
+        <SlowQueryTable />
+      </ObsSection>
 
-  return <QueryBoard initialData={result.data} />;
+      <ObsSection
+        icon={PieChart}
+        title="منبع فشار"
+        hint="کدام منبع بیشترین سهم لاگ را دارد؛ معمولاً همان‌جاست که کندی شروع می‌شود."
+      >
+        <SourceBreakdown />
+      </ObsSection>
+    </>
+  );
 }
