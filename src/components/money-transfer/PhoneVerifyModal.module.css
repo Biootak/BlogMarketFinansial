@@ -390,3 +390,42 @@
     transform: rotate(360deg);
   }
 }
+
+/* ── Telegram waiting step ────────────────────────────────────────────── */
+.tgWaiting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-2);
+  text-align: center;
+}
+
+.tgWaitingIcon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tgWaitingTitle {
+  margin: 0;
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--ds-text-primary);
+}
+
+.tgWaitingDesc {
+  margin: 0;
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-secondary);
+  line-height: 1.6;
+  max-width: 280px;
+}
+
+.tgWaitingHint {
+  margin: 0;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}

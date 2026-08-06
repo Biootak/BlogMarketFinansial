@@ -1,14 +1,5 @@
 'use server';
 
-/**
- * telegram-otp.ts — اتصال تلگرام کاربر برای دریافت OTP رایگان
- *
- * جریان:
- *   1. UI «اتصال تلگرام» را صدا می‌زند → توکن یک‌بارمصرف + لینک deep-link
- *   2. کاربر لینک را در تلگرام باز می‌کند → webhook chat_id را به حساب وصل می‌کند
- *   3. OTP های بعدی (تأیید شماره، تراکنش بالا، برداشت) به تلگرام می‌روند
- */
-
 import prisma from '@/lib/db';
 import { requireUser } from '@/lib/require-auth';
 import {
@@ -26,6 +17,28 @@ export interface TelegramLinkResultData {
   /** username ربات — برای نمایش به کاربر */
   username: string;
 }
+
+/**
+ * sendPhoneOtpViaTelegram — شماره رو ثبت + OTP رو از طریق تلگرام می‌فرسته.
+ * اگر تلگرام وصل نباشد، لینک اتصال رو برمی‌گردونه تا UI بلافاصله تلگرام رو باز کنه.
+ */
+export type PhoneOtpOrLinkResult =
+  | {
+      /** OTP فرستاده شد */
+      kind: 'sent';
+      message: string;
+    }
+  | {
+      /** تلگرام وصل نیست — URL برای باز کردن فوری */
+      kind: 'need-telegram';
+      telegramUrl: string;
+    }
+  | {
+      /** خطا */
+      kind: 'error';
+      message: string;
+      retryAfterMs?: number;
+    };
 
 export async function getTelegramLink(): Promise<FintechActionResult<TelegramLinkResultData>> {
   const auth = await requireUser();
@@ -61,4 +74,44 @@ export async function getTelegramLink(): Promise<FintechActionResult<TelegramLin
     success: true,
     data: { linked: false, url: getTelegramLinkUrl(token), username },
   };
+}
+
+/**
+ * requestPhoneOtpOrTelegramLink — یک action برای هر دو حالت:
+ *
+ *   ۱. تلگرام وصل است  → OTP می‌فرسته و 'sent' برمی‌گردونه
+ *   ۲. تلگرام وصل نیست → توکن یک‌بارمصرف می‌سازه، URL برمی‌گردونه
+ *      تا UI بلافاصله تلگرام رو باز کنه (بدون کلیک جداگانه)
+ *
+ * UI بعد از دریافت 'need-telegram': window.open(telegramUrl) + polling
+ * UI بعد از دریافت 'sent': مستقیم به صفحه وارد کردن کد می‌ره
+ */
+export async function requestPhoneOtpOrTelegramLink(phone: string): Promise<PhoneOtpOrLinkResult> {
+  const authResult = await requireUser();
+  if (!authResult.success) {
+    return { kind: 'error', message: 'وارد حساب کاربری شوید.' };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: authResult.user.id },
+    select: { telegramChatId: true },
+  });
+
+  // تلگرام وصل نیست → لینک اتصال برگردان تا UI فوری باز کنه
+  if (!user?.telegramChatId) {
+    const username = getTelegramBotUsername();
+    if (!username) {
+      return { kind: 'error', message: 'سرویس تلگرام هنوز راه‌اندازی نشده است.' };
+    }
+    const token = await createTelegramLinkToken(authResult.user.id);
+    return { kind: 'need-telegram', telegramUrl: getTelegramLinkUrl(token) };
+  }
+
+  // تلگرام وصل است → OTP بفرست از طریق phone-verify action
+  const { sendPhoneOtp } = await import('@/actions/phone-verify');
+  const res = await sendPhoneOtp({ phone });
+  if (!res.success) {
+    return { kind: 'error', message: res.message, retryAfterMs: res.retryAfterMs };
+  }
+  return { kind: 'sent', message: res.message };
 }
