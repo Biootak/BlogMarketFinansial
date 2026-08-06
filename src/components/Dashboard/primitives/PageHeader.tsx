@@ -126,8 +126,18 @@ export type PageHeaderAccent = 'indigo' | 'emerald' | 'amber' | 'rose' | 'violet
  */
 export type PageHeaderVariant = 'default' | 'compact' | 'minimal' | 'strip';
 
+export interface PageHeaderMetaItem {
+  label: string;
+  value: string | number;
+}
+
+export interface PageHeaderCrumb {
+  href?: string;
+  label: string;
+}
+
 export interface PageHeaderProps {
-  breadcrumb?: Array<{ href?: string; label: string }>;
+  breadcrumb?: PageHeaderCrumb[];
   title: string;
   description?: string;
   eyebrow?: string;
@@ -138,7 +148,7 @@ export interface PageHeaderProps {
   transition?: 'default' | 'none';
   className?: string;
   /** فقط در compact/minimal/strip: متریک‌های درون‌خطی کنار عنوان */
-  meta?: Array<{ label: string; value: string | number }>;
+  meta?: PageHeaderMetaItem[];
 }
 
 const ACCENT_CLASS: Record<PageHeaderAccent, string> = {
@@ -151,7 +161,9 @@ const ACCENT_CLASS: Record<PageHeaderAccent, string> = {
 };
 
 /** خرده‌مسیر — یک تعریف، چهار مصرف. تکرار قبلی چهار نسخه‌ی واگرا ساخته بود. */
-function Breadcrumbs({ items }: { items: NonNullable<PageHeaderProps['breadcrumb']> }) {
+function Breadcrumbs({ items }: { items: PageHeaderCrumb[] }) {
+  if (items.length === 0) return null;
+
   return (
     <nav aria-label="مسیر" className={s.breadcrumb}>
       {items.map((item, i) => {
@@ -180,7 +192,9 @@ function Breadcrumbs({ items }: { items: NonNullable<PageHeaderProps['breadcrumb
   );
 }
 
-function InlineMeta({ items }: { items: NonNullable<PageHeaderProps['meta']> }) {
+function InlineMeta({ items }: { items: PageHeaderMetaItem[] }) {
+  if (items.length === 0) return null;
+
   return (
     <div className={s.inlineMeta}>
       {items.map((m) => (
@@ -208,14 +222,14 @@ export function PageHeader({
 }: PageHeaderProps) {
   const Icon = icon ? ICON_MAP[icon] : null;
   const style = transition === 'default' ? { viewTransitionName: 'dash-page' } : undefined;
-  const hasBreadcrumb = Boolean(breadcrumb && breadcrumb.length > 0);
-  const hasMeta = Boolean(meta && meta.length > 0);
+  const crumbs = breadcrumb ?? [];
+  const metrics = meta ?? [];
 
   // ── strip ────────────────────────────────────────────────────────────────
   if (variant === 'strip') {
     return (
       <header className={cn(s.strip, ACCENT_CLASS[accent], className)} style={style} dir="rtl">
-        {hasBreadcrumb && <Breadcrumbs items={breadcrumb!} />}
+        <Breadcrumbs items={crumbs} />
         <div className={s.stripRow}>
           {Icon && (
             <div className={s.stripIcon} aria-hidden>
@@ -223,7 +237,7 @@ export function PageHeader({
             </div>
           )}
           <h1 className={s.stripTitle}>{title}</h1>
-          {hasMeta && <InlineMeta items={meta!} />}
+          <InlineMeta items={metrics} />
           {actions && <div className={s.stripActions}>{actions}</div>}
         </div>
         {description && <p className={cn(s.description, s.stripDescription)}>{description}</p>}
@@ -243,7 +257,7 @@ export function PageHeader({
             </div>
           )}
           <h1 className={s.minimalTitle}>{title}</h1>
-          {hasMeta && <InlineMeta items={meta!} />}
+          <InlineMeta items={metrics} />
           {actions && <div className={s.minimalActions}>{actions}</div>}
         </div>
         {description && <p className={cn(s.description, s.minimalDescription)}>{description}</p>}
@@ -258,7 +272,7 @@ export function PageHeader({
         <div className={s.compactTop}>
           <div className={s.metaRow}>
             <span className={s.dot} aria-hidden />
-            {hasBreadcrumb && <Breadcrumbs items={breadcrumb!} />}
+            <Breadcrumbs items={crumbs} />
             {eyebrow && <span className={s.eyebrow}>{eyebrow}</span>}
           </div>
 
@@ -269,7 +283,7 @@ export function PageHeader({
               </div>
             )}
             <h1 className={s.compactTitle}>{title}</h1>
-            {hasMeta && <InlineMeta items={meta!} />}
+            <InlineMeta items={metrics} />
           </div>
 
           {description && <p className={s.description}>{description}</p>}
@@ -286,7 +300,7 @@ export function PageHeader({
       <div className={s.body}>
         <div className={s.metaRow}>
           <span className={s.dot} aria-hidden />
-          {hasBreadcrumb && <Breadcrumbs items={breadcrumb!} />}
+          <Breadcrumbs items={crumbs} />
           {eyebrow && <span className={s.eyebrow}>{eyebrow}</span>}
         </div>
 
@@ -300,7 +314,7 @@ export function PageHeader({
         </div>
 
         {description && <p className={s.description}>{description}</p>}
-        {hasMeta && <InlineMeta items={meta!} />}
+        <InlineMeta items={metrics} />
       </div>
 
       {actions && <div className={s.actions}>{actions}</div>}
