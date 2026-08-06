@@ -4,7 +4,7 @@ import { Grid2x2 } from 'lucide-react';
 import { Fragment } from 'react';
 import type { CSSProperties } from 'react';
 
-import { faNum, hourRange } from './format';
+import { bucketLabel, faNum } from './format';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
 import h from './heat.module.css';
@@ -45,7 +45,7 @@ export function SourceHeat() {
                   className={h.cell}
                   data-error={cell.errors > 0}
                   style={{ '--level': Math.round((cell.total / max) * 100) } as CSSProperties}
-                  title={`${row.source} · ${hourRange(data.generatedAt, index, data.windowHours).label} · ${faNum(cell.total)} رویداد`}
+                  title={`${row.source} · ${bucketLabel(data.generatedAt, index, data.windowHours)} · ${faNum(cell.total)} رویداد`}
                 />
               ))}
             </div>

@@ -2,7 +2,7 @@
 
 import { Waves } from 'lucide-react';
 
-import { faNum, faPercent, hourRange, ratio } from './format';
+import { bucketLabel, faNum, faPercent, ratio } from './format';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
 import s from './obs.module.css';
@@ -50,7 +50,7 @@ export function DayStrip() {
           <ul className={s.stripList}>
             {hourly.map((value, index) => {
               const errors = hourlyErrors[index] ?? 0;
-              const label = hourRange(generatedAt, index, windowHours).label;
+              const label = bucketLabel(generatedAt, index, windowHours);
               const showTick = index % 4 === 0;
 
               return (
@@ -94,7 +94,7 @@ export function DayStrip() {
       </div>
 
       <aside className={s.readout} aria-live="polite">
-        <p className={s.readoutHour}>{hourRange(generatedAt, selected, windowHours).label}</p>
+        <p className={s.readoutHour}>{bucketLabel(generatedAt, selected, windowHours)}</p>
         <p className={s.readoutValue}>
           {faNum(selectedTotal)}
           <span className={s.readoutUnit}>رویداد</span>
@@ -116,7 +116,7 @@ export function DayStrip() {
           </div>
           <div className={s.row}>
             <dt className={s.rowKey}>شلوغ‌ترین ساعت</dt>
-            <dd className={s.rowVal}>{hourRange(generatedAt, peakIndex, windowHours).start}</dd>
+            <dd className={s.rowVal}>{bucketLabel(generatedAt, peakIndex, windowHours).slice(0, 5)}</dd>
           </div>
         </dl>
       </aside>
