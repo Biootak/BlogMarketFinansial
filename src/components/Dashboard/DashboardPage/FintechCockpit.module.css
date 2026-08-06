@@ -57,9 +57,10 @@
 /* ==========================================================================
    SPINE — فهرست بخش‌ها (فقط دسکتاپ عریض)
    --------------------------------------------------------------------------
-   تا ۹۶rem فقط شماره + نقطه رندر می‌شود؛ نام بخش روی aria-label/title می‌ماند.
-   برچسبِ مخفی‌شده با opacity هنوز عرض می‌گیرد و ناحیه‌ی کلیک را از ستون بیرون
-   می‌برد — به همین دلیل اینجا display:none است، نه opacity:0.
+   تا ۹۶rem فقط شماره + نقطه دیده می‌شود و نام بخش visually-hidden است:
+   فضا نمی‌گیرد (پس ناحیه‌ی کلیک از ستون بیرون نمی‌زند) ولی نام لینک برای
+   screen reader باقی می‌ماند. از ۹۶rem به بالا ستون پهن می‌شود و برچسب
+   واقعاً رندر می‌شود.
    ========================================================================== */
 
 .spine {
@@ -76,6 +77,7 @@
 }
 
 .spineItem {
+  position: relative;
   display: grid;
   grid-template-columns: 1.4rem 0.5rem;
   align-items: center;
@@ -123,10 +125,14 @@
 }
 
 .spineLabel {
-  display: none;
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
-  white-space: nowrap;
 }
 
 .body {
@@ -1672,7 +1678,6 @@
     position: sticky;
     inset-block-start: var(--ds-space-8);
     grid-column: 1;
-    overflow: hidden;
     padding-inline-end: var(--ds-space-2);
     border-inline-end: var(--k-rule) solid var(--k-line);
   }
@@ -1693,8 +1698,11 @@
   }
 
   .spineLabel {
-    display: block;
+    position: static;
+    inline-size: auto;
+    block-size: auto;
     overflow: hidden;
+    clip-path: none;
     text-overflow: ellipsis;
   }
 }
