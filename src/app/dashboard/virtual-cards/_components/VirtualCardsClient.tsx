@@ -8,6 +8,10 @@
  * - صدور کارت جدید (حداکثر ۳)
  * - فریز/آنفریز و لغو
  * - همه ۵ state: loading/empty/error/success/disabled
+ *
+ * ۲۰۲۶-۰۸: این کامپوننت مالک سربرگ این مسیر است (`pageHeaders.ts` → owner:
+ * 'client'). سربرگ دیگر props تکراری نمی‌گیرد؛ فقط `route` می‌دهد و خرده‌مسیر،
+ * eyebrow، نشانه و لهجه از جدول می‌آید. اکشن تعاملی محلی می‌ماند.
  */
 
 import {
@@ -151,11 +155,7 @@ export default function VirtualCardsClient({ initialCards }: Props) {
   return (
     <div className={s.page}>
       <PageHeader
-        variant="compact"
-        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'کارت‌های مجازی' }]}
-        eyebrow="پرداخت"
-        title="کارت‌های مجازی"
-        description="کارت‌های پیش‌پرداخت مجازی برای خریدهای آنلاین"
+        route="/dashboard/virtual-cards"
         actions={
           <Button
             size="sm"

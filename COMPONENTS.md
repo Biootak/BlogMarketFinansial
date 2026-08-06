@@ -41,6 +41,29 @@
 - **NOT use:** `ds/patterns/Skeleton` (unused).
 - **Required:** matches final layout dimensions.
 
+### PageHeader — `Dashboard/primitives/PageHeader.tsx` + `pageHeaders.ts`
+- **Use:** the title block of a dashboard route. **Exactly one per route.**
+- **Ownership is data, not taste.** `primitives/pageHeaders.ts` maps every route to a preset
+  and names its `owner`:
+  - `owner: 'layout'` → only `layout.tsx` renders it; sub-routes render none (e.g. `/dashboard/observability`, `/exchange/settings`).
+  - `owner: 'page'` → only the server `page.tsx` renders it.
+  - `owner: 'client'` → header actions are interactive, so the client shell renders it and `page.tsx` stays data-only (e.g. `/dashboard/virtual-cards`, `/dashboard/credit-rates`, `/dashboard/exchange-quotes`).
+- **Call it like this:** `<PageHeader route="/dashboard/virtual-cards" actions={…} />`. Explicit
+  props still win, so dynamic titles (customer name, tx id) pass `title` directly.
+- **Variant is a function of the page, not the mood:**
+  `default` = section root · `compact` = list/table with metrics · `minimal` = page that already
+  has a hero or sub-nav · `strip` = form, wizard, settings · **none** = sub-route under a
+  header-owning layout, detail pages with their own identity card, anything inside a modal.
+- **NOT use:** a second `PageHeader` below one that a parent already rendered; a hand-rolled
+  `<h1>` + breadcrumb block; `Dashboard/shared/DashboardTableWrapper.PageHeader` (@deprecated).
+- **Loading states:** never fake it with a real `<PageHeader>` or a guessed `h-[110px]` block —
+  use `PageHeaderSkeleton` (same CSS module ⇒ zero layout shift).
+- **RTL:** the component does NOT hardcode `dir`; it inherits from the document. The breadcrumb
+  separator is `ChevronRight` + `rtl:rotate-180` so it always points along the reading flow.
+- **Debug:** every rendered header carries `data-page-header="<variant>"`. More than one match on
+  a route = a duplicate regression.
+- **States:** with / without actions · with / without breadcrumb · with / without inline meta · skeleton.
+
 ### EmptyState — `Dashboard/primitives/EmptyState.tsx`
 - **Use:** empty lists/tables/sections. Props icon/title/description/action.
 - **NOT use:** `ds/patterns/EmptyState`, `Dashboard/shared/DashboardTableWrapper.EmptyState` (@deprecated), or inline local `EmptyState` — there are 5 copies; this is canonical.
@@ -71,7 +94,7 @@
 `ui/PersianDatePicker`, `ui/PersianDateTimePicker`, `ui/date-range-picker`, `ui/calendar`. Pick ONE canonical before documenting; until then reuse the one already used in the target page.
 
 ## Forbidden to create (duplicates that already exist)
-New `Button` / `Card` / `Modal` / `Dialog` / `EmptyState` / `Skeleton` / `Input` / `Table` / `Badge`. New global CSS classes for these. New `ModalHideAuthor`-style stubs (handlers must do real work).
+New `Button` / `Card` / `Modal` / `Dialog` / `EmptyState` / `Skeleton` / `Input` / `Table` / `Badge` / `PageHeader`. New global CSS classes for these. New `ModalHideAuthor`-style stubs (handlers must do real work). A second header on a route that already has one — add the route to `pageHeaders.ts` instead.
 
 ## Required states (every interactive/container component)
 loading · empty · error · disabled · success/active · keyboard focus-visible · reduced-motion-safe.
