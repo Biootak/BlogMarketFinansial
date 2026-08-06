@@ -1,11 +1,3 @@
-/**
- * FintechCockpitServer — Server component
- * ──────────────────────────────────────────
- *  2026-07-31 redesign: one fetch boundary, all data passed to the
- *  client `FintechCockpit`. Failures fall back to safe defaults so
- *  a single bad table never breaks the home page.
- */
-
 import { getFintechKpiData } from '@/actions/getFintechKpiData';
 import { getLiveOpsData } from '@/actions/liveOpsActions';
 import { getServiceRequestStats, getServiceRequests } from '@/actions/serviceRequestActions';
@@ -14,117 +6,25 @@ import { checkRole } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { FintechCockpit, type FintechCockpitProps } from './FintechCockpit';
 
-const safeNum = (n: unknown, fallback = 0): number =>
-  typeof n === 'number' && Number.isFinite(n) ? n : fallback;
-
-const safeString = (s: unknown, fallback = ''): string => (typeof s === 'string' ? s : fallback);
+const num = (value: unknown, fallback = 0) => typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+const str = (value: unknown, fallback = '') => typeof value === 'string' ? value : fallback;
 
 export async function FintechCockpitServer() {
   const session = await auth();
-  if (!session?.user) {
-    redirect('/auth?callbackUrl=/dashboard');
-  }
-
+  if (!session?.user) redirect('/auth?callbackUrl=/dashboard');
   await checkRole(['OWNER', 'ADMIN', 'AUTHOR', 'SUPERADMIN']).catch(() => undefined);
-
-  const userRole = (session.user.role ?? 'AUTHOR') as FintechCockpitProps['userRole'];
+  const role = (session.user.role ?? 'AUTHOR') as FintechCockpitProps['userRole'];
   const userName = (session.user.name ?? session.user.email ?? '').split(' ')[0] ?? '';
-
-  const [kpiRes, statsRes, listRes, liveRes] = await Promise.all([
-    getFintechKpiData().catch(() => null),
-    getServiceRequestStats().catch(() => null),
-    getServiceRequests({ status: 'PENDING', page: 1, limit: 6 }).catch(() => null),
-    getLiveOpsData().catch(() => null),
-  ]);
-
-  // KPI
-  const kpi = kpiRes && 'txn24h' in (kpiRes ?? {}) ? kpiRes : null;
-  const kpiData: FintechCockpitProps['kpi'] = {
-    txn24h: safeNum(kpi?.txn24h),
-    activeCustomers: safeNum(kpi?.activeCustomers),
-    openFraudCases: safeNum(kpi?.openFraudCases),
-    pendingRequests: safeNum(kpi?.pendingRequests),
-    dealsVolume: safeNum(kpi?.dealsVolume),
-    dealsCurrency: safeString(kpi?.dealsCurrency, 'AFN'),
-  };
-
-  // Service stats
+  const [kpiRes, statsRes, listRes, liveRes] = await Promise.all([getFintechKpiData().catch(() => null), getServiceRequestStats().catch(() => null), getServiceRequests({ status: 'PENDING', page: 1, limit: 6 }).catch(() => null), getLiveOpsData().catch(() => null)]);
+  const kpi = kpiRes && 'txn24h' in kpiRes ? kpiRes : null;
+  const kpiData = { txn24h: num(kpi?.txn24h), activeCustomers: num(kpi?.activeCustomers), openFraudCases: num(kpi?.openFraudCases), pendingRequests: num(kpi?.pendingRequests), dealsVolume: num(kpi?.dealsVolume), dealsCurrency: str(kpi?.dealsCurrency, 'AFN') };
   const stats = statsRes?.success ? statsRes.data : null;
-  const statsData: FintechCockpitProps['services']['stats'] = {
-    pending: safeNum(stats?.pending, kpiData.pendingRequests),
-    todayCount: safeNum(stats?.todayCount),
-    pendingUrgent: safeNum(stats?.pendingUrgent, safeNum(stats?.urgent)),
-    total: safeNum(stats?.total),
-  };
-
-  // Service list
+  const statsData = { pending: num(stats?.pending, kpiData.pendingRequests), todayCount: num(stats?.todayCount), pendingUrgent: num(stats?.pendingUrgent, num(stats?.urgent)), total: num(stats?.total) };
   const list = listRes?.success ? listRes.data : null;
-  const rawList = Array.isArray(list?.requests) ? list.requests : [];
-  const recent: FintechCockpitProps['services']['recent'] = rawList.slice(0, 6).map((r) => {
-    const x = r as Record<string, unknown>;
-    return {
-      id: safeString(x.id),
-      trackingCode: safeString(x.trackingCode, '—'),
-      fullName: safeString(x.fullName, '—'),
-      serviceType: safeString(x.serviceType, 'OTHER'),
-      amount: safeString(x.amount, '0'),
-      currency: safeString(x.currency, 'AFN'),
-      status: safeString(x.status, 'PENDING'),
-      urgency: safeString(x.urgency, 'NORMAL'),
-      createdAt:
-        x.createdAt instanceof Date
-          ? x.createdAt
-          : typeof x.createdAt === 'string'
-            ? x.createdAt
-            : new Date().toISOString(),
-    };
-  });
-
-  // Live ops
+  const recent = (Array.isArray(list?.requests) ? list.requests : []).slice(0, 6).map((row) => { const item = row as Record<string, unknown>; return { id: str(item.id), trackingCode: str(item.trackingCode, '---'), fullName: str(item.fullName, '---'), serviceType: str(item.serviceType, 'OTHER'), amount: str(item.amount, '0'), currency: str(item.currency, 'AFN'), status: str(item.status, 'PENDING'), urgency: str(item.urgency, 'NORMAL'), createdAt: item.createdAt instanceof Date || typeof item.createdAt === 'string' ? item.createdAt : new Date().toISOString() }; });
   const liveData = liveRes?.success ? liveRes.data : null;
-  const live = {
-    services:
-      liveData?.services?.map((s) => ({
-        id: safeString(s.id),
-        name: safeString(s.name),
-        desc: safeString(s.desc),
-        status: (s.status as 'healthy' | 'degraded' | 'down' | 'idle') ?? 'healthy',
-        latencyMs: s.latencyMs,
-        href: s.href,
-        iconName: s.iconName,
-      })) ?? [],
-    events:
-      liveData?.events?.map((e) => ({
-        id: safeString(e.id),
-        type: e.type as 'deposit' | 'withdraw' | 'kyc' | 'order' | 'auth' | 'fraud',
-        actor: safeString(e.actor),
-        detail: safeString(e.detail),
-        amount: e.amount
-          ? {
-              value: safeNum(e.amount.value),
-              currency: e.amount.currency,
-            }
-          : undefined,
-        timestamp: e.timestamp,
-        href: e.href,
-      })) ?? [],
-    activityBars: Array.isArray(liveData?.activityBars)
-      ? liveData.activityBars.filter((n) => typeof n === 'number')
-      : Array(24).fill(0),
-  };
-
-  const props: FintechCockpitProps = {
-    userName,
-    userRole,
-    kpi: kpiData,
-    services: {
-      stats: statsData,
-      recent,
-    },
-    live,
-  };
-
-  return <FintechCockpit {...props} />;
+  const live = { services: liveData?.services?.map((item) => ({ id: str(item.id), name: str(item.name), desc: str(item.desc), status: (item.status as FintechCockpitProps['live']['services'][number]['status']) ?? 'idle', latencyMs: item.latencyMs, href: item.href, iconName: item.iconName })) ?? [], events: liveData?.events?.map((item) => ({ id: str(item.id), type: item.type as FintechCockpitProps['live']['events'][number]['type'], actor: str(item.actor), detail: str(item.detail), amount: item.amount ? { value: num(item.amount.value), currency: str(item.amount.currency) } : undefined, timestamp: item.timestamp, href: item.href })) ?? [], activityBars: Array.isArray(liveData?.activityBars) ? liveData.activityBars.filter((value): value is number => typeof value === 'number') : [] };
+  return <FintechCockpit userName={userName} userRole={role} kpi={kpiData} services={{ stats: statsData, recent }} live={live} />;
 }
 
 export default FintechCockpitServer;
