@@ -3,10 +3,12 @@ import OfflineBanner from '@/components/OfflineBanner/OfflineBanner';
 import DashboardGate from './DashboardGate';
 import './dashboard.css';
 import './dashboard-shell.css';
+// atlas-primitives is the baseline skin for dash2-* primitives.
+import './atlas-primitives.css';
+// These are intentional final overrides: state and header behavior must win
+// over both the legacy dashboard stylesheet and the Atlas baseline.
 import './dashboard-header-overrides.css';
 import './dashboard-sidebar-state.css';
-// آخرین import عمدی است: atlas-primitives منبع حقیقت واحد کلاس‌های dash2-* است.
-import './atlas-primitives.css';
 
 export const dynamic = 'force-dynamic';
 
