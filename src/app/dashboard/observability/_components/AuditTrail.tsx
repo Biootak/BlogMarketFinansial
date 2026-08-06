@@ -3,7 +3,7 @@
 import { Activity, LogIn, ScrollText, ShieldAlert, ShieldCheck, Wallet } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
-import { relative, stamp } from './format';
+import { relative, stamp, type ToneKey } from './format';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
 import s from './obs.module.css';
@@ -11,7 +11,7 @@ import s from './obs.module.css';
 interface ActionMeta {
   label: string;
   icon: LucideIcon;
-  tone: 'ok' | 'warn' | 'bad' | 'info' | 'idle';
+  tone: ToneKey;
 }
 
 const ACTION_META: Record<string, ActionMeta> = {
@@ -34,7 +34,11 @@ const fallbackMeta = (action: string): ActionMeta => ({
   tone: 'idle',
 });
 
-/** رد ممیزی — رویدادهای واقعی AuditLog در پنجرهٔ جاری. */
+/**
+ * رد ممیزی — رویدادهای واقعی AuditLog در پنجرهٔ جاری.
+ * جریان زمانی روی یک خط پیوسته با گرهٔ رنگی است نه فهرستی از آیکون‌های در کادر؛
+ * خطِ پیوسته «توالی» را می‌رساند و کادرها آن را می‌شکستند.
+ */
 export function AuditTrail() {
   const { data } = useObs();
   if (!data) return null;
@@ -56,9 +60,11 @@ export function AuditTrail() {
         const Icon = meta.icon;
         return (
           <li key={entry.id} className={s.trailRow} data-tone={meta.tone}>
-            <Icon size={16} strokeWidth={1.5} className={s.trailIcon} aria-hidden />
-            <span>
-              <span className={s.trailAction}>{meta.label}</span>
+            <span className={s.trailText}>
+              <span className={s.trailAction}>
+                <Icon size={14} strokeWidth={1.5} className={s.trailIcon} aria-hidden="true" />
+                {meta.label}
+              </span>
               <span className={s.trailMeta}>
                 {entry.actorRole} · {entry.entityType} · {stamp(entry.createdAt)}
               </span>

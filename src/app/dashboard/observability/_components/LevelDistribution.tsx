@@ -2,26 +2,10 @@
 
 import { Layers3 } from 'lucide-react';
 
-import { faNum, faPercent, ratio } from './format';
+import { faNum, faPercent, levelLabel, levelTone, ratio } from './format';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
 import s from './obs.module.css';
-
-const LEVEL_LABEL: Record<string, string> = {
-  info: 'اطلاع',
-  warn: 'هشدار',
-  error: 'خطا',
-  fatal: 'بحرانی',
-  debug: 'اشکال‌زدایی',
-};
-
-const LEVEL_TONE: Record<string, 'ok' | 'warn' | 'bad' | 'info' | 'idle'> = {
-  info: 'info',
-  debug: 'idle',
-  warn: 'warn',
-  error: 'bad',
-  fatal: 'bad',
-};
 
 /** توزیع سطوح لاگ — دقیقاً همان مقادیری که در ستون level دیتابیس وجود دارد. */
 export function LevelDistribution() {
@@ -43,9 +27,9 @@ export function LevelDistribution() {
   return (
     <ul className={s.levels}>
       {data.levels.map((item) => (
-        <li key={item.level} className={s.levelRow} data-tone={LEVEL_TONE[item.level] ?? 'info'}>
-          <span>{LEVEL_LABEL[item.level] ?? item.level}</span>
-          <span className={s.levelBar}>
+        <li key={item.level} className={s.levelRow} data-tone={levelTone(item.level)}>
+          <span>{levelLabel(item.level)}</span>
+          <span className={s.levelBar} aria-hidden="true">
             <span className={s.levelFill} style={{ inlineSize: `${ratio(item.count, max, 2)}%` }} />
           </span>
           <span className={s.sourceMeta}>

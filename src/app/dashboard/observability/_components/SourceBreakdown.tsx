@@ -7,7 +7,11 @@ import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
 import s from './obs.module.css';
 
-/** سهم هر منبع از حجم لاگ، با سهم خطای همان منبع روی همان نوار. */
+/**
+ * سهم هر منبع از حجم لاگ، با سهم خطای همان منبع روی همان ریل.
+ * دو نوار روی یک ریل می‌نشینند نه دو نوار جدا: مقایسهٔ «چقدر پرحجم» با «چقدر
+ * پرخطا» فقط وقتی معنا دارد که مقیاسشان یکی باشد.
+ */
 export function SourceBreakdown() {
   const { data } = useObs();
   if (!data) return null;
@@ -28,12 +32,21 @@ export function SourceBreakdown() {
     <ul className={s.sources}>
       {data.sources.map((item) => (
         <li key={item.source} className={s.sourceRow}>
-          <span className={s.sourceName}>{item.source}</span>
-          <span className={s.sourceMeta}>
-            {faNum(item.total)} · {faPercent(item.share)} · آخرین {relative(item.lastAt, data.generatedAt)}
+          <span className={s.sourceName} title={item.source}>
+            {item.source}
           </span>
-          <span className={s.sourceBar}>
-            <span className={s.sourceFill} style={{ inlineSize: `${ratio(item.total, max, 1)}%` }} />
+
+          <span className={s.sourceMeta}>
+            {faNum(item.total)} · {faPercent(item.share)}
+            {item.errors > 0 ? ` · ${faNum(item.errors)} خطا` : ''} · آخرین{' '}
+            {relative(item.lastAt, data.generatedAt)}
+          </span>
+
+          <span className={s.sourceBar} aria-hidden="true">
+            <span
+              className={s.sourceFill}
+              style={{ inlineSize: `${ratio(item.total, max, 1)}%` }}
+            />
             {item.errors > 0 ? (
               <span
                 className={s.sourceErr}

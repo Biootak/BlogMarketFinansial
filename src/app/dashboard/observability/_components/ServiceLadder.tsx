@@ -4,25 +4,11 @@ import { ServerOff } from 'lucide-react';
 import Link from 'next/link';
 
 import type { ServiceHealth } from '@/lib/observability';
-import { faNum, faPercent, msShort, ratio } from './format';
+
+import { faNum, faPercent, hourKey, msShort, ratio, statusLabel, statusTone, toFa } from './format';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
 import s from './obs.module.css';
-
-const STATUS_LABEL: Record<string, string> = {
-  healthy: 'سالم',
-  degraded: 'کند',
-  down: 'قطع',
-  idle: 'بی‌صدا',
-  unknown: 'نامشخص',
-};
-
-const STATUS_TONE: Record<string, 'ok' | 'warn' | 'bad' | 'idle'> = {
-  healthy: 'ok',
-  degraded: 'warn',
-  down: 'bad',
-  idle: 'idle',
-};
 
 const RISK: Record<string, number> = { down: 0, degraded: 1, healthy: 2, idle: 3 };
 
@@ -31,7 +17,13 @@ const byRisk = (a: ServiceHealth, b: ServiceHealth): number => {
   return delta !== 0 ? delta : b.errors24h - a.errors24h;
 };
 
-/** نردبان سرویس‌ها — پرخطرترین بالا. ردیف است، نه کارت. */
+/**
+ * نردبان سرویس‌ها — ردیف رتبه‌دار، پرخطرترین بالا.
+ *
+ * ردیف است نه کارت، و شمارهٔ رتبه سمتِ شروع می‌نشیند تا «ترتیب» خودش یک
+ * اطلاعات باشد: خواننده می‌داند فهرست بر اساس ریسک مرتب شده، نه الفبا.
+ * وضعیت هم با رنگ و هم با کلمه گفته می‌شود، پس رنگ تنها نشانه نیست.
+ */
 export function ServiceLadder({ limit }: { limit?: number }) {
   const { data } = useObs();
   const services = [...(data?.services ?? [])].sort(byRisk);
@@ -50,13 +42,14 @@ export function ServiceLadder({ limit }: { limit?: number }) {
 
   return (
     <ul className={s.ladder}>
-      {rows.map((service) => {
-        const tone = STATUS_TONE[service.status] ?? 'idle';
+      {rows.map((service, rank) => {
         const max = Math.max(...service.sparkline, 1);
 
         return (
-          <li key={service.id} className={s.ladderRow} data-tone={tone}>
-            <span className={s.ladderDot} aria-hidden />
+          <li key={service.id} className={s.ladderRow} data-tone={statusTone(service.status)}>
+            <span className={s.ladderRank} aria-hidden="true">
+              {toFa(String(rank + 1).padStart(2, '0'))}
+            </span>
 
             <span className={s.ladderName}>
               <Link href={service.href} className={s.ladderTitle}>
@@ -65,11 +58,10 @@ export function ServiceLadder({ limit }: { limit?: number }) {
               <span className={s.ladderDesc}>{service.desc}</span>
             </span>
 
-            <span className={s.ladderSpark} aria-hidden>
+            <span className={s.ladderSpark} aria-hidden="true">
               {service.sparkline.map((value, index) => (
                 <span
-                  // biome-ignore lint/suspicious/noArrayIndexKey: نقاط ساعتی ترتیب ثابت دارند
-                  key={index}
+                  key={hourKey(index)}
                   className={s.sparkBar}
                   style={{ blockSize: `${ratio(value, max, 6)}%` }}
                 />
@@ -88,7 +80,10 @@ export function ServiceLadder({ limit }: { limit?: number }) {
               </span>
             </span>
 
-            <span className={s.ladderStatus}>{STATUS_LABEL[service.status] ?? service.status}</span>
+            <span className={s.ladderStatus}>
+              <span className={s.ladderDot} aria-hidden="true" />
+              {statusLabel(service.status)}
+            </span>
           </li>
         );
       })}
