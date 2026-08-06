@@ -141,7 +141,10 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
   });
 
   if (!senderCustomer) {
-    return { success: false, error: { code: 'NO_ACCOUNT', message: 'حساب فعالی برای این ارز یافت نشد' } };
+    return {
+      success: false,
+      error: { code: 'NO_ACCOUNT', message: 'حساب فعالی برای این ارز یافت نشد' },
+    };
   }
 
   const existing = await prisma.transaction.findFirst({
@@ -167,11 +170,17 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
   }
 
   if (senderCustomer.FintechAccount.length === 0) {
-    return { success: false, error: { code: 'NO_ACCOUNT', message: 'حساب فعالی برای این ارز یافت نشد' } };
+    return {
+      success: false,
+      error: { code: 'NO_ACCOUNT', message: 'حساب فعالی برای این ارز یافت نشد' },
+    };
   }
   const senderAccount = senderCustomer.FintechAccount[0];
   if (!senderAccount) {
-    return { success: false, error: { code: 'NO_ACCOUNT', message: 'حساب فعالی برای این ارز یافت نشد' } };
+    return {
+      success: false,
+      error: { code: 'NO_ACCOUNT', message: 'حساب فعالی برای این ارز یافت نشد' },
+    };
   }
 
   if (senderAccount.balance < BigInt(amountCents)) {
@@ -286,7 +295,11 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
 const ConfirmSchema = z.object({
   txnId: z.string().min(1),
   txnRef: z.string().min(1),
-  otp: z.string().length(6).regex(/^\d{6}$/).optional(),
+  otp: z
+    .string()
+    .length(6)
+    .regex(/^\d{6}$/)
+    .optional(),
   idempotencyKey: z.string().min(8).max(64).optional(),
 });
 
@@ -341,7 +354,10 @@ export async function confirmTransfer(
   }
   if (txn.status !== 'PENDING') {
     if (txn.status === 'COMPLETED') return { success: true, data: { txnId } };
-    return { success: false, error: { code: 'INVALID_STATE', message: 'این تراکنش قابل تأیید نیست' } };
+    return {
+      success: false,
+      error: { code: 'INVALID_STATE', message: 'این تراکنش قابل تأیید نیست' },
+    };
   }
 
   // The reference is transaction-bound. Without this check, any caller who knows
@@ -357,7 +373,8 @@ export async function confirmTransfer(
 
   const needsOtp = isHighValueTransaction({ kind: 'TRANSFER', amountCents: txn.amount });
   if (needsOtp) {
-    if (!otp) return { success: false, error: { code: 'OTP_REQUIRED', message: 'کد تأیید الزامی است' } };
+    if (!otp)
+      return { success: false, error: { code: 'OTP_REQUIRED', message: 'کد تأیید الزامی است' } };
     const otpResult = await verifyTransactionOtp({ txnRef, otp });
     if (!otpResult.success) return otpResult;
   }
@@ -438,7 +455,10 @@ export async function confirmTransfer(
     });
   } catch (err) {
     if ((err as Error).message === 'INSUFFICIENT_BALANCE') {
-      return { success: false, error: { code: 'INSUFFICIENT_BALANCE', message: 'موجودی کافی نیست' } };
+      return {
+        success: false,
+        error: { code: 'INSUFFICIENT_BALANCE', message: 'موجودی کافی نیست' },
+      };
     }
     if ((err as Error).message === 'RECIPIENT_NO_ACCOUNT') {
       return {

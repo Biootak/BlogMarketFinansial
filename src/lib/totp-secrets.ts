@@ -27,7 +27,8 @@ export function decryptTotpSecret(value: string): string {
   const parts = value.slice(PREFIX.length).split('.');
   if (parts.length !== 3) throw new Error('Invalid encrypted TOTP secret');
   const [iv, tag, ciphertext] = parts.map((part) => Buffer.from(part, 'base64url'));
-  if (iv.length !== IV_BYTES || tag.length !== TAG_BYTES) throw new Error('Invalid encrypted TOTP secret');
+  if (iv.length !== IV_BYTES || tag.length !== TAG_BYTES)
+    throw new Error('Invalid encrypted TOTP secret');
   const decipher = createDecipheriv('aes-256-gcm', key(), iv);
   decipher.setAuthTag(tag);
   return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8');

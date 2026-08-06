@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 const QR_ORIGIN = 'https://api.qrserver.com/v1/create-qr-code/';
 

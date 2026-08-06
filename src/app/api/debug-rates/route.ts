@@ -23,7 +23,8 @@ export async function GET() {
     take: 60,
   });
 
-  const grouped: Record<string, { unit: string; buy: number; sell: number; exchange: string }[]> = {};
+  const grouped: Record<string, { unit: string; buy: number; sell: number; exchange: string }[]> =
+    {};
   for (const q of quotes) {
     if (!grouped[q.currencyCode]) grouped[q.currencyCode] = [];
     grouped[q.currencyCode]?.push({
