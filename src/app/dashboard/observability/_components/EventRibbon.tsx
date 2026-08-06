@@ -5,8 +5,8 @@
  * ─────────────────────────────────────────────────────────────
  *  ۲۴ سطل ساعتی که مستقیم از SystemLog می‌آیند، روی یک محور زمانی واحد.
  *  به‌جای tooltip شناور، یک «قرائت‌گر» ثابت بالای نمودار داریم که با
- *  hover / focus روی هر ساعت به‌روز می‌شود — الگوی osciloscope، نه chart
- *  کلیشه‌ای. کلیک، ساعت را pin می‌کند تا موقع خواندن جدول‌های پایین ثابت بماند.
+ *  hover / focus روی هر ساعت به‌روز می‌شود — الگوی اسیلوسکوپ، نه chart
+ *  کلیشه‌ای. کلیک، ساعت را pin می‌کند تا هنگام خواندن جدول‌های پایین ثابت بماند.
  *
  *  RTL: چیدمان grid است، نه SVG. ستون اول در RTL سمت راست می‌نشیند، پس
  *  «قدیمی‌ترین در راست، اکنون در چپ» به‌صورت طبیعی و بدون هیچ transform
@@ -63,19 +63,16 @@ const RULER: RulerTick[] = [
   { key: 'tick-00', column: 24, label: 'اکنون' },
 ];
 
-function buildColumns(
-  hourly: number[],
-  hourlyErrors: number[],
-  incidents: Incident[],
-): Column[] {
+function buildColumns(hourly: number[], hourlyErrors: number[], incidents: Incident[]): Column[] {
   const peak = Math.max(...hourly, 1);
   const flagged = new Set<number>();
   for (const incident of incidents) {
     for (let i = incident.fromHour; i <= incident.toHour; i += 1) flagged.add(i);
   }
+  const last = hourly.length - 1;
   return hourly.map((total, index) => {
     const errors = hourlyErrors[index] ?? 0;
-    const offset = hourly.length - 1 - index;
+    const offset = last - index;
     return {
       key: hourKey(index),
       index,
@@ -95,13 +92,15 @@ export function EventRibbon({ hourly, hourlyErrors, incidents }: Props) {
     () => buildColumns(hourly, hourlyErrors, incidents),
     [hourly, hourlyErrors, incidents],
   );
-  const lastIndex = Math.max(0, columns.length - 1);
-  const [pinned, setPinned] = useState<number>(lastIndex);
+  const [pinned, setPinned] = useState<number>(23);
   const [hovered, setHovered] = useState<number | null>(null);
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
 
-  const activeIndex = hovered ?? Math.min(pinned, lastIndex);
-  const active = columns[activeIndex] ?? columns[lastIndex];
+  const lastIndex = Math.max(0, columns.length - 1);
+  const rovingIndex = Math.min(Math.max(pinned, 0), lastIndex);
+  const activeIndex = Math.min(Math.max(hovered ?? pinned, 0), lastIndex);
+  const active = columns[activeIndex];
+
   const volume = columns.reduce((sum, col) => sum + col.total, 0);
   const faults = columns.reduce((sum, col) => sum + col.errors, 0);
 
@@ -112,11 +111,12 @@ export function EventRibbon({ hourly, hourlyErrors, incidents }: Props) {
 
   const onKeyDown = useCallback(
     (event: KeyboardEvent<HTMLDivElement>) => {
-      const max = columns.length - 1;
+      const max = Math.max(0, columns.length - 1);
+      const current = Math.min(Math.max(hovered ?? pinned, 0), max);
       let next: number | null = null;
       // RTL: راست = عقب‌تر در زمان، چپ = نزدیک‌تر به اکنون.
-      if (event.key === 'ArrowRight') next = Math.max(0, activeIndex - 1);
-      else if (event.key === 'ArrowLeft') next = Math.min(max, activeIndex + 1);
+      if (event.key === 'ArrowRight') next = Math.max(0, current - 1);
+      else if (event.key === 'ArrowLeft') next = Math.min(max, current + 1);
       else if (event.key === 'Home') next = 0;
       else if (event.key === 'End') next = max;
       if (next === null) return;
@@ -124,18 +124,15 @@ export function EventRibbon({ hourly, hourlyErrors, incidents }: Props) {
       setHovered(null);
       focusColumn(next);
     },
-    [activeIndex, columns.length, focusColumn],
+    [columns.length, focusColumn, hovered, pinned],
   );
 
   const incidentOfActive = useMemo(
-    () =>
-      incidents.find(
-        (item) => active !== undefined && active.index >= item.fromHour && active.index <= item.toHour,
-      ),
-    [incidents, active],
+    () => incidents.find((item) => activeIndex >= item.fromHour && activeIndex <= item.toHour),
+    [incidents, activeIndex],
   );
 
-  if (!active) return null;
+  if (columns.length === 0 || !active) return null;
 
   const errorShare = active.total > 0 ? (active.errors / active.total) * 100 : 0;
 
@@ -199,11 +196,11 @@ export function EventRibbon({ hourly, hourlyErrors, incidents }: Props) {
             ))}
           </div>
 
-          {/* biome-ignore lint/a11y/useSemanticElements: گروه اسکراب با roving tabindex */}
+          {/* biome-ignore lint/a11y/useSemanticElements: گروه اسکراب با roving tabindex — fieldset معنای فرم می‌دهد */}
           <div
             className={s.track}
             role="group"
-            aria-label="سطل‌های ساعتی رویداد، با کلیدهای جهت جابه‌جا شوید"
+            aria-label="سطل‌های ساعتی رویداد؛ با کلیدهای جهت جابه‌جا شوید"
             onKeyDown={onKeyDown}
           >
             {columns.map((col) => (
@@ -216,7 +213,7 @@ export function EventRibbon({ hourly, hourlyErrors, incidents }: Props) {
                 className={s.col}
                 data-active={col.index === activeIndex}
                 data-incident={col.incident}
-                tabIndex={col.index === Math.min(pinned, lastIndex) ? 0 : -1}
+                tabIndex={col.index === rovingIndex ? 0 : -1}
                 aria-label={`${hourOffsetLabel(col.offset)}: ${formatNumber(col.total)} رویداد، ${formatNumber(col.errors)} خطا`}
                 onClick={() => setPinned(col.index)}
                 onFocus={() => setHovered(col.index)}
@@ -228,11 +225,7 @@ export function EventRibbon({ hourly, hourlyErrors, incidents }: Props) {
                   {col.label}
                 </span>
                 <span className={s.slot}>
-                  <span
-                    className={s.total}
-                    style={cssVars({ '--v': col.totalRatio })}
-                    aria-hidden
-                  />
+                  <span className={s.total} style={cssVars({ '--v': col.totalRatio })} aria-hidden />
                   {col.errors > 0 ? (
                     <span
                       className={s.error}
@@ -247,7 +240,11 @@ export function EventRibbon({ hourly, hourlyErrors, incidents }: Props) {
 
           <div className={s.ruler} aria-hidden>
             {RULER.map((tick) => (
-              <span key={tick.key} className={s.tick} style={cssVars({ gridColumnStart: tick.column })}>
+              <span
+                key={tick.key}
+                className={s.tick}
+                style={cssVars({ gridColumnStart: tick.column })}
+              >
                 {tick.label}
               </span>
             ))}
