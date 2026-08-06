@@ -19,6 +19,10 @@ const roleLabels: Record<string, string> = {
   AUTHOR: 'نویسنده',
   SUPPORT: 'پشتیبانی',
   USER: 'کاربر',
+  CUSTOMER: 'مشتری',
+  TEST_CUSTOMER: 'مشتری آزمایشی',
+  MERCHANT: 'پذیرنده',
+  EXCHANGE: 'کارمند صرافی',
 };
 
 const commandLinks = [
@@ -50,7 +54,6 @@ export function DashboardCommandSurface({ userName, role, children }: DashboardC
             <span className={s.greeting}>سلام، {userName || 'مدیر'}</span>
           </span>
         </div>
-
         <nav className={s.commandNav} aria-label="میان‌برهای عملیاتی">
           {commandLinks.map(({ href, label, icon: Icon }) => (
             <Link key={href} href={href} className={s.commandLink}>
@@ -59,18 +62,13 @@ export function DashboardCommandSurface({ userName, role, children }: DashboardC
             </Link>
           ))}
         </nav>
-
         <div className={s.commandMeta}>
-          <span className={s.time} dir="ltr" aria-label="زمان تهران">
-            {formatClock(now)}
-          </span>
+          <span className={s.time} dir="ltr" aria-label="زمان تهران">{formatClock(now)}</span>
           <span className={s.role}>{roleLabels[role] ?? role}</span>
           <Link href="/dashboard/site-guide" className={s.commandButton} aria-label="راهنمای داشبورد">
             <Search size={15} strokeWidth={1.7} aria-hidden="true" />
           </Link>
-          <span className={s.commandHint} aria-hidden="true">
-            <Command size={13} strokeWidth={1.7} />K
-          </span>
+          <span className={s.commandHint} aria-hidden="true"><Command size={13} strokeWidth={1.7} />K</span>
         </div>
       </header>
       <main className={s.content}>{children}</main>
