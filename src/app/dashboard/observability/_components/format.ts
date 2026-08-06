@@ -45,14 +45,14 @@ export function msShort(ms: number): string {
   return `${faNum(ms)} م‌ث`;
 }
 
-export function clock(iso: string | number): string {
-  const date = typeof iso === 'number' ? new Date(iso) : new Date(iso);
+export function clock(input: string | number): string {
+  const date = new Date(input);
   if (Number.isNaN(date.getTime())) return '—';
   return CLOCK.format(date);
 }
 
-export function stamp(iso: string | number): string {
-  const date = typeof iso === 'number' ? new Date(iso) : new Date(iso);
+export function stamp(input: string | number): string {
+  const date = new Date(input);
   if (Number.isNaN(date.getTime())) return '—';
   return STAMP.format(date);
 }
@@ -90,7 +90,7 @@ export function bucketLabel(generatedAt: string, index: number, windowHours: num
   return `${clock(start)} تا ${clock(start + HOUR_MS)}`;
 }
 
-/** درصد ایمن برای عرض/ارتفاع نوارها */
+/** درصد ایمن برای عرض یا ارتفاع نوارها */
 export function ratio(value: number, max: number, min = 0): number {
   if (!Number.isFinite(value) || max <= 0) return min;
   return Math.max(min, Math.min(100, (value / max) * 100));

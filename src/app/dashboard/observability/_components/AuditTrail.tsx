@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  Activity,
-  LogIn,
-  ShieldAlert,
-  ShieldCheck,
-  ScrollText,
-  Wallet,
-} from 'lucide-react';
+import { Activity, LogIn, ScrollText, ShieldAlert, ShieldCheck, Wallet } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 import { relative, stamp } from './format';

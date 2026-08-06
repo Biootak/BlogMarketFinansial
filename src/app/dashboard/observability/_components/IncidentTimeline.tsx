@@ -25,18 +25,20 @@ export function IncidentTimeline() {
     );
   }
 
-  const window = data.windowHours;
+  const hours = data.windowHours;
 
   return (
     <ul className={s.incidents}>
       {data.incidents.map((incident) => {
         const span = incident.toHour - incident.fromHour + 1;
+        const from = bucketLabel(data.generatedAt, incident.fromHour, hours).slice(0, 5);
+        const to = bucketLabel(data.generatedAt, incident.toHour, hours).slice(-5);
+
         return (
           <li key={incident.id} className={s.incidentRow}>
             <span>
               <span className={s.incidentTitle}>
-                {bucketLabel(data.generatedAt, incident.fromHour, window).slice(0, 5)} تا{' '}
-                {bucketLabel(data.generatedAt, incident.toHour, window).slice(-5)}
+                {from} تا {to}
               </span>
               <span className={s.incidentMeta}>
                 {faNum(incident.errors)} خطا در {faNum(span)} ساعت
@@ -48,8 +50,8 @@ export function IncidentTimeline() {
               <span
                 className={s.spanFill}
                 style={{
-                  insetInlineStart: `${(incident.fromHour / window) * 100}%`,
-                  inlineSize: `${(span / window) * 100}%`,
+                  insetInlineStart: `${(incident.fromHour / hours) * 100}%`,
+                  inlineSize: `${(span / hours) * 100}%`,
                 }}
               />
             </span>
