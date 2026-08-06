@@ -1,0 +1,112 @@
+/* ============================================================================
+   ObservabilityNav — ناوبری فرعی
+   یک خط ممتد hairline که چهار ایستگاه روی آن نشسته‌اند.
+   ============================================================================ */
+
+.nav {
+  min-inline-size: 0;
+}
+
+.list {
+  display: flex;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  border-block-end: 1px solid var(--ds-border-subtle);
+}
+
+.list::-webkit-scrollbar {
+  display: none;
+}
+
+.item {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+.link {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'chip label'
+    'chip hint';
+  align-items: center;
+  column-gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  min-block-size: 44px;
+  border-block-end: 2px solid transparent;
+  color: var(--ds-text-muted);
+  text-decoration: none;
+  transition:
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+@media (min-width: 48rem) {
+  .link {
+    padding-inline: var(--ds-space-4);
+  }
+}
+
+.link:hover {
+  color: var(--ds-text-primary);
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--ds-accent-cyan);
+  outline-offset: -3px;
+  border-radius: var(--ds-radius-sm);
+}
+
+.link[data-active='true'] {
+  color: var(--ds-text-primary);
+  border-block-end-color: var(--ds-accent-cyan);
+}
+
+.chip {
+  grid-area: chip;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 30px;
+  block-size: 30px;
+  border-radius: var(--ds-radius-sm);
+  border: 1px solid var(--ds-border-subtle);
+  color: inherit;
+  transition:
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    background-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.link[data-active='true'] .chip {
+  color: var(--ds-accent-cyan);
+  border-color: color-mix(in oklch, var(--ds-accent-cyan) 40%, transparent);
+  background: color-mix(in oklch, var(--ds-accent-cyan) 8%, transparent);
+}
+
+.label {
+  grid-area: label;
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  white-space: nowrap;
+}
+
+.hint {
+  grid-area: hint;
+  display: none;
+  font-size: 0.7rem;
+  color: var(--ds-text-muted);
+  white-space: nowrap;
+}
+
+@media (min-width: 62rem) {
+  .hint {
+    display: block;
+  }
+}
