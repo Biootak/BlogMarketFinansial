@@ -12,18 +12,8 @@ import s from './observability.module.css';
 
 export const dynamic = 'force-dynamic';
 
-/**
- * پوستهٔ مشترک همهٔ زیرمسیرهای مشاهده‌پذیری.
- *
- * داده یک‌بار اینجا خوانده می‌شود و از طریق ObsProvider بین زیرمسیرها به
- * اشتراک می‌رود؛ جابه‌جایی بین تب‌ها هیچ درخواست تازه‌ای نمی‌زند.
- *
- * ObsPulseDeck هم عمداً در layout است نه در page: «حال سامانه» زمینهٔ همهٔ
- * تب‌هاست، پس نباید با هر ناوبری unmount و دوباره رسم شود.
- */
 export default async function ObservabilityLayout({ children }: { children: ReactNode }) {
   await requireObservabilityAccess();
-
   const result = await getObservabilitySnapshot();
   const initialData = result.success && result.data ? result.data : null;
 
@@ -31,9 +21,9 @@ export default async function ObservabilityLayout({ children }: { children: Reac
     <div className={s.page}>
       <PageHeader
         variant="minimal"
-        eyebrow="مرکز عملیات"
-        title="مرکز مشاهده‌پذیری"
-        description="سلامت سرویس‌ها، تأخیر، خطا و رد ممیزی — هر عدد مستقیم از SystemLog و AuditLog خوانده می‌شود."
+        eyebrow="عملیات / سیگنال زنده"
+        title="اطلس مشاهده‌پذیری"
+        description="یک سطح عملیاتی برای دیدن سلامت واقعی سامانه، فهمیدن علت، و رسیدن به ردپای قابل اقدام."
         icon="radar"
         accent="emerald"
         breadcrumb={[{ href: '/dashboard', label: 'داشبورد' }, { label: 'مشاهده‌پذیری' }]}
@@ -44,9 +34,7 @@ export default async function ObservabilityLayout({ children }: { children: Reac
           <ObsSubNav />
           <ObsToolbar />
         </div>
-
         <ObsPulseDeck />
-
         <main className={s.main}>{children}</main>
       </ObsProvider>
     </div>

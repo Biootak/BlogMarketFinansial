@@ -1,64 +1,57 @@
-/* ============================================================================
-   Observability — route shell
-   ----------------------------------------------------------------------------
-   Mobile first. Logical properties only. Tokens only.
-
-   ساختار (۲۰۲۶-۰۸): ریلِ چسبانِ سمتِ کناری حذف شد. نشانه‌های حیاتی حالا داخل
-   ObsPulseDeck هستند، پس هر عدد فقط یک‌بار در صفحه دیده می‌شود و بدنه تمام‌عرض
-   می‌ماند تا گرید ۱۲ ستونی boardها جا داشته باشد.
-   ============================================================================ */
-
 .page {
+  --obs-accent: var(--nova-emerald, #2dd4a8);
+  --obs-ink: var(--ds-text-primary);
+  --obs-muted: var(--ds-text-secondary);
+  --obs-line: color-mix(in oklch, var(--ds-text-primary) 12%, transparent);
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-5);
+  gap: clamp(1rem, 0.7rem + 1vw, 1.8rem);
   min-block-size: 100%;
   min-inline-size: 0;
 }
 
-/*
-   نوار فرمان — ناوبری فرعی + وضعیت زنده.
-   چسبان است چون در اسکرول‌های بلندِ لاگ باید همیشه بدانی کدام تب باز است و
-   داده چقدر تازه است. شیشه فقط همین‌جا مجاز است: blur کم، شفافیت کم، مرز مویی.
-*/
 .command {
   position: sticky;
   inset-block-start: 0;
   z-index: 5;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-3);
-  padding-block: var(--ds-space-2);
-  border-block-end: 1px solid var(--ds-border-subtle);
-  background: color-mix(in oklch, var(--ds-canvas) 82%, transparent);
-  backdrop-filter: blur(10px) saturate(130%);
-  min-inline-size: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: .55rem;
+  padding-block: .5rem;
+  border-block: 1px solid var(--obs-line);
+  background: color-mix(in oklch, var(--ds-canvas) 88%, transparent);
+  backdrop-filter: blur(12px) saturate(125%);
 }
 
-@media (min-width: 60rem) {
-  .command {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--ds-space-5);
-  }
-}
-
-/*
-   گرید boardها. زیر ۶۴rem تک‌ستونی است و کلاس‌های span اصلاً وجود ندارند
-   (به boards.module.css نگاه کن) تا ستون ضمنی ساخته نشود.
-*/
 .main {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--ds-space-8);
+  gap: clamp(1rem, .6rem + 1.2vw, 1.75rem);
   min-inline-size: 0;
 }
 
-@media (min-width: 64rem) {
-  .main {
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: var(--ds-space-8) var(--ds-space-6);
-    align-items: start;
-  }
+.obs-atlas { display: grid; gap: clamp(1rem, .8rem + 1vw, 1.6rem); }
+.obs-atlas__intro { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1rem; align-items: start; padding: clamp(1rem, .7rem + 1.5vw, 1.6rem); border: 1px solid var(--obs-line); border-radius: 1.25rem; background: linear-gradient(135deg, color-mix(in oklch, var(--obs-accent) 10%, var(--ds-surface)), var(--ds-surface)); box-shadow: 0 1rem 3rem color-mix(in oklch, var(--ds-canvas) 65%, transparent); }
+.obs-atlas__intro-mark { display: grid; place-items: center; inline-size: 2.9rem; block-size: 2.9rem; color: var(--obs-accent); border: 1px solid color-mix(in oklch, var(--obs-accent) 35%, var(--obs-line)); border-radius: .9rem; background: color-mix(in oklch, var(--obs-accent) 12%, transparent); }
+.obs-atlas__kicker { display: flex; align-items: center; gap: .5rem; margin: 0 0 .35rem; color: var(--obs-accent); font-size: .72rem; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+.obs-atlas__signal { inline-size: .45rem; block-size: .45rem; border-radius: 50%; background: var(--obs-accent); box-shadow: 0 0 0 .25rem color-mix(in oklch, var(--obs-accent) 16%, transparent); }
+.obs-atlas__title { margin: 0; color: var(--obs-ink); font-size: clamp(1.25rem, 1rem + 1.1vw, 2rem); font-weight: 820; letter-spacing: -.035em; line-height: 1.15; }
+.obs-atlas__lede { max-inline-size: 68ch; margin: .55rem 0 0; color: var(--obs-muted); font-size: .88rem; line-height: 1.75; }
+.obs-atlas__legend { display: flex; grid-column: 2; flex-wrap: wrap; gap: .55rem 1rem; color: var(--obs-muted); font-size: .72rem; }
+.obs-atlas__legend span { display: inline-flex; align-items: center; gap: .35rem; }
+.obs-atlas__legend i { inline-size: .42rem; block-size: .42rem; border-radius: 50%; background: var(--ds-text-muted); }
+.obs-atlas__legend i[data-tone="ok"] { background: var(--nova-emerald, #2dd4a8); }
+.obs-atlas__legend i[data-tone="warn"] { background: var(--nova-amber, #e6b455); }
+.obs-atlas__legend i[data-tone="bad"] { background: var(--nova-rose, #e66b84); }
+.obs-atlas__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(1rem, .6rem + 1.2vw, 1.75rem); align-items: start; min-inline-size: 0; }
+
+@media (min-width: 40rem) {
+  .obs-atlas__intro { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .obs-atlas__legend { grid-column: auto; justify-content: flex-end; align-self: center; }
 }
+
+@media (min-width: 64rem) {
+  .main, .obs-atlas__grid { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(1rem, .5rem + 1vw, 1.5rem); row-gap: clamp(1rem, .6rem + 1vw, 1.6rem); }
+}
+
+@media (prefers-reduced-motion: reduce) { .obs-atlas__intro { box-shadow: none; } }
