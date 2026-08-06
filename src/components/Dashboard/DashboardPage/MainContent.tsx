@@ -16,7 +16,7 @@ const MainContent: React.FC<MainContentProps> = ({ children, ambient = false }) 
   const pageTransition: Transition = { type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.22 };
 
   return (
-    <main className="dash-scope dashboard-shell__main flex-1 overflow-auto overflow-x-hidden">
+    <main className="dash-scope dashboard-shell__main flex-1 overflow-x-hidden">
       {ambient ? <AmbientBackground intensity="med" /> : null}
       <AnimatePresence mode="wait">
         <motion.div key={pathname} initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="dashboard-shell__content relative min-h-full overflow-x-hidden at-main-content">
