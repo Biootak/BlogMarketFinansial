@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Activity, Grid2x2, Layers3, Layers, PieChart } from 'lucide-react';
+import { Activity, Grid2x2, Layers, Layers3, PieChart } from 'lucide-react';
 
 import b from '../_components/boards.module.css';
 import { LevelDistribution } from '../_components/LevelDistribution';

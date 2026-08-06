@@ -15,7 +15,12 @@ import s from './obs.module.css';
  *
  * موقعیت افقی هر ساقه = مقدار واقعی روی محور میلی‌ثانیه (داده).
  * ارتفاع ساقه‌ها فقط پله‌بندی صدک است (۵۰ → ۹۵ → ۹۹)، پس عدد جعلی نمی‌سازد.
+ *
+ * موقعیت‌ها به ۸۶٪ محدود می‌شوند: ساقه از لبهٔ شروع خودش لنگر می‌اندازد، پس
+ * بی‌سقف، برچسب p99 از لبهٔ محور بیرون می‌زد.
  */
+
+const MAX_POSITION = 86;
 
 const STEMS = [
   { id: 'p50', tone: 'ok' as const, height: '2.5rem' },
@@ -31,7 +36,7 @@ export function LatencyScale() {
   const max = Math.max(p99, p95, p50, 1) * 1.12;
 
   const values = [p50, p95, p99];
-  const positions = values.map((value) => Math.min(94, (value / max) * 100));
+  const positions = values.map((value) => Math.min(MAX_POSITION, (value / max) * 100));
   const tailStart = positions[1] ?? 0;
   const tailEnd = positions[2] ?? 0;
 
