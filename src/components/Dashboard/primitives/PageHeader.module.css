@@ -1,582 +1,374 @@
-/* ═══════════════════════════════════════════════════════════════════════════
-   PageHeader — Nova 2026
-   ─────────────────────────────────────────────────────────────────────────
-   الهام مستقیم از AtelierHero + Vercel/Linear page titles
-   ساختار: کارت پانورامیک با SVG geometric mark + gradient دوگانه +
-           live accent dot + title درشت + description + actions
-   بدون border، بدون shadow کلیشه‌ای — depth از gradient و mark میاد
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ============================================================================
+   PageHeader — Atlas 2026
+   ----------------------------------------------------------------------------
+   نسخه‌ی قبلی یک کارت پانورامیک با ستاره‌ی SVG چرخان و گرادیان بود: گران برای
+   رندر، بی‌معنا از نظر اطلاعاتی، و قالبی‌ترین المان کل داشبورد.
 
-.header {
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--ds-space-5);
-  flex-wrap: wrap;
+   جایگزین: قاعده‌ی افقی + عنوان + متریک درون‌خطی. گروه‌بندی با خط مو انجام
+   می‌شود، هم‌زبان با پوسته‌ی داشبورد.
 
-  padding: var(--ds-space-6) var(--ds-space-6) var(--ds-space-5);
-  margin-block-end: var(--ds-space-5);
+   فقط توکن. فقط ویژگی منطقی. انیمیشن فقط transform/opacity.
+   ============================================================================ */
 
-  background: radial-gradient(
-      ellipse 70% 140% at 100% 0%,
-      color-mix(in oklch, var(--ph-c, var(--at-accent)) 14%, transparent),
-      transparent 55%
-    ),
-    radial-gradient(
-      ellipse 50% 90% at 0% 100%,
-      color-mix(in oklch, var(--ph-c, var(--at-accent)) 7%, transparent),
-      transparent 50%
-    ), var(--at-surface);
+/* ---- لهجه‌ی رنگی -----------------------------------------------------------
+   لهجه فقط روی نشانه، eyebrow و نقطه اعمال می‌شود؛ نه روی کل سطح.
+   سهم رنگ تأکیدی زیر ۱۰٪ می‌ماند چون این یک صفحه‌ی کاری است، نه کمپین. */
+.accent--indigo { --ph-accent: var(--ds-accent-indigo); }
+.accent--emerald { --ph-accent: var(--ds-accent-emerald); }
+.accent--amber { --ph-accent: var(--ds-accent-amber); }
+.accent--rose { --ph-accent: var(--ds-accent-rose); }
+.accent--violet { --ph-accent: var(--ds-accent-violet); }
+.accent--cyan { --ph-accent: var(--ds-accent-cyan); }
 
-  border: 1px solid var(--at-line);
-  border-radius: var(--at-radius-xl, 20px);
-  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.06) inset, 0 2px 8px -2px oklch(18% 0.02 255 / 0.06);
-
-  overflow: hidden;
-  isolation: isolate;
-  animation: motion-fade-in-up 280ms var(--ds-ease-out-quart) both;
-}
-
-@media (max-width: 600px) {
-  .header {
-    padding: var(--ds-space-2-5) var(--ds-space-3) var(--ds-space-3);
-    margin-block-end: var(--ds-space-3);
-    gap: var(--ds-space-2);
-  }
-}
-
-.dark .header {
-  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.04) inset, 0 2px 12px -2px oklch(0% 0 0 / 0.35);
-}
-
-/* ─── SVG geometric mark — گوشه‌ی end-top، آروم می‌چرخه ──────────────────── */
-.mark {
-  position: absolute;
-  inset-block-start: -48px;
-  inset-inline-end: -48px;
-  width: clamp(160px, 22vw, 260px);
-  height: clamp(160px, 22vw, 260px);
-  color: var(--at-fg);
-  opacity: 0.055;
-  pointer-events: none;
-  z-index: 0;
-}
-.dark .mark {
-  opacity: 0.08;
-}
-.markSpin {
-  transform-origin: center;
-  animation: ph-mark-spin 80s linear infinite;
-}
-@keyframes ph-mark-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* ─── Body ────────────────────────────────────────────────────────────────── */
-.body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-2-5);
-  min-width: 0;
-  flex: 1;
-  position: relative;
-  z-index: 1;
-}
-
-/* ─── Meta row: breadcrumb / live dot / eyebrow ──────────────────────────── */
-.metaRow {
-  display: flex;
-  align-items: center;
+/* ==========================================================================
+   مشترک
+   ========================================================================== */
+.header,
+.compact,
+.minimal,
+.strip {
+  --ph-accent: var(--ds-brand-600);
+  display: grid;
   gap: var(--ds-space-3);
-  flex-wrap: wrap;
+  container-type: inline-size;
 }
 
-/* Live accent dot */
-.dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--ph-c, var(--at-accent));
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ph-c, var(--at-accent)) 22%, transparent);
-  flex-shrink: 0;
-  animation: ph-pulse 2s ease-in-out infinite;
-}
-@keyframes ph-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 3px color-mix(in oklch, var(--ph-c, var(--at-accent)) 22%, transparent);
-    transform: scale(1);
-  }
-  50% {
-    box-shadow: 0 0 0 6px color-mix(in oklch, var(--ph-c, var(--at-accent)) 0%, transparent);
-    transform: scale(0.88);
-  }
-}
-
-/* breadcrumb */
+/* ---- خرده‌مسیر ---- */
 .breadcrumb {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--ds-space-1-5);
+  gap: 0.25rem;
+  min-inline-size: 0;
+  color: var(--ds-text-muted);
   font-size: var(--ds-text-xs);
-  color: var(--at-fg-subtle);
 }
+
 .breadcrumbLink {
-  color: var(--at-fg-subtle);
+  color: var(--ds-text-muted);
   text-decoration: none;
-  transition: color 140ms var(--ds-ease-out-quart);
+  border-radius: var(--atlas-radius-xs);
+  transition: color var(--atlas-dur-ui) var(--atlas-ease);
 }
+
 .breadcrumbLink:hover {
-  color: var(--at-fg);
+  color: var(--ds-text-primary);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
-.breadcrumbSep {
-  opacity: 0.35;
-  display: inline-flex;
-  align-items: center;
-}
+
 .breadcrumbCurrent {
-  color: var(--at-fg-muted);
-  font-weight: 500;
+  color: var(--ds-text-secondary);
+  font-weight: var(--ds-weight-semibold);
 }
 
-/* eyebrow pill */
+.breadcrumbSep {
+  flex: 0 0 auto;
+  color: var(--ds-text-muted);
+  opacity: 0.55;
+}
+
+/* ---- ردیف فرا-داده ---- */
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-block-size: 1.25rem;
+}
+
+.dot {
+  flex: 0 0 auto;
+  inline-size: 0.375rem;
+  block-size: 0.375rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--ph-accent);
+}
+
 .eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ds-space-1-5);
-  padding: 3px var(--ds-space-2-5);
-  border-radius: 9999px;
+  color: var(--ph-accent);
   font-size: var(--ds-text-xs);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--ph-fg, var(--at-accent-fg));
-  background: color-mix(in oklch, var(--ph-c, var(--at-accent)) 11%, transparent);
-  border: 1px solid color-mix(in oklch, var(--ph-c, var(--at-accent)) 22%, transparent);
-  line-height: 1.4;
+  font-weight: var(--ds-weight-bold);
+  letter-spacing: var(--ds-tracking-caps);
+  text-transform: uppercase;
 }
 
-/* ─── Title row ────────────────────────────────────────────────────────────── */
-.titleRow {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-3);
-}
-
-/* Icon — لارج، روی gradient ظاهر میشه */
-.iconWrap {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 3rem;
-  height: 3rem;
-  border-radius: var(--at-radius-lg, 14px);
-  background: color-mix(in oklch, var(--ph-c, var(--at-accent)) 12%, var(--at-surface));
-  border: 1px solid color-mix(in oklch, var(--ph-c, var(--at-accent)) 22%, transparent);
-  color: var(--ph-c, var(--at-accent));
-  animation: ph-icon-pop 360ms var(--ds-ease-spring) both;
-  animation-delay: 80ms;
-}
-
-@media (max-width: 600px) {
-  .iconWrap {
-    width: 2.25rem;
-    height: 2.25rem;
-  }
-}
-@keyframes ph-icon-pop {
-  from {
-    transform: scale(0.72) rotate(-6deg);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1) rotate(0deg);
-    opacity: 1;
-  }
-}
-
-.title {
-  font-size: clamp(1rem, 3.5vw + 0.15rem, 2.25rem);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  margin: 0;
-  /* gradient از at-fg به accent — ظریف */
-  background: linear-gradient(
-    140deg,
-    var(--at-fg) 45%,
-    color-mix(in oklch, var(--at-fg) 55%, var(--ph-c, var(--at-accent))) 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ─── Description ──────────────────────────────────────────────────────────── */
+/* ---- توضیح ---- */
 .description {
-  font-size: var(--ds-text-sm);
-  color: var(--at-fg-subtle);
+  max-inline-size: var(--ds-measure);
   margin: 0;
-  line-height: var(--ds-leading-relaxed);
-  max-width: 56ch;
-}
-@media (max-width: 600px) {
-  .description {
-    font-size: var(--ds-text-xs);
-    line-height: 1.5;
-  }
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-sm);
+  line-height: var(--ds-leading-normal);
 }
 
-/* ─── Actions ──────────────────────────────────────────────────────────────── */
+/* ---- اقدام‌ها ---- */
 .actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--ds-space-2);
-  position: relative;
-  z-index: 1;
-  flex-shrink: 0;
-  /* default variant: full-width on mobile (بزرگتر است) */
-  width: 100%;
 }
 
-@media (min-width: 640px) {
-  .actions {
-    width: auto;
-    align-items: flex-end;
-  }
-}
-
-/* compact/minimal/strip: actions همیشه auto-width */
-.compact .actions,
-.minimal .actions,
-.strip .actions {
-  width: auto;
-  align-self: flex-start;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   ACCENT VARIANTS
-   ═══════════════════════════════════════════════════════════════════════════ */
-.accent--indigo {
-  --ph-c: oklch(56% 0.14 265);
-  --ph-fg: oklch(44% 0.14 265);
-}
-.accent--emerald {
-  --ph-c: oklch(55% 0.14 162);
-  --ph-fg: oklch(42% 0.14 162);
-}
-.accent--amber {
-  --ph-c: oklch(65% 0.14 75);
-  --ph-fg: oklch(46% 0.14 75);
-}
-.accent--rose {
-  --ph-c: oklch(58% 0.16 20);
-  --ph-fg: oklch(44% 0.15 20);
-}
-.accent--violet {
-  --ph-c: oklch(56% 0.14 295);
-  --ph-fg: oklch(44% 0.14 295);
-}
-.accent--cyan {
-  --ph-c: oklch(58% 0.13 210);
-  --ph-fg: oklch(44% 0.13 210);
-}
-
-.dark .accent--indigo {
-  --ph-c: oklch(72% 0.14 265);
-  --ph-fg: oklch(78% 0.13 268);
-}
-.dark .accent--emerald {
-  --ph-c: oklch(76% 0.14 162);
-  --ph-fg: oklch(82% 0.12 162);
-}
-.dark .accent--amber {
-  --ph-c: oklch(78% 0.14 75);
-  --ph-fg: oklch(82% 0.12 78);
-}
-.dark .accent--rose {
-  --ph-c: oklch(72% 0.16 20);
-  --ph-fg: oklch(80% 0.14 22);
-}
-.dark .accent--violet {
-  --ph-c: oklch(72% 0.14 295);
-  --ph-fg: oklch(78% 0.13 295);
-}
-.dark .accent--cyan {
-  --ph-c: oklch(74% 0.13 210);
-  --ph-fg: oklch(78% 0.12 212);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   COMPACT VARIANT — کارت کوتاه بدون SVG mark
-   مناسب: صفحات list (customers, users, kyc, audit)
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.compact {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-2-5);
-
-  padding: var(--ds-space-3) var(--ds-space-4);
-  margin-block-end: var(--ds-space-4);
-
-  background: linear-gradient(
-    105deg,
-    color-mix(in oklch, var(--ph-c, var(--at-accent)) 8%, var(--at-surface)) 0%,
-    var(--at-surface) 60%
-  );
-  border: 1px solid color-mix(in oklch, var(--ph-c, var(--at-accent)) 18%, var(--at-line));
-  border-radius: var(--at-radius-xl, 20px);
-  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.06) inset, 0 1px 4px -1px oklch(18% 0.02 255 / 0.04);
-
-  overflow: hidden;
-  isolation: isolate;
-  animation: motion-fade-in-up 240ms var(--ds-ease-out-quart) both;
-
-  /* accent stripe راست */
-  &::after {
-    content: "";
-    position: absolute;
-    inset-block: 0;
-    inset-inline-end: 0;
-    width: 3px;
-    background: linear-gradient(
-      to bottom,
-      color-mix(in oklch, var(--ph-c, var(--at-accent)) 55%, transparent),
-      color-mix(in oklch, var(--ph-c, var(--at-accent)) 15%, transparent)
-    );
-    border-radius: 0 var(--at-radius-xl, 20px) var(--at-radius-xl, 20px) 0;
-  }
-}
-
-@media (min-width: 640px) {
-  .compact {
-    flex-direction: row;
-    align-items: center;
-    gap: var(--ds-space-5);
-    padding: var(--ds-space-4) var(--ds-space-6);
-  }
-}
-
-.dark .compact {
-  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.04) inset, 0 1px 8px -2px oklch(0% 0 0 / 0.3);
-}
-
-/* ─── compactTop: بدنه‌ی چپ (metaRow + titleRow + description) ─────────── */
-.compactTop {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-1-5);
-  min-width: 0;
-  flex: 1;
-}
-
-.compactRow {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-2-5);
-  min-width: 0;
-}
-
-.compactIcon {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: var(--at-radius-md, 10px);
-  background: color-mix(in oklch, var(--ph-c, var(--at-accent)) 12%, var(--at-surface));
-  border: 1px solid color-mix(in oklch, var(--ph-c, var(--at-accent)) 22%, transparent);
-  color: var(--ph-c, var(--at-accent));
-}
-
-.compactTitle {
-  font-size: clamp(0.875rem, 3.5vw, 1.2rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-  margin: 0;
-  min-width: 0;
-  background: linear-gradient(
-    130deg,
-    var(--at-fg) 40%,
-    color-mix(in oklch, var(--at-fg) 60%, var(--ph-c, var(--at-accent))) 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-@media (min-width: 640px) {
-  .compactIcon {
-    width: 2.25rem;
-    height: 2.25rem;
-  }
-
-  .compactTitle {
-    font-size: clamp(1.1rem, 2vw + 0.3rem, 1.5rem);
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   MINIMAL VARIANT — inline بدون card، مناسب analytics / sub-sections
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.minimal {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-1-5);
-  padding-block-end: var(--ds-space-4);
-  margin-block-end: var(--ds-space-3);
-  border-block-end: 1px solid color-mix(in oklch, var(--ph-c, var(--at-accent)) 12%, var(--at-line));
-  animation: motion-fade-in-up 240ms var(--ds-ease-out-quart) both;
-}
-
-.minimalEyebrow {
-  display: inline-flex;
-  align-items: center;
-  font-size: var(--ds-text-xs);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ph-c, var(--at-accent));
-  opacity: 0.8;
-}
-
-.minimalRow {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-3);
-  flex-wrap: wrap;
-}
-
-.minimalIcon {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: var(--at-radius-md, 10px);
-  background: color-mix(in oklch, var(--ph-c, var(--at-accent)) 10%, transparent);
-  color: var(--ph-c, var(--at-accent));
-}
-
-.minimalTitle {
-  font-size: clamp(1.25rem, 2vw + 0.4rem, 1.75rem);
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.1;
-  margin: 0;
-  color: var(--at-fg);
-}
-
-.minimalActions {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-2);
-  margin-inline-start: auto;
-  flex-shrink: 0;
-}
-
-.minimalDescription {
-  color: var(--at-fg-subtle);
-  font-size: var(--ds-text-sm);
-  margin: 0;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   STRIP VARIANT — breadcrumb bar ساده بدون card، مناسب settings
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.strip {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-1-5);
-  padding-block-end: var(--ds-space-3);
-  margin-block-end: var(--ds-space-4);
-  animation: motion-fade-in-up 200ms var(--ds-ease-out-quart) both;
-}
-
-.stripRow {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-2-5);
-  flex-wrap: wrap;
-}
-
-.stripIcon {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 0.5rem;
-  background: color-mix(in oklch, var(--ph-c, var(--at-accent)) 10%, transparent);
-  color: var(--ph-c, var(--at-accent));
-}
-
-.stripTitle {
-  font-size: clamp(1.1rem, 1.5vw + 0.3rem, 1.35rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-  margin: 0;
-  color: var(--at-fg);
-}
-
-.stripActions {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-2);
-  margin-inline-start: auto;
-  flex-shrink: 0;
-}
-
-.stripDescription {
-  font-size: var(--ds-text-sm);
-  color: var(--at-fg-subtle);
-  margin: 0;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   INLINE META — متریک‌های کنار title برای compact/minimal
-   ═══════════════════════════════════════════════════════════════════════════ */
-
+/* ---- متریک درون‌خطی ----
+   ارقام tabular هستند تا با تغییر مقدار، عنوان کنارشان نلرزد. */
 .inlineMeta {
   display: flex;
-  align-items: center;
-  gap: var(--ds-space-1);
-  margin-inline-start: var(--ds-space-1);
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--ds-space-4);
+  margin-inline-start: auto;
 }
 
 .inlineMetaItem {
   display: inline-flex;
   align-items: baseline;
-  gap: 0.25em;
-  padding: 0.2rem 0.55rem;
-  border-radius: 9999px;
-  background: color-mix(in oklch, var(--ph-c, var(--at-accent)) 8%, transparent);
-  border: 1px solid color-mix(in oklch, var(--ph-c, var(--at-accent)) 16%, transparent);
-  line-height: 1;
+  gap: 0.375rem;
+  white-space: nowrap;
 }
 
 .inlineMetaValue {
-  font-size: var(--ds-text-sm);
-  font-weight: 700;
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-base);
+  font-weight: var(--ds-weight-bold);
   font-variant-numeric: tabular-nums;
-  color: var(--ph-c, var(--at-accent));
+  letter-spacing: var(--ds-tracking-tight);
 }
 
 .inlineMetaLabel {
+  color: var(--ds-text-muted);
   font-size: var(--ds-text-xs);
-  color: var(--at-fg-subtle);
-  font-weight: 500;
+}
+
+/* ---- نشانه‌ی آیکون ---- */
+.iconWrap,
+.compactIcon,
+.minimalIcon,
+.stripIcon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  color: var(--ph-accent);
+  border-radius: var(--atlas-radius-md);
+  background: color-mix(in oklch, var(--ph-accent) 9%, var(--ds-canvas));
+}
+
+.iconWrap {
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+}
+
+.compactIcon,
+.minimalIcon {
+  inline-size: 2rem;
+  block-size: 2rem;
+}
+
+.stripIcon {
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+}
+
+/* ==========================================================================
+   variant: default
+   ========================================================================== */
+.header {
+  padding-block-end: var(--ds-space-5);
+  border-block-end: var(--atlas-rule) solid var(--atlas-hairline);
+}
+
+/* نشانه‌ی SVG قدیمی حذف شد. کلاس‌ها برای سازگاری باقی مانده‌اند. */
+.mark,
+.markSpin {
+  display: none;
+}
+
+.body {
+  display: grid;
+  gap: var(--ds-space-2-5);
+  min-inline-size: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  min-inline-size: 0;
+}
+
+.title {
+  margin: 0;
+  min-inline-size: 0;
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-2xl);
+  font-weight: var(--ds-weight-extrabold);
+  letter-spacing: var(--ds-tracking-tighter);
+  line-height: var(--ds-leading-tight);
+}
+
+.header .actions {
+  padding-block-start: var(--ds-space-2);
+}
+
+/* در عرض کافی، اقدام‌ها کنار عنوان می‌نشینند */
+@container (min-width: 46rem) {
+  .header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    column-gap: var(--ds-space-5);
+  }
+
+  .header .actions {
+    justify-content: flex-end;
+    padding-block-start: 0;
+  }
+}
+
+/* ==========================================================================
+   variant: compact
+   ========================================================================== */
+.compact {
+  gap: var(--ds-space-2-5);
+  padding-block-end: var(--ds-space-4);
+  border-block-end: var(--atlas-rule) solid var(--atlas-hairline);
+}
+
+.compactTop {
+  display: grid;
+  gap: var(--ds-space-2);
+  min-inline-size: 0;
+}
+
+.compactRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2-5);
+  min-inline-size: 0;
+}
+
+.compactTitle {
+  margin: 0;
+  min-inline-size: 0;
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-xl);
+  font-weight: var(--ds-weight-bold);
+  letter-spacing: var(--ds-tracking-tighter);
+  line-height: var(--ds-leading-tight);
+}
+
+@container (min-width: 46rem) {
+  .compact {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    column-gap: var(--ds-space-5);
+  }
+}
+
+/* ==========================================================================
+   variant: minimal — بدون قاعده‌ی افقی، برای صفحاتی که خودشان سربرگ دارند
+   ========================================================================== */
+.minimal {
+  gap: var(--ds-space-2);
+}
+
+.minimalEyebrow {
+  color: var(--ph-accent);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-bold);
+  letter-spacing: var(--ds-tracking-caps);
+  text-transform: uppercase;
+}
+
+.minimalRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2-5);
+  min-inline-size: 0;
+}
+
+.minimalTitle {
+  margin: 0;
+  min-inline-size: 0;
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-bold);
+  letter-spacing: var(--ds-tracking-tight);
+  line-height: var(--ds-leading-tight);
+}
+
+.minimalActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin-inline-start: auto;
+}
+
+.minimalDescription {
+  font-size: var(--ds-text-sm);
+}
+
+/* ==========================================================================
+   variant: strip — نوار باریک تنظیمات
+   ========================================================================== */
+.strip {
+  gap: var(--ds-space-1-5);
+  padding-block-end: var(--ds-space-3);
+  border-block-end: var(--atlas-rule) solid var(--atlas-hairline);
+}
+
+.stripRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-inline-size: 0;
+}
+
+.stripTitle {
+  margin: 0;
+  min-inline-size: 0;
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-base);
+  font-weight: var(--ds-weight-bold);
+  letter-spacing: var(--ds-tracking-tight);
+}
+
+.stripActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin-inline-start: auto;
+}
+
+.stripDescription {
+  font-size: var(--ds-text-xs);
+}
+
+/* ==========================================================================
+   موبایل — متریک‌ها به جای چسبیدن به لبه، زیر عنوان می‌روند
+   ========================================================================== */
+@container (max-width: 30rem) {
+  .inlineMeta {
+    gap: var(--ds-space-3);
+    inline-size: 100%;
+    margin-inline-start: 0;
+  }
+
+  .minimalActions,
+  .stripActions {
+    inline-size: 100%;
+    margin-inline-start: 0;
+  }
+
+  .title {
+    font-size: var(--ds-text-xl);
+  }
+
+  .compactTitle {
+    font-size: var(--ds-text-lg);
+  }
 }
