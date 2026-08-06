@@ -1,8 +1,52 @@
-/* Sidebar state corrections, Atlas 2026-08-06.
-   The mobile drawer rule set a width for every state, including
-   `mobile-closed`, so the closed drawer stayed visible as a tall strip and
-   covered the page. State selectors must win over the generic mobile width. */
+/* Sidebar state corrections, Atlas 2026-08-06. */
 
+/* Desktop: the sidebar owns the full viewport rail. Only the content pane scrolls. */
+@media (min-width: 48rem) {
+  .dash-root > .dash-side {
+    position: sticky !important;
+    inset-block-start: 0 !important;
+    inset-inline-start: auto !important;
+    z-index: var(--atlas-z-sidebar, 20);
+    flex: 0 0 var(--ds-side-w-rail);
+    inline-size: var(--ds-side-w-rail);
+    max-inline-size: var(--ds-side-w-rail);
+    block-size: 100dvh;
+    min-block-size: 100dvh;
+    align-self: flex-start;
+    overflow: hidden;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .dash-root > .dash-side[data-state="expanded"] {
+    flex-basis: var(--ds-side-w-expanded);
+    inline-size: var(--ds-side-w-expanded);
+    max-inline-size: var(--ds-side-w-expanded);
+  }
+
+  .dash-root > .dash-side[data-state="rail"] {
+    flex-basis: var(--ds-side-w-rail);
+    inline-size: var(--ds-side-w-rail);
+    max-inline-size: var(--ds-side-w-rail);
+  }
+
+  .dash-root > .dash-side .dash-side__nav {
+    min-block-size: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  .dash-root > .dash-side .dash-side__nav-inner {
+    min-block-size: max-content;
+  }
+
+  .dash-root > .dash-side .dash-side__foot {
+    flex: 0 0 auto;
+  }
+}
+
+/* Mobile drawer states. */
 @media (max-width: 47.9375rem) {
   .dash-root > .dash-side[data-state="mobile-closed"] {
     inline-size: 0;
@@ -23,23 +67,5 @@
 
   .dash-root > .dash-side__overlay {
     display: block;
-  }
-}
-
-@media (min-width: 48rem) {
-  .dash-root > .dash-side[data-state="expanded"] {
-    inline-size: var(--ds-side-w-expanded);
-    max-inline-size: none;
-    transform: none;
-    visibility: visible;
-    pointer-events: auto;
-  }
-
-  .dash-root > .dash-side[data-state="rail"] {
-    inline-size: var(--ds-side-w-rail);
-    max-inline-size: var(--ds-side-w-rail);
-    transform: none;
-    visibility: visible;
-    pointer-events: auto;
   }
 }
