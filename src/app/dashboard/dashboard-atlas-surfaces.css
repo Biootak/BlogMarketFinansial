@@ -1,0 +1,70 @@
+/* Operational Atlas surfaces, restrained glass only where it improves hierarchy.
+   No neon, no full-page blur, no fake depth. The canvas stays solid; only
+   actionable workspace surfaces receive a low-alpha elevation. */
+
+.dashboard-shell [aria-label="صف تصمیم‌گیری"],
+.dashboard-shell [aria-label="نبض پلتفرم"] {
+  background: color-mix(in oklch, var(--ds-surface) 84%, transparent);
+  border-color: color-mix(in oklch, var(--ds-border-default) 78%, var(--ds-brand-500) 22%);
+  box-shadow: var(--ds-shadow-sm);
+  backdrop-filter: blur(12px) saturate(118%);
+  -webkit-backdrop-filter: blur(12px) saturate(118%);
+}
+
+.dashboard-shell [aria-label="صف تصمیم‌گیری"]::before,
+.dashboard-shell [aria-label="نبض پلتفرم"]::before {
+  content: "";
+  display: block;
+  block-size: 1px;
+  margin-inline: var(--ds-space-5);
+  background: linear-gradient(90deg, transparent, color-mix(in oklch, var(--ds-brand-500) 28%, var(--ds-border-subtle)), transparent);
+  opacity: 0.7;
+}
+
+.dashboard-shell [aria-label="صف تصمیم‌گیری"] a,
+.dashboard-shell [aria-label="نبض پلتفرم"] li,
+.dashboard-shell [aria-label="دسترسی سریع"] a,
+.dashboard-shell [aria-label="سیگنال‌های قابل اقدام"] a {
+  transition: background-color var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.dashboard-shell [aria-label="صف تصمیم‌گیری"] li:hover,
+.dashboard-shell [aria-label="نبض پلتفرم"] li:hover {
+  background: color-mix(in oklch, var(--ds-brand-500) 5%, var(--ds-surface));
+}
+
+.dashboard-shell [aria-label="صف تصمیم‌گیری"] a:focus-visible,
+.dashboard-shell [aria-label="نبض پلتفرم"] li:focus-within,
+.dashboard-shell [aria-label="دسترسی سریع"] a:focus-visible,
+.dashboard-shell [aria-label="سیگنال‌های قابل اقدام"] a:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: -2px;
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--ds-brand-500) 11%, transparent);
+}
+
+.dashboard-shell [aria-label="دسترسی سریع"] a,
+.dashboard-shell [aria-label="سیگنال‌های قابل اقدام"] a {
+  background: color-mix(in oklch, var(--ds-surface) 78%, transparent);
+  border-color: color-mix(in oklch, var(--ds-border-subtle) 82%, var(--ds-brand-500) 18%);
+  box-shadow: 0 8px 22px -20px var(--ds-text-primary);
+  backdrop-filter: blur(10px) saturate(112%);
+  -webkit-backdrop-filter: blur(10px) saturate(112%);
+}
+
+.dashboard-shell [aria-label="دسترسی سریع"] a:hover,
+.dashboard-shell [aria-label="سیگنال‌های قابل اقدام"] a:hover {
+  background: color-mix(in oklch, var(--ds-brand-500) 7%, var(--ds-surface));
+  border-color: color-mix(in oklch, var(--ds-brand-500) 38%, var(--ds-border-default));
+  transform: translateY(-1px);
+  box-shadow: var(--ds-shadow-sm);
+}
+
+@media (max-width: 48rem) {
+  .dashboard-shell [aria-label="صف تصمیم‌گیری"],
+  .dashboard-shell [aria-label="نبض پلتفرم"],
+  .dashboard-shell [aria-label="دسترسی سریع"] a,
+  .dashboard-shell [aria-label="سیگنال‌های قابل اقدام"] a {
+    backdrop-filter: blur(8px) saturate(108%);
+    -webkit-backdrop-filter: blur(8px) saturate(108%);
+  }
+}
