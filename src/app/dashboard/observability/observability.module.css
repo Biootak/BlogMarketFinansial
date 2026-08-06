@@ -3,85 +3,62 @@
    ----------------------------------------------------------------------------
    Mobile first. Logical properties only. Tokens only.
 
-   نکتهٔ هویتی: رنگ کل مسیر از خودِ وضعیت سامانه می‌آید. `.scope` یک
-   data-tone می‌گیرد که از verdict محاسبه شده و `--obs-tone` را می‌چرخاند.
-   همهٔ زیرکامپوننت‌ها از همین متغیر ارث می‌برند — یعنی رنگ «اطلاعات» است،
-   نه تزئین. این تنها dominant tone صفحه است.
+   ساختار (۲۰۲۶-۰۸): ریلِ چسبانِ سمتِ کناری حذف شد. نشانه‌های حیاتی حالا داخل
+   ObsPulseDeck هستند، پس هر عدد فقط یک‌بار در صفحه دیده می‌شود و بدنه تمام‌عرض
+   می‌ماند تا گرید ۱۲ ستونی boardها جا داشته باشد.
    ============================================================================ */
 
 .page {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-4);
+  gap: var(--ds-space-5);
   min-block-size: 100%;
+  min-inline-size: 0;
 }
 
-/* ── tone scope ─────────────────────────────────────────────────────────── */
-
-.scope {
-  /* dominant — از سلامت سامانه می‌آید */
-  --obs-tone: var(--ds-accent-emerald);
-  /* accent — رمزگذاری حجم داده، همیشه ثابت تا مقایسه ممکن باشد */
-  --obs-data: var(--ds-accent-indigo);
-  /* utility — فقط وضعیت */
-  --obs-ok: var(--nova-up);
-  --obs-warn: var(--ds-accent-amber);
-  --obs-bad: var(--nova-down);
-  --obs-info: var(--ds-accent-cyan);
-  --obs-idle: var(--ds-accent-slate);
-
-  --obs-rule: var(--ds-border-subtle);
-  --obs-rule-strong: var(--ds-border-default);
-  --obs-gutter: 2.25rem;
-
+/*
+   نوار فرمان — ناوبری فرعی + وضعیت زنده.
+   چسبان است چون در اسکرول‌های بلندِ لاگ باید همیشه بدانی کدام تب باز است و
+   داده چقدر تازه است. شیشه فقط همین‌جا مجاز است: blur کم، شفافیت کم، مرز مویی.
+*/
+.command {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 5;
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-5);
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-2);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  background: color-mix(in oklch, var(--ds-canvas) 82%, transparent);
+  backdrop-filter: blur(10px) saturate(130%);
+  min-inline-size: 0;
 }
 
-.scope[data-tone='warn'] {
-  --obs-tone: var(--obs-warn);
+@media (min-width: 60rem) {
+  .command {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ds-space-5);
+  }
 }
 
-.scope[data-tone='bad'] {
-  --obs-tone: var(--obs-bad);
-}
-
-.scope[data-tone='idle'] {
-  --obs-tone: var(--obs-idle);
-}
-
-/* ── grid: main + vitals rail ───────────────────────────────────────────── */
-
-.shell {
+/*
+   گرید boardها. زیر ۶۴rem تک‌ستونی است و کلاس‌های span اصلاً وجود ندارند
+   (به boards.module.css نگاه کن) تا ستون ضمنی ساخته نشود.
+*/
+.main {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--ds-space-5);
-}
-
-.main {
-  display: flex;
-  flex-direction: column;
   gap: var(--ds-space-8);
   min-inline-size: 0;
 }
 
-/* روی موبایل ریل حیاتی قبل از محتوا می‌آید — اول «آیا چیزی خراب است؟» */
-.rail {
-  order: -1;
-  min-inline-size: 0;
-}
-
-@media (min-width: 68rem) {
-  .shell {
-    grid-template-columns: minmax(0, 1fr) clamp(16rem, 22vw, 19.5rem);
+@media (min-width: 64rem) {
+  .main {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--ds-space-8) var(--ds-space-6);
     align-items: start;
-    gap: var(--ds-space-6);
-  }
-
-  .rail {
-    order: 0;
-    position: sticky;
-    inset-block-start: var(--ds-space-4);
   }
 }
