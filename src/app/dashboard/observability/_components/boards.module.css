@@ -1,24 +1,33 @@
 /* ============================================================================
-   Observability boards — گرید نامتقارن ۱۲ ستونی
+   Observability mosaic — جای‌گذاری ابزارها در گرید ۱۲ ستونی
    ----------------------------------------------------------------------------
    کلاس‌های span فقط داخل breakpoint تعریف می‌شوند. دلیلش مهم است: در موبایل
-   والد تک‌ستونی است و اگر `span 8` آنجا هم اعمال شود، گرید ستون ضمنی می‌سازد و
-   چیدمان می‌شکند. پیش‌فرض همه `auto` یعنی تمام‌عرض.
+   والد تک‌ستونی است و اگر `span 8` آنجا هم اعمال شود، گرید ستون ضمنی می‌سازد
+   و چیدمان می‌شکند. پیش‌فرض همه `auto` یعنی تمام‌عرض.
+
+   `.tall` با row-span قطعات را درهم قفل می‌کند؛ همین چیزی است که چیدمان را از
+   «ردیف‌های هم‌قدِ کارتی» بیرون می‌آورد و به موزاییک واقعی تبدیل می‌کند.
    ============================================================================ */
 
 .wide,
+.nine,
 .eight,
 .seven,
 .six,
 .five,
-.four {
+.four,
+.three,
+.tall {
   grid-column: auto;
   min-inline-size: 0;
 }
 
-@media (min-width: 64rem) {
+@container obs (min-width: 64rem) {
   .wide {
     grid-column: 1 / -1;
+  }
+  .nine {
+    grid-column: span 9;
   }
   .eight {
     grid-column: span 8;
@@ -34,5 +43,43 @@
   }
   .four {
     grid-column: span 4;
+  }
+  .three {
+    grid-column: span 3;
+  }
+  .tall {
+    grid-row: span 2;
+  }
+}
+
+@supports not (container-type: inline-size) {
+  @media (min-width: 64rem) {
+    .wide {
+      grid-column: 1 / -1;
+    }
+    .nine {
+      grid-column: span 9;
+    }
+    .eight {
+      grid-column: span 8;
+    }
+    .seven {
+      grid-column: span 7;
+    }
+    .six {
+      grid-column: span 6;
+    }
+    .five {
+      grid-column: span 5;
+    }
+    .four {
+      grid-column: span 4;
+    }
+    .three {
+      grid-column: span 3;
+    }
+    .tall {
+      grid-row: span 2;
+    }
   }
 }

@@ -1,64 +1,98 @@
 /* ============================================================================
-   Observability — route shell
+   Observability — پوستهٔ کنسول عملیات (بازطراحی ۲۰۲۶-۰۸)
    ----------------------------------------------------------------------------
-   Mobile first. Logical properties only. Tokens only.
+   ایدهٔ ساختاری: صفحه یک «دستگاه» است نه فهرستی از کارت.
+     ۱. کنسول فرمان (چسبان): حکم وضعیت + تب‌های ابزار + نوار زنده + مکان‌نمای زمان
+     ۲. دیوار سیگنال: گیج ترکیبی + خط‌الرأس شبانه‌روز + دنده‌های حیاتی
+     ۳. موزاییک ابزارها: گرید ۱۲ ستونی نامتقارن با row-span تا قطعات درهم قفل شوند
 
-   ساختار (۲۰۲۶-۰۸): ریلِ چسبانِ سمتِ کناری حذف شد. نشانه‌های حیاتی حالا داخل
-   ObsPulseDeck هستند، پس هر عدد فقط یک‌بار در صفحه دیده می‌شود و بدنه تمام‌عرض
-   می‌ماند تا گرید ۱۲ ستونی boardها جا داشته باشد.
+   قواعد: فقط توکن، فقط logical properties، موبایل‌اول، انیمیشن فقط
+   opacity/transform. reduced-motion در tokens.css به‌صورت جهانی clamp شده و
+   اینجا دوباره اعلام نمی‌شود.
    ============================================================================ */
 
 .page {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-5);
+  gap: var(--ds-space-4);
   min-block-size: 100%;
+  min-inline-size: 0;
+  /* پرس‌وجوی کانتینری: قطعات به عرضِ ظرف واکنش می‌دهند نه به عرض viewport،
+     پس در حالت جمع‌شدن سایدبار داشبورد هم چیدمان درست می‌ماند. */
+  container-type: inline-size;
+  container-name: obs;
+}
+
+/* ─────────────────────────── کنسول فرمان ─────────────────────────── */
+
+/*
+   چسبان است چون در اسکرول‌های بلندِ لاگ باید همیشه بدانی «کدام ابزار باز است»،
+   «داده چقدر تازه است» و «مکان‌نما روی چه ساعتی قفل شده».
+   شیشه فقط همین‌جا مجاز است: blur کم، شفافیت کم، مرز مویی.
+*/
+.console {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding-block: var(--ds-space-2) var(--ds-space-2-5);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  background: color-mix(in oklch, var(--ds-canvas) 86%, transparent);
+  backdrop-filter: blur(12px) saturate(135%);
   min-inline-size: 0;
 }
 
-/*
-   نوار فرمان — ناوبری فرعی + وضعیت زنده.
-   چسبان است چون در اسکرول‌های بلندِ لاگ باید همیشه بدانی کدام تب باز است و
-   داده چقدر تازه است. شیشه فقط همین‌جا مجاز است: blur کم، شفافیت کم، مرز مویی.
-*/
-.command {
-  position: sticky;
-  inset-block-start: 0;
-  z-index: 5;
+/* ردیف تب‌ها و وضعیت زنده — موبایل عمودی، از ۶۰rem افقی */
+.consoleRow {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-3);
-  padding-block: var(--ds-space-2);
-  border-block-end: 1px solid var(--ds-border-subtle);
-  background: color-mix(in oklch, var(--ds-canvas) 82%, transparent);
-  backdrop-filter: blur(10px) saturate(130%);
+  gap: var(--ds-space-2);
   min-inline-size: 0;
 }
 
 @media (min-width: 60rem) {
-  .command {
+  .consoleRow {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    gap: var(--ds-space-5);
+    gap: var(--ds-space-4);
   }
 }
 
+/* ─────────────────────────── موزاییک ابزارها ─────────────────────────── */
+
 /*
-   گرید boardها. زیر ۶۴rem تک‌ستونی است و کلاس‌های span اصلاً وجود ندارند
-   (به boards.module.css نگاه کن) تا ستون ضمنی ساخته نشود.
+   زیر ۶۴rem تک‌ستونی است و کلاس‌های span اصلاً تعریف نمی‌شوند
+   (به boards.module.css نگاه کن) تا گرید ستون ضمنی نسازد.
+   `align-items: start` لازم است وگرنه ردیف‌ها هم‌قد کشیده می‌شوند و
+   نامتقارنیِ عمدی چیدمان از بین می‌رود.
 */
 .main {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--ds-space-8);
+  gap: var(--ds-space-6);
   min-inline-size: 0;
 }
 
-@media (min-width: 64rem) {
+@container obs (min-width: 64rem) {
   .main {
     grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: var(--ds-space-8) var(--ds-space-6);
+    grid-auto-flow: row dense;
+    gap: var(--ds-space-6) var(--ds-space-5);
     align-items: start;
+  }
+}
+
+/* fallback برای مرورگرهایی که container query ندارند */
+@supports not (container-type: inline-size) {
+  @media (min-width: 64rem) {
+    .main {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      grid-auto-flow: row dense;
+      gap: var(--ds-space-6) var(--ds-space-5);
+      align-items: start;
+    }
   }
 }
