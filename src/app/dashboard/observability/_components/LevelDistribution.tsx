@@ -15,15 +15,15 @@ const LEVEL_LABEL: Record<string, string> = {
   debug: 'اشکال‌زدایی',
 };
 
-const LEVEL_TONE: Record<string, 'ok' | 'warn' | 'bad' | 'info'> = {
+const LEVEL_TONE: Record<string, 'ok' | 'warn' | 'bad' | 'info' | 'idle'> = {
   info: 'info',
-  debug: 'idle' as 'info',
+  debug: 'idle',
   warn: 'warn',
   error: 'bad',
   fatal: 'bad',
 };
 
-/** توزیع سطوح لاگ — دقیقاً همان چیزی که در ستون level دیتابیس هست. */
+/** توزیع سطوح لاگ — دقیقاً همان مقادیری که در ستون level دیتابیس وجود دارد. */
 export function LevelDistribution() {
   const { data } = useObs();
   if (!data) return null;
@@ -43,17 +43,10 @@ export function LevelDistribution() {
   return (
     <ul className={s.levels}>
       {data.levels.map((item) => (
-        <li
-          key={item.level}
-          className={s.levelRow}
-          data-tone={LEVEL_TONE[item.level] ?? 'info'}
-        >
+        <li key={item.level} className={s.levelRow} data-tone={LEVEL_TONE[item.level] ?? 'info'}>
           <span>{LEVEL_LABEL[item.level] ?? item.level}</span>
           <span className={s.levelBar}>
-            <span
-              className={s.levelFill}
-              style={{ inlineSize: `${ratio(item.count, max, 2)}%` }}
-            />
+            <span className={s.levelFill} style={{ inlineSize: `${ratio(item.count, max, 2)}%` }} />
           </span>
           <span className={s.sourceMeta}>
             {faNum(item.count)} · {faPercent(item.share)}

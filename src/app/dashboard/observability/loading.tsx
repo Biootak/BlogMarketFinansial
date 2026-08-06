@@ -1,29 +1,18 @@
-import { Skeleton } from '@/components/Dashboard/primitives';
-import s from './loading.module.css';
+import s from './_components/obs.module.css';
 
+/** اسکلت بارگذاری — هم‌ریتم با چیدمان واقعی صفحه، نه اسپینر. */
 export default function ObservabilityLoading() {
   return (
-    <div dir="rtl" className={s.root}>
-      <div className={s.blockCard}>
-        <Skeleton variant="card" className="!h-full" />
-      </div>
-      <div className={s.summary}>
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className={s.summaryItem}>
-            <Skeleton variant="card" className="!h-full" />
-          </div>
-        ))}
-      </div>
-      <div className={s.blockRow}>
-        <Skeleton variant="row" className="!h-full" />
-      </div>
-      <div className={s.overview}>
-        <div className={s.overviewItem}>
-          <Skeleton variant="card" className="!h-full" />
-        </div>
-        <div className={s.overviewItem}>
-          <Skeleton variant="card" className="!h-full" />
-        </div>
+    <div className={s.skeleton} aria-busy="true" aria-live="polite">
+      <span className="sr-only">در حال خواندن آخرین وضعیت سامانه</span>
+      <div className={s.skelBar} />
+      <div className={s.skelHero} />
+      <div className={s.skelRows}>
+        <div className={s.skelRow} />
+        <div className={s.skelRow} />
+        <div className={s.skelRow} />
+        <div className={s.skelRow} />
+        <div className={s.skelRow} />
       </div>
     </div>
   );
