@@ -1,160 +1,172 @@
 /* ============================================================================
-   Design System Tokens — Linear × Vercel × Stripe (low-saturation)
+   Design System Tokens — "Atlas" (2026-08)
    ----------------------------------------------------------------------------
-   این فایل **منبع حقیقت واحد** برای همه‌ی متغیرهای `--ds-*` در پروژه است.
-   هر کامپوننت، hero، یا token دیگری باید اینجا تعریف شود؛ کپی در globals.css
-   یا فایل‌های دیگر ممنوع است.
+   منبع حقیقت واحد برای همه‌ی متغیرهای `--ds-*`, `--nova-*` و `--atlas-*`.
+   تعریف توکن در هیچ فایل دیگری مجاز نیست.
 
-   - رنگ‌ها OKLCH (low-saturation) — هماهنگ با Linear / Vercel / Stripe
-   - Spacing و Typography fluid با clamp() — یکپارچه در همه‌ی breakpoints
-   - Radius و Duration با ramp هندسی (logarithmic) — premium feel
-   - prefers-reduced-motion در پایین فایل global clamp می‌شود
+   تغییرات این نسخه (Atlas):
+   1. دو سیستم رنگ رقیب (--ds-brand hue 165 و --nova-primary hue 265) به یک
+      رنگ سیگنال واحد جمع شد. --nova-primary حالا alias برند است.
+   2. خنثی‌ها دو-دمایی شدند: بوم عاج گرم (hue 95, chroma 0.004) در برابر
+      جوهر سبز-سرد (hue 175). این ترکیب عمداً از رفلکس «فینتک = سرمه‌ای/طوسی
+      آبی» فاصله می‌گیرد و حس دفتر ثبت چاپی می‌دهد.
+   3. نسبت مقیاس تایپ از ~۱٫۱۳ (تخت و گل‌آلود) به ~۱٫۲۸ رسید.
+   4. سطوح مات شدند. alpha فقط برای overlay و focus.
+   5. سطح دکمه‌ی برند به brand-600 منتقل شد تا متن روی آن AA بگیرد.
+   6. لایه‌ی --atlas-*: spine، hairline، z-scale معنایی، توکن‌های حرکت.
 
-   تاریخچه (2026-07-02):
-   - قبلاً duplicates از این tokens در globals.css @theme بود که override می‌کرد.
-   - حالا فقط یک منبع داریم؛ @theme در globals.css فقط Tailwind utilities را
-     expose می‌کند (color/font CSS vars).
+   نام هیچ توکن موجودی حذف نشده — فقط مقدارها. مصرف‌کننده‌ها دست‌نخورده‌اند.
    ============================================================================ */
 
 :root {
   /* ==========================================================================
-      BASE FONT SCALE — root font-size (fluid).
-      جایگزینِ zoom-hack: ریشه با clamp() فلوید می‌شود تا کل سایت حس
-      «قدمی عقب‌تر / خوانا / دیدنی بدون اسکرول زیاد» بدهد (الگوی Supabase/
-      Vercel/Stripe). حدود ۱۳px روی موبایل → ۱۴px روی دسکتاپ؛ تراکمی که
-      بیشتر محتوا در اولین نمای مرورگر جا شود (معادل حس zoom 0.85 پیشین
-      ولی بدون transform/tar شدن). همهٔ remها نسبت به این‌اند.
-      zoom حذف شد چون متن را تار و fixed-elementها را خراب می‌کرد.
-      ========================================================================== */
-  --fs-base: clamp(0.8125rem, 0.78rem + 0.15vw, 0.875rem);
-  /* ==========================================================================
-      SPACING (fluid) — clamp() برای scaling بدون breakpoint
-      ========================================================================== */
-  --ds-space-1: clamp(0.25rem, 0.2rem + 0.2vw, 0.375rem);
-  --ds-space-1-5: clamp(0.375rem, 0.3rem + 0.3vw, 0.5rem);
-  --ds-space-2: clamp(0.5rem, 0.4rem + 0.4vw, 0.75rem);
-  --ds-space-2-5: clamp(0.625rem, 0.5rem + 0.5vw, 0.875rem);
-  --ds-space-3: clamp(0.75rem, 0.6rem + 0.6vw, 1rem);
-  --ds-space-3-5: clamp(0.875rem, 0.7rem + 0.7vw, 1.125rem);
-  --ds-space-4: clamp(1rem, 0.8rem + 0.8vw, 1.5rem);
-  --ds-space-5: clamp(1.25rem, 1rem + 1vw, 1.75rem);
-  --ds-space-6: clamp(1.5rem, 1.2rem + 1.2vw, 2.25rem);
-  --ds-space-8: clamp(2rem, 1.5rem + 2vw, 3rem);
-  --ds-space-10: clamp(2.5rem, 2rem + 2.5vw, 3.75rem);
-
-  /* ==========================================================================
-     TYPOGRAPHY (fluid) — Optical-sized با Persian numerals
+     BASE FONT SCALE — ریشه‌ی فلوید. همه‌ی remها نسبت به این‌اند.
      ========================================================================== */
-  --ds-text-xs: clamp(0.75rem, 0.7rem + 0.2vw, 0.8125rem);
-  --ds-text-sm: clamp(0.875rem, 0.82rem + 0.25vw, 0.9375rem);
+  --fs-base: clamp(0.8125rem, 0.78rem + 0.15vw, 0.875rem);
+
+  /* ==========================================================================
+     SPACING — پایه ۴pt، فلوید با clamp()
+     ========================================================================== */
+  --ds-space-1: clamp(0.25rem, 0.22rem + 0.12vw, 0.3125rem);
+  --ds-space-1-5: clamp(0.375rem, 0.33rem + 0.18vw, 0.46875rem);
+  --ds-space-2: clamp(0.5rem, 0.44rem + 0.25vw, 0.625rem);
+  --ds-space-2-5: clamp(0.625rem, 0.55rem + 0.3vw, 0.78125rem);
+  --ds-space-3: clamp(0.75rem, 0.66rem + 0.36vw, 0.9375rem);
+  --ds-space-3-5: clamp(0.875rem, 0.77rem + 0.42vw, 1.09375rem);
+  --ds-space-4: clamp(1rem, 0.88rem + 0.5vw, 1.25rem);
+  --ds-space-5: clamp(1.25rem, 1.1rem + 0.62vw, 1.5625rem);
+  --ds-space-6: clamp(1.5rem, 1.32rem + 0.75vw, 1.875rem);
+  --ds-space-7: clamp(1.75rem, 1.54rem + 0.87vw, 2.1875rem);
+  --ds-space-8: clamp(2rem, 1.76rem + 1vw, 2.5rem);
+  --ds-space-10: clamp(2.5rem, 2.2rem + 1.25vw, 3.125rem);
+  --ds-space-12: clamp(3rem, 2.64rem + 1.5vw, 3.75rem);
+  --ds-space-16: clamp(4rem, 3.52rem + 2vw, 5rem);
+
+  /* ==========================================================================
+     TYPOGRAPHY — نسبت ~۱٫۲۸ (major third نرم). گام‌های کمتر، کنتراست بیشتر.
+     مقیاس قبلی xs..lg در بازه‌ی ۰٫۷۵→۱٫۰۶ فشرده بود و سلسله‌مراتب نمی‌ساخت.
+     ========================================================================== */
+  --ds-text-xs: clamp(0.75rem, 0.72rem + 0.1vw, 0.8125rem);
+  --ds-text-sm: clamp(0.8125rem, 0.79rem + 0.14vw, 0.875rem);
   --ds-text-base: clamp(0.9375rem, 0.9rem + 0.2vw, 1rem);
-  --ds-text-lg: clamp(1.0625rem, 1rem + 0.4vw, 1.25rem);
-  --ds-text-xl: clamp(1.25rem, 1.1rem + 0.7vw, 1.5rem);
-  --ds-text-2xl: clamp(1.5rem, 1.3rem + 1vw, 1.875rem);
-  --ds-text-3xl: clamp(1.875rem, 1.5rem + 1.5vw, 2.5rem);
-  --ds-text-4xl: clamp(2.25rem, 1.8rem + 2vw, 3rem);
+  --ds-text-lg: clamp(1.125rem, 1.05rem + 0.35vw, 1.3125rem);
+  --ds-text-xl: clamp(1.375rem, 1.25rem + 0.6vw, 1.6875rem);
+  --ds-text-2xl: clamp(1.6875rem, 1.45rem + 1vw, 2.125rem);
+  --ds-text-3xl: clamp(2rem, 1.7rem + 1.4vw, 2.625rem);
+  --ds-text-4xl: clamp(2.375rem, 1.95rem + 2.1vw, 3.25rem);
 
-  --ds-leading-tight: 1.12;
-  --ds-leading-snug: 1.45;
-  --ds-leading-normal: 1.65;
-  --ds-leading-relaxed: 1.75;
+  /* Leading — خط فارسی صعود/نزول بلندتری دارد؛ کمی بازتر از لاتین. */
+  --ds-leading-tight: 1.16;
+  --ds-leading-snug: 1.4;
+  --ds-leading-normal: 1.7;
+  --ds-leading-relaxed: 1.85;
 
+  --ds-weight-regular: 400;
   --ds-weight-medium: 500;
   --ds-weight-semibold: 600;
   --ds-weight-bold: 700;
   --ds-weight-extrabold: 800;
 
+  /* Measure — سقف طول سطر متن روان */
+  --ds-measure: 68ch;
+  --ds-measure-narrow: 46ch;
+
+  /* Tracking — حروف بزرگ لاتین در سایز کوچک به فاصله نیاز دارند */
+  --ds-tracking-caps: 0.09em;
+  --ds-tracking-tight: -0.015em;
+  --ds-tracking-tighter: -0.028em;
+
   /* ==========================================================================
-     RADIUS — ramp هندسی premium (8 / 12 / 16 / 20 / 24 px)
-     Linear / Vercel / Stripe از این rhythm استفاده می‌کنند.
-     قبلاً در globals.css @theme به 6/8/12/16/20 override می‌شد که
-     باعث می‌شد کامپوننت‌ها ۳۳٪ تیزتر از intent دیده شوند.
+     RADIUS — رامپ ۸/۱۲/۱۶/۲۰/۲۴ حفظ شد (مصرف‌کننده‌های زیاد).
+     برای زبان «دفتر ثبت» از --atlas-radius-* تیزتر استفاده کنید.
      ========================================================================== */
-  --ds-radius-sm: 0.5rem; /* 8px  */
-  --ds-radius-md: 0.75rem; /* 12px */
-  --ds-radius-lg: 1rem; /* 16px */
-  --ds-radius-xl: 1.25rem; /* 20px */
-  --ds-radius-2xl: 1.5rem; /* 24px */
+  --ds-radius-sm: 0.5rem;
+  --ds-radius-md: 0.75rem;
+  --ds-radius-lg: 1rem;
+  --ds-radius-xl: 1.25rem;
+  --ds-radius-2xl: 1.5rem;
   --ds-radius-full: 9999px;
 
   /* ==========================================================================
-     DURATION — Stripe-style timing (180 / 280 / 420 / 600 ms)
-     قبلاً در globals.css @theme به 120/200/320 تقلیل یافته بود.
-     این timing برای premium feel ضروری است؛ تغییرش کلیپ‌فیس می‌سازد.
+     DURATION — ۱۰۰/۳۰۰/۵۰۰: بازخورد آنی، تغییر وضعیت، تغییر چیدمان.
+     ۱۸۰ms برای یک tap کند بود و حس تأخیر می‌داد.
      ========================================================================== */
-  --ds-duration-fast: 180ms;
-  --ds-duration-base: 280ms;
-  --ds-duration-slow: 420ms;
-  --ds-duration-page: 600ms;
+  --ds-duration-fast: 140ms;
+  --ds-duration-base: 240ms;
+  --ds-duration-slow: 360ms;
+  --ds-duration-page: 520ms;
+  /* خروج ۷۵٪ ورود */
+  --ds-duration-exit: 180ms;
 
   /* ==========================================================================
-     EASING — منحنی‌های reference
-     --------------------------------------------------------------------------
-     - quart:   easing اصلی همه‌ی transitions در DS (Stripe-style)
-     - expo:    برای hero animations (sharper curve)
-     - spring:  برای morphing icons / playful interactions
-     - in-out:  برای accordion / panel toggles
+     EASING — نمایی. bounce/elastic ممنوع (حس آماتور).
+     --ds-ease-spring برای سازگاری عقب‌رو نگه داشته شد ولی دیگر overshoot ندارد.
      ========================================================================== */
-  --ds-ease-out-quart: cubic-bezier(0.22, 1, 0.36, 1);
-  --ds-ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --ds-ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ds-ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
   --ds-ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --ds-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ds-ease-in-quart: cubic-bezier(0.5, 0, 0.75, 0);
+  --ds-ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --ds-ease-spring: cubic-bezier(0.25, 1, 0.5, 1);
 
   /* ==========================================================================
-     COLORS — Light mode (default :root)
-     OKLCH با saturation پایین؛ gentle و premium.
-     هر دو رنگ canvas و surface در tokens هستند تا DS کامپوننت‌ها بتوانند
-     از `var(--ds-surface)` استفاده کنند.
+     COLORS — Light
+     بوم عاج گرم (hue 95) × جوهر سبز-سرد (hue 175). کنتراست دمایی ظریف که
+     صفحه را «کاغذی» می‌کند نه «طوسی‌آبی SaaS».
+     سطوح مات‌اند: alpha فقط در overlay و focus.
      ========================================================================== */
-  --ds-canvas: oklch(99% 0.003 240);
-  --ds-canvas-subtle: oklch(97% 0.005 240);
-  --ds-surface: oklch(100% 0 0 / 0.7);
-  --ds-surface-elevated: oklch(100% 0 0 / 0.85);
-  --ds-surface-recessed: oklch(96% 0.005 240 / 0.6);
+  --ds-canvas: oklch(98.8% 0.004 95);
+  --ds-canvas-subtle: oklch(96.8% 0.005 95);
+  --ds-surface: oklch(100% 0.002 95);
+  --ds-surface-elevated: oklch(100% 0 0);
+  --ds-surface-recessed: oklch(97.2% 0.005 100);
+  --ds-surface-raised: oklch(100% 0 0);
 
-  --ds-text-primary: oklch(20% 0.01 240);
-  --ds-text-secondary: oklch(45% 0.01 240);
-  --ds-text-muted: oklch(55% 0.01 240);
-  --ds-text-inverse: oklch(98% 0.005 240);
+  --ds-text-primary: oklch(24% 0.014 175);
+  --ds-text-secondary: oklch(44% 0.012 175);
+  --ds-text-muted: oklch(58% 0.01 175);
+  --ds-text-inverse: oklch(98% 0.004 175);
 
-  --ds-border-subtle: oklch(92% 0.005 240 / 0.6);
-  --ds-border-default: oklch(90% 0.005 240 / 0.8);
-  --ds-border-strong: oklch(82% 0.01 240 / 0.9);
+  --ds-border-subtle: oklch(91% 0.006 170);
+  --ds-border-default: oklch(87% 0.008 170);
+  --ds-border-strong: oklch(78% 0.012 170);
 
-  /* Brand — emerald (hue 165) هماهنگ با داشبورد و nova-emerald */
-  --ds-brand-50: oklch(96% 0.03 165);
-  --ds-brand-100: oklch(92% 0.05 165);
-  --ds-brand-200: oklch(86% 0.08 165);
-  --ds-brand-300: oklch(78% 0.1 165);
-  --ds-brand-400: oklch(68% 0.11 165);
-  --ds-brand-500: oklch(58% 0.12 165);
-  --ds-brand-600: oklch(52% 0.14 162);
-  --ds-brand-700: oklch(42% 0.14 162);
-  /* متنی که روی سطوح برند (brand-500/600/700) می‌نشیند — سفیدِ near-white */
-  --ds-brand-on: oklch(99% 0.005 240);
+  /* Overlay — به‌جای alpha پراکنده، توکن صریح */
+  --ds-overlay-scrim: oklch(24% 0.014 175 / 0.42);
+  --ds-overlay-hover: oklch(24% 0.014 175 / 0.045);
+  --ds-overlay-press: oklch(24% 0.014 175 / 0.08);
 
-  /* Legacy semantic aliases — کامپوننت‌های قدیمی (beneficiaries/kyc/header)
-     از اینها استفاده می‌کنند. برابر با برند/وضعیت. */
-  --ds-primary: oklch(58% 0.12 165); /* = --ds-brand-500 */
-  --ds-primary-light: oklch(68% 0.11 165); /* = --ds-brand-400 */
-  --ds-rose: oklch(60% 0.15 25); /* = --nova-rose */
-  --ds-amber: oklch(72% 0.13 70); /* = --ds-accent-amber */
+  /* ---- Brand — سیگنال واحد. hue 168، عمیق‌تر از سبز SaaS. -----------------
+     brand-600 سطح دکمه است (کنتراست ≈۴٫۸:۱ با brand-on).
+     brand-500 برای متن/آیکون روی بوم روشن. */
+  --ds-brand-50: oklch(96.5% 0.022 168);
+  --ds-brand-100: oklch(93% 0.042 168);
+  --ds-brand-200: oklch(87% 0.068 168);
+  --ds-brand-300: oklch(79% 0.09 168);
+  --ds-brand-400: oklch(68% 0.105 168);
+  --ds-brand-500: oklch(56% 0.108 168);
+  --ds-brand-600: oklch(48% 0.104 168);
+  --ds-brand-700: oklch(38% 0.085 168);
+  --ds-brand-on: oklch(99% 0.004 168);
 
-  /* Accents (low-saturation) */
-  --ds-accent-amber: oklch(72% 0.13 70);
-  --ds-accent-emerald: oklch(60% 0.1 165);
-  --ds-accent-rose: oklch(60% 0.13 20);
-  --ds-accent-violet: oklch(58% 0.13 290);
-  --ds-accent-slate: oklch(60% 0.02 250);
-  /* Accent های تکمیلی (اضافه شده ۲۰۲۶-۰۷-۳۱) — استفاده در observability و
-     داشبورد. semantic هستند؛ فقط برای tone متمایز. */
-  --ds-accent-cyan: oklch(70% 0.13 200);
-  --ds-accent-indigo: oklch(58% 0.14 265);
+  /* Legacy semantic aliases */
+  --ds-primary: var(--ds-brand-600);
+  --ds-primary-light: var(--ds-brand-400);
+  --ds-rose: oklch(56% 0.125 22);
+  --ds-amber: oklch(66% 0.115 72);
+
+  /* ---- Accents — همه در بازه‌ی L 52–66 و C 0.09–0.13 تنظیم شدند تا یک
+     خانواده دیده شوند، نه رنگین‌کمان. */
+  --ds-accent-amber: oklch(66% 0.115 72);
+  --ds-accent-emerald: oklch(56% 0.108 168);
+  --ds-accent-rose: oklch(56% 0.125 22);
+  --ds-accent-violet: oklch(54% 0.115 292);
+  --ds-accent-slate: oklch(56% 0.016 200);
+  --ds-accent-cyan: oklch(58% 0.095 215);
+  --ds-accent-indigo: oklch(52% 0.115 268);
 
   /* ==========================================================================
-     TYPE ALIASES — backward-compat برای فایل‌هایی که از --ds-fs-* استفاده
-     می‌کنند. canonical name --ds-text-* است؛ این alias ها موقتی هستند تا
-     migration کامل شود. (یادداشت ۲۰۲۶-۰۷-۳۱)
+     TYPE ALIASES — backward-compat
      ========================================================================== */
   --ds-fs-xs: var(--ds-text-xs);
   --ds-fs-sm: var(--ds-text-sm);
@@ -165,190 +177,172 @@
   --ds-fs-3xl: var(--ds-text-3xl);
   --ds-fs-4xl: var(--ds-text-4xl);
 
-  /* Surface aliases — canonical --ds-surface / --ds-surface-elevated.
-     این alias ها فقط برای compatibility؛ فایل‌های جدید نباید استفاده کنند. */
   --ds-surface-1: var(--ds-surface);
   --ds-surface-2: var(--ds-surface-elevated);
-
-  /* Border alias (legacy --ds-border) → --ds-border-subtle */
   --ds-border: var(--ds-border-subtle);
-
-  /* Text alias (legacy --ds-text) → --ds-text-primary */
   --ds-text: var(--ds-text-primary);
 
-  /* ==========================================================================
-     MISSING ALIASES — --ds-bg / --ds-fg / --ds-fg-* / --ds-surface-raised
-     --------------------------------------------------------------------------
-     16 فایل در پروژه از این توکن‌ها استفاده می‌کنند (MobileBottomNav، Footer،
-     RouteError، beneficiaries، blog، kyc، checkout، ...).
-     بدون این aliases، مرورگر fallback به مقدار پیش‌فرض (سیاه/شفاف) می‌شود
-     که باعث آیکون‌های سیاه و متن‌های تاریک در dark mode می‌شود.
-     اضافه شده: 2026-08
-     ========================================================================== */
-
-  /* پس‌زمینه عمومی صفحه — alias از canvas */
   --ds-bg: var(--ds-canvas);
-
-  /* رنگ اصلی متن — alias از text-primary */
   --ds-fg: var(--ds-text-primary);
-
-  /* سطوح مختلف متن */
-  --ds-fg-muted:     var(--ds-text-muted);
+  --ds-fg-muted: var(--ds-text-muted);
   --ds-fg-secondary: var(--ds-text-secondary);
-  --ds-fg-subtle:    var(--ds-text-muted);
-  --ds-fg-inverse:   var(--ds-text-inverse);
+  --ds-fg-subtle: var(--ds-text-muted);
+  --ds-fg-inverse: var(--ds-text-inverse);
 
-  /* Surface raised — کارت‌ها و المان‌های بالاتر از canvas */
-  --ds-surface-raised: oklch(100% 0 0 / 0.9);
-
-  /* Font family — برای کد و اعداد تکنیکال. semantic؛ جایگزین hardcoded
-     ui-monospace chains. (اضافه شده ۲۰۲۶-۰۷-۳۱) */
   --ds-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
     "Courier New", monospace;
 
   /* ==========================================================================
-     SEMANTIC COLOR TOKENS — Dashboard v2 (2026)
-     --------------------------------------------------------------------------
-     اضافه شده در 2026-07-02 برای یکدست کردن با dashboard.css.
-     این‌ها در کنار `--ds-canvas` / `--ds-surface` به عنوان semantic aliases
-     برای v2 dashboard استفاده می‌شوند. تفاوت‌شان در `--*-dark` flip pattern
-     است که به جای `.dark` selector با media-switch می‌شود.
+     SEMANTIC COLOR TOKENS — Dashboard v2
      ========================================================================== */
-  --ds-color-canvas: oklch(98.5% 0.004 245);
-  --ds-color-canvas-dark: oklch(15% 0.018 255);
-  --ds-color-surface: oklch(100% 0 0);
-  --ds-color-surface-dark: oklch(20% 0.018 255);
-  --ds-color-surface-2: oklch(96% 0.004 245);
-  --ds-color-surface-2-dark: oklch(24% 0.018 255);
-  --ds-color-border-subtle: oklch(92% 0.006 245);
-  --ds-color-border-subtle-dark: oklch(28% 0.02 255);
-  --ds-color-border-default: oklch(88% 0.008 245);
-  --ds-color-border-default-dark: oklch(34% 0.02 255);
-  --ds-color-border-strong: oklch(82% 0.012 245);
-  --ds-color-border-strong-dark: oklch(42% 0.022 255);
-  --ds-color-fg-muted: oklch(45% 0.01 245);
-  --ds-color-fg-muted-dark: oklch(70% 0.01 245);
-  --ds-color-fg-subtle: oklch(55% 0.01 245);
-  --ds-color-fg-subtle-dark: oklch(55% 0.012 250);
-  --ds-color-blue: oklch(70% 0.13 250);
-  --ds-color-blue-dark: oklch(70% 0.14 245);
-  --ds-color-side: oklch(99% 0.003 245);
-  --ds-color-side-dark: oklch(13% 0.018 255);
-  --ds-color-side-hover-bg: oklch(96% 0.005 245 / 0.7);
-  --ds-color-side-hover-bg-dark: oklch(20% 0.02 255 / 0.6);
-  --ds-color-side-active-bg: oklch(94% 0.04 245 / 0.7);
-  --ds-color-side-active-bg-dark: oklch(22% 0.04 250 / 0.5);
-  --ds-color-side-active-fg: oklch(20% 0.02 250);
-  --ds-color-side-active-fg-dark: oklch(95% 0.01 245);
+  --ds-color-canvas: oklch(98.8% 0.004 95);
+  --ds-color-canvas-dark: oklch(16% 0.012 190);
+  --ds-color-surface: oklch(100% 0.002 95);
+  --ds-color-surface-dark: oklch(20% 0.013 190);
+  --ds-color-surface-2: oklch(96.8% 0.005 95);
+  --ds-color-surface-2-dark: oklch(23.5% 0.014 190);
+  --ds-color-border-subtle: oklch(91% 0.006 170);
+  --ds-color-border-subtle-dark: oklch(28% 0.012 190);
+  --ds-color-border-default: oklch(87% 0.008 170);
+  --ds-color-border-default-dark: oklch(34% 0.014 190);
+  --ds-color-border-strong: oklch(78% 0.012 170);
+  --ds-color-border-strong-dark: oklch(44% 0.016 190);
+  --ds-color-fg-muted: oklch(44% 0.012 175);
+  --ds-color-fg-muted-dark: oklch(74% 0.008 180);
+  --ds-color-fg-subtle: oklch(58% 0.01 175);
+  --ds-color-fg-subtle-dark: oklch(60% 0.009 180);
+  /* «blue» تاریخی — حالا به سیگنال برند نگاشت شده تا دو رنگ تأکیدی نداشته باشیم */
+  --ds-color-blue: var(--ds-brand-600);
+  --ds-color-blue-dark: oklch(72% 0.1 168);
+  --ds-color-side: oklch(97.6% 0.005 95);
+  --ds-color-side-dark: oklch(14% 0.012 190);
+  --ds-color-side-hover-bg: oklch(94.5% 0.008 120);
+  --ds-color-side-hover-bg-dark: oklch(22% 0.014 190);
+  --ds-color-side-active-bg: oklch(94% 0.03 168);
+  --ds-color-side-active-bg-dark: oklch(25% 0.035 175);
+  --ds-color-side-active-fg: oklch(38% 0.085 168);
+  --ds-color-side-active-fg-dark: oklch(84% 0.075 168);
 
   /* ==========================================================================
-     DASHBOARD LAYOUT — Sidebar widths
+     DASHBOARD LAYOUT
      ========================================================================== */
-  --ds-side-w-expanded: 268px;
-  --ds-side-w-rail: 76px;
+  --ds-side-w-expanded: 272px;
+  --ds-side-w-rail: 72px;
 
   /* ==========================================================================
-     EFFECTS — shadows و glow (low-saturation)
+     EFFECTS — سایه‌ها باید حس شوند نه دیده. عمق اصلی از hairline می‌آید.
      ========================================================================== */
-  --ds-shadow-sm: 0 1px 2px oklch(20% 0.01 240 / 0.04);
-  --ds-shadow-md: 0 4px 12px -4px oklch(20% 0.01 240 / 0.1);
-  --ds-shadow-lg: 0 18px 50px -20px oklch(45% 0.1 250 / 0.35);
-  --ds-glow-brand: 0 0 0 1px oklch(55% 0.1 235 / 0.4), 0 8px 24px -8px oklch(55% 0.1 235 / 0.35);
+  --ds-shadow-sm: 0 1px 1px oklch(24% 0.014 175 / 0.04);
+  --ds-shadow-md: 0 2px 4px -2px oklch(24% 0.014 175 / 0.06), 0 6px 16px -8px oklch(24% 0.014 175 / 0.08);
+  --ds-shadow-lg: 0 4px 8px -4px oklch(24% 0.014 175 / 0.08), 0 20px 48px -24px oklch(24% 0.014 175 / 0.18);
+  --ds-glow-brand: 0 0 0 1px oklch(48% 0.104 168 / 0.32), 0 6px 20px -10px oklch(48% 0.104 168 / 0.3);
 
   /* ==========================================================================
-     STATUS COLOR TOKENS — برای status badge های سراسری
-     (pending, progress/info, success/done, error/cancelled)
-     هر گروه سه variant دارد: bg (پس‌زمینه)، border، fg (متن)
+     STATUS TOKENS — fg در L≈۴۲ تا روی bg روشن AA بگیرد.
      ========================================================================== */
-  --ds-status-pending-bg: oklch(97% 0.03 80);
-  --ds-status-pending-border: oklch(88% 0.07 80);
-  --ds-status-pending-fg: oklch(45% 0.14 80);
+  --ds-status-pending-bg: oklch(97% 0.02 78);
+  --ds-status-pending-border: oklch(89% 0.045 78);
+  --ds-status-pending-fg: oklch(44% 0.095 62);
 
-  --ds-status-progress-bg: oklch(96% 0.03 218);
-  --ds-status-progress-border: oklch(88% 0.07 218);
-  --ds-status-progress-fg: oklch(42% 0.14 218);
+  --ds-status-progress-bg: oklch(96.5% 0.018 215);
+  --ds-status-progress-border: oklch(89% 0.04 215);
+  --ds-status-progress-fg: oklch(42% 0.095 232);
 
-  --ds-status-success-bg: oklch(96% 0.04 145);
-  --ds-status-success-border: oklch(88% 0.08 145);
-  --ds-status-success-fg: oklch(36% 0.14 145);
+  --ds-status-success-bg: oklch(96.5% 0.022 168);
+  --ds-status-success-border: oklch(89% 0.048 168);
+  --ds-status-success-fg: oklch(40% 0.09 168);
 
-  --ds-status-error-bg: oklch(97% 0.02 15);
-  --ds-status-error-border: oklch(88% 0.05 15);
-  --ds-status-error-fg: oklch(40% 0.12 15);
+  --ds-status-error-bg: oklch(96.5% 0.02 22);
+  --ds-status-error-border: oklch(89% 0.045 22);
+  --ds-status-error-fg: oklch(44% 0.115 22);
 
-  --ds-status-cancelled-bg: oklch(97% 0.01 0);
-  --ds-status-cancelled-border: oklch(88% 0.04 0);
-  --ds-status-cancelled-fg: oklch(44% 0.08 0);
+  --ds-status-cancelled-bg: oklch(96.5% 0.004 175);
+  --ds-status-cancelled-border: oklch(89% 0.006 175);
+  --ds-status-cancelled-fg: oklch(46% 0.01 175);
 }
 
 /* ==========================================================================
-   DARK MODE FLIPS — همه‌ی semantic color tokens با prefix `--ds-color-*`
-   در dark mode به variant `-dark` خودشان switch می‌کنند.
+   DARK — عمق از روشنایی سطح می‌آید، نه از سایه. مشکی مطلق ممنوع.
    ========================================================================== */
 .dark {
-  --ds-canvas: oklch(15% 0.01 250);
-  --ds-canvas-subtle: oklch(18% 0.012 250);
-  --ds-surface: oklch(20% 0.012 250 / 0.7);
-  --ds-surface-elevated: oklch(22% 0.012 250 / 0.85);
-  --ds-surface-recessed: oklch(17% 0.012 250 / 0.6);
+  --ds-canvas: oklch(16% 0.012 190);
+  --ds-canvas-subtle: oklch(18.5% 0.013 190);
+  --ds-surface: oklch(20% 0.013 190);
+  --ds-surface-elevated: oklch(23.5% 0.014 190);
+  --ds-surface-recessed: oklch(17.5% 0.012 190);
+  --ds-surface-raised: oklch(23.5% 0.014 190);
 
-  /* Missing aliases — dark overrides */
   --ds-bg: var(--ds-canvas);
   --ds-fg: var(--ds-text-primary);
-  --ds-fg-muted:     var(--ds-text-muted);
+  --ds-fg-muted: var(--ds-text-muted);
   --ds-fg-secondary: var(--ds-text-secondary);
-  --ds-fg-subtle:    var(--ds-text-muted);
-  --ds-fg-inverse:   var(--ds-text-inverse);
-  --ds-surface-raised: oklch(22% 0.015 250 / 0.9);
+  --ds-fg-subtle: var(--ds-text-muted);
+  --ds-fg-inverse: var(--ds-text-inverse);
 
-  --ds-text-primary: oklch(95% 0.005 240);
-  --ds-text-secondary: oklch(70% 0.01 240);
-  --ds-text-muted: oklch(55% 0.01 240);
-  /* متن روی بکگراند رنگی پررنگ (دکمه برند/بج status) — حتی در dark هم روشن می‌ماند.
-     قبلاً oklch(15%) بود که در dark متن سیاه روی دکمه سبز می‌ساخت. */
-  --ds-text-inverse: oklch(99% 0.005 240);
+  /* وزن متن روی زمینه‌ی تیره سنگین‌تر دیده می‌شود؛ جبران با tracking و leading
+     در لایه‌ی shell انجام می‌شود. */
+  --ds-text-primary: oklch(94% 0.006 180);
+  --ds-text-secondary: oklch(74% 0.008 180);
+  --ds-text-muted: oklch(60% 0.009 180);
+  --ds-text-inverse: oklch(99% 0.004 180);
 
-  /* Brand on-brand text در dark هم سفید است — برند سبز تیره پس‌زمینه است */
-  --ds-brand-on: oklch(99% 0.005 240);
+  --ds-border-subtle: oklch(28% 0.012 190);
+  --ds-border-default: oklch(34% 0.014 190);
+  --ds-border-strong: oklch(44% 0.016 190);
 
-  /* Legacy semantic aliases — dark variant روشن‌تر برای کنتراست */
-  --ds-primary: oklch(65% 0.12 165);
-  --ds-primary-light: oklch(72% 0.12 165);
-  --ds-rose: oklch(68% 0.12 25);
-  --ds-amber: oklch(74% 0.12 70);
+  --ds-overlay-scrim: oklch(10% 0.01 190 / 0.6);
+  --ds-overlay-hover: oklch(94% 0.006 180 / 0.06);
+  --ds-overlay-press: oklch(94% 0.006 180 / 0.1);
 
-  --ds-border-subtle: oklch(28% 0.012 250 / 0.6);
-  --ds-border-default: oklch(30% 0.012 250 / 0.8);
-  --ds-border-strong: oklch(38% 0.02 250 / 0.9);
+  /* برند در تاریکی: اشباع کمی پایین‌تر، روشنایی بالاتر */
+  --ds-brand-50: oklch(28% 0.04 168);
+  --ds-brand-100: oklch(33% 0.055 168);
+  --ds-brand-200: oklch(40% 0.07 168);
+  --ds-brand-300: oklch(50% 0.085 168);
+  --ds-brand-400: oklch(60% 0.095 168);
+  --ds-brand-500: oklch(70% 0.1 168);
+  --ds-brand-600: oklch(50% 0.1 168);
+  --ds-brand-700: oklch(42% 0.09 168);
+  --ds-brand-on: oklch(99% 0.004 168);
 
-  --ds-shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.4);
-  --ds-shadow-md: 0 4px 12px -4px oklch(0% 0 0 / 0.5);
-  --ds-shadow-lg: 0 22px 60px -22px oklch(0% 0 0 / 0.7);
-  --ds-glow-brand: 0 0 0 1px oklch(65% 0.1 235 / 0.5), 0 8px 24px -8px oklch(65% 0.1 235 / 0.5);
+  --ds-primary: oklch(74% 0.095 168);
+  --ds-primary-light: oklch(80% 0.085 168);
+  --ds-rose: oklch(72% 0.11 22);
+  --ds-amber: oklch(78% 0.1 72);
 
-  /* Status token dark overrides — رنگ‌های وضعیت در تاریکی
-     bg: تیره‌تر/کم‌اشباع‌تر؛ border: کمی روشن‌تر؛ fg: روشن‌تر برای contrast */
-  --ds-status-pending-bg: oklch(22% 0.04 80 / 0.5);
-  --ds-status-pending-border: oklch(35% 0.07 80 / 0.6);
-  --ds-status-pending-fg: oklch(75% 0.14 80);
+  --ds-accent-amber: oklch(78% 0.1 72);
+  --ds-accent-emerald: oklch(74% 0.095 168);
+  --ds-accent-rose: oklch(72% 0.11 22);
+  --ds-accent-violet: oklch(72% 0.1 292);
+  --ds-accent-slate: oklch(70% 0.014 200);
+  --ds-accent-cyan: oklch(74% 0.085 215);
+  --ds-accent-indigo: oklch(70% 0.1 268);
 
-  --ds-status-progress-bg: oklch(20% 0.04 218 / 0.5);
-  --ds-status-progress-border: oklch(35% 0.07 218 / 0.6);
-  --ds-status-progress-fg: oklch(72% 0.14 218);
+  --ds-shadow-sm: 0 1px 1px oklch(0% 0 0 / 0.3);
+  --ds-shadow-md: 0 2px 6px -2px oklch(0% 0 0 / 0.4);
+  --ds-shadow-lg: 0 18px 48px -24px oklch(0% 0 0 / 0.62);
+  --ds-glow-brand: 0 0 0 1px oklch(70% 0.1 168 / 0.36), 0 6px 20px -10px oklch(70% 0.1 168 / 0.32);
 
-  --ds-status-success-bg: oklch(20% 0.05 145 / 0.5);
-  --ds-status-success-border: oklch(35% 0.08 145 / 0.6);
-  --ds-status-success-fg: oklch(72% 0.14 145);
+  --ds-status-pending-bg: oklch(26% 0.035 78);
+  --ds-status-pending-border: oklch(38% 0.055 78);
+  --ds-status-pending-fg: oklch(84% 0.1 78);
 
-  --ds-status-error-bg: oklch(22% 0.04 15 / 0.5);
-  --ds-status-error-border: oklch(35% 0.06 15 / 0.6);
-  --ds-status-error-fg: oklch(72% 0.12 15);
+  --ds-status-progress-bg: oklch(25% 0.032 215);
+  --ds-status-progress-border: oklch(37% 0.05 215);
+  --ds-status-progress-fg: oklch(82% 0.09 215);
 
-  --ds-status-cancelled-bg: oklch(20% 0.01 0 / 0.4);
-  --ds-status-cancelled-border: oklch(34% 0.03 0 / 0.6);
-  --ds-status-cancelled-fg: oklch(68% 0.06 0);
+  --ds-status-success-bg: oklch(25% 0.036 168);
+  --ds-status-success-border: oklch(37% 0.055 168);
+  --ds-status-success-fg: oklch(83% 0.095 168);
 
-  /* Dashboard v2 semantic colors */
+  --ds-status-error-bg: oklch(26% 0.038 22);
+  --ds-status-error-border: oklch(38% 0.055 22);
+  --ds-status-error-fg: oklch(82% 0.1 22);
+
+  --ds-status-cancelled-bg: oklch(24% 0.008 190);
+  --ds-status-cancelled-border: oklch(34% 0.01 190);
+  --ds-status-cancelled-fg: oklch(74% 0.008 190);
+
   --ds-color-canvas: var(--ds-color-canvas-dark);
   --ds-color-surface: var(--ds-color-surface-dark);
   --ds-color-surface-2: var(--ds-color-surface-2-dark);
@@ -365,50 +359,34 @@
 }
 
 /* ==========================================================================
-   REDUCED MOTION — global clamp. فقط یک‌بار در کل پروژه.
-   ========================================================================== */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-/* ==========================================================================
-   NOVA Dashboard Tokens — Unified Design System (2026-07-04)
-   --------------------------------------------------------------------------
-   این token‌ها جایگزین --cc-* و --nova-* قبلی می‌شوند.
-   همه از DS color scale و design language پیروی می‌کنن.
-   Hue 265 = brand accent برای NOVA.
+   NOVA — دیگر یک برند دوم نیست. همه‌ی نقش‌های هویتی به DS نگاشت شده‌اند.
+   قبلاً --nova-primary روی hue 265 (نیلی) بود و در کنار برند سبز ۱۶۵
+   دو مرکز ثقل رنگی می‌ساخت؛ داشبورد به همین دلیل ناهماهنگ دیده می‌شد.
+   hue 292 (violet) و بقیه فقط به‌عنوان تُن دسته‌بندی مسیر باقی مانده‌اند.
    ========================================================================== */
 :root {
-  /* ---- NOVA Colors (light mode) ---------------------------------------- */
-  --nova-primary: oklch(55% 0.14 265);
-  --nova-primary-hover: oklch(50% 0.14 265);
-  --nova-accent: oklch(55% 0.14 265); /* alias برند اصلی نووا */
-  --nova-on-accent: oklch(99% 0.005 240); /* متن روی سطوح accent — همیشه روشن */
-  --nova-ink: oklch(18% 0.006 265);
-  --nova-ink-2: oklch(42% 0.008 265);
-  --nova-muted: oklch(55% 0.008 265);
-  --nova-line: oklch(90% 0.006 265);
-  --nova-border: oklch(90% 0.006 265); /* alias مرزی */
-  --nova-surface: oklch(100% 0 0 / 0.65);
-  --nova-surface-solid: oklch(100% 0 0);
-  --nova-surface-2: oklch(96% 0.004 265);
-  --nova-canvas: oklch(98% 0.003 240);
+  --nova-primary: var(--ds-brand-600);
+  --nova-primary-hover: var(--ds-brand-700);
+  --nova-accent: var(--ds-brand-600);
+  --nova-on-accent: var(--ds-brand-on);
+  --nova-ink: var(--ds-text-primary);
+  --nova-ink-2: var(--ds-text-secondary);
+  --nova-muted: var(--ds-text-muted);
+  --nova-line: var(--ds-border-subtle);
+  --nova-border: var(--ds-border-subtle);
+  --nova-surface: var(--ds-surface);
+  --nova-surface-solid: var(--ds-surface-elevated);
+  --nova-surface-2: var(--ds-surface-recessed);
+  --nova-canvas: var(--ds-canvas);
 
-  /* Semantic trend colors */
-  --nova-up: oklch(52% 0.14 162);
-  --nova-up-bg: oklch(72% 0.14 165 / 0.14);
-  --nova-down: oklch(55% 0.17 20);
-  --nova-down-bg: oklch(68% 0.18 20 / 0.14);
-  --nova-flat: oklch(55% 0.02 265);
-  --nova-flat-bg: oklch(60% 0.02 265 / 0.12);
+  /* Trend — در مالی: صعود سبز، نزول قرمز، خنثی طوسی */
+  --nova-up: var(--ds-accent-emerald);
+  --nova-up-bg: color-mix(in oklch, var(--ds-accent-emerald) 12%, transparent);
+  --nova-down: var(--ds-accent-rose);
+  --nova-down-bg: color-mix(in oklch, var(--ds-accent-rose) 12%, transparent);
+  --nova-flat: var(--ds-accent-slate);
+  --nova-flat-bg: color-mix(in oklch, var(--ds-accent-slate) 12%, transparent);
 
-  /* Semantic trend aliases (finance: up=green, down=red, flat=neutral) */
   --trend-up: var(--nova-up);
   --trend-up-bg: var(--nova-up-bg);
   --trend-down: var(--nova-down);
@@ -416,23 +394,22 @@
   --trend-flat: var(--nova-flat);
   --trend-flat-bg: var(--nova-flat-bg);
 
-  /* Accent tones (per-tile) */
-  --nova-cyan: oklch(62% 0.12 220);
-  --nova-rose: oklch(60% 0.15 25);
-  --nova-emerald: oklch(58% 0.12 165);
-  --nova-violet: oklch(58% 0.14 290);
-  --nova-amber: oklch(68% 0.14 70);
+  /* Route-family tones — فقط برای تفکیک دسته، نه برای هویت */
+  --nova-cyan: var(--ds-accent-cyan);
+  --nova-rose: var(--ds-accent-rose);
+  --nova-emerald: var(--ds-accent-emerald);
+  --nova-violet: var(--ds-accent-violet);
+  --nova-amber: var(--ds-accent-amber);
+  --nova-indigo: var(--ds-accent-indigo);
 
-  /* ---- NOVA Typography ------------------------------------------------- */
-  --nova-weight-medium: 500;
-  --nova-weight-semibold: 600;
-  --nova-weight-bold: 700;
-  --nova-weight-extrabold: 800;
-  --nova-tracking-tight: -0.015em;
-  --nova-tracking-tighter: -0.025em;
-  --nova-tracking-tightest: -0.035em;
+  --nova-weight-medium: var(--ds-weight-medium);
+  --nova-weight-semibold: var(--ds-weight-semibold);
+  --nova-weight-bold: var(--ds-weight-bold);
+  --nova-weight-extrabold: var(--ds-weight-extrabold);
+  --nova-tracking-tight: var(--ds-tracking-tight);
+  --nova-tracking-tighter: var(--ds-tracking-tighter);
+  --nova-tracking-tightest: -0.038em;
 
-  /* ---- NOVA Spacing ---- یکپارچه با DS (fluid) — تعریف واحد */
   --nova-space-1: var(--ds-space-1);
   --nova-space-2: var(--ds-space-2);
   --nova-space-3: var(--ds-space-3);
@@ -441,7 +418,6 @@
   --nova-space-6: var(--ds-space-6);
   --nova-space-8: var(--ds-space-8);
 
-  /* ---- NOVA Radius ---- یکپارچه با رامپ DS (8/12/16/20/24) — تعریف واحد */
   --nova-radius-sm: var(--ds-radius-sm);
   --nova-radius-md: var(--ds-radius-md);
   --nova-radius-lg: var(--ds-radius-lg);
@@ -449,52 +425,65 @@
   --nova-radius-2xl: var(--ds-radius-2xl);
   --nova-radius-full: var(--ds-radius-full);
 
-  /* ---- NOVA Effects ---------------------------------------------------- */
-  --nova-backdrop: blur(16px) saturate(140%);
-  --nova-shadow-sm: 0 1px 2px oklch(20% 0.01 265 / 0.04);
-  --nova-shadow-md: 0 4px 12px -4px oklch(20% 0.01 265 / 0.08);
-  --nova-shadow-lg: 0 12px 32px -8px oklch(20% 0.01 265 / 0.12);
-  --nova-glow: 0 0 0 1px oklch(55% 0.14 265 / 0.3), 0 8px 24px -8px oklch(55% 0.14 265 / 0.25);
-  --nova-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* blur پایین + اشباع کم؛ گلاس نباید کل طراحی باشد */
+  --nova-backdrop: blur(10px) saturate(120%);
+  --nova-shadow-sm: var(--ds-shadow-sm);
+  --nova-shadow-md: var(--ds-shadow-md);
+  --nova-shadow-lg: var(--ds-shadow-lg);
+  --nova-glow: var(--ds-glow-brand);
+  --nova-ease: var(--ds-ease-out-quart);
 }
 
-.dark {
-  /* ---- NOVA Colors (dark mode) ----------------------------------------- */
-  --nova-primary: oklch(65% 0.12 265);
-  --nova-primary-hover: oklch(60% 0.12 265);
-  --nova-accent: oklch(65% 0.12 265);
-  --nova-on-accent: oklch(99% 0.005 240);
-  --nova-ink: oklch(93% 0.004 265);
-  --nova-ink-2: oklch(72% 0.006 265);
-  --nova-muted: oklch(58% 0.006 265);
-  --nova-line: oklch(28% 0.01 265);
-  --nova-border: oklch(28% 0.01 265);
-  --nova-surface: oklch(18% 0.01 265 / 0.6);
-  --nova-surface-solid: oklch(16% 0.008 265);
-  --nova-surface-2: oklch(22% 0.012 265);
-  --nova-canvas: oklch(12% 0.008 250);
+/* ==========================================================================
+   ATLAS — لایه‌ی چیدمان مشترک داشبورد.
+   «spine» ستون باریک کنار محتواست که شماره‌ی بخش، نقطه‌ی وضعیت و خطوط مو را
+   حمل می‌کند. ساختار گروه‌بندی از این خطوط می‌آید، نه از جعبه‌گذاری کارت.
+   ========================================================================== */
+:root {
+  --atlas-spine: clamp(0rem, -1.6rem + 4.5vw, 2.5rem);
+  --atlas-spine-gap: var(--ds-space-4);
+  --atlas-hairline: var(--ds-border-subtle);
+  --atlas-hairline-strong: var(--ds-border-default);
+  --atlas-rule: 1px;
 
-  --nova-up: oklch(75% 0.12 162);
-  --nova-up-bg: oklch(25% 0.05 165 / 0.2);
-  --nova-down: oklch(72% 0.14 20);
-  --nova-down-bg: oklch(25% 0.06 20 / 0.2);
-  --nova-flat: oklch(68% 0.01 265);
-  --nova-flat-bg: oklch(25% 0.005 265 / 0.15);
+  --atlas-radius-xs: 0.25rem;
+  --atlas-radius-sm: 0.375rem;
+  --atlas-radius-md: 0.5rem;
+  --atlas-radius-lg: 0.75rem;
 
-  --nova-cyan: oklch(68% 0.1 220);
-  --nova-rose: oklch(68% 0.12 25);
-  --nova-emerald: oklch(65% 0.1 165);
-  --nova-violet: oklch(65% 0.12 290);
-  --nova-amber: oklch(72% 0.12 70);
+  --atlas-dur-tap: var(--ds-duration-fast);
+  --atlas-dur-ui: var(--ds-duration-base);
+  --atlas-dur-panel: var(--ds-duration-slow);
+  --atlas-ease: var(--ds-ease-out-quart);
 
-  --nova-shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.3);
-  --nova-shadow-md: 0 4px 12px -4px oklch(0% 0 0 / 0.4);
-  --nova-shadow-lg: 0 12px 32px -8px oklch(0% 0 0 / 0.5);
-  --nova-glow: 0 0 0 1px oklch(65% 0.12 265 / 0.4), 0 8px 24px -8px oklch(65% 0.12 265 / 0.35);
+  --atlas-tap-min: 44px;
+
+  /* z-scale معنایی — پایان جنگ z-index: 9999 */
+  --atlas-z-base: 0;
+  --atlas-z-spine: 1;
+  --atlas-z-sticky: 20;
+  --atlas-z-side: 40;
+  --atlas-z-scrim: 50;
+  --atlas-z-drawer: 60;
+  --atlas-z-modal: 70;
+  --atlas-z-toast: 80;
+  --atlas-z-tooltip: 90;
 }
 
+/* ==========================================================================
+   REDUCED MOTION — clamp سراسری. تنها نسخه در کل پروژه.
+   ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   :root {
     --nova-ease: linear;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
