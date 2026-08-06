@@ -56,6 +56,10 @@
 
 /* ==========================================================================
    SPINE — فهرست بخش‌ها (فقط دسکتاپ عریض)
+   --------------------------------------------------------------------------
+   تا ۹۶rem فقط شماره + نقطه رندر می‌شود؛ نام بخش روی aria-label/title می‌ماند.
+   برچسبِ مخفی‌شده با opacity هنوز عرض می‌گیرد و ناحیه‌ی کلیک را از ستون بیرون
+   می‌برد — به همین دلیل اینجا display:none است، نه opacity:0.
    ========================================================================== */
 
 .spine {
@@ -73,16 +77,14 @@
 
 .spineItem {
   display: grid;
-  grid-template-columns: 1.4rem 0.5rem auto;
+  grid-template-columns: 1.4rem 0.5rem;
   align-items: center;
   gap: var(--ds-space-2);
   min-block-size: 2rem;
   padding-block: var(--ds-space-1);
   color: var(--k-ink-3);
   text-decoration: none;
-  transition:
-    color var(--k-fast) var(--k-ease),
-    opacity var(--k-fast) var(--k-ease);
+  transition: color var(--k-fast) var(--k-ease);
 }
 
 .spineItem:hover {
@@ -121,21 +123,10 @@
 }
 
 .spineLabel {
+  display: none;
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
   white-space: nowrap;
-  opacity: 0;
-  transform: translateX(0.25rem);
-  transition:
-    opacity var(--k-base) var(--k-ease),
-    transform var(--k-base) var(--k-ease);
-}
-
-.spine:hover .spineLabel,
-.spineItem[data-on='true'] .spineLabel,
-.spineItem:focus-visible .spineLabel {
-  opacity: 1;
-  transform: translateX(0);
 }
 
 .body {
@@ -1671,7 +1662,7 @@
 
 @media (min-width: 82rem) {
   .sheet {
-    grid-template-columns: 3.5rem minmax(0, 1fr);
+    grid-template-columns: 3.25rem minmax(0, 1fr);
     align-items: start;
     gap: var(--ds-space-4);
   }
@@ -1681,21 +1672,30 @@
     position: sticky;
     inset-block-start: var(--ds-space-8);
     grid-column: 1;
+    overflow: hidden;
     padding-inline-end: var(--ds-space-2);
     border-inline-end: var(--k-rule) solid var(--k-line);
-  }
-
-  .spine:hover {
-    /* برچسب‌ها روی محتوا نمی‌افتند چون ستون خودش عرض دارد و متن nowrap است */
-    z-index: 1;
   }
 
   .body {
     grid-column: 2;
   }
+}
 
-  .routes {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+@media (min-width: 96rem) {
+  .sheet {
+    grid-template-columns: 8rem minmax(0, 1fr);
+    gap: var(--ds-space-6);
+  }
+
+  .spineItem {
+    grid-template-columns: 1.4rem 0.5rem minmax(0, 1fr);
+  }
+
+  .spineLabel {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
