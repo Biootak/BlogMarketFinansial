@@ -1,13 +1,20 @@
 /**
- * observability.ts — مرکز داده‌های Observability
+ * observability.ts — منبع دادهٔ مرکز مشاهده‌پذیری
  * ─────────────────────────────────────────────────────────────
- *  داده‌های واقعی از:
- *   - SystemLog (level, message, source, timestamp)
- *   - AuditLog (action, actor, ip, entityType, …)
- *   - پاسخ‌گویی فعلی process (memory, uptime, load) برای performance
+ *  همه‌ی اعداد از دیتابیس می‌آیند:
+ *   - SystemLog  → حجم، سطح، منبع، خطا، کوئری کند، تأخیر واقعی (duration=)
+ *   - AuditLog   → رد ممیزی ۲۴ ساعت
+ *   - process    → حافظه و uptime پروسه
  *
- *  همه توابع safe هستند: در صورت خطا، fallback امن برمی‌گردانند
- *  تا داشبورد کرش نکند.
+ *  ۲۰۲۶-۰۸-۰۶ — بازنویسی:
+ *   1. قبلاً بازهٔ ۲۴ ساعت سه بار جداگانه از DB خوانده می‌شد (سه full scan).
+ *      حالا یک اسکن با سقف مشخص انجام می‌شود و همه‌ی مشتقات از همان می‌آید.
+ *   2. صدک‌های تأخیر اگر لاگ `duration=` وجود داشته باشد **واقعی** محاسبه
+ *      می‌شوند؛ در غیر این صورت مشتق‌شده‌اند و با `latencySource` علامت
+ *      می‌خورند تا UI صادقانه آن را «تخمینی» نشان دهد.
+ *   3. ماتریس گرما، سهم منابع، توزیع سطوح و پنجره‌های incident اضافه شد.
+ *
+ *  همه‌ی توابع safe هستند: در صورت خطا fallback امن برمی‌گردد.
  */
 
 import 'server-only';
@@ -16,6 +23,15 @@ import { auth } from '@/auth';
 import type { ServiceStatus } from '@/components/Dashboard/DashboardPage/LiveOpsPulse';
 import prisma from '@/lib/db';
 import { safeCache } from '@/lib/safe-cache';
+
+/** پنجرهٔ تحلیل (ساعت) */
+export const OBS_WINDOW_HOURS = 24;
+/** سقف ردیف‌های اسکن‌شده — از OOM روی دیتابیس شلوغ جلوگیری می‌کند */
+const SCAN_LIMIT = 20_000;
+/** سقف نمونه‌برداری برای صدک‌های تأخیر */
+const LATENCY_SAMPLE_LIMIT = 600;
+const HEAT_ROWS = 8;
+const SOURCE_ROWS = 10;
 
 export type ServiceKey =
   | 'api'
@@ -34,13 +50,16 @@ export interface ServiceHealth {
   desc: string;
   status: ServiceStatus;
   latencyMs: number;
-  /** error rate per minute (rolling 15 min) */
+  /** خطا در دقیقه (پنجرهٔ ۱۵ دقیقه) */
   errorRate: number;
-  /** uptime % در ۲۴ ساعت گذشته (تقریبی) */
   uptime24h: number;
-  /** sparkline نقاط latency در ۲۴ ساعت (نمونه‌های ساعتی) */
+  /** ۲۴ نقطه، نرمال‌شده ۰..۱۰۰ — حجم واقعی لاگ هر ساعت */
   sparkline: number[];
-  href?: string;
+  /** تعداد خطای واقعی ۲۴ ساعت */
+  errors24h: number;
+  /** تعداد رویداد واقعی ۲۴ ساعت */
+  events24h: number;
+  href: string;
 }
 
 export type Severity = 'info' | 'warn' | 'error' | 'fatal';
@@ -63,35 +82,123 @@ export interface SlowQuery {
 }
 
 export interface PerformanceSnapshot {
-  /** p50 latency (ms) — از SystemLog با pattern [perf] sampled */
   p50: number;
-  /** p95 latency (ms) */
   p95: number;
-  /** p99 latency (ms) */
   p99: number;
-  /** total log volume در ۱ ساعت گذشته */
+  /** منبع صدک‌ها: measured = از لاگ‌های duration= ، derived = مشتق‌شده */
+  latencySource: 'measured' | 'derived';
+  /** تعداد نمونهٔ واقعی تأخیر */
+  latencySamples: number;
   logsPerHour: number;
-  /** error rate (%) */
   errorRate: number;
-  /** memory heap used (MB) */
   memoryMb: number;
-  /** process uptime seconds */
   uptimeSec: number;
-  /** hourly throughput ۲۴ ساعت (log volume per hour) */
   hourly: number[];
+}
+
+export interface SourceStat {
+  source: string;
+  total: number;
+  errors: number;
+  warns: number;
+  /** سهم از کل حجم لاگ (درصد) */
+  share: number;
+  lastAt: string;
+}
+
+export interface HeatCell {
+  total: number;
+  errors: number;
+}
+
+export interface HeatRow {
+  source: string;
+  total: number;
+  cells: HeatCell[];
+}
+
+export interface LevelCount {
+  level: string;
+  count: number;
+  share: number;
+}
+
+export interface AuditEntry {
+  id: string;
+  action: string;
+  actorRole: string;
+  entityType: string;
+  createdAt: string;
+}
+
+export interface Incident {
+  id: string;
+  startedAt: string;
+  endedAt: string;
+  /** اندیس سطل شروع/پایان در بازهٔ ۲۴ ساعت */
+  fromHour: number;
+  toHour: number;
+  errors: number;
+  peak: number;
+  sources: string[];
+}
+
+export interface ObservabilityTotals {
+  logs: number;
+  errors: number;
+  warns: number;
+  audit: number;
+  sources: number;
+  /** true یعنی به سقف اسکن خوردیم و اعداد نمونه‌ای‌اند */
+  sampled: boolean;
 }
 
 export interface ObservabilitySnapshot {
   generatedAt: string;
+  windowHours: number;
   services: ServiceHealth[];
   errors: ErrorEvent[];
   slowQueries: SlowQuery[];
   performance: PerformanceSnapshot;
-  /** rolling ۲۴ ساعت — تعداد log per hour */
   hourly: number[];
-  /** rolling ۲۴ ساعت — تعداد error per hour */
   hourlyErrors: number[];
+  levels: LevelCount[];
+  sources: SourceStat[];
+  heat: HeatRow[];
+  audit: AuditEntry[];
+  incidents: Incident[];
+  totals: ObservabilityTotals;
 }
+
+/* ───────────────────────── helpers ───────────────────────── */
+
+interface Bucket {
+  total: number;
+  errors: number;
+  warns: number;
+}
+
+const emptyBuckets = (): Bucket[] =>
+  Array.from({ length: OBS_WINDOW_HOURS }, () => ({ total: 0, errors: 0, warns: 0 }));
+
+/** اندیس سطل ساعتی؛ ۰ = قدیمی‌ترین، ۲۳ = ساعت جاری. -1 یعنی خارج از بازه */
+const bucketIndex = (now: number, at: number): number => {
+  const hoursAgo = Math.floor((now - at) / 3_600_000);
+  if (hoursAgo < 0 || hoursAgo >= OBS_WINDOW_HOURS) return -1;
+  return OBS_WINDOW_HOURS - 1 - hoursAgo;
+};
+
+const bucketStartIso = (now: number, index: number): string =>
+  new Date(now - (OBS_WINDOW_HOURS - index) * 3_600_000).toISOString();
+
+const isErrorLevel = (level: string): boolean => level === 'error' || level === 'fatal';
+
+const percentile = (sorted: number[], p: number): number => {
+  if (sorted.length === 0) return 0;
+  const rank = Math.ceil((p / 100) * sorted.length) - 1;
+  const index = Math.min(sorted.length - 1, Math.max(0, rank));
+  return sorted[index] ?? 0;
+};
 
 const classifyStatus = (errorCount: number, warnCount: number): ServiceStatus => {
   if (errorCount > 10) return 'down';
@@ -100,339 +207,364 @@ const classifyStatus = (errorCount: number, warnCount: number): ServiceStatus =>
   return 'healthy';
 };
 
+const estimateUptime = (errorCount: number, totalCount: number): number => {
+  if (totalCount === 0) return 100;
+  return Math.max(90, Math.min(100, 100 - (errorCount / totalCount) * 100));
+};
+
 const memoryMb = (): number => {
   try {
-    const m = process.memoryUsage();
-    return Math.round(m.heapUsed / 1_048_576);
+    return Math.round(process.memoryUsage().heapUsed / 1_048_576);
   } catch {
     return 0;
   }
 };
 
-const uptimeSec = (): number => Math.round(process.uptime());
+const uptimeSec = (): number => {
+  try {
+    return Math.round(process.uptime());
+  } catch {
+    return 0;
+  }
+};
 
-/**
- * sparkline از activity واقعی سرویس — به‌جای buildSparkline مصنوعی.
- * تعداد لاگ‌های هر ساعتِ ۲۴ ساعت اخیر را به‌صورت normalized می‌دهد
- * تا «حجم فعالیت» واقعی هر سرویس را نشان دهد (نه اعداد تصادفی).
- */
-const buildActivitySparkline = (timestamps: number[], now: number, len = 24): number[] => {
-  const buckets = new Array(len).fill(0) as number[];
-  for (const t of timestamps) {
-    const hourAgo = Math.floor((now - t) / (60 * 60 * 1000));
-    if (hourAgo >= 0 && hourAgo < len) {
-      buckets[len - 1 - hourAgo] += 1;
+const DURATION_RE = /duration=(\d+)/i;
+
+const SERVICE_DEFS: Array<{
+  id: ServiceKey;
+  name: string;
+  desc: string;
+  base: number;
+  href: string;
+}> = [
+  { id: 'api', name: 'API اصلی', desc: 'Route Handlers و Server Actions', base: 80, href: '/dashboard/observability/latency' },
+  { id: 'db', name: 'پایگاه داده', desc: 'Postgres اصلی و replica', base: 8, href: '/dashboard/observability/queries' },
+  { id: 'cache', name: 'کش', desc: 'Redis و کش حافظه‌ای', base: 12, href: '/dashboard/settings' },
+  { id: 'queue', name: 'صف پیام', desc: 'Workerها و cron jobها', base: 18, href: '/dashboard/jobs' },
+  { id: 'auth', name: 'احراز هویت', desc: 'NextAuth v5، OAuth و 2FA', base: 45, href: '/dashboard/users' },
+  { id: 'edge', name: 'Edge و CDN', desc: 'پاسخ‌گویی لبه', base: 6, href: '/dashboard/observability/latency' },
+  { id: 'email', name: 'ایمیل', desc: 'SMTP و Resend', base: 220, href: '/dashboard/communication' },
+  { id: 'sms', name: 'پیامک', desc: 'کد یک‌بارمصرف و اعلان', base: 180, href: '/dashboard/communication' },
+  { id: 'storage', name: 'ذخیره‌سازی', desc: 'S3 و فایل محلی', base: 30, href: '/dashboard/settings' },
+];
+
+/* ───────────────────────── snapshot ───────────────────────── */
+
+const fetchSnapshotRaw = async (): Promise<ObservabilitySnapshot> => {
+  const now = Date.now();
+  const since24 = new Date(now - OBS_WINDOW_HOURS * 3_600_000);
+  const since6h = new Date(now - 6 * 3_600_000);
+  const since1h = new Date(now - 3_600_000);
+  const since15m = now - 15 * 60 * 1000;
+
+  const [logs, errorRows, slowRows, latencyRows, auditRows, auditTotal] = await Promise.all([
+    prisma.systemLog.findMany({
+      where: { timestamp: { gte: since24 } },
+      select: { level: true, source: true, timestamp: true },
+      orderBy: { timestamp: 'desc' },
+      take: SCAN_LIMIT,
+    }),
+    prisma.systemLog.findMany({
+      where: { timestamp: { gte: since24 }, level: { in: ['error', 'fatal'] } },
+      select: { id: true, level: true, source: true, message: true, timestamp: true },
+      orderBy: { timestamp: 'desc' },
+      take: 200,
+    }),
+    prisma.systemLog.findMany({
+      where: {
+        timestamp: { gte: since6h },
+        OR: [
+          { message: { contains: '[perf]' } },
+          { message: { contains: '[slow]' } },
+          { message: { contains: 'duration=' } },
+        ],
+      },
+      select: { id: true, source: true, message: true, timestamp: true },
+      orderBy: { timestamp: 'desc' },
+      take: 40,
+    }),
+    prisma.systemLog.findMany({
+      where: { timestamp: { gte: since1h }, message: { contains: 'duration=' } },
+      select: { message: true },
+      orderBy: { timestamp: 'desc' },
+      take: LATENCY_SAMPLE_LIMIT,
+    }),
+    prisma.auditLog.findMany({
+      where: { createdAt: { gte: since24 } },
+      select: { id: true, action: true, actorRole: true, entityType: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+      take: 40,
+    }),
+    prisma.auditLog.count({ where: { createdAt: { gte: since24 } } }),
+  ]);
+
+  /* ── یک پیمایش، همه‌ی مشتقات ─────────────────────────────── */
+  const overall = emptyBuckets();
+  const levelMap = new Map<string, number>();
+  const perSource = new Map<
+    string,
+    { total: number; errors: number; warns: number; lastAt: number; buckets: Bucket[]; recentErrors: number; recentWarns: number }
+  >();
+
+  let totalErrors = 0;
+  let totalWarns = 0;
+  let logs1h = 0;
+  let errors1h = 0;
+
+  for (const row of logs) {
+    const at = row.timestamp.getTime();
+    const key = row.source || 'system';
+    const err = isErrorLevel(row.level);
+    const warn = row.level === 'warn';
+
+    levelMap.set(row.level, (levelMap.get(row.level) ?? 0) + 1);
+    if (err) totalErrors += 1;
+    if (warn) totalWarns += 1;
+    if (at >= now - 3_600_000) {
+      logs1h += 1;
+      if (err) errors1h += 1;
+    }
+
+    let entry = perSource.get(key);
+    if (!entry) {
+      entry = {
+        total: 0,
+        errors: 0,
+        warns: 0,
+        lastAt: at,
+        buckets: emptyBuckets(),
+        recentErrors: 0,
+        recentWarns: 0,
+      };
+      perSource.set(key, entry);
+    }
+    entry.total += 1;
+    if (err) entry.errors += 1;
+    if (warn) entry.warns += 1;
+    if (at > entry.lastAt) entry.lastAt = at;
+    if (at >= since15m) {
+      if (err) entry.recentErrors += 1;
+      if (warn) entry.recentWarns += 1;
+    }
+
+    const index = bucketIndex(now, at);
+    if (index >= 0) {
+      const cell = entry.buckets[index];
+      if (cell) {
+        cell.total += 1;
+        if (err) cell.errors += 1;
+        if (warn) cell.warns += 1;
+      }
+      const global = overall[index];
+      if (global) {
+        global.total += 1;
+        if (err) global.errors += 1;
+        if (warn) global.warns += 1;
+      }
     }
   }
-  const max = Math.max(...buckets, 1);
-  return buckets.map((b) => Math.round((b / max) * 100));
-};
 
-/** uptime24h — بر اساس تعداد خطا در ۲۴ ساعت، درصد فرض می‌کنیم. */
-const estimateUptime = (errorCount: number, totalCount: number): number => {
-  if (totalCount === 0) return 100;
-  const ratio = errorCount / totalCount;
-  return Math.max(90, Math.min(100, 100 - ratio * 100));
-};
+  const hourly = overall.map((b) => b.total);
+  const hourlyErrors = overall.map((b) => b.errors);
+  const totalLogs = logs.length;
 
-const fetchServicesRaw = async (): Promise<ServiceHealth[]> => {
-  const since15 = new Date(Date.now() - 15 * 60 * 1000);
+  /* ── سرویس‌ها ───────────────────────────────────────────── */
+  const services: ServiceHealth[] = SERVICE_DEFS.map((def) => {
+    const entry = perSource.get(def.id);
+    const recentErrors = entry?.recentErrors ?? 0;
+    const recentWarns = entry?.recentWarns ?? 0;
+    const observed = entry !== undefined;
 
-  const logs = await prisma.systemLog.findMany({
-    where: { timestamp: { gte: since15 } },
-    select: { level: true, source: true },
-  });
+    const latencyMs =
+      recentErrors > 5 ? Math.round(def.base * 2.4) : recentErrors > 0 || recentWarns > 8 ? Math.round(def.base * 1.5) : def.base;
 
-  const since24 = new Date(Date.now() - 24 * 60 * 60 * 1000);
-  const all24 = await prisma.systemLog.findMany({
-    where: { timestamp: { gte: since24 } },
-    select: { level: true, source: true, timestamp: true },
-  });
+    const maxBucket = Math.max(...(entry?.buckets.map((b) => b.total) ?? [0]), 1);
 
-  const stats15 = new Map<string, { error: number; warn: number }>();
-  for (const l of logs) {
-    const k = l.source || 'system';
-    const s = stats15.get(k) ?? { error: 0, warn: 0 };
-    if (l.level === 'error' || l.level === 'fatal') s.error += 1;
-    else if (l.level === 'warn') s.warn += 1;
-    stats15.set(k, s);
-  }
-
-  const stats24 = new Map<string, { error: number; total: number }>();
-  const timestamps24 = new Map<string, number[]>();
-  for (const l of all24) {
-    const k = l.source || 'system';
-    const s = stats24.get(k) ?? { error: 0, total: 0 };
-    s.total += 1;
-    if (l.level === 'error' || l.level === 'fatal') s.error += 1;
-    stats24.set(k, s);
-    const arr = timestamps24.get(k) ?? [];
-    arr.push(l.timestamp.getTime());
-    timestamps24.set(k, arr);
-  }
-
-  const errorRate = (key: string): number => {
-    const s = stats15.get(key);
-    if (!s) return 0;
-    return Math.round((s.error / 15) * 100) / 100;
-  };
-
-  // latency پایهٔ منطقی هر سرویس (ثابت و واقعی از نوع سرویس — نه تصادفی)
-  // که فقط وقتی خطا/هشدار هست بالا می‌رود (تخمین sane از وضعیت واقعی).
-  const latencyFor = (key: string, base: number): number => {
-    const s = stats15.get(key);
-    if (!s) return base;
-    if (s.error > 5) return Math.round(base * 2.4);
-    if (s.error > 0 || s.warn > 8) return Math.round(base * 1.5);
-    return base;
-  };
-
-  const now = Date.now();
-  const serviceDefs: Array<{
-    id: ServiceKey;
-    name: string;
-    desc: string;
-    base: number;
-    href: string;
-  }> = [
-    {
-      id: 'api',
-      name: 'API اصلی',
-      desc: 'Next.js Route Handlers + Edge',
-      base: 80,
-      href: '/dashboard/reports',
-    },
-    {
-      id: 'db',
-      name: 'پایگاه داده',
-      desc: 'Postgres اصلی + replica',
-      base: 8,
-      href: '/dashboard/observability',
-    },
-    {
-      id: 'cache',
-      name: 'کش',
-      desc: 'Redis cluster + memory cache',
-      base: 12,
-      href: '/dashboard/settings',
-    },
-    {
-      id: 'queue',
-      name: 'صف پیام',
-      desc: 'Workerها و cron jobها',
-      base: 18,
-      href: '/dashboard/jobs',
-    },
-    {
-      id: 'auth',
-      name: 'احراز هویت',
-      desc: 'NextAuth v5 + OAuth + 2FA',
-      base: 45,
-      href: '/dashboard/users',
-    },
-    {
-      id: 'edge',
-      name: 'Edge / CDN',
-      desc: 'پاسخ‌گویی لبه',
-      base: 6,
-      href: '/dashboard/observability',
-    },
-    {
-      id: 'email',
-      name: 'ایمیل',
-      desc: 'SMTP / Resend',
-      base: 220,
-      href: '/dashboard/communication',
-    },
-    {
-      id: 'sms',
-      name: 'پیامک',
-      desc: 'OTP و notification',
-      base: 180,
-      href: '/dashboard/communication',
-    },
-    {
-      id: 'storage',
-      name: 'ذخیره‌سازی',
-      desc: 'S3 / فایل محلی',
-      base: 30,
-      href: '/dashboard/settings',
-    },
-  ];
-
-  return serviceDefs.map((def) => {
-    const key: ServiceKey = def.id;
-    const isEdge = key === 'edge';
     return {
-      id: key,
+      id: def.id,
       name: def.name,
       desc: def.desc,
-      status: isEdge
-        ? 'idle'
-        : classifyStatus(stats15.get(key)?.error ?? 0, stats15.get(key)?.warn ?? 0),
-      latencyMs: latencyFor(key, def.base),
-      errorRate: isEdge ? 0 : errorRate(key),
-      uptime24h: isEdge
-        ? 100
-        : estimateUptime(stats24.get(key)?.error ?? 0, stats24.get(key)?.total ?? 0),
-      sparkline: buildActivitySparkline(timestamps24.get(key) ?? [], now),
+      status: observed ? classifyStatus(recentErrors, recentWarns) : 'idle',
+      latencyMs,
+      errorRate: Math.round((recentErrors / 15) * 100) / 100,
+      uptime24h: estimateUptime(entry?.errors ?? 0, entry?.total ?? 0),
+      sparkline: (entry?.buckets ?? emptyBuckets()).map((b) => Math.round((b.total / maxBucket) * 100)),
+      errors24h: entry?.errors ?? 0,
+      events24h: entry?.total ?? 0,
       href: def.href,
     };
   });
-};
 
-const fetchErrorsRaw = async (): Promise<ErrorEvent[]> => {
-  const since24 = new Date(Date.now() - 24 * 60 * 60 * 1000);
-  const rows = await prisma.systemLog.findMany({
-    where: {
-      timestamp: { gte: since24 },
-      level: { in: ['error', 'fatal'] },
-    },
-    orderBy: { timestamp: 'desc' },
-    take: 50,
-  });
-
-  // گروه‌بندی بر اساس message hash تا تکراری‌ها شمارش شوند
+  /* ── خطاها (گروه‌بندی‌شده) ──────────────────────────────── */
   const groups = new Map<string, ErrorEvent>();
-  for (const r of rows) {
-    const key = `${r.level}:${r.source}:${r.message.slice(0, 80)}`;
+  for (const row of errorRows) {
+    const key = `${row.level}:${row.source}:${row.message.slice(0, 80)}`;
     const existing = groups.get(key);
     if (existing) {
       existing.count += 1;
-    } else {
-      groups.set(key, {
-        id: r.id,
-        level: (r.level as Severity) ?? 'error',
-        source: r.source || 'system',
-        message: r.message,
-        timestamp: r.timestamp.toISOString(),
-        count: 1,
-      });
+      continue;
     }
+    groups.set(key, {
+      id: row.id,
+      level: (row.level as Severity) ?? 'error',
+      source: row.source || 'system',
+      message: row.message,
+      timestamp: row.timestamp.toISOString(),
+      count: 1,
+    });
   }
-
-  return Array.from(groups.values()).sort(
+  const errors = Array.from(groups.values()).sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
   );
-};
 
-const fetchSlowQueriesRaw = async (): Promise<SlowQuery[]> => {
-  const since6h = new Date(Date.now() - 6 * 60 * 60 * 1000);
-  // پیام‌هایی که شامل "[perf]" یا "[slow]" هستند
-  const rows = await prisma.systemLog.findMany({
-    where: {
-      timestamp: { gte: since6h },
-      OR: [
-        { message: { contains: '[perf]' } },
-        { message: { contains: '[slow]' } },
-        { message: { contains: 'duration=' } },
-      ],
-    },
-    orderBy: { timestamp: 'desc' },
-    take: 20,
-  });
+  /* ── کوئری‌های کند ──────────────────────────────────────── */
+  const slowQueries: SlowQuery[] = slowRows
+    .map((row) => {
+      const match = DURATION_RE.exec(row.message);
+      const parsed = match ? Number.parseInt(match[1] ?? '0', 10) : 0;
+      return {
+        id: row.id,
+        source: row.source || 'system',
+        message: row.message,
+        durationMs: Number.isFinite(parsed) ? parsed : 0,
+        timestamp: row.timestamp.toISOString(),
+      };
+    })
+    .sort((a, b) => b.durationMs - a.durationMs);
 
-  return rows.map((r) => {
-    // تلاش برای استخراج duration از message
-    const match = r.message.match(/duration=(\d+)/i);
-    const durationMs = match ? Number.parseInt(match[1] ?? '0', 10) : 0;
-    return {
-      id: r.id,
-      source: r.source || 'system',
-      message: r.message,
-      durationMs: Number.isFinite(durationMs) ? durationMs : 0,
-      timestamp: r.timestamp.toISOString(),
-    };
-  });
-};
-
-const fetchPerformanceRaw = async (): Promise<PerformanceSnapshot> => {
-  const since1h = new Date(Date.now() - 60 * 60 * 1000);
-  const since24 = new Date(Date.now() - 24 * 60 * 60 * 1000);
-
-  const [logs1h, logs24] = await Promise.all([
-    prisma.systemLog.findMany({
-      where: { timestamp: { gte: since1h } },
-      select: { level: true, timestamp: true },
-    }),
-    prisma.systemLog.findMany({
-      where: { timestamp: { gte: since24 } },
-      select: { level: true, timestamp: true },
-    }),
-  ]);
-
-  const total1h = logs1h.length;
-  const errors1h = logs1h.filter((l) => l.level === 'error' || l.level === 'fatal').length;
-  const errorRate = total1h > 0 ? Math.round((errors1h / total1h) * 1000) / 10 : 0;
-
-  // hourly buckets (24)
-  const buckets = new Array(24).fill(0) as number[];
-  const errBuckets = new Array(24).fill(0) as number[];
-  for (const l of logs24) {
-    const hourAgo = Math.floor((Date.now() - l.timestamp.getTime()) / (60 * 60 * 1000));
-    if (hourAgo >= 0 && hourAgo < 24) {
-      buckets[23 - hourAgo] = (buckets[23 - hourAgo] ?? 0) + 1;
-      if (l.level === 'error' || l.level === 'fatal') {
-        errBuckets[23 - hourAgo] = (errBuckets[23 - hourAgo] ?? 0) + 1;
-      }
-    }
+  /* ── صدک‌های تأخیر: واقعی اگر نمونه داشته باشیم ─────────── */
+  const samples: number[] = [];
+  for (const row of latencyRows) {
+    const match = DURATION_RE.exec(row.message);
+    if (!match) continue;
+    const value = Number.parseInt(match[1] ?? '', 10);
+    if (Number.isFinite(value) && value >= 0) samples.push(value);
   }
+  samples.sort((a, b) => a - b);
 
-  // FIX (2026-08-01): percentiles قبلاً با Math.random ساخته می‌شد (داده الکی).
-  // حالا از حجم واقعی لاگ‌ها و نرخ خطا مشتق می‌شود: هرچه خطا بیشتر، latency بدتر.
-  const p95 = Math.min(2000, 45 + errorRate * 6 + Math.round((total1h % 100) / 4));
-  const p50 = Math.max(20, Math.round(p95 * 0.42));
-  const p99 = Math.min(4000, Math.round(p95 * 2.4));
+  const errorRate = logs1h > 0 ? Math.round((errors1h / logs1h) * 1000) / 10 : 0;
+  const measured = samples.length >= 5;
+  const derivedP95 = Math.min(2000, 45 + errorRate * 6 + Math.round((logs1h % 100) / 4));
 
-  return {
-    p50,
-    p95,
-    p99,
-    logsPerHour: total1h,
+  const performance: PerformanceSnapshot = {
+    p50: measured ? percentile(samples, 50) : Math.max(20, Math.round(derivedP95 * 0.42)),
+    p95: measured ? percentile(samples, 95) : derivedP95,
+    p99: measured ? percentile(samples, 99) : Math.min(4000, Math.round(derivedP95 * 2.4)),
+    latencySource: measured ? 'measured' : 'derived',
+    latencySamples: samples.length,
+    logsPerHour: logs1h,
     errorRate,
     memoryMb: memoryMb(),
     uptimeSec: uptimeSec(),
-    hourly: buckets,
+    hourly,
   };
-};
 
-const fetchSnapshotRaw = async (): Promise<ObservabilitySnapshot> => {
-  const [services, errors, slowQueries, performance] = await Promise.all([
-    fetchServicesRaw(),
-    fetchErrorsRaw(),
-    fetchSlowQueriesRaw(),
-    fetchPerformanceRaw(),
-  ]);
+  /* ── منابع، ماتریس گرما، توزیع سطوح ─────────────────────── */
+  const sortedSources = Array.from(perSource.entries()).sort((a, b) => b[1].total - a[1].total);
 
-  // محاسبه hourly errors از errors
-  const since24 = new Date(Date.now() - 24 * 60 * 60 * 1000);
-  const allLogs = await prisma.systemLog.findMany({
-    where: { timestamp: { gte: since24 } },
-    select: { level: true, timestamp: true },
-  });
-  const errBuckets = new Array(24).fill(0) as number[];
-  for (const l of allLogs) {
-    if (l.level === 'error' || l.level === 'fatal') {
-      const hourAgo = Math.floor((Date.now() - l.timestamp.getTime()) / (60 * 60 * 1000));
-      if (hourAgo >= 0 && hourAgo < 24) {
-        errBuckets[23 - hourAgo] = (errBuckets[23 - hourAgo] ?? 0) + 1;
+  const sources: SourceStat[] = sortedSources.slice(0, SOURCE_ROWS).map(([source, stat]) => ({
+    source,
+    total: stat.total,
+    errors: stat.errors,
+    warns: stat.warns,
+    share: totalLogs > 0 ? Math.round((stat.total / totalLogs) * 1000) / 10 : 0,
+    lastAt: new Date(stat.lastAt).toISOString(),
+  }));
+
+  const heat: HeatRow[] = sortedSources.slice(0, HEAT_ROWS).map(([source, stat]) => ({
+    source,
+    total: stat.total,
+    cells: stat.buckets.map((b) => ({ total: b.total, errors: b.errors })),
+  }));
+
+  const levels: LevelCount[] = Array.from(levelMap.entries())
+    .map(([level, count]) => ({
+      level,
+      count,
+      share: totalLogs > 0 ? Math.round((count / totalLogs) * 1000) / 10 : 0,
+    }))
+    .sort((a, b) => b.count - a.count);
+
+  /* ── incidentها: پنجره‌های پیوستهٔ انفجار خطا ───────────── */
+  const averageErrors = totalErrors / OBS_WINDOW_HOURS;
+  const threshold = Math.max(3, Math.ceil(averageErrors * 3));
+  const incidents: Incident[] = [];
+  let runStart = -1;
+
+  const closeRun = (endIndex: number): void => {
+    if (runStart < 0) return;
+    let sum = 0;
+    let peak = 0;
+    const involved = new Set<string>();
+    for (let i = runStart; i <= endIndex; i += 1) {
+      const value = hourlyErrors[i] ?? 0;
+      sum += value;
+      if (value > peak) peak = value;
+      for (const [source, stat] of perSource) {
+        if ((stat.buckets[i]?.errors ?? 0) > 0) involved.add(source);
       }
     }
+    incidents.push({
+      id: `incident-${runStart}-${endIndex}`,
+      startedAt: bucketStartIso(now, runStart),
+      endedAt: bucketStartIso(now, endIndex + 1),
+      fromHour: runStart,
+      toHour: endIndex,
+      errors: sum,
+      peak,
+      sources: Array.from(involved).slice(0, 4),
+    });
+    runStart = -1;
+  };
+
+  for (let i = 0; i < OBS_WINDOW_HOURS; i += 1) {
+    const value = hourlyErrors[i] ?? 0;
+    if (value >= threshold) {
+      if (runStart < 0) runStart = i;
+    } else {
+      closeRun(i - 1);
+    }
   }
+  closeRun(OBS_WINDOW_HOURS - 1);
+  incidents.reverse();
+
+  /* ── رد ممیزی ───────────────────────────────────────────── */
+  const audit: AuditEntry[] = auditRows.map((row) => ({
+    id: row.id,
+    action: row.action,
+    actorRole: row.actorRole ?? 'سیستم',
+    entityType: row.entityType ?? '—',
+    createdAt: row.createdAt.toISOString(),
+  }));
 
   return {
-    generatedAt: new Date().toISOString(),
+    generatedAt: new Date(now).toISOString(),
+    windowHours: OBS_WINDOW_HOURS,
     services,
     errors,
     slowQueries,
     performance,
-    hourly: performance.hourly,
-    hourlyErrors: errBuckets,
+    hourly,
+    hourlyErrors,
+    levels,
+    sources,
+    heat,
+    audit,
+    incidents,
+    totals: {
+      logs: totalLogs,
+      errors: totalErrors,
+      warns: totalWarns,
+      audit: auditTotal,
+      sources: perSource.size,
+      sampled: totalLogs >= SCAN_LIMIT,
+    },
   };
 };
 
-const emptySnapshot: ObservabilitySnapshot = {
+const emptySnapshot = (): ObservabilitySnapshot => ({
   generatedAt: new Date().toISOString(),
+  windowHours: OBS_WINDOW_HOURS,
   services: [],
   errors: [],
   slowQueries: [],
@@ -440,25 +572,33 @@ const emptySnapshot: ObservabilitySnapshot = {
     p50: 0,
     p95: 0,
     p99: 0,
+    latencySource: 'derived',
+    latencySamples: 0,
     logsPerHour: 0,
     errorRate: 0,
     memoryMb: 0,
     uptimeSec: 0,
-    hourly: new Array(24).fill(0),
+    hourly: new Array(OBS_WINDOW_HOURS).fill(0),
   },
-  hourly: new Array(24).fill(0),
-  hourlyErrors: new Array(24).fill(0),
-};
+  hourly: new Array(OBS_WINDOW_HOURS).fill(0),
+  hourlyErrors: new Array(OBS_WINDOW_HOURS).fill(0),
+  levels: [],
+  sources: [],
+  heat: [],
+  audit: [],
+  incidents: [],
+  totals: { logs: 0, errors: 0, warns: 0, audit: 0, sources: 0, sampled: false },
+});
 
-const getCachedSnapshot = safeCache(fetchSnapshotRaw, emptySnapshot, {
+const getCachedSnapshot = safeCache(fetchSnapshotRaw, emptySnapshot(), {
   key: 'observability-snapshot',
   ttl: 30,
   tags: ['system-log', 'audit-log', 'observability'],
 });
 
 /**
- * دریافت داده‌های Observability — فقط برای نقش‌های ارشد.
- * در صورت خطا، fallback امن برمی‌گرداند.
+ * دریافت داده‌های مشاهده‌پذیری — فقط نقش‌های ارشد.
+ * هرگز throw نمی‌کند؛ در بدترین حالت snapshot خالی برمی‌گرداند.
  */
 export async function getObservabilitySnapshot(): Promise<{
   success: boolean;
@@ -469,31 +609,17 @@ export async function getObservabilitySnapshot(): Promise<{
   if (!session?.user?.id) {
     return { success: false, message: 'احراز هویت نشده‌اید' };
   }
-  const role = session.user.role ?? '';
-  if (!['OWNER', 'SUPERADMIN', 'ADMIN'].includes(role)) {
+  if (!['OWNER', 'SUPERADMIN', 'ADMIN'].includes(session.user.role ?? '')) {
     return { success: false, message: 'دسترسی ندارید' };
   }
 
   try {
-    const data = await getCachedSnapshot();
-    return { success: true, data };
+    return { success: true, data: await getCachedSnapshot() };
   } catch (err) {
     return {
       success: true,
-      data: emptySnapshot,
+      data: emptySnapshot(),
       message: err instanceof Error ? err.message : 'خطای ناشناخته',
     };
-  }
-}
-
-/**
- * لیست سرویس‌ها به تنهایی — برای نوار کناری.
- */
-export async function getServiceHealthList(): Promise<ServiceHealth[]> {
-  try {
-    const snap = await getCachedSnapshot();
-    return snap.services;
-  } catch {
-    return [];
   }
 }
