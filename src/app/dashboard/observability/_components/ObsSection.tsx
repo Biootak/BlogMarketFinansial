@@ -5,6 +5,7 @@ import type { ToneKey } from './format';
 import s from './obs.module.css';
 
 interface ObsSectionProps {
+  id?: string;
   icon: LucideIcon;
   title: string;
   hint?: string;
@@ -17,18 +18,8 @@ interface ObsSectionProps {
   children: ReactNode;
 }
 
-/**
- * پوستهٔ استاندارد هر بلوک — «مدخل سالنامه».
- *
- * ساختار: شمارهٔ mono در ریل، تیتر، توضیح در حاشیهٔ کنارِ تیتر (وقتی خودِ
- * بلوک جا داشته باشد — با container query، نه با viewport)، یک خط مویی
- * سرتاسری، و بدنه. بدون کارت، بدون سایه.
- *
- * شماره با CSS counter تولید می‌شود (obs-entry، در observability.module.css
- * ریست می‌شود)، پس ترتیب همیشه با ترتیب DOM می‌خواند و هیچ prop عددی لازم
- * نیست — جابه‌جا کردن بلوک‌ها در page به‌طور خودکار شماره‌ها را درست می‌کند.
- */
 export function ObsSection({
+  id,
   icon: Icon,
   title,
   hint,
@@ -40,6 +31,7 @@ export function ObsSection({
 }: ObsSectionProps) {
   return (
     <section
+      id={id}
       className={className ? `${s.section} ${className}` : s.section}
       data-tone={tone}
       data-variant={variant}
@@ -66,7 +58,6 @@ interface ObsEmptyProps {
   hint: string;
 }
 
-/** حالت خالی — هرگز «چیزی نیست» خشک؛ همیشه می‌گوید چه چیزی قرار است اینجا بیاید. */
 export function ObsEmpty({ icon: Icon, title, hint }: ObsEmptyProps) {
   return (
     <div className={s.empty}>
