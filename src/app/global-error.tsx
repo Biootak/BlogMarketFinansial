@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * global-error.tsx — آخرین خط دفاع.
  * وقتی root layout خودش crash کند، این render می‌شود.

@@ -347,12 +347,8 @@ const nextConfig: NextConfig = {
       '@dnd-kit/utilities',
     ],
     optimizeCss: false,
-    // 2026-08-03: CSS chunking 'strict' — جلوی نشت CSS ماژول‌های dashboard
-    // (ObservabilityHub/ApprovalsHub/SessionGuard ~250KB) به صفحات عمومی را
-    // می‌گیرد. Turbopack به‌صورت پیش‌فرض CSS همهٔ مسیرها را در صفحات استاتیک
-    // ادغام می‌کند؛ 'strict' هر مسیر را جدا نگه می‌دارد (render-blocking CSS
-    // هوم‌پیج از ~1.2MB به ~850KB می‌رسد).
-    cssChunking: 'strict',
+    // cssChunking: 'strict' removed in Next.js 16.3.0 — only webpack supports it.
+    // Turbopack handles CSS chunking automatically; the option causes a build error.
     // 2026-08-04: Turbopack's embedded lightningcss can panic on some
     // oklch()/color-mix() constructs in globals.css. Excluding the polar
     // color features from transpilation lets the CSS pass through unchanged,
