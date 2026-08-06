@@ -4,6 +4,7 @@ import { AmbientBackground } from '@/components/Dashboard/primitives';
 import { AnimatePresence, type Transition, type Variants, motion } from '@/lib/motion-shim';
 import { usePathname } from 'next/navigation';
 import { RouteFrame } from './RouteFrame';
+import './HideAtlasSpine.module.css';
 
 interface MainContentProps {
   children: React.ReactNode;
