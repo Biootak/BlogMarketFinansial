@@ -7,7 +7,14 @@
 
 import type { EmailMessage } from './types';
 
-export type OtpEmailIntent = 'register' | 'login' | 'reverify' | 'recover' | 'service-verify';
+export type OtpEmailIntent =
+  | 'register'
+  | 'login'
+  | 'reverify'
+  | 'recover'
+  | 'service-verify'
+  | 'phone-verify'
+  | 'fintech-otp';
 
 export interface OtpEmailArgs {
   to: string;
@@ -41,6 +48,16 @@ const COPY: Record<OtpEmailIntent, { subject: string; heading: string; body: str
     subject: 'کد تأیید درخواست خدمات / Service request code',
     heading: 'تأیید درخواست',
     body: 'برای تأیید ایمیل و ثبت نهایی درخواست خدمات خود، این کد ۶ رقمی را وارد کنید.',
+  },
+  'phone-verify': {
+    subject: 'کد تأیید شماره موبایل / Phone verification code',
+    heading: 'تأیید شماره موبایل',
+    body: 'برای تأیید شماره موبایل خود، این کد ۶ رقمی را وارد کنید.',
+  },
+  'fintech-otp': {
+    subject: 'کد تأیید تراکنش مالی / Transaction confirmation code',
+    heading: 'تأیید تراکنش',
+    body: 'برای تأیید تراکنش مالی خود، این کد ۶ رقمی را وارد کنید. این کد فقط یک‌بار قابل استفاده است.',
   },
 };
 

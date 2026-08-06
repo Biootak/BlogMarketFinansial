@@ -19,6 +19,8 @@ export type VerificationEmailIntent =
   | 'reverify'
   | 'recover'
   | 'service-verify'
+  | 'phone-verify'
+  | 'fintech-otp'
   // C1-fix (2026-08-01): مرحلهٔ دوم ورود — TOTP 2FA. بعد از تأیید رمز، یک
   // challenge یکبارمصرف می‌سازیم؛ کاربر کد Authenticator را وارد می‌کند و
   // verifyTotpLogin آن را مصرف می‌کند تا سشن امن بسازد.

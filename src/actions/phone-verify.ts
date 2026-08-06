@@ -15,11 +15,10 @@
 
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
+import { sendOtp } from '@/lib/email-otp';
 import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { revalidatePath } from '@/lib/revalidate';
-import { sendSms } from '@/lib/sms';
-import { sendTelegramMessage } from '@/lib/telegram';
 import { consumeOtpToken, generateOtpToken } from '@/lib/tokens';
 import { headers } from 'next/headers';
 
@@ -85,38 +84,32 @@ export async function sendPhoneOtp(args: {
       return { success: false, message: `لطفاً ${sec} ثانیه صبر کنید.`, retryAfterMs: ms };
     }
 
-    // ارسال کد — اول تلگرام (رایگان، پوشش بالا در افغانستان)، بعد SMS (پولی).
-    // 2026-08-05: OTP برای تأیید شماره است؛ پس شماره‌ای که تلگرام دارد
-    // (telegramChatId متصل) کد را در تلگرامش دریافت می‌کند.
-    const body = `کد تأیید موبایل شما: ${otpResult.code}\nاعتبار: ۱۰ دقیقه`;
-
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { telegramChatId: true },
+      select: { telegramChatId: true, email: true },
     });
 
-    let channel: 'telegram' | 'sms' = 'sms';
+    const otpBody = `کد تأیید موبایل شما: ${otpResult.code}\nاعتبار: ۱۰ دقیقه`;
+    const delivery = await sendOtp(
+      { telegramChatId: user?.telegramChatId, email: user?.email, phone: e164 },
+      otpResult.code,
+      'phone-verify',
+      otpBody,
+    );
 
-    if (user?.telegramChatId) {
-      const tgResult = await sendTelegramMessage(user.telegramChatId, body);
-      if (tgResult.success) channel = 'telegram';
+    if (!delivery.success) {
+      return { success: false, message: 'ارسال کد تأیید ناموفق بود. لطفاً دوباره تلاش کنید.' };
     }
 
-    if (channel === 'sms') {
-      const smsResult = await sendSms(e164, body);
-      if (!smsResult.success) {
-        return { success: false, message: 'ارسال پیامک با خطا مواجه شد. لطفاً دوباره تلاش کنید.' };
-      }
-      return {
-        success: true,
-        message: `کد تأیید به ${e164.slice(0, 5)}**** ارسال شد.`,
-        devCode: smsResult.devCode,
-      };
-    }
-
+    const channelMessages: Record<string, string> = {
+      telegram: 'کد تأیید به تلگرام شما ارسال شد. ✅',
+      email: 'کد تأیید به ایمیل شما ارسال شد. 📧',
+      sms: `کد تأیید به ${e164.slice(0, 5)}**** ارسال شد.`,
+    };
     return {
       success: true,
-      message: 'کد تأیید به تلگرام شما ارسال شد. ✅',
+      message: channelMessages[delivery.channel ?? 'sms'] ?? 'کد تأیید ارسال شد.',
+      devCode: delivery.devCode,
     };
   } catch {
     return { success: false, message: 'خطای سرور. لطفاً دوباره تلاش کنید.' };

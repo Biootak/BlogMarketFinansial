@@ -13,9 +13,8 @@
 
 import { createHash, randomInt } from 'node:crypto';
 import prisma from '@/lib/db';
+import { sendOtp } from '@/lib/email-otp';
 import { requireUser } from '@/lib/require-auth';
-import { sendSms } from '@/lib/sms';
-import { sendTelegramMessage } from '@/lib/telegram';
 import type { FintechActionResult } from '@/types/types';
 import { z } from 'zod';
 
@@ -54,7 +53,13 @@ export async function requestTransactionOtp(params: {
   txnRef: string;
   amountCents: bigint;
   kind: string;
-}): Promise<FintechActionResult<{ expiresInSeconds: number; devCode?: string; channel?: 'telegram' | 'sms' }>> {
+}): Promise<
+  FintechActionResult<{
+    expiresInSeconds: number;
+    devCode?: string;
+    channel?: 'telegram' | 'email' | 'sms';
+  }>
+> {
   const auth = await requireUser();
   if (!auth.success) {
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد حساب کاربری شوید' } };
@@ -87,84 +92,51 @@ export async function requestTransactionOtp(params: {
     },
   });
 
-  // ارسال OTP — اول تلگرام (رایگان، پوشش بالا در افغانستان)، بعد SMS (پولی).
-  // 2026-08-05: اگر کاربر telegramChatId دارد، کد به تلگرامش می‌رود؛
-  // فقط اگر تلگرام fail شود (بلاک/قطع) به SMS fallback می‌شود.
   const userRecord = await prisma.user.findUnique({
     where: { id: auth.user.id },
-    select: { phoneNumber: true, telegramChatId: true },
+    select: { phoneNumber: true, telegramChatId: true, email: true },
   });
-  const phoneNumber = userRecord?.phoneNumber;
 
   const otpText = `کد تأیید تراکنش شما: ${otp}\nاعتبار: ${OTP_VALIDITY_MINUTES} دقیقه. این کد را با کسی به اشتراک نگذارید.`;
 
-  let channel: 'telegram' | 'sms' | undefined;
-  // در dev بدون Twilio، sendSms کد را برمی‌گرداند تا تست دستی شود
-  let smsDevCode: string | undefined;
+  const delivery = await sendOtp(
+    {
+      telegramChatId: userRecord?.telegramChatId,
+      email: userRecord?.email,
+      phone: userRecord?.phoneNumber,
+    },
+    otp,
+    'fintech-otp',
+    otpText,
+  );
 
-  if (userRecord?.telegramChatId) {
-    const tgResult = await sendTelegramMessage(userRecord.telegramChatId, otpText);
-    if (tgResult.success) channel = 'telegram';
-  }
-
-  if (!channel) {
-    // اگر شماره تلفن تأیید نشده → در production خطا؛ در dev کد را مستقیم برگردان
-    if (!phoneNumber) {
-      if (process.env.NODE_ENV === 'production') {
-        return {
-          success: false,
-          error: {
-            code: 'PHONE_REQUIRED',
-            message:
-              'شماره تلفن تأیید‌شده برای ارسال کد OTP الزامی است. لطفاً ابتدا شماره تلفن خود را در پروفایل ثبت کنید.',
-          },
-        };
-      }
-      // dev-only: OTP را مستقیم برگردان تا تست بتوان کرد
+  if (!delivery.success) {
+    if (process.env.NODE_ENV === 'production') {
+      // OTP را burn کن — کاربر باید دوباره request کند
+      await prisma.transactionOtp.update({
+        where: { userId_txnRef: { userId: auth.user.id, txnRef: params.txnRef } },
+        data: { used: true },
+      });
       return {
-        success: true,
-        data: { expiresInSeconds: OTP_VALIDITY_MINUTES * 60, devCode: otp },
+        success: false,
+        error: {
+          code: delivery.errorCode === 'NO_CHANNEL' ? 'PHONE_REQUIRED' : 'SEND_FAILED',
+          message:
+            delivery.errorCode === 'NO_CHANNEL'
+              ? 'برای دریافت کد OTP، تلگرام را وصل کنید یا شماره موبایل را در پروفایل ثبت کنید.'
+              : 'ارسال کد تأیید ناموفق بود. لطفاً مجدداً تلاش کنید.',
+        },
       };
     }
-
-    const smsResult = await sendSms(phoneNumber, otpText);
-    smsDevCode = smsResult.devCode;
-
-    if (!smsResult.success) {
-      // اگر SMS ارسال نشد در production، OTP را burn کن تا منقضی‌شده باشد
-      if (process.env.NODE_ENV === 'production') {
-        await prisma.transactionOtp.update({
-          where: { userId_txnRef: { userId: auth.user.id, txnRef: params.txnRef } },
-          data: { used: true }, // burn کن — کاربر باید دوباره request کند
-        });
-        return {
-          success: false,
-          error: {
-            code: 'SMS_FAILED',
-            message: 'ارسال کد تأیید ناموفق بود. لطفاً مجدداً تلاش کنید.',
-          },
-        };
-      }
-    } else {
-      channel = 'sms';
-    }
-  }
-
-  // SECURITY (P0): OTP هرگز در response به client نباید بیاید — حتی در dev/staging.
-  // نشت OTP در preview/staging deployments که NODE_ENV !== 'production' دارند،
-  // به مهاجم اجازه می‌دهد کد را مستقیم از response بخواند.
-  // در dev، OTP فقط در server log چاپ می‌شود (برای تست دستی).
-  if (process.env.NODE_ENV !== 'production' && smsDevCode !== undefined) {
+    // dev-only: OTP را مستقیم برگردان
     // biome-ignore lint/suspicious/noConsole: dev-only OTP logging for manual testing
-    console.log(`[DEV OTP] txnRef=${params.txnRef} code=${smsDevCode}`);
+    console.log(`[DEV OTP] txnRef=${params.txnRef} code=${otp}`);
+    return { success: true, data: { expiresInSeconds: OTP_VALIDITY_MINUTES * 60, devCode: otp } };
   }
 
   return {
     success: true,
-    data: {
-      expiresInSeconds: OTP_VALIDITY_MINUTES * 60,
-      channel,
-    },
+    data: { expiresInSeconds: OTP_VALIDITY_MINUTES * 60, channel: delivery.channel },
   };
 }
 

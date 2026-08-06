@@ -10,29 +10,56 @@
   gap: var(--ds-space-1);
 }
 
-.link {
-  background: none;
+/* دکمه اصلی اتصال تلگرام */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-1) var(--ds-space-3);
+  background: #2ca5e0;
+  color: #ffffff;
   border: none;
-  padding: 0;
+  border-radius: var(--ds-radius-md);
   font: inherit;
-  font-size: var(--ds-text-xs);
-  color: var(--ds-primary);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
   cursor: pointer;
+  transition: opacity 0.15s;
   width: fit-content;
 }
 
-.link:disabled {
+.btn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.btn:disabled {
   opacity: 0.6;
   cursor: wait;
 }
 
-.hint {
-  margin: 0;
-  font-size: var(--ds-text-xs);
+.tgIcon {
+  font-size: 1em;
+}
+
+/* حالت waiting — بعد از باز شدن تلگرام */
+.waiting {
+  margin-block-start: var(--ds-space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-sm);
   color: var(--ds-text-secondary);
-  line-height: 1.7;
+  line-height: 1.6;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.pulse {
+  animation: pulse 1.4s ease-in-out infinite;
+  flex-shrink: 0;
 }
 
 .err {
@@ -44,7 +71,8 @@
 
 .ok {
   margin: 0;
-  font-size: var(--ds-text-xs);
+  font-size: var(--ds-text-sm);
   color: var(--ds-accent-emerald);
   line-height: 1.7;
+  font-weight: 500;
 }
