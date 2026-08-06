@@ -1,958 +1,398 @@
 /* ============================================================================
-   Observability — component surface
+   Observability primitives — plate / rail / ledger / board
    ----------------------------------------------------------------------------
-   قواعد این فایل:
-     · Mobile first. هر media query فقط اضافه می‌کند، هرگز کم نمی‌کند.
-     · فقط logical properties. هیچ left/right/top/bottom فیزیکی.
-     · فقط توکن. هیچ hex/rgb/px ثابتی که معادل توکن دارد.
-     · بدون کارت. ساختار از خط مویی و ستون شماره می‌آید، نه از جعبه.
-     · انیمیشن: فقط opacity/transform. کل فایل دو انیمیشن دارد و بس
-       (نفس خط پایه + beacon که از utility سراسری anim-ping-soft می‌آید).
-
-   هویت بصری: دفتر کل. یک صرافی با «دفتر» کار می‌کند — ستون، خط‌کش، جمع
-   حاشیه، و عدد راست‌چین. مرکز مشاهده‌پذیری هم دفتر سلامت سامانه است.
+   قواعد سختِ این فایل:
+     ۱. هیچ «کارت» نداریم. واحد چیدمان «plate» است: خط مویی + شمارهٔ مونو +
+        بدنه. کارتِ تودرتو و شبکهٔ کارت‌های هم‌اندازه ممنوع.
+     ۲. کمیت با چگالی مرکب رسم می‌شود، نه با فام. فام فقط از --obs-tone می‌آید
+        که والدِ data-tone تعیینش کرده.
+     ۳. فقط logical properties. فقط transform/opacity متحرک می‌شوند.
+     ۴. هیچ @keyframes محلی؛ افکت‌های مشترک از globals.css می‌آیند.
    ============================================================================ */
 
-/* ══════════════════ 0. اتم‌های مشترک ══════════════════ */
-
-/*
- * هر عددی که واحد لاتین (ms / s) یا شناسهٔ لاتین دارد باید ایزوله شود؛
- * وگرنه bidi واحد را می‌برد سمت اشتباه. این کلاس قرارداد پروژه است.
- */
-.metric {
-  display: inline-block;
-  direction: ltr;
-  unicode-bidi: isolate;
-  font-variant-numeric: tabular-nums;
+/* آیکون‌های جهت‌دار — پایهٔ LTR است و در RTL آینه می‌شود، پس هر دو جهت درست‌اند. */
+.dirFlip {
+  transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
-.mono {
-  font-family: var(--ds-font-mono);
-  font-size: 0.78em;
-  letter-spacing: -0.01em;
-  direction: ltr;
-  unicode-bidi: isolate;
-}
-
-/* برچسب منبع/سرویس — همیشه لاتین، همیشه ایزوله */
-.tag {
-  display: inline-block;
-  max-inline-size: 12ch;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-family: var(--ds-font-mono);
-  font-size: 0.72rem;
-  color: var(--ds-text-secondary);
-  direction: ltr;
-  unicode-bidi: isolate;
-  text-align: start;
-}
-
-/* آیکون جهت‌دار — در RTL آینه می‌شود تا «قبل/بعد» درست بماند */
-.dirIcon {
-  flex: none;
-}
-
-[dir='rtl'] .dirIcon {
+:dir(rtl) .dirFlip {
   transform: scaleX(-1);
 }
 
-/* ── نگاشت tone → متغیر رنگ. گروهی نوشته شده تا تکرار نشود ─────────────── */
-.rowVal[data-tone='ok'],
-.ladderRow[data-tone='ok'],
-.ledgerRow[data-tone='ok'],
-.levelRow[data-tone='ok'],
-.trailRow[data-tone='ok'],
-.tableRow[data-tone='ok'],
-.navCount[data-tone='ok'] {
-  --tone: var(--obs-ok);
-}
+/* ═══════════════════════════ rail — ناوبری فرعی ═══════════════════════════ */
 
-.rowVal[data-tone='warn'],
-.ladderRow[data-tone='warn'],
-.ledgerRow[data-tone='warn'],
-.levelRow[data-tone='warn'],
-.trailRow[data-tone='warn'],
-.tableRow[data-tone='warn'],
-.navCount[data-tone='warn'] {
-  --tone: var(--obs-warn);
-}
-
-.rowVal[data-tone='bad'],
-.ladderRow[data-tone='bad'],
-.ledgerRow[data-tone='bad'],
-.levelRow[data-tone='bad'],
-.trailRow[data-tone='bad'],
-.tableRow[data-tone='bad'],
-.navCount[data-tone='bad'] {
-  --tone: var(--obs-bad);
-}
-
-.rowVal[data-tone='info'],
-.ladderRow[data-tone='info'],
-.ledgerRow[data-tone='info'],
-.levelRow[data-tone='info'],
-.trailRow[data-tone='info'],
-.tableRow[data-tone='info'],
-.navCount[data-tone='info'] {
-  --tone: var(--obs-info);
-}
-
-.rowVal[data-tone='idle'],
-.ladderRow[data-tone='idle'],
-.ledgerRow[data-tone='idle'],
-.levelRow[data-tone='idle'],
-.trailRow[data-tone='idle'],
-.tableRow[data-tone='idle'],
-.navCount[data-tone='idle'] {
-  --tone: var(--obs-idle);
-}
-
-/* ══════════════════ 1. نوار فرمان (utility zone) ══════════════════ */
-
-.command {
-  position: sticky;
-  inset-block-start: 0;
-  z-index: 3;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-2);
-  padding-block: var(--ds-space-2);
-  /* شیشه فقط در toolbar مجاز است — بلور کم، شفافیت کم، مرز مویی */
-  background: color-mix(in oklch, var(--ds-canvas) 82%, transparent);
-  backdrop-filter: blur(10px) saturate(1.2);
-  -webkit-backdrop-filter: blur(10px) saturate(1.2);
-  border-block-end: 1px solid var(--obs-rule);
-}
-
-.commandRow {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-3);
+.railNav {
   min-inline-size: 0;
 }
 
-.commandNav {
-  min-inline-size: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.commandNav::-webkit-scrollbar {
-  display: none;
-}
-
-.navList {
+.railList {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: var(--ds-space-1);
   margin: 0;
   padding: 0;
   list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: inline mandatory;
+  scrollbar-width: none;
 }
 
-.navLink {
-  position: relative;
+.railList::-webkit-scrollbar {
+  display: none;
+}
+
+.railLink {
   display: inline-flex;
   align-items: center;
   gap: var(--ds-space-1-5);
   min-block-size: 2.75rem;
-  padding-inline: var(--ds-space-2-5);
-  border-radius: var(--ds-radius-sm);
-  white-space: nowrap;
-  font-size: var(--ds-text-xs);
+  padding-inline: var(--ds-space-3);
+  padding-block: var(--ds-space-1-5);
+  border-block-end: 2px solid transparent;
+  color: var(--obs-ink-3);
+  font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-medium);
-  color: var(--ds-text-secondary);
+  white-space: nowrap;
+  scroll-snap-align: start;
   cursor: pointer;
   transition:
     color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    background-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+    opacity var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
-.navLink:hover {
-  color: var(--ds-text-primary);
-  background: var(--ds-surface-recessed);
+.railLink:hover {
+  color: var(--obs-ink);
 }
 
-.navLink:focus-visible {
-  outline: 2px solid var(--obs-tone);
-  outline-offset: 2px;
+.railLink:focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--obs-tone) 70%, transparent);
+  outline-offset: -2px;
+  border-radius: var(--ds-radius-sm);
 }
 
-/* تب فعال: خط مویی زیرین به رنگ وضعیت سامانه — نه قرص پررنگ */
-.navLink[aria-current='page'] {
-  color: var(--ds-text-primary);
+.railLink[aria-current='page'] {
+  color: var(--obs-ink);
   font-weight: var(--ds-weight-semibold);
+  border-block-end-color: var(--obs-ink);
 }
 
-.navLink[aria-current='page']::after {
-  content: '';
-  position: absolute;
-  inset-inline: var(--ds-space-2);
-  inset-block-end: 0.25rem;
-  block-size: 2px;
+.railIcon {
+  flex: none;
+  opacity: 0.72;
+}
+
+.railLink[aria-current='page'] .railIcon {
+  opacity: 1;
+}
+
+.railCount {
+  flex: none;
+  min-inline-size: 1.375rem;
+  padding-inline: 0.25rem;
   border-radius: var(--ds-radius-full);
-  background: var(--obs-tone);
-}
-
-.navCount {
-  --tone: var(--obs-idle);
-  min-inline-size: 1.25rem;
-  padding-inline: 0.3rem;
-  border-radius: var(--ds-radius-full);
-  font-size: 0.62rem;
-  font-weight: var(--ds-weight-semibold);
-  text-align: center;
-  color: var(--tone);
-  background: color-mix(in oklch, var(--tone) 14%, transparent);
-}
-
-/* ── وضعیت زنده ─────────────────────────────────────────────────────────── */
-
-.commandStatus {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-2);
-  margin-inline-start: auto;
+  background: color-mix(in oklch, var(--obs-tone) 14%, transparent);
+  color: color-mix(in oklch, var(--obs-tone) 72%, var(--obs-ink));
+  font-family: var(--obs-mono);
   font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
 }
 
-.beacon {
-  position: relative;
+/* ═══════════════════════════ toolbar — وضعیت زنده ═══════════════════════════ */
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2) var(--ds-space-3);
+  min-inline-size: 0;
+}
+
+.sync {
   display: inline-flex;
   align-items: center;
   gap: var(--ds-space-1-5);
-  color: var(--ds-text-secondary);
+  color: var(--obs-ink-2);
+  font-size: var(--ds-text-xs);
 }
 
-.beaconDot {
-  position: relative;
+.syncDot {
   inline-size: 0.5rem;
   block-size: 0.5rem;
   border-radius: var(--ds-radius-full);
-  background: var(--obs-tone);
+  background: var(--obs-idle);
 }
 
-.beaconDot[data-state='syncing'] {
+.syncDot[data-state='idle'] {
+  background: var(--obs-ok);
+}
+
+.syncDot[data-state='syncing'] {
   background: var(--obs-info);
 }
 
-.beaconDot[data-state='failed'],
-.beaconDot[data-state='blocked'] {
+.syncDot[data-state='failed'],
+.syncDot[data-state='blocked'] {
   background: var(--obs-bad);
 }
 
-.windowNote {
-  display: none;
-}
-
-.refresh {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ds-space-1-5);
-  min-block-size: 2.75rem;
-  padding-inline: var(--ds-space-2-5);
-  border: 1px solid var(--obs-rule);
-  border-radius: var(--ds-radius-sm);
-  background: transparent;
+.windowText {
+  color: var(--obs-ink-3);
   font-size: var(--ds-text-xs);
-  color: var(--ds-text-secondary);
-  cursor: pointer;
-  transition:
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  font-variant-numeric: tabular-nums;
 }
 
-.refresh:hover:not(:disabled) {
-  color: var(--ds-text-primary);
-  border-color: var(--obs-rule-strong);
-}
-
-/* فشار فنری — تنها جایی که scale مجاز است */
-.refresh:active:not(:disabled) {
-  transform: scale(0.96);
-}
-
-.refresh:focus-visible {
-  outline: 2px solid var(--obs-tone);
-  outline-offset: 2px;
-}
-
-.refresh:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
-.refreshText {
-  display: none;
-}
-
-/* خط پیشرفت determinate — به‌جای اسپینر چرخان */
-.progress {
+/*
+   نوار هم‌گام‌سازی — determinate و بی‌اسپینر. فقط scaleX حرکت می‌کند، پس هیچ
+   layout thrash و هیچ keyframe محلی لازم نیست.
+*/
+.meter {
   position: relative;
+  flex: 1 1 3rem;
+  min-inline-size: 2.5rem;
+  max-inline-size: 8rem;
   block-size: 1px;
+  background: var(--obs-rule-2);
   overflow: hidden;
-  background: var(--obs-rule);
 }
 
-.progressBar {
+.meterBar {
   position: absolute;
   inset-block: 0;
   inset-inline-start: 0;
   inline-size: 100%;
   transform-origin: inline-start;
   transform: scaleX(0);
-  background: var(--obs-tone);
-  transition: transform var(--ds-duration-slow) var(--ds-ease-out-quart);
+  background: var(--obs-ok);
+  transition: transform var(--ds-duration-slow) var(--ds-ease-out-expo);
 }
 
-.progressBar[data-state='syncing'] {
-  transform: scaleX(0.7);
+.meterBar[data-state='idle'] {
+  transform: scaleX(1);
 }
 
-.progressBar[data-state='failed'],
-.progressBar[data-state='blocked'] {
+.meterBar[data-state='syncing'] {
+  transform: scaleX(0.45);
+  background: var(--obs-info);
+}
+
+.meterBar[data-state='failed'],
+.meterBar[data-state='blocked'] {
   transform: scaleX(1);
   background: var(--obs-bad);
 }
 
-@media (min-width: 48rem) {
-  .command {
-    flex-direction: column;
-  }
-
-  .windowNote,
-  .refreshText {
-    display: inline;
-  }
-}
-
-/* ══════════════════ 2. hero — عرشهٔ نبض ══════════════════ */
-
-.deck {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-4);
-  padding-block-start: var(--ds-space-2);
-}
-
-.deckTop {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-4);
-}
-
-.verdict {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-1);
-  min-inline-size: 0;
-}
-
-.verdictTop {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-2);
-  color: var(--obs-tone);
-}
-
-.verdictLabel {
-  margin: 0;
-  font-size: var(--ds-text-2xl);
-  font-weight: var(--ds-weight-bold);
-  letter-spacing: var(--nova-tracking-tight);
-  line-height: var(--ds-leading-tight);
-  color: var(--obs-tone);
-}
-
-.verdictHead {
-  margin: 0;
-  font-size: var(--ds-text-base);
-  line-height: var(--ds-leading-snug);
-  color: var(--ds-text-primary);
-}
-
-.verdictAction {
-  margin: 0;
-  font-size: var(--ds-text-xs);
-  line-height: var(--ds-leading-normal);
-  color: var(--ds-text-muted);
-  max-inline-size: 46ch;
-}
-
-/* نوار متریک بالای نمودار — RED: نرخ، خطا، مدت */
-.deckMetrics {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ds-space-3) var(--ds-space-4);
-  padding-block: var(--ds-space-3);
-  border-block: 1px solid var(--obs-rule);
-}
-
-.metricCell {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  min-inline-size: 0;
-}
-
-.metricLabel {
-  font-size: 0.66rem;
-  font-weight: var(--ds-weight-medium);
-  letter-spacing: 0.02em;
-  color: var(--ds-text-muted);
-}
-
-.metricValue {
-  font-size: var(--ds-text-lg);
-  font-weight: var(--ds-weight-semibold);
-  line-height: var(--ds-leading-tight);
-  letter-spacing: var(--nova-tracking-tight);
-  color: var(--ds-text-primary);
-  font-variant-numeric: tabular-nums;
-}
-
-.metricValue[data-tone='bad'] {
-  color: var(--obs-bad);
-}
-
-.metricValue[data-tone='warn'] {
-  color: var(--obs-warn);
-}
-
-.metricSub {
-  font-size: 0.66rem;
-  color: var(--ds-text-muted);
-}
-
-@media (min-width: 40rem) {
-  .deckMetrics {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 60rem) {
-  .deckTop {
-    flex-direction: row;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: var(--ds-space-6);
-  }
-
-  .deckMetrics {
-    flex: 1 1 34rem;
-    border-block-start: 0;
-    border-block-end: 0;
-    border-inline-start: 1px solid var(--obs-rule);
-    padding-block: 0;
-    padding-inline-start: var(--ds-space-5);
-  }
-}
-
-/* ── نمودار زلزله‌نگار ───────────────────────────────────────────────── */
-
-.chartWrap {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--ds-space-4);
-}
-
-.chart {
-  position: relative;
-  min-inline-size: 0;
-  contain: paint;
-}
-
-.chartSvg {
-  display: block;
-  inline-size: 100%;
-  block-size: clamp(9rem, 26vw, 13rem);
-  overflow: visible;
-}
-
-/*
- * SVG با dir نمی‌چرخد. مختصات داخلی همیشه «قدیمی‌ترین در x=0» است و در RTL
- * کل بوم آینه می‌شود — پس قدیمی‌ترین سطل همیشه سمت inline-start می‌افتد،
- * دقیقاً همان‌جا که overlay های HTML با inset-inline-start قرارشان می‌دهند.
- * هیچ متنی داخل SVG نیست، پس آینه شدن چیزی را نمی‌شکند.
- */
-[dir='rtl'] .chartSvg {
-  transform: scaleX(-1);
-}
-
-.svgArea {
-  fill: url(#obs-volume);
-}
-
-.svgLine {
-  fill: none;
-  stroke: var(--obs-data);
-  stroke-width: 1.25;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
-}
-
-.svgErrArea {
-  fill: color-mix(in oklch, var(--obs-bad) 22%, transparent);
-}
-
-.svgErrLine {
-  fill: none;
-  stroke: var(--obs-bad);
-  stroke-width: 1;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
-}
-
-/* خط پایه — تنها عنصر «زنده» صفحه. نفس ۰٫۵ هرتز. */
-.svgBase {
-  stroke: var(--obs-tone);
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
-  animation: obs-breath 2s ease-in-out infinite;
-}
-
-@keyframes obs-breath {
-  0%,
-  100% {
-    opacity: 0.35;
-  }
-  50% {
-    opacity: 0.85;
-  }
-}
-
-.svgPeak {
-  stroke: var(--ds-text-muted);
-  stroke-width: 1;
-  stroke-dasharray: 2 3;
-  vector-effect: non-scaling-stroke;
-  opacity: 0.6;
-}
-
-.gradTop {
-  stop-color: var(--obs-data);
-  stop-opacity: 0.34;
-}
-
-.gradBottom {
-  stop-color: var(--obs-data);
-  stop-opacity: 0.02;
-}
-
-/* اهداف کلیک ستون‌ها — روی SVG، بدون آینه شدن */
-.chartHits {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.chartHit {
-  border: 0;
-  padding: 0;
-  background: transparent;
-  cursor: pointer;
-  border-radius: var(--ds-radius-sm);
-  transition: background-color var(--ds-duration-fast) var(--ds-ease-out-quart);
-}
-
-.chartHit:hover {
-  background: color-mix(in oklch, var(--obs-data) 8%, transparent);
-}
-
-.chartHit[data-active='true'] {
-  background: color-mix(in oklch, var(--obs-data) 12%, transparent);
-}
-
-.chartHit:focus-visible {
-  outline: 2px solid var(--obs-tone);
-  outline-offset: -2px;
-}
-
-/* مکان‌نمای زمانی */
-.cursor {
-  position: absolute;
-  inset-block: 0;
-  inline-size: 1px;
-  background: var(--ds-text-primary);
-  opacity: 0.45;
-  pointer-events: none;
-  transition: inset-inline-start var(--ds-duration-fast) var(--ds-ease-out-quart);
-}
-
-.chartAxis {
-  display: flex;
-  justify-content: space-between;
-  margin: 0;
-  margin-block-start: var(--ds-space-1);
-  font-size: 0.62rem;
-  color: var(--ds-text-muted);
-}
-
-/* ── خوانش سطل انتخاب‌شده ────────────────────────────────────────────── */
-
-.readout {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-2);
-  padding: var(--ds-space-3);
-  border-radius: var(--ds-radius-md);
-  background: var(--ds-surface-recessed);
-  border: 1px solid var(--obs-rule);
-}
-
-.readoutHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ds-space-2);
-}
-
-.readoutHour {
-  margin: 0;
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-semibold);
-  color: var(--ds-text-secondary);
-  font-variant-numeric: tabular-nums;
-}
-
-.readoutBig {
-  display: flex;
-  align-items: baseline;
-  gap: var(--ds-space-1-5);
-  margin: 0;
-  font-size: var(--ds-text-2xl);
-  font-weight: var(--ds-weight-bold);
-  letter-spacing: var(--nova-tracking-tighter);
-  line-height: 1;
-  color: var(--ds-text-primary);
-  font-variant-numeric: tabular-nums;
-}
-
-.readoutUnit {
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-medium);
-  color: var(--ds-text-muted);
-}
-
-/* ← → و «اکنون» — مسیر دسترس‌پذیر معادل برای پیمایش ساعت‌ها */
 .scrub {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: var(--ds-space-1);
+  gap: 1px;
+  padding: 2px;
+  border: 1px solid var(--obs-rule-2);
+  border-radius: var(--ds-radius-sm);
 }
 
-.scrubBtn {
+.scrubBtn,
+.reload,
+.scrubLive {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: 2.75rem;
-  block-size: 2.75rem;
-  border: 1px solid var(--obs-rule);
+  gap: var(--ds-space-1-5);
+  min-block-size: 2.25rem;
+  min-inline-size: 2.25rem;
+  padding-inline: var(--ds-space-2);
+  border: 0;
   border-radius: var(--ds-radius-sm);
   background: transparent;
-  color: var(--ds-text-secondary);
+  color: var(--obs-ink-2);
+  font-size: var(--ds-text-xs);
+  font-family: inherit;
   cursor: pointer;
   transition:
     color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    opacity var(--ds-duration-fast) var(--ds-ease-out-quart),
     transform var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
-.scrubBtn:hover:not(:disabled) {
-  color: var(--ds-text-primary);
-  border-color: var(--obs-rule-strong);
+.scrubBtn:hover,
+.reload:hover,
+.scrubLive:hover {
+  color: var(--obs-ink);
 }
 
-.scrubBtn:active:not(:disabled) {
+.scrubBtn:active,
+.reload:active,
+.scrubLive:active {
   transform: scale(0.94);
 }
 
-.scrubBtn:focus-visible {
-  outline: 2px solid var(--obs-tone);
-  outline-offset: 2px;
+.scrubBtn:focus-visible,
+.reload:focus-visible,
+.scrubLive:focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--obs-tone) 70%, transparent);
+  outline-offset: 1px;
 }
 
-.scrubBtn:disabled {
+.scrubBtn:disabled,
+.reload:disabled,
+.scrubLive:disabled {
   opacity: 0.4;
-  cursor: default;
+  cursor: not-allowed;
 }
 
-.scrubNow {
-  inline-size: auto;
-  padding-inline: var(--ds-space-2-5);
-  font-size: 0.68rem;
+.scrubLive[data-live='false'] {
+  color: color-mix(in oklch, var(--obs-warn) 80%, var(--obs-ink));
 }
 
-@media (min-width: 60rem) {
-  .chartWrap {
-    grid-template-columns: minmax(0, 1fr) clamp(12rem, 20vw, 15rem);
-    align-items: stretch;
-    gap: var(--ds-space-5);
-  }
+.reload {
+  border: 1px solid var(--obs-rule-2);
+  margin-inline-start: auto;
 }
 
-/* ══════════════════ 3. zone — بلوک دفتری ══════════════════ */
-
-.board {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--ds-space-8) var(--ds-space-6);
+.stampText {
+  color: var(--obs-ink-3);
+  font-family: var(--obs-mono);
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
 }
 
-@media (min-width: 56rem) {
-  .board {
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-  }
+/* ═══════════════════════════ plate — واحد چیدمان ═══════════════════════════ */
 
-  .board > * {
-    grid-column: span 12;
-  }
-
-  .board > [data-span='half'] {
-    grid-column: span 6;
-  }
-
-  .board > [data-span='wide'] {
-    grid-column: span 7;
-  }
-
-  .board > [data-span='narrow'] {
-    grid-column: span 5;
-  }
-}
-
-.zone {
-  display: grid;
-  grid-template-columns: var(--obs-gutter) minmax(0, 1fr);
-  gap: 0 var(--ds-space-2);
+.plate {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
   min-inline-size: 0;
 }
 
 /*
- * variant=plain: بدون ستون شماره. عمداً وجود دارد تا همهٔ بلوک‌های صفحه
- * یک شکل نباشند — تنوع intentional، نه یکنواختی.
- */
-.zone[data-variant='plain'] {
-  grid-template-columns: minmax(0, 1fr);
+   خط‌کش — امضای دیداری کل مرکز. یک خط مویی با تیک‌های ریز که با
+   repeating-linear-gradient کشیده می‌شود، پس صفر گرهٔ DOM اضافه دارد.
+*/
+.rule {
+  display: block;
+  block-size: 0.375rem;
+  border-block-start: 1px solid color-mix(in oklch, var(--obs-tone) 42%, var(--obs-rule-2));
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--obs-rule-2) 0 1px,
+    transparent 1px 1.25rem
+  );
+  background-size: 100% 0.1875rem;
+  background-repeat: no-repeat;
+  opacity: 0.8;
 }
 
-.zoneIndex {
-  grid-row: 1 / span 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--ds-space-2);
-  padding-block-start: 0.15rem;
-  font-family: var(--ds-font-mono);
-  font-size: 0.7rem;
-  color: var(--ds-text-muted);
-}
-
-/* خط‌کش عمودی دفتر */
-.zoneIndex::after {
-  content: '';
-  flex: 1;
-  inline-size: 1px;
-  background: linear-gradient(to bottom, var(--obs-rule), transparent);
-}
-
-.zone[data-variant='plain'] .zoneIndex {
-  display: none;
-}
-
-.zoneHead {
+.plateHead {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--ds-space-1) var(--ds-space-3);
-  padding-block-end: var(--ds-space-2);
+  align-items: flex-start;
+  gap: var(--ds-space-2) var(--ds-space-3);
+  min-inline-size: 0;
 }
 
-.zoneTitle {
-  display: inline-flex;
+.plateIndex {
+  flex: none;
+  padding-block-start: 0.15rem;
+  color: color-mix(in oklch, var(--obs-tone) 60%, var(--obs-ink-3));
+  font-family: var(--obs-mono);
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+
+.plateText {
+  flex: 1 1 16rem;
+  min-inline-size: 0;
+}
+
+.plateTitle {
+  display: flex;
   align-items: center;
   gap: var(--ds-space-1-5);
   margin: 0;
-  font-size: var(--ds-text-sm);
+  color: var(--obs-ink);
+  font-size: var(--ds-text-lg);
   font-weight: var(--ds-weight-semibold);
-  letter-spacing: var(--nova-tracking-tight);
-  color: var(--ds-text-primary);
+  line-height: var(--ds-leading-tight);
+  letter-spacing: -0.01em;
 }
 
-.zoneTitle svg {
-  color: var(--obs-tone);
+.plateIcon {
+  flex: none;
+  color: color-mix(in oklch, var(--obs-tone) 70%, var(--obs-ink-2));
 }
 
-.zoneHint {
-  flex: 1 1 18rem;
-  margin: 0;
-  font-size: 0.7rem;
-  line-height: var(--ds-leading-normal);
-  color: var(--ds-text-muted);
+.plateHint {
+  margin: var(--ds-space-1) 0 0;
+  max-inline-size: 68ch;
+  color: var(--obs-ink-3);
+  font-size: var(--ds-text-xs);
+  line-height: var(--ds-leading-snug);
 }
 
-.zoneActions {
+.plateMeta {
+  flex: none;
+  margin-inline-start: auto;
+  padding-block-start: 0.2rem;
+  color: var(--obs-ink-3);
+  font-family: var(--obs-mono);
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.plateActions {
+  flex: none;
   display: flex;
   align-items: center;
-  gap: var(--ds-space-1);
-  margin-inline-start: auto;
+  gap: var(--ds-space-2);
 }
 
-.zoneBody {
+.plateBody {
   min-inline-size: 0;
-  padding-block-start: var(--ds-space-2);
-  border-block-start: 1px solid var(--obs-rule);
 }
 
-/* ══════════════════ 4. حالت خالی ══════════════════ */
+/* ═══════════════════════════ حالت خالی ═══════════════════════════ */
 
 .empty {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--ds-space-1);
-  padding-block: var(--ds-space-5);
-  max-inline-size: 46ch;
+  display: grid;
+  justify-items: start;
+  gap: var(--ds-space-1-5);
+  padding: var(--ds-space-5) var(--ds-space-4);
+  border: 1px dashed var(--obs-rule-2);
+  border-radius: var(--ds-radius-md);
+  background: color-mix(in oklch, var(--obs-plate) 55%, transparent);
 }
 
-.emptyIcon {
-  color: var(--ds-text-muted);
+.emptyMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  border: 1px solid var(--obs-rule-2);
+  border-radius: var(--ds-radius-sm);
+  color: color-mix(in oklch, var(--obs-tone) 70%, var(--obs-ink-3));
 }
 
 .emptyTitle {
   margin: 0;
+  color: var(--obs-ink);
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
-  color: var(--ds-text-secondary);
 }
 
 .emptyHint {
   margin: 0;
-  font-size: 0.72rem;
-  line-height: var(--ds-leading-normal);
-  color: var(--ds-text-muted);
-}
-
-/* ══════════════════ 5. ردیف کلید/مقدار ══════════════════ */
-
-.rows {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-}
-
-.row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--ds-space-2);
-  padding-block: var(--ds-space-1-5);
-  border-block-end: 1px dashed var(--obs-rule);
-}
-
-.row:last-child {
-  border-block-end: 0;
-}
-
-.rowKey {
-  font-size: 0.72rem;
-  color: var(--ds-text-muted);
-}
-
-.rowVal {
-  --tone: var(--ds-text-primary);
-  margin: 0;
+  max-inline-size: 62ch;
+  color: var(--obs-ink-3);
   font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-semibold);
-  color: var(--tone);
-  font-variant-numeric: tabular-nums;
+  line-height: var(--ds-leading-snug);
 }
 
-/* ══════════════════ 6. ریل نشانه‌های حیاتی ══════════════════ */
-
-.vitals {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-3);
-  padding: var(--ds-space-3);
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-surface-recessed);
-  /* خط مویی خودروشن سمت شروع — به رنگ وضعیت */
-  border-inline-start: 2px solid var(--obs-tone);
-  box-shadow: var(--ds-shadow-sm);
-}
-
-.vitalsTop {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-2);
-  color: var(--obs-tone);
-}
-
-.vitalsLabel {
-  margin: 0;
-  font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-bold);
-  letter-spacing: var(--nova-tracking-tight);
-}
-
-.vitalsNote {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--ds-space-1-5);
-  margin: 0;
-  font-size: 0.7rem;
-  line-height: var(--ds-leading-normal);
-  color: var(--ds-text-muted);
-}
-
-/* ستون فقرات: هر ردیف یک ساعت، طول میله یعنی حجم */
-.spine {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.spineRow {
-  display: block;
-  block-size: 3px;
-  border-radius: var(--ds-radius-full);
-  background: var(--ds-surface-elevated);
-  overflow: hidden;
-}
-
-.spineTick {
-  display: block;
-  block-size: 100%;
-  border-radius: var(--ds-radius-full);
-  background: var(--obs-data);
-  opacity: 0.55;
-}
-
-.spineTick[data-tone='bad'] {
-  background: var(--obs-bad);
-  opacity: 1;
-}
-
-.spineLegend {
-  display: flex;
-  justify-content: space-between;
-  margin: 0;
-  font-size: 0.6rem;
-  color: var(--ds-text-muted);
-}
-
-/* ══════════════════ 7. نردبان سرویس‌ها ══════════════════ */
+/* ═══════════════════════════ نردبان سرویس‌ها ═══════════════════════════ */
 
 .ladder {
   display: flex;
@@ -960,548 +400,338 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  content-visibility: auto;
-  contain-intrinsic-size: auto 28rem;
+  border-block-start: 1px solid var(--obs-rule);
 }
 
 .ladderRow {
-  --tone: var(--obs-idle);
   display: grid;
-  grid-template-columns: 1.5rem 0.5rem minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'rank name status'
+    'rank nums nums'
+    'spark spark spark';
   align-items: center;
-  gap: var(--ds-space-2);
-  padding-block: var(--ds-space-2-5);
+  gap: var(--ds-space-1) var(--ds-space-3);
+  padding-block: var(--ds-space-3);
   border-block-end: 1px solid var(--obs-rule);
+  min-inline-size: 0;
 }
 
-.ladderRow:last-child {
-  border-block-end: 0;
+.ladderRow:hover {
+  background: color-mix(in oklch, var(--obs-tone) 5%, transparent);
 }
 
 .ladderRank {
-  font-family: var(--ds-font-mono);
-  font-size: 0.66rem;
-  color: var(--ds-text-muted);
-  text-align: start;
+  grid-area: rank;
+  align-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  color: color-mix(in oklch, var(--obs-tone) 65%, var(--obs-ink-3));
+  font-family: var(--obs-mono);
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
 }
 
 .ladderDot {
-  inline-size: 0.5rem;
-  block-size: 0.5rem;
+  inline-size: 0.4375rem;
+  block-size: 0.4375rem;
   border-radius: var(--ds-radius-full);
-  background: var(--tone);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--tone) 14%, transparent);
+  background: var(--obs-tone);
 }
 
 .ladderName {
+  grid-area: name;
   display: flex;
   flex-direction: column;
-  gap: 0.05rem;
+  gap: 0.1rem;
   min-inline-size: 0;
 }
 
 .ladderTitle {
-  font-size: var(--ds-text-xs);
+  color: var(--obs-ink);
+  font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
-  color: var(--ds-text-primary);
   text-decoration: none;
   cursor: pointer;
-  border-radius: var(--ds-radius-sm);
 }
 
 .ladderTitle:hover {
-  color: var(--tone);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
 }
 
 .ladderTitle:focus-visible {
-  outline: 2px solid var(--obs-tone);
+  outline: 2px solid color-mix(in oklch, var(--obs-tone) 70%, transparent);
   outline-offset: 3px;
+  border-radius: 2px;
 }
 
 .ladderDesc {
-  font-size: 0.66rem;
-  color: var(--ds-text-muted);
+  color: var(--obs-ink-3);
+  font-size: var(--ds-text-xs);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.ladderNums {
+  grid-area: nums;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-1) var(--ds-space-3);
+  min-inline-size: 0;
+}
+
+.ladderNum {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  color: var(--obs-ink-3);
+  font-size: var(--ds-text-xs);
+}
+
+.ladderNum > b {
+  color: var(--obs-ink-2);
+  font-family: var(--obs-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--ds-weight-medium);
+}
+
 .ladderStatus {
+  grid-area: status;
+  align-self: start;
   padding-inline: var(--ds-space-2);
   padding-block: 0.15rem;
+  border: 1px solid color-mix(in oklch, var(--obs-tone) 32%, transparent);
   border-radius: var(--ds-radius-full);
-  font-size: 0.64rem;
-  font-weight: var(--ds-weight-semibold);
-  color: var(--tone);
-  background: color-mix(in oklch, var(--tone) 12%, transparent);
+  background: color-mix(in oklch, var(--obs-tone) 10%, transparent);
+  color: color-mix(in oklch, var(--obs-tone) 78%, var(--obs-ink));
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
   white-space: nowrap;
 }
 
-/* اسپارک‌لاین و اعداد در ردیف دوم روی موبایل */
-.ladderTail {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-3);
-  padding-block-start: var(--ds-space-1-5);
-  padding-inline-start: 2rem;
-}
-
-.spark {
-  display: flex;
-  align-items: flex-end;
+/* نمودار ریز — همان ۲۴ سطلِ spine، پس چشم بدون ترجمه مقایسه می‌کند. */
+.ladderSpark {
+  grid-area: spark;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  align-items: end;
   gap: 1px;
-  flex: 1 1 6rem;
-  block-size: 1.35rem;
+  block-size: 1.5rem;
+  margin-block-start: var(--ds-space-1);
   min-inline-size: 0;
 }
 
 .sparkBar {
-  flex: 1;
-  min-inline-size: 1px;
-  border-radius: 1px;
-  background: color-mix(in oklch, var(--tone) 45%, transparent);
+  display: block;
+  min-block-size: 1px;
+  border-radius: 0.5px;
+  background: color-mix(in oklch, var(--obs-tone) 45%, transparent);
 }
 
-.ladderNums {
-  display: flex;
-  gap: var(--ds-space-3);
-  flex: none;
-}
-
-.num {
-  display: flex;
-  flex-direction: column;
-  gap: 0.05rem;
-  text-align: start;
-}
-
-.numLabel {
-  font-size: 0.6rem;
-  color: var(--ds-text-muted);
-}
-
-.numValue {
-  font-size: 0.72rem;
-  font-weight: var(--ds-weight-semibold);
-  color: var(--ds-text-secondary);
-  font-variant-numeric: tabular-nums;
-}
-
-@media (min-width: 48rem) {
+@media (min-width: 60rem) {
   .ladderRow {
-    grid-template-columns: 1.5rem 0.5rem minmax(8rem, 1fr) minmax(5rem, 8rem) auto auto;
+    grid-template-columns: auto minmax(9rem, 14rem) minmax(6rem, 1fr) auto auto;
+    grid-template-areas: 'rank name spark nums status';
+    gap: var(--ds-space-4);
+    padding-block: var(--ds-space-2-5);
   }
 
-  .ladderTail {
-    display: contents;
+  .ladderSpark {
+    margin-block-start: 0;
+    block-size: 1.75rem;
   }
 
-  .spark {
-    flex: none;
-    inline-size: 100%;
+  .ladderNums {
+    flex-wrap: nowrap;
+    justify-content: flex-end;
   }
 }
 
-/* ══════════════════ 8. توزیع وضعیت (نوار انباشته) ══════════════════ */
+/* ═══════════════════════════ دفتر خطا ═══════════════════════════ */
 
-.spread {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-2);
-}
-
-.spreadBar {
-  display: flex;
-  block-size: 0.5rem;
-  border-radius: var(--ds-radius-full);
-  overflow: hidden;
-  background: var(--ds-surface-recessed);
-}
-
-.spreadSeg {
-  block-size: 100%;
-}
-
-.spreadLegend {
+.ledgerTools {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--ds-space-1) var(--ds-space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: 0.68rem;
-  color: var(--ds-text-muted);
-}
-
-.spreadItem {
-  display: inline-flex;
   align-items: center;
-  gap: var(--ds-space-1-5);
+  gap: var(--ds-space-2);
+  margin-block-end: var(--ds-space-3);
 }
 
-.spreadSwatch {
-  inline-size: 0.5rem;
-  block-size: 0.5rem;
-  border-radius: 2px;
+.seg {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--obs-rule-2);
+  border-radius: var(--ds-radius-sm);
 }
 
-/* ══════════════════ 9. پنجره‌های بحرانی ══════════════════ */
+.segBtn {
+  min-block-size: 2.25rem;
+  padding-inline: var(--ds-space-3);
+  border: 0;
+  border-radius: calc(var(--ds-radius-sm) - 2px);
+  background: transparent;
+  color: var(--obs-ink-3);
+  font-family: inherit;
+  font-size: var(--ds-text-xs);
+  cursor: pointer;
+  transition:
+    color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-spring);
+}
 
-.incidents {
-  display: flex;
-  flex-direction: column;
+.segBtn:hover {
+  color: var(--obs-ink);
+}
+
+.segBtn:active {
+  transform: scale(0.95);
+}
+
+.segBtn:focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--obs-tone) 70%, transparent);
+  outline-offset: 1px;
+}
+
+.segBtn[aria-pressed='true'] {
+  background: color-mix(in oklch, var(--obs-ink) 8%, transparent);
+  color: var(--obs-ink);
+  font-weight: var(--ds-weight-semibold);
+}
+
+.search {
+  flex: 1 1 12rem;
+  min-inline-size: 0;
+  min-block-size: 2.25rem;
+  padding-inline: var(--ds-space-3);
+  border: 1px solid var(--obs-rule-2);
+  border-radius: var(--ds-radius-sm);
+  background: transparent;
+  color: var(--obs-ink);
+  font-family: inherit;
+  font-size: var(--ds-text-xs);
+}
+
+.search::placeholder {
+  color: var(--obs-ink-3);
+}
+
+.search:focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--obs-tone) 70%, transparent);
+  outline-offset: 1px;
+}
+
+.toolsCount {
+  color: var(--obs-ink-3);
+  font-family: var(--obs-mono);
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ledger {
   margin: 0;
   padding: 0;
   list-style: none;
+  border-block-start: 1px solid var(--obs-rule);
+  /* فهرست‌های بلند لاگ — رندر خارج از دید حذف می‌شود. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 32rem;
 }
 
-.incidentRow {
+.ledgerRow {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--ds-space-1) var(--ds-space-3);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'level source time'
+    'msg   msg    msg'
+    'count count  count';
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-2);
   padding-block: var(--ds-space-2-5);
   border-block-end: 1px solid var(--obs-rule);
 }
 
-.incidentRow:last-child {
-  border-block-end: 0;
-}
-
-.incidentTitle {
-  display: block;
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-semibold);
-  color: var(--ds-text-primary);
-  font-variant-numeric: tabular-nums;
-}
-
-.incidentMeta {
-  display: block;
-  font-size: 0.66rem;
-  color: var(--ds-text-muted);
-}
-
-.incidentPeak {
-  align-self: center;
-  font-size: var(--ds-text-base);
-  font-weight: var(--ds-weight-bold);
-  color: var(--obs-bad);
-  font-variant-numeric: tabular-nums;
-}
-
-/* نوار جای‌گیری incident روی محور ۲۴ ساعت */
-.span {
-  grid-column: 1 / -1;
-  position: relative;
-  block-size: 3px;
-  border-radius: var(--ds-radius-full);
-  background: var(--ds-surface-recessed);
-  overflow: hidden;
-}
-
-.spanFill {
-  position: absolute;
-  inset-block: 0;
-  border-radius: var(--ds-radius-full);
-  background: var(--obs-bad);
-}
-
-/* ══════════════════ 10. توزیع سطوح و منابع ══════════════════ */
-
-.levels,
-.sources {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.levelRow {
-  --tone: var(--obs-info);
-  display: grid;
-  grid-template-columns: minmax(4rem, auto) minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--ds-space-2);
-  padding-block: var(--ds-space-2);
-  border-block-end: 1px dashed var(--obs-rule);
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-secondary);
-}
-
-.levelRow:last-child {
-  border-block-end: 0;
-}
-
-.levelBar {
-  block-size: 0.4rem;
-  border-radius: var(--ds-radius-full);
-  background: var(--ds-surface-recessed);
-  overflow: hidden;
-}
-
-.levelFill {
-  display: block;
-  block-size: 100%;
-  border-radius: var(--ds-radius-full);
-  background: var(--tone);
-}
-
-.levelMeta {
-  font-size: 0.66rem;
-  color: var(--ds-text-muted);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.sourceRow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.2rem var(--ds-space-2);
-  padding-block: var(--ds-space-2);
-  border-block-end: 1px dashed var(--obs-rule);
-}
-
-.sourceRow:last-child {
-  border-block-end: 0;
-}
-
-.sourceMeta {
-  font-size: 0.66rem;
-  color: var(--ds-text-muted);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.sourceBar {
-  grid-column: 1 / -1;
-  position: relative;
-  block-size: 0.4rem;
-  border-radius: var(--ds-radius-full);
-  background: var(--ds-surface-recessed);
-  overflow: hidden;
-}
-
-.sourceFill {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  border-radius: var(--ds-radius-full);
-  background: color-mix(in oklch, var(--obs-data) 70%, transparent);
-}
-
-.sourceErr {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  border-radius: var(--ds-radius-full);
-  background: var(--obs-bad);
-}
-
-/* ══════════════════ 11. دفتر خطا ══════════════════ */
-
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ds-space-2);
-  padding-block-end: var(--ds-space-3);
-}
-
-.chip {
-  min-block-size: 2rem;
-  padding-inline: var(--ds-space-2-5);
-  border: 1px solid var(--obs-rule);
-  border-radius: var(--ds-radius-full);
-  background: transparent;
-  font-size: 0.7rem;
-  color: var(--ds-text-secondary);
-  cursor: pointer;
-  transition:
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
-}
-
-.chip:hover {
-  color: var(--ds-text-primary);
-  border-color: var(--obs-rule-strong);
-}
-
-.chip:active {
-  transform: scale(0.95);
-}
-
-.chip:focus-visible {
-  outline: 2px solid var(--obs-tone);
-  outline-offset: 2px;
-}
-
-.chip[aria-pressed='true'] {
-  color: var(--ds-text-primary);
-  border-color: var(--obs-tone);
-  background: color-mix(in oklch, var(--obs-tone) 10%, transparent);
-}
-
-.filterSearch {
-  flex: 1 1 12rem;
-  min-inline-size: 0;
-  max-inline-size: 22rem;
-}
-
-.ledger {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  content-visibility: auto;
-  contain-intrinsic-size: auto 30rem;
-}
-
-.ledgerRow {
-  --tone: var(--obs-info);
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 0.2rem var(--ds-space-2);
-  padding-block: var(--ds-space-2);
-  padding-inline-start: var(--ds-space-2);
-  border-block-end: 1px solid var(--obs-rule);
-  border-inline-start: 2px solid var(--tone);
-}
-
-.ledgerRow:last-child {
-  border-block-end: 0;
-}
-
 .ledgerLevel {
-  font-size: 0.64rem;
+  grid-area: level;
+  padding-inline: var(--ds-space-2);
+  padding-block: 0.1rem;
+  border-radius: 2px;
+  background: color-mix(in oklch, var(--obs-tone) 14%, transparent);
+  color: color-mix(in oklch, var(--obs-tone) 80%, var(--obs-ink));
+  font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
-  color: var(--tone);
+  white-space: nowrap;
+}
+
+.ledgerSource {
+  grid-area: source;
+  color: var(--obs-ink-2);
+  font-family: var(--obs-mono);
+  font-size: var(--ds-text-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ledgerMsg {
-  grid-column: 1 / -1;
-  font-family: var(--ds-font-mono);
-  font-size: 0.7rem;
+  grid-area: msg;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  color: var(--obs-ink);
+  font-family: var(--obs-mono);
+  font-size: var(--ds-text-xs);
   line-height: var(--ds-leading-snug);
-  color: var(--ds-text-secondary);
-  direction: ltr;
-  unicode-bidi: isolate;
-  text-align: start;
   overflow-wrap: anywhere;
 }
 
-.ledgerTime {
-  font-size: 0.64rem;
-  color: var(--ds-text-muted);
-  white-space: nowrap;
-}
-
 .ledgerCount {
-  font-size: 0.64rem;
-  font-weight: var(--ds-weight-semibold);
-  color: var(--ds-text-secondary);
+  grid-area: count;
+  justify-self: start;
+  color: var(--obs-ink-3);
+  font-size: var(--ds-text-xs);
   font-variant-numeric: tabular-nums;
+}
+
+.ledgerTime {
+  grid-area: time;
+  justify-self: end;
+  color: var(--obs-ink-3);
+  font-size: var(--ds-text-xs);
   white-space: nowrap;
 }
 
-/* ══════════════════ 12. محور صدک تأخیر ══════════════════ */
+@media (min-width: 60rem) {
+  .ledgerRow {
+    grid-template-columns: 4.5rem minmax(6rem, 9rem) minmax(0, 1fr) auto auto;
+    grid-template-areas: 'level source msg count time';
+    gap: var(--ds-space-3);
+    padding-block: var(--ds-space-2);
+  }
 
-.scale {
-  padding-block: var(--ds-space-6) var(--ds-space-3);
+  .ledgerMsg {
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+  }
 }
 
-.scaleTrack {
-  position: relative;
-  block-size: 0.4rem;
-  border-radius: var(--ds-radius-full);
-  background: linear-gradient(
-    to right,
-    color-mix(in oklch, var(--obs-ok) 30%, transparent),
-    color-mix(in oklch, var(--obs-warn) 30%, transparent),
-    color-mix(in oklch, var(--obs-bad) 30%, transparent)
-  );
-}
-
-.scaleMark {
-  position: absolute;
-  inset-block: -0.35rem;
-  inline-size: 2px;
-  border-radius: var(--ds-radius-full);
-  background: var(--tone, var(--ds-text-primary));
-}
-
-.scaleLabel {
-  position: absolute;
-  inset-block-end: 0.9rem;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.05rem;
-  font-size: 0.62rem;
-  color: var(--ds-text-muted);
-  white-space: nowrap;
-}
-
-.scaleLabel b {
-  font-size: 0.76rem;
-  font-weight: var(--ds-weight-semibold);
-  color: var(--tone, var(--ds-text-primary));
-}
-
-.scaleMarkOk {
-  --tone: var(--obs-ok);
-}
-
-.scaleMarkWarn {
-  --tone: var(--obs-warn);
-}
-
-.scaleMarkBad {
-  --tone: var(--obs-bad);
-}
-
-.scaleAxis {
-  display: flex;
-  justify-content: space-between;
-  margin: 0;
-  margin-block-start: var(--ds-space-2);
-  font-size: 0.62rem;
-  color: var(--ds-text-muted);
-}
-
-.note {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--ds-space-2);
-  margin: 0;
-  margin-block-start: var(--ds-space-3);
-  padding: var(--ds-space-2-5);
-  border-radius: var(--ds-radius-md);
-  background: var(--ds-surface-recessed);
-  font-size: 0.7rem;
-  line-height: var(--ds-leading-normal);
-  color: var(--ds-text-muted);
-}
-
-.note svg {
-  flex: none;
-  margin-block-start: 0.1rem;
-}
-
-/* ══════════════════ 13. جدول کوئری کند ══════════════════ */
+/* ═══════════════════════════ جدول کوئری کند ═══════════════════════════ */
 
 .tableWrap {
-  min-inline-size: 0;
   overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  min-inline-size: 0;
 }
 
 .table {
   inline-size: 100%;
-  min-inline-size: 30rem;
   border-collapse: collapse;
   font-size: var(--ds-text-xs);
 }
@@ -1509,10 +739,9 @@
 .table th {
   padding-block: var(--ds-space-2);
   padding-inline: var(--ds-space-2);
-  border-block-end: 1px solid var(--obs-rule-strong);
-  font-size: 0.66rem;
+  border-block-end: 1px solid var(--obs-rule-3);
+  color: var(--obs-ink-3);
   font-weight: var(--ds-weight-medium);
-  color: var(--ds-text-muted);
   text-align: start;
   white-space: nowrap;
 }
@@ -1521,114 +750,618 @@
   padding-block: var(--ds-space-2);
   padding-inline: var(--ds-space-2);
   border-block-end: 1px solid var(--obs-rule);
-  vertical-align: top;
+  vertical-align: baseline;
 }
 
-.tableRow {
-  --tone: var(--obs-ok);
+.table tbody tr:hover {
+  background: color-mix(in oklch, var(--obs-tone) 5%, transparent);
 }
 
-.duration {
-  font-weight: var(--ds-weight-semibold);
-  color: var(--tone);
+.cellSource {
+  color: var(--obs-ink-2);
+  font-family: var(--obs-mono);
+  white-space: nowrap;
+}
+
+.cellDur {
+  color: color-mix(in oklch, var(--obs-tone) 80%, var(--obs-ink));
+  font-family: var(--obs-mono);
   font-variant-numeric: tabular-nums;
+  font-weight: var(--ds-weight-semibold);
+  white-space: nowrap;
 }
 
-/* ══════════════════ 14. رد ممیزی ══════════════════ */
+.cellMsg {
+  display: block;
+  max-inline-size: 52ch;
+  color: var(--obs-ink);
+  font-family: var(--obs-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cellTime {
+  color: var(--obs-ink-3);
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════ رد ممیزی ═══════════════════════════ */
 
 .trail {
   display: flex;
   flex-direction: column;
+  gap: var(--ds-space-1);
   margin: 0;
-  padding: 0;
+  padding-inline-start: var(--ds-space-4);
   list-style: none;
+  border-inline-start: 1px solid var(--obs-rule-2);
   content-visibility: auto;
-  contain-intrinsic-size: auto 30rem;
+  contain-intrinsic-size: auto 28rem;
 }
 
 .trailRow {
-  --tone: var(--obs-idle);
+  position: relative;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
   gap: var(--ds-space-2);
   padding-block: var(--ds-space-2);
-  border-block-end: 1px dashed var(--obs-rule);
 }
 
-.trailRow:last-child {
-  border-block-end: 0;
+.trailNode {
+  position: absolute;
+  inset-inline-start: calc(var(--ds-space-4) * -1);
+  inset-block-start: var(--ds-space-3);
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-canvas);
+  color: color-mix(in oklch, var(--obs-tone) 78%, var(--obs-ink-3));
 }
 
-.trailIcon {
-  color: var(--tone);
+:dir(rtl) .trailNode {
+  transform: translateX(50%);
 }
 
 .trailBody {
   display: flex;
   flex-direction: column;
-  gap: 0.05rem;
+  gap: 0.1rem;
   min-inline-size: 0;
 }
 
 .trailAction {
-  font-size: var(--ds-text-xs);
+  color: var(--obs-ink);
+  font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-medium);
-  color: var(--ds-text-primary);
 }
 
 .trailMeta {
-  font-size: 0.64rem;
-  color: var(--ds-text-muted);
+  color: var(--obs-ink-3);
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
 }
 
 .trailTime {
-  font-size: 0.64rem;
-  color: var(--ds-text-muted);
+  color: var(--obs-ink-3);
+  font-size: var(--ds-text-xs);
   white-space: nowrap;
 }
 
-/* ══════════════════ 15. اسکلت بارگذاری ══════════════════ */
+/* ═══════════════════════════ سهم منابع ═══════════════════════════ */
+
+.shares {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shareRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.2rem var(--ds-space-2);
+  min-inline-size: 0;
+}
+
+.shareName {
+  color: var(--obs-ink);
+  font-family: var(--obs-mono);
+  font-size: var(--ds-text-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shareNums {
+  color: var(--obs-ink-3);
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  white-space: nowrap;
+}
+
+.shareBar {
+  position: relative;
+  grid-column: 1 / -1;
+  block-size: 0.375rem;
+  border-radius: 1px;
+  background: color-mix(in oklch, var(--obs-ink) 6%, transparent);
+  overflow: hidden;
+}
+
+.shareFill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  background: color-mix(in oklch, var(--obs-ink) 34%, transparent);
+}
+
+.shareErr {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  background: var(--obs-bad);
+}
+
+.shareFoot {
+  margin: var(--ds-space-3) 0 0;
+  color: var(--obs-ink-3);
+  font-size: var(--ds-text-xs);
+  line-height: var(--ds-leading-snug);
+}
+
+/* ═══════════════════════════ نوار سطوح لاگ ═══════════════════════════ */
+
+.band {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+.bandBar {
+  display: flex;
+  block-size: 2rem;
+  border-radius: var(--ds-radius-sm);
+  overflow: hidden;
+}
+
+.bandSeg {
+  min-inline-size: 2px;
+  background: color-mix(in oklch, var(--obs-tone) 42%, transparent);
+  border-inline-end: 1px solid var(--ds-canvas);
+  transition: opacity var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.bandSeg:last-child {
+  border-inline-end: 0;
+}
+
+.bandBar:hover .bandSeg {
+  opacity: 0.55;
+}
+
+.bandBar:hover .bandSeg:hover {
+  opacity: 1;
+}
+
+.bandLegend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: var(--ds-space-2) var(--ds-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bandItem {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ds-space-1-5);
+  padding-block-start: var(--ds-space-1-5);
+  border-block-start: 1px solid var(--obs-rule);
+  color: var(--obs-ink-2);
+  font-size: var(--ds-text-xs);
+}
+
+.bandDot {
+  flex: none;
+  inline-size: 0.4375rem;
+  block-size: 0.4375rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--obs-tone);
+  transform: translateY(-1px);
+}
+
+.bandCount {
+  margin-inline-start: auto;
+  color: var(--obs-ink);
+  font-family: var(--obs-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ═══════════════════════════ پنجره‌های بحرانی ═══════════════════════════ */
+
+.incidents {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.incidentRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--ds-space-1) var(--ds-space-2);
+  padding-block-end: var(--ds-space-3);
+  border-block-end: 1px solid var(--obs-rule);
+}
+
+.incidentRow:last-child {
+  border-block-end: 0;
+  padding-block-end: 0;
+}
+
+.incidentTitle {
+  display: block;
+  color: var(--obs-ink);
+  font-family: var(--obs-mono);
+  font-size: var(--ds-text-sm);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--ds-weight-semibold);
+}
+
+.incidentMeta {
+  display: block;
+  margin-block-start: 0.1rem;
+  color: var(--obs-ink-3);
+  font-size: var(--ds-text-xs);
+  line-height: var(--ds-leading-snug);
+}
+
+.incidentPeak {
+  align-self: start;
+  color: var(--obs-bad);
+  font-family: var(--obs-mono);
+  font-size: var(--ds-text-lg);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--ds-weight-bold);
+  line-height: 1;
+}
+
+/*
+   نوار پنجره روی همان محور ۲۴ سطلی spine قرار می‌گیرد — با grid-column، پس در
+   RTL خودبه‌خود آینه می‌شود و هیچ محاسبهٔ درصدی جهت‌دار لازم نیست.
+*/
+.incidentTrack {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(var(--n, 24), minmax(0, 1fr));
+  block-size: 0.375rem;
+  margin-block-start: var(--ds-space-1);
+  background: repeating-linear-gradient(
+    90deg,
+    var(--obs-rule-2) 0 1px,
+    transparent 1px calc(100% / var(--n, 24))
+  );
+}
+
+.incidentSpan {
+  grid-row: 1;
+  grid-column: var(--from) / var(--to);
+  border-radius: 1px;
+  background: var(--obs-bad);
+}
+
+.incidentAxis {
+  display: flex;
+  justify-content: space-between;
+  margin: var(--ds-space-2) 0 0;
+  color: var(--obs-ink-3);
+  font-size: var(--ds-text-xs);
+}
+
+/* ═══════════════════════════ پراکندگی تأخیر ═══════════════════════════ */
+
+.spread {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+.spreadTrack {
+  position: relative;
+  block-size: 3.5rem;
+  border-block-end: 1px solid var(--obs-rule-3);
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--obs-rule) 0 1px,
+    transparent 1px 10%
+  );
+  background-position: 0 100%;
+  background-size: 100% 0.375rem;
+  background-repeat: no-repeat;
+}
+
+/* دمِ توزیع — فاصلهٔ p95 تا p99. همان چیزی که سه کارت عدد بزرگ پنهانش می‌کند. */
+.spreadTail {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-start: var(--from);
+  inline-size: var(--width);
+  block-size: 1.75rem;
+  background: color-mix(in oklch, var(--obs-bad) 12%, transparent);
+  border-inline-end: 1px solid color-mix(in oklch, var(--obs-bad) 40%, transparent);
+}
+
+.spreadTick {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: var(--at);
+  inline-size: 1px;
+  background: var(--obs-tone);
+}
+
+.spreadFlag {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: var(--at);
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  padding-inline-start: var(--ds-space-1-5);
+  color: var(--obs-ink-3);
+  font-size: var(--ds-text-xs);
+  white-space: nowrap;
+}
+
+.spreadFlag > b {
+  color: color-mix(in oklch, var(--obs-tone) 80%, var(--obs-ink));
+  font-family: var(--obs-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--ds-text-sm);
+}
+
+.spreadAxis {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  color: var(--obs-ink-3);
+  font-family: var(--obs-mono);
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: var(--ds-space-3);
+  margin: 0;
+}
+
+.fact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding-block-start: var(--ds-space-2);
+  border-block-start: 1px solid var(--obs-rule-2);
+}
+
+.factKey {
+  color: var(--obs-ink-3);
+  font-size: var(--ds-text-xs);
+}
+
+.factVal {
+  margin: 0;
+  color: color-mix(in oklch, var(--obs-tone) 72%, var(--obs-ink));
+  font-family: var(--obs-mono);
+  font-size: var(--ds-text-lg);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--ds-weight-semibold);
+  line-height: 1.1;
+}
+
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-2);
+  margin: 0;
+  padding: var(--ds-space-3);
+  border: 1px solid var(--obs-rule);
+  border-radius: var(--ds-radius-md);
+  background: color-mix(in oklch, var(--obs-plate) 60%, transparent);
+  color: var(--obs-ink-2);
+  font-size: var(--ds-text-xs);
+  line-height: var(--ds-leading-snug);
+}
+
+.noteIcon {
+  flex: none;
+  margin-block-start: 0.1rem;
+  color: color-mix(in oklch, var(--obs-tone) 75%, var(--obs-ink-3));
+}
+
+/* ═══════════════════════════ جدول ساعتی ═══════════════════════════ */
+
+.hours {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+}
+
+.hoursScroll {
+  max-block-size: 24rem;
+  overflow-y: auto;
+  overscroll-behavior-block: contain;
+  scrollbar-width: thin;
+  border-block: 1px solid var(--obs-rule);
+}
+
+.hourRow {
+  display: block;
+}
+
+.hourBtn {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(4rem, 1fr) auto;
+  align-items: center;
+  gap: var(--ds-space-3);
+  inline-size: 100%;
+  min-block-size: 2.75rem;
+  padding-inline: var(--ds-space-2);
+  border: 0;
+  border-block-end: 1px solid var(--obs-rule);
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.hourBtn:hover {
+  background: color-mix(in oklch, var(--obs-ink) 4%, transparent);
+}
+
+.hourBtn:focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--obs-tone) 70%, transparent);
+  outline-offset: -2px;
+}
+
+.hourBtn[aria-pressed='true'] {
+  background: color-mix(in oklch, var(--obs-tone) 9%, transparent);
+}
+
+.hourStamp {
+  color: var(--obs-ink-2);
+  font-family: var(--obs-mono);
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.hourBtn[aria-pressed='true'] .hourStamp {
+  color: var(--obs-ink);
+  font-weight: var(--ds-weight-semibold);
+}
+
+.hourTrack {
+  position: relative;
+  block-size: 0.5rem;
+  background: color-mix(in oklch, var(--obs-ink) 5%, transparent);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.hourFill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  background: color-mix(in oklch, var(--obs-ink) 30%, transparent);
+}
+
+.hourErr {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  background: var(--obs-bad);
+}
+
+.hourNums {
+  display: flex;
+  gap: var(--ds-space-3);
+  color: var(--obs-ink-3);
+  font-family: var(--obs-mono);
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.hourNum[data-tone='bad'] {
+  color: var(--obs-bad);
+}
+
+/* ═══════════════════════════ اسکلت بارگذاری ═══════════════════════════ */
 
 .skeleton {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-5);
+  gap: var(--ds-space-4);
 }
 
-.skelBar,
-.skelHero,
-.skelBlock {
+.skelHead,
+.skelMast,
+.skelSpine,
+.skelRail,
+.skelPlate,
+.skelAside {
   border-radius: var(--ds-radius-md);
-  background: linear-gradient(
-    90deg,
-    var(--ds-surface-recessed) 0%,
-    var(--ds-surface-elevated) 50%,
-    var(--ds-surface-recessed) 100%
-  );
-  background-size: 200% 100%;
+  background: color-mix(in oklch, var(--ds-text-primary) 5%, transparent);
 }
 
-.skelBar {
+.skelHead {
+  block-size: 3.5rem;
+  max-inline-size: 26rem;
+}
+
+.skelMast {
+  block-size: 9rem;
+}
+
+.skelSpine {
+  block-size: 7rem;
+}
+
+.skelRail {
   block-size: 2.75rem;
-}
-
-.skelHero {
-  block-size: clamp(11rem, 30vw, 15rem);
 }
 
 .skelGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--ds-space-4);
+  gap: var(--ds-space-5);
 }
 
-.skelBlock {
+.skelPlate {
+  block-size: 11rem;
+}
+
+.skelAside {
   block-size: 8rem;
 }
 
-@media (min-width: 56rem) {
+@media (min-width: 64rem) {
   .skelGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+
+  .skelPlate:nth-child(1) {
+    grid-column: 1 / -1;
+  }
+
+  .skelPlate:nth-child(2) {
+    grid-column: span 7;
+  }
+
+  .skelPlate:nth-child(3) {
+    grid-column: span 5;
+  }
+
+  .skelPlate:nth-child(4) {
+    grid-column: span 4;
+  }
+
+  .skelPlate:nth-child(5) {
+    grid-column: span 8;
   }
 }

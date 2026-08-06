@@ -1,39 +1,38 @@
 /* ============================================================================
-   Source heat matrix — منبع × ساعت
+   Source matrix — منبع در برابر ساعت
    ----------------------------------------------------------------------------
-   RTL امن: چیدمان با grid و property های منطقی. ستون ۱ گرید در RTL سمت راست
-   می‌نشیند، پس سطل ۰ (قدیمی‌ترین) در inline-start است — دقیقاً هم‌جهت با
-   زلزله‌نگار hero. هر دو نمایش یک زبان زمانی دارند.
-
-   جمع حاشیه (marginal total) عمداً وجود دارد: دفتر مالی همیشه جمع ستون را
-   کنار ردیف می‌نویسد. اینجا هم همان کار را می‌کنیم.
+   شدت خانه با «چگالی مرکب» رسم می‌شود نه با رنگین‌کمان: یک مرکب، ده پله. پس
+   خواندنش برای کوررنگی هم ممکن است و در dark mode هم نمی‌سوزد.
+   خانهٔ دارای خطا حلقهٔ سرخ می‌گیرد (تفاوت الگو، نه فقط فام) و ستونِ ساعتِ
+   انتخاب‌شده در spine اینجا هم علامت می‌خورد — یعنی یک محور زمان برای کل مرکز.
    ============================================================================ */
 
 .wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
   min-inline-size: 0;
 }
 
-.scroller {
-  min-inline-size: 0;
+.scroll {
   overflow-x: auto;
-  padding-block-end: var(--ds-space-1);
+  overscroll-behavior-inline: contain;
+  min-inline-size: 0;
+  scrollbar-width: thin;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: minmax(5.5rem, max-content) minmax(0, 1fr) minmax(2.5rem, max-content);
+  grid-template-columns: minmax(5rem, auto) minmax(11rem, 1fr);
   align-items: center;
-  gap: 3px var(--ds-space-2);
-  min-inline-size: 26rem;
+  gap: 2px var(--ds-space-3);
+  min-inline-size: 0;
 }
 
 .label {
-  font-family: var(--ds-font-mono);
-  font-size: 0.68rem;
-  direction: ltr;
-  unicode-bidi: isolate;
-  text-align: start;
-  color: var(--ds-text-secondary);
+  color: var(--obs-ink-2);
+  font-family: var(--obs-mono);
+  font-size: var(--ds-text-xs);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -41,54 +40,41 @@
 
 .cells {
   display: grid;
-  grid-template-columns: repeat(var(--obs-hours, 24), minmax(0, 1fr));
+  grid-template-columns: repeat(var(--n, 24), minmax(0, 1fr));
   gap: 2px;
+  min-inline-size: 0;
 }
 
 .cell {
-  block-size: 1.1rem;
+  block-size: 1.125rem;
   border-radius: 2px;
-  background: color-mix(
-    in oklch,
-    var(--obs-data) calc(var(--level, 0) * 1%),
-    var(--ds-surface-recessed)
-  );
-  transition: transform var(--ds-duration-fast) var(--ds-ease-spring);
+  /* پلهٔ چگالی: --level بین ۰ و ۱۰۰ است؛ ضریب ۰٫۵ سقف را روی ۵۰٪ نگه می‌دارد. */
+  background: color-mix(in oklch, var(--obs-ink) calc(var(--level, 0) * 0.5%), transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--obs-ink) 4%, transparent);
 }
 
 .cell[data-error='true'] {
-  background: color-mix(
-    in oklch,
-    var(--obs-bad) calc(28% + var(--level, 0) * 0.62%),
-    transparent
-  );
+  box-shadow: inset 0 0 0 1px var(--obs-bad);
 }
 
-/* ساعت انتخاب‌شده در hero — همان ستون اینجا هم روشن می‌شود */
-.cell[data-cursor='true'] {
-  box-shadow: inset 0 0 0 1px var(--ds-text-primary);
+.cell[data-active='true'] {
+  box-shadow:
+    inset 0 0 0 1px var(--obs-ink),
+    0 0 0 1px var(--ds-canvas);
 }
 
-.cell:hover {
-  transform: scaleY(1.2);
-}
-
-.total {
-  font-size: 0.66rem;
-  font-weight: var(--ds-weight-semibold);
-  color: var(--ds-text-muted);
-  text-align: end;
-  font-variant-numeric: tabular-nums;
+.cell[data-error='true'][data-active='true'] {
+  box-shadow:
+    inset 0 0 0 1px var(--obs-bad),
+    0 0 0 1px var(--obs-ink);
 }
 
 .axis {
-  grid-column: 2;
   display: flex;
   justify-content: space-between;
   margin: 0;
-  margin-block-start: var(--ds-space-1);
-  font-size: 0.6rem;
-  color: var(--ds-text-muted);
+  color: var(--obs-ink-3);
+  font-size: var(--ds-text-xs);
 }
 
 .legend {
@@ -97,31 +83,26 @@
   align-items: center;
   gap: var(--ds-space-1-5) var(--ds-space-3);
   margin: 0;
-  margin-block-start: var(--ds-space-3);
-  font-size: 0.66rem;
-  color: var(--ds-text-muted);
+  color: var(--obs-ink-3);
+  font-size: var(--ds-text-xs);
 }
 
-.legendItem {
+.ramp {
   display: inline-flex;
-  align-items: center;
-  gap: var(--ds-space-1-5);
+  gap: 2px;
 }
 
-.swatch {
-  inline-size: 0.7rem;
-  block-size: 0.7rem;
+.rampStep {
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
   border-radius: 2px;
-}
-
-.swatchLow {
-  background: color-mix(in oklch, var(--obs-data) 18%, var(--ds-surface-recessed));
-}
-
-.swatchHigh {
-  background: color-mix(in oklch, var(--obs-data) 85%, var(--ds-surface-recessed));
+  background: color-mix(in oklch, var(--obs-ink) calc(var(--level, 0) * 0.5%), transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--obs-ink) 6%, transparent);
 }
 
 .swatchError {
-  background: var(--obs-bad);
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px var(--obs-bad);
 }
