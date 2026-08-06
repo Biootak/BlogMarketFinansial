@@ -7,14 +7,11 @@ import './atlas-primitives.css';
 import './dashboard-header-overrides.css';
 import './dashboard-sidebar-state.css';
 import './dashboard-atlas-surfaces.css';
+import './dashboard-atlas-glass.css';
 
 export const dynamic = 'force-dynamic';
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <SessionGuard>
       <OfflineBanner />
