@@ -1,0 +1,96 @@
+/* Atlas glass treatment: surfaces stay readable, glass is reserved for
+   interactive workspace regions. No loud glow, no full-canvas blur. */
+.dashboard-shell .atlasHeader,
+.dashboard-shell .signal,
+.dashboard-shell .commands a,
+.dashboard-shell .panel {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(135deg, color-mix(in oklch, var(--ds-surface) 82%, transparent), color-mix(in oklch, var(--ds-surface-elevated) 92%, transparent));
+  border: 1px solid color-mix(in oklch, var(--ds-border-default) 70%, var(--ds-brand-500) 30%);
+  box-shadow: var(--ds-shadow-sm), inset 0 1px 0 color-mix(in oklch, var(--ds-text-inverse) 70%, transparent);
+  backdrop-filter: blur(14px) saturate(120%);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+}
+
+.dashboard-shell .atlasHeader::after,
+.dashboard-shell .signal::after,
+.dashboard-shell .commands a::after,
+.dashboard-shell .panel::after {
+  content: "";
+  position: absolute;
+  inset-inline: 1rem;
+  inset-block-start: 0;
+  block-size: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in oklch, var(--ds-brand-500) 42%, transparent), transparent);
+  opacity: .65;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.dashboard-shell .atlasHeader {
+  overflow: hidden;
+  border-radius: var(--atlas-radius-xl);
+  box-shadow: var(--ds-shadow-md), inset 0 1px 0 color-mix(in oklch, var(--ds-text-inverse) 78%, transparent);
+}
+
+.dashboard-shell .atlasHeader::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  inline-size: 34%;
+  background: radial-gradient(circle at 70% 35%, color-mix(in oklch, var(--ds-brand-500) 16%, transparent), transparent 58%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.dashboard-shell .signal,
+.dashboard-shell .commands a {
+  border-radius: var(--atlas-radius-lg);
+  transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart), background-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.dashboard-shell .signal:hover,
+.dashboard-shell .commands a:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--ds-shadow-md), inset 0 1px 0 color-mix(in oklch, var(--ds-text-inverse) 82%, transparent);
+}
+
+.dashboard-shell .panel {
+  overflow: hidden;
+  border-radius: var(--atlas-radius-xl);
+  box-shadow: var(--ds-shadow-md), inset 0 1px 0 color-mix(in oklch, var(--ds-text-inverse) 74%, transparent);
+}
+
+.dashboard-shell .panelHead {
+  background: color-mix(in oklch, var(--ds-surface-elevated) 48%, transparent);
+}
+
+.dashboard-shell .queue li a,
+.dashboard-shell .events li {
+  transition: background-color var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.dashboard-shell .queue li a:hover,
+.dashboard-shell .events li:hover {
+  background: color-mix(in oklch, var(--ds-brand-500) 7%, var(--ds-surface));
+  transform: translateX(-2px);
+}
+
+.dashboard-shell .avatar,
+.dashboard-shell .eventMarker,
+.dashboard-shell .signalIcon,
+.dashboard-shell .commandIcon {
+  box-shadow: inset 0 1px 0 color-mix(in oklch, var(--ds-text-inverse) 75%, transparent), 0 6px 16px -12px var(--ds-brand-600);
+}
+
+@media (max-width: 48rem) {
+  .dashboard-shell .atlasHeader,
+  .dashboard-shell .signal,
+  .dashboard-shell .commands a,
+  .dashboard-shell .panel {
+    backdrop-filter: blur(9px) saturate(112%);
+    -webkit-backdrop-filter: blur(9px) saturate(112%);
+  }
+}
