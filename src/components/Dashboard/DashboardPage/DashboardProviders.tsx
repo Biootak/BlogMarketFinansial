@@ -7,7 +7,6 @@ import MainContent from '@/components/Dashboard/DashboardPage/MainContent';
 import Sidebar from '@/components/Dashboard/DashboardPage/Sidebar';
 import SidebarInitializer from '@/components/Dashboard/DashboardPage/SidebarInitializer';
 import SidebarToggle from '@/components/Dashboard/DashboardPage/SidebarToggle';
-import TopTabs from '@/components/Dashboard/DashboardPage/TopTabs';
 import { Toaster } from '@/components/ui/toaster';
 import { DirectionProvider } from '@radix-ui/react-direction';
 import type { ReactNode } from 'react';
@@ -45,7 +44,6 @@ export function DashboardProviders({ userRole, portal = 'admin', staffRole, chil
         <BreadcrumbProvider>
           <div className="dashboard-shell__viewport">
             <Header portal={portal} />
-            <TopTabs />
             <MainContent>{children}</MainContent>
           </div>
         </BreadcrumbProvider>
