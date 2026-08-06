@@ -1,19 +1,11 @@
 /**
  * GET|POST /api/cron/backup
- * ─────────────────────────────────────────────────────────────
- * Scheduled backup endpoint — محافظت‌شده توسط CRON_SECRET.
- *
- * فراخوانی می‌شود از: Vercel Cron، docker crontab، یا هر scheduler خارجی.
- *
- * هر بار اجرا می‌شود:
- *  1. backup کامل Prisma JSON را می‌سازد
- *  2. retention خودکار — حداکثر ۲۰ نسخه نگه می‌دارد
- *
- * Auth: Authorization: Bearer ${CRON_SECRET}
+ * Scheduled backup endpoint protected by CRON_SECRET.
  */
 
 import { runBackup } from '@/lib/backup';
 import { verifyCronSecret } from '@/lib/cron-auth';
+import { serverLog } from '@/lib/server-logger';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -25,7 +17,6 @@ async function handleBackup(req: Request) {
 
   try {
     const info = await runBackup('scheduled', 'cron');
-
     return NextResponse.json({
       success: true,
       data: {
@@ -35,15 +26,10 @@ async function handleBackup(req: Request) {
       },
     });
   } catch (err) {
+    serverLog.error('cron-backup', 'run-backup', err);
     return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'BACKUP_FAILED',
-          message: err instanceof Error ? err.message : 'خطا در اجرای backup',
-        },
-      },
-      { status: 500 },
+      { success: false, error: { code: 'BACKUP_FAILED', message: 'خطا در اجرای backup' } },
+      { status: 500, headers: { 'Cache-Control': 'no-store' } },
     );
   }
 }
