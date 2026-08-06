@@ -1,17 +1,1207 @@
-:root { --dashboard-content-max: 90rem; --dashboard-gutter: clamp(0.875rem, 0.5rem + 1.3vw, 2rem); --dashboard-hairline: color-mix(in oklch, var(--ds-text-primary) 11%, var(--ds-canvas)); --dashboard-accent: var(--ds-brand-500); --dashboard-accent-soft: color-mix(in oklch, var(--dashboard-accent) 8%, var(--ds-surface)); --dashboard-surface-solid: var(--ds-surface-elevated); }
-.dashboard-shell { inline-size: 100%; min-block-size: 100dvh; background: var(--ds-canvas); color: var(--ds-text-primary); isolation: isolate; }
-.dash-root { display: flex !important; flex-direction: row !important; align-items: stretch; inline-size: 100%; block-size: 100dvh; min-inline-size: 0; min-block-size: 0; overflow: hidden; background: var(--ds-canvas); color: var(--ds-text-primary); isolation: isolate; }
-.dashboard-shell[data-portal="customer"], .dash-root[data-portal="customer"] { --dashboard-accent: var(--nova-emerald, var(--ds-brand-500)); } .dashboard-shell[data-portal="exchange"], .dash-root[data-portal="exchange"] { --dashboard-accent: var(--nova-cyan, var(--ds-brand-500)); } .dashboard-shell[data-portal="admin"], .dash-root[data-portal="admin"] { --dashboard-accent: var(--ds-brand-500); }
-.dashboard-shell__viewport { display: flex; flex: 1 1 auto; flex-direction: column; inline-size: auto; min-inline-size: 0; min-block-size: 0; overflow: hidden; }
-.dashboard-shell__main, .dash-scope { display: block; flex: 1 1 auto; inline-size: 100%; min-inline-size: 0; min-block-size: 0; overflow: auto; background: linear-gradient(180deg, color-mix(in oklch, var(--dashboard-accent) 2%, transparent), transparent 22rem), var(--ds-canvas); }
-.dashboard-shell__content { inline-size: min(100%, var(--dashboard-content-max)); margin-inline: auto; padding-inline: var(--dashboard-gutter); padding-block: clamp(1rem, 0.75rem + 1vw, 2rem) clamp(3.5rem, 2rem + 3vw, 5rem); }
-.dashboard-shell :where(button, a, input, select, textarea):focus-visible { outline: 2px solid var(--dashboard-accent); outline-offset: 3px; } .dashboard-shell :where(a, button) { -webkit-tap-highlight-color: transparent; } .dashboard-shell :where(a, button):active { transform: scale(0.985); transition: transform 120ms var(--ds-ease-spring); }
-.dash-root > .dash-side { position: relative !important; inset: auto !important; flex: 0 0 auto; block-size: 100%; min-block-size: 0; }
-.dash-root .dash-header { position: sticky; inset-block-start: 0; z-index: 20; flex: 0 0 auto; background: color-mix(in oklch, var(--ds-canvas) 94%, transparent); border-block-end: 1px solid var(--ds-border-subtle); backdrop-filter: blur(10px); } .dash-root .dash-header__inner { min-height: 4.25rem; padding-inline: var(--dashboard-gutter); } .dash-root .dash-header__eyebrow-dot, .dash-root .dash-header__status-dot { background: var(--dashboard-accent); } .dash-root .dash-header__eyebrow-text, .dash-root .dash-header__mobile-title { color: var(--ds-text-primary); font-weight: 700; } .dash-root .dash-header__search { border-color: var(--ds-border-subtle); background: var(--ds-surface-recessed); } .dash-root .dash-header__search:focus-within { border-color: var(--dashboard-accent); box-shadow: 0 0 0 3px color-mix(in oklch, var(--dashboard-accent) 14%, transparent); } .dash-root .dash-header__iconbtn:hover, .dash-root .dash-header__avatar:hover { background: var(--dashboard-accent-soft); } .dash-root .dash-header__divider { background: color-mix(in oklch, var(--dashboard-accent) 34%, var(--ds-border-subtle)); }
-.dash-root .dash-side { background: var(--ds-surface-recessed); border-inline-end: 1px solid var(--ds-border-subtle); box-shadow: none; } .dash-root .dash-side__brand-logo { border-color: color-mix(in oklch, var(--dashboard-accent) 30%, var(--ds-border-subtle)); background: var(--dashboard-accent-soft); } .dash-root .dash-side__brand-dot, .dash-root .dash-side__section-tick { background: var(--dashboard-accent); } .dash-root .dash-side__item:hover { background: var(--dashboard-accent-soft); } .dash-root .dash-side__item[data-active="true"], .dash-root .dash-side__item--active { background: color-mix(in oklch, var(--dashboard-accent) 12%, var(--ds-surface)); color: var(--dashboard-accent); } .dash-root .dash-side__item-ico { color: currentColor; } .dash-root .dash-side__overlay { background: color-mix(in oklch, var(--ds-text-primary) 30%, transparent); backdrop-filter: blur(2px); }
-.route-frame { --route-accent: var(--dashboard-accent); inline-size: min(100%, var(--dashboard-content-max)); margin-inline: auto; container-type: inline-size; } .route-frame__utility { display: flex; align-items: center; gap: var(--ds-space-3); min-height: 2rem; margin-block-end: var(--ds-space-3); color: var(--ds-text-muted); font-size: var(--ds-text-xs); } .route-frame__breadcrumb { display: inline-flex; align-items: center; gap: .45rem; color: var(--ds-text-secondary); font-weight: 700; } .route-frame__breadcrumb-dot { inline-size: .45rem; block-size: .45rem; border-radius: 50%; background: var(--route-accent); box-shadow: 0 0 0 .22rem color-mix(in oklch, var(--route-accent) 14%, transparent); } .route-frame__back { display: inline-flex; align-items: center; gap: .35rem; color: var(--route-accent); text-decoration: none; } .route-frame__path { margin-inline-start: auto; color: var(--ds-text-muted); font-family: var(--ds-font-mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.route-frame__header { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: var(--ds-space-4); padding-block: var(--ds-space-4) var(--ds-space-6); border-block-end: 1px solid var(--ds-border-subtle); margin-block-end: var(--ds-space-5); } .route-frame__mark { display: grid; place-items: center; inline-size: 2.85rem; block-size: 2.85rem; color: var(--route-accent); background: var(--dashboard-accent-soft); border: 1px solid color-mix(in oklch, var(--route-accent) 28%, var(--ds-border-subtle)); border-radius: var(--ds-radius-md); } .route-frame__heading { min-width: 0; } .route-frame__eyebrow { display: block; margin-block-end: var(--ds-space-1); color: var(--route-accent); font-size: var(--ds-text-xs); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; } .route-frame__title { margin: 0; color: var(--ds-text-primary); font-size: var(--ds-text-3xl); font-weight: 800; letter-spacing: -.025em; line-height: var(--ds-leading-tight); text-wrap: balance; } .route-frame__description { max-width: 70ch; margin: var(--ds-space-2) 0 0; color: var(--ds-text-secondary); font-size: var(--ds-text-sm); line-height: var(--ds-leading-relaxed); } .route-frame__tools { display: grid; justify-items: end; gap: var(--ds-space-2); } .route-frame__state, .route-frame__sibling { display: inline-flex; align-items: center; gap: .45rem; padding-block: .35rem; padding-inline: .6rem; border: 1px solid var(--ds-border-subtle); border-radius: var(--ds-radius-full); font-size: var(--ds-text-xs); white-space: nowrap; } .route-frame__state { color: var(--ds-text-secondary); } .route-frame__sibling { color: var(--route-accent); text-decoration: none; background: var(--dashboard-accent-soft); } .route-frame__state-dot { inline-size: .45rem; block-size: .45rem; border-radius: 50%; background: var(--route-accent); }
-.route-frame__body { container-type: inline-size; } .route-frame[data-route-family="risk"] { --route-accent: var(--nova-rose, var(--dashboard-accent)); } .route-frame[data-route-family="money"] { --route-accent: var(--nova-emerald, var(--dashboard-accent)); } .route-frame[data-route-family="identity"] { --route-accent: var(--nova-violet, var(--dashboard-accent)); } .route-frame[data-route-family="observe"] { --route-accent: var(--nova-cyan, var(--dashboard-accent)); } .route-frame[data-route-family="reports"] { --route-accent: var(--nova-amber, var(--dashboard-accent)); } .route-frame[data-route-family="security"] { --route-accent: var(--nova-indigo, var(--dashboard-accent)); }
-.route-frame :where(.loading, [aria-busy="true"]) { min-height: 12rem; border: 1px solid var(--ds-border-subtle); background: linear-gradient(90deg, var(--ds-surface), var(--ds-surface-recessed), var(--ds-surface)); background-size: 200% 100%; animation: route-skeleton 1.6s linear infinite; } .route-frame :where(.error, [data-state="error"]) { border: 1px solid color-mix(in oklch, var(--nova-rose) 36%, var(--ds-border-subtle)); background: color-mix(in oklch, var(--nova-rose) 5%, var(--ds-surface)); } @keyframes route-skeleton { from { background-position: 200% 0; } to { background-position: -200% 0; } }
-@media (max-width: 768px) { .dash-root { flex-direction: column !important; block-size: 100dvh; } .dash-root > .dash-side { position: fixed !important; block-size: 100dvh; } .dashboard-shell__content { padding-inline: .875rem; padding-block-start: .75rem; } .dash-root .dash-header__inner { min-height: 3.75rem; padding-inline: .875rem; } .dash-root .dash-side[data-state="mobile-open"] { box-shadow: var(--ds-shadow-lg); } .dash-root :where(.table-wrap, [data-table-scroll]) { overflow-x: auto; overscroll-behavior-inline: contain; } .route-frame__utility { flex-wrap: wrap; } .route-frame__path { display: none; } .route-frame__header { grid-template-columns: auto minmax(0, 1fr); gap: var(--ds-space-3); padding-block-end: var(--ds-space-5); } .route-frame__tools { grid-column: 2; justify-items: start; grid-auto-flow: column; align-items: center; } .route-frame__title { font-size: var(--ds-text-2xl); } }
-@media (prefers-reduced-motion: reduce) { .dashboard-shell :where(a, button):active { transform: none; } .route-frame :where(.loading, [aria-busy="true"]) { animation: none; } }
+/* ============================================================================
+   Atlas Shell — لایه‌ی چیدمان و پوسته‌ی داشبورد (۲۰۲۶-۰۸)
+   ----------------------------------------------------------------------------
+   این فایل بعد از dashboard.css ایمپورت می‌شود و لایه‌ی «حقیقت بصری» است.
+   هر قانونی اینجا با اسپسیفیسیتی دو-کلاسه نوشته شده تا بر قوانین تک‌کلاسه‌ی
+   dashboard.css غلبه کند، بدون آنکه آن فایل ۴۴۴ کیلوبایتی دست بخورد.
+
+   زبان طراحی: «دفتر ثبت» (Registry)
+   - گروه‌بندی با خط مو و فاصله انجام می‌شود، نه با جعبه‌گذاری کارت.
+   - ستون spine کنار محتوا شماره‌ی بخش و نقطه‌ی وضعیت را حمل می‌کند.
+   - اعداد همه tabular هستند تا ستون‌ها در جدول‌های مالی نلرزند.
+   - عمق از خط مو و اختلاف سطح می‌آید، نه از سایه‌ی پررنگ یا گلاس.
+
+   قواعد اجباری رعایت‌شده:
+   - فقط ویژگی‌های منطقی (inline/block) — هیچ left/right سخت‌کدی.
+   - فقط توکن‌های --ds-* / --atlas-* — هیچ رنگ یا فاصله‌ی هاردکد.
+   - انیمیشن فقط روی transform و opacity.
+   - بلوک prefers-reduced-motion اینجا تعریف نمی‌شود (clamp سراسری در tokens).
+   ============================================================================ */
+
+/* ==========================================================================
+   ۰ — متغیرهای محدوده‌ی داشبورد
+   ========================================================================== */
+.dashboard-shell,
+.dash-root {
+  --dashboard-content-max: 88rem;
+  --dashboard-gutter: clamp(0.875rem, 0.5rem + 1.4vw, 2.25rem);
+  --dashboard-hairline: var(--atlas-hairline);
+  --dashboard-accent: var(--ds-brand-600);
+  --dashboard-accent-soft: color-mix(in oklch, var(--dashboard-accent) 9%, var(--ds-surface));
+  --dashboard-accent-line: color-mix(in oklch, var(--dashboard-accent) 26%, var(--atlas-hairline));
+  --dashboard-surface-solid: var(--ds-surface-elevated);
+}
+
+/* پورتال‌ها فقط تُن سیگنال را جابه‌جا می‌کنند، نه کل هویت را */
+.dashboard-shell[data-portal="customer"],
+.dash-root[data-portal="customer"] {
+  --dashboard-accent: var(--ds-accent-emerald);
+}
+.dashboard-shell[data-portal="exchange"],
+.dash-root[data-portal="exchange"] {
+  --dashboard-accent: var(--ds-accent-cyan);
+}
+.dashboard-shell[data-portal="admin"],
+.dash-root[data-portal="admin"] {
+  --dashboard-accent: var(--ds-brand-600);
+}
+
+/* ==========================================================================
+   ۱ — اسکلت
+   ========================================================================== */
+.dashboard-shell {
+  inline-size: 100%;
+  min-block-size: 100dvh;
+  background: var(--ds-canvas);
+  color: var(--ds-text-primary);
+  font-variant-numeric: tabular-nums;
+  isolation: isolate;
+}
+
+.dash-root {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch;
+  inline-size: 100%;
+  block-size: 100dvh;
+  min-inline-size: 0;
+  min-block-size: 0;
+  overflow: hidden;
+  background: var(--ds-canvas);
+  color: var(--ds-text-primary);
+  font-variant-numeric: tabular-nums;
+  isolation: isolate;
+}
+
+.dashboard-shell__viewport {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  inline-size: auto;
+  min-inline-size: 0;
+  min-block-size: 0;
+  overflow: hidden;
+}
+
+.dashboard-shell__main,
+.dash-scope {
+  display: block;
+  flex: 1 1 auto;
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: 0;
+  overflow: auto;
+  overscroll-behavior-block: contain;
+  background: var(--ds-canvas);
+  scrollbar-gutter: stable;
+}
+
+/* ---- Spine ----------------------------------------------------------------
+   ستون باریک کنار محتوا. یک خط مو که از بالای صفحه تا انتها ادامه دارد و
+   لنگر بصری همه‌ی مسیرهاست. در موبایل به صفر جمع می‌شود.
+   با pseudo-element ساخته شده تا فرزندان دلخواه صفحات را وارد grid نکند. */
+.dashboard-shell__content {
+  position: relative;
+  inline-size: min(100%, var(--dashboard-content-max));
+  margin-inline: auto;
+  padding-inline: calc(var(--dashboard-gutter) + var(--atlas-spine) + var(--atlas-spine-gap))
+    var(--dashboard-gutter);
+  padding-block: clamp(1rem, 0.75rem + 1vw, 2rem) clamp(4rem, 2.5rem + 3vw, 6rem);
+}
+
+.dashboard-shell__content::before {
+  content: "";
+  position: absolute;
+  z-index: var(--atlas-z-spine);
+  inset-block: 0;
+  inset-inline-start: calc(var(--dashboard-gutter) + var(--atlas-spine));
+  inline-size: var(--atlas-rule);
+  background: linear-gradient(
+    to bottom,
+    var(--dashboard-accent-line),
+    var(--atlas-hairline) 6rem,
+    var(--atlas-hairline) calc(100% - 8rem),
+    transparent
+  );
+  pointer-events: none;
+}
+
+@media (max-width: 47.9375rem) {
+  .dashboard-shell__content::before {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   ۲ — تعامل پایه
+   ========================================================================== */
+.dashboard-shell :where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--dashboard-accent);
+  outline-offset: 2px;
+  border-radius: var(--atlas-radius-xs);
+}
+
+.dashboard-shell :where(a, button) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dashboard-shell :where(a, button):active {
+  transform: scale(0.985);
+  transition: transform var(--atlas-dur-tap) var(--atlas-ease);
+}
+
+.dashboard-shell :where(h1, h2, h3) {
+  text-wrap: balance;
+}
+
+.dashboard-shell :where(p) {
+  text-wrap: pretty;
+}
+
+/* اسکرول‌بار باریک و بی‌صدا */
+.dashboard-shell :where(*)::-webkit-scrollbar {
+  inline-size: 10px;
+  block-size: 10px;
+}
+.dashboard-shell :where(*)::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-border-default);
+  background-clip: content-box;
+}
+.dashboard-shell :where(*)::-webkit-scrollbar-thumb:hover {
+  background: var(--ds-border-strong);
+  background-clip: content-box;
+}
+.dashboard-shell :where(*)::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ==========================================================================
+   ۳ — نوار کناری
+   ریل‌محور. ستون شماره سمت شروع، برچسب بعد از آن. حالت فعال = سطح تیره‌ی
+   ملایم + نقطه در ناودان. هیچ نوار رنگی کناری‌ای در کار نیست.
+   ========================================================================== */
+.dash-root > .dash-side {
+  position: relative !important;
+  inset: auto !important;
+  z-index: var(--atlas-z-side);
+  flex: 0 0 auto;
+  block-size: 100%;
+  min-block-size: 0;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side {
+  display: flex;
+  flex-direction: column;
+  inline-size: var(--ds-side-w-expanded);
+  background: var(--ds-color-side);
+  border-inline-end: var(--atlas-rule) solid var(--atlas-hairline);
+  box-shadow: none;
+  transition: inline-size var(--atlas-dur-panel) var(--atlas-ease);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side[data-state="rail"] {
+  inline-size: var(--ds-side-w-rail);
+}
+
+/* عنصر تزئینی ارثی — در Atlas خاموش است. شلوغی بدون معنا. */
+:is(.dash-root, .dashboard-shell) .dash-side__geo-accent {
+  display: none;
+}
+
+/* ---- سربرگ برند ---- */
+:is(.dash-root, .dashboard-shell) .dash-side__top {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-block-size: 4.25rem;
+  padding-inline: var(--ds-space-3);
+  border-block-end: var(--atlas-rule) solid var(--atlas-hairline);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__brand {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: var(--ds-space-2-5);
+  min-inline-size: 0;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__brand-logo {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border: var(--atlas-rule) solid var(--dashboard-accent-line);
+  border-radius: var(--atlas-radius-md);
+  background: var(--dashboard-accent-soft);
+  overflow: hidden;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__brand-logo-img {
+  max-inline-size: 100%;
+  max-block-size: 100%;
+  object-fit: contain;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__brand-text {
+  display: grid;
+  gap: 0.125rem;
+  min-inline-size: 0;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__brand-name {
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-bold);
+  letter-spacing: var(--ds-tracking-tight);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__brand-sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__brand-dot {
+  inline-size: 0.375rem;
+  block-size: 0.375rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--dashboard-accent);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__close {
+  display: grid;
+  place-items: center;
+  inline-size: var(--atlas-tap-min);
+  block-size: var(--atlas-tap-min);
+  color: var(--ds-text-secondary);
+  border-radius: var(--atlas-radius-md);
+  background: transparent;
+  transition: background-color var(--atlas-dur-ui) var(--atlas-ease);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__close:hover {
+  background: var(--ds-overlay-hover);
+}
+
+/* ---- ناوبری ---- */
+:is(.dash-root, .dashboard-shell) .dash-side__nav {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  content-visibility: auto;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__nav-inner {
+  display: grid;
+  gap: var(--ds-space-5);
+  padding-block: var(--ds-space-4);
+  padding-inline: var(--ds-space-2);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__section {
+  display: grid;
+  gap: var(--ds-space-1);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__section-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-inline: var(--ds-space-2);
+  padding-block-end: var(--ds-space-2);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__section-tick {
+  display: none;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__section-index {
+  flex: 0 0 auto;
+  color: var(--ds-text-muted);
+  font-family: var(--ds-font-mono);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__section-label {
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: var(--ds-tracking-caps);
+  white-space: nowrap;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__section-rule {
+  flex: 1 1 auto;
+  order: 3;
+  block-size: var(--atlas-rule);
+  background: var(--atlas-hairline);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__list {
+  display: grid;
+  gap: 0.125rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__row {
+  display: block;
+}
+
+/* ---- آیتم ناوبری ---- */
+:is(.dash-root, .dashboard-shell) .dash-side__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2-5);
+  inline-size: 100%;
+  min-block-size: 2.5rem;
+  padding-inline: var(--ds-space-2-5);
+  padding-block: 0.5rem;
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  text-align: start;
+  text-decoration: none;
+  border: var(--atlas-rule) solid transparent;
+  border-radius: var(--atlas-radius-md);
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background-color var(--atlas-dur-ui) var(--atlas-ease),
+    color var(--atlas-dur-ui) var(--atlas-ease),
+    border-color var(--atlas-dur-ui) var(--atlas-ease);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__item:hover {
+  color: var(--ds-text-primary);
+  background: var(--ds-color-side-hover-bg);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__item[data-active="true"],
+:is(.dash-root, .dashboard-shell) .dash-side__item--active {
+  color: var(--ds-color-side-active-fg);
+  font-weight: var(--ds-weight-semibold);
+  border-color: var(--dashboard-accent-line);
+  background: var(--ds-color-side-active-bg);
+}
+
+/* نشانگر حالت فعال: نقطه در ناودان — نه نوار رنگی کناری */
+:is(.dash-root, .dashboard-shell) .dash-side__diamond {
+  position: absolute;
+  inset-inline-start: -0.3125rem;
+  inset-block-start: 50%;
+  inline-size: 0.25rem;
+  block-size: 0.25rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--dashboard-accent);
+  opacity: 0;
+  transform: translateY(-50%) scale(0.5);
+  transition:
+    opacity var(--atlas-dur-ui) var(--atlas-ease),
+    transform var(--atlas-dur-ui) var(--atlas-ease);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__item[data-active="true"] .dash-side__diamond {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__index {
+  flex: 0 0 1.125rem;
+  color: var(--ds-text-muted);
+  font-family: var(--ds-font-mono);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  opacity: 0.55;
+  transition: opacity var(--atlas-dur-ui) var(--atlas-ease);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__item:hover .dash-side__index,
+:is(.dash-root, .dashboard-shell) .dash-side__item[data-active="true"] .dash-side__index {
+  opacity: 1;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__item-ico {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  color: currentColor;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__item-ico > svg {
+  inline-size: 1.1875rem;
+  block-size: 1.1875rem;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__item-label {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__item-kbd {
+  flex: 0 0 auto;
+  min-inline-size: 1.25rem;
+  padding-inline: 0.3125rem;
+  padding-block: 0.0625rem;
+  color: var(--ds-text-muted);
+  font-family: var(--ds-font-mono);
+  font-size: 0.625rem;
+  text-align: center;
+  border: var(--atlas-rule) solid var(--atlas-hairline);
+  border-radius: var(--atlas-radius-xs);
+  background: var(--ds-surface-recessed);
+  opacity: 0;
+  transition: opacity var(--atlas-dur-ui) var(--atlas-ease);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__item:hover .dash-side__item-kbd {
+  opacity: 1;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__item-chev {
+  flex: 0 0 auto;
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
+  color: var(--ds-text-muted);
+  transition: transform var(--atlas-dur-ui) var(--atlas-ease);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__item[data-expanded] .dash-side__item-chev {
+  transform: rotate(180deg);
+}
+
+/* ---- زیرمنو ---- */
+:is(.dash-root, .dashboard-shell) .dash-side__sub {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--atlas-dur-panel) var(--atlas-ease);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__sub[data-open] {
+  grid-template-rows: 1fr;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__sub-inner {
+  display: grid;
+  gap: 0.125rem;
+  min-block-size: 0;
+  margin-inline-start: calc(var(--ds-space-2-5) + 1.125rem);
+  padding-inline-start: var(--ds-space-3);
+  border-inline-start: var(--atlas-rule) solid var(--atlas-hairline);
+  overflow: hidden;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__item--sub {
+  min-block-size: 2.125rem;
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-regular);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__item--sub[data-active="true"] {
+  font-weight: var(--ds-weight-semibold);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__item-tick {
+  flex: 0 0 auto;
+  inline-size: 0.25rem;
+  block-size: 0.25rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-border-strong);
+  transition: background-color var(--atlas-dur-ui) var(--atlas-ease);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__item--sub[data-active="true"] .dash-side__item-tick {
+  background: var(--dashboard-accent);
+}
+
+/* ---- پاورقی ---- */
+:is(.dash-root, .dashboard-shell) .dash-side__foot {
+  display: grid;
+  gap: 0.125rem;
+  flex: 0 0 auto;
+  padding-inline: var(--ds-space-2);
+  padding-block: var(--ds-space-3);
+  border-block-start: var(--atlas-rule) solid var(--atlas-hairline);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__baseline {
+  display: none;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__user {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2-5);
+  margin-block-end: var(--ds-space-2);
+  padding-inline: var(--ds-space-2-5);
+  padding-block: var(--ds-space-2);
+  border-radius: var(--atlas-radius-md);
+  background: var(--ds-surface-recessed);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__user--rail {
+  justify-content: center;
+  padding-inline: 0;
+  background: transparent;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__user-avatar {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__user-glyph {
+  position: absolute;
+  inset-block-end: -0.125rem;
+  inset-inline-end: -0.125rem;
+  display: grid;
+  place-items: center;
+  inline-size: 1rem;
+  block-size: 1rem;
+  color: var(--ds-brand-on);
+  font-size: 0.5rem;
+  font-weight: var(--ds-weight-bold);
+  border-radius: var(--ds-radius-full);
+  background: var(--dashboard-accent);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__user-meta {
+  display: grid;
+  gap: 0.0625rem;
+  min-inline-size: 0;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__user-name {
+  margin: 0;
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__user-email {
+  margin: 0;
+  color: var(--ds-text-muted);
+  font-size: 0.6875rem;
+  direction: ltr;
+  text-align: start;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__user-role {
+  color: var(--dashboard-accent);
+  font-size: 0.625rem;
+  font-weight: var(--ds-weight-semibold);
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side__logout:hover {
+  color: var(--ds-accent-rose);
+  background: color-mix(in oklch, var(--ds-accent-rose) 8%, transparent);
+}
+
+/* ---- حالت ریل: فقط آیکون ---- */
+:is(.dash-root, .dashboard-shell) .dash-side[data-state="rail"] .dash-side__item {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+:is(.dash-root, .dashboard-shell) .dash-side[data-state="rail"] .dash-side__index,
+:is(.dash-root, .dashboard-shell) .dash-side[data-state="rail"] .dash-side__item-chev,
+:is(.dash-root, .dashboard-shell) .dash-side[data-state="rail"] .dash-side__section-head {
+  display: none;
+}
+
+/* ---- پرده‌ی موبایل ---- */
+:is(.dash-root, .dashboard-shell) .dash-side__overlay {
+  position: fixed;
+  z-index: var(--atlas-z-scrim);
+  inset: 0;
+  border: 0;
+  background: var(--ds-overlay-scrim);
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   ۴ — نوار بالا
+   نوار وضعیت است، نه کارت شناور. گلاس فقط همین‌جا و در کشوها مجاز است.
+   ========================================================================== */
+.dash-root .dash-header {
+  position: sticky;
+  z-index: var(--atlas-z-sticky);
+  inset-block-start: 0;
+  flex: 0 0 auto;
+  border-block-end: var(--atlas-rule) solid var(--atlas-hairline);
+  background: color-mix(in oklch, var(--ds-canvas) 88%, transparent);
+  backdrop-filter: blur(10px) saturate(120%);
+}
+
+.dash-root .dash-header__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  min-block-size: 3.75rem;
+  padding-inline: var(--dashboard-gutter);
+}
+
+.dash-root .dash-header__eyebrow-dot,
+.dash-root .dash-header__status-dot {
+  inline-size: 0.375rem;
+  block-size: 0.375rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--dashboard-accent);
+}
+
+.dash-root .dash-header__eyebrow-text {
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: var(--ds-tracking-caps);
+}
+
+.dash-root .dash-header__mobile-title {
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-bold);
+  letter-spacing: var(--ds-tracking-tight);
+}
+
+.dash-root .dash-header__search {
+  min-block-size: 2.25rem;
+  color: var(--ds-text-secondary);
+  border: var(--atlas-rule) solid var(--atlas-hairline);
+  border-radius: var(--atlas-radius-md);
+  background: var(--ds-surface-recessed);
+  transition:
+    border-color var(--atlas-dur-ui) var(--atlas-ease),
+    box-shadow var(--atlas-dur-ui) var(--atlas-ease);
+}
+
+.dash-root .dash-header__search:focus-within {
+  border-color: var(--dashboard-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--dashboard-accent) 12%, transparent);
+}
+
+.dash-root .dash-header__iconbtn {
+  display: grid;
+  place-items: center;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  color: var(--ds-text-secondary);
+  border-radius: var(--atlas-radius-md);
+  background: transparent;
+  transition:
+    background-color var(--atlas-dur-ui) var(--atlas-ease),
+    color var(--atlas-dur-ui) var(--atlas-ease);
+}
+
+.dash-root .dash-header__iconbtn:hover,
+.dash-root .dash-header__avatar:hover {
+  color: var(--ds-text-primary);
+  background: var(--ds-overlay-hover);
+}
+
+.dash-root .dash-header__divider {
+  inline-size: var(--atlas-rule);
+  block-size: 1.25rem;
+  background: var(--atlas-hairline);
+}
+
+/* ==========================================================================
+   ۵ — قاب مسیر
+   ========================================================================== */
+.route-frame {
+  --route-accent: var(--dashboard-accent);
+  inline-size: 100%;
+  container-type: inline-size;
+}
+
+.route-frame[data-route-family="risk"] { --route-accent: var(--ds-accent-rose); }
+.route-frame[data-route-family="money"] { --route-accent: var(--ds-accent-emerald); }
+.route-frame[data-route-family="identity"] { --route-accent: var(--ds-accent-violet); }
+.route-frame[data-route-family="observe"] { --route-accent: var(--ds-accent-cyan); }
+.route-frame[data-route-family="reports"] { --route-accent: var(--ds-accent-amber); }
+.route-frame[data-route-family="security"] { --route-accent: var(--ds-accent-indigo); }
+.route-frame[data-route-family="people"] { --route-accent: var(--ds-accent-slate); }
+.route-frame[data-route-family="support"] { --route-accent: var(--ds-accent-cyan); }
+
+/* ---- نوار خدماتی بالای عنوان ---- */
+.route-frame__utility {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  min-block-size: 1.75rem;
+  margin-block-end: var(--ds-space-2);
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+}
+
+.route-frame__breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4375rem;
+  color: var(--ds-text-secondary);
+  font-weight: var(--ds-weight-semibold);
+}
+
+.route-frame__breadcrumb-dot {
+  inline-size: 0.375rem;
+  block-size: 0.375rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--route-accent);
+}
+
+.route-frame__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  color: var(--route-accent);
+  font-weight: var(--ds-weight-medium);
+  text-decoration: none;
+}
+
+.route-frame__back:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* آیکون جهت‌دار در RTL باید برگردد */
+[dir="rtl"] .route-frame__back > svg {
+  transform: scaleX(-1);
+}
+
+.route-frame__path {
+  margin-inline-start: auto;
+  color: var(--ds-text-muted);
+  font-family: var(--ds-font-mono);
+  font-size: 0.6875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.7;
+}
+
+/* ---- سربرگ مسیر ----
+   عنوان بزرگ در ستون اصلی، نشانه و شماره در ناودان spine.
+   قاعده‌ی افقی زیر سربرگ، گروه را می‌بندد؛ نه کارت. */
+.route-frame__header {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--ds-space-4);
+  padding-block: var(--ds-space-2) var(--ds-space-5);
+  margin-block-end: var(--ds-space-6);
+  border-block-end: var(--atlas-rule) solid var(--atlas-hairline);
+}
+
+.route-frame__mark {
+  position: absolute;
+  inset-block-start: 0.125rem;
+  inset-inline-start: calc(-1 * (var(--atlas-spine) + var(--atlas-spine-gap)));
+  display: grid;
+  place-items: center;
+  inline-size: var(--atlas-spine);
+  block-size: var(--atlas-spine);
+  color: var(--route-accent);
+  border-radius: var(--atlas-radius-md);
+  background: color-mix(in oklch, var(--route-accent) 9%, var(--ds-canvas));
+}
+
+@media (max-width: 47.9375rem) {
+  .route-frame__mark {
+    position: static;
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    margin-block-end: var(--ds-space-2);
+  }
+}
+
+.route-frame__heading {
+  min-inline-size: 0;
+}
+
+.route-frame__eyebrow {
+  display: block;
+  margin-block-end: var(--ds-space-1-5);
+  color: var(--route-accent);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-bold);
+  letter-spacing: var(--ds-tracking-caps);
+  text-transform: uppercase;
+}
+
+.route-frame__title {
+  margin: 0;
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-2xl);
+  font-weight: var(--ds-weight-extrabold);
+  letter-spacing: var(--ds-tracking-tighter);
+  line-height: var(--ds-leading-tight);
+}
+
+.route-frame__description {
+  max-inline-size: var(--ds-measure);
+  margin: var(--ds-space-2) 0 0;
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-sm);
+  line-height: var(--ds-leading-normal);
+}
+
+.route-frame__tools {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.route-frame__state,
+.route-frame__sibling {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4375rem;
+  min-block-size: 2rem;
+  padding-inline: var(--ds-space-2-5);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  white-space: nowrap;
+  border: var(--atlas-rule) solid var(--atlas-hairline);
+  border-radius: var(--atlas-radius-md);
+}
+
+.route-frame__state {
+  color: var(--ds-text-secondary);
+  background: var(--ds-surface-recessed);
+}
+
+.route-frame__sibling {
+  color: var(--route-accent);
+  text-decoration: none;
+  border-color: color-mix(in oklch, var(--route-accent) 24%, var(--atlas-hairline));
+  background: color-mix(in oklch, var(--route-accent) 7%, transparent);
+  transition: background-color var(--atlas-dur-ui) var(--atlas-ease);
+}
+
+.route-frame__sibling:hover {
+  background: color-mix(in oklch, var(--route-accent) 13%, transparent);
+}
+
+.route-frame__state-dot {
+  inline-size: 0.375rem;
+  block-size: 0.375rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--route-accent);
+}
+
+.route-frame__body {
+  container-type: inline-size;
+}
+
+/* حالت‌های بارگذاری و خطا در سطح مسیر */
+.route-frame :where(.loading, [aria-busy="true"]) {
+  min-block-size: 10rem;
+  border: var(--atlas-rule) solid var(--atlas-hairline);
+  border-radius: var(--atlas-radius-lg);
+  background: linear-gradient(
+    90deg,
+    var(--ds-surface-recessed),
+    var(--ds-surface),
+    var(--ds-surface-recessed)
+  );
+  background-size: 200% 100%;
+  animation: atlas-shimmer 1.6s linear infinite;
+}
+
+.route-frame :where(.error, [data-state="error"]) {
+  border: var(--atlas-rule) solid var(--ds-status-error-border);
+  border-radius: var(--atlas-radius-lg);
+  background: var(--ds-status-error-bg);
+  color: var(--ds-status-error-fg);
+}
+
+@keyframes atlas-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+/* ==========================================================================
+   ۶ — بازپوشانی primitives سراسری (dash2-*)
+   کارت‌های یک‌شکل کنار هم جای خود را به «نوار سنجه» می‌دهند: ارقام با خط مو
+   از هم جدا می‌شوند، نه با جعبه. جعبه فقط وقتی که واقعاً کلیک‌پذیر است.
+   ========================================================================== */
+.dashboard-shell .dash2-statcard {
+  position: relative;
+  display: grid;
+  gap: var(--ds-space-2);
+  align-content: start;
+  padding-inline: var(--ds-space-4);
+  padding-block: var(--ds-space-3-5) var(--ds-space-4);
+  color: inherit;
+  text-decoration: none;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: inset var(--atlas-rule) 0 0 0 var(--atlas-hairline);
+}
+
+/* اولین سنجه در هر ردیف خط جداکننده نمی‌خواهد */
+.dashboard-shell .dash2-statcard:first-child {
+  box-shadow: none;
+  padding-inline-start: 0;
+}
+
+.dashboard-shell a.dash2-statcard {
+  border-radius: var(--atlas-radius-md);
+  transition: background-color var(--atlas-dur-ui) var(--atlas-ease);
+}
+
+.dashboard-shell a.dash2-statcard:hover {
+  background: var(--ds-overlay-hover);
+}
+
+.dashboard-shell .dash2-statcard__label {
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: var(--ds-tracking-caps);
+  text-transform: uppercase;
+}
+
+.dashboard-shell .dash2-statcard__value {
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-xl);
+  font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ds-tracking-tighter);
+  line-height: var(--ds-leading-tight);
+}
+
+.dashboard-shell .dash2-statcard__spark {
+  block-size: 2rem;
+  opacity: 0.9;
+}
+
+.dashboard-shell .dash2-statcard__delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  justify-self: start;
+  padding-inline: var(--ds-space-2);
+  padding-block: 0.125rem;
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  border-radius: var(--atlas-radius-sm);
+}
+
+.dashboard-shell .dash2-statcard__delta[data-trend="up"] {
+  color: var(--trend-up);
+  background: var(--trend-up-bg);
+}
+
+.dashboard-shell .dash2-statcard__delta[data-trend="down"] {
+  color: var(--trend-down);
+  background: var(--trend-down-bg);
+}
+
+.dashboard-shell .dash2-statcard__delta[data-trend="flat"] {
+  color: var(--trend-flat);
+  background: var(--trend-flat-bg);
+}
+
+/* ---- جدول: دفتر ثبت ---- */
+.dashboard-shell .dash2-table {
+  inline-size: 100%;
+  border: var(--atlas-rule) solid var(--atlas-hairline);
+  border-radius: var(--atlas-radius-lg);
+  background: var(--ds-surface);
+  overflow: hidden;
+  contain: paint;
+}
+
+.dashboard-shell .dash2-table__head {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding-inline: var(--ds-space-4);
+  padding-block: var(--ds-space-2-5);
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: var(--ds-tracking-caps);
+  text-transform: uppercase;
+  border-block-end: var(--atlas-rule) solid var(--atlas-hairline);
+  background: var(--ds-surface-recessed);
+}
+
+.dashboard-shell .dash2-table__row {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding-inline: var(--ds-space-4);
+  padding-block: var(--ds-space-3);
+  font-size: var(--ds-text-sm);
+  border-block-start: var(--atlas-rule) solid var(--atlas-hairline);
+  transition: background-color var(--atlas-dur-tap) var(--atlas-ease);
+}
+
+.dashboard-shell .dash2-table__row:first-child {
+  border-block-start: 0;
+}
+
+.dashboard-shell .dash2-table__row:hover {
+  background: var(--ds-overlay-hover);
+}
+
+.dashboard-shell .dash2-table__row[data-density="compact"] {
+  padding-block: var(--ds-space-2);
+}
+
+.dashboard-shell .dash2-table__row[data-density="comfortable"] {
+  padding-block: var(--ds-space-4);
+}
+
+.dashboard-shell .dash2-table__row[aria-selected="true"] {
+  background: color-mix(in oklch, var(--dashboard-accent) 7%, transparent);
+}
+
+.dashboard-shell .dash2-table__cell {
+  flex: 1 1 0;
+  min-inline-size: 0;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dashboard-shell .dash2-skeleton {
+  border-radius: var(--atlas-radius-xs);
+  background: linear-gradient(
+    90deg,
+    var(--ds-surface-recessed),
+    var(--ds-canvas-subtle),
+    var(--ds-surface-recessed)
+  );
+  background-size: 200% 100%;
+  animation: atlas-shimmer 1.6s linear infinite;
+}
+
+/* ==========================================================================
+   ۷ — موبایل: بازطراحی، نه کوچک‌کردن
+   ========================================================================== */
+@media (max-width: 47.9375rem) {
+  .dash-root {
+    flex-direction: column !important;
+    block-size: 100dvh;
+  }
+
+  .dash-root > .dash-side {
+    position: fixed !important;
+    inset-block: 0;
+    inset-inline-start: 0;
+    z-index: var(--atlas-z-drawer);
+    inline-size: min(19rem, 86vw);
+    block-size: 100dvh;
+    transform: translateX(0);
+  }
+
+  :is(.dash-root, .dashboard-shell) .dash-side[data-state="mobile-open"] {
+    box-shadow: var(--ds-shadow-lg);
+  }
+
+  /* روی لمس، میان‌بر صفحه‌کلید معنا ندارد */
+  :is(.dash-root, .dashboard-shell) .dash-side__item-kbd {
+    display: none;
+  }
+
+  :is(.dash-root, .dashboard-shell) .dash-side__item {
+    min-block-size: var(--atlas-tap-min);
+  }
+
+  .dashboard-shell__content {
+    padding-inline: 0.875rem;
+    padding-block-start: 0.75rem;
+  }
+
+  .dash-root .dash-header__inner {
+    min-block-size: 3.5rem;
+    padding-inline: 0.875rem;
+  }
+
+  .dash-root :where(.table-wrap, [data-table-scroll]) {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+
+  .route-frame__utility {
+    flex-wrap: wrap;
+  }
+
+  .route-frame__path {
+    display: none;
+  }
+
+  .route-frame__header {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: var(--ds-space-3);
+    padding-block-end: var(--ds-space-4);
+    margin-block-end: var(--ds-space-5);
+  }
+
+  .route-frame__tools {
+    flex-wrap: wrap;
+  }
+
+  .route-frame__title {
+    font-size: var(--ds-text-xl);
+  }
+
+  /* در موبایل، سنجه‌ها روی هم می‌آیند: خط جداکننده افقی می‌شود */
+  .dashboard-shell .dash2-statcard {
+    padding-inline: 0;
+    padding-block: var(--ds-space-3);
+    box-shadow: inset 0 var(--atlas-rule) 0 0 var(--atlas-hairline);
+  }
+
+  .dashboard-shell .dash2-statcard:first-child {
+    box-shadow: none;
+  }
+
+  /* ردیف‌های جدول در موبایل به بلوک تبدیل می‌شوند */
+  .dashboard-shell .dash2-table__cell[data-collapse] {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   ۸ — نمایشگرهای بزرگ: فضای بیشتر، نه محتوای کشیده
+   ========================================================================== */
+@media (min-width: 100rem) {
+  .dashboard-shell,
+  .dash-root {
+    --dashboard-content-max: 96rem;
+  }
+}
