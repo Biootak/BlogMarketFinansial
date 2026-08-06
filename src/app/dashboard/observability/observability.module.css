@@ -1,11 +1,21 @@
 /* ============================================================================
-   Observability — route shell
+   Observability — route shell · «سالنانه» ۲۰۲۶
    ----------------------------------------------------------------------------
    Mobile first. Logical properties only. Tokens only.
 
-   ساختار (۲۰۲۶-۰۸): ریلِ چسبانِ سمتِ کناری حذف شد. نشانه‌های حیاتی حالا داخل
-   ObsPulseDeck هستند، پس هر عدد فقط یک‌بار در صفحه دیده می‌شود و بدنه تمام‌عرض
-   می‌ماند تا گرید ۱۲ ستونی boardها جا داشته باشد.
+   تغییر ساختاری این نسخه:
+   بدنه دیگر یک گرید ۱۲ ستونیِ ساده با ردیف‌های مساوی نیست. سه چیز اضافه شد:
+
+     ۱. «ریلِ حاشیه» — یک خط مویی عمودی که از بالای بدنه تا پایین کشیده
+        می‌شود و همهٔ مدخل‌ها را به یک نخ می‌بندد. با ::before رسم می‌شود، پس
+        هیچ گرید آیتم اضافه‌ای نمی‌سازد و صفر هزینهٔ layout دارد.
+
+     ۲. شمارندهٔ مدخل — obs-entry اینجا reset می‌شود تا شمارهٔ بلوک‌ها با
+        ترتیب DOM بخواند؛ هیچ prop شماره‌ای در page لازم نیست.
+
+     ۳. ریتم پلکانی — در عرض‌های بزرگ بلوک دوم هر جفت کمی پایین‌تر می‌نشیند.
+        هدف شکستن «ردیف‌های خط‌کشیِ» گریدِ کلاسیک است؛ padding-block است نه
+        transform، چون باید فضای واقعی بگیرد و روی چیزی نیفتد.
    ============================================================================ */
 
 .page {
@@ -30,8 +40,9 @@
   gap: var(--ds-space-3);
   padding-block: var(--ds-space-2);
   border-block-end: 1px solid var(--ds-border-subtle);
-  background: color-mix(in oklch, var(--ds-canvas) 82%, transparent);
+  background: color-mix(in oklch, var(--ds-canvas) 84%, transparent);
   backdrop-filter: blur(10px) saturate(130%);
+  -webkit-backdrop-filter: blur(10px) saturate(130%);
   min-inline-size: 0;
 }
 
@@ -45,20 +56,46 @@
 }
 
 /*
-   گرید boardها. زیر ۶۴rem تک‌ستونی است و کلاس‌های span اصلاً وجود ندارند
+   گرید مدخل‌ها. زیر ۶۴rem تک‌ستونی است و کلاس‌های span اصلاً وجود ندارند
    (به boards.module.css نگاه کن) تا ستون ضمنی ساخته نشود.
 */
 .main {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--ds-space-8);
   min-inline-size: 0;
+  counter-reset: obs-entry;
 }
 
 @media (min-width: 64rem) {
   .main {
     grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: var(--ds-space-8) var(--ds-space-6);
+    /* ریتم عمودی سخاوتمندتر از افقی — چشم ستون‌ها را جفت می‌کند، نه ردیف‌ها را */
+    gap: var(--ds-space-10) var(--ds-space-6);
     align-items: start;
+    grid-auto-flow: row dense;
+    padding-inline-start: var(--ds-space-5);
+  }
+
+  /* ریلِ حاشیه — نخی که همهٔ مدخل‌ها را به هم می‌بندد */
+  .main::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: 1px;
+    background: linear-gradient(
+      to bottom,
+      var(--ds-border-default),
+      var(--ds-border-subtle) 55%,
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  /* پلکان: مدخل‌های جفت کمی دیرتر شروع می‌شوند تا صفحه ردیف‌بندی نفس بکشد */
+  .main > :nth-child(2n) {
+    padding-block-start: var(--ds-space-6);
   }
 }

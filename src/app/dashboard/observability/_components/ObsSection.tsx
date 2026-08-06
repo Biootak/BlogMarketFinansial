@@ -12,10 +12,22 @@ interface ObsSectionProps {
   /** برای جاگذاری در گرید boards — کلاس span از boards.module.css می‌آید. */
   className?: string;
   tone?: ToneKey;
+  /** plain شمارهٔ مدخل را پنهان می‌کند؛ برای بلوک‌های فرعی زیرمسیرها. */
+  variant?: 'entry' | 'plain';
   children: ReactNode;
 }
 
-/** پوستهٔ استاندارد هر بلوک — تیتر، توضیح کوتاه، خط مویی، بدنه. بدون کارت. */
+/**
+ * پوستهٔ استاندارد هر بلوک — «مدخل سالنامه».
+ *
+ * ساختار: شمارهٔ mono در ریل، تیتر، توضیح در حاشیهٔ کنارِ تیتر (وقتی خودِ
+ * بلوک جا داشته باشد — با container query، نه با viewport)، یک خط مویی
+ * سرتاسری، و بدنه. بدون کارت، بدون سایه.
+ *
+ * شماره با CSS counter تولید می‌شود (obs-entry، در observability.module.css
+ * ریست می‌شود)، پس ترتیب همیشه با ترتیب DOM می‌خواند و هیچ prop عددی لازم
+ * نیست — جابه‌جا کردن بلوک‌ها در page به‌طور خودکار شماره‌ها را درست می‌کند.
+ */
 export function ObsSection({
   icon: Icon,
   title,
@@ -23,14 +35,20 @@ export function ObsSection({
   actions,
   className,
   tone,
+  variant = 'entry',
   children,
 }: ObsSectionProps) {
   return (
-    <section className={className ? `${s.section} ${className}` : s.section} data-tone={tone}>
+    <section
+      className={className ? `${s.section} ${className}` : s.section}
+      data-tone={tone}
+      data-variant={variant}
+    >
       <header className={s.sectionHead}>
+        <span className={s.sectionIndex} aria-hidden="true" />
         <div className={s.sectionHeadText}>
           <h2 className={s.sectionTitle}>
-            <Icon size={16} strokeWidth={1.5} aria-hidden="true" />
+            <Icon size={18} strokeWidth={1.5} aria-hidden="true" />
             {title}
           </h2>
           {hint ? <p className={s.sectionHint}>{hint}</p> : null}

@@ -1,16 +1,24 @@
 /* ============================================================================
-   Observability — component surface
+   Observability — component surface · «سالنامه» (Almanac)
    ----------------------------------------------------------------------------
    قواعد این فایل:
-     · Mobile first. هر media query فقط اضافه می‌کند، هرگز کم نمی‌کند.
+     · Mobile first. هر media/container query فقط اضافه می‌کند، هرگز کم نمی‌کند.
      · فقط logical properties. هیچ left/right/top/bottom فیزیکی.
-     · فقط توکن. هیچ hex/rgb/px ثابتی که معادل توکن دارد.
-     · بدون کارت. ساختار از خط مویی و ستون شماره می‌آید، نه از جعبه.
-     · انیمیشن: فقط opacity/transform. کل فایل دو انیمیشن دارد و بس
-       (نفس خط پایه + beacon که از utility سراسری anim-ping-soft می‌آید).
+     · فقط توکن. هیچ hex/rgb.
+     · انیمیشن: فقط opacity/transform. کل فایل یک @keyframes دارد (نفس خط پایه).
+     · بدون reduced-motion محلی — سراسری در tokens.css کلمپ شده.
 
-   هویت بصری: دفتر کل. یک صرافی با «دفتر» کار می‌کند — ستون، خط‌کش، جمع
-   حاشیه، و عدد راست‌چین. مرکز مشاهده‌پذیری هم دفتر سلامت سامانه است.
+   هویت بصری ۲۰۲۶ — «سالنامه»:
+   دفتر کل قبلی ستون و خط‌کش داشت ولی همهٔ بلوک‌ها یک وزن داشتند. سالنامه یک
+   قدم جلوتر است: هر بلوک یک «مدخل» شماره‌دار است که با عدد mono و یک خط
+   مویی سرتاسری ثبت می‌شود، و توضیحش نه زیر تیتر بلکه در «حاشیهٔ» کنار آن
+   می‌نشیند — مثل یادداشت‌های حاشیهٔ تقویم‌های نجومی. تصمیم عرض حاشیه با
+   container query گرفته می‌شود نه viewport، چون یک بلوک ۵ ستونی و یک بلوک ۸
+   ستونی در همان viewport فضای متفاوتی دارند.
+
+   حذف‌شده‌ها نسبت به نسخهٔ قبل: نوارِ رنگیِ کنارِ کارت‌ها (border-inline-start
+   ضخیم) — هیچ‌وقت تصمیم طراحی نبود، عادت بود. جایش خط مویی کامل + نویسهٔ
+   پیشروِ سطح آمده.
    ============================================================================ */
 
 /* ══════════════════ 0. اتم‌های مشترک ══════════════════ */
@@ -120,9 +128,9 @@
   gap: var(--ds-space-2);
   padding-block: var(--ds-space-2);
   /* شیشه فقط در toolbar مجاز است — بلور کم، شفافیت کم، مرز مویی */
-  background: color-mix(in oklch, var(--ds-canvas) 82%, transparent);
-  backdrop-filter: blur(10px) saturate(1.2);
-  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  background: color-mix(in oklch, var(--ds-canvas) 84%, transparent);
+  backdrop-filter: blur(10px) saturate(1.15);
+  -webkit-backdrop-filter: blur(10px) saturate(1.15);
   border-block-end: 1px solid var(--obs-rule);
 }
 
@@ -136,6 +144,8 @@
 .commandNav {
   min-inline-size: 0;
   overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: inline mandatory;
   scrollbar-width: none;
 }
 
@@ -152,6 +162,10 @@
   list-style: none;
 }
 
+/*
+ * تب‌ها: نه قرص پررنگ، نه زیرخطِ تنها. عدد mono پیشرو + وزن تیتر، و برای تب
+ * فعال یک «قوس» مویی که فقط زیر متن کشیده می‌شود. هدف لمسی ۲٫۷۵rem می‌ماند.
+ */
 .navLink {
   position: relative;
   display: inline-flex;
@@ -160,10 +174,11 @@
   min-block-size: 2.75rem;
   padding-inline: var(--ds-space-2-5);
   border-radius: var(--ds-radius-sm);
+  scroll-snap-align: start;
   white-space: nowrap;
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-medium);
-  color: var(--ds-text-secondary);
+  color: var(--ds-text-muted);
   cursor: pointer;
   transition:
     color var(--ds-duration-fast) var(--ds-ease-out-quart),
@@ -180,7 +195,6 @@
   outline-offset: 2px;
 }
 
-/* تب فعال: خط مویی زیرین به رنگ وضعیت سامانه — نه قرص پررنگ */
 .navLink[aria-current='page'] {
   color: var(--ds-text-primary);
   font-weight: var(--ds-weight-semibold);
@@ -189,8 +203,8 @@
 .navLink[aria-current='page']::after {
   content: '';
   position: absolute;
-  inset-inline: var(--ds-space-2);
-  inset-block-end: 0.25rem;
+  inset-inline: var(--ds-space-2-5);
+  inset-block-end: 0.3rem;
   block-size: 2px;
   border-radius: var(--ds-radius-full);
   background: var(--obs-tone);
@@ -206,6 +220,7 @@
   text-align: center;
   color: var(--tone);
   background: color-mix(in oklch, var(--tone) 14%, transparent);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── وضعیت زنده ─────────────────────────────────────────────────────────── */
@@ -320,10 +335,6 @@
 }
 
 @media (min-width: 48rem) {
-  .command {
-    flex-direction: column;
-  }
-
   .windowNote,
   .refreshText {
     display: inline;
@@ -343,13 +354,13 @@
 .deckTop {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-4);
+  gap: var(--ds-space-5);
 }
 
 .verdict {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-1);
+  gap: var(--ds-space-1-5);
   min-inline-size: 0;
 }
 
@@ -360,13 +371,18 @@
   color: var(--obs-tone);
 }
 
+/*
+ * حکم سامانه بزرگ‌ترین تیپوگرافی صفحه است و باید ۳ برابر متن بدنه باشد، نه
+ * ۱٫۵ برابر؛ سلسله‌مراتب ضعیف بیشتر از رنگ غلط به طراحی ضربه می‌زند.
+ */
 .verdictLabel {
   margin: 0;
-  font-size: var(--ds-text-2xl);
-  font-weight: var(--ds-weight-bold);
-  letter-spacing: var(--nova-tracking-tight);
+  font-size: var(--ds-text-3xl);
+  font-weight: var(--ds-weight-extrabold);
+  letter-spacing: var(--nova-tracking-tightest);
   line-height: var(--ds-leading-tight);
   color: var(--obs-tone);
+  text-wrap: balance;
 }
 
 .verdictHead {
@@ -374,21 +390,28 @@
   font-size: var(--ds-text-base);
   line-height: var(--ds-leading-snug);
   color: var(--ds-text-primary);
+  max-inline-size: 52ch;
+  text-wrap: pretty;
 }
 
 .verdictAction {
   margin: 0;
+  padding-block-start: var(--ds-space-2);
+  border-block-start: 1px solid var(--obs-rule);
   font-size: var(--ds-text-xs);
   line-height: var(--ds-leading-normal);
   color: var(--ds-text-muted);
   max-inline-size: 46ch;
 }
 
-/* نوار متریک بالای نمودار — RED: نرخ، خطا، مدت */
+/*
+ * نوار متریک (RED: نرخ، خطا، مدت). قبلاً چهار خانهٔ هم‌اندازه بود = ریتم صفر.
+ * حالا خانهٔ اول وزن بیشتری می‌گیرد و جداکننده‌ها خط مویی عمودی‌اند.
+ */
 .deckMetrics {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ds-space-3) var(--ds-space-4);
+  gap: var(--ds-space-3) 0;
   padding-block: var(--ds-space-3);
   border-block: 1px solid var(--obs-rule);
 }
@@ -396,22 +419,29 @@
 .metricCell {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: 0.15rem;
   min-inline-size: 0;
+  padding-inline: var(--ds-space-3);
+  border-inline-start: 1px solid var(--obs-rule);
+}
+
+.metricCell:first-child {
+  padding-inline-start: 0;
+  border-inline-start: 0;
 }
 
 .metricLabel {
-  font-size: 0.66rem;
+  font-size: 0.64rem;
   font-weight: var(--ds-weight-medium);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.06em;
   color: var(--ds-text-muted);
 }
 
 .metricValue {
-  font-size: var(--ds-text-lg);
-  font-weight: var(--ds-weight-semibold);
+  font-size: var(--ds-text-xl);
+  font-weight: var(--ds-weight-bold);
   line-height: var(--ds-leading-tight);
-  letter-spacing: var(--nova-tracking-tight);
+  letter-spacing: var(--nova-tracking-tighter);
   color: var(--ds-text-primary);
   font-variant-numeric: tabular-nums;
 }
@@ -431,7 +461,7 @@
 
 @media (min-width: 40rem) {
   .deckMetrics {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: 1.25fr repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -445,11 +475,14 @@
 
   .deckMetrics {
     flex: 1 1 34rem;
-    border-block-start: 0;
-    border-block-end: 0;
-    border-inline-start: 1px solid var(--obs-rule);
+    border-block: 0;
     padding-block: 0;
     padding-inline-start: var(--ds-space-5);
+    border-inline-start: 1px solid var(--obs-rule);
+  }
+
+  .deckMetrics .metricCell:first-child {
+    padding-inline-start: 0;
   }
 }
 
@@ -497,7 +530,7 @@
 }
 
 .svgErrArea {
-  fill: color-mix(in oklch, var(--obs-bad) 22%, transparent);
+  fill: color-mix(in oklch, var(--obs-bad) 20%, transparent);
 }
 
 .svgErrLine {
@@ -536,7 +569,7 @@
 
 .gradTop {
   stop-color: var(--obs-data);
-  stop-opacity: 0.34;
+  stop-opacity: 0.32;
 }
 
 .gradBottom {
@@ -596,6 +629,7 @@
   margin-block-start: var(--ds-space-1);
   font-size: 0.62rem;
   color: var(--ds-text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── خوانش سطل انتخاب‌شده ────────────────────────────────────────────── */
@@ -701,7 +735,12 @@
   }
 }
 
-/* ══════════════════ 3. zone — بلوک دفتری ══════════════════ */
+/* ══════════════════ 3. مدخل سالنامه — پوستهٔ هر بلوک ══════════════════
+   دو خانواده کلاس اینجا زندگی می‌کنند و هر دو باید بمانند:
+     · .section*  → پوستهٔ ObsSection (نسخهٔ فعلی)
+     · .zone*     → مصرف‌کنندگان قدیمی‌تر داخل زیرمسیرها
+   ظاهرشان یکی است؛ فقط نام‌ها فرق دارند تا هیچ import ای نشکند.
+   ══════════════════════════════════════════════════════════════════════ */
 
 .board {
   display: grid;
@@ -712,6 +751,7 @@
 @media (min-width: 56rem) {
   .board {
     grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: start;
   }
 
   .board > * {
@@ -731,87 +771,176 @@
   }
 }
 
+/* رنگ وضعیت هر مدخل — محلی، بدون آلوده کردن ریشه */
+.section[data-tone='ok'],
+.zone[data-tone='ok'] {
+  --obs-tone: var(--obs-ok);
+}
+
+.section[data-tone='warn'],
+.zone[data-tone='warn'] {
+  --obs-tone: var(--obs-warn);
+}
+
+.section[data-tone='bad'],
+.zone[data-tone='bad'] {
+  --obs-tone: var(--obs-bad);
+}
+
+.section[data-tone='info'],
+.zone[data-tone='info'] {
+  --obs-tone: var(--obs-info);
+}
+
+.section,
 .zone {
-  display: grid;
-  grid-template-columns: var(--obs-gutter) minmax(0, 1fr);
-  gap: 0 var(--ds-space-2);
+  /* پهنای ریل شمارهٔ مدخل. ثابت است تا خط‌کش عمودی همهٔ بلوک‌ها هم‌تراز شود. */
+  --entry-rail: 2rem;
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
   min-inline-size: 0;
+  counter-increment: obs-entry;
 }
 
 /*
- * variant=plain: بدون ستون شماره. عمداً وجود دارد تا همهٔ بلوک‌های صفحه
- * یک شکل نباشند — تنوع intentional، نه یکنواختی.
+ * سرِ مدخل: [شماره] [تیتر] ... [کنش‌ها] و یک خط مویی سرتاسری زیر همه.
+ * شماره با counter تولید می‌شود، پس هیچ prop اضافه‌ای لازم نیست و ترتیب
+ * همیشه با ترتیب DOM می‌خواند.
  */
-.zone[data-variant='plain'] {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.zoneIndex {
-  grid-row: 1 / span 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--ds-space-2);
-  padding-block-start: 0.15rem;
-  font-family: var(--ds-font-mono);
-  font-size: 0.7rem;
-  color: var(--ds-text-muted);
-}
-
-/* خط‌کش عمودی دفتر */
-.zoneIndex::after {
-  content: '';
-  flex: 1;
-  inline-size: 1px;
-  background: linear-gradient(to bottom, var(--obs-rule), transparent);
-}
-
-.zone[data-variant='plain'] .zoneIndex {
-  display: none;
-}
-
+.sectionHead,
 .zoneHead {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: var(--entry-rail) minmax(0, 1fr) auto;
   align-items: baseline;
-  gap: var(--ds-space-1) var(--ds-space-3);
-  padding-block-end: var(--ds-space-2);
+  column-gap: var(--ds-space-2);
+  row-gap: var(--ds-space-1-5);
+  padding-block-end: var(--ds-space-2-5);
+  border-block-end: 1px solid var(--obs-rule-strong);
 }
 
-.zoneTitle {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ds-space-1-5);
-  margin: 0;
-  font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-semibold);
-  letter-spacing: var(--nova-tracking-tight);
-  color: var(--ds-text-primary);
+.sectionIndex,
+.zoneIndex {
+  grid-column: 1;
+  align-self: start;
+  font-family: var(--ds-font-mono);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  line-height: var(--ds-leading-snug);
+  color: var(--ds-text-muted);
+  transition: color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  user-select: none;
 }
 
-.zoneTitle svg {
+.sectionIndex::before,
+.zoneIndex::before {
+  content: counter(obs-entry, decimal-leading-zero);
+}
+
+.section:hover .sectionIndex,
+.section:focus-within .sectionIndex,
+.zone:hover .zoneIndex,
+.zone:focus-within .zoneIndex {
   color: var(--obs-tone);
 }
 
-.zoneHint {
-  flex: 1 1 18rem;
-  margin: 0;
-  font-size: 0.7rem;
-  line-height: var(--ds-leading-normal);
-  color: var(--ds-text-muted);
+.sectionHeadText,
+.zoneHeadText {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  min-inline-size: 0;
 }
 
+.sectionTitle,
+.zoneTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin: 0;
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: var(--nova-tracking-tight);
+  line-height: var(--ds-leading-tight);
+  color: var(--ds-text-primary);
+  text-wrap: balance;
+}
+
+.sectionTitle svg,
+.zoneTitle svg {
+  flex: none;
+  color: var(--obs-tone);
+}
+
+.sectionHint,
+.zoneHint {
+  margin: 0;
+  font-size: var(--ds-text-xs);
+  line-height: var(--ds-leading-normal);
+  color: var(--ds-text-muted);
+  max-inline-size: 62ch;
+  text-wrap: pretty;
+}
+
+.sectionActions,
 .zoneActions {
+  grid-column: 3;
   display: flex;
   align-items: center;
   gap: var(--ds-space-1);
-  margin-inline-start: auto;
 }
 
+/*
+ * حاشیه‌نویسی: وقتی خودِ بلوک (نه viewport) پهن باشد، توضیح از زیر تیتر
+ * می‌رود کنارش. container query لازم است چون یک بلوک ۵ ستونی و یک بلوک ۸
+ * ستونی در همان عرض صفحه فضای کاملاً متفاوتی دارند.
+ */
+@container (min-width: 34rem) {
+  .sectionHeadText,
+  .zoneHeadText {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(16ch, 26ch);
+    align-items: baseline;
+    column-gap: var(--ds-space-5);
+  }
+
+  .sectionHint,
+  .zoneHint {
+    padding-inline-start: var(--ds-space-4);
+    border-inline-start: 1px solid var(--obs-rule);
+  }
+}
+
+.sectionBody,
 .zoneBody {
   min-inline-size: 0;
-  padding-block-start: var(--ds-space-2);
-  border-block-start: 1px solid var(--obs-rule);
+  padding-block-start: var(--ds-space-4);
+  padding-inline-start: calc(var(--entry-rail) + var(--ds-space-2));
+}
+
+/* زیر ۴۸rem تورفتگی بدنه حذف می‌شود؛ عرض خواندنی مهم‌تر از تراز خط‌کش است. */
+@media (max-width: 47.99rem) {
+  .sectionBody,
+  .zoneBody {
+    padding-inline-start: 0;
+  }
+
+  .sectionHead,
+  .zoneHead {
+    grid-template-columns: var(--entry-rail) minmax(0, 1fr);
+  }
+
+  .sectionActions,
+  .zoneActions {
+    grid-column: 2;
+  }
+}
+
+/* variant=plain: بدون شمارهٔ مدخل — تنوع عمدی، نه یکنواختی. */
+.section[data-variant='plain'] .sectionIndex,
+.zone[data-variant='plain'] .zoneIndex {
+  visibility: hidden;
 }
 
 /* ══════════════════ 4. حالت خالی ══════════════════ */
@@ -820,13 +949,14 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--ds-space-1);
-  padding-block: var(--ds-space-5);
+  gap: var(--ds-space-1-5);
+  padding-block: var(--ds-space-6);
   max-inline-size: 46ch;
 }
 
 .emptyIcon {
-  color: var(--ds-text-muted);
+  color: var(--obs-tone);
+  opacity: 0.7;
 }
 
 .emptyTitle {
@@ -856,7 +986,7 @@
   align-items: baseline;
   justify-content: space-between;
   gap: var(--ds-space-2);
-  padding-block: var(--ds-space-1-5);
+  padding-block: var(--ds-space-2);
   border-block-end: 1px dashed var(--obs-rule);
 }
 
@@ -872,24 +1002,42 @@
 .rowVal {
   --tone: var(--ds-text-primary);
   margin: 0;
-  font-size: var(--ds-text-xs);
+  font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
   color: var(--tone);
   font-variant-numeric: tabular-nums;
 }
 
-/* ══════════════════ 6. ریل نشانه‌های حیاتی ══════════════════ */
+/* ══════════════════ 6. ریل نشانه‌های حیاتی ══════════════════
+   نوارِ رنگیِ ضخیمِ کناری حذف شد. حالا خط مویی کامل + یک نور نازک افقی در
+   لبهٔ بالا، همان «alive but quiet» که AGENTS.ui-design می‌خواهد.
+   ═════════════════════════════════════════════════════════════════════ */
 
 .vitals {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-3);
-  padding: var(--ds-space-3);
-  border-radius: var(--ds-radius-lg);
+  padding: var(--ds-space-4) var(--ds-space-3) var(--ds-space-3);
+  border: 1px solid var(--obs-rule);
+  border-radius: var(--ds-radius-md);
   background: var(--ds-surface-recessed);
-  /* خط مویی خودروشن سمت شروع — به رنگ وضعیت */
-  border-inline-start: 2px solid var(--obs-tone);
-  box-shadow: var(--ds-shadow-sm);
+  overflow: clip;
+}
+
+.vitals::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklch, var(--obs-tone) 70%, transparent),
+    transparent
+  );
+  pointer-events: none;
 }
 
 .vitalsTop {
@@ -901,9 +1049,10 @@
 
 .vitalsLabel {
   margin: 0;
-  font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-bold);
-  letter-spacing: var(--nova-tracking-tight);
+  font-size: 0.68rem;
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .vitalsNote {
@@ -950,6 +1099,7 @@
   margin: 0;
   font-size: 0.6rem;
   color: var(--ds-text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ══════════════════ 7. نردبان سرویس‌ها ══════════════════ */
@@ -970,19 +1120,35 @@
   grid-template-columns: 1.5rem 0.5rem minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--ds-space-2);
-  padding-block: var(--ds-space-2-5);
+  padding-block: var(--ds-space-3);
   border-block-end: 1px solid var(--obs-rule);
+  transition: background-color var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .ladderRow:last-child {
   border-block-end: 0;
 }
 
+.ladderRow:hover {
+  background: color-mix(in oklch, var(--tone) 5%, transparent);
+}
+
+/*
+ * رتبه: عدد اول بزرگ‌تر و پررنگ‌تر است. «پرخطرترین» یعنی یکی از بقیه مهم‌تر
+ * است؛ اگر همهٔ رتبه‌ها یک اندازه باشند، فهرست فقط یک صف است نه یک اولویت.
+ */
 .ladderRank {
   font-family: var(--ds-font-mono);
   font-size: 0.66rem;
   color: var(--ds-text-muted);
   text-align: start;
+  font-variant-numeric: tabular-nums;
+}
+
+.ladderRow:first-child .ladderRank {
+  font-size: 0.8rem;
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-text-secondary);
 }
 
 .ladderDot {
@@ -996,17 +1162,18 @@
 .ladderName {
   display: flex;
   flex-direction: column;
-  gap: 0.05rem;
+  gap: 0.1rem;
   min-inline-size: 0;
 }
 
 .ladderTitle {
-  font-size: var(--ds-text-xs);
+  font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
   color: var(--ds-text-primary);
   text-decoration: none;
   cursor: pointer;
   border-radius: var(--ds-radius-sm);
+  transition: color var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .ladderTitle:hover {
@@ -1043,7 +1210,7 @@
   display: flex;
   align-items: center;
   gap: var(--ds-space-3);
-  padding-block-start: var(--ds-space-1-5);
+  padding-block-start: var(--ds-space-2);
   padding-inline-start: 2rem;
 }
 
@@ -1060,29 +1227,30 @@
   flex: 1;
   min-inline-size: 1px;
   border-radius: 1px;
-  background: color-mix(in oklch, var(--tone) 45%, transparent);
+  background: color-mix(in oklch, var(--tone) 42%, transparent);
 }
 
 .ladderNums {
   display: flex;
-  gap: var(--ds-space-3);
+  gap: var(--ds-space-4);
   flex: none;
 }
 
 .num {
   display: flex;
   flex-direction: column;
-  gap: 0.05rem;
+  gap: 0.1rem;
   text-align: start;
 }
 
 .numLabel {
   font-size: 0.6rem;
+  letter-spacing: 0.05em;
   color: var(--ds-text-muted);
 }
 
 .numValue {
-  font-size: 0.72rem;
+  font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
   color: var(--ds-text-secondary);
   font-variant-numeric: tabular-nums;
@@ -1108,7 +1276,7 @@
 .spread {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-2);
+  gap: var(--ds-space-2-5);
 }
 
 .spreadBar {
@@ -1126,7 +1294,7 @@
 .spreadLegend {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--ds-space-1) var(--ds-space-3);
+  gap: var(--ds-space-1) var(--ds-space-4);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1159,8 +1327,8 @@
 .incidentRow {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--ds-space-1) var(--ds-space-3);
-  padding-block: var(--ds-space-2-5);
+  gap: var(--ds-space-1-5) var(--ds-space-3);
+  padding-block: var(--ds-space-3);
   border-block-end: 1px solid var(--obs-rule);
 }
 
@@ -1170,7 +1338,7 @@
 
 .incidentTitle {
   display: block;
-  font-size: var(--ds-text-xs);
+  font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
   color: var(--ds-text-primary);
   font-variant-numeric: tabular-nums;
@@ -1182,10 +1350,12 @@
   color: var(--ds-text-muted);
 }
 
+/* شدت رخداد بزرگ‌ترین عدد ردیف است — سلسله‌مراتب از اندازه، نه فقط رنگ. */
 .incidentPeak {
   align-self: center;
-  font-size: var(--ds-text-base);
+  font-size: var(--ds-text-xl);
   font-weight: var(--ds-weight-bold);
+  letter-spacing: var(--nova-tracking-tighter);
   color: var(--obs-bad);
   font-variant-numeric: tabular-nums;
 }
@@ -1223,8 +1393,8 @@
   display: grid;
   grid-template-columns: minmax(4rem, auto) minmax(0, 1fr) auto;
   align-items: center;
-  gap: var(--ds-space-2);
-  padding-block: var(--ds-space-2);
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-2-5);
   border-block-end: 1px dashed var(--obs-rule);
   font-size: var(--ds-text-xs);
   color: var(--ds-text-secondary);
@@ -1258,8 +1428,8 @@
 .sourceRow {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.2rem var(--ds-space-2);
-  padding-block: var(--ds-space-2);
+  gap: 0.3rem var(--ds-space-3);
+  padding-block: var(--ds-space-2-5);
   border-block-end: 1px dashed var(--obs-rule);
 }
 
@@ -1310,8 +1480,8 @@
 }
 
 .chip {
-  min-block-size: 2rem;
-  padding-inline: var(--ds-space-2-5);
+  min-block-size: 2.25rem;
+  padding-inline: var(--ds-space-3);
   border: 1px solid var(--obs-rule);
   border-radius: var(--ds-radius-full);
   background: transparent;
@@ -1321,6 +1491,7 @@
   transition:
     color var(--ds-duration-fast) var(--ds-ease-out-quart),
     border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    background-color var(--ds-duration-fast) var(--ds-ease-out-quart),
     transform var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
@@ -1360,31 +1531,50 @@
   contain-intrinsic-size: auto 30rem;
 }
 
+/*
+ * ردیف لاگ: نوارِ رنگیِ کناری رفت. سطح خطا حالا یک نویسهٔ mono در قابِ مویی
+ * است — رنگ تنها حامل معنا نیست (WCAG 2.2)، و ردیف‌ها دیگر شبیه هشدارهای
+ * کلیشه‌ای bootstrap نیستند.
+ */
 .ledgerRow {
   --tone: var(--obs-info);
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 0.2rem var(--ds-space-2);
-  padding-block: var(--ds-space-2);
-  padding-inline-start: var(--ds-space-2);
+  align-items: baseline;
+  gap: 0.3rem var(--ds-space-2-5);
+  padding-block: var(--ds-space-2-5);
   border-block-end: 1px solid var(--obs-rule);
-  border-inline-start: 2px solid var(--tone);
 }
 
 .ledgerRow:last-child {
   border-block-end: 0;
 }
 
+.ledgerRow[data-tone='bad'] {
+  background: color-mix(in oklch, var(--obs-bad) 4%, transparent);
+}
+
 .ledgerLevel {
-  font-size: 0.64rem;
+  display: inline-grid;
+  place-items: center;
+  min-inline-size: 3.25rem;
+  padding-block: 0.1rem;
+  border: 1px solid color-mix(in oklch, var(--tone) 34%, transparent);
+  border-radius: var(--ds-radius-sm);
+  font-family: var(--ds-font-mono);
+  font-size: 0.6rem;
   font-weight: var(--ds-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--tone);
+  direction: ltr;
+  unicode-bidi: isolate;
 }
 
 .ledgerMsg {
   grid-column: 1 / -1;
   font-family: var(--ds-font-mono);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   line-height: var(--ds-leading-snug);
   color: var(--ds-text-secondary);
   direction: ltr;
@@ -1397,14 +1587,26 @@
   font-size: 0.64rem;
   color: var(--ds-text-muted);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .ledgerCount {
-  font-size: 0.64rem;
+  font-size: 0.68rem;
   font-weight: var(--ds-weight-semibold);
   color: var(--ds-text-secondary);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+@media (min-width: 56rem) {
+  .ledgerRow {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    align-items: center;
+  }
+
+  .ledgerMsg {
+    grid-column: 2;
+  }
 }
 
 /* ══════════════════ 12. محور صدک تأخیر ══════════════════ */
@@ -1413,15 +1615,19 @@
   padding-block: var(--ds-space-6) var(--ds-space-3);
 }
 
+/*
+ * شیب رنگ خطر باید در RTL هم از «خوب» به «بد» برود. `to inline-end` منطقی
+ * است و در هر دو جهت درست می‌چرخد — نکته‌ای که با `to right` می‌شکست.
+ */
 .scaleTrack {
   position: relative;
   block-size: 0.4rem;
   border-radius: var(--ds-radius-full);
   background: linear-gradient(
-    to right,
-    color-mix(in oklch, var(--obs-ok) 30%, transparent),
-    color-mix(in oklch, var(--obs-warn) 30%, transparent),
-    color-mix(in oklch, var(--obs-bad) 30%, transparent)
+    to inline-end,
+    color-mix(in oklch, var(--obs-ok) 28%, transparent),
+    color-mix(in oklch, var(--obs-warn) 28%, transparent),
+    color-mix(in oklch, var(--obs-bad) 28%, transparent)
   );
 }
 
@@ -1447,9 +1653,10 @@
 }
 
 .scaleLabel b {
-  font-size: 0.76rem;
-  font-weight: var(--ds-weight-semibold);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-bold);
   color: var(--tone, var(--ds-text-primary));
+  font-variant-numeric: tabular-nums;
 }
 
 .scaleMarkOk {
@@ -1471,6 +1678,7 @@
   margin-block-start: var(--ds-space-2);
   font-size: 0.62rem;
   color: var(--ds-text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .note {
@@ -1478,11 +1686,12 @@
   align-items: flex-start;
   gap: var(--ds-space-2);
   margin: 0;
-  margin-block-start: var(--ds-space-3);
-  padding: var(--ds-space-2-5);
+  margin-block-start: var(--ds-space-4);
+  padding: var(--ds-space-3);
+  border: 1px solid var(--obs-rule);
   border-radius: var(--ds-radius-md);
   background: var(--ds-surface-recessed);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   line-height: var(--ds-leading-normal);
   color: var(--ds-text-muted);
 }
@@ -1490,6 +1699,7 @@
 .note svg {
   flex: none;
   margin-block-start: 0.1rem;
+  color: var(--obs-tone);
 }
 
 /* ══════════════════ 13. جدول کوئری کند ══════════════════ */
@@ -1510,15 +1720,17 @@
   padding-block: var(--ds-space-2);
   padding-inline: var(--ds-space-2);
   border-block-end: 1px solid var(--obs-rule-strong);
-  font-size: 0.66rem;
-  font-weight: var(--ds-weight-medium);
+  font-size: 0.62rem;
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
   color: var(--ds-text-muted);
   text-align: start;
   white-space: nowrap;
 }
 
 .table td {
-  padding-block: var(--ds-space-2);
+  padding-block: var(--ds-space-2-5);
   padding-inline: var(--ds-space-2);
   border-block-end: 1px solid var(--obs-rule);
   vertical-align: top;
@@ -1526,10 +1738,16 @@
 
 .tableRow {
   --tone: var(--obs-ok);
+  transition: background-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.tableRow:hover {
+  background: color-mix(in oklch, var(--tone) 5%, transparent);
 }
 
 .duration {
-  font-weight: var(--ds-weight-semibold);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-bold);
   color: var(--tone);
   font-variant-numeric: tabular-nums;
 }
@@ -1551,8 +1769,8 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: var(--ds-space-2);
-  padding-block: var(--ds-space-2);
+  gap: var(--ds-space-2-5);
+  padding-block: var(--ds-space-2-5);
   border-block-end: 1px dashed var(--obs-rule);
 }
 
@@ -1567,7 +1785,7 @@
 .trailBody {
   display: flex;
   flex-direction: column;
-  gap: 0.05rem;
+  gap: 0.1rem;
   min-inline-size: 0;
 }
 
@@ -1586,6 +1804,7 @@
   font-size: 0.64rem;
   color: var(--ds-text-muted);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ══════════════════ 15. اسکلت بارگذاری ══════════════════ */
@@ -1617,10 +1836,11 @@
   block-size: clamp(11rem, 30vw, 15rem);
 }
 
+/* اسکلت هم باید نامتقارن باشد؛ اگر دو بلوک مساوی بدهی، بعدِ لود صفحه می‌پرد. */
 .skelGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--ds-space-4);
+  gap: var(--ds-space-5);
 }
 
 .skelBlock {
@@ -1629,6 +1849,10 @@
 
 @media (min-width: 56rem) {
   .skelGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 2fr 1fr;
+  }
+
+  .skelBlock:nth-child(even) {
+    block-size: 11rem;
   }
 }

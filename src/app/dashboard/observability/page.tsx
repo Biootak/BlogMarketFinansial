@@ -18,7 +18,12 @@ export const metadata: Metadata = {
 /**
  * نمای کلی. جریان شبانه‌روز و نشانه‌های حیاتی در deck (layout) هستند، پس اینجا
  * تکرار نمی‌شوند؛ این صفحه به «کجا را نگاه کنم» پاسخ می‌دهد نه «چقدر ترافیک
- * داشتیم». وزن هر board با اهمیتش تعیین شده، نه با تقارن.
+ * داشتیم». وزن هر مدخل با اهمیتش تعیین شده، نه با تقارن.
+ *
+ * ترتیب عمدی است و روایت دارد: چه چیزی خراب است ← سامانه خودش چه می‌گوید ←
+ * کِی خراب شد ← کجا خراب شد ← از چه حجمی حرف می‌زنیم ← ترکیب کل.
+ * ریتم ستون‌ها هم عوض می‌شود (۸/۴ ← ۵/۷ ← ۷/۵) تا سه ردیفِ هم‌شکل پشت هم
+ * نیفتد؛ همان چیزی که داشبوردها را «تولیدشده» نشان می‌دهد.
  */
 export default function ObservabilityOverviewPage() {
   return (
@@ -42,21 +47,22 @@ export default function ObservabilityOverviewPage() {
       </ObsSection>
 
       <ObsSection
+        className={b.five}
+        icon={Siren}
+        title="پنجره‌های بحرانی"
+        tone="bad"
+        hint="بازه‌هایی که نرخ خطا از سه برابر میانگین شبانه‌روز گذشته است."
+      >
+        <IncidentTimeline />
+      </ObsSection>
+
+      <ObsSection
         className={b.seven}
         icon={Grid2x2}
         title="نقشهٔ گرمای منابع"
         hint="پرحجم‌ترین منابع لاگ در برابر ساعت‌های شبانه‌روز."
       >
         <SourceHeat />
-      </ObsSection>
-
-      <ObsSection
-        className={b.five}
-        icon={Siren}
-        title="پنجره‌های بحرانی"
-        hint="بازه‌هایی که نرخ خطا از سه برابر میانگین شبانه‌روز گذشته است."
-      >
-        <IncidentTimeline />
       </ObsSection>
 
       <ObsSection
