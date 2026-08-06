@@ -1,14 +1,20 @@
 'use client';
 
-import { ArrowLeft, ArrowUpLeft, BarChart3, FileCheck2, Landmark, LifeBuoy, LockKeyhole, Settings2, ShieldCheck, WalletCards } from 'lucide-react';
+import { ArrowLeft, ArrowUpLeft, BarChart3, FileCheck2, Landmark, LifeBuoy, LockKeyhole, Radar, Settings2, ShieldCheck, WalletCards } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 
 type Meta = { label: string; family: string; description: string; icon: typeof BarChart3; sibling?: string; siblingLabel?: string };
 
+/*
+ * این جدول تنها منبع تیتر هر مسیر داشبورد است. هیچ صفحه‌ای نباید تیتر دومی
+ * (PageHeader و مانند آن) بالای محتوای خودش بگذارد — نتیجه‌اش دو h1 روی یک
+ * صفحه است که هم تکراری دیده می‌شود هم ساختار heading را برای screen reader
+ * می‌شکند. اگر متن یک مسیر نارسا است، همین‌جا اصلاحش کن.
+ */
 const META: Array<[string, Meta]> = [
-  ['/observability', { label: 'مشاهده‌پذیری', family: 'observe', description: 'سلامت سرویس‌ها، latency و رویدادهای زنده در یک نمای عملیاتی.', icon: BarChart3, sibling: '/dashboard/observability/services', siblingLabel: 'سرویس‌ها' }],
+  ['/observability', { label: 'مرکز مشاهده‌پذیری', family: 'observe', description: 'سلامت سرویس‌ها، تأخیر، خطا و رد ممیزی — هر عدد مستقیم از SystemLog و AuditLog خوانده می‌شود.', icon: Radar, sibling: '/dashboard/observability/services', siblingLabel: 'سرویس‌ها' }],
   ['/reports', { label: 'گزارش‌ها', family: 'reports', description: 'گزارش‌های قابل اتکا برای تصمیم‌های مالی و عملیاتی.', icon: BarChart3, sibling: '/dashboard/audit-log', siblingLabel: 'لاگ ممیزی' }],
   ['/audit-log', { label: 'لاگ ممیزی', family: 'risk', description: 'ردپای تغییرات و رویدادهای حساس سیستم.', icon: ShieldCheck, sibling: '/dashboard/reports', siblingLabel: 'گزارش‌ها' }],
   ['/fraud-review', { label: 'بررسی ریسک', family: 'risk', description: 'صف بررسی موارد مشکوک، بدون داده ساختگی.', icon: ShieldCheck, sibling: '/dashboard/kyc-review', siblingLabel: 'صف احراز هویت' }],
@@ -47,7 +53,7 @@ export function RouteFrame({ children }: { children: ReactNode }) {
       </div>
       <header className="route-frame__header">
         <div className="route-frame__mark" aria-hidden><Icon size={21} strokeWidth={1.7} /></div>
-        <div className="route-frame__heading"><span className="route-frame__eyebrow">{meta.family === 'home' ? 'Command center' : 'Route workspace'}</span><h1 className="route-frame__title">{meta.label}</h1><p className="route-frame__description">{meta.description}</p></div>
+        <div className="route-frame__heading"><span className="route-frame__eyebrow">{meta.family === 'home' ? 'مرکز فرمان' : 'مرکز عملیات'}</span><h1 className="route-frame__title">{meta.label}</h1><p className="route-frame__description">{meta.description}</p></div>
         <div className="route-frame__tools"><span className="route-frame__state"><span className="route-frame__state-dot" aria-hidden /> داده زنده</span>{meta.sibling && <Link href={meta.sibling} className="route-frame__sibling">{meta.siblingLabel}<ArrowUpLeft aria-hidden size={14} /></Link>}</div>
       </header>
       <div className="route-frame__body">{children}</div>

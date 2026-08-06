@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 
-import { PageHeader } from '@/components/Dashboard/primitives';
 import { getObservabilitySnapshot } from '@/lib/observability';
 
 import { ObsProvider } from './_components/ObsProvider';
@@ -20,6 +19,12 @@ export const dynamic = 'force-dynamic';
  *
  * ObsPulseDeck هم عمداً در layout است نه در page: «حال سامانه» زمینهٔ همهٔ
  * تب‌هاست، پس نباید با هر ناوبری unmount و دوباره رسم شود.
+ *
+ * تیتر صفحه اینجا نیست و نباید باشد: RouteFrame (در پوستهٔ داشبورد) برای هر
+ * مسیر خودش h1 و breadcrumb و توضیح را می‌سازد. قبلاً اینجا یک PageHeader دوم
+ * هم رندر می‌شد که نتیجه‌اش دو تیتر تکراری و دو h1 روی یک صفحه بود — هم
+ * بصری غلط، هم شکستن ساختار heading برای screen reader. متن مرجع (منشأ اعداد)
+ * به META همان RouteFrame منتقل شد تا چیزی از دست نرود.
  */
 export default async function ObservabilityLayout({ children }: { children: ReactNode }) {
   await requireObservabilityAccess();
@@ -29,16 +34,6 @@ export default async function ObservabilityLayout({ children }: { children: Reac
 
   return (
     <div className={s.page}>
-      <PageHeader
-        variant="minimal"
-        eyebrow="مرکز عملیات"
-        title="مرکز مشاهده‌پذیری"
-        description="سلامت سرویس‌ها، تأخیر، خطا و رد ممیزی — هر عدد مستقیم از SystemLog و AuditLog خوانده می‌شود."
-        icon="radar"
-        accent="emerald"
-        breadcrumb={[{ href: '/dashboard', label: 'داشبورد' }, { label: 'مشاهده‌پذیری' }]}
-      />
-
       <ObsProvider initialData={initialData}>
         <div className={s.command}>
           <ObsSubNav />
