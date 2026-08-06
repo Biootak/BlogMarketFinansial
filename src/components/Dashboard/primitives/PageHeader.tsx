@@ -6,7 +6,7 @@ import {
   BarChart2,
   Bell,
   Building2,
-  ChevronLeft,
+  ChevronRight,
   CircleDollarSign,
   ClipboardList,
   CreditCard,
@@ -39,41 +39,38 @@ import {
 import Link from 'next/link';
 import type { FC, ReactNode } from 'react';
 import s from './PageHeader.module.css';
+import {
+  PAGE_HEADERS,
+  type PageHeaderAccent,
+  type PageHeaderCrumb,
+  type PageHeaderIcon,
+  type PageHeaderMetaItem,
+  type PageHeaderRoute,
+  type PageHeaderVariant,
+} from './pageHeaders';
 
-export type PageHeaderIcon =
-  | 'user-circle'
-  | 'users'
-  | 'shield-check'
-  | 'shield-x'
-  | 'clipboard-list'
-  | 'layers'
-  | 'arrow-left-right'
-  | 'bell'
-  | 'folder-open'
-  | 'bar-chart'
-  | 'layout-dashboard'
-  | 'settings'
-  | 'wallet'
-  | 'file-text'
-  | 'tag'
-  | 'building'
-  | 'credit-card'
-  | 'sparkles'
-  | 'activity'
-  | 'radar'
-  | 'gauge'
-  | 'zap'
-  | 'alert-triangle'
-  | 'database'
-  | 'workflow'
-  | 'inbox'
-  | 'send'
-  | 'megaphone'
-  | 'message-square'
-  | 'ticket'
-  | 'key-round'
-  | 'circle-dollar-sign'
-  | 'device-phone-mobile';
+/**
+ * PageHeader — Atlas 2026
+ * ----------------------------------------------------------------------------
+ * قانون: هر مسیر دقیقاً یک سربرگ. مالک هر مسیر در `pageHeaders.ts` مشخص شده
+ * (layout / page / client). اگر صفحه‌ای زیر یک layoutِ سربرگ‌دار است، خودش
+ * سربرگ نمی‌زند؛ اگر اکشن‌های سربرگ تعاملی‌اند، پوستهٔ کلاینت مالک است و
+ * `page.tsx` سربرگ نمی‌زند.
+ *
+ * مصرف پیشنهادی:
+ *   <PageHeader route="/dashboard/virtual-cards" actions={…} />
+ *
+ * برای عنوان‌های پویا (نام مشتری، شناسهٔ تراکنش) همان props صریح را بدهید؛
+ * هر prop صریح بر پیش‌تنظیم اولویت دارد.
+ *
+ * ۲۰۲۶-۰۸ (Atlas):
+ *  - `dir="rtl"` سخت‌کدشده حذف شد. سربرگ حالا جهت را از سند به ارث می‌برد،
+ *    پس در بخش‌های LTR (اسناد فنی، پنل توسعه‌دهنده) وارونه نمی‌شود.
+ *  - جداکنندهٔ خرده‌مسیر اصلاح شد: پایه ChevronRight + `rtl:rotate-180`.
+ *    نسخهٔ قبلی ChevronLeft با rotate بود که در هر دو جهت خلاف جریان خواندن
+ *    اشاره می‌کرد.
+ *  - ستارهٔ SVG چرخان و گرادیان شعاعی قبلاً حذف شده‌اند (~۳۰ نود در هر مسیر).
+ */
 
 const ICON_MAP: Record<PageHeaderIcon, FC<LucideProps>> = {
   'user-circle': UserCircle,
@@ -111,34 +108,17 @@ const ICON_MAP: Record<PageHeaderIcon, FC<LucideProps>> = {
   'device-phone-mobile': Smartphone,
 };
 
-export type PageHeaderAccent = 'indigo' | 'emerald' | 'amber' | 'rose' | 'violet' | 'cyan';
+export type {
+  PageHeaderAccent,
+  PageHeaderCrumb,
+  PageHeaderIcon,
+  PageHeaderMetaItem,
+  PageHeaderRoute,
+  PageHeaderVariant,
+};
 
-/**
- * variant:
- *  - 'default'  — سربرگ کامل با قاعده‌ی افقی (صفحات اصلی)
- *  - 'compact'  — کوتاه‌تر، مناسب صفحات فهرست با سنجه در ادامه
- *  - 'minimal'  — فقط eyebrow + عنوان، بدون قاعده
- *  - 'strip'    — نوار باریک خرده‌مسیر، مناسب تنظیمات
- *
- * ۲۰۲۶-۰۸ (Atlas): ستاره‌ی هشت‌پرِ چرخان و گرادیان شعاعی حذف شد. حدود ۳۰ نود
- * SVG در هر مسیر داشبورد رندر می‌شد و هیچ اطلاعاتی منتقل نمی‌کرد. API عمومی
- * دست‌نخورده است.
- */
-export type PageHeaderVariant = 'default' | 'compact' | 'minimal' | 'strip';
-
-export interface PageHeaderMetaItem {
-  label: string;
-  value: string | number;
-}
-
-export interface PageHeaderCrumb {
-  href?: string;
-  label: string;
-}
-
-export interface PageHeaderProps {
+interface PageHeaderBaseProps {
   breadcrumb?: PageHeaderCrumb[];
-  title: string;
   description?: string;
   eyebrow?: string;
   actions?: ReactNode;
@@ -151,6 +131,14 @@ export interface PageHeaderProps {
   meta?: PageHeaderMetaItem[];
 }
 
+/**
+ * یا `route` بده و عنوان از جدول بیاید، یا `title` را صریح بده.
+ * ترکیب هر دو هم مجاز است (عنوان پویا روی پیش‌تنظیم مسیر).
+ */
+export type PageHeaderProps =
+  | (PageHeaderBaseProps & { route: PageHeaderRoute; title?: string })
+  | (PageHeaderBaseProps & { route?: never; title: string });
+
 const ACCENT_CLASS: Record<PageHeaderAccent, string> = {
   indigo: s['accent--indigo'],
   emerald: s['accent--emerald'],
@@ -160,7 +148,7 @@ const ACCENT_CLASS: Record<PageHeaderAccent, string> = {
   cyan: s['accent--cyan'],
 };
 
-/** خرده‌مسیر — یک تعریف، چهار مصرف. تکرار قبلی چهار نسخه‌ی واگرا ساخته بود. */
+/** خرده‌مسیر — یک تعریف، چهار مصرف. تکرار قبلی چهار نسخهٔ واگرا ساخته بود. */
 function Breadcrumbs({ items }: { items: PageHeaderCrumb[] }) {
   if (items.length === 0) return null;
 
@@ -183,7 +171,11 @@ function Breadcrumbs({ items }: { items: PageHeaderCrumb[] }) {
               </span>
             )}
             {!isLast && (
-              <ChevronLeft size={10} className={cn(s.breadcrumbSep, 'rtl:rotate-180')} aria-hidden />
+              <ChevronRight
+                size={10}
+                className={cn(s.breadcrumbSep, 'rtl:rotate-180')}
+                aria-hidden
+              />
             )}
           </span>
         );
@@ -207,28 +199,33 @@ function InlineMeta({ items }: { items: PageHeaderMetaItem[] }) {
   );
 }
 
-export function PageHeader({
-  breadcrumb,
-  title,
-  description,
-  eyebrow,
-  actions,
-  icon,
-  accent = 'indigo',
-  variant = 'default',
-  transition = 'none',
-  className,
-  meta,
-}: PageHeaderProps) {
-  const Icon = icon ? ICON_MAP[icon] : null;
+export function PageHeader(props: PageHeaderProps) {
+  const preset = props.route ? PAGE_HEADERS[props.route] : undefined;
+
+  const title = props.title ?? preset?.title ?? '';
+  const description = props.description ?? preset?.description;
+  const eyebrow = props.eyebrow ?? preset?.eyebrow;
+  const iconName = props.icon ?? preset?.icon;
+  const accent = props.accent ?? preset?.accent ?? 'indigo';
+  const variant = props.variant ?? preset?.variant ?? 'default';
+  const crumbs = props.breadcrumb ?? preset?.breadcrumb ?? [];
+  const metrics = props.meta ?? [];
+  const { actions, className, transition = 'none' } = props;
+
+  const Icon = iconName ? ICON_MAP[iconName] : null;
   const style = transition === 'default' ? { viewTransitionName: 'dash-page' } : undefined;
-  const crumbs = breadcrumb ?? [];
-  const metrics = meta ?? [];
+
+  // `data-page-header` تنها راه ارزان تشخیص سربرگ تکراری در تست e2e است:
+  // در هر مسیر باید دقیقاً یک المان با این ویژگی وجود داشته باشد.
+  const shared = {
+    'data-page-header': variant,
+    style,
+  } as const;
 
   // ── strip ────────────────────────────────────────────────────────────────
   if (variant === 'strip') {
     return (
-      <header className={cn(s.strip, ACCENT_CLASS[accent], className)} style={style} dir="rtl">
+      <header {...shared} className={cn(s.strip, ACCENT_CLASS[accent], className)}>
         <Breadcrumbs items={crumbs} />
         <div className={s.stripRow}>
           {Icon && (
@@ -248,7 +245,7 @@ export function PageHeader({
   // ── minimal ──────────────────────────────────────────────────────────────
   if (variant === 'minimal') {
     return (
-      <header className={cn(s.minimal, ACCENT_CLASS[accent], className)} style={style} dir="rtl">
+      <header {...shared} className={cn(s.minimal, ACCENT_CLASS[accent], className)}>
         {eyebrow && <span className={s.minimalEyebrow}>{eyebrow}</span>}
         <div className={s.minimalRow}>
           {Icon && (
@@ -268,7 +265,7 @@ export function PageHeader({
   // ── compact ──────────────────────────────────────────────────────────────
   if (variant === 'compact') {
     return (
-      <header className={cn(s.compact, ACCENT_CLASS[accent], className)} style={style} dir="rtl">
+      <header {...shared} className={cn(s.compact, ACCENT_CLASS[accent], className)}>
         <div className={s.compactTop}>
           <div className={s.metaRow}>
             <span className={s.dot} aria-hidden />
@@ -296,7 +293,7 @@ export function PageHeader({
 
   // ── default ──────────────────────────────────────────────────────────────
   return (
-    <header className={cn(s.header, ACCENT_CLASS[accent], className)} style={style} dir="rtl">
+    <header {...shared} className={cn(s.header, ACCENT_CLASS[accent], className)}>
       <div className={s.body}>
         <div className={s.metaRow}>
           <span className={s.dot} aria-hidden />

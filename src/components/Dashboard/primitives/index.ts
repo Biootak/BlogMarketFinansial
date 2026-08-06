@@ -9,6 +9,13 @@
 export { PageHeader } from './PageHeader';
 export type { PageHeaderProps, PageHeaderAccent } from './PageHeader';
 
+export { PageHeaderSkeleton } from './PageHeaderSkeleton';
+export type { PageHeaderSkeletonProps } from './PageHeaderSkeleton';
+
+// قرارداد سربرگ صفحه — یک مسیر، یک سربرگ، یک مالک. جزئیات در pageHeaders.ts
+export { PAGE_HEADERS, isPageHeaderRoute, resolvePageHeader } from './pageHeaders';
+export type { PageHeaderOwner, PageHeaderPreset, PageHeaderRoute } from './pageHeaders';
+
 export { StatCard } from './StatCard';
 export type { StatCardProps } from './StatCard';
 
