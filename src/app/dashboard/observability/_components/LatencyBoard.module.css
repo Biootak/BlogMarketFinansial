@@ -1,0 +1,299 @@
+/* ============================================================================
+   LatencyBoard — صدک‌ها و تأخیر هر سرویس
+   ============================================================================ */
+
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  min-inline-size: 0;
+}
+
+@media (min-width: 64rem) {
+  .board {
+    gap: var(--ds-space-5);
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-3);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
+}
+
+.chip {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.chip[data-strong='true'] {
+  color: var(--ds-text-primary);
+  font-weight: var(--ds-weight-medium);
+}
+
+.unit {
+  margin-inline-start: 0.2rem;
+  font-size: 0.7rem;
+  color: var(--ds-text-muted);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-4);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-surface);
+  animation: anim-fade-in-up var(--ds-duration-base) var(--ds-ease-out-quart) both;
+}
+
+@media (min-width: 64rem) {
+  .panel {
+    padding: var(--ds-space-5) var(--ds-space-6);
+  }
+}
+
+.panelHead {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.panelTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin: 0;
+  font-size: var(--ds-text-base);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-primary);
+}
+
+.panelTitle svg {
+  color: var(--ds-accent-cyan);
+}
+
+.panelCaption {
+  margin: 0;
+  max-inline-size: 72ch;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  line-height: var(--ds-leading-snug);
+}
+
+/* ── صدک‌ها ─────────────────────────────────────────────── */
+.percentiles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+.percentile {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'label value'
+    'track track'
+    'note note';
+  align-items: baseline;
+  gap: var(--ds-space-1) var(--ds-space-3);
+}
+
+@media (min-width: 48rem) {
+  .percentile {
+    grid-template-columns: 3rem auto minmax(0, 1fr);
+    grid-template-areas:
+      'label value track'
+      'label note note';
+    gap: var(--ds-space-1) var(--ds-space-4);
+  }
+}
+
+.pLabel {
+  grid-area: label;
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.pValue {
+  grid-area: value;
+  justify-self: end;
+  font-size: var(--ds-text-xl);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+@media (min-width: 48rem) {
+  .pValue {
+    justify-self: start;
+    min-inline-size: 5.5rem;
+  }
+}
+
+.percentile[data-measured='false'] .pValue {
+  color: var(--ds-text-secondary);
+}
+
+.pTrack {
+  grid-area: track;
+  align-self: center;
+  block-size: 6px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-surface-recessed);
+  overflow: hidden;
+}
+
+.pFill {
+  display: block;
+  block-size: 100%;
+  border-radius: var(--ds-radius-full);
+  background: color-mix(in oklch, var(--ds-accent-cyan) 62%, transparent);
+  transform-origin: 100% 50%;
+  scale: var(--v) 1;
+  transition: scale var(--ds-duration-base) var(--ds-ease-out-quart);
+}
+
+.pNote {
+  grid-area: note;
+  font-size: 0.7rem;
+  color: var(--ds-text-muted);
+}
+
+/* ── سرویس‌ها ───────────────────────────────────────────── */
+.services {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.service {
+  border-block-end: 1px solid var(--ds-border-subtle);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 76px;
+}
+
+.service:last-child {
+  border-block-end: none;
+}
+
+.serviceLink {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'name value'
+    'desc badge'
+    'bar bar'
+    'meta meta';
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-1);
+  color: inherit;
+  text-decoration: none;
+  transition: background-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+@media (min-width: 62rem) {
+  .serviceLink {
+    grid-template-columns: minmax(9rem, 1fr) minmax(0, 1.6fr) auto auto;
+    grid-template-areas:
+      'name bar value badge'
+      'desc meta meta meta';
+    gap: 0.1rem var(--ds-space-4);
+  }
+
+  .service {
+    contain-intrinsic-size: auto 56px;
+  }
+}
+
+.serviceLink:hover {
+  background: var(--ds-surface-recessed);
+}
+
+.serviceLink:focus-visible {
+  outline: 2px solid var(--ds-accent-cyan);
+  outline-offset: -2px;
+  border-radius: var(--ds-radius-sm);
+}
+
+.serviceName {
+  grid-area: name;
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-primary);
+}
+
+.serviceDesc {
+  grid-area: desc;
+  font-size: 0.7rem;
+  color: var(--ds-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.serviceBar {
+  grid-area: bar;
+  block-size: 6px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-surface-recessed);
+  overflow: hidden;
+}
+
+.serviceFill {
+  display: block;
+  block-size: 100%;
+  border-radius: var(--ds-radius-full);
+  background: color-mix(in oklch, var(--tone) 65%, transparent);
+  transform-origin: 100% 50%;
+  scale: var(--v) 1;
+  transition: scale var(--ds-duration-base) var(--ds-ease-out-quart);
+}
+
+.serviceValue {
+  grid-area: value;
+  justify-self: end;
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-primary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.serviceMeta {
+  grid-area: meta;
+  font-size: 0.7rem;
+  color: var(--ds-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 62rem) {
+  .serviceMeta {
+    justify-self: end;
+  }
+}
+
+.serviceBadge {
+  grid-area: badge;
+  justify-self: end;
+  font-size: 0.7rem;
+  padding: 0.1rem var(--ds-space-2);
+  border-radius: var(--ds-radius-full);
+  color: var(--tone);
+  border: 1px solid color-mix(in oklch, var(--tone) 38%, transparent);
+  background: color-mix(in oklch, var(--tone) 8%, transparent);
+  white-space: nowrap;
+}
