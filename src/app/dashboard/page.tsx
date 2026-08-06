@@ -8,37 +8,22 @@ import { getTopAuthors } from '@/actions/getTopAuthors';
 import { getViewStats } from '@/actions/getViewStats';
 import { getMarketRates } from '@/actions/market-rates';
 import { getScheduledPosts, getStats } from '@/actions/postActions';
+import { DashboardCommandSurface } from '@/components/Dashboard/DashboardPage/DashboardCommandSurface';
 import { FintechCockpitServer } from '@/components/Dashboard/DashboardPage/FintechCockpitServer';
 import { UserHome } from '@/components/Dashboard/DashboardPage/UserHome';
-// 2026-07-31: بازطراحی یکپارچه داشبورد.
-//
-// قبلاً ۴ کامپوننت مستقل (AtelierDeck + FintechKpiWidget +
-// LiveOpsPulse + ServiceRequestsWidget) روی هم چیده می‌شد که هر کدام
-// زبان بصری خودشان را داشتند و صفحه را تکه‌تکه نشان می‌داد.
-//
-// حالا برای نقش‌های ادمین/مالک/نویسنده/سوپرادمین:
-//   - FintechCockpitServer → یکپارچه و coheisve (Hero + KPI strip +
-//     Services + Live Ops + Quick Actions همگی در یک زبان بصری)
-//   - Editorial deck هنوز به‌عنوان ردیف اختیاری پایین FintechCockpit
-//     نمایش داده می‌شود (اگر داده موجود باشد)
-//
-// برای نقش USER/SUPPORT: همان UserHome بهینه‌سازی‌شده با tokens.
 import { AtelierDeck } from '@/components/Dashboard/DashboardPage/atelier';
 import prisma from '@/lib/db';
 
 export default async function Dashboard() {
-  // 2026-07-29: USER role gets a clean user-facing home (not admin
-  // Atelier). Routing at the page-level keeps the layout/Sidebar
-  // happy and avoids redirect ping-pong.
-  // 2026-07-31: SUPPORT هم مثل USER فقط به baseDashboardRoutes دسترسی دارد
-  // (sidebar فقط dashboard/my-requests/devices/profile را نشان می‌دهد)؛
-  // بنابراین همان UserHome را می‌بیند تا صفحه خالی یا redirect به / نبیند.
   const initialSession = await auth();
   if (!initialSession?.user) {
     redirect('/auth?callbackUrl=/dashboard');
   }
 
-  if (initialSession.user.role === 'USER' || initialSession.user.role === 'SUPPORT') {
+  const role = initialSession.user.role ?? 'USER';
+  const displayName = initialSession.user.name ?? initialSession.user.email ?? '';
+
+  if (role === 'USER' || role === 'SUPPORT') {
     const dbUser = await prisma.user
       .findUnique({
         where: { id: initialSession.user.id },
@@ -62,47 +47,29 @@ export default async function Dashboard() {
       : 999;
 
     return (
-      <UserHome
-        userId={dbUser.id}
-        userName={dbUser.name ?? initialSession.user.name ?? ''}
-        userEmail={dbUser.email}
-        emailVerified={!!dbUser.emailVerified}
-        accountAgeDays={accountAgeDays}
-        role={dbUser.role}
-      />
+      <DashboardCommandSurface userName={dbUser.name ?? displayName} role={role}>
+        <UserHome
+          userId={dbUser.id}
+          userName={dbUser.name ?? displayName}
+          userEmail={dbUser.email}
+          emailVerified={!!dbUser.emailVerified}
+          accountAgeDays={accountAgeDays}
+          role={dbUser.role}
+        />
+      </DashboardCommandSurface>
     );
   }
 
-  // 2026-08-perf: checkRole حذف شد — auth() اضافی اجرا می‌کرد.
-  // role check inline با initialSession (که خط ۳۷ awaited شده).
-  const ALLOWED_ROLES = new Set(['OWNER', 'ADMIN', 'AUTHOR', 'SUPERADMIN']);
-  if (!ALLOWED_ROLES.has(initialSession.user.role ?? '')) {
+  const allowedRoles = new Set(['OWNER', 'ADMIN', 'AUTHOR', 'SUPERADMIN']);
+  if (!allowedRoles.has(role)) {
     redirect('/');
   }
 
-  const session = initialSession;
-
-  if (!session?.user) {
-    redirect('/auth?callbackUrl=/dashboard');
-  }
-
-  const userRole = (session.user.role ?? 'AUTHOR') as 'OWNER' | 'ADMIN' | 'AUTHOR';
+  const userRole = role as 'OWNER' | 'ADMIN' | 'AUTHOR' | 'SUPERADMIN';
   const isEditor = userRole === 'AUTHOR' || userRole === 'ADMIN' || userRole === 'OWNER';
 
-  // Editorial data — only fetched if user is editor (or owner).
-  // Failures fall back to `[]` so the editorial row degrades gracefully
-  // and never breaks the page.
   if (isEditor) {
-    const [
-      statsResult,
-      scheduledPostsResult,
-      popularPostsResult,
-      recentDraftsResult,
-      viewStatsResult,
-      recentActivityResult,
-      marketRates,
-      topAuthors,
-    ] = await Promise.all([
+    const [statsResult, scheduledPostsResult, popularPostsResult, recentDraftsResult, viewStatsResult, recentActivityResult, marketRates, topAuthors] = await Promise.all([
       getStats().catch(() => null),
       getScheduledPosts().catch(() => null),
       getPopularPosts().catch(() => null),
@@ -132,23 +99,27 @@ export default async function Dashboard() {
           : [];
 
       return (
-        <>
+        <DashboardCommandSurface userName={displayName} role={role}>
           <FintechCockpitServer />
           <AtelierDeck
-            stats={statsResult?.data!}
-            scheduledPosts={scheduledPostsResult?.data!}
-            popularPosts={popularPostsResult?.data!}
-            recentDrafts={recentDraftsResult?.data!}
-            viewStats={viewStatsResult?.data!}
+            stats={statsResult.data}
+            scheduledPosts={scheduledPostsResult.data}
+            popularPosts={popularPostsResult.data}
+            recentDrafts={recentDraftsResult.data}
+            viewStats={viewStatsResult.data}
             recentActivity={recentActivity}
-            userRole={userRole}
+            userRole={userRole === 'SUPERADMIN' ? 'ADMIN' : userRole}
             marketRates={marketRates ?? []}
             topAuthors={topAuthors ?? []}
           />
-        </>
+        </DashboardCommandSurface>
       );
     }
   }
 
-  return <FintechCockpitServer />;
+  return (
+    <DashboardCommandSurface userName={displayName} role={role}>
+      <FintechCockpitServer />
+    </DashboardCommandSurface>
+  );
 }
