@@ -14,7 +14,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 
-import { bucketLabel, faNum, faPercent, msShort, statusLabel, type ToneKey } from './format';
+import { bucketLabel, faNum, faPercent, msShort, statusLabel, toFa, type ToneKey } from './format';
 import { readHealth } from './obsHealth';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
@@ -30,11 +30,18 @@ interface Finding {
   cta?: string;
 }
 
+/** وزن تُن برای مرتب‌سازی — بحرانی‌ها همیشه بالای فهرست. */
+const WEIGHT: Record<ToneKey, number> = { bad: 0, warn: 1, info: 2, ok: 3, idle: 4 };
+
 /**
- * یافته‌های خودکار — هیچ‌کدام متن ثابت یا نمونهٔ نمایشی نیست؛ هر جمله از
- * همان snapshot دیتابیس ساخته می‌شود و اگر شرطش برقرار نباشد اصلاً رندر
- * نمی‌شود. هدف: کاربر به‌جای خواندن پنج نمودار، در ده ثانیه بفهمد کجا را
- * نگاه کند.
+ * یافته‌های خودکار.
+ *
+ * هیچ‌کدام متن ثابت یا نمونهٔ نمایشی نیست؛ هر جمله از همان snapshot دیتابیس
+ * ساخته می‌شود و اگر شرطش برقرار نباشد اصلاً رندر نمی‌شود.
+ *
+ * تازه در این نسخه: یافته‌ها بر اساس شدت مرتب می‌شوند و رتبهٔ عددی می‌گیرند،
+ * پس ترتیب خواندن قطعی است نه تابع ترتیب کدنویسی. هدف: کاربر به‌جای خواندن
+ * پنج نمودار، در ده ثانیه بفهمد کجا را نگاه کند.
  */
 export function InsightStack() {
   const { data } = useObs();
@@ -64,12 +71,14 @@ export function InsightStack() {
       tone: worstService.status === 'down' ? 'bad' : 'warn',
       title: `${worstService.name} ${statusLabel(worstService.status)} است`,
       body: `${faNum(worstService.errors24h)} خطا از ${faNum(worstService.events24h)} رویداد در پنجرهٔ جاری، با تأخیر ${msShort(worstService.latencyMs)} و در دسترس بودن ${faPercent(worstService.uptime24h, 2)}.`,
-      href: worstService.href,
-      cta: 'رفتن به سرویس',
+      href: `/dashboard/observability/services/${worstService.id}`,
+      cta: 'کارنامهٔ سرویس',
     });
   }
 
-  const noisiest = [...data.sources].filter((item) => item.errors > 0).sort((a, b) => b.errors - a.errors)[0];
+  const noisiest = [...data.sources]
+    .filter((item) => item.errors > 0)
+    .sort((a, b) => b.errors - a.errors)[0];
 
   if (noisiest) {
     findings.push({
@@ -83,6 +92,21 @@ export function InsightStack() {
     });
   }
 
+  if (data.incidents.length > 0) {
+    const worst = [...data.incidents].sort((a, b) => b.errors - a.errors)[0];
+    if (worst) {
+      findings.push({
+        id: `incident-${worst.id}`,
+        icon: Siren,
+        tone: 'warn',
+        title: `${faNum(data.incidents.length)} پنجرهٔ بحرانی در این شبانه‌روز`,
+        body: `شدیدترین‌شان ${faNum(worst.errors)} خطا در بازهٔ ${bucketLabel(data.generatedAt, worst.fromHour, data.windowHours).slice(0, 5)} تا ${bucketLabel(data.generatedAt, worst.toHour, data.windowHours).slice(-5)} با اوج ${faNum(worst.peak)} خطا در ساعت.`,
+        href: '/dashboard/observability/errors',
+        cta: 'پنجره‌های بحرانی',
+      });
+    }
+  }
+
   if (!health.silent && health.peakValue > 0) {
     findings.push({
       id: 'peak',
@@ -90,6 +114,8 @@ export function InsightStack() {
       tone: 'info',
       title: 'شلوغ‌ترین ساعت شبانه‌روز',
       body: `بازهٔ ${bucketLabel(data.generatedAt, health.peakHour, data.windowHours)} با ${faNum(health.peakValue)} رویداد، برابر ${faPercent((health.peakValue / Math.max(data.totals.logs, 1)) * 100)} کل حجم پنجره. ظرفیت را برای همین ساعت بچینید نه برای میانگین.`,
+      href: '/dashboard/observability/latency',
+      cta: 'بار سامانه',
     });
   }
 
@@ -148,15 +174,24 @@ export function InsightStack() {
     );
   }
 
+  const ranked = findings
+    .sort((a, b) => WEIGHT[a.tone] - WEIGHT[b.tone])
+    .slice(0, 6);
+
   return (
-    <ul className={`${d.insights} stagger-children`}>
-      {findings.slice(0, 6).map((finding) => {
+    <ol className={`${d.insights} stagger-children`}>
+      {ranked.map((finding, index) => {
         const Icon = finding.icon;
         return (
           <li key={finding.id} className={d.insight} data-tone={finding.tone}>
+            <span className={d.insightRank} aria-hidden="true">
+              {toFa(String(index + 1))}
+            </span>
+
             <span className={d.insightIcon} aria-hidden="true">
               <Icon size={16} strokeWidth={1.5} />
             </span>
+
             <div className={d.insightBody}>
               <p className={d.insightTitle}>{finding.title}</p>
               <p className={d.insightText}>{finding.body}</p>
@@ -170,6 +205,6 @@ export function InsightStack() {
           </li>
         );
       })}
-    </ul>
+    </ol>
   );
 }
