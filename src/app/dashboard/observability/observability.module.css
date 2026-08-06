@@ -1,11 +1,20 @@
 /* ============================================================================
-   Observability — route shell
+   Observability — route shell · «Stratum» (۲۰۲۶-۰۸)
    ----------------------------------------------------------------------------
-   Mobile first. Logical properties only. Tokens only.
+   Mobile-first · logical properties only · tokens only.
 
-   ساختار (۲۰۲۶-۰۸): ریلِ چسبانِ سمتِ کناری حذف شد. نشانه‌های حیاتی حالا داخل
-   ObsPulseDeck هستند، پس هر عدد فقط یک‌بار در صفحه دیده می‌شود و بدنه تمام‌عرض
-   می‌ماند تا گرید ۱۲ ستونی boardها جا داشته باشد.
+   چیدمان تازه:
+     PageHeader
+       → ObsCommandRail   (چسبان: ناوبری + وضعیت زنده + مکان‌نمای ساعت)
+       → ObsPulseDeck     (دیال سلامت + نوار لرزه‌نگار + بودجهٔ خطا + بانک نشانه‌ها)
+       → گرید ۱۲ ستونی boardها
+
+   نقشهٔ تُن (--obs-*) فقط همین‌جا تعریف می‌شود و همهٔ ماژول‌های دیگر این مسیر
+   از آن ارث می‌برند. دلیلش: رنگِ وضعیت «اطلاعات» است نه تزئین، و اطلاعات باید
+   یک منبع حقیقت داشته باشد نه شش کپی در شش فایل CSS.
+
+   --obs-ink با color-mix از خودِ تُن ساخته می‌شود، پس در light تیره و در dark
+   روشن می‌شود و کنتراست متن هر دو حالت بدون هیچ literal رنگی تأمین است.
    ============================================================================ */
 
 .page {
@@ -14,44 +23,48 @@
   gap: var(--ds-space-5);
   min-block-size: 100%;
   min-inline-size: 0;
+
+  /* پیش‌فرض‌های تُن — وقتی هیچ data-tone بالادست نباشد */
+  --obs-tone: var(--nova-muted);
+  --obs-ink: var(--ds-text-secondary);
+  --obs-wash: color-mix(in oklch, var(--nova-muted) 10%, transparent);
+  --obs-line: var(--ds-border-default);
 }
 
-/*
-   نوار فرمان — ناوبری فرعی + وضعیت زنده.
-   چسبان است چون در اسکرول‌های بلندِ لاگ باید همیشه بدانی کدام تب باز است و
-   داده چقدر تازه است. شیشه فقط همین‌جا مجاز است: blur کم، شفافیت کم، مرز مویی.
-*/
-.command {
-  position: sticky;
-  inset-block-start: 0;
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-3);
-  padding-block: var(--ds-space-2);
-  border-block-end: 1px solid var(--ds-border-subtle);
-  background: color-mix(in oklch, var(--ds-canvas) 82%, transparent);
-  backdrop-filter: blur(10px) saturate(130%);
-  min-inline-size: 0;
+/* مشتق‌های تُن — روی هر عنصری که data-tone دارد بازمحاسبه می‌شوند */
+.page :where([data-tone]) {
+  --obs-ink: color-mix(in oklch, var(--obs-tone) 72%, var(--ds-text-primary));
+  --obs-wash: color-mix(in oklch, var(--obs-tone) 12%, transparent);
+  --obs-line: color-mix(in oklch, var(--obs-tone) 42%, transparent);
 }
 
-@media (min-width: 60rem) {
-  .command {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--ds-space-5);
-  }
+.page :where([data-tone='ok']) {
+  --obs-tone: var(--nova-up);
+}
+.page :where([data-tone='warn']) {
+  --obs-tone: var(--ds-accent-amber);
+}
+.page :where([data-tone='bad']) {
+  --obs-tone: var(--nova-down);
+}
+.page :where([data-tone='info']) {
+  --obs-tone: var(--ds-accent-cyan);
+}
+.page :where([data-tone='idle']) {
+  --obs-tone: var(--nova-muted);
 }
 
-/*
-   گرید boardها. زیر ۶۴rem تک‌ستونی است و کلاس‌های span اصلاً وجود ندارند
-   (به boards.module.css نگاه کن) تا ستون ضمنی ساخته نشود.
-*/
+/* ----------------------------------------------------------------------------
+   گرید boardها.
+   زیر ۶۴rem تک‌ستونی است و کلاس‌های span اصلاً وجود ندارند (boards.module.css)
+   تا گرید ستون ضمنی نسازد. بالای ۶۴rem دوازده ستونِ نامساوی.
+   خطِ مویی عمودی بین ستون‌ها با column-gap + border روی خود section می‌آید،
+   نه با divider جدا، تا DOM سبک بماند.
+   ---------------------------------------------------------------------------- */
 .main {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--ds-space-8);
+  gap: var(--ds-space-6);
   min-inline-size: 0;
 }
 

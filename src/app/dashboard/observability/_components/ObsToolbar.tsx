@@ -10,42 +10,58 @@ const SYNC_TEXT: Record<string, string> = {
   idle: 'زنده',
   syncing: 'در حال هم‌گام‌سازی',
   failed: 'اتصال قطع شد',
+  blocked: 'نشست منقضی شد',
+};
+
+const SYNC_TONE: Record<string, 'ok' | 'info' | 'bad' | 'warn'> = {
+  idle: 'ok',
+  syncing: 'info',
+  failed: 'bad',
+  blocked: 'warn',
 };
 
 /**
- * نوار وضعیت زنده. به‌جای اسپینر چرخان یک خط مویی determinate داریم:
- * فقط transform/opacity حرکت می‌کند و هیچ keyframe محلی لازم نیست.
- * زمان‌ها با timeZone ثابت فرمت می‌شوند تا SSR و کلاینت یکی باشند.
+ * وضعیت زنده. به‌جای اسپینر چرخان یک «نوار تلگرافی» determinate داریم که فقط
+ * transform/opacity حرکت می‌کند؛ هیچ keyframe محلی لازم نیست و در
+ * prefers-reduced-motion خودبه‌خود clamp می‌شود (قانون global در tokens.css).
+ *
+ * زمان‌ها با timeZone ثابت فرمت می‌شوند تا SSR و کلاینت بیت‌به‌بیت یکی باشند.
  */
 export function ObsToolbar() {
-  const { data, sync, refresh } = useObs();
+  const { data, sync, refresh, windowHours } = useObs();
+  const tone = SYNC_TONE[sync] ?? 'idle';
 
   return (
-    <div className={s.toolbar}>
+    <div className={s.toolbar} data-tone={tone}>
       <span className={s.live}>
         <span
           className={sync === 'idle' ? `${s.liveDot} anim-ping-soft` : s.liveDot}
           data-state={sync}
-          aria-hidden
+          aria-hidden="true"
         />
-        <span aria-live="polite">{SYNC_TEXT[sync] ?? 'زنده'}</span>
+        <span className={s.liveText} aria-live="polite">
+          {SYNC_TEXT[sync] ?? 'زنده'}
+        </span>
+      </span>
+
+      <span className={s.tape} aria-hidden="true">
+        <span className={s.tapeBar} data-state={sync} />
       </span>
 
       <span className={s.window}>
-        {faNum(data?.windowHours ?? 24)} ساعت گذشته · هر {faNum(30)} ثانیه
+        پنجرهٔ {faNum(windowHours)} ساعت · هر {faNum(30)} ثانیه
       </span>
 
-      <span className={s.syncTrack} aria-hidden>
-        <span className={s.syncBar} data-state={sync} />
-      </span>
+      <span className={s.stamp}>{data ? clock(data.generatedAt) : '—'}</span>
 
-      <span className={s.stamp}>
-        {data ? `خوانش ${clock(data.generatedAt)}` : 'بدون خوانش'}
-      </span>
-
-      <button type="button" className={s.refresh} onClick={refresh} disabled={sync === 'syncing'}>
-        <RefreshCw size={16} strokeWidth={1.5} aria-hidden />
-        <span>خواندن دوباره</span>
+      <button
+        type="button"
+        className={s.refresh}
+        onClick={refresh}
+        disabled={sync === 'syncing' || sync === 'blocked'}
+      >
+        <RefreshCw size={16} strokeWidth={1.5} aria-hidden="true" />
+        <span className={s.refreshLabel}>خواندن دوباره</span>
       </button>
     </div>
   );

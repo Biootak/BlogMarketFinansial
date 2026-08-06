@@ -4,14 +4,19 @@
    کلاس‌های span فقط داخل breakpoint تعریف می‌شوند. دلیلش مهم است: در موبایل
    والد تک‌ستونی است و اگر `span 8` آنجا هم اعمال شود، گرید ستون ضمنی می‌سازد و
    چیدمان می‌شکند. پیش‌فرض همه `auto` یعنی تمام‌عرض.
+
+   وزن هر board با اهمیتش تعیین می‌شود نه با تقارن — هیچ‌جای این مسیر سه ستون
+   هم‌اندازه نداریم.
    ============================================================================ */
 
 .wide,
+.nine,
 .eight,
 .seven,
 .six,
 .five,
-.four {
+.four,
+.three {
   grid-column: auto;
   min-inline-size: 0;
 }
@@ -19,6 +24,9 @@
 @media (min-width: 64rem) {
   .wide {
     grid-column: 1 / -1;
+  }
+  .nine {
+    grid-column: span 9;
   }
   .eight {
     grid-column: span 8;
@@ -34,5 +42,8 @@
   }
   .four {
     grid-column: span 4;
+  }
+  .three {
+    grid-column: span 3;
   }
 }

@@ -19,6 +19,17 @@ const ITEMS = [
   { segment: '/audit', label: 'رد ممیزی', icon: ScrollText },
 ] as const;
 
+/**
+ * ناوبری فرعی — segmented rail.
+ *
+ * نشانگر فعال یک هیرلاین است که با `transform: scaleX` باز می‌شود، نه یک نوار
+ * جداگانه که با JS اندازه‌گیری شود؛ پس هیچ measure/resize-observer نداریم و
+ * حرکت فقط روی transform است.
+ *
+ * روی موبایل اسکرول افقی با scroll-snap دارد و هر قلم هدف لمسی ۴۴px می‌گیرد.
+ * شمارنده‌ها عدد واقعی snapshot‌اند: اگر صفر باشند اصلاً رندر نمی‌شوند تا نوار
+ * پر از «۰» نشود.
+ */
 export function ObsSubNav() {
   const pathname = usePathname();
   const { data } = useObs();
@@ -27,11 +38,15 @@ export function ObsSubNav() {
     (service) => service.status === 'down' || service.status === 'degraded',
   ).length;
 
-  const counts: Record<string, { value: number; alarming: boolean } | undefined> = {
-    '/services': { value: unhealthy, alarming: unhealthy > 0 },
-    '/errors': { value: data?.totals.errors ?? 0, alarming: (data?.totals.errors ?? 0) > 0 },
-    '/queries': { value: data?.slowQueries.length ?? 0, alarming: false },
-    '/audit': { value: data?.totals.audit ?? 0, alarming: false },
+  const counts: Record<string, { value: number; tone: 'bad' | 'warn' | 'idle' } | undefined> = {
+    '/services': { value: unhealthy, tone: unhealthy > 0 ? 'bad' : 'idle' },
+    '/errors': { value: data?.totals.errors ?? 0, tone: (data?.totals.errors ?? 0) > 0 ? 'bad' : 'idle' },
+    '/latency': {
+      value: data?.performance.latencySamples ?? 0,
+      tone: data?.performance.latencySource === 'measured' ? 'idle' : 'warn',
+    },
+    '/queries': { value: data?.slowQueries.length ?? 0, tone: 'idle' },
+    '/audit': { value: data?.totals.audit ?? 0, tone: 'idle' },
   };
 
   return (
@@ -43,15 +58,21 @@ export function ObsSubNav() {
           const count = counts[segment];
 
           return (
-            <li key={href}>
-              <Link href={href} className={s.navLink} aria-current={active ? 'page' : undefined}>
-                <Icon size={16} strokeWidth={1.5} aria-hidden />
-                <span>{label}</span>
+            <li key={href} className={s.navItem}>
+              <Link
+                href={href}
+                className={s.navLink}
+                data-active={active}
+                aria-current={active ? 'page' : undefined}
+              >
+                <Icon size={16} strokeWidth={1.5} className={s.navIcon} aria-hidden="true" />
+                <span className={s.navLabel}>{label}</span>
                 {count && count.value > 0 ? (
-                  <span className={s.navCount} data-tone={count.alarming ? 'bad' : 'idle'}>
+                  <span className={s.navCount} data-tone={count.tone}>
                     {faNum(count.value)}
                   </span>
                 ) : null}
+                <span className={s.navUnderline} aria-hidden="true" />
               </Link>
             </li>
           );
