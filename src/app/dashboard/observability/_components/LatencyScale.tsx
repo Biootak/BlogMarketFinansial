@@ -17,6 +17,7 @@ export function LatencyScale() {
 
   const { p50, p95, p99, latencySource, latencySamples } = data.performance;
   const max = Math.max(p99, p95, p50, 1) * 1.1;
+  const tailRatio = p50 > 0 ? p99 / p50 : 0;
 
   const marks: Array<{ id: string; value: number; tone: 'ok' | 'warn' | 'bad' }> = [
     { id: 'p50', value: p50, tone: 'ok' },
@@ -25,13 +26,18 @@ export function LatencyScale() {
   ];
 
   return (
-    <div>
+    <div className={s.latencySurface}>
       <div className={s.scale}>
-        <div className={s.scaleTrack}>
+        <div
+          className={s.scaleTrack}
+          style={{ background: 'linear-gradient(90deg, color-mix(in oklch, var(--obs-ok) 22%, transparent), color-mix(in oklch, var(--obs-warn) 20%, transparent), color-mix(in oklch, var(--obs-bad) 20%, transparent))' }}
+          role="img"
+          aria-label={`p50 ${msShort(p50)}، p95 ${msShort(p95)}، p99 ${msShort(p99)}`}
+        >
           {marks.map((mark) => {
             const position = Math.min(97, (mark.value / max) * 100);
             return (
-              <span key={mark.id} data-tone={mark.tone}>
+              <span key={mark.id} className={s[`scaleMark${mark.tone === 'ok' ? 'Ok' : mark.tone === 'warn' ? 'Warn' : 'Bad'}`]}>
                 <span className={s.scaleMark} style={{ insetInlineStart: `${position}%` }} />
                 <span className={s.scaleLabel} style={{ insetInlineStart: `${position}%` }}>
                   <b>{msShort(mark.value)}</b>
@@ -47,22 +53,31 @@ export function LatencyScale() {
         </p>
       </div>
 
-      <dl className={s.rows}>
-        <div className={s.row}>
-          <dt className={s.rowKey}>نرخ خطای ساعت اخیر</dt>
-          <dd className={s.rowVal} data-tone={data.performance.errorRate > 2 ? 'bad' : 'ok'}>
-            {faPercent(data.performance.errorRate)}
-          </dd>
+      <div className={s.latencyReadout}>
+        <div>
+          <span className={s.readoutKicker}>الگوی اصلی</span>
+          <strong className={s.readoutHeadline}>
+            {tailRatio > 0 ? `${tailRatio.toFixed(1)}×` : '—'}
+          </strong>
+          <span className={s.readoutCopy}>کشیدگی دم، p99 نسبت به p50</span>
         </div>
-        <div className={s.row}>
-          <dt className={s.rowKey}>حجم لاگ ساعت اخیر</dt>
-          <dd className={s.rowVal}>{faNum(data.performance.logsPerHour)}</dd>
-        </div>
-        <div className={s.row}>
-          <dt className={s.rowKey}>نمونه‌های اندازه‌گیری‌شده</dt>
-          <dd className={s.rowVal}>{faNum(latencySamples)}</dd>
-        </div>
-      </dl>
+        <dl className={s.rows}>
+          <div className={s.row}>
+            <dt className={s.rowKey}>نرخ خطای ساعت اخیر</dt>
+            <dd className={s.rowVal} data-tone={data.performance.errorRate > 2 ? 'bad' : 'ok'}>
+              {faPercent(data.performance.errorRate)}
+            </dd>
+          </div>
+          <div className={s.row}>
+            <dt className={s.rowKey}>حجم لاگ ساعت اخیر</dt>
+            <dd className={s.rowVal}>{faNum(data.performance.logsPerHour)}</dd>
+          </div>
+          <div className={s.row}>
+            <dt className={s.rowKey}>نمونه‌های اندازه‌گیری‌شده</dt>
+            <dd className={s.rowVal}>{faNum(latencySamples)}</dd>
+          </div>
+        </dl>
+      </div>
 
       <p className={s.note}>
         <Info size={16} strokeWidth={1.5} aria-hidden />
