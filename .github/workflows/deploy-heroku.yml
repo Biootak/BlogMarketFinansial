@@ -35,14 +35,15 @@ jobs:
       # صفحات استاتیک/ISR در build-time به DB وصل می‌شوند، پس build باید به
       # همان DB production (RDS) متصل باشد، نه یک secret جدا که ممکن است
       # قدیمی/اشتباه باشد.
+      # از Platform API مستقیم استفاده می‌شود (heroku CLI روی runner نیست).
       - name: Get production DATABASE_URL from Heroku
         id: db
         run: |
-          DB_URL=$(heroku config:get DATABASE_URL -a ${{ secrets.HEROKU_APP_NAME }})
-          echo "database_url=$DB_URL" >> "$GITHUB_OUTPUT"
-          echo "direct_url=$(heroku config:get DIRECT_URL -a ${{ secrets.HEROKU_APP_NAME }})" >> "$GITHUB_OUTPUT"
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          CONFIG=$(curl -sS -H "Accept: application/vnd.heroku+json; version=3" \
+            -H "Authorization: Bearer ${{ secrets.HEROKU_API_KEY }}" \
+            "https://api.heroku.com/apps/${{ secrets.HEROKU_APP_NAME }}/config-vars")
+          echo "database_url=$(echo "$CONFIG" | jq -r .DATABASE_URL)" >> "$GITHUB_OUTPUT"
+          echo "direct_url=$(echo "$CONFIG" | jq -r .DIRECT_URL)" >> "$GITHUB_OUTPUT"
 
       # ─── 5. Build & Push Docker image to Heroku ───────────────────────────
       - name: Build and push image
