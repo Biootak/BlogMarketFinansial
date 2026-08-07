@@ -165,7 +165,7 @@ model Post {
 
   @@index([status])
   @@index([authorId])
-  @@index([createdAt])
+  @@index([createdAt], map: "Post_createdAt_asc_idx")
   @@index([isFeatured])
   @@index([scheduledAt])
   @@index([status, createdAt(sort: Desc)])
@@ -174,7 +174,7 @@ model Post {
   @@index([authorId, status, createdAt(sort: Desc)])
   @@index([title])
   @@index([slug])
-  @@index([createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)], map: "Post_createdAt_desc_idx")
 }
 
 model View {
@@ -501,31 +501,33 @@ model Advertisement {
 }
 
 model ExchangeRate {
-  id            String   @id @default(cuid())
-  name          String   @unique
-  currency      String
-  symbol        String?  @unique
-  displayNameFa String?
-  group         String?
-  unit          String?
-  divisor       Int      @default(1)
-  decimals      Int      @default(0)
-  priority      Int      @default(99)
-  provider      String   @default("auto")
-  tgjuKey       String?
-  active        Boolean  @default(true)
-  rateType      RateType @default(BUY_SELL)
-  buyRate       String?
-  sellRate      String?
-  singleRate    String?
-  bulkRate      String?
-  description   String?
-  imageUrl      String?
-  manualNote    String?
-  marginPercent Float    @default(0)
-  showInSlider  Boolean  @default(false)
-  updatedAt     DateTime @updatedAt
-  createdAt     DateTime @default(now())
+  id               String   @id @default(cuid())
+  name             String   @unique
+  currency         String
+  symbol           String?  @unique
+  displayNameFa    String?
+  group            String?
+  unit             String?
+  divisor          Int      @default(1)
+  decimals         Int      @default(0)
+  priority         Int      @default(99)
+  provider         String   @default("auto")
+  tgjuKey          String?
+  active           Boolean  @default(true)
+  rateType         RateType @default(BUY_SELL)
+  buyRate          String?
+  sellRate         String?
+  singleRate       String?
+  bulkRate         String?
+  description      String?
+  imageUrl         String?
+  manualNote       String?
+  marginPercent    Float    @default(0)
+  showInSlider     Boolean  @default(false)
+  lastChangePercent Float   @default(0) // آخرین درصد تغییرات معتبر برای نمایش وقتی بازار بسته است
+  lastChangeAt     DateTime? // زمان آخرین به‌روزرسانی درصد تغییرات
+  updatedAt        DateTime @updatedAt
+  createdAt        DateTime @default(now())
 
   @@index([createdAt(sort: Desc)])
   @@index([active, priority])
@@ -879,7 +881,7 @@ model Beneficiary {
   Customer   Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   @@unique([userId, identifier])
-  @@unique([customerId, identifier])
+  @@unique([customerId, identifier], map: "Beneficiary_customerId_identifier_unique")
   @@index([userId, createdAt])
   @@index([customerId, createdAt])
 }

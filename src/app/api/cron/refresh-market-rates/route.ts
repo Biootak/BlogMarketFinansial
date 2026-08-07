@@ -10,6 +10,7 @@ import { verifyCronSecret } from '@/lib/cron-auth';
 import prisma from '@/lib/db';
 import { assembleMarketRates } from '@/lib/market-rates';
 import { writeMarketRatesSnapshot } from '@/lib/market-rates/snapshot';
+import { updateChangePercentBatch, saveChangeCache } from '@/lib/market-rates/change-cache';
 import { revalidateTag } from '@/lib/revalidate';
 import { NextResponse } from 'next/server';
 
@@ -52,6 +53,7 @@ async function handleRefresh(req: Request) {
   let updated = 0;
   let skipped = 0;
   const errors: { symbol: string; reason: string }[] = [];
+  const changeUpdates: { symbol: string; changePercent: number }[] = [];
 
   for (const item of items) {
     if (item.provider !== 'auto') continue;
@@ -63,19 +65,45 @@ async function handleRefresh(req: Request) {
       continue;
     }
     try {
+      // Try to update with lastChangePercent (if migration is applied)
       const affected = await prisma.exchangeRate.updateMany({
         where: { symbol: item.symbol, provider: 'auto', active: true },
-        data: { singleRate: rawValue.toString() },
+        data: {
+          singleRate: rawValue.toString(),
+          lastChangePercent: item.changePercent,
+          lastChangeAt: new Date(),
+        },
       });
       if (affected.count > 0) {
         updated++;
+        // جمع change percents برای ذخیره در cache (fallback)
+        changeUpdates.push({ symbol: item.symbol, changePercent: item.changePercent });
       } else {
         skipped++;
       }
     } catch (e: unknown) {
-      const err = e as { message?: string };
-      errors.push({ symbol: item.symbol, reason: err.message ?? 'unknown' });
+      // If migration not applied, fallback to updating only singleRate
+      try {
+        const affected = await prisma.exchangeRate.updateMany({
+          where: { symbol: item.symbol, provider: 'auto', active: true },
+          data: { singleRate: rawValue.toString() },
+        });
+        if (affected.count > 0) {
+          updated++;
+          changeUpdates.push({ symbol: item.symbol, changePercent: item.changePercent });
+        } else {
+          skipped++;
+        }
+      } catch (e2: unknown) {
+        const err = e2 as { message?: string };
+        errors.push({ symbol: item.symbol, reason: err.message ?? 'unknown' });
+      }
     }
+  }
+
+  // ذخیره change percents در cache (fallback if DB migration not applied)
+  if (changeUpdates.length > 0) {
+    updateChangePercentBatch(changeUpdates);
   }
 
   revalidateTag(TAGS.ticker);

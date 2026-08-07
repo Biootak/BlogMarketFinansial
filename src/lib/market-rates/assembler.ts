@@ -16,6 +16,9 @@ import { fetchAllTgjuPages } from './tgju';
 import { CANONICAL_KEY_TO_SOURCES, type SymbolSource } from './tgjuKeys';
 import type { MarketRateGroup, MarketRateItem, MarketRateProvider, MarketRateUnit } from './types';
 import { getUsdtRate } from './usdt';
+import { getLastChangePercent, updateChangePercent } from './change-cache';
+
+console.log('[assembler] Module loaded, getLastChangePercent imported:', typeof getLastChangePercent);
 
 function getUsdtPremiumPercent(): number {
   const raw = process.env.USDT_PREMIUM_PERCENT;
@@ -84,7 +87,10 @@ export async function assembleMarketRates(): Promise<MarketRateItem[]> {
     const symbol = row.symbol ?? row.currency;
     const registry = SYMBOL_REGISTRY_MAP.get(symbol);
     const item = assembleFromRow(row, tgjuMap, usdt, fx, bonbast, bonbastBS, sarafi, registry);
-    if (item) out.push(item);
+    if (item) {
+      console.log(`[assembler] ${symbol} changePercent=${item.changePercent}`);
+      out.push(item);
+    }
   }
   return out;
 }
@@ -185,7 +191,15 @@ function assembleFromRow(
         // اگه rawValue هنوز null است → bonbast mid را fallback می‌کنیم
         if (rawValue === null) {
           rawValue = ((bsEntry.buy + bsEntry.sell) / 2) * divisor;
-          changePercent = 0;
+        }
+        // اگه تغییرات جدید نداریم، از آخرین تغییرات ذخیره شده در DB یا cache استفاده کن
+        if (changePercent === 0) {
+          console.log(`[assembler] ${symbol} changePercent=0, row.lastChangePercent=${row.lastChangePercent}`);
+          const lastChange = row.lastChangePercent ?? getLastChangePercent(symbol);
+          console.log(`[assembler] ${symbol} using lastChange=${lastChange}`);
+          if (lastChange !== 0) {
+            changePercent = lastChange;
+          }
         }
       }
     }
@@ -232,7 +246,13 @@ function assembleFromRow(
       buyValue = entry.buyRate * divisor;
       sellValue = entry.sellRate * divisor;
       rawValue = ((entry.buyRate + entry.sellRate) / 2) * divisor;
-      changePercent = 0;
+      // اگه تغییرات جدید نداریم، از آخرین تغییرات ذخیره شده در DB یا cache استفاده کن
+      if (changePercent === 0) {
+        const lastChange = row.lastChangePercent ?? getLastChangePercent(symbol);
+        if (lastChange !== 0) {
+          changePercent = lastChange;
+        }
+      }
     }
   }
 
@@ -254,7 +274,13 @@ function assembleFromRow(
         buyValue = bsEntry.buy * divisor;
         sellValue = bsEntry.sell * divisor;
         rawValue = ((bsEntry.buy + bsEntry.sell) / 2) * divisor;
-        changePercent = 0;
+        // اگه تغییرات جدید نداریم، از آخرین تغییرات ذخیره شده در DB یا cache استفاده کن
+        if (changePercent === 0) {
+          const lastChange = row.lastChangePercent ?? getLastChangePercent(symbol);
+          if (lastChange !== 0) {
+            changePercent = lastChange;
+          }
+        }
       }
     }
   }
@@ -271,7 +297,13 @@ function assembleFromRow(
       const crossRate = bonbast.crossRates[fxCode.toUpperCase()];
       if (crossRate && crossRate > 0) {
         rawValue = crossRateToToman(crossRate, bonbast.irrPerEur) * divisor;
-        changePercent = 0;
+        // اگه تغییرات جدید نداریم، از آخرین تغییرات ذخیره شده در DB یا cache استفاده کن
+        if (changePercent === 0) {
+          const lastChange = row.lastChangePercent ?? getLastChangePercent(symbol);
+          if (lastChange !== 0) {
+            changePercent = lastChange;
+          }
+        }
       }
     }
   }

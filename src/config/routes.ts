@@ -274,6 +274,9 @@ export const adminRoutes = [
   // 2026-07-31: permissions در sidebar ADMIN بخش admin است اما فقط در superAdminRoutes بود
   '/dashboard/permissions',
   '/dashboard/permissions/[...slug]',
+  // 2026-01-XX: price sources management
+  '/dashboard/price-sources',
+  '/dashboard/price-sources/[...slug]',
 ];
 
 /**

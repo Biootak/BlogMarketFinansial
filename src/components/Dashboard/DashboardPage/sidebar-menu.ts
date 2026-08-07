@@ -419,6 +419,14 @@ export function getMenu(role: UserRole): NavSection[] {
     title: 'تسویه‌حساب صرافی‌ها',
   };
 
+  const priceSources: MenuItem = {
+    id: 'priceSources',
+    href: '/dashboard/price-sources',
+    icon: HiOutlineRadio({ className: ICON_CLASS }),
+    label: 'منابع قیمت',
+    title: 'مدیریت منابع وب‌اسکریپت قیمت',
+  };
+
   const permissions: MenuItem = {
     id: 'permissions',
     href: '/dashboard/permissions',
@@ -721,6 +729,7 @@ export function getMenu(role: UserRole): NavSection[] {
             exchangeRates,
             exchangeQuotes,
             creditRates,
+            priceSources,
             advertisements,
             serviceRequests,
             observability,
@@ -785,6 +794,7 @@ export function getMenu(role: UserRole): NavSection[] {
             exchangeRates,
             exchangeQuotes,
             creditRates,
+            priceSources,
             advertisements,
             serviceRequests,
             observability,
