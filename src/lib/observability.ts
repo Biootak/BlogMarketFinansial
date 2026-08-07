@@ -680,13 +680,15 @@ const buildSnapshot = async (now: number): Promise<ObservabilitySnapshot> => {
   incidents.reverse();
 
   /* ── رد ممیزی ───────────────────────────────────────────── */
-  const audit: AuditEntry[] = auditRows.map((row) => ({
-    id: row.id,
-    action: row.action,
-    actorRole: row.actorRole ?? 'سیستم',
-    entityType: row.entityType ?? '—',
-    createdAt: row.createdAt.toISOString(),
-  }));
+  const audit: AuditEntry[] = auditRows
+    .filter((row) => row.createdAt !== null) // Filter out rows with null dates
+    .map((row) => ({
+      id: row.id,
+      action: row.action ?? 'unknown',
+      actorRole: row.actorRole ?? 'سیستم',
+      entityType: row.entityType ?? '—',
+      createdAt: row.createdAt.toISOString(),
+    }));
 
   return {
     generatedAt: new Date(now).toISOString(),

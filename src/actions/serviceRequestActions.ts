@@ -1155,7 +1155,9 @@ export async function cancelMyServiceRequest(
     ]);
     revalidateTag('service-requests');
     return { success: true, data: undefined };
-  } catch {
+  } catch (error) {
+    // Log the error for debugging
+    console.error('[serviceRequestActions] cancelRequest error:', error);
     return {
       success: false,
       error: { code: 'SERVER_ERROR', message: 'خطایی در لغو سفارش رخ داد.' },

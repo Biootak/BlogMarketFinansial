@@ -114,10 +114,14 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
     const current = initialPosts[activeIndex];
     const others = initialPosts.filter((_, i) => i !== activeIndex);
     return {
-      mainTheme: getCategoryTheme(current.categories?.[0]?.slug, current.categories?.[0]?.name),
+      mainTheme: current.categories && current.categories.length > 0 && current.categories[0]
+        ? getCategoryTheme(current.categories[0].slug, current.categories[0].name)
+        : getCategoryTheme(),
       otherPosts: others,
       sideThemes: others.map((p) =>
-        getCategoryTheme(p.categories?.[0]?.slug, p.categories?.[0]?.name),
+        p.categories && p.categories.length > 0 && p.categories[0]
+          ? getCategoryTheme(p.categories[0].slug, p.categories[0].name)
+          : getCategoryTheme(),
       ),
     };
   }, [initialPosts, activeIndex]);
@@ -128,8 +132,9 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
 
     const mainPost = initialPosts[activeIndex];
     const cat = (
-      mainPost?.categories?.[0]?.slug ||
-      mainPost?.categories?.[0]?.name ||
+      (mainPost?.categories && mainPost.categories.length > 0 && mainPost.categories[0]
+        ? mainPost.categories[0].slug || mainPost.categories[0].name
+        : '') ||
       ''
     ).toLowerCase();
 
@@ -283,7 +288,7 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                       </span>
 
                       {/* Top tag — بج تگ اصلی پست (اگه تگی وجود داشته باشه) */}
-                      {mainPost.tags && mainPost.tags.length > 0 && (
+                      {mainPost.tags && mainPost.tags.length > 0 && mainPost.tags[0] && (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 backdrop-blur-md text-white text-[11px] sm:text-xs font-bold rounded-full border border-white/20 shadow-lg">
                           <TagIcon className="w-3 h-3" />
                           {mainPost.tags[0].name}
@@ -325,7 +330,7 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                     {/* Content */}
                     <div className="absolute bottom-0 start-0 end-0 p-3 sm:p-5 lg:p-6 z-10">
                       {/* Category */}
-                      {mainPost.categories?.[0] && (
+                      {mainPost.categories && mainPost.categories.length > 0 && mainPost.categories[0] && (
                         <motion.span
                           key={`cat-${mainPost.id}`}
                           className={`inline-flex items-center gap-1.5 px-3 py-1 mb-3 ${mainTheme.badge} text-white text-[11px] sm:text-xs font-bold rounded-lg shadow-lg ${mainTheme.glow}`}
@@ -589,13 +594,13 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
 
                       {/* Top badges row */}
                       <div className="absolute top-2 start-2 end-2 z-10 flex items-center justify-between gap-1.5">
-                        {post.tags && post.tags.length > 0 && (
+                        {post.tags && post.tags.length > 0 && post.tags[0] && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-white/10 backdrop-blur-md text-white text-[9px] font-bold rounded-md border border-white/20 shadow-md line-clamp-1 max-w-[60%]">
                             <TagIcon className="w-2.5 h-2.5 shrink-0" />
                             <span className="truncate">{post.tags[0].name}</span>
                           </span>
                         )}
-                        {post.categories?.[0] && (
+                        {post.categories && post.categories.length > 0 && post.categories[0] && (
                           <span
                             className={`px-2 py-0.5 ${theme.badge} text-white text-[9px] font-bold rounded-md shadow-md line-clamp-1 max-w-full`}
                           >
@@ -649,7 +654,9 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
           {initialPosts.map((post, i) => {
             const theme =
               i === activeIndex
-                ? getCategoryTheme(post.categories?.[0]?.slug, post.categories?.[0]?.name)
+                ? post.categories && post.categories.length > 0 && post.categories[0]
+                  ? getCategoryTheme(post.categories[0].slug, post.categories[0].name)
+                  : getCategoryTheme()
                 : null;
             return (
               // 24px hit target (target-size audit): the site's html font-size

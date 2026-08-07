@@ -23,6 +23,10 @@ export async function GET() {
       // Use path.parse to safely extract drive root on Windows; on Linux/macOS cwd() is used directly
       const cwd = process.cwd();
       const diskRoot = process.platform === 'win32' ? (cwd.split('\\')[0] ?? cwd) : cwd;
+      // Validate diskRoot to prevent path traversal
+      if (typeof diskRoot !== 'string' || diskRoot.includes('..') || diskRoot.includes('\0')) {
+        throw new Error('Invalid disk path');
+      }
       const diskSpace = await checkDiskSpace(diskRoot);
       if (diskSpace) {
         systemInfo.disk = {

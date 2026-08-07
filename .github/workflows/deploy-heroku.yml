@@ -53,6 +53,11 @@ jobs:
           file: Dockerfile.heroku
           push: true
           tags: registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web
+          # 2026-08-08: Heroku Container Registry از OCI attestations
+          # (provenance/sbom) پشتیبانی نمی‌کند — push با
+          # "failed to push ...: unsupported" شکست می‌خورد.
+          provenance: false
+          sbom: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |

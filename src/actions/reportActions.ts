@@ -229,6 +229,10 @@ export const getSystemStatus = async (): Promise<ActionResult<SystemStatus>> => 
     // دیسک: استخراج drive root
     const cwd = process.cwd();
     const diskRoot = process.platform === 'win32' ? (cwd.split('\\')[0] ?? cwd) : cwd;
+    // Validate diskRoot to prevent path traversal
+    if (typeof diskRoot !== 'string' || diskRoot.includes('..') || diskRoot.includes('\0')) {
+      throw new Error('Invalid disk path');
+    }
     const diskSpace = await checkDiskSpace(diskRoot);
 
     // وضعیت دیتابیس از طریق یک query سبک

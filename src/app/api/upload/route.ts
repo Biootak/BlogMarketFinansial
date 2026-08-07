@@ -356,6 +356,14 @@ export async function POST(request: NextRequest) {
     // اگه فرم آن را نفرستد، از نگاشت فولدر→اسلات پیش‌فرض استفاده می‌کنیم.
     const slotId = (formData.get('slot') as string) || undefined;
 
+    // Security: validate folder parameter to prevent path traversal
+    if (!folder || typeof folder !== 'string' || folder.includes('..') || folder.includes('/') || folder.includes('\\')) {
+      return NextResponse.json(
+        { success: false, error: { code: 'INVALID_FOLDER', message: 'فولدر نامعتبر است' } },
+        { status: 400 },
+      );
+    }
+
     if (!ALLOWED_FOLDERS.includes(folder as AllowedFolder)) {
       return NextResponse.json(
         { success: false, error: { code: 'INVALID_FOLDER', message: 'فولدر نامعتبر است' } },

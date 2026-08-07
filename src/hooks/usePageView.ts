@@ -59,6 +59,8 @@ export function usePageView() {
           }).catch((_error) => {
             // silent fail - pageview نباید UX رو خراب کنه
             if (process.env.NODE_ENV === 'development') {
+              // biome-ignore lint/suspicious/noConsole: dev-only error logging
+              console.error('[usePageView] fetch failed:', _error);
             }
           });
         } catch {

@@ -49,7 +49,11 @@ export default prisma;
 // Helper function برای چک کردن اتصال دیتابیس
 export async function checkDatabaseConnection(): Promise<boolean> {
   try {
-    await prisma.$queryRaw`SELECT 1`;
+    // Add timeout to prevent hanging on connection issues
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Database connection timeout')), 5000),
+    );
+    await Promise.race([prisma.$queryRaw`SELECT 1`, timeoutPromise]);
     return true;
   } catch (error) {
     serverLog.error('db', 'check-connection', error);

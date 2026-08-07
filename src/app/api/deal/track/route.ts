@@ -98,6 +98,20 @@ export async function POST(request: Request) {
     );
   }
 
+  // Ensure Exchange exists before accessing its properties
+  if (!deal.Exchange) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'DATA_ERROR',
+          message: 'اطلاعات صرافی یافت نشد',
+        },
+      },
+      { status: 500, headers: { 'Cache-Control': 'no-store, private' } },
+    );
+  }
+
   return NextResponse.json(
     {
       success: true,
@@ -115,7 +129,7 @@ export async function POST(request: Request) {
         createdAt: deal.createdAt.toISOString(),
         confirmedAt: deal.confirmedAt?.toISOString() ?? null,
         completedAt: deal.completedAt?.toISOString() ?? null,
-        statusLogs: deal.StatusLogs.map((l) => ({
+        statusLogs: (deal.StatusLogs || []).map((l) => ({
           toStatus: l.toStatus,
           note: l.note ?? null,
           createdAt: l.createdAt.toISOString(),

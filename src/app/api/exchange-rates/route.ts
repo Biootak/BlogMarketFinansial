@@ -76,17 +76,19 @@ export async function GET(request: Request) {
       take: 200,
     });
 
-    const data = quotes.map((q) => ({
-      id: q.id,
-      exchangeId: q.exchangeId,
-      exchangeName: q.Exchange.displayName ?? q.Exchange.name,
-      exchangeSlug: q.Exchange.slug,
-      exchangeCity: q.Exchange.city ?? null,
-      exchangeLogoUrl: q.Exchange.logoUrl ?? null,
-      currencyCode: q.currencyCode,
-      currencyPair: q.currencyPair,
-      buyRate: q.buyRate.toString(),
-      sellRate: q.sellRate.toString(),
+    const data = quotes
+      .filter((q) => q.Exchange !== null) // Filter out quotes without Exchange
+      .map((q) => ({
+        id: q.id,
+        exchangeId: q.exchangeId,
+        exchangeName: q.Exchange.displayName ?? q.Exchange.name,
+        exchangeSlug: q.Exchange.slug,
+        exchangeCity: q.Exchange.city ?? null,
+        exchangeLogoUrl: q.Exchange.logoUrl ?? null,
+        currencyCode: q.currencyCode,
+        currencyPair: q.currencyPair,
+        buyRate: q.buyRate.toString(),
+        sellRate: q.sellRate.toString(),
       unit: q.unit,
       minAmount: q.minAmount?.toString() ?? null,
       maxAmount: q.maxAmount?.toString() ?? null,

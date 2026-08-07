@@ -1283,7 +1283,7 @@ async function _refundDealImpl(
             LIMIT 1
             FOR UPDATE
           `;
-          const lockedAccount = lockedRows[0];
+          const lockedAccount = lockedRows && lockedRows.length > 0 ? lockedRows[0] : null;
           if (lockedAccount) {
             const refundAmount = BigInt(new Decimal(deal.toAmount.toString()).toFixed(0));
             // اگر balance کمتر از مبلغ بازگشتی است → خطا به‌جای silent clamp

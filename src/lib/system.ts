@@ -97,8 +97,11 @@ export async function checkDiskSpace(drive: string): Promise<DiskSpace | null> {
 
     // For Unix-like systems (Linux, macOS): drive is a full path like /app or cwd.
     // Sanitize: allow only safe filesystem path characters, no shell metacharacters.
+    // Additional check: prevent path traversal (..) and absolute path escape
     const safePath = drive.replace(/[^a-zA-Z0-9/._-]/g, '');
     if (!safePath || safePath.length === 0) return null;
+    // Prevent path traversal attacks
+    if (safePath.includes('..')) return null;
 
     const { stdout } = await execAsync(`df -k "${safePath}"`);
     const lines = stdout.trim().split('\n');

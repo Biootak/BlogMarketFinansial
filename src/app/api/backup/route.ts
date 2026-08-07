@@ -39,6 +39,20 @@ export async function DELETE(req: NextRequest) {
       { status: 400 },
     );
   }
+  // Security: prevent path traversal and ensure filename is safe
+  if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+    return NextResponse.json(
+      { success: false, error: { code: 'BAD_REQUEST', message: 'نام فایل نامعتبر است' } },
+      { status: 400 },
+    );
+  }
+  // Ensure filename matches expected backup pattern
+  if (!filename.startsWith('backup_') || !filename.endsWith('.json')) {
+    return NextResponse.json(
+      { success: false, error: { code: 'BAD_REQUEST', message: 'فرمت فایل نامعتبر است' } },
+      { status: 400 },
+    );
+  }
   const res = await deleteBackup(filename);
   if (!res.success) {
     return NextResponse.json(
