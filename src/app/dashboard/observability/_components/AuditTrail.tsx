@@ -2,17 +2,10 @@
 
 import { ScrollText } from 'lucide-react';
 
-<<<<<<< HEAD
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
-import { relative, stamp } from './format';
-import s from './obs.module.css';
-=======
 import { hhmm, relative, stamp } from './format';
-import { ObsEmpty } from './ObsSection';
-import { useObs } from './ObsProvider';
 import l from './ledger.module.css';
->>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
 
 const MAX_ROWS = 24;
 

@@ -2,18 +2,11 @@
 
 import { Database } from 'lucide-react';
 
-<<<<<<< HEAD
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
-import { msShort, relative } from './format';
-import s from './obs.module.css';
-=======
 import { maxOf } from './chart';
 import { cssVars, faNum, msShort, ratio, relative, sourceName } from './format';
-import { ObsEmpty } from './ObsSection';
-import { useObs } from './ObsProvider';
 import l from './ledger.module.css';
->>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
 
 /** آستانه‌های خوانش زمان اجرا (میلی‌ثانیه). */
 const BAD_MS = 1000;
