@@ -107,7 +107,8 @@ export async function getSuggestedRates(params: {
   const buyValue = matchedRate.buyValue ?? matchedRate.value;
   const sellValue = matchedRate.sellValue ?? matchedRate.value;
 
-  if (!buyValue || !sellValue) return null;
+  if (buyValue == null || sellValue == null) return null;
+  if (!Number.isFinite(Number(buyValue)) || !Number.isFinite(Number(sellValue))) return null;
 
   const marketBuyRate = Number(buyValue);
   const marketSellRate = Number(sellValue);

@@ -16,6 +16,7 @@ import { EDITABLE_ROLES } from '@/lib/permissions-constants';
 import { requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import type { FintechActionResult } from '@/types/types';
+import { Role } from '@prisma/client';
 import { v4 as createId } from 'uuid';
 import { z } from 'zod';
 
@@ -108,25 +109,40 @@ export async function saveRoleMatrix(
   let updated = 0;
 
   await prisma.$transaction(async (tx) => {
+    const permissionIds = parsed.data.map((r) => r.permissionId);
+
+    // Batch fetch — prevents N×M queries inside nested loops
+    const existingRolePerms = await tx.rolePermission.findMany({
+      where: { permissionId: { in: permissionIds } },
+      select: { id: true, permissionId: true, role: true },
+    });
+    const existingSet = new Map(
+      existingRolePerms.map((rp) => [`${rp.permissionId}:${rp.role}`, rp.id]),
+    );
+
+    const toCreate: { id: string; permissionId: string; role: Role }[] = [];
+    const toDelete: string[] = [];
+
     for (const row of parsed.data) {
       for (const roleKey of EDITABLE_ROLES) {
         const shouldHave = row.roles[roleKey] === true;
+        const existingId = existingSet.get(`${row.permissionId}:${roleKey}`);
 
-        const existing = await tx.rolePermission.findFirst({
-          where: { permissionId: row.permissionId, role: roleKey },
-          select: { id: true },
-        });
-
-        if (shouldHave && !existing) {
-          await tx.rolePermission.create({
-            data: { id: createId(), permissionId: row.permissionId, role: roleKey },
-          });
+        if (shouldHave && !existingId) {
+          toCreate.push({ id: createId(), permissionId: row.permissionId, role: roleKey as Role });
           updated++;
-        } else if (!shouldHave && existing) {
-          await tx.rolePermission.delete({ where: { id: existing.id } });
+        } else if (!shouldHave && existingId) {
+          toDelete.push(existingId);
           updated++;
         }
       }
+    }
+
+    if (toCreate.length > 0) {
+      await tx.rolePermission.createMany({ data: toCreate, skipDuplicates: true });
+    }
+    if (toDelete.length > 0) {
+      await tx.rolePermission.deleteMany({ where: { id: { in: toDelete } } });
     }
 
     // AuditLog

@@ -47,8 +47,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AuthorsPage() {
   const data = await getAuthorsHubData(12, 6);
 
-  const [feature, ...rest] = data.topAuthors;
-  const heroTop = data.topAuthors.slice(0, 3);
+  const topAuthors = data.topAuthors ?? [];
+  const [feature, ...rest] = topAuthors;
+  const heroTop = topAuthors.slice(0, 3);
 
   // JSON-LD: CollectionPage of Person items for SEO.
   const jsonLd = {
@@ -57,7 +58,7 @@ export default async function AuthorsPage() {
     name: 'نویسندگان',
     description: 'مجموعه نویسندگان فعال در پلتفرم بازارهای مالی',
     url: `${SITE_URL}/authors`,
-    hasPart: data.topAuthors.slice(0, 10).map((a) => ({
+    hasPart: topAuthors.slice(0, 10).map((a) => ({
       '@type': 'Person',
       name: a.name ?? 'نویسنده',
       url: `${SITE_URL}/author/${a.id}`,

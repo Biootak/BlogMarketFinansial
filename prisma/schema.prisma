@@ -97,7 +97,7 @@ model Session {
   userId       String
   expires      DateTime
   createdAt    DateTime @default(now())
-  updatedAt    DateTime
+  updatedAt    DateTime @updatedAt
   deviceId     String?
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -889,7 +889,7 @@ model BillingAddress {
   recipientName String?
   phoneNumber   String?
   createdAt     DateTime @default(now())
-  updatedAt     DateTime
+  updatedAt     DateTime @updatedAt
   User          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -933,7 +933,7 @@ model ContactSubmission {
   status    String   @default("NEW")
   ipAddress String?
   createdAt DateTime @default(now())
-  updatedAt DateTime
+  updatedAt DateTime @updatedAt
 
   @@index([createdAt(sort: Desc)])
   @@index([status])
@@ -961,7 +961,7 @@ model Customer {
   shareWithExchange Boolean           @default(false)
   createdById       String?
   createdAt         DateTime          @default(now())
-  updatedAt         DateTime
+  updatedAt         DateTime          @updatedAt
   Exchange          Exchange          @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
   User              User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
   Device            Device[]
@@ -1100,7 +1100,7 @@ model Exchange {
   requireKyc         Boolean             @default(true)
   createdById        String?
   createdAt          DateTime            @default(now())
-  updatedAt          DateTime
+  updatedAt          DateTime            @updatedAt
   AuditLog           AuditLog[]
   Customer           Customer[]
   Device             Device[]
@@ -1210,7 +1210,7 @@ model FintechAccount {
   balance      BigInt        @default(0)
   frozenUntil  DateTime?
   createdAt    DateTime      @default(now())
-  updatedAt    DateTime
+  updatedAt    DateTime      @updatedAt
   Customer     Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
   Exchange     Exchange      @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
   LedgerEntry  LedgerEntry[]
@@ -1255,7 +1255,7 @@ model KycAttempt {
   selfieUrl      String?
   rejectReason   String?
   createdAt      DateTime         @default(now())
-  updatedAt      DateTime
+  updatedAt      DateTime         @updatedAt
 }
 
 model KycRecord {
@@ -1272,7 +1272,7 @@ model KycRecord {
   /// تاریخ انقضای KYC — برای compliance (پیش‌فرض ۲ سال از reviewedAt)
   expiresAt      DateTime?
   createdAt      DateTime  @default(now())
-  updatedAt      DateTime
+  updatedAt      DateTime  @updatedAt
   User           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -1292,7 +1292,7 @@ model KycVerification {
   rejectReason  String?
   expiresAt     DateTime?
   createdAt     DateTime  @default(now())
-  updatedAt     DateTime
+  updatedAt     DateTime  @updatedAt
   Customer      Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
   Exchange      Exchange  @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
 
@@ -1365,7 +1365,7 @@ model Transaction {
   createdById    String?
   reviewedById   String?
   createdAt      DateTime          @default(now())
-  updatedAt      DateTime
+  updatedAt      DateTime          @updatedAt
   FraudReview    FraudReview[]
   LedgerEntry    LedgerEntry[]
   FintechAccount FintechAccount?   @relation(fields: [accountId], references: [id], onDelete: Cascade)
@@ -1403,7 +1403,7 @@ model VirtualCard {
   currency  WalletCurrency @default(USD)
   expiresAt DateTime
   createdAt DateTime       @default(now())
-  updatedAt DateTime
+  updatedAt DateTime       @updatedAt
   User      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   Account   FintechAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 

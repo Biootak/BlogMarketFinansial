@@ -143,10 +143,10 @@ export default async function Page({ params }: PageProps) {
                     sidebarAdsResult.success && sidebarAdsResult.data ? sidebarAdsResult.data : []
                   }
                   className="relative space-y-6 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl rounded-2xl p-5 border border-neutral-200/50 dark:border-neutral-800/50 shadow-[0_8px_40px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.2)]"
-                  widgetPosts={sidebarData.recentPosts}
-                  tags={sidebarData.popularTags}
-                  categories={sidebarData.popularCategories}
-                  authors={sidebarData.popularAuthors}
+                  widgetPosts={sidebarData?.recentPosts ?? []}
+                  tags={sidebarData?.popularTags ?? []}
+                  categories={sidebarData?.popularCategories ?? []}
+                  authors={sidebarData?.popularAuthors ?? []}
                 />
               </div>
             </div>

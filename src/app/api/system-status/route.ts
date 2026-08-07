@@ -3,10 +3,12 @@ import db from '@/lib/db';
 import { checkDiskSpace, getSystemMetrics } from '@/lib/system';
 import { NextResponse } from 'next/server';
 
+const STATUS_ROLES = new Set(['OWNER', 'SUPERADMIN']);
+
 export async function GET() {
   try {
     const session = await auth();
-    if (!session?.user || !['OWNER', 'SUPERADMIN'].includes(session.user.role ?? '')) {
+    if (!session?.user || !STATUS_ROLES.has(session.user.role ?? '')) {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } },
         { status: 403 },

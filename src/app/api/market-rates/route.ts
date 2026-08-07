@@ -1,5 +1,7 @@
 import { getMarketRates } from '@/actions/market-rates';
-import { NextResponse } from 'next/server';
+import { getTrustedClientIp } from '@/lib/client-ip';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -21,7 +23,22 @@ interface SerializedRate {
   updatedAt: string;
 }
 
-export async function GET(): Promise<NextResponse> {
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  const ip = getTrustedClientIp(request);
+  const rl = await checkRateLimit(`market-rates:${ip}`, 'api');
+  if (!rl.success) {
+    return NextResponse.json(
+      { success: false, error: { code: 'RATE_LIMITED', message: 'درخواست بیش از حد مجاز' } },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': String(Math.max(1, Math.ceil((rl.reset - Date.now()) / 1000))),
+          'Cache-Control': 'no-store',
+        },
+      },
+    );
+  }
+
   try {
     const items = await getMarketRates();
     const data: SerializedRate[] = items.map((r) => ({

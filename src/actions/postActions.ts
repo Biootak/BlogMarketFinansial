@@ -1269,6 +1269,10 @@ export async function likeItem(
     }
 
     revalidatePath(path);
+    revalidateTag('comments');
+    if (itemType === 'post') {
+      revalidateTag(`post-${itemId}`);
+    }
     return { success: true, message: 'وضعیت لایک با موفقیت به‌روزرسانی شد.' };
   } catch (_error) {
     return {
@@ -1312,6 +1316,7 @@ export async function savePost(postId: string): Promise<ActionResult> {
     }
 
     revalidatePath(`/posts/${postId}`);
+    revalidateTag(`post-${postId}`);
     return {
       success: true,
       message: existingSave ? 'پست از لیست ذخیره‌ها حذف شد.' : 'پست با موفقیت ذخیره شد.',

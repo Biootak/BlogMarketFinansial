@@ -64,6 +64,15 @@ interface ActivityLog {
   createdAt: string;
 }
 
+interface SystemLogEntry {
+  id?: string;
+  level: 'error' | 'warning' | 'info' | 'debug';
+  message: string;
+  details?: string;
+  source?: string;
+  timestamp: string | Date;
+}
+
 export default function SystemLogs() {
   const { toast } = useToast();
   const [logs, setLogs] = useState<ActivityLog[]>([]);
@@ -75,7 +84,7 @@ export default function SystemLogs() {
     search: '',
   });
 
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<SystemLogEntry[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -326,7 +335,7 @@ export default function SystemLogs() {
       </div>
 
       <div className="space-y-4">
-        {data.map((log: any, index: number) => (
+        {(data ?? []).map((log: SystemLogEntry, index: number) => (
           <div key={index} className="dash-panel p-4">
             <div className="flex justify-between items-start">
               <div>
