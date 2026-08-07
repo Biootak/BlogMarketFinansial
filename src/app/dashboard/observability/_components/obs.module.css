@@ -53,11 +53,11 @@
   content: counter(obs-entry, persian);
 }
 
-.section[data-variant='plain'] .index {
+.section[data-variant="plain"] .index {
   display: none;
 }
 
-.section[data-variant='plain'] .head {
+.section[data-variant="plain"] .head {
   border-block-start-color: var(--obs-rule);
 }
 
@@ -161,9 +161,7 @@
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-medium);
   cursor: pointer;
-  transition:
-    border-color var(--obs-fast) var(--obs-ease),
-    color var(--obs-fast) var(--obs-ease),
+  transition: border-color var(--obs-fast) var(--obs-ease), color var(--obs-fast) var(--obs-ease),
     background-color var(--obs-fast) var(--obs-ease);
 }
 

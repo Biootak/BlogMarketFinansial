@@ -89,11 +89,7 @@ export function StaffAddPanel({ exchangeId, onAdded }: Props) {
           <label className={s.fieldLabel} id="staff-role-label">
             نقش
           </label>
-          <Select
-            value={role}
-            onValueChange={(v) => setRole(v as typeof role)}
-            disabled={adding}
-          >
+          <Select value={role} onValueChange={(v) => setRole(v as typeof role)} disabled={adding}>
             <SelectTrigger aria-labelledby="staff-role-label" className={s.selectTrigger}>
               <SelectValue />
             </SelectTrigger>

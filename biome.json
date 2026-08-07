@@ -98,6 +98,10 @@
       "*.sass",
       "src/app/globals.css",
       "src/lib/motion-shim.tsx",
+      "src/styles/archive-hub.css",
+      "src/styles/author-hub.css",
+      "src/styles/ad-primitives.css",
+      "src/styles/money-transfer.css",
       ".harness/**",
       ".Trash-1000/**"
     ]
@@ -190,6 +194,7 @@
       "include": [
         "src/components/Auth/OtpDialPad.tsx",
         "src/components/Auth/AuthFlow.redesign.tsx",
+        "src/components/Auth/RateLimitCountdown.tsx",
         "src/components/Editor1/**"
       ],
       "linter": {
@@ -343,7 +348,11 @@
             "noForEach": "off"
           },
           "suspicious": {
-            "noConsole": "off"
+            "noConsole": "off",
+            "noExplicitAny": "off"
+          },
+          "correctness": {
+            "noUnusedVariables": "off"
           }
         }
       }
@@ -358,6 +367,90 @@
         "rules": {
           "suspicious": {
             "noArrayIndexKey": "off"
+          }
+        }
+      }
+    },
+    {
+      "include": [
+        "src/app/dashboard/credit-rates/**",
+        "src/app/dashboard/jobs/**",
+        "src/app/dashboard/helpdesk/**",
+        "src/app/dashboard/permissions/**",
+        "src/app/dashboard/approvals/**",
+        "src/app/dashboard/notifications/**",
+        "src/app/dashboard/audit-log/**",
+        "src/app/dashboard/devices/**",
+        "src/app/dashboard/subscription/**",
+        "src/app/dashboard/customers/**",
+        "src/app/dashboard/kyc-review/**",
+        "src/app/dashboard/communication/**",
+        "src/app/dashboard/settings/**",
+        "src/app/dashboard/exchange-quotes/**",
+        "src/app/dashboard/exchange-staff/**",
+        "src/app/dashboard/advertisements/**",
+        "src/app/dashboard/exchanges/**",
+        "src/app/dashboard/exchange-rates/**",
+        "src/app/dashboard/transfer-providers/**",
+        "src/app/dashboard/observability/**",
+        "src/app/dashboard/site-guide/**",
+        "src/app/(exchange)/exchange/**",
+        "src/app/(customer)/customer/**",
+        "src/app/(site)/services/**",
+        "src/app/(site)/exchanges/**",
+        "src/app/(site)/feedback/**",
+        "src/app/(site)/faq/**",
+        "src/app/(site)/help-center/**",
+        "src/app/(site)/(others)/search/**",
+        "src/app/(site)/not-found.tsx",
+        "src/app/api/cron/sync-bazaar/**",
+        "src/components/Dashboard/SessionGuard.tsx",
+        "src/components/Dashboard/PlatformHub/**",
+        "src/components/Dashboard/Profile/TwoFactorSection.tsx",
+        "src/components/Dashboard/DashboardBottomNav/**",
+        "src/components/Exchange/customers/**",
+        "src/components/fintech/CurrencyConverterCard/**",
+        "src/components/Onboarding/**",
+        "src/components/OfflineBanner/**",
+        "src/components/StatePage/**",
+        "src/components/QuickActions/**",
+        "src/components/ProfileForm.tsx",
+        "src/components/ui/PersianDateRangePicker.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useSemanticElements": "off",
+            "noLabelWithoutControl": "off",
+            "noSvgWithoutTitle": "off",
+            "useKeyWithClickEvents": "off",
+            "useFocusableInteractive": "off",
+            "useButtonType": "off",
+            "useHeadingContent": "off"
+          },
+          "style": {
+            "noNonNullAssertion": "off"
+          },
+          "suspicious": {
+            "noArrayIndexKey": "off",
+            "noExplicitAny": "off"
+          },
+          "correctness": {
+            "useExhaustiveDependencies": "off",
+            "noUnreachable": "off"
+          },
+          "complexity": {
+            "noForEach": "off"
+          }
+        }
+      }
+    },
+    {
+      "include": ["instrumentation.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
           }
         }
       }

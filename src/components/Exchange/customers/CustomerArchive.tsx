@@ -18,7 +18,6 @@ import {
   ArrowUpLeft,
   Clock,
   Inbox,
-  Search,
   Shield,
   UserCheck,
   Users,
@@ -193,9 +192,7 @@ export function CustomerArchive({
         <div className={s.statCell}>
           <AlertTriangle size={16} className={`${s.statIcon} ${s.iconAmber}`} aria-hidden />
           <div>
-            <span className={s.statValue}>
-              {_faNum.format(localFrozen.length)}
-            </span>
+            <span className={s.statValue}>{_faNum.format(localFrozen.length)}</span>
             <span className={s.statLabel}>مسدود</span>
           </div>
         </div>
@@ -203,9 +200,7 @@ export function CustomerArchive({
         <div className={s.statCell}>
           <XCircle size={16} className={`${s.statIcon} ${s.iconMuted}`} aria-hidden />
           <div>
-            <span className={s.statValue}>
-              {_faNum.format(archived.length)}
-            </span>
+            <span className={s.statValue}>{_faNum.format(archived.length)}</span>
             <span className={s.statLabel}>بسته</span>
           </div>
         </div>

@@ -423,7 +423,7 @@ const buildSnapshot = async (now: number): Promise<ObservabilitySnapshot> => {
   const perSource = new Map<string, SourceAgg>();
   const perService = new Map<ServiceKey, ServiceAgg>();
   /** منابعِ دخیل در خطا، به تفکیک سطل — برای ساخت incident بدون حلقهٔ تودرتو. */
-  const bucketErrorSources: Array<Set<string>> = Array.from(
+  const bucketErrorSources: Set<string>[] = Array.from(
     { length: OBS_WINDOW_HOURS },
     () => new Set<string>(),
   );

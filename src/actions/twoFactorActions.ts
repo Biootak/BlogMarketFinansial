@@ -4,8 +4,8 @@ import { randomBytes } from 'node:crypto';
 import prisma from '@/lib/db';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
-import { decryptTotpSecret, encryptTotpSecret } from '@/lib/totp-secrets';
 import { generateOtpAuthUri, generateTotpSecret, verifyTotp } from '@/lib/totp';
+import { decryptTotpSecret, encryptTotpSecret } from '@/lib/totp-secrets';
 import type { FintechActionResult } from '@/types/types';
 import bcrypt from 'bcryptjs';
 import { v4 as createId } from 'uuid';
@@ -72,7 +72,11 @@ export async function confirmEnable2FA(
   await prisma.$transaction(async (tx) => {
     await tx.user.update({
       where: { id: auth.user.id },
-      data: { twoFactorEnabled: true, twoFactorSecretEnc: encryptTotpSecret(secret), twoFactorSecret: null },
+      data: {
+        twoFactorEnabled: true,
+        twoFactorSecretEnc: encryptTotpSecret(secret),
+        twoFactorSecret: null,
+      },
     });
     await tx.twoFactorBackupCode.deleteMany({ where: { userId: auth.user.id } });
     await tx.twoFactorBackupCode.createMany({

@@ -86,13 +86,9 @@
   border-radius: var(--ds-radius-2xl);
   border: 1px solid var(--ds-border-subtle);
   background: var(--ds-surface-elevated);
-  box-shadow:
-    0 1px 4px oklch(0% 0 0 / 0.04),
-    inset 0 1px 0 oklch(100% 0 0 / 0.65);
-  transition:
-    border-color var(--ds-duration-fast),
-    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart),
-    transform var(--ds-duration-base) var(--ds-ease-out-quart);
+  box-shadow: 0 1px 4px oklch(0% 0 0 / 0.04), inset 0 1px 0 oklch(100% 0 0 / 0.65);
+  transition: border-color var(--ds-duration-fast), box-shadow var(--ds-duration-base)
+    var(--ds-ease-out-quart), transform var(--ds-duration-base) var(--ds-ease-out-quart);
   position: relative;
   overflow: hidden;
 }
@@ -114,9 +110,7 @@
 
 .statCard:hover {
   transform: translateY(-3px);
-  box-shadow:
-    var(--ds-shadow-md),
-    inset 0 1px 0 oklch(100% 0 0 / 0.8);
+  box-shadow: var(--ds-shadow-md), inset 0 1px 0 oklch(100% 0 0 / 0.8);
   border-color: oklch(52% 0.14 162 / 0.25);
 }
 
@@ -127,9 +121,7 @@
 :global(.dark) .statCard {
   background: oklch(20% 0.015 250 / 0.5);
   border-color: oklch(28% 0.02 255 / 0.6);
-  box-shadow:
-    0 1px 4px oklch(0% 0 0 / 0.15),
-    inset 0 1px 0 oklch(100% 0 0 / 0.04);
+  box-shadow: 0 1px 4px oklch(0% 0 0 / 0.15), inset 0 1px 0 oklch(100% 0 0 / 0.04);
 }
 
 .statIcon {
@@ -245,19 +237,14 @@
   padding: clamp(0.75rem, 2vw, 1.125rem);
   border-radius: var(--ds-radius-xl);
   border: 1px solid transparent;
-  transition:
-    background var(--ds-duration-base),
-    border-color var(--ds-duration-base),
-    box-shadow var(--ds-duration-base),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: background var(--ds-duration-base), border-color var(--ds-duration-base), box-shadow
+    var(--ds-duration-base), transform var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .featureItem:hover {
   background: var(--ds-surface-elevated);
   border-color: oklch(52% 0.14 162 / 0.18);
-  box-shadow:
-    0 2px 12px -4px oklch(52% 0.14 162 / 0.1),
-    inset 0 1px 0 oklch(100% 0 0 / 0.7);
+  box-shadow: 0 2px 12px -4px oklch(52% 0.14 162 / 0.1), inset 0 1px 0 oklch(100% 0 0 / 0.7);
   transform: translateY(-1px);
 }
 

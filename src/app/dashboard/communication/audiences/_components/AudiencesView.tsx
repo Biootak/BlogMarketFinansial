@@ -9,8 +9,7 @@
 import { LiveDot } from '@/components/Dashboard/PlatformHub';
 import { CountUp, EmptyState, SearchInput } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ChevronLeft, Layers, Search, Sparkles, Target, Users } from 'lucide-react';
+import { ChevronLeft, Layers, Sparkles, Target, Users } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';

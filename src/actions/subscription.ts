@@ -112,7 +112,14 @@ export async function changePlan(
   }
 
   const _xff = (await headers()).get('x-forwarded-for') ?? '';
-  const ip = (_xff.split(',').map((p) => p.trim()).filter(Boolean).pop()) ?? (await headers()).get('x-real-ip')?.trim() ?? 'unknown';
+  const ip =
+    _xff
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .pop() ??
+    (await headers()).get('x-real-ip')?.trim() ??
+    'unknown';
   const rl = await checkRateLimit(`plan:${auth.user.id}`, 'api');
   if (!rl.success) {
     return {

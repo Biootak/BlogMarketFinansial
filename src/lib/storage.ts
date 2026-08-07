@@ -182,9 +182,7 @@ export async function getFileStream(
 
   if (isS3Configured()) {
     try {
-      const response = await s3Client.send(
-        new GetObjectCommand({ Bucket: BUCKET_NAME, Key: key }),
-      );
+      const response = await s3Client.send(new GetObjectCommand({ Bucket: BUCKET_NAME, Key: key }));
       return response.Body as unknown as NodeJS.ReadableStream;
     } catch (_error) {}
   }
@@ -203,9 +201,7 @@ export async function getFile(folder: string, filename: string): Promise<Buffer 
 
   if (isS3Configured()) {
     try {
-      const response = await s3Client.send(
-        new GetObjectCommand({ Bucket: BUCKET_NAME, Key: key }),
-      );
+      const response = await s3Client.send(new GetObjectCommand({ Bucket: BUCKET_NAME, Key: key }));
       if (response.Body) {
         const body = response.Body as unknown as AsyncIterable<Uint8Array>;
         const chunks: Uint8Array[] = [];

@@ -56,7 +56,18 @@ function secureRandomString(length: number): string {
 async function getRequestContext() {
   const h = await headers();
   return {
-    ip: (() => { const xff = h.get('x-forwarded-for') ?? ''; return xff.split(',').map((p) => p.trim()).filter(Boolean).pop() ?? h.get('x-real-ip')?.trim() ?? null; })(),
+    ip: (() => {
+      const xff = h.get('x-forwarded-for') ?? '';
+      return (
+        xff
+          .split(',')
+          .map((p) => p.trim())
+          .filter(Boolean)
+          .pop() ??
+        h.get('x-real-ip')?.trim() ??
+        null
+      );
+    })(),
     userAgent: h.get('user-agent') ?? null,
   };
 }

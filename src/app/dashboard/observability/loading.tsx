@@ -1,5 +1,5 @@
-import s from './observability.module.css';
 import o from './_components/obs.module.css';
+import s from './observability.module.css';
 
 /**
  * اسکلت بارگذاری — هم‌ریتم با چیدمان واقعی، نه اسپینر.

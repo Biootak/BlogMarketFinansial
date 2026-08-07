@@ -54,14 +54,13 @@
   border: 1px solid var(--ds-border-subtle);
   border-radius: var(--ds-radius-md);
   overflow: hidden;
-  transition: border-color 200ms var(--ds-ease-out-quart),
-    box-shadow 200ms var(--ds-ease-out-quart);
+  transition: border-color 200ms var(--ds-ease-out-quart), box-shadow 200ms var(--ds-ease-out-quart);
   animation: cardEnter 320ms var(--ds-ease-out-quart) both;
 }
 
 /* accent top stripe — کوتاه، رنگی */
 .summaryCard::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block-start: 0;
   inset-inline: 0;
@@ -72,12 +71,26 @@
   transition: opacity 160ms var(--ds-ease-out-quart);
 }
 
-.summaryCard:hover::before { opacity: 1; }
+.summaryCard:hover::before {
+  opacity: 1;
+}
 
-.summaryCard[data-tone="success"]::before  { background: var(--nova-up); opacity: 1; }
-.summaryCard[data-tone="warning"]::before  { background: var(--nova-amber); opacity: 1; }
-.summaryCard[data-tone="danger"]::before   { background: var(--nova-down); opacity: 1; }
-.summaryCard[data-tone="neutral"]::before  { background: var(--ds-text-muted); opacity: 0.4; }
+.summaryCard[data-tone="success"]::before {
+  background: var(--nova-up);
+  opacity: 1;
+}
+.summaryCard[data-tone="warning"]::before {
+  background: var(--nova-amber);
+  opacity: 1;
+}
+.summaryCard[data-tone="danger"]::before {
+  background: var(--nova-down);
+  opacity: 1;
+}
+.summaryCard[data-tone="neutral"]::before {
+  background: var(--ds-text-muted);
+  opacity: 0.4;
+}
 
 .summaryCard:hover {
   border-color: var(--ds-border-default);

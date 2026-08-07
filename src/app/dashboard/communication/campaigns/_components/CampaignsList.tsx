@@ -9,7 +9,6 @@
 import { LiveDot } from '@/components/Dashboard/PlatformHub';
 import { ConfirmDialog, CountUp, EmptyState, SearchInput } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   Eye,
   Mail,
@@ -17,7 +16,6 @@ import {
   Pause,
   Play,
   Plus,
-  Search,
   Send,
   Sparkles,
   Trash2,

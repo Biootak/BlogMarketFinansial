@@ -22,7 +22,6 @@ import {
 } from '@/components/Dashboard/PlatformHub';
 import { ConfirmDialog, CountUp, EmptyState, SearchInput } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   Archive,
   ChevronLeft,
@@ -30,7 +29,6 @@ import {
   Megaphone,
   MoreHorizontal,
   Plus,
-  Search,
   Send,
   Trash2,
 } from 'lucide-react';

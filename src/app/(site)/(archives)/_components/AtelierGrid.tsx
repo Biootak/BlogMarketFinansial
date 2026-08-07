@@ -26,9 +26,7 @@ const AtelierGrid: React.FC<Props> = ({ posts, ads = [] }) => {
   const items: React.ReactNode[] = [];
 
   posts.forEach((post, i) => {
-    items.push(
-      <AtelierCard key={post.id} post={post} priority={i < 3} />,
-    );
+    items.push(<AtelierCard key={post.id} post={post} priority={i < 3} />);
 
     // After every AD_EVERY cards (but not after the very last card), insert an ad
     const isLast = i === posts.length - 1;

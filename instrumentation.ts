@@ -19,7 +19,5 @@ export async function register() {
 
   const { warmup } = await import('./src/lib/startup-warmup');
   // non-blocking — اگر خطا داد، سرور را crash نکند
-  warmup().catch((e) => {
-    console.warn('[instrumentation] warmup error (non-fatal):', e?.message ?? e);
-  });
+  warmup().catch((_e) => {});
 }

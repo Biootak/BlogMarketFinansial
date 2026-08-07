@@ -16,8 +16,8 @@ import { requireExchangeAccess } from '@/lib/exchange-auth';
 import { requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import type { FintechActionResult } from '@/types/types';
-import { Decimal } from '@prisma/client/runtime/library';
 import type { Prisma } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 import { v4 as createId } from 'uuid';
 import { z } from 'zod';
 

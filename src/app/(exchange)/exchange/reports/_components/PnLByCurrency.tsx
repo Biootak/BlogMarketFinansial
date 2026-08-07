@@ -104,9 +104,7 @@ export default function PnLByCurrency({ rows }: Props) {
               <div className={s.rowMeta}>
                 <span className={s.metaPill}>
                   <span className={s.metaPillLabel}>معاملات</span>
-                  <span className={s.metaPillValue}>
-                    {_faNum.format(r.dealCount)}
-                  </span>
+                  <span className={s.metaPillValue}>{_faNum.format(r.dealCount)}</span>
                 </span>
                 <span className={s.metaPill}>
                   <span className={s.metaPillLabel}>میانگین</span>

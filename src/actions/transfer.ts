@@ -109,7 +109,14 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
   }
 
   const _xff = (await headers()).get('x-forwarded-for') ?? '';
-  const ip = (_xff.split(',').map((p) => p.trim()).filter(Boolean).pop()) ?? (await headers()).get('x-real-ip')?.trim() ?? 'unknown';
+  const ip =
+    _xff
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .pop() ??
+    (await headers()).get('x-real-ip')?.trim() ??
+    'unknown';
   const rl = await checkRateLimit(`transfer:${auth.user.id}`, 'api');
   if (!rl.success) {
     return {
@@ -484,7 +491,14 @@ export async function confirmTransfer(
 
   revalidateTag('wallet');
   const _xff2 = (await headers()).get('x-forwarded-for') ?? '';
-  const ip = (_xff2.split(',').map((p) => p.trim()).filter(Boolean).pop()) ?? (await headers()).get('x-real-ip')?.trim() ?? 'unknown';
+  const ip =
+    _xff2
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .pop() ??
+    (await headers()).get('x-real-ip')?.trim() ??
+    'unknown';
   await prisma.auditLog.create({
     data: {
       id: createId(),

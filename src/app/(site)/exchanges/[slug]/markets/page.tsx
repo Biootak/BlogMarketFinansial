@@ -10,9 +10,9 @@
  *   - generateMetadata از همان cache slot — بدون DB hit اضافی.
  */
 
-import { safeCache } from '@/lib/safe-cache';
 import prisma from '@/lib/db';
 import { stripHours } from '@/lib/exchange-hours';
+import { safeCache } from '@/lib/safe-cache';
 import { notFound } from 'next/navigation';
 
 import type { Metadata } from 'next';
@@ -70,7 +70,10 @@ const getMarketsSparkHistory = safeCache(
     const out = new Map<string, number[]>();
     for (const [code, pts] of grouped) {
       pts.sort((a, b) => a.t - b.t);
-      out.set(code, pts.slice(-24).map((p) => p.v));
+      out.set(
+        code,
+        pts.slice(-24).map((p) => p.v),
+      );
     }
     return out;
   },

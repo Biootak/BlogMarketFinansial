@@ -28,9 +28,9 @@
 .row {
   display: grid;
   grid-template-areas:
-    'rank id go'
-    'rank spark spark'
-    'rank figs figs';
+    "rank id go"
+    "rank spark spark"
+    "rank figs figs";
   grid-template-columns: 1.6rem minmax(0, 1fr) 1.5rem;
   gap: 0.5rem var(--ds-space-3);
   align-items: center;
@@ -52,7 +52,7 @@
 
 @media (min-width: 56rem) {
   .row {
-    grid-template-areas: 'rank id spark figs go';
+    grid-template-areas: "rank id spark figs go";
     grid-template-columns:
       1.75rem
       minmax(0, 1.45fr)
@@ -194,9 +194,7 @@
   grid-area: go;
   justify-self: end;
   color: var(--obs-muted);
-  transition:
-    transform var(--obs-base) var(--obs-ease),
-    color var(--obs-fast) var(--obs-ease);
+  transition: transform var(--obs-base) var(--obs-ease), color var(--obs-fast) var(--obs-ease);
 }
 
 .row:hover .go {
@@ -432,7 +430,7 @@
 }
 
 .queryTrack::after {
-  content: '';
+  content: "";
   position: absolute;
   inset-block: 0;
   inset-inline-start: 0;
@@ -468,7 +466,7 @@
 }
 
 .trail::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block: 0.6rem 1.2rem;
   inset-inline-start: 0.22rem;
@@ -485,7 +483,7 @@
 }
 
 .event::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block-start: 1.05rem;
   inset-inline-start: calc(var(--ds-space-4) * -1 + 0.03rem);
@@ -557,7 +555,7 @@
 }
 
 .incidentSpan:hover,
-.incidentSpan[data-selected='true'] {
+.incidentSpan[data-selected="true"] {
   background: var(--obs-bad);
 }
 

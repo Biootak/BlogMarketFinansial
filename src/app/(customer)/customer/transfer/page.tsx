@@ -37,7 +37,17 @@ export default async function CustomerTransferPage({
   if (!profile) redirect('/customer/dashboard');
 
   return (
-    <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)', maxInlineSize: '720px', marginInline: 'auto', inlineSize: '100%' }}>
+    <div
+      dir="rtl"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'var(--ds-space-6)',
+        maxInlineSize: '720px',
+        marginInline: 'auto',
+        inlineSize: '100%',
+      }}
+    >
       <PageHeader
         eyebrow="عملیات مالی"
         title="انتقال و عملیات"

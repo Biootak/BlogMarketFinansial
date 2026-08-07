@@ -138,9 +138,7 @@ export default function SettlementCockpit({ initialRows }: Props) {
             <span className={s.cellNumber}>{fmtNum(totals.totalVolume)}</span>
             <span className={s.cellUnit}>{primaryCurrency}</span>
           </div>
-          <span className={s.cellMeta}>
-            {_faNum.format(initialRows.length)} دوره
-          </span>
+          <span className={s.cellMeta}>{_faNum.format(initialRows.length)} دوره</span>
         </div>
 
         <div className={s.ribbonCell} data-tone="amber">
@@ -206,9 +204,7 @@ export default function SettlementCockpit({ initialRows }: Props) {
                       style={{ width: `${Math.max(2, pct)}%` }}
                     />
                   </span>
-                  <span className={s.distCount}>
-                    {_faNum.format(d.count)}
-                  </span>
+                  <span className={s.distCount}>{_faNum.format(d.count)}</span>
                 </div>
               );
             })}
@@ -254,9 +250,7 @@ export default function SettlementCockpit({ initialRows }: Props) {
                   onClick={() => setFilter(f.key)}
                 >
                   <span>{f.label}</span>
-                  <span className={s.filterCount}>
-                    {_faNum.format(count)}
-                  </span>
+                  <span className={s.filterCount}>{_faNum.format(count)}</span>
                 </button>
               );
             })}
@@ -319,9 +313,7 @@ export default function SettlementCockpit({ initialRows }: Props) {
             </div>
             <div className={s.detailStat}>
               <span className={s.detailStatLabel}>تعداد معاملات</span>
-              <span className={s.detailStatValue}>
-                {_faNum.format(selectedRow.dealCount)}
-              </span>
+              <span className={s.detailStatValue}>{_faNum.format(selectedRow.dealCount)}</span>
             </div>
             <div className={s.detailStat}>
               <span className={s.detailStatLabel}>کارمزد پلتفرم</span>

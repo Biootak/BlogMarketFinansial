@@ -122,9 +122,7 @@ export default function ServicesAnalyticsWidget({ summary, exchangeSlug }: Props
                     {Icon && <Icon size={14} strokeWidth={1.8} />}
                   </span>
                   <span className={s.topName}>{meta?.name ?? svc.serviceName}</span>
-                  <span className={s.topCount}>
-                    {_faNum.format(svc.count)}
-                  </span>
+                  <span className={s.topCount}>{_faNum.format(svc.count)}</span>
                 </li>
               );
             })}

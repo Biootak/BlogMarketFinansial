@@ -49,10 +49,9 @@
   border-radius: var(--ds-radius-xl);
   overflow: hidden;
   box-shadow: var(--ds-shadow-sm);
-  transition:
-    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-base) var(--ds-ease-out-quart),
-    transform var(--ds-duration-base) var(--ds-ease-out-quart);
+  transition: box-shadow var(--ds-duration-base) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-base) var(--ds-ease-out-quart), transform var(--ds-duration-base)
+    var(--ds-ease-out-quart);
   cursor: default;
 }
 
@@ -63,7 +62,7 @@
 
 /* Tone variants — left border accent */
 .kpiCard::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block: 0;
   inset-inline-start: 0;
@@ -71,11 +70,21 @@
   border-radius: var(--ds-radius-full) 0 0 var(--ds-radius-full);
 }
 
-.kpiCard--emerald::before { background: var(--nova-emerald); }
-.kpiCard--amber::before   { background: var(--nova-amber); }
-.kpiCard--cyan::before    { background: var(--nova-cyan); }
-.kpiCard--violet::before  { background: var(--nova-violet); }
-.kpiCard--rose::before    { background: var(--nova-rose); }
+.kpiCard--emerald::before {
+  background: var(--nova-emerald);
+}
+.kpiCard--amber::before {
+  background: var(--nova-amber);
+}
+.kpiCard--cyan::before {
+  background: var(--nova-cyan);
+}
+.kpiCard--violet::before {
+  background: var(--nova-violet);
+}
+.kpiCard--rose::before {
+  background: var(--nova-rose);
+}
 
 /* ── KPI Top (icon + trend) ── */
 .kpiTop {
@@ -218,10 +227,9 @@
   background: transparent;
   color: var(--ds-text-muted);
   cursor: pointer;
-  transition:
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    background var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: color var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), background var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
 }
 
 .refreshBtn:hover {
@@ -428,8 +436,12 @@
    Skeleton
    ═══════════════════════════════════════════════════════════════════════════ */
 @keyframes shimmer {
-  0%   { background-position: 200% center; }
-  100% { background-position: -200% center; }
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
 }
 
 .skCard {

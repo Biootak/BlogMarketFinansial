@@ -309,7 +309,14 @@ export async function createDeal(
   // ── Rate limit: 5 deal در 10 دقیقه بر اساس IP (M5) ──────────────────────
   // Rightmost XFF entry = آخرین proxy مورد اعتماد (spoof-resistant). leftmost [0] توسط client جعل می‌شود.
   const _xff = (await headers()).get('x-forwarded-for') ?? '';
-  const ip = (_xff.split(',').map((p) => p.trim()).filter(Boolean).pop()) ?? (await headers()).get('x-real-ip')?.trim() ?? 'unknown';
+  const ip =
+    _xff
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .pop() ??
+    (await headers()).get('x-real-ip')?.trim() ??
+    'unknown';
   const rl = await checkRateLimit(`deal:${ip}`, 'api');
   if (!rl.success) {
     return {
@@ -507,9 +514,15 @@ async function getClientIp(): Promise<string> {
   // Rightmost XFF entry = آخرین proxy مورد اعتماد ما (spoof-resistant).
   // leftmost [0] توسط client کنترل می‌شود و جعل‌پذیر است.
   const xff = (await headers()).get('x-forwarded-for') ?? '';
-  return xff.split(',').map((p) => p.trim()).filter(Boolean).pop()
-    ?? (await headers()).get('x-real-ip')?.trim()
-    ?? 'unknown';
+  return (
+    xff
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .pop() ??
+    (await headers()).get('x-real-ip')?.trim() ??
+    'unknown'
+  );
 }
 
 // ─── CONFIRM (صرافی) ─────────────────────────────────────────────────────────

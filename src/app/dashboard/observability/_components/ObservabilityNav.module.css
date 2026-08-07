@@ -89,7 +89,7 @@
    layout thrash ای ندارد.
 */
 .link::after {
-  content: '';
+  content: "";
   position: absolute;
   inset-block-end: 0;
   inset-inline: var(--ds-space-2);
@@ -101,17 +101,17 @@
   transition: transform var(--obs-base) var(--obs-ease);
 }
 
-.link[data-active='true'] {
+.link[data-active="true"] {
   color: var(--obs-ink);
   font-weight: var(--ds-weight-semibold);
 }
 
-.link[data-active='true'] svg {
+.link[data-active="true"] svg {
   opacity: 1;
   color: var(--obs-accent);
 }
 
-.link[data-active='true']::after {
+.link[data-active="true"]::after {
   transform: scaleX(1);
 }
 

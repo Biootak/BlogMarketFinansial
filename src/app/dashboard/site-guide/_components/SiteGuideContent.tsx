@@ -11,7 +11,6 @@ import {
   ClipboardCheck,
   ClipboardList,
   CreditCard,
-  ExternalLink,
   FileText,
   FolderOpen,
   Globe,
@@ -19,10 +18,9 @@ import {
   Info,
   Layers,
   LayoutDashboard,
-  Link as LinkIcon,
   Lock,
   Mail,
-  Map,
+  Map as MapIcon,
   Megaphone,
   Radio,
   RefreshCw,
@@ -216,7 +214,7 @@ const SECTIONS: SectionDef[] = [
         label: 'ردیابی تراکنش',
         path: '/track',
         description: 'پیگیری وضعیت تراکنش‌ها با کد پیگیری',
-        icon: <Map size={iconSize} />,
+        icon: <MapIcon size={iconSize} />,
         tone: 'amber',
       },
       {
@@ -542,7 +540,7 @@ const SECTIONS: SectionDef[] = [
         label: 'آدرس صورتحساب',
         path: '/dashboard/billing-address',
         description: 'اطلاعات مالیاتی و آدرس صورتحساب',
-        icon: <Map size={iconSize} />,
+        icon: <MapIcon size={iconSize} />,
         tone: 'slate',
       },
     ],
@@ -781,11 +779,41 @@ const SECTIONS: SectionDef[] = [
     icon: <Lock size={20} />,
     tone: 'slate',
     routes: [
-      { label: 'ورود', path: '/signin', description: 'صفحه ورود با ایمیل/رمز یا OAuth', icon: <Lock size={iconSize} />, tone: 'slate' },
-      { label: 'ثبت‌نام', path: '/signup', description: 'ایجاد حساب کاربری جدید', icon: <Users size={iconSize} />, tone: 'slate' },
-      { label: 'فراموشی رمز', path: '/forgot-password', description: 'دریافت لینک بازیابی رمز عبور', icon: <Lock size={iconSize} />, tone: 'slate' },
-      { label: 'بازنشانی رمز', path: '/reset-password', description: 'تغییر رمز با توکن دریافت‌شده', icon: <Lock size={iconSize} />, tone: 'slate' },
-      { label: 'تأیید ایمیل', path: '/verify-email', description: 'تأیید آدرس ایمیل با توکن', icon: <Mail size={iconSize} />, tone: 'slate' },
+      {
+        label: 'ورود',
+        path: '/signin',
+        description: 'صفحه ورود با ایمیل/رمز یا OAuth',
+        icon: <Lock size={iconSize} />,
+        tone: 'slate',
+      },
+      {
+        label: 'ثبت‌نام',
+        path: '/signup',
+        description: 'ایجاد حساب کاربری جدید',
+        icon: <Users size={iconSize} />,
+        tone: 'slate',
+      },
+      {
+        label: 'فراموشی رمز',
+        path: '/forgot-password',
+        description: 'دریافت لینک بازیابی رمز عبور',
+        icon: <Lock size={iconSize} />,
+        tone: 'slate',
+      },
+      {
+        label: 'بازنشانی رمز',
+        path: '/reset-password',
+        description: 'تغییر رمز با توکن دریافت‌شده',
+        icon: <Lock size={iconSize} />,
+        tone: 'slate',
+      },
+      {
+        label: 'تأیید ایمیل',
+        path: '/verify-email',
+        description: 'تأیید آدرس ایمیل با توکن',
+        icon: <Mail size={iconSize} />,
+        tone: 'slate',
+      },
     ],
   },
 ];
@@ -812,7 +840,11 @@ const BADGE_CLASS: Record<Tone, string> = {
 
 function RouteCard({ item }: { item: RouteItem }) {
   return (
-    <Link href={item.path} className={s.card} target={item.path.startsWith('http') ? '_blank' : undefined}>
+    <Link
+      href={item.path}
+      className={s.card}
+      target={item.path.startsWith('http') ? '_blank' : undefined}
+    >
       <div className={s.cardTop}>
         <span className={`${s.cardIcon} ${TONE_ICON_CLASS[item.tone]}`}>{item.icon}</span>
         <span className={s.cardLabel}>{item.label}</span>
@@ -881,12 +913,13 @@ export function SiteGuideContent({
               className={`${s.cardBadge} ${BADGE_CLASS[userRole === 'ADMIN' ? 'amber' : 'rose']}`}
               style={{ fontSize: 'var(--ds-text-xs)', padding: '4px 12px' }}
             >
-              نقش شما: {userRole === 'OWNER' ? 'مالک' : userRole === 'SUPERADMIN' ? 'سوپرادمین' : 'مدیر'}
+              نقش شما:{' '}
+              {userRole === 'OWNER' ? 'مالک' : userRole === 'SUPERADMIN' ? 'سوپرادمین' : 'مدیر'}
             </span>
           </div>
         </div>
         <div className={s.heroIcon} aria-hidden>
-          <Map size={36} />
+          <MapIcon size={36} />
         </div>
       </div>
 
@@ -894,8 +927,8 @@ export function SiteGuideContent({
       <div className={s.infoBox}>
         <Info size={16} className={s.infoBoxIcon} />
         <p className={s.infoBoxText}>
-          این صفحه به‌صورت خودکار از ساختار route های پروژه ساخته شده. روی هر کارت کلیک کنید تا مستقیماً
-          به آن بخش بروید. کارت‌هایی که badge «مالک» دارند فقط برای نقش‌های OWNER و SUPERADMIN
+          این صفحه به‌صورت خودکار از ساختار route های پروژه ساخته شده. روی هر کارت کلیک کنید تا
+          مستقیماً به آن بخش بروید. کارت‌هایی که badge «مالک» دارند فقط برای نقش‌های OWNER و SUPERADMIN
           قابل دسترسی‌اند و دسترسی ADMIN به آن‌ها محدود است.
         </p>
       </div>

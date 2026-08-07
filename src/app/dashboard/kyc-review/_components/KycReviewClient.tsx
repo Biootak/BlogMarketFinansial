@@ -355,9 +355,7 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
           <UserIcon size={14} aria-hidden />
           <span>کاربران پلتفرم</span>
           {rows.length > 0 && (
-            <span className={s.scopeTabCount}>
-              {formatFaNumber(rows.length)}
-            </span>
+            <span className={s.scopeTabCount}>{formatFaNumber(rows.length)}</span>
           )}
         </button>
         <button
@@ -370,9 +368,7 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
           <Building2 size={14} aria-hidden />
           <span>مشتریان صرافی‌ها</span>
           {customerRows.length > 0 && (
-            <span className={s.scopeTabCount}>
-              {formatFaNumber(customerRows.length)}
-            </span>
+            <span className={s.scopeTabCount}>{formatFaNumber(customerRows.length)}</span>
           )}
         </button>
       </div>
@@ -391,9 +387,7 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
               <div className={s.kpiTop}>
                 <span className={s.kpiIcon}>{item.icon}</span>
               </div>
-              <span className={s.kpiValue}>
-                {formatFaNumber(item.value)}
-              </span>
+              <span className={s.kpiValue}>{formatFaNumber(item.value)}</span>
               <span className={s.kpiLabel}>{item.label}</span>
             </div>
           ))}
@@ -405,8 +399,8 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
         <div className={s.queueBar} role="status">
           <span className={s.queueBarDot} aria-hidden />
           <span className={s.queueBarText}>
-            {formatFaNumber(urgentCount)} درخواست بیش از ۲ روز در صف انتظار
-            است — بررسی فوری توصیه می‌شود
+            {formatFaNumber(urgentCount)} درخواست بیش از ۲ روز در صف انتظار است — بررسی فوری توصیه
+            می‌شود
           </span>
         </div>
       )}

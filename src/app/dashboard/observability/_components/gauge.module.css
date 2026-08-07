@@ -62,9 +62,8 @@
   block-size: var(--h, 2%);
   border-radius: 2px 2px 0 0;
   background: color-mix(in oklch, var(--obs-accent) 34%, transparent);
-  transition:
-    block-size var(--ds-duration-slow) var(--obs-ease),
-    background-color var(--obs-fast) var(--obs-ease);
+  transition: block-size var(--ds-duration-slow) var(--obs-ease), background-color var(--obs-fast)
+    var(--obs-ease);
 }
 
 /* خطاها روی همان ستون می‌نشینند، پس نسبت خطا به حجم مستقیم خوانده می‌شود */
@@ -78,12 +77,12 @@
   transition: block-size var(--ds-duration-slow) var(--obs-ease);
 }
 
-.col[data-selected='true'] .colFill {
+.col[data-selected="true"] .colFill {
   background: var(--obs-accent);
 }
 
-.col[data-selected='true']::after {
-  content: '';
+.col[data-selected="true"]::after {
+  content: "";
   position: absolute;
   inset-block-end: -5px;
   inset-inline-start: 50%;
@@ -95,7 +94,7 @@
 }
 
 /* ساعت جاری همیشه یک نشانهٔ ثابت دارد، حتی وقتی انتخاب جای دیگری است */
-.col[data-live='true'] .colFill {
+.col[data-live="true"] .colFill {
   box-shadow: inset 0 1.5px 0 0 var(--obs-ok);
 }
 
@@ -198,7 +197,7 @@
 }
 
 .marker::after {
-  content: '';
+  content: "";
   position: absolute;
   inset-block-start: calc(50% - 4px);
   inset-inline-start: -3.5px;
@@ -218,11 +217,11 @@
 }
 
 /* برچسب‌ها یکی‌درمیان بالا و پایین می‌نشینند تا در دم فشرده روی هم نیفتند */
-.marker[data-place='top'] .markerLabel {
+.marker[data-place="top"] .markerLabel {
   inset-block-start: 0;
 }
 
-.marker[data-place='bottom'] .markerLabel {
+.marker[data-place="bottom"] .markerLabel {
   inset-block-end: 0;
 }
 

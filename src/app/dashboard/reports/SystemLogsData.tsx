@@ -234,8 +234,7 @@ export default function SystemLogsData() {
       {totalPages > 1 && (
         <div className={s.pagination}>
           <span className={s.paginationInfo}>
-            <span className={s.paginationTotal}>{total.toLocaleString('fa-IR')}</span>
-            {' '}رویداد کل
+            <span className={s.paginationTotal}>{total.toLocaleString('fa-IR')}</span> رویداد کل
           </span>
           <div className={s.paginationBtns}>
             <Button

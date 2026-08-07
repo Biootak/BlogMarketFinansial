@@ -65,28 +65,28 @@
    .skeleton هم باید پوشش داده شود: loading.tsx و error.tsx بیرون از .page
    رندر می‌شوند و پالت را ارث نمی‌برند.
 */
-.page [data-tone='ok'],
-.skeleton [data-tone='ok'] {
+.page [data-tone="ok"],
+.skeleton [data-tone="ok"] {
   --tone: var(--obs-ok);
 }
 
-.page [data-tone='warn'],
-.skeleton [data-tone='warn'] {
+.page [data-tone="warn"],
+.skeleton [data-tone="warn"] {
   --tone: var(--obs-warn);
 }
 
-.page [data-tone='bad'],
-.skeleton [data-tone='bad'] {
+.page [data-tone="bad"],
+.skeleton [data-tone="bad"] {
   --tone: var(--obs-bad);
 }
 
-.page [data-tone='info'],
-.skeleton [data-tone='info'] {
+.page [data-tone="info"],
+.skeleton [data-tone="info"] {
   --tone: var(--obs-accent);
 }
 
-.page [data-tone='idle'],
-.skeleton [data-tone='idle'] {
+.page [data-tone="idle"],
+.skeleton [data-tone="idle"] {
   --tone: var(--obs-idle);
 }
 

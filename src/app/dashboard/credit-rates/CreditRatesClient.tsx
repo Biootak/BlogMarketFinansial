@@ -11,7 +11,7 @@ import {
   updateBank,
   updateCreditRate,
 } from '@/actions/credit-rates';
-import { PageHeader, Section, StatCard, StatGrid } from '@/components/Dashboard/primitives';
+import { PageHeader, Section, StatCard } from '@/components/Dashboard/primitives';
 import { TYPE_FA } from '@/lib/credit-rate-constants';
 import type { CreditRateType } from '@prisma/client';
 import {
@@ -72,8 +72,7 @@ export default function CreditRatesClient({
     return r.status !== 'ARCHIVED';
   });
 
-  const fmtCents = (cents: number) =>
-    _faNum.format(cents / 100);
+  const fmtCents = (cents: number) => _faNum.format(cents / 100);
 
   const handleBankSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -247,11 +246,7 @@ export default function CreditRatesClient({
               info={aggregates.bestDeposit.title}
             />
           ) : (
-            <StatCard
-              label="بهترین سپرده"
-              value="—"
-              icon={<TrendingUp size={16} />}
-            />
+            <StatCard label="بهترین سپرده" value="—" icon={<TrendingUp size={16} />} />
           )}
           {aggregates.cheapestLoan ? (
             <StatCard
@@ -262,11 +257,7 @@ export default function CreditRatesClient({
               info={aggregates.cheapestLoan.title}
             />
           ) : (
-            <StatCard
-              label="تسهیلات مناسب"
-              value="—"
-              icon={<Percent size={16} />}
-            />
+            <StatCard label="تسهیلات مناسب" value="—" icon={<Percent size={16} />} />
           )}
         </div>
       )}
@@ -308,7 +299,9 @@ export default function CreditRatesClient({
                 >
                   <option value="ALL">همه انواع تسهیلات</option>
                   {Object.entries(TYPE_FA).map(([k, v]) => (
-                    <option key={k} value={k}>{v}</option>
+                    <option key={k} value={k}>
+                      {v}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -321,14 +314,15 @@ export default function CreditRatesClient({
                 >
                   <option value="ALL">همه بانک‌ها</option>
                   {banks.map((b) => (
-                    <option key={b.id} value={b.id}>{b.displayName || b.name}</option>
+                    <option key={b.id} value={b.id}>
+                      {b.displayName || b.name}
+                    </option>
                   ))}
                 </select>
               </div>
             </div>
             <p className={s.rateCount}>
-              موارد یافت شده:{' '}
-              <span className={s.rateCountNum}>{filteredRates.length}</span>
+              موارد یافت شده: <span className={s.rateCountNum}>{filteredRates.length}</span>
             </p>
           </div>
 
@@ -370,13 +364,28 @@ export default function CreditRatesClient({
                           </div>
                         </div>
                       </td>
-                      <td className={s.td} style={{ color: 'var(--ds-text-secondary)', fontWeight: 500 }}>
+                      <td
+                        className={s.td}
+                        style={{ color: 'var(--ds-text-secondary)', fontWeight: 500 }}
+                      >
                         {TYPE_FA[r.type]}
                       </td>
                       <td className={s.td}>
-                        <div style={{ fontWeight: 600, color: 'var(--ds-text-primary)' }}>{r.title}</div>
+                        <div style={{ fontWeight: 600, color: 'var(--ds-text-primary)' }}>
+                          {r.title}
+                        </div>
                         {r.description && (
-                          <div style={{ fontSize: '0.7rem', color: 'var(--ds-text-muted)', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', maxInlineSize: '200px' }}>
+                          <div
+                            style={{
+                              fontSize: '0.7rem',
+                              color: 'var(--ds-text-muted)',
+                              overflow: 'hidden',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 1,
+                              WebkitBoxOrient: 'vertical',
+                              maxInlineSize: '200px',
+                            }}
+                          >
                             {r.description}
                           </div>
                         )}
@@ -384,13 +393,18 @@ export default function CreditRatesClient({
                       <td className={s.td}>
                         <span className={s.rateValue}>{r.annualRate}٪</span>
                       </td>
-                      <td className={s.td} style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                      <td
+                        className={s.td}
+                        style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}
+                      >
                         {r.minAmountCents === 0 && r.maxAmountCents === 0 ? (
                           <span style={{ color: 'var(--ds-text-muted)' }}>بدون محدودیت</span>
                         ) : (
                           <span>
                             {fmtCents(r.minAmountCents)} — {fmtCents(r.maxAmountCents)}{' '}
-                            <span style={{ fontSize: '0.7rem', color: 'var(--ds-text-muted)' }}>{r.currency}</span>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--ds-text-muted)' }}>
+                              {r.currency}
+                            </span>
                           </span>
                         )}
                       </td>
@@ -398,11 +412,18 @@ export default function CreditRatesClient({
                         {r.maxTermMonths === 0 ? (
                           <span style={{ color: 'var(--ds-text-muted)' }}>نامحدود</span>
                         ) : (
-                          <>{r.maxTermMonths} <span style={{ fontSize: '0.7rem', color: 'var(--ds-text-muted)' }}>ماه</span></>
+                          <>
+                            {r.maxTermMonths}{' '}
+                            <span style={{ fontSize: '0.7rem', color: 'var(--ds-text-muted)' }}>
+                              ماه
+                            </span>
+                          </>
                         )}
                       </td>
                       <td className={s.td}>
-                        <span className={`${s.statusPill} ${r.status === 'ACTIVE' ? s.statusActive : s.statusDraft}`}>
+                        <span
+                          className={`${s.statusPill} ${r.status === 'ACTIVE' ? s.statusActive : s.statusDraft}`}
+                        >
                           {r.status === 'ACTIVE' ? 'فعال' : 'پیش‌نویس'}
                         </span>
                       </td>
@@ -441,25 +462,21 @@ export default function CreditRatesClient({
                 <div className={s.bankCardHead}>
                   <div className={s.bankCardIdentity}>
                     <div className={s.bankCardAvatar}>
-                      {b.logoUrl ? (
-                        <img src={b.logoUrl} alt={b.name} />
-                      ) : (
-                        b.name[0]
-                      )}
+                      {b.logoUrl ? <img src={b.logoUrl} alt={b.name} /> : b.name[0]}
                     </div>
                     <div>
                       <div className={s.bankCardName}>{b.displayName || b.name}</div>
                       <div className={s.bankCardCity}>{b.city || 'افغانستان'}</div>
                     </div>
                   </div>
-                  <span className={`${s.statusPill} ${b.status === 'ACTIVE' ? s.statusActive : s.statusDraft}`}>
+                  <span
+                    className={`${s.statusPill} ${b.status === 'ACTIVE' ? s.statusActive : s.statusDraft}`}
+                  >
                     {b.status === 'ACTIVE' ? 'فعال' : b.status}
                   </span>
                 </div>
 
-                {b.description && (
-                  <p className={s.bankCardDesc}>{b.description}</p>
-                )}
+                {b.description && <p className={s.bankCardDesc}>{b.description}</p>}
 
                 <div className={s.bankCardFoot}>
                   <div className={s.bankCardActions}>
@@ -525,68 +542,118 @@ export default function CreditRatesClient({
               <div className={s.fieldGroup}>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>کد یکتا (Slug)</label>
-                  <input name="slug" type="text" required defaultValue={bankModal.data?.slug}
-                    pattern="^[a-z0-9-]+$" title="فقط حروف کوچک، اعداد و خط تیره"
-                    placeholder="pashtany-bank" className={s.fieldInput}
-                    disabled={bankModal.mode === 'edit'} />
+                  <input
+                    name="slug"
+                    type="text"
+                    required
+                    defaultValue={bankModal.data?.slug}
+                    pattern="^[a-z0-9-]+$"
+                    title="فقط حروف کوچک، اعداد و خط تیره"
+                    placeholder="pashtany-bank"
+                    className={s.fieldInput}
+                    disabled={bankModal.mode === 'edit'}
+                  />
                 </div>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>نام رسمی</label>
-                  <input name="name" type="text" required defaultValue={bankModal.data?.name}
-                    placeholder="Pashtany Bank" className={s.fieldInput} />
+                  <input
+                    name="name"
+                    type="text"
+                    required
+                    defaultValue={bankModal.data?.name}
+                    placeholder="Pashtany Bank"
+                    className={s.fieldInput}
+                  />
                 </div>
               </div>
 
               <div className={s.fieldGroup}>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>نام نمایشی (فارسی)</label>
-                  <input name="displayName" type="text" defaultValue={bankModal.data?.displayName || ''}
-                    placeholder="بانک پشتنی" className={s.fieldInput} />
+                  <input
+                    name="displayName"
+                    type="text"
+                    defaultValue={bankModal.data?.displayName || ''}
+                    placeholder="بانک پشتنی"
+                    className={s.fieldInput}
+                  />
                 </div>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>کد کشور</label>
-                  <input name="country" type="text" maxLength={2}
+                  <input
+                    name="country"
+                    type="text"
+                    maxLength={2}
                     defaultValue={bankModal.data?.country || 'AF'}
-                    placeholder="AF" className={s.fieldInput} />
+                    placeholder="AF"
+                    className={s.fieldInput}
+                  />
                 </div>
               </div>
 
               <div className={s.fieldGroup}>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>شهر</label>
-                  <input name="city" type="text" defaultValue={bankModal.data?.city || ''}
-                    placeholder="کابل" className={s.fieldInput} />
+                  <input
+                    name="city"
+                    type="text"
+                    defaultValue={bankModal.data?.city || ''}
+                    placeholder="کابل"
+                    className={s.fieldInput}
+                  />
                 </div>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>شماره مجوز فعالیت</label>
-                  <input name="licenseNo" type="text" defaultValue={bankModal.data?.licenseNo || ''}
-                    placeholder="LIC-1234" className={s.fieldInput} />
+                  <input
+                    name="licenseNo"
+                    type="text"
+                    defaultValue={bankModal.data?.licenseNo || ''}
+                    placeholder="LIC-1234"
+                    className={s.fieldInput}
+                  />
                 </div>
               </div>
 
               <div className={s.fieldGroup}>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>آدرس لوگو (URL)</label>
-                  <input name="logoUrl" type="url" defaultValue={bankModal.data?.logoUrl || ''}
-                    placeholder="https://example.com/logo.png" className={s.fieldInput} />
+                  <input
+                    name="logoUrl"
+                    type="url"
+                    defaultValue={bankModal.data?.logoUrl || ''}
+                    placeholder="https://example.com/logo.png"
+                    className={s.fieldInput}
+                  />
                 </div>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>وب‌سایت</label>
-                  <input name="website" type="url" defaultValue={bankModal.data?.website || ''}
-                    placeholder="https://pashtanybank.com.af" className={s.fieldInput} />
+                  <input
+                    name="website"
+                    type="url"
+                    defaultValue={bankModal.data?.website || ''}
+                    placeholder="https://pashtanybank.com.af"
+                    className={s.fieldInput}
+                  />
                 </div>
               </div>
 
               <div className={s.fieldGroup3}>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>ترتیب نمایش</label>
-                  <input name="sortOrder" type="number" defaultValue={bankModal.data?.sortOrder || 0}
-                    className={s.fieldInput} />
+                  <input
+                    name="sortOrder"
+                    type="number"
+                    defaultValue={bankModal.data?.sortOrder || 0}
+                    className={s.fieldInput}
+                  />
                 </div>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>وضعیت</label>
-                  <select name="status" defaultValue={bankModal.data?.status || 'ACTIVE'}
-                    className={s.fieldSelect}>
+                  <select
+                    name="status"
+                    defaultValue={bankModal.data?.status || 'ACTIVE'}
+                    className={s.fieldSelect}
+                  >
                     <option value="ACTIVE">فعال</option>
                     <option value="PENDING">در انتظار تایید</option>
                     <option value="SUSPENDED">تعلیق شده</option>
@@ -595,9 +662,11 @@ export default function CreditRatesClient({
                 </div>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>نمایش در سایت</label>
-                  <select name="isVisible"
+                  <select
+                    name="isVisible"
                     defaultValue={bankModal.data?.isVisible === false ? 'false' : 'true'}
-                    className={s.fieldSelect}>
+                    className={s.fieldSelect}
+                  >
                     <option value="true">بله</option>
                     <option value="false">خیر</option>
                   </select>
@@ -606,16 +675,23 @@ export default function CreditRatesClient({
 
               <div className={s.field}>
                 <label className={s.fieldLabel}>توضیحات</label>
-                <textarea name="description" defaultValue={bankModal.data?.description || ''} rows={3}
+                <textarea
+                  name="description"
+                  defaultValue={bankModal.data?.description || ''}
+                  rows={3}
                   className={s.fieldTextarea}
-                  placeholder="توضیحات کوتاه درباره خدمات و سابقه بانک" />
+                  placeholder="توضیحات کوتاه درباره خدمات و سابقه بانک"
+                />
               </div>
             </form>
 
             {/* sticky footer — خارج از form */}
             <div className={s.modalFoot}>
-              <button type="button" onClick={() => setBankModal({ open: false, mode: 'create' })}
-                className={s.addBtn}>
+              <button
+                type="button"
+                onClick={() => setBankModal({ open: false, mode: 'create' })}
+                className={s.addBtn}
+              >
                 انصراف
               </button>
               <button type="submit" form="bank-form" disabled={isPending} className={s.primaryBtn}>
@@ -651,20 +727,32 @@ export default function CreditRatesClient({
               <div className={s.fieldGroup}>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>بانک مربوطه</label>
-                  <select name="bankId" required defaultValue={rateModal.data?.bankId}
-                    className={s.fieldSelect}>
+                  <select
+                    name="bankId"
+                    required
+                    defaultValue={rateModal.data?.bankId}
+                    className={s.fieldSelect}
+                  >
                     <option value="">انتخاب کنید...</option>
                     {banks.map((b) => (
-                      <option key={b.id} value={b.id}>{b.displayName || b.name}</option>
+                      <option key={b.id} value={b.id}>
+                        {b.displayName || b.name}
+                      </option>
                     ))}
                   </select>
                 </div>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>نوع محصول اعتباری</label>
-                  <select name="type" required defaultValue={rateModal.data?.type || 'DEPOSIT'}
-                    className={s.fieldSelect}>
+                  <select
+                    name="type"
+                    required
+                    defaultValue={rateModal.data?.type || 'DEPOSIT'}
+                    className={s.fieldSelect}
+                  >
                     {Object.entries(TYPE_FA).map(([k, v]) => (
-                      <option key={k} value={k}>{v}</option>
+                      <option key={k} value={k}>
+                        {v}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -672,21 +760,38 @@ export default function CreditRatesClient({
 
               <div className={s.field}>
                 <label className={s.fieldLabel}>عنوان طرح اعتباری / تسهیلاتی</label>
-                <input name="title" type="text" required defaultValue={rateModal.data?.title}
-                  placeholder="مثال: سپرده بلندمدت طلایی Pashtany" className={s.fieldInput} />
+                <input
+                  name="title"
+                  type="text"
+                  required
+                  defaultValue={rateModal.data?.title}
+                  placeholder="مثال: سپرده بلندمدت طلایی Pashtany"
+                  className={s.fieldInput}
+                />
               </div>
 
               <div className={s.fieldGroup3}>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>نرخ بهره سالانه (٪)</label>
-                  <input name="annualRate" type="number" step="0.01" min="0" max="100" required
-                    defaultValue={rateModal.data?.annualRate} placeholder="مثال: 12.5"
-                    className={s.fieldInput} />
+                  <input
+                    name="annualRate"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    required
+                    defaultValue={rateModal.data?.annualRate}
+                    placeholder="مثال: 12.5"
+                    className={s.fieldInput}
+                  />
                 </div>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>ارز مورد معامله</label>
-                  <select name="currency" defaultValue={rateModal.data?.currency || 'AFN'}
-                    className={s.fieldSelect}>
+                  <select
+                    name="currency"
+                    defaultValue={rateModal.data?.currency || 'AFN'}
+                    className={s.fieldSelect}
+                  >
                     <option value="AFN">AFN (افغانی)</option>
                     <option value="USD">USD (دلار)</option>
                     <option value="IRR">IRR (ریال)</option>
@@ -694,77 +799,121 @@ export default function CreditRatesClient({
                 </div>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>حداکثر مدت (ماه)</label>
-                  <input name="maxTermMonths" type="number"
+                  <input
+                    name="maxTermMonths"
+                    type="number"
                     defaultValue={rateModal.data?.maxTermMonths || 0}
-                    placeholder="مثال: 36" className={s.fieldInput} />
+                    placeholder="مثال: 36"
+                    className={s.fieldInput}
+                  />
                 </div>
               </div>
 
               <div className={s.fieldGroup}>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>حداقل مبلغ (اسمی)</label>
-                  <input name="minAmount" type="number"
-                    defaultValue={rateModal.data && rateModal.data.minAmountCents != null
-                      ? rateModal.data.minAmountCents / 100 : 0}
-                    className={s.fieldInput} />
+                  <input
+                    name="minAmount"
+                    type="number"
+                    defaultValue={
+                      rateModal.data && rateModal.data.minAmountCents != null
+                        ? rateModal.data.minAmountCents / 100
+                        : 0
+                    }
+                    className={s.fieldInput}
+                  />
                 </div>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>حداکثر مبلغ (اسمی)</label>
-                  <input name="maxAmount" type="number"
-                    defaultValue={rateModal.data && rateModal.data.maxAmountCents != null
-                      ? rateModal.data.maxAmountCents / 100 : 0}
-                    className={s.fieldInput} />
+                  <input
+                    name="maxAmount"
+                    type="number"
+                    defaultValue={
+                      rateModal.data && rateModal.data.maxAmountCents != null
+                        ? rateModal.data.maxAmountCents / 100
+                        : 0
+                    }
+                    className={s.fieldInput}
+                  />
                 </div>
               </div>
 
               <div className={s.fieldGroup3}>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>درصد سپرده قانونی (LTV)</label>
-                  <input name="depositRatio" type="number" step="0.01"
+                  <input
+                    name="depositRatio"
+                    type="number"
+                    step="0.01"
                     defaultValue={rateModal.data?.depositRatio || ''}
-                    placeholder="مثال: 20" className={s.fieldInput} />
+                    placeholder="مثال: 20"
+                    className={s.fieldInput}
+                  />
                 </div>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>وضعیت</label>
-                  <select name="status" defaultValue={rateModal.data?.status || 'ACTIVE'}
-                    className={s.fieldSelect}>
+                  <select
+                    name="status"
+                    defaultValue={rateModal.data?.status || 'ACTIVE'}
+                    className={s.fieldSelect}
+                  >
                     <option value="ACTIVE">فعال / عمومی</option>
                     <option value="DRAFT">پیش‌نویس</option>
                   </select>
                 </div>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>ترتیب اولویت</label>
-                  <input name="sortOrder" type="number" defaultValue={rateModal.data?.sortOrder || 0}
-                    className={s.fieldInput} />
+                  <input
+                    name="sortOrder"
+                    type="number"
+                    defaultValue={rateModal.data?.sortOrder || 0}
+                    className={s.fieldInput}
+                  />
                 </div>
               </div>
 
               <div className={s.fieldGroup}>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>منبع / آدرس مستندات</label>
-                  <input name="source" type="text" defaultValue={rateModal.data?.source || ''}
-                    placeholder="سایت بانک مرکزی یا بخشنامه رسمی" className={s.fieldInput} />
+                  <input
+                    name="source"
+                    type="text"
+                    defaultValue={rateModal.data?.source || ''}
+                    placeholder="سایت بانک مرکزی یا بخشنامه رسمی"
+                    className={s.fieldInput}
+                  />
                 </div>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>یادداشت داخلی (ادمین)</label>
-                  <input name="internalNote" type="text"
+                  <input
+                    name="internalNote"
+                    type="text"
                     defaultValue={(rateModal.data as any)?.internalNote || ''}
-                    placeholder="توضیحات خصوصی یا شماره تلفن مسئول" className={s.fieldInput} />
+                    placeholder="توضیحات خصوصی یا شماره تلفن مسئول"
+                    className={s.fieldInput}
+                  />
                 </div>
               </div>
 
               <div className={s.field}>
                 <label className={s.fieldLabel}>توضیحات تکمیلی (برای کلاینت)</label>
-                <textarea name="description" defaultValue={rateModal.data?.description || ''}
-                  rows={2} className={s.fieldTextarea}
-                  placeholder="شرایط دریافت، مدارک مورد نیاز یا تضامین..." />
+                <textarea
+                  name="description"
+                  defaultValue={rateModal.data?.description || ''}
+                  rows={2}
+                  className={s.fieldTextarea}
+                  placeholder="شرایط دریافت، مدارک مورد نیاز یا تضامین..."
+                />
               </div>
             </form>
 
             {/* sticky footer — خارج از form */}
             <div className={s.modalFoot}>
-              <button type="button" onClick={() => setRateModal({ open: false, mode: 'create' })}
-                className={s.addBtn}>
+              <button
+                type="button"
+                onClick={() => setRateModal({ open: false, mode: 'create' })}
+                className={s.addBtn}
+              >
                 انصراف
               </button>
               <button type="submit" form="rate-form" disabled={isPending} className={s.primaryBtn}>

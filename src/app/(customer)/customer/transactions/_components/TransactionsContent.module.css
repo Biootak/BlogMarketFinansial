@@ -5,8 +5,14 @@
  * ============================================================================ */
 
 @keyframes rowIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── Root ───────────────────────────────────────────────────────────────── */
@@ -46,13 +52,12 @@
   border-radius: var(--ds-radius-xl);
   overflow: hidden;
   isolation: isolate;
-  transition: border-color 160ms var(--ds-ease-out-quart),
-    box-shadow 160ms var(--ds-ease-out-quart);
+  transition: border-color 160ms var(--ds-ease-out-quart), box-shadow 160ms var(--ds-ease-out-quart);
 }
 
 /* accent stripe — بالا */
 .summaryCard::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block-start: 0;
   inset-inline: 0;
@@ -71,10 +76,18 @@
   opacity: 1;
 }
 
-.summaryCard[data-tone="neutral"]::before  { background: var(--ds-brand-500); }
-.summaryCard[data-tone="credit"]::before   { background: var(--nova-up); }
-.summaryCard[data-tone="warning"]::before  { background: var(--nova-amber); }
-.summaryCard[data-tone="danger"]::before   { background: var(--nova-down); }
+.summaryCard[data-tone="neutral"]::before {
+  background: var(--ds-brand-500);
+}
+.summaryCard[data-tone="credit"]::before {
+  background: var(--nova-up);
+}
+.summaryCard[data-tone="warning"]::before {
+  background: var(--nova-amber);
+}
+.summaryCard[data-tone="danger"]::before {
+  background: var(--nova-down);
+}
 
 /* ── ردیف بالا: label + icon ── */
 .summaryTop {
@@ -184,8 +197,7 @@
   border: 1px solid var(--ds-border-subtle);
   border-radius: 999px;
   cursor: pointer;
-  transition: background 120ms var(--ds-ease-out-quart),
-    color 120ms var(--ds-ease-out-quart),
+  transition: background 120ms var(--ds-ease-out-quart), color 120ms var(--ds-ease-out-quart),
     border-color 120ms var(--ds-ease-out-quart);
   font-family: inherit;
   line-height: 1.6;
@@ -302,7 +314,11 @@
 }
 
 .rowLink:hover {
-  background: color-mix(in oklch, var(--ds-brand-500) 3%, var(--at-surface, var(--nova-surface-solid)));
+  background: color-mix(
+    in oklch,
+    var(--ds-brand-500) 3%,
+    var(--at-surface, var(--nova-surface-solid))
+  );
 }
 
 .rowLink:focus-visible {
@@ -323,11 +339,22 @@
   transition: background 200ms var(--ds-ease-out-quart);
 }
 
-.row[data-status="pending"]  .rowDot { background: var(--nova-amber); }
-.row[data-status="progress"] .rowDot { background: var(--nova-cyan); }
-.row[data-status="success"]  .rowDot { background: var(--nova-up); }
-.row[data-status="danger"]   .rowDot { background: var(--nova-down); }
-.row[data-status="cancelled"].rowDot { background: var(--ds-text-muted); opacity: 0.4; }
+.row[data-status="pending"] .rowDot {
+  background: var(--nova-amber);
+}
+.row[data-status="progress"] .rowDot {
+  background: var(--nova-cyan);
+}
+.row[data-status="success"] .rowDot {
+  background: var(--nova-up);
+}
+.row[data-status="danger"] .rowDot {
+  background: var(--nova-down);
+}
+.row[data-status="cancelled"].rowDot {
+  background: var(--ds-text-muted);
+  opacity: 0.4;
+}
 
 /* icon — رنگ بر اساس نوع تراکنش */
 .rowIcon {
@@ -457,8 +484,12 @@
   white-space: nowrap;
 }
 
-.rowAmount[data-tone="credit"] { color: var(--nova-up); }
-.rowAmount[data-tone="debit"]  { color: var(--nova-down); }
+.rowAmount[data-tone="credit"] {
+  color: var(--nova-up);
+}
+.rowAmount[data-tone="debit"] {
+  color: var(--nova-down);
+}
 
 .rowCurrency {
   font-size: 0.625rem;
@@ -501,8 +532,7 @@
   font-size: var(--ds-text-xs);
   font-weight: 600;
   cursor: pointer;
-  transition: background 150ms var(--ds-ease-out-quart),
-    border-color 150ms var(--ds-ease-out-quart);
+  transition: background 150ms var(--ds-ease-out-quart), border-color 150ms var(--ds-ease-out-quart);
 }
 
 button.pageBtn:hover {
@@ -559,7 +589,9 @@ span.pageBtn[aria-disabled] {
 /* ── Accessibility ── */
 
 @media (prefers-reduced-motion: reduce) {
-  .row { animation: none; }
+  .row {
+    animation: none;
+  }
 }
 
 /* ── Mobile ── */

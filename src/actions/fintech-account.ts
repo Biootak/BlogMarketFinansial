@@ -62,7 +62,14 @@ export async function requestDeposit(raw: unknown): Promise<FintechActionResult<
   }
 
   const _xff1 = (await headers()).get('x-forwarded-for') ?? '';
-  const ip = (_xff1.split(',').map((p) => p.trim()).filter(Boolean).pop()) ?? (await headers()).get('x-real-ip')?.trim() ?? 'unknown';
+  const ip =
+    _xff1
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .pop() ??
+    (await headers()).get('x-real-ip')?.trim() ??
+    'unknown';
   const rl = await checkRateLimit(`deposit:${auth.user.id}`, 'api');
   if (!rl.success) {
     return {
@@ -190,7 +197,14 @@ export async function requestWithdraw(raw: unknown): Promise<FintechActionResult
   }
 
   const _xff2 = (await headers()).get('x-forwarded-for') ?? '';
-  const ip = (_xff2.split(',').map((p) => p.trim()).filter(Boolean).pop()) ?? (await headers()).get('x-real-ip')?.trim() ?? 'unknown';
+  const ip =
+    _xff2
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .pop() ??
+    (await headers()).get('x-real-ip')?.trim() ??
+    'unknown';
   const rl = await checkRateLimit(`withdraw:${auth.user.id}`, 'api');
   if (!rl.success) {
     return {
@@ -333,7 +347,14 @@ export async function confirmWithdraw(
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد حساب کاربری شوید' } };
   }
   const _xff3 = (await headers()).get('x-forwarded-for') ?? '';
-  const ip = (_xff3.split(',').map((p) => p.trim()).filter(Boolean).pop()) ?? (await headers()).get('x-real-ip')?.trim() ?? 'unknown';
+  const ip =
+    _xff3
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .pop() ??
+    (await headers()).get('x-real-ip')?.trim() ??
+    'unknown';
 
   const parsed = ConfirmWithdrawSchema.safeParse(raw);
   if (!parsed.success) {

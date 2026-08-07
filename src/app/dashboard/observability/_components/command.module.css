@@ -34,7 +34,7 @@
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--tone) 15%, transparent);
 }
 
-.dot[data-live='true'] {
+.dot[data-live="true"] {
   animation: toolbar-breath 2s var(--obs-ease) infinite;
 }
 
@@ -76,9 +76,7 @@
   font-weight: var(--ds-weight-medium);
   white-space: nowrap;
   cursor: pointer;
-  transition:
-    border-color var(--obs-fast) var(--obs-ease),
-    color var(--obs-fast) var(--obs-ease),
+  transition: border-color var(--obs-fast) var(--obs-ease), color var(--obs-fast) var(--obs-ease),
     transform 120ms var(--ds-ease-spring);
 }
 
@@ -102,7 +100,7 @@
 }
 
 /* در RTL چرخش معکوس طبیعی‌تر خوانده می‌شود */
-.refresh svg[data-spin='true'] {
+.refresh svg[data-spin="true"] {
   animation: refresh-spin 900ms linear infinite;
 }
 
@@ -126,12 +124,12 @@
   transition: opacity var(--obs-fast) var(--obs-ease);
 }
 
-.progress[data-state='syncing'] {
+.progress[data-state="syncing"] {
   opacity: 1;
 }
 
-.progress[data-state='syncing']::after {
-  content: '';
+.progress[data-state="syncing"]::after {
+  content: "";
   position: absolute;
   inset-block: 0;
   inset-inline-start: 0;
@@ -150,9 +148,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dot[data-live='true'],
-  .refresh svg[data-spin='true'],
-  .progress[data-state='syncing']::after {
+  .dot[data-live="true"],
+  .refresh svg[data-spin="true"],
+  .progress[data-state="syncing"]::after {
     animation: none;
   }
 

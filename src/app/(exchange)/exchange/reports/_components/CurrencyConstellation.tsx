@@ -346,9 +346,7 @@ export default function CurrencyConstellation({ pnlByCurrency, totalDeals }: Pro
                 </div>
                 <div className={s.tooltipRow}>
                   <dt className={s.tooltipKey}>معاملات</dt>
-                  <dd className={s.tooltipVal}>
-                    {_faNum.format(tooltipData.dealCount)}
-                  </dd>
+                  <dd className={s.tooltipVal}>{_faNum.format(tooltipData.dealCount)}</dd>
                 </div>
                 <div className={s.tooltipRow}>
                   <dt className={s.tooltipKey}>میانگین</dt>

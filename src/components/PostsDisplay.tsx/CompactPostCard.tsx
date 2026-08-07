@@ -80,8 +80,7 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
         imgRef.current.style.transform = `translate3d(${(s.x * -8).toFixed(2)}px, ${(s.y * -8).toFixed(2)}px, 0) scale(1.05)`;
       }
       const settled =
-        Math.abs(s.x - s.tx) < PARALLAX_EPSILON &&
-        Math.abs(s.y - s.ty) < PARALLAX_EPSILON;
+        Math.abs(s.x - s.tx) < PARALLAX_EPSILON && Math.abs(s.y - s.ty) < PARALLAX_EPSILON;
       if (settled) {
         // اگر به مرکز برگشته، transform را به حالت پایه برمی‌گردانیم؛
         // اگر hover باشد مقدار فعلی حفظ می‌شود — در هر دو حالت حلقه می‌ایستد.

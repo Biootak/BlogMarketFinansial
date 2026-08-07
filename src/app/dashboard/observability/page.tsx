@@ -1,5 +1,5 @@
-import type { Metadata } from 'next';
 import { Activity, Grid2x2, Layers3, PieChart, ServerCog, Siren, Sparkles } from 'lucide-react';
+import type { Metadata } from 'next';
 
 import { DayStrip } from './_components/DayStrip';
 import { IncidentTimeline } from './_components/IncidentTimeline';
@@ -29,8 +29,8 @@ export default function ObservabilityOverviewPage() {
           <span className={b.tabEyebrow}>OPERATIONS / OVERVIEW</span>
           <h2 className={b.tabTitle}>اول آتش را پیدا کن، بعد نمودار را بخوان</h2>
           <p className={b.tabLead}>
-            این نما از مهم‌ترین نشانه‌ها شروع می‌کند: سرویس‌های پرریسک، یافته‌های قابل اقدام و
-            پنجره‌هایی که فشار در آن‌ها متمرکز شده است.
+            این نما از مهم‌ترین نشانه‌ها شروع می‌کند: سرویس‌های پرریسک، یافته‌های قابل اقدام و پنجره‌هایی
+            که فشار در آن‌ها متمرکز شده است.
           </p>
         </div>
         <p className={b.tabStamp} data-tone="info">

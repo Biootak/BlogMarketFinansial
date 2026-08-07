@@ -374,7 +374,7 @@ describe('confirmTransfer', () => {
       amount: BigInt(50000),
       currency: 'AFN',
       accountId: 'acc-1',
-      meta: { recipientCustomerId: 'cust-recv' },
+      meta: { txnRef: 'ref-1', recipientCustomerId: 'cust-recv' },
       exchangeId: 'exch-1',
       customerId: 'cust-1',
     } as never);
@@ -395,7 +395,7 @@ describe('confirmTransfer', () => {
       amount: BigInt(50000),
       currency: 'AFN',
       accountId: 'acc-1',
-      meta: {},
+      meta: { txnRef: 'ref-1' },
       exchangeId: 'exch-1',
       customerId: 'cust-1',
     } as never);
@@ -415,7 +415,7 @@ describe('confirmTransfer', () => {
       amount: BigInt(50000),
       currency: 'AFN',
       accountId: null,
-      meta: { recipientCustomerId: 'cust-recv' },
+      meta: { txnRef: 'ref-1', recipientCustomerId: 'cust-recv' },
       exchangeId: 'exch-1',
       customerId: null,
     } as never);

@@ -116,28 +116,21 @@
   background: var(--ds-surface-elevated);
   overflow: hidden;
   cursor: default;
-  box-shadow:
-    0 1px 4px oklch(0% 0 0 / 0.04),
-    inset 0 1px 0 oklch(100% 0 0 / 0.6);
-  transition:
-    border-color var(--ds-duration-base) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart),
-    transform var(--ds-duration-base) var(--ds-ease-out-quart);
+  box-shadow: 0 1px 4px oklch(0% 0 0 / 0.04), inset 0 1px 0 oklch(100% 0 0 / 0.6);
+  transition: border-color var(--ds-duration-base) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-base) var(--ds-ease-out-quart), transform var(--ds-duration-base)
+    var(--ds-ease-out-quart);
 }
 
 .card:hover {
   transform: translateY(-3px);
-  box-shadow:
-    var(--ds-shadow-lg),
-    inset 0 1px 0 oklch(100% 0 0 / 0.8);
+  box-shadow: var(--ds-shadow-lg), inset 0 1px 0 oklch(100% 0 0 / 0.8);
 }
 
 :global(.dark) .card {
   background: oklch(20% 0.015 250 / 0.6);
   border-color: oklch(28% 0.02 255 / 0.7);
-  box-shadow:
-    0 1px 4px oklch(0% 0 0 / 0.15),
-    inset 0 1px 0 oklch(100% 0 0 / 0.04);
+  box-shadow: 0 1px 4px oklch(0% 0 0 / 0.15), inset 0 1px 0 oklch(100% 0 0 / 0.04);
 }
 
 /* Hover glow overlay */
@@ -343,10 +336,8 @@
     min-height: unset;
     border-radius: var(--ds-radius-xl);
     /* shadow ملایم‌تر در موبایل */
-    box-shadow:
-      0 1px 4px oklch(0% 0 0 / 0.05),
-      0 2px 8px -2px oklch(0% 0 0 / 0.04),
-      inset 0 1px 0 oklch(100% 0 0 / 0.7);
+    box-shadow: 0 1px 4px oklch(0% 0 0 / 0.05), 0 2px 8px -2px oklch(0% 0 0 / 0.04), inset 0 1px 0
+      oklch(100% 0 0 / 0.7);
   }
 
   /* آیکون compact — رنگ accent در موبایل هم نمایش داده می‌شود */
@@ -395,14 +386,26 @@
   }
 
   /* رنگ CTA با accent هر کارت */
-  .accent_emerald .cardCta { color: var(--ds-accent-emerald); }
-  .accent_amber   .cardCta { color: oklch(52% 0.14 70); }
-  .accent_violet  .cardCta { color: var(--ds-accent-violet); }
+  .accent_emerald .cardCta {
+    color: var(--ds-accent-emerald);
+  }
+  .accent_amber .cardCta {
+    color: oklch(52% 0.14 70);
+  }
+  .accent_violet .cardCta {
+    color: var(--ds-accent-violet);
+  }
 
   /* CTA arrow — منطبق با accent */
-  .accent_emerald .ctaArrow { color: var(--ds-accent-emerald); }
-  .accent_amber   .ctaArrow { color: oklch(52% 0.14 70); }
-  .accent_violet  .ctaArrow { color: var(--ds-accent-violet); }
+  .accent_emerald .ctaArrow {
+    color: var(--ds-accent-emerald);
+  }
+  .accent_amber .ctaArrow {
+    color: oklch(52% 0.14 70);
+  }
+  .accent_violet .ctaArrow {
+    color: var(--ds-accent-violet);
+  }
 
   /* hover scale برای کل کارت در موبایل */
   .card:active {

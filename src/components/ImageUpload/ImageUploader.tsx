@@ -4,9 +4,9 @@ import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type FileRejection, useDropzone } from 'react-dropzone';
 
-import { getSlot, FOLDER_TO_DEFAULT_SLOT } from '@/lib/image-slots';
-import type { ImageSlotId } from '@/lib/image-slots';
 import { toast } from '@/components/ui/use-toast';
+import { FOLDER_TO_DEFAULT_SLOT, getSlot } from '@/lib/image-slots';
+import type { ImageSlotId } from '@/lib/image-slots';
 import {
   RiCheckLine,
   RiCloseLine,

@@ -1,8 +1,8 @@
 'use client';
 
+import { useObs } from './ObsProvider';
 import { niceMax, tailScale } from './chart';
 import { cssVars, faNum, msShort } from './format';
-import { useObs } from './ObsProvider';
 import g from './gauge.module.css';
 
 /**

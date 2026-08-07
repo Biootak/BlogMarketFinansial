@@ -92,9 +92,7 @@ export function ExchangeRateTableView({ rates }: Props) {
       {/* Header */}
       <header className="mt-rates-header">
         <h3 className="mt-rates-header__title">نرخ بازار</h3>
-        <span className="mt-rates-header__count tabular-nums">
-          {allDisplayed.length} مورد
-        </span>
+        <span className="mt-rates-header__count tabular-nums">{allDisplayed.length} مورد</span>
       </header>
 
       {/* Tabs — گروه‌بندی */}
@@ -164,8 +162,7 @@ export function ExchangeRateTableView({ rates }: Props) {
                 {/* Rate — عدد LTR + واحد جدا (RTL) */}
                 <div className="mt-table__price">
                   <span className="mt-table__price-val">
-                    <span dir="ltr">{formatValueOnly(rate.value, rate.decimals)}</span>
-                    {' '}
+                    <span dir="ltr">{formatValueOnly(rate.value, rate.decimals)}</span>{' '}
                     <span className="mt-table__price-unit">{UNIT_LABELS[rate.unit]}</span>
                   </span>
                 </div>

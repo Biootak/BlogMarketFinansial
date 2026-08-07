@@ -12,9 +12,9 @@
  */
 
 import { getPublicExchangeServices } from '@/actions/exchange-services';
-import { safeCache } from '@/lib/safe-cache';
 import prisma from '@/lib/db';
 import { splitHours, stripHours } from '@/lib/exchange-hours';
+import { safeCache } from '@/lib/safe-cache';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import ExchangePublicView from './_components/ExchangePublicView';

@@ -76,7 +76,11 @@ export async function issueServiceOtp(args: {
     const headersList = await headers();
     const _xff = headersList.get('x-forwarded-for') ?? '';
     const ip =
-      (_xff.split(',').map((p) => p.trim()).filter(Boolean).pop()) ||
+      _xff
+        .split(',')
+        .map((p) => p.trim())
+        .filter(Boolean)
+        .pop() ||
       headersList.get('x-real-ip')?.trim() ||
       'unknown';
 

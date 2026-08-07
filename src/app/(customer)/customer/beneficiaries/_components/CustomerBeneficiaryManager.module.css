@@ -11,13 +11,25 @@
 }
 
 @keyframes pageIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes rowIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── Empty state ──────────────────────────────────────────────────────────── */
@@ -101,8 +113,7 @@
   border-radius: var(--ds-radius-md);
   background: color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
   border: 1px solid var(--ds-border-subtle);
-  transition: border-color 160ms var(--ds-ease-out-quart),
-    background 160ms var(--ds-ease-out-quart);
+  transition: border-color 160ms var(--ds-ease-out-quart), background 160ms var(--ds-ease-out-quart);
 }
 
 .searchBox:focus-within {
@@ -205,8 +216,7 @@
   border-radius: var(--ds-radius-lg);
   background: var(--at-surface, var(--ds-surface-elevated));
   border: 1px solid var(--ds-border-subtle);
-  transition: border-color 160ms var(--ds-ease-out-quart),
-    box-shadow 160ms var(--ds-ease-out-quart),
+  transition: border-color 160ms var(--ds-ease-out-quart), box-shadow 160ms var(--ds-ease-out-quart),
     background 160ms var(--ds-ease-out-quart);
   animation: rowIn 300ms var(--ds-ease-out-quart) backwards;
   animation-delay: calc(var(--row-i, 0) * 35ms);
@@ -215,7 +225,11 @@
 .row:hover {
   border-color: var(--ds-border-default);
   box-shadow: 0 2px 8px -4px oklch(0% 0 0 / 0.08);
-  background: color-mix(in oklch, var(--ds-brand-500) 2%, var(--at-surface, var(--ds-surface-elevated)));
+  background: color-mix(
+    in oklch,
+    var(--ds-brand-500) 2%,
+    var(--at-surface, var(--ds-surface-elevated))
+  );
 }
 
 .avatar {

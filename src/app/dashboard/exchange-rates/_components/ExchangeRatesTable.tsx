@@ -160,7 +160,6 @@ export default function ExchangeRatesTable({
               const align = col.align ?? 'start';
               return (
                 <th
-                  // biome-ignore lint/suspicious/noArrayIndexKey: table column headers are static/positional — stable index
                   key={i}
                   scope="col"
                   aria-sort={

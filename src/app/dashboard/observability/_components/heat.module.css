@@ -44,16 +44,16 @@
   transition: transform 120ms var(--obs-ease);
 }
 
-.cell[data-level='1'] {
+.cell[data-level="1"] {
   background: color-mix(in oklch, var(--obs-accent) 18%, transparent);
 }
-.cell[data-level='2'] {
+.cell[data-level="2"] {
   background: color-mix(in oklch, var(--obs-accent) 36%, transparent);
 }
-.cell[data-level='3'] {
+.cell[data-level="3"] {
   background: color-mix(in oklch, var(--obs-accent) 58%, transparent);
 }
-.cell[data-level='4'] {
+.cell[data-level="4"] {
   background: color-mix(in oklch, var(--obs-accent) 82%, transparent);
 }
 
@@ -61,19 +61,17 @@
    خطا فقط با رنگ اعلام نمی‌شود (WCAG 2.2 — رنگ نباید تنها نشانه باشد):
    یک حلقهٔ تویی هم می‌گیرد، پس در چاپ سیاه‌سفید و کوررنگی هم دیده می‌شود.
 */
-.cell[data-errors='true'] {
+.cell[data-errors="true"] {
   box-shadow: inset 0 0 0 1.5px var(--obs-bad);
 }
 
-.cell[data-cursor='true'] {
+.cell[data-cursor="true"] {
   box-shadow: inset 0 0 0 1.5px var(--obs-ink);
   transform: scale(1.15);
 }
 
-.cell[data-errors='true'][data-cursor='true'] {
-  box-shadow:
-    inset 0 0 0 1.5px var(--obs-bad),
-    0 0 0 1.5px var(--obs-ink);
+.cell[data-errors="true"][data-cursor="true"] {
+  box-shadow: inset 0 0 0 1.5px var(--obs-bad), 0 0 0 1.5px var(--obs-ink);
 }
 
 .rowLabel {
@@ -119,16 +117,16 @@
   background: color-mix(in oklch, var(--obs-ink) 5%, transparent);
 }
 
-.swatch[data-level='1'] {
+.swatch[data-level="1"] {
   background: color-mix(in oklch, var(--obs-accent) 18%, transparent);
 }
-.swatch[data-level='2'] {
+.swatch[data-level="2"] {
   background: color-mix(in oklch, var(--obs-accent) 36%, transparent);
 }
-.swatch[data-level='3'] {
+.swatch[data-level="3"] {
   background: color-mix(in oklch, var(--obs-accent) 58%, transparent);
 }
-.swatch[data-level='4'] {
+.swatch[data-level="4"] {
   background: color-mix(in oklch, var(--obs-accent) 82%, transparent);
 }
 

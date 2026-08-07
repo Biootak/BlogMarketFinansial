@@ -26,7 +26,7 @@
  * --------------------------------------------------------------------------
  */
 
-import { type LogLevel, normalizeLogLevel } from '@/lib/log-levels';
+import type { LogLevel } from '@/lib/log-levels';
 import * as Sentry from '@sentry/nextjs';
 
 const isDev = process.env.NODE_ENV === 'development';
@@ -113,7 +113,6 @@ export const serverLog = {
   error(module: string, action: string, error: unknown): void {
     const message = line(action, error);
     if (isDev) {
-      console.error(`[${module}] ${message}`);
     } else {
       Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
         tags: { module, action },
@@ -126,15 +125,13 @@ export const serverLog = {
   /** هشدارهای غیر-بحرانی. */
   warn(module: string, message: string, context?: LogContext): void {
     const text = line(message, context);
-    if (isDev) console.warn(`[${module}] ${text}`);
-    persist('warn', module, text);
+    if (isDev) persist('warn', module, text);
   },
 
   /** رویدادهای عادی که ارزش ردیابی دارند (ورود موفق، انتشار پست، …). */
   info(module: string, message: string, context?: LogContext): void {
     const text = line(message, context);
-    if (isDev) console.info(`[${module}] ${text}`);
-    persist('info', module, text);
+    if (isDev) persist('info', module, text);
   },
 
   /**
@@ -148,8 +145,7 @@ export const serverLog = {
     const ms = Number.isFinite(durationMs) ? Math.max(0, Math.round(durationMs)) : 0;
     const slow = ms >= slowThresholdMs;
     const text = `${slow ? '[slow]' : '[perf]'} ${action} duration=${ms}`;
-    if (isDev && slow) console.warn(`[${module}] ${text}`);
-    persist(slow ? 'warn' : 'info', module, text);
+    if (isDev && slow) persist(slow ? 'warn' : 'info', module, text);
   },
 
   /** اندازه‌گیری خودکار یک عملیات async — نتیجه را دست‌نخورده پس می‌دهد. */

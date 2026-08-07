@@ -45,7 +45,12 @@ function hashStringToInt(str: string): number {
  * @param endValue  مقدار نقطهٔ آخر (معمولاً balance فعلی)
  * @param volatility  دامنهٔ نوسان (پیش‌فرض 0.08 = 8% از مقدار)
  */
-export function generateTrend(seed: string, length: number = 12, endValue: number, volatility = 0.08): number[] {
+export function generateTrend(
+  seed: string,
+  length: number,
+  endValue: number,
+  volatility = 0.08,
+): number[] {
   const rng = mulberry32(hashStringToInt(seed));
   const data: number[] = [];
 

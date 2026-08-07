@@ -782,7 +782,11 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
 
       {/* ── Details Sheet ── */}
       <Sheet open={!!selectedDevice} onOpenChange={(o) => !o && setSelectedDevice(null)}>
-        <SheetContent side="left" className="w-[360px] max-w-[calc(100vw-1rem)] p-0 overflow-hidden" dir="rtl">
+        <SheetContent
+          side="left"
+          className="w-[360px] max-w-[calc(100vw-1rem)] p-0 overflow-hidden"
+          dir="rtl"
+        >
           {selectedDevice &&
             (() => {
               const d = selectedDevice;

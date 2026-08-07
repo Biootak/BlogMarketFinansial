@@ -46,7 +46,11 @@ export async function sendPhoneOtp(args: {
     const headersList = await headers();
     const _xff = headersList.get('x-forwarded-for') ?? '';
     const ip =
-      (_xff.split(',').map((p) => p.trim()).filter(Boolean).pop()) ||
+      _xff
+        .split(',')
+        .map((p) => p.trim())
+        .filter(Boolean)
+        .pop() ||
       headersList.get('x-real-ip')?.trim() ||
       'unknown';
 
@@ -73,7 +77,7 @@ export async function sendPhoneOtp(args: {
     if (!isPhoneValid(phone)) {
       return { success: false, message: 'شماره موبایل معتبر نیست (مثال: ۰۷۰۱۲۳۴۵۶۷)' };
     }
-    const e164 = normalizeToE164(phone);
+    const _e164 = normalizeToE164(phone);
 
     // تولید کد OTP — از email کاربر به عنوان کلید VerificationToken استفاده می‌کنیم
     const email = session.user.email.trim().toLowerCase();

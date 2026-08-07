@@ -859,10 +859,7 @@ function AdvertisementForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>نحوه نمایش تصویر</FormLabel>
-                      <Select
-                        value={field.value ?? 'ambient'}
-                        onValueChange={field.onChange}
-                      >
+                      <Select value={field.value ?? 'ambient'} onValueChange={field.onChange}>
                         <FormControl>
                           <SelectTrigger className={inputClassName}>
                             <SelectValue placeholder="انتخاب حالت نمایش" />
@@ -872,16 +869,15 @@ function AdvertisementForm({
                           <SelectItem value="ambient">
                             پرب (پیش‌فرض) — کل کادر پر + کل تصویر دیده می‌شود
                           </SelectItem>
-                          <SelectItem value="cover">
-                            کادری — کل کادر پر، بخشی برش می‌خورد
-                          </SelectItem>
+                          <SelectItem value="cover">کادری — کل کادر پر، بخشی برش می‌خورد</SelectItem>
                           <SelectItem value="contain">
                             کامل — کل تصویر دیده، فراغ با گرادینت
                           </SelectItem>
                         </SelectContent>
                       </Select>
                       <p className="text-[10px] text-neutral-500 mt-1">
-                        ambient (YouTube/Netflix): کل محتوا دیده + کادر پر. برای لوگو/متن تبلیغ ایده‌آل.
+                        ambient (YouTube/Netflix): کل محتوا دیده + کادر پر. برای لوگو/متن تبلیغ
+                        ایده‌آل.
                       </p>
                       <FormMessage />
                     </FormItem>
@@ -1108,12 +1104,7 @@ function AdvertisementForm({
             </div>
             <div className="overflow-hidden rounded-xl bg-neutral-950/5 min-h-[160px] flex items-center justify-center p-3">
               {previewAd.imageUrl ? (
-                <BannerADS
-                  ad={previewAd}
-                  variant="minimal"
-                  showAdLabel
-                  className="w-full"
-                />
+                <BannerADS ad={previewAd} variant="minimal" showAdLabel className="w-full" />
               ) : (
                 <div className="text-center py-8 px-4">
                   <HiOutlineMegaphone className="size-10 mx-auto text-neutral-300 mb-2" />

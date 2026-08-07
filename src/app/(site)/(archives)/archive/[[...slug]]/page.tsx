@@ -216,8 +216,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
 
   // featured post فقط در صفحه ۱ و بدون هیچ filter/search نمایش داده می‌شود.
   // در صفحات دیگر یا وقتی filter/search فعال است، همه پست‌ها به grid می‌روند.
-  const showFeatured =
-    currentPage === 1 && !searchQuery && filter === DEFAULT_FILTER;
+  const showFeatured = currentPage === 1 && !searchQuery && filter === DEFAULT_FILTER;
   const featuredPost = showFeatured && posts.length > 0 ? posts[0] : null;
   const gridPosts = featuredPost ? posts.slice(1) : posts;
 

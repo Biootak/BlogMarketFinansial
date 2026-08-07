@@ -19,7 +19,11 @@ export default async function ExchangeLayout({ children }: { children: React.Rea
   const { user } = session;
   const role = user.role as string;
   const settings = await getSystemSettingsData();
-  const initialSettings = { siteName: settings.siteName, siteDescription: settings.siteDescription, logoUrl: settings.logoUrl };
+  const initialSettings = {
+    siteName: settings.siteName,
+    siteDescription: settings.siteDescription,
+    logoUrl: settings.logoUrl,
+  };
 
   if (PLATFORM_ADMINS.has(role)) {
     const membership = await getExchangeForOwner();
@@ -27,7 +31,11 @@ export default async function ExchangeLayout({ children }: { children: React.Rea
     return (
       <SiteSettingsProvider initialSettings={initialSettings}>
         <div className="dashboard-shell" data-portal="exchange">
-          <Suspense fallback={null}><DashboardProviders userRole={role} portal="exchange" staffRole="OWNER">{children}</DashboardProviders></Suspense>
+          <Suspense fallback={null}>
+            <DashboardProviders userRole={role} portal="exchange" staffRole="OWNER">
+              {children}
+            </DashboardProviders>
+          </Suspense>
         </div>
       </SiteSettingsProvider>
     );
@@ -40,7 +48,11 @@ export default async function ExchangeLayout({ children }: { children: React.Rea
   return (
     <SiteSettingsProvider initialSettings={initialSettings}>
       <div className="dashboard-shell" data-portal="exchange">
-        <Suspense fallback={null}><DashboardProviders userRole={role} portal="exchange" staffRole={membership.staffRole}>{children}</DashboardProviders></Suspense>
+        <Suspense fallback={null}>
+          <DashboardProviders userRole={role} portal="exchange" staffRole={membership.staffRole}>
+            {children}
+          </DashboardProviders>
+        </Suspense>
       </div>
     </SiteSettingsProvider>
   );

@@ -293,9 +293,7 @@ export default function ExchangeBentoGrid({
           <p className={s.sectionSub}>{subheading}</p>
         </div>
         <div className={s.sectionStat}>
-          <span className={s.sectionStatNum}>
-            {_faNum.format(items.length)}
-          </span>
+          <span className={s.sectionStatNum}>{_faNum.format(items.length)}</span>
           <span className={s.sectionStatLabel}>صرافی فعال</span>
         </div>
       </header>

@@ -377,9 +377,7 @@ const nextConfig: NextConfig = {
 
   // 2026-08: logging.fetches — در dev نشان می‌دهد کدام fetch cached است
   // و کدام شبکه می‌رود. در production فقط خطاها.
-  logging: process.env.NODE_ENV !== 'production'
-    ? { fetches: { fullUrl: true } }
-    : undefined,
+  logging: process.env.NODE_ENV !== 'production' ? { fetches: { fullUrl: true } } : undefined,
 
   // 2026-07-07: `next-auth` beta.25 imports `next/server` without the `.js`
   // extension. When Turbopack externalizes the package, Node's ESM loader

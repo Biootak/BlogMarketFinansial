@@ -51,7 +51,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 import {
-  HiMagnifyingGlass,
   HiOutlineCheckCircle,
   HiOutlineClock,
   HiOutlineEnvelope,
@@ -330,9 +329,7 @@ export function UsersClient({
             <span className={`${s.kpiIcon} ${cls}`} aria-hidden>
               <Icon className="size-4" />
             </span>
-            <span className={`${s.kpiVal} ${cls}`}>
-              {_faNum.format(value)}
-            </span>
+            <span className={`${s.kpiVal} ${cls}`}>{_faNum.format(value)}</span>
             <span className={s.kpiLabel}>{label}</span>
           </div>
         ))}
@@ -495,8 +492,7 @@ export function UsersClient({
         {/* Footer */}
         <div className={s.tableFoot}>
           <span className={s.footCount}>
-            {_faNum.format(users.length)} از{' '}
-            {_faNum.format(totalCount)} کاربر
+            {_faNum.format(users.length)} از {_faNum.format(totalCount)} کاربر
           </span>
           {totalPages > 1 && (
             <nav className={s.pagination} aria-label="صفحه‌بندی">
@@ -509,8 +505,7 @@ export function UsersClient({
                 قبلی
               </button>
               <span className={s.pageInfo}>
-                {_faNum.format(currentPage)} /{' '}
-                {_faNum.format(totalPages)}
+                {_faNum.format(currentPage)} / {_faNum.format(totalPages)}
               </span>
               <button
                 type="button"

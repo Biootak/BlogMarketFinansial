@@ -3,10 +3,10 @@
 import { Grid2x2 } from 'lucide-react';
 import { Fragment } from 'react';
 
+import { useObs } from './ObsProvider';
+import { ObsEmpty } from './ObsSection';
 import { heatLevel, maxOf } from './chart';
 import { bucketLabel, cssVars, faNum, hourKey, sourceName } from './format';
-import { ObsEmpty } from './ObsSection';
-import { useObs } from './ObsProvider';
 import h from './heat.module.css';
 
 const LEVELS = [0, 1, 2, 3, 4] as const;

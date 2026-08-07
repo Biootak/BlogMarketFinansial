@@ -1,5 +1,5 @@
-import type { Metadata } from 'next';
 import { Database, Grid2x2, PieChart } from 'lucide-react';
+import type { Metadata } from 'next';
 
 import { ObsSection } from '../_components/ObsSection';
 import { SlowQueryTable } from '../_components/SlowQueryTable';
@@ -21,8 +21,8 @@ export default function ObservabilityQueriesPage() {
           <span className={b.tabEyebrow}>OPERATIONS / QUERIES</span>
           <h2 className={b.tabTitle}>کندی را به مسیر واقعی وصل کن</h2>
           <p className={b.tabLead}>
-            نوار هر ردیف نسبت به بدترین رکورد همین فهرست است، نه یک سقف دلخواه؛ چون سؤال واقعی
-            «چقدر بدتر از بقیه» است.
+            نوار هر ردیف نسبت به بدترین رکورد همین فهرست است، نه یک سقف دلخواه؛ چون سؤال واقعی «چقدر
+            بدتر از بقیه» است.
           </p>
         </div>
         <p className={b.tabStamp} data-tone="warn">

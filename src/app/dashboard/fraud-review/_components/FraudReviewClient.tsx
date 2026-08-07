@@ -13,8 +13,13 @@
  * - spring micro-interactions
  */
 
+import {
+  DataTable,
+  MillionDollarEmpty,
+  PageHeader,
+  SearchInput,
+} from '@/components/Dashboard/primitives';
 import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
-import { DataTable, MillionDollarEmpty, PageHeader, SearchInput } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -277,23 +282,17 @@ export function FraudReviewClient({ reviews: initial }: Props) {
         </div>
         <div className={s.kpiDivider} aria-hidden />
         <div className={s.kpiItem}>
-          <span className={`${s.kpiVal} ${s.kpiHigh}`}>
-            {_faNum.format(highCount)}
-          </span>
+          <span className={`${s.kpiVal} ${s.kpiHigh}`}>{_faNum.format(highCount)}</span>
           <span className={s.kpiLabel}>پرریسک ≥۷۰</span>
         </div>
         <div className={s.kpiDivider} aria-hidden />
         <div className={s.kpiItem}>
-          <span className={`${s.kpiVal} ${s.kpiMed}`}>
-            {_faNum.format(medCount)}
-          </span>
+          <span className={`${s.kpiVal} ${s.kpiMed}`}>{_faNum.format(medCount)}</span>
           <span className={s.kpiLabel}>متوسط ۴۰–۶۹</span>
         </div>
         <div className={s.kpiDivider} aria-hidden />
         <div className={s.kpiItem}>
-          <span className={s.kpiVal}>
-            {_faNum.format(rows.length - highCount - medCount)}
-          </span>
+          <span className={s.kpiVal}>{_faNum.format(rows.length - highCount - medCount)}</span>
           <span className={s.kpiLabel}>کم‌ریسک</span>
         </div>
       </div>

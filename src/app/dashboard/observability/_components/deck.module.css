@@ -74,7 +74,7 @@
 
 .mastheadDate::before,
 .mastheadWindow::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block: 0.15rem;
   inset-inline-start: 0.3rem;
@@ -156,7 +156,7 @@
   stroke-width: 5;
 }
 
-.seal[data-silent='true'] .sealTrack {
+.seal[data-silent="true"] .sealTrack {
   stroke-dasharray: 2 6;
   stroke-linecap: round;
 }
@@ -304,9 +304,7 @@
   background: transparent;
   color: var(--obs-ink-2);
   cursor: pointer;
-  transition:
-    border-color var(--obs-fast) var(--obs-ease),
-    color var(--obs-fast) var(--obs-ease),
+  transition: border-color var(--obs-fast) var(--obs-ease), color var(--obs-fast) var(--obs-ease),
     transform 120ms var(--ds-ease-spring);
 }
 
@@ -439,7 +437,7 @@
 }
 
 .vitalTrack::after {
-  content: '';
+  content: "";
   position: absolute;
   inset-block: 0;
   inset-inline-start: 0;

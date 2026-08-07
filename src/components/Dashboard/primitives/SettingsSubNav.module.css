@@ -60,7 +60,12 @@
   inset-block-start: 28px;
   inset-block-end: -4px;
   inline-size: 1px;
-  background: linear-gradient(180deg, var(--at-line) 0%, var(--at-line-strong) 50%, transparent 100%);
+  background: linear-gradient(
+    180deg,
+    var(--at-line) 0%,
+    var(--at-line-strong) 50%,
+    transparent 100%
+  );
   pointer-events: none;
   z-index: 0;
 }
@@ -92,14 +97,18 @@
   border-color: var(--at-accent);
   box-shadow: 0 0 0 4px color-mix(in oklch, var(--at-accent) 22%, transparent);
 }
-.bulletActive .stepDot { display: none; }
+.bulletActive .stepDot {
+  display: none;
+}
 .stepNum {
   font-size: 9px;
   font-weight: 800;
   color: var(--at-fg-inv);
   line-height: 1;
 }
-.bulletRecommended { border-style: dashed; }
+.bulletRecommended {
+  border-style: dashed;
+}
 
 /* ── Icon chip ───────────────────────────────────────────────────── */
 .iconChip {
@@ -157,10 +166,26 @@
   border: 1px solid transparent;
   font-variant-numeric: tabular-nums;
 }
-.badge_neutral { background: var(--at-bg-elevated); color: var(--at-fg-muted); border-color: var(--at-line); }
-.badge_warn { background: color-mix(in oklch, var(--at-warning) 14%, transparent); color: var(--at-warning); border-color: color-mix(in oklch, var(--at-warning) 32%, transparent); }
-.badge_success { background: color-mix(in oklch, var(--at-accent) 14%, transparent); color: var(--at-accent); border-color: color-mix(in oklch, var(--at-accent) 32%, transparent); }
-.badge_info { background: color-mix(in oklch, var(--at-info) 14%, transparent); color: var(--at-info); border-color: color-mix(in oklch, var(--at-info) 32%, transparent); }
+.badge_neutral {
+  background: var(--at-bg-elevated);
+  color: var(--at-fg-muted);
+  border-color: var(--at-line);
+}
+.badge_warn {
+  background: color-mix(in oklch, var(--at-warning) 14%, transparent);
+  color: var(--at-warning);
+  border-color: color-mix(in oklch, var(--at-warning) 32%, transparent);
+}
+.badge_success {
+  background: color-mix(in oklch, var(--at-accent) 14%, transparent);
+  color: var(--at-accent);
+  border-color: color-mix(in oklch, var(--at-accent) 32%, transparent);
+}
+.badge_info {
+  background: color-mix(in oklch, var(--at-info) 14%, transparent);
+  color: var(--at-info);
+  border-color: color-mix(in oklch, var(--at-info) 32%, transparent);
+}
 
 /* ── Active edge bar (desktop only) ─────────────────────────────── */
 .activeBar {
@@ -172,7 +197,9 @@
   background: var(--at-accent);
 }
 
-.firstItem .btn { margin-block-start: 0; }
+.firstItem .btn {
+  margin-block-start: 0;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Mobile / Tablet (≤1024px): pill tab bar

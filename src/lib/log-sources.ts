@@ -126,7 +126,16 @@ const RULES: readonly SourceRule[] = [
     'rate-limiter',
     'firewall',
   ]),
-  rule('email', ['email', 'e-mail', 'mail', 'mailer', 'smtp', 'resend', 'nodemailer', 'newsletter']),
+  rule('email', [
+    'email',
+    'e-mail',
+    'mail',
+    'mailer',
+    'smtp',
+    'resend',
+    'nodemailer',
+    'newsletter',
+  ]),
   rule('sms', ['sms', 'kavenegar', 'melipayamak', 'ghasedak', 'pishgam', 'telegram']),
   rule('storage', [
     'storage',

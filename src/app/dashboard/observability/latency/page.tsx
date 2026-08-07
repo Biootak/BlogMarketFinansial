@@ -1,5 +1,5 @@
-import type { Metadata } from 'next';
 import { Activity, ArrowLeft, Gauge, ServerCog } from 'lucide-react';
+import type { Metadata } from 'next';
 
 import { DayStrip } from '../_components/DayStrip';
 import { LatencyScale } from '../_components/LatencyScale';
@@ -37,8 +37,8 @@ export default function ObservabilityLatencyPage() {
           <span className={b.tabEyebrow}>OPERATIONS / LATENCY</span>
           <h2 className={b.tabTitle}>تأخیر را قبل از تبدیل شدن به حادثه ببین</h2>
           <p className={b.tabLead}>
-            میانگین دروغ می‌گوید. آنچه کاربر حس می‌کند فاصلهٔ بین p95 و p99 است، و همین فاصله
-            محور اصلی این صفحه است.
+            میانگین دروغ می‌گوید. آنچه کاربر حس می‌کند فاصلهٔ بین p95 و p99 است، و همین فاصله محور اصلی
+            این صفحه است.
           </p>
         </div>
         <p className={b.tabStamp} data-tone="info">

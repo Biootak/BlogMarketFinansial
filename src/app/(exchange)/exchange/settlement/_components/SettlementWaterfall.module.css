@@ -20,7 +20,11 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: radial-gradient(ellipse 60% 80% at 0% 0%, color-mix(in oklch, var(--at-accent) 10%, transparent) 0%, transparent 55%);
+  background: radial-gradient(
+    ellipse 60% 80% at 0% 0%,
+    color-mix(in oklch, var(--at-accent) 10%, transparent) 0%,
+    transparent 55%
+  );
   opacity: 1;
   pointer-events: none;
 }

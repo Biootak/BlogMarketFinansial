@@ -33,11 +33,26 @@ export default async function CustomerLayout({ children }: { children: React.Rea
   const hasExplicitCustomer = isPlatformAdmin && !!cookieStore.get(ADMIN_CUSTOMER_COOKIE)?.value;
 
   return (
-    <SiteSettingsProvider initialSettings={{ siteName: settings.siteName, siteDescription: settings.siteDescription, logoUrl: settings.logoUrl }}>
+    <SiteSettingsProvider
+      initialSettings={{
+        siteName: settings.siteName,
+        siteDescription: settings.siteDescription,
+        logoUrl: settings.logoUrl,
+      }}
+    >
       <div className="dashboard-shell" data-portal="customer">
-        {isPlatformAdmin && <AdminCustomerSwitcher currentCustomerId={profile.id} currentCustomerName={profile.fullName} currentExchangeName={profile.exchange.name} isImpersonating={hasExplicitCustomer} />}
+        {isPlatformAdmin && (
+          <AdminCustomerSwitcher
+            currentCustomerId={profile.id}
+            currentCustomerName={profile.fullName}
+            currentExchangeName={profile.exchange.name}
+            isImpersonating={hasExplicitCustomer}
+          />
+        )}
         <Suspense fallback={null}>
-          <DashboardProviders userRole={role} portal="customer">{children}</DashboardProviders>
+          <DashboardProviders userRole={role} portal="customer">
+            {children}
+          </DashboardProviders>
         </Suspense>
       </div>
     </SiteSettingsProvider>

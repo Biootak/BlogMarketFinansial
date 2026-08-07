@@ -75,9 +75,7 @@
 .focusArrow {
   margin-inline-start: auto;
   color: var(--obs-muted);
-  transition:
-    transform var(--obs-base) var(--obs-ease),
-    color var(--obs-fast) var(--obs-ease);
+  transition: transform var(--obs-base) var(--obs-ease), color var(--obs-fast) var(--obs-ease);
 }
 
 .focusItem:hover .focusArrow {

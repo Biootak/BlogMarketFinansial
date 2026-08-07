@@ -81,7 +81,8 @@ export function CryptoTickerCard({ rate }: CryptoTickerCardProps) {
         }}
         onMouseEnter={(e) => {
           (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--ds-brand-500)';
-          (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px -4px oklch(52% 0.14 162 / 0.25)';
+          (e.currentTarget as HTMLDivElement).style.boxShadow =
+            '0 4px 12px -4px oklch(52% 0.14 162 / 0.25)';
           (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-1px)';
         }}
         onMouseLeave={(e) => {
@@ -115,16 +116,10 @@ export function CryptoTickerCard({ rate }: CryptoTickerCardProps) {
 
         <span
           className={`flex items-center gap-0.5 text-[11px] font-semibold tabular-nums ${
-            isPositive
-              ? 'text-emerald-700 dark:text-emerald-400'
-              : 'text-red-700 dark:text-red-400'
+            isPositive ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'
           }`}
         >
-          {isPositive ? (
-            <TrendingUp className="w-3 h-3" />
-          ) : (
-            <TrendingDown className="w-3 h-3" />
-          )}
+          {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
           {isPositive ? '+' : ''}
           {change.toFixed(2)}%
         </span>

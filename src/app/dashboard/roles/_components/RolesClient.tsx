@@ -24,7 +24,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Lock,
-  Search,
   Shield,
   ShieldCheck,
   X,
@@ -263,7 +262,7 @@ function RoleUsersDrawer({
   const [loading, setLoading] = useState(false);
   const [changeTarget, setChangeTarget] = useState<{ userId: string; newRole: Role } | null>(null);
   const [changePending, startChange] = useTransition();
-  const searchRef = useRef<HTMLInputElement>(null);
+  const _searchRef = useRef<HTMLInputElement>(null);
   const color = ROLE_COLOR[role] ?? 'var(--at-fg-muted)';
 
   const load = useCallback(
@@ -341,8 +340,14 @@ function RoleUsersDrawer({
           {/* Search */}
           <SearchInput
             value={search}
-            onChange={(v) => { setSearch(v); setPage(1); }}
-            onClear={() => { setSearch(''); setPage(1); }}
+            onChange={(v) => {
+              setSearch(v);
+              setPage(1);
+            }}
+            onClear={() => {
+              setSearch('');
+              setPage(1);
+            }}
             placeholder="جستجو در کاربران..."
             ariaLabel="جستجو در کاربران"
           />

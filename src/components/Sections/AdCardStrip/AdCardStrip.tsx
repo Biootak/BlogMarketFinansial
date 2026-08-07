@@ -189,8 +189,7 @@ function HeroAdCard({
 
           {/* Content */}
           <div className="relative h-full flex flex-col justify-between p-4 sm:p-5 lg:p-6 min-h-[inherit] text-white">
-            <div className="flex items-center gap-2">
-            </div>
+            <div className="flex items-center gap-2" />
 
             <div className="space-y-2 sm:space-y-2.5">
               <h3 className="text-[16px] sm:text-[20px] lg:text-[22px] font-bold leading-[1.2] line-clamp-2 text-balance">
@@ -304,7 +303,6 @@ function RichAdCard({
             aria-hidden
             style={{ backgroundColor: accentColor }}
           />
-
 
           {/* Bottom-start "مشاهده" pill (on hover) */}
           <div

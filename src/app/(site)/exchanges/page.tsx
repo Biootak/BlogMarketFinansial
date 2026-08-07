@@ -18,8 +18,8 @@
  */
 
 import ScrollReveal from '@/app/(site)/money-transfer/ScrollReveal';
-import { safeCache } from '@/lib/safe-cache';
 import prisma from '@/lib/db';
+import { safeCache } from '@/lib/safe-cache';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import CurrencyPulseGrid, { type PulseTile } from './_components/CurrencyPulseGrid';
@@ -129,43 +129,43 @@ const getExchangesData = safeCache(
  */
 const getSparkHistoryBatch = safeCache(
   async (
-  exchangeIds: string[],
-  currencyCodes: string[],
-): Promise<Map<string, Map<string, number[]>>> => {
-  const out = new Map<string, Map<string, number[]>>();
-  if (exchangeIds.length === 0 || currencyCodes.length === 0) return out;
-  for (const code of currencyCodes) out.set(code, new Map());
+    exchangeIds: string[],
+    currencyCodes: string[],
+  ): Promise<Map<string, Map<string, number[]>>> => {
+    const out = new Map<string, Map<string, number[]>>();
+    if (exchangeIds.length === 0 || currencyCodes.length === 0) return out;
+    for (const code of currencyCodes) out.set(code, new Map());
 
-  const rows = await prisma.exchangeRateQuote.findMany({
-    where: {
-      exchangeId: { in: exchangeIds },
-      currencyCode: { in: currencyCodes },
-      status: { in: ['ACTIVE', 'EXPIRED', 'ARCHIVED'] },
-    },
-    select: { exchangeId: true, currencyCode: true, buyRate: true, createdAt: true },
-    orderBy: { createdAt: 'desc' },
-    take: exchangeIds.length * currencyCodes.length * 12,
-  });
+    const rows = await prisma.exchangeRateQuote.findMany({
+      where: {
+        exchangeId: { in: exchangeIds },
+        currencyCode: { in: currencyCodes },
+        status: { in: ['ACTIVE', 'EXPIRED', 'ARCHIVED'] },
+      },
+      select: { exchangeId: true, currencyCode: true, buyRate: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+      take: exchangeIds.length * currencyCodes.length * 12,
+    });
 
-  // group by (currency, exchange), keep last 12 per pair, reverse to oldest-first
-  const grouped = new Map<string, { ex: string; code: string; buy: number }[]>();
-  for (const r of rows) {
-    const buy = Number(r.buyRate);
-    if (!Number.isFinite(buy)) continue;
-    const key = `${r.currencyCode}::${r.exchangeId}`;
-    if (!grouped.has(key)) grouped.set(key, []);
-    const list = grouped.get(key);
-    if (!list || list.length >= 12) continue;
-    list.push({ ex: r.exchangeId, code: r.currencyCode, buy });
-  }
-  for (const list of grouped.values()) {
-    if (list.length === 0) continue;
-    const first = list[0];
-    if (!first) continue;
-    const currencyMap = out.get(first.code);
-    if (!currencyMap) continue;
-    currencyMap.set(first.ex, list.map((x) => x.buy).reverse());
-  }
+    // group by (currency, exchange), keep last 12 per pair, reverse to oldest-first
+    const grouped = new Map<string, { ex: string; code: string; buy: number }[]>();
+    for (const r of rows) {
+      const buy = Number(r.buyRate);
+      if (!Number.isFinite(buy)) continue;
+      const key = `${r.currencyCode}::${r.exchangeId}`;
+      if (!grouped.has(key)) grouped.set(key, []);
+      const list = grouped.get(key);
+      if (!list || list.length >= 12) continue;
+      list.push({ ex: r.exchangeId, code: r.currencyCode, buy });
+    }
+    for (const list of grouped.values()) {
+      if (list.length === 0) continue;
+      const first = list[0];
+      if (!first) continue;
+      const currencyMap = out.get(first.code);
+      if (!currencyMap) continue;
+      currencyMap.set(first.ex, list.map((x) => x.buy).reverse());
+    }
     return out;
   },
   new Map(),

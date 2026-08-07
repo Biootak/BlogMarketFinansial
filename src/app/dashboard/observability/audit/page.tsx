@@ -1,5 +1,5 @@
-import type { Metadata } from 'next';
 import { ScrollText, Siren, Sparkles } from 'lucide-react';
+import type { Metadata } from 'next';
 
 import { AuditTrail } from '../_components/AuditTrail';
 import { IncidentTimeline } from '../_components/IncidentTimeline';

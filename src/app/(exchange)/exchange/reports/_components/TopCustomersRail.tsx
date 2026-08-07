@@ -67,9 +67,7 @@ export default function TopCustomersRail({ customers }: Props) {
                   <span className={s.barFill} style={{ width: `${Math.max(2, ratio)}%` }} />
                 </div>
                 <div className={s.bodyFoot}>
-                  <span className={s.dealCount}>
-                    {_faNum.format(c.dealCount)} معامله
-                  </span>
+                  <span className={s.dealCount}>{_faNum.format(c.dealCount)} معامله</span>
                   <span className={s.share}>
                     {new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 1 }).format(ratio)}٪
                   </span>

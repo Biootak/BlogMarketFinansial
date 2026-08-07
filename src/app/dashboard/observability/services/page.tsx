@@ -1,5 +1,5 @@
-import type { Metadata } from 'next';
 import { Activity, Grid2x2, PieChart, ServerCog } from 'lucide-react';
+import type { Metadata } from 'next';
 
 import { DayStrip } from '../_components/DayStrip';
 import { ObsSection } from '../_components/ObsSection';
@@ -22,8 +22,8 @@ export default function ObservabilityServicesPage() {
           <span className={b.tabEyebrow}>OPERATIONS / SERVICES</span>
           <h2 className={b.tabTitle}>هر سرویس یک وضعیت، یک روند، یک تصمیم</h2>
           <p className={b.tabLead}>
-            ردیف‌ها برای مقایسه ساخته شده‌اند نه برای پر کردن صفحه. ستون‌ها هم‌تراز‌اند تا چشم
-            بتواند دو سرویس را بدون اسکرول کنار هم بخواند.
+            ردیف‌ها برای مقایسه ساخته شده‌اند نه برای پر کردن صفحه. ستون‌ها هم‌تراز‌اند تا چشم بتواند دو
+            سرویس را بدون اسکرول کنار هم بخواند.
           </p>
         </div>
         <p className={b.tabStamp} data-tone="warn">

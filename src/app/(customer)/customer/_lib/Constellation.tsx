@@ -67,7 +67,10 @@ export function Constellation({
 }: Props) {
   // اگر props پیش‌فرض باشند از cache استفاده می‌کنیم
   const isDefault =
-    cols === DEFAULT_COLS && rows === DEFAULT_ROWS && spacing === DEFAULT_SPACING && r === DEFAULT_R;
+    cols === DEFAULT_COLS &&
+    rows === DEFAULT_ROWS &&
+    spacing === DEFAULT_SPACING &&
+    r === DEFAULT_R;
 
   const dots = isDefault ? DEFAULT_DOTS : buildDots(cols, rows, spacing, r);
   const width = isDefault ? DEFAULT_WIDTH : cols * spacing + spacing;

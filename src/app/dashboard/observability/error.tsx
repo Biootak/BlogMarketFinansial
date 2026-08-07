@@ -25,8 +25,8 @@ export default function ObservabilityError({
         <TriangleAlert size={20} strokeWidth={1.5} className={o.emptyIcon} aria-hidden="true" />
         <p className={o.emptyTitle}>خواندن وضعیت سامانه شکست خورد</p>
         <p className={o.emptyHint}>
-          پوستهٔ داشبورد سالم است و بقیهٔ بخش‌ها کار می‌کنند؛ فقط این مسیر نتوانست snapshot را
-          بسازد. معمولاً یعنی اتصال دیتابیس یا نشست، نه خرابی سامانه.
+          پوستهٔ داشبورد سالم است و بقیهٔ بخش‌ها کار می‌کنند؛ فقط این مسیر نتوانست snapshot را بسازد.
+          معمولاً یعنی اتصال دیتابیس یا نشست، نه خرابی سامانه.
         </p>
         {error.digest ? (
           <p className={o.emptyHint}>

@@ -51,7 +51,6 @@ import {
   PencilLine,
   Plus,
   Radar,
-  Search,
   TrendingUp,
   Users,
   Wallet,

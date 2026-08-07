@@ -192,10 +192,7 @@ export default function SafeImage({
           {/* لایه foreground: wrapper با inset → تصویر کامل بدون برش */}
           <div className="absolute inset-[5%]">
             <Image
-              className={cn(
-                'object-contain',
-                className === 'object-cover' ? undefined : className,
-              )}
+              className={cn('object-contain', className === 'object-cover' ? undefined : className)}
               alt={alt}
               sizes={sizes}
               priority={priority}

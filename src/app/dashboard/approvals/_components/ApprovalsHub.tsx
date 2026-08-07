@@ -20,7 +20,6 @@ import {
   Loader2,
   MessageSquare,
   Plus,
-  Search,
   Send,
   Shield,
   ShieldCheck,

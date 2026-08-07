@@ -377,9 +377,7 @@ export function AuditLogClient({
             </div>
             <div className={s.kpiBody}>
               <span className={s.kpiLabel}>امروز</span>
-              <span className={s.kpiValue}>
-                {faNum.format(todayCount)}
-              </span>
+              <span className={s.kpiValue}>{faNum.format(todayCount)}</span>
             </div>
           </div>
 
@@ -398,9 +396,7 @@ export function AuditLogClient({
               </div>
               <div className={s.kpiBody}>
                 <span className={s.kpiLabel}>{label}</span>
-                <span className={s.kpiValue}>
-                  {faNum.format(kpiCounts[key])}
-                </span>
+                <span className={s.kpiValue}>{faNum.format(kpiCounts[key])}</span>
               </div>
             </button>
           ))}
@@ -782,8 +778,7 @@ export function AuditLogClient({
             </Button>
 
             <span className={s.pageInfo} aria-live="polite">
-              صفحه {faNum.format(currentPage)} از{' '}
-              {faNum.format(totalPages)}
+              صفحه {faNum.format(currentPage)} از {faNum.format(totalPages)}
             </span>
           </nav>
         )}

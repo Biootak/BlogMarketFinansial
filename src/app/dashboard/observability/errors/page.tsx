@@ -1,5 +1,5 @@
-import type { Metadata } from 'next';
 import { AlertTriangle, Layers3, Siren } from 'lucide-react';
+import type { Metadata } from 'next';
 
 import { ErrorLedger } from '../_components/ErrorLedger';
 import { IncidentTimeline } from '../_components/IncidentTimeline';
@@ -27,8 +27,8 @@ export default function ObservabilityErrorsPage() {
           <span className={b.tabEyebrow}>OPERATIONS / ERRORS</span>
           <h2 className={b.tabTitle}>خطاها را از نویز جدا کن</h2>
           <p className={b.tabLead}>
-            رکوردهای هم‌شکل روی سرور گروه شده‌اند، پس یک خطای تکرارشونده صد ردیف نمی‌سازد و صد
-            خطای متفاوت هم پشت یک ردیف پنهان نمی‌شود.
+            رکوردهای هم‌شکل روی سرور گروه شده‌اند، پس یک خطای تکرارشونده صد ردیف نمی‌سازد و صد خطای
+            متفاوت هم پشت یک ردیف پنهان نمی‌شود.
           </p>
         </div>
         <p className={b.tabStamp} data-tone="bad">

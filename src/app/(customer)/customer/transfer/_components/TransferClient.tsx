@@ -945,7 +945,6 @@ function ExchangeForm({
     <form onSubmit={onSubmit} className={s.form}>
       <div className={s.currencyPair}>
         <div className={s.field}>
-          {/* biome-ignore lint/a11y/noLabelWithoutControl: CurrencySelect uses its own ariaLabel */}
           <label className={s.label}>از ارز</label>
           <CurrencySelect
             items={currencyItems}
@@ -961,7 +960,6 @@ function ExchangeForm({
           )}
         </div>
         <div className={s.field}>
-          {/* biome-ignore lint/a11y/noLabelWithoutControl: CurrencySelect uses its own ariaLabel */}
           <label className={s.label}>به ارز</label>
           <CurrencySelect
             items={toItems}

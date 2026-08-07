@@ -72,14 +72,14 @@ export async function getUsers({
 
     // Add role-based filtering
     if (currentUserRole !== 'OWNER' && currentUserRole !== 'SUPERADMIN') {
-        if (currentUserRole === 'ADMIN') {
-          const requestedRole = where.role;
-          where.role = undefined;
-          where.AND = [
-            // M5-fix: SUPERADMIN هم مانند OWNER نباید توسط ADMIN دیده شود
-            { role: { not: { in: [Role.OWNER, Role.ADMIN, Role.SUPERADMIN] } } },
-            ...(requestedRole ? [{ role: requestedRole }] : []),
-          ];
+      if (currentUserRole === 'ADMIN') {
+        const requestedRole = where.role;
+        where.role = undefined;
+        where.AND = [
+          // M5-fix: SUPERADMIN هم مانند OWNER نباید توسط ADMIN دیده شود
+          { role: { not: { in: [Role.OWNER, Role.ADMIN, Role.SUPERADMIN] } } },
+          ...(requestedRole ? [{ role: requestedRole }] : []),
+        ];
       } else {
         return { success: false, message: 'شما دسترسی لازم را ندارید' };
       }

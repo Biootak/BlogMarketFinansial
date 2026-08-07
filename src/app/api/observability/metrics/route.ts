@@ -1,7 +1,4 @@
-import {
-  type ObservabilityFailure,
-  getObservabilitySnapshot,
-} from '@/lib/observability';
+import { type ObservabilityFailure, getObservabilitySnapshot } from '@/lib/observability';
 
 /**
  * GET /api/observability/metrics

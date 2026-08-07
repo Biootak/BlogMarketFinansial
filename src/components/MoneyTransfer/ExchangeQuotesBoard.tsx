@@ -158,9 +158,7 @@ function QuoteTableRow({
             <div className={s.cardTop}>
               <div className={s.cardExchange}>
                 <span className={s.exchangeName}>{quote.exchangeName ?? 'صرافی'}</span>
-                {quote.exchangeCity && (
-                  <span className={s.exchangeCity}>{quote.exchangeCity}</span>
-                )}
+                {quote.exchangeCity && <span className={s.exchangeCity}>{quote.exchangeCity}</span>}
               </div>
               <div className={s.cardActions}>
                 {isBestBuy && <span className={s.bestBadge}>بهترین</span>}

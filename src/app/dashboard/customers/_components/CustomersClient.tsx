@@ -45,13 +45,11 @@ import {
   Filter,
   Lock,
   Plus,
-  Search,
   ShieldCheck,
   ShieldOff,
   Unlock,
   UserCheck,
   Users,
-  X,
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -292,7 +290,7 @@ export default function CustomersClient({
   const [searchInput, setSearchInput] = useState(currentQuery);
   const deferredSearch = useDeferredValue(searchInput);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const searchRef = useRef<HTMLInputElement>(null);
+  const _searchRef = useRef<HTMLInputElement>(null);
 
   const navigate = useCallback(
     (overrides: Record<string, string>) => {
@@ -496,7 +494,10 @@ export default function CustomersClient({
     <SearchInput
       value={searchInput}
       onChange={setSearchInput}
-      onClear={() => { setSearchInput(''); navigate({ q: '', page: '1' }); }}
+      onClear={() => {
+        setSearchInput('');
+        navigate({ q: '', page: '1' });
+      }}
       placeholder="جستجو نام، تلفن، شهر…"
       ariaLabel="جستجو مشتری"
     />
@@ -622,9 +623,7 @@ export default function CustomersClient({
                     />
                   </div>
                   {/* big number */}
-                  <span className={s.kpiValue}>
-                    {_faNum.format(item.value)}
-                  </span>
+                  <span className={s.kpiValue}>{_faNum.format(item.value)}</span>
                   {/* label */}
                   <span className={s.kpiLabel}>{item.label}</span>
                 </div>

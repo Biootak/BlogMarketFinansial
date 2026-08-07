@@ -10,8 +10,8 @@
  *   • HoursMatrix for full editor on sub-route /hours
  */
 
-import { Calendar, Clock4, Moon, Sun } from 'lucide-react';
 import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
+import { Calendar, Clock4, Moon, Sun } from 'lucide-react';
 import { useState } from 'react';
 import s from './WorkingHoursStrip.module.css';
 

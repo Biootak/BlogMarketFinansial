@@ -1053,9 +1053,7 @@ export function WalletClient({ walletData, userRole }: Props) {
         <div className={s.txHeader}>
           <h2 className={s.txTitle}>تاریخچه تراکنش‌ها</h2>
           {entries.length > 0 && (
-            <span className={s.txCount}>
-              {_faNum.format(entries.length)} مورد
-            </span>
+            <span className={s.txCount}>{_faNum.format(entries.length)} مورد</span>
           )}
         </div>
 

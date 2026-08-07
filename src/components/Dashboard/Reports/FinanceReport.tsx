@@ -57,7 +57,12 @@ function fmt(n: number): string {
 interface ReportData {
   kpi: PlatformFinanceKpi;
   txTrend: TransactionTrend[];
-  topExchanges: { exchangeId: string; exchangeName: string; txCount: number; customerCount: number }[];
+  topExchanges: {
+    exchangeId: string;
+    exchangeName: string;
+    txCount: number;
+    customerCount: number;
+  }[];
   settlementDist: SettlementStatusDist[];
 }
 
@@ -142,7 +147,11 @@ function FinanceSkeleton() {
     <div className={s.root}>
       <div className={s.kpiRow}>
         {[0, 1, 2, 3, 4].map((i) => (
-          <div key={i} className={s.skCard} style={{ '--sk-delay': `${i * 60}ms` } as React.CSSProperties} />
+          <div
+            key={i}
+            className={s.skCard}
+            style={{ '--sk-delay': `${i * 60}ms` } as React.CSSProperties}
+          />
         ))}
       </div>
       <div className={s.skHero} />
@@ -300,12 +309,7 @@ export default function FinanceReport() {
               <TrendingUp size={18} aria-hidden /> روند تراکنش‌ها
             </h3>
           </div>
-          <button
-            type="button"
-            onClick={load}
-            className={s.refreshBtn}
-            aria-label="بارگذاری مجدد"
-          >
+          <button type="button" onClick={load} className={s.refreshBtn} aria-label="بارگذاری مجدد">
             <RefreshCw size={14} aria-hidden />
           </button>
         </div>
@@ -326,12 +330,7 @@ export default function FinanceReport() {
                     <stop offset="95%" stopColor="var(--nova-rose)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <XAxis
-                  dataKey="date"
-                  hide
-                  axisLine={false}
-                  tickLine={false}
-                />
+                <XAxis dataKey="date" hide axisLine={false} tickLine={false} />
                 <YAxis hide axisLine={false} tickLine={false} />
                 <Tooltip content={<ChartTip />} />
                 <Area
@@ -375,7 +374,6 @@ export default function FinanceReport() {
 
       {/* ── Bottom Row ── */}
       <div className={s.bottomRow}>
-
         {/* ── Top Exchanges ── */}
         <motion.div
           className={s.chartCard}
@@ -478,9 +476,7 @@ export default function FinanceReport() {
                       className={s.settleDot}
                       style={{ background: SETTLEMENT_TONE[row.status] ?? 'var(--ds-text-muted)' }}
                     />
-                    <span className={s.settleLabel}>
-                      {SETTLE_LABEL[row.status] ?? row.status}
-                    </span>
+                    <span className={s.settleLabel}>{SETTLE_LABEL[row.status] ?? row.status}</span>
                     <span className={s.settleCount}>{fmt(row.count)}</span>
                     <span className={s.settlePct}>
                       {settleTotal > 0 ? `${Math.round((row.count / settleTotal) * 100)}٪` : '—'}

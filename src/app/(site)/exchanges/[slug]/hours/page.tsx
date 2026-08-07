@@ -5,9 +5,9 @@
  * تا DB hit تکراری حذف شود.
  */
 
-import { safeCache } from '@/lib/safe-cache';
 import prisma from '@/lib/db';
 import { splitHours } from '@/lib/exchange-hours';
+import { safeCache } from '@/lib/safe-cache';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import HoursView from './_components/HoursView';
