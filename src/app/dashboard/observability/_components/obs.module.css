@@ -2,8 +2,12 @@
    Observability — کروم مدخل‌ها و اتم‌های مشترک ۲۰۲۶
    ----------------------------------------------------------------------------
    هر چیزی که بیش از یک board لازمش دارد اینجاست و فقط اینجا: سرصفحهٔ مدخل،
+<<<<<<< HEAD
    خالی‌بودن، بج، نقطهٔ وضعیت، «خوانش» (برچسب/عدد/واحد)، ریل عددی، ظرفِ LTR،
    و همهٔ جداول/فهرست‌های component‌های data.
+=======
+   خالی‌بودن، بج، نقطهٔ وضعیت، «خوانش»، ریل نسبت و ظرفِ LTR.
+>>>>>>> ee351d0c39d48ebf78b4842575c81c71c83dc38d
    هیچ board ای اجازه ندارد نسخهٔ محلی این‌ها را دوباره بنویسد.
    ============================================================================ */
 
@@ -17,7 +21,6 @@
 }
 
 .head {
-  position: relative;
   display: flex;
   align-items: flex-start;
   gap: var(--ds-space-3);
@@ -26,17 +29,24 @@
 }
 
 /*
+<<<<<<< HEAD
    شمارهٔ مدخل روی خط می‌نشیند — شمارنده در CSS، نه در props.
    ترتیب DOM منبع حقیقت است.
+=======
+   شمارهٔ مدخل در حاشیه می‌نشیند — همان کاری که سالنامه‌های چاپی با شمارهٔ فصل
+   می‌کنند. شمارنده در CSS است نه در props، پس ترتیب DOM منبع حقیقت است و هیچ
+   صفحه‌ای مجبور نیست شماره پاس بدهد.
+
+   عمداً روی خط ننشسته: برای شکستن خط باید پس‌زمینهٔ سطح زیرین را تقلید کند و
+   داخل .featured سطح فرق می‌کند، یعنی یک وصلهٔ رنگیِ بدقواره. حاشیهٔ ساده
+   همان کار را بدون بدهی می‌کند.
+>>>>>>> ee351d0c39d48ebf78b4842575c81c71c83dc38d
 */
 .index {
   flex: none;
-  inline-size: 1.75rem;
-  margin-block-start: -0.9rem;
-  padding-block-end: 0.15rem;
-  background: var(--obs-paper);
+  inline-size: 1.5rem;
   color: var(--obs-muted);
-  font: 500 0.68rem / 1 var(--obs-mono);
+  font: 500 0.68rem / 1.6 var(--obs-mono);
   letter-spacing: 0.04em;
 }
 
@@ -56,7 +66,6 @@
 .headText {
   flex: 1 1 auto;
   min-inline-size: 0;
-  margin-block-start: -0.15rem;
 }
 
 .title {
@@ -121,7 +130,7 @@
 }
 
 .emptyHint {
-  max-inline-size: 52ch;
+  max-inline-size: 62ch;
   margin: 0;
   color: var(--obs-muted);
   font-size: var(--ds-text-xs);
@@ -177,7 +186,7 @@
   }
 }
 
-/* خوانش: برچسب کوچک، عدد جدولی، واحد ایزوله */
+/* خوانش: برچسب کوچک، عدد جدولی، یادداشت */
 .fig {
   display: flex;
   flex-direction: column;
@@ -235,6 +244,7 @@
   transition: inline-size var(--obs-base) var(--obs-ease);
 }
 
+<<<<<<< HEAD
 .barAlt {
   position: absolute;
   inset-block: 0;
@@ -245,6 +255,8 @@
   transition: inline-size var(--obs-base) var(--obs-ease);
 }
 
+=======
+>>>>>>> ee351d0c39d48ebf78b4842575c81c71c83dc38d
 /*
    ظرف محور زمان — سری زمانی همیشه LTR است.
    صفحه راست‌به‌چپ است ولی «گذشت زمان از چپ به راست» قرارداد جهانی است.
@@ -254,6 +266,7 @@
   min-inline-size: 0;
 }
 
+<<<<<<< HEAD
 /* لیست بدون نشانه */
 .list {
   display: flex;
@@ -268,12 +281,16 @@
 }
 
 /* دکمهٔ خطی کوچک */
+=======
+/* دکمهٔ خطی کوچک — برای اکشن‌های داخل سرصفحهٔ مدخل و مرز خطا */
+>>>>>>> ee351d0c39d48ebf78b4842575c81c71c83dc38d
 .ghostButton {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  min-block-size: 2.25rem;
-  padding: 0.3rem 0.7rem;
+  min-block-size: 2.75rem;
+  margin-block-start: var(--ds-space-2);
+  padding-inline: 0.8rem;
   border: 1px solid var(--obs-rule-2);
   border-radius: var(--ds-radius-sm);
   background: transparent;
