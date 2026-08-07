@@ -1,25 +1,8 @@
 /**
- * safe-cache — 2026-06-21
- * --------------------------------------------------------------------------
- * جایگزین ایمن برای `unstable_cache` که:
- *   1. خطای DB را catch می‌کند (حتی اگر `unstable_cache` re-throw کند)
- *   2. در صورت خطا، مقدار fallback برمی‌گرداند (نه throw)
- *   3. اگر قبلاً cache موفق داشتیم، آن را به‌عنوان stale-fallback نگه می‌دارد
- *   4. بین request ها share می‌شود (در سطح process)
- *
- * چرا `unstable_cache` به تنهایی کافی نیست:
- *   - وقتی DB fail می‌شود، `unstable_cache` خطا را در سطح cache-layer
- *     throw می‌کند، نه در سطح function body. بنابراین try/catch داخل
- *     function بی‌اثر است.
- *   - نتیجه: کل layout/page کرش می‌کند.
- *
- * استفاده:
- *   export const getSystemSettingsData = safeCache(
- *     async () => prisma.systemSettings.findFirst(),
- *     { siteName: null, ... },   // fallback
- *     { key: 'system-settings', ttl: 300, tags: ['system-settings'] },
- *   );
- * --------------------------------------------------------------------------
+ * safe-cache — جایگزین ایمن برای `unstable_cache`.
+ * خطای DB را catch می‌کند، fallback برمی‌گرداند، و stale-while-revalidate دارد.
+ * unstable_cache به تنهایی کافی نیست چون خطا را در cache-layer throw می‌کند
+ * نه داخل function body — یعنی try/catch داخل function بی‌اثر است.
  */
 
 const isDev = process.env.NODE_ENV === 'development';
@@ -31,16 +14,11 @@ interface CacheEntry<T> {
   storedAt: number;
 }
 
-// 2026-06-28: bound in-memory cache to prevent unbounded growth.
-// Map preserves insertion order; oldest entries are evicted first.
+// In-memory cache bounded to prevent unbounded growth; oldest entries evicted first.
 const MAX_CACHE_ENTRIES = Number(process.env.SAFE_CACHE_MAX_ENTRIES) || 1000;
 const memoryStore = new Map<string, CacheEntry<unknown>>();
 
-// 2026-07-08: map tag -> set of safeCache base keys, so a cache
-// invalidation (safeRevalidateTag) can purge the in-memory slots that
-// listen on a given tag. Previously safeCache tags were inert — revalidateTag
-// only busted unstable_cache, leaving safeCache entries stale up to their TTL
-// (e.g. sidebar stayed stale 1h after a publish). See H5.
+// Maps tag → set of base keys so safeRevalidateTag can purge in-memory slots by tag.
 const tagRegistry = new Map<string, Set<string>>();
 
 function evictIfNeeded(): void {
@@ -81,18 +59,12 @@ export function safeCache<TArgs extends unknown[], T>(
 ): (...args: TArgs) => Promise<T> {
   const { key: baseKey, ttl, tags = [] } = options;
 
-  // 2026-07-08: register this slot under each of its tags so
-  // safeRevalidateTag(tag) can purge it on demand.
   for (const tag of tags) {
     if (!tagRegistry.has(tag)) tagRegistry.set(tag, new Set());
     tagRegistry.get(tag)?.add(baseKey);
   }
 
   return async (...args: TArgs): Promise<T> => {
-    // Use `performance.now()` (a monotonic timer, ms since process start)
-    // rather than `Date.now()`. TTL comparison only needs relative elapsed
-    // time, not wall-clock timestamps, and a monotonic clock is immune to
-    // system-clock adjustments.
     const now = performance.now();
     const fullKey = makeKey(baseKey, args);
     const cached = memoryStore.get(fullKey) as CacheEntry<T> | undefined;
@@ -134,10 +106,7 @@ export function safeRevalidate(key: string): void {
 }
 
 /**
- * 2026-07-08: purge every in-memory safeCache slot listening on `tag`.
- * Tags are registered by safeCache() above. Used by cacheActions so that
- * Next's revalidateTag (unstable_cache) and the in-memory safeCache stay
- * in sync after mutations (H5).
+ * پاک کردن همه slot های in-memory که به این tag گوش می‌دهند.
  */
 export function safeRevalidateTag(tag: string): void {
   const keys = tagRegistry.get(tag);

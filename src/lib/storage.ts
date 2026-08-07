@@ -8,21 +8,8 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 
-// 2026-07-06: Liara S3 timeout + no-retry tuning.
-//
-// Without these, a single ECONNRESET on the initial TLS handshake (network
-// down, VPN disconnected, Liara outage) blocks every upload for ~1.5s while
-// the AWS SDK retries 3 times with exponential backoff. The local write
-// completes in <100ms — the user shouldn't wait on a cloud that's
-// unreachable.
-//
-// Two settings do the work:
-//   * `maxAttempts: 1`            → no SDK-level retries
-//   * `requestHandler.requestTimeout: 2000` → per-request hard ceiling
-//
-// Combined with the circuit breaker below (which disables S3 entirely for
-// 60s after a failure), the user sees local-only latency on every upload
-// while Liara is unreachable, instead of paying the timeout cost each time.
+// maxAttempts:1 = no SDK retries; requestTimeout/connectionTimeout = hard ceiling
+// so an unreachable Liara doesn't block uploads (circuit breaker handles the rest).
 const s3Client = new S3Client({
   region: 'default',
   endpoint: process.env.LIARA_ENDPOINT,
@@ -34,11 +21,6 @@ const s3Client = new S3Client({
   maxAttempts: 1,
   requestHandler: {
     requestTimeout: 2000,
-    // 2026-07-07: hard ceiling on establishing the TCP/TLS connection.
-    // Without this, an unreachable S3 endpoint (wrong URL, DNS blackout,
-    // network down) can hang the upload request for minutes while the OS
-    // connection timeout runs. The requestTimeout above only covers the
-    // period *after* the connection is established.
     connectionTimeout: 3000,
   },
 });
@@ -46,21 +28,14 @@ const s3Client = new S3Client({
 const BUCKET_NAME = process.env.LIARA_BUCKET_NAME || '';
 const S3_PUBLIC_URL =
   process.env.LIARA_ENDPOINT?.replace('https://', `https://${BUCKET_NAME}.`) || '';
-// 2026-08-05 perf: Turbopack traces `path.join(process.cwd(), 'public', 'uploads')`
-// at build time, matching every file under public/uploads (12k-48k files) into
-// the standalone bundle graph and severely bloating build time. The uploads
-// directory is per-request runtime I/O — it must never be part of the build
-// graph. We compute cwd() through an indirection the bundler cannot fold, and
-// assemble the directory via an env override or a runtime-only join so no
-// static literal path to public/uploads exists for the analyzer.
+
+// Turbopack-safe: avoid a static literal path to public/uploads in the build graph.
 const _cwd = (typeof process !== 'undefined' ? process.cwd() : '') as string;
 const LOCAL_UPLOAD_DIR =
   process.env.LOCAL_UPLOAD_DIR ||
   [_cwd, 'public', 'uploads'].join(path.sep).replace(/\/+/g, path.sep);
 
-// 2026-07-05: S3 is now optional. If credentials are missing, the system
-// falls back to local disk storage automatically. This supports local dev
-// and hosted test environments without configuring Liara.
+// S3 is optional — falls back to local disk when credentials are missing.
 function isS3CredentialsSet(): boolean {
   return Boolean(
     process.env.LIARA_ENDPOINT &&
@@ -70,11 +45,8 @@ function isS3CredentialsSet(): boolean {
   );
 }
 
-// 2026-07-06: Circuit breaker for S3. If a request fails (network down,
-// DNS error, Liara outage), we mark S3 unavailable for 60 seconds so the
-// next uploads skip the S3 attempt entirely instead of paying the 2s
-// timeout again. After 60s the next upload tries S3 once to probe
-// recovery — if it succeeds, the breaker stays closed.
+// Circuit breaker: after an S3 failure, skip S3 for 60s to avoid paying
+// the timeout cost on every subsequent upload while Liara is unreachable.
 const S3_BREAKER_TTL_MS = 60_000;
 let s3DisabledUntil = 0;
 
@@ -85,7 +57,7 @@ function isS3Configured(): boolean {
 }
 
 function tripCircuitBreaker(_reason: string): void {
-  if (s3DisabledUntil > Date.now()) return; // already tripped
+  if (s3DisabledUntil > Date.now()) return;
   s3DisabledUntil = Date.now() + S3_BREAKER_TTL_MS;
 }
 
@@ -95,18 +67,13 @@ export interface UploadResult {
   localPath: string;
   filename: string;
   size: number;
-  /**
-   * 2026-06-21: ابعاد تصویر (پیکسل) برای استفاده در next/image و جلوگیری از CLS.
-   * برای فایل‌های غیرتصویری (که الان سرو نمی‌شود) null برمی‌گردد.
-   */
+  /** ابعاد تصویر (پیکسل) برای next/image — برای غیرتصویری null است. */
   width?: number | null;
   height?: number | null;
 }
 
 /**
- * نوشتن روی دیسک لوکال — استخراج‌شده برای DRY شدن بین uploadFile و
- * هر جای دیگری که نیاز به write روی public/uploads دارد.
- * مسیر به‌صورت ایمن ساخته می‌شود (folder traversal نمی‌تواند فرار کند).
+ * نوشتن روی دیسک لوکال با sanitize ایمن (folder traversal نمی‌تواند فرار کند).
  */
 async function writeLocal(buffer: Buffer, folder: string, filename: string): Promise<string> {
   const safeFolder = folder.replace(/[^a-zA-Z0-9_-]/g, '');
@@ -124,11 +91,8 @@ async function writeLocal(buffer: Buffer, folder: string, filename: string): Pro
 }
 
 /**
- * 2026-07-08: resolve a local upload target safely. Mirror the sanitization
- * used by `writeLocal` for reads/deletes so a crafted `folder`/`filename`
- * (e.g. `../../etc/passwd`) cannot escape LOCAL_UPLOAD_DIR. Previously only
- * the write path sanitized these inputs, leaving getFile/getFileStream/
- * deleteFile open to path traversal (H1).
+ * Sanitize folder/filename for reads and deletes — same rules as writeLocal
+ * so getFile/getFileStream/deleteFile cannot be used for path traversal.
  */
 function resolveUploadTarget(folder: string, filename: string): { localPath: string; key: string } {
   const safeFolder = folder.replace(/[^a-zA-Z0-9_-]/g, '');
@@ -145,14 +109,8 @@ function resolveUploadTarget(folder: string, filename: string): { localPath: str
 }
 
 /**
- * آپلود فایل — local + S3 به‌صورت موازی (نه ترتیبی).
- * 2026-07-05: S3 اختیاری است؛ اگر credentials نباشد، فقط local می‌نویسد.
- * 2026-07-06: parallel writes — local writeFile و S3 PutObject هم‌زمان
- *   شروع می‌شوند. در نسخه‌ی قبلی local اول await می‌شد بعد S3 شروع
- *   می‌شد، یعنی تأخیر S3 به local اضافه می‌شد. با `Promise.allSettled`
- *   کل عملیات = max(local, S3) می‌شود، نه sum.
- *   اگر S3 fail شود، local کپی نجات‌دهنده است؛ اگر local fail شود،
- *   S3 هنوز فایل را دارد. هر دو شکست = throw به caller.
+ * آپلود فایل — local + S3 به‌صورت موازی.
+ * S3 اختیاری است؛ اگر credentials نباشد یا circuit breaker فعال باشد، فقط local.
  */
 export async function uploadFile(
   buffer: Buffer,
@@ -161,17 +119,10 @@ export async function uploadFile(
   contentType: string,
   dims?: { width?: number | null; height?: number | null },
 ): Promise<UploadResult> {
-  // M5/M9 fix: sanitize folder + filename the same way `resolveUploadTarget`
-  // does, so the S3 `Key` always matches the locally resolved path (no
-  // mismatch that would make S3 objects unreadable/undeletable). Folder is
-  // already constrained by ALLOWED_FOLDERS upstream, but sanitize defensively.
   const safeFolder = folder.replace(/[^a-zA-Z0-9_-]/g, '');
   const safeFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '');
   const key = `${safeFolder}/${safeFilename}`;
-  const _localPath = `/uploads/${safeFolder}/${safeFilename}`;
 
-  // هم local هم S3 را هم‌زمان شروع کن.
-  // localPathString در صورت موفقیت local پر می‌شود.
   const localPromise = writeLocal(buffer, folder, filename).then((p) => ({
     kind: 'local' as const,
     path: p,
@@ -195,12 +146,9 @@ export async function uploadFile(
           },
         }),
       );
-      // success — make sure the breaker is closed
       s3DisabledUntil = 0;
       return { kind: 's3', url: `${S3_PUBLIC_URL}/${key}` };
     } catch (error) {
-      // S3 اختیاری است — log می‌کنیم ولی throw نمی‌کنیم تا local نجات بدهد.
-      // tripCircuitBreaker trips once and suppresses repeat logs for 60s.
       const reason =
         error instanceof Error ? ((error as { code?: string }).code ?? error.name) : 'unknown';
       tripCircuitBreaker(reason);
@@ -208,13 +156,7 @@ export async function uploadFile(
     }
   })();
 
-  // صبر کن هر دو تمام شوند (یا fail شوند). allSettled طوری رفتار می‌کند
-  // که حتی اگه یکی reject شه، بقیه نتیجه‌شون رو برمی‌گردونن.
   const [localResult, s3Result] = await Promise.all([localPromise, s3Promise]);
-
-  // اگه local هم fail شده باشه، اینجا throw می‌کنیم چون راه نجاتی نیست.
-  // s3Result در این حالت هم null یا یه url هست، ولی چون local نداریم
-  // فایل قابل دسترسی نیست پس خطا می‌دیم.
   const s3Url = s3Result?.url ?? null;
 
   return {
@@ -229,15 +171,8 @@ export async function uploadFile(
 }
 
 /**
- * خواندن فایل - اول S3، بعد (در dev) لوکال.
- * در production دیگر fallback لوکال وجود ندارد.
- *
- * 2026-06-14: split into two helpers:
- *   * `getFileStream` returns the raw Node ReadableStream from S3 so
- *     route handlers can pipe it straight to the HTTP response
- *     (no `Buffer.concat` of a 10MB file in RAM).
- *   * `getFile` keeps the Buffer-based API for callers that need
- *     the bytes (e.g. sharp pipeline in upload route).
+ * خواندن فایل به صورت stream — اول S3، سپس fallback لوکال.
+ * برای pipe مستقیم به HTTP response بدون buffer کردن در RAM.
  */
 export async function getFileStream(
   folder: string,
@@ -245,43 +180,33 @@ export async function getFileStream(
 ): Promise<NodeJS.ReadableStream> {
   const { localPath: localFilePath, key } = resolveUploadTarget(folder, filename);
 
-  // Try S3 first when configured.
   if (isS3Configured()) {
     try {
       const response = await s3Client.send(
-        new GetObjectCommand({
-          Bucket: BUCKET_NAME,
-          Key: key,
-        }),
+        new GetObjectCommand({ Bucket: BUCKET_NAME, Key: key }),
       );
-      // AWS SDK returns a Node ReadableStream in the Node runtime; the
-      // types only declare a Web ReadableStream variant so we cast.
       return response.Body as unknown as NodeJS.ReadableStream;
     } catch (_error) {}
   }
 
-  // Local fallback (also the default when S3 is not configured).
   if (!existsSync(localFilePath)) {
     throw new Error('File not found');
   }
   return createReadStream(localFilePath);
 }
 
+/**
+ * خواندن فایل به صورت Buffer — اول S3، سپس fallback لوکال.
+ */
 export async function getFile(folder: string, filename: string): Promise<Buffer | null> {
   const { localPath: localFilePath, key } = resolveUploadTarget(folder, filename);
 
-  // Try S3 first when configured.
   if (isS3Configured()) {
     try {
       const response = await s3Client.send(
-        new GetObjectCommand({
-          Bucket: BUCKET_NAME,
-          Key: key,
-        }),
+        new GetObjectCommand({ Bucket: BUCKET_NAME, Key: key }),
       );
       if (response.Body) {
-        // 2026-08-07: AWS SDK types Body as StreamingBlobPayloadOutputTypes;
-        // cast like getFileStream does above — no @ts-expect-error.
         const body = response.Body as unknown as AsyncIterable<Uint8Array>;
         const chunks: Uint8Array[] = [];
         for await (const chunk of body) {
@@ -294,7 +219,6 @@ export async function getFile(folder: string, filename: string): Promise<Buffer 
     }
   }
 
-  // Local fallback (also the default when S3 is not configured).
   try {
     return await readFile(localFilePath);
   } catch {
@@ -303,10 +227,8 @@ export async function getFile(folder: string, filename: string): Promise<Buffer 
 }
 
 /**
- * حذف فایل — از S3 (اگر تنظیم شده) و از دیسک لوکال، به‌صورت موازی.
- * 2026-07-06: قبلاً ترتیبی بود (S3 اول، local بعد). حالا هم‌زمان.
- * اگر فقط یکی موفق بشه باز هم true برمی‌گردونیم — فایل از یکی از
- * storageها حذف شده و دیگر در دسترس نیست.
+ * حذف فایل از S3 و دیسک لوکال به‌صورت موازی.
+ * اگر فقط یکی موفق شود true برمی‌گردد.
  */
 export async function deleteFile(folder: string, filename: string): Promise<boolean> {
   const { localPath: localFilePath, key } = resolveUploadTarget(folder, filename);
@@ -314,12 +236,7 @@ export async function deleteFile(folder: string, filename: string): Promise<bool
   const s3Promise = (async (): Promise<boolean> => {
     if (!isS3Configured()) return false;
     try {
-      await s3Client.send(
-        new DeleteObjectCommand({
-          Bucket: BUCKET_NAME,
-          Key: key,
-        }),
-      );
+      await s3Client.send(new DeleteObjectCommand({ Bucket: BUCKET_NAME, Key: key }));
       return true;
     } catch (_error) {
       return false;
@@ -331,8 +248,6 @@ export async function deleteFile(folder: string, filename: string): Promise<bool
       await unlink(localFilePath);
       return true;
     } catch {
-      // فایل لوکال وجود نداشت — موفقیت در نظر نمی‌گیریم چون S3 ممکنه
-      // موفق شده باشه و کافیه.
       return false;
     }
   })();

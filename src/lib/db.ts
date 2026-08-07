@@ -4,23 +4,9 @@ import { serverLog } from './server-logger';
 
 export { buildDatabaseUrl };
 
-// 2026-06-29: Prisma connection pool tuning
-// ---------------------------------------------------------------------------
-// The default Prisma pool (connection_limit=21, pool_timeout=10s) collapses
-// during Next.js static generation because many workers open connections at
-// the same time. We now build the query URL from DATABASE_URL and append
-// configurable connection_limit / pool_timeout values via env vars:
-//   PRISMA_CONNECTION_LIMIT  (default: 30 prod / 10 dev)
-//   PRISMA_POOL_TIMEOUT      (default: 30 seconds)
-// Existing query params in DATABASE_URL are preserved.
-
-// 2026-06-30: Lazy singleton via Proxy
-// ---------------------------------------------------------------------------
-// Previously the PrismaClient was created when this module was imported. If
-// DATABASE_URL was missing, the entire module graph threw before any caller
-// could fall back (e.g. site-identity.ts). Now creation is deferred until the
-// first property access, so pages/components that don't touch the DB import
-// cleanly and DB consumers get the error exactly when they try to query.
+// Lazy singleton via Proxy — defers PrismaClient creation to first use so
+// missing DATABASE_URL doesn't crash the entire module graph at import time.
+// Pool tuning via PRISMA_CONNECTION_LIMIT / PRISMA_POOL_TIMEOUT env vars.
 const createPrismaClient = () =>
   new PrismaClient({
     datasources: {
