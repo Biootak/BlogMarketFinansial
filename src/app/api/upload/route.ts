@@ -34,8 +34,8 @@ const ALLOWED_FOLDERS = [
 // soft max-width for the canonical rendition. We do NOT generate multiple
 // variants — the upload route returns one WebP (or the original mime for
 // SVG/GIF) and next/image handles responsive sizing at request time.
-const MAX_CANONICAL_WIDTH = 1920;
-const WEBP_QUALITY = 85;
+const _MAX_CANONICAL_WIDTH = 1920;
+const _WEBP_QUALITY = 85;
 
 // Magic-byte signatures — catches MIME spoofing before we touch the pixel
 // pipeline. SVG is checked separately because it's text, not binary.
@@ -97,7 +97,7 @@ interface OptimizeResult {
 async function processImage(
   input: Buffer,
   mime: AllowedMime,
-  folder: AllowedFolder,
+  _folder: AllowedFolder,
   slotId: ImageSlotId | string | undefined,
 ): Promise<OptimizeResult> {
   if (mime === 'image/gif') {
@@ -125,9 +125,9 @@ async function processImage(
   // منبع نسبت: رجیستری مرکزی image-slots.ts (Single Source of Truth).
   const slot = getSlot(slotId);
   const targetRatio = slot.normalizeOnUpload ? slot.ratio : 0;
-  const sourceRatio =
-    sourceWidth > 0 && sourceHeight ? sourceWidth / sourceHeight : 0;
-  const ratioDelta = targetRatio && sourceRatio ? Math.abs(sourceRatio - targetRatio) / targetRatio : 1;
+  const sourceRatio = sourceWidth > 0 && sourceHeight ? sourceWidth / sourceHeight : 0;
+  const ratioDelta =
+    targetRatio && sourceRatio ? Math.abs(sourceRatio - targetRatio) / targetRatio : 1;
   const needsCrop = targetRatio > 0 && sourceRatio > 0 && ratioDelta > 0.02; // >2% اختلاف
 
   const needsResize = sourceWidth > slot.maxWidth;
@@ -367,7 +367,7 @@ export async function POST(request: NextRequest) {
     // Restrict writes there to ADMIN/OWNER; every other role may only use
     // their own-purpose folders (avatars/posts/etc.).
     const role = (session.user as { role?: string }).role;
-    if (folder === 'ads' && role !== 'ADMIN' && role !== 'OWNER') {
+    if (folder === 'ads' && role !== 'ADMIN' && role !== 'OWNER' && role !== 'SUPERADMIN') {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } },
         { status: 403 },

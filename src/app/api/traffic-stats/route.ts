@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'احراز هویت الزامی است' }, { status: 401 });
     }
     const role = session.user.role as Role | undefined;
-    if (role !== Role.ADMIN && role !== Role.OWNER) {
+    if (role !== Role.ADMIN && role !== Role.OWNER && role !== Role.SUPERADMIN) {
       return NextResponse.json({ error: 'دسترسی غیرمجاز' }, { status: 403 });
     }
 

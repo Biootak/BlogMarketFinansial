@@ -268,7 +268,11 @@ export async function createServiceRequest(
     const headersList = await headers();
     const _xff = headersList.get('x-forwarded-for') ?? '';
     const ip =
-      (_xff.split(',').map((p) => p.trim()).filter(Boolean).pop()) ||
+      _xff
+        .split(',')
+        .map((p) => p.trim())
+        .filter(Boolean)
+        .pop() ||
       headersList.get('x-real-ip')?.trim() ||
       'unknown';
     const userAgent = headersList.get('user-agent') || 'unknown';
@@ -1012,9 +1016,11 @@ export async function getMyServiceRequests(params?: {
   const page = params?.page ?? 1;
   const limit = params?.limit ?? 10;
   const skip = (page - 1) * limit;
-  const where: any = { userId: session.user.id };
+  const where: { userId: string; status?: import('@prisma/client').ServiceRequestStatus } = {
+    userId: session.user.id,
+  };
   if (params?.status && params.status !== 'ALL') {
-    where.status = params.status;
+    where.status = params.status as import('@prisma/client').ServiceRequestStatus;
   }
   try {
     const [requests, total] = await Promise.all([

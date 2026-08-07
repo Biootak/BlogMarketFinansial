@@ -118,8 +118,8 @@ export async function getAllHeaderAds(): Promise<ActionResult<unknown[]>> {
   try {
     const ads = await fetchAllHeaderAdsInternal();
     return { success: true, message: 'لیست تبلیغات دریافت شد.', data: ads };
-  } catch (err) {
-    return { success: false, message: 'خطا در دریافت لیست تبلیغات.', error: String(err) };
+  } catch {
+    return { success: false, message: 'خطا در دریافت لیست تبلیغات.' };
   }
 }
 
@@ -128,8 +128,8 @@ export async function getHeaderAdById(id: string): Promise<ActionResult<unknown>
     const ad = await prisma.headerAd.findUnique({ where: { id } });
     if (!ad) return { success: false, message: 'تبلیغ یافت نشد.' };
     return { success: true, message: 'تبلیغ دریافت شد.', data: ad };
-  } catch (err) {
-    return { success: false, message: 'خطا در دریافت تبلیغ.', error: String(err) };
+  } catch {
+    return { success: false, message: 'خطا در دریافت تبلیغ.' };
   }
 }
 
@@ -172,7 +172,7 @@ export async function createHeaderAd(input: HeaderAdInput): Promise<ActionResult
     if (err instanceof z.ZodError) {
       return { success: false, message: err.issues[0]?.message ?? 'ورودی نامعتبر است.' };
     }
-    return { success: false, message: 'خطا در ایجاد تبلیغ.', error: String(err) };
+    return { success: false, message: 'خطا در ایجاد تبلیغ.' };
   }
 }
 
@@ -219,7 +219,7 @@ export async function updateHeaderAd(
     if (err instanceof z.ZodError) {
       return { success: false, message: err.issues[0]?.message ?? 'ورودی نامعتبر است.' };
     }
-    return { success: false, message: 'خطا در به‌روزرسانی تبلیغ.', error: String(err) };
+    return { success: false, message: 'خطا در به‌روزرسانی تبلیغ.' };
   }
 }
 
@@ -233,8 +233,8 @@ export async function deleteHeaderAd(id: string): Promise<ActionResult> {
     revalidateTag('header-ad');
     revalidatePath('/');
     return { success: true, message: 'تبلیغ هدر حذف شد.' };
-  } catch (err) {
-    return { success: false, message: 'خطا در حذف تبلیغ.', error: String(err) };
+  } catch {
+    return { success: false, message: 'خطا در حذف تبلیغ.' };
   }
 }
 
@@ -268,7 +268,7 @@ export async function toggleHeaderAd(id: string): Promise<ActionResult<unknown>>
       message: nextActive ? 'تبلیغ فعال شد.' : 'تبلیغ غیرفعال شد.',
       data: ad,
     };
-  } catch (err) {
-    return { success: false, message: 'خطا در تغییر وضعیت.', error: String(err) };
+  } catch {
+    return { success: false, message: 'خطا در تغییر وضعیت.' };
   }
 }

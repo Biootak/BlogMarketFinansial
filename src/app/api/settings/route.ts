@@ -6,7 +6,7 @@ export async function GET() {
   try {
     const session = await auth();
 
-    if (!session?.user || session.user.role !== 'OWNER') {
+    if (!session?.user || !['OWNER', 'SUPERADMIN'].includes(session.user.role ?? '')) {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: 'شما دسترسی لازم را ندارید' } },
         { status: 403 },
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   try {
     const session = await auth();
 
-    if (!session?.user || session.user.role !== 'OWNER') {
+    if (!session?.user || !['OWNER', 'SUPERADMIN'].includes(session.user.role ?? '')) {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: 'شما دسترسی لازم را ندارید' } },
         { status: 403 },
