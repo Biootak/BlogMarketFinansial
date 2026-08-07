@@ -3,7 +3,7 @@
 import { motion } from '@/lib/motion-shim';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import * as React from 'react';
-import { FaCheck, FaChevronLeft, FaCircle } from 'react-icons/fa6';
+import { Check, ChevronLeft, Circle } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
@@ -42,7 +42,7 @@ const DropdownMenuSubTrigger = React.forwardRef<
     {...props}
   >
     {children}
-    <FaChevronLeft className="mr-auto h-3.5 w-3.5 opacity-60" />
+    <ChevronLeft className="mr-auto h-3.5 w-3.5 opacity-60" />
   </DropdownMenuPrimitive.SubTrigger>
 ));
 DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayName;
@@ -113,7 +113,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
   >
     <span className="absolute left-3 flex h-5 w-5 items-center justify-center rounded-md bg-violet-100 dark:bg-violet-900/50">
       <DropdownMenuPrimitive.ItemIndicator>
-        <FaCheck className="h-3 w-3 text-violet-600 dark:text-violet-400" />
+        <Check className="h-3 w-3 text-violet-600 dark:text-violet-400" />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}
@@ -135,7 +135,7 @@ const DropdownMenuRadioItem = React.forwardRef<
   >
     <span className="absolute right-3 flex h-5 w-5 items-center justify-center rounded-full border-2 border-slate-300 dark:border-slate-600">
       <DropdownMenuPrimitive.ItemIndicator>
-        <FaCircle className="h-2 w-2 fill-violet-600 dark:fill-violet-400" />
+        <Circle className="h-2 w-2 fill-violet-600 dark:fill-violet-400" />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}

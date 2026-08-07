@@ -37,6 +37,14 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const currency = url.searchParams.get('currency') ?? undefined;
 
+  // Validate currency parameter to prevent injection
+  if (currency && !/^[A-Z]{3}$/.test(currency)) {
+    return NextResponse.json(
+      { success: false, error: { code: 'INVALID_CURRENCY', message: 'کد ارز نامعتبر است' } },
+      { status: 400 },
+    );
+  }
+
   try {
     const data = await getCachedActiveQuotes({ currency });
     return NextResponse.json({ success: true, data });

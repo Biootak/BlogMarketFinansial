@@ -9,6 +9,7 @@
  *  ۲۰۲۶-۰۶-۱۴: مطابق الگوی api/revalidate و api/settings
  */
 
+import { checkRateLimit } from '@/lib/rate-limiter';
 import {
   createHeaderAd,
   deleteHeaderAd,
@@ -19,7 +20,17 @@ import {
 import { auth } from '@/auth';
 import { type NextRequest, NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Rate limiting for public API
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? request.headers.get('x-real-ip') ?? '127.0.0.1';
+  const rateLimit = await checkRateLimit(`header-ad:${ip}`, 'api');
+  if (!rateLimit.success) {
+    return NextResponse.json(
+      { success: false, error: { code: 'RATE_LIMITED', message: 'تعداد درخواست‌ها بیش از حد مجاز است' } },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil((rateLimit.reset - Date.now()) / 1000)) } },
+    );
+  }
+
   try {
     const result = await getActiveHeaderAd();
     if (!result.success) {
@@ -28,7 +39,10 @@ export async function GET() {
         { status: 500 },
       );
     }
-    return NextResponse.json({ success: true, data: result.data });
+    return NextResponse.json(
+      { success: true, data: result.data },
+      { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } }, // Add caching
+    );
   } catch {
     return NextResponse.json(
       { success: false, message: 'خطا در دریافت تبلیغ هدر' },

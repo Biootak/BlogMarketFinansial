@@ -173,6 +173,8 @@ model Post {
   @@index([status, isFeatured, createdAt(sort: Desc)])
   @@index([authorId, status, createdAt(sort: Desc)])
   @@index([title])
+  @@index([slug])
+  @@index([createdAt(sort: Desc)])
 }
 
 model View {
@@ -208,6 +210,7 @@ model Comment {
   @@index([approved])
   @@index([postId, approved, createdAt(sort: Desc)])
   @@index([authorId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
 }
 
 model Like {
@@ -225,6 +228,7 @@ model Like {
   @@index([postId, createdAt(sort: Desc)])
   @@index([commentId, createdAt(sort: Desc)])
   @@index([userId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
 }
 
 model Category {
@@ -537,6 +541,7 @@ model RateList {
   updatedAt DateTime @updatedAt
 
   @@index([isActive, createdAt(sort: Desc)])
+  @@index([title])
 }
 
 model PageView {
@@ -644,6 +649,7 @@ model ActivityLog {
   user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId, createdAt])
+  @@index([createdAt(sort: Desc)])
 }
 
 model CurrencyPattern {

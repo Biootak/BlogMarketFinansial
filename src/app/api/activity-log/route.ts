@@ -13,7 +13,7 @@ export async function GET() {
     }
 
     const activities = await db.activityLog.findMany({
-      take: 100,
+      take: 50, // Reduce from 100 to 50 for faster response
       orderBy: {
         createdAt: 'desc',
       },

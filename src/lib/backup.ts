@@ -535,9 +535,9 @@ export async function runBackup(reason = 'manual', actor = 'cron'): Promise<Back
     /* skip */
   }
 
-  // Audit log — last 1000 rows
+  // Audit log — last 500 rows (reduced from 1000 for faster backup)
   try {
-    const audit = await prisma.auditLog.findMany({ orderBy: { createdAt: 'desc' }, take: 1000 });
+    const audit = await prisma.auditLog.findMany({ orderBy: { createdAt: 'desc' }, take: 500 });
     sections.push({ name: 'audit_log', rowCount: audit.length, takenAt: createdAt, data: audit });
   } catch {
     /* skip */
@@ -558,9 +558,9 @@ export async function runBackup(reason = 'manual', actor = 'cron'): Promise<Back
 
   // ── محتوای اصلی سایت ────────────────────────────────────────────────────
 
-  // Posts — recent 5000 (بدون relations؛ آیدی‌ها برای بازسازی کافی‌اند)
+  // Posts — recent 2000 (reduced from 5000 for faster backup)
   await pushSection(sections, createdAt, 'posts', async () =>
-    prisma.post.findMany({ orderBy: { createdAt: 'desc' }, take: 5000 }),
+    prisma.post.findMany({ orderBy: { createdAt: 'desc' }, take: 2000 }),
   );
 
   // Users — sensitive fields stripped (TOTP secrets, national id hash);
@@ -569,9 +569,9 @@ export async function runBackup(reason = 'manual', actor = 'cron'): Promise<Back
     stripSecrets('user', await prisma.user.findMany({ take: 50_000 })),
   );
 
-  // Comments — recent 10000
+  // Comments — recent 5000 (reduced from 10000 for faster backup)
   await pushSection(sections, createdAt, 'comments', async () =>
-    prisma.comment.findMany({ orderBy: { createdAt: 'desc' }, take: 10000 }),
+    prisma.comment.findMany({ orderBy: { createdAt: 'desc' }, take: 5000 }),
   );
 
   // Categories & Tags
@@ -591,9 +591,9 @@ export async function runBackup(reason = 'manual', actor = 'cron'): Promise<Back
   );
   await pushSection(sections, createdAt, 'newsletters', async () => prisma.newsletter.findMany());
 
-  // Support tickets (پشتیبانی) — recent 500
+  // Support tickets (پشتیبانی) — recent 200 (reduced from 500 for faster backup)
   await pushSection(sections, createdAt, 'support_tickets', async () =>
-    prisma.supportTicket.findMany({ orderBy: { createdAt: 'desc' }, take: 500 }),
+    prisma.supportTicket.findMany({ orderBy: { createdAt: 'desc' }, take: 200 }),
   );
 
   // Exchange partners (صرافی‌ها) — بخش اصلی دامنه

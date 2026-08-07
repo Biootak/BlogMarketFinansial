@@ -292,13 +292,13 @@ const fetchChannelMixRaw = async (): Promise<ChannelMix> => {
   const announcements = await prisma.announcement.findMany({
     select: { channels: true, status: true },
     where: { status: { in: ['published', 'scheduled'] } },
-    take: 200,
+    take: 100, // Reduce from 200 to 100 for faster stats
   });
 
   // aggregate campaign stats
   const campaigns = await prisma.campaign.findMany({
     select: { channel: true, status: true, statsSent: true },
-    take: 200,
+    take: 100, // Reduce from 200 to 100 for faster stats
   });
 
   // recipient counts per channel (rough estimate)

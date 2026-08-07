@@ -73,7 +73,7 @@ export async function GET(request: Request) {
         },
       },
       orderBy: { createdAt: 'desc' },
-      take: 200,
+      take: 50, // Reduce from 200 to 50 for faster response
     });
 
     const data = quotes
@@ -109,7 +109,7 @@ export async function GET(request: Request) {
       {
         headers: {
           ...CORS_HEADERS,
-          'Cache-Control': 'public, max-age=30, stale-while-revalidate=60',
+          'Cache-Control': 'public, max-age=60, stale-while-revalidate=120', // Increased from 30 to 60 for fewer DB hits
         },
       },
     );

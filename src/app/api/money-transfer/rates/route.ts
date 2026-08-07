@@ -12,11 +12,20 @@ const DEFAULT_SYMBOL = 'USD';
 const MIN_AMOUNT = 0.0001;
 const MAX_AMOUNT = 1_000_000_000;
 function toFiniteAmount(raw: string | null): number {
+  // Validate input is a numeric string
+  if (raw !== null && raw !== '' && !/^-?\d*\.?\d+$/.test(raw.trim())) {
+    return 100; // Return default if invalid format
+  }
   const n = raw ? Number.parseFloat(raw) : 100;
   return Number.isFinite(n) ? Math.min(MAX_AMOUNT, Math.max(MIN_AMOUNT, n)) : 100;
 }
 function toSymbol(raw: string | null): string {
-  return (raw?.trim().toUpperCase() || DEFAULT_SYMBOL).slice(0, 8);
+  const symbol = (raw?.trim().toUpperCase() || DEFAULT_SYMBOL).slice(0, 8);
+  // Validate symbol format (e.g., USD, EUR, etc.)
+  if (!/^[A-Z]{3,8}$/.test(symbol)) {
+    return DEFAULT_SYMBOL;
+  }
+  return symbol;
 }
 async function buildQuotes({ symbol, amount }: BuildArgs): Promise<TransferApiResponse> {
   const rates = await assembleMarketRates();

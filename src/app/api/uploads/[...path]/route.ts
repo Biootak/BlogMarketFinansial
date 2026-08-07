@@ -48,23 +48,35 @@ export async function GET(
     const { path: pathSegments } = await params;
 
     if (!pathSegments || pathSegments.length < 2) {
-      return NextResponse.json({ error: 'مسیر نامعتبر' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: { code: 'INVALID_PATH', message: 'مسیر نامعتبر' } },
+        { status: 400 },
+      );
     }
 
     const folder = pathSegments[0];
     const filename = pathSegments.slice(1).join('/');
 
     if (!ALLOWED_FOLDERS.includes(folder)) {
-      return NextResponse.json({ error: 'فولدر نامعتبر' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: { code: 'INVALID_FOLDER', message: 'فولدر نامعتبر' } },
+        { status: 400 },
+      );
     }
 
     if (filename.includes('..') || filename.includes('~')) {
-      return NextResponse.json({ error: 'مسیر نامعتبر' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: { code: 'INVALID_PATH', message: 'مسیر نامعتبر' } },
+        { status: 400 },
+      );
     }
 
     const ext = path.extname(filename).toLowerCase();
     if (!MIME_TYPES[ext]) {
-      return NextResponse.json({ error: 'نوع فایل مجاز نیست' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: { code: 'INVALID_FILE_TYPE', message: 'نوع فایل مجاز نیست' } },
+        { status: 400 },
+      );
     }
 
     const etag = buildEtag(folder, filename);
@@ -85,7 +97,10 @@ export async function GET(
     try {
       stream = await getFileStream(folder, filename);
     } catch {
-      return NextResponse.json({ error: 'فایل یافت نشد' }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: { code: 'NOT_FOUND', message: 'فایل یافت نشد' } },
+        { status: 404 },
+      );
     }
 
     return new NextResponse(stream as unknown as ReadableStream, {
@@ -98,6 +113,9 @@ export async function GET(
       },
     });
   } catch {
-    return NextResponse.json({ error: 'خطا در خواندن فایل' }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: { code: 'INTERNAL_ERROR', message: 'خطا در خواندن فایل' } },
+      { status: 500 },
+    );
   }
 }

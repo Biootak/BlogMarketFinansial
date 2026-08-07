@@ -342,7 +342,7 @@ export async function getBackupStatus() {
     if (!gate.success) return authFailureToActionResult(gate);
     const dbConfig = await prisma.backupConfig.findUnique({ where: { id: 'singleton' } });
     const config: BackupConfig = dbConfig ? { ...dbConfig } : { ...DEFAULT_BACKUP_CONFIG };
-    const runs = await prisma.backupRun.findMany({ orderBy: { createdAt: 'desc' }, take: 100 });
+    const runs = await prisma.backupRun.findMany({ orderBy: { createdAt: 'desc' }, take: 30 }); // Reduce from 100 to 30
     const backups: BackupFileInfo[] = runs.map((r) => ({
       filename: r.filename,
       path: '',

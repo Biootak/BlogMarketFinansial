@@ -6,7 +6,6 @@ export { buildDatabaseUrl };
 
 // Lazy singleton via Proxy — defers PrismaClient creation to first use so
 // missing DATABASE_URL doesn't crash the entire module graph at import time.
-// Pool tuning via PRISMA_CONNECTION_LIMIT / PRISMA_POOL_TIMEOUT env vars.
 const createPrismaClient = () =>
   new PrismaClient({
     datasources: {

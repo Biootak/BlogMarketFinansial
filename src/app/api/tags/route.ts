@@ -1,7 +1,18 @@
+import { checkRateLimit } from '@/lib/rate-limiter';
 import { getTags } from '@/actions/getTags';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
+  // Rate limiting for public API
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? request.headers.get('x-real-ip') ?? '127.0.0.1';
+  const rateLimit = await checkRateLimit(`tags:${ip}`, 'api');
+  if (!rateLimit.success) {
+    return NextResponse.json(
+      { success: false, error: { code: 'RATE_LIMITED', message: 'تعداد درخواست‌ها بیش از حد مجاز است' } },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil((rateLimit.reset - Date.now()) / 1000)) } },
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const page = Math.max(1, Number.parseInt(searchParams.get('page') || '1') || 1);
   // L2 fix: clamp limit to bound query cost (prevent DoS via huge limit).
@@ -12,7 +23,13 @@ export async function GET(request: NextRequest) {
   const result = await getTags({ page, limit, search });
 
   if (result.success) {
-    return NextResponse.json(result.data);
+    return NextResponse.json(
+      { success: true, data: result.data },
+      { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } }, // Add caching
+    );
   }
-  return NextResponse.json({ error: result.message }, { status: 400 });
+  return NextResponse.json(
+    { success: false, error: { code: 'QUERY_ERROR', message: result.message } },
+    { status: 400 },
+  );
 }

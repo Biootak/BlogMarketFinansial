@@ -100,7 +100,7 @@ const getSparkHistory = safeCache(
       },
       select: { currencyCode: true, sellRate: true, createdAt: true },
       orderBy: { createdAt: 'desc' },
-      take: 200,
+      take: 50, // Reduce from 200 to 50 (only need last 12 points per currency)
     });
     const map = new Map<string, SparkPoint[]>();
     for (const code of currencyCodes) map.set(code, []);

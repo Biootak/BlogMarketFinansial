@@ -549,7 +549,7 @@ const fetchRecentJobTypesRaw = async (): Promise<JobTypeInfo[]> => {
   const rows = await prisma.backgroundJob.findMany({
     where: { createdAt: { gte: since24 } },
     orderBy: { createdAt: 'desc' },
-    take: 500,
+    take: 100, // Reduce from 500 to 100 for faster stats
     select: { type: true, status: true, createdAt: true },
   });
   const map = new Map<string, JobTypeInfo>();

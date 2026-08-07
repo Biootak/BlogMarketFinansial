@@ -1598,7 +1598,7 @@ export async function getScheduledPosts(): Promise<ActionResult<PostWithRelation
         },
       },
       orderBy: [{ scheduledAt: 'asc' }, { createdAt: 'desc' }],
-      take: 500,
+      take: 100, // Reduce from 500 to 100 for faster calendar loading
     });
 
     return {

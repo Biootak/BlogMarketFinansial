@@ -67,7 +67,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           source: 'tgju+usdt+fx+manual',
         },
       },
-      { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' } },
+      { headers: { 'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=300' } }, // Increased for fewer DB hits
     );
   } catch {
     return NextResponse.json(

@@ -715,6 +715,7 @@ export default function AtelierChart({ viewStats, statsData }: AtelierChartProps
         : undefined,
     revalidateOnFocus: false,
     revalidateIfStale: true,
+    dedupingInterval: 30000, // Prevent duplicate requests within 30s
   });
 
   // اگر دادهٔ SWR آماده نیست، از viewStats (برای 7d) استفاده می‌کنیم؛

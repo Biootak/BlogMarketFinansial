@@ -148,7 +148,7 @@ const fetchSnapshotRaw = async (): Promise<TicketSnapshot> => {
     prisma.supportTicket.findMany({
       where: { firstResponseAt: { not: null } },
       select: { createdAt: true, firstResponseAt: true },
-      take: 200,
+      take: 100, // Reduce from 200 to 100 for faster stats calculation
     }),
   ]);
 
