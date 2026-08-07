@@ -3,19 +3,11 @@
 import { ArrowLeft, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
-<<<<<<< HEAD
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
-import d from './deck.module.css';
-import { type ToneKey, bucketLabel, faNum, faPercent, msShort, statusLabel } from './format';
-import { readHealth } from './obsHealth';
-=======
-import { bucketLabel, faNum, faPercent, msShort, sourceName, type ToneKey } from './format';
-import { ObsEmpty } from './ObsSection';
-import { readHealth } from './obsHealth';
-import { useObs } from './ObsProvider';
+import { type ToneKey, bucketLabel, faNum, faPercent, msShort, sourceName } from './format';
 import l from './ledger.module.css';
->>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
+import { readHealth } from './obsHealth';
 
 interface Finding {
   id: string;
@@ -57,42 +49,7 @@ export function InsightStack() {
   const down = data.services.filter((service) => service.status === 'down');
   if (down.length > 0) {
     findings.push({
-<<<<<<< HEAD
-      id: 'silent',
-      icon: Radio,
-      tone: 'idle',
-      title: 'جمع‌آورندهٔ لاگ ساکت است',
-      body: `در ${faNum(data.windowHours)} ساعت گذشته حتی یک رکورد در SystemLog ثبت نشده. یا ترافیکی نبوده یا نویسندهٔ لاگ از کار افتاده — تا روشن شدن این نکته هیچ عددی روی این صفحه قابل استناد نیست.`,
-    });
-  }
-
-  const worstService = [...data.services]
-    .filter((service) => service.status === 'down' || service.status === 'degraded')
-    .sort((a, b) => b.errors24h - a.errors24h)[0];
-
-  if (worstService) {
-    findings.push({
-      id: `service-${worstService.id}`,
-      icon: ServerCrash,
-      tone: worstService.status === 'down' ? 'bad' : 'warn',
-      title: `${worstService.name} ${statusLabel(worstService.status)} است`,
-      body: `${faNum(worstService.errors24h)} خطا از ${faNum(worstService.events24h)} رویداد در پنجرهٔ جاری، با تأخیر ${msShort(worstService.latencyMs)} و در دسترس بودن ${faPercent(worstService.uptime24h, 2)}.`,
-      href: worstService.href,
-      cta: 'رفتن به سرویس',
-    });
-  }
-
-  const noisiest = [...data.sources]
-    .filter((item) => item.errors > 0)
-    .sort((a, b) => b.errors - a.errors)[0];
-
-  if (noisiest) {
-    findings.push({
-      id: `source-${noisiest.source}`,
-      icon: Siren,
-=======
       id: 'down',
->>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
       tone: 'bad',
       title: `${faNum(down.length)} سرویس خارج از سرویس`,
       body: `${down.map((service) => service.name).join('، ')} در پانزده دقیقهٔ اخیر بیش از آستانه خطا داده‌اند.`,
@@ -110,6 +67,17 @@ export function InsightStack() {
       body: `${degraded.map((service) => service.name).join('، ')} هنوز پاسخ می‌دهند ولی نرخ خطا یا هشدارشان از حالت عادی بالاتر است.`,
       href: '/dashboard/observability/services',
       cta: 'مقایسهٔ سرویس‌ها',
+    });
+  }
+
+  // «سکوت» یک وضعیت است نه سلامت. اگر هیچ رکوردی نیامده باشد، هیچ عدد دیگری
+  // روی این صفحه قابل استناد نیست و باید صریح گفته شود.
+  if (health.silent) {
+    findings.push({
+      id: 'silent',
+      tone: 'idle',
+      title: 'جمع‌آورندهٔ لاگ ساکت است',
+      body: `در ${faNum(data.windowHours)} ساعت گذشته حتی یک رکورد در SystemLog ثبت نشده. یا ترافیکی نبوده یا نویسندهٔ لاگ از کار افتاده — تا روشن شدن این نکته هیچ عددی روی این صفحه قابل استناد نیست.`,
     });
   }
 
