@@ -45,6 +45,12 @@ ENV NODE_ENV=production
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# 2026-08-08: migrations را قبل از build اعمال کن. صفحات ISR/استاتیک در build-time
+# به DB وصل می‌شوند (generateStaticParams، getSidebarData و ...) — اگر جدول‌ها
+# هنوز ساخته نشده باشند، build با «table does not exist» شکست می‌خورد.
+# (قبلاً migrate deploy فقط در runtime اجرا می‌شد که خیلی دیر بود.)
+RUN npx prisma migrate deploy --schema=./prisma/schema.prisma
+
 RUN npm run build
 
 # ─── Stage 3: Runner ─────────────────────────────────────────────────────────
