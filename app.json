@@ -1,0 +1,194 @@
+{
+  "name": "Afghanistan Financial Market",
+  "description": "بازار صرافی‌های افغانستان — نرخ‌های تبدیل افغانی (AFN) و کاربران افغان",
+  "logo": "",
+  "keywords": ["nextjs", "prisma", "postgresql", "afghanistan", "financial", "market"],
+  "repository": "",
+  "stack": "container",
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "addons": [
+    {
+      "plan": "heroku-postgresql:essential-0",
+      "as": "DATABASE"
+    }
+  ],
+  "buildpacks": [],
+  "env": {
+    "NODE_ENV": {
+      "description": "محیط اجرا",
+      "value": "production"
+    },
+    "OUTPUT_STANDALONE": {
+      "description": "فعال‌سازی standalone output برای Docker",
+      "value": "1"
+    },
+    "NEXT_TELEMETRY_DISABLED": {
+      "description": "غیرفعال کردن تلمتری Next.js",
+      "value": "1"
+    },
+    "AUTH_SECRET": {
+      "description": "کلید رمزنگاری NextAuth — بساز با: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
+      "generator": "secret",
+      "required": true
+    },
+    "NEXTAUTH_URL": {
+      "description": "URL کامل اپ در Heroku — مثلاً https://your-app.herokuapp.com",
+      "required": true
+    },
+    "NEXT_PUBLIC_APP_URL": {
+      "description": "URL عمومی اپ (همان NEXTAUTH_URL)",
+      "required": true
+    },
+    "NEXT_PUBLIC_SITE_URL": {
+      "description": "URL کانونیکال سایت برای OG/metadata",
+      "required": true
+    },
+    "APP_URL": {
+      "description": "URL اپ برای cron ها",
+      "required": true
+    },
+    "CRON_SECRET": {
+      "description": "کلید محرمانه برای endpoint های cron — بساز با: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
+      "generator": "secret",
+      "required": true
+    },
+    "DIRECT_URL": {
+      "description": "URL مستقیم Postgres برای Prisma CLI (بدون pooler) — از همان DATABASE_URL استفاده کن",
+      "required": true
+    },
+    "PRISMA_CONNECTION_LIMIT": {
+      "description": "حداکثر connection های Prisma pool",
+      "value": "5"
+    },
+    "PRISMA_POOL_TIMEOUT": {
+      "description": "timeout در ثانیه برای Prisma connection pool",
+      "value": "30"
+    },
+    "EMAIL_PROVIDER": {
+      "description": "سرویس ارسال ایمیل: resend | smtp | console",
+      "value": "resend"
+    },
+    "RESEND_API_KEY": {
+      "description": "کلید API سرویس Resend برای ارسال ایمیل",
+      "required": false
+    },
+    "RESEND_FROM": {
+      "description": "آدرس فرستنده ایمیل",
+      "value": "onboarding@resend.dev",
+      "required": false
+    },
+    "LIARA_ENDPOINT": {
+      "description": "endpoint ذخیره‌سازی S3-compatible (Liara یا هر S3 دیگر: R2, B2, MinIO)",
+      "value": "https://storage.c2.liara.space",
+      "required": false
+    },
+    "LIARA_ACCESS_KEY": {
+      "description": "کلید دسترسی ذخیره‌سازی — ⚠️ روی Heroku filesystem اپمرال است؛ بدون این ۴ متغیر آپلودها بعد از restart پاک می‌شوند",
+      "required": false
+    },
+    "LIARA_SECRET_KEY": {
+      "description": "کلید مخفی ذخیره‌سازی",
+      "required": false
+    },
+    "LIARA_BUCKET_NAME": {
+      "description": "نام bucket ذخیره‌سازی",
+      "required": false
+    },
+    "LIARA_PUBLIC_URL": {
+      "description": "اختیاری — URL عمومی فایل‌ها برای providerهای غیر از Liara (مثلاً دامنه اختصاصی R2)",
+      "required": false
+    },
+    "LIARA_BACKUP_BUCKET": {
+      "description": "اختیاری ولی توصیه‌شده — bucket خصوصی جدا برای backup دیتابیس (باکت تصاویر public است و نباید backup را در خودش نگه دارد)",
+      "required": false
+    },
+    "TELEGRAM_BOT_TOKEN": {
+      "description": "توکن Telegram Bot",
+      "required": false
+    },
+    "TELEGRAM_BOT_USERNAME": {
+      "description": "نام کاربری ربات تلگرام (بدون @)",
+      "required": false
+    },
+    "TELEGRAM_WEBHOOK_SECRET": {
+      "description": "کلید مخفی webhook تلگرام",
+      "required": false
+    },
+    "TELEGRAM_ADMIN_CHAT_ID": {
+      "description": "Chat ID ادمین تلگرام",
+      "required": false
+    },
+    "UPSTASH_REDIS_REST_URL": {
+      "description": "URL سرویس Upstash Redis برای rate limiting",
+      "required": false
+    },
+    "UPSTASH_REDIS_REST_TOKEN": {
+      "description": "توکن Upstash Redis",
+      "required": false
+    },
+    "NEXT_PUBLIC_SENTRY_DSN": {
+      "description": "DSN سرویس Sentry برای error tracking",
+      "required": false
+    },
+    "SENTRY_ORG": {
+      "description": "نام سازمان Sentry",
+      "required": false
+    },
+    "SENTRY_PROJECT": {
+      "description": "نام پروژه Sentry",
+      "required": false
+    },
+    "SENTRY_AUTH_TOKEN": {
+      "description": "توکن احراز هویت Sentry",
+      "required": false
+    },
+    "USDT_PREMIUM_PERCENT": {
+      "description": "ضریب premium تتر نسبت به دلار بازار آزاد",
+      "value": "1.5"
+    },
+    "TGJU_SCRAPER_ENABLED": {
+      "description": "فعال/غیرفعال کردن scraper TGJU",
+      "value": "true"
+    },
+    "TZ": {
+      "description": "timezone سرور",
+      "value": "Asia/Tehran"
+    },
+    "DEBUG_MODE": {
+      "description": "فعال‌سازی لاگ debug در middleware",
+      "value": "false"
+    },
+    "SETUP_PREVIEW_MODE": {
+      "description": "نمایش wizard setup حتی با وجود super admin (فقط dev)",
+      "value": "false"
+    },
+    "ALLOWED_SETUP_IPS": {
+      "description": "IP های مجاز برای صفحه setup",
+      "value": "127.0.0.1,::1"
+    },
+    "AUTH_GOOGLE_ID": {
+      "description": "Google OAuth Client ID",
+      "required": false
+    },
+    "AUTH_GOOGLE_SECRET": {
+      "description": "Google OAuth Client Secret",
+      "required": false
+    },
+    "AUTH_GITHUB_ID": {
+      "description": "GitHub OAuth App ID",
+      "required": false
+    },
+    "AUTH_GITHUB_SECRET": {
+      "description": "GitHub OAuth App Secret",
+      "required": false
+    }
+  },
+  "scripts": {
+    "postdeploy": "node node_modules/prisma/build/index.js migrate deploy"
+  }
+}
