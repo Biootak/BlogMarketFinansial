@@ -1,3 +1,4 @@
+import { isPhoneValid } from '@/lib/phone-validation';
 import { z } from 'zod';
 
 /**
@@ -9,7 +10,6 @@ import { z } from 'zod';
  * the server. If you change one side, change the other in the same commit.
  */
 
-export const PERSIAN_PHONE_REGEX = /^(\+98|0)?9\d{9}$/;
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const setupSchema = z.object({
@@ -34,10 +34,11 @@ export const setupSchema = z.object({
     .regex(/[^A-Za-z0-9]/, 'رمز عبور باید شامل کاراکترهای خاص (!@#…) باشد')
     .max(128, 'رمز عبور نباید بیشتر از ۱۲۸ کاراکتر باشد'),
 
-  phoneNumber: z
-    .string()
-    .trim()
-    .regex(PERSIAN_PHONE_REGEX, 'شماره موبایل نامعتبر است؛ مثال: ۰۹۱۲۳۴۵۶۷۸۹'),
+  // شمارهٔ موبایل — همهٔ کشورها پذیرفته می‌شود (با پیشوند +CC یا کشور پیش‌فرض AF).
+  // همان مکانیزم واحد phone-validation را اعمال می‌کند: مجازی (VoIP) رد می‌شود.
+  phoneNumber: z.string().trim().refine(isPhoneValid, {
+    message: 'شماره تماس معتبر نیست؛ مثال: ۰۷۰۱۲۳۴۵۶۷ یا +93701234567 (شماره مجازی پذیرفته نمی‌شود)',
+  }),
 
   jobName: z
     .string()

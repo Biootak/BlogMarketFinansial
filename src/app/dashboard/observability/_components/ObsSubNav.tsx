@@ -4,9 +4,9 @@ import { AlertTriangle, Database, Gauge, Layers, Radar, ScrollText } from 'lucid
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { faNum } from './format';
 import { useObs } from './ObsProvider';
-import s from './obs.module.css';
+import n from './ObservabilityNav.module.css';
+import { faNum } from './format';
 
 const BASE = '/dashboard/observability';
 
@@ -19,6 +19,21 @@ const ITEMS = [
   { segment: '/audit', label: 'رد ممیزی', icon: ScrollText },
 ] as const;
 
+interface Badge {
+  value: number;
+  tone: 'bad' | 'warn' | 'idle';
+}
+
+/**
+ * ریل مدخل‌ها.
+ *
+ * نشانگر فعال یک خط مویی زیر تب است، نه قرص رنگی. دلیلش ساده است: در یک صفحه
+ * که همه‌ی رنگ‌هایش معنای وضعیت دارند، یک قرص رنگی برای «تب باز» رنگ را از
+ * معنا تهی می‌کند. خط زیرین همان کار را می‌کند و رنگ را برای خطا نگه می‌دارد.
+ *
+ * شمارنده‌ها واقعی‌اند و از snapshot می‌آیند؛ صفر اصلاً رندر نمی‌شود چون
+ * «۰ خطا» به‌شکل بج، نویز است نه اطلاعات.
+ */
 export function ObsSubNav() {
   const pathname = usePathname();
   const { data } = useObs();
@@ -26,30 +41,39 @@ export function ObsSubNav() {
   const unhealthy = (data?.services ?? []).filter(
     (service) => service.status === 'down' || service.status === 'degraded',
   ).length;
+  const errors = data?.totals.errors ?? 0;
+  const slow = data?.slowQueries.length ?? 0;
+  const audit = data?.totals.audit ?? 0;
 
-  const counts: Record<string, { value: number; alarming: boolean } | undefined> = {
-    '/services': { value: unhealthy, alarming: unhealthy > 0 },
-    '/errors': { value: data?.totals.errors ?? 0, alarming: (data?.totals.errors ?? 0) > 0 },
-    '/queries': { value: data?.slowQueries.length ?? 0, alarming: false },
-    '/audit': { value: data?.totals.audit ?? 0, alarming: false },
+  const badges: Record<string, Badge | undefined> = {
+    '/services': { value: unhealthy, tone: unhealthy > 0 ? 'bad' : 'idle' },
+    '/errors': { value: errors, tone: errors > 0 ? 'bad' : 'idle' },
+    '/queries': { value: slow, tone: slow > 0 ? 'warn' : 'idle' },
+    '/audit': { value: audit, tone: 'idle' },
   };
 
   return (
-    <nav className={s.nav} aria-label="بخش‌های مشاهده‌پذیری">
-      <ul className={s.navList}>
+    <nav className={n.nav} aria-label="مدخل‌های مشاهده‌پذیری">
+      <span className={n.label}>مدخل</span>
+      <ul className={n.list}>
         {ITEMS.map(({ segment, label, icon: Icon }) => {
           const href = `${BASE}${segment}`;
           const active = segment === '' ? pathname === BASE : pathname.startsWith(href);
-          const count = counts[segment];
+          const badge = badges[segment];
 
           return (
             <li key={href}>
-              <Link href={href} className={s.navLink} aria-current={active ? 'page' : undefined}>
-                <Icon size={16} strokeWidth={1.5} aria-hidden />
+              <Link
+                href={href}
+                className={n.link}
+                aria-current={active ? 'page' : undefined}
+                data-active={active ? 'true' : undefined}
+              >
+                <Icon size={15} strokeWidth={1.7} aria-hidden="true" />
                 <span>{label}</span>
-                {count && count.value > 0 ? (
-                  <span className={s.navCount} data-tone={count.alarming ? 'bad' : 'idle'}>
-                    {faNum(count.value)}
+                {badge && badge.value > 0 ? (
+                  <span className={n.badge} data-tone={badge.tone}>
+                    {faNum(badge.value)}
                   </span>
                 ) : null}
               </Link>

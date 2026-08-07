@@ -156,9 +156,7 @@ export function ExchangeIdentityCard({ exchange, publicUrl, counters }: Props) {
                   <div key={c.label} className={s.counterCell}>
                     <dt className={s.counterLabel}>{c.label}</dt>
                     <dd className={s.counterValue}>
-                      {typeof c.value === 'number'
-                        ? _faNum.format(c.value)
-                        : c.value}
+                      {typeof c.value === 'number' ? _faNum.format(c.value) : c.value}
                     </dd>
                   </div>
                 ))}

@@ -1,4 +1,4 @@
-const {PrismaClient} = require('@prisma/client');
+const { PrismaClient } = require('@prisma/client');
 const p = new PrismaClient();
 (async () => {
   const r = await p.post.findMany({
@@ -8,5 +8,8 @@ const p = new PrismaClient();
     take: 5,
   });
   console.log(JSON.stringify(r, null, 2));
-  await p['\']();
-})().catch(e => { console.error(e); process.exit(1); });
+  await p.$disconnect();
+})().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

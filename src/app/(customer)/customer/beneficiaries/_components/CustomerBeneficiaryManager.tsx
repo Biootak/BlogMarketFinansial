@@ -216,8 +216,7 @@ export function CustomerBeneficiaryManager({ initialBeneficiaries }: Props) {
             {search && filtered.length !== rows.length && (
               <div className={s.statChipStat}>
                 <span>
-                  {_faNum.format(filtered.length)} نتیجه از{' '}
-                  {_faNum.format(rows.length)}
+                  {_faNum.format(filtered.length)} نتیجه از {_faNum.format(rows.length)}
                 </span>
               </div>
             )}

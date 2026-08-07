@@ -21,19 +21,23 @@ export class AppError extends Error {
 }
 
 // خطاهای از پیش تعریف شده
+// هر بار یک instance جدید ساخته می‌شود تا stack trace صحیح داشته باشند
+// (singleton errors همیشه stack trace لحظه‌ی تعریف را نشان می‌دهند، نه throw)
 export const Errors = {
   // Authentication
-  UNAUTHORIZED: new AppError('احراز هویت الزامی است', 401, 'UNAUTHORIZED'),
-  FORBIDDEN: new AppError('دسترسی غیرمجاز', 403, 'FORBIDDEN'),
-  INVALID_CREDENTIALS: new AppError(
-    'نام کاربری یا رمز عبور اشتباه است',
-    401,
-    'INVALID_CREDENTIALS',
-  ),
+  get UNAUTHORIZED() {
+    return new AppError('احراز هویت الزامی است', 401, 'UNAUTHORIZED');
+  },
+  get FORBIDDEN() {
+    return new AppError('دسترسی غیرمجاز', 403, 'FORBIDDEN');
+  },
+  get INVALID_CREDENTIALS() {
+    return new AppError('نام کاربری یا رمز عبور اشتباه است', 401, 'INVALID_CREDENTIALS');
+  },
 
   // Validation
   VALIDATION_ERROR: (message: string) => new AppError(message, 400, 'VALIDATION_ERROR'),
-  INVALID_INPUT: new AppError('ورودی نامعتبر است', 400, 'INVALID_INPUT'),
+  INVALID_INPUT: () => new AppError('ورودی نامعتبر است', 400, 'INVALID_INPUT'),
 
   // Resources
   NOT_FOUND: (resource: string) => new AppError(`${resource} یافت نشد`, 404, 'NOT_FOUND'),
@@ -41,11 +45,17 @@ export const Errors = {
     new AppError(`${resource} قبلاً وجود دارد`, 409, 'ALREADY_EXISTS'),
 
   // Rate Limiting
-  TOO_MANY_REQUESTS: new AppError('تعداد درخواست‌ها بیش از حد مجاز است', 429, 'TOO_MANY_REQUESTS'),
+  get TOO_MANY_REQUESTS() {
+    return new AppError('تعداد درخواست‌ها بیش از حد مجاز است', 429, 'TOO_MANY_REQUESTS');
+  },
 
   // Server
-  INTERNAL_ERROR: new AppError('خطای داخلی سرور', 500, 'INTERNAL_ERROR'),
-  DATABASE_ERROR: new AppError('خطا در ارتباط با پایگاه داده', 500, 'DATABASE_ERROR'),
+  get INTERNAL_ERROR() {
+    return new AppError('خطای داخلی سرور', 500, 'INTERNAL_ERROR');
+  },
+  get DATABASE_ERROR() {
+    return new AppError('خطا در ارتباط با پایگاه داده', 500, 'DATABASE_ERROR');
+  },
 };
 
 // نوع برگشتی استاندارد برای Server Actions
@@ -133,6 +143,11 @@ export function logError(error: unknown, context?: Record<string, unknown>): voi
 
   // در development لاگ کن
   if (process.env.NODE_ENV === 'development') {
+    // L1-fix: در dev پیام خطا به console می‌رود تا debug آسان‌تر شود
+    if (error instanceof Error) {
+      // biome-ignore lint/suspicious/noConsole: intentional dev-only logging
+      console.error('[error-handler]', error.name, error.message, context);
+    }
   }
 
   // ارسال به Sentry در production

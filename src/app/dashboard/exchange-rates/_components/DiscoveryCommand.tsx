@@ -41,6 +41,9 @@ export default function DiscoveryCommand({ open, onOpenChange, onSelect }: Props
       .then((j: { success?: boolean; data?: TgjuSymbol[] }) => {
         if (j.success && j.data) setSymbols(j.data);
       })
+      .catch(() => {
+        // silently ignore network errors — list stays empty
+      })
       .finally(() => setLoading(false));
   }, [open]);
 

@@ -78,9 +78,7 @@ function TimelineItem({ activity, isLast, idx }: TimelineItemProps) {
     >
       {/* Timeline line + dot */}
       <div className={s.timelineTrack} aria-hidden>
-        <span className={`${s.timelineDot} ${meta.css}`}>
-          {meta.icon}
-        </span>
+        <span className={`${s.timelineDot} ${meta.css}`}>{meta.icon}</span>
         {!isLast && <span className={s.timelineLine} />}
       </div>
 
@@ -88,10 +86,14 @@ function TimelineItem({ activity, isLast, idx }: TimelineItemProps) {
       <div className={s.timelineContent}>
         <div className={s.timelineHead}>
           <div className={s.timelineUser}>
-            <span className={s.avatar} aria-hidden>{initials}</span>
+            <span className={s.avatar} aria-hidden>
+              {initials}
+            </span>
             <div>
               <p className={s.userName}>{activity.user?.name ?? 'ناشناس'}</p>
-              <p className={s.userEmail} dir="ltr">{activity.user?.email ?? '—'}</p>
+              <p className={s.userEmail} dir="ltr">
+                {activity.user?.email ?? '—'}
+              </p>
             </div>
           </div>
           <span className={s.timelineTime}>
@@ -107,9 +109,7 @@ function TimelineItem({ activity, isLast, idx }: TimelineItemProps) {
             {meta.icon}
             {activity.action}
           </span>
-          {activity.details && (
-            <p className={s.details}>{activity.details}</p>
-          )}
+          {activity.details && <p className={s.details}>{activity.details}</p>}
         </div>
       </div>
     </div>
@@ -164,9 +164,7 @@ export default function ActivityLogComponent() {
           </div>
         </div>
         <div className={s.headerMeta} role="status" aria-live="polite">
-          <span className={s.totalBadge}>
-            {total.toLocaleString('fa-IR')} رویداد
-          </span>
+          <span className={s.totalBadge}>{total.toLocaleString('fa-IR')} رویداد</span>
         </div>
       </div>
 
@@ -200,11 +198,8 @@ export default function ActivityLogComponent() {
       {totalPages > 1 && !loading && (
         <div className={s.pagination}>
           <span className={s.paginationInfo}>
-            نمایش{' '}
-            <strong>{((page - 1) * LIMIT + 1).toLocaleString('fa-IR')}</strong>
-            {' '}تا{' '}
-            <strong>{Math.min(page * LIMIT, total).toLocaleString('fa-IR')}</strong>
-            {' '}از{' '}
+            نمایش <strong>{((page - 1) * LIMIT + 1).toLocaleString('fa-IR')}</strong> تا{' '}
+            <strong>{Math.min(page * LIMIT, total).toLocaleString('fa-IR')}</strong> از{' '}
             <strong>{total.toLocaleString('fa-IR')}</strong>
           </span>
           <div className={s.paginationBtns}>

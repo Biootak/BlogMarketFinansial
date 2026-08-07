@@ -33,6 +33,15 @@ export function toFa(input: string): string {
   return input.replace(/[0-9]/g, (digit) => FA_DIGITS[Number(digit)] ?? digit);
 }
 
+/**
+ * بستن یک رشتهٔ لاتین در ایزولهٔ bidi.
+ * هر جا نام سرویس، کلید لاگ یا واحد لاتین داخل جملهٔ فارسی می‌آید باید از این
+ * رد شود، وگرنه الگوریتم bidi پرانتز و نقطه را به سمت اشتباه پرت می‌کند.
+ */
+export function isolate(text: string): string {
+  return `${LRI}${text}${PDI}`;
+}
+
 function groupDigits(digits: string): string {
   let out = '';
   for (let index = 0; index < digits.length; index += 1) {
@@ -67,11 +76,23 @@ export function faPercent(value: number, digits = 1): string {
   return `${faDecimal(value, digits)}٪`;
 }
 
+/**
+ * عدد فشرده برای جاهای تنگ — «۱۲٫۴ هزار» به‌جای «۱۲٬۴۳۱».
+ * فقط جایی استفاده می‌شود که دقت کامل معنی ندارد (برچسب محور، بج شمارش).
+ */
+export function faCompact(value: number): string {
+  if (!Number.isFinite(value)) return '—';
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000) return `${faDecimal(value / 1_000_000, 1)} میلیون`;
+  if (abs >= 1_000) return `${faDecimal(value / 1_000, 1)} هزار`;
+  return faNum(value);
+}
+
 /** مدت کوتاه با واحد ایزوله‌شده — در متن فارسی جابه‌جا نمی‌شود. */
 export function msShort(ms: number): string {
   if (!Number.isFinite(ms)) return '—';
-  if (Math.abs(ms) >= 1000) return `${LRI}${faDecimal(ms / 1000, 2)} s${PDI}`;
-  return `${LRI}${faNum(ms)} ms${PDI}`;
+  if (Math.abs(ms) >= 1000) return isolate(`${faDecimal(ms / 1000, 2)} s`);
+  return isolate(`${faNum(ms)} ms`);
 }
 
 /** حجم حافظه — ورودی مگابایت. */
@@ -210,6 +231,15 @@ export function dayLabel(iso: string): string {
   return `${toFa(String(jd))} ${JALALI_MONTHS[jm - 1] ?? ''}`.trim();
 }
 
+/** تاریخ کامل شمسی — «۱۵ مرداد ۱۴۰۵». برای سرصفحهٔ سالنامه. */
+export function fullDayLabel(iso: string): string {
+  const at = Date.parse(iso);
+  if (Number.isNaN(at)) return '—';
+  const parts = wallClock(at);
+  const [jy, jm, jd] = toJalali(parts.year, parts.month, parts.day);
+  return `${toFa(String(jd))} ${JALALI_MONTHS[jm - 1] ?? ''} ${toFa(String(jy))}`.trim();
+}
+
 /**
  * فاصلهٔ نسبی نسبت به یک مبنا. مبنا همیشه `generatedAt` است نه `Date.now()`
  * تا خروجی SSR و اولین رندر کلاینت دقیقاً یکی باشد.
@@ -250,6 +280,13 @@ export function bucketLabel(generatedAt: string, index: number, windowHours = 24
   if (Number.isNaN(base)) return '—';
   const start = base - (windowHours - index) * 3_600_000;
   return `${hhmmAt(start)} تا ${hhmmAt(start + 3_600_000)}`;
+}
+
+/** فقط ساعتِ شروع یک سطل — برای برچسب محور. */
+export function bucketStart(generatedAt: string, index: number, windowHours = 24): string {
+  const base = Date.parse(generatedAt);
+  if (Number.isNaN(base)) return '—';
+  return hhmmAt(base - (windowHours - index) * 3_600_000);
 }
 
 /** همان سطل، ولی به‌صورت «چند ساعت پیش» — برای برچسب‌های فشرده. */
@@ -309,6 +346,24 @@ const LEVEL_TONE: Record<string, ToneKey> = {
   fatal: 'bad',
 };
 
+/**
+ * نام فارسی منابع شناخته‌شدهٔ لاگ.
+ * کلیدها دقیقاً همان `ServiceKey` های `src/lib/observability.ts` هستند. منبعی
+ * که اینجا نباشد با نام خام خودش نمایش داده می‌شود — حدس نمی‌زنیم.
+ */
+const SOURCE_LABEL: Record<string, string> = {
+  api: 'API اصلی',
+  db: 'پایگاه داده',
+  cache: 'کش',
+  queue: 'صف پیام',
+  auth: 'احراز هویت',
+  edge: 'Edge و CDN',
+  email: 'ایمیل',
+  sms: 'پیامک',
+  storage: 'ذخیره‌سازی',
+  system: 'سامانه',
+};
+
 export function statusLabel(status: string): string {
   return STATUS_LABEL[status] ?? status;
 }
@@ -323,6 +378,16 @@ export function levelLabel(level: string): string {
 
 export function levelTone(level: string): ToneKey {
   return LEVEL_TONE[level] ?? 'info';
+}
+
+/** نام خواناى منبع؛ اگر نشناسیم همان کلید خام برمی‌گردد. */
+export function sourceName(source: string): string {
+  return SOURCE_LABEL[source] ?? source;
+}
+
+/** true یعنی برای این منبع نام فارسی داریم و کلید خام هم ارزش نمایش دارد. */
+export function hasSourceName(source: string): boolean {
+  return SOURCE_LABEL[source] !== undefined;
 }
 
 /** پاس دادن custom property به `style` بدون `any`. */

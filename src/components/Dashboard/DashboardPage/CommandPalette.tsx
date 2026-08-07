@@ -53,7 +53,7 @@ import {
   HiOutlineUsers,
 } from 'react-icons/hi2';
 
-export type CommandActionRole = 'OWNER' | 'ADMIN' | 'AUTHOR';
+export type CommandActionRole = 'OWNER' | 'SUPERADMIN' | 'ADMIN' | 'AUTHOR';
 
 interface CommandPaletteProps {
   role: CommandActionRole;
@@ -205,6 +205,7 @@ const ALL_ITEMS: CommandItem[] = [
 
 const ROLE_ALLOWED: Record<CommandActionRole, string[] | 'all'> = {
   OWNER: 'all',
+  SUPERADMIN: 'all',
   ADMIN: [
     'home',
     'new-post',

@@ -18,9 +18,18 @@
 
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { mkdir, readFile, readdir, stat, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rename, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import prisma from '@/lib/db';
+import { S3_REGION, getS3Bucket } from '@/lib/s3-config';
+import { serverLog } from '@/lib/server-logger';
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -99,6 +108,132 @@ export const DEFAULT_BACKUP_CONFIG: BackupConfig = {
 
 const BACKUP_DIR = path.join(process.cwd(), 'backups');
 
+// ── S3 backup (optional — Vercel ephemeral filesystem safe) ─────────────────
+// M8-fix: backups are mirrored to S3 so they survive Vercel redeploys.
+// All operations are best-effort — a missing/misconfigured S3 never fails
+// the primary filesystem backup.
+
+const BACKUP_S3_PREFIX = 'backups/';
+
+/** فقط یک‌بار در هر restart دربارهٔ bucket مشترک هشدار بده. */
+let backupBucketWarningEmitted = false;
+
+/**
+ * Bucket اختصاصی backup — از باکت عمومی (که تصاویر از روی آن سرو می‌شود) جدا.
+ * ⚠️ امنیت: باکت تصاویر باید public-read باشد تا `S3_PUBLIC_URL` کار کند؛ اگر
+ * backup با همان bucket آپلود شود، فایل‌های JSON حاوی ایمیل/موبایل/هش پسورد
+ * کاربران برای عموم قابل دانلود می‌شود. پس حتماً `S3_BACKUP_BUCKET` را روی
+ * یک bucket خصوصی (بدون public access) جدا ست کن.
+ */
+function getBackupBucket(): string | null {
+  const dedicated = process.env.S3_BACKUP_BUCKET;
+  if (dedicated) return dedicated;
+  const shared = getS3Bucket();
+  if (!shared) return null;
+  if (!backupBucketWarningEmitted) {
+    backupBucketWarningEmitted = true;
+    serverLog.warn('backup', 's3-backup-bucket-shared-with-public', {
+      message: 'S3_BACKUP_BUCKET تنظیم نشده — backup در باکت عمومی تصاویر ذخیره می‌شود',
+    });
+  }
+  return shared;
+}
+
+function buildS3Client(): S3Client | null {
+  if (!process.env.S3_ENDPOINT || !process.env.S3_ACCESS_KEY || !process.env.S3_SECRET_KEY)
+    return null;
+  return new S3Client({
+    region: S3_REGION,
+    endpoint: process.env.S3_ENDPOINT,
+    credentials: {
+      accessKeyId: process.env.S3_ACCESS_KEY,
+      secretAccessKey: process.env.S3_SECRET_KEY,
+    },
+    forcePathStyle: true,
+    maxAttempts: 1,
+    requestHandler: { requestTimeout: 5000, connectionTimeout: 4000 },
+  });
+}
+
+async function uploadBackupToS3(filename: string, json: string): Promise<boolean> {
+  const client = buildS3Client();
+  if (!client) return false;
+  // 2026-08-03: validate bucket name — if unset, cast to `string` silently
+  // produces undefined which crashes the S3 call.
+  const bucket = getBackupBucket();
+  if (!bucket) return false;
+  try {
+    await client.send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: `${BACKUP_S3_PREFIX}${filename}`,
+        Body: Buffer.from(json, 'utf8'),
+        ContentType: 'application/json',
+        CacheControl: 'no-store',
+      }),
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function readBackupFromS3(filename: string): Promise<string | null> {
+  const client = buildS3Client();
+  if (!client) return null;
+  const bucket = getBackupBucket();
+  if (!bucket) return null;
+  try {
+    const res = await client.send(
+      new GetObjectCommand({
+        Bucket: bucket,
+        Key: `${BACKUP_S3_PREFIX}${filename}`,
+      }),
+    );
+    if (!res.Body) return null;
+    const chunks: Uint8Array[] = [];
+    // @ts-expect-error — Body is a Node stream at runtime
+    for await (const chunk of res.Body) chunks.push(chunk);
+    return Buffer.concat(chunks).toString('utf8');
+  } catch {
+    return null;
+  }
+}
+
+async function deleteBackupFromS3(filename: string): Promise<void> {
+  const client = buildS3Client();
+  if (!client) return;
+  const bucket = getBackupBucket();
+  if (!bucket) return;
+  try {
+    await client.send(
+      new DeleteObjectCommand({
+        Bucket: bucket,
+        Key: `${BACKUP_S3_PREFIX}${filename}`,
+      }),
+    );
+  } catch {
+    /* best-effort */
+  }
+}
+
+async function listBackupsFromS3(): Promise<string[]> {
+  const client = buildS3Client();
+  if (!client) return [];
+  const bucket = getBackupBucket();
+  if (!bucket) return [];
+  try {
+    const res = await client.send(
+      new ListObjectsV2Command({ Bucket: bucket, Prefix: BACKUP_S3_PREFIX }),
+    );
+    return (res.Contents ?? [])
+      .map((obj) => obj.Key?.replace(BACKUP_S3_PREFIX, '') ?? '')
+      .filter((k) => k.startsWith('backup_') && k.endsWith('.json'));
+  } catch {
+    return [];
+  }
+}
+
 async function ensureBackupDir(): Promise<void> {
   if (!existsSync(BACKUP_DIR)) {
     await mkdir(BACKUP_DIR, { recursive: true, mode: 0o700 });
@@ -143,7 +278,6 @@ export async function writeBackup(
   try {
     await writeFile(tmpPath, json, { mode: 0o600 });
     // atomic rename
-    const { rename } = await import('node:fs/promises');
     await rename(tmpPath, fullPath);
   } catch (err) {
     // cleanup tmp
@@ -154,6 +288,10 @@ export async function writeBackup(
     }
     throw err;
   }
+
+  // M8-fix: mirror to S3 so backup survives Vercel ephemeral filesystem
+  // best-effort — filesystem backup already written, S3 failure is non-fatal
+  await uploadBackupToS3(filename, json).catch(() => {});
 
   const stats = await stat(fullPath);
   return {
@@ -173,10 +311,20 @@ export async function writeBackup(
 
 export async function listBackups(): Promise<BackupFileInfo[]> {
   await ensureBackupDir();
-  const entries = await readdir(BACKUP_DIR).catch(() => [] as string[]);
+
+  // M8-fix: merge local + S3 filenames (deduplicated), prefer local metadata
+  const [localEntries, s3Names] = await Promise.all([
+    readdir(BACKUP_DIR).catch(() => [] as string[]),
+    listBackupsFromS3(),
+  ]);
+
+  const seen = new Set<string>();
   const results: BackupFileInfo[] = [];
-  for (const name of entries) {
+
+  // local first (has stat + full content)
+  for (const name of localEntries) {
     if (!name.startsWith('backup_') || !name.endsWith('.json')) continue;
+    seen.add(name);
     const fullPath = path.join(BACKUP_DIR, name);
     try {
       const raw = await readFile(fullPath, 'utf8');
@@ -197,6 +345,30 @@ export async function listBackups(): Promise<BackupFileInfo[]> {
       // skip corrupted file
     }
   }
+
+  // S3-only entries (e.g. after Vercel redeploy wiped local fs)
+  for (const name of s3Names) {
+    if (seen.has(name)) continue;
+    try {
+      const raw = await readBackupFromS3(name);
+      if (!raw) continue;
+      const envelope = JSON.parse(raw) as BackupEnvelope;
+      results.push({
+        filename: name,
+        path: '',
+        sizeBytes: Buffer.byteLength(raw, 'utf8'),
+        createdAt: envelope.manifest.createdAt,
+        reason: envelope.manifest.reason,
+        totalRows: envelope.manifest.totalRows,
+        sections: envelope.manifest.sections.map((s) => s.name),
+        actor: envelope.manifest.actor,
+        checksum: envelope.manifest.checksum,
+      });
+    } catch {
+      // skip
+    }
+  }
+
   // newest first
   results.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
   return results;
@@ -210,10 +382,22 @@ export async function readBackup(filename: string): Promise<BackupEnvelope | nul
   if (!filename.startsWith('backup_') || !filename.endsWith('.json')) {
     return null;
   }
+
+  // try local filesystem first
   const fullPath = path.join(BACKUP_DIR, filename);
-  if (!existsSync(fullPath)) return null;
+  if (existsSync(fullPath)) {
+    try {
+      const raw = await readFile(fullPath, 'utf8');
+      return JSON.parse(raw) as BackupEnvelope;
+    } catch {
+      // fall through to S3
+    }
+  }
+
+  // M8-fix: fallback to S3 (handles Vercel ephemeral fs wipe)
   try {
-    const raw = await readFile(fullPath, 'utf8');
+    const raw = await readBackupFromS3(filename);
+    if (!raw) return null;
     return JSON.parse(raw) as BackupEnvelope;
   } catch {
     return null;
@@ -233,9 +417,11 @@ export async function pruneBackups(retentionCount: number): Promise<number> {
   let deleted = 0;
   for (const b of toDelete) {
     try {
-      // filesystem
+      // filesystem (path may be '' for S3-only entries)
       if (b.path) await unlink(b.path).catch(() => {});
-      // DB record — best-effort، ممکن است BackupRun وجود نداشته باشد
+      // M8-fix: also remove from S3
+      await deleteBackupFromS3(b.filename);
+      // DB record — best-effort
       await prisma.backupRun.deleteMany({ where: { filename: b.filename } }).catch(() => {});
       deleted++;
     } catch {
@@ -275,6 +461,45 @@ export function formatSize(bytes: number): string {
 //   - triggerBackup (server action) → actor = user.id
 //   - /api/cron/backup              → actor = 'cron'
 
+// ── Full-data sections (beyond the original 4) ─────────────────────────────
+// 2026-08-07: backup فقط ۴ جدول کوچک را پوشش می‌داد — در عمل «backup دیتابیس»
+// نبود (پست‌ها، کاربران، کامنت‌ها و … جایی ذخیره نمی‌شدند). حالا محتوای اصلی
+// سایت هم شامل می‌شود. مقادیر take سقفِ محافظه‌کارانه برای حجم JSON است؛
+// می‌توان برای سایت بزرگ‌تر آن را بالا برد.
+
+/** فیلدهای حساسی که هرگز در backup نباید بروند. */
+const SECRET_FIELDS = {
+  user: ['twoFactorSecret', 'twoFactorSecretEnc', 'nationalIdHash'],
+  systemSettings: ['smtpPassword'],
+} as const;
+
+/** حذف فیلدهای حساس از آبجکت — برای جداول بدون whitelist هم امن است. */
+function stripSecrets<T>(table: string, rows: T[]): T[] {
+  const fields = SECRET_FIELDS[table as keyof typeof SECRET_FIELDS];
+  if (!fields) return rows;
+  return rows.map((r) => {
+    if (typeof r !== 'object' || r === null) return r;
+    const obj = { ...(r as Record<string, unknown>) };
+    for (const f of fields) delete obj[f];
+    return obj as T;
+  });
+}
+
+/** افزودن یک بخش به backup با try/catch یکسان — بدون تکرار. */
+async function pushSection(
+  sections: BackupEnvelope['sections'],
+  createdAt: string,
+  name: string,
+  run: () => Promise<unknown[]>,
+): Promise<void> {
+  try {
+    const rows = await run();
+    sections.push({ name, rowCount: rows.length, takenAt: createdAt, data: rows });
+  } catch {
+    sections.push({ name, rowCount: 0, takenAt: createdAt, data: [] });
+  }
+}
+
 /**
  * اجرای backup کامل Prisma JSON.
  * @param reason  دلیل backup — نمایش در UI
@@ -288,7 +513,7 @@ export async function runBackup(reason = 'manual', actor = 'cron'): Promise<Back
   try {
     const settings = await prisma.systemSettings.findFirst();
     if (settings) {
-      const { smtpPassword: _omit, ...safe } = settings as Record<string, unknown>;
+      const safe = stripSecrets('systemSettings', [settings])[0];
       sections.push({ name: 'system_settings', rowCount: 1, takenAt: createdAt, data: safe });
     } else {
       sections.push({ name: 'system_settings', rowCount: 0, takenAt: createdAt, data: null });
@@ -318,9 +543,9 @@ export async function runBackup(reason = 'manual', actor = 'cron'): Promise<Back
     /* skip */
   }
 
-  // Exchange rates
+  // Exchange rates — full (جدول اصلی نرخ بازار)
   try {
-    const rates = await prisma.exchangeRate.findMany({ take: 200 });
+    const rates = await prisma.exchangeRate.findMany();
     sections.push({
       name: 'exchange_rates',
       rowCount: rates.length,
@@ -330,6 +555,49 @@ export async function runBackup(reason = 'manual', actor = 'cron'): Promise<Back
   } catch {
     /* skip */
   }
+
+  // ── محتوای اصلی سایت ────────────────────────────────────────────────────
+
+  // Posts — recent 5000 (بدون relations؛ آیدی‌ها برای بازسازی کافی‌اند)
+  await pushSection(sections, createdAt, 'posts', async () =>
+    prisma.post.findMany({ orderBy: { createdAt: 'desc' }, take: 5000 }),
+  );
+
+  // Users — sensitive fields stripped (TOTP secrets, national id hash);
+  // سقف 50k برای جلوگیری از backup بی‌نهایت بزرگ در سایت بزرگ‌تر.
+  await pushSection(sections, createdAt, 'users', async () =>
+    stripSecrets('user', await prisma.user.findMany({ take: 50_000 })),
+  );
+
+  // Comments — recent 10000
+  await pushSection(sections, createdAt, 'comments', async () =>
+    prisma.comment.findMany({ orderBy: { createdAt: 'desc' }, take: 10000 }),
+  );
+
+  // Categories & Tags
+  await pushSection(sections, createdAt, 'categories', async () => prisma.category.findMany());
+  await pushSection(sections, createdAt, 'tags', async () => prisma.tag.findMany());
+
+  // Advertisements (هر دو جدول تبلیغ)
+  await pushSection(sections, createdAt, 'advertisements', async () =>
+    prisma.advertisement.findMany(),
+  );
+  await pushSection(sections, createdAt, 'header_ads', async () => prisma.headerAd.findMany());
+
+  // Rate lists + announcements + newsletters
+  await pushSection(sections, createdAt, 'rate_lists', async () => prisma.rateList.findMany());
+  await pushSection(sections, createdAt, 'announcements', async () =>
+    prisma.announcement.findMany(),
+  );
+  await pushSection(sections, createdAt, 'newsletters', async () => prisma.newsletter.findMany());
+
+  // Support tickets (پشتیبانی) — recent 500
+  await pushSection(sections, createdAt, 'support_tickets', async () =>
+    prisma.supportTicket.findMany({ orderBy: { createdAt: 'desc' }, take: 500 }),
+  );
+
+  // Exchange partners (صرافی‌ها) — بخش اصلی دامنه
+  await pushSection(sections, createdAt, 'exchanges', async () => prisma.exchange.findMany());
 
   const manifestWithoutChecksum = {
     version: 1 as const,
@@ -381,8 +649,15 @@ export async function runBackup(reason = 'manual', actor = 'cron'): Promise<Back
     /* ignore */
   }
 
-  // retention
-  await pruneBackups(20).catch(() => 0);
+  // H5-fix: retention از config خوانده می‌شود نه hardcoded 20
+  let retentionCount = 20;
+  try {
+    const dbConfig = await prisma.backupConfig.findUnique({ where: { id: 'singleton' } });
+    if (dbConfig?.retentionCount) retentionCount = dbConfig.retentionCount;
+  } catch {
+    /* ignore — از مقدار پیش‌فرض استفاده می‌شود */
+  }
+  await pruneBackups(retentionCount).catch(() => 0);
 
   return info;
 }

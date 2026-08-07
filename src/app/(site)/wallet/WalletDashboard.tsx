@@ -92,9 +92,7 @@ export default async function WalletDashboard({ userId }: Props) {
       <section className={s.transactions} aria-label="آخرین تراکنش‌ها">
         <h2 className={s.sectionTitle}>
           آخرین تراکنش‌ها
-          <span className={s.sectionBadge}>
-            {_faNum.format(Number(totalAfn) / 100)} AFN
-          </span>
+          <span className={s.sectionBadge}>{_faNum.format(Number(totalAfn) / 100)} AFN</span>
         </h2>
 
         {ledgerEntries.length === 0 ? (
@@ -122,8 +120,7 @@ export default async function WalletDashboard({ userId }: Props) {
                     className={`${s.txAmount} ${isCredit ? s.txAmountCredit : s.txAmountDebit}`}
                   >
                     {isCredit ? '+' : '−'}
-                    {_faNum.format(Number(entry.amount) / 100)}{' '}
-                    {entry.currency}
+                    {_faNum.format(Number(entry.amount) / 100)} {entry.currency}
                   </span>
                   <time className={s.txDate} dateTime={entry.createdAt.toISOString()}>
                     {new Intl.DateTimeFormat('fa-IR', { month: 'short', day: 'numeric' }).format(

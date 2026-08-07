@@ -100,9 +100,7 @@ export default function DailyVolumeStrip({ buckets, currency }: Props) {
                 </span>
               </div>
               <span className={s.dayLabel}>{day}</span>
-              <span className={s.dealCount}>
-                {formatFaNumber(bucket.dealCount)}
-              </span>
+              <span className={s.dealCount}>{formatFaNumber(bucket.dealCount)}</span>
             </div>
           );
         })}

@@ -35,6 +35,7 @@ import {
   invalidateOtpTokens,
 } from '@/lib/tokens';
 import { verifyTotp } from '@/lib/totp';
+import { decryptTotpSecret } from '@/lib/totp-secrets';
 import {
   EmailLookupSchema,
   LoginSchema,
@@ -414,8 +415,10 @@ export async function loginWithPassword(formData: FormData): Promise<AuthResult>
     // to handle 'CredentialsSignin' with an extra hint — if the user
     // is unverified, prompt them to verify first.
     if (error instanceof AuthError && error.type === 'CredentialsSignin') {
-      const user = await prisma.user.findUnique({
-        where: { email: getFormString(formData, 'email') },
+      // 2026-08-03: use case-insensitive lookup for consistency with rest of auth pipeline.
+      const emailInput = getFormString(formData, 'email');
+      const user = await prisma.user.findFirst({
+        where: { email: { equals: emailInput, mode: 'insensitive' } },
       });
       if (user && !user.emailVerified) {
         const sent = await issueOtp(user.email, 'reverify');
@@ -463,15 +466,29 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
       };
     }
 
-    // C1-fix: برای intent='2fa' کد از اپلیکیشن Authenticator (TOTP) می‌آید
+    // برای intent='2fa' کد از اپلیکیشن Authenticator (TOTP) می‌آید
     // نه از ایمیل. challenge قبلاً در loginWithPassword ساخته شده؛ اینجا
     // TOTP را با secret ذخیره‌شده چک و challenge را consume می‌کنیم.
     if (input.intent === '2fa') {
+      // H1-fix: rate-limit اختصاصی برای TOTP verify (جلوگیری از brute-force کد Authenticator)
+      const totpRate = await checkRateLimit(`2fa-verify:${input.email}`, 'auth');
+      if (!totpRate.success) {
+        return {
+          success: false,
+          error: 'تعداد تلاش‌های احراز هویت دو مرحله‌ای بیش از حد است. لطفاً چند دقیقه صبر کنید',
+          cooldownMs: Math.max(0, totpRate.reset - Date.now()),
+        };
+      }
       const twoFaUser = await prisma.user.findFirst({
         where: { email: { equals: input.email, mode: 'insensitive' } },
-        select: { twoFactorEnabled: true, twoFactorSecret: true, emailVerified: true, email: true },
+        select: {
+          twoFactorEnabled: true,
+          twoFactorSecretEnc: true,
+          emailVerified: true,
+          email: true,
+        },
       });
-      if (!twoFaUser?.twoFactorEnabled || !twoFaUser.twoFactorSecret) {
+      if (!twoFaUser?.twoFactorEnabled || !twoFaUser.twoFactorSecretEnc) {
         return {
           success: false,
           error: 'احراز هویت دو مرحله‌ای برای این حساب فعال نیست',
@@ -480,7 +497,8 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
       if (!twoFaUser.emailVerified) {
         return { success: false, error: 'ایمیل شما تأیید نشده است' };
       }
-      const totpOk = await verifyTotp(twoFaUser.twoFactorSecret, input.code);
+      // C2-fix: decrypt secret رمزنگاری‌شده قبل از verify
+      const totpOk = await verifyTotp(decryptTotpSecret(twoFaUser.twoFactorSecretEnc), input.code);
       if (!totpOk) {
         // consume challenge را به‌گونه‌ای انجام می‌دهیم که brute-force محدود بماند
         await prisma.verificationToken.deleteMany({
@@ -737,13 +755,16 @@ export async function setNewPassword(formData: FormData): Promise<AuthResult> {
       };
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: input.email },
+    // 2026-08-03: use findFirst with case-insensitive match (consistent
+    // with the rest of the auth pipeline) and return a generic error that
+    // does NOT confirm whether the email exists — prevents user enumeration.
+    const user = await prisma.user.findFirst({
+      where: { email: { equals: input.email, mode: 'insensitive' } },
     });
     if (!user) {
       return {
         success: false,
-        error: 'کاربری با این ایمیل یافت نشد',
+        error: 'نشست بازنشانی نامعتبر است. لطفاً از ابتدا اقدام کنید',
       };
     }
 

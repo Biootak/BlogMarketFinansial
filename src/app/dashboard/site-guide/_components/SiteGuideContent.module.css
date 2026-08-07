@@ -27,7 +27,11 @@
 .heroBg {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 60% 80% at 90% 50%, oklch(from var(--ds-brand-500) l c h / 0.07) 0%, transparent 70%);
+  background: radial-gradient(
+    ellipse 60% 80% at 90% 50%,
+    oklch(from var(--ds-brand-500) l c h / 0.07) 0%,
+    transparent 70%
+  );
   pointer-events: none;
 }
 
@@ -150,10 +154,9 @@
   border-radius: var(--ds-radius-lg);
   text-decoration: none;
   color: inherit;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
 }
 
 .card:hover {
@@ -195,7 +198,7 @@
 .cardPath {
   font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   direction: ltr;
   text-align: left;
 }
@@ -239,28 +242,80 @@
 }
 
 /* ── Tones ──────────────────────────────────────────────────── */
-.tonePrimary { background: oklch(from var(--ds-brand-500) l c h / 0.12); color: var(--ds-brand-500); }
-.toneEmerald { background: oklch(from var(--ds-accent-emerald) l c h / 0.12); color: oklch(from var(--ds-accent-emerald) calc(l - 0.08) c h); }
-.toneAmber   { background: oklch(from var(--ds-accent-amber) l c h / 0.12);   color: oklch(from var(--ds-accent-amber) calc(l - 0.08) c h); }
-.toneRose    { background: oklch(from var(--ds-accent-rose) l c h / 0.12);     color: oklch(from var(--ds-accent-rose) calc(l - 0.08) c h); }
-.toneViolet  { background: oklch(from var(--ds-accent-violet) l c h / 0.12);   color: oklch(from var(--ds-accent-violet) calc(l - 0.08) c h); }
-.toneCyan    { background: oklch(from var(--nova-cyan) l c h / 0.12);           color: oklch(from var(--nova-cyan) calc(l - 0.08) c h); }
-.toneSlate   { background: oklch(from var(--ds-accent-slate) l c h / 0.12);    color: oklch(from var(--ds-accent-slate) calc(l - 0.08) c h); }
+.tonePrimary {
+  background: oklch(from var(--ds-brand-500) l c h / 0.12);
+  color: var(--ds-brand-500);
+}
+.toneEmerald {
+  background: oklch(from var(--ds-accent-emerald) l c h / 0.12);
+  color: oklch(from var(--ds-accent-emerald) calc(l - 0.08) c h);
+}
+.toneAmber {
+  background: oklch(from var(--ds-accent-amber) l c h / 0.12);
+  color: oklch(from var(--ds-accent-amber) calc(l - 0.08) c h);
+}
+.toneRose {
+  background: oklch(from var(--ds-accent-rose) l c h / 0.12);
+  color: oklch(from var(--ds-accent-rose) calc(l - 0.08) c h);
+}
+.toneViolet {
+  background: oklch(from var(--ds-accent-violet) l c h / 0.12);
+  color: oklch(from var(--ds-accent-violet) calc(l - 0.08) c h);
+}
+.toneCyan {
+  background: oklch(from var(--nova-cyan) l c h / 0.12);
+  color: oklch(from var(--nova-cyan) calc(l - 0.08) c h);
+}
+.toneSlate {
+  background: oklch(from var(--ds-accent-slate) l c h / 0.12);
+  color: oklch(from var(--ds-accent-slate) calc(l - 0.08) c h);
+}
 
-.badgePrimary { background: oklch(from var(--ds-brand-500) l c h / 0.12); color: var(--ds-brand-500); }
-.badgeEmerald { background: oklch(from var(--ds-accent-emerald) l c h / 0.12); color: oklch(from var(--ds-accent-emerald) calc(l - 0.08) c h); }
-.badgeAmber   { background: oklch(from var(--ds-accent-amber) l c h / 0.12);   color: oklch(from var(--ds-accent-amber) calc(l - 0.08) c h); }
-.badgeRose    { background: oklch(from var(--ds-accent-rose) l c h / 0.12);     color: oklch(from var(--ds-accent-rose) calc(l - 0.08) c h); }
-.badgeViolet  { background: oklch(from var(--ds-accent-violet) l c h / 0.12);   color: oklch(from var(--ds-accent-violet) calc(l - 0.08) c h); }
-.badgeCyan    { background: oklch(from var(--nova-cyan) l c h / 0.12);           color: oklch(from var(--nova-cyan) calc(l - 0.08) c h); }
-.badgeSlate   { background: oklch(from var(--ds-accent-slate) l c h / 0.12);    color: oklch(from var(--ds-accent-slate) calc(l - 0.08) c h); }
+.badgePrimary {
+  background: oklch(from var(--ds-brand-500) l c h / 0.12);
+  color: var(--ds-brand-500);
+}
+.badgeEmerald {
+  background: oklch(from var(--ds-accent-emerald) l c h / 0.12);
+  color: oklch(from var(--ds-accent-emerald) calc(l - 0.08) c h);
+}
+.badgeAmber {
+  background: oklch(from var(--ds-accent-amber) l c h / 0.12);
+  color: oklch(from var(--ds-accent-amber) calc(l - 0.08) c h);
+}
+.badgeRose {
+  background: oklch(from var(--ds-accent-rose) l c h / 0.12);
+  color: oklch(from var(--ds-accent-rose) calc(l - 0.08) c h);
+}
+.badgeViolet {
+  background: oklch(from var(--ds-accent-violet) l c h / 0.12);
+  color: oklch(from var(--ds-accent-violet) calc(l - 0.08) c h);
+}
+.badgeCyan {
+  background: oklch(from var(--nova-cyan) l c h / 0.12);
+  color: oklch(from var(--nova-cyan) calc(l - 0.08) c h);
+}
+.badgeSlate {
+  background: oklch(from var(--ds-accent-slate) l c h / 0.12);
+  color: oklch(from var(--ds-accent-slate) calc(l - 0.08) c h);
+}
 
 @media (max-width: 768px) {
-  .page { padding: var(--ds-space-4); }
-  .hero { grid-template-columns: 1fr; }
-  .heroIcon { display: none; }
-  .grid { grid-template-columns: 1fr 1fr; }
+  .page {
+    padding: var(--ds-space-4);
+  }
+  .hero {
+    grid-template-columns: 1fr;
+  }
+  .heroIcon {
+    display: none;
+  }
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 @media (max-width: 480px) {
-  .grid { grid-template-columns: 1fr; }
+  .grid {
+    grid-template-columns: 1fr;
+  }
 }

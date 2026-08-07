@@ -220,10 +220,7 @@ export default function ProviderDrawer({ open, editRow, onClose, onSave }: Props
             <label className={s.drawerLabel} id="p-kind-label">
               نوع سرویس
             </label>
-            <Select
-              value={form.kind}
-              onValueChange={(v) => setForm((f) => ({ ...f, kind: v }))}
-            >
+            <Select value={form.kind} onValueChange={(v) => setForm((f) => ({ ...f, kind: v }))}>
               <SelectTrigger aria-labelledby="p-kind-label" className={s.drawerSelectTrigger}>
                 <SelectValue />
               </SelectTrigger>

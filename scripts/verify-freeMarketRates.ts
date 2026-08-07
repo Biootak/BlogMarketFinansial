@@ -30,30 +30,81 @@ interface FreeMarketItem {
 }
 
 const NAVASAN_KEY: Record<string, string> = {
-  USD: 'usd', EUR: 'eur', GBP: 'gbp', AED: 'aed', CHF: 'chf',
-  CAD: 'cad', AUD: 'aud', CNY: 'cny', JPY: 'jpy', RUB: 'rub',
-  INR: 'inr', TRY: 'try',
-  SEKKEH: 'sekkeh', BAHAR: 'bahar', NIM: 'nim', ROB: 'rob',
-  GERAMI: 'gerami', GOLD18: '18ayar', ABSHODEH: 'abshodeh', OUNCE_GOLD: 'xau',
+  USD: 'usd',
+  EUR: 'eur',
+  GBP: 'gbp',
+  AED: 'aed',
+  CHF: 'chf',
+  CAD: 'cad',
+  AUD: 'aud',
+  CNY: 'cny',
+  JPY: 'jpy',
+  RUB: 'rub',
+  INR: 'inr',
+  TRY: 'try',
+  SEKKEH: 'sekkeh',
+  BAHAR: 'bahar',
+  NIM: 'nim',
+  ROB: 'rob',
+  GERAMI: 'gerami',
+  GOLD18: '18ayar',
+  ABSHODEH: 'abshodeh',
+  OUNCE_GOLD: 'xau',
 };
 
 const DISPLAY_NAMES: Record<string, string> = {
-  USD: 'دلار آمریکا', EUR: 'یورو', GBP: 'پوند', AED: 'درهم',
-  CHF: 'فرانک', CAD: 'دلار کانادا', AUD: 'دلار استرالیا',
-  SEKKEH: 'سکه امامی', NIM: 'نیم سکه', ROB: 'ربع سکه',
-  GERAMI: 'سکه گرمی', GOLD18: 'طلای ۱۸ عیار', OUNCE_GOLD: 'انس طلا',
+  USD: 'دلار آمریکا',
+  EUR: 'یورو',
+  GBP: 'پوند',
+  AED: 'درهم',
+  CHF: 'فرانک',
+  CAD: 'دلار کانادا',
+  AUD: 'دلار استرالیا',
+  SEKKEH: 'سکه امامی',
+  NIM: 'نیم سکه',
+  ROB: 'ربع سکه',
+  GERAMI: 'سکه گرمی',
+  GOLD18: 'طلای ۱۸ عیار',
+  OUNCE_GOLD: 'انس طلا',
 };
 
 const WANTED = [
-  'USD', 'EUR', 'GBP', 'AED', 'CHF', 'CAD', 'AUD', 'CNY', 'JPY', 'RUB', 'INR', 'TRY',
-  'SEKKEH', 'NIM', 'ROB', 'GERAMI', 'GOLD18', 'OUNCE_GOLD',
+  'USD',
+  'EUR',
+  'GBP',
+  'AED',
+  'CHF',
+  'CAD',
+  'AUD',
+  'CNY',
+  'JPY',
+  'RUB',
+  'INR',
+  'TRY',
+  'SEKKEH',
+  'NIM',
+  'ROB',
+  'GERAMI',
+  'GOLD18',
+  'OUNCE_GOLD',
 ];
 
-interface NavasanItem { value: string; percent?: string; }
+interface NavasanItem {
+  value: string;
+  percent?: string;
+}
 type NavasanData = Record<string, NavasanItem>;
-interface FxMap { [k: string]: number; }
-interface UsdtRate { toman: number; change: number; }
-interface DbRow { symbol: string; price: number; }
+interface FxMap {
+  [k: string]: number;
+}
+interface UsdtRate {
+  toman: number;
+  change: number;
+}
+interface DbRow {
+  symbol: string;
+  price: number;
+}
 type DbItems = Map<string, DbRow>;
 
 /**
@@ -158,15 +209,19 @@ function assemble(
 /*  Test helpers                                                              */
 /* -------------------------------------------------------------------------- */
 
-function logScenario(name: string, items: FreeMarketItem[], expected: Record<string, MarketSource>) {
+function logScenario(
+  name: string,
+  items: FreeMarketItem[],
+  expected: Record<string, MarketSource>,
+) {
   console.log(`\n━━━ ${name} ━━━`);
-  console.log('symbol'.padEnd(12) + 'price (T)'.padEnd(13) + 'change'.padEnd(8) + 'source');
+  console.log(`${'symbol'.padEnd(12) + 'price (T)'.padEnd(13) + 'change'.padEnd(8)}source`);
   console.log('─'.repeat(48));
   for (const it of items) {
     console.log(
       it.symbol.padEnd(12) +
         Math.round(it.priceToman).toLocaleString('en').padEnd(13) +
-        (it.change ? (it.change > 0 ? '+' : '') + it.change.toFixed(2) + '%' : '—').padEnd(8) +
+        (it.change ? `${(it.change > 0 ? '+' : '') + it.change.toFixed(2)}%` : '—').padEnd(8) +
         it.source,
     );
   }
@@ -175,9 +230,7 @@ function logScenario(name: string, items: FreeMarketItem[], expected: Record<str
     const got = items.find((i) => i.symbol === sym)?.source;
     const ok = got === wantSrc;
     if (!ok) pass = false;
-    console.log(
-      `  ${ok ? '✓' : '✗'} ${sym}: expected=${wantSrc} got=${got ?? 'MISSING'}`,
-    );
+    console.log(`  ${ok ? '✓' : '✗'} ${sym}: expected=${wantSrc} got=${got ?? 'MISSING'}`);
   }
   console.log(pass ? '✅ PASS\n' : '❌ FAIL\n');
   return pass;
@@ -195,25 +248,28 @@ function check(name: string, ok: boolean) {
 /* -------------------------------------------------------------------------- */
 {
   const navasan: NavasanData = {
-    usd: { value: '7000000', percent: '1.2' },         // 700000 toman
-    eur: { value: '7600000', percent: '0.8' },         // 760000 toman
+    usd: { value: '7000000', percent: '1.2' }, // 700000 toman
+    eur: { value: '7600000', percent: '0.8' }, // 760000 toman
     gbp: { value: '8900000', percent: '0.5' },
     aed: { value: '1900000', percent: '0' },
     chf: { value: '7800000', percent: '-0.3' },
     try: { value: '220000', percent: '0' },
-    sekkeh: { value: '4500000000', percent: '2.1' },   // 450M toman
+    sekkeh: { value: '4500000000', percent: '2.1' }, // 450M toman
     nim: { value: '2250000000', percent: '2' },
     rob: { value: '1500000000', percent: '2' },
     '18ayar': { value: '35000000', percent: '0.5' },
     xau: { value: '2300000000', percent: '0' },
   };
   const db: DbItems = new Map([
-    ['EUR', { symbol: 'EUR', price: 100000 }],   // stale/wrong — should NOT show
-    ['OIL', { symbol: 'OIL', price: 50000 }],    // not in wanted list
+    ['EUR', { symbol: 'EUR', price: 100000 }], // stale/wrong — should NOT show
+    ['OIL', { symbol: 'OIL', price: 50000 }], // not in wanted list
   ]);
   const items = assemble(navasan, null, null, db, 0);
   const pass = logScenario('1. Navasan full + DB has stale EUR and OIL', items, {
-    USD: 'navasan', EUR: 'navasan', SEKKEH: 'navasan', OIL: 'db',
+    USD: 'navasan',
+    EUR: 'navasan',
+    SEKKEH: 'navasan',
+    OIL: 'db',
   });
   check('scenario 1', pass);
   // خاص: USD از Navasan باشه (نه از DB)
@@ -221,10 +277,16 @@ function check(name: string, ok: boolean) {
   check('  scenario 1: USD price from Navasan (=700,000)', usdItem?.priceToman === 700000);
   // EUR از Navasan باشه (نه stale DB)
   const eurItem = items.find((i) => i.symbol === 'EUR');
-  check('  scenario 1: EUR price from Navasan (=760,000), not stale DB', eurItem?.priceToman === 760000);
+  check(
+    '  scenario 1: EUR price from Navasan (=760,000), not stale DB',
+    eurItem?.priceToman === 760000,
+  );
   // TRY از Navasan باشه (bug قبلی: کلید اشتباه)
   const tryItem = items.find((i) => i.symbol === 'TRY');
-  check('  scenario 1: TRY from Navasan with correct key "try"', tryItem?.source === 'navasan' && tryItem?.priceToman === 22000);
+  check(
+    '  scenario 1: TRY from Navasan with correct key "try"',
+    tryItem?.source === 'navasan' && tryItem?.priceToman === 22000,
+  );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -242,7 +304,10 @@ function check(name: string, ok: boolean) {
   ]);
   const items = assemble(navasan, null, null, db, 0);
   const pass = logScenario('2. Navasan has only USD, DB has rest', items, {
-    USD: 'navasan', EUR: 'db', GBP: 'db', SEKKEH: 'db',
+    USD: 'navasan',
+    EUR: 'db',
+    GBP: 'db',
+    SEKKEH: 'db',
   });
   check('scenario 2', pass);
 }
@@ -252,11 +317,11 @@ function check(name: string, ok: boolean) {
 /*  انتظار: USD از USDT، EUR/GBP از FX×USDT، SEKKEH از DB                      */
 /* -------------------------------------------------------------------------- */
 {
-  const usdt: UsdtRate = { toman: 700000, change: 1.2 };  // USDT = 700k
+  const usdt: UsdtRate = { toman: 700000, change: 1.2 }; // USDT = 700k
   const fx: FxMap = {
-    EUR: 0.92,    // EUR = 0.92 * 700000 = 644,000
-    GBP: 0.79,    // GBP = 553,000
-    AED: 3.67,    // AED = 2,569,000
+    EUR: 0.92, // EUR = 0.92 * 700000 = 644,000
+    GBP: 0.79, // GBP = 553,000
+    AED: 3.67, // AED = 2,569,000
     CHF: 0.88,
     CAD: 1.36,
     AUD: 1.52,
@@ -267,29 +332,40 @@ function check(name: string, ok: boolean) {
     TRY: 32.0,
   };
   const db: DbItems = new Map([
-    ['SEKKEH', { symbol: 'SEKKEH', price: 450000000 }],  // Navasan نداره، DB داره
-    ['OIL', { symbol: 'OIL', price: 80000 }],            // not in wanted
+    ['SEKKEH', { symbol: 'SEKKEH', price: 450000000 }], // Navasan نداره، DB داره
+    ['OIL', { symbol: 'OIL', price: 80000 }], // not in wanted
   ]);
-  const items = assemble(null, usdt, fx, db, 1.5);  // premium 1.5%
+  const items = assemble(null, usdt, fx, db, 1.5); // premium 1.5%
   const pass = logScenario('3. No Navasan + DB partial + USDT + FX', items, {
-    USD: 'usdt', EUR: 'fx-derived', GBP: 'fx-derived', AED: 'fx-derived', SEKKEH: 'db', OIL: 'db',
+    USD: 'usdt',
+    EUR: 'fx-derived',
+    GBP: 'fx-derived',
+    AED: 'fx-derived',
+    SEKKEH: 'db',
+    OIL: 'db',
   });
   check('scenario 3', pass);
 
   // USD = 700000 * 1.015 = 710500
   const usdItem = items.find((i) => i.symbol === 'USD');
-  check('  scenario 3: USD = USDT(700k) × 1.015 = 710,500',
-    usdItem?.priceToman === 710500 && usdItem?.source === 'usdt');
+  check(
+    '  scenario 3: USD = USDT(700k) × 1.015 = 710,500',
+    usdItem?.priceToman === 710500 && usdItem?.source === 'usdt',
+  );
 
   // EUR = 0.92 * 700000 = 644000
   const eurItem = items.find((i) => i.symbol === 'EUR');
-  check('  scenario 3: EUR = 0.92 × 700k = 644,000',
-    eurItem?.priceToman === 644000 && eurItem?.source === 'fx-derived');
+  check(
+    '  scenario 3: EUR = 0.92 × 700k = 644,000',
+    eurItem?.priceToman === 644000 && eurItem?.source === 'fx-derived',
+  );
 
   // AED = 3.67 * 700000 = 2,569,000
   const aedItem = items.find((i) => i.symbol === 'AED');
-  check('  scenario 3: AED = 3.67 × 700k = 2,569,000',
-    aedItem?.priceToman === 2569000 && aedItem?.source === 'fx-derived');
+  check(
+    '  scenario 3: AED = 3.67 × 700k = 2,569,000',
+    aedItem?.priceToman === 2569000 && aedItem?.source === 'fx-derived',
+  );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -299,12 +375,24 @@ function check(name: string, ok: boolean) {
 {
   const usdt: UsdtRate = { toman: 700000, change: 1.5 };
   const fx: FxMap = {
-    EUR: 0.92, GBP: 0.79, AED: 3.67, CHF: 0.88, CAD: 1.36, AUD: 1.52,
-    CNY: 7.24, JPY: 152, RUB: 92, INR: 83.5, TRY: 32,
+    EUR: 0.92,
+    GBP: 0.79,
+    AED: 3.67,
+    CHF: 0.88,
+    CAD: 1.36,
+    AUD: 1.52,
+    CNY: 7.24,
+    JPY: 152,
+    RUB: 92,
+    INR: 83.5,
+    TRY: 32,
   };
   const items = assemble(null, usdt, fx, new Map(), 0);
   const pass = logScenario('4. Only USDT + FX (no Navasan, no DB)', items, {
-    USD: 'usdt', EUR: 'fx-derived', GBP: 'fx-derived', AED: 'fx-derived',
+    USD: 'usdt',
+    EUR: 'fx-derived',
+    GBP: 'fx-derived',
+    AED: 'fx-derived',
   });
   check('scenario 4', pass);
   // change% for FX-derived should be 0 (we don't have it)
@@ -345,8 +433,10 @@ function check(name: string, ok: boolean) {
   console.log('\n━━━ 6. Navasan has wrong key "try_" (should fall through to FX) ━━━');
   console.log('TRY item:', tryItem);
   check('scenario 6: TRY not from Navasan (wrong key ignored)', tryItem?.source !== 'navasan');
-  check('scenario 6: TRY from FX-derived at 22,400,000',
-    tryItem?.source === 'fx-derived' && tryItem?.priceToman === 22400000);
+  check(
+    'scenario 6: TRY from FX-derived at 22,400,000',
+    tryItem?.source === 'fx-derived' && tryItem?.priceToman === 22400000,
+  );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -358,8 +448,8 @@ function check(name: string, ok: boolean) {
     eur: { value: '7600000', percent: '0.8' },
   };
   const db: DbItems = new Map([
-    ['USD', { symbol: 'USD', price: 900000 }],   // duplicate
-    ['EUR', { symbol: 'EUR', price: 800000 }],   // duplicate
+    ['USD', { symbol: 'USD', price: 900000 }], // duplicate
+    ['EUR', { symbol: 'EUR', price: 800000 }], // duplicate
   ]);
   const items = assemble(navasan, null, null, db, 0);
   const usdCount = items.filter((i) => i.symbol === 'USD').length;
@@ -370,7 +460,7 @@ function check(name: string, ok: boolean) {
   check('scenario 7: no duplicate EUR', eurCount === 1);
 }
 
-console.log('\n' + '═'.repeat(50));
+console.log(`\n${'═'.repeat(50)}`);
 console.log(allPass ? '✅ ALL SCENARIOS PASS' : '❌ SOME SCENARIOS FAILED');
 console.log('═'.repeat(50));
 process.exit(allPass ? 0 : 1);

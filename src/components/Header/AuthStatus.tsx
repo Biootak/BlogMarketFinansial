@@ -1,8 +1,8 @@
 'use client';
 
 import { Sparkles } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import { useSession } from 'next-auth/react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 /**
  * AuthStatus — client island for the header's sign-in / avatar area.
@@ -23,7 +23,9 @@ import { type ReactNode, useEffect, useState } from 'react';
 
 const AvatarDropdown = dynamic(() => import('./AvatarDropdown'), {
   ssr: false,
-  loading: () => <div className="h-10 w-10 rounded-xl animate-pulse bg-neutral-100 dark:bg-neutral-800" />,
+  loading: () => (
+    <div className="h-10 w-10 rounded-xl animate-pulse bg-neutral-100 dark:bg-neutral-800" />
+  ),
 });
 const NotifyDropdown = dynamic(() => import('./NotifyDropdown'), {
   ssr: false,
@@ -48,7 +50,12 @@ export default function AuthStatus() {
 
   // بعد از mount: session واقعی
   if (status === 'loading') {
-    return <div className="h-10 w-10 rounded-xl animate-pulse bg-neutral-100 dark:bg-neutral-800" aria-hidden="true" />;
+    return (
+      <div
+        className="h-10 w-10 rounded-xl animate-pulse bg-neutral-100 dark:bg-neutral-800"
+        aria-hidden="true"
+      />
+    );
   }
 
   if (session?.user) {

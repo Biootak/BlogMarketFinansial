@@ -108,7 +108,15 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد حساب کاربری شوید' } };
   }
 
-  const ip = (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+  const _xff = (await headers()).get('x-forwarded-for') ?? '';
+  const ip =
+    _xff
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .pop() ??
+    (await headers()).get('x-real-ip')?.trim() ??
+    'unknown';
   const rl = await checkRateLimit(`transfer:${auth.user.id}`, 'api');
   if (!rl.success) {
     return {
@@ -335,8 +343,17 @@ export async function confirmTransfer(
     where: { userId: auth.user.id },
     select: { id: true },
   });
+  // 2026-08-03: explicit null-check — if the customer profile was deleted
+  // between the session check and here, return a clear error rather than
+  // letting the query proceed with customerId='__none__'.
+  if (!senderCustomer) {
+    return {
+      success: false,
+      error: { code: 'NO_ACCOUNT', message: 'حساب مشتری یافت نشد. لطفاً مجدداً وارد شوید' },
+    };
+  }
   const txn = await prisma.transaction.findFirst({
-    where: { id: txnId, customerId: senderCustomer?.id ?? '__none__' },
+    where: { id: txnId, customerId: senderCustomer.id },
     select: {
       id: true,
       status: true,
@@ -473,7 +490,15 @@ export async function confirmTransfer(
   }
 
   revalidateTag('wallet');
-  const ip = (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+  const _xff2 = (await headers()).get('x-forwarded-for') ?? '';
+  const ip =
+    _xff2
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .pop() ??
+    (await headers()).get('x-real-ip')?.trim() ??
+    'unknown';
   await prisma.auditLog.create({
     data: {
       id: createId(),

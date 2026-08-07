@@ -152,23 +152,17 @@ export default function ServicesMarketplace({
           {/* Counters */}
           <div className={s.counters} role="list">
             <div className={s.counter} role="listitem">
-              <span className={s.counterValue}>
-                {_faNum.format(totalExchanges)}
-              </span>
+              <span className={s.counterValue}>{_faNum.format(totalExchanges)}</span>
               <span className={s.counterLabel}>صرافی فعال</span>
             </div>
             <span className={s.counterDivider} aria-hidden />
             <div className={s.counter} role="listitem">
-              <span className={s.counterValue}>
-                {_faNum.format(totalServices)}
-              </span>
+              <span className={s.counterValue}>{_faNum.format(totalServices)}</span>
               <span className={s.counterLabel}>خدمت</span>
             </div>
             <span className={s.counterDivider} aria-hidden />
             <div className={s.counter} role="listitem">
-              <span className={s.counterValue}>
-                {_faNum.format(totalMatches)}
-              </span>
+              <span className={s.counterValue}>{_faNum.format(totalMatches)}</span>
               <span className={s.counterLabel}>صرافی-خدمت</span>
             </div>
           </div>
@@ -276,9 +270,7 @@ export default function ServicesMarketplace({
                   <h2 id={`grp-${group.key}`} className={s.groupTitle}>
                     {SERVICE_GROUPS[group.key as ExchangeServiceMeta['group']]?.label ?? group.key}
                   </h2>
-                  <span className={s.groupCount}>
-                    {_faNum.format(group.services.length)} خدمت
-                  </span>
+                  <span className={s.groupCount}>{_faNum.format(group.services.length)} خدمت</span>
                 </header>
 
                 <ul className={s.serviceList}>

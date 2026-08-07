@@ -57,9 +57,7 @@ export default async function SettingsIndexPage() {
         <div className={s.heroStats}>
           <div className={s.statCell}>
             <span className={s.statLabel}>آخرین تغییر</span>
-            <span className={s.statValue}>
-              {_faNum.format(daysSinceUpdate)} روز پیش
-            </span>
+            <span className={s.statValue}>{_faNum.format(daysSinceUpdate)} روز پیش</span>
           </div>
           <span className={s.statSep} aria-hidden />
           <div className={s.statCell}>

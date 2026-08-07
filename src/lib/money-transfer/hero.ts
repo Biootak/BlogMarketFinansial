@@ -232,6 +232,8 @@ export function buildHeroPairs(rates: ExchangeRateData[]): HeroPair[] {
  */
 export function convertViaIRT(amount: number, from: HeroPair, to: HeroPair): number {
   if (!Number.isFinite(amount) || amount <= 0) return Number.NaN;
+  if (!Number.isFinite(from.buy) || from.buy <= 0) return Number.NaN;
+  if (!Number.isFinite(to.sell) || to.sell <= 0) return Number.NaN;
   if (from.id === to.id) return amount;
   return (amount * from.buy) / to.sell;
 }

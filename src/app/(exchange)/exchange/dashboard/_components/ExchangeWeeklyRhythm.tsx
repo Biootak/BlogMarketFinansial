@@ -49,8 +49,7 @@ export default function ExchangeWeeklyRhythm({
       </div>
       <div className={s.weekFooter}>
         <span>
-          جمع هفته: <strong dir="ltr">{_faNum.format(totalCount)}</strong>{' '}
-          تراکنش
+          جمع هفته: <strong dir="ltr">{_faNum.format(totalCount)}</strong> تراکنش
         </span>
         <span>
           اوج روز: <strong dir="ltr">{_faNum.format(maxCount)}</strong>

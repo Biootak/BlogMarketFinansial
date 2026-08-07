@@ -31,7 +31,7 @@ const prisma = require('./src/lib/db').default;
     console.log('all titles with sample rate values:');
     for (const l of lists) {
       const rates = Array.isArray(l.rates) ? l.rates : [];
-      console.log(' -', l.title, '(active=' + l.isActive + ')', 'rates:', rates.length);
+      console.log(' -', l.title, `(active=${l.isActive})`, 'rates:', rates.length);
       for (const r of rates.slice(0, 3)) {
         console.log('     •', r.title, '=>', String(r.value).slice(0, 80));
       }

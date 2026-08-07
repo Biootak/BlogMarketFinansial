@@ -36,7 +36,9 @@ interface SystemMetrics {
 
 export async function getSystemMetrics(): Promise<SystemMetrics> {
   const cpus = os.cpus();
-  const cpuUsage = (os.loadavg()[0] * 100) / cpus.length;
+  // os.loadavg() returns [0,0,0] on Windows; cpus.length guard against division-by-zero
+  const loadAvg = os.loadavg()[0] ?? 0;
+  const cpuUsage = cpus.length > 0 ? (loadAvg * 100) / cpus.length : 0;
   const totalMem = os.totalmem();
   const freeMem = os.freemem();
   const usedMem = totalMem - freeMem;
@@ -45,7 +47,7 @@ export async function getSystemMetrics(): Promise<SystemMetrics> {
     cpu: {
       usage: Math.round(cpuUsage * 100) / 100,
       count: cpus.length,
-      model: cpus[0].model,
+      model: cpus[0]?.model ?? 'unknown',
     },
     memory: {
       total: totalMem,
@@ -65,13 +67,11 @@ export async function getSystemMetrics(): Promise<SystemMetrics> {
 
 export async function checkDiskSpace(drive: string): Promise<DiskSpace | null> {
   try {
-    // Guard against command injection: only a single ASCII letter is allowed.
-    if (!/^[a-zA-Z]$/.test(drive)) {
-      return null;
-    }
-
-    // For Windows
+    // For Windows: only a single ASCII drive letter is allowed (injection guard).
     if (process.platform === 'win32') {
+      if (!/^[a-zA-Z]$/.test(drive)) {
+        return null;
+      }
       const { stdout } = await execAsync(
         `wmic logicaldisk where "DeviceID='${drive}:'" get size,freespace /format:value`,
       );
@@ -92,17 +92,25 @@ export async function checkDiskSpace(drive: string): Promise<DiskSpace | null> {
           free: Number.parseInt(values.FreeSpace, 10),
         };
       }
+      return null;
     }
 
-    // For Unix-like systems (Linux, macOS)
-    else {
-      const { stdout } = await execAsync(`df -k ${drive}`);
-      const lines = stdout.trim().split('\n');
-      if (lines.length >= 2) {
-        const [, size, , free] = lines[1].split(/\s+/);
+    // For Unix-like systems (Linux, macOS): drive is a full path like /app or cwd.
+    // Sanitize: allow only safe filesystem path characters, no shell metacharacters.
+    const safePath = drive.replace(/[^a-zA-Z0-9/._-]/g, '');
+    if (!safePath || safePath.length === 0) return null;
+
+    const { stdout } = await execAsync(`df -k "${safePath}"`);
+    const lines = stdout.trim().split('\n');
+    if (lines.length >= 2) {
+      const parts = lines[1].split(/\s+/);
+      // df -k output: Filesystem 1K-blocks Used Available Use% Mounted
+      const size = Number.parseInt(parts[1] ?? '0', 10);
+      const free = Number.parseInt(parts[3] ?? '0', 10);
+      if (Number.isFinite(size) && Number.isFinite(free) && size > 0) {
         return {
-          size: Number.parseInt(size, 10) * 1024, // Convert KB to bytes
-          free: Number.parseInt(free, 10) * 1024,
+          size: size * 1024, // Convert KB to bytes
+          free: free * 1024,
         };
       }
     }

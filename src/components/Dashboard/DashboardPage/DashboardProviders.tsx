@@ -12,9 +12,30 @@ import { DirectionProvider } from '@radix-ui/react-direction';
 import type { ReactNode } from 'react';
 
 export type PortalType = 'admin' | 'customer' | 'exchange';
-export type AllowedRole = 'USER' | 'AUTHOR' | 'SUPPORT' | 'ADMIN' | 'OWNER' | 'SUPERADMIN' | 'CUSTOMER' | 'TEST_CUSTOMER' | 'MERCHANT' | 'EXCHANGE';
+export type AllowedRole =
+  | 'USER'
+  | 'AUTHOR'
+  | 'SUPPORT'
+  | 'ADMIN'
+  | 'OWNER'
+  | 'SUPERADMIN'
+  | 'CUSTOMER'
+  | 'TEST_CUSTOMER'
+  | 'MERCHANT'
+  | 'EXCHANGE';
 
-const KNOWN_ROLES = new Set<string>(['USER', 'AUTHOR', 'SUPPORT', 'ADMIN', 'OWNER', 'SUPERADMIN', 'CUSTOMER', 'TEST_CUSTOMER', 'MERCHANT', 'EXCHANGE']);
+const KNOWN_ROLES = new Set<string>([
+  'USER',
+  'AUTHOR',
+  'SUPPORT',
+  'ADMIN',
+  'OWNER',
+  'SUPERADMIN',
+  'CUSTOMER',
+  'TEST_CUSTOMER',
+  'MERCHANT',
+  'EXCHANGE',
+]);
 const PLATFORM_ADMINS = new Set(['OWNER', 'SUPERADMIN', 'ADMIN']);
 
 function resolvePortalRole(userRole: string, portal: PortalType): AllowedRole {
@@ -31,7 +52,12 @@ interface DashboardProvidersProps {
   children: ReactNode;
 }
 
-export function DashboardProviders({ userRole, portal = 'admin', staffRole, children }: DashboardProvidersProps) {
+export function DashboardProviders({
+  userRole,
+  portal = 'admin',
+  staffRole,
+  children,
+}: DashboardProvidersProps) {
   const sidebarRole = resolvePortalRole(userRole, portal);
 
   return (

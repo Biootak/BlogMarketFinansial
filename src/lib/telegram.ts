@@ -17,7 +17,7 @@
  *   - هرگز throw نمی‌کند — نتیجه همیشه بازگردانده می‌شود
  */
 
-import { randomBytes } from 'node:crypto';
+import { randomBytes, timingSafeEqual } from 'node:crypto';
 import prisma from '@/lib/db';
 
 const TELEGRAM_API = 'https://api.telegram.org';
@@ -151,7 +151,9 @@ export function isTelegramWebhookSecretValid(secret: string | null | undefined):
   if (!expected || !secret) return false;
   const a = Buffer.from(secret);
   const b = Buffer.from(expected);
-  return a.length === b.length && a.equals(b);
+  if (a.length !== b.length) return false;
+  // constant-time compare — prevent timing oracle attacks (same pattern as cron-auth.ts)
+  return timingSafeEqual(a, b);
 }
 
 export const TELEGRAM_LINK_PREFIX = LINK_PREFIX;

@@ -2,51 +2,73 @@
 
 import { RefreshCw } from 'lucide-react';
 
-import { clock, faNum } from './format';
 import { useObs } from './ObsProvider';
-import s from './obs.module.css';
+import c from './command.module.css';
+import { clock, faNum } from './format';
 
 const SYNC_TEXT: Record<string, string> = {
-  idle: 'زنده',
+  idle: 'خوانش زنده',
   syncing: 'در حال هم‌گام‌سازی',
-  failed: 'اتصال قطع شد',
+  failed: 'خوانش تازه نشد',
+  blocked: 'نشست منقضی شده',
+};
+
+const SYNC_TONE: Record<string, string> = {
+  idle: 'ok',
+  syncing: 'info',
+  failed: 'warn',
+  blocked: 'bad',
 };
 
 /**
- * نوار وضعیت زنده. به‌جای اسپینر چرخان یک خط مویی determinate داریم:
- * فقط transform/opacity حرکت می‌کند و هیچ keyframe محلی لازم نیست.
- * زمان‌ها با timeZone ثابت فرمت می‌شوند تا SSR و کلاینت یکی باشند.
+ * وضعیت خوانش.
+ *
+ * هر چهار حالت provider اینجا حرف می‌زنند — از جمله `blocked` که یعنی نشست
+ * منقضی شده و polling برای همیشه خوابیده. نسخهٔ قبلی این حالت را نداشت و
+ * صفحه بی‌صدا کهنه می‌شد بدون اینکه کاربر بفهمد؛ بدترین نوع دروغِ داشبورد.
+ *
+ * `failed` حالا دو معنی دارد و هر دو درست‌اند: یا شبکه قطع شده، یا سرور
+ * ۵۰۳ داده چون لاگ‌ها را نتوانسته بخواند. در هر دو حالت پیام یکی است:
+ * «آنچه می‌بینی تازه نیست».
  */
 export function ObsToolbar() {
   const { data, sync, refresh } = useObs();
+  const tone = SYNC_TONE[sync] ?? 'idle';
 
   return (
-    <div className={s.toolbar}>
-      <span className={s.live}>
+    <div className={c.toolbar} data-tone={tone}>
+      <span className={c.state}>
         <span
-          className={sync === 'idle' ? `${s.liveDot} anim-ping-soft` : s.liveDot}
-          data-state={sync}
-          aria-hidden
+          className={c.dot}
+          data-live={sync === 'idle' ? 'true' : undefined}
+          aria-hidden="true"
         />
-        <span aria-live="polite">{SYNC_TEXT[sync] ?? 'زنده'}</span>
+        <span aria-live="polite">{SYNC_TEXT[sync] ?? 'خوانش زنده'}</span>
       </span>
 
-      <span className={s.window}>
-        {faNum(data?.windowHours ?? 24)} ساعت گذشته · هر {faNum(30)} ثانیه
+      <span className={c.divider} aria-hidden="true" />
+
+      <span className={c.meta}>{faNum(data?.windowHours ?? 24)} ساعت گذشته</span>
+      <span className={c.meta}>
+        {data ? `آخرین خوانش ${clock(data.generatedAt)}` : 'بدون خوانش'}
       </span>
 
-      <span className={s.syncTrack} aria-hidden>
-        <span className={s.syncBar} data-state={sync} />
-      </span>
-
-      <span className={s.stamp}>
-        {data ? `خوانش ${clock(data.generatedAt)}` : 'بدون خوانش'}
-      </span>
-
-      <button type="button" className={s.refresh} onClick={refresh} disabled={sync === 'syncing'}>
-        <RefreshCw size={16} strokeWidth={1.5} aria-hidden />
+      <button
+        type="button"
+        className={c.refresh}
+        onClick={refresh}
+        disabled={sync === 'syncing' || sync === 'blocked'}
+      >
+        <RefreshCw
+          size={14}
+          strokeWidth={1.8}
+          aria-hidden="true"
+          data-spin={sync === 'syncing' ? 'true' : undefined}
+        />
         <span>خواندن دوباره</span>
       </button>
+
+      <span className={c.progress} data-state={sync} aria-hidden="true" />
     </div>
   );
 }

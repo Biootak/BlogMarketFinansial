@@ -22,12 +22,7 @@ const OPTIMIZED_WIDTHS = [480, 768, 1200, 1920];
 const DEFAULT_WIDTH = 1200;
 
 /** Hosts served by the Next image optimizer (must match next.config images). */
-const OPTIMIZABLE_HOSTS = new Set([
-  'images.pexels.com',
-  'images.unsplash.com',
-  'biotak.storage.c2.liara.space',
-  'cdn.jsdelivr.net',
-]);
+const OPTIMIZABLE_HOSTS = new Set(['images.pexels.com', 'images.unsplash.com', 'cdn.jsdelivr.net']);
 
 const _srcsetPattern = /^\s*[\d\s,wx/]+(?:\s*\d+w)?\s*$/;
 

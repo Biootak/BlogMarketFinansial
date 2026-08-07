@@ -79,7 +79,11 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(135deg, color-mix(in oklch, var(--at-violet) 12%, transparent) 0%, transparent 55%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--at-violet) 12%, transparent) 0%,
+    transparent 55%
+  );
   opacity: 1;
 }
 
@@ -384,7 +388,11 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: radial-gradient(ellipse 60% 80% at 100% 0%, color-mix(in oklch, var(--at-violet) 15%, transparent) 0%, transparent 55%);
+  background: radial-gradient(
+    ellipse 60% 80% at 100% 0%,
+    color-mix(in oklch, var(--at-violet) 15%, transparent) 0%,
+    transparent 55%
+  );
   opacity: 1;
 }
 

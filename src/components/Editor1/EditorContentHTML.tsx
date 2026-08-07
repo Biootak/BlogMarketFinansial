@@ -2,10 +2,9 @@
  * @file EditorContentHTML.tsx — Server Component rendering of Tiptap JSON/HTML
  * post content to static HTML, without the TipTap editor runtime.
  *
- * Previously `EditorContentRenderer` created a full read-only TipTap editor on
- * the client (ProseMirror view + extensions + lowlight + KaTeX), which shipped
- * ~800 KB of JS on every blog post. This Server Component serializes the same
- * stored content to HTML on the server:
+ * This Server Component serializes stored content to HTML on the server,
+ * replacing a former client-side read-only TipTap editor (ProseMirror view +
+ * extensions + lowlight + KaTeX, ~800 KB of JS on every blog post):
  *   - Tiptap JSON  → `generateHTML()` (schema renderHTML rules, text-escaped)
  *   - Raw HTML     → sanitized with DOMPurify (client-provided HTML is not
  *                     schema-constrained, so it must be scrubbed)
@@ -24,7 +23,7 @@ import 'server-only';
 import MarkdownRenderer from '@/app/(site)/(singles)/MarkdownRenderer';
 import BannerAds from '@/components/BannerADS/BannerADS';
 import { optimizeBodyImages, wrapBodyTables } from '@/lib/optimize-body-images';
-import { sanitizeHtml } from '@/lib/utils';
+import { sanitizeHtml, sanitizeRenderedBody } from '@/lib/utils';
 import type { Advertisement } from '@/types/types';
 import { generateHTML } from '@tiptap/html/server';
 import { renderExtensions } from './render-content';
@@ -48,8 +47,12 @@ export default async function EditorContentHTML({
     return null;
   }
 
-  // ترکیب هر دو تبدیل تصویر و wrap جدول برای خروجی HTML آماده نمایش
-  const renderBodyHtml = (html: string) => wrapBodyTables(optimizeBodyImages(html));
+  // ترکیب هر دو تبدیل تصویر و wrap جدول برای خروجی HTML آماده نمایش.
+  // 2026-08: خروجی generateHTML همیشه از sanitizeRenderedBody عبور می‌کند —
+  // JSON ذخیره‌شده در DB ممکن است مستقیماً از API بیاید و href های مخرب
+  // (javascript:) را پشت سر بگذارد؛ سمت امن render باید اجباری باشد.
+  const renderBodyHtml = (html: string) =>
+    wrapBodyTables(optimizeBodyImages(sanitizeRenderedBody(html)));
 
   const renderBody = () => {
     // ── Tiptap JSON document ─────────────────────────────────────────────

@@ -1,7 +1,11 @@
 import { PrismaClient } from '@prisma/client';
 const p = new PrismaClient();
 const isValid = (v) =>
-  v && (v.startsWith('/') || v.startsWith('http://') || v.startsWith('https://') || v.startsWith('data:'));
+  v &&
+  (v.startsWith('/') ||
+    v.startsWith('http://') ||
+    v.startsWith('https://') ||
+    v.startsWith('data:'));
 async function main() {
   const rows = await p.socialLink.findMany();
   for (const r of rows) {

@@ -119,9 +119,7 @@ export default function AboutView({ exchange }: Props) {
                 )}
                 <span className={s.heroMetaItem}>
                   <CalendarDays size={12} strokeWidth={1.9} aria-hidden />
-                  {yearsActive > 0
-                    ? `${_faNum.format(yearsActive)} سال سابقه`
-                    : 'صرافی تازه‌تأسیس'}
+                  {yearsActive > 0 ? `${_faNum.format(yearsActive)} سال سابقه` : 'صرافی تازه‌تأسیس'}
                 </span>
               </div>
             </div>
@@ -134,18 +132,14 @@ export default function AboutView({ exchange }: Props) {
             <span className={s.kpiIcon} aria-hidden>
               <Users size={18} strokeWidth={1.6} />
             </span>
-            <span className={s.kpiValue}>
-              {_faNum.format(exchange._count.Customer)}
-            </span>
+            <span className={s.kpiValue}>{_faNum.format(exchange._count.Customer)}</span>
             <span className={s.kpiLabel}>مشتری ثبت‌شده</span>
           </article>
           <article className={s.kpiCard}>
             <span className={s.kpiIcon} aria-hidden>
               <Wallet size={18} strokeWidth={1.6} />
             </span>
-            <span className={s.kpiValue}>
-              {_faNum.format(exchange._count.Transaction)}
-            </span>
+            <span className={s.kpiValue}>{_faNum.format(exchange._count.Transaction)}</span>
             <span className={s.kpiLabel}>تراکنش انجام‌شده</span>
           </article>
           <article className={s.kpiCard}>

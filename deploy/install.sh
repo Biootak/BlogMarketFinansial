@@ -46,10 +46,12 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get install -y -qq curl ca-certificates gnupg lsb-release nginx ufw jq
 
-# Node.js 20 (Nodesource)
-if ! command -v node >/dev/null 2>&1 || [[ "$(node -v | cut -d. -f1 | tr -d 'v')" -lt 20 ]]; then
-    info "نصب Node.js 20..."
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+# Node.js 22 (Nodesource) — package.json engines >=22; jsdom 30 (pulled by
+# isomorphic-dompurify) hard-requires >=22.22.2, so Node 20 would crash the
+# server-side sanitizer at runtime.
+if ! command -v node >/dev/null 2>&1 || [[ "$(node -v | cut -d. -f1 | tr -d 'v')" -lt 22 ]]; then
+    info "نصب Node.js 22..."
+    curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
     apt-get install -y -qq nodejs
 fi
 

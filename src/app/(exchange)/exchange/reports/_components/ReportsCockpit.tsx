@@ -145,9 +145,7 @@ export default function ReportsCockpit({ exchangeId, report, txRows, txTotal }: 
             <span className={s.cellNumber}>{fmtCompact(report.totalVolume)}</span>
             <span className={s.cellUnit}>{primaryCurrency}</span>
           </div>
-          <span className={s.cellMeta}>
-            {_faNum.format(report.totalDeals)} معامله
-          </span>
+          <span className={s.cellMeta}>{_faNum.format(report.totalDeals)} معامله</span>
         </div>
 
         <div className={s.cell} data-tone="amber">
@@ -193,9 +191,7 @@ export default function ReportsCockpit({ exchangeId, report, txRows, txTotal }: 
             <span className={s.cellLabel}>مشتریان فعال</span>
           </div>
           <div className={s.cellValue}>
-            <span className={s.cellNumber}>
-              {_faNum.format(report.topCustomers.length)}
-            </span>
+            <span className={s.cellNumber}>{_faNum.format(report.topCustomers.length)}</span>
             <span className={s.cellUnit}>نفر</span>
           </div>
           <span className={s.cellMeta}>۵ نفر برتر</span>

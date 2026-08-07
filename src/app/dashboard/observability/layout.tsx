@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 
-import { PageHeader } from '@/components/Dashboard/primitives';
 import { getObservabilitySnapshot } from '@/lib/observability';
 
 import { ObsProvider } from './_components/ObsProvider';
@@ -16,10 +15,18 @@ export const dynamic = 'force-dynamic';
  * پوستهٔ مشترک همهٔ زیرمسیرهای مشاهده‌پذیری.
  *
  * داده یک‌بار اینجا خوانده می‌شود و از طریق ObsProvider بین زیرمسیرها به
- * اشتراک می‌رود؛ جابه‌جایی بین تب‌ها هیچ درخواست تازه‌ای نمی‌زند.
+ * اشتراک می‌رود؛ جابه‌جایی بین تب‌ها هیچ درخواست تازه‌ای نمی‌زند و مکان‌نمای
+ * ساعت هم بین تب‌ها حفظ می‌شود.
  *
- * ObsPulseDeck هم عمداً در layout است نه در page: «حال سامانه» زمینهٔ همهٔ
+ * ObsPulseDeck عمداً در layout است نه در page: «حال سامانه» زمینهٔ همهٔ
  * تب‌هاست، پس نباید با هر ناوبری unmount و دوباره رسم شود.
+ *
+ * تیتر صفحه اینجا نیست و نباید باشد: RouteFrame (در پوستهٔ داشبورد) برای هر
+ * مسیر h1 و breadcrumb می‌سازد. سلسله‌مراتب نهایی: h1 از RouteFrame، h2 عنوان
+ * تب در هر page، h3 عنوان هر مدخل در ObsSection.
+ *
+ * main هم دیگر گرید نیست. قبلاً هم پوسته یک گرید ۱۲ ستونی داشت و هم هر صفحه
+ * گرید خودش را می‌ساخت؛ نتیجه دو گرید تودرتو بود که span ها را بی‌اثر می‌کرد.
  */
 export default async function ObservabilityLayout({ children }: { children: ReactNode }) {
   await requireObservabilityAccess();
@@ -29,16 +36,6 @@ export default async function ObservabilityLayout({ children }: { children: Reac
 
   return (
     <div className={s.page}>
-      <PageHeader
-        variant="minimal"
-        eyebrow="مرکز عملیات"
-        title="مرکز مشاهده‌پذیری"
-        description="سلامت سرویس‌ها، تأخیر، خطا و رد ممیزی — هر عدد مستقیم از SystemLog و AuditLog خوانده می‌شود."
-        icon="radar"
-        accent="emerald"
-        breadcrumb={[{ href: '/dashboard', label: 'داشبورد' }, { label: 'مشاهده‌پذیری' }]}
-      />
-
       <ObsProvider initialData={initialData}>
         <div className={s.command}>
           <ObsSubNav />

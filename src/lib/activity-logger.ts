@@ -2,12 +2,14 @@
 
 import { auth } from '@/auth';
 import db from '@/lib/db';
+import { serverLog } from '@/lib/server-logger';
 
 export async function logActivity(action: string, details: string) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      throw new Error('کاربر احراز هویت نشده است');
+      // کاربر لاگین نیست — لاگ بدون userId ممکن نیست؛ silent skip
+      return;
     }
 
     await db.activityLog.create({
@@ -17,5 +19,8 @@ export async function logActivity(action: string, details: string) {
         details,
       },
     });
-  } catch (_error) {}
+  } catch (error) {
+    // نباید مسیر اصلی را بلاک کند — best-effort
+    serverLog.error('activity-logger', 'logActivity', error);
+  }
 }

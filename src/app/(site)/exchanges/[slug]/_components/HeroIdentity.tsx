@@ -78,11 +78,14 @@ export default function HeroIdentity({ exchange, primaryRate, activeCurrencies }
   }, [primaryRate]);
 
   // tick every 10s (not 1s) — label granularity is minutes, so 1s ticks waste CPU
-  useVisibilityAwareInterval(() => {
-    if (!primaryRate) return;
-    const base = new Date(primaryRate.createdAt).getTime();
-    setAgeSec(Math.max(0, Math.floor((Date.now() - base) / 1000)));
-  }, primaryRate ? 10_000 : 0);
+  useVisibilityAwareInterval(
+    () => {
+      if (!primaryRate) return;
+      const base = new Date(primaryRate.createdAt).getTime();
+      setAgeSec(Math.max(0, Math.floor((Date.now() - base) / 1000)));
+    },
+    primaryRate ? 10_000 : 0,
+  );
 
   const ageLabel = useAgeLabel(ageSec);
 
@@ -214,9 +217,7 @@ export default function HeroIdentity({ exchange, primaryRate, activeCurrencies }
                 <Users size={11} strokeWidth={1.9} aria-hidden />
                 مشتری
               </dt>
-              <dd className={s.statValue}>
-                {faNumInt.format(exchange._count.Customer)}
-              </dd>
+              <dd className={s.statValue}>{faNumInt.format(exchange._count.Customer)}</dd>
             </div>
             <span className={s.statDiv} aria-hidden />
             <div className={s.statCell}>
@@ -224,9 +225,7 @@ export default function HeroIdentity({ exchange, primaryRate, activeCurrencies }
                 <Wallet size={11} strokeWidth={1.9} aria-hidden />
                 تراکنش
               </dt>
-              <dd className={s.statValue}>
-                {faNumInt.format(exchange._count.Transaction)}
-              </dd>
+              <dd className={s.statValue}>{faNumInt.format(exchange._count.Transaction)}</dd>
             </div>
             <span className={s.statDiv} aria-hidden />
             <div className={s.statCell}>
@@ -234,9 +233,7 @@ export default function HeroIdentity({ exchange, primaryRate, activeCurrencies }
                 <Globe size={11} strokeWidth={1.9} aria-hidden />
                 ارز فعال
               </dt>
-              <dd className={s.statValue}>
-                {faNumInt.format(activeCurrencies)}
-              </dd>
+              <dd className={s.statValue}>{faNumInt.format(activeCurrencies)}</dd>
             </div>
           </dl>
 

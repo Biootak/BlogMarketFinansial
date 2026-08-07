@@ -51,25 +51,36 @@ function toLatinDigits(str: string): string {
 }
 
 const FA_INT = new Intl.NumberFormat('fa-IR', { useGrouping: true, maximumFractionDigits: 0 });
-const FA_DEC_2 = new Intl.NumberFormat('fa-IR',
-  { useGrouping: true, minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const FA_USD_TO_AFN = new Intl.NumberFormat('fa-IR',
-  { useGrouping: true, minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const FA_COMPACT = new Intl.NumberFormat('fa-IR',
-  { notation: 'compact', maximumFractionDigits: 1 });
+const FA_DEC_2 = new Intl.NumberFormat('fa-IR', {
+  useGrouping: true,
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+const FA_USD_TO_AFN = new Intl.NumberFormat('fa-IR', {
+  useGrouping: true,
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+const FA_COMPACT = new Intl.NumberFormat('fa-IR', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
 const FA_PLAIN = new Intl.NumberFormat('fa-IR');
 
 /* ── Glass tilt hook ──────────────────────────────────────────────────── */
 function useGlassTilt(strength = 5) {
   const ref = useRef<HTMLDivElement>(null);
-  const handleMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const el = ref.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    el.style.transform = `perspective(600px) rotateX(${-y * strength}deg) rotateY(${x * strength}deg) translateZ(4px)`;
-  }, [strength]);
+  const handleMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const el = ref.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      el.style.transform = `perspective(600px) rotateX(${-y * strength}deg) rotateY(${x * strength}deg) translateZ(4px)`;
+    },
+    [strength],
+  );
   const handleLeave = useCallback(() => {
     const el = ref.current;
     if (!el) return;
@@ -385,14 +396,27 @@ export default function HeroVisual({
                     <span className={s.mobileRateName}>
                       {SYMBOL_ROW_LABELS[rate.symbol] ?? rate.displayNameFa}
                     </span>
-                    <span className={`${s.mobileRateVal} ${trend === 'up' ? s.trendUp : s.trendDown}`}>
-                      {trend === 'up'
-                        ? <TrendingUp size={9} strokeWidth={2} style={{ display: 'inline', marginInlineEnd: 3 }} />
-                        : <TrendingDown size={9} strokeWidth={2} style={{ display: 'inline', marginInlineEnd: 3 }} />
-                      }
+                    <span
+                      className={`${s.mobileRateVal} ${trend === 'up' ? s.trendUp : s.trendDown}`}
+                    >
+                      {trend === 'up' ? (
+                        <TrendingUp
+                          size={9}
+                          strokeWidth={2}
+                          style={{ display: 'inline', marginInlineEnd: 3 }}
+                        />
+                      ) : (
+                        <TrendingDown
+                          size={9}
+                          strokeWidth={2}
+                          style={{ display: 'inline', marginInlineEnd: 3 }}
+                        />
+                      )}
                       {formatValueOnly(rate.value, rate.decimals)}
                     </span>
-                    <span className={`${s.mobileRateChange} ${trend === 'up' ? s.trendUp : s.trendDown}`}>
+                    <span
+                      className={`${s.mobileRateChange} ${trend === 'up' ? s.trendUp : s.trendDown}`}
+                    >
                       {formatChangePercent(rate.changePercent)}
                     </span>
                   </div>
@@ -481,14 +505,26 @@ export default function HeroVisual({
                           {SYMBOL_ROW_LABELS[rate.symbol] ?? rate.displayNameFa}
                         </span>
                         <div className={s.rateRight}>
-                          <span className={`${s.rateChange} ${trend === 'up' ? s.trendUp : s.trendDown}`}>
+                          <span
+                            className={`${s.rateChange} ${trend === 'up' ? s.trendUp : s.trendDown}`}
+                          >
                             {formatChangePercent(rate.changePercent)}
                           </span>
-                          <span className={`${s.rateVal} ${trend === 'up' ? s.trendUp : s.trendDown}`}>
+                          <span
+                            className={`${s.rateVal} ${trend === 'up' ? s.trendUp : s.trendDown}`}
+                          >
                             {trend === 'up' ? (
-                              <TrendingUp size={9} strokeWidth={2} style={{ display: 'inline', marginInlineEnd: 3 }} />
+                              <TrendingUp
+                                size={9}
+                                strokeWidth={2}
+                                style={{ display: 'inline', marginInlineEnd: 3 }}
+                              />
                             ) : (
-                              <TrendingDown size={9} strokeWidth={2} style={{ display: 'inline', marginInlineEnd: 3 }} />
+                              <TrendingDown
+                                size={9}
+                                strokeWidth={2}
+                                style={{ display: 'inline', marginInlineEnd: 3 }}
+                              />
                             )}
                             {formatValueOnly(rate.value, rate.decimals)}
                           </span>
@@ -502,7 +538,9 @@ export default function HeroVisual({
                           </span>
                           <span className={s.buySellItem}>
                             <span className={s.buySellLabel}>فروش:</span>
-                            <span className={`${s.buySellVal} ${s.buySellSell}`}>{sellDisplay}</span>
+                            <span className={`${s.buySellVal} ${s.buySellSell}`}>
+                              {sellDisplay}
+                            </span>
                           </span>
                         </div>
                       )}
@@ -565,11 +603,15 @@ export default function HeroVisual({
               <>
                 <div className={s.rateRow}>
                   <span className={s.rateName}>دریافتی (افغانی)</span>
-                  <span className={`${s.rateVal} ${resultAfn ? s.trendUp : ''}`}>{resultAfnFormatted}</span>
+                  <span className={`${s.rateVal} ${resultAfn ? s.trendUp : ''}`}>
+                    {resultAfnFormatted}
+                  </span>
                 </div>
                 <div className={s.rateRow}>
                   <span className={s.rateName}>دریافتی (تومان)</span>
-                  <span className={`${s.rateVal} ${s.resultTomanMuted}`}>{resultTomanFormatted}</span>
+                  <span className={`${s.rateVal} ${s.resultTomanMuted}`}>
+                    {resultTomanFormatted}
+                  </span>
                 </div>
                 <div className={s.rateRow}>
                   <span className={s.rateName}>کارمزد</span>

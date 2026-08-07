@@ -1,12 +1,12 @@
 /**
  * @file render-content.ts — server-side rendering of Tiptap JSON content.
  *
- * Why this exists: the read-only article renderer (`EditorContentRenderer`)
- * previously spun up a full TipTap editor instance in the browser, which
- * pulled the entire editor runtime + lowlight + KaTeX into the client bundle
- * (~800 KB on blog pages). `@tiptap/html`'s `generateHTML()` serializes the
- * same JSON through each extension's static `renderHTML` rules — no editor,
- * no ProseMirror view, no hydration — so the article body can be SSR'd.
+ * Why this exists: the former client-side article renderer spun up a full
+ * TipTap editor instance in the browser, which pulled the entire editor
+ * runtime + lowlight + KaTeX into the client bundle (~800 KB on blog pages).
+ * `@tiptap/html`'s `generateHTML()` serializes the same JSON through each
+ * extension's static `renderHTML` rules — no editor, no ProseMirror view, no
+ * hydration — so the article body can be SSR'd.
  *
  * IMPORTANT: this module must NOT import anything that drags in the client
  * editor runtime. The real `details`/`embed`/`math` extensions import
@@ -216,6 +216,12 @@ export const renderExtensions = [
     heading: {
       levels: [1, 2, 3, 4, 5, 6],
     },
+    // TipTap v3 StarterKit includes link/underline by default — they are added
+    // separately below with custom config, so disable them here to avoid the
+    // "Duplicate extension names" warning on every article page (matches
+    // Editor1/extensions/index.ts).
+    link: false,
+    underline: false,
     codeBlock: false,
     dropcursor: false,
     gapcursor: false,

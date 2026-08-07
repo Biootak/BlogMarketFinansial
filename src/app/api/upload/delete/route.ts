@@ -16,7 +16,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const session = await auth();
     const role = (session?.user as { role?: string } | undefined)?.role;
-    if (!session?.user || (role !== 'ADMIN' && role !== 'OWNER')) {
+    if (!session?.user || (role !== 'ADMIN' && role !== 'OWNER' && role !== 'SUPERADMIN')) {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: 'فقط ادمین می‌تواند فایل حذف کند' } },
         { status: 403 },

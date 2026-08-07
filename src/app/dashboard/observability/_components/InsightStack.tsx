@@ -1,28 +1,16 @@
 'use client';
 
-import {
-  ArrowUpLeft,
-  Clock3,
-  Database,
-  Gauge,
-  Radio,
-  ServerCrash,
-  ShieldAlert,
-  ShieldCheck,
-  Siren,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { ArrowLeft, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
-import { bucketLabel, faNum, faPercent, msShort, statusLabel, type ToneKey } from './format';
-import { readHealth } from './obsHealth';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
-import d from './deck.module.css';
+import { type ToneKey, bucketLabel, faNum, faPercent, msShort, sourceName } from './format';
+import l from './ledger.module.css';
+import { readHealth } from './obsHealth';
 
 interface Finding {
   id: string;
-  icon: LucideIcon;
   tone: ToneKey;
   title: string;
   body: string;
@@ -30,146 +18,166 @@ interface Finding {
   cta?: string;
 }
 
+/** فوریت تُن — مرتب‌سازی یافته‌ها بر همین اساس است. */
+const URGENCY: Record<ToneKey, number> = { bad: 0, warn: 1, info: 2, idle: 3, ok: 4 };
+
+const MAX_FINDINGS = 5;
+
 /**
- * یافته‌های خودکار — هیچ‌کدام متن ثابت یا نمونهٔ نمایشی نیست؛ هر جمله از
- * همان snapshot دیتابیس ساخته می‌شود و اگر شرطش برقرار نباشد اصلاً رندر
- * نمی‌شود. هدف: کاربر به‌جای خواندن پنج نمودار، در ده ثانیه بفهمد کجا را
- * نگاه کند.
+ * یافته‌های خودکار.
+ *
+ * قاعدهٔ سخت: هر یافته باید از یک عدد واقعی در snapshot مشتق شده باشد و یک
+ * مسیر بررسی داشته باشد. هیچ توصیهٔ عمومی و هیچ «بهتر است بررسی کنید» بدون
+ * پشتوانهٔ عددی اینجا نمی‌آید؛ داشبوردی که نصیحت می‌کند اعتماد را می‌سوزاند.
  */
 export function InsightStack() {
   const { data } = useObs();
-  if (!data) return null;
+
+  if (!data) {
+    return (
+      <ObsEmpty
+        icon={Sparkles}
+        title="یافته‌ای در دست نیست"
+        hint="یافته‌ها از روی همان snapshot ساخته می‌شوند؛ تا اولین خوانش نرسد چیزی برای گفتن نداریم."
+      />
+    );
+  }
 
   const health = readHealth(data);
   const findings: Finding[] = [];
 
+  const down = data.services.filter((service) => service.status === 'down');
+  if (down.length > 0) {
+    findings.push({
+      id: 'down',
+      tone: 'bad',
+      title: `${faNum(down.length)} سرویس خارج از سرویس`,
+      body: `${down.map((service) => service.name).join('، ')} در پانزده دقیقهٔ اخیر بیش از آستانه خطا داده‌اند.`,
+      href: '/dashboard/observability/services',
+      cta: 'نردبان سرویس‌ها',
+    });
+  }
+
+  const degraded = data.services.filter((service) => service.status === 'degraded');
+  if (degraded.length > 0) {
+    findings.push({
+      id: 'degraded',
+      tone: 'warn',
+      title: `${faNum(degraded.length)} سرویس کند شده`,
+      body: `${degraded.map((service) => service.name).join('، ')} هنوز پاسخ می‌دهند ولی نرخ خطا یا هشدارشان از حالت عادی بالاتر است.`,
+      href: '/dashboard/observability/services',
+      cta: 'مقایسهٔ سرویس‌ها',
+    });
+  }
+
+  // «سکوت» یک وضعیت است نه سلامت. اگر هیچ رکوردی نیامده باشد، هیچ عدد دیگری
+  // روی این صفحه قابل استناد نیست و باید صریح گفته شود.
   if (health.silent) {
     findings.push({
       id: 'silent',
-      icon: Radio,
       tone: 'idle',
       title: 'جمع‌آورندهٔ لاگ ساکت است',
       body: `در ${faNum(data.windowHours)} ساعت گذشته حتی یک رکورد در SystemLog ثبت نشده. یا ترافیکی نبوده یا نویسندهٔ لاگ از کار افتاده — تا روشن شدن این نکته هیچ عددی روی این صفحه قابل استناد نیست.`,
     });
   }
 
-  const worstService = [...data.services]
-    .filter((service) => service.status === 'down' || service.status === 'degraded')
-    .sort((a, b) => b.errors24h - a.errors24h)[0];
-
-  if (worstService) {
+  const noisiest = [...data.sources].sort((a, b) => b.errors - a.errors)[0];
+  if (noisiest && noisiest.errors > 0) {
+    const share = noisiest.total > 0 ? (noisiest.errors / noisiest.total) * 100 : 0;
     findings.push({
-      id: `service-${worstService.id}`,
-      icon: ServerCrash,
-      tone: worstService.status === 'down' ? 'bad' : 'warn',
-      title: `${worstService.name} ${statusLabel(worstService.status)} است`,
-      body: `${faNum(worstService.errors24h)} خطا از ${faNum(worstService.events24h)} رویداد در پنجرهٔ جاری، با تأخیر ${msShort(worstService.latencyMs)} و در دسترس بودن ${faPercent(worstService.uptime24h, 2)}.`,
-      href: worstService.href,
-      cta: 'رفتن به سرویس',
-    });
-  }
-
-  const noisiest = [...data.sources].filter((item) => item.errors > 0).sort((a, b) => b.errors - a.errors)[0];
-
-  if (noisiest) {
-    findings.push({
-      id: `source-${noisiest.source}`,
-      icon: Siren,
-      tone: 'bad',
-      title: `منبع ${noisiest.source} پرخطاترین است`,
-      body: `${faNum(noisiest.errors)} خطا در ${faNum(noisiest.total)} رویداد، یعنی ${faPercent((noisiest.errors / Math.max(noisiest.total, 1)) * 100)} از ترافیک خودش و ${faPercent(noisiest.share)} از کل حجم پنجره.`,
+      id: 'noisy-source',
+      tone: share > 10 ? 'bad' : 'warn',
+      title: `بیشترین خطا از ${sourceName(noisiest.source)}`,
+      body: `${faNum(noisiest.errors)} خطا از ${faNum(noisiest.total)} رویداد همین منبع، یعنی ${faPercent(share)} از ترافیک خودش.`,
       href: '/dashboard/observability/errors',
       cta: 'دفتر خطا',
     });
   }
 
-  if (!health.silent && health.peakValue > 0) {
+  const worstIncident = [...data.incidents].sort((a, b) => b.peak - a.peak)[0];
+  if (worstIncident) {
     findings.push({
-      id: 'peak',
-      icon: Clock3,
-      tone: 'info',
-      title: 'شلوغ‌ترین ساعت شبانه‌روز',
-      body: `بازهٔ ${bucketLabel(data.generatedAt, health.peakHour, data.windowHours)} با ${faNum(health.peakValue)} رویداد، برابر ${faPercent((health.peakValue / Math.max(data.totals.logs, 1)) * 100)} کل حجم پنجره. ظرفیت را برای همین ساعت بچینید نه برای میانگین.`,
+      id: 'incident',
+      tone: 'warn',
+      title: `${faNum(data.incidents.length)} پنجرهٔ بحرانی در این بازه`,
+      body: `سنگین‌ترین بازه ${bucketLabel(data.generatedAt, worstIncident.fromHour, data.windowHours)} بود، با اوج ${faNum(worstIncident.peak)} خطا در ساعت.`,
+      href: '/dashboard/observability/errors',
+      cta: 'بررسی پنجره‌ها',
     });
   }
 
   const worstQuery = data.slowQueries[0];
-  if (worstQuery && worstQuery.durationMs > 0) {
+  if (worstQuery && worstQuery.durationMs >= 500) {
     findings.push({
-      id: 'slow',
-      icon: Database,
+      id: 'slow-query',
       tone: worstQuery.durationMs >= 1000 ? 'bad' : 'warn',
       title: `کندترین مسیر ${msShort(worstQuery.durationMs)} طول کشیده`,
-      body: `منبع ${worstQuery.source} — ${worstQuery.message.slice(0, 120)}`,
+      body: `منبع ${sourceName(worstQuery.source)}؛ هر مسیری که از یک ثانیه رد شود، در ساعت اوج به صف تبدیل می‌شود.`,
       href: '/dashboard/observability/queries',
       cta: 'کوئری‌های کند',
     });
   }
 
-  findings.push(
-    data.performance.latencySource === 'measured'
-      ? {
-          id: 'latency',
-          icon: Gauge,
-          tone: 'ok',
-          title: 'صدک‌های تأخیر اندازه‌گیری‌شده‌اند',
-          body: `از ${faNum(data.performance.latencySamples)} نمونهٔ واقعی duration در یک ساعت اخیر: p50 برابر ${msShort(data.performance.p50)} و p99 برابر ${msShort(data.performance.p99)}.`,
-          href: '/dashboard/observability/latency',
-          cta: 'محور صدک‌ها',
-        }
-      : {
-          id: 'latency',
-          icon: Gauge,
-          tone: 'warn',
-          title: 'صدک‌های تأخیر مشتق‌شده‌اند',
-          body: 'هنوز نمونهٔ کافی duration در لاگ‌ها نیست، پس این اعداد از حجم و نرخ خطا استنتاج شده‌اند نه اندازه‌گیری مستقیم. الگوی duration=<ms> را در مسیرهای داغ لاگ کنید تا اعداد واقعی شوند.',
-          href: '/dashboard/observability/latency',
-          cta: 'محور صدک‌ها',
-        },
-  );
+  if (data.performance.latencySource === 'derived') {
+    findings.push({
+      id: 'derived-latency',
+      tone: 'idle',
+      title: 'صدک‌های تأخیر تخمینی‌اند',
+      body: 'در ساعت اخیر هیچ لاگی با کلید duration ثبت نشده، پس p50 و p95 و p99 مشتق‌شده‌اند نه اندازه‌گیری‌شده.',
+      href: '/dashboard/observability/latency',
+      cta: 'محور تأخیر',
+    });
+  }
 
   if (data.totals.sampled) {
     findings.push({
       id: 'sampled',
-      icon: ShieldAlert,
       tone: 'warn',
-      title: 'به سقف اسکن خورده‌ایم',
-      body: 'حجم لاگ پنجره از سقف امنِ اسکن گذشته، پس اعداد نمونه‌ای از تازه‌ترین رکوردهاست نه شمارش کامل. برای دقت بیشتر بازهٔ نگه‌داری لاگ را کوتاه‌تر کنید.',
+      title: 'اعداد این پنجره نمونه‌ای هستند',
+      body: 'حجم لاگ به سقف اسکن رسیده است؛ مجموع‌ها کف واقعی‌اند نه عدد دقیق. برای عدد دقیق باید بازه را کوتاه‌تر کرد.',
+    });
+  }
+
+  if (!health.silent) {
+    findings.push({
+      id: 'rhythm',
+      tone: 'info',
+      title: 'ریتم شبانه‌روز',
+      body: `اوج ترافیک ${bucketLabel(data.generatedAt, health.peakHour, data.windowHours)} با ${faNum(health.peakValue)} رویداد بود و سهم خطا از کل پنجره ${faPercent(health.errorShare, 2)} است.`,
+      href: '/dashboard/observability/latency',
+      cta: 'نوار روز',
     });
   }
 
   if (findings.length === 0) {
     return (
       <ObsEmpty
-        icon={ShieldCheck}
-        title="یافتهٔ قابل اقدامی نیست"
-        hint="وقتی سرویسی کند شود، منبعی خطا بدهد یا کوئری کندی ثبت گردد، همین‌جا با عدد و لینکِ مقصد خلاصه می‌شود."
+        icon={Sparkles}
+        title="چیزی برای رسیدگی نیست"
+        hint="در پنجرهٔ جاری نه سرویسی افتاده، نه پنجرهٔ بحرانی ثبت شده و نه مسیر کندی از آستانه رد شده است."
       />
     );
   }
 
+  const ordered = findings.sort((a, b) => URGENCY[a.tone] - URGENCY[b.tone]).slice(0, MAX_FINDINGS);
+
   return (
-    <ul className={`${d.insights} stagger-children`}>
-      {findings.slice(0, 6).map((finding) => {
-        const Icon = finding.icon;
-        return (
-          <li key={finding.id} className={d.insight} data-tone={finding.tone}>
-            <span className={d.insightIcon} aria-hidden="true">
-              <Icon size={16} strokeWidth={1.5} />
-            </span>
-            <div className={d.insightBody}>
-              <p className={d.insightTitle}>{finding.title}</p>
-              <p className={d.insightText}>{finding.body}</p>
-              {finding.href && finding.cta ? (
-                <Link className={d.insightLink} href={finding.href}>
-                  {finding.cta}
-                  <ArrowUpLeft size={14} strokeWidth={1.75} aria-hidden="true" />
-                </Link>
-              ) : null}
-            </div>
-          </li>
-        );
-      })}
-    </ul>
+    <ol className={l.insights}>
+      {ordered.map((finding) => (
+        <li key={finding.id}>
+          <div className={l.insight} data-tone={finding.tone}>
+            <span className={l.insightMark} aria-hidden="true" />
+            <p className={l.insightTitle}>{finding.title}</p>
+            <p className={l.insightBody}>{finding.body}</p>
+            {finding.href && finding.cta ? (
+              <Link href={finding.href} className={l.insightLink}>
+                {finding.cta}
+                <ArrowLeft size={13} strokeWidth={1.8} aria-hidden="true" />
+              </Link>
+            ) : null}
+          </div>
+        </li>
+      ))}
+    </ol>
   );
 }

@@ -99,7 +99,7 @@ npm run dev
 - **Styling**: Tailwind CSS 4, Radix UI
 - **Database**: PostgreSQL با Prisma ORM
 - **Authentication**: NextAuth.js v5
-- **Storage**: S3 Compatible (Liara)
+- **Storage**: S3 Compatible (Cloudflare R2 / MinIO / B2)
 - **Email**: Resend
 - **Editor**: Tiptap
 - **Charts**: Chart.js, Recharts

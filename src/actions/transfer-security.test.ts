@@ -120,7 +120,7 @@ describe('confirmTransfer — OTP bypass', () => {
       amount: BigInt(15_000_000), // بالای آستانه high-value
       currency: 'AFN',
       accountId: 'acc-1',
-      meta: { recipientCustomerId: 'cust-recv' },
+      meta: { txnRef: 'ref-hv', recipientCustomerId: 'cust-recv' },
       exchangeId: 'exch-1',
       customerId: 'cust-1',
     } as never);
@@ -141,7 +141,7 @@ describe('confirmTransfer — OTP bypass', () => {
       amount: BigInt(15_000_000),
       currency: 'AFN',
       accountId: 'acc-1',
-      meta: { recipientCustomerId: 'cust-recv' },
+      meta: { txnRef: 'ref-hv2', recipientCustomerId: 'cust-recv' },
       exchangeId: 'exch-1',
       customerId: 'cust-1',
     } as never);
@@ -164,7 +164,7 @@ describe('confirmTransfer — OTP bypass', () => {
       amount: BigInt(15_000_000),
       currency: 'AFN',
       accountId: 'acc-1',
-      meta: { recipientCustomerId: 'cust-recv' },
+      meta: { txnRef: 'ref-hv3', recipientCustomerId: 'cust-recv' },
       exchangeId: 'exch-1',
       customerId: 'cust-1',
     } as never);

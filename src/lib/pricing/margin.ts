@@ -77,6 +77,12 @@ export function applyMargin(
   marketSellRate: number,
   spreadPercent: number,
 ): MarginResult {
+  if (!Number.isFinite(marketBuyRate) || marketBuyRate <= 0) {
+    return { buyRate: 0, sellRate: 0, spreadPercent, spreadAbsolute: 0, profitPerUnit: 0 };
+  }
+  if (!Number.isFinite(marketSellRate) || marketSellRate <= 0) {
+    return { buyRate: 0, sellRate: 0, spreadPercent, spreadAbsolute: 0, profitPerUnit: 0 };
+  }
   const midRate = (marketBuyRate + marketSellRate) / 2;
   const half = spreadPercent / 100 / 2;
 

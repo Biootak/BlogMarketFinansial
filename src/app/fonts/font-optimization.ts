@@ -1,6 +1,6 @@
 /**
  * Font Optimization Strategy - 2026 Best Practices
- * 
+ *
  * استراتژی بهینه‌سازی فونت‌ها برای بهترین performance
  * - Preload critical fonts
  * - Font display swap
@@ -12,7 +12,7 @@ import localFont from 'next/font/local';
 
 /**
  * Estedad - فونت فارسی/عربی اصلی
- * 
+ *
  * Optimization:
  * - Variable font (100-900) - یک فایل برای همه وزن‌ها
  * - دو subset جداگانه (arabic + latin)
@@ -42,7 +42,7 @@ export const estedad = localFont({
 
 /**
  * Geist - فونت انگلیسی
- * 
+ *
  * Optimization:
  * - Variable font
  * - Preload: false (non-critical)
@@ -64,13 +64,13 @@ export const geist = localFont({
 export const FONT_STRATEGY = {
   // Critical fonts - preload
   critical: ['estedad-arabic'],
-  
+
   // Non-critical fonts - load on demand
   nonCritical: ['estedad-latin', 'geist'],
-  
+
   // Font display strategy
   display: 'swap' as const,
-  
+
   // Fallback fonts
   fallback: {
     persian: ['Arial', 'Tahoma', 'sans-serif'],
@@ -130,22 +130,22 @@ export const FONT_FACE_CSS = `
 export const FONT_PERFORMANCE_TIPS = {
   // 1. Use variable fonts (single file for all weights)
   variableFonts: true,
-  
+
   // 2. Subset fonts (separate files for different scripts)
   subsetting: true,
-  
+
   // 3. Preload only critical fonts
   preloadCritical: true,
-  
+
   // 4. Use font-display: swap
   fontDisplay: 'swap',
-  
+
   // 5. Self-host fonts (no external requests)
   selfHost: true,
-  
+
   // 6. Use woff2 format (best compression)
   format: 'woff2',
-  
+
   // 7. Adjust font fallback (reduce CLS)
   adjustFallback: true,
 } as const;
@@ -169,6 +169,6 @@ export function calculateFontMetrics(fontFamily: string) {
       sizeAdjust: '100%',
     },
   };
-  
+
   return metrics[fontFamily as keyof typeof metrics] || metrics.estedad;
 }

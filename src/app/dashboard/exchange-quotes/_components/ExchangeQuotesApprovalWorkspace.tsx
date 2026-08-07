@@ -531,9 +531,7 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
     if (fail === 0) {
       showSuccess(`${faNum.format(ok)} قیمت تأیید شد`);
     } else {
-      showError(
-        `${faNum.format(ok)} تأیید، ${faNum.format(fail)} خطا`,
-      );
+      showError(`${faNum.format(ok)} تأیید، ${faNum.format(fail)} خطا`);
     }
   }, [checked]);
 
@@ -681,9 +679,7 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
                   onClick={() => setFilterCurrency('all')}
                 >
                   همه
-                  <span className={s.filterCount}>
-                    {faNum.format(quotes.length)}
-                  </span>
+                  <span className={s.filterCount}>{faNum.format(quotes.length)}</span>
                 </button>
                 {kpi.currencies.map((c) => {
                   const cnt = quotes.filter((q) => q.currencyCode === c).length;
@@ -697,9 +693,7 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
                       onClick={() => setFilterCurrency(c)}
                     >
                       {c}
-                      <span className={s.filterCount}>
-                        {faNum.format(cnt)}
-                      </span>
+                      <span className={s.filterCount}>{faNum.format(cnt)}</span>
                     </button>
                   );
                 })}
@@ -712,9 +706,7 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
             {checked.size > 0 && (
               <div className={s.batchBar}>
                 <Layers size={13} aria-hidden />
-                <span className={s.batchCount}>
-                  {faNum.format(checked.size)} انتخاب شده
-                </span>
+                <span className={s.batchCount}>{faNum.format(checked.size)} انتخاب شده</span>
                 <Button
                   size="sm"
                   className={s.batchApproveBtn}
@@ -833,13 +825,10 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
                   rows={3}
-                  // biome-ignore lint/a11y/noAutofocus: reject dialog is intentional context
                   autoFocus
                   maxLength={500}
                 />
-                <span className={s.rejectCharCount}>
-                  {faNum.format(rejectReason.length)} / ۵۰۰
-                </span>
+                <span className={s.rejectCharCount}>{faNum.format(rejectReason.length)} / ۵۰۰</span>
               </div>
             )}
 

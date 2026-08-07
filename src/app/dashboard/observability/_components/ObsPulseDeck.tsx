@@ -1,88 +1,115 @@
 'use client';
 
-import { faNum, faPercent } from './format';
+import { ChevronLeft, ChevronRight, Radio } from 'lucide-react';
+
 import { HealthRing } from './HealthRing';
-import { readHealth } from './obsHealth';
 import { useObs } from './ObsProvider';
 import { RidgeChart } from './RidgeChart';
 import { SystemVitals } from './SystemVitals';
 import d from './deck.module.css';
+import { bucketLabel, faNum, fullDayLabel } from './format';
+import { readHealth } from './obsHealth';
 
 /**
- * پوستهٔ فرماندهی — سه ناحیهٔ نامتقارن که با هم یک جمله می‌سازند:
- *   «حال سامانه این است» ← «در شبانه‌روز این‌طور نفس کشیده» ← «اعدادش این‌هاست».
+ * سرصفحهٔ سالنامه.
+ * ─────────────────────────────────────────────────────────────
+ *  اینجا عمداً «عدد قهرمان» نداریم. تحقیق طراحی داشبوردهای SRE یک نکتهٔ ساده
+ *  دارد: اپراتور در پنج ثانیهٔ اول دنبال عدد نیست، دنبال **جمله** است —
+ *  «چیزی خراب است یا نه، و قدم بعدی چیست». پس تیتر یک جملهٔ واقعی است که از
+ *  verdict می‌آید و عدد سلامت به یک مُهر کوچک تنزل پیدا می‌کند.
  *
- * چیدمان از موبایل شروع می‌شود (تک‌ستون، حلقه بالا)، در ۵۴rem به دو ستون و در
- * ۸۲rem به سه ستونِ نامساوی می‌رسد. هیچ‌جا سه کارت هم‌اندازه نداریم؛ وزن هر
- * ناحیه با اهمیتش تعیین شده نه با تقارن.
+ *  در layout قرار دارد نه در page: «حال سامانه» زمینهٔ همهٔ تب‌هاست و نباید
+ *  با هر ناوبری unmount و دوباره رسم شود.
  */
 export function ObsPulseDeck() {
-  const { data } = useObs();
-
-  if (!data) {
-    return (
-      <section className={d.deck} data-tone="idle" aria-label="وضعیت کلی سامانه">
-        <p className={d.deckFallback}>هنوز خوانشی از سامانه ثبت نشده است.</p>
-      </section>
-    );
-  }
-
-  const health = readHealth(data);
-
-  const chips = [
-    { id: 'down', label: 'قطع', value: health.down, tone: health.down > 0 ? 'bad' : 'idle' },
-    {
-      id: 'degraded',
-      label: 'کند',
-      value: health.degraded,
-      tone: health.degraded > 0 ? 'warn' : 'idle',
-    },
-    { id: 'healthy', label: 'سالم', value: health.healthy, tone: health.healthy > 0 ? 'ok' : 'idle' },
-    { id: 'idle', label: 'بی‌ترافیک', value: health.idle, tone: 'idle' },
-  ] as const;
+  const { data, verdict, hour, windowHours, isLiveHour, stepHour, resetHour } = useObs();
+  const health = data ? readHealth(data) : null;
+  const range = data ? bucketLabel(data.generatedAt, hour, windowHours) : '—';
 
   return (
-    <section className={d.deck} data-tone={health.tone} aria-label="وضعیت کلی سامانه">
-      <span className={d.deckEdge} aria-hidden="true" />
-
-      <div className={d.deckVerdict}>
-        <HealthRing
-          score={health.score}
-          tone={health.tone}
-          label={health.label}
-          unknown={health.silent}
-        />
-        <p className={d.deckNote}>{health.note}</p>
-
-        <ul className={d.chips}>
-          {chips.map((chip) => (
-            <li key={chip.id} className={d.chip} data-tone={chip.tone}>
-              <b>{faNum(chip.value)}</b>
-              <span>{chip.label}</span>
-            </li>
-          ))}
-        </ul>
-
-        <p className={d.deckFormula}>
-          شاخص ترکیبی: ۴۰٪ در دسترس بودن ({faPercent(health.availability, 2)}) · ۳۵٪ نرخ خطا (
-          {faPercent(data.performance.errorRate)}) · ۲۵٪ پایداری سرویس‌ها
+    <section className={d.deck} data-tone={verdict.tone} aria-labelledby="obs-verdict">
+      <div className={d.slug}>
+        <p className={d.masthead}>
+          <Radio size={13} strokeWidth={1.8} aria-hidden="true" />
+          <span className={d.mastheadName}>سالنامهٔ عملیات</span>
+          <span className={d.mastheadDate}>{data ? fullDayLabel(data.generatedAt) : '—'}</span>
+          <span className={d.mastheadWindow}>پنجرهٔ {faNum(windowHours)} ساعته</span>
         </p>
+
+        <h2 id="obs-verdict" className={d.verdict}>
+          {verdict.headline}
+        </h2>
+        <p className={d.action}>{verdict.action}</p>
       </div>
 
-      <div className={d.deckFlow}>
-        <div className={d.deckFlowHead}>
-          <h2 className={d.deckFlowTitle}>نفسِ شبانه‌روز</h2>
-          <p className={d.deckFlowHint}>
-            خط‌الرأس، حجم رویداد هر ساعت است و بندِ سرخ زیرش سهم خطا. با کلیک یا Tab روی هر ساعت،
-            خوانش همان بازه باز می‌شود.
-          </p>
-        </div>
+      <div className={d.sealRow}>
+        <HealthRing
+          score={health?.score ?? 0}
+          tone={verdict.tone === 'idle' ? 'idle' : verdict.tone}
+          label={verdict.label}
+          availability={health?.availability ?? 0}
+          silent={health?.silent ?? true}
+        />
+
+        <ul className={d.tally}>
+          <li data-tone="bad">
+            <span>{faNum(verdict.down)}</span>
+            قطع
+          </li>
+          <li data-tone="warn">
+            <span>{faNum(verdict.degraded)}</span>
+            کند
+          </li>
+          <li data-tone="ok">
+            <span>{faNum(verdict.active)}</span>
+            فعال
+          </li>
+        </ul>
+      </div>
+
+      <div className={d.band}>
         <RidgeChart />
+
+        {/*
+          مکان‌نمای ساعت درست زیر نوار سیگنال است، نه در نوار ابزار.
+          کنترل باید کنار چیزی باشد که تغییرش می‌دهد. آیکون‌ها هم برای RTL
+          درست‌اند: «عقب‌تر در زمان» یعنی راست، «جلوتر» یعنی چپ.
+        */}
+        <fieldset className={d.cursorBar} aria-label="انتخاب ساعت">
+          <button
+            type="button"
+            className={d.cursorStep}
+            onClick={() => stepHour(-1)}
+            disabled={hour <= 0}
+            aria-label="ساعت قبل"
+          >
+            <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" />
+          </button>
+
+          <p className={d.cursorLabel}>
+            <span>{range}</span>
+            <small>
+              {isLiveHour ? 'ساعت جاری' : `سطل ${faNum(hour + 1)} از ${faNum(windowHours)}`}
+            </small>
+          </p>
+
+          <button
+            type="button"
+            className={d.cursorStep}
+            onClick={() => stepHour(1)}
+            disabled={isLiveHour}
+            aria-label="ساعت بعد"
+          >
+            <ChevronLeft size={16} strokeWidth={1.8} aria-hidden="true" />
+          </button>
+
+          <button type="button" className={d.cursorReset} onClick={resetHour} disabled={isLiveHour}>
+            بازگشت به ساعت جاری
+          </button>
+        </fieldset>
       </div>
 
-      <div className={d.deckVitals}>
-        <SystemVitals />
-      </div>
+      <SystemVitals />
     </section>
   );
 }

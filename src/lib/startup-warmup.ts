@@ -9,9 +9,8 @@
  * 3. ISR pre-warm — صفحات ISR را prefetch می‌کند
  */
 
-const log = (msg: string) => {
+const log = (_msg: string) => {
   if (process.env.NODE_ENV === 'development') return; // در dev سکوت
-  console.log(`[warmup] ${msg}`);
 };
 
 export async function warmup(): Promise<void> {
@@ -24,8 +23,8 @@ export async function warmup(): Promise<void> {
     const { default: prisma } = await import('@/lib/db');
     await prisma.$queryRaw`SELECT 1`;
     log(`DB ping ok (${Math.round(performance.now() - start)}ms)`);
-  } catch (e) {
-    console.warn('[warmup] DB ping failed (non-fatal):', (e as Error)?.message);
+  } catch {
+    // best-effort — warmup failure should not block startup
   }
 
   // ─── 2. safeCache prime — hot data ───────────────────────────────────────
@@ -52,8 +51,8 @@ export async function warmup(): Promise<void> {
       getLatestPostCategories().catch(() => null),
     ]);
     log(`safeCache primed (${Math.round(performance.now() - cacheStart)}ms)`);
-  } catch (e) {
-    console.warn('[warmup] safeCache prime failed (non-fatal):', (e as Error)?.message);
+  } catch {
+    // best-effort — cache priming failure should not block startup
   }
 
   // ─── 3. ISR pre-warm — صفحات پرمخاطب ─────────────────────────────────────
@@ -75,7 +74,9 @@ export async function warmup(): Promise<void> {
           }).catch(() => null),
         ),
       );
-      log(`ISR pre-warm done for ${pages.length} pages (${Math.round(performance.now() - warmStart)}ms)`);
+      log(
+        `ISR pre-warm done for ${pages.length} pages (${Math.round(performance.now() - warmStart)}ms)`,
+      );
     } catch {
       // silent fail — pre-warm اختیاری است
     }

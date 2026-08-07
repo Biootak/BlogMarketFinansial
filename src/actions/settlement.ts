@@ -17,6 +17,7 @@ import { requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import type { FintechActionResult } from '@/types/types';
 import type { Prisma } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 import { v4 as createId } from 'uuid';
 import { z } from 'zod';
 
@@ -230,21 +231,23 @@ export async function computePeriodSettlement(
     select: { fromAmount: true, feeAmount: true },
   });
 
-  // Prisma Decimal → string → BigInt (مثال: 1500.50 AFN → "150050" cents)
-  // از d.fromAmount.toString() به جای Number() برای جلوگیری از floating-point precision error
+  // C5-fix: از Decimal.js برای تبدیل دقیق به cents (BigInt) استفاده می‌کنیم.
+  // Number() روی مبالغ بزرگ (>2^53) precision می‌بازد — Decimal کامل‌اً صحیح است.
   const totalVolumeDecimal = deals.reduce(
-    (sum, d) => sum + BigInt(Math.round(Number(d.fromAmount.toString()) * 100)),
+    (sum, d) => sum + BigInt(new Decimal(d.fromAmount.toString()).mul(100).round().toFixed(0)),
     BigInt(0),
   );
   const totalFeeDecimal = deals.reduce(
-    (sum, d) => sum + BigInt(Math.round(Number(d.feeAmount.toString()) * 100)),
+    (sum, d) => sum + BigInt(new Decimal(d.feeAmount.toString()).mul(100).round().toFixed(0)),
     BigInt(0),
   );
 
   // platformFee = totalFeeDecimal * (platformFeeRate / 100)
   // مثال: totalFeeDecimal=10000n (100 AFN), platformFeeRate=10% → platformFee=1000n (10 AFN)
-  const platformFeeRate = Number((exchange.platformFee ?? 0).toString()) / 100;
-  const platformFee = BigInt(Math.round(Number(totalFeeDecimal) * platformFeeRate));
+  const platformFeeRateDecimal = new Decimal((exchange.platformFee ?? 0).toString()).div(100);
+  const platformFee = BigInt(
+    new Decimal(totalFeeDecimal.toString()).mul(platformFeeRateDecimal).round().toFixed(0),
+  );
   const exchangeNet = totalFeeDecimal - platformFee;
 
   const id = createId();

@@ -7,6 +7,7 @@ import {
   toggleSocialLink,
   updateSocialLink,
 } from '@/actions/socialLinkActions';
+import { ConfirmDialog } from '@/components/Dashboard/primitives';
 import ImageUploadDialog from '@/components/ImageUpload/ImageUploadDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,6 +78,7 @@ export default function SocialLinksManager() {
   const [showAddForm, setShowAddForm] = useState<SocialLinkType | null>(null);
   const [isIconDialogOpen, setIsIconDialogOpen] = useState(false);
   const [isEditIconDialogOpen, setIsEditIconDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   useEffect(() => {
     loadLinks();
@@ -149,8 +151,14 @@ export default function SocialLinksManager() {
     setSaving(false);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('آیا مطمئن هستید؟')) return;
+  const handleDelete = (id: string) => {
+    setDeleteTarget(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const id = deleteTarget;
+    setDeleteTarget(null);
     const result = await deleteSocialLink(id);
     if (result.success) {
       toast({ title: 'موفق', description: 'حذف شد' });
@@ -519,6 +527,17 @@ export default function SocialLinksManager() {
         initialPreview={editingData.icon || ''}
         title="آپلود آیکون"
         folder="general"
+      />
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+        title="حذف لینک"
+        description="آیا مطمئن هستید؟ این عملیات قابل بازگشت نیست."
+        confirmLabel="حذف"
+        variant="danger"
+        onConfirm={confirmDelete}
       />
     </div>
   );

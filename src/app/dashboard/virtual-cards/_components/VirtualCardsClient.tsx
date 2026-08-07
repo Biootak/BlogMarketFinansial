@@ -186,21 +186,15 @@ export default function VirtualCardsClient({ initialCards }: Props) {
         <>
           <div className={s.stats}>
             <div className={s.stat}>
-              <span className={s.statValue}>
-                {_faNum.format(cards.length)}
-              </span>
+              <span className={s.statValue}>{_faNum.format(cards.length)}</span>
               <span className={s.statLabel}>کل کارت‌ها</span>
             </div>
             <div className={s.stat}>
-              <span className={s.statValue}>
-                {_faNum.format(activeCount)}
-              </span>
+              <span className={s.statValue}>{_faNum.format(activeCount)}</span>
               <span className={s.statLabel}>فعال</span>
             </div>
             <div className={s.stat}>
-              <span className={s.statValue}>
-                {_faNum.format(3 - activeCount)}
-              </span>
+              <span className={s.statValue}>{_faNum.format(3 - activeCount)}</span>
               <span className={s.statLabel}>ظرفیت باقی‌مانده</span>
             </div>
           </div>

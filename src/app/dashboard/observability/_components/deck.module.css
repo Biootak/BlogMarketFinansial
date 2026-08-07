@@ -1,722 +1,463 @@
 /* ============================================================================
-   Observability — Operations Deck (2026)
+   سرصفحهٔ سالنامه — مُهر سلامت، جملهٔ وضعیت، نوار سیگنال، ریل نشانه‌ها
    ----------------------------------------------------------------------------
-   قواعد این فایل (هم‌راستا با AGENTS.style.md / AGENTS.ui-design.md):
-   • فقط توکن‌های --ds-* / --nova-*؛ هیچ hex یا rgb.
-   • فقط property های منطقی (inline/block) — هیچ left/right.
-   • هیچ @keyframes محلی؛ حرکت فقط transition روی opacity/transform.
-   • --tone روی خودِ ریشهٔ هر بلوک ست می‌شود (scoped)، نه با سلکتور سراسری.
+   Mobile first. هیچ رنگ خامی؛ فقط --obs-* و --tone.
    ============================================================================ */
 
-/* ── tone (scoped) ────────────────────────────────────────── */
-
-.deck,
-.ring,
-.rib,
-.insight,
-.chip,
-.readoutFacts li,
-.pulseTick {
-  --tone: var(--ds-accent-slate);
-}
-
-.deck[data-tone='ok'],
-.ring[data-tone='ok'],
-.rib[data-tone='ok'],
-.insight[data-tone='ok'],
-.chip[data-tone='ok'],
-.readoutFacts li[data-tone='ok'],
-.pulseTick[data-tone='ok'] {
-  --tone: var(--nova-up);
-}
-
-.deck[data-tone='warn'],
-.ring[data-tone='warn'],
-.rib[data-tone='warn'],
-.insight[data-tone='warn'],
-.chip[data-tone='warn'],
-.readoutFacts li[data-tone='warn'] {
-  --tone: var(--ds-accent-amber);
-}
-
-.deck[data-tone='bad'],
-.ring[data-tone='bad'],
-.rib[data-tone='bad'],
-.insight[data-tone='bad'],
-.chip[data-tone='bad'],
-.readoutFacts li[data-tone='bad'],
-.pulseTick[data-tone='bad'] {
-  --tone: var(--nova-down);
-}
-
-.deck[data-tone='info'],
-.ring[data-tone='info'],
-.rib[data-tone='info'],
-.insight[data-tone='info'],
-.chip[data-tone='info'] {
-  --tone: var(--ds-accent-indigo);
-}
-
-/* ── Deck shell ───────────────────────────────────────────── */
-
 .deck {
-  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--ds-space-5);
-  padding: var(--ds-space-5) var(--ds-space-4) var(--ds-space-4);
-  border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-2xl);
-  background:
-    radial-gradient(
-      130% 110% at 100% 0%,
-      color-mix(in oklch, var(--tone) 8%, transparent),
-      transparent 62%
-    ),
-    var(--ds-surface-elevated);
-  box-shadow: var(--ds-shadow-md);
-  overflow: clip;
-  min-inline-size: 0;
-}
-
-/* هیرلاین محیطی — نور نازکِ خودروشن به‌جای بلور و درخشش سنگین */
-.deckEdge {
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline: 0;
-  block-size: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in oklch, var(--tone) 65%, transparent),
-    transparent
-  );
-  pointer-events: none;
-}
-
-.deckFallback {
-  margin: 0;
-  font-size: var(--ds-text-sm);
-  color: var(--ds-text-muted);
-}
-
-@media (min-width: 54rem) {
-  .deck {
-    grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr);
-    padding: var(--ds-space-6) var(--ds-space-5) var(--ds-space-5);
-    gap: var(--ds-space-6);
-  }
-
-  .deckVitals {
-    grid-column: 1 / -1;
-  }
-}
-
-@media (min-width: 82rem) {
-  .deck {
-    grid-template-columns: minmax(12rem, 16rem) minmax(0, 1fr) minmax(13rem, 17rem);
-  }
-
-  .deckVitals {
-    grid-column: auto;
-    border-inline-start: 1px solid var(--ds-border-subtle);
-    padding-inline-start: var(--ds-space-5);
-  }
-}
-
-/* ── Zone 1 — verdict ─────────────────────────────────────── */
-
-.deckVerdict {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--ds-space-3);
-  min-inline-size: 0;
-}
-
-.deckNote {
-  margin: 0;
-  font-size: var(--ds-text-xs);
-  line-height: var(--ds-leading-normal);
-  color: var(--ds-text-secondary);
-  max-inline-size: 34ch;
-}
-
-.deckFormula {
-  margin: 0;
-  font-size: 0.66rem;
-  line-height: var(--ds-leading-snug);
-  color: var(--ds-text-muted);
-  padding-block-start: var(--ds-space-2);
-  border-block-start: 1px solid var(--ds-border-subtle);
-  inline-size: 100%;
-}
-
-/* ── Health ring ──────────────────────────────────────────── */
-
-.ring {
-  position: relative;
-  display: grid;
-  place-items: center;
-  inline-size: clamp(7.5rem, 26vw, 9.5rem);
-  aspect-ratio: 1;
-  align-self: center;
-}
-
-.ringSvg {
-  position: absolute;
-  inset: 0;
-  inline-size: 100%;
-  block-size: 100%;
-  transform: rotate(-90deg);
-  overflow: visible;
-}
-
-.ringTrack {
-  fill: none;
-  stroke: var(--ds-border-subtle);
-  stroke-width: 6;
-}
-
-.ringArc {
-  fill: none;
-  stroke: var(--tone);
-  stroke-width: 6;
-  stroke-linecap: round;
-  transition: stroke-dasharray var(--ds-duration-slow) var(--ds-ease-out-expo);
-}
-
-.ringInner {
-  fill: none;
-  stroke: color-mix(in oklch, var(--tone) 26%, transparent);
-  stroke-width: 1;
-  stroke-dasharray: 2 6;
-}
-
-.ringCore {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.1rem;
-  line-height: 1;
-}
-
-.ringScore {
-  font-size: var(--ds-text-3xl);
-  font-weight: var(--ds-weight-extrabold);
-  letter-spacing: var(--nova-tracking-tightest);
-  color: var(--ds-text-primary);
-  font-variant-numeric: tabular-nums;
-}
-
-.ringUnit {
-  font-size: 0.62rem;
-  color: var(--ds-text-muted);
-}
-
-.ringLabel {
-  position: absolute;
-  inset-block-end: -0.35rem;
-  margin: 0;
-  padding: 0.15rem var(--ds-space-3);
-  border: 1px solid color-mix(in oklch, var(--tone) 38%, transparent);
-  border-radius: var(--ds-radius-full);
-  background: var(--ds-surface-elevated);
-  color: var(--tone);
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-bold);
-  white-space: nowrap;
-}
-
-/* ── Status chips ─────────────────────────────────────────── */
-
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ds-space-2);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--ds-space-1);
-  padding: 0.2rem var(--ds-space-2);
-  border: 1px solid color-mix(in oklch, var(--tone) 30%, var(--ds-border-subtle));
-  border-radius: var(--ds-radius-sm);
-  background: color-mix(in oklch, var(--tone) 8%, transparent);
-  font-size: 0.66rem;
-  color: var(--ds-text-secondary);
-}
-
-.chip b {
-  color: var(--tone);
-  font-weight: var(--ds-weight-bold);
-  font-variant-numeric: tabular-nums;
-}
-
-/* ── Zone 2 — ridge ───────────────────────────────────────── */
-
-.deckFlow {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-3);
-  min-inline-size: 0;
-}
-
-.deckFlowHead {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-1);
-}
-
-.deckFlowTitle {
-  margin: 0;
-  font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-semibold);
-  letter-spacing: var(--nova-tracking-tight);
-  color: var(--ds-text-primary);
-}
-
-.deckFlowHint {
-  margin: 0;
-  font-size: var(--ds-text-xs);
-  line-height: var(--ds-leading-snug);
-  color: var(--ds-text-muted);
-  max-inline-size: 64ch;
-}
-
-.ridge {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-2);
-  min-inline-size: 0;
-}
-
-.ridgePlot {
-  position: relative;
-  block-size: 8.5rem;
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-surface-recessed);
-  box-shadow: inset 0 0 0 1px var(--ds-border-subtle);
-  overflow: hidden;
+  padding-block-end: var(--ds-space-5);
+  border-block-end: 1px solid var(--obs-rule-2);
   min-inline-size: 0;
 }
 
 @media (min-width: 62rem) {
-  .ridgePlot {
-    block-size: 10.5rem;
-  }
-}
-
-/*
-   SVG در مختصات چپ‌به‌راست رسم شده (قدیمی‌ترین ساعت در x=0). در RTL کل بوم
-   آینه می‌شود تا قدیمی‌ترین سمت راست بیفتد و با جهت خواندن فارسی و با لایهٔ
-   flex هدف‌های لمسی هم‌راستا شود. هیچ متنی داخل SVG نیست، پس چیزی برعکس
-   خوانده نمی‌شود.
-*/
-.ridgeSvg {
-  position: absolute;
-  inset: 0;
-  inline-size: 100%;
-  block-size: 100%;
-}
-
-:global(html[dir='rtl']) .ridgeSvg {
-  transform: scaleX(-1);
-}
-
-.ridgeGrid line {
-  stroke: var(--ds-border-subtle);
-  stroke-width: 1;
-  stroke-dasharray: 3 5;
-}
-
-.ridgeStopTop {
-  stop-color: var(--nova-up);
-  stop-opacity: 0.3;
-}
-
-.ridgeStopBottom {
-  stop-color: var(--nova-up);
-  stop-opacity: 0.02;
-}
-
-.ridgeArea {
-  stroke: none;
-}
-
-.ridgeLine {
-  fill: none;
-  stroke: var(--nova-up);
-  stroke-width: 1.75;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-}
-
-.ridgeErrLine {
-  fill: none;
-  stroke: var(--nova-down);
-  stroke-width: 1.25;
-  stroke-linejoin: round;
-  stroke-dasharray: 4 3;
-  opacity: 0.85;
-}
-
-/* لایهٔ تعامل — HTML و flex، پس در RTL خودش از راست شروع می‌کند */
-.ridgeHits {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.ridgeHit {
-  flex: 1 1 0;
-  min-inline-size: 0;
-  display: flex;
-}
-
-.ridgeBtn {
-  position: relative;
-  inline-size: 100%;
-  min-block-size: 2.75rem;
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: pointer;
-  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
-}
-
-.ridgeBtn:hover {
-  background: color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
-}
-
-.ridgeBtn:focus-visible {
-  outline: 2px solid var(--nova-primary);
-  outline-offset: -2px;
-}
-
-.ridgeStem {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 50%;
-  inline-size: 1px;
-  background: var(--ds-text-primary);
-  opacity: 0;
-  transform: scaleY(0.6);
-  transform-origin: bottom center;
-  transition:
-    opacity var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-base) var(--ds-ease-spring);
-}
-
-.ridgeBtn[data-active='true'] .ridgeStem {
-  opacity: 0.45;
-  transform: scaleY(1);
-}
-
-.ridgeDrop {
-  position: absolute;
-  inset-block-end: 0;
-  inset-inline: 22%;
-  border-start-start-radius: 2px;
-  border-start-end-radius: 2px;
-  background: color-mix(in oklch, var(--nova-down) 55%, transparent);
-}
-
-.ridgeBtn[data-error='false'] .ridgeDrop {
-  display: none;
-}
-
-.ridgeAxis {
-  display: flex;
-  justify-content: space-between;
-  margin: 0;
-  font-size: 0.64rem;
-  color: var(--ds-text-muted);
-}
-
-/* ── Readout ──────────────────────────────────────────────── */
-
-.readout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--ds-space-2);
-  padding: var(--ds-space-3);
-  border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-surface);
-}
-
-@media (min-width: 44rem) {
-  .readout {
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    gap: var(--ds-space-4);
+  .deck {
+    grid-template-columns: minmax(0, 1fr) minmax(11rem, 14rem);
+    column-gap: clamp(2rem, 5vw, 4.5rem);
+    row-gap: var(--ds-space-6);
+    align-items: start;
   }
 
-  .readoutHour {
+  .slug {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .sealRow {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .band,
+  .vitals,
+  .vitalsEmpty {
     grid-column: 1 / -1;
   }
 }
 
-.readoutHour {
-  margin: 0;
-  font-size: 0.66rem;
-  color: var(--ds-text-muted);
-  font-variant-numeric: tabular-nums;
+/* ── جملهٔ وضعیت ─────────────────────────────────────────────── */
+
+.slug {
+  min-inline-size: 0;
 }
 
-.readoutMain {
-  margin: 0;
-  font-size: var(--ds-text-2xl);
-  font-weight: var(--ds-weight-bold);
-  line-height: var(--ds-leading-tight);
-  letter-spacing: var(--nova-tracking-tighter);
-  color: var(--ds-text-primary);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.readoutUnit {
-  margin-inline-start: var(--ds-space-1);
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-medium);
-  color: var(--ds-text-muted);
-}
-
-.readoutFacts {
+.masthead {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--ds-space-2) var(--ds-space-4);
+  align-items: center;
+  gap: 0.4rem 0.7rem;
+  margin: 0 0 var(--ds-space-3);
+  color: var(--obs-muted);
+  font-size: 0.68rem;
+  line-height: 1.5;
+}
+
+.masthead svg {
+  color: var(--tone);
+}
+
+.mastheadName {
+  color: var(--obs-ink);
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: var(--nova-tracking-tight);
+}
+
+.mastheadDate,
+.mastheadWindow {
+  position: relative;
+  padding-inline-start: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.mastheadDate::before,
+.mastheadWindow::before {
+  content: "";
+  position: absolute;
+  inset-block: 0.15rem;
+  inset-inline-start: 0.3rem;
+  inline-size: 1px;
+  background: var(--obs-rule-2);
+}
+
+/*
+   تیتر یک جملهٔ کامل است، نه یک عدد.
+   وزن ۸۰۰ و tracking منفی زیاد، اما اندازه کنترل‌شده: باید از دو متر خوانده
+   شود بدون اینکه نصف صفحه را بخورد.
+*/
+.verdict {
+  max-inline-size: 24ch;
+  margin: 0;
+  color: var(--obs-ink);
+  font-size: clamp(1.5rem, 1rem + 2.6vw, 2.75rem);
+  font-weight: var(--ds-weight-extrabold);
+  letter-spacing: -0.042em;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+.action {
+  max-inline-size: 58ch;
+  margin: var(--ds-space-3) 0 0;
+  padding-inline-start: var(--ds-space-3);
+  border-inline-start: 1px solid var(--tone);
+  color: var(--obs-ink-2);
+  font-size: var(--ds-text-sm);
+  line-height: var(--ds-leading-relaxed);
+  text-wrap: pretty;
+}
+
+/* ── مُهر سلامت ──────────────────────────────────────────────── */
+
+.sealRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-4);
+  min-inline-size: 0;
+}
+
+@media (min-width: 62rem) {
+  .sealRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--ds-space-4);
+    padding-inline-start: var(--ds-space-5);
+    border-inline-start: 1px solid var(--obs-rule);
+  }
+}
+
+/*
+   مُهر: نقاشی و عدد در یک خانهٔ گرید روی هم می‌نشینند و پانویس ردیف بعد.
+   عمداً absolute نیست — پانویس باید فضای واقعی بگیرد وگرنه روی شمارش وضعیت
+   می‌افتد (همان باگی که نسخهٔ قبل داشت).
+*/
+.seal {
+  flex: none;
+  display: grid;
+  grid-template-rows: auto auto;
+  justify-items: center;
+  gap: 0.4rem;
+  inline-size: clamp(5.5rem, 18vw, 7rem);
+  margin: 0;
+}
+
+.sealArt {
+  grid-area: 1 / 1;
+  inline-size: 100%;
+  aspect-ratio: 1;
+  transform: rotate(-90deg);
+}
+
+.sealTrack {
+  fill: none;
+  stroke: var(--obs-rule-2);
+  stroke-width: 5;
+}
+
+.seal[data-silent="true"] .sealTrack {
+  stroke-dasharray: 2 6;
+  stroke-linecap: round;
+}
+
+.sealAvailability {
+  fill: none;
+  stroke: color-mix(in oklch, var(--obs-accent) 45%, transparent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: var(--arc) var(--gap);
+  transition: stroke-dasharray var(--ds-duration-slow) var(--obs-ease);
+}
+
+.sealScore {
+  fill: none;
+  stroke: var(--tone);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: var(--arc) var(--gap);
+  transition: stroke-dasharray var(--ds-duration-slow) var(--obs-ease);
+}
+
+/*
+   «نفسِ سامانه» — نوسان ۰٫۵ هرتزی روی یک خط مویی خودروشن.
+   نه glow، نه blur، نه Lottie. فقط opacity، پس روی GPU ارزان است و روی
+   OLED هم چیزی نمی‌سوزاند.
+*/
+.sealBreath {
+  fill: none;
+  stroke: var(--tone);
+  stroke-width: 0.75;
+  opacity: 0.35;
+  animation: seal-breath 2s var(--obs-ease) infinite;
+}
+
+@keyframes seal-breath {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.08;
+  }
+}
+
+.sealCaption {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  margin: 0;
+}
+
+.sealScoreText {
+  color: var(--obs-ink);
+  font-size: var(--ds-text-xl);
+  font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.sealLabel {
+  color: var(--tone);
+  font-size: 0.66rem;
+  font-weight: var(--ds-weight-medium);
+}
+
+.sealFoot {
+  grid-area: 2 / 1;
+  margin: 0;
+  color: var(--obs-muted);
+  font-size: 0.62rem;
+  line-height: 1.5;
+  text-align: center;
+  text-wrap: balance;
+}
+
+/* شمارش وضعیت — سه عدد، بدون کارت، فقط خط مویی بین‌شان */
+.tally {
+  display: flex;
+  flex: 1 1 auto;
+  gap: var(--ds-space-3);
   margin: 0;
   padding: 0;
   list-style: none;
+  min-inline-size: 0;
 }
 
-.readoutFacts li {
+@media (min-width: 62rem) {
+  .tally {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .tally li + li {
+    border-block-start: 1px solid var(--obs-rule);
+  }
+}
+
+.tally li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding-block: 0.35rem;
+  color: var(--obs-muted);
+  font-size: var(--ds-text-xs);
+}
+
+.tally span {
+  color: var(--tone);
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+/* ── نوار سیگنال و مکان‌نما ──────────────────────────────────── */
+
+.band {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  min-inline-size: 0;
+}
+
+.cursorBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  min-inline-size: 0;
+}
+
+.cursorStep {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border: 1px solid var(--obs-rule-2);
+  border-radius: var(--ds-radius-sm);
+  background: transparent;
+  color: var(--obs-ink-2);
+  cursor: pointer;
+  transition: border-color var(--obs-fast) var(--obs-ease), color var(--obs-fast) var(--obs-ease),
+    transform 120ms var(--ds-ease-spring);
+}
+
+.cursorStep:hover:not(:disabled) {
+  border-color: var(--obs-accent);
+  color: var(--obs-accent);
+}
+
+.cursorStep:active:not(:disabled) {
+  transform: scale(0.93);
+}
+
+.cursorStep:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cursorStep:focus-visible,
+.cursorReset:focus-visible {
+  outline: 2px solid var(--obs-accent);
+  outline-offset: 2px;
+}
+
+.cursorLabel {
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
-  font-size: 0.66rem;
-  color: var(--ds-text-muted);
-}
-
-.readoutFacts b {
+  margin: 0;
+  min-inline-size: 0;
+  color: var(--obs-ink);
   font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-bold);
-  color: var(--tone);
+  font-weight: var(--ds-weight-medium);
   font-variant-numeric: tabular-nums;
 }
 
-.readoutFacts li[data-tone='idle'] b {
-  color: var(--ds-text-primary);
-}
-
-/* ── Zone 3 — vital ribs ──────────────────────────────────── */
-
-.deckVitals {
-  min-inline-size: 0;
-}
-
-.vitals {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-3);
-}
-
-.vitalsHead {
-  margin: 0;
+.cursorLabel small {
+  color: var(--obs-muted);
   font-size: 0.66rem;
-  font-weight: var(--ds-weight-semibold);
-  letter-spacing: 0.04em;
-  color: var(--ds-text-muted);
+  font-weight: 400;
 }
 
-.ribs {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ds-space-2) var(--ds-space-4);
-  margin: 0;
-}
-
-@media (min-width: 82rem) {
-  .ribs {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0;
-  }
-}
-
-.rib {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: baseline;
-  gap: 0 var(--ds-space-2);
-  padding-block: var(--ds-space-1-5);
-}
-
-@media (min-width: 82rem) {
-  .rib {
-    border-block-start: 1px solid var(--ds-border-subtle);
-    padding-block: var(--ds-space-2);
-  }
-
-  .rib:first-of-type {
-    border-block-start: 0;
-  }
-}
-
-.ribKey {
-  font-size: 0.68rem;
-  color: var(--ds-text-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.ribVal {
-  margin: 0;
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-semibold);
-  color: var(--tone);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.rib[data-tone='idle'] .ribVal {
-  color: var(--ds-text-primary);
-}
-
-.ribTrack {
-  grid-column: 1 / -1;
-  block-size: 2px;
-  margin-block-start: 0.2rem;
-  border-radius: var(--ds-radius-full);
-  background: var(--ds-surface-recessed);
-  overflow: hidden;
-}
-
-.ribFill {
-  display: block;
-  block-size: 100%;
-  background: color-mix(in oklch, var(--tone) 65%, transparent);
-  transition: inline-size var(--ds-duration-slow) var(--ds-ease-out-expo);
-}
-
-/* نبض فشرده — ۲۴ خط مویی، تازه‌ترین در inline-end */
-.pulse {
-  display: flex;
-  align-items: flex-end;
-  gap: 1px;
-  block-size: 2rem;
-  padding-block-start: var(--ds-space-2);
-  border-block-start: 1px solid var(--ds-border-subtle);
-}
-
-.pulseTick {
-  flex: 1 1 0;
-  min-inline-size: 1px;
-  border-radius: 1px;
-  background: color-mix(in oklch, var(--tone) 48%, transparent);
-}
-
-.vitalsNote {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--ds-space-2);
-  margin: 0;
-  font-size: 0.64rem;
-  line-height: var(--ds-leading-snug);
-  color: var(--ds-text-muted);
-}
-
-.vitalsNote svg {
-  flex: none;
-  margin-block-start: 0.1rem;
-}
-
-/* ── Insight stack ────────────────────────────────────────── */
-
-.insights {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.insight {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--ds-space-3);
-  padding-block: var(--ds-space-3);
-  border-block-start: 1px solid var(--ds-border-subtle);
-}
-
-.insight:first-child {
-  border-block-start: 0;
-}
-
-.insightIcon {
-  display: grid;
-  place-items: center;
-  inline-size: 1.85rem;
-  block-size: 1.85rem;
-  border-radius: var(--ds-radius-sm);
-  border: 1px solid color-mix(in oklch, var(--tone) 30%, transparent);
-  background: color-mix(in oklch, var(--tone) 10%, transparent);
-  color: var(--tone);
-  flex: none;
-}
-
-.insightBody {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  min-inline-size: 0;
-}
-
-.insightTitle {
-  margin: 0;
-  font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-semibold);
-  color: var(--ds-text-primary);
-  line-height: var(--ds-leading-snug);
-}
-
-.insightText {
-  margin: 0;
-  font-size: var(--ds-text-xs);
-  line-height: var(--ds-leading-normal);
-  color: var(--ds-text-muted);
-  overflow-wrap: anywhere;
-}
-
-.insightLink {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ds-space-1);
-  align-self: flex-start;
-  min-block-size: 2.25rem;
+.cursorReset {
+  min-block-size: 2.75rem;
+  margin-inline-start: auto;
+  padding-inline: 0.75rem;
+  border: none;
+  background: none;
+  color: var(--obs-accent);
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-medium);
-  color: var(--nova-primary);
-  text-decoration: none;
   cursor: pointer;
-  transition: opacity var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: opacity var(--obs-fast) var(--obs-ease);
 }
 
-.insightLink:hover {
-  opacity: 0.75;
+.cursorReset:disabled {
+  color: var(--obs-muted);
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.insightLink:focus-visible {
-  outline: 2px solid var(--nova-primary);
-  outline-offset: 2px;
+/* ── ریل نشانه‌های حیاتی ─────────────────────────────────────── */
+
+/*
+   جداکنندهٔ مویی با ترفند «gap یک پیکسلی»: ظرف رنگ خط را می‌گیرد، خانه‌ها
+   رنگ کاغذ. در هر تعداد ستون و هر حالت wrap درست می‌افتد و در RTL هم
+   نیاز به اصلاح ندارد. جایگزین border-inline-start و بازی nth-child.
+*/
+.vitals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: 1px;
+  margin: 0;
+  border: 1px solid var(--obs-rule);
+  border-radius: var(--ds-radius-lg);
+  background: var(--obs-rule);
+  overflow: hidden;
+}
+
+.vital {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: var(--ds-space-3) var(--ds-space-3-5);
+  background: var(--obs-paper);
+  min-inline-size: 0;
+}
+
+.vitalLabel {
+  color: var(--obs-muted);
+  font-size: 0.66rem;
+  font-weight: var(--ds-weight-medium);
+  letter-spacing: 0.02em;
+}
+
+.vitalBody {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin: 0;
+  min-inline-size: 0;
+}
+
+.vitalValue {
+  color: var(--obs-ink);
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.vitalChip {
+  padding: 0.1rem 0.35rem;
+  border: 1px solid color-mix(in oklch, var(--tone) 35%, transparent);
   border-radius: var(--ds-radius-sm);
+  color: color-mix(in oklch, var(--tone) 75%, var(--obs-ink));
+  font-size: 0.6rem;
+  font-weight: var(--ds-weight-medium);
+  white-space: nowrap;
+}
+
+.vitalTrack {
+  position: relative;
+  flex: 1 0 100%;
+  block-size: 2px;
+  margin-block-start: 0.2rem;
+  background: color-mix(in oklch, var(--obs-ink) 8%, transparent);
+  overflow: hidden;
+}
+
+.vitalTrack::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: var(--fill, 0%);
+  background: var(--tone);
+  transition: inline-size var(--ds-duration-slow) var(--obs-ease);
+}
+
+.vitalNote {
+  flex: 1 0 100%;
+  color: var(--obs-muted);
+  font-size: 0.64rem;
+  line-height: 1.5;
+}
+
+.vitalsEmpty {
+  margin: 0;
+  padding: var(--ds-space-4);
+  border: 1px dashed var(--obs-rule-2);
+  border-radius: var(--ds-radius-lg);
+  color: var(--obs-muted);
+  font-size: var(--ds-text-xs);
 }

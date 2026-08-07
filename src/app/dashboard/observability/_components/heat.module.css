@@ -1,127 +1,290 @@
 /* ============================================================================
-   Source heat matrix — منبع × ساعت
+   توزیع‌ها — ماتریس گرما، سهم منابع، توزیع سطوح
    ----------------------------------------------------------------------------
-   RTL امن: چیدمان با grid و property های منطقی. ستون ۱ گرید در RTL سمت راست
-   می‌نشیند، پس سطل ۰ (قدیمی‌ترین) در inline-start است — دقیقاً هم‌جهت با
-   زلزله‌نگار hero. هر دو نمایش یک زبان زمانی دارند.
-
-   جمع حاشیه (marginal total) عمداً وجود دارد: دفتر مالی همیشه جمع ستون را
-   کنار ردیف می‌نویسد. اینجا هم همان کار را می‌کنیم.
+   هیچ‌کدام از این سه، دایره‌ای نیستند. نمودار دایره‌ای برای مقایسهٔ بیش از سه
+   سهم بی‌فایده است (چشم زاویه را بد می‌خواند) و در RTL جهت چرخشش هم
+   بحث‌برانگیز می‌شود. همه‌جا نوار و ماتریس داریم: قابل مقایسه، قابل اسکن، ارزان.
    ============================================================================ */
 
-.wrap {
+/* ═══════════════ ماتریس گرما ═══════════════ */
+
+/*
+   کل ماتریس LTR است (زمان چپ به راست) ولی ستون نامِ منبع **آخرین** ستون
+   تعریف شده. نتیجه: در صفحهٔ راست‌به‌چپ، نام منبع سمت راست می‌نشیند و ساعت
+   جاری هم دقیقاً کنارش. یعنی چشم از نام منبع به تازه‌ترین لحظه می‌رسد، نه به
+   بیست‌وچهار ساعت پیش. این جزئیات همان چیزی است که RTL درست را می‌سازد.
+*/
+.heat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
   min-inline-size: 0;
 }
 
-.scroller {
-  min-inline-size: 0;
-  overflow-x: auto;
-  padding-block-end: var(--ds-space-1);
-}
-
+/*
+   لیست ستون‌ها کامل از JS می‌آید، نه فقط تعدادش.
+   `repeat(var(--n), …)` طبق مشخصات CSS معتبر نیست (تعداد باید عدد لفظی
+   باشد) و مرورگر کل اعلان را دور می‌ریزد؛ یعنی ماتریس بی‌صدا به یک ستون
+   تبدیل می‌شود. جایگزینی کل مقدار با var کاملاً معتبر است.
+*/
 .grid {
   display: grid;
-  grid-template-columns: minmax(5.5rem, max-content) minmax(0, 1fr) minmax(2.5rem, max-content);
-  align-items: center;
-  gap: 3px var(--ds-space-2);
-  min-inline-size: 26rem;
-}
-
-.label {
-  font-family: var(--ds-font-mono);
-  font-size: 0.68rem;
-  direction: ltr;
-  unicode-bidi: isolate;
-  text-align: start;
-  color: var(--ds-text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.cells {
-  display: grid;
-  grid-template-columns: repeat(var(--obs-hours, 24), minmax(0, 1fr));
+  grid-template-columns:
+    var(--cols-template, repeat(24, minmax(0, 1fr)))
+    minmax(4.5rem, auto);
   gap: 2px;
+  min-inline-size: 0;
 }
 
 .cell {
-  block-size: 1.1rem;
+  aspect-ratio: 1;
+  min-block-size: 0.55rem;
   border-radius: 2px;
-  background: color-mix(
-    in oklch,
-    var(--obs-data) calc(var(--level, 0) * 1%),
-    var(--ds-surface-recessed)
-  );
-  transition: transform var(--ds-duration-fast) var(--ds-ease-spring);
+  background: color-mix(in oklch, var(--obs-ink) 5%, transparent);
+  transition: transform 120ms var(--obs-ease);
 }
 
-.cell[data-error='true'] {
-  background: color-mix(
-    in oklch,
-    var(--obs-bad) calc(28% + var(--level, 0) * 0.62%),
-    transparent
-  );
+.cell[data-level="1"] {
+  background: color-mix(in oklch, var(--obs-accent) 18%, transparent);
+}
+.cell[data-level="2"] {
+  background: color-mix(in oklch, var(--obs-accent) 36%, transparent);
+}
+.cell[data-level="3"] {
+  background: color-mix(in oklch, var(--obs-accent) 58%, transparent);
+}
+.cell[data-level="4"] {
+  background: color-mix(in oklch, var(--obs-accent) 82%, transparent);
 }
 
-/* ساعت انتخاب‌شده در hero — همان ستون اینجا هم روشن می‌شود */
-.cell[data-cursor='true'] {
-  box-shadow: inset 0 0 0 1px var(--ds-text-primary);
+/*
+   خطا فقط با رنگ اعلام نمی‌شود (WCAG 2.2 — رنگ نباید تنها نشانه باشد):
+   یک حلقهٔ تویی هم می‌گیرد، پس در چاپ سیاه‌سفید و کوررنگی هم دیده می‌شود.
+*/
+.cell[data-errors="true"] {
+  box-shadow: inset 0 0 0 1.5px var(--obs-bad);
 }
 
-.cell:hover {
-  transform: scaleY(1.2);
+.cell[data-cursor="true"] {
+  box-shadow: inset 0 0 0 1.5px var(--obs-ink);
+  transform: scale(1.15);
 }
 
-.total {
+.cell[data-errors="true"][data-cursor="true"] {
+  box-shadow: inset 0 0 0 1.5px var(--obs-bad), 0 0 0 1.5px var(--obs-ink);
+}
+
+.rowLabel {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  padding-inline-start: var(--ds-space-2);
+  color: var(--obs-ink-2);
   font-size: 0.66rem;
-  font-weight: var(--ds-weight-semibold);
-  color: var(--ds-text-muted);
-  text-align: end;
+  font-weight: var(--ds-weight-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rowTotal {
+  color: var(--obs-muted);
+  font: 400 0.6rem / 1 var(--obs-mono);
   font-variant-numeric: tabular-nums;
 }
 
-.axis {
-  grid-column: 2;
-  display: flex;
-  justify-content: space-between;
-  margin: 0;
-  margin-block-start: var(--ds-space-1);
-  font-size: 0.6rem;
-  color: var(--ds-text-muted);
-}
-
-.legend {
+.foot {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--ds-space-1-5) var(--ds-space-3);
+  gap: 0.4rem 1rem;
   margin: 0;
-  margin-block-start: var(--ds-space-3);
-  font-size: 0.66rem;
-  color: var(--ds-text-muted);
+  color: var(--obs-muted);
+  font-size: 0.64rem;
 }
 
-.legendItem {
+.scale {
   display: inline-flex;
   align-items: center;
-  gap: var(--ds-space-1-5);
+  gap: 0.25rem;
 }
 
 .swatch {
   inline-size: 0.7rem;
   block-size: 0.7rem;
   border-radius: 2px;
+  background: color-mix(in oklch, var(--obs-ink) 5%, transparent);
 }
 
-.swatchLow {
-  background: color-mix(in oklch, var(--obs-data) 18%, var(--ds-surface-recessed));
+.swatch[data-level="1"] {
+  background: color-mix(in oklch, var(--obs-accent) 18%, transparent);
 }
-
-.swatchHigh {
-  background: color-mix(in oklch, var(--obs-data) 85%, var(--ds-surface-recessed));
+.swatch[data-level="2"] {
+  background: color-mix(in oklch, var(--obs-accent) 36%, transparent);
+}
+.swatch[data-level="3"] {
+  background: color-mix(in oklch, var(--obs-accent) 58%, transparent);
+}
+.swatch[data-level="4"] {
+  background: color-mix(in oklch, var(--obs-accent) 82%, transparent);
 }
 
 .swatchError {
+  inline-size: 0.7rem;
+  block-size: 0.7rem;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1.5px var(--obs-bad);
+}
+
+/* ═══════════════ سهم منابع ═══════════════ */
+
+.shares {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.share {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.3rem var(--ds-space-2);
+  align-items: baseline;
+}
+
+.shareName {
+  min-inline-size: 0;
+  color: var(--obs-ink);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shareValue {
+  color: var(--obs-ink-2);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/*
+   دو لایه روی یک ریل: حجم کل، و سهم خطا از همان حجم.
+   چون هر دو از یک لبه شروع می‌شوند، «چقدر از این ستون خراب است» را مستقیم
+   می‌خوانی؛ دو نوار جدا این مقایسه را از بین می‌برد.
+*/
+.shareTrack {
+  position: relative;
+  display: block;
+  grid-column: 1 / -1;
+  block-size: 0.4rem;
+  border-radius: var(--ds-radius-full);
+  background: color-mix(in oklch, var(--obs-ink) 6%, transparent);
+  overflow: hidden;
+}
+
+.shareFill,
+.shareErrors {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  border-radius: inherit;
+  transition: inline-size var(--ds-duration-slow) var(--obs-ease);
+}
+
+.shareFill {
+  inline-size: var(--fill, 0%);
+  background: color-mix(in oklch, var(--obs-accent) 55%, transparent);
+}
+
+.shareErrors {
+  inline-size: var(--fill-errors, 0%);
   background: var(--obs-bad);
+}
+
+.shareMeta {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.8rem;
+  color: var(--obs-muted);
+  font-size: 0.62rem;
+}
+
+/* ═══════════════ توزیع سطوح ═══════════════ */
+
+.levels {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+/* یک نوار انباشته — نه پنج نوار جدا و نه دونات */
+.ribbon {
+  display: flex;
+  block-size: 0.7rem;
+  border-radius: var(--ds-radius-full);
+  background: color-mix(in oklch, var(--obs-ink) 6%, transparent);
+  overflow: hidden;
+}
+
+.segment {
+  inline-size: var(--fill, 0%);
+  min-inline-size: 2px;
+  background: var(--tone);
+  transition: inline-size var(--ds-duration-slow) var(--obs-ease);
+}
+
+.segment + .segment {
+  border-inline-start: 1px solid var(--obs-paper);
+}
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legend > li + li {
+  border-block-start: 1px solid var(--obs-rule);
+}
+
+.legendRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  gap: var(--ds-space-2);
+  align-items: center;
+  padding-block: 0.4rem;
+  font-size: var(--ds-text-xs);
+}
+
+.legendPip {
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: 2px;
+  background: var(--tone);
+}
+
+.legendName {
+  color: var(--obs-ink);
+  font-weight: var(--ds-weight-medium);
+}
+
+.legendCount,
+.legendShare {
+  color: var(--obs-ink-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.legendShare {
+  color: var(--obs-muted);
+  font-size: 0.66rem;
 }

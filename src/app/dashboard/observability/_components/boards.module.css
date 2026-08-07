@@ -1,12 +1,128 @@
 /* ============================================================================
-   Observability boards — گرید نامتقارن ۱۲ ستونی
+   Observability — گرید سالنامه ۲۰۲۶
    ----------------------------------------------------------------------------
-   کلاس‌های span فقط داخل breakpoint تعریف می‌شوند. دلیلش مهم است: در موبایل
-   والد تک‌ستونی است و اگر `span 8` آنجا هم اعمال شود، گرید ستون ضمنی می‌سازد و
-   چیدمان می‌شکند. پیش‌فرض همه `auto` یعنی تمام‌عرض.
+   Mobile first · logical properties · token-only · RTL-safe.
+
+   استعاره: صفحهٔ کاری یک ستون‌نگار عملیاتی — ردیف‌های نابرابر، حاشیهٔ ریلی،
+   پلکان ریتمی. «کارت یکسان» نه؛ «مدخل با وزن» بله.
    ============================================================================ */
 
+/* ── پوستهٔ تب ─────────────────────────────────────────────── */
+
+.tabLayout {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2rem, 4vw, 3.5rem);
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+
+/* ── سرصفحهٔ تب ────────────────────────────────────────────── */
+
+.tabIntro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ds-space-4);
+  padding-block-end: var(--ds-space-5);
+  border-block-end: 1px solid var(--obs-rule-2);
+}
+
+@media (min-width: 48rem) {
+  .tabIntro {
+    grid-template-columns: minmax(0, 1fr) minmax(11rem, 16rem);
+    align-items: end;
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    padding-block: clamp(0.5rem, 2vw, 1.5rem) var(--ds-space-5);
+  }
+}
+
+.tabEyebrow {
+  display: block;
+  margin-block-end: 0.65rem;
+  color: var(--obs-accent);
+  font: 500 0.66rem / 1 var(--obs-mono);
+  letter-spacing: 0.14em;
+  direction: ltr;
+  text-align: start;
+}
+
+.tabTitle {
+  max-inline-size: 26ch;
+  margin: 0;
+  color: var(--obs-ink);
+  font-size: clamp(1.65rem, 1.1rem + 2.4vw, 2.9rem);
+  font-weight: var(--ds-weight-extrabold);
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+.tabLead {
+  max-inline-size: 64ch;
+  margin: var(--ds-space-3) 0 0;
+  color: var(--obs-ink-2);
+  font-size: var(--ds-text-sm);
+  line-height: var(--ds-leading-relaxed);
+  text-wrap: pretty;
+}
+
+/*
+   «مهرِ» صفحه — قرارداد خواندن این تب را می‌گوید.
+   کارت نیست: فقط یک خط مویی بالای متن و تورفتگی.
+*/
+.tabStamp {
+  display: grid;
+  gap: 0.3rem;
+  align-self: end;
+  padding-block-start: var(--ds-space-2);
+  border-block-start: 2px solid var(--tone);
+  color: var(--obs-muted);
+  font-size: 0.7rem;
+  line-height: 1.6;
+}
+
+.tabStamp strong {
+  color: var(--obs-ink);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+}
+
+/* ── گرید مدخل‌های تب ──────────────────────────────────────── */
+
+.tabGrid {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(2rem, 4vw, 3.25rem);
+  min-inline-size: 0;
+  counter-reset: obs-entry;
+}
+
+@media (min-width: 64rem) {
+  .tabGrid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: clamp(2.25rem, 3.5vw, 3.5rem) var(--ds-space-6);
+    align-items: start;
+    grid-auto-flow: row dense;
+    padding-inline-start: var(--ds-space-5);
+  }
+
+  /* ریلِ حاشیه — نخی که مدخل‌ها را به هم می‌دوزد */
+  .tabGrid::before {
+    content: "";
+    position: absolute;
+    inset-block: 0.35rem 2rem;
+    inset-inline-start: 0;
+    inline-size: 1px;
+    background: linear-gradient(to bottom, var(--obs-rule-2), var(--obs-rule) 60%, transparent);
+    pointer-events: none;
+  }
+}
+
+/* ── کلاس‌های span دوازده‌ستونی ────────────────────────────── */
+
 .wide,
+.twelve,
 .eight,
 .seven,
 .six,
@@ -17,22 +133,225 @@
 }
 
 @media (min-width: 64rem) {
-  .wide {
-    grid-column: 1 / -1;
+  .wide,
+  .twelve {
+    grid-column: span 12;
   }
+
   .eight {
     grid-column: span 8;
   }
+
   .seven {
     grid-column: span 7;
   }
+
   .six {
     grid-column: span 6;
   }
+
   .five {
     grid-column: span 5;
   }
+
   .four {
     grid-column: span 4;
   }
+
+  /* پلکان — مدخل‌های باریک کمی دیرتر شروع می‌شوند */
+  .tabGrid > .five:nth-child(2n),
+  .tabGrid > .four:nth-child(2n) {
+    padding-block-start: var(--ds-space-6);
+  }
+}
+
+/* ── سطوح ویژه ─────────────────────────────────────────────── */
+
+/*
+   «برجسته» — کاغذ بالاتر از سطح پیشین. عمق از اختلاف روشنایی،
+   نه سایهٔ سنگین.
+*/
+.featured {
+  padding: clamp(1rem, 2.5vw, 1.75rem);
+  border: 1px solid var(--obs-rule);
+  border-radius: var(--ds-radius-lg);
+  background: var(--obs-raise);
+  box-shadow: var(--ds-shadow-sm);
+}
+
+/* تخته فرورفته — برای بلوک‌های فرعی */
+.recessed {
+  padding: clamp(0.875rem, 2vw, 1.35rem);
+  border-radius: var(--ds-radius-lg);
+  background: var(--obs-recess);
+}
+
+/* سطح هشدار — بسیار کم‌رنگ */
+.alertSurface {
+  background: color-mix(in oklch, var(--obs-bad) 4%, var(--obs-raise));
+  border-color: color-mix(in oklch, var(--obs-bad) 18%, var(--obs-rule));
+}
+
+/* پنل یافته‌ها — کمی بالاتر از سطح */
+.insightPanel {
+  padding: clamp(0.875rem, 2vw, 1.35rem);
+  border: 1px solid var(--obs-rule);
+  border-radius: var(--ds-radius-lg);
+  background: color-mix(in oklch, var(--obs-accent) 3%, var(--obs-paper));
+}
+
+/* ── گرید قدیمی (backward-compat) ──────────────────────────── */
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.75rem, 3.5vw, 3rem);
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+
+.intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ds-space-4);
+  padding-block-end: var(--ds-space-4);
+  border-block-end: 1px solid var(--obs-rule-2);
+}
+
+@media (min-width: 48rem) {
+  .intro {
+    grid-template-columns: minmax(0, 1fr) minmax(12rem, 17rem);
+    align-items: end;
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    padding-block: clamp(0.5rem, 2vw, 1.5rem) var(--ds-space-5);
+  }
+}
+
+.eyebrow {
+  display: block;
+  margin-block-end: 0.65rem;
+  color: var(--obs-accent);
+  font: 500 0.66rem / 1 var(--obs-mono);
+  letter-spacing: 0.14em;
+  direction: ltr;
+  text-align: start;
+}
+
+.title {
+  max-inline-size: 26ch;
+  margin: 0;
+  color: var(--obs-ink);
+  font-size: clamp(1.65rem, 1.1rem + 2.4vw, 2.9rem);
+  font-weight: var(--ds-weight-extrabold);
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+.lead {
+  max-inline-size: 64ch;
+  margin: var(--ds-space-3) 0 0;
+  color: var(--obs-ink-2);
+  font-size: var(--ds-text-sm);
+  line-height: var(--ds-leading-relaxed);
+  text-wrap: pretty;
+}
+
+.stamp {
+  display: grid;
+  gap: 0.3rem;
+  align-self: end;
+  padding-block-start: var(--ds-space-2);
+  border-block-start: 2px solid var(--tone);
+  color: var(--obs-muted);
+  font-size: 0.7rem;
+  line-height: 1.6;
+}
+
+.stamp strong {
+  color: var(--obs-ink);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+}
+
+.board {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(2rem, 4vw, 3.25rem);
+  min-inline-size: 0;
+  counter-reset: obs-entry;
+}
+
+.span12,
+.span8,
+.span7,
+.span6,
+.span5,
+.span4 {
+  grid-column: auto;
+  min-inline-size: 0;
+}
+
+@media (min-width: 64rem) {
+  .board {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: clamp(2.25rem, 3.5vw, 3.5rem) var(--ds-space-6);
+    align-items: start;
+    grid-auto-flow: row dense;
+    padding-inline-start: var(--ds-space-5);
+  }
+
+  .board::before {
+    content: "";
+    position: absolute;
+    inset-block: 0.35rem 2rem;
+    inset-inline-start: 0;
+    inline-size: 1px;
+    background: linear-gradient(to bottom, var(--obs-rule-2), var(--obs-rule) 60%, transparent);
+    pointer-events: none;
+  }
+
+  .span12 {
+    grid-column: span 12;
+  }
+  .span8 {
+    grid-column: span 8;
+  }
+  .span7 {
+    grid-column: span 7;
+  }
+  .span6 {
+    grid-column: span 6;
+  }
+  .span5 {
+    grid-column: span 5;
+  }
+  .span4 {
+    grid-column: span 4;
+  }
+
+  .board > .span5:nth-child(2n),
+  .board > .span4:nth-child(2n) {
+    padding-block-start: var(--ds-space-6);
+  }
+}
+
+.featured {
+  padding: clamp(1rem, 2.5vw, 1.75rem);
+  border: 1px solid var(--obs-rule);
+  border-radius: var(--ds-radius-lg);
+  background: var(--obs-raise);
+  box-shadow: var(--ds-shadow-sm);
+}
+
+.recessed {
+  padding: clamp(0.875rem, 2vw, 1.35rem);
+  border-radius: var(--ds-radius-lg);
+  background: var(--obs-recess);
+}
+
+.alert {
+  background: color-mix(in oklch, var(--obs-bad) 4%, var(--obs-raise));
+  border-color: color-mix(in oklch, var(--obs-bad) 18%, var(--obs-rule));
 }

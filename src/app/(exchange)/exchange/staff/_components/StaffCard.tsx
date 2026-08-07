@@ -138,10 +138,7 @@ export function StaffCard({
             }
             disabled={isUpdating}
           >
-            <SelectTrigger
-              aria-label={`تغییر نقش ${display}`}
-              className={s.cardRoleSelect}
-            >
+            <SelectTrigger aria-label={`تغییر نقش ${display}`} className={s.cardRoleSelect}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

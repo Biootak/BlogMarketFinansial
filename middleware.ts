@@ -16,29 +16,57 @@ const SECURE_COOKIE_NAME = '__Secure-authjs.session-token';
 const DEV_COOKIE_NAME = 'authjs.session-token';
 const DEBUG_MODE = process.env.DEBUG_MODE === 'true';
 const CUSTOMER_PORTAL_ROLES = new Set(['CUSTOMER', 'TEST_CUSTOMER', 'MERCHANT']);
-const adminApiRoutes = [
-  '/api/users',
-  '/api/advertisements',
-  '/api/exchange-rates',
-  '/api/rate-lists',
-  '/api/categories',
-  '/api/credit-rates',
-  '/api/billing',
-  '/api/subscription',
-  '/api/posts',
-  '/api/system-stats',
+
+/* ─────────────────────── سیاست دسترسی API ───────────────────────
+ *
+ * ۲۰۲۶-۰۸-۰۷ — چرا این بخش بازنویسی شد:
+ *
+ * نسخهٔ قبلی `checkApiAccess` با دو فهرست `adminApiRoutes` و
+ * `authorApiRoutes` داشت، ولی `config.matcher` **هیچ ورودی `/api` نداشت**.
+ * یعنی آن کد هرگز اجرا نمی‌شد — یک RBAC کاملاً مرده. بدتر: هر دو فهرست به
+ * مسیرهایی اشاره می‌کردند که اصلاً وجود ندارند (`/api/users`,
+ * `/api/system-stats`, `/api/dashboard/*`, …).
+ *
+ * حالا matcher عمداً **فقط APIهای مدیریتی** را می‌گیرد، نه کل `/api/*`.
+ * دلیلش محافظه‌کاری است: باز کردن گارد روی همهٔ APIها یعنی ریسک شکستن
+ * مسیرهای عمومی سایت (نرخ ارز، تبلیغ هدر، حواله) و پورتال مشتری، بدون
+ * اینکه چیزی به امنیت اضافه کند — آن مسیرها یا عمومی‌اند یا گارد خودشان
+ * را دارند. اینجا لایهٔ دوم دفاع برای همان‌هایی گذاشته می‌شود که اگر لو
+ * بروند واقعاً درد دارد.
+ * ───────────────────────────────────────────────────────────────── */
+
+/** APIهایی که هرگز نباید پشت گاردِ نشست بروند: وب‌هوک، پروب، دارایی عمومی. */
+const OPEN_API_PREFIXES = [
+  '/api/auth',
+  '/api/public',
+  '/api/pageview',
+  '/api/uploads',
+  '/api/cron',
+  '/api/telegram',
+  '/api/health',
 ];
-const authorApiRoutes = [
-  '/api/posts',
-  '/api/comments',
-  '/api/categories',
+
+/** APIهای مدیریتی — فقط OWNER / SUPERADMIN / ADMIN. */
+const ADMIN_API_PREFIXES = [
+  '/api/observability',
+  '/api/system-health',
+  '/api/system-logs',
+  '/api/system-status',
+  '/api/system-reports',
+  '/api/activity-log',
   '/api/traffic-stats',
-  '/api/dashboard/view-stats',
-  '/api/dashboard/stats',
-  '/api/dashboard/scheduled-posts',
-  '/api/dashboard/popular-posts',
-  '/api/dashboard/recent-drafts',
+  '/api/reports',
+  '/api/jobs',
+  '/api/approvals',
+  '/api/communication',
+  '/api/backup',
+  '/api/settings',
+  '/api/debug-rates',
 ];
+
+/** ابزار توسعه — در production اصلاً نباید وجود داشته باشد. */
+const DEV_ONLY_API_PREFIXES = ['/api/dev', '/api/debug-session'];
+
 type CompiledRoute = { pattern: string; test: (pathname: string) => boolean };
 const compileRoute = (pattern: string): CompiledRoute => {
   if (pattern.includes('[...')) {
@@ -61,6 +89,11 @@ const compiledPublic = publicRoutes.map(compileRoute);
 const compiledUserFintech = userFintechRoutes.map(compileRoute);
 const matchesAny = (pathname: string, routes: CompiledRoute[]): boolean =>
   routes.some((r) => r.test(pathname));
+
+/** تطبیق پیشوندی امن — `/api/jobsomething` نباید با `/api/jobs` مچ شود. */
+const underPrefix = (pathname: string, prefixes: readonly string[]): boolean =>
+  prefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+
 const SUPER_ROLES = new Set(['OWNER', 'SUPERADMIN']);
 const ADMIN_ROLES = new Set(['OWNER', 'SUPERADMIN', 'ADMIN']);
 const AUTHOR_ROLES = new Set(['OWNER', 'SUPERADMIN', 'ADMIN', 'AUTHOR']);
@@ -69,16 +102,13 @@ const SUPPORT_ROUTE_PREFIXES = [
   '/dashboard/approvals',
   '/dashboard/service-requests',
 ];
-const checkApiAccess = (pathname: string, role?: string): boolean => {
-  if (pathname.startsWith('/api/public')) return true;
-  if (pathname.startsWith(apiAuthPrefix)) return true;
-  if (!role) return false;
-  if (SUPER_ROLES.has(role)) return true;
-  if (ADMIN_ROLES.has(role) && adminApiRoutes.some((r) => pathname.startsWith(r))) return true;
-  if (AUTHOR_ROLES.has(role) && authorApiRoutes.some((r) => pathname.startsWith(r))) return true;
-  if (pathname.startsWith('/api/')) return false;
-  return true;
-};
+
+const jsonError = (status: number, code: string, message: string): NextResponse =>
+  NextResponse.json(
+    { success: false, error: { code, message } },
+    { status, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } },
+  );
+
 const isStaticPath = (pathname: string): boolean => {
   if (pathname.startsWith('/_next/')) return true;
   if (pathname.startsWith('/uploads/')) return true;
@@ -94,7 +124,7 @@ const isStaticPath = (pathname: string): boolean => {
   return false;
 };
 const isPublicApi = (pathname: string): boolean =>
-  pathname.startsWith('/api/public/') || pathname.startsWith(apiAuthPrefix);
+  underPrefix(pathname, OPEN_API_PREFIXES) || pathname.startsWith(apiAuthPrefix);
 const DASHBOARD_BLOCKED_ROLES = new Set(['CUSTOMER', 'MERCHANT', 'EXCHANGE', 'TEST_CUSTOMER']);
 const EXCHANGE_ROLES = new Set(['EXCHANGE']);
 const checkDashboardAccess = (pathname: string, role?: string) => {
@@ -111,18 +141,23 @@ const checkDashboardAccess = (pathname: string, role?: string) => {
     return true;
   return false;
 };
+
 export async function middleware(req: NextRequest) {
   const { nextUrl } = req;
   const pathname = nextUrl.pathname;
   const search = nextUrl.search;
   if (isStaticPath(pathname)) return NextResponse.next();
   const isProduction = process.env.NODE_ENV === 'production';
+  const isApi = pathname.startsWith('/api/');
   const cookieName = isProduction ? SECURE_COOKIE_NAME : DEV_COOKIE_NAME;
   const token = await getToken({ req, secret: process.env.AUTH_SECRET, cookieName });
   if (DEBUG_MODE && pathname.startsWith('/dashboard')) {
     /* no sensitive logging */
   }
   if (token?.exp && Date.now() / 1000 > token.exp) {
+    // مسیر API نباید redirect بگیرد — کلاینت fetch منتظر JSON است و یک
+    // ریدایرکت به صفحهٔ HTML ورود باعث خطای parse می‌شود نه پیام روشن.
+    if (isApi) return jsonError(401, 'SESSION_EXPIRED', 'نشست شما منقضی شده است');
     if (pathname === '/auth' || pathname.startsWith('/auth?')) return NextResponse.next();
     return NextResponse.redirect(
       new URL(`/auth?expired=1&callbackUrl=${encodeURIComponent(pathname)}`, nextUrl),
@@ -130,7 +165,24 @@ export async function middleware(req: NextRequest) {
   }
   const isLoggedIn = !!token;
   const role = token?.role as string | undefined;
-  if (isPublicApi(pathname)) return NextResponse.next();
+
+  /* ── APIها: قبل از هر قاعدهٔ صفحه‌ای ─────────────────────── */
+  if (isApi) {
+    if (underPrefix(pathname, DEV_ONLY_API_PREFIXES)) {
+      // ابزار توسعه در production وجود ندارد — نه ۴۰۳، بلکه ۴۰۴، تا سطح
+      // حمله را حتی افشا هم نکنیم.
+      if (isProduction) return jsonError(404, 'NOT_FOUND', 'یافت نشد');
+      if (!isLoggedIn) return jsonError(401, 'UNAUTHENTICATED', 'احراز هویت لازم است');
+      return NextResponse.next();
+    }
+    if (isPublicApi(pathname)) return NextResponse.next();
+    if (!isLoggedIn) return jsonError(401, 'UNAUTHENTICATED', 'احراز هویت لازم است');
+    if (underPrefix(pathname, ADMIN_API_PREFIXES) && !ADMIN_ROLES.has(role ?? '')) {
+      return jsonError(403, 'FORBIDDEN', 'دسترسی ندارید');
+    }
+    return NextResponse.next();
+  }
+
   if (matchesAny(pathname, compiledPublic)) return NextResponse.next();
   if (authRoutes.some((r) => pathname.startsWith(r))) return NextResponse.next();
   if (!isLoggedIn && pathname.startsWith('/dashboard')) {
@@ -144,10 +196,6 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL('/exchange/dashboard', nextUrl));
     if (CUSTOMER_PORTAL_ROLES.has(role))
       return NextResponse.redirect(new URL('/customer/dashboard', nextUrl));
-  }
-  if (pathname.startsWith('/api') && !isPublicApi(pathname)) {
-    if (checkApiAccess(pathname, role)) return NextResponse.next();
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
   }
   if (pathname.startsWith('/dashboard')) {
     if (checkDashboardAccess(pathname, role)) return NextResponse.next();
@@ -188,11 +236,31 @@ export async function middleware(req: NextRequest) {
   }
   return NextResponse.next();
 }
+
 export const config = {
   matcher: [
     '/dashboard/:path*',
     '/exchange/:path*',
     '/customer/:path*',
+    // APIهای مدیریتی — عمداً فهرست صریح، نه `/api/:path*`.
+    // هزینهٔ میان‌افزار فقط روی همین مسیرها پرداخت می‌شود و مسیرهای عمومی
+    // (نرخ ارز، تبلیغ هدر، حواله، pageview) اصلاً از اینجا رد نمی‌شوند.
+    '/api/observability/:path*',
+    '/api/system-health',
+    '/api/system-logs',
+    '/api/system-status',
+    '/api/system-reports',
+    '/api/activity-log/:path*',
+    '/api/traffic-stats',
+    '/api/reports/:path*',
+    '/api/jobs/:path*',
+    '/api/approvals/:path*',
+    '/api/communication/:path*',
+    '/api/backup/:path*',
+    '/api/settings/:path*',
+    '/api/debug-rates',
+    '/api/debug-session',
+    '/api/dev/:path*',
     '/auth',
     '/signin',
     '/signup',

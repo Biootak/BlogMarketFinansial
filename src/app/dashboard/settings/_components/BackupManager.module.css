@@ -40,6 +40,12 @@
   color: var(--nova-emerald);
 }
 
+/* آینه ابری قطع موقت (circuit breaker) — اخطار دیده شود */
+.statusIcon[data-breaker="on"] {
+  background: color-mix(in oklch, var(--at-danger, oklch(65% 0.18 25)) 15%, transparent);
+  color: var(--at-danger, oklch(65% 0.18 25));
+}
+
 .statusLabel {
   font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);

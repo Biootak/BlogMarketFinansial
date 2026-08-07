@@ -20,7 +20,7 @@ export function Section({ title, description, icon, actions, children, className
     if (React.isValidElement(icon)) {
       return <div className="size-5 text-muted-foreground/70">{icon}</div>;
     }
-    const Icon = icon as any;
+    const Icon = icon as LucideIcon;
     return <Icon className="size-5 text-muted-foreground/70" aria-hidden="true" />;
   };
 

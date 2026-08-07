@@ -18,8 +18,8 @@
  * --------------------------------------------------------------------------
  */
 const sharp = require('sharp');
-const path = require('path');
-const fs = require('fs');
+const path = require('node:path');
+const fs = require('node:fs');
 const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
@@ -47,7 +47,10 @@ function parseImageUrl(url) {
     // پیدا کردن folder از مسیر
     let folder = null;
     for (const p of parts) {
-      if (ALLOWED_FOLDERS.includes(p)) { folder = p; break; }
+      if (ALLOWED_FOLDERS.includes(p)) {
+        folder = p;
+        break;
+      }
     }
     if (!folder || !filename) return null;
     return { folder, filename, raw: u.pathname };
@@ -62,16 +65,18 @@ function parseSvgDimensions(content) {
   const heightMatch = content.match(/\bheight=["']([\d.]+)(?:px)?["']/);
   if (widthMatch && heightMatch) {
     return {
-      width: Math.round(parseFloat(widthMatch[1])),
-      height: Math.round(parseFloat(heightMatch[1])),
+      width: Math.round(Number.parseFloat(widthMatch[1])),
+      height: Math.round(Number.parseFloat(heightMatch[1])),
     };
   }
   // fallback: از viewBox
-  const viewBoxMatch = content.match(/\bviewBox=["']\s*[\d.\-]+\s+[\d.\-]+\s+([\d.]+)\s+([\d.]+)["']/);
+  const viewBoxMatch = content.match(
+    /\bviewBox=["']\s*[\d.\-]+\s+[\d.\-]+\s+([\d.]+)\s+([\d.]+)["']/,
+  );
   if (viewBoxMatch) {
     return {
-      width: Math.round(parseFloat(viewBoxMatch[1])),
-      height: Math.round(parseFloat(viewBoxMatch[2])),
+      width: Math.round(Number.parseFloat(viewBoxMatch[1])),
+      height: Math.round(Number.parseFloat(viewBoxMatch[2])),
     };
   }
   return null;
@@ -100,7 +105,7 @@ async function readLocal(folder, filename) {
   return null;
 }
 
-async function readS3(folder, filename) {
+async function readS3(_folder, _filename) {
   // در صورت نیاز می‌توان S3 client را اینجا اضافه کرد.
   // فعلاً فقط dev (local) پشتیبانی می‌شود.
   return null;
@@ -162,12 +167,12 @@ async function processAd(ad) {
 
   const existingDims = ad.customDimensions || {};
   const alreadyHasDims = existingDims.width && existingDims.height;
-  const existingW = alreadyHasDims ? parseInt(existingDims.width, 10) : null;
-  const existingH = alreadyHasDims ? parseInt(existingDims.height, 10) : null;
+  const existingW = alreadyHasDims ? Number.parseInt(existingDims.width, 10) : null;
+  const existingH = alreadyHasDims ? Number.parseInt(existingDims.height, 10) : null;
   const dimsMatch = existingW === dims.width && existingH === dims.height;
 
   // 3. تولید variant ها — فقط برای raster images (نه SVG)
-  const baseNoExt = parsed.filename.replace(/\.[^/.]+$/, '');
+  const _baseNoExt = parsed.filename.replace(/\.[^/.]+$/, '');
   const generated = [];
   const skipped = [];
 

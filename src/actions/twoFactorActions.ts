@@ -5,6 +5,7 @@ import prisma from '@/lib/db';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
 import { generateOtpAuthUri, generateTotpSecret, verifyTotp } from '@/lib/totp';
+import { decryptTotpSecret, encryptTotpSecret } from '@/lib/totp-secrets';
 import type { FintechActionResult } from '@/types/types';
 import bcrypt from 'bcryptjs';
 import { v4 as createId } from 'uuid';
@@ -30,9 +31,10 @@ export async function setup2FA(): Promise<FintechActionResult<TwoFASetupData>> {
   if (user.twoFactorEnabled)
     return { success: false, error: { code: 'ALREADY_ENABLED', message: '۲FA قبلاً فعال شده است' } };
   const secret = generateTotpSecret();
+  // H2-fix: secret را قبل از ذخیره رمزنگاری کن (pending هم باید محافظت شود)
   await prisma.user.update({
     where: { id: auth.user.id },
-    data: { twoFactorSecretEnc: `pending:${secret}` },
+    data: { twoFactorSecretEnc: `pending:${encryptTotpSecret(secret)}` },
   });
   return {
     success: true,
@@ -61,14 +63,20 @@ export async function confirmEnable2FA(
       success: false,
       error: { code: 'SETUP_REQUIRED', message: 'ابتدا setup2FA را انجام دهید' },
     };
-  const secret = user.twoFactorSecretEnc.slice('pending:'.length);
+  // H2-fix: decrypt کن — با encryptTotpSecret ذخیره شده بود
+  const secret = decryptTotpSecret(user.twoFactorSecretEnc.slice('pending:'.length));
   if (!(await verifyTotp(secret, token)))
     return { success: false, error: { code: 'INVALID_TOKEN', message: 'کد وارد شده نادرست است' } };
   const backupCodes = Array.from({ length: 8 }, () => randomBytes(4).toString('hex').toUpperCase());
+  // C2-fix: secret را رمزنگاری‌شده ذخیره کن — plaintext هرگز در DB نباشد
   await prisma.$transaction(async (tx) => {
     await tx.user.update({
       where: { id: auth.user.id },
-      data: { twoFactorEnabled: true, twoFactorSecret: secret, twoFactorSecretEnc: null },
+      data: {
+        twoFactorEnabled: true,
+        twoFactorSecretEnc: encryptTotpSecret(secret),
+        twoFactorSecret: null,
+      },
     });
     await tx.twoFactorBackupCode.deleteMany({ where: { userId: auth.user.id } });
     await tx.twoFactorBackupCode.createMany({
@@ -107,16 +115,18 @@ export async function disable2FA(token: string): Promise<FintechActionResult<voi
     };
   const user = await prisma.user.findUnique({
     where: { id: auth.user.id },
-    select: { twoFactorEnabled: true, twoFactorSecret: true },
+    select: { twoFactorEnabled: true, twoFactorSecretEnc: true },
   });
-  if (!user?.twoFactorEnabled || !user.twoFactorSecret)
+  if (!user?.twoFactorEnabled || !user.twoFactorSecretEnc)
     return { success: false, error: { code: 'NOT_ENABLED', message: '۲FA فعال نیست' } };
-  if (!(await verifyTotp(user.twoFactorSecret, token)))
+  // C2-fix: از fiel رمزنگاری‌شده decrypt و verify کن
+  const secret2 = decryptTotpSecret(user.twoFactorSecretEnc);
+  if (!(await verifyTotp(secret2, token)))
     return { success: false, error: { code: 'INVALID_TOKEN', message: 'کد وارد شده نادرست است' } };
   await prisma.$transaction(async (tx) => {
     await tx.user.update({
       where: { id: auth.user.id },
-      data: { twoFactorEnabled: false, twoFactorSecret: null, twoFactorSecretEnc: null },
+      data: { twoFactorEnabled: false, twoFactorSecretEnc: null, twoFactorSecret: null },
     });
     await tx.twoFactorBackupCode.deleteMany({ where: { userId: auth.user.id } });
     await tx.auditLog.create({

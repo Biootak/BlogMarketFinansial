@@ -35,16 +35,7 @@ import {
   inverseRate,
   parseLocaleNumber,
 } from '@/lib/money-transfer/hero';
-import {
-  ArrowDown,
-  ArrowLeftRight,
-  Bitcoin,
-  Coins,
-  Lock,
-  Send,
-  TrendingUp,
-  Wallet,
-} from 'lucide-react';
+import { ArrowDown, ArrowLeftRight, Bitcoin, Coins, Lock, Send, Wallet } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import styles from './HeroConverter.module.css';
@@ -287,7 +278,7 @@ export default function HeroConverter({
   // DERIVED FOR RENDER
   // ===========================================================================
   const hasRates = filteredPairs.length >= 2;
-  const activeCategory = CATEGORIES.find((c) => c.id === category) ?? CATEGORIES[0];
+  const _activeCategory = CATEGORIES.find((c) => c.id === category) ?? CATEGORIES[0];
 
   // freshness از anchor سرور (snapshot.generatedAt یا max db.updatedAt).
   // چرا anchor: قبلاً از pairs[].updatedAt می‌گرفتیم که اگه DB خالی/قدیمی

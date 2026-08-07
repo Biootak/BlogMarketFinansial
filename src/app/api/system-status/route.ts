@@ -3,10 +3,12 @@ import db from '@/lib/db';
 import { checkDiskSpace, getSystemMetrics } from '@/lib/system';
 import { NextResponse } from 'next/server';
 
+const STATUS_ROLES = new Set(['OWNER', 'SUPERADMIN']);
+
 export async function GET() {
   try {
     const session = await auth();
-    if (!session?.user || session.user.role !== 'OWNER') {
+    if (!session?.user || !STATUS_ROLES.has(session.user.role ?? '')) {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } },
         { status: 403 },
@@ -100,12 +102,11 @@ export async function GET() {
         timestamp: new Date().toISOString(),
       },
     });
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       {
         success: false,
-        error: 'Internal server error',
-        details: process.env.NODE_ENV === 'development' ? String(err) : undefined,
+        error: { code: 'INTERNAL_ERROR', message: 'خطای داخلی سرور' },
       },
       { status: 500 },
     );

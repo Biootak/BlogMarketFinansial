@@ -184,9 +184,7 @@ export default function SubNav({ exchange }: Props) {
         {/* Meta — currencies count */}
         <div className={s.meta} aria-label="خلاصه">
           <Radio size={12} strokeWidth={1.9} aria-hidden />
-          <span className={s.metaNum}>
-            {_faNum.format(exchange.activeCurrencies)}
-          </span>
+          <span className={s.metaNum}>{_faNum.format(exchange.activeCurrencies)}</span>
           <span className={s.metaLabel}>ارز فعال</span>
         </div>
       </div>

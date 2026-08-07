@@ -6,15 +6,33 @@
  *   - AuditLog   → رد ممیزی ۲۴ ساعت
  *   - process    → حافظه و uptime پروسه
  *
- *  ۲۰۲۶-۰۸-۰۶ — بازنویسی:
- *   1. قبلاً بازهٔ ۲۴ ساعت سه بار جداگانه از DB خوانده می‌شد (سه full scan).
- *      حالا یک اسکن با سقف مشخص انجام می‌شود و همه‌ی مشتقات از همان می‌آید.
- *   2. صدک‌های تأخیر اگر لاگ `duration=` وجود داشته باشد **واقعی** محاسبه
- *      می‌شوند؛ در غیر این صورت مشتق‌شده‌اند و با `latencySource` علامت
- *      می‌خورند تا UI صادقانه آن را «تخمینی» نشان دهد.
- *   3. ماتریس گرما، سهم منابع، توزیع سطوح و پنجره‌های incident اضافه شد.
+ *  ۲۰۲۶-۰۸-۰۶ — بازنویسی: یک اسکن با سقف مشخص به‌جای سه full scan.
  *
- *  همه‌ی توابع safe هستند: در صورت خطا fallback امن برمی‌گردد.
+ *  ۲۰۲۶-۰۸-۰۷ — رفع سه باگ بحرانی که داشبورد را روی دادهٔ واقعی بی‌اثر
+ *  کرده بود:
+ *
+ *   1. **واژگان سطح لاگ.** فقط `'error' | 'fatal'` (lowercase) شمرده می‌شد،
+ *      در حالی که نویسندگان لاگ `'ERROR'` و `'WARNING'` می‌نوشتند. یعنی روی
+ *      دیتابیسِ پر از خطا، دفتر خطا و نرخ خطا و پنجره‌های بحرانی و توزیع
+ *      سطوح همگی صفر بودند. حالا واژگان از `@/lib/log-levels` می‌آید و کوئری
+ *      تاریخی همهٔ املاها را می‌گیرد.
+ *
+ *   2. **نگاشت منبع به سرویس.** `SERVICE_DEFS` با کلید خام به `perSource`
+ *      مچ می‌شد، ولی منابع واقعی `api/auth`, `cron/rates`, `middleware` بودند؛
+ *      نتیجه اینکه ۸ سرویس از ۹ همیشه `idle` می‌ماندند. حالا
+ *      `resolveServiceKey` این فاصله را پر می‌کند.
+ *
+ *   3. **صداقت در خطا.** هنگام سقوط دیتابیس `success: true` با snapshot خالی
+ *      برمی‌گشت — یعنی دقیقاً لحظه‌ای که سامانه down بود، صفحهٔ مانیتورینگ
+ *      همه‌چیز را «سبز و صفر» نشان می‌داد. بدترین حالت ممکن برای یک ابزار
+ *      observability. حالا `degraded: true` علامت می‌خورد.
+ *
+ *  دو دروغ کوچک‌تر هم برداشته شد:
+ *   - `latencyMs` از عدد ثابت `def.base` ساخته می‌شد. حالا از نمونه‌های واقعی
+ *     `duration=` همان سرویس می‌آید و اگر نمونه نداشته باشیم
+ *     `latencyMeasured=false` است تا UI «—» نشان دهد نه یک عدد ساختگی.
+ *   - `estimateUptime` کف مصنوعی ۹۰٪ داشت؛ یعنی سرویسِ کاملاً مرده هم هرگز
+ *     زیر ۹۰٪ دیده نمی‌شد.
  */
 
 import 'server-only';
@@ -22,36 +40,43 @@ import 'server-only';
 import { auth } from '@/auth';
 import type { ServiceStatus } from '@/components/Dashboard/DashboardPage/LiveOpsPulse';
 import prisma from '@/lib/db';
+import {
+  ERROR_LEVEL_DB_VARIANTS,
+  type LogLevel,
+  isErrorLevel,
+  isWarnLevel,
+  normalizeLogLevel,
+} from '@/lib/log-levels';
+import { type ServiceKey, resolveServiceKey } from '@/lib/log-sources';
 import { safeCache } from '@/lib/safe-cache';
+
+export type { ServiceKey };
 
 /** پنجرهٔ تحلیل (ساعت) */
 export const OBS_WINDOW_HOURS = 24;
 /** سقف ردیف‌های اسکن‌شده — از OOM روی دیتابیس شلوغ جلوگیری می‌کند */
 const SCAN_LIMIT = 20_000;
 /** سقف نمونه‌برداری برای صدک‌های تأخیر */
-const LATENCY_SAMPLE_LIMIT = 600;
+const LATENCY_SAMPLE_LIMIT = 1_000;
+/** کمترین تعداد نمونه‌ای که اجازه می‌دهد عدد را «اندازه‌گیری‌شده» بنامیم */
+const MIN_LATENCY_SAMPLES = 5;
 const HEAT_ROWS = 8;
 const SOURCE_ROWS = 10;
-
-export type ServiceKey =
-  | 'api'
-  | 'db'
-  | 'cache'
-  | 'queue'
-  | 'auth'
-  | 'edge'
-  | 'email'
-  | 'sms'
-  | 'storage';
 
 export interface ServiceHealth {
   id: ServiceKey;
   name: string;
   desc: string;
   status: ServiceStatus;
+  /** صدک ۹۵ تأخیر واقعی (ms). وقتی `latencyMeasured` غلط است بی‌معناست. */
   latencyMs: number;
+  /** true یعنی این عدد از لاگ‌های `duration=` همین سرویس آمده، نه از تخمین. */
+  latencyMeasured: boolean;
+  /** تعداد نمونهٔ واقعی تأخیر این سرویس */
+  latencySamples: number;
   /** خطا در دقیقه (پنجرهٔ ۱۵ دقیقه) */
   errorRate: number;
+  /** درصد در دسترس بودن ۲۴ ساعت — بدون کف مصنوعی */
   uptime24h: number;
   /** ۲۴ نقطه، نرمال‌شده ۰..۱۰۰ — حجم واقعی لاگ هر ساعت */
   sparkline: number[];
@@ -59,10 +84,15 @@ export interface ServiceHealth {
   errors24h: number;
   /** تعداد رویداد واقعی ۲۴ ساعت */
   events24h: number;
+  /** منابع خامی که به این سرویس نگاشت شده‌اند — برای شفافیت و اشکال‌زدایی */
+  sources: string[];
   href: string;
 }
 
+/** سطوحی که در دفتر خطا معنی دارند. `debug` عمداً اینجا نیست. */
 export type Severity = 'info' | 'warn' | 'error' | 'fatal';
+
+const asSeverity = (level: LogLevel): Severity => (level === 'debug' ? 'info' : level);
 
 export interface ErrorEvent {
   id: string;
@@ -104,6 +134,8 @@ export interface SourceStat {
   /** سهم از کل حجم لاگ (درصد) */
   share: number;
   lastAt: string;
+  /** سرویسی که این منبع به آن نسبت داده شده؛ null یعنی نشناختیم. */
+  service: ServiceKey | null;
 }
 
 export interface HeatCell {
@@ -118,7 +150,7 @@ export interface HeatRow {
 }
 
 export interface LevelCount {
-  level: string;
+  level: LogLevel;
   count: number;
   share: number;
 }
@@ -156,6 +188,12 @@ export interface ObservabilityTotals {
 export interface ObservabilitySnapshot {
   generatedAt: string;
   windowHours: number;
+  /**
+   * true یعنی این snapshot از دیتابیس خوانده **نشده** است.
+   * هیچ‌کدام از اعداد زیر را نباید به‌عنوان واقعیت نشان داد؛ UI باید صریحاً
+   * بگوید «خوانش در دسترس نیست». صفرِ دروغین بدترین خروجی یک ابزار پایش است.
+   */
+  degraded: boolean;
   services: ServiceHealth[];
   errors: ErrorEvent[];
   slowQueries: SlowQuery[];
@@ -191,8 +229,6 @@ const bucketIndex = (now: number, at: number): number => {
 const bucketStartIso = (now: number, index: number): string =>
   new Date(now - (OBS_WINDOW_HOURS - index) * 3_600_000).toISOString();
 
-const isErrorLevel = (level: string): boolean => level === 'error' || level === 'fatal';
-
 const percentile = (sorted: number[], p: number): number => {
   if (sorted.length === 0) return 0;
   const rank = Math.ceil((p / 100) * sorted.length) - 1;
@@ -207,9 +243,14 @@ const classifyStatus = (errorCount: number, warnCount: number): ServiceStatus =>
   return 'healthy';
 };
 
-const estimateUptime = (errorCount: number, totalCount: number): number => {
-  if (totalCount === 0) return 100;
-  return Math.max(90, Math.min(100, 100 - (errorCount / totalCount) * 100));
+/**
+ * درصد در دسترس بودن. کفِ مصنوعی ۹۰٪ حذف شد: سرویسی که در ۲۴ ساعت فقط خطا
+ * لاگ کرده باید ۰٪ نشان دهد، نه ۹۰٪.
+ */
+const computeUptime = (errorCount: number, totalCount: number): number => {
+  if (totalCount <= 0) return 0;
+  const value = 100 - (errorCount / totalCount) * 100;
+  return Math.max(0, Math.min(100, Math.round(value * 100) / 100));
 };
 
 const memoryMb = (): number => {
@@ -230,28 +271,99 @@ const uptimeSec = (): number => {
 
 const DURATION_RE = /duration=(\d+)/i;
 
+/** استخراج امنِ `duration=NNN` از متن لاگ. */
+const readDuration = (message: string): number | null => {
+  const match = DURATION_RE.exec(message);
+  if (!match) return null;
+  const value = Number.parseInt(match[1] ?? '', 10);
+  if (!Number.isFinite(value) || value < 0) return null;
+  return value;
+};
+
 const SERVICE_DEFS: Array<{
   id: ServiceKey;
   name: string;
   desc: string;
-  base: number;
   href: string;
 }> = [
-  { id: 'api', name: 'API اصلی', desc: 'Route Handlers و Server Actions', base: 80, href: '/dashboard/observability/latency' },
-  { id: 'db', name: 'پایگاه داده', desc: 'Postgres اصلی و replica', base: 8, href: '/dashboard/observability/queries' },
-  { id: 'cache', name: 'کش', desc: 'Redis و کش حافظه‌ای', base: 12, href: '/dashboard/settings' },
-  { id: 'queue', name: 'صف پیام', desc: 'Workerها و cron jobها', base: 18, href: '/dashboard/jobs' },
-  { id: 'auth', name: 'احراز هویت', desc: 'NextAuth v5، OAuth و 2FA', base: 45, href: '/dashboard/users' },
-  { id: 'edge', name: 'Edge و CDN', desc: 'پاسخ‌گویی لبه', base: 6, href: '/dashboard/observability/latency' },
-  { id: 'email', name: 'ایمیل', desc: 'SMTP و Resend', base: 220, href: '/dashboard/communication' },
-  { id: 'sms', name: 'پیامک', desc: 'کد یک‌بارمصرف و اعلان', base: 180, href: '/dashboard/communication' },
-  { id: 'storage', name: 'ذخیره‌سازی', desc: 'S3 و فایل محلی', base: 30, href: '/dashboard/settings' },
+  {
+    id: 'api',
+    name: 'API اصلی',
+    desc: 'Route Handlers و Server Actions',
+    href: '/dashboard/observability/latency',
+  },
+  {
+    id: 'db',
+    name: 'پایگاه داده',
+    desc: 'Postgres اصلی و replica',
+    href: '/dashboard/observability/queries',
+  },
+  { id: 'cache', name: 'کش', desc: 'Redis و کش حافظه‌ای', href: '/dashboard/settings' },
+  { id: 'queue', name: 'صف پیام', desc: 'Workerها و cron jobها', href: '/dashboard/jobs' },
+  {
+    id: 'auth',
+    name: 'احراز هویت',
+    desc: 'NextAuth v5، OAuth و 2FA',
+    href: '/dashboard/users',
+  },
+  {
+    id: 'edge',
+    name: 'Edge و CDN',
+    desc: 'میان‌افزار و پاسخ‌گویی لبه',
+    href: '/dashboard/observability/latency',
+  },
+  { id: 'email', name: 'ایمیل', desc: 'SMTP و Resend', href: '/dashboard/communication' },
+  { id: 'sms', name: 'پیامک', desc: 'کد یک‌بارمصرف و اعلان', href: '/dashboard/communication' },
+  { id: 'storage', name: 'ذخیره‌سازی', desc: 'S3 و فایل محلی', href: '/dashboard/settings' },
 ];
 
 /* ───────────────────────── snapshot ───────────────────────── */
 
-const fetchSnapshotRaw = async (): Promise<ObservabilitySnapshot> => {
-  const now = Date.now();
+interface SourceAgg {
+  total: number;
+  errors: number;
+  warns: number;
+  lastAt: number;
+  buckets: Bucket[];
+  recentErrors: number;
+  recentWarns: number;
+  service: ServiceKey | null;
+}
+
+interface ServiceAgg {
+  total: number;
+  errors: number;
+  warns: number;
+  recentErrors: number;
+  recentWarns: number;
+  buckets: Bucket[];
+  sources: Set<string>;
+  latencies: number[];
+}
+
+const newSourceAgg = (at: number, service: ServiceKey | null): SourceAgg => ({
+  total: 0,
+  errors: 0,
+  warns: 0,
+  lastAt: at,
+  buckets: emptyBuckets(),
+  recentErrors: 0,
+  recentWarns: 0,
+  service,
+});
+
+const newServiceAgg = (): ServiceAgg => ({
+  total: 0,
+  errors: 0,
+  warns: 0,
+  recentErrors: 0,
+  recentWarns: 0,
+  buckets: emptyBuckets(),
+  sources: new Set<string>(),
+  latencies: [],
+});
+
+const buildSnapshot = async (now: number): Promise<ObservabilitySnapshot> => {
   const since24 = new Date(now - OBS_WINDOW_HOURS * 3_600_000);
   const since6h = new Date(now - 6 * 3_600_000);
   const since1h = new Date(now - 3_600_000);
@@ -265,7 +377,12 @@ const fetchSnapshotRaw = async (): Promise<ObservabilitySnapshot> => {
       take: SCAN_LIMIT,
     }),
     prisma.systemLog.findMany({
-      where: { timestamp: { gte: since24 }, level: { in: ['error', 'fatal'] } },
+      // ⬅ باگ اصلی اینجا بود: قبلاً فقط ['error','fatal'] بود و ردیف‌های
+      //    'ERROR' که seed و اکثر نویسندگان می‌نوشتند هرگز خوانده نمی‌شدند.
+      where: {
+        timestamp: { gte: since24 },
+        level: { in: [...ERROR_LEVEL_DB_VARIANTS] },
+      },
       select: { id: true, level: true, source: true, message: true, timestamp: true },
       orderBy: { timestamp: 'desc' },
       take: 200,
@@ -285,7 +402,9 @@ const fetchSnapshotRaw = async (): Promise<ObservabilitySnapshot> => {
     }),
     prisma.systemLog.findMany({
       where: { timestamp: { gte: since1h }, message: { contains: 'duration=' } },
-      select: { message: true },
+      // ⬅ `source` اضافه شد تا تأخیر را بتوانیم به سرویس نسبت دهیم؛
+      //    قبلاً فقط یک عدد سراسری داشتیم و ردیف هر سرویس عدد ثابت می‌گرفت.
+      select: { source: true, message: true },
       orderBy: { timestamp: 'desc' },
       take: LATENCY_SAMPLE_LIMIT,
     }),
@@ -300,11 +419,14 @@ const fetchSnapshotRaw = async (): Promise<ObservabilitySnapshot> => {
 
   /* ── یک پیمایش، همه‌ی مشتقات ─────────────────────────────── */
   const overall = emptyBuckets();
-  const levelMap = new Map<string, number>();
-  const perSource = new Map<
-    string,
-    { total: number; errors: number; warns: number; lastAt: number; buckets: Bucket[]; recentErrors: number; recentWarns: number }
-  >();
+  const levelMap = new Map<LogLevel, number>();
+  const perSource = new Map<string, SourceAgg>();
+  const perService = new Map<ServiceKey, ServiceAgg>();
+  /** منابعِ دخیل در خطا، به تفکیک سطل — برای ساخت incident بدون حلقهٔ تودرتو. */
+  const bucketErrorSources: Set<string>[] = Array.from(
+    { length: OBS_WINDOW_HOURS },
+    () => new Set<string>(),
+  );
 
   let totalErrors = 0;
   let totalWarns = 0;
@@ -314,10 +436,12 @@ const fetchSnapshotRaw = async (): Promise<ObservabilitySnapshot> => {
   for (const row of logs) {
     const at = row.timestamp.getTime();
     const key = row.source || 'system';
-    const err = isErrorLevel(row.level);
-    const warn = row.level === 'warn';
+    const level = normalizeLogLevel(row.level);
+    const err = isErrorLevel(level);
+    const warn = isWarnLevel(level);
+    const serviceKey = resolveServiceKey(key);
 
-    levelMap.set(row.level, (levelMap.get(row.level) ?? 0) + 1);
+    levelMap.set(level, (levelMap.get(level) ?? 0) + 1);
     if (err) totalErrors += 1;
     if (warn) totalWarns += 1;
     if (at >= now - 3_600_000) {
@@ -327,15 +451,7 @@ const fetchSnapshotRaw = async (): Promise<ObservabilitySnapshot> => {
 
     let entry = perSource.get(key);
     if (!entry) {
-      entry = {
-        total: 0,
-        errors: 0,
-        warns: 0,
-        lastAt: at,
-        buckets: emptyBuckets(),
-        recentErrors: 0,
-        recentWarns: 0,
-      };
+      entry = newSourceAgg(at, serviceKey);
       perSource.set(key, entry);
     }
     entry.total += 1;
@@ -347,6 +463,23 @@ const fetchSnapshotRaw = async (): Promise<ObservabilitySnapshot> => {
       if (warn) entry.recentWarns += 1;
     }
 
+    let service: ServiceAgg | undefined;
+    if (serviceKey !== null) {
+      service = perService.get(serviceKey);
+      if (!service) {
+        service = newServiceAgg();
+        perService.set(serviceKey, service);
+      }
+      service.total += 1;
+      service.sources.add(key);
+      if (err) service.errors += 1;
+      if (warn) service.warns += 1;
+      if (at >= since15m) {
+        if (err) service.recentErrors += 1;
+        if (warn) service.recentWarns += 1;
+      }
+    }
+
     const index = bucketIndex(now, at);
     if (index >= 0) {
       const cell = entry.buckets[index];
@@ -355,12 +488,19 @@ const fetchSnapshotRaw = async (): Promise<ObservabilitySnapshot> => {
         if (err) cell.errors += 1;
         if (warn) cell.warns += 1;
       }
+      const serviceCell = service?.buckets[index];
+      if (serviceCell) {
+        serviceCell.total += 1;
+        if (err) serviceCell.errors += 1;
+        if (warn) serviceCell.warns += 1;
+      }
       const global = overall[index];
       if (global) {
         global.total += 1;
         if (err) global.errors += 1;
         if (warn) global.warns += 1;
       }
+      if (err) bucketErrorSources[index]?.add(key);
     }
   }
 
@@ -368,29 +508,52 @@ const fetchSnapshotRaw = async (): Promise<ObservabilitySnapshot> => {
   const hourlyErrors = overall.map((b) => b.errors);
   const totalLogs = logs.length;
 
+  /* ── نمونه‌های تأخیر: سراسری و به تفکیک سرویس ───────────── */
+  const samples: number[] = [];
+  for (const row of latencyRows) {
+    const value = readDuration(row.message);
+    if (value === null) continue;
+    samples.push(value);
+    const serviceKey = resolveServiceKey(row.source);
+    if (serviceKey === null) continue;
+    let service = perService.get(serviceKey);
+    if (!service) {
+      service = newServiceAgg();
+      perService.set(serviceKey, service);
+    }
+    service.latencies.push(value);
+  }
+  samples.sort((a, b) => a - b);
+
   /* ── سرویس‌ها ───────────────────────────────────────────── */
   const services: ServiceHealth[] = SERVICE_DEFS.map((def) => {
-    const entry = perSource.get(def.id);
-    const recentErrors = entry?.recentErrors ?? 0;
-    const recentWarns = entry?.recentWarns ?? 0;
-    const observed = entry !== undefined;
+    const agg = perService.get(def.id);
+    const events24h = agg?.total ?? 0;
+    const errors24h = agg?.errors ?? 0;
+    const recentErrors = agg?.recentErrors ?? 0;
+    const recentWarns = agg?.recentWarns ?? 0;
 
-    const latencyMs =
-      recentErrors > 5 ? Math.round(def.base * 2.4) : recentErrors > 0 || recentWarns > 8 ? Math.round(def.base * 1.5) : def.base;
+    const latencies = [...(agg?.latencies ?? [])].sort((a, b) => a - b);
+    const measured = latencies.length >= MIN_LATENCY_SAMPLES;
 
-    const maxBucket = Math.max(...(entry?.buckets.map((b) => b.total) ?? [0]), 1);
+    const buckets = agg?.buckets ?? emptyBuckets();
+    const maxBucket = Math.max(...buckets.map((b) => b.total), 1);
 
     return {
       id: def.id,
       name: def.name,
       desc: def.desc,
-      status: observed ? classifyStatus(recentErrors, recentWarns) : 'idle',
-      latencyMs,
+      // بدون رویداد یعنی «نمی‌دانیم»، نه «سالم».
+      status: events24h > 0 ? classifyStatus(recentErrors, recentWarns) : 'idle',
+      latencyMs: measured ? percentile(latencies, 95) : 0,
+      latencyMeasured: measured,
+      latencySamples: latencies.length,
       errorRate: Math.round((recentErrors / 15) * 100) / 100,
-      uptime24h: estimateUptime(entry?.errors ?? 0, entry?.total ?? 0),
-      sparkline: (entry?.buckets ?? emptyBuckets()).map((b) => Math.round((b.total / maxBucket) * 100)),
-      errors24h: entry?.errors ?? 0,
-      events24h: entry?.total ?? 0,
+      uptime24h: computeUptime(errors24h, events24h),
+      sparkline: buckets.map((b) => Math.round((b.total / maxBucket) * 100)),
+      errors24h,
+      events24h,
+      sources: Array.from(agg?.sources ?? []).slice(0, 6),
       href: def.href,
     };
   });
@@ -398,7 +561,9 @@ const fetchSnapshotRaw = async (): Promise<ObservabilitySnapshot> => {
   /* ── خطاها (گروه‌بندی‌شده) ──────────────────────────────── */
   const groups = new Map<string, ErrorEvent>();
   for (const row of errorRows) {
-    const key = `${row.level}:${row.source}:${row.message.slice(0, 80)}`;
+    const level = asSeverity(normalizeLogLevel(row.level));
+    const source = row.source || 'system';
+    const key = `${level}:${source}:${row.message.slice(0, 80)}`;
     const existing = groups.get(key);
     if (existing) {
       existing.count += 1;
@@ -406,44 +571,31 @@ const fetchSnapshotRaw = async (): Promise<ObservabilitySnapshot> => {
     }
     groups.set(key, {
       id: row.id,
-      level: (row.level as Severity) ?? 'error',
-      source: row.source || 'system',
+      level,
+      source,
       message: row.message,
       timestamp: row.timestamp.toISOString(),
       count: 1,
     });
   }
   const errors = Array.from(groups.values()).sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+    (a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp),
   );
 
   /* ── کوئری‌های کند ──────────────────────────────────────── */
   const slowQueries: SlowQuery[] = slowRows
-    .map((row) => {
-      const match = DURATION_RE.exec(row.message);
-      const parsed = match ? Number.parseInt(match[1] ?? '0', 10) : 0;
-      return {
-        id: row.id,
-        source: row.source || 'system',
-        message: row.message,
-        durationMs: Number.isFinite(parsed) ? parsed : 0,
-        timestamp: row.timestamp.toISOString(),
-      };
-    })
+    .map((row) => ({
+      id: row.id,
+      source: row.source || 'system',
+      message: row.message,
+      durationMs: readDuration(row.message) ?? 0,
+      timestamp: row.timestamp.toISOString(),
+    }))
     .sort((a, b) => b.durationMs - a.durationMs);
 
-  /* ── صدک‌های تأخیر: واقعی اگر نمونه داشته باشیم ─────────── */
-  const samples: number[] = [];
-  for (const row of latencyRows) {
-    const match = DURATION_RE.exec(row.message);
-    if (!match) continue;
-    const value = Number.parseInt(match[1] ?? '', 10);
-    if (Number.isFinite(value) && value >= 0) samples.push(value);
-  }
-  samples.sort((a, b) => a - b);
-
+  /* ── صدک‌های سراسری تأخیر ───────────────────────────────── */
   const errorRate = logs1h > 0 ? Math.round((errors1h / logs1h) * 1000) / 10 : 0;
-  const measured = samples.length >= 5;
+  const measured = samples.length >= MIN_LATENCY_SAMPLES;
   const derivedP95 = Math.min(2000, 45 + errorRate * 6 + Math.round((logs1h % 100) / 4));
 
   const performance: PerformanceSnapshot = {
@@ -469,6 +621,7 @@ const fetchSnapshotRaw = async (): Promise<ObservabilitySnapshot> => {
     warns: stat.warns,
     share: totalLogs > 0 ? Math.round((stat.total / totalLogs) * 1000) / 10 : 0,
     lastAt: new Date(stat.lastAt).toISOString(),
+    service: stat.service,
   }));
 
   const heat: HeatRow[] = sortedSources.slice(0, HEAT_ROWS).map(([source, stat]) => ({
@@ -500,9 +653,7 @@ const fetchSnapshotRaw = async (): Promise<ObservabilitySnapshot> => {
       const value = hourlyErrors[i] ?? 0;
       sum += value;
       if (value > peak) peak = value;
-      for (const [source, stat] of perSource) {
-        if ((stat.buckets[i]?.errors ?? 0) > 0) involved.add(source);
-      }
+      for (const source of bucketErrorSources[i] ?? []) involved.add(source);
     }
     incidents.push({
       id: `incident-${runStart}-${endIndex}`,
@@ -540,6 +691,7 @@ const fetchSnapshotRaw = async (): Promise<ObservabilitySnapshot> => {
   return {
     generatedAt: new Date(now).toISOString(),
     windowHours: OBS_WINDOW_HOURS,
+    degraded: false,
     services,
     errors,
     slowQueries,
@@ -562,9 +714,15 @@ const fetchSnapshotRaw = async (): Promise<ObservabilitySnapshot> => {
   };
 };
 
-const emptySnapshot = (): ObservabilitySnapshot => ({
-  generatedAt: new Date().toISOString(),
+/**
+ * snapshotی که صریحاً می‌گوید «نخواندم».
+ * `generatedAt` هر بار تازه ساخته می‌شود — نسخهٔ قبلی این مقدار را یک‌بار در
+ * زمان بارگذاری ماژول می‌ساخت و برای همیشه یک زمان یخ‌زده نشان می‌داد.
+ */
+const degradedSnapshot = (now: number = Date.now()): ObservabilitySnapshot => ({
+  generatedAt: new Date(now).toISOString(),
   windowHours: OBS_WINDOW_HOURS,
+  degraded: true,
   services: [],
   errors: [],
   slowQueries: [],
@@ -576,8 +734,8 @@ const emptySnapshot = (): ObservabilitySnapshot => ({
     latencySamples: 0,
     logsPerHour: 0,
     errorRate: 0,
-    memoryMb: 0,
-    uptimeSec: 0,
+    memoryMb: memoryMb(),
+    uptimeSec: uptimeSec(),
     hourly: new Array(OBS_WINDOW_HOURS).fill(0),
   },
   hourly: new Array(OBS_WINDOW_HOURS).fill(0),
@@ -590,36 +748,68 @@ const emptySnapshot = (): ObservabilitySnapshot => ({
   totals: { logs: 0, errors: 0, warns: 0, audit: 0, sources: 0, sampled: false },
 });
 
-const getCachedSnapshot = safeCache(fetchSnapshotRaw, emptySnapshot(), {
+const fetchSnapshotRaw = async (): Promise<ObservabilitySnapshot> => {
+  const now = Date.now();
+  try {
+    return await buildSnapshot(now);
+  } catch {
+    // دیتابیس در دسترس نیست. صادقانه degraded برمی‌گردانیم تا UI بگوید
+    // «خوانش نداریم» — نه اینکه صفرها را به‌جای سلامت جا بزند.
+    return degradedSnapshot(now);
+  }
+};
+
+const getCachedSnapshot = safeCache(fetchSnapshotRaw, degradedSnapshot(), {
   key: 'observability-snapshot',
   ttl: 30,
   tags: ['system-log', 'audit-log', 'observability'],
 });
 
-/**
- * دریافت داده‌های مشاهده‌پذیری — فقط نقش‌های ارشد.
- * هرگز throw نمی‌کند؛ در بدترین حالت snapshot خالی برمی‌گرداند.
- */
-export async function getObservabilitySnapshot(): Promise<{
+export type ObservabilityFailure = 'UNAUTHENTICATED' | 'FORBIDDEN' | 'DEGRADED';
+
+export interface ObservabilityResult {
   success: boolean;
   data?: ObservabilitySnapshot;
+  code?: ObservabilityFailure;
   message?: string;
-}> {
+}
+
+/** نقش‌هایی که اجازهٔ دیدن مرکز مشاهده‌پذیری دارند. */
+const ALLOWED_ROLES = new Set(['OWNER', 'SUPERADMIN', 'ADMIN']);
+
+/**
+ * دریافت داده‌های مشاهده‌پذیری — فقط نقش‌های ارشد.
+ *
+ * هرگز throw نمی‌کند، ولی برخلاف نسخهٔ قبل **دروغ هم نمی‌گوید**: اگر دیتابیس
+ * نخوانده باشد `success: false` با کد `DEGRADED` برمی‌گرداند و همان snapshot
+ * علامت‌خورده را هم پیوست می‌کند تا UI بتواند صریحاً «داده در دسترس نیست»
+ * نشان دهد. تفکیک `UNAUTHENTICATED` از `FORBIDDEN` هم لازم است چون کلاینت
+ * برای اولی باید polling را قطع کند و برای دومی نه.
+ */
+export async function getObservabilitySnapshot(): Promise<ObservabilityResult> {
   const session = await auth();
   if (!session?.user?.id) {
-    return { success: false, message: 'احراز هویت نشده‌اید' };
+    return { success: false, code: 'UNAUTHENTICATED', message: 'احراز هویت نشده‌اید' };
   }
-  if (!['OWNER', 'SUPERADMIN', 'ADMIN'].includes(session.user.role ?? '')) {
-    return { success: false, message: 'دسترسی ندارید' };
+  if (!ALLOWED_ROLES.has(session.user.role ?? '')) {
+    return { success: false, code: 'FORBIDDEN', message: 'دسترسی ندارید' };
   }
 
+  let data: ObservabilitySnapshot;
   try {
-    return { success: true, data: await getCachedSnapshot() };
-  } catch (err) {
+    data = await getCachedSnapshot();
+  } catch {
+    data = degradedSnapshot();
+  }
+
+  if (data.degraded) {
     return {
-      success: true,
-      data: emptySnapshot(),
-      message: err instanceof Error ? err.message : 'خطای ناشناخته',
+      success: false,
+      data,
+      code: 'DEGRADED',
+      message: 'خواندن لاگ‌های سامانه ممکن نشد؛ اعداد این صفحه معتبر نیستند.',
     };
   }
+
+  return { success: true, data };
 }

@@ -75,7 +75,9 @@ export default function TransactionsContent({
         <article className={s.summaryCard} data-tone="neutral">
           <div className={s.summaryTop}>
             <span className={s.summaryLabel}>تعداد کل</span>
-            <span className={s.summaryIcon} aria-hidden><History size={15} /></span>
+            <span className={s.summaryIcon} aria-hidden>
+              <History size={15} />
+            </span>
           </div>
           <span className={s.summaryValue}>{faNum(total)}</span>
           <span className={s.summarySub}>تراکنش ثبت شده</span>
@@ -83,7 +85,9 @@ export default function TransactionsContent({
         <article className={s.summaryCard} data-tone="credit">
           <div className={s.summaryTop}>
             <span className={s.summaryLabel}>موفق</span>
-            <span className={s.summaryIcon} aria-hidden><CheckCircle2 size={15} /></span>
+            <span className={s.summaryIcon} aria-hidden>
+              <CheckCircle2 size={15} />
+            </span>
           </div>
           <span className={s.summaryValue}>{faNum(completed)}</span>
           <span className={s.summarySub}>در این صفحه</span>
@@ -91,7 +95,9 @@ export default function TransactionsContent({
         <article className={s.summaryCard} data-tone="warning">
           <div className={s.summaryTop}>
             <span className={s.summaryLabel}>در انتظار</span>
-            <span className={s.summaryIcon} aria-hidden><Clock size={15} /></span>
+            <span className={s.summaryIcon} aria-hidden>
+              <Clock size={15} />
+            </span>
           </div>
           <span className={s.summaryValue}>{faNum(pending)}</span>
           <span className={s.summarySub}>نیازمند اقدام</span>
@@ -99,7 +105,9 @@ export default function TransactionsContent({
         <article className={s.summaryCard} data-tone="danger">
           <div className={s.summaryTop}>
             <span className={s.summaryLabel}>ناموفق</span>
-            <span className={s.summaryIcon} aria-hidden><AlertCircle size={15} /></span>
+            <span className={s.summaryIcon} aria-hidden>
+              <AlertCircle size={15} />
+            </span>
           </div>
           <span className={s.summaryValue}>{faNum(failed)}</span>
           <span className={s.summarySub}>لغو/خطا</span>

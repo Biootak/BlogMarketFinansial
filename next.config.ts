@@ -15,7 +15,7 @@ const ContentSecurityPolicy = `
   img-src 'self' blob: data:
     https://images.pexels.com
     https://images.unsplash.com
-    https://*.storage.c2.liara.space
+    https://*.r2.dev
     https://avatar.vercel.sh
     https://lh3.googleusercontent.com
     https://avatars.githubusercontent.com
@@ -205,6 +205,9 @@ const nextConfig: NextConfig = {
     // افزایش timeout برای لود تصاویر — images are effectively immutable,
     // so cache the optimizer result for a full day instead of 60s.
     minimumCacheTTL: 86400,
+    // کیفیت‌های مجاز — default 75؛ ArchiveAdCard از quality=40 استفاده می‌کند و
+    // در production بدون ثبت این مقدار، آپتیمایزر 400 می‌داد و تبلیغ لود نمی‌شد.
+    qualities: [40, 75],
     // فرمت‌های مجاز
     formats: ['image/avif', 'image/webp'],
     // محدودیت سایز دستگاه‌ها
@@ -224,11 +227,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'biotak.storage.c2.liara.space',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.storage.c2.liara.space',
+        hostname: '*.r2.dev',
       },
       {
         protocol: 'https',
@@ -377,9 +376,7 @@ const nextConfig: NextConfig = {
 
   // 2026-08: logging.fetches — در dev نشان می‌دهد کدام fetch cached است
   // و کدام شبکه می‌رود. در production فقط خطاها.
-  logging: process.env.NODE_ENV !== 'production'
-    ? { fetches: { fullUrl: true } }
-    : undefined,
+  logging: process.env.NODE_ENV !== 'production' ? { fetches: { fullUrl: true } } : undefined,
 
   // 2026-07-07: `next-auth` beta.25 imports `next/server` without the `.js`
   // extension. When Turbopack externalizes the package, Node's ESM loader

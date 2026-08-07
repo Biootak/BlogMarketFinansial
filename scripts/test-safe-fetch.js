@@ -3,11 +3,13 @@
  * test-safe-fetch — 2026-06-21
  * تست می‌کند که helper safe-fetch خطای DB را بگیرد و سایت کرش نکند.
  */
-const { execSync } = require('child_process');
+const { execSync } = require('node:child_process');
 
 // شبیه‌سازی خطای DB — مثل `prisma.rateList.findMany()` که throw می‌کند
 async function simulateDbError() {
-  throw new Error("Can't reach database server at ep-spring-forest-a57spxe5.us-east-2.aws.neon.tech:5432");
+  throw new Error(
+    "Can't reach database server at ep-spring-forest-a57spxe5.us-east-2.aws.neon.tech:5432",
+  );
 }
 
 async function simulateDbSuccess() {
@@ -42,14 +44,20 @@ async function main() {
   const result1 = await safeArray(simulateDbError(), 'test/error');
   console.log(`  نتیجه: ${JSON.stringify(result1)}`);
   if (result1.length === 0) console.log('  ✅ fallback آرایه‌ی خالی برگشت');
-  else { console.log('  ❌ باید آرایه‌ی خالی می‌بود'); process.exit(1); }
+  else {
+    console.log('  ❌ باید آرایه‌ی خالی می‌بود');
+    process.exit(1);
+  }
 
   // تست ۲: موفقیت → مقدار واقعی برگردد
   console.log('\nتست ۲: promise که resolve می‌شود');
   const result2 = await safeArray(simulateDbSuccess(), 'test/success');
   console.log(`  نتیجه: ${result2.length} آیتم`);
   if (result2.length === 2) console.log('  ✅ مقدار واقعی برگشت');
-  else { console.log('  ❌ باید ۲ آیتم می‌بود'); process.exit(1); }
+  else {
+    console.log('  ❌ باید ۲ آیتم می‌بود');
+    process.exit(1);
+  }
 
   // تست ۳: safe با fallback شیء
   console.log('\nتست ۳: safe با fallback شیء');
@@ -60,7 +68,10 @@ async function main() {
   );
   console.log(`  نتیجه: ${JSON.stringify(result3)}`);
   if (result3.siteName === '') console.log('  ✅ fallback شیء برگشت');
-  else { console.log('  ❌'); process.exit(1); }
+  else {
+    console.log('  ❌');
+    process.exit(1);
+  }
 
   // تست ۴: Promise.all با همه‌ی promise های fail
   console.log('\nتست ۴: Promise.all با همه‌ی promise های fail (سناریوی SiteLayout)');

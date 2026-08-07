@@ -1,72 +1,59 @@
 'use client';
 
-import { Activity, LogIn, ScrollText, ShieldAlert, ShieldCheck, Wallet } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { ScrollText } from 'lucide-react';
 
-import { relative, stamp } from './format';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
-import s from './obs.module.css';
+import { hhmm, relative, stamp } from './format';
+import l from './ledger.module.css';
 
-interface ActionMeta {
-  label: string;
-  icon: LucideIcon;
-  tone: 'ok' | 'warn' | 'bad' | 'info' | 'idle';
-}
+const MAX_ROWS = 24;
 
-const ACTION_META: Record<string, ActionMeta> = {
-  LOGIN: { label: 'ورود کاربر', icon: LogIn, tone: 'info' },
-  LOGOUT: { label: 'خروج کاربر', icon: LogIn, tone: 'idle' },
-  SIGNUP: { label: 'ثبت‌نام', icon: ShieldCheck, tone: 'ok' },
-  DEPOSIT: { label: 'واریز', icon: Wallet, tone: 'ok' },
-  WITHDRAW: { label: 'برداشت', icon: Wallet, tone: 'warn' },
-  TRANSFER: { label: 'انتقال', icon: Wallet, tone: 'warn' },
-  KYC_APPROVED: { label: 'تأیید احراز هویت', icon: ShieldCheck, tone: 'ok' },
-  KYC_REJECTED: { label: 'رد احراز هویت', icon: ShieldAlert, tone: 'bad' },
-  KYC_SUBMITTED: { label: 'ارسال احراز هویت', icon: ShieldCheck, tone: 'info' },
-  FRAUD_DETECTED: { label: 'تشخیص تقلب', icon: ShieldAlert, tone: 'bad' },
-  FRAUD_BLOCKED: { label: 'مسدودسازی تقلب', icon: ShieldAlert, tone: 'bad' },
-};
-
-const fallbackMeta = (action: string): ActionMeta => ({
-  label: action,
-  icon: Activity,
-  tone: 'idle',
-});
-
-/** رد ممیزی — رویدادهای واقعی AuditLog در پنجرهٔ جاری. */
+/**
+ * رد ممیزی.
+ *
+ * نام اکشن و نوع موجودیت مستقیم از دیتابیس می‌آیند و لاتین‌اند، پس هر کدام
+ * داخل `bdi` بسته می‌شوند: بدون آن، الگوریتم bidi زیرخط و نقطه را در جملهٔ
+ * فارسی به سمت اشتباه پرت می‌کند و متن به‌هم می‌ریزد. اینجا حدس نمی‌زنیم و
+ * ترجمه نمی‌کنیم؛ کلید خام همان چیزی است که در DB جست‌وجو می‌شود.
+ */
 export function AuditTrail() {
   const { data } = useObs();
-  if (!data) return null;
+  const events = data?.audit ?? [];
 
-  if (data.audit.length === 0) {
+  if (!data || events.length === 0) {
     return (
       <ObsEmpty
         icon={ScrollText}
-        title="رویداد ممیزی‌شده‌ای نداریم"
-        hint="هر اقدام حساس (ورود، احراز هویت، تراکنش، تغییر تنظیمات) در AuditLog ثبت و همین‌جا به‌ترتیب زمان نمایش داده می‌شود."
+        title="رد ممیزی در این بازه خالی است"
+        hint="هیچ تغییر قابل‌ممیزی‌ای در بیست‌وچهار ساعت گذشته ثبت نشده است."
       />
     );
   }
 
   return (
-    <ul className={s.trail}>
-      {data.audit.map((entry) => {
-        const meta = ACTION_META[entry.action] ?? fallbackMeta(entry.action);
-        const Icon = meta.icon;
-        return (
-          <li key={entry.id} className={s.trailRow} data-tone={meta.tone}>
-            <Icon size={16} strokeWidth={1.5} className={s.trailIcon} aria-hidden />
-            <span>
-              <span className={s.trailAction}>{meta.label}</span>
-              <span className={s.trailMeta}>
-                {entry.actorRole} · {entry.entityType} · {stamp(entry.createdAt)}
-              </span>
+    <ol className={l.trail}>
+      {events.slice(0, MAX_ROWS).map((event) => (
+        <li key={event.id}>
+          <div className={l.event}>
+            <span className={l.eventAction}>
+              <bdi>{event.action}</bdi>
             </span>
-            <span className={s.time}>{relative(entry.createdAt, data.generatedAt)}</span>
-          </li>
-        );
-      })}
-    </ul>
+            <time className={l.eventTime} dateTime={event.createdAt} title={stamp(event.createdAt)}>
+              {hhmm(event.createdAt)}
+            </time>
+            <span className={l.eventMeta}>
+              <span>
+                نقش عامل: <bdi>{event.actorRole}</bdi>
+              </span>
+              <span>
+                موجودیت: <bdi>{event.entityType}</bdi>
+              </span>
+              <span>{relative(event.createdAt, data.generatedAt)}</span>
+            </span>
+          </div>
+        </li>
+      ))}
+    </ol>
   );
 }

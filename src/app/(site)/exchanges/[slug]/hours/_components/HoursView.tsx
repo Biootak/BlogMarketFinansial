@@ -9,8 +9,8 @@
  *   • خلاصهٔ آماری در header
  */
 
-import { Calendar, Clock4, Moon, Sun } from 'lucide-react';
 import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
+import { Calendar, Clock4, Moon, Sun } from 'lucide-react';
 import { useState } from 'react';
 import s from './HoursView.module.css';
 
@@ -165,9 +165,7 @@ export default function HoursView({ exchange, hours, timezone = 'Asia/Tehran' }:
             <span className={s.statLabel}>میانگین روزانه</span>
             <span className={s.statValue}>
               {openDays > 0
-                ? _faNum.format(
-                    Math.round((totalOpenHours / openDays) * 10) / 10,
-                  )
+                ? _faNum.format(Math.round((totalOpenHours / openDays) * 10) / 10)
                 : '۰'}
               <span className={s.statUnit}>ساعت</span>
             </span>

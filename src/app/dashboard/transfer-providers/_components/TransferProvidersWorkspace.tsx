@@ -23,6 +23,7 @@ import {
   MillionDollarEmpty,
   PageHeader,
 } from '@/components/Dashboard/primitives';
+import { SearchInput } from '@/components/Dashboard/primitives';
 import {
   Select,
   SelectContent,
@@ -31,9 +32,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from '@/components/ui/use-toast';
-import { SearchInput } from '@/components/Dashboard/primitives';
 import { formatFaNumber } from '@/lib/fa-number';
-import { PencilLine, Plus, Search, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
+import { PencilLine, Plus, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
 import { useCallback, useMemo, useState, useTransition } from 'react';
 import ProviderDrawer from './ProviderDrawer';
 import s from './TransferProvidersWorkspace.module.css';
@@ -375,9 +375,7 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
                     <span className={s.metaNum}>{r.spreadPercent.toFixed(2)}٪ اسپرد</span>
                   )}
                   {r.flatFeeToman > 0 && (
-                    <span className={s.metaNum}>
-                      {formatFaNumber(r.flatFeeToman)} ت کارمزد
-                    </span>
+                    <span className={s.metaNum}>{formatFaNumber(r.flatFeeToman)} ت کارمزد</span>
                   )}
                 </div>
 

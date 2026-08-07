@@ -96,11 +96,11 @@ export const getPostBySlug = cache(
         message: 'پست با موفقیت بازیابی شد.',
         data: post as unknown as PostWithRelations,
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         success: false,
         message: 'خطا در بازیابی پست.',
-        error: error instanceof Error ? error.message : String(error),
+        error: 'INTERNAL_ERROR',
       };
     }
   },

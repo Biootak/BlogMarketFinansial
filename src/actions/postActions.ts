@@ -115,11 +115,11 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
       message: 'پست با موفقیت ایجاد شد.',
       data: post,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در ایجاد پست. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
+      error: 'INTERNAL_ERROR',
     };
   }
 }
@@ -157,9 +157,9 @@ export async function updatePost(
       };
     }
 
-    // Only OWNER, ADMIN, and post owner (AUTHOR) can edit posts
+    // Only OWNER, SUPERADMIN, ADMIN, and post owner (AUTHOR) can edit posts
     if (
-      !['OWNER', 'ADMIN'].includes(session.user.role) &&
+      !['OWNER', 'SUPERADMIN', 'ADMIN'].includes(session.user.role) &&
       !(session.user.role === 'AUTHOR' && currentPost.authorId === session.user.id)
     ) {
       return {
@@ -269,11 +269,11 @@ export async function updatePost(
       message: 'پست با موفقیت به‌روزرسانی شد.',
       data: post,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در به‌روزرسانی پست. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
+      error: 'INTERNAL_ERROR',
     };
   }
 }
@@ -383,11 +383,11 @@ export async function updatePostStatus(
       message: 'وضعیت پست با موفقیت به‌روزرسانی شد.',
       data: updatedPost,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در به‌روزرسانی وضعیت پست. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
+      error: 'INTERNAL_ERROR',
     };
   }
 }
@@ -406,11 +406,11 @@ export async function updatePostStatusAndInvalidate(
     }
 
     return result;
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در بروزرسانی وضعیت پست',
-      error: error instanceof Error ? error.message : 'خطای ناشناخته',
+      error: 'INTERNAL_ERROR',
     };
   }
 }
@@ -471,11 +471,11 @@ export async function getPostStatusCounts(): Promise<ActionResult<PostStatusCoun
     }
 
     return { success: true, message: 'شمارنده‌ها با موفقیت محاسبه شدند.', data: counts };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در دریافت شمارنده‌ها.',
-      error: error instanceof Error ? error.message : String(error),
+      error: 'INTERNAL_ERROR',
     };
   }
 }
@@ -607,7 +607,7 @@ export async function deletePost(postId: string): Promise<ActionResult> {
     }
 
     if (
-      !['OWNER', 'ADMIN'].includes(session.user.role) &&
+      !['OWNER', 'SUPERADMIN', 'ADMIN'].includes(session.user.role) &&
       !(session.user.role === 'AUTHOR' && post.authorId === session.user.id)
     ) {
       return {
@@ -720,7 +720,10 @@ export async function getPostById(postId: string): Promise<ActionResult<PostWith
     // A user may only load a post they own, unless they are ADMIN/OWNER.
     // This blocks any logged-in user from reading other authors' DRAFT /
     // PENDING_REVIEW / SCHEDULED posts by id.
-    const isPrivileged = currentUser.role === 'ADMIN' || currentUser.role === 'OWNER';
+    const isPrivileged =
+      currentUser.role === 'ADMIN' ||
+      currentUser.role === 'OWNER' ||
+      currentUser.role === 'SUPERADMIN';
     if (!isPrivileged && post.authorId !== currentUser.id) {
       return { success: false, message: 'شما مجوز دسترسی به این پست را ندارید.' };
     }
@@ -730,11 +733,11 @@ export async function getPostById(postId: string): Promise<ActionResult<PostWith
       message: 'پست با موفقیت بازیابی شد.',
       data: post as unknown as PostWithRelations,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در بازیابی پست. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
+      error: 'INTERNAL_ERROR',
     };
   }
 }
@@ -888,11 +891,11 @@ async function fetchPostBySlugRaw(slug: string): Promise<
         moreFromAuthor: moreFromAuthor as unknown as RelatedPostWithRelations[],
       },
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در بازیابی پست. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
+      error: 'INTERNAL_ERROR',
     };
   }
 }
@@ -1037,11 +1040,11 @@ export async function listAllPosts(
       message: 'پست‌ها با موفقیت بازیابی شدند.',
       data: { posts: posts as unknown as PostWithRelations[], total, pages },
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در بازیابی پست‌ها. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
+      error: 'INTERNAL_ERROR',
     };
   }
 }
@@ -1203,11 +1206,11 @@ async function fetchArchivePostsRaw(
         pages: Math.ceil(total / limit),
       },
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در بازیابی پست‌ها. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
+      error: 'INTERNAL_ERROR',
     };
   }
 }
@@ -1266,12 +1269,16 @@ export async function likeItem(
     }
 
     revalidatePath(path);
+    revalidateTag('comments');
+    if (itemType === 'post') {
+      revalidateTag(`post-${itemId}`);
+    }
     return { success: true, message: 'وضعیت لایک با موفقیت به‌روزرسانی شد.' };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در به‌روزرسانی وضعیت لایک. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
+      error: 'INTERNAL_ERROR',
     };
   }
 }
@@ -1309,6 +1316,7 @@ export async function savePost(postId: string): Promise<ActionResult> {
     }
 
     revalidatePath(`/posts/${postId}`);
+    revalidateTag(`post-${postId}`);
     return {
       success: true,
       message: existingSave ? 'پست از لیست ذخیره‌ها حذف شد.' : 'پست با موفقیت ذخیره شد.',

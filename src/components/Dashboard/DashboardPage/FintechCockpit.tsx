@@ -166,7 +166,10 @@ const STATUS_LIVE_LABELS: Record<FintechCockpitLiveService['status'], string> = 
 
 // Module-level Intl singletons — created once, never per call
 const _faNum = new Intl.NumberFormat('fa-IR');
-const _faCompact = new Intl.NumberFormat('fa-IR', { notation: 'compact', maximumFractionDigits: 1 });
+const _faCompact = new Intl.NumberFormat('fa-IR', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
 
 const toMs = (ts: string | number): number => {
   if (typeof ts === 'number') return ts;

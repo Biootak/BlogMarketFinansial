@@ -365,10 +365,7 @@ export default function ServicesWorkspace({ initialItems, canEdit }: Props) {
                       }}
                       disabled={!canEdit}
                     >
-                      <SelectTrigger
-                        aria-label="واحد زمان"
-                        className={s.selectTrigger}
-                      >
+                      <SelectTrigger aria-label="واحد زمان" className={s.selectTrigger}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

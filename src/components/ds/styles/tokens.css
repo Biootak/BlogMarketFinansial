@@ -193,10 +193,10 @@
   --ds-fg: var(--ds-text-primary);
 
   /* سطوح مختلف متن */
-  --ds-fg-muted:     var(--ds-text-muted);
+  --ds-fg-muted: var(--ds-text-muted);
   --ds-fg-secondary: var(--ds-text-secondary);
-  --ds-fg-subtle:    var(--ds-text-muted);
-  --ds-fg-inverse:   var(--ds-text-inverse);
+  --ds-fg-subtle: var(--ds-text-muted);
+  --ds-fg-inverse: var(--ds-text-inverse);
 
   /* Surface raised — کارت‌ها و المان‌های بالاتر از canvas */
   --ds-surface-raised: oklch(100% 0 0 / 0.9);
@@ -295,10 +295,10 @@
   /* Missing aliases — dark overrides */
   --ds-bg: var(--ds-canvas);
   --ds-fg: var(--ds-text-primary);
-  --ds-fg-muted:     var(--ds-text-muted);
+  --ds-fg-muted: var(--ds-text-muted);
   --ds-fg-secondary: var(--ds-text-secondary);
-  --ds-fg-subtle:    var(--ds-text-muted);
-  --ds-fg-inverse:   var(--ds-text-inverse);
+  --ds-fg-subtle: var(--ds-text-muted);
+  --ds-fg-inverse: var(--ds-text-inverse);
   --ds-surface-raised: oklch(22% 0.015 250 / 0.9);
 
   --ds-text-primary: oklch(95% 0.005 240);

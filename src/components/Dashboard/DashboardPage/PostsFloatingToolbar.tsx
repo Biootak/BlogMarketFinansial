@@ -350,17 +350,23 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                         <span className={cn('at-badge text-[10px]', currentMeta.pillClass)}>
                           {currentMeta.label}
                         </span>
-                        <span aria-hidden className="opacity-40">·</span>
+                        <span aria-hidden className="opacity-40">
+                          ·
+                        </span>
                         <span className="font-mono text-[10px] truncate max-w-[120px] sm:max-w-[180px]">
                           {activePost.postType}
                         </span>
-                        <span aria-hidden className="opacity-40 hidden sm:inline">·</span>
+                        <span aria-hidden className="opacity-40 hidden sm:inline">
+                          ·
+                        </span>
                         <span className="hidden sm:inline">
                           <FormattedDate date={activePost.createdAt} />
                         </span>
                         {activePost.readingTime != null && (
                           <>
-                            <span aria-hidden className="opacity-40 hidden sm:inline">·</span>
+                            <span aria-hidden className="opacity-40 hidden sm:inline">
+                              ·
+                            </span>
                             <span className="hidden sm:inline tabular-nums">
                               {activePost.readingTime} دقیقه
                             </span>
@@ -388,7 +394,9 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                           </span>
                           <span className="text-[color:var(--at-fg-subtle)]">بازدید</span>
                         </span>
-                        <span aria-hidden className="opacity-30">|</span>
+                        <span aria-hidden className="opacity-30">
+                          |
+                        </span>
                         <span className="inline-flex items-center gap-1">
                           <HiOutlineChatBubbleLeftRight className="w-3.5 h-3.5" aria-hidden />
                           <span className="tabular-nums font-bold">
@@ -416,7 +424,11 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                       onClick={onClose}
                       aria-label="بستن نوار ابزار"
                       title="بستن"
-                      className={cn(iconBtn, variantBtn.iconOnly, 'hidden sm:inline-flex self-center me-3 h-9 w-9')}
+                      className={cn(
+                        iconBtn,
+                        variantBtn.iconOnly,
+                        'hidden sm:inline-flex self-center me-3 h-9 w-9',
+                      )}
                     >
                       <HiXMark className="w-4 h-4" />
                     </button>
@@ -450,12 +462,18 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                         >
                           <span className="flex items-center gap-1.5 min-w-0">
                             <span
-                              className={cn('w-2 h-2 rounded-full flex-shrink-0', currentMeta.dotClass)}
+                              className={cn(
+                                'w-2 h-2 rounded-full flex-shrink-0',
+                                currentMeta.dotClass,
+                              )}
                               aria-hidden
                             />
                             <span className="font-bold truncate">{currentMeta.shortLabel}</span>
                           </span>
-                          <HiOutlineBars3BottomLeft className="w-3.5 h-3.5 opacity-60 flex-shrink-0 ms-1" aria-hidden />
+                          <HiOutlineBars3BottomLeft
+                            className="w-3.5 h-3.5 opacity-60 flex-shrink-0 ms-1"
+                            aria-hidden
+                          />
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
@@ -483,7 +501,10 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                             >
                               <span className="flex items-center gap-2 min-w-0">
                                 <span
-                                  className={cn('w-2 h-2 rounded-full flex-shrink-0', meta.dotClass)}
+                                  className={cn(
+                                    'w-2 h-2 rounded-full flex-shrink-0',
+                                    meta.dotClass,
+                                  )}
                                   aria-hidden
                                 />
                                 <Icon className="w-4 h-4 flex-shrink-0 opacity-80" aria-hidden />
@@ -555,7 +576,9 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                               <HiOutlineStar
                                 className={cn(
                                   'w-4 h-4 flex-shrink-0',
-                                  activePost.isFeatured ? 'text-amber-500 fill-current' : 'opacity-80',
+                                  activePost.isFeatured
+                                    ? 'text-amber-500 fill-current'
+                                    : 'opacity-80',
                                 )}
                                 aria-hidden
                               />

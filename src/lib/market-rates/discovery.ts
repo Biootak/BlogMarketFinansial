@@ -1,7 +1,7 @@
 // src/lib/market-rates/discovery.ts
 // لیست همه‌ی symbol های موجود در TGJU homepage.
 
-import { unstable_cache } from 'next/cache';
+import { safeCache } from '@/lib/safe-cache';
 import { fetchTgjuLatest } from './tgju';
 
 export interface TgjuSymbol {
@@ -12,7 +12,7 @@ export interface TgjuSymbol {
 }
 
 /** لیست نمادهای TGJU با کش ۱ ساعته (TGJU خودش CDN cache 5min دارد). */
-export const discoverTgjuSymbols = unstable_cache(
+export const discoverTgjuSymbols = safeCache(
   async (): Promise<TgjuSymbol[]> => {
     const result = await fetchTgjuLatest();
     if (!result.ok || !result.data) return [];
@@ -28,6 +28,10 @@ export const discoverTgjuSymbols = unstable_cache(
     }
     return list;
   },
-  ['market-rates:tgju-symbols:v1'],
-  { revalidate: 3600 },
+  [] as TgjuSymbol[],
+  {
+    key: 'market-rates:tgju-symbols',
+    ttl: 3600,
+    tags: ['market-rates:ticker'],
+  },
 );

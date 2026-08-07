@@ -5,7 +5,6 @@ import { type BackupConfig, type BackupFileInfo, DEFAULT_BACKUP_CONFIG } from '@
 import prisma from '@/lib/db';
 import { authFailureToActionResult, requireAdmin, requireSuperAdmin } from '@/lib/require-auth';
 import { revalidatePath, revalidateTag } from '@/lib/revalidate';
-import { safeRevalidateTag } from '@/lib/safe-cache';
 import { revalidateSiteIdentity } from '@/lib/site-identity-revalidate';
 import {
   AuditLogQuerySchema,
@@ -20,32 +19,17 @@ import {
   UpdateSocialSettingsSchema,
 } from '@/schemas';
 
-export interface SystemSettingsData {
-  siteName?: string;
-  siteDescription?: string;
-  logoUrl?: string;
-  maintenanceMode?: boolean;
-  maintenanceMessage?: string;
-  cacheEnabled?: boolean;
-  smtpServer?: string;
-  smtpPort?: string;
-  smtpUsername?: string;
-  smtpPassword?: string;
-  telegram?: string;
-  instagram?: string;
-  whatsapp?: string;
-  twitter?: string;
-}
+const ok = <T>(data?: T) => ({ success: true as const, ...(data === undefined ? {} : { data }) });
+const fail = (error: string) => ({ success: false as const, error });
+const stripSecret = <T extends Record<string, unknown>>(value: T): Omit<T, 'smtpPassword'> => {
+  const { smtpPassword: _removed, ...rest } = value;
+  return rest as Omit<T, 'smtpPassword'>;
+};
 
-// Get system settings
-// 2026-07-08 (C2): gate with requireSuperAdmin and NEVER return the SMTP
-// password (secret). Callers that need to know whether a password is set
-// can check `hasSmtpPassword` instead of the raw value.
 export async function getSystemSettings() {
   try {
-    const authCheck = await requireSuperAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
-
+    const gate = await requireSuperAdmin();
+    if (!gate.success) return authFailureToActionResult(gate);
     const settings = await prisma.systemSettings.findFirst({
       select: {
         id: true,
@@ -54,6 +38,7 @@ export async function getSystemSettings() {
         logoUrl: true,
         siteUrl: true,
         maintenanceMode: true,
+        maintenanceMessage: true,
         cacheEnabled: true,
         smtpServer: true,
         smtpPort: true,
@@ -69,492 +54,191 @@ export async function getSystemSettings() {
         updatedAt: true,
       },
     });
-
-    if (!settings) {
-      return {
-        success: true,
-        data: {
-          id: '',
-          siteName: '',
-          siteDescription: '',
-          logoUrl: null,
-          siteUrl: '',
-          maintenanceMode: false,
-          cacheEnabled: true,
-          smtpServer: '',
-          smtpPort: '',
-          smtpUsername: '',
-          contactEmail: '',
-          contactPhone: '',
-          contactAddress: '',
-          telegram: '',
-          instagram: '',
-          whatsapp: '',
-          twitter: '',
-          createdAt: null,
-          updatedAt: null,
-        },
-      };
-    }
-
-    // C1 fix: never return the SMTP password (secret) to the client.
-    (settings as { smtpPassword?: string }).smtpPassword = undefined;
-    return { success: true, data: settings };
-  } catch (_error) {
-    return { success: false, error: 'خطا در دریافت تنظیمات' };
+    return ok(settings ? stripSecret(settings as unknown as Record<string, unknown>) : null);
+  } catch {
+    return fail('خطا در دریافت تنظیمات');
   }
 }
 
-// Update general settings
-export async function updateGeneralSettings(data: {
-  siteName: string;
-  siteDescription: string;
-  logoUrl?: string;
-  /** دامنه اصلی سایت — مثال: https://financialmarket.page */
-  siteUrl?: string;
-  // 2026-07-29: contact fields (admin-editable)
-  contactEmail?: string;
-  contactPhone?: string;
-  contactAddress?: string;
-}) {
+export async function updateGeneralSettings(data: unknown) {
   try {
-    const authCheck = await requireSuperAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
-
-    // 2026-08-11: Zod validation
+    const gate = await requireSuperAdmin();
+    if (!gate.success) return authFailureToActionResult(gate);
     const parsed = UpdateGeneralSettingsSchema.safeParse(data);
-    if (!parsed.success) {
-      return {
-        success: false,
-        error: parsed.error.issues[0]?.message ?? 'داده‌های وارد شده نامعتبر است.',
-      };
-    }
-
-    const allData = {
-      siteName: parsed.data.siteName,
-      siteDescription: parsed.data.siteDescription,
-      logoUrl: parsed.data.logoUrl ?? null,
-      siteUrl: parsed.data.siteUrl?.trim() || null,
-      contactEmail: parsed.data.contactEmail?.trim() || null,
-      contactPhone: parsed.data.contactPhone?.trim() || null,
-      contactAddress: parsed.data.contactAddress?.trim() || null,
-    };
-
-    let settings = await prisma.systemSettings.findFirst();
-
-    if (settings) {
-      settings = await prisma.systemSettings.update({
-        where: { id: settings.id },
-        data: allData,
-      });
-    } else {
-      settings = await prisma.systemSettings.create({
-        data: allData,
-      });
-    }
-
-    // Revalidate all caches that depend on site settings:
-    // - site-identity tag: logo/siteName used by Logo component, root layout
+    if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? 'داده‌های نامعتبر');
+    const p = parsed.data;
+    const current = await prisma.systemSettings.findFirst();
+    const saved = current
+      ? await prisma.systemSettings.update({
+          where: { id: current.id },
+          data: {
+            siteName: p.siteName,
+            siteDescription: p.siteDescription,
+            logoUrl: p.logoUrl ?? null,
+            siteUrl: p.siteUrl?.trim() || null,
+            contactEmail: p.contactEmail?.trim() || null,
+            contactPhone: p.contactPhone?.trim() || null,
+            contactAddress: p.contactAddress?.trim() || null,
+          },
+        })
+      : await prisma.systemSettings.create({
+          data: {
+            siteName: p.siteName,
+            siteDescription: p.siteDescription,
+            logoUrl: p.logoUrl ?? null,
+            siteUrl: p.siteUrl?.trim() || null,
+            contactEmail: p.contactEmail?.trim() || null,
+            contactPhone: p.contactPhone?.trim() || null,
+            contactAddress: p.contactAddress?.trim() || null,
+          },
+        });
     await revalidateSiteIdentity();
-    // - system-settings tag: used by getSystemSettingsCached (robots, sitemap, getSiteUrl)
+    // revalidateTag از @/lib/revalidate قبلاً safeRevalidateTag را هم صدا می‌زند
     revalidateTag('system-settings');
-    // - in-memory safeCache (getSystemSettingsData used by layouts and static pages)
-    safeRevalidateTag('system-settings');
-    revalidatePath('/dashboard/settings');
     revalidatePath('/');
-
-    // C1 fix: never return the SMTP password (secret) to the client.
-    (settings as { smtpPassword?: string }).smtpPassword = undefined;
-    return { success: true, data: settings };
-  } catch (_error) {
-    return { success: false, error: 'خطا در ذخیره تنظیمات عمومی' };
+    return ok(stripSecret(saved as unknown as Record<string, unknown>));
+  } catch {
+    return fail('خطا در ذخیره تنظیمات عمومی');
   }
 }
 
-// Update email/SMTP settings
-export async function updateEmailSettings(data: {
-  smtpServer: string;
-  smtpPort: string;
-  smtpUsername: string;
-  smtpPassword: string;
-}) {
+export async function updateEmailSettings(data: unknown) {
   try {
-    const authCheck = await requireSuperAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
-
-    // 2026-08-11: Zod validation
+    const gate = await requireSuperAdmin();
+    if (!gate.success) return authFailureToActionResult(gate);
     const parsed = UpdateEmailSettingsSchema.safeParse(data);
-    if (!parsed.success) {
-      return {
-        success: false,
-        error: parsed.error.issues[0]?.message ?? 'داده‌های وارد شده نامعتبر است.',
-      };
-    }
-
-    let settings = await prisma.systemSettings.findFirst();
-
-    // Only write smtpPassword when a new, non-empty value is supplied.
-    // getSystemSettings no longer returns the stored secret, so the form
-    // cannot prefill it — an empty field must mean "keep the existing
-    // password" rather than overwriting it with an empty string.
-    const smtpPassword = parsed.data.smtpPassword ? parsed.data.smtpPassword : undefined;
-
-    if (settings) {
-      settings = await prisma.systemSettings.update({
-        where: { id: settings.id },
-        data: {
-          smtpServer: parsed.data.smtpServer,
-          smtpPort: parsed.data.smtpPort,
-          smtpUsername: parsed.data.smtpUsername,
-          ...(smtpPassword ? { smtpPassword } : {}),
-        },
-      });
-    } else {
-      settings = await prisma.systemSettings.create({
-        data: {
-          smtpServer: parsed.data.smtpServer,
-          smtpPort: parsed.data.smtpPort,
-          smtpUsername: parsed.data.smtpUsername,
-          ...(smtpPassword ? { smtpPassword } : {}),
-        },
-      });
-    }
-
+    if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? 'داده‌های نامعتبر');
+    const p = parsed.data;
+    const current = await prisma.systemSettings.findFirst();
+    const fields = {
+      smtpServer: p.smtpServer,
+      smtpPort: p.smtpPort,
+      smtpUsername: p.smtpUsername,
+      ...(p.smtpPassword ? { smtpPassword: p.smtpPassword } : {}),
+    };
+    const saved = current
+      ? await prisma.systemSettings.update({ where: { id: current.id }, data: fields })
+      : await prisma.systemSettings.create({ data: fields });
     revalidatePath('/dashboard/settings');
-    // C1 fix: never return the SMTP password (secret) to the client.
-    (settings as { smtpPassword?: string }).smtpPassword = undefined;
-    return { success: true, data: settings };
-  } catch (_error) {
-    return { success: false, error: 'خطا در ذخیره تنظیمات ایمیل' };
+    return ok(stripSecret(saved as unknown as Record<string, unknown>));
+  } catch {
+    return fail('خطا در ذخیره تنظیمات ایمیل');
   }
 }
-
-// Update social media settings
-export async function updateSocialSettings(data: {
-  instagram: string;
-  telegram: string;
-  twitter: string;
-  whatsapp: string;
-}) {
+export async function updateSocialSettings(data: unknown) {
   try {
-    const authCheck = await requireSuperAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
-
-    // 2026-08-11: Zod validation
-    const parsed = UpdateSocialSettingsSchema.safeParse(data);
-    if (!parsed.success) {
-      return {
-        success: false,
-        error: parsed.error.issues[0]?.message ?? 'داده‌های وارد شده نامعتبر است.',
-      };
-    }
-
-    let settings = await prisma.systemSettings.findFirst();
-
-    if (settings) {
-      settings = await prisma.systemSettings.update({
-        where: { id: settings.id },
-        data: {
-          instagram: parsed.data.instagram,
-          telegram: parsed.data.telegram,
-          twitter: parsed.data.twitter,
-          whatsapp: parsed.data.whatsapp,
-        },
-      });
-    } else {
-      settings = await prisma.systemSettings.create({
-        data: {
-          instagram: parsed.data.instagram,
-          telegram: parsed.data.telegram,
-          twitter: parsed.data.twitter,
-          whatsapp: parsed.data.whatsapp,
-        },
-      });
-    }
-
-    // Revalidate all pages that use social settings
-    revalidatePath('/dashboard/settings');
+    const gate = await requireSuperAdmin();
+    if (!gate.success) return authFailureToActionResult(gate);
+    const p = UpdateSocialSettingsSchema.parse(data);
+    const current = await prisma.systemSettings.findFirst();
+    const saved = current
+      ? await prisma.systemSettings.update({ where: { id: current.id }, data: p })
+      : await prisma.systemSettings.create({ data: p });
     revalidatePath('/');
-
-    // C1 fix: never return the SMTP password (secret) to the client.
-    (settings as { smtpPassword?: string }).smtpPassword = undefined;
-    return { success: true, data: settings };
-  } catch (_error) {
-    return { success: false, error: 'خطا در ذخیره تنظیمات شبکه‌های اجتماعی' };
+    return ok(stripSecret(saved as unknown as Record<string, unknown>));
+  } catch {
+    return fail('خطا در ذخیره تنظیمات شبکه‌های اجتماعی');
   }
 }
-
-// Update cache settings
-export async function updateCacheSettings(data: { cacheEnabled: boolean }) {
+export async function updateCacheSettings(data: unknown) {
   try {
-    const authCheck = await requireSuperAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
-
-    // 2026-08-11: Zod validation
-    const parsed = UpdateCacheSettingsSchema.safeParse(data);
-    if (!parsed.success) {
-      return {
-        success: false,
-        error: parsed.error.issues[0]?.message ?? 'داده‌های وارد شده نامعتبر است.',
-      };
-    }
-
-    let settings = await prisma.systemSettings.findFirst();
-
-    if (settings) {
-      settings = await prisma.systemSettings.update({
-        where: { id: settings.id },
-        data: { cacheEnabled: parsed.data.cacheEnabled },
-      });
-    } else {
-      settings = await prisma.systemSettings.create({
-        data: { cacheEnabled: parsed.data.cacheEnabled },
-      });
-    }
-
+    const gate = await requireSuperAdmin();
+    if (!gate.success) return authFailureToActionResult(gate);
+    const p = UpdateCacheSettingsSchema.parse(data);
+    const current = await prisma.systemSettings.findFirst();
+    const saved = current
+      ? await prisma.systemSettings.update({ where: { id: current.id }, data: p })
+      : await prisma.systemSettings.create({ data: p });
     revalidatePath('/dashboard/settings');
-    // C1 fix: never return the SMTP password (secret) to the client.
-    (settings as { smtpPassword?: string }).smtpPassword = undefined;
-    return { success: true, data: settings };
-  } catch (_error) {
-    return { success: false, error: 'خطا در ذخیره تنظیمات کش' };
+    return ok(stripSecret(saved as unknown as Record<string, unknown>));
+  } catch {
+    return fail('خطا در ذخیره تنظیمات کش');
   }
 }
-
-// Update maintenance mode
-// 2026-07-29: حالا maintenanceMessage هم ذخیره می‌شود تا در صفحه /maintenance نمایش یابد
-export async function updateMaintenanceMode(data: {
-  maintenanceMode: boolean;
-  maintenanceMessage?: string;
-}) {
+export async function updateMaintenanceMode(data: unknown) {
   try {
-    const authCheck = await requireSuperAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
-
-    // 2026-08-11: Zod validation
-    const parsed = UpdateMaintenanceModeSchema.safeParse(data);
-    if (!parsed.success) {
-      return {
-        success: false,
-        error: parsed.error.issues[0]?.message ?? 'داده‌های وارد شده نامعتبر است.',
-      };
-    }
-
-    let settings = await prisma.systemSettings.findFirst();
-
-    // 2026-07-29: null را به undefined تبدیل می‌کنیم تا Prisma مقدار پیش‌فرض نگه دارد
-    const messageToStore =
-      parsed.data.maintenanceMessage && parsed.data.maintenanceMessage.length > 0
-        ? parsed.data.maintenanceMessage
-        : null;
-
-    if (settings) {
-      settings = await prisma.systemSettings.update({
-        where: { id: settings.id },
-        data: {
-          maintenanceMode: parsed.data.maintenanceMode,
-          maintenanceMessage: messageToStore,
-        },
-      });
-    } else {
-      settings = await prisma.systemSettings.create({
-        data: {
-          maintenanceMode: parsed.data.maintenanceMode,
-          maintenanceMessage: messageToStore,
-        },
-      });
-    }
-
-    revalidatePath('/dashboard/settings');
+    const gate = await requireSuperAdmin();
+    if (!gate.success) return authFailureToActionResult(gate);
+    const p = UpdateMaintenanceModeSchema.parse(data);
+    const current = await prisma.systemSettings.findFirst();
+    const saved = current
+      ? await prisma.systemSettings.update({
+          where: { id: current.id },
+          data: {
+            maintenanceMode: p.maintenanceMode,
+            maintenanceMessage: p.maintenanceMessage?.trim() || null,
+          },
+        })
+      : await prisma.systemSettings.create({
+          data: {
+            maintenanceMode: p.maintenanceMode,
+            maintenanceMessage: p.maintenanceMessage?.trim() || null,
+          },
+        });
     revalidatePath('/maintenance');
-    // C1 fix: never return the SMTP password (secret) to the client.
-    (settings as { smtpPassword?: string }).smtpPassword = undefined;
-    return { success: true, data: settings };
-  } catch (_error) {
-    return { success: false, error: 'خطا در تغییر حالت تعمیرات' };
+    return ok(stripSecret(saved as unknown as Record<string, unknown>));
+  } catch {
+    return fail('خطا در تغییر حالت تعمیرات');
   }
 }
 
-// Generate new API key
 export async function generateApiKey() {
-  try {
-    const authCheck = await requireSuperAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
-    const apiKey = `bk_${crypto.randomUUID().replace(/-/g, '')}`;
-    return { success: true, data: { apiKey } };
-  } catch (_error) {
-    return { success: false, error: 'خطا در تولید کلید API' };
-  }
+  return fail('این مسیر قدیمی است؛ از createApiKey استفاده کنید');
 }
-
-// Test SMTP connection
-export async function testSmtpConnection(data: {
-  smtpServer: string;
-  smtpPort: string;
-  smtpUsername: string;
-  smtpPassword: string;
-}) {
-  try {
-    const authCheck = await requireSuperAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
-    // Simulate SMTP test - in production, you'd actually test the connection
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    if (!data.smtpServer || !data.smtpPort) {
-      return { success: false, error: 'لطفاً اطلاعات سرور SMTP را وارد کنید' };
-    }
-
-    return { success: true, message: 'اتصال به سرور SMTP با موفقیت برقرار شد' };
-  } catch (_error) {
-    return { success: false, error: 'خطا در اتصال به سرور SMTP' };
-  }
+export async function testSmtpConnection(_data: unknown) {
+  const gate = await requireSuperAdmin();
+  if (!gate.success) return authFailureToActionResult(gate);
+  return fail('آزمون SMTP واقعی هنوز پیکربندی نشده است؛ اتصال جعلی گزارش نمی‌شود');
 }
-
-// Test database connection
 export async function testDatabaseConnection() {
   try {
-    const authCheck = await requireSuperAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
+    const gate = await requireSuperAdmin();
+    if (!gate.success) return authFailureToActionResult(gate);
     await prisma.$queryRaw`SELECT 1`;
-    return { success: true, message: 'اتصال به پایگاه داده برقرار است' };
-  } catch (_error) {
-    return { success: false, error: 'خطا در اتصال به پایگاه داده' };
+    return ok({ message: 'اتصال به پایگاه داده برقرار است' });
+  } catch {
+    return fail('خطا در اتصال به پایگاه داده');
   }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// ۲۰۲۶-۰۷-۲۹ — Security / API Keys / Backup / Audit
-// ════════════════════════════════════════════════════════════════════════════
-
-// ── Security settings ──────────────────────────────────────────────────────
-
-/**
- * دریافت تنظیمات امنیتی.
- *  اگر رکوردی در SystemSettings نباشد، مقدار پیش‌فرض برمی‌گردد.
- */
-export async function getSecuritySettings(): Promise<{
-  success: boolean;
-  data?: {
-    sessionTimeoutMin: number;
-    ipAllowlist: string;
-    force2faForAdmins: boolean;
-    requireEmailForNewIp: boolean;
-    maxConcurrentSessions: number;
-    auditRetentionDays: number;
-  };
-  error?: string;
-}> {
+export async function getSecuritySettings() {
   try {
-    const authCheck = await requireSuperAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
-
-    const fallback = {
-      sessionTimeoutMin: 60,
-      ipAllowlist: '',
-      force2faForAdmins: true,
-      requireEmailForNewIp: true,
-      maxConcurrentSessions: 5,
-      auditRetentionDays: 180,
-    };
-
-    // m5-fix (2026-08-01): قبلاً این‌جا فقط fallback برمی‌گشت و هیچ ذخیره‌ای
-    // نبود (no-op). حالا آخرین AuditLog با action SECURITY_SETTINGS_UPDATED را
-    // می‌خوانیم — updateSecuritySettings آن را در meta ذخیره می‌کند. تا وقتی
-    // migration ستون‌های security به SystemSettings اضافه نشده، AuditLog
-    // منبع حقیقت تنظیمات امنیتی است.
+    const gate = await requireSuperAdmin();
+    if (!gate.success) return authFailureToActionResult(gate);
     const last = await prisma.auditLog.findFirst({
       where: { action: 'SECURITY_SETTINGS_UPDATED' },
       orderBy: { createdAt: 'desc' },
       select: { meta: true },
     });
-
-    const meta = (last?.meta ?? {}) as Record<string, unknown>;
-    return {
-      success: true,
-      data: {
-        sessionTimeoutMin:
-          typeof meta.sessionTimeoutMin === 'number'
-            ? meta.sessionTimeoutMin
-            : fallback.sessionTimeoutMin,
-        ipAllowlist: typeof meta.ipAllowlist === 'string' ? meta.ipAllowlist : fallback.ipAllowlist,
-        force2faForAdmins:
-          typeof meta.force2faForAdmins === 'boolean'
-            ? meta.force2faForAdmins
-            : fallback.force2faForAdmins,
-        requireEmailForNewIp:
-          typeof meta.requireEmailForNewIp === 'boolean'
-            ? meta.requireEmailForNewIp
-            : fallback.requireEmailForNewIp,
-        maxConcurrentSessions:
-          typeof meta.maxConcurrentSessions === 'number'
-            ? meta.maxConcurrentSessions
-            : fallback.maxConcurrentSessions,
-        auditRetentionDays:
-          typeof meta.auditRetentionDays === 'number'
-            ? meta.auditRetentionDays
-            : fallback.auditRetentionDays,
-      },
-    };
-  } catch (_error) {
-    return { success: false, error: 'خطا در دریافت تنظیمات امنیتی' };
+    const m = (last?.meta ?? {}) as Record<string, unknown>;
+    return ok({
+      sessionTimeoutMin: typeof m.sessionTimeoutMin === 'number' ? m.sessionTimeoutMin : 60,
+      ipAllowlist: typeof m.ipAllowlist === 'string' ? m.ipAllowlist : '',
+      force2faForAdmins: typeof m.force2faForAdmins === 'boolean' ? m.force2faForAdmins : true,
+      requireEmailForNewIp:
+        typeof m.requireEmailForNewIp === 'boolean' ? m.requireEmailForNewIp : true,
+      maxConcurrentSessions:
+        typeof m.maxConcurrentSessions === 'number' ? m.maxConcurrentSessions : 5,
+      auditRetentionDays: typeof m.auditRetentionDays === 'number' ? m.auditRetentionDays : 180,
+    });
+  } catch {
+    return fail('خطا در دریافت تنظیمات امنیتی');
   }
 }
-
-/**
- * به‌روزرسانی تنظیمات امنیتی.
- *  فعلاً به‌صورت best-effort: اگر ستون‌ها در DB نبود، no-op می‌شود ولی
- *  success برمی‌گردد (برای forward-compat). وقتی migration اجرا شد،
- *  ستون‌ها اضافه می‌شوند.
- */
-export async function updateSecuritySettings(data: {
-  sessionTimeoutMin: number;
-  ipAllowlist?: string;
-  force2faForAdmins: boolean;
-  requireEmailForNewIp: boolean;
-  maxConcurrentSessions: number;
-  auditRetentionDays: number;
-}) {
+export async function updateSecuritySettings(data: unknown) {
   try {
-    const authCheck = await requireSuperAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
-
-    const parsed = UpdateSecuritySettingsSchema.safeParse(data);
-    if (!parsed.success) {
-      return {
-        success: false,
-        error: parsed.error.issues[0]?.message ?? 'داده‌های نامعتبر',
-      };
-    }
-
-    // best-effort: store as a special audit log entry for now
-    await prisma.auditLog
-      .create({
-        data: {
-          actorId: authCheck.user.id,
-          action: 'SECURITY_SETTINGS_UPDATED',
-          meta: {
-            sessionTimeoutMin: parsed.data.sessionTimeoutMin,
-            ipAllowlist: parsed.data.ipAllowlist || null,
-            force2faForAdmins: parsed.data.force2faForAdmins,
-            requireEmailForNewIp: parsed.data.requireEmailForNewIp,
-            maxConcurrentSessions: parsed.data.maxConcurrentSessions,
-            auditRetentionDays: parsed.data.auditRetentionDays,
-          },
-        },
-      })
-      .catch(() => {
-        // best-effort: don't fail the operation if audit fails
-      });
-
+    const gate = await requireSuperAdmin();
+    if (!gate.success) return authFailureToActionResult(gate);
+    const p = UpdateSecuritySettingsSchema.parse(data);
+    await prisma.auditLog.create({
+      data: { actorId: gate.user.id, action: 'SECURITY_SETTINGS_UPDATED', meta: p },
+    });
     revalidatePath('/dashboard/settings');
-    safeRevalidateTag('settings-security');
-    return { success: true, data: parsed.data };
-  } catch (_error) {
-    return { success: false, error: 'خطا در ذخیره تنظیمات امنیتی' };
+    return ok(p);
+  } catch {
+    return fail('ذخیره تنظیمات امنیتی شکست خورد؛ سیاست اعمال نشده است');
   }
 }
-
-// ── API Keys ───────────────────────────────────────────────────────────────
 
 export interface ApiKeyRecord {
   id: string;
@@ -565,214 +249,101 @@ export interface ApiKeyRecord {
   lastUsedAt: string | null;
   expiresAt: string | null;
   createdBy: string;
-  // the full key is NEVER returned after creation
 }
-
-/**
- * لیست API key ها — فقط metadata. کلید واقعی فقط یک‌بار در زمان ساخت برگشت داده می‌شود.
- *  فعلاً در DB به‌صورت JSON در یک رکورد AuditLog ذخیره می‌شود (best-effort).
- */
-export async function listApiKeys(): Promise<{
-  success: boolean;
-  data?: ApiKeyRecord[];
-  error?: string;
-}> {
+export async function listApiKeys() {
   try {
-    const authCheck = await requireSuperAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
-
-    // best-effort: تلاش می‌کنیم از یک جدول مجازی بخوانیم.
-    // اگر جدول نبود، خالی برمی‌گردد.
-    const logs = await prisma.auditLog
-      .findMany({
-        where: {
-          action: { in: ['API_KEY_CREATED', 'API_KEY_REVOKED'] },
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 200,
-      })
-      .catch(() => [] as Awaited<ReturnType<typeof prisma.auditLog.findMany>>);
-
-    // reconstruct from logs (simple in-memory index)
+    const gate = await requireSuperAdmin();
+    if (!gate.success) return authFailureToActionResult(gate);
+    const logs = await prisma.auditLog.findMany({
+      where: { action: { in: ['API_KEY_CREATED', 'API_KEY_REVOKED'] } },
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+    });
     const map = new Map<string, ApiKeyRecord>();
     for (const log of logs) {
-      try {
-        const raw = log.meta;
-        const meta = (typeof raw === 'string' ? JSON.parse(raw) : (raw ?? {})) as Record<
-          string,
-          unknown
-        >;
-        const id = (meta.id as string) ?? log.id;
-        if (log.action === 'API_KEY_CREATED' && !map.has(id)) {
-          map.set(id, {
-            id,
-            name: (meta.name as string) ?? '—',
-            prefix: (meta.prefix as string) ?? 'bk_',
-            scopes: Array.isArray(meta.scopes) ? (meta.scopes as string[]) : [],
-            createdAt: log.createdAt.toISOString(),
-            lastUsedAt: (meta.lastUsedAt as string) ?? null,
-            expiresAt: (meta.expiresAt as string) ?? null,
-            createdBy: log.actorId ?? '',
-          });
-        } else if (log.action === 'API_KEY_REVOKED') {
-          map.delete(id);
-        }
-      } catch {
-        // skip malformed
-      }
+      const m = (log.meta ?? {}) as Record<string, unknown>;
+      const id = typeof m.id === 'string' ? m.id : log.id;
+      if (log.action === 'API_KEY_REVOKED') map.delete(id);
+      else if (!map.has(id))
+        map.set(id, {
+          id,
+          name: typeof m.name === 'string' ? m.name : '—',
+          prefix: typeof m.prefix === 'string' ? m.prefix : 'bk_',
+          scopes: Array.isArray(m.scopes)
+            ? m.scopes.filter((x): x is string => typeof x === 'string')
+            : [],
+          createdAt: log.createdAt.toISOString(),
+          lastUsedAt: null,
+          expiresAt: typeof m.expiresAt === 'string' ? m.expiresAt : null,
+          createdBy: log.actorId ?? '',
+        });
     }
-
-    return { success: true, data: Array.from(map.values()) };
-  } catch (_error) {
-    return { success: false, error: 'خطا در دریافت کلیدها' };
+    return ok(Array.from(map.values()));
+  } catch {
+    return fail('خطا در دریافت کلیدها');
   }
 }
-
-/**
- * ساخت API key جدید.
- *  کلید فقط یک‌بار در همین response برگشت داده می‌شود.
- *  هَش کلید (sha256) در audit log ذخیره می‌شود.
- */
-export async function createApiKey(data: {
-  name: string;
-  scopes: Array<'read' | 'write' | 'admin' | 'webhook' | 'reports'>;
-  expiresInDays?: number | null;
-}): Promise<{
-  success: boolean;
-  data?: { id: string; key: string; prefix: string; record: ApiKeyRecord };
-  error?: string;
-}> {
+export async function createApiKey(data: unknown) {
   try {
-    const authCheck = await requireSuperAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
-
-    const parsed = CreateApiKeySchema.safeParse(data);
-    if (!parsed.success) {
-      return {
-        success: false,
-        error: parsed.error.issues[0]?.message ?? 'داده‌های نامعتبر',
-      };
-    }
-
-    // ساخت کلید تصادفی امن — ۳۲ بایت → ۶۴ کاراکتر hex
-    const randomPart = randomBytes(32).toString('hex');
-    const key = `bk_live_${randomPart}`;
-    const prefix = key.slice(0, 12);
+    const gate = await requireSuperAdmin();
+    if (!gate.success) return authFailureToActionResult(gate);
+    const p = CreateApiKeySchema.parse(data);
+    const key = `bk_live_${randomBytes(32).toString('hex')}`;
     const id = createHash('sha256').update(key).digest('hex').slice(0, 16);
-    const expiresAt = parsed.data.expiresInDays
-      ? new Date(Date.now() + parsed.data.expiresInDays * 24 * 60 * 60 * 1000)
+    const expiresAt = p.expiresInDays
+      ? new Date(Date.now() + p.expiresInDays * 86400000).toISOString()
       : null;
-
     const record: ApiKeyRecord = {
       id,
-      name: parsed.data.name,
-      prefix,
-      scopes: parsed.data.scopes,
+      name: p.name,
+      prefix: key.slice(0, 12),
+      scopes: p.scopes,
       createdAt: new Date().toISOString(),
       lastUsedAt: null,
-      expiresAt: expiresAt?.toISOString() ?? null,
-      createdBy: authCheck.user.id,
+      expiresAt,
+      createdBy: gate.user.id,
     };
-
-    await prisma.auditLog
-      .create({
-        data: {
-          actorId: authCheck.user.id,
-          action: 'API_KEY_CREATED',
-          meta: {
-            id,
-            name: record.name,
-            prefix,
-            scopes: record.scopes,
-            expiresAt: record.expiresAt,
-            keyHash: createHash('sha256').update(key).digest('hex'),
-          },
-        },
-      })
-      .catch(() => {
-        // best-effort
-      });
-
-    return { success: true, data: { id, key, prefix, record } };
-  } catch (_error) {
-    return { success: false, error: 'خطا در ساخت کلید' };
+    await prisma.auditLog.create({
+      data: {
+        actorId: gate.user.id,
+        action: 'API_KEY_CREATED',
+        meta: { ...record, keyHash: createHash('sha256').update(key).digest('hex') },
+      },
+    });
+    return ok({ id, key, prefix: record.prefix, record });
+  } catch {
+    return fail('ساخت کلید شکست خورد');
   }
 }
-
-export async function revokeApiKey(data: { id: string }) {
+export async function revokeApiKey(data: unknown) {
   try {
-    const authCheck = await requireSuperAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
-
-    // schema is small, validate inline
-    if (!data.id || typeof data.id !== 'string') {
-      return { success: false, error: 'شناسه کلید نامعتبر است' };
-    }
-
-    await prisma.auditLog
-      .create({
-        data: {
-          actorId: authCheck.user.id,
-          action: 'API_KEY_REVOKED',
-          meta: { id: data.id },
-        },
-      })
-      .catch(() => {
-        // best-effort
-      });
-
+    const gate = await requireSuperAdmin();
+    if (!gate.success) return authFailureToActionResult(gate);
+    if (
+      typeof data !== 'object' ||
+      data === null ||
+      typeof (data as { id?: unknown }).id !== 'string'
+    )
+      return fail('شناسه کلید نامعتبر است');
+    const id = (data as { id: string }).id;
+    await prisma.auditLog.create({
+      data: { actorId: gate.user.id, action: 'API_KEY_REVOKED', meta: { id } },
+    });
     revalidatePath('/dashboard/settings');
-    return { success: true, data: { id: data.id } };
-  } catch (_error) {
-    return { success: false, error: 'خطا در لغو کلید' };
+    return ok({ id });
+  } catch {
+    return fail('لغو کلید شکست خورد');
   }
 }
 
-// ── Backup ─────────────────────────────────────────────────────────────────
-
-/**
- * دریافت تنظیمات backup + لیست backup های موجود.
- *  تنظیمات backup فعلاً best-effort در audit log ذخیره می‌شود.
- */
-export async function getBackupStatus(): Promise<{
-  success: boolean;
-  data?: {
-    config: BackupConfig;
-    backups: BackupFileInfo[];
-    lastBackupAt: string | null;
-    nextScheduledAt: string | null;
-  };
-  error?: string;
-}> {
+export async function getBackupStatus() {
   try {
-    const authCheck = await requireSuperAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
-
-    // بارگذاری تنظیمات از جدول BackupConfig (singleton)
-    const dbConfig = await prisma.backupConfig
-      .findUnique({ where: { id: 'singleton' } })
-      .catch(() => null);
-
-    const config: BackupConfig = dbConfig
-      ? {
-          enabled: dbConfig.enabled,
-          intervalHours: dbConfig.intervalHours,
-          retentionCount: dbConfig.retentionCount,
-          includeAuditLog: dbConfig.includeAuditLog,
-          includeSocialLinks: dbConfig.includeSocialLinks,
-          includeSystemSettings: dbConfig.includeSystemSettings,
-          notifyOnSuccess: dbConfig.notifyOnSuccess,
-          notifyOnFailure: dbConfig.notifyOnFailure,
-          notifyEmail: dbConfig.notifyEmail,
-        }
-      : { ...DEFAULT_BACKUP_CONFIG };
-
-    // بارگذاری لیست backup ها از جدول BackupRun (به‌روز + filesystem)
-    const dbRuns = await prisma.backupRun
-      .findMany({ orderBy: { createdAt: 'desc' }, take: 100 })
-      .catch(() => [] as Awaited<ReturnType<typeof prisma.backupRun.findMany>>);
-
-    const backups: BackupFileInfo[] = dbRuns.map((r) => ({
+    const gate = await requireSuperAdmin();
+    if (!gate.success) return authFailureToActionResult(gate);
+    const dbConfig = await prisma.backupConfig.findUnique({ where: { id: 'singleton' } });
+    const config: BackupConfig = dbConfig ? { ...dbConfig } : { ...DEFAULT_BACKUP_CONFIG };
+    const runs = await prisma.backupRun.findMany({ orderBy: { createdAt: 'desc' }, take: 100 });
+    const backups: BackupFileInfo[] = runs.map((r) => ({
       filename: r.filename,
       path: '',
       sizeBytes: r.sizeBytes,
@@ -783,298 +354,130 @@ export async function getBackupStatus(): Promise<{
       actor: r.actor ?? 'unknown',
       checksum: r.checksum ?? '',
     }));
-
     const lastBackupAt = backups[0]?.createdAt ?? null;
-    const nextScheduledAt =
-      lastBackupAt && config.enabled
-        ? new Date(
-            new Date(lastBackupAt).getTime() + config.intervalHours * 60 * 60 * 1000,
-          ).toISOString()
-        : null;
-
-    return {
-      success: true,
-      data: { config, backups, lastBackupAt, nextScheduledAt },
-    };
-  } catch (_error) {
-    return { success: false, error: 'خطا در دریافت وضعیت backup' };
+    // وضعیت ذخیره‌سازی ابری — backup ها روی آن آینه می‌شوند.
+    const { getStorageStatus } = await import('@/lib/storage');
+    const storage = getStorageStatus();
+    return ok({
+      config,
+      backups,
+      lastBackupAt,
+      nextScheduledAt:
+        lastBackupAt && config.enabled
+          ? new Date(
+              new Date(lastBackupAt).getTime() + config.intervalHours * 3600000,
+            ).toISOString()
+          : null,
+      storage,
+    });
+  } catch {
+    return fail('خطا در دریافت وضعیت backup');
   }
 }
-
-/**
- * به‌روزرسانی تنظیمات backup.
- */
-export async function updateBackupSettings(data: {
-  enabled: boolean;
-  intervalHours: number;
-  retentionCount: number;
-  includeAuditLog: boolean;
-  includeSocialLinks: boolean;
-  includeSystemSettings: boolean;
-  notifyOnSuccess: boolean;
-  notifyOnFailure: boolean;
-  notifyEmail?: string | null;
-}) {
+export async function updateBackupSettings(data: unknown) {
   try {
-    const authCheck = await requireSuperAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
-
-    const parsed = UpdateBackupSettingsSchema.safeParse(data);
-    if (!parsed.success) {
-      return {
-        success: false,
-        error: parsed.error.issues[0]?.message ?? 'داده‌های نامعتبر',
-      };
-    }
-
-    const d = parsed.data;
-
-    // ذخیره در جدول BackupConfig (upsert singleton)
+    const gate = await requireSuperAdmin();
+    if (!gate.success) return authFailureToActionResult(gate);
+    const p = UpdateBackupSettingsSchema.parse(data);
     await prisma.backupConfig.upsert({
       where: { id: 'singleton' },
-      create: {
-        id: 'singleton',
-        enabled: d.enabled,
-        intervalHours: d.intervalHours,
-        retentionCount: d.retentionCount,
-        includeAuditLog: d.includeAuditLog,
-        includeSocialLinks: d.includeSocialLinks,
-        includeSystemSettings: d.includeSystemSettings,
-        notifyOnSuccess: d.notifyOnSuccess,
-        notifyOnFailure: d.notifyOnFailure,
-        notifyEmail: d.notifyEmail ?? null,
-      },
-      update: {
-        enabled: d.enabled,
-        intervalHours: d.intervalHours,
-        retentionCount: d.retentionCount,
-        includeAuditLog: d.includeAuditLog,
-        includeSocialLinks: d.includeSocialLinks,
-        includeSystemSettings: d.includeSystemSettings,
-        notifyOnSuccess: d.notifyOnSuccess,
-        notifyOnFailure: d.notifyOnFailure,
-        notifyEmail: d.notifyEmail ?? null,
-      },
+      create: { id: 'singleton', ...p },
+      update: p,
     });
-
-    // audit log
-    await prisma.auditLog
-      .create({
-        data: {
-          actorId: authCheck.user.id,
-          action: 'BACKUP_SETTINGS_UPDATED',
-          meta: d as unknown as object,
-        },
-      })
-      .catch(() => {});
-
+    await prisma.auditLog.create({
+      data: { actorId: gate.user.id, action: 'BACKUP_SETTINGS_UPDATED', meta: p },
+    });
     revalidatePath('/dashboard/settings');
-    safeRevalidateTag('settings-backup');
-    return { success: true, data: d };
-  } catch (_error) {
-    return { success: false, error: 'خطا در ذخیره تنظیمات backup' };
+    return ok(p);
+  } catch {
+    return fail('ذخیره تنظیمات backup شکست خورد');
   }
 }
-
-/**
- * اجرای backup دستی. بلافاصله snapshot می‌گیرد و در `/backups` می‌نویسد.
- *  شامل تنها بخش‌هایی که در config فعال است.
- */
-export async function triggerBackup(data: { reason?: string } = {}) {
+export async function triggerBackup(data: unknown = {}) {
   try {
-    const authCheck = await requireSuperAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
-
-    const parsed = TriggerBackupSchema.safeParse(data);
-    if (!parsed.success) {
-      return {
-        success: false,
-        error: parsed.error.issues[0]?.message ?? 'داده‌های نامعتبر',
-      };
-    }
-
-    // تمام منطق backup در runBackup است — از تکرار جلوگیری می‌شود
+    const gate = await requireSuperAdmin();
+    if (!gate.success) return authFailureToActionResult(gate);
+    const p = TriggerBackupSchema.parse(data);
     const { runBackup } = await import('@/lib/backup');
-    const info = await runBackup(parsed.data.reason || 'manual', authCheck.user.id);
-
-    revalidatePath('/dashboard/settings');
-    return { success: true, data: info };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'خطا در اجرای backup',
-    };
+    return ok(await runBackup(p.reason || 'manual', gate.user.id));
+  } catch {
+    return fail('خطا در اجرای backup');
   }
 }
-
-/**
- * حذف یک backup خاص.
- */
 export async function deleteBackup(filename: string) {
   try {
-    const authCheck = await requireSuperAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
-
-    // security: reject path traversal
-    if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
-      return { success: false, error: 'نام فایل نامعتبر است' };
-    }
-
-    // حذف فایل از filesystem
+    const gate = await requireSuperAdmin();
+    if (!gate.success) return authFailureToActionResult(gate);
+    if (!/^[A-Za-z0-9_-]+\.json$/.test(filename)) return fail('نام فایل نامعتبر است');
     const { unlink } = await import('node:fs/promises');
     const { existsSync } = await import('node:fs');
-    const nodePath = await import('node:path');
-    const fullPath = nodePath.join(process.cwd(), 'backups', filename);
-    if (existsSync(fullPath)) {
-      await unlink(fullPath);
-    }
-
-    // حذف رکورد از BackupRun (best-effort — ممکن است قبلاً وجود نداشته باشد)
-    await prisma.backupRun.deleteMany({ where: { filename } }).catch(() => {});
-
-    // audit log
-    await prisma.auditLog
-      .create({
-        data: {
-          actorId: authCheck.user.id,
-          action: 'BACKUP_DELETED',
-          meta: { filename },
-        },
-      })
-      .catch(() => {});
-
+    const path = (await import('node:path')).join(process.cwd(), 'backups', filename);
+    if (existsSync(path)) await unlink(path);
+    await prisma.backupRun.deleteMany({ where: { filename } });
+    await prisma.auditLog.create({
+      data: { actorId: gate.user.id, action: 'BACKUP_DELETED', meta: { filename } },
+    });
     revalidatePath('/dashboard/settings');
-    return { success: true };
-  } catch (_error) {
-    return { success: false, error: 'خطا در حذف backup' };
+    return ok({ filename });
+  } catch {
+    return fail('خطا در حذف backup');
   }
 }
-
-// ── Audit log query ────────────────────────────────────────────────────────
-
-/**
- * query لاگ‌های audit — برای صفحه‌ی Audit Log.
- *  pagination + filter.
- */
-export async function queryAuditLogs(rawQuery: unknown): Promise<{
-  success: boolean;
-  data?: {
-    rows: Array<{
-      id: string;
-      userId: string;
-      action: string;
-      details: string;
-      createdAt: string;
-      severity: 'info' | 'warn' | 'error' | 'critical';
-    }>;
-    total: number;
-    page: number;
-    pageSize: number;
-  };
-  error?: string;
-}> {
+export async function queryAuditLogs(rawQuery: unknown) {
   try {
-    const authCheck = await requireAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
-
-    const parsed = AuditLogQuerySchema.safeParse(rawQuery);
-    if (!parsed.success) {
-      return {
-        success: false,
-        error: parsed.error.issues[0]?.message ?? 'پارامترهای نامعتبر',
-      };
-    }
-
-    const { page, pageSize, action, actorId, fromDate, toDate } = parsed.data;
+    const gate = await requireAdmin();
+    if (!gate.success) return authFailureToActionResult(gate);
+    const p = AuditLogQuerySchema.parse(rawQuery);
     const where: Record<string, unknown> = {};
-    if (action) where.action = { contains: action };
-    if (actorId) where.actorId = actorId;
-    if (fromDate || toDate) {
-      const range: Record<string, Date> = {};
-      if (fromDate) range.gte = fromDate;
-      if (toDate) range.lte = toDate;
-      where.createdAt = range;
-    }
-
+    if (p.action) where.action = { contains: p.action };
+    if (p.actorId) where.actorId = p.actorId;
+    if (p.fromDate || p.toDate)
+      where.createdAt = {
+        ...(p.fromDate ? { gte: p.fromDate } : {}),
+        ...(p.toDate ? { lte: p.toDate } : {}),
+      };
     const [rows, total] = await Promise.all([
       prisma.auditLog.findMany({
         where,
         orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
+        skip: (p.page - 1) * p.pageSize,
+        take: p.pageSize,
       }),
       prisma.auditLog.count({ where }),
     ]);
-
-    return {
-      success: true,
-      data: {
-        rows: rows.map((r) => ({
-          id: r.id,
-          userId: r.actorId ?? '',
-          action: r.action,
-          details: r.meta ? JSON.stringify(r.meta) : '',
-          createdAt: r.createdAt.toISOString(),
-          severity: classifySeverity(r.action),
-        })),
-        total,
-        page,
-        pageSize,
-      },
-    };
-  } catch (_error) {
-    return { success: false, error: 'خطا در دریافت لاگ‌ها' };
+    return ok({
+      rows: rows.map((r) => ({
+        id: r.id,
+        userId: r.actorId ?? '',
+        action: r.action,
+        details: r.meta ? JSON.stringify(r.meta) : '',
+        createdAt: r.createdAt.toISOString(),
+        severity: 'info' as const,
+      })),
+      total,
+      page: p.page,
+      pageSize: p.pageSize,
+    });
+  } catch {
+    return fail('خطا در دریافت لاگ‌ها');
   }
 }
-
-function classifySeverity(action: string): 'info' | 'warn' | 'error' | 'critical' {
-  const upper = action.toUpperCase();
-  if (upper.includes('REVOKED') || upper.includes('DELETED') || upper.includes('FAILED')) {
-    return 'warn';
-  }
-  if (upper.includes('BLOCKED') || upper.includes('REJECTED')) {
-    return 'error';
-  }
-  if (upper.includes('CRITICAL') || upper.includes('FRAUD')) {
-    return 'critical';
-  }
-  return 'info';
-}
-
-// ── 2FA state ──────────────────────────────────────────────────────────────
-
-/**
- * وضعیت 2FA ادمین‌ها — آیا همه 2FA فعال دارند یا نه.
- *  best-effort: از جدول TwoFactor می‌خواند اگر موجود باشد.
- */
-export async function get2faStatus(): Promise<{
-  success: boolean;
-  data?: {
-    totalAdmins: number;
-    adminsWith2fa: number;
-    adminsWithout2fa: Array<{ id: string; name: string; email: string }>;
-  };
-  error?: string;
-}> {
+export async function get2faStatus() {
   try {
-    const authCheck = await requireAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
-
+    const gate = await requireAdmin();
+    if (!gate.success) return authFailureToActionResult(gate);
     const admins = await prisma.user.findMany({
       where: { role: { in: ['ADMIN', 'OWNER', 'SUPERADMIN'] } },
       select: { id: true, name: true, email: true, twoFactorEnabled: true },
     });
-
-    const adminsWith2fa = admins.filter((a) => a.twoFactorEnabled).length;
-    const adminsWithout2fa = admins
-      .filter((a) => !a.twoFactorEnabled)
-      .map((a) => ({ id: a.id, name: a.name ?? '', email: a.email }));
-
-    return {
-      success: true,
-      data: { totalAdmins: admins.length, adminsWith2fa, adminsWithout2fa },
-    };
-  } catch (_error) {
-    return { success: false, error: 'خطا در دریافت وضعیت 2FA' };
+    return ok({
+      totalAdmins: admins.length,
+      adminsWith2fa: admins.filter((a) => a.twoFactorEnabled).length,
+      adminsWithout2fa: admins
+        .filter((a) => !a.twoFactorEnabled)
+        .map((a) => ({ id: a.id, name: a.name ?? '', email: a.email })),
+    });
+  } catch {
+    return fail('خطا در دریافت وضعیت 2FA');
   }
 }

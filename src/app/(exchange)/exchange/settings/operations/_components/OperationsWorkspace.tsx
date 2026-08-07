@@ -267,9 +267,7 @@ export default function OperationsWorkspace({ exchange, canEdit }: Props) {
         >
           <div className={s.limitHero}>
             <div className={s.limitDisplay}>
-              <span className={s.limitAmount}>
-                {_faNum.format(dailyLimit)}
-              </span>
+              <span className={s.limitAmount}>{_faNum.format(dailyLimit)}</span>
               <span className={s.limitUnit}>{primaryCurrency} / روز</span>
             </div>
             <div className={s.limitProgress}>

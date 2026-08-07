@@ -6,7 +6,7 @@ export async function GET() {
   try {
     const session = await auth();
 
-    if (!session?.user || session.user.role !== 'OWNER') {
+    if (!session?.user || !['OWNER', 'SUPERADMIN'].includes(session.user.role ?? '')) {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: 'شما دسترسی لازم را ندارید' } },
         { status: 403 },
@@ -21,7 +21,10 @@ export async function GET() {
     }
     return NextResponse.json({ success: true, data: settings });
   } catch {
-    return NextResponse.json({ success: false, message: 'خطای داخلی سرور' }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: { code: 'INTERNAL_ERROR', message: 'خطای داخلی سرور' } },
+      { status: 500 },
+    );
   }
 }
 
@@ -29,7 +32,7 @@ export async function POST(req: Request) {
   try {
     const session = await auth();
 
-    if (!session?.user || session.user.role !== 'OWNER') {
+    if (!session?.user || !['OWNER', 'SUPERADMIN'].includes(session.user.role ?? '')) {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: 'شما دسترسی لازم را ندارید' } },
         { status: 403 },
@@ -72,7 +75,10 @@ export async function POST(req: Request) {
 
     if (!data.siteName) {
       return NextResponse.json(
-        { success: false, message: 'لطفاً فیلدهای اجباری را پر کنید' },
+        {
+          success: false,
+          error: { code: 'BAD_REQUEST', message: 'لطفاً فیلدهای اجباری را پر کنید' },
+        },
         { status: 400 },
       );
     }
@@ -102,11 +108,14 @@ export async function POST(req: Request) {
       });
     } catch {
       return NextResponse.json(
-        { success: false, message: 'خطا در ذخیره تنظیمات در دیتابیس' },
+        { success: false, error: { code: 'DB_ERROR', message: 'خطا در ذخیره تنظیمات در دیتابیس' } },
         { status: 500 },
       );
     }
   } catch {
-    return NextResponse.json({ success: false, message: 'خطای داخلی سرور' }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: { code: 'INTERNAL_ERROR', message: 'خطای داخلی سرور' } },
+      { status: 500 },
+    );
   }
 }

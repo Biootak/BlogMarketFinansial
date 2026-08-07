@@ -66,7 +66,9 @@ async function main() {
   const rows = await prisma.exchangeRate.findMany();
   console.log('Found', rows.length, 'rows to backfill');
 
-  let updated = 0, skipped = 0, noMapping = 0;
+  let updated = 0;
+  let skipped = 0;
+  let noMapping = 0;
   for (const row of rows) {
     if (row.symbol) {
       skipped++;

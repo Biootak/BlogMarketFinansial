@@ -9,8 +9,8 @@
  */
 
 import { getPublicExchangeServices } from '@/actions/exchange-services';
-import { safeCache } from '@/lib/safe-cache';
 import prisma from '@/lib/db';
+import { safeCache } from '@/lib/safe-cache';
 import { notFound } from 'next/navigation';
 import SubNav from './_components/SubNav';
 

@@ -10,6 +10,16 @@ export interface ContactFormState {
   error: string | null;
 }
 
+/** escape HTML special chars to prevent XSS in email templates */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export async function sendContactAction(
   _prev: ContactFormState,
   formData: FormData,
@@ -30,16 +40,20 @@ export async function sendContactAction(
     const { getEmailProviderAsync } = await import('@/lib/email');
     const provider = await getEmailProviderAsync();
     const to = process.env.CONTACT_TO_EMAIL ?? process.env.RESEND_FROM ?? 'noreply@example.com';
+    // escape user input before embedding in HTML to prevent XSS
+    const safeName = escapeHtml(name);
+    const safeEmail = escapeHtml(email);
+    const safeMessage = escapeHtml(message);
     await provider.send({
       to,
-      subject: `پیام جدید از ${name} — فرم تماس`,
+      subject: `پیام جدید از ${safeName} — فرم تماس`,
       html: `
         <div dir="rtl" style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #1a1a2e;">پیام جدید از سایت</h2>
-          <p><strong>نام:</strong> ${name}</p>
-          <p><strong>ایمیل:</strong> ${email}</p>
+          <p><strong>نام:</strong> ${safeName}</p>
+          <p><strong>ایمیل:</strong> ${safeEmail}</p>
           <hr />
-          <p style="white-space: pre-wrap;">${message}</p>
+          <p style="white-space: pre-wrap;">${safeMessage}</p>
         </div>
       `,
       text: `پیام از ${name} (${email}):\n\n${message}`,

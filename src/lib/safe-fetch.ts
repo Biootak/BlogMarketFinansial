@@ -27,8 +27,10 @@ export async function safe<T>(promise: Promise<T>, fallback: T, context?: string
     return await promise;
   } catch (error) {
     if (isDev) {
-      const _label = context ? ` [${context}]` : '';
-      const _msg = error instanceof Error ? error.message : String(error);
+      const label = context ? ` [${context}]` : '';
+      const msg = error instanceof Error ? error.message : String(error);
+      // biome-ignore lint/suspicious/noConsole: dev-only error logging in safe-fetch
+      console.error(`[safe-fetch]${label} ${msg}`);
     }
     return fallback;
   }

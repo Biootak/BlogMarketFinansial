@@ -661,8 +661,6 @@
   color: var(--ds-text-secondary);
 }
 
-
-
 .spin {
   animation: spin 0.7s linear infinite;
 }

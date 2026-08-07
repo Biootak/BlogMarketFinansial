@@ -126,23 +126,17 @@ export default function ComparisonMatrixView({ matrix, initialExchange, initialG
 
           <div className={s.counters} role="list">
             <div className={s.counter} role="listitem">
-              <span className={s.counterValue}>
-                {_faNum.format(visibleExchanges.length)}
-              </span>
+              <span className={s.counterValue}>{_faNum.format(visibleExchanges.length)}</span>
               <span className={s.counterLabel}>صرافی فعال</span>
             </div>
             <span className={s.counterDivider} aria-hidden />
             <div className={s.counter} role="listitem">
-              <span className={s.counterValue}>
-                {_faNum.format(totalServices)}
-              </span>
+              <span className={s.counterValue}>{_faNum.format(totalServices)}</span>
               <span className={s.counterLabel}>خدمت</span>
             </div>
             <span className={s.counterDivider} aria-hidden />
             <div className={s.counter} role="listitem">
-              <span className={s.counterValue}>
-                {_faNum.format(fillRate)}٪
-              </span>
+              <span className={s.counterValue}>{_faNum.format(fillRate)}٪</span>
               <span className={s.counterLabel}>پوشش</span>
             </div>
           </div>
@@ -279,9 +273,7 @@ export default function ComparisonMatrixView({ matrix, initialExchange, initialG
                       );
                     })}
                   <td className={s.countCell}>
-                    <span className={s.countValue}>
-                      {_faNum.format(ex.serviceCount)}
-                    </span>
+                    <span className={s.countValue}>{_faNum.format(ex.serviceCount)}</span>
                     <span className={s.countLabel}>
                       از {_faNum.format(visibleServiceKeys.size)}
                     </span>

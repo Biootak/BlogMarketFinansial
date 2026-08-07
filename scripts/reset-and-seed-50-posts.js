@@ -1,8 +1,8 @@
 /* runner: reads scripts/posts.ndjson and inserts 50 posts.
  * اجرا: node scripts/reset-and-seed-50-posts.js
  */
-const fs = require('fs');
-const path = require('path');
+const _fs = require('node:fs');
+const path = require('node:path');
 const { PrismaClient } = require('@prisma/client');
 const p = new PrismaClient();
 
@@ -22,19 +22,120 @@ function tipDoc(blocks) {
   return JSON.stringify({
     type: 'doc',
     content: blocks.map((b) => {
-      if (b.t === 'h2') return { type: 'heading', attrs: { textAlign: null, level: 2, id: b.id }, content: [{ type: 'text', text: b.x }] };
-      if (b.t === 'h3') return { type: 'heading', attrs: { textAlign: null, level: 3, id: b.id }, content: [{ type: 'text', text: b.x }] };
-      if (b.t === 'p')  return { type: 'paragraph', attrs: { textAlign: null, dataEmpty: null }, content: [{ type: 'text', text: b.x }] };
-      if (b.t === 'quote') return { type: 'blockquote', content: [{ type: 'paragraph', attrs: { textAlign: null, dataEmpty: null }, content: [{ type: 'text', text: b.x }] }] };
-      if (b.t === 'li') return { type: 'bulletList', content: b.items.map((t) => ({ type: 'listItem', content: [{ type: 'paragraph', attrs: { textAlign: null, dataEmpty: null }, content: [{ type: 'text', text: t }] }] })) };
-      return { type: 'paragraph', attrs: { textAlign: null, dataEmpty: null }, content: [{ type: 'text', text: '' }] };
+      if (b.t === 'h2')
+        return {
+          type: 'heading',
+          attrs: { textAlign: null, level: 2, id: b.id },
+          content: [{ type: 'text', text: b.x }],
+        };
+      if (b.t === 'h3')
+        return {
+          type: 'heading',
+          attrs: { textAlign: null, level: 3, id: b.id },
+          content: [{ type: 'text', text: b.x }],
+        };
+      if (b.t === 'p')
+        return {
+          type: 'paragraph',
+          attrs: { textAlign: null, dataEmpty: null },
+          content: [{ type: 'text', text: b.x }],
+        };
+      if (b.t === 'quote')
+        return {
+          type: 'blockquote',
+          content: [
+            {
+              type: 'paragraph',
+              attrs: { textAlign: null, dataEmpty: null },
+              content: [{ type: 'text', text: b.x }],
+            },
+          ],
+        };
+      if (b.t === 'li')
+        return {
+          type: 'bulletList',
+          content: b.items.map((t) => ({
+            type: 'listItem',
+            content: [
+              {
+                type: 'paragraph',
+                attrs: { textAlign: null, dataEmpty: null },
+                content: [{ type: 'text', text: t }],
+              },
+            ],
+          })),
+        };
+      return {
+        type: 'paragraph',
+        attrs: { textAlign: null, dataEmpty: null },
+        content: [{ type: 'text', text: '' }],
+      };
     }),
   });
 }
 
 function slugify(s) {
-  const map = {'۰':'0','۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9','ا':'a','ب':'b','پ':'p','ت':'t','ث':'s','ج':'j','چ':'ch','ح':'h','خ':'kh','د':'d','ذ':'z','ر':'r','ز':'z','ژ':'zh','س':'s','ش':'sh','ص':'s','ض':'z','ط':'t','ظ':'z','ع':'a','غ':'gh','ف':'f','ق':'gh','ک':'k','گ':'g','ل':'l','م':'m','ن':'n','و':'o','ه':'h','ی':'i','ئ':'i','ء':'','آ':'a','أ':'a','إ':'e','ة':'h','‌':'-'};
-  return s.toLowerCase().split('').map((c) => (map[c] !== undefined ? map[c] : c)).join('').replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 80);
+  const map = {
+    '۰': '0',
+    '۱': '1',
+    '۲': '2',
+    '۳': '3',
+    '۴': '4',
+    '۵': '5',
+    '۶': '6',
+    '۷': '7',
+    '۸': '8',
+    '۹': '9',
+    ا: 'a',
+    ب: 'b',
+    پ: 'p',
+    ت: 't',
+    ث: 's',
+    ج: 'j',
+    چ: 'ch',
+    ح: 'h',
+    خ: 'kh',
+    د: 'd',
+    ذ: 'z',
+    ر: 'r',
+    ز: 'z',
+    ژ: 'zh',
+    س: 's',
+    ش: 'sh',
+    ص: 's',
+    ض: 'z',
+    ط: 't',
+    ظ: 'z',
+    ع: 'a',
+    غ: 'gh',
+    ف: 'f',
+    ق: 'gh',
+    ک: 'k',
+    گ: 'g',
+    ل: 'l',
+    م: 'm',
+    ن: 'n',
+    و: 'o',
+    ه: 'h',
+    ی: 'i',
+    ئ: 'i',
+    ء: '',
+    آ: 'a',
+    أ: 'a',
+    إ: 'e',
+    ة: 'h',
+    '‌': '-',
+  };
+  return s
+    .toLowerCase()
+    .split('')
+    .map((c) => (map[c] !== undefined ? map[c] : c))
+    .join('')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 80);
 }
 
 async function main() {
@@ -61,21 +162,31 @@ async function main() {
     return tag;
   }
 
-  let added = 0, failed = 0;
+  let added = 0;
+  let failed = 0;
   for (let i = 0; i < lines.length; i++) {
     const post = JSON.parse(lines[i]);
     try {
-      let baseSlug = slugify(post.title) || ('post-' + Date.now() + '-' + i);
-      let uniqueSlug = baseSlug, counter = 1;
-      while (await p.post.findUnique({ where: { slug: uniqueSlug } })) { uniqueSlug = baseSlug + '-' + counter; counter++; }
+      const baseSlug = slugify(post.title) || `post-${Date.now()}-${i}`;
+      let uniqueSlug = baseSlug;
+      let counter = 1;
+      while (await p.post.findUnique({ where: { slug: uniqueSlug } })) {
+        uniqueSlug = `${baseSlug}-${counter}`;
+        counter++;
+      }
 
       const cats = await p.category.findMany({ where: { slug: { in: post.cats } } });
-      if (cats.length === 0) { console.log('⚠️  [' + (i+1) + '] "' + post.title + '" - هیچ دسته‌ای پیدا نشد'); failed++; continue; }
+      if (cats.length === 0) {
+        console.log(`⚠️  [${i + 1}] "${post.title}" - هیچ دسته‌ای پیدا نشد`);
+        failed++;
+        continue;
+      }
 
       const tags = await Promise.all(post.tags.map((t) => getOrCreateTag(t)));
 
       const wordCount = post.blocks.reduce((acc, b) => {
-        if (b.t === 'p' || b.t === 'h2' || b.t === 'h3' || b.t === 'quote') return acc + (b.x ? b.x.split(/\s+/).length : 0);
+        if (b.t === 'p' || b.t === 'h2' || b.t === 'h3' || b.t === 'quote')
+          return acc + (b.x ? b.x.split(/\s+/).length : 0);
         if (b.t === 'li') return acc + b.items.reduce((a, t) => a + t.split(/\s+/).length, 0);
         return acc;
       }, 0);
@@ -101,21 +212,32 @@ async function main() {
       if (post.type === 'AUDIO' && post.audioUrl) data.audioUrl = post.audioUrl;
 
       const created = await p.post.create({ data });
-      console.log('✅ [' + (i+1) + '/50] ' + (created.postType || 'STANDARD').padEnd(8) + ' | ' + created.title.slice(0, 55));
+      console.log(
+        `✅ [${i + 1}/50] ${(created.postType || 'STANDARD').padEnd(8)} | ${created.title.slice(0, 55)}`,
+      );
       added++;
     } catch (err) {
-      console.log('❌ [' + (i+1) + '] "' + post.title + '" - ' + err.message);
+      console.log(`❌ [${i + 1}] "${post.title}" - ${err.message}`);
       failed++;
     }
   }
 
-  console.log('\n📊 نتیجه: ' + added + ' اضافه شد، ' + failed + ' شکست');
+  console.log(`\n📊 نتیجه: ${added} اضافه شد، ${failed} شکست`);
   const total = await p.post.count();
   const byType = await p.post.groupBy({ by: ['postType'], _count: { _all: true } });
   const byFeat = await p.post.groupBy({ by: ['isFeatured'], _count: { _all: true } });
-  console.log('\n📈 کل پست‌ها: ' + total);
-  console.log('   بر اساس نوع: ' + byType.map((b) => b.postType + '=' + b._count._all).join(', '));
-  console.log('   ویژه: ' + (byFeat.find((b) => b.isFeatured)?._count._all || 0) + ' | عادی: ' + (byFeat.find((b) => !b.isFeatured)?._count._all || 0));
+  console.log(`\n📈 کل پست‌ها: ${total}`);
+  console.log(`   بر اساس نوع: ${byType.map((b) => `${b.postType}=${b._count._all}`).join(', ')}`);
+  console.log(
+    `   ویژه: ${byFeat.find((b) => b.isFeatured)?._count._all || 0} | عادی: ${byFeat.find((b) => !b.isFeatured)?._count._all || 0}`,
+  );
 }
 
-main().catch((e) => { console.error('❌ خطای کلی:', e); process.exit(1); }).finally(async () => { await p.$disconnect(); });
+main()
+  .catch((e) => {
+    console.error('❌ خطای کلی:', e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await p.$disconnect();
+  });

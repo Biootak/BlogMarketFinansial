@@ -1,10 +1,5 @@
-// 2026-06-23: server-side auth helper for use in `'use server'` actions.
-// Returns a discriminated result instead of `redirect()` so callers can
-// produce a structured `{ success: false, error }` response instead of
-// the server action crashing with NEXT_REDIRECT. This is the right
-// pattern for server actions called from forms: the client renders the
-// error and stays on the page, rather than being thrown to a redirect
-// destination the user didn't choose.
+// Auth helper for server actions — returns discriminated result instead of redirect()
+// so callers can return { success: false, error } without crashing with NEXT_REDIRECT.
 import { auth } from '@/auth';
 import { Role } from '@prisma/client';
 

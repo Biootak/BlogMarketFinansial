@@ -2,15 +2,16 @@
 
 import { requireUser } from '@/lib/require-auth';
 import { authFailureToActionResult } from '@/lib/require-auth';
+import { S3_REGION } from '@/lib/s3-config';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 const s3Client = new S3Client({
-  region: 'default',
-  endpoint: process.env.LIARA_ENDPOINT,
+  region: S3_REGION,
+  endpoint: process.env.S3_ENDPOINT,
   credentials: {
-    accessKeyId: process.env.LIARA_ACCESS_KEY as string,
-    secretAccessKey: process.env.LIARA_SECRET_KEY as string,
+    accessKeyId: process.env.S3_ACCESS_KEY as string,
+    secretAccessKey: process.env.S3_SECRET_KEY as string,
   },
   forcePathStyle: true,
   maxAttempts: 1,
@@ -65,7 +66,7 @@ export async function getPresignedUrl(
   const key = `${Date.now()}-${fileName}`;
 
   const command = new PutObjectCommand({
-    Bucket: process.env.LIARA_BUCKET_NAME as string,
+    Bucket: process.env.S3_BUCKET_NAME as string,
     Key: key,
     ContentType: fileType,
   });

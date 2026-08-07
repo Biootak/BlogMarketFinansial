@@ -244,7 +244,7 @@ function CreateKeyDialog({
     if (res.success && res.data) {
       onCreated(res.data);
       onClose();
-    } else {
+    } else if (!res.success) {
       toast.error(typeof res.error === 'string' ? res.error : 'خطا در ساخت');
     }
   };

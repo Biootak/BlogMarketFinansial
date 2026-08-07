@@ -6,7 +6,8 @@
  */
 
 import { deleteBackup, getBackupStatus } from '@/actions/settingsActions';
-import { NextResponse } from 'next/server';
+import { assertSameOrigin } from '@/lib/csrf';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -22,7 +23,14 @@ export async function GET() {
   return NextResponse.json({ success: true, data: res.data });
 }
 
-export async function DELETE(req: Request) {
+export async function DELETE(req: NextRequest) {
+  // C3-fix: CSRF guard — جلوگیری از cross-site DELETE توسط مهاجم
+  if (!assertSameOrigin(req)) {
+    return NextResponse.json(
+      { success: false, error: { code: 'CSRF', message: 'درخواست نامعتبر' } },
+      { status: 403 },
+    );
+  }
   const { searchParams } = new URL(req.url);
   const filename = searchParams.get('filename');
   if (!filename) {

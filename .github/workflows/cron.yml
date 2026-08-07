@@ -1,0 +1,64 @@
+name: Cron Jobs
+
+on:
+  schedule:
+    # هر ۱ دقیقه — پست‌های scheduled + نرخ بازار
+    # (GitHub Actions حداقل interval دقیقه‌ای دارد)
+    - cron: "* * * * *"
+    # هر ۱۰ دقیقه — sync bazaar
+    - cron: "*/10 * * * *"
+    # هر شب ۰۳:۰۰ UTC — backup دیتابیس (JSON → S3-compatible)
+    - cron: "0 3 * * *"
+  # اجرای دستی
+  workflow_dispatch:
+
+jobs:
+  # ─── پست‌های scheduled ──────────────────────────────────────────────────
+  publish-scheduled-posts:
+    name: Publish Scheduled Posts
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '* * * * *' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Trigger publish-scheduled-posts
+        run: |
+          curl -fsS \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/cron/publish-scheduled-posts"
+
+  # ─── نرخ‌های بازار ──────────────────────────────────────────────────────
+  refresh-market-rates:
+    name: Refresh Market Rates
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '* * * * *' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Trigger refresh-market-rates
+        run: |
+          curl -fsS \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/cron/refresh-market-rates"
+
+  # ─── sync-bazaar (هر ۱۰ دقیقه) ─────────────────────────────────────────
+  sync-bazaar:
+    name: Sync Bazaar (TGJU)
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '*/10 * * * *' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Trigger sync-bazaar
+        run: |
+          curl -fsS \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/cron/sync-bazaar"
+
+  # ─── backup دیتابیس (شبانه) ─────────────────────────────────────────────
+  # JSON کامل (محتوای سایت + تنظیمات) را می‌سازد و در S3-compatible آینه می‌کند
+  # تا روی filesystem اپمرال (Heroku/Vercel) از بین نرود.
+  db-backup:
+    name: Database Backup
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 3 * * *' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Trigger backup
+        run: |
+          curl -fsS \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/cron/backup"

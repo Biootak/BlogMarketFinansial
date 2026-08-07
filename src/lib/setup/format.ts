@@ -19,11 +19,34 @@ export function toPersianDigits(input: string | number): string {
 export function formatPersianPhone(raw: string): string {
   const ascii = toAsciiDigits(raw);
   const trimmed = ascii.replace(/[^\d+]/g, '');
+  // Afghanistan-first (AGENTS.md P0): Afghan mobiles are `07XXXXXXXX` (national)
+  // or `+93 7XXXXXXXX` (E.164). Iranian numbers remain supported for legacy
+  // admin accounts, but the local/national branch prefers the Afghan shape.
+  // ⚠️ These `+93`/`+98` branches MUST stay above the generic `+` early-return
+  // below, otherwise they are unreachable dead code.
+  if (trimmed.startsWith('+93')) {
+    const digits = trimmed.slice(3).slice(0, 9);
+    if (digits.length <= 3) return `+93 ${digits}`;
+    if (digits.length <= 6) return `+93 ${digits.slice(0, 3)} ${digits.slice(3)}`;
+    return `+93 ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
+  }
+  if (trimmed.startsWith('93') && trimmed.length > 2) {
+    // 93701234567 → national 0701234567 → 070 123 4567
+    const digits = trimmed.slice(2).slice(0, 9);
+    if (digits.length <= 2) return `0${digits}`;
+    if (digits.length <= 5) return `0${digits.slice(0, 2)} ${digits.slice(2)}`;
+    return `0${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5)}`;
+  }
   if (trimmed.startsWith('+98')) {
     const digits = trimmed.slice(3).slice(0, 10);
     if (digits.length <= 3) return `+98 ${digits}`;
     if (digits.length <= 6) return `+98 ${digits.slice(0, 3)} ${digits.slice(3)}`;
     return `+98 ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
+  }
+  // شمارهٔ بین‌المللی (با +) از بقیهٔ کشورها — همان‌طور که تایپ شده نمایش داده
+  // می‌شود تا ساختار ملیِ هر کشور خراب نشود. (بعد از شاخه‌های +93/+98 تا dead code نشود)
+  if (trimmed.startsWith('+')) {
+    return trimmed;
   }
   if (trimmed.startsWith('98') && trimmed.length > 2) {
     const digits = trimmed.slice(2).slice(0, 10);
@@ -32,6 +55,12 @@ export function formatPersianPhone(raw: string): string {
     return `0${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
   }
   const local = trimmed.replace(/^0/, '').slice(0, 10);
+  // Afghan national: 7XXXXXXXX → 070 123 4567 (leading 0 + 2-3-4 grouping)
+  if (local.startsWith('7')) {
+    if (local.length <= 2) return `0${local}`;
+    if (local.length <= 5) return `0${local.slice(0, 2)} ${local.slice(2)}`;
+    return `0${local.slice(0, 2)} ${local.slice(2, 5)} ${local.slice(5)}`;
+  }
   if (local.length <= 4) return `0${local}`;
   if (local.length <= 7) return `0${local.slice(0, 4)} ${local.slice(4)}`;
   return `0${local.slice(0, 4)} ${local.slice(4, 7)} ${local.slice(7)}`;

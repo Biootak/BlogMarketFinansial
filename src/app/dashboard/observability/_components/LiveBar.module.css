@@ -1,123 +1,162 @@
 /* ============================================================================
-   LiveBar — نوار فرمان
-   Mobile first · logical properties · فقط توکن --ds-*
+   نوار سیگنال ۲۴ ساعت (RidgeChart)
+   ----------------------------------------------------------------------------
+   محور زمان اینجا LTR قفل است. توضیح کامل در obs.module.css (کلاس .ltr).
    ============================================================================ */
 
-.bar {
+.band {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-inline-size: 0;
+}
+
+.plot {
+  position: relative;
+  block-size: clamp(5rem, 12vw, 7.5rem);
+  min-inline-size: 0;
+}
+
+.canvas {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+}
+
+.grid,
+.base {
+  stroke: var(--obs-rule);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.base {
+  stroke: var(--obs-rule-2);
+}
+
+.area {
+  fill: color-mix(in oklch, var(--obs-accent) 11%, transparent);
+  stroke: none;
+}
+
+.line {
+  fill: none;
+  stroke: color-mix(in oklch, var(--obs-accent) 78%, transparent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/*
+   خط خطا نقطه‌چین است نه توپر — رنگ تنها نشانه نیست (WCAG 2.2)، پس حتی در
+   حالت کوررنگی هم از حجم قابل تفکیک می‌ماند.
+*/
+.errorLine {
+  fill: none;
+  stroke: var(--obs-bad);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* مکان‌نمای ساعت مشترک — همان ساعتی که نوار روز و ماتریس گرما رویش قفل‌اند */
+.cursor {
+  position: absolute;
+  inset-block: -0.15rem 0;
+  inset-inline-start: var(--cursor, 100%);
+  inline-size: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in oklch, var(--obs-ink) 45%, transparent) 25%,
+    color-mix(in oklch, var(--obs-ink) 45%, transparent)
+  );
+  transition: inset-inline-start var(--obs-base) var(--obs-ease);
+  pointer-events: none;
+}
+
+.cursor::before {
+  content: "";
+  position: absolute;
+  inset-block-start: -0.15rem;
+  inset-inline-start: -0.19rem;
+  inline-size: 0.4rem;
+  block-size: 0.4rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--obs-ink);
+}
+
+.quiet {
+  position: absolute;
+  inset-block-end: 0.65rem;
+  inset-inline-start: 0;
+  margin: 0;
+  color: var(--obs-muted);
+  font-size: var(--ds-text-xs);
+  direction: rtl;
+}
+
+/* برچسب محور — مطلق روی درصد، پس با هر عرضی سرجایش می‌ماند */
+.axis {
+  position: relative;
+  block-size: 1rem;
+  min-inline-size: 0;
+}
+
+.axis span {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: var(--at, 0%);
+  transform: translateX(-50%);
+  color: var(--obs-muted);
+  font: 400 0.64rem / 1 var(--obs-mono);
+  white-space: nowrap;
+}
+
+.axis span:first-child {
+  transform: none;
+}
+
+.axis span:last-child {
+  transform: translateX(-100%);
+}
+
+.legend {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--ds-space-2) var(--ds-space-4);
-  padding: var(--ds-space-2) var(--ds-space-3);
-  border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-full);
-  background: var(--ds-surface);
+  gap: 0.4rem 1rem;
+  margin: 0;
+  color: var(--obs-muted);
+  font-size: 0.68rem;
+  line-height: 1.6;
 }
 
-@media (min-width: 48rem) {
-  .bar {
-    flex-wrap: nowrap;
-    padding-inline: var(--ds-space-4);
-  }
-}
-
-.pulse {
+.keyVolume,
+.keyError {
   display: inline-flex;
   align-items: center;
-  gap: var(--ds-space-2);
-  flex: 0 0 auto;
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-medium);
-  color: var(--ds-text-secondary);
-  white-space: nowrap;
+  gap: 0.35rem;
 }
 
-.dot {
-  inline-size: 7px;
-  block-size: 7px;
-  border-radius: var(--ds-radius-full);
-  background: var(--ds-accent-emerald);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-accent-emerald) 16%, transparent);
+.keyVolume::before,
+.keyError::before {
+  content: "";
+  inline-size: 0.85rem;
+  block-size: 0;
+  border-block-start: 2px solid var(--obs-accent);
 }
 
-.pulse[data-status='refreshing'] .dot {
-  background: var(--ds-accent-cyan);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-accent-cyan) 18%, transparent);
+.keyError::before {
+  border-block-start-style: dashed;
+  border-block-start-color: var(--obs-bad);
 }
 
-.pulse[data-status='stalled'] .dot {
-  background: var(--ds-accent-amber);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-accent-amber) 18%, transparent);
-}
-
-.slot {
-  display: flex;
-  flex: 1 1 auto;
-  min-inline-size: 0;
-  align-items: center;
-  gap: var(--ds-space-3);
-  order: 3;
-  inline-size: 100%;
-}
-
-@media (min-width: 48rem) {
-  .slot {
-    order: 0;
-    inline-size: auto;
-  }
-}
-
-.tail {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ds-space-2);
+.readout {
   margin-inline-start: auto;
-  flex: 0 0 auto;
-}
-
-.stamp {
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
+  color: var(--obs-ink-2);
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.sampled {
-  font-size: 0.7rem;
-  padding: 0.1rem var(--ds-space-2);
-  border-radius: var(--ds-radius-full);
-  color: var(--ds-accent-amber);
-  border: 1px solid color-mix(in oklch, var(--ds-accent-amber) 35%, transparent);
-  white-space: nowrap;
-}
-
-.refresh {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  inline-size: 30px;
-  block-size: 30px;
-  border-radius: var(--ds-radius-full);
-  border: 1px solid var(--ds-border-default);
-  background: transparent;
-  color: var(--ds-text-secondary);
-  cursor: pointer;
-  transition:
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
-}
-
-.refresh:hover:not(:disabled) {
-  color: var(--ds-accent-cyan);
-  border-color: color-mix(in oklch, var(--ds-accent-cyan) 45%, transparent);
-}
-
-.refresh:focus-visible {
-  outline: 2px solid var(--ds-accent-cyan);
-  outline-offset: 2px;
-}
-
-.refresh:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
+  font-weight: var(--ds-weight-medium);
 }

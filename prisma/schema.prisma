@@ -10,59 +10,59 @@ datasource db {
 }
 
 model User {
-  id                  String                @id @default(cuid())
-  name                String?
-  email               String                @unique
-  role                Role                  @default(USER)
-  status              String                @default("Active")
-  password            String?
-  emailVerified       DateTime?
-  phoneNumber         String?
-  image               String?
-  imageWidth          Int?
-  imageHeight         Int?
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
-  nationalIdHash      String?
-  kycSubmittedAt      DateTime?
-  kycReviewedAt       DateTime?
-  kycRejectReason     String?
-  kycDocUrl           String?
-  twoFactorEnabled    Boolean               @default(false)
-  twoFactorSecret     String?
-  twoFactorSecretEnc  String?
+  id                    String                @id @default(cuid())
+  name                  String?
+  email                 String                @unique
+  role                  Role                  @default(USER)
+  status                String                @default("Active")
+  password              String?
+  emailVerified         DateTime?
+  phoneNumber           String?
+  image                 String?
+  imageWidth            Int?
+  imageHeight           Int?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  nationalIdHash        String?
+  kycSubmittedAt        DateTime?
+  kycReviewedAt         DateTime?
+  kycRejectReason       String?
+  kycDocUrl             String?
+  twoFactorEnabled      Boolean               @default(false)
+  twoFactorSecret       String?
+  twoFactorSecretEnc    String?
   /// 2026-07-29: ترجیحات اطلاع‌رسانی کاربر (SettingsContent)
-  notifyVoice         Boolean               @default(false)
-  monthlyActivityReport Boolean             @default(false)
-  exchangePartnerId   String?
-  tokenVersion        Int                   @default(0)
+  notifyVoice           Boolean               @default(false)
+  monthlyActivityReport Boolean               @default(false)
+  exchangePartnerId     String?
+  tokenVersion          Int                   @default(0)
   /// 2026-08-05: chat_id تلگرام کاربر برای تحویل OTP (رایگان — مخصوص بازار افغانستان)
-  telegramChatId      String?               @unique
-  accounts            Account[]
-  activities          ActivityLog[]
-  Beneficiary         Beneficiary[]
-  BillingAddress      BillingAddress?
-  comments            Comment[]
-  Customer            Customer?
-  ExchangeStaff       ExchangeStaff[]
-  KycRecord           KycRecord?
-  likes               Like[]
-  newsletter          Newsletter?
-  notifications       Notification[]
-  posts               Post[]
-  profile             Profile?
-  savedPosts          SavedPost[]
-  serviceRequests     ServiceRequest[]
-  sessions            Session[]
-  tasks               Task[]
-  TwoFactorBackupCode TwoFactorBackupCode[]
-  TelegramLinkToken   TelegramLinkToken[]
-  VirtualCard         VirtualCard[]
-  CurrencyDeal        CurrencyDeal[]
-  TransactionOtp      TransactionOtp[]
-  Device              Device[]
-  ApiKeys             ApiKey[]
-  Webhooks            Webhook[]
+  telegramChatId        String?               @unique
+  accounts              Account[]
+  activities            ActivityLog[]
+  Beneficiary           Beneficiary[]
+  BillingAddress        BillingAddress?
+  comments              Comment[]
+  Customer              Customer?
+  ExchangeStaff         ExchangeStaff[]
+  KycRecord             KycRecord?
+  likes                 Like[]
+  newsletter            Newsletter?
+  notifications         Notification[]
+  posts                 Post[]
+  profile               Profile?
+  savedPosts            SavedPost[]
+  serviceRequests       ServiceRequest[]
+  sessions              Session[]
+  tasks                 Task[]
+  TwoFactorBackupCode   TwoFactorBackupCode[]
+  TelegramLinkToken     TelegramLinkToken[]
+  VirtualCard           VirtualCard[]
+  CurrencyDeal          CurrencyDeal[]
+  TransactionOtp        TransactionOtp[]
+  Device                Device[]
+  ApiKeys               ApiKey[]
+  Webhooks              Webhook[]
 
   @@index([status])
   @@index([role, status])
@@ -97,7 +97,7 @@ model Session {
   userId       String
   expires      DateTime
   createdAt    DateTime @default(now())
-  updatedAt    DateTime
+  updatedAt    DateTime @updatedAt
   deviceId     String?
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -131,7 +131,7 @@ model Profile {
   jobName       String?
   company       String?
   userId        String  @unique
-  user          User    @relation(fields: [userId], references: [id])
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Post {
@@ -149,7 +149,7 @@ model Post {
   postType            PostType    @default(STANDARD)
   videoUrl            String?
   audioUrl            String?
-  authorId            String
+  authorId            String?
   viewCount           Int         @default(0)
   readingTime         Int         @default(0)
   scheduledAt         DateTime?
@@ -157,7 +157,7 @@ model Post {
   updatedAt           DateTime    @updatedAt
   comments            Comment[]
   likes               Like[]
-  author              User        @relation(fields: [authorId], references: [id])
+  author              User?       @relation(fields: [authorId], references: [id], onDelete: SetNull)
   savedBy             SavedPost[]
   views               View[]
   categories          Category[]  @relation("CategoryToPost")
@@ -182,7 +182,7 @@ model View {
   userAgent String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  post      Post     @relation(fields: [postId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@index([postId])
   @@index([createdAt])
@@ -197,10 +197,10 @@ model Comment {
   approved  Boolean   @default(false)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  author    User      @relation(fields: [authorId], references: [id])
-  parent    Comment?  @relation("CommentToComment", fields: [parentId], references: [id])
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent    Comment?  @relation("CommentToComment", fields: [parentId], references: [id], onDelete: Cascade)
   replies   Comment[] @relation("CommentToComment")
-  post      Post      @relation(fields: [postId], references: [id])
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
   likes     Like[]
 
   @@index([postId])
@@ -216,9 +216,9 @@ model Like {
   postId    String?
   commentId String?
   createdAt DateTime @default(now())
-  comment   Comment? @relation(fields: [commentId], references: [id])
-  post      Post?    @relation(fields: [postId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  comment   Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  post      Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
   @@unique([userId, commentId])
@@ -258,8 +258,8 @@ model SavedPost {
   userId    String
   postId    String
   createdAt DateTime @default(now())
-  post      Post     @relation(fields: [postId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
   @@index([createdAt(sort: Desc)])
@@ -272,7 +272,7 @@ model Notification {
   userId    String
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
   @@index([userId, createdAt(sort: Desc)])
@@ -284,24 +284,24 @@ model Notification {
 // Campaign: کمپین ایمیلی/پیامکی چندمرحله‌ای
 // CampaignRecipient: وضعیت هر گیرنده در هر کمپین
 model Announcement {
-  id            String    @id @default(cuid())
-  title         String
-  body          String
+  id             String    @id @default(cuid())
+  title          String
+  body           String
   // نوع کانال — درون‌برنامه‌ای، ایمیل، پوش، یا همه
-  channels      String    @default("inapp") // comma-separated: inapp,email,push,sms
+  channels       String    @default("inapp") // comma-separated: inapp,email,push,sms
   // مخاطب — all, role, segment
-  audience      String    @default("all")
+  audience       String    @default("all")
   // فیلتر اضافی (مثلاً نقش‌ها یا segment)
   audienceFilter String?
   // زمان‌بندی انتشار
-  scheduledAt   DateTime?
-  publishedAt   DateTime?
-  expiresAt     DateTime?
-  status        String    @default("draft") // draft, scheduled, published, archived
+  scheduledAt    DateTime?
+  publishedAt    DateTime?
+  expiresAt      DateTime?
+  status         String    @default("draft") // draft, scheduled, published, archived
   // چه کسی ساخته
-  createdById   String
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdById    String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@index([status])
   @@index([scheduledAt])
@@ -309,27 +309,27 @@ model Announcement {
 }
 
 model Campaign {
-  id           String    @id @default(cuid())
-  name         String
-  description  String?
-  channel      String    @default("email") // email, sms, push
-  subject      String?
-  body         String
-  status       String    @default("draft") // draft, scheduled, sending, completed, paused
-  audience     String    @default("all")
+  id             String    @id @default(cuid())
+  name           String
+  description    String?
+  channel        String    @default("email") // email, sms, push
+  subject        String?
+  body           String
+  status         String    @default("draft") // draft, scheduled, sending, completed, paused
+  audience       String    @default("all")
   audienceFilter String?
-  scheduledAt  DateTime?
-  startedAt    DateTime?
-  completedAt  DateTime?
-  statsSent    Int       @default(0)
-  statsOpened  Int       @default(0)
-  statsClicked Int       @default(0)
-  statsBounced Int       @default(0)
-  createdById  String
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  scheduledAt    DateTime?
+  startedAt      DateTime?
+  completedAt    DateTime?
+  statsSent      Int       @default(0)
+  statsOpened    Int       @default(0)
+  statsClicked   Int       @default(0)
+  statsBounced   Int       @default(0)
+  createdById    String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  recipients   CampaignRecipient[]
+  recipients CampaignRecipient[]
 
   @@index([status])
   @@index([scheduledAt])
@@ -356,7 +356,7 @@ model CampaignRecipient {
 // BackgroundJob: jobهای پس‌زمینه، cron، retry، DLQ
 model BackgroundJob {
   id           String    @id @default(cuid())
-  type         String    // email.send, market.rates.refresh, settlement.process
+  type         String // email.send, market.rates.refresh, settlement.process
   queue        String    @default("default")
   payload      Json?
   status       String    @default("pending") // pending, running, completed, failed, dead
@@ -370,7 +370,7 @@ model BackgroundJob {
   errorMessage String?
   errorStack   String?
   result       Json?
-  triggeredBy  String?   // userId یا 'system' یا 'cron'
+  triggeredBy  String? // userId یا 'system' یا 'cron'
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -383,29 +383,29 @@ model BackgroundJob {
 
 // ─── Helpdesk / Tickets models (Tier 1) ────────────────────
 model SupportTicket {
-  id            String    @id @default(cuid())
-  subject       String
-  description   String
-  status        String    @default("open") // open, pending, in_progress, resolved, closed
-  priority      String    @default("normal") // low, normal, high, urgent
-  category      String    @default("general") // general, billing, technical, kyc, account, other
+  id              String    @id @default(cuid())
+  subject         String
+  description     String
+  status          String    @default("open") // open, pending, in_progress, resolved, closed
+  priority        String    @default("normal") // low, normal, high, urgent
+  category        String    @default("general") // general, billing, technical, kyc, account, other
   // چه کسی تیکت را ایجاد کرده
-  requesterId   String
-  requesterRole String?
+  requesterId     String
+  requesterRole   String?
   // ارجاع به staff
-  assignedToId  String?
+  assignedToId    String?
   // SLA
   firstResponseAt DateTime?
-  resolvedAt   DateTime?
-  closedAt     DateTime?
+  resolvedAt      DateTime?
+  closedAt        DateTime?
   // شمارنده پیام‌ها
-  messageCount Int       @default(0)
+  messageCount    Int       @default(0)
   // تگ‌ها برای گروه‌بندی
-  tags         String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  tags            String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  messages     TicketMessage[]
+  messages TicketMessage[]
 
   @@index([status])
   @@index([priority])
@@ -424,7 +424,7 @@ model TicketMessage {
   attachments Json?
   createdAt   DateTime @default(now())
 
-  ticket      SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
   @@index([ticketId, createdAt(sort: Desc)])
   @@index([authorId])
@@ -432,23 +432,23 @@ model TicketMessage {
 
 // ─── Approval Workflows models (Tier 1) ────────────────────
 model ApprovalRequest {
-  id            String    @id @default(cuid())
-  type          String    // settlement, kyc, refund, withdrawal, custom
-  title         String
-  description   String?
-  entityType    String
-  entityId      String
-  requesterId   String
-  status        String    @default("pending") // pending, approved, rejected, cancelled
-  currentStep   Int       @default(0)
-  totalSteps    Int       @default(1)
+  id          String    @id @default(cuid())
+  type        String // settlement, kyc, refund, withdrawal, custom
+  title       String
+  description String?
+  entityType  String
+  entityId    String
+  requesterId String
+  status      String    @default("pending") // pending, approved, rejected, cancelled
+  currentStep Int       @default(0)
+  totalSteps  Int       @default(1)
   // payload اضافی (مثلاً amount, currency, reason)
-  payload       Json?
-  decidedAt     DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  payload     Json?
+  decidedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  steps         ApprovalStep[]
+  steps ApprovalStep[]
 
   @@index([status])
   @@index([type, status])
@@ -461,14 +461,14 @@ model ApprovalStep {
   id           String    @id @default(cuid())
   requestId    String
   stepIndex    Int
-  approverRole String    // ADMIN, OWNER, SUPERADMIN, CUSTOM (specific user)
-  approverId   String?   // اگر specific user باشد
+  approverRole String // ADMIN, OWNER, SUPERADMIN, CUSTOM (specific user)
+  approverId   String? // اگر specific user باشد
   status       String    @default("pending") // pending, approved, rejected, skipped
   comment      String?
   decidedAt    DateTime?
   createdAt    DateTime  @default(now())
 
-  request      ApprovalRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  request ApprovalRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
 
   @@unique([requestId, stepIndex])
   @@index([requestId, status])
@@ -558,35 +558,35 @@ model Newsletter {
   userId    String?  @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User?    @relation(fields: [userId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
 
 model SystemSettings {
-  id              String   @id @default(cuid())
-  siteName        String?
-  siteDescription String?
-  logoUrl         String?
+  id                 String   @id @default(cuid())
+  siteName           String?
+  siteDescription    String?
+  logoUrl            String?
   // دامنه اصلی سایت — منبع واحد برای robots.txt، sitemap، OG، لینک‌های اشتراک‌گذاری
-  siteUrl         String?
-  maintenanceMode Boolean  @default(false)
+  siteUrl            String?
+  maintenanceMode    Boolean  @default(false)
   // 2026-07-29: پیام سفارشی نمایش‌داده‌شده در صفحه تعمیرات — ادمین ارشد ویرایش می‌کند
   maintenanceMessage String?
-  cacheEnabled    Boolean  @default(true)
-  smtpServer      String?
-  smtpPort        String?
-  smtpUsername    String?
-  smtpPassword    String?
+  cacheEnabled       Boolean  @default(true)
+  smtpServer         String?
+  smtpPort           String?
+  smtpUsername       String?
+  smtpPassword       String?
   // 2026-07-29: فیلدهای تماس ادمین‌قابل‌ویرایش — جایگزین مقادیر hardcode شده در Footer/Help
-  contactEmail    String?
-  contactPhone    String?
-  contactAddress  String?
+  contactEmail       String?
+  contactPhone       String?
+  contactAddress     String?
   // شبکه‌های اجتماعی (برای SocialLinks و Schema.org sameAs)
-  telegram        String?
-  instagram       String?
-  whatsapp        String?
-  twitter         String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  telegram           String?
+  instagram          String?
+  whatsapp           String?
+  twitter            String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
 // ── Backup ──────────────────────────────────────────────────
@@ -608,15 +608,15 @@ model BackupConfig {
 
 // رکورد هر backup که اجرا شده — برای audit trail و UI لیست
 model BackupRun {
-  id         String   @id @default(cuid())
-  filename   String   @unique
-  sizeBytes  Int
-  totalRows  Int
-  sections   String[] @default([])
-  reason     String   @default("manual")
-  actor      String?
-  checksum   String?
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  filename  String   @unique
+  sizeBytes Int
+  totalRows Int
+  sections  String[] @default([])
+  reason    String   @default("manual")
+  actor     String?
+  checksum  String?
+  createdAt DateTime @default(now())
 
   @@index([createdAt(sort: Desc)])
   @@index([reason])
@@ -637,11 +637,11 @@ model SystemLog {
 // #8 fix: هر دو @default(cuid()) داشتند — OK است.
 model ActivityLog {
   id        String   @id @default(cuid())
-  userId    String
+  userId    String?
   action    String
   details   String
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId, createdAt])
 }
@@ -675,8 +675,8 @@ model SocialLink {
 }
 
 model ServiceRequest {
-  id                    String                    @id @default(cuid())
-  trackingCode          String                    @unique
+  id                    String                     @id @default(cuid())
+  trackingCode          String                     @unique
   fullName              String
   phone                 String
   email                 String?
@@ -684,14 +684,14 @@ model ServiceRequest {
   amount                String
   currency              String
   description           String?
-  urgency               RequestUrgency            @default(NORMAL)
+  urgency               RequestUrgency             @default(NORMAL)
   contactMethod         String
-  status                ServiceRequestStatus      @default(PENDING)
+  status                ServiceRequestStatus       @default(PENDING)
   adminNotes            String?
   ipAddress             String?
   userAgent             String?
-  createdAt             DateTime                  @default(now())
-  updatedAt             DateTime                  @updatedAt
+  createdAt             DateTime                   @default(now())
+  updatedAt             DateTime                   @updatedAt
   userId                String?
   /// 2026-07-28: اگر درخواست از صفحه صرافی خاصی ثبت شود، صرافی مقصد اینجاست.
   /// null = درخواست به پلتفرم (flow قدیمی).
@@ -699,10 +699,10 @@ model ServiceRequest {
   metadata              Json?
   estimatedCompletionAt DateTime?
   externalTxId          String?
-  phoneVerified         Boolean                   @default(false)
-  emailVerified         Boolean                   @default(false)
-  idempotencyKey        String?                   @unique
-  user                  User?                       @relation(fields: [userId], references: [id])
+  phoneVerified         Boolean                    @default(false)
+  emailVerified         Boolean                    @default(false)
+  idempotencyKey        String?                    @unique
+  user                  User?                      @relation(fields: [userId], references: [id], onDelete: SetNull)
   targetExchange        Exchange?                  @relation(fields: [targetExchangeId], references: [id], onDelete: SetNull)
   statusLogs            ServiceRequestStatusLog[]
   notes                 ServiceRequestNote[]
@@ -804,7 +804,7 @@ model Task {
   userId      String
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
-  user        User         @relation(fields: [userId], references: [id])
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, status, createdAt(sort: Desc)])
   @@index([userId, dueDate])
@@ -812,23 +812,23 @@ model Task {
 }
 
 model TransferProvider {
-  id            String    @id @default(cuid())
-  slug          String    @unique
+  id            String       @id @default(cuid())
+  slug          String       @unique
   name          String
   kind          TransferKind
-  spreadPercent Float     @default(0)
-  flatFeeToman  Int       @default(0)
-  speedMinutes  Int       @default(0)
-  features      String[]  @default([])
-  active        Boolean   @default(true)
-  order         Int       @default(100)
+  spreadPercent Float        @default(0)
+  flatFeeToman  Int          @default(0)
+  speedMinutes  Int          @default(0)
+  features      String[]     @default([])
+  active        Boolean      @default(true)
+  order         Int          @default(100)
   description   String?
   logoUrl       String?
   /// اگر این provider متعلق به یک صرافی خاص باشد — null = پلتفرم‌شمول
   exchangeId    String?
-  Exchange      Exchange? @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  Exchange      Exchange?    @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   @@index([active, order])
   @@index([exchangeId])
@@ -889,7 +889,7 @@ model BillingAddress {
   recipientName String?
   phoneNumber   String?
   createdAt     DateTime @default(now())
-  updatedAt     DateTime
+  updatedAt     DateTime @updatedAt
   User          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -933,45 +933,45 @@ model ContactSubmission {
   status    String   @default("NEW")
   ipAddress String?
   createdAt DateTime @default(now())
-  updatedAt DateTime
+  updatedAt DateTime @updatedAt
 
   @@index([createdAt(sort: Desc)])
   @@index([status])
 }
 
 model Customer {
-  id              String            @id
-  exchangeId      String
-  userId          String?           @unique
-  fullName        String
-  fatherName      String?
-  nationalId      String?
-  passportNo      String?
-  phone           String
-  email           String?
-  address         String?
-  city            String?
-  status          CustomerStatus    @default(PROSPECT)
-  kycLevel        KycLevel          @default(NONE)
-  kycStatus       KycStatus         @default(NOT_STARTED)
-  personalLimitAf BigInt?
-  riskScore       Int               @default(0)
-  notes           String?
+  id                String            @id
+  exchangeId        String
+  userId            String?           @unique
+  fullName          String
+  fatherName        String?
+  nationalId        String?
+  passportNo        String?
+  phone             String
+  email             String?
+  address           String?
+  city              String?
+  status            CustomerStatus    @default(PROSPECT)
+  kycLevel          KycLevel          @default(NONE)
+  kycStatus         KycStatus         @default(NOT_STARTED)
+  personalLimitAf   BigInt?
+  riskScore         Int               @default(0)
+  notes             String?
   /// 2026-07-29: آیا اطلاعات این مشتری با صرافی مربوطه به اشتراک گذاشته شود؟
-  shareWithExchange Boolean          @default(false)
-  createdById     String?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime
-  Exchange        Exchange          @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
-  User            User?             @relation(fields: [userId], references: [id])
-  Device          Device[]
-  FintechAccount  FintechAccount[]
-  FraudReview     FraudReview[]
-  KycVerification KycVerification[]
-  LedgerEntry     LedgerEntry[]
-  Transaction     Transaction[]
-  CustomerRequest CustomerRequest[]
-  Beneficiary     Beneficiary[]
+  shareWithExchange Boolean           @default(false)
+  createdById       String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  Exchange          Exchange          @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  User              User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  Device            Device[]
+  FintechAccount    FintechAccount[]
+  FraudReview       FraudReview[]
+  KycVerification   KycVerification[]
+  LedgerEntry       LedgerEntry[]
+  Transaction       Transaction[]
+  CustomerRequest   CustomerRequest[]
+  Beneficiary       Beneficiary[]
 
   @@index([createdAt(sort: Desc)])
   @@index([exchangeId])
@@ -1007,9 +1007,9 @@ model CustomerRequest {
   createdAt    DateTime              @default(now())
   updatedAt    DateTime              @updatedAt
 
-  customer        Customer                    @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  exchange        Exchange                    @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
-  statusLogs      CustomerRequestStatusLog[]
+  customer   Customer                   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  exchange   Exchange                   @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  statusLogs CustomerRequestStatusLog[]
 
   @@index([customerId, createdAt(sort: Desc)])
   @@index([customerId, status])
@@ -1021,7 +1021,7 @@ model CustomerRequest {
 
 /// تاریخچه تغییر وضعیت — برای timeline و audit
 model CustomerRequestStatusLog {
-  id         String                  @id @default(cuid())
+  id         String                 @id @default(cuid())
   requestId  String
   fromStatus CustomerRequestStatus?
   toStatus   CustomerRequestStatus
@@ -1029,8 +1029,8 @@ model CustomerRequestStatusLog {
   /// نقش: CUSTOMER | STAFF | SYSTEM
   actorRole  String?
   note       String?
-  createdAt  DateTime                @default(now())
-  request    CustomerRequest         @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  createdAt  DateTime               @default(now())
+  request    CustomerRequest        @relation(fields: [requestId], references: [id], onDelete: Cascade)
 
   @@index([requestId, createdAt(sort: Desc)])
 }
@@ -1074,50 +1074,50 @@ model Device {
 }
 
 model Exchange {
-  id                   String            @id
-  name                 String
-  slug                 String            @unique
-  licenseNo            String?
-  city                 String?
-  address              String?
-  phone                String?
-  email                String?
-  logoUrl              String?
+  id                 String              @id
+  name               String
+  slug               String              @unique
+  licenseNo          String?
+  city               String?
+  address            String?
+  phone              String?
+  email              String?
+  logoUrl            String?
   /// نام رسمی فارسی برای نمایش در سایت
-  displayName          String?
-  website              String?
+  displayName        String?
+  website            String?
   /// آیا در جدول مقایسه /money-transfer نشان داده شود
-  showInComparison     Boolean           @default(false)
+  showInComparison   Boolean             @default(false)
   /// ارز پایه صرافی برای محاسبه آمار — پیش‌فرض AFN
-  primaryCurrency      String            @default("AFN")
+  primaryCurrency    String              @default("AFN")
   /// ارزهایی که این صرافی مجاز به ثبت قیمت برای آن‌ها است
-  allowedCurrencies    String[]          @default([])
+  allowedCurrencies  String[]            @default([])
   /// مدت اعتبار quote (دقیقه) — پیش‌فرض ۶۰
-  quoteAutoExpireMin   Int               @default(60)
-  status               ExchangeStatus    @default(PENDING)
-  dailyLimitAf         BigInt            @default(0)
-  platformFee          Float             @default(0)
-  requireKyc           Boolean           @default(true)
-  createdById          String?
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime
-  AuditLog             AuditLog[]
-  Customer             Customer[]
-  Device               Device[]
-  ExchangeStaff        ExchangeStaff[]
-  ExchangeService      ExchangeService[]
-  ServiceClick         ServiceClick[]
-  ServiceRequest       ServiceRequest[]
-  FintechAccount       FintechAccount[]
-  FraudReview          FraudReview[]
-  KycVerification      KycVerification[]
-  LedgerEntry          LedgerEntry[]
-  Transaction          Transaction[]
-  TransferProvider     TransferProvider[]
-  ExchangeRateQuote    ExchangeRateQuote[]
-  CurrencyDeal         CurrencyDeal[]
-  Settlement           Settlement[]
-  CustomerRequest      CustomerRequest[]
+  quoteAutoExpireMin Int                 @default(60)
+  status             ExchangeStatus      @default(PENDING)
+  dailyLimitAf       BigInt              @default(0)
+  platformFee        Float               @default(0)
+  requireKyc         Boolean             @default(true)
+  createdById        String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  AuditLog           AuditLog[]
+  Customer           Customer[]
+  Device             Device[]
+  ExchangeStaff      ExchangeStaff[]
+  ExchangeService    ExchangeService[]
+  ServiceClick       ServiceClick[]
+  ServiceRequest     ServiceRequest[]
+  FintechAccount     FintechAccount[]
+  FraudReview        FraudReview[]
+  KycVerification    KycVerification[]
+  LedgerEntry        LedgerEntry[]
+  Transaction        Transaction[]
+  TransferProvider   TransferProvider[]
+  ExchangeRateQuote  ExchangeRateQuote[]
+  CurrencyDeal       CurrencyDeal[]
+  Settlement         Settlement[]
+  CustomerRequest    CustomerRequest[]
 
   @@index([city])
   @@index([createdAt(sort: Desc)])
@@ -1176,23 +1176,23 @@ model ExchangeService {
 /// 2026-07-28: analytics — هر کلیک روی کارت سرویس ثبت می‌شود.
 /// استفاده: ranking سرویس‌های محبوب، heatmap رفتار مشتری، attribution.
 model ServiceClick {
-  id          String          @id @default(cuid())
+  id         String    @id @default(cuid())
   /// 2026-07-28: صرافی‌ای که کلیک روی کارت آن بوده. null = marketplace hub
-  exchangeId  String?
+  exchangeId String?
   /// 2026-07-28: کلید سرویس کلیک‌شده
-  serviceKey  String
+  serviceKey String
   /// 2026-07-28: از کجا کلیک شده
-  source      String
+  source     String
   /// 2026-07-28: کاربر لاگین‌شده (اختیاری)
-  userId      String?
+  userId     String?
   /// 2026-07-28: IP (برای تشخیص unique)
-  ipAddress   String?
+  ipAddress  String?
   /// 2026-07-28: User agent
-  userAgent   String?
+  userAgent  String?
   /// 2026-07-28: referer URL (URL کامل صفحه‌ای که کلیک شده)
-  referer     String?
-  createdAt   DateTime        @default(now())
-  Exchange    Exchange?       @relation(fields: [exchangeId], references: [id], onDelete: SetNull)
+  referer    String?
+  createdAt  DateTime  @default(now())
+  Exchange   Exchange? @relation(fields: [exchangeId], references: [id], onDelete: SetNull)
 
   @@index([serviceKey, createdAt(sort: Desc)])
   @@index([exchangeId, createdAt(sort: Desc)])
@@ -1200,17 +1200,17 @@ model ServiceClick {
 }
 
 model FintechAccount {
-  id          String        @id
-  exchangeId  String
-  customerId  String
-  type        AccountType   @default(WALLET)
-  label       String?
-  currency    String        @default("AFN")
-  status      AccountStatus @default(PENDING)
-  balance     BigInt        @default(0)
-  frozenUntil DateTime?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime
+  id           String        @id
+  exchangeId   String
+  customerId   String
+  type         AccountType   @default(WALLET)
+  label        String?
+  currency     String        @default("AFN")
+  status       AccountStatus @default(PENDING)
+  balance      BigInt        @default(0)
+  frozenUntil  DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   Customer     Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
   Exchange     Exchange      @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
   LedgerEntry  LedgerEntry[]
@@ -1235,9 +1235,9 @@ model FraudReview {
   resolution   String?
   createdAt    DateTime     @default(now())
   resolvedAt   DateTime?
-  Customer     Customer?    @relation(fields: [customerId], references: [id])
+  Customer     Customer?    @relation(fields: [customerId], references: [id], onDelete: SetNull)
   Exchange     Exchange     @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
-  Transaction  Transaction? @relation(fields: [txnId], references: [id])
+  Transaction  Transaction? @relation(fields: [txnId], references: [id], onDelete: SetNull)
 
   @@index([exchangeId, status])
   @@index([riskScore])
@@ -1255,7 +1255,7 @@ model KycAttempt {
   selfieUrl      String?
   rejectReason   String?
   createdAt      DateTime         @default(now())
-  updatedAt      DateTime
+  updatedAt      DateTime         @updatedAt
 }
 
 model KycRecord {
@@ -1272,7 +1272,7 @@ model KycRecord {
   /// تاریخ انقضای KYC — برای compliance (پیش‌فرض ۲ سال از reviewedAt)
   expiresAt      DateTime?
   createdAt      DateTime  @default(now())
-  updatedAt      DateTime
+  updatedAt      DateTime  @updatedAt
   User           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -1292,7 +1292,7 @@ model KycVerification {
   rejectReason  String?
   expiresAt     DateTime?
   createdAt     DateTime  @default(now())
-  updatedAt     DateTime
+  updatedAt     DateTime  @updatedAt
   Customer      Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
   Exchange      Exchange  @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
 
@@ -1320,7 +1320,7 @@ model LedgerEntry {
   FintechAccount FintechAccount? @relation(fields: [accountId], references: [id], onDelete: Cascade)
   Customer       Customer?       @relation(fields: [customerId], references: [id], onDelete: Cascade)
   Exchange       Exchange        @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
-  Transaction    Transaction?    @relation(fields: [txnId], references: [id])
+  Transaction    Transaction?    @relation(fields: [txnId], references: [id], onDelete: SetNull)
 
   @@index([accountId, createdAt(sort: Desc)])
   @@index([customerId, createdAt(sort: Desc)])
@@ -1365,7 +1365,7 @@ model Transaction {
   createdById    String?
   reviewedById   String?
   createdAt      DateTime          @default(now())
-  updatedAt      DateTime
+  updatedAt      DateTime          @updatedAt
   FraudReview    FraudReview[]
   LedgerEntry    LedgerEntry[]
   FintechAccount FintechAccount?   @relation(fields: [accountId], references: [id], onDelete: Cascade)
@@ -1403,7 +1403,7 @@ model VirtualCard {
   currency  WalletCurrency @default(USD)
   expiresAt DateTime
   createdAt DateTime       @default(now())
-  updatedAt DateTime
+  updatedAt DateTime       @updatedAt
   User      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   Account   FintechAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
@@ -1412,20 +1412,20 @@ model VirtualCard {
 }
 
 model ApiKey {
-  id        String    @id @default(cuid())
+  id        String        @id @default(cuid())
   name      String
-  key       String    @unique
+  key       String        @unique
   secret    String
   userId    String
-  isActive  Boolean   @default(true)
+  isActive  Boolean       @default(true)
   lastUsed  DateTime?
   expiresAt DateTime?
   // scopes: لیست دسترسی‌ها — خالی = دسترسی کامل (backward-compatible)
-  scopes    String[]  @default([])
+  scopes    String[]      @default([])
   // fingerprint اخیر: برای تشخیص تغییر مرورگر/IP
   lastIp    String?
-  createdAt DateTime  @default(now())
-  User      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+  User      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   audits    ApiKeyAudit[]
 
   @@index([userId])
@@ -1450,34 +1450,34 @@ model ApiKeyAudit {
 }
 
 model Webhook {
-  id         String   @id @default(cuid())
+  id         String            @id @default(cuid())
   url        String
   events     String[]
-  isActive   Boolean  @default(true)
+  isActive   Boolean           @default(true)
   secret     String
   userId     String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  User       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   deliveries WebhookDelivery[]
 
   @@index([userId])
 }
 
 model WebhookDelivery {
-  id            String   @id @default(cuid())
-  webhookId     String
-  event         String
-  payload       Json
-  responseCode  Int?
-  responseBody  String?
-  attempt       Int      @default(1)
-  status        WebhookDeliveryStatus @default(PENDING)
-  durationMs    Int?
-  error         String?
-  deliveredAt   DateTime?
-  createdAt     DateTime @default(now())
-  Webhook       Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  id           String                @id @default(cuid())
+  webhookId    String
+  event        String
+  payload      Json
+  responseCode Int?
+  responseBody String?
+  attempt      Int                   @default(1)
+  status       WebhookDeliveryStatus @default(PENDING)
+  durationMs   Int?
+  error        String?
+  deliveredAt  DateTime?
+  createdAt    DateTime              @default(now())
+  Webhook      Webhook               @relation(fields: [webhookId], references: [id], onDelete: Cascade)
 
   @@index([webhookId, createdAt])
   @@index([status])
@@ -1492,16 +1492,16 @@ enum WebhookDeliveryStatus {
 
 // لاگ درخواست‌های API — برای نمایش «فعالیت اخیر API» در داشبورد
 model ApiCallLog {
-  id          String   @id @default(cuid())
-  userId      String
-  apiKeyId    String?
-  method      String
-  path        String
-  statusCode  Int
-  durationMs  Int
-  ip          String?
-  userAgent   String?
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  userId     String
+  apiKeyId   String?
+  method     String
+  path       String
+  statusCode Int
+  durationMs Int
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
 
   @@index([userId, createdAt])
   @@index([apiKeyId])
@@ -1693,75 +1693,75 @@ enum CreditRateType {
 
 /// بانک — منبع نرخ‌های اعتباری
 model Bank {
-  id            String       @id
+  id          String       @id
   /// کد یکتای بانک (مثلاً «afbank»، «kabulbank»)
-  slug          String       @unique
+  slug        String       @unique
   /// نام رسمی
-  name          String
+  name        String
   /// نام نمایشی
-  displayName   String?
+  displayName String?
   /// کشور
-  country       String       @default("AF")
+  country     String       @default("AF")
   /// شهر مرکزی
-  city          String?
+  city        String?
   /// لوگو
-  logoUrl       String?
+  logoUrl     String?
   /// وبسایت
-  website       String?
+  website     String?
   /// شماره مجوز
-  licenseNo     String?
+  licenseNo   String?
   /// وضعیت: ACTIVE | PENDING | SUSPENDED | CLOSED
-  status        String       @default("ACTIVE")
+  status      String       @default("ACTIVE")
   /// نمایش در صفحه عمومی
-  isVisible     Boolean      @default(true)
+  isVisible   Boolean      @default(true)
   /// ترتیب نمایش
-  sortOrder     Int          @default(0)
+  sortOrder   Int          @default(0)
   /// توضیح کوتاه
-  description   String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  rates         CreditRate[]
+  description String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  rates       CreditRate[]
 
   @@index([status, isVisible, sortOrder])
 }
 
 /// نرخ اعتباری — یک محصول بانکی (وام یا سپرده) با نرخ سود
 model CreditRate {
-  id            String         @id
-  bankId        String
+  id             String         @id
+  bankId         String
   /// نوع محصول
-  type          CreditRateType
+  type           CreditRateType
   /// عنوان فارسی
-  title         String
+  title          String
   /// شرح کوتاه
-  description   String?
+  description    String?
   /// نرخ سود سالانه (درصد، مثلاً ۱۲.۵)
-  annualRate    Decimal        @db.Decimal(6, 3)
+  annualRate     Decimal        @db.Decimal(6, 3)
   /// حداقل مبلغ (ریال/افغانی — هر چه واحد پول reference)
-  minAmountCents BigInt        @default(0)
+  minAmountCents BigInt         @default(0)
   /// حداکثر مبلغ
-  maxAmountCents BigInt        @default(0)
+  maxAmountCents BigInt         @default(0)
   /// حداکثر مدت (ماه)
-  maxTermMonths Int           @default(0)
+  maxTermMonths  Int            @default(0)
   /// نیاز به سپرده گذاری (درصد)
-  depositRatio  Decimal?       @db.Decimal(5, 2)
+  depositRatio   Decimal?       @db.Decimal(5, 2)
   /// واحد پول: AFN, IRR, USD
-  currency      String         @default("AFN")
+  currency       String         @default("AFN")
   /// وضعیت: ACTIVE | DRAFT | ARCHIVED
-  status        String         @default("ACTIVE")
+  status         String         @default("ACTIVE")
   /// تاریخ شروع اعتبار
-  effectiveFrom DateTime?
+  effectiveFrom  DateTime?
   /// تاریخ پایان
-  effectiveTo   DateTime?
+  effectiveTo    DateTime?
   /// منبع (مثلاً «وبسایت رسمی»، «بانک مرکزی»)
-  source        String?
+  source         String?
   /// ترتیب نمایش
-  sortOrder     Int            @default(0)
+  sortOrder      Int            @default(0)
   /// یادداشت داخلی
-  internalNote  String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  bank          Bank           @relation(fields: [bankId], references: [id], onDelete: Cascade)
+  internalNote   String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  bank           Bank           @relation(fields: [bankId], references: [id], onDelete: Cascade)
 
   @@index([bankId, status, sortOrder])
   @@index([type, status])
@@ -1802,70 +1802,70 @@ enum ExchangeStaffRole {
 
 /// وضعیت یک quote قیمت‌گذاری صرافی
 enum QuoteStatus {
-  PENDING   // ثبت‌شده — در انتظار تایید ادمین
-  ACTIVE    // تایید‌شده — در سایت نمایش داده می‌شود
-  REJECTED  // رد‌شده توسط ادمین با یادداشت
-  EXPIRED   // منقضی‌شده (cron خودکار)
-  ARCHIVED  // آرشیو دستی توسط ادمین
-  LOCKED    // انتخاب‌شده توسط مشتری — در حین انجام معامله
+  PENDING // ثبت‌شده — در انتظار تایید ادمین
+  ACTIVE // تایید‌شده — در سایت نمایش داده می‌شود
+  REJECTED // رد‌شده توسط ادمین با یادداشت
+  EXPIRED // منقضی‌شده (cron خودکار)
+  ARCHIVED // آرشیو دستی توسط ادمین
+  LOCKED // انتخاب‌شده توسط مشتری — در حین انجام معامله
 }
 
 /// نحوه انجام معامله
 enum DealChannel {
-  ONLINE    // از طریق پلتفرم
-  INPERSON  // حضوری در شعبه صرافی
-  PHONE     // تلفنی
+  ONLINE // از طریق پلتفرم
+  INPERSON // حضوری در شعبه صرافی
+  PHONE // تلفنی
 }
 
 /// وضعیت معامله
 enum DealStatus {
-  PENDING     // ثبت‌شده — در انتظار تایید صرافی
-  CONFIRMED   // تایید صرافی
-  PROCESSING  // در حال انجام
-  COMPLETED   // تکمیل‌شده
-  CANCELLED   // لغو‌شده
-  DISPUTED    // در حال رسیدگی به اعتراض
-  REFUNDED    // بازگشت وجه
+  PENDING // ثبت‌شده — در انتظار تایید صرافی
+  CONFIRMED // تایید صرافی
+  PROCESSING // در حال انجام
+  COMPLETED // تکمیل‌شده
+  CANCELLED // لغو‌شده
+  DISPUTED // در حال رسیدگی به اعتراض
+  REFUNDED // بازگشت وجه
 }
 
 /// قیمت ثبت‌شده توسط صرافی برای یک ارز — پس از تایید ادمین در سایت نمایش داده می‌شود
 model ExchangeRateQuote {
-  id              String       @id @default(cuid())
-  exchangeId      String
+  id            String      @id @default(cuid())
+  exchangeId    String
   /// کد ارز استاندارد ISO 4217
-  currencyCode    String       // USD، EUR، AFN، AED، …
+  currencyCode  String // USD، EUR، AFN، AED، …
   /// جفت ارز: "USD/AFN"، "USD/IRR"، "EUR/AFN"
-  currencyPair    String
+  currencyPair  String
   /// قیمت خرید صرافی (صرافی از مشتری می‌خرد) — واحد: تومان یا افغانی
-  buyRate         Decimal      @db.Decimal(20, 6)
+  buyRate       Decimal     @db.Decimal(20, 6)
   /// قیمت فروش صرافی (صرافی به مشتری می‌فروشد)
-  sellRate        Decimal      @db.Decimal(20, 6)
+  sellRate      Decimal     @db.Decimal(20, 6)
   /// واحد پول پایه: toman / rial / afn / usd
-  unit            String       @default("toman")
+  unit          String      @default("toman")
   /// حداقل مبلغ معامله
-  minAmount       Decimal?     @db.Decimal(20, 2)
+  minAmount     Decimal?    @db.Decimal(20, 2)
   /// حداکثر مبلغ معامله
-  maxAmount       Decimal?     @db.Decimal(20, 2)
-  status          QuoteStatus  @default(PENDING)
+  maxAmount     Decimal?    @db.Decimal(20, 2)
+  status        QuoteStatus @default(PENDING)
   /// مدت اعتبار (دقیقه) — از approvedAt محاسبه می‌شود
-  validMinutes    Int          @default(60)
+  validMinutes  Int         @default(60)
   /// زمان انقضا (پر می‌شود هنگام ACTIVE شدن)
-  expiresAt       DateTime?
+  expiresAt     DateTime?
   /// یادداشت ادمین هنگام تایید یا رد
-  note            String?
+  note          String?
   /// شناسه ادمین تایید‌کننده
-  approvedById    String?
-  approvedAt      DateTime?
+  approvedById  String?
+  approvedAt    DateTime?
   /// شناسه صراف ثبت‌کننده
-  submittedById   String?
+  submittedById String?
   /// شماره نسخه برای optimistic locking
-  version         Int          @default(1)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  version       Int         @default(1)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
-  Exchange    Exchange          @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
-  StatusLogs  QuoteStatusLog[]
-  Deals       CurrencyDeal[]
+  Exchange   Exchange         @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  StatusLogs QuoteStatusLog[]
+  Deals      CurrencyDeal[]
 
   @@index([exchangeId, currencyCode, status])
   @@index([status, expiresAt])
@@ -1876,7 +1876,7 @@ model ExchangeRateQuote {
 
 /// تاریخچه کامل تغییر وضعیت هر quote — برای audit trail و نمودار تاریخچه نرخ
 model QuoteStatusLog {
-  id         String      @id @default(cuid())
+  id         String       @id @default(cuid())
   quoteId    String
   fromStatus QuoteStatus?
   toStatus   QuoteStatus
@@ -1887,7 +1887,7 @@ model QuoteStatusLog {
   reason     String?
   /// metadata: اختلاف با بازار٪، buyRate قبلی و جدید
   metadata   Json?
-  createdAt  DateTime    @default(now())
+  createdAt  DateTime     @default(now())
 
   Quote ExchangeRateQuote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
 
@@ -1914,9 +1914,9 @@ model CurrencyDeal {
   customerPhone  String
   customerEmail  String?
   /// کد ارز مبدأ
-  fromCurrency   String      // USD، EUR، …
+  fromCurrency   String // USD، EUR، …
   /// کد ارز مقصد
-  toCurrency     String      // AFN، IRR، AED، …
+  toCurrency     String // AFN، IRR، AED، …
   /// مبلغ پرداختی مشتری — #6 fix: Decimal(20,6) برای دقت بهتر مبالغ ارزی
   fromAmount     Decimal     @db.Decimal(20, 6)
   /// مبلغ دریافتی مشتری (محاسبه‌شده)
@@ -1960,14 +1960,14 @@ model CurrencyDeal {
 
 /// تاریخچه وضعیت معامله
 model DealStatusLog {
-  id         String     @id @default(cuid())
+  id         String      @id @default(cuid())
   dealId     String
   fromStatus DealStatus?
   toStatus   DealStatus
   actorId    String?
   actorRole  String?
   note       String?
-  createdAt  DateTime   @default(now())
+  createdAt  DateTime    @default(now())
 
   Deal CurrencyDeal @relation(fields: [dealId], references: [id], onDelete: Cascade)
 
@@ -1999,40 +1999,38 @@ model DealAttachment {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Settlement {
-  id            String           @id @default(cuid())
-  exchangeId    String
+  id           String           @id @default(cuid())
+  exchangeId   String
   /// دوره محاسبه (شروع)
-  periodStart   DateTime
+  periodStart  DateTime
   /// دوره محاسبه (پایان)
-  periodEnd     DateTime
+  periodEnd    DateTime
   /// مجموع حجم معاملات در این دوره (smallest unit)
-  totalVolume   BigInt           @default(0)
+  totalVolume  BigInt           @default(0)
   /// تعداد معاملات
-  dealCount     Int              @default(0)
+  dealCount    Int              @default(0)
   /// کارمزد پلتفرم (محاسبه‌شده از platformFee Exchange)
-  platformFee   BigInt           @default(0)
+  platformFee  BigInt           @default(0)
   /// خالص قابل پرداخت به صرافی
-  exchangeNet   BigInt           @default(0)
+  exchangeNet  BigInt           @default(0)
   /// ارز پایه محاسبه
-  currency      String           @default("AFN")
-  status        SettlementStatus @default(PENDING)
+  currency     String           @default("AFN")
+  status       SettlementStatus @default(PENDING)
   /// یادداشت ادمین
-  note          String?
+  note         String?
   /// شناسه ادمین تأییدکننده
-  approvedById  String?
-  approvedAt    DateTime?
+  approvedById String?
+  approvedAt   DateTime?
   /// زمان پرداخت
-  paidAt        DateTime?
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  Exchange      Exchange         @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  paidAt       DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  Exchange     Exchange         @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
 
   @@index([exchangeId, status])
   @@index([periodStart, periodEnd])
   @@index([status])
 }
-
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TransactionOtp — کد یکبار مصرف برای تأیید تراکنش‌های حساس
@@ -2177,5 +2175,3 @@ enum SettlementStatus {
   DISPUTED
   CANCELLED
 }
-
-

@@ -30,7 +30,10 @@ export default async function ExchangeProfilePage() {
   const canEdit = staffRole === 'OWNER' || staffRole === 'MANAGER';
 
   return (
-    <div className="at-page" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-5)' }}>
+    <div
+      className="at-page"
+      style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-5)' }}
+    >
       <PageHeader
         title="پروفایل عمومی"
         description="هویت بصری و اطلاعاتی که مشتریان در صفحهٔ عمومی شما می‌بینند"

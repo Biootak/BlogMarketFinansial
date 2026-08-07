@@ -22,21 +22,40 @@ export function StepCredentials({ values, errors, onChange, onBlur }: StepCreden
     (raw: string) => {
       // Convert any Persian/Arabic digits to ASCII first.
       const ascii = toAsciiDigits(raw);
-      // Strip everything except digits — we want to store the canonical
-      // (unformatted) form in state so schema validation and server submission
-      // both work against `^(\+98|0)?9\d{9}$`.
-      const digitsOnly = ascii.replace(/[^\d]/g, '');
+      // Keep the `+` prefix when present — the user typed an international
+      // number (any country). Preserve it as E.164-style (max 15 digits).
+      const hasPlus = ascii.startsWith('+');
+      let digitsOnly = ascii.replace(/[^\d]/g, '');
 
-      // Normalize common prefixes to the canonical `0XXXXXXXXXX` form
-      // (the regex accepts `+98`, `98`, `0`, or a bare 9-leading number).
+      if (hasPlus) {
+        // `+93 0 7XXXXXXXX` (صفر اضافهٔ ملی بعد از کد کشور) E.164 معتبر نیست —
+        // صفر را حذف می‌کنیم: +93 0701234567 → +93701234567.
+        if (digitsOnly.startsWith('9307')) {
+          digitsOnly = digitsOnly.slice(0, 2) + digitsOnly.slice(3);
+        }
+        onChange('phoneNumber', `+${digitsOnly.slice(0, 15)}`);
+        return;
+      }
+
+      // Bare national number → normalize common prefixes to the canonical
+      // national form:
+      //   Afghanistan-first: `93 7XXXXXXXX` → `07XXXXXXXX` (10 digits)
+      //   Iran (legacy):     `98 9XXXXXXXXX` → `09XXXXXXXXX` (11 digits)
       let canonical: string;
-      if (digitsOnly.startsWith('0098')) {
+      if (digitsOnly.startsWith('0093')) {
         canonical = `0${digitsOnly.slice(4)}`;
-      } else if (digitsOnly.startsWith('98')) {
+      } else if (digitsOnly.startsWith('93') && digitsOnly.length > 10) {
+        // `93…` could be `+93 7…` (Afghan) or a truncated Iranian `9…` —
+        // a redundant zero (`93 0 7…` → `9307…`) must be stripped too.
+        const rest = digitsOnly[2] === '0' ? digitsOnly.slice(3) : digitsOnly.slice(2);
+        canonical = `0${rest}`;
+      } else if (digitsOnly.startsWith('0098')) {
+        canonical = `0${digitsOnly.slice(4)}`;
+      } else if (digitsOnly.startsWith('98') && digitsOnly.length > 10) {
         canonical = `0${digitsOnly.slice(2)}`;
       } else if (digitsOnly.startsWith('0')) {
         canonical = digitsOnly;
-      } else if (digitsOnly.startsWith('9')) {
+      } else if (digitsOnly.startsWith('9') || digitsOnly.startsWith('7')) {
         canonical = `0${digitsOnly}`;
       } else {
         canonical = digitsOnly;
@@ -110,7 +129,7 @@ export function StepCredentials({ values, errors, onChange, onBlur }: StepCreden
         required
         dir="ltr"
         error={errors.phoneNumber ?? null}
-        help="برای اطلاع‌رسانی‌های حساس امنیتی"
+        help="مثال: ۰۷۰۱۲۳۴۵۶۷ (افغانستان) یا +93701234567 — شماره مجازی پذیرفته نمی‌شود"
         leading={
           <span className="setup-field__ico">
             <PhoneGlyph />

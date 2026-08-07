@@ -1,0 +1,613 @@
+/* ============================================================================
+   دفترها — همهٔ boardهای فهرستی روی یک ورق
+   ----------------------------------------------------------------------------
+   نردبان سرویس‌ها، یافته‌ها، دفتر خطا، کوئری‌های کند، رد ممیزی و پنجره‌های
+   بحرانی همگی «ردیف» اند. اگر هر کدام ورق خودش را داشته باشد، شش نسخهٔ کمی
+   متفاوت از یک ردیف می‌سازیم و صفحه بی‌ریتم می‌شود. پس یک ورق، شش گویش.
+
+   قاعدهٔ مشترک: ردیف = خط مویی بالا + فضای نفس‌کشیدن + hover فقط روی
+   background/color. هیچ ردیفی کارت نیست و هیچ کارتی تودرتو نمی‌شود.
+   ============================================================================ */
+
+/* ═══════════════ نردبان سرویس‌ها ═══════════════ */
+
+.ladder {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: rung;
+  min-inline-size: 0;
+}
+
+.ladder > li + li {
+  border-block-start: 1px solid var(--obs-rule);
+}
+
+.row {
+  display: grid;
+  grid-template-areas:
+    "rank id go"
+    "rank spark spark"
+    "rank figs figs";
+  grid-template-columns: 1.6rem minmax(0, 1fr) 1.5rem;
+  gap: 0.5rem var(--ds-space-3);
+  align-items: center;
+  padding: var(--ds-space-3) var(--ds-space-2);
+  border-radius: var(--ds-radius-md);
+  color: inherit;
+  text-decoration: none;
+  transition: background-color var(--obs-fast) var(--obs-ease);
+}
+
+.row:hover {
+  background: color-mix(in oklch, var(--obs-ink) 4%, transparent);
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--obs-accent);
+  outline-offset: -2px;
+}
+
+@media (min-width: 56rem) {
+  .row {
+    grid-template-areas: "rank id spark figs go";
+    grid-template-columns:
+      1.75rem
+      minmax(0, 1.45fr)
+      minmax(4.5rem, 0.9fr)
+      minmax(0, 1.3fr)
+      1.5rem;
+    gap: var(--ds-space-4);
+  }
+}
+
+.rank {
+  grid-area: rank;
+  align-self: start;
+  padding-block-start: 0.15rem;
+  color: var(--obs-muted);
+  font: 500 0.64rem / 1.4 var(--obs-mono);
+}
+
+.rank::before {
+  counter-increment: rung;
+  content: counter(rung, persian);
+}
+
+.identity {
+  grid-area: id;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  min-inline-size: 0;
+}
+
+.pip {
+  flex: none;
+  margin-block-start: 0.35rem;
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--tone);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--tone) 16%, transparent);
+}
+
+.name {
+  display: block;
+  color: var(--obs-ink);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: var(--nova-tracking-tight);
+  line-height: 1.35;
+}
+
+.desc {
+  display: block;
+  margin-block-start: 0.1rem;
+  color: var(--obs-muted);
+  font-size: 0.66rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.statusWord {
+  color: color-mix(in oklch, var(--tone) 78%, var(--obs-ink));
+  font-weight: var(--ds-weight-medium);
+}
+
+/* نمودار کوچک — یک SVG، نه ۲۴ عنصر DOM */
+.spark {
+  grid-area: spark;
+  position: relative;
+  block-size: 1.9rem;
+  min-inline-size: 0;
+}
+
+.sparkArt {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+}
+
+.sparkArea {
+  fill: color-mix(in oklch, var(--tone) 12%, transparent);
+}
+
+.sparkLine {
+  fill: none;
+  stroke: color-mix(in oklch, var(--tone) 70%, transparent);
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* همان مکان‌نمای ساعتِ مشترک — نردبان و نوار سیگنال روی یک لحظه قفل‌اند */
+.sparkCursor {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: var(--cursor, 100%);
+  inline-size: 1px;
+  background: color-mix(in oklch, var(--obs-ink) 28%, transparent);
+  transition: inset-inline-start var(--obs-base) var(--obs-ease);
+}
+
+.figs {
+  grid-area: figs;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem var(--ds-space-4);
+  min-inline-size: 0;
+  margin: 0;
+}
+
+.figCell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  min-inline-size: 0;
+}
+
+.figCell dt {
+  color: var(--obs-muted);
+  font-size: 0.62rem;
+  white-space: nowrap;
+}
+
+.figCell dd {
+  margin: 0;
+  color: var(--obs-ink);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/*
+   فلش «برو».
+   در RTL جلو یعنی چپ، پس ArrowLeft درست است و هیچ scaleX(-1) لازم نیست.
+   حرکت hover فقط translate است، آن هم روی خودِ فلش نه کل ردیف.
+*/
+.go {
+  grid-area: go;
+  justify-self: end;
+  color: var(--obs-muted);
+  transition: transform var(--obs-base) var(--obs-ease), color var(--obs-fast) var(--obs-ease);
+}
+
+.row:hover .go {
+  color: var(--obs-accent);
+  transform: translateX(-0.2rem);
+}
+
+/* ═══════════════ یافته‌های خودکار ═══════════════ */
+
+.insights {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: finding;
+}
+
+.insights > li + li {
+  margin-block-start: var(--ds-space-3);
+  padding-block-start: var(--ds-space-3);
+  border-block-start: 1px solid var(--obs-rule);
+}
+
+.insight {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr);
+  gap: 0.2rem var(--ds-space-2);
+  align-items: baseline;
+}
+
+.insightMark {
+  grid-row: 1 / span 3;
+  color: var(--tone);
+  font: 500 0.64rem / 1.6 var(--obs-mono);
+}
+
+.insightMark::before {
+  counter-increment: finding;
+  content: counter(finding, persian);
+}
+
+.insightTitle {
+  margin: 0;
+  color: var(--obs-ink);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  line-height: 1.5;
+}
+
+.insightBody {
+  margin: 0;
+  color: var(--obs-ink-2);
+  font-size: 0.7rem;
+  line-height: var(--ds-leading-relaxed);
+  text-wrap: pretty;
+}
+
+.insightLink {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-block-size: 2rem;
+  color: var(--obs-accent);
+  font-size: 0.68rem;
+  font-weight: var(--ds-weight-medium);
+  text-decoration: none;
+}
+
+.insightLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.insightLink:focus-visible {
+  outline: 2px solid var(--obs-accent);
+  outline-offset: 2px;
+  border-radius: var(--ds-radius-sm);
+}
+
+/* ═══════════════ دفتر خطا ═══════════════ */
+
+.records {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-inline-size: 0;
+}
+
+.records > li + li {
+  border-block-start: 1px solid var(--obs-rule);
+}
+
+.record {
+  padding-block: var(--ds-space-3);
+  min-inline-size: 0;
+}
+
+/* details/summary بومی — بدون یک بایت JS برای باز و بسته شدن */
+.recordSummary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.35rem var(--ds-space-2);
+  align-items: center;
+  cursor: pointer;
+  list-style: none;
+}
+
+.recordSummary::-webkit-details-marker {
+  display: none;
+}
+
+.recordSummary:focus-visible {
+  outline: 2px solid var(--obs-accent);
+  outline-offset: 3px;
+  border-radius: var(--ds-radius-sm);
+}
+
+.recordLevel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid color-mix(in oklch, var(--tone) 30%, transparent);
+  border-radius: var(--ds-radius-sm);
+  background: color-mix(in oklch, var(--tone) 9%, transparent);
+  color: color-mix(in oklch, var(--tone) 80%, var(--obs-ink));
+  font-size: 0.62rem;
+  font-weight: var(--ds-weight-medium);
+  white-space: nowrap;
+}
+
+.recordMessage {
+  min-inline-size: 0;
+  color: var(--obs-ink);
+  font-family: var(--obs-mono);
+  font-size: 0.72rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.record[open] .recordMessage {
+  display: block;
+  overflow: visible;
+}
+
+.recordCount {
+  padding: 0.05rem 0.35rem;
+  border-radius: var(--ds-radius-full);
+  background: color-mix(in oklch, var(--obs-ink) 7%, transparent);
+  color: var(--obs-ink-2);
+  font: 500 0.62rem / 1.6 var(--obs-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.recordMeta {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.85rem;
+  margin: 0;
+  color: var(--obs-muted);
+  font-size: 0.64rem;
+}
+
+.recordMeta bdi {
+  font-family: var(--obs-mono);
+}
+
+.recordDetail {
+  margin: var(--ds-space-2) 0 0;
+  padding: var(--ds-space-2-5);
+  border-radius: var(--ds-radius-sm);
+  background: var(--obs-recess);
+  color: var(--obs-ink-2);
+  font-size: 0.68rem;
+  line-height: var(--ds-leading-relaxed);
+}
+
+/* ═══════════════ کوئری‌های کند ═══════════════ */
+
+.queries {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.queries > li + li {
+  border-block-start: 1px solid var(--obs-rule);
+}
+
+.query {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.4rem var(--ds-space-3);
+  padding-block: var(--ds-space-3);
+  align-items: baseline;
+}
+
+.queryDuration {
+  color: color-mix(in oklch, var(--tone) 78%, var(--obs-ink));
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.queryText {
+  min-inline-size: 0;
+  color: var(--obs-ink);
+  font-family: var(--obs-mono);
+  font-size: 0.72rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.queryTrack {
+  grid-column: 1 / -1;
+  position: relative;
+  block-size: 2px;
+  background: color-mix(in oklch, var(--obs-ink) 7%, transparent);
+}
+
+.queryTrack::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: var(--fill, 0%);
+  background: var(--tone);
+  transition: inline-size var(--ds-duration-slow) var(--obs-ease);
+}
+
+.queryMeta {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.85rem;
+  color: var(--obs-muted);
+  font-size: 0.64rem;
+}
+
+/* ═══════════════ رد ممیزی ═══════════════ */
+
+/*
+   تایم‌لاین با یک نخ عمودی در حاشیه.
+   نخ با ::before روی ظرف کشیده می‌شود، نه با border روی هر ردیف؛ پس بین
+   ردیف‌ها قطع نمی‌شود و در انتها محو می‌شود.
+*/
+.trail {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  padding-inline-start: var(--ds-space-4);
+  list-style: none;
+}
+
+.trail::before {
+  content: "";
+  position: absolute;
+  inset-block: 0.6rem 1.2rem;
+  inset-inline-start: 0.22rem;
+  inline-size: 1px;
+  background: linear-gradient(to bottom, var(--obs-rule-2), transparent);
+}
+
+.event {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.15rem var(--ds-space-2);
+  padding-block: var(--ds-space-2-5);
+}
+
+.event::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 1.05rem;
+  inset-inline-start: calc(var(--ds-space-4) * -1 + 0.03rem);
+  inline-size: 0.4rem;
+  block-size: 0.4rem;
+  border: 1px solid var(--obs-rule-3);
+  border-radius: var(--ds-radius-full);
+  background: var(--obs-paper);
+}
+
+.eventAction {
+  min-inline-size: 0;
+  color: var(--obs-ink);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  overflow-wrap: anywhere;
+}
+
+.eventAction bdi {
+  font-family: var(--obs-mono);
+  font-size: 0.72rem;
+}
+
+.eventTime {
+  color: var(--obs-muted);
+  font-size: 0.64rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.eventMeta {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.75rem;
+  color: var(--obs-muted);
+  font-size: 0.64rem;
+}
+
+/* ═══════════════ پنجره‌های بحرانی ═══════════════ */
+
+.incidents {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  min-inline-size: 0;
+}
+
+/* محور ۲۴ ساعت — LTR قفل، مثل بقیهٔ سری‌های زمانی */
+.incidentAxis {
+  position: relative;
+  block-size: 1.4rem;
+  border-radius: var(--ds-radius-sm);
+  background: color-mix(in oklch, var(--obs-ink) 5%, transparent);
+  overflow: hidden;
+}
+
+.incidentSpan {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: var(--from, 0%);
+  inline-size: var(--width, 0%);
+  min-inline-size: 3px;
+  border: none;
+  padding: 0;
+  background: color-mix(in oklch, var(--obs-bad) 45%, transparent);
+  cursor: pointer;
+  transition: background-color var(--obs-fast) var(--obs-ease);
+}
+
+.incidentSpan:hover,
+.incidentSpan[data-selected="true"] {
+  background: var(--obs-bad);
+}
+
+.incidentSpan:focus-visible {
+  outline: 2px solid var(--obs-accent);
+  outline-offset: 1px;
+}
+
+.incidentList {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.incidentList > li + li {
+  border-block-start: 1px solid var(--obs-rule);
+}
+
+.incidentItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.2rem var(--ds-space-3);
+  padding-block: var(--ds-space-2-5);
+  align-items: baseline;
+}
+
+.incidentRange {
+  color: var(--obs-ink);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.incidentPeak {
+  color: var(--obs-bad);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.incidentMeta {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.75rem;
+  color: var(--obs-muted);
+  font-size: 0.64rem;
+}
+
+.incidentMeta bdi {
+  font-family: var(--obs-mono);
+}

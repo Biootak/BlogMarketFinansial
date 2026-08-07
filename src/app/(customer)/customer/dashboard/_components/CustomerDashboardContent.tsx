@@ -512,9 +512,7 @@ function ActivityHeatmap({
         <div className={s.heatmapStatBox}>
           <span className={s.heatmapStatLabel}>پردسترتـرین</span>
           <span className={s.heatmapStatValue}>
-            <strong>
-              {faNum(heatmap.filter((c) => c.count === max && c.count > 0).length)}
-            </strong>
+            <strong>{faNum(heatmap.filter((c) => c.count === max && c.count > 0).length)}</strong>
             <span className={s.heatmapStatSub}>روز</span>
           </span>
         </div>

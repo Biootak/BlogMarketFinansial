@@ -253,9 +253,7 @@
   background: oklch(100% 0 0);
   border: 1px solid var(--ds-border-default);
   border-radius: var(--ds-radius-lg);
-  box-shadow:
-    0 4px 6px -2px oklch(20% 0.01 240 / 0.06),
-    0 12px 40px -8px oklch(20% 0.01 240 / 0.22),
+  box-shadow: 0 4px 6px -2px oklch(20% 0.01 240 / 0.06), 0 12px 40px -8px oklch(20% 0.01 240 / 0.22),
     0 0 0 1px oklch(20% 0.01 240 / 0.04);
   z-index: 200;
   overflow: hidden;

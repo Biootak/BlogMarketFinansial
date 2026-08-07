@@ -344,9 +344,7 @@ export default function MyDealsClient() {
               <CheckCircle2 size={16} />
             </div>
             <div className={s.kpiBody}>
-              <span className={s.kpiVal}>
-                {_faNum.format(kpi.completed)}
-              </span>
+              <span className={s.kpiVal}>{_faNum.format(kpi.completed)}</span>
               <span className={s.kpiLabel}>تکمیل شده</span>
             </div>
           </div>
@@ -380,11 +378,7 @@ export default function MyDealsClient() {
                 onClick={() => setStatusFilter(f)}
               >
                 {f === 'ALL' ? 'همه' : (STATUS_META[f]?.label ?? f)}
-                {count > 0 && (
-                  <span className={s.filterCount}>
-                    {_faNum.format(count)}
-                  </span>
-                )}
+                {count > 0 && <span className={s.filterCount}>{_faNum.format(count)}</span>}
               </button>
             );
           })}
@@ -514,8 +508,7 @@ export default function MyDealsClient() {
             ›
           </button>
           <span className={s.pageInfo}>
-            {_faNum.format(page)} از{' '}
-            {_faNum.format(totalPages)}
+            {_faNum.format(page)} از {_faNum.format(totalPages)}
           </span>
           <button
             type="button"

@@ -76,7 +76,7 @@ export function StatCard({
     if (React.isValidElement(icon)) {
       return <div className="size-4 text-muted-foreground">{icon}</div>;
     }
-    const Icon = icon as any;
+    const Icon = icon as LucideIcon;
     return <Icon className="size-4 text-muted-foreground" aria-hidden="true" />;
   };
 

@@ -1,56 +1,77 @@
-'use client';
-
-import { useId } from 'react';
-
-import { faNum, type ToneKey } from './format';
 import d from './deck.module.css';
+import type { ToneKey } from './format';
+import { cssVars, faNum, faPercent } from './format';
 
 interface HealthRingProps {
-  /** ۰..۱۰۰ */
   score: number;
   tone: ToneKey;
   label: string;
-  /** وقتی داده‌ای نداریم عدد نشان نمی‌دهیم — «نمی‌دانیم» با «سالم» فرق دارد. */
-  unknown?: boolean;
+  availability: number;
+  silent: boolean;
 }
 
-const RADIUS = 42;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-
 /**
- * حلقهٔ سلامت — یک stroke نازکِ خودروشن به‌جای گیج و عقربه.
- * کمان با `stroke-dasharray` رسم می‌شود، پس فقط یک path است و هیچ JS انیمیشنی
- * لازم ندارد؛ transition روی `stroke-dasharray` کار حرکت را می‌کند.
- * SVG جهت‌مستقل است: هیچ متنی داخلش نیست و در RTL نیازی به flip ندارد.
+ * مُهرِ سلامت — نسخهٔ عملیاتیِ مهر روی جلد سالنامه.
+ *
+ * دو کمان دارد و هر دو معنا دارند:
+ *   بیرونی (نازک) = میانگین در دسترس بودن سرویس‌های دیده‌شده
+ *   درونی (ضخیم) = شاخص ترکیبی سلامت
+ * یک کمان سوم فقط «نفس» است: نوسان ۰٫۵ هرتزی روی opacity که می‌گوید رابط
+ * زنده است. نه glow، نه سایهٔ رنگی — فقط یک خط مویی خودروشن.
+ *
+ * وقتی هیچ لاگی نداریم عدد نشان نمی‌دهیم. «نمی‌دانم» جواب صادقانه‌تری از
+ * یک صفرِ گمراه‌کننده است.
  */
-export function HealthRing({ score, tone, label, unknown = false }: HealthRingProps) {
-  const titleId = useId();
-  const safe = Math.max(0, Math.min(100, Math.round(score)));
-  const filled = unknown ? 0 : (safe / 100) * CIRCUMFERENCE;
+export function HealthRing({ score, tone, label, availability, silent }: HealthRingProps) {
+  const RADIUS = 42;
+  const OUTER = 48;
+  const circumference = 2 * Math.PI * RADIUS;
+  const outerCircumference = 2 * Math.PI * OUTER;
+
+  const scoreArc = silent ? 0 : (Math.max(0, Math.min(100, score)) / 100) * circumference;
+  const availabilityArc = silent
+    ? 0
+    : (Math.max(0, Math.min(100, availability)) / 100) * outerCircumference;
 
   return (
-    <div className={d.ring} data-tone={tone}>
-      <svg className={d.ringSvg} viewBox="0 0 100 100" role="img" aria-labelledby={titleId}>
-        <title id={titleId}>
-          {unknown ? 'شاخص سلامت در دسترس نیست' : `شاخص سلامت سامانه: ${safe} از ۱۰۰`}
-        </title>
-        <circle className={d.ringTrack} cx="50" cy="50" r={RADIUS} />
-        <circle
-          className={d.ringArc}
-          cx="50"
-          cy="50"
-          r={RADIUS}
-          strokeDasharray={`${filled.toFixed(2)} ${(CIRCUMFERENCE - filled).toFixed(2)}`}
-        />
-        <circle className={d.ringInner} cx="50" cy="50" r={RADIUS - 9} />
+    <figure className={d.seal} data-tone={tone} data-silent={silent ? 'true' : undefined}>
+      <svg viewBox="0 0 100 100" className={d.sealArt} aria-hidden="true" focusable="false">
+        <circle className={d.sealBreath} cx="50" cy="50" r={OUTER} />
+        <circle className={d.sealTrack} cx="50" cy="50" r={RADIUS} />
+        {silent ? null : (
+          <>
+            <circle
+              className={d.sealAvailability}
+              cx="50"
+              cy="50"
+              r={OUTER}
+              style={cssVars({
+                '--arc': `${availabilityArc.toFixed(2)}`,
+                '--gap': `${(outerCircumference - availabilityArc).toFixed(2)}`,
+              })}
+            />
+            <circle
+              className={d.sealScore}
+              cx="50"
+              cy="50"
+              r={RADIUS}
+              style={cssVars({
+                '--arc': `${scoreArc.toFixed(2)}`,
+                '--gap': `${(circumference - scoreArc).toFixed(2)}`,
+              })}
+            />
+          </>
+        )}
       </svg>
 
-      <span className={d.ringCore}>
-        <b className={d.ringScore}>{unknown ? '—' : faNum(safe)}</b>
-        <span className={d.ringUnit}>{unknown ? 'بدون خوانش' : 'از ۱۰۰'}</span>
-      </span>
+      <figcaption className={d.sealCaption}>
+        <strong className={d.sealScoreText}>{silent ? '—' : faNum(score)}</strong>
+        <span className={d.sealLabel}>{label}</span>
+      </figcaption>
 
-      <p className={d.ringLabel}>{label}</p>
-    </div>
+      <p className={d.sealFoot}>
+        {silent ? 'بدون خوانش در پنجرهٔ جاری' : `در دسترس بودن ${faPercent(availability, 2)}`}
+      </p>
+    </figure>
   );
 }

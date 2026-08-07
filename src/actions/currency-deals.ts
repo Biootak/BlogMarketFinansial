@@ -307,8 +307,16 @@ export async function createDeal(
   raw: unknown,
 ): Promise<FintechActionResult<{ id: string; trackingCode: string }>> {
   // ── Rate limit: 5 deal در 10 دقیقه بر اساس IP (M5) ──────────────────────
-  // Bug-fix: .split(',')[0] (اول لیست) = real client IP — .pop() آخرین proxy IP را می‌گرفت
-  const ip = (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+  // Rightmost XFF entry = آخرین proxy مورد اعتماد (spoof-resistant). leftmost [0] توسط client جعل می‌شود.
+  const _xff = (await headers()).get('x-forwarded-for') ?? '';
+  const ip =
+    _xff
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .pop() ??
+    (await headers()).get('x-real-ip')?.trim() ??
+    'unknown';
   const rl = await checkRateLimit(`deal:${ip}`, 'api');
   if (!rl.success) {
     return {
@@ -416,7 +424,9 @@ export async function createDeal(
       const fraudRisk = await screenTransaction({
         customerId: customer.id,
         exchangeId,
-        amount: BigInt(Math.round(Number(fromAmount) * 100)),
+        // 2026-08-03: Decimal→BigInt conversion — avoid Number() precision loss
+        // on large amounts (> 2^53 loses bits). Decimal.toFixed(0) stays exact.
+        amount: BigInt(new Decimal(fromAmount.toString()).mul(100).round().toFixed(0)),
         currency: fromCurrency,
         ip,
         kind: 'EXCHANGE',
@@ -501,8 +511,18 @@ export async function createDeal(
 
 // ─── helper: خواندن IP از headers ────────────────────────────────────────────
 async function getClientIp(): Promise<string> {
-  // [0] = real client IP — pop() آخرین proxy IP را می‌گرفت که نادرست است
-  return (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+  // Rightmost XFF entry = آخرین proxy مورد اعتماد ما (spoof-resistant).
+  // leftmost [0] توسط client کنترل می‌شود و جعل‌پذیر است.
+  const xff = (await headers()).get('x-forwarded-for') ?? '';
+  return (
+    xff
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .pop() ??
+    (await headers()).get('x-real-ip')?.trim() ??
+    'unknown'
+  );
 }
 
 // ─── CONFIRM (صرافی) ─────────────────────────────────────────────────────────

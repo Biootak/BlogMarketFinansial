@@ -20,6 +20,16 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+/**
+ * Defensive ISO conversion — `new Date(undefined).toISOString()` throws
+ * `RangeError: Invalid time value` at runtime and kills the whole page if a
+ * DB row ever carries a null/odd timestamp. Fall back to epoch instead.
+ */
+function toIso(value: unknown): string {
+  const d = value == null ? null : new Date(value as string);
+  return d && !Number.isNaN(d.getTime()) ? d.toISOString() : new Date(0).toISOString();
+}
+
 type ApiKeyRow = {
   id: string;
   name: string;
@@ -64,11 +74,11 @@ export default async function DeveloperPortalPage() {
     key: String(k.key),
     secret: String(k.secret),
     isActive: Boolean(k.isActive),
-    lastUsed: k.lastUsed ? new Date(k.lastUsed as string).toISOString() : null,
+    lastUsed: k.lastUsed ? toIso(k.lastUsed) : null,
     lastIp: k.lastIp ? String(k.lastIp) : null,
-    expiresAt: k.expiresAt ? new Date(k.expiresAt as string).toISOString() : null,
+    expiresAt: k.expiresAt ? toIso(k.expiresAt) : null,
     scopes: Array.isArray(k.scopes) ? k.scopes.map((s) => String(s)) : [],
-    createdAt: new Date(k.createdAt as string).toISOString(),
+    createdAt: toIso(k.createdAt),
   }));
 
   const webhooks: WebhookRow[] = (rawWebhooks as Record<string, unknown>[]).map((w) => ({
@@ -76,7 +86,7 @@ export default async function DeveloperPortalPage() {
     url: String(w.url),
     events: Array.isArray(w.events) ? w.events.map((e) => String(e)) : [],
     isActive: Boolean(w.isActive),
-    createdAt: new Date(w.createdAt as string).toISOString(),
+    createdAt: toIso(w.createdAt),
   }));
 
   const audits: AuditRow[] = (rawAudits as Record<string, unknown>[]).map((a) => ({
@@ -84,7 +94,7 @@ export default async function DeveloperPortalPage() {
     action: String(a.action),
     ip: a.ip ? String(a.ip) : null,
     userAgent: a.userAgent ? String(a.userAgent) : null,
-    createdAt: new Date(a.createdAt as string).toISOString(),
+    createdAt: toIso(a.createdAt),
     ApiKey:
       a.ApiKey && typeof a.ApiKey === 'object'
         ? { name: String((a.ApiKey as { name: unknown }).name) }

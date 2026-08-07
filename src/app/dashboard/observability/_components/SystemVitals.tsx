@@ -1,102 +1,122 @@
 'use client';
 
-import { ShieldAlert } from 'lucide-react';
-
-import { faNum, faPercent, hourKey, mbShort, ratio, uptimeFa, type ToneKey } from './format';
 import { useObs } from './ObsProvider';
 import d from './deck.module.css';
+import { cssVars, faNum, faPercent, mbShort, msShort, ratio, uptimeFa } from './format';
+import { readHealth } from './obsHealth';
 
-interface Rib {
-  id: string;
+interface Reading {
+  key: string;
   label: string;
   value: string;
-  tone: ToneKey;
-  /** ۰..۱۰۰ — وقتی تعریف نشده باشد فقط عدد نشان داده می‌شود، نه نوار. */
+  note?: string;
   fill?: number;
+  tone?: 'ok' | 'warn' | 'bad' | 'info' | 'idle';
+  chip?: string;
 }
 
 /**
- * دنده‌های حیاتی — هشت عدد واقعی سامانه در یک ستون فشرده.
- * هر دنده یک هیرلاین دارد که «بزرگی نسبی» را می‌رساند؛ عدد خالی بدون مقیاس
- * چیزی نمی‌گوید. هیچ عددی اینجا تخمینی نیست؛ همه از snapshot می‌آید.
+ * ریلِ نشانه‌های حیاتی.
+ *
+ * چیدمان با ترفند «۱ پیکسل gap»: ظرف رنگ خط را می‌گیرد و هر خانه رنگ کاغذ،
+ * پس جداکنندهٔ مویی در هر حالتِ wrap دقیقاً درست می‌افتد — بدون border روی
+ * فرزندها و بدون nth-child بازی. در RTL هم بی‌نیاز از اصلاح است.
+ *
+ * هیچ عددی اینجا تزئینی نیست؛ هر کدام مستقیم از snapshot می‌آید و آن‌هایی که
+ * تخمینی‌اند (صدک‌های مشتق‌شده) با بجِ صریح علامت می‌خورند.
  */
 export function SystemVitals() {
   const { data } = useObs();
-  if (!data) return null;
 
-  const { totals, performance } = data;
-  const maxHour = Math.max(...data.hourly, 1);
+  if (!data) {
+    return (
+      <p className={d.vitalsEmpty}>
+        هنوز خوانشی نرسیده است. نشانه‌های حیاتی بعد از اولین هم‌گام‌سازی پر می‌شوند.
+      </p>
+    );
+  }
 
-  const ribs: Rib[] = [
+  const health = readHealth(data);
+  const perf = data.performance;
+  const measured = perf.latencySource === 'measured';
+
+  const readings: Reading[] = [
     {
-      id: 'errors',
-      label: 'خطای پنجره',
-      value: faNum(totals.errors),
-      tone: totals.errors > 0 ? 'bad' : 'ok',
-      fill: ratio(totals.errors, Math.max(totals.logs, 1), 0),
+      key: 'availability',
+      label: 'در دسترس بودن',
+      value: health.silent ? '—' : faPercent(health.availability, 2),
+      fill: health.silent ? 0 : ratio(health.availability, 100, 2),
+      tone: health.silent ? 'idle' : health.availability >= 99.5 ? 'ok' : 'warn',
+      note: health.silent ? 'بدون ترافیک' : `${faNum(health.healthy)} سرویس سالم`,
     },
     {
-      id: 'warns',
-      label: 'هشدار',
-      value: faNum(totals.warns),
-      tone: totals.warns > 0 ? 'warn' : 'idle',
-      fill: ratio(totals.warns, Math.max(totals.logs, 1), 0),
+      key: 'errorRate',
+      label: 'نرخ خطای ساعت اخیر',
+      value: faPercent(perf.errorRate),
+      fill: ratio(perf.errorRate, 10, 2),
+      tone: perf.errorRate > 2 ? 'bad' : perf.errorRate > 0.5 ? 'warn' : 'ok',
+      note: `${faNum(data.totals.errors)} خطا در کل پنجره`,
     },
     {
-      id: 'throughput',
-      label: 'لاگ ساعت اخیر',
-      value: faNum(performance.logsPerHour),
+      key: 'p95',
+      label: 'تأخیر p95',
+      value: msShort(perf.p95),
+      chip: measured ? 'اندازه‌گیری‌شده' : 'تخمینی',
+      tone: measured ? 'info' : 'idle',
+      note: measured
+        ? `${faNum(perf.latencySamples)} نمونهٔ واقعی`
+        : 'بدون لاگ duration؛ عدد مشتق‌شده است',
+    },
+    {
+      key: 'throughput',
+      label: 'رویداد در ساعت',
+      value: faNum(perf.logsPerHour),
+      fill: ratio(perf.logsPerHour, Math.max(1, health.peakValue), 2),
       tone: 'info',
-      fill: ratio(performance.logsPerHour, maxHour, 0),
+      note: `اوج پنجره ${faNum(health.peakValue)}`,
     },
     {
-      id: 'rate',
-      label: 'نرخ خطا',
-      value: faPercent(performance.errorRate),
-      tone: performance.errorRate > 2 ? 'bad' : performance.errorRate > 0 ? 'warn' : 'ok',
-      fill: ratio(performance.errorRate, 10, 0),
+      key: 'sources',
+      label: 'منابع فعال',
+      value: faNum(data.totals.sources),
+      tone: 'info',
+      note: `${faNum(data.totals.audit)} رویداد ممیزی`,
     },
-    { id: 'sources', label: 'منابع فعال', value: faNum(totals.sources), tone: 'idle' },
-    { id: 'audit', label: 'رد ممیزی', value: faNum(totals.audit), tone: 'idle' },
-    { id: 'heap', label: 'حافظهٔ heap', value: mbShort(performance.memoryMb), tone: 'idle' },
-    { id: 'uptime', label: 'عمر پروسه', value: uptimeFa(performance.uptimeSec), tone: 'idle' },
+    {
+      key: 'memory',
+      label: 'حافظهٔ پروسه',
+      value: mbShort(perf.memoryMb),
+      tone: 'idle',
+      note: 'heap در لحظهٔ خوانش',
+    },
+    {
+      key: 'uptime',
+      label: 'عمر پروسه',
+      value: uptimeFa(perf.uptimeSec),
+      tone: 'idle',
+      note: data.totals.sampled ? 'اعداد پنجره نمونه‌ای‌اند' : 'اسکن کامل پنجره',
+    },
   ];
 
   return (
-    <div className={d.vitals}>
-      <p className={d.vitalsHead}>نشانه‌های حیاتی</p>
-
-      <dl className={d.ribs}>
-        {ribs.map((rib) => (
-          <div key={rib.id} className={d.rib} data-tone={rib.tone}>
-            <dt className={d.ribKey}>{rib.label}</dt>
-            <dd className={d.ribVal}>{rib.value}</dd>
-            {typeof rib.fill === 'number' ? (
-              <span className={d.ribTrack} aria-hidden="true">
-                <span className={d.ribFill} style={{ inlineSize: `${rib.fill}%` }} />
-              </span>
-            ) : null}
-          </div>
-        ))}
-      </dl>
-
-      <div className={d.pulse} aria-hidden="true">
-        {data.hourly.map((value, index) => (
-          <span
-            key={hourKey(index)}
-            className={d.pulseTick}
-            data-tone={(data.hourlyErrors[index] ?? 0) > 0 ? 'bad' : 'ok'}
-            style={{ blockSize: `${ratio(value, maxHour, 8)}%` }}
-          />
-        ))}
-      </div>
-
-      {totals.sampled ? (
-        <p className={d.vitalsNote}>
-          <ShieldAlert size={14} strokeWidth={1.5} aria-hidden="true" />
-          حجم لاگ به سقف اسکن رسیده؛ اعداد نمونه‌ای از تازه‌ترین رکوردهاست.
-        </p>
-      ) : null}
-    </div>
+    <dl className={d.vitals}>
+      {readings.map((reading) => (
+        <div key={reading.key} className={d.vital} data-tone={reading.tone}>
+          <dt className={d.vitalLabel}>{reading.label}</dt>
+          <dd className={d.vitalBody}>
+            <span className={d.vitalValue}>{reading.value}</span>
+            {reading.chip ? <span className={d.vitalChip}>{reading.chip}</span> : null}
+            {reading.fill === undefined ? null : (
+              <span
+                className={d.vitalTrack}
+                aria-hidden="true"
+                style={cssVars({ '--fill': `${reading.fill}%` })}
+              />
+            )}
+            {reading.note ? <small className={d.vitalNote}>{reading.note}</small> : null}
+          </dd>
+        </div>
+      ))}
+    </dl>
   );
 }
