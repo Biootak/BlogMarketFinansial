@@ -14,7 +14,7 @@ const replacements = [
   },
   {
     match: { titleContains: 'کدام کشور شما را بیشتر' },
-    // The slug-based match: only the duplicate one (older, still references Liara)
+    // The slug-based match: only the duplicate one (older, still references the old bucket)
     image:
       'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1600&q=80&auto=format&fit=crop',
   },
@@ -42,7 +42,7 @@ const replacements = [
 (async () => {
   let updated = 0;
   for (const r of replacements) {
-    // For "کدام کشور" there are two posts. Update only the one whose image still references Liara.
+    // For "کدام کشور" there are two posts. Update only the one whose image still references the old bucket.
     const where = {};
     if (r.match.titleContains) where.title = { contains: r.match.titleContains };
     if (r.match.featuredImageContains) {

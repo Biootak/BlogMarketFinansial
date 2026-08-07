@@ -95,12 +95,14 @@ heroku config:set \
   RESEND_FROM=noreply@your-domain.com \
   -a $APP
 
-# ذخیره‌سازی فایل (Liara)
+# ذخیره‌سازی فایل (S3-compatible — پیشنهاد: Cloudflare R2)
 heroku config:set \
-  LIARA_ENDPOINT=https://storage.c2.liara.space \
-  LIARA_ACCESS_KEY=your-key \
-  LIARA_SECRET_KEY=your-secret \
-  LIARA_BUCKET_NAME=your-bucket \
+  S3_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com \
+  S3_ACCESS_KEY=your-key \
+  S3_SECRET_KEY=your-secret \
+  S3_BUCKET_NAME=your-bucket \
+  S3_REGION=auto \
+  S3_PUBLIC_URL=https://<custom-domain-or-pub-<hash>.r2.dev> \
   -a $APP
 
 # تلگرام
@@ -242,38 +244,71 @@ Heroku خودش PORT تعیین می‌کند — `Dockerfile.heroku` از `${PO
 ### Ephemeral Filesystem
 Heroku storage موقتی است — فایل‌های آپلودشده پس از restart پاک می‌شوند!
 
-**راه‌حل:** از ذخیره‌سازی ابری S3-compatible استفاده کن (پیش‌فرض Liara):
+**راه‌حل:** از ذخیره‌سازی ابری S3-compatible استفاده کن (پیشنهاد: Cloudflare R2 — رایگان + کریپتو):
 ```
-LIARA_ENDPOINT=https://storage.c2.liara.space
-LIARA_ACCESS_KEY=...
-LIARA_SECRET_KEY=...
-LIARA_BUCKET_NAME=...
+S3_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+S3_ACCESS_KEY=...
+S3_SECRET_KEY=...
+S3_BUCKET_NAME=...
+S3_REGION=auto
+S3_PUBLIC_URL=https://<دامنه اختصاصی یا pub-<hash>.r2.dev>
 ```
 
-> ⚠️ بدون این ۴ متغیر، آپلودها فقط روی دیسک لوکال Heroku می‌نویسند و بعد از هر restart/deploy پاک می‌شوند. بعد از ست کردن، وضعیت «آینه ابری» در داشبورد → تنظیمات → backup سبز می‌شود و سرویس «ذخیره‌سازی ابری» در LiveOps سالم می‌ماند.
+> ⚠️ بدون این متغیرها، آپلودها فقط روی دیسک لوکال Heroku می‌نویسند و بعد از هر restart/deploy پاک می‌شوند. بعد از ست کردن، وضعیت «آینه ابری» در داشبورد → تنظیمات → backup سبز می‌شود و سرویس «ذخیره‌سازی ابری» در LiveOps سالم می‌ماند.
 
 **Backup دیتابیس (اختیاری ولی توصیه‌شده):**
 ```
-LIARA_BACKUP_BUCKET=backup-private-bucket
+S3_BACKUP_BUCKET=backup-private-bucket
 ```
 باکت تصاویر باید public-read باشد تا URL تصاویر کار کند؛ اگر backup با همان باکت آپلود شود، فایل‌های JSON (شامل ایمیل/موبایل کاربران) عمومی می‌شود. یک bucket خصوصی جدا برای backup بساز و این متغیر را روی آن بگذار.
 
 ### انتخاب ذخیره‌سازی رایگان / قابل مهاجرت
 
-کد با **S3 API استاندارد** کار می‌کند → مهاجرت به هر provider سازگار با S3 فقط تغییر ۴ متغیر env است، بدون تغییر کد:
+کد با **S3 API استاندارد** کار می‌کند → مهاجرت به هر provider سازگار با S3 فقط تغییر متغیرهای env است، بدون تغییر کد.
 
-| Provider | Free Tier (2026) | نکته |
-|----------|------------------|------|
-| **Cloudflare R2** | 10GB رایگان، **بدون هزینه خروجی (egress)** | عالی برای تصاویر پرترافیک؛ نیاز به دامنه/URL عمومی → `LIARA_PUBLIC_URL` را ست کن |
-| **Backblaze B2** | 10GB رایگان، ۳× egress رایگان در روز | ارزان‌ترین گزینه برای بکاپ؛ URL عمومی خودکار دارد |
-| **Liara** | پلن استارتاپی/پرداختی دارد | داخل ایران میزبانی می‌شود — دسترسی سریع‌تر برای کاربران ایرانی/افغان |
-| **MinIO** | کاملاً رایگان (self-hosted) | روی سرور خودت؛ مناسب privacy-first |
+#### ⭐ پیشنهاد: Cloudflare R2 (رایگان + قابل پرداخت با کریپتو)
+
+بهترین گزینه برای شروع بدون کارت بانکی بین‌المللی:
+
+| ویژگی | مقدار |
+|--------|-------|
+| ذخیره‌سازی رایگان | **۱۰GB دائمی** (نه دوره آزمایشی) |
+| خروجی (egress) | **صفر** — تصاویر هر چقدر خوانده شوند هزینه ندارد |
+| پرداخت | **USDC روی شبکه Base/Polygon** (از طریق Stripe checkout) — برای بالای سقف رایگان |
+| قیمت بعد از سقف | $0.015 / GB-month |
+| Sanctions | برای افغانستان در دسترس است (تحریم نیست)؛ کاربران ایران محدودیت کارت دارند ولی با USDC قابل دور زدن |
+
+**ست کردن روی Heroku:**
+```bash
+heroku config:set \
+  S3_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com \
+  S3_ACCESS_KEY=<r2-access-key> \
+  S3_SECRET_KEY=<r2-secret-key> \
+  S3_BUCKET_NAME=<bucket-name> \
+  S3_REGION=auto \
+  S3_PUBLIC_URL=https://<custom-domain-or-r2.dev-url> \
+  -a $APP
+```
+
+> ⚠️ **نکات R2:**
+> - در داشبورد Cloudflare → R2 → bucket → **Settings → API** توکن بساز (Object Read & Write)
+> - R2 به‌صورت پیش‌فرض خصوصی است؛ برای سرو مستقیم تصاویر یا دامنهٔ اختصاصی وصل کن (توصیه‌شده) یا `r2.dev` development URL را فعال کن — سپس آن را در `S3_PUBLIC_URL` بگذار
+> - دامنهٔ سرو تصاویر را به `next.config.ts` → `images.remotePatterns` هم اضافه کن
+> - چون باکت تصاویر عمومی می‌شود، **backup دیتابیس را در bucket خصوصی جدا** (`S3_BACKUP_BUCKET`) بریز
+
+| گزینه | رایگان (2026) | پرداخت کریپتو | نکته |
+|--------|---------------|---------------|------|
+| **Cloudflare R2** ⭐ | 10GB دائمی + اگریس صفر | ✅ USDC (Base/Polygon) | بهترین انتخاب برای شروع بدون کارت |
+| **Backblaze B2** | 10GB رایگان | ❌ (کارت فقط) | افغانستان OK ولی کارت لازم دارد؛ `S3_REGION` را روی region واقعی بگذار |
+| **Storj** | فقط trial ۳۰ روزه | ⚠️ فقط توکن STORJ | سقف مینیمم $50/ماه برای کارت؛ با STORJ معاف |
+| **MinIO** | کاملاً رایگان (self-host) | — | نیاز به سرور خودت دارد |
 
 برای مهاجرت به هرکدام:
 1. در provider جدید bucket بساز + کلید بساز
-2. ۴ متغیر `LIARA_*` را به‌روزرسانی کن (و در صورت نیاز `LIARA_PUBLIC_URL`)
-3. (اختیاری) فایل‌های قبلی را با یک script به bucket جدید کپی کن
-4. restart — بدون تغییر کد
+2. متغیرهای `S3_*` را به‌روزرسانی کن (`S3_REGION` را هم چک کن)
+3. `S3_PUBLIC_URL` را روی دامنهٔ عمومی/URL جدید بگذار
+4. (اختیاری) فایل‌های قبلی را با یک script به bucket جدید کپی کن
+5. restart — بدون تغییر کد
 
 ### Free Dyno Sleep
 در plan رایگان، dyno بعد از 30 دقیقه بی‌فعالیت می‌خوابد.
@@ -310,4 +345,4 @@ heroku restart -a your-app-name
 | `Application error` | لاگ بگیر | `heroku logs --tail` |
 | `R10 Boot timeout` | build کند است | افزایش timeout یا بهینه‌سازی |
 | `H10 App crashed` | env variable مفقود | همه Required env ها را بررسی کن |
-| Image upload پاک می‌شود | Ephemeral filesystem | Liara Storage را configure کن |
+| Image upload پاک می‌شود | Ephemeral filesystem | S3-compatible storage را configure کن (پیشنهاد: Cloudflare R2) |

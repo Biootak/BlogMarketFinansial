@@ -1,6 +1,8 @@
 import { createReadStream, existsSync } from 'node:fs';
 import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { S3_REGION, getS3Bucket, isS3CredentialsSet } from '@/lib/s3-config';
+import { serverLog } from '@/lib/server-logger';
 import {
   DeleteObjectCommand,
   GetObjectCommand,
@@ -9,13 +11,14 @@ import {
 } from '@aws-sdk/client-s3';
 
 // maxAttempts:1 = no SDK retries; requestTimeout/connectionTimeout = hard ceiling
-// so an unreachable Liara doesn't block uploads (circuit breaker handles the rest).
+// so an unreachable storage doesn't block uploads (circuit breaker handles the rest).
+// Region از s3-config می‌آید: 'default' برای MinIO/B2، 'auto' برای Cloudflare R2.
 const s3Client = new S3Client({
-  region: 'default',
-  endpoint: process.env.LIARA_ENDPOINT,
+  region: S3_REGION,
+  endpoint: process.env.S3_ENDPOINT,
   credentials: {
-    accessKeyId: process.env.LIARA_ACCESS_KEY || '',
-    secretAccessKey: process.env.LIARA_SECRET_KEY || '',
+    accessKeyId: process.env.S3_ACCESS_KEY || '',
+    secretAccessKey: process.env.S3_SECRET_KEY || '',
   },
   forcePathStyle: true,
   maxAttempts: 1,
@@ -25,12 +28,23 @@ const s3Client = new S3Client({
   },
 });
 
-const BUCKET_NAME = process.env.LIARA_BUCKET_NAME || '';
-// Build the public URL by swapping the host on the endpoint (handles both
-// https and http, and avoids producing the literal string "undefined" when
-// the endpoint is unset — S3 callers already gate on isS3Configured()).
+const BUCKET_NAME = getS3Bucket();
+
+// Public URL for objects. Provider-agnostic:
+//   - If S3_PUBLIC_URL is set, use it verbatim (trailing slash stripped).
+//     This is the migration escape hatch: Cloudflare R2 (`https://<custom-domain>`
+//     or `https://pub-<hash>.r2.dev`), Backblaze B2
+//     (`https://<bucket>.s3.<region>.backblazeb2.com`) and MinIO all expose
+//     objects on different hosts — setting this var means switching providers
+//     is a config change, not a code change.
+//   - Otherwise derive the virtual-host style URL `https://<bucket>.<endpoint-host>`
+//     as a fallback (handles https+http, and avoids producing the literal string
+//     "undefined" when the endpoint is unset). For R2 این کافی نیست — باید
+//     S3_PUBLIC_URL صریحاً ست شود.
 const S3_PUBLIC_URL = (() => {
-  const endpoint = process.env.LIARA_ENDPOINT;
+  const override = process.env.S3_PUBLIC_URL;
+  if (override) return override.replace(/\/$/, '');
+  const endpoint = process.env.S3_ENDPOINT;
   if (!endpoint || !BUCKET_NAME) return '';
   try {
     const url = new URL(endpoint);
@@ -48,17 +62,9 @@ const LOCAL_UPLOAD_DIR =
   [_cwd, 'public', 'uploads'].join(path.sep).replace(/\/+/g, path.sep);
 
 // S3 is optional — falls back to local disk when credentials are missing.
-function isS3CredentialsSet(): boolean {
-  return Boolean(
-    process.env.LIARA_ENDPOINT &&
-      process.env.LIARA_ACCESS_KEY &&
-      process.env.LIARA_SECRET_KEY &&
-      process.env.LIARA_BUCKET_NAME,
-  );
-}
 
 // Circuit breaker: after an S3 failure, skip S3 for 60s to avoid paying
-// the timeout cost on every subsequent upload while Liara is unreachable.
+// the timeout cost on every subsequent upload while the storage is unreachable.
 const S3_BREAKER_TTL_MS = 60_000;
 let s3DisabledUntil = 0;
 
@@ -68,9 +74,53 @@ function isS3Configured(): boolean {
   return true;
 }
 
-function tripCircuitBreaker(_reason: string): void {
+function tripCircuitBreaker(reason: string): void {
   if (s3DisabledUntil > Date.now()) return;
   s3DisabledUntil = Date.now() + S3_BREAKER_TTL_MS;
+  // S3 failure is a first-class observability event: on ephemeral filesystems
+  // (Heroku/Vercel) a silent S3 fallback means uploads are written only to the
+  // local disk and wiped on the next restart — exactly the "image upload
+  // disappears" bug. Log it so the LiveOps `storage` service + SystemLog catch it.
+  serverLog.warn('storage', 's3-circuit-breaker-tripped', { reason });
+}
+
+/** فقط یک‌بار در هر restart دربارهٔ missing public URL برای R2 هشدار بده. */
+let r2PublicUrlWarningEmitted = false;
+
+/**
+ * وضعیت پیکربندی ذخیره‌سازی ابری — برای LiveOps و صفحه تنظیمات.
+ * بدون هیچ درخواست شبکه‌ای؛ فقط env + وضعیت breaker را بازمی‌گرداند.
+ */
+export function getStorageStatus(): {
+  configured: boolean;
+  provider: 's3-compatible' | 's3-compatible-r2' | 'none';
+  bucket: string;
+  publicUrl: string;
+  circuitBreakerActive: boolean;
+} {
+  const credentials = isS3CredentialsSet();
+  const endpoint = process.env.S3_ENDPOINT ?? '';
+  const isR2 = endpoint.includes('r2.cloudflarestorage.com');
+
+  // R2 با مشتق‌گیری پیش‌فرض (bucket.endpoint-host) URL عمومی درست نمی‌سازد —
+  // آن host برای SigV4 است نه مرورگر؛ بدون S3_PUBLIC_URL تصاویر آپلود می‌شوند
+  // ولی آدرس‌هایشان 403 می‌دهد. یک‌بار هشدار بده تا بی‌صدا نشکند.
+  if (credentials && isR2 && !S3_PUBLIC_URL) {
+    if (!r2PublicUrlWarningEmitted) {
+      r2PublicUrlWarningEmitted = true;
+      serverLog.warn('storage', 'r2-public-url-missing', {
+        message: 'R2 بدون S3_PUBLIC_URL — تصاویر در bucket ذخیره می‌شوند ولی URL عمومی 403 می‌دهد',
+      });
+    }
+  }
+
+  return {
+    configured: credentials,
+    provider: !credentials ? 'none' : isR2 ? 's3-compatible-r2' : 's3-compatible',
+    bucket: BUCKET_NAME,
+    publicUrl: S3_PUBLIC_URL,
+    circuitBreakerActive: Date.now() < s3DisabledUntil,
+  };
 }
 
 export interface UploadResult {
@@ -163,6 +213,10 @@ export async function uploadFile(
     } catch (error) {
       const reason =
         error instanceof Error ? ((error as { code?: string }).code ?? error.name) : 'unknown';
+      // Log every upload failure (not just the breaker trip) so transient
+      // failures are traceable — the breaker log is rate-limited to once per
+      // TTL, this one is per-upload.
+      serverLog.warn('storage', 's3-upload-failed', { key, reason });
       tripCircuitBreaker(reason);
       return null;
     }
@@ -196,7 +250,10 @@ export async function getFileStream(
     try {
       const response = await s3Client.send(new GetObjectCommand({ Bucket: BUCKET_NAME, Key: key }));
       return response.Body as unknown as NodeJS.ReadableStream;
-    } catch (_error) {}
+    } catch (_error) {
+      // Local fallback is intentional (files uploaded before S3 was configured),
+      // so this is not an error — only log when the breaker gets tripped.
+    }
   }
 
   if (!existsSync(localFilePath)) {

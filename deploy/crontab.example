@@ -36,6 +36,11 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # جدول اصلی نرخ‌ها (دلار، یورو، طلا، سکه) را از TGJU scrape می‌کند.
 */10 * * * * curl -fsS -m 60 -H "Authorization: Bearer YOUR_CRON_SECRET" https://YOUR_DOMAIN.com/api/cron/sync-bazaar >> /var/log/fm-cron.log 2>&1
 
+# ---------- backup دیتابیس: هر شب ساعت ۰۳:۰۰ ----------
+# JSON کامل (محتوای سایت + تنظیمات) می‌سازد و در S3-compatible آینه می‌کند تا
+# روی filesystem اپمرال (Heroku/Vercel) از بین نرود.
+0 3 * * * curl -fsS -m 300 -H "Authorization: Bearer YOUR_CRON_SECRET" https://YOUR_DOMAIN.com/api/cron/backup >> /var/log/fm-cron.log 2>&1
+
 # ============================================================
 # نصب:
 #   sudo crontab deploy/crontab.example   # یا

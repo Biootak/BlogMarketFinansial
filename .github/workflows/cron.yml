@@ -7,7 +7,7 @@ on:
     - cron: "* * * * *"
     # هر ۱۰ دقیقه — sync bazaar
     - cron: "*/10 * * * *"
-    # هر شب ۰۳:۰۰ UTC — backup دیتابیس (JSON → S3/Liara)
+    # هر شب ۰۳:۰۰ UTC — backup دیتابیس (JSON → S3-compatible)
     - cron: "0 3 * * *"
   # اجرای دستی
   workflow_dispatch:
@@ -50,7 +50,7 @@ jobs:
             "${{ secrets.APP_URL }}/api/cron/sync-bazaar"
 
   # ─── backup دیتابیس (شبانه) ─────────────────────────────────────────────
-  # JSON کامل (محتوای سایت + تنظیمات) را می‌سازد و در S3/Liara آینه می‌کند
+  # JSON کامل (محتوای سایت + تنظیمات) را می‌سازد و در S3-compatible آینه می‌کند
   # تا روی filesystem اپمرال (Heroku/Vercel) از بین نرود.
   db-backup:
     name: Database Backup

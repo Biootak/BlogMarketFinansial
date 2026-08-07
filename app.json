@@ -82,28 +82,33 @@
       "value": "onboarding@resend.dev",
       "required": false
     },
-    "LIARA_ENDPOINT": {
-      "description": "endpoint ذخیره‌سازی S3-compatible (Liara یا هر S3 دیگر: R2, B2, MinIO)",
-      "value": "https://storage.c2.liara.space",
+    "S3_ENDPOINT": {
+      "description": "endpoint ذخیره‌سازی S3-compatible — پیشنهاد: Cloudflare R2 (https://<account-id>.r2.cloudflarestorage.com) یا MinIO",
+      "value": "",
       "required": false
     },
-    "LIARA_ACCESS_KEY": {
+    "S3_REGION": {
+      "description": "region — 'auto' برای Cloudflare R2، 'default' برای MinIO/B2",
+      "value": "default",
+      "required": false
+    },
+    "S3_ACCESS_KEY": {
       "description": "کلید دسترسی ذخیره‌سازی — ⚠️ روی Heroku filesystem اپمرال است؛ بدون این ۴ متغیر آپلودها بعد از restart پاک می‌شوند",
       "required": false
     },
-    "LIARA_SECRET_KEY": {
+    "S3_SECRET_KEY": {
       "description": "کلید مخفی ذخیره‌سازی",
       "required": false
     },
-    "LIARA_BUCKET_NAME": {
+    "S3_BUCKET_NAME": {
       "description": "نام bucket ذخیره‌سازی",
       "required": false
     },
-    "LIARA_PUBLIC_URL": {
-      "description": "اختیاری — URL عمومی فایل‌ها برای providerهای غیر از Liara (مثلاً دامنه اختصاصی R2)",
+    "S3_PUBLIC_URL": {
+      "description": "اختیاری — URL عمومی فایل‌ها (مثلاً دامنه اختصاصی R2 یا pub-<hash>.r2.dev)",
       "required": false
     },
-    "LIARA_BACKUP_BUCKET": {
+    "S3_BACKUP_BUCKET": {
       "description": "اختیاری ولی توصیه‌شده — bucket خصوصی جدا برای backup دیتابیس (باکت تصاویر public است و نباید backup را در خودش نگه دارد)",
       "required": false
     },

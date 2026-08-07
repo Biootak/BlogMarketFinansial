@@ -15,7 +15,7 @@ const ContentSecurityPolicy = `
   img-src 'self' blob: data:
     https://images.pexels.com
     https://images.unsplash.com
-    https://*.storage.c2.liara.space
+    https://*.r2.dev
     https://avatar.vercel.sh
     https://lh3.googleusercontent.com
     https://avatars.githubusercontent.com
@@ -227,11 +227,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'biotak.storage.c2.liara.space',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.storage.c2.liara.space',
+        hostname: '*.r2.dev',
       },
       {
         protocol: 'https',

@@ -23,6 +23,7 @@ import type { BackupConfig, BackupFileInfo } from '@/lib/backup';
 import {
   Archive,
   Clock,
+  Cloud,
   Database,
   Download,
   Loader2,
@@ -69,12 +70,21 @@ const formatRelative = (iso: string): string => {
   }
 };
 
+interface StorageStatusInfo {
+  configured: boolean;
+  provider: 's3-compatible' | 's3-compatible-r2' | 'none';
+  bucket: string;
+  publicUrl: string;
+  circuitBreakerActive: boolean;
+}
+
 export function BackupManager() {
   const [config, setConfig] = useState<BackupConfig>(DEFAULT_CFG);
   const [original, setOriginal] = useState<BackupConfig>(DEFAULT_CFG);
   const [backups, setBackups] = useState<BackupFileInfo[]>([]);
   const [lastAt, setLastAt] = useState<string | null>(null);
   const [nextAt, setNextAt] = useState<string | null>(null);
+  const [storage, setStorage] = useState<StorageStatusInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [triggering, setTriggering] = useState(false);
@@ -93,6 +103,7 @@ export function BackupManager() {
         setBackups(res.data.backups);
         setLastAt(res.data.lastBackupAt);
         setNextAt(res.data.nextScheduledAt);
+        setStorage(res.data.storage ?? null);
       }
       setLoading(false);
     })();
@@ -108,6 +119,7 @@ export function BackupManager() {
       setBackups(res.data.backups);
       setLastAt(res.data.lastBackupAt);
       setNextAt(res.data.nextScheduledAt);
+      setStorage(res.data.storage ?? null);
     }
   };
 
@@ -202,6 +214,38 @@ export function BackupManager() {
           <div>
             <div className={s.statusLabel}>نگهداری</div>
             <div className={s.statusVal}>{backups.length} نسخه</div>
+          </div>
+        </div>
+        <div
+          className={s.statusItem}
+          title={
+            storage
+              ? storage.configured
+                ? `باکت: ${storage.bucket}`
+                : 'S3_* تنظیم نشده — backup روی دیسک لوکال می‌ماند'
+              : undefined
+          }
+        >
+          <div
+            className={s.statusIcon}
+            data-on={storage?.configured ?? false}
+            data-breaker={storage?.circuitBreakerActive ? 'on' : undefined}
+          >
+            <Cloud size={14} strokeWidth={2} />
+          </div>
+          <div>
+            <div className={s.statusLabel}>آینه ابری</div>
+            <div className={s.statusVal}>
+              {!storage
+                ? '—'
+                : storage.configured
+                  ? storage.circuitBreakerActive
+                    ? 'قطع موقت'
+                    : storage.provider === 's3-compatible-r2'
+                      ? 'R2 فعال'
+                      : 'S3 فعال'
+                  : 'تنظیم نشده'}
+            </div>
           </div>
         </div>
       </section>
@@ -324,7 +368,10 @@ export function BackupManager() {
         <h3 className={s.sectionTitle}>backup دستی</h3>
         <p className={s.sectionDesc}>
           در هر زمان می‌توانید یک backup فوری ایجاد کنید. فایل در مسیر{' '}
-          <code className={s.path}>/backups</code> ذخیره می‌شود.
+          <code className={s.path}>/backups</code> ذخیره می‌شود و{' '}
+          {storage?.configured
+            ? 'روی ذخیره‌سازی ابری نیز آینه می‌شود.'
+            : 'در صورت تنظیم ذخیره‌سازی ابری (S3_*) روی آن هم آینه می‌شود.'}
         </p>
         <div className={s.triggerRow}>
           <input

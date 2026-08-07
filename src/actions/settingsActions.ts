@@ -355,6 +355,9 @@ export async function getBackupStatus() {
       checksum: r.checksum ?? '',
     }));
     const lastBackupAt = backups[0]?.createdAt ?? null;
+    // وضعیت ذخیره‌سازی ابری — backup ها روی آن آینه می‌شوند.
+    const { getStorageStatus } = await import('@/lib/storage');
+    const storage = getStorageStatus();
     return ok({
       config,
       backups,
@@ -365,6 +368,7 @@ export async function getBackupStatus() {
               new Date(lastBackupAt).getTime() + config.intervalHours * 3600000,
             ).toISOString()
           : null,
+      storage,
     });
   } catch {
     return fail('خطا در دریافت وضعیت backup');

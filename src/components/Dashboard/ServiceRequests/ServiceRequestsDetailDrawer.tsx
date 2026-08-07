@@ -266,7 +266,7 @@ export default function ServiceRequestsDetailDrawer({
     });
   };
 
-  // ── Attachment upload — uses /api/upload (Liara S3 / local fallback) ───────
+  // ── Attachment upload — uses /api/upload (S3-compatible / local fallback) ───────
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !request) return;
@@ -283,7 +283,7 @@ export default function ServiceRequestsDetailDrawer({
         return;
       }
 
-      // Upload to /api/upload (Liara S3 in production, public/uploads locally)
+      // Upload to /api/upload (S3-compatible in production, public/uploads locally)
       // PDF files: /api/upload only accepts images — store as-is via attachment action with data URL fallback.
       let uploadedUrl: string;
       if (file.type === 'application/pdf') {

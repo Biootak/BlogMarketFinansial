@@ -114,6 +114,10 @@ const fetchActivityBarsRaw = async (): Promise<number[]> => {
 const fetchServiceHealthRaw = async (): Promise<LiveOpsData['services']> => {
   const since = new Date(Date.now() - 15 * 60 * 1000);
 
+  // وضعیت ذخیره‌سازی ابری (S3-compatible) — بدون شبکه، فقط env + circuit breaker.
+  const { getStorageStatus } = await import('@/lib/storage');
+  const storageStatus = getStorageStatus();
+
   // گروه‌بندی لاگ‌ها بر اساس source + level
   const logs = await prisma.systemLog.findMany({
     where: { timestamp: { gte: since } },
@@ -150,6 +154,21 @@ const fetchServiceHealthRaw = async (): Promise<LiveOpsData['services']> => {
       status: classifyService(stats.get('api')?.error ?? 0, stats.get('api')?.warn ?? 0),
       latencyMs: latencyFor('api', 80),
       href: '/dashboard/reports',
+    },
+    {
+      id: 'storage',
+      name: 'ذخیره‌سازی ابری',
+      desc: storageStatus.configured
+        ? `${storageStatus.provider === 's3-compatible-r2' ? 'R2' : 'S3'} — bucket: ${storageStatus.bucket}`
+        : 'پیکربندی نشده — فایل‌ها روی دیسک لوکال',
+      iconName: 'HardDrive',
+      status: !storageStatus.configured
+        ? 'idle'
+        : storageStatus.circuitBreakerActive
+          ? 'down'
+          : classifyService(stats.get('storage')?.error ?? 0, stats.get('storage')?.warn ?? 0),
+      latencyMs: latencyFor('storage', 15),
+      href: '/dashboard/settings',
     },
     {
       id: 'db',

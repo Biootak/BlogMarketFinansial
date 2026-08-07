@@ -21,6 +21,8 @@ import { existsSync } from 'node:fs';
 import { mkdir, readFile, readdir, rename, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import prisma from '@/lib/db';
+import { S3_REGION, getS3Bucket } from '@/lib/s3-config';
+import { serverLog } from '@/lib/server-logger';
 import {
   DeleteObjectCommand,
   GetObjectCommand,
@@ -113,20 +115,39 @@ const BACKUP_DIR = path.join(process.cwd(), 'backups');
 
 const BACKUP_S3_PREFIX = 'backups/';
 
+/** فقط یک‌بار در هر restart دربارهٔ bucket مشترک هشدار بده. */
+let backupBucketWarningEmitted = false;
+
+/**
+ * Bucket اختصاصی backup — از باکت عمومی (که تصاویر از روی آن سرو می‌شود) جدا.
+ * ⚠️ امنیت: باکت تصاویر باید public-read باشد تا `S3_PUBLIC_URL` کار کند؛ اگر
+ * backup با همان bucket آپلود شود، فایل‌های JSON حاوی ایمیل/موبایل/هش پسورد
+ * کاربران برای عموم قابل دانلود می‌شود. پس حتماً `S3_BACKUP_BUCKET` را روی
+ * یک bucket خصوصی (بدون public access) جدا ست کن.
+ */
+function getBackupBucket(): string | null {
+  const dedicated = process.env.S3_BACKUP_BUCKET;
+  if (dedicated) return dedicated;
+  const shared = getS3Bucket();
+  if (!shared) return null;
+  if (!backupBucketWarningEmitted) {
+    backupBucketWarningEmitted = true;
+    serverLog.warn('backup', 's3-backup-bucket-shared-with-public', {
+      message: 'S3_BACKUP_BUCKET تنظیم نشده — backup در باکت عمومی تصاویر ذخیره می‌شود',
+    });
+  }
+  return shared;
+}
+
 function buildS3Client(): S3Client | null {
-  if (
-    !process.env.LIARA_ENDPOINT ||
-    !process.env.LIARA_ACCESS_KEY ||
-    !process.env.LIARA_SECRET_KEY ||
-    !process.env.LIARA_BUCKET_NAME
-  )
+  if (!process.env.S3_ENDPOINT || !process.env.S3_ACCESS_KEY || !process.env.S3_SECRET_KEY)
     return null;
   return new S3Client({
-    region: 'default',
-    endpoint: process.env.LIARA_ENDPOINT,
+    region: S3_REGION,
+    endpoint: process.env.S3_ENDPOINT,
     credentials: {
-      accessKeyId: process.env.LIARA_ACCESS_KEY,
-      secretAccessKey: process.env.LIARA_SECRET_KEY,
+      accessKeyId: process.env.S3_ACCESS_KEY,
+      secretAccessKey: process.env.S3_SECRET_KEY,
     },
     forcePathStyle: true,
     maxAttempts: 1,
@@ -137,9 +158,9 @@ function buildS3Client(): S3Client | null {
 async function uploadBackupToS3(filename: string, json: string): Promise<boolean> {
   const client = buildS3Client();
   if (!client) return false;
-  // 2026-08-03: validate bucket name — if LIARA_BUCKET_NAME is unset,
-  // cast to `string` silently produces undefined which crashes the S3 call.
-  const bucket = process.env.LIARA_BUCKET_NAME;
+  // 2026-08-03: validate bucket name — if unset, cast to `string` silently
+  // produces undefined which crashes the S3 call.
+  const bucket = getBackupBucket();
   if (!bucket) return false;
   try {
     await client.send(
@@ -160,7 +181,7 @@ async function uploadBackupToS3(filename: string, json: string): Promise<boolean
 async function readBackupFromS3(filename: string): Promise<string | null> {
   const client = buildS3Client();
   if (!client) return null;
-  const bucket = process.env.LIARA_BUCKET_NAME;
+  const bucket = getBackupBucket();
   if (!bucket) return null;
   try {
     const res = await client.send(
@@ -182,7 +203,7 @@ async function readBackupFromS3(filename: string): Promise<string | null> {
 async function deleteBackupFromS3(filename: string): Promise<void> {
   const client = buildS3Client();
   if (!client) return;
-  const bucket = process.env.LIARA_BUCKET_NAME;
+  const bucket = getBackupBucket();
   if (!bucket) return;
   try {
     await client.send(
@@ -199,7 +220,7 @@ async function deleteBackupFromS3(filename: string): Promise<void> {
 async function listBackupsFromS3(): Promise<string[]> {
   const client = buildS3Client();
   if (!client) return [];
-  const bucket = process.env.LIARA_BUCKET_NAME;
+  const bucket = getBackupBucket();
   if (!bucket) return [];
   try {
     const res = await client.send(
@@ -440,6 +461,45 @@ export function formatSize(bytes: number): string {
 //   - triggerBackup (server action) → actor = user.id
 //   - /api/cron/backup              → actor = 'cron'
 
+// ── Full-data sections (beyond the original 4) ─────────────────────────────
+// 2026-08-07: backup فقط ۴ جدول کوچک را پوشش می‌داد — در عمل «backup دیتابیس»
+// نبود (پست‌ها، کاربران، کامنت‌ها و … جایی ذخیره نمی‌شدند). حالا محتوای اصلی
+// سایت هم شامل می‌شود. مقادیر take سقفِ محافظه‌کارانه برای حجم JSON است؛
+// می‌توان برای سایت بزرگ‌تر آن را بالا برد.
+
+/** فیلدهای حساسی که هرگز در backup نباید بروند. */
+const SECRET_FIELDS = {
+  user: ['twoFactorSecret', 'twoFactorSecretEnc', 'nationalIdHash'],
+  systemSettings: ['smtpPassword'],
+} as const;
+
+/** حذف فیلدهای حساس از آبجکت — برای جداول بدون whitelist هم امن است. */
+function stripSecrets<T>(table: string, rows: T[]): T[] {
+  const fields = SECRET_FIELDS[table as keyof typeof SECRET_FIELDS];
+  if (!fields) return rows;
+  return rows.map((r) => {
+    if (typeof r !== 'object' || r === null) return r;
+    const obj = { ...(r as Record<string, unknown>) };
+    for (const f of fields) delete obj[f];
+    return obj as T;
+  });
+}
+
+/** افزودن یک بخش به backup با try/catch یکسان — بدون تکرار. */
+async function pushSection(
+  sections: BackupEnvelope['sections'],
+  createdAt: string,
+  name: string,
+  run: () => Promise<unknown[]>,
+): Promise<void> {
+  try {
+    const rows = await run();
+    sections.push({ name, rowCount: rows.length, takenAt: createdAt, data: rows });
+  } catch {
+    sections.push({ name, rowCount: 0, takenAt: createdAt, data: [] });
+  }
+}
+
 /**
  * اجرای backup کامل Prisma JSON.
  * @param reason  دلیل backup — نمایش در UI
@@ -453,7 +513,7 @@ export async function runBackup(reason = 'manual', actor = 'cron'): Promise<Back
   try {
     const settings = await prisma.systemSettings.findFirst();
     if (settings) {
-      const { smtpPassword: _omit, ...safe } = settings as Record<string, unknown>;
+      const safe = stripSecrets('systemSettings', [settings])[0];
       sections.push({ name: 'system_settings', rowCount: 1, takenAt: createdAt, data: safe });
     } else {
       sections.push({ name: 'system_settings', rowCount: 0, takenAt: createdAt, data: null });
@@ -483,9 +543,9 @@ export async function runBackup(reason = 'manual', actor = 'cron'): Promise<Back
     /* skip */
   }
 
-  // Exchange rates
+  // Exchange rates — full (جدول اصلی نرخ بازار)
   try {
-    const rates = await prisma.exchangeRate.findMany({ take: 200 });
+    const rates = await prisma.exchangeRate.findMany();
     sections.push({
       name: 'exchange_rates',
       rowCount: rates.length,
@@ -495,6 +555,49 @@ export async function runBackup(reason = 'manual', actor = 'cron'): Promise<Back
   } catch {
     /* skip */
   }
+
+  // ── محتوای اصلی سایت ────────────────────────────────────────────────────
+
+  // Posts — recent 5000 (بدون relations؛ آیدی‌ها برای بازسازی کافی‌اند)
+  await pushSection(sections, createdAt, 'posts', async () =>
+    prisma.post.findMany({ orderBy: { createdAt: 'desc' }, take: 5000 }),
+  );
+
+  // Users — sensitive fields stripped (TOTP secrets, national id hash);
+  // سقف 50k برای جلوگیری از backup بی‌نهایت بزرگ در سایت بزرگ‌تر.
+  await pushSection(sections, createdAt, 'users', async () =>
+    stripSecrets('user', await prisma.user.findMany({ take: 50_000 })),
+  );
+
+  // Comments — recent 10000
+  await pushSection(sections, createdAt, 'comments', async () =>
+    prisma.comment.findMany({ orderBy: { createdAt: 'desc' }, take: 10000 }),
+  );
+
+  // Categories & Tags
+  await pushSection(sections, createdAt, 'categories', async () => prisma.category.findMany());
+  await pushSection(sections, createdAt, 'tags', async () => prisma.tag.findMany());
+
+  // Advertisements (هر دو جدول تبلیغ)
+  await pushSection(sections, createdAt, 'advertisements', async () =>
+    prisma.advertisement.findMany(),
+  );
+  await pushSection(sections, createdAt, 'header_ads', async () => prisma.headerAd.findMany());
+
+  // Rate lists + announcements + newsletters
+  await pushSection(sections, createdAt, 'rate_lists', async () => prisma.rateList.findMany());
+  await pushSection(sections, createdAt, 'announcements', async () =>
+    prisma.announcement.findMany(),
+  );
+  await pushSection(sections, createdAt, 'newsletters', async () => prisma.newsletter.findMany());
+
+  // Support tickets (پشتیبانی) — recent 500
+  await pushSection(sections, createdAt, 'support_tickets', async () =>
+    prisma.supportTicket.findMany({ orderBy: { createdAt: 'desc' }, take: 500 }),
+  );
+
+  // Exchange partners (صرافی‌ها) — بخش اصلی دامنه
+  await pushSection(sections, createdAt, 'exchanges', async () => prisma.exchange.findMany());
 
   const manifestWithoutChecksum = {
     version: 1 as const,
