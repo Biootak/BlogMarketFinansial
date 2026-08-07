@@ -2,17 +2,10 @@
 
 import { Siren } from 'lucide-react';
 
-<<<<<<< HEAD
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
-import { bucketLabel, faNum } from './format';
-import s from './obs.module.css';
-=======
 import { bucketLabel, cssVars, faNum, sourceName } from './format';
-import { ObsEmpty } from './ObsSection';
-import { useObs } from './ObsProvider';
 import l from './ledger.module.css';
->>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
 
 /**
  * پنجره‌های بحرانی.
@@ -54,14 +47,18 @@ export function IncidentTimeline() {
           const from = (incident.fromHour / windowHours) * 100;
           const width = ((incident.toHour - incident.fromHour + 1) / windowHours) * 100;
           const peak = peakHourOf(incident.fromHour, incident.toHour);
+          const selected = hour >= incident.fromHour && hour <= incident.toHour;
 
           return (
             <button
               key={incident.id}
               type="button"
               className={l.incidentSpan}
-              data-selected={hour >= incident.fromHour && hour <= incident.toHour ? 'true' : undefined}
-              style={cssVars({ '--from': `${from.toFixed(2)}%`, '--width': `${width.toFixed(2)}%` })}
+              data-selected={selected ? 'true' : undefined}
+              style={cssVars({
+                '--from': `${from.toFixed(2)}%`,
+                '--width': `${width.toFixed(2)}%`,
+              })}
               onClick={() => setHour(peak)}
               aria-label={`پرش به اوج بازهٔ ${bucketLabel(data.generatedAt, incident.fromHour, windowHours)}`}
             />

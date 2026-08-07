@@ -2,17 +2,10 @@
 
 import { Layers3 } from 'lucide-react';
 
-<<<<<<< HEAD
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
-import { faNum, faPercent, ratio } from './format';
-import s from './obs.module.css';
-=======
 import { cssVars, faNum, faPercent, levelLabel, levelTone } from './format';
-import { ObsEmpty } from './ObsSection';
-import { useObs } from './ObsProvider';
 import h from './heat.module.css';
->>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
 
 /**
  * توزیع سطوح لاگ.
@@ -20,6 +13,10 @@ import h from './heat.module.css';
  * یک نوار انباشته به‌جای دونات: نسبت‌ها را در یک خط می‌خوانی و مقایسه با
  * پنجره‌های قبلی هم ساده می‌ماند. فهرست زیرش عدد دقیق را می‌دهد، چون نوار
  * برای «حس» است و عدد برای «تصمیم».
+ *
+ * نکته: `level` از سرور همیشه canonical و lowercase می‌آید
+ * (`@/lib/log-levels`). تا قبل از ۲۰۲۶-۰۸-۰۷ مقدار خام `'WARNING'` رد می‌شد
+ * و `levelLabel` آن را پیدا نمی‌کرد، پس برچسب‌ها انگلیسی و بی‌رنگ می‌ماندند.
  */
 export function LevelDistribution() {
   const { data } = useObs();
