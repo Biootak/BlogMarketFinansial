@@ -4,6 +4,21 @@
 > Source of truth for tokens: `src/components/ds/styles/tokens.css`.
 > This is the agent-readable compression of the brand. Keep it scannable; extend, don't bloat.
 
+## ⚠️ UI/UX Pro Max skill — use with override
+
+The `ui-ux-pro-max` skill is installed in `.claude/skills/ui-ux-pro-max/` (Claude Code) and
+`.agents/skills/ui-ux-pro-max/` (Bob IDE / universal). **Its default output is amber+violet
+Dark OLED with Fira Code — this DOES NOT match our brand.** Our brand is emerald+indigo,
+Vazirmatn-first, light+dark, calm confidence.
+
+**Before trusting any `--design-system` output from the skill, read:**
+
+- `design-system/financialmarket/MASTER.md` — project-aligned design system (overrides skill defaults)
+- `design-system/financialmarket/pages/[page].md` — per-page overrides if exists
+
+When invoking the skill, always include `--persist -p "FinancialMarket"`, then **cross-check
+the generated MASTER.md against this DESIGN.md** and the project tokens before implementing.
+
 ## Authority
 When sources conflict: (1) existing production components in `src/components/ui` + `src/components/Dashboard/primitives`, (2) tokens in `tokens.css`, (3) `AGENTS.ui-design.md` intent, (4) screenshots/legacy pages (NOT references). Do NOT copy values from screenshots when a token exists.
 

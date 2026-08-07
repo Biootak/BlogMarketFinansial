@@ -1,17 +1,18 @@
-import { getCustomers } from '@/actions/exchange-customers';
-import { getTransactions } from '@/actions/exchange-transactions';
-import { getExchangeForUser } from '@/actions/exchanges';
 /**
  * /exchange/transactions — ثبت و مشاهده تراکنش‌ها
  */
+
+import { getCustomers } from '@/actions/exchange-customers';
+import { getTransactions } from '@/actions/exchange-transactions';
+import { getExchangeForUser } from '@/actions/exchanges';
 import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
-
-const _faNum = new Intl.NumberFormat('fa-IR');
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import TransactionsWorkspace from './_components/TransactionsWorkspace';
+
+const _faNum = new Intl.NumberFormat('fa-IR');
 
 export const metadata: Metadata = { title: 'تراکنش‌های صرافی' };
 

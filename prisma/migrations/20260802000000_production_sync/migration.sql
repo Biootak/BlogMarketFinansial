@@ -148,6 +148,20 @@ CREATE TABLE IF NOT EXISTS "Task" (
     "updatedAt"   TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "Task_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='Task') THEN
+    ALTER TABLE "Task" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL;
+    ALTER TABLE "Task" ADD COLUMN IF NOT EXISTS "title" TEXT NOT NULL;
+    ALTER TABLE "Task" ADD COLUMN IF NOT EXISTS "description" TEXT;
+    ALTER TABLE "Task" ADD COLUMN IF NOT EXISTS "status" "TaskStatus"   NOT NULL DEFAULT 'PENDING';
+    ALTER TABLE "Task" ADD COLUMN IF NOT EXISTS "priority" "TaskPriority" NOT NULL DEFAULT 'MEDIUM';
+    ALTER TABLE "Task" ADD COLUMN IF NOT EXISTS "dueDate" TIMESTAMP(3);
+    ALTER TABLE "Task" ADD COLUMN IF NOT EXISTS "userId" TEXT NOT NULL;
+    ALTER TABLE "Task" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+    ALTER TABLE "Task" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS "Task_userId_idx"  ON "Task"("userId");
 CREATE INDEX IF NOT EXISTS "Task_status_idx"  ON "Task"("status");
 CREATE INDEX IF NOT EXISTS "Task_dueDate_idx" ON "Task"("dueDate");
@@ -180,6 +194,23 @@ CREATE TABLE IF NOT EXISTS "BackupConfig" (
   CONSTRAINT "BackupConfig_pkey" PRIMARY KEY ("id")
 );
 
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='BackupConfig') THEN
+    ALTER TABLE "BackupConfig" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL DEFAULT 'singleton';
+    ALTER TABLE "BackupConfig" ADD COLUMN IF NOT EXISTS "enabled" BOOLEAN NOT NULL DEFAULT true;
+    ALTER TABLE "BackupConfig" ADD COLUMN IF NOT EXISTS "intervalHours" INTEGER NOT NULL DEFAULT 24;
+    ALTER TABLE "BackupConfig" ADD COLUMN IF NOT EXISTS "retentionCount" INTEGER NOT NULL DEFAULT 7;
+    ALTER TABLE "BackupConfig" ADD COLUMN IF NOT EXISTS "includeAuditLog" BOOLEAN NOT NULL DEFAULT true;
+    ALTER TABLE "BackupConfig" ADD COLUMN IF NOT EXISTS "includeSocialLinks" BOOLEAN NOT NULL DEFAULT true;
+    ALTER TABLE "BackupConfig" ADD COLUMN IF NOT EXISTS "includeSystemSettings" BOOLEAN NOT NULL DEFAULT true;
+    ALTER TABLE "BackupConfig" ADD COLUMN IF NOT EXISTS "notifyOnSuccess" BOOLEAN NOT NULL DEFAULT false;
+    ALTER TABLE "BackupConfig" ADD COLUMN IF NOT EXISTS "notifyOnFailure" BOOLEAN NOT NULL DEFAULT true;
+    ALTER TABLE "BackupConfig" ADD COLUMN IF NOT EXISTS "notifyEmail" TEXT;
+    ALTER TABLE "BackupConfig" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+    ALTER TABLE "BackupConfig" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
+
 CREATE TABLE IF NOT EXISTS "BackupRun" (
   "id" TEXT NOT NULL,
   "filename" TEXT NOT NULL,
@@ -193,6 +224,20 @@ CREATE TABLE IF NOT EXISTS "BackupRun" (
   CONSTRAINT "BackupRun_pkey" PRIMARY KEY ("id"),
   CONSTRAINT "BackupRun_filename_key" UNIQUE ("filename")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='BackupRun') THEN
+    ALTER TABLE "BackupRun" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL;
+    ALTER TABLE "BackupRun" ADD COLUMN IF NOT EXISTS "filename" TEXT NOT NULL;
+    ALTER TABLE "BackupRun" ADD COLUMN IF NOT EXISTS "sizeBytes" INTEGER NOT NULL;
+    ALTER TABLE "BackupRun" ADD COLUMN IF NOT EXISTS "totalRows" INTEGER NOT NULL;
+    ALTER TABLE "BackupRun" ADD COLUMN IF NOT EXISTS "sections" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[];
+    ALTER TABLE "BackupRun" ADD COLUMN IF NOT EXISTS "reason" TEXT NOT NULL DEFAULT 'manual';
+    ALTER TABLE "BackupRun" ADD COLUMN IF NOT EXISTS "actor" TEXT;
+    ALTER TABLE "BackupRun" ADD COLUMN IF NOT EXISTS "checksum" TEXT;
+    ALTER TABLE "BackupRun" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS "BackupRun_createdAt_idx" ON "BackupRun"("createdAt" DESC);
 CREATE INDEX IF NOT EXISTS "BackupRun_reason_idx"    ON "BackupRun"("reason");
 
@@ -207,6 +252,18 @@ CREATE TABLE IF NOT EXISTS "ApprovalRequest" (
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "ApprovalRequest_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='ApprovalRequest') THEN
+    ALTER TABLE "ApprovalRequest" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL, "type" TEXT NOT NULL, "title" TEXT NOT NULL;
+    ALTER TABLE "ApprovalRequest" ADD COLUMN IF NOT EXISTS "description" TEXT, "entityType" TEXT NOT NULL, "entityId" TEXT NOT NULL;
+    ALTER TABLE "ApprovalRequest" ADD COLUMN IF NOT EXISTS "requesterId" TEXT NOT NULL, "status" TEXT NOT NULL DEFAULT 'pending';
+    ALTER TABLE "ApprovalRequest" ADD COLUMN IF NOT EXISTS "currentStep" INTEGER NOT NULL DEFAULT 0, "totalSteps" INTEGER NOT NULL DEFAULT 1;
+    ALTER TABLE "ApprovalRequest" ADD COLUMN IF NOT EXISTS "payload" JSONB, "decidedAt" TIMESTAMP(3);
+    ALTER TABLE "ApprovalRequest" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+    ALTER TABLE "ApprovalRequest" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE TABLE IF NOT EXISTS "ApprovalStep" (
     "id" TEXT NOT NULL, "requestId" TEXT NOT NULL, "stepIndex" INTEGER NOT NULL,
     "approverRole" TEXT NOT NULL, "approverId" TEXT, "status" TEXT NOT NULL DEFAULT 'pending',
@@ -214,6 +271,15 @@ CREATE TABLE IF NOT EXISTS "ApprovalStep" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "ApprovalStep_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='ApprovalStep') THEN
+    ALTER TABLE "ApprovalStep" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL, "requestId" TEXT NOT NULL, "stepIndex" INTEGER NOT NULL;
+    ALTER TABLE "ApprovalStep" ADD COLUMN IF NOT EXISTS "approverRole" TEXT NOT NULL, "approverId" TEXT, "status" TEXT NOT NULL DEFAULT 'pending';
+    ALTER TABLE "ApprovalStep" ADD COLUMN IF NOT EXISTS "comment" TEXT, "decidedAt" TIMESTAMP(3);
+    ALTER TABLE "ApprovalStep" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS "ApprovalRequest_status_idx"              ON "ApprovalRequest"("status");
 CREATE INDEX IF NOT EXISTS "ApprovalRequest_type_status_idx"         ON "ApprovalRequest"("type","status");
 CREATE INDEX IF NOT EXISTS "ApprovalRequest_requesterId_idx"         ON "ApprovalRequest"("requesterId");
@@ -231,6 +297,14 @@ CREATE TABLE IF NOT EXISTS "ApiKeyAudit" (
   "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT "ApiKeyAudit_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='ApiKeyAudit') THEN
+    ALTER TABLE "ApiKeyAudit" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL, "apiKeyId" TEXT NOT NULL, "userId" TEXT NOT NULL;
+    ALTER TABLE "ApiKeyAudit" ADD COLUMN IF NOT EXISTS "action" TEXT NOT NULL, "ip" TEXT, "userAgent" TEXT, "metadata" JSONB;
+    ALTER TABLE "ApiKeyAudit" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS "ApiKeyAudit_userId_createdAt_idx" ON "ApiKeyAudit"("userId","createdAt" DESC);
 CREATE INDEX IF NOT EXISTS "ApiKeyAudit_apiKeyId_idx"         ON "ApiKeyAudit"("apiKeyId");
 DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname='ApiKeyAudit_apiKeyId_fkey') THEN
@@ -251,6 +325,17 @@ CREATE TABLE IF NOT EXISTS "WebhookDelivery" (
   "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT "WebhookDelivery_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='WebhookDelivery') THEN
+    ALTER TABLE "WebhookDelivery" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL, "webhookId" TEXT NOT NULL, "event" TEXT NOT NULL;
+    ALTER TABLE "WebhookDelivery" ADD COLUMN IF NOT EXISTS "payload" JSONB NOT NULL, "responseCode" INTEGER, "responseBody" TEXT;
+    ALTER TABLE "WebhookDelivery" ADD COLUMN IF NOT EXISTS "attempt" INTEGER NOT NULL DEFAULT 1;
+    ALTER TABLE "WebhookDelivery" ADD COLUMN IF NOT EXISTS "status" "WebhookDeliveryStatus" NOT NULL DEFAULT 'PENDING';
+    ALTER TABLE "WebhookDelivery" ADD COLUMN IF NOT EXISTS "durationMs" INTEGER, "error" TEXT, "deliveredAt" TIMESTAMP(3);
+    ALTER TABLE "WebhookDelivery" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS "WebhookDelivery_webhookId_createdAt_idx" ON "WebhookDelivery"("webhookId","createdAt" DESC);
 CREATE INDEX IF NOT EXISTS "WebhookDelivery_status_idx"              ON "WebhookDelivery"("status");
 DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname='WebhookDelivery_webhookId_fkey') THEN
@@ -266,6 +351,16 @@ CREATE TABLE IF NOT EXISTS "ApiCallLog" (
   "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT "ApiCallLog_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='ApiCallLog') THEN
+    ALTER TABLE "ApiCallLog" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL, "userId" TEXT NOT NULL, "apiKeyId" TEXT;
+    ALTER TABLE "ApiCallLog" ADD COLUMN IF NOT EXISTS "method" TEXT NOT NULL, "path" TEXT NOT NULL;
+    ALTER TABLE "ApiCallLog" ADD COLUMN IF NOT EXISTS "statusCode" INTEGER NOT NULL, "durationMs" INTEGER NOT NULL;
+    ALTER TABLE "ApiCallLog" ADD COLUMN IF NOT EXISTS "ip" TEXT, "userAgent" TEXT;
+    ALTER TABLE "ApiCallLog" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS "ApiCallLog_userId_createdAt_idx" ON "ApiCallLog"("userId","createdAt" DESC);
 CREATE INDEX IF NOT EXISTS "ApiCallLog_apiKeyId_idx"         ON "ApiCallLog"("apiKeyId");
 
@@ -274,6 +369,13 @@ CREATE TABLE IF NOT EXISTS "ApiRateLimit" (
   "windowStart" TIMESTAMP(3) NOT NULL, "count" INTEGER NOT NULL DEFAULT 1,
   CONSTRAINT "ApiRateLimit_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='ApiRateLimit') THEN
+    ALTER TABLE "ApiRateLimit" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL, "userId" TEXT NOT NULL, "action" TEXT NOT NULL;
+    ALTER TABLE "ApiRateLimit" ADD COLUMN IF NOT EXISTS "windowStart" TIMESTAMP(3) NOT NULL, "count" INTEGER NOT NULL DEFAULT 1;
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS "ApiRateLimit_userId_action_windowStart_idx"
   ON "ApiRateLimit"("userId","action","windowStart" DESC);
 
@@ -286,6 +388,16 @@ CREATE TABLE IF NOT EXISTS "ExchangeService" (
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "ExchangeService_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='ExchangeService') THEN
+    ALTER TABLE "ExchangeService" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL, "exchangeId" TEXT NOT NULL, "serviceKey" TEXT NOT NULL;
+    ALTER TABLE "ExchangeService" ADD COLUMN IF NOT EXISTS "isActive" BOOLEAN NOT NULL DEFAULT true, "description" TEXT, "ctaHref" TEXT;
+    ALTER TABLE "ExchangeService" ADD COLUMN IF NOT EXISTS "order" INTEGER NOT NULL DEFAULT 0, "leadTimeMin" INTEGER;
+    ALTER TABLE "ExchangeService" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+    ALTER TABLE "ExchangeService" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE UNIQUE INDEX IF NOT EXISTS "ExchangeService_exchangeId_serviceKey_key" ON "ExchangeService"("exchangeId","serviceKey");
 CREATE INDEX        IF NOT EXISTS "ExchangeService_exchangeId_isActive_order_idx" ON "ExchangeService"("exchangeId","isActive","order");
 CREATE INDEX        IF NOT EXISTS "ExchangeService_serviceKey_isActive_idx"       ON "ExchangeService"("serviceKey","isActive");
@@ -325,6 +437,15 @@ CREATE TABLE IF NOT EXISTS "ServiceClick" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "ServiceClick_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='ServiceClick') THEN
+    ALTER TABLE "ServiceClick" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL, "exchangeId" TEXT, "serviceKey" TEXT NOT NULL;
+    ALTER TABLE "ServiceClick" ADD COLUMN IF NOT EXISTS "source" TEXT NOT NULL, "userId" TEXT, "ipAddress" TEXT;
+    ALTER TABLE "ServiceClick" ADD COLUMN IF NOT EXISTS "userAgent" TEXT, "referer" TEXT;
+    ALTER TABLE "ServiceClick" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS "ServiceClick_serviceKey_createdAt_idx" ON "ServiceClick"("serviceKey","createdAt" DESC);
 CREATE INDEX IF NOT EXISTS "ServiceClick_exchangeId_createdAt_idx" ON "ServiceClick"("exchangeId","createdAt" DESC);
 CREATE INDEX IF NOT EXISTS "ServiceClick_source_createdAt_idx"     ON "ServiceClick"("source","createdAt" DESC);
@@ -347,6 +468,18 @@ CREATE TABLE IF NOT EXISTS "CustomerRequest" (
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "CustomerRequest_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='CustomerRequest') THEN
+    ALTER TABLE "CustomerRequest" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL, "trackingCode" TEXT NOT NULL;
+    ALTER TABLE "CustomerRequest" ADD COLUMN IF NOT EXISTS "customerId" TEXT NOT NULL, "exchangeId" TEXT NOT NULL, "userId" TEXT NOT NULL;
+    ALTER TABLE "CustomerRequest" ADD COLUMN IF NOT EXISTS "type" "CustomerRequestType" NOT NULL, "status" "CustomerRequestStatus" NOT NULL DEFAULT 'PENDING';
+    ALTER TABLE "CustomerRequest" ADD COLUMN IF NOT EXISTS "payload" JSONB, "note" TEXT, "resolution" TEXT, "reviewedById" TEXT;
+    ALTER TABLE "CustomerRequest" ADD COLUMN IF NOT EXISTS "reviewedAt" TIMESTAMP(3);
+    ALTER TABLE "CustomerRequest" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+    ALTER TABLE "CustomerRequest" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE UNIQUE INDEX IF NOT EXISTS "CustomerRequest_trackingCode_key"               ON "CustomerRequest"("trackingCode");
 CREATE INDEX        IF NOT EXISTS "CustomerRequest_customerId_createdAt_idx"       ON "CustomerRequest"("customerId","createdAt" DESC);
 CREATE INDEX        IF NOT EXISTS "CustomerRequest_customerId_status_idx"          ON "CustomerRequest"("customerId","status");
@@ -362,6 +495,15 @@ CREATE TABLE IF NOT EXISTS "CustomerRequestStatusLog" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "CustomerRequestStatusLog_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='CustomerRequestStatusLog') THEN
+    ALTER TABLE "CustomerRequestStatusLog" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL, "requestId" TEXT NOT NULL;
+    ALTER TABLE "CustomerRequestStatusLog" ADD COLUMN IF NOT EXISTS "fromStatus" "CustomerRequestStatus", "toStatus" "CustomerRequestStatus" NOT NULL;
+    ALTER TABLE "CustomerRequestStatusLog" ADD COLUMN IF NOT EXISTS "actorId" TEXT, "actorRole" TEXT, "note" TEXT;
+    ALTER TABLE "CustomerRequestStatusLog" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS "CustomerRequestStatusLog_requestId_createdAt_idx"
     ON "CustomerRequestStatusLog"("requestId","createdAt" DESC);
 
@@ -404,6 +546,18 @@ CREATE TABLE IF NOT EXISTS "Announcement" (
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "Announcement_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='Announcement') THEN
+    ALTER TABLE "Announcement" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL, "title" TEXT NOT NULL, "body" TEXT NOT NULL;
+    ALTER TABLE "Announcement" ADD COLUMN IF NOT EXISTS "channels" TEXT NOT NULL DEFAULT 'inapp', "audience" TEXT NOT NULL DEFAULT 'all';
+    ALTER TABLE "Announcement" ADD COLUMN IF NOT EXISTS "audienceFilter" TEXT, "scheduledAt" TIMESTAMP(3), "publishedAt" TIMESTAMP(3);
+    ALTER TABLE "Announcement" ADD COLUMN IF NOT EXISTS "expiresAt" TIMESTAMP(3), "status" TEXT NOT NULL DEFAULT 'draft';
+    ALTER TABLE "Announcement" ADD COLUMN IF NOT EXISTS "createdById" TEXT NOT NULL;
+    ALTER TABLE "Announcement" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+    ALTER TABLE "Announcement" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS "Announcement_status_idx"      ON "Announcement"("status");
 CREATE INDEX IF NOT EXISTS "Announcement_scheduledAt_idx" ON "Announcement"("scheduledAt");
 CREATE INDEX IF NOT EXISTS "Announcement_createdAt_idx"   ON "Announcement"("createdAt" DESC);
@@ -420,6 +574,20 @@ CREATE TABLE IF NOT EXISTS "Campaign" (
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "Campaign_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='Campaign') THEN
+    ALTER TABLE "Campaign" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL, "name" TEXT NOT NULL, "description" TEXT;
+    ALTER TABLE "Campaign" ADD COLUMN IF NOT EXISTS "channel" TEXT NOT NULL DEFAULT 'email', "subject" TEXT, "body" TEXT NOT NULL;
+    ALTER TABLE "Campaign" ADD COLUMN IF NOT EXISTS "status" TEXT NOT NULL DEFAULT 'draft', "audience" TEXT NOT NULL DEFAULT 'all';
+    ALTER TABLE "Campaign" ADD COLUMN IF NOT EXISTS "audienceFilter" TEXT, "scheduledAt" TIMESTAMP(3), "startedAt" TIMESTAMP(3);
+    ALTER TABLE "Campaign" ADD COLUMN IF NOT EXISTS "completedAt" TIMESTAMP(3), "statsSent" INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE "Campaign" ADD COLUMN IF NOT EXISTS "statsOpened" INTEGER NOT NULL DEFAULT 0, "statsClicked" INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE "Campaign" ADD COLUMN IF NOT EXISTS "statsBounced" INTEGER NOT NULL DEFAULT 0, "createdById" TEXT NOT NULL;
+    ALTER TABLE "Campaign" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+    ALTER TABLE "Campaign" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS "Campaign_status_idx"      ON "Campaign"("status");
 CREATE INDEX IF NOT EXISTS "Campaign_scheduledAt_idx" ON "Campaign"("scheduledAt");
 CREATE INDEX IF NOT EXISTS "Campaign_createdAt_idx"   ON "Campaign"("createdAt" DESC);
@@ -430,6 +598,14 @@ CREATE TABLE IF NOT EXISTS "CampaignRecipient" (
     "openedAt" TIMESTAMP(3), "clickedAt" TIMESTAMP(3), "errorMessage" TEXT,
     CONSTRAINT "CampaignRecipient_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='CampaignRecipient') THEN
+    ALTER TABLE "CampaignRecipient" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL, "campaignId" TEXT NOT NULL, "userId" TEXT NOT NULL;
+    ALTER TABLE "CampaignRecipient" ADD COLUMN IF NOT EXISTS "status" TEXT NOT NULL DEFAULT 'pending', "sentAt" TIMESTAMP(3);
+    ALTER TABLE "CampaignRecipient" ADD COLUMN IF NOT EXISTS "openedAt" TIMESTAMP(3), "clickedAt" TIMESTAMP(3), "errorMessage" TEXT;
+  END IF;
+END $$;
 CREATE INDEX  IF NOT EXISTS "CampaignRecipient_campaignId_status_idx" ON "CampaignRecipient"("campaignId","status");
 CREATE INDEX  IF NOT EXISTS "CampaignRecipient_userId_idx"            ON "CampaignRecipient"("userId");
 CREATE UNIQUE INDEX IF NOT EXISTS "CampaignRecipient_campaignId_userId_key" ON "CampaignRecipient"("campaignId","userId");
@@ -450,12 +626,33 @@ CREATE TABLE IF NOT EXISTS "SupportTicket" (
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "SupportTicket_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='SupportTicket') THEN
+    ALTER TABLE "SupportTicket" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL, "subject" TEXT NOT NULL, "description" TEXT NOT NULL;
+    ALTER TABLE "SupportTicket" ADD COLUMN IF NOT EXISTS "status" TEXT NOT NULL DEFAULT 'open', "priority" TEXT NOT NULL DEFAULT 'normal';
+    ALTER TABLE "SupportTicket" ADD COLUMN IF NOT EXISTS "category" TEXT NOT NULL DEFAULT 'general', "requesterId" TEXT NOT NULL;
+    ALTER TABLE "SupportTicket" ADD COLUMN IF NOT EXISTS "requesterRole" TEXT, "assignedToId" TEXT, "firstResponseAt" TIMESTAMP(3);
+    ALTER TABLE "SupportTicket" ADD COLUMN IF NOT EXISTS "resolvedAt" TIMESTAMP(3), "closedAt" TIMESTAMP(3);
+    ALTER TABLE "SupportTicket" ADD COLUMN IF NOT EXISTS "messageCount" INTEGER NOT NULL DEFAULT 0, "tags" TEXT;
+    ALTER TABLE "SupportTicket" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+    ALTER TABLE "SupportTicket" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE TABLE IF NOT EXISTS "TicketMessage" (
     "id" TEXT NOT NULL, "ticketId" TEXT NOT NULL, "authorId" TEXT NOT NULL,
     "authorRole" TEXT, "body" TEXT NOT NULL, "isInternal" BOOLEAN NOT NULL DEFAULT false,
     "attachments" JSONB, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "TicketMessage_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='TicketMessage') THEN
+    ALTER TABLE "TicketMessage" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL, "ticketId" TEXT NOT NULL, "authorId" TEXT NOT NULL;
+    ALTER TABLE "TicketMessage" ADD COLUMN IF NOT EXISTS "authorRole" TEXT, "body" TEXT NOT NULL, "isInternal" BOOLEAN NOT NULL DEFAULT false;
+    ALTER TABLE "TicketMessage" ADD COLUMN IF NOT EXISTS "attachments" JSONB, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS "SupportTicket_status_idx"       ON "SupportTicket"("status");
 CREATE INDEX IF NOT EXISTS "SupportTicket_priority_idx"     ON "SupportTicket"("priority");
 CREATE INDEX IF NOT EXISTS "SupportTicket_assignedToId_idx" ON "SupportTicket"("assignedToId");
@@ -480,6 +677,19 @@ CREATE TABLE IF NOT EXISTS "BackgroundJob" (
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "BackgroundJob_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='BackgroundJob') THEN
+    ALTER TABLE "BackgroundJob" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL, "type" TEXT NOT NULL, "queue" TEXT NOT NULL DEFAULT 'default';
+    ALTER TABLE "BackgroundJob" ADD COLUMN IF NOT EXISTS "payload" JSONB, "status" TEXT NOT NULL DEFAULT 'pending';
+    ALTER TABLE "BackgroundJob" ADD COLUMN IF NOT EXISTS "priority" INTEGER NOT NULL DEFAULT 0, "attempts" INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE "BackgroundJob" ADD COLUMN IF NOT EXISTS "maxAttempts" INTEGER NOT NULL DEFAULT 3, "scheduledAt" TIMESTAMP(3);
+    ALTER TABLE "BackgroundJob" ADD COLUMN IF NOT EXISTS "startedAt" TIMESTAMP(3), "completedAt" TIMESTAMP(3), "failedAt" TIMESTAMP(3);
+    ALTER TABLE "BackgroundJob" ADD COLUMN IF NOT EXISTS "errorMessage" TEXT, "errorStack" TEXT, "result" JSONB, "triggeredBy" TEXT;
+    ALTER TABLE "BackgroundJob" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+    ALTER TABLE "BackgroundJob" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS "BackgroundJob_status_idx"       ON "BackgroundJob"("status");
 CREATE INDEX IF NOT EXISTS "BackgroundJob_queue_status_idx" ON "BackgroundJob"("queue","status");
 CREATE INDEX IF NOT EXISTS "BackgroundJob_type_idx"         ON "BackgroundJob"("type");
@@ -502,6 +712,23 @@ CREATE TABLE IF NOT EXISTS "TransferProvider" (
     "updatedAt"       TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "TransferProvider_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='TransferProvider') THEN
+    ALTER TABLE "TransferProvider" ADD COLUMN IF NOT EXISTS "id" TEXT    NOT NULL;
+    ALTER TABLE "TransferProvider" ADD COLUMN IF NOT EXISTS "exchangeId" TEXT    NOT NULL;
+    ALTER TABLE "TransferProvider" ADD COLUMN IF NOT EXISTS "name" TEXT    NOT NULL;
+    ALTER TABLE "TransferProvider" ADD COLUMN IF NOT EXISTS "spreadPercent" DECIMAL(10,4) NOT NULL DEFAULT 0;
+    ALTER TABLE "TransferProvider" ADD COLUMN IF NOT EXISTS "flatFeeToman" DECIMAL(20,2) NOT NULL DEFAULT 0;
+    ALTER TABLE "TransferProvider" ADD COLUMN IF NOT EXISTS "speedMinutes" INTEGER NOT NULL DEFAULT 60;
+    ALTER TABLE "TransferProvider" ADD COLUMN IF NOT EXISTS "features" TEXT[]  NOT NULL DEFAULT ARRAY[]::TEXT[];
+    ALTER TABLE "TransferProvider" ADD COLUMN IF NOT EXISTS "active" BOOLEAN NOT NULL DEFAULT true;
+    ALTER TABLE "TransferProvider" ADD COLUMN IF NOT EXISTS "description" TEXT;
+    ALTER TABLE "TransferProvider" ADD COLUMN IF NOT EXISTS "logoUrl" TEXT;
+    ALTER TABLE "TransferProvider" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+    ALTER TABLE "TransferProvider" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS "TransferProvider_exchangeId_active_idx" ON "TransferProvider"("exchangeId","active");
 
 -- ── 22. Fintech core tables (اگر fintech_core اجرا نشده) ─────
@@ -573,6 +800,26 @@ CREATE TABLE IF NOT EXISTS "Exchange" (
     "updatedAt"     TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "Exchange_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='Exchange') THEN
+    ALTER TABLE "Exchange" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL;
+    ALTER TABLE "Exchange" ADD COLUMN IF NOT EXISTS "name" TEXT NOT NULL;
+    ALTER TABLE "Exchange" ADD COLUMN IF NOT EXISTS "slug" TEXT NOT NULL;
+    ALTER TABLE "Exchange" ADD COLUMN IF NOT EXISTS "licenseNo" TEXT;
+    ALTER TABLE "Exchange" ADD COLUMN IF NOT EXISTS "city" TEXT;
+    ALTER TABLE "Exchange" ADD COLUMN IF NOT EXISTS "address" TEXT;
+    ALTER TABLE "Exchange" ADD COLUMN IF NOT EXISTS "phone" TEXT;
+    ALTER TABLE "Exchange" ADD COLUMN IF NOT EXISTS "email" TEXT;
+    ALTER TABLE "Exchange" ADD COLUMN IF NOT EXISTS "logoUrl" TEXT;
+    ALTER TABLE "Exchange" ADD COLUMN IF NOT EXISTS "status" "ExchangeStatus" NOT NULL DEFAULT 'PENDING';
+    ALTER TABLE "Exchange" ADD COLUMN IF NOT EXISTS "requireKyc" BOOLEAN NOT NULL DEFAULT true;
+    ALTER TABLE "Exchange" ADD COLUMN IF NOT EXISTS "dailyLimitAf" INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE "Exchange" ADD COLUMN IF NOT EXISTS "platformFee" DECIMAL(5,2) NOT NULL DEFAULT 0;
+    ALTER TABLE "Exchange" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+    ALTER TABLE "Exchange" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE UNIQUE INDEX IF NOT EXISTS "Exchange_slug_key" ON "Exchange"("slug");
 CREATE INDEX        IF NOT EXISTS "Exchange_status_idx" ON "Exchange"("status");
 
@@ -587,6 +834,19 @@ CREATE TABLE IF NOT EXISTS "ExchangeStaff" (
     "revokedAt"   TIMESTAMP(3),
     CONSTRAINT "ExchangeStaff_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='ExchangeStaff') THEN
+    ALTER TABLE "ExchangeStaff" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL;
+    ALTER TABLE "ExchangeStaff" ADD COLUMN IF NOT EXISTS "exchangeId" TEXT NOT NULL;
+    ALTER TABLE "ExchangeStaff" ADD COLUMN IF NOT EXISTS "userId" TEXT NOT NULL;
+    ALTER TABLE "ExchangeStaff" ADD COLUMN IF NOT EXISTS "role" "ExchangeStaffRole" NOT NULL DEFAULT 'STAFF';
+    ALTER TABLE "ExchangeStaff" ADD COLUMN IF NOT EXISTS "title" TEXT;
+    ALTER TABLE "ExchangeStaff" ADD COLUMN IF NOT EXISTS "permissions" JSONB;
+    ALTER TABLE "ExchangeStaff" ADD COLUMN IF NOT EXISTS "joinedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+    ALTER TABLE "ExchangeStaff" ADD COLUMN IF NOT EXISTS "revokedAt" TIMESTAMP(3);
+  END IF;
+END $$;
 CREATE UNIQUE INDEX IF NOT EXISTS "ExchangeStaff_exchangeId_userId_key" ON "ExchangeStaff"("exchangeId","userId");
 CREATE INDEX        IF NOT EXISTS "ExchangeStaff_exchangeId_idx"        ON "ExchangeStaff"("exchangeId");
 CREATE INDEX        IF NOT EXISTS "ExchangeStaff_userId_idx"            ON "ExchangeStaff"("userId");
@@ -627,6 +887,26 @@ CREATE TABLE IF NOT EXISTS "KycRecord" (
     "updatedAt"   TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "KycRecord_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='KycRecord') THEN
+    ALTER TABLE "KycRecord" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL;
+    ALTER TABLE "KycRecord" ADD COLUMN IF NOT EXISTS "userId" TEXT NOT NULL;
+    ALTER TABLE "KycRecord" ADD COLUMN IF NOT EXISTS "exchangeId" TEXT;
+    ALTER TABLE "KycRecord" ADD COLUMN IF NOT EXISTS "status" "KycStatus" NOT NULL DEFAULT 'NOT_SUBMITTED';
+    ALTER TABLE "KycRecord" ADD COLUMN IF NOT EXISTS "level" "KycLevel" NOT NULL DEFAULT 'NONE';
+    ALTER TABLE "KycRecord" ADD COLUMN IF NOT EXISTS "docType" TEXT;
+    ALTER TABLE "KycRecord" ADD COLUMN IF NOT EXISTS "docUrl" TEXT;
+    ALTER TABLE "KycRecord" ADD COLUMN IF NOT EXISTS "selfieUrl" TEXT;
+    ALTER TABLE "KycRecord" ADD COLUMN IF NOT EXISTS "notes" TEXT;
+    ALTER TABLE "KycRecord" ADD COLUMN IF NOT EXISTS "reviewedBy" TEXT;
+    ALTER TABLE "KycRecord" ADD COLUMN IF NOT EXISTS "submittedAt" TIMESTAMP(3);
+    ALTER TABLE "KycRecord" ADD COLUMN IF NOT EXISTS "reviewedAt" TIMESTAMP(3);
+    ALTER TABLE "KycRecord" ADD COLUMN IF NOT EXISTS "expiresAt" TIMESTAMP(3);
+    ALTER TABLE "KycRecord" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+    ALTER TABLE "KycRecord" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE UNIQUE INDEX IF NOT EXISTS "KycRecord_userId_key"             ON "KycRecord"("userId");
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.columns
@@ -666,6 +946,23 @@ CREATE TABLE IF NOT EXISTS "Customer" (
     "updatedAt"        TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "Customer_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='Customer') THEN
+    ALTER TABLE "Customer" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL;
+    ALTER TABLE "Customer" ADD COLUMN IF NOT EXISTS "userId" TEXT NOT NULL;
+    ALTER TABLE "Customer" ADD COLUMN IF NOT EXISTS "exchangeId" TEXT;
+    ALTER TABLE "Customer" ADD COLUMN IF NOT EXISTS "fullName" TEXT NOT NULL;
+    ALTER TABLE "Customer" ADD COLUMN IF NOT EXISTS "phone" TEXT NOT NULL;
+    ALTER TABLE "Customer" ADD COLUMN IF NOT EXISTS "phoneVerified" BOOLEAN NOT NULL DEFAULT false;
+    ALTER TABLE "Customer" ADD COLUMN IF NOT EXISTS "kycStatus" "KycStatus" NOT NULL DEFAULT 'NOT_SUBMITTED';
+    ALTER TABLE "Customer" ADD COLUMN IF NOT EXISTS "kycLevel" "KycLevel" NOT NULL DEFAULT 'NONE';
+    ALTER TABLE "Customer" ADD COLUMN IF NOT EXISTS "shareWithExchange" BOOLEAN NOT NULL DEFAULT false;
+    ALTER TABLE "Customer" ADD COLUMN IF NOT EXISTS "dailyLimitAf" INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE "Customer" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+    ALTER TABLE "Customer" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE UNIQUE INDEX IF NOT EXISTS "Customer_userId_key"    ON "Customer"("userId");
 CREATE INDEX        IF NOT EXISTS "Customer_phone_idx"     ON "Customer"("phone");
 CREATE INDEX        IF NOT EXISTS "Customer_exchangeId_idx" ON "Customer"("exchangeId");
@@ -706,6 +1003,20 @@ CREATE TABLE IF NOT EXISTS "FintechAccount" (
     "updatedAt"  TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "FintechAccount_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='FintechAccount') THEN
+    ALTER TABLE "FintechAccount" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL;
+    ALTER TABLE "FintechAccount" ADD COLUMN IF NOT EXISTS "customerId" TEXT NOT NULL;
+    ALTER TABLE "FintechAccount" ADD COLUMN IF NOT EXISTS "currency" TEXT NOT NULL DEFAULT 'AFN';
+    ALTER TABLE "FintechAccount" ADD COLUMN IF NOT EXISTS "balance" DECIMAL(20,2) NOT NULL DEFAULT 0;
+    ALTER TABLE "FintechAccount" ADD COLUMN IF NOT EXISTS "type" "AccountType" NOT NULL DEFAULT 'CHECKING';
+    ALTER TABLE "FintechAccount" ADD COLUMN IF NOT EXISTS "status" "AccountStatus" NOT NULL DEFAULT 'ACTIVE';
+    ALTER TABLE "FintechAccount" ADD COLUMN IF NOT EXISTS "exchangeId" TEXT;
+    ALTER TABLE "FintechAccount" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+    ALTER TABLE "FintechAccount" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS "FintechAccount_customerId_idx"  ON "FintechAccount"("customerId");
 CREATE INDEX IF NOT EXISTS "FintechAccount_status_idx"      ON "FintechAccount"("status");
 DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname='FintechAccount_customerId_fkey') THEN
@@ -733,6 +1044,28 @@ CREATE TABLE IF NOT EXISTS "Transaction" (
     "updatedAt"       TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "Transaction_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='Transaction') THEN
+    ALTER TABLE "Transaction" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL;
+    ALTER TABLE "Transaction" ADD COLUMN IF NOT EXISTS "txnRef" TEXT NOT NULL;
+    ALTER TABLE "Transaction" ADD COLUMN IF NOT EXISTS "type" "TransactionType" NOT NULL DEFAULT 'TRANSFER';
+    ALTER TABLE "Transaction" ADD COLUMN IF NOT EXISTS "status" "TransactionStatus" NOT NULL DEFAULT 'PENDING';
+    ALTER TABLE "Transaction" ADD COLUMN IF NOT EXISTS "senderId" TEXT;
+    ALTER TABLE "Transaction" ADD COLUMN IF NOT EXISTS "recipientId" TEXT;
+    ALTER TABLE "Transaction" ADD COLUMN IF NOT EXISTS "senderAccountId" TEXT;
+    ALTER TABLE "Transaction" ADD COLUMN IF NOT EXISTS "recipientAccountId" TEXT;
+    ALTER TABLE "Transaction" ADD COLUMN IF NOT EXISTS "amount" DECIMAL(20,2) NOT NULL;
+    ALTER TABLE "Transaction" ADD COLUMN IF NOT EXISTS "currency" TEXT NOT NULL DEFAULT 'AFN';
+    ALTER TABLE "Transaction" ADD COLUMN IF NOT EXISTS "fee" DECIMAL(20,2) NOT NULL DEFAULT 0;
+    ALTER TABLE "Transaction" ADD COLUMN IF NOT EXISTS "exchangeId" TEXT;
+    ALTER TABLE "Transaction" ADD COLUMN IF NOT EXISTS "idempotencyKey" TEXT;
+    ALTER TABLE "Transaction" ADD COLUMN IF NOT EXISTS "meta" JSONB;
+    ALTER TABLE "Transaction" ADD COLUMN IF NOT EXISTS "completedAt" TIMESTAMP(3);
+    ALTER TABLE "Transaction" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+    ALTER TABLE "Transaction" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE UNIQUE INDEX IF NOT EXISTS "Transaction_txnRef_key"         ON "Transaction"("txnRef");
 CREATE UNIQUE INDEX IF NOT EXISTS "Transaction_idempotencyKey_key" ON "Transaction"("idempotencyKey") WHERE "idempotencyKey" IS NOT NULL;
 CREATE INDEX        IF NOT EXISTS "Transaction_senderId_idx"       ON "Transaction"("senderId");
@@ -752,6 +1085,20 @@ CREATE TABLE IF NOT EXISTS "LedgerEntry" (
     "createdAt"      TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "LedgerEntry_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='LedgerEntry') THEN
+    ALTER TABLE "LedgerEntry" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL;
+    ALTER TABLE "LedgerEntry" ADD COLUMN IF NOT EXISTS "accountId" TEXT NOT NULL;
+    ALTER TABLE "LedgerEntry" ADD COLUMN IF NOT EXISTS "transactionId" TEXT;
+    ALTER TABLE "LedgerEntry" ADD COLUMN IF NOT EXISTS "direction" TEXT NOT NULL;
+    ALTER TABLE "LedgerEntry" ADD COLUMN IF NOT EXISTS "amount" DECIMAL(20,2) NOT NULL;
+    ALTER TABLE "LedgerEntry" ADD COLUMN IF NOT EXISTS "currency" TEXT NOT NULL DEFAULT 'AFN';
+    ALTER TABLE "LedgerEntry" ADD COLUMN IF NOT EXISTS "runningBalance" DECIMAL(20,2) NOT NULL;
+    ALTER TABLE "LedgerEntry" ADD COLUMN IF NOT EXISTS "description" TEXT;
+    ALTER TABLE "LedgerEntry" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS "LedgerEntry_accountId_createdAt_idx" ON "LedgerEntry"("accountId","createdAt" DESC);
 
 -- TransactionOtp
@@ -766,6 +1113,19 @@ CREATE TABLE IF NOT EXISTS "TransactionOtp" (
     "createdAt"   TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "TransactionOtp_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='TransactionOtp') THEN
+    ALTER TABLE "TransactionOtp" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL;
+    ALTER TABLE "TransactionOtp" ADD COLUMN IF NOT EXISTS "userId" TEXT NOT NULL;
+    ALTER TABLE "TransactionOtp" ADD COLUMN IF NOT EXISTS "txnId" TEXT NOT NULL;
+    ALTER TABLE "TransactionOtp" ADD COLUMN IF NOT EXISTS "code" TEXT NOT NULL;
+    ALTER TABLE "TransactionOtp" ADD COLUMN IF NOT EXISTS "expiresAt" TIMESTAMP(3) NOT NULL;
+    ALTER TABLE "TransactionOtp" ADD COLUMN IF NOT EXISTS "usedAt" TIMESTAMP(3);
+    ALTER TABLE "TransactionOtp" ADD COLUMN IF NOT EXISTS "attempts" INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE "TransactionOtp" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS "TransactionOtp_txnId_idx" ON "TransactionOtp"("txnId");
 
 -- ExchangeQuote
@@ -788,6 +1148,27 @@ CREATE TABLE IF NOT EXISTS "ExchangeQuote" (
     "updatedAt"      TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "ExchangeQuote_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='ExchangeQuote') THEN
+    ALTER TABLE "ExchangeQuote" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL;
+    ALTER TABLE "ExchangeQuote" ADD COLUMN IF NOT EXISTS "exchangeId" TEXT NOT NULL;
+    ALTER TABLE "ExchangeQuote" ADD COLUMN IF NOT EXISTS "currencyCode" TEXT NOT NULL;
+    ALTER TABLE "ExchangeQuote" ADD COLUMN IF NOT EXISTS "currencyPair" TEXT NOT NULL;
+    ALTER TABLE "ExchangeQuote" ADD COLUMN IF NOT EXISTS "buyRate" DECIMAL(20,6) NOT NULL;
+    ALTER TABLE "ExchangeQuote" ADD COLUMN IF NOT EXISTS "sellRate" DECIMAL(20,6) NOT NULL;
+    ALTER TABLE "ExchangeQuote" ADD COLUMN IF NOT EXISTS "minAmount" DECIMAL(20,2) NOT NULL DEFAULT 0;
+    ALTER TABLE "ExchangeQuote" ADD COLUMN IF NOT EXISTS "maxAmount" DECIMAL(20,2);
+    ALTER TABLE "ExchangeQuote" ADD COLUMN IF NOT EXISTS "status" "QuoteStatus" NOT NULL DEFAULT 'PENDING';
+    ALTER TABLE "ExchangeQuote" ADD COLUMN IF NOT EXISTS "expiresAt" TIMESTAMP(3);
+    ALTER TABLE "ExchangeQuote" ADD COLUMN IF NOT EXISTS "publishedAt" TIMESTAMP(3);
+    ALTER TABLE "ExchangeQuote" ADD COLUMN IF NOT EXISTS "version" INTEGER NOT NULL DEFAULT 1;
+    ALTER TABLE "ExchangeQuote" ADD COLUMN IF NOT EXISTS "notes" TEXT;
+    ALTER TABLE "ExchangeQuote" ADD COLUMN IF NOT EXISTS "createdById" TEXT;
+    ALTER TABLE "ExchangeQuote" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+    ALTER TABLE "ExchangeQuote" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS "ExchangeQuote_exchangeId_status_idx"        ON "ExchangeQuote"("exchangeId","status");
 CREATE INDEX IF NOT EXISTS "ExchangeQuote_exchangeId_currencyCode_idx"  ON "ExchangeQuote"("exchangeId","currencyCode");
 CREATE INDEX IF NOT EXISTS "ExchangeQuote_expiresAt_idx"                ON "ExchangeQuote"("expiresAt");
@@ -823,6 +1204,20 @@ CREATE TABLE IF NOT EXISTS "Device" (
     "createdAt"   TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "Device_pkey" PRIMARY KEY ("id")
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='Device') THEN
+    ALTER TABLE "Device" ADD COLUMN IF NOT EXISTS "id" TEXT NOT NULL;
+    ALTER TABLE "Device" ADD COLUMN IF NOT EXISTS "userId" TEXT NOT NULL;
+    ALTER TABLE "Device" ADD COLUMN IF NOT EXISTS "name" TEXT NOT NULL;
+    ALTER TABLE "Device" ADD COLUMN IF NOT EXISTS "fingerprint" TEXT NOT NULL;
+    ALTER TABLE "Device" ADD COLUMN IF NOT EXISTS "userAgent" TEXT;
+    ALTER TABLE "Device" ADD COLUMN IF NOT EXISTS "ip" TEXT;
+    ALTER TABLE "Device" ADD COLUMN IF NOT EXISTS "trusted" BOOLEAN NOT NULL DEFAULT false;
+    ALTER TABLE "Device" ADD COLUMN IF NOT EXISTS "lastSeenAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+    ALTER TABLE "Device" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  END IF;
+END $$;
 CREATE UNIQUE INDEX IF NOT EXISTS "Device_userId_fingerprint_key" ON "Device"("userId","fingerprint");
 CREATE INDEX        IF NOT EXISTS "Device_userId_idx"             ON "Device"("userId");
 DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname='Device_userId_fkey') THEN
