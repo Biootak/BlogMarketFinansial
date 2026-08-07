@@ -36,6 +36,10 @@ WORKDIR /app
 # در Heroku این به‌صورت build arg ست می‌شود (از GitHub Actions)
 ARG DATABASE_URL
 ENV DATABASE_URL=$DATABASE_URL
+# Prisma schema نیاز به DIRECT_URL دارد (برای مهاجرت مستقیم به DB).
+# در build-time همان DATABASE_URL کافی است — مقادیر runtime در Heroku
+# جدا ست می‌شوند (Config Vars).
+ENV DIRECT_URL=$DATABASE_URL
 
 # فعال‌سازی standalone output برای Heroku
 ENV OUTPUT_STANDALONE=1
