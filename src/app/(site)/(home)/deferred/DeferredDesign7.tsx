@@ -1,6 +1,6 @@
 'use client';
 
-import type { MarketRateItem } from '@/actions/marketRates';
+import type { MarketRateItem } from '@/lib/market-rates';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
 import type { CryptoTickerRate, PostWithRelations, RateListData } from '@/types/types';
 import dynamic from 'next/dynamic';

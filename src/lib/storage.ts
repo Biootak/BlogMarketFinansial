@@ -280,9 +280,11 @@ export async function getFile(folder: string, filename: string): Promise<Buffer 
         }),
       );
       if (response.Body) {
+        // 2026-08-07: AWS SDK types Body as StreamingBlobPayloadOutputTypes;
+        // cast like getFileStream does above — no @ts-expect-error.
+        const body = response.Body as unknown as AsyncIterable<Uint8Array>;
         const chunks: Uint8Array[] = [];
-        // @ts-expect-error - Body is a readable stream
-        for await (const chunk of response.Body) {
+        for await (const chunk of body) {
           chunks.push(chunk);
         }
         return Buffer.concat(chunks);
