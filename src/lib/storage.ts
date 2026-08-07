@@ -250,9 +250,14 @@ export async function getFileStream(
     try {
       const response = await s3Client.send(new GetObjectCommand({ Bucket: BUCKET_NAME, Key: key }));
       return response.Body as unknown as NodeJS.ReadableStream;
-    } catch (_error) {
+    } catch (error) {
       // Local fallback is intentional (files uploaded before S3 was configured),
-      // so this is not an error — only log when the breaker gets tripped.
+      // so this is a warning rather than an error — but it still has to be
+      // visible: on an ephemeral filesystem the local copy may not exist.
+      serverLog.warn('storage', 's3-get-stream-failed', {
+        key,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
@@ -279,14 +284,23 @@ export async function getFile(folder: string, filename: string): Promise<Buffer 
         }
         return Buffer.concat(chunks);
       }
-    } catch {
+    } catch (error) {
       // S3 failed — fall back to local.
+      serverLog.warn('storage', 's3-get-object-failed', {
+        key,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
   try {
     return await readFile(localFilePath);
-  } catch {
+  } catch (error) {
+    // ENOENT is the normal "file does not exist" answer of this function;
+    // anything else (permissions, corrupt mount) is a real fault.
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      serverLog.error('storage', `local-read-failed ${filename}`, error);
+    }
     return null;
   }
 }
@@ -303,7 +317,10 @@ export async function deleteFile(folder: string, filename: string): Promise<bool
     try {
       await s3Client.send(new DeleteObjectCommand({ Bucket: BUCKET_NAME, Key: key }));
       return true;
-    } catch (_error) {
+    } catch (error) {
+      // An orphaned object keeps costing money and stays publicly reachable,
+      // so a failed delete must not be invisible.
+      serverLog.error('storage', `s3-delete-failed ${key}`, error);
       return false;
     }
   })();
@@ -312,7 +329,10 @@ export async function deleteFile(folder: string, filename: string): Promise<bool
     try {
       await unlink(localFilePath);
       return true;
-    } catch {
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+        serverLog.error('storage', `local-delete-failed ${filename}`, error);
+      }
       return false;
     }
   })();

@@ -5,6 +5,8 @@
  * نه داخل function body — یعنی try/catch داخل function بی‌اثر است.
  */
 
+import { serverLog } from '@/lib/server-logger';
+
 const isDev = process.env.NODE_ENV === 'development';
 
 interface CacheEntry<T> {
@@ -83,10 +85,17 @@ export function safeCache<TArgs extends unknown[], T>(
         // فقط برای dev observability
       }
       return value;
-    } catch {
+    } catch (error) {
       // 3) خطا رخ داد:
       //    - اگر قبلاً value موفق داشتیم (stale) → آن را برگردان
       //    - در غیر این صورت → fallback
+      // در هر دو حالت خطا لاگ می‌شود: بدون آن، یک DB کاملاً down فقط
+      // به‌صورت «صفحهٔ خالی» دیده می‌شد و هیچ ردی در SystemLog نمی‌گذاشت.
+      serverLog.error(
+        'safe-cache',
+        `${cached ? 'stale-served' : 'fallback-served'} ${fullKey}`,
+        error,
+      );
       if (cached) {
         // TTL را تمدید کن تا request بعدی دوباره امتحان کند
         cached.expiresAt = now + Math.min(ttl, 30) * 1000;

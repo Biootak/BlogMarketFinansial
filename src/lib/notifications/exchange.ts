@@ -16,6 +16,7 @@
 import prisma from '@/lib/db';
 import { getEmailProviderAsync } from '@/lib/email';
 import { exchangeServiceRequestEmail } from '@/lib/email/templates';
+import { serverLog } from '@/lib/server-logger';
 
 type NotifyArgs = {
   requestId: string;
@@ -44,6 +45,10 @@ export async function notifyExchangeOfServiceRequest(args: NotifyArgs): Promise<
       select: { id: true, name: true, displayName: true, email: true },
     });
     if (!exchange) {
+      serverLog.warn('notifications/exchange', 'exchange-not-found', {
+        exchangeId: args.exchangeId,
+        trackingCode: args.trackingCode,
+      });
       return;
     }
 
@@ -99,5 +104,10 @@ export async function notifyExchangeOfServiceRequest(args: NotifyArgs): Promise<
         },
       });
     }
-  } catch (_err) {}
+  } catch (err) {
+    // The request itself is already persisted, so we never rethrow — but a
+    // notification that silently vanishes means an exchange never learns about
+    // a customer request. Surface it instead of swallowing.
+    serverLog.error('notifications/exchange', 'notify-service-request-failed', err);
+  }
 }

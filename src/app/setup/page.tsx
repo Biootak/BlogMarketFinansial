@@ -5,6 +5,7 @@ import { SetupWizard } from '@/components/Setup/SetupWizard';
 import { ArrowLeftGlyph, ShieldCheckGlyph } from '@/components/Setup/WizardIcons';
 import { checkExistingSuperAdmin } from '@/lib/auth';
 import prisma from '@/lib/db';
+import { serverLog } from '@/lib/server-logger';
 import { maskEmail } from '@/lib/setup/format';
 import { getSiteIdentity } from '@/lib/site-identity';
 import { headers } from 'next/headers';
@@ -80,17 +81,20 @@ async function SetupContent({ siteName, logoUrl }: { siteName: string; logoUrl: 
       headerList.get('x-forwarded-for')?.split(',')[0]?.trim() ??
       headerList.get('x-real-ip') ??
       undefined;
-  } catch {
+  } catch (error) {
+    serverLog.warn('setup', 'client-ip-unavailable', error);
     clientIp = undefined;
   }
 
   let existingAdmin: Awaited<ReturnType<typeof checkExistingSuperAdmin>> = null;
   try {
     existingAdmin = await checkExistingSuperAdmin(prisma);
-  } catch {
+  } catch (error) {
     // Fail open: if the DB query fails we still render the wizard so the
     // operator can recover. The server action will be the authoritative
-    // gate and will refuse the duplicate if it materialises.
+    // gate and will refuse the duplicate if it materialises. The failure is
+    // logged so "wizard shown again on a configured install" is diagnosable.
+    serverLog.error('setup', 'check-existing-super-admin', error);
   }
 
   return (

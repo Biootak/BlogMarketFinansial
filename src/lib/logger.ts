@@ -1,3 +1,5 @@
+import { clientLog } from '@/lib/client-logger';
+
 type LogLevel = 'ERROR' | 'WARNING' | 'INFO';
 
 interface LogParams {
@@ -17,11 +19,14 @@ export async function logSystemEvent({ level, message, source }: LogParams) {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to log system event');
+      throw new Error(`Failed to log system event: HTTP ${response.status}`);
     }
 
     return await response.json();
-  } catch (_error) {
+  } catch (error) {
+    // Returning null keeps the caller running, but a logger that drops its own
+    // failure is how SystemLog ends up looking healthy while it is not written to.
+    clientLog.warn('logger', `log-system-event ${source}/${level}`, error);
     return null;
   }
 }

@@ -67,15 +67,16 @@ export async function checkAuthor() {
   return session.user;
 }
 
+/**
+ * `null` فقط یعنی «هیچ OWNER وجود ندارد».
+ * خطای دیتابیس propagate می‌شود تا caller بتواند «نمی‌دانم» را از «وجود ندارد»
+ * تشخیص دهد — بلعیدن خطا اینجا یعنی صفحهٔ setup روی DB خراب طوری رفتار می‌کرد
+ * که انگار سیستم هنوز راه‌اندازی نشده است.
+ */
 export async function checkExistingSuperAdmin(prisma: PrismaClientType) {
-  try {
-    const existingAdmin = await prisma.user.findFirst({
-      where: {
-        role: Role.OWNER,
-      },
-    });
-    return existingAdmin;
-  } catch {
-    return null;
-  }
+  return prisma.user.findFirst({
+    where: {
+      role: Role.OWNER,
+    },
+  });
 }

@@ -5,6 +5,8 @@
  * در development اگر env ست نشده باشد، کد رو در console لاگ می‌کند.
  */
 
+import { serverLog } from '@/lib/server-logger';
+
 export interface SmsSendResult {
   success: boolean;
   /** فقط در dev mode پر می‌شود */
@@ -29,6 +31,11 @@ export async function sendSms(to: string, body: string): Promise<SmsSendResult> 
       return { success: true, devCode };
     }
     // در production بدون env → fail واضح
+    serverLog.error('sms', 'twilio-not-configured', {
+      hasSid: Boolean(sid),
+      hasToken: Boolean(token),
+      hasFrom: Boolean(from),
+    });
     return { success: false };
   }
 
@@ -45,10 +52,17 @@ export async function sendSms(to: string, body: string): Promise<SmsSendResult> 
       body: params.toString(),
     });
     if (!res.ok) {
+      // The caller only sees `success: false`; without this the Twilio reason
+      // (bad number, unfunded account, blocked region) was lost entirely.
+      serverLog.error('sms', 'twilio-send-rejected', {
+        status: res.status,
+        body: (await res.text().catch(() => '')).slice(0, 300),
+      });
       return { success: false };
     }
     return { success: true };
-  } catch {
+  } catch (error) {
+    serverLog.error('sms', 'twilio-send-failed', error);
     return { success: false };
   }
 }

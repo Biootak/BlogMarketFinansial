@@ -11,6 +11,7 @@ import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
+import { serverLog } from '@/lib/server-logger';
 
 export type ApprovalType = 'settlement' | 'kyc' | 'refund' | 'withdrawal' | 'custom';
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
@@ -249,6 +250,8 @@ export async function getApprovalSnapshot(): Promise<{
   success: boolean;
   data?: ApprovalSnapshot;
   message?: string;
+  /** true یعنی «هیچ درخواست تأییدی نیست» از خطا آمده، نه از صف خالی. */
+  degraded?: boolean;
 }> {
   const guard = await requireStaff();
   if (!guard.ok) return { success: false, message: guard.reason };
@@ -256,9 +259,11 @@ export async function getApprovalSnapshot(): Promise<{
     const data = await getCachedSnapshot();
     return { success: true, data };
   } catch (err) {
+    serverLog.error('approvals', 'get-approval-snapshot', err);
     return {
       success: true,
       data: empty,
+      degraded: true,
       message: err instanceof Error ? err.message : 'خطای ناشناخته',
     };
   }

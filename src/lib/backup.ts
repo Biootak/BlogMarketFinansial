@@ -173,7 +173,8 @@ async function uploadBackupToS3(filename: string, json: string): Promise<boolean
       }),
     );
     return true;
-  } catch {
+  } catch (error) {
+    serverLog.error('backup', `s3-upload-failed ${filename}`, error);
     return false;
   }
 }
@@ -195,7 +196,8 @@ async function readBackupFromS3(filename: string): Promise<string | null> {
     // @ts-expect-error — Body is a Node stream at runtime
     for await (const chunk of res.Body) chunks.push(chunk);
     return Buffer.concat(chunks).toString('utf8');
-  } catch {
+  } catch (error) {
+    serverLog.error('backup', `s3-read-failed ${filename}`, error);
     return null;
   }
 }
@@ -212,8 +214,11 @@ async function deleteBackupFromS3(filename: string): Promise<void> {
         Key: `${BACKUP_S3_PREFIX}${filename}`,
       }),
     );
-  } catch {
-    /* best-effort */
+  } catch (error) {
+    serverLog.warn('backup', 's3-delete-failed', {
+      filename,
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 }
 
@@ -229,7 +234,10 @@ async function listBackupsFromS3(): Promise<string[]> {
     return (res.Contents ?? [])
       .map((obj) => obj.Key?.replace(BACKUP_S3_PREFIX, '') ?? '')
       .filter((k) => k.startsWith('backup_') && k.endsWith('.json'));
-  } catch {
+  } catch (error) {
+    // Returning [] here makes the remote copies look absent — without a log a
+    // failed listing is indistinguishable from «no backups at all».
+    serverLog.error('backup', 's3-list-failed', error);
     return [];
   }
 }
@@ -283,15 +291,20 @@ export async function writeBackup(
     // cleanup tmp
     try {
       if (existsSync(tmpPath)) await unlink(tmpPath);
-    } catch {
-      // ignore
+    } catch (cleanupError) {
+      serverLog.warn('backup', 'tmp-cleanup-failed', {
+        tmpPath,
+        error: cleanupError instanceof Error ? cleanupError.message : String(cleanupError),
+      });
     }
     throw err;
   }
 
   // M8-fix: mirror to S3 so backup survives Vercel ephemeral filesystem
   // best-effort — filesystem backup already written, S3 failure is non-fatal
-  await uploadBackupToS3(filename, json).catch(() => {});
+  await uploadBackupToS3(filename, json).catch((error) => {
+    serverLog.error('backup', `s3-mirror-failed ${filename}`, error);
+  });
 
   const stats = await stat(fullPath);
   return {
@@ -389,8 +402,10 @@ export async function readBackup(filename: string): Promise<BackupEnvelope | nul
     try {
       const raw = await readFile(fullPath, 'utf8');
       return JSON.parse(raw) as BackupEnvelope;
-    } catch {
-      // fall through to S3
+    } catch (error) {
+      // fall through to S3 — a local file that exists but cannot be parsed is
+      // a corrupt backup, which is exactly what you want to know before a restore.
+      serverLog.error('backup', `local-read-failed ${filename}`, error);
     }
   }
 
@@ -399,7 +414,8 @@ export async function readBackup(filename: string): Promise<BackupEnvelope | nul
     const raw = await readBackupFromS3(filename);
     if (!raw) return null;
     return JSON.parse(raw) as BackupEnvelope;
-  } catch {
+  } catch (error) {
+    serverLog.error('backup', `read-failed ${filename}`, error);
     return null;
   }
 }
@@ -418,14 +434,24 @@ export async function pruneBackups(retentionCount: number): Promise<number> {
   for (const b of toDelete) {
     try {
       // filesystem (path may be '' for S3-only entries)
-      if (b.path) await unlink(b.path).catch(() => {});
+      if (b.path)
+        await unlink(b.path).catch((error: NodeJS.ErrnoException) => {
+          if (error.code !== 'ENOENT') {
+            serverLog.warn('backup', 'prune-unlink-failed', {
+              filename: b.filename,
+              error: error.message,
+            });
+          }
+        });
       // M8-fix: also remove from S3
       await deleteBackupFromS3(b.filename);
       // DB record — best-effort
-      await prisma.backupRun.deleteMany({ where: { filename: b.filename } }).catch(() => {});
+      await prisma.backupRun
+        .deleteMany({ where: { filename: b.filename } })
+        .catch((error) => serverLog.warn('backup', 'prune-db-row-failed', error));
       deleted++;
-    } catch {
-      // ignore
+    } catch (error) {
+      serverLog.error('backup', `prune-failed ${b.filename}`, error);
     }
   }
   return deleted;
@@ -495,7 +521,11 @@ async function pushSection(
   try {
     const rows = await run();
     sections.push({ name, rowCount: rows.length, takenAt: createdAt, data: rows });
-  } catch {
+  } catch (error) {
+    // A failed section is written as an empty one so the backup still completes,
+    // which means an incomplete backup looks identical to an empty database.
+    // Log it — this is the difference between a usable restore and data loss.
+    serverLog.error('backup', `section-failed ${name}`, error);
     sections.push({ name, rowCount: 0, takenAt: createdAt, data: [] });
   }
 }
@@ -518,7 +548,8 @@ export async function runBackup(reason = 'manual', actor = 'cron'): Promise<Back
     } else {
       sections.push({ name: 'system_settings', rowCount: 0, takenAt: createdAt, data: null });
     }
-  } catch {
+  } catch (error) {
+    serverLog.error('backup', 'section-failed system_settings', error);
     sections.push({ name: 'system_settings', rowCount: 0, takenAt: createdAt, data: null });
   }
 
@@ -531,16 +562,16 @@ export async function runBackup(reason = 'manual', actor = 'cron'): Promise<Back
       takenAt: createdAt,
       data: social,
     });
-  } catch {
-    /* skip */
+  } catch (error) {
+    serverLog.error('backup', 'section-failed social_links', error);
   }
 
   // Audit log — last 1000 rows
   try {
     const audit = await prisma.auditLog.findMany({ orderBy: { createdAt: 'desc' }, take: 1000 });
     sections.push({ name: 'audit_log', rowCount: audit.length, takenAt: createdAt, data: audit });
-  } catch {
-    /* skip */
+  } catch (error) {
+    serverLog.error('backup', 'section-failed audit_log', error);
   }
 
   // Exchange rates — full (جدول اصلی نرخ بازار)
@@ -552,8 +583,8 @@ export async function runBackup(reason = 'manual', actor = 'cron'): Promise<Back
       takenAt: createdAt,
       data: rates,
     });
-  } catch {
-    /* skip */
+  } catch (error) {
+    serverLog.error('backup', 'section-failed exchange_rates', error);
   }
 
   // ── محتوای اصلی سایت ────────────────────────────────────────────────────
@@ -632,8 +663,9 @@ export async function runBackup(reason = 'manual', actor = 'cron'): Promise<Back
         checksum: info.checksum,
       },
     });
-  } catch {
-    /* ignore — filesystem backup already written */
+  } catch (error) {
+    // filesystem backup already written; the missing DB row only affects the UI list
+    serverLog.warn('backup', 'backup-run-row-failed', error);
   }
 
   // audit log (best-effort)
@@ -645,8 +677,8 @@ export async function runBackup(reason = 'manual', actor = 'cron'): Promise<Back
         meta: { filename: info.filename, sizeBytes: info.sizeBytes, totalRows: info.totalRows },
       },
     });
-  } catch {
-    /* ignore */
+  } catch (error) {
+    serverLog.warn('backup', 'audit-log-write-failed', error);
   }
 
   // H5-fix: retention از config خوانده می‌شود نه hardcoded 20
@@ -654,10 +686,13 @@ export async function runBackup(reason = 'manual', actor = 'cron'): Promise<Back
   try {
     const dbConfig = await prisma.backupConfig.findUnique({ where: { id: 'singleton' } });
     if (dbConfig?.retentionCount) retentionCount = dbConfig.retentionCount;
-  } catch {
-    /* ignore — از مقدار پیش‌فرض استفاده می‌شود */
+  } catch (error) {
+    serverLog.warn('backup', 'retention-config-read-failed', error);
   }
-  await pruneBackups(retentionCount).catch(() => 0);
+  await pruneBackups(retentionCount).catch((error) => {
+    serverLog.error('backup', 'prune-failed', error);
+    return 0;
+  });
 
   return info;
 }

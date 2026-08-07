@@ -16,6 +16,7 @@ import { toast } from '@/components/ui/use-toast';
 // از این hook می‌خوانیم تا اگر روزی پنلی LTR شد (مثلاً ادیتور چندزبانه)
 // یا کاربر دکمهٔ تغییر زبان زد، shell درست رفتار کند.
 import { useDirection } from '@/hooks/useDirection';
+import { clientLog } from '@/lib/client-logger';
 import { cn } from '@/lib/utils';
 import type { Content, EditorOptions } from '@tiptap/core';
 import { EditorContent, useEditor } from '@tiptap/react';
@@ -590,7 +591,11 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
               });
             }
           }
-        } catch (_e) {}
+        } catch (e) {
+          // A corrupt/unreadable autosave entry must not block the editor, but
+          // silently dropping it looked like «my draft vanished» to the author.
+          clientLog.warn('editor', 'autosave-restore-failed', e);
+        }
       }
 
       const handleUpdate = () => {
@@ -604,7 +609,11 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
                 savedAt: Date.now(),
               }),
             );
-          } catch (_e) {}
+          } catch (e) {
+            // localStorage full or blocked (private mode) — autosave is dead from
+            // here on, so surface it instead of pretending drafts are safe.
+            clientLog.warn('editor', 'autosave-write-failed', e);
+          }
         }, AUTO_SAVE_DEBOUNCE_MS);
       };
 

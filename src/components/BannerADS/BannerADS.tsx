@@ -15,6 +15,7 @@
 'use client';
 
 import SafeImage from '@/components/SafeImage/SafeImage';
+import { clientLog } from '@/lib/client-logger';
 import { cn, parseCustomDimensions, toPersianNumber } from '@/lib/utils';
 import type { AdPosition, AdSize, Advertisement, CustomAdDimensions } from '@/types/types';
 import {
@@ -323,7 +324,11 @@ export default function BannerAds({
         if (data.success && typeof data.views === 'number') {
           setViewsCount(data.views);
         }
-      } catch (_err) {}
+      } catch (err) {
+        // Ad impressions are billing data — a dropped view must be recoverable
+        // from the logs, not invisible.
+        clientLog.warn('banner-ads', 'record-view-failed', err);
+      }
     };
     const io = new IntersectionObserver(
       (entries) => {

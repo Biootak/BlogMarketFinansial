@@ -1,3 +1,5 @@
+import { clientLog } from '@/lib/client-logger';
+
 interface LogActivityParams {
   action: string;
   details: string;
@@ -14,11 +16,12 @@ export async function logActivity({ action, details }: LogActivityParams) {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to log activity');
+      throw new Error(`Failed to log activity: HTTP ${response.status}`);
     }
 
     return await response.json();
-  } catch (_error) {
+  } catch (error) {
+    clientLog.warn('activity', `log-activity ${action}`, error);
     return null;
   }
 }

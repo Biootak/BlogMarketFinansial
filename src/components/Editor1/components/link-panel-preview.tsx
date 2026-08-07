@@ -1,3 +1,4 @@
+import { clientLog } from '@/lib/client-logger';
 import React, { useMemo, useCallback } from 'react';
 import { Icon } from '../../ui/icon';
 
@@ -26,7 +27,11 @@ const LinkPanelPreview = ({ url, onEdit, onRemove }: LinkPanelPreviewProps) => {
       await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (_error) {}
+    } catch (error) {
+      // clipboard denied — the «copied» state stays off, which is the user-visible
+      // signal; the reason belongs in the logs.
+      clientLog.warn('editor/link-panel', 'clipboard-copy-failed', error);
+    }
   }, [url]);
 
   return (
