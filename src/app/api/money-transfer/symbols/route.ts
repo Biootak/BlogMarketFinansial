@@ -1,11 +1,3 @@
-/**
- * /api/money-transfer/symbols
- * ----------------------------------------------------------------------------
- * لیست ارزهای قابل تبدیل به همراه نرخ بازار و تغییر روزانه.
- * برای Currency Selector dropdown استفاده می‌شود.
- * ----------------------------------------------------------------------------
- */
-
 import { assembleMarketRates } from '@/lib/market-rates';
 import { safeCache } from '@/lib/safe-cache';
 import { NextResponse } from 'next/server';
@@ -21,8 +13,6 @@ const FALLBACK: { items: SymbolItem[]; updatedAt: string } = {
   items: [],
   updatedAt: new Date(0).toISOString(),
 };
-
-// گروه‌هایی که نباید در انتخاب ارز مبدأ حواله نمایش داده شوند
 const EXCLUDED_GROUPS = new Set(['global']);
 
 async function buildSymbols(): Promise<{ items: SymbolItem[]; updatedAt: string }> {
@@ -48,14 +38,10 @@ export async function GET() {
   try {
     const data = await getCachedSymbols();
     return NextResponse.json({ success: true, data });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'خطای نامشخص';
+  } catch {
     return NextResponse.json(
-      {
-        success: false,
-        error: { code: 'INTERNAL', message },
-      },
-      { status: 500 },
+      { success: false, error: { code: 'SYMBOLS_UNAVAILABLE', message: 'فهرست ارزها موقتاً در دسترس نیست' } },
+      { status: 503 },
     );
   }
 }
