@@ -46,11 +46,11 @@ async function fetchActiveAdsInternal(
       message: 'تبلیغات فعال با موفقیت بازیابی شدند.',
       data: ads,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در بازیابی تبلیغات. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
+      error: 'INTERNAL_ERROR',
     };
   }
 }
@@ -129,11 +129,11 @@ export async function getAllAdvertisements({
       message: 'تمام تبلیغات با موفقیت بازیابی شدند.',
       data: { ads, totalCount },
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در بازیابی تبلیغات. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
+      error: 'INTERNAL_ERROR',
     };
   }
 }
@@ -154,11 +154,11 @@ export async function getAdvertisementById(id: string): Promise<ActionResult<Adv
       message: 'تبلیغ با موفقیت بازیابی شد.',
       data: ad,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در بازیابی تبلیغ. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
+      error: 'INTERNAL_ERROR',
     };
   }
 }
@@ -194,11 +194,11 @@ export async function createAdvertisement(
       message: 'تبلیغ با موفقیت ایجاد شد.',
       data: newAd,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در ایجاد تبلیغ. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
+      error: 'INTERNAL_ERROR',
     };
   }
 }
@@ -236,11 +236,11 @@ export async function updateAdvertisement(
       message: 'تبلیغ با موفقیت به‌روزرسانی شد.',
       data: updatedAd,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در به‌روزرسانی تبلیغ. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
+      error: 'INTERNAL_ERROR',
     };
   }
 }
@@ -256,11 +256,11 @@ export async function deleteAdvertisement(id: string): Promise<ActionResult> {
       success: true,
       message: 'تبلیغ با موفقیت حذف شد.',
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در حذف تبلیغ. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
+      error: 'INTERNAL_ERROR',
     };
   }
 }

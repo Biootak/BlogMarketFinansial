@@ -32,7 +32,7 @@ import prisma from '../src/lib/db';
     console.log('---');
     for (const l of lists) {
       const rates = Array.isArray(l.rates) ? l.rates : [];
-      console.log('LIST:', l.title, '| active=' + l.isActive, '| rates=' + rates.length);
+      console.log('LIST:', l.title, `| active=${l.isActive}`, `| rates=${rates.length}`);
       for (const r of rates) {
         const v = String((r as any)?.value || '').slice(0, 80);
         console.log('   •', (r as any).title, '=>', v);

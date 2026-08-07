@@ -9,8 +9,8 @@ export async function checkRole(allowedRoles: string[]) {
     redirect('/auth');
   }
 
-  // OWNER has access to everything.
-  if (session.user.role === 'OWNER') {
+  // OWNER and SUPERADMIN have access to everything.
+  if (session.user.role === 'OWNER' || session.user.role === 'SUPERADMIN') {
     return session;
   }
 

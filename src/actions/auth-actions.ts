@@ -34,8 +34,8 @@ import {
   generateSixDigitCode,
   invalidateOtpTokens,
 } from '@/lib/tokens';
-import { decryptTotpSecret } from '@/lib/totp-secrets';
 import { verifyTotp } from '@/lib/totp';
+import { decryptTotpSecret } from '@/lib/totp-secrets';
 import {
   EmailLookupSchema,
   LoginSchema,
@@ -481,7 +481,12 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
       }
       const twoFaUser = await prisma.user.findFirst({
         where: { email: { equals: input.email, mode: 'insensitive' } },
-        select: { twoFactorEnabled: true, twoFactorSecretEnc: true, emailVerified: true, email: true },
+        select: {
+          twoFactorEnabled: true,
+          twoFactorSecretEnc: true,
+          emailVerified: true,
+          email: true,
+        },
       });
       if (!twoFaUser?.twoFactorEnabled || !twoFaUser.twoFactorSecretEnc) {
         return {

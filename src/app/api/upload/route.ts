@@ -391,7 +391,8 @@ export async function POST(request: NextRequest) {
       !isUserFolder &&
       role !== 'AUTHOR' &&
       role !== 'ADMIN' &&
-      role !== 'OWNER'
+      role !== 'OWNER' &&
+      role !== 'SUPERADMIN'
     ) {
       return NextResponse.json(
         {

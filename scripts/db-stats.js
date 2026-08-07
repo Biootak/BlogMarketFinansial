@@ -26,6 +26,8 @@ const p = new PrismaClient();
     systemSettings: await p.systemSettings.count(),
   };
   console.log('آمار فعلی دیتابیس:');
-  Object.entries(stats).sort((a, b) => a[1] - b[1]).forEach(([k, v]) => console.log('  ' + k.padEnd(20) + ': ' + v));
+  Object.entries(stats)
+    .sort((a, b) => a[1] - b[1])
+    .forEach(([k, v]) => console.log(`  ${k.padEnd(20)}: ${v}`));
   await p.$disconnect();
 })();

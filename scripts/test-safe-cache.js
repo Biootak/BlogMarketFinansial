@@ -17,8 +17,11 @@ const isDev = process.env.NODE_ENV === 'development';
 const ARG_SEPARATOR = '::';
 function makeKey(base, args) {
   if (args.length === 0) return base;
-  try { return `${base}${ARG_SEPARATOR}${JSON.stringify(args)}`; }
-  catch { return `${base}${ARG_SEPARATOR}${args.map(String).join(ARG_SEPARATOR)}`; }
+  try {
+    return `${base}${ARG_SEPARATOR}${JSON.stringify(args)}`;
+  } catch {
+    return `${base}${ARG_SEPARATOR}${args.map(String).join(ARG_SEPARATOR)}`;
+  }
 }
 
 function safeCache(fn, fallback, options) {
@@ -32,7 +35,7 @@ function safeCache(fn, fallback, options) {
       const value = await fn(...args);
       memoryStore.set(fullKey, { value, expiresAt: now + ttl * 1000, storedAt: now });
       return value;
-    } catch (error) {
+    } catch (_error) {
       if (cached) {
         if (isDev) console.warn(`[safe-cache] ${fullKey} stale fallback`);
         cached.expiresAt = now + Math.min(ttl, 30) * 1000;
@@ -65,13 +68,22 @@ async function mockArrayCall() {
 const RESULTS = { pass: 0, fail: 0 };
 
 function assert(cond, msg) {
-  if (cond) { RESULTS.pass += 1; console.log(`  ✅ ${msg}`); }
-  else { RESULTS.fail += 1; console.log(`  ❌ ${msg}`); }
+  if (cond) {
+    RESULTS.pass += 1;
+    console.log(`  ✅ ${msg}`);
+  } else {
+    RESULTS.fail += 1;
+    console.log(`  ❌ ${msg}`);
+  }
 }
 
-function section(t) { console.log(`\n━━━ ${t} ━━━`); }
+function section(t) {
+  console.log(`\n━━━ ${t} ━━━`);
+}
 
-async function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
+async function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
 
 async function main() {
   console.log('🧪 تست safeCache wrapper\n');
@@ -176,4 +188,7 @@ async function main() {
   console.log('🎉 همه‌ی تست‌ها موفق — safeCache آماده است');
 }
 
-main().catch((err) => { console.error('💥', err); process.exit(1); });
+main().catch((err) => {
+  console.error('💥', err);
+  process.exit(1);
+});
