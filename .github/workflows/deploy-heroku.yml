@@ -58,6 +58,7 @@ jobs:
           build-args: |
             DATABASE_URL=${{ steps.db.outputs.database_url }}
             DIRECT_URL=${{ steps.db.outputs.direct_url }}
+            SEED_OWNER_PASSWORD=${{ secrets.SEED_OWNER_PASSWORD }}
 
       # ─── 6. Release (deploy) روی Heroku ──────────────────────────────────
       - name: Release on Heroku

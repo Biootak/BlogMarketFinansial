@@ -40,6 +40,9 @@ ENV DATABASE_URL=$DATABASE_URL
 # در build-time همان DATABASE_URL کافی است — مقادیر runtime در Heroku
 # جدا ست می‌شوند (Config Vars).
 ENV DIRECT_URL=$DATABASE_URL
+# رمز OWNER برای seed اولیه (اختیاری — اگر خالی باشد seed رمز تصادفی می‌سازد)
+ARG SEED_OWNER_PASSWORD
+ENV SEED_OWNER_PASSWORD=$SEED_OWNER_PASSWORD
 
 # فعال‌سازی standalone output برای Heroku
 ENV OUTPUT_STANDALONE=1
@@ -54,6 +57,10 @@ COPY . .
 # هنوز ساخته نشده باشند، build با «table does not exist» شکست می‌خورد.
 # (قبلاً migrate deploy فقط در runtime اجرا می‌شد که خیلی دیر بود.)
 RUN npx prisma migrate deploy --schema=./prisma/schema.prisma
+
+# 2026-08-08: seed اولیه روی DB خالی (idempotent — چندبار اجرا بی‌ضرر است).
+# این مرحله فقط در build اجرا می‌شود؛ runtime داده را از DB می‌خواند.
+RUN node prisma/seed.js && npx tsx prisma/seed-market-rates.ts || echo "seed skipped (DB not empty or transient error)"
 
 RUN npm run build
 
