@@ -415,8 +415,10 @@ export async function loginWithPassword(formData: FormData): Promise<AuthResult>
     // to handle 'CredentialsSignin' with an extra hint — if the user
     // is unverified, prompt them to verify first.
     if (error instanceof AuthError && error.type === 'CredentialsSignin') {
-      const user = await prisma.user.findUnique({
-        where: { email: getFormString(formData, 'email') },
+      // 2026-08-03: use case-insensitive lookup for consistency with rest of auth pipeline.
+      const emailInput = getFormString(formData, 'email');
+      const user = await prisma.user.findFirst({
+        where: { email: { equals: emailInput, mode: 'insensitive' } },
       });
       if (user && !user.emailVerified) {
         const sent = await issueOtp(user.email, 'reverify');
@@ -748,13 +750,16 @@ export async function setNewPassword(formData: FormData): Promise<AuthResult> {
       };
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: input.email },
+    // 2026-08-03: use findFirst with case-insensitive match (consistent
+    // with the rest of the auth pipeline) and return a generic error that
+    // does NOT confirm whether the email exists — prevents user enumeration.
+    const user = await prisma.user.findFirst({
+      where: { email: { equals: input.email, mode: 'insensitive' } },
     });
     if (!user) {
       return {
         success: false,
-        error: 'کاربری با این ایمیل یافت نشد',
+        error: 'نشست بازنشانی نامعتبر است. لطفاً از ابتدا اقدام کنید',
       };
     }
 

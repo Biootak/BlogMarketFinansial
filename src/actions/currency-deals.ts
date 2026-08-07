@@ -417,7 +417,9 @@ export async function createDeal(
       const fraudRisk = await screenTransaction({
         customerId: customer.id,
         exchangeId,
-        amount: BigInt(Math.round(Number(fromAmount) * 100)),
+        // 2026-08-03: Decimal→BigInt conversion — avoid Number() precision loss
+        // on large amounts (> 2^53 loses bits). Decimal.toFixed(0) stays exact.
+        amount: BigInt(new Decimal(fromAmount.toString()).mul(100).round().toFixed(0)),
         currency: fromCurrency,
         ip,
         kind: 'EXCHANGE',

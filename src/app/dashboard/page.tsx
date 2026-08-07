@@ -125,7 +125,16 @@ export default async function Dashboard() {
       recentDraftsResult.data &&
       viewStatsResult.data;
 
-    if (editorialDataOk) {
+    // editorialDataOk checked all five .data fields are truthy;
+    // narrow with explicit checks to satisfy Biome noNonNullAssertion.
+    if (
+      editorialDataOk &&
+      statsResult?.data &&
+      scheduledPostsResult?.data &&
+      popularPostsResult?.data &&
+      recentDraftsResult?.data &&
+      viewStatsResult?.data
+    ) {
       const recentActivity =
         recentActivityResult?.success && Array.isArray(recentActivityResult.data)
           ? recentActivityResult.data
@@ -135,11 +144,11 @@ export default async function Dashboard() {
         <>
           <FintechCockpitServer />
           <AtelierDeck
-            stats={statsResult?.data!}
-            scheduledPosts={scheduledPostsResult?.data!}
-            popularPosts={popularPostsResult?.data!}
-            recentDrafts={recentDraftsResult?.data!}
-            viewStats={viewStatsResult?.data!}
+            stats={statsResult.data}
+            scheduledPosts={scheduledPostsResult.data}
+            popularPosts={popularPostsResult.data}
+            recentDrafts={recentDraftsResult.data}
+            viewStats={viewStatsResult.data}
             recentActivity={recentActivity}
             userRole={userRole}
             marketRates={marketRates ?? []}

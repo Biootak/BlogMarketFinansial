@@ -336,8 +336,17 @@ export async function confirmTransfer(
     where: { userId: auth.user.id },
     select: { id: true },
   });
+  // 2026-08-03: explicit null-check — if the customer profile was deleted
+  // between the session check and here, return a clear error rather than
+  // letting the query proceed with customerId='__none__'.
+  if (!senderCustomer) {
+    return {
+      success: false,
+      error: { code: 'NO_ACCOUNT', message: 'حساب مشتری یافت نشد. لطفاً مجدداً وارد شوید' },
+    };
+  }
   const txn = await prisma.transaction.findFirst({
-    where: { id: txnId, customerId: senderCustomer?.id ?? '__none__' },
+    where: { id: txnId, customerId: senderCustomer.id },
     select: {
       id: true,
       status: true,

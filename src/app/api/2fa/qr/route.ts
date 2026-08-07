@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
-import { decryptTotpSecret } from '@/lib/totp-secrets';
 import { generateOtpAuthUri } from '@/lib/totp';
+import { decryptTotpSecret } from '@/lib/totp-secrets';
 import { type NextRequest, NextResponse } from 'next/server';
 
 const PRIVATE_HEADERS = {
@@ -44,16 +44,32 @@ export async function GET(_request: NextRequest) {
 
   if (!user.twoFactorSecretEnc?.startsWith('pending:')) {
     return NextResponse.json(
-      { success: false, error: { code: 'SETUP_REQUIRED', message: 'ابتدا تنظیم ۲FA را شروع کنید' } },
+      {
+        success: false,
+        error: { code: 'SETUP_REQUIRED', message: 'ابتدا تنظیم ۲FA را شروع کنید' },
+      },
       { status: 409, headers: PRIVATE_HEADERS },
     );
   }
 
-  const secret = decryptTotpSecret(user.twoFactorSecretEnc.slice('pending:'.length));
-  const otpauthUri = generateOtpAuthUri(secret, user.email ?? session.user.id);
+  // 2026-08-03: wrap decryption in try-catch — a corrupted/rotated secret
+  // would otherwise bubble up as an unhandled 500 with no user-friendly message.
+  let otpauthUri: string;
+  try {
+    const secret = decryptTotpSecret(user.twoFactorSecretEnc.slice('pending:'.length));
+    otpauthUri = generateOtpAuthUri(secret, user.email ?? session.user.id);
+  } catch {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'DECRYPT_FAILED',
+          message: 'خطا در پردازش QR. ابتدا تنظیم ۲FA را مجدداً آغاز کنید',
+        },
+      },
+      { status: 500, headers: PRIVATE_HEADERS },
+    );
+  }
 
-  return NextResponse.json(
-    { success: true, data: { otpauthUri } },
-    { headers: PRIVATE_HEADERS },
-  );
+  return NextResponse.json({ success: true, data: { otpauthUri } }, { headers: PRIVATE_HEADERS });
 }

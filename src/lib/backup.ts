@@ -137,7 +137,10 @@ function buildS3Client(): S3Client | null {
 async function uploadBackupToS3(filename: string, json: string): Promise<boolean> {
   const client = buildS3Client();
   if (!client) return false;
-  const bucket = process.env.LIARA_BUCKET_NAME as string;
+  // 2026-08-03: validate bucket name — if LIARA_BUCKET_NAME is unset,
+  // cast to `string` silently produces undefined which crashes the S3 call.
+  const bucket = process.env.LIARA_BUCKET_NAME;
+  if (!bucket) return false;
   try {
     await client.send(
       new PutObjectCommand({
@@ -157,7 +160,8 @@ async function uploadBackupToS3(filename: string, json: string): Promise<boolean
 async function readBackupFromS3(filename: string): Promise<string | null> {
   const client = buildS3Client();
   if (!client) return null;
-  const bucket = process.env.LIARA_BUCKET_NAME as string;
+  const bucket = process.env.LIARA_BUCKET_NAME;
+  if (!bucket) return null;
   try {
     const res = await client.send(
       new GetObjectCommand({
@@ -178,7 +182,8 @@ async function readBackupFromS3(filename: string): Promise<string | null> {
 async function deleteBackupFromS3(filename: string): Promise<void> {
   const client = buildS3Client();
   if (!client) return;
-  const bucket = process.env.LIARA_BUCKET_NAME as string;
+  const bucket = process.env.LIARA_BUCKET_NAME;
+  if (!bucket) return;
   try {
     await client.send(
       new DeleteObjectCommand({
@@ -194,7 +199,8 @@ async function deleteBackupFromS3(filename: string): Promise<void> {
 async function listBackupsFromS3(): Promise<string[]> {
   const client = buildS3Client();
   if (!client) return [];
-  const bucket = process.env.LIARA_BUCKET_NAME as string;
+  const bucket = process.env.LIARA_BUCKET_NAME;
+  if (!bucket) return [];
   try {
     const res = await client.send(
       new ListObjectsV2Command({ Bucket: bucket, Prefix: BACKUP_S3_PREFIX }),
