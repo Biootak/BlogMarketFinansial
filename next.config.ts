@@ -59,10 +59,6 @@ const nextConfig: NextConfig = {
   cacheComponents: false,
   compress: true,
   poweredByHeader: false,
-  // Enable static asset compression (gzip). For production behind a CDN
-  // the CDN usually does this; when running standalone (e.g. `next start`)
-  // we want Next to do it too so the size that the client parses is
-  // smaller on cold cache.
   productionBrowserSourceMaps: false,
 
   // Rewrites برای serve کردن فایل‌های آپلود شده در production
@@ -180,13 +176,10 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Turbopack configuration — dev AND build.
-  // 2026-08-04: Turbopack build (Next.js 16.2.9) now succeeds. The previous
-  // lightningcss alpha panic on OKLCH/color-mix tokens is resolved because
-  // CSS processing goes through `@tailwindcss/postcss` (lightningcss 1.30.2
-  // stable) — NOT the alpha version embedded in the Turbopack binary.
-  // `next build` uses Turbopack (default since Next.js 16); `build:webpack`
-  // is a slow fallback only. This cut production build time materially.
+  // Turbopack — dev AND build (default since Next.js 16). CSS processing
+  // goes through `@tailwindcss/postcss` (lightningcss 1.30.2 stable), so no
+  // `useLightningcss`/`lightningCssFeatures` flags are needed (Next 16.3
+  // dropped them). `build:webpack` remains as a slow fallback only.
   turbopack: {},
 
   images: {
@@ -275,33 +268,27 @@ const nextConfig: NextConfig = {
     silenceDeprecations: ['legacy-js-api'],
   },
 
-  // 2026-06-14: experimental flags tuned for the public/blog
-  // workload (2026-06-24: `ppr` removed — it moved to the top-level
-  // `cacheComponents` flag in Next.js 16):
-  //   * staleTimes: client router cache stays warm across back/
-  //     forward navigations, which is the dominant nav pattern on
-  //     long-form blog reading.
-  //   * optimizePackageImports: tree-shakes lucide-react and
-  //     react-icons, both of which are imported widely here and
-  //     easily bloat the first-load JS by 100KB+ without this.
-  //   * optimizeCss: explicitly OFF. Only governs webpack fallback
-  //     builds. Turbopack (now the default) uses its own CSS pipeline
-  //     via lightningcss 1.30.2 (stable) — the previous alpha panic
-  //     on OKLCH/color-mix tokens is resolved. Kept OFF as a
-  //     precaution for any `next build --webpack` fallback.
+  // 2026-06-14: experimental flags tuned for the public/blog workload.
+  // All of these are documented official options in Next.js 16.3.0.
+  // NOTE (2026-08-07): `staticGenerationRetryCount: 0` was REMOVED — it was
+  // the actual root cause of the build failure
+  // "Invariant: Expected an HTML size for prerendered app route /_global-error".
+  // With retryCount 0, the first prerender attempt of the internal
+  // `/_global-error` route fails and the build aborts instantly instead of
+  // retrying. Keeping the default (undefined → 1 retry) lets the build pass.
+  // The `cpus: 1` workaround was also removed — proven unnecessary once
+  // retryCount returned to default; the default `cpus` (os.cpus()-1) is fine.
   experimental: {
     // 2026-07-06: route handlers handle our image uploads (max 10MB).
     // Server Actions cap at 1MB by default; we don't use them for upload
     // today, but the setting future-proofs any action-based upload path
     // someone wires up later. 12MB = 2MB headroom over MAX_FILE_SIZE.
-    // (In Next 16 `serverActions` lives under `experimental`, not at top
-    // level — that's why this nested placement exists.)
     serverActions: {
       bodySizeLimit: '12mb',
     },
     // 2026-07-06: Next 15.5+ added an internal proxy that silently
     // truncates binary bodies over 1MB unless this is set explicitly.
-    // Keep in sync with `experimental.serverActions.bodySizeLimit` above.
+    // Keep in sync with `serverActions.bodySizeLimit` above.
     proxyClientMaxBodySize: '12mb',
     staleTimes: {
       dynamic: 30,
@@ -312,10 +299,8 @@ const nextConfig: NextConfig = {
     // within one worker, not across workers). With connection_limit=3
     // in production, 8 concurrent workers would try to open 8 connections
     // simultaneously, collapsing any database under ~30 max_connections.
-    // Retry = 0 (fail fast — no point retrying a DB timeout).
     // Concurrency = 1 (build pages one at a time — doubly safe with DB).
     // MinPagesPerWorker = 50 (fewer workers = fewer total connections).
-    staticGenerationRetryCount: 0,
     staticGenerationMaxConcurrency: 1,
     staticGenerationMinPagesPerWorker: 50,
     optimizePackageImports: [
@@ -346,25 +331,6 @@ const nextConfig: NextConfig = {
       '@dnd-kit/utilities',
     ],
     optimizeCss: false,
-    // cssChunking: 'strict' removed in Next.js 16.3.0 — only webpack supports it.
-    // Turbopack handles CSS chunking automatically; the option causes a build error.
-    // 2026-08-04: Turbopack's embedded lightningcss can panic on some
-    // oklch()/color-mix() constructs in globals.css. Excluding the polar
-    // color features from transpilation lets the CSS pass through unchanged,
-    // avoiding the parser/transformer panic while keeping modern browsers that
-    // natively support oklch().
-    // In dev, Turbopack uses its embedded lightningcss (useLightningcss=true)
-    // with the excludes below. In production build (also Turbopack now),
-    // useLightningcss=false so CSS minification flows through PostCSS
-    // (`@tailwindcss/postcss` → lightningcss 1.30.2 stable), avoiding any
-    // conflict between two lightningcss instances.
-    useLightningcss: process.env.NODE_ENV !== 'production',
-    lightningCssFeatures:
-      process.env.NODE_ENV !== 'production'
-        ? {
-            exclude: ['oklab-colors', 'lab-colors', 'color-function'],
-          }
-        : undefined,
   },
 
   // 2026-06-14: keepAlive on the global HTTP agent. Re-establishing

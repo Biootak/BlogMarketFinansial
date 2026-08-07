@@ -44,7 +44,7 @@ const fetchPopularPostsRaw = async (userId: string, role: string): Promise<Popul
     views: post.viewCount,
     // safeCache returns plain JSON so Dates arrive as ISO strings on cache hits.
     publishDate: new Date(post.createdAt).toLocaleDateString('fa-IR'),
-    author: post.author.name || 'ناشناس',
+    author: post.author?.name || 'ناشناس',
     slug: post.slug,
   }));
 };

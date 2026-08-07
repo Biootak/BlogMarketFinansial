@@ -1,6 +1,9 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
+// 2026-08-07: `export const dynamic = 'force-dynamic'` حذف شد — این export در
+// فایل client بی‌معناست و در Next.js 16.3.0 باعث خطای build می‌شود:
+// "Invariant: Expected an HTML size for prerendered app route /_global-error".
+// global-error همیشه در لحظهٔ خطا render می‌شود و نیازی به route segment config ندارد.
 
 /**
  * global-error.tsx — آخرین خط دفاع.
