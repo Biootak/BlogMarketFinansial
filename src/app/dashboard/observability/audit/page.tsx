@@ -1,78 +1,44 @@
-<<<<<<< HEAD
-import { ScrollText, Sparkles } from 'lucide-react';
-import type { Metadata } from 'next';
-=======
 import type { Metadata } from 'next';
 import { ScrollText, Siren, Sparkles } from 'lucide-react';
 
->>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
 import { AuditTrail } from '../_components/AuditTrail';
 import { IncidentTimeline } from '../_components/IncidentTimeline';
 import { InsightStack } from '../_components/InsightStack';
 import { ObsSection } from '../_components/ObsSection';
 import b from '../_components/boards.module.css';
 
-export const metadata: Metadata = { title: 'رد ممیزی · مشاهده‌پذیری' };
+export const metadata: Metadata = {
+  title: 'رد ممیزی · مشاهده‌پذیری',
+  description: 'رویدادهای قابل ممیزی بیست‌وچهار ساعت اخیر، کنار پنجره‌های بحرانی همان بازه.',
+};
 
 /**
  * رد ممیزی.
+ *
  * پنجره‌های بحرانی عمداً روی همین صفحه هستند: سؤال همیشگی بعد از یک حادثه
  * این است که «همان موقع چه کسی چه چیزی را عوض کرد».
  */
 export default function ObservabilityAuditPage() {
   return (
-<<<<<<< HEAD
     <div className={b.tabLayout} data-tab="audit">
-      <div className={b.tabIntro}>
+      <header className={b.tabIntro}>
         <div>
           <span className={b.tabEyebrow}>OPERATIONS / AUDIT</span>
           <h2 className={b.tabTitle}>هر تغییر باید قابل پیگیری باشد</h2>
           <p className={b.tabLead}>
-            رد ممیزی را مثل یک timeline بخوان: چه کسی، چه کاری، روی کدام موجودیت و چه زمانی.
-          </p>
-        </div>
-        <div className={b.tabStamp}>
-          <strong>آخرین ۴۰ رویداد</strong>
-          <span>منبع: AuditLog</span>
-        </div>
-      </div>
-      <div className={b.tabGrid}>
-        <ObsSection
-          className={`${b.eight} ${b.featured}`}
-          icon={ScrollText}
-          title="رد ممیزی پنجرهٔ جاری"
-          hint="رویدادها با نقش عامل و نوع موجودیت، برای مرور سریع و دقیق."
-        >
-          <AuditTrail />
-        </ObsSection>
-        <ObsSection
-          className={`${b.four} ${b.insightPanel}`}
-          icon={Sparkles}
-          title="یافته‌های خودکار"
-          hint="زمینهٔ عملیاتی همین پنجره کنار رویدادهای ممیزی."
-        >
-          <InsightStack />
-        </ObsSection>
-=======
-    <div className={b.tab} data-tab="audit">
-      <header className={b.intro}>
-        <div>
-          <span className={b.eyebrow}>OPERATIONS / AUDIT</span>
-          <h2 className={b.title}>هر تغییر باید قابل پیگیری باشد</h2>
-          <p className={b.lead}>
             رد ممیزی را مثل یک خط زمان بخوان: چه کسی، چه کاری، روی کدام موجودیت و چه زمانی. کلیدها
             خام و قابل جست‌وجو در دیتابیس‌اند، پس ترجمه نمی‌شوند.
           </p>
         </div>
-        <p className={b.stamp} data-tone="info">
+        <p className={b.tabStamp} data-tone="info">
           <strong>آخرین رویدادها</strong>
           <span>منبع: جدول AuditLog</span>
         </p>
       </header>
 
-      <div className={b.board}>
+      <div className={b.tabGrid}>
         <ObsSection
-          className={`${b.span8} ${b.featured}`}
+          className={`${b.eight} ${b.featured}`}
           icon={ScrollText}
           title="رد ممیزی پنجرهٔ جاری"
           hint="نقش عامل و نوع موجودیت کنار هر رویداد، برای مرور سریع و دقیق."
@@ -81,7 +47,7 @@ export default function ObservabilityAuditPage() {
         </ObsSection>
 
         <ObsSection
-          className={`${b.span4} ${b.recessed}`}
+          className={`${b.four} ${b.insightPanel}`}
           icon={Sparkles}
           title="یافته‌های خودکار"
           hint="زمینهٔ عملیاتی همین پنجره، کنار رویدادهای ممیزی."
@@ -90,7 +56,7 @@ export default function ObservabilityAuditPage() {
         </ObsSection>
 
         <ObsSection
-          className={b.span12}
+          className={b.wide}
           icon={Siren}
           title="تغییرات در کنار حوادث"
           hint="اگر بازهٔ بحرانی با یک تغییر هم‌زمان است، احتمالاً همان جواب است."
@@ -98,7 +64,6 @@ export default function ObservabilityAuditPage() {
         >
           <IncidentTimeline />
         </ObsSection>
->>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
       </div>
     </div>
   );
