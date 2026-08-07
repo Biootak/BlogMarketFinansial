@@ -1,220 +1,14 @@
 /* ============================================================================
-<<<<<<< HEAD
-   صفحهٔ تأخیر — طراحی ۲۰۲۶
-   Mobile first · logical props · فقط توکن.
-   ============================================================================ */
-
-.page {
-  display: grid;
-  gap: clamp(1.25rem, 3vw, 2.75rem);
-  padding-block-end: clamp(2rem, 5vw, 5rem);
-  min-inline-size: 0;
-}
-
-/* ── نوار فرمان ─────────────────────────────────────────────── */
-
-.commandBar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--ds-space-3);
-  min-block-size: 3rem;
-  border-block-end: 1px solid var(--obs-rule);
-}
-
-.breadcrumb,
-.commandActions,
-.live,
-.actionButton {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-}
-
-.breadcrumb {
-  color: var(--obs-muted);
-  font-size: 0.75rem;
-}
-
-.breadcrumb strong {
-  color: var(--obs-ink);
-}
-
-.slash {
-  color: var(--obs-rule-2);
-}
-
-.eyebrow {
-  color: var(--obs-ok);
-  font: 0.67rem var(--obs-mono);
-  letter-spacing: 0.12em;
-  direction: ltr;
-}
-
-.commandActions {
-  font-size: 0.7rem;
-  color: var(--obs-muted);
-}
-
-.live {
-  color: var(--obs-ok);
-}
-
-.live i {
-  display: inline-block;
-  inline-size: 0.45rem;
-  block-size: 0.45rem;
-  border-radius: var(--ds-radius-full);
-  background: var(--obs-ok);
-  box-shadow: 0 0 0 0.25rem color-mix(in oklch, var(--obs-ok) 14%, transparent);
-}
-
-.actionButton {
-  min-block-size: 2.5rem;
-  padding-inline: 0.75rem;
-  border: 1px solid var(--obs-rule);
-  border-radius: var(--ds-radius-md);
-  background: transparent;
-  color: var(--obs-muted);
-  font: inherit;
-  cursor: pointer;
-  transition: border-color var(--obs-fast) var(--obs-ease), color var(--obs-fast) var(--obs-ease);
-}
-
-.actionButton:hover {
-  color: var(--obs-ink);
-  border-color: var(--obs-ok);
-}
-
-/* ── تیتر قهرمان ─────────────────────────────────────────────── */
-
-.hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: clamp(1.5rem, 5vw, 4rem);
-  align-items: end;
-  padding-block: clamp(1.5rem, 5vw, 4rem) 1rem;
-}
-
-@media (min-width: 55rem) {
-  .hero {
-    grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.36fr);
-  }
-}
-
-.heroCopy {
-  max-inline-size: 63rem;
-}
-
-.kicker {
-  margin: 0 0 0.75rem;
-  color: var(--obs-ok);
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-.hero h1 {
-  max-inline-size: 12ch;
-  margin: 0;
-  color: var(--obs-ink);
-  font-size: clamp(2.7rem, 6vw, 6.8rem);
-  font-weight: var(--ds-weight-extrabold);
-  letter-spacing: -0.065em;
-  line-height: 0.95;
-  text-wrap: balance;
-}
-
-.lede {
-  max-inline-size: 58ch;
-  margin: 1.25rem 0 0;
-  color: var(--obs-muted);
-  font-size: 0.95rem;
-  line-height: 1.8;
-}
-
-.nextAction {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  inline-size: max-content;
-  margin-block-start: 1.5rem;
-  padding-block: 0.75rem;
-  color: var(--obs-ink);
-  text-decoration: none;
-  border-block: 1px solid var(--obs-rule);
-}
-
-.nextAction span {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
-.nextAction small,
-.asideLabel {
-  color: var(--obs-muted);
-  font-size: 0.68rem;
-}
-
-.heroAside {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: var(--ds-space-3);
-  align-items: center;
-  padding-block: 1rem;
-  border-block: 1px solid var(--obs-rule);
-}
-
-.statusRing {
-  display: grid;
-  place-items: center;
-  inline-size: 5.2rem;
-  block-size: 5.2rem;
-  border: 1px solid var(--obs-ok);
-  border-radius: var(--ds-radius-full);
-  color: var(--obs-ok);
-}
-
-.statusRing span {
-  font-size: 0.68rem;
-  font-weight: 700;
-}
-
-.heroAside strong,
-.heroAside small {
-  display: block;
-}
-
-.heroAside strong {
-  margin-block: 0.25rem;
-  color: var(--obs-ink);
-  font-size: 1.05rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.heroAside small {
-  color: var(--obs-muted);
-  font-size: 0.68rem;
-}
-
-/* ── ناوبری فوکوس ─────────────────────────────────────────────── */
-
-.focusNav {
-  display: grid;
-  grid-template-columns: 1fr;
-  border-block: 1px solid var(--obs-rule);
-}
-
-@media (min-width: 40rem) {
-  .focusNav {
-    grid-template-columns: repeat(3, 1fr);
-=======
    تأخیر — استایل مخصوص همین مسیر
    ----------------------------------------------------------------------------
    فقط ریل تمرکز اینجاست. بقیهٔ چیدمان از boards.module.css می‌آید تا این صفحه
    با بقیهٔ سالنامه یک ریتم داشته باشد.
+
+   نسخهٔ قبلی این فایل یک صفحهٔ کامل موازی می‌ساخت (hero با فونت ۶٫۸rem، نوار
+   فرمان، گرید مستقل) که هم با بقیهٔ ماژول ناهماهنگ بود و هم کلاس‌هایی داشت
+   که بعد از merge هیچ‌کس استفاده‌شان نمی‌کرد.
+
+   Mobile first · logical properties · فقط توکن.
    ============================================================================ */
 
 .focus {
@@ -230,101 +24,10 @@
 @media (min-width: 48rem) {
   .focus {
     grid-template-columns: repeat(3, minmax(0, 1fr));
->>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
   }
 }
 
 .focusItem {
-<<<<<<< HEAD
-  display: grid;
-  grid-template-columns: auto auto 1fr auto;
-  gap: 0.7rem;
-  align-items: center;
-  min-block-size: 4.5rem;
-  padding-inline: 1rem;
-  color: var(--obs-muted);
-  text-decoration: none;
-  border-inline-start: 1px solid var(--obs-rule);
-  transition: background-color var(--obs-fast) var(--obs-ease);
-}
-
-.focusItem:first-child {
-  border-inline-start: none;
-}
-
-@media (max-width: 39rem) {
-  .focusItem {
-    border-inline-start: none;
-    border-block-start: 1px solid var(--obs-rule);
-  }
-
-  .focusItem:first-child {
-    border-block-start: none;
-  }
-}
-
-.focusItem:hover {
-  background: color-mix(in oklch, var(--obs-accent) 4%, transparent);
-  color: var(--obs-ink);
-}
-
-.focusIndex {
-  color: var(--obs-ok);
-  font: 0.68rem var(--obs-mono);
-}
-
-.focusItem strong,
-.focusItem small {
-  display: block;
-}
-
-.focusItem strong {
-  color: var(--obs-ink);
-  font-size: 0.78rem;
-}
-
-.focusItem small {
-  margin-block-start: 0.2rem;
-  font-size: 0.66rem;
-}
-
-.focusArrow {
-  opacity: 0.5;
-}
-
-/* ── بدنهٔ اصلی ─────────────────────────────────────────────── */
-
-.board {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: clamp(2rem, 5vw, 5rem) clamp(1.25rem, 3vw, 3rem);
-  align-items: start;
-}
-
-@media (min-width: 55rem) {
-  .board {
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-  }
-}
-
-.primary {
-  grid-column: span 12;
-  padding: clamp(1rem, 3vw, 2rem);
-  border: 1px solid var(--obs-rule);
-  border-radius: var(--ds-radius-xl);
-  background: var(--obs-raise);
-  box-shadow: var(--ds-shadow-sm);
-}
-
-@media (min-width: 55rem) {
-  .traffic {
-    grid-column: span 7;
-  }
-
-  .services {
-    grid-column: span 5;
-  }
-=======
   display: flex;
   align-items: center;
   gap: var(--ds-space-3);
@@ -380,5 +83,15 @@
 .focusItem:hover .focusArrow {
   color: var(--obs-accent);
   transform: translateX(-0.2rem);
->>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .focusItem,
+  .focusArrow {
+    transition: none;
+  }
+
+  .focusItem:hover .focusArrow {
+    transform: none;
+  }
 }

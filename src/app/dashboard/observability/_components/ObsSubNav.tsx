@@ -5,12 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { useObs } from './ObsProvider';
-<<<<<<< HEAD
-import s from './command.module.css';
-import { faNum } from './format';
-=======
 import n from './ObservabilityNav.module.css';
->>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
+import { faNum } from './format';
 
 const BASE = '/dashboard/observability';
 
@@ -41,34 +37,6 @@ interface Badge {
 export function ObsSubNav() {
   const pathname = usePathname();
   const { data } = useObs();
-<<<<<<< HEAD
-  const unhealthy = (data?.services ?? []).filter(
-    (service) => service.status === 'down' || service.status === 'degraded',
-  ).length;
-  const counts: Record<string, { value: number; alarming: boolean } | undefined> = {
-    '/services': { value: unhealthy, alarming: unhealthy > 0 },
-    '/errors': { value: data?.totals.errors ?? 0, alarming: (data?.totals.errors ?? 0) > 0 },
-    '/queries': { value: data?.slowQueries.length ?? 0, alarming: false },
-    '/audit': { value: data?.totals.audit ?? 0, alarming: false },
-  };
-
-  return (
-    <nav className={s.nav} aria-label="بخش‌های مشاهده‌پذیری">
-      <span className={s.navLabel}>نمای عملیاتی</span>
-      <ul className={s.navList}>
-        {ITEMS.map(({ segment, label, icon: Icon }) => {
-          const href = `${BASE}${segment}`;
-          const active = segment === '' ? pathname === BASE : pathname.startsWith(href);
-          const count = counts[segment];
-          return (
-            <li key={href}>
-              <Link href={href} className={s.navLink} aria-current={active ? 'page' : undefined}>
-                <Icon size={16} strokeWidth={1.7} aria-hidden />
-                <span>{label}</span>
-                {count && count.value > 0 ? (
-                  <span className={s.navCount} data-tone={count.alarming ? 'bad' : 'idle'}>
-                    {faNum(count.value)}
-=======
 
   const unhealthy = (data?.services ?? []).filter(
     (service) => service.status === 'down' || service.status === 'degraded',
@@ -106,7 +74,6 @@ export function ObsSubNav() {
                 {badge && badge.value > 0 ? (
                   <span className={n.badge} data-tone={badge.tone}>
                     {faNum(badge.value)}
->>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
                   </span>
                 ) : null}
               </Link>
