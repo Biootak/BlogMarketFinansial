@@ -11,13 +11,15 @@ COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 COPY prisma ./prisma
 
 ENV PRISMA_SKIP_POSTINSTALL_GENERATE=1
+# postinstall اجرای migrate را در build time بلاک می‌کند
+ENV SKIP_POSTINSTALL=1
 
 RUN if [ -f yarn.lock ]; then \
-      yarn --frozen-lockfile; \
+      yarn --frozen-lockfile --ignore-scripts; \
     elif [ -f package-lock.json ]; then \
-      npm ci --no-audit --no-fund; \
+      npm ci --no-audit --no-fund --ignore-scripts; \
     else \
-      npm install; \
+      npm install --ignore-scripts; \
     fi
 
 RUN mkdir -p node_modules/.prisma/client && \
