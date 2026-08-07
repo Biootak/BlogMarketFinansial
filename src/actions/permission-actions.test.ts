@@ -9,15 +9,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Mock ─────────────────────────────────────────────────────────────────────
 
-// tx با findFirst=existing (برای تست delete branch در saveRoleMatrix)
-const txWithExisting = {
+// tx mock با همه عملیات batch که production code استفاده می‌کند
+const makeTx = (existingPerms: { id: string; permissionId: string; role: string }[] = []) => ({
   rolePermission: {
-    findFirst: vi.fn().mockResolvedValue({ id: 'rp-existing' }),
-    create: vi.fn(),
-    delete: vi.fn(),
+    findMany: vi.fn().mockResolvedValue(existingPerms),
+    createMany: vi.fn().mockResolvedValue({ count: 0 }),
+    deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
   },
   auditLog: { create: vi.fn() },
-};
+});
 
 vi.mock('@/lib/db', () => ({
   default: {
@@ -37,18 +37,7 @@ vi.mock('@/lib/db', () => ({
     auditLog: {
       create: vi.fn(),
     },
-    $transaction: vi.fn((fn: (tx: unknown) => Promise<unknown>) =>
-      fn({
-        rolePermission: {
-          findFirst: vi.fn().mockResolvedValue(null),
-          create: vi.fn(),
-          delete: vi.fn(),
-        },
-        auditLog: {
-          create: vi.fn(),
-        },
-      }),
-    ),
+    $transaction: vi.fn((fn: (tx: unknown) => Promise<unknown>) => fn(makeTx())),
   },
 }));
 
@@ -252,18 +241,20 @@ describe('saveRoleMatrix', () => {
 
   it('roles[roleKey]=false با existing → delete branch اجرا می‌شود', async () => {
     vi.mocked(requireAdmin).mockResolvedValue(ADMIN);
-    // override: $transaction به tx با findFirst=existing ارجاع می‌دهد
-    vi.mocked(prisma.$transaction).mockImplementationOnce((fn) => fn(txWithExisting as never));
+    // tx با یک رکورد موجود (CUSTOMER) → چون CUSTOMER=false است باید deleteMany صدا زده شود
+    const txExisting = makeTx([{ id: 'rp-existing', permissionId: 'perm-1', role: 'CUSTOMER' }]);
+    vi.mocked(prisma.$transaction).mockImplementationOnce((fn) => fn(txExisting as never));
 
     const result = await saveRoleMatrix([
       {
         permissionId: 'perm-1',
-        // CUSTOMER=false + findFirst در tx مقدار موجود برمی‌گرداند → باید delete شود
         roles: { CUSTOMER: false, MERCHANT: false, EXCHANGE: false, SUPPORT: false, ADMIN: false },
       },
     ]);
     expect(result.success).toBe(true);
-    // delete باید صدا زده شده باشد
-    expect(txWithExisting.rolePermission.delete).toHaveBeenCalled();
+    // deleteMany باید با id رکورد موجود صدا زده شده باشد
+    expect(txExisting.rolePermission.deleteMany).toHaveBeenCalledWith({
+      where: { id: { in: ['rp-existing'] } },
+    });
   });
 });

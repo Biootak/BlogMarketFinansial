@@ -11,7 +11,7 @@ import {
   updateBank,
   updateCreditRate,
 } from '@/actions/credit-rates';
-import { PageHeader, Section, StatCard } from '@/components/Dashboard/primitives';
+import { ConfirmDialog, PageHeader, Section, StatCard } from '@/components/Dashboard/primitives';
 import { TYPE_FA } from '@/lib/credit-rate-constants';
 import type { CreditRateType } from '@prisma/client';
 import {
@@ -62,6 +62,9 @@ export default function CreditRatesClient({
   }>({ open: false, mode: 'create' });
 
   const [error, setError] = useState<string | null>(null);
+
+  const [deleteBankId, setDeleteBankId] = useState<string | null>(null);
+  const [archiveRateId, setArchiveRateId] = useState<string | null>(null);
 
   const [filterType, setFilterType] = useState<string>('ALL');
   const [filterBank, setFilterBank] = useState<string>('ALL');
@@ -122,9 +125,14 @@ export default function CreditRatesClient({
     });
   };
 
-  const handleBankDelete = async (id: string) => {
-    if (!confirm('آیا از حذف این بانک اطمینان دارید؟ تمام نرخ‌های مربوطه نیز حذف خواهند شد.'))
-      return;
+  const handleBankDelete = (id: string) => {
+    setDeleteBankId(id);
+  };
+
+  const confirmBankDelete = () => {
+    if (!deleteBankId) return;
+    const id = deleteBankId;
+    setDeleteBankId(null);
     setError(null);
     startTransition(async () => {
       const res = await deleteBank(id);
@@ -132,7 +140,7 @@ export default function CreditRatesClient({
         setBanks((prev) => prev.filter((b) => b.id !== id));
         setRates((prev) => prev.filter((r) => r.bankId !== id));
       } else {
-        alert(res.error?.message ?? 'حذف ناموفق بود');
+        setError(res.error.message);
       }
     });
   };
@@ -183,15 +191,21 @@ export default function CreditRatesClient({
     });
   };
 
-  const handleRateArchive = async (id: string) => {
-    if (!confirm('آیا از آرشیو کردن این نرخ اطمینان دارید؟')) return;
+  const handleRateArchive = (id: string) => {
+    setArchiveRateId(id);
+  };
+
+  const confirmRateArchive = () => {
+    if (!archiveRateId) return;
+    const id = archiveRateId;
+    setArchiveRateId(null);
     setError(null);
     startTransition(async () => {
       const res = await archiveCreditRate(id);
       if (res.success) {
         setRates((prev) => prev.filter((r) => r.id !== id));
       } else {
-        alert(res.error?.message ?? 'آرشیو ناموفق بود');
+        setError(res.error.message);
       }
     });
   };
@@ -927,6 +941,33 @@ export default function CreditRatesClient({
           </div>
         </div>
       )}
+
+      {/* ConfirmDialogs برای عملیات مخرب */}
+      <ConfirmDialog
+        open={deleteBankId !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteBankId(null);
+        }}
+        title="حذف بانک"
+        description="آیا از حذف این بانک اطمینان دارید؟ تمام نرخ‌های مربوطه نیز حذف خواهند شد."
+        confirmLabel="حذف بانک"
+        variant="danger"
+        loading={isPending}
+        onConfirm={confirmBankDelete}
+      />
+
+      <ConfirmDialog
+        open={archiveRateId !== null}
+        onOpenChange={(open) => {
+          if (!open) setArchiveRateId(null);
+        }}
+        title="آرشیو نرخ"
+        description="آیا از آرشیو کردن این نرخ اطمینان دارید؟"
+        confirmLabel="آرشیو کردن"
+        variant="danger"
+        loading={isPending}
+        onConfirm={confirmRateArchive}
+      />
     </main>
   );
 }

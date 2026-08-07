@@ -223,9 +223,6 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
     }
   }, [posts, isLoading, hasMore, activeCategory, initialPageSize]);
 
-  /* ---------- Switch category → scroll to top of panel ---------- */
-  // TODO: implement scroll-to-top when category changes
-
   return (
     <section className="relative isolate space-y-3 sm:space-y-4">
       {/* Market Ticker */}

@@ -40,7 +40,7 @@ import type { Advertisement, CustomAdDimensions } from '@/types/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { type UseFormReturn, useForm } from 'react-hook-form';
 import {
   HiMagnifyingGlass,
@@ -97,7 +97,7 @@ const positionLabels: Record<string, string> = {
   CUSTOM: 'سفارشی',
 };
 
-export default function AdvertisementsPage() {
+function AdvertisementsInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'advertisements' | 'header'>(
@@ -698,6 +698,14 @@ export default function AdvertisementsPage() {
           <HeaderAdsClient initialAds={headerAds} onRefresh={fetchHeaderAds} />
         ))}
     </div>
+  );
+}
+
+export default function AdvertisementsPage() {
+  return (
+    <Suspense fallback={null}>
+      <AdvertisementsInner />
+    </Suspense>
   );
 }
 

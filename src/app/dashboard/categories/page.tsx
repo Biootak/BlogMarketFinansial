@@ -40,7 +40,9 @@ export default async function CategoriesPage({
         accent="cyan"
         actions={
           <>
-            <SearchCategories />
+            <Suspense fallback={null}>
+              <SearchCategories />
+            </Suspense>
             <CategoryForm parentCategories={parentCategories} />
           </>
         }

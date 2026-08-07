@@ -91,6 +91,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
             aria-hidden
           >
             <div
+              data-err-ring=""
               style={{
                 position: 'absolute',
                 inset: '-6px',

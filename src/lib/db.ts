@@ -19,7 +19,7 @@ const createPrismaClient = () =>
 
 type PrismaClientType = ReturnType<typeof createPrismaClient>;
 
-// biome-ignore lint/suspicious/noShadowRestrictedNames: <explanation>
+// biome-ignore lint/suspicious/noShadowRestrictedNames: redeclaring globalThis is the standard Next.js pattern for Prisma singleton across hot-reload
 declare const globalThis: {
   prismaGlobal: PrismaClientType | undefined;
 } & typeof global;
