@@ -2,57 +2,68 @@
 
 import { Layers3 } from 'lucide-react';
 
+<<<<<<< HEAD
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
 import { faNum, faPercent, ratio } from './format';
 import s from './obs.module.css';
+=======
+import { cssVars, faNum, faPercent, levelLabel, levelTone } from './format';
+import { ObsEmpty } from './ObsSection';
+import { useObs } from './ObsProvider';
+import h from './heat.module.css';
+>>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
 
-const LEVEL_LABEL: Record<string, string> = {
-  info: 'اطلاع',
-  warn: 'هشدار',
-  error: 'خطا',
-  fatal: 'بحرانی',
-  debug: 'اشکال‌زدایی',
-};
-
-const LEVEL_TONE: Record<string, 'ok' | 'warn' | 'bad' | 'info' | 'idle'> = {
-  info: 'info',
-  debug: 'idle',
-  warn: 'warn',
-  error: 'bad',
-  fatal: 'bad',
-};
-
-/** توزیع سطوح لاگ — دقیقاً همان مقادیری که در ستون level دیتابیس وجود دارد. */
+/**
+ * توزیع سطوح لاگ.
+ *
+ * یک نوار انباشته به‌جای دونات: نسبت‌ها را در یک خط می‌خوانی و مقایسه با
+ * پنجره‌های قبلی هم ساده می‌ماند. فهرست زیرش عدد دقیق را می‌دهد، چون نوار
+ * برای «حس» است و عدد برای «تصمیم».
+ */
 export function LevelDistribution() {
   const { data } = useObs();
-  if (!data) return null;
+  const levels = data?.levels ?? [];
 
-  if (data.levels.length === 0) {
+  if (!data || levels.length === 0) {
     return (
       <ObsEmpty
         icon={Layers3}
-        title="سطحی برای شمارش نیست"
-        hint="به‌محض ثبت اولین لاگ، سهم هر سطح از کل حجم پنجره اینجا مقایسه می‌شود."
+        title="سطحی برای شمردن نیست"
+        hint="هیچ رکوردی در پنجرهٔ جاری ثبت نشده است."
       />
     );
   }
 
-  const max = Math.max(...data.levels.map((item) => item.count), 1);
-
   return (
-    <ul className={s.levels}>
-      {data.levels.map((item) => (
-        <li key={item.level} className={s.levelRow} data-tone={LEVEL_TONE[item.level] ?? 'info'}>
-          <span>{LEVEL_LABEL[item.level] ?? item.level}</span>
-          <span className={s.levelBar}>
-            <span className={s.levelFill} style={{ inlineSize: `${ratio(item.count, max, 2)}%` }} />
-          </span>
-          <span className={s.sourceMeta}>
-            {faNum(item.count)} · {faPercent(item.share)}
-          </span>
-        </li>
-      ))}
-    </ul>
+    <div className={h.levels}>
+      <div
+        className={h.ribbon}
+        role="img"
+        aria-label={`توزیع سطوح لاگ: ${levels.map((level) => `${levelLabel(level.level)} ${faPercent(level.share)}`).join('، ')}`}
+      >
+        {levels.map((level) => (
+          <span
+            key={level.level}
+            className={h.segment}
+            data-tone={levelTone(level.level)}
+            style={cssVars({ '--fill': `${level.share}%` })}
+          />
+        ))}
+      </div>
+
+      <ul className={h.legend}>
+        {levels.map((level) => (
+          <li key={level.level}>
+            <div className={h.legendRow} data-tone={levelTone(level.level)}>
+              <span className={h.legendPip} aria-hidden="true" />
+              <span className={h.legendName}>{levelLabel(level.level)}</span>
+              <span className={h.legendCount}>{faNum(level.count)}</span>
+              <span className={h.legendShare}>{faPercent(level.share)}</span>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

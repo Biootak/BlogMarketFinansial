@@ -1,64 +1,84 @@
 'use client';
 
-import { Timer } from 'lucide-react';
+import { Database } from 'lucide-react';
 
+<<<<<<< HEAD
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
 import { msShort, relative } from './format';
 import s from './obs.module.css';
+=======
+import { maxOf } from './chart';
+import { cssVars, faNum, msShort, ratio, relative, sourceName } from './format';
+import { ObsEmpty } from './ObsSection';
+import { useObs } from './ObsProvider';
+import l from './ledger.module.css';
+>>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
 
-const toneFor = (durationMs: number): 'ok' | 'warn' | 'bad' => {
-  if (durationMs >= 1000) return 'bad';
-  if (durationMs >= 300) return 'warn';
-  return 'ok';
-};
+/** آستانه‌های خوانش زمان اجرا (میلی‌ثانیه). */
+const BAD_MS = 1000;
+const WARN_MS = 500;
 
-/** کوئری‌ها و مسیرهای کند ۶ ساعت اخیر، مرتب‌شده بر اساس بدترین زمان. */
+const MAX_ROWS = 16;
+
+/**
+ * کندترین مسیرها.
+ *
+ * نوار نسبت، نسبت به بدترین رکورد همین فهرست است نه یک سقف ثابت؛ چون سؤال
+ * واقعی «چقدر بدتر از بقیه» است، نه «چند درصد از یک عدد دلخواه».
+ * تُن هم از آستانهٔ زمان می‌آید، پس رنگ حرف می‌زند نه تزئین می‌کند.
+ */
 export function SlowQueryTable() {
   const { data } = useObs();
-  if (!data) return null;
+  const queries = data?.slowQueries ?? [];
 
-  if (data.slowQueries.length === 0) {
+  if (!data || queries.length === 0) {
     return (
       <ObsEmpty
-        icon={Timer}
-        title="کوئری کندی ثبت نشده"
-        hint="لاگ‌هایی که برچسب [perf] یا [slow] دارند یا الگوی duration=<ms> در پیامشان هست، اینجا با بدترین زمان بالا می‌آیند."
+        icon={Database}
+        title="مسیر کندی ثبت نشده"
+        hint="در شش ساعت گذشته هیچ لاگی با نشانهٔ perf یا slow یا کلید duration نیامده است. اگر انتظار داشتید بیاید، ابزار سنجش را چک کنید."
       />
     );
   }
 
+  const worst = Math.max(1, maxOf(queries.map((query) => query.durationMs)));
+
   return (
-    <div className={s.tableWrap}>
-      <table className={s.table}>
-        <caption className="sr-only">کوئری‌های کند شش ساعت اخیر</caption>
-        <thead>
-          <tr>
-            <th scope="col">منبع</th>
-            <th scope="col">مدت</th>
-            <th scope="col">پیام</th>
-            <th scope="col">زمان</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.slowQueries.map((item) => (
-            <tr key={item.id} data-tone={toneFor(item.durationMs)}>
-              <td>
-                <span className={s.source}>{item.source}</span>
-              </td>
-              <td>
-                <span className={s.duration}>{msShort(item.durationMs)}</span>
-              </td>
-              <td>
-                <span className={s.message}>{item.message}</span>
-              </td>
-              <td>
-                <span className={s.time}>{relative(item.timestamp, data.generatedAt)}</span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <ol className={l.queries}>
+      {queries.slice(0, MAX_ROWS).map((query) => {
+        const tone =
+          query.durationMs >= BAD_MS ? 'bad' : query.durationMs >= WARN_MS ? 'warn' : 'info';
+
+        return (
+          <li key={query.id}>
+            <div className={l.query} data-tone={tone}>
+              <span className={l.queryText}>{query.message}</span>
+              <span className={l.queryDuration}>
+                {query.durationMs > 0 ? msShort(query.durationMs) : '—'}
+              </span>
+              <span
+                className={l.queryTrack}
+                aria-hidden="true"
+                style={cssVars({ '--fill': `${ratio(query.durationMs, worst, 2)}%` })}
+              />
+              <span className={l.queryMeta}>
+                <span>
+                  منبع <bdi>{sourceName(query.source)}</bdi>
+                </span>
+                <span>{relative(query.timestamp, data.generatedAt)}</span>
+                <span>
+                  {query.durationMs >= BAD_MS
+                    ? 'از یک ثانیه رد شده'
+                    : query.durationMs >= WARN_MS
+                      ? 'در محدودهٔ هشدار'
+                      : `${faNum(Math.round((query.durationMs / worst) * 100))}٪ بدترین رکورد`}
+                </span>
+              </span>
+            </div>
+          </li>
+        );
+      })}
+    </ol>
   );
 }

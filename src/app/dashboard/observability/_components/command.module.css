@@ -1,4 +1,5 @@
 /* ============================================================================
+<<<<<<< HEAD
    Observability — نوار فرمان: ناوبری فرعی + وضعیت خوانش
    ----------------------------------------------------------------------------
    Mobile first · logical properties · token-only · RTL-safe.
@@ -140,11 +141,49 @@
 }
 
 @keyframes live-pulse {
+=======
+   نوار وضعیت خوانش (ObsToolbar)
+   ============================================================================ */
+
+.toolbar {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem var(--ds-space-3);
+  min-inline-size: 0;
+}
+
+.state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: color-mix(in oklch, var(--tone) 72%, var(--obs-ink));
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  white-space: nowrap;
+}
+
+.dot {
+  inline-size: 0.45rem;
+  block-size: 0.45rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--tone);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--tone) 15%, transparent);
+}
+
+.dot[data-live='true'] {
+  animation: toolbar-breath 2s var(--obs-ease) infinite;
+}
+
+@keyframes toolbar-breath {
+>>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
   0%,
   100% {
     opacity: 1;
   }
   50% {
+<<<<<<< HEAD
     opacity: 0.55;
   }
 }
@@ -190,10 +229,30 @@
 }
 
 /* دکمهٔ بازخوانی */
+=======
+    opacity: 0.4;
+  }
+}
+
+.divider {
+  inline-size: 1px;
+  block-size: 0.9rem;
+  background: var(--obs-rule-2);
+}
+
+.meta {
+  color: var(--obs-muted);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+>>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
 .refresh {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+<<<<<<< HEAD
   margin-inline-start: auto;
   min-block-size: 2.25rem;
   padding-inline: 0.65rem;
@@ -211,6 +270,32 @@
   border-color: var(--nova-primary);
   color: var(--nova-primary);
   background: color-mix(in oklch, var(--nova-primary) 6%, transparent);
+=======
+  min-block-size: 2.75rem;
+  margin-inline-start: auto;
+  padding-inline: var(--ds-space-2-5);
+  border: 1px solid var(--obs-rule-2);
+  border-radius: var(--ds-radius-sm);
+  background: transparent;
+  color: var(--obs-ink-2);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color var(--obs-fast) var(--obs-ease),
+    color var(--obs-fast) var(--obs-ease),
+    transform 120ms var(--ds-ease-spring);
+}
+
+.refresh:hover:not(:disabled) {
+  border-color: var(--obs-accent);
+  color: var(--obs-accent);
+}
+
+.refresh:active:not(:disabled) {
+  transform: scale(0.96);
+>>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
 }
 
 .refresh:disabled {
@@ -219,6 +304,7 @@
 }
 
 .refresh:focus-visible {
+<<<<<<< HEAD
   outline: 2px solid var(--nova-primary);
   outline-offset: 2px;
 }
@@ -231,5 +317,55 @@
 @keyframes spin {
   to {
     transform: rotate(360deg);
+=======
+  outline: 2px solid var(--obs-accent);
+  outline-offset: 2px;
+}
+
+.refresh svg[data-spin='true'] {
+  animation: refresh-spin 900ms linear infinite;
+}
+
+@keyframes refresh-spin {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+/*
+   خط پیشرفت مویی. برای حالت نامعین از linear استفاده می‌شود (تنها جایی که
+   منحنی نداریم) و فقط transform انیمیت می‌شود.
+*/
+.progress {
+  position: absolute;
+  inset-block-end: calc(var(--ds-space-2) * -1 - 1px);
+  inset-inline: 0;
+  block-size: 1px;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity var(--obs-fast) var(--obs-ease);
+}
+
+.progress[data-state='syncing'] {
+  opacity: 1;
+}
+
+.progress[data-state='syncing']::after {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 35%;
+  background: var(--obs-accent);
+  animation: progress-sweep 1.1s linear infinite;
+}
+
+@keyframes progress-sweep {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(400%);
+>>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
   }
 }
