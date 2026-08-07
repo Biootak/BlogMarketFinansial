@@ -12,7 +12,8 @@
    رنگ فقط وقتی می‌آید که «وضعیت» حرفی برای گفتن دارد.
    ============================================================================ */
 
-.page {
+.page,
+.skeleton {
   /* ── جوهر و کاغذ ─────────────────────────────────────────── */
   --obs-paper: var(--ds-canvas);
   --obs-paper-2: var(--ds-canvas-subtle);
@@ -42,7 +43,9 @@
 
   /* تُن پیش‌فرض؛ هر عنصری با data-tone آن را برای خودش بازنویسی می‌کند */
   --tone: var(--obs-accent);
+}
 
+.page {
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-5);
@@ -53,22 +56,27 @@
 /*
    نگاشت تُن — یک‌بار، برای کل زیردرخت.
    انتخابگر صفتی است نه کلاس، پس CSS Module آن را hash نمی‌کند و همهٔ
-   ماژول‌های فرزند (deck / boards / heat / …) از همین ارث می‌برند.
-   نتیجه: هیچ ماژولی مجبور نیست نگاشت تُن خودش را تکرار کند.
+   ماژول‌های فرزند (deck / boards / ledger / heat / gauge) از همین ارث
+   می‌برند. نتیجه: هیچ ماژولی مجبور نیست نگاشت تُن خودش را تکرار کند.
 */
-.page [data-tone='ok'] {
+.page [data-tone='ok'],
+.skeleton [data-tone='ok'] {
   --tone: var(--obs-ok);
 }
-.page [data-tone='warn'] {
+.page [data-tone='warn'],
+.skeleton [data-tone='warn'] {
   --tone: var(--obs-warn);
 }
-.page [data-tone='bad'] {
+.page [data-tone='bad'],
+.skeleton [data-tone='bad'] {
   --tone: var(--obs-bad);
 }
-.page [data-tone='info'] {
+.page [data-tone='info'],
+.skeleton [data-tone='info'] {
   --tone: var(--obs-accent);
 }
-.page [data-tone='idle'] {
+.page [data-tone='idle'],
+.skeleton [data-tone='idle'] {
   --tone: var(--obs-idle);
 }
 
@@ -112,14 +120,15 @@
   min-inline-size: 0;
 }
 
-/* ── اسکلت بارگذاری ─────────────────────────────────────────
-   هم‌ریتم با چیدمان واقعی: نوار فرمان، سرصفحهٔ سالنامه، بعد مدخل‌ها.
-   پس بعد از لود هیچ پرش چیدمانی رخ نمی‌دهد. */
+/*
+   ریشهٔ اسکلت و مرز خطا.
+   این دو بیرون از .page رندر می‌شوند (Next آن‌ها را جای children می‌گذارد)،
+   پس پالت را نمی‌توانند از .page ارث ببرند و باید خودشان حملش کنند.
+*/
 .skeleton {
-  --obs-rule: var(--ds-border-subtle);
-  --obs-recess: var(--ds-surface-recessed);
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-5);
   min-inline-size: 0;
+  color: var(--obs-ink);
 }

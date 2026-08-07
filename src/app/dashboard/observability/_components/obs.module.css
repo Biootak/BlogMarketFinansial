@@ -2,7 +2,7 @@
    Observability — کروم مدخل‌ها و اتم‌های مشترک
    ----------------------------------------------------------------------------
    هر چیزی که بیش از یک board لازمش دارد اینجاست و فقط اینجا: سرصفحهٔ مدخل،
-   خالی‌بودن، بج، نقطهٔ وضعیت، «خوانش» (برچسب/عدد/واحد)، ریل عددی و ظرفِ LTR.
+   خالی‌بودن، بج، نقطهٔ وضعیت، «خوانش»، ریل نسبت و ظرفِ LTR.
    هیچ board ای اجازه ندارد نسخهٔ محلی این‌ها را دوباره بنویسد.
    ============================================================================ */
 
@@ -16,7 +16,6 @@
 }
 
 .head {
-  position: relative;
   display: flex;
   align-items: flex-start;
   gap: var(--ds-space-3);
@@ -25,18 +24,19 @@
 }
 
 /*
-   شمارهٔ مدخل روی خط می‌نشیند و آن را می‌شکند — همان کاری که سالنامه‌های چاپی
-   با شمارهٔ فصل می‌کنند. شمارنده در CSS است نه در props، پس ترتیب DOM منبع
-   حقیقت است و هیچ صفحه‌ای مجبور نیست شماره پاس بدهد.
+   شمارهٔ مدخل در حاشیه می‌نشیند — همان کاری که سالنامه‌های چاپی با شمارهٔ فصل
+   می‌کنند. شمارنده در CSS است نه در props، پس ترتیب DOM منبع حقیقت است و هیچ
+   صفحه‌ای مجبور نیست شماره پاس بدهد.
+
+   عمداً روی خط ننشسته: برای شکستن خط باید پس‌زمینهٔ سطح زیرین را تقلید کند و
+   داخل .featured سطح فرق می‌کند، یعنی یک وصلهٔ رنگیِ بدقواره. حاشیهٔ ساده
+   همان کار را بدون بدهی می‌کند.
 */
 .index {
   flex: none;
-  inline-size: 1.75rem;
-  margin-block-start: -0.9rem;
-  padding-block-end: 0.15rem;
-  background: var(--obs-paper);
+  inline-size: 1.5rem;
   color: var(--obs-muted);
-  font: 500 0.68rem / 1 var(--obs-mono);
+  font: 500 0.68rem / 1.6 var(--obs-mono);
   letter-spacing: 0.04em;
 }
 
@@ -56,7 +56,6 @@
 .headText {
   flex: 1 1 auto;
   min-inline-size: 0;
-  margin-block-start: -0.15rem;
 }
 
 .title {
@@ -122,7 +121,7 @@
 }
 
 .emptyHint {
-  max-inline-size: 52ch;
+  max-inline-size: 62ch;
   margin: 0;
   color: var(--obs-muted);
   font-size: var(--ds-text-xs);
@@ -171,7 +170,7 @@
   }
 }
 
-/* خوانش: برچسب کوچک، عدد جدولی، واحد ایزوله */
+/* خوانش: برچسب کوچک، عدد جدولی، یادداشت */
 .fig {
   display: flex;
   flex-direction: column;
@@ -229,17 +228,6 @@
   transition: inline-size var(--obs-base) var(--obs-ease);
 }
 
-/* سهم خطا روی همان ریل — لایهٔ دوم، همیشه از همان لبه شروع می‌شود */
-.barAlt {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  inline-size: var(--fill-alt, 0%);
-  border-radius: inherit;
-  background: var(--obs-bad);
-  transition: inline-size var(--obs-base) var(--obs-ease);
-}
-
 /*
    ظرف محور زمان.
    قاعدهٔ صریح این پروژه: **سری زمانی همیشه LTR است**. صفحه راست‌به‌چپ است،
@@ -253,27 +241,14 @@
   min-inline-size: 0;
 }
 
-/* لیست بدون نشانه — پایهٔ همهٔ نردبان‌ها و دفترها */
-.list {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-/* جداکنندهٔ مویی بین ردیف‌ها؛ ردیف اول خط ندارد */
-.list > li + li {
-  border-block-start: 1px solid var(--obs-rule);
-}
-
-/* دکمهٔ خطی کوچک — برای اکشن‌های داخل سرصفحهٔ مدخل */
+/* دکمهٔ خطی کوچک — برای اکشن‌های داخل سرصفحهٔ مدخل و مرز خطا */
 .ghostButton {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  min-block-size: 2.25rem;
-  padding: 0.3rem 0.7rem;
+  min-block-size: 2.75rem;
+  margin-block-start: var(--ds-space-2);
+  padding-inline: 0.8rem;
   border: 1px solid var(--obs-rule-2);
   border-radius: var(--ds-radius-sm);
   background: transparent;
