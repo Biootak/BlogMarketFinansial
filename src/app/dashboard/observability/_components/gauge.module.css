@@ -1,0 +1,270 @@
+/* ============================================================================
+   ابزارهای سنجش — نوار روز و محور صدک‌ها
+   ----------------------------------------------------------------------------
+   هر دو محور دارند، هر دو LTR اند، هر دو باید روی موبایل هم قابل استفاده
+   باشند. پس یک ورق مشترک، نه دو نسخهٔ کمی متفاوت.
+   ============================================================================ */
+
+/* ═══════════════ نوار روز ═══════════════ */
+
+.strip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  min-inline-size: 0;
+}
+
+/*
+   ریل ستون‌ها.
+   روی موبایل اسکرول افقی می‌شود تا هر ستون حداقل عرض قابل لمس داشته باشد؛
+   فشرده کردن ۲۴ ستون در ۳۲۰ پیکسل یعنی هدف ۱۳ پیکسلی، که عملاً غیرقابل
+   استفاده است. ارتفاع دکمه ۴۴ پیکسل می‌ماند حتی وقتی ستونش کوتاه است.
+*/
+.rail {
+  display: flex;
+  gap: 2px;
+  align-items: flex-end;
+  min-inline-size: 0;
+  padding-block-end: 2px;
+  border-block-end: 1px solid var(--obs-rule-2);
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
+}
+
+.col {
+  position: relative;
+  flex: 1 0 1.35rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  block-size: 5.5rem;
+  min-block-size: 2.75rem;
+  padding: 0;
+  border: none;
+  border-radius: 2px 2px 0 0;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color var(--obs-fast) var(--obs-ease);
+}
+
+.col:hover {
+  background: color-mix(in oklch, var(--obs-ink) 5%, transparent);
+}
+
+.col:focus-visible {
+  outline: 2px solid var(--obs-accent);
+  outline-offset: 1px;
+}
+
+.colFill {
+  display: block;
+  block-size: var(--h, 2%);
+  border-radius: 2px 2px 0 0;
+  background: color-mix(in oklch, var(--obs-accent) 34%, transparent);
+  transition:
+    block-size var(--ds-duration-slow) var(--obs-ease),
+    background-color var(--obs-fast) var(--obs-ease);
+}
+
+/* خطاها روی همان ستون می‌نشینند، پس نسبت خطا به حجم مستقیم خوانده می‌شود */
+.colErrors {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline: 0;
+  block-size: var(--e, 0%);
+  border-radius: 2px 2px 0 0;
+  background: var(--obs-bad);
+  transition: block-size var(--ds-duration-slow) var(--obs-ease);
+}
+
+.col[data-selected='true'] .colFill {
+  background: var(--obs-accent);
+}
+
+.col[data-selected='true']::after {
+  content: '';
+  position: absolute;
+  inset-block-end: -5px;
+  inset-inline-start: 50%;
+  inline-size: 5px;
+  block-size: 5px;
+  border-radius: var(--ds-radius-full);
+  background: var(--obs-ink);
+  transform: translateX(-50%);
+}
+
+/* ساعت جاری همیشه یک نشانهٔ ثابت دارد، حتی وقتی انتخاب جای دیگری است */
+.col[data-live='true'] .colFill {
+  box-shadow: inset 0 1.5px 0 0 var(--obs-ok);
+}
+
+.axis {
+  display: flex;
+  justify-content: space-between;
+  color: var(--obs-muted);
+  font: 400 0.62rem / 1 var(--obs-mono);
+}
+
+/* ═══════════════ خوانش ساعت انتخاب‌شده ═══════════════ */
+
+.readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: 1px;
+  margin: 0;
+  border: 1px solid var(--obs-rule);
+  border-radius: var(--ds-radius-md);
+  background: var(--obs-rule);
+  overflow: hidden;
+}
+
+.readCell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: var(--ds-space-2-5) var(--ds-space-3);
+  background: var(--obs-paper);
+}
+
+.readLabel {
+  color: var(--obs-muted);
+  font-size: 0.62rem;
+}
+
+.readValue {
+  margin: 0;
+  color: var(--obs-ink);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.readNote {
+  grid-column: 1 / -1;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  background: var(--obs-recess);
+  color: var(--obs-ink-2);
+  font-size: 0.66rem;
+  line-height: var(--ds-leading-relaxed);
+}
+
+/* ═══════════════ محور صدک‌ها ═══════════════ */
+
+.scale {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  min-inline-size: 0;
+}
+
+.plot {
+  position: relative;
+  block-size: 5.5rem;
+  min-inline-size: 0;
+  padding-block: 1.6rem;
+}
+
+.line {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline: 0;
+  block-size: 2px;
+  border-radius: var(--ds-radius-full);
+  background: color-mix(in oklch, var(--obs-ink) 8%, transparent);
+}
+
+/*
+   ناحیهٔ «دم» بین p95 و p99.
+   این بازه همان چیزی است که کاربر بدشانس تجربه می‌کند؛ پر کردنش یعنی
+   نگفتنِ ضمنی «اینجا را ببین».
+*/
+.tail {
+  position: absolute;
+  inset-block-start: calc(50% - 5px);
+  inset-inline-start: var(--from, 0%);
+  inline-size: var(--width, 0%);
+  block-size: 12px;
+  border-radius: var(--ds-radius-sm);
+  background: color-mix(in oklch, var(--obs-warn) 22%, transparent);
+}
+
+.marker {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: var(--at, 0%);
+  inline-size: 1px;
+  background: var(--tone);
+}
+
+.marker::after {
+  content: '';
+  position: absolute;
+  inset-block-start: calc(50% - 4px);
+  inset-inline-start: -3.5px;
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: var(--ds-radius-full);
+  background: var(--tone);
+}
+
+.markerLabel {
+  position: absolute;
+  inset-inline-start: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  text-align: center;
+  direction: rtl;
+}
+
+/* برچسب‌ها یکی‌درمیان بالا و پایین می‌نشینند تا در دم فشرده روی هم نیفتند */
+.marker[data-place='top'] .markerLabel {
+  inset-block-start: 0;
+}
+
+.marker[data-place='bottom'] .markerLabel {
+  inset-block-end: 0;
+}
+
+.markerKey {
+  display: block;
+  color: var(--obs-muted);
+  font: 500 0.62rem / 1.4 var(--obs-mono);
+  direction: ltr;
+}
+
+.markerValue {
+  display: block;
+  color: var(--obs-ink);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.ticks {
+  position: absolute;
+  inset-block-end: -0.2rem;
+  inset-inline: 0;
+  display: flex;
+  justify-content: space-between;
+  color: var(--obs-muted);
+  font: 400 0.6rem / 1 var(--obs-mono);
+}
+
+.note {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  margin: 0;
+  color: var(--obs-muted);
+  font-size: 0.66rem;
+  line-height: var(--ds-leading-relaxed);
+}
+
+.noteChip {
+  padding: 0.1rem 0.4rem;
+  border: 1px solid color-mix(in oklch, var(--tone) 32%, transparent);
+  border-radius: var(--ds-radius-sm);
+  color: color-mix(in oklch, var(--tone) 78%, var(--obs-ink));
+  font-weight: var(--ds-weight-medium);
+}

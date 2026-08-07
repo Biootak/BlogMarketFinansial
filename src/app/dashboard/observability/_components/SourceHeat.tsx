@@ -1,6 +1,7 @@
 'use client';
 
 import { Grid2x2 } from 'lucide-react';
+import { Fragment } from 'react';
 
 import { heatLevel, maxOf } from './chart';
 import { bucketLabel, cssVars, faNum, hourKey, sourceName } from './format';
@@ -15,7 +16,7 @@ const LEVELS = [0, 1, 2, 3, 4] as const;
  *
  * این یک نمایشگر است نه یک کنترل: انتخاب ساعت جای دیگری انجام می‌شود
  * (نوار روز و مکان‌نمای سرصفحه) و ماتریس فقط ستون انتخاب‌شده را برجسته
- * می‌کند. دلیلش دسترس‌پذیری است — ۱۹۲ سلولِ کلیک‌پذیر ۱۰ پیکسلی نه هدف
+ * می‌کند. دلیلش دسترس‌پذیری است — ۱۹۲ سلولِ کلیک‌پذیرِ ۱۰ پیکسلی نه هدف
  * لمسی قابل قبولی دارد و نه ناوبری صفحه‌کلید قابل تحملی.
  *
  * شدت پله‌ای است (۵ پله) نه پیوسته، چون چشم انسان اختلاف چنددرصدی روشنایی
@@ -49,7 +50,7 @@ export function SourceHeat() {
         style={cssVars({ '--cols': windowHours })}
       >
         {rows.map((row) => (
-          <div key={row.source} style={{ display: 'contents' }}>
+          <Fragment key={row.source}>
             {row.cells.map((cell, index) => (
               <span
                 key={`${row.source}-${hourKey(index)}`}
@@ -64,7 +65,7 @@ export function SourceHeat() {
               <bdi>{sourceName(row.source)}</bdi>
               <span className={h.rowTotal}>{faNum(row.total)}</span>
             </span>
-          </div>
+          </Fragment>
         ))}
       </div>
 
