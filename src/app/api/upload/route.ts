@@ -2,6 +2,7 @@
 // route handler runs. Idempotent — safe to re-import across hot reloads.
 import '@/lib/sharp-config';
 
+import { randomBytes } from 'node:crypto';
 import { auth } from '@/auth';
 import { type ImageSlotId, getSlot } from '@/lib/image-slots';
 import { checkRateLimit as checkSharedRateLimit } from '@/lib/rate-limiter';
@@ -221,7 +222,7 @@ async function processImage(
 // component gives ~2B namespace per millisecond.
 function generateFilename(originalName: string, mime: AllowedMime): string {
   const timestamp = Date.now();
-  const random = Math.random().toString(36).slice(2, 8);
+  const random = randomBytes(3).toString('hex'); // 6 chars, cryptographically random
   const baseName =
     originalName
       .replace(/\.[^/.]+$/, '')

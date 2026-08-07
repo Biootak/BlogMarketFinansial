@@ -74,9 +74,10 @@ export async function issueServiceOtp(args: {
 }): Promise<IssueOtpResult> {
   try {
     const headersList = await headers();
+    const _xff = headersList.get('x-forwarded-for') ?? '';
     const ip =
+      (_xff.split(',').map((p) => p.trim()).filter(Boolean).pop()) ||
       headersList.get('x-real-ip')?.trim() ||
-      headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
       'unknown';
 
     // Rate limit: 10 OTP requests per email per 15 min

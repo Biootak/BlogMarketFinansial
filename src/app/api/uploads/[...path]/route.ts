@@ -2,7 +2,8 @@ import path from 'node:path';
 import { getFileStream } from '@/lib/storage';
 import { type NextRequest, NextResponse } from 'next/server';
 
-const ALLOWED_FOLDERS = ['posts', 'avatars', 'categories', 'tags', 'ads', 'general'];
+// H4-fix: باید با ALLOWED_FOLDERS در upload route هماهنگ باشد (kyc, logos, exchange اضافه شدند)
+const ALLOWED_FOLDERS = ['posts', 'avatars', 'categories', 'tags', 'ads', 'general', 'kyc', 'logos', 'exchange'];
 
 const MIME_TYPES: Record<string, string> = {
   '.webp': 'image/webp',

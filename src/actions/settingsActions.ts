@@ -9,7 +9,7 @@ import { safeRevalidateTag } from '@/lib/safe-cache';
 import { revalidateSiteIdentity } from '@/lib/site-identity-revalidate';
 import { AuditLogQuerySchema, CreateApiKeySchema, TriggerBackupSchema, UpdateBackupSettingsSchema, UpdateCacheSettingsSchema, UpdateEmailSettingsSchema, UpdateGeneralSettingsSchema, UpdateMaintenanceModeSchema, UpdateSecuritySettingsSchema, UpdateSocialSettingsSchema } from '@/schemas';
 
-const ok = (data?: unknown) => ({ success: true as const, ...(data === undefined ? {} : { data }) });
+const ok = <T>(data?: T) => ({ success: true as const, ...(data === undefined ? {} : { data }) });
 const fail = (error: string) => ({ success: false as const, error });
 const stripSecret = <T extends Record<string, unknown>>(value: T): T => {
   const copy = { ...value };

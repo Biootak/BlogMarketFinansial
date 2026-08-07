@@ -266,9 +266,10 @@ export async function createServiceRequest(
 ): Promise<FintechActionResult<{ trackingCode: string }>> {
   try {
     const headersList = await headers();
+    const _xff = headersList.get('x-forwarded-for') ?? '';
     const ip =
+      (_xff.split(',').map((p) => p.trim()).filter(Boolean).pop()) ||
       headersList.get('x-real-ip')?.trim() ||
-      headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
       'unknown';
     const userAgent = headersList.get('user-agent') || 'unknown';
 

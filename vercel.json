@@ -1,21 +1,21 @@
 {
-  "buildCommand": "npm run build:webpack",
+  "buildCommand": "npm run build",
   "crons": [
     {
       "path": "/api/cron/refresh-market-rates",
-      "schedule": "0 6 * * *"
+      "schedule": "*/10 * * * *"
     },
     {
       "path": "/api/cron/sync-rate-lists",
-      "schedule": "0 7 * * *"
+      "schedule": "*/5 * * * *"
     },
     {
       "path": "/api/cron/expire-quotes",
-      "schedule": "0 8 * * *"
+      "schedule": "*/5 * * * *"
     },
     {
       "path": "/api/cron/publish-scheduled-posts",
-      "schedule": "0 9 * * *"
+      "schedule": "0 * * * *"
     },
     {
       "path": "/api/cron/expire-kyc",

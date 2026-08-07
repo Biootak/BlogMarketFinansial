@@ -77,7 +77,8 @@ export async function GET(): Promise<NextResponse> {
       message: `${created.count} تبلیغ ایجاد شد`,
       ads: ADS.map((a) => ({ title: a.title, imageUrl: a.imageUrl })),
     });
-  } catch (error) {
-    return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
+  } catch {
+    // H6-fix: خطای داخلی نباید به client leak شود
+    return NextResponse.json({ success: false, error: 'خطای سرور' }, { status: 500 });
   }
 }

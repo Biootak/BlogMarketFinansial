@@ -20,6 +20,13 @@ import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { mkdir, readFile, readdir, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import prisma from '@/lib/db';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -99,6 +106,107 @@ export const DEFAULT_BACKUP_CONFIG: BackupConfig = {
 
 const BACKUP_DIR = path.join(process.cwd(), 'backups');
 
+// ── S3 backup (optional — Vercel ephemeral filesystem safe) ─────────────────
+// M8-fix: backups are mirrored to S3 so they survive Vercel redeploys.
+// All operations are best-effort — a missing/misconfigured S3 never fails
+// the primary filesystem backup.
+
+const BACKUP_S3_PREFIX = 'backups/';
+
+function buildS3Client(): S3Client | null {
+  if (
+    !process.env.LIARA_ENDPOINT ||
+    !process.env.LIARA_ACCESS_KEY ||
+    !process.env.LIARA_SECRET_KEY ||
+    !process.env.LIARA_BUCKET_NAME
+  )
+    return null;
+  return new S3Client({
+    region: 'default',
+    endpoint: process.env.LIARA_ENDPOINT,
+    credentials: {
+      accessKeyId: process.env.LIARA_ACCESS_KEY,
+      secretAccessKey: process.env.LIARA_SECRET_KEY,
+    },
+    forcePathStyle: true,
+    maxAttempts: 1,
+    requestHandler: { requestTimeout: 5000, connectionTimeout: 4000 },
+  });
+}
+
+async function uploadBackupToS3(filename: string, json: string): Promise<boolean> {
+  const client = buildS3Client();
+  if (!client) return false;
+  const bucket = process.env.LIARA_BUCKET_NAME as string;
+  try {
+    await client.send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: `${BACKUP_S3_PREFIX}${filename}`,
+        Body: Buffer.from(json, 'utf8'),
+        ContentType: 'application/json',
+        CacheControl: 'no-store',
+      }),
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function readBackupFromS3(filename: string): Promise<string | null> {
+  const client = buildS3Client();
+  if (!client) return null;
+  const bucket = process.env.LIARA_BUCKET_NAME as string;
+  try {
+    const res = await client.send(
+      new GetObjectCommand({
+        Bucket: bucket,
+        Key: `${BACKUP_S3_PREFIX}${filename}`,
+      }),
+    );
+    if (!res.Body) return null;
+    const chunks: Uint8Array[] = [];
+    // @ts-expect-error — Body is a Node stream at runtime
+    for await (const chunk of res.Body) chunks.push(chunk);
+    return Buffer.concat(chunks).toString('utf8');
+  } catch {
+    return null;
+  }
+}
+
+async function deleteBackupFromS3(filename: string): Promise<void> {
+  const client = buildS3Client();
+  if (!client) return;
+  const bucket = process.env.LIARA_BUCKET_NAME as string;
+  try {
+    await client.send(
+      new DeleteObjectCommand({
+        Bucket: bucket,
+        Key: `${BACKUP_S3_PREFIX}${filename}`,
+      }),
+    );
+  } catch {
+    /* best-effort */
+  }
+}
+
+async function listBackupsFromS3(): Promise<string[]> {
+  const client = buildS3Client();
+  if (!client) return [];
+  const bucket = process.env.LIARA_BUCKET_NAME as string;
+  try {
+    const res = await client.send(
+      new ListObjectsV2Command({ Bucket: bucket, Prefix: BACKUP_S3_PREFIX }),
+    );
+    return (res.Contents ?? [])
+      .map((obj) => obj.Key?.replace(BACKUP_S3_PREFIX, '') ?? '')
+      .filter((k) => k.startsWith('backup_') && k.endsWith('.json'));
+  } catch {
+    return [];
+  }
+}
+
 async function ensureBackupDir(): Promise<void> {
   if (!existsSync(BACKUP_DIR)) {
     await mkdir(BACKUP_DIR, { recursive: true, mode: 0o700 });
@@ -155,6 +263,10 @@ export async function writeBackup(
     throw err;
   }
 
+  // M8-fix: mirror to S3 so backup survives Vercel ephemeral filesystem
+  // best-effort — filesystem backup already written, S3 failure is non-fatal
+  await uploadBackupToS3(filename, json).catch(() => {});
+
   const stats = await stat(fullPath);
   return {
     filename,
@@ -173,10 +285,20 @@ export async function writeBackup(
 
 export async function listBackups(): Promise<BackupFileInfo[]> {
   await ensureBackupDir();
-  const entries = await readdir(BACKUP_DIR).catch(() => [] as string[]);
+
+  // M8-fix: merge local + S3 filenames (deduplicated), prefer local metadata
+  const [localEntries, s3Names] = await Promise.all([
+    readdir(BACKUP_DIR).catch(() => [] as string[]),
+    listBackupsFromS3(),
+  ]);
+
+  const seen = new Set<string>();
   const results: BackupFileInfo[] = [];
-  for (const name of entries) {
+
+  // local first (has stat + full content)
+  for (const name of localEntries) {
     if (!name.startsWith('backup_') || !name.endsWith('.json')) continue;
+    seen.add(name);
     const fullPath = path.join(BACKUP_DIR, name);
     try {
       const raw = await readFile(fullPath, 'utf8');
@@ -197,6 +319,30 @@ export async function listBackups(): Promise<BackupFileInfo[]> {
       // skip corrupted file
     }
   }
+
+  // S3-only entries (e.g. after Vercel redeploy wiped local fs)
+  for (const name of s3Names) {
+    if (seen.has(name)) continue;
+    try {
+      const raw = await readBackupFromS3(name);
+      if (!raw) continue;
+      const envelope = JSON.parse(raw) as BackupEnvelope;
+      results.push({
+        filename: name,
+        path: '',
+        sizeBytes: Buffer.byteLength(raw, 'utf8'),
+        createdAt: envelope.manifest.createdAt,
+        reason: envelope.manifest.reason,
+        totalRows: envelope.manifest.totalRows,
+        sections: envelope.manifest.sections.map((s) => s.name),
+        actor: envelope.manifest.actor,
+        checksum: envelope.manifest.checksum,
+      });
+    } catch {
+      // skip
+    }
+  }
+
   // newest first
   results.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
   return results;
@@ -210,10 +356,22 @@ export async function readBackup(filename: string): Promise<BackupEnvelope | nul
   if (!filename.startsWith('backup_') || !filename.endsWith('.json')) {
     return null;
   }
+
+  // try local filesystem first
   const fullPath = path.join(BACKUP_DIR, filename);
-  if (!existsSync(fullPath)) return null;
+  if (existsSync(fullPath)) {
+    try {
+      const raw = await readFile(fullPath, 'utf8');
+      return JSON.parse(raw) as BackupEnvelope;
+    } catch {
+      // fall through to S3
+    }
+  }
+
+  // M8-fix: fallback to S3 (handles Vercel ephemeral fs wipe)
   try {
-    const raw = await readFile(fullPath, 'utf8');
+    const raw = await readBackupFromS3(filename);
+    if (!raw) return null;
     return JSON.parse(raw) as BackupEnvelope;
   } catch {
     return null;
@@ -233,9 +391,11 @@ export async function pruneBackups(retentionCount: number): Promise<number> {
   let deleted = 0;
   for (const b of toDelete) {
     try {
-      // filesystem
+      // filesystem (path may be '' for S3-only entries)
       if (b.path) await unlink(b.path).catch(() => {});
-      // DB record — best-effort، ممکن است BackupRun وجود نداشته باشد
+      // M8-fix: also remove from S3
+      await deleteBackupFromS3(b.filename);
+      // DB record — best-effort
       await prisma.backupRun.deleteMany({ where: { filename: b.filename } }).catch(() => {});
       deleted++;
     } catch {
@@ -381,8 +541,15 @@ export async function runBackup(reason = 'manual', actor = 'cron'): Promise<Back
     /* ignore */
   }
 
-  // retention
-  await pruneBackups(20).catch(() => 0);
+  // H5-fix: retention از config خوانده می‌شود نه hardcoded 20
+  let retentionCount = 20;
+  try {
+    const dbConfig = await prisma.backupConfig.findUnique({ where: { id: 'singleton' } });
+    if (dbConfig?.retentionCount) retentionCount = dbConfig.retentionCount;
+  } catch {
+    /* ignore — از مقدار پیش‌فرض استفاده می‌شود */
+  }
+  await pruneBackups(retentionCount).catch(() => 0);
 
   return info;
 }

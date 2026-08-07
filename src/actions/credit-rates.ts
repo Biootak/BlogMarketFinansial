@@ -378,7 +378,8 @@ export async function createBank(raw: unknown): Promise<FintechActionResult<Bank
   if (!auth.success) {
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'دسترسی ندارید' } };
   }
-  const ip = (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+  const _xff1 = (await headers()).get('x-forwarded-for') ?? '';
+  const ip = (_xff1.split(',').map((p) => p.trim()).filter(Boolean).pop()) ?? (await headers()).get('x-real-ip')?.trim() ?? 'unknown';
   const rl = await checkRateLimit(`admin-bank:${auth.user.id}`, 'api');
   if (!rl.success) {
     return { success: false, error: { code: 'RATE_LIMITED', message: 'تعداد درخواست‌ها زیاد است' } };
@@ -486,7 +487,8 @@ export async function deleteBank(id: string): Promise<FintechActionResult<{ id: 
   if (!auth.success) {
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'دسترسی ندارید' } };
   }
-  const ip = (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+  const _xff2 = (await headers()).get('x-forwarded-for') ?? '';
+  const ip = (_xff2.split(',').map((p) => p.trim()).filter(Boolean).pop()) ?? (await headers()).get('x-real-ip')?.trim() ?? 'unknown';
   const bank = await prisma.bank.findUnique({ where: { id } });
   if (!bank) {
     return { success: false, error: { code: 'NOT_FOUND', message: 'بانک یافت نشد' } };

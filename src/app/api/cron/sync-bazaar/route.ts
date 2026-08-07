@@ -9,11 +9,8 @@
  *   — snapshot JSON می‌نویسد
  *   — با کل SYMBOL_REGISTRY هماهنگ است
  *
- * این فایل برای backward-compat با deployment های قدیمی نگه داشته شده.
- * در vercel.json باید فقط refresh-market-rates فعال باشد.
- *
- * Auth: فقط `Authorization: Bearer CRON_SECRET` پذیرفته می‌شود.
- * (query string و x-cron-secret پشتیبانی نمی‌شوند — راه ناامن هستند.)
+ * M7-fix: این endpoint اکنون 410 Gone برمی‌گرداند تا از اجرای تصادفی جلوگیری شود.
+ * برای sync واقعی از /api/cron/refresh-market-rates استفاده کنید.
  * ----------------------------------------------------------------------------
  */
 
@@ -129,9 +126,20 @@ async function upsertRate(opts: {
  *   GET /api/cron/sync-bazaar?secret=XXX (دستی)
  *   GET /api/cron/sync-bazaar (Vercel Cron با هدر Authorization)
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
+  // M7-fix: endpoint deprecated — 410 Gone برمی‌گرداند
+  return NextResponse.json(
+    {
+      deprecated: true,
+      message: 'این endpoint منسوخ شده است. از /api/cron/refresh-market-rates استفاده کنید.',
+      newEndpoint: '/api/cron/refresh-market-rates',
+    },
+    { status: 410 },
+  );
+
+  // کد قدیمی زیر نگه داشته شده برای reference — هرگز اجرا نمی‌شود
   // 1) Auth: only Authorization: Bearer CRON_SECRET (constant-time).
-  const authError = verifyCronSecret(request);
+  const authError = verifyCronSecret(_request);
   if (authError) return authError;
 
   // 2) Scrape TGJU
@@ -151,7 +159,8 @@ export async function GET(request: NextRequest) {
   }
 
   // 3) Upsert به DB
-  const data: TgjuResponse = scrape.data;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const data: TgjuResponse = scrape.data!;
   const results: Array<{
     name: string;
     currency: string;

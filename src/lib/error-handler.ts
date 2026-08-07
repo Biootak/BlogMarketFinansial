@@ -133,6 +133,11 @@ export function logError(error: unknown, context?: Record<string, unknown>): voi
 
   // در development لاگ کن
   if (process.env.NODE_ENV === 'development') {
+    // L1-fix: در dev پیام خطا به console می‌رود تا debug آسان‌تر شود
+    if (error instanceof Error) {
+      // biome-ignore lint/no-console: intentional dev-only logging
+      console.error('[error-handler]', error.name, error.message, context);
+    }
   }
 
   // ارسال به Sentry در production
