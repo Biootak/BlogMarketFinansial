@@ -18,7 +18,7 @@
 
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { mkdir, readFile, readdir, stat, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rename, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import prisma from '@/lib/db';
 import {
@@ -257,7 +257,6 @@ export async function writeBackup(
   try {
     await writeFile(tmpPath, json, { mode: 0o600 });
     // atomic rename
-    const { rename } = await import('node:fs/promises');
     await rename(tmpPath, fullPath);
   } catch (err) {
     // cleanup tmp

@@ -205,6 +205,9 @@ const nextConfig: NextConfig = {
     // افزایش timeout برای لود تصاویر — images are effectively immutable,
     // so cache the optimizer result for a full day instead of 60s.
     minimumCacheTTL: 86400,
+    // کیفیت‌های مجاز — default 75؛ ArchiveAdCard از quality=40 استفاده می‌کند و
+    // در production بدون ثبت این مقدار، آپتیمایزر 400 می‌داد و تبلیغ لود نمی‌شد.
+    qualities: [40, 75],
     // فرمت‌های مجاز
     formats: ['image/avif', 'image/webp'],
     // محدودیت سایز دستگاه‌ها

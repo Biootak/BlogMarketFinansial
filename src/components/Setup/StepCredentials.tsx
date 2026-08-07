@@ -24,19 +24,28 @@ export function StepCredentials({ values, errors, onChange, onBlur }: StepCreden
       const ascii = toAsciiDigits(raw);
       // Strip everything except digits — we want to store the canonical
       // (unformatted) form in state so schema validation and server submission
-      // both work against `^(\+98|0)?9\d{9}$`.
+      // both work against PERSIAN_PHONE_REGEX.
       const digitsOnly = ascii.replace(/[^\d]/g, '');
 
-      // Normalize common prefixes to the canonical `0XXXXXXXXXX` form
-      // (the regex accepts `+98`, `98`, `0`, or a bare 9-leading number).
+      // Normalize common prefixes to the canonical national form:
+      //   Afghanistan-first: `+93 7XXXXXXXX` → `07XXXXXXXX` (10 digits)
+      //   Iran (legacy):     `+98 9XXXXXXXXX` → `09XXXXXXXXX` (11 digits)
+      // The regex accepts `+93|0093|93|0` + `7…` and `+98|0098|98|0` + `9…`.
       let canonical: string;
-      if (digitsOnly.startsWith('0098')) {
+      if (digitsOnly.startsWith('0093')) {
         canonical = `0${digitsOnly.slice(4)}`;
-      } else if (digitsOnly.startsWith('98')) {
+      } else if (digitsOnly.startsWith('93') && digitsOnly.length > 10) {
+        // `93…` could be `+93 7…` (Afghan) or a truncated Iranian `9…` —
+        // a redundant zero (`+93 0 7…` → `9307…`) must be stripped too.
+        const rest = digitsOnly[2] === '0' ? digitsOnly.slice(3) : digitsOnly.slice(2);
+        canonical = `0${rest}`;
+      } else if (digitsOnly.startsWith('0098')) {
+        canonical = `0${digitsOnly.slice(4)}`;
+      } else if (digitsOnly.startsWith('98') && digitsOnly.length > 10) {
         canonical = `0${digitsOnly.slice(2)}`;
       } else if (digitsOnly.startsWith('0')) {
         canonical = digitsOnly;
-      } else if (digitsOnly.startsWith('9')) {
+      } else if (digitsOnly.startsWith('9') || digitsOnly.startsWith('7')) {
         canonical = `0${digitsOnly}`;
       } else {
         canonical = digitsOnly;
@@ -110,7 +119,7 @@ export function StepCredentials({ values, errors, onChange, onBlur }: StepCreden
         required
         dir="ltr"
         error={errors.phoneNumber ?? null}
-        help="برای اطلاع‌رسانی‌های حساس امنیتی"
+        help="مثال: ۰۷۰۱۲۳۴۵۶۷ (افغانستان) یا ۰۹۱۲۳۴۵۶۷۸۹ (ایران)"
         leading={
           <span className="setup-field__ico">
             <PhoneGlyph />

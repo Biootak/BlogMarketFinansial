@@ -216,6 +216,12 @@ export const renderExtensions = [
     heading: {
       levels: [1, 2, 3, 4, 5, 6],
     },
+    // TipTap v3 StarterKit includes link/underline by default — they are added
+    // separately below with custom config, so disable them here to avoid the
+    // "Duplicate extension names" warning on every article page (matches
+    // Editor1/extensions/index.ts).
+    link: false,
+    underline: false,
     codeBlock: false,
     dropcursor: false,
     gapcursor: false,

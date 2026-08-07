@@ -26,8 +26,20 @@ const s3Client = new S3Client({
 });
 
 const BUCKET_NAME = process.env.LIARA_BUCKET_NAME || '';
-const S3_PUBLIC_URL =
-  process.env.LIARA_ENDPOINT?.replace('https://', `https://${BUCKET_NAME}.`) || '';
+// Build the public URL by swapping the host on the endpoint (handles both
+// https and http, and avoids producing the literal string "undefined" when
+// the endpoint is unset — S3 callers already gate on isS3Configured()).
+const S3_PUBLIC_URL = (() => {
+  const endpoint = process.env.LIARA_ENDPOINT;
+  if (!endpoint || !BUCKET_NAME) return '';
+  try {
+    const url = new URL(endpoint);
+    url.hostname = `${BUCKET_NAME}.${url.hostname}`;
+    return url.toString().replace(/\/$/, '');
+  } catch {
+    return '';
+  }
+})();
 
 // Turbopack-safe: avoid a static literal path to public/uploads in the build graph.
 const _cwd = (typeof process !== 'undefined' ? process.cwd() : '') as string;

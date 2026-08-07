@@ -78,7 +78,9 @@ const getCachedAuthors = safeCache(
         id: true,
         name: true,
         image: true,
-        profile: { select: { avatar: true } },
+        // SearchResult renders jobName + bio in author cards — select them
+        // (previous select only fetched avatar → silent undefined fields).
+        profile: { select: { avatar: true, jobName: true, bio: true } },
       },
     });
   },

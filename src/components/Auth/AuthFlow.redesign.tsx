@@ -183,7 +183,9 @@ export default function AuthFlow() {
         </div>
 
         {/* ── Notices ── */}
-        <NoticeBanner notice={notice} key={notice ? `${notice.tone}-${Date.now()}` : 'idle'} />
+        {/* Key is derived from notice identity (not Date.now) so RateLimitCountdown
+            keeps its interval while AuthFlow re-renders on the cooldown tick. */}
+        <NoticeBanner notice={notice} key={notice ? `${notice.tone}-${notice.message}` : 'idle'} />
 
         {/* ── Step content ── */}
         <Suspense fallback={<StepFallback />}>

@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { PERSIAN_PHONE_REGEX } from '@/lib/setup/schema';
 import { Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { headers } from 'next/headers';
@@ -17,7 +18,7 @@ const superAdminSchema = z.object({
     .regex(/[0-9]/, 'رمز عبور باید شامل اعداد باشد')
     .regex(/[^A-Za-z0-9]/, 'رمز عبور باید شامل کاراکترهای خاص باشد'),
   name: z.string().min(2, 'نام باید حداقل 2 حرف داشته باشد'),
-  phoneNumber: z.string().regex(/^(\+98|0)?9\d{9}$/, 'شماره موبایل نامعتبر است'),
+  phoneNumber: z.string().regex(PERSIAN_PHONE_REGEX, 'شماره موبایل نامعتبر است'),
   jobName: z.string().min(2, 'عنوان شغلی باید حداقل 2 حرف داشته باشد'),
   company: z.string().min(2, 'نام شرکت باید حداقل 2 حرف داشته باشد'),
   bio: z.string().min(10, 'بیوگرافی باید حداقل 10 حرف داشته باشد'),

@@ -9,7 +9,10 @@ import { z } from 'zod';
  * the server. If you change one side, change the other in the same commit.
  */
 
-export const PERSIAN_PHONE_REGEX = /^(\+98|0)?9\d{9}$/;
+// Afghanistan-first (AGENTS.md P0): Afghan mobiles are `07XXXXXXXX` (national)
+// or `+93 7XXXXXXXX` (E.164). Iranian numbers (`09XXXXXXXXX` / `+98 9XXXXXXXXX`)
+// are still accepted for legacy admin accounts, but never as the primary form.
+export const PERSIAN_PHONE_REGEX = /^(?:\+98|0098|98|0)?9\d{9}$|^(?:\+93|0093|93|0)?7\d{8}$/;
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const setupSchema = z.object({
@@ -37,7 +40,7 @@ export const setupSchema = z.object({
   phoneNumber: z
     .string()
     .trim()
-    .regex(PERSIAN_PHONE_REGEX, 'شماره موبایل نامعتبر است؛ مثال: ۰۹۱۲۳۴۵۶۷۸۹'),
+    .regex(PERSIAN_PHONE_REGEX, 'شماره موبایل نامعتبر است؛ مثال: ۰۷۰۱۲۳۴۵۶۷ یا ۰۹۱۲۳۴۵۶۷۸۹'),
 
   jobName: z
     .string()
