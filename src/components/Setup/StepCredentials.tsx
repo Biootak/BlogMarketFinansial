@@ -22,21 +22,31 @@ export function StepCredentials({ values, errors, onChange, onBlur }: StepCreden
     (raw: string) => {
       // Convert any Persian/Arabic digits to ASCII first.
       const ascii = toAsciiDigits(raw);
-      // Strip everything except digits — we want to store the canonical
-      // (unformatted) form in state so schema validation and server submission
-      // both work against PERSIAN_PHONE_REGEX.
-      const digitsOnly = ascii.replace(/[^\d]/g, '');
+      // Keep the `+` prefix when present — the user typed an international
+      // number (any country). Preserve it as E.164-style (max 15 digits).
+      const hasPlus = ascii.startsWith('+');
+      let digitsOnly = ascii.replace(/[^\d]/g, '');
 
-      // Normalize common prefixes to the canonical national form:
-      //   Afghanistan-first: `+93 7XXXXXXXX` → `07XXXXXXXX` (10 digits)
-      //   Iran (legacy):     `+98 9XXXXXXXXX` → `09XXXXXXXXX` (11 digits)
-      // The regex accepts `+93|0093|93|0` + `7…` and `+98|0098|98|0` + `9…`.
+      if (hasPlus) {
+        // `+93 0 7XXXXXXXX` (صفر اضافهٔ ملی بعد از کد کشور) E.164 معتبر نیست —
+        // صفر را حذف می‌کنیم: +93 0701234567 → +93701234567.
+        if (digitsOnly.startsWith('9307')) {
+          digitsOnly = digitsOnly.slice(0, 2) + digitsOnly.slice(3);
+        }
+        onChange('phoneNumber', `+${digitsOnly.slice(0, 15)}`);
+        return;
+      }
+
+      // Bare national number → normalize common prefixes to the canonical
+      // national form:
+      //   Afghanistan-first: `93 7XXXXXXXX` → `07XXXXXXXX` (10 digits)
+      //   Iran (legacy):     `98 9XXXXXXXXX` → `09XXXXXXXXX` (11 digits)
       let canonical: string;
       if (digitsOnly.startsWith('0093')) {
         canonical = `0${digitsOnly.slice(4)}`;
       } else if (digitsOnly.startsWith('93') && digitsOnly.length > 10) {
         // `93…` could be `+93 7…` (Afghan) or a truncated Iranian `9…` —
-        // a redundant zero (`+93 0 7…` → `9307…`) must be stripped too.
+        // a redundant zero (`93 0 7…` → `9307…`) must be stripped too.
         const rest = digitsOnly[2] === '0' ? digitsOnly.slice(3) : digitsOnly.slice(2);
         canonical = `0${rest}`;
       } else if (digitsOnly.startsWith('0098')) {
@@ -119,7 +129,7 @@ export function StepCredentials({ values, errors, onChange, onBlur }: StepCreden
         required
         dir="ltr"
         error={errors.phoneNumber ?? null}
-        help="مثال: ۰۷۰۱۲۳۴۵۶۷ (افغانستان) یا ۰۹۱۲۳۴۵۶۷۸۹ (ایران)"
+        help="مثال: ۰۷۰۱۲۳۴۵۶۷ (افغانستان) یا +93701234567 — شماره مجازی پذیرفته نمی‌شود"
         leading={
           <span className="setup-field__ico">
             <PhoneGlyph />

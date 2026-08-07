@@ -1,7 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { PERSIAN_PHONE_REGEX } from '@/lib/setup/schema';
+import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
 import { Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { headers } from 'next/headers';
@@ -18,7 +18,8 @@ const superAdminSchema = z.object({
     .regex(/[0-9]/, 'رمز عبور باید شامل اعداد باشد')
     .regex(/[^A-Za-z0-9]/, 'رمز عبور باید شامل کاراکترهای خاص باشد'),
   name: z.string().min(2, 'نام باید حداقل 2 حرف داشته باشد'),
-  phoneNumber: z.string().regex(PERSIAN_PHONE_REGEX, 'شماره موبایل نامعتبر است'),
+  // همان مکانیزم واحد phone-validation: همهٔ کشورها + بلوک شمارهٔ مجازی (VoIP).
+  phoneNumber: z.string().refine(isPhoneValid, 'شماره تماس معتبر نیست'),
   jobName: z.string().min(2, 'عنوان شغلی باید حداقل 2 حرف داشته باشد'),
   company: z.string().min(2, 'نام شرکت باید حداقل 2 حرف داشته باشد'),
   bio: z.string().min(10, 'بیوگرافی باید حداقل 10 حرف داشته باشد'),
@@ -86,12 +87,14 @@ export async function createSuperAdmin(formData: FormData) {
         if (existingAdmin) return { existing: true as const, user: null };
 
         const hashedPassword = await bcrypt.hash(formDataObj.password, 12);
+        // ذخیرهٔ شماره به فرمت استاندارد E.164 (هماهنگ با بقیهٔ اپ)
+        const phoneE164 = normalizeToE164(formDataObj.phoneNumber);
         const created = await tx.user.create({
           data: {
             email: formDataObj.email,
             password: hashedPassword,
             name: formDataObj.name,
-            phoneNumber: formDataObj.phoneNumber,
+            phoneNumber: phoneE164,
             role: Role.OWNER,
             profile: {
               create: {

@@ -22,6 +22,8 @@ export function formatPersianPhone(raw: string): string {
   // Afghanistan-first (AGENTS.md P0): Afghan mobiles are `07XXXXXXXX` (national)
   // or `+93 7XXXXXXXX` (E.164). Iranian numbers remain supported for legacy
   // admin accounts, but the local/national branch prefers the Afghan shape.
+  // ⚠️ These `+93`/`+98` branches MUST stay above the generic `+` early-return
+  // below, otherwise they are unreachable dead code.
   if (trimmed.startsWith('+93')) {
     const digits = trimmed.slice(3).slice(0, 9);
     if (digits.length <= 3) return `+93 ${digits}`;
@@ -40,6 +42,11 @@ export function formatPersianPhone(raw: string): string {
     if (digits.length <= 3) return `+98 ${digits}`;
     if (digits.length <= 6) return `+98 ${digits.slice(0, 3)} ${digits.slice(3)}`;
     return `+98 ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
+  }
+  // شمارهٔ بین‌المللی (با +) از بقیهٔ کشورها — همان‌طور که تایپ شده نمایش داده
+  // می‌شود تا ساختار ملیِ هر کشور خراب نشود. (بعد از شاخه‌های +93/+98 تا dead code نشود)
+  if (trimmed.startsWith('+')) {
+    return trimmed;
   }
   if (trimmed.startsWith('98') && trimmed.length > 2) {
     const digits = trimmed.slice(2).slice(0, 10);

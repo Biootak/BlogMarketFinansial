@@ -1,3 +1,4 @@
+import { isPhoneValid } from '@/lib/phone-validation';
 import { z } from 'zod';
 
 /**
@@ -9,10 +10,6 @@ import { z } from 'zod';
  * the server. If you change one side, change the other in the same commit.
  */
 
-// Afghanistan-first (AGENTS.md P0): Afghan mobiles are `07XXXXXXXX` (national)
-// or `+93 7XXXXXXXX` (E.164). Iranian numbers (`09XXXXXXXXX` / `+98 9XXXXXXXXX`)
-// are still accepted for legacy admin accounts, but never as the primary form.
-export const PERSIAN_PHONE_REGEX = /^(?:\+98|0098|98|0)?9\d{9}$|^(?:\+93|0093|93|0)?7\d{8}$/;
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const setupSchema = z.object({
@@ -37,10 +34,11 @@ export const setupSchema = z.object({
     .regex(/[^A-Za-z0-9]/, 'رمز عبور باید شامل کاراکترهای خاص (!@#…) باشد')
     .max(128, 'رمز عبور نباید بیشتر از ۱۲۸ کاراکتر باشد'),
 
-  phoneNumber: z
-    .string()
-    .trim()
-    .regex(PERSIAN_PHONE_REGEX, 'شماره موبایل نامعتبر است؛ مثال: ۰۷۰۱۲۳۴۵۶۷ یا ۰۹۱۲۳۴۵۶۷۸۹'),
+  // شمارهٔ موبایل — همهٔ کشورها پذیرفته می‌شود (با پیشوند +CC یا کشور پیش‌فرض AF).
+  // همان مکانیزم واحد phone-validation را اعمال می‌کند: مجازی (VoIP) رد می‌شود.
+  phoneNumber: z.string().trim().refine(isPhoneValid, {
+    message: 'شماره تماس معتبر نیست؛ مثال: ۰۷۰۱۲۳۴۵۶۷ یا +93701234567 (شماره مجازی پذیرفته نمی‌شود)',
+  }),
 
   jobName: z
     .string()
