@@ -16,7 +16,7 @@
 import { Disclosure } from '@/app/headlessui';
 import ButtonClose from '@/components/ButtonClose/ButtonClose';
 import Logo from '@/components/Logo/Logo';
-import ClientSocialLinks from '@/components/SocialsList/ClientSocialLinks';
+import SocialLinks from '@/components/SocialsList/SocialLinks';
 import SwitchDarkMode from '@/components/SwitchDarkMode/SwitchDarkMode';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import Link from 'next/link';
@@ -238,7 +238,7 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
 
         <div className="mt-4 flex justify-between items-center">
           <SwitchDarkMode className="bg-[rgb(var(--c-surface-elevated))]" />
-          <ClientSocialLinks className="gap-2" itemClass="!w-9 !h-9" iconSize={18} />
+          <SocialLinks className="gap-2" itemClass="!w-9 !h-9" iconSize={18} />
         </div>
 
         <form onSubmit={handleSearch} className="mt-5 text-[rgb(var(--c-foreground))]">

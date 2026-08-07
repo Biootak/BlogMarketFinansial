@@ -1,4 +1,5 @@
-import { auth } from '@/auth';
+import { denyUnlessAdmin } from '@/lib/api/admin-guard';
+import { apiError, apiOk, apiServerError, parseJsonBody } from '@/lib/api/response';
 import {
   type UpdateAnnouncementInput,
   deleteAnnouncement,
@@ -10,7 +11,7 @@ import prisma from '@/lib/db';
  * PATCH  /api/communication/announcements/[id]    — ویرایش اعلان
  * DELETE /api/communication/announcements/[id]    — حذف اعلان (فقط draft/archived)
  */
-import { type NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { parseChannelsFromBody } from './_helpers';
 
@@ -28,93 +29,41 @@ const PatchSchema = z.object({
   status: z.enum(['draft', 'scheduled', 'published', 'archived']).optional(),
 });
 
-async function guard() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { ok: false as const, status: 401, msg: 'احراز هویت نشده‌اید' };
-  }
-  const role = session.user.role ?? '';
-  if (!['OWNER', 'SUPERADMIN', 'ADMIN'].includes(role)) {
-    return { ok: false as const, status: 403, msg: 'دسترسی ندارید' };
-  }
-  return { ok: true as const };
-}
-
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const g = await guard();
-  if (!g.ok) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: { code: g.status === 401 ? 'UNAUTHORIZED' : 'FORBIDDEN', message: g.msg },
-      },
-      { status: g.status },
-    );
-  }
+  const denied = await denyUnlessAdmin();
+  if (denied) return denied;
+
   const { id } = await params;
   const row = await prisma.announcement.findUnique({ where: { id } });
   if (!row) {
-    return NextResponse.json(
-      { success: false, error: { code: 'NOT_FOUND', message: 'اعلان یافت نشد' } },
-      { status: 404 },
-    );
+    return apiError('NOT_FOUND', 'اعلان یافت نشد', 404);
   }
-  return NextResponse.json({
-    success: true,
-    data: {
-      id: row.id,
-      title: row.title,
-      body: row.body,
-      channels: parseChannelsFromBody(row),
-      audience: row.audience,
-      audienceFilter: row.audienceFilter,
-      status: row.status,
-      scheduledAt: row.scheduledAt?.toISOString() ?? null,
-      publishedAt: row.publishedAt?.toISOString() ?? null,
-      expiresAt: row.expiresAt?.toISOString() ?? null,
-      createdById: row.createdById,
-      createdAt: row.createdAt.toISOString(),
-      updatedAt: row.updatedAt.toISOString(),
-    },
+  return apiOk({
+    id: row.id,
+    title: row.title,
+    body: row.body,
+    channels: parseChannelsFromBody(row),
+    audience: row.audience,
+    audienceFilter: row.audienceFilter,
+    status: row.status,
+    scheduledAt: row.scheduledAt?.toISOString() ?? null,
+    publishedAt: row.publishedAt?.toISOString() ?? null,
+    expiresAt: row.expiresAt?.toISOString() ?? null,
+    createdById: row.createdById,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
   });
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const g = await guard();
-  if (!g.ok) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: { code: g.status === 401 ? 'UNAUTHORIZED' : 'FORBIDDEN', message: g.msg },
-      },
-      { status: g.status },
-    );
-  }
+  const denied = await denyUnlessAdmin();
+  if (denied) return denied;
+
   const { id } = await params;
-  let raw: unknown;
-  try {
-    raw = await req.json();
-  } catch {
-    return NextResponse.json(
-      { success: false, error: { code: 'BAD_BODY', message: 'بدنه نامعتبر' } },
-      { status: 400 },
-    );
-  }
-  const parsed = PatchSchema.safeParse(raw);
-  if (!parsed.success) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'VALIDATION',
-          message: parsed.error.issues[0]?.message ?? 'خطای اعتبارسنجی',
-        },
-      },
-      { status: 400 },
-    );
-  }
+  const body = await parseJsonBody(req, PatchSchema);
+  if (body.error) return body.error;
   const patch: UpdateAnnouncementInput = {};
-  const p = parsed.data;
+  const p = body.data;
   if (p.title !== undefined) patch.title = p.title;
   if (p.body !== undefined) patch.body = p.body;
   if (p.channels !== undefined) patch.channels = p.channels;
@@ -129,32 +78,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (p.status !== undefined) patch.status = p.status;
   const result = await updateAnnouncement(id, patch);
   if (!result.success) {
-    return NextResponse.json(
-      { success: false, error: { code: 'SERVER', message: result.message ?? 'خطای سرور' } },
-      { status: 500 },
-    );
+    return apiServerError(result.message);
   }
-  return NextResponse.json({ success: true });
+  return apiOk();
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const g = await guard();
-  if (!g.ok) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: { code: g.status === 401 ? 'UNAUTHORIZED' : 'FORBIDDEN', message: g.msg },
-      },
-      { status: g.status },
-    );
-  }
+  const denied = await denyUnlessAdmin();
+  if (denied) return denied;
+
   const { id } = await params;
   const result = await deleteAnnouncement(id);
   if (!result.success) {
-    return NextResponse.json(
-      { success: false, error: { code: 'SERVER', message: result.message ?? 'خطای سرور' } },
-      { status: 500 },
-    );
+    return apiServerError(result.message);
   }
-  return NextResponse.json({ success: true });
+  return apiOk();
 }

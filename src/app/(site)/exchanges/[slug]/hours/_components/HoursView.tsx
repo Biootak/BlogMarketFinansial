@@ -10,90 +10,30 @@
  */
 
 import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
+import {
+  DEFAULT_TIMEZONE,
+  type HoursValue,
+  WEEK_DAYS,
+  getDayStatus,
+  hourOfDayInZone,
+  nowDayKey,
+  parseTime,
+  weeklyHoursSummary,
+} from '@/lib/exchange-hours';
 import { Calendar, Clock4, Moon, Sun } from 'lucide-react';
 import { useState } from 'react';
 import s from './HoursView.module.css';
 
 const _faNum = new Intl.NumberFormat('fa-IR');
 
-type HoursValue = { open: string; close: string; closed: boolean };
-type HoursMap = Record<string, HoursValue>;
-
 type Props = {
   exchange: { name: string; city: string | null };
-  hours: HoursMap;
+  hours: Record<string, HoursValue>;
   timezone?: string;
 };
 
-const DAYS: ReadonlyArray<{ key: keyof HoursMap; label: string; sub: string }> = [
-  { key: 'sat', label: 'شنبه', sub: 'Saturday' },
-  { key: 'sun', label: 'یکشنبه', sub: 'Sunday' },
-  { key: 'mon', label: 'دوشنبه', sub: 'Monday' },
-  { key: 'tue', label: 'سه‌شنبه', sub: 'Tuesday' },
-  { key: 'wed', label: 'چهارشنبه', sub: 'Wednesday' },
-  { key: 'thu', label: 'پنجشنبه', sub: 'Thursday' },
-  { key: 'fri', label: 'جمعه', sub: 'Friday' },
-];
-
-// Module-level formatters/caches — this component re-renders every 30s.
+// Module-level formatter — this component re-renders every 30s.
 const FA_INT = new Intl.NumberFormat('fa-IR', { useGrouping: false });
-const DAY_FMT_CACHE = new Map<string, Intl.DateTimeFormat>();
-function dayFmt(timeZone: string): Intl.DateTimeFormat {
-  let f = DAY_FMT_CACHE.get(timeZone);
-  if (!f) {
-    f = new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone });
-    DAY_FMT_CACHE.set(timeZone, f);
-  }
-  return f;
-}
-const TIME_FMT_CACHE = new Map<string, Intl.DateTimeFormat>();
-function timeFmt(timeZone: string): Intl.DateTimeFormat {
-  let f = TIME_FMT_CACHE.get(timeZone);
-  if (!f) {
-    f = new Intl.DateTimeFormat('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-      timeZone,
-    });
-    TIME_FMT_CACHE.set(timeZone, f);
-  }
-  return f;
-}
-
-function nowDayKey(timezone = 'Asia/Tehran'): keyof HoursMap {
-  const wd = dayFmt(timezone).format(new Date());
-  const map: Record<string, keyof HoursMap> = {
-    Sat: 'sat',
-    Sun: 'sun',
-    Mon: 'mon',
-    Tue: 'tue',
-    Wed: 'wed',
-    Thu: 'thu',
-    Fri: 'fri',
-  };
-  return (map[wd] ?? 'sat') as keyof HoursMap;
-}
-
-function parseTime(t: string): number {
-  const [h, m] = t.split(':').map(Number);
-  return h + m / 60;
-}
-
-function getStatus(
-  hours: HoursMap,
-  dayKey: keyof HoursMap,
-  currentMinutes: number,
-): 'closed' | 'open' | 'upcoming' | 'past' {
-  const v = hours[dayKey];
-  if (!v) return 'closed';
-  if (v.closed) return 'closed';
-  const open = parseTime(v.open);
-  const close = parseTime(v.close);
-  if (currentMinutes >= open && currentMinutes < close) return 'open';
-  if (currentMinutes < open) return 'upcoming';
-  return 'past';
-}
 
 function formatFaTime(t: string): string {
   // HH:MM -> فارسی
@@ -101,27 +41,15 @@ function formatFaTime(t: string): string {
   return `${FA_INT.format(Number(h))}:${FA_INT.format(Number(m))}`;
 }
 
-export default function HoursView({ exchange, hours, timezone = 'Asia/Tehran' }: Props) {
+export default function HoursView({ exchange, hours, timezone = DEFAULT_TIMEZONE }: Props) {
   const [now, setNow] = useState(() => new Date());
   // کلاک ۳۰ ثانیه‌ای — در تب مخفی pause می‌شود
   useVisibilityAwareInterval(() => setNow(new Date()), 30_000);
 
-  const [hh, mm] = timeFmt(timezone)
-    .formatToParts(now)
-    .map((p) => p.value)
-    .join('')
-    .split(':')
-    .map(Number);
-  const currentMin = hh + mm / 60;
+  const currentMin = hourOfDayInZone(now, timezone);
   const todayKey = nowDayKey(timezone);
-
-  const totalOpenHours = DAYS.reduce((acc, d) => {
-    const v = hours[d.key];
-    if (!v || v.closed) return acc;
-    return acc + Math.max(0, parseTime(v.close) - parseTime(v.open));
-  }, 0);
-  const openDays = DAYS.filter((d) => hours[d.key] && !hours[d.key].closed).length;
-  const todayStatus = getStatus(hours, todayKey, currentMin);
+  const { openDays, totalOpenHours } = weeklyHoursSummary(hours);
+  const todayStatus = getDayStatus(hours, todayKey, currentMin);
 
   return (
     <section className={s.section} dir="rtl" aria-label={`ساعات کاری ${exchange.name}`}>
@@ -130,7 +58,7 @@ export default function HoursView({ exchange, hours, timezone = 'Asia/Tehran' }:
           <h1 className={s.title}>ساعات کاری {exchange.name}</h1>
           <p className={s.sub}>
             برنامهٔ کامل هفتگی همراه با وضعیت لحظه‌ای باز/بسته. ساعت بر اساس منطقهٔ زمانی{' '}
-            {timezone === 'Asia/Tehran' ? 'تهران' : timezone} نمایش داده می‌شود.
+            {timezone === DEFAULT_TIMEZONE ? 'تهران' : timezone} نمایش داده می‌شود.
           </p>
           {todayStatus === 'open' && (
             <div className={s.statusBanner} role="status">
@@ -173,9 +101,9 @@ export default function HoursView({ exchange, hours, timezone = 'Asia/Tehran' }:
         </div>
 
         <div className={s.daysGrid} role="list" aria-label="برنامهٔ هفتگی">
-          {DAYS.map((d) => {
+          {WEEK_DAYS.map((d) => {
             const v = hours[d.key] ?? { open: '00:00', close: '00:00', closed: true };
-            const status = getStatus(hours, d.key, currentMin);
+            const status = getDayStatus(hours, d.key, currentMin);
             const isToday = d.key === todayKey;
             const open = parseTime(v.open);
             const close = parseTime(v.close);
@@ -197,7 +125,7 @@ export default function HoursView({ exchange, hours, timezone = 'Asia/Tehran' }:
                 <header className={s.dayHead}>
                   <div className={s.dayLabel}>
                     <span className={s.dayLabelMain}>{d.label}</span>
-                    <span className={s.dayLabelSub}>{d.sub}</span>
+                    <span className={s.dayLabelSub}>{d.long}</span>
                   </div>
                   {isToday && (
                     <span className={s.todayChip}>

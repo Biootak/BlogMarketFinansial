@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { postCardInclude } from '@/lib/post-include';
 import type { ActionResult, PostWithRelations } from '@/types/types';
 import { cache } from 'react';
 
@@ -19,42 +20,7 @@ export const getMoreFromAuthor = cache(
         },
         take: 4,
         orderBy: { createdAt: 'desc' },
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-              profile: {
-                select: {
-                  avatar: true,
-                  jobName: true,
-                },
-              },
-            },
-          },
-          categories: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
-          tags: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
-          _count: {
-            select: {
-              comments: true,
-              likes: true,
-              savedBy: true,
-            },
-          },
-        },
+        include: postCardInclude,
       });
 
       return {

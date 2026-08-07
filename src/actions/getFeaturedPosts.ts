@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { postCardInclude } from '@/lib/post-include';
 import { safeCache } from '@/lib/safe-cache';
 import type { ActionResult, PostWithRelations } from '@/types/types';
 import { PostStatus } from '@prisma/client';
@@ -16,42 +17,7 @@ async function fetchFeaturedPosts(limit: number): Promise<ActionResult<PostWithR
       take: limit,
       orderBy: { createdAt: 'desc' },
       omit: { content: true },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
-            profile: {
-              select: {
-                avatar: true,
-                jobName: true,
-              },
-            },
-          },
-        },
-        categories: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
-        tags: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
-        _count: {
-          select: {
-            comments: true,
-            likes: true,
-            savedBy: true,
-          },
-        },
-      },
+      include: postCardInclude,
     });
 
     return {

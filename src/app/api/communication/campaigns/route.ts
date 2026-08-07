@@ -1,4 +1,5 @@
-import { auth } from '@/auth';
+import { denyUnlessAdmin } from '@/lib/api/admin-guard';
+import { apiError, apiOk, apiServerError, parseJsonBody } from '@/lib/api/response';
 import { createCampaign } from '@/lib/communication';
 /**
  * POST /api/communication/campaigns
@@ -15,7 +16,7 @@ import { createCampaign } from '@/lib/communication';
  *  - scheduledAt?: ISO string
  *  - status?: 'draft' | 'scheduled' | 'sending' | 'completed' | 'paused' (default: 'draft')
  */
-import { type NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { z } from 'zod';
 
 const BodySchema = z.object({
@@ -31,52 +32,14 @@ const BodySchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json(
-      { success: false, error: { code: 'UNAUTHORIZED', message: 'احراز هویت نشده‌اید' } },
-      { status: 401 },
-    );
-  }
-  const role = session.user.role ?? '';
-  if (!['OWNER', 'SUPERADMIN', 'ADMIN'].includes(role)) {
-    return NextResponse.json(
-      { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی ندارید' } },
-      { status: 403 },
-    );
-  }
+  const denied = await denyUnlessAdmin();
+  if (denied) return denied;
 
-  let raw: unknown;
-  try {
-    raw = await req.json();
-  } catch {
-    return NextResponse.json(
-      { success: false, error: { code: 'BAD_BODY', message: 'بدنه نامعتبر' } },
-      { status: 400 },
-    );
-  }
-  const parsed = BodySchema.safeParse(raw);
-  if (!parsed.success) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'VALIDATION',
-          message: parsed.error.issues[0]?.message ?? 'خطای اعتبارسنجی',
-        },
-      },
-      { status: 400 },
-    );
-  }
-  const p = parsed.data;
+  const body = await parseJsonBody(req, BodySchema);
+  if (body.error) return body.error;
+  const p = body.data;
   if (p.channel === 'email' && !p.subject?.trim()) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: { code: 'VALIDATION', message: 'برای کمپین ایمیلی، موضوع الزامی است' },
-      },
-      { status: 400 },
-    );
+    return apiError('VALIDATION', 'برای کمپین ایمیلی، موضوع الزامی است', 400);
   }
   const result = await createCampaign({
     name: p.name,
@@ -90,10 +53,7 @@ export async function POST(req: NextRequest) {
     status: p.status,
   });
   if (!result.success) {
-    return NextResponse.json(
-      { success: false, error: { code: 'SERVER', message: result.message ?? 'خطای سرور' } },
-      { status: 500 },
-    );
+    return apiServerError(result.message);
   }
-  return NextResponse.json({ success: true, data: { id: result.id } });
+  return apiOk({ id: result.id });
 }

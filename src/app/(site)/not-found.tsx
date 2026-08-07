@@ -15,10 +15,11 @@
  * Mirrors the same illustration in dashboard/not-found for visual consistency.
  */
 
+import { useStaggerReveal } from '@/hooks/useStaggerReveal';
 import { ArrowRight, Compass, Home, Search, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useId, useRef } from 'react';
+import { useId } from 'react';
 import s from './not-found.module.css';
 
 const SUGGESTED_LINKS: ReadonlyArray<{ href: string; label: string; sub: string }> = [
@@ -30,24 +31,13 @@ const SUGGESTED_LINKS: ReadonlyArray<{ href: string; label: string; sub: string 
 
 export default function SiteNotFound() {
   const pathname = usePathname();
-  const root = useRef<HTMLDivElement | null>(null);
   const titleId = useId();
-
-  useEffect(() => {
-    if (!root.current) return;
-    const items = root.current.querySelectorAll<HTMLElement>('[data-stagger]');
-    items.forEach((el, i) => {
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(10px)';
-      requestAnimationFrame(() => {
-        el.style.transition =
-          'opacity 0.6s var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)), transform 0.6s var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1))';
-        el.style.transitionDelay = `${i * 70}ms`;
-        el.style.opacity = '1';
-        el.style.transform = 'translateY(0)';
-      });
-    });
-  }, []);
+  const root = useStaggerReveal({
+    offsetY: '10px',
+    duration: '0.6s',
+    delayStep: 70,
+    easing: 'var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1))',
+  });
 
   return (
     <div ref={root} className={s.root} dir="rtl" role="alert" aria-labelledby={titleId}>

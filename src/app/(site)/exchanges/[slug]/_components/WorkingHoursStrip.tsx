@@ -11,115 +11,36 @@
  */
 
 import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
+import {
+  DEFAULT_TIMEZONE,
+  type HoursValue,
+  WEEK_DAYS,
+  getDayStatus,
+  hourOfDayInZone,
+  nowDayKey,
+  parseTime,
+  weeklyHoursSummary,
+} from '@/lib/exchange-hours';
 import { Calendar, Clock4, Moon, Sun } from 'lucide-react';
 import { useState } from 'react';
 import s from './WorkingHoursStrip.module.css';
 
-type HoursValue = { open: string; close: string; closed: boolean };
-type HoursMap = Record<string, HoursValue>;
-
 type Props = {
-  hours: HoursMap;
-  /** نام روز فعلی (مثلاً "sat" برای شنبه). محاسبه از ساعت سیستم. */
-  todayKey?: string;
+  hours: Record<string, HoursValue>;
   /** timezone IANA. */
   timezone?: string;
 };
 
-const DAYS: ReadonlyArray<{ key: keyof HoursMap; label: string; sub: string }> = [
-  { key: 'sat', label: 'شنبه', sub: 'Sat' },
-  { key: 'sun', label: 'یکشنبه', sub: 'Sun' },
-  { key: 'mon', label: 'دوشنبه', sub: 'Mon' },
-  { key: 'tue', label: 'سه‌شنبه', sub: 'Tue' },
-  { key: 'wed', label: 'چهارشنبه', sub: 'Wed' },
-  { key: 'thu', label: 'پنجشنبه', sub: 'Thu' },
-  { key: 'fri', label: 'جمعه', sub: 'Fri' },
-];
-
-// Module-level formatters — creating Intl instances on every render (this
-// component re-renders every 30s) is wasteful; they're cheap to build once.
 const FA_NUM = new Intl.NumberFormat('fa-IR');
-const DAY_FMT_CACHE = new Map<string, Intl.DateTimeFormat>();
-function dayFmt(timeZone: string): Intl.DateTimeFormat {
-  let f = DAY_FMT_CACHE.get(timeZone);
-  if (!f) {
-    f = new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone });
-    DAY_FMT_CACHE.set(timeZone, f);
-  }
-  return f;
-}
-const TIME_FMT_CACHE = new Map<string, Intl.DateTimeFormat>();
-function timeFmt(timeZone: string): Intl.DateTimeFormat {
-  let f = TIME_FMT_CACHE.get(timeZone);
-  if (!f) {
-    f = new Intl.DateTimeFormat('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-      timeZone,
-    });
-    TIME_FMT_CACHE.set(timeZone, f);
-  }
-  return f;
-}
 
-function nowDayKey(timezone = 'Asia/Tehran'): keyof HoursMap {
-  // ساعت سیستم را به Asia/Tehran تبدیل می‌کنیم
-  const wd = dayFmt(timezone).format(new Date());
-  const map: Record<string, keyof HoursMap> = {
-    Sat: 'sat',
-    Sun: 'sun',
-    Mon: 'mon',
-    Tue: 'tue',
-    Wed: 'wed',
-    Thu: 'thu',
-    Fri: 'fri',
-  };
-  return (map[wd] ?? 'sat') as keyof HoursMap;
-}
-
-function parseTime(t: string): number {
-  const [h, m] = t.split(':').map(Number);
-  return h + m / 60;
-}
-
-function getStatus(
-  hours: HoursMap,
-  dayKey: keyof HoursMap,
-  currentMinutes: number,
-): 'closed' | 'open' | 'upcoming' | 'past' {
-  const v = hours[dayKey];
-  if (!v) return 'closed';
-  if (v.closed) return 'closed';
-  const open = parseTime(v.open);
-  const close = parseTime(v.close);
-  if (currentMinutes >= open && currentMinutes < close) return 'open';
-  if (currentMinutes < open) return 'upcoming';
-  return 'past';
-}
-
-export default function WorkingHoursStrip({ hours, timezone = 'Asia/Tehran' }: Props) {
+export default function WorkingHoursStrip({ hours, timezone = DEFAULT_TIMEZONE }: Props) {
   const [now, setNow] = useState(() => new Date());
   // کلاک ۳۰ ثانیه‌ای — در تب مخفی pause می‌شود
   useVisibilityAwareInterval(() => setNow(new Date()), 30_000);
 
-  // current minutes-of-day in the given timezone
-  const [hh, mm] = timeFmt(timezone)
-    .formatToParts(now)
-    .map((p) => p.value)
-    .join('')
-    .split(':')
-    .map(Number);
-  const currentMin = hh + mm / 60;
+  const currentMin = hourOfDayInZone(now, timezone);
   const todayKey = nowDayKey(timezone);
-
-  // total open hours per week
-  const totalOpenHours = DAYS.reduce((acc, d) => {
-    const v = hours[d.key];
-    if (!v || v.closed) return acc;
-    return acc + Math.max(0, parseTime(v.close) - parseTime(v.open));
-  }, 0);
-  const openDays = DAYS.filter((d) => hours[d.key] && !hours[d.key].closed).length;
+  const { openDays, totalOpenHours } = weeklyHoursSummary(hours);
 
   return (
     <section className={s.section} id="hours" aria-label="ساعات کاری هفتگی" dir="rtl">
@@ -156,9 +77,9 @@ export default function WorkingHoursStrip({ hours, timezone = 'Asia/Tehran' }: P
         </header>
 
         <div className={s.grid} role="list" aria-label="برنامهٔ هفتگی">
-          {DAYS.map((d) => {
+          {WEEK_DAYS.map((d) => {
             const v = hours[d.key] ?? { open: '00:00', close: '00:00', closed: true };
-            const status = getStatus(hours, d.key, currentMin);
+            const status = getDayStatus(hours, d.key, currentMin);
             const isToday = d.key === todayKey;
             const open = parseTime(v.open);
             const close = parseTime(v.close);
@@ -181,7 +102,7 @@ export default function WorkingHoursStrip({ hours, timezone = 'Asia/Tehran' }: P
                 <header className={s.dayHead}>
                   <div className={s.dayLabel}>
                     <span className={s.dayLabelMain}>{d.label}</span>
-                    <span className={s.dayLabelSub}>{d.sub}</span>
+                    <span className={s.dayLabelSub}>{d.short}</span>
                   </div>
                   {isToday ? (
                     <span className={s.todayChip} aria-hidden>

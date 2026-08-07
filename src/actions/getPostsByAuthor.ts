@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { postCardInclude } from '@/lib/post-include';
 import type { ActionResult, PaginationParams, PostWithRelations } from '@/types/types';
 import type { Prisma } from '@prisma/client';
 
@@ -33,42 +34,7 @@ export async function getPostsByAuthor(
     const [posts, total] = await Promise.all([
       prisma.post.findMany({
         where,
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-              profile: {
-                select: {
-                  avatar: true,
-                  jobName: true,
-                },
-              },
-            },
-          },
-          categories: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
-          tags: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
-          _count: {
-            select: {
-              comments: true,
-              likes: true,
-              savedBy: true,
-            },
-          },
-        },
+        include: postCardInclude,
         orderBy,
         skip,
         take: limit,
