@@ -15,6 +15,7 @@ import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
+import { serverLog } from '@/lib/server-logger';
 
 export type AnnouncementStatus = 'draft' | 'scheduled' | 'published' | 'archived';
 export type CampaignStatus = 'draft' | 'scheduled' | 'sending' | 'completed' | 'paused';
@@ -358,6 +359,8 @@ export async function getChannelMix(): Promise<{
   success: boolean;
   data?: ChannelMix;
   message?: string;
+  /** true یعنی داده‌ی خالی از خطا آمده، نه از نبودِ فعالیت. */
+  degraded?: boolean;
 }> {
   const guard = await requireAdminRole();
   if (!guard.ok) return { success: false, message: guard.reason };
@@ -365,9 +368,11 @@ export async function getChannelMix(): Promise<{
     const data = await getCachedChannelMix();
     return { success: true, data };
   } catch (err) {
+    serverLog.error('communication', 'get-channel-mix', err);
     return {
       success: true,
       data: emptyChannelMix,
+      degraded: true,
       message: err instanceof Error ? err.message : 'خطا',
     };
   }
@@ -489,6 +494,7 @@ export async function getAudiences(): Promise<{
   success: boolean;
   data?: AudiencesSnapshot;
   message?: string;
+  degraded?: boolean;
 }> {
   const guard = await requireAdminRole();
   if (!guard.ok) return { success: false, message: guard.reason };
@@ -496,9 +502,11 @@ export async function getAudiences(): Promise<{
     const data = await getCachedAudiences();
     return { success: true, data };
   } catch (err) {
+    serverLog.error('communication', 'get-audiences', err);
     return {
       success: true,
       data: emptyAudiences,
+      degraded: true,
       message: err instanceof Error ? err.message : 'خطا',
     };
   }
@@ -630,6 +638,7 @@ export async function getCommunicationSnapshot(): Promise<{
   success: boolean;
   data?: CommunicationSnapshot;
   message?: string;
+  degraded?: boolean;
 }> {
   const guard = await requireAdminRole();
   if (!guard.ok) return { success: false, message: guard.reason };
@@ -638,9 +647,11 @@ export async function getCommunicationSnapshot(): Promise<{
     const data = await getCachedSnapshot();
     return { success: true, data };
   } catch (err) {
+    serverLog.error('communication', 'get-communication-snapshot', err);
     return {
       success: true,
       data: emptySnapshot,
+      degraded: true,
       message: err instanceof Error ? err.message : 'خطای ناشناخته',
     };
   }
@@ -991,6 +1002,7 @@ export async function getCommunicationNexus(): Promise<{
   success: boolean;
   data?: CommunicationNexus;
   message?: string;
+  degraded?: boolean;
 }> {
   const guard = await requireAdminRole();
   if (!guard.ok) return { success: false, message: guard.reason };
@@ -998,8 +1010,10 @@ export async function getCommunicationNexus(): Promise<{
     const data = await getCachedNexus();
     return { success: true, data };
   } catch (err) {
+    serverLog.error('communication', 'get-communication-nexus', err);
     return {
       success: true,
+      degraded: true,
       data: {
         generatedAt: new Date(0).toISOString(),
         heatmap: emptyHeatmap,

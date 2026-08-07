@@ -10,6 +10,7 @@ import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
+import { serverLog } from '@/lib/server-logger';
 
 export type JobStatus = 'pending' | 'running' | 'completed' | 'failed' | 'dead';
 export type JobQueue = 'default' | 'email' | 'sms' | 'market-rates' | 'settlement' | 'kyc' | 'cron';
@@ -193,6 +194,8 @@ export async function getJobSnapshot(): Promise<{
   success: boolean;
   data?: JobSnapshot;
   message?: string;
+  /** true یعنی داده‌ی خالیِ زیر از یک خطا آمده، نه از یک صف واقعاً خالی. */
+  degraded?: boolean;
 }> {
   const guard = await requireAdmin();
   if (!guard.ok) return { success: false, message: guard.reason };
@@ -200,9 +203,11 @@ export async function getJobSnapshot(): Promise<{
     const data = await getCachedSnapshot();
     return { success: true, data };
   } catch (err) {
+    serverLog.error('jobs', 'get-job-snapshot', err);
     return {
       success: true,
       data: empty,
+      degraded: true,
       message: err instanceof Error ? err.message : 'خطای ناشناخته',
     };
   }
@@ -525,14 +530,16 @@ export async function getQueueHealth(): Promise<{
   success: boolean;
   data: QueueHealth[];
   message?: string;
+  degraded?: boolean;
 }> {
   const guard = await requireAdmin();
   if (!guard.ok) return { success: false, data: [], message: guard.reason };
   try {
     const data = await getCachedQueueHealth();
     return { success: true, data };
-  } catch {
-    return { success: true, data: [], message: 'خطا در محاسبه سلامت صف' };
+  } catch (err) {
+    serverLog.error('jobs', 'get-queue-health', err);
+    return { success: true, data: [], degraded: true, message: 'خطا در محاسبه سلامت صف' };
   }
 }
 
@@ -583,13 +590,15 @@ export async function getRecentJobTypes(): Promise<{
   success: boolean;
   data: JobTypeInfo[];
   message?: string;
+  degraded?: boolean;
 }> {
   const guard = await requireAdmin();
   if (!guard.ok) return { success: false, data: [], message: guard.reason };
   try {
     const data = await getCachedJobTypes();
     return { success: true, data };
-  } catch {
-    return { success: true, data: [], message: 'خطا در فهرست نوع‌ها' };
+  } catch (err) {
+    serverLog.error('jobs', 'get-recent-job-types', err);
+    return { success: true, data: [], degraded: true, message: 'خطا در فهرست نوع‌ها' };
   }
 }

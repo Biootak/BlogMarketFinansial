@@ -2,6 +2,7 @@
 
 import prisma from '@/lib/db';
 import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
+import { serverLog } from '@/lib/server-logger';
 import { Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { headers } from 'next/headers';
@@ -141,7 +142,11 @@ export async function createSuperAdmin(formData: FormData) {
       errors: {},
       existingAdmin: null,
     };
-  } catch (_error: unknown) {
+  } catch (error: unknown) {
+    // Sentry + SystemLog — بدون این، شکست ساخت حساب OWNER فقط یک پیام
+    // عمومی فارسی بود و علت واقعی هیچ‌جا ثبت نمی‌شد.
+    serverLog.error('setup', 'create-super-admin', error);
+
     // ثبت خطا در لاگ سیستم (بدون PII)
     try {
       await prisma.systemLog.create({
@@ -151,7 +156,9 @@ export async function createSuperAdmin(formData: FormData) {
           source: 'SETUP',
         },
       });
-    } catch (_logError) {}
+    } catch (logError) {
+      serverLog.error('setup', 'create-super-admin-log-write', logError);
+    }
 
     return {
       success: false,

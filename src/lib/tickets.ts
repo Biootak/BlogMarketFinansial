@@ -12,6 +12,7 @@ import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
+import { serverLog } from '@/lib/server-logger';
 
 export type TicketStatus = 'open' | 'pending' | 'in_progress' | 'resolved' | 'closed';
 export type TicketPriority = 'low' | 'normal' | 'high' | 'urgent';
@@ -206,6 +207,8 @@ export async function getTicketSnapshot(): Promise<{
   success: boolean;
   data?: TicketSnapshot;
   message?: string;
+  /** true یعنی snapshot خالی نتیجه‌ی خطاست، نه نبودِ تیکت. */
+  degraded?: boolean;
 }> {
   const guard = await requireStaff();
   if (!guard.ok) return { success: false, message: guard.reason };
@@ -213,9 +216,11 @@ export async function getTicketSnapshot(): Promise<{
     const data = await getCachedSnapshot();
     return { success: true, data };
   } catch (err) {
+    serverLog.error('tickets', 'get-ticket-snapshot', err);
     return {
       success: true,
       data: empty,
+      degraded: true,
       message: err instanceof Error ? err.message : 'خطای ناشناخته',
     };
   }

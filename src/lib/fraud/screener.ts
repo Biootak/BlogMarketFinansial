@@ -6,6 +6,7 @@
  */
 
 import prisma from '@/lib/db';
+import { serverLog } from '@/lib/server-logger';
 import { v4 as createId } from 'uuid';
 import { type FraudRisk, assessTransactionRisk } from './rules';
 
@@ -20,7 +21,9 @@ export async function screenTransaction(params: ScreenParams): Promise<FraudRisk
       customerId: params.customerId,
       riskScore: risk.score,
       reasons: risk.reasons,
-    }).catch(() => {});
+    }).catch((error) => {
+      serverLog.error('fraud', 'screen-transaction-review-failed', error);
+    });
   }
 
   return risk;
@@ -45,7 +48,10 @@ export async function createFraudReview(params: {
         status: 'OPEN',
       },
     });
-  } catch {
-    // DB write failure must not crash caller — fraud review is best-effort
+  } catch (error) {
+    // DB write failure must not crash caller — but a fraud review that never
+    // reaches the queue is a blocked/held transaction nobody will look at, so
+    // it has to be visible in SystemLog + Sentry.
+    serverLog.error('fraud', 'create-fraud-review-failed', error);
   }
 }

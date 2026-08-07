@@ -12,6 +12,7 @@
 import { getEmailProvider } from '@/lib/email';
 import { otpEmail } from '@/lib/email/templates';
 import type { OtpEmailIntent } from '@/lib/email/templates';
+import { serverLog } from '@/lib/server-logger';
 import { sendSms } from '@/lib/sms';
 import { sendTelegramMessage } from '@/lib/telegram';
 
@@ -61,8 +62,10 @@ export async function sendOtp(
       const provider = getEmailProvider();
       await provider.send(otpEmail({ to: target.email, code, intent, expiresLabel: '۵ دقیقه' }));
       return { success: true, channel: 'email' };
-    } catch {
-      // ایمیل fail شد — به SMS برو
+    } catch (error) {
+      // ایمیل fail شد — به SMS برو. بدون لاگ، علت شکست کانال رایگان
+      // (کلید Resend، domain تأییدنشده، سقف روزانه) هرگز دیده نمی‌شد.
+      serverLog.error('email-otp', `email-delivery-failed intent=${intent}`, error);
     }
   }
 
@@ -78,8 +81,17 @@ export async function sendOtp(
       console.log(`[DEV OTP] intent=${intent} code=${res.devCode}`);
       return { success: true, channel: 'sms', devCode: res.devCode };
     }
+    serverLog.error('email-otp', `all-channels-failed intent=${intent}`, {
+      hasTelegram: Boolean(target.telegramChatId),
+      hasEmail: Boolean(target.email),
+      hasPhone: true,
+    });
     return { success: false, errorCode: 'SEND_FAILED' };
   }
 
+  serverLog.warn('email-otp', `no-channel intent=${intent}`, {
+    hasTelegram: Boolean(target.telegramChatId),
+    hasEmail: Boolean(target.email),
+  });
   return { success: false, errorCode: 'NO_CHANNEL' };
 }

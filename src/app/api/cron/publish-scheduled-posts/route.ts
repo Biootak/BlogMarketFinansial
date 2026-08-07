@@ -26,6 +26,7 @@
 import { verifyCronSecret } from '@/lib/cron-auth';
 import prisma from '@/lib/db';
 import { revalidatePath, revalidateTag } from '@/lib/revalidate';
+import { serverLog } from '@/lib/server-logger';
 import { NextResponse } from 'next/server';
 
 // Vercel Cron: Hobby max=10s, Pro max=60s. کوئری ما یک SELECT + چند UPDATE
@@ -112,6 +113,9 @@ async function handle(request: Request) {
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       errors.push({ postId: post.id, error: msg });
+      // The JSON response body is only seen by whoever reads the cron output;
+      // SystemLog/Sentry is what the observability dashboard actually reads.
+      serverLog.error('cron/posts', `publish-scheduled ${post.id}`, err);
     }
   }
 

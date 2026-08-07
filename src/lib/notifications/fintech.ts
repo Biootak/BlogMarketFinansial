@@ -6,6 +6,7 @@
  */
 
 import prisma from '@/lib/db';
+import { serverLog } from '@/lib/server-logger';
 
 interface DealInfo {
   trackingCode: string;
@@ -40,7 +41,8 @@ async function sendTelegram(message: string): Promise<void> {
         select: { telegram: true },
       });
       chatId = settings?.telegram ?? undefined;
-    } catch {
+    } catch (error) {
+      serverLog.error('notifications/fintech', 'telegram-chat-id-lookup-failed', error);
       return;
     }
   }
@@ -57,10 +59,13 @@ async function sendTelegram(message: string): Promise<void> {
       }),
     });
     if (!res.ok) {
-      // Telegram API error — fire-and-forget, no crash
+      serverLog.warn('notifications/fintech', 'telegram-send-rejected', {
+        status: res.status,
+        body: (await res.text().catch(() => '')).slice(0, 200),
+      });
     }
-  } catch {
-    // network failure — fire-and-forget
+  } catch (error) {
+    serverLog.error('notifications/fintech', 'telegram-send-failed', error);
   }
 }
 
@@ -69,8 +74,9 @@ export async function notifyDealStatusChange(deal: DealInfo, newStatus: string):
     const label = DEAL_STATUS_FA[newStatus] ?? newStatus;
     const msg = `📊 <b>تغییر وضعیت معامله</b>\n🔑 کد: <code>${deal.trackingCode}</code>\n📌 وضعیت: ${label}\n👤 مشتری: ${deal.customerName}\n💱 ${deal.fromAmount} ${deal.fromCurrency} → ${deal.toAmount} ${deal.toCurrency}\n🏢 صرافی: ${deal.exchangeName}`;
     await sendTelegram(msg);
-  } catch {
+  } catch (error) {
     // fire-and-forget — notification failure must never crash the caller
+    serverLog.error('notifications/fintech', 'notify-deal-status-change-failed', error);
   }
 }
 
@@ -78,8 +84,9 @@ export async function notifyNewDeal(deal: DealInfo): Promise<void> {
   try {
     const msg = `🆕 <b>معامله جدید</b>\n🔑 <code>${deal.trackingCode}</code>\n👤 ${deal.customerName} — ${deal.customerPhone}\n💱 ${deal.fromAmount} ${deal.fromCurrency}`;
     await sendTelegram(msg);
-  } catch {
+  } catch (error) {
     // fire-and-forget
+    serverLog.error('notifications/fintech', 'notify-new-deal-failed', error);
   }
 }
 

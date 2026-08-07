@@ -19,6 +19,7 @@ import type {
 import prisma from '@/lib/db';
 import { requireAdmin } from '@/lib/require-auth';
 import { safeCache } from '@/lib/safe-cache';
+import { serverLog } from '@/lib/server-logger';
 
 export interface LiveOpsData {
   services: Array<{
@@ -291,6 +292,8 @@ export async function getLiveOpsData(): Promise<{
   success: boolean;
   data?: LiveOpsData;
   message?: string;
+  /** true یعنی داشبورد روی داده‌ی خالیِ ناشی از خطا نشسته است. */
+  degraded?: boolean;
 }> {
   const auth = await requireAdmin();
   if (!auth.success) {
@@ -300,9 +303,14 @@ export async function getLiveOpsData(): Promise<{
   try {
     const data = await getCachedLiveOps();
     return { success: true, data };
-  } catch {
+  } catch (err) {
+    // یک صفحه‌ی «همه‌چیز سبز و صفر» دقیقاً وقتی سامانه down است بدترین
+    // خروجی ممکن برای یک ابزار LiveOps است — پس degraded علامت می‌خورد.
+    serverLog.error('liveops', 'get-live-ops-data', err);
     return {
       success: true,
+      degraded: true,
+      message: err instanceof Error ? err.message : 'خطای ناشناخته',
       data: {
         services: [],
         events: [],

@@ -1,3 +1,4 @@
+import { serverLog } from '@/lib/server-logger';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { LRUCache } from 'lru-cache';
@@ -122,12 +123,15 @@ export async function checkRateLimit(
         remaining: result.remaining,
         reset: result.reset,
       };
-    } catch {
+    } catch (error) {
       // For security-critical limiters (auth) we must fail CLOSED: when Upstash
       // is unreachable we deny the request rather than silently letting an
       // attacker bypass brute-force protection. Non-critical limiters fall back
       // to the per-process in-memory store so availability is preserved.
+      // Either way the outage is logged — an in-memory fallback is per-process
+      // and therefore much weaker than the shared Redis window.
       if (type === 'auth') {
+        serverLog.error('rate-limiter', 'upstash-unreachable-auth-fail-closed', error);
         // auth type: fail closed — deny request when Upstash unreachable
         return {
           success: false,
@@ -135,7 +139,10 @@ export async function checkRateLimit(
           reset: Date.now() + (LIMITS[type]?.windowMs ?? 15 * 60 * 1000),
         };
       }
-      // non-critical: fall back to in-memory silently
+      serverLog.warn('rate-limiter', 'upstash-unreachable-memory-fallback', {
+        type,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 

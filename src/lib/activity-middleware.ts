@@ -1,5 +1,6 @@
 import { auth } from '@/auth';
 import db from '@/lib/db';
+import { serverLog } from '@/lib/server-logger';
 import type { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -71,7 +72,15 @@ export async function logActivityMiddleware(req: NextRequest) {
         });
       }
     }
-  } catch (_error) {}
+  } catch (error) {
+    // Audit logging must not break the request it is auditing, but a missing
+    // audit trail is itself a finding — record the failure.
+    serverLog.error(
+      'activity-middleware',
+      `log-activity ${req.method} ${req.nextUrl.pathname}`,
+      error,
+    );
+  }
 }
 
 export function withActivityLogging(

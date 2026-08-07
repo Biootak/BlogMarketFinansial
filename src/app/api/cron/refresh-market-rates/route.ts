@@ -11,6 +11,7 @@ import prisma from '@/lib/db';
 import { assembleMarketRates } from '@/lib/market-rates';
 import { writeMarketRatesSnapshot } from '@/lib/market-rates/snapshot';
 import { revalidateTag } from '@/lib/revalidate';
+import { serverLog } from '@/lib/server-logger';
 import { NextResponse } from 'next/server';
 
 const TAGS = {
@@ -41,6 +42,11 @@ async function handleRefresh(req: Request) {
   const items = await assembleMarketRates();
 
   if (items.length === 0) {
+    serverLog.error(
+      'cron/rates',
+      'refresh-market-rates',
+      new Error('assembleMarketRates returned no items — all upstream sources failed'),
+    );
     return NextResponse.json(
       { error: 'ALL_SOURCES_FAILED', detail: 'assembleMarketRates returned empty array' },
       { status: 502 },
@@ -75,6 +81,7 @@ async function handleRefresh(req: Request) {
     } catch (e: unknown) {
       const err = e as { message?: string };
       errors.push({ symbol: item.symbol, reason: err.message ?? 'unknown' });
+      serverLog.error('cron/rates', `update-rate ${item.symbol}`, e);
     }
   }
 
@@ -89,6 +96,7 @@ async function handleRefresh(req: Request) {
     snapshotCount = snap.count;
   } catch (e) {
     snapshotError = e instanceof Error ? e.message : 'snapshot failed';
+    serverLog.error('cron/rates', 'write-snapshot', e);
   }
 
   return NextResponse.json({
