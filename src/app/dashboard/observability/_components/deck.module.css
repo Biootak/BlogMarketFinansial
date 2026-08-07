@@ -1,1 +1,463 @@
-.deck{display:grid;gap:var(--ds-space-5);padding:var(--ds-space-5) var(--ds-space-4);border:1px solid var(--ds-border-subtle);border-radius:var(--ds-radius-2xl);background:var(--ds-surface-elevated);box-shadow:var(--ds-shadow-md);min-inline-size:0}.deck[data-tone='ok']{--tone:var(--nova-up)}.deck[data-tone='warn']{--tone:var(--ds-accent-amber)}.deck[data-tone='bad']{--tone:var(--nova-down)}.ring{--tone:var(--ds-accent-slate)}.insights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ds-space-2);margin:0;padding:0;list-style:none}.insight{--tone:var(--ds-accent-slate);display:grid;grid-template-columns:auto minmax(0,1fr);gap:var(--ds-space-3);min-block-size:8rem;padding:var(--ds-space-3);border:1px solid var(--ds-border-subtle);border-radius:var(--ds-radius-md);background:var(--ds-surface);transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}.insight[data-tone='ok']{--tone:var(--nova-up)}.insight[data-tone='warn']{--tone:var(--ds-accent-amber)}.insight[data-tone='bad']{--tone:var(--nova-down)}.insight[data-tone='info']{--tone:var(--ds-accent-indigo)}.insight:hover{transform:translateY(-2px);border-color:var(--tone);box-shadow:var(--ds-shadow-sm)}.insightIcon{display:grid;place-items:center;width:2.25rem;height:2.25rem;border:1px solid color-mix(in oklch,var(--tone) 36%,transparent);border-radius:var(--ds-radius-md);background:color-mix(in oklch,var(--tone) 12%,var(--ds-surface));color:var(--tone)}.insightBody{display:flex;flex-direction:column;gap:.25rem;min-inline-size:0}.insightTitle{margin:0;color:var(--ds-text-primary);font-size:var(--ds-text-sm);font-weight:700}.insightText{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;margin:0;color:var(--ds-text-muted);font-size:var(--ds-text-xs);line-height:1.6}.insightLink{display:inline-flex;align-items:center;gap:.25rem;min-block-size:2rem;color:var(--nova-primary);font-size:var(--ds-text-xs);text-decoration:none}@media(max-width:46rem){.insights{grid-template-columns:1fr}.insight{min-block-size:0}}
+/* ============================================================================
+   سرصفحهٔ سالنامه — مُهر سلامت، جملهٔ وضعیت، نوار سیگنال، ریل نشانه‌ها
+   ----------------------------------------------------------------------------
+   Mobile first. هیچ رنگ خامی؛ فقط --obs-* و --tone.
+   ============================================================================ */
+
+.deck {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ds-space-5);
+  padding-block-end: var(--ds-space-5);
+  border-block-end: 1px solid var(--obs-rule-2);
+  min-inline-size: 0;
+}
+
+@media (min-width: 62rem) {
+  .deck {
+    grid-template-columns: minmax(0, 1fr) minmax(11rem, 14rem);
+    column-gap: clamp(2rem, 5vw, 4.5rem);
+    row-gap: var(--ds-space-6);
+    align-items: start;
+  }
+
+  .slug {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .sealRow {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .band,
+  .vitals,
+  .vitalsEmpty {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ── جملهٔ وضعیت ─────────────────────────────────────────────── */
+
+.slug {
+  min-inline-size: 0;
+}
+
+.masthead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.7rem;
+  margin: 0 0 var(--ds-space-3);
+  color: var(--obs-muted);
+  font-size: 0.68rem;
+  line-height: 1.5;
+}
+
+.masthead svg {
+  color: var(--tone);
+}
+
+.mastheadName {
+  color: var(--obs-ink);
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: var(--nova-tracking-tight);
+}
+
+.mastheadDate,
+.mastheadWindow {
+  position: relative;
+  padding-inline-start: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.mastheadDate::before,
+.mastheadWindow::before {
+  content: "";
+  position: absolute;
+  inset-block: 0.15rem;
+  inset-inline-start: 0.3rem;
+  inline-size: 1px;
+  background: var(--obs-rule-2);
+}
+
+/*
+   تیتر یک جملهٔ کامل است، نه یک عدد.
+   وزن ۸۰۰ و tracking منفی زیاد، اما اندازه کنترل‌شده: باید از دو متر خوانده
+   شود بدون اینکه نصف صفحه را بخورد.
+*/
+.verdict {
+  max-inline-size: 24ch;
+  margin: 0;
+  color: var(--obs-ink);
+  font-size: clamp(1.5rem, 1rem + 2.6vw, 2.75rem);
+  font-weight: var(--ds-weight-extrabold);
+  letter-spacing: -0.042em;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+.action {
+  max-inline-size: 58ch;
+  margin: var(--ds-space-3) 0 0;
+  padding-inline-start: var(--ds-space-3);
+  border-inline-start: 1px solid var(--tone);
+  color: var(--obs-ink-2);
+  font-size: var(--ds-text-sm);
+  line-height: var(--ds-leading-relaxed);
+  text-wrap: pretty;
+}
+
+/* ── مُهر سلامت ──────────────────────────────────────────────── */
+
+.sealRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-4);
+  min-inline-size: 0;
+}
+
+@media (min-width: 62rem) {
+  .sealRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--ds-space-4);
+    padding-inline-start: var(--ds-space-5);
+    border-inline-start: 1px solid var(--obs-rule);
+  }
+}
+
+/*
+   مُهر: نقاشی و عدد در یک خانهٔ گرید روی هم می‌نشینند و پانویس ردیف بعد.
+   عمداً absolute نیست — پانویس باید فضای واقعی بگیرد وگرنه روی شمارش وضعیت
+   می‌افتد (همان باگی که نسخهٔ قبل داشت).
+*/
+.seal {
+  flex: none;
+  display: grid;
+  grid-template-rows: auto auto;
+  justify-items: center;
+  gap: 0.4rem;
+  inline-size: clamp(5.5rem, 18vw, 7rem);
+  margin: 0;
+}
+
+.sealArt {
+  grid-area: 1 / 1;
+  inline-size: 100%;
+  aspect-ratio: 1;
+  transform: rotate(-90deg);
+}
+
+.sealTrack {
+  fill: none;
+  stroke: var(--obs-rule-2);
+  stroke-width: 5;
+}
+
+.seal[data-silent="true"] .sealTrack {
+  stroke-dasharray: 2 6;
+  stroke-linecap: round;
+}
+
+.sealAvailability {
+  fill: none;
+  stroke: color-mix(in oklch, var(--obs-accent) 45%, transparent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: var(--arc) var(--gap);
+  transition: stroke-dasharray var(--ds-duration-slow) var(--obs-ease);
+}
+
+.sealScore {
+  fill: none;
+  stroke: var(--tone);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: var(--arc) var(--gap);
+  transition: stroke-dasharray var(--ds-duration-slow) var(--obs-ease);
+}
+
+/*
+   «نفسِ سامانه» — نوسان ۰٫۵ هرتزی روی یک خط مویی خودروشن.
+   نه glow، نه blur، نه Lottie. فقط opacity، پس روی GPU ارزان است و روی
+   OLED هم چیزی نمی‌سوزاند.
+*/
+.sealBreath {
+  fill: none;
+  stroke: var(--tone);
+  stroke-width: 0.75;
+  opacity: 0.35;
+  animation: seal-breath 2s var(--obs-ease) infinite;
+}
+
+@keyframes seal-breath {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.08;
+  }
+}
+
+.sealCaption {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  margin: 0;
+}
+
+.sealScoreText {
+  color: var(--obs-ink);
+  font-size: var(--ds-text-xl);
+  font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.sealLabel {
+  color: var(--tone);
+  font-size: 0.66rem;
+  font-weight: var(--ds-weight-medium);
+}
+
+.sealFoot {
+  grid-area: 2 / 1;
+  margin: 0;
+  color: var(--obs-muted);
+  font-size: 0.62rem;
+  line-height: 1.5;
+  text-align: center;
+  text-wrap: balance;
+}
+
+/* شمارش وضعیت — سه عدد، بدون کارت، فقط خط مویی بین‌شان */
+.tally {
+  display: flex;
+  flex: 1 1 auto;
+  gap: var(--ds-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-inline-size: 0;
+}
+
+@media (min-width: 62rem) {
+  .tally {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .tally li + li {
+    border-block-start: 1px solid var(--obs-rule);
+  }
+}
+
+.tally li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding-block: 0.35rem;
+  color: var(--obs-muted);
+  font-size: var(--ds-text-xs);
+}
+
+.tally span {
+  color: var(--tone);
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+/* ── نوار سیگنال و مکان‌نما ──────────────────────────────────── */
+
+.band {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  min-inline-size: 0;
+}
+
+.cursorBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  min-inline-size: 0;
+}
+
+.cursorStep {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border: 1px solid var(--obs-rule-2);
+  border-radius: var(--ds-radius-sm);
+  background: transparent;
+  color: var(--obs-ink-2);
+  cursor: pointer;
+  transition: border-color var(--obs-fast) var(--obs-ease), color var(--obs-fast) var(--obs-ease),
+    transform 120ms var(--ds-ease-spring);
+}
+
+.cursorStep:hover:not(:disabled) {
+  border-color: var(--obs-accent);
+  color: var(--obs-accent);
+}
+
+.cursorStep:active:not(:disabled) {
+  transform: scale(0.93);
+}
+
+.cursorStep:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cursorStep:focus-visible,
+.cursorReset:focus-visible {
+  outline: 2px solid var(--obs-accent);
+  outline-offset: 2px;
+}
+
+.cursorLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin: 0;
+  min-inline-size: 0;
+  color: var(--obs-ink);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  font-variant-numeric: tabular-nums;
+}
+
+.cursorLabel small {
+  color: var(--obs-muted);
+  font-size: 0.66rem;
+  font-weight: 400;
+}
+
+.cursorReset {
+  min-block-size: 2.75rem;
+  margin-inline-start: auto;
+  padding-inline: 0.75rem;
+  border: none;
+  background: none;
+  color: var(--obs-accent);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  cursor: pointer;
+  transition: opacity var(--obs-fast) var(--obs-ease);
+}
+
+.cursorReset:disabled {
+  color: var(--obs-muted);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── ریل نشانه‌های حیاتی ─────────────────────────────────────── */
+
+/*
+   جداکنندهٔ مویی با ترفند «gap یک پیکسلی»: ظرف رنگ خط را می‌گیرد، خانه‌ها
+   رنگ کاغذ. در هر تعداد ستون و هر حالت wrap درست می‌افتد و در RTL هم
+   نیاز به اصلاح ندارد. جایگزین border-inline-start و بازی nth-child.
+*/
+.vitals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: 1px;
+  margin: 0;
+  border: 1px solid var(--obs-rule);
+  border-radius: var(--ds-radius-lg);
+  background: var(--obs-rule);
+  overflow: hidden;
+}
+
+.vital {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: var(--ds-space-3) var(--ds-space-3-5);
+  background: var(--obs-paper);
+  min-inline-size: 0;
+}
+
+.vitalLabel {
+  color: var(--obs-muted);
+  font-size: 0.66rem;
+  font-weight: var(--ds-weight-medium);
+  letter-spacing: 0.02em;
+}
+
+.vitalBody {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin: 0;
+  min-inline-size: 0;
+}
+
+.vitalValue {
+  color: var(--obs-ink);
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.vitalChip {
+  padding: 0.1rem 0.35rem;
+  border: 1px solid color-mix(in oklch, var(--tone) 35%, transparent);
+  border-radius: var(--ds-radius-sm);
+  color: color-mix(in oklch, var(--tone) 75%, var(--obs-ink));
+  font-size: 0.6rem;
+  font-weight: var(--ds-weight-medium);
+  white-space: nowrap;
+}
+
+.vitalTrack {
+  position: relative;
+  flex: 1 0 100%;
+  block-size: 2px;
+  margin-block-start: 0.2rem;
+  background: color-mix(in oklch, var(--obs-ink) 8%, transparent);
+  overflow: hidden;
+}
+
+.vitalTrack::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: var(--fill, 0%);
+  background: var(--tone);
+  transition: inline-size var(--ds-duration-slow) var(--obs-ease);
+}
+
+.vitalNote {
+  flex: 1 0 100%;
+  color: var(--obs-muted);
+  font-size: 0.64rem;
+  line-height: 1.5;
+}
+
+.vitalsEmpty {
+  margin: 0;
+  padding: var(--ds-space-4);
+  border: 1px dashed var(--obs-rule-2);
+  border-radius: var(--ds-radius-lg);
+  color: var(--obs-muted);
+  font-size: var(--ds-text-xs);
+}
