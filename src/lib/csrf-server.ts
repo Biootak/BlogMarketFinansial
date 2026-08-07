@@ -58,7 +58,16 @@ function getAllowedHosts(): Set<string> {
   return set;
 }
 
-let cachedHosts: Set<string> | null = null;
+// کش محدود به module scope — در serverless هر instance جداگانه است.
+// CSRF_ALLOWED_HOSTS از env فقط یک‌بار خوانده می‌شود (کافی است چون env در runtime تغییر نمی‌کند).
+let _cachedHosts: Set<string> | null = null;
+
+function getAllowedHostsCached(): Set<string> {
+  if (!_cachedHosts) {
+    _cachedHosts = getAllowedHosts();
+  }
+  return _cachedHosts;
+}
 
 export async function assertCsrf(): Promise<void> {
   const headersList = await headers();
@@ -75,8 +84,7 @@ export async function assertCsrf(): Promise<void> {
     throw new CsrfError('invalid origin url');
   }
 
-  cachedHosts ??= getAllowedHosts();
-  if (!cachedHosts.has(host)) {
+  if (!getAllowedHostsCached().has(host)) {
     throw new CsrfError(`host not allowed: ${host}`);
   }
 }

@@ -220,8 +220,6 @@ export async function getSystemReports(from?: Date, to?: Date) {
 }
 
 export const getSystemStatus = async (): Promise<ActionResult<SystemStatus>> => {
-  'use server';
-
   try {
     await checkReportAccess();
 
@@ -301,8 +299,6 @@ export const getSystemStatus = async (): Promise<ActionResult<SystemStatus>> => 
 };
 
 export const getActivityLog = async (): Promise<ActionResult<Activity[]>> => {
-  'use server';
-
   try {
     await checkReportAccess();
 

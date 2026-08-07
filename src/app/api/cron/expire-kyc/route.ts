@@ -49,10 +49,12 @@ export async function GET(req: Request) {
   const userIds = expiredRecords.map((r) => r.userId);
 
   // همه write ها در یک transaction
+  const expiredIds = expiredRecords.map((r) => r.id);
+
   await prisma.$transaction(async (tx) => {
-    // ۱. KycRecord: rejectedReason = 'KYC_EXPIRED'
+    // ۱. KycRecord: فقط همین رکوردهای منقضی‌شده را update کن (نه همه KYC های هر userId)
     await tx.kycRecord.updateMany({
-      where: { userId: { in: userIds } },
+      where: { id: { in: expiredIds } },
       data: {
         rejectedReason: 'KYC_EXPIRED',
         updatedAt: now,

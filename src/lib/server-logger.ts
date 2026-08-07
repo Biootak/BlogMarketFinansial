@@ -112,26 +112,29 @@ export const serverLog = {
    */
   error(module: string, action: string, error: unknown): void {
     const message = line(action, error);
-    if (isDev) {
-    } else {
+    if (!isDev) {
+      // Production: ارسال به Sentry
       Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
         tags: { module, action },
         extra: redact(toSentryExtra(error)) as Record<string, unknown>,
       });
     }
+    // همیشه (dev + prod) در SystemLog ذخیره کن
     persist('error', module, message);
   },
 
   /** هشدارهای غیر-بحرانی. */
   warn(module: string, message: string, context?: LogContext): void {
     const text = line(message, context);
-    if (isDev) persist('warn', module, text);
+    // همیشه persist کن تا observability در production هم کار کند
+    persist('warn', module, text);
   },
 
   /** رویدادهای عادی که ارزش ردیابی دارند (ورود موفق، انتشار پست، …). */
   info(module: string, message: string, context?: LogContext): void {
     const text = line(message, context);
-    if (isDev) persist('info', module, text);
+    // همیشه persist کن
+    persist('info', module, text);
   },
 
   /**
@@ -145,7 +148,8 @@ export const serverLog = {
     const ms = Number.isFinite(durationMs) ? Math.max(0, Math.round(durationMs)) : 0;
     const slow = ms >= slowThresholdMs;
     const text = `${slow ? '[slow]' : '[perf]'} ${action} duration=${ms}`;
-    if (isDev && slow) persist(slow ? 'warn' : 'info', module, text);
+    // همیشه slow queries را ذخیره کن (dev + prod) — پرفورمنس داده در هر محیط مهم است
+    if (slow) persist(slow ? 'warn' : 'info', module, text);
   },
 
   /** اندازه‌گیری خودکار یک عملیات async — نتیجه را دست‌نخورده پس می‌دهد. */
