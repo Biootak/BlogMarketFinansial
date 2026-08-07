@@ -1,71 +1,86 @@
 'use client';
 
 import { Grid2x2 } from 'lucide-react';
-import { Fragment } from 'react';
-import type { CSSProperties } from 'react';
 
-import { bucketLabel, faNum } from './format';
-import { useObs } from './ObsProvider';
+import { heatLevel, maxOf } from './chart';
+import { bucketLabel, cssVars, faNum, hourKey, sourceName } from './format';
 import { ObsEmpty } from './ObsSection';
+import { useObs } from './ObsProvider';
 import h from './heat.module.css';
 
+const LEVELS = [0, 1, 2, 3, 4] as const;
+
 /**
- * ماتریس گرما — هر ردیف یک منبع لاگ واقعی از دیتابیس، هر خانه یک ساعت.
- * شدت رنگ = حجم؛ خانهٔ سرخ = آن ساعت خطا داشته است.
+ * ماتریس گرمای منبع × ساعت.
+ *
+ * این یک نمایشگر است نه یک کنترل: انتخاب ساعت جای دیگری انجام می‌شود
+ * (نوار روز و مکان‌نمای سرصفحه) و ماتریس فقط ستون انتخاب‌شده را برجسته
+ * می‌کند. دلیلش دسترس‌پذیری است — ۱۹۲ سلولِ کلیک‌پذیر ۱۰ پیکسلی نه هدف
+ * لمسی قابل قبولی دارد و نه ناوبری صفحه‌کلید قابل تحملی.
+ *
+ * شدت پله‌ای است (۵ پله) نه پیوسته، چون چشم انسان اختلاف چنددرصدی روشنایی
+ * را نمی‌خواند ولی پله را بله.
  */
 export function SourceHeat() {
-  const { data } = useObs();
-  if (!data) return null;
+  const { data, hour, windowHours } = useObs();
+  const rows = data?.heat ?? [];
 
-  if (data.heat.length === 0) {
+  if (!data || rows.length === 0) {
     return (
       <ObsEmpty
         icon={Grid2x2}
-        title="منبعی ثبت نشده"
-        hint="هر مقدار متمایز در ستون source جدول SystemLog یک ردیف اینجا می‌سازد و توزیع ساعتی‌اش رسم می‌شود."
+        title="ماتریسی برای رسم نیست"
+        hint="هیچ منبعی در پنجرهٔ جاری لاگ نفرستاده است، پس شبکهٔ منبع در ساعت خالی می‌ماند."
       />
     );
   }
 
-  const max = Math.max(1, ...data.heat.flatMap((row) => row.cells.map((cell) => cell.total)));
+  /* سقف مشترک بین همهٔ سطرها — وگرنه هر سطر مقیاس خودش را می‌گیرد و
+     مقایسهٔ بین منابع بی‌معنا می‌شود. */
+  const ceiling = Math.max(1, maxOf(rows.flatMap((row) => row.cells.map((cell) => cell.total))));
 
   return (
-    <div className={h.wrap}>
-      <div className={h.grid}>
-        {data.heat.map((row) => (
-          <Fragment key={row.source}>
-            <span className={h.label} title={`${row.source} · ${faNum(row.total)} رویداد`}>
-              {row.source}
+    <div className={h.heat}>
+      <div
+        className={h.grid}
+        dir="ltr"
+        role="img"
+        aria-label={`ماتریس حجم لاگ برای ${faNum(rows.length)} منبع در ${faNum(windowHours)} ساعت گذشته`}
+        style={cssVars({ '--cols': windowHours })}
+      >
+        {rows.map((row) => (
+          <div key={row.source} style={{ display: 'contents' }}>
+            {row.cells.map((cell, index) => (
+              <span
+                key={`${row.source}-${hourKey(index)}`}
+                className={h.cell}
+                data-level={heatLevel(cell.total, ceiling)}
+                data-errors={cell.errors > 0 ? 'true' : undefined}
+                data-cursor={index === hour ? 'true' : undefined}
+                title={`${sourceName(row.source)} · ${bucketLabel(data.generatedAt, index, windowHours)} · ${faNum(cell.total)} رویداد · ${faNum(cell.errors)} خطا`}
+              />
+            ))}
+            <span className={h.rowLabel} dir="rtl">
+              <bdi>{sourceName(row.source)}</bdi>
+              <span className={h.rowTotal}>{faNum(row.total)}</span>
             </span>
-            <div className={h.cells}>
-              {row.cells.map((cell, index) => (
-                <span
-                  // biome-ignore lint/suspicious/noArrayIndexKey: ساعت‌ها اندیس ثابت دارند
-                  key={index}
-                  className={h.cell}
-                  data-error={cell.errors > 0}
-                  style={{ '--level': Math.round((cell.total / max) * 100) } as CSSProperties}
-                  title={`${row.source} · ${bucketLabel(data.generatedAt, index, data.windowHours)} · ${faNum(cell.total)} رویداد`}
-                />
-              ))}
-            </div>
-          </Fragment>
+          </div>
         ))}
-
-        <span aria-hidden />
-        <p className={h.axis}>
-          <span>{faNum(data.windowHours)} ساعت پیش</span>
-          <span>هم‌اکنون</span>
-        </p>
       </div>
 
-      <p className={h.legend}>
-        <span className={`${h.swatch} ${h.swatchLow}`} aria-hidden />
-        کم
-        <span className={`${h.swatch} ${h.swatchHigh}`} aria-hidden />
-        زیاد
-        <span className={`${h.swatch} ${h.swatchError}`} aria-hidden />
-        دارای خطا
+      <p className={h.foot}>
+        <span className={h.scale}>
+          کم
+          {LEVELS.map((level) => (
+            <span key={level} className={h.swatch} data-level={level} aria-hidden="true" />
+          ))}
+          زیاد
+        </span>
+        <span className={h.scale}>
+          <span className={h.swatchError} aria-hidden="true" />
+          خانه‌ای که خطا داشته
+        </span>
+        <span>ستون برجسته: {bucketLabel(data.generatedAt, hour, windowHours)}</span>
       </p>
     </div>
   );

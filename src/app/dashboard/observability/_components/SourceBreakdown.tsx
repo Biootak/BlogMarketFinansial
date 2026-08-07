@@ -2,47 +2,64 @@
 
 import { PieChart } from 'lucide-react';
 
-import { faNum, faPercent, ratio, relative } from './format';
-import { useObs } from './ObsProvider';
+import { cssVars, faNum, faPercent, ratio, relative, sourceName } from './format';
 import { ObsEmpty } from './ObsSection';
-import s from './obs.module.css';
+import { useObs } from './ObsProvider';
+import h from './heat.module.css';
 
-/** سهم هر منبع از حجم لاگ، با سهم خطای همان منبع روی همان نوار. */
+/**
+ * سهم منابع از ترافیک.
+ *
+ * دو لایه روی یک ریل: حجم کل منبع، و سهم خطا از همان حجم. چون هر دو از یک
+ * لبه شروع می‌شوند، «چه بخشی از این منبع خراب است» مستقیم خوانده می‌شود.
+ */
 export function SourceBreakdown() {
   const { data } = useObs();
-  if (!data) return null;
+  const sources = data?.sources ?? [];
 
-  if (data.sources.length === 0) {
+  if (!data || sources.length === 0) {
     return (
       <ObsEmpty
         icon={PieChart}
-        title="منبعی برای تفکیک نیست"
-        hint="وقتی سرویس‌ها با source مشخص لاگ بنویسند، سهم هرکدام از کل ترافیک اینجا مقایسه می‌شود."
+        title="منبعی ثبت نشده"
+        hint="در پنجرهٔ جاری هیچ لاگی نیامده، پس سهمی هم برای تقسیم کردن وجود ندارد."
       />
     );
   }
 
-  const max = Math.max(...data.sources.map((item) => item.total), 1);
+  const biggest = Math.max(1, sources[0]?.total ?? 1);
 
   return (
-    <ul className={s.sources}>
-      {data.sources.map((item) => (
-        <li key={item.source} className={s.sourceRow}>
-          <span className={s.sourceName}>{item.source}</span>
-          <span className={s.sourceMeta}>
-            {faNum(item.total)} · {faPercent(item.share)} · آخرین {relative(item.lastAt, data.generatedAt)}
-          </span>
-          <span className={s.sourceBar}>
-            <span className={s.sourceFill} style={{ inlineSize: `${ratio(item.total, max, 1)}%` }} />
-            {item.errors > 0 ? (
-              <span
-                className={s.sourceErr}
-                style={{ inlineSize: `${ratio(item.errors, max, 1)}%` }}
-              />
-            ) : null}
-          </span>
+    <ol className={h.shares}>
+      {sources.map((source) => (
+        <li key={source.source}>
+          <div className={h.share}>
+            <span className={h.shareName}>
+              <bdi>{sourceName(source.source)}</bdi>
+            </span>
+            <span className={h.shareValue}>{faPercent(source.share)}</span>
+
+            <span
+              className={h.shareTrack}
+              aria-hidden="true"
+              style={cssVars({
+                '--fill': `${ratio(source.total, biggest, 2)}%`,
+                '--fill-errors': `${ratio(source.errors, biggest, 0)}%`,
+              })}
+            >
+              <span className={h.shareFill} />
+              <span className={h.shareErrors} />
+            </span>
+
+            <span className={h.shareMeta}>
+              <span>{faNum(source.total)} رویداد</span>
+              <span>{faNum(source.errors)} خطا</span>
+              <span>{faNum(source.warns)} هشدار</span>
+              <span>آخرین {relative(source.lastAt, data.generatedAt)}</span>
+            </span>
+          </div>
         </li>
       ))}
-    </ul>
+    </ol>
   );
 }
