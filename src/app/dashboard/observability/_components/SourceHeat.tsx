@@ -3,16 +3,10 @@
 import { Grid2x2 } from 'lucide-react';
 import { Fragment } from 'react';
 
-<<<<<<< HEAD
-import { useObs } from './ObsProvider';
-import { ObsEmpty } from './ObsSection';
-import { bucketLabel, faNum } from './format';
-=======
 import { heatLevel, maxOf } from './chart';
 import { bucketLabel, cssVars, faNum, hourKey, sourceName } from './format';
 import { ObsEmpty } from './ObsSection';
 import { useObs } from './ObsProvider';
->>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
 import h from './heat.module.css';
 
 const LEVELS = [0, 1, 2, 3, 4] as const;
@@ -53,7 +47,7 @@ export function SourceHeat() {
         dir="ltr"
         role="img"
         aria-label={`ماتریس حجم لاگ برای ${faNum(rows.length)} منبع در ${faNum(windowHours)} ساعت گذشته`}
-        style={cssVars({ '--cols': windowHours })}
+        style={cssVars({ '--cols-template': `repeat(${windowHours}, minmax(0, 1fr))` })}
       >
         {rows.map((row) => (
           <Fragment key={row.source}>

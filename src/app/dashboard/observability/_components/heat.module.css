@@ -2,8 +2,8 @@
    توزیع‌ها — ماتریس گرما، سهم منابع، توزیع سطوح
    ----------------------------------------------------------------------------
    هیچ‌کدام از این سه، دایره‌ای نیستند. نمودار دایره‌ای برای مقایسهٔ بیش از سه
-   سهم بی‌فایده است (چشم زاویه را بد می‌خواند) و در RTL جهت چرخشش هم بحث‌برانگیز
-   می‌شود. همه‌جا نوار و ماتریس داریم: قابل مقایسه، قابل اسکن، ارزان.
+   سهم بی‌فایده است (چشم زاویه را بد می‌خواند) و در RTL جهت چرخشش هم
+   بحث‌برانگیز می‌شود. همه‌جا نوار و ماتریس داریم: قابل مقایسه، قابل اسکن، ارزان.
    ============================================================================ */
 
 /* ═══════════════ ماتریس گرما ═══════════════ */
@@ -21,34 +21,17 @@
   min-inline-size: 0;
 }
 
+/*
+   لیست ستون‌ها کامل از JS می‌آید، نه فقط تعدادش.
+   `repeat(var(--n), …)` طبق مشخصات CSS معتبر نیست (تعداد باید عدد لفظی
+   باشد) و مرورگر کل اعلان را دور می‌ریزد؛ یعنی ماتریس بی‌صدا به یک ستون
+   تبدیل می‌شود. جایگزینی کل مقدار با var کاملاً معتبر است.
+*/
 .grid {
-  --obs-data: var(--obs-accent);
   display: grid;
-<<<<<<< HEAD
-  grid-template-columns: minmax(5.5rem, max-content) minmax(0, 1fr);
-  align-items: center;
-  gap: 3px var(--ds-space-2);
-  min-inline-size: 26rem;
-}
-
-.label {
-  font-family: var(--ds-font-mono);
-  font-size: 0.68rem;
-  direction: ltr;
-  unicode-bidi: isolate;
-  text-align: start;
-  color: var(--ds-text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.cells {
-  display: grid;
-  grid-template-columns: repeat(var(--obs-hours, 24), minmax(0, 1fr));
-=======
-  grid-template-columns: repeat(var(--cols, 24), minmax(0, 1fr)) minmax(4.5rem, auto);
->>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
+  grid-template-columns:
+    var(--cols-template, repeat(24, minmax(0, 1fr)))
+    minmax(4.5rem, auto);
   gap: 2px;
   min-inline-size: 0;
 }
@@ -61,15 +44,6 @@
   transition: transform 120ms var(--obs-ease);
 }
 
-<<<<<<< HEAD
-.cell[data-error="true"] {
-  background: color-mix(in oklch, var(--obs-bad) calc(28% + var(--level, 0) * 0.62%), transparent);
-}
-
-/* ساعت انتخاب‌شده در hero — همان ستون اینجا هم روشن می‌شود */
-.cell[data-cursor="true"] {
-  box-shadow: inset 0 0 0 1px var(--ds-text-primary);
-=======
 .cell[data-level='1'] {
   background: color-mix(in oklch, var(--obs-accent) 18%, transparent);
 }
@@ -94,7 +68,6 @@
 .cell[data-cursor='true'] {
   box-shadow: inset 0 0 0 1.5px var(--obs-ink);
   transform: scale(1.15);
->>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
 }
 
 .cell[data-errors='true'][data-cursor='true'] {
@@ -128,6 +101,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.4rem 1rem;
+  margin: 0;
   color: var(--obs-muted);
   font-size: 0.64rem;
 }
@@ -208,6 +182,7 @@
 */
 .shareTrack {
   position: relative;
+  display: block;
   grid-column: 1 / -1;
   block-size: 0.4rem;
   border-radius: var(--ds-radius-full);

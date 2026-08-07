@@ -74,7 +74,7 @@
 
 .mastheadDate::before,
 .mastheadWindow::before {
-  content: "";
+  content: '';
   position: absolute;
   inset-block: 0.15rem;
   inset-inline-start: 0.3rem;
@@ -128,17 +128,25 @@
   }
 }
 
+/*
+   مُهر: نقاشی و عدد در یک خانهٔ گرید روی هم می‌نشینند و پانویس ردیف بعد.
+   عمداً absolute نیست — پانویس باید فضای واقعی بگیرد وگرنه روی شمارش وضعیت
+   می‌افتد (همان باگی که نسخهٔ قبل داشت).
+*/
 .seal {
-  position: relative;
   flex: none;
+  display: grid;
+  grid-template-rows: auto auto;
+  justify-items: center;
+  gap: 0.4rem;
   inline-size: clamp(5.5rem, 18vw, 7rem);
   margin: 0;
-  aspect-ratio: 1;
 }
 
 .sealArt {
+  grid-area: 1 / 1;
   inline-size: 100%;
-  block-size: 100%;
+  aspect-ratio: 1;
   transform: rotate(-90deg);
 }
 
@@ -148,7 +156,7 @@
   stroke-width: 5;
 }
 
-.seal[data-silent="true"] .sealTrack {
+.seal[data-silent='true'] .sealTrack {
   stroke-dasharray: 2 6;
   stroke-linecap: round;
 }
@@ -195,13 +203,13 @@
 }
 
 .sealCaption {
-  position: absolute;
-  inset: 0;
+  grid-area: 1 / 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 0.1rem;
+  margin: 0;
 }
 
 .sealScoreText {
@@ -220,13 +228,13 @@
 }
 
 .sealFoot {
-  position: absolute;
-  inset-block-start: 100%;
-  inset-inline: 0;
-  margin: 0.4rem 0 0;
+  grid-area: 2 / 1;
+  margin: 0;
   color: var(--obs-muted);
-  font-size: 0.64rem;
+  font-size: 0.62rem;
+  line-height: 1.5;
   text-align: center;
+  text-wrap: balance;
 }
 
 /* شمارش وضعیت — سه عدد، بدون کارت، فقط خط مویی بین‌شان */
@@ -283,9 +291,6 @@
   align-items: center;
   gap: 0.5rem;
   min-inline-size: 0;
-  border: none;
-  padding: 0;
-  margin: 0;
 }
 
 .cursorStep {
@@ -299,7 +304,9 @@
   background: transparent;
   color: var(--obs-ink-2);
   cursor: pointer;
-  transition: border-color var(--obs-fast) var(--obs-ease), color var(--obs-fast) var(--obs-ease),
+  transition:
+    border-color var(--obs-fast) var(--obs-ease),
+    color var(--obs-fast) var(--obs-ease),
     transform 120ms var(--ds-ease-spring);
 }
 
@@ -432,7 +439,7 @@
 }
 
 .vitalTrack::after {
-  content: "";
+  content: '';
   position: absolute;
   inset-block: 0;
   inset-inline-start: 0;
@@ -455,77 +462,4 @@
   border-radius: var(--ds-radius-lg);
   color: var(--obs-muted);
   font-size: var(--ds-text-xs);
-}
-
-/* ═══════════════ یافته‌های خودکار ═══════════════ */
-
-.insights {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.insight {
-  display: grid;
-  grid-template-columns: 1.75rem 1fr;
-  gap: 0.25rem var(--ds-space-3);
-  padding-block: var(--ds-space-3);
-  border-block-start: 1px solid var(--obs-rule);
-}
-
-.insight:first-child {
-  border-block-start: none;
-}
-
-.insightIcon {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-block-start: 0.15rem;
-  color: var(--tone);
-}
-
-.insightBody {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  min-inline-size: 0;
-}
-
-.insightTitle {
-  margin: 0;
-  color: var(--obs-ink);
-  font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-medium);
-  line-height: 1.4;
-}
-
-.insightText {
-  margin: 0;
-  color: var(--obs-muted);
-  font-size: var(--ds-text-xs);
-  line-height: var(--ds-leading-relaxed);
-}
-
-.insightLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  color: var(--obs-accent);
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-medium);
-  text-decoration: none;
-  transition: opacity var(--obs-fast) var(--obs-ease);
-}
-
-.insightLink:hover {
-  opacity: 0.75;
-}
-
-.insightLink:focus-visible {
-  outline: 2px solid var(--obs-accent);
-  outline-offset: 2px;
-  border-radius: 2px;
 }
