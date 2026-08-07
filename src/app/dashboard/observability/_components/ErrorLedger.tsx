@@ -2,17 +2,10 @@
 
 import { ShieldCheck } from 'lucide-react';
 
-<<<<<<< HEAD
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
-import { faNum, relative } from './format';
-import s from './obs.module.css';
-=======
 import { faNum, levelLabel, levelTone, relative, sourceName, stamp } from './format';
-import { ObsEmpty } from './ObsSection';
-import { useObs } from './ObsProvider';
 import l from './ledger.module.css';
->>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
 
 /** سقف نمایش — بیشتر از این، فهرست به دیوار متن تبدیل می‌شود. */
 const MAX_ROWS = 24;
