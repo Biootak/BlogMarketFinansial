@@ -8,7 +8,7 @@ import type React from 'react';
 import { HiArrowLeft, HiPencilSquare } from 'react-icons/hi2';
 
 export interface SingleAuthorProps {
-  author?: UserWithProfile;
+  author?: UserWithProfile | null;
 }
 
 const SingleAuthor: React.FC<SingleAuthorProps> = ({ author }) => {

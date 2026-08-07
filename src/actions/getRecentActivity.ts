@@ -21,11 +21,12 @@ export interface ActivityEntry {
   details: string;
   /** ISO string for serialization */
   createdAt: string;
+  /** کاربر حذف‌شده → null (onDelete: SetNull در schema) */
   user: {
     id: string;
     name: string | null;
     image: string | null;
-  };
+  } | null;
 }
 
 const fetchRecentActivityRaw = async (
@@ -48,11 +49,13 @@ const fetchRecentActivityRaw = async (
     action: r.action,
     details: r.details,
     createdAt: r.createdAt.toISOString(),
-    user: {
-      id: r.user.id,
-      name: r.user.name,
-      image: r.user.image,
-    },
+    user: r.user
+      ? {
+          id: r.user.id,
+          name: r.user.name,
+          image: r.user.image,
+        }
+      : null,
   }));
 };
 

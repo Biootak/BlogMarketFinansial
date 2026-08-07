@@ -22,8 +22,8 @@ const CardAuthor2 = ({
   }
   const { author, createdAt } = post;
 
-  const { name: displayName, id: authorId, image: avatar } = author;
-  const href = `/author/${authorId}`;
+  const { name: displayName, id: authorId, image: avatar } = author ?? {};
+  const href = authorId ? `/author/${authorId}` : '#';
 
   const readingTime = getReadingMinutes(post);
 
@@ -41,7 +41,7 @@ const CardAuthor2 = ({
         sizeClass="h-8 w-8 text-xs"
         containerClassName="flex-shrink-0 me-2.5"
         radius="rounded-full"
-        imgUrl={author.profile?.avatar || avatar}
+        imgUrl={author?.profile?.avatar || avatar}
         userName={displayName || ''}
       />
       <div>

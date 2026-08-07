@@ -31,7 +31,7 @@ export async function GET() {
       action: activity.action,
       details: activity.details,
       userId: activity.userId,
-      userEmail: activity.user.email,
+      userEmail: activity.user?.email ?? null,
       createdAt: activity.createdAt,
     }));
 

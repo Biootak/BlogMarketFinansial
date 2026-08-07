@@ -36,7 +36,7 @@ const fetchRecentDraftsRaw = async (userId: string, role: string): Promise<Recen
     title: draft.title,
     // safeCache returns plain JSON so Dates arrive as ISO strings on cache hits.
     date: new Date(draft.updatedAt).toLocaleDateString('fa-IR'),
-    author: draft.author.name || 'ناشناس',
+    author: draft.author?.name || 'ناشناس',
   }));
 };
 

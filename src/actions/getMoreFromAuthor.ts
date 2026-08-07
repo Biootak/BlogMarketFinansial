@@ -5,8 +5,12 @@ import type { ActionResult, PostWithRelations } from '@/types/types';
 import { cache } from 'react';
 
 export const getMoreFromAuthor = cache(
-  async (authorId: string, postId: string): Promise<ActionResult<PostWithRelations[]>> => {
+  async (authorId: string | null, postId: string): Promise<ActionResult<PostWithRelations[]>> => {
     try {
+      // پست بدون نویسنده (authorId null) → هیچ پست مرتبطی ندارد
+      if (!authorId) {
+        return { success: true, message: 'پست‌های بیشتر از این نویسنده', data: [] };
+      }
       const moreFromAuthor = await prisma.post.findMany({
         where: {
           authorId,

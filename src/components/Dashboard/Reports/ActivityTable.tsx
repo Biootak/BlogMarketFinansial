@@ -110,16 +110,16 @@ export default function ActivityTable({
                             'shadow-sm',
                           )}
                         >
-                          {(activity.user.name || activity.user.email || '?')
+                          {(activity.user?.name || activity.user?.email || '?')
                             .charAt(0)
                             .toUpperCase()}
                         </div>
                         <div>
                           <p className="font-medium text-gray-900 dark:text-white">
-                            {activity.user.name || 'کاربر ناشناس'}
+                            {activity.user?.name || 'کاربر ناشناس'}
                           </p>
                           <p className="text-xs text-gray-500 dark:text-gray-400">
-                            {activity.user.email}
+                            {activity.user?.email ?? '—'}
                           </p>
                         </div>
                       </div>

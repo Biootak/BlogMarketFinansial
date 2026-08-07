@@ -30,24 +30,24 @@ const PostCardMetaV2: FC<PostCardMetaV2Props> = ({
           <Avatar
             radius="rounded-full"
             sizeClass={avatarSize}
-            imgUrl={author.profile?.avatar || author.image}
-            userName={author.name}
+            imgUrl={author?.profile?.avatar || author?.image}
+            userName={author?.name}
           />
         )}
         <div>
           <h2 className={`block font-semibold ${titleClassName}`}>
             {/* WCAG 2.5.3 label-in-name + target-size: aria-label حذف شد تا نام
                 دسترس‌پذیر دقیقاً همان متنِ دیده‌شده باشد و با آن تناقض نکند. */}
-            <Link href={`/author/${author.id}`} className="line-clamp-1 block py-1.5 -my-1.5">
+            <Link href={`/author/${author?.id}`} className="line-clamp-1 block py-1.5 -my-1.5">
               {title}
             </Link>
           </h2>
 
           {/* حداقل ارتفاع ۴۴px touch target — بدون aria-label اضافی تا
               accessible name دقیقاً متنِ دیده‌شده (نام + تاریخ) باشد */}
-          <Link href={`/author/${author.id}`} className="flex mt-1.5 min-h-[44px] items-center">
+          <Link href={`/author/${author?.id}`} className="flex mt-1.5 min-h-[44px] items-center">
             <span className="block text-neutral-700 hover:text-black dark:text-neutral-300 dark:hover:text-white font-medium">
-              {author.name}
+              {author?.name}
             </span>
             <span className="text-neutral-600 dark:text-neutral-400 mx-[6px] font-medium">·</span>
             <span className="text-neutral-600 dark:text-neutral-400 font-normal">

@@ -245,7 +245,7 @@ export default function AtelierActivity({ items }: AtelierActivityProps) {
                 {group.items.map((item) => {
                   const tone = actionTone(item.action);
                   const cat = actionCategory(item.action);
-                  const userName = item.user.name ?? 'کاربر';
+                  const userName = item.user?.name ?? 'کاربر';
                   const initials = userName.charAt(0);
                   const avatar =
                     (item.user as unknown as { avatar?: string | null }).avatar ?? null;

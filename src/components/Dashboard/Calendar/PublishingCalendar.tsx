@@ -88,7 +88,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, selectedDate, posts }) =
                   {post.excerpt || post.content.substring(0, 100)}...
                 </p>
                 <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-500 mb-2">
-                  نویسنده: {post.author.name}
+                  نویسنده: {post.author?.name ?? 'ناشناس'}
                 </p>
                 {post.featuredImage && (
                   // 2026-06-14: raw <img> swapped for next/image so

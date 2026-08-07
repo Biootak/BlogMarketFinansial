@@ -135,7 +135,9 @@ export default function ActivityLogComponent() {
           ...a,
           createdAt: new Date(a.createdAt as string),
           userEmail: a.user?.email ?? '',
-          user: { ...a.user, name: a.user?.name || 'کاربر ناشناس', email: a.user?.email ?? '' },
+          user: a.user
+            ? { ...a.user, name: a.user.name || 'کاربر ناشناس', email: a.user.email ?? '' }
+            : null,
         })),
       );
       setTotal(result.data.total);

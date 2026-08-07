@@ -322,7 +322,7 @@ export const getActivityLog = async (): Promise<ActionResult<Activity[]>> => {
 
     const formattedActivities = activities.map((activity: (typeof activities)[number]) => ({
       id: activity.id,
-      userEmail: activity.user.email,
+      userEmail: activity.user?.email ?? '',
       action: activity.action,
       details: activity.details,
       createdAt: activity.createdAt.toISOString(),

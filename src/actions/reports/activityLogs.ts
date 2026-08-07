@@ -5,14 +5,14 @@ import { checkReportAccess } from './auth';
 
 export type ActivityLog = {
   id: string;
-  userId: string;
+  userId: string | null;
   action: string;
   details: string;
   createdAt: Date;
   user: {
-    name: string;
+    name: string | null;
     email: string;
-  };
+  } | null;
 };
 
 export async function getActivityLog(page = 1, limit = 10) {

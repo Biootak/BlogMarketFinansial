@@ -42,10 +42,10 @@ const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hov
         </h3>
         <div className="flex mt-2.5 relative items-center">
           <Link
-            href={`/author/${author.id}`}
+            href={`/author/${author?.id}`}
             className="text-neutral-200 hover:text-white font-medium truncate transition-colors duration-200"
           >
-            {author.name}
+            {author?.name || 'ناشناس'}
           </Link>
           <span className="mx-2 w-1 h-1 rounded-full bg-neutral-400" />
           <span className={['truncate text-neutral-300', text.meta].join(' ')}>

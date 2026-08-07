@@ -380,12 +380,12 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                           <Avatar
                             sizeClass="h-9 w-9 sm:h-10 sm:w-10"
                             radius="rounded-full"
-                            imgUrl={mainPost.author.profile?.avatar || mainPost.author.image}
-                            userName={mainPost.author.name || ''}
+                            imgUrl={mainPost.author?.profile?.avatar || mainPost.author?.image}
+                            userName={mainPost.author?.name || ''}
                           />
                           <div className="flex flex-col">
                             <span className="font-semibold text-white text-xs sm:text-sm">
-                              {mainPost.author.name}
+                              {mainPost.author?.name}
                             </span>
                             <span className="text-white/60 text-[10px] sm:text-xs flex items-center gap-1">
                               <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
@@ -613,11 +613,11 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                           <Avatar
                             sizeClass="h-5 w-5"
                             radius="rounded-full"
-                            imgUrl={post.author.profile?.avatar || post.author.image}
-                            userName={post.author.name || ''}
+                            imgUrl={post.author?.profile?.avatar || post.author?.image}
+                            userName={post.author?.name || ''}
                           />
                           <span className="text-white/70 text-[10px] truncate flex-1 min-w-0">
-                            {post.author.name}
+                            {post.author?.name}
                           </span>
                           {post.viewCount > 0 && (
                             <span className="text-white/60 text-[10px] flex items-center gap-0.5 tabular-nums shrink-0">
