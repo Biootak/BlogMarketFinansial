@@ -14,7 +14,7 @@
 
 import type { ObservabilitySnapshot } from '@/lib/observability';
 
-import { faNum, faPercent, type ToneKey } from './format';
+import { type ToneKey, faNum, faPercent } from './format';
 
 export interface HealthReading {
   /** ۰..۱۰۰ — وقتی `silent` است بی‌معناست و UI نباید نمایشش دهد. */

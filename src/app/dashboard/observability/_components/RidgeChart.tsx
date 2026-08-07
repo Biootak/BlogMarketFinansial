@@ -1,9 +1,9 @@
 'use client';
 
+import r from './LiveBar.module.css';
+import { useObs } from './ObsProvider';
 import { areaPath, axisPercent, linePath, maxOf, niceMax } from './chart';
 import { bucketLabel, bucketStart, cssVars, faNum, hourKey } from './format';
-import { useObs } from './ObsProvider';
-import r from './LiveBar.module.css';
 
 const VIEW_W = 600;
 const VIEW_H = 120;
@@ -72,14 +72,15 @@ export function RidgeChart() {
 
         <span className={r.cursor} aria-hidden="true" />
 
-        {hasVolume ? null : (
-          <p className={r.quiet}>در پنجرهٔ جاری هیچ لاگی ثبت نشده است</p>
-        )}
+        {hasVolume ? null : <p className={r.quiet}>در پنجرهٔ جاری هیچ لاگی ثبت نشده است</p>}
       </div>
 
       <div className={r.axis} dir="ltr" aria-hidden="true">
         {ticks.map((tick) => (
-          <span key={tick.key} style={cssVars({ '--at': `${axisPercent(tick.index, windowHours)}%` })}>
+          <span
+            key={tick.key}
+            style={cssVars({ '--at': `${axisPercent(tick.index, windowHours)}%` })}
+          >
             {tick.label}
           </span>
         ))}

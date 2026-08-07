@@ -2,9 +2,9 @@
 
 import { Layers3 } from 'lucide-react';
 
-import { faNum, faPercent, ratio } from './format';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
+import { faNum, faPercent, ratio } from './format';
 import s from './obs.module.css';
 
 const LEVEL_LABEL: Record<string, string> = {

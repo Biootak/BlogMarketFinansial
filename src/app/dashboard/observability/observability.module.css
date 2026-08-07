@@ -34,6 +34,9 @@
   --obs-bad: var(--nova-down);
   --obs-idle: var(--nova-flat);
 
+  /* ── رنگ داده برای ماتریس گرما ─────────────────────────── */
+  --obs-data: var(--nova-primary);
+
   /* ── تایپ و حرکت ─────────────────────────────────────────── */
   --obs-mono: var(--ds-font-mono);
   --obs-ease: var(--ds-ease-out-quart);
@@ -56,19 +59,19 @@
    ماژول‌های فرزند (deck / boards / heat / …) از همین ارث می‌برند.
    نتیجه: هیچ ماژولی مجبور نیست نگاشت تُن خودش را تکرار کند.
 */
-.page [data-tone='ok'] {
+.page [data-tone="ok"] {
   --tone: var(--obs-ok);
 }
-.page [data-tone='warn'] {
+.page [data-tone="warn"] {
   --tone: var(--obs-warn);
 }
-.page [data-tone='bad'] {
+.page [data-tone="bad"] {
   --tone: var(--obs-bad);
 }
-.page [data-tone='info'] {
+.page [data-tone="info"] {
   --tone: var(--obs-accent);
 }
-.page [data-tone='idle'] {
+.page [data-tone="idle"] {
   --tone: var(--obs-idle);
 }
 

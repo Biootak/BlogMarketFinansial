@@ -2,9 +2,9 @@
 
 import { ShieldCheck } from 'lucide-react';
 
-import { bucketLabel, faNum } from './format';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
+import { bucketLabel, faNum } from './format';
 import s from './obs.module.css';
 
 /**

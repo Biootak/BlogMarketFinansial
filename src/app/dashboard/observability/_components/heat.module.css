@@ -20,8 +20,9 @@
 }
 
 .grid {
+  --obs-data: var(--obs-accent);
   display: grid;
-  grid-template-columns: minmax(5.5rem, max-content) minmax(0, 1fr) minmax(2.5rem, max-content);
+  grid-template-columns: minmax(5.5rem, max-content) minmax(0, 1fr);
   align-items: center;
   gap: 3px var(--ds-space-2);
   min-inline-size: 26rem;
@@ -56,16 +57,12 @@
   transition: transform var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
-.cell[data-error='true'] {
-  background: color-mix(
-    in oklch,
-    var(--obs-bad) calc(28% + var(--level, 0) * 0.62%),
-    transparent
-  );
+.cell[data-error="true"] {
+  background: color-mix(in oklch, var(--obs-bad) calc(28% + var(--level, 0) * 0.62%), transparent);
 }
 
 /* ساعت انتخاب‌شده در hero — همان ستون اینجا هم روشن می‌شود */
-.cell[data-cursor='true'] {
+.cell[data-cursor="true"] {
   box-shadow: inset 0 0 0 1px var(--ds-text-primary);
 }
 

@@ -2,9 +2,9 @@
 
 import { Timer } from 'lucide-react';
 
-import { msShort, relative } from './format';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
+import { msShort, relative } from './format';
 import s from './obs.module.css';
 
 const toneFor = (durationMs: number): 'ok' | 'warn' | 'bad' => {

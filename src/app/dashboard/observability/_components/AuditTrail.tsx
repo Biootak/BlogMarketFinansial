@@ -3,9 +3,9 @@
 import { Activity, LogIn, ScrollText, ShieldAlert, ShieldCheck, Wallet } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
-import { relative, stamp } from './format';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
+import { relative, stamp } from './format';
 import s from './obs.module.css';
 
 interface ActionMeta {

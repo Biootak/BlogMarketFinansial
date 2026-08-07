@@ -2,13 +2,13 @@
 
 import { ChevronLeft, ChevronRight, Radio } from 'lucide-react';
 
-import { readHealth } from './obsHealth';
-import { bucketLabel, faNum, fullDayLabel } from './format';
 import { HealthRing } from './HealthRing';
+import { useObs } from './ObsProvider';
 import { RidgeChart } from './RidgeChart';
 import { SystemVitals } from './SystemVitals';
-import { useObs } from './ObsProvider';
 import d from './deck.module.css';
+import { bucketLabel, faNum, fullDayLabel } from './format';
+import { readHealth } from './obsHealth';
 
 /**
  * سرصفحهٔ سالنامه.
@@ -75,7 +75,7 @@ export function ObsPulseDeck() {
           کنترل باید کنار چیزی باشد که تغییرش می‌دهد. آیکون‌ها هم برای RTL
           درست‌اند: «عقب‌تر در زمان» یعنی راست، «جلوتر» یعنی چپ.
         */}
-        <div className={d.cursorBar} role="group" aria-label="انتخاب ساعت">
+        <fieldset className={d.cursorBar} aria-label="انتخاب ساعت">
           <button
             type="button"
             className={d.cursorStep}
@@ -88,7 +88,9 @@ export function ObsPulseDeck() {
 
           <p className={d.cursorLabel}>
             <span>{range}</span>
-            <small>{isLiveHour ? 'ساعت جاری' : `سطل ${faNum(hour + 1)} از ${faNum(windowHours)}`}</small>
+            <small>
+              {isLiveHour ? 'ساعت جاری' : `سطل ${faNum(hour + 1)} از ${faNum(windowHours)}`}
+            </small>
           </p>
 
           <button
@@ -101,15 +103,10 @@ export function ObsPulseDeck() {
             <ChevronLeft size={16} strokeWidth={1.8} aria-hidden="true" />
           </button>
 
-          <button
-            type="button"
-            className={d.cursorReset}
-            onClick={resetHour}
-            disabled={isLiveHour}
-          >
+          <button type="button" className={d.cursorReset} onClick={resetHour} disabled={isLiveHour}>
             بازگشت به ساعت جاری
           </button>
-        </div>
+        </fieldset>
       </div>
 
       <SystemVitals />

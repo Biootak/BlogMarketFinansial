@@ -2,9 +2,9 @@
 
 import { PieChart } from 'lucide-react';
 
-import { faNum, faPercent, ratio, relative } from './format';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
+import { faNum, faPercent, ratio, relative } from './format';
 import s from './obs.module.css';
 
 /** سهم هر منبع از حجم لاگ، با سهم خطای همان منبع روی همان نوار. */
@@ -30,10 +30,14 @@ export function SourceBreakdown() {
         <li key={item.source} className={s.sourceRow}>
           <span className={s.sourceName}>{item.source}</span>
           <span className={s.sourceMeta}>
-            {faNum(item.total)} · {faPercent(item.share)} · آخرین {relative(item.lastAt, data.generatedAt)}
+            {faNum(item.total)} · {faPercent(item.share)} · آخرین{' '}
+            {relative(item.lastAt, data.generatedAt)}
           </span>
           <span className={s.sourceBar}>
-            <span className={s.sourceFill} style={{ inlineSize: `${ratio(item.total, max, 1)}%` }} />
+            <span
+              className={s.sourceFill}
+              style={{ inlineSize: `${ratio(item.total, max, 1)}%` }}
+            />
             {item.errors > 0 ? (
               <span
                 className={s.sourceErr}

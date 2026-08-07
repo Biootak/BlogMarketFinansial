@@ -1,6 +1,6 @@
+import d from './deck.module.css';
 import type { ToneKey } from './format';
 import { cssVars, faNum, faPercent } from './format';
-import d from './deck.module.css';
 
 interface HealthRingProps {
   score: number;

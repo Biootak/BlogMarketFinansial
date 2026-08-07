@@ -1,8 +1,9 @@
 /* ============================================================================
-   Observability — کروم مدخل‌ها و اتم‌های مشترک
+   Observability — کروم مدخل‌ها و اتم‌های مشترک ۲۰۲۶
    ----------------------------------------------------------------------------
    هر چیزی که بیش از یک board لازمش دارد اینجاست و فقط اینجا: سرصفحهٔ مدخل،
-   خالی‌بودن، بج، نقطهٔ وضعیت، «خوانش» (برچسب/عدد/واحد)، ریل عددی و ظرفِ LTR.
+   خالی‌بودن، بج، نقطهٔ وضعیت، «خوانش» (برچسب/عدد/واحد)، ریل عددی، ظرفِ LTR،
+   و همهٔ جداول/فهرست‌های component‌های data.
    هیچ board ای اجازه ندارد نسخهٔ محلی این‌ها را دوباره بنویسد.
    ============================================================================ */
 
@@ -25,9 +26,8 @@
 }
 
 /*
-   شمارهٔ مدخل روی خط می‌نشیند و آن را می‌شکند — همان کاری که سالنامه‌های چاپی
-   با شمارهٔ فصل می‌کنند. شمارنده در CSS است نه در props، پس ترتیب DOM منبع
-   حقیقت است و هیچ صفحه‌ای مجبور نیست شماره پاس بدهد.
+   شمارهٔ مدخل روی خط می‌نشیند — شمارنده در CSS، نه در props.
+   ترتیب DOM منبع حقیقت است.
 */
 .index {
   flex: none;
@@ -45,11 +45,11 @@
   content: counter(obs-entry, persian);
 }
 
-.section[data-variant='plain'] .index {
+.section[data-variant="plain"] .index {
   display: none;
 }
 
-.section[data-variant='plain'] .head {
+.section[data-variant="plain"] .head {
   border-block-start-color: var(--obs-rule);
 }
 
@@ -96,8 +96,7 @@
   min-inline-size: 0;
 }
 
-/* ═══════════════ خالی‌بودن ═══════════════
-   حالت خالی یک وضعیت است نه یک اشتباه؛ پس صادق و آرام نوشته می‌شود. */
+/* ═══════════════ خالی‌بودن ═══════════════ */
 
 .empty {
   display: flex;
@@ -131,7 +130,7 @@
 
 /* ═══════════════ اتم‌ها ═══════════════ */
 
-/* بج کوچک وضعیت/سطح — رنگ از --tone می‌آید، نه از کلاس رنگی */
+/* بج کوچک وضعیت/سطح */
 .chip {
   display: inline-flex;
   align-items: center;
@@ -143,10 +142,18 @@
   color: color-mix(in oklch, var(--tone) 78%, var(--obs-ink));
   font-size: 0.68rem;
   font-weight: var(--ds-weight-medium);
+  cursor: pointer;
+  transition: background-color var(--obs-fast) var(--obs-ease), border-color var(--obs-fast)
+    var(--obs-ease);
   white-space: nowrap;
 }
 
-/* نقطهٔ وضعیت — رنگ هرگز تنها نشانه نیست؛ همیشه کنارش متن هست */
+.chip[aria-pressed="true"] {
+  background: color-mix(in oklch, var(--tone) 20%, transparent);
+  border-color: color-mix(in oklch, var(--tone) 55%, transparent);
+}
+
+/* نقطهٔ وضعیت */
 .dot {
   flex: none;
   inline-size: 0.5rem;
@@ -156,8 +163,7 @@
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--tone) 16%, transparent);
 }
 
-/* نبض آرام ۰٫۵ هرتز — «زنده ولی ساکت». فقط opacity، پس ارزان است. */
-.dot[data-live='true'] {
+.dot[data-live="true"] {
   animation: obs-breath 2s var(--obs-ease) infinite;
 }
 
@@ -202,7 +208,7 @@
   line-height: 1.5;
 }
 
-/* متن لاتین/کد — همیشه داخل bdi استفاده می‌شود تا در متن RTL نشکند */
+/* متن لاتین/کد */
 .mono {
   font-family: var(--obs-mono);
   font-size: 0.72rem;
@@ -210,7 +216,7 @@
   overflow-wrap: anywhere;
 }
 
-/* نوار نسبت — ریل + پرکن. عرض از --fill می‌آید که JS ست می‌کند. */
+/* نوار نسبت */
 .track {
   position: relative;
   block-size: 0.3rem;
@@ -229,7 +235,6 @@
   transition: inline-size var(--obs-base) var(--obs-ease);
 }
 
-/* سهم خطا روی همان ریل — لایهٔ دوم، همیشه از همان لبه شروع می‌شود */
 .barAlt {
   position: absolute;
   inset-block: 0;
@@ -241,19 +246,15 @@
 }
 
 /*
-   ظرف محور زمان.
-   قاعدهٔ صریح این پروژه: **سری زمانی همیشه LTR است**. صفحه راست‌به‌چپ است،
-   ولی «گذشت زمان از چپ به راست» قرارداد جهانی نمودار است و برگرداندنش باعث
-   می‌شود خواننده ساعت جاری را در سمت اشتباه بجوید. پس این ظرف direction را
-   قفل می‌کند و همهٔ محورهای زمانی داخل آن می‌نشینند. برچسب‌های فارسیِ کنار
-   محور بیرون این ظرف می‌مانند.
+   ظرف محور زمان — سری زمانی همیشه LTR است.
+   صفحه راست‌به‌چپ است ولی «گذشت زمان از چپ به راست» قرارداد جهانی است.
 */
 .ltr {
   direction: ltr;
   min-inline-size: 0;
 }
 
-/* لیست بدون نشانه — پایهٔ همهٔ نردبان‌ها و دفترها */
+/* لیست بدون نشانه */
 .list {
   display: flex;
   flex-direction: column;
@@ -262,12 +263,11 @@
   list-style: none;
 }
 
-/* جداکنندهٔ مویی بین ردیف‌ها؛ ردیف اول خط ندارد */
 .list > li + li {
   border-block-start: 1px solid var(--obs-rule);
 }
 
-/* دکمهٔ خطی کوچک — برای اکشن‌های داخل سرصفحهٔ مدخل */
+/* دکمهٔ خطی کوچک */
 .ghostButton {
   display: inline-flex;
   align-items: center;
@@ -281,9 +281,7 @@
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-medium);
   cursor: pointer;
-  transition:
-    border-color var(--obs-fast) var(--obs-ease),
-    color var(--obs-fast) var(--obs-ease),
+  transition: border-color var(--obs-fast) var(--obs-ease), color var(--obs-fast) var(--obs-ease),
     background-color var(--obs-fast) var(--obs-ease);
 }
 
@@ -304,6 +302,15 @@
 }
 
 /* ═══════════════ اسکلت ═══════════════ */
+
+.skeleton {
+  --obs-rule: var(--ds-border-subtle);
+  --obs-recess: var(--ds-surface-recessed);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5);
+  min-inline-size: 0;
+}
 
 .skelBar,
 .skelHero,
@@ -349,3 +356,971 @@
     background-position: -20% 0;
   }
 }
+
+/* ═══════════════ نردبان سرویس‌ها ═══════════════ */
+
+.serviceTable {
+  min-inline-size: 0;
+  overflow: auto;
+}
+
+.serviceTableHead {
+  display: none;
+  padding: 0 var(--ds-space-3) var(--ds-space-2);
+  color: var(--obs-muted);
+  font-size: 0.62rem;
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+@media (min-width: 48rem) {
+  .serviceTableHead {
+    display: grid;
+    grid-template-columns: 2rem 0.5rem 1fr 8rem 12rem 2.5rem;
+    gap: var(--ds-space-3);
+    align-items: center;
+  }
+}
+
+.ladder {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ladderRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--ds-space-3) var(--ds-space-3);
+  align-items: center;
+  padding: var(--ds-space-3) var(--ds-space-3);
+  border-block-start: 1px solid var(--obs-rule);
+  transition: background-color var(--obs-fast) var(--obs-ease);
+}
+
+.ladderRow:first-child {
+  border-block-start: none;
+}
+
+.ladderRow:hover {
+  background: color-mix(in oklch, var(--obs-accent) 3%, transparent);
+}
+
+@media (min-width: 48rem) {
+  .ladderRow {
+    grid-template-columns: 2rem 0.5rem 1fr 8rem 12rem 2.5rem;
+  }
+}
+
+.ladderRank {
+  color: var(--obs-muted);
+  font: 500 0.66rem / 1 var(--obs-mono);
+  letter-spacing: 0.04em;
+}
+
+.ladderDot {
+  inline-size: 0.45rem;
+  block-size: 0.45rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--tone);
+  flex: none;
+}
+
+.ladderName {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-inline-size: 0;
+}
+
+.ladderTitle {
+  color: var(--obs-ink);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  text-decoration: none;
+  transition: color var(--obs-fast) var(--obs-ease);
+}
+
+.ladderTitle:hover {
+  color: var(--obs-accent);
+}
+
+.ladderDesc {
+  color: var(--obs-muted);
+  font-size: 0.66rem;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ladderStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--tone);
+  font: 500 0.62rem / 1 var(--obs-mono);
+  letter-spacing: 0.04em;
+}
+
+.ladderSpark {
+  display: none;
+  align-items: flex-end;
+  gap: 2px;
+  block-size: 2.25rem;
+  padding-block: 0.15rem;
+  direction: ltr;
+}
+
+@media (min-width: 48rem) {
+  .ladderSpark {
+    display: flex;
+  }
+}
+
+.sparkBar {
+  flex: 1 0 auto;
+  max-inline-size: 6px;
+  min-inline-size: 3px;
+  border-radius: var(--ds-radius-sm) var(--ds-radius-sm) 0 0;
+  background: color-mix(in oklch, var(--obs-accent) 55%, transparent);
+  transition: background-color var(--obs-fast) var(--obs-ease);
+}
+
+.ladderRow[data-tone="bad"] .sparkBar {
+  background: color-mix(in oklch, var(--obs-bad) 45%, transparent);
+}
+
+.ladderRow[data-tone="warn"] .sparkBar {
+  background: color-mix(in oklch, var(--obs-warn) 45%, transparent);
+}
+
+.ladderNums {
+  display: none;
+  gap: var(--ds-space-3);
+}
+
+@media (min-width: 48rem) {
+  .ladderNums {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.ladderNums > span {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-inline-size: 0;
+}
+
+.ladderNums small {
+  color: var(--obs-muted);
+  font-size: 0.6rem;
+}
+
+.ladderNums strong {
+  color: var(--obs-ink);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.ladderOpen {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border: 1px solid var(--obs-rule-2);
+  border-radius: var(--ds-radius-sm);
+  color: var(--obs-muted);
+  text-decoration: none;
+  transition: border-color var(--obs-fast) var(--obs-ease), color var(--obs-fast) var(--obs-ease),
+    background-color var(--obs-fast) var(--obs-ease);
+}
+
+.ladderOpen:hover {
+  border-color: var(--obs-accent);
+  color: var(--obs-accent);
+  background: color-mix(in oklch, var(--obs-accent) 6%, transparent);
+}
+
+.ladderOpen:focus-visible {
+  outline: 2px solid var(--obs-accent);
+  outline-offset: 2px;
+}
+
+/* ═══════════════ پنجره‌های بحرانی ═══════════════ */
+
+.incidents {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.incidentRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 0.25rem var(--ds-space-4);
+  align-items: start;
+  padding-block: var(--ds-space-3);
+  border-block-start: 1px solid var(--obs-rule);
+}
+
+.incidentRow:first-child {
+  border-block-start: none;
+}
+
+.incidentTitle {
+  color: var(--obs-ink);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  font-variant-numeric: tabular-nums;
+}
+
+.incidentMeta {
+  grid-column: 1;
+  grid-row: 2;
+  color: var(--obs-muted);
+  font-size: var(--ds-text-xs);
+}
+
+.incidentPeak {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  align-self: center;
+  color: var(--obs-bad);
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+/* نوار زمانی incident روی یک محور */
+.span {
+  grid-column: 1 / -1;
+  position: relative;
+  block-size: 4px;
+  border-radius: var(--ds-radius-full);
+  background: color-mix(in oklch, var(--obs-ink) 8%, transparent);
+  overflow: hidden;
+}
+
+.spanFill {
+  position: absolute;
+  inset-block: 0;
+  border-radius: inherit;
+  background: var(--obs-bad);
+  opacity: 0.7;
+}
+
+/* ═══════════════ رد ممیزی ═══════════════ */
+
+.trail {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trailRow {
+  display: grid;
+  grid-template-columns: 1.5rem 1fr auto;
+  gap: 0.35rem var(--ds-space-3);
+  align-items: start;
+  padding-block: var(--ds-space-3);
+  border-block-start: 1px solid var(--obs-rule);
+  transition: background-color var(--obs-fast) var(--obs-ease);
+}
+
+.trailRow:first-child {
+  border-block-start: none;
+}
+
+.trailRow:hover {
+  background: color-mix(in oklch, var(--obs-accent) 2.5%, transparent);
+}
+
+.trailIcon {
+  color: var(--tone);
+  margin-block-start: 0.15rem;
+}
+
+.trailAction {
+  display: block;
+  color: var(--obs-ink);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  line-height: 1.4;
+}
+
+.trailMeta {
+  display: block;
+  color: var(--obs-muted);
+  font-size: 0.66rem;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+.time {
+  color: var(--obs-muted);
+  font: 400 0.66rem / 1.4 var(--obs-mono);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ═══════════════ دفتر خطا ═══════════════ */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin-block-end: var(--ds-space-3);
+  padding-block-end: var(--ds-space-3);
+  border-block-end: 1px solid var(--obs-rule);
+}
+
+.search {
+  flex: 1 1 12rem;
+  min-block-size: 2.25rem;
+  padding-inline: var(--ds-space-3);
+  border: 1px solid var(--obs-rule-2);
+  border-radius: var(--ds-radius-sm);
+  background: var(--obs-paper);
+  color: var(--obs-ink);
+  font: inherit;
+  font-size: var(--ds-text-xs);
+  outline: none;
+  transition: border-color var(--obs-fast) var(--obs-ease);
+}
+
+.search::placeholder {
+  color: var(--obs-muted);
+}
+
+.search:focus {
+  border-color: var(--obs-accent);
+}
+
+.ledger {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ledgerRow {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto auto;
+  gap: 0 var(--ds-space-3);
+  align-items: baseline;
+  padding-block: var(--ds-space-2-5);
+  border-block-start: 1px solid var(--obs-rule);
+}
+
+.ledgerRow:first-child {
+  border-block-start: none;
+}
+
+@media (max-width: 47rem) {
+  .ledgerRow {
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: auto auto;
+    gap: var(--ds-space-1) var(--ds-space-2);
+  }
+}
+
+.level {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.12rem 0.4rem;
+  border: 1px solid color-mix(in oklch, var(--tone) 30%, transparent);
+  border-radius: var(--ds-radius-sm);
+  background: color-mix(in oklch, var(--tone) 8%, transparent);
+  color: color-mix(in oklch, var(--tone) 80%, var(--obs-ink));
+  font: 600 0.6rem / 1 var(--obs-mono);
+  white-space: nowrap;
+}
+
+.source {
+  color: var(--obs-muted);
+  font: 400 0.68rem / 1.4 var(--obs-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-inline-size: 12ch;
+}
+
+.message {
+  color: var(--obs-ink-2);
+  font-size: var(--ds-text-xs);
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 47rem) {
+  .message {
+    grid-column: 1 / -1;
+    white-space: normal;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+  }
+}
+
+.count {
+  color: var(--obs-muted);
+  font: 400 0.66rem / 1 var(--obs-mono);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ═══════════════ توزیع سطوح ═══════════════ */
+
+.levels {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.levelRow {
+  display: grid;
+  grid-template-columns: 6rem 1fr 5rem;
+  gap: var(--ds-space-3);
+  align-items: center;
+  min-inline-size: 0;
+}
+
+.levelRow > span:first-child {
+  color: var(--obs-ink-2);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+}
+
+.levelBar {
+  position: relative;
+  block-size: 0.35rem;
+  border-radius: var(--ds-radius-full);
+  background: color-mix(in oklch, var(--obs-ink) 8%, transparent);
+  overflow: hidden;
+}
+
+.levelFill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  border-radius: inherit;
+  background: var(--tone);
+  transition: inline-size var(--obs-base) var(--obs-ease);
+}
+
+/* ═══════════════ تفکیک منابع ═══════════════ */
+
+.sources {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sourceRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.35rem;
+  min-inline-size: 0;
+}
+
+.sourceName {
+  color: var(--obs-ink);
+  font: 400 0.72rem / 1 var(--obs-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sourceMeta {
+  color: var(--obs-muted);
+  font-size: 0.64rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.sourceBar {
+  position: relative;
+  block-size: 0.35rem;
+  border-radius: var(--ds-radius-full);
+  background: color-mix(in oklch, var(--obs-ink) 8%, transparent);
+  overflow: hidden;
+}
+
+.sourceFill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  border-radius: inherit;
+  background: color-mix(in oklch, var(--obs-accent) 70%, transparent);
+  transition: inline-size var(--obs-base) var(--obs-ease);
+}
+
+.sourceErr {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  border-radius: inherit;
+  background: var(--obs-bad);
+  transition: inline-size var(--obs-base) var(--obs-ease);
+}
+
+/* ═══════════════ مقیاس تأخیر ═══════════════ */
+
+.latencySurface {
+  display: grid;
+  gap: var(--ds-space-4);
+  min-inline-size: 0;
+}
+
+.scale {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  min-inline-size: 0;
+}
+
+.scaleTrack {
+  position: relative;
+  block-size: 3.5rem;
+  border-block-end: 1px solid var(--obs-rule-2);
+  min-inline-size: 0;
+  direction: ltr;
+}
+
+.scaleMarkOk,
+.scaleMarkWarn,
+.scaleMarkBad {
+  position: absolute;
+  inset-block: 0;
+}
+
+.scaleMarkOk {
+  --tone: var(--obs-ok);
+}
+
+.scaleMarkWarn {
+  --tone: var(--obs-warn);
+}
+
+.scaleMarkBad {
+  --tone: var(--obs-bad);
+}
+
+.scaleMark {
+  position: absolute;
+  inset-block: 0;
+  inline-size: 1px;
+  background: var(--tone);
+  transform: none;
+}
+
+.scaleLabel {
+  position: absolute;
+  inset-block-start: 0.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  transform: translateX(-50%);
+  color: var(--tone);
+  font-size: 0.68rem;
+  white-space: nowrap;
+}
+
+.scaleLabel b {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.scaleAxis {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  color: var(--obs-muted);
+  font: 400 0.62rem / 1 var(--obs-mono);
+}
+
+.latencyReadout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ds-space-3);
+  padding-block-start: var(--ds-space-3);
+  border-block-start: 1px solid var(--obs-rule);
+}
+
+@media (min-width: 36rem) {
+  .latencyReadout {
+    grid-template-columns: minmax(10rem, 0.65fr) minmax(0, 1fr);
+    gap: var(--ds-space-5);
+    align-items: start;
+  }
+}
+
+.readoutKicker {
+  display: block;
+  color: var(--obs-muted);
+  font-size: 0.68rem;
+  margin-block-end: 0.35rem;
+}
+
+.readoutHeadline {
+  display: block;
+  color: var(--obs-ink);
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: var(--ds-weight-extrabold);
+  letter-spacing: -0.055em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.readoutCopy {
+  display: block;
+  max-inline-size: 18ch;
+  color: var(--obs-muted);
+  font-size: 0.72rem;
+  line-height: 1.5;
+  margin-block-start: 0.35rem;
+}
+
+/* ── dl صف خوانش‌ها ──────────────────────── */
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  padding-block: 0.55rem;
+  border-block-start: 1px solid var(--obs-rule);
+  min-inline-size: 0;
+}
+
+.row:first-child {
+  border-block-start: none;
+}
+
+.rowKey {
+  color: var(--obs-muted);
+  font-size: var(--ds-text-xs);
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.rowVal {
+  color: var(--obs-ink);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  flex: none;
+}
+
+.rowVal[data-tone="bad"] {
+  color: var(--obs-bad);
+}
+
+.rowVal[data-tone="ok"] {
+  color: var(--obs-ok);
+}
+
+/* یادداشت اطلاعاتی زیر بخش */
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-2);
+  margin: 0;
+  padding: var(--ds-space-3);
+  border: 1px solid var(--obs-rule);
+  border-radius: var(--ds-radius-md);
+  background: color-mix(in oklch, var(--obs-accent) 5%, var(--obs-recess));
+  color: var(--obs-muted);
+  font-size: var(--ds-text-xs);
+  line-height: var(--ds-leading-relaxed);
+}
+
+.note svg {
+  flex: none;
+  color: var(--obs-accent);
+  margin-block-start: 0.1rem;
+}
+
+/* ═══════════════ نوار روز (DayStrip) ═══════════════ */
+
+.strip {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--ds-space-4);
+  min-inline-size: 0;
+}
+
+@media (min-width: 40rem) {
+  .strip {
+    grid-template-columns: 1fr minmax(9rem, 13rem);
+    gap: var(--ds-space-5);
+    align-items: start;
+  }
+}
+
+.stripMain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  min-inline-size: 0;
+}
+
+.stripHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  color: var(--obs-muted);
+  font-size: 0.66rem;
+}
+
+.stripHeader span:last-child {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.legendVolume,
+.legendError {
+  display: inline-block;
+  inline-size: 0.65rem;
+  block-size: 0.65rem;
+  border-radius: 2px;
+}
+
+.legendVolume {
+  background: color-mix(in oklch, var(--obs-accent) 60%, transparent);
+}
+
+.legendError {
+  background: var(--obs-bad);
+}
+
+.stripScroller {
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-block-end: var(--ds-space-1);
+}
+
+.stripScroller::-webkit-scrollbar {
+  display: none;
+}
+
+.stripList {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  block-size: 5rem;
+  min-inline-size: max-content;
+  direction: ltr;
+}
+
+.stripCol {
+  flex: 1 0 auto;
+  min-inline-size: 0.65rem;
+  max-inline-size: 2rem;
+  block-size: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.stripBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-1);
+  inline-size: 100%;
+  block-size: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.stripBtn:focus-visible {
+  outline: 2px solid var(--obs-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.stripTrack {
+  position: relative;
+  inline-size: 100%;
+  flex: 1 1 auto;
+  border-radius: 2px 2px 0 0;
+  background: color-mix(in oklch, var(--obs-ink) 6%, transparent);
+  overflow: hidden;
+}
+
+.stripFill {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline: 0;
+  border-radius: inherit;
+  background: color-mix(in oklch, var(--obs-accent) 55%, transparent);
+  transition: block-size var(--obs-base) var(--obs-ease);
+}
+
+.stripBtn[data-active="true"] .stripFill {
+  background: var(--obs-accent);
+}
+
+.stripErr {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline: 0;
+  border-radius: inherit;
+  background: var(--obs-bad);
+  opacity: 0.75;
+  transition: block-size var(--obs-base) var(--obs-ease);
+}
+
+.stripTick {
+  flex: none;
+  color: var(--obs-muted);
+  font: 400 0.58rem / 1 var(--obs-mono);
+  white-space: nowrap;
+  padding-block-end: 2px;
+}
+
+.stripAxis {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  color: var(--obs-muted);
+  font-size: 0.6rem;
+}
+
+/* جعبهٔ خوانش ساعت انتخابی */
+.readout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-3);
+  border: 1px solid var(--obs-rule);
+  border-radius: var(--ds-radius-md);
+  background: var(--obs-raise);
+  min-inline-size: 0;
+}
+
+.readoutHour {
+  margin: 0;
+  color: var(--obs-muted);
+  font: 500 0.66rem / 1 var(--obs-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.readoutValue {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  margin: 0;
+  color: var(--obs-ink);
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+
+.readoutUnit {
+  color: var(--obs-muted);
+  font-size: 0.72rem;
+  font-weight: var(--ds-weight-medium);
+  letter-spacing: 0;
+}
+
+/* ═══════════════ جدول ═══════════════ */
+
+.tableWrap {
+  overflow-x: auto;
+  min-inline-size: 0;
+}
+
+.table {
+  inline-size: 100%;
+  min-inline-size: 34rem;
+  border-collapse: collapse;
+  font-size: var(--ds-text-xs);
+}
+
+.table thead th {
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-block-end: 1px solid var(--obs-rule-2);
+  color: var(--obs-muted);
+  font-size: 0.64rem;
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: 0.06em;
+  text-align: start;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.table tbody tr {
+  border-block-start: 1px solid var(--obs-rule);
+  transition: background-color var(--obs-fast) var(--obs-ease);
+}
+
+.table tbody tr:first-child {
+  border-block-start: none;
+}
+
+.table tbody tr:hover {
+  background: color-mix(in oklch, var(--obs-accent) 3%, transparent);
+}
+
+.table tbody td {
+  padding: var(--ds-space-2-5) var(--ds-space-3);
+  vertical-align: middle;
+}
+
+.duration {
+  color: var(--tone);
+  font: 600 var(--ds-text-sm) / 1 var(--obs-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ═══════════════ یافته‌های خودکار (InsightStack) ═══════════════
+   کلاس‌های insights/insight در deck.module.css هستند. اینجا نیست.
+   ════════════════════════════════════════════════════════════════ */

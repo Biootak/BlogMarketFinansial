@@ -4,25 +4,51 @@ import { ArrowUpLeft, ServerOff } from 'lucide-react';
 import Link from 'next/link';
 
 import type { ServiceHealth } from '@/lib/observability';
-import { faNum, faPercent, msShort, ratio } from './format';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
+import { faNum, faPercent, msShort, ratio } from './format';
 import s from './obs.module.css';
 
-const STATUS_LABEL: Record<string, string> = { healthy: 'سالم', degraded: 'کند', down: 'قطع', idle: 'بی‌صدا', unknown: 'نامشخص' };
-const STATUS_TONE: Record<string, 'ok' | 'warn' | 'bad' | 'idle'> = { healthy: 'ok', degraded: 'warn', down: 'bad', idle: 'idle' };
+const STATUS_LABEL: Record<string, string> = {
+  healthy: 'سالم',
+  degraded: 'کند',
+  down: 'قطع',
+  idle: 'بی‌صدا',
+  unknown: 'نامشخص',
+};
+const STATUS_TONE: Record<string, 'ok' | 'warn' | 'bad' | 'idle'> = {
+  healthy: 'ok',
+  degraded: 'warn',
+  down: 'bad',
+  idle: 'idle',
+};
 const RISK: Record<string, number> = { down: 0, degraded: 1, healthy: 2, idle: 3 };
-const byRisk = (a: ServiceHealth, b: ServiceHealth): number => { const delta = (RISK[a.status] ?? 9) - (RISK[b.status] ?? 9); return delta !== 0 ? delta : b.errors24h - a.errors24h; };
+const byRisk = (a: ServiceHealth, b: ServiceHealth): number => {
+  const delta = (RISK[a.status] ?? 9) - (RISK[b.status] ?? 9);
+  return delta !== 0 ? delta : b.errors24h - a.errors24h;
+};
 
 export function ServiceLadder({ limit }: { limit?: number }) {
   const { data } = useObs();
   const services = [...(data?.services ?? [])].sort(byRisk);
-  if (services.length === 0) return <ObsEmpty icon={ServerOff} title="سرویسی زیر نظر نیست" hint="فهرست سرویس‌ها از تعریف زیرساخت می‌آید و وضعیت هرکدام از لاگ‌های همان منبع محاسبه می‌شود." />;
+  if (services.length === 0)
+    return (
+      <ObsEmpty
+        icon={ServerOff}
+        title="سرویسی زیر نظر نیست"
+        hint="فهرست سرویس‌ها از تعریف زیرساخت می‌آید و وضعیت هرکدام از لاگ‌های همان منبع محاسبه می‌شود."
+      />
+    );
   const rows = typeof limit === 'number' ? services.slice(0, limit) : services;
 
   return (
     <div className={s.serviceTable}>
-      <div className={s.serviceTableHead}><span>سرویس و وضعیت</span><span>روند ۲۴ ساعت</span><span>شاخص‌ها</span><span>عملیات</span></div>
+      <div className={s.serviceTableHead}>
+        <span>سرویس و وضعیت</span>
+        <span>روند ۲۴ ساعت</span>
+        <span>شاخص‌ها</span>
+        <span>عملیات</span>
+      </div>
       <ul className={s.ladder}>
         {rows.map((service, index) => {
           const tone = STATUS_TONE[service.status] ?? 'idle';
@@ -31,10 +57,46 @@ export function ServiceLadder({ limit }: { limit?: number }) {
             <li key={service.id} className={s.ladderRow} data-tone={tone}>
               <span className={s.ladderRank}>۰{index + 1}</span>
               <span className={s.ladderDot} aria-hidden />
-              <span className={s.ladderName}><Link href={service.href} className={s.ladderTitle}>{service.name}</Link><span className={s.ladderDesc}>{service.desc}</span><span className={s.ladderStatus}>{STATUS_LABEL[service.status] ?? service.status}</span></span>
-              <span className={s.ladderSpark} aria-label="روند ساعتی" aria-hidden="true">{service.sparkline.map((value, sparkIndex) => <span key={sparkIndex} className={s.sparkBar} style={{ blockSize: `${ratio(value, max, 6)}%` }} />)}</span>
-              <span className={s.ladderNums}><span><small>تأخیر</small><strong>{msShort(service.latencyMs)}</strong></span><span><small>دسترس‌پذیری</small><strong>{faPercent(service.uptime24h, 2)}</strong></span><span><small>خطا</small><strong>{faNum(service.errors24h)}</strong></span></span>
-              <Link href={service.href} className={s.ladderOpen} aria-label={`باز کردن ${service.name}`}><ArrowUpLeft size={15} aria-hidden="true" /></Link>
+              <span className={s.ladderName}>
+                <Link href={service.href} className={s.ladderTitle}>
+                  {service.name}
+                </Link>
+                <span className={s.ladderDesc}>{service.desc}</span>
+                <span className={s.ladderStatus}>
+                  {STATUS_LABEL[service.status] ?? service.status}
+                </span>
+              </span>
+              <span className={s.ladderSpark} aria-label="روند ساعتی" aria-hidden="true">
+                {service.sparkline.map((value, sparkIndex) => (
+                  <span
+                    // biome-ignore lint/suspicious/noArrayIndexKey: sparkline positional — index is identity
+                    key={sparkIndex}
+                    className={s.sparkBar}
+                    style={{ blockSize: `${ratio(value, max, 6)}%` }}
+                  />
+                ))}
+              </span>
+              <span className={s.ladderNums}>
+                <span>
+                  <small>تأخیر</small>
+                  <strong>{msShort(service.latencyMs)}</strong>
+                </span>
+                <span>
+                  <small>دسترس‌پذیری</small>
+                  <strong>{faPercent(service.uptime24h, 2)}</strong>
+                </span>
+                <span>
+                  <small>خطا</small>
+                  <strong>{faNum(service.errors24h)}</strong>
+                </span>
+              </span>
+              <Link
+                href={service.href}
+                className={s.ladderOpen}
+                aria-label={`باز کردن ${service.name}`}
+              >
+                <ArrowUpLeft size={15} aria-hidden="true" />
+              </Link>
             </li>
           );
         })}

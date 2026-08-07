@@ -1,17 +1,9 @@
 'use client';
 
-import { readHealth } from './obsHealth';
-import {
-  cssVars,
-  faNum,
-  faPercent,
-  mbShort,
-  msShort,
-  ratio,
-  uptimeFa,
-} from './format';
 import { useObs } from './ObsProvider';
 import d from './deck.module.css';
+import { cssVars, faNum, faPercent, mbShort, msShort, ratio, uptimeFa } from './format';
+import { readHealth } from './obsHealth';
 
 interface Reading {
   key: string;

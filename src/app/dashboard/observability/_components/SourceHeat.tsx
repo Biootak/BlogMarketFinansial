@@ -4,9 +4,9 @@ import { Grid2x2 } from 'lucide-react';
 import { Fragment } from 'react';
 import type { CSSProperties } from 'react';
 
-import { bucketLabel, faNum } from './format';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
+import { bucketLabel, faNum } from './format';
 import h from './heat.module.css';
 
 /**

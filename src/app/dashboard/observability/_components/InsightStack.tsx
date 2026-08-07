@@ -14,11 +14,11 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 
-import { bucketLabel, faNum, faPercent, msShort, statusLabel, type ToneKey } from './format';
-import { readHealth } from './obsHealth';
 import { useObs } from './ObsProvider';
 import { ObsEmpty } from './ObsSection';
 import d from './deck.module.css';
+import { type ToneKey, bucketLabel, faNum, faPercent, msShort, statusLabel } from './format';
+import { readHealth } from './obsHealth';
 
 interface Finding {
   id: string;
@@ -69,7 +69,9 @@ export function InsightStack() {
     });
   }
 
-  const noisiest = [...data.sources].filter((item) => item.errors > 0).sort((a, b) => b.errors - a.errors)[0];
+  const noisiest = [...data.sources]
+    .filter((item) => item.errors > 0)
+    .sort((a, b) => b.errors - a.errors)[0];
 
   if (noisiest) {
     findings.push({

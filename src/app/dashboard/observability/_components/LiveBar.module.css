@@ -78,7 +78,7 @@
 }
 
 .cursor::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block-start: -0.15rem;
   inset-inline-start: -0.19rem;
@@ -143,7 +143,7 @@
 
 .keyVolume::before,
 .keyError::before {
-  content: '';
+  content: "";
   inline-size: 0.85rem;
   block-size: 0;
   border-block-start: 2px solid var(--obs-accent);
