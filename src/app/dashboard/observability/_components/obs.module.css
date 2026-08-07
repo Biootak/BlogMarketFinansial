@@ -1,2 +1,351 @@
-/* Shared observability surface plus refreshed service table. */
-.metric{display:inline-block;direction:ltr;font-variant-numeric:tabular-nums}.mono{font-family:var(--ds-font-mono)}.section{--obs-tone:var(--obs-idle);container-type:inline-size;display:flex;flex-direction:column;min-inline-size:0}.section[data-tone='ok']{--obs-tone:var(--obs-ok)}.section[data-tone='warn']{--obs-tone:var(--obs-warn)}.section[data-tone='bad']{--obs-tone:var(--obs-bad)}.sectionHead{display:grid;grid-template-columns:2rem minmax(0,1fr) auto;align-items:start;gap:var(--ds-space-2);padding-block-end:var(--ds-space-3);border-block-end:1px solid var(--obs-rule-strong)}.sectionIndex{font:.68rem var(--ds-font-mono);color:var(--ds-text-muted)}.sectionIndex::before{content:counter(obs-entry,decimal-leading-zero)}.sectionHeadText{min-inline-size:0}.sectionTitle{display:flex;align-items:center;gap:var(--ds-space-2);margin:0;color:var(--ds-text-primary);font-size:var(--ds-text-lg);font-weight:var(--ds-weight-bold)}.sectionTitle svg{color:var(--obs-tone)}.sectionHint{max-inline-size:62ch;margin:var(--ds-space-1) 0 0;color:var(--ds-text-muted);font-size:var(--ds-text-xs);line-height:1.6}.sectionBody{min-inline-size:0;padding-block-start:var(--ds-space-4)}.empty{display:grid;gap:var(--ds-space-2);padding-block:var(--ds-space-6);color:var(--ds-text-muted)}.emptyTitle,.emptyHint{margin:0}.emptyTitle{font-weight:700}.emptyHint{font-size:var(--ds-text-xs)}.rows{display:flex;flex-direction:column;margin:0}.row{display:flex;justify-content:space-between;gap:var(--ds-space-2);padding-block:var(--ds-space-2);border-block-end:1px dashed var(--obs-rule)}.rowKey{color:var(--ds-text-muted);font-size:.72rem}.rowVal{margin:0;color:var(--tone,var(--ds-text-primary));font-weight:700;font-variant-numeric:tabular-nums}.rowVal[data-tone='ok']{--tone:var(--obs-ok)}.rowVal[data-tone='bad']{--tone:var(--obs-bad)}.serviceTable{display:flex;flex-direction:column;gap:var(--ds-space-2)}.serviceTableHead{display:grid;grid-template-columns:minmax(12rem,1.3fr) minmax(7rem,.7fr) minmax(15rem,1.4fr) 2rem;gap:var(--ds-space-3);padding:0 var(--ds-space-3) var(--ds-space-2);border-block-end:1px solid var(--obs-rule-strong);color:var(--ds-text-muted);font-size:.62rem}.ladder{display:flex;flex-direction:column;gap:var(--ds-space-2);margin:0;padding:0;list-style:none}.ladderRow{--tone:var(--obs-idle);display:grid;grid-template-columns:1.5rem .55rem minmax(12rem,1.2fr) minmax(7rem,.75fr) minmax(15rem,1.4fr) 2rem;align-items:center;gap:var(--ds-space-3);padding:var(--ds-space-3);border:1px solid var(--obs-rule);border-radius:var(--ds-radius-md);background:var(--ds-surface-elevated);transition:transform .15s ease,border-color .15s ease}.ladderRow[data-tone='ok']{--tone:var(--obs-ok)}.ladderRow[data-tone='warn']{--tone:var(--obs-warn)}.ladderRow[data-tone='bad']{--tone:var(--obs-bad)}.ladderRow:hover{transform:translateY(-1px);border-color:var(--tone)}.ladderRank{font:.68rem var(--ds-font-mono);color:var(--ds-text-muted)}.ladderDot{inline-size:.55rem;block-size:.55rem;border-radius:50%;background:var(--tone);box-shadow:0 0 0 4px color-mix(in oklch,var(--tone) 12%,transparent)}.ladderName{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:.2rem .6rem;min-inline-size:0}.ladderTitle{color:var(--ds-text-primary);font-size:var(--ds-text-sm);font-weight:700;text-decoration:none}.ladderDesc{grid-column:1;overflow:hidden;color:var(--ds-text-muted);font-size:.66rem;text-overflow:ellipsis;white-space:nowrap}.ladderStatus{grid-column:2;grid-row:1 / span 2;padding:.25rem .55rem;border:1px solid color-mix(in oklch,var(--tone) 30%,transparent);border-radius:999px;color:var(--tone);background:color-mix(in oklch,var(--tone) 9%,transparent);font-size:.62rem;white-space:nowrap}.ladderSpark{display:flex;align-items:end;gap:2px;height:2.25rem;padding-inline:.35rem;border-block-end:1px solid color-mix(in oklch,var(--tone) 25%,var(--obs-rule))}.sparkBar{flex:1;min-inline-size:2px;max-inline-size:5px;border-radius:2px 2px 0 0;background:color-mix(in oklch,var(--tone) 58%,transparent)}.ladderNums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--ds-space-2)}.ladderNums span{display:flex;flex-direction:column;gap:.15rem}.ladderNums small{color:var(--ds-text-muted);font-size:.6rem;white-space:nowrap}.ladderNums strong{color:var(--tone);font-size:.78rem;white-space:nowrap}.ladderOpen{display:grid;place-items:center;width:2rem;height:2rem;border-radius:50%;color:var(--tone);background:color-mix(in oklch,var(--tone) 10%,transparent)}.latencySurface{display:grid;gap:var(--ds-space-4)}.scale{padding-block:var(--ds-space-5)}.scaleTrack{position:relative;min-height:.45rem;border-radius:999px;background:linear-gradient(90deg,var(--obs-ok),var(--obs-warn),var(--obs-bad))}.scaleMark{position:absolute;inset-block:-.35rem;width:2px;background:var(--tone)}.scaleLabel{position:absolute;inset-block-end:1rem;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;color:var(--ds-text-muted);font-size:.62rem}.scaleLabel b{color:var(--tone);font-size:var(--ds-text-sm)}.scaleMarkOk{--tone:var(--obs-ok)}.scaleMarkWarn{--tone:var(--obs-warn)}.scaleMarkBad{--tone:var(--obs-bad)}.scaleAxis{display:flex;justify-content:space-between;color:var(--ds-text-muted);font-size:.62rem}.note{display:flex;gap:var(--ds-space-2);padding:var(--ds-space-3);border:1px solid var(--obs-rule);border-radius:var(--ds-radius-md);color:var(--ds-text-muted);font-size:.72rem;line-height:1.6}.strip{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--ds-space-4)}.stripList{display:flex;align-items:end;gap:.35rem;min-inline-size:34rem;height:10rem;margin:0;padding:0 var(--ds-space-2) var(--ds-space-2);list-style:none;border-block-end:1px solid var(--obs-rule)}.stripCol{display:flex;flex:1}.stripBtn{display:flex;flex:1;flex-direction:column;align-items:center;justify-content:end;gap:.25rem;border:0;background:none}.stripTrack{display:block;width:1.35rem;height:100%;background:var(--ds-surface-recessed)}.stripFill,.stripErr{display:block;width:100%;border-radius:inherit}.stripFill{background:var(--obs-data)}.stripErr{background:var(--obs-bad)}.readout{padding:var(--ds-space-3);border:1px solid var(--obs-rule);border-radius:var(--ds-radius-md);background:var(--ds-surface-recessed)}.readoutValue{font-size:var(--ds-text-2xl);font-weight:700}@media(max-width:60rem){.serviceTableHead{display:none}.ladderRow{grid-template-columns:1.25rem .55rem minmax(0,1fr) 2rem}.ladderName{grid-column:3}.ladderSpark,.ladderNums{grid-column:3 / -1}.ladderOpen{grid-column:4;grid-row:1}.ladderSpark{grid-row:2}.ladderNums{grid-row:3}}@media(max-width:34rem){.ladderNums small{font-size:.55rem}.ladderNums strong{font-size:.7rem}}
+/* ============================================================================
+   Observability — کروم مدخل‌ها و اتم‌های مشترک
+   ----------------------------------------------------------------------------
+   هر چیزی که بیش از یک board لازمش دارد اینجاست و فقط اینجا: سرصفحهٔ مدخل،
+   خالی‌بودن، بج، نقطهٔ وضعیت، «خوانش» (برچسب/عدد/واحد)، ریل عددی و ظرفِ LTR.
+   هیچ board ای اجازه ندارد نسخهٔ محلی این‌ها را دوباره بنویسد.
+   ============================================================================ */
+
+/* ═══════════════ مدخل ═══════════════ */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  min-inline-size: 0;
+}
+
+.head {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-3);
+  padding-block-start: var(--ds-space-3);
+  border-block-start: 1px solid var(--obs-rule-2);
+}
+
+/*
+   شمارهٔ مدخل روی خط می‌نشیند و آن را می‌شکند — همان کاری که سالنامه‌های چاپی
+   با شمارهٔ فصل می‌کنند. شمارنده در CSS است نه در props، پس ترتیب DOM منبع
+   حقیقت است و هیچ صفحه‌ای مجبور نیست شماره پاس بدهد.
+*/
+.index {
+  flex: none;
+  inline-size: 1.75rem;
+  margin-block-start: -0.9rem;
+  padding-block-end: 0.15rem;
+  background: var(--obs-paper);
+  color: var(--obs-muted);
+  font: 500 0.68rem / 1 var(--obs-mono);
+  letter-spacing: 0.04em;
+}
+
+.index::before {
+  counter-increment: obs-entry;
+  content: counter(obs-entry, persian);
+}
+
+.section[data-variant='plain'] .index {
+  display: none;
+}
+
+.section[data-variant='plain'] .head {
+  border-block-start-color: var(--obs-rule);
+}
+
+.headText {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  margin-block-start: -0.15rem;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin: 0;
+  color: var(--obs-ink);
+  font-size: var(--ds-text-base);
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: var(--nova-tracking-tight);
+  line-height: 1.3;
+}
+
+.title svg {
+  flex: none;
+  color: var(--tone);
+}
+
+.hint {
+  max-inline-size: 68ch;
+  margin: 0.35rem 0 0;
+  color: var(--obs-muted);
+  font-size: var(--ds-text-xs);
+  line-height: var(--ds-leading-relaxed);
+  text-wrap: pretty;
+}
+
+.actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.body {
+  min-inline-size: 0;
+}
+
+/* ═══════════════ خالی‌بودن ═══════════════
+   حالت خالی یک وضعیت است نه یک اشتباه؛ پس صادق و آرام نوشته می‌شود. */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  padding: var(--ds-space-5) var(--ds-space-4);
+  border: 1px dashed var(--obs-rule-2);
+  border-radius: var(--ds-radius-md);
+  background: var(--obs-recess);
+}
+
+.emptyIcon {
+  color: var(--obs-muted);
+}
+
+.emptyTitle {
+  margin: 0.25rem 0 0;
+  color: var(--obs-ink-2);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+}
+
+.emptyHint {
+  max-inline-size: 52ch;
+  margin: 0;
+  color: var(--obs-muted);
+  font-size: var(--ds-text-xs);
+  line-height: var(--ds-leading-relaxed);
+}
+
+/* ═══════════════ اتم‌ها ═══════════════ */
+
+/* بج کوچک وضعیت/سطح — رنگ از --tone می‌آید، نه از کلاس رنگی */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid color-mix(in oklch, var(--tone) 32%, transparent);
+  border-radius: var(--ds-radius-sm);
+  background: color-mix(in oklch, var(--tone) 10%, transparent);
+  color: color-mix(in oklch, var(--tone) 78%, var(--obs-ink));
+  font-size: 0.68rem;
+  font-weight: var(--ds-weight-medium);
+  white-space: nowrap;
+}
+
+/* نقطهٔ وضعیت — رنگ هرگز تنها نشانه نیست؛ همیشه کنارش متن هست */
+.dot {
+  flex: none;
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--tone);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--tone) 16%, transparent);
+}
+
+/* نبض آرام ۰٫۵ هرتز — «زنده ولی ساکت». فقط opacity، پس ارزان است. */
+.dot[data-live='true'] {
+  animation: obs-breath 2s var(--obs-ease) infinite;
+}
+
+@keyframes obs-breath {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* خوانش: برچسب کوچک، عدد جدولی، واحد ایزوله */
+.fig {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-inline-size: 0;
+}
+
+.figLabel {
+  color: var(--obs-muted);
+  font-size: 0.68rem;
+  font-weight: var(--ds-weight-medium);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.figValue {
+  color: var(--obs-ink);
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--nova-tracking-tight);
+  line-height: 1.15;
+}
+
+.figNote {
+  color: var(--obs-muted);
+  font-size: 0.68rem;
+  line-height: 1.5;
+}
+
+/* متن لاتین/کد — همیشه داخل bdi استفاده می‌شود تا در متن RTL نشکند */
+.mono {
+  font-family: var(--obs-mono);
+  font-size: 0.72rem;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+/* نوار نسبت — ریل + پرکن. عرض از --fill می‌آید که JS ست می‌کند. */
+.track {
+  position: relative;
+  block-size: 0.3rem;
+  border-radius: var(--ds-radius-full);
+  background: color-mix(in oklch, var(--obs-ink) 8%, transparent);
+  overflow: hidden;
+}
+
+.bar {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: var(--fill, 0%);
+  border-radius: inherit;
+  background: var(--tone);
+  transition: inline-size var(--obs-base) var(--obs-ease);
+}
+
+/* سهم خطا روی همان ریل — لایهٔ دوم، همیشه از همان لبه شروع می‌شود */
+.barAlt {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: var(--fill-alt, 0%);
+  border-radius: inherit;
+  background: var(--obs-bad);
+  transition: inline-size var(--obs-base) var(--obs-ease);
+}
+
+/*
+   ظرف محور زمان.
+   قاعدهٔ صریح این پروژه: **سری زمانی همیشه LTR است**. صفحه راست‌به‌چپ است،
+   ولی «گذشت زمان از چپ به راست» قرارداد جهانی نمودار است و برگرداندنش باعث
+   می‌شود خواننده ساعت جاری را در سمت اشتباه بجوید. پس این ظرف direction را
+   قفل می‌کند و همهٔ محورهای زمانی داخل آن می‌نشینند. برچسب‌های فارسیِ کنار
+   محور بیرون این ظرف می‌مانند.
+*/
+.ltr {
+  direction: ltr;
+  min-inline-size: 0;
+}
+
+/* لیست بدون نشانه — پایهٔ همهٔ نردبان‌ها و دفترها */
+.list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* جداکنندهٔ مویی بین ردیف‌ها؛ ردیف اول خط ندارد */
+.list > li + li {
+  border-block-start: 1px solid var(--obs-rule);
+}
+
+/* دکمهٔ خطی کوچک — برای اکشن‌های داخل سرصفحهٔ مدخل */
+.ghostButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-block-size: 2.25rem;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--obs-rule-2);
+  border-radius: var(--ds-radius-sm);
+  background: transparent;
+  color: var(--obs-ink-2);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  cursor: pointer;
+  transition:
+    border-color var(--obs-fast) var(--obs-ease),
+    color var(--obs-fast) var(--obs-ease),
+    background-color var(--obs-fast) var(--obs-ease);
+}
+
+.ghostButton:hover:not(:disabled) {
+  border-color: var(--obs-accent);
+  color: var(--obs-accent);
+  background: color-mix(in oklch, var(--obs-accent) 7%, transparent);
+}
+
+.ghostButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ghostButton:focus-visible {
+  outline: 2px solid var(--obs-accent);
+  outline-offset: 2px;
+}
+
+/* ═══════════════ اسکلت ═══════════════ */
+
+.skelBar,
+.skelHero,
+.skelRow {
+  border-radius: var(--ds-radius-md);
+  background: linear-gradient(
+    100deg,
+    var(--obs-recess) 30%,
+    color-mix(in oklch, var(--obs-recess) 55%, var(--obs-paper)) 50%,
+    var(--obs-recess) 70%
+  );
+  background-size: 220% 100%;
+  animation: obs-shimmer 1.5s linear infinite;
+}
+
+.skelBar {
+  block-size: 2.5rem;
+}
+
+.skelHero {
+  block-size: 12rem;
+}
+
+.skelRows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+.skelRow {
+  block-size: 3.25rem;
+}
+
+.skelRow:nth-child(2n) {
+  opacity: 0.75;
+}
+
+@keyframes obs-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -20% 0;
+  }
+}

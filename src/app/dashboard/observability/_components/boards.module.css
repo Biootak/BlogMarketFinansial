@@ -1,1 +1,191 @@
-.wide,.eight,.seven,.six,.five,.four{grid-column:auto;min-inline-size:0}.tabLayout{display:flex;flex-direction:column;gap:clamp(1.5rem,3vw,3rem);inline-size:100%;min-inline-size:0}.tabIntro{display:grid;grid-template-columns:minmax(0,1fr) minmax(14rem,20rem);justify-content:initial;align-items:end;gap:clamp(1.5rem,5vw,4rem);padding-block:clamp(1rem,3vw,2.5rem) .75rem;border-block-end:1px solid var(--ds-border-subtle)}.tabEyebrow{display:block;margin-block-end:.75rem;color:var(--nova-primary);font:.68rem var(--ds-font-mono);letter-spacing:.12em;direction:ltr}.tabTitle{max-inline-size:32ch;margin:0;color:var(--ds-text-primary);font-size:clamp(1.8rem,3vw,3.4rem);font-weight:850;letter-spacing:-.045em;line-height:1.08;text-wrap:balance}.tabLead{max-inline-size:62ch;margin:1rem 0 0;color:var(--ds-text-muted);font-size:.82rem;line-height:1.75}.tabStamp{display:grid;align-self:center;gap:.3rem;min-inline-size:0;padding:1rem 1.1rem;border:1px solid var(--ds-border-subtle);border-radius:1rem;background:var(--ds-surface-recessed);color:var(--ds-text-muted);font-size:.68rem}.tabStamp strong{color:var(--ds-text-primary);font-size:.78rem}.tabStamp[data-tone='bad'] strong{color:var(--nova-down)}.tabGrid{display:grid;grid-template-columns:minmax(0,1fr);inline-size:100%;gap:clamp(2rem,5vw,4rem) clamp(1.25rem,3vw,3rem);align-items:start}.featured{padding:clamp(1rem,3vw,2rem);border:1px solid var(--ds-border-subtle);border-radius:1.25rem;background:var(--ds-surface-elevated);box-shadow:var(--ds-shadow-sm)}.insightPanel{padding:1rem;border-radius:1rem;background:color-mix(in oklch,var(--nova-primary) 4%,var(--ds-surface))}.alertSurface{background:color-mix(in oklch,var(--nova-down) 3%,var(--ds-surface-elevated))}@media(min-width:64rem){.tabGrid{grid-template-columns:minmax(0,1.4fr) minmax(20rem,.8fr);gap:clamp(2rem,4vw,4rem) clamp(1.5rem,3vw,3rem)}.wide{grid-column:1 / -1}.eight,.seven,.six,.five,.four{grid-column:auto}.tabGrid>.featured.eight,.tabGrid>.featured.seven{min-block-size:28rem}}@media(max-width:48rem){.tabIntro{grid-template-columns:1fr;align-items:start}.tabStamp{inline-size:100%}.tabTitle{font-size:2.35rem;max-inline-size:24ch}}
+/* ============================================================================
+   Observability — گرید سالنامه
+   ----------------------------------------------------------------------------
+   Mobile first. زیر ۶۴rem همه‌چیز تک‌ستونی است و کلاس‌های span اصلاً وجود
+   ندارند تا ستون ضمنی ساخته نشود.
+
+   چیدمان عمداً متقارن نیست. سه ابزار برای شکستن «شبکهٔ کارت‌های یک‌اندازه»:
+     ۱. ستون‌های نابرابر (۷/۵ و ۸/۴) که در هر صفحه ترتیبشان عوض می‌شود.
+     ۲. ریلِ حاشیه: یک خط مویی عمودی که همهٔ مدخل‌ها را به یک نخ می‌بندد و
+        شمارهٔ مدخل‌ها روی آن می‌نشینند. با ::before رسم می‌شود، پس هیچ آیتم
+        گرید اضافه‌ای نمی‌سازد و صفر هزینهٔ layout دارد.
+     ۳. ریتم پلکانی: مدخل دوم هر جفت کمی دیرتر شروع می‌شود تا ردیف‌ها
+        خط‌کشی‌شده به نظر نرسند. padding است نه transform، چون باید فضای
+        واقعی بگیرد.
+   ============================================================================ */
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.75rem, 3.5vw, 3rem);
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+
+/* ── سرصفحهٔ مدخلِ صفحه ─────────────────────────────────────── */
+
+.intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ds-space-4);
+  padding-block-end: var(--ds-space-4);
+  border-block-end: 1px solid var(--obs-rule-2);
+}
+
+@media (min-width: 48rem) {
+  .intro {
+    grid-template-columns: minmax(0, 1fr) minmax(12rem, 17rem);
+    align-items: end;
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    padding-block: clamp(0.5rem, 2vw, 1.5rem) var(--ds-space-5);
+  }
+}
+
+.eyebrow {
+  display: block;
+  margin-block-end: 0.65rem;
+  color: var(--obs-accent);
+  font: 500 0.66rem / 1 var(--obs-mono);
+  letter-spacing: 0.14em;
+  direction: ltr;
+  text-align: start;
+}
+
+.title {
+  max-inline-size: 26ch;
+  margin: 0;
+  color: var(--obs-ink);
+  font-size: clamp(1.65rem, 1.1rem + 2.4vw, 2.9rem);
+  font-weight: var(--ds-weight-extrabold);
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+.lead {
+  max-inline-size: 64ch;
+  margin: var(--ds-space-3) 0 0;
+  color: var(--obs-ink-2);
+  font-size: var(--ds-text-sm);
+  line-height: var(--ds-leading-relaxed);
+  text-wrap: pretty;
+}
+
+/*
+   «مهرِ» صفحه — قرارداد خواندن این تب را می‌گوید (پنجره، مرتب‌سازی، منبع).
+   کارت نیست: فقط یک خط مویی بالای متن و کمی تورفتگی. سه‌تا کارت کنار هم
+   دقیقاً همان کلیشه‌ای است که نمی‌خواهیم.
+*/
+.stamp {
+  display: grid;
+  gap: 0.3rem;
+  align-self: end;
+  padding-block-start: var(--ds-space-2);
+  border-block-start: 2px solid var(--tone);
+  color: var(--obs-muted);
+  font-size: 0.7rem;
+  line-height: 1.6;
+}
+
+.stamp strong {
+  color: var(--obs-ink);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+}
+
+/* ── گرید مدخل‌ها ───────────────────────────────────────────── */
+
+.board {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(2rem, 4vw, 3.25rem);
+  min-inline-size: 0;
+  counter-reset: obs-entry;
+}
+
+.span12,
+.span8,
+.span7,
+.span6,
+.span5,
+.span4 {
+  grid-column: auto;
+  min-inline-size: 0;
+}
+
+@media (min-width: 64rem) {
+  .board {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: clamp(2.25rem, 3.5vw, 3.5rem) var(--ds-space-6);
+    align-items: start;
+    grid-auto-flow: row dense;
+    padding-inline-start: var(--ds-space-5);
+  }
+
+  /* ریلِ حاشیه — نخی که مدخل‌ها را به هم می‌دوزد */
+  .board::before {
+    content: '';
+    position: absolute;
+    inset-block: 0.35rem 2rem;
+    inset-inline-start: 0;
+    inline-size: 1px;
+    background: linear-gradient(
+      to bottom,
+      var(--obs-rule-2),
+      var(--obs-rule) 60%,
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  .span12 {
+    grid-column: span 12;
+  }
+  .span8 {
+    grid-column: span 8;
+  }
+  .span7 {
+    grid-column: span 7;
+  }
+  .span6 {
+    grid-column: span 6;
+  }
+  .span5 {
+    grid-column: span 5;
+  }
+  .span4 {
+    grid-column: span 4;
+  }
+
+  /* پلکان — فقط برای مدخل‌های باریک، تا ردیف‌ها هم‌تراز نمانند */
+  .board > .span5:nth-child(2n),
+  .board > .span4:nth-child(2n) {
+    padding-block-start: var(--ds-space-6);
+  }
+}
+
+/*
+   تخته‌های ویژه.
+   «برجسته» یعنی کاغذ کمی بالاتر آمده، نه اینکه سایه و شیشه گرفته.
+   عمق از اختلاف روشنایی می‌آید، همان درسی که از Mercury گرفتیم.
+*/
+.featured {
+  padding: clamp(1rem, 2.5vw, 1.75rem);
+  border: 1px solid var(--obs-rule);
+  border-radius: var(--ds-radius-lg);
+  background: var(--obs-raise);
+  box-shadow: var(--ds-shadow-sm);
+}
+
+.recessed {
+  padding: clamp(0.875rem, 2vw, 1.35rem);
+  border-radius: var(--ds-radius-lg);
+  background: var(--obs-recess);
+}
+
+/* سطح هشدار — بسیار کم‌رنگ؛ رنگ اطلاعات است نه تزئین */
+.alert {
+  background: color-mix(in oklch, var(--obs-bad) 4%, var(--obs-raise));
+  border-color: color-mix(in oklch, var(--obs-bad) 18%, var(--obs-rule));
+}
