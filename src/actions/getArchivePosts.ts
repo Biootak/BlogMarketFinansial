@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { postCardInclude } from '@/lib/post-include';
 import type { ActionResult, PostWithRelations } from '@/types/types';
 import type { Prisma } from '@prisma/client';
 
@@ -28,42 +29,7 @@ export async function getArchivePosts(
         take: limit,
         skip,
         orderBy: { createdAt: 'desc' },
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-              profile: {
-                select: {
-                  avatar: true,
-                  jobName: true,
-                },
-              },
-            },
-          },
-          categories: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
-          tags: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
-          _count: {
-            select: {
-              comments: true,
-              likes: true,
-              savedBy: true,
-            },
-          },
-        },
+        include: postCardInclude,
       }),
       prisma.post.count({ where: whereCondition }),
     ]);

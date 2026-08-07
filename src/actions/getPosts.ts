@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { galleryPostCardInclude } from '@/lib/post-include';
 import { safeCache } from '@/lib/safe-cache';
 import type { PostWithRelations } from '@/types/types';
 
@@ -15,31 +16,7 @@ async function fetchPosts(limit: number): Promise<PostWithRelations[]> {
     where: { status: 'PUBLISHED', postType: 'GALLERY' },
     orderBy: { createdAt: 'desc' },
     omit: { content: true },
-    include: {
-      author: {
-        select: {
-          id: true,
-          name: true,
-          image: true,
-          profile: {
-            select: { avatar: true, jobName: true },
-          },
-        },
-      },
-      categories: {
-        select: { id: true, name: true, slug: true },
-      },
-      tags: {
-        select: { id: true, name: true, slug: true },
-        take: 5, // حداکثر ۵ تگ — بیشتر در کارت نمایش نمی‌شود
-      },
-      _count: {
-        select: {
-          comments: true,
-          likes: true,
-        },
-      },
-    },
+    include: galleryPostCardInclude,
   });
 
   return posts as PostWithRelations[];

@@ -5,30 +5,15 @@
  */
 
 import { Spotlight } from '@/components/Dashboard/primitives';
+import { useStaggerReveal } from '@/hooks/useStaggerReveal';
 import { Building2, ChevronLeft, Compass, Home, Search, SearchX } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef } from 'react';
 import s from './not-found.module.css';
 
 export default function ExchangeNotFound() {
   const pathname = usePathname();
-  const root = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!root.current) return;
-    const items = root.current.querySelectorAll<HTMLElement>('[data-stagger]');
-    items.forEach((el, i) => {
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(6px)';
-      requestAnimationFrame(() => {
-        el.style.transition = 'opacity 0.5s var(--nova-ease), transform 0.5s var(--nova-ease)';
-        el.style.transitionDelay = `${i * 60}ms`;
-        el.style.opacity = '1';
-        el.style.transform = 'translateY(0)';
-      });
-    });
-  }, []);
+  const root = useStaggerReveal();
 
   return (
     <div ref={root} className={s.root} dir="rtl">

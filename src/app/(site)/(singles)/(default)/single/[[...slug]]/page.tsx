@@ -7,6 +7,7 @@ import SingleContent from '@/app/(site)/(singles)/SingleContent';
 import SingleHeader from '@/app/(site)/(singles)/SingleHeader';
 import SingleRelatedPosts from '@/app/(site)/(singles)/SingleRelatedPosts';
 import NcImage from '@/components/NcImage/NcImage';
+import { buildPostMetadata } from '@/lib/post-metadata';
 import type { ActionResult, PostWithRelations } from '@/types/types';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -22,7 +23,7 @@ export interface PageProps {
   params: Promise<{ slug: string[] }>;
 }
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://financialmarket.page';
+const SITE_NAME = 'بیوتاک';
 
 /**
  * Prerender the most recent published slugs so article pages have static HTML
@@ -40,52 +41,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const postSlug = slug?.join('/') || '';
   const result = await getPostBySlug(postSlug);
 
-  if (!result.success || !result.data) {
-    return {
-      title: 'پست یافت نشد',
-    };
-  }
-
-  const post = result.data;
-  const postUrl = `${APP_URL}/single/${postSlug}`;
-  const imageUrl = post.featuredImage || `${APP_URL}/images/default-og.jpg`;
-
-  // استخراج توضیحات از محتوا (حذف HTML tags)
-  const description =
-    post.excerpt ||
-    (post.content
-      ? `${post.content.replace(/<[^>]*>/g, '').slice(0, 160)}...`
-      : 'بیوتاک - مرجع تحلیل بازارهای مالی');
-
-  return {
-    title: post.title,
-    description,
-    openGraph: {
-      title: post.title,
-      description,
-      url: postUrl,
-      siteName: 'بیوتاک',
-      images: [
-        {
-          url: imageUrl,
-          width: 1200,
-          height: 630,
-          alt: post.title,
-        },
-      ],
-      locale: 'fa_IR',
-      type: 'article',
-      publishedTime: post.createdAt ? new Date(post.createdAt).toISOString() : undefined,
-      modifiedTime: post.updatedAt ? new Date(post.updatedAt).toISOString() : undefined,
-      authors: post.author?.name ? [post.author.name] : undefined,
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: post.title,
-      description,
-      images: [imageUrl],
-    },
-  };
+  return buildPostMetadata({
+    post: result.success ? result.data : null,
+    path: `single/${postSlug}`,
+    siteName: SITE_NAME,
+  });
 }
 
 export default async function PageSingle({ params }: PageProps) {

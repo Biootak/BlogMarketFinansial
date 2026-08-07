@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { postCardInclude } from '@/lib/post-include';
 import { revalidatePath, revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
 import type { PostWithRelations } from '@/types/types';
@@ -71,42 +72,7 @@ async function fetchLatestPosts(
       // بدنه‌ی کامل مقاله (content) در کارت‌های لیست استفاده نمی‌شه؛ حذفش
       // از payload (DB → RSC → hydration) حجم صفحه‌ی اصلی رو کم می‌کنه.
       omit: { content: true },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
-            profile: {
-              select: {
-                avatar: true,
-                jobName: true,
-              },
-            },
-          },
-        },
-        categories: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
-        tags: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
-        _count: {
-          select: {
-            comments: true,
-            likes: true,
-            savedBy: true,
-          },
-        },
-      },
+      include: postCardInclude,
     });
 
     // فیلتر ثانویه: حذف رشته‌های خالی / placeholder های broken
