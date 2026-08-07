@@ -3,140 +3,139 @@
 **Repository:** `Biootak/BlogMarketFinansial`  
 **Branch audited:** `redesign/observability-almanac-2026`  
 **Audit date:** 2026-08-07  
-**Method:** static repository review, targeted source/config/schema inspection, route and security-boundary review. No build, deploy, database mutation, or runtime smoke test was executed.
+**Method:** repeated static repository review, targeted source/config/schema inspection, route and security-boundary review. No build, deploy, database mutation, or runtime smoke test was executed.
 
 ## Release decision
 
-**DO NOT DEPLOY.** The branch currently contains parser-breaking merge-conflict markers and multiple production-behavior defects. The conflict markers alone make the release a hard stop.
+**DO NOT DEPLOY.** The project has unresolved release blockers. A static audit is not a green release gate.
 
-## Confirmed critical blockers
+## Pass 1 findings
 
-### C-01: Merge-conflict markers remain in production source
-
-**Severity:** Critical  
-**Evidence:** `src/app/dashboard/observability/page.tsx` contains `<<<<<<< HEAD`, `=======`, and `>>>>>>>`. The reported build error at line 67 is a direct consequence. The same marker pattern was also found in observability stylesheets/components during the audit, including `observability.module.css`, `boards.module.css`, `LiveBar.module.css`, `BoardSkeleton.module.css`, and `ObservabilityNav.module.css`.
-
-**Impact:** Next.js parser/PostCSS failure; production cannot build reliably.  
-**Required fix:** remove every conflict marker across the entire repository, then run typecheck, lint, and the production build.
-
-### C-02: API key generation path is not a complete persisted API-key flow
+### C-01: Merge-conflict markers in production source
 
 **Severity:** Critical  
-**Evidence:** `src/actions/settingsActions.ts` contains `generateApiKey()`, which creates a UUID-shaped key and returns it, but does not persist an `ApiKey` row or hash. The same file has a separate `createApiKey()` flow that stores metadata in `AuditLog`, while `prisma/schema.prisma` also defines a real `ApiKey` model. These are competing implementations.
+**Evidence:** `src/app/dashboard/observability/page.tsx` was confirmed on the audited branch with `<<<<<<< HEAD`, `=======`, and `>>>>>>>`, causing the reported `Expression expected` error. Conflict markers were also found in observability stylesheets/components, including `observability.module.css`, `boards.module.css`, `LiveBar.module.css`, `BoardSkeleton.module.css`, and `ObservabilityNav.module.css`.
 
-**Impact:** keys generated through the legacy action are not durable, not revocable through the real key table, and cannot be validated consistently. A security setting can appear to succeed while creating an unusable credential.
+**Impact:** Next.js parser/PostCSS failure.  
+**Required fix:** remove every conflict marker across the repository, then run typecheck, lint, tests, verify, and production build.
 
-**Required fix:** delete or migrate `generateApiKey()` to the canonical `createApiKey()` implementation; choose one storage model; add an authenticated verification path, expiry enforcement, scope enforcement, revocation, last-used updates, and tests.
+### C-02: API key generation has competing implementations
 
-### C-03: Security settings are persisted only as an audit-log snapshot
+`src/actions/settingsActions.ts` contains `generateApiKey()`, which returns a UUID-shaped key without persisting a real `ApiKey` record. The same file has `createApiKey()` storing metadata in `AuditLog`, while `prisma/schema.prisma` defines a real `ApiKey` model.
 
-**Severity:** Critical  
-**Evidence:** `updateSecuritySettings()` in `src/actions/settingsActions.ts` writes values into an `AuditLog` row and returns `success: true`. `getSecuritySettings()` reconstructs the latest values from that log. The action comments explicitly describe this as best-effort.
+**Impact:** keys can be non-durable, inconsistently revocable, and impossible to validate consistently.  
+**Fix:** choose one canonical storage/verification flow with expiry, scopes, revocation, last-used updates, hashing, and tests.
 
-**Impact:** security controls such as session timeout, IP allowlist, forced 2FA, concurrent-session limits, and audit retention are not authoritative runtime configuration. If the audit insert fails, the action still succeeds and the requested security policy is not applied.
+### C-03: Security settings are not authoritative runtime configuration
 
-**Required fix:** add a real `SecuritySettings` singleton/table or explicit columns, write transactionally, fail closed on persistence failure, and make auth/session/rate-limit code consume the stored values.
+`updateSecuritySettings()` stores policy values in an `AuditLog` snapshot and returns success even when the audit write fails. `getSecuritySettings()` reconstructs the latest snapshot from that log.
 
-### C-04: SMTP test reports success without testing SMTP
+**Impact:** session timeout, IP allowlist, forced 2FA, concurrent-session limits, and retention settings are not guaranteed to be applied.  
+**Fix:** persist a real singleton/table or explicit columns, write transactionally, fail closed, and make auth/session/rate-limit code consume them.
 
-**Severity:** Critical  
-**Evidence:** `testSmtpConnection()` in `src/actions/settingsActions.ts` waits 1.5 seconds and returns a success message. Its own comment says it simulates the test.
+### C-04: SMTP test is simulated
 
-**Impact:** operators can deploy invalid mail credentials believing email delivery is healthy. Password-reset, OTP, verification, and notification flows can fail in production while the settings UI reports green.
+`testSmtpConnection()` waits 1.5 seconds and returns success without connecting to SMTP.
 
-**Required fix:** perform a real bounded SMTP connection/authentication using the configured host, port, username, and password; never return credentials; add timeout and safe error mapping.
+**Impact:** invalid production mail credentials can be reported as healthy.  
+**Fix:** perform a bounded real connection/authentication and return only stable safe errors.
 
-### C-05: Financial/data mutations need a deployment gate for idempotency and transactionality
+### C-05: Financial mutation safety is unverified
 
-**Severity:** Critical pending runtime verification  
-**Evidence:** the schema contains financial mutation entities (`Transaction`, `LedgerEntry`, `CurrencyDeal`, `Settlement`) and idempotency fields, but static inspection alone cannot prove every mutation path uses a single database transaction, checks idempotency before side effects, and writes matching ledger entries.
+The schema includes `Transaction`, `LedgerEntry`, `CurrencyDeal`, and `Settlement` with idempotency fields, but static review cannot prove every create/approve/complete/refund/settle mutation uses one database transaction, checks idempotency before side effects, and writes matching ledger entries.
 
-**Impact:** duplicate requests, partial writes, balance drift, or double settlement are unacceptable in a real financial product.
+**Release gate:** concurrent idempotency and ledger-consistency tests are mandatory.
 
-**Required fix:** block release until every create/approve/complete/refund/settle path is mapped and covered by concurrency tests using the same idempotency key.
+## Pass 2 findings
 
-## Confirmed high-severity findings
+### C-06: TOTP QR endpoint leaks the OTP enrollment secret to a third party
 
-### H-01: Raw internal error text is returned by production-facing action/API paths
+**Evidence:** `src/app/api/2fa/qr/route.ts` accepts any `data` query parameter beginning with `otpauth://totp/` without authentication, then forwards the full secret-bearing URI to `https://api.qrserver.com/v1/create-qr-code/`.
 
-**Evidence:** `src/actions/headerAdActions.ts` returns `String(err)` in action results; `src/app/api/system-status/route.ts` includes `String(err)` in development responses; `src/app/api/money-transfer/symbols/route.ts` and `src/app/api/money-transfer/rates/route.ts` return `error.message`.
+**Impact:** anyone who obtains or guesses an enrollment URI can send the TOTP secret to an external service and receive a QR image. This is a credential-enrollment secret, not public content. It also creates an unnecessary third-party privacy dependency.
 
-**Impact:** infrastructure/provider/database details can leak to clients and become an information oracle.  
-**Fix:** return stable public error codes/messages; log the full exception server-side through the central logger.
+**Required fix:** require the authenticated user and verify the URI belongs to the current enrollment flow; generate QR locally or use a server-side library; never send the secret to a third party; add no-store headers and tests for unauthenticated access.
 
-### H-02: Middleware does not cover every API route
+### C-07: Production API error details are still exposed
 
-**Evidence:** `middleware.ts` matcher is an explicit list of selected management endpoints. All other `/api/*` routes bypass this middleware and must be independently authenticated. The current architecture is fragile because adding a sensitive route without adding it to the list silently creates a security gap.
+**Evidence:** `src/app/api/tickets/snapshot/route.ts`, `src/app/api/money-transfer/symbols/route.ts`, and `src/app/api/money-transfer/rates/route.ts` return `err.message` to clients. `src/app/api/system-status/route.ts` also conditionally returns `String(err)` in development, which is unsafe if environment configuration is wrong or a non-production mode is exposed.
 
-**Impact:** future or currently unreviewed routes can be exposed if their handler forgets its own auth guard.  
-**Fix:** use a default API matcher with explicit public exceptions, or enforce a shared auth wrapper in every private route and add an automated route-auth audit.
+**Impact:** provider, database, filesystem, or query details become an information oracle.  
+**Required fix:** stable `{ success: false, error: { code, message } }` responses only; send full errors to the server logger/Sentry.
 
-### H-03: Development/debug routes are shipped into the application bundle
+### H-01: Middleware API coverage is fragile
 
-**Evidence:** `src/app/api/dev/*` and `src/app/api/debug-session` exist in the app tree. They currently return 404 in production in several handlers and middleware also blocks them, but this is defense by runtime branch rather than removal from the production artifact.
+`middleware.ts` uses an explicit list of management API matchers. Any future private route omitted from that list bypasses middleware and must remember to implement its own guard. The route search also surfaced many API handlers outside the middleware list.
 
-**Impact:** accidental environment misconfiguration or a future missing guard can expose seed/debug behavior.  
-**Fix:** move dev-only handlers outside the production route tree or fail the build when dev routes are present in a production manifest.
+**Required fix:** use a default API matcher with explicit public exceptions, or enforce a shared private-route wrapper and add an automated auth-coverage test.
 
-### H-04: Uploaded KYC/exchange assets are accepted for any authenticated user in broad folders
+### H-02: Development/debug route files ship in the app tree
 
-**Evidence:** `src/app/api/upload/route.ts` allows authenticated users to write to `kyc`, `logos`, and `exchange`; the handler comment says binding is checked later by another action. The upload endpoint itself does not bind the uploaded object to a specific owner/entity before storage.
+`src/app/api/dev/*` and `src/app/api/debug-session` exist in the production route tree. Several handlers return 404 in production, but they remain defense-by-runtime-branch rather than being removed from the artifact.
 
-**Impact:** orphaned sensitive documents, storage abuse, and possible cross-entity attachment mistakes if a caller later reuses the returned URL incorrectly.
+**Required fix:** move development handlers out of the production route tree or fail the production build when dev routes are present.
 
-**Fix:** require an upload purpose plus target entity, authorize ownership/staff access in the upload route, store a pending attachment row, and only expose object URLs after binding.
+### H-03: Sensitive upload folders are broad and not entity-bound
 
-### H-05: Production CSP permits `unsafe-inline` scripts
+`src/app/api/upload/route.ts` allows authenticated users to upload to `kyc`, `logos`, and `exchange`; ownership/binding is deferred to later actions.
 
-**Evidence:** `next.config.ts` sets `script-src 'self' 'unsafe-inline'` in production.
+**Impact:** orphaned sensitive documents, storage abuse, and cross-entity attachment mistakes.  
+**Required fix:** require purpose plus target entity, authorize ownership/staff access before storage, create a pending attachment record, and expose only bound objects.
 
-**Impact:** XSS impact is materially higher if any HTML/script injection exists elsewhere.  
-**Fix:** move to nonce/hash-based CSP for inline scripts; keep exceptions only where framework-required and document them.
+### H-04: Production CSP allows `unsafe-inline` scripts
 
-### H-06: Secrets are represented as plaintext fields in the database schema
+`next.config.ts` includes `script-src 'self' 'unsafe-inline'` in production.
 
-**Evidence:** `SystemSettings.smtpPassword`, `User.twoFactorSecret`, `ApiKey.secret`, and `Webhook.secret` are plaintext `String` fields in `prisma/schema.prisma`. Some flows use encrypted variants for 2FA, but the schema and code paths are mixed.
+**Required fix:** move to nonce/hash-based CSP where framework constraints allow it and document any unavoidable exception.
 
-**Impact:** a database read or backup leak becomes credential compromise.  
-**Fix:** encrypt secrets at rest with a versioned KMS/app-key envelope, store only hashes where verification is sufficient, rotate keys, and redact backup/export paths.
+### H-05: Secrets are plaintext-capable in the schema
 
-## Confirmed release-quality / correctness findings
+`SystemSettings.smtpPassword`, `User.twoFactorSecret`, `ApiKey.secret`, and `Webhook.secret` are plain `String` fields. Some flows have encrypted variants, but the model/code contract is mixed.
 
-### Q-01: No single source of truth for API keys
+**Required fix:** use envelope encryption for retrievable secrets, hashes where verification is enough, rotation, and backup/export redaction.
 
-The schema has `ApiKey`, the settings actions reconstruct keys from `AuditLog`, and the route reads the action. This guarantees drift between UI metadata, actual authentication, revoke behavior, and expiry behavior.
+## Pass 2 false-positive handling
 
-### Q-02: Backup and audit operations are best-effort in places where correctness matters
+Direct branch reads confirmed that `/api/system-health` and `/api/backup/download` had auth/rate-limit protections in the audited branch. Some GitHub code-search snippets were stale/default-ref results, so those routes are not reclassified as current blockers without a direct branch read. This is why the report distinguishes confirmed branch reads from search-only leads.
 
-`settingsActions.ts` catches and ignores failures for audit rows around API keys, backup settings, backup deletion, and security settings. A successful response can therefore mean the requested audit/security record was not written.
+## Correctness and operational findings
 
-### Q-03: Backup deletion is filesystem-first and database-second
+### Q-01: API-key source of truth is split
 
-`deleteBackup()` removes the file and then best-effort deletes the `BackupRun` row. If the database deletion fails, the UI and filesystem/database inventory can diverge. The operation should be transactional at the metadata level and return a warning/failure when reconciliation fails.
+Schema `ApiKey`, AuditLog reconstruction, and legacy key generation can drift between UI metadata, actual authentication, revoke behavior, and expiry.
 
-### Q-04: Repository contains many standalone Prisma clients in scripts
+### Q-02: Important audit writes are best-effort
 
-`new PrismaClient()` appears in multiple scripts and seed utilities. This is acceptable only for isolated CLI processes, not application code, but it must be explicitly classified and excluded from the rule rather than allowed to drift into imported runtime modules.
+API-key, backup, and security audit rows are caught/ignored in places where success should mean durable auditability.
 
-### Q-05: Seed data is not production-safe by default
+### Q-03: Backup deletion can diverge filesystem and database
 
-`prisma/seed.js` creates development users, sample OAuth tokens, sample financial/exchange records, placeholder external images, and test transactions. The script is correctly separate from normal runtime, but deployment pipelines must guarantee it is never run against production.
+`deleteBackup()` deletes the filesystem object first and then best-effort deletes metadata. Reconciliation failures can leave inventory inconsistent.
 
-## Coverage notes and unresolved verification items
+### Q-04: Many standalone Prisma clients exist in scripts
 
-The GitHub code-search API hit its rate limit during the audit, so this file records confirmed static findings plus the remaining mandatory gates rather than claiming a green full-project verification.
+This is acceptable only for isolated CLI processes. It must be explicitly kept out of imported runtime code and deployment entry points.
 
-Before deployment, execute and attach results for:
+### Q-05: Seed data is unsafe for production
+
+`prisma/seed.js` creates development users, sample OAuth tokens, sample financial records, placeholder images, and test transactions. Deployment must guarantee the seed never runs against production.
+
+### Q-06: Public market-rate APIs leak raw exception messages
+
+The public market-rates/money-transfer failure path is externally callable, so error messages must not include provider or database details.
+
+## Mandatory release gates
 
 1. `git grep -n -E '<<<<<<<|=======|>>>>>>>' -- ':!docs/PRODUCTION-CRITICAL-AUDIT.md'`
 2. `npm run typecheck`
 3. `npm run lint`
 4. `npm test`
 5. `npm run verify`
-6. `npm run build:webpack` (or the approved production build command)
+6. `npm run build:webpack` or the approved production build command
 7. authenticated route smoke tests for every private API
-8. concurrent idempotency tests for transaction, deal, transfer, refund, and settlement mutations
-9. backup restore test into a clean database
-10. production CSP and cookie/security-header scan
+8. unauthenticated TOTP QR test proving enrollment secrets are never forwarded
+9. concurrent idempotency tests for transaction, deal, transfer, refund, and settlement mutations
+10. backup restore test into a clean database
+11. production CSP, cookie, secret-redaction, and route-auth scan
 
-**This audit file is a release blocker checklist, not a claim that the project is deployable.**
+The GitHub code-search API hit its rate limit during repeated passes, so this file records confirmed findings and explicitly labels unresolved verification. **This report is not a claim that the project is deployable.**
