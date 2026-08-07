@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import prisma from '@/lib/db';
 import { FintechCockpitServer } from '@/components/Dashboard/DashboardPage/FintechCockpitServer';
 import { UserHome } from '@/components/Dashboard/DashboardPage/UserHome';
-import { DashboardCommandSurface } from '@/components/Dashboard/DashboardPage/DashboardCommandSurface';
+import { DashboardCommandSurface } from '@/components/Dashboard/primitives';
 
 /** One focused landing surface. Editorial analytics keep their dedicated routes. */
 export default async function Dashboard() {

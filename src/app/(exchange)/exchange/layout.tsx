@@ -1,7 +1,7 @@
 import '@/app/dashboard/dashboard.css';
 import { getExchangeForOwner, getExchangeForUser } from '@/actions/exchanges';
 import { auth } from '@/auth';
-import { DashboardCommandSurface } from '@/components/Dashboard/DashboardPage/DashboardCommandSurface';
+import { DashboardCommandSurface } from '@/components/Dashboard/primitives';
 import { DashboardProviders } from '@/components/Dashboard/DashboardPage/DashboardProviders';
 import { SiteSettingsProvider } from '@/components/SiteSettingsProvider';
 import { getSystemSettingsData } from '@/data/getSystemSettings';

@@ -4,7 +4,7 @@ import { auth } from '@/auth';
 
 export const dynamic = 'force-dynamic';
 import { AdminCustomerSwitcher } from '@/components/Dashboard/DashboardPage/AdminCustomerSwitcher';
-import { DashboardCommandSurface } from '@/components/Dashboard/DashboardPage/DashboardCommandSurface';
+import { DashboardCommandSurface } from '@/components/Dashboard/primitives';
 import { DashboardProviders } from '@/components/Dashboard/DashboardPage/DashboardProviders';
 import { SiteSettingsProvider } from '@/components/SiteSettingsProvider';
 import { getSystemSettingsData } from '@/data/getSystemSettings';

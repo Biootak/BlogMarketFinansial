@@ -94,3 +94,5 @@ export { RouteError } from './RouteError';
 export type { RouteErrorProps } from './RouteError';
 
 export type { SettingsNavIconName } from './SettingsSubNav';
+
+export { DashboardCommandSurface } from './DashboardCommandSurface';

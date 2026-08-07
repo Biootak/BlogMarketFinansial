@@ -1,9 +1,10 @@
 'use client';
 
 import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
+import { getAccessibleRoutes } from '@/config/routes';
 import { ArrowLeft, Command, LifeBuoy, Radio, Search, ShieldCheck, WalletCards } from 'lucide-react';
 import Link from 'next/link';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import s from './DashboardCommandSurface.module.css';
 
 type Portal = 'admin' | 'customer' | 'exchange';
@@ -43,13 +44,22 @@ const PORTAL_LABEL: Record<Portal, string> = {
 };
 
 function formatClock(date: Date): string {
-  return new Intl.DateTimeFormat('fa-IR', { timeZone: 'Asia/Tehran', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(date);
+  return new Intl.DateTimeFormat('fa-IR', { timeZone: 'Asia/Kabul', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(date);
+}
+
+/** مسیرهای پورتال ادمین بر پایهٔ نقش فیلتر می‌شوند تا لینکِ redirect-شونده نمانَد. */
+function isReachable(href: string, accessible: readonly string[]): boolean {
+  return accessible.some((route) => route === href || href.startsWith(`${route}/`));
 }
 
 export function DashboardCommandSurface({ portal, userName, role, children }: DashboardCommandSurfaceProps) {
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => setNow(new Date()), []);
   useVisibilityAwareInterval(() => setNow(new Date()), 30_000);
-  const links = LINKS[portal];
+  const accessible = portal === 'admin' ? getAccessibleRoutes(role) : null;
+  const links = accessible ? LINKS[portal].filter(({ href }) => isReachable(href, accessible)) : LINKS[portal];
+  const guideHref = portal === 'customer' ? '/customer/settings' : portal === 'exchange' ? '/exchange/settings' : '/dashboard/site-guide';
+  const showGuide = portal !== 'admin' || ['OWNER', 'SUPERADMIN', 'ADMIN'].includes(role);
 
   return (
     <div className={s.surface} data-portal={portal} dir="rtl">
@@ -61,6 +71,7 @@ export function DashboardCommandSurface({ portal, userName, role, children }: Da
             <span className={s.greeting}>سلام، {userName || 'مدیر'}</span>
           </span>
         </div>
+        {links.length > 0 && (
         <nav className={s.commandNav} aria-label="میان‌برهای عملیاتی">
           {links.map(({ href, label, icon: Icon }) => (
             <Link key={href} href={href} className={s.commandLink}>
@@ -69,21 +80,26 @@ export function DashboardCommandSurface({ portal, userName, role, children }: Da
             </Link>
           ))}
         </nav>
+        )}
         <div className={s.commandMeta}>
-          <span className={s.time} dir="ltr" aria-label="زمان تهران">{formatClock(now)}</span>
+          <span className={s.time} dir="ltr" aria-label="زمان کابل" suppressHydrationWarning>
+            {now ? formatClock(now) : '--:--'}
+          </span>
           <span className={s.role}>{roleLabels[role] ?? role}</span>
-          <Link href={portal === 'admin' ? '/dashboard/site-guide' : portal === 'customer' ? '/customer/settings' : '/exchange/settings'} className={s.commandButton} aria-label="تنظیمات و راهنما">
+          {showGuide && (
+          <Link href={guideHref} className={s.commandButton} aria-label="تنظیمات و راهنما">
             <Search size={15} strokeWidth={1.7} aria-hidden="true" />
           </Link>
+          )}
           <span className={s.commandHint} aria-hidden="true"><Command size={13} strokeWidth={1.7} />K</span>
         </div>
       </header>
-      <main className={s.content}>{children}</main>
-      <Link href={portal === 'admin' ? '/dashboard/site-guide' : portal === 'customer' ? '/customer/settings' : '/exchange/settings'} className={s.mobileGuide}>
+      <div className={s.content}>{children}</div>
+      {showGuide && (
+      <Link href={guideHref} className={s.mobileGuide}>
         مسیرها و تنظیمات <ArrowLeft size={14} strokeWidth={1.7} aria-hidden="true" />
       </Link>
+      )}
     </div>
   );
 }
-
-export default DashboardCommandSurface;
