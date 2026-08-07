@@ -81,6 +81,7 @@
       "dist",
       "build",
       "public",
+      "next-env.d.ts",
       "perf-out",
       ".bob",
       ".harness",

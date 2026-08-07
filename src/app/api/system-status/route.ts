@@ -102,12 +102,11 @@ export async function GET() {
         timestamp: new Date().toISOString(),
       },
     });
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       {
         success: false,
-        error: 'Internal server error',
-        details: process.env.NODE_ENV === 'development' ? String(err) : undefined,
+        error: { code: 'INTERNAL_ERROR', message: 'خطای داخلی سرور' },
       },
       { status: 500 },
     );

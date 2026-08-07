@@ -5,7 +5,6 @@ import { type BackupConfig, type BackupFileInfo, DEFAULT_BACKUP_CONFIG } from '@
 import prisma from '@/lib/db';
 import { authFailureToActionResult, requireAdmin, requireSuperAdmin } from '@/lib/require-auth';
 import { revalidatePath, revalidateTag } from '@/lib/revalidate';
-import { safeRevalidateTag } from '@/lib/safe-cache';
 import { revalidateSiteIdentity } from '@/lib/site-identity-revalidate';
 import {
   AuditLogQuerySchema,
@@ -94,8 +93,8 @@ export async function updateGeneralSettings(data: unknown) {
           },
         });
     await revalidateSiteIdentity();
+    // revalidateTag از @/lib/revalidate قبلاً safeRevalidateTag را هم صدا می‌زند
     revalidateTag('system-settings');
-    safeRevalidateTag('system-settings');
     revalidatePath('/');
     return ok(stripSecret(saved as unknown as Record<string, unknown>));
   } catch {
@@ -235,7 +234,6 @@ export async function updateSecuritySettings(data: unknown) {
       data: { actorId: gate.user.id, action: 'SECURITY_SETTINGS_UPDATED', meta: p },
     });
     revalidatePath('/dashboard/settings');
-    safeRevalidateTag('settings-security');
     return ok(p);
   } catch {
     return fail('ذخیره تنظیمات امنیتی شکست خورد؛ سیاست اعمال نشده است');
@@ -386,7 +384,6 @@ export async function updateBackupSettings(data: unknown) {
       data: { actorId: gate.user.id, action: 'BACKUP_SETTINGS_UPDATED', meta: p },
     });
     revalidatePath('/dashboard/settings');
-    safeRevalidateTag('settings-backup');
     return ok(p);
   } catch {
     return fail('ذخیره تنظیمات backup شکست خورد');

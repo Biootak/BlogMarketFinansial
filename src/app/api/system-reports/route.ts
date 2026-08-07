@@ -190,17 +190,26 @@ export async function GET(): Promise<NextResponse> {
       },
     );
 
-    return NextResponse.json(systemReport);
+    return NextResponse.json({ success: true, data: systemReport });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       return NextResponse.json(
-        { error: 'Database operation failed', code: error.code },
+        { success: false, error: { code: 'DB_ERROR', message: 'خطای دیتابیس' } },
         { status: 500 },
       );
     }
     if (error instanceof Prisma.PrismaClientValidationError) {
-      return NextResponse.json({ error: 'Invalid data provided to database' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: { code: 'VALIDATION_ERROR', message: 'داده نامعتبر' } },
+        { status: 400 },
+      );
     }
-    return NextResponse.json({ error: 'خطا در دریافت گزارش‌های سیستم' }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: { code: 'INTERNAL_ERROR', message: 'خطا در دریافت گزارش‌های سیستم' },
+      },
+      { status: 500 },
+    );
   }
 }

@@ -29,8 +29,10 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
 
   // توکن‌ها — local mirror از tokens.css (نمی‌توانیم از var() در JS استفاده کنیم
   // چون dark-mode flip در این سطح کار نمی‌کند؛ به‌جای media query دستی).
+  // توجه: این کامپوننت 'use client' است ولی ممکن است اولین render در SSR باشد
+  // پس از window guard استفاده می‌کنیم تا از "window is not defined" جلوگیری شود.
   const tokens =
-    typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
+    typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches
       ? DARK
       : LIGHT;
 

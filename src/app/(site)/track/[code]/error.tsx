@@ -4,7 +4,7 @@ import { Home, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 
 export default function TrackCodeError({
-  error,
+  error: _error,
   reset,
 }: {
   error: Error & { digest?: string };
@@ -25,7 +25,7 @@ export default function TrackCodeError({
       }}
     >
       <p style={{ fontSize: 'var(--ds-text-sm)', color: 'var(--ds-text-muted)', margin: 0 }}>
-        {error.message || 'خطایی در بارگذاری اطلاعات پیگیری رخ داد.'}
+        خطایی در بارگذاری اطلاعات پیگیری رخ داد.
       </p>
       <div
         style={{

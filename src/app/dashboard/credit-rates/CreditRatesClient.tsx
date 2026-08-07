@@ -88,7 +88,11 @@ export default function CreditRatesClient({
       logoUrl: (formData.get('logoUrl') as string) || null,
       website: (formData.get('website') as string) || null,
       licenseNo: (formData.get('licenseNo') as string) || null,
-      status: (formData.get('status') as any) || 'ACTIVE',
+      status: ((formData.get('status') as string) || 'ACTIVE') as
+        | 'ACTIVE'
+        | 'PENDING'
+        | 'SUSPENDED'
+        | 'CLOSED',
       isVisible: formData.get('isVisible') === 'true',
       sortOrder: Number(formData.get('sortOrder') || 0),
       description: (formData.get('description') as string) || null,
@@ -149,7 +153,7 @@ export default function CreditRatesClient({
       maxTermMonths: Number(formData.get('maxTermMonths') || 0),
       depositRatio: formData.get('depositRatio') ? Number(formData.get('depositRatio')) : null,
       currency: (formData.get('currency') as string) || 'AFN',
-      status: (formData.get('status') as any) || 'ACTIVE',
+      status: ((formData.get('status') as string) || 'ACTIVE') as 'ACTIVE' | 'DRAFT' | 'ARCHIVED',
       source: (formData.get('source') as string) || null,
       sortOrder: Number(formData.get('sortOrder') || 0),
       internalNote: (formData.get('internalNote') as string) || null,
@@ -888,7 +892,7 @@ export default function CreditRatesClient({
                   <input
                     name="internalNote"
                     type="text"
-                    defaultValue={(rateModal.data as any)?.internalNote || ''}
+                    defaultValue={rateModal.data?.internalNote ?? ''}
                     placeholder="توضیحات خصوصی یا شماره تلفن مسئول"
                     className={s.fieldInput}
                   />

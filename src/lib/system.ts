@@ -36,7 +36,9 @@ interface SystemMetrics {
 
 export async function getSystemMetrics(): Promise<SystemMetrics> {
   const cpus = os.cpus();
-  const cpuUsage = (os.loadavg()[0] * 100) / cpus.length;
+  // os.loadavg() returns [0,0,0] on Windows; cpus.length guard against division-by-zero
+  const loadAvg = os.loadavg()[0] ?? 0;
+  const cpuUsage = cpus.length > 0 ? (loadAvg * 100) / cpus.length : 0;
   const totalMem = os.totalmem();
   const freeMem = os.freemem();
   const usedMem = totalMem - freeMem;
@@ -45,7 +47,7 @@ export async function getSystemMetrics(): Promise<SystemMetrics> {
     cpu: {
       usage: Math.round(cpuUsage * 100) / 100,
       count: cpus.length,
-      model: cpus[0].model,
+      model: cpus[0]?.model ?? 'unknown',
     },
     memory: {
       total: totalMem,

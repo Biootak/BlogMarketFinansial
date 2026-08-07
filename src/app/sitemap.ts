@@ -48,7 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       prisma.tag.findMany({ select: { slug: true } }),
       prisma.user.findMany({
         select: { id: true },
-        where: { role: { in: ['AUTHOR', 'ADMIN', 'OWNER'] } },
+        where: { role: { in: ['AUTHOR', 'ADMIN', 'OWNER', 'SUPERADMIN'] } },
       }),
     ]);
 

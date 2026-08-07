@@ -23,7 +23,9 @@ export async function warmup(): Promise<void> {
     const { default: prisma } = await import('@/lib/db');
     await prisma.$queryRaw`SELECT 1`;
     log(`DB ping ok (${Math.round(performance.now() - start)}ms)`);
-  } catch (_e) {}
+  } catch {
+    // best-effort — warmup failure should not block startup
+  }
 
   // ─── 2. safeCache prime — hot data ───────────────────────────────────────
   // همه safeCache ها را موازی گرم می‌کند.
@@ -49,7 +51,9 @@ export async function warmup(): Promise<void> {
       getLatestPostCategories().catch(() => null),
     ]);
     log(`safeCache primed (${Math.round(performance.now() - cacheStart)}ms)`);
-  } catch (_e) {}
+  } catch {
+    // best-effort — cache priming failure should not block startup
+  }
 
   // ─── 3. ISR pre-warm — صفحات پرمخاطب ─────────────────────────────────────
   // Next.js ISR صفحه را اولین بار که درخواست می‌شود می‌سازد (cold SSR).

@@ -16,7 +16,7 @@ import { EDITABLE_ROLES } from '@/lib/permissions-constants';
 import { requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import type { FintechActionResult } from '@/types/types';
-import { Role } from '@prisma/client';
+import type { Role } from '@prisma/client';
 import { v4 as createId } from 'uuid';
 import { z } from 'zod';
 
