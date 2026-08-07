@@ -125,6 +125,7 @@
     "date-fns-jalali": "^4.1.0-0",
     "dompurify": "^3.2.3",
     "html-react-parser": "^5.2.1",
+    "isomorphic-dompurify": "^3.22.0",
     "katex": "^0.16.25",
     "libphonenumber-js": "^1.13.9",
     "lodash": "^4.17.21",

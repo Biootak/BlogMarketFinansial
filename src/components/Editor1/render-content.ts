@@ -1,12 +1,12 @@
 /**
  * @file render-content.ts — server-side rendering of Tiptap JSON content.
  *
- * Why this exists: the read-only article renderer (`EditorContentRenderer`)
- * previously spun up a full TipTap editor instance in the browser, which
- * pulled the entire editor runtime + lowlight + KaTeX into the client bundle
- * (~800 KB on blog pages). `@tiptap/html`'s `generateHTML()` serializes the
- * same JSON through each extension's static `renderHTML` rules — no editor,
- * no ProseMirror view, no hydration — so the article body can be SSR'd.
+ * Why this exists: the former client-side article renderer spun up a full
+ * TipTap editor instance in the browser, which pulled the entire editor
+ * runtime + lowlight + KaTeX into the client bundle (~800 KB on blog pages).
+ * `@tiptap/html`'s `generateHTML()` serializes the same JSON through each
+ * extension's static `renderHTML` rules — no editor, no ProseMirror view, no
+ * hydration — so the article body can be SSR'd.
  *
  * IMPORTANT: this module must NOT import anything that drags in the client
  * editor runtime. The real `details`/`embed`/`math` extensions import

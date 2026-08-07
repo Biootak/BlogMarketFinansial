@@ -87,7 +87,11 @@ export default async function Dashboard() {
   }
 
   const userRole = (session.user.role ?? 'AUTHOR') as 'OWNER' | 'ADMIN' | 'AUTHOR' | 'SUPERADMIN';
-  const isEditor = userRole === 'AUTHOR' || userRole === 'ADMIN' || userRole === 'OWNER' || userRole === 'SUPERADMIN';
+  const isEditor =
+    userRole === 'AUTHOR' ||
+    userRole === 'ADMIN' ||
+    userRole === 'OWNER' ||
+    userRole === 'SUPERADMIN';
 
   // Editorial data — only fetched if user is editor (or owner).
   // Failures fall back to `[]` so the editorial row degrades gracefully

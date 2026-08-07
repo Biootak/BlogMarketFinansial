@@ -90,6 +90,7 @@
       ".claude",
       ".kimchi",
       ".kiro",
+      ".agents",
       ".agent_tmp",
       "graphify-out",
       ".codepus-todos.json",

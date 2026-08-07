@@ -63,7 +63,7 @@ interface AtelierHeroProps {
   /** Number of published posts (used as a "right-now" anchor). */
   publishedTotal: number;
   /** Role-aware Quick Access items rendered as small cards inside the Hero. */
-  userRole: 'OWNER' | 'ADMIN' | 'AUTHOR';
+  userRole: 'OWNER' | 'SUPERADMIN' | 'ADMIN' | 'AUTHOR';
 }
 
 /* ---------------------------------------------------------------------------
@@ -305,7 +305,11 @@ export default function AtelierHero({
         : HiOutlineMinus;
 
   const quickItems =
-    userRole === 'OWNER' ? HERO_OWNER : userRole === 'ADMIN' ? HERO_ADMIN : HERO_AUTHOR;
+    userRole === 'OWNER' || userRole === 'SUPERADMIN'
+      ? HERO_OWNER
+      : userRole === 'ADMIN'
+        ? HERO_ADMIN
+        : HERO_AUTHOR;
 
   return (
     <section className="at-tile at-hero" aria-label="خلاصهٔ امروز">

@@ -3,7 +3,7 @@
 import prisma from '@/lib/db';
 import { authFailureToActionResult, requireAdmin } from '@/lib/require-auth';
 import { revalidatePath, revalidateTag } from '@/lib/revalidate';
-import { safeCache, safeRevalidateTag } from '@/lib/safe-cache';
+import { safeCache } from '@/lib/safe-cache';
 import type { SocialLinkType } from '@prisma/client';
 
 // M14 fix: validate social URLs before persisting. Stored links are later
@@ -124,7 +124,6 @@ export async function createSocialLink(data: SocialLinkData) {
     revalidatePath('/dashboard/settings');
     revalidatePath('/');
     revalidateTag('social-links');
-    safeRevalidateTag('social-links');
     return { success: true, data: link };
   } catch {
     return { success: false, error: 'خطا در ایجاد لینک' };
@@ -155,7 +154,6 @@ export async function updateSocialLink(id: string, data: Partial<SocialLinkData>
     revalidatePath('/dashboard/settings');
     revalidatePath('/');
     revalidateTag('social-links');
-    safeRevalidateTag('social-links');
     return { success: true, data: link };
   } catch {
     return { success: false, error: 'خطا در بروزرسانی لینک' };
@@ -172,7 +170,6 @@ export async function deleteSocialLink(id: string) {
     revalidatePath('/dashboard/settings');
     revalidatePath('/');
     revalidateTag('social-links');
-    safeRevalidateTag('social-links');
     return { success: true };
   } catch {
     return { success: false, error: 'خطا در حذف لینک' };
@@ -198,7 +195,6 @@ export async function toggleSocialLink(id: string) {
     revalidatePath('/dashboard/settings');
     revalidatePath('/');
     revalidateTag('social-links');
-    safeRevalidateTag('social-links');
     return { success: true, data: updated };
   } catch {
     return { success: false, error: 'خطا در تغییر وضعیت' };
@@ -223,7 +219,6 @@ export async function reorderSocialLinks(orderedIds: string[]) {
     revalidatePath('/dashboard/settings');
     revalidatePath('/');
     revalidateTag('social-links');
-    safeRevalidateTag('social-links');
     return { success: true };
   } catch {
     return { success: false, error: 'خطا در تغییر ترتیب' };

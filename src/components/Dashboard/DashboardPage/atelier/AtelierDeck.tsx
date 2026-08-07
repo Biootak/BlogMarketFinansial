@@ -69,7 +69,7 @@ interface AtelierDeckProps {
   recentDrafts: Array<{ id: string; title: string; date: string; author: string }>;
   viewStats: { labels: string[]; data: number[]; totalViews: number; todayViews: number };
   recentActivity: ActivityItem[];
-  userRole: 'OWNER' | 'ADMIN' | 'AUTHOR';
+  userRole: 'OWNER' | 'SUPERADMIN' | 'ADMIN' | 'AUTHOR';
   marketRates: MarketRateItem[];
   topAuthors: TopAuthor[];
 }

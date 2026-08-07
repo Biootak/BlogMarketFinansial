@@ -1,5 +1,8 @@
 # syntax=docker/dockerfile:1
-FROM registry.docker.ir/node:20-alpine AS base
+# 2026-08-07: node:22-alpine (all stages). package.json engines >=22, and
+# jsdom 30 (pulled by isomorphic-dompurify) hard-requires >=22.22.2 — Node 20
+# crashes the server-side sanitizer (EditorContentHTML) at runtime.
+FROM registry.docker.ir/node:22-alpine AS base
 
 # 2026-08-04: The `# syntax=` directive on line 1 activates BuildKit,
 # which enables `--mount=type=cache` (npm + Next cache) below. It must
@@ -7,7 +10,7 @@ FROM registry.docker.ir/node:20-alpine AS base
 # comment) breaks the parser directive.
 
 # Install dependencies only when needed
-FROM registry.docker.ir/node:20-alpine AS deps
+FROM registry.docker.ir/node:22-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
@@ -52,7 +55,7 @@ RUN mkdir -p node_modules/.prisma/client && \
     done
 
 # Rebuild the source code only when needed
-FROM registry.docker.ir/node:20-alpine AS builder
+FROM registry.docker.ir/node:22-alpine AS builder
 WORKDIR /app
 # Build-time DB connection: passed via --build-arg so prerendering can
 # reach the (already running) database. At runtime the compose env_file
@@ -82,7 +85,7 @@ RUN --mount=type=cache,target=/app/.next/cache \
     npm run build
 
 # Production image, copy all the files and run next
-FROM registry.docker.ir/node:20-alpine AS runner
+FROM registry.docker.ir/node:22-alpine AS runner
 WORKDIR /app
 
 # Set production environment

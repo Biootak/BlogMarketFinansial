@@ -8,7 +8,13 @@ import type {
 import type { Prisma } from '@prisma/client';
 import type { JSONContent } from '@tiptap/core';
 import { type ClassValue, clsx } from 'clsx';
-import DOMPurify from 'dompurify';
+// 2026-08: dompurify → isomorphic-dompurify. DOMPurify's plain `dompurify`
+// build is browser-only (its Node export is a factory without `.sanitize`),
+// so `sanitizeHtml()`/`sanitizeRenderedBody()` — called from the Server
+// Component EditorContentHTML — crashed with "DOMPurify.sanitize is not a
+// function" on every legacy raw-HTML post. `isomorphic-dompurify` wraps
+// DOMPurify + jsdom and exposes the same `.sanitize` API in both runtimes.
+import DOMPurify from 'isomorphic-dompurify';
 import { customAlphabet } from 'nanoid';
 import type { Session } from 'next-auth';
 import { twMerge } from 'tailwind-merge';
@@ -374,8 +380,26 @@ const FORBIDDEN_EVENT_ATTRS = [
   'onwheel',
 ];
 
-export function sanitizeHtml(html: string): string {
-  const clean = DOMPurify.sanitize(html, {
+// 2026-08: DOMPurify's default DATA_URI_TAGS bypass allows `data:` URIs on
+// img/video/audio/source src — the ALLOWED_URI_REGEXP never sees them. For a
+// strict production policy we strip every URI-bearing attribute whose value
+// starts with `data:` (OWASP: treat data:/javascript:/vbscript: as unsafe
+// unless explicitly required — this renderer never needs data:). Hooks must be
+// registered on the instance (config-level hook keys are ignored).
+const DATA_URI_ATTRS = ['src', 'href', 'poster', 'xlink:href', 'formaction', 'background'] as const;
+DOMPurify.addHook('beforeSanitizeAttributes', (node) => {
+  for (const attr of DATA_URI_ATTRS) {
+    const v = node.getAttribute?.(attr);
+    // 2026-08: scheme match must be case-insensitive — HTML URL schemes are
+    // case-insensitive, so `DATA:text/html` would bypass a lowercase check.
+    if (v && /^data:/i.test(v.trim())) {
+      node.removeAttribute(attr);
+    }
+  }
+});
+
+function buildSanitizeOptions(allowDataAttrs: boolean) {
+  return {
     ALLOWED_TAGS: [
       // Text formatting
       'p',
@@ -459,12 +483,33 @@ export function sanitizeHtml(html: string): string {
       'type',
       'value',
     ],
-    ALLOW_DATA_ATTR: false,
+    ALLOW_DATA_ATTR: allowDataAttrs,
     FORBID_ATTR: ['style', ...FORBIDDEN_EVENT_ATTRS],
     ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
-  });
+  };
+}
 
-  return clean;
+export function sanitizeHtml(html: string): string {
+  return DOMPurify.sanitize(html, buildSanitizeOptions(false));
+}
+
+/**
+ * Sanitize a server-serialized rich body (Tiptap `generateHTML` output).
+ *
+ * Unlike `sanitizeHtml`, data-* attributes are preserved — the renderer
+ * legitimately emits `data-mention`, `data-label`, `data-type`, `data-callout`,
+ * `data-embed`, `data-latex`, `data-checked`, … for interactive extensions.
+ * Everything else stays locked down: only the allowlisted tags/attrs survive,
+ * `style` and all event handlers are stripped, and `href`/`src` must match the
+ * safe-URI allowlist (http/https/mailto/tel/relative) — `javascript:`,
+ * `data:text/html`, `vbscript:` etc. are dropped at the output boundary.
+ *
+ * 2026-08 (OWASP XSS Prevention / DOMPurify allowlist practice): stored post
+ * content is JSON served by the API — it must be scrubbed where it is
+ * rendered, not trusted because the editor UI validates schemes.
+ */
+export function sanitizeRenderedBody(html: string): string {
+  return DOMPurify.sanitize(html, buildSanitizeOptions(true));
 }
 
 export function htmlToEditorContent(html: string): JSONContent {
