@@ -17,6 +17,14 @@ export default defineConfig({
       // isHighValueTransaction (core logic) با تست مستقیم پوشش داده شده
       include: [
         'src/lib/pricing/margin.ts',
+        'src/lib/pricing/auto-suggest.ts',
+        'src/lib/totp.ts',
+        'src/lib/customer-format.ts',
+        'src/lib/exchange-hours.ts',
+        'src/lib/exchange-tx-formatters.ts',
+        'src/lib/rateItem.ts',
+        'src/lib/setup/format.ts',
+        'src/lib/setup/strength.ts',
         'src/lib/fraud/rules.ts',
         'src/lib/afn-format.ts',
         'src/lib/require-auth.ts',
