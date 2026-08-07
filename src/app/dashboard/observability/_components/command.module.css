@@ -1,148 +1,10 @@
 /* ============================================================================
-<<<<<<< HEAD
-   Observability — نوار فرمان: ناوبری فرعی + وضعیت خوانش
-   ----------------------------------------------------------------------------
-   Mobile first · logical properties · token-only · RTL-safe.
-
-   تنها جای مجاز شیشه در این بخش: blur کم، شفافیت کم، مرز مویی.
-   ============================================================================ */
-
-/* ── ناوبری ─────────────────────────────────────────────────── */
-
-.nav {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  min-inline-size: 0;
-}
-
-.navLabel {
-  flex: none;
-  color: var(--ds-text-muted);
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.navList {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  min-inline-size: 0;
-  overflow: auto;
-  scrollbar-width: none;
-}
-
-.navList::-webkit-scrollbar {
-  display: none;
-}
-
-.navLink {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  min-block-size: 2.6rem;
-  padding-inline: 0.75rem;
-  border: 1px solid transparent;
-  border-radius: var(--ds-radius-md);
-  color: var(--ds-text-muted);
-  font-size: 0.72rem;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;
-}
-
-.navLink:hover {
-  color: var(--ds-text-primary);
-  background: var(--ds-surface-recessed);
-}
-
-.navLink[aria-current="page"] {
-  color: var(--ds-text-primary);
-  background: var(--ds-surface);
-  border-color: var(--ds-border-subtle);
-  box-shadow: var(--ds-shadow-sm);
-  font-weight: 700;
-}
-
-/* نقطهٔ فعال زیر لینک */
-.navLink[aria-current="page"]::after {
-  content: "";
-  position: absolute;
-  inset-inline: 1rem;
-  inset-block-end: -0.55rem;
-  block-size: 2px;
-  border-radius: 999px;
-  background: var(--nova-primary);
-}
-
-/* شمارهٔ بج alert */
-.navCount {
-  min-inline-size: 1.2rem;
-  padding: 0.12rem 0.3rem;
-  border-radius: 999px;
-  background: color-mix(in oklch, var(--nova-down) 12%, transparent);
-  color: var(--nova-down);
-  font: 700 0.62rem var(--ds-font-mono);
-  text-align: center;
-}
-
-.navCount[data-tone="idle"] {
-  background: color-mix(in oklch, var(--ds-text-muted) 12%, transparent);
-  color: var(--ds-text-muted);
-}
-
-/* ── نوار ابزار ─────────────────────────────────────────────── */
-
-.toolbar {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  min-inline-size: 0;
-  color: var(--ds-text-muted);
-  font-size: 0.68rem;
-}
-
-/* وضعیت زنده */
-.live {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  white-space: nowrap;
-  color: var(--nova-up);
-  font-weight: 700;
-}
-
-.liveDot {
-  inline-size: 0.45rem;
-  block-size: 0.45rem;
-  border-radius: 50%;
-  background: var(--nova-up);
-  box-shadow: 0 0 0 0.22rem color-mix(in oklch, var(--nova-up) 14%, transparent);
-  animation: live-pulse 2.2s ease infinite;
-}
-
-.liveDot[data-state="syncing"] {
-  background: var(--nova-primary);
-  box-shadow: none;
-  animation: none;
-}
-
-.liveDot[data-state="failed"] {
-  background: var(--nova-down);
-  box-shadow: none;
-  animation: none;
-}
-
-@keyframes live-pulse {
-=======
    نوار وضعیت خوانش (ObsToolbar)
+   ----------------------------------------------------------------------------
+   Mobile first · logical properties · فقط توکن --obs-* · RTL-safe.
+
+   ناوبری مدخل‌ها اینجا نیست؛ در ObservabilityNav.module.css است. این فایل فقط
+   «داده چقدر تازه است» را می‌گوید.
    ============================================================================ */
 
 .toolbar {
@@ -177,59 +39,11 @@
 }
 
 @keyframes toolbar-breath {
->>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
   0%,
   100% {
     opacity: 1;
   }
   50% {
-<<<<<<< HEAD
-    opacity: 0.55;
-  }
-}
-
-.window,
-.stamp {
-  white-space: nowrap;
-}
-
-/* نوار همگام‌سازی */
-.syncTrack {
-  inline-size: 5rem;
-  block-size: 2px;
-  background: var(--ds-border-subtle);
-  overflow: hidden;
-  border-radius: 999px;
-}
-
-.syncBar {
-  display: block;
-  inline-size: 100%;
-  block-size: 100%;
-  transform-origin: inline-start;
-  background: var(--nova-primary);
-  transform: scaleX(0);
-  transition: transform 400ms ease;
-}
-
-.syncBar[data-state="syncing"] {
-  transform: scaleX(0.65);
-  transition: transform 1.5s ease;
-}
-
-.syncBar[data-state="idle"] {
-  transform: scaleX(1);
-  opacity: 0;
-  transition: transform 200ms ease, opacity 200ms ease 300ms;
-}
-
-.syncBar[data-state="failed"] {
-  background: var(--nova-down);
-  transform: scaleX(1);
-}
-
-/* دکمهٔ بازخوانی */
-=======
     opacity: 0.4;
   }
 }
@@ -247,30 +61,10 @@
   white-space: nowrap;
 }
 
->>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
 .refresh {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-<<<<<<< HEAD
-  margin-inline-start: auto;
-  min-block-size: 2.25rem;
-  padding-inline: 0.65rem;
-  border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-sm);
-  background: transparent;
-  color: var(--ds-text-muted);
-  font: inherit;
-  font-size: 0.68rem;
-  cursor: pointer;
-  transition: border-color 160ms ease, color 160ms ease, background-color 160ms ease;
-}
-
-.refresh:hover:not(:disabled) {
-  border-color: var(--nova-primary);
-  color: var(--nova-primary);
-  background: color-mix(in oklch, var(--nova-primary) 6%, transparent);
-=======
   min-block-size: 2.75rem;
   margin-inline-start: auto;
   padding-inline: var(--ds-space-2-5);
@@ -295,7 +89,6 @@
 
 .refresh:active:not(:disabled) {
   transform: scale(0.96);
->>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
 }
 
 .refresh:disabled {
@@ -304,24 +97,11 @@
 }
 
 .refresh:focus-visible {
-<<<<<<< HEAD
-  outline: 2px solid var(--nova-primary);
-  outline-offset: 2px;
-}
-
-/* آیکون چرخشی هنگام sync */
-.refresh[disabled] svg {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-=======
   outline: 2px solid var(--obs-accent);
   outline-offset: 2px;
 }
 
+/* در RTL چرخش معکوس طبیعی‌تر خوانده می‌شود */
 .refresh svg[data-spin='true'] {
   animation: refresh-spin 900ms linear infinite;
 }
@@ -366,6 +146,17 @@
   }
   to {
     transform: translateX(400%);
->>>>>>> cc577b44f17b1f7d6d64006fdcd7dcb18ca2898f
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot[data-live='true'],
+  .refresh svg[data-spin='true'],
+  .progress[data-state='syncing']::after {
+    animation: none;
+  }
+
+  .refresh {
+    transition: none;
   }
 }
