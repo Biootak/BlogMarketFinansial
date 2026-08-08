@@ -19,6 +19,15 @@ import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { z } from 'zod';
 
+// 2026-08-08 fix: Ensure NEXTAUTH_SECRET is set, otherwise use a fallback for development
+if (!process.env.NEXTAUTH_SECRET) {
+  if (process.env.NODE_ENV === 'production') {
+    serverLog.error('auth', 'missing-secret', 'NEXTAUTH_SECRET is not set in production');
+  } else {
+    process.env.NEXTAUTH_SECRET = 'dev-secret-change-in-production';
+  }
+}
+
 // 2026-06-24: P1-3. Credentials provider accepts two *internal* fields
 // (`kind` and `intent`) that are not in the public schema. Auth.js v5
 // is permissive about unknown fields, but we still validate them here
@@ -220,6 +229,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     strategy: 'jwt',
     maxAge: 3 * 24 * 60 * 60, // 3 days
     updateAge: 24 * 60 * 60, // 24 hours
+  },
+  // 2026-08-08 perf: Add error handling for missing NEXTAUTH_SECRET
+  debug: process.env.NODE_ENV === 'development',
+  // 2026-08-08 fix: Handle auth errors gracefully when NEXTAUTH_SECRET is missing
+  pages: {
+    error: '/auth/error',
   },
   providers: [
     Credentials({
