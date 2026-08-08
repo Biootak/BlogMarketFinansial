@@ -50,8 +50,6 @@
 
 const TGJU_URL = 'https://www.tgju.org/';
 const REQUEST_TIMEOUT_MS = 15_000;
-// 2026-08-08 perf: Limit response size to prevent memory issues
-const MAX_RESPONSE_SIZE_BYTES = 1_000_000; // 1MB limit
 
 export interface TgjuItem {
   /** مقدار — ریال خام (÷10 = تومان). مگر طلای جهانی که USD/oz است. */
@@ -394,19 +392,7 @@ export async function fetchTgjuPage(page: TgjuPageId): Promise<FetchTgjuResult> 
       return { ok: false, error: 'http-error', status: response.status, latencyMs, page };
     }
 
-    // 2026-08-08 perf: Check response size before parsing to prevent memory issues
-    const contentLength = response.headers.get('content-length');
-    if (contentLength && Number.parseInt(contentLength, 10) > MAX_RESPONSE_SIZE_BYTES) {
-      return { ok: false, error: 'network-error', status: response.status, latencyMs, page };
-    }
-
     const html = await response.text();
-
-    // Double-check actual HTML size (in case content-length header is missing or incorrect)
-    if (html.length > MAX_RESPONSE_SIZE_BYTES) {
-      return { ok: false, error: 'network-error', status: response.status, latencyMs, page };
-    }
-
     if (DEBUG_DUMP) await debugDump(page, html);
     const data = parseTableRows(page, html);
     const itemCount = Object.keys(data).length;
