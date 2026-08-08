@@ -1,0 +1,82 @@
+name: Heroku Stability Check
+
+# چک پایداری خودکار — هر ۶ ساعت + اجرای دستی از GitHub UI.
+# گزارش می‌دهد: وضعیت dyno، آخرین release، HTTP سایت، R14/R15/H10 و روند حافظه.
+# اگر ناسالم باشد (HTTP غیر از 200 یا خطای حافظه/کرش در پنجره) run قرمز می‌شود.
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: Dyno / Memory / R14-R15
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Install Heroku CLI
+        run: npm install -g heroku@latest
+
+      - name: Run stability check
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+        shell: bash
+        run: |
+          set -u
+          APP="$HEROKU_APP_NAME"
+          FAIL=0
+
+          echo "=== Dyno ==="
+          heroku ps -a "$APP"
+
+          echo "=== Releases ==="
+          heroku releases -a "$APP" | head -4
+
+          echo "=== Home HTTP ==="
+          APP_URL="$(heroku config:get APP_URL -a "$APP" 2>/dev/null)"
+          [ -z "$APP_URL" ] && APP_URL="https://$APP.herokuapp.com"
+          CODE="$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$APP_URL")"
+          echo "http_code=$CODE"
+          [ "$CODE" = "200" ] || FAIL=1
+
+          echo "=== R14/R15/H10 (پنجرهٔ آخرین 1500 لاگ) ==="
+          heroku logs --num 1500 -a "$APP" > /tmp/fm-logs.txt 2>/dev/null
+          if grep -E 'R14|R15|H10' /tmp/fm-logs.txt | tail -6; then
+            echo "⚠️ خطاهای حافظه/کرش پیدا شد"
+            FAIL=1
+          else
+            echo "تمیز — هیچ R14/R15/H10 در پنجره"
+          fi
+
+          echo "=== روند حافظه ==="
+          grep 'sample#memory' /tmp/fm-logs.txt | tail -400 > /tmp/fm-mem.txt
+          node <<'NODE'
+            const fs = require('fs');
+            const lines = fs.readFileSync('/tmp/fm-mem.txt','utf8').trim().split('\n').filter(Boolean);
+            if (!lines.length) { console.log('(بدون نمونه‌ی حافظه — log-runtime-metrics فعال نیست)'); process.exit(0); }
+            const rows = lines.map(l => ({
+              ts: l.match(/^(\S+)/)[1],
+              rss: +l.match(/memory_rss=([\d.]+)MB/)[1],
+              swap: +l.match(/memory_swap=([\d.]+)MB/)[1],
+              dyno: l.match(/dyno=(\S+)/)[1],
+            }));
+            const rss = rows.map(r => r.rss);
+            const sw = rows.filter(r => r.swap > 0);
+            const dynos = new Set(rows.map(r => r.dyno));
+            console.log('بازه:', rows[0].ts, '→', rows[rows.length - 1].ts);
+            console.log('نمونه‌ها:', rows.length);
+            console.log('RSS min/avg/max:', Math.round(Math.min(...rss)) + '/' + Math.round(rss.reduce((a, b) => a + b, 0) / rss.length) + '/' + Math.round(Math.max(...rss)) + 'MB');
+            console.log('با swap>0:', sw.length, sw.length ? ('(max ' + Math.round(Math.max(...sw.map(r => r.swap))) + 'MB)') : '(بدون swap)');
+            console.log('ری‌استارت dyno در پنجره:', dynos.size === 1 ? 'خیر' : 'بله (' + dynos.size + ')');
+            const last = rows[rows.length - 1];
+            console.log('آخرین نمونه:', last.ts, 'RSS=' + Math.round(last.rss) + 'MB swap=' + Math.round(last.swap) + 'MB');
+          NODE
+
+          echo "=== نتیجه ==="
+          if [ "$FAIL" = "1" ]; then
+            echo "🔴 ناسالم — جزئیات بالا را ببین"
+            exit 1
+          fi
+          echo "🟢 سالم"

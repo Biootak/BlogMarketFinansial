@@ -214,6 +214,12 @@ heroku addons -a $APP                  # postgres essential-0
 gh run list --workflow 'Deploy to Heroku' --limit 5   # آخرین دیپلوی‌ها
 ```
 
+### چک پایداری خودکار
+
+`.github/workflows/stability-check.yml` هر ۶ ساعت (و با `workflow_dispatch` دستی)
+وضعیت dyno، آخرین release، HTTP سایت، R14/R15/H10 و روند حافظه را گزارش می‌دهد؛
+اگر ناسالم باشد run قرمز می‌شود. خروجی در: GitHub → Actions → Heroku Stability Check.
+
 ### حافظه (R14/R15)
 
 - R14 = رد شدن از ۵۱۲MB (swap) — کندی. R15 = کرش اجباری dyno.
