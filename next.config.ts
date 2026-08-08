@@ -202,7 +202,10 @@ const nextConfig: NextConfig = {
     // در production بدون ثبت این مقدار، آپتیمایزر 400 می‌داد و تبلیغ لود نمی‌شد.
     qualities: [40, 75],
     // فرمت‌های مجاز
-    formats: ['image/avif', 'image/webp'],
+    // 2026-08-08: AVIF حذف شد — encode آن با sharp گران‌ترین عملیات حافظه است
+    // و با چند درخواست همزمان روی Eco dyno (512MB) باعث R14/R15 می‌شد.
+    // WebP چند برابر سبک‌تر است و مرورگرها پشتیبانی کامل دارند.
+    formats: ['image/webp'],
     // محدودیت سایز دستگاه‌ها
     // 2026-08-02: hero/deferred sections request w=1600 — without it the
     // optimizer 400s and the hero image never loads (LCP falls back to a
