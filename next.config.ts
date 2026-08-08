@@ -60,9 +60,6 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
-  // 2026-08-08 perf: Disable SWC minification in dev for faster rebuilds
-  // In production, keep it for smaller bundle sizes
-  swcMinify: process.env.NODE_ENV === 'production',
 
   // Rewrites برای serve کردن فایل‌های آپلود شده در production
   async rewrites() {
