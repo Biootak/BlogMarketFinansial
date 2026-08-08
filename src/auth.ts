@@ -230,12 +230,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     maxAge: 3 * 24 * 60 * 60, // 3 days
     updateAge: 24 * 60 * 60, // 24 hours
   },
-  // 2026-08-08 perf: Add error handling for missing NEXTAUTH_SECRET
-  debug: process.env.NODE_ENV === 'development',
-  // 2026-08-08 fix: Handle auth errors gracefully when NEXTAUTH_SECRET is missing
-  pages: {
-    error: '/auth/error',
-  },
   providers: [
     Credentials({
       // kind is internal — never shown to users, so we don't declare it
