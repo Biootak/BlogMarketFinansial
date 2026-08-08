@@ -15,8 +15,11 @@ const createPrismaClient = () =>
     },
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
     // 2026-08-08 fix: Limit connection pool to prevent "too many connections" error
-    // PostgreSQL essential-0 has a 20 connection limit
-    connectionLimit: 5,
+    // PostgreSQL essential-0 has a 20 connection limit, but we can use a smaller pool
+    pool: {
+      min: 1,
+      max: 5,
+    },
   });
 
 type PrismaClientType = ReturnType<typeof createPrismaClient>;
