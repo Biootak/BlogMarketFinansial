@@ -4,13 +4,11 @@
 import prisma from '@/lib/db';
 import { assembleMarketRates } from '@/lib/market-rates';
 import type { MarketRateItem } from '@/lib/market-rates';
-import {
-  readMarketRatesSnapshot,
-  type SnapshotItem,
-} from '@/lib/market-rates/snapshot-reader';
+import { type SnapshotItem, readMarketRatesSnapshot } from '@/lib/market-rates/snapshot-reader';
 import { requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeCache, safeRevalidateTag, safeSet } from '@/lib/safe-cache';
+import { serverLog } from '@/lib/server-logger';
 
 const TAGS = {
   ticker: 'market-rates:ticker',
@@ -44,8 +42,7 @@ function snapToItem(s: SnapshotItem): MarketRateItem {
     value: s.value,
     buyValue: s.buyValue,
     sellValue: s.sellValue,
-    spread:
-      s.buyValue != null && s.sellValue != null ? s.sellValue - s.buyValue : undefined,
+    spread: s.buyValue != null && s.sellValue != null ? s.sellValue - s.buyValue : undefined,
     changePercent: s.changePercent,
     provider: s.provider,
     updatedAt: s.updatedAt ? new Date(s.updatedAt) : new Date(),
@@ -67,12 +64,18 @@ export const getMarketRates = safeCache(
     // 1) snapshot-first (بدون scrape) — فقط اگر تازه باشد
     const snap = await readMarketRatesSnapshot();
     if (snap && snap.items.length > 0) {
-      const ageMs = snap.generatedAt ? Date.now() - snap.generatedAt.getTime() : Infinity;
+      const ageMs = snap.generatedAt
+        ? Date.now() - snap.generatedAt.getTime()
+        : Number.POSITIVE_INFINITY;
       if (ageMs <= SNAPSHOT_MAX_AGE_MS) {
         return snap.items.map(snapToItem);
       }
     }
-    // 2) fallback: assemble واقعی (snapshot نیست/کهنه است)
+    // 2) fallback: assemble واقعی (snapshot نیست/کهنه است) — cron را چک کن
+    serverLog.warn(
+      'market-rates',
+      `snapshot miss/stale → assemble fallback (age=${snap?.generatedAt ? Math.round((Date.now() - snap.generatedAt.getTime()) / 1000) : 'n/a'}s) — cron refresh-market-rates باید هر دقیقه snapshot بنویسد`,
+    );
     const items = await assembleMarketRates();
     if (items.length === 0) throw new Error('ALL_SOURCES_FAILED');
     return items;

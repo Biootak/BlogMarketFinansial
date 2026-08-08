@@ -1,6 +1,5 @@
 import {
   AdBannerSkeleton,
-  HeroSectionSkeleton,
   SectionAuthorsSkeleton,
   SectionCategoriesSkeleton,
   SectionMagazine7Skeleton,
@@ -31,15 +30,21 @@ export const revalidate = 300;
 // component wrapped in its own <Suspense> boundary so the page shell renders
 // immediately and sections stream in as their data arrives. This eliminates
 // the "blank page + loading.tsx flash" caused by a top-level Promise.all block.
+//
+// 2026-08-08-perf (LCP): hero عمداً از Suspense خارج شد — طبق داک رسمی web.dev
+// (Optimize LCP): محتوای بالای fold باید در HTML اولیه باشد تا LCP ≈ FCP.
+// قبلاً skeleton اول رنگ می‌شد و hero واقعی در chunk بعدی استریم می‌آمد (LCP
+// ~4.5-5.6s و CLS هنگام جابه‌جایی skeleton→hero). حالا getMarketRates
+// snapshot-fast است (فایل IO، بدون scrape) پس هزینه‌ی TTFB ناچیز است و hero در
+// اولین پاسخ است. بقیهٔ sections همچنان Suspense خودشان را دارند.
 export default function Home() {
   return (
     <div className="nc-HomePage relative">
       {/* ── Hero Section (async — fetches market rates) ──────── */}
       {/* ⚠️ بدون container — hero full-width است و padding خودش را دارد */}
+      {/* ⚠️ بدون Suspense (2026-08-08) — hero باید در HTML اولیه باشد (LCP) */}
       <div className="container relative pt-4 sm:pt-6 lg:pt-10">
-        <Suspense fallback={<HeroSectionSkeleton />}>
-          <HeroSection />
-        </Suspense>
+        <HeroSection />
       </div>
 
       {/* ── Services Section (static) ────────────────────────── */}

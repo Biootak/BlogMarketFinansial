@@ -62,7 +62,7 @@ export async function warmup(): Promise<void> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.SITE_URL;
   if (process.env.NODE_ENV === 'production' && siteUrl) {
     const warmStart = performance.now();
-    const pages = ['/', '/exchanges', '/money-transfer', '/about', '/exchange-rates'];
+    const pages = ['/', '/archive', '/exchanges', '/money-transfer', '/about', '/exchange-rates'];
     try {
       await Promise.allSettled(
         pages.map((path) =>
@@ -76,6 +76,44 @@ export async function warmup(): Promise<void> {
       );
       log(
         `ISR pre-warm done for ${pages.length} pages (${Math.round(performance.now() - warmStart)}ms)`,
+      );
+    } catch {
+      // silent fail — pre-warm اختیاری است
+    }
+
+    // ─── 3.5. پیش‌گرم آپتیمایزر تصویر (sequential) ─────────────────────────
+    // بعد از هر restart، کش آپتیمایزر (ephemeral) خالی است — اولین درخواست هر
+    // تصویر، sharp را سرد اجرا می‌کند (LCP پرش + موج R14). با fetch کردن خود
+    // URL های /_next/image موجود در HTML، پردازش پیش‌گرم می‌شود و ۲۴ ساعت
+    // (minimumCacheTTL) کش می‌ماند. sequential است تا حافظه روی Eco باند بماند.
+    try {
+      const imageWarmStart = performance.now();
+      const warmPages = ['/', '/archive', '/exchanges', '/money-transfer'];
+      let warmed = 0;
+      for (const path of warmPages) {
+        try {
+          const res = await fetch(`${siteUrl}${path}`, {
+            headers: { 'x-warmup': '1' },
+            cache: 'no-store',
+          });
+          const html = await res.text();
+          // HTML entity decode: در HTML واقعی URL ها &amp; دارند نه &
+          const srcs = [...html.matchAll(/src="(\/_next\/image\?[^"]+)"/g)]
+            .map((m) => m[1].replaceAll('&amp;', '&'))
+            .filter((s) => /[?&]w=\d+/.test(s));
+          for (const src of [...new Set(srcs)].slice(0, 4)) {
+            await fetch(`${siteUrl}${src}`, {
+              headers: { 'x-warmup': '1' },
+              cache: 'no-store',
+            }).catch(() => null);
+            warmed++;
+          }
+        } catch {
+          // best-effort
+        }
+      }
+      log(
+        `image optimizer pre-warmed ${warmed} urls (${Math.round(performance.now() - imageWarmStart)}ms)`,
       );
     } catch {
       // silent fail — pre-warm اختیاری است
