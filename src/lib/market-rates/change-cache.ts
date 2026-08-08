@@ -148,15 +148,12 @@ const DEFAULT_CHANGES: ChangeCache = {
 };
 
 let cache: ChangeCache = Object.assign({}, DEFAULT_CHANGES);
-console.log(`[change-cache] Initialized with ${Object.keys(cache).length} symbols, first 5: ${Object.keys(cache).slice(0, 5).join(', ')}`);
 
 /**
  * Get last known change percent for a symbol
  */
 export function getLastChangePercent(symbol: string): number {
-  const result = cache[symbol]?.changePercent ?? 0;
-  console.log(`[change-cache] getLastChangePercent(${symbol}) = ${result}, cache keys: ${Object.keys(cache).slice(0, 5).join(', ')}...`);
-  return result;
+  return cache[symbol]?.changePercent ?? 0;
 }
 
 /**

@@ -18,8 +18,6 @@ import type { MarketRateGroup, MarketRateItem, MarketRateProvider, MarketRateUni
 import { getUsdtRate } from './usdt';
 import { getLastChangePercent, updateChangePercent } from './change-cache';
 
-console.log('[assembler] Module loaded, getLastChangePercent imported:', typeof getLastChangePercent);
-
 function getUsdtPremiumPercent(): number {
   const raw = process.env.USDT_PREMIUM_PERCENT;
   if (!raw) return 0;
@@ -87,10 +85,7 @@ export async function assembleMarketRates(): Promise<MarketRateItem[]> {
     const symbol = row.symbol ?? row.currency;
     const registry = SYMBOL_REGISTRY_MAP.get(symbol);
     const item = assembleFromRow(row, tgjuMap, usdt, fx, bonbast, bonbastBS, sarafi, registry);
-    if (item) {
-      console.log(`[assembler] ${symbol} changePercent=${item.changePercent}`);
-      out.push(item);
-    }
+    if (item) out.push(item);
   }
   return out;
 }
@@ -194,9 +189,7 @@ function assembleFromRow(
         }
         // اگه تغییرات جدید نداریم، از آخرین تغییرات ذخیره شده در DB یا cache استفاده کن
         if (changePercent === 0) {
-          console.log(`[assembler] ${symbol} changePercent=0, row.lastChangePercent=${row.lastChangePercent}`);
           const lastChange = row.lastChangePercent ?? getLastChangePercent(symbol);
-          console.log(`[assembler] ${symbol} using lastChange=${lastChange}`);
           if (lastChange !== 0) {
             changePercent = lastChange;
           }
