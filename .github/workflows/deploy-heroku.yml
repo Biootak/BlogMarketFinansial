@@ -27,11 +27,7 @@ jobs:
           username: _
           password: ${{ secrets.HEROKU_API_KEY }}
 
-      # ─── 3. Set up Docker Buildx (BuildKit) ──────────────────────────────
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      # ─── 4. Read production DB config from Heroku (source of truth) ────────
+      # ─── 3. Read production DB config from Heroku (source of truth) ────────
       # صفحات استاتیک/ISR در build-time به DB وصل می‌شوند، پس build باید به
       # همان DB production (RDS) متصل باشد، نه یک secret جدا که ممکن است
       # قدیمی/اشتباه باشد.
@@ -43,29 +39,29 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.HEROKU_API_KEY }}" \
             "https://api.heroku.com/apps/${{ secrets.HEROKU_APP_NAME }}/config-vars")
           echo "database_url=$(echo "$CONFIG" | jq -r .DATABASE_URL)" >> "$GITHUB_OUTPUT"
-          echo "direct_url=$(echo "$CONFIG" | jq -r .DIRECT_URL)" >> "$GITHUB_OUTPUT"
+          # DIRECT_URL روی Heroku ست نشده باشد → خالی بده (نه رشته‌ی "null")
+          echo "direct_url=$(echo "$CONFIG" | jq -r '.DIRECT_URL // empty')" >> "$GITHUB_OUTPUT"
 
-      # ─── 5. Build & Push Docker image to Heroku ───────────────────────────
-      - name: Build and push image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile.heroku
-          push: true
-          tags: registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web
-          # 2026-08-08: Heroku Container Registry از OCI attestations
-          # (provenance/sbom) پشتیبانی نمی‌کند — push با
-          # "failed to push ...: unsupported" شکست می‌خورد.
-          provenance: false
-          sbom: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            DATABASE_URL=${{ steps.db.outputs.database_url }}
-            DIRECT_URL=${{ steps.db.outputs.direct_url }}
-            SEED_OWNER_PASSWORD=${{ secrets.SEED_OWNER_PASSWORD }}
+      # ─── 4. Build & Push Docker image to Heroku ───────────────────────────
+      # 2026-08-08: docker/build-push-action (BuildKit) تصویر را با OCI index
+      # push می‌کند که Heroku Container Registry قبول نمی‌کند
+      # ("failed to push ...: unsupported") — حتی با provenance/sbom=false.
+      # راه‌حل رسمی و مطمئن: Heroku CLI → heroku container:push (همان مسیر
+      # documented در deploy/HEROKU.md).
+      - name: Install Heroku CLI
+        run: npm install -g heroku@latest
 
-      # ─── 6. Release (deploy) روی Heroku ──────────────────────────────────
+      - name: Build and push image (heroku container:push)
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          heroku container:login
+          heroku container:push web --app ${{ secrets.HEROKU_APP_NAME }} \
+            --arg DATABASE_URL="${{ steps.db.outputs.database_url }}" \
+            --arg DIRECT_URL="${{ steps.db.outputs.direct_url }}" \
+            --arg SEED_OWNER_PASSWORD="${{ secrets.SEED_OWNER_PASSWORD }}"
+
+      # ─── 5. Release (deploy) روی Heroku ──────────────────────────────────
       - name: Release on Heroku
         run: |
           curl -n -X POST https://api.heroku.com/apps/${{ secrets.HEROKU_APP_NAME }}/container/release \
