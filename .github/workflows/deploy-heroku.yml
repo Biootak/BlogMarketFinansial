@@ -12,6 +12,11 @@ on:
   # اجازه دیپلوی دستی از GitHub UI
   workflow_dispatch:
 
+# فقط یک deploy در هر زمان — اگر push جدید بیاید، run قبلی کنسل می‌شود
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy:
     name: Build & Deploy to Heroku
