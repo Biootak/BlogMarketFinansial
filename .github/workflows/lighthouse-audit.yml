@@ -1,0 +1,70 @@
+# Lighthouse Audit — اجرای تست سرعت موبایل روی همهٔ صفحات عمومی
+# ------------------------------------------------------------------
+# روی رانر تمیز گیت‌هاب (ubuntu-latest) اجرا می‌شود — اعداد قابل‌اعتماد
+# بدون وابستگی به CPU ماشین توسعه‌دهنده یا سهمیهٔ PageSpeed (PSI).
+#
+# کاربرد:
+#   gh workflow run lighthouse-audit
+#   gh run watch <run-id>  → خروجی جدول امتیازها در لاگ
+#
+# فقط workflow_dispatch — هیچ‌وقت روی push اجرا نمی‌شود و دیپلوی را
+# trigger نمی‌کند (مسیر .github/workflows/** در paths-ignore دیپلوی است).
+name: Lighthouse Audit
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lighthouse-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    name: Mobile Lighthouse on public pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Run Lighthouse (mobile) on all public pages
+        shell: bash
+        run: |
+          PAGES=(
+            "home|https://financialmarket.page/"
+            "exchanges|https://financialmarket.page/exchanges"
+            "money-transfer|https://financialmarket.page/money-transfer"
+            "exchange-rates|https://financialmarket.page/exchange-rates"
+            "archive|https://financialmarket.page/archive"
+            "about|https://financialmarket.page/about"
+          )
+          echo "== Lighthouse Mobile (strategy: mobile) =="
+          echo "PAGE | PERF A11Y BP SEO | FCP LCP TBT CLS TTFB"
+          for entry in "${PAGES[@]}"; do
+            name="${entry%%|*}"
+            url="${entry##*|}"
+            out="/tmp/lh-$name.json"
+            npx -y lighthouse "$url" --output=json --output-path="$out" --quiet \
+              --chrome-flags="--headless=new --no-sandbox --disable-gpu" >/dev/null 2>&1 || true
+            node -e '
+              const fs = require("fs");
+              const [f, n] = [process.argv[1], process.argv[2]];
+              const r = JSON.parse(fs.readFileSync(f, "utf8"));
+              const pct = id => Math.round((r.categories[id] || {}).score * 100);
+              const m = id => { const a = r.audits[id]; return a ? (a.displayValue || a.numericValue || "-") : "-"; };
+              console.log(
+                n.padEnd(16),
+                String(pct("performance")).padStart(4),
+                String(pct("accessibility")).padStart(4),
+                String(pct("best-practices")).padStart(4),
+                String(pct("seo")).padStart(4),
+                "|",
+                m("first-contentful-paint").padStart(6),
+                m("largest-contentful-paint").padStart(7),
+                m("total-blocking-time").padStart(6),
+                m("cumulative-layout-shift").padStart(7),
+                m("server-response-time").padStart(8),
+              );
+            ' "$out" "$name"
+          done
+          echo "== done =="
