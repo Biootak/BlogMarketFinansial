@@ -82,12 +82,8 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-# 2026-08-08: کل پوشه‌ی @prisma کپی می‌شود — نه فقط client.
-# runtime migrate (CMD) به @prisma/engines نیاز دارد؛ بدون آن
-# container با «Cannot find module '@prisma/engines'» کرش می‌کرد.
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma/client ./node_modules/@prisma/client
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/sharp ./node_modules/sharp
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
 USER nextjs
@@ -96,5 +92,9 @@ USER nextjs
 ENV PORT=${PORT:-3000}
 ENV HOSTNAME="0.0.0.0"
 
-# Migration + start
-CMD sh -c "node node_modules/prisma/build/index.js migrate deploy && node server.js"
+# 2026-08-08: migrations فقط در build-time اجرا می‌شوند
+# (RUN npx prisma migrate deploy در stage builder با DATABASE_URL واقعی
+# production که CI از Heroku می‌خواند). runtime migrate حذف شد — کپی دستی
+# prisma CLI و وابستگی‌هایش (effect و ...) به runner شکننده بود و در boot
+# با MODULE_NOT_FOUND کرش می‌کرد. runtime فقط server.js (standalone).
+CMD ["node", "server.js"]

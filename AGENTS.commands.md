@@ -18,4 +18,11 @@ npx prisma migrate dev # schema changes
 npx prisma studio      # DB GUI
 ```
 
-Postgres is provided by `docker-compose.yml` (`registry.docker.ir/library/postgres:15-alpine`); otherwise set `DATABASE_URL` to a local instance. There is **no test framework** (`jest`/`vitest`/`playwright` not installed) and **no CI** (no `.github/workflows`).
+Postgres is provided by `docker-compose.yml` (`registry.docker.ir/library/postgres:15-alpine`); otherwise set `DATABASE_URL` to a local instance.
+
+## Tests & CI
+
+- Tests: `npm test` (vitest) — unit tests in `src/lib/*.test.ts`.
+- CI exists in `.github/workflows/`: `deploy-heroku.yml` (deploy به Heroku) و `cron.yml`.
+- **Deploy به Heroku فقط از یک روش:** push به `main` (Container stack + GitHub Actions).
+  سند کامل و مرجع واحد: `deploy/HEROKU.md`. از buildpack استفاده نکن.

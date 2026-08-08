@@ -8,7 +8,7 @@
   "formation": {
     "web": {
       "quantity": 1,
-      "size": "basic"
+      "size": "eco"
     }
   },
   "addons": [
@@ -30,6 +30,10 @@
     "NEXT_TELEMETRY_DISABLED": {
       "description": "غیرفعال کردن تلمتری Next.js",
       "value": "1"
+    },
+    "NODE_OPTIONS": {
+      "description": "سقف هیپ Node برای Eco dyno (512MB) — از OOM/R14/R15 جلوگیری می‌کند",
+      "value": "--max-old-space-size=256"
     },
     "AUTH_SECRET": {
       "description": "کلید رمزنگاری NextAuth — بساز با: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
@@ -62,8 +66,8 @@
       "required": true
     },
     "PRISMA_CONNECTION_LIMIT": {
-      "description": "حداکثر connection های Prisma pool",
-      "value": "5"
+      "description": "حداکثر connection های Prisma pool — برای Eco یک dyno کافی است",
+      "value": "3"
     },
     "PRISMA_POOL_TIMEOUT": {
       "description": "timeout در ثانیه برای Prisma connection pool",
@@ -192,8 +196,5 @@
       "description": "GitHub OAuth App Secret",
       "required": false
     }
-  },
-  "scripts": {
-    "postdeploy": "node node_modules/prisma/build/index.js migrate deploy"
   }
 }

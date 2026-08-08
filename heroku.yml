@@ -3,4 +3,4 @@ build:
     web: Dockerfile.heroku
 
 run:
-  web: sh -c "node node_modules/prisma/build/index.js migrate deploy && node server.js"
+  web: node server.js

@@ -5,6 +5,10 @@ on:
     branches:
       - main
       - master
+    # تغییرات مستندات/build می‌کنند trigger دیپلوی نمی‌شوند
+    paths-ignore:
+      - '*.md'
+      - 'deploy/**'
   # اجازه دیپلوی دستی از GitHub UI
   workflow_dispatch:
 
