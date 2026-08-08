@@ -6,11 +6,12 @@
 //
 // Auth: Bearer CRON_SECRET (constant-time, header only).
 
+import { primeMarketRatesCache } from '@/actions/market-rates';
 import { verifyCronSecret } from '@/lib/cron-auth';
 import prisma from '@/lib/db';
 import { assembleMarketRates } from '@/lib/market-rates';
+import { updateChangePercentBatch } from '@/lib/market-rates/change-cache';
 import { writeMarketRatesSnapshot } from '@/lib/market-rates/snapshot';
-import { updateChangePercentBatch, saveChangeCache } from '@/lib/market-rates/change-cache';
 import { revalidateTag } from '@/lib/revalidate';
 import { NextResponse } from 'next/server';
 
@@ -48,6 +49,10 @@ async function handleRefresh(req: Request) {
     );
   }
 
+  // 2026-08-08-perf: نرخ‌های تازه را مستقیم در safeCache صفحات بریز تا
+  // home/money-transfer همیشه از کش تازه بخوانند و هرگز منتظر scrape نمانند.
+  primeMarketRatesCache(items);
+
   // ذخیره نرخ‌های محاسبه‌شده در DB (fqr آیتم‌هایی که provider='auto').
   // فقط singleRate و changePercent را به‌روز می‌کنیم تا override های ادمین حفظ شوند.
   let updated = 0;
@@ -81,7 +86,7 @@ async function handleRefresh(req: Request) {
       } else {
         skipped++;
       }
-    } catch (e: unknown) {
+    } catch {
       // If migration not applied, fallback to updating only singleRate
       try {
         const affected = await prisma.exchangeRate.updateMany({

@@ -6,7 +6,7 @@ import { assembleMarketRates } from '@/lib/market-rates';
 import type { MarketRateItem } from '@/lib/market-rates';
 import { requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
-import { safeCache, safeRevalidateTag } from '@/lib/safe-cache';
+import { safeCache, safeRevalidateTag, safeSet } from '@/lib/safe-cache';
 
 const TAGS = {
   ticker: 'market-rates:ticker',
@@ -15,26 +15,48 @@ const TAGS = {
 };
 
 /**
- * کش ۶۰ ثانیه‌ای برای assemble.
+ * TTL مشترک برای کش نرخ‌ها — هم getMarketRates و هم primeMarketRatesCache
+ * (cron) از همین مقدار استفاده می‌کنند تا از هم فاصله نگیرند.
+ */
+const MARKET_RATES_TTL = 180;
+
+/**
+ * کش برای assemble.
  * 2026-08-01: unstable_cache → safeCache. assembleMarketRates خودش
  * try/catch دارد ولی unstable_cache خطا را از طریق cache boundary
  * re-throw می‌کرد. safeCache fallback به [] می‌دهد.
+ * 2026-08-08-perf: اگر همهٔ منابع fail شوند (خروجی خالی)، throw می‌کنیم تا
+ * مسیر SWR دادهٔ خوبِ قبلی را حفظ کند — نه اینکه [] جای آن را بگیرد.
  */
 export const getMarketRates = safeCache(
   async (): Promise<MarketRateItem[]> => {
-    return assembleMarketRates();
+    const items = await assembleMarketRates();
+    if (items.length === 0) throw new Error('ALL_SOURCES_FAILED');
+    return items;
   },
   [] as MarketRateItem[],
   {
     key: 'market-rates',
-    // 2026-08-08-perf: ttl 60 → 180 — هر ۶۰ ثانیه کش خالی می‌شد و hero
-    // همهٔ صفحات منتظر re-assemble (تا ۱۵ ثانیه با timeout های قدیمی) می‌ماند.
-    // حالا re-assemble فقط هر ۳ دقیقه و با کران ۴ ثانیه‌ای. cron
-    // refresh-market-rates همچنان نرخ‌ها را تازه نگه می‌دارد.
-    ttl: 180,
+    // 2026-08-08-perf: ttl 60 → 180 + swr.
+    //  - ttl 180: هر ۶۰ ثانیه کش خالی می‌شد و hero منتظر re-assemble می‌ماند
+    //    (با timeout های قدیمی تا ۱۵ ثانیه). حالا فقط هر ۳ دقیقه.
+    //  - swr: بعد از انقضا، hero مقدار قبلی را فوراً می‌گیرد و refresh در
+    //    پس‌زمینه اجرا می‌شود — request دیگر هیچ‌وقت روی scrape بلاک نمی‌شود.
+    //  - cron refresh-market-rates با primeMarketRatesCache کش را هم تازه می‌کند.
+    ttl: MARKET_RATES_TTL,
+    swr: true,
     tags: [TAGS.ticker, TAGS.list],
   },
 );
+
+/**
+ * 2026-08-08-perf: cron نرخ‌های تازه‌ی assemble را مستقیم در safeCache صفحات
+ * می‌ریزد (fullKey = 'market-rates' — چون getMarketRates آرگومان ندارد).
+ * قبلاً cron فقط DB را به‌روز می‌کرد و صفحات هنوز منتظر انقضای کش بودند.
+ */
+export function primeMarketRatesCache(items: MarketRateItem[]): void {
+  safeSet('market-rates', items, MARKET_RATES_TTL);
+}
 
 /**
  * لیست همه‌ی ExchangeRate برای داشبورد.

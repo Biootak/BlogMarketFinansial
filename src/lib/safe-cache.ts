@@ -21,6 +21,11 @@ const memoryStore = new Map<string, CacheEntry<unknown>>();
 // Maps tag → set of base keys so safeRevalidateTag can purge in-memory slots by tag.
 const tagRegistry = new Map<string, Set<string>>();
 
+// 2026-08-08: single-flight برای background refresh (حالت swr) — فقط یک
+// refresh هم‌زمان برای هر key؛ بقیه‌ی request ها stale می‌گیرند نه اینکه
+// scrape دوباره را trigger کنند (ضد stampede).
+const inflightRefresh = new Set<string>();
+
 function evictIfNeeded(): void {
   while (memoryStore.size > MAX_CACHE_ENTRIES) {
     const oldestKey = memoryStore.keys().next().value;
@@ -37,6 +42,13 @@ interface SafeCacheOptions {
   ttl: number;
   /** اختیاری — برای observability */
   tags?: string[];
+  /**
+   * 2026-08-08: stale-while-revalidate.
+   * وقتی cache منقضی شده ولی مقدار قبلی موجود است → همان لحظه مقدار قبلی
+   * (stale) برمی‌گردد و refresh در پس‌زمینه اجرا می‌شود. request هرگز روی
+   * فراخوانی‌های کند (مثل scrape های خارجی) بلاک نمی‌شود.
+   */
+  swr?: boolean;
 }
 
 // کلید cache بر اساس آرگومان‌ها ساخته می‌شود تا call-site های متفاوت
@@ -57,7 +69,7 @@ export function safeCache<TArgs extends unknown[], T>(
   fallback: T,
   options: SafeCacheOptions,
 ): (...args: TArgs) => Promise<T> {
-  const { key: baseKey, ttl, tags = [] } = options;
+  const { key: baseKey, ttl, tags = [], swr = false } = options;
 
   for (const tag of tags) {
     if (!tagRegistry.has(tag)) tagRegistry.set(tag, new Set());
@@ -71,6 +83,39 @@ export function safeCache<TArgs extends unknown[], T>(
 
     // 1) اگر cache تازه است → از cache برگردان (no DB call)
     if (cached && cached.expiresAt > now) {
+      return cached.value;
+    }
+
+    // 1.5) SWR: منقضی ولی مقدار قبلی موجود → فوراً stale برگردان و refresh
+    // را در پس‌زمینه اجرا کن (single-flight). مسیر رندر (hero) دیگر هیچ‌وقت
+    // منتظر scrape نمی‌ماند.
+    if (swr && cached) {
+      if (!inflightRefresh.has(fullKey)) {
+        inflightRefresh.add(fullKey);
+        const startedAt = performance.now();
+        fn(...args)
+          .then((value) => {
+            // اگر در همین فاصله نوشتهٔ تازه‌تری آمده (مثلاً cron با safeSet)،
+            // نتیجهٔ کندِ ما نباید آن را پاک کند — فقط وقتی بنویس که ورودی
+            // فعلی قدیمی‌تر از شروعِ این refresh باشد.
+            const current = memoryStore.get(fullKey) as CacheEntry<T> | undefined;
+            if (!current || current.storedAt <= startedAt) {
+              memoryStore.set(fullKey, {
+                value,
+                expiresAt: performance.now() + ttl * 1000,
+                storedAt: performance.now(),
+              });
+              evictIfNeeded();
+            }
+          })
+          .catch(() => {
+            // stale را نگه دار؛ TTL را کمی تمدید کن تا زودتر دوباره تلاش شود
+            cached.expiresAt = performance.now() + Math.min(ttl, 30) * 1000;
+          })
+          .finally(() => {
+            inflightRefresh.delete(fullKey);
+          });
+      }
       return cached.value;
     }
 
@@ -103,6 +148,17 @@ export function safeCache<TArgs extends unknown[], T>(
  */
 export function safeRevalidate(key: string): void {
   memoryStore.delete(key);
+}
+
+/**
+ * 2026-08-08: نوشتن مستقیم در cache — برای cron ها که داده را از قبل دارند
+ * (مثل refresh-market-rates) تا کش صفحات بدون بلاکِ scrape تازه شود.
+ * کلید باید همان fullKey باشد (برای safeCache بدون آرگومان = خود baseKey).
+ */
+export function safeSet<T>(key: string, value: T, ttlSeconds: number): void {
+  const now = performance.now();
+  memoryStore.set(key, { value, expiresAt: now + ttlSeconds * 1000, storedAt: now });
+  evictIfNeeded();
 }
 
 /**
