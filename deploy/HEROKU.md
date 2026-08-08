@@ -269,6 +269,55 @@ gh run watch <run-id>   # جدول PERF/A11Y/BP/SEO + FCP/LCP/TBT/CLS/TTFB در 
 
 ---
 
+## امنیت حساب مالک (OWNER) — لایه‌های دفاعی
+
+مالک **کاملاً از کاربران جدا** است و چند لایه محافظت دارد:
+
+### جلوگیری (Prevention)
+1. **ساخت فقط از `/setup`** — سید/اسکریپت/دیپلوی هرگز مالک نمی‌سازند (`SEED_OWNER_*` حذف شد).
+   یک‌بار برای همیشه؛ ساخت دوم با تراکنش Serializable + بررسی اتمی بلاک می‌شود.
+2. **هش قوی‌تر از کاربران عادی** — bcrypt cost 13 (کاربران عادی 12)؛ OWASP حداقل 10.
+3. **2FA اجباری و دائمی** — ورود مالک بدون 2FA به صفحه‌ی فعال‌سازی هدایت می‌شود؛
+   غیرفعال‌کردن 2FA برای مالک بسته است. هر ورود بعدی challenge TOTP می‌گیرد.
+4. **Rate-limit چندلایه** — setup (سراسری)، ورود (per-email + per-IP در authorize)،
+   تأیید TOTP، و همه‌ی مسیرهای auth؛ نوع auth در نبود Redis **fail-closed** است.
+5. **IP-allowlist برای /setup** — در production با `ALLOWED_SETUP_IPS` فقط از IPهای مجاز.
+6. **غیرقابل‌ویرایش/حذف از طریق سایت** — hierarchy در userActions/role-actions هر تغییری
+   روی ردیف OWNER (حتی توسط OWNER دیگر) را بلاک می‌کند؛ لیست مالک‌ها فقط برای OWNER.
+7. **wipe سید مالک را حفظ می‌کند** — `SEED_WIPE=true` روی production نمی‌تواند مالک را حذف کند.
+
+### تشخیص (Detection) — همه در `AuditLog` / داشبورد audit-log
+- `OWNER_LOGIN`, `OWNER_LOGIN_FAILED`, `OWNER_LOGIN_2FA_CHALLENGE`, `OWNER_LOGIN_2FA_PENDING`
+  (با IP کلاینت) — هر تلاش ورود/تغییر روی حساب مالک ثبت می‌شود.
+- `OWNER account created` در `SystemLog` (source=SETUP).
+- بازیابی رمز مالک → هشدار در `SystemLog` (source=AUTH).
+
+### بازیابی (Recovery) — اگر حساب مالک قفل/هک شد
+1. **از دست رفتن Authenticator** → کدهای پشتیبان ۸تایی (در فعال‌سازی 2FA نمایش داده می‌شوند).
+2. **قفل کامل** → بازیابی مستقیم از دیتابیس (مالک به RDS دسترسی دارد):
+   ```sql
+   -- 1) رمز جدید با bcrypt بساز (cost 13) و جایگزین کن:
+   --    node -e "console.log(require('bcryptjs').hashSync('رمزقوی-تازه', 13))"
+   -- 2) 2FA را ریست کن تا بتواند دوباره از /dashboard/edit-profile فعال کند:
+   UPDATE "User" SET "password"='<hash>', "twoFactorEnabled"=false,
+          "twoFactorSecretEnc"=NULL, "twoFactorSecret"=NULL, "tokenVersion"="tokenVersion"+1
+   WHERE "role"='OWNER';
+   --    (بعد از ورود، 2FA دوباره اجباری می‌شود — اولین کار فعال‌سازی آن است)
+   ```
+3. **هک کامل (رمز+2FA عوض شد)** → همین کوئری بالا را اجرا کن؛ ورود بعدی با 2FA اجباری
+   دوباره امن است. چون فقط مالک به RDS دسترسی دارد، هیچ راهی از داخل سایت برای
+   بازگرداندن حساب هک‌شده وجود ندارد (عمدی).
+
+### زیرساخت (باید ست شود)
+- **`UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` روی Heroku** — بدون آن،
+  rate-limit در حافظه‌ی همان dyno است و با چند dyno ضعیف می‌شود. این تنها شکاف زیرساختی
+  فعلی است.
+- **`AUTH_SECRET`** باید قوی و یکتا باشد (JWT امضا می‌شود).
+- **`ALLOWED_SETUP_IPS`** روی Heroku — بعد از ساخت مالک، `/setup` دیگر قابل استفاده نیست؛
+  برای لایه‌ی اضافه، IP خودت را ست کن.
+
+---
+
 ## قوانین طلایی (برای همیشه)
 
 1. **روش واحد = push به `main`** — همه از همین استفاده کنند.
@@ -276,3 +325,6 @@ gh run watch <run-id>   # جدول PERF/A11Y/BP/SEO + FCP/LCP/TBT/CLS/TTFB در 
 3. **`CRON_SECRET` در دو سمت** — بعد از تغییر، در Heroku و GitHub هم‌زمان عوض کن.
 4. **فرمت تصویر `webp`** را در `next.config.ts` به `avif` برنگردان (بازگشت کرش‌های حافظه).
 5. **مستندات را فقط به‌روز کن، روش را نه** — اگر روش بهتری یافتی، اول این سند را به‌روز کن بعد اجرا.
+6. **مالک را از seed/Wipe حذف نکن** — ساخت مالک فقط از `/setup`؛ wipe باید مالک را حفظ کند.
+7. **`SEED_OWNER_PASSWORD` را هرگز برنگردان** — این متغیر عمداً حذف شد تا هیچ مسیر جانبی
+   برای ساخت مالک دوم وجود نداشته باشد.

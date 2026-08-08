@@ -12,13 +12,13 @@
  *   - ترتیب وابستگی‌ها (foreign keys) رعایت شده
  *   - داده‌ها واقع‌گرایانه‌اند: تاریخ‌ها در طول عمر سایت (> ۱ سال) پخش شده،
  *     نام‌ها/شماره‌ها/ایمیل‌ها واقعی‌نما، بازدیدها همبسته با سن پست
- *   - مالک (OWNER): رمز از SEED_OWNER_PASSWORD؛ اگر تنظیم نشود رمز قوی تصادفی
- *     تولید و در پایان seed چاپ می‌شود
+ *   - مالک (OWNER): هرگز از seed ساخته نمی‌شود — ساخت مالک فقط و فقط از
+ *     صفحه /setup ممکن است (یک‌بار برای همیشه). wipe هم حساب مالک را
+ *     حفظ می‌کند.
  *
  * متغیرهای محیطی:
- *   SEED_OWNER_EMAIL    (اختیاری) — پیش‌فرض Admin@gmail.com
- *   SEED_OWNER_PASSWORD (اختیاری) — اگر تنظیم نشود، رمز تصادفی چاپ می‌شود
  *   SEED_WIPE           (اختیاری) — true/1 = پاکسازی کامل قبل از seed
+ *     (مالک/OWNER هرگز پاک نمی‌شود)
  *
  * اجرا:
  *   node prisma/seed.js              (بدون پاکسازی — idempotent)
@@ -200,6 +200,16 @@ function iranPhone() {
  * ─────────────────────────────────────────────────────────────── */
 async function wipeDatabase() {
   console.log('🗑️  پاکسازی کامل دیتابیس (حذف داده‌های قبلی)...');
+
+  // ── حفاظت مالک: حساب OWNER/SUPERADMIN هرگز پاک نمی‌شود، حتی در wipe. ──
+  // اگر کسی SEED_WIPE را روی production اجرا کند (سهوا یا عمداً)، مالک
+  // (که فقط از طریق /setup ساخته می‌شود) از بین نمی‌رود — فقط کاربران
+  // عادی حذف و دوباره سید می‌شوند.
+  const owners = await p.user.findMany({
+    where: { role: { in: ['OWNER', 'SUPERADMIN'] } },
+    select: { id: true, email: true },
+  });
+
   const tables = await p.$queryRawUnsafe(
     "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename <> '_prisma_migrations'",
   );
@@ -207,23 +217,28 @@ async function wipeDatabase() {
     console.log('   (دیتابیس خالی است)');
     return;
   }
-  const names = tables.map((t) => `"${t.tablename}"`).join(', ');
-  await p.$executeRawUnsafe(`TRUNCATE TABLE ${names} RESTART IDENTITY CASCADE`);
-  console.log(`   ✅ ${tables.length} جدول پاکسازی شد`);
-}
+  const allNames = tables.map((t) => `"${t.tablename}"`);
 
-/* ─── seed credential helpers ────────────────────────────────── */
-let seededOwner = null; // { email, password, source } فقط در صورت ایجاد جدید پر می‌شود
-
-function generatePassword(length = 16) {
-  const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const lower = 'abcdefghijklmnopqrstuvwxyz';
-  const digits = '0123456789';
-  const special = '!@#$%^&*()_+-=[]{}|;:,.<>?';
-  const all = upper + lower + digits + special;
-  const password = [pick(upper), pick(lower), pick(digits), pick(special)];
-  for (let i = password.length; i < length; i++) password.push(pick(all));
-  return password.sort(() => Math.random() - 0.5).join('');
+  if (owners.length > 0) {
+    // جدول User از TRUNCATE خارج می‌شود؛ فقط کاربران غیرمالک حذف می‌شوند.
+    // (بقیه‌ی جدول‌ها CASCADE می‌شوند؛ User در لیست نیست پس دست‌نخورده می‌ماند.)
+    const withoutUser = allNames.filter((t) => t !== '"User"');
+    if (withoutUser.length > 0) {
+      await p.$executeRawUnsafe(
+        `TRUNCATE TABLE ${withoutUser.join(', ')} RESTART IDENTITY CASCADE`,
+      );
+    }
+    await p.$executeRawUnsafe(`DELETE FROM "User" WHERE role NOT IN ('OWNER', 'SUPERADMIN')`);
+    console.log(
+      `   ✅ ${withoutUser.length} جدول پاکسازی شد؛ ${owners.length} حساب مالک (OWNER) حفظ شد`,
+    );
+    for (const o of owners) {
+      console.log(`   🔒 مالک حفظ شد: ${o.email}`);
+    }
+  } else {
+    await p.$executeRawUnsafe(`TRUNCATE TABLE ${allNames.join(', ')} RESTART IDENTITY CASCADE`);
+    console.log(`   ✅ ${allNames.length} جدول پاکسازی شد`);
+  }
 }
 
 /* ─── step: اجرای هر بخش با تلاش مجدد روی خطاهای موقتی اتصال ── */
@@ -281,14 +296,10 @@ async function seedSystemSettings() {
 
 /* ─── 2) Users (نویسنده، ادمین، کاربر عادی) ──────────────────── */
 async function seedUsers() {
+  // امنیت: مالک (OWNER) هرگز از seed ساخته نمی‌شود — ساخت مالک فقط از
+  // صفحه /setup ممکن است تا هیچ مسیر جانبی (env، اسکریپت، دیپلوی) نتواند
+  // یک مالک دوم بسازد یا /setup را بلاک کند.
   const samplePassword = await bcrypt.hash('Password123!', 10);
-
-  // مالک (OWNER): اگر SEED_OWNER_PASSWORD تنظیم شده باشد از آن استفاده می‌شود؛
-  // در غیر این صورت رمز قوی تصادفی تولید و در پایان seed چاپ می‌شود.
-  const ownerEmail = process.env.SEED_OWNER_EMAIL?.trim() || 'Admin@gmail.com';
-  const ownerPasswordFromEnv = process.env.SEED_OWNER_PASSWORD;
-  const ownerPassword = ownerPasswordFromEnv || generatePassword(16);
-  const ownerPasswordHash = await bcrypt.hash(ownerPassword, 10);
 
   // ── تیم سایت — نام/ایمیل/شماره واقعی‌نما، عضویت از ماه‌های قبل ──
   const usersData = [
@@ -311,15 +322,6 @@ async function seedUsers() {
       phoneNumber: '09121234567',
       image: 'https://i.pravatar.cc/150?img=33',
       createdAt: daysAgo(rand(330, 380)),
-    },
-    {
-      id: 'cm5kqiap00001ckmow11600x8',
-      name: 'مالک',
-      email: ownerEmail,
-      role: 'OWNER',
-      status: 'Active',
-      image: 'https://i.pravatar.cc/150?img=68',
-      createdAt: daysAgo(rand(380, 430)),
     },
     {
       id: 'cmqcm407d0002vjpsihhfla61',
@@ -369,22 +371,14 @@ async function seedUsers() {
       created.push(exists);
       continue;
     }
-    const isOwner = u.role === 'OWNER';
     const user = await p.user.create({
       data: {
         ...u,
-        password: isOwner ? ownerPasswordHash : samplePassword,
+        password: samplePassword,
         emailVerified: addDays(u.createdAt, rand(1, 5)),
       },
     });
     created.push(user);
-    if (isOwner) {
-      seededOwner = {
-        email: u.email,
-        password: ownerPassword,
-        source: ownerPasswordFromEnv ? 'env' : 'generated',
-      };
-    }
   }
 
   // ── کاربران عادی — افغانستان + ایران، عضویت از ۱ هفته تا ~۱۳ ماه قبل ──
@@ -3397,19 +3391,11 @@ async function main() {
     });
   console.log('═'.repeat(50));
 
-  /* ─── نمایش مشخصات مالک (OWNER) ─── */
-  if (seededOwner) {
-    console.log(`\n${'═'.repeat(50)}`);
-    console.log('🔐 مشخصات مالک / OWNER (ذخیره کنید):');
-    console.log('   Email:', seededOwner.email);
-    if (seededOwner.source === 'env') {
-      console.log('   Password: <از متغیر محیطی SEED_OWNER_PASSWORD>');
-    } else {
-      console.log('   Password:', seededOwner.password);
-      console.log('   (تولید تصادفی چون SEED_OWNER_PASSWORD تنظیم نشده بود — پس از ورود، از داشبورد تغییر دهید)');
-    }
-    console.log('═'.repeat(50));
-  }
+  /* ─── مالک (OWNER) ─── */
+  console.log(`\n${'═'.repeat(50)}`);
+  console.log('ℹ️  مالک (OWNER) از seed ساخته نمی‌شود.');
+  console.log('   ساخت حساب مالک فقط از صفحه /setup ممکن است (یک‌بار برای همیشه).');
+  console.log('═'.repeat(50));
 
   console.log('\n✨ Seed کامل با موفقیت تمام شد!');
 }

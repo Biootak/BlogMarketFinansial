@@ -124,6 +124,21 @@ export async function getUsersByRole(
   }
 
   const { role, page, search } = parsed.data;
+
+  // مالک کاملاً از کاربران جدا است: ردیف‌های OWNER/SUPERADMIN فقط برای
+  // OWNER/SUPERADMIN قابل مشاهده‌اند — ADMIN/SUPPORT نباید حتی لیست
+  // مالک‌ها (ایمیل/نام) را ببینند.
+  if (
+    (role === Role.OWNER || role === Role.SUPERADMIN) &&
+    auth.user.role !== Role.OWNER &&
+    auth.user.role !== Role.SUPERADMIN
+  ) {
+    return {
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'شما اجازه‌ی مشاهده‌ی این نقش را ندارید' },
+    };
+  }
+
   const limit = 12;
   const skip = (page - 1) * limit;
 

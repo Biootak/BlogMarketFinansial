@@ -44,8 +44,12 @@ import {
   SetPasswordSchema,
   VerifyOtpSchema,
 } from '@/schemas';
+import { Role } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { AuthError } from 'next-auth';
+import { headers } from 'next/headers';
+import { v4 as createId } from 'uuid';
 import { z } from 'zod';
 
 // 2026-06-30: Next 16's `revalidateTag` requires a second `profile`
@@ -127,6 +131,56 @@ function handleAuthError(error: unknown, context: string): AuthResult {
 function getFormString(formData: FormData, key: string): string {
   const value = formData.get(key);
   return typeof value === 'string' ? value : '';
+}
+
+/**
+ * IP کلاینت از rightmost X-Forwarded-For (که proxy قابل‌اعتماد اضافه می‌کند)
+ * تا از spoofing جلوگیری شود — همان الگوی createSuperAdmin.
+ */
+async function getClientIp(): Promise<string | undefined> {
+  try {
+    const h = await headers();
+    const xff = h.get('x-forwarded-for');
+    return xff
+      ? (xff
+          .split(',')
+          .map((p) => p.trim())
+          .filter(Boolean)
+          .pop() ?? undefined)
+      : h.get('x-real-ip')?.trim() || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * لایه تشخیص: هر رویداد امنیتی مربوط به حساب مالک در auditLog ثبت می‌شود
+ * (ورود موفق/ناموفق/چالش 2FA) تا اگر حسابی هک شد یا تلاش هک شد، سریع
+ * در داشبورد audit-log دیده شود. شکست logging هرگز auth را نمی‌شکند.
+ */
+async function logOwnerSecurityEvent(
+  action: string,
+  userId: string,
+  ip?: string,
+  meta?: Record<string, unknown>,
+): Promise<void> {
+  try {
+    await prisma.auditLog.create({
+      data: {
+        id: createId(),
+        exchangeId: null,
+        actorId: userId,
+        actorRole: Role.OWNER,
+        action,
+        entityType: 'User',
+        entityId: userId,
+        ip,
+        meta: (meta ?? {}) as Prisma.InputJsonValue,
+      },
+    });
+  } catch {
+    // logging must never break the auth flow
+  }
 }
 
 async function dispatchOtpEmail(
@@ -353,7 +407,14 @@ export async function loginWithPassword(formData: FormData): Promise<AuthResult>
     // (رمز در DB ذخیره نمی‌شود؛ با همان hashing موجود)
     const twoFaUser = await prisma.user.findFirst({
       where: { email: { equals: input.email, mode: 'insensitive' } },
-      select: { twoFactorEnabled: true, password: true, emailVerified: true, email: true },
+      select: {
+        id: true,
+        twoFactorEnabled: true,
+        password: true,
+        emailVerified: true,
+        email: true,
+        role: true,
+      },
     });
 
     if (twoFaUser?.twoFactorEnabled) {
@@ -363,6 +424,9 @@ export async function loginWithPassword(formData: FormData): Promise<AuthResult>
       }
       const pwOk = await bcrypt.compare(input.password, twoFaUser.password);
       if (!pwOk) {
+        if (twoFaUser.role === Role.OWNER || twoFaUser.role === Role.SUPERADMIN) {
+          await logOwnerSecurityEvent('OWNER_LOGIN_FAILED', twoFaUser.id, await getClientIp());
+        }
         return { success: false, error: 'ایمیل یا رمز عبور اشتباه است' };
       }
       if (!twoFaUser.emailVerified) {
@@ -388,12 +452,62 @@ export async function loginWithPassword(formData: FormData): Promise<AuthResult>
         },
       });
 
+      if (twoFaUser.role === Role.OWNER || twoFaUser.role === Role.SUPERADMIN) {
+        await logOwnerSecurityEvent('OWNER_LOGIN_2FA_CHALLENGE', twoFaUser.id, await getClientIp());
+      }
+
       return {
         success: true,
         step: 'verify',
         email: input.email,
         intent: '2fa',
         message: 'کد احراز هویت دو مرحله‌ای (Authenticator) را وارد کنید',
+      };
+    }
+
+    // OWNER/SUPERADMIN: 2FA اجباری و دائمی است. اولین ورود (وقتی هنوز
+    // فعال نشده) مجاز است ولی مستقیم به صفحه‌ی فعال‌سازی 2FA می‌رود؛ از
+    // ورود دوم به بعد همیشه challenge TOTP گرفته می‌شود (بلوک بالا).
+    // غیرفعال‌کردن 2FA برای مالک هم در twoFactorActions بسته شده است.
+    if (twoFaUser?.role === Role.OWNER || twoFaUser?.role === Role.SUPERADMIN) {
+      if (!twoFaUser.password) {
+        return { success: false, error: 'ایمیل یا رمز عبور اشتباه است' };
+      }
+      const pwOk = await bcrypt.compare(input.password, twoFaUser.password);
+      if (!pwOk) {
+        if (twoFaUser.role === Role.OWNER || twoFaUser.role === Role.SUPERADMIN) {
+          await logOwnerSecurityEvent('OWNER_LOGIN_FAILED', twoFaUser.id, await getClientIp());
+        }
+        return { success: false, error: 'ایمیل یا رمز عبور اشتباه است' };
+      }
+      if (!twoFaUser.emailVerified) {
+        const sent = await issueOtp(input.email, 'reverify');
+        if (sent.ok) {
+          return {
+            success: false,
+            error:
+              'ایمیل شما هنوز تأیید نشده است. کد جدید به ایمیل‌تان ارسال شد—لطفاً ابتدا کد را وارد کنید',
+          };
+        }
+        return { success: false, error: 'ایمیل شما هنوز تأیید نشده است' };
+      }
+
+      // نشست بساز تا بتواند 2FA را فعال کند — ولی مستقیم به صفحه‌ی
+      // فعال‌سازی هدایت شود؛ اولین کار بعد از ورود، فعال‌سازی 2FA است.
+      await signIn('credentials', {
+        email: input.email,
+        password: input.password,
+        kind: 'password',
+        redirect: false,
+      });
+
+      await logOwnerSecurityEvent('OWNER_LOGIN_2FA_PENDING', twoFaUser.id, await getClientIp());
+
+      return {
+        success: true,
+        message:
+          'برای حساب مالک، احراز هویت دو مرحله‌ای (2FA) اجباری است. لطفاً همین حالا آن را فعال کنید.',
+        redirect: '/dashboard/edit-profile?2fa=required',
       };
     }
 
@@ -482,10 +596,12 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
       const twoFaUser = await prisma.user.findFirst({
         where: { email: { equals: input.email, mode: 'insensitive' } },
         select: {
+          id: true,
           twoFactorEnabled: true,
           twoFactorSecretEnc: true,
           emailVerified: true,
           email: true,
+          role: true,
         },
       });
       if (!twoFaUser?.twoFactorEnabled || !twoFaUser.twoFactorSecretEnc) {
@@ -531,6 +647,11 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
           success: false,
           error: 'کد تأیید شد ولی ورود با خطا مواجه شد. لطفاً دوباره از ابتدا اقدام کنید',
         };
+      }
+
+      // لایه تشخیص: ورود موفق مالک با TOTP ثبت می‌شود
+      if (twoFaUser.role === Role.OWNER || twoFaUser.role === Role.SUPERADMIN) {
+        await logOwnerSecurityEvent('OWNER_LOGIN', twoFaUser.id, await getClientIp());
       }
 
       return {
@@ -691,6 +812,23 @@ export async function recoverPassword(formData: FormData): Promise<AuthResult> {
         intent: 'recover',
         message: 'اگر این ایمیل در سیستم ما وجود داشته باشد، کد بازنشانی ارسال شده است',
       };
+    }
+
+    // امنیت: هر درخواست بازیابی رمز برای حساب مالک ثبت می‌شود (audit trail).
+    // حتی اگر کسی ایمیل مالک را در اختیار داشته باشد، ورود بدون TOTP ممکن
+    // نیست — 2FA برای مالک اجباری است (loginWithPassword).
+    if (user.role === Role.OWNER || user.role === Role.SUPERADMIN) {
+      try {
+        await prisma.systemLog.create({
+          data: {
+            level: 'WARN',
+            message: `Password recovery requested for OWNER account at ${new Date().toISOString()}`,
+            source: 'AUTH',
+          },
+        });
+      } catch (_logErr) {
+        // log failure must never break the recovery flow
+      }
     }
 
     const sent = await issueOtp(email, 'recover');

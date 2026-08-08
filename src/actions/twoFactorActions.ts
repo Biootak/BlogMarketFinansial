@@ -7,6 +7,7 @@ import { requireUser } from '@/lib/require-auth';
 import { generateOtpAuthUri, generateTotpSecret, verifyTotp } from '@/lib/totp';
 import { decryptTotpSecret, encryptTotpSecret } from '@/lib/totp-secrets';
 import type { FintechActionResult } from '@/types/types';
+import { Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { v4 as createId } from 'uuid';
 
@@ -115,10 +116,20 @@ export async function disable2FA(token: string): Promise<FintechActionResult<voi
     };
   const user = await prisma.user.findUnique({
     where: { id: auth.user.id },
-    select: { twoFactorEnabled: true, twoFactorSecretEnc: true },
+    select: { twoFactorEnabled: true, twoFactorSecretEnc: true, role: true },
   });
   if (!user?.twoFactorEnabled || !user.twoFactorSecretEnc)
     return { success: false, error: { code: 'NOT_ENABLED', message: '۲FA فعال نیست' } };
+  // مالک (OWNER/SUPERADMIN) هرگز نمی‌تواند 2FA را غیرفعال کند — امنیت دائمی
+  if (user.role === Role.OWNER || user.role === Role.SUPERADMIN) {
+    return {
+      success: false,
+      error: {
+        code: 'FORBIDDEN',
+        message: 'حساب مالک اجازه‌ی غیرفعال‌کردن احراز هویت دو مرحله‌ای را ندارد',
+      },
+    };
+  }
   // C2-fix: از fiel رمزنگاری‌شده decrypt و verify کن
   const secret2 = decryptTotpSecret(user.twoFactorSecretEnc);
   if (!(await verifyTotp(secret2, token)))

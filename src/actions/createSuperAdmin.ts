@@ -2,10 +2,16 @@
 
 import prisma from '@/lib/db';
 import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
+import { checkRateLimit } from '@/lib/rate-limiter';
 import { Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { headers } from 'next/headers';
 import { z } from 'zod';
+
+// مالک مهم‌ترین حساب سامانه است — هش قوی‌تر از کاربران عادی (cost 13 = 8192
+// راند key-stretching؛ OWASP حداقل 10 را برای bcrypt الزامی می‌داند). چون ساخت
+// مالک فقط یک‌بار و در /setup انجام می‌شود، هزینه‌ی اضافه قابل‌قبول است.
+const OWNER_BCRYPT_COST = 13;
 
 // اعتبارسنجی قوی‌تر با zod
 const superAdminSchema = z.object({
@@ -27,6 +33,19 @@ const superAdminSchema = z.object({
 
 export async function createSuperAdmin(formData: FormData) {
   try {
+    // Rate-limit سراسری روی خودِ عملیات setup — ساخت مالک باارزش‌ترین هدف
+    // brute-force است. (نوع auth: fail-closed — اگر Redis در دسترس نباشد،
+    // درخواست رد می‌شود نه اینکه بدون محدودیت بماند.)
+    const setupRate = await checkRateLimit('setup-create', 'auth');
+    if (!setupRate.success) {
+      return {
+        success: false,
+        message: 'تعداد تلاش‌های بیش از حد مجاز. لطفاً کمی بعد دوباره تلاش کنید',
+        errors: {},
+        existingAdmin: null,
+      };
+    }
+
     // بررسی محیط اجرا
     if (process.env.NODE_ENV === 'production') {
       // بررسی IP در محیط تولید
@@ -86,7 +105,7 @@ export async function createSuperAdmin(formData: FormData) {
         const existingAdmin = await tx.user.findFirst({ where: { role: Role.OWNER } });
         if (existingAdmin) return { existing: true as const, user: null };
 
-        const hashedPassword = await bcrypt.hash(formDataObj.password, 12);
+        const hashedPassword = await bcrypt.hash(formDataObj.password, OWNER_BCRYPT_COST);
         // ذخیرهٔ شماره به فرمت استاندارد E.164 (هماهنگ با بقیهٔ اپ)
         const phoneE164 = normalizeToE164(formDataObj.phoneNumber);
         const created = await tx.user.create({
