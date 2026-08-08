@@ -4,7 +4,9 @@
 # بدون وابستگی به CPU ماشین توسعه‌دهنده یا سهمیهٔ PageSpeed (PSI).
 #
 # کاربرد:
-#   gh workflow run lighthouse-audit
+#   gh workflow run lighthouse-audit                                   → همهٔ صفحات
+#   gh workflow run lighthouse-audit -f url=.../exchanges             → یک صفحه
+#   gh workflow run lighthouse-audit -f detail=true -f url=.../       → + تشخیص LCP/MT
 #   gh run watch <run-id>  → خروجی جدول امتیازها در لاگ
 #
 # فقط workflow_dispatch — هیچ‌وقت روی push اجرا نمی‌شود و دیپلوی را
@@ -13,6 +15,16 @@ name: Lighthouse Audit
 
 on:
   workflow_dispatch:
+    inputs:
+      url:
+        description: 'صفحه (اختیاری) — فقط همین آدرس تست می‌شود'
+        required: false
+        type: string
+      detail:
+        description: 'خروجی تشخیصی (LCP element + main-thread + long tasks)'
+        required: false
+        default: 'false'
+        type: boolean
 
 permissions:
   contents: read
@@ -27,17 +39,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Run Lighthouse (mobile) on all public pages
+      - name: Run Lighthouse (mobile) on public pages
         shell: bash
         run: |
-          PAGES=(
-            "home|https://financialmarket.page/"
-            "exchanges|https://financialmarket.page/exchanges"
-            "money-transfer|https://financialmarket.page/money-transfer"
-            "exchange-rates|https://financialmarket.page/exchange-rates"
-            "archive|https://financialmarket.page/archive"
-            "about|https://financialmarket.page/about"
-          )
+          DETAIL="${{ inputs.detail }}"
+          if [ -n "${{ inputs.url }}" ]; then
+            name="custom"
+            url="${{ inputs.url }}"
+            PAGES=("$name|$url")
+          else
+            PAGES=(
+              "home|https://financialmarket.page/"
+              "exchanges|https://financialmarket.page/exchanges"
+              "money-transfer|https://financialmarket.page/money-transfer"
+              "exchange-rates|https://financialmarket.page/exchange-rates"
+              "archive|https://financialmarket.page/archive"
+              "about|https://financialmarket.page/about"
+            )
+          fi
           echo "== Lighthouse Mobile (strategy: mobile) =="
           echo "PAGE | PERF A11Y BP SEO | FCP LCP TBT CLS TTFB"
           for entry in "${PAGES[@]}"; do
@@ -48,7 +67,7 @@ jobs:
               --chrome-flags="--headless=new --no-sandbox --disable-gpu" >/dev/null 2>&1 || true
             node -e '
               const fs = require("fs");
-              const [f, n] = [process.argv[1], process.argv[2]];
+              const [f, n, detail] = [process.argv[1], process.argv[2], process.argv[3] === "true"];
               const r = JSON.parse(fs.readFileSync(f, "utf8"));
               const pct = id => Math.round((r.categories[id] || {}).score * 100);
               const m = id => { const a = r.audits[id]; return a ? (a.displayValue || a.numericValue || "-") : "-"; };
@@ -65,6 +84,35 @@ jobs:
                 m("cumulative-layout-shift").padStart(7),
                 m("server-response-time").padStart(8),
               );
-            ' "$out" "$name"
+              if (detail) {
+                const lcp = r.audits["largest-contentful-paint-element"];
+                if (lcp && lcp.details && lcp.details.items && lcp.details.items[0]) {
+                  const it = lcp.details.items[0];
+                  console.log("  LCP-el:", (it.node && it.node.snippet ? String(it.node.snippet).slice(0, 90) : it.url || "?"));
+                }
+                const ls = r.audits["layout-shifts"];
+                if (ls && ls.details && ls.details.items) {
+                  for (const it of ls.details.items.slice(0, 4)) {
+                    console.log("  CLS-el score=" + it.score.toFixed(3), it.node && it.node.snippet ? String(it.node.snippet).slice(0, 70) : "?");
+                  }
+                }
+                const mt = r.audits["mainthread-work-breakdown"];
+                if (mt && mt.details && mt.details.items) {
+                  const g = {};
+                  for (const it of mt.details.items) g[it.group] = (g[it.group] || 0) + it.duration;
+                  console.log("  MT:", Object.entries(g).sort((a, b) => b[1] - a[1]).map(([k, v]) => k + "=" + (v / 1000).toFixed(2) + "s").join(" "));
+                }
+                const lt = r.audits["long-tasks"];
+                if (lt && lt.details && lt.details.items) {
+                  const top = lt.details.items.slice(0, 4).map(i => Math.round(i.duration) + "ms:" + (i.url ? i.url.split("/").pop().slice(0, 40) : "?"));
+                  console.log("  Long-tasks:", top.join(" | "));
+                }
+                const boot = r.audits["bootup-time"];
+                if (boot && boot.details && boot.details.items) {
+                  const top = boot.details.items.filter(i => i.scripting > 0).sort((a, b) => b.scripting - a.scripting).slice(0, 3);
+                  console.log("  Top scripting:", top.map(i => (i.url.split("/").pop() || "?").slice(0, 40) + "=" + (i.scripting / 1000).toFixed(2) + "s").join(" | "));
+                }
+              }
+            ' "$out" "$name" "$DETAIL"
           done
           echo "== done =="
