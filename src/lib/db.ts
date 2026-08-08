@@ -2,6 +2,8 @@ import { PrismaClient } from '@prisma/client';
 import { buildDatabaseUrl } from './db-url';
 import { serverLog } from './server-logger';
 
+// 2026-08-08: deploy-pipeline E2E test marker (dummy change — no behavior impact)
+
 export { buildDatabaseUrl };
 
 // Lazy singleton via Proxy — defers PrismaClient creation to first use so
