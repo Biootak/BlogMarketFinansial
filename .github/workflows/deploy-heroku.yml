@@ -9,6 +9,7 @@ on:
     paths-ignore:
       - '*.md'
       - 'deploy/**'
+      - '.github/workflows/stability-check.yml'
   # اجازه دیپلوی دستی از GitHub UI
   workflow_dispatch:
 

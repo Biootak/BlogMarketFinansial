@@ -37,17 +37,21 @@ jobs:
           echo "=== Home HTTP ==="
           APP_URL="$(heroku config:get APP_URL -a "$APP" 2>/dev/null)"
           [ -z "$APP_URL" ] && APP_URL="https://$APP.herokuapp.com"
-          CODE="$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$APP_URL")"
-          echo "http_code=$CODE"
+          CODE="$(curl -sL -o /dev/null -w '%{http_code}' --max-time 30 "$APP_URL")"
+          echo "http_code=$CODE (url=$APP_URL)"
           [ "$CODE" = "200" ] || FAIL=1
 
-          echo "=== R14/R15/H10 (پنجرهٔ آخرین 1500 لاگ) ==="
+          echo "=== R14/R15/H10 (فقط بعد از release فعلی) ==="
           heroku logs --num 1500 -a "$APP" > /tmp/fm-logs.txt 2>/dev/null
-          if grep -E 'R14|R15|H10' /tmp/fm-logs.txt | tail -6; then
-            echo "⚠️ خطاهای حافظه/کرش پیدا شد"
+          REL_TS="$(heroku releases -a "$APP" --json 2>/dev/null | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{const j=JSON.parse(d);process.stdout.write(j[0]?j[0].created_at:'')})")"
+          echo "release_ts=$REL_TS"
+          grep -E 'R14|R15|H10' /tmp/fm-logs.txt | awk -v ts="$REL_TS" '$1 > ts' > /tmp/fm-errors.txt
+          if [ -s /tmp/fm-errors.txt ]; then
+            cat /tmp/fm-errors.txt
+            echo "⚠️ خطاهای حافظه/کرش بعد از release فعلی پیدا شد"
             FAIL=1
           else
-            echo "تمیز — هیچ R14/R15/H10 در پنجره"
+            echo "تمیز — هیچ R14/R15/H10 بعد از release فعلی"
           fi
 
           echo "=== روند حافظه ==="
