@@ -86,9 +86,26 @@ jobs:
               );
               if (detail) {
                 const lcp = r.audits["largest-contentful-paint-element"];
+                let lcpInfo = "(no details)";
                 if (lcp && lcp.details && lcp.details.items && lcp.details.items[0]) {
                   const it = lcp.details.items[0];
-                  console.log("  LCP-el:", (it.node && it.node.snippet ? String(it.node.snippet).slice(0, 90) : it.url || "?"));
+                  const sn = it.node && it.node.snippet ? String(it.node.snippet).replace(/\s+/g, " ").slice(0, 90) : "";
+                  lcpInfo = (sn || it.url || JSON.stringify(it).slice(0, 160));
+                  if (!sn && it.items && it.items[0]) {
+                    const inner = it.items[0];
+                    const sn2 = inner.node && inner.node.snippet ? String(inner.node.snippet).replace(/\s+/g, " ").slice(0, 90) : "";
+                    lcpInfo = (sn2 || inner.url || lcpInfo);
+                  }
+                }
+                console.log("  LCP-el:", lcpInfo);
+                const net = r.audits["network-requests"];
+                if (net && net.details && net.details.items) {
+                  const top = net.details.items
+                    .filter(n => n.transferSize > 50000)
+                    .sort((a, b) => b.transferSize - a.transferSize)
+                    .slice(0, 8)
+                    .map(n => (n.url.split("/").pop() || n.url).slice(0, 42) + "=" + Math.round(n.transferSize / 1024) + "KB");
+                  console.log("  Top resources:", top.join(" | ") || "none >50KB");
                 }
                 const ls = r.audits["layout-shifts"];
                 if (ls && ls.details && ls.details.items) {
