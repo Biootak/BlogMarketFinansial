@@ -43,23 +43,22 @@ jobs:
           echo "direct_url=$(echo "$CONFIG" | jq -r '.DIRECT_URL // empty')" >> "$GITHUB_OUTPUT"
 
       # ─── 4. Build & Push Docker image to Heroku ───────────────────────────
-      # 2026-08-08: docker/build-push-action (BuildKit) تصویر را با OCI index
-      # push می‌کند که Heroku Container Registry قبول نمی‌کند
+      # 2026-08-08: docker/build-push-action (BuildKit container driver) تصویر
+      # را با OCI index push می‌کند که Heroku Container Registry قبول نمی‌کند
       # ("failed to push ...: unsupported") — حتی با provenance/sbom=false.
-      # راه‌حل رسمی و مطمئن: Heroku CLI → heroku container:push (همان مسیر
-      # documented در deploy/HEROKU.md).
-      - name: Install Heroku CLI
-        run: npm install -g heroku@latest
-
-      - name: Build and push image (heroku container:push)
+      # راه‌حل قطعی: docker build + docker push ساده (همان کاری که
+      # heroku container:push داخلاً می‌کند — مسیر documented در HEROKU.md).
+      - name: Build and push image (docker)
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: |
-          heroku container:login
-          heroku container:push web --app ${{ secrets.HEROKU_APP_NAME }} \
-            --arg DATABASE_URL="${{ steps.db.outputs.database_url }}" \
-            --arg DIRECT_URL="${{ steps.db.outputs.direct_url }}" \
-            --arg SEED_OWNER_PASSWORD="${{ secrets.SEED_OWNER_PASSWORD }}"
+          echo "$HEROKU_API_KEY" | docker login --username=_ --password-stdin registry.heroku.com
+          docker build -f Dockerfile.heroku \
+            --build-arg DATABASE_URL="${{ steps.db.outputs.database_url }}" \
+            --build-arg DIRECT_URL="${{ steps.db.outputs.direct_url }}" \
+            --build-arg SEED_OWNER_PASSWORD="${{ secrets.SEED_OWNER_PASSWORD }}" \
+            -t registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web .
+          docker push registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web
 
       # ─── 5. Release (deploy) روی Heroku ──────────────────────────────────
       - name: Release on Heroku
