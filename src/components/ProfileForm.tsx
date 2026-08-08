@@ -505,7 +505,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
                       })}
                       rows={5}
                       maxLength={BIO_MAX}
-                      placeholder="درباره خودتان بنویسید..."
+                      placeholder="درباره خودتان بنویسید…"
                       aria-invalid={!!infoErrors.bio}
                       className={cn('resize-none', s.textarea)}
                     />
@@ -535,7 +535,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
                   {isInfoSubmitting ? (
                     <span className="flex items-center gap-2">
                       <span className={s.spinner} role="status" aria-label="در حال بارگذاری" />
-                      در حال ذخیره...
+                      در حال ذخیره…
                     </span>
                   ) : (
                     <span className="flex items-center gap-2">
@@ -721,7 +721,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
                   {isSecuritySubmitting ? (
                     <span className="flex items-center gap-2">
                       <span className={s.spinner} role="status" aria-label="در حال بارگذاری" />
-                      در حال ذخیره...
+                      در حال ذخیره…
                     </span>
                   ) : (
                     <span className="flex items-center gap-2">

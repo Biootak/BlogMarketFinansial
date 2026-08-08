@@ -32,7 +32,7 @@ export default function LoadMoreButton({ onLoadMore, isLoading, hasMore }: LoadM
         {isLoading ? (
           <span className="flex items-center gap-2">
             <Loader2 className="w-4 h-4 animate-spin" aria-hidden />
-            در حال بارگذاری...
+            در حال بارگذاری…
           </span>
         ) : (
           <span className="flex items-center gap-2">

@@ -1392,87 +1392,75 @@ export const CommentSkeleton: FC = () => (
 export const AuthorPageSkeleton: FC = () => (
   <div className="container py-6 sm:py-10 lg:py-12 space-y-8 sm:space-y-10">
     {/*
-      Hero — mirrors AuthorProfileHero exactly:
-      dark mesh bg + top row (avatar ring + badge) + name block + chips + bio + stats strip
-      No cover band — the real component uses CSS mesh, not an image band.
+      Hero — mirrors AuthorProfileHero «Masthead Ledger»:
+      [avatar 4/5 portrait] | topline (kicker·hairline·badge) → name+rule →
+      chips → bio → stats ticker (2×2 mobile / 4 cols) → CTA
     */}
     <div
-      className="relative overflow-hidden rounded-3xl"
-      style={{ background: 'oklch(18% 0.015 250)', minHeight: '260px' }}
+      className="relative overflow-hidden rounded-2xl border"
+      style={{
+        borderColor: 'var(--ds-border-subtle)',
+        background: 'var(--ds-surface)',
+        padding: 'var(--ds-space-6)',
+      }}
     >
-      {/* Inner content */}
-      <div className="relative z-10 px-6 sm:px-8 lg:px-10 pt-8 pb-0">
-        {/* Top row: avatar + badge */}
-        <div className="flex items-start justify-between gap-4 mb-5">
-          {/* Avatar ring */}
-          <SkeletonBase
-            className="h-16 w-16 sm:h-20 sm:w-20 rounded-full flex-shrink-0"
-            style={{ background: 'oklch(30% 0.02 250)' }}
-          />
-          {/* Role badge */}
-          <SkeletonBase
-            className="h-6 w-28 rounded-full"
-            style={{ background: 'oklch(28% 0.02 250)' }}
-          />
-        </div>
+      <div className="grid grid-cols-[minmax(0,96px)_1fr] gap-5 lg:grid-cols-[minmax(0,220px)_1fr] lg:gap-10 lg:items-center">
+        {/* Portrait — 4/5 avatar card */}
+        <SkeletonBase className="aspect-[4/5] rounded-xl w-full" />
 
-        {/* Name block */}
-        <div className="space-y-2 mb-4">
-          <SkeletonBase
-            className="h-9 sm:h-11 w-56 rounded-lg"
-            style={{ background: 'oklch(28% 0.02 250)' }}
-          />
-          <SkeletonBase
-            className="h-1.5 w-48 rounded-full"
-            style={{ background: 'oklch(32% 0.04 200)' }}
-          />
-        </div>
-
-        {/* Chips: job + company */}
-        <div className="flex gap-2 mb-4">
-          <SkeletonBase
-            className="h-7 w-28 rounded-full"
-            style={{ background: 'oklch(28% 0.02 250)' }}
-          />
-          <SkeletonBase
-            className="h-7 w-24 rounded-full"
-            style={{ background: 'oklch(28% 0.02 250)' }}
-          />
-        </div>
-
-        {/* Bio lines */}
-        <div className="space-y-2 pb-6">
-          <SkeletonBase
-            className="h-4 w-full rounded-md"
-            style={{ background: 'oklch(26% 0.015 250)' }}
-          />
-          <SkeletonBase
-            className="h-4 w-4/5 rounded-md"
-            style={{ background: 'oklch(26% 0.015 250)' }}
-          />
-        </div>
-      </div>
-
-      {/* Stats strip — 4-column frosted bar at the bottom */}
-      <div
-        className="relative z-10 grid grid-cols-2 sm:grid-cols-4 divide-x divide-x-reverse"
-        style={{
-          borderTop: '1px solid oklch(30% 0.02 250)',
-          background: 'oklch(20% 0.015 250 / 0.7)',
-        }}
-      >
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="flex flex-col items-center gap-1 py-4 px-2">
-            <SkeletonBase
-              className="h-6 w-10 rounded-md"
-              style={{ background: 'oklch(30% 0.02 250)' }}
-            />
-            <SkeletonBase
-              className="h-3 w-12 rounded-md"
-              style={{ background: 'oklch(26% 0.015 250)' }}
-            />
+        {/* Content column */}
+        <div className="flex flex-col gap-4 min-w-0">
+          {/* Topline: kicker + hairline + badge */}
+          <div className="flex items-center gap-3">
+            <SkeletonBase className="h-4 w-24 rounded-full" />
+            <SkeletonBase className="h-px flex-1 rounded-full" />
+            <SkeletonBase className="h-6 w-20 rounded-full" />
           </div>
-        ))}
+
+          {/* Name + signature rule */}
+          <div className="flex flex-col gap-1.5">
+            <SkeletonBase className="h-9 w-2/3 rounded-lg" style={{ maxWidth: '26rem' }} />
+            <SkeletonBase className="h-2.5 w-40 rounded-full" />
+          </div>
+
+          {/* Meta chips */}
+          <div className="flex flex-wrap gap-2">
+            <SkeletonBase className="h-7 w-24 rounded-full" />
+            <SkeletonBase className="h-7 w-28 rounded-full" />
+          </div>
+
+          {/* Bio */}
+          <div className="space-y-2">
+            <SkeletonBase className="h-4 w-full rounded-md" />
+            <SkeletonBase className="h-4 w-4/5 rounded-md" />
+          </div>
+
+          {/* Stats ticker — hairline-ruled cells */}
+          <div
+            className="grid grid-cols-2 sm:grid-cols-4 gap-px rounded-xl overflow-hidden"
+            style={{
+              background: 'var(--ds-border-subtle)',
+              border: '1px solid var(--ds-border-subtle)',
+            }}
+          >
+            {[...Array(4)].map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 p-4"
+                style={{ background: 'var(--ds-surface-elevated)' }}
+              >
+                <SkeletonBase className="h-10 w-10 rounded-lg flex-shrink-0" />
+                <div className="flex flex-col gap-1.5 min-w-0">
+                  <SkeletonBase className="h-4 w-10 rounded-md" />
+                  <SkeletonBase className="h-2.5 w-8 rounded-sm" />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <SkeletonBase className="h-11 w-full rounded-xl sm:w-48" />
+        </div>
       </div>
     </div>
 

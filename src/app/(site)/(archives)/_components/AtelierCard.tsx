@@ -11,7 +11,7 @@ import { Eye, MessagesSquare } from 'lucide-react';
 // keeps the route statically prerenderable while the date is formatted in
 // the browser / SSR simulation.
 import Link from 'next/link';
-import type * as React from 'react';
+import React from 'react';
 
 /**
  * AtelierCard — editorial article card (2026).
@@ -53,7 +53,7 @@ function typeLabel(postType?: string | null) {
   }
 }
 
-const AtelierCard: React.FC<AtelierCardProps> = ({ post, priority = false }) => {
+const AtelierCard: React.FC<AtelierCardProps> = React.memo(function AtelierCard({ post, priority = false }) {
   if (!post || !post.slug) return null;
 
   const {
@@ -126,6 +126,11 @@ const AtelierCard: React.FC<AtelierCardProps> = ({ post, priority = false }) => 
       </div>
     </article>
   );
-};
+}, (prevProps, nextProps) => {
+  // Custom comparison: فقط اگر post ID یا priority تغییر کرد re-render کن
+  return prevProps.post.id === nextProps.post.id && prevProps.priority === nextProps.priority;
+});
+
+AtelierCard.displayName = 'AtelierCard';
 
 export default AtelierCard;

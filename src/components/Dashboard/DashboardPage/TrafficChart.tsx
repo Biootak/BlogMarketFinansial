@@ -86,7 +86,7 @@ const TrafficChart: React.FC<TrafficChartProps> = ({ period = '7d' }) => {
         <div className="relative">
           <div className="w-12 h-12 rounded-full border-4 border-violet-200 dark:border-violet-900 border-t-violet-600 animate-spin" />
         </div>
-        <p className="mt-4 text-slate-500 dark:text-slate-400 text-sm">در حال بارگیری...</p>
+        <p className="mt-4 text-slate-500 dark:text-slate-400 text-sm">در حال بارگیری…</p>
       </div>
     );
   }

@@ -35,7 +35,6 @@ interface ToolbarProps {
   onAddClick: () => void;
   totalShown?: number;
   totalAll?: number;
-  registryTotal?: number;
 }
 
 const GROUP_LABELS: Record<GroupFilter, string> = {
@@ -76,7 +75,6 @@ export default function ExchangeRatesToolbar({
   onAddClick,
   totalShown,
   totalAll,
-  registryTotal,
 }: ToolbarProps) {
   const [localQuery, setLocalQuery] = useState(query);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -90,11 +88,6 @@ export default function ExchangeRatesToolbar({
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => onQueryChange(v), 280);
   };
-
-  const coverage =
-    typeof registryTotal === 'number' && registryTotal > 0 && typeof totalAll === 'number'
-      ? Math.round((totalAll / registryTotal) * 100)
-      : null;
 
   return (
     <div
@@ -187,11 +180,6 @@ export default function ExchangeRatesToolbar({
             {(totalAll ?? 0).toLocaleString('fa-IR')}
           </span>
           <span>نرخ</span>
-          {coverage !== null && (
-            <span className="font-semibold" style={{ color: 'var(--ds-brand-500)' }}>
-              · پوشش {coverage.toLocaleString('fa-IR')}٪
-            </span>
-          )}
         </div>
       </div>
 

@@ -33,7 +33,10 @@ export default function Providers({
   return (
     <SessionProvider
       {...(session ? { session: session as never } : {})}
-      refetchOnWindowFocus={true}
+      // 2026-08-08: در هر visibilitychange/focus یک fetch /api/auth/session
+      // می‌رفت (در هر بازدید چند بار). برای سایت محتوایی که session کم تغییر
+      // می‌کند زائد است — فقط روی mount اولیه fetch می‌شود.
+      refetchOnWindowFocus={false}
       refetchWhenOffline={false}
       refetchInterval={0}
     >

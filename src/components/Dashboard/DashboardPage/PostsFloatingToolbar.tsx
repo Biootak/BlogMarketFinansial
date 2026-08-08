@@ -604,7 +604,7 @@ const PostsFloatingToolbar: FC<PostsFloatingToolbarProps> = ({
                               aria-hidden
                             />
                             <span className="font-semibold">
-                              {duplicateLoading ? 'در حال تکرار...' : 'تکرار پست'}
+                              {duplicateLoading ? 'در حال تکرار…' : 'تکرار پست'}
                             </span>
                           </DropdownMenuItem>
                         )}

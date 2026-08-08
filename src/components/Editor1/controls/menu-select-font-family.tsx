@@ -234,7 +234,7 @@ const MenuSelectFontFamily: React.FC<MenuSelectFontFamilyProps> = ({ editor }) =
         <div className="px-4 py-3 border-b">
           <div className="relative">
             <Input
-              placeholder="جستجو..."
+              placeholder="جستجو…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               aria-label="جستجوی فونت"

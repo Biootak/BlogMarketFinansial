@@ -232,7 +232,7 @@ export default function ReportsCockpit({ exchangeId, report, txRows, txTotal }: 
               aria-label="خروجی CSV"
             >
               <FileSpreadsheet size={13} aria-hidden />
-              {exporting ? 'در حال ساخت...' : 'خروجی CSV'}
+              {exporting ? 'در حال ساخت…' : 'خروجی CSV'}
             </Button>
           </div>
         </header>

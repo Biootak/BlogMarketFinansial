@@ -227,7 +227,7 @@ export function CustomerCreateWorkspace({ exchangeId, primaryCurrency }: Props) 
                 name="address"
                 value={form.address}
                 onChange={handleChange}
-                placeholder="خیابان..."
+                placeholder="خیابان…"
                 disabled={isPending}
               />
             </Field>
@@ -279,7 +279,7 @@ export function CustomerCreateWorkspace({ exchangeId, primaryCurrency }: Props) 
               onChange={handleChange}
               rows={3}
               className={s.textarea}
-              placeholder="اطلاعات اضافی..."
+              placeholder="اطلاعات اضافی…"
               disabled={isPending}
             />
           </Field>
@@ -307,7 +307,7 @@ export function CustomerCreateWorkspace({ exchangeId, primaryCurrency }: Props) 
             {isPending ? (
               <>
                 <Loader2 size={15} className={s.spin} aria-hidden />
-                در حال ذخیره...
+                در حال ذخیره…
               </>
             ) : (
               <>

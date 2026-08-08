@@ -226,7 +226,7 @@ export default function EditCategoryDialog({
               )}
             />
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'در حال ذخیره...' : 'ذخیره تغییرات'}
+              {isSubmitting ? 'در حال ذخیره…' : 'ذخیره تغییرات'}
             </Button>
           </form>
         </Form>

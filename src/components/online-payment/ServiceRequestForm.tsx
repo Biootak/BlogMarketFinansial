@@ -906,7 +906,7 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
                 }}
                 rows={2}
                 className={s.textarea}
-                placeholder="اگر توضیحات خاصی دارید اینجا بنویسید... (اختیاری)"
+                placeholder="اگر توضیحات خاصی دارید اینجا بنویسید… (اختیاری)"
                 onInput={autoResize}
               />
               {errors.description && (
@@ -929,7 +929,7 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
               کد ۶ رقمی به <strong dir="ltr">{watch('email')}</strong> ارسال شد. لطفاً کد را وارد
               کنید.
             </p>
-            {otpSending && <p className={s.otpHint}>در حال ارسال کد...</p>}
+            {otpSending && <p className={s.otpHint}>در حال ارسال کد…</p>}
             {otpError && (
               <div className={s.errorAlert} role="alert">
                 <AlertCircle size={14} />
@@ -961,7 +961,7 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
                 {otpVerifying ? (
                   <>
                     <span className={s.spinner} aria-hidden="true" />
-                    <span>در حال تأیید...</span>
+                    <span>در حال تأیید…</span>
                   </>
                 ) : (
                   <>

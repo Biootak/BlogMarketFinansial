@@ -95,7 +95,7 @@ const LogoutButton = () => {
           'transition-colors duration-300',
         )}
       >
-        {isLoading ? 'در حال خروج...' : 'خروج'}
+        {isLoading ? 'در حال خروج…' : 'خروج'}
       </span>
     </button>
   );

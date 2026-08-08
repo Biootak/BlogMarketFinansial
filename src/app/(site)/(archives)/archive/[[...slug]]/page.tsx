@@ -11,14 +11,13 @@ import { getArchivePosts } from '@/actions/postActions';
 import BackgroundSection from '@/components/BackgroundSection/BackgroundSection';
 import DynamicCategories from '@/components/DynamicCategories';
 import Empty from '@/components/Empty';
-import Pagination from '@/components/Pagination/Pagination';
 import SectionSliderNewAuthors from '@/components/SectionSliderNewAthors/SectionSliderNewAuthors';
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
 import type { ActiveFilter } from '../../_components/ActiveFilters';
-import AtelierGrid from '../../_components/AtelierGrid';
 import AtelierMasthead from '../../_components/AtelierMasthead';
 import AtelierToolbar from '../../_components/AtelierToolbar';
 import { buildArchiveCrumbs } from '../../_components/buildArchiveCrumbs';
+import { ArchiveClient } from './ArchiveClient';
 
 const ARCHIVE_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://financialmarket.page';
 
@@ -89,7 +88,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
   const currentPage = searchParamsData.page ? Number.parseInt(searchParamsData.page) : 1;
   const filter = searchParamsData.filter || DEFAULT_FILTER;
   const searchQuery = searchParamsData.q || '';
-  const limit = 12;
+  const limit = 15;
 
   if (type && !['category', 'tag'].includes(type)) {
     notFound();
@@ -219,6 +218,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
   const showFeatured = currentPage === 1 && !searchQuery && filter === DEFAULT_FILTER;
   const featuredPost = showFeatured && posts.length > 0 ? posts[0] : null;
   const gridPosts = featuredPost ? posts.slice(1) : posts;
+  const hasMore = currentPage < pages;
 
   return (
     <div className="atl-page">
@@ -251,28 +251,25 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
           totalCount={total}
         />
 
-        {gridPosts.length > 0 ? (
-          <div className="atl-result-meta">
-            <span>
-              نمایش <b>{posts.length.toLocaleString('fa-IR')}</b> از{' '}
-              <b>{total.toLocaleString('fa-IR')}</b> مقاله
-            </span>
-            <span className="atl-result-meta__rule" aria-hidden />
-          </div>
-        ) : null}
-
-        {posts.length > 0 ? <AtelierGrid posts={gridPosts} ads={betweenPostsAds} /> : <Empty />}
-
-        {posts.length > 0 && pages > 1 ? (
-          <div
-            className="flex justify-center"
-            style={{
-              marginBlock: 'var(--ds-space-10) var(--ds-space-8)',
-            }}
-          >
-            <Pagination currentPage={currentPage} totalPages={pages} />
-          </div>
-        ) : null}
+        {posts.length > 0 ? (
+          <ArchiveClient
+            initialPosts={gridPosts}
+            initialTotal={total}
+            initialPages={pages}
+            initialHasMore={hasMore}
+            filter={filter}
+            type={type}
+            category={category}
+            subcategory={subcategory}
+            tag={type === 'tag' ? category : undefined}
+            searchQuery={searchQuery}
+            ads={betweenPostsAds}
+            showFeatured={showFeatured}
+            featuredPost={featuredPost}
+          />
+        ) : (
+          <Empty />
+        )}
 
         {posts.length === 0 ? (
           <div
@@ -292,7 +289,13 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
 
       <div className="relative atl-section">
         <BackgroundSection />
-        <div className="container relative z-10" style={{ paddingBlock: 'var(--ds-space-2)' }}>
+        <div
+          className="container relative z-10"
+          style={{
+            paddingBlock: 'var(--ds-space-8)',
+            paddingInline: 'var(--ds-space-6)',
+          }}
+        >
           <DynamicCategories
             initialCategories={categories}
             initialTotalCount={categoriesResult.data?.totalCount || 0}
@@ -303,7 +306,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
       <div className="container atl-section">
         <SectionSliderNewAuthors
           heading="صدای تحلیلگران"
-          subHeading="با ذهن‌هایی آشنا شوید که پشت هر روایت، نگاه تیزبین و قلم بی‌طرفی دارند"
+          subHeading="با ذهن‌هایی آشنا شوید که پشت هر روایت، نگاهی تیزبین و قلمی بی‌طرف دارند"
           authors={topAuthors}
           itemPerRow={5}
         />

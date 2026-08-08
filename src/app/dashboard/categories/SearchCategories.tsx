@@ -40,14 +40,14 @@ export default function SearchCategories() {
     <div className="at-filterbar__search">
       <input
         type="text"
-        placeholder="جستجوی دسته‌بندی..."
+        placeholder="جستجوی دسته‌بندی…"
         value={searchTerm}
         onChange={(e) => handleSearch(e.target.value)}
       />
       <HiMagnifyingGlass className="at-filterbar__search__ico size-4" />
       {isPending && (
         <span className="text-[10px] text-[color:var(--at-fg-subtle)] mt-1 block">
-          در حال جستجو...
+          در حال جستجو…
         </span>
       )}
     </div>

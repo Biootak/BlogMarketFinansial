@@ -161,7 +161,6 @@ export default function ExchangeRatesWorkspace({ initialRows }: Props) {
         onAddClick={handleAddManual}
         totalShown={filteredCount}
         totalAll={initialRows.length}
-        registryTotal={SYMBOL_REGISTRY.length}
       />
 
       <ExchangeRatesTable

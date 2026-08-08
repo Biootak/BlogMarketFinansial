@@ -102,7 +102,7 @@ const SingleCommentForm: FC<SingleCommentFormProps> = ({
         <div className="relative p-4 sm:p-5">
           <textarea
             ref={textareaRef}
-            placeholder="نظر خود را بنویسید..."
+            placeholder="نظر خود را بنویسید…"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onFocus={() => setIsFocused(true)}

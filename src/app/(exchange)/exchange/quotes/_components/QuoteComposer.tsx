@@ -262,7 +262,7 @@ export function QuoteComposer({ open, exchangeId, allowedCurrencies, onClose, on
                   onChange={handleCurrency}
                   items={items}
                   ariaLabel="انتخاب ارز"
-                  searchPlaceholder="جستجوی ارز..."
+                  searchPlaceholder="جستجوی ارز…"
                 />
               </div>
               <span className={s.pickUnit}>

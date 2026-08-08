@@ -585,7 +585,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                   >
                     <RiUploadCloud2Line className="animate-pulse" size={18} aria-hidden />
                     <span className={s.uploadingPct}>
-                      {entry.progress >= 100 ? 'در حال پردازش...' : `${entry.progress}%`}
+                      {entry.progress >= 100 ? 'در حال پردازش…' : `${entry.progress}%`}
                     </span>
                   </div>
                 )}
@@ -639,7 +639,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             <RiImageAddLine size={isLargeThumb ? 56 : 48} className={s.emptyIcon} aria-hidden />
             <p className={[s.emptyTitle, isLargeThumb ? s.emptyTitleLarge : ''].join(' ')}>
               {isDragActive
-                ? 'فایل تصویر را اینجا رها کنید...'
+                ? 'فایل تصویر را اینجا رها کنید…'
                 : multiple
                   ? 'برای انتخاب تصاویر، فایل‌ها را اینجا بکشید و رها کنید یا کلیک کنید'
                   : 'برای انتخاب تصویر، فایل را اینجا بکشید و رها کنید یا کلیک کنید'}
@@ -655,7 +655,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       {anyUploading && (
         <div className={s.progress} role="status" aria-live="polite">
           <RiUploadCloud2Line className="animate-pulse" size={20} aria-hidden />
-          <span>در حال آپلود...</span>
+          <span>در حال آپلود…</span>
         </div>
       )}
     </div>

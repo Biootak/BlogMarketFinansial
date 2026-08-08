@@ -285,7 +285,7 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
             انصراف
           </button>
           <button type="submit" className="at-btn at-btn--primary" disabled={isSubmitting}>
-            {isSubmitting ? 'در حال ذخیره...' : category ? 'ویرایش دسته‌بندی' : 'ایجاد دسته‌بندی'}
+            {isSubmitting ? 'در حال ذخیره…' : category ? 'ویرایش دسته‌بندی' : 'ایجاد دسته‌بندی'}
           </button>
         </div>
       </form>

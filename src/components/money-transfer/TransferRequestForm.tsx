@@ -100,7 +100,7 @@ const SERVICE_OPTIONS: ServiceOption[] = [
   {
     key: 'CRYPTO_BUY',
     label: 'خرید ارز دیجیتال',
-    sublabel: 'بیت‌کوین، اتریوم، تتر و...',
+    sublabel: 'بیت‌کوین، اتریوم، تتر و…',
     icon: Bitcoin,
     group: 'crypto',
   },

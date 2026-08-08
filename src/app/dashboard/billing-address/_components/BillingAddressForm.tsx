@@ -241,7 +241,7 @@ export function BillingAddressForm({ initial }: Props) {
               {isPending ? (
                 <>
                   <Loader2 size={15} className={s.spinner} aria-hidden />
-                  در حال ذخیره...
+                  در حال ذخیره…
                 </>
               ) : (
                 <>

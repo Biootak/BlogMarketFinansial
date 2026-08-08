@@ -272,7 +272,7 @@ export default function CommandPanel({
               <div className="atl-cmd__section">
                 <div className="atl-cmd__section-title">
                   <Sparkles className="w-3.5 h-3.5" aria-hidden />
-                  <span>میان‌بُر</span>
+                  <span>میان‌بر</span>
                 </div>
                 <button
                   type="button"

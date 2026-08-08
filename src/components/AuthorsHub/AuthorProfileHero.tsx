@@ -1,28 +1,62 @@
 import styles from '@/components/AuthorsHub/AuthorProfileHero.module.css';
-import AuthorAvatar from '@/components/AuthorsHub/primitives/AuthorAvatar';
 import { cn, toPersianNumber } from '@/lib/utils';
-import { Briefcase, Building2 } from 'lucide-react';
+import {
+  Briefcase,
+  Building2,
+  FileText,
+  FolderOpen,
+  Mail,
+  MessageSquare,
+  ThumbsUp,
+} from 'lucide-react';
 import Image from 'next/image';
+import type * as React from 'react';
+
 /**
  * @file AuthorProfileHero
- * @description Signature editorial hero — 2026-07 redesign.
+ * @description «Masthead Ledger» — financial-editorial author masthead.
  *
- * Layout:
- *   ┌──────────────────────────────────────────────────────┐
- *   │  [avatar + spinning ring]       [نویسنده • badge]   │  ← mesh bg
- *   │                                                      │
- *   │  عنوان بزرگ نویسنده                                 │
- *   │  ~~~~~~~~~~~~~~~~~~~~ (SVG animated underline)       │
- *   │  [chip: job] [chip: company]                         │
- *   │  bio text                                            │
- *   ├──────────────────────────────────────────────────────┤
- *   │  مقالات │ کتگوری‌ها │ کامنت‌ها │  لایک‌ها           │  ← frosted bar
- *   └──────────────────────────────────────────────────────┘
+ * Mobile-first. Domain language of the hub: chart-paper ledger grid,
+ * hairline-ruled stats ticker, hand-drawn name rule with brand gradient.
+ * All colors from --ds-* tokens (adaptive light/dark). Logical properties
+ * only → RTL-correct, icons flow with the text direction.
  *
- * Server-renderable. No client JS. Dark-always mesh (no dark/light toggle needed —
- * the card is its own dark surface on both modes).
+ * Server-renderable. No client JS. Real data only (server-fetched props).
  */
-import type * as React from 'react';
+
+/**
+ * Normalize image URLs similar to SafeImage
+ * - Handle placehold.co SVG → PNG conversion
+ * - Remove conflicting query params from unsplash
+ */
+function normalizeImageUrl(src: string): string {
+  if (src.startsWith('https://placehold.co/')) {
+    const queryIdx = src.indexOf('?');
+    const base = queryIdx === -1 ? src : src.slice(0, queryIdx);
+    if (/\.(png|jpg|jpeg|webp|gif)$/i.test(base)) return src;
+    const query = queryIdx === -1 ? '' : src.slice(queryIdx);
+    return `${base}.png${query}`;
+  }
+
+  if (src.includes('images.unsplash.com')) {
+    try {
+      const u = new URL(src);
+      u.searchParams.delete('w');
+      u.searchParams.delete('q');
+      u.searchParams.delete('auto');
+      u.searchParams.delete('fit');
+      u.searchParams.delete('crop');
+      u.searchParams.delete('ixlib');
+      u.searchParams.delete('ixid');
+      u.searchParams.delete('cs');
+      return u.toString();
+    } catch {
+      return src;
+    }
+  }
+
+  return src;
+}
 
 export interface AuthorProfileHeroAuthor {
   id: string;
@@ -47,8 +81,12 @@ export interface AuthorProfileHeroProps {
   className?: string;
 }
 
-const isLocalUploads = (raw: string): boolean => raw.startsWith('/uploads/');
-const isLocalAsset = (raw: string): boolean => raw.startsWith('/') && !raw.startsWith('//');
+/** Pick the best available photo: bgImage → avatar */
+const pickPhoto = (profile?: AuthorProfileHeroAuthor['profile']): string | null => {
+  const bg = profile?.bgImage?.trim();
+  const av = profile?.avatar?.trim();
+  return bg || av || null;
+};
 
 const AuthorProfileHero: React.FC<AuthorProfileHeroProps> = ({
   author,
@@ -57,86 +95,73 @@ const AuthorProfileHero: React.FC<AuthorProfileHeroProps> = ({
   likeCount = 0,
   className,
 }) => {
-  const name = author.name?.trim() || 'نویسنده';
-  const job = author.profile?.jobName;
-  const company = author.profile?.company;
-  const bio = author.profile?.bio;
-  const avatar = author.profile?.avatar ?? null;
-  const bgImage = author.profile?.bgImage?.trim() ?? null;
+  const name      = author.name?.trim() || 'نویسنده';
+  const job       = author.profile?.jobName;
+  const company   = author.profile?.company;
+  const bio       = author.profile?.bio;
+  const photo     = pickPhoto(author.profile);
   const postCount = author._count?.posts ?? 0;
-
-  const useNextImage = bgImage ? isLocalUploads(bgImage) : false;
-  const usePlainImg = bgImage ? !useNextImage && !isLocalAsset(bgImage) : false;
+  // Real status — derived from actual published posts, not hardcoded.
+  const isActive  = postCount > 0;
 
   const stats = [
-    { label: 'مقالات', value: postCount },
-    { label: 'کتگوری‌ها', value: categoryCount },
-    { label: 'کامنت‌ها', value: commentCount },
-    { label: 'لایک‌ها', value: likeCount },
+    { key: 'posts',     icon: FileText,      label: 'مقاله',     value: postCount },
+    { key: 'categories', icon: FolderOpen,   label: 'دسته‌بندی', value: categoryCount },
+    { key: 'comments',  icon: MessageSquare, label: 'کامنت',     value: commentCount },
+    { key: 'likes',     icon: ThumbsUp,      label: 'لایک',      value: likeCount },
   ] as const;
 
   return (
     <section dir="rtl" className={cn(styles.hero, className)} aria-label={`پروفایل ${name}`}>
-      {/* ── Ambient Mesh Background ───────────────────────────── */}
-      <div aria-hidden className={styles.meshBg} />
-      <div aria-hidden className={styles.meshNoise} />
 
-      {/* Optional cover photo — layered on top of mesh */}
-      {useNextImage && bgImage && (
-        <Image
-          src={bgImage}
-          alt=""
-          fill
-          priority
-          sizes="(max-width: 1024px) 100vw, 1024px"
-          className="object-cover opacity-20 mix-blend-luminosity"
-          aria-hidden
-        />
-      )}
-      {usePlainImg && bgImage && (
-        <Image
-          unoptimized
-          src={bgImage}
-          alt=""
-          fill
-          priority
-          sizes="(max-width: 1024px) 100vw, 1024px"
-          className="object-cover opacity-20 mix-blend-luminosity"
-          referrerPolicy="no-referrer"
-          aria-hidden
-        />
-      )}
-      <div aria-hidden className={styles.meshFade} />
+      {/* ══ ATMOSPHERE — ledger grid + brand aurora ═════════════════ */}
+      <div className={styles.ledgerGrid} aria-hidden />
+      <div className={styles.aura} aria-hidden />
 
-      {/* ── Inner Content ─────────────────────────────────────── */}
-      <div className={styles.inner}>
-        {/* Top row: avatar left, badge right */}
-        <div>
-          <div className={styles.topRow}>
-            <div className={styles.avatarRing}>
-              <AuthorAvatar
-                size="xl"
-                imgUrl={avatar}
-                userName={name}
-                containerClassName="rounded-full"
+      {/* ══ BODY ════════════════════════════════════════════════════ */}
+      <div className={styles.heroBody}>
+
+        {/* ══ PORTRAIT — compact 4/5 card ══════════════════════════ */}
+        <div className={styles.avatarRing}>
+          <div className={styles.avatarCard}>
+            {photo ? (
+              <Image
+                src={normalizeImageUrl(photo)}
+                alt={name}
+                fill
+                priority
+                sizes="(min-width: 1024px) 220px, 96px"
+                className={styles.avatarImg}
               />
-            </div>
+            ) : (
+              <span className={styles.avatarFallback} aria-hidden>
+                {name.charAt(0)}
+              </span>
+            )}
+          </div>
+        </div>
 
+        {/* ══ CONTENT ══════════════════════════════════════════════ */}
+        <div className={styles.contentCol}>
+
+          {/* Topline — kicker · hairline · status badge */}
+          <div className={styles.topline}>
+            {job && <span className={styles.kicker}>{job}</span>}
+            <span className={styles.hairline} aria-hidden />
             <span className={styles.roleBadge} aria-label="وضعیت نویسنده">
               <span className={styles.roleDot} aria-hidden />
-              نویسنده فعال
+              {isActive ? 'نویسنده فعال' : 'نویسنده'}
             </span>
           </div>
 
-          {/* Giant name */}
+          {/* Name + hand-drawn signature rule */}
           <div className={styles.nameBlock}>
-            <h1 className={styles.authorName}>{name}</h1>
-            {/* Animated SVG underline stroke — signature moment */}
+            <h1 className={styles.name}>{name}</h1>
             <svg
-              className={styles.nameSvg}
+              className={styles.nameRule}
               viewBox="0 0 520 10"
               fill="none"
-              aria-hidden
+              aria-hidden="true"
               focusable="false"
             >
               <path
@@ -144,30 +169,29 @@ const AuthorProfileHero: React.FC<AuthorProfileHeroProps> = ({
                 stroke="url(#nameGrad)"
                 strokeWidth="2.5"
                 strokeLinecap="round"
-                className={styles.nameSvgStroke}
               />
               <defs>
                 <linearGradient id="nameGrad" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="oklch(65% 0.18 200)" />
-                  <stop offset="50%" stopColor="oklch(62% 0.2 280)" />
-                  <stop offset="100%" stopColor="oklch(72% 0.16 60)" />
+                  <stop offset="0%" className={styles.gradStart} />
+                  <stop offset="50%" className={styles.gradMid} />
+                  <stop offset="100%" className={styles.gradEnd} />
                 </linearGradient>
               </defs>
             </svg>
           </div>
 
-          {/* Chips: job + company */}
+          {/* Meta chips — real profile data */}
           {(job || company) && (
             <div className={styles.metaRow}>
               {job && (
                 <span className={styles.chip}>
-                  <Briefcase className="h-3 w-3" strokeWidth={2.5} aria-hidden />
+                  <Briefcase className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden />
                   {job}
                 </span>
               )}
               {company && (
                 <span className={styles.chip}>
-                  <Building2 className="h-3 w-3" strokeWidth={2.5} aria-hidden />
+                  <Building2 className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden />
                   {company}
                 </span>
               )}
@@ -176,21 +200,38 @@ const AuthorProfileHero: React.FC<AuthorProfileHeroProps> = ({
 
           {/* Bio */}
           {bio && <p className={styles.bio}>{bio}</p>}
+
+          {/* Stats ticker — real aggregated counts */}
+          <div className={styles.statsStrip} aria-label="آمار نویسنده">
+            {stats.map((s) => {
+              const Icon = s.icon;
+              return (
+                <div key={s.key} className={styles.statCell}>
+                  <span className={styles.statIcon}>
+                    <Icon className="h-4 w-4" strokeWidth={1.5} aria-hidden />
+                  </span>
+                  <span className={styles.statText}>
+                    <span className={styles.statValue}>{toPersianNumber(s.value)}</span>
+                    <span className={styles.statLabel}>{s.label}</span>
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Action — only when a real contact address exists */}
+          {author.email && (
+            <div className={styles.actions}>
+              <a href={`mailto:${author.email}`} className={styles.cta}>
+                <Mail className="h-4 w-4" strokeWidth={1.5} aria-hidden />
+                <span>تماس با نویسنده</span>
+              </a>
+            </div>
+          )}
+
         </div>
       </div>
 
-      {/* ── 4-Column Stat Strip ───────────────────────────────── */}
-      <ul className={styles.statsStrip} aria-label="آمار نویسنده">
-        {stats.map((stat) => (
-          <li key={stat.label} className={styles.statCell}>
-            <span aria-hidden className={styles.statPip} />
-            <span className={cn(styles.statValue, 'author-num')}>
-              {toPersianNumber(stat.value)}
-            </span>
-            <span className={styles.statLabel}>{stat.label}</span>
-          </li>
-        ))}
-      </ul>
     </section>
   );
 };

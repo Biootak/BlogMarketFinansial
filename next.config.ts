@@ -216,10 +216,13 @@ const nextConfig: NextConfig = {
     // The dev script sets `NODE_OPTIONS=--dns-result-order=ipv4first`
     // so Node prefers IPv4 A-records, sidestepping the bug in dev.
     // Production (Vercel edge optimizer) is unaffected.
-    // When the dev machine cannot reach remote image hosts (e.g.
-    // network restrictions), skip the Image Optimization fetch so the
-    // server does not log ECONNRESET errors on every remote image.
-    unoptimized: process.env.NODE_ENV === 'development',
+    // 2026-08-08: قبلاً در dev کاملاً unoptimized بود — هر تصویر با سایز اصلی
+    // (تا چند MB) دانلود می‌شد؛ صفحهٔ archive با ۱۵ کارت چند ده مگابایت وزن داشت،
+    // تصاویر «با اسکرول لود نمی‌شدند» و priority هم کار نمی‌کرد.
+    // حالا پیش‌فرض همیشه optimize است (dev همان prod رفتار می‌کند). اگر ماشین
+    // dev به هاست تصویر دسترسی نداشت (ECONNRESET)، با NEXT_IMAGE_UNOPTIMIZED=1
+    // برگردانید.
+    unoptimized: process.env.NEXT_IMAGE_UNOPTIMIZED === '1',
     // افزایش timeout برای لود تصاویر — images are effectively immutable,
     // so cache the optimizer result for a full day instead of 60s.
     minimumCacheTTL: 86400,

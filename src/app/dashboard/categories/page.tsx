@@ -54,7 +54,7 @@ export default async function CategoriesPage({
             <span className="at-loading__dot" />
             <span className="at-loading__dot" />
             <span className="at-loading__dot" />
-            <span>در حال بارگذاری دسته‌بندی‌ها...</span>
+            <span>در حال بارگذاری دسته‌بندی‌ها…</span>
           </div>
         }
       >

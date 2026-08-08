@@ -347,34 +347,43 @@
     gap: var(--ds-space-2);
     flex-wrap: wrap;
   }
-  .atl-sort {
+  /* 2026-08-08: مرتب‌سازی به دراپ‌داون آیکون‌دار تبدیل شد (atl-filter-trigger).
+     قوانین atl-sort قدیمی (تب‌های tablist) حذف شدند. */
+  .atl-filter-trigger {
     display: inline-flex;
-    padding: 0.2rem;
-    border-radius: var(--ds-radius-full);
-    background: var(--ds-surface-recessed);
-    border: 1px solid var(--ds-border-subtle);
-    gap: 0.1rem;
-  }
-  .atl-sort__item {
-    appearance: none;
-    border: 0;
-    background: transparent;
-    padding: 0.4rem 0.8rem;
-    border-radius: var(--ds-radius-full);
-    font-size: var(--ds-text-xs);
-    font-weight: var(--ds-weight-medium);
-    color: var(--ds-text-secondary);
-    cursor: pointer;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.65rem;
+    border-radius: 0.75rem;
+    background: oklch(100% 0 0 / 0.6);
+    border: 1px solid oklch(88% 0.006 240 / 0.85);
+    color: oklch(45% 0.01 240);
+    font-size: 0.8125rem;
+    font-weight: 500;
     white-space: nowrap;
-    transition: color var(--ds-duration-fast), background var(--ds-duration-fast);
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), background 220ms
+      cubic-bezier(0.22, 1, 0.36, 1), border-color 220ms cubic-bezier(0.22, 1, 0.36, 1), color 220ms
+      cubic-bezier(0.22, 1, 0.36, 1);
   }
-  .atl-sort__item:hover {
-    color: var(--ds-text-primary);
+  .atl-filter-trigger:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in oklch, var(--ds-brand-500), transparent 50%);
+    color: oklch(20% 0.01 240);
+    background: oklch(100% 0 0 / 0.92);
   }
-  .atl-sort__item[aria-selected="true"] {
-    background: var(--ds-canvas);
-    color: var(--ds-brand-500);
-    box-shadow: var(--ds-shadow-sm);
+  .dark .atl-filter-trigger {
+    background: oklch(22% 0.01 250 / 0.7);
+    border-color: oklch(32% 0.012 250 / 0.85);
+    color: oklch(82% 0.01 250);
+  }
+  .dark .atl-filter-trigger:hover {
+    background: oklch(27% 0.012 250 / 0.85);
+    color: oklch(94% 0.01 250);
+  }
+  .atl-filter-trigger__label {
+    max-width: 7rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* ============================ Command trigger (دکمه‌های انتخاب) ============================ */
@@ -1134,30 +1143,191 @@
       min-height: 15rem;
       aspect-ratio: 16 / 10;
     }
+
+    /* 2026-08-08: hero معرفی — موبایل (دیزاین برتر)
+       - گرادیان برند جسورتر + عمق بیشتر
+       - عنوان در مقیاس نمایشی موبایل
+       - آمار داخل کارت شیشه‌ای (gloss) با جداکنندهٔ عمودی
+       - چیپ‌ها: یک ردیف اسکرول‌شونده، برنددارتر (تعداد داخل بج سبز) */
+    .atl-hero {
+      border-radius: var(--ds-radius-2xl);
+      background: radial-gradient(
+          140% 130% at 85% 0%,
+          color-mix(in oklch, var(--ds-brand-500), transparent 78%),
+          transparent 60%
+        ),
+        linear-gradient(170deg, var(--ds-surface-elevated), var(--ds-canvas-subtle));
+    }
+    .atl-hero__intro {
+      /* min-width:0 حیاتی است — در grid فرزند default min-width:auto دارد
+         و محتوای bleed (quicklinks با margin منفی) پدر را از راست بیرون می‌زد */
+      min-width: 0;
+      padding: var(--ds-space-5) var(--ds-space-5) var(--ds-space-6);
+      gap: var(--ds-space-3);
+    }
+    .atl-hero__index {
+      font-size: var(--ds-text-2xs);
+      letter-spacing: 0.2em;
+      color: var(--ds-brand-600);
+    }
+    .atl-hero__kicker {
+      padding: 0.35rem 0.8rem;
+      font-size: var(--ds-text-xs);
+      background: color-mix(in oklch, var(--ds-brand-500), transparent 90%);
+      border-color: color-mix(in oklch, var(--ds-brand-500), transparent 75%);
+      color: var(--ds-brand-700);
+    }
+    .dark .atl-hero__kicker {
+      background: color-mix(in oklch, var(--ds-brand-500), transparent 82%);
+      color: var(--ds-brand-300);
+    }
+    .atl-title {
+      font-size: clamp(1.5rem, 1.25rem + 1.8vw, 1.9rem);
+      letter-spacing: -0.025em;
+    }
+    .atl-hero__feature-title {
+      font-size: clamp(1.05rem, 0.95rem + 0.9vw, 1.35rem);
+    }
+    .atl-hero__feature-eyebrow {
+      font-size: var(--ds-text-2xs);
+    }
+    .atl-hero__feature-meta {
+      font-size: var(--ds-text-2xs);
+    }
+    .atl-lead {
+      font-size: var(--ds-text-sm);
+      line-height: 1.9;
+      max-width: 100%;
+    }
+    .atl-quicklinks {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-block: 0.2rem;
+      /* bleed تا لبهٔ hero — ولی max-width مانع کشیدن پدر (intro) می‌شود؛
+         وگرنه align-items:stretch پدر را از راست بیرون می‌زد */
+      margin-inline: calc(-1 * var(--ds-space-5));
+      padding-inline: var(--ds-space-5);
+      max-width: calc(100% + (2 * var(--ds-space-5)));
+      width: calc(100% + (2 * var(--ds-space-5)));
+    }
+    .atl-quicklinks::-webkit-scrollbar {
+      display: none;
+    }
+    .atl-quicklinks__label {
+      flex: none;
+      font-size: var(--ds-text-2xs);
+      font-weight: var(--ds-weight-semibold);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ds-text-muted);
+      padding-inline-end: var(--ds-space-1);
+    }
+    .atl-chip {
+      flex: none;
+      padding: 0.4rem 0.85rem;
+      gap: 0.45rem;
+      background: var(--ds-surface);
+      border-color: var(--ds-border-default);
+      box-shadow: var(--ds-shadow-sm);
+      font-size: var(--ds-text-xs);
+    }
+    .atl-chip__count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.15rem;
+      height: 1.15rem;
+      padding-inline: 0.25rem;
+      border-radius: var(--ds-radius-full);
+      background: color-mix(in oklch, var(--ds-brand-500), transparent 88%);
+      color: var(--ds-brand-600);
+      font-size: 0.65rem;
+      font-weight: var(--ds-weight-semibold);
+    }
     .atl-stats {
-      gap: var(--ds-space-4);
+      width: 100%;
+      margin-block-start: var(--ds-space-1);
+      padding: var(--ds-space-3) var(--ds-space-1);
+      gap: 0;
+      justify-content: space-between;
+      background: color-mix(in oklch, var(--ds-canvas), transparent 12%);
+      border: 1px solid color-mix(in oklch, var(--ds-border-default), transparent 40%);
+      border-radius: var(--ds-radius-xl);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--ds-shadow-sm);
+    }
+    .atl-stat {
+      flex: 1;
+      min-width: 0;
+      align-items: center;
+      text-align: center;
+      padding-inline: var(--ds-space-2);
+    }
+    .atl-stat + .atl-stat {
+      border-inline-start: 1px solid var(--ds-border-subtle);
+    }
+    .atl-stat__num {
+      font-size: var(--ds-text-base);
+      letter-spacing: -0.01em;
+    }
+    .atl-stat__label {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      font-size: var(--ds-text-2xs);
     }
     .atl-grid {
       gap: var(--ds-space-4);
     }
+    /* موبایل: فاصله بین section‌ها کمتر */
+    .atl-section {
+      margin-top: var(--ds-space-6);
+      padding-top: var(--ds-space-5);
+    }
+    /* چیدمان موبایل:
+       ردیف ۱ — search تمام‌عرض
+       ردیف ۲ — سه دکمه مساوی کنار هم (nowrap)
+       toolbar: column + stretch تا هر ردیف عرض کامل بگیرد */
     .atl-toolbar {
+      flex-direction: column;
+      align-items: stretch;
       border-radius: var(--ds-radius-2xl);
+      gap: var(--ds-space-2);
+      padding: var(--ds-space-2-5) var(--ds-space-2-5);
+    }
+    .atl-toolbar__search {
+      width: 100%;
+      flex: none;
     }
     .atl-toolbar__group {
       width: 100%;
+      flex-wrap: nowrap;
+      gap: var(--ds-space-1-5);
     }
-    /* Sort segments can be wider than the screen — let them scroll, never break */
-    .atl-sort {
+    .atl-toolbar__group .arc-cmd-trigger-v4,
+    .atl-toolbar__group .atl-filter-trigger {
+      flex: 1 1 0;
+      justify-content: center;
+      min-width: 0;
+      height: 2.35rem;
+      padding-inline: 0.4rem;
+      border-radius: 0.65rem;
+    }
+    .atl-toolbar__group .arc-cmd-trigger-v4__label,
+    .atl-filter-trigger__label {
+      max-width: none;
       flex: 1;
-      max-width: 100%;
-      overflow-x: auto;
-      scrollbar-width: none;
+      text-align: center;
+      font-size: 0.75rem;
     }
-    .atl-sort::-webkit-scrollbar {
-      display: none;
-    }
-    .atl-sort__item {
+    .atl-toolbar__group .arc-cmd-trigger-v4__icon {
       flex: none;
+    }
+    .atl-toolbar__group .arc-cmd-trigger-v4__count {
+      flex: none;
+      font-size: 0.7rem;
     }
   }
 }

@@ -457,9 +457,9 @@ export function CustomerImportWizard({ exchangeId, primaryCurrency: _primaryCurr
       {/* ── Content ── */}
       <div className={s.content}>
         {isPending && (
-          <div className={s.loadingOverlay} aria-label="در حال وارد کردن...">
+          <div className={s.loadingOverlay} aria-label="در حال وارد کردن…">
             <Loader2 size={32} className={s.spinner} aria-hidden />
-            <p className={s.loadingText}>در حال وارد کردن مشتریان...</p>
+            <p className={s.loadingText}>در حال وارد کردن مشتریان…</p>
           </div>
         )}
 

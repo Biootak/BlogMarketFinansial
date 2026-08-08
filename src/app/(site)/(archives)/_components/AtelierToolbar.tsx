@@ -7,8 +7,28 @@
  * from the existing archive primitives; only the presentation is new.
  */
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import type { TaxonomyType } from '@/types/types';
-import { ArrowDownAZ, FolderOpen, Hash, RotateCcw, Search, X } from 'lucide-react';
+import {
+  ArrowDownAZ,
+  ArrowUpDown,
+  Check,
+  Clock3,
+  Flame,
+  FolderOpen,
+  Hash,
+  History,
+  LayoutGrid,
+  ListFilter,
+  RotateCcw,
+  Search,
+  X,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
@@ -35,6 +55,14 @@ const ACTIVE_ICONS = {
   category: FolderOpen,
   tag: Hash,
   sort: ArrowDownAZ,
+} as const;
+
+// آیکون معنایی هر حالت مرتب‌سازی — در دراپ‌داون فیلتر نمایش داده می‌شود.
+const SORT_ICONS = {
+  'همه مقالات': LayoutGrid,
+  جدیدترین: Clock3,
+  قدیمی‌ترین: History,
+  محبوب‌ترین: Flame,
 } as const;
 
 export default function AtelierToolbar({
@@ -110,24 +138,38 @@ export default function AtelierToolbar({
             selectedName={currentTag?.name ?? null}
           />
 
-          <div className="atl-sort" role="tablist" aria-label="مرتب‌سازی">
-            {filters.map((f) => {
-              const isActive = initialFilter === f.name;
-              return (
-                <button
-                  key={f.name}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  className="atl-sort__item"
-                  onClick={() => setFilter(f.name)}
-                  title={f.name}
-                >
-                  {f.name}
-                </button>
-              );
-            })}
-          </div>
+          {/* 2026-08-08: فیلتر مرتب‌سازی به‌صورت دراپ‌داون آیکون‌دار —
+              در موبایل یک دکمهٔ فشرده به‌جای ۴ تب پهن */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="atl-filter-trigger"
+                aria-label={`مرتب‌سازی: ${initialFilter}`}
+              >
+                <ListFilter className="w-4 h-4" aria-hidden />
+                <span className="atl-filter-trigger__label">{initialFilter}</span>
+                <ArrowUpDown className="w-3.5 h-3.5 opacity-50" aria-hidden />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" sideOffset={6} className="w-48">
+              {filters.map((f) => {
+                const isActive = initialFilter === f.name;
+                const SortIcon = SORT_ICONS[f.name as keyof typeof SORT_ICONS] ?? ArrowUpDown;
+                return (
+                  <DropdownMenuItem
+                    key={f.name}
+                    onClick={() => setFilter(f.name)}
+                    className="gap-2"
+                  >
+                    <SortIcon className="w-4 h-4 opacity-70" aria-hidden />
+                    <span className="flex-1">{f.name}</span>
+                    {isActive ? <Check className="w-4 h-4 text-primary" aria-hidden /> : null}
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -164,7 +206,7 @@ export default function AtelierToolbar({
         mode="category"
         items={categories}
         title="انتخاب دسته‌بندی"
-        description="موضوع مورد علاقه‌ات را پیدا کن و واردش شو"
+        description="موضوعات را مرور کنید یا جستجو کنید"
         currentSlug={currentCategory?.slug}
       />
       <CommandPanel
@@ -173,7 +215,7 @@ export default function AtelierToolbar({
         mode="tag"
         items={tags}
         title="انتخاب برچسب"
-        description="مقاله‌ها را بر اساس موضوع‌های دقیق دنبال کن"
+        description="مقالات مرتبط با یک موضوع خاص"
         currentSlug={currentTag?.slug}
       />
     </>

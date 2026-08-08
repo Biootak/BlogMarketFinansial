@@ -298,7 +298,7 @@ export function HelpdeskHub({ initialTickets }: HelpdeskHubProps) {
         <SearchInput
           value={query}
           onChange={setQuery}
-          placeholder="جستجو در تیکت‌ها..."
+          placeholder="جستجو در تیکت‌ها…"
           ariaLabel="جستجو در تیکت‌ها"
         />
         <div className={s.pillsWrap}>

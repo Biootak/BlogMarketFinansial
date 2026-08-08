@@ -325,7 +325,7 @@ function AdvertisementsInner() {
               <div className="at-filterbar__search" style={{ minWidth: '240px' }}>
                 <input
                   type="text"
-                  placeholder="جستجوی تبلیغ..."
+                  placeholder="جستجوی تبلیغ…"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -684,7 +684,7 @@ function AdvertisementsInner() {
                 ))}
               </div>
 
-              {isLoading && page > 1 && <LoadingMore message="در حال دریافت تبلیغات بیشتر..." />}
+              {isLoading && page > 1 && <LoadingMore message="در حال دریافت تبلیغات بیشتر…" />}
               <div ref={infiniteScrollRef} className="h-4" />
             </div>
           )}
@@ -1116,7 +1116,7 @@ function AdvertisementForm({
               ) : (
                 <div className="text-center py-8 px-4">
                   <HiOutlineMegaphone className="size-10 mx-auto text-neutral-300 mb-2" />
-                  <div className="text-neutral-400 text-[10px]">در انتظار محتوا...</div>
+                  <div className="text-neutral-400 text-[10px]">در انتظار محتوا…</div>
                 </div>
               )}
             </div>

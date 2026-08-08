@@ -55,7 +55,7 @@ const SectionSubscribe2: FC<SectionSubscribe2Props> = async ({ className = '' })
           <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-2xl pt-3 sm:pt-4 border-t border-white/10">
             <StatCell
               icon={<Users className="h-3.5 w-3.5" strokeWidth={2.25} />}
-              value="۱۰,۲۴۷"
+              value="۱۰٬۲۴۷"
               label="عضو فعال"
             />
             <StatCell

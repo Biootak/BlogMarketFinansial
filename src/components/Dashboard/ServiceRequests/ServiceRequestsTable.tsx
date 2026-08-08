@@ -384,7 +384,7 @@ export default function ServiceRequestsTable({
             <HiSearch className="at-srq-table__search-icon w-4 h-4" aria-hidden />
             <input
               type="text"
-              placeholder="جستجو در کد پیگیری، نام یا شماره..."
+              placeholder="جستجو در کد پیگیری، نام یا شماره…"
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);

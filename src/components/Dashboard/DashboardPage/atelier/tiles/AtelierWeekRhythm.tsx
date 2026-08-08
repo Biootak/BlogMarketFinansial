@@ -416,7 +416,8 @@ export default function AtelierWeekRhythm({ scheduledPosts }: AtelierWeekRhythmP
           <div className="at-rhythm__empty-text">
             <p className="at-rhythm__empty-title">هفتهٔ خالی</p>
             <p className="at-rhythm__empty-sub">
-              هنوز هیچ پستی برای این هفته برنامه‌ریزی نشده. اولین پست رو بنویس تا تقویم پُر بشه.
+              هنوز هیچ پستی برای این هفته برنامه‌ریزی نشده است. اولین پست را بنویسید تا تقویم تکمیل
+              شود.
             </p>
           </div>
           <Link href="/dashboard/posts/create" className="at-rhythm__empty-cta">
@@ -463,7 +464,7 @@ export default function AtelierWeekRhythm({ scheduledPosts }: AtelierWeekRhythmP
                 </span>
                 <span className="at-rhythm__spot-title">نوشتن پست جدید</span>
                 <span className="at-rhythm__spot-meta">
-                  امروز را پُر کن
+                  امروز را تکمیل کنید
                   <HiOutlineArrowLeft className="w-3 h-3" />
                 </span>
               </Link>

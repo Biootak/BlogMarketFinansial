@@ -469,7 +469,7 @@ function WithdrawModal({
               onClick={handleRequest}
               disabled={isPending || amountCents <= 0 || !dest.trim()}
             >
-              {isPending ? 'در حال پردازش...' : 'درخواست برداشت'}
+              {isPending ? 'در حال پردازش…' : 'درخواست برداشت'}
             </button>
           </div>
         )}
@@ -512,7 +512,7 @@ function WithdrawModal({
               onClick={handleConfirm}
               disabled={isPending || otp.length < 6}
             >
-              {isPending ? 'در حال تأیید...' : 'تأیید برداشت'}
+              {isPending ? 'در حال تأیید…' : 'تأیید برداشت'}
             </button>
           </div>
         )}
@@ -780,7 +780,7 @@ function FxTradeModal({
               onClick={handleSubmit}
               disabled={isPending || amountCents <= 0 || !quote || amountCents > maxCents}
             >
-              {isPending ? 'در حال تبدیل...' : 'تأیید و تبدیل'}
+              {isPending ? 'در حال تبدیل…' : 'تأیید و تبدیل'}
             </button>
           </div>
         )}

@@ -188,7 +188,7 @@ export default function RequestsContent({ rows, stats }: Props) {
           <input
             type="search"
             className={s.searchInput}
-            placeholder="جستجو در کد پیگیری، نوع، یا یادداشت..."
+            placeholder="جستجو در کد پیگیری، نوع، یا یادداشت…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             aria-label="جستجو"

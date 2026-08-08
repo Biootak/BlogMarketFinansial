@@ -295,7 +295,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
           .run();
 
         toast({
-          title: 'در حال آپلود...',
+          title: 'در حال آپلود…',
           description: file.name,
         });
 
@@ -756,7 +756,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
             <span className="at-editor-deck__spacer" />
             <span
               className={`at-editor-deck__save at-editor-deck__save--${saveState}`}
-              title={saveState === 'saving' ? 'در حال ویرایش...' : 'آمادهٔ نوشتن'}
+              title={saveState === 'saving' ? 'در حال ویرایش…' : 'آمادهٔ نوشتن'}
               role="status"
               aria-live="polite"
             >

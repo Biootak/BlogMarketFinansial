@@ -654,7 +654,7 @@ export default function ProfileContent({ profile, initialEditField }: Props) {
         />
         <ActionCard
           icon={LogOut}
-          title={signingOut ? 'در حال خروج...' : 'خروج'}
+          title={signingOut ? 'در حال خروج…' : 'خروج'}
           desc="پایان جلسه کاری"
           tone="red"
           onClick={() => void handleSignOut()}

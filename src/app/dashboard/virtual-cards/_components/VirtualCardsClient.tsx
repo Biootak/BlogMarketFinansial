@@ -296,7 +296,7 @@ export default function VirtualCardsClient({ initialCards }: Props) {
                 انصراف
               </Button>
               <Button onClick={handleIssue} disabled={isPending}>
-                {isPending ? 'در حال صدور...' : 'صدور کارت'}
+                {isPending ? 'در حال صدور…' : 'صدور کارت'}
               </Button>
             </div>
           </div>

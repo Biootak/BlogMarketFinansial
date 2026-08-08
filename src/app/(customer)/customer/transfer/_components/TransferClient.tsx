@@ -589,7 +589,7 @@ function WithdrawForm({
         </div>
         <TelegramConnectLink />
         <button type="submit" className={s.submit} disabled={isPending || otp.length < 4}>
-          {isPending ? 'در حال تأیید...' : 'تأیید برداشت'}
+          {isPending ? 'در حال تأیید…' : 'تأیید برداشت'}
         </button>
       </form>
     );
@@ -646,7 +646,7 @@ function WithdrawForm({
         className={s.submit}
         disabled={!accountId || cents <= 0 || !dest.trim() || overBalance || isPending}
       >
-        {isPending ? 'در حال پردازش...' : 'درخواست برداشت'}
+        {isPending ? 'در حال پردازش…' : 'درخواست برداشت'}
       </button>
     </form>
   );
@@ -824,7 +824,7 @@ function TransferForm({
             />
           </div>
           <button type="submit" className={s.submit} disabled={otp.length !== 6 || isPending}>
-            {isPending ? 'در حال تأیید...' : 'تأیید و انتقال'}
+            {isPending ? 'در حال تأیید…' : 'تأیید و انتقال'}
           </button>
           <button type="button" className={s.cancelOtp} onClick={cancelOtp} disabled={isPending}>
             انصراف
@@ -836,7 +836,7 @@ function TransferForm({
           className={s.submit}
           disabled={sameAccount || overBalance || cents <= 0 || isPending}
         >
-          {isPending ? 'در حال انتقال...' : 'انتقال'}
+          {isPending ? 'در حال انتقال…' : 'انتقال'}
         </button>
       )}
     </form>
@@ -1003,13 +1003,13 @@ function ExchangeForm({
           )}
         </div>
       )}
-      {quoteLoading && <p className={s.hint}>در حال دریافت نرخ...</p>}
+      {quoteLoading && <p className={s.hint}>در حال دریافت نرخ…</p>}
       <button
         type="submit"
         className={s.submit}
         disabled={sameCurrency || overBalance || cents <= 0 || isPending || !quote}
       >
-        {isPending ? 'در حال تبدیل...' : 'تأیید تبدیل'}
+        {isPending ? 'در حال تبدیل…' : 'تأیید تبدیل'}
       </button>
     </form>
   );

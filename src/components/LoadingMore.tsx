@@ -8,7 +8,7 @@ interface LoadingMoreProps {
 }
 
 export default function LoadingMore({
-  message = 'در حال بارگذاری موارد بیشتر...',
+  message = 'در حال بارگذاری موارد بیشتر…',
   className,
 }: LoadingMoreProps) {
   return (

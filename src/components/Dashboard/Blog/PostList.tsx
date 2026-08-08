@@ -606,7 +606,7 @@ export default function PostList({
 
       {isLoading && (
         <div>
-          <LoadingMore message="در حال دریافت پستهای بیشتر..." />
+          <LoadingMore message="در حال دریافت پستهای بیشتر…" />
         </div>
       )}
 

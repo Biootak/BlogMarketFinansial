@@ -459,7 +459,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                               field.onChange(e);
                               if (!isEditing && !slug) generateSlugFromTitle(e.target.value);
                             }}
-                            placeholder="یک عنوان جذاب برای پست..."
+                            placeholder="یک عنوان جذاب برای پست…"
                             className="at-input at-input--ghost"
                             dir="rtl"
                           />
@@ -597,7 +597,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                         <FormControl>
                           <textarea
                             {...field}
-                            placeholder="خلاصه‌ای کوتاه از محتوای پست..."
+                            placeholder="خلاصه‌ای کوتاه از محتوای پست…"
                             rows={3}
                             className="at-textarea"
                             dir="rtl"

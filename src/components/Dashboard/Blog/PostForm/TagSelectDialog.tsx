@@ -125,7 +125,7 @@ export function TagSelectDialog({
             <input
               value={newTag}
               onChange={(e) => setNewTag(e.target.value)}
-              placeholder="برچسب جدید..."
+              placeholder="برچسب جدید…"
               className="at-input"
               dir="rtl"
             />
@@ -144,7 +144,7 @@ export function TagSelectDialog({
           <div className="at-dialog-search">
             <input
               type="text"
-              placeholder="جستجوی برچسب..."
+              placeholder="جستجوی برچسب…"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />

@@ -111,7 +111,7 @@ export function CategoryList({
           <tbody>{renderCategories(categories)}</tbody>
         </table>
       </div>
-      {isLoading && <LoadingMore message="در حال دریافت دسته‌بندی‌های بیشتر..." />}
+      {isLoading && <LoadingMore message="در حال دریافت دسته‌بندی‌های بیشتر…" />}
       <div className="at-table__foot">
         <span>
           {categories.length} از {initialData.totalCount} دسته‌بندی

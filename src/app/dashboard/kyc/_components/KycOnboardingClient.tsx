@@ -514,7 +514,7 @@ export function KycOnboardingClient({ initialRecord }: Props) {
                 onClick={step === 1 ? handleStep1 : handleStep2}
                 disabled={isPending}
               >
-                {isPending ? 'در حال پردازش...' : 'بعدی'}
+                {isPending ? 'در حال پردازش…' : 'بعدی'}
                 {!isPending && <ArrowLeft size={14} aria-hidden />}
               </Button>
             )}

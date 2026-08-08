@@ -477,7 +477,7 @@ export default function SystemReports() {
                 }}
                 aria-hidden
               />
-              در حال دانلود...
+              در حال دانلود…
             </>
           ) : (
             <>

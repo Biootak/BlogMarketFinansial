@@ -376,7 +376,7 @@ export function TicketDetail({ ticket, onClose, onChanged }: TicketDetailProps) 
           {loadingMsgs ? (
             <div className={s.loading}>
               <IconLoader className={`${s.spin} ${s.loadingIcon}`} aria-hidden /> در حال بارگذاری
-              پیام‌ها...
+              پیام‌ها…
             </div>
           ) : messages.length === 0 ? (
             <div className={s.empty}>هنوز پیامی ارسال نشده. اولین پاسخ را بنویسید.</div>
@@ -440,7 +440,7 @@ export function TicketDetail({ ticket, onClose, onChanged }: TicketDetailProps) 
         <textarea
           value={reply}
           onChange={(e) => setReply(e.target.value)}
-          placeholder="پاسخ خود را بنویسید..."
+          placeholder="پاسخ خود را بنویسید…"
           rows={4}
           maxLength={5000}
           dir="rtl"

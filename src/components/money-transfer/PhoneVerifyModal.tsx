@@ -192,7 +192,7 @@ const PhoneVerifyModal: FC<Props> = ({ onVerified, onClose }) => {
             </h3>
             <p className={s.subtitle}>
               {modalStep === 'phone' && 'شماره موبایل خود را وارد کنید.'}
-              {modalStep === 'tg-waiting' && 'در تلگرام روی Start بزنید…'}
+              {modalStep === 'tg-waiting' && 'در تلگرام روی Start کلیک کنید…'}
               {modalStep === 'otp' && 'کد ۶ رقمی ارسال‌شده به تلگرام را وارد کنید.'}
             </p>
           </div>
@@ -219,8 +219,8 @@ const PhoneVerifyModal: FC<Props> = ({ onVerified, onClose }) => {
               </div>
               <p className={s.tgWaitingTitle}>تلگرام باز شد</p>
               <p className={s.tgWaitingDesc}>
-                روی دکمه <strong>Start</strong> در تلگرام بزنید. بعد از اتصال، کد خودکار ارسال
-                می‌شود.
+                روی دکمه <strong>Start</strong> در تلگرام کلیک کنید. پس از اتصال، کد به‌صورت خودکار
+                ارسال می‌شود.
               </p>
               <p className={s.tgWaitingHint}>
                 {loading ? 'در حال بررسی اتصال…' : 'منتظر اتصال تلگرام…'}

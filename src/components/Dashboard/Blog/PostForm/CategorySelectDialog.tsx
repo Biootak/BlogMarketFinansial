@@ -99,7 +99,7 @@ export function CategorySelectDialog({
           <div className="at-dialog-search">
             <input
               type="text"
-              placeholder="جستجوی دسته‌بندی..."
+              placeholder="جستجوی دسته‌بندی…"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />

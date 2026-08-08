@@ -1,7 +1,7 @@
 'use client';
 
 import { getCategories } from '@/actions/categoryActions';
-import ButtonSecondary from '@/components/Button/ButtonSecondary';
+import ButtonPrimary from '@/components/Button/ButtonPrimary';
 import SectionGridCategoryBox from '@/components/SectionGridCategoryBox/SectionGridCategoryBox';
 import type { TaxonomyType } from '@/types/types';
 import type React from 'react';
@@ -43,9 +43,9 @@ const DynamicCategories: React.FC<DynamicCategoriesProps> = ({
       />
       <div className="text-center mx-auto mt-10 md:mt-16">
         {categories.length < totalCount && (
-          <ButtonSecondary onClick={loadMoreCategories} disabled={loading}>
-            {loading ? 'در حال بارگذاری...' : 'کشف دنیاهای جدید'}
-          </ButtonSecondary>
+          <ButtonPrimary onClick={loadMoreCategories} disabled={loading}>
+            {loading ? 'در حال دریافت دسته‌بندی‌ها…' : 'دسته‌بندی‌های بیشتر'}
+          </ButtonPrimary>
         )}
       </div>
     </>

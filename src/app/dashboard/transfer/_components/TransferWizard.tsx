@@ -208,7 +208,7 @@ export function TransferWizard() {
             <div className={s.footer}>
               <span />
               <Button onClick={handleFindRecipient} disabled={isPending || !identifier}>
-                {isPending ? 'جستجو...' : 'جستجو'}
+                {isPending ? 'جستجو…' : 'جستجو'}
                 <ArrowLeft size={14} aria-hidden />
               </Button>
             </div>
@@ -318,7 +318,7 @@ export function TransferWizard() {
                 <ArrowRight size={14} aria-hidden /> قبلی
               </Button>
               <Button onClick={handleInitiateTransfer} disabled={isPending || amountCents <= 0}>
-                {isPending ? 'در حال پردازش...' : 'ادامه'}
+                {isPending ? 'در حال پردازش…' : 'ادامه'}
                 {!isPending && <ArrowLeft size={14} aria-hidden />}
               </Button>
             </div>

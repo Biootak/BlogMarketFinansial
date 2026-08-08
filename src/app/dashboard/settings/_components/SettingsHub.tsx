@@ -699,7 +699,7 @@ export function SettingsHub({ initialData }: SettingsHubProps) {
                   value={form.maintenance.maintenanceMessage}
                   onChange={(e) => set('maintenance', 'maintenanceMessage', e.target.value)}
                   disabled={loading}
-                  placeholder="مثال: در حال به‌روزرسانی هستیم، لطفاً چند دقیقه دیگر مراجعه کنید..."
+                  placeholder="مثال: در حال به‌روزرسانی هستیم، لطفاً چند دقیقه دیگر مراجعه کنید…"
                 />
               </div>
             </Panel>

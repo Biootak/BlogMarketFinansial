@@ -751,7 +751,7 @@ export default function CreditRatesClient({
                     defaultValue={rateModal.data?.bankId}
                     className={s.fieldSelect}
                   >
-                    <option value="">انتخاب کنید...</option>
+                    <option value="">انتخاب کنید…</option>
                     {banks.map((b) => (
                       <option key={b.id} value={b.id}>
                         {b.displayName || b.name}
@@ -920,7 +920,7 @@ export default function CreditRatesClient({
                   defaultValue={rateModal.data?.description || ''}
                   rows={2}
                   className={s.fieldTextarea}
-                  placeholder="شرایط دریافت، مدارک مورد نیاز یا تضامین..."
+                  placeholder="شرایط دریافت، مدارک مورد نیاز یا تضامین…"
                 />
               </div>
             </form>

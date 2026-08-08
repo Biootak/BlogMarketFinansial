@@ -106,7 +106,7 @@ export default function CustomerDrawer({ open, initialData, saving, onClose, onS
               fontWeight: 600,
             }}
           >
-            {saving ? 'در حال ذخیره...' : 'ذخیره تغییرات'}
+            {saving ? 'در حال ذخیره…' : 'ذخیره تغییرات'}
           </button>
         </div>
       }
