@@ -16,7 +16,6 @@ const p = new PrismaClient();
     notifications: await p.notification.count(),
     newsletters: await p.newsletter.count(),
     activityLogs: await p.activityLog.count(),
-    activities: await p.activity.count(),
     rateLists: await p.rateList.count(),
     pageViews: await p.pageView.count(),
     serviceRequests: await p.serviceRequest.count(),

@@ -6,17 +6,23 @@
  * را در یک‌بار اجرا در دیتابیس درج می‌کند.
  *
  * ویژگی‌ها:
- *   - Idempotent: چندبار اجرا بشه مشکلی پیش نمیاد
- *   - Comprehensive: همه 22 مدل Prisma را پوشش می‌دهد
+ *   - فقط وقتی SEED_WIPE=true باشد داده‌های قبلی TRUNCATE می‌شوند؛
+ *     در غیر این صورت idempotent است (در دیپلوی‌های بعدی امن)
+ *   - Comprehensive: همه مدل‌های Prisma را پوشش می‌دهد
  *   - ترتیب وابستگی‌ها (foreign keys) رعایت شده
- *   - رمز مالک (OWNER) از env خوانده می‌شود؛ در غیر این صورت تصادفی تولید و چاپ می‌شود
+ *   - داده‌ها واقع‌گرایانه‌اند: تاریخ‌ها در طول عمر سایت (> ۱ سال) پخش شده،
+ *     نام‌ها/شماره‌ها/ایمیل‌ها واقعی‌نما، بازدیدها همبسته با سن پست
+ *   - مالک (OWNER): رمز از SEED_OWNER_PASSWORD؛ اگر تنظیم نشود رمز قوی تصادفی
+ *     تولید و در پایان seed چاپ می‌شود
  *
  * متغیرهای محیطی:
  *   SEED_OWNER_EMAIL    (اختیاری) — پیش‌فرض Admin@gmail.com
- *   SEED_OWNER_PASSWORD (اختیاری) — اگر تنظیم نشود، یک رمز تصادفی قوی چاپ می‌شود
+ *   SEED_OWNER_PASSWORD (اختیاری) — اگر تنظیم نشود، رمز تصادفی چاپ می‌شود
+ *   SEED_WIPE           (اختیاری) — true/1 = پاکسازی کامل قبل از seed
  *
  * اجرا:
- *   node prisma/seed.js
+ *   node prisma/seed.js              (بدون پاکسازی — idempotent)
+ *   SEED_WIPE=true node prisma/seed.js (پاکسازی + seed کامل)
  *   یا
  *   npx prisma db seed
  * =============================================================
@@ -161,6 +167,50 @@ function daysAgo(n) {
 function hoursAgo(n) {
   return new Date(Date.now() - n * 60 * 60 * 1000);
 }
+function addDays(date, n) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + n);
+  return d;
+}
+/** تاریخ تصادفی بین createdAt یک رکورد و امروز — برای کامنت/لایک/بازدید */
+function afterDate(baseDate, minDays, maxDays) {
+  const age = (Date.now() - new Date(baseDate).getTime()) / (24 * 60 * 60 * 1000);
+  const lo = Math.max(0, Math.min(age, minDays ?? 0));
+  const hi = Math.max(lo, Math.min(age, maxDays ?? age));
+  return daysAgo(Math.floor(age - rand(lo, hi)));
+}
+/** آی‌پی‌های واقع‌گرایانه — رنج‌های ایران و افغانستان (به‌جای ۲۵۵.۲۵۵.۲۵۵) */
+const IR_IP_PREFIXES = ['5.112', '46.32', '78.39', '91.99', '94.182', '128.65', '151.238', '185.126', '213.217', '37.63', '93.110', '5.234'];
+const AF_IP_PREFIXES = ['103.91', '113.203', '124.29', '149.20', '182.180', '202.162', '103.21', '197.154'];
+function randIP() {
+  const prefix = pick([...IR_IP_PREFIXES, ...AF_IP_PREFIXES]);
+  return `${prefix}.${rand(1, 254)}`;
+}
+/** شماره موبایل افغانستان: +93 7X XXX XXXX */
+function afghanPhone() {
+  return `+937${rand(0, 9)}${rand(1000000, 9999999)}`;
+}
+/** شماره موبایل ایران: 09XX XXX XXXX */
+function iranPhone() {
+  return `09${rand(100000000, 999999999)}`;
+}
+/* ─── wipe: پاکسازی کامل دیتابیس قبل از seed ───────────────────
+ * فقط وقتی SEED_WIPE=true تنظیم شده باشد اجرا می‌شود — تا دیپلوی‌های
+ * بعدی (که seed در build-time اجرا می‌شود) دیتابیس production را پاک نکنند.
+ * ─────────────────────────────────────────────────────────────── */
+async function wipeDatabase() {
+  console.log('🗑️  پاکسازی کامل دیتابیس (حذف داده‌های قبلی)...');
+  const tables = await p.$queryRawUnsafe(
+    "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename <> '_prisma_migrations'",
+  );
+  if (tables.length === 0) {
+    console.log('   (دیتابیس خالی است)');
+    return;
+  }
+  const names = tables.map((t) => `"${t.tablename}"`).join(', ');
+  await p.$executeRawUnsafe(`TRUNCATE TABLE ${names} RESTART IDENTITY CASCADE`);
+  console.log(`   ✅ ${tables.length} جدول پاکسازی شد`);
+}
 
 /* ─── seed credential helpers ────────────────────────────────── */
 let seededOwner = null; // { email, password, source } فقط در صورت ایجاد جدید پر می‌شود
@@ -176,6 +226,29 @@ function generatePassword(length = 16) {
   return password.sort(() => Math.random() - 0.5).join('');
 }
 
+/* ─── step: اجرای هر بخش با تلاش مجدد روی خطاهای موقتی اتصال ── */
+function isConnError(e) {
+  return !!(
+    e &&
+    (e.code === 'P1001' ||
+      e.code === 'P1008' ||
+      e.code === 'P1017' ||
+      /Can't reach database|connection.*(?:closed|reset|timed out|terminated)/i.test(e.message || ''))
+  );
+}
+async function step(label, fn) {
+  console.log(label);
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    try {
+      return await fn();
+    } catch (e) {
+      if (!isConnError(e) || attempt === 5) throw e;
+      console.log(`   🔁 اتصال موقتاً قطع شد — تلاش مجدد (${attempt}/4)...`);
+      await new Promise((r) => setTimeout(r, 3000 * attempt));
+    }
+  }
+}
+
 /* ─── 1) SystemSettings (singleton) ──────────────────────────── */
 async function seedSystemSettings() {
   const existingCount = await p.systemSettings.findFirst();
@@ -187,6 +260,10 @@ async function seedSystemSettings() {
     data: {
       siteName: 'Financial Market',
       siteDescription: 'مرجع تحلیل بازار طلا، ارز، رمزارز و بورس',
+      siteUrl: 'https://financialmarket.page',
+      contactEmail: 'info@financialmarket.af',
+      contactPhone: '+93701234567',
+      contactAddress: 'کابل، شهر نو، سرک حاجی نجار، مارکت مالی',
       maintenanceMode: false,
       cacheEnabled: true,
       smtpServer: 'smtp.resend.com',
@@ -194,7 +271,7 @@ async function seedSystemSettings() {
       smtpUsername: 'resend',
       telegram: 'https://t.me/blogmarket',
       instagram: 'https://instagram.com/blogmarket',
-      whatsapp: 'https://wa.me/989120000000',
+      whatsapp: 'https://wa.me/93701234567',
       twitter: 'https://twitter.com/blogmarket',
     },
   });
@@ -206,28 +283,34 @@ async function seedSystemSettings() {
 async function seedUsers() {
   const samplePassword = await bcrypt.hash('Password123!', 10);
 
-  // مالک (OWNER): رمز از env خوانده می‌شود؛ در غیر این صورت تصادفی تولید و چاپ می‌شود
+  // مالک (OWNER): اگر SEED_OWNER_PASSWORD تنظیم شده باشد از آن استفاده می‌شود؛
+  // در غیر این صورت رمز قوی تصادفی تولید و در پایان seed چاپ می‌شود.
   const ownerEmail = process.env.SEED_OWNER_EMAIL?.trim() || 'Admin@gmail.com';
   const ownerPasswordFromEnv = process.env.SEED_OWNER_PASSWORD;
   const ownerPassword = ownerPasswordFromEnv || generatePassword(16);
   const ownerPasswordHash = await bcrypt.hash(ownerPassword, 10);
 
+  // ── تیم سایت — نام/ایمیل/شماره واقعی‌نما، عضویت از ماه‌های قبل ──
   const usersData = [
     {
       id: 'cm5qdrd3e0001m4zli12b2rd5',
-      name: 'author',
-      email: 'author@gmail.com',
+      name: 'امید رحیمی',
+      email: 'omid.rahimi@financialmarket.af',
       role: 'AUTHOR',
       status: 'Active',
+      phoneNumber: '+93701234567',
       image: 'https://i.pravatar.cc/150?img=12',
+      createdAt: daysAgo(rand(360, 410)),
     },
     {
       id: 'cm5qnptpb0001v8tnms9kwp6j',
-      name: 'biotak',
-      email: 'bioootak@gmail.com',
+      name: 'بهرام قادری',
+      email: 'bahram.ghaderi@financialmarket.af',
       role: 'ADMIN',
       status: 'Active',
+      phoneNumber: '09121234567',
       image: 'https://i.pravatar.cc/150?img=33',
+      createdAt: daysAgo(rand(330, 380)),
     },
     {
       id: 'cm5kqiap00001ckmow11600x8',
@@ -236,14 +319,46 @@ async function seedUsers() {
       role: 'OWNER',
       status: 'Active',
       image: 'https://i.pravatar.cc/150?img=68',
+      createdAt: daysAgo(rand(380, 430)),
     },
     {
       id: 'cmqcm407d0002vjpsihhfla61',
+      name: 'سارا محمدی',
+      email: 'sara.mohammadi@financialmarket.af',
+      role: 'AUTHOR',
+      status: 'Active',
+      phoneNumber: '+93713334455',
+      image: 'https://i.pravatar.cc/150?img=47',
+      createdAt: daysAgo(rand(280, 340)),
+    },
+    {
+      id: 'cmqcm407d0002vjpsihhfla62',
       name: 'تیم تحریریه',
-      email: 'author@blogmarket.local',
+      email: 'editorial@financialmarket.af',
       role: 'AUTHOR',
       status: 'Active',
       image: 'https://i.pravatar.cc/150?img=5',
+      createdAt: daysAgo(rand(400, 440)),
+    },
+    {
+      id: 'cmqcm407d0002vjpsihhfla63',
+      name: 'نرگس احمدی',
+      email: 'narges.ahmadi@financialmarket.af',
+      role: 'SUPPORT',
+      status: 'Active',
+      phoneNumber: '+93702333445',
+      image: 'https://i.pravatar.cc/150?img=20',
+      createdAt: daysAgo(rand(220, 280)),
+    },
+    {
+      id: 'cmqcm407d0002vjpsihhfla64',
+      name: 'محمد عظیمی',
+      email: 'm.azimi@sarafi.af',
+      role: 'EXCHANGE',
+      status: 'Active',
+      phoneNumber: '+93704455667',
+      image: 'https://i.pravatar.cc/150?img=15',
+      createdAt: daysAgo(rand(180, 240)),
     },
   ];
 
@@ -252,18 +367,17 @@ async function seedUsers() {
     const exists = await p.user.findUnique({ where: { id: u.id } });
     if (exists) {
       created.push(exists);
-      if (u.role === 'OWNER' && exists.email === ownerEmail) {
-        console.log('   ⏭️  مالک (OWNER) قبلاً وجود دارد؛ رمز عبور تغییر نکرد');
-      }
       continue;
     }
     const isOwner = u.role === 'OWNER';
-    const password = isOwner ? ownerPasswordHash : samplePassword;
     const user = await p.user.create({
-      data: { ...u, password, emailVerified: daysAgo(rand(30, 300)) },
+      data: {
+        ...u,
+        password: isOwner ? ownerPasswordHash : samplePassword,
+        emailVerified: addDays(u.createdAt, rand(1, 5)),
+      },
     });
     created.push(user);
-
     if (isOwner) {
       seededOwner = {
         email: u.email,
@@ -273,16 +387,22 @@ async function seedUsers() {
     }
   }
 
-  // کاربران عادی برای تست
+  // ── کاربران عادی — افغانستان + ایران، عضویت از ۱ هفته تا ~۱۳ ماه قبل ──
   const normalUsers = [
-    { name: 'علی محمدی', email: 'ali.m@test.ir', role: 'USER' },
-    { name: 'مریم احمدی', email: 'maryam@test.ir', role: 'USER' },
-    { name: 'حسین رضایی', email: 'hossein@test.ir', role: 'USER' },
-    { name: 'زهرا کریمی', email: 'zahra@test.ir', role: 'USER' },
-    { name: 'محمد قاسمی', email: 'mohammad@test.ir', role: 'USER' },
-    { name: 'فاطمه نوری', email: 'fateme@test.ir', role: 'USER' },
-    { name: 'رضا صادقی', email: 'reza@test.ir', role: 'USER' },
-    { name: 'نگار حسینی', email: 'negar@test.ir', role: 'USER' },
+    { name: 'احمد رحیمی', email: 'ahmad.rahimi@gmail.com', phoneNumber: '+93701239876', city: 'کابل' },
+    { name: 'مریم نوری', email: 'maryam.nouri@gmail.com', phoneNumber: '+93713334455', city: 'هرات' },
+    { name: 'عبدالرحمن عظیمی', email: 'abdulrahman.azimi@gmail.com', phoneNumber: '+93774455667', city: 'مزار شریف' },
+    { name: 'حسین رضایی', email: 'hossein.rezaei@gmail.com', phoneNumber: '09124567890', city: 'تهران' },
+    { name: 'زهرا کریمی', email: 'zahra.karimi@gmail.com', phoneNumber: '+93715566778', city: 'کابل' },
+    { name: 'فرشته احمدی', email: 'fereshte.ahmadi@gmail.com', phoneNumber: '+93726677889', city: 'هرات' },
+    { name: 'رضا قاسمی', email: 'reza.ghasemi@gmail.com', phoneNumber: '09135566778', city: 'مشهد' },
+    { name: 'وحیدالله صافی', email: 'wahid.safi@gmail.com', phoneNumber: '+93737788990', city: 'قندهار' },
+    { name: 'فاطمه موسوی', email: 'fateme.mousavi@gmail.com', phoneNumber: '09126677889', city: 'اصفهان' },
+    { name: 'سمیع‌الله نوری', email: 'sami.noori@gmail.com', phoneNumber: '+93748899001', city: 'بلخ' },
+    { name: 'نگار صادقی', email: 'negar.sadeghi@gmail.com', phoneNumber: '09147788990', city: 'شیراز' },
+    { name: 'ظاهر حسینی', email: 'zaher.hosseini@gmail.com', phoneNumber: '+93759900112', city: 'جلال‌آباد' },
+    { name: 'علی محمدی', email: 'ali.mohammadi@gmail.com', phoneNumber: '09158899001', city: 'تبریز' },
+    { name: 'حمیرا شریفی', email: 'homeira.sharifi@gmail.com', phoneNumber: '+93760011223', city: 'هرات' },
   ];
   for (const u of normalUsers) {
     const exists = await p.user.findUnique({ where: { email: u.email } });
@@ -290,13 +410,16 @@ async function seedUsers() {
       created.push(exists);
       continue;
     }
+    const joinedAt = daysAgo(rand(7, 390));
+    const { city, ...userFields } = u; // city فقط برای اطلاعات است — در مدل User نیست
     const user = await p.user.create({
       data: {
-        ...u,
+        ...userFields,
         password: samplePassword,
         status: 'Active',
         image: `https://i.pravatar.cc/150?img=${rand(1, 70)}`,
-        emailVerified: daysAgo(rand(1, 200)),
+        emailVerified: addDays(joinedAt, rand(1, 3)),
+        createdAt: joinedAt,
       },
     });
     created.push(user);
@@ -401,7 +524,14 @@ async function seedTags() {
 
 /* ─── 6) Posts (۵۰ پست متنوع) ──────────────────────────────── */
 async function seedPosts() {
-  const AUTHOR_ID = 'cm5qdrd3e0001m4zli12b2rd5';
+  const AUTHORS = await p.user.findMany({
+    where: { role: 'AUTHOR' },
+    select: { id: true },
+  });
+  if (AUTHORS.length === 0) {
+    console.log('   ⚠️  نویسنده‌ای برای پست‌ها یافت نشد');
+    return;
+  }
   let added = 0;
   let skipped = 0;
   for (let i = 0; i < POSTS_DATA.length; i++) {
@@ -430,6 +560,17 @@ async function seedPosts() {
     }, 0);
     const readingTime = Math.max(1, Math.ceil(wordCount / 180));
 
+    // انتشار در طول ~۱۳ ماه گذشته پخش می‌شود تا سایت قدیمی به نظر برسد
+    const publishedAt = daysAgo(rand(3, 400));
+    const featured = !!post.featured;
+    // بازدید با سن پست همبسته است — پست قدیمی‌تر بازدید بیشتری دارد
+    const ageDays = (Date.now() - publishedAt.getTime()) / (24 * 60 * 60 * 1000);
+    const viewCount = Math.min(
+      60000,
+      Math.round(ageDays * (featured ? 42 : 16) * (0.75 + Math.random() * 0.5)),
+    );
+    const author = AUTHORS[i % AUTHORS.length] || AUTHORS[0];
+
     const data = {
       title: post.title,
       slug: uniqueSlug,
@@ -438,11 +579,12 @@ async function seedPosts() {
       featuredImage: post.image,
       status: 'PUBLISHED',
       postType: post.type || 'STANDARD',
-      isFeatured: !!post.featured,
-      viewCount: rand(50, 3000),
+      isFeatured: featured,
+      viewCount,
       readingTime,
-      authorId: AUTHOR_ID,
-      createdAt: daysAgo(rand(1, 90)),
+      authorId: author.id,
+      createdAt: publishedAt,
+      updatedAt: addDays(publishedAt, rand(0, 20)),
       categories: { connect: cats.map((c) => ({ id: c.id })) },
       tags: { connect: tags.map((t) => ({ id: t.id })) },
     };
@@ -455,10 +597,62 @@ async function seedPosts() {
 }
 
 /* ─── 7) Comments (با reply تو در تو) ────────────────────────── */
+// دیدگاه‌های مرتبط با موضوع مقاله — به‌جای متن‌های تکراری عمومی
+const TOPIC_COMMENTS = {
+  crypto: [
+    'تحلیل خوبی بود، ولی به نظر من نوسانات بیت‌کوین در کوتاه‌مدت قابل پیش‌بینی نیست.',
+    'من چند ساله در این بازار هستم؛ دقیقاً همین نکته‌ای که گفتید باعث ضرر خیلی‌ها شده.',
+    'کاش در مورد ریسک نگهداری دارایی در صرافی‌ها هم بیشتر توضیح می‌دادید.',
+    'با این تحلیل موافقم، مخصوصاً بخش مربوط به ETFها.',
+    'سؤال: همین الان برای خرید وارد شویم یا منتظر اصلاح بمانیم؟',
+    'مطلب مفیدی بود؛ لطفاً نمودارهای بیشتری بگذارید.',
+  ],
+  gold: [
+    'با توجه به تورم منطقه، به نظر من طلا هنوز جای رشد دارد.',
+    'تحلیل خوبی بود؛ ولی قیمت سکه در بازار ما همیشه یک حباب دارد.',
+    'من از پارسال سکه خریدم و سود خوبی کردم؛ ولی الان ریسکش بالاست.',
+    'اونس طلا این هفته خیلی نوسان داشت؛ لطفاً تحلیل هفتگی را ادامه بدهید.',
+    'ممنون از مقاله؛ لطفاً در مورد حباب سکه هم مطلب بنویسید.',
+  ],
+  stocks: [
+    'بازار سهام این روزها واقعاً غیرقابل پیش‌بینی شده.',
+    'کاش می‌گفتید کدام گروه الان ارزنده‌تر است.',
+    'تحلیل خوبی بود، ولی نباید فقط P/E کل بازار را ملاک قرار داد.',
+    'ممنون؛ منتظر تحلیل گروه فلزات اساسی هستم.',
+  ],
+  analysis: [
+    'این سبک تحلیل برای من تازه بود؛ خیلی روان توضیح دادید.',
+    'لطفاً یک مقاله کامل درباره پرایس اکشن بنویسید.',
+    'نمودارها خیلی کمک‌کننده بودند؛ منبع داده‌هایتان کجاست؟',
+    'کاش فایل PDF تحلیل را هم می‌گذاشتید.',
+  ],
+  news: [
+    'خبر مهمی بود؛ ممنون که سریع پوشش دادید.',
+    'منبع این خبر کجاست؟ لطفاً لینک بگذارید.',
+    'به‌روزرسانی بعدی این خبر کی منتشر می‌شود؟',
+  ],
+  general: [
+    'مقاله بسیار مفیدی بود، ممنون از تیم تحریریه.',
+    'عالی! منتظر مقاله بعدی شما هستم.',
+    'این تحلیل خیلی به‌درد من خورد، تشکر.',
+    'خیلی ساده و روان توضیح دادید، سپاسگزارم.',
+  ],
+};
+
+function pickTopicPool(post) {
+  const text = `${post.title || ''} ${post.slug || ''}`;
+  if (/(بیت|کریپتو|ارز دیجیتال|بلاکچین|توکن|NFT|ماینینگ|کیف پول|اتریوم|صرافی|وب ۳|دیفای|متامسک|فانتوم|بیت‌کوین)/.test(text)) return TOPIC_COMMENTS.crypto;
+  if (/(طلا|سکه|اونس|حباب)/.test(text)) return TOPIC_COMMENTS.gold;
+  if (/(بورس|سهام|شاخص|سرمایه‌گذاری|صندوق|IPO)/.test(text)) return TOPIC_COMMENTS.stocks;
+  if (/(تحلیل|تکنیکال|نمودار|کندل|DXY)/.test(text)) return TOPIC_COMMENTS.analysis;
+  if (/(خبر|رکورد|فوری)/.test(text)) return TOPIC_COMMENTS.news;
+  return TOPIC_COMMENTS.general;
+}
+
 async function seedComments(users, posts) {
   const existingCount = await p.comment.count();
-  if (existingCount >= 200) {
-    console.log(`   ⏭️  Comments قبلاً ایجاد شده (${existingCount} عدد)`);
+  if (existingCount > 0) {
+    console.log(`   ⏭️  دیدگاه‌ها قبلاً ایجاد شده (${existingCount} عدد)`);
     return;
   }
   const normalUsers = users.filter((u) => u.role === 'USER');
@@ -466,47 +660,36 @@ async function seedComments(users, posts) {
     console.log('   ⚠️  کاربر عادی برای دیدگاه یافت نشد');
     return;
   }
-  const sampleComments = [
-    'مقاله بسیار مفیدی بود، ممنون از تیم تحریریه.',
-    'آیا منبع آماری که استفاده کردید رو هم معرفی می‌کنید؟',
-    'با نظر شما موافقم، به‌خصوص در مورد تحلیل تکنیکال.',
-    'تجربه شخصی من با این روش کاملاً متفاوت بود.',
-    'لطفاً در مورد ریسک‌های این روش هم صحبت کنید.',
-    'عالی! منتظر مقاله بعدی شما هستم.',
-    'این تحلیل خیلی به‌درد من خورد، تشکر.',
-    'سؤال: آیا این روش برای بازار ایران هم کار می‌کند؟',
-    'نظر متفاوتی دارم، در ادامه توضیح می‌دم.',
-    'خیلی ساده و روان توضیح دادید، سپاسگزارم.',
-    'این اولین بار است که این مفهوم را این‌طور واضح می‌فهمم.',
-    'لطفاً نمونه‌های واقعی بیشتری بررسی کنید.',
-  ];
+  const staff = users.filter((u) => ['AUTHOR', 'ADMIN', 'SUPPORT'].includes(u.role));
   const replies = [
     'ممنون از بازخورد شما.',
-    'در مقاله بعدی به این موضوع می‌پردازم.',
+    'در مقاله بعدی به این موضوع می‌پردازیم.',
     'دقیقاً، همین نکته خیلی مهمه.',
     'تجربیات شما همیشه ارزشمنده.',
-    'موافقم، پیشنهاد خوبیه.',
+    'موافقم؛ پیشنهاد خوبیه.',
   ];
 
   let added = 0;
-  for (const post of posts.slice(0, 40)) {
-    // هر پست ۲ تا ۸ دیدگاه
-    const count = rand(2, 8);
+  for (const post of posts) {
+    // تعداد دیدگاه متناسب با بازدید مقاله — مقاله پرمخاطب کامنت بیشتری دارد
+    const baseCount = Math.round(post.viewCount / 700);
+    const count = Math.min(14, Math.max(0, baseCount + rand(-1, 2)));
     for (let i = 0; i < count; i++) {
       const author = pick(normalUsers);
-      const parentExists = Math.random() > 0.7;
+      const createdAt = afterDate(post.createdAt, 0, 180);
       const data = {
-        content: pick(sampleComments),
+        content: pick(pickTopicPool(post)),
         postId: post.id,
         authorId: author.id,
-        approved: Math.random() > 0.15, // ۸۵٪ تأیید شده
-        createdAt: daysAgo(rand(0, 60)),
+        approved: Math.random() > 0.12,
+        createdAt,
       };
       const created = await p.comment.create({ data });
       added++;
-      // ۲۵٪ شانس reply
-      if (parentExists) {
-        const replier = pick(normalUsers.filter((u) => u.id !== author.id));
+      // ~۲۰٪ دیدگاه‌ها پاسخ دارند (کاربر دیگر یا تیم)
+      if (Math.random() > 0.8) {
+        const replierPool = Math.random() > 0.4 ? normalUsers : staff;
+        const replier = pick(replierPool.filter((u) => u.id !== author.id)) || pick(replierPool);
         await p.comment.create({
           data: {
             content: pick(replies),
@@ -514,7 +697,7 @@ async function seedComments(users, posts) {
             authorId: replier.id,
             parentId: created.id,
             approved: true,
-            createdAt: daysAgo(rand(0, 30)),
+            createdAt: afterDate(createdAt, 0, 10),
           },
         });
         added++;
@@ -536,26 +719,31 @@ async function seedLikes(users, posts) {
   // Like روی پست‌ها
   for (const post of posts) {
     const likers = [...normalUsers].sort(() => Math.random() - 0.5).slice(0, rand(0, 6));
-    for (const user of likers) {
-      const exists = await p.like.findFirst({ where: { userId: user.id, postId: post.id } });
-      if (exists) continue;
-      await p.like.create({
-        data: { userId: user.id, postId: post.id, createdAt: daysAgo(rand(0, 60)) },
-      });
-      added++;
+    const rows = likers.map((user) => ({
+      userId: user.id,
+      postId: post.id,
+      createdAt: afterDate(post.createdAt, 0, 120),
+    }));
+    if (rows.length) {
+      const res = await p.like.createMany({ data: rows, skipDuplicates: true });
+      added += res.count;
     }
   }
   // Like روی دیدگاه‌ها
   const comments = await p.comment.findMany({ take: 100 });
+  const cRows = [];
   for (const c of comments) {
     if (Math.random() > 0.4) continue;
     const liker = pick(normalUsers);
-    const exists = await p.like.findFirst({ where: { userId: liker.id, commentId: c.id } });
-    if (exists) continue;
-    await p.like.create({
-      data: { userId: liker.id, commentId: c.id, createdAt: daysAgo(rand(0, 30)) },
+    cRows.push({
+      userId: liker.id,
+      commentId: c.id,
+      createdAt: afterDate(c.createdAt, 0, 30),
     });
-    added++;
+  }
+  if (cRows.length) {
+    const res = await p.like.createMany({ data: cRows, skipDuplicates: true });
+    added += res.count;
   }
   console.log(`   ✅ ${added} لایک ایجاد شد`);
 }
@@ -576,18 +764,18 @@ async function seedViews(posts) {
   ];
   let added = 0;
   for (const post of posts) {
-    const count = rand(5, 40);
+    const count = rand(8, 30);
+    const rows = [];
     for (let i = 0; i < count; i++) {
-      await p.view.create({
-        data: {
-          postId: post.id,
-          ip: randIP(),
-          userAgent: pick(userAgents),
-          createdAt: daysAgo(rand(0, 60)),
-        },
+      rows.push({
+        postId: post.id,
+        ip: randIP(),
+        userAgent: pick(userAgents),
+        createdAt: afterDate(post.createdAt, 0, 120),
       });
-      added++;
     }
+    const res = await p.view.createMany({ data: rows });
+    added += res.count;
   }
   console.log(`   ✅ ${added} بازدید ثبت شد`);
 }
@@ -604,16 +792,14 @@ async function seedSavedPosts(users, posts) {
   for (const user of normalUsers) {
     const count = rand(1, 8);
     const shuffled = [...posts].sort(() => Math.random() - 0.5).slice(0, count);
-    for (const post of shuffled) {
-      const exists = await p.savedPost.findUnique({
-        where: { userId_postId: { userId: user.id, postId: post.id } },
-      });
-      if (exists) continue;
-      await p.savedPost.create({
-        data: { userId: user.id, postId: post.id, createdAt: daysAgo(rand(0, 30)) },
-      });
-      added++;
-    }
+    const rows = shuffled.map((post) => ({
+      userId: user.id,
+      postId: post.id,
+      createdAt: afterDate(post.createdAt, 0, 120),
+    }));
+    if (!rows.length) continue;
+    const res = await p.savedPost.createMany({ data: rows, skipDuplicates: true });
+    added += res.count;
   }
   console.log(`   ✅ ${added} پست ذخیره‌شده`);
 }
@@ -630,27 +816,28 @@ async function seedNotifications(users) {
     'پاسخ به دیدگاه شما توسط {user} ارسال شد.',
     '{user} مقاله شما را پسندید.',
     'مقاله جدیدی در دسته {cat} منتشر شد.',
-    'خبر فوری: {user} به شما پیام داد.',
     'دیدگاه شما توسط مدیر تأیید شد.',
     'پست ذخیره‌شده شما به‌روزرسانی شد.',
-    'پاسخ جدید در گفتگوی شما',
+    'نرخ جدید در دسته {cat} ثبت شد.',
   ];
-  let added = 0;
+  const rows = [];
   for (const user of normalUsers) {
     const count = rand(2, 6);
     for (let i = 0; i < count; i++) {
       const tpl = pick(samples);
-      await p.notification.create({
-        data: {
-          userId: user.id,
-          message: tpl
-            .replace('{user}', pick(users).name || 'کاربر')
-            .replace('{cat}', pick(['طلا', 'بیت‌کوین', 'بورس'])),
-          createdAt: daysAgo(rand(0, 30)),
-        },
+      rows.push({
+        userId: user.id,
+        message: tpl
+          .replace('{user}', pick(users).name || 'کاربر')
+          .replace('{cat}', pick(['طلا', 'بیت‌کوین', 'بورس', 'ارز', 'سرمایه‌گذاری'])),
+        createdAt: daysAgo(rand(0, 90)),
       });
-      added++;
     }
+  }
+  let added = 0;
+  if (rows.length) {
+    const res = await p.notification.createMany({ data: rows });
+    added += res.count;
   }
   console.log(`   ✅ ${added} اعلان`);
 }
@@ -663,29 +850,33 @@ async function seedActivityLogs(users) {
     return;
   }
   const actions = [
-    'LOGIN',
-    'POST_VIEW',
-    'POST_LIKE',
-    'COMMENT_ADD',
-    'PROFILE_UPDATE',
-    'POST_CREATE',
-    'PASSWORD_CHANGE',
+    ['LOGIN', 'وارد حساب کاربری شد'],
+    ['POST_VIEW', 'مقاله «{t}» را مشاهده کرد'],
+    ['POST_LIKE', 'مقاله «{t}» را پسندید'],
+    ['COMMENT_ADD', 'روی مقاله «{t}» دیدگاه گذاشت'],
+    ['PROFILE_UPDATE', 'پروفایل خود را به‌روزرسانی کرد'],
+    ['POST_CREATE', 'مقاله جدید «{t}» منتشر شد'],
+    ['PASSWORD_CHANGE', 'رمز عبور خود را تغییر داد'],
+    ['NEWSLETTER_SUBSCRIBE', 'در خبرنامه عضویت کرد'],
   ];
-  let added = 0;
+  const topics = ['تحلیل طلا', 'پیش‌بینی بیت‌کوین', 'بازار بورس', 'راهنمای کیف پول', 'نرخ لحظه‌ای ارز'];
+  const rows = [];
   for (const user of users) {
-    const count = rand(5, 15);
+    const count = rand(3, 10);
     for (let i = 0; i < count; i++) {
-      const action = pick(actions);
-      await p.activityLog.create({
-        data: {
-          userId: user.id,
-          action,
-          details: `کاربر ${action} را انجام داد`,
-          createdAt: daysAgo(rand(0, 60)),
-        },
+      const [action, tpl] = pick(actions);
+      rows.push({
+        userId: user.id,
+        action,
+        details: tpl.replace('{t}', pick(topics)),
+        createdAt: daysAgo(rand(1, 380)),
       });
-      added++;
     }
+  }
+  let added = 0;
+  if (rows.length) {
+    const res = await p.activityLog.createMany({ data: rows });
+    added += res.count;
   }
   console.log(`   ✅ ${added} لاگ فعالیت`);
 }
@@ -698,22 +889,22 @@ async function seedNewsletters() {
     return;
   }
   const emails = [
-    'investor1@gmail.com',
-    'trader2@yahoo.com',
-    'crypto.fan@outlook.com',
-    'gold.lover@gmail.com',
-    'stock.pro@protonmail.com',
+    'm.karimi@gmail.com',
+    's.tawakoli@yahoo.com',
+    'a.rahimi@outlook.com',
+    'noori.mohammad@gmail.com',
+    'zahra.sadeghi@yahoo.com',
+    'h.azizi@gmail.com',
+    'fereshte.a@outlook.com',
+    'wali.mohmand@gmail.com',
   ];
-  let added = 0;
-  for (const email of emails) {
-    const exists = await p.newsletter.findUnique({ where: { email } });
-    if (exists) continue;
-    await p.newsletter.create({
-      data: { email, isActive: true, createdAt: daysAgo(rand(30, 200)) },
-    });
-    added++;
-  }
-  console.log(`   ✅ ${added} عضو خبرنامه`);
+  const rows = emails.map((email) => ({
+    email,
+    isActive: true,
+    createdAt: daysAgo(rand(30, 200)),
+  }));
+  const res = await p.newsletter.createMany({ data: rows, skipDuplicates: true });
+  console.log(`   ✅ ${res.count} عضو خبرنامه`);
 }
 
 /* ─── 14) SocialLinks ──────────────────────────────────────── */
@@ -1748,56 +1939,131 @@ async function seedRateLists() {
 
 /* ─── 16) ServiceRequests (درخواست خدمات) ───────────────────── */
 async function seedServiceRequests() {
-  const names = [
-    'علی موسوی',
-    'مریم صادقی',
-    'حسین نوری',
-    'زهرا رضایی',
-    'محمد احمدی',
-    'فاطمه کریمی',
-    'رضا مرادی',
-    'نگار حسینی',
+  const existingCount = await p.serviceRequest.count();
+  if (existingCount >= 30) {
+    console.log(`   ⏭️  ServiceRequests قبلاً ایجاد شده (${existingCount} عدد)`);
+    return;
+  }
+  const admin = await p.user.findFirst({ where: { role: { in: ['ADMIN', 'OWNER'] } } });
+  const afghanExchanges = await p.exchange.findMany({
+    where: { status: 'ACTIVE', city: { in: ['هرات', 'کابل', 'جوزجان', 'قندهار'] } },
+    select: { id: true },
+  });
+  const exchangeIds = afghanExchanges.map((e) => e.id);
+
+  const REQUESTERS = [
+    { fullName: 'احمد رحیمی', phone: '+93701239876', email: 'ahmad.rahimi@gmail.com' },
+    { fullName: 'عبدالرحمن عظیمی', phone: '+93774455667' },
+    { fullName: 'زهرا کریمی', phone: '+93715566778', email: 'zahra.karimi@gmail.com' },
+    { fullName: 'رضا قاسمی', phone: '09135566778' },
+    { fullName: 'وحیدالله صافی', phone: '+93737788990', email: 'wahid.safi@gmail.com' },
+    { fullName: 'فاطمه موسوی', phone: '09126677889', email: 'fateme.mousavi@gmail.com' },
+    { fullName: 'سمیع‌الله نوری', phone: '+93748899001' },
+    { fullName: 'حمیرا شریفی', phone: '+93760011223', email: 'homeira.sharifi@gmail.com' },
+    { fullName: 'محمد رفیع عثمانی', phone: '+93781234567' },
+    { fullName: 'نادره حبیبی', phone: '+93794455667', email: 'nadera.habibi@gmail.com' },
+    { fullName: 'علی محمدی', phone: '09158899001' },
+    { fullName: 'ظاهر حسینی', phone: '+93759900112', email: 'zaher.hosseini@gmail.com' },
   ];
-  const services = [
-    'INTERNATIONAL_TRANSFER',
-    'ONLINE_PAYMENT',
-    'TUITION_PAYMENT',
-    'FREELANCE_INCOME',
-    'SOFTWARE_PURCHASE',
-    'OTHER',
+
+  // هر خدمت با توضیح و مبلغ واقعیِ همان خدمت
+  const SERVICES = [
+    { type: 'INTERNATIONAL_TRANSFER', desc: 'ارسال حواله از کابل به دبی برای هزینه خانواده', amount: () => `${rand(200, 5000)}`, currency: 'USD' },
+    { type: 'TUITION_PAYMENT', desc: 'پرداخت شهریه ترم جدید دانشگاه در ترکیه', amount: () => `${rand(500, 4000)}`, currency: 'USD' },
+    { type: 'FREELANCE_INCOME', desc: 'دریافت درآمد فریلنسری از Upwork به حساب بانکی', amount: () => `${rand(100, 3000)}`, currency: 'USD' },
+    { type: 'ONLINE_PAYMENT', desc: 'خرید نرم‌افزار و سرویس‌های آنلاین از فروشگاه خارجی', amount: () => `${rand(50, 1500)}`, currency: 'USD' },
+    { type: 'CURRENCY_BUY', desc: 'خرید دلار نقدی برای سفر', amount: () => `${rand(15000, 900000)}`, currency: 'AFN' },
+    { type: 'CURRENCY_SELL', desc: 'فروش افغانی و تبدیل به دلار برای حواله', amount: () => `${rand(20000, 800000)}`, currency: 'AFN' },
+    { type: 'CRYPTO_BUY', desc: 'خرید تتر برای پرداخت آنلاین', amount: () => `${rand(100, 4000)}`, currency: 'USDT' },
+    { type: 'SOFTWARE_PURCHASE', desc: 'خرید اشتراک نرم‌افزار طراحی و اداری', amount: () => `${rand(20, 800)}`, currency: 'USD' },
+    { type: 'GIFT_CARD', desc: 'خرید کارت هدیه فروشگاه خارجی', amount: () => `${rand(25, 500)}`, currency: 'USD' },
+    { type: 'PAYPAL_TRANSFER', desc: 'واریز وجه به حساب پی‌پال', amount: () => `${rand(100, 2000)}`, currency: 'USD' },
   ];
-  const statuses = ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'COMPLETED', 'COMPLETED', 'CANCELLED'];
-  const currencies = ['USD', 'EUR', 'GBP', 'AED', 'CAD'];
-  const urgencies = ['NORMAL', 'NORMAL', 'NORMAL', 'URGENT'];
-  const methods = ['telegram', 'whatsapp'];
+  const STATUS_WEIGHTS = ['COMPLETED', 'COMPLETED', 'COMPLETED', 'IN_PROGRESS', 'IN_PROGRESS', 'PENDING', 'PENDING', 'CANCELLED'];
+  const METHODS = ['telegram', 'whatsapp', 'phone', 'website'];
+  const NOTES = {
+    COMPLETED: ['حواله با موفقیت انجام و رسید ارسال شد.', 'تراکنش تکمیل شد؛ رسید برای مشتری ارسال گردید.'],
+    IN_PROGRESS: ['در حال هماهنگی با صرافی مقصد.', 'منتظر تأیید پرداخت از سمت صرافی.'],
+    PENDING: ['در صف بررسی؛ مدارک کامل است.', 'نیازمند تکمیل مدارک از سمت مشتری.'],
+    CANCELLED: ['مشتری به دلیل تغییر شرایط انصراف داد.', 'عدم تطابق مدارک؛ درخواست لغو شد.'],
+  };
+  // کد پیگیری قطعی بر اساس ایندکس — در تلاش‌های مجدد تکراری ایجاد نمی‌شود
+  const genCode = (i) => `SR-${1000 + i}`;
 
   let added = 0;
-  for (let i = 0; i < 12; i++) {
-    const name = pick(names);
-    const phone = `09${rand(100000000, 999999999)}`;
-    const code = `TRK-DEV-${String(i + 1).padStart(3, '0')}`;
+  for (let i = 0; i < 30; i++) {
+    const requester = pick(REQUESTERS);
+    const svc = pick(SERVICES);
+    const status = pick(STATUS_WEIGHTS);
+    const createdAt = daysAgo(rand(2, 330));
+    const code = genCode(i);
     const exists = await p.serviceRequest.findUnique({ where: { trackingCode: code } });
     if (exists) continue;
-    await p.serviceRequest.create({
-      data: {
-        trackingCode: code,
-        fullName: name,
-        phone,
-        email: Math.random() > 0.3 ? `${name.replace(' ', '.').toLowerCase()}@test.ir` : null,
-        serviceType: pick(services),
-        amount: String(rand(100, 50000)),
-        currency: pick(currencies),
-        description: 'درخواست تستی برای بررسی عملکرد سیستم',
-        urgency: pick(urgencies),
-        contactMethod: pick(methods),
-        status: pick(statuses),
-        adminNotes: Math.random() > 0.6 ? 'بررسی شد، منتظر پرداخت هستیم' : null,
-        createdAt: daysAgo(rand(0, 60)),
-      },
-    });
+
+    const data = {
+      trackingCode: code,
+      fullName: requester.fullName,
+      phone: requester.phone,
+      email: requester.email || null,
+      serviceType: svc.type,
+      amount: svc.amount(),
+      currency: svc.currency,
+      description: svc.desc,
+      urgency: Math.random() < 0.18 ? 'URGENT' : 'NORMAL',
+      contactMethod: pick(METHODS),
+      status,
+      adminNotes: Math.random() < 0.6 ? pick(NOTES[status]) : null,
+      targetExchangeId: exchangeIds.length && Math.random() < 0.45 ? pick(exchangeIds) : null,
+      createdAt,
+      estimatedCompletionAt:
+        status === 'COMPLETED' || status === 'IN_PROGRESS' ? addDays(createdAt, rand(1, 5)) : null,
+      statusLogs: { create: buildStatusLogs(status, createdAt, admin) },
+    };
+    await p.serviceRequest.create({ data });
     added++;
   }
   console.log(`   ✅ ${added} درخواست خدمات`);
+}
+
+function buildStatusLogs(status, createdAt, admin) {
+  const changedBy = admin ? admin.id : 'SYSTEM';
+  const logs = [
+    {
+      fromStatus: null,
+      toStatus: 'PENDING',
+      changedBy: 'SYSTEM',
+      note: 'ثبت درخواست توسط مشتری',
+      createdAt,
+    },
+  ];
+  if (status === 'IN_PROGRESS' || status === 'COMPLETED') {
+    logs.push({
+      fromStatus: 'PENDING',
+      toStatus: 'IN_PROGRESS',
+      changedBy,
+      note: 'شروع بررسی توسط پشتیبانی',
+      createdAt: addDays(createdAt, rand(0, 2)),
+    });
+  }
+  if (status === 'COMPLETED') {
+    logs.push({
+      fromStatus: 'IN_PROGRESS',
+      toStatus: 'COMPLETED',
+      changedBy,
+      note: 'انجام درخواست و ارسال رسید',
+      createdAt: addDays(createdAt, rand(2, 5)),
+    });
+  }
+  if (status === 'CANCELLED') {
+    logs.push({
+      fromStatus: 'PENDING',
+      toStatus: 'CANCELLED',
+      changedBy,
+      note: 'لغو درخواست',
+      createdAt: addDays(createdAt, rand(1, 10)),
+    });
+  }
+  return logs;
 }
 
 /* ─── 17) SystemLogs ────────────────────────────────────────── */
@@ -1819,52 +2085,51 @@ async function seedSystemLogs() {
     'Timeout در درخواست API',
     'پشتیبان‌گیری روزانه تکمیل شد',
   ];
-  let added = 0;
+  const rows = [];
   for (let i = 0; i < 25; i++) {
-    await p.systemLog.create({
-      data: {
-        level: pick(levels),
-        source: pick(sources),
-        message: pick(messages),
-        timestamp: hoursAgo(rand(1, 240)),
-      },
+    rows.push({
+      level: pick(levels),
+      source: pick(sources),
+      message: pick(messages),
+      timestamp: hoursAgo(rand(1, 240)),
     });
-    added++;
   }
-  console.log(`   ✅ ${added} لاگ سیستم`);
+  const res = await p.systemLog.createMany({ data: rows });
+  console.log(`   ✅ ${res.count} لاگ سیستم`);
 }
 
 /* ─── 18) PageViews (آمار بازدید صفحات) ─────────────────────── */
 async function seedPageViews() {
-  // 2026-07-04: now that @@unique([page, date]) is the bucket key,
-  // we write one row per (page, day) for the last 90 days so the
-  // dashboard's 7d/30d/90d charts all have real data to render.
-  const pages = ['/', '/blog', '/about', '/contact', '/services', '/gold', '/crypto', '/stocks'];
+  // یک سال داده روزانه — با روند رشد تدریجی، نوسان هفتگی و نویز واقعی
+  const pages = [
+    { page: '/', base: 2400 },
+    { page: '/blog', base: 1350 },
+    { page: '/exchange-rates', base: 900 },
+    { page: '/gold', base: 680 },
+    { page: '/crypto', base: 620 },
+    { page: '/services', base: 430 },
+    { page: '/stocks', base: 380 },
+    { page: '/about', base: 210 },
+    { page: '/contact', base: 170 },
+  ];
   let added = 0;
-  for (let i = 0; i < pages.length; i++) {
-    const page = pages[i];
-    // Only fill days missing for this page (idempotent across re-runs).
-    for (let d = 0; d < 90; d++) {
+  for (const { page, base } of pages) {
+    const rows = [];
+    for (let d = 0; d < 365; d++) {
       const dayDate = startOfDayUTC(daysAgo(d));
-      const exists = await p.pageView.findUnique({
-        where: { page_date: { page, date: dayDate } },
-      });
-      if (exists) continue;
-      // Older days get a bit less traffic on average — slight downward
-      // drift so the chart isn't flat.
-      const baseViews = rand(500, 8000);
-      const decay = 1 - d * 0.003; // 0d=1.0, 90d≈0.73
-      await p.pageView.create({
-        data: {
-          page,
-          views: Math.max(50, Math.round(baseViews * decay)),
-          date: dayDate,
-        },
-      });
-      added++;
+      const dow = dayDate.getUTCDay(); // 0=Sun..6=Sat
+      // جمعه (تعطیل) ترافیک کمتر، اوایل هفته بیشتر
+      const weekday = dow === 5 ? 0.55 : dow === 6 ? 0.8 : dow === 1 ? 0.9 : 1;
+      // سایت در یک سال گذشته رشد کرده — روزهای قدیمی‌تر کمی کمتر
+      const growth = 1 + (364 - d) * 0.0012;
+      const noise = 0.75 + Math.random() * 0.5;
+      const views = Math.max(25, Math.round(base * weekday * growth * noise));
+      rows.push({ page, views, date: dayDate });
     }
+    const res = await p.pageView.createMany({ data: rows, skipDuplicates: true });
+    added += res.count;
   }
-  console.log(`   ✅ ${added} آمار بازدید صفحه (90 روز اخیر)`);
+  console.log(`   ✅ ${added} آمار بازدید صفحه (۳۶۵ روز اخیر)`);
 }
 
 function startOfDayUTC(d) {
@@ -1911,70 +2176,49 @@ async function seedCurrencyPatterns() {
 
 /* ─── 20) Accounts (OAuth providers) ────────────────────────── */
 async function seedAccounts(users) {
-  const existingCount = await p.account.count();
-  if (existingCount >= 1) {
-    console.log(`   ⏭️  Account قبلاً ایجاد شده (${existingCount} عدد)`);
-    return;
-  }
-
-  const providers = [
-    { provider: 'google', providerAccountId: 'google-123456' },
-    { provider: 'github', providerAccountId: 'github-789012' },
-  ];
-  let added = 0;
-  for (let i = 0; i < providers.length; i++) {
-    await p.account.create({
-      data: {
-        userId: users[i].id,
-        type: 'oauth',
-        ...providers[i],
-        access_token: `mock_access_${Math.random().toString(36).slice(2)}`,
-        refresh_token: `mock_refresh_${Math.random().toString(36).slice(2)}`,
-        expires_at: Math.floor(Date.now() / 1000) + 3600,
-        token_type: 'Bearer',
-        scope: 'openid email profile',
-      },
-    });
-    added++;
-  }
-  console.log(`   ✅ ${added} اکانت OAuth`);
+  // اکانت‌های OAuth فقط توسط خود جریان ورود ساخته می‌شوند — seed نمی‌کند
+  console.log('   ⏭️  اکانت‌های OAuth توسط جریان ورود کاربران ساخته می‌شوند');
 }
 
 /* ─── 20b) Tasks (وظایف کاربران) ────────────────────────────── */
 async function seedTasks(users) {
   const existingCount = await p.task.count();
-  if (existingCount >= 10) {
+  if (existingCount > 0) {
     console.log(`   ⏭️  Tasks قبلاً ایجاد شده (${existingCount} عدد)`);
     return;
   }
-  const titles = [
-    'بازبینی مقاله بیت‌کوین',
-    'به‌روزرسانی نرخ‌های طلا',
-    'پاسخ به تیکت پشتیبانی',
-    'آماده‌سازی خبرنامه هفتگی',
-    'بررسی کامنت‌های تایید نشده',
-    'بهینه‌سازی تصاویر بنر',
-    'نوشتن یادداشت تحلیل بورس',
-    'همگام‌سازی داده‌های بازار',
-    'چک کردن وضعیت سرور',
-    'تدوین محتوای شبکه‌های اجتماعی',
+  const TASKS = [
+    { title: 'بازبینی مقاله هفتگی بیت‌کوین', description: 'بررسی نهایی و انتشار تحلیل هفتگی', status: 'COMPLETED' },
+    { title: 'به‌روزرسانی نرخ‌های طلا و سکه', description: 'همگام‌سازی نرخ‌ها با بازار امروز', status: 'COMPLETED' },
+    { title: 'پاسخ به تیکت‌های پشتیبانی', description: 'بررسی تیکت‌های باز امروز', status: 'IN_PROGRESS' },
+    { title: 'آماده‌سازی خبرنامه هفتگی', description: 'تدوین و ارسال خبرنامه به اعضا', status: 'PENDING' },
+    { title: 'بررسی دیدگاه‌های در انتظار تأیید', description: 'تأیید یا رد دیدگاه‌های جدید', status: 'IN_PROGRESS' },
+    { title: 'بهینه‌سازی تصاویر صفحه اول', description: 'فشرده‌سازی و به‌روزرسانی تصاویر', status: 'COMPLETED' },
+    { title: 'نوشتن یادداشت تحلیل بورس هفته', description: 'گزارش هفتگی بازار سهام', status: 'PENDING' },
+    { title: 'همگام‌سازی داده‌های نرخ ارز', description: 'اجرای cron و بررسی صحت نرخ‌ها', status: 'COMPLETED' },
+    { title: 'بررسی وضعیت سرور و پشتیبان‌گیری', description: 'لاگ‌ها و پشتیبان شبانه', status: 'COMPLETED' },
+    { title: 'تدوین محتوای شبکه‌های اجتماعی', description: 'پست هفتگی تلگرام و اینستاگرام', status: 'PENDING' },
   ];
-  const statuses = ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
-  const priorities = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
+  const staffUsers = users.filter((u) => ['AUTHOR', 'ADMIN', 'SUPPORT', 'OWNER'].includes(u.role));
+  if (staffUsers.length === 0) {
+    console.log('   ⚠️  کاربر تیم برای وظایف یافت نشد');
+    return;
+  }
+  const statuses = ['PENDING', 'IN_PROGRESS', 'COMPLETED'];
+  const priorities = ['LOW', 'MEDIUM', 'HIGH'];
   let added = 0;
-  for (let i = 0; i < titles.length; i++) {
-    const owner = users[i % users.length];
-    const exists = await p.task.findFirst({ where: { title: titles[i], userId: owner.id } });
-    if (exists) continue;
+  for (let i = 0; i < TASKS.length; i++) {
+    const owner = staffUsers[i % staffUsers.length];
+    const createdAt = daysAgo(rand(1, 60));
     await p.task.create({
       data: {
-        title: titles[i],
-        description: 'وظیفه نمونه برای تست داشبورد کاربران',
-        status: pick(statuses),
+        title: TASKS[i].title,
+        description: TASKS[i].description,
+        status: TASKS[i].status || pick(statuses),
         priority: pick(priorities),
-        dueDate: daysAgo(-rand(1, 20)),
+        dueDate: addDays(createdAt, rand(2, 10)),
         userId: owner.id,
-        createdAt: daysAgo(rand(1, 30)),
+        createdAt,
       },
     });
     added++;
@@ -2106,7 +2350,7 @@ async function seedExchangeQuotes() {
         status: 'ACTIVE',
         validMinutes: q.validMinutes,
         expiresAt,
-        note: 'seed — DEV',
+        note: 'نرخ لحظه‌ای صرافی',
       },
     });
     await p.exchange
@@ -2394,13 +2638,6 @@ async function seedExchangeServices() {
 
 /* ─── CurrencyDeals ────────────────────────────────────────────── */
 async function seedCurrencyDeals() {
-  const existing = await p.currencyDeal.count();
-  if (existing >= 5) {
-    console.log(`   ⏭️  CurrencyDeals قبلاً ایجاد شده (${existing} عدد)`);
-    return;
-  }
-
-  // نیاز به صرافی فعال و quote فعال داریم
   const exchanges = await p.exchange.findMany({
     where: { status: 'ACTIVE' },
     take: 4,
@@ -2412,68 +2649,25 @@ async function seedCurrencyDeals() {
   }
 
   const DEALS = [
-    {
-      customerName: 'احمد رضایی',
-      customerPhone: '09120000001',
-      fromCurrency: 'USD',
-      toCurrency: 'AFN',
-      fromAmount: 500,
-      toAmount: 44250,
-      appliedRate: 88.5,
-      channel: 'ONLINE',
-      status: 'COMPLETED',
-    },
-    {
-      customerName: 'مریم احمدی',
-      customerPhone: '09120000002',
-      fromCurrency: 'EUR',
-      toCurrency: 'AFN',
-      fromAmount: 300,
-      toAmount: 28830,
-      appliedRate: 96.1,
-      channel: 'ONLINE',
-      status: 'CONFIRMED',
-    },
-    {
-      customerName: 'علی محمدی',
-      customerPhone: '09120000003',
-      fromCurrency: 'USD',
-      toCurrency: 'AFN',
-      fromAmount: 1000,
-      toAmount: 89000,
-      appliedRate: 89.0,
-      channel: 'INPERSON',
-      status: 'PENDING',
-    },
-    {
-      customerName: 'فاطمه کریمی',
-      customerPhone: '09120000004',
-      fromCurrency: 'AED',
-      toCurrency: 'AFN',
-      fromAmount: 2000,
-      toAmount: 48200,
-      appliedRate: 24.1,
-      channel: 'ONLINE',
-      status: 'PENDING',
-    },
-    {
-      customerName: 'حسین صادقی',
-      customerPhone: '09120000005',
-      fromCurrency: 'USD',
-      toCurrency: 'IRR',
-      fromAmount: 200,
-      toAmount: 1740000,
-      appliedRate: 8700,
-      channel: 'ONLINE',
-      status: 'CANCELLED',
-    },
+    { customerName: 'احمد رحیمی', customerPhone: '+93701239876', fromCurrency: 'USD', toCurrency: 'AFN', fromAmount: 500, appliedRate: 88.5 },
+    { customerName: 'مریم نوری', customerPhone: '+93713334455', fromCurrency: 'EUR', toCurrency: 'AFN', fromAmount: 300, appliedRate: 96.1 },
+    { customerName: 'عبدالرحمن عظیمی', customerPhone: '+93774455667', fromCurrency: 'USD', toCurrency: 'AFN', fromAmount: 1000, appliedRate: 89.0 },
+    { customerName: 'فرشته احمدی', customerPhone: '+93726677889', fromCurrency: 'AED', toCurrency: 'AFN', fromAmount: 2000, appliedRate: 24.1 },
+    { customerName: 'رضا قاسمی', customerPhone: '09135566778', fromCurrency: 'USD', toCurrency: 'IRR', fromAmount: 200, appliedRate: 8700 },
+    { customerName: 'وحیدالله صافی', customerPhone: '+93737788990', fromCurrency: 'USD', toCurrency: 'AFN', fromAmount: 750, appliedRate: 88.8 },
+    { customerName: 'فاطمه موسوی', customerPhone: '09126677889', fromCurrency: 'EUR', toCurrency: 'AFN', fromAmount: 120, appliedRate: 95.9 },
+    { customerName: 'حمیرا شریفی', customerPhone: '+93760011223', fromCurrency: 'GBP', toCurrency: 'AFN', fromAmount: 250, appliedRate: 113.4 },
   ];
+  const STATUS_WEIGHTS = ['COMPLETED', 'COMPLETED', 'COMPLETED', 'CONFIRMED', 'PENDING', 'CANCELLED'];
 
   let added = 0;
   for (let i = 0; i < DEALS.length; i++) {
     const d = DEALS[i];
     const ex = exchanges[i % exchanges.length];
-    const trackingCode = `DL-${Date.now()}-${String(i + 1).padStart(4, '0')}`;
+    const createdAt = daysAgo(rand(3, 150));
+    const trackingCode = `DL-${new Date(createdAt).getFullYear()}-${String(1000 + i).padStart(4, '0')}`;
+    const status = pick(STATUS_WEIGHTS);
+    const toAmount = Math.round(d.fromAmount * d.appliedRate);
     const existing = await p.currencyDeal.findFirst({
       where: { customerPhone: d.customerPhone, exchangeId: ex.id },
     });
@@ -2487,12 +2681,15 @@ async function seedCurrencyDeals() {
         fromCurrency: d.fromCurrency,
         toCurrency: d.toCurrency,
         fromAmount: d.fromAmount,
-        toAmount: d.toAmount,
+        toAmount,
         appliedRate: d.appliedRate,
-        channel: d.channel,
-        status: d.status,
-        note: 'seed — DEV',
-        createdAt: daysAgo(rand(0, 30)),
+        feeAmount: Math.round(d.fromAmount * 0.005 * 100) / 100,
+        channel: Math.random() > 0.3 ? 'ONLINE' : 'INPERSON',
+        status,
+        confirmedAt: status === 'COMPLETED' || status === 'CONFIRMED' ? addDays(createdAt, rand(0, 1)) : null,
+        completedAt: status === 'COMPLETED' ? addDays(createdAt, rand(1, 2)) : null,
+        createdAt,
+        updatedAt: addDays(createdAt, rand(0, 3)),
       },
     });
     added++;
@@ -2501,13 +2698,23 @@ async function seedCurrencyDeals() {
 }
 
 /* ─── Settlements ──────────────────────────────────────────────── */
-async function seedSettlements() {
-  const existing = await p.settlement.count();
-  if (existing >= 2) {
-    console.log(`   ⏭️  Settlements قبلاً ایجاد شده (${existing} عدد)`);
-    return;
-  }
+function monthStartUTC(n) {
+  const d = new Date();
+  d.setUTCDate(1);
+  d.setUTCMonth(d.getUTCMonth() - n);
+  d.setUTCHours(0, 0, 0, 0);
+  return d;
+}
+function monthEndUTC(n) {
+  const start = monthStartUTC(n);
+  const end = new Date(start);
+  end.setUTCMonth(end.getUTCMonth() + 1);
+  end.setUTCDate(0);
+  end.setUTCHours(23, 59, 59, 999);
+  return end;
+}
 
+async function seedSettlements() {
   const exchanges = await p.exchange.findMany({
     where: { status: 'ACTIVE' },
     take: 3,
@@ -2521,22 +2728,29 @@ async function seedSettlements() {
   let added = 0;
   for (let i = 0; i < Math.min(3, exchanges.length); i++) {
     const ex = exchanges[i];
-    const periodStart = daysAgo(30);
-    const periodEnd = daysAgo(1);
+    // تسویه ماهانه برای سه ماه گذشته — قدیمی‌ترین ماه پرداخت‌شده
+    const periodStart = monthStartUTC(i);
+    const periodEnd = monthEndUTC(i);
     const existing = await p.settlement.findFirst({ where: { exchangeId: ex.id, periodStart } });
     if (existing) continue;
+    const totalVolume = BigInt(rand(120_000_000, 420_000_000));
+    const platformFee = (totalVolume * 10n) / 1000n; // ~۱٪ کارمزد پلتفرم
+    const dealCount = Math.round(Number(totalVolume) / rand(1_800_000, 2_600_000));
+    // قدیمی‌ترین ماه (i=2) پرداخت‌شده، ماه جاری (i=0) در انتظار
     await p.settlement.create({
       data: {
         exchangeId: ex.id,
         periodStart,
         periodEnd,
-        totalVolume: BigInt(rand(50_000_000, 500_000_000)),
-        dealCount: rand(20, 150),
-        platformFee: BigInt(rand(500_000, 5_000_000)),
-        exchangeNet: BigInt(rand(45_000_000, 490_000_000)),
+        totalVolume,
+        dealCount,
+        platformFee,
+        exchangeNet: totalVolume - platformFee,
         currency: 'AFN',
-        status: i === 0 ? 'PAID' : i === 1 ? 'APPROVED' : 'PENDING',
-        note: 'seed — DEV',
+        status: i === 2 ? 'PAID' : i === 1 ? 'APPROVED' : 'PENDING',
+        approvedAt: i >= 1 ? addDays(periodEnd, rand(2, 5)) : null,
+        paidAt: i === 2 ? addDays(periodEnd, rand(6, 9)) : null,
+        note: 'تسویه ماهانه معاملات',
       },
     });
     added++;
@@ -2549,12 +2763,6 @@ async function seedSettlements() {
  *  برای نمایش KPI، نمودار هفتگی، top customers و pending queue نیاز دارد.
  * ─────────────────────────────────────────────────────────────── */
 async function seedExchangeFintech() {
-  const existingCustomers = await p.customer.count();
-  if (existingCustomers >= 10) {
-    console.log(`   ⏭️  Exchange Fintech data قبلاً ایجاد شده (${existingCustomers} مشتری)`);
-    return;
-  }
-
   const { v4: uuid } = require('uuid');
 
   // فقط ۴ صرافی اول ACTIVE
@@ -2568,110 +2776,25 @@ async function seedExchangeFintech() {
     return;
   }
 
-  // اطلاعات مشتریان نمونه
-  const CUSTOMER_TEMPLATES = [
-    {
-      fullName: 'احمد رضایی',
-      phone: '0912111001',
-      city: 'تهران',
-      status: 'ACTIVE',
-      kycStatus: 'APPROVED',
-      kycLevel: 'LEVEL_2',
-    },
-    {
-      fullName: 'مریم احمدی',
-      phone: '0912111002',
-      city: 'کابل',
-      status: 'ACTIVE',
-      kycStatus: 'APPROVED',
-      kycLevel: 'LEVEL_1',
-    },
-    {
-      fullName: 'علی محمدی',
-      phone: '0912111003',
-      city: 'مشهد',
-      status: 'ACTIVE',
-      kycStatus: 'PENDING',
-      kycLevel: 'NONE',
-    },
-    {
-      fullName: 'فاطمه کریمی',
-      phone: '0912111004',
-      city: 'هرات',
-      status: 'ACTIVE',
-      kycStatus: 'APPROVED',
-      kycLevel: 'LEVEL_2',
-    },
-    {
-      fullName: 'حسین صادقی',
-      phone: '0912111005',
-      city: 'اصفهان',
-      status: 'FROZEN',
-      kycStatus: 'APPROVED',
-      kycLevel: 'LEVEL_1',
-    },
-    {
-      fullName: 'زینب موسوی',
-      phone: '0912111006',
-      city: 'تهران',
-      status: 'ACTIVE',
-      kycStatus: 'APPROVED',
-      kycLevel: 'LEVEL_2',
-    },
-    {
-      fullName: 'رضا قاسمی',
-      phone: '0912111007',
-      city: 'کابل',
-      status: 'ACTIVE',
-      kycStatus: 'NOT_STARTED',
-      kycLevel: 'NONE',
-    },
-    {
-      fullName: 'نگار حسینی',
-      phone: '0912111008',
-      city: 'شیراز',
-      status: 'PROSPECT',
-      kycStatus: 'NOT_STARTED',
-      kycLevel: 'NONE',
-    },
-    {
-      fullName: 'کامران نوری',
-      phone: '0912111009',
-      city: 'تبریز',
-      status: 'ACTIVE',
-      kycStatus: 'APPROVED',
-      kycLevel: 'LEVEL_1',
-    },
-    {
-      fullName: 'سارا جعفری',
-      phone: '0912111010',
-      city: 'هرات',
-      status: 'ACTIVE',
-      kycStatus: 'APPROVED',
-      kycLevel: 'LEVEL_2',
-    },
-    {
-      fullName: 'مهدی ابراهیمی',
-      phone: '0912111011',
-      city: 'تهران',
-      status: 'ACTIVE',
-      kycStatus: 'REJECTED',
-      kycLevel: 'NONE',
-    },
-    {
-      fullName: 'لیلا شریفی',
-      phone: '0912111012',
-      city: 'کرج',
-      status: 'CLOSED',
-      kycStatus: 'APPROVED',
-      kycLevel: 'LEVEL_1',
-    },
+  // مشتریان واقعی‌نما — نام/شماره افغانستانی و ایرانی
+  const CUSTOMERS = [
+    { fullName: 'احمد رحیمی', phone: '+93701239876', city: 'کابل', status: 'ACTIVE', kycStatus: 'APPROVED', kycLevel: 'LEVEL_2' },
+    { fullName: 'مریم نوری', phone: '+93713334455', city: 'هرات', status: 'ACTIVE', kycStatus: 'APPROVED', kycLevel: 'LEVEL_1' },
+    { fullName: 'عبدالرحمن عظیمی', phone: '+93774455667', city: 'مزار شریف', status: 'ACTIVE', kycStatus: 'PENDING', kycLevel: 'NONE' },
+    { fullName: 'فرشته احمدی', phone: '+93726677889', city: 'هرات', status: 'ACTIVE', kycStatus: 'APPROVED', kycLevel: 'LEVEL_2' },
+    { fullName: 'وحیدالله صافی', phone: '+93737788990', city: 'قندهار', status: 'FROZEN', kycStatus: 'APPROVED', kycLevel: 'LEVEL_1' },
+    { fullName: 'سمیع‌الله نوری', phone: '+93748899001', city: 'بلخ', status: 'ACTIVE', kycStatus: 'APPROVED', kycLevel: 'LEVEL_2' },
+    { fullName: 'ظاهر حسینی', phone: '+93759900112', city: 'جلال‌آباد', status: 'ACTIVE', kycStatus: 'NOT_STARTED', kycLevel: 'NONE' },
+    { fullName: 'حمیرا شریفی', phone: '+93760011223', city: 'هرات', status: 'ACTIVE', kycStatus: 'APPROVED', kycLevel: 'LEVEL_1' },
+    { fullName: 'محمد رفیع عثمانی', phone: '+93781234567', city: 'کابل', status: 'ACTIVE', kycStatus: 'APPROVED', kycLevel: 'LEVEL_2' },
+    { fullName: 'نادره حبیبی', phone: '+93794455667', city: 'هرات', status: 'ACTIVE', kycStatus: 'APPROVED', kycLevel: 'LEVEL_2' },
+    { fullName: 'علی محمدی', phone: '09158899001', city: 'تهران', status: 'ACTIVE', kycStatus: 'APPROVED', kycLevel: 'LEVEL_1' },
+    { fullName: 'رضا قاسمی', phone: '09135566778', city: 'مشهد', status: 'PROSPECT', kycStatus: 'NOT_STARTED', kycLevel: 'NONE' },
+    { fullName: 'فاطمه موسوی', phone: '09126677889', city: 'اصفهان', status: 'ACTIVE', kycStatus: 'REJECTED', kycLevel: 'NONE' },
+    { fullName: 'نگار صادقی', phone: '09147788990', city: 'شیراز', status: 'CLOSED', kycStatus: 'APPROVED', kycLevel: 'LEVEL_1' },
   ];
 
-  // نوع‌های تراکنش با احتمال‌های مختلف
   const TX_KINDS = ['DEPOSIT', 'WITHDRAWAL', 'EXCHANGE', 'TRANSFER', 'FEE'];
-  const TX_STATUS = ['COMPLETED', 'COMPLETED', 'COMPLETED', 'PENDING', 'CANCELLED'];
-
   let totalCustomers = 0;
   let totalAccounts = 0;
   let totalTxns = 0;
@@ -2681,20 +2804,19 @@ async function seedExchangeFintech() {
 
   for (const ex of exchanges) {
     const currency = ex.primaryCurrency || 'AFN';
-
-    // — مشتریان: هر صرافی ۴ مشتری اختصاصی —
-    const myCustomers = CUSTOMER_TEMPLATES.slice(
-      (exchanges.indexOf(ex) * 3) % CUSTOMER_TEMPLATES.length,
-    ).slice(0, 4);
+    // هر صرافی ۳ مشتری اختصاصی — بدون هم‌پوشانی بین صرافی‌ها
+    const per = 3;
+    const start = exchanges.indexOf(ex) * per;
+    const myCustomers = CUSTOMERS.slice(start, start + per);
 
     for (const tmpl of myCustomers) {
-      // جلوگیری از تکرار (phone + exchangeId)
       const exists = await p.customer.findFirst({
         where: { phone: tmpl.phone, exchangeId: ex.id },
       });
       if (exists) continue;
 
       const custId = uuid();
+      const joinedAt = daysAgo(rand(15, 300));
       await p.customer.create({
         data: {
           id: custId,
@@ -2705,14 +2827,14 @@ async function seedExchangeFintech() {
           status: tmpl.status,
           kycStatus: tmpl.kycStatus,
           kycLevel: tmpl.kycLevel,
-          riskScore: rand(0, 30),
-          createdAt: daysAgo(rand(10, 180)),
-          updatedAt: daysAgo(rand(0, 10)),
+          riskScore: rand(5, 45),
+          createdAt: joinedAt,
+          updatedAt: addDays(joinedAt, rand(1, 30)),
         },
       });
       totalCustomers++;
 
-      // — حساب fintech برای هر مشتری —
+      // — حساب کیف پول — مانده در پایان از تراکنش‌های تکمیل‌شده محاسبه می‌شود
       const accId = uuid();
       await p.fintechAccount.create({
         data: {
@@ -2721,15 +2843,16 @@ async function seedExchangeFintech() {
           customerId: custId,
           type: 'WALLET',
           currency,
-          status: tmpl.status === 'ACTIVE' ? 'ACTIVE' : 'FROZEN',
-          balance: BigInt(rand(50_000, 5_000_000)),
-          updatedAt: daysAgo(rand(0, 5)),
+          status: tmpl.status === 'ACTIVE' ? 'ACTIVE' : tmpl.status === 'FROZEN' ? 'FROZEN' : 'CLOSED',
+          balance: BigInt(0),
+          updatedAt: addDays(joinedAt, rand(1, 30)),
         },
       });
       totalAccounts++;
 
-      // — KYC verification اگر تأیید یا در انتظار —
-      if (tmpl.kycStatus === 'APPROVED' || tmpl.kycStatus === 'PENDING') {
+      // — KYC —
+      if (['APPROVED', 'PENDING', 'REJECTED'].includes(tmpl.kycStatus)) {
+        const kycAt = addDays(joinedAt, rand(2, 15));
         await p.kycVerification.create({
           data: {
             id: uuid(),
@@ -2738,23 +2861,41 @@ async function seedExchangeFintech() {
             level: tmpl.kycLevel === 'NONE' ? 'LEVEL_1' : tmpl.kycLevel,
             status: tmpl.kycStatus,
             docType: 'NATIONAL_ID',
-            docNumber: `IR${rand(1000000000, 9999999999)}`,
-            createdAt: daysAgo(rand(5, 60)),
-            updatedAt: daysAgo(rand(0, 5)),
+            docNumber: `AF${rand(1000000000, 9999999999)}`,
+            reviewedAt:
+              tmpl.kycStatus === 'APPROVED' || tmpl.kycStatus === 'REJECTED'
+                ? addDays(kycAt, rand(1, 4))
+                : null,
+            createdAt: kycAt,
+            updatedAt: addDays(kycAt, rand(1, 4)),
           },
         });
         totalKyc++;
       }
 
-      // — تراکنش‌های ۳۰ روز اخیر (۵-۱۵ تراکنش) —
-      const txCount = rand(5, 15);
+      // — تراکنش‌ها از زمان عضویت تا امروز، به ترتیب زمان —
+      const txCount = rand(6, 16);
+      const txDates = Array.from({ length: txCount }, () => {
+        const span = Date.now() - joinedAt.getTime();
+        return new Date(joinedAt.getTime() + Math.random() * span);
+      }).sort((a, b) => a - b);
+
       let runningBalance = BigInt(0);
       for (let t = 0; t < txCount; t++) {
-        const kind = TX_KINDS[rand(0, TX_KINDS.length - 1)];
-        const status = TX_STATUS[rand(0, TX_STATUS.length - 1)];
-        const amount = BigInt(rand(100_000, 2_000_000));
+        let kind = t === 0 ? 'DEPOSIT' : pick(TX_KINDS);
+        const status = t === txCount - 1 && Math.random() < 0.15 ? 'PENDING' : 'COMPLETED';
+        const amount = BigInt(rand(20_000, 2_500_000));
+        const fee = kind === 'DEPOSIT' || kind === 'EXCHANGE' ? BigInt(rand(500, 20_000)) : BigInt(0);
         const txId = uuid();
-        const txDate = daysAgo(rand(0, 29));
+        const txDate = txDates[t];
+
+        // جلوگیری از منفی شدن مانده — مبلغ برداشت به اندازه موجودی محدود می‌شود
+        const isDebit = ['WITHDRAWAL', 'EXCHANGE', 'TRANSFER', 'FEE'].includes(kind);
+        let finalAmount = amount;
+        if (status === 'COMPLETED' && isDebit && runningBalance - (amount + fee) < 0n) {
+          finalAmount = runningBalance > fee ? runningBalance - fee : BigInt(0);
+          if (finalAmount === 0n) continue;
+        }
 
         await p.transaction.create({
           data: {
@@ -2764,18 +2905,18 @@ async function seedExchangeFintech() {
             accountId: accId,
             kind,
             status,
-            amount,
+            amount: finalAmount,
             currency,
-            fee: BigInt(rand(1000, 20000)),
+            fee,
             createdAt: txDate,
             updatedAt: txDate,
           },
         });
         totalTxns++;
 
-        // — Ledger entry جفت (DEBIT/CREDIT) —
         if (status === 'COMPLETED') {
-          runningBalance += amount;
+          const isCredit = kind === 'DEPOSIT';
+          runningBalance = isCredit ? runningBalance + finalAmount : runningBalance - finalAmount - fee;
           await p.ledgerEntry.create({
             data: {
               id: uuid(),
@@ -2783,29 +2924,42 @@ async function seedExchangeFintech() {
               accountId: accId,
               customerId: custId,
               txnId: txId,
-              direction: 'CREDIT',
-              amount,
+              direction: isCredit ? 'CREDIT' : 'DEBIT',
+              amount: finalAmount,
               currency,
               runningBalance,
-              description: `تراکنش ${kind}`,
+              description: isCredit
+                ? 'واریز به حساب'
+                : kind === 'WITHDRAWAL'
+                  ? 'برداشت از حساب'
+                  : kind === 'EXCHANGE'
+                    ? 'تبدیل ارز'
+                    : kind === 'TRANSFER'
+                      ? 'حواله'
+                      : 'کارمزد',
               createdAt: txDate,
             },
           });
           totalLedger++;
         }
       }
+      await p.fintechAccount.update({ where: { id: accId }, data: { balance: runningBalance } });
 
-      // — یک FraudReview برای مشتریان با ریسک بالا —
-      if (tmpl.status === 'FROZEN' || rand(0, 10) > 8) {
+      // — بررسی تقلب برای حساب‌های مشکوک —
+      if (tmpl.status === 'FROZEN' || Math.random() < 0.12) {
         await p.fraudReview.create({
           data: {
             id: uuid(),
             exchangeId: ex.id,
             customerId: custId,
-            reason: 'تراکنش مشکوک — بررسی الگوی رفتاری',
-            riskScore: rand(60, 95),
+            reason:
+              tmpl.status === 'FROZEN'
+                ? 'فعالیت غیرعادی — حساب برای بررسی مسدود شد'
+                : 'تراکنش با الگوی غیرعادی — بررسی لازم است',
+            riskScore: rand(55, 92),
             status: tmpl.status === 'FROZEN' ? 'OPEN' : 'RESOLVED',
-            createdAt: daysAgo(rand(1, 20)),
+            createdAt: addDays(joinedAt, rand(10, 60)),
+            resolvedAt: tmpl.status !== 'FROZEN' ? addDays(joinedAt, rand(12, 65)) : null,
           },
         });
         totalFraud++;
@@ -2880,6 +3034,40 @@ async function seedExchangeStaff() {
     }
   }
 
+  // کارکنان صرافی‌های افغانستان (هرات/کابل/...) از تیم پلتفرم
+  const support = await p.user.findFirst({ where: { role: 'SUPPORT' } });
+  const exchangeUser = await p.user.findFirst({ where: { role: 'EXCHANGE' } });
+  const author = await p.user.findFirst({ where: { role: 'AUTHOR' } });
+  const afghanExchanges = await p.exchange.findMany({
+    where: { status: 'ACTIVE', city: { in: ['هرات', 'کابل', 'جوزجان', 'قندهار'] } },
+    select: { id: true, name: true },
+  });
+  const staffAssignments = [
+    { user: support, role: 'STAFF', title: 'کارشناس پشتیبانی' },
+    { user: exchangeUser, role: 'MANAGER', title: 'مدیر عملیات صرافی' },
+    { user: author, role: 'STAFF', title: 'مسئول نرخ‌ها' },
+  ];
+  let staffIdx = 0;
+  for (const ex of afghanExchanges) {
+    const assign = staffAssignments[staffIdx % staffAssignments.length];
+    staffIdx++;
+    if (!assign.user) continue;
+    const exists = await p.exchangeStaff.findUnique({
+      where: { exchangeId_userId: { exchangeId: ex.id, userId: assign.user.id } },
+    });
+    if (exists) continue;
+    await p.exchangeStaff.create({
+      data: {
+        id: uuid(),
+        exchangeId: ex.id,
+        userId: assign.user.id,
+        role: assign.role,
+        title: assign.title,
+      },
+    });
+    added++;
+  }
+
   console.log(`   ✅ ${added} کارمند صرافی`);
 }
 
@@ -2893,36 +3081,51 @@ async function seedContactSubmissions() {
   const { v4: uuid } = require('uuid');
   const CONTACTS = [
     {
-      name: 'احمد رضایی',
-      email: 'ahmad@test.ir',
+      name: 'احمد رحیمی',
+      email: 'ahmad.rahimi@gmail.com',
       subject: 'سوال درباره حواله',
-      message: 'آیا می‌توانم از افغانستان به ایران حواله ارسال کنم؟',
-      status: 'NEW',
+      message: 'آیا می‌توانم از کابل به دبی حواله ارسال کنم؟ کارمزد و زمان چقدر است؟',
+      status: 'RESOLVED',
     },
     {
-      name: 'مریم کریمی',
-      email: 'maryam@test.ir',
-      subject: 'مشکل پرداخت',
-      message: 'پرداختم گیر کرده — لطفاً بررسی کنید.',
+      name: 'مریم نوری',
+      email: 'maryam.nouri@gmail.com',
+      subject: 'مشکل پرداخت شهریه',
+      message: 'پرداخت شهریه دانشگاه ارسال کردم اما هنوز تأیید نشده. لطفاً بررسی کنید.',
       status: 'IN_PROGRESS',
     },
     {
       name: 'علی محمدی',
-      email: 'ali@test.ir',
+      email: 'ali.mohammadi@gmail.com',
       subject: 'پیشنهاد بهبود سایت',
-      message: 'پیشنهاد می‌دهم نمودار قیمت ارز اضافه شود.',
+      message: 'پیشنهاد می‌کنم نمودار تغییرات قیمت دلار در ۳۰ روز اخیر هم اضافه شود.',
       status: 'RESOLVED',
     },
     {
-      name: 'فاطمه نوری',
-      email: 'fateme@test.ir',
+      name: 'وحیدالله صافی',
+      email: 'wahid.safi@gmail.com',
       subject: 'درخواست همکاری صرافی',
-      message: 'صرافی ما می‌خواهد در پلتفرم شما ثبت شود.',
+      message: 'صرافی ما در قندهار می‌خواهد در پلتفرم شما ثبت شود؛ راهنمایی کنید.',
       status: 'NEW',
+    },
+    {
+      name: 'فرشته احمدی',
+      email: 'fereshte.ahmadi@gmail.com',
+      subject: 'سوال درباره نرخ روز',
+      message: 'نرخ خرید دلار در صرافی‌های هرات امروز چند است؟',
+      status: 'NEW',
+    },
+    {
+      name: 'رضا قاسمی',
+      email: 'reza.ghasemi@gmail.com',
+      subject: 'گزارش مشکل فنی',
+      message: 'صفحه نرخ ارز در موبایل درست نمایش داده نمی‌شود.',
+      status: 'IN_PROGRESS',
     },
   ];
   let added = 0;
   for (const c of CONTACTS) {
+    const createdAt = daysAgo(rand(5, 200));
     await p.contactSubmission.create({
       data: {
         id: uuid(),
@@ -2931,8 +3134,9 @@ async function seedContactSubmissions() {
         subject: c.subject,
         message: c.message,
         status: c.status,
-        updatedAt: new Date(),
-        createdAt: daysAgo(rand(1, 30)),
+        ipAddress: randIP(),
+        createdAt,
+        updatedAt: addDays(createdAt, rand(1, 7)),
       },
     });
     added++;
@@ -2948,36 +3152,54 @@ async function seedSubscriptionEvents() {
     return;
   }
   const { v4: uuid } = require('uuid');
-  const users = await p.user.findMany({ take: 4, select: { id: true } });
+  const users = await p.user.findMany({
+    where: { role: 'USER' },
+    take: 5,
+    select: { id: true },
+  });
   if (users.length === 0) {
     console.log('   ⚠️  کاربری پیدا نشد');
     return;
   }
 
-  const PLANS = [
-    { fromPlan: null, toPlan: 'FREE', kind: 'UPGRADE', amount: 0, status: 'PAID' },
-    { fromPlan: 'FREE', toPlan: 'BASIC', kind: 'UPGRADE', amount: 500000, status: 'PAID' },
-    { fromPlan: 'BASIC', toPlan: 'PRO', kind: 'UPGRADE', amount: 1500000, status: 'PAID' },
-    { fromPlan: 'PRO', toPlan: 'BASIC', kind: 'DOWNGRADE', amount: 0, status: 'PAID' },
+  // چرخه واقعی اشتراک: رایگان → پایه → حرفه‌ای با تمدید/تنزل
+  const EVENTS = [
+    { kind: 'UPGRADE', fromPlan: null, toPlan: 'FREE', amount: 0, method: null },
+    { kind: 'UPGRADE', fromPlan: 'FREE', toPlan: 'BASIC', amount: 499000, method: 'CARD' },
+    { kind: 'RENEWAL', fromPlan: 'BASIC', toPlan: 'BASIC', amount: 499000, method: 'HAWALA' },
+    { kind: 'UPGRADE', fromPlan: 'BASIC', toPlan: 'PRO', amount: 1290000, method: 'BANK_TRANSFER' },
+    { kind: 'DOWNGRADE', fromPlan: 'PRO', toPlan: 'BASIC', amount: 0, method: null },
+    { kind: 'RENEWAL', fromPlan: 'BASIC', toPlan: 'BASIC', amount: 499000, method: 'CARD' },
   ];
+  const PAYMENT_STATUS = ['PAID', 'PAID', 'PAID', 'PENDING'];
 
   let added = 0;
-  for (let i = 0; i < Math.min(PLANS.length, users.length); i++) {
-    const plan = PLANS[i];
-    const user = users[i];
+  let i = 0;
+  for (const user of users) {
+    const ev = EVENTS[i % EVENTS.length];
+    i++;
+    const createdAt = daysAgo(rand(20, 360));
+    const status = pick(PAYMENT_STATUS);
+    const invoiceNo = `INV-${new Date(createdAt).getFullYear()}-${String(rand(1000, 9999))}`;
     await p.subscriptionEvent.create({
       data: {
         id: uuid(),
         userId: user.id,
-        kind: plan.kind,
-        fromPlan: plan.fromPlan,
-        toPlan: plan.toPlan,
-        amount: BigInt(plan.amount),
+        kind: ev.kind,
+        fromPlan: ev.fromPlan,
+        toPlan: ev.toPlan,
+        amount: BigInt(ev.amount),
         currency: 'AFN',
-        status: plan.status,
+        status,
+        invoiceNo: status === 'PAID' ? invoiceNo : null,
+        paymentMethod: ev.method,
         validUntil:
-          plan.toPlan !== 'FREE' ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) : null,
-        createdAt: daysAgo(rand(1, 60)),
+          ev.toPlan !== 'FREE' && ev.toPlan !== ev.fromPlan
+            ? addDays(createdAt, 365)
+            : ev.toPlan !== 'FREE'
+              ? addDays(createdAt, 365)
+              : null,
+        createdAt,
       },
     });
     added++;
@@ -3010,139 +3232,115 @@ async function seedServiceClicks() {
     'CURRENCY_SELL',
   ];
   const SOURCES = ['exchange-page', 'marketplace', 'homepage', 'comparison-table'];
+  const UAS = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36',
+    'Mozilla/5.0 (Linux; Android 14; SM-A156) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36',
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 Version/17.5 Mobile/15E148 Safari/604.1',
+  ];
 
-  let added = 0;
-  for (let i = 0; i < 20; i++) {
+  const rows = [];
+  for (let i = 0; i < 40; i++) {
     const ex = exchanges[i % exchanges.length];
-    await p.serviceClick.create({
-      data: {
-        exchangeId: ex.id,
-        serviceKey: SERVICES[i % SERVICES.length],
-        source: SOURCES[i % SOURCES.length],
-        ipAddress: randIP(),
-        createdAt: daysAgo(rand(0, 14)),
-      },
+    rows.push({
+      exchangeId: ex.id,
+      serviceKey: SERVICES[i % SERVICES.length],
+      source: SOURCES[i % SOURCES.length],
+      ipAddress: randIP(),
+      userAgent: pick(UAS),
+      createdAt: daysAgo(rand(0, 200)),
     });
-    added++;
   }
-  console.log(`   ✅ ${added} کلیک سرویس (analytics)`);
+  const res = await p.serviceClick.createMany({ data: rows });
+  console.log(`   ✅ ${res.count} کلیک سرویس (analytics)`);
 }
 
 /* ─── main: اجرای ترتیبی seed ───────────────────────────────── */
 async function main() {
   console.log('🌱 شروع Seed کامل دیتابیس BlogMarketFinansial\n');
 
-  console.log('1️⃣  SystemSettings:');
-  await seedSystemSettings();
+  const shouldWipe = ['true', '1'].includes((process.env.SEED_WIPE || '').toLowerCase());
+  if (shouldWipe) {
+    await step('0️⃣  پاکسازی داده‌های قبلی:', () => wipeDatabase());
+  } else {
+    console.log('⏭️  پاکسازی رد شد (SEED_WIPE تنظیم نشده) — فقط داده‌های از دست رفته سید می‌شوند');
+  }
 
-  console.log('\n2️⃣  Users:');
-  const users = await seedUsers();
+  await step('\n1️⃣  SystemSettings:', () => seedSystemSettings());
 
-  console.log('\n3️⃣  Profiles:');
-  await seedProfiles(users);
+  const users = await step('\n2️⃣  Users:', () => seedUsers());
 
-  console.log('\n4️⃣  Categories:');
-  await seedCategories();
+  await step('\n3️⃣  Profiles:', () => seedProfiles(users));
 
-  console.log('\n5️⃣  Tags:');
-  await seedTags();
+  await step('\n4️⃣  Categories:', () => seedCategories());
 
-  console.log('\n6️⃣  Posts:');
-  await seedPosts();
+  await step('\n5️⃣  Tags:', () => seedTags());
+
+  await step('\n6️⃣  Posts:', () => seedPosts());
   const posts = await p.post.findMany();
 
-  console.log('\n7️⃣  Comments:');
-  await seedComments(users, posts);
+  await step('\n7️⃣  Comments:', () => seedComments(users, posts));
 
-  console.log('\n8️⃣  Likes:');
-  await seedLikes(users, posts);
+  await step('\n8️⃣  Likes:', () => seedLikes(users, posts));
 
-  console.log('\n9️⃣  Views:');
-  await seedViews(posts);
+  await step('\n9️⃣  Views:', () => seedViews(posts));
 
-  console.log('\n🔟  SavedPosts:');
-  await seedSavedPosts(users, posts);
+  await step('\n🔟  SavedPosts:', () => seedSavedPosts(users, posts));
 
-  console.log('\n1️⃣1️⃣  Notifications:');
-  await seedNotifications(users);
+  await step('\n1️⃣1️⃣  Notifications:', () => seedNotifications(users));
 
-  console.log('\n1️⃣2️⃣  ActivityLogs + Activities:');
-  await seedActivityLogs(users);
+  await step('\n1️⃣2️⃣  ActivityLogs + Activities:', () => seedActivityLogs(users));
 
-  console.log('\n1️⃣3️⃣  Newsletters:');
-  await seedNewsletters();
+  await step('\n1️⃣3️⃣  Newsletters:', () => seedNewsletters());
 
-  console.log('\n1️⃣4️⃣  SocialLinks:');
-  await seedSocialLinks();
+  await step('\n1️⃣4️⃣  SocialLinks:', () => seedSocialLinks());
 
-  console.log('\n1️⃣4️⃣b  HeaderAd:');
-  await seedHeaderAd();
+  await step('\n1️⃣4️⃣b  HeaderAd:', () => seedHeaderAd());
 
-  console.log('\n1️⃣4️⃣c  Advertisements:');
-  await seedAdvertisements();
+  await step('\n1️⃣4️⃣c  Advertisements:', () => seedAdvertisements());
 
-  console.log('\n1️⃣5️⃣  RateLists:');
-  await seedRateLists();
+  await step('\n1️⃣5️⃣  RateLists:', () => seedRateLists());
 
-  console.log('\n1️⃣6️⃣  ServiceRequests:');
-  await seedServiceRequests();
+  await step('\n1️⃣6️⃣  ServiceRequests:', () => seedServiceRequests());
 
-  console.log('\n1️⃣7️⃣  SystemLogs:');
-  await seedSystemLogs();
+  await step('\n1️⃣7️⃣  SystemLogs:', () => seedSystemLogs());
 
-  console.log('\n1️⃣8️⃣  PageViews:');
-  await seedPageViews();
+  await step('\n1️⃣8️⃣  PageViews:', () => seedPageViews());
 
-  console.log('\n1️⃣9️⃣  CurrencyPatterns:');
-  await seedCurrencyPatterns();
+  await step('\n1️⃣9️⃣  CurrencyPatterns:', () => seedCurrencyPatterns());
 
-  console.log('\n2️⃣0️⃣  Accounts:');
-  await seedAccounts(users);
+  await step('\n2️⃣0️⃣  Accounts (OAuth):', () => seedAccounts(users));
 
-  console.log('\n2️⃣0️⃣b  Tasks:');
-  await seedTasks(users);
+  await step('\n2️⃣0️⃣b  Tasks:', () => seedTasks(users));
 
-  console.log('\n2️⃣1️⃣  ExchangeRates:');
-  await seedExchangeRates();
+  await step('\n2️⃣1️⃣  ExchangeRates:', () => seedExchangeRates());
 
-  console.log('\n2️⃣2️⃣  Exchanges + linked TransferProviders:');
-  await seedExchangesAndProviders();
+  await step('\n2️⃣2️⃣  Exchanges + linked TransferProviders:', () => seedExchangesAndProviders());
 
-  console.log('\n2️⃣3️⃣  Legacy TransferProviders (market-mid + tgju):');
-  await seedTransferProviders();
+  await step('\n2️⃣3️⃣  Legacy TransferProviders (market-mid + tgju):', () => seedTransferProviders());
 
-  console.log('\n2️⃣4️⃣  Sample ExchangeRateQuotes (DEV):');
-  await seedExchangeQuotes();
+  await step('\n2️⃣4️⃣  Sample ExchangeRateQuotes:', () => seedExchangeQuotes());
 
-  console.log('\n2️⃣5️⃣  ExchangeServices:');
-  await seedExchangeServices();
+  await step('\n2️⃣5️⃣  ExchangeServices:', () => seedExchangeServices());
 
-  console.log('\n2️⃣6️⃣  Banks:');
-  await seedBanks();
+  await step('\n2️⃣6️⃣  Banks:', () => seedBanks());
 
-  console.log('\n2️⃣7️⃣  CreditRates:');
-  await seedCreditRates();
+  await step('\n2️⃣7️⃣  CreditRates:', () => seedCreditRates());
 
-  console.log('\n2️⃣8️⃣  CurrencyDeals:');
-  await seedCurrencyDeals();
+  await step('\n2️⃣8️⃣  CurrencyDeals:', () => seedCurrencyDeals());
 
-  console.log('\n2️⃣9️⃣  Settlements:');
-  await seedSettlements();
+  await step('\n2️⃣9️⃣  Settlements:', () => seedSettlements());
 
-  console.log('\n3️⃣0️⃣  Exchange Fintech (Customers + Accounts + Transactions + KYC + Fraud):');
-  await seedExchangeFintech();
+  await step('\n3️⃣0️⃣  Exchange Fintech (Customers + Accounts + Transactions + KYC + Fraud):', () =>
+    seedExchangeFintech(),
+  );
 
-  console.log('\n3️⃣1️⃣  ExchangeStaff:');
-  await seedExchangeStaff();
+  await step('\n3️⃣1️⃣  ExchangeStaff:', () => seedExchangeStaff());
 
-  console.log('\n3️⃣2️⃣  ContactSubmissions:');
-  await seedContactSubmissions();
+  await step('\n3️⃣2️⃣  ContactSubmissions:', () => seedContactSubmissions());
 
-  console.log('\n3️⃣3️⃣  SubscriptionEvents:');
-  await seedSubscriptionEvents();
+  await step('\n3️⃣3️⃣  SubscriptionEvents:', () => seedSubscriptionEvents());
 
-  console.log('\n3️⃣4️⃣  ServiceClicks:');
-  await seedServiceClicks();
+  await step('\n3️⃣4️⃣  ServiceClicks:', () => seedServiceClicks());
 
   /* ─── گزارش نهایی ─── */
   const stats = {
@@ -3185,6 +3383,10 @@ async function main() {
     serviceClicks: await p.serviceClick.count(),
     contactSubmissions: await p.contactSubmission.count(),
     subscriptionEvents: await p.subscriptionEvent.count(),
+    exchangeRates: await p.exchangeRate.count(),
+    exchangeRateQuotes: await p.exchangeRateQuote.count(),
+    serviceRequestStatusLogs: await p.serviceRequestStatusLog.count(),
+    systemSettings: await p.systemSettings.count(),
   };
   console.log(`\n${'═'.repeat(50)}`);
   console.log('📊 آمار نهایی دیتابیس:');
@@ -3195,16 +3397,16 @@ async function main() {
     });
   console.log('═'.repeat(50));
 
-  /* ─── نمایش مشخصات مالک (OWNER) در صورت ایجاد جدید ─── */
+  /* ─── نمایش مشخصات مالک (OWNER) ─── */
   if (seededOwner) {
     console.log(`\n${'═'.repeat(50)}`);
     console.log('🔐 مشخصات مالک / OWNER (ذخیره کنید):');
     console.log('   Email:', seededOwner.email);
-    if (seededOwner.source === 'generated') {
-      console.log('   Password:', seededOwner.password);
-      console.log('   (تولید تصادفی چون SEED_OWNER_PASSWORD تنظیم نشده بود)');
-    } else {
+    if (seededOwner.source === 'env') {
       console.log('   Password: <از متغیر محیطی SEED_OWNER_PASSWORD>');
+    } else {
+      console.log('   Password:', seededOwner.password);
+      console.log('   (تولید تصادفی چون SEED_OWNER_PASSWORD تنظیم نشده بود — پس از ورود، از داشبورد تغییر دهید)');
     }
     console.log('═'.repeat(50));
   }
