@@ -3,6 +3,7 @@
 
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import type { MarketRateItem } from './types';
 import { assembleMarketRates } from './assembler';
 
 export interface SnapshotResult {
@@ -14,17 +15,29 @@ export interface SnapshotResult {
   generatedAt: string;
 }
 
+interface WriteSnapshotOptions {
+  /** پوشه‌ی خروجی (پیش‌فرض: `public/data` — برای static serving). */
+  outDir?: string;
+  /** نام فایل (پیش‌فرض: `market-rates.json`). */
+  fileName?: string;
+  /**
+   * 2026-08-08: نرخ‌های از قبل assembled — جلوگیری از assemble دوباره.
+   * قبلاً cron خودش assemble می‌کرد و این تابع دوباره scrape می‌زد (۲× هزینه).
+   */
+  items?: MarketRateItem[];
+}
+
 /**
  * تولید snapshot از assembled market rates و نوشتن در فایل JSON.
  *
- * @param outDir پوشه‌ی خروجی (پیش‌فرض: `public/data` — برای static serving).
- * @param fileName نام فایل (پیش‌فرض: `market-rates.json`).
+ * @param options پوشه/نام/آیتم‌های از قبل assembled.
  */
 export async function writeMarketRatesSnapshot(
-  outDir = join(process.cwd(), 'public', 'data'),
-  fileName = 'market-rates.json',
+  options: WriteSnapshotOptions = {},
 ): Promise<SnapshotResult> {
-  const items = await assembleMarketRates();
+  const outDir = options.outDir ?? join(process.cwd(), 'public', 'data');
+  const fileName = options.fileName ?? 'market-rates.json';
+  const items = options.items ?? (await assembleMarketRates());
 
   const data = items.map((r) => ({
     symbol: r.symbol,

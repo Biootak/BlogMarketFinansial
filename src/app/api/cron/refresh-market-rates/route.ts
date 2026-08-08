@@ -51,7 +51,7 @@ async function handleRefresh(req: Request) {
 
   // 2026-08-08-perf: نرخ‌های تازه را مستقیم در safeCache صفحات بریز تا
   // home/money-transfer همیشه از کش تازه بخوانند و هرگز منتظر scrape نمانند.
-  primeMarketRatesCache(items);
+  await primeMarketRatesCache(items);
 
   // ذخیره نرخ‌های محاسبه‌شده در DB (fqr آیتم‌هایی که provider='auto').
   // فقط singleRate و changePercent را به‌روز می‌کنیم تا override های ادمین حفظ شوند.
@@ -118,7 +118,8 @@ async function handleRefresh(req: Request) {
   let snapshotCount: number | null = null;
   let snapshotError: string | null = null;
   try {
-    const snap = await writeMarketRatesSnapshot();
+    // 2026-08-08: items از همین assemble — دیگر scrape دوباره نمی‌زند.
+    const snap = await writeMarketRatesSnapshot({ items });
     snapshotCount = snap.count;
   } catch (e) {
     snapshotError = e instanceof Error ? e.message : 'snapshot failed';

@@ -4,6 +4,10 @@
 import prisma from '@/lib/db';
 import { assembleMarketRates } from '@/lib/market-rates';
 import type { MarketRateItem } from '@/lib/market-rates';
+import {
+  readMarketRatesSnapshot,
+  type SnapshotItem,
+} from '@/lib/market-rates/snapshot-reader';
 import { requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeCache, safeRevalidateTag, safeSet } from '@/lib/safe-cache';
@@ -21,15 +25,54 @@ const TAGS = {
 const MARKET_RATES_TTL = 180;
 
 /**
+ * سن مجاز snapshot برای مسیر request — اگر cron از کار افتاده باشد و
+ * snapshot کهنه‌تر از این باشد، به‌جای سرو دادهٔ قدیمی، assemble واقعی
+ * تلاش می‌شود.
+ */
+const SNAPSHOT_MAX_AGE_MS = 10 * 60 * 1000; // ۱۰ دقیقه
+
+function snapToItem(s: SnapshotItem): MarketRateItem {
+  return {
+    symbol: s.symbol,
+    displayNameFa: s.displayNameFa,
+    // snapshot آن‌ها را string ذخیره می‌کند؛ به نوع اتحادی‌ای برمی‌گردانیم
+    group: s.group as MarketRateItem['group'],
+    unit: s.unit as MarketRateItem['unit'],
+    divisor: s.divisor,
+    decimals: s.decimals,
+    priority: s.priority,
+    value: s.value,
+    buyValue: s.buyValue,
+    sellValue: s.sellValue,
+    spread:
+      s.buyValue != null && s.sellValue != null ? s.sellValue - s.buyValue : undefined,
+    changePercent: s.changePercent,
+    provider: s.provider,
+    updatedAt: s.updatedAt ? new Date(s.updatedAt) : new Date(),
+  };
+}
+
+/**
  * کش برای assemble.
  * 2026-08-01: unstable_cache → safeCache. assembleMarketRates خودش
  * try/catch دارد ولی unstable_cache خطا را از طریق cache boundary
  * re-throw می‌کرد. safeCache fallback به [] می‌دهد.
  * 2026-08-08-perf: اگر همهٔ منابع fail شوند (خروجی خالی)، throw می‌کنیم تا
  * مسیر SWR دادهٔ خوبِ قبلی را حفظ کند — نه اینکه [] جای آن را بگیرد.
+ * 2026-08-08-perf²: snapshot-first — مسیر request هرگز scrape نمی‌کند:
+ * cron هر دقیقه snapshot می‌نویسد؛ اگر تازه باشد همان خوانده می‌شود (فایل IO ~ms).
  */
 export const getMarketRates = safeCache(
   async (): Promise<MarketRateItem[]> => {
+    // 1) snapshot-first (بدون scrape) — فقط اگر تازه باشد
+    const snap = await readMarketRatesSnapshot();
+    if (snap && snap.items.length > 0) {
+      const ageMs = snap.generatedAt ? Date.now() - snap.generatedAt.getTime() : Infinity;
+      if (ageMs <= SNAPSHOT_MAX_AGE_MS) {
+        return snap.items.map(snapToItem);
+      }
+    }
+    // 2) fallback: assemble واقعی (snapshot نیست/کهنه است)
     const items = await assembleMarketRates();
     if (items.length === 0) throw new Error('ALL_SOURCES_FAILED');
     return items;
@@ -54,7 +97,9 @@ export const getMarketRates = safeCache(
  * می‌ریزد (fullKey = 'market-rates' — چون getMarketRates آرگومان ندارد).
  * قبلاً cron فقط DB را به‌روز می‌کرد و صفحات هنوز منتظر انقضای کش بودند.
  */
-export function primeMarketRatesCache(items: MarketRateItem[]): void {
+export async function primeMarketRatesCache(items: MarketRateItem[]): Promise<void> {
+  // ⚠️ این فایل 'use server' است — همهٔ export ها باید async باشند
+  // (Turbopack: "Server Actions must be async functions").
   safeSet('market-rates', items, MARKET_RATES_TTL);
 }
 
