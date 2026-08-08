@@ -157,28 +157,29 @@ heroku container:release web -a $APP
 
 ---
 
-## مرحله ۵ — Cron Jobs و بیدار نگه داشتن Eco
+## مرحله ۵ — Cron Jobs و بیدار نگه داشتن Eco — **cron-job.org** (همه‌چیز)
 
-### کارهای cron (پست‌ها، نرخ بازار، backup) — GitHub Actions
+> 2026-08-08: `.github/workflows/cron.yml` **حذف شد** — همهٔ cron ها به
+> [cron-job.org](https://cron-job.org) منتقل شدند (رایگان، دقیق؛ زمان‌بندی
+> GitHub Actions تا ۳۰+ دقیقه تأخیر داشت و Eco در این فاصله می‌خوابید).
 
-`.github/workflows/cron.yml` این endpoint ها را صدا می‌زند (با `Authorization: Bearer $CRON_SECRET`):
+### Jobs بساز (در داشبورد cron-job.org)
 
-| Endpoint | هر چند وقت |
-|----------|------------|
-| `/api/cron/publish-scheduled-posts` | ۱ دقیقه |
-| `/api/cron/refresh-market-rates` | ۱ دقیقه |
-| `/api/cron/sync-bazaar` | ۱۰ دقیقه |
-| `/api/cron/backup` | شبانه ۰۳:۰۰ UTC |
+برای هر ردیف یک job بساز. همه به‌جز `/api/ping` به این Header نیاز دارند:
 
-### 😴 بیدار نگه داشتن Eco dyno (خواب بعد از ۳۰ دقیقه) — **cron-job.org**
+**Header مشترک:** `Authorization: Bearer <CRON_SECRET>`
 
-> ⚠️ GitHub Actions **برای بیدار نگه داشتن قابل اعتماد نیست** — زمان‌بندی آن تا ۳۰+ دقیقه تأخیر
-> دارد (مشاهده‌شده). در این فاصله Eco می‌خوابد و اولین بازدید cold start چند ثانیه‌ای دارد.
+| Job | URL | بازه |
+|-----|-----|------|
+| Keep-alive dyno (بدون auth) | `https://your-app.herokuapp.com/api/ping` | هر ۵ دقیقه |
+| انتشار پست‌های زمان‌بندی‌شده | `https://your-app.herokuapp.com/api/cron/publish-scheduled-posts` | هر ۱ دقیقه |
+| به‌روزرسانی نرخ بازار | `https://your-app.herokuapp.com/api/cron/refresh-market-rates` | هر ۱ دقیقه |
+| Sync بازار (TGJU) | `https://your-app.herokuapp.com/api/cron/sync-bazaar` | هر ۱۰ دقیقه |
+| Backup دیتابیس | `https://your-app.herokuapp.com/api/cron/backup` | شبانه ۰۳:۰۰ UTC |
 
-**راه مطمئن و رایگان: [cron-job.org](https://cron-job.org)**
-1. ثبت‌نام رایگان
-2. یک job بساز: URL = `https://your-app.herokuapp.com/` (یا دامنه اختصاصی)، بازه = **هر ۵ دقیقه**
-3. تمام — هیچ‌وقت نمی‌خوابد (۵ دقیقه < آستانهٔ ۳۰ دقیقه)
+- `/api/ping` فقط برای بیدار نگه داشتن است (۵ دقیقه < آستانهٔ خواب ۳۰ دقیقه → هیچ‌وقت نمی‌خوابد).
+- بقیه بدون `CRON_SECRET` درست → ۵۰۳ می‌دهند (باید در Heroku config ست باشد).
+- دامنه اختصاصی (مثلاً `https://financialmarket.page`) به‌جای herokuapp.com هم کار می‌کند.
 
 ---
 

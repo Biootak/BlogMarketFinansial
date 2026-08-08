@@ -23,6 +23,8 @@ Postgres is provided by `docker-compose.yml` (`registry.docker.ir/library/postgr
 ## Tests & CI
 
 - Tests: `npm test` (vitest) — unit tests in `src/lib/*.test.ts`.
-- CI exists in `.github/workflows/`: `deploy-heroku.yml` (deploy به Heroku) و `cron.yml`.
+- CI exists in `.github/workflows/`: `deploy-heroku.yml` (deploy به Heroku) و `dependency-safety.yml`.
 - **Deploy به Heroku فقط از یک روش:** push به `main` (Container stack + GitHub Actions).
   سند کامل و مرجع واحد: `deploy/HEROKU.md`. از buildpack استفاده نکن.
+- Cron ها (نرخ بازار، پست‌های زمان‌بندی‌شده، backup) + keep-alive روی **cron-job.org** هستند
+  (`.github/workflows/cron.yml` حذف شد). جزئیات در `deploy/HEROKU.md` مرحله ۵.
