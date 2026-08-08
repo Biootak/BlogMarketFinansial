@@ -61,15 +61,17 @@ jobs:
           docker push registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web
 
       # ─── 5. Release (deploy) روی Heroku ──────────────────────────────────
-      - name: Release on Heroku
-        run: |
-          curl -n -X POST https://api.heroku.com/apps/${{ secrets.HEROKU_APP_NAME }}/container/release \
-            -H "Content-Type: application/json" \
-            -H "Accept: application/vnd.heroku+json; version=3.docker-releases" \
-            -H "Authorization: Bearer ${{ secrets.HEROKU_API_KEY }}" \
-            -d '{"process_types":{"web":"registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web"}}'
+      # 2026-08-08: Platform API /container/release(s) برای این اپ 404 می‌داد.
+      # مسیر قطعی: heroku container:release (CLI) — فقط روی container stack.
+      - name: Install Heroku CLI
+        run: npm install -g heroku@latest
 
-      # ─── 7. اطلاع‌رسانی موفقیت ──────────────────────────────────────────
+      - name: Release on Heroku
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:release web --app ${{ secrets.HEROKU_APP_NAME }}
+
+      # ─── 6. اطلاع‌رسانی موفقیت ──────────────────────────────────────────
       - name: Deployment successful
         run: |
           echo "✅ Deployed successfully to https://${{ secrets.HEROKU_APP_NAME }}.herokuapp.com"
