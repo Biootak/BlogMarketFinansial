@@ -882,6 +882,21 @@ export const HeroSectionSkeleton: FC = () => (
         <SkeletonBase className="h-11 w-32 rounded-xl" />
         <SkeletonBase className="h-11 w-24 rounded-xl" />
       </div>
+      {/* 2026-08-08-perf: mobile rate card — mirror HeroVisual.mobileRateCard
+          (فقط موبایل) تا ارتفاع skeleton برابر hero واقعی باشد → CLS صفر.
+          CLS 0.102 در Lighthouse از همین جای خالی می‌آمد. */}
+      <div className="lg:hidden rounded-2xl border border-neutral-200/60 dark:border-neutral-700/60 bg-white/80 dark:bg-neutral-800/60 p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <SkeletonBase className="h-4 w-24 rounded-md" />
+          <SkeletonBase className="h-4 w-20 rounded-md" />
+        </div>
+        {(['m1', 'm2', 'm3'] as const).map((k) => (
+          <div key={k} className="flex items-center justify-between py-1">
+            <SkeletonBase className="h-4 w-16 rounded-md" />
+            <SkeletonBase className="h-4 w-20 rounded-md" />
+          </div>
+        ))}
+      </div>
       <div className="flex gap-5 mt-2">
         {(['s1', 's2', 's3'] as const).map((k) => (
           <div key={k} className="flex flex-col gap-1">

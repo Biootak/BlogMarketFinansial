@@ -1,7 +1,7 @@
 import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
-import CryptoTickerSlider from '@/components/CryptoTickerSlider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
+import CryptoTickerSliderLazy from './CryptoTickerSliderLazy';
 
 async function CryptoTickerContent() {
   const result = await fetchCryptoTickerRates();
@@ -13,7 +13,9 @@ async function CryptoTickerContent() {
     return null;
   }
 
-  return <CryptoTickerSlider rates={result.data} />;
+  // 2026-08-08-perf: lazy wrapper — hydration اسلایدر (زیر-fold) از bundle
+  // اولیه خارج شد (الگوی PulseArticlesLazy).
+  return <CryptoTickerSliderLazy rates={result.data} />;
 }
 
 /**
