@@ -71,6 +71,31 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  // 2026-08-08-perf: /exchange-rates یک مسیر خالص redirect است. قبلاً
+  // redirect داخل خود page.tsx انجام می‌شد — صفحه HTML با status 200 و بدنه‌ی
+  // تقریباً خالی سرو می‌شد و سپس navigation کلاینت‌ساید رخ می‌داد → CLS ~0.87
+  // و جریمه‌ی redirect ~4.5s در Lighthouse. redirect در سطح config در همان
+  // لایه‌ی routing پاسخ 307 خالص می‌فرستد — بدون HTML اضافه، بدون JS، بدون
+  // CLS (داک رسمی Next.js: next.config redirects).
+  async redirects() {
+    return [
+      {
+        source: '/exchange-rates',
+        destination: '/money-transfer',
+        // permanent: false (307) — اگر بعداً صفحه‌ی واقعی نرخ ارز ساختیم
+        // این مسیر آزاد می‌ماند.
+        permanent: false,
+      },
+      {
+        // /exchange-rates/USD → /money-transfer?currency=USD#rates
+        // (قبلاً redirect داخل [currency]/page.tsx بود — همان مشکل CLS/redirect)
+        source: '/exchange-rates/:currency',
+        destination: '/money-transfer?currency=:currency#rates',
+        permanent: false,
+      },
+    ];
+  },
+
   // Security headers
   async headers() {
     return [

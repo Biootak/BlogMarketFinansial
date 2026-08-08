@@ -17,6 +17,7 @@ import {
 import { loadActiveTransferProviders } from '@/lib/money-transfer/providers';
 import type { ExchangeRateData } from '@/types/types';
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { ExchangeRateTableView } from './ExchangeRateTableView';
 import FAQ from './FAQ';
 import FeatureList from './FeatureList';
@@ -147,12 +148,22 @@ async function buildHeroInitial(
 // while rates refresh at the same cadence as the market-rates cache.
 export const revalidate = 60;
 
-export default async function MoneyTransferPage() {
-  // 2026-08-perf: market اول به‌صورت موازی با rateLists، سپس hero با نتیجه
-  // آن‌ها build می‌شود. این از دو بار فراخوانی loadMarketRates جلوگیری می‌کند.
-  const [market, rateLists] = await Promise.all([loadMarketRates(), getRateLists()]);
-  const [hero] = await Promise.all([buildHeroInitial(market.rates, market.items)]);
+/**
+ * 2026-08-08-perf: RateListGrid از مسیر blocking خارج شد. طبق داک رسمی Next.js
+ * (Loading UI and Streaming): داده‌های غیر-hero داخل Suspense خودشان استریم
+ * می‌شوند تا first paint فقط منتظر نرخ‌های hero بماند.
+ */
+async function RateListSection({ liveRates }: { liveRates: MarketRateItem[] }) {
+  const rateLists = await getRateLists();
   const activeRateLists = rateLists.filter((list) => list.isActive);
+  return <RateListGrid rateLists={activeRateLists} liveRates={liveRates} initialCount={10} />;
+}
+
+export default async function MoneyTransferPage() {
+  // 2026-08-08-perf: فقط داده‌ی hero (market) blocking است؛ rateLists داخل
+  // Suspense استریم می‌شود.
+  const market = await loadMarketRates();
+  const [hero] = await Promise.all([buildHeroInitial(market.rates, market.items)]);
 
   return (
     <div
@@ -201,11 +212,19 @@ export default async function MoneyTransferPage() {
           </section>
         </ScrollReveal>
 
-        {/* Rate Lists */}
+        {/* Rate Lists (streamed — 2026-08-08-perf) */}
         <ScrollReveal className="mt-section">
-          <section>
-            <RateListGrid rateLists={activeRateLists} liveRates={market.items} initialCount={10} />
-          </section>
+          <Suspense
+            fallback={
+              <div className="py-10 text-center text-sm text-muted-foreground" aria-busy="true">
+                در حال بارگذاری لیست نرخ‌ها…
+              </div>
+            }
+          >
+            <section>
+              <RateListSection liveRates={market.items} />
+            </section>
+          </Suspense>
         </ScrollReveal>
 
         {/* Transfer Request Form */}

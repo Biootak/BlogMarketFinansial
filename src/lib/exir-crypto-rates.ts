@@ -33,7 +33,11 @@ const CURRENCIES = [
 ];
 
 const CACHE_TTL = 60; // 1 minute
-const MAX_RETRIES = 2;
+// 2026-08-08-perf: MAX_RETRIES ۲→۱ و timeout ۱۰s→۳s. این فراخوانی روی مسیر
+// بحرانی رندر است (money-transfer hero)؛ قبلاً بدترین حالت ۲۰ ثانیه بلاک‌کردن
+// HTML بود. حالا حداکثر ۳ ثانیه و در شکست، fallback خالی (FALLBACK_CRYPTO)
+// استفاده می‌شود — تیکر خودش را ۶۰ ثانیه بعد ترمیم می‌کند.
+const MAX_RETRIES = 1;
 const RETRY_DELAY = 500;
 const USE_MOCK_ON_FAILURE = false;
 
@@ -89,7 +93,8 @@ async function fetchWithRetry(
   for (let i = 0; i < retries; i++) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      // 2026-08-08-perf: 10s → 3s — کران سخت برای مسیر بحرانی رندر
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
 
       const response = await fetch(url, {
         ...options,

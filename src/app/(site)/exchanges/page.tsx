@@ -354,12 +354,22 @@ async function buildBentoExchanges(
   return enriched;
 }
 
-async function buildHeroStats(
-  exchanges: ExchangeWithQuotes[],
-  pulseTiles: PulseTile[],
-): Promise<HeroStat[]> {
+async function buildHeroStats(exchanges: ExchangeWithQuotes[]): Promise<HeroStat[]> {
   const totalQuotes = exchanges.reduce((sum, e) => sum + e.ExchangeRateQuote.length, 0);
-  const usdTile = pulseTiles.find((t) => t.code === 'USD');
+  // بهترین خرید USD — مستقیم از quote های صرافی‌ها، بدون نیاز به spark history
+  // (2026-08-08-perf: buildHeroStats دیگر pulseTiles نمی‌گیرد تا hero به
+  // getSparkHistoryBatch وابسته نباشد — first paint زودتر استریم می‌شود.)
+  const usdQuotes = exchanges.flatMap((e) =>
+    e.ExchangeRateQuote.filter((q) => q.currencyCode === 'USD').map((q) => ({
+      buy: Number(q.buyRate),
+      ex: e,
+    })),
+  );
+  const bestUsd = pickBestBy(
+    usdQuotes.filter((q) => q.buy > 0),
+    (q) => q.buy,
+    'max',
+  );
   const spreadAvg =
     exchanges
       .flatMap((e) => e.ExchangeRateQuote)
@@ -388,31 +398,99 @@ async function buildHeroStats(
     },
     {
       label: 'بهترین خرید USD',
-      value: usdTile ? formatFaCount(usdTile.bestBuy) : '—',
-      hint: usdTile ? usdTile.buyExchange : '—',
+      value: bestUsd ? formatFaCount(bestUsd.buy) : '—',
+      hint: bestUsd ? (bestUsd.ex.displayName ?? bestUsd.ex.name) : '—',
       tone: 'accent',
     },
   ];
 }
 
-// ─── Page ───────────────────────────────────────────────────────────────────
+// ─── Async streaming sections (2026-08-08-perf) ─────────────────────────────
+// طبق داک رسمی Next.js (Loading UI and Streaming): داده‌های سنگین هر کدام در
+// Suspense خودشان استریم می‌شوند تا first paint فقط منتظر داده‌ی hero بماند.
 
-export default async function ExchangesPage() {
-  const exchanges = await getExchangesData();
+function PulseGridFallback() {
+  return (
+    <section className={s.section} aria-busy="true">
+      <div className={s.sectionInner}>
+        <div className={s.rateBoardFallback}>در حال بارگذاری نمای بازار…</div>
+      </div>
+    </section>
+  );
+}
 
-  // ۲۰۲۶-۰۷-۲۹: pre-compute currencies و یک batched query مشترک
-  // برای buildPulseTiles (همه ارزها) و buildBentoExchanges (فقط USD spark).
+function BentoGridFallback() {
+  return (
+    <section className={s.section} aria-busy="true">
+      <div className={s.sectionInner}>
+        <div className={s.rateBoardFallback}>در حال بارگذاری صرافی‌ها…</div>
+      </div>
+    </section>
+  );
+}
+
+async function PulseGridSection({ exchanges }: { exchanges: ExchangeWithQuotes[] }) {
   const allCurrencyCodes = [
     ...new Set(exchanges.flatMap((e) => e.ExchangeRateQuote.map((q) => q.currencyCode))),
   ];
   const allExIds = exchanges.map((e) => e.id);
   const batchedHistory = await getSparkHistoryBatch(allExIds, allCurrencyCodes);
+  const pulseTiles = await buildPulseTiles(exchanges, batchedHistory);
+  if (pulseTiles.length === 0) return null;
+  return (
+    <section className={s.section} aria-label="نگاه کلی به بازار">
+      <div className={s.sectionInner}>
+        <ScrollReveal>
+          <header className={s.pulseHeader}>
+            <div>
+              <span className={s.pulseEyebrow}>
+                <span className={s.pulseEyebrowDot} aria-hidden />
+                نگاه کلی به بازار
+              </span>
+              <h2 className={s.pulseTitle}>همه ارزها در یک نگاه</h2>
+              <p className={s.pulseSub}>
+                اندازه هر بلوک نشان‌دهنده تعداد صرافی‌های فعال برای آن ارز است. روی هر ارز بزنید تا
+                تابلوی نرخ‌ها به آن ارز تغییر کند.
+              </p>
+            </div>
+          </header>
+        </ScrollReveal>
+        <ScrollReveal delay={120}>
+          <CurrencyPulseGrid tiles={pulseTiles} />
+        </ScrollReveal>
+      </div>
+    </section>
+  );
+}
+
+async function BentoGridSection({ exchanges }: { exchanges: ExchangeWithQuotes[] }) {
+  const allExIds = exchanges.map((e) => e.id);
+  const batchedHistory = await getSparkHistoryBatch(allExIds, ['USD']);
+  const bentoItems = await buildBentoExchanges(exchanges, batchedHistory.get('USD') ?? new Map());
+  if (bentoItems.length === 0) return null;
+  return (
+    <section className={s.section} aria-label="صرافی‌های تأییدشده">
+      <div className={s.sectionInner}>
+        <ScrollReveal>
+          <ExchangeBentoGrid items={bentoItems} />
+        </ScrollReveal>
+      </div>
+    </section>
+  );
+}
+
+// ─── Page ───────────────────────────────────────────────────────────────────
+
+export default async function ExchangesPage() {
+  // 2026-08-08-perf: فقط داده‌ی hero (exchanges — safeCached) blocking است.
+  // getSparkHistoryBatch (query سنگین تاریخچه) به بخش‌های پایینی منتقل شد؛
+  // هر کدام داخل Suspense خودشان استریم می‌شوند — first paint دیگر منتظر آن
+  // نمی‌ماند (داک رسمی Next.js: Loading UI and Streaming).
+  const exchanges = await getExchangesData();
 
   const tapeItems = buildTapeItems(exchanges);
   const tickerStats = buildTickerStats(exchanges);
-  const pulseTiles = await buildPulseTiles(exchanges, batchedHistory);
-  const bentoItems = await buildBentoExchanges(exchanges, batchedHistory.get('USD') ?? new Map());
-  const heroStats = await buildHeroStats(exchanges, pulseTiles);
+  const heroStats = await buildHeroStats(exchanges);
 
   const hasQuotes = exchanges.some((e) => e.ExchangeRateQuote.length > 0);
 
@@ -497,42 +575,15 @@ export default async function ExchangesPage() {
         </div>
       </section>
 
-      {/* ═══ CURRENCY PULSE — Heatmap (interactive) ══════════════════════ */}
-      {pulseTiles.length > 0 && (
-        <section className={s.section} aria-label="نگاه کلی به بازار">
-          <div className={s.sectionInner}>
-            <ScrollReveal>
-              <header className={s.pulseHeader}>
-                <div>
-                  <span className={s.pulseEyebrow}>
-                    <span className={s.pulseEyebrowDot} aria-hidden />
-                    نگاه کلی به بازار
-                  </span>
-                  <h2 className={s.pulseTitle}>همه ارزها در یک نگاه</h2>
-                  <p className={s.pulseSub}>
-                    اندازه هر بلوک نشان‌دهنده تعداد صرافی‌های فعال برای آن ارز است. روی هر ارز بزنید
-                    تا تابلوی نرخ‌ها به آن ارز تغییر کند.
-                  </p>
-                </div>
-              </header>
-            </ScrollReveal>
-            <ScrollReveal delay={120}>
-              <CurrencyPulseGrid tiles={pulseTiles} />
-            </ScrollReveal>
-          </div>
-        </section>
-      )}
+      {/* ═══ CURRENCY PULSE — Heatmap (async — داخل Suspense استریم می‌شود) ═══ */}
+      <Suspense fallback={<PulseGridFallback />}>
+        <PulseGridSection exchanges={exchanges} />
+      </Suspense>
 
-      {/* ═══ EXCHANGE BENTO GRID ══════════════════════════════════════════ */}
-      {bentoItems.length > 0 && (
-        <section className={s.section} aria-label="صرافی‌های تأییدشده">
-          <div className={s.sectionInner}>
-            <ScrollReveal>
-              <ExchangeBentoGrid items={bentoItems} />
-            </ScrollReveal>
-          </div>
-        </section>
-      )}
+      {/* ═══ EXCHANGE BENTO GRID (async — استریم) ═════════════════════════ */}
+      <Suspense fallback={<BentoGridFallback />}>
+        <BentoGridSection exchanges={exchanges} />
+      </Suspense>
 
       {/* ═══ EMPTY STATE — no exchanges at all ═════════════════════════════ */}
       {exchanges.length === 0 && (
