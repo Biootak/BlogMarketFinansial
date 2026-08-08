@@ -49,7 +49,10 @@
  */
 
 const TGJU_URL = 'https://www.tgju.org/';
-const REQUEST_TIMEOUT_MS = 15_000;
+// 2026-08-08-perf: 15s → 4s — hero همهٔ صفحات منتظر کندترین source می‌ماند؛
+// کران سخت ۴ ثانیه‌ای بدترین حالت رندر را محدود می‌کند (داک web.dev:
+// bound third-party latency). اگر TGJU کند باشد، بقیهٔ fallback ها جواب می‌دهند.
+const REQUEST_TIMEOUT_MS = 4_000;
 
 export interface TgjuItem {
   /** مقدار — ریال خام (÷10 = تومان). مگر طلای جهانی که USD/oz است. */

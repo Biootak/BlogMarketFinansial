@@ -2,7 +2,8 @@
 // نرخ‌های جهانی FX از exchangerate-api.com (رایگان، بدون کلید).
 
 const EXR_BASE = 'https://api.exchangerate-api.com/v4/latest/USD';
-const REQUEST_TIMEOUT_MS = 8_000;
+// 2026-08-08-perf: 8s → 3s — کران سخت برای مسیر رندر (نگاه کنید tgju.ts)
+const REQUEST_TIMEOUT_MS = 3_000;
 
 export interface FxMap {
   [currency: string]: number;

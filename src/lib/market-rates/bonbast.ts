@@ -25,7 +25,8 @@
 
 const BONBAST_URL = 'https://www.bonbast.com/';
 const BONBAST_JSON_URL = 'https://www.bonbast.com/json';
-const REQUEST_TIMEOUT_MS = 12_000;
+// 2026-08-08-perf: 12s → 4s — کران سخت برای مسیر رندر (نگاه کنید tgju.ts)
+const REQUEST_TIMEOUT_MS = 4_000;
 const USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36';
 

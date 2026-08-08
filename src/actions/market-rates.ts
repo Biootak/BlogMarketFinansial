@@ -27,7 +27,11 @@ export const getMarketRates = safeCache(
   [] as MarketRateItem[],
   {
     key: 'market-rates',
-    ttl: 60,
+    // 2026-08-08-perf: ttl 60 → 180 — هر ۶۰ ثانیه کش خالی می‌شد و hero
+    // همهٔ صفحات منتظر re-assemble (تا ۱۵ ثانیه با timeout های قدیمی) می‌ماند.
+    // حالا re-assemble فقط هر ۳ دقیقه و با کران ۴ ثانیه‌ای. cron
+    // refresh-market-rates همچنان نرخ‌ها را تازه نگه می‌دارد.
+    ttl: 180,
     tags: [TAGS.ticker, TAGS.list],
   },
 );

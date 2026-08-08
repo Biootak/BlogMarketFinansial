@@ -12,7 +12,8 @@
 // Usage in assembler: SARA_<CURRENCY> → buyValue = buy_rate (AFN), sellValue = sell_rate (AFN)
 
 const SARAFI_URL = 'https://sarafi.af/api/rates';
-const REQUEST_TIMEOUT_MS = 12_000;
+// 2026-08-08-perf: 12s → 4s — کران سخت برای مسیر رندر (نگاه کنید tgju.ts)
+const REQUEST_TIMEOUT_MS = 4_000;
 
 export interface SarafiRateEntry {
   currency: string;
