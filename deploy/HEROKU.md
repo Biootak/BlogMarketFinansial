@@ -220,6 +220,35 @@ gh run list --workflow 'Deploy to Heroku' --limit 5   # آخرین دیپلوی�
 وضعیت dyno، آخرین release، HTTP سایت، R14/R15/H10 و روند حافظه را گزارش می‌دهد؛
 اگر ناسالم باشد run قرمز می‌شود. خروجی در: GitHub → Actions → Heroku Stability Check.
 
+### 🚀 Lighthouse Audit (تست سرعت موبایل — همهٔ صفحات)
+
+`.github/workflows/lighthouse-audit.yml` — اجرای موبایل Lighthouse روی همهٔ صفحات عمومی
+روی **رانر تمیز گیت‌هاب** (اعداد قابل‌اعتماد؛ مستقل از CPU ماشین توسعه‌دهنده و سهمیهٔ PSI).
+فقط دستی — هیچ‌وقت روی push اجرا نمی‌شود و دیپلوی را trigger نمی‌کند:
+
+```bash
+gh workflow run 'Lighthouse Audit'                                   # ۶ صفحه
+gh workflow run 'Lighthouse Audit' -f url=https://.../exchanges      # یک صفحه
+gh workflow run 'Lighthouse Audit' -f detail=true                    # + LCP element/MT/منابع
+gh run watch <run-id>   # جدول PERF/A11Y/BP/SEO + FCP/LCP/TBT/CLS/TTFB در لاگ
+```
+
+### 🧊 معماری نرخ بازار — «هرگز روی scrape بلاک نشو» (2026-08-08)
+
+مسیر hero (home/money-transfer) از `getMarketRates()` می‌خواند که assemble موازی از
+منابع خارجی می‌سازد (TGJU/bonbast/sarafi/fx/USDT). سه اصل که **نباید** برگردند:
+
+1. **`REQUEST_TIMEOUT_MS` کران سخت**: tgju=4s، bonbast=4s، sarafi=4s، fx=3s.
+   (قبلاً تا ۱۵ ثانیه — hero همهٔ صفحات منتظر کندترین منبع می‌ماند.)
+2. **`getMarketRates` با `swr: true`** (safe-cache): بعد از انقضای کش، مقدار قبلی
+   فوراً برمی‌گردد و refresh در پس‌زمینه (single-flight) اجرا می‌شود — request هرگز
+   بلاک نمی‌شود. TTL = 180s.
+3. **cron `refresh-market-rates` کش صفحات را هم پر می‌کند** (`primeMarketRatesCache`)
+   — قبلاً فقط DB را به‌روز می‌کرد و صفحات هنوز منتظر انقضای کش بودند.
+
+> ⛔ timeout ها را به ۱۰+ ثانیه برنگردان. اگر منبعی کند/خاموش است، assembler از
+> ۷ fallback پشت‌سر هم استفاده می‌کند — سریع fail شدن بهتر از بلاک‌کردن hero است.
+
 ### حافظه (R14/R15)
 
 - R14 = رد شدن از ۵۱۲MB (swap) — کندی. R15 = کرش اجباری dyno.
