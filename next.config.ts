@@ -60,6 +60,9 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
+  // 2026-08-08 perf: Disable SWC minification in dev for faster rebuilds
+  // In production, keep it for smaller bundle sizes
+  swcMinify: process.env.NODE_ENV === 'production',
 
   // Rewrites برای serve کردن فایل‌های آپلود شده در production
   async rewrites() {
@@ -207,8 +210,9 @@ const nextConfig: NextConfig = {
     // 2026-08-02: hero/deferred sections request w=1600 — without it the
     // optimizer 400s and the hero image never loads (LCP falls back to a
     // text node). 1600 is a real device width for 2x mobile / 1x laptop.
-    deviceSizes: [640, 750, 828, 1080, 1200, 1600, 1920],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // 2026-08-08 perf: Reduced device sizes to save memory and build time
+    deviceSizes: [640, 828, 1200, 1920],
+    imageSizes: [16, 32, 64, 128, 256],
     remotePatterns: [
       {
         protocol: 'https',
@@ -290,9 +294,10 @@ const nextConfig: NextConfig = {
     // truncates binary bodies over 1MB unless this is set explicitly.
     // Keep in sync with `serverActions.bodySizeLimit` above.
     proxyClientMaxBodySize: '12mb',
+    // 2026-08-08 perf: Reduced stale times for Eco dyno to free memory faster
     staleTimes: {
-      dynamic: 30,
-      static: 180,
+      dynamic: 15,
+      static: 60,
     },
     // 2026-07-29: staticGeneration concurrency dialed to SAFE values.
     // Each worker builds its OWN PrismaClient (the singleton only helps
@@ -301,8 +306,9 @@ const nextConfig: NextConfig = {
     // simultaneously, collapsing any database under ~30 max_connections.
     // Concurrency = 1 (build pages one at a time — doubly safe with DB).
     // MinPagesPerWorker = 50 (fewer workers = fewer total connections).
+    // 2026-08-08 perf: Reduced concurrency further for Eco dyno (256MB RAM)
     staticGenerationMaxConcurrency: 1,
-    staticGenerationMinPagesPerWorker: 50,
+    staticGenerationMinPagesPerWorker: 100,
     optimizePackageImports: [
       'lucide-react',
       'react-icons',
@@ -329,6 +335,14 @@ const nextConfig: NextConfig = {
       '@dnd-kit/core',
       '@dnd-kit/sortable',
       '@dnd-kit/utilities',
+      // 2026-08-08 perf: Heavy packages for charts and data visualization
+      'recharts',
+      'react-chartjs-2',
+      'chart.js',
+      // 2026-08-08 perf: Form and validation libraries
+      'zod',
+      'react-hook-form',
+      '@hookform/resolvers',
     ],
     optimizeCss: false,
   },
@@ -365,6 +379,40 @@ const nextConfig: NextConfig = {
     '@auth/prisma-adapter',
     '@aws-sdk/client-s3',
     '@aws-sdk/s3-request-presigner',
+    // 2026-08-08 perf: TipTap editor packages are heavy and only used in dashboard
+    // Marking them as serverExternal reduces bundle size and memory usage
+    '@tiptap/core',
+    '@tiptap/react',
+    '@tiptap/starter-kit',
+    '@tiptap/pm',
+    '@tiptap/extension-placeholder',
+    '@tiptap/extension-task-list',
+    '@tiptap/extension-text-align',
+    '@tiptap/extension-underline',
+    '@tiptap/extension-color',
+    '@tiptap/extension-text-style',
+    '@tiptap/extension-link',
+    '@tiptap/extension-image',
+    '@tiptap/extension-table',
+    '@tiptap/extension-table-row',
+    '@tiptap/extension-table-header',
+    '@tiptap/extension-table-cell',
+    '@tiptap/extension-bubble-menu',
+    '@tiptap/extension-floating-menu',
+    '@tiptap/extension-character-count',
+    '@tiptap/extension-code-block-lowlight',
+    '@tiptap/extension-highlight',
+    '@tiptap/extension-typography',
+    '@tiptap/extension-focus',
+    '@tiptap/extension-file-handler',
+    '@tiptap/extension-gapcursor',
+    '@tiptap/extension-youtube',
+    '@tiptap/extension-mention',
+    '@tiptap/extension-superscript',
+    '@tiptap/extension-subscript',
+    '@tiptap/extension-horizontal-rule',
+    '@tiptap/extension-dropcursor',
+    '@tiptap/extension-suggestion',
   ],
 
   transpilePackages: ['next-auth'],

@@ -14,6 +14,9 @@ const createPrismaClient = () =>
       },
     },
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+    // 2026-08-08 perf: Optimize connection pool for Eco dyno (256MB RAM)
+    // Reduced from default to prevent memory issues
+    connectionLimit: 3,
   });
 
 type PrismaClientType = ReturnType<typeof createPrismaClient>;

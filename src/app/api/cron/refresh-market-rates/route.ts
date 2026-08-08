@@ -55,49 +55,71 @@ async function handleRefresh(req: Request) {
   const errors: { symbol: string; reason: string }[] = [];
   const changeUpdates: { symbol: string; changePercent: number }[] = [];
 
-  for (const item of items) {
-    if (item.provider !== 'auto') continue;
-    // value در MarketRateItem = rawValue / divisor (به‌واحد unit). برای ذخیره ریال خام:
-    // singleRate = value * divisor (چون assembler rawValue/divisor = value → rawValue = value*divisor)
-    const rawValue = item.value * item.divisor;
-    if (!Number.isFinite(rawValue) || rawValue <= 0) {
-      skipped++;
-      continue;
-    }
-    try {
-      // Try to update with lastChangePercent (if migration is applied)
-      const affected = await prisma.exchangeRate.updateMany({
-        where: { symbol: item.symbol, provider: 'auto', active: true },
-        data: {
-          singleRate: rawValue.toString(),
-          lastChangePercent: item.changePercent,
-          lastChangeAt: new Date(),
-        },
-      });
-      if (affected.count > 0) {
-        updated++;
-        // جمع change percents برای ذخیره در cache (fallback)
-        changeUpdates.push({ symbol: item.symbol, changePercent: item.changePercent });
-      } else {
+  // 2026-08-08 perf: Process in batches to reduce memory usage
+  const BATCH_SIZE = 20;
+  const autoItems = items.filter(item => item.provider === 'auto');
+
+  for (let i = 0; i < autoItems.length; i += BATCH_SIZE) {
+    const batch = autoItems.slice(i, i + BATCH_SIZE);
+    const batchUpdates: { symbol: string; rawValue: string; changePercent: number }[] = [];
+
+    for (const item of batch) {
+      // value در MarketRateItem = rawValue / divisor (به‌واحد unit). برای ذخیره ریال خام:
+      // singleRate = value * divisor (چون assembler rawValue/divisor = value → rawValue = value*divisor)
+      const rawValue = item.value * item.divisor;
+      if (!Number.isFinite(rawValue) || rawValue <= 0) {
         skipped++;
+        continue;
       }
-    } catch (e: unknown) {
-      // If migration not applied, fallback to updating only singleRate
+      batchUpdates.push({
+        symbol: item.symbol,
+        rawValue: rawValue.toString(),
+        changePercent: item.changePercent,
+      });
+    }
+
+    // Batch update to DB
+    for (const update of batchUpdates) {
       try {
+        // Try to update with lastChangePercent (if migration is applied)
         const affected = await prisma.exchangeRate.updateMany({
-          where: { symbol: item.symbol, provider: 'auto', active: true },
-          data: { singleRate: rawValue.toString() },
+          where: { symbol: update.symbol, provider: 'auto', active: true },
+          data: {
+            singleRate: update.rawValue,
+            lastChangePercent: update.changePercent,
+            lastChangeAt: new Date(),
+          },
         });
         if (affected.count > 0) {
           updated++;
-          changeUpdates.push({ symbol: item.symbol, changePercent: item.changePercent });
+          // جمع change percents برای ذخیره در cache (fallback)
+          changeUpdates.push({ symbol: update.symbol, changePercent: update.changePercent });
         } else {
           skipped++;
         }
-      } catch (e2: unknown) {
-        const err = e2 as { message?: string };
-        errors.push({ symbol: item.symbol, reason: err.message ?? 'unknown' });
+      } catch (e: unknown) {
+        // If migration not applied, fallback to updating only singleRate
+        try {
+          const affected = await prisma.exchangeRate.updateMany({
+            where: { symbol: update.symbol, provider: 'auto', active: true },
+            data: { singleRate: update.rawValue },
+          });
+          if (affected.count > 0) {
+            updated++;
+            changeUpdates.push({ symbol: update.symbol, changePercent: update.changePercent });
+          } else {
+            skipped++;
+          }
+        } catch (e2: unknown) {
+          const err = e2 as { message?: string };
+          errors.push({ symbol: update.symbol, reason: err.message ?? 'unknown' });
+        }
       }
+    }
+
+    // Force garbage collection between batches for Eco dyno
+    if (global.gc && i % (BATCH_SIZE * 5) === 0) {
+      global.gc();
     }
   }
 
