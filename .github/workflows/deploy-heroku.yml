@@ -37,12 +37,12 @@ jobs:
           username: _
           password: ${{ secrets.HEROKU_API_KEY }}
 
-      # ─── 3. Read production DB config from Heroku (source of truth) ────────
+      # ─── 3. Read production config from Heroku (source of truth) ───────────
       # صفحات استاتیک/ISR در build-time به DB وصل می‌شوند، پس build باید به
       # همان DB production (RDS) متصل باشد، نه یک secret جدا که ممکن است
       # قدیمی/اشتباه باشد.
       # از Platform API مستقیم استفاده می‌شود (heroku CLI روی runner نیست).
-      - name: Get production DATABASE_URL from Heroku
+      - name: Get production config from Heroku
         id: db
         run: |
           CONFIG=$(curl -sS -H "Accept: application/vnd.heroku+json; version=3" \
@@ -51,6 +51,10 @@ jobs:
           echo "database_url=$(echo "$CONFIG" | jq -r .DATABASE_URL)" >> "$GITHUB_OUTPUT"
           # DIRECT_URL روی Heroku ست نشده باشد → خالی بده (نه رشته‌ی "null")
           echo "direct_url=$(echo "$CONFIG" | jq -r '.DIRECT_URL // empty')" >> "$GITHUB_OUTPUT"
+          # AUTH_SECRET در build-time لازم است (auth.ts در production fail-closed
+          # است و route های 2FA در build collect می‌شوند). اگر فقط NEXTAUTH_SECRET
+          # ست شده باشد، همان را به build می‌دهیم تا build شکست نخورد.
+          echo "auth_secret=$(echo "$CONFIG" | jq -r '.AUTH_SECRET // .NEXTAUTH_SECRET // empty')" >> "$GITHUB_OUTPUT"
 
       # ─── 4. Build & Push Docker image to Heroku ───────────────────────────
       # 2026-08-08: docker/build-push-action (BuildKit container driver) تصویر
@@ -67,6 +71,7 @@ jobs:
             --build-arg DATABASE_URL="${{ steps.db.outputs.database_url }}" \
             --build-arg DIRECT_URL="${{ steps.db.outputs.direct_url }}" \
             --build-arg SEED_OWNER_PASSWORD="${{ secrets.SEED_OWNER_PASSWORD }}" \
+            --build-arg AUTH_SECRET="${{ steps.db.outputs.auth_secret }}" \
             -t registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web .
           docker push registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web
 

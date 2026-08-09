@@ -43,6 +43,13 @@ ENV DIRECT_URL=$DATABASE_URL
 # رمز OWNER برای seed اولیه (اختیاری — اگر خالی باشد seed رمز تصادفی می‌سازد)
 ARG SEED_OWNER_PASSWORD
 ENV SEED_OWNER_PASSWORD=$SEED_OWNER_PASSWORD
+# AUTH_SECRET برای build-time لازم است: auth.ts در NODE_ENV=production
+# fail-closed است و route های 2FA (src/app/api/2fa/qr) در build-time collect
+# می‌شوند و auth را import می‌کنند — بدون secret، next build با
+# «AUTH_SECRET is required in production» شکست می‌خورد.
+# مقدار از Heroku config خوانده می‌شود (منبع حقیقت — مثل DATABASE_URL).
+ARG AUTH_SECRET
+ENV AUTH_SECRET=$AUTH_SECRET
 
 # فعال‌سازی standalone output برای Heroku
 ENV OUTPUT_STANDALONE=1
