@@ -73,6 +73,15 @@ export function ArrowLeftGlyph({ className, title }: GlyphProps) {
   );
 }
 
+export function ChevronDownGlyph({ className, title }: GlyphProps) {
+  return (
+    <svg {...baseProps} className={className} role={title ? 'img' : undefined}>
+      {title ? <title>{title}</title> : null}
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  );
+}
+
 export function ArrowRightGlyph({ className, title }: GlyphProps) {
   return (
     <svg {...baseProps} className={className} role={title ? 'img' : undefined}>
@@ -161,6 +170,28 @@ export function QuoteGlyph({ className, title }: GlyphProps) {
       {title ? <title>{title}</title> : null}
       <path d="M7 7h4v4H7a3 3 0 00-3 3v3" />
       <path d="M15 7h4v4h-4a3 3 0 00-3 3v3" />
+    </svg>
+  );
+}
+
+export function WandGlyph({ className, title }: GlyphProps) {
+  return (
+    <svg {...baseProps} className={className} role={title ? 'img' : undefined}>
+      {title ? <title>{title}</title> : null}
+      <path d="M4 20L16 8" />
+      <path d="M16 3l.9 2.1L19 6l-2.1.9L16 9l-.9-2.1L13 6l2.1-.9L16 3z" />
+      <path d="M8 4l.5 1.5L10 6l-1.5.5L8 8l-.5-1.5L6 6l1.5-.5L8 4z" />
+    </svg>
+  );
+}
+
+export function SaveGlyph({ className, title }: GlyphProps) {
+  return (
+    <svg {...baseProps} className={className} role={title ? 'img' : undefined}>
+      {title ? <title>{title}</title> : null}
+      <path d="M5 4h11l3 3v13H5V4z" />
+      <path d="M8 4v5h7V4" />
+      <path d="M8 15h8" />
     </svg>
   );
 }

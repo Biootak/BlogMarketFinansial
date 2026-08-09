@@ -148,10 +148,24 @@
     min-block-size: 100vh;
     min-block-size: 100dvh;
     color: oklch(28% 0.02 250);
-    background: radial-gradient(120% 90% at 100% -10%, oklch(70% 0.1 245 / 0.1), transparent 55%),
-      radial-gradient(110% 90% at 0% 0%, oklch(72% 0.12 165 / 0.07), transparent 50%),
-      linear-gradient(180deg, oklch(98.5% 0.004 245), oklch(96.5% 0.006 245));
+    background: radial-gradient(120% 90% at 100% -10%, oklch(68% 0.13 255 / 0.14), transparent 55%),
+      radial-gradient(90% 80% at 0% 8%, oklch(70% 0.12 165 / 0.1), transparent 50%),
+      radial-gradient(80% 110% at 50% 115%, oklch(66% 0.11 280 / 0.08), transparent 60%),
+      linear-gradient(180deg, oklch(99% 0.003 250), oklch(96.2% 0.006 245));
     overflow-x: clip;
+  }
+  /* Film grain — a fixed, whisper-quiet noise layer gives the canvas a
+     printed, hand-finished feel. Scoped to the setup surface only. */
+  .setup-page::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    background-size: 180px 180px;
   }
   .dark .setup-page {
     color: oklch(90% 0.01 245);
@@ -191,7 +205,11 @@
     gap: 1rem;
     max-inline-size: 84rem;
     margin-inline: auto;
-    padding: 1.25rem clamp(1rem, 4vw, 2.5rem);
+    padding: 1rem clamp(1rem, 4vw, 2.5rem);
+    border-block-end: 1px solid oklch(50% 0.02 250 / 0.08);
+    background: oklch(99% 0.002 250 / 0.55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
   }
   .setup-page__brand {
     display: inline-flex;
@@ -293,51 +311,35 @@
 
   .setup-page__shell {
     position: relative;
-    border-radius: clamp(1.25rem, 2vw + 0.5rem, 1.875rem);
-    background: linear-gradient(180deg, oklch(100% 0 0 / 0.96), oklch(99% 0.003 245 / 0.9));
-    border: 1px solid oklch(90% 0.006 245 / 0.9);
-    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.7) inset, 0 28px 60px -34px oklch(45% 0.08 255 / 0.3), 0
-      1px 2px oklch(0% 0 0 / 0.04);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    border-radius: clamp(1.5rem, 2vw + 0.5rem, 2.25rem);
+    background: linear-gradient(180deg, oklch(100% 0 0 / 0.97), oklch(99% 0.003 245 / 0.9));
+    border: 1px solid oklch(91% 0.008 250 / 0.85);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.8) inset, 0 0 0 1px oklch(45% 0.02 250 / 0.02), 0
+        32px 64px -40px oklch(28% 0.03 250 / 0.3), 0 8px 20px -16px oklch(30% 0.03 250 / 0.25), 0
+        1px 3px oklch(0% 0 0 / 0.05);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
     overflow: clip;
   }
   .dark .setup-page__shell {
-    background: linear-gradient(180deg, oklch(20% 0.018 255 / 0.72), oklch(16% 0.016 255 / 0.62));
+    background: linear-gradient(180deg, oklch(20% 0.018 255 / 0.74), oklch(16% 0.016 255 / 0.62));
     border: 1px solid oklch(34% 0.02 255 / 0.7);
-    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.04) inset, 0 36px 80px -36px oklch(0% 0 0 / 0.75);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.04) inset, 0 0 0 1px oklch(0% 0 0 / 0.4), 0
+        40px 80px -44px oklch(0% 0 0 / 0.75);
   }
+  /* Ambient top light: a soft beam hugging the card's top edge instead of a
+     conic glow. Restraint is the premium signal here. */
   .setup-page__shell-glow {
     position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    padding: 1px;
-    background: conic-gradient(
-      from var(--setup-angle),
-      oklch(70% 0.16 255 / 0) 0%,
-      oklch(70% 0.16 255 / 0.55) 18%,
-      oklch(72% 0.14 165 / 0.5) 36%,
-      oklch(70% 0.16 255 / 0.55) 54%,
-      oklch(70% 0.16 280 / 0.4) 72%,
-      oklch(70% 0.16 255 / 0) 100%
-    );
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity var(--ds-duration-slow) var(--ds-ease-out-quart);
+    inset: 0;
+    background: radial-gradient(55% 3px at 50% 0%, oklch(72% 0.12 245 / 0.5), transparent 80%),
+      radial-gradient(120% 35% at 50% -18%, oklch(70% 0.12 245 / 0.12), transparent 65%);
     pointer-events: none;
-    z-index: 0;
-    animation: setup-angle 22s linear infinite;
+    z-index: 2;
   }
-  .setup-page__shell:hover .setup-page__shell-glow,
-  .setup-page__shell:focus-within .setup-page__shell-glow {
-    opacity: 0.85;
-  }
-  @keyframes setup-angle {
-    to {
-      --setup-angle: 360deg;
-    }
+  .dark .setup-page__shell-glow {
+    background: radial-gradient(55% 3px at 50% 0%, oklch(78% 0.12 245 / 0.45), transparent 80%),
+      radial-gradient(120% 35% at 50% -18%, oklch(72% 0.12 245 / 0.16), transparent 65%);
   }
   .setup-page__shell-inner {
     position: relative;
@@ -374,19 +376,18 @@
     position: absolute;
     inset: -20%;
     background: conic-gradient(
-      from var(--setup-angle, 0deg) at 50% 50%,
-      oklch(70% 0.12 245 / 0.1) 0deg,
-      oklch(68% 0.14 165 / 0.08) 120deg,
-      oklch(68% 0.13 280 / 0.1) 240deg,
-      oklch(70% 0.12 245 / 0.1) 360deg
+      from 0deg at 50% 50%,
+      oklch(70% 0.12 245 / 0.09) 0deg,
+      oklch(68% 0.14 165 / 0.07) 120deg,
+      oklch(68% 0.13 280 / 0.09) 240deg,
+      oklch(70% 0.12 245 / 0.09) 360deg
     );
-    filter: blur(40px);
-    opacity: 0.65;
-    animation: setup-angle 80s linear infinite;
+    filter: blur(48px);
+    opacity: 0.55;
   }
   .dark .setup-stage__mesh {
-    opacity: 0.4;
-    filter: blur(60px);
+    opacity: 0.35;
+    filter: blur(64px);
   }
   .setup-stage__blob {
     position: absolute;
@@ -573,6 +574,10 @@
      -------------------------------------------------------------------------- */
   .setup-wizard {
     display: grid;
+    /* minmax(0, 1fr) keeps the column at the container width instead of
+       letting a wide child (e.g. the horizontally-scrollable stepper row)
+       blow the whole wizard up on narrow screens. */
+    grid-template-columns: minmax(0, 1fr);
     gap: clamp(var(--space-5), 2vw + var(--space-2), var(--space-7));
   }
   .setup-wizard--solo {
@@ -651,6 +656,15 @@
     background: oklch(70% 0.12 245 / 0.12);
     color: oklch(82% 0.1 245);
   }
+  .setup-wizard__resume-glyph {
+    inline-size: var(--size-icon-sm);
+    block-size: var(--size-icon-sm);
+    color: oklch(48% 0.14 245);
+    flex-shrink: 0;
+  }
+  .dark .setup-wizard__resume-glyph {
+    color: oklch(78% 0.1 245);
+  }
   .setup-wizard__resume-reset {
     border: none;
     background: transparent;
@@ -698,6 +712,8 @@
     line-height: 1;
     border: var(--line-hair) solid transparent;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
     transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart), background
       var(--ds-duration-fast) var(--ds-ease-out-quart), border-color var(--ds-duration-fast)
       var(--ds-ease-out-quart), box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
@@ -739,14 +755,14 @@
     border-color: oklch(70% 0.12 245 / 0.5);
   }
   .setup-wizard__nav--primary {
-    background: linear-gradient(135deg, oklch(58% 0.16 265), oklch(48% 0.16 250));
+    background: oklch(52% 0.16 265);
     color: oklch(100% 0 0);
-    border-color: oklch(58% 0.16 265 / 0.5);
-    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.18) inset, 0 16px 32px -16px oklch(45% 0.18 265 / 0.65);
+    border-color: oklch(52% 0.16 265 / 0.6);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.18) inset, 0 12px 24px -14px oklch(40% 0.16 265 / 0.5);
   }
   .setup-wizard__nav--primary:not(:disabled):hover {
-    background: linear-gradient(135deg, oklch(62% 0.16 265), oklch(52% 0.16 250));
-    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.22) inset, 0 22px 40px -16px oklch(45% 0.18 265 / 0.75);
+    background: oklch(56% 0.16 265);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.2) inset, 0 16px 28px -14px oklch(40% 0.16 265 / 0.55);
   }
   .setup-wizard__nav-glyph {
     inline-size: var(--size-icon-sm);
@@ -787,6 +803,38 @@
   .setup-wizard__hint-text {
     margin-inline-start: 0.25rem;
   }
+
+  /* Auto-save note — a quiet glass pill confirming the draft is local. */
+  .setup-wizard__autosave {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    justify-self: center;
+    margin: 0;
+    padding: 0.45rem 0.95rem;
+    border-radius: var(--radius-full);
+    background: oklch(100% 0 0 / 0.6);
+    border: 1px solid oklch(65% 0.1 165 / 0.25);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.7) inset, 0 8px 20px -14px oklch(40% 0.05 250 / 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: oklch(48% 0.1 165);
+    animation: setup-fade-in 0.4s var(--ds-ease-out-quart) both;
+  }
+  .dark .setup-wizard__autosave {
+    background: oklch(20% 0.02 255 / 0.6);
+    border-color: oklch(55% 0.12 160 / 0.3);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.05) inset, 0 8px 20px -14px oklch(0% 0 0 / 0.5);
+    color: oklch(75% 0.1 165);
+  }
+  .setup-wizard__autosave-glyph {
+    inline-size: 0.9rem;
+    block-size: 0.9rem;
+    color: oklch(55% 0.13 160);
+    flex-shrink: 0;
+  }
   .setup-wizard__spinner {
     inline-size: 1rem;
     block-size: 1rem;
@@ -808,10 +856,78 @@
     display: grid;
     gap: clamp(var(--space-6), 2vw + var(--space-2), var(--space-8));
   }
+  /* Desktop: editorial spread — hero + perks on the main column, roadmap as
+     a quiet sticky sidebar. Mobile stays a single flow. */
+  @media (min-width: 1024px) {
+    .setup-intro {
+      grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+      column-gap: clamp(var(--space-10), 3vw, var(--space-16));
+    }
+    .setup-intro__hero,
+    .setup-intro__perks,
+    .setup-intro__needs {
+      grid-column: 1;
+    }
+    .setup-intro__roadmap {
+      grid-column: 2;
+      grid-row: 1 / span 3;
+      align-self: start;
+      position: sticky;
+      top: 1.5rem;
+    }
+  }
   .setup-intro__hero {
     display: grid;
     gap: var(--space-4);
     text-align: start;
+  }
+  .setup-intro__seal {
+    position: relative;
+    inline-size: 4.5rem;
+    block-size: 4.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: radial-gradient(130% 130% at 32% 18%, oklch(100% 0 0 / 0.95), oklch(94% 0.03 260 / 0.5)),
+      linear-gradient(160deg, oklch(63% 0.14 255), oklch(50% 0.16 265));
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset, 0 20px 40px -20px oklch(40% 0.16 265 / 0.6), 0
+      0 0 1px oklch(50% 0.16 265 / 0.25);
+  }
+  .dark .setup-intro__seal {
+    background: radial-gradient(130% 130% at 32% 18%, oklch(42% 0.1 260 / 0.6), oklch(30% 0.09 265 / 0.4)),
+      linear-gradient(160deg, oklch(56% 0.15 255), oklch(46% 0.16 265));
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.16) inset, 0 20px 40px -20px oklch(0% 0 0 / 0.7), 0 0 0
+      1px oklch(70% 0.14 255 / 0.35);
+  }
+  .setup-intro__seal-ring {
+    position: absolute;
+    inset: -0.65rem;
+    border-radius: 9999px;
+    border: 1px solid oklch(55% 0.12 245 / 0.2);
+    background: oklch(70% 0.12 245 / 0.05);
+  }
+  .dark .setup-intro__seal-ring {
+    border-color: oklch(72% 0.12 245 / 0.22);
+    background: oklch(70% 0.12 245 / 0.08);
+  }
+  .setup-intro__seal-glyph {
+    inline-size: 2.1rem;
+    block-size: 2.1rem;
+    color: oklch(100% 0 0);
+  }
+  .setup-intro__seal {
+    animation: setup-seal-in 0.65s var(--ds-ease-out-quart) both;
+  }
+  @keyframes setup-seal-in {
+    from {
+      opacity: 0;
+      transform: scale(0.9) translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
   .setup-intro__eyebrow {
     display: inline-flex;
@@ -837,7 +953,7 @@
   }
   .setup-intro__title {
     margin: 0;
-    font-size: clamp(var(--text-3xl), 2.6vw + var(--text-base), var(--text-4xl));
+    font-size: clamp(2rem, 3vw + 0.75rem, 3.25rem);
     font-weight: 800;
     letter-spacing: var(--tracking-tight);
     line-height: var(--leading-tight);
@@ -847,15 +963,10 @@
     color: oklch(96% 0.005 245);
   }
   .setup-intro__title-accent {
-    background: linear-gradient(
-      120deg,
-      oklch(65% 0.16 270),
-      oklch(58% 0.14 200) 60%,
-      oklch(68% 0.13 165)
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: oklch(50% 0.16 265);
+  }
+  .dark .setup-intro__title-accent {
+    color: oklch(72% 0.14 245);
   }
   .setup-intro__lead {
     margin: 0;
@@ -884,22 +995,52 @@
     border: var(--line-hair) solid transparent;
     cursor: pointer;
     width: fit-content;
+    position: relative;
+    overflow: hidden;
     transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
       var(--ds-duration-fast) var(--ds-ease-out-quart);
+  }
+  /* Light sweep across the primary CTA on hover — a quiet "alive" detail. */
+  .setup-intro__btn--primary::after,
+  .setup-wizard__nav--primary::after {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: -80%;
+    inline-size: 55%;
+    background: linear-gradient(105deg, transparent, oklch(100% 0 0 / 0.3), transparent);
+    transform: skewX(-18deg);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--ds-duration-base) var(--ds-ease-out-quart);
+  }
+  .setup-intro__btn--primary:hover::after,
+  .setup-wizard__nav--primary:not(:disabled):hover::after {
+    opacity: 1;
+    animation: setup-sweep 0.85s var(--ds-ease-out-quart);
+  }
+  @keyframes setup-sweep {
+    from {
+      inset-inline-start: -80%;
+    }
+    to {
+      inset-inline-start: 130%;
+    }
   }
   .setup-intro__btn:focus-visible {
     outline: var(--line-thin) solid oklch(70% 0.12 245);
     outline-offset: var(--space-1);
   }
   .setup-intro__btn--primary {
-    background: linear-gradient(135deg, oklch(58% 0.16 265), oklch(48% 0.16 250));
+    background: oklch(52% 0.16 265);
     color: oklch(100% 0 0);
-    border-color: oklch(58% 0.16 265 / 0.5);
-    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.18) inset, 0 18px 36px -16px oklch(45% 0.18 265 / 0.65);
+    border-color: oklch(52% 0.16 265 / 0.6);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.18) inset, 0 14px 28px -14px oklch(40% 0.16 265 / 0.5);
   }
   .setup-intro__btn--primary:hover {
     transform: translateY(-1px);
-    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.22) inset, 0 24px 44px -16px oklch(45% 0.18 265 / 0.75);
+    background: oklch(56% 0.16 265);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.2) inset, 0 18px 32px -14px oklch(40% 0.16 265 / 0.55);
   }
   .setup-intro__btn-glyph {
     inline-size: var(--size-icon-md);
@@ -948,8 +1089,9 @@
     align-items: center;
     justify-content: center;
     border-radius: var(--radius-md);
-    background: linear-gradient(135deg, oklch(70% 0.12 245 / 0.18), oklch(70% 0.12 280 / 0.12));
-    color: oklch(48% 0.14 265);
+    background: oklch(52% 0.16 265 / 0.1);
+    border: 1px solid oklch(52% 0.16 265 / 0.18);
+    color: oklch(48% 0.15 265);
     flex-shrink: 0;
   }
   .dark .setup-intro__perk-glyph {
@@ -1049,8 +1191,9 @@
     align-items: center;
     justify-content: center;
     border-radius: 9999px;
-    background: linear-gradient(135deg, oklch(70% 0.12 245 / 0.18), oklch(70% 0.12 280 / 0.12));
-    color: oklch(48% 0.14 265);
+    background: oklch(52% 0.16 265 / 0.1);
+    border: 1px solid oklch(52% 0.16 265 / 0.22);
+    color: oklch(48% 0.15 265);
     font-size: 0.72rem;
     font-weight: 700;
   }
@@ -1148,47 +1291,13 @@
     border: 1px solid oklch(90% 0.006 245 / 0.9);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    box-shadow: 0 24px 48px -28px oklch(45% 0.08 255 / 0.25);
+    box-shadow: 0 24px 48px -28px oklch(30% 0.03 250 / 0.18);
   }
   .dark .setup-sidepanel {
     background: linear-gradient(180deg, oklch(20% 0.018 255 / 0.65), oklch(16% 0.016 255 / 0.55));
     border-color: oklch(34% 0.02 255 / 0.7);
-    box-shadow: 0 28px 56px -28px oklch(0% 0 0 / 0.55);
+    box-shadow: 0 28px 56px -28px oklch(0% 0 0 / 0.5);
   }
-  .setup-sidepanel__step {
-    display: grid;
-    gap: 0.25rem;
-  }
-  .setup-sidepanel__step-eyebrow {
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: oklch(48% 0.14 265);
-  }
-  .dark .setup-sidepanel__step-eyebrow {
-    color: oklch(78% 0.12 245);
-  }
-  .setup-sidepanel__step-title {
-    margin: 0;
-    font-size: 1.05rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    color: oklch(22% 0.02 250);
-  }
-  .dark .setup-sidepanel__step-title {
-    color: oklch(96% 0.005 245);
-  }
-  .setup-sidepanel__step-summary {
-    margin: 0;
-    font-size: 0.78rem;
-    color: oklch(50% 0.02 250);
-    line-height: 1.55;
-  }
-  .dark .setup-sidepanel__step-summary {
-    color: oklch(72% 0.012 245);
-  }
-
   .setup-sidepanel__tip {
     display: grid;
     gap: 0.35rem;
@@ -1204,12 +1313,17 @@
   .setup-sidepanel__tip-label {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: 0.35rem;
     font-size: 0.68rem;
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: oklch(48% 0.14 75);
+  }
+  .setup-sidepanel__tip-glyph {
+    inline-size: 0.8rem;
+    block-size: 0.8rem;
+    color: oklch(65% 0.16 75);
   }
   .dark .setup-sidepanel__tip-label {
     color: oklch(82% 0.14 75);
@@ -1231,62 +1345,6 @@
   }
   .dark .setup-sidepanel__tip-body {
     color: oklch(82% 0.02 75);
-  }
-
-  .setup-sidepanel__next {
-    display: grid;
-    gap: 0.4rem;
-    padding: 0.85rem 0.95rem;
-    border-radius: 0.85rem;
-    background: oklch(70% 0.12 245 / 0.08);
-    border: 1px solid oklch(70% 0.12 245 / 0.2);
-  }
-  .dark .setup-sidepanel__next {
-    background: oklch(70% 0.12 245 / 0.12);
-    border-color: oklch(70% 0.12 245 / 0.25);
-  }
-  .setup-sidepanel__next-label {
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: oklch(48% 0.14 245);
-  }
-  .dark .setup-sidepanel__next-label {
-    color: oklch(82% 0.1 245);
-  }
-  .setup-sidepanel__next-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .setup-sidepanel__next-num {
-    inline-size: 1.5rem;
-    block-size: 1.5rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 9999px;
-    background: linear-gradient(135deg, oklch(58% 0.16 265), oklch(48% 0.16 250));
-    color: oklch(100% 0 0);
-    font-size: 0.72rem;
-    font-weight: 700;
-  }
-  .setup-sidepanel__next-title {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: oklch(22% 0.02 250);
-  }
-  .dark .setup-sidepanel__next-title {
-    color: oklch(96% 0.005 245);
-  }
-  .setup-sidepanel__next-sub {
-    font-size: 0.72rem;
-    color: oklch(50% 0.02 250);
-    line-height: 1.5;
-  }
-  .dark .setup-sidepanel__next-sub {
-    color: oklch(72% 0.012 245);
   }
 
   /* ---- Admin preview card ---------------------------------------------- */
@@ -1323,14 +1381,14 @@
     background: oklch(100% 0 0);
     border: 1px solid oklch(90% 0.006 245 / 0.9);
     overflow: hidden;
-    box-shadow: 0 18px 36px -22px oklch(45% 0.08 255 / 0.3);
+    box-shadow: 0 16px 32px -24px oklch(30% 0.03 250 / 0.22);
     transition: box-shadow var(--ds-duration-slow) var(--ds-ease-out-quart), transform
       var(--ds-duration-slow) var(--ds-ease-out-quart);
   }
   .dark .admin-preview__card {
     background: oklch(22% 0.018 255 / 0.85);
     border-color: oklch(34% 0.02 255 / 0.7);
-    box-shadow: 0 22px 44px -22px oklch(0% 0 0 / 0.6);
+    box-shadow: 0 22px 44px -22px oklch(0% 0 0 / 0.55);
   }
   .admin-preview__card[data-empty="true"] {
     opacity: 0.92;
@@ -1358,13 +1416,6 @@
     inset-inline-end: -1.5rem;
     background: oklch(78% 0.16 90 / 0.5);
   }
-  .admin-preview__cover-orb--b {
-    inline-size: 5rem;
-    block-size: 5rem;
-    inset-block-end: -2rem;
-    inset-inline-start: 25%;
-    background: oklch(75% 0.16 350 / 0.4);
-  }
   .admin-preview__cover-grid {
     position: absolute;
     inset: 0;
@@ -1387,27 +1438,20 @@
     inline-size: 3.7rem;
     block-size: 3.7rem;
     border-radius: 9999px;
-    background: linear-gradient(135deg, oklch(78% 0.14 165), oklch(68% 0.13 160));
+    background: oklch(55% 0.13 160);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 12px 24px -10px oklch(45% 0.18 165 / 0.55), 0 0 0 4px oklch(100% 0 0);
+    box-shadow: 0 10px 20px -12px oklch(35% 0.13 160 / 0.5), 0 0 0 4px oklch(100% 0 0);
   }
   .dark .admin-preview__avatar {
-    box-shadow: 0 12px 24px -10px oklch(45% 0.18 165 / 0.55), 0 0 0 4px oklch(22% 0.018 255 / 0.9);
+    box-shadow: 0 10px 20px -12px oklch(35% 0.13 160 / 0.5), 0 0 0 4px oklch(22% 0.018 255 / 0.9);
   }
   .admin-preview__avatar-inner {
     font-size: 1.2rem;
     font-weight: 800;
     color: oklch(100% 0 0);
     letter-spacing: -0.02em;
-  }
-  .admin-preview__avatar-ring {
-    position: absolute;
-    inset: -4px;
-    border-radius: 9999px;
-    border: 1.5px dashed oklch(75% 0.14 165 / 0.45);
-    animation: setup-spin 24s linear infinite;
   }
   .admin-preview__identity {
     display: grid;
@@ -1419,8 +1463,9 @@
     align-items: center;
     padding: 0.15rem 0.5rem;
     border-radius: 9999px;
-    background: linear-gradient(135deg, oklch(70% 0.14 270 / 0.18), oklch(70% 0.12 245 / 0.18));
-    color: oklch(48% 0.14 270);
+    background: oklch(52% 0.16 265 / 0.1);
+    border: 1px solid oklch(52% 0.16 265 / 0.2);
+    color: oklch(48% 0.15 265);
     font-size: 0.62rem;
     font-weight: 800;
     letter-spacing: 0.08em;
@@ -1573,9 +1618,27 @@
     flex-shrink: 0;
   }
   .admin-preview__counter {
-    position: relative;
-    display: grid;
-    gap: var(--space-3);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+    padding-block-start: 0.75rem;
+    border-block-start: var(--line-hair) solid oklch(90% 0.006 245 / 0.8);
+    font-size: 0.72rem;
+    color: oklch(55% 0.02 250);
+    font-variant-numeric: tabular-nums;
+  }
+  .dark .admin-preview__counter {
+    border-block-start-color: oklch(28% 0.02 255 / 0.8);
+    color: oklch(70% 0.012 245);
+  }
+  .admin-preview__counter::before {
+    content: "";
+    flex: none;
+    inline-size: 0.4rem;
+    block-size: 0.4rem;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, oklch(70% 0.14 165), oklch(60% 0.13 160));
   }
   .setup-stepper__statusbar {
     display: grid;
@@ -1631,10 +1694,9 @@
     inset-block: 0;
     inset-inline-start: 0;
     inline-size: 0%;
-    background: linear-gradient(90deg, oklch(58% 0.16 265), oklch(65% 0.14 165));
+    background: oklch(52% 0.16 265);
     border-radius: var(--radius-full);
     transition: inline-size var(--ds-duration-slow) var(--ds-ease-out-expo);
-    box-shadow: 0 0 8px oklch(58% 0.16 265 / 0.4);
   }
   .setup-stepper__eta {
     display: inline-flex;
@@ -1678,11 +1740,18 @@
     margin: 0;
     padding: 0;
     list-style: none;
+    position: relative;
+    z-index: 0; /* stacking context so the connecting track stays behind the discs */
   }
   @media (max-width: 720px) {
     .setup-stepper__list {
       grid-template-columns: repeat(5, minmax(var(--space-7), 1fr));
     }
+  }
+  .setup-stepper__track-slot {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
   }
   .setup-stepper__item {
     position: relative;
@@ -1783,9 +1852,9 @@
   }
 
   .setup-stepper__item--done .setup-stepper__disc {
-    background: linear-gradient(135deg, oklch(65% 0.14 165), oklch(55% 0.13 160));
+    background: oklch(58% 0.13 160);
     color: oklch(100% 0 0);
-    border-color: oklch(65% 0.14 165 / 0.5);
+    border-color: oklch(58% 0.13 160 / 0.5);
   }
   .setup-stepper__item--done .setup-stepper__disc-inner {
     background: transparent;
@@ -1799,10 +1868,10 @@
   }
 
   .setup-stepper__item--active .setup-stepper__disc {
-    background: linear-gradient(135deg, oklch(60% 0.16 265), oklch(48% 0.16 250));
+    background: oklch(52% 0.16 265);
     color: oklch(100% 0 0);
-    border-color: oklch(60% 0.16 265 / 0.5);
-    box-shadow: 0 0 0 4px oklch(60% 0.16 265 / 0.12), 0 10px 20px -10px oklch(45% 0.18 265 / 0.55);
+    border-color: oklch(52% 0.16 265 / 0.5);
+    box-shadow: 0 0 0 3px oklch(52% 0.16 265 / 0.14), 0 8px 16px -10px oklch(40% 0.16 265 / 0.4);
   }
   .setup-stepper__item--active .setup-stepper__disc-inner {
     color: inherit;
@@ -1833,7 +1902,7 @@
     inset-block: 0;
     inset-inline-start: 0;
     inline-size: 0%;
-    background: linear-gradient(90deg, oklch(60% 0.16 265), oklch(65% 0.14 165));
+    background: oklch(52% 0.16 265);
     border-radius: 9999px;
     transition: inline-size var(--ds-duration-slow) var(--ds-ease-out-expo);
   }
@@ -1844,11 +1913,11 @@
   .setup-step-header {
     display: grid;
     gap: 0.6rem;
-    padding-block-end: 0.5rem;
-    border-block-end: 1px dashed oklch(50% 0.02 250 / 0.12);
+    padding-block-end: 0.75rem;
+    border-block-end: var(--line-hair) solid oklch(88% 0.006 245 / 0.8);
   }
   .dark .setup-step-header {
-    border-block-end-color: oklch(85% 0.01 245 / 0.12);
+    border-block-end-color: oklch(30% 0.02 255 / 0.8);
   }
   .setup-step-header__row {
     display: flex;
@@ -1910,7 +1979,7 @@
   .setup-step-header__bar-fill {
     display: block;
     block-size: 100%;
-    background: linear-gradient(90deg, oklch(58% 0.16 265), oklch(65% 0.14 165));
+    background: oklch(52% 0.16 265);
     border-radius: inherit;
     transition: inline-size var(--ds-duration-slow) var(--ds-ease-out-expo);
   }
@@ -1973,22 +2042,18 @@
     padding-block-start: var(--space-5);
   }
   .setup-field--success .setup-field__shell {
-    border-color: oklch(65% 0.14 165 / 0.55);
-    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset, 0 0 0 3px oklch(65% 0.14 165 / 0.12);
+    border-color: oklch(65% 0.14 165 / 0.5);
   }
   .setup-field--error .setup-field__shell {
-    border-color: oklch(62% 0.18 22 / 0.55);
-    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset, 0 0 0 3px oklch(62% 0.18 22 / 0.12);
+    border-color: oklch(62% 0.18 22 / 0.5);
   }
   .setup-field__shell:focus-within {
-    border-color: oklch(60% 0.16 265);
-    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset, 0 0 0 var(--line-ring)
-      oklch(60% 0.16 265 / 0.15), 0 12px 28px -16px oklch(45% 0.18 265 / 0.5);
+    border-color: oklch(55% 0.16 265);
+    box-shadow: 0 0 0 2px oklch(55% 0.16 265 / 0.22);
   }
   .setup-field--error .setup-field__shell:focus-within {
     border-color: oklch(55% 0.18 22);
-    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset, 0 0 0 var(--line-ring)
-      oklch(55% 0.18 22 / 0.18);
+    box-shadow: 0 0 0 2px oklch(55% 0.18 22 / 0.2);
   }
 
   .setup-field__input {
@@ -2026,7 +2091,9 @@
 
   .setup-field__label {
     position: absolute;
-    inset-inline-start: var(--space-7);
+    /* 16px shell padding + 24px leading icon + 4px breathing gap — so the
+       label never sits on top of the leading glyph (was 28px = overlap). */
+    inset-inline-start: 2.75rem;
     inset-block-start: 50%;
     transform: translateY(-50%);
     display: inline-flex;
@@ -2103,10 +2170,72 @@
     margin-block-start: var(--space-1);
   }
 
+  /* Country-code prefix inside the phone field */
+  .setup-field__leading--country {
+    inline-size: auto;
+    gap: 0.15rem;
+    padding-inline-start: var(--space-1);
+    color: oklch(45% 0.02 250);
+    /* RTL page: keep direction, reverse the flex so the dial code
+       renders left of the caret: [+93][⌄]. */
+    flex-direction: row-reverse;
+  }
+  .dark .setup-field__leading--country {
+    color: oklch(72% 0.01 245);
+  }
+  .setup-field__country {
+    appearance: none;
+    border: none;
+    background: transparent;
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: inherit;
+    padding-inline: 0 0.3rem;
+    cursor: pointer;
+    outline: none;
+    font-variant-numeric: tabular-nums;
+    direction: ltr;
+  }
+  .setup-field__country-caret {
+    inline-size: 0.7rem;
+    block-size: 0.7rem;
+    opacity: 0.55;
+    flex-shrink: 0;
+    pointer-events: none;
+  }
+  /* The phone field reads left-to-right as one unit: [+93][070 123 4567].
+     In an RTL page, flipping the shell to `direction: ltr` makes Edge's
+     flex layout fall apart once the select widens (the leading drifts
+     outside the shell and the input overlaps it), so the dial-code select
+     is taken out of flow and pinned to the physical LEFT edge — the side
+     that never flips — while the input clears it with a fixed left padding
+     and the label follows the digits. `> .setup-field__leading` targets
+     only the outer wrapper span (the inner .--country span must stay in
+     flow), and `row-reverse` on the inner span keeps the dial code before
+     the caret. */
+  .setup-field--country .setup-field__shell > .setup-field__leading {
+    position: absolute;
+    inset-block-start: 0;
+    inset-block-end: 0;
+    left: var(--space-4);
+    inline-size: auto;
+    justify-content: flex-start;
+    z-index: 1;
+  }
+  .setup-field--country .setup-field__input {
+    padding-inline-start: 72px;
+  }
+  .setup-field--country .setup-field__label {
+    inset-inline-start: auto;
+    left: calc(var(--space-4) + 72px);
+  }
+
   .setup-field__trailing {
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
+    gap: 0.25rem;
   }
   .setup-field__action {
     display: inline-flex;
@@ -2125,6 +2254,10 @@
   .setup-field__action:hover {
     background: oklch(50% 0.02 250 / 0.1);
     color: oklch(30% 0.02 250);
+  }
+  .setup-field__action--generate:hover {
+    background: oklch(52% 0.16 265 / 0.12);
+    color: oklch(48% 0.15 265);
   }
   .dark .setup-field__action {
     color: oklch(70% 0.01 245);
@@ -2739,7 +2872,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 9999px;
-    background: linear-gradient(135deg, oklch(65% 0.14 165), oklch(50% 0.13 160));
+    background: oklch(55% 0.13 160);
     color: oklch(100% 0 0);
     box-shadow: 0 0 0 6px oklch(100% 0 0 / 0.6), 0 24px 40px -20px oklch(55% 0.14 165 / 0.55);
     animation: setup-complete-pop 0.7s var(--ds-ease-out-expo) both;
@@ -2852,7 +2985,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 9999px;
-    background: linear-gradient(135deg, oklch(65% 0.14 165), oklch(55% 0.13 160));
+    background: oklch(58% 0.13 160);
     color: oklch(100% 0 0);
     font-size: 0.7rem;
     font-weight: 800;
@@ -2888,20 +3021,22 @@
     gap: 0.55rem;
     padding: 0.85rem 1.5rem;
     border-radius: 0.85rem;
-    border: 1px solid oklch(58% 0.16 265 / 0.5);
-    background: linear-gradient(135deg, oklch(58% 0.16 265), oklch(48% 0.16 250));
+    border: 1px solid oklch(52% 0.16 265 / 0.6);
+    background: oklch(52% 0.16 265);
     color: oklch(100% 0 0);
     font: inherit;
     font-size: 0.9375rem;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 18px 36px -16px oklch(45% 0.18 265 / 0.55);
-    transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
-      var(--ds-duration-fast) var(--ds-ease-out-quart);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.18) inset, 0 14px 28px -14px oklch(40% 0.16 265 / 0.5);
+    transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart), background
+      var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow var(--ds-duration-fast)
+      var(--ds-ease-out-quart);
   }
   .setup-complete__cta:hover {
     transform: translateY(-1px);
-    box-shadow: 0 22px 40px -16px oklch(45% 0.18 265 / 0.7);
+    background: oklch(56% 0.16 265);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.2) inset, 0 18px 32px -14px oklch(40% 0.16 265 / 0.55);
   }
   .setup-complete__cta:focus-visible {
     outline: 2px solid oklch(70% 0.12 245);
@@ -3037,16 +3172,18 @@
     align-items: center;
     padding: 0.7rem 1.25rem;
     border-radius: 0.75rem;
-    background: linear-gradient(135deg, oklch(58% 0.16 265), oklch(48% 0.16 250));
+    background: oklch(52% 0.16 265);
     color: oklch(100% 0 0);
     text-decoration: none;
     font-size: 0.875rem;
     font-weight: 700;
-    box-shadow: 0 14px 30px -16px oklch(45% 0.18 265 / 0.55);
-    transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.18) inset, 0 12px 24px -14px oklch(40% 0.16 265 / 0.5);
+    transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart), background
+      var(--ds-duration-fast) var(--ds-ease-out-quart);
   }
   .setup-already__cta:hover {
     transform: translateY(-1px);
+    background: oklch(56% 0.16 265);
   }
   .setup-already__cta:focus-visible {
     outline: 2px solid oklch(70% 0.12 245);
@@ -3094,6 +3231,218 @@
   }
 
   /* --------------------------------------------------------------------------
+     Responsive refinements — mobile-first density & touch targets
+     -------------------------------------------------------------------------- */
+
+  /* Primary actions clear the 44px touch-target bar (WCAG 2.2). Layered
+     (NOT the unlayered block below) so the mobile media queries can
+     override it to 40px. px, not rem — the fluid root font would shrink
+     a rem value below the target on small screens. */
+  .setup-wizard__nav,
+  .setup-intro__btn,
+  .setup-complete__cta,
+  .setup-already__cta {
+    min-block-size: 44px;
+  }
+
+  /* The live preview side panel is a desktop "Visual Focus" device. Below
+     `lg` it is hidden so the form stays the single focus of the screen —
+     the stepper + step header already carry the context. */
+  @media (max-width: 1023.98px) {
+    .setup-shell__aside {
+      display: none;
+    }
+    /* 16px floor for every field below desktop — iPad/iPhone Safari
+       auto-zooms into inputs whose font-size is under 16px. */
+    .setup-field__input {
+      font-size: 16px;
+    }
+  }
+
+  /* Compact the page chrome on small screens. */
+  @media (max-width: 639.98px) {
+    .setup-page__topbar {
+      padding-block: 0.9rem;
+      padding-inline: 1rem;
+    }
+    .setup-page__topnav-badge {
+      padding-inline: 0.55rem;
+    }
+    .setup-page__stage {
+      padding-inline: 1rem;
+      padding-block-end: 2rem;
+      gap: 1rem;
+    }
+    .setup-page__shell-inner {
+      padding: 1.25rem;
+    }
+    .setup-wizard {
+      gap: var(--space-4);
+    }
+    .setup-wizard__form {
+      gap: var(--space-5);
+    }
+    .setup-intro {
+      gap: var(--space-5);
+    }
+  }
+  @media (max-width: 419.98px) {
+    .setup-page__brand-text {
+      display: none;
+    }
+  }
+
+  /* Mobile actions stay compact — auto-width, quiet paddings. No stretched
+     full-width buttons: a premium phone UI keeps controls sized to their
+     content. The ⌘+Enter hint is desktop-only. */
+  @media (max-width: 639.98px) {
+    .setup-wizard__footer {
+      gap: var(--space-3);
+    }
+    .setup-wizard__nav {
+      padding-inline: var(--space-4);
+      min-block-size: 40px;
+    }
+    .setup-wizard__hint {
+      display: none;
+    }
+    .setup-intro__btn {
+      min-block-size: 40px;
+    }
+  }
+
+  /* Stepper status bar on phones — two rows so every label stays visible:
+     [۲۵٪ پیشرفت]  [۳ دقیقه و ۳۰ ثانیه / زمان تقریبی باقی‌مانده]
+     [──────────────────── track ────────────────────] */
+  @media (max-width: 639.98px) {
+    .setup-stepper__statusbar {
+      grid-template-columns: 1fr auto;
+      grid-template-areas:
+        'pct eta'
+        'track track';
+      gap: 0.4rem 0.75rem;
+      padding: var(--space-3) var(--space-4);
+    }
+    .setup-stepper__pct {
+      grid-area: pct;
+    }
+    .setup-stepper__eta {
+      grid-area: eta;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.15rem;
+    }
+    .setup-stepper__pct-track {
+      grid-area: track;
+    }
+    .setup-stepper__pct-label,
+    .setup-stepper__eta-label {
+      display: inline;
+    }
+    .setup-stepper__pct-label,
+    .setup-stepper__eta-label {
+      font-size: 12px;
+    }
+    .setup-stepper__pct-num {
+      font-size: 17px;
+    }
+    .setup-stepper__eta-num {
+      font-size: 13px;
+    }
+  }
+
+  /* Stepper steps on phones — never clip the titles: the row scrolls
+     horizontally with natural-width columns, and the active step is kept
+     centered by the component. */
+  @media (max-width: 639.98px) {
+    .setup-stepper__list {
+      grid-template-columns: repeat(5, auto);
+      inline-size: max-content;
+      gap: var(--space-3);
+    }
+  }
+
+  /* Intro — tightened rhythm on phones. */
+  @media (max-width: 639.98px) {
+    .setup-intro__title {
+      font-size: clamp(1.85rem, 2.5vw + 0.9rem, 2.4rem);
+    }
+    .setup-intro__seal {
+      inline-size: 3.75rem;
+      block-size: 3.75rem;
+    }
+    .setup-intro__seal-glyph {
+      inline-size: 1.75rem;
+      block-size: 1.75rem;
+    }
+    .setup-intro__perk {
+      padding: var(--space-3) var(--space-4);
+    }
+    .setup-intro__roadmap {
+      padding: var(--space-3) var(--space-4);
+    }
+    .setup-intro__needs-list li {
+      padding: 0.4rem 0.6rem;
+      font-size: 0.75rem;
+    }
+  }
+
+  /* Readability floors for phones — px on purpose.
+     The global design system ships a fluid root font (--fs-base) that
+     compresses rem text to ~10–12px on small screens. On a first-run flow
+     that is (a) below comfortable reading size and (b) under 16px, which
+     makes iOS Safari auto-zoom into every field on focus. These floors are
+     scoped to the setup page only. */
+  @media (max-width: 639.98px) {
+    .setup-field__label,
+    .setup-field__help,
+    .setup-field__error,
+    .setup-field__counter {
+      font-size: 12px;
+    }
+    .setup-wizard__nav {
+      font-size: 14px;
+    }
+    .setup-intro__btn {
+      font-size: 15px;
+    }
+    .setup-intro__lead,
+    .setup-step-header__summary {
+      font-size: 13px;
+    }
+    .setup-stepper__title {
+      font-size: 12px;
+    }
+    .setup-field__country {
+      font-size: 15px;
+    }
+  }
+
+  /* --------------------------------------------------------------------------
+     Premium micro-interactions
+     -------------------------------------------------------------------------- */
+
+  /* Press feedback — a quiet spring-scale on every primary action. */
+  .setup-wizard__nav:not(:disabled):active,
+  .setup-intro__btn:active,
+  .setup-complete__cta:active,
+  .setup-already__cta:active {
+    transform: scale(0.98);
+  }
+
+  /* Hover is a quiet border/bg shift — never lift the surface. */
+  .setup-intro__perk:hover,
+  .setup-intro__roadmap-item:hover {
+    background: oklch(100% 0 0 / 0.9);
+    border-color: oklch(70% 0.12 245 / 0.35);
+  }
+  .dark .setup-intro__perk:hover,
+  .dark .setup-intro__roadmap-item:hover {
+    background: oklch(28% 0.02 255 / 0.7);
+    border-color: oklch(70% 0.12 245 / 0.4);
+  }
+
+  /* --------------------------------------------------------------------------
      Reduced-motion contract
      -------------------------------------------------------------------------- */
   @media (prefers-reduced-motion: reduce) {
@@ -3104,6 +3453,9 @@
     .setup-stage__blob,
     .setup-stage__scan,
     .setup-page__shell-glow,
+    .setup-intro__seal,
+    .setup-intro__btn--primary::after,
+    .setup-wizard__nav--primary::after,
     .setup-complete__ring,
     .setup-complete__ring--b,
     .setup-complete__ring--c,
@@ -3115,6 +3467,9 @@
     .setup-step-header__bar-fill,
     .setup-intro__perk,
     .setup-intro__roadmap-item,
+    .setup-intro__btn,
+    .setup-complete__cta,
+    .setup-already__cta,
     .setup-req__item[data-passed="true"] .setup-req__indicator,
     .admin-preview__avatar-ring,
     .setup-confetti__piece {
@@ -3128,6 +3483,19 @@
       display: none;
     }
   }
+}
+
+/* --------------------------------------------------------------------------
+   Unlayered overrides — must sit OUTSIDE @layer utilities.
+   globals.css applies an unlayered `:where(h1…h6) { font-weight: 700 }`
+   which beats every layered rule regardless of specificity. The editorial
+   hero titles here are designed at 800, so they get an unlayered rule.
+   -------------------------------------------------------------------------- */
+.setup-intro__title,
+.setup-step-header__title,
+.setup-complete__title,
+.setup-already__title {
+  font-weight: 800;
 }
 
 /* ===== END Setup Surface 2026 — Aurora / Editorial Glass ===== */

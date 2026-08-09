@@ -5,7 +5,12 @@
  * هدف تست: پایداری فرمول entropy + نگاشت درست bits → score/label/tone.
  */
 
-import { calculateEntropy, evaluatePassword, scoreFromEntropy } from '@/lib/setup/strength';
+import {
+  calculateEntropy,
+  evaluatePassword,
+  generateStrongPassword,
+  scoreFromEntropy,
+} from '@/lib/setup/strength';
 import { describe, expect, it } from 'vitest';
 
 // ─── calculateEntropy ─────────────────────────────────────────────────────────
@@ -114,5 +119,42 @@ describe('evaluatePassword', () => {
     const scores = ['Aa1!', 'Aa1!Aa1!', 'Aa1!Aa1!Aa1!'].map((p) => evaluatePassword(p).score);
     expect(scores[1]).toBeGreaterThanOrEqual(scores[0] ?? 0);
     expect(scores[2]).toBeGreaterThanOrEqual(scores[1] ?? 0);
+  });
+});
+
+// ─── generateStrongPassword ──────────────────────────────────────────────────
+
+describe('generateStrongPassword', () => {
+  it('طول پیش‌فرض ۱۸ و شامل هر چهار کلاس کاراکتر است', () => {
+    for (let i = 0; i < 20; i += 1) {
+      const pw = generateStrongPassword();
+      expect(pw).toHaveLength(18);
+      expect(pw).toMatch(/[A-Z]/);
+      expect(pw).toMatch(/[a-z]/);
+      expect(pw).toMatch(/[0-9]/);
+      expect(pw).toMatch(/[^A-Za-z0-9]/);
+    }
+  });
+
+  it('طول سفارشی رعایت می‌شود و حداقل ۱۲ است', () => {
+    expect(generateStrongPassword(12)).toHaveLength(12);
+    expect(generateStrongPassword(40)).toHaveLength(40);
+    // زیر حداقل → clamp به ۱۲
+    expect(generateStrongPassword(4)).toHaveLength(12);
+  });
+
+  it('حروف مبهم (0 O 1 l I) تولید نمی‌شود', () => {
+    for (let i = 0; i < 20; i += 1) {
+      const pw = generateStrongPassword();
+      expect(pw).not.toMatch(/[0O1lI]/);
+    }
+  });
+
+  it('دو تولید پشت‌سرهم یکسان نیستند', () => {
+    expect(generateStrongPassword()).not.toBe(generateStrongPassword());
+  });
+
+  it('خروجی به‌عنوان «عالی» (score 4) ارزیابی می‌شود', () => {
+    expect(evaluatePassword(generateStrongPassword()).score).toBe(4);
   });
 });

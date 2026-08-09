@@ -1,12 +1,23 @@
 'use client';
 
-import { formatPersianPhone, toAsciiDigits } from '@/lib/setup/format';
+import { toAsciiDigits } from '@/lib/setup/format';
 import type { SetupFormValues } from '@/lib/setup/schema';
+import { generateStrongPassword } from '@/lib/setup/strength';
+import { parsePhoneNumber, type CountryCode } from 'libphonenumber-js';
 import * as React from 'react';
 import { Field } from './Field';
 import { PasswordStrength } from './PasswordStrength';
 import { RequirementList } from './RequirementList';
-import { EyeGlyph, EyeOffGlyph, LockGlyph, PhoneGlyph } from './WizardIcons';
+import { ChevronDownGlyph, EyeGlyph, EyeOffGlyph, LockGlyph, WandGlyph } from './WizardIcons';
+
+/**
+ * StepCredentials — access step: strong password + mobile number.
+ *
+ * The phone field carries a compact country-code selector. The number is
+ * stored as E.164 (e.g. +93701234567) so every country is validated by the
+ * same libphonenumber mechanism the rest of the app uses, and the display
+ * is formatted per-country (070 123 4567 / 912 345 6789) as you type.
+ */
 
 export interface StepCredentialsProps {
   values: Pick<SetupFormValues, 'password' | 'phoneNumber'>;
@@ -15,65 +26,97 @@ export interface StepCredentialsProps {
   onBlur: <K extends keyof SetupFormValues>(key: K) => void;
 }
 
+/** Curated dial-code list — AF first (the platform's primary market). */
+const COUNTRY_OPTIONS: ReadonlyArray<{ code: CountryCode; name: string; dial: string }> = [
+  { code: 'AF', name: 'افغانستان', dial: '+93' },
+  { code: 'IR', name: 'ایران', dial: '+98' },
+  { code: 'US', name: 'ایالات متحده', dial: '+1' },
+  { code: 'GB', name: 'بریتانیا', dial: '+44' },
+  { code: 'DE', name: 'آلمان', dial: '+49' },
+  { code: 'FR', name: 'فرانسه', dial: '+33' },
+  { code: 'TR', name: 'ترکیه', dial: '+90' },
+  { code: 'AE', name: 'امارات', dial: '+971' },
+  { code: 'SA', name: 'عربستان سعودی', dial: '+966' },
+  { code: 'PK', name: 'پاکستان', dial: '+92' },
+  { code: 'IN', name: 'هند', dial: '+91' },
+  { code: 'CN', name: 'چین', dial: '+86' },
+  { code: 'RU', name: 'روسیه', dial: '+7' },
+  { code: 'CA', name: 'کانادا', dial: '+1' },
+  { code: 'AU', name: 'استرالیا', dial: '+61' },
+];
+
+const DIAL_BY_COUNTRY = Object.fromEntries(
+  COUNTRY_OPTIONS.map((c) => [c.code, c.dial]),
+) as Record<CountryCode, string>;
+
 export function StepCredentials({ values, errors, onChange, onBlur }: StepCredentialsProps) {
   const [reveal, setReveal] = React.useState(false);
+  const [country, setCountry] = React.useState<CountryCode>('AF');
 
+  const handleGenerate = React.useCallback(() => {
+    const generated = generateStrongPassword();
+    onChange('password', generated);
+    // Reveal the generated password so the user can read / copy it.
+    setReveal(true);
+  }, [onChange]);
+
+  /**
+   * Keep the stored value as E.164 while typing. Digits without a `+` are
+   * parsed against the selected country; an explicit `+…` is kept as-is so
+   * any international number works. libphonenumber returns its best-effort
+   * E.164 even for partial input, which keeps the schema honest after blur.
+   */
   const handlePhoneChange = React.useCallback(
     (raw: string) => {
-      // Convert any Persian/Arabic digits to ASCII first.
       const ascii = toAsciiDigits(raw);
-      // Keep the `+` prefix when present — the user typed an international
-      // number (any country). Preserve it as E.164-style (max 15 digits).
-      const hasPlus = ascii.startsWith('+');
-      let digitsOnly = ascii.replace(/[^\d]/g, '');
-
-      if (hasPlus) {
-        // `+93 0 7XXXXXXXX` (صفر اضافهٔ ملی بعد از کد کشور) E.164 معتبر نیست —
-        // صفر را حذف می‌کنیم: +93 0701234567 → +93701234567.
-        if (digitsOnly.startsWith('9307')) {
-          digitsOnly = digitsOnly.slice(0, 2) + digitsOnly.slice(3);
-        }
-        onChange('phoneNumber', `+${digitsOnly.slice(0, 15)}`);
+      const cleaned = ascii.replace(/[^\d+]/g, '');
+      if (!cleaned) {
+        onChange('phoneNumber', '');
         return;
       }
-
-      // Bare national number → normalize common prefixes to the canonical
-      // national form:
-      //   Afghanistan-first: `93 7XXXXXXXX` → `07XXXXXXXX` (10 digits)
-      //   Iran (legacy):     `98 9XXXXXXXXX` → `09XXXXXXXXX` (11 digits)
-      let canonical: string;
-      if (digitsOnly.startsWith('0093')) {
-        canonical = `0${digitsOnly.slice(4)}`;
-      } else if (digitsOnly.startsWith('93') && digitsOnly.length > 10) {
-        // `93…` could be `+93 7…` (Afghan) or a truncated Iranian `9…` —
-        // a redundant zero (`93 0 7…` → `9307…`) must be stripped too.
-        const rest = digitsOnly[2] === '0' ? digitsOnly.slice(3) : digitsOnly.slice(2);
-        canonical = `0${rest}`;
-      } else if (digitsOnly.startsWith('0098')) {
-        canonical = `0${digitsOnly.slice(4)}`;
-      } else if (digitsOnly.startsWith('98') && digitsOnly.length > 10) {
-        canonical = `0${digitsOnly.slice(2)}`;
-      } else if (digitsOnly.startsWith('0')) {
-        canonical = digitsOnly;
-      } else if (digitsOnly.startsWith('9') || digitsOnly.startsWith('7')) {
-        canonical = `0${digitsOnly}`;
-      } else {
-        canonical = digitsOnly;
+      try {
+        const parsed = cleaned.startsWith('+')
+          ? parsePhoneNumber(cleaned)
+          : parsePhoneNumber(cleaned, country);
+        onChange('phoneNumber', (parsed?.number ?? cleaned).slice(0, 16));
+      } catch {
+        onChange('phoneNumber', cleaned.slice(0, 16));
       }
-
-      // Hard-cap at 11 digits (0 + 10). Anything beyond is dropped silently
-      // to avoid pushing the user into an unrecoverable invalid state.
-      canonical = canonical.slice(0, 11);
-
-      onChange('phoneNumber', canonical);
     },
-    [onChange],
+    [country, onChange],
   );
 
-  // Display only: show the formatted version (e.g. "0912 345 6789") while
-  // keeping state canonical. This avoids the regex-busting whitespace bug
-  // and keeps the server payload clean.
-  const phoneDisplay = formatPersianPhone(values.phoneNumber);
+  /** Switch country: keep the typed digits, rebuild the E.164 prefix. */
+  const handleCountryChange = React.useCallback(
+    (code: CountryCode) => {
+      setCountry(code);
+      const ascii = toAsciiDigits(values.phoneNumber);
+      let national = ascii.replace(/[^\d]/g, '');
+      if (values.phoneNumber.startsWith('+')) {
+        try {
+          const parsed = parsePhoneNumber(values.phoneNumber);
+          national = parsed ? parsed.nationalNumber : national;
+        } catch {
+          // keep raw digits
+        }
+      }
+      onChange('phoneNumber', national ? `${DIAL_BY_COUNTRY[code]}${national}` : '');
+    },
+    [onChange, values.phoneNumber],
+  );
+
+  // Display only: format per-country (070 123 4567, 912 345 6789, …).
+  const phoneDisplay = React.useMemo(() => {
+    const v = values.phoneNumber;
+    if (!v) return '';
+    try {
+      const parsed = parsePhoneNumber(v, country);
+      if (!parsed) return v;
+      return parsed.formatNational();
+    } catch {
+      return v;
+    }
+  }, [country, values.phoneNumber]);
 
   return (
     <div className="setup-step-grid">
@@ -98,15 +141,26 @@ export function StepCredentials({ values, errors, onChange, onBlur }: StepCreden
             </span>
           }
           trailing={
-            <button
-              type="button"
-              onClick={() => setReveal((r) => !r)}
-              className="setup-field__action"
-              aria-label={reveal ? 'پنهان‌کردن رمز عبور' : 'نمایش رمز عبور'}
-              aria-pressed={reveal}
-            >
-              {reveal ? <EyeOffGlyph /> : <EyeGlyph />}
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={handleGenerate}
+                className="setup-field__action setup-field__action--generate"
+                aria-label="تولید رمز قوی"
+                title="تولید رمز قوی"
+              >
+                <WandGlyph />
+              </button>
+              <button
+                type="button"
+                onClick={() => setReveal((r) => !r)}
+                className="setup-field__action"
+                aria-label={reveal ? 'پنهان‌کردن رمز عبور' : 'نمایش رمز عبور'}
+                aria-pressed={reveal}
+              >
+                {reveal ? <EyeOffGlyph /> : <EyeGlyph />}
+              </button>
+            </>
           }
         />
 
@@ -128,11 +182,25 @@ export function StepCredentials({ values, errors, onChange, onBlur }: StepCreden
         onBlur={() => onBlur('phoneNumber')}
         required
         dir="ltr"
+        wrapperClassName="setup-field--country"
         error={errors.phoneNumber ?? null}
-        help="مثال: ۰۷۰۱۲۳۴۵۶۷ (افغانستان) یا +93701234567 — شماره مجازی پذیرفته نمی‌شود"
+        help="پیش‌شماره کشور را انتخاب و شماره را وارد کنید — شماره مجازی پذیرفته نمی‌شود"
         leading={
-          <span className="setup-field__ico">
-            <PhoneGlyph />
+          <span className="setup-field__leading setup-field__leading--country">
+            <select
+              className="setup-field__country"
+              value={country}
+              onChange={(e) => handleCountryChange(e.target.value as CountryCode)}
+              aria-label="پیش‌شماره کشور"
+              title={COUNTRY_OPTIONS.find((c) => c.code === country)?.name}
+            >
+              {COUNTRY_OPTIONS.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.dial}
+                </option>
+              ))}
+            </select>
+            <ChevronDownGlyph className="setup-field__country-caret" />
           </span>
         }
       />

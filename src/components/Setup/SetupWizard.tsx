@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 
+import type { StepId } from '@/lib/setup/schema';
 import { useSetupWizard } from '@/lib/setup/useSetupWizard';
 
 import { IntroStep } from './IntroStep';
@@ -13,7 +14,13 @@ import { StepIdentity } from './StepIdentity';
 import { StepIndicator } from './StepIndicator';
 import { StepProfile } from './StepProfile';
 import { StepReview } from './StepReview';
-import { ArrowLeftGlyph, ArrowRightGlyph, ShieldCheckGlyph } from './WizardIcons';
+import { ArrowLeftGlyph, ArrowRightGlyph, SaveGlyph, ShieldCheckGlyph } from './WizardIcons';
+
+/** Map a step id to its canonical URL. `intro` lives at `/setup`; every
+ *  other step is a real sub-route (`/setup/identity`, …). */
+export function stepPath(step: StepId): string {
+  return step === 'intro' ? '/setup' : `/setup/${step}`;
+}
 
 /**
  * SetupWizard — view layer of the first-run super-admin bootstrap.
@@ -21,6 +28,11 @@ import { ArrowLeftGlyph, ArrowRightGlyph, ShieldCheckGlyph } from './WizardIcons
  * All state, persistence, and validation live in `useSetupWizard`. This
  * component is purely presentational; it owns layout, the form chrome,
  * and routing between steps.
+ *
+ * The current step is a prop supplied by the route (`/setup` or
+ * `/setup/[step]`) — the URL is the source of truth, so every step can be
+ * deep-linked, refreshed, and shared. Navigation pushes the target step's
+ * sub-route via `stepPath`.
  *
  * Three layout modes:
  *   1. intro       — full-width welcome with a single CTA
@@ -31,9 +43,14 @@ import { ArrowLeftGlyph, ArrowRightGlyph, ShieldCheckGlyph } from './WizardIcons
  * The side panel is only rendered during form steps because the preview
  * has no useful content during intro or after completion.
  */
-export function SetupWizard() {
+export function SetupWizard({ step }: { step: StepId }) {
   const router = useRouter();
-  const w = useSetupWizard();
+
+  const onStepChange = (target: StepId) => {
+    router.push(stepPath(target));
+  };
+
+  const w = useSetupWizard({ step, onStepChange });
 
   if (w.completed) {
     return <SetupComplete email={w.values.email} onContinue={() => router.push('/auth')} />;
@@ -45,7 +62,7 @@ export function SetupWizard() {
         <IntroStep onStart={w.handleStart} hasResume={w.hasResume} />
         {w.hasResume ? (
           <div className="setup-wizard__resume">
-            <span aria-hidden="true">💾</span>
+            <SaveGlyph className="setup-wizard__resume-glyph" />
             <span>پیش‌نویس شما به‌طور خودکار ذخیره شده و با انتخاب «ادامه» بارگذاری می‌شود.</span>
             <button
               type="button"
@@ -185,6 +202,13 @@ export function SetupWizard() {
               </div>
             </footer>
           </form>
+
+          {w.hydrated && w.lastSavedAt > 0 ? (
+            <output className="setup-wizard__autosave" aria-live="polite">
+              <SaveGlyph className="setup-wizard__autosave-glyph" />
+              <span>پیش‌نویس به‌صورت خودکار ذخیره شد</span>
+            </output>
+          ) : null}
         </div>
       </div>
 

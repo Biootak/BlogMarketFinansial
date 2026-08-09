@@ -61,6 +61,11 @@ export function IntroStep({ onStart, hasResume }: IntroStepProps) {
   return (
     <div className="setup-intro" aria-labelledby="intro-heading">
       <div className="setup-intro__hero">
+        <span className="setup-intro__seal" aria-hidden="true">
+          <span className="setup-intro__seal-ring" />
+          <ShieldCheckGlyph className="setup-intro__seal-glyph" />
+        </span>
+
         <span className="setup-intro__eyebrow">
           <SparklesGlyph className="setup-intro__eyebrow-glyph" />
           <span>پیکربندی اولیه · {toPersianDigits(totalMinutes)} دقیقه</span>

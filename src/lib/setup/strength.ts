@@ -73,3 +73,54 @@ export function evaluatePassword(password: string): StrengthResult {
     tone: meta.tone,
   };
 }
+
+/**
+ * Generate a cryptographically-strong random password that satisfies the
+ * setup schema: ≥12 chars, upper + lower + digit + symbol, no ambiguous
+ * glyphs (0/O/1/l/I). Used by the "تولید رمز قوی" action in the wizard.
+ *
+ * Uses crypto.getRandomValues (Web Crypto) with a rejection sampler;
+ * falls back to Math.random only in non-secure (HTTP) environments.
+ */
+const GEN_UPPER = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+const GEN_LOWER = 'abcdefghijkmnopqrstuvwxyz';
+const GEN_DIGITS = '23456789';
+const GEN_SYMBOLS = '!@#$%^&*()-_=+';
+const GEN_ALL = GEN_UPPER + GEN_LOWER + GEN_DIGITS + GEN_SYMBOLS;
+
+export function generateStrongPassword(length = 18): string {
+  const safeLength = Math.min(64, Math.max(12, Math.floor(length)));
+
+  // Rejection sampler — unbiased over the charset (modulo would skew).
+  const pick = (alphabet: string): string => {
+    const max = alphabet.length;
+    const limit = Math.floor(0xffffffff / max) * max;
+    while (true) {
+      let value: number;
+      if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+        const buf = new Uint32Array(1);
+        crypto.getRandomValues(buf);
+        value = buf[0];
+      } else {
+        value = Math.floor(Math.random() * 0xffffffff);
+      }
+      if (value < limit) return alphabet[value % max];
+    }
+  };
+
+  // Guarantee one char from every class, then fill the rest randomly.
+  const parts: string[] = [GEN_UPPER, GEN_LOWER, GEN_DIGITS, GEN_SYMBOLS].map((set) =>
+    pick(set),
+  );
+  for (let i = parts.length; i < safeLength; i += 1) {
+    parts.push(pick(GEN_ALL));
+  }
+
+  // Fisher–Yates shuffle so the guaranteed classes aren't clustered.
+  for (let i = parts.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [parts[i], parts[j]] = [parts[j], parts[i]];
+  }
+
+  return parts.join('');
+}

@@ -4,6 +4,7 @@ import { toPersianDigits } from '@/lib/setup/format';
 import type { StepId } from '@/lib/setup/schema';
 import { STEPS, stepIndex } from '@/lib/setup/steps';
 import { cn } from '@/lib/utils';
+import * as React from 'react';
 import { STEP_GLYPHS } from './WizardIcons';
 
 /**
@@ -38,6 +39,48 @@ function formatRemaining(seconds: number): string {
 export function StepIndicator({ current, furthestReached, onJump }: StepIndicatorProps) {
   const activeIdx = stepIndex(current);
   const furthestIdx = stepIndex(furthestReached);
+
+  // On narrow screens the stepper row scrolls horizontally; keep the active
+  // step centered so its title is always in view when the step changes.
+  const activeRef = React.useRef<HTMLLIElement | null>(null);
+  React.useEffect(() => {
+    activeRef.current?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+  }, [current]);
+
+  // The connecting track must span exactly between the FIRST and LAST disc
+  // centers. Step titles have natural widths on mobile, so no fixed CSS
+  // inset can line up with the discs — measure them instead (once the
+  // layout is known, and again when fonts/widths settle).
+  const listRef = React.useRef<HTMLOListElement | null>(null);
+  const [trackSpan, setTrackSpan] = React.useState<{
+    start: number;
+    end: number;
+    top: number;
+  } | null>(null);
+  React.useLayoutEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    const measure = () => {
+      const discs = list.querySelectorAll<HTMLElement>('.setup-stepper__disc');
+      if (discs.length < 2) return;
+      const lr = list.getBoundingClientRect();
+      const first = discs[0].getBoundingClientRect();
+      const last = discs[discs.length - 1].getBoundingClientRect();
+      setTrackSpan({
+        start: lr.right - (first.x + first.width / 2),
+        end: last.x + last.width / 2 - lr.left,
+        top: first.y + first.height / 2 - lr.y,
+      });
+    };
+    measure();
+    // Re-measure once webfonts finish swapping (they change item widths).
+    if (typeof document !== 'undefined' && document.fonts) {
+      void document.fonts.ready.then(measure);
+    }
+    const ro = new ResizeObserver(measure);
+    ro.observe(list);
+    return () => ro.disconnect();
+  }, []);
 
   // Progress as a 0..1 fraction across the ENTIRE wizard (excluding the
   // intro from the form-fill accounting — the intro counts as 0% work).
@@ -74,7 +117,28 @@ export function StepIndicator({ current, furthestReached, onJump }: StepIndicato
       </span>
 
       <div className="setup-stepper__scroll">
-        <ol className="setup-stepper__list">
+        <ol className="setup-stepper__list" ref={listRef}>
+          {/* The connecting track lives inside the list so it scrolls with
+              the steps and stays aligned under the discs on narrow screens. */}
+          <li className="setup-stepper__track-slot" aria-hidden="true">
+            <span
+              className="setup-stepper__track"
+              style={
+                trackSpan
+                  ? {
+                      insetInlineStart: trackSpan.start,
+                      insetInlineEnd: trackSpan.end,
+                      insetBlockStart: trackSpan.top - 1,
+                    }
+                  : undefined
+              }
+            >
+              <span
+                className="setup-stepper__fill"
+                style={{ inlineSize: `${trackFillPct}%` }}
+              />
+            </span>
+          </li>
           {STEPS.map((step, idx) => {
             const isActive = step.id === current;
             const isDone = idx < activeIdx;
@@ -83,6 +147,7 @@ export function StepIndicator({ current, furthestReached, onJump }: StepIndicato
             return (
               <li
                 key={step.id}
+                ref={isActive ? activeRef : undefined}
                 className={cn(
                   'setup-stepper__item',
                   isActive && 'setup-stepper__item--active',
@@ -115,12 +180,6 @@ export function StepIndicator({ current, furthestReached, onJump }: StepIndicato
             );
           })}
         </ol>
-        <div className="setup-stepper__track" aria-hidden="true">
-          <div
-            className="setup-stepper__fill"
-            style={{ insetInlineStart: '0%', inlineSize: `${trackFillPct}%` }}
-          />
-        </div>
       </div>
     </nav>
   );

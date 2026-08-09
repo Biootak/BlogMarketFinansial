@@ -53,14 +53,12 @@ export function AdminPreviewCard({ values }: AdminPreviewCardProps) {
       >
         <div className="admin-preview__cover" aria-hidden="true">
           <span className="admin-preview__cover-orb admin-preview__cover-orb--a" />
-          <span className="admin-preview__cover-orb admin-preview__cover-orb--b" />
           <span className="admin-preview__cover-grid" />
         </div>
 
         <div className="admin-preview__body">
           <span className="admin-preview__avatar" aria-hidden="true">
             <span className="admin-preview__avatar-inner">{initials(values.name)}</span>
-            <span className="admin-preview__avatar-ring" />
           </span>
 
           <div className="admin-preview__identity">

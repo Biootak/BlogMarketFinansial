@@ -1,19 +1,20 @@
 'use client';
 
-import { toPersianDigits } from '@/lib/setup/format';
 import type { SetupFormValues, StepId } from '@/lib/setup/schema';
-import { STEPS, stepIndex } from '@/lib/setup/steps';
 import { AdminPreviewCard } from './AdminPreviewCard';
+import { SparklesGlyph } from './WizardIcons';
 
 /**
  * SetupSidePanel — desktop side panel that contextualises the wizard.
  *
- * Always shows the live admin preview. On top of that it shows a contextual
- * "tip of the step" + the next step's preview.
+ * Two quiet blocks only: the live admin preview (the Visual Focus) and a
+ * per-step tip. The "اکنون / بعدی" step cards are deliberately omitted —
+ * the stepper already owns progress, so the panel stays uncluttered.
  *
- * Hidden below `lg` because the live preview is a Visual Focus device, not a
- * requirement. On smaller screens the preview is shown at the bottom of the
- * wizard instead (see SetupWizard).
+ * Hidden below `lg` (see setup.css `.setup-shell__aside`) because the live
+ * preview is a Visual Focus device, not a requirement. On smaller screens
+ * the stepper + step header already carry the context, so the panel is
+ * dropped entirely to keep the form the single focus.
  */
 
 export interface SetupSidePanelProps {
@@ -50,42 +51,20 @@ const STEP_TIPS: Record<StepId, StepTip> = {
 };
 
 export function SetupSidePanel({ values, step }: SetupSidePanelProps) {
-  const currentIdx = stepIndex(step);
   const tip = STEP_TIPS[step];
-  const nextStepDef = STEPS[currentIdx + 1];
-  const currentStepDef = STEPS[currentIdx];
 
   return (
     <aside className="setup-sidepanel" aria-label="پیش‌نمایش و راهنما">
-      <div className="setup-sidepanel__step" aria-live="polite">
-        <span className="setup-sidepanel__step-eyebrow">اکنون</span>
-        <h2 className="setup-sidepanel__step-title">{currentStepDef?.title ?? ''}</h2>
-        <p className="setup-sidepanel__step-summary">{currentStepDef?.summary ?? ''}</p>
-      </div>
-
       <AdminPreviewCard values={values} />
 
       <div className="setup-sidepanel__tip">
         <span className="setup-sidepanel__tip-label">
-          <span aria-hidden="true">💡</span>
+          <SparklesGlyph className="setup-sidepanel__tip-glyph" />
           <span>نکته</span>
         </span>
         <h3 className="setup-sidepanel__tip-title">{tip.title}</h3>
         <p className="setup-sidepanel__tip-body">{tip.body}</p>
       </div>
-
-      {nextStepDef ? (
-        <div className="setup-sidepanel__next" aria-hidden="true">
-          <span className="setup-sidepanel__next-label">بعدی</span>
-          <div className="setup-sidepanel__next-row">
-            <span className="setup-sidepanel__next-num">
-              {toPersianDigits(nextStepDef.index + 1)}
-            </span>
-            <span className="setup-sidepanel__next-title">{nextStepDef.title}</span>
-          </div>
-          <span className="setup-sidepanel__next-sub">{nextStepDef.summary}</span>
-        </div>
-      ) : null}
     </aside>
   );
 }

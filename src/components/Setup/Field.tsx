@@ -39,6 +39,7 @@ export interface FieldProps {
   trailing?: React.ReactNode;
   showCounter?: boolean;
   inputClassName?: string;
+  wrapperClassName?: string;
   autoFocus?: boolean;
   name?: string;
   onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
@@ -65,6 +66,7 @@ export const Field = React.forwardRef<HTMLInputElement | null, FieldProps>(funct
     trailing,
     showCounter = false,
     inputClassName,
+    wrapperClassName,
     autoFocus: _autoFocus,
     name,
     onKeyDown,
@@ -79,7 +81,7 @@ export const Field = React.forwardRef<HTMLInputElement | null, FieldProps>(funct
   const describedBy = [helpId, errorId].filter(Boolean).join(' ') || undefined;
 
   return (
-    <div className={cn('setup-field', `setup-field--${tone}`)} data-tone={tone}>
+    <div className={cn('setup-field', `setup-field--${tone}`, wrapperClassName)} data-tone={tone}>
       <div className="setup-field__shell">
         {leading ? (
           <span className="setup-field__leading" aria-hidden="true">
@@ -108,6 +110,7 @@ export const Field = React.forwardRef<HTMLInputElement | null, FieldProps>(funct
           onChange={(e) => onChange(e.target.value)}
           onBlur={onBlur}
           onKeyDown={onKeyDown}
+          autoFocus={_autoFocus}
           className={cn('setup-field__input', inputClassName)}
         />
         <label htmlFor={id} className="setup-field__label">

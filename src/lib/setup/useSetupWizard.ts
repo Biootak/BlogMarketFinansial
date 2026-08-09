@@ -1,6 +1,7 @@
 'use client';
 
 import { createSuperAdmin } from '@/actions/createSuperAdmin';
+import { useSetupStore } from '@/hooks/setupStore';
 import * as React from 'react';
 
 import { toAsciiDigits } from '@/lib/setup/format';
@@ -21,6 +22,17 @@ import { clearDraft, loadDraft, saveDraft, valuesFromDraft } from './storage';
  * Extracted from `SetupWizard.tsx` so that the wizard form and the
  * side-panel preview (which both live in `SetupShell`) can share the
  * exact same form state without prop-drilling or context gymnastics.
+ *
+ * The current step is NOT owned here — it lives in the URL so every step
+ * is a real sub-route of `/setup` (e.g. `/setup/credentials`) that can be
+ * deep-linked, refreshed, and bookmarked. The caller passes `step` (parsed
+ * from the route) and `onStepChange` (which navigates to the step's URL).
+ *
+ * All mutable state (values, touched, furthest, submit flags) lives in the
+ * module-level `setupStore`. Next.js remounts the page component when the
+ * path changes between sub-routes, so component-local state would be wiped
+ * on every step transition — losing the password (deliberately never
+ * persisted to the draft). The store survives remounts for the page session.
  *
  * Returns:
  *   - `values`, `step`, `furthest`, `busy`, `serverError`, `completed`,
@@ -78,6 +90,29 @@ const HONEYPOT_FIELD_NAME = 'website';
 const SUBMIT_COOLDOWN_MS = 3000;
 const ERROR_COOLDOWN_MS = 8000;
 
+/**
+ * Anti-bot timing refs live at module scope, not in component state: the
+ * wizard remounts on every sub-route navigation, and a remount must not
+ * reset the "time visible" clock or let a bot re-submit immediately after
+ * a step change.
+ */
+let mountedAtMs = 0;
+let lastSubmitAtMs = 0;
+let lastErrorAtMs = 0;
+
+export interface UseSetupWizardOptions {
+  /**
+   * The step currently shown — owned by the URL (/setup/[step]).
+   * `'intro'` maps to `/setup`, the rest to `/setup/<step>`.
+   */
+  step: StepId;
+  /**
+   * Called whenever the wizard wants to move to another step. The caller
+   * navigates to the step's sub-route (see SetupWizard).
+   */
+  onStepChange: (step: StepId) => void;
+}
+
 export interface UseSetupWizard {
   // state
   hydrated: boolean;
@@ -98,12 +133,15 @@ export interface UseSetupWizard {
   progress: number;
   fieldSteps: typeof STEPS;
 
+  /** Timestamp of the last successful draft save (0 until the first save). */
+  lastSavedAt: number;
+
   // refs
   regionRef: React.MutableRefObject<HTMLFormElement | null>;
 
   // honeypot (anti-bot)
   honeypot: string;
-  setHoneypot: React.Dispatch<React.SetStateAction<string>>;
+  setHoneypot: (honeypot: string) => void;
   /** Name attribute used for the honeypot input. Exposed so SetupWizard
    *  can render a single source-of-truth field name. */
   HONEYPOT_FIELD_NAME: string;
@@ -119,64 +157,83 @@ export interface UseSetupWizard {
   handleSubmit: () => Promise<void>;
   handleResetDraft: () => void;
   handleFormSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-  setServerError: React.Dispatch<React.SetStateAction<string | null>>;
+  setServerError: (serverError: string | null) => void;
 }
 
-export function useSetupWizard(): UseSetupWizard {
-  const [hydrated, setHydrated] = React.useState(false);
-  const [hasResume, setHasResume] = React.useState(false);
-  const [values, setValues] = React.useState<SetupFormValues>(DEFAULT_VALUES);
-  const [touched, setTouched] = React.useState<Partial<Record<keyof SetupFormValues, true>>>({});
-  const [step, setStep] = React.useState<StepId>('intro');
-  const [furthest, setFurthest] = React.useState<StepId>('intro');
-  const [busy, setBusy] = React.useState(false);
-  const [serverError, setServerError] = React.useState<string | null>(null);
-  const [completed, setCompleted] = React.useState(false);
+export function useSetupWizard({ step, onStepChange }: UseSetupWizardOptions): UseSetupWizard {
+  const hydrated = useSetupStore((s) => s.hydrated);
+  const hasResume = useSetupStore((s) => s.hasResume);
+  const values = useSetupStore((s) => s.values);
+  const touched = useSetupStore((s) => s.touched);
+  const furthest = useSetupStore((s) => s.furthest);
+  const busy = useSetupStore((s) => s.busy);
+  const serverError = useSetupStore((s) => s.serverError);
+  const completed = useSetupStore((s) => s.completed);
+  const lastSavedAt = useSetupStore((s) => s.lastSavedAt);
+  const honeypot = useSetupStore((s) => s.honeypot);
+
+  const {
+    setHydrated,
+    setHasResume,
+    setValues,
+    setTouched,
+    setFurthest,
+    setBusy,
+    setServerError,
+    setCompleted,
+    setLastSavedAt,
+    setHoneypot,
+  } = useSetupStore.getState();
 
   const regionRef = React.useRef<HTMLFormElement | null>(null);
 
-  // Bot protection: honeypot + submit timing. Both are checked at submit
-  // time. The honeypot field is rendered off-screen by SetupWizard;
-  // timing is measured from the moment the wizard first mounts on the
-  // client (mountedAtRef is set in the effect below, so SSR doesn't pin
-  // the timestamp to build time).
-  const [honeypot, setHoneypot] = React.useState('');
-  const mountedAtRef = React.useRef<number>(0);
-  const lastSubmitAtRef = React.useRef<number>(0);
-  const lastErrorAtRef = React.useRef<number>(0);
+  // Start the anti-bot clock on the wizard's first mount in this page
+  // session (module scope, so sub-route remounts don't reset it).
   React.useEffect(() => {
-    mountedAtRef.current = Date.now();
+    if (mountedAtMs === 0) mountedAtMs = Date.now();
   }, []);
 
-  // Hydrate from localStorage on mount.
+  // Hydrate from localStorage on mount (once per page session — the store
+  // persists across sub-route remounts, so `hydrated` guards re-entry). The
+  // step itself comes from the URL (deep link / refresh), so only values +
+  // furthest are restored; the draft step is used purely to decide the
+  // resume CTA on the intro page.
   React.useEffect(() => {
+    if (hydrated) return;
     const draft = loadDraft();
     if (draft?.values) {
       setValues(valuesFromDraft(draft));
       setHasResume(true);
-      if (draft.step) setStep(draft.step);
       if (draft.furthest) setFurthest(draft.furthest);
     }
     setHydrated(true);
-  }, []);
+  }, [hydrated, setValues, setHasResume, setFurthest, setHydrated]);
 
   // Persist non-secret fields on every change after hydration.
   React.useEffect(() => {
     if (!hydrated) return;
     saveDraft(values, step, furthest);
-  }, [hydrated, values, step, furthest]);
+    setLastSavedAt(Date.now());
+  }, [hydrated, values, step, furthest, setLastSavedAt]);
 
   const handleChange = React.useCallback(
     <K extends keyof SetupFormValues>(key: K, value: string) => {
-      setValues((prev) => ({ ...prev, [key]: value }));
+      // Read the latest values from the store (not the render closure) so
+      // fast consecutive keystrokes never clobber each other.
+      const current = useSetupStore.getState().values;
+      setValues({ ...current, [key]: value });
       setServerError(null);
     },
-    [],
+    [setValues, setServerError],
   );
 
-  const handleBlur = React.useCallback(<K extends keyof SetupFormValues>(key: K) => {
-    setTouched((prev) => ({ ...prev, [key]: true }));
-  }, []);
+  const handleBlur = React.useCallback(
+    <K extends keyof SetupFormValues>(key: K) => {
+      const current = useSetupStore.getState().touched;
+      setTouched({ ...current, [key]: true });
+    },
+    [setTouched],
+  );
 
   const visibleErrors = React.useMemo(() => {
     const out: Partial<Record<keyof SetupFormValues, string>> = {};
@@ -202,8 +259,10 @@ export function useSetupWizard(): UseSetupWizard {
     requestAnimationFrame(() => {
       const root = regionRef.current;
       if (!root) return;
+      // Skip the honeypot (tabIndex=-1) and disabled fields — focus must
+      // land on the first real field of the step.
       const focusable = root.querySelector<HTMLElement>(
-        'input:not([type="hidden"]):not([disabled]), textarea:not([disabled]), select:not([disabled]), button:not([disabled])',
+        'input:not([type="hidden"]):not([disabled]):not([tabindex="-1"]), textarea:not([disabled]), select:not([disabled]), button:not([disabled])',
       );
       focusable?.focus();
     });
@@ -211,20 +270,29 @@ export function useSetupWizard(): UseSetupWizard {
 
   const goTo = React.useCallback(
     (target: StepId) => {
-      setStep(target);
-      setFurthest((prev) => {
-        const prevIdx = stepIndex(prev);
-        const nextIdx = stepIndex(target);
-        return nextIdx > prevIdx ? target : prev;
-      });
-      focusFirstField();
+      onStepChange(target);
+      // Always read the latest furthest from the store — never a stale
+      // closure — so jumping around stays monotonic.
+      const prev = useSetupStore.getState().furthest;
+      setFurthest(stepIndex(target) > stepIndex(prev) ? target : prev);
     },
-    [focusFirstField],
+    [onStepChange, setFurthest],
   );
 
+  // Focus the first field of the step once it actually renders. The URL
+  // navigation is async (unlike the old internal setState), so this lives
+  // in an effect keyed on `step` instead of inside `goTo`.
+  React.useEffect(() => {
+    if (!hydrated) return;
+    if (step === 'intro' || step === 'review') return;
+    focusFirstField();
+  }, [step, hydrated, focusFirstField]);
+
   const handleStart = React.useCallback(() => {
-    goTo('identity');
-  }, [goTo]);
+    // With a saved draft, "ادامه از مرحله‌ی قبل" continues from the deepest
+    // step reached; otherwise the wizard starts at identity.
+    goTo(hasResume && furthest !== 'intro' ? furthest : 'identity');
+  }, [goTo, hasResume, furthest]);
 
   const handleNext = React.useCallback(() => {
     if (step === 'intro') {
@@ -234,15 +302,15 @@ export function useSetupWizard(): UseSetupWizard {
     if (!isStepValid) {
       const fields: ReadonlyArray<keyof SetupFormValues> =
         step === 'review' ? [] : (STEP_FIELDS[step] as ReadonlyArray<keyof SetupFormValues>);
-      setTouched((prev) => ({
-        ...prev,
-        ...Object.fromEntries(fields.map((f) => [f, true])),
-      }));
+      const current = useSetupStore.getState().touched;
+      const nextTouched = { ...current };
+      for (const f of fields) nextTouched[f] = true;
+      setTouched(nextTouched);
       return;
     }
     const next = nextStep(step);
     if (next) goTo(next);
-  }, [goTo, isStepValid, step]);
+  }, [goTo, isStepValid, step, setTouched]);
 
   const handleBack = React.useCallback(() => {
     const prev = previousStep(step);
@@ -275,11 +343,11 @@ export function useSetupWizard(): UseSetupWizard {
     }
     setValues(DEFAULT_VALUES);
     setTouched({});
-    setStep('intro');
     setFurthest('intro');
     setServerError(null);
     clearDraft();
-  }, []);
+    onStepChange('intro');
+  }, [setValues, setTouched, setFurthest, setServerError, onStepChange]);
 
   const handleSubmit = React.useCallback(async () => {
     setTouched(ALL_TOUCHED);
@@ -298,8 +366,7 @@ export function useSetupWizard(): UseSetupWizard {
     // Bots typically complete and submit a multi-field form in well under
     // 2 seconds. Reject too-fast submissions with a generic message so
     // the bot cannot fingerprint the check.
-    const elapsed =
-      mountedAtRef.current > 0 ? Date.now() - mountedAtRef.current : Number.POSITIVE_INFINITY;
+    const elapsed = mountedAtMs > 0 ? Date.now() - mountedAtMs : Number.POSITIVE_INFINITY;
     if (elapsed < MIN_SUBMIT_MS) {
       setServerError('لطفاً کمی صبر کنید و دوباره تلاش کنید.');
       return;
@@ -311,15 +378,15 @@ export function useSetupWizard(): UseSetupWizard {
     // user's UI. After an error, the cooldown is even longer to slow
     // down credential-stuffing attempts.
     const now = Date.now();
-    const sinceLastSubmit = now - lastSubmitAtRef.current;
-    const sinceLastError = now - lastErrorAtRef.current;
+    const sinceLastSubmit = now - lastSubmitAtMs;
+    const sinceLastError = now - lastErrorAtMs;
     const minGap = sinceLastError < ERROR_COOLDOWN_MS ? ERROR_COOLDOWN_MS : SUBMIT_COOLDOWN_MS;
-    if (lastSubmitAtRef.current > 0 && sinceLastSubmit < minGap) {
+    if (lastSubmitAtMs > 0 && sinceLastSubmit < minGap) {
       const wait = Math.ceil((minGap - sinceLastSubmit) / 1000);
       setServerError(`لطفاً ${toPersianDigits(wait)} ثانیه‌ی دیگر تلاش کنید.`);
       return;
     }
-    lastSubmitAtRef.current = now;
+    lastSubmitAtMs = now;
 
     const result = setupSchema.safeParse(values);
     if (!result.success) {
@@ -358,20 +425,20 @@ export function useSetupWizard(): UseSetupWizard {
       if (response.success) {
         setCompleted(true);
         clearDraft();
-        lastErrorAtRef.current = 0; // reset error tracking on success
+        lastErrorAtMs = 0; // reset error tracking on success
       } else {
         setServerError(response.message || 'خطایی در پردازش رخ داد');
-        lastErrorAtRef.current = Date.now();
+        lastErrorAtMs = Date.now();
       }
     } catch (err) {
       setServerError(
         err instanceof Error ? err.message : 'خطای غیرمنتظره‌ای رخ داد؛ لطفاً دوباره تلاش کنید.',
       );
-      lastErrorAtRef.current = Date.now();
+      lastErrorAtMs = Date.now();
     } finally {
       setBusy(false);
     }
-  }, [goTo, values, honeypot]);
+  }, [goTo, values, honeypot, setBusy, setServerError, setTouched, setCompleted]);
 
   const handleFormSubmit = React.useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
@@ -422,6 +489,7 @@ export function useSetupWizard(): UseSetupWizard {
     currentStepDef,
     progress,
     fieldSteps,
+    lastSavedAt,
     // refs
     regionRef,
     // honeypot
