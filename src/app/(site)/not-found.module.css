@@ -329,8 +329,9 @@
 /* ── Primary actions ─────────────────────────────────────────────── */
 .actions {
   display: flex;
+  flex-direction: row-reverse;
   align-items: center;
-  gap: var(--ds-space-2-5);
+  gap: var(--ds-space-3);
   flex-wrap: wrap;
   justify-content: center;
 }

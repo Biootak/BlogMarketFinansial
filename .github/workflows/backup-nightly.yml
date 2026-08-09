@@ -1,0 +1,63 @@
+name: Nightly DB Backup → B2
+
+# بکاپ شبانهٔ دیتابیس در ابر (GitHub Actions) — کاملاً مستقل از هر کامپیوتر.
+# هر شب: pg_dump از دیتابیس production (Heroku Postgres) → آپلود به باکت
+# Backblaze B2 (مقصد دوم / برون‌سایتی — قانون 3-2-1) + نگهداری ۳۰ نسخه.
+#
+# رنجر هر شب دیتابیس را dump می‌کند و به B2 می‌فرستد؛ نیازی به هیچ
+# کامپیوتری نیست. برای اجرای دستی از GitHub UI: Actions → این workflow → Run.
+
+on:
+  schedule:
+    # هر شب ساعت ۲۰:۳۰ UTC = ۰۰:۰۰ به وقت تهران
+    - cron: '30 20 * * *'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    name: pg_dump → Backblaze B2
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # DATABASE_URL از Heroku خوانده می‌شود (مثل deploy-heroku.yml) تا همیشه
+      # با production همگام باشد — نه یک secret جدا که ممکن است قدیمی شود.
+      - name: Get production DATABASE_URL from Heroku
+        id: db
+        run: |
+          CONFIG=$(curl -sS -H "Accept: application/vnd.heroku+json; version=3" \
+            -H "Authorization: Bearer ${{ secrets.HEROKU_API_KEY }}" \
+            "https://api.heroku.com/apps/${{ secrets.HEROKU_APP_NAME }}/config-vars")
+          echo "database_url=$(echo "$CONFIG" | jq -r .DATABASE_URL)" >> "$GITHUB_OUTPUT"
+
+      # pg_dump باید ≥ نسخهٔ سرور باشد (سرور PostgreSQL 18.x است؛
+      # postgresql-client پیش‌فرض ubuntu 16 است → از PGDG نسخهٔ 18 نصب می‌شود).
+      - name: Install pg_dump 18 (PGDG)
+        run: |
+          sudo apt-get update -qq
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-18
+
+      # فقط @aws-sdk/client-s3 (dependency اسکریپت بکاپ) نصب می‌شود.
+      # ⚠️ عمداً npm ci انجام نمی‌شود: postinstall آن prisma migrate deploy را
+      # روی دیتابیس production اجرا می‌کند — برای یک job بکاپ خطرناک است.
+      - name: Install backup SDK (lean)
+        run: |
+          npm install --silent --prefix /tmp/sdk @aws-sdk/client-s3
+          mkdir -p node_modules
+          cp -r /tmp/sdk/node_modules/* node_modules/
+
+      - name: Run nightly backup
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.database_url }}
+          BACKUP_S3_SECONDARY_ENDPOINT: ${{ secrets.BACKUP_S3_SECONDARY_ENDPOINT }}
+          BACKUP_S3_SECONDARY_ACCESS_KEY: ${{ secrets.BACKUP_S3_SECONDARY_ACCESS_KEY }}
+          BACKUP_S3_SECONDARY_SECRET_KEY: ${{ secrets.BACKUP_S3_SECONDARY_SECRET_KEY }}
+          BACKUP_S3_SECONDARY_BUCKET: ${{ secrets.BACKUP_S3_SECONDARY_BUCKET }}
+          BACKUP_S3_SECONDARY_REGION: ${{ secrets.BACKUP_S3_SECONDARY_REGION }}
+        run: |
+          node scripts/backup-db.mjs --verbose

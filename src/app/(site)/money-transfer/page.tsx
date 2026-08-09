@@ -171,7 +171,6 @@ export default async function MoneyTransferPage() {
         minHeight: '100dvh',
         background:
           'linear-gradient(to bottom, var(--ds-bg-subtle), var(--ds-bg-primary), var(--ds-bg-subtle))',
-        overflowX: 'clip',
       }}
     >
       {/* Hero + Live Converter (one cohesive unit) */}

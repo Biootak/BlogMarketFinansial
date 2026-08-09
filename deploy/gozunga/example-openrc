@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# ============================================================================
+# OpenRC credentials template — گوزونگا Cloud (OpenStack API)
+# ----------------------------------------------------------------------------
+# از پورتال گوزونگا بساز: Portal → Access → Application Credentials
+# سپس کپی کن به my-project.openrc و مقادیر را پر کن.
+# هرگز این فایل را در git نگذار (به .gitignore اضافه کن).
+# ============================================================================
+export OS_AUTH_TYPE=v3applicationcredential
+export OS_AUTH_URL=https://cloud.fsd1.gozunga.com:5000/v3
+export OS_IDENTITY_API_VERSION=3
+export OS_REGION_NAME="SiouxFalls"
+export OS_INTERFACE=public
+export OS_APPLICATION_CREDENTIAL_ID=YOUR_CREDENTIAL_ID
+export OS_APPLICATION_CREDENTIAL_SECRET=YOUR_CREDENTIAL_SECRET

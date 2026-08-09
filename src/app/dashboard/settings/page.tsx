@@ -20,7 +20,13 @@ export default async function SettingsPage() {
   const session = await auth();
   const role = session?.user?.role;
   if (!session?.user) redirect('/auth?callbackUrl=/dashboard/settings');
-  if (role !== 'ADMIN' && role !== 'OWNER' && role !== 'SUPERADMIN') {
+  // 2026-08-09 fix: ADMIN was allowed here while the route config
+  // (superAdminRoutes), the middleware, the sidebar and the settings
+  // actions (requireSuperAdmin) all treat settings as OWNER/SUPERADMIN
+  // only. Since client-side navigation bypasses middleware, an ADMIN
+  // could open this page (API keys, security, backup) just by
+  // navigating in-app. Keep the guard aligned with the rest: OWNER only.
+  if (role !== 'OWNER' && role !== 'SUPERADMIN') {
     redirect('/dashboard');
   }
 

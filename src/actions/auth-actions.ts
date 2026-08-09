@@ -432,16 +432,30 @@ export async function loginWithPassword(formData: FormData): Promise<AuthResult>
       if (!twoFaUser.emailVerified) {
         const sent = await issueOtp(input.email, 'reverify');
         if (sent.ok) {
+          // 2026-08-09 fix: unverified login used to return success:false with
+          // only a message — the user was told to enter the code but the UI
+          // stayed on the login form (no OTP field) → dead end. Move to the
+          // verify step instead, like lookupEmail does for unverified users.
           return {
-            success: false,
-            error:
-              'ایمیل شما هنوز تأیید نشده است. کد جدید به ایمیل‌تان ارسال شد—لطفاً ابتدا کد را وارد کنید',
+            success: true,
+            step: 'verify',
+            email: input.email,
+            intent: 'reverify',
+            message:
+              'ایمیل شما هنوز تأیید نشده است. کد جدید به ایمیل‌تان ارسال شد—لطفاً آن را وارد کنید',
           };
         }
         return { success: false, error: 'ایمیل شما هنوز تأیید نشده است' };
       }
 
-      // challenge یکبارمصرف — فقط با کد TOTP معتبر قابل مصرف
+      // challenge یکبارمصرف — فقط با کد TOTP معتبر قابل مصرف.
+      // 2026-08-09 fix: توکن قبلی (email,intent) را اول حذف می‌کنیم —
+      // در غیر این صورت وقتی کاربر ورود را نیمه‌کاره رها کند یا دوبار
+      // submit کند، create با unique constraint (email,intent) fail
+      // می‌شود و خطای عمومی «خطای موقتی در سامانه» نشان داده می‌شود.
+      await prisma.verificationToken.deleteMany({
+        where: { email: input.email.toLowerCase(), intent: '2fa' },
+      });
       await prisma.verificationToken.create({
         data: {
           email: input.email.toLowerCase(),
@@ -483,10 +497,15 @@ export async function loginWithPassword(formData: FormData): Promise<AuthResult>
       if (!twoFaUser.emailVerified) {
         const sent = await issueOtp(input.email, 'reverify');
         if (sent.ok) {
+          // 2026-08-09 fix: same dead-end as the 2FA branch above —
+          // transition to the verify step so the user can enter the code.
           return {
-            success: false,
-            error:
-              'ایمیل شما هنوز تأیید نشده است. کد جدید به ایمیل‌تان ارسال شد—لطفاً ابتدا کد را وارد کنید',
+            success: true,
+            step: 'verify',
+            email: input.email,
+            intent: 'reverify',
+            message:
+              'ایمیل شما هنوز تأیید نشده است. کد جدید به ایمیل‌تان ارسال شد—لطفاً آن را وارد کنید',
           };
         }
         return { success: false, error: 'ایمیل شما هنوز تأیید نشده است' };
@@ -537,10 +556,16 @@ export async function loginWithPassword(formData: FormData): Promise<AuthResult>
       if (user && !user.emailVerified) {
         const sent = await issueOtp(user.email, 'reverify');
         if (sent.ok) {
+          // 2026-08-09 fix: dead-end — the code was sent but the UI had no
+          // OTP field on the login step. Move to verify so the user can
+          // enter the code.
           return {
-            success: false,
-            error:
-              'ایمیل شما هنوز تأیید نشده است. کد جدید به ایمیل‌تان ارسال شد—لطفاً ابتدا کد را وارد کنید',
+            success: true,
+            step: 'verify',
+            email: user.email,
+            intent: 'reverify',
+            message:
+              'ایمیل شما هنوز تأیید نشده است. کد جدید به ایمیل‌تان ارسال شد—لطفاً آن را وارد کنید',
           };
         }
       }

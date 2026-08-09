@@ -19,6 +19,7 @@
 
 import { randomBytes } from 'node:crypto';
 import prisma from '@/lib/db';
+import { assertOutgoingKycLimit } from '@/lib/kyc-limits';
 import {
   isHighValueTransaction,
   requestTransactionOtp,
@@ -254,6 +255,17 @@ export async function requestWithdraw(raw: unknown): Promise<FintechActionResult
   const account = customer.FintechAccount[0]!;
   if (account.balance < BigInt(amountCents)) {
     return { success: false, error: { code: 'INSUFFICIENT_BALANCE', message: 'موجودی کافی نیست' } };
+  }
+
+  // سقف AML سطح‌بندی‌شده KYC (per-txn + روزانه)
+  const limitCheck = await assertOutgoingKycLimit({
+    exchangeId: account.exchangeId,
+    customerId: customer.id,
+    currency,
+    amountCents,
+  });
+  if (!limitCheck.ok) {
+    return { success: false, error: { code: limitCheck.code, message: limitCheck.error } };
   }
 
   const txnRef = randomBytes(8).toString('hex');

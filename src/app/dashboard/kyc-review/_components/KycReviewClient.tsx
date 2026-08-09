@@ -111,6 +111,20 @@ function initials(name: string | null | undefined): string {
   return name.slice(0, 2);
 }
 
+const DOC_TYPE_LABELS: Record<string, string> = {
+  NATIONAL_ID: 'تذکره / کارت ملی',
+  PASSPORT: 'پاسپورت',
+  RESIDENCE_PERMIT: 'اجازه اقامت',
+  SELFIE: 'سلفی (تأیید چهره)',
+  ADDRESS_PROOF: 'سند اثبات آدرس',
+};
+
+const KYC_LEVEL_LABELS: Record<string, string> = {
+  LEVEL_1: 'سطح ۱ — مدرک هویتی',
+  LEVEL_2: 'سطح ۲ — تأیید چهره',
+  LEVEL_3: 'سطح ۳ — اثبات آدرس',
+};
+
 /** آیا رکورد بیش از ۲ روز است — urgent */
 function isUrgent(submittedAt: string | null): boolean {
   if (!submittedAt) return false;
@@ -659,7 +673,9 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
                         </span>
                       </td>
                       <td className={s.td}>
-                        <span className={s.docTypeChip}>{row.docType}</span>
+                        <span className={s.docTypeChip}>
+                          {DOC_TYPE_LABELS[row.docType] ?? row.docType}
+                        </span>
                       </td>
                       <td className={s.td}>
                         <span className={s.phone} dir="ltr">
@@ -667,7 +683,9 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
                         </span>
                       </td>
                       <td className={s.td}>
-                        <span className={s.levelChip}>{row.level}</span>
+                        <span className={s.levelChip}>
+                          {KYC_LEVEL_LABELS[row.level] ?? row.level}
+                        </span>
                       </td>
                       <td className={s.td}>
                         <span className={s.date}>{formatDate(row.createdAt)}</span>
@@ -895,7 +913,9 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
                     <div className={s.customerKycMeta}>
                       <div className={s.metaRow}>
                         <span className={s.metaLabel}>نوع مدرک:</span>
-                        <span className={s.metaValue}>{previewCustomer.docType}</span>
+                        <span className={s.metaValue}>
+                          {DOC_TYPE_LABELS[previewCustomer.docType] ?? previewCustomer.docType}
+                        </span>
                       </div>
                       <div className={s.metaRow}>
                         <span className={s.metaLabel}>شماره:</span>
@@ -905,7 +925,9 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
                       </div>
                       <div className={s.metaRow}>
                         <span className={s.metaLabel}>سطح درخواستی:</span>
-                        <span className={s.metaValue}>{previewCustomer.level}</span>
+                        <span className={s.metaValue}>
+                          {KYC_LEVEL_LABELS[previewCustomer.level] ?? previewCustomer.level}
+                        </span>
                       </div>
                       <div className={s.metaRow}>
                         <span className={s.metaLabel}>تاریخ ارسال:</span>

@@ -11,6 +11,7 @@ import { randomBytes } from 'node:crypto';
 import { getExchangeForUser } from '@/actions/exchanges';
 import { requireCustomerAccess } from '@/lib/customer-auth';
 import prisma from '@/lib/db';
+import { assertOutgoingKycLimit } from '@/lib/kyc-limits';
 import {
   isHighValueTransaction,
   requestTransactionOtp,
@@ -148,14 +149,72 @@ const ProfileUpdateSchema = z.object({
   address: z.string().max(300, 'آدرس حداکثر ۳۰۰ کاراکتر').nullable().optional(),
 });
 
-const KycSubmitSchema = z.object({
-  docType: z.enum(['NATIONAL_ID', 'PASSPORT', 'RESIDENCE_PERMIT'], {
-    errorMap: () => ({ message: 'نوع مدرک نامعتبر است' }),
-  }),
-  docNumber: z.string().min(1, 'شماره مدرک الزامی است').max(30),
-  // URL فایل توسط `/api/upload` تولید می‌شود — می‌تواند relative (مثل
-  // `/uploads/kyc/...`) یا absolute باشد. فقط لازم است non-empty باشد.
-  fileUrl: z.string().min(1, 'تصویر مدرک الزامی است').max(2000, 'آدرس فایل طولانی است'),
+/**
+ * KYC سطح‌بندی‌شده به انتخاب کاربر (tiered KYC — مطابق الگوی FATF):
+ *  - LEVEL_1: تأیید موبایل با تلگرام (OTP) — اکشن جدا: submitKycPhone
+ *  - LEVEL_2: مدرک هویتی + سلفی تأیید چهره
+ *  - LEVEL_3: + شهر/آدرس (سند آدرس) + صورت حساب بانکی
+ */
+const KycSubmitSchema = z
+  .object({
+    level: z.enum(['LEVEL_2', 'LEVEL_3'], {
+      errorMap: () => ({ message: 'سطح احراز هویت نامعتبر است' }),
+    }),
+    docType: z.enum(['NATIONAL_ID', 'PASSPORT', 'RESIDENCE_PERMIT'], {
+      errorMap: () => ({ message: 'نوع مدرک نامعتبر است' }),
+    }),
+    docNumber: z.string().min(1, 'شماره مدرک الزامی است').max(30),
+    // URL فایل توسط `/api/upload` تولید می‌شود — می‌تواند relative (مثل
+    // `/uploads/kyc/...`) یا absolute باشد. فقط لازم است non-empty باشد.
+    fileUrl: z.string().min(1, 'تصویر مدرک الزامی است').max(2000, 'آدرس فایل طولانی است'),
+    // سطح ۲ و ۳: سلفی تأیید چهره الزامی است
+    selfieUrl: z.string().min(1, 'برای این سطح، سلفی (تأیید چهره) الزامی است').max(2000, 'آدرس فایل طولانی است'),
+    // سطح ۳: آدرس + صورت حساب بانکی
+    city: z.string().max(120, 'شهر حداکثر ۱۲۰ کاراکتر').optional(),
+    address: z.string().max(300, 'آدرس حداکثر ۳۰۰ کاراکتر').optional(),
+    addressDocUrl: z.string().max(2000, 'آدرس فایل طولانی است').optional(),
+    bankStatementUrl: z.string().max(2000, 'آدرس فایل طولانی است').optional(),
+  })
+  .superRefine((val, ctx) => {
+    if (val.level === 'LEVEL_3') {
+      if (!val.city) {
+        ctx.addIssue({ code: 'custom', path: ['city'], message: 'برای سطح ۳، شهر الزامی است' });
+      }
+      if (!val.address) {
+        ctx.addIssue({ code: 'custom', path: ['address'], message: 'برای سطح ۳، آدرس الزامی است' });
+      }
+      if (!val.addressDocUrl) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['addressDocUrl'],
+          message: 'برای سطح ۳، تصویر سند اثبات آدرس الزامی است',
+        });
+      }
+      if (!val.bankStatementUrl) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['bankStatementUrl'],
+          message: 'برای سطح ۳، تصویر صورت حساب بانکی الزامی است',
+        });
+      }
+    }
+  });
+
+/** تأیید موبایل با تلگرام — سطح ۱ */
+const KycPhoneSchema = z.object({
+  phone: z.string().min(8, 'شماره موبایل نامعتبر است').max(20),
+  code: z.string().min(4, 'کد تأیید نامعتبر است').max(8),
+});
+
+/** ارتقا به سطح ۳ (آدرس + صورت حساب بانکی) — هنگام در صف بررسی بودن */
+const KycLevel3Schema = z.object({
+  city: z.string().min(1, 'شهر الزامی است').max(120),
+  address: z.string().min(1, 'آدرس الزامی است').max(300),
+  addressDocUrl: z.string().min(1, 'تصویر سند آدرس الزامی است').max(2000, 'آدرس فایل طولانی است'),
+  bankStatementUrl: z
+    .string()
+    .min(1, 'تصویر صورت حساب بانکی الزامی است')
+    .max(2000, 'آدرس فایل طولانی است'),
 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -473,8 +532,9 @@ export async function submitKycDocument(raw: unknown): Promise<{
     if (updated.count === 0) {
       raceBlocked = true;
       return;
-    }
+    }    const selectedLevel = parsed.data.level;
 
+    // سطح ۱ — مدرک هویتی (همیشه)
     await tx.kycVerification.create({
       data: {
         id: createId(),
@@ -488,13 +548,121 @@ export async function submitKycDocument(raw: unknown): Promise<{
         updatedAt: new Date(),
       },
     });
+
+    // سطح ۲ — سلفی تأیید چهره (اگر سطح انتخابی ≥ ۲)
+    if ((selectedLevel === 'LEVEL_2' || selectedLevel === 'LEVEL_3') && parsed.data.selfieUrl) {
+      await tx.kycVerification.create({
+        data: {
+          id: createId(),
+          exchangeId: customer.exchangeId,
+          customerId: access.customerId,
+          level: 'LEVEL_2',
+          status: 'PENDING',
+          docType: 'SELFIE',
+          fileUrl: parsed.data.selfieUrl,
+          updatedAt: new Date(),
+        },
+      });
+    }
+
+    // سطح ۳ — اثبات آدرس (فقط اگر سطح انتخابی = ۳)
+    if (selectedLevel === 'LEVEL_3') {
+      const addressText = parsed.data.address
+        ? `${parsed.data.city ? `${parsed.data.city}، ` : ''}${parsed.data.address}`
+        : null;
+      await tx.kycVerification.create({
+        data: {
+          id: createId(),
+          exchangeId: customer.exchangeId,
+          customerId: access.customerId,
+          level: 'LEVEL_3',
+          status: 'PENDING',
+          docType: 'ADDRESS_PROOF',
+          docNumber: addressText,
+          fileUrl: parsed.data.addressDocUrl ?? null,
+          updatedAt: new Date(),
+        },
+      });
+      await tx.customer.update({
+        where: { id: access.customerId },
+        data: {
+          city: parsed.data.city ?? undefined,
+          address: parsed.data.address ?? undefined,
+          updatedAt: new Date(),
+        },
+      });
+    }
   });
 
   if (raceBlocked) {
     return { success: false, error: 'مدارک قبلی شما هنوز در حال بررسی است' };
   }
 
+
   revalidateTag('customer-kyc');
+  return { success: true };
+}
+
+// ─── WRITE — KYC selfie (تأیید چهره) ───────────────────────────────────────────
+//
+// سلفی را می‌توان «بعد از» ارسال مدرک (در حالی که LEVEL_1 هنوز در صف بررسی است)
+// هم ارسال کرد — بدون اینکه منتظر تأیید سطح قبل بمانیم. به این ترتیب هر دو رکورد
+// در همان دورهٔ بررسی یک‌جا توسط ادمین/صرافی دیده می‌شوند.
+
+export async function submitKycSelfie(raw: unknown): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  const access = await requireCustomerAccess();
+  if (!access.ok) return { success: false, error: access.error.message };
+
+  const parsed = KycSelfieSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.errors[0]?.message ?? 'داده نامعتبر' };
+  }
+
+  const customer = await prisma.customer.findUnique({
+    where: { id: access.customerId },
+    select: { status: true, exchangeId: true },
+  });
+  if (!customer) return { success: false, error: 'مشتری یافت نشد' };
+  if (customer.status === 'FROZEN' || customer.status === 'CLOSED') {
+    return { success: false, error: 'حساب شما مسدود است — با پشتیبانی تماس بگیرید' };
+  }
+
+  // اگر رکورد LEVEL_2 در صف بررسی است، ارسال مجدد بلاک شود
+  const existingPending = await prisma.kycVerification.findFirst({
+    where: { customerId: access.customerId, level: 'LEVEL_2', status: 'PENDING' },
+    select: { id: true },
+  });
+  if (existingPending) {
+    return { success: false, error: 'سلفی قبلی شما هنوز در حال بررسی است' };
+  }
+
+  const { v4: createId } = await import('uuid');
+
+  await prisma.$transaction(async (tx) => {
+    await tx.kycVerification.create({
+      data: {
+        id: createId(),
+        exchangeId: customer.exchangeId,
+        customerId: access.customerId,
+        level: 'LEVEL_2',
+        status: 'PENDING',
+        docType: 'SELFIE',
+        fileUrl: parsed.data.selfieUrl,
+        updatedAt: new Date(),
+      },
+    });
+    // اگر هنوز PENDING نیست (مثلاً NOT_STARTED)، وضعیت را PENDING کن
+    await tx.customer.updateMany({
+      where: { id: access.customerId, kycStatus: { not: 'PENDING' } },
+      data: { kycStatus: 'PENDING', updatedAt: new Date() },
+    });
+  });
+
+  revalidateTag('customer-kyc');
+  revalidateTag('customer-profile');
   return { success: true };
 }
 
@@ -580,6 +748,7 @@ export async function reviewCustomerKycRecord(raw: unknown): Promise<{
     : null;
   const newStatus: 'APPROVED' | 'REJECTED' = approved ? 'APPROVED' : 'REJECTED';
 
+  let remainingPending = 0;
   await prisma.$transaction(async (tx) => {
     await tx.kycVerification.update({
       where: { id: recordId },
@@ -592,14 +761,39 @@ export async function reviewCustomerKycRecord(raw: unknown): Promise<{
         updatedAt: now,
       },
     });
-    await tx.customer.update({
-      where: { id: record.customerId },
-      data: {
-        kycStatus: newStatus,
-        ...(approved && level ? { kycLevel: level } : {}),
-        updatedAt: now,
-      },
+
+    // رکوردهای هنوز در صف بررسی برای همین مشتری
+    remainingPending = await tx.kycVerification.count({
+      where: { customerId: record.customerId, status: 'PENDING' },
     });
+
+    if (approved) {
+      // بالاترین سطح تأییدشده (LEVEL_1 → 1 …)
+      const approvedLevels = await tx.kycVerification.findMany({
+        where: { customerId: record.customerId, status: 'APPROVED' },
+        select: { level: true },
+      });
+      const maxNum = approvedLevels.reduce((acc, r) => {
+        const n = r.level === 'LEVEL_1' ? 1 : r.level === 'LEVEL_2' ? 2 : r.level === 'LEVEL_3' ? 3 : 0;
+        return Math.max(acc, n);
+      }, 0);
+      const finalLevel: 'LEVEL_1' | 'LEVEL_2' | 'LEVEL_3' | undefined =
+        maxNum === 3 ? 'LEVEL_3' : maxNum === 2 ? 'LEVEL_2' : maxNum === 1 ? 'LEVEL_1' : undefined;
+      await tx.customer.update({
+        where: { id: record.customerId },
+        data: {
+          // تا وقتی رکورد دیگری در صف است، PENDING بماند تا همه یک‌جا تکمیل شوند
+          kycStatus: remainingPending > 0 ? 'PENDING' : 'APPROVED',
+          ...(finalLevel ? { kycLevel: finalLevel } : {}),
+          updatedAt: now,
+        },
+      });
+    } else {
+      await tx.customer.update({
+        where: { id: record.customerId },
+        data: { kycStatus: 'REJECTED', updatedAt: now },
+      });
+    }
   });
 
   revalidateTag('customer-kyc');
@@ -620,6 +814,7 @@ export async function reviewCustomerKycRecord(raw: unknown): Promise<{
         meta: {
           customerId: record.customerId,
           approved,
+          remainingPending,
           ...(rejectedReason ? { rejectedReason } : {}),
         } as Prisma.InputJsonValue,
       },
@@ -636,7 +831,9 @@ export async function reviewCustomerKycRecord(raw: unknown): Promise<{
       await createNotification(
         userId,
         approved
-          ? '✅ احراز هویت مشتری شما تأیید شد.'
+          ? remainingPending > 0
+            ? '✅ یک مرحله از احراز هویت مشتری شما تأیید شد — بقیه مدارک در صف بررسی است.'
+            : '✅ احراز هویت مشتری شما کامل و تأیید شد.'
           : `❌ احراز هویت مشتری شما رد شد. دلیل: ${rejectedReason ?? 'نامشخص'}.`,
       );
     } catch {
@@ -1929,6 +2126,20 @@ export async function transferBetweenAccounts(
     return {
       success: false,
       error: { code: 'CUSTOMER_LOCKED', message: 'حساب مشتری مسدود است' },
+    };
+  }
+
+  // سقف AML سطح‌بندی‌شده KYC (per-txn + روزانه)
+  const limitCheck = await assertOutgoingKycLimit({
+    exchangeId: customer.exchangeId,
+    customerId: access.customerId,
+    currency: from.currency,
+    amountCents,
+  });
+  if (!limitCheck.ok) {
+    return {
+      success: false,
+      error: { code: limitCheck.code, message: limitCheck.error },
     };
   }
 

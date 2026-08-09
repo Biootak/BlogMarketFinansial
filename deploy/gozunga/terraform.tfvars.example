@@ -1,0 +1,11 @@
+# terraform.tfvars.example → کپی کن به terraform.tfvars و پر کن
+# (terraform.tfvars را در git نگذار — حاوی اطلاعات حساس است)
+
+key_pair = "your-ssh-key-name"   # نام SSH key که در پورتال آپلود کرده‌ای
+
+# اختیاری — پیش‌فرض‌ها:
+# instance_name   = "fm-blog-prod"
+# image_name      = "ubuntu-26.04"
+# flavor_name     = "gp.small1"
+# db_volume_size_gb = 20
+# ssh_allowed_cidr  = "0.0.0.0/0"   # بهتر: IP خودت مثل "1.2.3.4/32"

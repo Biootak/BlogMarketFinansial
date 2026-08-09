@@ -147,6 +147,8 @@ export const DOC_TYPE_LABEL: Record<string, string> = {
   NATIONAL_ID: 'تذکره / کارت ملی',
   PASSPORT: 'پاسپورت',
   RESIDENCE_PERMIT: 'اجازه اقامت',
+  SELFIE: 'سلفی (تأیید چهره)',
+  ADDRESS_PROOF: 'سند اثبات آدرس',
 };
 
 // ─── CSS Key Mappers (برای data-* attribute) ────────────────────────────── //

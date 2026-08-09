@@ -170,12 +170,12 @@ export function CurrencySelect({
       // Clamp panel so it never overflows the viewport horizontally
       if (panelRef.current) {
         const rect = panelRef.current.getBoundingClientRect();
-        if (rect.left < 8) {
-          // panel bleeds off the inline-start edge — shift it right
+        if (rect.right > window.innerWidth - 8) {
+          // panel bleeds off the inline-end (left in RTL) edge — anchor to inline-end
+          setPanelStyle({ insetInlineStart: 'auto', insetInlineEnd: 0 });
+        } else if (rect.left < 8) {
+          // panel bleeds off the inline-start (right in RTL) edge — anchor to inline-start
           setPanelStyle({ insetInlineEnd: 'auto', insetInlineStart: 0 });
-        } else if (rect.right > window.innerWidth - 8) {
-          // panel bleeds off the inline-end edge — shift it left
-          setPanelStyle({ insetInlineEnd: 'auto', insetInlineStart: 'auto', right: 0 });
         }
       }
     }, 20);

@@ -24,8 +24,12 @@ export function createConsoleProvider(): EmailProvider {
     name: 'console',
     async send(message: EmailMessage): Promise<EmailSendResult> {
       const id = `console-${Date.now()}`;
-      // استخراج کد OTP از متن ایمیل (۶ رقمی)
-      const codeMatch = message.html.match(/\b(\d{6})\b/) ?? message.text?.match(/\b(\d{6})\b/);
+      // استخراج کد OTP از متن ایمیل (۶ رقمی).
+      // نکته: اول از `text` استخراج می‌کنیم و در HTML از رنگ‌های هگز
+      // (مثل #111827) با negative lookbehind عبور می‌کنیم — وگرنه به‌جای
+      // کد واقعی، عدد ثابت رنگ را برمی‌داریم.
+      const codeMatch =
+        message.text?.match(/\b(\d{6})\b/) ?? message.html.match(/(?<!#)\b(\d{6})\b/);
       const code = codeMatch?.[1];
 
       const lines = [

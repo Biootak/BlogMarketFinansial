@@ -36,6 +36,8 @@ export default function LoginStep({
   const [visible, setVisible] = useState(false);
   const busy = isPending || form.formState.isSubmitting;
 
+  const emailLocked = initialEmail.length > 0;
+
   const onSubmit: SubmitHandler<Values> = (values) => {
     startTransition(async () => {
       const formData = new FormData();
@@ -48,8 +50,35 @@ export default function LoginStep({
 
   return (
     <form noValidate onSubmit={form.handleSubmit(onSubmit)} className="auth-stage-form">
-      {/* Locked email chip — shows which account is being logged in to */}
-      <LockedEmailChip email={initialEmail} onChangeEmail={onBack} />
+      {emailLocked ? (
+        /* Locked email chip — shows which account is being logged in to */
+        <LockedEmailChip email={initialEmail} onChangeEmail={onBack} />
+      ) : (
+        /* 2026-08-09: when the user lands on step=login directly (e.g. the
+            header «ورود» button → /auth?step=login) there is no email in the
+            URL, so collect it here — login becomes a single step:
+            email + password in one form. */
+        <div className="auth-fieldset">
+          <label htmlFor="login-email" className="auth-label">
+            ایمیل
+          </label>
+          <input
+            id="login-email"
+            type="email"
+            autoComplete="email"
+            dir="ltr"
+            // biome-ignore lint/a11y/noAutofocus: email is the first field when login starts here
+            autoFocus
+            placeholder="you@example.com"
+            aria-invalid={Boolean(form.formState.errors.email) || undefined}
+            className={`auth-input${form.formState.errors.email ? ' auth-input--invalid' : ''}`}
+            {...form.register('email')}
+          />
+          {form.formState.errors.email?.message ? (
+            <span className="auth-error">{form.formState.errors.email.message}</span>
+          ) : null}
+        </div>
+      )}
 
       <SocialProviders />
 
@@ -57,16 +86,18 @@ export default function LoginStep({
         <span className="auth-divider-label">یا ورود با رمز عبور</span>
       </div>
 
-      {/* Hidden email field — kept for password-manager autofill */}
-      <input
-        type="email"
-        autoComplete="username email"
-        value={initialEmail}
-        readOnly
-        aria-hidden="true"
-        tabIndex={-1}
-        style={{ display: 'none' }}
-      />
+      {/* Hidden email field — kept for password-manager autofill (locked path only) */}
+      {emailLocked ? (
+        <input
+          type="email"
+          autoComplete="username email"
+          value={initialEmail}
+          readOnly
+          aria-hidden="true"
+          tabIndex={-1}
+          style={{ display: 'none' }}
+        />
+      ) : null}
 
       <div className="auth-fieldset">
         <div className="auth-label-row">
@@ -86,7 +117,7 @@ export default function LoginStep({
             aria-invalid={Boolean(form.formState.errors.password) || undefined}
             className={`auth-input auth-input--with-action${form.formState.errors.password ? ' auth-input--invalid' : ''}`}
             // biome-ignore lint/a11y/noAutofocus: password field should auto-focus since email is pre-filled
-            autoFocus
+            autoFocus={emailLocked}
             {...form.register('password')}
           />
           <button

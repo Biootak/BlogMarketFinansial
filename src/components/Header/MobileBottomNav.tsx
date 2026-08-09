@@ -102,7 +102,8 @@ const buildItems = (loggedIn: boolean): NavItem[] => [
   },
   {
     id: 'profile',
-    href: loggedIn ? '/dashboard' : '/auth',
+    // 2026-08-09: single-step login — email + password on one page
+    href: loggedIn ? '/dashboard' : '/auth?step=login',
     label: loggedIn ? 'پروفایل' : 'ورود',
     icon: HiOutlineUserCircle,
     matchPrefixes: ['/dashboard', '/auth', '/customer', '/exchange'],

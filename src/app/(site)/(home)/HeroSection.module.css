@@ -9,7 +9,7 @@
    ────────────────────────────────────────────────────────────────────────── */
 .root {
   position: relative;
-  min-height: clamp(480px, 80vh, 860px);
+  min-height: clamp(480px, calc(100dvh - 160px), 860px);
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
   align-items: center;
@@ -612,7 +612,7 @@
     0 8px 24px -8px oklch(45% 0.08 240 / 0.15),
     inset 0 1px 0 oklch(100% 0 0 / 0.75),
     inset 0 -1px 0 oklch(100% 0 0 / 0.12);
-  overflow: hidden;
+  overflow: visible;
   cursor: default;
   transform-style: preserve-3d;
   will-change: transform;
@@ -1207,7 +1207,7 @@
 @media (max-width: 900px) {
   .root {
     grid-template-columns: 1fr;
-    min-height: clamp(520px, 70vh, 760px);
+    min-height: clamp(520px, calc(100dvh - 180px), 760px);
     padding-block: clamp(28px, 4.5vw, 52px);
   }
 

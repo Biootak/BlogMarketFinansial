@@ -1,0 +1,221 @@
+#cloud-config
+# ============================================================================
+# cloud-init برای deploy اپ روی گوزونگا Cloud (در اولین بوت اجرا می‌شود)
+# ----------------------------------------------------------------------------
+#  - نصب Node.js 22 + PostgreSQL + Nginx
+#  - فرمت و mount حجم بلوکی جدا برای دادهٔ دیتابیس (دیتا با حذف instance
+#    از بین نمی‌رود — همان توصیهٔ راهنمای رسمی OpenTofu گوزونگا)
+#  - clone ریپو، ساخت .env با secretهای تولیدشده، npm ci + build
+#  - systemd unit برای اپ + Nginx reverse proxy + cron بکاپ شبانه
+#
+# ⚠️ بعد از اولین boot این‌ها را دستی انجام بده (در README هم هست):
+#   1) .env واقعی را آپلود کن (scp) — مخصوصاً NEXTAUTH_URL، CRON_SECRET،
+#      RESEND_API_KEY، AUTH_GOOGLE_* و S3_* (برای بکاپ)
+#   2) systemctl restart fm-blog
+#   3) SSL با certbot:  certbot --nginx -d your-domain.com
+# ============================================================================
+
+write_files:
+  # ── اسکریپت bootstrap اصلی (runcmd آن را اجرا می‌کند) ─────────────────────
+  - path: /opt/fm-blog-bootstrap.sh
+    permissions: '0755'
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+
+      export DEBIAN_FRONTEND=noninteractive
+      APP_DIR=/var/www/fm-blog
+      APP_USER=fmblog
+      # ⚠️ EDIT ME — آدرس ریپو و شاخهٔ موردنظر خودت را بگذار
+      REPO_URL="https://github.com/your-org/fullstack-blog.git"
+      BRANCH="main"
+      DB_USER=blog_owner
+      DB_NAME=blog
+      DB_PASS="$(openssl rand -hex 16)"
+
+      echo "=== [1/8] پایه‌ها ==="
+      apt-get update -qq
+      apt-get install -y -qq ca-certificates curl gnupg git build-essential \
+        postgresql postgresql-client nginx openssl ufw >/dev/null
+
+      echo "=== [2/8] Node.js 22 ==="
+      if ! command -v node >/dev/null 2>&1; then
+        curl -fsSL https://deb.nodesource.com/setup_22.x | bash - >/dev/null 2>&1
+        apt-get install -y -qq nodejs >/dev/null
+      fi
+
+      echo "=== [3/8] حجم بلوکی دیتابیس ==="
+      # دیتکت دستگاه حجم (بسته به هایپروایزر: vdb / sdb / xvdb)
+      VOL=""
+      for dev in /dev/vdb /dev/sdb /dev/xvdb; do
+        if [ -b "$dev" ]; then VOL="$dev"; break; fi
+      done
+      if [ -n "$VOL" ]; then
+        PGDIR=$(ls -d /var/lib/postgresql/*/main 2>/dev/null | head -1 || true)
+        if [ -z "$PGDIR" ]; then PGDIR=/var/lib/postgresql/16/main; fi
+        HAS_FS="$(blkid -o value -s TYPE "$VOL" 2>/dev/null || true)"
+        systemctl stop postgresql || true
+        # ⚠️ فقط حجم تازه فرمت می‌شود — اگر volume قبلاً دیتا دارد (سناریوی DR
+        # بعد از حذف instance) mkfs نمی‌زنیم تا دیتا پاک نشود.
+        if [ -z "$HAS_FS" ]; then
+          mkfs.ext4 -F -q "$VOL"
+        else
+          echo "حجم $VOL از قبل فایل‌سیستم دارد — فرمت نمی‌شود (دیتا حفظ می‌شود)"
+        fi
+        mkdir -p "$PGDIR"
+        mountpoint -q "$PGDIR" || mount "$VOL" "$PGDIR"
+        # mount خودکار بعد از reboot (قبل از شروع postgres)
+        grep -qF "$VOL $PGDIR" /etc/fstab || \
+          echo "$VOL $PGDIR ext4 defaults,x-systemd.before=postgresql.service 0 2" >> /etc/fstab
+        if [ ! -f "$PGDIR/PG_VERSION" ]; then
+          # حجم تازه — ساخت cluster جدید روی حجم
+          PGSQL_VER=$(basename "$(ls -d /etc/postgresql/*/ 2>/dev/null | head -1)" || echo 16)
+          pg_dropcluster --stop "${PGSQL_VER}" main 2>/dev/null || true
+          pg_createcluster "${PGSQL_VER}" main --start || true
+        else
+          echo "دیتای قبلی Postgres روی حجم پیدا شد — cluster حفظ می‌شود"
+        fi
+        chown -R postgres:postgres "$PGDIR"
+        systemctl start postgresql || true
+        echo "دیتای Postgres روی $VOL (حجم جدا از instance) است ✔"
+      else
+        echo "⚠️ حجم بلوکی پیدا نشد — دیتا روی دیسک ریشه می‌ماند (توصیه نمی‌شود)"
+      fi
+
+      echo "=== [4/8] کاربر و نقش دیتابیس ==="
+      su postgres -c "psql -tAc \"SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}'\"" | grep -q 1 || \
+        su postgres -c "psql -c \"CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASS}';\""
+      su postgres -c "psql -tAc \"SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'\"" | grep -q 1 || \
+        su postgres -c "createdb -O ${DB_USER} ${DB_NAME}"
+
+      echo "=== [5/8] clone ریپو ==="
+      id -u ${APP_USER} >/dev/null 2>&1 || useradd -m -s /bin/bash ${APP_USER}
+      mkdir -p "$APP_DIR"
+      chown ${APP_USER}:${APP_USER} "$APP_DIR"
+      if [ ! -d "$APP_DIR/.git" ]; then
+        sudo -u ${APP_USER} git clone --branch "$BRANCH" --depth 1 "$REPO_URL" "$APP_DIR"
+      fi
+
+      echo "=== [6/8] ساخت .env از قالب ==="
+      AUTH_SECRET="$(openssl rand -hex 32)"
+      CRON_SECRET="$(openssl rand -hex 32)"
+      # مقادیر hex هستند → جایگزینی با sed امن است (کاراکتر ویژه ندارند)
+      sed -e "s/__DB_USER__/${DB_USER}/g" \
+          -e "s/__DB_PASS__/${DB_PASS}/g" \
+          -e "s/__AUTH_SECRET__/${AUTH_SECRET}/g" \
+          -e "s/__CRON_SECRET__/${CRON_SECRET}/g" \
+        /opt/fm-blog-env.template > "$APP_DIR/.env"
+      chown ${APP_USER}:${APP_USER} "$APP_DIR/.env"
+      echo "محتوای .env را با مقادیر واقعی جایگزین کن (NEXTAUTH_URL، RESEND_API_KEY، S3_* و …) سپس: systemctl restart fm-blog"
+
+      echo "=== [7/8] نصب و build اپ ==="
+      cd "$APP_DIR"
+      sudo -u ${APP_USER} bash -c "export \$(grep -v '^#' .env | xargs) && npm ci && npm run build"
+
+      echo "=== [8/8] systemd + nginx + cron ==="
+      # CRON_SECRET تولیدشده را در فایل cron (که write_files نوشته) جایگزین کن
+      sed -i "s/__CRON_SECRET__/${CRON_SECRET}/g" /etc/cron.d/fm-blog
+      chmod 0644 /etc/cron.d/fm-blog
+      service cron restart || true
+
+      systemctl daemon-reload
+      systemctl enable --now fm-blog || true
+      nginx -t && systemctl enable --now nginx || true
+
+      echo "✅ bootstrap تمام شد. IP سرور را در DNS روی دامنه بگذار و سپس:"
+      echo "   ssh ubuntu@IP  →  nano /var/www/fm-blog/.env  →  systemctl restart fm-blog"
+
+  # ── systemd unit اپ (فایل ثابت — write_files قبل از runcmd می‌نویسد) ───────
+  - path: /etc/systemd/system/fm-blog.service
+    content: |
+      [Unit]
+      Description=FM Blog (Next.js on Gozunga)
+      After=network.target postgresql.service
+      Wants=postgresql.service
+
+      [Service]
+      Type=simple
+      User=fmblog
+      WorkingDirectory=/var/www/fm-blog
+      EnvironmentFile=/var/www/fm-blog/.env
+      ExecStart=/usr/bin/npm start -- -p 3000
+      Restart=always
+      RestartSec=5
+
+      [Install]
+      WantedBy=multi-user.target
+
+  # ── Nginx reverse proxy ────────────────────────────────────────────────────
+  - path: /etc/nginx/sites-available/fm-blog
+    content: |
+      server {
+          listen 80;
+          server_name _;
+
+          client_max_body_size 25m;
+
+          location / {
+              proxy_pass http://127.0.0.1:3000;
+              proxy_http_version 1.1;
+              proxy_set_header Host $host;
+              proxy_set_header X-Real-IP $remote_addr;
+              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              proxy_set_header X-Forwarded-Proto $scheme;
+          }
+      }
+
+  # ── cron: بکاپ شبانه Postgres + سه endpoint اپ ────────────────────────────
+  # __CRON_SECRET__ توسط bootstrap با مقدار واقعی جایگزین می‌شود
+  - path: /etc/cron.d/fm-blog
+    content: |
+      SHELL=/bin/bash
+      PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+      # بکاپ واقعی Postgres هر شب ۰۳:۳۰ (آپلود به دو مقصد S3 — 3-2-1)
+      30 3 * * * fmblog cd /var/www/fm-blog && /usr/bin/node /var/www/fm-blog/scripts/backup-db.mjs >> /var/www/fm-blog/backups/cron.log 2>&1
+
+      # endpointهای اپ (جای YOUR_DOMAIN را با دامنهٔ واقعی عوض کن)
+      * * * * * root curl -fsS -m 30 -H "Authorization: Bearer __CRON_SECRET__" https://YOUR_DOMAIN.com/api/cron/publish-scheduled-posts >> /var/log/fm-cron.log 2>&1
+      * * * * * root curl -fsS -m 30 -H "Authorization: Bearer __CRON_SECRET__" https://YOUR_DOMAIN.com/api/cron/refresh-market-rates >> /var/log/fm-cron.log 2>&1
+      */10 * * * * root curl -fsS -m 60 -H "Authorization: Bearer __CRON_SECRET__" https://YOUR_DOMAIN.com/api/cron/sync-bazaar >> /var/log/fm-cron.log 2>&1
+
+  # ── قالب .env — placeholder ها با sed جایگزین می‌شوند ─────────────────────
+  # مقادیر خالی را بعداً با مقادیر واقعی پر کن (نگاه کن به README)
+  - path: /opt/fm-blog-env.template
+    content: |
+      NODE_ENV=production
+      DATABASE_URL=postgresql://__DB_USER__:__DB_PASS__@localhost:5432/blog
+      DIRECT_URL=postgresql://__DB_USER__:__DB_PASS__@localhost:5432/blog
+      NEXTAUTH_URL=https://fm-blog.example.com
+      NEXT_PUBLIC_APP_URL=https://fm-blog.example.com
+      AUTH_SECRET=__AUTH_SECRET__
+      NEXTAUTH_SECRET=__AUTH_SECRET__
+      CRON_SECRET=__CRON_SECRET__
+      PRISMA_CONNECTION_LIMIT=10
+      PRISMA_POOL_TIMEOUT=30
+      NODE_OPTIONS=--dns-result-order=ipv4first
+      EMAIL_PROVIDER=resend
+      RESEND_API_KEY=
+      AUTH_GOOGLE_ID=
+      AUTH_GOOGLE_SECRET=
+      AUTH_GITHUB_ID=
+      AUTH_GITHUB_SECRET=
+      NEXT_PUBLIC_SUPABASE_URL=
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+      S3_ENDPOINT=
+      S3_ACCESS_KEY=
+      S3_SECRET_KEY=
+      S3_BUCKET_NAME=
+      S3_BACKUP_BUCKET=
+      BACKUP_S3_SECONDARY_ENDPOINT=
+      BACKUP_S3_SECONDARY_ACCESS_KEY=
+      BACKUP_S3_SECONDARY_SECRET_KEY=
+      BACKUP_S3_SECONDARY_BUCKET=
+      TGJU_SCRAPER_ENABLED=true
+      DEBUG_MODE=false
+      SETUP_PREVIEW_MODE=false
+
+runcmd:
+  - bash /opt/fm-blog-bootstrap.sh
+
+final_message: "fm-blog bootstrap complete"

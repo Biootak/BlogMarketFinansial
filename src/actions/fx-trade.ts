@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { assertOutgoingKycLimit } from '@/lib/kyc-limits';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
@@ -196,6 +197,17 @@ export async function executeFxTrade(raw: unknown): Promise<FintechActionResult<
       },
     };
   }
+  // سقف AML سطح‌بندی‌شده KYC (per-txn + روزانه)
+  const limitCheck = await assertOutgoingKycLimit({
+    exchangeId: customer.exchangeId,
+    customerId: customer.id,
+    currency: fromCurrency,
+    amountCents,
+  });
+  if (!limitCheck.ok) {
+    return { success: false, error: { code: limitCheck.code, message: limitCheck.error } };
+  }
+
   const ip = (await headers()).get('x-forwarded-for')?.split(',').pop()?.trim() ?? 'unknown';
   const fromAccount = await prisma.fintechAccount.findFirst({
     where: { customerId: customer.id, currency: fromCurrency, status: 'ACTIVE' },

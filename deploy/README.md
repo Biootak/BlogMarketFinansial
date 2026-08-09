@@ -124,15 +124,66 @@ npm run deploy:rebuild
 
 ## پشتیبان‌گیری
 
-```bash
-# Database
-docker exec -t fm-blog-db pg_dump -U blog_owner blog | gzip > backup-$(date +%F).sql.gz
-# یا اگه Postgres بیرون از داکر است
-pg_dump $DATABASE_URL | gzip > backup-$(date +%F).sql.gz
+پروژه دو لایه بکاپ دارد:
 
-# آپلودها
-tar -czf uploads-$(date +%F).tar.gz public/uploads/
+### ۱) بکاپ JSON اپ (داخل خود اپ)
+
+`/api/cron/backup` (با CRON_SECRET) از تمام جداول مهم snapshot JSON می‌گیرد،
+روی `backups/` ذخیره و در S3-compatible (باکت `S3_BACKUP_BUCKET`) آینه می‌کند.
+این بکاپ برای بازیابی سریعِ محتوای اپ (پست‌ها، کاربران، تنظیمات) کافی است.
+
+### ۲) بکاپ واقعی Postgres با pg_dump (توصیه‌شده برای DR)
+
+`scripts/backup-db.mjs` بکاپ کامل دیتابیس (schema + داده + sequences) را با
+`pg_dump -Fc` می‌گیرد و طبق قانون 3-2-1 در **دو مقصد S3-compatible** آپلود
+می‌کند — مقصد اصلی (مثلاً Object Storage گوزونگا) و مقصد دوم خارج از پلتفرم
+(Backblaze B2 / R2 / MinIO روی سرور دیگر) تا با حذف اکانت یا VM از بین نرود.
+
+```bash
+# بکاپ دستی
+node scripts/backup-db.mjs --verbose
+
+# لیست بکاپ‌ها و بازیابی
+node scripts/restore-db.mjs --list
+node scripts/restore-db.mjs --file pg_2026-08-09_...dump --drop-first
+
+# تست خشک (فقط نمایش پیکربندی)
+node scripts/backup-db.mjs --dry-run
 ```
+
+متغیرهای محیطی لازم (در `.env`):
+
+```bash
+# مقصد اصلی — اگر ست نشود از S3_ENDPOINT / S3_ACCESS_KEY / S3_SECRET_KEY / S3_BUCKET_NAME استفاده می‌کند
+BACKUP_S3_PRIMARY_ENDPOINT=https://s3.gozunga.com
+BACKUP_S3_PRIMARY_ACCESS_KEY=...
+BACKUP_S3_PRIMARY_SECRET_KEY=...
+BACKUP_S3_PRIMARY_BUCKET=your-private-backup-bucket
+
+# مقصد دوم (خارج از پلتفرم — قانون 3-2-1)
+BACKUP_S3_SECONDARY_ENDPOINT=https://s3.us-west-004.backblazeb2.com
+BACKUP_S3_SECONDARY_ACCESS_KEY=...
+BACKUP_S3_SECONDARY_SECRET_KEY=...
+BACKUP_S3_SECONDARY_BUCKET=fm-blog-backups
+
+# اختیاری
+BACKUP_RETENTION_LOCAL=14        # چند نسخهٔ آخر لوکال بماند
+BACKUP_RETENTION_S3=30           # چند نسخهٔ آخر در هر مقصد S3 بماند
+BACKUP_INCLUDE_UPLOADS=1         # public/uploads هم بکاپ شود
+```
+
+⚠️ **پیش‌نیاز:** روی سرور باید `pg_dump` نصب باشد (`apt install postgresql-client`).
+نسخهٔ pg_dump نباید از نسخهٔ سرور Postgres قدیمی‌تر باشد.
+
+سطر cron (روی هاست/VPS، هر شب ۰۳:۳۰):
+
+```
+30 3 * * * cd /var/www/fm-blog && node scripts/backup-db.mjs >> backups/cron.log 2>&1
+```
+
+برای بازیابی کامل (بعد از از دست رفتن سرور): سرور جدید را بالا بیاور،
+اسکریپت را اجرا کن تا بکاپ از S3 دانلود شود و `pg_restore` کن — یعنی همان
+`node scripts/restore-db.mjs --file <name> --drop-first`.
 
 ---
 

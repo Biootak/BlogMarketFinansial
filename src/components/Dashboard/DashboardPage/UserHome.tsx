@@ -120,12 +120,14 @@ export async function UserHome({
           <h1 id="user-home-title" className={styles.name}>
             سلام، {userName || 'کاربر گرامی'}
           </h1>
-          <p className={styles.subtitle}>
+          {/* 2026-08-09: div به‌جای p — Badge یک <div> رندر می‌کند و div داخل p
+              نامعتبر است (باعث خطای hydration در داشبورد می‌شد). */}
+          <div className={styles.subtitle}>
             <span dir="ltr">{userEmail}</span>
             <Badge variant={emailVerified ? 'secondary' : 'destructive'} className={styles.badge}>
               {emailVerified ? 'ایمیل تأیید شده' : 'ایمیل تأیید نشده'}
             </Badge>
-          </p>
+          </div>
         </div>
         <div className={styles.headerAction}>
           <Link href="/dashboard/my-requests" className={styles.primaryCta}>

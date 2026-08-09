@@ -78,7 +78,7 @@ export function GuestAuthLinks(): ReactNode {
   return (
     <div className="flex items-center gap-1.5 sm:gap-2 me-1">
       <Link
-        href="/auth"
+        href="/auth?step=login"
         className="
           group relative inline-flex items-center justify-center gap-1 sm:gap-1.5
           h-8 sm:h-10 px-3 sm:px-5

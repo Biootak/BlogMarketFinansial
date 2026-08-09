@@ -5,6 +5,7 @@
 // This marks the module server-only so the client bundle stays slim.
 import 'server-only';
 
+import { randomBytes } from 'node:crypto';
 import authConfig from '@/auth.config';
 import { getUserByEmail } from '@/data/user';
 import prisma from '@/lib/db';
@@ -19,13 +20,32 @@ import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { z } from 'zod';
 
-// 2026-08-08 fix: Ensure NEXTAUTH_SECRET is set, otherwise use a fallback for development
-if (!process.env.NEXTAUTH_SECRET) {
+// 2026-08-09 fix: accept both AUTH_SECRET (canonical, used by middleware +
+// totp-secrets) and NEXTAUTH_SECRET; fail-closed in production (the previous
+// version only logged and let Auth.js continue with an undefined secret);
+// dev fallback is random per process, not a shared hardcoded string.
+const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
+if (!authSecret) {
   if (process.env.NODE_ENV === 'production') {
-    serverLog.error('auth', 'missing-secret', 'NEXTAUTH_SECRET is not set in production');
-  } else {
-    process.env.NEXTAUTH_SECRET = 'dev-secret-change-in-production';
+    throw new Error(
+      'AUTH_SECRET (or NEXTAUTH_SECRET) is required in production. ' +
+        "Generate one with: node -e \"console.log(require('crypto').randomBytes(32).toString('base64'))\"",
+    );
   }
+  const generated = randomBytes(32).toString('base64');
+  // Keep both names in sync so middleware's getToken and Auth.js share
+  // the same signing secret in dev.
+  process.env.AUTH_SECRET = generated;
+  process.env.NEXTAUTH_SECRET = generated;
+  serverLog.warn(
+    'auth',
+    'dev-secret-generated',
+    'No AUTH_SECRET/NEXTAUTH_SECRET set; generated a random dev secret. Sessions expire on restart.',
+  );
+} else {
+  // If only one name is set, mirror it so middleware + Auth.js never drift apart.
+  if (!process.env.AUTH_SECRET) process.env.AUTH_SECRET = authSecret;
+  if (!process.env.NEXTAUTH_SECRET) process.env.NEXTAUTH_SECRET = authSecret;
 }
 
 // 2026-06-24: P1-3. Credentials provider accepts two *internal* fields
@@ -34,7 +54,17 @@ if (!process.env.NEXTAUTH_SECRET) {
 // so the authorize function gets typed input and a malformed call from
 // a tampered client is rejected at the boundary.
 const InternalCredentialsKindSchema = z.enum(['password', 'after_otp']);
-const InternalCredentialsIntentSchema = z.enum(['register', 'login', 'reverify', 'recover']);
+// 2026-08-09: '2fa' added — verifyTotpLogin (auth-actions) hands the
+// single-use loginToken to signIn with intent='2fa' after a valid TOTP
+// code; without it the intent enum rejected the value, authorize()
+// returned null, and every 2FA login died with CredentialsSignin.
+const InternalCredentialsIntentSchema = z.enum([
+  'register',
+  'login',
+  'reverify',
+  'recover',
+  '2fa',
+]);
 
 const InternalCredentialsSchema = z.object({
   email: z.string().email(),
@@ -264,11 +294,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const { email } = internal.data;
         const kind = internal.data.kind ?? 'password';
 
-        const parsed = LoginSchema.safeParse({
-          email,
-          password: internal.data.password ?? '',
-        });
-        if (!parsed.success) return null;
+        // 2026-08-09 fix: password validation is only meaningful for the
+        // kind='password' path. The after_otp path never carries a password
+        // (verifyOtp gates it with the single-use loginToken), so running
+        // LoginSchema here rejected the empty password and every OTP login
+        // died with CredentialsSignin after the code was already consumed.
+        let password = '';
+        if (kind === 'password') {
+          const parsed = LoginSchema.safeParse({
+            email,
+            password: internal.data.password ?? '',
+          });
+          if (!parsed.success) return null;
+          password = parsed.data.password;
+        }
 
         const user = await getUserByEmail(email);
         if (!user) return null;
@@ -291,7 +330,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         // Password path.
         if (!user.password) return null;
-        const ok = await bcrypt.compare(parsed.data.password, user.password);
+        const ok = await bcrypt.compare(password, user.password);
         if (!ok) return null;
         if (!user.emailVerified) return null;
         return user;

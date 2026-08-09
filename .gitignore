@@ -7,6 +7,7 @@
 
 # Next.js
 /.next/
+/.next-lh/
 /out/
 
 # Uploaded files - tracked for deployment fallback
@@ -16,7 +17,11 @@
 /coverage
 .agent_tmp/
 tmp/
-scripts/
+scripts/*
+!scripts/backup-db.mjs
+!scripts/restore-db.mjs
+.agents/skills/*/scripts/
+.claude/skills/*/scripts/
 # Logs
 *.log
 npm-debug.log*
@@ -250,3 +255,13 @@ setup-vm.ps1
 
 # AGENTS.ui-ux-skill.md (generated enforcement file — not source code)
 /AGENTS.ui-ux-skill.md
+
+# ============================================================================
+# Database backups (never commit dumps or backup logs)
+# ============================================================================
+/backups/
+
+# Gozunga OpenTofu credentials (deploy/gozunga)
+*.openrc
+terraform.tfvars
+!deploy/gozunga/example-openrc

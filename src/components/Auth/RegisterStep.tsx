@@ -44,10 +44,39 @@ export default function RegisterStep({
     });
   };
 
+  const emailLocked = initialEmail.length > 0;
+
   return (
     <form noValidate onSubmit={form.handleSubmit(onSubmit)} className="auth-stage-form">
-      {/* Locked email chip */}
-      <LockedEmailChip email={initialEmail} onChangeEmail={onBack} label="ثبت‌نام برای" />
+      {emailLocked ? (
+        /* Locked email chip — when email came from the lookup step */
+        <LockedEmailChip email={initialEmail} onChangeEmail={onBack} label="ثبت‌نام برای" />
+      ) : (
+        /* 2026-08-09: when the user lands on step=register directly (e.g. the
+            header «ثبت‌نام» button → /auth?step=register) there is no email in
+            the URL, so collect it here — registration becomes a single step:
+            email + name + password in one form. */
+        <div className="auth-fieldset">
+          <label htmlFor="register-email" className="auth-label">
+            ایمیل
+          </label>
+          <input
+            id="register-email"
+            type="email"
+            autoComplete="email"
+            dir="ltr"
+            // biome-ignore lint/a11y/noAutofocus: email is the first field when registration starts here
+            autoFocus
+            placeholder="you@example.com"
+            aria-invalid={Boolean(form.formState.errors.email) || undefined}
+            className={`auth-input${form.formState.errors.email ? ' auth-input--invalid' : ''}`}
+            {...form.register('email')}
+          />
+          {form.formState.errors.email?.message ? (
+            <span className="auth-error">{form.formState.errors.email.message}</span>
+          ) : null}
+        </div>
+      )}
 
       <div className="auth-fieldset">
         <label htmlFor="register-name" className="auth-label">
@@ -58,7 +87,7 @@ export default function RegisterStep({
           type="text"
           autoComplete="name"
           // biome-ignore lint/a11y/noAutofocus: name field should auto-focus when email is pre-filled
-          autoFocus
+          autoFocus={emailLocked}
           aria-invalid={Boolean(form.formState.errors.name) || undefined}
           className={`auth-input${form.formState.errors.name ? ' auth-input--invalid' : ''}`}
           {...form.register('name')}
@@ -68,16 +97,19 @@ export default function RegisterStep({
         ) : null}
       </div>
 
-      {/* Hidden email for password-manager autofill */}
-      <input
-        type="email"
-        autoComplete="username email"
-        value={initialEmail}
-        readOnly
-        aria-hidden="true"
-        tabIndex={-1}
-        style={{ display: 'none' }}
-      />
+      {/* Hidden email for password-manager autofill (locked path only — the
+          visible email field above already serves autofill in the single-step path) */}
+      {emailLocked ? (
+        <input
+          type="email"
+          autoComplete="username email"
+          value={initialEmail}
+          readOnly
+          aria-hidden="true"
+          tabIndex={-1}
+          style={{ display: 'none' }}
+        />
+      ) : null}
 
       <PasswordField<Values>
         name="password"

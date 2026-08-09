@@ -41,6 +41,11 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # روی filesystem اپمرال (Heroku/Vercel) از بین نرود.
 0 3 * * * curl -fsS -m 300 -H "Authorization: Bearer YOUR_CRON_SECRET" https://YOUR_DOMAIN.com/api/cron/backup >> /var/log/fm-cron.log 2>&1
 
+# ---------- بکاپ واقعی Postgres (pg_dump): هر شب ساعت ۰۳:۳۰ ----------
+# بکاپ کامل دیتابیس (schema + داده + sequences) با آپلود به S3 اصلی + مقصد دوم
+# خارج از پلتفرم (قانون 3-2-1). متغیرهای BACKUP_S3_* را در .env تنظیم کن.
+30 3 * * * cd /var/www/fm-blog && node scripts/backup-db.mjs >> backups/cron.log 2>&1
+
 # ============================================================
 # نصب:
 #   sudo crontab deploy/crontab.example   # یا

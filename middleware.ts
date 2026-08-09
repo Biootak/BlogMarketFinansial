@@ -120,7 +120,10 @@ const isStaticPath = (pathname: string): boolean => {
     pathname === '/site.webmanifest'
   )
     return true;
-  if (pathname.includes('.')) return true;
+  // 2026-08-09 fix: previously `pathname.includes('.')` let ANY dotted path
+  // skip the guard — a crafted route containing a dot would bypass auth.
+  // Now only real file extensions (webp, json, …) count as static.
+  if (/\.[a-z0-9]+$/i.test(pathname)) return true;
   return false;
 };
 const isPublicApi = (pathname: string): boolean =>
@@ -149,7 +152,16 @@ export async function middleware(req: NextRequest) {
   if (isStaticPath(pathname)) return NextResponse.next();
   const isProduction = process.env.NODE_ENV === 'production';
   const isApi = pathname.startsWith('/api/');
-  const cookieName = isProduction ? SECURE_COOKIE_NAME : DEV_COOKIE_NAME;
+  // 2026-08-09 fix: Auth.js decides the secure (`__Secure-`) cookie prefix from
+  // the auth base URL protocol (see @auth/core init.js: defaultCookies(
+  // useSecureCookies ?? url.protocol === 'https:')). The middleware used to
+  // decide it from NODE_ENV alone, so with NEXTAUTH_URL=https://… in a dev
+  // server, Auth.js wrote `__Secure-authjs.session-token` while this guard
+  // looked for `authjs.session-token` — every session was rejected and users
+  // bounced back to /auth right after a successful login. Mirror Auth.js here.
+  const authBaseUrl = process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? '';
+  const useSecureCookies = isProduction || authBaseUrl.startsWith('https://');
+  const cookieName = useSecureCookies ? SECURE_COOKIE_NAME : DEV_COOKIE_NAME;
   const token = await getToken({ req, secret: process.env.AUTH_SECRET, cookieName });
   if (DEBUG_MODE && pathname.startsWith('/dashboard')) {
     /* no sensitive logging */
